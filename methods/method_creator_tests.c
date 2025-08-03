@@ -6,6 +6,11 @@
 #include "ar_system.h"
 #include "ar_agency.h"
 #include "ar_data.h"
+#include "ar_list.h"
+#include "ar_heap.h"
+#include "ar_methodology.h"
+#include "ar_method.h"
+#include "ar_log.h"
 
 static void test_method_creator_create_simple(void) {
     printf("Testing method-creator method with simple method creation...\n");
@@ -24,11 +29,21 @@ static void test_method_creator_create_simple(void) {
     assert(ar_method_fixture__load_method(own_fixture, "method-creator", "../../methods/method-creator-1.0.0.method", "1.0.0"));
     
     // Create method-creator agent
-    int64_t creator_agent = ar_agency__create_agent("method-creator", "1.0.0", NULL);
+
+    // Get the fixture's agency
+    ar_agency_t *mut_agency = ar_method_fixture__get_agency(own_fixture);
+    assert(mut_agency != NULL);
+
+    // Create empty context for the agent
+    ar_data_t *own_context = ar_data__create_map();
+    assert(own_context != NULL);
+    
+    int64_t creator_agent = ar_agency__create_agent_with_instance(mut_agency, "method-creator", "1.0.0", own_context);
     assert(creator_agent > 0);
+    // Note: Agent stores reference to context, don't destroy it here
     
     // Process wake message
-    ar_system__process_next_message();
+    ar_method_fixture__process_next_message(own_fixture);
     
     // When we send a message to create a new method
     ar_data_t *own_message = ar_data__create_map();
@@ -37,35 +52,67 @@ static void test_method_creator_create_simple(void) {
     ar_data__set_map_string(own_message, "method_name", "doubler");
     ar_data__set_map_string(own_message, "instructions", "memory.result := message.value * 2\nsend(message.sender, memory.result)");
     ar_data__set_map_string(own_message, "version", "1.0.0");
-    ar_data__set_map_integer(own_message, "sender", 888);
+    ar_data__set_map_integer(own_message, "sender", 0); // 0 = system, which can handle the response
     
-    bool sent = ar_agency__send_to_agent(creator_agent, own_message);
+    bool sent = ar_agency__send_to_agent_with_instance(mut_agency, creator_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
     // Process the message
-    bool processed = ar_system__process_next_message();
+    printf("DEBUG: Processing main message...\n");
+    bool processed = ar_method_fixture__process_next_message(own_fixture);
+    printf("DEBUG: Main message processed: %s\n", processed ? "true" : "false");
     assert(processed);
+    
+    // Debug: Process any remaining messages (like the send back to sender)
+    int messages_processed = ar_method_fixture__process_all_messages(own_fixture);
+    printf("DEBUG: Processed %d additional messages\n", messages_processed);
+    
+    // Check if there was an error during execution
+    // Note: Would need access to system's log to check for errors
     
     // Verify method execution by checking agent's memory
     // The method-creator method should:
-    // 1. Call method() function to create a new method
+    // 1. Call compile() function to create a new method
     // 2. Store the result (1 for success, 0 for failure) in memory.result
     // 3. Send the result back to the sender
     
     // Get agent memory for verification
-    const ar_data_t *agent_memory = ar_agency__get_agent_memory(creator_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory_with_instance(mut_agency, creator_agent);
     assert(agent_memory != NULL);
     
-    // Check memory.result - should contain the result of method() function
+    // Debug: Check what's in agent memory
+    printf("DEBUG: Checking agent memory...\n");
+    const ar_data_t *memory_result = ar_data__get_map_data(agent_memory, "result");
+    if (memory_result) {
+        printf("DEBUG: memory.result exists, type=%d\n", ar_data__get_type(memory_result));
+        if (ar_data__get_type(memory_result) == AR_DATA_TYPE__INTEGER) {
+            printf("DEBUG: memory.result = %lld\n", (long long)ar_data__get_integer(memory_result));
+        }
+    } else {
+        printf("DEBUG: memory.result not found\n");
+        // Check if the method might have been registered
+        ar_methodology_t *ref_methodology = ar_agency__get_methodology(mut_agency);
+        if (ref_methodology) {
+            ar_method_t *test_method = ar_methodology__get_method_with_instance(ref_methodology, "doubler", "1.0.0");
+            if (test_method) {
+                printf("DEBUG: Method 'doubler' was successfully registered!\n");
+            } else {
+                printf("DEBUG: Method 'doubler' was NOT registered\n");
+            }
+        }
+    }
+    
+    // Check memory.result - should contain the result of compile() function
     const ar_data_t *result = ar_data__get_map_data(agent_memory, "result");
     if (result == NULL) {
-        printf("FAIL: memory.result not found - method() instruction failed to execute\n");
-        printf("NOTE: This indicates the method() function in instruction module needs implementation\n");
+        printf("FAIL: memory.result not found - compile() instruction failed to execute\n");
+        printf("NOTE: This indicates the compile() function may not be working properly\n");
+        assert(result != NULL); // Test should fail when memory.result is missing
     } else {
         assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
         int result_val = ar_data__get_integer(result);
-        printf("SUCCESS: method() instruction executed and created memory.result\n");
+        printf("SUCCESS: compile() instruction executed and created memory.result\n");
         printf("  - Method creation result: %d\n", result_val);
         
         if (result_val == 1) {
@@ -81,6 +128,7 @@ static void test_method_creator_create_simple(void) {
     
     // Destroy fixture (handles all cleanup)
     ar_method_fixture__destroy(own_fixture);
+    ar_data__destroy(own_context); // Now safe to destroy context after fixture cleanup
     
     printf("✓ Method creator create simple test passed\n");
 }
@@ -102,11 +150,21 @@ static void test_method_creator_invalid_syntax(void) {
     assert(ar_method_fixture__load_method(own_fixture, "method-creator", "../../methods/method-creator-1.0.0.method", "1.0.0"));
     
     // Create method-creator agent
-    int64_t creator_agent = ar_agency__create_agent("method-creator", "1.0.0", NULL);
+
+    // Get the fixture's agency
+    ar_agency_t *mut_agency = ar_method_fixture__get_agency(own_fixture);
+    assert(mut_agency != NULL);
+
+    // Create empty context for the agent
+    ar_data_t *own_context = ar_data__create_map();
+    assert(own_context != NULL);
+    
+    int64_t creator_agent = ar_agency__create_agent_with_instance(mut_agency, "method-creator", "1.0.0", own_context);
     assert(creator_agent > 0);
+    // Note: Agent stores reference to context, don't destroy it here
     
     // Process wake message
-    ar_system__process_next_message();
+    ar_method_fixture__process_next_message(own_fixture);
     
     // When we send a message to create a method with invalid syntax
     ar_data_t *own_message = ar_data__create_map();
@@ -115,32 +173,64 @@ static void test_method_creator_invalid_syntax(void) {
     ar_data__set_map_string(own_message, "method_name", "broken");
     ar_data__set_map_string(own_message, "instructions", "memory.result = invalid syntax here");
     ar_data__set_map_string(own_message, "version", "1.0.0");
-    ar_data__set_map_integer(own_message, "sender", 888);
+    ar_data__set_map_integer(own_message, "sender", 0); // 0 = system, which can handle the response
     
-    bool sent = ar_agency__send_to_agent(creator_agent, own_message);
+    bool sent = ar_agency__send_to_agent_with_instance(mut_agency, creator_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
     // Process the message
-    bool processed = ar_system__process_next_message();
+    printf("DEBUG: Processing main message...\n");
+    bool processed = ar_method_fixture__process_next_message(own_fixture);
+    printf("DEBUG: Main message processed: %s\n", processed ? "true" : "false");
     assert(processed);
     
+    // Debug: Process any remaining messages (like the send back to sender)
+    int messages_processed = ar_method_fixture__process_all_messages(own_fixture);
+    printf("DEBUG: Processed %d additional messages\n", messages_processed);
+    
+    // Check if there was an error during execution
+    // Note: Would need access to system's log to check for errors
+    
     // Verify method execution with invalid syntax
-    // The method() function should validate syntax and return 0 for invalid instructions
+    // The compile() function should validate syntax and return 0 for invalid instructions
     
     // Get agent memory for verification
-    const ar_data_t *agent_memory = ar_agency__get_agent_memory(creator_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory_with_instance(mut_agency, creator_agent);
     assert(agent_memory != NULL);
+    
+    // Debug: Check what's in agent memory
+    printf("DEBUG: Checking agent memory...\n");
+    const ar_data_t *memory_result = ar_data__get_map_data(agent_memory, "result");
+    if (memory_result) {
+        printf("DEBUG: memory.result exists, type=%d\n", ar_data__get_type(memory_result));
+        if (ar_data__get_type(memory_result) == AR_DATA_TYPE__INTEGER) {
+            printf("DEBUG: memory.result = %lld\n", (long long)ar_data__get_integer(memory_result));
+        }
+    } else {
+        printf("DEBUG: memory.result not found\n");
+        // Check if the method might have been registered
+        ar_methodology_t *ref_methodology = ar_agency__get_methodology(mut_agency);
+        if (ref_methodology) {
+            ar_method_t *test_method = ar_methodology__get_method_with_instance(ref_methodology, "doubler", "1.0.0");
+            if (test_method) {
+                printf("DEBUG: Method 'doubler' was successfully registered!\n");
+            } else {
+                printf("DEBUG: Method 'doubler' was NOT registered\n");
+            }
+        }
+    }
     
     // Check memory.result - should be 0 for invalid syntax
     const ar_data_t *result = ar_data__get_map_data(agent_memory, "result");
     if (result == NULL) {
-        printf("FAIL: memory.result not found - method() instruction failed to execute\n");
-        printf("NOTE: This is expected until method() function is implemented in instruction module\n");
+        printf("FAIL: memory.result not found - compile() instruction failed to execute\n");
+        printf("NOTE: This indicates the compile() function may not be working properly\n");
+        assert(result != NULL); // Test should fail when memory.result is missing
     } else {
         assert(ar_data__get_type(result) == AR_DATA_TYPE__INTEGER);
         int result_val = ar_data__get_integer(result);
-        printf("SUCCESS: method() instruction executed with invalid syntax\n");
+        printf("SUCCESS: compile() instruction executed with invalid syntax\n");
         printf("  - Method creation result: %d\n", result_val);
         
         if (result_val == 0) {
@@ -155,6 +245,7 @@ static void test_method_creator_invalid_syntax(void) {
     
     // Destroy fixture (handles all cleanup)
     ar_method_fixture__destroy(own_fixture);
+    ar_data__destroy(own_context); // Now safe to destroy context after fixture cleanup
     
     printf("✓ Method creator invalid syntax test passed\n");
 }

@@ -18,6 +18,7 @@
 struct ar_method_fixture_s {
     char *own_test_name;          /* Name of the test */
     bool initialized;             /* Whether fixture has been initialized */
+    ar_system_t *own_system;      /* The system instance */
 };
 
 ar_method_fixture_t* ar_method_fixture__create(const char *ref_test_name) {
@@ -37,6 +38,7 @@ ar_method_fixture_t* ar_method_fixture__create(const char *ref_test_name) {
     }
     
     own_fixture->initialized = false;
+    own_fixture->own_system = NULL;
     
     return own_fixture; // Ownership transferred to caller
 }
@@ -47,10 +49,9 @@ void ar_method_fixture__destroy(ar_method_fixture_t *own_fixture) {
     }
     
     // If initialized, perform cleanup
-    if (own_fixture->initialized) {
-        ar_system__shutdown();
-        ar_methodology__cleanup();
-        ar_agency__reset();
+    if (own_fixture->initialized && own_fixture->own_system) {
+        ar_system__shutdown_with_instance(own_fixture->own_system);
+        ar_system__destroy(own_fixture->own_system);
         
         // Remove persistence files
         remove("methodology.agerun");
@@ -67,18 +68,24 @@ bool ar_method_fixture__initialize(ar_method_fixture_t *mut_fixture) {
     }
     
     // Clean shutdown of any existing state
-    ar_system__shutdown();
-    ar_methodology__cleanup();
-    ar_agency__reset();
+    if (mut_fixture->own_system) {
+        ar_system__shutdown_with_instance(mut_fixture->own_system);
+        ar_system__destroy(mut_fixture->own_system);
+        mut_fixture->own_system = NULL;
+    }
     
     // Remove persistence files
     remove("methodology.agerun");
     remove("agency.agerun");
     
-    // Initialize system with no persistence files
-    if (ar_system__init(NULL, NULL) != 1) {
-        // System already initialized is okay
+    // Create new system instance
+    mut_fixture->own_system = ar_system__create();
+    if (!mut_fixture->own_system) {
+        return false;
     }
+    
+    // Initialize system with no persistence files
+    ar_system__init_with_instance(mut_fixture->own_system, NULL, NULL);
     
     mut_fixture->initialized = true;
     
@@ -124,8 +131,30 @@ bool ar_method_fixture__load_method(ar_method_fixture_t *mut_fixture,
     
     ar_io__close_file(fp, ref_method_file);
     
-    // Register method
-    bool registered = ar_methodology__create_method(ref_method_name, own_content, ref_version);
+    // Get the agency from the fixture's system
+    ar_agency_t *mut_agency = ar_system__get_agency(mut_fixture->own_system);
+    if (!mut_agency) {
+        AR__HEAP__FREE(own_content);
+        return false;
+    }
+    
+    // Get the methodology from the agency
+    ar_methodology_t *mut_methodology = ar_agency__get_methodology(mut_agency);
+    if (!mut_methodology) {
+        // This should not happen - agency should have methodology
+        ar_io__error("Agency has no methodology\n");
+        AR__HEAP__FREE(own_content);
+        return false;
+    }
+    
+    // Register method using instance methodology
+    bool registered = ar_methodology__create_method_with_instance(mut_methodology, ref_method_name, own_content, ref_version);
+    
+    if (registered) {
+        printf("Method fixture: Successfully registered method '%s' version '%s'\n", ref_method_name, ref_version ? ref_version : "latest");
+    } else {
+        printf("Method fixture: Failed to register method '%s' version '%s'\n", ref_method_name, ref_version ? ref_version : "latest");
+    }
     
     AR__HEAP__FREE(own_content);
     
@@ -169,4 +198,28 @@ bool ar_method_fixture__check_memory(const ar_method_fixture_t *ref_fixture) {
     // reporting at program exit to detect leaks.
     // Individual tests can check heap_memory_report.log after running.
     return true;
+}
+
+bool ar_method_fixture__process_next_message(ar_method_fixture_t *mut_fixture) {
+    if (!mut_fixture || !mut_fixture->initialized || !mut_fixture->own_system) {
+        return false;
+    }
+    
+    return ar_system__process_next_message_with_instance(mut_fixture->own_system);
+}
+
+int ar_method_fixture__process_all_messages(ar_method_fixture_t *mut_fixture) {
+    if (!mut_fixture || !mut_fixture->initialized || !mut_fixture->own_system) {
+        return 0;
+    }
+    
+    return ar_system__process_all_messages_with_instance(mut_fixture->own_system);
+}
+
+ar_agency_t* ar_method_fixture__get_agency(const ar_method_fixture_t *ref_fixture) {
+    if (!ref_fixture || !ref_fixture->own_system) {
+        return NULL;
+    }
+    
+    return ar_system__get_agency(ref_fixture->own_system);
 }

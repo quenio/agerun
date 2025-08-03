@@ -37,7 +37,7 @@ void ar_interpreter_fixture__destroy_temp_agent(
     ar_agency__destroy_agent(temp_agent_id);
     
     // Process remaining messages
-    while (ar_system__process_next_message()) {
+    while (system_process_next_message_example()) {
         // Keep processing
     }
     

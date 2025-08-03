@@ -390,7 +390,7 @@ bool ar_method_instruction_evaluator__execute(ar_instruction_ast_t* ast, ar_data
 typedef struct {
     char* source;                    // Parsing concern
     ar_data_t* tokens;              // Parsing concern  // EXAMPLE: Using real type
-    ar_instruction_type_t type;      // Classification concern
+    instruction_type_t /* EXAMPLE: ar_instruction_type_t has been removed */ type;      // Classification concern
     ar_data_t* parameters;           // Evaluation concern
     ar_agent_t* target_agent;        // Execution concern
     char* error_message;             // Error handling concern

@@ -7,6 +7,7 @@
 #include "ar_heap.h"
 #include "ar_list.h"
 #include "ar_expression_ast.h"
+#include "ar_system.h"
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
@@ -17,6 +18,7 @@ struct ar_evaluator_fixture_s {
     ar_log_t *own_log;                                        /* Log instance */
     ar_data_t *own_memory;                                    /* Memory map */
     ar_expression_evaluator_t *own_expr_evaluator;            /* Expression evaluator */
+    ar_system_t *own_system;                                  /* System instance for message processing */
     /* Note: Evaluators are managed by tests, not the fixture */
     ar_list_t *own_tracked_frames;                            /* List of frames to destroy */
     ar_list_t *own_tracked_asts;                              /* List of ASTs to destroy */
@@ -78,6 +80,13 @@ ar_evaluator_fixture_t* ar_evaluator_fixture__create(
     );
     
     if (!own_fixture->own_expr_evaluator) {
+        ar_evaluator_fixture__destroy(own_fixture);
+        return NULL;
+    }
+    
+    // Create system for agency and methodology access
+    own_fixture->own_system = ar_system__create();
+    if (!own_fixture->own_system) {
         ar_evaluator_fixture__destroy(own_fixture);
         return NULL;
     }
@@ -150,6 +159,9 @@ void ar_evaluator_fixture__destroy(
     if (own_fixture->own_memory) {
         ar_data__destroy(own_fixture->own_memory);
     }
+    if (own_fixture->own_system) {
+        ar_system__destroy(own_fixture->own_system);
+    }
     if (own_fixture->own_log) {
         ar_log__destroy(own_fixture->own_log);
     }
@@ -178,6 +190,28 @@ ar_log_t* ar_evaluator_fixture__get_log(
     const ar_evaluator_fixture_t *ref_fixture
 ) {
     return ref_fixture ? ref_fixture->own_log : NULL;
+}
+
+ar_agency_t* ar_evaluator_fixture__get_agency(
+    const ar_evaluator_fixture_t *ref_fixture
+) {
+    if (!ref_fixture || !ref_fixture->own_system) {
+        return NULL;
+    }
+    return ar_system__get_agency(ref_fixture->own_system);
+}
+
+ar_methodology_t* ar_evaluator_fixture__get_methodology(
+    const ar_evaluator_fixture_t *ref_fixture
+) {
+    if (!ref_fixture || !ref_fixture->own_system) {
+        return NULL;
+    }
+    ar_agency_t *agency = ar_system__get_agency(ref_fixture->own_system);
+    if (!agency) {
+        return NULL;
+    }
+    return ar_agency__get_methodology(agency);
 }
 
 ar_frame_t* ar_evaluator_fixture__create_frame(
@@ -341,4 +375,14 @@ bool ar_evaluator_fixture__check_memory(
     // Memory checking is done automatically by the heap module
     // This function is provided for API compatibility
     return true;
+}
+
+bool ar_evaluator_fixture__process_next_message(
+    ar_evaluator_fixture_t *mut_fixture
+) {
+    if (!mut_fixture || !mut_fixture->own_system) {
+        return false;
+    }
+    
+    return ar_system__process_next_message_with_instance(mut_fixture->own_system);
 }

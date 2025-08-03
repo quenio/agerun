@@ -101,7 +101,7 @@ void ar_agent_update__process_event(ar_event_t* event);
 **Problem**: Module handling too many concerns
 ```c
 // BAD: ar_system doing everything
-void ar_system__init();
+void system_init_example();
 void ar_system__parse_method(const char* text);  // EXAMPLE: Hypothetical function
 void ar_system__create_agent(const char* method_name);  // EXAMPLE: Hypothetical function
 void ar_system__send_message(uint64_t agent_id, ar_data_t* message);  // EXAMPLE: Hypothetical function
@@ -113,7 +113,7 @@ void ar_system__cleanup();  // EXAMPLE: Hypothetical function
 **Solution**: Split into focused modules
 ```c
 // ar_system.h - System lifecycle only
-void ar_system__init();
+void system_init_example();
 void ar_system__cleanup();  // EXAMPLE: Hypothetical function
 
 // ar_methodology.h - Method management

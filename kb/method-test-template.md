@@ -26,7 +26,7 @@ int main() {
     }
 
     // Clean state - prevent pollution from previous runs
-    ar_system__shutdown();
+    ar_system__shutdown_with_instance(own_system);
     ar_methodology__cleanup();
     ar_agency__reset();
     remove("methodology.agerun");
@@ -38,10 +38,10 @@ int main() {
     // ... test code ...
     
     // Process all messages before cleanup
-    while (ar_system__process_next_message());
+    while (ar_system__process_next_message_with_instance(own_system));
     
     // Initialize system after creating methods
-    ar_system__init(NULL, NULL);
+    ar_system__init_with_instance(own_system, NULL, NULL);
     
     return 0;
 }

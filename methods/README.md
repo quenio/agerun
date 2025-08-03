@@ -215,7 +215,7 @@ static void test_method_basic(void) {
     assert(agent > 0);
     
     // Process wake message
-    ar_system__process_next_message();
+    ar_system__process_next_message_with_instance(own_system));
     
     // When we send a test message
     ar_data_t *own_message = ar_data__create_string("test");
@@ -224,7 +224,7 @@ static void test_method_basic(void) {
     own_message = NULL; // Ownership transferred
     
     // Process the message
-    bool processed = ar_system__process_next_message();
+    bool processed = ar_system__process_next_message_with_instance(own_system));
     assert(processed);
     
     // Then verify expected behavior

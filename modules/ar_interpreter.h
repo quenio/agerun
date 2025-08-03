@@ -7,8 +7,21 @@
 #include "ar_method.h"
 #include "ar_log.h"
 
+/* Forward declaration */
+typedef struct ar_agency_s ar_agency_t;
+
 /* Interpreter instance (opaque type) */
 typedef struct ar_interpreter_s ar_interpreter_t;
+
+/**
+ * Creates a new interpreter instance with agency
+ * @param ref_log The log instance for error reporting (borrowed reference)
+ * @param ref_agency The agency instance to use (borrowed reference)
+ * @return Newly created interpreter, or NULL on failure
+ * @note Ownership: Returns an owned object that the caller must destroy with ar_interpreter__destroy.
+ *       The interpreter borrows the log and agency references.
+ */
+ar_interpreter_t* ar_interpreter__create_with_agency(ar_log_t *ref_log, ar_agency_t *ref_agency);
 
 /**
  * Creates a new interpreter instance

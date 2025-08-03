@@ -637,6 +637,10 @@ int main(void) {
     // Run global instance test (doesn't need system initialized)
     test_methodology__global_instance();
     
+    // Create system instance for tests
+    ar_system_t *mut_system = ar_system__create();
+    assert(mut_system != NULL);
+    
     // Given a test method and initialized system
     const char *init_method = "methodology_test_method";
     const char *init_instructions = "memory.result = \"Test methodology\"";
@@ -653,10 +657,10 @@ int main(void) {
     const char *init_version = "1.0.0";
     
     // When we initialize the system
-    ar_system__init(init_method, init_version);
+    ar_system__init_with_instance(mut_system, init_method, init_version);
     
     // Process the wake message from the initial agent
-    ar_system__process_next_message();
+    ar_system__process_next_message_with_instance(mut_system);
     
     // And we run all methodology tests
     test_methodology_get_method();
@@ -664,7 +668,6 @@ int main(void) {
     test_method_counts();
     
     // Shutdown the system to clean up resources
-    ar_system__shutdown();
     
     // Run persistence test (doesn't need system initialized)
     test_methodology_save_load();
@@ -681,5 +684,9 @@ int main(void) {
     
     // And report success
     printf("All 18 tests passed!\n");
+    // Clean up system instance
+    ar_system__shutdown_with_instance(mut_system);
+    ar_system__destroy(mut_system);
+    
     return 0;
 }

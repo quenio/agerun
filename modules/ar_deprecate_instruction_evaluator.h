@@ -12,6 +12,7 @@
 #include "ar_frame.h"
 #include "ar_data.h"
 #include "ar_log.h"
+#include "ar_methodology.h"
 
 /* Forward declaration of opaque struct */
 typedef struct ar_deprecate_instruction_evaluator_s ar_deprecate_instruction_evaluator_t;
@@ -20,12 +21,14 @@ typedef struct ar_deprecate_instruction_evaluator_s ar_deprecate_instruction_eva
  * Creates a new deprecate instruction evaluator instance
  * @param ref_log The log instance to use for error reporting (borrowed reference)
  * @param ref_expr_evaluator Expression evaluator to use (borrowed reference)
+ * @param ref_methodology Methodology instance to operate on (borrowed reference)
  * @return New evaluator instance, or NULL on failure
  * @note Ownership: Returns an owned value that caller must destroy
  */
 ar_deprecate_instruction_evaluator_t* ar_deprecate_instruction_evaluator__create(
     ar_log_t *ref_log,
-    ar_expression_evaluator_t *ref_expr_evaluator
+    ar_expression_evaluator_t *ref_expr_evaluator,
+    ar_methodology_t *ref_methodology
 );
 
 /**

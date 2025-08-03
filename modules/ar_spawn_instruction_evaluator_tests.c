@@ -20,7 +20,6 @@
 
 static void test_spawn_instruction_evaluator__evaluate_with_context(void) {
     // Initialize system for agent creation
-    ar_system__init(NULL, NULL);
     
     // Given a test fixture and frame-based create evaluator
     ar_evaluator_fixture_t *fixture = 
@@ -37,16 +36,18 @@ static void test_spawn_instruction_evaluator__evaluate_with_context(void) {
     
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_agency_t *mut_agency = ar_evaluator_fixture__get_agency(fixture);
+    ar_methodology_t *mut_methodology = ar_evaluator_fixture__get_methodology(fixture);
     
     ar_spawn_instruction_evaluator_t *evaluator = ar_spawn_instruction_evaluator__create(
-        log, expr_eval
+        log, expr_eval, mut_agency
     );
     assert(evaluator != NULL);
     
-    // Register a method to create agents with
+    // Register a method to create agents with using instance APIs
     ar_method_t *method = ar_method__create("worker", "send(0, context.config)", "2.0.0");
     assert(method != NULL);
-    ar_methodology__register_method(method);
+    ar_methodology__register_method_with_instance(mut_methodology, method);
     
     // When evaluating a create instruction with context: spawn("worker", "2.0.0", memory)
     const char *args[] = {"\"worker\"", "\"2.0.0\"", "memory"};
@@ -80,7 +81,7 @@ static void test_spawn_instruction_evaluator__evaluate_with_context(void) {
     assert(result == true);
     
     // Process wake message to avoid leak
-    ar_system__process_next_message();
+    ar_evaluator_fixture__process_next_message(fixture);
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
@@ -91,7 +92,6 @@ static void test_spawn_instruction_evaluator__evaluate_with_context(void) {
     ar_agency__reset();
     
     // Shutdown system
-    ar_system__shutdown();
     
     // Clean up methodology after each test to prevent accumulation
     ar_methodology__cleanup();
@@ -99,7 +99,6 @@ static void test_spawn_instruction_evaluator__evaluate_with_context(void) {
 
 static void test_spawn_instruction_evaluator__evaluate_with_result(void) {
     // Initialize system for agent creation
-    ar_system__init(NULL, NULL);
     
     // Given a test fixture and frame-based create evaluator
     ar_evaluator_fixture_t *fixture = 
@@ -111,16 +110,18 @@ static void test_spawn_instruction_evaluator__evaluate_with_result(void) {
     
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_agency_t *mut_agency = ar_evaluator_fixture__get_agency(fixture);
+    ar_methodology_t *mut_methodology = ar_evaluator_fixture__get_methodology(fixture);
     
     ar_spawn_instruction_evaluator_t *evaluator = ar_spawn_instruction_evaluator__create(
-        log, expr_eval
+        log, expr_eval, mut_agency
     );
     assert(evaluator != NULL);
     
-    // Register a method to create agents with
+    // Register a method to create agents with using instance APIs
     ar_method_t *method = ar_method__create("counter", "memory.count := memory.count + 1", "1.0.0");
     assert(method != NULL);
-    ar_methodology__register_method(method);
+    ar_methodology__register_method_with_instance(mut_methodology, method);
     
     // When evaluating a create instruction with result assignment: memory.agent_id := spawn("counter", "1.0.0", memory)
     const char *args[] = {"\"counter\"", "\"1.0.0\"", "memory"};
@@ -159,7 +160,7 @@ static void test_spawn_instruction_evaluator__evaluate_with_result(void) {
     assert(agent_id > 0);  // Agent IDs start from 1
     
     // Process wake message to avoid leak
-    ar_system__process_next_message();
+    ar_evaluator_fixture__process_next_message(fixture);
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
@@ -170,7 +171,6 @@ static void test_spawn_instruction_evaluator__evaluate_with_result(void) {
     ar_agency__reset();
     
     // Shutdown system
-    ar_system__shutdown();
     
     // Clean up methodology after each test to prevent accumulation
     ar_methodology__cleanup();
@@ -178,7 +178,6 @@ static void test_spawn_instruction_evaluator__evaluate_with_result(void) {
 
 static void test_spawn_instruction_evaluator__evaluate_invalid_method(void) {
     // Initialize system for agent creation
-    ar_system__init(NULL, NULL);
     
     // Given a test fixture and frame-based create evaluator (no methods registered)
     ar_evaluator_fixture_t *fixture = 
@@ -190,9 +189,10 @@ static void test_spawn_instruction_evaluator__evaluate_invalid_method(void) {
     
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_agency_t *mut_agency = ar_evaluator_fixture__get_agency(fixture);
     
     ar_spawn_instruction_evaluator_t *evaluator = ar_spawn_instruction_evaluator__create(
-        log, expr_eval
+        log, expr_eval, mut_agency
     );
     assert(evaluator != NULL);
     
@@ -217,7 +217,6 @@ static void test_spawn_instruction_evaluator__evaluate_invalid_method(void) {
     ar_agency__reset();
     
     // Shutdown system
-    ar_system__shutdown();
     
     // Clean up methodology after each test to prevent accumulation
     ar_methodology__cleanup();
@@ -225,7 +224,6 @@ static void test_spawn_instruction_evaluator__evaluate_invalid_method(void) {
 
 static void test_spawn_instruction_evaluator__evaluate_invalid_args(void) {
     // Initialize system for agent creation
-    ar_system__init(NULL, NULL);
     
     // Given a test fixture and frame-based create evaluator
     ar_evaluator_fixture_t *fixture = 
@@ -237,9 +235,10 @@ static void test_spawn_instruction_evaluator__evaluate_invalid_args(void) {
     
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_agency_t *mut_agency = ar_evaluator_fixture__get_agency(fixture);
     
     ar_spawn_instruction_evaluator_t *evaluator = ar_spawn_instruction_evaluator__create(
-        log, expr_eval
+        log, expr_eval, mut_agency
     );
     assert(evaluator != NULL);
     
@@ -296,7 +295,6 @@ static void test_spawn_instruction_evaluator__evaluate_invalid_args(void) {
     ar_evaluator_fixture__destroy(fixture);
     
     // Shutdown system
-    ar_system__shutdown();
 }
 
 static void test_spawn_instruction_evaluator__create_destroy(void) {
@@ -307,9 +305,10 @@ static void test_spawn_instruction_evaluator__create_destroy(void) {
     
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_agency_t *mut_agency = ar_evaluator_fixture__get_agency(fixture);
     
     // When creating a create instruction evaluator instance
-    ar_spawn_instruction_evaluator_t *evaluator = ar_spawn_instruction_evaluator__create(log, expr_eval);
+    ar_spawn_instruction_evaluator_t *evaluator = ar_spawn_instruction_evaluator__create(log, expr_eval, mut_agency);
     
     // Then it should be created successfully
     assert(evaluator != NULL);
@@ -325,7 +324,6 @@ static void test_spawn_instruction_evaluator__create_destroy(void) {
 
 static void test_spawn_instruction_evaluator__evaluate_with_instance(void) {
     // Initialize system for agent creation
-    ar_system__init(NULL, NULL);
     
     // Given a test fixture and frame-based create evaluator with config data
     ar_evaluator_fixture_t *fixture = 
@@ -341,14 +339,16 @@ static void test_spawn_instruction_evaluator__evaluate_with_instance(void) {
     
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_agency_t *mut_agency = ar_evaluator_fixture__get_agency(fixture);
+    ar_methodology_t *mut_methodology = ar_evaluator_fixture__get_methodology(fixture);
     
-    ar_spawn_instruction_evaluator_t *evaluator = ar_spawn_instruction_evaluator__create(log, expr_eval);
+    ar_spawn_instruction_evaluator_t *evaluator = ar_spawn_instruction_evaluator__create(log, expr_eval, mut_agency);
     assert(evaluator != NULL);
     
     // Register a method to create agents with
     ar_method_t *method = ar_method__create("tester", "send(0, memory.config)", "1.0.0");
     assert(method != NULL);
-    ar_methodology__register_method(method);
+    ar_methodology__register_method_with_instance(mut_methodology, method);
     
     // When evaluating an agent instruction with the instance: agent("tester", "1.0.0", memory)
     const char *args[] = {"\"tester\"", "\"1.0.0\"", "memory"};
@@ -382,7 +382,7 @@ static void test_spawn_instruction_evaluator__evaluate_with_instance(void) {
     assert(result == true);
     
     // Process wake message to avoid leak
-    ar_system__process_next_message();
+    ar_evaluator_fixture__process_next_message(fixture);
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
@@ -393,7 +393,6 @@ static void test_spawn_instruction_evaluator__evaluate_with_instance(void) {
     ar_agency__reset();
     
     // Shutdown system
-    ar_system__shutdown();
     
     // Clean up methodology after test
     ar_methodology__cleanup();
@@ -401,7 +400,6 @@ static void test_spawn_instruction_evaluator__evaluate_with_instance(void) {
 
 static void test_spawn_instruction_evaluator__legacy_evaluate_function(void) {
     // Initialize system for agent creation
-    ar_system__init(NULL, NULL);
     
     // Given a test fixture and frame-based create evaluator with status data
     ar_evaluator_fixture_t *fixture = 
@@ -417,17 +415,19 @@ static void test_spawn_instruction_evaluator__legacy_evaluate_function(void) {
     
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_agency_t *mut_agency = ar_evaluator_fixture__get_agency(fixture);
+    ar_methodology_t *mut_methodology = ar_evaluator_fixture__get_methodology(fixture);
     
     // Create an evaluator instance
     ar_spawn_instruction_evaluator_t *evaluator = ar_spawn_instruction_evaluator__create(
-        log, expr_eval
+        log, expr_eval, mut_agency
     );
     assert(evaluator != NULL);
     
     // Register a method to create agents with
     ar_method_t *method = ar_method__create("legacy_worker", "send(0, memory.status)", "1.0.0");
     assert(method != NULL);
-    ar_methodology__register_method(method);
+    ar_methodology__register_method_with_instance(mut_methodology, method);
     
     // When calling the instance-based evaluate function: agent("legacy_worker", "1.0.0", memory)
     const char *args[] = {"\"legacy_worker\"", "\"1.0.0\"", "memory"};
@@ -461,7 +461,7 @@ static void test_spawn_instruction_evaluator__legacy_evaluate_function(void) {
     assert(result == true);
     
     // Process wake message to avoid leak
-    ar_system__process_next_message();
+    ar_evaluator_fixture__process_next_message(fixture);
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
@@ -472,7 +472,6 @@ static void test_spawn_instruction_evaluator__legacy_evaluate_function(void) {
     ar_agency__reset();
     
     // Shutdown system
-    ar_system__shutdown();
     
     // Clean up methodology after test
     ar_methodology__cleanup();
@@ -493,7 +492,6 @@ int main(void) {
     }
     
     // Clean up any existing state at the start
-    ar_system__shutdown();
     ar_methodology__cleanup();
     ar_agency__reset();
     remove("methodology.agerun");
@@ -523,7 +521,6 @@ int main(void) {
     printf("All create instruction evaluator tests passed!\n");
     
     // Final cleanup to ensure no agents are left running
-    ar_system__shutdown();
     ar_methodology__cleanup();
     ar_agency__reset();
     remove("methodology.agerun");

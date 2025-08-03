@@ -21,6 +21,9 @@
 #include "ar_log.h"
 #include "ar_frame.h"
 
+/* Forward declaration */
+typedef struct ar_agency_s ar_agency_t;
+
 /**
  * Opaque type for instruction evaluator
  */
@@ -29,13 +32,15 @@ typedef struct ar_instruction_evaluator_s ar_instruction_evaluator_t;
 /**
  * Creates a new instruction evaluator
  * @param ref_log The log instance to use for error reporting (borrowed reference)
+ * @param ref_agency The agency instance to use for agent/method operations (borrowed reference)
  * @return A new evaluator instance
  * @note Ownership: Returns an owned value that caller must destroy.
- *       The function does not take ownership of the log parameter.
+ *       The function does not take ownership of the log or agency parameters.
  *       The evaluator creates and owns its expression evaluator internally.
  */
 ar_instruction_evaluator_t* ar_instruction_evaluator__create(
-    ar_log_t *ref_log
+    ar_log_t *ref_log,
+    ar_agency_t *ref_agency
 );
 
 /**

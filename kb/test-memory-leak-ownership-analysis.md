@@ -21,7 +21,7 @@ static void test_agency_functionality(void) {
     ar_methodology__unregister_method("test_method", "1.0.0");  // NOT NEEDED
     
     // System shutdown cleans up methodology and all registered methods
-    ar_system__shutdown();  // Calls ar_methodology__cleanup() which frees all methods
+    ar_system__shutdown_with_instance(own_system));  // Calls ar_methodology__cleanup() which frees all methods
 }
 ```
 

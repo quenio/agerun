@@ -353,3 +353,84 @@ bool ar_methodology__unregister_method_with_instance(ar_methodology_t *mut_metho
     ar_method_registry__unregister_method(mut_methodology->own_registry, ref_name, ref_version);
     return true;
 }
+
+/**
+ * Clean up all method definitions and free resources in a specific methodology instance
+ * @param mut_methodology The methodology instance to cleanup (mutable reference)
+ * @note This should be called before destroying the methodology instance
+ * @note Ownership: This cleans up all methods owned by the instance
+ */
+void ar_methodology__cleanup_with_instance(ar_methodology_t *mut_methodology) {
+    if (!mut_methodology) {
+        return;
+    }
+    
+    // The registry, resolver, and store don't have clear functions.
+    // The best we can do is unregister all methods one by one.
+    // Get all methods and unregister them.
+    
+    if (mut_methodology->own_registry) {
+        // Get all methods from the registry
+        ar_list_t *own_methods = ar_method_registry__get_all_methods(mut_methodology->own_registry);
+        if (own_methods) {
+            // Get the count and items array
+            size_t count = ar_list__count(own_methods);
+            
+            if (count > 0) {
+                // Get array of method pointers
+                void **ref_items = ar_list__items(own_methods);
+                
+                if (ref_items) {
+                    // We need to collect names and versions first because unregistering
+                    // will modify the registry while we're iterating
+                    char **own_names = AR__HEAP__MALLOC(count * sizeof(char*), "method names array");
+                    char **own_versions = AR__HEAP__MALLOC(count * sizeof(char*), "method versions array");
+                    
+                    if (own_names && own_versions) {
+                        // Collect all method names and versions
+                        for (size_t i = 0; i < count; i++) {
+                            ar_method_t *ref_method = (ar_method_t*)ref_items[i];
+                            if (ref_method) {
+                                own_names[i] = AR__HEAP__STRDUP(ar_method__get_name(ref_method), "method name copy");
+                                own_versions[i] = AR__HEAP__STRDUP(ar_method__get_version(ref_method), "method version copy");
+                            } else {
+                                own_names[i] = NULL;
+                                own_versions[i] = NULL;
+                            }
+                        }
+                        
+                        // Now unregister all methods
+                        for (size_t i = 0; i < count; i++) {
+                            if (own_names[i] && own_versions[i]) {
+                                ar_method_registry__unregister_method(mut_methodology->own_registry, 
+                                                                      own_names[i], own_versions[i]);
+                            }
+                            
+                            // Free the temporary strings
+                            if (own_names[i]) {
+                                AR__HEAP__FREE(own_names[i]);
+                            }
+                            if (own_versions[i]) {
+                                AR__HEAP__FREE(own_versions[i]);
+                            }
+                        }
+                    }
+                    
+                    // Free the arrays
+                    if (own_names) {
+                        AR__HEAP__FREE(own_names);
+                    }
+                    if (own_versions) {
+                        AR__HEAP__FREE(own_versions);
+                    }
+                    
+                    // Free the items array (owned by us)
+                    AR__HEAP__FREE(ref_items);
+                }
+            }
+            
+            // Destroy the list
+            ar_list__destroy(own_methods);
+        }
+    }
+}

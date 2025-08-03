@@ -47,6 +47,8 @@ ar_data_t* ar_data__create_string(const char* text);
 ar_data_type_t ar_data__get_type(ar_data_t* data);
 ```
 
+
+**Note**: Examples assume `own_system`, `mut_agency`, and other instance variables are available. In practice, these would be created via fixtures or passed as parameters.
 ### Wrong Decomposition (Flow-Based)
 
 **BAD: Decomposition Based on Current Workflow**:
@@ -142,7 +144,7 @@ ar_message_queue_t* ar_agent__get_queue(ar_agent_t* agent);  // EXAMPLE: Hypothe
 
 // CORRECT: Hide communication behind interface
 void ar_agent__send_message(uint64_t agent_id, ar_data_t* message);  // EXAMPLE: Hypothetical function
-bool ar_system__process_next_message();
+bool ar_system__process_next_message_with_instance(own_system);
 
 // Implementation can change without affecting clients
 ```

@@ -31,15 +31,10 @@ static const char g_sleep_message[] = "__sleep__";
 static const char g_wake_message[] = "__wake__";
 
 /* Implementation */
-ar_agent_t* ar_agent__create(const char *ref_method_name, const char *ref_version, const ar_data_t *ref_context) {
-    if (!ref_method_name) {
-        return NULL;
-    }
-    
-    // Lookup method using methodology
-    const ar_method_t *ref_method = ar_methodology__get_method(ref_method_name, ref_version);
+
+ar_agent_t* ar_agent__create_with_method(const ar_method_t *ref_method, const ar_data_t *ref_context) {
     if (!ref_method) {
-        return NULL;  // Method not found
+        return NULL;
     }
     
     // Create agent structure
@@ -76,6 +71,21 @@ ar_agent_t* ar_agent__create(const char *ref_method_name, const char *ref_versio
     }
     
     return own_agent;
+}
+
+ar_agent_t* ar_agent__create(const char *ref_method_name, const char *ref_version, const ar_data_t *ref_context) {
+    if (!ref_method_name) {
+        return NULL;
+    }
+    
+    // Lookup method using global methodology
+    const ar_method_t *ref_method = ar_methodology__get_method(ref_method_name, ref_version);
+    if (!ref_method) {
+        return NULL;  // Method not found
+    }
+    
+    // Delegate to the new function
+    return ar_agent__create_with_method(ref_method, ref_context);
 }
 
 void ar_agent__destroy(ar_agent_t *own_agent) {

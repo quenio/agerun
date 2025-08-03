@@ -20,7 +20,7 @@ bool evaluate_deprecate(evaluator, method_name, version) {
     // (iterate through all agents, check if using this method)
     
     // 3. Process all sleep messages
-    while (ar_system__process_next_message());
+    while (ar_system__process_next_message_with_instance(own_system));
     
     // 4. Destroy all agents using this method
     // (iterate and destroy each one)
@@ -106,6 +106,8 @@ if (simple_instruction_a()) {
 }
 ```
 
+
+**Note**: Examples assume `own_system`, `mut_agency`, and other instance variables are available. In practice, these would be created via fixtures or passed as parameters.
 ## Related Patterns
 - [Single Responsibility Principle](single-responsibility-principle.md)
 - [Refactoring Key Patterns](refactoring-key-patterns.md)

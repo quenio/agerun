@@ -41,110 +41,94 @@ static size_t _skip_whitespace(const char *ref_str, size_t pos) {
 }
 
 /**
- * Parse a quoted string argument
+ * Extract a single argument from function call.
+ * Handles nested parentheses and quoted strings.
  */
-static char* _parse_string_argument(const char *ref_instruction, size_t *mut_pos) {
-    size_t pos = *mut_pos;
+static char* _extract_argument(const char *ref_str, size_t *pos, char delimiter) {
+    int paren_depth = 0;
+    bool in_quotes = false;
     
-    if (ref_instruction[pos] != '"') {
+    /* Skip leading whitespace */
+    *pos = _skip_whitespace(ref_str, *pos);
+    size_t start = *pos;
+    
+    /* Check for empty argument */
+    if (ref_str[*pos] == delimiter) {
         return NULL;
     }
     
-    size_t start = pos;
-    pos++; /* Skip opening quote */
-    
-    /* Find closing quote, handling escapes */
-    while (ref_instruction[pos] && ref_instruction[pos] != '"') {
-        if (ref_instruction[pos] == '\\' && ref_instruction[pos + 1]) {
-            pos += 2; /* Skip escape sequence */
-        } else {
-            pos++;
+    /* Find delimiter or end */
+    while (ref_str[*pos]) {
+        char c = ref_str[*pos];
+        
+        if (c == '"' && (*pos == 0 || ref_str[*pos - 1] != '\\')) {
+            in_quotes = !in_quotes;
+        } else if (!in_quotes) {
+            if (c == '(') paren_depth++;
+            else if (c == ')') {
+                if (paren_depth > 0) paren_depth--;
+                else if (delimiter == ')') break;
+            }
+            else if (c == delimiter && paren_depth == 0) break;
         }
+        (*pos)++;
     }
     
-    if (ref_instruction[pos] != '"') {
-        return NULL; /* Unterminated string */
-    }
-    
-    pos++; /* Include closing quote */
-    
-    /* Extract the string including quotes */
-    size_t len = pos - start;
-    char *own_arg = AR__HEAP__MALLOC(len + 1, "string argument");
-    if (!own_arg) {
+    if (ref_str[*pos] != delimiter) {
         return NULL;
     }
     
-    strncpy(own_arg, ref_instruction + start, len);
-    own_arg[len] = '\0';
+    /* Trim trailing whitespace */
+    size_t end = *pos;
+    while (end > start && ar_string__isspace(ref_str[end - 1])) {
+        end--;
+    }
     
-    *mut_pos = pos;
-    return own_arg;
+    /* Extract argument */
+    size_t len = end - start;
+    char *arg = AR__HEAP__MALLOC(len + 1, "function argument");
+    if (!arg) {
+        return NULL;
+    }
+    memcpy(arg, ref_str + start, len);
+    arg[len] = '\0';
+    
+    return arg;
 }
 
 /**
  * Parse arguments for the parse function (expects exactly 2)
  */
 static bool _parse_arguments(const char *ref_instruction, size_t *mut_pos, char ***mut_args, size_t *mut_arg_count, size_t expected_count) {
-    size_t pos = *mut_pos;
-    *mut_arg_count = 0;
-    *mut_args = AR__HEAP__MALLOC(expected_count * sizeof(char*), "args array");
+    *mut_args = AR__HEAP__MALLOC(expected_count * sizeof(char*), "function arguments array");
     if (!*mut_args) {
         return false;
     }
     
+    *mut_arg_count = 0;
+    
     for (size_t i = 0; i < expected_count; i++) {
-        /* Skip whitespace */
-        pos = _skip_whitespace(ref_instruction, pos);
-        
-        /* Parse string argument */
-        char *own_arg = _parse_string_argument(ref_instruction, &pos);
-        if (!own_arg) {
+        char delimiter = (i < expected_count - 1) ? ',' : ')';
+        char *arg = _extract_argument(ref_instruction, mut_pos, delimiter);
+        if (!arg) {
             /* Clean up on failure */
-            for (size_t j = 0; j < i; j++) {
+            for (size_t j = 0; j < *mut_arg_count; j++) {
                 AR__HEAP__FREE((*mut_args)[j]);
             }
             AR__HEAP__FREE(*mut_args);
             *mut_args = NULL;
             return false;
         }
-        
-        (*mut_args)[i] = own_arg;
+        (*mut_args)[i] = arg;
         (*mut_arg_count)++;
         
-        /* Skip whitespace */
-        pos = _skip_whitespace(ref_instruction, pos);
-        
-        /* Expect comma between arguments (except after last) */
         if (i < expected_count - 1) {
-            if (ref_instruction[pos] != ',') {
-                /* Clean up on failure */
-                for (size_t j = 0; j <= i; j++) {
-                    AR__HEAP__FREE((*mut_args)[j]);
-                }
-                AR__HEAP__FREE(*mut_args);
-                *mut_args = NULL;
-                return false;
-            }
-            pos++; /* Skip comma */
+            (*mut_pos)++; /* Skip comma */
+            /* Skip whitespace after comma */
+            *mut_pos = _skip_whitespace(ref_instruction, *mut_pos);
         }
     }
     
-    /* Skip whitespace after last argument */
-    pos = _skip_whitespace(ref_instruction, pos);
-    
-    /* Check for closing parenthesis */
-    if (ref_instruction[pos] != ')') {
-        /* Clean up on failure */
-        for (size_t j = 0; j < expected_count; j++) {
-            AR__HEAP__FREE((*mut_args)[j]);
-        }
-        AR__HEAP__FREE(*mut_args);
-        *mut_args = NULL;
-        return false;
-    }
-    
-    *mut_pos = pos;
     return true;
 }
 

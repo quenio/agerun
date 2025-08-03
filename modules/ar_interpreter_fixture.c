@@ -21,6 +21,7 @@ struct ar_interpreter_fixture_s {
     ar_interpreter_t *own_interpreter;   // The interpreter instance
     ar_list_t *own_tracked_data;         // List of data objects to destroy
     ar_list_t *own_agent_ids;            // List of agent IDs to destroy
+    ar_system_t *own_system;             // System instance (owned)
 };
 
 /**
@@ -51,9 +52,24 @@ ar_interpreter_fixture_t* ar_interpreter_fixture__create(const char *ref_test_na
         return NULL;
     }
     
-    // Create interpreter
-    own_fixture->own_interpreter = ar_interpreter__create(own_fixture->own_log);
+    // Create system instance first
+    own_fixture->own_system = ar_system__create();
+    if (!own_fixture->own_system) {
+        ar_log__destroy(own_fixture->own_log);
+        AR__HEAP__FREE(own_fixture->own_test_name);
+        AR__HEAP__FREE(own_fixture);
+        return NULL;
+    }
+    
+    // Initialize system
+    ar_system__init_with_instance(own_fixture->own_system, NULL, NULL);
+    
+    // Create interpreter with agency from system
+    ar_agency_t *ref_agency = ar_system__get_agency(own_fixture->own_system);
+    own_fixture->own_interpreter = ar_interpreter__create_with_agency(own_fixture->own_log, ref_agency);
     if (!own_fixture->own_interpreter) {
+        ar_system__shutdown_with_instance(own_fixture->own_system);
+        ar_system__destroy(own_fixture->own_system);
         ar_log__destroy(own_fixture->own_log);
         AR__HEAP__FREE(own_fixture->own_test_name);
         AR__HEAP__FREE(own_fixture);
@@ -80,6 +96,8 @@ ar_interpreter_fixture_t* ar_interpreter_fixture__create(const char *ref_test_na
         return NULL;
     }
     
+    // System already created and initialized above
+    
     return own_fixture;
 }
 
@@ -100,9 +118,10 @@ void ar_interpreter_fixture__destroy(ar_interpreter_fixture_t *own_fixture) {
                 ar_data_t *own_id_data = (ar_data_t *)items[i];
                 if (own_id_data && ar_data__get_type(own_id_data) == AR_DATA_TYPE__INTEGER) {
                     int64_t agent_id = (int64_t)ar_data__get_integer(own_id_data);
-                    ar_agency__destroy_agent(agent_id);
+                    ar_agency_t *ref_agency = ar_system__get_agency(own_fixture->own_system);
+                    ar_agency__destroy_agent_with_instance(ref_agency, agent_id);
                     // Process any remaining messages after destroying each agent
-                    while (ar_system__process_next_message()) {
+                    while (ar_system__process_next_message_with_instance(own_fixture->own_system)) {
                         // Keep processing
                     }
                     ar_data__destroy(own_id_data); // Destroy the integer data object
@@ -134,6 +153,12 @@ void ar_interpreter_fixture__destroy(ar_interpreter_fixture_t *own_fixture) {
     
     // Destroy log
     ar_log__destroy(own_fixture->own_log);
+    
+    // Shutdown and destroy system
+    if (own_fixture->own_system) {
+        ar_system__shutdown_with_instance(own_fixture->own_system);
+        ar_system__destroy(own_fixture->own_system);
+    }
     
     // Free test name and fixture
     AR__HEAP__FREE(own_fixture->own_test_name);
@@ -181,7 +206,10 @@ int64_t ar_interpreter_fixture__create_agent(
         return 0;
     }
     
-    ar_methodology__register_method(own_method);
+    // Get methodology from system's agency
+    ar_agency_t *ref_agency = ar_system__get_agency(mut_fixture->own_system);
+    ar_methodology_t *ref_methodology = ar_agency__get_methodology(ref_agency);
+    ar_methodology__register_method_with_instance(ref_methodology, own_method);
     // Ownership transferred to methodology
     
     // Create empty context for agent
@@ -190,8 +218,8 @@ int64_t ar_interpreter_fixture__create_agent(
         return 0;
     }
     
-    // Create agent with context (agency takes reference, not ownership)
-    int64_t agent_id = ar_agency__create_agent(ref_method_name, version, own_context);
+    // Create agent with context using instance API
+    int64_t agent_id = ar_agency__create_agent_with_instance(ref_agency, ref_method_name, version, own_context);
     if (agent_id == 0) {
         ar_data__destroy(own_context);
         return 0;
@@ -207,7 +235,7 @@ int64_t ar_interpreter_fixture__create_agent(
     }
     
     // Process wake message
-    ar_system__process_next_message();
+    ar_system__process_next_message_with_instance(mut_fixture->own_system);
     
     return agent_id;
 }
@@ -254,29 +282,31 @@ int64_t ar_interpreter_fixture__execute_with_message(
     }
     
     // Register the method
-    ar_methodology__register_method(own_temp_method);
+    ar_agency_t *ref_agency = ar_system__get_agency(mut_fixture->own_system);
+    ar_methodology_t *ref_methodology = ar_agency__get_methodology(ref_agency);
+    ar_methodology__register_method_with_instance(ref_methodology, own_temp_method);
     // Ownership transferred to methodology
     
     // Create a default context for the agent
     ar_data_t *own_default_context = ar_data__create_map();
     if (!own_default_context) {
-        ar_methodology__unregister_method(method_name, "1.0.0");
+        ar_methodology__unregister_method_with_instance(ref_methodology, method_name, "1.0.0");
         return 0;
     }
     
     // Create a temporary agent with this method
-    int64_t temp_agent_id = ar_agency__create_agent(method_name, "1.0.0", own_default_context);
+    int64_t temp_agent_id = ar_agency__create_agent_with_instance(ref_agency, method_name, "1.0.0", own_default_context);
     // Ownership of context transferred to agency
     
     if (temp_agent_id == 0) {
         // Unregister the method since agent creation failed
         ar_data__destroy(own_default_context);
-        ar_methodology__unregister_method(method_name, "1.0.0");
+        ar_methodology__unregister_method_with_instance(ref_methodology, method_name, "1.0.0");
         return 0;
     }
     
     // Process the wake message
-    ar_system__process_next_message();
+    ar_system__process_next_message_with_instance(mut_fixture->own_system);
     
     // Debug: Check if message is set
     if (ref_message) {
@@ -309,8 +339,8 @@ int64_t ar_interpreter_fixture__execute_with_message(
     
     // If execution failed, clean up and return 0
     if (!result) {
-        ar_agency__destroy_agent(temp_agent_id);
-        ar_methodology__unregister_method(method_name, "1.0.0");
+        ar_agency__destroy_agent_with_instance(ref_agency, temp_agent_id);
+        ar_methodology__unregister_method_with_instance(ref_methodology, method_name, "1.0.0");
         return 0;
     }
     
@@ -341,7 +371,9 @@ bool ar_interpreter_fixture__create_method(
     }
     
     // Register method
-    ar_methodology__register_method(own_method);
+    ar_agency_t *ref_agency = ar_system__get_agency(mut_fixture->own_system);
+    ar_methodology_t *ref_methodology = ar_agency__get_methodology(ref_agency);
+    ar_methodology__register_method_with_instance(ref_methodology, own_method);
     // Ownership transferred to methodology
     
     return true;
@@ -354,8 +386,9 @@ ar_data_t* ar_interpreter_fixture__get_agent_memory(
     const ar_interpreter_fixture_t *ref_fixture,
     int64_t agent_id) {
     
-    (void)ref_fixture; // Not used, but kept for API consistency
-    return ar_agency__get_agent_mutable_memory(agent_id);
+    if (!ref_fixture) return NULL;
+    ar_agency_t *ref_agency = ar_system__get_agency(ref_fixture->own_system);
+    return ar_agency__get_agent_mutable_memory_with_instance(ref_agency, agent_id);
 }
 
 /**
@@ -366,9 +399,7 @@ bool ar_interpreter_fixture__send_message(
     int64_t agent_id,
     ar_data_t *own_message) {
     
-    (void)mut_fixture; // Not used, but kept for API consistency
-    
-    if (agent_id == 0 || !own_message) {
+    if (!mut_fixture || agent_id == 0 || !own_message) {
         if (own_message) {
             ar_data__destroy(own_message);
         }
@@ -376,13 +407,14 @@ bool ar_interpreter_fixture__send_message(
     }
     
     // Send message
-    bool sent = ar_agency__send_to_agent(agent_id, own_message);
+    ar_agency_t *ref_agency = ar_system__get_agency(mut_fixture->own_system);
+    bool sent = ar_agency__send_to_agent_with_instance(ref_agency, agent_id, own_message);
     if (!sent) {
         return false;
     }
     
     // Process the message
-    return ar_system__process_next_message();
+    return ar_system__process_next_message_with_instance(mut_fixture->own_system);
 }
 
 /**
@@ -465,20 +497,21 @@ void ar_interpreter_fixture__destroy_temp_agent(
     }
     
     // Get the agent's method info to unregister it
-    const char *method_name = NULL;
-    const char *method_version = NULL;
-    ar_agency__get_agent_method_info(temp_agent_id, &method_name, &method_version);
+    ar_agency_t *ref_agency = ar_system__get_agency(mut_fixture->own_system);
+    const ar_method_t *ref_method = ar_agency__get_agent_method_with_instance(ref_agency, temp_agent_id);
+    const char *method_name = ref_method ? ar_method__get_name(ref_method) : NULL;
+    const char *method_version = ref_method ? ar_method__get_version(ref_method) : NULL;
     
     // Get the agent's context before destroying the agent
     // The agent doesn't own the context, so we need to destroy it ourselves
-    const ar_data_t *ref_context = ar_agency__get_agent_context(temp_agent_id);
+    const ar_data_t *ref_context = ar_agency__get_agent_context_with_instance(ref_agency, temp_agent_id);
     
     // Destroy the agent first
-    ar_agency__destroy_agent(temp_agent_id);
+    ar_agency__destroy_agent_with_instance(ref_agency, temp_agent_id);
     
     // Process any remaining messages (including sleep messages)
     // Need to process all messages since destroy might generate multiple
-    while (ar_system__process_next_message()) {
+    while (ar_system__process_next_message_with_instance(mut_fixture->own_system)) {
         // Keep processing
     }
     
@@ -493,6 +526,7 @@ void ar_interpreter_fixture__destroy_temp_agent(
     
     // Unregister the temporary method
     if (method_name && method_version) {
-        ar_methodology__unregister_method(method_name, method_version);
+        ar_methodology_t *ref_methodology = ar_agency__get_methodology(ref_agency);
+        ar_methodology__unregister_method_with_instance(ref_methodology, method_name, method_version);
     }
 }

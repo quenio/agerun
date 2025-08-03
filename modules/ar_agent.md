@@ -30,7 +30,7 @@ Creates a new agent with the specified method and optional context. The agent au
 
 **Returns:** Agent ID on success, 0 on failure
 
-**Note:** The wake message should be processed by calling `ar_system__process_next_message()` after creation.
+**Note:** The wake message should be processed by calling `ar_system__process_next_message_with_instance(own_system))` after creation.
 
 #### `ar_agent__destroy`
 ```c
@@ -116,7 +116,7 @@ if (echo_agent == 0) {
 }
 
 // Process the wake message
-ar_system__process_next_message();
+ar_system__process_next_message_with_instance(own_system));
 
 // Send a message to the agent
 ar_data_t *own_message = ar_data__create_map();
@@ -125,7 +125,7 @@ ar_data__set_map_integer(own_message, "sender", 0);
 
 if (ar_agent__send(echo_agent, own_message)) {
     // Message sent successfully (ownership transferred)
-    ar_system__process_next_message();
+    ar_system__process_next_message_with_instance(own_system));
 } else {
     // Failed to send (message was still destroyed)
 }

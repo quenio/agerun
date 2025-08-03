@@ -29,15 +29,11 @@ int main(void) {
         }
     }
     
-    // Clean state
-    ar_system__shutdown();
-    ar_methodology__cleanup();
-    ar_agency__reset();
+    // Clean state - remove persistence files
     remove("methodology.agerun");
     remove("agency.agerun");
     
     // Initialize system
-    ar_system__init(NULL, NULL);
     
     // Run tests
     test_fixture_create_destroy();
@@ -45,22 +41,7 @@ int main(void) {
     test_fixture_execute_instruction();
     test_fixture_data_tracking();
     
-    // Debug: Check how many agents are still active
-    printf("Active agents before cleanup: %d\n", ar_agency__count_agents());
-    
-    // Process any remaining messages before cleanup
-    int message_count = 0;
-    while (ar_system__process_next_message()) {
-        message_count++;
-    }
-    if (message_count > 0) {
-        printf("Processed %d remaining messages\n", message_count);
-    }
-    
-    // Cleanup
-    ar_system__shutdown();
-    ar_methodology__cleanup();
-    ar_agency__reset();
+    // Cleanup - remove persistence files
     remove("methodology.agerun");
     remove("agency.agerun");
     

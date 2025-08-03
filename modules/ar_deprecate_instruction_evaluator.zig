@@ -20,14 +20,16 @@ const c = @cImport({
 const ar_deprecate_instruction_evaluator_t = struct {
     ref_log: ?*c.ar_log_t,                              // Borrowed reference to log instance
     ref_expr_evaluator: ?*c.ar_expression_evaluator_t,  // Borrowed reference to expression evaluator
+    ref_methodology: ?*c.ar_methodology_t,              // Borrowed reference to methodology instance
 };
 
 /// Creates a new deprecate instruction evaluator
 pub export fn ar_deprecate_instruction_evaluator__create(
     ref_log: ?*c.ar_log_t,
-    ref_expr_evaluator: ?*c.ar_expression_evaluator_t
+    ref_expr_evaluator: ?*c.ar_expression_evaluator_t,
+    ref_methodology: ?*c.ar_methodology_t
 ) ?*ar_deprecate_instruction_evaluator_t {
-    if (ref_log == null or ref_expr_evaluator == null) {
+    if (ref_log == null or ref_expr_evaluator == null or ref_methodology == null) {
         return null;
     }
     
@@ -35,6 +37,7 @@ pub export fn ar_deprecate_instruction_evaluator__create(
     
     own_evaluator.ref_log = ref_log;
     own_evaluator.ref_expr_evaluator = ref_expr_evaluator;
+    own_evaluator.ref_methodology = ref_methodology;
     
     // Ownership transferred to caller
     return own_evaluator;
@@ -131,8 +134,8 @@ pub export fn ar_deprecate_instruction_evaluator__evaluate(
     const method_version = c.ar_data__get_string(own_version);
     
     // Get the method to check if it exists
-    const ref_method = c.ar_methodology__get_method(method_name, method_version);
-    const destroy_result = if (ref_method != null) c.ar_methodology__unregister_method(method_name, method_version) else false;
+    const ref_method = c.ar_methodology__get_method_with_instance(ref_evaluator.?.ref_methodology, method_name, method_version);
+    const destroy_result = if (ref_method != null) c.ar_methodology__unregister_method_with_instance(ref_evaluator.?.ref_methodology, method_name, method_version) else false;
     
     // Store result if assigned
     if (c.ar_instruction_ast__has_result_assignment(ref_ast)) {

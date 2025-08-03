@@ -97,23 +97,31 @@ Developers are encouraged to run both dynamic (ASan) and static analysis regular
 
 ```c
 #include "ar_system.h"
+#include "ar_agency.h"
+#include "ar_log.h"
 #include <stdio.h>
 
 int main(void) {
     // Define a simple echo method with semantic version "1.0.0"
     const char *echo_version = ar_method__create("echo", "send(0, message)", "1.0.0");
 
+    // Create system (it creates its own log and agency internally)
+    ar_system_t *own_system = ar_system__create();
+
     // Initialize the runtime with the echo method
-    int64_t initial_agent = ar_system__init("echo", echo_version);
+    int64_t initial_agent = ar_system__init_with_instance(own_system, "echo", echo_version);
 
     // Send a message to the echo agent
-    ar_agent__send(initial_agent, "Hello, AgeRun!");
+    ar_agency_t *mut_agency = ar_system__get_agency(own_system);
+    ar_agency__send_to_agent_with_instance(mut_agency, initial_agent, 
+                                            ar_data__create_string("Hello, AgeRun!"));
 
     // Process all messages
-    ar_system__process_all_messages();
+    ar_system__process_all_messages_with_instance(own_system);
 
-    // Shutdown the runtime
-    ar_system__shutdown();
+    // Shutdown and cleanup (system handles all cleanup)
+    ar_system__shutdown_with_instance(own_system);
+    ar_system__destroy(own_system);
 
     return 0;
 }
@@ -136,8 +144,8 @@ ar_agent__send(counter_id, "increment");
 ar_agent__send(counter_id, "increment");
 ar_agent__send(counter_id, "get");
 
-// Process all messages
-ar_system__process_all_messages();
+// Process all messages (assuming system instance is available)
+// ar_system__process_all_messages_with_instance(own_system);
 ```
 
 ### Persistence
@@ -147,16 +155,16 @@ ar_system__process_all_messages();
 ar_agency__save_agents();
 ar_methodology__save_methods();
 
-// Shutdown the runtime
-ar_system__shutdown();
+// Shutdown the runtime (assuming system instance is available)
+// ar_system__shutdown_with_instance(own_system);
 
 // Later, in a new session:
 
-// Load methods
-ar_methodology__load_methods();
+// Load methods (assuming methodology instance is available)
+// ar_methodology__load_methods_with_instance(own_methodology);
 
 // Initialize runtime (will also load persistent agents)
-ar_system__init("some_method", some_version);
+// ar_system__init_with_instance(own_system, "some_method", some_version);
 ```
 
 ## Method Expressions and Instructions

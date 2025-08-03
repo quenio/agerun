@@ -37,51 +37,17 @@ The system module acts as a facade that coordinates several subsystems:
 
 ## Key Functions
 
-### Initialization and Shutdown
-
-```c
-/**
- * Initializes the global AgeRun system.
- * @param ref_method_name Optional method name for initial agent (can be NULL)
- * @param ref_version Optional method version for initial agent (can be NULL)
- * @return ID of the created initial agent, or 0 on failure
- */
-int64_t ar_system__init(const char *ref_method_name, const char *ref_version);
-
-/**
- * Shuts down the global AgeRun system.
- * @note Sends sleep messages to all agents before cleanup
- */
-void ar_system__shutdown(void);
-```
-
-### Message Processing
-
-```c
-/**
- * Processes the next message in the queue.
- * @return true if a message was processed, false if queue was empty
- */
-bool ar_system__process_next_message(void);
-
-/**
- * Processes all pending messages until the queue is empty.
- * @return Total number of messages processed
- */
-int ar_system__process_all_messages(void);
-```
-
-### Instance-Based API (New)
+### Instance-Based API
 
 The system module now supports creating multiple independent system instances:
 
 ```c
 /**
  * Create a new system instance.
- * @param ref_agency The agency instance to use (borrowed reference), or NULL for global agency
  * @return New system instance (ownership transferred), or NULL on failure
+ * @note The system creates and owns its own agency internally
  */
-ar_system_t* ar_system__create(ar_agency_t *ref_agency);
+ar_system_t* ar_system__create(void);
 
 /**
  * Destroy a system instance.
@@ -171,26 +137,11 @@ Each system instance owns and manages its own interpreter:
 
 ## Usage Examples
 
-### Basic System Lifecycle (Global API)
+### Basic System Lifecycle
 
 ```c
-// Initialize system with an echo agent
-int64_t agent_id = ar_system__init("echo", "1.0.0");
-
-// Process all messages
-int processed = ar_system__process_all_messages();
-printf("Processed %d messages\n", processed);
-
-// Clean shutdown (saves state automatically)
-ar_system__shutdown();
-```
-
-### Instance-Based System
-
-```c
-// Create a custom agency and system
-ar_agency_t *own_agency = ar_agency__create(NULL);
-ar_system_t *own_system = ar_system__create(own_agency);
+// Create a system instance (it creates its own agency internally)
+ar_system_t *own_system = ar_system__create();
 
 // Initialize with a method
 int64_t agent_id = ar_system__init_with_instance(own_system, "worker", "1.0.0");
@@ -200,18 +151,15 @@ int count = ar_system__process_all_messages_with_instance(own_system);
 
 // Clean shutdown
 ar_system__shutdown_with_instance(own_system);
-ar_system__destroy(own_system);
-ar_agency__destroy(own_agency);
+ar_system__destroy(own_system);  // This also destroys the internal agency
 ```
 
 ### Parallel Systems
 
 ```c
-// Create two independent systems
-ar_agency_t *own_agency1 = ar_agency__create(NULL);
-ar_agency_t *own_agency2 = ar_agency__create(NULL);
-ar_system_t *own_system1 = ar_system__create(own_agency1);
-ar_system_t *own_system2 = ar_system__create(own_agency2);
+// Create two independent systems (each with its own agency)
+ar_system_t *own_system1 = ar_system__create();
+ar_system_t *own_system2 = ar_system__create();
 
 // Initialize each with different methods
 ar_system__init_with_instance(own_system1, "producer", "1.0.0");
@@ -221,20 +169,18 @@ ar_system__init_with_instance(own_system2, "consumer", "1.0.0");
 ar_system__process_all_messages_with_instance(own_system1);
 ar_system__process_all_messages_with_instance(own_system2);
 
-// Clean up both systems
+// Clean up both systems (also destroys their internal agencies)
 ar_system__shutdown_with_instance(own_system1);
 ar_system__shutdown_with_instance(own_system2);
 ar_system__destroy(own_system1);
 ar_system__destroy(own_system2);
-ar_agency__destroy(own_agency1);
-ar_agency__destroy(own_agency2);
 ```
 
 ### Message Processing Patterns
 
 ```c
 // Single message processing
-if (ar_system__process_next_message()) {
+if (ar_system__process_next_message_with_instance(own_system))) {
     printf("Processed one message\n");
 }
 
@@ -244,7 +190,7 @@ if (ar_system__process_next_message_with_instance(mut_system)) {
 }
 
 // Process all pending
-int all = ar_system__process_all_messages();
+int all = ar_system__process_all_messages_with_instance(own_system));
 int instance_all = ar_system__process_all_messages_with_instance(mut_system);
 ```
 

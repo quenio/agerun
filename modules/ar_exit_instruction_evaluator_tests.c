@@ -13,6 +13,7 @@
 #include "ar_list.h"
 #include "ar_methodology.h"
 #include "ar_agency.h"
+#include "ar_agent_registry.h"
 #include "ar_system.h"
 #include "ar_log.h"
 #include "ar_event.h"
@@ -27,10 +28,11 @@ static void test_exit_agent_instruction_evaluator__create_destroy(void) {
     
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_agency_t *mut_agency = ar_evaluator_fixture__get_agency(fixture);
     
     // When creating a exit agent evaluator with frame-based pattern (no memory parameter)
     ar_exit_instruction_evaluator_t *evaluator = ar_exit_instruction_evaluator__create(
-        log, expr_eval
+        log, expr_eval, mut_agency
     );
     
     // Then it should be created successfully
@@ -55,7 +57,6 @@ static void test_exit_agent_instruction_evaluator__evaluate_with_instance(void) 
     ar_methodology__cleanup();
     
     // Initialize system for agent operations
-    ar_system__init(NULL, NULL);
     
     // Given a test fixture and frame-based exit agent evaluator
     ar_evaluator_fixture_t *fixture = 
@@ -68,19 +69,24 @@ static void test_exit_agent_instruction_evaluator__evaluate_with_instance(void) 
     
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_agency_t *mut_agency = ar_evaluator_fixture__get_agency(fixture);
+    ar_methodology_t *mut_methodology = ar_evaluator_fixture__get_methodology(fixture);
     
     ar_exit_instruction_evaluator_t *evaluator = ar_exit_instruction_evaluator__create(
-        log, expr_eval
+        log, expr_eval, mut_agency
     );
     assert(evaluator != NULL);
     
-    // Create a test method and agent
-    ar_methodology__create_method("test_method", "memory.x := 1", "1.0.0");
-    int64_t agent_id = ar_agency__create_agent("test_method", "1.0.0", NULL);
+    // Create a test method using instance APIs
+    ar_method_t *own_method = ar_method__create("test_method", "memory.x := 1", "1.0.0");
+    assert(own_method != NULL);
+    ar_methodology__register_method_with_instance(mut_methodology, own_method);
+    
+    int64_t agent_id = ar_agency__create_agent_with_instance(mut_agency, "test_method", "1.0.0", NULL);
     assert(agent_id > 0);
     
     // Process wake message to avoid leak
-    ar_system__process_next_message();
+    ar_evaluator_fixture__process_next_message(fixture);
     
     // Set the agent ID in memory for evaluation
     ar_data__set_map_integer(memory, "agent_id", (int)agent_id);
@@ -110,8 +116,9 @@ static void test_exit_agent_instruction_evaluator__evaluate_with_instance(void) 
     // Then it should succeed
     assert(result == true);
     
-    // And the agent should be exited (not exist anymore)
-    assert(ar_agency__agent_exists(agent_id) == false);
+    // And the agent should be exited (not exist anymore)  
+    ar_agent_registry_t *registry = ar_agency__get_registry_with_instance(mut_agency);
+    assert(ar_agent_registry__is_registered(registry, agent_id) == false);
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
@@ -122,7 +129,6 @@ static void test_exit_agent_instruction_evaluator__evaluate_with_instance(void) 
     ar_agency__reset();
     
     // Shutdown system
-    ar_system__shutdown();
     
     // Clean up methodology after each test to prevent accumulation
     ar_methodology__cleanup();
@@ -135,7 +141,6 @@ static void test_exit_agent_instruction_evaluator__evaluate_literal_id(void) {
     remove("agency.agerun");
     
     // Initialize system for agent operations
-    ar_system__init(NULL, NULL);
     
     // Given a test fixture and frame-based exit agent evaluator
     ar_evaluator_fixture_t *fixture = 
@@ -147,20 +152,25 @@ static void test_exit_agent_instruction_evaluator__evaluate_literal_id(void) {
     
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_agency_t *mut_agency = ar_evaluator_fixture__get_agency(fixture);
+    ar_methodology_t *mut_methodology = ar_evaluator_fixture__get_methodology(fixture);
     
     // Create an evaluator instance
     ar_exit_instruction_evaluator_t *evaluator = ar_exit_instruction_evaluator__create(
-        log, expr_eval
+        log, expr_eval, mut_agency
     );
     assert(evaluator != NULL);
     
-    // Create a test method and agent
-    ar_methodology__create_method("test_method", "memory.x := 1", "1.0.0");
-    int64_t agent_id = ar_agency__create_agent("test_method", "1.0.0", NULL);
+    // Create a test method using instance APIs
+    ar_method_t *own_method = ar_method__create("test_method", "memory.x := 1", "1.0.0");
+    assert(own_method != NULL);
+    ar_methodology__register_method_with_instance(mut_methodology, own_method);
+    
+    int64_t agent_id = ar_agency__create_agent_with_instance(mut_agency, "test_method", "1.0.0", NULL);
     assert(agent_id > 0);
     
     // Process wake message to avoid leak
-    ar_system__process_next_message();
+    ar_evaluator_fixture__process_next_message(fixture);
     
     // Create exit AST with agent ID
     char agent_id_str[32];
@@ -189,7 +199,8 @@ static void test_exit_agent_instruction_evaluator__evaluate_literal_id(void) {
     assert(result == true);
     
     // And the agent should be exited
-    assert(ar_agency__agent_exists(agent_id) == false);
+    ar_agent_registry_t *registry = ar_agency__get_registry_with_instance(mut_agency);
+    assert(ar_agent_registry__is_registered(registry, agent_id) == false);
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
@@ -200,7 +211,6 @@ static void test_exit_agent_instruction_evaluator__evaluate_literal_id(void) {
     ar_agency__reset();
     
     // Shutdown system
-    ar_system__shutdown();
     
     // Clean up methodology after each test to prevent accumulation
     ar_methodology__cleanup();
@@ -213,7 +223,6 @@ static void test_exit_agent_instruction_evaluator__evaluate_with_result(void) {
     remove("agency.agerun");
     
     // Initialize system for agent operations
-    ar_system__init(NULL, NULL);
     
     // Given a test fixture and frame-based exit agent evaluator
     ar_evaluator_fixture_t *fixture = 
@@ -226,19 +235,24 @@ static void test_exit_agent_instruction_evaluator__evaluate_with_result(void) {
     
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_agency_t *mut_agency = ar_evaluator_fixture__get_agency(fixture);
+    ar_methodology_t *mut_methodology = ar_evaluator_fixture__get_methodology(fixture);
     
     ar_exit_instruction_evaluator_t *evaluator = ar_exit_instruction_evaluator__create(
-        log, expr_eval
+        log, expr_eval, mut_agency
     );
     assert(evaluator != NULL);
     
-    // Create a test method and agent
-    ar_methodology__create_method("test_method", "memory.x := 1", "1.0.0");
-    int64_t agent_id = ar_agency__create_agent("test_method", "1.0.0", NULL);
+    // Create a test method using instance APIs
+    ar_method_t *own_method = ar_method__create("test_method", "memory.x := 1", "1.0.0");
+    assert(own_method != NULL);
+    ar_methodology__register_method_with_instance(mut_methodology, own_method);
+    
+    int64_t agent_id = ar_agency__create_agent_with_instance(mut_agency, "test_method", "1.0.0", NULL);
     assert(agent_id > 0);
     
     // Process wake message to avoid leak
-    ar_system__process_next_message();
+    ar_evaluator_fixture__process_next_message(fixture);
     
     // Create exit AST with result assignment
     char agent_id_str[32];
@@ -273,7 +287,8 @@ static void test_exit_agent_instruction_evaluator__evaluate_with_result(void) {
     assert(ar_data__get_integer(result_value) == 1);
     
     // And the agent should be exited
-    assert(ar_agency__agent_exists(agent_id) == false);
+    ar_agent_registry_t *registry = ar_agency__get_registry_with_instance(mut_agency);
+    assert(ar_agent_registry__is_registered(registry, agent_id) == false);
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
@@ -284,7 +299,6 @@ static void test_exit_agent_instruction_evaluator__evaluate_with_result(void) {
     ar_agency__reset();
     
     // Shutdown system
-    ar_system__shutdown();
     
     // Clean up methodology after each test to prevent accumulation
     ar_methodology__cleanup();
@@ -297,7 +311,6 @@ static void test_exit_agent_instruction_evaluator__evaluate_nonexistent(void) {
     remove("agency.agerun");
     
     // Initialize system for agent operations
-    ar_system__init(NULL, NULL);
     
     // Given a test fixture and frame-based exit agent evaluator with no agents
     ar_evaluator_fixture_t *fixture = 
@@ -310,9 +323,10 @@ static void test_exit_agent_instruction_evaluator__evaluate_nonexistent(void) {
     
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_agency_t *mut_agency = ar_evaluator_fixture__get_agency(fixture);
     
     ar_exit_instruction_evaluator_t *evaluator = ar_exit_instruction_evaluator__create(
-        log, expr_eval
+        log, expr_eval, mut_agency
     );
     assert(evaluator != NULL);
     
@@ -355,7 +369,6 @@ static void test_exit_agent_instruction_evaluator__evaluate_nonexistent(void) {
     ar_agency__reset();
     
     // Shutdown system
-    ar_system__shutdown();
     
     // Clean up methodology after each test to prevent accumulation
     ar_methodology__cleanup();
@@ -373,9 +386,10 @@ static void test_exit_agent_instruction_evaluator__evaluate_invalid_type(void) {
     
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_agency_t *mut_agency = ar_evaluator_fixture__get_agency(fixture);
     
     ar_exit_instruction_evaluator_t *evaluator = ar_exit_instruction_evaluator__create(
-        log, expr_eval
+        log, expr_eval, mut_agency
     );
     assert(evaluator != NULL);
     
@@ -421,9 +435,10 @@ static void test_exit_agent_instruction_evaluator__evaluate_wrong_arg_count(void
     
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_agency_t *mut_agency = ar_evaluator_fixture__get_agency(fixture);
     
     ar_exit_instruction_evaluator_t *evaluator = ar_exit_instruction_evaluator__create(
-        log, expr_eval
+        log, expr_eval, mut_agency
     );
     assert(evaluator != NULL);
     
@@ -476,7 +491,6 @@ int main(void) {
     }
     
     // Clean up any existing state at the start
-    ar_system__shutdown();
     ar_methodology__cleanup();
     ar_agency__reset();
     remove("methodology.agerun");

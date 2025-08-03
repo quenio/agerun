@@ -90,22 +90,26 @@ static void test_count_using_method(void) {
     );
     assert(ref_calc != NULL);
     
+    // Get the fixture's agency
+    ar_agency_t *mut_agency = ar_system_fixture__get_agency(own_fixture);
+    assert(mut_agency != NULL);
+    
     // When no agents exist
-    assert(ar_agency__count_agents_using_method(ref_echo) == 0);
-    assert(ar_agency__count_agents_using_method(ref_calc) == 0);
+    assert(ar_agency__count_agents_using_method_with_instance(mut_agency, ref_echo) == 0);
+    assert(ar_agency__count_agents_using_method_with_instance(mut_agency, ref_calc) == 0);
     
     // When creating agents
-    ar_agency__create_agent("echo", "1.0.0", NULL);
-    ar_agency__create_agent("echo", "1.0.0", NULL);
-    ar_agency__create_agent("calc", "1.0.0", NULL);
-    ar_system__process_all_messages(); // Process wake messages
+    ar_agency__create_agent_with_instance(mut_agency, "echo", "1.0.0", NULL);
+    ar_agency__create_agent_with_instance(mut_agency, "echo", "1.0.0", NULL);
+    ar_agency__create_agent_with_instance(mut_agency, "calc", "1.0.0", NULL);
+    ar_system_fixture__process_all_messages(own_fixture); // Process wake messages
     
     // Then counts should be correct
-    assert(ar_agency__count_agents_using_method(ref_echo) == 2);
-    assert(ar_agency__count_agents_using_method(ref_calc) == 1);
+    assert(ar_agency__count_agents_using_method_with_instance(mut_agency, ref_echo) == 2);
+    assert(ar_agency__count_agents_using_method_with_instance(mut_agency, ref_calc) == 1);
     
     // When checking with null
-    assert(ar_agency__count_agents_using_method(NULL) == 0);
+    assert(ar_agency__count_agents_using_method_with_instance(mut_agency, NULL) == 0);
     
     // Check for memory leaks
     assert(ar_system_fixture__check_memory(own_fixture));
@@ -140,29 +144,33 @@ static void test_update_without_lifecycle(void) {
         own_fixture, "calc", "send(0, \"result\")", "1.0.0"
     );
     
+    // Get the fixture's agency
+    ar_agency_t *mut_agency = ar_system_fixture__get_agency(own_fixture);
+    assert(mut_agency != NULL);
+    
     // Create agents with v1.0
-    int64_t agent1 = ar_agency__create_agent("echo", "1.0.0", NULL);
-    int64_t agent2 = ar_agency__create_agent("echo", "1.0.0", NULL);
-    ar_agency__create_agent("calc", "1.0.0", NULL); // Different method - won't be updated
-    ar_system__process_all_messages(); // Process wake messages
+    int64_t agent1 = ar_agency__create_agent_with_instance(mut_agency, "echo", "1.0.0", NULL);
+    int64_t agent2 = ar_agency__create_agent_with_instance(mut_agency, "echo", "1.0.0", NULL);
+    ar_agency__create_agent_with_instance(mut_agency, "calc", "1.0.0", NULL); // Different method - won't be updated
+    ar_system_fixture__process_all_messages(own_fixture); // Process wake messages
     
     // Verify initial state
-    assert(ar_agency__get_agent_method(agent1) == ref_v1_0);
-    assert(ar_agency__get_agent_method(agent2) == ref_v1_0);
+    assert(ar_agency__get_agent_method_with_instance(mut_agency, agent1) == ref_v1_0);
+    assert(ar_agency__get_agent_method_with_instance(mut_agency, agent2) == ref_v1_0);
     
     // When updating without lifecycle events
-    int count = ar_agency__update_agent_methods(ref_v1_0, ref_v1_1, false);
+    int count = ar_agency__update_agent_methods_with_instance(mut_agency, ref_v1_0, ref_v1_1, false);
     
     // Then correct number should be updated
     assert(count == 2);
     
     // Then methods should be updated
-    assert(ar_agency__get_agent_method(agent1) == ref_v1_1);
-    assert(ar_agency__get_agent_method(agent2) == ref_v1_1);
+    assert(ar_agency__get_agent_method_with_instance(mut_agency, agent1) == ref_v1_1);
+    assert(ar_agency__get_agent_method_with_instance(mut_agency, agent2) == ref_v1_1);
     
     // Then no messages should be queued
-    assert(!ar_agency__agent_has_messages(agent1));
-    assert(!ar_agency__agent_has_messages(agent2));
+    assert(!ar_agency__agent_has_messages_with_instance(mut_agency, agent1));
+    assert(!ar_agency__agent_has_messages_with_instance(mut_agency, agent2));
     
     // Check for memory leaks
     assert(ar_system_fixture__check_memory(own_fixture));
@@ -196,36 +204,40 @@ static void test_update_with_lifecycle(void) {
     );
     assert(ref_v1_1 != NULL);
     
-    // Create agents
-    int64_t agent1 = ar_agency__create_agent("echo", "1.0.0", NULL);
-    int64_t agent2 = ar_agency__create_agent("echo", "1.0.0", NULL);
-    ar_system__process_all_messages(); // Process initial wake messages
+    // Get the fixture's agency
+    ar_agency_t *mut_agency = ar_system_fixture__get_agency(own_fixture);
+    assert(mut_agency != NULL);
     
-    // Verify initial state
-    assert(ar_agency__agent_has_messages(agent1) == false);
-    assert(ar_agency__agent_has_messages(agent2) == false);
+    // Create agents using instance APIs
+    int64_t agent1 = ar_agency__create_agent_with_instance(mut_agency, "echo", "1.0.0", NULL);
+    int64_t agent2 = ar_agency__create_agent_with_instance(mut_agency, "echo", "1.0.0", NULL);
+    ar_system_fixture__process_all_messages(own_fixture); // Process initial wake messages
     
-    // When updating with lifecycle events
-    int count = ar_agency__update_agent_methods(ref_v1_0, ref_v1_1, true);
+    // Verify initial state using instance APIs
+    assert(ar_agency__agent_has_messages_with_instance(mut_agency, agent1) == false);
+    assert(ar_agency__agent_has_messages_with_instance(mut_agency, agent2) == false);
+    
+    // When updating with lifecycle events using instance API
+    int count = ar_agency__update_agent_methods_with_instance(mut_agency, ref_v1_0, ref_v1_1, true);
     assert(count == 2);
     
     // Then messages should be queued
-    assert(ar_agency__agent_has_messages(agent1) == true);
-    assert(ar_agency__agent_has_messages(agent2) == true);
+    assert(ar_agency__agent_has_messages_with_instance(mut_agency, agent1) == true);
+    assert(ar_agency__agent_has_messages_with_instance(mut_agency, agent2) == true);
     
     // Process sleep messages
-    ar_system__process_next_message(); // agent1 sleep
-    ar_system__process_next_message(); // agent1 wake
-    ar_system__process_next_message(); // agent2 sleep  
-    ar_system__process_next_message(); // agent2 wake
+    ar_system_fixture__process_next_message(own_fixture); // agent1 sleep
+    ar_system_fixture__process_next_message(own_fixture); // agent1 wake
+    ar_system_fixture__process_next_message(own_fixture); // agent2 sleep  
+    ar_system_fixture__process_next_message(own_fixture); // agent2 wake
     
     // Then no more messages should be queued
-    assert(ar_agency__agent_has_messages(agent1) == false);
-    assert(ar_agency__agent_has_messages(agent2) == false);
+    assert(ar_agency__agent_has_messages_with_instance(mut_agency, agent1) == false);
+    assert(ar_agency__agent_has_messages_with_instance(mut_agency, agent2) == false);
     
-    // And methods should be updated
-    assert(ar_agency__get_agent_method(agent1) == ref_v1_1);
-    assert(ar_agency__get_agent_method(agent2) == ref_v1_1);
+    // And methods should be updated using instance API
+    assert(ar_agency__get_agent_method_with_instance(mut_agency, agent1) == ref_v1_1);
+    assert(ar_agency__get_agent_method_with_instance(mut_agency, agent2) == ref_v1_1);
     
     // Check for memory leaks
     assert(ar_system_fixture__check_memory(own_fixture));
@@ -260,21 +272,25 @@ static void test_update_incompatible(void) {
     );
     assert(ref_other != NULL);
     
-    // Create agents
-    ar_agency__create_agent("echo", "1.0.0", NULL);
-    ar_agency__create_agent("echo", "1.0.0", NULL);
-    ar_system__process_all_messages();
+    // Get the fixture's agency
+    ar_agency_t *mut_agency = ar_system_fixture__get_agency(own_fixture);
+    assert(mut_agency != NULL);
     
-    // When attempting incompatible updates
+    // Create agents using instance APIs
+    ar_agency__create_agent_with_instance(mut_agency, "echo", "1.0.0", NULL);
+    ar_agency__create_agent_with_instance(mut_agency, "echo", "1.0.0", NULL);
+    ar_system_fixture__process_all_messages(own_fixture);
+    
+    // When attempting incompatible updates using instance API
     // Then major version change should fail
-    assert(ar_agency__update_agent_methods(ref_v1_0, ref_v2_0, false) == 0);
+    assert(ar_agency__update_agent_methods_with_instance(mut_agency, ref_v1_0, ref_v2_0, false) == 0);
     
     // Then different method should fail
-    assert(ar_agency__update_agent_methods(ref_v1_0, ref_other, false) == 0);
+    assert(ar_agency__update_agent_methods_with_instance(mut_agency, ref_v1_0, ref_other, false) == 0);
     
     // Then null methods should fail
-    assert(ar_agency__update_agent_methods(NULL, ref_v1_0, false) == 0);
-    assert(ar_agency__update_agent_methods(ref_v1_0, NULL, false) == 0);
+    assert(ar_agency__update_agent_methods_with_instance(mut_agency, NULL, ref_v1_0, false) == 0);
+    assert(ar_agency__update_agent_methods_with_instance(mut_agency, ref_v1_0, NULL, false) == 0);
     
     // Check for memory leaks
     assert(ar_system_fixture__check_memory(own_fixture));
@@ -304,8 +320,12 @@ static void test_update_no_agents(void) {
     );
     assert(ref_v1_1 != NULL);
     
-    // When updating with no agents
-    int count = ar_agency__update_agent_methods(ref_v1_0, ref_v1_1, true);
+    // Get the fixture's agency
+    ar_agency_t *mut_agency = ar_system_fixture__get_agency(own_fixture);
+    assert(mut_agency != NULL);
+    
+    // When updating with no agents using instance API
+    int count = ar_agency__update_agent_methods_with_instance(mut_agency, ref_v1_0, ref_v1_1, true);
     
     // Then no agents should be updated
     assert(count == 0);

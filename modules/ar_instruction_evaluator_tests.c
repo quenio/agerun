@@ -16,12 +16,16 @@
 #include "ar_frame.h"
 
 static void test_instruction_evaluator__create_destroy(void) {
-    // Given a log
+    // Given a log and system for agency
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
     
-    // When creating an instruction evaluator with only a log
-    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log);
+    ar_system_t *sys = ar_system__create();
+    assert(sys != NULL);
+    ar_agency_t *agency = ar_system__get_agency(sys);
+    
+    // When creating an instruction evaluator with log and agency
+    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log, agency);
     
     // Then it should be created successfully
     assert(evaluator != NULL);
@@ -29,23 +33,29 @@ static void test_instruction_evaluator__create_destroy(void) {
     // When destroying the evaluator
     ar_instruction_evaluator__destroy(evaluator);
     
-    // Then cleanup log
+    // Then cleanup
+    ar_system__destroy(sys);
     ar_log__destroy(log);
 }
 
 static void test_instruction_evaluator__create_with_null_context(void) {
-    // Given a log
+    // Given a log and system
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
     
+    ar_system_t *sys = ar_system__create();
+    assert(sys != NULL);
+    ar_agency_t *agency = ar_system__get_agency(sys);
+    
     // When creating an instruction evaluator
-    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log);
+    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log, agency);
     
     // Then it should be created successfully
     assert(evaluator != NULL);
     
     // Cleanup
     ar_instruction_evaluator__destroy(evaluator);
+    ar_system__destroy(sys);
     ar_log__destroy(log);
 }
 
@@ -65,14 +75,19 @@ static void test_instruction_evaluator__create_with_null_memory(void) {
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
     
+    ar_system_t *sys = ar_system__create();
+    assert(sys != NULL);
+    ar_agency_t *agency = ar_system__get_agency(sys);
+    
     // When creating an instruction evaluator (memory comes from frame now)
-    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log);
+    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log, agency);
     
     // Then it should succeed (memory is no longer required at creation)
     assert(evaluator != NULL);
     
     // Cleanup
     ar_instruction_evaluator__destroy(evaluator);
+    ar_system__destroy(sys);
     ar_data__destroy(dummy_memory);
     ar_log__destroy(log);
 }
@@ -85,8 +100,12 @@ static void test_instruction_evaluator__stores_evaluator_instances_internally(vo
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
     
+    ar_system_t *sys = ar_system__create();
+    assert(sys != NULL);
+    ar_agency_t *agency = ar_system__get_agency(sys);
+    
     // When creating an instruction evaluator
-    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log);
+    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log, agency);
     assert(evaluator != NULL);
     
     // Then it should work with all instruction types through the unified interface
@@ -116,6 +135,7 @@ static void test_instruction_evaluator__stores_evaluator_instances_internally(vo
     
     // Cleanup
     ar_instruction_evaluator__destroy(evaluator);
+    ar_system__destroy(sys);
     ar_data__destroy(memory);
     ar_log__destroy(log);
 }
@@ -137,7 +157,11 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
     
-    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log);
+    ar_system_t *sys = ar_system__create();
+    assert(sys != NULL);
+    ar_agency_t *agency = ar_system__get_agency(sys);
+    
+    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log, agency);
     assert(evaluator != NULL);
     
     // Test 1: Send instruction
@@ -303,6 +327,7 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
     
     // Test 5: Method instruction
     {
+        
         // Given a compile instruction AST with three string arguments and result assignment
         const char *args[] = {"\"test_method\"", "\"memory.result := 42\"", "\"1.0.0\""};
         ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
@@ -339,27 +364,27 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         assert(ar_data__get_integer(value) == 1);
         
         // And the method should be registered in methodology
-        ar_method_t *method = ar_methodology__get_method("test_method", "1.0.0");
+        ar_methodology_t *methodology = ar_agency__get_methodology(agency);
+        ar_method_t *method = ar_methodology__get_method_with_instance(methodology, "test_method", "1.0.0");
         assert(method != NULL);
         assert(strcmp(ar_method__get_name(method), "test_method") == 0);
         assert(strcmp(ar_method__get_version(method), "1.0.0") == 0);
         
         ar_instruction_ast__destroy(ast);
-        ar_methodology__cleanup();
     }
     
     // Test 6: Destroy agent instruction 
     {
-        // Initialize system for agent operations
-        ar_system__init(NULL, NULL);
+        // Use the same agency from the evaluator
+        ar_methodology_t *mut_methodology = ar_agency__get_methodology(agency);
         
         // Create a test method and agent first
-        ar_methodology__create_method("destroy_test_method", "memory.x := 1", "1.0.0");
-        int64_t agent_id = ar_agency__create_agent("destroy_test_method", "1.0.0", NULL);
+        ar_methodology__create_method_with_instance(mut_methodology, "destroy_test_method", "memory.x := 1", "1.0.0");
+        int64_t agent_id = ar_agency__create_agent_with_instance(agency, "destroy_test_method", "1.0.0", NULL);
         assert(agent_id > 0);
         
         // Process wake message to avoid leak
-        ar_system__process_next_message();
+        ar_system__process_next_message_with_instance(sys);
         
         // Create destroy agent instruction AST
         char agent_id_str[32];
@@ -397,26 +422,21 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         assert(ar_data__get_integer(value) == 1);
         
         // And the agent should be destroyed
-        assert(ar_agency__agent_exists(agent_id) == false);
+        ar_agent_registry_t *ref_registry = ar_agency__get_registry_with_instance(agency);
+        assert(ar_agent_registry__is_registered(ref_registry, agent_id) == false);
         
         ar_instruction_ast__destroy(ast);
-        
-        // Clean up system state
-        ar_agency__reset();
-        ar_system__shutdown();
-        ar_methodology__cleanup();
     }
     
     // Test 7: Destroy method instruction 
     {
-        // Initialize system for method operations
-        ar_system__init(NULL, NULL);
+        // Use the same methodology from the evaluator
+        ar_methodology_t *mut_methodology = ar_agency__get_methodology(agency);
         
-        // Create a test method first
-        ar_methodology__create_method("destroy_method_test", "memory.x := 1", "1.0.0");
+        ar_methodology__create_method_with_instance(mut_methodology, "destroy_method_test", "memory.x := 1", "1.0.0");
         
         // Verify method exists
-        ar_method_t *method = ar_methodology__get_method("destroy_method_test", "1.0.0");
+        ar_method_t *method = ar_methodology__get_method_with_instance(mut_methodology, "destroy_method_test", "1.0.0");
         assert(method != NULL);
         
         // Create destroy method instruction AST
@@ -455,18 +475,15 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         assert(ar_data__get_integer(value) == 1);
         
         // And the method should be destroyed
-        ar_method_t *destroyed_method = ar_methodology__get_method("destroy_method_test", "1.0.0");
+        ar_method_t *destroyed_method = ar_methodology__get_method_with_instance(mut_methodology, "destroy_method_test", "1.0.0");
         assert(destroyed_method == NULL);
         
         ar_instruction_ast__destroy(ast);
-        
-        // Clean up system state
-        ar_system__shutdown();
-        ar_methodology__cleanup();
     }
     
     // Cleanup
     ar_instruction_evaluator__destroy(evaluator);
+    ar_system__destroy(sys);
     ar_data__destroy(memory);
     ar_data__destroy(context);
     ar_data__destroy(message);
@@ -484,7 +501,11 @@ static void test_instruction_evaluator__only_unified_interface_exposed(void) {
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
     
-    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log);
+    ar_system_t *sys = ar_system__create();
+    assert(sys != NULL);
+    ar_agency_t *agency = ar_system__get_agency(sys);
+    
+    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log, agency);
     assert(evaluator != NULL);
     
     // When we have various instruction ASTs
@@ -543,6 +564,7 @@ static void test_instruction_evaluator__only_unified_interface_exposed(void) {
     ar_instruction_ast__destroy(assignment_ast);
     ar_instruction_ast__destroy(send_ast);
     ar_instruction_evaluator__destroy(evaluator);
+    ar_system__destroy(sys);
     ar_data__destroy(memory);
     ar_log__destroy(log);
 }
@@ -555,7 +577,11 @@ static void test_instruction_evaluator__unified_evaluate_assignment(void) {
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
     
-    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log);
+    ar_system_t *sys = ar_system__create();
+    assert(sys != NULL);
+    ar_agency_t *agency = ar_system__get_agency(sys);
+    
+    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log, agency);
     assert(evaluator != NULL);
     
     // Create an assignment AST: memory.x := 42
@@ -594,6 +620,7 @@ static void test_instruction_evaluator__unified_evaluate_assignment(void) {
     // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_instruction_evaluator__destroy(evaluator);
+    ar_system__destroy(sys);
     ar_data__destroy(memory);
     ar_log__destroy(log);
 }

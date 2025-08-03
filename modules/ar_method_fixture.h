@@ -2,6 +2,7 @@
 #define AGERUN_METHOD_FIXTURE_H
 
 #include <stdbool.h>
+#include "ar_system.h"
 
 /**
  * @file ar_method_fixture.h
@@ -72,5 +73,27 @@ const char* ar_method_fixture__get_name(const ar_method_fixture_t *ref_fixture);
  * @return true if no memory leaks, false if leaks detected
  */
 bool ar_method_fixture__check_memory(const ar_method_fixture_t *ref_fixture);
+
+/**
+ * Process the next message in the system
+ * @param mut_fixture The fixture managing the system
+ * @return true if a message was processed, false if no messages
+ */
+bool ar_method_fixture__process_next_message(ar_method_fixture_t *mut_fixture);
+
+/**
+ * Process all pending messages in the system
+ * @param mut_fixture The fixture managing the system
+ * @return Number of messages processed
+ */
+int ar_method_fixture__process_all_messages(ar_method_fixture_t *mut_fixture);
+
+/**
+ * Get the agency instance from the fixture's system
+ * @param ref_fixture The fixture containing the system
+ * @return The agency instance (borrowed reference), or NULL if fixture has no system
+ * @note Ownership: Returns a borrowed reference - do not destroy
+ */
+ar_agency_t* ar_method_fixture__get_agency(const ar_method_fixture_t *ref_fixture);
 
 #endif /* AGERUN_METHOD_FIXTURE_H */

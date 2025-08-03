@@ -25,10 +25,11 @@ static void test_compile_instruction_evaluator__create_destroy(void) {
     
     ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
     ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_methodology_t *ref_methodology = ar_evaluator_fixture__get_methodology(own_fixture);
     
     // When creating a compile instruction evaluator
     ar_compile_instruction_evaluator_t *evaluator = ar_compile_instruction_evaluator__create(
-        ref_log, ref_expr_eval
+        ref_log, ref_expr_eval, ref_methodology
     );
     
     // Then it should be created successfully
@@ -48,11 +49,12 @@ static void test_compile_instruction_evaluator__evaluate_with_instance(void) {
     
     ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
     ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_methodology_t *ref_methodology = ar_evaluator_fixture__get_methodology(own_fixture);
     ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     // When creating a compile instruction evaluator instance
     ar_compile_instruction_evaluator_t *evaluator = ar_compile_instruction_evaluator__create(
-        ref_log, ref_expr_eval
+        ref_log, ref_expr_eval, ref_methodology
     );
     assert(evaluator != NULL);
     
@@ -104,12 +106,13 @@ static void test_compile_instruction_evaluator__evaluate_legacy(void) {
     
     ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
     ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_methodology_t *ref_methodology = ar_evaluator_fixture__get_methodology(own_fixture);
     ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
     ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     // Create an evaluator instance
     ar_compile_instruction_evaluator_t *evaluator = ar_compile_instruction_evaluator__create(
-        ref_log, ref_expr_eval
+        ref_log, ref_expr_eval, ref_methodology
     );
     assert(evaluator != NULL);
     
@@ -165,10 +168,11 @@ static void test_instruction_evaluator__evaluate_method_simple(void) {
     
     ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
     ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_methodology_t *ref_methodology = ar_evaluator_fixture__get_methodology(own_fixture);
     ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     ar_compile_instruction_evaluator_t *evaluator = ar_compile_instruction_evaluator__create(
-        ref_log, ref_expr_eval
+        ref_log, ref_expr_eval, ref_methodology
     );
     assert(evaluator != NULL);
     
@@ -219,11 +223,12 @@ static void test_instruction_evaluator__evaluate_method_with_result(void) {
     
     ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
     ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_methodology_t *ref_methodology = ar_evaluator_fixture__get_methodology(own_fixture);
     ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
     ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     ar_compile_instruction_evaluator_t *evaluator = ar_compile_instruction_evaluator__create(
-        ref_log, ref_expr_eval
+        ref_log, ref_expr_eval, ref_methodology
     );
     assert(evaluator != NULL);
     
@@ -278,10 +283,11 @@ static void test_instruction_evaluator__evaluate_method_invalid_instructions(voi
     
     ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
     ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_methodology_t *ref_methodology = ar_evaluator_fixture__get_methodology(own_fixture);
     ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     ar_compile_instruction_evaluator_t *evaluator = ar_compile_instruction_evaluator__create(
-        ref_log, ref_expr_eval
+        ref_log, ref_expr_eval, ref_methodology
     );
     assert(evaluator != NULL);
     
@@ -333,10 +339,11 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     
     ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
     ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_methodology_t *ref_methodology = ar_evaluator_fixture__get_methodology(own_fixture);
     ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     
     ar_compile_instruction_evaluator_t *evaluator = ar_compile_instruction_evaluator__create(
-        ref_log, ref_expr_eval
+        ref_log, ref_expr_eval, ref_methodology
     );
     assert(evaluator != NULL);
     
@@ -472,7 +479,6 @@ int main(void) {
     }
     
     // Clean up any existing state at the start
-    ar_system__shutdown();
     ar_methodology__cleanup();
     ar_agency__reset();
     remove("methodology.agerun");

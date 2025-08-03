@@ -193,7 +193,7 @@ printf("Updated %d agents\n", count);
 
 // Process the lifecycle messages (2 per agent)
 for (int i = 0; i < count * 2; i++) {
-    ar_system__process_next_message();
+    ar_system__process_next_message_with_instance(own_system));
 }
 ```
 

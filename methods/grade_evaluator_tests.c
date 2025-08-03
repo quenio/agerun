@@ -40,7 +40,12 @@ static void test_grade_evaluator_grades(void) {
     ar_data__set_map_integer(own_initial_memory, "value", 0);
     
     // Create grade-evaluator agent with initial memory
-    int64_t evaluator_agent = ar_agency__create_agent("grade-evaluator", "1.0.0", own_initial_memory);
+
+    // Get the fixture's agency
+    ar_agency_t *mut_agency = ar_method_fixture__get_agency(own_fixture);
+    assert(mut_agency != NULL);
+
+    int64_t evaluator_agent = ar_agency__create_agent_with_instance(mut_agency, "grade-evaluator", "1.0.0", own_initial_memory);
     assert(evaluator_agent > 0);
     
     // Process wake message
@@ -51,7 +56,7 @@ static void test_grade_evaluator_grades(void) {
     bool has_messages = ar_agency__agent_has_messages(evaluator_agent);
     printf("DEBUG: Agent has messages: %s\n", has_messages ? "yes" : "no");
     
-    bool wake_processed = ar_system__process_next_message();
+    bool wake_processed = ar_method_fixture__process_next_message(own_fixture);
     if (wake_processed) {
         printf("Wake message processed successfully\n");
     } else {
@@ -59,7 +64,7 @@ static void test_grade_evaluator_grades(void) {
     }
     
     // Verify agent memory was initialized
-    const ar_data_t *agent_memory = ar_agency__get_agent_memory(evaluator_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory_with_instance(mut_agency, evaluator_agent);
     assert(agent_memory != NULL);
     
     // Test case 1: Grade A (90+)
@@ -70,12 +75,12 @@ static void test_grade_evaluator_grades(void) {
     ar_data__set_map_string(own_message, "type", "grade");
     ar_data__set_map_integer(own_message, "value", 95);
     
-    bool sent = ar_agency__send_to_agent(evaluator_agent, own_message);
+    bool sent = ar_agency__send_to_agent_with_instance(mut_agency, evaluator_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
     // Process the grade message
-    bool processed = ar_system__process_next_message();
+    bool processed = ar_method_fixture__process_next_message(own_fixture);
     assert(processed);
     
     // Check the result
@@ -105,11 +110,11 @@ static void test_grade_evaluator_grades(void) {
     ar_data__set_map_string(own_message2, "type", "grade");
     ar_data__set_map_integer(own_message2, "value", 85);
     
-    sent = ar_agency__send_to_agent(evaluator_agent, own_message2);
+    sent = ar_agency__send_to_agent_with_instance(mut_agency, evaluator_agent, own_message2);
     assert(sent);
     own_message2 = NULL; // Ownership transferred
     
-    processed = ar_system__process_next_message();
+    processed = ar_method_fixture__process_next_message(own_fixture);
     assert(processed);
     
     grade = ar_data__get_map_data(agent_memory, "grade");
@@ -125,11 +130,11 @@ static void test_grade_evaluator_grades(void) {
     ar_data__set_map_string(own_message3, "type", "grade");
     ar_data__set_map_integer(own_message3, "value", 75);
     
-    sent = ar_agency__send_to_agent(evaluator_agent, own_message3);
+    sent = ar_agency__send_to_agent_with_instance(mut_agency, evaluator_agent, own_message3);
     assert(sent);
     own_message3 = NULL; // Ownership transferred
     
-    processed = ar_system__process_next_message();
+    processed = ar_method_fixture__process_next_message(own_fixture);
     assert(processed);
     
     grade = ar_data__get_map_data(agent_memory, "grade");
@@ -145,11 +150,11 @@ static void test_grade_evaluator_grades(void) {
     ar_data__set_map_string(own_message4, "type", "grade");
     ar_data__set_map_integer(own_message4, "value", 65);
     
-    sent = ar_agency__send_to_agent(evaluator_agent, own_message4);
+    sent = ar_agency__send_to_agent_with_instance(mut_agency, evaluator_agent, own_message4);
     assert(sent);
     own_message4 = NULL; // Ownership transferred
     
-    processed = ar_system__process_next_message();
+    processed = ar_method_fixture__process_next_message(own_fixture);
     assert(processed);
     
     grade = ar_data__get_map_data(agent_memory, "grade");
@@ -158,23 +163,16 @@ static void test_grade_evaluator_grades(void) {
     assert(strcmp(ar_data__get_string(grade), "F") == 0);
     
     // Clean up agent explicitly
-    // Get the agent's context before destroying it (we created it, we must destroy it)
-    const ar_data_t *ref_context = ar_agency__get_agent_context(evaluator_agent);
-    
-    ar_agency__destroy_agent(evaluator_agent);
+    ar_agency__destroy_agent_with_instance(mut_agency, evaluator_agent);
     
     // Process any remaining messages (including sleep messages)
-    while (ar_system__process_next_message()) {
+    while (ar_method_fixture__process_next_message(own_fixture)) {
         // Keep processing
     }
     
-    // Destroy the context we created for this agent
-    if (ref_context) {
-        #pragma GCC diagnostic push
-        #pragma GCC diagnostic ignored "-Wcast-qual"
-        ar_data__destroy((ar_data_t*)ref_context);  // We created it, we destroy it
-        #pragma GCC diagnostic pop
-    }
+    // Destroy the initial memory we created
+    // The agency only takes a reference, not ownership
+    ar_data__destroy(own_initial_memory);
     
     // Check for memory leaks
     assert(ar_method_fixture__check_memory(own_fixture));
@@ -218,7 +216,12 @@ static void test_grade_evaluator_status(void) {
     ar_data__set_map_integer(own_initial_memory, "value", 0);
     
     // Create grade-evaluator agent with initial memory
-    int64_t evaluator_agent = ar_agency__create_agent("grade-evaluator", "1.0.0", own_initial_memory);
+
+    // Get the fixture's agency
+    ar_agency_t *mut_agency = ar_method_fixture__get_agency(own_fixture);
+    assert(mut_agency != NULL);
+
+    int64_t evaluator_agent = ar_agency__create_agent_with_instance(mut_agency, "grade-evaluator", "1.0.0", own_initial_memory);
     assert(evaluator_agent > 0);
     
     // Process wake message
@@ -228,7 +231,7 @@ static void test_grade_evaluator_status(void) {
     bool has_messages = ar_agency__agent_has_messages(evaluator_agent);
     printf("DEBUG: Agent has messages: %s\n", has_messages ? "yes" : "no");
     
-    bool wake_processed = ar_system__process_next_message();
+    bool wake_processed = ar_method_fixture__process_next_message(own_fixture);
     if (wake_processed) {
         printf("Wake message processed successfully\n");
     } else {
@@ -243,14 +246,14 @@ static void test_grade_evaluator_status(void) {
     ar_data__set_map_string(own_message, "type", "status");
     ar_data__set_map_integer(own_message, "value", 5);
     
-    bool sent = ar_agency__send_to_agent(evaluator_agent, own_message);
+    bool sent = ar_agency__send_to_agent_with_instance(mut_agency, evaluator_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
-    bool processed = ar_system__process_next_message();
+    bool processed = ar_method_fixture__process_next_message(own_fixture);
     assert(processed);
     
-    const ar_data_t *agent_memory = ar_agency__get_agent_memory(evaluator_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory_with_instance(mut_agency, evaluator_agent);
     assert(agent_memory != NULL);
     
     const ar_data_t *status = ar_data__get_map_data(agent_memory, "status");
@@ -266,11 +269,11 @@ static void test_grade_evaluator_status(void) {
     ar_data__set_map_string(own_message2, "type", "status");
     ar_data__set_map_integer(own_message2, "value", 0);
     
-    sent = ar_agency__send_to_agent(evaluator_agent, own_message2);
+    sent = ar_agency__send_to_agent_with_instance(mut_agency, evaluator_agent, own_message2);
     assert(sent);
     own_message2 = NULL; // Ownership transferred
     
-    processed = ar_system__process_next_message();
+    processed = ar_method_fixture__process_next_message(own_fixture);
     assert(processed);
     
     status = ar_data__get_map_data(agent_memory, "status");
@@ -286,11 +289,11 @@ static void test_grade_evaluator_status(void) {
     ar_data__set_map_string(own_message3, "type", "unknown");
     ar_data__set_map_integer(own_message3, "value", 100);
     
-    sent = ar_agency__send_to_agent(evaluator_agent, own_message3);
+    sent = ar_agency__send_to_agent_with_instance(mut_agency, evaluator_agent, own_message3);
     assert(sent);
     own_message3 = NULL; // Ownership transferred
     
-    processed = ar_system__process_next_message();
+    processed = ar_method_fixture__process_next_message(own_fixture);
     assert(processed);
     
     const ar_data_t *result = ar_data__get_map_data(agent_memory, "result");
@@ -299,23 +302,16 @@ static void test_grade_evaluator_status(void) {
     assert(strcmp(ar_data__get_string(result), "unknown") == 0);
     
     // Clean up agent explicitly
-    // Get the agent's context before destroying it (we created it, we must destroy it)
-    const ar_data_t *ref_context = ar_agency__get_agent_context(evaluator_agent);
-    
-    ar_agency__destroy_agent(evaluator_agent);
+    ar_agency__destroy_agent_with_instance(mut_agency, evaluator_agent);
     
     // Process any remaining messages (including sleep messages)
-    while (ar_system__process_next_message()) {
+    while (ar_method_fixture__process_next_message(own_fixture)) {
         // Keep processing
     }
     
-    // Destroy the context we created for this agent
-    if (ref_context) {
-        #pragma GCC diagnostic push
-        #pragma GCC diagnostic ignored "-Wcast-qual"
-        ar_data__destroy((ar_data_t*)ref_context);  // We created it, we destroy it
-        #pragma GCC diagnostic pop
-    }
+    // Destroy the initial memory we created
+    // The agency only takes a reference, not ownership
+    ar_data__destroy(own_initial_memory);
     
     // Check for memory leaks
     assert(ar_method_fixture__check_memory(own_fixture));

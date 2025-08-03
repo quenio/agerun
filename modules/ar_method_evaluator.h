@@ -17,6 +17,9 @@
 #include "ar_method_ast.h"
 #include "ar_frame.h"
 
+/* Forward declaration */
+typedef struct ar_agency_s ar_agency_t;
+
 /**
  * Opaque type for the method evaluator
  */
@@ -25,12 +28,14 @@ typedef struct ar_method_evaluator_s ar_method_evaluator_t;
 /**
  * Creates a new method evaluator
  * @param ref_log The log instance for error reporting (borrowed reference)
+ * @param ref_agency The agency instance to use for agent/method operations (borrowed reference)
  * @return A new method evaluator instance, or NULL on failure
  * @note Ownership: Returns an owned value that caller must destroy.
  *       The evaluator creates and owns its instruction evaluator internally.
  */
 ar_method_evaluator_t* ar_method_evaluator__create(
-    ar_log_t *ref_log
+    ar_log_t *ref_log,
+    ar_agency_t *ref_agency
 );
 
 /**

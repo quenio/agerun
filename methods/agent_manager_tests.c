@@ -25,11 +25,16 @@ static void test_agent_manager_spawn_exit(void) {
     assert(ar_method_fixture__load_method(own_fixture, "agent-manager", "../../methods/agent-manager-1.0.0.method", "1.0.0"));
     
     // Create agent-manager agent
-    int64_t manager_agent = ar_agency__create_agent("agent-manager", "1.0.0", NULL);
+
+    // Get the fixture's agency
+    ar_agency_t *mut_agency = ar_method_fixture__get_agency(own_fixture);
+    assert(mut_agency != NULL);
+
+    int64_t manager_agent = ar_agency__create_agent_with_instance(mut_agency, "agent-manager", "1.0.0", NULL);
     assert(manager_agent > 0);
     
     // Process wake message
-    ar_system__process_next_message();
+    ar_method_fixture__process_next_message(own_fixture);
     
     // When we send a message to spawn an echo agent
     ar_data_t *own_message = ar_data__create_map();
@@ -43,16 +48,16 @@ static void test_agent_manager_spawn_exit(void) {
     ar_data__set_map_data(own_message, "context", own_context);
     own_context = NULL; // Ownership transferred
     
-    bool sent = ar_agency__send_to_agent(manager_agent, own_message);
+    bool sent = ar_agency__send_to_agent_with_instance(mut_agency, manager_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
     // Process the create message
-    bool processed = ar_system__process_next_message();
+    bool processed = ar_method_fixture__process_next_message(own_fixture);
     assert(processed);
     
     // Check agent memory for result
-    const ar_data_t *agent_memory = ar_agency__get_agent_memory(manager_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory_with_instance(mut_agency, manager_agent);
     assert(agent_memory != NULL);
     
     const ar_data_t *result = ar_data__get_map_data(agent_memory, "result");
@@ -91,12 +96,12 @@ static void test_agent_manager_spawn_exit(void) {
     ar_data__set_map_string(own_destroy_message, "action", "exit");
     ar_data__set_map_integer(own_destroy_message, "agent_id", 2); // Assuming agent 2 was created
     
-    sent = ar_agency__send_to_agent(manager_agent, own_destroy_message);
+    sent = ar_agency__send_to_agent_with_instance(mut_agency, manager_agent, own_destroy_message);
     assert(sent);
     own_destroy_message = NULL; // Ownership transferred
     
     // Process the destroy message
-    processed = ar_system__process_next_message();
+    processed = ar_method_fixture__process_next_message(own_fixture);
     assert(processed);
     
     // Check if destroy worked
@@ -143,11 +148,16 @@ static void test_agent_manager_invalid_action(void) {
     assert(ar_method_fixture__load_method(own_fixture, "agent-manager", "../../methods/agent-manager-1.0.0.method", "1.0.0"));
     
     // Create agent-manager agent
-    int64_t manager_agent = ar_agency__create_agent("agent-manager", "1.0.0", NULL);
+
+    // Get the fixture's agency
+    ar_agency_t *mut_agency = ar_method_fixture__get_agency(own_fixture);
+    assert(mut_agency != NULL);
+
+    int64_t manager_agent = ar_agency__create_agent_with_instance(mut_agency, "agent-manager", "1.0.0", NULL);
     assert(manager_agent > 0);
     
     // Process wake message
-    ar_system__process_next_message();
+    ar_method_fixture__process_next_message(own_fixture);
     
     // When we send a message with an invalid action
     ar_data_t *own_message = ar_data__create_map();
@@ -155,15 +165,15 @@ static void test_agent_manager_invalid_action(void) {
     
     ar_data__set_map_string(own_message, "action", "invalid");
     
-    bool sent = ar_agency__send_to_agent(manager_agent, own_message);
+    bool sent = ar_agency__send_to_agent_with_instance(mut_agency, manager_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
     // Process the invalid action message
-    ar_system__process_next_message();
+    ar_method_fixture__process_next_message(own_fixture);
     
     // Check agent memory - invalid actions should be handled gracefully
-    const ar_data_t *agent_memory = ar_agency__get_agent_memory(manager_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory_with_instance(mut_agency, manager_agent);
     assert(agent_memory != NULL);
     
     // For invalid actions, the method should fail gracefully

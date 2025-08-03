@@ -133,7 +133,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - Debug strategy: Check report → Trace source → Verify ownership → Fix naming → Add cleanup ([details](kb/memory-debugging-comprehensive-guide.md))
 - Test leak analysis: Verify lifecycle management before adding cleanup ([details](kb/test-memory-leak-ownership-analysis.md))
 - Environment variables: `ASAN_OPTIONS=halt_on_error=0` (continue on error), `detect_leaks=1` (complex leaks)
-- Wake messages: Process with `ar_system__process_next_message()` after agent creation ([details](kb/agent-wake-message-processing.md))
+- Wake messages: Process with `ar_system__process_next_message_with_instance(own_system)` after agent creation ([details](kb/agent-wake-message-processing.md))
 
 ### 2. Test-Driven Development (MANDATORY)
 
@@ -188,7 +188,7 @@ For each new behavior/feature:
 - One test per behavior, isolated & fast, zero leaks
 - Names reflect behavior ([details](kb/test-function-naming-accuracy.md))
 - Global cleanup: `ar_methodology__cleanup()` & `ar_agency__reset()`
-- Process messages: `while (ar_system__process_next_message());`
+- Process messages: `while (ar_system__process_next_message_with_instance(own_system));`
 - Process wake messages after agent creation to prevent leaks ([details](kb/agent-wake-message-processing.md))
 - Use fixtures when available, run with `make test_name 2>&1`
 - Adapt fixtures when APIs change ([details](kb/test-fixture-api-adaptation.md))
@@ -228,6 +228,8 @@ grep -n "#include.*ar_" module.h module.c
 # Verify hierarchy: Foundation (io/list/map) → Data (heap/data) → Core (agent/method) → System (agency/interpreter)
 ```
 
+
+**Note**: Examples assume `own_system`, `mut_agency`, and other instance variables are available. In practice, these would be created via fixtures or passed as parameters.
 **Architectural Patterns**: Interface segregation > Registry > Facade (coordinate only) > Parser/Executor > Callbacks ([details](kb/architectural-patterns-hierarchy.md))
 
 **Code Duplication Prevention (DRY - Don't Repeat Yourself)**:
@@ -393,7 +395,7 @@ cd bin  # Wrong - avoid relative paths
 - Agents receive `__wake__` on creation
 - Agents receive `__sleep__` before destruction
 - ALWAYS process messages after sending to prevent leaks
-- Call `ar_system__process_next_message()` after `ar_agent__send()`
+- Call `ar_system__process_next_message_with_instance(own_system)` after `ar_agent__send()`
 - Agents mark themselves as owners of wake/sleep messages ([details](kb/ownership-drop-message-passing.md))
 - Tests must process wake messages to prevent leaks ([details](kb/agent-wake-message-processing.md))
 

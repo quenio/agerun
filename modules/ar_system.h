@@ -10,11 +10,10 @@ typedef struct ar_system_s ar_system_t;
 
 /**
  * Create a new system instance
- * @param ref_agency The agency instance to use (borrowed reference), or NULL for global agency
  * @return New system instance (ownership transferred), or NULL on failure
- * @note Ownership: Caller must destroy the returned system.
+ * @note Ownership: Caller must destroy the returned system. The system creates and owns its own agency.
  */
-ar_system_t* ar_system__create(ar_agency_t *ref_agency);
+ar_system_t* ar_system__create(void);
 
 /**
  * Destroy a system instance
@@ -57,32 +56,19 @@ bool ar_system__process_next_message_with_instance(ar_system_t *mut_system);
 int ar_system__process_all_messages_with_instance(ar_system_t *mut_system);
 
 /**
- * Initialize the Agerun runtime system
- * @param ref_method_name Name of the initial method to run (borrowed reference)
- * @param ref_version Version string of the method (NULL for latest)
- * @return ID of the created initial agent, or 0 on failure
- * @note Ownership: Function copies the method name; does not take ownership of ref_method_name.
+ * Get the agency instance from a system
+ * @param ref_system The system instance (borrowed reference)
+ * @return The agency instance (borrowed reference), or NULL if system is NULL
+ * @note Ownership: Returns a borrowed reference - do not destroy
  */
-int64_t ar_system__init(const char *ref_method_name, const char *ref_version);
+ar_agency_t* ar_system__get_agency(const ar_system_t *ref_system);
 
 /**
- * Shut down the Agerun runtime system
- * @note Ownership: Frees all resources owned by the system.
+ * Get the log instance from a system
+ * @param ref_system The system instance (borrowed reference)
+ * @return The log instance (borrowed reference), or NULL if system is NULL
+ * @note Ownership: Returns a borrowed reference - do not destroy
  */
-void ar_system__shutdown(void);
-
-/**
- * Process the next pending message in the system
- * @return true if a message was processed, false if no messages
- * @note Ownership: Takes ownership of and destroys the processed message.
- */
-bool ar_system__process_next_message(void);
-
-/**
- * Process all pending messages in the system
- * @return Number of messages processed
- * @note Ownership: Takes ownership of and destroys all processed messages.
- */
-int ar_system__process_all_messages(void);
+ar_log_t* ar_system__get_log(const ar_system_t *ref_system);
 
 #endif /* AGERUN_SYSTEM_H */

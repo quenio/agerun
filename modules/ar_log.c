@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 #define LOG_FILE_NAME "agerun.log"
-#define BUFFER_LIMIT 10
+#define BUFFER_LIMIT 1
 
 struct ar_log_s {
     ar_list_t *own_events;     /* Owned list of events */

@@ -5,6 +5,8 @@
 #include "ar_data.h"
 #include "ar_log.h"
 #include "ar_expression_evaluator.h"
+#include "ar_agency.h"
+#include "ar_methodology.h"
 /* Individual evaluator headers should be included by test files */
 #include "ar_frame.h"
 #include "ar_instruction_ast.h"
@@ -70,6 +72,26 @@ ar_data_t* ar_evaluator_fixture__get_memory(
  * @note Ownership: Returns a borrowed reference; do not destroy
  */
 ar_log_t* ar_evaluator_fixture__get_log(
+    const ar_evaluator_fixture_t *ref_fixture
+);
+
+/**
+ * Gets the agency instance from the fixture
+ * @param ref_fixture The fixture to query
+ * @return The agency (borrowed reference)
+ * @note Ownership: Returns a borrowed reference; do not destroy
+ */
+ar_agency_t* ar_evaluator_fixture__get_agency(
+    const ar_evaluator_fixture_t *ref_fixture
+);
+
+/**
+ * Gets the methodology instance from the fixture
+ * @param ref_fixture The fixture to query
+ * @return The methodology (borrowed reference)
+ * @note Ownership: Returns a borrowed reference; do not destroy
+ */
+ar_methodology_t* ar_evaluator_fixture__get_methodology(
     const ar_evaluator_fixture_t *ref_fixture
 );
 
@@ -144,6 +166,16 @@ void ar_evaluator_fixture__track_ast(
  */
 bool ar_evaluator_fixture__check_memory(
     const ar_evaluator_fixture_t *ref_fixture
+);
+
+/**
+ * Processes the next message in the system queue
+ * @param mut_fixture The fixture managing the test
+ * @return true if a message was processed, false if queue is empty
+ * @note This is useful for processing wake messages after creating agents
+ */
+bool ar_evaluator_fixture__process_next_message(
+    ar_evaluator_fixture_t *mut_fixture
 );
 
 #endif /* AGERUN_INSTRUCTION_EVALUATOR_FIXTURE_H */

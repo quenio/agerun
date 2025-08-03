@@ -33,6 +33,9 @@
 #include "ar_instruction_ast.h"
 #include "ar_heap.h"
 #include "ar_frame.h"
+#include "ar_system.h"
+#include "ar_agency.h"
+#include "ar_methodology.h"
 
 // Define the interceptor functions that will override the real ones
 #define DEFINE_INTERCEPTOR(name) \
@@ -133,13 +136,45 @@ void ar_send_instruction_evaluator__destroy(ar_send_instruction_evaluator_t* eva
         if (evaluator) printf("  Mock: Destroyed %s evaluator\n", name); \
     }
 
+#define DEFINE_AGENCY_INTERCEPTOR(type, name, addr) \
+    ar_##type##_instruction_evaluator_t* ar_##type##_instruction_evaluator__create( \
+        ar_log_t* log, ar_expression_evaluator_t* expr, ar_agency_t* agency) { \
+        (void)log; (void)expr; (void)agency; \
+        current_evaluator++; \
+        if (current_evaluator == fail_at_evaluator) { \
+            printf("  Mock: Failing %s evaluator creation (#%d)\n", name, current_evaluator); \
+            return NULL; \
+        } \
+        printf("  Mock: Created %s evaluator (#%d)\n", name, current_evaluator); \
+        return (ar_##type##_instruction_evaluator_t*)addr; \
+    } \
+    void ar_##type##_instruction_evaluator__destroy(ar_##type##_instruction_evaluator_t* evaluator) { \
+        if (evaluator) printf("  Mock: Destroyed %s evaluator\n", name); \
+    }
+
+#define DEFINE_METHODOLOGY_INTERCEPTOR(type, name, addr) \
+    ar_##type##_instruction_evaluator_t* ar_##type##_instruction_evaluator__create( \
+        ar_log_t* log, ar_expression_evaluator_t* expr, ar_methodology_t* methodology) { \
+        (void)log; (void)expr; (void)methodology; \
+        current_evaluator++; \
+        if (current_evaluator == fail_at_evaluator) { \
+            printf("  Mock: Failing %s evaluator creation (#%d)\n", name, current_evaluator); \
+            return NULL; \
+        } \
+        printf("  Mock: Created %s evaluator (#%d)\n", name, current_evaluator); \
+        return (ar_##type##_instruction_evaluator_t*)addr; \
+    } \
+    void ar_##type##_instruction_evaluator__destroy(ar_##type##_instruction_evaluator_t* evaluator) { \
+        if (evaluator) printf("  Mock: Destroyed %s evaluator\n", name); \
+    }
+
 DEFINE_SIMPLE_INTERCEPTOR(condition, "condition", 0x4000)
 DEFINE_SIMPLE_INTERCEPTOR(parse, "parse", 0x5000)
 DEFINE_SIMPLE_INTERCEPTOR(build, "build", 0x6000)
-DEFINE_SIMPLE_INTERCEPTOR(compile, "compile", 0x7000)
-DEFINE_SIMPLE_INTERCEPTOR(spawn, "spawn", 0x8000)
-DEFINE_SIMPLE_INTERCEPTOR(exit, "exit", 0x9000)
-DEFINE_SIMPLE_INTERCEPTOR(deprecate, "deprecate", 0xA000)
+DEFINE_METHODOLOGY_INTERCEPTOR(compile, "compile", 0x7000)
+DEFINE_AGENCY_INTERCEPTOR(spawn, "spawn", 0x8000)
+DEFINE_AGENCY_INTERCEPTOR(exit, "exit", 0x9000)
+DEFINE_METHODOLOGY_INTERCEPTOR(deprecate, "deprecate", 0xA000)
 
 // Additional mocks needed by ar_allocator
 void* malloc(size_t size) {
@@ -169,11 +204,8 @@ void free(void* ptr) {
 // ar_heap functions are already defined in the heap module
 // We'll link with the real implementations
 
-// Mock instruction AST functions
-ar_instruction_ast_type_t ar_instruction_ast__get_type(const ar_instruction_ast_t* ast) {
-    (void)ast;
-    return AR_INSTRUCTION_AST_TYPE__ASSIGNMENT;
-}
+// Mock instruction AST functions that aren't in the real library
+// Note: ar_instruction_ast__get_type is now in the real library, so we don't mock it
 
 // Mock evaluate functions (not needed for our test but required for linking)
 #define MOCK_EVALUATE(type) \
@@ -196,11 +228,7 @@ MOCK_EVALUATE(exit)
 MOCK_EVALUATE(deprecate)
 
 // Test framework integration
-
-// Simple log mock
-ar_log_t* ar_log__create(void) { return (ar_log_t*)0xF000; }
-void ar_log__destroy(ar_log_t* log) { (void)log; }
-void ar_log__error(ar_log_t* log, const char* msg) { (void)log; (void)msg; }
+// Note: We now use the real ar_log implementation from the library
 
 static void reset_counters(void) {
     current_evaluator = 0;
@@ -227,7 +255,9 @@ static void run_test(const char* test_name, int fail_at) {
     fail_at_evaluator = fail_at;
     
     ar_log_t* log = ar_log__create();
-    ar_instruction_evaluator_t* evaluator = ar_instruction_evaluator__create(log);
+    ar_system_t* sys = ar_system__create();
+    ar_agency_t* agency = ar_system__get_agency(sys);
+    ar_instruction_evaluator_t* evaluator = ar_instruction_evaluator__create(log, agency);
     
     if (evaluator) {
         printf("Result: SUCCESS - evaluator created\n");
@@ -251,6 +281,7 @@ static void run_test(const char* test_name, int fail_at) {
         printf("  OK: All evaluators properly cleaned up\n");
     }
     
+    ar_system__destroy(sys);
     ar_log__destroy(log);
 }
 

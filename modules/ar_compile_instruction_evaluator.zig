@@ -19,15 +19,17 @@ const c = @cImport({
 const ar_compile_instruction_evaluator_t = struct {
     ref_log: ?*c.ar_log_t,                              // Borrowed reference to log instance
     ref_expr_evaluator: ?*c.ar_expression_evaluator_t,  // Borrowed reference to expression evaluator
+    ref_methodology: ?*c.ar_methodology_t,               // Borrowed reference to methodology instance
 };
 
 /// Creates a new compile instruction evaluator
 pub export fn ar_compile_instruction_evaluator__create(
     ref_log: ?*c.ar_log_t,
-    ref_expr_evaluator: ?*c.ar_expression_evaluator_t
+    ref_expr_evaluator: ?*c.ar_expression_evaluator_t,
+    ref_methodology: ?*c.ar_methodology_t
 ) ?*ar_compile_instruction_evaluator_t {
     // Validate required parameters
-    if (ref_log == null or ref_expr_evaluator == null) {
+    if (ref_log == null or ref_expr_evaluator == null or ref_methodology == null) {
         return null;
     }
     
@@ -37,6 +39,7 @@ pub export fn ar_compile_instruction_evaluator__create(
     // Initialize fields
     own_evaluator.ref_log = ref_log;
     own_evaluator.ref_expr_evaluator = ref_expr_evaluator;
+    own_evaluator.ref_methodology = ref_methodology;
     
     return own_evaluator;
 }
@@ -147,7 +150,7 @@ pub export fn ar_compile_instruction_evaluator__evaluate(
         // Create and register the method
         const own_method = c.ar_method__create_with_log(ref_method_name, ref_instructions, ref_version, ref_evaluator.?.ref_log);
         if (own_method != null) {
-            c.ar_methodology__register_method(own_method);
+            c.ar_methodology__register_method_with_instance(ref_evaluator.?.ref_methodology, own_method);
             // Ownership transferred to methodology
             success = true;
         }

@@ -15,6 +15,7 @@
 #include "ar_instruction_ast.h"
 #include "ar_log.h"
 #include "ar_frame.h"
+#include "ar_agency.h"
 
 /* Forward declaration of opaque struct */
 typedef struct ar_spawn_instruction_evaluator_s ar_spawn_instruction_evaluator_t;
@@ -23,12 +24,14 @@ typedef struct ar_spawn_instruction_evaluator_s ar_spawn_instruction_evaluator_t
  * Creates a new spawn instruction evaluator instance
  * @param ref_log The log instance to use for error reporting (borrowed reference)
  * @param ref_expr_evaluator The expression evaluator dependency (borrowed reference)
+ * @param ref_agency Agency instance to operate on (borrowed reference)
  * @return A newly created evaluator instance or NULL on failure
  * @note Ownership: Returns an owned value that caller must destroy
  */
 ar_spawn_instruction_evaluator_t* ar_spawn_instruction_evaluator__create(
     ar_log_t *ref_log,
-    ar_expression_evaluator_t *ref_expr_evaluator
+    ar_expression_evaluator_t *ref_expr_evaluator,
+    ar_agency_t *ref_agency
 );
 
 /**

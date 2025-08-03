@@ -57,7 +57,7 @@ if (ar_agent_update__are_compatible(ref_old, ref_new)) {
     
     // Process the lifecycle messages
     for (int i = 0; i < count * 2; i++) {
-        ar_system__process_next_message();
+        ar_system__process_next_message_with_instance(own_system));
     }
 }
 

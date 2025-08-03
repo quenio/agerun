@@ -16,6 +16,9 @@
 #include "ar_log.h"
 #include "ar_frame.h"
 
+/* Forward declaration */
+typedef struct ar_methodology_s ar_methodology_t;
+
 /**
  * Opaque type for compile instruction evaluator
  */
@@ -26,12 +29,14 @@ typedef struct ar_compile_instruction_evaluator_s ar_compile_instruction_evaluat
  *
  * @param ref_log The log instance to use for error reporting (borrowed reference)
  * @param ref_expr_evaluator The expression evaluator to use (borrowed reference)
+ * @param ref_methodology The methodology instance to use for method registration (borrowed reference)
  * @return A new compile instruction evaluator instance, or NULL on failure
  * @note Ownership: Returns an owned value that caller must destroy
  */
 ar_compile_instruction_evaluator_t* ar_compile_instruction_evaluator__create(
     ar_log_t *ref_log,
-    ar_expression_evaluator_t *ref_expr_evaluator
+    ar_expression_evaluator_t *ref_expr_evaluator,
+    ar_methodology_t *ref_methodology
 );
 
 /**

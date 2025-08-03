@@ -38,148 +38,94 @@ static size_t _skip_whitespace(const char *ref_str, size_t pos) {
 }
 
 /**
- * Parse a string argument (handles quoted strings with escapes).
+ * Extract a single argument from function call.
+ * Handles nested parentheses and quoted strings.
  */
-static char* _parse_string_argument(const char *ref_str, size_t *pos) {
+static char* _extract_argument(const char *ref_str, size_t *pos, char delimiter) {
+    int paren_depth = 0;
+    bool in_quotes = false;
+    
+    /* Skip leading whitespace */
+    *pos = _skip_whitespace(ref_str, *pos);
     size_t start = *pos;
     
-    if (ref_str[start] != '"') {
+    /* Check for empty argument */
+    if (ref_str[*pos] == delimiter) {
         return NULL;
     }
     
-    /* Skip opening quote */
-    (*pos)++;
-    
-    /* Count length first */
-    size_t len = 0;
-    size_t i = *pos;
-    while (ref_str[i] && ref_str[i] != '"') {
-        if (ref_str[i] == '\\' && ref_str[i+1]) {
-            i += 2;
-            len += 2;  /* Escape sequence takes 2 characters */
-        } else {
-            i++;
-            len++;
+    /* Find delimiter or end */
+    while (ref_str[*pos]) {
+        char c = ref_str[*pos];
+        
+        if (c == '"' && (*pos == 0 || ref_str[*pos - 1] != '\\')) {
+            in_quotes = !in_quotes;
+        } else if (!in_quotes) {
+            if (c == '(') paren_depth++;
+            else if (c == ')') {
+                if (paren_depth > 0) paren_depth--;
+                else if (delimiter == ')') break;
+            }
+            else if (c == delimiter && paren_depth == 0) break;
         }
+        (*pos)++;
     }
     
-    if (ref_str[i] != '"') {
-        return NULL;  /* Unterminated string */
-    }
-    
-    /* Allocate buffer for content + quotes + null terminator */
-    char *own_result = AR__HEAP__MALLOC(len + 3, "string argument");
-    if (!own_result) {
+    if (ref_str[*pos] != delimiter) {
         return NULL;
     }
     
-    /* Copy with quotes */
-    own_result[0] = '"';
-    size_t out = 1;
-    i = *pos;
-    while (ref_str[i] && ref_str[i] != '"') {
-        if (ref_str[i] == '\\' && ref_str[i+1]) {
-            own_result[out++] = ref_str[i];
-            own_result[out++] = ref_str[i+1];
-            i += 2;
-        } else {
-            own_result[out++] = ref_str[i];
-            i++;
-        }
+    /* Trim trailing whitespace */
+    size_t end = *pos;
+    while (end > start && ar_string__isspace(ref_str[end - 1])) {
+        end--;
     }
-    own_result[out++] = '"';
-    own_result[out] = '\0';
     
-    *pos = i + 1;  /* Skip closing quote */
-    return own_result;
+    /* Extract argument */
+    size_t len = end - start;
+    char *arg = AR__HEAP__MALLOC(len + 1, "function argument");
+    if (!arg) {
+        return NULL;
+    }
+    memcpy(arg, ref_str + start, len);
+    arg[len] = '\0';
+    
+    return arg;
 }
 
 /**
  * Parse function arguments.
  */
 static bool _parse_arguments(const char *ref_str, size_t *pos, char ***out_args, size_t *out_count, size_t expected_count) {
-    char **args = NULL;
-    size_t count = 0;
-    size_t capacity = 3;
-    
-    args = AR__HEAP__MALLOC(capacity * sizeof(char*), "args array");
-    if (!args) {
+    *out_args = AR__HEAP__MALLOC(expected_count * sizeof(char*), "function arguments array");
+    if (!*out_args) {
         return false;
     }
     
-    /* Skip whitespace */
-    *pos = _skip_whitespace(ref_str, *pos);
+    *out_count = 0;
     
-    while (ref_str[*pos] && ref_str[*pos] != ')') {
-        char *arg = NULL;
-        
-        /* Skip whitespace */
-        *pos = _skip_whitespace(ref_str, *pos);
-        
-        /* Parse string argument - method() only accepts string arguments */
-        if (ref_str[*pos] == '"') {
-            arg = _parse_string_argument(ref_str, pos);
-        } else {
-            /* Invalid argument type for method */
-            for (size_t i = 0; i < count; i++) {
-                AR__HEAP__FREE(args[i]);
-            }
-            AR__HEAP__FREE(args);
-            return false;
-        }
-        
+    for (size_t i = 0; i < expected_count; i++) {
+        char delimiter = (i < expected_count - 1) ? ',' : ')';
+        char *arg = _extract_argument(ref_str, pos, delimiter);
         if (!arg) {
-            /* Clean up on error */
-            for (size_t i = 0; i < count; i++) {
-                AR__HEAP__FREE(args[i]);
+            /* Clean up on failure */
+            for (size_t j = 0; j < *out_count; j++) {
+                AR__HEAP__FREE((*out_args)[j]);
             }
-            AR__HEAP__FREE(args);
+            AR__HEAP__FREE(*out_args);
+            *out_args = NULL;
             return false;
         }
+        (*out_args)[i] = arg;
+        (*out_count)++;
         
-        /* Add to array */
-        if (count >= capacity) {
-            capacity *= 2;
-            char **new_args = AR__HEAP__REALLOC(args, capacity * sizeof(char*), "args array resize");
-            if (!new_args) {
-                AR__HEAP__FREE(arg);
-                for (size_t i = 0; i < count; i++) {
-                    AR__HEAP__FREE(args[i]);
-                }
-                AR__HEAP__FREE(args);
-                return false;
-            }
-            args = new_args;
-        }
-        args[count++] = arg;
-        
-        /* Skip whitespace */
-        *pos = _skip_whitespace(ref_str, *pos);
-        
-        /* Check for comma or end */
-        if (ref_str[*pos] == ',') {
-            (*pos)++;
-        } else if (ref_str[*pos] != ')') {
-            /* Invalid separator */
-            for (size_t i = 0; i < count; i++) {
-                AR__HEAP__FREE(args[i]);
-            }
-            AR__HEAP__FREE(args);
-            return false;
+        if (i < expected_count - 1) {
+            (*pos)++; /* Skip comma */
+            /* Skip whitespace after comma */
+            *pos = _skip_whitespace(ref_str, *pos);
         }
     }
     
-    /* Check expected count */
-    if (expected_count > 0 && count != expected_count) {
-        for (size_t i = 0; i < count; i++) {
-            AR__HEAP__FREE(args[i]);
-        }
-        AR__HEAP__FREE(args);
-        return false;
-    }
-    
-    *out_args = args;
-    *out_count = count;
     return true;
 }
 

@@ -38,7 +38,9 @@ void ar_system__destroy_instance(ar_data_t *own_system) {  // EXAMPLE: Hypotheti
 }
 
 // CORRECT: Keep instance and global completely separate
-bool ar_system__process_next_message(void) {
+// Note: This shows the old global API pattern (now removed)
+// In current code, use ar_system__process_next_message_with_instance()
+bool process_next_message_global(void) {  // EXAMPLE: Old pattern
     if (!is_initialized) {
         return false;
     }
@@ -86,7 +88,7 @@ When migrating from global to instance-based APIs:
 To safely migrate modules with shared resources:
 ```c
 // 1. Keep global API using global state directly
-bool ar_system__process_next_message(void) {
+bool system_process_next_message_example(void) {
     // Direct use of global g_interpreter, g_log
     // No wrapper instance needed
 }
@@ -107,7 +109,9 @@ int ar_agency__count_agents(void) {
 // 4. CORRECT: Single global instance pattern (from ar_system refactoring)
 static ar_data_t *g_system = NULL;  // EXAMPLE: Would be ar_system_t* - owns everything
 
-int64_t ar_system__init(const char *ref_method_name, const char *ref_version) {
+// Note: This shows the old global API pattern (now removed)
+// In current code, only instance-based APIs exist
+int64_t init_global_example(const char *ref_method_name, const char *ref_version) {  // EXAMPLE: Old pattern
     if (g_system) {
         printf("Already initialized\n");
         return 0;

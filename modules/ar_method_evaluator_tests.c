@@ -16,16 +16,23 @@
 #include "ar_method_ast.h"
 #include "ar_expression_ast.h"
 #include "ar_instruction_ast.h"
+#include "ar_system.h"
+#include "ar_agency.h"
 
 static void test_method_evaluator__create_destroy(void) {
     printf("Testing method evaluator create/destroy...\n");
     
-    // Given a log
+    // Given a system and log
+    ar_system_t *own_system = ar_system__create();
+    assert(own_system != NULL);
+    ar_agency_t *ref_agency = ar_system__get_agency(own_system);
+    assert(ref_agency != NULL);
+    
     ar_log_t *own_log = ar_log__create();
     assert(own_log != NULL);
     
-    // When creating a method evaluator with only a log
-    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log);
+    // When creating a method evaluator with log and agency
+    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, ref_agency);
     
     // Then it should be created successfully
     assert(own_evaluator != NULL);
@@ -33,6 +40,7 @@ static void test_method_evaluator__create_destroy(void) {
     // Cleanup
     ar_method_evaluator__destroy(own_evaluator);
     ar_log__destroy(own_log);
+    ar_system__destroy(own_system);
     
     printf("  ✓ Method evaluator created and destroyed successfully\n");
 }
@@ -40,11 +48,16 @@ static void test_method_evaluator__create_destroy(void) {
 static void test_method_evaluator__evaluate_empty_method(void) {
     printf("Testing method evaluator with empty method...\n");
     
-    // Given a method evaluator and frame
+    // Given a system and method evaluator
+    ar_system_t *own_system = ar_system__create();
+    assert(own_system != NULL);
+    ar_agency_t *ref_agency = ar_system__get_agency(own_system);
+    assert(ref_agency != NULL);
+    
     ar_log_t *own_log = ar_log__create();
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
-    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log);
+    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, ref_agency);
     
     // Create a frame
     ar_data_t *own_message = ar_data__create_string("test message");
@@ -72,6 +85,7 @@ static void test_method_evaluator__evaluate_empty_method(void) {
     ar_data__destroy(own_context);
     ar_data__destroy(own_memory);
     ar_log__destroy(own_log);
+    ar_system__destroy(own_system);
     
     printf("  ✓ Empty method evaluated successfully\n");
 }
@@ -79,11 +93,16 @@ static void test_method_evaluator__evaluate_empty_method(void) {
 static void test_method_evaluator__evaluate_single_instruction_method(void) {
     printf("Testing method evaluator with single instruction...\n");
     
-    // Given a method evaluator
+    // Given a system and method evaluator
+    ar_system_t *own_system = ar_system__create();
+    assert(own_system != NULL);
+    ar_agency_t *ref_agency = ar_system__get_agency(own_system);
+    assert(ref_agency != NULL);
+    
     ar_log_t *own_log = ar_log__create();
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
-    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log);
+    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, ref_agency);
     
     // Create a frame
     ar_data_t *own_message = ar_data__create_string("test message");
@@ -118,6 +137,7 @@ static void test_method_evaluator__evaluate_single_instruction_method(void) {
     ar_data__destroy(own_context);
     ar_data__destroy(own_memory);
     ar_log__destroy(own_log);
+    ar_system__destroy(own_system);
     
     printf("  ✓ Single instruction method evaluated successfully\n");
 }
@@ -125,11 +145,16 @@ static void test_method_evaluator__evaluate_single_instruction_method(void) {
 static void test_method_evaluator__evaluate_multiple_instructions(void) {
     printf("Testing method evaluator with multiple instructions...\n");
     
-    // Given a method evaluator and frame
+    // Given a system and method evaluator
+    ar_system_t *own_system = ar_system__create();
+    assert(own_system != NULL);
+    ar_agency_t *ref_agency = ar_system__get_agency(own_system);
+    assert(ref_agency != NULL);
+    
     ar_log_t *own_log = ar_log__create();
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
-    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log);
+    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, ref_agency);
     
     // Create a frame
     ar_data_t *own_message = ar_data__create_string("test message");
@@ -178,6 +203,7 @@ static void test_method_evaluator__evaluate_multiple_instructions(void) {
     ar_data__destroy(own_context);
     ar_data__destroy(own_memory);
     ar_log__destroy(own_log);
+    ar_system__destroy(own_system);
     
     printf("  ✓ Multiple instruction method evaluated successfully\n");
 }
@@ -185,11 +211,16 @@ static void test_method_evaluator__evaluate_multiple_instructions(void) {
 static void test_method_evaluator__evaluate_null_parameters(void) {
     printf("Testing method evaluator with NULL parameters...\n");
     
-    // Given a method evaluator
+    // Given a system and method evaluator
+    ar_system_t *own_system = ar_system__create();
+    assert(own_system != NULL);
+    ar_agency_t *ref_agency = ar_system__get_agency(own_system);
+    assert(ref_agency != NULL);
+    
     ar_log_t *own_log = ar_log__create();
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
-    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log);
+    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, ref_agency);
     
     // Create valid frame and AST for testing
     ar_data_t *own_message = ar_data__create_string("test message");
@@ -222,6 +253,7 @@ static void test_method_evaluator__evaluate_null_parameters(void) {
     ar_data__destroy(own_context);
     ar_data__destroy(own_memory);
     ar_log__destroy(own_log);
+    ar_system__destroy(own_system);
     
     printf("  ✓ NULL parameter handling verified\n");
 }
@@ -229,11 +261,16 @@ static void test_method_evaluator__evaluate_null_parameters(void) {
 static void test_method_evaluator__evaluate_with_failing_instruction(void) {
     printf("Testing method evaluator with failing instruction...\n");
     
-    // Given a method evaluator
+    // Given a system and method evaluator
+    ar_system_t *own_system = ar_system__create();
+    assert(own_system != NULL);
+    ar_agency_t *ref_agency = ar_system__get_agency(own_system);
+    assert(ref_agency != NULL);
+    
     ar_log_t *own_log = ar_log__create();
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
-    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log);
+    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, ref_agency);
     
     // Create a frame
     ar_data_t *own_message = ar_data__create_string("test message");
@@ -281,6 +318,7 @@ static void test_method_evaluator__evaluate_with_failing_instruction(void) {
     ar_data__destroy(own_context);
     ar_data__destroy(own_memory);
     ar_log__destroy(own_log);
+    ar_system__destroy(own_system);
     
     printf("  ✓ Failing instruction handling verified\n");
 }
@@ -288,11 +326,16 @@ static void test_method_evaluator__evaluate_with_failing_instruction(void) {
 static void test_method_evaluator__memory_stress_test(void) {
     printf("Testing method evaluator memory handling with many instructions...\n");
     
-    // Given a method evaluator
+    // Given a system and method evaluator
+    ar_system_t *own_system = ar_system__create();
+    assert(own_system != NULL);
+    ar_agency_t *ref_agency = ar_system__get_agency(own_system);
+    assert(ref_agency != NULL);
+    
     ar_log_t *own_log = ar_log__create();
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
-    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log);
+    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, ref_agency);
     
     // Create a frame
     ar_data_t *own_message = ar_data__create_string("test message");
@@ -338,6 +381,7 @@ static void test_method_evaluator__memory_stress_test(void) {
     ar_data__destroy(own_context);
     ar_data__destroy(own_memory);
     ar_log__destroy(own_log);
+    ar_system__destroy(own_system);
     
     printf("  ✓ Memory handling verified with 50 instructions\n");
 }

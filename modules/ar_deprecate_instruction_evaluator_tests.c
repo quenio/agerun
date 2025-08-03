@@ -14,6 +14,7 @@
 #include "ar_list.h"
 #include "ar_methodology.h"
 #include "ar_agency.h"
+#include "ar_agent_registry.h"
 #include "ar_system.h"
 #include "ar_method.h"
 #include "ar_heap.h"
@@ -30,10 +31,11 @@ static void test_deprecate_instruction_evaluator__create_destroy(void) {
     
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_methodology_t *mut_methodology = ar_evaluator_fixture__get_methodology(fixture);
     
     // When creating a destroy method evaluator (frame-based pattern)
     ar_deprecate_instruction_evaluator_t *evaluator = ar_deprecate_instruction_evaluator__create(
-        log, expr_eval
+        log, expr_eval, mut_methodology
     );
     
     // Then it should be created successfully
@@ -55,7 +57,6 @@ static void test_deprecate_instruction_evaluator__evaluate_with_instance(void) {
     remove("agency.agerun");
     
     // Initialize system for method operations
-    ar_system__init(NULL, NULL);
     
     // Given a test fixture and evaluator instance
     ar_evaluator_fixture_t *fixture = ar_evaluator_fixture__create(
@@ -65,17 +66,20 @@ static void test_deprecate_instruction_evaluator__evaluate_with_instance(void) {
     
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_methodology_t *mut_methodology = ar_evaluator_fixture__get_methodology(fixture);
     
     ar_deprecate_instruction_evaluator_t *evaluator = ar_deprecate_instruction_evaluator__create(
-        log, expr_eval
+        log, expr_eval, mut_methodology
     );
     assert(evaluator != NULL);
     
-    // Create a test method
-    ar_methodology__create_method("test_destroyer", "memory.x := 1", "1.0.0");
+    // Create a test method using instance APIs
+    ar_method_t *own_method = ar_method__create("test_destroyer", "memory.x := 1", "1.0.0");
+    assert(own_method != NULL);
+    ar_methodology__register_method_with_instance(mut_methodology, own_method);
     
     // Verify method exists
-    ar_method_t *method = ar_methodology__get_method("test_destroyer", "1.0.0");
+    ar_method_t *method = ar_methodology__get_method_with_instance(mut_methodology, "test_destroyer", "1.0.0");
     assert(method != NULL);
     
     // Create destroy AST with method name and version
@@ -111,7 +115,7 @@ static void test_deprecate_instruction_evaluator__evaluate_with_instance(void) {
     assert(result == true);
     
     // And the method should be destroyed (not exist anymore)
-    method = ar_methodology__get_method("test_destroyer", "1.0.0");
+    method = ar_methodology__get_method_with_instance(mut_methodology, "test_destroyer", "1.0.0");
     assert(method == NULL);
     
     // Cleanup
@@ -123,7 +127,6 @@ static void test_deprecate_instruction_evaluator__evaluate_with_instance(void) {
     ar_agency__reset();
     
     // Shutdown system
-    ar_system__shutdown();
     
     // Clean up methodology after each test to prevent accumulation
     ar_methodology__cleanup();
@@ -136,7 +139,6 @@ static void test_deprecate_instruction_evaluator__evaluate_frame_based(void) {
     remove("agency.agerun");
     
     // Initialize system for method operations
-    ar_system__init(NULL, NULL);
     
     // Given a test fixture
     ar_evaluator_fixture_t *fixture = ar_evaluator_fixture__create(
@@ -146,15 +148,18 @@ static void test_deprecate_instruction_evaluator__evaluate_frame_based(void) {
     
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_methodology_t *mut_methodology = ar_evaluator_fixture__get_methodology(fixture);
     
     // Create an evaluator instance
     ar_deprecate_instruction_evaluator_t *evaluator = ar_deprecate_instruction_evaluator__create(
-        log, expr_eval
+        log, expr_eval, mut_methodology
     );
     assert(evaluator != NULL);
     
-    // Create a test method
-    ar_methodology__create_method("test_destroyer", "memory.x := 1", "1.0.0");
+    // Create a test method using instance APIs
+    ar_method_t *own_method = ar_method__create("test_destroyer", "memory.x := 1", "1.0.0");
+    assert(own_method != NULL);
+    ar_methodology__register_method_with_instance(mut_methodology, own_method);
     
     // Create destroy AST with method name and version
     const char *args[] = {"\"test_destroyer\"", "\"1.0.0\""};
@@ -189,7 +194,7 @@ static void test_deprecate_instruction_evaluator__evaluate_frame_based(void) {
     assert(result == true);
     
     // And the method should be destroyed
-    ar_method_t *method = ar_methodology__get_method("test_destroyer", "1.0.0");
+    ar_method_t *method = ar_methodology__get_method_with_instance(mut_methodology, "test_destroyer", "1.0.0");
     assert(method == NULL);
     
     // Cleanup
@@ -201,7 +206,6 @@ static void test_deprecate_instruction_evaluator__evaluate_frame_based(void) {
     ar_agency__reset();
     
     // Shutdown system
-    ar_system__shutdown();
     
     // Clean up methodology after each test to prevent accumulation
     ar_methodology__cleanup();
@@ -214,7 +218,6 @@ static void test_deprecate_instruction_evaluator__evaluate_with_agents(void) {
     remove("agency.agerun");
     
     // Initialize system for method operations
-    ar_system__init(NULL, NULL);
     
     // Given a test fixture and evaluator instance with a method and agents using it
     ar_evaluator_fixture_t *fixture = ar_evaluator_fixture__create(
@@ -225,22 +228,31 @@ static void test_deprecate_instruction_evaluator__evaluate_with_agents(void) {
     ar_data_t *memory = ar_evaluator_fixture__get_memory(fixture);
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_agency_t *mut_agency = ar_evaluator_fixture__get_agency(fixture);
+    ar_methodology_t *mut_methodology = ar_evaluator_fixture__get_methodology(fixture);
+    
+    assert(mut_agency != NULL);
+    assert(mut_methodology != NULL);
     
     ar_deprecate_instruction_evaluator_t *evaluator = ar_deprecate_instruction_evaluator__create(
-        log, expr_eval
+        log, expr_eval, mut_methodology
     );
     assert(evaluator != NULL);
     
-    // Create a test method and agents using it
-    ar_methodology__create_method("test_destroyer", "memory.x := 1", "1.0.0");
-    int64_t agent1 = ar_agency__create_agent("test_destroyer", "1.0.0", NULL);
-    int64_t agent2 = ar_agency__create_agent("test_destroyer", "1.0.0", NULL);
+    // Create a test method using instance APIs
+    ar_method_t *own_method = ar_method__create("test_destroyer", "memory.x := 1", "1.0.0");
+    assert(own_method != NULL);
+    ar_methodology__register_method_with_instance(mut_methodology, own_method);
+    
+    // Create agents using instance APIs
+    int64_t agent1 = ar_agency__create_agent_with_instance(mut_agency, "test_destroyer", "1.0.0", NULL);
+    int64_t agent2 = ar_agency__create_agent_with_instance(mut_agency, "test_destroyer", "1.0.0", NULL);
     assert(agent1 > 0);
     assert(agent2 > 0);
     
     // Process wake messages to avoid leaks
-    ar_system__process_next_message();
-    ar_system__process_next_message();
+    ar_evaluator_fixture__process_next_message(fixture);
+    ar_evaluator_fixture__process_next_message(fixture);
     
     // Create destroy AST with method name and version
     const char *args[] = {"\"test_destroyer\"", "\"1.0.0\""};
@@ -281,11 +293,12 @@ static void test_deprecate_instruction_evaluator__evaluate_with_agents(void) {
     assert(ar_data__get_integer(result_value) == 1);
     
     // The agents should still exist (deprecate no longer destroys agents)
-    assert(ar_agency__agent_exists(agent1) == true);
-    assert(ar_agency__agent_exists(agent2) == true);
+    ar_agent_registry_t *registry = ar_agency__get_registry_with_instance(mut_agency);
+    assert(ar_agent_registry__is_registered(registry, agent1) == true);
+    assert(ar_agent_registry__is_registered(registry, agent2) == true);
     
     // And the method should be destroyed
-    ar_method_t *method = ar_methodology__get_method("test_destroyer", "1.0.0");
+    ar_method_t *method = ar_methodology__get_method_with_instance(mut_methodology, "test_destroyer", "1.0.0");
     assert(method == NULL);
     
     // Cleanup
@@ -293,14 +306,7 @@ static void test_deprecate_instruction_evaluator__evaluate_with_agents(void) {
     ar_deprecate_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(fixture);
     
-    // Clean up agency before shutting down
-    ar_agency__reset();
-    
-    // Shutdown system
-    ar_system__shutdown();
-    
-    // Clean up methodology after each test to prevent accumulation
-    ar_methodology__cleanup();
+    // System cleanup is handled by fixture destroy
 }
 
 // Test destroy nonexistent method
@@ -310,7 +316,6 @@ static void test_deprecate_instruction_evaluator__evaluate_nonexistent(void) {
     remove("agency.agerun");
     
     // Initialize system for method operations
-    ar_system__init(NULL, NULL);
     
     // Given a test fixture and evaluator instance with no methods
     ar_evaluator_fixture_t *fixture = ar_evaluator_fixture__create(
@@ -321,9 +326,10 @@ static void test_deprecate_instruction_evaluator__evaluate_nonexistent(void) {
     ar_data_t *memory = ar_evaluator_fixture__get_memory(fixture);
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_methodology_t *mut_methodology = ar_evaluator_fixture__get_methodology(fixture);
     
     ar_deprecate_instruction_evaluator_t *evaluator = ar_deprecate_instruction_evaluator__create(
-        log, expr_eval
+        log, expr_eval, mut_methodology
     );
     assert(evaluator != NULL);
     
@@ -374,7 +380,6 @@ static void test_deprecate_instruction_evaluator__evaluate_nonexistent(void) {
     ar_agency__reset();
     
     // Shutdown system
-    ar_system__shutdown();
     
     // Clean up methodology after each test to prevent accumulation
     ar_methodology__cleanup();
@@ -390,9 +395,10 @@ static void test_deprecate_instruction_evaluator__evaluate_invalid_name_type(voi
     
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_methodology_t *mut_methodology = ar_evaluator_fixture__get_methodology(fixture);
     
     ar_deprecate_instruction_evaluator_t *evaluator = ar_deprecate_instruction_evaluator__create(
-        log, expr_eval
+        log, expr_eval, mut_methodology
     );
     assert(evaluator != NULL);
     
@@ -444,9 +450,10 @@ static void test_deprecate_instruction_evaluator__evaluate_wrong_arg_count(void)
     
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_methodology_t *mut_methodology = ar_evaluator_fixture__get_methodology(fixture);
     
     ar_deprecate_instruction_evaluator_t *evaluator = ar_deprecate_instruction_evaluator__create(
-        log, expr_eval
+        log, expr_eval, mut_methodology
     );
     assert(evaluator != NULL);
     
@@ -499,7 +506,6 @@ int main(void) {
     }
     
     // Clean up any existing state at the start
-    ar_system__shutdown();
     ar_methodology__cleanup();
     ar_agency__reset();
     remove("methodology.agerun");

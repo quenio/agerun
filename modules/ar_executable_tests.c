@@ -33,9 +33,8 @@ static void test_executable_run(void) {
         // In the child process
         
         // Clean up inherited resources before running the test
-        ar_system__shutdown();
-        ar_methodology__cleanup();
-        ar_agency__reset();
+        // Note: We're in a child process, so we can't use the parent's system instance
+        // The child will have its own copy of memory
         
         // Given we redirect stdout to avoid cluttering test output
         freopen("/dev/null", "w", stdout);
@@ -93,6 +92,14 @@ static void test_executable_run(void) {
 int main(void) {
     printf("Starting Executable Module Tests...\n");
     
+    // Run the executable test first (before creating any system instances)
+    test_executable_run();
+    
+    // Now run a separate test with a system instance
+    // Create system instance for tests
+    ar_system_t *mut_system = ar_system__create();
+    assert(mut_system != NULL);
+    
     // Given we have a test method and initialized system
     const char *init_method = "exec_test_method";
     const char *init_instructions = "memory.result = \"Test complete\"";
@@ -102,23 +109,23 @@ int main(void) {
     ar_method_t *own_method = ar_method__create(init_method, init_instructions, init_version);
     assert(own_method != NULL);
     
-    // Register with methodology
-    ar_methodology__register_method(own_method);
+    // Register with methodology using instance API
+    ar_agency_t *ref_agency = ar_system__get_agency(mut_system);
+    ar_methodology_t *ref_methodology = ar_agency__get_methodology(ref_agency);
+    ar_methodology__register_method_with_instance(ref_methodology, own_method);
     own_method = NULL; // Mark as transferred
     
     // When we initialize the system with this method
-    int64_t initial_agent = ar_system__init(init_method, init_version);
+    int64_t initial_agent = ar_system__init_with_instance(mut_system, init_method, init_version);
     
     // Process the wake message if an agent was created
     if (initial_agent > 0) {
-        ar_system__process_next_message();
+        ar_system__process_next_message_with_instance(mut_system);
     }
     
-    // And we run the executable test
-    test_executable_run();
-    
     // Then we clean up the system
-    ar_system__shutdown();
+    ar_system__shutdown_with_instance(mut_system);
+    ar_system__destroy(mut_system);
     
     // And report success
     printf("All 2 tests passed!\n");

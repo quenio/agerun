@@ -16,13 +16,15 @@ const c = @cImport({
 const ar_spawn_instruction_evaluator_t = struct {
     ref_log: ?*c.ar_log_t,
     ref_expr_evaluator: ?*c.ar_expression_evaluator_t,
+    ref_agency: ?*c.ar_agency_t,
 };
 
 pub export fn ar_spawn_instruction_evaluator__create(
     ref_log: ?*c.ar_log_t,
-    ref_expr_evaluator: ?*c.ar_expression_evaluator_t
+    ref_expr_evaluator: ?*c.ar_expression_evaluator_t,
+    ref_agency: ?*c.ar_agency_t
 ) ?*ar_spawn_instruction_evaluator_t {
-    if (ref_log == null or ref_expr_evaluator == null) {
+    if (ref_log == null or ref_expr_evaluator == null or ref_agency == null) {
         return null;
     }
     
@@ -33,6 +35,7 @@ pub export fn ar_spawn_instruction_evaluator__create(
     
     own_evaluator.?.ref_log = ref_log;
     own_evaluator.?.ref_expr_evaluator = ref_expr_evaluator;
+    own_evaluator.?.ref_agency = ref_agency;
     
     return own_evaluator;
 }
@@ -130,11 +133,12 @@ pub export fn ar_spawn_instruction_evaluator__evaluate(
             const method_name = c.ar_data__get_string(own_method_name);
             const version = c.ar_data__get_string(own_version);
             
-            // Check if method exists
-            const ref_method = c.ar_methodology__get_method(method_name, version);
+            // Get methodology from agency and check if method exists
+            const ref_methodology = c.ar_agency__get_methodology(ref_evaluator.?.ref_agency);
+            const ref_method = c.ar_methodology__get_method_with_instance(ref_methodology, method_name, version);
             if (ref_method != null) {
                 // Create the agent - context is borrowed, not owned
-                agent_id = c.ar_agency__create_agent(method_name, version, ref_context_data);
+                agent_id = c.ar_agency__create_agent_with_instance(ref_evaluator.?.ref_agency, method_name, version, ref_context_data);
                 if (agent_id > 0) {
                     success = true;
                 }

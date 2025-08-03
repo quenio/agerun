@@ -392,11 +392,6 @@ ar_system_fixture
 ├──c──> ar_method
 └──c──> ar_heap (Zig)
 
-ar_instruction_fixture
-├──h──> ar_data
-├──h──> ar_expression
-├──c──> ar_list
-└──c──> ar_heap (Zig)
 
 ar_interpreter_fixture
 ├──h──> ar_interpreter
@@ -748,10 +743,6 @@ ar_system_fixture_tests
 ├──c──> ar_data
 └──c──> ar_heap (Zig)
 
-ar_instruction_fixture_tests
-├──c──> ar_instruction_fixture (module under test)
-├──c──> ar_data
-├──c──> ar_expression
 ├──c──> ar_list
 └──c──> ar_heap (Zig)
 
@@ -795,9 +786,9 @@ The AgeRun system is organized into hierarchical layers, with each layer buildin
                                ▼                                 └─│                              │
 ┌───────────────────────────────────────────────────────────┐      │      Fixture Modules         │
 │                  Foundation Modules                       │      │ (ar_method_fixture,      │
-│  (ar_data, ar_expression, ar_expression_ast,  │      │  ar_instruction_fixture, │
+│  (ar_data, ar_expression, ar_expression_ast,  │      │                          │
 │   ar_expression_parser, ar_expression_evaluator,  │ ◄────┤  ar_system_fixture,      │
-│   ar_instruction, ar_interpreter, ar_method,  │      │  ar_interpreter_fixture) │
+│   ar_interpreter, ar_method,                  │      │  ar_interpreter_fixture) │
 │   ar_methodology)                                     │      │                              │
 └──────────────────────────────┬────────────────────────────┘      │                              │
                                │                                   └──────────────────────────────┘
@@ -1203,15 +1194,6 @@ The [deprecate instruction evaluator module](ar_deprecate_instruction_evaluator.
 - **Result Storage**: Stores success/failure result when assignment specified
 - **Instantiable Design**: Follows instantiable pattern with create/destroy lifecycle
 
-### Instruction Module (`ar_instruction`)
-
-The [instruction module](ar_instruction.md) provides a recursive descent parser for parsing instructions in the AgeRun agent system:
-
-- **Grammar Implementation**: Implements the BNF grammar for instructions defined in the specification
-- **AST Generation**: Parses instructions into Abstract Syntax Tree nodes without executing them
-- **Memory Assignment**: Parses assignment to memory using dot notation
-- **Function Parsing**: Parses function calls with optional assignment
-- **Parser Integration**: Works with the expression evaluator for expression parsing
 - **Memory Safety**: Provides proper memory management and error handling
 - **Separation of Concerns**: Only parses instructions; execution is handled by the interpreter module
 - **Depends on Expression**: Uses the expression module for evaluating expressions
@@ -1513,21 +1495,6 @@ The method test fixture module provides a proper abstraction for method test set
 - **Opaque Type**: Method test fixture structure is opaque, following Parnas principles
 - **Depends on Core Modules**: Uses system, methodology, agency, IO, and heap modules
 
-### Instruction Fixture Module (`ar_instruction_fixture`)
-
-The instruction fixture module provides a proper abstraction for instruction module test patterns:
-
-- **Agent Management**: Creates and tracks test agents with automatic method registration and cleanup
-- **System Integration**: Optional system initialization for tests that require full runtime environment
-- **Expression Context Management**: Creates and tracks expression contexts with pre-populated test data
-- **Test Data Builders**: Provides common test data structures (maps, lists) with standard values
-- **Resource Tracking**: Automatically tracks and destroys all created data objects, contexts, and agents
-- **Generic Resource Support**: Can track any resource type with custom destructors
-- **Memory Leak Detection**: Ensures all test resources are properly cleaned up
-- **No Helper Functions**: Proper module abstraction eliminating repetitive setup code
-- **Opaque Type**: Instruction test fixture structure is opaque, following Parnas principles
-- **Designed for Instruction Modules**: Used specifically by instruction module tests
-- **Reduces Boilerplate**: Eliminates 200+ lines of repetitive agent setup and teardown code
 
 ### System Fixture Module (`ar_system_fixture`)
 

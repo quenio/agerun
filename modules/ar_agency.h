@@ -5,23 +5,26 @@
 #include <stdint.h>
 #include "ar_data.h"
 #include "ar_agent_registry.h"
+#include "ar_log.h"
 
 /* Forward declarations */
 typedef struct ar_method_s ar_method_t;
 typedef struct ar_agent_s ar_agent_t;
-typedef struct ar_agency_s ar_agency_t;
 typedef struct ar_methodology_s ar_methodology_t;
+
+/* Agency type */
+typedef struct ar_agency_s ar_agency_t;
 
 /* Constants */
 #define AGENCY_FILE_NAME "agency.agerun"
 
 /**
  * Create a new agency instance
- * @param ref_methodology The methodology instance to use (borrowed reference)
+ * @param ref_log The log instance to use for the agency's methodology (borrowed reference)
  * @return New agency instance (ownership transferred), or NULL on failure
- * @note Ownership: Caller must destroy the returned agency.
+ * @note Ownership: Caller must destroy the returned agency. The agency creates and owns its own methodology.
  */
-ar_agency_t* ar_agency__create(ar_methodology_t *ref_methodology);
+ar_agency_t* ar_agency__create(ar_log_t *ref_log);
 
 /**
  * Destroy an agency instance
@@ -247,6 +250,33 @@ ar_agent_registry_t* ar_agency__get_registry(void);
 int ar_agency__count_agents_with_instance(ar_agency_t *ref_agency);
 
 /**
+ * Count the number of agents using a specific method (instance version)
+ * @param ref_agency The agency instance (borrowed reference)
+ * @param ref_method The method to check (borrowed reference)
+ * @return Number of active agents using the method
+ * @note Ownership: Does not take ownership of the method reference.
+ */
+int ar_agency__count_agents_using_method_with_instance(ar_agency_t *ref_agency, const ar_method_t *ref_method);
+
+/**
+ * Update agents using a specific method to use a different method (instance version)
+ * @param mut_agency The agency instance (mutable reference)
+ * @param ref_old_method The old method being used (borrowed reference)
+ * @param ref_new_method The new method to use (borrowed reference)
+ * @param send_lifecycle_events If true, send sleep/wake messages for each updated agent
+ * @return Number of agents updated (each agent will have 2 messages queued if lifecycle events are sent)
+ * @note Ownership: Does not take ownership of either method reference.
+ *       If send_lifecycle_events is true, the update process involves:
+ *       1. Agent finishes processing current message
+ *       2. Sleep message is sent to agent
+ *       3. Method reference is updated
+ *       4. Wake message is sent to agent
+ *       IMPORTANT: The caller must process 2*update_count messages after this call
+ *       to ensure all sleep and wake messages are processed.
+ */
+int ar_agency__update_agent_methods_with_instance(ar_agency_t *mut_agency, const ar_method_t *ref_old_method, const ar_method_t *ref_new_method, bool send_lifecycle_events);
+
+/**
  * Create a new agent with ID allocation and tracking (instance version)
  * @param mut_agency The agency instance (mutable reference)
  * @param ref_method_name Name of the method to use (borrowed reference)
@@ -362,6 +392,41 @@ bool ar_agency__agent_has_messages_with_instance(ar_agency_t *ref_agency, int64_
  * @note Ownership: Caller takes ownership of the returned message.
  */
 ar_data_t* ar_agency__get_agent_message_with_instance(ar_agency_t *mut_agency, int64_t agent_id);
+
+/**
+ * Get agent method by ID (instance version)
+ * @param ref_agency The agency instance (borrowed reference)
+ * @param agent_id ID of the agent
+ * @return Const pointer to agent's method, or NULL if agent doesn't exist
+ * @note Ownership: Returns a borrowed reference.
+ */
+const ar_method_t* ar_agency__get_agent_method_with_instance(ar_agency_t *ref_agency, int64_t agent_id);
+
+/**
+ * Get mutable agent memory by ID (instance version)
+ * @param mut_agency The agency instance (mutable reference)
+ * @param agent_id ID of the agent
+ * @return Mutable pointer to agent's memory data
+ * @note Ownership: Returns a mutable reference, do not destroy.
+ */
+ar_data_t* ar_agency__get_agent_mutable_memory_with_instance(ar_agency_t *mut_agency, int64_t agent_id);
+
+/**
+ * Get agent context by ID (instance version)
+ * @param ref_agency The agency instance (borrowed reference)
+ * @param agent_id ID of the agent
+ * @return Const pointer to agent's context data, or NULL if agent doesn't exist
+ * @note Ownership: Returns a borrowed reference.
+ */
+const ar_data_t* ar_agency__get_agent_context_with_instance(ar_agency_t *ref_agency, int64_t agent_id);
+
+/**
+ * Check if an agent exists using a specific agency instance
+ * @param ref_agency The agency instance to use (borrowed reference)
+ * @param agent_id ID of the agent to check
+ * @return true if the agent exists, false otherwise
+ */
+bool ar_agency__agent_exists_with_instance(ar_agency_t *ref_agency, int64_t agent_id);
 
 #endif /* AGERUN_AGENCY_H */
 

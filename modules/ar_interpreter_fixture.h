@@ -6,6 +6,7 @@
 #include "ar_interpreter.h"
 #include "ar_data.h"
 #include "ar_method.h"
+#include "ar_system.h"
 
 /**
  * @file ar_interpreter_fixture.h

@@ -42,21 +42,14 @@ The AgeRun codebase has been successfully refactored to eliminate all circular d
    - ar_agent.h → ar_data.h
    - ar_expression.h → ar_data.h
    - ar_method.h → ar_data.h
-   - ar_instruction.h → ar_data.h
 
 4. **Higher Layers**:
    - ar_agency.h → ar_data.h, ar_agent_registry.h
    - ar_agent_update.h → ar_agent_registry.h
    - ar_methodology.h → ar_method.h
-   - ar_interpreter.h → ar_data.h, ar_instruction.h, ar_method.h
+   - ar_interpreter.h → ar_data.h, ar_method.h
 
 ### Key Implementation Dependencies (from .c files)
-
-**Instruction Module** (parsing only):
-- ar_instruction.c includes:
-  - ar_data.h
-  - ar_expression.h
-  - ar_string.h
   - ar_assert.h
   - (NO dependencies on agent, agency, or methodology)
 

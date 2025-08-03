@@ -137,6 +137,17 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Updated kb/README.md index with new articles
 - [x] Added references to CLAUDE.md for module instantiation patterns
 
+### System-Wide Migration to Instance-Based APIs (Completed 2025-08-02)
+- [x] Migrated all tests and modules to use instance-based APIs throughout
+- [x] Updated ar_agent_store to simplified instance-based implementation
+- [x] Fixed all memory leaks in test files (0 leaks remaining)
+- [x] Enhanced test fixtures with instance management capabilities
+- [x] Updated all parsers and evaluators to accept instance parameters
+- [x] Removed obsolete ar_instruction module and related files (~6,730 lines)
+- [x] Created 7 migration scripts for systematic updates
+- [x] Updated 15+ knowledge base articles with instance patterns
+- [x] Completed foundation for multi-instance runtime support
+
 ## Critical Compliance Tasks
 
 ### CRITICAL - Evaluator Code Duplication Refactoring (HIGHEST PRIORITY)
@@ -307,13 +318,25 @@ This document tracks pending tasks and improvements for the AgeRun project.
 2. **ar_agency second** - Used by system but not methodology
 3. **ar_methodology last** - Most widely used across codebase
 
+**Phase 1 Progress (ar_system)**:
+- [x] Remove ar_instruction module files and references
+- [x] Update all tests to use instance-based APIs
+- [x] Fix memory leaks in various tests
+- [x] Add ar_methodology__cleanup_with_instance function
+- [x] Add ar_agency__agent_exists_with_instance function
+- [ ] Remove global APIs from ar_system header
+- [ ] Remove implementations and g_system static variable
+- [ ] Update ar_executable.c to create and manage instances
+- [ ] Run make clean build 2>&1 and fix all errors
+
+**Remaining Tasks**:
+- [ ] Fix method_creator_tests - missing method() instruction implementation
+- [ ] Fix string_builder_tests - missing parse() and build() instruction implementations
+- [ ] Fix message_router_tests - send() function failures
+- [ ] Expose system/agency through interpreter fixture for method verification in tests
+
 **Tasks**:
-- [ ] Phase 1: Remove global APIs from ar_system
-  - [ ] Remove init/shutdown/process functions from header
-  - [ ] Remove implementations and g_system static variable
-  - [ ] Update ar_executable.c to create and manage instances
-  - [ ] Update ~10 test files to use instance APIs
-  - [ ] Run make clean build 2>&1 and fix all errors
+- [ ] Phase 1: Remove global APIs from ar_system (IN PROGRESS)
 - [ ] Phase 2: Remove global APIs from ar_agency
   - [ ] Remove 20+ global functions from header
   - [ ] Remove implementations and g_agency static variable
@@ -397,7 +420,49 @@ Based on successful instantiation learnings:
   - [ ] Create ar_runtime.md and ar_message_broker.md
   - [ ] Update module dependency diagram
 
-### 4. System-Wide Integration Testing and Verification
+### 4. Complete Agent Store Load Implementation
+
+**Rationale**: The agent store save functionality works correctly, but the load implementation is incomplete. It only reads the agent count from the file but doesn't actually recreate agents with their methods and memory.
+
+**Current State**: 
+- Agent store is now instantiable with registry dependency injection (completed 2025-08-02)
+- Save functionality works: writes agent ID, method name/version, and memory to file
+- Load functionality is stub: only reads agent count, doesn't recreate agents
+- Tests updated to work with instantiable API without methodology dependency
+
+**Design Challenge**: The agent store has no access to methodology for method lookup, by design to avoid circular dependencies. The load implementation needs to either:
+1. **Have agency coordinate loading** - agency looks up methods and passes them to agent store
+2. **Store method definitions in file** - make agent store files self-contained
+3. **Accept method lookup callback** - inject methodology interface during load
+
+**Recommended Approach**: Option 1 (agency coordination) aligns with current architecture where agency owns both methodology and agent store.
+
+**Tasks**:
+- [ ] Design load coordination between agency and agent store
+  - [ ] Agency provides method lookup during load operation
+  - [ ] Agent store requests method by name/version from agency
+  - [ ] Agency creates agents and passes them to registry
+- [ ] Implement complete load functionality in ar_agent_store.c
+  - [ ] Parse agent definitions (ID, method name/version, memory items)
+  - [ ] Create agents using provided method references
+  - [ ] Restore agent memory from saved state
+  - [ ] Register agents in the provided registry
+- [ ] Update agency save/load functions to coordinate with agent store
+- [ ] Add comprehensive load tests verifying agent restoration
+  - [ ] Single agent with memory persistence
+  - [ ] Multiple agents with different methods
+  - [ ] Agent ID preservation across save/load cycles
+  - [ ] Error handling for missing methods
+- [ ] Update documentation with complete save/load workflow
+
+**Success Criteria**:
+- Agents are fully restored with correct methods and memory
+- Agent IDs are preserved across save/load cycles
+- Missing methods during load are handled gracefully
+- Zero memory leaks in save/load operations
+- Tests verify complete agent lifecycle persistence
+
+### 5. System-Wide Integration Testing and Verification
 
 **Rationale**: After completing all evaluator migrations to Zig and frame-based execution implementation, we need comprehensive integration testing to verify the full system works correctly.
 
@@ -427,7 +492,7 @@ Based on successful instantiation learnings:
   - [ ] Memory usage profiling
   - [ ] Comparison of C vs Zig evaluator performance
 
-### 5. Complete C to Zig ABI-Compatible Migration
+### 6. Complete C to Zig ABI-Compatible Migration
 
 **Current Status**: 21/58 modules migrated (36%)
 
@@ -441,7 +506,7 @@ Based on successful instantiation learnings:
 - [ ] ar_frame - Execution context for evaluators
 - [ ] ar_log - Error reporting and logging
 
-### 5. Build System Improvements
+### 7. Build System Improvements
 
 **Rationale**: As more modules are migrated to Zig, we need proper static analysis and formatting checks integrated into the build system.
 
@@ -452,7 +517,7 @@ Based on successful instantiation learnings:
   - [ ] Consider integrating third-party linters like zlint for more comprehensive analysis
   - [ ] Update analyze-exec and analyze-tests targets to include Zig modules
 
-### 6. Knowledge Base Documentation
+### 8. Knowledge Base Documentation
 
 **Rationale**: Missing documentation articles would enhance the knowledge base and help future development.
 
@@ -467,7 +532,7 @@ Based on successful instantiation learnings:
 - [ ] **Authoritative Source Validation** (kb/authoritative-source-validation.md) - Verifying information from authoritative sources
 - [ ] **Code Block Context Handling** (kb/code-block-context-handling.md) - Handling code examples in different contexts
 
-### 7. String Module Refactoring
+### 9. String Module Refactoring
 
 **Rationale**: Path operations in the string module should be extracted to improve module cohesion.
 

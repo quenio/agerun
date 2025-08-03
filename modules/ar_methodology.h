@@ -153,4 +153,12 @@ bool ar_methodology__unregister_method_with_instance(ar_methodology_t *mut_metho
                                                      const char *ref_name,
                                                      const char *ref_version);
 
+/**
+ * Clean up all method definitions and free resources in a specific methodology instance
+ * @param mut_methodology The methodology instance to cleanup (mutable reference)
+ * @note This should be called before destroying the methodology instance
+ * @note Ownership: This cleans up all methods owned by the instance
+ */
+void ar_methodology__cleanup_with_instance(ar_methodology_t *mut_methodology);
+
 #endif /* AGERUN_METHODOLOGY_H */

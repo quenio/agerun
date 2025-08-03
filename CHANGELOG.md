@@ -2,6 +2,36 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-08-02 (Part 2)
+
+### ✅ System-Wide Migration to Instance-Based APIs Complete
+- **Major architectural transformation eliminating global state dependencies**:
+  - Converted ar_system to single-instance module with instance-based APIs
+  - Migrated ar_agency to use instance methodology and log references  
+  - Updated ar_agent_store to simplified instance-based implementation
+  - Added instance parameters throughout the codebase for proper dependency injection
+- **Module cleanup removing ~6,730 lines of obsolete code**:
+  - Removed obsolete ar_instruction module and all related files
+  - Deleted ar_instruction_fixture module (functionality moved to evaluator_fixture)
+  - Removed INSTRUCTION_EXECUTION_COMPARISON.md report
+  - Eliminated duplicate and obsolete code across the codebase
+- **Complete test infrastructure update**:
+  - Updated all test modules to use instance-based APIs
+  - Fixed all memory leaks across all test files (0 leaks remaining)
+  - Enhanced fixtures with instance management capabilities
+  - Migrated method tests to use proper context ownership
+- **Parser and evaluator updates**:
+  - Updated compile/parse instruction parsers for instance APIs
+  - Modified all evaluators to accept instance parameters
+  - Enhanced evaluator fixture for better test support
+- **Documentation and tooling**:
+  - Updated 15+ knowledge base articles with instance patterns
+  - Created 7 new migration scripts for systematic updates
+  - Updated module documentation to reflect new APIs
+  - Enhanced TODO.md with completed instance migration tasks
+- **Impact**: Completes the groundwork for making AgeRun modules fully instantiable,
+  enabling better testability, cleaner architecture, and future multi-instance support
+
 ## 2025-08-02
 
 ### ✅ System Module Made Instantiable

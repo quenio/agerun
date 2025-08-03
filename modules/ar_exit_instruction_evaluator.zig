@@ -19,21 +19,24 @@ const c = @cImport({
 const ar_exit_instruction_evaluator_t = struct {
     ref_log: ?*c.ar_log_t,                           // Borrowed reference to log instance
     ref_expr_evaluator: ?*c.ar_expression_evaluator_t, // Borrowed reference to expression evaluator
+    ref_agency: ?*c.ar_agency_t,                      // Borrowed reference to agency instance
 };
 
 
 /// Creates a new destroy agent instruction evaluator instance
 pub export fn ar_exit_instruction_evaluator__create(
     ref_log: ?*c.ar_log_t,
-    ref_expr_evaluator: ?*c.ar_expression_evaluator_t
+    ref_expr_evaluator: ?*c.ar_expression_evaluator_t,
+    ref_agency: ?*c.ar_agency_t
 ) ?*ar_exit_instruction_evaluator_t {
-    if (ref_expr_evaluator == null) {
+    if (ref_expr_evaluator == null or ref_agency == null) {
         return null;
     }
     
     const own_evaluator = ar_allocator.create(ar_exit_instruction_evaluator_t, "destroy_agent_instruction_evaluator") orelse return null;
     own_evaluator.ref_log = ref_log;
     own_evaluator.ref_expr_evaluator = ref_expr_evaluator;
+    own_evaluator.ref_agency = ref_agency;
     
     return own_evaluator;
 }
@@ -98,7 +101,7 @@ pub export fn ar_exit_instruction_evaluator__evaluate(
         
         if (c.ar_data__get_type(own_agent_id) == c.AR_DATA_TYPE__INTEGER) {
             const agent_id: i64 = @intCast(c.ar_data__get_integer(own_agent_id));
-            destroy_result = c.ar_agency__destroy_agent(agent_id);
+            destroy_result = c.ar_agency__destroy_agent_with_instance(ref_evaluator.?.ref_agency, agent_id);
             success = true;
         }
     }

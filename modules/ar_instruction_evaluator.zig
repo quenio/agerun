@@ -13,12 +13,15 @@ const c = @cImport({
     @cInclude("ar_spawn_instruction_evaluator.h");
     @cInclude("ar_exit_instruction_evaluator.h");
     @cInclude("ar_deprecate_instruction_evaluator.h");
+    @cInclude("ar_agency.h");
+    @cInclude("ar_methodology.h");
 });
 const ar_allocator = @import("ar_allocator.zig");
 
 /// Internal structure for instruction evaluator facade
 const ar_instruction_evaluator_t = struct {
     ref_log: ?*c.ar_log_t,                                              // Log instance (borrowed reference)
+    ref_agency: ?*c.ar_agency_t,                                        // Agency instance (borrowed reference)
     own_expr_evaluator: ?*c.ar_expression_evaluator_t,                  // Expression evaluator (owned)
     own_assignment_evaluator: ?*c.ar_assignment_instruction_evaluator_t, // Assignment evaluator (owned)
     own_send_evaluator: ?*c.ar_send_instruction_evaluator_t,            // Send evaluator (owned)
@@ -32,14 +35,15 @@ const ar_instruction_evaluator_t = struct {
 };
 
 /// Private implementation that uses error unions for proper cleanup
-fn _create(ref_log: ?*c.ar_log_t) !*ar_instruction_evaluator_t {
-    if (ref_log == null) return error.NullParameter;
+fn _create(ref_log: ?*c.ar_log_t, ref_agency: ?*c.ar_agency_t) !*ar_instruction_evaluator_t {
+    if (ref_log == null or ref_agency == null) return error.NullParameter;
     
     const own_evaluator = ar_allocator.create(ar_instruction_evaluator_t, "instruction_evaluator") orelse 
         return error.OutOfMemory;
     errdefer ar_allocator.free(own_evaluator);
     
     own_evaluator.ref_log = ref_log;
+    own_evaluator.ref_agency = ref_agency;
     
     // Create the expression evaluator internally
     own_evaluator.own_expr_evaluator = c.ar_expression_evaluator__create(ref_log) orelse 
@@ -77,27 +81,35 @@ fn _create(ref_log: ?*c.ar_log_t) !*ar_instruction_evaluator_t {
     ) orelse return error.BuildEvaluatorCreationFailed;
     errdefer c.ar_build_instruction_evaluator__destroy(own_evaluator.own_build_evaluator);
     
+    // Get methodology from agency
+    const ref_methodology = c.ar_agency__get_methodology(ref_agency);
+    if (ref_methodology == null) return error.MethodologyNotFound;
+    
     own_evaluator.own_compile_evaluator = c.ar_compile_instruction_evaluator__create(
         ref_log,
-        own_evaluator.own_expr_evaluator
+        own_evaluator.own_expr_evaluator,
+        ref_methodology
     ) orelse return error.CompileEvaluatorCreationFailed;
     errdefer c.ar_compile_instruction_evaluator__destroy(own_evaluator.own_compile_evaluator);
     
     own_evaluator.own_spawn_evaluator = c.ar_spawn_instruction_evaluator__create(
         ref_log,
-        own_evaluator.own_expr_evaluator
+        own_evaluator.own_expr_evaluator,
+        ref_agency
     ) orelse return error.SpawnEvaluatorCreationFailed;
     errdefer c.ar_spawn_instruction_evaluator__destroy(own_evaluator.own_spawn_evaluator);
     
     own_evaluator.own_exit_evaluator = c.ar_exit_instruction_evaluator__create(
         ref_log,
-        own_evaluator.own_expr_evaluator
+        own_evaluator.own_expr_evaluator,
+        ref_agency
     ) orelse return error.ExitEvaluatorCreationFailed;
     errdefer c.ar_exit_instruction_evaluator__destroy(own_evaluator.own_exit_evaluator);
     
     own_evaluator.own_deprecate_evaluator = c.ar_deprecate_instruction_evaluator__create(
         ref_log,
-        own_evaluator.own_expr_evaluator
+        own_evaluator.own_expr_evaluator,
+        ref_methodology
     ) orelse return error.DeprecateEvaluatorCreationFailed;
     
     return own_evaluator;
@@ -105,9 +117,10 @@ fn _create(ref_log: ?*c.ar_log_t) !*ar_instruction_evaluator_t {
 
 /// Creates a new instruction evaluator facade (ABI-compatible)
 export fn ar_instruction_evaluator__create(
-    ref_log: ?*c.ar_log_t
+    ref_log: ?*c.ar_log_t,
+    ref_agency: ?*c.ar_agency_t
 ) ?*ar_instruction_evaluator_t {
-    return _create(ref_log) catch null;
+    return _create(ref_log, ref_agency) catch null;
 }
 
 /// Destroys an instruction evaluator facade

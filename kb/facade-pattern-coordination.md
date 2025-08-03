@@ -10,7 +10,7 @@ Maintains clean separation between coordination and implementation, enables inde
 ```c
 // Good: Facade coordinates
 bool ar_instruction_evaluator__evaluate(evaluator, frame, ast) {
-    ar_instruction_type_t type = ar_instruction_ast__get_type(ast);
+    instruction_type_t /* EXAMPLE: ar_instruction_type_t has been removed */ type = ar_instruction_ast__get_type(ast);
     switch (type) {
         case AR_INSTRUCTION_TYPE__ASSIGNMENT:
             return ar_assignment_instruction_evaluator__evaluate(

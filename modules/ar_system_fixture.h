@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include "ar_method.h"
+#include "ar_system.h"
 
 /**
  * @file ar_system_fixture.h
@@ -82,5 +83,26 @@ void ar_system_fixture__reset_system(ar_system_fixture_t *mut_fixture);
  * @note This is useful for persistence tests that need to verify data survives restarts
  */
 void ar_system_fixture__shutdown_preserve_files(ar_system_fixture_t *mut_fixture);
+
+/**
+ * Process the next message in the system
+ * @param mut_fixture The fixture managing the system
+ * @return true if a message was processed, false if no messages
+ */
+bool ar_system_fixture__process_next_message(ar_system_fixture_t *mut_fixture);
+
+/**
+ * Process all pending messages in the system
+ * @param mut_fixture The fixture managing the system
+ * @return Number of messages processed
+ */
+int ar_system_fixture__process_all_messages(ar_system_fixture_t *mut_fixture);
+
+/**
+ * Get the agency from the fixture's system
+ * @param ref_fixture The fixture to query
+ * @return The system's agency (borrowed reference)
+ */
+ar_agency_t* ar_system_fixture__get_agency(ar_system_fixture_t *ref_fixture);
 
 #endif /* AGERUN_SYSTEM_FIXTURE_H */

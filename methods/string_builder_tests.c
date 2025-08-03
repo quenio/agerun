@@ -24,11 +24,21 @@ static void test_string_builder_parse_build(void) {
     assert(ar_method_fixture__load_method(own_fixture, "string-builder", "../../methods/string-builder-1.0.0.method", "1.0.0"));
     
     // Create string-builder agent
-    int64_t builder_agent = ar_agency__create_agent("string-builder", "1.0.0", NULL);
+
+    // Get the fixture's agency
+    ar_agency_t *mut_agency = ar_method_fixture__get_agency(own_fixture);
+    assert(mut_agency != NULL);
+
+    // Create empty context for the agent
+    ar_data_t *own_context = ar_data__create_map();
+    assert(own_context != NULL);
+    
+    int64_t builder_agent = ar_agency__create_agent_with_instance(mut_agency, "string-builder", "1.0.0", own_context);
     assert(builder_agent > 0);
+    // Note: Agent stores reference to context, don't destroy it here
     
     // Process wake message
-    ar_system__process_next_message();
+    ar_method_fixture__process_next_message(own_fixture);
     
     // When we send a message to parse and build
     ar_data_t *own_message = ar_data__create_map();
@@ -37,21 +47,21 @@ static void test_string_builder_parse_build(void) {
     ar_data__set_map_string(own_message, "template", "user={username}, role={role}");
     ar_data__set_map_string(own_message, "input", "user=alice, role=admin");
     ar_data__set_map_string(own_message, "output_template", "Welcome {username}! Your role is: {role}");
-    ar_data__set_map_integer(own_message, "sender", 999);
+    ar_data__set_map_integer(own_message, "sender", 0); // 0 = system, which can handle the response
     
-    bool sent = ar_agency__send_to_agent(builder_agent, own_message);
+    bool sent = ar_agency__send_to_agent_with_instance(mut_agency, builder_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
     // Process the message
-    bool processed = ar_system__process_next_message();
+    bool processed = ar_method_fixture__process_next_message(own_fixture);
     assert(processed);
     
     // Then the string-builder agent should have sent back the built string
     // Expected: "Welcome alice! Your role is: admin"
     
     // Verify agent memory state
-    const ar_data_t *agent_memory = ar_agency__get_agent_memory(builder_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory_with_instance(mut_agency, builder_agent);
     assert(agent_memory != NULL);
     
     // Verify method execution by checking agent's memory
@@ -129,6 +139,7 @@ static void test_string_builder_parse_build(void) {
     
     // Destroy fixture (handles all cleanup)
     ar_method_fixture__destroy(own_fixture);
+    ar_data__destroy(own_context); // Now safe to destroy context after fixture cleanup
     
     printf("✓ String builder parse and build test passed\n");
 }
@@ -150,11 +161,21 @@ __attribute__((unused)) static void test_string_builder_parse_failure(void) {
     assert(ar_method_fixture__load_method(own_fixture, "string-builder", "../../methods/string-builder-1.0.0.method", "1.0.0"));
     
     // Create string-builder agent
-    int64_t builder_agent = ar_agency__create_agent("string-builder", "1.0.0", NULL);
+
+    // Get the fixture's agency
+    ar_agency_t *mut_agency = ar_method_fixture__get_agency(own_fixture);
+    assert(mut_agency != NULL);
+
+    // Create empty context for the agent
+    ar_data_t *own_context = ar_data__create_map();
+    assert(own_context != NULL);
+    
+    int64_t builder_agent = ar_agency__create_agent_with_instance(mut_agency, "string-builder", "1.0.0", own_context);
     assert(builder_agent > 0);
+    // Note: Agent stores reference to context, don't destroy it here
     
     // Process wake message
-    ar_system__process_next_message();
+    ar_method_fixture__process_next_message(own_fixture);
     
     // When we send a message where the template doesn't match the input
     ar_data_t *own_message = ar_data__create_map();
@@ -163,21 +184,21 @@ __attribute__((unused)) static void test_string_builder_parse_failure(void) {
     ar_data__set_map_string(own_message, "template", "name={name}, age={age}");
     ar_data__set_map_string(own_message, "input", "user=bob, role=user");
     ar_data__set_map_string(own_message, "output_template", "Hello {name}, you are {age} years old");
-    ar_data__set_map_integer(own_message, "sender", 999);
+    ar_data__set_map_integer(own_message, "sender", 0); // 0 = system, which can handle the response
     
-    bool sent = ar_agency__send_to_agent(builder_agent, own_message);
+    bool sent = ar_agency__send_to_agent_with_instance(mut_agency, builder_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
     // Process the message
-    bool processed = ar_system__process_next_message();
+    bool processed = ar_method_fixture__process_next_message(own_fixture);
     assert(processed);
     
     // Then the string-builder agent should have sent back a string with empty placeholders
     // Expected: "Hello , you are  years old"
     
     // Verify agent memory state
-    const ar_data_t *agent_memory = ar_agency__get_agent_memory(builder_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory_with_instance(mut_agency, builder_agent);
     assert(agent_memory != NULL);
     
     // Verify method execution with mismatched template
@@ -215,6 +236,7 @@ __attribute__((unused)) static void test_string_builder_parse_failure(void) {
     
     // Destroy fixture (handles all cleanup)
     ar_method_fixture__destroy(own_fixture);
+    ar_data__destroy(own_context); // Now safe to destroy context after fixture cleanup
     
     printf("✓ String builder parse failure test passed\n");
 }
