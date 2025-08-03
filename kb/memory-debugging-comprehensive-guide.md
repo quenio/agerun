@@ -70,3 +70,5 @@ This pattern caused identical leaks (2 allocations, ~41-45 bytes) across 8+ test
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)
 - [Agent Wake Message Processing](agent-wake-message-processing.md)
 - [Stderr Redirection for Debugging](stderr-redirection-debugging.md) - Leak warnings go to stderr
+- [Test Simplification Through Reversion](test-simplification-through-reversion.md)
+- [Context Ownership Lifecycle](context-ownership-lifecycle.md)

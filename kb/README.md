@@ -38,6 +38,7 @@ Each learning file contains:
 - [Evaluator Migration Priority Strategy](evaluator-migration-priority-strategy.md)
 - [Refactoring Phase Completion Checklist](refactoring-phase-completion-checklist.md)
 - [Commit Scope Verification](commit-scope-verification.md)
+- [Architectural Review in Feedback](architectural-review-in-feedback.md)
 
 ### Memory Management
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)
@@ -61,6 +62,8 @@ Each learning file contains:
 - [Test Fixture API Adaptation](test-fixture-api-adaptation.md)
 - [Refactoring Systematic Cleanup](refactoring-systematic-cleanup.md)
 - [Test Diagnostic Output Preservation](test-diagnostic-output-preservation.md)
+- [Test Simplification Through Reversion](test-simplification-through-reversion.md)
+- [Test Execution Order Dependencies](test-execution-order-dependencies.md)
 
 ### Architecture & Design
 - [Opaque Types Pattern](opaque-types-pattern.md)
@@ -75,6 +78,7 @@ Each learning file contains:
 - [Dependency Injection Anti-pattern](dependency-injection-anti-pattern.md)
 - [Ownership Pattern Extraction](ownership-pattern-extraction.md)
 - [Temporary Resource Ownership Pattern](temporary-resource-ownership-pattern.md)
+- [Context Ownership Lifecycle](context-ownership-lifecycle.md)
 - [Internal vs External Module Pattern](internal-vs-external-module-pattern.md)
 - [Module Instantiation Prerequisites](module-instantiation-prerequisites.md)
 - [Instance Association Pattern](instance-association-pattern.md)

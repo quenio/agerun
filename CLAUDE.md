@@ -123,6 +123,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - Ownership patterns: Use `ar_data__claim_or_copy()` & `ar_data__destroy_if_owned()` ([details](kb/ownership-pattern-extraction.md))
 - Temporary resources: Creator destroys contexts since agents store as references ([details](kb/temporary-resource-ownership-pattern.md))
 - API ownership on failure: Verify implementation to understand cleanup requirements ([details](kb/api-ownership-on-failure.md))
+- Context lifecycle: Destroy resources where variables are still in scope ([details](kb/context-ownership-lifecycle.md))
 
 **Memory Leak Detection**:
 - Full test suite: Check console for "WARNING: X memory leaks detected"
@@ -193,6 +194,8 @@ For each new behavior/feature:
 - Use fixtures when available, run with `make test_name 2>&1`
 - Adapt fixtures when APIs change ([details](kb/test-fixture-api-adaptation.md))
 - Keep diagnostic output in tests for debugging ([details](kb/test-diagnostic-output-preservation.md))
+- Simplify tests by reverting to origin when debugging ([details](kb/test-simplification-through-reversion.md))
+- Fork tests must run before system creation ([details](kb/test-execution-order-dependencies.md))
 
 **TDD Advanced**: Break large refactoring into sequential cycles, one behavior each ([details](kb/tdd-advanced-large-refactoring.md))
 **API Simplification**: Use TDD for safe API changes ([details](kb/tdd-api-simplification.md))
@@ -430,6 +433,7 @@ Never compile directly with gcc.
 - **Session todos (TodoWrite/TodoRead)**: Current TDD cycles, implementations, bug fixes
 - **TODO.md file**: Long-term architecture, future features (check [ ] vs [x] for completion)
 - **User feedback**: May reveal design issues, not just implementation bugs. Listen for concerns about output/behavior/consistency. Verify assumptions before acting. ([details](kb/user-feedback-as-qa.md))
+- **Architectural insights**: User feedback often reveals bigger transformations ([details](kb/architectural-review-in-feedback.md))
 - **Be frank, not polite**: Only confirm correctness when certain - honest disagreement > polite agreement
 - **Todo list integrity**: Mark items complete, never remove them - preserves task history
 
