@@ -1795,7 +1795,11 @@ static void _format_structure_recursive(
     int current_depth,
     int max_depth
 ) {
-    if (!ref_data || current_depth > max_depth) {
+    if (!ref_data) {
+        _append_to_buffer(mut_buffer, mut_size, mut_used, "null");
+        return;
+    }
+    if (current_depth > max_depth) {
         _append_to_buffer(mut_buffer, mut_size, mut_used, "...");
         return;
     }
@@ -1898,7 +1902,13 @@ char* ar_data__format_structure(const ar_data_t *ref_data, int max_depth) {
     if (!own_buffer) return NULL;
     
     own_buffer[0] = '\0';
-    _format_structure_recursive(&own_buffer, &buffer_size, &buffer_used, ref_data, 0, max_depth);
+    
+    // Special case: if data has an owner, it's a reference
+    if (ref_data && ref_data->owner != NULL) {
+        _append_to_buffer(&own_buffer, &buffer_size, &buffer_used, "<reference>");
+    } else {
+        _format_structure_recursive(&own_buffer, &buffer_size, &buffer_used, ref_data, 0, max_depth);
+    }
     
     return own_buffer;
 }

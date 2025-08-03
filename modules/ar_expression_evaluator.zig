@@ -156,6 +156,36 @@ fn _evaluate_memory_access(
         return map;
     }
     
+    // Check if the base value is actually a map
+    const base_type = c.ar_data__get_type(map);
+    if (base_type != c.AR_DATA_TYPE__MAP) {
+        // Build error message showing the type mismatch
+        var error_msg: [512]u8 = undefined;
+        const type_name = switch (base_type) {
+            c.AR_DATA_TYPE__INTEGER => "INTEGER",
+            c.AR_DATA_TYPE__DOUBLE => "DOUBLE",
+            c.AR_DATA_TYPE__STRING => "STRING",
+            c.AR_DATA_TYPE__LIST => "LIST",
+            else => "UNKNOWN",
+        };
+        
+        // Get the first path component for the error message
+        const first_field = if (path != null and path_count > 0) path.?[0] else @as([*c]u8, @constCast("unknown"));
+        
+        // Format detailed error message
+        if (base_type == c.AR_DATA_TYPE__STRING) {
+            const str_value = c.ar_data__get_string(map);
+            _ = std.fmt.bufPrintZ(&error_msg, "Cannot access field '{s}' on {s} value \"{s}\"", 
+                .{first_field, type_name, str_value orelse @as([*c]const u8, @constCast("null"))}) catch undefined;
+        } else {
+            _ = std.fmt.bufPrintZ(&error_msg, "Cannot access field '{s}' on {s} value", 
+                .{first_field, type_name}) catch undefined;
+        }
+        
+        c.ar_log__error(ref_log, &error_msg);
+        return null;
+    }
+    
     // Calculate total length needed for the path
     var total_len: usize = 0;
     for (0..path_count) |i| {

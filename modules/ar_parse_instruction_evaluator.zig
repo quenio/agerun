@@ -31,14 +31,27 @@ fn _report_nested_container_error(
     
     // Try to evaluate to see the structure
     const temp_result = c.ar_expression_evaluator__evaluate(ref_evaluator.ref_expr_evaluator, ref_frame, ref_ast);
-    const own_structure = c.ar_data__format_structure(temp_result, 3);
-    defer if (own_structure) |s| c.AR__HEAP__FREE(s);
+    
+    // Check if there's a specific error message from the evaluation
+    const eval_error = c.ar_log__get_last_error_message(ref_evaluator.ref_log);
     
     var buffer: [1024]u8 = undefined;
-    const structure_str = if (own_structure) |s| s else @as([*c]const u8, "null");
-    const msg = std.fmt.bufPrintZ(&buffer, "Cannot parse with nested containers in {s} (expression: {s}, structure: {s})", 
-        .{param_name, own_path, structure_str}) catch undefined;
-    c.ar_log__error(ref_evaluator.ref_log, msg.ptr);
+    
+    if (eval_error != null and c.strlen(eval_error) > 0) {
+        // Use the specific error from evaluation
+        const msg = std.fmt.bufPrintZ(&buffer, "Cannot parse with nested containers in {s} (expression: {s}, error: {s})", 
+            .{param_name, own_path, eval_error}) catch undefined;
+        c.ar_log__error(ref_evaluator.ref_log, msg.ptr);
+    } else {
+        // Fall back to showing the structure
+        const own_structure = c.ar_data__format_structure(temp_result, 3);
+        defer if (own_structure) |s| c.AR__HEAP__FREE(s);
+        
+        const structure_str = if (own_structure) |s| s else @as([*c]const u8, "null");
+        const msg = std.fmt.bufPrintZ(&buffer, "Cannot parse with nested containers in {s} (expression: {s}, structure: {s})", 
+            .{param_name, own_path, structure_str}) catch undefined;
+        c.ar_log__error(ref_evaluator.ref_log, msg.ptr);
+    }
 }
 
 /// Helper function to parse a value string and determine its type

@@ -770,6 +770,62 @@ static void test_evaluate_string_comparison(void) {
     printf("  ✓ String comparison returns correct integer result\n");
 }
 
+/**
+ * Test that accessing a field on a non-map value produces a detailed error message
+ */
+static void test_evaluate_type_mismatch_error_message(void) {
+    printf("Testing expression evaluator type mismatch error message...\n");
+    
+    // Given a test fixture
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_type_mismatch_error");
+    assert(own_fixture != NULL);
+    
+    ar_expression_evaluator_t *ref_evaluator = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    
+    // Create a custom frame with a string message instead of a map
+    ar_data_t *own_context = ar_data__create_map();
+    ar_data_t *own_message = ar_data__create_string("__wake__");
+    ar_frame_t *own_frame = ar_frame__create(mut_memory, own_context, own_message);
+    assert(own_frame != NULL);
+    
+    // Create an expression that tries to access a field on the string message: message.method_name
+    const char *path[] = {"method_name"};
+    ar_expression_ast_t *own_ast = ar_expression_ast__create_memory_access("message", path, 1);
+    assert(own_ast != NULL);
+    
+    // Clear any previous error messages
+    ar_log__error(ref_log, NULL);
+    
+    // When evaluating the expression using our custom frame
+    ar_data_t *result = ar_expression_evaluator__evaluate(ref_evaluator, own_frame, own_ast);
+    
+    // Then it should return NULL and log a detailed error message
+    assert(result == NULL);
+    
+    // Check that a detailed error message was logged
+    const char *error_msg = ar_log__get_last_error_message(ref_log);
+    assert(error_msg != NULL);
+    
+    // Print the actual error message to see what we got
+    printf("    Actual error message: '%s'\n", error_msg);
+    
+    // The error message should contain type information and field name
+    assert(strstr(error_msg, "Cannot access field 'method_name'") != NULL);
+    assert(strstr(error_msg, "STRING") != NULL);
+    assert(strstr(error_msg, "__wake__") != NULL);
+    
+    // Clean up
+    ar_expression_ast__destroy(own_ast);
+    ar_frame__destroy(own_frame);
+    ar_data__destroy(own_context);
+    ar_data__destroy(own_message);
+    ar_evaluator_fixture__destroy(own_fixture);
+    
+    printf("  ✓ Type mismatch produces detailed error message\n");
+}
+
 int main(void) {
     printf("\n=== Expression Evaluator Tests ===\n\n");
     
@@ -792,6 +848,7 @@ int main(void) {
     test_evaluate_handles_int_as_binary_op();
     test_evaluate_binary_op_nested();
     test_evaluate_string_comparison();
+    test_evaluate_type_mismatch_error_message();
     
     printf("\nAll expression_evaluator tests passed!\n");
     return 0;
