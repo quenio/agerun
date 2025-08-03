@@ -6,6 +6,9 @@
 echo "=== Checking Build Logs for Issues ==="
 echo
 
+# Track if we found any issues
+FOUND_ISSUES=false
+
 # Check for assertion failures
 echo "--- Checking for assertion failures ---"
 if grep -q "Assertion failed" logs/*.log 2>/dev/null; then
@@ -92,41 +95,13 @@ echo
 # Check for compilation warnings and errors
 echo "--- Checking for compilation warnings/errors ---"
 # Look for compiler warnings and errors from gcc, clang, and zig
-# Exclude known safe patterns from analysis logs
-if grep -E "(warning:|error:|Error:|ERROR:)" logs/*.log 2>/dev/null | \
+# Only look for actual compiler output patterns, not runtime errors
+if grep -E "(\.(c|h|zig):[0-9]+:[0-9]+: (warning|error):|^(warning|error):)" logs/*.log 2>/dev/null | \
    grep -v "logs/analyze-" | \
-   grep -v "No bugs found" | \
-   grep -v "WARNING: .* memory leaks detected" | \
-   grep -v "WARNING: ThreadSanitizer" | \
-   grep -v "ERROR: Test" | \
-   grep -v "ERROR: AddressSanitizer" | \
-   grep -v "ERROR: LeakSanitizer" | \
-   grep -v "ERROR: UndefinedBehaviorSanitizer" | \
-   grep -v "ERROR: Failed to create execution frame" | \
-   grep -v "ERROR: Unknown" | \
-   grep -v "ERROR: Expected" | \
-   grep -v "ERROR: Invalid" | \
-   grep -v "ERROR: Assignment" | \
-   grep -v "ERROR: Agent" | \
-   grep -E "(\.(c|h|zig):[0-9]+:|warning:|error:)" | \
    grep -q .; then
     echo "⚠️  COMPILATION WARNINGS/ERRORS FOUND:"
-    grep -n -E "(warning:|error:|Error:|ERROR:)" logs/*.log 2>/dev/null | \
+    grep -n -E "(\.(c|h|zig):[0-9]+:[0-9]+: (warning|error):|^(warning|error):)" logs/*.log 2>/dev/null | \
         grep -v "logs/analyze-" | \
-        grep -v "No bugs found" | \
-        grep -v "WARNING: .* memory leaks detected" | \
-        grep -v "WARNING: ThreadSanitizer" | \
-        grep -v "ERROR: Test" | \
-        grep -v "ERROR: AddressSanitizer" | \
-        grep -v "ERROR: LeakSanitizer" | \
-        grep -v "ERROR: UndefinedBehaviorSanitizer" | \
-        grep -v "ERROR: Failed to create execution frame" | \
-        grep -v "ERROR: Unknown" | \
-        grep -v "ERROR: Expected" | \
-        grep -v "ERROR: Invalid" | \
-        grep -v "ERROR: Assignment" | \
-        grep -v "ERROR: Agent" | \
-        grep -E "(\.(c|h|zig):[0-9]+:|warning:|error:)" | \
         head -30
 else
     echo "✓ No compilation warnings/errors found"
@@ -157,6 +132,64 @@ else
 fi
 echo
 
+# Check for deep copy support errors
+echo "--- Checking for deep copy support errors ---"
+if grep -q "no deep copy support" logs/*.log 2>/dev/null; then
+    echo "⚠️  DEEP COPY SUPPORT ERRORS FOUND:"
+    grep -n "no deep copy support" logs/*.log | head -10
+    FOUND_ISSUES=true
+else
+    echo "✓ No deep copy support errors found"
+fi
+echo
+
+# Check for method loading warnings
+echo "--- Checking for method loading warnings ---"
+if grep -q "Could not load methods from file" logs/*.log 2>/dev/null; then
+    echo "⚠️  METHOD LOADING WARNINGS FOUND:"
+    grep -n "Could not load methods from file" logs/*.log | head -10
+    echo "Note: These warnings indicate the method store file doesn't exist yet."
+    echo "This is expected during initial test runs but may indicate issues in production."
+else
+    echo "✓ No method loading warnings found"
+fi
+echo
+
+# Check for unexpected method creation successes
+echo "--- Checking for unexpected test behaviors ---"
+if grep -q "WARNING: Method creation succeeded with invalid syntax (expected failure)" logs/*.log 2>/dev/null; then
+    echo "⚠️  UNEXPECTED TEST BEHAVIOR FOUND:"
+    grep -n "WARNING: Method creation succeeded with invalid syntax (expected failure)" logs/*.log | head -10
+    echo "Note: A test expecting failure actually succeeded - this may indicate a validation bug."
+    FOUND_ISSUES=true
+else
+    echo "✓ No unexpected test behaviors found"
+fi
+echo
+
+# Check for method evaluation failures (excluding test patterns)
+echo "--- Checking for method evaluation failures ---"
+# Look for method evaluation failures that aren't part of expected test output
+if grep "ERROR: Method evaluation failed" logs/*.log 2>/dev/null | grep -v "test.*expected.*fail" | grep -q .; then
+    echo "⚠️  METHOD EVALUATION FAILURES FOUND:"
+    grep -n "ERROR: Method evaluation failed" logs/*.log | grep -v "test.*expected.*fail" | head -10
+    FOUND_ISSUES=true
+else
+    echo "✓ No unexpected method evaluation failures found"
+fi
+echo
+
+# Check for missing AST errors
+echo "--- Checking for missing AST errors ---"
+if grep -q "ERROR: Method has no AST" logs/*.log 2>/dev/null; then
+    echo "⚠️  MISSING AST ERRORS FOUND:"
+    grep -n "ERROR: Method has no AST" logs/*.log | head -10
+    FOUND_ISSUES=true
+else
+    echo "✓ No missing AST errors found"
+fi
+echo
+
 # Summary with exit code
 echo "=== Summary ==="
 echo "Log files are in: logs/"
@@ -177,23 +210,14 @@ if grep -q -E "Warning: [0-9]+ memory leaks? detected" logs/*.log 2>/dev/null; t
     CRITICAL_ISSUES=1
 fi
 
+# Check for our new specific issues
+if [ "$FOUND_ISSUES" = true ]; then
+    CRITICAL_ISSUES=1
+fi
+
 # Check for compilation warnings/errors
-if grep -E "(warning:|error:|Error:|ERROR:)" logs/*.log 2>/dev/null | \
+if grep -E "(\.(c|h|zig):[0-9]+:[0-9]+: (warning|error):|^(warning|error):)" logs/*.log 2>/dev/null | \
    grep -v "logs/analyze-" | \
-   grep -v "No bugs found" | \
-   grep -v "WARNING: .* memory leaks detected" | \
-   grep -v "WARNING: ThreadSanitizer" | \
-   grep -v "ERROR: Test" | \
-   grep -v "ERROR: AddressSanitizer" | \
-   grep -v "ERROR: LeakSanitizer" | \
-   grep -v "ERROR: UndefinedBehaviorSanitizer" | \
-   grep -v "ERROR: Failed to create execution frame" | \
-   grep -v "ERROR: Unknown" | \
-   grep -v "ERROR: Expected" | \
-   grep -v "ERROR: Invalid" | \
-   grep -v "ERROR: Assignment" | \
-   grep -v "ERROR: Agent" | \
-   grep -E "(\.(c|h|zig):[0-9]+:|warning:|error:)" | \
    grep -q .; then
     WARNING_ISSUES=1
 fi
