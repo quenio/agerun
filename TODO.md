@@ -824,6 +824,15 @@ Once all modules are migrated to Zig with C-ABI compatibility, identify internal
 - Modules that are not part of the public C API
 
 
+## Low Priority Tasks
+
+### Fix check-logs Script Exit Code for Test Failures
+- [ ] Update scripts/check_build_logs.sh to exit with error code 1 when test failures are detected
+- [ ] Current issue: Script detects and displays test failures (like "ERROR: Test error message") but doesn't include them in the exit condition check (line 100)
+- [ ] Need to add test failure patterns to the final exit condition alongside other critical errors
+- [ ] Important: Must ignore intentional error logs from tests that are testing error handling behavior
+- [ ] Consider adding a pattern to distinguish between actual test failures and expected error messages in test output
+
 ## Notes
 
 - **Parnas Compliance**: ACHIEVED (as of 2025-06-08) - All interface violations have been fixed
