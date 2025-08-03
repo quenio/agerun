@@ -279,10 +279,13 @@ bool ar_system__process_next_message_with_instance(ar_system_t *mut_system) {
             printf("[complex data]\n");
         }
         
+        // Take ownership of the message for the system
+        ar_data__take_ownership(own_message, mut_system);
+        
         ar_interpreter__execute_method(mut_system->own_interpreter, agent_id, own_message);
         
         // Free the message as it's now been processed
-        ar_data__destroy_if_owned(own_message, &mut_system->is_initialized);
+        ar_data__destroy_if_owned(own_message, mut_system);
         own_message = NULL; // Mark as freed
         return true;
     }

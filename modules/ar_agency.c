@@ -529,6 +529,31 @@ bool ar_agency__send_to_agent_with_instance(ar_agency_t *mut_agency,
         return false;
     }
     
+    // DEBUG: Log every message being sent
+    if (own_message) {
+        fprintf(stderr, "DEBUG [SEND]: Sending message to agent %lld, ", (long long)agent_id);
+        switch (ar_data__get_type(own_message)) {
+            case AR_DATA_TYPE__INTEGER:
+                fprintf(stderr, "type=INTEGER, value=%lld\n", (long long)ar_data__get_integer(own_message));
+                break;
+            case AR_DATA_TYPE__STRING:
+                fprintf(stderr, "type=STRING, value=\"%s\"\n", ar_data__get_string(own_message));
+                break;
+            case AR_DATA_TYPE__MAP:
+                fprintf(stderr, "type=MAP\n");
+                break;
+            case AR_DATA_TYPE__LIST:
+                fprintf(stderr, "type=LIST\n");
+                break;
+            case AR_DATA_TYPE__DOUBLE:
+                fprintf(stderr, "type=DOUBLE, value=%f\n", ar_data__get_double(own_message));
+                break;
+            default:
+                fprintf(stderr, "type=UNKNOWN\n");
+                break;
+        }
+    }
+    
     ar_agent_t *mut_agent = (ar_agent_t*)ar_agent_registry__find_agent(mut_agency->own_registry, agent_id);
     if (!mut_agent) {
         if (own_message) {

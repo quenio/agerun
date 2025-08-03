@@ -84,6 +84,16 @@ bool ar_interpreter__execute_method(ar_interpreter_t *mut_interpreter,
         return false;
     }
     
+    // DEBUG: Log method execution
+    if (ref_message) {
+        fprintf(stderr, "DEBUG [INTERPRETER]: Executing method for agent %lld with message type=%u\n", 
+               (long long)agent_id, 
+               (unsigned int)ar_data__get_type(ref_message));
+    } else {
+        fprintf(stderr, "DEBUG [INTERPRETER]: Executing method for agent %lld with NULL message\n", 
+               (long long)agent_id);
+    }
+    
     // Get agent method - use instance agency if available
     const ar_method_t *ref_method = NULL;
     ar_data_t *mut_memory = NULL;

@@ -824,6 +824,7 @@ static void test_evaluate_type_mismatch_error_message(void) {
     ar_evaluator_fixture__destroy(own_fixture);
     
     printf("  ✓ Type mismatch produces detailed error message\n");
+    printf("    (The error above 'Cannot access field 'method_name' on STRING value \"__wake__\"' was expected)\n");
 }
 
 int main(void) {

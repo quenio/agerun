@@ -69,6 +69,9 @@ export fn ar_method_evaluator__evaluate(
         return false;
     }
     
+    // DEBUG: Log when we start evaluating a method AST
+    std.debug.print("DEBUG [METHOD_EVAL]: Evaluating method AST with {} instructions\n", .{c.ar_method_ast__get_instruction_count(ref_ast)});
+    
     // Get instruction count
     const instruction_count = c.ar_method_ast__get_instruction_count(ref_ast);
     
@@ -82,6 +85,9 @@ export fn ar_method_evaluator__evaluate(
     // Evaluate each instruction in sequence
     var line_no: usize = 1;
     while (line_no <= instruction_count) : (line_no += 1) {
+        // DEBUG: Log which instruction we're evaluating
+        std.debug.print("DEBUG [METHOD_EVAL]: Evaluating instruction {} of {}\n", .{line_no, instruction_count});
+        
         // Get the instruction
         const ref_instruction = c.ar_method_ast__get_instruction(ref_ast, line_no);
         if (ref_instruction == null) {

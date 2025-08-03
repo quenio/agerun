@@ -138,6 +138,15 @@ fn _evaluate_memory_access(
         map = @constCast(c.ar_frame__get_context(ref_frame));
     } else if (c.strcmp(base, "message") == 0) {
         map = @constCast(c.ar_frame__get_message(ref_frame));
+        // DEBUG: Log message access
+        if (map != null) {
+            std.debug.print("DEBUG [MEMORY_ACCESS]: Accessing 'message', type={}, ", .{c.ar_data__get_type(map)});
+            if (c.ar_data__get_type(map) == c.AR_DATA_TYPE__INTEGER) {
+                std.debug.print("value={}\n", .{c.ar_data__get_integer(map)});
+            } else {
+                std.debug.print("\n", .{});
+            }
+        }
     } else {
         var error_msg: [256]u8 = undefined;
         _ = c.snprintf(&error_msg, error_msg.len, "evaluate_memory_access: Invalid base accessor '%s'", base);
@@ -175,11 +184,15 @@ fn _evaluate_memory_access(
         // Format detailed error message
         if (base_type == c.AR_DATA_TYPE__STRING) {
             const str_value = c.ar_data__get_string(map);
-            _ = std.fmt.bufPrintZ(&error_msg, "Cannot access field '{s}' on {s} value \"{s}\"", 
-                .{first_field, type_name, str_value orelse @as([*c]const u8, @constCast("null"))}) catch undefined;
+            _ = std.fmt.bufPrintZ(&error_msg, "Cannot access field '{s}' on {s} value \"{s}\" (base: {s})", 
+                .{first_field, type_name, str_value orelse @as([*c]const u8, @constCast("null")), base}) catch undefined;
+        } else if (base_type == c.AR_DATA_TYPE__INTEGER) {
+            const int_value = c.ar_data__get_integer(map);
+            _ = std.fmt.bufPrintZ(&error_msg, "Cannot access field '{s}' on {s} value {d} (base: {s})", 
+                .{first_field, type_name, int_value, base}) catch undefined;
         } else {
-            _ = std.fmt.bufPrintZ(&error_msg, "Cannot access field '{s}' on {s} value", 
-                .{first_field, type_name}) catch undefined;
+            _ = std.fmt.bufPrintZ(&error_msg, "Cannot access field '{s}' on {s} value (base: {s})", 
+                .{first_field, type_name, base}) catch undefined;
         }
         
         c.ar_log__error(ref_log, &error_msg);
@@ -246,25 +259,19 @@ fn _evaluate_expression(
             return _evaluate_literal_string(ref_log, ref_node);
         },
         c.AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS => {
-            // Memory access returns a reference, we need to make a copy for binary ops
+            // Memory access returns a reference, use claim_or_copy for consistent ownership
             const ref_value = _evaluate_memory_access(ref_log, ref_frame, ref_node) orelse return null;
             
-            // Create a copy based on type
-            switch (c.ar_data__get_type(ref_value)) {
-                c.AR_DATA_TYPE__INTEGER => {
-                    return c.ar_data__create_integer(c.ar_data__get_integer(ref_value));
-                },
-                c.AR_DATA_TYPE__DOUBLE => {
-                    return c.ar_data__create_double(c.ar_data__get_double(ref_value));
-                },
-                c.AR_DATA_TYPE__STRING => {
-                    return c.ar_data__create_string(c.ar_data__get_string(ref_value));
-                },
-                else => {
-                    c.ar_log__error(ref_log, "_evaluate_expression: Unsupported data type for copy");
-                    return null;
-                },
+            // Use claim_or_copy to handle ownership properly for all types
+            const own_value = c.ar_data__claim_or_copy(ref_value, ref_frame);
+            if (own_value == null) {
+                c.ar_log__error(ref_log, "_evaluate_expression: Cannot copy value (nested containers)");
             }
+            // Debug: Check if we got the same pointer or a copy
+            if (ref_value == own_value and c.ar_data__get_type(ref_value) == c.AR_DATA_TYPE__MAP) {
+                std.debug.print("DEBUG [EVALUATE_EXPR]: Claimed ownership of MAP at {*}\n", .{ref_value});
+            }
+            return own_value;
         },
         c.AR_EXPRESSION_AST_TYPE__BINARY_OP => {
             return _evaluate_binary_op(ref_log, ref_frame, ref_node);
@@ -356,17 +363,18 @@ fn _evaluate_binary_op(
     }
     
     // Recursively evaluate both operands
+    // _evaluate_expression now always returns owned values (via claim_or_copy)
     const left = _evaluate_expression(ref_log, ref_frame, left_node) orelse {
         c.ar_log__error(ref_log, "evaluate_binary_op: Failed to evaluate left operand");
         return null;
     };
-    defer c.ar_data__destroy(left);
+    defer c.ar_data__destroy_if_owned(left, ref_frame);
     
     const right = _evaluate_expression(ref_log, ref_frame, right_node) orelse {
         c.ar_log__error(ref_log, "evaluate_binary_op: Failed to evaluate right operand");
         return null;
     };
-    defer c.ar_data__destroy(right);
+    defer c.ar_data__destroy_if_owned(right, ref_frame);
     
     // Get the types of both operands
     const left_type = c.ar_data__get_type(left);
@@ -499,6 +507,47 @@ fn _evaluate_binary_op(
             else => {
                 c.ar_log__error(ref_log, "evaluate_binary_op: Unsupported operator for strings");
             },
+        }
+    } else if ((op == c.AR_BINARY_OPERATOR__EQUAL or op == c.AR_BINARY_OPERATOR__NOT_EQUAL) and 
+               (left_type == c.AR_DATA_TYPE__STRING or right_type == c.AR_DATA_TYPE__STRING)) {
+        // Special handling for string comparisons with other types
+        // Convert non-string operand to string representation for comparison
+        const left_str = if (left_type == c.AR_DATA_TYPE__STRING) 
+            c.ar_data__get_string(left) 
+        else 
+            blk: {
+                // For non-string types being compared to strings, we return false for equality
+                // This handles cases like MAP compared to STRING "__wake__"
+                break :blk null;
+            };
+        
+        const right_str = if (right_type == c.AR_DATA_TYPE__STRING) 
+            c.ar_data__get_string(right) 
+        else 
+            null;
+        
+        if (left_str == null or right_str == null) {
+            // Type mismatch - different types are never equal
+            switch (op) {
+                c.AR_BINARY_OPERATOR__EQUAL => {
+                    result = c.ar_data__create_integer(0); // false
+                },
+                c.AR_BINARY_OPERATOR__NOT_EQUAL => {
+                    result = c.ar_data__create_integer(1); // true
+                },
+                else => unreachable,
+            }
+        } else {
+            // Both are strings, compare them
+            switch (op) {
+                c.AR_BINARY_OPERATOR__EQUAL => {
+                    result = c.ar_data__create_integer(if (c.strcmp(left_str, right_str) == 0) 1 else 0);
+                },
+                c.AR_BINARY_OPERATOR__NOT_EQUAL => {
+                    result = c.ar_data__create_integer(if (c.strcmp(left_str, right_str) != 0) 1 else 0);
+                },
+                else => unreachable,
+            }
         }
     } else {
         c.ar_log__error(ref_log, "evaluate_binary_op: Type mismatch in binary operation");
