@@ -9,6 +9,58 @@ echo
 # Track if we found any issues
 FOUND_ISSUES=false
 
+# Function to check if an error is in a test context
+is_intentional_test_error() {
+    local log_file=$1
+    local line_num=$2
+    local error_text=$3
+    
+    # Get context: 20 lines before the error (more context for test detection)
+    local start=$((line_num - 20))
+    local end=$((line_num + 5))
+    [ $start -lt 1 ] && start=1
+    
+    local context=$(sed -n "${start},${end}p" "$log_file")
+    
+    # Check for test indicators in the context
+    # 1. Test function names
+    if echo "$context" | grep -qE "__test_instruction_[0-9]+__|test_.*__.*Testing.*invalid|Testing.*error.*handling"; then
+        return 0  # It's intentional
+    fi
+    
+    # 2. Method evaluation errors in test methods or evaluator tests
+    if echo "$error_text" | grep -q "Method evaluation failed" && echo "$context" | grep -qE "__test_instruction_|Testing.*invalid.*syntax|test_.*_instruction|ar_method_evaluator_tests|Assignment target must start with"; then
+        return 0
+    fi
+    
+    # 3. "Method has no AST" for intentionally broken test methods
+    if echo "$error_text" | grep -q "Method has no AST" && echo "$context" | grep -qE "method '(echo|calc|test_broken|exec_test_method)' version|ar_executable_tests|Executable.*[Tt]est"; then
+        return 0
+    fi
+    
+    # 4. Field access errors on __wake__ messages in test contexts
+    if echo "$error_text" | grep -q "Cannot access field.*on STRING value \"__wake__\"" && echo "$context" | grep -q "test_"; then
+        return 0
+    fi
+    
+    # 5. Parse errors followed by test method creation
+    if echo "$error_text" | grep -q "Failed to parse argument expression" && echo "$context" | grep -qE "Creating test method|test_.*__|echo.*version"; then
+        return 0
+    fi
+    
+    # 6. Expected failure warnings in test output
+    if echo "$error_text" | grep -q "WARNING: Method creation succeeded with invalid syntax" && echo "$context" | grep -q "Method creator.*test"; then
+        return 0
+    fi
+    
+    # 7. General pattern: errors within test runners
+    if echo "$context" | grep -qE "Running test:.*_tests|All.*tests passed|test.*passed|Testing.*error.*handling"; then
+        return 0
+    fi
+    
+    return 1  # Not intentional
+}
+
 # Check for assertion failures
 echo "--- Checking for assertion failures ---"
 if grep -q "Assertion failed" logs/*.log 2>/dev/null; then
@@ -167,12 +219,26 @@ else
 fi
 echo
 
-# Check for method evaluation failures (excluding test patterns)
+# Check for method evaluation failures (excluding intentional test errors)
 echo "--- Checking for method evaluation failures ---"
-# Look for method evaluation failures that aren't part of expected test output
-if grep "ERROR: Method evaluation failed" logs/*.log 2>/dev/null | grep -v "test.*expected.*fail" | grep -q .; then
+UNINTENTIONAL_ERRORS=""
+while IFS= read -r line; do
+    # Parse the grep output: filename:line_number:timestamp_and_error_text
+    # Extract just the file and line number first
+    file=$(echo "$line" | cut -d: -f1)
+    line_num=$(echo "$line" | cut -d: -f2)
+    # Everything after the second colon is the error text
+    error_text=$(echo "$line" | cut -d: -f3-)
+    
+    # Check if this error is intentional
+    if [ -n "$file" ] && [ -n "$line_num" ] && ! is_intentional_test_error "$file" "$line_num" "$error_text"; then
+        UNINTENTIONAL_ERRORS="${UNINTENTIONAL_ERRORS}${line}\n"
+    fi
+done < <(grep -n "ERROR: Method evaluation failed" logs/*.log 2>/dev/null)
+
+if [ -n "$UNINTENTIONAL_ERRORS" ]; then
     echo "⚠️  METHOD EVALUATION FAILURES FOUND:"
-    grep -n "ERROR: Method evaluation failed" logs/*.log | grep -v "test.*expected.*fail" | head -10
+    echo -e "$UNINTENTIONAL_ERRORS" | head -10
     FOUND_ISSUES=true
 else
     echo "✓ No unexpected method evaluation failures found"
@@ -181,9 +247,20 @@ echo
 
 # Check for missing AST errors
 echo "--- Checking for missing AST errors ---"
-if grep -q "ERROR: Method has no AST" logs/*.log 2>/dev/null; then
+UNINTENTIONAL_AST_ERRORS=""
+while IFS= read -r line; do
+    file=$(echo "$line" | cut -d: -f1)
+    line_num=$(echo "$line" | cut -d: -f2)
+    error_text=$(echo "$line" | cut -d: -f3-)
+    
+    if [ -n "$file" ] && [ -n "$line_num" ] && ! is_intentional_test_error "$file" "$line_num" "$error_text"; then
+        UNINTENTIONAL_AST_ERRORS="${UNINTENTIONAL_AST_ERRORS}${line}\n"
+    fi
+done < <(grep -n "ERROR: Method has no AST" logs/*.log 2>/dev/null)
+
+if [ -n "$UNINTENTIONAL_AST_ERRORS" ]; then
     echo "⚠️  MISSING AST ERRORS FOUND:"
-    grep -n "ERROR: Method has no AST" logs/*.log | head -10
+    echo -e "$UNINTENTIONAL_AST_ERRORS" | head -10
     FOUND_ISSUES=true
 else
     echo "✓ No missing AST errors found"

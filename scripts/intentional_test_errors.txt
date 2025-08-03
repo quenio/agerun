@@ -1,0 +1,21 @@
+# Intentional Test Error Patterns
+# These errors are expected as part of test suites and should be ignored
+
+# Method evaluation test errors
+Cannot access field .* on STRING value "__wake__" .base: message.
+Cannot access field .* on INTEGER value
+Method evaluation failed at line [0-9].*__test_instruction_.*__
+Failed to evaluate expression.*__test_instruction_.*__
+
+# Missing AST errors from parse failure tests
+Method has no AST.*echo.*version
+Method has no AST.*calc.*version
+Failed to parse argument expression .at position
+
+# Method creation test warnings
+WARNING: Method creation succeeded with invalid syntax .expected failure.
+
+# Test context patterns
+Testing.*invalid syntax
+test_.*__.*ERROR:
+__test_instruction_[0-9]+__

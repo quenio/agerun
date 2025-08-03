@@ -12,7 +12,7 @@
 #include "ar_method.h"
 #include "ar_log.h"
 
-/*static void test_method_creator_create_simple(void) {
+static void test_method_creator_create_simple(void) {
     printf("Testing method-creator method with simple method creation...\n");
     
     // Create test fixture
@@ -131,7 +131,7 @@
     ar_data__destroy(own_context); // Now safe to destroy context after fixture cleanup
     
     printf("✓ Method creator create simple test passed\n");
-}*/
+}
 
 static void test_method_creator_invalid_syntax(void) {
     printf("Testing method-creator method with invalid syntax...\n");
@@ -257,8 +257,7 @@ static void test_method_creator_invalid_syntax(void) {
 int main(void) {
     printf("Running method-creator method tests...\n\n");
     
-    // Temporarily disabled to check if INTEGER message errors come from other tests
-    // test_method_creator_create_simple();
+    test_method_creator_create_simple();
     test_method_creator_invalid_syntax();
     
     printf("\nAll method-creator method tests passed!\n");

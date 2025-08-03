@@ -189,9 +189,17 @@ pub export fn ar_compile_instruction_evaluator__evaluate(
         // Create and register the method
         const own_method = c.ar_method__create_with_log(ref_method_name, ref_instructions, ref_version, ref_evaluator.?.ref_log);
         if (own_method != null) {
-            c.ar_methodology__register_method_with_instance(ref_evaluator.?.ref_methodology, own_method);
-            // Ownership transferred to methodology
-            success = true;
+            // Check if the method has a valid AST (parsing succeeded)
+            const ref_method_ast = c.ar_method__get_ast(own_method);
+            if (ref_method_ast != null) {
+                c.ar_methodology__register_method_with_instance(ref_evaluator.?.ref_methodology, own_method);
+                // Ownership transferred to methodology
+                success = true;
+            } else {
+                // Parsing failed, destroy the method
+                c.ar_method__destroy(own_method);
+                success = false;
+            }
         }
     }
     
