@@ -217,6 +217,7 @@ Before claiming to understand a bug:
 ## Related Patterns
 - [Memory Debugging Comprehensive Guide](memory-debugging-comprehensive-guide.md)
 - [User Feedback Debugging Pattern](user-feedback-debugging-pattern.md)
+- [Test Isolation Through Strategic Commenting](test-isolation-through-commenting.md)
 - [API Behavior Verification](api-behavior-verification.md)
 - [Build Verification Before Commit](build-verification-before-commit.md)
 - [Build System Exit Code Verification](build-system-exit-code-verification.md)

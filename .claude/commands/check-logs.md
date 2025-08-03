@@ -57,3 +57,5 @@ To view a specific log: `less logs/<logname>.log`
 To search all logs: `grep -r 'pattern' logs/`
 
 This check is especially important after the critical build system issue discovered on 2025-07-28 where test failures were not being properly reported ([details](../../kb/build-system-exit-code-verification.md)).
+
+The log checker uses context-aware filtering to distinguish between intentional test errors and real problems ([details](../../kb/intentional-test-errors-filtering.md)).

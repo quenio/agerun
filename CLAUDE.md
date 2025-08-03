@@ -125,6 +125,8 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Test Requirements**: BDD structure, one test per behavior, zero leaks ([details](kb/bdd-test-structure.md))
 **Cleanup**: `ar_methodology__cleanup()` & `ar_agency__reset()`
 **Messages**: Process all including wake messages ([details](kb/agent-wake-message-processing.md))
+**Test isolation**: Comment out tests to isolate error sources ([details](kb/test-isolation-through-commenting.md))
+**Error marking**: Mark intentional errors clearly in tests ([details](kb/test-error-marking-strategy.md))
 **Advanced patterns**: ([details](kb/tdd-advanced-large-refactoring.md), [API changes](kb/tdd-api-simplification.md))
 
 ### 3. Parnas Design Principles (STRICT ENFORCEMENT) ✅
@@ -138,6 +140,8 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - **Opaque Types**: Required for complex data structures ([details](kb/opaque-types-principle.md))
 - **Minimal Interfaces**: Expose only what's necessary ([details](kb/minimal-interfaces-principle.md))
 - **Complete Documentation**: Every module must be fully documented ([details](kb/complete-documentation-principle.md))
+- **Observable State**: Objects need queryable validity beyond existence ([details](kb/observable-internal-state.md))
+- **Validation at Creation**: Check internal state, not just object existence ([details](kb/validation-at-creation-time.md))
 - **Program Families**: Design for anticipated variations and multiple versions ([details](kb/program-families-principle.md))
 - **Design for Change**: Decompose based on what's likely to change, not workflow ([details](kb/design-for-change-principle.md))
 - **Separation of Concerns**: Each module addresses a distinct concern ([details](kb/separation-of-concerns-principle.md))
@@ -262,6 +266,7 @@ grep -r "function_name\|concept" modules/
 **Navigation**: Use absolute paths only ([details](kb/absolute-path-navigation.md))
 **Backups**: Use git stash/diff, never .bak files
 **Scripts**: Add to `/scripts/` with make targets ([details](kb/progressive-tool-enhancement.md))
+**Shell scripts**: Use proper variable assignment for error handling ([details](kb/shell-script-command-substitution.md))
 **Debug**: `make sanitize-tests 2>&1`, always redirect stderr ([details](kb/development-debug-tools.md))
 **Ownership debugging**: Add logging at transfer points to trace corruption ([details](kb/debug-logging-ownership-tracing.md))
 **Expression ownership**: References=borrowed, new objects=destroy ([details](kb/expression-ownership-rules.md))

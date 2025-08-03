@@ -74,6 +74,9 @@ Each learning file contains:
 - [Test Diagnostic Output Preservation](test-diagnostic-output-preservation.md)
 - [Test Simplification Through Reversion](test-simplification-through-reversion.md)
 - [Test Execution Order Dependencies](test-execution-order-dependencies.md)
+- [Test Isolation Through Strategic Commenting](test-isolation-through-commenting.md)
+- [Test Error Marking Strategy](test-error-marking-strategy.md)
+- [Intentional Test Errors Filtering](intentional-test-errors-filtering.md)
 
 ### Architecture & Design
 - [Opaque Types Pattern](opaque-types-pattern.md)
@@ -96,6 +99,8 @@ Each learning file contains:
 - [Global Instance Wrapper Anti-Pattern](global-instance-wrapper-anti-pattern.md)
 - [Instance API Resource Cleanup Pattern](instance-api-resource-cleanup-pattern.md)
 - [NULL Dependency Fallback Pattern](null-dependency-fallback-pattern.md)
+- [Validation at Creation Time](validation-at-creation-time.md)
+- [Observable Internal State](observable-internal-state.md)
 
 ### Parnas Design Principles
 - [Information Hiding Principle](information-hiding-principle.md)
@@ -173,6 +178,7 @@ Each learning file contains:
 - [Build System Exit Code Verification](build-system-exit-code-verification.md)
 - [Build Log Verification Requirement](build-log-verification-requirement.md)
 - [Regression Root Cause Analysis](regression-root-cause-analysis.md)
+- [Shell Script Command Substitution](shell-script-command-substitution.md)
 - [Comprehensive Output Review](comprehensive-output-review.md)
 
 ### Code Quality & Smells

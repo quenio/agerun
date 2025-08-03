@@ -75,3 +75,4 @@ git commit --amend  # Update to reflect architectural scope
 - [User Feedback as QA](user-feedback-as-qa.md)
 - [Commit Scope Verification](commit-scope-verification.md)
 - [Refactoring Phase Completion Checklist](refactoring-phase-completion-checklist.md)
+- [Observable Internal State](observable-internal-state.md)
