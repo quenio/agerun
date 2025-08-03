@@ -29,9 +29,10 @@ echo
 # Check for test failures that might not be caught
 echo "--- Checking for test failures ---"
 # Look for actual test failure indicators, not just the word "fail" in test output
-if grep -E "(TEST FAILED|Test .* failed|ERROR: Test|FAILED:)" logs/run-tests.log logs/sanitize-tests.log logs/tsan-tests.log 2>/dev/null | grep -q .; then
+# Exclude "ERROR: Test error message" which is a legitimate test output pattern
+if grep -E "(TEST FAILED|Test .* failed|ERROR: Test|FAILED:)" logs/run-tests.log logs/sanitize-tests.log logs/tsan-tests.log 2>/dev/null | grep -v "ERROR: Test error message" | grep -q .; then
     echo "⚠️  TEST FAILURES FOUND:"
-    grep -n -E "(TEST FAILED|Test .* failed|ERROR: Test|FAILED:)" logs/run-tests.log logs/sanitize-tests.log logs/tsan-tests.log 2>/dev/null | head -10
+    grep -n -E "(TEST FAILED|Test .* failed|ERROR: Test|FAILED:)" logs/run-tests.log logs/sanitize-tests.log logs/tsan-tests.log 2>/dev/null | grep -v "ERROR: Test error message" | head -10
 else
     echo "✓ No test failures found"
 fi
