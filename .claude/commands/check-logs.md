@@ -69,7 +69,7 @@ If `make check-logs` reports errors that are intentional (e.g., testing error ha
    - The line immediately before the error
    - The line immediately after the error
 
-2. Add an entry to `error_whitelist.yaml`:
+2. Add an entry to `log_whitelist.yaml`:
    ```yaml
    - test: ""  # Can be left empty - not used in matching
      error: "ERROR: Method evaluation failed"
@@ -93,7 +93,7 @@ make check-logs
 # Previous line: [2025-01-01 09:59:59] DEBUG: Parsing expression
 # Next line: [2025-01-01 10:00:01] DEBUG: Returning error state
 
-# Add to error_whitelist.yaml:
+# Add to log_whitelist.yaml:
 # - test: ""
 #   error: "ERROR: Expected literal (string or number) (at position 0)"
 #   before: "DEBUG: Parsing expression"

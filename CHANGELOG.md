@@ -2,6 +2,64 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-08-04
+
+### ✅ Simplified and Enhanced Log Whitelist System
+- Simplified whitelist by removing before/after attributes
+  - Reduced from 414 to 207 unique entries by removing duplicates
+  - Simplified matching logic to only check context and message
+  - Improved maintainability and reduced complexity
+- Renamed attributes for clarity
+  - 'test' → 'context' (supports both test and executable contexts)
+  - 'error' → 'message' (more generic for errors and warnings)
+- Renamed whitelist file from error_whitelist.yaml to log_whitelist.yaml
+  - Better reflects that it handles both errors and warnings
+  - Updated all references in scripts and documentation
+- Fixed deep analysis to respect whitelist for warnings
+  - Modified warning scanning to use is_whitelisted_error()
+  - Now properly filters out whitelisted warnings in deep analysis
+- Added wake message field access errors to whitelist
+  - Whitelisted errors for accessing fields on "__wake__" messages
+  - Covers all test contexts that receive wake messages
+
+### ✅ Enhanced Error Whitelist with Test Context Filtering
+- Enhanced check_logs.py to consider test context when filtering whitelisted errors
+  - Added get_current_test_context() to find which test an error occurred in
+  - Modified is_whitelisted_error() to check test context if specified in whitelist
+  - Enhanced error reporting to show test context: "(in test: test_name)"
+- Extended test context to general pattern checking
+  - Added show_test_context parameter to check_logs_for_pattern()
+  - Applied to method loading warnings, memory leaks, deep copy errors, and unexpected behaviors
+  - Now shows which test triggered warnings/errors for better debugging
+- Updated log_whitelist.yaml documentation to explain test context filtering
+  - Test field is now optional - when specified, error must occur in that test
+  - When omitted or empty, error matches regardless of test context
+- Added whitelist summary showing test-specific vs general entries
+- Extended test context to deep analysis sections
+  - Added context to "failure indicators" check
+  - Added context to "suspicious test patterns" check
+  - Now all error reporting in deep analysis shows test context when available
+- Extended whitelist to support executable contexts
+  - Added support for whitelisting errors in executable runs using context: "executable"
+  - Updated is_whitelisted_error() to detect executable contexts from -exec.log files
+  - Modified "failure indicators" check to use whitelist filtering
+  - Enhanced summary to show breakdown of test vs executable entries
+- Renamed whitelist attribute from 'test' to 'context' for clarity
+  - Updated all YAML entries to use 'context:' instead of 'test:'
+  - Modified Python code to support both attributes for backward compatibility
+  - Updated documentation to reflect the more generic 'context' terminology
+- Extended whitelist support to warnings
+  - Modified check_method_loading_warnings() to use whitelist filtering
+  - Added whitelist entries for method loading warnings in specific test contexts
+  - Warnings can now be whitelisted just like errors
+- Enhanced all warning/error reporting to show context
+  - Updated deep analysis WARNING patterns to show test context
+  - Updated ThreadSanitizer warnings to show test context
+  - Updated memory sanitizer errors to show test context
+  - Added "(executable)" context for warnings/errors from -exec.log files
+  - All errors and warnings now consistently show their execution context
+- **Impact**: More precise error/warning filtering for both test and executable contexts, clearer terminology, consistent context reporting
+
 ## 2025-08-03 (Part 8)
 
 ### ✅ Fixed compile() Function Validation and Build Script Errors
