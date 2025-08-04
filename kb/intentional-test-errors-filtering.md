@@ -15,10 +15,11 @@ ar_data__get_map_data(string_value, "field");  // This will error
 # Or use a prefix in error messages
 ar_log__error(log, "[TEST EXPECTED] Cannot access field on non-map type");
 
-# In check_build_logs.sh, filter these out:
-grep -v "\[INTENTIONAL ERROR\]\|\[TEST EXPECTED\]" logs/run-tests.log | \
-    grep "ERROR:" | \
-    grep -v "known_test_patterns.txt"
+# In check_logs.py, filter these out using whitelist:
+# See check_logs.py for implementation with:
+# - Pattern-based whitelist
+# - Context-aware filtering
+# - Configurable error patterns
 ```
 
 ## Generalization
@@ -29,59 +30,52 @@ Three strategies for handling intentional test errors:
 3. **Context Strategy**: Check if errors occur within test functions (by name pattern)
 
 ## Implementation
-```bash
-# Context-aware filtering function
-is_intentional_test_error() {
-    local log_file=$1
-    local line_num=$2
-    local error_text=$3
-    
-    # Get context: 20 lines before the error
-    local start=$((line_num - 20))
-    local end=$((line_num + 5))
-    [ $start -lt 1 ] && start=1
-    
-    local context=$(sed -n "${start},${end}p" "$log_file")
-    
-    # Check for specific test contexts:
-    
-    # 1. Test methods with special names
-    if echo "$context" | grep -qE "__test_instruction_[0-9]+__|test_.*__.*Testing.*invalid"; then
-        return 0
-    fi
-    
-    # 2. Method evaluation errors in test contexts
-    if echo "$error_text" | grep -q "Method evaluation failed" && \
-       echo "$context" | grep -qE "__test_instruction_|ar_method_evaluator_tests|calculator_tests"; then
-        return 0
-    fi
-    
-    # 3. Missing AST errors for test methods
-    if echo "$error_text" | grep -q "Method has no AST" && \
-       echo "$context" | grep -qE "method '(echo|calc|exec_test_method)' version|ar_executable_tests"; then
-        return 0
-    fi
-    
-    # 4. General test runner context
-    if echo "$context" | grep -qE "Running test:.*_tests|All.*tests passed"; then
-        return 0
-    fi
-    
-    return 1  # Not intentional
-}
+The Python implementation in `check_logs.py` uses a comprehensive whitelist approach:
 
-# Use in check_build_logs.sh
-UNINTENTIONAL_ERRORS=""
-while IFS= read -r line; do
-    file=$(echo "$line" | cut -d: -f1)
-    line_num=$(echo "$line" | cut -d: -f2)
-    error_text=$(echo "$line" | cut -d: -f3-)
+```python
+# Example whitelist patterns from check_logs.py
+ERROR_WHITELIST = [
+    # Test-specific errors
+    "ERROR: Method evaluation failed.*__test_instruction_",
+    "ERROR: Method has no AST.*exec_test_method",
+    "ERROR: Invalid method name.*Testing.*invalid",
     
-    if ! is_intentional_test_error "$file" "$line_num" "$error_text"; then
-        UNINTENTIONAL_ERRORS="${UNINTENTIONAL_ERRORS}${line}\n"
-    fi
-done < <(grep -n "ERROR: Method evaluation failed" logs/*.log 2>/dev/null)
+    # Context-specific patterns
+    "ERROR:.*\\[TEST EXPECTED\\]",
+    "ERROR:.*\\[INTENTIONAL ERROR\\]",
+    
+    # Specific test files
+    "ar_method_evaluator_tests.*Method evaluation failed",
+    "calculator_tests.*Invalid expression",
+]
+
+def is_whitelisted_error(line, context_lines):
+    """Check if an error line matches whitelist patterns"""
+    for pattern in ERROR_WHITELIST:
+        if re.search(pattern, line):
+            return True
+    
+    # Check context for test indicators
+    test_indicators = [
+        "Running test:",
+        "All.*tests passed",
+        "__test_instruction_",
+    ]
+    
+    for indicator in test_indicators:
+        for ctx_line in context_lines:
+            if indicator in ctx_line:
+                return True
+    
+    return False
 ```
+
+Key advantages of the Python implementation:
+- **Maintainable whitelist**: All patterns in one place
+- **Regex support**: More flexible pattern matching
+- **Context analysis**: Can examine surrounding lines
+- **Easy updates**: Add new patterns without modifying logic
+- **Better reporting**: Can show which pattern matched
 
 ## Related Patterns
 - [Evidence-Based Debugging](evidence-based-debugging.md)

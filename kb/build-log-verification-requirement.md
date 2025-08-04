@@ -38,7 +38,7 @@ make check-logs  # Still essential!
 # - Thread safety issues (ThreadSanitizer)
 ```
 
-The `make check-logs` target runs `scripts/check_build_logs.sh` which scans all log files in the `logs/` directory for potential issues.
+The `make check-logs` target runs `scripts/check_logs.py` which scans all log files in the `logs/` directory for potential issues.
 
 ## Manual Log Inspection
 When issues are found, examine specific logs:

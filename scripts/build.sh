@@ -275,7 +275,7 @@ if $leak_found; then
 fi
 
 
-# Note: Detailed runtime error checking is now handled by check_build_logs.sh
+# Note: Detailed runtime error checking is now handled by `make check-logs`
 # This build script focuses on job status and memory leaks only
 echo
 echo "--- Runtime Error Check (Basic) ---"
