@@ -4,6 +4,15 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-08-04
 
+### ✅ Knowledge Base Articles from Log Whitelist Enhancement
+- Updated existing KB article on intentional test error filtering with YAML-based approach
+- Created whitelist-simplification-pattern.md documenting configuration simplification strategies
+- Created log-format-variation-handling.md for handling environment-specific log variations
+- Created uniform-filtering-application.md on applying filters consistently across code paths
+- Created yaml-string-matching-pitfalls.md documenting YAML quote escaping issues
+- Updated CLAUDE.md with references to new patterns in Development Practices section
+- Updated check-logs command documentation to reflect simplified whitelist format
+
 ### ✅ Simplified and Enhanced Log Whitelist System
 - Simplified whitelist by removing before/after attributes
   - Reduced from 414 to 207 unique entries by removing duplicates

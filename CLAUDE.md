@@ -271,6 +271,10 @@ grep -r "function_name\|concept" modules/
 **Ownership debugging**: Add logging at transfer points to trace corruption ([details](kb/debug-logging-ownership-tracing.md))
 **Expression ownership**: References=borrowed, new objects=destroy ([details](kb/expression-ownership-rules.md))
 **Test error filtering**: Use context-aware filtering for intentional errors ([details](kb/intentional-test-errors-filtering.md))
+**Log format variations**: Test names vary by environment, verify actual content ([details](kb/log-format-variation-handling.md))
+**Whitelist simplification**: Start complex, simplify based on usage ([details](kb/whitelist-simplification-pattern.md))
+**Uniform filtering**: Apply whitelist consistently in all checks ([details](kb/uniform-filtering-application.md))
+**YAML string matching**: Watch for quote escaping issues ([details](kb/yaml-string-matching-pitfalls.md))
 
 ### 9. Error Propagation Pattern
 

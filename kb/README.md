@@ -84,6 +84,7 @@ Each learning file contains:
 - [Error Propagation Pattern](error-propagation-pattern.md)
 - [Expression Evaluator Accessor Extension](expression-evaluator-accessor-extension.md)
 - [Instruction Behavior Simplification](instruction-behavior-simplification.md)
+- [Whitelist Simplification Pattern](whitelist-simplification-pattern.md)
 - [Module Delegation with Error Propagation](module-delegation-error-propagation.md)
 - [Parser Function Alias Support](parser-function-alias-support.md)
 - [Refactoring Key Patterns](refactoring-key-patterns.md)
@@ -101,6 +102,7 @@ Each learning file contains:
 - [NULL Dependency Fallback Pattern](null-dependency-fallback-pattern.md)
 - [Validation at Creation Time](validation-at-creation-time.md)
 - [Observable Internal State](observable-internal-state.md)
+- [Uniform Filtering Application](uniform-filtering-application.md)
 
 ### Parnas Design Principles
 - [Information Hiding Principle](information-hiding-principle.md)
@@ -127,6 +129,7 @@ Each learning file contains:
 - [Script Backward Compatibility Testing](script-backward-compatibility-testing.md)
 - [Settings File Merging Pattern](settings-file-merging-pattern.md)
 - [String Parsing Quote Tracking](string-parsing-quote-tracking.md)
+- [YAML String Matching Pitfalls](yaml-string-matching-pitfalls.md)
 - [Makefile POSIX Shell Compatibility](makefile-posix-shell-compatibility.md)
 - [Zig Test Build Integration](zig-test-build-integration.md)
 - [CI Debugging Artifact Upload](ci-debugging-artifact-upload.md)
@@ -180,6 +183,7 @@ Each learning file contains:
 - [Regression Root Cause Analysis](regression-root-cause-analysis.md)
 - [Shell Script Command Substitution](shell-script-command-substitution.md)
 - [Comprehensive Output Review](comprehensive-output-review.md)
+- [Log Format Variation Handling](log-format-variation-handling.md)
 
 ### Code Quality & Smells
 - [Code Smell: Long Method](code-smell-long-method.md)

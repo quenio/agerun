@@ -1,83 +1,102 @@
 # Filtering Intentional Test Errors in Build Scripts
 
 ## Learning
-Test suites include intentional errors to verify error handling, but these are only intentional in specific test contexts. Build scripts must use context-aware filtering to distinguish between expected test errors and actual problems.
+Test suites include intentional errors to verify error handling, but these are only intentional in specific test contexts. Modern build scripts use YAML-based whitelists with context-aware filtering to distinguish between expected test errors and actual problems.
 
 ## Importance
-Without context-aware filtering, intentional test errors create noise in build output. However, the same error messages could indicate real problems in production code, so filtering must be precise.
+Without context-aware filtering, intentional test errors create noise in build output. However, the same error messages could indicate real problems in production code or different tests, so filtering must be precise to the specific execution context.
 
 ## Example
-```bash
-# Mark intentional errors in test output
-printf("[INTENTIONAL ERROR] Testing invalid field access\n");
-ar_data__get_map_data(string_value, "field");  // This will error
-
-# Or use a prefix in error messages
-ar_log__error(log, "[TEST EXPECTED] Cannot access field on non-map type");
-
-# In check_logs.py, filter these out using whitelist:
-# See check_logs.py for implementation with:
-# - Pattern-based whitelist
-# - Context-aware filtering
-# - Configurable error patterns
+```yaml
+# log_whitelist.yaml structure
+ignored_errors:
+  # Context-specific whitelisting
+  - context: "ar_method_evaluator_tests"
+    message: "ERROR: Method evaluation failed at line 2"
+    comment: "Testing invalid assignment target error handling"
+    
+  - context: "ar_interpreter_tests"
+    message: "ERROR: Agent 999999 has no method"
+    comment: "Testing agent with no method error"
+    
+  # Executable context
+  - context: "executable"
+    message: "Warning: Could not load methods from file"
+    comment: "Expected warning in executable runs"
 ```
 
-## Generalization
-Three strategies for handling intentional test errors:
-
-1. **Marker Strategy**: Add prefixes like [TEST EXPECTED] to intentional errors
-2. **Pattern File Strategy**: Maintain a file of known error patterns to exclude
-3. **Context Strategy**: Check if errors occur within test functions (by name pattern)
-
-## Implementation
-The Python implementation in `check_logs.py` uses a comprehensive whitelist approach:
-
+The Python implementation uses context detection:
 ```python
-# Example whitelist patterns from check_logs.py
-ERROR_WHITELIST = [
-    # Test-specific errors
-    "ERROR: Method evaluation failed.*__test_instruction_",
-    "ERROR: Method has no AST.*exec_test_method",
-    "ERROR: Invalid method name.*Testing.*invalid",
-    
-    # Context-specific patterns
-    "ERROR:.*\\[TEST EXPECTED\\]",
-    "ERROR:.*\\[INTENTIONAL ERROR\\]",
-    
-    # Specific test files
-    "ar_method_evaluator_tests.*Method evaluation failed",
-    "calculator_tests.*Invalid expression",
-]
+def get_current_test_context(lines, line_num):
+    """Find the most recent 'Running test:' line before the given line number."""
+    for i in range(line_num - 1, -1, -1):
+        if i < len(lines):
+            line = lines[i]
+            match = re.match(r'Running test:\s*(\S+)', line)
+            if match:
+                return match.group(1)
+    return None
 
-def is_whitelisted_error(line, context_lines):
-    """Check if an error line matches whitelist patterns"""
-    for pattern in ERROR_WHITELIST:
-        if re.search(pattern, line):
-            return True
+def is_whitelisted_error(log_file, line_num, error_line, whitelist):
+    """Check if an error is whitelisted based on context and message."""
+    # Get the current test context
+    current_test = get_current_test_context(lines, line_num - 1)
     
-    # Check context for test indicators
-    test_indicators = [
-        "Running test:",
-        "All.*tests passed",
-        "__test_instruction_",
-    ]
+    # Determine if this is an executable context
+    is_executable = '-exec.log' in log_file and current_test is None
     
-    for indicator in test_indicators:
-        for ctx_line in context_lines:
-            if indicator in ctx_line:
-                return True
+    # Check against whitelist entries
+    for entry in whitelist:
+        context_pattern = entry.get('context', '')
+        if context_pattern:
+            # Special handling for "executable" context
+            if context_pattern == 'executable':
+                if not is_executable:
+                    continue
+            else:
+                # Regular test name matching
+                if current_test != context_pattern:
+                    continue
+        
+        # Check if message matches
+        message_pattern = entry.get('message', '')
+        if message_pattern and message_pattern not in error_text_clean:
+            continue
+            
+        # All conditions match - this error is whitelisted
+        return True
     
     return False
 ```
 
-Key advantages of the Python implementation:
-- **Maintainable whitelist**: All patterns in one place
-- **Regex support**: More flexible pattern matching
-- **Context analysis**: Can examine surrounding lines
-- **Easy updates**: Add new patterns without modifying logic
-- **Better reporting**: Can show which pattern matched
+## Generalization
+Modern whitelist systems should:
+
+1. **Use structured configuration**: YAML allows easy maintenance without code changes
+2. **Context-aware matching**: Same error in different contexts may have different meanings
+3. **Support multiple contexts**: Tests, executables, and other execution environments
+4. **Simple attribute model**: Just context + message is often sufficient
+5. **Uniform application**: Apply whitelist consistently across all checks
+
+## Implementation
+Key implementation patterns:
+
+1. **Context detection**: Search backwards through log for "Running test:" patterns
+2. **Filename-based context**: Use log filename patterns (e.g., `-exec.log`) for non-test contexts
+3. **Simplified matching**: Avoid complex before/after patterns unless truly needed
+4. **Backward compatibility**: Support attribute renaming during transitions
+5. **Deep analysis consistency**: Apply whitelist to all analysis phases
+
+Benefits of the YAML approach:
+- **Declarative**: Non-programmers can maintain the whitelist
+- **Versionable**: Changes tracked in git with clear diffs
+- **Commentable**: Each entry can explain why it's whitelisted
+- **Validatable**: Structure can be validated before use
+- **Portable**: Same whitelist works across different tools
 
 ## Related Patterns
 - [Evidence-Based Debugging](evidence-based-debugging.md)
 - [Build Verification Before Commit](build-verification-before-commit.md)
 - [Development Debug Tools](development-debug-tools.md)
+- [Whitelist Simplification Pattern](whitelist-simplification-pattern.md)
+- [Uniform Filtering Application](uniform-filtering-application.md)
