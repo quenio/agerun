@@ -57,3 +57,86 @@ intentional_errors:
     before: ""
     after: ""
     comment: "General AST missing errors during test execution - these are expected in test scenarios"
+    
+  # Parsing errors during test execution - these occur when testing error handling
+  - test: ""
+    error: "ERROR: Expected literal (string or number) (at position 0)"
+    before: ""
+    after: ""
+    comment: "Testing parser error handling for invalid expressions"
+    
+  - test: ""
+    error: "ERROR: Failed to parse argument expression"
+    before: ""
+    after: ""
+    comment: "Testing parser error handling for invalid argument syntax"
+    
+  - test: ""
+    error: "ERROR: Unknown parse error"
+    before: ""
+    after: ""
+    comment: "Testing parser error handling for general parse failures"
+    
+  - test: ""
+    error: "ERROR: Failed to create execution frame"
+    before: ""
+    after: ""
+    comment: "Testing frame creation error handling"
+    
+  # File parsing errors during executable runs
+  - test: ""
+    error: "Error: Unexpected end of file"
+    before: ""
+    after: ""
+    comment: "Testing handling of incomplete agency files"
+    
+  # Assignment instruction parser errors
+  - test: ""
+    error: "ERROR: Assignment target must start with 'memory.'"
+    before: ""
+    after: ""
+    comment: "Testing assignment validation rules"
+    
+  - test: ""
+    error: "ERROR: Expected ':=' operator"
+    before: ""
+    after: ""
+    comment: "Testing assignment operator parsing"
+    
+  # Build instruction parser errors
+  - test: ""
+    error: "ERROR: Expected 'build' function"
+    before: ""
+    after: ""
+    comment: "Testing build instruction parsing"
+    
+  - test: ""
+    error: "ERROR: Expected '(' after 'build'"
+    before: ""
+    after: ""
+    comment: "Testing build instruction syntax"
+    
+  - test: ""
+    error: "ERROR: Failed to parse build arguments"
+    before: ""
+    after: ""
+    comment: "Testing build argument parsing"
+    
+  # Compile instruction parser errors
+  - test: ""
+    error: "ERROR: Expected 'compile' function"
+    before: ""
+    after: ""
+    comment: "Testing compile instruction parsing"
+    
+  - test: ""
+    error: "ERROR: Expected '(' after 'compile'"
+    before: ""
+    after: ""
+    comment: "Testing compile instruction syntax"
+    
+  - test: ""
+    error: "ERROR: Failed to parse compile arguments"
+    before: ""
+    after: ""
+    comment: "Testing compile argument parsing"
