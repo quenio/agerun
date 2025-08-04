@@ -220,6 +220,8 @@ Before claiming to understand a bug:
 - [Test Isolation Through Strategic Commenting](test-isolation-through-commenting.md)
 - [API Behavior Verification](api-behavior-verification.md)
 - [Build Verification Before Commit](build-verification-before-commit.md)
+- [Log Format Variation Handling](log-format-variation-handling.md)
+- [YAML String Matching Pitfalls](yaml-string-matching-pitfalls.md)
 - [Build System Exit Code Verification](build-system-exit-code-verification.md)
 - [Regression Root Cause Analysis](regression-root-cause-analysis.md)
 - [Comprehensive Output Review](comprehensive-output-review.md)

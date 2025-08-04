@@ -35,3 +35,4 @@ When parsing structured text, track state that affects interpretation of subsequ
 - Context-aware scanning
 - String literal handling
 - Escape sequence processing
+- [YAML String Matching Pitfalls](yaml-string-matching-pitfalls.md)

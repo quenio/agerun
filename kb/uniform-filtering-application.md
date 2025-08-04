@@ -124,3 +124,5 @@ Common locations to check:
 - [Intentional Test Errors Filtering](intentional-test-errors-filtering.md)
 - [Single Responsibility Principle](single-responsibility-principle.md)
 - [Facade Pattern Coordination](facade-pattern-coordination.md)
+- [Whitelist Simplification Pattern](whitelist-simplification-pattern.md)
+- [Log Format Variation Handling](log-format-variation-handling.md)

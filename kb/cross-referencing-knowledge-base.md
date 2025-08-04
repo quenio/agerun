@@ -43,3 +43,4 @@ grep -r "\[details\]" ./kb/ | wc -l
 - [Markdown Link Resolution Patterns](markdown-link-resolution-patterns.md)
 - [Systematic Guideline Enhancement](systematic-guideline-enhancement.md)
 - [CLAUDE.md Reference Requirement](claude-md-reference-requirement.md)
+- [New Learnings Cross-Reference Requirement](new-learnings-cross-reference-requirement.md)

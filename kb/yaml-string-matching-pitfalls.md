@@ -117,3 +117,5 @@ Common problem patterns:
 - [Intentional Test Errors Filtering](intentional-test-errors-filtering.md)
 - [String Parsing Quote Tracking](string-parsing-quote-tracking.md)
 - [Evidence-Based Debugging](evidence-based-debugging.md)
+- [Whitelist Simplification Pattern](whitelist-simplification-pattern.md)
+- [Log Format Variation Handling](log-format-variation-handling.md)

@@ -106,3 +106,5 @@ Common format variations:
 - [Intentional Test Errors Filtering](intentional-test-errors-filtering.md)
 - [Evidence-Based Debugging](evidence-based-debugging.md)
 - [CI Debugging Through Artifact Upload](ci-debugging-artifact-upload.md)
+- [YAML String Matching Pitfalls](yaml-string-matching-pitfalls.md)
+- [Whitelist Simplification Pattern](whitelist-simplification-pattern.md)

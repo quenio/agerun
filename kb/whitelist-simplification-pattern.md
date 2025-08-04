@@ -85,3 +85,5 @@ Benefits of simplification:
 - [API Simplification Through TDD](tdd-api-simplification.md)
 - [Instruction Behavior Simplification](instruction-behavior-simplification.md)
 - [Code Smell - Long Parameter List](code-smell-long-parameter-list.md)
+- [Uniform Filtering Application](uniform-filtering-application.md)
+- [YAML String Matching Pitfalls](yaml-string-matching-pitfalls.md)

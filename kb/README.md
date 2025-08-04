@@ -77,6 +77,8 @@ Each learning file contains:
 - [Test Isolation Through Strategic Commenting](test-isolation-through-commenting.md)
 - [Test Error Marking Strategy](test-error-marking-strategy.md)
 - [Intentional Test Errors Filtering](intentional-test-errors-filtering.md)
+- [Uniform Filtering Application](uniform-filtering-application.md)
+- [Log Format Variation Handling](log-format-variation-handling.md)
 
 ### Architecture & Design
 - [Opaque Types Pattern](opaque-types-pattern.md)
@@ -147,6 +149,7 @@ Each learning file contains:
 - [Systematic Guideline Enhancement](systematic-guideline-enhancement.md)
 - [CLAUDE.md Reference Requirement](claude-md-reference-requirement.md)
 - [Cross-Referencing Knowledge Base](cross-referencing-knowledge-base.md)
+- [New Learnings Cross-Reference Requirement](new-learnings-cross-reference-requirement.md)
 - [Frank Communication Principle](frank-communication-principle.md)
 - [Research-Driven Development](research-driven-development.md)
 - [User Feedback as QA](user-feedback-as-qa.md)

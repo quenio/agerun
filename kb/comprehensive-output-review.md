@@ -52,3 +52,5 @@ make run-tests 2>&1 | grep "memory leaks detected"
 - [Evidence-Based Debugging](evidence-based-debugging.md)
 - [User Feedback as QA](user-feedback-as-qa.md)
 - [Stderr Redirection for Debugging](stderr-redirection-debugging.md) - Critical for seeing all warnings/errors
+- [Build Log Verification Requirement](build-log-verification-requirement.md)
+- [Log Format Variation Handling](log-format-variation-handling.md)

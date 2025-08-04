@@ -56,3 +56,5 @@ grep -r "ERROR" logs/
 - [Test Diagnostic Output Preservation](test-diagnostic-output-preservation.md)
 - [Evidence-Based Debugging](evidence-based-debugging.md)
 - [Comprehensive Output Review](comprehensive-output-review.md)
+- [Intentional Test Errors Filtering](intentional-test-errors-filtering.md)
+- [Log Format Variation Handling](log-format-variation-handling.md)

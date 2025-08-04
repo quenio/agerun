@@ -58,6 +58,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Check SPEC.md before implementing** features to avoid unnecessary work ([details](kb/specification-consistency-maintenance.md))
 **When reading TODO.md**: Check [ ] = incomplete, [x] = complete. Read completion dates. Be explicit - list all components.
 **KB articles need CLAUDE.md references** to be accessible in future sessions ([details](kb/claude-md-reference-requirement.md))
+**Cross-reference new KB articles**: MANDATORY bidirectional linking when creating KB articles ([details](kb/new-learnings-cross-reference-requirement.md))
 **Evidence-based debugging**: Always verify with concrete evidence, not assumptions ([details](kb/evidence-based-debugging.md))
 **Build output review**: Review complete command output, not just final status ([details](kb/comprehensive-output-review.md))
 **Documentation compaction**: Extract verbose content to KB while preserving links ([details](kb/documentation-compacting-pattern.md))

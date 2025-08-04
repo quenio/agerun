@@ -95,3 +95,5 @@ fi
 - [Intentional Test Errors Filtering](intentional-test-errors-filtering.md)
 - [BDD Test Structure](bdd-test-structure.md)
 - [Test Diagnostic Output Preservation](test-diagnostic-output-preservation.md)
+- [Whitelist Simplification Pattern](whitelist-simplification-pattern.md)
+- [Uniform Filtering Application](uniform-filtering-application.md)
