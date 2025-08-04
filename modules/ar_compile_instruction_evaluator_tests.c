@@ -319,9 +319,9 @@ static void test_instruction_evaluator__evaluate_method_invalid_instructions(voi
     
     bool result = ar_compile_instruction_evaluator__evaluate(evaluator, ref_frame, ast);
     
-    // Then it should return true (method creation succeeds even with invalid instructions)
-    // The validation happens when the method is actually executed
-    assert(result == true);
+    // Then it should return false (method creation fails with invalid instructions)
+    // Per specification: compile() returns false if instructions cannot be parsed
+    assert(result == false);
     
     // Cleanup
     ar_instruction_ast__destroy(ast);

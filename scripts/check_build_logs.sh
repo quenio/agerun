@@ -9,57 +9,128 @@ echo
 # Track if we found any issues
 FOUND_ISSUES=false
 
-# Function to check if an error is in a test context
-is_intentional_test_error() {
-    local log_file=$1
-    local line_num=$2
-    local error_text=$3
+# Simple function to check if an error line matches whitelist patterns (before/error/after only)
+is_whitelisted_error() {
+    local log_file="$1"
+    local line_num="$2"
+    local error_line="$3"
     
-    # Get context: 20 lines before the error (more context for test detection)
-    local start=$((line_num - 20))
-    local end=$((line_num + 5))
-    [ $start -lt 1 ] && start=1
-    
-    local context=$(sed -n "${start},${end}p" "$log_file")
-    
-    # Check for test indicators in the context
-    # 1. Test function names
-    if echo "$context" | grep -qE "__test_instruction_[0-9]+__|test_.*__.*Testing.*invalid|Testing.*error.*handling"; then
-        return 0  # It's intentional
+    # Check if whitelist file exists
+    if [ ! -f "error_whitelist.yaml" ]; then
+        return 1  # No whitelist, report all errors
     fi
     
-    # 2. Method evaluation errors in test methods or evaluator tests
-    if echo "$error_text" | grep -q "Method evaluation failed" && echo "$context" | grep -qE "__test_instruction_|Testing.*invalid.*syntax|test_.*_instruction|ar_method_evaluator_tests|Assignment target must start with"; then
-        return 0
+    # Get the lines before and after the error
+    local before_line=""
+    local after_line=""
+    
+    # Validate parsing worked (line_num should be a number)
+    if ! [[ "$line_num" =~ ^[0-9]+$ ]]; then
+        return 1  # Invalid parsing, report error
     fi
     
-    # 3. "Method has no AST" for intentionally broken test methods
-    if echo "$error_text" | grep -q "Method has no AST" && echo "$context" | grep -qE "method '(echo|calc|test_broken|exec_test_method)' version|ar_executable_tests|Executable.*[Tt]est"; then
-        return 0
+    if [ "$line_num" -gt 1 ]; then
+        before_line=$(sed -n "$((line_num - 1))p" "$log_file" 2>/dev/null)
+    fi
+    after_line=$(sed -n "$((line_num + 1))p" "$log_file" 2>/dev/null)
+    
+    # Parse YAML and check for matches (ignore test and comment attributes)
+    local in_intentional_errors=false
+    local current_entry_error=""
+    local current_entry_before=""
+    local current_entry_after=""
+    
+    while IFS= read -r line; do
+        # Skip comments and empty lines
+        [[ "$line" =~ ^[[:space:]]*# ]] && continue
+        [[ "$line" =~ ^[[:space:]]*$ ]] && continue
+        
+        # Check if we're in the intentional_errors section
+        if [[ "$line" =~ ^intentional_errors: ]]; then
+            in_intentional_errors=true
+            continue
+        fi
+        
+        # If we're not in the intentional_errors section, skip
+        [ "$in_intentional_errors" = false ] && continue
+        
+        # Parse YAML entries (ignore test and comment)
+        if [[ "$line" =~ ^[[:space:]]*-[[:space:]]*test: ]]; then
+            # Reset for new entry
+            current_entry_error=""
+            current_entry_before=""
+            current_entry_after=""
+        elif [[ "$line" =~ ^[[:space:]]*error:[[:space:]]*\"(.*)\"$ ]]; then
+            current_entry_error="${BASH_REMATCH[1]}"
+        elif [[ "$line" =~ ^[[:space:]]*before:[[:space:]]*\"(.*)\"$ ]]; then
+            current_entry_before="${BASH_REMATCH[1]}"
+        elif [[ "$line" =~ ^[[:space:]]*after:[[:space:]]*\"(.*)\"$ ]]; then
+            current_entry_after="${BASH_REMATCH[1]}"
+        elif [[ "$line" =~ ^[[:space:]]*comment: ]] || [[ "$line" =~ ^[[:space:]]*-[[:space:]]*test: ]]; then
+            # End of current entry - check if it matches
+            if [ -n "$current_entry_error" ]; then
+                # Check if all conditions match
+                local error_match=false
+                local before_match=false
+                local after_match=false
+                
+                # Error must be contained in the error line
+                if [[ "$error_line" == *"$current_entry_error"* ]]; then
+                    error_match=true
+                fi
+                
+                # Before line match (empty string means ignore)
+                if [ -z "$current_entry_before" ]; then
+                    before_match=true
+                elif [[ "$before_line" == *"$current_entry_before"* ]]; then
+                    before_match=true
+                fi
+                
+                # After line match (empty string means ignore)
+                if [ -z "$current_entry_after" ]; then
+                    after_match=true
+                elif [[ "$after_line" == *"$current_entry_after"* ]]; then
+                    after_match=true
+                fi
+                
+                # If all conditions match, this error is whitelisted
+                if [ "$error_match" = true ] && [ "$before_match" = true ] && [ "$after_match" = true ]; then
+                    return 0  # Whitelisted error
+                fi
+            fi
+        fi
+    done < "error_whitelist.yaml"
+    
+    # Check the last entry if file doesn't end with comment
+    if [ -n "$current_entry_error" ]; then
+        local error_match=false
+        local before_match=false
+        local after_match=false
+        
+        if [[ "$error_line" == *"$current_entry_error"* ]]; then
+            error_match=true
+        fi
+        
+        if [ -z "$current_entry_before" ]; then
+            before_match=true
+        elif [[ "$before_line" == *"$current_entry_before"* ]]; then
+            before_match=true
+        fi
+        
+        if [ -z "$current_entry_after" ]; then
+            after_match=true
+        elif [[ "$after_line" == *"$current_entry_after"* ]]; then
+            after_match=true
+        fi
+        
+        if [ "$error_match" = true ] && [ "$before_match" = true ] && [ "$after_match" = true ]; then
+            return 0  # Whitelisted error
+        fi
     fi
     
-    # 4. Field access errors on __wake__ messages in test contexts
-    if echo "$error_text" | grep -q "Cannot access field.*on STRING value \"__wake__\"" && echo "$context" | grep -q "test_"; then
-        return 0
-    fi
-    
-    # 5. Parse errors followed by test method creation
-    if echo "$error_text" | grep -q "Failed to parse argument expression" && echo "$context" | grep -qE "Creating test method|test_.*__|echo.*version"; then
-        return 0
-    fi
-    
-    # 6. Expected failure warnings in test output
-    if echo "$error_text" | grep -q "WARNING: Method creation succeeded with invalid syntax" && echo "$context" | grep -q "Method creator.*test"; then
-        return 0
-    fi
-    
-    # 7. General pattern: errors within test runners
-    if echo "$context" | grep -qE "Running test:.*_tests|All.*tests passed|test.*passed|Testing.*error.*handling"; then
-        return 0
-    fi
-    
-    return 1  # Not intentional
+    return 1  # Not whitelisted
 }
+
 
 # Check for assertion failures
 echo "--- Checking for assertion failures ---"
@@ -222,23 +293,30 @@ echo
 # Check for method evaluation failures (excluding intentional test errors)
 echo "--- Checking for method evaluation failures ---"
 UNINTENTIONAL_ERRORS=""
+
+# Get all the errors and check against whitelist
 while IFS= read -r line; do
-    # Parse the grep output: filename:line_number:timestamp_and_error_text
-    # Extract just the file and line number first
-    file=$(echo "$line" | cut -d: -f1)
-    line_num=$(echo "$line" | cut -d: -f2)
-    # Everything after the second colon is the error text
-    error_text=$(echo "$line" | cut -d: -f3-)
+    # Parse the grep output: logs/filename.log:line_number:[timestamp] ERROR: ...
+    # Extract file (everything before the first :line_number:)
+    file=$(echo "$line" | sed 's/:\([0-9]\+\):.*$//')
+    # Extract line number (the number after the first colon and before the second colon)
+    line_num=$(echo "$line" | sed 's/^[^:]*:\([0-9]\+\):.*$/\1/')
+    # Extract error text (everything after line_number:[timestamp])
+    error_text=$(echo "$line" | sed 's/^[^:]*:[0-9]\+:\[.*\] //')
     
-    # Check if this error is intentional
-    if [ -n "$file" ] && [ -n "$line_num" ] && ! is_intentional_test_error "$file" "$line_num" "$error_text"; then
-        UNINTENTIONAL_ERRORS="${UNINTENTIONAL_ERRORS}${line}\n"
+    # Check if this error is whitelisted
+    if [ -n "$file" ] && [ -n "$line_num" ] && ! is_whitelisted_error "$file" "$line_num" "$error_text"; then
+        if [ -z "$UNINTENTIONAL_ERRORS" ]; then
+            UNINTENTIONAL_ERRORS="$line"
+        else
+            UNINTENTIONAL_ERRORS="$UNINTENTIONAL_ERRORS"$'\n'"$line"
+        fi
     fi
 done < <(grep -n "ERROR: Method evaluation failed" logs/*.log 2>/dev/null)
 
 if [ -n "$UNINTENTIONAL_ERRORS" ]; then
     echo "⚠️  METHOD EVALUATION FAILURES FOUND:"
-    echo -e "$UNINTENTIONAL_ERRORS" | head -10
+    echo "$UNINTENTIONAL_ERRORS" | head -10
     FOUND_ISSUES=true
 else
     echo "✓ No unexpected method evaluation failures found"
@@ -248,19 +326,41 @@ echo
 # Check for missing AST errors
 echo "--- Checking for missing AST errors ---"
 UNINTENTIONAL_AST_ERRORS=""
+
+# Get all AST errors and check against whitelist
 while IFS= read -r line; do
-    file=$(echo "$line" | cut -d: -f1)
-    line_num=$(echo "$line" | cut -d: -f2)
-    error_text=$(echo "$line" | cut -d: -f3-)
+    # Parse the grep output: logs/filename.log:line_number:[timestamp] ERROR: ...
+    # Extract file (everything before the first :line_number:)
+    file=$(echo "$line" | sed 's/:\([0-9]\+\):.*$//')
+    # Extract line number (the number after the first colon and before the second colon)
+    line_num=$(echo "$line" | sed 's/^[^:]*:\([0-9]\+\):.*$/\1/')
+    # Extract error text (everything after line_number:[timestamp])
+    error_text=$(echo "$line" | sed 's/^[^:]*:[0-9]\+:\[.*\] //')
     
-    if [ -n "$file" ] && [ -n "$line_num" ] && ! is_intentional_test_error "$file" "$line_num" "$error_text"; then
-        UNINTENTIONAL_AST_ERRORS="${UNINTENTIONAL_AST_ERRORS}${line}\n"
+    # Check against general whitelist first
+    is_whitelisted=false
+    if [ -n "$file" ] && [ -n "$line_num" ] && is_whitelisted_error "$file" "$line_num" "$error_text"; then
+        is_whitelisted=true
+    fi
+    
+    # Special handling for exec logs (expected AST errors)
+    if echo "$line" | grep -q "logs/.*-exec\.log:"; then
+        is_whitelisted=true
+    fi
+    
+    # If not whitelisted, add to unintentional errors
+    if [ "$is_whitelisted" = false ]; then
+        if [ -z "$UNINTENTIONAL_AST_ERRORS" ]; then
+            UNINTENTIONAL_AST_ERRORS="$line"
+        else
+            UNINTENTIONAL_AST_ERRORS="$UNINTENTIONAL_AST_ERRORS"$'\n'"$line"
+        fi
     fi
 done < <(grep -n "ERROR: Method has no AST" logs/*.log 2>/dev/null)
 
 if [ -n "$UNINTENTIONAL_AST_ERRORS" ]; then
     echo "⚠️  MISSING AST ERRORS FOUND:"
-    echo -e "$UNINTENTIONAL_AST_ERRORS" | head -10
+    echo "$UNINTENTIONAL_AST_ERRORS" | head -10
     FOUND_ISSUES=true
 else
     echo "✓ No missing AST errors found"
@@ -324,28 +424,42 @@ else
     
     DEEP_ISSUES_FOUND=false
     
-    # Check for any ERROR: patterns we might have missed
+    # Check for any ERROR: patterns we might have missed (with whitelist filtering)
     echo "--- Scanning for additional ERROR patterns ---"
-    ERROR_COUNT=$(grep -E "ERROR:|Error:" logs/*.log 2>/dev/null | \
-        grep -v "ERROR: Test error message" | \
-        grep -v "ERROR: AddressSanitizer" | \
-        grep -v "ERROR: LeakSanitizer" | \
-        grep -v "ERROR: UndefinedBehaviorSanitizer" | \
-        grep -v "ERROR: ThreadSanitizer" | \
-        wc -l)
+    UNFILTERED_ERRORS=""
     
-    if [ "$ERROR_COUNT" -gt 0 ]; then
-        echo "⚠️  Found $ERROR_COUNT ERROR messages in logs:"
-        grep -E "ERROR:|Error:" logs/*.log 2>/dev/null | \
-            grep -v "ERROR: Test error message" | \
-            grep -v "ERROR: AddressSanitizer" | \
-            grep -v "ERROR: LeakSanitizer" | \
-            grep -v "ERROR: UndefinedBehaviorSanitizer" | \
-            grep -v "ERROR: ThreadSanitizer" | \
-            head -10 | sed 's/^/    /'
+    # Get all ERROR patterns and filter through whitelist
+    while IFS= read -r line; do
+        # Skip known sanitizer errors
+        if echo "$line" | grep -q -E "(ERROR: AddressSanitizer|ERROR: LeakSanitizer|ERROR: UndefinedBehaviorSanitizer|ERROR: ThreadSanitizer|ERROR: Test error message)"; then
+            continue
+        fi
+        
+        # Parse the grep output for whitelist checking
+        file=$(echo "$line" | sed 's/:\([0-9]\+\):.*$//')
+        line_num=$(echo "$line" | sed 's/^.*:\([0-9]\+\):.*$/\1/')
+        error_text=$(echo "$line" | sed 's/^[^:]*:[0-9]\+://')
+        
+        # Check if this error is whitelisted
+        if [ -n "$file" ] && [ -n "$line_num" ] && is_whitelisted_error "$file" "$line_num" "$error_text"; then
+            continue  # Skip whitelisted errors
+        fi
+        
+        # Add to unfiltered errors
+        if [ -z "$UNFILTERED_ERRORS" ]; then
+            UNFILTERED_ERRORS="$line"
+        else
+            UNFILTERED_ERRORS="$UNFILTERED_ERRORS"$'\n'"$line"
+        fi
+    done < <(grep -n -E "ERROR:|Error:" logs/*.log 2>/dev/null)
+    
+    if [ -n "$UNFILTERED_ERRORS" ]; then
+        ERROR_COUNT=$(echo "$UNFILTERED_ERRORS" | wc -l)
+        echo "⚠️  Found $ERROR_COUNT unwhitelisted ERROR messages in logs:"
+        echo "$UNFILTERED_ERRORS" | head -10 | sed 's/^/    /'
         DEEP_ISSUES_FOUND=true
     else
-        echo "✓ No additional ERROR patterns found"
+        echo "✓ No additional unwhitelisted ERROR patterns found"
     fi
     echo
     

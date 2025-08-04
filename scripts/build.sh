@@ -274,46 +274,12 @@ if $leak_found; then
     exit_status=1
 fi
 
-# Check for runtime errors and warnings that indicate real issues
+
+# Note: Detailed runtime error checking is now handled by check_build_logs.sh
+# This build script focuses on job status and memory leaks only
 echo
-echo "--- Runtime Error Check ---"
-runtime_errors_found=false
-
-# Check for deep copy support errors
-if grep -q "no deep copy support" logs/*.log 2>/dev/null; then
-    echo "✗ Deep copy support errors detected:"
-    grep "no deep copy support" logs/*.log 2>/dev/null | head -3 | sed 's/^/    /'
-    runtime_errors_found=true
-    exit_status=1
-fi
-
-# Check for unexpected test behaviors
-if grep -q "expected failure" logs/*.log 2>/dev/null; then
-    echo "✗ Tests behaving unexpectedly (expected failures succeeding):"
-    grep "expected failure" logs/*.log 2>/dev/null | head -3 | sed 's/^/    /'
-    runtime_errors_found=true
-    exit_status=1
-fi
-
-# Check for method evaluation failures
-if grep "ERROR: Method evaluation failed" logs/*.log 2>/dev/null | grep -v "test.*expected.*fail" | grep -q .; then
-    echo "✗ Method evaluation failures detected:"
-    grep "ERROR: Method evaluation failed" logs/*.log 2>/dev/null | grep -v "test.*expected.*fail" | head -3 | sed 's/^/    /'
-    runtime_errors_found=true
-    exit_status=1
-fi
-
-# Check for missing AST errors
-if grep -q "ERROR: Method has no AST" logs/*.log 2>/dev/null; then
-    echo "✗ Missing AST errors detected:"
-    grep "ERROR: Method has no AST" logs/*.log 2>/dev/null | head -3 | sed 's/^/    /'
-    runtime_errors_found=true
-    exit_status=1
-fi
-
-if [ "$runtime_errors_found" = false ]; then
-    echo "✓ No runtime errors detected"
-fi
+echo "--- Runtime Error Check (Basic) ---"
+echo "✓ Use 'make check-logs' for detailed error analysis"
 
 if [ $exit_status -eq 0 ]; then
     echo "Overall status: ✓ SUCCESS"

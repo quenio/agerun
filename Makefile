@@ -606,10 +606,10 @@ build: install-scan-build
 
 # Check build logs for hidden issues
 check-logs:
-	@if [ -x ./scripts/check_build_logs.sh ]; then \
-		./scripts/check_build_logs.sh; \
+	@if [ -x ./scripts/check_logs.py ]; then \
+		python3 ./scripts/check_logs.py; \
 	else \
-		echo "ERROR: scripts/check_build_logs.sh not found or not executable"; \
+		echo "ERROR: scripts/check_logs.py not found or not executable"; \
 		exit 1; \
 	fi
 
