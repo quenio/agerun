@@ -23,7 +23,7 @@ def load_whitelist():
     # Simple YAML parser for our specific format
     whitelist = []
     with open(whitelist_file, 'r') as f:
-        in_intentional_errors = False
+        in_ignored_errors = False
         current_entry = {}
         
         for line in f:
@@ -31,12 +31,12 @@ def load_whitelist():
             if line.strip().startswith('#') or not line.strip():
                 continue
                 
-            # Check if we're in the intentional_errors section
-            if line.strip() == 'intentional_errors:':
-                in_intentional_errors = True
+            # Check if we're in the ignored_errors section
+            if line.strip() == 'ignored_errors:':
+                in_ignored_errors = True
                 continue
                 
-            if not in_intentional_errors:
+            if not in_ignored_errors:
                 continue
                 
             # Parse YAML entries

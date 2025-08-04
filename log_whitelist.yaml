@@ -10,7 +10,7 @@
 #     message: "error_message_suffix"
 #     comment: "Optional description"
 
-intentional_errors:
+ignored_errors:
 
   # agent_manager_tests
   - context: "agent_manager_tests"
