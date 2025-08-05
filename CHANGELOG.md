@@ -4,6 +4,18 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-08-05
 
+### ✅ Calculator Wake Message Field Access Error Resolution
+- Fixed wake message field access error in calculator method
+  - Applied same pattern as echo method to detect special messages
+  - Provides default values for operation, operands, and sender fields
+  - Prevents "Cannot access field 'operation' on STRING value" error
+- Removed calculator_tests wake message error from whitelist
+  - Whitelist reduced from 220 to 219 entries
+  - Verified fix with clean build and check-logs
+- Updated calculator method documentation
+  - Added Special Messages section explaining lifecycle message handling
+  - Updated implementation section with wake/sleep handling code
+
 ### ✅ Wake Message Field Access Error Resolution & Knowledge Base Enhancement
 - Fixed wake message field access error in echo method
   - Applied pattern from method-creator to detect special messages

@@ -6,6 +6,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+### Calculator Wake Message Field Access Error Fix (Completed 2025-08-05)
+- [x] Fixed wake message field access error in calculator method using same pattern as echo; removed calculator_tests error from whitelist (219 entries remaining); 13 wake message errors remain to be fixed
+
 ### Wake Message Field Access Error Fix & Knowledge Base Enhancement (Completed 2025-08-05)
 - [x] Fixed wake message field access error in echo method by detecting special messages and providing default values; removed echo_tests error from whitelist (220 entries remaining); pattern can be applied to fix remaining 14 wake message errors in other methods; created 4 new KB articles (wake-message-field-access-pattern.md, agerun-language-constraint-workarounds.md, cross-method-pattern-discovery.md, systematic-error-whitelist-reduction.md); updated defensive-programming-consistency.md with message type handling; added cross-references to 3 existing articles; updated CLAUDE.md and check-logs command with new patterns
 

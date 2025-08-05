@@ -17,13 +17,27 @@ The calculator performs the requested operation and sends the result back to the
 ## Implementation
 
 ```
+memory.is_wake := if(message = "__wake__", 1, 0)
+memory.is_sleep := if(message = "__sleep__", 1, 0)
+memory.is_special := memory.is_wake + memory.is_sleep
+memory.operation := if(memory.is_special > 0, "none", message.operation)
+memory.a := if(memory.is_special > 0, 0, message.a)
+memory.b := if(memory.is_special > 0, 0, message.b)
+memory.sender := if(memory.is_special > 0, 0, message.sender)
 memory.result := 0
-memory.result := if(message.operation = "add", message.a + message.b, memory.result)
-memory.result := if(message.operation = "multiply", message.a * message.b, memory.result)
-memory.result := if(message.operation = "subtract", message.a - message.b, memory.result)
-memory.result := if(message.operation = "divide", message.a / message.b, memory.result)
-send(message.sender, memory.result)
+memory.result := if(memory.operation = "add", memory.a + memory.b, memory.result)
+memory.result := if(memory.operation = "multiply", memory.a * memory.b, memory.result)
+memory.result := if(memory.operation = "subtract", memory.a - memory.b, memory.result)
+memory.result := if(memory.operation = "divide", memory.a / memory.b, memory.result)
+send(memory.sender, memory.result)
 ```
+
+The implementation handles special lifecycle messages (`__wake__` and `__sleep__`) which are strings, not maps. For these messages:
+- The operation is set to "none" (no calculation performed)
+- Operands a and b are set to 0
+- The sender is set to 0 (system)
+- Result 0 is sent back
+- This prevents errors when trying to access fields that don't exist on string messages
 
 ## Usage
 
@@ -84,11 +98,19 @@ The calculator sends back a single numeric value representing the result of the 
 3. **Subtraction** (`"subtract"`): Returns a - b
 4. **Division** (`"divide"`): Returns a / b
 
+## Special Messages
+
+The calculator method handles lifecycle messages specially:
+- `__wake__`: Sent back to agent 0 (system) with result 0
+- `__sleep__`: Sent back to agent 0 (system) with result 0
+
+These special messages are strings, not maps, so the method detects them and provides default values to avoid field access errors.
+
 ## Error Handling
 
 - If the operation is not recognized, the calculator returns the last computed result (initially 0)
 - Division by zero follows standard floating-point behavior (returns infinity)
-- Missing fields in the message may cause undefined behavior
+- Special messages (`__wake__`, `__sleep__`) are handled gracefully with default values
 
 ## Memory State
 
