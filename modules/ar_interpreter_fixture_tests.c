@@ -143,6 +143,9 @@ static void test_fixture_execute_instruction(void) {
     ar_data__set_map_string(own_message, "text", "Hello");
     ar_data__set_map_integer(own_message, "count", 42);
     
+    // Take ownership of the message (fixture owns it during execution)
+    ar_data__take_ownership(own_message, own_fixture);
+    
     // Test string concatenation with message field
     temp_agent_id = ar_interpreter_fixture__execute_with_message(
         own_fixture,
@@ -157,13 +160,26 @@ static void test_fixture_execute_instruction(void) {
     assert(strcmp(ar_data__get_string(ref_greeting), "Message says: Hello") == 0);
     ar_interpreter_fixture__destroy_temp_agent(own_fixture, temp_agent_id);
     
+    // Destroy message if fixture still owns it
+    ar_data__destroy_if_owned(own_message, own_fixture);
+    
+    // Create a new message for the second test
+    own_message = ar_data__create_map();
+    ar_data__set_map_string(own_message, "text", "World");
+    ar_data__set_map_integer(own_message, "count", 42);
+    
+    // Take ownership again
+    ar_data__take_ownership(own_message, own_fixture);
+    
     // Test arithmetic with message field
     temp_agent_id = ar_interpreter_fixture__execute_with_message(
         own_fixture,
         "memory.doubled := message.count * 2",
         own_message
     );
-    ar_data__destroy(own_message);
+    
+    // Destroy message if fixture still owns it
+    ar_data__destroy_if_owned(own_message, own_fixture);
     
     assert(temp_agent_id > 0);
     mut_memory = ar_interpreter_fixture__get_agent_memory(own_fixture, temp_agent_id);

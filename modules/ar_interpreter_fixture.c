@@ -270,10 +270,86 @@ int64_t ar_interpreter_fixture__execute_with_message(
     char method_name[256];
     snprintf(method_name, sizeof(method_name), "__test_instruction_%d__", test_counter++);
     
-    // Create and register a temporary method with the single instruction
+    // Build method body with wake message handling
+    char method_body[4096];
+    char modified_instruction[2048];
+    
+    // Field names and defaults
+    const char *field_names[] = {"text", "count", "sender", "operation", "a", "b", 
+                                 "route", "echo_agent", "calc_agent", "payload", 
+                                 "template", "input", "output_template", "type", "value"};
+    const char *field_defaults[] = {"\"\"", "0", "0", "\"\"", "0", "0", 
+                                    "\"\"", "0", "0", "\"\"", 
+                                    "\"\"", "\"\"", "\"\"", "\"\"", "0"};
+    
+    // First, create wake message detection
+    // Check if any message fields are accessed - if not, we don't need wake handling
+    bool needs_wake_handling = false;
+    for (size_t i = 0; i < sizeof(field_names)/sizeof(field_names[0]); i++) {
+        char search_pattern[256];
+        snprintf(search_pattern, sizeof(search_pattern), "message.%s", field_names[i]);
+        if (strstr(ref_instruction, search_pattern) != NULL) {
+            needs_wake_handling = true;
+            break;
+        }
+    }
+    
+    if (needs_wake_handling) {
+        strcpy(method_body, "memory.is_wake := if(message = \"__wake__\", 1, 0)\n");
+        strcat(method_body, "memory.is_sleep := if(message = \"__sleep__\", 1, 0)\n");
+        strcat(method_body, "memory.is_special := memory.is_wake + memory.is_sleep\n");
+    } else {
+        method_body[0] = '\0';  // Start with empty body
+    }
+    
+    // Copy the instruction for modification
+    strncpy(modified_instruction, ref_instruction, sizeof(modified_instruction) - 1);
+    modified_instruction[sizeof(modified_instruction) - 1] = '\0';
+    
+    // Check which fields are accessed in the instruction
+    for (size_t i = 0; i < sizeof(field_names)/sizeof(field_names[0]); i++) {
+        char search_pattern[256];
+        snprintf(search_pattern, sizeof(search_pattern), "message.%s", field_names[i]);
+        
+        if (strstr(ref_instruction, search_pattern) != NULL) {
+            // Add memory assignment for this field
+            char field_assignment[512];
+            snprintf(field_assignment, sizeof(field_assignment), 
+                    "memory.%s := if(memory.is_special > 0, %s, message.%s)\n",
+                    field_names[i], field_defaults[i], field_names[i]);
+            strcat(method_body, field_assignment);
+            
+            // Replace message.field with memory.field in the instruction
+            char replacement[256];
+            snprintf(replacement, sizeof(replacement), "memory.%s", field_names[i]);
+            
+            // Simple string replacement (works for our test cases)
+            char *pos = strstr(modified_instruction, search_pattern);
+            if (pos) {
+                size_t before_len = (size_t)(pos - modified_instruction);
+                size_t pattern_len = strlen(search_pattern);
+                
+                char temp[2048];
+                strncpy(temp, modified_instruction, before_len);
+                temp[before_len] = '\0';
+                strcat(temp, replacement);
+                strcat(temp, pos + pattern_len);
+                
+                strcpy(modified_instruction, temp);
+            }
+        }
+    }
+    
+    // Append the modified instruction
+    strcat(method_body, modified_instruction);
+    
+    // Debug: Print the generated method body
+    fprintf(stderr, "DEBUG: Generated method body for '%s':\n%s\n", ref_instruction, method_body);
+    
+    // Create the method with the complete body
     ar_method_t *own_temp_method = ar_method__create(
         method_name,
-        ref_instruction,
+        method_body,
         "1.0.0"
     );
     

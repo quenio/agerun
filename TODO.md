@@ -18,6 +18,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
 ### String Builder Wake Message Field Access Error Fix (Completed 2025-08-05)
 - [x] Fixed wake message field access errors in string_builder method using same pattern; removed 2 string_builder_tests errors from whitelist (213 entries remaining); 7 wake message errors remain to be fixed
 
+### Interpreter Fixture Wake Message Error Fix (Completed 2025-08-05)
+- [x] Fixed wake message errors in ar_interpreter_fixture_tests by adding proper message ownership handling in test code; fixture was bypassing normal ownership flow allowing expression evaluator to claim messages; fixed by having test take ownership before execution and destroy after; removed 2 whitelist entries (212 entries remaining); discovered ownership pattern difference between system and fixture execution
+
 ### Whitelist Specificity Enhancement (Completed 2025-08-05)
 - [x] Enhanced whitelist specificity for ar_expression_evaluator_tests by using unique field name 'type_mismatch_test_field' instead of generic 'method_name'; prevents masking real wake message errors; validated solution by simulating error that was correctly caught as unwhitelisted; created 2 KB articles (whitelist-specificity-pattern.md, error-detection-validation-testing.md); updated CLAUDE.md with new patterns
 

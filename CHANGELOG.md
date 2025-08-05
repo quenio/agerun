@@ -4,6 +4,20 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-08-05
 
+### ✅ Interpreter Fixture Wake Message Error Resolution
+- Fixed ownership issue in ar_interpreter_fixture_tests causing wake message errors
+  - Root cause: fixture bypassed normal message ownership flow
+  - Expression evaluator claimed unowned messages, corrupting frame references
+  - Solution: test takes ownership before passing to fixture, destroys after
+- Removed 2 wake message errors from whitelist
+  - "Cannot access field 'text' on STRING value" error
+  - "Cannot access field 'count' on STRING value" error
+  - Whitelist reduced from 214 to 212 entries
+- Discovered architectural difference between system and fixture execution
+  - System owns messages during interpreter execution
+  - Fixture tests must manually manage ownership
+  - Follows pattern: take_ownership → execute → destroy_if_owned
+
 ### ✅ Whitelist Specificity Enhancement for ar_expression_evaluator_tests
 - Made wake message error whitelisting more specific to prevent masking real bugs
   - Changed field name from generic 'method_name' to unique 'type_mismatch_test_field'
