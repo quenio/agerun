@@ -1,4 +1,11 @@
-memory.parsed := parse(message.template, message.input)
-memory.result := build(message.output_template, memory.parsed)
-send(message.sender, memory.result)
+memory.is_wake := if(message = "__wake__", 1, 0)
+memory.is_sleep := if(message = "__sleep__", 1, 0)
+memory.is_special := memory.is_wake + memory.is_sleep
+memory.template := if(memory.is_special > 0, "", message.template)
+memory.input := if(memory.is_special > 0, "", message.input)
+memory.output_template := if(memory.is_special > 0, "", message.output_template)
+memory.sender := if(memory.is_special > 0, 0, message.sender)
+memory.parsed := parse(memory.template, memory.input)
+memory.result := build(memory.output_template, memory.parsed)
+send(memory.sender, memory.result)
 

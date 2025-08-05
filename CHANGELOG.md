@@ -4,6 +4,19 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-08-05
 
+### ✅ String Builder Wake Message Field Access Error Resolution
+- Fixed wake message field access errors in string_builder method
+  - Applied same pattern to detect special messages and provide defaults
+  - Provides default values for template fields and sender
+  - Prevents "Cannot access field 'template' on STRING value" errors
+- Removed 2 string_builder_tests wake message errors from whitelist
+  - Whitelist reduced from 215 to 213 entries
+  - Updated whitelist totals to reflect new count
+  - Verified fix with clean build and check-logs
+- Updated string-builder method documentation
+  - Added Implementation and Special Messages sections
+  - Explains how parse/build operations handle empty strings for special messages
+
 ### ✅ Message Router Wake Message Field Access Error Resolution
 - Fixed wake message field access errors in message_router method
   - Applied same pattern to detect special messages and provide defaults

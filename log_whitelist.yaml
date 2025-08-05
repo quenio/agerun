@@ -737,15 +737,9 @@ ignored_errors:
   - context: "ar_interpreter_fixture_tests"
     message: "ERROR: Cannot access field 'count' on STRING value "__wake__" (base: message)"
     comment: "Wake message field access error"
-  - context: "string_builder_tests"
-    message: "ERROR: Cannot access field 'template' on STRING value "__wake__" (base: message)"
-    comment: "Wake message field access error"
-  - context: "string_builder_tests"
-    message: "ERROR: Cannot parse with nested containers in template (expression: message.template, error: Cannot access field 'template' on STRING value "__wake__" (base: message))"
-    comment: "Wake message template parsing error"
 
-# Total entries: 221
-# Test entries: 214
+# Total entries: 213
+# Test entries: 206
 # Executable entries: 7
 # Context-free entries: 0
 
