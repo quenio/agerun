@@ -81,6 +81,7 @@ Each learning file contains:
 - [Intentional Test Errors Filtering](intentional-test-errors-filtering.md)
 - [Whitelist Specificity Pattern](whitelist-specificity-pattern.md)
 - [Error Detection Validation Testing](error-detection-validation-testing.md)
+- [Systematic Whitelist Error Resolution](systematic-whitelist-error-resolution.md)
 - [Uniform Filtering Application](uniform-filtering-application.md)
 - [Log Format Variation Handling](log-format-variation-handling.md)
 - [Systematic Error Whitelist Reduction](systematic-error-whitelist-reduction.md)
