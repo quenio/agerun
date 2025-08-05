@@ -4,6 +4,21 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-08-05
 
+### ✅ Whitelist Specificity Enhancement for ar_expression_evaluator_tests
+- Made wake message error whitelisting more specific to prevent masking real bugs
+  - Changed field name from generic 'method_name' to unique 'type_mismatch_test_field'
+  - Ensures only the intentional test error is whitelisted
+  - Prevents accidental wake message errors in other tests from being ignored
+- Updated whitelist entries to match the new unique field name
+  - Added entry for test explanation message "(The error above...was expected)"
+  - Total whitelist entries increased from 213 to 214
+- Thoroughly tested the solution
+  - Simulated a wake message error in another test (accessing message.sender)
+  - Confirmed the simulated error was caught by deep analysis as unwhitelisted
+  - Verified only the specific test error is ignored
+
+## 2025-08-05
+
 ### ✅ String Builder Wake Message Field Access Error Resolution
 - Fixed wake message field access errors in string_builder method
   - Applied same pattern to detect special messages and provide defaults

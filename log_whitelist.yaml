@@ -724,13 +724,16 @@ ignored_errors:
     message: "Warning: Agent store file does not exist"
     comment: "Expected agent store warning in executable"
 
-  # Wake message field access errors
+  # Intentional wake message errors for testing error handling
   - context: "ar_expression_evaluator_tests"
-    message: "ERROR: Cannot access field 'method_name' on STRING value "__wake__" (base: message)"
-    comment: "Wake message field access error"
+    message: "ERROR: Cannot access field 'type_mismatch_test_field' on STRING value "__wake__" (base: message)"
+    comment: "Intentional test error - verifying field access error message format (unique field name prevents masking real errors)"
   - context: "ar_expression_evaluator_tests"
-    message: "Actual error message: 'Cannot access field 'method_name' on STRING value "__wake__" (base: message)'"
-    comment: "Wake message field access error output"
+    message: "Actual error message: 'Cannot access field 'type_mismatch_test_field' on STRING value "__wake__" (base: message)'"
+    comment: "Test output showing the expected error was produced"
+  - context: "ar_expression_evaluator_tests"
+    message: "(The error above 'Cannot access field 'type_mismatch_test_field' on STRING value "__wake__"' was expected)"
+    comment: "Test explanation that the error was intentional"
   - context: "ar_interpreter_fixture_tests"
     message: "ERROR: Cannot access field 'text' on STRING value "__wake__" (base: message)"
     comment: "Wake message field access error"
@@ -738,8 +741,8 @@ ignored_errors:
     message: "ERROR: Cannot access field 'count' on STRING value "__wake__" (base: message)"
     comment: "Wake message field access error"
 
-# Total entries: 213
-# Test entries: 206
+# Total entries: 214
+# Test entries: 207
 # Executable entries: 7
 # Context-free entries: 0
 

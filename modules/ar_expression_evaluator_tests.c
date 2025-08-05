@@ -790,8 +790,8 @@ static void test_evaluate_type_mismatch_error_message(void) {
     ar_frame_t *own_frame = ar_frame__create(mut_memory, own_context, own_message);
     assert(own_frame != NULL);
     
-    // Create an expression that tries to access a field on the string message: message.method_name
-    const char *path[] = {"method_name"};
+    // Create an expression that tries to access a field on the string message: message.type_mismatch_test_field
+    const char *path[] = {"type_mismatch_test_field"};
     ar_expression_ast_t *own_ast = ar_expression_ast__create_memory_access("message", path, 1);
     assert(own_ast != NULL);
     
@@ -812,7 +812,7 @@ static void test_evaluate_type_mismatch_error_message(void) {
     printf("    Actual error message: '%s'\n", error_msg);
     
     // The error message should contain type information and field name
-    assert(strstr(error_msg, "Cannot access field 'method_name'") != NULL);
+    assert(strstr(error_msg, "Cannot access field 'type_mismatch_test_field'") != NULL);
     assert(strstr(error_msg, "STRING") != NULL);
     assert(strstr(error_msg, "__wake__") != NULL);
     
@@ -824,7 +824,7 @@ static void test_evaluate_type_mismatch_error_message(void) {
     ar_evaluator_fixture__destroy(own_fixture);
     
     printf("  ✓ Type mismatch produces detailed error message\n");
-    printf("    (The error above 'Cannot access field 'method_name' on STRING value \"__wake__\"' was expected)\n");
+    printf("    (The error above 'Cannot access field 'type_mismatch_test_field' on STRING value \"__wake__\"' was expected)\n");
 }
 
 int main(void) {
