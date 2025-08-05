@@ -4,6 +4,18 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-08-05
 
+### ✅ Message Router Wake Message Field Access Error Resolution
+- Fixed wake message field access errors in message_router method
+  - Applied same pattern to detect special messages and provide defaults
+  - Provides default values for route, agent IDs, payload, and sender fields
+  - Prevents "Cannot access field on STRING value" errors for 3 different fields
+- Removed 3 message_router_tests wake message errors from whitelist
+  - Whitelist reduced from 218 to 215 entries
+  - Verified fix with clean build and check-logs
+- Updated message-router method documentation
+  - Added Implementation and Special Messages sections
+  - Explains how all 5 accessed fields are handled for lifecycle messages
+
 ### ✅ Grade Evaluator Wake Message Field Access Error Resolution
 - Fixed wake message field access error in grade_evaluator method
   - Applied same pattern to detect special messages and provide defaults
