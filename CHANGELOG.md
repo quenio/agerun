@@ -2,6 +2,19 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-08-05
+
+### ✅ Wake Message Field Access Error Resolution
+- Fixed wake message field access error in echo method
+  - Applied pattern from method-creator to detect special messages
+  - Provides default values for fields when message is a string
+  - Prevents "Cannot access field on STRING value" errors
+- Removed echo_tests wake message error from whitelist
+  - Whitelist reduced from 221 to 220 entries
+  - Verified fix with clean build and check-logs
+- Identified pattern applicable to remaining 14 wake message errors
+  - Same fix can be applied to calculator, grade evaluator, message router, string builder, and other affected methods
+
 ## 2025-08-04
 
 ### ✅ Knowledge Base Articles from Log Whitelist Enhancement
