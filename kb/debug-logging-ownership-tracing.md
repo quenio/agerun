@@ -47,11 +47,12 @@ if (ref_value == own_value and c.ar_data__get_type(ref_value) == c.AR_DATA_TYPE_
 
 ## Generalization
 Debug logging strategy for ownership issues:
-1. **Log at every transfer point**: Send, receive, create, destroy
+1. **Log at every transfer point**: Send, receive, create, destroy, claim
 2. **Include key information**: Component name, operation, data type, data value (if simple), pointer address
 3. **Use consistent prefixes**: [COMPONENT_ACTION] for easy grep filtering
-4. **Log ownership changes**: When taking, dropping, or transferring ownership
+4. **Log ownership changes**: When taking, dropping, claiming, or transferring ownership
 5. **Keep logs after fixing**: Future debugging will benefit
+6. **Log claim attempts**: Critical for detecting evaluator ownership claims
 
 ## Implementation
 ```c
@@ -75,10 +76,21 @@ make test_name 2>&1 | grep "data=0x600001db5640"
 
 // See ownership flow
 make test_name 2>&1 | grep -E "SEND|RECEIVE|CLAIM|DESTROY"
+
+// Critical: Look for unexpected claims
+make test_name 2>&1 | grep "Claimed ownership"
 ```
+
+## Real Example: Expression Evaluator Claim
+The debug message that revealed the ownership issue in ar_interpreter_fixture_tests:
+```
+DEBUG [EVALUATE_EXPR]: Claimed ownership of MAP at cimport.struct_ar_data_s@600000139920
+```
+This indicated the expression evaluator was claiming an unowned message during wake handling evaluation.
 
 ## Related Patterns
 - [Evidence-Based Debugging](evidence-based-debugging.md)
 - [Memory Debugging Comprehensive Guide](memory-debugging-comprehensive-guide.md)
 - [Ownership Gap Vulnerability Pattern](ownership-gap-vulnerability.md)
 - [Stderr Redirection for Debugging](stderr-redirection-debugging.md)
+- [Expression Evaluator Claim Behavior](expression-evaluator-claim-behavior.md)

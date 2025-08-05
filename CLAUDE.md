@@ -97,6 +97,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
   - `AR_ASSERT_NOT_USED_AFTER_FREE()` for complex reuse patterns
   - See ar_assert.md for complete guidelines
 - Expression ownership: memory.x=reference, arithmetic/strings=new object ([details](kb/expression-ownership-rules.md))
+- Expression evaluator claims: Unowned data can be claimed during evaluation ([details](kb/expression-evaluator-claim-behavior.md))
 - Map iteration: get keys, destroy list & elements; persist with key/type then value
 - Wake/sleep messages: Agents mark ownership, system drops before destroy ([details](kb/ownership-drop-message-passing.md))
 - Message ownership flow: System takes ownership after dequeuing from agents ([details](kb/message-ownership-flow.md))
@@ -129,6 +130,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Test isolation**: Comment out tests to isolate error sources ([details](kb/test-isolation-through-commenting.md))
 **Error marking**: Mark intentional errors clearly in tests ([details](kb/test-error-marking-strategy.md))
 **Whitelist specificity**: Use unique fields for test errors to prevent masking ([details](kb/whitelist-specificity-pattern.md))
+**Fixture ownership**: Tests bypassing system must manage message ownership ([details](kb/test-fixture-message-ownership.md))
 **Advanced patterns**: ([details](kb/tdd-advanced-large-refactoring.md), [API changes](kb/tdd-api-simplification.md))
 
 ### 3. Parnas Design Principles (STRICT ENFORCEMENT) ✅

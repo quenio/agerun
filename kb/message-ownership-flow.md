@@ -66,6 +66,22 @@ bool ar_system__process_next_message_with_instance(ar_system_t *mut_system) {
 3. **Const References**: Interpreter and frame store messages as const references, not taking ownership
 4. **System Responsibility**: The system is responsible for message lifecycle after dequeuing
 
+## Test Fixture Considerations
+
+Test fixtures that bypass the normal system flow must replicate ownership management:
+
+```c
+// WRONG: Fixture calls interpreter directly without ownership
+ar_interpreter__execute_method(interpreter, agent_id, message);  // Message unowned!
+
+// CORRECT: Test fixture must manage ownership like system does
+ar_data__take_ownership(message, fixture);
+ar_interpreter__execute_method(interpreter, agent_id, message);
+ar_data__destroy_if_owned(message, fixture);
+```
+
+**Critical**: Any code that calls `ar_interpreter__execute_method` directly must ensure the message has an owner to prevent the expression evaluator from claiming it during evaluation.
+
 ## Related Patterns
 - [Ownership Drop in Message Passing](ownership-drop-message-passing.md) - Previous pattern (now updated)
 - [Ownership Naming Conventions](ownership-naming-conventions.md)
@@ -74,3 +90,4 @@ bool ar_system__process_next_message_with_instance(ar_system_t *mut_system) {
 - [Memory Debugging Comprehensive Guide](memory-debugging-comprehensive-guide.md)
 - [Ownership Gap Vulnerability](ownership-gap-vulnerability.md) - Detailed explanation of the gap issue
 - [Debug Logging for Ownership Tracing](debug-logging-ownership-tracing.md) - How to debug these issues
+- [Test Fixture Message Ownership](test-fixture-message-ownership.md) - Fixture-specific patterns

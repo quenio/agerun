@@ -58,6 +58,23 @@ ar_data__destroy(own_keys);  // Destroys the list structure
 **Self-ownership check**: Never let `values_result == mut_memory` in evaluators
 **Context lifetime**: NEVER destroy context or its elements in evaluators
 
+## Claim Behavior During Evaluation
+
+The expression evaluator uses `ar_data__claim_or_copy()` which can claim ownership of unowned data:
+
+```c
+// DANGER: Unowned data can be claimed during evaluation
+ar_data_t *unowned_message = /* message with no owner */;
+// During evaluation of comparisons like (message = "__wake__"):
+// Evaluator may claim ownership, corrupting frame references
+
+// SAFE: Ensure data has an owner before evaluation
+ar_data__take_ownership(message, owner);
+// Now evaluator will make a copy instead of claiming
+```
+
+**Warning**: Always ensure data passed to expression evaluation has an owner to prevent unexpected claims.
+
 ## Related Patterns
 - [Ownership Naming Conventions](ownership-naming-conventions.md)
 - [Memory Debugging Comprehensive Guide](memory-debugging-comprehensive-guide.md)
@@ -65,3 +82,4 @@ ar_data__destroy(own_keys);  // Destroys the list structure
 - [Ownership Transfer in Message Passing](ownership-drop-message-passing.md)
 - [Ownership Gap Vulnerability](ownership-gap-vulnerability.md) - How unowned data causes corruption
 - [Debug Logging for Ownership Tracing](debug-logging-ownership-tracing.md) - Debugging ownership issues
+- [Expression Evaluator Claim Behavior](expression-evaluator-claim-behavior.md) - Details on claim mechanism
