@@ -46,6 +46,7 @@ Each learning file contains:
 - [Module Development Patterns](module-development-patterns.md)
 - [Zig Module Development Guide](zig-module-development-guide.md)
 - [Refactoring Patterns Detailed](refactoring-patterns-detailed.md)
+- [Cross-Method Pattern Discovery](cross-method-pattern-discovery.md)
 
 ### Memory Management
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)
@@ -79,6 +80,7 @@ Each learning file contains:
 - [Intentional Test Errors Filtering](intentional-test-errors-filtering.md)
 - [Uniform Filtering Application](uniform-filtering-application.md)
 - [Log Format Variation Handling](log-format-variation-handling.md)
+- [Systematic Error Whitelist Reduction](systematic-error-whitelist-reduction.md)
 
 ### Architecture & Design
 - [Opaque Types Pattern](opaque-types-pattern.md)
@@ -98,6 +100,8 @@ Each learning file contains:
 - [Internal vs External Module Pattern](internal-vs-external-module-pattern.md)
 - [Module Instantiation Prerequisites](module-instantiation-prerequisites.md)
 - [Instance Association Pattern](instance-association-pattern.md)
+- [Wake Message Field Access Pattern](wake-message-field-access-pattern.md)
+- [AgeRun Language Constraint Workarounds](agerun-language-constraint-workarounds.md)
 - [Persistence Simplification Through Instantiation](persistence-simplification-through-instantiation.md)
 - [Global Instance Wrapper Anti-Pattern](global-instance-wrapper-anti-pattern.md)
 - [Instance API Resource Cleanup Pattern](instance-api-resource-cleanup-pattern.md)

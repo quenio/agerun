@@ -46,6 +46,36 @@ ar_data__destroy_if_owned(data, owner);
 // Future changes won't introduce subtle bugs
 ```
 
+### Message Type Handling
+Defensive programming is especially important when dealing with mixed message types:
+
+```c
+// Non-defensive: Assumes message is always a map
+ar_data_t* ref_sender = ar_data__get_map_data(message, "sender");  // BAD: Crashes on string messages
+
+// Defensive: Handle both string and map messages
+ar_data_type_t msg_type = ar_data__get_type(message);
+ar_data_t* own_sender;
+if (msg_type == AR_DATA_TYPE_STRING) {
+    // Handle special messages like __wake__
+    own_sender = ar_data__create_integer(0);  // Default sender
+} else if (msg_type == AR_DATA_TYPE_MAP) {
+    // Safe to access map fields
+    ar_data_t* ref_sender_field = ar_data__get_map_data(message, "sender");
+    own_sender = ref_sender_field ? ar_data__shallow_copy(ref_sender_field) : ar_data__create_integer(0);
+} else {
+    // Handle other types defensively
+    own_sender = ar_data__create_integer(0);
+}
+```
+
+In AgeRun method language, use defensive value selection:
+```
+memory.is_special := if(message = "__wake__", 1, 0)
+memory.sender := if(memory.is_special = 1, 0, message.sender)  # Defensive default
+```
+
 ## Related Patterns
 - [Ownership Pattern Extraction](ownership-pattern-extraction.md)
 - [Ownership Naming Conventions](ownership-naming-conventions.md)
+- [Wake Message Field Access Pattern](wake-message-field-access-pattern.md)

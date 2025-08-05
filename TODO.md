@@ -6,8 +6,8 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
-### Wake Message Field Access Error Fix (Completed 2025-08-05)
-- [x] Fixed wake message field access error in echo method by detecting special messages and providing default values; removed echo_tests error from whitelist (220 entries remaining); pattern can be applied to fix remaining 14 wake message errors in other methods
+### Wake Message Field Access Error Fix & Knowledge Base Enhancement (Completed 2025-08-05)
+- [x] Fixed wake message field access error in echo method by detecting special messages and providing default values; removed echo_tests error from whitelist (220 entries remaining); pattern can be applied to fix remaining 14 wake message errors in other methods; created 4 new KB articles (wake-message-field-access-pattern.md, agerun-language-constraint-workarounds.md, cross-method-pattern-discovery.md, systematic-error-whitelist-reduction.md); updated defensive-programming-consistency.md with message type handling; added cross-references to 3 existing articles; updated CLAUDE.md and check-logs command with new patterns
 
 ### compile() Function Validation and Build Script Fixes (Completed 2025-08-03 Part 8)
 - [x] Fixed compile() function to properly validate method syntax before returning success; now checks if method AST is valid after parsing; returns 0 for invalid syntax; fixed shell script error in check_build_logs.sh; implemented context-aware filtering for intentional test errors; created intentional-test-errors-filtering.md KB article

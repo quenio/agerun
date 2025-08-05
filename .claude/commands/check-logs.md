@@ -80,6 +80,7 @@ If `make check-logs` reports errors that are intentional (e.g., testing error ha
    - `message`: The error/warning message to match (timestamps automatically stripped)
    - `comment`: Optional description of why this is whitelisted
    - No more before/after matching - context + message is sufficient ([details](../../kb/whitelist-simplification-pattern.md))
+   - Consider fixing root causes instead of whitelisting ([details](../../kb/systematic-error-whitelist-reduction.md))
 
 Example workflow:
 ```bash

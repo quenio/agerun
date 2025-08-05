@@ -63,3 +63,4 @@ for (int i = 0; i < num_agents; i++) {
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)
 - [Test Fixture API Adaptation](test-fixture-api-adaptation.md)
 - [Ownership Transfer in Message Passing](ownership-drop-message-passing.md)
+- [Wake Message Field Access Pattern](wake-message-field-access-pattern.md)

@@ -87,3 +87,4 @@ Benefits of simplification:
 - [Code Smell - Long Parameter List](code-smell-long-parameter-list.md)
 - [Uniform Filtering Application](uniform-filtering-application.md)
 - [YAML String Matching Pitfalls](yaml-string-matching-pitfalls.md)
+- [Systematic Error Whitelist Reduction](systematic-error-whitelist-reduction.md)

@@ -261,6 +261,7 @@ grep -r "function_name\|concept" modules/
 - Function calls cannot be nested
 - `if()` cannot be nested
 - `send(0, message)` is a no-op returning true
+- Handle wake messages defensively ([details](kb/wake-message-field-access-pattern.md))
 
 ### 8. Development Practices
 
@@ -276,6 +277,8 @@ grep -r "function_name\|concept" modules/
 **Whitelist simplification**: Start complex, simplify based on usage ([details](kb/whitelist-simplification-pattern.md))
 **Uniform filtering**: Apply whitelist consistently in all checks ([details](kb/uniform-filtering-application.md))
 **YAML string matching**: Watch for quote escaping issues ([details](kb/yaml-string-matching-pitfalls.md))
+**Pattern discovery**: Check existing methods for solutions ([details](kb/cross-method-pattern-discovery.md))
+**Whitelist reduction**: Fix root causes, not symptoms ([details](kb/systematic-error-whitelist-reduction.md))
 
 ### 9. Error Propagation Pattern
 
@@ -412,6 +415,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 - **Function calls are NOT expressions** - per BNF grammar specification
 - **Send with memory references not supported** - send() needs ownership of message
 - **Message accessor** - `message.field` returns references like memory/context ([details](kb/expression-evaluator-accessor-extension.md))
+- **Language constraints** - No type checking, if() returns values ([details](kb/agerun-language-constraint-workarounds.md))
 
 ## Method Test Template
 
