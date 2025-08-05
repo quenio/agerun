@@ -102,3 +102,5 @@ Benefits of the YAML approach:
 - [Uniform Filtering Application](uniform-filtering-application.md)
 - [Log Format Variation Handling](log-format-variation-handling.md)
 - [YAML String Matching Pitfalls](yaml-string-matching-pitfalls.md)
+- [Whitelist Specificity Pattern](whitelist-specificity-pattern.md)
+- [Error Detection Validation Testing](error-detection-validation-testing.md)

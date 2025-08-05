@@ -128,6 +128,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Messages**: Process all including wake messages ([details](kb/agent-wake-message-processing.md))
 **Test isolation**: Comment out tests to isolate error sources ([details](kb/test-isolation-through-commenting.md))
 **Error marking**: Mark intentional errors clearly in tests ([details](kb/test-error-marking-strategy.md))
+**Whitelist specificity**: Use unique fields for test errors to prevent masking ([details](kb/whitelist-specificity-pattern.md))
 **Advanced patterns**: ([details](kb/tdd-advanced-large-refactoring.md), [API changes](kb/tdd-api-simplification.md))
 
 ### 3. Parnas Design Principles (STRICT ENFORCEMENT) ✅
@@ -279,6 +280,7 @@ grep -r "function_name\|concept" modules/
 **YAML string matching**: Watch for quote escaping issues ([details](kb/yaml-string-matching-pitfalls.md))
 **Pattern discovery**: Check existing methods for solutions ([details](kb/cross-method-pattern-discovery.md))
 **Whitelist reduction**: Fix root causes, not symptoms ([details](kb/systematic-error-whitelist-reduction.md))
+**Detection validation**: Test that whitelists don't mask real errors ([details](kb/error-detection-validation-testing.md))
 
 ### 9. Error Propagation Pattern
 

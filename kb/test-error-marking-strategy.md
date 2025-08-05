@@ -97,3 +97,4 @@ fi
 - [Test Diagnostic Output Preservation](test-diagnostic-output-preservation.md)
 - [Whitelist Simplification Pattern](whitelist-simplification-pattern.md)
 - [Uniform Filtering Application](uniform-filtering-application.md)
+- [Whitelist Specificity Pattern](whitelist-specificity-pattern.md)
