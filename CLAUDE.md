@@ -128,6 +128,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Cleanup**: `ar_methodology__cleanup()` & `ar_agency__reset()`
 **Messages**: Process all including wake messages ([details](kb/agent-wake-message-processing.md))
 **Test isolation**: Comment out tests to isolate error sources ([details](kb/test-isolation-through-commenting.md))
+**Integration tests**: Run actual binary with popen(), verify output ([details](kb/integration-test-binary-execution.md))
 **Error marking**: Mark intentional errors clearly in tests ([details](kb/test-error-marking-strategy.md))
 **Whitelist specificity**: Use unique fields for test errors to prevent masking ([details](kb/whitelist-specificity-pattern.md))
 **Fixture ownership**: Tests bypassing system must manage message ownership ([details](kb/test-fixture-message-ownership.md))

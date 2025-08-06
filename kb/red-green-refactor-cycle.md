@@ -21,13 +21,18 @@ Only after ALL three phases: Commit the complete feature
 Break complex features into small behavior cycles, completing each cycle fully before advancing
 
 ## Implementation
-1. **Red Phase**: Write failing test for ONE specific behavior
+1. **Red Phase**: Write REAL failing test that verifies actual behavior
+   - Test must actually execute and FAIL (not just compile error)
+   - No placeholder tests that do nothing
+   - Test failure must be for the RIGHT reason
 2. **Green Phase**: Write minimum code to make test pass
 3. **Refactor Phase**: Improve code while keeping tests green (MANDATORY)
 4. **Repeat cycle** for next behavior
 5. **Commit only** after ALL cycles complete
 
-Critical: Refactor phase is NOT optional - always look for improvements
+Critical: 
+- RED phase must be a real test, not a placeholder
+- Refactor phase is NOT optional - always look for improvements
 
 ### Example: Extracting Ownership Patterns
 ```c
@@ -57,6 +62,7 @@ ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, void *owner) {
 - [TDD Advanced Large Refactoring](tdd-advanced-large-refactoring.md)
 - [Ownership Pattern Extraction](ownership-pattern-extraction.md)
 - [TDD Cycle Detailed Explanation](tdd-cycle-detailed-explanation.md)
+- [Integration Test Binary Execution](integration-test-binary-execution.md)
 - Test-driven development methodology
 - Incremental feature development
 - Code quality maintenance

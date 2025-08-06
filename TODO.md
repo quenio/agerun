@@ -9,6 +9,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
 ### Executable Single Session Refactoring - TDD Cycle 1 (Completed 2025-08-06)
 - [x] Removed second runtime session from ar_executable.c using true TDD approach; created comprehensive integration test that runs actual executable and verifies single session behavior; test always builds executable to ensure latest code is tested; handles signal detection and proper error reporting; removed obsolete executable whitelist entry for "Unexpected end of file in agency.agerun" (211 entries remaining); first of 9 TDD cycles for transforming executable into bootstrap system
 
+### Knowledge Base Enhancement - Integration Testing Patterns (Completed 2025-08-06)
+- [x] Created 4 new KB articles documenting integration testing patterns from TDD Cycle 1 implementation; integration-test-binary-execution.md for popen() pattern; test-build-before-run-pattern.md for rebuild requirement; test-working-directory-verification.md for directory checks; process-termination-analysis.md for exit code handling; updated red-green-refactor-cycle.md to emphasize real tests vs placeholders; added cross-references to 3 existing articles; updated CLAUDE.md TDD section with integration test reference
+
 ### Calculator Wake Message Field Access Error Fix (Completed 2025-08-05)
 - [x] Fixed wake message field access error in calculator method using same pattern as echo; removed calculator_tests error from whitelist (219 entries remaining); 13 wake message errors remain to be fixed
 

@@ -72,3 +72,5 @@ make clean test_name 2>&1
 - [Development Debug Tools](development-debug-tools.md)
 - [Build Verification Before Commit](build-verification-before-commit.md)
 - [Makefile Pattern Rule Management](makefile-pattern-rule-management.md)
+- [Test Build Before Run Pattern](test-build-before-run-pattern.md)
+- [Integration Test Binary Execution](integration-test-binary-execution.md)

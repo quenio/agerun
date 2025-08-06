@@ -4,6 +4,19 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-08-06
 
+### ✅ Knowledge Base Enhancement - Integration Testing Patterns
+- Created comprehensive documentation from TDD Cycle 1 learnings
+  - integration-test-binary-execution.md: Running binaries with popen()
+  - test-build-before-run-pattern.md: Always rebuild before testing
+  - test-working-directory-verification.md: Verify test environment
+  - process-termination-analysis.md: Analyze exit codes and signals
+- Updated existing documentation
+  - Enhanced red-green-refactor-cycle.md to emphasize real tests
+  - Added cross-references to 3 related KB articles
+  - Updated CLAUDE.md TDD section with integration testing
+- All examples use real AgeRun types and functions
+- Validated with make check-docs
+
 ### ✅ Executable Single Session Refactoring - TDD Cycle 1
 - Removed second runtime session from ar_executable.c following true TDD methodology
   - Created integration test that runs actual executable binary

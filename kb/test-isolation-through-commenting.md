@@ -88,3 +88,4 @@ mv "$TEST_FILE.bak" "$TEST_FILE"
 - [Evidence-Based Debugging](evidence-based-debugging.md)
 - [Test Execution Order Dependencies](test-execution-order-dependencies.md)
 - [Memory Debugging Comprehensive Guide](memory-debugging-comprehensive-guide.md)
+- [Test Working Directory Verification](test-working-directory-verification.md)
