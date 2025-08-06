@@ -2,6 +2,33 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-08-06
+
+### ✅ Executable Single Session Refactoring - TDD Cycle 1
+- Removed second runtime session from ar_executable.c following true TDD methodology
+  - Created integration test that runs actual executable binary
+  - Test captures output via popen() to verify no "Starting new runtime session" message
+  - Test always rebuilds executable to ensure testing latest code
+  - Proper RED-GREEN-REFACTOR cycle with verified test failure before fix
+- Removed 80+ lines of demonstration code for second session
+  - Deleted second system instance creation
+  - Removed methodology loading demonstration
+  - Eliminated counter agent restoration check
+  - Cleaned up memory leak testing code
+- Enhanced test with robust error handling
+  - Detects crashed processes via signal detection (SIGABRT, etc.)
+  - Verifies exit codes and provides detailed failure messages
+  - Includes pre-test cleanup for proper isolation
+  - Validates test runs from correct directory
+- Cleaned up obsolete whitelist entry
+  - Removed "Unexpected end of file in agency.agerun" for executable context
+  - Whitelist reduced from 212 to 211 entries (7→6 executable entries)
+- First of 9 planned TDD cycles for bootstrap system transformation
+  - Cycle 2: Remove auto-loading from system
+  - Cycle 3: Remove auto-saving from system
+  - Cycle 4: Create bootstrap method file
+  - Cycles 5-9: Implement full bootstrap behavior
+
 ## 2025-08-05
 
 ### ✅ Interpreter Fixture Wake Message Error Resolution & Knowledge Base Enhancement

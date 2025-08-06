@@ -643,9 +643,6 @@ ignored_errors:
   - context: "executable"
     message: "ERROR: Unknown parse error (at position 1)"
     comment: "Unknown parse error following initial parse failure"
-  - context: "executable"
-    message: "Error: Unexpected end of file in agency.agerun"
-    comment: "EOF error in agency file"
 
   # grade_evaluator_tests
   - context: "grade_evaluator_tests"
