@@ -62,6 +62,10 @@ Each learning file contains:
 
 ### Code Quality & Testing
 - [BDD Test Structure](bdd-test-structure.md)
+- [AR_ASSERT for Descriptive Failures](ar-assert-descriptive-failures.md)
+- [Test Signal Reporting Practice](test-signal-reporting-practice.md)
+- [Test Standardization Retroactive Application](test-standardization-retroactive.md)
+- [Progressive System Decoupling via TDD](progressive-system-decoupling-tdd.md)
 - [Test Memory Leak Ownership Analysis](test-memory-leak-ownership-analysis.md)
 - [Test Function Naming Accuracy](test-function-naming-accuracy.md)
 - [Code Movement Verification](code-movement-verification.md)

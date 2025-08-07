@@ -125,15 +125,17 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Verify fix**: Run single test first, then full suite ([details](kb/test-first-verification-practice.md))
 **Complete ALL cycles** → Update docs/TODO/CHANGELOG → Single commit
 
-**Test Requirements**: BDD structure, one test per behavior, zero leaks ([details](kb/bdd-test-structure.md))
+**Test Requirements**: BDD structure, one test per behavior, AR_ASSERT macros, zero leaks ([details](kb/bdd-test-structure.md), [assertions](kb/ar-assert-descriptive-failures.md))
 **Cleanup**: `ar_methodology__cleanup()` & `ar_agency__reset()`
 **Messages**: Process all including wake messages ([details](kb/agent-wake-message-processing.md))
 **Test isolation**: Comment out tests to isolate error sources ([details](kb/test-isolation-through-commenting.md))
+**Test updates**: Apply improvements retroactively to all tests ([details](kb/test-standardization-retroactive.md))
 **Integration tests**: Run actual binary with popen(), verify output ([details](kb/integration-test-binary-execution.md))
 **Error marking**: Mark intentional errors clearly in tests ([details](kb/test-error-marking-strategy.md))
+**Signal reporting**: Report signal numbers before assertions ([details](kb/test-signal-reporting-practice.md))
 **Whitelist specificity**: Use unique fields for test errors to prevent masking ([details](kb/whitelist-specificity-pattern.md))
 **Fixture ownership**: Tests bypassing system must manage message ownership ([details](kb/test-fixture-message-ownership.md))
-**Advanced patterns**: ([details](kb/tdd-advanced-large-refactoring.md), [API changes](kb/tdd-api-simplification.md))
+**Advanced patterns**: ([details](kb/tdd-advanced-large-refactoring.md), [API changes](kb/tdd-api-simplification.md), [decoupling](kb/progressive-system-decoupling-tdd.md))
 
 ### 3. Parnas Design Principles (STRICT ENFORCEMENT) ✅
 
