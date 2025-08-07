@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include <sys/stat.h>
 
@@ -281,14 +282,11 @@ static void test_no_auto_saving_on_shutdown(void) {
     
     // Then no files should be saved
     struct stat st;
-    if (stat("methodology.agerun", &st) == 0) {
-        printf("FAIL: methodology.agerun should NOT have been saved\n");
-        assert(0);
-    }
-    if (stat("agency.agerun", &st) == 0) {
-        printf("FAIL: agency.agerun should NOT have been saved\n");
-        assert(0);
-    }
+    bool methodology_exists = (stat("methodology.agerun", &st) == 0);
+    bool agency_exists = (stat("agency.agerun", &st) == 0);
+    
+    assert(!methodology_exists);  // methodology.agerun should NOT exist
+    assert(!agency_exists);       // agency.agerun should NOT exist
     
     printf("No auto-saving test passed.\n");
 }
