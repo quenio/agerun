@@ -68,3 +68,4 @@ make run-tests > logs/run-tests.log 2>&1
 - [Evidence-based debugging](evidence-based-debugging.md) - Capture all output for analysis
 - [Comprehensive output review](comprehensive-output-review.md) - Review complete command output
 - [Memory debugging](memory-debugging-comprehensive-guide.md) - Memory leak warnings go to stderr
+- [Stdout Capture Test Pattern](stdout-capture-test-pattern.md) - Programmatic stdout capture in tests

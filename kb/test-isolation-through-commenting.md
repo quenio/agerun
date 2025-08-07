@@ -84,8 +84,32 @@ done
 mv "$TEST_FILE.bak" "$TEST_FILE"
 ```
 
+## File I/O Isolation Strategy
+
+Beyond commenting out tests, another isolation approach is eliminating unwanted file I/O operations that can cause test interference:
+
+```c
+// Example: System module auto-loading caused test fixture warnings
+// BEFORE: Auto-loading in ar_system__init_with_instance()
+if (!ar_methodology__load_methods_with_instance(ref_methodology, NULL)) {
+    printf("Warning: Could not load methods from file\n");  // Unwanted in tests
+}
+
+// AFTER: Removed auto-loading for test isolation
+// Auto-loading removed - executable now has full control over when to load files
+
+// Result: Test fixtures run cleanly without file system dependencies
+```
+
+Benefits of I/O elimination:
+- **No file system dependencies**: Tests don't rely on external files
+- **Faster execution**: No disk I/O overhead
+- **Better isolation**: Tests can't interfere through shared files
+- **Cleaner output**: No spurious warnings about missing files
+
 ## Related Patterns
 - [Evidence-Based Debugging](evidence-based-debugging.md)
 - [Test Execution Order Dependencies](test-execution-order-dependencies.md)
 - [Memory Debugging Comprehensive Guide](memory-debugging-comprehensive-guide.md)
 - [Test Working Directory Verification](test-working-directory-verification.md)
+- [Stdout Capture Test Pattern](stdout-capture-test-pattern.md)

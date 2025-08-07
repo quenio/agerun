@@ -6,6 +6,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+### Knowledge Base Enhancement - TDD Cycle 2 Learnings (Completed 2025-08-07)
+- [x] Created 3 new KB articles from TDD Cycle 2 implementation; stdout-capture-test-pattern.md for capturing output in tests; static-analysis-error-handling.md for syscall error checking requirements; test-first-verification-practice.md for single test verification workflow; updated test-isolation-through-commenting.md with I/O elimination strategy; added cross-references to stderr-redirection-debugging.md; updated CLAUDE.md with static analysis and test verification references
+
 ### System Auto-Loading Removal - TDD Cycle 2 (Completed 2025-08-07)  
 - [x] Removed auto-loading from ar_system__init_with_instance() using TDD approach; created test that captures stdout to detect loading warnings; test properly failed in RED phase with assertion; removed methodology and agency loading code (lines 123-147); eliminated all "Warning: Could not load" messages in test fixtures; fixed static analysis issue with proper error handling for dup() functions; all 67 tests pass with zero memory leaks
 

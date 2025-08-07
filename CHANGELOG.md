@@ -4,6 +4,18 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-08-07
 
+### ✅ Knowledge Base Enhancement - TDD Cycle 2 Learnings
+- Created comprehensive documentation from TDD Cycle 2 insights
+  - stdout-capture-test-pattern.md: Using pipe() and dup2() to capture stdout in tests
+  - static-analysis-error-handling.md: Proper error checking for system calls
+  - test-first-verification-practice.md: Run single test before full suite
+- Updated existing documentation
+  - Enhanced test-isolation-through-commenting.md with I/O elimination strategy
+  - Added cross-references to stderr-redirection-debugging.md
+  - Updated CLAUDE.md with static analysis and test verification guidelines
+- All examples use real AgeRun types and functions
+- Validated with make check-docs
+
 ### ✅ System Auto-Loading Removal - TDD Cycle 2
 - Removed auto-loading behavior from system module following TDD methodology
   - Created test that captures stdout to detect file loading warnings

@@ -122,6 +122,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 **Pre-modification**: Run module tests BEFORE changes
 **Cycle**: Red→Green→Refactor for EACH behavior, NO commits during ([details](kb/red-green-refactor-cycle.md), [cycle details](kb/tdd-cycle-detailed-explanation.md))
+**Verify fix**: Run single test first, then full suite ([details](kb/test-first-verification-practice.md))
 **Complete ALL cycles** → Update docs/TODO/CHANGELOG → Single commit
 
 **Test Requirements**: BDD structure, one test per behavior, zero leaks ([details](kb/bdd-test-structure.md))
@@ -273,7 +274,7 @@ grep -r "function_name\|concept" modules/
 **Backups**: Use git stash/diff, never .bak files
 **Scripts**: Add to `/scripts/` with make targets ([details](kb/progressive-tool-enhancement.md))
 **Shell scripts**: Use proper variable assignment for error handling ([details](kb/shell-script-command-substitution.md))
-**Debug**: `make sanitize-tests 2>&1`, always redirect stderr ([details](kb/development-debug-tools.md))
+**Debug**: `make sanitize-tests 2>&1`, redirect stderr, check syscall returns ([details](kb/development-debug-tools.md), [static](kb/static-analysis-error-handling.md))
 **Ownership debugging**: Add logging at transfer points to trace corruption ([details](kb/debug-logging-ownership-tracing.md))
 **Expression ownership**: References=borrowed, new objects=destroy ([details](kb/expression-ownership-rules.md))
 **Test error filtering**: Use context-aware filtering for intentional errors ([details](kb/intentional-test-errors-filtering.md))
