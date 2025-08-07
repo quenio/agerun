@@ -660,6 +660,49 @@ Based on successful instantiation learnings:
 ### LOW - Create Method Files (After Architecture is Stable)
 - [x] Created additional method files for testing various agent behaviors (Completed)
 
+## In Progress - Executable Transformation to Bootstrap System
+
+### TDD Cycles for Single-Session Bootstrap Implementation
+Transforming ar_executable.c from two-session demo to single-session bootstrap system using strict TDD methodology.
+
+**Completed Cycles:**
+- [x] Cycle 1: Remove second session - executable runs once (Completed 2025-08-06)
+- [x] Cycle 2: Remove auto-loading from system - no files loaded on init (Completed 2025-08-07)
+- [x] Cycle 3: Remove auto-saving from system - no files saved on shutdown (Completed 2025-08-07)
+- [x] Cycle 4: Create bootstrap method - foundation for system init (Completed 2025-08-07)
+
+**Remaining Cycles:**
+- [ ] Cycle 5: Load methods from directory when no methodology file exists
+  - Test: Verify system loads all .method files from methods/ directory
+  - Implementation: Add directory scanning and method loading to executable
+  - This enables bootstrap to spawn echo agent (currently commented out)
+  
+- [ ] Cycle 6: Add bootstrap agent creation in executable
+  - Test: Verify executable creates bootstrap agent on startup
+  - Implementation: Create bootstrap agent with proper context for echo
+  - Bootstrap will spawn echo and other system agents
+  
+- [ ] Cycle 7: Add message processing loop
+  - Test: Verify executable processes messages until none remain
+  - Implementation: Add while loop processing all messages
+  - Ensures all agent interactions complete
+  
+- [ ] Cycle 8: Save methodology after processing
+  - Test: Verify methodology.agerun created after first run
+  - Implementation: Save methodology post-processing
+  - Enables persistence for subsequent runs
+  
+- [ ] Cycle 9: Load methodology file when it exists
+  - Test: Verify second run loads from methodology.agerun
+  - Implementation: Check for file existence and load if present
+  - Completes the bootstrap cycle
+
+**Clean-up Task:**
+- [ ] Remove obsolete whitelist entries (currently 211 entries)
+  - Remove entries related to removed auto-loading/saving
+  - Clean up wake message errors as they're fixed
+  - Target: < 100 whitelist entries
+
 ## Pending Features
 
 ### Interpreter Function Implementations (Tests Temporarily Removed)
