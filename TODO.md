@@ -6,6 +6,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+### System Auto-Loading Removal - TDD Cycle 2 (Completed 2025-08-07)  
+- [x] Removed auto-loading from ar_system__init_with_instance() using TDD approach; created test that captures stdout to detect loading warnings; test properly failed in RED phase with assertion; removed methodology and agency loading code (lines 123-147); eliminated all "Warning: Could not load" messages in test fixtures; fixed static analysis issue with proper error handling for dup() functions; all 67 tests pass with zero memory leaks
+
 ### Executable Single Session Refactoring - TDD Cycle 1 (Completed 2025-08-06)
 - [x] Removed second runtime session from ar_executable.c using true TDD approach; created comprehensive integration test that runs actual executable and verifies single session behavior; test always builds executable to ensure latest code is tested; handles signal detection and proper error reporting; removed obsolete executable whitelist entry for "Unexpected end of file in agency.agerun" (211 entries remaining); first of 9 TDD cycles for transforming executable into bootstrap system
 

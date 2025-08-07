@@ -7,14 +7,85 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <unistd.h>
 
 /* Message strings */
 static const char *g_test_message = "test_message";
 
 /* Test function prototypes */
+static void test_no_auto_loading_on_init(void);
 static void test_method_creation(ar_system_t *mut_system);
 static void test_agent_creation(ar_system_t *mut_system);
 static void test_message_passing(ar_system_t *mut_system);
+
+static void test_no_auto_loading_on_init(void) {
+    printf("Testing that system does NOT auto-load files on init...\n");
+    
+    // Given we want to verify no file loading happens during init
+    // We'll redirect stdout to capture any warning messages
+    
+    // Save original stdout
+    fflush(stdout);
+    int original_stdout = dup(1);
+    if (original_stdout == -1) {
+        printf("FAIL: Could not duplicate stdout\n");
+        assert(0);
+    }
+    
+    // Create a pipe to capture output
+    int pipefd[2];
+    if (pipe(pipefd) == -1) {
+        close(original_stdout);
+        printf("FAIL: Could not create pipe\n");
+        assert(0);
+    }
+    
+    // Redirect stdout to pipe
+    if (dup2(pipefd[1], 1) == -1) {
+        close(original_stdout);
+        close(pipefd[0]);
+        close(pipefd[1]);
+        printf("FAIL: Could not redirect stdout\n");
+        assert(0);
+    }
+    close(pipefd[1]);
+    
+    // When we create and init a system
+    ar_system_t *mut_system = ar_system__create();
+    assert(mut_system != NULL);
+    
+    ar_system__init_with_instance(mut_system, NULL, NULL);
+    
+    // Restore stdout
+    fflush(stdout);
+    if (dup2(original_stdout, 1) == -1) {
+        // Can't restore stdout, but test should still fail appropriately
+    }
+    close(original_stdout);
+    
+    // Read captured output
+    char buffer[1024] = {0};
+    read(pipefd[0], buffer, sizeof(buffer) - 1);
+    close(pipefd[0]);
+    
+    // Then verify NO loading warnings were printed
+    // This will FAIL initially because system auto-loads
+    if (strstr(buffer, "Warning: Could not load") != NULL) {
+        printf("FAIL: System attempted to load files during init!\n");
+        printf("Captured output: %s\n", buffer);
+        assert(0);  // FAIL - auto-loading should not happen
+    }
+    
+    // Clean up
+    ar_system__shutdown_with_instance(mut_system);
+    ar_system__destroy(mut_system);
+    
+    // Remove temp files
+    remove("methodology.agerun");
+    remove("agency.agerun");
+    
+    printf("No auto-loading test passed!\n");
+}
 
 static void test_method_creation(ar_system_t *mut_system) {
     printf("Testing method creation...\n");
@@ -177,6 +248,9 @@ static void test_message_passing(ar_system_t *mut_system) {
 
 int main(void) {
     printf("Starting Agerun tests...\n");
+    
+    // Test that system does NOT auto-load files
+    test_no_auto_loading_on_init();
     
     // Create system instance
     ar_system_t *mut_system = ar_system__create();

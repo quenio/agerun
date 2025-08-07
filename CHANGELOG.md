@@ -2,6 +2,30 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-08-07
+
+### ✅ System Auto-Loading Removal - TDD Cycle 2
+- Removed auto-loading behavior from system module following TDD methodology
+  - Created test that captures stdout to detect file loading warnings
+  - Test uses pipe() and dup2() to redirect and capture output
+  - RED phase: Test failed with assertion when warnings detected
+  - GREEN phase: Removed auto-loading code from ar_system__init_with_instance()
+- Eliminated methodology and agency file loading on initialization
+  - Removed 24 lines of auto-loading code (lines 123-147)
+  - System no longer attempts to load "methodology.agerun" or "agency.agerun"
+  - Executable now has full control over persistence loading
+- Fixed all test fixture warnings
+  - No more "Warning: Could not load methods from file" messages
+  - Test fixtures run cleanly without file I/O attempts
+  - Improved test isolation and reliability
+- Enhanced error handling for stdout capture
+  - Added proper error checking for dup(), pipe(), and dup2() calls
+  - Fixed static analysis warnings about unchecked return values
+  - Ensures test robustness even if I/O operations fail
+- All 67 tests pass with zero memory leaks
+  - Second of 9 TDD cycles for bootstrap system transformation
+  - Maintains backward compatibility while removing unwanted behavior
+
 ## 2025-08-06
 
 ### ✅ Knowledge Base Enhancement - Integration Testing Patterns

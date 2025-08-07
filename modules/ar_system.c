@@ -117,35 +117,7 @@ int64_t ar_system__init_with_instance(ar_system_t *mut_system, const char *ref_m
     mut_system->is_initialized = true;
     
     // If we have an agency instance, initialize it
-    if (mut_system->own_agency) {
-        ar_methodology_t *ref_methodology = ar_agency__get_methodology(mut_system->own_agency);
-        
-        // Load methods from file if available
-        if (ref_methodology) {
-            if (!ar_methodology__load_methods_with_instance(ref_methodology, NULL)) {
-                printf("Warning: Could not load methods from file\n");
-            }
-        } else {
-            // No methodology in agency means we're using global methodology
-            if (!ar_methodology__load_methods()) {
-                printf("Warning: Could not load methods from file\n");
-            }
-        }
-        
-        // Load agents from file if available
-        if (!ar_agency__load_agents_with_instance(mut_system->own_agency, NULL)) {
-            printf("Warning: Could not load agents from file\n");
-        }
-    } else {
-        // Use global methodology and agency
-        if (!ar_methodology__load_methods()) {
-            printf("Warning: Could not load methods from file\n");
-        }
-        
-        if (!ar_agency__load_agents()) {
-            printf("Warning: Could not load agents from file\n");
-        }
-    }
+    // Auto-loading removed - executable now has full control over when to load files
     
     // Create initial agent if ref_method_name is provided
     if (ref_method_name != NULL) {
