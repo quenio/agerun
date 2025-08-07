@@ -3,9 +3,11 @@
 #include "ar_method.h"
 #include "ar_methodology.h"
 #include "ar_agency.h"
+#include "ar_assert.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <stdbool.h>
 #include <signal.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -26,63 +28,32 @@ int ar_executable__main(void) {
 static void test_single_session(void) {
     printf("Testing executable has only single session...\n");
     
-    // First verify we're running from the correct directory
+    // Given we're running from the correct test directory
     char cwd[1024];
-    if (getcwd(cwd, sizeof(cwd)) == NULL) {
-        printf("FAIL: Could not get current directory\n");
-        assert(0);
-    }
-    
-    // Check if we're in a bin subdirectory
-    if (strstr(cwd, "/bin/") == NULL) {
-        printf("FAIL: Test must be run from bin directory, but running from: %s\n", cwd);
-        assert(0);
-    }
+    AR_ASSERT(getcwd(cwd, sizeof(cwd)) != NULL, "Should be able to get current directory");
+    AR_ASSERT(strstr(cwd, "/bin/") != NULL, "Test must be run from bin directory");
     printf("Running from: %s\n", cwd);
     
-    // Given we want to verify the executable doesn't have a second session
-    // When we run the actual executable and capture its output
-    // Then it should NOT contain "Starting new runtime session"
-    
-    // Clean up any existing files before test to ensure isolation
+    // And the environment is clean
     printf("Cleaning up any existing files...\n");
     system("cd ../run-exec 2>/dev/null && rm -f methodology.agerun agency.agerun 2>/dev/null");
     
-    // Always build the executable to ensure we test the latest code
+    // And we have a freshly built executable
     printf("Building executable to ensure latest version...\n");
-    // Build the library first, then the executable
-    // We can't use 'make run-exec' because it also runs the executable
     int build_lib = system("cd ../.. && make -s run_exec_lib > /dev/null 2>&1");
-    if (build_lib == 0) {
-        // Build just the executable without running it
-        int build_exe = system("cd ../.. && gcc-13 -Wall -Wextra -Werror -std=c11 -I./modules -g -O0 -o bin/run-exec/agerun modules/ar_executable.c bin/run-exec/libagerun.a -lm 2>/dev/null");
-        if (build_exe != 0) {
-            printf("FAIL: Executable build failed with code %d\n", build_exe);
-            assert(0);
-        }
-    } else {
-        printf("FAIL: Library build failed with code %d\n", build_lib);
-        assert(0);
-    }
+    AR_ASSERT(build_lib == 0, "Library build should succeed");
     
-    // Verify the run-exec directory exists
-    if (access("../run-exec", F_OK) != 0) {
-        printf("FAIL: Directory ../run-exec does not exist\n");
-        assert(0);
-    }
+    int build_exe = system("cd ../.. && gcc-13 -Wall -Wextra -Werror -std=c11 -I./modules -g -O0 -o bin/run-exec/agerun modules/ar_executable.c bin/run-exec/libagerun.a -lm 2>/dev/null");
+    AR_ASSERT(build_exe == 0, "Executable build should succeed");
     
-    // Run the actual executable and capture output  
-    // Note: Tests are run from bin/run-tests directory
-    // We need to run from the correct directory for the executable to work properly
+    AR_ASSERT(access("../run-exec", F_OK) == 0, "Directory ../run-exec should exist");
+    
+    // When we run the actual executable and capture its output
     printf("Running executable to check for second session...\n");
-    // popen() captures stdout (and stderr via 2>&1) from the executable
     FILE *pipe = popen("cd ../run-exec && ./agerun 2>&1", "r");
-    if (!pipe) {
-        printf("Failed to run executable\n");
-        assert(0);
-    }
+    AR_ASSERT(pipe != NULL, "Should be able to run executable via popen");
     
-    char buffer[512];  // Increased buffer size for longer lines
+    char buffer[512];
     bool found_second_session = false;
     int line_count = 0;
     
@@ -91,44 +62,34 @@ static void test_single_session(void) {
         line_count++;
         if (strstr(buffer, "Starting new runtime session") != NULL) {
             found_second_session = true;
-            printf("FAIL: Found second session at line %d: %s", line_count, buffer);
+            printf("Found second session at line %d: %s", line_count, buffer);
         }
     }
     
     int status = pclose(pipe);
     
-    // Check how the process terminated
+    // Then the executable should terminate successfully
     if (WIFSIGNALED(status)) {
         int sig = WTERMSIG(status);
         printf("FAIL: Executable terminated by signal %d\n", sig);
-        assert(0);
+        AR_ASSERT(false, "Executable should not terminate by signal");
     } else if (WIFEXITED(status)) {
         int exit_code = WEXITSTATUS(status);
-        if (exit_code != 0) {
-            printf("FAIL: Executable exited with code %d\n", exit_code);
-            assert(exit_code == 0);
-        }
+        AR_ASSERT(exit_code == 0, "Executable should exit with code 0");
     } else {
-        printf("FAIL: Executable terminated abnormally\n");
-        assert(0);
+        AR_ASSERT(false, "Executable should terminate normally");
     }
     
     printf("Executable produced %d lines of output\n", line_count);
     
     // And it should NOT have a second session
-    if (found_second_session) {
-        printf("FAIL: Executable has a second session (should only have one)\n");
-        assert(!found_second_session);
-    }
+    AR_ASSERT(!found_second_session, "Executable should only have one session, not two");
     
     printf("Single session test passed!\n");
     
     // Clean up generated files
     printf("Cleaning up generated files...\n");
-    int cleanup_result = system("cd ../run-exec && rm -f methodology.agerun agency.agerun 2>/dev/null");
-    if (cleanup_result != 0) {
-        printf("Warning: Cleanup may have failed (code %d), but test passed\n", cleanup_result);
-    }
+    system("cd ../run-exec && rm -f methodology.agerun agency.agerun 2>/dev/null");
 }
 
 // Test that the executable can be run in a child process

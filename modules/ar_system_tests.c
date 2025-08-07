@@ -30,17 +30,13 @@ static void test_no_auto_loading_on_init(void) {
     // Save original stdout
     fflush(stdout);
     int original_stdout = dup(1);
-    if (original_stdout == -1) {
-        printf("FAIL: Could not duplicate stdout\n");
-        assert(0);
-    }
+    AR_ASSERT(original_stdout != -1, "Could not duplicate stdout for capture");
     
     // Create a pipe to capture output
     int pipefd[2];
     if (pipe(pipefd) == -1) {
         close(original_stdout);
-        printf("FAIL: Could not create pipe\n");
-        assert(0);
+        AR_ASSERT(false, "Could not create pipe for stdout capture");
     }
     
     // Redirect stdout to pipe
@@ -48,14 +44,13 @@ static void test_no_auto_loading_on_init(void) {
         close(original_stdout);
         close(pipefd[0]);
         close(pipefd[1]);
-        printf("FAIL: Could not redirect stdout\n");
-        assert(0);
+        AR_ASSERT(false, "Could not redirect stdout to pipe");
     }
     close(pipefd[1]);
     
     // When we create and init a system
     ar_system_t *mut_system = ar_system__create();
-    assert(mut_system != NULL);
+    AR_ASSERT(mut_system != NULL, "System creation should succeed");
     
     ar_system__init_with_instance(mut_system, NULL, NULL);
     
@@ -72,12 +67,11 @@ static void test_no_auto_loading_on_init(void) {
     close(pipefd[0]);
     
     // Then verify NO loading warnings were printed
-    // This will FAIL initially because system auto-loads
-    if (strstr(buffer, "Warning: Could not load") != NULL) {
-        printf("FAIL: System attempted to load files during init!\n");
+    bool loading_attempted = (strstr(buffer, "Warning: Could not load") != NULL);
+    if (loading_attempted) {
         printf("Captured output: %s\n", buffer);
-        assert(0);  // FAIL - auto-loading should not happen
     }
+    AR_ASSERT(!loading_attempted, "System should NOT attempt to load files during init");
     
     // Clean up
     ar_system__shutdown_with_instance(mut_system);
