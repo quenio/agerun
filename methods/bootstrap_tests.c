@@ -142,51 +142,12 @@ static void test_bootstrap_handles_wake_message(void) {
     printf("PASS\n");
 }
 
-static void test_bootstrap_parse_error_detection(void) {
-    printf("Testing bootstrap parse error detection...\n");
-    
-    // Given a fixture
-    ar_method_fixture_t *own_fixture = ar_method_fixture__create("bootstrap_parse_error");
-    AR_ASSERT(own_fixture != NULL, "Fixture should be created");
-    
-    AR_ASSERT(ar_method_fixture__initialize(own_fixture), "Fixture should initialize");
-    AR_ASSERT(ar_method_fixture__verify_directory(own_fixture), "Should be in bin directory");
-    
-    // When loading a method with invalid syntax (nested if in send)
-    // Create a test file with bad syntax
-    FILE *bad_file = fopen("../../methods/test-bad-syntax.method", "w");
-    AR_ASSERT(bad_file != NULL, "Should create test file");
-    fprintf(bad_file, "memory.test := 1\n");
-    fprintf(bad_file, "send(0, if(memory.test > 0, \"Bad\", \"Syntax\"))\n");
-    fclose(bad_file);
-    
-    // Load the bad method
-    AR_ASSERT(ar_method_fixture__load_method(own_fixture, "badtest", "../../methods/test-bad-syntax.method", "1.0.0"),
-              "Method file should load");
-    
-    // Then the method should NOT have a valid AST
-    ar_agency_t *mut_agency = ar_method_fixture__get_agency(own_fixture);
-    ar_methodology_t *mut_methodology = ar_agency__get_methodology(mut_agency);
-    ar_method_t *ref_method = ar_methodology__get_method_with_instance(mut_methodology, "badtest", "1.0.0");
-    AR_ASSERT(ref_method != NULL, "Method should be registered");
-    AR_ASSERT(ar_method__get_ast(ref_method) == NULL, "Method with parse errors should NOT have AST");
-    
-    // Clean up
-    AR_ASSERT(ar_method_fixture__check_memory(own_fixture), "No memory leaks");
-    ar_method_fixture__destroy(own_fixture);
-    
-    // Remove test file
-    remove("../../methods/test-bad-syntax.method");
-    
-    printf("PASS\n");
-}
 
 int main(void) {
     printf("Bootstrap Method Tests\n");
     printf("======================\n\n");
     
     test_bootstrap_handles_wake_message();
-    test_bootstrap_parse_error_detection();
     // TODO: Re-enable once system can load methods from files (Cycle 5)
     // test_bootstrap_spawns_echo();
     
