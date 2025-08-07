@@ -104,10 +104,6 @@ static void test_executable_run(void) {
     if (pid == 0) {
         // In the child process
         
-        // Clean up inherited resources before running the test
-        // Note: We're in a child process, so we can't use the parent's system instance
-        // The child will have its own copy of memory
-        
         // Given we redirect stdout to avoid cluttering test output
         freopen("/dev/null", "w", stdout);
         
@@ -140,22 +136,19 @@ static void test_executable_run(void) {
             int sig = WTERMSIG(status);
             
             // Then it should be either our SIGTERM or the alarm's SIGALRM
-            assert(sig == SIGTERM || sig == SIGALRM);
-            printf("Executable terminated by signal %d as expected\n", sig);
+            bool valid_signal = (sig == SIGTERM || sig == SIGALRM);
+            printf("Executable terminated by signal %d\n", sig);
+            AR_ASSERT(valid_signal, "Executable should terminate by SIGTERM or SIGALRM");
         } else {
             // If exited normally
             int exit_status = WEXITSTATUS(status);
-            
-            // Then it should have exit code 0
-            assert(exit_status == 0);
             printf("Executable exited normally with status %d\n", exit_status);
+            AR_ASSERT(exit_status == 0, "Executable should exit with status 0");
         }
     } else {
         // When the fork fails
         perror("Fork failed");
-        
-        // Then the test should fail
-        assert(0);
+        AR_ASSERT(false, "Fork should succeed");
     }
     
     printf("Executable run test passed!\n");
@@ -173,7 +166,7 @@ int main(void) {
     // Now run a separate test with a system instance
     // Create system instance for tests
     ar_system_t *mut_system = ar_system__create();
-    assert(mut_system != NULL);
+    AR_ASSERT(mut_system != NULL, "System creation should succeed");
     
     // Given we have a test method and initialized system
     const char *init_method = "exec_test_method";
@@ -182,7 +175,7 @@ int main(void) {
     
     // Create method and register it with methodology 
     ar_method_t *own_method = ar_method__create(init_method, init_instructions, init_version);
-    assert(own_method != NULL);
+    AR_ASSERT(own_method != NULL, "Method creation should succeed");
     
     // Register with methodology using instance API
     ar_agency_t *ref_agency = ar_system__get_agency(mut_system);
