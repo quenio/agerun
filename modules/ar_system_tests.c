@@ -3,6 +3,7 @@
 #include "ar_methodology.h"
 #include "ar_agency.h"
 #include "ar_agent_registry.h"
+#include "ar_assert.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -285,8 +286,8 @@ static void test_no_auto_saving_on_shutdown(void) {
     bool methodology_exists = (stat("methodology.agerun", &st) == 0);
     bool agency_exists = (stat("agency.agerun", &st) == 0);
     
-    assert(!methodology_exists);  // methodology.agerun should NOT exist
-    assert(!agency_exists);       // agency.agerun should NOT exist
+    AR_ASSERT(!methodology_exists, "methodology.agerun should NOT have been saved on shutdown");
+    AR_ASSERT(!agency_exists, "agency.agerun should NOT have been saved on shutdown");
     
     printf("No auto-saving test passed.\n");
 }
