@@ -8,6 +8,7 @@
 #include <string.h>
 #include <assert.h>
 #include <unistd.h>
+#include <sys/stat.h>
 
 /* Message strings */
 static const char *g_test_message = "test_message";
@@ -246,11 +247,64 @@ static void test_message_passing(ar_system_t *mut_system) {
     printf("Message passing test passed.\n");
 }
 
+static void test_no_auto_saving_on_shutdown(void) {
+    printf("Testing that system does NOT auto-save on shutdown...\n");
+    
+    // Remove any existing files that might interfere
+    remove("methodology.agerun");
+    remove("agency.agerun");
+    
+    // Create and initialize system
+    ar_system_t *mut_system = ar_system__create();
+    assert(mut_system != NULL);
+    ar_system__init_with_instance(mut_system, NULL, NULL);
+    
+    // Get the agency instance
+    ar_agency_t *mut_agency = ar_system__get_agency(mut_system);
+    assert(mut_agency != NULL);
+    
+    // Get methodology from agency
+    ar_methodology_t *mut_methodology = ar_agency__get_methodology(mut_agency);
+    assert(mut_methodology != NULL);
+    
+    // Add a method to methodology (so there's something to save)
+    ar_method_t *own_method = ar_method__create("test_method", "send(0, \"test\")", "1.0.0");
+    assert(own_method != NULL);
+    ar_methodology__register_method_with_instance(mut_methodology, own_method);
+    
+    // Create an agent (so there's something in agency to save)
+    int64_t agent_id = ar_agency__create_agent_with_instance(mut_agency, "test_method", "1.0.0", NULL);
+    assert(agent_id > 0);
+    
+    // Process wake message
+    ar_system__process_next_message_with_instance(mut_system);
+    
+    // Now shutdown the system
+    ar_system__shutdown_with_instance(mut_system);
+    ar_system__destroy(mut_system);
+    
+    // Verify that NO files were saved
+    struct stat st;
+    if (stat("methodology.agerun", &st) == 0) {
+        printf("FAIL: methodology.agerun should NOT have been saved\n");
+        assert(0);
+    }
+    if (stat("agency.agerun", &st) == 0) {
+        printf("FAIL: agency.agerun should NOT have been saved\n");
+        assert(0);
+    }
+    
+    printf("No auto-saving test passed.\n");
+}
+
 int main(void) {
     printf("Starting Agerun tests...\n");
     
     // Test that system does NOT auto-load files
     test_no_auto_loading_on_init();
+    
+    // Test that system does NOT auto-save files
+    test_no_auto_saving_on_shutdown();
     
     // Create system instance
     ar_system_t *mut_system = ar_system__create();

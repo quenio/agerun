@@ -169,20 +169,11 @@ void ar_system__shutdown_with_instance(ar_system_t *mut_system) {
         return;
     }
     
+    // Auto-saving removed - executable now has full control over when to save files
+    
     // If we have an agency instance, shut it down properly
     if (mut_system->own_agency) {
         ar_methodology_t *ref_methodology = ar_agency__get_methodology(mut_system->own_agency);
-        
-        // Save methods to file
-        if (ref_methodology) {
-            ar_methodology__save_methods_with_instance(ref_methodology, NULL);
-        } else {
-            // No methodology in agency means we're using global methodology
-            ar_methodology__save_methods();
-        }
-        
-        // Save persistent agents to file
-        ar_agency__save_agents_with_instance(mut_system->own_agency, NULL);
         
         // Reset the agency to clean up all agents
         ar_agency__reset_with_instance(mut_system->own_agency);
@@ -193,8 +184,6 @@ void ar_system__shutdown_with_instance(ar_system_t *mut_system) {
         }
     } else {
         // Use global methodology and agency
-        ar_methodology__save_methods();
-        ar_agency__save_agents();
         ar_agency__reset();
         ar_methodology__cleanup();
     }
