@@ -75,3 +75,4 @@ make ar_method_tests 2>&1 | tail -20
 - [Test Build Before Run Pattern](test-build-before-run-pattern.md)
 - [Make-Only Test Execution](make-only-test-execution.md)
 - [TDD Cycle Detailed Explanation](tdd-cycle-detailed-explanation.md)
+- [Method Test AST Verification](method-test-ast-verification.md)

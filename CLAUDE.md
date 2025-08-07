@@ -126,6 +126,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Complete ALL cycles** → Update docs/TODO/CHANGELOG → Single commit
 
 **Test Requirements**: BDD structure, one test per behavior, AR_ASSERT macros, zero leaks ([details](kb/bdd-test-structure.md), [assertions](kb/ar-assert-descriptive-failures.md))
+**Method tests**: Verify AST after loading to catch parse errors ([details](kb/method-test-ast-verification.md))
 **Cleanup**: `ar_methodology__cleanup()` & `ar_agency__reset()`
 **Messages**: Process all including wake messages ([details](kb/agent-wake-message-processing.md))
 **Test isolation**: Comment out tests to isolate error sources ([details](kb/test-isolation-through-commenting.md))
@@ -274,6 +275,7 @@ grep -r "function_name\|concept" modules/
 
 **Navigation**: Use absolute paths only ([details](kb/absolute-path-navigation.md))
 **Backups**: Use git stash/diff, never .bak files
+**Stubs**: Comment unready features with dependency notes ([details](kb/stub-and-revisit-pattern.md))
 **Scripts**: Add to `/scripts/` with make targets ([details](kb/progressive-tool-enhancement.md))
 **Shell scripts**: Use proper variable assignment for error handling ([details](kb/shell-script-command-substitution.md))
 **Debug**: `make sanitize-tests 2>&1`, redirect stderr, check syscall returns ([details](kb/development-debug-tools.md), [static](kb/static-analysis-error-handling.md))
@@ -421,7 +423,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 - Agent ID 0 indicates failure
 - Always process `__wake__` messages
 - Always process messages after sending to prevent memory leaks
-- **Function calls are NOT expressions** - per BNF grammar specification
+- **Function calls are NOT expressions** - cannot nest in other calls ([details](kb/agerun-method-language-nesting-constraint.md))
 - **Send with memory references not supported** - send() needs ownership of message
 - **Message accessor** - `message.field` returns references like memory/context ([details](kb/expression-evaluator-accessor-extension.md))
 - **Language constraints** - No type checking, if() returns values ([details](kb/agerun-language-constraint-workarounds.md))

@@ -47,6 +47,7 @@ Each learning file contains:
 - [Zig Module Development Guide](zig-module-development-guide.md)
 - [Refactoring Patterns Detailed](refactoring-patterns-detailed.md)
 - [Cross-Method Pattern Discovery](cross-method-pattern-discovery.md)
+- [Stub and Revisit Pattern](stub-and-revisit-pattern.md)
 
 ### Memory Management
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)
@@ -88,6 +89,7 @@ Each learning file contains:
 - [Stdout Capture Test Pattern](stdout-capture-test-pattern.md)
 - [Static Analysis Error Handling](static-analysis-error-handling.md)
 - [Test First Verification Practice](test-first-verification-practice.md)
+- [Method Test AST Verification](method-test-ast-verification.md)
 - [Test Error Marking Strategy](test-error-marking-strategy.md)
 - [Intentional Test Errors Filtering](intentional-test-errors-filtering.md)
 - [Whitelist Specificity Pattern](whitelist-specificity-pattern.md)
@@ -118,6 +120,7 @@ Each learning file contains:
 - [Instance Association Pattern](instance-association-pattern.md)
 - [Wake Message Field Access Pattern](wake-message-field-access-pattern.md)
 - [AgeRun Language Constraint Workarounds](agerun-language-constraint-workarounds.md)
+- [AgeRun Method Language Nesting Constraint](agerun-method-language-nesting-constraint.md)
 - [Persistence Simplification Through Instantiation](persistence-simplification-through-instantiation.md)
 - [Global Instance Wrapper Anti-Pattern](global-instance-wrapper-anti-pattern.md)
 - [Instance API Resource Cleanup Pattern](instance-api-resource-cleanup-pattern.md)

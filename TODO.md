@@ -6,6 +6,15 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+### Knowledge Base Enhancement - TDD Cycle 4 Learnings (Completed 2025-08-07)
+- [x] Created 3 new KB articles from TDD Cycle 4 implementation; agerun-method-language-nesting-constraint.md documenting function call limitations; method-test-ast-verification.md for parse error detection in tests; stub-and-revisit-pattern.md for handling unavailable dependencies; updated method-test-template.md and test-first-verification-practice.md with cross-references; added references to CLAUDE.md in TDD, Language Notes, and Development Practices sections
+
+### Bootstrap Method Implementation - TDD Cycle 4 (Completed 2025-08-07)
+- [x] Created bootstrap-1.0.0.method for system initialization using TDD approach; handles wake/sleep messages with proper syntax (no nested function calls); added comprehensive tests with AST verification to catch parse errors; documented method behavior and future spawn functionality; commented spawn code awaiting Cycle 5 (method loading from filesystem); improved test quality to properly detect method syntax errors
+
+### System Auto-Saving Removal - TDD Cycle 3 (Completed 2025-08-07)
+- [x] Removed auto-saving from ar_system__shutdown_with_instance() using TDD approach; created test verifying no files saved on shutdown; removed 11 lines of auto-save code; standardized all Cycle 1-3 tests to use BDD structure and AR_ASSERT; all 68 tests pass with zero memory leaks
+
 ### Knowledge Base Enhancement - TDD Cycle 2 Learnings (Completed 2025-08-07)
 - [x] Created 3 new KB articles from TDD Cycle 2 implementation; stdout-capture-test-pattern.md for capturing output in tests; static-analysis-error-handling.md for syscall error checking requirements; test-first-verification-practice.md for single test verification workflow; updated test-isolation-through-commenting.md with I/O elimination strategy; added cross-references to stderr-redirection-debugging.md; updated CLAUDE.md with static analysis and test verification references
 

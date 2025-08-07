@@ -70,3 +70,5 @@ Common issues prevented:
 ## Related Patterns
 - [BDD Test Structure](bdd-test-structure.md)
 - [Test Function Naming Accuracy](test-function-naming-accuracy.md)
+- [Method Test AST Verification](method-test-ast-verification.md)
+- [AgeRun Method Language Nesting Constraint](agerun-method-language-nesting-constraint.md)
