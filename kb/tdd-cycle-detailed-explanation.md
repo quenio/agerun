@@ -77,3 +77,4 @@ git commit -m "feat: implement feature using TDD
 - [TDD Advanced Large Refactoring](tdd-advanced-large-refactoring.md)
 - [TDD API Simplification](tdd-api-simplification.md)
 - [TDD Feature Completion Before Commit](tdd-feature-completion-before-commit.md)
+- [Requirement Precision in TDD](requirement-precision-in-tdd.md)

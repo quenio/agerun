@@ -126,6 +126,8 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Complete ALL cycles** → Update docs/TODO/CHANGELOG → Single commit
 
 **Test Requirements**: BDD structure, one test per behavior, AR_ASSERT macros, zero leaks ([details](kb/bdd-test-structure.md), [assertions](kb/ar-assert-descriptive-failures.md))
+**Requirement precision**: Verify exact requirements before implementing ([details](kb/requirement-precision-in-tdd.md))
+**Test completeness**: Enumerate & verify each outcome individually ([details](kb/test-completeness-enumeration.md))
 **Method tests**: Verify AST after loading to catch parse errors ([details](kb/method-test-ast-verification.md))
 **Cleanup**: `ar_methodology__cleanup()` & `ar_agency__reset()`
 **Messages**: Process all including wake messages ([details](kb/agent-wake-message-processing.md))
@@ -274,7 +276,7 @@ grep -r "function_name\|concept" modules/
 ### 8. Development Practices
 
 **Navigation**: Use absolute paths only ([details](kb/absolute-path-navigation.md))
-**Backups**: Use git stash/diff, never .bak files
+**Backups**: Use git stash/diff, never .bak files (ar_io creates them automatically - [details](kb/file-io-backup-mechanism.md))
 **Stubs**: Comment unready features with dependency notes ([details](kb/stub-and-revisit-pattern.md))
 **Scripts**: Add to `/scripts/` with make targets ([details](kb/progressive-tool-enhancement.md))
 **Shell scripts**: Use proper variable assignment for error handling ([details](kb/shell-script-command-substitution.md))

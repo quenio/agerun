@@ -98,6 +98,8 @@ Each learning file contains:
 - [Uniform Filtering Application](uniform-filtering-application.md)
 - [Log Format Variation Handling](log-format-variation-handling.md)
 - [Systematic Error Whitelist Reduction](systematic-error-whitelist-reduction.md)
+- [Requirement Precision in TDD](requirement-precision-in-tdd.md)
+- [Test Completeness Enumeration](test-completeness-enumeration.md)
 
 ### Architecture & Design
 - [Opaque Types Pattern](opaque-types-pattern.md)
@@ -161,6 +163,7 @@ Each learning file contains:
 - [Makefile Filtered Variables Pattern](makefile-filtered-variables-pattern.md)
 - [Sanitizer Test Exclusion Pattern](sanitizer-test-exclusion-pattern.md)
 - [Zig Static Analysis Tools](zig-static-analysis-tools.md)
+- [File I/O Backup Mechanism](file-io-backup-mechanism.md)
 
 ### Development Practices
 - [Documentation Validation Enhancement Patterns](documentation-validation-enhancement-patterns.md)
