@@ -17,6 +17,7 @@
 // Forward declarations
 static void test_executable_run(void);
 static void test_single_session(void);
+static void test_loading_methods_from_directory(void);
 
 // Stub function to avoid linking with the actual executable
 int ar_executable__main(void) {
@@ -34,9 +35,6 @@ static void test_single_session(void) {
     AR_ASSERT(strstr(cwd, "/bin/") != NULL, "Test must be run from bin directory");
     printf("Running from: %s\n", cwd);
     
-    // And the environment is clean
-    printf("Cleaning up any existing files...\n");
-    system("cd ../run-exec 2>/dev/null && rm -f methodology.agerun agency.agerun 2>/dev/null");
     
     // And we have a freshly built executable
     printf("Building executable to ensure latest version...\n");
@@ -87,9 +85,6 @@ static void test_single_session(void) {
     
     printf("Single session test passed!\n");
     
-    // Clean up generated files
-    printf("Cleaning up generated files...\n");
-    system("cd ../run-exec && rm -f methodology.agerun agency.agerun 2>/dev/null");
 }
 
 // Test that the executable can be run in a child process
@@ -154,6 +149,122 @@ static void test_executable_run(void) {
     printf("Executable run test passed!\n");
 }
 
+// Test that the executable loads methods from directory
+static void test_loading_methods_from_directory(void) {
+    printf("Testing executable loads methods from directory...\n");
+    
+    // Given we're running from the correct test directory
+    char cwd[1024];
+    AR_ASSERT(getcwd(cwd, sizeof(cwd)) != NULL, "Should be able to get current directory");
+    AR_ASSERT(strstr(cwd, "/bin/") != NULL, "Test must be run from bin directory");
+    printf("Running from: %s\n", cwd);
+    
+    
+    // And we have a freshly built executable
+    printf("Building executable to ensure latest version...\n");
+    int build_lib = system("cd ../.. && make -s run_exec_lib > /dev/null 2>&1");
+    AR_ASSERT(build_lib == 0, "Library build should succeed");
+    
+    int build_exe = system("cd ../.. && gcc-13 -Wall -Wextra -Werror -std=c11 -I./modules -g -O0 -o bin/run-exec/agerun modules/ar_executable.c bin/run-exec/libagerun.a -lm 2>/dev/null");
+    AR_ASSERT(build_exe == 0, "Executable build should succeed");
+    
+    // When we run the executable (should load methods from directory)
+    printf("Running executable to test method loading...\n");
+    FILE *pipe = popen("cd ../run-exec && ./agerun 2>&1", "r");
+    AR_ASSERT(pipe != NULL, "Should be able to run executable");
+    
+    // Then we should see evidence that methods were loaded
+    char line[256];
+    bool found_agent_manager = false;
+    bool found_bootstrap = false;
+    bool found_calculator = false;
+    bool found_echo = false;
+    bool found_grade_evaluator = false;
+    bool found_message_router = false;
+    bool found_method_creator = false;
+    bool found_string_builder = false;
+    bool found_loading_message = false;
+    int method_count = 0;
+    
+    while (fgets(line, sizeof(line), pipe) != NULL) {
+        printf("Output: %s", line);
+        
+        // Look for evidence of each loaded method
+        if (strstr(line, "Loaded method 'agent-manager'")) {
+            found_agent_manager = true;
+        }
+        if (strstr(line, "Loaded method 'bootstrap'")) {
+            found_bootstrap = true;
+        }
+        if (strstr(line, "Loaded method 'calculator'")) {
+            found_calculator = true;
+        }
+        if (strstr(line, "Loaded method 'echo'")) {
+            found_echo = true;
+        }
+        if (strstr(line, "Loaded method 'grade-evaluator'")) {
+            found_grade_evaluator = true;
+        }
+        if (strstr(line, "Loaded method 'message-router'")) {
+            found_message_router = true;
+        }
+        if (strstr(line, "Loaded method 'method-creator'")) {
+            found_method_creator = true;
+        }
+        if (strstr(line, "Loaded method 'string-builder'")) {
+            found_string_builder = true;
+        }
+        
+        // Look for the loading from directory message
+        if (strstr(line, "Loading methods from directory")) {
+            found_loading_message = true;
+        }
+        
+        // Also look for a summary line about loading methods
+        if (strstr(line, "Loaded") && strstr(line, "methods from directory")) {
+            char *num_str = strstr(line, "Loaded ");
+            if (num_str) {
+                int loaded = 0;
+                if (sscanf(num_str, "Loaded %d methods", &loaded) == 1) {
+                    printf("Found summary: %d methods loaded\n", loaded);
+                    method_count = loaded;
+                }
+            }
+        }
+    }
+    
+    int status = pclose(pipe);
+    
+    // Verify the executable ran successfully
+    if (WIFEXITED(status)) {
+        int exit_code = WEXITSTATUS(status);
+        AR_ASSERT(exit_code == 0, "Executable should exit normally");
+    } else if (WIFSIGNALED(status)) {
+        int sig = WTERMSIG(status);
+        printf("Executable terminated by signal %d\n", sig);
+        AR_ASSERT(false, "Executable should not be terminated by signal");
+    }
+    
+    // Verify that we saw the loading message
+    AR_ASSERT(found_loading_message, "Should see message about loading from directory");
+    
+    // Verify that we loaded exactly 8 methods
+    AR_ASSERT(method_count == 8, "Should load exactly 8 methods from directory");
+    
+    // Verify that all individual methods were loaded
+    AR_ASSERT(found_agent_manager, "Should load agent-manager method");
+    AR_ASSERT(found_bootstrap, "Should load bootstrap method");
+    AR_ASSERT(found_calculator, "Should load calculator method");
+    AR_ASSERT(found_echo, "Should load echo method");
+    AR_ASSERT(found_grade_evaluator, "Should load grade-evaluator method");
+    AR_ASSERT(found_message_router, "Should load message-router method");
+    AR_ASSERT(found_method_creator, "Should load method-creator method");
+    AR_ASSERT(found_string_builder, "Should load string-builder method");
+    
+    printf("Methods from directory loading test passed!\n");
+    
+}
+
 int main(void) {
     printf("Starting Executable Module Tests...\n");
     
@@ -162,6 +273,9 @@ int main(void) {
     
     // Test that executable has only single session
     test_single_session();
+    
+    // Test that executable loads methods from directory
+    test_loading_methods_from_directory();
     
     // Now run a separate test with a system instance
     // Create system instance for tests

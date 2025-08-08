@@ -672,10 +672,10 @@ Transforming ar_executable.c from two-session demo to single-session bootstrap s
 - [x] Cycle 4: Create bootstrap method - foundation for system init (Completed 2025-08-07)
 
 **Remaining Cycles:**
-- [ ] Cycle 5: Load methods from directory when no methodology file exists
-  - Test: Verify system loads all .method files from methods/ directory
+- [x] Cycle 5: Load methods from directory (Completed 2025-08-07)
+  - Test: Verify system loads all .method files from methods/ directory  
   - Implementation: Add directory scanning and method loading to executable
-  - This enables bootstrap to spawn echo agent (currently commented out)
+  - Note: Executable now always loads from directory (no persistence files)
   
 - [ ] Cycle 6: Add bootstrap agent creation in executable
   - Test: Verify executable creates bootstrap agent on startup

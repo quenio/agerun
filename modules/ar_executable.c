@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include <inttypes.h>
+#include <dirent.h>
 #include "ar_system.h"
 #include "ar_method.h"
 #include "ar_agent.h"
@@ -9,10 +11,107 @@
 #include "ar_methodology.h"
 #include "ar_executable.h"
 #include "ar_heap.h"
+#include "ar_io.h"
 
-/* Message strings */
-static const char *ref_increment_message = "increment";
-static const char *ref_get_message = "get";
+/* No message strings needed for now */
+
+/**
+ * Load all method files from the methods directory
+ * @param mut_methodology The methodology instance to load methods into
+ * @return Number of methods loaded successfully
+ */
+static int _load_methods_from_directory(ar_methodology_t *mut_methodology) {
+    const char *methods_dir = "../../methods";
+    DIR *dir = opendir(methods_dir);
+    if (!dir) {
+        printf("Failed to open methods directory: %s\n", methods_dir);
+        return 0;
+    }
+    
+    int loaded_count = 0;
+    struct dirent *entry;
+    
+    while ((entry = readdir(dir)) != NULL) {
+        // Check if it's a .method file
+        const char *extension = strrchr(entry->d_name, '.');
+        if (!extension || strcmp(extension, ".method") != 0) {
+            continue;
+        }
+        
+        // Parse the filename to extract name and version
+        // Format: name-version.method (e.g., echo-1.0.0.method)
+        char method_name[256];
+        char version[32];
+        
+        // Copy filename without extension
+        size_t name_len = (size_t)(extension - entry->d_name);
+        if (name_len >= sizeof(method_name)) {
+            printf("Method filename too long: %s\n", entry->d_name);
+            continue;
+        }
+        strncpy(method_name, entry->d_name, name_len);
+        method_name[name_len] = '\0';
+        
+        // Find the last hyphen to separate name and version
+        char *last_hyphen = strrchr(method_name, '-');
+        if (!last_hyphen) {
+            printf("Invalid method filename format: %s\n", entry->d_name);
+            continue;
+        }
+        
+        // Split into name and version
+        *last_hyphen = '\0';
+        strncpy(version, last_hyphen + 1, sizeof(version) - 1);
+        version[sizeof(version) - 1] = '\0';
+        
+        // Build full path to method file
+        char filepath[2048];
+        snprintf(filepath, sizeof(filepath), "%s/%s", methods_dir, entry->d_name);
+        
+        // Read the method file
+        FILE *fp = NULL;
+        ar_file_result_t result = ar_io__open_file(filepath, "r", &fp);
+        if (result != AR_FILE_RESULT__SUCCESS) {
+            printf("Failed to open method file %s: %d\n", filepath, result);
+            continue;
+        }
+        
+        // Get file size
+        fseek(fp, 0, SEEK_END);
+        long file_size = ftell(fp);
+        fseek(fp, 0, SEEK_SET);
+        
+        // Allocate buffer for file content
+        char *own_content = AR__HEAP__MALLOC((size_t)(file_size + 1), "Method file content");
+        if (!own_content) {
+            ar_io__close_file(fp, filepath);
+            continue;
+        }
+        
+        // Read file content
+        size_t bytes_read = fread(own_content, 1, (size_t)file_size, fp);
+        own_content[bytes_read] = '\0';
+        ar_io__close_file(fp, filepath);
+        
+        // Create method in methodology
+        if (ar_methodology__create_method_with_instance(mut_methodology, method_name, own_content, version)) {
+            printf("Loaded method '%s' version '%s' from directory\n", method_name, version);
+            loaded_count++;
+        } else {
+            printf("Failed to create method '%s' version '%s'\n", method_name, version);
+        }
+        
+        AR__HEAP__FREE(own_content);
+    }
+    
+    closedir(dir);
+    
+    if (loaded_count > 0) {
+        printf("Loaded %d methods from directory\n", loaded_count);
+    }
+    
+    return loaded_count;
+}
 
 int ar_executable__main(void) {
     printf("Agerun Example Application\n");
@@ -55,154 +154,53 @@ int ar_executable__main(void) {
         return 1;
     }
     
-    // Create a simple echo method that handles wake messages properly
-    printf("Creating echo method...\n");
-    const char *ref_echo_instructions = "if(message = \"__wake__\", send(0, \"Echo agent is awake\"), send(0, message))";
+    // Always load methods from directory (no persistence files)
+    printf("Loading methods from directory...\n");
+    int methods_loaded = _load_methods_from_directory(mut_methodology);
     
-    // Create method using methodology instance
-    const char *ref_echo_version = "1.0.0";
-    if (!ar_methodology__create_method_with_instance(mut_methodology, "echo", ref_echo_instructions, ref_echo_version)) {
-        printf("Failed to create echo method\n");
-        ar_system__shutdown_with_instance(mut_system);
-        ar_system__destroy(mut_system);
-        return 1;
-    }
-    
-    printf("Echo method created with version %s\n\n", ref_echo_version);
-    
-    // Create a simplified counter method that just echoes back messages
-    printf("Creating counter method...\n");
-    const char *ref_counter_code = "send(0, \"Hello from counter!\")";
-    
-    // Create method using methodology instance
-    const char *ref_counter_version = "1.0.0";
-    if (!ar_methodology__create_method_with_instance(mut_methodology, "counter", ref_counter_code, ref_counter_version)) {
-        printf("Failed to create counter method\n");
-        ar_system__shutdown_with_instance(mut_system);
-        ar_system__destroy(mut_system);
-        return 1;
-    }
-    
-    printf("Counter method created with version %s\n\n", ref_counter_version);
-    
-    // Create the initial agent with proper context
-    printf("Creating initial agent...\n");
-    ar_data_t *own_echo_context = ar_data__create_map();
-    if (!own_echo_context) {
-        printf("Failed to create context for echo agent\n");
-        ar_system__shutdown_with_instance(mut_system);
-        ar_system__destroy(mut_system);
-        return 1;
-    }
-    
-    initial_agent = ar_agency__create_agent_with_instance(mut_agency, "echo", ref_echo_version, own_echo_context);
-    if (initial_agent == 0) {
-        printf("Failed to create initial agent\n");
-        ar_data__destroy(own_echo_context);
-        ar_system__shutdown_with_instance(mut_system);
-        ar_system__destroy(mut_system);
-        return 1;
-    }
-    // Note: Agent stores reference to context, don't destroy it here
-    
-    printf("Initial agent created with ID: %" PRId64 "\n\n", initial_agent);
-    
-    // Process the __wake__ message that the agent sent to itself
-    printf("Processing initial __wake__ message...\n");
-    int processed = ar_system__process_all_messages_with_instance(mut_system);
-    printf("Processed %d messages\n\n", processed);
-    
-    // Create a counter agent with proper context
-    printf("Creating counter agent...\n");
-    ar_data_t *own_counter_context = ar_data__create_map();
-    if (!own_counter_context) {
-        printf("Failed to create context for counter agent\n");
-        ar_system__shutdown_with_instance(mut_system);
-        ar_system__destroy(mut_system);
-        return 1;
-    }
-    
-    int64_t counter_id = ar_agency__create_agent_with_instance(mut_agency, "counter", ref_counter_version, own_counter_context);
-    if (counter_id == 0) {
-        printf("Failed to create counter agent\n");
-        ar_data__destroy(own_counter_context);
-        ar_system__shutdown_with_instance(mut_system);
-        ar_system__destroy(mut_system);
-        return 1;
-    }
-    // Note: Agent stores reference to context, don't destroy it here
-    printf("Counter agent created with ID: %" PRId64 "\n\n", counter_id);
-    
-    // Send some messages to the counter agent
-    printf("Sending messages to counter agent...\n");
-    ar_data_t *own_incr_msg1 = ar_data__create_string(ref_increment_message);
-    ar_data_t *own_incr_msg2 = ar_data__create_string(ref_increment_message);
-    ar_data_t *own_incr_msg3 = ar_data__create_string(ref_increment_message);
-    ar_data_t *own_get_msg1 = ar_data__create_string(ref_get_message);
-    
-    if (own_incr_msg1 && own_incr_msg2 && own_incr_msg3 && own_get_msg1) {
-        ar_agency__send_to_agent_with_instance(mut_agency, counter_id, own_incr_msg1);
-        // Ownership transferred to agent
-        own_incr_msg1 = NULL; // Mark as transferred
+    if (methods_loaded == 0) {
+        // Fall back to creating methods programmatically if directory loading fails
+        printf("No methods loaded from directory, creating default methods...\n");
         
-        ar_agency__send_to_agent_with_instance(mut_agency, counter_id, own_incr_msg2);
-        // Ownership transferred to agent
-        own_incr_msg2 = NULL; // Mark as transferred
+        // Create a simple echo method that handles wake messages properly
+        printf("Creating echo method...\n");
+        const char *ref_echo_instructions = "if(message = \"__wake__\", send(0, \"Echo agent is awake\"), send(0, message))";
+        const char *ref_echo_version = "1.0.0";
         
-        ar_agency__send_to_agent_with_instance(mut_agency, counter_id, own_incr_msg3);
-        // Ownership transferred to agent
-        own_incr_msg3 = NULL; // Mark as transferred
+        if (!ar_methodology__create_method_with_instance(mut_methodology, "echo", ref_echo_instructions, ref_echo_version)) {
+            printf("Failed to create echo method\n");
+            ar_system__shutdown_with_instance(mut_system);
+            ar_system__destroy(mut_system);
+            return 1;
+        }
         
-        ar_agency__send_to_agent_with_instance(mut_agency, counter_id, own_get_msg1);
-        // Ownership transferred to agent
-        own_get_msg1 = NULL; // Mark as transferred
+        printf("Echo method created with version %s\n\n", ref_echo_version);
+        
+        // Create a simplified counter method that just echoes back messages
+        printf("Creating counter method...\n");
+        const char *ref_counter_code = "send(0, \"Hello from counter!\")";
+        const char *ref_counter_version = "1.0.0";
+        
+        if (!ar_methodology__create_method_with_instance(mut_methodology, "counter", ref_counter_code, ref_counter_version)) {
+            printf("Failed to create counter method\n");
+            ar_system__shutdown_with_instance(mut_system);
+            ar_system__destroy(mut_system);
+            return 1;
+        }
+        
+        printf("Counter method created with version %s\n\n", ref_counter_version);
+    } else {
+        printf("Successfully loaded %d methods from directory\n\n", methods_loaded);
     }
     
-    // Process all messages
-    printf("Processing messages...\n");
-    processed = ar_system__process_all_messages_with_instance(mut_system);
-    printf("Processed %d messages\n\n", processed);
+    // TODO: Future cycles will add more functionality
+    // (No persistence files - no saving or loading of agents/methodology)
     
-    // Send more messages
-    printf("Sending more messages...\n");
-    ar_data_t *own_incr_msg4 = ar_data__create_string(ref_increment_message);
-    ar_data_t *own_incr_msg5 = ar_data__create_string(ref_increment_message);
-    ar_data_t *own_get_msg2 = ar_data__create_string(ref_get_message);
-    
-    if (own_incr_msg4 && own_incr_msg5 && own_get_msg2) {
-        ar_agency__send_to_agent_with_instance(mut_agency, counter_id, own_incr_msg4);
-        // Ownership transferred to agent
-        own_incr_msg4 = NULL; // Mark as transferred
-        
-        ar_agency__send_to_agent_with_instance(mut_agency, counter_id, own_incr_msg5);
-        // Ownership transferred to agent
-        own_incr_msg5 = NULL; // Mark as transferred
-        
-        ar_agency__send_to_agent_with_instance(mut_agency, counter_id, own_get_msg2);
-        // Ownership transferred to agent
-        own_get_msg2 = NULL; // Mark as transferred
-    }
-    
-    // Process all messages
-    printf("Processing messages...\n");
-    processed = ar_system__process_all_messages_with_instance(mut_system);
-    printf("Processed %d messages\n\n", processed);
-    
-    // Save agents and methods to disk
-    printf("Saving agents and methods to disk...\n");
-    bool saved_agents = ar_agency__save_agents_with_instance(mut_agency, NULL);
-    bool saved_methods = ar_methodology__save_methods_with_instance(mut_methodology, "methodology.agerun");
-    printf("Agents saved: %s\n", saved_agents ? "yes" : "no");
-    printf("Methods saved: %s\n\n", saved_methods ? "yes" : "no");
+    printf("System initialized with methods loaded.\n");
     
     // Shutdown the runtime
     printf("Shutting down runtime...\n");
     ar_system__shutdown_with_instance(mut_system);
-    
-    // Now that agents are destroyed, we can safely clean up the contexts we created
-    ar_data__destroy(own_echo_context);
-    ar_data__destroy(own_counter_context);
-    
     ar_system__destroy(mut_system);
     printf("Runtime shutdown complete\n\n");
     

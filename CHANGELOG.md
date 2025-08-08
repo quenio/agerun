@@ -4,6 +4,29 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-08-07
 
+### ✅ Executable Method Loading from Directory - TDD Cycle 5
+- Implemented automatic loading of all .method files from methods/ directory
+  - RED phase: Test verified methods weren't being loaded from directory
+  - GREEN phase: Added _load_methods_from_directory() function to scan and load methods
+  - REFACTOR phase: Simplified to always load from directory (no persistence checks)
+- Enhanced test coverage for comprehensive method verification
+  - Test now checks all 8 methods individually (agent-manager, bootstrap, calculator, echo, grade-evaluator, message-router, method-creator, string-builder)
+  - Verifies exact count and individual method loading
+  - Extracts Gherkin scenario from test structure
+- Removed all persistence file handling
+  - No checking for methodology.agerun existence
+  - No saving or loading of agents/methodology files
+  - Simplified architecture focused solely on directory loading
+- Clean separation of concerns
+  - Executable only loads methods and initializes system
+  - No agent creation (reserved for future bootstrap agent)
+  - Proper memory management with heap tracking macros
+- All 68 tests pass with zero memory leaks
+  - Fifth of 9 TDD cycles for bootstrap system transformation
+  - Build time: 57 seconds
+
+## 2025-08-07
+
 ### ✅ Knowledge Base Enhancement - TDD Cycle 2 Learnings
 - Created comprehensive documentation from TDD Cycle 2 insights
   - stdout-capture-test-pattern.md: Using pipe() and dup2() to capture stdout in tests
