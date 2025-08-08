@@ -13,7 +13,9 @@
 #include "ar_heap.h"
 #include "ar_io.h"
 
-/* No message strings needed for now */
+/* Bootstrap agent configuration */
+static const char *BOOTSTRAP_METHOD_NAME = "bootstrap";
+static const char *BOOTSTRAP_METHOD_VERSION = "1.0.0";
 
 /**
  * Load all method files from the methods directory
@@ -21,7 +23,11 @@
  * @return Number of methods loaded successfully
  */
 static int _load_methods_from_directory(ar_methodology_t *mut_methodology) {
-    const char *methods_dir = "../../methods";
+    // Allow methods directory to be overridden via environment variable
+    const char *methods_dir = getenv("AGERUN_METHODS_DIR");
+    if (!methods_dir) {
+        methods_dir = "../../methods";
+    }
     DIR *dir = opendir(methods_dir);
     if (!dir) {
         printf("Failed to open methods directory: %s\n", methods_dir);
@@ -125,16 +131,7 @@ int ar_executable__main(void) {
         return 1;
     }
     
-    // Initialize the runtime
-    printf("Initializing runtime...\n");
-    int64_t initial_agent = ar_system__init_with_instance(mut_system, NULL, NULL);
-    if (initial_agent != 0) {
-        printf("Error: Unexpected agent created during initialization\n");
-        ar_system__shutdown_with_instance(mut_system);
-        ar_system__destroy(mut_system);
-        return 1;
-    }
-    printf("Runtime initialized successfully\n\n");
+    // Get references needed for loading methods
     
     // Get agency instance from the system
     ar_agency_t *mut_agency = ar_system__get_agency(mut_system);
@@ -193,10 +190,16 @@ int ar_executable__main(void) {
         printf("Successfully loaded %d methods from directory\n\n", methods_loaded);
     }
     
-    // TODO: Future cycles will add more functionality
-    // (No persistence files - no saving or loading of agents/methodology)
-    
-    printf("System initialized with methods loaded.\n");
+    // Initialize the system and create bootstrap agent
+    printf("Creating bootstrap agent...\n");
+    int64_t initial_agent = ar_system__init_with_instance(mut_system, BOOTSTRAP_METHOD_NAME, BOOTSTRAP_METHOD_VERSION);
+    if (initial_agent <= 0) {
+        printf("Error: Failed to create bootstrap agent\n");
+        ar_system__shutdown_with_instance(mut_system);
+        ar_system__destroy(mut_system);
+        return 1;
+    }
+    printf("Bootstrap agent created with ID: %" PRId64 "\n", initial_agent);
     
     // Shutdown the runtime
     printf("Shutting down runtime...\n");

@@ -15,6 +15,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
 ### Knowledge Base Enhancement - TDD Cycle 4 Learnings (Completed 2025-08-07)
 - [x] Created 3 new KB articles from TDD Cycle 4 implementation; agerun-method-language-nesting-constraint.md documenting function call limitations; method-test-ast-verification.md for parse error detection in tests; stub-and-revisit-pattern.md for handling unavailable dependencies; updated method-test-template.md and test-first-verification-practice.md with cross-references; added references to CLAUDE.md in TDD, Language Notes, and Development Practices sections
 
+### Bootstrap Agent Creation & Race Condition Fix - TDD Cycle 6 (Completed 2025-08-08)
+- [x] Implemented bootstrap agent creation in ar_executable.c using TDD approach with 3 iterations; created 5 comprehensive tests including single session, method loading, bootstrap creation, failure handling, and echo spawning verification; fixed critical race condition in parallel test execution by implementing per-process isolated build environments using process ID-based temporary directories and individual methods copies; resolved Thread Sanitizer test failures; extracted helper functions for test code reuse; all 68 tests pass including Thread Sanitizer with zero memory leaks
+
 ### Bootstrap Method Implementation - TDD Cycle 4 (Completed 2025-08-07)
 - [x] Created bootstrap-1.0.0.method for system initialization using TDD approach; handles wake/sleep messages with proper syntax (no nested function calls); added comprehensive tests with AST verification to catch parse errors; documented method behavior and future spawn functionality; commented spawn code awaiting Cycle 5 (method loading from filesystem); improved test quality to properly detect method syntax errors
 

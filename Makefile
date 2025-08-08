@@ -35,7 +35,8 @@ help:
 # Output directories for parallel builds
 ANALYZE_EXEC_DIR = bin/analyze-exec
 ANALYZE_TESTS_DIR = bin/analyze-tests
-RUN_EXEC_DIR = bin/run-exec
+# Allow RUN_EXEC_DIR to be overridden by environment variable for parallel test isolation
+RUN_EXEC_DIR ?= bin/run-exec
 RUN_TESTS_DIR = bin/run-tests
 SANITIZE_TESTS_DIR = bin/sanitize-tests
 SANITIZE_EXEC_DIR = bin/sanitize-exec
