@@ -58,6 +58,9 @@ dkms.conf
 *.swp
 *.swo
 
+# Backup files
+*.bak
+
 # Build directories
 build/
 bin/
