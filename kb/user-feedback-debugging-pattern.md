@@ -46,4 +46,28 @@ zig translate-c -DDEBUG -I modules modules/ar_heap.h | grep "AR__HEAP__FREE"
 grep -n "Actual memory leaks:" memory_report.log
 ```
 
+## Real-Time Course Correction Pattern
+
+Beyond challenging formed assumptions, user feedback can provide immediate course correction to prevent going down wrong paths entirely:
+
+**Pattern**: User intervenes before wrong approach is fully pursued
+- "You know we cannot use the default build dir because of the race condition"
+- "It does not make sense to run the full build if you broke the tests"  
+- "No, man! That change was good. You should not have reverted it"
+
+**Benefits**:
+- Prevents wasted time on incorrect approaches
+- Provides immediate redirection when logic goes astray
+- Acts as real-time quality assurance during problem-solving
+
+**Implementation**: Welcome immediate corrections and treat them as valuable course corrections rather than interruptions. Each intervention reveals a gap in systematic thinking.
+
+```bash
+# When user provides course correction:
+# 1. Stop current approach immediately
+# 2. Understand the reasoning behind the correction
+# 3. Adjust methodology based on the feedback
+# 4. Resume with corrected approach
+```
+
 ## Related Patterns

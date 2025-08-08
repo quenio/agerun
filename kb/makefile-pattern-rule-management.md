@@ -68,3 +68,4 @@ git diff Makefile
 ## Related Patterns
 - [Zig Build Flag Configuration](zig-build-flag-configuration.md)
 - [Makefile Filtered Variables Pattern](makefile-filtered-variables-pattern.md)
+- [Makefile Environment Variable Directory Target Dependencies](makefile-environment-variable-directory-gotcha.md) - Directory target gotchas with environment overrides

@@ -90,3 +90,4 @@ bool run_and_verify_executable(const char* ref_expected, const char* ref_unexpec
 - [Process Termination Analysis](process-termination-analysis.md)
 - [Test Working Directory Verification](test-working-directory-verification.md)
 - [Red-Green-Refactor Cycle](red-green-refactor-cycle.md)
+- [Parallel Test Isolation with Process-Based Resource Copying](parallel-test-isolation-process-resources.md) - Advanced pattern for parallel integration tests
