@@ -6,6 +6,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+### Knowledge Base Enhancement - Task Authorization Learning (Completed 2025-08-08)
+- [x] Created task-authorization-pattern.md documenting the importance of waiting for explicit user instruction before proceeding with tasks; added cross-references to 3 related KB articles (user-feedback-as-qa, plan-verification-and-review, frank-communication-principle); updated kb/README.md index; updated CLAUDE.md Task Management section with reference
+
 ### Knowledge Base Enhancement - Session Learnings (Completed 2025-08-08)
 - [x] Created 3 new KB articles from session investigation and previous TDD cycle 5; file-io-backup-mechanism.md documenting automatic .bak file creation; requirement-precision-in-tdd.md capturing lessons about requirement misunderstandings; test-completeness-enumeration.md for verifying each expected outcome individually; updated kb/README.md with new articles; added cross-references to existing KB articles; updated CLAUDE.md with references to new patterns
 

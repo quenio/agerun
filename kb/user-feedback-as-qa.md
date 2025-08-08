@@ -66,3 +66,4 @@ Integrate user-as-QA pattern into development workflow:
 - [Specification Consistency Maintenance](specification-consistency-maintenance.md)
 - [Comprehensive Output Review](comprehensive-output-review.md)
 - [Architectural Review in Feedback](architectural-review-in-feedback.md)
+- [Task Authorization Pattern](task-authorization-pattern.md)

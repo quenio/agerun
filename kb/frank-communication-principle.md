@@ -40,3 +40,4 @@ When communicating technically:
 ## Related Patterns
 - [API Behavior Verification](api-behavior-verification.md)
 - [User Feedback as QA](user-feedback-as-qa.md)
+- [Task Authorization Pattern](task-authorization-pattern.md)

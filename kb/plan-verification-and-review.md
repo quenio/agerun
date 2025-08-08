@@ -234,3 +234,4 @@ When reviewing plans with others:
 - [Evidence-Based Debugging](evidence-based-debugging.md)
 - [TDD Red-Green-Refactor Cycle](red-green-refactor-cycle.md)
 - [Build Verification Before Commit](build-verification-before-commit.md)
+- [Task Authorization Pattern](task-authorization-pattern.md)

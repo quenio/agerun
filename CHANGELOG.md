@@ -4,6 +4,19 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-08-08
 
+### ✅ Knowledge Base Enhancement - Task Authorization Pattern
+- Created new KB article capturing critical workflow learning
+  - task-authorization-pattern.md: Documents waiting for explicit user instruction
+  - Learning emerged from incorrectly continuing "in_progress" task without authorization
+- Added cross-references to 3 related KB articles
+  - Updated user-feedback-as-qa.md with reference
+  - Updated plan-verification-and-review.md with reference
+  - Updated frank-communication-principle.md with reference
+- Updated documentation indices
+  - Added to kb/README.md in Development Workflow section
+  - Updated CLAUDE.md Task Management section with reference
+- All documentation validated with make check-docs
+
 ### ✅ Knowledge Base Enhancement - Session Learnings
 - Created 3 new KB articles capturing learnings from session
   - file-io-backup-mechanism.md: Documents automatic .bak file creation by ar_io module

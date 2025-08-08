@@ -337,6 +337,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 **Task Management**:
 - **Session todos (TodoWrite/TodoRead)**: Current TDD cycles, implementations, bug fixes
 - **TODO.md file**: Long-term architecture, future features (check [ ] vs [x] for completion)
+- **Task authorization**: Wait for explicit instruction before starting tasks ([details](kb/task-authorization-pattern.md))
 - **User feedback**: May reveal design issues, not just implementation bugs. Listen for concerns about output/behavior/consistency. Verify assumptions before acting. ([details](kb/user-feedback-as-qa.md))
 - **Architectural insights**: User feedback often reveals bigger transformations ([details](kb/architectural-review-in-feedback.md))
 - **Be frank, not polite**: Only confirm correctness when certain - honest disagreement > polite agreement

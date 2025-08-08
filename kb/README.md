@@ -48,6 +48,7 @@ Each learning file contains:
 - [Refactoring Patterns Detailed](refactoring-patterns-detailed.md)
 - [Cross-Method Pattern Discovery](cross-method-pattern-discovery.md)
 - [Stub and Revisit Pattern](stub-and-revisit-pattern.md)
+- [Task Authorization Pattern](task-authorization-pattern.md)
 
 ### Memory Management
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)
