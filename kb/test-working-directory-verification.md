@@ -77,3 +77,4 @@ void test_function(void) {
 - [Integration Test Binary Execution](integration-test-binary-execution.md)
 - [Make-Only Test Execution](make-only-test-execution.md)
 - [Test Isolation Through Commenting](test-isolation-through-commenting.md)
+- [Parallel Test Isolation with Process-Based Resource Copying](parallel-test-isolation-process-resources.md) - Resource isolation for parallel test execution

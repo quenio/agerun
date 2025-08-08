@@ -61,3 +61,4 @@ This double-verification ensures no issues slip through.
 ## Related Patterns
 - [Evidence-Based Debugging](evidence-based-debugging.md)
 - [Test Diagnostic Output Preservation](test-diagnostic-output-preservation.md)
+- [Makefile Environment Variable Directory Target Dependencies](makefile-environment-variable-directory-gotcha.md) - Directory target dependencies with environment variable overrides

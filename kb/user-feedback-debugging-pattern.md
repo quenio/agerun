@@ -71,3 +71,6 @@ Beyond challenging formed assumptions, user feedback can provide immediate cours
 ```
 
 ## Related Patterns
+- [Evidence-Based Debugging](evidence-based-debugging.md)
+- [User Feedback as Quality Assurance](user-feedback-as-qa.md)
+- [Parallel Test Isolation with Process-Based Resource Copying](parallel-test-isolation-process-resources.md) - Example of knowledge application gap in real-time debugging

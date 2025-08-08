@@ -74,3 +74,4 @@ make clean test_name 2>&1
 - [Makefile Pattern Rule Management](makefile-pattern-rule-management.md)
 - [Test Build Before Run Pattern](test-build-before-run-pattern.md)
 - [Integration Test Binary Execution](integration-test-binary-execution.md)
+- [Parallel Test Isolation with Process-Based Resource Copying](parallel-test-isolation-process-resources.md) - Advanced pattern for parallel test resource isolation
