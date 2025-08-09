@@ -10,6 +10,7 @@ Before starting the commit process, ensure you have completed ALL of these steps
 3. **Update System Documentation**: For major refactoring, check modules/README.md and dependency trees ([details](../../kb/refactoring-phase-completion-checklist.md))
 4. **Update TODO.md**: Mark completed tasks and add any new tasks identified
 5. **Update CHANGELOG.md**: Document completed milestones and achievements (NON-NEGOTIABLE)
+   - **IMPORTANT**: Include all documentation updates in the same commit as implementation ([details](../../kb/atomic-commit-documentation-pattern.md))
 6. **Review Changes**: Use `git diff` to verify all changes are intentional
 7. **Check for temporary/backup files**: NEVER commit backup files (*.backup, *.bak, *.tmp, etc.)
 8. **Test Enhanced Scripts**: If you enhanced any scripts, verify they preserve original functionality ([details](../../kb/script-backward-compatibility-testing.md))

@@ -6,6 +6,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+### Knowledge Base Enhancement - Test Fixture Patterns (Completed 2025-08-09)
+- [x] Created 4 new KB articles documenting patterns discovered during fixture module creation; test-fixture-module-creation-pattern.md for proper fixture design with opaque types; compiler-output-conflict-pattern.md for parallel build isolation requirements; dynamic-test-resource-allocation.md for ownership in test resources; atomic-commit-documentation-pattern.md for including docs with implementation; updated parallel-test-isolation-process-resources.md with cross-references; updated kb/README.md index with new articles; updated CLAUDE.md with references in TDD, memory, and build sections
+
 ### Executable Test Fixture Module Creation (Completed 2025-08-09)
 - [x] Created ar_executable_fixture module to isolate test build directories and prevent compiler conflicts between gcc and clang; extracted helper functions from ar_executable_tests.c into proper fixture module with opaque types; implemented dynamic allocation for methods directory paths with clear ownership semantics; added comprehensive tests for the fixture module; renamed functions to use create/destroy pattern for consistency; fixed "invalid control bits" linker error from parallel builds
 

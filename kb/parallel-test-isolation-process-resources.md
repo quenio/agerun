@@ -91,3 +91,5 @@ Despite having [Evidence-Based Debugging](evidence-based-debugging.md) guidance 
 - [Test Working Directory Verification](test-working-directory-verification.md)
 - [Evidence-Based Debugging](evidence-based-debugging.md) - Should have been consulted early
 - [User Feedback Debugging Pattern](user-feedback-debugging-pattern.md) - Emphasizes accepting challenges to assumptions
+- [Compiler Output Conflict Pattern](compiler-output-conflict-pattern.md) - Specific compiler mixing issues
+- [Test Fixture Module Creation Pattern](test-fixture-module-creation-pattern.md) - Proper fixture design

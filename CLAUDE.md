@@ -97,6 +97,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
   - `AR_ASSERT_NOT_USED_AFTER_FREE()` for complex reuse patterns
   - See ar_assert.md for complete guidelines
 - Expression ownership: memory.x=reference, arithmetic/strings=new object ([details](kb/expression-ownership-rules.md))
+- Test resources: Use dynamic allocation with ownership transfer ([details](kb/dynamic-test-resource-allocation.md))
 - Expression evaluator claims: Unowned data can be claimed during evaluation ([details](kb/expression-evaluator-claim-behavior.md))
 - Map iteration: get keys, destroy list & elements; persist with key/type then value
 - Wake/sleep messages: Agents mark ownership, system drops before destroy ([details](kb/ownership-drop-message-passing.md))
@@ -139,6 +140,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Signal reporting**: Report signal numbers before assertions ([details](kb/test-signal-reporting-practice.md))
 **Whitelist specificity**: Use unique fields for test errors to prevent masking ([details](kb/whitelist-specificity-pattern.md))
 **Fixture ownership**: Tests bypassing system must manage message ownership ([details](kb/test-fixture-message-ownership.md))
+**Fixture modules**: Extract helpers into proper modules with opaque types ([details](kb/test-fixture-module-creation-pattern.md))
 **Advanced patterns**: ([details](kb/tdd-advanced-large-refactoring.md), [API changes](kb/tdd-api-simplification.md), [decoupling](kb/progressive-system-decoupling-tdd.md))
 
 ### 3. Parnas Design Principles (STRICT ENFORCEMENT) ✅
@@ -318,7 +320,7 @@ make test_name 2>&1  # Build individual test (with stderr)
 ```
 Never compile directly with gcc or run binaries directly ([details](kb/make-only-test-execution.md)).
 
-**Parallel Build System**: Targets use isolated directories (bin/run-tests/, bin/sanitize-tests/) to enable parallel execution without conflicts.
+**Parallel Build System**: Targets use isolated directories (bin/run-tests/, bin/sanitize-tests/) to enable parallel execution without conflicts ([details](kb/compiler-output-conflict-pattern.md)).
 
 **Important Makefile Features**:
 - When building individual tests, the test is automatically executed after building
@@ -349,7 +351,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 1. `make clean build 2>&1` → verify exit 0 → `make check-logs` ([details](kb/build-verification-before-commit.md))
 2. Update docs for API changes ([details](kb/documentation-language-migration-updates.md))
 3. Check outdated refs: `grep -l "old_name" modules/*.md`
-4. Update TODO.md & CHANGELOG.md
+4. Update TODO.md & CHANGELOG.md in same commit ([details](kb/atomic-commit-documentation-pattern.md))
 5. `git diff` full review → clean temp files → commit
 
 **Remember**: Complete ALL TDD Cycles → Docs → TODO → CHANGELOG → Commit ([details](kb/tdd-feature-completion-before-commit.md))

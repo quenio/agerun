@@ -49,6 +49,7 @@ Each learning file contains:
 - [Cross-Method Pattern Discovery](cross-method-pattern-discovery.md)
 - [Stub and Revisit Pattern](stub-and-revisit-pattern.md)
 - [Task Authorization Pattern](task-authorization-pattern.md)
+- [Atomic Commit Documentation Pattern](atomic-commit-documentation-pattern.md)
 
 ### Memory Management
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)
@@ -56,6 +57,7 @@ Each learning file contains:
 - [Memory Debugging Comprehensive Guide](memory-debugging-comprehensive-guide.md)
 - [Expression Ownership Rules](expression-ownership-rules.md)
 - [Ownership Drop in Message Passing](ownership-drop-message-passing.md)
+- [Dynamic Test Resource Allocation](dynamic-test-resource-allocation.md)
 - [Message Ownership Flow](message-ownership-flow.md)
 - [Ownership Gap Vulnerability](ownership-gap-vulnerability.md)
 - [Debug Logging for Ownership Tracing](debug-logging-ownership-tracing.md)
@@ -78,6 +80,7 @@ Each learning file contains:
 - [Method Test Template](method-test-template.md)
 - [Test Fixture API Adaptation](test-fixture-api-adaptation.md)
 - [Test Fixture Message Ownership](test-fixture-message-ownership.md)
+- [Test Fixture Module Creation Pattern](test-fixture-module-creation-pattern.md)
 - [Refactoring Systematic Cleanup](refactoring-systematic-cleanup.md)
 - [Test Diagnostic Output Preservation](test-diagnostic-output-preservation.md)
 - [Test Simplification Through Reversion](test-simplification-through-reversion.md)
@@ -99,6 +102,7 @@ Each learning file contains:
 - [Uniform Filtering Application](uniform-filtering-application.md)
 - [Log Format Variation Handling](log-format-variation-handling.md)
 - [Parallel Test Isolation with Process-Based Resource Copying](parallel-test-isolation-process-resources.md)
+- [Compiler Output Conflict Pattern](compiler-output-conflict-pattern.md)
 - [Test Expectation Reality Alignment](test-expectation-reality-alignment.md)
 - [Systematic Error Whitelist Reduction](systematic-error-whitelist-reduction.md)
 - [Requirement Precision in TDD](requirement-precision-in-tdd.md)

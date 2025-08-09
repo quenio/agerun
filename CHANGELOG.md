@@ -4,6 +4,18 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-08-09
 
+### ✅ Knowledge Base Enhancement - Test Fixture Patterns
+- Created comprehensive documentation for patterns discovered during fixture module implementation
+  - test-fixture-module-creation-pattern.md: Proper fixture design with opaque types and lifecycle management
+  - compiler-output-conflict-pattern.md: Mixing gcc/clang outputs causes "invalid control bits" errors
+  - dynamic-test-resource-allocation.md: Test resources need dynamic allocation with ownership transfer
+  - atomic-commit-documentation-pattern.md: Implementation and docs belong in same commit
+- Enhanced existing documentation with cross-references
+  - Updated parallel-test-isolation-process-resources.md with compiler conflict references
+  - Added references to kb/README.md in appropriate categories
+  - Updated CLAUDE.md with new patterns in TDD, memory management, and build sections
+- **Key Insight**: Splitting implementation and documentation into separate commits violates atomic commit principles
+
 ### ✅ Executable Test Fixture Module Creation
 - Created ar_executable_fixture module to manage test infrastructure with proper isolation
   - Extracted helper functions from ar_executable_tests.c into dedicated fixture module
