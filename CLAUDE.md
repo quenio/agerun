@@ -123,6 +123,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Pre-modification**: Run module tests BEFORE changes
 **Cycle**: Red→Green→Refactor for EACH behavior, NO commits during ([details](kb/red-green-refactor-cycle.md), [cycle details](kb/tdd-cycle-detailed-explanation.md))
 **Verify fix**: Run single test first, then full suite ([details](kb/test-first-verification-practice.md))
+**Test reality**: Align expectations with actual behavior ([details](kb/test-expectation-reality-alignment.md))
 **Complete ALL cycles** → Update docs/TODO/CHANGELOG → Single commit
 
 **Test Requirements**: BDD structure, one test per behavior, AR_ASSERT macros, zero leaks ([details](kb/bdd-test-structure.md), [assertions](kb/ar-assert-descriptive-failures.md))
@@ -270,7 +271,7 @@ grep -r "function_name\|concept" modules/
 - Instructions: assignments, function calls
 - Function calls cannot be nested
 - `if()` cannot be nested
-- `send(0, message)` is a no-op returning true
+- `send(0, message)` is a no-op returning true ([details](kb/no-op-semantics-pattern.md))
 - Handle wake messages defensively ([details](kb/wake-message-field-access-pattern.md))
 
 ### 8. Development Practices
@@ -307,6 +308,7 @@ grep -r "function_name\|concept" modules/
 - Call `ar_system__process_next_message_with_instance(own_system)` after `ar_agent__send()`
 - Agents mark themselves as owners of wake/sleep messages ([details](kb/ownership-drop-message-passing.md))
 - Tests must process wake messages to prevent leaks ([details](kb/agent-wake-message-processing.md))
+- Note: ar_system__init sends duplicate wake (bug) ([details](kb/duplicate-wake-message-bug.md))
 
 ### 11. Building Individual Tests
 
@@ -426,6 +428,8 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 - Agent ID 0 indicates failure
 - Always process `__wake__` messages
 - Always process messages after sending to prevent memory leaks
+- Message processing loop required for complete execution ([details](kb/message-processing-loop-pattern.md))
+- All messages flow through system layer ([details](kb/system-message-flow-architecture.md))
 - **Function calls are NOT expressions** - cannot nest in other calls ([details](kb/agerun-method-language-nesting-constraint.md))
 - **Send with memory references not supported** - send() needs ownership of message
 - **Message accessor** - `message.field` returns references like memory/context ([details](kb/expression-evaluator-accessor-extension.md))

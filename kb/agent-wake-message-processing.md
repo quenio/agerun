@@ -64,3 +64,4 @@ for (int i = 0; i < num_agents; i++) {
 - [Test Fixture API Adaptation](test-fixture-api-adaptation.md)
 - [Ownership Transfer in Message Passing](ownership-drop-message-passing.md)
 - [Wake Message Field Access Pattern](wake-message-field-access-pattern.md)
+- [Duplicate Wake Message Bug](duplicate-wake-message-bug.md) - System sends duplicate wake messages
