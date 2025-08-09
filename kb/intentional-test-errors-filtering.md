@@ -77,6 +77,7 @@ Modern whitelist systems should:
 3. **Support multiple contexts**: Tests, executables, and other execution environments
 4. **Simple attribute model**: Just context + message is often sufficient
 5. **Uniform application**: Apply whitelist consistently across all checks
+6. **Pre-commit validation**: Always run check-logs before committing to catch unwhitelisted warnings
 
 ## Implementation
 Key implementation patterns:

@@ -94,4 +94,5 @@ git commit --amend  # Update to reflect architectural scope
 - [Refactoring Phase Completion Checklist](refactoring-phase-completion-checklist.md)
 - [Observable Internal State](observable-internal-state.md)
 - [Architectural Simplification Through Feature Removal](architectural-simplification-through-feature-removal.md)
+- [Struggling Detection Pattern](struggling-detection-pattern.md)
 - [Bug to Architecture Pattern](bug-to-architecture-pattern.md)

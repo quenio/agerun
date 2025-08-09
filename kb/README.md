@@ -52,6 +52,8 @@ Each learning file contains:
 - [Atomic Commit Documentation Pattern](atomic-commit-documentation-pattern.md)
 - [Multi-Session TDD Planning](multi-session-tdd-planning.md)
 - [Lifecycle Event Separation TDD](lifecycle-event-separation-tdd.md)
+- [Struggling Detection Pattern](struggling-detection-pattern.md)
+- [Phased Cleanup Pattern](phased-cleanup-pattern.md)
 
 ### Memory Management
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)
@@ -110,6 +112,8 @@ Each learning file contains:
 - [Systematic Error Whitelist Reduction](systematic-error-whitelist-reduction.md)
 - [Requirement Precision in TDD](requirement-precision-in-tdd.md)
 - [Test Completeness Enumeration](test-completeness-enumeration.md)
+- [Permission-Based Test Modification](permission-based-test-modification.md)
+- [Comprehensive Impact Analysis](comprehensive-impact-analysis.md)
 
 ### Architecture & Design
 - [Opaque Types Pattern](opaque-types-pattern.md)
@@ -146,6 +150,8 @@ Each learning file contains:
 - [Validation at Creation Time](validation-at-creation-time.md)
 - [Observable Internal State](observable-internal-state.md)
 - [Uniform Filtering Application](uniform-filtering-application.md)
+- [Shared Context Architecture Pattern](shared-context-architecture-pattern.md)
+- [Frame Creation Prerequisites](frame-creation-prerequisites.md)
 
 ### Parnas Design Principles
 - [Information Hiding Principle](information-hiding-principle.md)

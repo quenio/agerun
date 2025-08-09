@@ -12,6 +12,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
 ### Executable Test Fixture Module Creation (Completed 2025-08-09)
 - [x] Created ar_executable_fixture module to isolate test build directories and prevent compiler conflicts between gcc and clang; extracted helper functions from ar_executable_tests.c into proper fixture module with opaque types; implemented dynamic allocation for methods directory paths with clear ownership semantics; added comprehensive tests for the fixture module; renamed functions to use create/destroy pattern for consistency; fixed "invalid control bits" linker error from parallel builds
 
+### Knowledge Base Enhancement from Session Learnings (Completed 2025-08-09)
+- [x] Created 6 new KB articles from session learnings: shared-context-architecture-pattern.md for system resource management; frame-creation-prerequisites.md for debugging frame errors; permission-based-test-modification.md for TDD discipline; struggling-detection-pattern.md for knowing when to ask for help; phased-cleanup-pattern.md for managing post-change cleanup; comprehensive-impact-analysis.md for systematic change verification; updated 4 existing KB articles with cross-references; updated CLAUDE.md with all new article references in appropriate sections
+
 ### Knowledge Base Enhancement - Task Authorization Learning (Completed 2025-08-08)
 - [x] Created task-authorization-pattern.md documenting the importance of waiting for explicit user instruction before proceeding with tasks; added cross-references to 3 related KB articles (user-feedback-as-qa, plan-verification-and-review, frank-communication-principle); updated kb/README.md index; updated CLAUDE.md Task Management section with reference
 

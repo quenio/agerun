@@ -33,6 +33,7 @@ Break complex features into small behavior cycles, completing each cycle fully b
 Critical: 
 - RED phase must be a real test, not a placeholder
 - Refactor phase is NOT optional - always look for improvements
+- NEVER skip phases even if solution seems obvious - maintains discipline
 
 ### Example: Extracting Ownership Patterns
 ```c
@@ -63,6 +64,7 @@ ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, void *owner) {
 - [Ownership Pattern Extraction](ownership-pattern-extraction.md)
 - [TDD Cycle Detailed Explanation](tdd-cycle-detailed-explanation.md)
 - [Integration Test Binary Execution](integration-test-binary-execution.md)
+- [Permission-Based Test Modification](permission-based-test-modification.md)
 - Test-driven development methodology
 - Incremental feature development
 - Code quality maintenance

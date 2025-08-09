@@ -51,4 +51,5 @@ When encountering bugs:
 - [Architectural Simplification Through Feature Removal](architectural-simplification-through-feature-removal.md)
 - [Evidence Based Debugging](evidence-based-debugging.md)
 - [User Feedback as QA](user-feedback-as-qa.md)
+- [Frame Creation Prerequisites](frame-creation-prerequisites.md)
 - [Regression Root Cause Analysis](regression-root-cause-analysis.md)

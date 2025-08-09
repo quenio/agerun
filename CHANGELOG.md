@@ -4,6 +4,18 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-08-09
 
+### ✅ Knowledge Base Enhancement from Session Learnings
+- Created 6 comprehensive KB articles documenting patterns discovered during TDD Cycle 2:
+  - shared-context-architecture-pattern.md: System maintains ONE shared context for all agents
+  - frame-creation-prerequisites.md: ar_frame__create requires non-NULL memory, context, message
+  - permission-based-test-modification.md: Never modify tests during TDD without permission
+  - struggling-detection-pattern.md: Stop after 3 failed attempts and ask for guidance
+  - phased-cleanup-pattern.md: Review→Fix critical→Defer non-critical with tracking
+  - comprehensive-impact-analysis.md: Systematically check main→tests→fixtures→entire codebase
+- Updated 4 existing KB articles with cross-references for knowledge connectivity
+- Enhanced CLAUDE.md with references to all new articles in appropriate sections
+- All documentation validated with make check-docs using EXAMPLE tags for hypothetical types
+
 ### ✅ Wake Message Removal from System - TDD Cycle 2 & Cleanup
 - Successfully removed wake messages from ar_system using strict TDD methodology
   - RED phase: Added test `test_no_wake_message_from_init_with_agent` that detects wake messages → FAILED

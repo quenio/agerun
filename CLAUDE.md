@@ -109,6 +109,8 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - Temporary resources: Creator destroys contexts since agents store as references ([details](kb/temporary-resource-ownership-pattern.md))
 - API ownership on failure: Verify implementation to understand cleanup requirements ([details](kb/api-ownership-on-failure.md))
 - Context lifecycle: Destroy resources where variables are still in scope ([details](kb/context-ownership-lifecycle.md))
+- Shared context: System maintains ONE context for all agents ([details](kb/shared-context-architecture-pattern.md))
+- Frame prerequisites: ar_frame__create needs non-NULL memory, context, message ([details](kb/frame-creation-prerequisites.md))
 
 **Memory Leak Detection**:
 - Full test suite: Check console for "WARNING: X memory leaks detected"
@@ -129,6 +131,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Test reality**: Align expectations with actual behavior ([details](kb/test-expectation-reality-alignment.md))
 **Multi-session**: Use session tracking for large changes ([details](kb/multi-session-tdd-planning.md))
 **Lifecycle separation**: Handle creation/destruction in separate cycles ([details](kb/lifecycle-event-separation-tdd.md))
+**Test modification**: Ask permission before changing tests ([details](kb/permission-based-test-modification.md))
 **Complete ALL cycles** → Update docs/TODO/CHANGELOG → Single commit
 
 **Test Requirements**: BDD structure, one test per behavior, AR_ASSERT macros, zero leaks ([details](kb/bdd-test-structure.md), [assertions](kb/ar-assert-descriptive-failures.md))
@@ -300,6 +303,9 @@ grep -r "function_name\|concept" modules/
 **Pattern discovery**: Check existing methods for solutions ([details](kb/cross-method-pattern-discovery.md))
 **Whitelist reduction**: Fix root causes, not symptoms ([details](kb/systematic-error-whitelist-reduction.md))
 **Detection validation**: Test that whitelists don't mask real errors ([details](kb/error-detection-validation-testing.md))
+**Struggling detection**: Stop after 3 failed attempts, ask for help ([details](kb/struggling-detection-pattern.md))
+**Phased cleanup**: Review→Fix critical→Defer non-critical with tracking ([details](kb/phased-cleanup-pattern.md))
+**Impact analysis**: Check main→tests→fixtures→entire codebase ([details](kb/comprehensive-impact-analysis.md))
 
 ### 9. Error Propagation Pattern
 
