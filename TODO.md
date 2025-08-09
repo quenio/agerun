@@ -705,6 +705,14 @@ Transforming ar_executable.c from two-session demo to single-session bootstrap s
   - Implementation: Add while loop processing all messages
   - Ensures all agent interactions complete
   - Note: Discovered duplicate wake message bug in ar_system__init
+
+**IMPORTANT BUG TO FIX BEFORE CONTINUING:**
+- [ ] Fix duplicate wake message bug in ar_system__init
+  - Issue: ar_system__init sends extra wake message even though agents auto-send wake to themselves
+  - Impact: Message processing loop always processes 1 extra message (the duplicate)
+  - Fix: Remove manual wake send from ar_system__init_with_instance, just process the auto-sent one
+  - Tests affected: ar_executable_tests.c expects 1 message; after fix will be 0
+  - See kb/duplicate-wake-message-bug.md for details
   
 - [ ] Cycle 8: Save methodology after processing
   - Test: Verify methodology.agerun created after first run
