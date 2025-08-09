@@ -1,4 +1,5 @@
 #include "ar_executable.h"
+#include "ar_executable_fixture.h"
 #include "ar_system.h"
 #include "ar_method.h"
 #include "ar_methodology.h"
@@ -15,95 +16,12 @@
 #include <string.h>
 
 // Forward declarations
-static void test_single_session(void);
-static void test_loading_methods_from_directory(void);
-static void test_bootstrap_agent_creation(void);
-static void test_bootstrap_agent_creation_failure(void);
-static void test_bootstrap_spawns_echo(void);
-static void test_message_processing_loop(void);
-
-// Static variable to hold the temporary build directory for all tests
-static char g_temp_build_dir[256] = {0};
-
-// Helper function to initialize temporary build directory at test start
-static void _init_temp_build_dir(void) {
-    if (g_temp_build_dir[0] == '\0') {
-        pid_t pid = getpid();
-        snprintf(g_temp_build_dir, sizeof(g_temp_build_dir), 
-                 "/tmp/agerun_test_%d_build", (int)pid);
-        
-        char mkdir_cmd[512];
-        snprintf(mkdir_cmd, sizeof(mkdir_cmd), "mkdir -p %s/obj", g_temp_build_dir);
-        
-        int result = system(mkdir_cmd);
-        if (result != 0) {
-            fprintf(stderr, "WARNING: Failed to create temp build directory: %s\n", g_temp_build_dir);
-        } else {
-            printf("Created temporary build directory: %s\n", g_temp_build_dir);
-        }
-    }
-}
-
-// Helper function to clean up temporary build directory at test end
-static void _cleanup_temp_build_dir(void) {
-    if (g_temp_build_dir[0] != '\0') {
-        char cleanup_cmd[512];
-        snprintf(cleanup_cmd, sizeof(cleanup_cmd), "rm -rf %s 2>&1", g_temp_build_dir);
-        
-        int result = system(cleanup_cmd);
-        if (result != 0) {
-            printf("WARNING: Failed to remove temporary build directory: %s\n", g_temp_build_dir);
-        } else {
-            printf("Cleaned up temporary build directory: %s\n", g_temp_build_dir);
-        }
-        
-        g_temp_build_dir[0] = '\0';  // Clear the path
-    }
-}
-
-// Helper function to copy methods to a temporary directory
-static char* _copy_methods_dir(void) {
-    static char methods_dir[256];
-    pid_t pid = getpid();
-    
-    snprintf(methods_dir, sizeof(methods_dir), "/tmp/agerun_test_%d_methods", (int)pid);
-    
-    char setup_cmd[1024];
-    snprintf(setup_cmd, sizeof(setup_cmd),
-        "rm -rf %s 2>/dev/null && "
-        "mkdir -p %s && "
-        "cp ../../methods/* %s/",
-        methods_dir, methods_dir, methods_dir);
-    
-    int result = system(setup_cmd);
-    AR_ASSERT(result == 0, "Failed to copy methods directory");
-    
-    printf("Copied methods to: %s\n", methods_dir);
-    return methods_dir;
-}
-
-// Helper function to build and run executable with specified methods directory
-static FILE* _build_and_run(const char *methods_dir) {
-    char build_cmd[1024];
-    snprintf(build_cmd, sizeof(build_cmd), 
-        "cd ../.. && "
-        "AGERUN_METHODS_DIR=%s RUN_EXEC_DIR=%s make run-exec 2>&1", 
-        methods_dir, g_temp_build_dir);
-    return popen(build_cmd, "r");
-}
-
-// Helper function to delete the temporary methods directory
-static void _delete_methods_dir(const char *methods_dir) {
-    char cleanup_cmd[512];
-    snprintf(cleanup_cmd, sizeof(cleanup_cmd), "rm -rf %s 2>&1", methods_dir);
-    
-    int result = system(cleanup_cmd);
-    if (result != 0) {
-        printf("WARNING: Failed to remove temporary directory: %s\n", methods_dir);
-    } else {
-        printf("Cleaned up temporary directory: %s\n", methods_dir);
-    }
-}
+static void test_single_session(ar_executable_fixture_t *mut_fixture);
+static void test_loading_methods_from_directory(ar_executable_fixture_t *mut_fixture);
+static void test_bootstrap_agent_creation(ar_executable_fixture_t *mut_fixture);
+static void test_bootstrap_agent_creation_failure(ar_executable_fixture_t *mut_fixture);
+static void test_bootstrap_spawns_echo(ar_executable_fixture_t *mut_fixture);
+static void test_message_processing_loop(ar_executable_fixture_t *mut_fixture);
 
 
 // Stub function to avoid linking with the actual executable
@@ -113,7 +31,7 @@ int ar_executable__main(void) {
 }
 
 // Test that the executable only runs a single session
-static void test_single_session(void) {
+static void test_single_session(ar_executable_fixture_t *mut_fixture) {
     printf("Testing executable has only single session...\n");
     
     // Given we're running from the correct test directory
@@ -125,8 +43,8 @@ static void test_single_session(void) {
     
     // When we build and run the executable using make
     printf("Building and running executable...\n");
-    char *methods_dir = _copy_methods_dir();
-    FILE *pipe = _build_and_run(methods_dir);
+    char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
+    FILE *pipe = ar_executable_fixture__build_and_run(mut_fixture, own_methods_dir);
     AR_ASSERT(pipe != NULL, "Should be able to run executable via popen");
     
     char buffer[512];
@@ -165,11 +83,11 @@ static void test_single_session(void) {
     
     printf("Single session test passed!\n");
     
-    _delete_methods_dir(methods_dir);
+    ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
 }
 
 // Test that the executable loads methods from directory
-static void test_loading_methods_from_directory(void) {
+static void test_loading_methods_from_directory(ar_executable_fixture_t *mut_fixture) {
     printf("Testing executable loads methods from directory...\n");
     
     // Given we're running from the correct test directory
@@ -181,8 +99,8 @@ static void test_loading_methods_from_directory(void) {
     
     // When we build and run the executable using make
     printf("Building and running executable to test method loading...\n");
-    char *methods_dir = _copy_methods_dir();
-    FILE *pipe = _build_and_run(methods_dir);
+    char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
+    FILE *pipe = ar_executable_fixture__build_and_run(mut_fixture, own_methods_dir);
     AR_ASSERT(pipe != NULL, "Should be able to run executable");
     
     // Then we should see evidence that methods were loaded
@@ -274,11 +192,11 @@ static void test_loading_methods_from_directory(void) {
     
     printf("Methods from directory loading test passed!\n");
     
-    _delete_methods_dir(methods_dir);
+    ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
 }
 
 // Test that the executable creates a bootstrap agent
-static void test_bootstrap_agent_creation(void) {
+static void test_bootstrap_agent_creation(ar_executable_fixture_t *mut_fixture) {
     printf("Testing executable creates bootstrap agent...\n");
     
     // Given we're running from the correct test directory
@@ -289,8 +207,8 @@ static void test_bootstrap_agent_creation(void) {
     
     // When we build and run the executable using make
     printf("Building and running executable to test bootstrap agent creation...\n");
-    char *methods_dir = _copy_methods_dir();
-    FILE *pipe = _build_and_run(methods_dir);
+    char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
+    FILE *pipe = ar_executable_fixture__build_and_run(mut_fixture, own_methods_dir);
     AR_ASSERT(pipe != NULL, "Should be able to run executable");
     
     // Then we should see evidence of bootstrap agent creation
@@ -344,11 +262,11 @@ static void test_bootstrap_agent_creation(void) {
     
     printf("Bootstrap agent creation test passed!\n");
     
-    _delete_methods_dir(methods_dir);
+    ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
 }
 
 // Test that the executable handles bootstrap agent creation failure gracefully
-static void test_bootstrap_agent_creation_failure(void) {
+static void test_bootstrap_agent_creation_failure(ar_executable_fixture_t *mut_fixture) {
     printf("Testing executable handles bootstrap creation failure...\n");
     
     // Given we're running from the correct test directory
@@ -358,19 +276,19 @@ static void test_bootstrap_agent_creation_failure(void) {
     
     // Copy methods and then hide bootstrap to simulate it missing
     printf("Setting up temp methods directory and hiding bootstrap method file...\n");
-    char *methods_dir = _copy_methods_dir();
+    char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
     
     // Hide bootstrap method
     char hide_cmd[512];
     snprintf(hide_cmd, sizeof(hide_cmd),
         "mv %s/bootstrap-1.0.0.method %s/bootstrap-1.0.0.method.hidden 2>/dev/null",
-        methods_dir, methods_dir);
+        own_methods_dir, own_methods_dir);
     int hide_result = system(hide_cmd);
     AR_ASSERT(hide_result == 0, "Failed to hide bootstrap method");
     
     // When we build and run the executable without bootstrap method
     printf("Building and running executable without bootstrap method...\n");
-    FILE *pipe = _build_and_run(methods_dir);
+    FILE *pipe = ar_executable_fixture__build_and_run(mut_fixture, own_methods_dir);
     AR_ASSERT(pipe != NULL, "Should be able to run executable");
     
     // Then we should see error handling
@@ -405,11 +323,11 @@ static void test_bootstrap_agent_creation_failure(void) {
     
     printf("Bootstrap failure handling test passed!\n");
     
-    _delete_methods_dir(methods_dir);
+    ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
 }
 
 // Test that bootstrap agent spawns echo agent
-static void test_bootstrap_spawns_echo(void) {
+static void test_bootstrap_spawns_echo(ar_executable_fixture_t *mut_fixture) {
     printf("Testing bootstrap spawns echo agent...\n");
     
     // Given we're running from the correct test directory
@@ -419,8 +337,8 @@ static void test_bootstrap_spawns_echo(void) {
     
     // When we build and run the executable using make
     printf("Building and running executable to test echo agent spawning...\n");
-    char *methods_dir = _copy_methods_dir();
-    FILE *pipe = _build_and_run(methods_dir);
+    char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
+    FILE *pipe = ar_executable_fixture__build_and_run(mut_fixture, own_methods_dir);
     AR_ASSERT(pipe != NULL, "Should be able to run executable");
     
     // Then we should see evidence of echo agent being spawned
@@ -463,11 +381,11 @@ static void test_bootstrap_spawns_echo(void) {
     
     printf("Bootstrap spawn echo test passed!\n");
     
-    _delete_methods_dir(methods_dir);
+    ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
 }
 
 // Test that the executable processes all messages until none remain
-static void test_message_processing_loop(void) {
+static void test_message_processing_loop(ar_executable_fixture_t *mut_fixture) {
     printf("Testing message processing loop...\n");
     
     // Given we're running from the correct test directory
@@ -478,8 +396,8 @@ static void test_message_processing_loop(void) {
     
     // When we build and run the executable using make
     printf("Building and running executable to test message processing...\n");
-    char *methods_dir = _copy_methods_dir();
-    FILE *pipe = _build_and_run(methods_dir);
+    char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
+    FILE *pipe = ar_executable_fixture__build_and_run(mut_fixture, own_methods_dir);
     AR_ASSERT(pipe != NULL, "Should be able to run executable");
     
     // Then we should see evidence of message processing
@@ -530,35 +448,36 @@ static void test_message_processing_loop(void) {
     
     printf("Message processing loop test passed! Processed %d messages\n", messages_processed);
     
-    _delete_methods_dir(methods_dir);
+    ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
 }
 
 int main(void) {
     printf("Starting Executable Module Tests...\n");
     
-    // Initialize temporary build directory for all tests
-    _init_temp_build_dir();
+    // Create fixture for all tests
+    ar_executable_fixture_t *own_fixture = ar_executable_fixture__create();
+    AR_ASSERT(own_fixture != NULL, "Failed to create executable fixture");
     
     // Skip the fork-based test as it causes memory space conflicts
     // test_executable_run();
     
     // Test that executable has only single session
-    test_single_session();
+    test_single_session(own_fixture);
     
     // Test that executable loads methods from directory
-    test_loading_methods_from_directory();
+    test_loading_methods_from_directory(own_fixture);
     
     // Test that executable creates bootstrap agent
-    test_bootstrap_agent_creation();
+    test_bootstrap_agent_creation(own_fixture);
     
     // Test that executable handles bootstrap failure
-    test_bootstrap_agent_creation_failure();
+    test_bootstrap_agent_creation_failure(own_fixture);
     
     // Test that bootstrap spawns echo agent
-    test_bootstrap_spawns_echo();
+    test_bootstrap_spawns_echo(own_fixture);
     
     // Test that executable processes all messages
-    test_message_processing_loop();
+    test_message_processing_loop(own_fixture);
     
     // Now run a separate test with a system instance
     // Create system instance for tests
@@ -592,8 +511,8 @@ int main(void) {
     ar_system__shutdown_with_instance(mut_system);
     ar_system__destroy(mut_system);
     
-    // Clean up temporary build directory
-    _cleanup_temp_build_dir();
+    // Destroy the fixture (also cleans up temp build directory)
+    ar_executable_fixture__destroy(own_fixture);
     
     // And report success
     printf("All 5 tests passed!\n");
