@@ -706,25 +706,233 @@ Transforming ar_executable.c from two-session demo to single-session bootstrap s
   - Ensures all agent interactions complete
   - Note: Discovered duplicate wake message bug in ar_system__init
 
-**IMPORTANT BUG TO FIX BEFORE CONTINUING:**
-- [ ] Fix duplicate wake message bug in ar_system__init
-  - Issue: ar_system__init sends extra wake message even though agents auto-send wake to themselves
-  - Impact: Message processing loop always processes 1 extra message (the duplicate)
-  - Fix: Remove manual wake send from ar_system__init_with_instance, just process the auto-sent one
-  - Tests affected: ar_executable_tests.c expects 1 message; after fix will be 0
-  - See kb/duplicate-wake-message-bug.md for details
-  
-- [ ] Cycle 8: Save methodology after processing
-  - Test: Verify methodology.agerun created after first run
-  - Implementation: Save methodology post-processing
-  - Enables persistence for subsequent runs
-  
-- [ ] Cycle 9: Load methodology file when it exists
-  - Test: Verify second run loads from methodology.agerun
-  - Implementation: Check for file existence and load if present
-  - Completes the bootstrap cycle
+## In Progress - Remove Wake/Sleep Messages from System
 
-**Clean-up Task:**
+### Architectural Decision
+Remove wake/sleep messages as system-level concepts since they're not essential for all agents. Supervision agents can implement lifecycle notifications if needed for specific use cases.
+
+### TDD Plan: 9 Cycles across 4 Phases
+
+#### Phase 1: Remove Wake/Sleep from Core Modules (Cycles 1-3)
+
+##### TDD Cycle 1: Remove wake messages from ar_agent
+**Session tracking**: [ ] Started [ ] Completed
+
+###### Iteration 1.1: Remove wake message sending from agent creation
+- **RED**: Modify ar_agent_tests.c to expect no wake message sent on creation → Test FAILS
+- **GREEN**: Remove wake message sending from ar_agent__create (lines 65-71)
+- **REFACTOR**: Clean up initialization flow, remove wake-related comments
+
+###### Iteration 1.2: Update ar_system_fixture to not expect wake messages
+- **RED**: Tests using ar_system_fixture fail because fixture expects wake messages
+- **GREEN**: Update ar_system_fixture__process_wake_messages to be a no-op
+- **REFACTOR**: Consider renaming or removing the function entirely
+
+**Success**: ar_agent_tests, ar_agent_update_tests pass with zero memory leaks
+**Documentation**: Update ar_agent.md
+
+##### TDD Cycle 2: Remove wake messages from ar_system
+**Session tracking**: [ ] Started [ ] Completed
+
+###### Iteration 2.1: Remove duplicate wake message bug from system init
+- **RED**: Modify ar_executable_tests.c:447 to expect 0 messages instead of 1 → FAIL
+- **GREEN**: Remove wake message sending from ar_system__init_with_instance (lines 135-144)
+- **REFACTOR**: Clean up initialization flow
+
+###### Iteration 2.2: Remove wake message global constant
+- **RED**: Compilation fails with undefined reference to g_wake_message
+- **GREEN**: Remove g_wake_message from ar_agent.h/.c (line 29) and all references
+- **REFACTOR**: Clean up includes, simplify code
+
+**Success**: ar_system_tests, ar_executable_tests pass
+**Documentation**: Update ar_system.md
+
+##### TDD Cycle 3: Remove sleep messages from ar_agent and ar_agency
+**Session tracking**: [ ] Started [ ] Completed
+
+###### Iteration 3.1: Remove sleep message sending from agent destruction
+- **RED**: Create test verifying no sleep message on destruction → FAIL
+- **GREEN**: Remove sleep message sending from ar_agent__destroy (lines 96-106)
+- **REFACTOR**: Simplify destruction logic
+
+###### Iteration 3.2: Remove sleep message from agent method updates
+- **RED**: Test ar_agent__update_method with send_sleep_wake=true → FAIL
+- **GREEN**: Remove sleep/wake logic from ar_agent__update_method (lines 287-303)
+- **REFACTOR**: Simplify method update logic
+
+###### Iteration 3.3: Remove sleep message global constant
+- **RED**: Compilation fails with undefined reference to g_sleep_message
+- **GREEN**: Remove g_sleep_message from ar_agent.h/.c (line 30)
+- **REFACTOR**: Clean up remaining sleep references
+
+###### Iteration 3.4: Update ar_agency to not expect sleep messages
+- **RED**: ar_agency_tests.c fails if expecting sleep messages
+- **GREEN**: Update ar_agency__destroy_all_agents to not process sleep
+- **REFACTOR**: Remove message-related code from destroy paths
+
+**Success**: ar_agent_tests, ar_agency_tests pass
+**Documentation**: Update ar_agent.md, ar_agency.md
+
+#### Phase 2: Update Method Implementations (Cycle 4)
+
+##### TDD Cycle 4: Update all methods to remove wake/sleep detection
+**Session tracking**: [ ] Started [ ] Completed
+
+###### Iteration 4.1: Update bootstrap method
+- **RED**: bootstrap_tests.c fails with wake/sleep checks → FAIL
+- **GREEN**: Remove lines 1-5 from bootstrap-1.0.0.method, spawn echo immediately
+- **REFACTOR**: Simplify to essential spawning logic
+
+###### Iteration 4.2: Update ar_method_fixture
+- **RED**: All method tests fail - fixture sends wake messages
+- **GREEN**: Update ar_method_fixture to not send wake messages
+- **REFACTOR**: Clean up fixture initialization
+
+###### Iteration 4.3: Update echo method
+- **RED**: echo_tests.c fails with wake/sleep checks
+- **GREEN**: Remove wake/sleep detection from echo-1.0.0.method
+- **REFACTOR**: Simplify to pure echo
+
+###### Iteration 4.4: Update calculator method
+- **RED**: calculator_tests.c fails
+- **GREEN**: Remove wake/sleep from calculator-1.0.0.method
+- **REFACTOR**: Clean up initialization
+
+###### Iteration 4.5: Update agent-manager method
+- **RED**: agent_manager_tests.c fails
+- **GREEN**: Remove wake/sleep from agent-manager-1.0.0.method
+- **REFACTOR**: Simplify agent management
+
+###### Iteration 4.6: Update grade-evaluator method
+- **RED**: grade_evaluator_tests.c fails
+- **GREEN**: Remove wake/sleep from grade-evaluator-1.0.0.method
+- **REFACTOR**: Clean up grading logic
+
+###### Iteration 4.7: Update message-router method
+- **RED**: message_router_tests.c fails
+- **GREEN**: Remove wake/sleep from message-router-1.0.0.method
+- **REFACTOR**: Simplify routing logic
+
+###### Iteration 4.8: Update method-creator method
+- **RED**: method_creator_tests.c fails
+- **GREEN**: Remove wake/sleep from method-creator-1.0.0.method
+- **REFACTOR**: Clean up method creation
+
+###### Iteration 4.9: Update string-builder method
+- **RED**: string_builder_tests.c fails
+- **GREEN**: Remove wake/sleep from string-builder-1.0.0.method
+- **REFACTOR**: Simplify string operations
+
+**Success**: All 8 method tests pass
+**Documentation**: Update all method .md files
+
+#### Phase 3: Update Documentation (Cycles 5-6)
+
+##### TDD Cycle 5: Update project documentation
+**Session tracking**: [ ] Started [ ] Completed
+
+###### Iteration 5.1: Update SPEC.md
+- **RED**: make check-docs fails with wake/sleep references
+- **GREEN**: Remove wake/sleep from Agent Lifecycle section
+- **REFACTOR**: Reorganize lifecycle section
+
+###### Iteration 5.2: Update README.md
+- **RED**: Documentation validation fails
+- **GREEN**: Update agent lifecycle description, remove from examples
+- **REFACTOR**: Improve example clarity
+
+###### Iteration 5.3: Update MMM.md
+- **RED**: Memory model references wake/sleep ownership
+- **GREEN**: Update ownership examples
+- **REFACTOR**: Consolidate ownership rules
+
+**Success**: make check-docs passes
+
+##### TDD Cycle 6: Update knowledge base
+**Session tracking**: [ ] Started [ ] Completed
+
+###### Iteration 6.1: Update duplicate-wake-message-bug.md
+- **RED**: KB describes obsolete bug
+- **GREEN**: Mark as RESOLVED, document removal
+- **REFACTOR**: Add historical context
+
+###### Iteration 6.2: Update agent-wake-message-processing.md
+- **RED**: KB describes removed feature
+- **GREEN**: Add OBSOLETE header, document change
+- **REFACTOR**: Add migration notes
+
+###### Iteration 6.3: Update ownership-drop-message-passing.md
+- **RED**: References wake/sleep patterns
+- **GREEN**: Remove wake/sleep examples
+- **REFACTOR**: Update with current patterns
+
+###### Iteration 6.4: Update wake-message-field-access-pattern.md
+- **RED**: Entire article about removed feature
+- **GREEN**: Mark as OBSOLETE
+- **REFACTOR**: Add historical note
+
+###### Iteration 6.5: Update message-processing-loop-pattern.md
+- **RED**: References wake processing
+- **GREEN**: Update to remove wake references
+- **REFACTOR**: Focus on general messages
+
+###### Iteration 6.6: Update system-message-flow-architecture.md
+- **RED**: Shows wake/sleep in flow
+- **GREEN**: Remove from diagrams
+- **REFACTOR**: Simplify architecture
+
+###### Iteration 6.7: Update no-op-semantics-pattern.md
+- **RED**: Uses wake/sleep examples
+- **GREEN**: Find different examples
+- **REFACTOR**: Improve clarity
+
+###### Iteration 6.8: Update CLAUDE.md
+- **RED**: Multiple wake/sleep references
+- **GREEN**: Remove from all sections
+- **REFACTOR**: Consolidate patterns
+
+**Success**: All KB articles updated
+
+#### Phase 4: Complete Bootstrap System (Cycles 7-9)
+
+##### TDD Cycle 7: Bootstrap spawns echo immediately
+**Session tracking**: [ ] Started [ ] Completed
+
+###### Iteration 7.1: Bootstrap spawns echo without wake trigger
+- **RED**: Test expects echo agent (ID 2) but not created
+- **GREEN**: Update bootstrap to spawn("echo", "1.0.0", "context") immediately
+- **REFACTOR**: Simplify to essential spawn
+
+**Success**: Bootstrap spawns echo correctly
+
+##### TDD Cycle 8: Save methodology after processing
+**Session tracking**: [ ] Started [ ] Completed
+
+###### Iteration 8.1: Implement methodology persistence
+- **RED**: Test expects methodology.agerun file after run
+- **GREEN**: Add ar_methodology__save after message processing
+- **REFACTOR**: Extract save logic, add error handling
+
+**Success**: Methodology persisted
+
+##### TDD Cycle 9: Load methodology when exists
+**Session tracking**: [ ] Started [ ] Completed
+
+###### Iteration 9.1: Load persisted methodology
+- **RED**: Test expects methods from methodology.agerun
+- **GREEN**: Check for file before directory scan
+- **REFACTOR**: Unify load/save paths
+
+**Success**: Complete bootstrap system
+
+### Execution Notes
+- Each cycle is independently committable
+- User will run /commit at end of each cycle
+- Wake (Cycles 1-2) and Sleep (Cycle 3) removed separately
+- All methods updated in single cycle (Cycle 4)
+- Fixture updates within dependent cycles
+
+### Clean-up Task
 - [ ] Remove obsolete whitelist entries (currently 211 entries)
   - Remove entries related to removed auto-loading/saving
   - Clean up wake message errors as they're fixed
