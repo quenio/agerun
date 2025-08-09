@@ -22,46 +22,87 @@ static void test_bootstrap_agent_creation_failure(void);
 static void test_bootstrap_spawns_echo(void);
 static void test_message_processing_loop(void);
 
-// Helper function to build and run executable with unique directory
-static FILE* _build_and_run_executable(void) {
-    char build_cmd[1024];
+// Static variable to hold the temporary build directory for all tests
+static char g_temp_build_dir[256] = {0};
+
+// Helper function to initialize temporary build directory at test start
+static void _init_temp_build_dir(void) {
+    if (g_temp_build_dir[0] == '\0') {
+        pid_t pid = getpid();
+        snprintf(g_temp_build_dir, sizeof(g_temp_build_dir), 
+                 "/tmp/agerun_test_%d_build", (int)pid);
+        
+        char mkdir_cmd[512];
+        snprintf(mkdir_cmd, sizeof(mkdir_cmd), "mkdir -p %s/obj", g_temp_build_dir);
+        
+        int result = system(mkdir_cmd);
+        if (result != 0) {
+            fprintf(stderr, "WARNING: Failed to create temp build directory: %s\n", g_temp_build_dir);
+        } else {
+            printf("Created temporary build directory: %s\n", g_temp_build_dir);
+        }
+    }
+}
+
+// Helper function to clean up temporary build directory at test end
+static void _cleanup_temp_build_dir(void) {
+    if (g_temp_build_dir[0] != '\0') {
+        char cleanup_cmd[512];
+        snprintf(cleanup_cmd, sizeof(cleanup_cmd), "rm -rf %s 2>&1", g_temp_build_dir);
+        
+        int result = system(cleanup_cmd);
+        if (result != 0) {
+            printf("WARNING: Failed to remove temporary build directory: %s\n", g_temp_build_dir);
+        } else {
+            printf("Cleaned up temporary build directory: %s\n", g_temp_build_dir);
+        }
+        
+        g_temp_build_dir[0] = '\0';  // Clear the path
+    }
+}
+
+// Helper function to copy methods to a temporary directory
+static char* _copy_methods_dir(void) {
+    static char methods_dir[256];
     pid_t pid = getpid();
     
-    // Clean up, copy methods, create full directory structure manually since Makefile doesn't handle override properly
+    snprintf(methods_dir, sizeof(methods_dir), "/tmp/agerun_test_%d_methods", (int)pid);
+    
+    char setup_cmd[1024];
+    snprintf(setup_cmd, sizeof(setup_cmd),
+        "rm -rf %s 2>/dev/null && "
+        "mkdir -p %s && "
+        "cp ../../methods/* %s/",
+        methods_dir, methods_dir, methods_dir);
+    
+    int result = system(setup_cmd);
+    AR_ASSERT(result == 0, "Failed to copy methods directory");
+    
+    printf("Copied methods to: %s\n", methods_dir);
+    return methods_dir;
+}
+
+// Helper function to build and run executable with specified methods directory
+static FILE* _build_and_run(const char *methods_dir) {
+    char build_cmd[1024];
     snprintf(build_cmd, sizeof(build_cmd), 
         "cd ../.. && "
-        "rm -rf /tmp/agerun_test_%d 2>/dev/null && "
-        "mkdir -p /tmp/agerun_test_%d/obj && "
-        "mkdir -p /tmp/agerun_test_%d/methods && "
-        "cp methods/* /tmp/agerun_test_%d/methods/ && "
-        "AGERUN_METHODS_DIR=/tmp/agerun_test_%d/methods "
-        "RUN_EXEC_DIR=/tmp/agerun_test_%d make run-exec 2>&1", 
-        (int)pid, (int)pid, (int)pid, (int)pid, (int)pid, (int)pid);
+        "AGERUN_METHODS_DIR=%s RUN_EXEC_DIR=%s make run-exec 2>&1", 
+        methods_dir, g_temp_build_dir);
     return popen(build_cmd, "r");
 }
 
-// Helper function to build and run executable using existing temp methods directory
-static FILE* _build_and_run_executable_existing_methods(void) {
-    char build_cmd[1024];
-    pid_t pid = getpid();
+// Helper function to delete the temporary methods directory
+static void _delete_methods_dir(const char *methods_dir) {
+    char cleanup_cmd[512];
+    snprintf(cleanup_cmd, sizeof(cleanup_cmd), "rm -rf %s 2>&1", methods_dir);
     
-    // Use existing temp methods directory (don't copy again)
-    snprintf(build_cmd, sizeof(build_cmd), 
-        "cd ../.. && "
-        "AGERUN_METHODS_DIR=/tmp/agerun_test_%d/methods "
-        "RUN_EXEC_DIR=/tmp/agerun_test_%d make run-exec 2>&1", 
-        (int)pid, (int)pid);
-    return popen(build_cmd, "r");
-}
-
-// Helper function to clean up the temporary build directory
-static void _cleanup_build_directory(void) {
-    char cleanup_cmd[256];
-    snprintf(cleanup_cmd, sizeof(cleanup_cmd), 
-        "rm -rf /tmp/agerun_test_%d 2>/dev/null", 
-        (int)getpid());
-    system(cleanup_cmd);
-    printf("Cleaned up temporary build directory: /tmp/agerun_test_%d\n", (int)getpid());
+    int result = system(cleanup_cmd);
+    if (result != 0) {
+        printf("WARNING: Failed to remove temporary directory: %s\n", methods_dir);
+    } else {
+        printf("Cleaned up temporary directory: %s\n", methods_dir);
+    }
 }
 
 
@@ -84,7 +125,8 @@ static void test_single_session(void) {
     
     // When we build and run the executable using make
     printf("Building and running executable...\n");
-    FILE *pipe = _build_and_run_executable();
+    char *methods_dir = _copy_methods_dir();
+    FILE *pipe = _build_and_run(methods_dir);
     AR_ASSERT(pipe != NULL, "Should be able to run executable via popen");
     
     char buffer[512];
@@ -123,6 +165,7 @@ static void test_single_session(void) {
     
     printf("Single session test passed!\n");
     
+    _delete_methods_dir(methods_dir);
 }
 
 // Test that the executable loads methods from directory
@@ -138,7 +181,8 @@ static void test_loading_methods_from_directory(void) {
     
     // When we build and run the executable using make
     printf("Building and running executable to test method loading...\n");
-    FILE *pipe = _build_and_run_executable();
+    char *methods_dir = _copy_methods_dir();
+    FILE *pipe = _build_and_run(methods_dir);
     AR_ASSERT(pipe != NULL, "Should be able to run executable");
     
     // Then we should see evidence that methods were loaded
@@ -230,6 +274,7 @@ static void test_loading_methods_from_directory(void) {
     
     printf("Methods from directory loading test passed!\n");
     
+    _delete_methods_dir(methods_dir);
 }
 
 // Test that the executable creates a bootstrap agent
@@ -244,7 +289,8 @@ static void test_bootstrap_agent_creation(void) {
     
     // When we build and run the executable using make
     printf("Building and running executable to test bootstrap agent creation...\n");
-    FILE *pipe = _build_and_run_executable();
+    char *methods_dir = _copy_methods_dir();
+    FILE *pipe = _build_and_run(methods_dir);
     AR_ASSERT(pipe != NULL, "Should be able to run executable");
     
     // Then we should see evidence of bootstrap agent creation
@@ -297,6 +343,8 @@ static void test_bootstrap_agent_creation(void) {
     }
     
     printf("Bootstrap agent creation test passed!\n");
+    
+    _delete_methods_dir(methods_dir);
 }
 
 // Test that the executable handles bootstrap agent creation failure gracefully
@@ -308,20 +356,21 @@ static void test_bootstrap_agent_creation_failure(void) {
     AR_ASSERT(getcwd(cwd, sizeof(cwd)) != NULL, "Should be able to get current directory");
     AR_ASSERT(strstr(cwd, "/bin/") != NULL, "Test must be run from bin directory");
     
-    // Set up temp directory and copy methods, then hide bootstrap to simulate it missing
+    // Copy methods and then hide bootstrap to simulate it missing
     printf("Setting up temp methods directory and hiding bootstrap method file...\n");
-    char setup_cmd[1024];
-    snprintf(setup_cmd, sizeof(setup_cmd), 
-        "cd ../.. && "
-        "mkdir -p /tmp/agerun_test_%d && "
-        "cp -r methods /tmp/agerun_test_%d/ && "
-        "mv /tmp/agerun_test_%d/methods/bootstrap-1.0.0.method /tmp/agerun_test_%d/methods/bootstrap-1.0.0.method.hidden 2>/dev/null", 
-        (int)getpid(), (int)getpid(), (int)getpid(), (int)getpid());
-    system(setup_cmd);
+    char *methods_dir = _copy_methods_dir();
+    
+    // Hide bootstrap method
+    char hide_cmd[512];
+    snprintf(hide_cmd, sizeof(hide_cmd),
+        "mv %s/bootstrap-1.0.0.method %s/bootstrap-1.0.0.method.hidden 2>/dev/null",
+        methods_dir, methods_dir);
+    int hide_result = system(hide_cmd);
+    AR_ASSERT(hide_result == 0, "Failed to hide bootstrap method");
     
     // When we build and run the executable without bootstrap method
     printf("Building and running executable without bootstrap method...\n");
-    FILE *pipe = _build_and_run_executable_existing_methods();
+    FILE *pipe = _build_and_run(methods_dir);
     AR_ASSERT(pipe != NULL, "Should be able to run executable");
     
     // Then we should see error handling
@@ -343,14 +392,6 @@ static void test_bootstrap_agent_creation_failure(void) {
     
     int status = pclose(pipe);
     
-    // Restore bootstrap method file in our temp copy
-    printf("Restoring bootstrap method file...\n");
-    char restore_cmd[512];
-    snprintf(restore_cmd, sizeof(restore_cmd), 
-        "mv /tmp/agerun_test_%d/methods/bootstrap-1.0.0.method.hidden /tmp/agerun_test_%d/methods/bootstrap-1.0.0.method 2>/dev/null", 
-        (int)getpid(), (int)getpid());
-    system(restore_cmd);
-    
     // Verify error handling
     if (WIFEXITED(status)) {
         exit_code = WEXITSTATUS(status);
@@ -363,6 +404,8 @@ static void test_bootstrap_agent_creation_failure(void) {
     AR_ASSERT(exit_code == 2, "Should exit with error code 2 when bootstrap fails (via make)");
     
     printf("Bootstrap failure handling test passed!\n");
+    
+    _delete_methods_dir(methods_dir);
 }
 
 // Test that bootstrap agent spawns echo agent
@@ -376,7 +419,8 @@ static void test_bootstrap_spawns_echo(void) {
     
     // When we build and run the executable using make
     printf("Building and running executable to test echo agent spawning...\n");
-    FILE *pipe = _build_and_run_executable();
+    char *methods_dir = _copy_methods_dir();
+    FILE *pipe = _build_and_run(methods_dir);
     AR_ASSERT(pipe != NULL, "Should be able to run executable");
     
     // Then we should see evidence of echo agent being spawned
@@ -418,6 +462,8 @@ static void test_bootstrap_spawns_echo(void) {
     }
     
     printf("Bootstrap spawn echo test passed!\n");
+    
+    _delete_methods_dir(methods_dir);
 }
 
 // Test that the executable processes all messages until none remain
@@ -432,7 +478,8 @@ static void test_message_processing_loop(void) {
     
     // When we build and run the executable using make
     printf("Building and running executable to test message processing...\n");
-    FILE *pipe = _build_and_run_executable();
+    char *methods_dir = _copy_methods_dir();
+    FILE *pipe = _build_and_run(methods_dir);
     AR_ASSERT(pipe != NULL, "Should be able to run executable");
     
     // Then we should see evidence of message processing
@@ -482,10 +529,15 @@ static void test_message_processing_loop(void) {
     AR_ASSERT(messages_processed == 1, "Should process 1 message (duplicate wake)");
     
     printf("Message processing loop test passed! Processed %d messages\n", messages_processed);
+    
+    _delete_methods_dir(methods_dir);
 }
 
 int main(void) {
     printf("Starting Executable Module Tests...\n");
+    
+    // Initialize temporary build directory for all tests
+    _init_temp_build_dir();
     
     // Skip the fork-based test as it causes memory space conflicts
     // test_executable_run();
@@ -540,8 +592,8 @@ int main(void) {
     ar_system__shutdown_with_instance(mut_system);
     ar_system__destroy(mut_system);
     
-    // Final cleanup of any leftover temp directories
-    _cleanup_build_directory();
+    // Clean up temporary build directory
+    _cleanup_temp_build_dir();
     
     // And report success
     printf("All 5 tests passed!\n");
