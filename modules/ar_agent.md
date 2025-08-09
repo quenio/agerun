@@ -21,7 +21,7 @@ The agent module (`ar_agent.h` and `ar_agent.c`) provides individual agent lifec
 ```c
 int64_t ar_agent__create(const char *ref_method_name, const char *ref_version, const ar_data_t *ref_context)
 ```
-Creates a new agent with the specified method and optional context. The agent automatically receives a `__wake__` message upon creation.
+Creates a new agent with the specified method and optional context.
 
 **Parameters:**
 - `ref_method_name`: Name of the method to execute (borrowed reference)
@@ -29,8 +29,6 @@ Creates a new agent with the specified method and optional context. The agent au
 - `ref_context`: Optional context data (borrowed reference, can be NULL)
 
 **Returns:** Agent ID on success, 0 on failure
-
-**Note:** The wake message should be processed by calling `ar_system__process_next_message_with_instance(own_system))` after creation.
 
 #### `ar_agent__destroy`
 ```c
@@ -115,8 +113,7 @@ if (echo_agent == 0) {
     return;
 }
 
-// Process the wake message
-ar_system__process_next_message_with_instance(own_system));
+// Agent is ready to receive messages immediately
 
 // Send a message to the agent
 ar_data_t *own_message = ar_data__create_map();

@@ -414,13 +414,20 @@ static void test_message_processing_loop(ar_executable_fixture_t *mut_fixture) {
             found_processing_messages = true;
         }
         
-        // Look for count of messages processed
-        if (strstr(line, "Processed") && (strstr(line, "message") || strstr(line, "messages"))) {
+        // Look for count of messages processed or "No messages to process"
+        if ((strstr(line, "Processed") && (strstr(line, "message") || strstr(line, "messages"))) ||
+            strstr(line, "No messages to process")) {
             found_messages_processed_count = true;
-            // Try to extract the number (handles both "message" and "messages")
-            char *num_str = strstr(line, "Processed ");
-            if (num_str) {
-                sscanf(num_str, "Processed %d message", &messages_processed);
+            
+            // Check if it's "No messages to process"
+            if (strstr(line, "No messages to process")) {
+                messages_processed = 0;
+            } else {
+                // Try to extract the number (handles both "message" and "messages")
+                char *num_str = strstr(line, "Processed ");
+                if (num_str) {
+                    sscanf(num_str, "Processed %d message", &messages_processed);
+                }
             }
         }
     }
@@ -441,10 +448,11 @@ static void test_message_processing_loop(ar_executable_fixture_t *mut_fixture) {
     // Verify message processing occurred
     AR_ASSERT(found_processing_messages, "Should see 'Processing messages' indicating loop started");
     // Note: "Bootstrap initialized" won't appear because send(0, ...) is a no-op per CLAUDE.md
-    // Currently processes duplicate wake message (bug: ar_system__init sends extra wake)
+    // After Cycle 1: No wake from agent creation, system's wake processed internally
+    // So the message processing loop completes with 0 messages
     AR_ASSERT(found_messages_processed_count, "Should see count of messages processed");
-    // We expect 1 message (the duplicate wake) until the bug is fixed
-    AR_ASSERT(messages_processed == 1, "Should process 1 message (duplicate wake)");
+    // We expect 0 messages (wake removed from agent creation, system's wake processed internally)
+    AR_ASSERT(messages_processed == 0, "Should process 0 messages after Cycle 1 changes");
     
     printf("Message processing loop test passed! Processed %d messages\n", messages_processed);
     

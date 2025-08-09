@@ -53,9 +53,10 @@ static void test_system_instance_with_custom_agency(void) {
     // Then an agent should be created
     assert(agent_id > 0);
     
-    // And message processing should work
+    // System already processed the wake message internally during init
+    // No additional messages to process
     bool processed = ar_system__process_next_message_with_instance(own_system);
-    assert(processed); // Should process the wake message
+    assert(!processed); // No messages left to process
     
     // When we shut down the system
     ar_system__shutdown_with_instance(own_system);
@@ -102,9 +103,7 @@ static void test_system_instance_parallel_systems(void) {
     // Note: Both agents may have the same ID (1) since they're in different agencies
     // This is expected behavior - each agency has its own ID sequence
     
-    // Process wake messages
-    ar_system__process_next_message_with_instance(own_system1);
-    ar_system__process_next_message_with_instance(own_system2);
+    // No wake messages to process (system processes them internally during init)
     
     // Clean up
     ar_system__shutdown_with_instance(own_system1);
@@ -137,9 +136,10 @@ static void test_system_instance_message_processing(void) {
     int64_t agent_id = ar_system__init_with_instance(own_system, "msg_test", "1.0.0");
     assert(agent_id > 0);
     
-    // Process the wake message (this executes the method)
+    // System already processed the wake message internally during init
+    // Try to process but expect no messages
     bool processed = ar_system__process_next_message_with_instance(own_system);
-    assert(processed);
+    assert(!processed);
     
     // Verify the method was executed by checking agent memory
     ar_agency_t *ref_agency = ar_system__get_agency(own_system);

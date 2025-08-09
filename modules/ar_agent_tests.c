@@ -42,8 +42,10 @@ static void test_agent_create_destroy(ar_system_fixture_t *own_fixture) {
     // Then the agent should be created successfully
     assert(agent_id > 0);
     
-    // Process the wake message the agent sent to itself
-    ar_system_fixture__process_next_message(own_fixture);
+    // Verify no wake message was sent (agent should not send wake on creation)
+    // Trying to process a message should return false (no messages pending)
+    bool message_processed = ar_system_fixture__process_next_message(own_fixture);
+    assert(!message_processed && "No wake message should be sent on agent creation");
     
     // And the agent should exist in the system
     ar_agent_registry_t *ref_registry = ar_agency__get_registry_with_instance(mut_agency);
@@ -82,8 +84,7 @@ static void test_agent_send(ar_system_fixture_t *own_fixture) {
     int64_t agent_id = ar_agency__create_agent_with_instance(mut_agency, method_name, version, NULL);
     assert(agent_id > 0);
     
-    // Process the wake message the agent sent to itself
-    ar_system_fixture__process_next_message(own_fixture);
+    // No wake message should be sent on creation
     
     // When we send a message to the agent
     ar_data_t *own_message_data = ar_data__create_string(g_hello_message);
@@ -127,8 +128,7 @@ static void test_agent_exists(ar_system_fixture_t *own_fixture) {
     int64_t agent_id = ar_agency__create_agent_with_instance(mut_agency, method_name, version, NULL);
     assert(agent_id > 0);
     
-    // Process the wake message the agent sent to itself
-    ar_system_fixture__process_next_message(own_fixture);
+    // No wake message should be sent on creation
     
     // When we check if the valid agent ID exists
     ar_agent_registry_t *ref_registry = ar_agency__get_registry_with_instance(mut_agency);
@@ -187,8 +187,7 @@ static void test_agent_persistence(ar_system_fixture_t *own_fixture) {
     int64_t agent_id = ar_agency__create_agent_with_instance(mut_agency, method_name, version, own_context);
     assert(agent_id > 0);
     
-    // Process the wake message the agent sent to itself
-    ar_system_fixture__process_next_message(own_fixture);
+    // No wake message should be sent on creation
     
     // When we save agents to disk using instance API
     bool save_result = ar_agency__save_agents_with_instance(mut_agency, "agency.agerun");

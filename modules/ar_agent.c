@@ -61,14 +61,7 @@ ar_agent_t* ar_agent__create_with_method(const ar_method_t *ref_method, const ar
         return NULL;
     }
     
-    // Send wake message
-    ar_data_t *own_wake_msg = ar_data__create_string(g_wake_message);
-    if (own_wake_msg) {
-        // Mark agent as owner of the message
-        ar_data__take_ownership(own_wake_msg, own_agent);
-        ar_agent__send(own_agent, own_wake_msg);
-        // Note: The wake message will be processed when the system runs
-    }
+    // No longer send wake message on creation - agents initialize themselves
     
     return own_agent;
 }

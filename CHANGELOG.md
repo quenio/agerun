@@ -4,6 +4,25 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-08-09
 
+### ✅ Wake Message Removal from Agent Creation - TDD Cycle 1
+- Successfully removed wake messages from agent creation using strict TDD methodology
+  - RED phase: Modified ar_agent_tests.c to assert no messages pending after creation → Tests FAILED as expected
+  - GREEN phase: Removed wake message sending code from ar_agent__create (7 lines) → Tests PASSED
+  - REFACTOR phase: Simplified initialization flow with clear comments explaining the change
+- Updated test expectations across multiple test files
+  - ar_agent_tests.c: Added assertion to verify no messages pending after agent creation
+  - ar_agent_update_tests.c: Updated 3 comments to reflect no wake messages on creation
+  - ar_system_instance_tests.c: Fixed 3 tests that expected wake messages (system still sends them internally)
+  - ar_executable_tests.c: Updated to handle "No messages to process" output when 0 messages processed
+  - bootstrap_tests.c: Updated to not expect wake message on agent creation
+- Documentation updates
+  - ar_agent.md: Removed references to automatic wake message on creation
+  - TODO.md: Marked TDD Cycle 1 as completed with tracking information
+- All 68 tests pass with zero memory leaks; build successful (took 1m 12s)
+- **Note**: This is part of a larger 9-cycle TDD plan to completely remove wake/sleep messages from the system
+
+## 2025-08-09
+
 ### ✅ Knowledge Base Enhancement - Test Fixture Patterns
 - Created comprehensive documentation for patterns discovered during fixture module implementation
   - test-fixture-module-creation-pattern.md: Proper fixture design with opaque types and lifecycle management

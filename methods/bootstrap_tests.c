@@ -124,9 +124,9 @@ static void test_bootstrap_handles_wake_message(void) {
     int64_t bootstrap_agent = ar_agency__create_agent_with_instance(mut_agency, "bootstrap", "1.0.0", own_context);
     AR_ASSERT(bootstrap_agent > 0, "Bootstrap agent should be created");
     
-    // Then wake message should be processed without error
+    // No wake message is sent on agent creation anymore (removed in Cycle 1)
     bool processed = ar_method_fixture__process_next_message(own_fixture);
-    AR_ASSERT(processed, "Wake message should be processed");
+    AR_ASSERT(!processed, "No wake message should be sent on creation");
     
     // Verify agent memory was initialized
     const ar_data_t *agent_memory = ar_agency__get_agent_memory_with_instance(mut_agency, bootstrap_agent);
