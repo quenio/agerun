@@ -1541,6 +1541,20 @@ The [instruction evaluator fixture module](ar_evaluator_fixture.md) provides reu
 - **Opaque Type**: Fixture structure is opaque, following Parnas principles
 - **Designed for Instruction Evaluators**: Specifically tailored for testing instruction evaluator modules
 
+### Executable Fixture Module (`ar_executable_fixture`)
+
+The executable test fixture module provides infrastructure for testing the AgeRun executable with proper isolation:
+
+- **Build Directory Isolation**: Creates temporary build directories per test run to prevent compiler conflicts
+- **Methods Directory Management**: Creates and destroys temporary methods directories for test isolation
+- **Executable Building**: Builds the AgeRun executable with proper environment variables and paths
+- **Process Execution**: Runs the executable and captures output via popen for test verification
+- **Resource Cleanup**: Automatically cleans up temporary directories and build artifacts
+- **Compiler Compatibility**: Prevents conflicts between gcc and clang outputs in parallel builds
+- **Dynamic Allocation**: Uses dynamic memory allocation for paths with clear ownership semantics
+- **Opaque Type**: Executable fixture structure is opaque, following Parnas principles
+- **Designed for Executable Tests**: Specifically tailored for testing the AgeRun executable behavior
+
 ## Zig Struct Modules
 
 Zig struct modules are a new category of modules that leverage Zig's native patterns for internal components. These modules are not part of the core runtime but provide utilities and tools for other Zig modules.
