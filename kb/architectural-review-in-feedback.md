@@ -50,6 +50,23 @@ When receiving user feedback about scope:
 4. Document the strategic transformation, not just tactical fixes
 5. Update commit messages to reflect true scope
 
+## Questioning Fundamental Assumptions
+
+User feedback often challenges core assumptions, leading to architectural simplification:
+
+**Example progression**:
+1. Bug report: "System sends duplicate wake messages"
+2. User question: "Who should send the wake message?"
+3. Deeper question: "Which module should be responsible for agent lifecycle?"
+4. Fundamental insight: "Are wake/sleep messages even necessary?"
+5. Architectural decision: Remove the feature entirely
+
+This questioning pattern transforms bug fixes into architectural improvements by:
+- Challenging whether features are essential
+- Identifying optional complexity
+- Simplifying system design
+- Reducing maintenance burden
+
 ## Implementation
 
 ```bash
@@ -76,3 +93,5 @@ git commit --amend  # Update to reflect architectural scope
 - [Commit Scope Verification](commit-scope-verification.md)
 - [Refactoring Phase Completion Checklist](refactoring-phase-completion-checklist.md)
 - [Observable Internal State](observable-internal-state.md)
+- [Architectural Simplification Through Feature Removal](architectural-simplification-through-feature-removal.md)
+- [Bug to Architecture Pattern](bug-to-architecture-pattern.md)

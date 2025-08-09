@@ -48,14 +48,35 @@ void test_facade__evaluates_assignment() {
 - All cycles before commit: Complete ALL planned cycles before documentation and commit
 - MANDATORY facade updates: Always include facade/integration updates as separate TDD cycles in same plan
 
+## Multi-Session Tracking
+
+For refactorings spanning multiple work sessions, add tracking:
+
+```markdown
+### TDD Cycle 1: Remove wake messages
+**Session tracking**: [ ] Started [ ] Completed
+
+### TDD Cycle 2: Remove sleep messages  
+**Session tracking**: [ ] Started [ ] Completed
+```
+
+Benefits:
+- Resume work with clear context
+- Track progress across days/weeks
+- Enable handoff between team members
+- Prevent losing work state
+
 ## Implementation
 1. Identify all behaviors that need to change
 2. Create a plan listing each behavior as a separate TDD cycle
-3. For each cycle:
+3. Add session tracking checkboxes for multi-session work
+4. For each cycle:
+   - Mark as started when beginning work
    - Write failing test for ONE behavior
    - Implement minimal code to pass
    - Refactor to improve design
-4. After all cycles complete:
+   - Mark as completed when done
+5. After all cycles complete:
    - Update documentation
    - Update TODO.md and CHANGELOG.md
    - Commit all changes together
@@ -67,3 +88,6 @@ Example pattern: 9 cycles for facade refactoring (assignment, send, if, parse, b
 - [Facade Pattern Coordination](facade-pattern-coordination.md)
 - [Ownership Pattern Extraction](ownership-pattern-extraction.md)
 - [TDD Feature Completion Before Commit](tdd-feature-completion-before-commit.md)
+- [Multi-Session TDD Planning](multi-session-tdd-planning.md)
+- [Lifecycle Event Separation TDD](lifecycle-event-separation-tdd.md)
+- [Progressive System Decoupling TDD](progressive-system-decoupling-tdd.md)

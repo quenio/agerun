@@ -60,6 +60,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **KB articles need CLAUDE.md references** to be accessible in future sessions ([details](kb/claude-md-reference-requirement.md))
 **Cross-reference new KB articles**: MANDATORY bidirectional linking when creating KB articles ([details](kb/new-learnings-cross-reference-requirement.md))
 **Evidence-based debugging**: Always verify with concrete evidence, not assumptions ([details](kb/evidence-based-debugging.md))
+**Bug-to-architecture**: Bugs can reveal architectural improvements ([details](kb/bug-to-architecture-pattern.md))
 **Build output review**: Review complete command output, not just final status ([details](kb/comprehensive-output-review.md))
 **Documentation compaction**: Extract verbose content to KB while preserving links ([details](kb/documentation-compacting-pattern.md))
 **Selective compaction**: Compact only completed items in mixed-state documents ([details](kb/selective-compaction-pattern.md))
@@ -75,6 +76,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - **Markdown links**: Use relative paths only - see link resolution rules ([details](kb/markdown-link-resolution-patterns.md))
 - **Preferred types**: `ar_data_t*`, `ar_agent_t*`, `ar_expression_ast_t*`, `ar_instruction_ast_t*`
 - **Helper reference**: `python3 scripts/get_real_types.py --guide` for available APIs
+- **Feature removal**: Question if "core" features are truly essential ([details](kb/architectural-simplification-through-feature-removal.md))
 
 ### 1. Memory Management (ZERO TOLERANCE FOR LEAKS)
 
@@ -125,6 +127,8 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Cycle**: Red→Green→Refactor for EACH behavior, NO commits during ([details](kb/red-green-refactor-cycle.md), [cycle details](kb/tdd-cycle-detailed-explanation.md))
 **Verify fix**: Run single test first, then full suite ([details](kb/test-first-verification-practice.md))
 **Test reality**: Align expectations with actual behavior ([details](kb/test-expectation-reality-alignment.md))
+**Multi-session**: Use session tracking for large changes ([details](kb/multi-session-tdd-planning.md))
+**Lifecycle separation**: Handle creation/destruction in separate cycles ([details](kb/lifecycle-event-separation-tdd.md))
 **Complete ALL cycles** → Update docs/TODO/CHANGELOG → Single commit
 
 **Test Requirements**: BDD structure, one test per behavior, AR_ASSERT macros, zero leaks ([details](kb/bdd-test-structure.md), [assertions](kb/ar-assert-descriptive-failures.md))
@@ -135,6 +139,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Messages**: Process all including wake messages ([details](kb/agent-wake-message-processing.md))
 **Test isolation**: Comment out tests to isolate error sources ([details](kb/test-isolation-through-commenting.md))
 **Test updates**: Apply improvements retroactively to all tests ([details](kb/test-standardization-retroactive.md))
+**Fixture dependencies**: Map which tests use which fixtures before changes ([details](kb/fixture-dependency-mapping.md))
 **Integration tests**: Run actual binary with popen(), verify output ([details](kb/integration-test-binary-execution.md))
 **Error marking**: Mark intentional errors clearly in tests ([details](kb/test-error-marking-strategy.md))
 **Signal reporting**: Report signal numbers before assertions ([details](kb/test-signal-reporting-practice.md))

@@ -50,6 +50,8 @@ Each learning file contains:
 - [Stub and Revisit Pattern](stub-and-revisit-pattern.md)
 - [Task Authorization Pattern](task-authorization-pattern.md)
 - [Atomic Commit Documentation Pattern](atomic-commit-documentation-pattern.md)
+- [Multi-Session TDD Planning](multi-session-tdd-planning.md)
+- [Lifecycle Event Separation TDD](lifecycle-event-separation-tdd.md)
 
 ### Memory Management
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)
@@ -78,6 +80,7 @@ Each learning file contains:
 - [Code Smell Quick Detection](code-smell-quick-detection.md)
 - [Module Quality Checklist](module-quality-checklist.md)
 - [Method Test Template](method-test-template.md)
+- [Fixture Dependency Mapping](fixture-dependency-mapping.md)
 - [Test Fixture API Adaptation](test-fixture-api-adaptation.md)
 - [Test Fixture Message Ownership](test-fixture-message-ownership.md)
 - [Test Fixture Module Creation Pattern](test-fixture-module-creation-pattern.md)
@@ -120,6 +123,8 @@ Each learning file contains:
 - [Parser Function Alias Support](parser-function-alias-support.md)
 - [Refactoring Key Patterns](refactoring-key-patterns.md)
 - [Architectural Patterns Hierarchy](architectural-patterns-hierarchy.md)
+- [Architectural Simplification Through Feature Removal](architectural-simplification-through-feature-removal.md)
+- [Bug to Architecture Pattern](bug-to-architecture-pattern.md)
 - [Dependency Injection Anti-pattern](dependency-injection-anti-pattern.md)
 - [Ownership Pattern Extraction](ownership-pattern-extraction.md)
 - [Temporary Resource Ownership Pattern](temporary-resource-ownership-pattern.md)

@@ -29,6 +29,22 @@ User questions and corrections are valuable quality assurance, not criticism.
 - "Did you consider the impact on existing tests?"
 - "What about updating the documentation?"
 
+### 4. Iterative Refinement Through Multiple Rounds
+Plans often require multiple refinement iterations based on user feedback to reach optimal form.
+
+**Common refinement patterns**:
+- Combining iterations that test the same behavior
+- Ensuring each iteration has a real failing test in RED phase
+- Placing fixture updates within dependent cycles, not separately
+- Separating module documentation from project documentation
+- Removing redundant build verification steps when user handles commits
+
+**Example refinement progression**:
+- Initial: "Iterations 1.1 and 1.2 both test wake message removal"
+- Feedback: "Iterations 1.1 and 1.2 should be combined"
+- Refined: Single iteration testing complete wake removal
+- Result: Clearer, more focused plan
+
 ## Plan Structure Template
 
 A well-structured plan should include:
@@ -235,3 +251,5 @@ When reviewing plans with others:
 - [TDD Red-Green-Refactor Cycle](red-green-refactor-cycle.md)
 - [Build Verification Before Commit](build-verification-before-commit.md)
 - [Task Authorization Pattern](task-authorization-pattern.md)
+- [Multi-Session TDD Planning](multi-session-tdd-planning.md)
+- [Fixture Dependency Mapping](fixture-dependency-mapping.md)
