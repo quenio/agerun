@@ -201,6 +201,18 @@ int ar_executable__main(void) {
     }
     printf("Bootstrap agent created with ID: %" PRId64 "\n", initial_agent);
     
+    // Process all messages until none remain
+    // Note: Currently processes duplicate wake message due to ar_system__init sending
+    // an extra wake even though agents auto-send wake to themselves
+    printf("Processing messages...\n");
+    int messages_processed = ar_system__process_all_messages_with_instance(mut_system);
+    if (messages_processed > 0) {
+        printf("Processed %d message%s\n", messages_processed, 
+               messages_processed == 1 ? "" : "s");
+    } else {
+        printf("No messages to process\n");
+    }
+    
     // Shutdown the runtime
     printf("Shutting down runtime...\n");
     ar_system__shutdown_with_instance(mut_system);

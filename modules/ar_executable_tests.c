@@ -20,6 +20,7 @@ static void test_loading_methods_from_directory(void);
 static void test_bootstrap_agent_creation(void);
 static void test_bootstrap_agent_creation_failure(void);
 static void test_bootstrap_spawns_echo(void);
+static void test_message_processing_loop(void);
 
 // Helper function to build and run executable with unique directory
 static FILE* _build_and_run_executable(void) {
@@ -419,6 +420,70 @@ static void test_bootstrap_spawns_echo(void) {
     printf("Bootstrap spawn echo test passed!\n");
 }
 
+// Test that the executable processes all messages until none remain
+static void test_message_processing_loop(void) {
+    printf("Testing message processing loop...\n");
+    
+    // Given we're running from the correct test directory
+    char cwd[1024];
+    AR_ASSERT(getcwd(cwd, sizeof(cwd)) != NULL, "Should be able to get current directory");
+    AR_ASSERT(strstr(cwd, "/bin/") != NULL, "Test must be run from bin directory");
+    printf("Running from: %s\n", cwd);
+    
+    // When we build and run the executable using make
+    printf("Building and running executable to test message processing...\n");
+    FILE *pipe = _build_and_run_executable();
+    AR_ASSERT(pipe != NULL, "Should be able to run executable");
+    
+    // Then we should see evidence of message processing
+    char line[256];
+    bool found_processing_messages = false;
+    bool found_messages_processed_count = false;
+    int messages_processed = 0;
+    
+    while (fgets(line, sizeof(line), pipe) != NULL) {
+        printf("Make output: %s", line);  // Print all make output for debugging
+        
+        // Look for "Processing messages" to know loop started
+        if (strstr(line, "Processing messages")) {
+            found_processing_messages = true;
+        }
+        
+        // Look for count of messages processed
+        if (strstr(line, "Processed") && (strstr(line, "message") || strstr(line, "messages"))) {
+            found_messages_processed_count = true;
+            // Try to extract the number (handles both "message" and "messages")
+            char *num_str = strstr(line, "Processed ");
+            if (num_str) {
+                sscanf(num_str, "Processed %d message", &messages_processed);
+            }
+        }
+    }
+    
+    int status = pclose(pipe);
+    
+    // Verify the executable ran successfully
+    if (WIFEXITED(status)) {
+        int exit_code = WEXITSTATUS(status);
+        printf("Message processing test: executable exited with code %d\n", exit_code);
+        AR_ASSERT(exit_code == 0, "Executable should exit normally");
+    } else if (WIFSIGNALED(status)) {
+        int sig = WTERMSIG(status);
+        printf("Executable terminated by signal %d\n", sig);
+        AR_ASSERT(false, "Executable should not be terminated by signal");
+    }
+    
+    // Verify message processing occurred
+    AR_ASSERT(found_processing_messages, "Should see 'Processing messages' indicating loop started");
+    // Note: "Bootstrap initialized" won't appear because send(0, ...) is a no-op per CLAUDE.md
+    // Currently processes duplicate wake message (bug: ar_system__init sends extra wake)
+    AR_ASSERT(found_messages_processed_count, "Should see count of messages processed");
+    // We expect 1 message (the duplicate wake) until the bug is fixed
+    AR_ASSERT(messages_processed == 1, "Should process 1 message (duplicate wake)");
+    
+    printf("Message processing loop test passed! Processed %d messages\n", messages_processed);
+}
+
 int main(void) {
     printf("Starting Executable Module Tests...\n");
     
@@ -439,6 +504,9 @@ int main(void) {
     
     // Test that bootstrap spawns echo agent
     test_bootstrap_spawns_echo();
+    
+    // Test that executable processes all messages
+    test_message_processing_loop();
     
     // Now run a separate test with a system instance
     // Create system instance for tests
