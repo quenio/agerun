@@ -85,9 +85,6 @@ static void test_exit_agent_instruction_evaluator__evaluate_with_instance(void) 
     int64_t agent_id = ar_agency__create_agent_with_instance(mut_agency, "test_method", "1.0.0", NULL);
     assert(agent_id > 0);
     
-    // Process wake message to avoid leak
-    ar_evaluator_fixture__process_next_message(fixture);
-    
     // Set the agent ID in memory for evaluation
     ar_data__set_map_integer(memory, "agent_id", (int)agent_id);
     
@@ -169,9 +166,6 @@ static void test_exit_agent_instruction_evaluator__evaluate_literal_id(void) {
     int64_t agent_id = ar_agency__create_agent_with_instance(mut_agency, "test_method", "1.0.0", NULL);
     assert(agent_id > 0);
     
-    // Process wake message to avoid leak
-    ar_evaluator_fixture__process_next_message(fixture);
-    
     // Create exit AST with agent ID
     char agent_id_str[32];
     snprintf(agent_id_str, sizeof(agent_id_str), "%" PRId64, agent_id);
@@ -250,9 +244,6 @@ static void test_exit_agent_instruction_evaluator__evaluate_with_result(void) {
     
     int64_t agent_id = ar_agency__create_agent_with_instance(mut_agency, "test_method", "1.0.0", NULL);
     assert(agent_id > 0);
-    
-    // Process wake message to avoid leak
-    ar_evaluator_fixture__process_next_message(fixture);
     
     // Create exit AST with result assignment
     char agent_id_str[32];

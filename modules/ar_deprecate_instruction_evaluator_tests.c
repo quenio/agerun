@@ -250,10 +250,6 @@ static void test_deprecate_instruction_evaluator__evaluate_with_agents(void) {
     assert(agent1 > 0);
     assert(agent2 > 0);
     
-    // Process wake messages to avoid leaks
-    ar_evaluator_fixture__process_next_message(fixture);
-    ar_evaluator_fixture__process_next_message(fixture);
-    
     // Create destroy AST with method name and version
     const char *args[] = {"\"test_destroyer\"", "\"1.0.0\""};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(

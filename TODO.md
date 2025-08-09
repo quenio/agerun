@@ -786,11 +786,14 @@ Remove wake/sleep messages as system-level concepts since they're not essential 
 ###### Iteration 4.2: Update ar_method_fixture
 - **RED**: All method tests fail - fixture sends wake messages
 - **GREEN**: Update ar_method_fixture to not send wake messages
+- **GREEN**: Remove wake processing from all 8 method test files
 - **REFACTOR**: Clean up fixture initialization
 
 ###### Iteration 4.3: Update echo method
 - **RED**: echo_tests.c fails with wake/sleep checks
 - **GREEN**: Remove wake/sleep detection from echo-1.0.0.method
+- **GREEN**: Update ar_executable.c default echo method (line 164)
+- **GREEN**: Update ar_executable.c outdated comments (lines 162, 205-206)
 - **REFACTOR**: Simplify to pure echo
 
 ###### Iteration 4.4: Update calculator method

@@ -80,8 +80,6 @@ static void test_spawn_instruction_evaluator__evaluate_with_context(void) {
     // Then it should return true
     assert(result == true);
     
-    // Process wake message to avoid leak
-    ar_evaluator_fixture__process_next_message(fixture);
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
@@ -159,8 +157,6 @@ static void test_spawn_instruction_evaluator__evaluate_with_result(void) {
     int agent_id = ar_data__get_map_integer(memory, "agent_id");
     assert(agent_id > 0);  // Agent IDs start from 1
     
-    // Process wake message to avoid leak
-    ar_evaluator_fixture__process_next_message(fixture);
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
@@ -381,8 +377,6 @@ static void test_spawn_instruction_evaluator__evaluate_with_instance(void) {
     // Then it should return true
     assert(result == true);
     
-    // Process wake message to avoid leak
-    ar_evaluator_fixture__process_next_message(fixture);
     
     // Cleanup
     ar_instruction_ast__destroy(ast);
@@ -460,8 +454,6 @@ static void test_spawn_instruction_evaluator__legacy_evaluate_function(void) {
     // Then it should return true
     assert(result == true);
     
-    // Process wake message to avoid leak
-    ar_evaluator_fixture__process_next_message(fixture);
     
     // Cleanup
     ar_instruction_ast__destroy(ast);

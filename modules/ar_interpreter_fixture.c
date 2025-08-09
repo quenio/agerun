@@ -234,9 +234,6 @@ int64_t ar_interpreter_fixture__create_agent(
         ar_list__add_last(mut_fixture->own_agent_ids, own_id_data);
     }
     
-    // Process wake message
-    ar_system__process_next_message_with_instance(mut_fixture->own_system);
-    
     return agent_id;
 }
 
@@ -380,9 +377,6 @@ int64_t ar_interpreter_fixture__execute_with_message(
         ar_methodology__unregister_method_with_instance(ref_methodology, method_name, "1.0.0");
         return 0;
     }
-    
-    // Process the wake message
-    ar_system__process_next_message_with_instance(mut_fixture->own_system);
     
     // Debug: Check if message is set
     if (ref_message) {

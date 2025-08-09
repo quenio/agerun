@@ -4,6 +4,33 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-08-09
 
+### ✅ Wake Message Removal from System - TDD Cycle 2 & Cleanup
+- Successfully removed wake messages from ar_system using strict TDD methodology
+  - RED phase: Added test `test_no_wake_message_from_init_with_agent` that detects wake messages → FAILED
+  - Context fix: Fixed ar_system to provide shared context to agents (was passing NULL)
+  - GREEN phase: Removed wake message sending from `ar_system__init_with_instance` → Tests PASSED
+  - REFACTOR phase: Updated ar_system.md documentation to remove wake references
+- Comprehensive cleanup of wake message processing across test suite
+  - Removed 17 unnecessary `process_next_message` calls from test files:
+    - ar_system_tests.c: 4 calls removed
+    - ar_agency_tests.c: 6 calls removed  
+    - ar_interpreter_fixture.c: 2 calls removed
+    - ar_deprecate_instruction_evaluator_tests.c: 2 calls removed
+    - ar_exit_instruction_evaluator_tests.c: 3 calls removed
+    - ar_method_tests.c: 2 calls removed
+    - ar_methodology_tests.c: 1 call removed
+    - ar_spawn_instruction_evaluator_tests.c: 4 calls removed
+  - Fixed outdated RED phase comment in ar_system_tests.c
+  - All fixture tests remain passing with zero memory leaks
+- TODO.md updates to track remaining work
+  - Added notes for ar_executable.c cleanup in Cycle 4
+  - Added notes for method test file cleanup in Cycle 4
+  - All remaining wake/sleep references properly tracked for future cycles
+- All 68 tests pass with zero memory leaks; build successful (took 1m 12s)
+- **Progress**: Completed TDD Cycles 1-2 of 9-cycle plan to remove wake/sleep messages
+
+## 2025-08-09
+
 ### ✅ Wake Message Removal from Agent Creation - TDD Cycle 1
 - Successfully removed wake messages from agent creation using strict TDD methodology
   - RED phase: Modified ar_agent_tests.c to assert no messages pending after creation → Tests FAILED as expected

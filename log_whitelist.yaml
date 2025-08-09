@@ -719,6 +719,11 @@ ignored_errors:
     message: "Warning: Could not load methods from file"
     comment: "Expected warning in method creator tests"
 
+  # grade_evaluator_tests
+  - context: "grade_evaluator_tests"
+    message: "WARNING: Failed to process wake message"
+    comment: "Test intentionally prints this warning when wake processing fails"
+
   # string_builder_tests
   - context: "string_builder_tests"
     message: "ERROR: Method evaluation failed"
@@ -753,8 +758,8 @@ ignored_errors:
     message: "(The error above 'Cannot access field 'type_mismatch_test_field' on STRING value "__wake__"' was expected)"
     comment: "Test explanation that the error was intentional"
 
-# Total entries: 212
-# Test entries: 207
+# Total entries: 213
+# Test entries: 208
 # Executable entries: 7
 # Context-free entries: 0
 

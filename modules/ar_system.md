@@ -111,7 +111,7 @@ Each system instance contains:
 1. **Create Resources**: System creates its own interpreter and log
 2. **Load Persistence**: Attempts to load saved agents and methods
 3. **Create Initial Agent**: If specified, creates initial agent with specified method
-4. **Send Wake Message**: Notifies initial agent it is active
+4. **Agent Ready**: Agent is immediately ready to receive messages
 
 ### Message Processing Loop
 
@@ -222,7 +222,7 @@ The system module depends on:
 - `ar_agency`: For agent persistence operations
 - `ar_methodology`: For method persistence operations
 - `ar_interpreter`: For executing agent methods
-- `ar_data`: For creating __sleep__ and __wake__ messages
+- `ar_data`: For creating and managing shared context
 
 ## Error Handling
 

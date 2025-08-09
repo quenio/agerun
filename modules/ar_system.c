@@ -26,7 +26,7 @@
  */
 
 /* Static variables for commonly used messages */
-static char g_wake_message[] = "__wake__";
+/* Removed - wake messages no longer sent by system */
 
 /* Memory Map structure is now defined in ar_map.h */
 
@@ -42,6 +42,7 @@ struct ar_system_s {
     ar_agency_t *own_agency;         // Always owned by the system
     ar_interpreter_t *own_interpreter; // Always owned by the system
     ar_log_t *own_log;                // Always owned by the system
+    ar_data_t *own_context;           // Shared context for all agents
 };
 
 /* Implementation */
@@ -57,9 +58,17 @@ ar_system_t* ar_system__create(void) {
     // Initialize fields
     own_system->is_initialized = false;
     
+    // Create shared context for all agents
+    own_system->own_context = ar_data__create_map();
+    if (!own_system->own_context) {
+        AR__HEAP__FREE(own_system);
+        return NULL;
+    }
+    
     // Create owned resources
     own_system->own_log = ar_log__create();
     if (!own_system->own_log) {
+        ar_data__destroy(own_system->own_context);
         AR__HEAP__FREE(own_system);
         return NULL;
     }
@@ -68,6 +77,7 @@ ar_system_t* ar_system__create(void) {
     own_system->own_agency = ar_agency__create(own_system->own_log);
     if (!own_system->own_agency) {
         ar_log__destroy(own_system->own_log);
+        ar_data__destroy(own_system->own_context);
         AR__HEAP__FREE(own_system);
         return NULL;
     }
@@ -76,6 +86,7 @@ ar_system_t* ar_system__create(void) {
     if (!own_system->own_interpreter) {
         ar_agency__destroy(own_system->own_agency);
         ar_log__destroy(own_system->own_log);
+        ar_data__destroy(own_system->own_context);
         AR__HEAP__FREE(own_system);
         return NULL;
     }
@@ -101,6 +112,10 @@ void ar_system__destroy(ar_system_t *own_system) {
         ar_agency__destroy(own_system->own_agency);
     }
     
+    if (own_system->own_context) {
+        ar_data__destroy(own_system->own_context);
+    }
+    
     AR__HEAP__FREE(own_system);
 }
 
@@ -122,41 +137,16 @@ int64_t ar_system__init_with_instance(ar_system_t *mut_system, const char *ref_m
     // Create initial agent if ref_method_name is provided
     if (ref_method_name != NULL) {
         int64_t initial_agent;
-        ar_data_t *own_wake_data;
         
         if (mut_system->own_agency) {
-            // Use instance-based agency
+            // Use instance-based agency with shared context
             initial_agent = ar_agency__create_agent_with_instance(mut_system->own_agency, 
                                                                  ref_method_name, 
                                                                  ref_version, 
-                                                                 NULL);
-            
-            if (initial_agent != 0) {
-                // Send wake message to initial agent
-                own_wake_data = ar_data__create_string(g_wake_message);
-                if (own_wake_data) {
-                    ar_agency__send_to_agent_with_instance(mut_system->own_agency, 
-                                                          initial_agent, 
-                                                          own_wake_data);
-                    
-                    // Process the wake message
-                    ar_system__process_next_message_with_instance(mut_system);
-                }
-            }
+                                                                 mut_system->own_context);
         } else {
-            // Use global agency
-            initial_agent = ar_agency__create_agent(ref_method_name, ref_version, NULL);
-            
-            if (initial_agent != 0) {
-                // Send wake message to initial agent
-                own_wake_data = ar_data__create_string(g_wake_message);
-                if (own_wake_data) {
-                    ar_agency__send_to_agent(initial_agent, own_wake_data);
-                    
-                    // Process the wake message
-                    ar_system__process_next_message_with_instance(mut_system);
-                }
-            }
+            // Use global agency with shared context
+            initial_agent = ar_agency__create_agent(ref_method_name, ref_version, mut_system->own_context);
         }
         return initial_agent;
     }

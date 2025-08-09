@@ -105,9 +105,6 @@ static void test_method_run(ar_system_t *mut_system) {
     int64_t agent_id = ar_agency__create_agent_with_instance(ref_agency, method_name, version, NULL);
     assert(agent_id > 0);
     
-    // Process the wake message
-    ar_system__process_next_message_with_instance(mut_system);
-    
     // Check that the agent exists using instance API
     assert(ar_agency__agent_exists_with_instance(ref_agency, agent_id));
     
@@ -350,9 +347,6 @@ int main(void) {
     
     // When we initialize the system
     ar_system__init_with_instance(mut_system, init_method, init_version);
-    
-    // Process the wake message from the initial agent
-    ar_system__process_next_message_with_instance(mut_system);
     
     // And we run all method tests
     test_method_create(mut_system);

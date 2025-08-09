@@ -42,8 +42,6 @@ static void test_agency_count_agents(ar_system_fixture_t *own_fixture) {
     for (int i = 0; i < num_agents_to_create; i++) {
         agent_ids[i] = ar_agency__create_agent_with_instance(mut_agency, method_name, version, NULL);
         assert(agent_ids[i] > 0);
-        // Process the wake message
-        ar_system_fixture__process_next_message(own_fixture);
     }
     
     // Then the agent count should increase by the number of agents created
@@ -94,9 +92,6 @@ static void test_agency_persistence(ar_system_fixture_t *own_fixture) {
     int64_t agent_id = ar_agency__create_agent_with_instance(mut_agency, method_name, version, NULL);
     assert(agent_id > 0);
     
-    // Process the wake message
-    ar_system_fixture__process_next_message(own_fixture);
-    
     // When we save agents to disk
     bool save_result = ar_agency__save_agents_with_instance(mut_agency, NULL);
     
@@ -129,11 +124,6 @@ static void test_agency_persistence(ar_system_fixture_t *own_fixture) {
     // Then the load operations should succeed
     assert(load_agents_result);
     
-    // Process wake messages for any agents created during load
-    // Based on the output, 2 agents are created when loading
-    ar_system_fixture__process_next_message(own_fixture);
-    ar_system_fixture__process_next_message(own_fixture);
-    
     // And our persistent agent should still exist
     ar_agent_registry_t *ref_registry = ar_agency__get_registry_with_instance(mut_agency_after_reset);
     bool exists = ar_agent_registry__is_registered(ref_registry, agent_id);
@@ -165,9 +155,6 @@ static void test_agency_reset(ar_system_fixture_t *own_fixture) {
     // And an agent created with this method
     int64_t agent_id = ar_agency__create_agent_with_instance(mut_agency, method_name, version, NULL);
     assert(agent_id > 0);
-    
-    // Process the wake message
-    ar_system_fixture__process_next_message(own_fixture);
     
     // And the agent exists in the system
     ar_agent_registry_t *ref_registry = ar_agency__get_registry_with_instance(mut_agency);
@@ -216,9 +203,6 @@ int main(void) {
     int64_t init_agent_id = ar_agency__create_agent_with_instance(mut_agency, method_name, version, NULL);
     assert(init_agent_id > 0);
     
-    // Process the wake message
-    ar_system_fixture__process_next_message(own_fixture);
-    
     // When we run all agency tests
     test_agency_count_agents(own_fixture);
     // TODO: Fix persistence test - needs proper instance-based save/load
@@ -253,9 +237,6 @@ static void test_agency_instance_api(ar_system_fixture_t *own_fixture) {
     // Create an agent using instance API
     int64_t agent_id = ar_agency__create_agent_with_instance(mut_agency, method_name, "1.0.0", NULL);
     assert(agent_id > 0);
-    
-    // Process wake message
-    ar_system_fixture__process_next_message(own_fixture);
     
     // Verify count increased
     int count = ar_agency__count_agents_with_instance(mut_agency);
