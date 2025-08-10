@@ -60,4 +60,12 @@ FILE* ar_executable_fixture__build_and_run(const ar_executable_fixture_t *ref_fi
 void ar_executable_fixture__destroy_methods_dir(ar_executable_fixture_t *mut_fixture,
                                                 char *own_methods_dir);
 
+/**
+ * Gets the temporary build directory path used by the fixture
+ * @param ref_fixture The fixture to query
+ * @return The temporary build directory path (borrowed reference)
+ * @note Ownership: Returns a borrowed reference to the internal path
+ */
+const char* ar_executable_fixture__get_build_dir(const ar_executable_fixture_t *ref_fixture);
+
 #endif /* AGERUN_EXECUTABLE_FIXTURE_H */

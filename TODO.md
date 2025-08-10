@@ -929,22 +929,27 @@ Remove wake/sleep messages as system-level concepts since they're not essential 
 
 **Success**: Bootstrap spawns echo correctly
 
-##### TDD Cycle 8: Save methodology after processing
-**Session tracking**: [ ] Started [ ] Completed
+##### TDD Cycle 8: Save methodology after processing (Completed 2025-08-10)
+**Session tracking**: [x] Started [x] Completed
 
-###### Iteration 8.1: Implement methodology persistence
-- **RED**: Test expects methodology.agerun file after run
-- **GREEN**: Add ar_methodology__save after message processing
-- **REFACTOR**: Extract save logic, add error handling
+###### Iteration 8.1: Basic save after processing
+- **RED**: Create test `test_executable__saves_methodology_file()` that runs executable and verifies `agerun.methodology` file exists with all 8 methods from `methods/` directory
+- **GREEN**: Add `ar_methodology__save_methods_with_instance()` call after message processing in ar_executable.c; update filename to `agerun.methodology` in ar_methodology.h
+- **REFACTOR**: Check for Long Method (>20 lines), Duplicate Code, Long Parameter List (>4 params) code smells per KB articles
 
-**Success**: Methodology persisted
+###### Iteration 8.2: Handle save failures gracefully
+- **RED**: Create test `test_executable__continues_on_save_failure()` that verifies executable exits cleanly even if save fails
+- **GREEN**: Add error handling around save call with warning message but continue shutdown
+- **REFACTOR**: Check for Duplicate Code and Primitive Obsession code smells; extract error handling if repeated
+
+**Success**: Methodology persisted reliably with proper error handling
 
 ##### TDD Cycle 9: Load methodology when exists
 **Session tracking**: [ ] Started [ ] Completed
 
 ###### Iteration 9.1: Load persisted methodology
-- **RED**: Test expects methods from methodology.agerun
-- **GREEN**: Check for file before directory scan
+- **RED**: Test expects methods from agerun.methodology file to be loaded on startup
+- **GREEN**: Check for file before directory scan and load if exists
 - **REFACTOR**: Unify load/save paths
 
 **Success**: Complete bootstrap system

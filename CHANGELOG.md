@@ -4,6 +4,24 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-08-10
 
+### ✅ Methodology Persistence - TDD Cycle 8
+- Implemented methodology save functionality after message processing:
+  - Executable saves all loaded methods to `agerun.methodology` file
+  - Changed filename from `methodology.agerun` to `agerun.methodology` for clarity
+  - Added `ar_methodology__save_methods_with_instance()` call in ar_executable.c
+- Added comprehensive error handling for save failures:
+  - Executable continues gracefully if save fails
+  - Prints warning message but completes shutdown normally
+  - Returns exit code 0 to indicate overall success
+- Created tests for both success and failure scenarios:
+  - `test_executable__saves_methodology_file()` verifies all 8 methods are saved
+  - `test_executable__continues_on_save_failure()` verifies graceful failure handling
+  - Added fixture helper `ar_executable_fixture__get_build_dir()` for test directory access
+- Verified test effectiveness by temporarily breaking implementation
+- All 69 tests passing with zero memory leaks
+
+## 2025-08-10
+
 ### ✅ Bootstrap Agent Spawning - TDD Cycle 7
 - Fixed send_instruction_evaluator to use instance-specific agency:
   - Added ref_agency field to evaluator struct

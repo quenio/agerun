@@ -156,3 +156,10 @@ void ar_executable_fixture__destroy_methods_dir(ar_executable_fixture_t *mut_fix
     // Free the allocated path string
     AR__HEAP__FREE(own_methods_dir);
 }
+
+const char* ar_executable_fixture__get_build_dir(const ar_executable_fixture_t *ref_fixture) {
+    if (!ref_fixture) {
+        return NULL;
+    }
+    return ref_fixture->temp_build_dir;
+}

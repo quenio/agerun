@@ -211,6 +211,14 @@ int ar_executable__main(void) {
         printf("No messages to process\n");
     }
     
+    // Save methodology to file after processing
+    printf("Saving methodology to file...\n");
+    if (ar_methodology__save_methods_with_instance(mut_methodology, METHODOLOGY_FILE_NAME)) {
+        printf("Methodology saved to %s\n", METHODOLOGY_FILE_NAME);
+    } else {
+        printf("Warning: Failed to save methodology to %s\n", METHODOLOGY_FILE_NAME);
+    }
+    
     // Shutdown the runtime
     printf("Shutting down runtime...\n");
     ar_system__shutdown_with_instance(mut_system);

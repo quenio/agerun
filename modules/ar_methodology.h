@@ -6,7 +6,7 @@
 #include "ar_log.h"
 
 /* Constants */
-#define METHODOLOGY_FILE_NAME "methodology.agerun"
+#define METHODOLOGY_FILE_NAME "agerun.methodology"
 
 /* Opaque type for methodology instance */
 typedef struct ar_methodology_s ar_methodology_t;

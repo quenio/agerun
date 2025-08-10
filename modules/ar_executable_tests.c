@@ -5,6 +5,7 @@
 #include "ar_methodology.h"
 #include "ar_agency.h"
 #include "ar_assert.h"
+#include "ar_heap.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -13,6 +14,7 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <sys/stat.h>
 #include <string.h>
 
 // Forward declarations
@@ -22,6 +24,8 @@ static void test_bootstrap_agent_creation(ar_executable_fixture_t *mut_fixture);
 static void test_bootstrap_agent_creation_failure(ar_executable_fixture_t *mut_fixture);
 static void test_bootstrap_spawns_echo(ar_executable_fixture_t *mut_fixture);
 static void test_message_processing_loop(ar_executable_fixture_t *mut_fixture);
+static void test_executable__saves_methodology_file(ar_executable_fixture_t *mut_fixture);
+static void test_executable__continues_on_save_failure(ar_executable_fixture_t *mut_fixture);
 
 
 // Stub function to avoid linking with the actual executable
@@ -33,12 +37,6 @@ int ar_executable__main(void) {
 // Test that the executable only runs a single session
 static void test_single_session(ar_executable_fixture_t *mut_fixture) {
     printf("Testing executable has only single session...\n");
-    
-    // Given we're running from the correct test directory
-    char cwd[1024];
-    AR_ASSERT(getcwd(cwd, sizeof(cwd)) != NULL, "Should be able to get current directory");
-    AR_ASSERT(strstr(cwd, "/bin/") != NULL, "Test must be run from bin directory");
-    printf("Running from: %s\n", cwd);
     
     
     // When we build and run the executable using make
@@ -89,12 +87,6 @@ static void test_single_session(ar_executable_fixture_t *mut_fixture) {
 // Test that the executable loads methods from directory
 static void test_loading_methods_from_directory(ar_executable_fixture_t *mut_fixture) {
     printf("Testing executable loads methods from directory...\n");
-    
-    // Given we're running from the correct test directory
-    char cwd[1024];
-    AR_ASSERT(getcwd(cwd, sizeof(cwd)) != NULL, "Should be able to get current directory");
-    AR_ASSERT(strstr(cwd, "/bin/") != NULL, "Test must be run from bin directory");
-    printf("Running from: %s\n", cwd);
     
     
     // When we build and run the executable using make
@@ -198,12 +190,6 @@ static void test_loading_methods_from_directory(ar_executable_fixture_t *mut_fix
 // Test that the executable creates a bootstrap agent
 static void test_bootstrap_agent_creation(ar_executable_fixture_t *mut_fixture) {
     printf("Testing executable creates bootstrap agent...\n");
-    
-    // Given we're running from the correct test directory
-    char cwd[1024];
-    AR_ASSERT(getcwd(cwd, sizeof(cwd)) != NULL, "Should be able to get current directory");
-    AR_ASSERT(strstr(cwd, "/bin/") != NULL, "Test must be run from bin directory");
-    printf("Running from: %s\n", cwd);
     
     // When we build and run the executable using make
     printf("Building and running executable to test bootstrap agent creation...\n");
@@ -388,12 +374,6 @@ static void test_bootstrap_spawns_echo(ar_executable_fixture_t *mut_fixture) {
 static void test_message_processing_loop(ar_executable_fixture_t *mut_fixture) {
     printf("Testing message processing loop...\n");
     
-    // Given we're running from the correct test directory
-    char cwd[1024];
-    AR_ASSERT(getcwd(cwd, sizeof(cwd)) != NULL, "Should be able to get current directory");
-    AR_ASSERT(strstr(cwd, "/bin/") != NULL, "Test must be run from bin directory");
-    printf("Running from: %s\n", cwd);
-    
     // When we build and run the executable using make
     printf("Building and running executable to test message processing...\n");
     char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
@@ -459,8 +439,143 @@ static void test_message_processing_loop(ar_executable_fixture_t *mut_fixture) {
     ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
 }
 
+static void test_executable__saves_methodology_file(ar_executable_fixture_t *mut_fixture) {
+    printf("\n=== Testing methodology file persistence ===\n");
+    
+    // Get the build directory where the file will be saved
+    const char *build_dir = ar_executable_fixture__get_build_dir(mut_fixture);
+    AR_ASSERT(build_dir != NULL, "Should have build directory");
+    
+    // Build the full path to the methodology file
+    char methodology_path[512];
+    snprintf(methodology_path, sizeof(methodology_path), "%s/agerun.methodology", build_dir);
+    
+    // Given: Remove any existing agerun.methodology file
+    remove(methodology_path);
+    
+    // When: Build and run the executable
+    printf("Building and running executable to test methodology persistence...\n");
+    char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
+    FILE *pipe = ar_executable_fixture__build_and_run(mut_fixture, own_methods_dir);
+    AR_ASSERT(pipe != NULL, "Should be able to run executable");
+    
+    // Read all output (but we don't need to check it for this test)
+    char line[256];
+    while (fgets(line, sizeof(line), pipe) != NULL) {
+        // Just consume the output
+    }
+    
+    // Close pipe and check exit status
+    int exit_status = pclose(pipe);
+    AR_ASSERT(exit_status == 0, "Executable should exit successfully");
+    
+    // Clean up methods directory
+    ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
+    
+    // Then: Check that agerun.methodology file exists in the build directory
+    FILE *methodology_file = fopen(methodology_path, "r");
+    AR_ASSERT(methodology_file != NULL, "agerun.methodology file should exist after execution");
+    
+    // Verify the file contains all expected methods
+    char *file_content = NULL;
+    size_t content_size = 0;
+    fseek(methodology_file, 0, SEEK_END);
+    content_size = (size_t)ftell(methodology_file);
+    fseek(methodology_file, 0, SEEK_SET);
+    
+    file_content = AR__HEAP__MALLOC(content_size + 1, "methodology file content");
+    AR_ASSERT(file_content != NULL, "Should allocate memory for file content");
+    
+    size_t read_size = fread(file_content, 1, content_size, methodology_file);
+    file_content[read_size] = '\0';
+    fclose(methodology_file);
+    
+    // Check for all 8 methods
+    AR_ASSERT(strstr(file_content, "agent-manager") != NULL, "Should contain agent-manager method");
+    AR_ASSERT(strstr(file_content, "bootstrap") != NULL, "Should contain bootstrap method");
+    AR_ASSERT(strstr(file_content, "calculator") != NULL, "Should contain calculator method");
+    AR_ASSERT(strstr(file_content, "echo") != NULL, "Should contain echo method");
+    AR_ASSERT(strstr(file_content, "grade-evaluator") != NULL, "Should contain grade-evaluator method");
+    AR_ASSERT(strstr(file_content, "message-router") != NULL, "Should contain message-router method");
+    AR_ASSERT(strstr(file_content, "method-creator") != NULL, "Should contain method-creator method");
+    AR_ASSERT(strstr(file_content, "string-builder") != NULL, "Should contain string-builder method");
+    
+    AR__HEAP__FREE(file_content);
+    
+    printf("✓ All 8 methods found in agerun.methodology file\n");
+}
+
+static void test_executable__continues_on_save_failure(ar_executable_fixture_t *mut_fixture) {
+    printf("\n=== Testing executable continues on save failure ===\n");
+    
+    // Get the build directory where the file would be saved
+    const char *build_dir = ar_executable_fixture__get_build_dir(mut_fixture);
+    AR_ASSERT(build_dir != NULL, "Should have build directory");
+    
+    // Build the full path to the methodology file
+    char methodology_path[512];
+    snprintf(methodology_path, sizeof(methodology_path), "%s/agerun.methodology", build_dir);
+    
+    // Given: Create a read-only file to force save failure
+    // First create the file
+    FILE *fp = fopen(methodology_path, "w");
+    if (fp) {
+        fprintf(fp, "This file is read-only\n");
+        fclose(fp);
+        // Make it read-only (remove write permissions)
+        chmod(methodology_path, 0444);
+    }
+    
+    // When: Build and run the executable
+    printf("Building and running executable with read-only methodology file...\n");
+    char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
+    FILE *pipe = ar_executable_fixture__build_and_run(mut_fixture, own_methods_dir);
+    AR_ASSERT(pipe != NULL, "Should be able to run executable");
+    
+    // Read output and look for warning message
+    char line[256];
+    bool found_warning = false;
+    bool found_shutdown = false;
+    while (fgets(line, sizeof(line), pipe) != NULL) {
+        if (strstr(line, "Warning: Failed to save methodology")) {
+            found_warning = true;
+            printf("Found expected warning: %s", line);
+        }
+        if (strstr(line, "Runtime shutdown complete")) {
+            found_shutdown = true;
+        }
+    }
+    
+    // Close pipe and check exit status
+    int exit_status = pclose(pipe);
+    
+    // Clean up - restore write permissions and remove file
+    chmod(methodology_path, 0644);
+    remove(methodology_path);
+    
+    // Clean up methods directory
+    ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
+    
+    // Then: Verify executable handled failure gracefully
+    printf("Exit status: %d (expecting 0)\n", exit_status);
+    printf("Found warning: %s\n", found_warning ? "yes" : "no");
+    printf("Found shutdown: %s\n", found_shutdown ? "yes" : "no");
+    AR_ASSERT(exit_status == 0, "Executable should exit successfully despite save failure");
+    AR_ASSERT(found_warning, "Should see warning about save failure");
+    AR_ASSERT(found_shutdown, "Should see shutdown complete message");
+    
+    printf("✓ Executable continues gracefully when save fails\n");
+}
+
 int main(void) {
     printf("Starting Executable Module Tests...\n");
+    
+    // Verify we're running from the correct test directory
+    char cwd[1024];
+    AR_ASSERT(getcwd(cwd, sizeof(cwd)) != NULL, "Should be able to get current directory");
+    AR_ASSERT(strstr(cwd, "/bin/") != NULL && strstr(cwd, "-tests") != NULL, 
+              "Test must be run from bin/*-tests directory");
+    printf("Running from: %s\n", cwd);
     
     // Create fixture for all tests
     ar_executable_fixture_t *own_fixture = ar_executable_fixture__create();
@@ -486,6 +601,12 @@ int main(void) {
     
     // Test that executable processes all messages
     test_message_processing_loop(own_fixture);
+    
+    // Test that executable saves methodology to file
+    test_executable__saves_methodology_file(own_fixture);
+    
+    // Test that executable continues on save failure
+    test_executable__continues_on_save_failure(own_fixture);
     
     // Now run a separate test with a system instance
     // Create system instance for tests
@@ -523,7 +644,7 @@ int main(void) {
     ar_executable_fixture__destroy(own_fixture);
     
     // And report success
-    printf("All 5 tests passed!\n");
+    printf("All 8 tests passed!\n");
     return 0;
 }
 

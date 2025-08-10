@@ -757,9 +757,14 @@ ignored_errors:
   - context: "ar_expression_evaluator_tests"
     message: "(The error above 'Cannot access field 'type_mismatch_test_field' on STRING value "test_string_value"' was expected)"
     comment: "Test explanation that the error was intentional"
+    
+  # Save failure test - this warning is intentional
+  - test: "ar_executable_tests"
+    message: "Found expected warning: Warning: Failed to save methodology to agerun.methodology"
+    comment: "Test output from test_executable__continues_on_save_failure - deliberately triggers save failure"
 
-# Total entries: 213
-# Test entries: 208
+# Total entries: 214
+# Test entries: 209
 # Executable entries: 7
 # Context-free entries: 0
 
