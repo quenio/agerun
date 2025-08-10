@@ -747,15 +747,15 @@ ignored_errors:
     message: "Warning: Agent store file does not exist"
     comment: "Expected agent store warning in executable"
 
-  # Intentional wake message errors for testing error handling
+  # Intentional type mismatch errors for testing error handling
   - context: "ar_expression_evaluator_tests"
-    message: "ERROR: Cannot access field 'type_mismatch_test_field' on STRING value "__wake__" (base: message)"
+    message: "ERROR: Cannot access field 'type_mismatch_test_field' on STRING value "test_string_value" (base: message)"
     comment: "Intentional test error - verifying field access error message format (unique field name prevents masking real errors)"
   - context: "ar_expression_evaluator_tests"
-    message: "Actual error message: 'Cannot access field 'type_mismatch_test_field' on STRING value "__wake__" (base: message)'"
+    message: "Actual error message: 'Cannot access field 'type_mismatch_test_field' on STRING value "test_string_value" (base: message)'"
     comment: "Test output showing the expected error was produced"
   - context: "ar_expression_evaluator_tests"
-    message: "(The error above 'Cannot access field 'type_mismatch_test_field' on STRING value "__wake__"' was expected)"
+    message: "(The error above 'Cannot access field 'type_mismatch_test_field' on STRING value "test_string_value"' was expected)"
     comment: "Test explanation that the error was intentional"
 
 # Total entries: 213

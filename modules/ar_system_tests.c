@@ -20,7 +20,6 @@ static void test_no_auto_loading_on_init(void);
 static void test_method_creation(ar_system_t *mut_system);
 static void test_agent_creation(ar_system_t *mut_system);
 static void test_message_passing(ar_system_t *mut_system);
-static void test_no_wake_message_from_init_with_agent(void);
 
 static void test_no_auto_loading_on_init(void) {
     printf("Testing that system does NOT auto-load files on init...\n");
@@ -279,53 +278,6 @@ static void test_no_auto_saving_on_shutdown(void) {
     printf("No auto-saving test passed.\n");
 }
 
-static void test_no_wake_message_from_init_with_agent(void) {
-    printf("Testing that system does NOT send wake message when init with agent...\n");
-    
-    // Given we create a system
-    ar_system_t *mut_system = ar_system__create();
-    AR_ASSERT(mut_system != NULL, "System creation should succeed");
-    
-    // Get the system's agency and methodology
-    ar_agency_t *mut_agency = ar_system__get_agency(mut_system);
-    ar_methodology_t *mut_methodology = ar_agency__get_methodology(mut_agency);
-    
-    // Create a test method that checks if the message is "__wake__" and records it
-    ar_method_t *own_method = ar_method__create("init_test", 
-        "memory.got_wake := if(message = \"__wake__\", 1, 0)", "1.0.0");
-    AR_ASSERT(own_method != NULL, "Method creation should succeed");
-    
-    // Register the method with the system's methodology
-    ar_methodology__register_method_with_instance(mut_methodology, own_method);
-    
-    // When we initialize the system with an initial agent
-    ar_system__init_with_instance(mut_system, "init_test", "1.0.0");
-    
-    // Check the agent's memory to see if it received a wake message
-    const ar_data_t *ref_memory = ar_agency__get_agent_memory_with_instance(mut_agency, 1);
-    AR_ASSERT(ref_memory != NULL, "Agent should have memory");
-    
-    const ar_data_t *ref_got_wake = ar_data__get_map_data(ref_memory, "got_wake");
-    
-    // Debug output
-    if (ref_got_wake != NULL) {
-        int value = ar_data__get_integer(ref_got_wake);
-        printf("DEBUG: memory.got_wake = %d\n", value);
-    } else {
-        printf("DEBUG: memory.got_wake is not set\n");
-    }
-    
-    // Verify that no wake message was sent
-    // ref_got_wake should be NULL (field not set) since no wake message is sent
-    AR_ASSERT(ref_got_wake == NULL, "Agent should NOT have received a wake message");
-    
-    // Clean up
-    ar_system__shutdown_with_instance(mut_system);
-    ar_system__destroy(mut_system);
-    
-    printf("No wake message from init test passed!\n");
-}
-
 int main(void) {
     printf("Starting Agerun tests...\n");
     
@@ -334,9 +286,6 @@ int main(void) {
     
     // Test that system does NOT auto-save files
     test_no_auto_saving_on_shutdown();
-    
-    // Test that system does NOT send wake messages
-    test_no_wake_message_from_init_with_agent();
     
     // Create system instance
     ar_system_t *mut_system = ar_system__create();

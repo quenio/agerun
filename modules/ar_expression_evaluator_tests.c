@@ -786,7 +786,7 @@ static void test_evaluate_type_mismatch_error_message(void) {
     
     // Create a custom frame with a string message instead of a map
     ar_data_t *own_context = ar_data__create_map();
-    ar_data_t *own_message = ar_data__create_string("__wake__");
+    ar_data_t *own_message = ar_data__create_string("test_string_value");
     ar_frame_t *own_frame = ar_frame__create(mut_memory, own_context, own_message);
     assert(own_frame != NULL);
     
@@ -814,7 +814,7 @@ static void test_evaluate_type_mismatch_error_message(void) {
     // The error message should contain type information and field name
     assert(strstr(error_msg, "Cannot access field 'type_mismatch_test_field'") != NULL);
     assert(strstr(error_msg, "STRING") != NULL);
-    assert(strstr(error_msg, "__wake__") != NULL);
+    assert(strstr(error_msg, "test_string_value") != NULL);
     
     // Clean up
     ar_expression_ast__destroy(own_ast);
@@ -824,7 +824,7 @@ static void test_evaluate_type_mismatch_error_message(void) {
     ar_evaluator_fixture__destroy(own_fixture);
     
     printf("  ✓ Type mismatch produces detailed error message\n");
-    printf("    (The error above 'Cannot access field 'type_mismatch_test_field' on STRING value \"__wake__\"' was expected)\n");
+    printf("    (The error above 'Cannot access field 'type_mismatch_test_field' on STRING value \"test_string_value\"' was expected)\n");
 }
 
 int main(void) {
