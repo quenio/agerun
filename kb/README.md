@@ -118,8 +118,11 @@ Each learning file contains:
 - [Permission-Based Test Modification](permission-based-test-modification.md)
 - [Comprehensive Impact Analysis](comprehensive-impact-analysis.md)
 - [Test Fixture Simplification Pattern](test-fixture-simplification-pattern.md)
+- [Test Fixture Evolution Pattern](test-fixture-evolution-pattern.md)
 - [Compilation-Based TDD Approach](compilation-based-tdd-approach.md)
 - [Regression Test Removal Criteria](regression-test-removal-criteria.md)
+- [Test Effectiveness Verification](test-effectiveness-verification.md)
+- [Permission-Based Failure Testing](permission-based-failure-testing.md)
 
 ### Architecture & Design
 - [Opaque Types Pattern](opaque-types-pattern.md)
@@ -134,6 +137,7 @@ Each learning file contains:
 - [Refactoring Key Patterns](refactoring-key-patterns.md)
 - [Instance vs Global Resource Pattern](instance-vs-global-resource-pattern.md)
 - [No-op Instruction Semantics](no-op-instruction-semantics.md)
+- [Graceful Degradation Pattern](graceful-degradation-pattern.md)
 - [Architectural Patterns Hierarchy](architectural-patterns-hierarchy.md)
 - [Architectural Simplification Through Feature Removal](architectural-simplification-through-feature-removal.md)
 - [Bug to Architecture Pattern](bug-to-architecture-pattern.md)
@@ -200,6 +204,7 @@ Each learning file contains:
 - [Documentation-Only Change Pattern](documentation-only-change-pattern.md)
 - [Example Marker Granular Control](example-marker-granular-control.md)
 - [Multi-Language Documentation Validation](multi-language-documentation-validation.md)
+- [Exit Code Propagation Through popen](exit-code-propagation-popen.md)
 - [Documentation Standards Integration](documentation-standards-integration.md)
 - [Validated Documentation Examples](validated-documentation-examples.md)
 - [Absolute Path Navigation](absolute-path-navigation.md)

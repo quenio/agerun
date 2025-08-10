@@ -37,3 +37,4 @@ Handle errors at appropriate levels - detect at source, decide at caller, report
 - Single responsibility principle
 - Clean architecture patterns
 - [Module Delegation Error Propagation](module-delegation-error-propagation.md)
+- [Graceful Degradation Pattern](graceful-degradation-pattern.md)

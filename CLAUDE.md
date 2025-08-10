@@ -134,6 +134,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Cycle**: Red→Green→Refactor for EACH behavior, NO commits during ([details](kb/red-green-refactor-cycle.md), [cycle details](kb/tdd-cycle-detailed-explanation.md))
 **Verify fix**: Run single test first, then full suite ([details](kb/test-first-verification-practice.md))
 **Test reality**: Align expectations with actual behavior ([details](kb/test-expectation-reality-alignment.md))
+**Test effectiveness**: Break implementation to verify tests catch failures ([details](kb/test-effectiveness-verification.md))
 **Multi-session**: Use session tracking for large changes ([details](kb/multi-session-tdd-planning.md))
 **Lifecycle separation**: Handle creation/destruction in separate cycles ([details](kb/lifecycle-event-separation-tdd.md))
 **Test modification**: Ask permission before changing tests ([details](kb/permission-based-test-modification.md))
@@ -152,7 +153,10 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Test isolation**: Comment out tests to isolate error sources ([details](kb/test-isolation-through-commenting.md))
 **Test updates**: Apply improvements retroactively to all tests ([details](kb/test-standardization-retroactive.md))
 **Fixture dependencies**: Map which tests use which fixtures before changes ([details](kb/fixture-dependency-mapping.md))
+**Fixture evolution**: Add helpers as needed ([details](kb/test-fixture-evolution-pattern.md))
 **Integration tests**: Run actual binary with popen(), verify output ([details](kb/integration-test-binary-execution.md))
+**Exit codes**: popen() multiplies by 256 ([details](kb/exit-code-propagation-popen.md))
+**Permission testing**: chmod to force failures ([details](kb/permission-based-failure-testing.md))
 **Error marking**: Mark intentional errors clearly in tests ([details](kb/test-error-marking-strategy.md))
 **Test strings**: Use clearly synthetic test data, not system-like strings ([details](kb/test-string-selection-strategy.md))
 **Signal reporting**: Report signal numbers before assertions ([details](kb/test-signal-reporting-practice.md))
@@ -324,6 +328,7 @@ grep -r "function_name\|concept" modules/
 
 **Implementation**: Set errors at source → Store in struct → Propagate via get_error() → Print once at top level ([details](kb/error-propagation-pattern.md))
 **Key Rule**: Evaluators set errors, interpreter prints them. Never print errors where they occur.
+**Graceful degradation**: Non-critical ops warn & continue ([details](kb/graceful-degradation-pattern.md))
 
 ### 10. Agent Lifecycle
 
