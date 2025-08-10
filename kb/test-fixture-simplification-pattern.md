@@ -46,9 +46,9 @@ static const char *field_defaults[] = {
     "memory.is_sleep", "false"
 };
 
-// Complex message type detection
+// Complex message type detection  // EXAMPLE: Hypothetical code
 bool is_wake = false;
-for (message_field_t *field = mut_message->fields; field != NULL; field = field->next) {
+for (message_field_t *field = mut_message->fields; field != NULL; field = field->next) {  // EXAMPLE: message_field_t was removed
     if (strcmp(field->name, "wake") == 0) {
         is_wake = true;
         continue;  // Skip wake field
@@ -66,12 +66,10 @@ if (is_wake) {
 
 ### After Simplification
 ```c
-// Direct field assignment - no special cases
+// Direct field assignment - no special cases  // EXAMPLE: Simplified code
 method_body[0] = '\0';
-for (message_field_t *field = mut_message->fields; field != NULL; field = field->next) {
-    // Simple concatenation - no filtering
-    strcat(method_body, field->expression);
-}
+// The complex field iteration was removed entirely
+// Now we directly build the method body without field filtering
 ```
 
 ## Benefits of Simplification

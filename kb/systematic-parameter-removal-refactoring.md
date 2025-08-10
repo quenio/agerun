@@ -83,7 +83,7 @@ ar_agency__update_agent_methods(ref_old, ref_new, false);  // Always false
 
 ### 2. Found cascade chain
 - `ar_agency__update_agent_methods()` → public API
-- `ar_agency__update_agent_method_with_instance()` → instance variant
+- `ar_agency__update_agent_methods_with_instance()` → instance variant
 - `ar_agent__update_method()` → core implementation
 
 ### 3. Removed systematically
