@@ -70,18 +70,10 @@ bool ar_agency__load_agents(void);
  * Update agents using a specific method to use a different method
  * @param ref_old_method The old method being used (borrowed reference)
  * @param ref_new_method The new method to use (borrowed reference)
- * @param send_lifecycle_events If true, send sleep/wake messages for each updated agent
- * @return Number of agents updated (each agent will have 2 messages queued if lifecycle events are sent)
+ * @return Number of agents updated
  * @note Ownership: Does not take ownership of either method reference.
- *       If send_lifecycle_events is true, the update process involves:
- *       1. Agent finishes processing current message
- *       2. Sleep message is sent to agent
- *       3. Method reference is updated
- *       4. Wake message is sent to agent
- *       IMPORTANT: The caller must process 2*update_count messages after this call
- *       to ensure all sleep and wake messages are processed.
  */
-int ar_agency__update_agent_methods(const ar_method_t *ref_old_method, const ar_method_t *ref_new_method, bool send_lifecycle_events);
+int ar_agency__update_agent_methods(const ar_method_t *ref_old_method, const ar_method_t *ref_new_method);
 
 /**
  * Count the number of agents using a specific method
@@ -206,10 +198,9 @@ ar_data_t* ar_agency__get_agent_mutable_memory(int64_t agent_id);
  * Update agent method by ID
  * @param agent_id ID of the agent to update
  * @param ref_new_method The new method (borrowed reference)
- * @param send_sleep_wake If true, send sleep/wake messages during update
  * @return true if successful, false otherwise
  */
-bool ar_agency__update_agent_method(int64_t agent_id, const ar_method_t *ref_new_method, bool send_sleep_wake);
+bool ar_agency__update_agent_method(int64_t agent_id, const ar_method_t *ref_new_method);
 
 /**
  * Set agent active status by ID
@@ -263,18 +254,10 @@ int ar_agency__count_agents_using_method_with_instance(ar_agency_t *ref_agency, 
  * @param mut_agency The agency instance (mutable reference)
  * @param ref_old_method The old method being used (borrowed reference)
  * @param ref_new_method The new method to use (borrowed reference)
- * @param send_lifecycle_events If true, send sleep/wake messages for each updated agent
- * @return Number of agents updated (each agent will have 2 messages queued if lifecycle events are sent)
+ * @return Number of agents updated
  * @note Ownership: Does not take ownership of either method reference.
- *       If send_lifecycle_events is true, the update process involves:
- *       1. Agent finishes processing current message
- *       2. Sleep message is sent to agent
- *       3. Method reference is updated
- *       4. Wake message is sent to agent
- *       IMPORTANT: The caller must process 2*update_count messages after this call
- *       to ensure all sleep and wake messages are processed.
  */
-int ar_agency__update_agent_methods_with_instance(ar_agency_t *mut_agency, const ar_method_t *ref_old_method, const ar_method_t *ref_new_method, bool send_lifecycle_events);
+int ar_agency__update_agent_methods_with_instance(ar_agency_t *mut_agency, const ar_method_t *ref_old_method, const ar_method_t *ref_new_method);
 
 /**
  * Create a new agent with ID allocation and tracking (instance version)

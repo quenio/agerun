@@ -26,10 +26,6 @@ struct ar_agent_s {
 
 /* Constants */
 
-/* Static variables for commonly used messages */
-static const char g_sleep_message[] = "__sleep__";
-static const char g_wake_message[] = "__wake__";
-
 /* Implementation */
 
 ar_agent_t* ar_agent__create_with_method(const ar_method_t *ref_method, const ar_data_t *ref_context) {
@@ -84,19 +80,6 @@ ar_agent_t* ar_agent__create(const char *ref_method_name, const char *ref_versio
 void ar_agent__destroy(ar_agent_t *own_agent) {
     if (!own_agent) {
         return;
-    }
-    
-    // Send sleep message before destruction
-    ar_data_t *own_sleep_msg = ar_data__create_string(g_sleep_message);
-    if (own_sleep_msg) {
-        // Mark agent as owner of the message
-        ar_data__take_ownership(own_sleep_msg, own_agent);
-        bool sent = ar_list__add_last(own_agent->own_message_queue, own_sleep_msg);
-        if (!sent) {
-            // Transfer ownership back before destroying
-            ar_data__destroy_if_owned(own_sleep_msg, own_agent);
-        }
-        // Note: The sleep message will be processed before the agent is destroyed
     }
     
     // Destroy memory if owned
@@ -272,39 +255,13 @@ ar_data_t* ar_agent__get_message(ar_agent_t *mut_agent) {
     return own_message;
 }
 
-bool ar_agent__update_method(ar_agent_t *mut_agent, const ar_method_t *ref_new_method, bool send_sleep_wake) {
+bool ar_agent__update_method(ar_agent_t *mut_agent, const ar_method_t *ref_new_method) {
     if (!mut_agent || !ref_new_method) {
         return false;
     }
     
-    if (send_sleep_wake) {
-        // Send sleep message before update
-        ar_data_t *own_sleep_msg = ar_data__create_string(g_sleep_message);
-        if (own_sleep_msg) {
-            // Mark agent as owner of the message
-            ar_data__take_ownership(own_sleep_msg, mut_agent);
-            if (!ar_list__add_last(mut_agent->own_message_queue, own_sleep_msg)) {
-                // Transfer ownership back before destroying
-                ar_data__destroy_if_owned(own_sleep_msg, mut_agent);
-            }
-        }
-    }
-    
     // Update the method
     mut_agent->ref_method = ref_new_method;
-    
-    if (send_sleep_wake) {
-        // Send wake message after update
-        ar_data_t *own_wake_msg = ar_data__create_string(g_wake_message);
-        if (own_wake_msg) {
-            // Mark agent as owner of the message
-            ar_data__take_ownership(own_wake_msg, mut_agent);
-            if (!ar_list__add_last(mut_agent->own_message_queue, own_wake_msg)) {
-                // Transfer ownership back before destroying
-                ar_data__destroy_if_owned(own_wake_msg, mut_agent);
-            }
-        }
-    }
     
     return true;
 }

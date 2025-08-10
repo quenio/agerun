@@ -45,8 +45,7 @@ Key features:
 2. **Agent Creation**: Spawns agents with specified method and context
 3. **Method Validation**: Ensures the method exists before creating agent
 4. **Context Handling**: Gets memory and context from execution frame
-5. **Wake Messages**: New agents receive `__wake__` message automatically
-6. **Result Assignment**: Stores agent ID when assignment specified
+5. **Result Assignment**: Stores agent ID when assignment specified
 
 ### Frame-Based Architecture
 

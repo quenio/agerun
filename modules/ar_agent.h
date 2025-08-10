@@ -145,10 +145,9 @@ ar_data_t* ar_agent__get_message(ar_agent_t *mut_agent);
  * Update the method for an agent
  * @param mut_agent Agent to update (mutable reference)
  * @param ref_new_method The new method (borrowed reference)
- * @param send_sleep_wake If true, send sleep/wake messages during update
  * @return true if successful, false otherwise
  */
-bool ar_agent__update_method(ar_agent_t *mut_agent, const ar_method_t *ref_new_method, bool send_sleep_wake);
+bool ar_agent__update_method(ar_agent_t *mut_agent, const ar_method_t *ref_new_method);
 
 /**
  * Set agent ID (for persistence restoration)

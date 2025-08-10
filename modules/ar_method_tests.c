@@ -109,10 +109,10 @@ static void test_method_run(ar_system_t *mut_system) {
     assert(ar_agency__agent_exists_with_instance(ref_agency, agent_id));
     
     // When we send a message to the agent
-    static const char *sleep_text = "__sleep__"; // Use a special message that will be handled
-    ar_data_t *sleep_message = ar_data__create_string(sleep_text);
-    assert(sleep_message != NULL);
-    bool result = ar_agency__send_to_agent_with_instance(ref_agency, agent_id, sleep_message);
+    static const char *test_message_text = "test_message"; // Just a test message
+    ar_data_t *test_message = ar_data__create_string(test_message_text);
+    assert(test_message != NULL);
+    bool result = ar_agency__send_to_agent_with_instance(ref_agency, agent_id, test_message);
     
     // Then the method should run successfully
     assert(result);

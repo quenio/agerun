@@ -34,7 +34,7 @@ Creates a new agent with the specified method and optional context.
 ```c
 bool ar_agent__destroy(int64_t agent_id)
 ```
-Destroys an agent and cleans up all its resources. Sends a `__sleep__` message before destruction.
+Destroys an agent and cleans up all its resources.
 
 **Parameters:**
 - `agent_id`: ID of the agent to destroy

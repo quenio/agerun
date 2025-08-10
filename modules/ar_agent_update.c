@@ -15,8 +15,7 @@
 /* Update agents using a specific method to use a different method */
 int ar_agent_update__update_methods(ar_agent_registry_t *ref_registry,
                                   const ar_method_t *ref_old_method, 
-                                  const ar_method_t *ref_new_method,
-                                  bool send_lifecycle_events) {
+                                  const ar_method_t *ref_new_method) {
     if (!ref_registry || !ref_old_method || !ref_new_method) {
         return 0;
     }
@@ -41,7 +40,7 @@ int ar_agent_update__update_methods(ar_agent_registry_t *ref_registry,
     while (agent_id != 0) {
         ar_agent_t *mut_agent = (ar_agent_t*)ar_agent_registry__find_agent(ref_registry, agent_id);
         if (mut_agent && ar_agent__get_method(mut_agent) == ref_old_method) {
-            if (ar_agent__update_method(mut_agent, ref_new_method, send_lifecycle_events)) {
+            if (ar_agent__update_method(mut_agent, ref_new_method)) {
                 count++;
             }
         }
@@ -50,9 +49,6 @@ int ar_agent_update__update_methods(ar_agent_registry_t *ref_registry,
     
     if (count > 0) {
         ar_io__info("Updated %d agents to new method version", count);
-        if (send_lifecycle_events) {
-            ar_io__info("Queued %d sleep and %d wake messages", count, count);
-        }
     }
     
     return count;

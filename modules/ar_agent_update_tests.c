@@ -158,8 +158,8 @@ static void test_update_without_lifecycle(void) {
     assert(ar_agency__get_agent_method_with_instance(mut_agency, agent1) == ref_v1_0);
     assert(ar_agency__get_agent_method_with_instance(mut_agency, agent2) == ref_v1_0);
     
-    // When updating without lifecycle events
-    int count = ar_agency__update_agent_methods_with_instance(mut_agency, ref_v1_0, ref_v1_1, false);
+    // When updating
+    int count = ar_agency__update_agent_methods_with_instance(mut_agency, ref_v1_0, ref_v1_1);
     
     // Then correct number should be updated
     assert(count == 2);
@@ -217,21 +217,16 @@ static void test_update_with_lifecycle(void) {
     assert(ar_agency__agent_has_messages_with_instance(mut_agency, agent1) == false);
     assert(ar_agency__agent_has_messages_with_instance(mut_agency, agent2) == false);
     
-    // When updating with lifecycle events using instance API
-    int count = ar_agency__update_agent_methods_with_instance(mut_agency, ref_v1_0, ref_v1_1, true);
+    // When updating using instance API
+    // (Note: lifecycle events are no longer sent)
+    int count = ar_agency__update_agent_methods_with_instance(mut_agency, ref_v1_0, ref_v1_1);
     assert(count == 2);
     
-    // Then messages should be queued
-    assert(ar_agency__agent_has_messages_with_instance(mut_agency, agent1) == true);
-    assert(ar_agency__agent_has_messages_with_instance(mut_agency, agent2) == true);
+    // Then no messages should be queued (sleep/wake messages removed)
+    assert(ar_agency__agent_has_messages_with_instance(mut_agency, agent1) == false);
+    assert(ar_agency__agent_has_messages_with_instance(mut_agency, agent2) == false);
     
-    // Process sleep messages
-    ar_system_fixture__process_next_message(own_fixture); // agent1 sleep
-    ar_system_fixture__process_next_message(own_fixture); // agent1 wake
-    ar_system_fixture__process_next_message(own_fixture); // agent2 sleep  
-    ar_system_fixture__process_next_message(own_fixture); // agent2 wake
-    
-    // Then no more messages should be queued
+    // Then no messages to process
     assert(ar_agency__agent_has_messages_with_instance(mut_agency, agent1) == false);
     assert(ar_agency__agent_has_messages_with_instance(mut_agency, agent2) == false);
     
@@ -283,14 +278,14 @@ static void test_update_incompatible(void) {
     
     // When attempting incompatible updates using instance API
     // Then major version change should fail
-    assert(ar_agency__update_agent_methods_with_instance(mut_agency, ref_v1_0, ref_v2_0, false) == 0);
+    assert(ar_agency__update_agent_methods_with_instance(mut_agency, ref_v1_0, ref_v2_0) == 0);
     
     // Then different method should fail
-    assert(ar_agency__update_agent_methods_with_instance(mut_agency, ref_v1_0, ref_other, false) == 0);
+    assert(ar_agency__update_agent_methods_with_instance(mut_agency, ref_v1_0, ref_other) == 0);
     
     // Then null methods should fail
-    assert(ar_agency__update_agent_methods_with_instance(mut_agency, NULL, ref_v1_0, false) == 0);
-    assert(ar_agency__update_agent_methods_with_instance(mut_agency, ref_v1_0, NULL, false) == 0);
+    assert(ar_agency__update_agent_methods_with_instance(mut_agency, NULL, ref_v1_0) == 0);
+    assert(ar_agency__update_agent_methods_with_instance(mut_agency, ref_v1_0, NULL) == 0);
     
     // Check for memory leaks
     assert(ar_system_fixture__check_memory(own_fixture));
@@ -325,7 +320,7 @@ static void test_update_no_agents(void) {
     assert(mut_agency != NULL);
     
     // When updating with no agents using instance API
-    int count = ar_agency__update_agent_methods_with_instance(mut_agency, ref_v1_0, ref_v1_1, true);
+    int count = ar_agency__update_agent_methods_with_instance(mut_agency, ref_v1_0, ref_v1_1);
     
     // Then no agents should be updated
     assert(count == 0);

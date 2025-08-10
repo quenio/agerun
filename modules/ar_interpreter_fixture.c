@@ -275,29 +275,9 @@ int64_t ar_interpreter_fixture__execute_with_message(
     const char *field_names[] = {"text", "count", "sender", "operation", "a", "b", 
                                  "route", "echo_agent", "calc_agent", "payload", 
                                  "template", "input", "output_template", "type", "value"};
-    const char *field_defaults[] = {"\"\"", "0", "0", "\"\"", "0", "0", 
-                                    "\"\"", "0", "0", "\"\"", 
-                                    "\"\"", "\"\"", "\"\"", "\"\"", "0"};
     
-    // First, create wake message detection
-    // Check if any message fields are accessed - if not, we don't need wake handling
-    bool needs_wake_handling = false;
-    for (size_t i = 0; i < sizeof(field_names)/sizeof(field_names[0]); i++) {
-        char search_pattern[256];
-        snprintf(search_pattern, sizeof(search_pattern), "message.%s", field_names[i]);
-        if (strstr(ref_instruction, search_pattern) != NULL) {
-            needs_wake_handling = true;
-            break;
-        }
-    }
-    
-    if (needs_wake_handling) {
-        strcpy(method_body, "memory.is_wake := if(message = \"__wake__\", 1, 0)\n");
-        strcat(method_body, "memory.is_sleep := if(message = \"__sleep__\", 1, 0)\n");
-        strcat(method_body, "memory.is_special := memory.is_wake + memory.is_sleep\n");
-    } else {
-        method_body[0] = '\0';  // Start with empty body
-    }
+    // Start with empty body (no wake/sleep detection needed)
+    method_body[0] = '\0';
     
     // Copy the instruction for modification
     strncpy(modified_instruction, ref_instruction, sizeof(modified_instruction) - 1);
@@ -309,11 +289,11 @@ int64_t ar_interpreter_fixture__execute_with_message(
         snprintf(search_pattern, sizeof(search_pattern), "message.%s", field_names[i]);
         
         if (strstr(ref_instruction, search_pattern) != NULL) {
-            // Add memory assignment for this field
+            // Add memory assignment for this field (no wake/sleep check needed)
             char field_assignment[512];
             snprintf(field_assignment, sizeof(field_assignment), 
-                    "memory.%s := if(memory.is_special > 0, %s, message.%s)\n",
-                    field_names[i], field_defaults[i], field_names[i]);
+                    "memory.%s := message.%s\n",
+                    field_names[i], field_names[i]);
             strcat(method_body, field_assignment);
             
             // Replace message.field with memory.field in the instruction

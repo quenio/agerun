@@ -24,9 +24,7 @@ This module was created as part of the agency module refactoring to improve cohe
 When updating agents to a new method version:
 
 1. **Compatibility Check**: Ensures the old and new methods have the same name and compatible versions (same major version)
-2. **Optional Sleep Message**: Sends `__sleep__` to each agent being updated (if lifecycle events enabled)
-3. **Method Update**: Updates the agent's method reference
-4. **Optional Wake Message**: Sends `__wake__` to each agent with the new method (if lifecycle events enabled)
+2. **Method Update**: Updates the agent's method reference
 
 ## Design Principles
 
@@ -52,13 +50,9 @@ const ar_method_t *ref_new = ar_methodology__get_method("echo", "1.1.0");
 
 // Check compatibility
 if (ar_agent_update__are_compatible(ref_old, ref_new)) {
-    // Update agents with lifecycle events
-    int count = ar_agent_update__update_methods(registry, ref_old, ref_new, true);
-    
-    // Process the lifecycle messages
-    for (int i = 0; i < count * 2; i++) {
-        ar_system__process_next_message_with_instance(own_system));
-    }
+    // Update agents
+    int count = ar_agent_update__update_methods(registry, ref_old, ref_new);
+    ar_io__info("Updated %d agents", count);
 }
 
 // Count agents using a method
@@ -66,14 +60,6 @@ int count = ar_agent_update__count_using_method(ref_old);
 ```
 
 ## Important Notes
-
-### Lifecycle Events
-
-When `send_lifecycle_events` is true:
-- Each agent receives a `__sleep__` message before update
-- Each agent receives a `__wake__` message after update
-- The caller MUST process `2 * update_count` messages to handle these events
-- This ensures agents can clean up and reinitialize properly
 
 ### Version Compatibility
 

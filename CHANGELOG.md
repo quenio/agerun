@@ -2,6 +2,27 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-08-10
+
+### ✅ Sleep Message Removal from Agent System - TDD Cycle 3
+- Successfully removed all sleep message functionality from ar_agent and ar_agency modules
+  - Iteration 3.1: Removed non-functional sleep message sending from agent destruction
+  - Iteration 3.2: Removed sleep/wake message logic from agent method updates
+  - Iteration 3.3: Removed g_sleep_message and g_wake_message constants
+  - Iteration 3.4: Updated all ar_agency interfaces to remove lifecycle parameters
+- Removed unused parameters from all function signatures:
+  - `send_sleep_wake` parameter from ar_agent__update_method()
+  - `send_lifecycle_events` parameter from ar_agency and ar_agent_update functions
+- Updated tests to not expect lifecycle messages
+- Cleaned up documentation and test fixtures:
+  - Updated ar_agent_update.md to remove lifecycle event references
+  - Simplified ar_interpreter_fixture.c by removing wake/sleep detection
+  - Updated ar_semver.md and ar_spawn_instruction_evaluator.md
+  - Changed test message in ar_method_tests.c from "__sleep__" to "test_message"
+- **Key finding**: Sleep messages were never functional - they were added to agent's own queue and immediately destroyed
+- All tests pass with zero memory leaks
+- Total impact: 13 files modified, 116 lines removed (net reduction)
+
 ## 2025-08-09
 
 ### ✅ Knowledge Base Enhancement from Session Learnings

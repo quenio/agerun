@@ -99,10 +99,8 @@ When a new method version is registered, AgeRun automatically transitions runnin
 The transition process follows these steps:
 
 1. The agent finishes processing its current message
-2. The system sends a `__sleep__` message to the agent
-3. The agent's method reference is updated to the newer version
-4. The system sends a `__wake__` message to the agent
-5. The agent resumes operation with the new version
+2. The agent's method reference is updated to the newer version
+3. The agent resumes operation with the new version
 
 This process ensures a clean transition between compatible versions while preserving the agent's state.
 

@@ -751,7 +751,7 @@ Remove wake/sleep messages as system-level concepts since they're not essential 
 **Documentation**: Update ar_system.md
 
 ##### TDD Cycle 3: Remove sleep messages from ar_agent and ar_agency
-**Session tracking**: [ ] Started [ ] Completed
+**Session tracking**: [x] Started [x] Completed 2025-08-10
 
 ###### Iteration 3.1: Remove sleep message sending from agent destruction
 - **RED**: Create test verifying no sleep message on destruction → FAIL

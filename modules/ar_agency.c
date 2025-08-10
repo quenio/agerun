@@ -172,13 +172,13 @@ bool ar_agency__load_agents(void) {
     return mut_agency ? ar_agency__load_agents_with_instance(mut_agency, NULL) : false;
 }
 
-int ar_agency__update_agent_methods(const ar_method_t *ref_old_method, const ar_method_t *ref_new_method, bool send_lifecycle_events) {
+int ar_agency__update_agent_methods(const ar_method_t *ref_old_method, const ar_method_t *ref_new_method) {
     if (!g_is_initialized || !g_own_registry) {
         return 0;
     }
     
     // Delegate to agent_update module, passing our registry
-    return ar_agent_update__update_methods(g_own_registry, ref_old_method, ref_new_method, send_lifecycle_events);
+    return ar_agent_update__update_methods(g_own_registry, ref_old_method, ref_new_method);
 }
 
 int ar_agency__count_agents_using_method(const ar_method_t *ref_method) {
@@ -320,7 +320,7 @@ ar_data_t* ar_agency__get_agent_mutable_memory(int64_t agent_id) {
     return ar_agent__get_mutable_memory(mut_agent);
 }
 
-bool ar_agency__update_agent_method(int64_t agent_id, const ar_method_t *ref_new_method, bool send_sleep_wake) {
+bool ar_agency__update_agent_method(int64_t agent_id, const ar_method_t *ref_new_method) {
     if (!g_is_initialized || !g_own_registry) {
         return false;
     }
@@ -330,7 +330,7 @@ bool ar_agency__update_agent_method(int64_t agent_id, const ar_method_t *ref_new
         return false;
     }
     
-    return ar_agent__update_method(mut_agent, ref_new_method, send_sleep_wake);
+    return ar_agent__update_method(mut_agent, ref_new_method);
 }
 
 bool ar_agency__set_agent_active(int64_t agent_id, bool is_active) {
@@ -410,13 +410,13 @@ int ar_agency__count_agents_using_method_with_instance(ar_agency_t *ref_agency, 
     return ar_agent_update__count_using_method(ref_agency->own_registry, ref_method);
 }
 
-int ar_agency__update_agent_methods_with_instance(ar_agency_t *mut_agency, const ar_method_t *ref_old_method, const ar_method_t *ref_new_method, bool send_lifecycle_events) {
+int ar_agency__update_agent_methods_with_instance(ar_agency_t *mut_agency, const ar_method_t *ref_old_method, const ar_method_t *ref_new_method) {
     if (!mut_agency || !mut_agency->is_initialized || !mut_agency->own_registry) {
         return 0;
     }
     
     // Delegate to agent_update module, passing the agency's registry
-    return ar_agent_update__update_methods(mut_agency->own_registry, ref_old_method, ref_new_method, send_lifecycle_events);
+    return ar_agent_update__update_methods(mut_agency->own_registry, ref_old_method, ref_new_method);
 }
 
 int64_t ar_agency__create_agent_with_instance(ar_agency_t *mut_agency, 
