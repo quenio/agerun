@@ -129,6 +129,5 @@ send(memory.sender, memory.content)
 
 ## Related Patterns
 - [Systematic Error Whitelist Reduction](systematic-error-whitelist-reduction.md)
-- [Wake Message Field Access Pattern](wake-message-field-access-pattern.md)
 - [Whitelist Specificity Pattern](whitelist-specificity-pattern.md)
 - [Cross Method Pattern Discovery](cross-method-pattern-discovery.md)

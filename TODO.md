@@ -6,6 +6,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+### Knowledge Base Cleanup - TDD Cycle 6 (Completed 2025-08-10)
+- [x] Removed 4 obsolete KB articles about wake/sleep messages: duplicate-wake-message-bug.md, agent-wake-message-processing.md, ownership-drop-message-passing.md, wake-message-field-access-pattern.md; updated CLAUDE.md to remove 7 references; updated kb/README.md index to remove 4 entries; cleaned up cross-references in 14 KB articles; updated .claude/commands/fix-errors-whitelisted.md; all documentation validation passes
+
 ### Knowledge Base Enhancement - Documentation Patterns (Completed 2025-08-10)
 - [x] Created documentation-only-change-pattern.md explaining that documentation updates don't require TDD cycles; updated atomic-commit-documentation-pattern.md to include git amend technique for forgotten documentation; added cross-references to 4 existing KB articles; updated CLAUDE.md with reference in TDD section
 

@@ -99,7 +99,6 @@ See [Debug Logging for Ownership Tracing](debug-logging-ownership-tracing.md) an
 - [Ownership Naming Conventions](ownership-naming-conventions.md)
 - [Temporary Resource Ownership Pattern](temporary-resource-ownership-pattern.md) - Common cause of context leaks
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)
-- [Agent Wake Message Processing](agent-wake-message-processing.md)
 - [Stderr Redirection for Debugging](stderr-redirection-debugging.md) - Leak warnings go to stderr
 - [Test Simplification Through Reversion](test-simplification-through-reversion.md)
 - [Context Ownership Lifecycle](context-ownership-lifecycle.md)

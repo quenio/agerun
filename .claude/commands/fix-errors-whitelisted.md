@@ -51,13 +51,6 @@ grep -B1 -A1 "Intentional.*error" log_whitelist.yaml | grep -E "context:|message
 
 Based on the pattern identified, determine the fix approach:
 
-### For Wake Message Errors ([details](../../kb/wake-message-field-access-pattern.md))
-```
-1. Identify affected methods
-2. Add wake/sleep detection at start of method
-3. Provide default values for accessed fields
-4. Test and remove whitelist entries
-```
 
 ### For Test Ownership Issues ([details](../../kb/test-fixture-message-ownership.md))
 ```
@@ -133,13 +126,6 @@ Whitelist reduced from [old] to [new] entries."
 
 ## Common Fix Patterns
 
-### Wake Message Handling
-```
-memory.is_wake := if(message = "__wake__", 1, 0)
-memory.is_sleep := if(message = "__sleep__", 1, 0)
-memory.is_special := memory.is_wake + memory.is_sleep
-memory.field := if(memory.is_special > 0, default, message.field)
-```
 
 ### Test Message Ownership
 ```c
@@ -174,7 +160,6 @@ Keep track of your whitelist reduction:
 
 ## Related Documentation
 - [Systematic Whitelist Error Resolution](../../kb/systematic-whitelist-error-resolution.md)
-- [Wake Message Field Access Pattern](../../kb/wake-message-field-access-pattern.md)
 - [Test Fixture Message Ownership](../../kb/test-fixture-message-ownership.md)
 - [Whitelist Specificity Pattern](../../kb/whitelist-specificity-pattern.md)
 

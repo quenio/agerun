@@ -83,9 +83,7 @@ ar_data__destroy_if_owned(message, fixture);
 **Critical**: Any code that calls `ar_interpreter__execute_method` directly must ensure the message has an owner to prevent the expression evaluator from claiming it during evaluation.
 
 ## Related Patterns
-- [Ownership Drop in Message Passing](ownership-drop-message-passing.md) - Previous pattern (now updated)
 - [Ownership Naming Conventions](ownership-naming-conventions.md)
-- [Agent Wake Message Processing](agent-wake-message-processing.md)
 - [Expression Ownership Rules](expression-ownership-rules.md)
 - [Memory Debugging Comprehensive Guide](memory-debugging-comprehensive-guide.md)
 - [Ownership Gap Vulnerability](ownership-gap-vulnerability.md) - Detailed explanation of the gap issue

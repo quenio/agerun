@@ -37,4 +37,3 @@ Handle errors at appropriate levels - detect at source, decide at caller, report
 - Single responsibility principle
 - Clean architecture patterns
 - [Module Delegation Error Propagation](module-delegation-error-propagation.md)
-- [Ownership Transfer in Message Passing](ownership-drop-message-passing.md)

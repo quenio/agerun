@@ -103,7 +103,6 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - Test resources: Use dynamic allocation with ownership transfer ([details](kb/dynamic-test-resource-allocation.md))
 - Expression evaluator claims: Unowned data can be claimed during evaluation ([details](kb/expression-evaluator-claim-behavior.md))
 - Map iteration: get keys, destroy list & elements; persist with key/type then value
-- Wake/sleep messages: Agents mark ownership, system drops before destroy ([details](kb/ownership-drop-message-passing.md))
 - Message ownership flow: System takes ownership after dequeuing from agents ([details](kb/message-ownership-flow.md))
 - Ownership gap vulnerability: Ensure atomic ownership transfer to prevent corruption ([details](kb/ownership-gap-vulnerability.md))
 - Ownership patterns: Use `ar_data__claim_or_copy()` & `ar_data__destroy_if_owned()` ([details](kb/ownership-pattern-extraction.md))
@@ -122,7 +121,6 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - Debug strategy: Check report → Trace source → Verify ownership → Fix naming → Add cleanup ([details](kb/memory-debugging-comprehensive-guide.md))
 - Test leak analysis: Verify lifecycle management before adding cleanup ([details](kb/test-memory-leak-ownership-analysis.md))
 - Environment variables: `ASAN_OPTIONS=halt_on_error=0` (continue on error), `detect_leaks=1` (complex leaks)
-- Wake messages: Process with `ar_system__process_next_message_with_instance(own_system)` after agent creation ([details](kb/agent-wake-message-processing.md))
 
 ### 2. Test-Driven Development (MANDATORY)
 
@@ -142,7 +140,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Test completeness**: Enumerate & verify each outcome individually ([details](kb/test-completeness-enumeration.md))
 **Method tests**: Verify AST after loading to catch parse errors ([details](kb/method-test-ast-verification.md))
 **Cleanup**: `ar_methodology__cleanup()` & `ar_agency__reset()`
-**Messages**: Process all including wake messages ([details](kb/agent-wake-message-processing.md))
+**Messages**: Process all messages to prevent memory leaks
 **Test isolation**: Comment out tests to isolate error sources ([details](kb/test-isolation-through-commenting.md))
 **Test updates**: Apply improvements retroactively to all tests ([details](kb/test-standardization-retroactive.md))
 **Fixture dependencies**: Map which tests use which fixtures before changes ([details](kb/fixture-dependency-mapping.md))
@@ -288,7 +286,6 @@ grep -r "function_name\|concept" modules/
 - Function calls cannot be nested
 - `if()` cannot be nested
 - `send(0, message)` is a no-op returning true ([details](kb/no-op-semantics-pattern.md))
-- Handle wake messages defensively ([details](kb/wake-message-field-access-pattern.md))
 
 ### 8. Development Practices
 
@@ -321,13 +318,8 @@ grep -r "function_name\|concept" modules/
 ### 10. Agent Lifecycle
 
 **Critical Points**:
-- Agents receive `__wake__` on creation
-- Agents receive `__sleep__` before destruction
 - ALWAYS process messages after sending to prevent leaks
 - Call `ar_system__process_next_message_with_instance(own_system)` after `ar_agent__send()`
-- Agents mark themselves as owners of wake/sleep messages ([details](kb/ownership-drop-message-passing.md))
-- Tests must process wake messages to prevent leaks ([details](kb/agent-wake-message-processing.md))
-- Note: ar_system__init sends duplicate wake (bug) ([details](kb/duplicate-wake-message-bug.md))
 
 ### 11. Building Individual Tests
 
@@ -447,7 +439,6 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 - Version strings explicit (e.g., "1.0.0")
 - **No map literals** - `{}` syntax is not supported in AgeRun expressions
 - Agent ID 0 indicates failure
-- Always process `__wake__` messages
 - Always process messages after sending to prevent memory leaks
 - Message processing loop required for complete execution ([details](kb/message-processing-loop-pattern.md))
 - All messages flow through system layer ([details](kb/system-message-flow-architecture.md))

@@ -66,6 +66,5 @@ Strategies for working within constraints:
    - `if(condition, a, b)`: Returns value, evaluates both branches
 
 ## Related Patterns
-- [Wake Message Field Access Pattern](wake-message-field-access-pattern.md)
 - [Expression Ownership Rules](expression-ownership-rules.md)
 - [Specification Consistency Maintenance](specification-consistency-maintenance.md)

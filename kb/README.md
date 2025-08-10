@@ -20,7 +20,6 @@ Each learning file contains:
 ## Current Learnings
 
 ### Development Workflow
-- [Agent Wake Message Processing](agent-wake-message-processing.md)
 - [API Migration Completion Verification](api-migration-completion-verification.md)
 - [Build Verification Before Commit](build-verification-before-commit.md)
 - [Build Time Reporting](build-time-reporting.md)
@@ -60,7 +59,6 @@ Each learning file contains:
 - [Ownership Naming Conventions](ownership-naming-conventions.md)
 - [Memory Debugging Comprehensive Guide](memory-debugging-comprehensive-guide.md)
 - [Expression Ownership Rules](expression-ownership-rules.md)
-- [Ownership Drop in Message Passing](ownership-drop-message-passing.md)
 - [Dynamic Test Resource Allocation](dynamic-test-resource-allocation.md)
 - [Message Ownership Flow](message-ownership-flow.md)
 - [Ownership Gap Vulnerability](ownership-gap-vulnerability.md)
@@ -140,10 +138,8 @@ Each learning file contains:
 - [Internal vs External Module Pattern](internal-vs-external-module-pattern.md)
 - [Module Instantiation Prerequisites](module-instantiation-prerequisites.md)
 - [Instance Association Pattern](instance-association-pattern.md)
-- [Wake Message Field Access Pattern](wake-message-field-access-pattern.md)
 - [AgeRun Language Constraint Workarounds](agerun-language-constraint-workarounds.md)
 - [AgeRun Method Language Nesting Constraint](agerun-method-language-nesting-constraint.md)
-- [Duplicate Wake Message Bug](duplicate-wake-message-bug.md)
 - [Message Processing Loop Pattern](message-processing-loop-pattern.md)
 - [System Message Flow Architecture](system-message-flow-architecture.md)
 - [No-op Semantics Pattern](no-op-semantics-pattern.md)

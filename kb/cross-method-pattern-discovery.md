@@ -75,6 +75,5 @@ Benefits of pattern discovery:
 - Faster problem resolution
 
 ## Related Patterns
-- [Wake Message Field Access Pattern](wake-message-field-access-pattern.md)
 - [Code Smell - Duplicate Code](code-smell-duplicate-code.md)
 - [Refactoring Key Patterns](refactoring-key-patterns.md)

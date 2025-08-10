@@ -4,6 +4,18 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-08-10
 
+### ✅ Knowledge Base Cleanup - TDD Cycle 6
+- Removed 4 obsolete KB articles about wake/sleep messages:
+  - duplicate-wake-message-bug.md: Bug that no longer exists after wake/sleep removal
+  - agent-wake-message-processing.md: Processing pattern for removed feature
+  - ownership-drop-message-passing.md: Ownership pattern primarily for wake/sleep
+  - wake-message-field-access-pattern.md: Workaround for removed functionality
+- Updated CLAUDE.md to remove 7 references to deleted articles
+- Updated kb/README.md index to remove 4 entries
+- Cleaned up cross-references in 14 KB articles
+- Updated .claude/commands/fix-errors-whitelisted.md command documentation
+- Documentation validation passes with zero broken links
+
 ### ✅ Knowledge Base Enhancement - Documentation Patterns
 - Created documentation-only-change-pattern.md:
   - Documents that .md updates don't require TDD cycles

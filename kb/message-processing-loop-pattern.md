@@ -68,6 +68,5 @@ int ar_executable__main(void) {
 ```
 
 ## Related Patterns
-- [Agent Wake Message Processing](agent-wake-message-processing.md)
 - [Message Ownership Flow](message-ownership-flow.md)
 - [System Message Flow Architecture](system-message-flow-architecture.md)

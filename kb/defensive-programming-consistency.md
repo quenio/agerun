@@ -78,4 +78,3 @@ memory.sender := if(memory.is_special = 1, 0, message.sender)  # Defensive defau
 ## Related Patterns
 - [Ownership Pattern Extraction](ownership-pattern-extraction.md)
 - [Ownership Naming Conventions](ownership-naming-conventions.md)
-- [Wake Message Field Access Pattern](wake-message-field-access-pattern.md)

@@ -103,4 +103,3 @@ This fix was critical for expression evaluation to work properly with context ac
 ## Related Patterns
 - [Ownership Naming Conventions](ownership-naming-conventions.md)
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)
-- [Agent Wake Message Processing](agent-wake-message-processing.md)

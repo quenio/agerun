@@ -73,4 +73,3 @@ void test_message_output(void) {
 ## Related Patterns
 - [Message Processing Loop Pattern](message-processing-loop-pattern.md)
 - [No-op Semantics Pattern](no-op-semantics-pattern.md)
-- [Agent Wake Message Processing](agent-wake-message-processing.md)

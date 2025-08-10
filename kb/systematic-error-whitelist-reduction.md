@@ -100,7 +100,6 @@ Benefits:
 - Knowledge preservation
 
 ## Related Patterns
-- [Wake Message Field Access Pattern](wake-message-field-access-pattern.md)
 - [Whitelist Simplification Pattern](whitelist-simplification-pattern.md)
 - [Intentional Test Errors Filtering](intentional-test-errors-filtering.md)
 - [Whitelist Specificity Pattern](whitelist-specificity-pattern.md)

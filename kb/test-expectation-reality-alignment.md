@@ -71,4 +71,3 @@ void test_actual_behavior(void) {
 ## Related Patterns
 - [Evidence-Based Debugging](evidence-based-debugging.md)
 - [TDD Cycle Detailed Explanation](tdd-cycle-detailed-explanation.md)
-- [Duplicate Wake Message Bug](duplicate-wake-message-bug.md)
