@@ -159,9 +159,9 @@ int ar_executable__main(void) {
         // Fall back to creating methods programmatically if directory loading fails
         printf("No methods loaded from directory, creating default methods...\n");
         
-        // Create a simple echo method that handles wake messages properly
+        // Create a simple echo method
         printf("Creating echo method...\n");
-        const char *ref_echo_instructions = "if(message = \"__wake__\", send(0, \"Echo agent is awake\"), send(0, message))";
+        const char *ref_echo_instructions = "send(0, message)";
         const char *ref_echo_version = "1.0.0";
         
         if (!ar_methodology__create_method_with_instance(mut_methodology, "echo", ref_echo_instructions, ref_echo_version)) {
@@ -202,8 +202,6 @@ int ar_executable__main(void) {
     printf("Bootstrap agent created with ID: %" PRId64 "\n", initial_agent);
     
     // Process all messages until none remain
-    // Note: Currently processes duplicate wake message due to ar_system__init sending
-    // an extra wake even though agents auto-send wake to themselves
     printf("Processing messages...\n");
     int messages_processed = ar_system__process_all_messages_with_instance(mut_system);
     if (messages_processed > 0) {

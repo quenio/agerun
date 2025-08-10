@@ -1,9 +1,2 @@
-memory.is_wake := if(message = "__wake__", 1, 0)
-memory.is_sleep := if(message = "__sleep__", 1, 0)
-memory.is_special := memory.is_wake + memory.is_sleep
-memory.method_name := if(memory.is_special > 0, "bogus", message.method_name)
-memory.instructions := if(memory.is_special > 0, "memory.dummy := 1", message.instructions)
-memory.version := if(memory.is_special > 0, "1.0.0", message.version)
-memory.sender := if(memory.is_special > 0, 0, message.sender)
-memory.result := compile(memory.method_name, memory.instructions, memory.version)
-send(memory.sender, memory.result)
+memory.result := compile(message.method_name, message.instructions, message.version)
+send(message.sender, memory.result)

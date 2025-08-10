@@ -6,6 +6,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+### Wake/Sleep Message Removal - TDD Cycle 4 (Completed 2025-08-10)
+- [x] Successfully removed all wake/sleep detection logic from 7 method files: bootstrap, echo, calculator, grade-evaluator, message-router, string-builder, and method-creator; updated ar_executable.c to remove hardcoded wake message handling and outdated comments; simplified all methods to directly access message fields without special case handling; all 68 tests pass with zero memory leaks
+
 ### Knowledge Base Enhancement - Test Fixture Patterns (Completed 2025-08-09)
 - [x] Created 4 new KB articles documenting patterns discovered during fixture module creation; test-fixture-module-creation-pattern.md for proper fixture design with opaque types; compiler-output-conflict-pattern.md for parallel build isolation requirements; dynamic-test-resource-allocation.md for ownership in test resources; atomic-commit-documentation-pattern.md for including docs with implementation; updated parallel-test-isolation-process-resources.md with cross-references; updated kb/README.md index with new articles; updated CLAUDE.md with references in TDD, memory, and build sections
 
@@ -778,8 +781,8 @@ Remove wake/sleep messages as system-level concepts since they're not essential 
 
 #### Phase 2: Update Method Implementations (Cycle 4)
 
-##### TDD Cycle 4: Update all methods to remove wake/sleep detection
-**Session tracking**: [ ] Started [ ] Completed
+##### TDD Cycle 4: Update all methods to remove wake/sleep detection (Completed 2025-08-10)
+**Session tracking**: [x] Started [x] Completed
 
 ###### Iteration 4.1: Update bootstrap method
 - **RED**: bootstrap_tests.c fails with wake/sleep checks → FAIL

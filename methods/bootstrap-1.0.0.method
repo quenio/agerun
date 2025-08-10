@@ -1,6 +1,2 @@
-memory.is_wake := if(message = "__wake__", 1, 0)
-memory.is_sleep := if(message = "__sleep__", 1, 0)
-memory.is_special := memory.is_wake + memory.is_sleep
-memory.initialized := if(memory.is_wake > 0, 1, memory.initialized)
-memory.status := if(memory.initialized > 0, "Bootstrap initialized", "Bootstrap ready")
+memory.status := "Bootstrap ready"
 send(0, memory.status)
