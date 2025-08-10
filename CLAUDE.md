@@ -34,17 +34,23 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 ## Critical Development Rules
 
-### Knowledge Base Usage (MANDATORY) ([details](kb/knowledge-base-consultation-protocol.md))
+### Knowledge Base Usage (MANDATORY - SHOW SEARCHES IN CONVERSATION)
 
-**KB articles are mandatory prerequisites, NOT optional references**:
-- **Before ANY task**: Search for relevant KB articles using grep on CLAUDE.md
-- **MUST read BEFORE executing**: KB articles contain critical patterns to prevent errors
-- **Task planning**: First todo item must be "Read kb/relevant-article.md"
-- **Search first**: When asked about a topic, check if there's a kb link before answering
-- **Example**: Before refactoring → read kb/refactoring-key-patterns.md FIRST
-- **Example**: Before debugging → read kb/memory-debugging-comprehensive-guide.md FIRST
+**Make KB searches VISIBLE - don't just think about searching, actually DO it and SHOW it**:
+- **Before Edit/Write**: "Let me search KB first..." → `grep -r "module_name" kb/*.md` → show results
+- **After test fails**: "Searching KB for this error..." → `grep -r "error" kb/*.md` → read findings
+- **User corrects you**: IMMEDIATELY search → `grep -r "what_user_said" kb/*.md` → apply pattern
+- **Mid-implementation doubt**: STOP → search KB → show what you found → then continue
+- **Choosing approach**: "Let me check KB for patterns..." → actually run grep → discuss findings
 
-**Workflow**: Task requested → Search KB → Read articles → THEN execute task
+**Wrong**: "Let me fix this..." [starts coding immediately]
+**Right**: "Let me search KB..." [runs grep] "Found 3 articles..." [reads] "KB says to..." [then codes]
+
+**Trigger words that REQUIRE KB search**:
+- User: "Why are you..." / "You should..." / "Actually..." → Search that topic NOW
+- You: "Let me fix..." / "The problem is..." / "I'll implement..." → Search FIRST
+
+**Make it conversational**: "According to kb/pattern.md..." "The KB article suggests..." "I found in KB..."
 
 **Markdown Link Resolution** ([details](kb/markdown-link-resolution-patterns.md)):
 - **Always use relative paths** - Never use `/path` format which breaks on GitHub
