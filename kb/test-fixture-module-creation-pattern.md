@@ -87,5 +87,6 @@ void test_executable_behavior(void) {
 ## Related Patterns
 - [Opaque Types Principle](opaque-types-principle.md)
 - [Ownership Naming Conventions](ownership-naming-conventions.md)
+- [Test Fixture Simplification Pattern](test-fixture-simplification-pattern.md)
 - [Module Development Patterns](module-development-patterns.md)
 - [Test Fixture API Adaptation](test-fixture-api-adaptation.md)

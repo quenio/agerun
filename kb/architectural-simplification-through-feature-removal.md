@@ -52,3 +52,6 @@ When encountering complex system-level features:
 - [Progressive System Decoupling TDD](progressive-system-decoupling-tdd.md)
 - [Single Responsibility Principle](single-responsibility-principle.md)
 - [TDD API Simplification](tdd-api-simplification.md)
+- [Non-Functional Code Detection Pattern](non-functional-code-detection-pattern.md)
+- [Systematic Parameter Removal Refactoring](systematic-parameter-removal-refactoring.md)
+- [Compilation-Based TDD Approach](compilation-based-tdd-approach.md)

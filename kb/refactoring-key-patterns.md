@@ -115,3 +115,5 @@ ar_data_t* ar_old_function(ar_data_t *param) {
 - [Ownership Pattern Extraction](ownership-pattern-extraction.md)
 - [Defensive Programming Consistency](defensive-programming-consistency.md)
 - [Module Removal Checklist](module-removal-checklist.md)
+- [Systematic Parameter Removal Refactoring](systematic-parameter-removal-refactoring.md)
+- [Non-Functional Code Detection Pattern](non-functional-code-detection-pattern.md)

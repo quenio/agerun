@@ -91,3 +91,4 @@ Example pattern: 9 cycles for facade refactoring (assignment, send, if, parse, b
 - [Multi-Session TDD Planning](multi-session-tdd-planning.md)
 - [Lifecycle Event Separation TDD](lifecycle-event-separation-tdd.md)
 - [Progressive System Decoupling TDD](progressive-system-decoupling-tdd.md)
+- [Compilation-Based TDD Approach](compilation-based-tdd-approach.md)

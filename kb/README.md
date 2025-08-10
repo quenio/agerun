@@ -114,6 +114,8 @@ Each learning file contains:
 - [Test Completeness Enumeration](test-completeness-enumeration.md)
 - [Permission-Based Test Modification](permission-based-test-modification.md)
 - [Comprehensive Impact Analysis](comprehensive-impact-analysis.md)
+- [Test Fixture Simplification Pattern](test-fixture-simplification-pattern.md)
+- [Compilation-Based TDD Approach](compilation-based-tdd-approach.md)
 
 ### Architecture & Design
 - [Opaque Types Pattern](opaque-types-pattern.md)
@@ -218,6 +220,8 @@ Each learning file contains:
 - [User Feedback Debugging Pattern](user-feedback-debugging-pattern.md)
 - [Makefile Pattern Rule Management](makefile-pattern-rule-management.md)
 - [Development Debug Tools](development-debug-tools.md)
+- [Non-Functional Code Detection Pattern](non-functional-code-detection-pattern.md)
+- [Systematic Parameter Removal Refactoring](systematic-parameter-removal-refactoring.md)
 - [Stderr Redirection for Debugging](stderr-redirection-debugging.md)
 - [Zig Integration Comprehensive](zig-integration-comprehensive.md)
 - [Zig Struct Modules Pattern](zig-struct-modules-pattern.md)

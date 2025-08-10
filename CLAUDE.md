@@ -132,6 +132,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Multi-session**: Use session tracking for large changes ([details](kb/multi-session-tdd-planning.md))
 **Lifecycle separation**: Handle creation/destruction in separate cycles ([details](kb/lifecycle-event-separation-tdd.md))
 **Test modification**: Ask permission before changing tests ([details](kb/permission-based-test-modification.md))
+**Compilation-based TDD**: Use compilation failure as RED phase for infrastructure removal ([details](kb/compilation-based-tdd-approach.md))
 **Complete ALL cycles** → Update docs/TODO/CHANGELOG → Single commit
 
 **Test Requirements**: BDD structure, one test per behavior, AR_ASSERT macros, zero leaks ([details](kb/bdd-test-structure.md), [assertions](kb/ar-assert-descriptive-failures.md))
@@ -149,6 +150,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Whitelist specificity**: Use unique fields for test errors to prevent masking ([details](kb/whitelist-specificity-pattern.md))
 **Fixture ownership**: Tests bypassing system must manage message ownership ([details](kb/test-fixture-message-ownership.md))
 **Fixture modules**: Extract helpers into proper modules with opaque types ([details](kb/test-fixture-module-creation-pattern.md))
+**Fixture simplification**: Remove complex logic for obsolete features ([details](kb/test-fixture-simplification-pattern.md))
 **Advanced patterns**: ([details](kb/tdd-advanced-large-refactoring.md), [API changes](kb/tdd-api-simplification.md), [decoupling](kb/progressive-system-decoupling-tdd.md))
 
 ### 3. Parnas Design Principles (STRICT ENFORCEMENT) ✅
@@ -379,6 +381,8 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 **Bulk ops**: Use scripts not sed - `rename_symbols.py`, `batch_fix_docs.py` ([details](kb/script-enhancement-over-one-off.md))
 **Verification**: `diff -u <(sed -n '130,148p' old.c) <(sed -n '11,29p' new.c)` ([details](kb/code-movement-verification.md))
 **Key patterns**: ([details](kb/refactoring-key-patterns.md))
+**Non-functional code**: Detect and remove code that never executes ([details](kb/non-functional-code-detection-pattern.md))
+**Parameter removal**: Systematically remove unused parameters across layers ([details](kb/systematic-parameter-removal-refactoring.md))
 
 ### 14. Plan Verification and Review ([details](kb/plan-verification-and-review.md))
 
