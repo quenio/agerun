@@ -4,6 +4,22 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-08-10
 
+### ✅ Bootstrap Agent Spawning - TDD Cycle 7
+- Fixed send_instruction_evaluator to use instance-specific agency:
+  - Added ref_agency field to evaluator struct
+  - Changed from global ar_agency__send_to_agent to ar_agency__send_to_agent_with_instance
+  - Updated all tests to pass agency parameter
+- Implemented spawn no-op behavior for conditional spawning:
+  - Returns true when method_name is 0 (integer) or "" (empty string)
+  - Sets result to 0 when assigned to a variable
+  - Added comprehensive tests for both no-op cases
+- Completed bootstrap-1.0.0.method implementation:
+  - Spawns echo agent when receiving "__boot__" message
+  - Handles "__boomerang__" reply from echo agent
+  - Uses conditional spawning to avoid errors on non-boot messages
+- Updated SPEC.md to document spawn instruction's no-op behavior
+- All 69 tests passing with zero memory leaks
+
 ### ✅ Knowledge Base Cleanup - TDD Cycle 6
 - Removed 4 obsolete KB articles about wake/sleep messages:
   - duplicate-wake-message-bug.md: Bug that no longer exists after wake/sleep removal

@@ -6,6 +6,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+### Bootstrap Agent Spawning - TDD Cycle 7 (Completed 2025-08-10)
+- [x] Fixed send_instruction_evaluator to use instance-specific agency for proper message routing instead of global agency; added spawn no-op behavior when method_name is 0 or empty string to allow conditional spawning; implemented bootstrap-1.0.0.method that spawns echo agent on __boot__ message and handles boomerang reply; added comprehensive tests for spawn no-op cases; updated SPEC.md to document spawn instruction's no-op behavior; all 69 tests passing with zero memory leaks
+
 ### Knowledge Base Cleanup - TDD Cycle 6 (Completed 2025-08-10)
 - [x] Removed 4 obsolete KB articles about wake/sleep messages: duplicate-wake-message-bug.md, agent-wake-message-processing.md, ownership-drop-message-passing.md, wake-message-field-access-pattern.md; updated CLAUDE.md to remove 7 references; updated kb/README.md index to remove 4 entries; cleaned up cross-references in 14 KB articles; updated .claude/commands/fix-errors-whitelisted.md; all documentation validation passes
 
