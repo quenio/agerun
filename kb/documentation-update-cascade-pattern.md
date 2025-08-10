@@ -103,3 +103,4 @@ memory.result := 0  // Simplified, no wake check
 - [Specification Consistency Maintenance](specification-consistency-maintenance.md)
 - [Documentation Compacting Pattern](documentation-compacting-pattern.md)
 - [Systematic Guideline Enhancement](systematic-guideline-enhancement.md)
+- [Documentation-Only Change Pattern](documentation-only-change-pattern.md)

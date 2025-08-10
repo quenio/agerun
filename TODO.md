@@ -6,6 +6,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+### Knowledge Base Enhancement - Documentation Patterns (Completed 2025-08-10)
+- [x] Created documentation-only-change-pattern.md explaining that documentation updates don't require TDD cycles; updated atomic-commit-documentation-pattern.md to include git amend technique for forgotten documentation; added cross-references to 4 existing KB articles; updated CLAUDE.md with reference in TDD section
+
 ### Project Documentation Update - TDD Cycle 5 (Completed 2025-08-10)
 - [x] Updated SPEC.md to remove all 7 wake/sleep references: removed wake/sleep from version transition behavior; removed Agent Lifecycle section that only described wake/sleep; updated exit instruction to reflect immediate destruction; removed Special Messages section entirely; updated System Startup section; renamed Agent Lifecycle to Resource Management; documentation validation passes
 

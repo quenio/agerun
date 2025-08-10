@@ -4,6 +4,16 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-08-10
 
+### ✅ Knowledge Base Enhancement - Documentation Patterns
+- Created documentation-only-change-pattern.md:
+  - Documents that .md updates don't require TDD cycles
+  - Clarifies when TDD is actually required vs optional
+- Updated atomic-commit-documentation-pattern.md:
+  - Added git commit --amend technique for forgotten documentation
+  - Prevents separate "fix docs" commits
+- Added cross-references to 4 existing KB articles
+- Updated CLAUDE.md with reference in TDD section
+
 ### ✅ Project Documentation Update - TDD Cycle 5
 - Updated SPEC.md to remove all wake/sleep references:
   - Removed wake/sleep from version transition behavior (lines 24-26, 38-41)

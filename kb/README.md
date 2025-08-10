@@ -195,6 +195,7 @@ Each learning file contains:
 ### Development Practices
 - [Documentation Validation Enhancement Patterns](documentation-validation-enhancement-patterns.md)
 - [Documentation Update Cascade Pattern](documentation-update-cascade-pattern.md)
+- [Documentation-Only Change Pattern](documentation-only-change-pattern.md)
 - [Example Marker Granular Control](example-marker-granular-control.md)
 - [Multi-Language Documentation Validation](multi-language-documentation-validation.md)
 - [Documentation Standards Integration](documentation-standards-integration.md)

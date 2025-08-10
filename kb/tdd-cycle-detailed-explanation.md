@@ -78,3 +78,4 @@ git commit -m "feat: implement feature using TDD
 - [TDD API Simplification](tdd-api-simplification.md)
 - [TDD Feature Completion Before Commit](tdd-feature-completion-before-commit.md)
 - [Requirement Precision in TDD](requirement-precision-in-tdd.md)
+- [Documentation-Only Change Pattern](documentation-only-change-pattern.md)

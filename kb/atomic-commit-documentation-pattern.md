@@ -76,6 +76,19 @@ git diff --cached --stat
 git commit -m "feat: complete implementation with documentation"
 ```
 
+### Fixing Forgotten Documentation
+If you forget to include TODO.md/CHANGELOG.md in your commit:
+```bash
+# DON'T create a separate commit
+git add TODO.md CHANGELOG.md
+git commit -m "docs: update TODO and CHANGELOG"  # BAD: Separate commit
+
+# DO amend the previous commit
+git add TODO.md CHANGELOG.md
+git commit --amend  # GOOD: Keeps changes atomic
+# This opens your editor to update the commit message if needed
+```
+
 ## Related Patterns
 - [Commit Scope Verification](commit-scope-verification.md)
 - [Pre-Commit Checklist Detailed](pre-commit-checklist-detailed.md)

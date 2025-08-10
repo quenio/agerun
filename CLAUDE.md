@@ -134,6 +134,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Lifecycle separation**: Handle creation/destruction in separate cycles ([details](kb/lifecycle-event-separation-tdd.md))
 **Test modification**: Ask permission before changing tests ([details](kb/permission-based-test-modification.md))
 **Compilation-based TDD**: Use compilation failure as RED phase for infrastructure removal ([details](kb/compilation-based-tdd-approach.md))
+**Documentation-only changes**: Skip TDD for .md updates, use direct editing ([details](kb/documentation-only-change-pattern.md))
 **Complete ALL cycles** → Update docs/TODO/CHANGELOG → Single commit
 
 **Test Requirements**: BDD structure, one test per behavior, AR_ASSERT macros, zero leaks ([details](kb/bdd-test-structure.md), [assertions](kb/ar-assert-descriptive-failures.md))
