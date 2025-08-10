@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <inttypes.h>
 #include <dirent.h>
+#include <sys/stat.h>
 #include "ar_system.h"
 #include "ar_method.h"
 #include "ar_agent.h"
@@ -151,13 +152,31 @@ int ar_executable__main(void) {
         return 1;
     }
     
-    // Always load methods from directory (no persistence files)
-    printf("Loading methods from directory...\n");
-    int methods_loaded = _load_methods_from_directory(mut_methodology);
+    // Check if persisted methodology file exists
+    int methods_loaded = 0;
+    bool loaded_from_file = false;
+    struct stat st;
+    if (stat(METHODOLOGY_FILE_NAME, &st) == 0) {
+        // Load from persisted file
+        printf("Loading methods from persisted methodology...\n");
+        if (ar_methodology__load_methods_with_instance(mut_methodology, METHODOLOGY_FILE_NAME)) {
+            printf("Successfully loaded methods from %s\n", METHODOLOGY_FILE_NAME);
+            loaded_from_file = true;
+            // We don't know the exact count when loading from file, but that's OK
+        } else {
+            printf("Failed to load from %s, will try directory\n", METHODOLOGY_FILE_NAME);
+        }
+    }
     
-    if (methods_loaded == 0) {
-        // Fall back to creating methods programmatically if directory loading fails
-        printf("No methods loaded from directory, creating default methods...\n");
+    // If no persisted file or loading failed, load from directory
+    if (!loaded_from_file) {
+        printf("Loading methods from directory...\n");
+        methods_loaded = _load_methods_from_directory(mut_methodology);
+    }
+    
+    if (!loaded_from_file && methods_loaded == 0) {
+        // Fall back to creating methods programmatically if both file and directory loading fail
+        printf("No methods loaded from file or directory, creating default methods...\n");
         
         // Create a simple echo method
         printf("Creating echo method...\n");
@@ -186,9 +205,10 @@ int ar_executable__main(void) {
         }
         
         printf("Counter method created with version %s\n\n", ref_counter_version);
-    } else {
+    } else if (!loaded_from_file) {
         printf("Successfully loaded %d methods from directory\n\n", methods_loaded);
     }
+    // If loaded_from_file is true, we already printed the success message above
     
     // Initialize the system and create bootstrap agent
     printf("Creating bootstrap agent...\n");

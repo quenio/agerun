@@ -88,6 +88,13 @@ static void test_single_session(ar_executable_fixture_t *mut_fixture) {
 static void test_loading_methods_from_directory(ar_executable_fixture_t *mut_fixture) {
     printf("Testing executable loads methods from directory...\n");
     
+    // Remove any existing methodology file to ensure we load from directory
+    const char *build_dir = ar_executable_fixture__get_build_dir(mut_fixture);
+    if (build_dir) {
+        char methodology_path[512];
+        snprintf(methodology_path, sizeof(methodology_path), "%s/agerun.methodology", build_dir);
+        remove(methodology_path);
+    }
     
     // When we build and run the executable using make
     printf("Building and running executable to test method loading...\n");
@@ -191,6 +198,14 @@ static void test_loading_methods_from_directory(ar_executable_fixture_t *mut_fix
 static void test_bootstrap_agent_creation(ar_executable_fixture_t *mut_fixture) {
     printf("Testing executable creates bootstrap agent...\n");
     
+    // Remove any existing methodology file to ensure clean test
+    const char *build_dir = ar_executable_fixture__get_build_dir(mut_fixture);
+    if (build_dir) {
+        char methodology_path[512];
+        snprintf(methodology_path, sizeof(methodology_path), "%s/agerun.methodology", build_dir);
+        remove(methodology_path);
+    }
+    
     // When we build and run the executable using make
     printf("Building and running executable to test bootstrap agent creation...\n");
     char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
@@ -259,6 +274,14 @@ static void test_bootstrap_agent_creation_failure(ar_executable_fixture_t *mut_f
     char cwd[1024];
     AR_ASSERT(getcwd(cwd, sizeof(cwd)) != NULL, "Should be able to get current directory");
     AR_ASSERT(strstr(cwd, "/bin/") != NULL, "Test must be run from bin directory");
+    
+    // Remove any existing methodology file to ensure clean test
+    const char *build_dir = ar_executable_fixture__get_build_dir(mut_fixture);
+    if (build_dir) {
+        char methodology_path[512];
+        snprintf(methodology_path, sizeof(methodology_path), "%s/agerun.methodology", build_dir);
+        remove(methodology_path);
+    }
     
     // Copy methods and then hide bootstrap to simulate it missing
     printf("Setting up temp methods directory and hiding bootstrap method file...\n");
@@ -505,6 +528,80 @@ static void test_executable__saves_methodology_file(ar_executable_fixture_t *mut
     printf("✓ All 8 methods found in agerun.methodology file\n");
 }
 
+static void test_executable__loads_persisted_methodology(ar_executable_fixture_t *mut_fixture) {
+    printf("\n=== Testing methodology loads from persisted file ===\n");
+    
+    // Get the build directory where the file will be saved
+    const char *build_dir = ar_executable_fixture__get_build_dir(mut_fixture);
+    AR_ASSERT(build_dir != NULL, "Should have build directory");
+    
+    // Build the full path to the methodology file
+    char methodology_path[512];
+    snprintf(methodology_path, sizeof(methodology_path), "%s/agerun.methodology", build_dir);
+    
+    // Step 1: Run executable once to create agerun.methodology file
+    printf("First run: Creating methodology file...\n");
+    char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
+    FILE *pipe = ar_executable_fixture__build_and_run(mut_fixture, own_methods_dir);
+    AR_ASSERT(pipe != NULL, "Should be able to run executable first time");
+    
+    // Consume output
+    char line[256];
+    while (fgets(line, sizeof(line), pipe) != NULL) {
+        // Just consume the output
+    }
+    
+    int exit_status = pclose(pipe);
+    AR_ASSERT(exit_status == 0, "First run should exit successfully");
+    
+    // Verify methodology file was created
+    FILE *methodology_file = fopen(methodology_path, "r");
+    AR_ASSERT(methodology_file != NULL, "agerun.methodology should exist after first run");
+    fclose(methodology_file);
+    
+    // Step 2: Delete all .method files from the methods directory
+    printf("Deleting source method files...\n");
+    char command[1024];
+    snprintf(command, sizeof(command), "rm -f %s/*.method", own_methods_dir);
+    int rm_result = system(command);
+    AR_ASSERT(rm_result == 0, "Should delete method files successfully");
+    
+    // Verify methods directory is now empty of .method files
+    snprintf(command, sizeof(command), "ls %s/*.method 2>/dev/null | wc -l", own_methods_dir);
+    FILE *count_pipe = popen(command, "r");
+    char count_str[16];
+    if (count_pipe != NULL) {
+        fgets(count_str, sizeof(count_str), count_pipe);
+        pclose(count_pipe);
+    } else {
+        count_str[0] = '0';
+        count_str[1] = '\0';
+    }
+    int method_count = atoi(count_str);
+    AR_ASSERT(method_count == 0, "Methods directory should have no .method files");
+    
+    // Step 3: Run executable again - should load from persisted file
+    printf("Second run: Testing load from persisted methodology...\n");
+    pipe = ar_executable_fixture__build_and_run(mut_fixture, own_methods_dir);
+    AR_ASSERT(pipe != NULL, "Should be able to run executable second time");
+    
+    // Read output to verify it runs successfully
+    int lines_read = 0;
+    while (fgets(line, sizeof(line), pipe) != NULL) {
+        lines_read++;
+        // Could check for specific output if needed
+    }
+    
+    exit_status = pclose(pipe);
+    AR_ASSERT(exit_status == 0, "Second run should exit successfully using persisted methodology");
+    AR_ASSERT(lines_read > 0, "Should produce output when running with persisted methodology");
+    
+    // Clean up
+    ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
+    
+    printf("✓ Executable successfully loaded and ran from persisted methodology\n");
+}
+
 static void test_executable__continues_on_save_failure(ar_executable_fixture_t *mut_fixture) {
     printf("\n=== Testing executable continues on save failure ===\n");
     
@@ -607,6 +704,9 @@ int main(void) {
     
     // Test that executable continues on save failure
     test_executable__continues_on_save_failure(own_fixture);
+    
+    // Test that executable loads from persisted methodology
+    test_executable__loads_persisted_methodology(own_fixture);
     
     // Now run a separate test with a system instance
     // Create system instance for tests

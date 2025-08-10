@@ -14,6 +14,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* Constants */
+#define MAX_INSTRUCTION_LENGTH 4096
+#define MAX_VERSION_LENGTH 256
+#define MAX_METHOD_NAME_LENGTH 256
+
 /* Method store structure */
 struct ar_method_store_s {
     ar_method_registry_t *ref_registry;  /* Borrowed reference to method registry */
@@ -201,8 +206,19 @@ bool ar_method_store__save(ar_method_store_t *ref_store) {
                 /* Write version */
                 fprintf(fp, "%s\n", version);
                 
-                /* Write instructions */
-                fprintf(fp, "%s\n", instructions ? instructions : "");
+                /* Write instructions - escape newlines */
+                if (instructions) {
+                    for (const char *p = instructions; *p; p++) {
+                        if (*p == '\n') {
+                            fprintf(fp, "\\n");
+                        } else if (*p == '\\') {
+                            fprintf(fp, "\\\\");
+                        } else {
+                            fputc(*p, fp);
+                        }
+                    }
+                }
+                fprintf(fp, "\n");
             }
         }
         
@@ -220,11 +236,15 @@ bool ar_method_store__save(ar_method_store_t *ref_store) {
 
 bool ar_method_store__load(ar_method_store_t *mut_store) {
     if (!mut_store || !mut_store->own_file_path) {
+        ar_io__error("method_store_load: Invalid store or path");
         return false;
     }
     
+    ar_io__info("method_store_load: Checking file: %s", mut_store->own_file_path);
+    
     /* Check if file exists */
     if (!ar_method_store__exists(mut_store)) {
+        ar_io__error("method_store_load: File does not exist: %s", mut_store->own_file_path);
         return false;
     }
     
@@ -249,41 +269,101 @@ bool ar_method_store__load(ar_method_store_t *mut_store) {
     
     /* Load methods - matching ar_methodology format */
     for (int i = 0; i < method_count; i++) {
-        char method_name[256];
+        char method_name[MAX_METHOD_NAME_LENGTH];
         int version_count = 0;
         
         /* Read method name and version count */
         if (fscanf(fp, "%255s %d\n", method_name, &version_count) != 2) {
+            ar_io__error("method_store_load: Failed to read method name/version count at method %d", i);
             fclose(fp);
             return false;
         }
+        ar_io__info("method_store_load: Reading method %s with %d versions", method_name, version_count);
         
         /* Load each version */
         for (int j = 0; j < version_count; j++) {
-            char version[256];
-            char instructions[4096];
+            char version[MAX_VERSION_LENGTH];
+            char instructions[MAX_INSTRUCTION_LENGTH];
             
-            /* Read version */
-            if (fgets(version, sizeof(version), fp) == NULL) {
+            /* Read version - skip blank lines */
+            version[0] = '\0';
+            char *line_result = NULL;
+            do {
+                line_result = fgets(version, sizeof(version), fp);
+                if (line_result == NULL) {
+                    break; /* EOF or error */
+                }
+                /* Remove newline */
+                size_t len = strlen(version);
+                if (len > 0 && version[len-1] == '\n') {
+                    version[len-1] = '\0';
+                    len--;
+                }
+                /* If non-blank line found, use it */
+                if (len > 0) {
+                    break;
+                }
+                /* Otherwise continue to next line */
+            } while (line_result != NULL);
+            
+            /* If we hit EOF without finding version, that's an error */
+            if (version[0] == '\0' || line_result == NULL) {
+                ar_io__error("method_store_load: No version found for method %s", method_name);
                 fclose(fp);
                 return false;
             }
-            /* Remove newline */
-            size_t len = strlen(version);
-            if (len > 0 && version[len-1] == '\n') {
-                version[len-1] = '\0';
-            }
             
-            /* Read instructions */
-            if (fgets(instructions, sizeof(instructions), fp) == NULL) {
+            /* Read instructions - skip blank lines */
+            instructions[0] = '\0';
+            line_result = NULL;
+            do {
+                line_result = fgets(instructions, sizeof(instructions), fp);
+                if (line_result == NULL) {
+                    break; /* EOF or error */
+                }
+                /* Remove newline */
+                size_t inst_len = strlen(instructions);
+                if (inst_len > 0 && instructions[inst_len-1] == '\n') {
+                    instructions[inst_len-1] = '\0';
+                    inst_len--;
+                }
+                /* If non-blank line found, use it */
+                if (inst_len > 0) {
+                    break;
+                }
+                /* Otherwise continue to next line */
+            } while (line_result != NULL);
+            
+            /* If we hit EOF without finding instructions, that's an error */
+            if (instructions[0] == '\0' || line_result == NULL) {
+                ar_io__error("method_store_load: No instructions found for method %s version %s", method_name, version);
                 fclose(fp);
                 return false;
             }
-            /* Remove newline */
-            len = strlen(instructions);
-            if (len > 0 && instructions[len-1] == '\n') {
-                instructions[len-1] = '\0';
+            
+            /* Unescape newlines and backslashes */
+            char unescaped[MAX_INSTRUCTION_LENGTH];
+            size_t out_idx = 0;
+            size_t escaped_len = strlen(instructions);
+            for (size_t in_idx = 0; in_idx < escaped_len && out_idx < sizeof(unescaped)-1; in_idx++) {
+                if (instructions[in_idx] == '\\' && in_idx + 1 < escaped_len) {
+                    if (instructions[in_idx+1] == 'n') {
+                        unescaped[out_idx++] = '\n';
+                        in_idx++; // Skip the 'n'
+                    } else if (instructions[in_idx+1] == '\\') {
+                        unescaped[out_idx++] = '\\';
+                        in_idx++; // Skip the second backslash
+                    } else {
+                        unescaped[out_idx++] = instructions[in_idx];
+                    }
+                } else {
+                    unescaped[out_idx++] = instructions[in_idx];
+                }
             }
+            unescaped[out_idx] = '\0';
+            /* Safe copy back to instructions buffer */
+            strncpy(instructions, unescaped, sizeof(instructions) - 1);
+            instructions[sizeof(instructions) - 1] = '\0';
             
             /* Create and register method */
             ar_method_t *own_method;
@@ -301,10 +381,12 @@ bool ar_method_store__load(ar_method_store_t *mut_store) {
             
             /* Register with the registry */
             ar_method_registry__register_method(mut_store->ref_registry, own_method);
+            ar_io__info("method_store_load: Registered method %s version %s", method_name, version);
         }
     }
     
     fclose(fp);
+    ar_io__info("method_store_load: Successfully loaded %d methods", method_count);
     return true;
 }
 

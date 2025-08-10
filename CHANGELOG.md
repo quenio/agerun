@@ -4,6 +4,25 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-08-10
 
+### ✅ Methodology Loading from Persisted File - TDD Cycle 9
+- Implemented methodology loading from persisted file on startup:
+  - Executable checks for `agerun.methodology` file before directory scan
+  - Falls back to directory loading only if persisted file doesn't exist or fails
+  - Added proper file existence check using stat() in ar_executable.c
+- Fixed multi-line instruction persistence format:
+  - Escape newlines as `\n` and backslashes as `\\` when saving
+  - Unescape on load to restore original multi-line instructions
+  - Parser skips blank lines automatically for robustness
+- Code quality improvements:
+  - Replaced unsafe strcpy with strncpy and bounds checking
+  - Fixed inconsistent method counting with separate boolean flag
+  - Replaced magic numbers (4096, 256) with defined constants
+  - Fixed static analyzer warnings about stream operations
+- Preserved all diagnostic messages in method_store for debugging
+- All 69 tests passing with zero memory leaks
+
+## 2025-08-10
+
 ### ✅ Methodology Persistence - TDD Cycle 8
 - Implemented methodology save functionality after message processing:
   - Executable saves all loaded methods to `agerun.methodology` file
