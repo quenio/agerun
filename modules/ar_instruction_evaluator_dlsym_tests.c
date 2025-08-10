@@ -100,8 +100,8 @@ void ar_assignment_instruction_evaluator__destroy(ar_assignment_instruction_eval
 
 // Send evaluator interceptors
 ar_send_instruction_evaluator_t* ar_send_instruction_evaluator__create(
-    ar_log_t* log, ar_expression_evaluator_t* expr) {
-    (void)log; (void)expr; // Suppress unused warnings
+    ar_log_t* log, ar_expression_evaluator_t* expr, ar_agency_t* agency) {
+    (void)log; (void)expr; (void)agency; // Suppress unused warnings
     current_evaluator++;
     if (current_evaluator == fail_at_evaluator) {
         printf("  Mock: Failing send evaluator creation (#%d)\n", current_evaluator);

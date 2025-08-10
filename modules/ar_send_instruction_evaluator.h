@@ -16,6 +16,9 @@
 #include "ar_log.h"
 #include "ar_frame.h"
 
+/* Forward declarations */
+typedef struct ar_agency_s ar_agency_t;
+
 /**
  * Opaque type for send instruction evaluator
  */
@@ -25,12 +28,14 @@ typedef struct ar_send_instruction_evaluator_s ar_send_instruction_evaluator_t;
  * Creates a new send instruction evaluator
  * @param ref_log The log instance to use for error reporting (borrowed reference)
  * @param ref_expr_evaluator The expression evaluator to use (borrowed reference)
+ * @param ref_agency The agency instance to use for sending messages (borrowed reference)
  * @return A new send instruction evaluator, or NULL on error
  * @note Ownership: Returns an owned value that caller must destroy
  */
 ar_send_instruction_evaluator_t* ar_send_instruction_evaluator__create(
     ar_log_t *ref_log,
-    ar_expression_evaluator_t *ref_expr_evaluator
+    ar_expression_evaluator_t *ref_expr_evaluator,
+    ar_agency_t *ref_agency
 );
 
 /**

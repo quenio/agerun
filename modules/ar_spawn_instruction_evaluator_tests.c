@@ -4,6 +4,7 @@
 #include <string.h>
 #include <inttypes.h>
 #include <unistd.h>
+#include "ar_assert.h"
 #include "ar_evaluator_fixture.h"
 #include "ar_spawn_instruction_evaluator.h"
 #include "ar_expression_evaluator.h"
@@ -469,6 +470,138 @@ static void test_spawn_instruction_evaluator__legacy_evaluate_function(void) {
     ar_methodology__cleanup();
 }
 
+static void test_spawn_instruction_evaluator__noop_with_integer_zero(void) {
+    printf("Testing spawn with method_name = 0 (no-op case)...\n");
+    
+    // Given a test fixture
+    ar_evaluator_fixture_t *fixture = ar_evaluator_fixture__create("test_spawn_noop_integer");
+    printf("Fixture created: %s\n", fixture ? "yes" : "no");
+    AR_ASSERT(fixture != NULL, "Test fixture should be created");
+    
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_agency_t *mut_agency = ar_evaluator_fixture__get_agency(fixture);
+    ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
+    ar_data_t *memory = ar_evaluator_fixture__get_memory(fixture);
+    
+    // Create spawn evaluator
+    ar_spawn_instruction_evaluator_t *evaluator = ar_spawn_instruction_evaluator__create(
+        log, expr_eval, mut_agency
+    );
+    assert(evaluator != NULL);
+    
+    // Create spawn AST with result assignment: spawn(0, "1.0.0", context)
+    const char *args[] = {"0", "\"1.0.0\"", "context"};
+    ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
+        AR_INSTRUCTION_AST_TYPE__SPAWN, "spawn", args, 3, "memory.agent_id"
+    );
+    assert(ast != NULL);
+    
+    // Create and attach the expression ASTs for arguments
+    ar_list_t *arg_asts = ar_list__create();
+    assert(arg_asts != NULL);
+    
+    // Method name: literal integer 0
+    ar_expression_ast_t *method_ast = ar_expression_ast__create_literal_int(0);
+    ar_list__add_last(arg_asts, method_ast);
+    
+    // Version: literal string "1.0.0"
+    ar_expression_ast_t *version_ast = ar_expression_ast__create_literal_string("1.0.0");
+    ar_list__add_last(arg_asts, version_ast);
+    
+    // Context: context variable
+    ar_expression_ast_t *context_ast = ar_expression_ast__create_memory_access("context", NULL, 0);
+    ar_list__add_last(arg_asts, context_ast);
+    
+    bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
+    
+    // When evaluating the spawn with method_name = 0
+    bool result = ar_spawn_instruction_evaluator__evaluate(evaluator, frame, ast);
+    
+    // Then it should succeed (no-op returns true)
+    printf("Result: %s\n", result ? "true" : "false");
+    AR_ASSERT(result == true, "spawn(0, version, context) should return true as a no-op");
+    
+    // And the agent_id should be 0
+    const ar_data_t *agent_id = ar_data__get_map_data(memory, "agent_id");
+    AR_ASSERT(agent_id != NULL, "agent_id should be set in memory");
+    AR_ASSERT(ar_data__get_type(agent_id) == AR_DATA_TYPE__INTEGER, "agent_id should be an integer");
+    AR_ASSERT(ar_data__get_integer(agent_id) == 0, "agent_id should be 0 for no-op spawn");
+    
+    // Cleanup
+    ar_instruction_ast__destroy(ast);
+    ar_spawn_instruction_evaluator__destroy(evaluator);
+    ar_evaluator_fixture__destroy(fixture);
+    
+    printf("PASS\n");
+}
+
+static void test_spawn_instruction_evaluator__noop_with_empty_string(void) {
+    printf("Testing spawn with method_name = \"\" (no-op case)...\n");
+    
+    // Given a test fixture
+    ar_evaluator_fixture_t *fixture = ar_evaluator_fixture__create("test_spawn_noop_string");
+    assert(fixture != NULL);
+    
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_agency_t *mut_agency = ar_evaluator_fixture__get_agency(fixture);
+    ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
+    ar_data_t *memory = ar_evaluator_fixture__get_memory(fixture);
+    
+    // Create spawn evaluator
+    ar_spawn_instruction_evaluator_t *evaluator = ar_spawn_instruction_evaluator__create(
+        log, expr_eval, mut_agency
+    );
+    assert(evaluator != NULL);
+    
+    // Create spawn AST with result assignment: spawn("", "1.0.0", context)
+    const char *args[] = {"\"\"", "\"1.0.0\"", "context"};
+    ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
+        AR_INSTRUCTION_AST_TYPE__SPAWN, "spawn", args, 3, "memory.agent_id"
+    );
+    assert(ast != NULL);
+    
+    // Create and attach the expression ASTs for arguments
+    ar_list_t *arg_asts = ar_list__create();
+    assert(arg_asts != NULL);
+    
+    // Method name: literal empty string ""
+    ar_expression_ast_t *method_ast = ar_expression_ast__create_literal_string("");
+    ar_list__add_last(arg_asts, method_ast);
+    
+    // Version: literal string "1.0.0"
+    ar_expression_ast_t *version_ast = ar_expression_ast__create_literal_string("1.0.0");
+    ar_list__add_last(arg_asts, version_ast);
+    
+    // Context: context variable
+    ar_expression_ast_t *context_ast = ar_expression_ast__create_memory_access("context", NULL, 0);
+    ar_list__add_last(arg_asts, context_ast);
+    
+    bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
+    
+    // When evaluating the spawn with method_name = ""
+    bool result = ar_spawn_instruction_evaluator__evaluate(evaluator, frame, ast);
+    
+    // Then it should succeed (no-op returns true)
+    assert(result == true);
+    
+    // And the agent_id should be 0
+    const ar_data_t *agent_id = ar_data__get_map_data(memory, "agent_id");
+    AR_ASSERT(agent_id != NULL, "agent_id should be set in memory");
+    AR_ASSERT(ar_data__get_type(agent_id) == AR_DATA_TYPE__INTEGER, "agent_id should be an integer");
+    AR_ASSERT(ar_data__get_integer(agent_id) == 0, "agent_id should be 0 for no-op spawn");
+    
+    // Cleanup
+    ar_instruction_ast__destroy(ast);
+    ar_spawn_instruction_evaluator__destroy(evaluator);
+    ar_evaluator_fixture__destroy(fixture);
+    
+    printf("PASS\n");
+}
+
 int main(void) {
     printf("Starting create instruction evaluator tests...\n");
     
@@ -509,6 +642,9 @@ int main(void) {
     
     test_spawn_instruction_evaluator__legacy_evaluate_function();
     printf("test_spawn_instruction_evaluator__legacy_evaluate_function passed!\n");
+    
+    test_spawn_instruction_evaluator__noop_with_integer_zero();
+    test_spawn_instruction_evaluator__noop_with_empty_string();
     
     printf("All create instruction evaluator tests passed!\n");
     

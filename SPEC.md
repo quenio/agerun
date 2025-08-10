@@ -132,7 +132,7 @@ The following BNF grammar defines the syntax of individual instructions allowed 
 <parse-function> ::= 'parse' '(' <expression> ',' <expression> ')'
 <build-function> ::= 'build' '(' <expression> ',' <expression> ')'
 <method-function> ::= 'method' '(' <expression> ',' <expression> ',' <expression> ')'
-<spawn-function> ::= 'spawn' '(' <expression> ',' <expression> [',' <expression>] ')'
+<spawn-function> ::= 'spawn' '(' <expression> ',' <expression> ',' <expression> ')'
 <exit-function> ::= 'exit' '(' <expression> ')'
 <deprecate-function> ::= 'deprecate' '(' <expression> ',' <expression> ')'
 <if-function> ::= 'if' '(' <comparison-expression> ',' <expression> ',' <expression> ')'
@@ -244,7 +244,7 @@ The expression evaluator follows these rules:
 ### 6. Agent Management
 
 - `compile(method_name: string, instructions: string, version: string) → boolean`: Defines a new method with the specified name, instruction code, and version string. The version string must follow semantic versioning (e.g., "1.0.0"). Compatibility between versions is determined based on semantic versioning rules: agents using version 1.x.x will automatically use the latest 1.x.x version. Returns true if the method was successfully defined, or false if the instructions cannot be parsed or compiled.
-- `spawn(method_name: string, version: string, context: map = null) → agent_id`: Spawns a new agent instance based on the specified method name and version string. The version parameter is required. If a partial version is specified (e.g., "1"), the latest matching version (e.g., latest "1.x.x") will be used. An optional context may be provided. Returns a unique agent ID.
+- `spawn(method_name: string | integer, version: string, context: map) → agent_id`: Spawns a new agent instance based on the specified method name and version string. The version parameter is required. If a partial version is specified (e.g., "1"), the latest matching version (e.g., latest "1.x.x") will be used. A context map must be provided as the third argument. Returns a unique agent ID. Special no-op cases: if method_name is 0 (integer) or "" (empty string), the instruction performs no operation but returns true and sets the result to 0 if assigned to a variable.
 - `exit(agent_id: integer) → boolean`: Attempts to exit the specified agent. The agent is immediately destroyed. Returns true if successful, or false if the agent does not exist or is already destroyed.
 - `deprecate(method_name: string, method_version: string) → boolean`: Attempts to deprecate the specified method version by unregistering it from the methodology. This allows deprecating methods even when agents are actively using them. Returns true if successful, or false if the method does not exist.
 

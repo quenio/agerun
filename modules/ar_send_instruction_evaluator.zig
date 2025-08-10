@@ -14,14 +14,16 @@ const c = @cImport({
 const ar_send_instruction_evaluator_t = struct {
     ref_log: ?*c.ar_log_t,                              // Borrowed reference to log instance
     ref_expr_evaluator: ?*c.ar_expression_evaluator_t,  // Expression evaluator (borrowed reference)
+    ref_agency: ?*c.ar_agency_t,                        // Agency instance (borrowed reference)
 };
 
 /// Creates a new send instruction evaluator
 pub export fn ar_send_instruction_evaluator__create(
     ref_log: ?*c.ar_log_t,
-    ref_expr_evaluator: ?*c.ar_expression_evaluator_t
+    ref_expr_evaluator: ?*c.ar_expression_evaluator_t,
+    ref_agency: ?*c.ar_agency_t
 ) ?*ar_send_instruction_evaluator_t {
-    if (ref_expr_evaluator == null) {
+    if (ref_expr_evaluator == null or ref_agency == null) {
         return null;
     }
     
@@ -29,6 +31,7 @@ pub export fn ar_send_instruction_evaluator__create(
     
     own_evaluator.ref_log = ref_log;
     own_evaluator.ref_expr_evaluator = ref_expr_evaluator;
+    own_evaluator.ref_agency = ref_agency;
     
     // Ownership transferred to caller
     return own_evaluator;
@@ -120,8 +123,8 @@ pub export fn ar_send_instruction_evaluator__evaluate(
         c.ar_data__destroy_if_owned(own_message, ref_evaluator);
         send_result = true;
     } else {
-        // Send message (ownership transferred to ar_agency__send_to_agent)
-        send_result = c.ar_agency__send_to_agent(agent_id, own_message);
+        // Send message (ownership transferred to ar_agency__send_to_agent_with_instance)
+        send_result = c.ar_agency__send_to_agent_with_instance(ref_evaluator.?.ref_agency, agent_id, own_message);
     }
     
     // Handle result assignment if present

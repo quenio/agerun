@@ -1,2 +1,21 @@
-memory.status := "Bootstrap ready"
+# Check for boot message
+memory.is_boot := if(message = "__boot__", 1, 0)
+
+# Set spawn parameters - 0 when not booting causes spawn to return 0
+memory.method_name := if(memory.is_boot = 1, "echo", 0)
+memory.method_version := "1.0.0"
+
+# Spawn echo agent (returns 0 if method_name = 0)
+memory.echo_id := spawn(memory.method_name, memory.method_version, context)
+
+# Prepare and send message to echo
+# Use parse to create a map structure
+memory.echo_message := parse("sender={sender} content={content}", "sender=1 content=__boomerang__")
+send(memory.echo_id, memory.echo_message)
+
+# Check if we received the boomerang back
+memory.reply_received := if(message = "__boomerang__", 1, 0)
+
+# Send status
+memory.status := if(memory.reply_received = 1, "Bootstrap received reply", "Bootstrap ready")
 send(0, memory.status)

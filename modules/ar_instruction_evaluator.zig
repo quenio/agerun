@@ -59,7 +59,8 @@ fn _create(ref_log: ?*c.ar_log_t, ref_agency: ?*c.ar_agency_t) !*ar_instruction_
     
     own_evaluator.own_send_evaluator = c.ar_send_instruction_evaluator__create(
         ref_log,
-        own_evaluator.own_expr_evaluator
+        own_evaluator.own_expr_evaluator,
+        ref_agency
     ) orelse return error.SendEvaluatorCreationFailed;
     errdefer c.ar_send_instruction_evaluator__destroy(own_evaluator.own_send_evaluator);
     

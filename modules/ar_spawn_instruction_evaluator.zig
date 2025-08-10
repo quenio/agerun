@@ -53,7 +53,9 @@ pub export fn ar_spawn_instruction_evaluator__evaluate(
     ref_frame: ?*const c.ar_frame_t,
     ref_ast: ?*const c.ar_instruction_ast_t
 ) bool {
+    std.debug.print("DEBUG [SPAWN]: evaluate called\n", .{});
     if (ref_evaluator == null or ref_frame == null or ref_ast == null) {
+        std.debug.print("DEBUG [SPAWN]: null parameter\n", .{});
         return false;
     }
     
@@ -66,17 +68,21 @@ pub export fn ar_spawn_instruction_evaluator__evaluate(
     
     // Validate AST type
     if (c.ar_instruction_ast__get_type(ref_ast) != c.AR_INSTRUCTION_AST_TYPE__SPAWN) {
+        std.debug.print("DEBUG [SPAWN]: wrong AST type: {}\n", .{c.ar_instruction_ast__get_type(ref_ast)});
         return false;
     }
     
     // Get pre-parsed expression ASTs for arguments
     const ref_arg_asts = c.ar_instruction_ast__get_function_arg_asts(ref_ast);
     if (ref_arg_asts == null) {
+        std.debug.print("DEBUG [SPAWN]: no arg ASTs\n", .{});
         return false;
     }
     
     // Verify we have exactly 3 arguments
-    if (c.ar_list__count(ref_arg_asts) != 3) {
+    const arg_count = c.ar_list__count(ref_arg_asts);
+    if (arg_count != 3) {
+        std.debug.print("DEBUG [SPAWN]: wrong arg count: {}\n", .{arg_count});
         return false;
     }
     
@@ -119,6 +125,55 @@ pub export fn ar_spawn_instruction_evaluator__evaluate(
     
     // For context, use the reference directly - agency expects a borrowed reference
     const ref_context_data = c.ar_expression_evaluator__evaluate(ref_expr_evaluator, ref_frame, ref_context_ast);
+    
+    // Debug: Print what we got for method_name
+    std.debug.print("DEBUG [SPAWN]: method_name type={}, ", .{c.ar_data__get_type(own_method_name)});
+    if (c.ar_data__get_type(own_method_name) == c.AR_DATA_TYPE__INTEGER) {
+        std.debug.print("value={}\n", .{c.ar_data__get_integer(own_method_name)});
+    } else if (c.ar_data__get_type(own_method_name) == c.AR_DATA_TYPE__STRING) {
+        const str = c.ar_data__get_string(own_method_name);
+        if (str != null) {
+            std.debug.print("value='{s}'\n", .{std.mem.span(str)});
+        } else {
+            std.debug.print("value=null\n", .{});
+        }
+    } else {
+        std.debug.print("unexpected type\n", .{});
+    }
+    
+    // Check for no-op cases: method_name is 0 (integer) or "" (empty string)
+    if (c.ar_data__get_type(own_method_name) == c.AR_DATA_TYPE__INTEGER and c.ar_data__get_integer(own_method_name) == 0) {
+        // No-op case: method_name is 0
+        std.debug.print("DEBUG [SPAWN]: No-op detected - method_name is 0\n", .{});
+        if (c.ar_instruction_ast__has_result_assignment(ref_ast)) {
+            const own_result = c.ar_data__create_integer(0);
+            if (own_result != null) {
+                const ref_result_path = c.ar_instruction_ast__get_function_result_path(ref_ast);
+                if (!c.ar_data__set_map_data_if_root_matched(mut_memory, "memory", ref_result_path, own_result)) {
+                    c.ar_data__destroy(own_result);
+                }
+            }
+        }
+        return true; // Success for no-op
+    }
+    
+    if (c.ar_data__get_type(own_method_name) == c.AR_DATA_TYPE__STRING) {
+        const method_name_str = c.ar_data__get_string(own_method_name);
+        if (method_name_str != null and method_name_str[0] == 0) { // Empty string
+            // No-op case: method_name is ""
+            std.debug.print("DEBUG [SPAWN]: No-op detected - method_name is empty string\n", .{});
+            if (c.ar_instruction_ast__has_result_assignment(ref_ast)) {
+                const own_result = c.ar_data__create_integer(0);
+                if (own_result != null) {
+                    const ref_result_path = c.ar_instruction_ast__get_function_result_path(ref_ast);
+                    if (!c.ar_data__set_map_data_if_root_matched(mut_memory, "memory", ref_result_path, own_result)) {
+                        c.ar_data__destroy(own_result);
+                    }
+                }
+            }
+            return true; // Success for no-op
+        }
+    }
     
     var agent_id: i64 = 0;
     var success = false;
