@@ -4,6 +4,16 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-08-10
 
+### ✅ Project Documentation Update - TDD Cycle 5
+- Updated SPEC.md to remove all wake/sleep references:
+  - Removed wake/sleep from version transition behavior (lines 24-26, 38-41)
+  - Removed Agent Lifecycle section that only described wake/sleep
+  - Updated exit instruction to reflect immediate destruction
+  - Removed Special Messages section entirely (lines 271-272)
+  - Updated System Startup to not mention wake message
+  - Renamed Agent Lifecycle section to Resource Management
+- Documentation validation passes with all references validated
+
 ### ✅ Knowledge Base Enhancement - Wake/Sleep Cleanup Patterns
 - Created 3 new KB articles documenting patterns from wake/sleep cleanup:
   - test-string-selection-strategy.md: Guidelines for choosing clearly synthetic test data
