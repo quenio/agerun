@@ -587,6 +587,7 @@ def check_relative_links(doc_files):
     
     all_links_valid = True
     broken_links = []
+    self_links = []  # Track self-linking warnings
     checked_files = 0
     
     # Patterns to match different types of links
@@ -602,6 +603,7 @@ def check_relative_links(doc_files):
         checked_files += 1
         doc_path = Path(doc)
         doc_dir = doc_path.parent
+        doc_name = doc_path.name
         
         # Skip link checking for source files - they can contain syntax that looks like links
         if doc.endswith('.zig') or doc.endswith('.c'):
@@ -644,6 +646,9 @@ def check_relative_links(doc_files):
             image_matches = image_pattern.findall(line)
             if image_matches:
                 for alt_text, image_path in image_matches:
+                    # Check for self-linking
+                    if check_if_self_link(image_path, doc_name):
+                        self_links.append(f"  - {doc}:{line_num} warning: self-linking image '[{alt_text or 'unnamed'}]({image_path})'")
                     errors, warnings = validate_link_path(doc, line_num, f"Image: {alt_text or 'unnamed'}", image_path, doc_dir)
                     if errors:
                         all_links_valid = False
@@ -652,6 +657,9 @@ def check_relative_links(doc_files):
             else:
                 # Only check standard links if this isn't an image line
                 for link_text, link_path in link_pattern.findall(line):
+                    # Check for self-linking
+                    if check_if_self_link(link_path, doc_name):
+                        self_links.append(f"  - {doc}:{line_num} warning: self-linking '[{link_text}]({link_path})'")
                     errors, warnings = validate_link_path(doc, line_num, link_text, link_path, doc_dir)
                     if errors:
                         all_links_valid = False
@@ -662,6 +670,9 @@ def check_relative_links(doc_files):
             for link_text, ref_name in ref_link_pattern.findall(line):
                 if ref_name in ref_definitions:
                     ref_path = ref_definitions[ref_name]
+                    # Check for self-linking
+                    if check_if_self_link(ref_path, doc_name):
+                        self_links.append(f"  - {doc}:{line_num} warning: self-linking '[{link_text}][{ref_name}]'")
                     errors, warnings = validate_link_path(doc, line_num, link_text, ref_path, doc_dir)
                     if errors:
                         all_links_valid = False
@@ -670,6 +681,12 @@ def check_relative_links(doc_files):
                 else:
                     all_links_valid = False
                     broken_links.append(f"  - {doc}:{line_num} undefined reference '[{link_text}][{ref_name}]'")
+    
+    # Print self-linking warnings first
+    if self_links:
+        print("Self-linking warnings found:")
+        for link in self_links:
+            print(link)
     
     if all_links_valid:
         print(f"Relative link check: {checked_files} files checked, all links valid ✓")
@@ -680,6 +697,45 @@ def check_relative_links(doc_files):
         return 1
     
     return 0
+
+def check_if_self_link(link_path, doc_name):
+    """Check if a link points to the same document"""
+    # Skip external URLs, email addresses
+    if '://' in link_path or 'mailto:' in link_path:
+        return False
+    
+    # Extract path without anchor
+    path_without_anchor = link_path.split('#')[0]
+    
+    # Empty path with anchor means same-document link (this is OK - just an anchor)
+    if not path_without_anchor and '#' in link_path:
+        return False
+    
+    # Check if the path resolves to the same file
+    # We need to be more careful - only flag if it's actually the same file
+    if path_without_anchor:
+        # Normalize the path
+        link_path_normalized = Path(path_without_anchor).as_posix()
+        
+        # Check various self-link patterns:
+        # 1. Just the filename (e.g., "README.md" in README.md)
+        # 2. ./ prefix (e.g., "./README.md" in README.md)  
+        # 3. Exact match after normalization
+        
+        # Remove ./ prefix if present
+        if link_path_normalized.startswith('./'):
+            link_path_normalized = link_path_normalized[2:]
+        
+        # If the normalized path equals the doc name, it's a self-link
+        # But only if there's no directory component
+        if '/' not in link_path_normalized and link_path_normalized == doc_name:
+            return True
+        
+        # Also check for ./docname pattern
+        if path_without_anchor in [doc_name, f'./{doc_name}']:
+            return True
+    
+    return False
 
 def main():
     """Main function"""
