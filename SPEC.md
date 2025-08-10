@@ -21,9 +21,8 @@ This specification defines a lightweight, message-driven agent system where each
   - Agents must specify a version, but can use a partial version (e.g., "1") to get the latest matching version (e.g., latest "1.x.x").
   - When a new compatible method version is registered, agents using an older version will:
     1. Complete processing their current message
-    2. Receive the `__sleep__` message
-    3. Have their method reference updated to the newest compatible version
-    4. Receive the `__wake__` message to resume operation with the new version
+    2. Have their method reference updated to the newest compatible version
+    3. Continue operation with the new version
 
 ### Version Transition Examples
 
@@ -35,9 +34,7 @@ This specification defines a lightweight, message-driven agent system where each
 - Agent is using method "Calculator" version "1.2.0"
 - When version "1.2.5" is added:
   - Agent finishes processing its current message
-  - System sends `__sleep__` message to the agent
   - Agent's method reference is updated to version "1.2.5"
-  - System sends `__wake__` message to the agent
   - Agent continues processing with the new version
 
 **Case 3: New Incompatible Version**
@@ -55,12 +52,7 @@ This specification defines a lightweight, message-driven agent system where each
 - **Methodology**: All method definitions are persisted in a file named `methodology.agerun`. They are loaded and made available when the agent system restarts.
 - **Agency**: Agents and their memory are not persisted by default. However, if an agent is created with the `persist: boolean` option set to `true` (default is `false`), its memory map and context are saved to a file named `agency.agerun`. The persisted agents are automatically restored at system startup before the first agent is executed.
 
-## Agent Lifecycle
-
-- **Creation/Resumption**: Upon creation or resumption, the agent receives the special message `__wake__`.
-- **Pausing/Destruction**: Before pausing or destruction, the agent receives the special message `__sleep__`. An agent is only destroyed after it has processed the `__sleep__` message and entered a sleeping state.
-
-### Resource Management:
+## Resource Management
 
 - **Paused Agents**: Retain their message queue and memory map.
 - **Destroyed Agents**: All associated resources, including message queue and memory, are deleted.
@@ -253,7 +245,7 @@ The expression evaluator follows these rules:
 
 - `compile(method_name: string, instructions: string, version: string) → boolean`: Defines a new method with the specified name, instruction code, and version string. The version string must follow semantic versioning (e.g., "1.0.0"). Compatibility between versions is determined based on semantic versioning rules: agents using version 1.x.x will automatically use the latest 1.x.x version. Returns true if the method was successfully defined, or false if the instructions cannot be parsed or compiled.
 - `spawn(method_name: string, version: string, context: map = null) → agent_id`: Spawns a new agent instance based on the specified method name and version string. The version parameter is required. If a partial version is specified (e.g., "1"), the latest matching version (e.g., latest "1.x.x") will be used. An optional context may be provided. Returns a unique agent ID.
-- `exit(agent_id: integer) → boolean`: Attempts to exit the specified agent. Before exit, the agent receives the `__sleep__` message. The agent is only destroyed after it is in a sleeping state. Returns true if successful, or false if the agent does not exist or is already destroyed.
+- `exit(agent_id: integer) → boolean`: Attempts to exit the specified agent. The agent is immediately destroyed. Returns true if successful, or false if the agent does not exist or is already destroyed.
 - `deprecate(method_name: string, method_version: string) → boolean`: Attempts to deprecate the specified method version by unregistering it from the methodology. This allows deprecating methods even when agents are actively using them. Returns true if successful, or false if the method does not exist.
 
 ## Message Handling
@@ -266,12 +258,7 @@ Messages can be any of the supported data types:
 - **LIST**: Collections of values for batch processing.
 - **MAP**: Structured data with named fields.
 
-### Special Messages:
-
-- `__wake__`: Special STRING message indicating the agent has been created or resumed.
-- `__sleep__`: Special STRING message indicating the agent is about to be paused or destroyed.
-
-**Processing**: All messages, regardless of their data type and including special ones, are handled by the agent's single method.
+**Processing**: All messages, regardless of their data type, are handled by the agent's single method.
 
 ## Agent Creation
 
@@ -285,4 +272,4 @@ Messages can be any of the supported data types:
 
 ## System Startup
 
-The system is started by providing a method name and version string, which is used to spawn the first agent—similar to the `spawn` instruction. Immediately after spawning, the system sends the special message `__wake__` to this initial agent.
+The system is started by providing a method name and version string, which is used to spawn the first agent—similar to the `spawn` instruction.
