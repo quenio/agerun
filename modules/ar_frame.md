@@ -25,7 +25,7 @@ The frame abstraction enables:
 // Create execution context
 ar_data_t *own_memory = ar_data__create_map();
 ar_data_t *own_context = ar_data__create_map();
-ar_data_t *own_message = ar_data__create_string("__wake__");
+ar_data_t *own_message = ar_data__create_map();
 
 // Create frame bundling the context
 ar_frame_t *own_frame = ar_frame__create(own_memory, own_context, own_message);

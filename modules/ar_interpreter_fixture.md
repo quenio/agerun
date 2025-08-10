@@ -24,7 +24,6 @@ The fixture automatically creates an interpreter instance when the fixture is cr
 The fixture provides simplified agent creation that:
 - Automatically registers methods before creating agents
 - Tracks all created agents for cleanup
-- Processes wake messages automatically
 - Provides easy access to agent memory
 
 ### Instruction Execution
@@ -71,7 +70,7 @@ Creates a test agent with the specified method.
   - Method instructions
   - Version (optional, defaults to "1.0.0")
 - **Returns**: Agent ID or 0 on error
-- **Note**: Automatically registers the method and processes wake message
+- **Note**: Automatically registers the method
 
 #### `ar_interpreter_fixture__get_agent_memory`
 Gets an agent's memory for testing.

@@ -1177,7 +1177,6 @@ The [compile instruction evaluator module](ar_compile_instruction_evaluator.md) 
 The [spawn instruction evaluator module](ar_spawn_instruction_evaluator.md) handles agent spawning:
 - **Agent Creation**: Creates agents with specified method and context
 - **Context Handling**: Supports both memory and context references
-- **Wake Messages**: Agents receive `__wake__` message on creation
 
 #### Exit Instruction Evaluator Module (`ar_exit_instruction_evaluator`)
 
@@ -1190,7 +1189,6 @@ The [exit agent instruction evaluator module](ar_exit_instruction_evaluator.md) 
 
 The [deprecate instruction evaluator module](ar_deprecate_instruction_evaluator.md) handles method deprecation:
 - **Method Destruction**: Unregisters methods and destroys associated agents
-- **Agent Lifecycle**: Sends `__sleep__` messages to agents before destruction
 - **Result Storage**: Stores success/failure result when assignment specified
 - **Instantiable Design**: Follows instantiable pattern with create/destroy lifecycle
 
@@ -1425,10 +1423,8 @@ The agent update module manages method version transitions for agents:
 
 - **Method Updates**: Updates agents from one method version to another
 - **Compatibility Checking**: Validates version compatibility before updates
-- **Lifecycle Management**: Controls __sleep__/__wake__ message sending during updates
 - **Agent Counting**: Counts agents using specific method versions
 - **Semantic Versioning**: Uses semver rules for compatibility validation
-- **Safe Transitions**: Ensures agents receive proper lifecycle events
 - **Currently Forwarding**: Implementation temporarily delegates to agent module
 - **Future Enhancement**: Will contain the actual update logic after refactoring
 - **Depends on Semver**: Uses semantic versioning for compatibility checks

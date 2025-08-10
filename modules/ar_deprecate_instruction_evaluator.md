@@ -47,16 +47,13 @@ The module evaluates deprecate instructions of the form:
 Key features:
 1. **Frame-Based Execution**: Uses ar_frame_t for memory, context, and message bundling
 2. **Method Name/Version Evaluation**: Evaluates both arguments to strings
-3. **Agent Lifecycle Management**: Sends `__sleep__` messages to agents before destruction
-4. **Agent Destruction**: Destroys all agents using the method
-5. **Method Unregistration**: Removes the method from methodology
-6. **Result Assignment**: Stores true (1) if method was destroyed, false (0) otherwise
-7. **Memory Access**: Gets memory from frame during evaluation
+3. **Method Unregistration**: Removes the method from methodology
+4. **Result Assignment**: Stores true (1) if method was destroyed, false (0) otherwise
+5. **Memory Access**: Gets memory from frame during evaluation
 
 ### Deprecation Behavior
 
 The deprecate instruction only unregisters the method from the methodology. It does not:
-- Send `__sleep__` messages to agents
 - Destroy agents using the method
 - Affect running agents in any way
 

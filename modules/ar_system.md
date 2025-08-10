@@ -132,7 +132,7 @@ Each system instance owns and manages its own interpreter:
 
 1. **Save Methods**: Persists method definitions to disk
 2. **Save Agents**: Persists agent state to disk
-3. **Reset Agency**: Cleans up all agents (sends sleep messages)
+3. **Reset Agency**: Cleans up all agents
 4. **Mark Uninitialized**: Updates system state
 
 ## Usage Examples
