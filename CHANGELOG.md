@@ -20,6 +20,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - Fixed static analyzer warnings about stream operations
 - Preserved all diagnostic messages in method_store for debugging
 - All 69 tests passing with zero memory leaks
+- Created KB articles: session-start priming, multi-line persistence, test cleanup, static analyzer compliance
 
 ## 2025-08-10
 

@@ -37,6 +37,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 ### Knowledge Base Usage (MANDATORY - SHOW SEARCHES IN CONVERSATION)
 
 **Make KB searches VISIBLE - don't just think about searching, actually DO it and SHOW it**:
+- **Session start**: Prime with explicit reminders ([details](kb/session-start-priming-pattern.md))
 - **Before Edit/Write**: "Let me search KB first..." → `grep -r "module_name" kb/*.md` → show results
 - **After test fails**: "Searching KB for this error..." → `grep -r "error" kb/*.md` → read findings
 - **User corrects you**: IMMEDIATELY search → `grep -r "what_user_said" kb/*.md` → apply pattern
@@ -151,6 +152,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Cleanup**: `ar_methodology__cleanup()` & `ar_agency__reset()`
 **Messages**: Process all messages to prevent memory leaks
 **Test isolation**: Comment out tests to isolate error sources ([details](kb/test-isolation-through-commenting.md))
+**Test cleanup**: Remove persisted files before tests run ([details](kb/test-file-cleanup-pattern.md))
 **Test updates**: Apply improvements retroactively to all tests ([details](kb/test-standardization-retroactive.md))
 **Fixture dependencies**: Map which tests use which fixtures before changes ([details](kb/fixture-dependency-mapping.md))
 **Fixture evolution**: Add helpers as needed ([details](kb/test-fixture-evolution-pattern.md))
@@ -308,6 +310,7 @@ grep -r "function_name\|concept" modules/
 **Scripts**: Add to `/scripts/` with make targets ([details](kb/progressive-tool-enhancement.md))
 **Shell scripts**: Use proper variable assignment for error handling ([details](kb/shell-script-command-substitution.md))
 **Debug**: `make sanitize-tests 2>&1`, redirect stderr, check syscall returns ([details](kb/development-debug-tools.md), [static](kb/static-analysis-error-handling.md))
+**Static compliance**: Restructure stream ops for analyzer satisfaction ([details](kb/static-analyzer-stream-compliance.md))
 **Debug output**: Keep for future troubleshooting ([details](kb/debug-output-preservation-strategy.md))
 **Ownership debugging**: Add logging at transfer points to trace corruption ([details](kb/debug-logging-ownership-tracing.md))
 **Expression ownership**: References=borrowed, new objects=destroy ([details](kb/expression-ownership-rules.md))
@@ -317,6 +320,7 @@ grep -r "function_name\|concept" modules/
 **Whitelist simplification**: Start complex, simplify based on usage ([details](kb/whitelist-simplification-pattern.md))
 **Uniform filtering**: Apply whitelist consistently in all checks ([details](kb/uniform-filtering-application.md))
 **YAML string matching**: Watch for quote escaping issues ([details](kb/yaml-string-matching-pitfalls.md))
+**Multi-line persistence**: Escape newlines & backslashes in file formats ([details](kb/multi-line-data-persistence-format.md))
 **Pattern discovery**: Check existing methods for solutions ([details](kb/cross-method-pattern-discovery.md))
 **Whitelist reduction**: Fix root causes, not symptoms ([details](kb/systematic-error-whitelist-reduction.md))
 **Detection validation**: Test that whitelists don't mask real errors ([details](kb/error-detection-validation-testing.md))

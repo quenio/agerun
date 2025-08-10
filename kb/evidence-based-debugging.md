@@ -24,7 +24,9 @@ Welcome questions that force re-examination of assumptions.
 **Bad**: "I'm certain this is the problem"  
 **Good**: "My hypothesis is X because of evidence Y, but let me verify..."
 
-**Example**: Initially hypothesized sleep messages caused memory leaks based on pattern (3 temporary agents = 3 sets of leaks). Debug output showed sleep messages created/destroyed correctly. Leaked addresses didn't match sleep message addresses. Evidence proved hypothesis wrong - actual cause was orphaned contexts.
+**Example 1**: Initially hypothesized sleep messages caused memory leaks based on pattern (3 temporary agents = 3 sets of leaks). Debug output showed sleep messages created/destroyed correctly. Leaked addresses didn't match sleep message addresses. Evidence proved hypothesis wrong - actual cause was orphaned contexts.
+
+**Example 2**: User hypothesized "ar_methodology__load_methods_with_instance() is actually loading the methods from agerun.methodology but returning false" when multi-line methods failed to reload. Testing confirmed hypothesis exactly - methods loaded successfully but format mismatch caused false return. Led directly to discovering newline escaping issue.
 
 ### 4. Use Tools, Not Intuition
 Leverage debugging tools to gather facts rather than relying on mental models.

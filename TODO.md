@@ -946,6 +946,7 @@ Remove wake/sleep messages as system-level concepts since they're not essential 
 
 ##### TDD Cycle 9: Load methodology when exists
 **Session tracking**: [x] Started [x] Completed (2025-08-10)
+**KB articles created**: session-start-priming-pattern, multi-line-data-persistence-format, test-file-cleanup-pattern, static-analyzer-stream-compliance
 
 ###### Iteration 9.1: Load persisted methodology
 - **RED**: Test expects methods from agerun.methodology file to be loaded on startup

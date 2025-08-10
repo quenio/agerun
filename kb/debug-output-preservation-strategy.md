@@ -66,3 +66,5 @@ git diff HEAD~1 | grep "debug.print\|DEBUG"
 ## Related Patterns
 - [Debug Logging Ownership Tracing](debug-logging-ownership-tracing.md)
 - [Comprehensive Output Review](comprehensive-output-review.md)
+- [Session-Start Priming Pattern](session-start-priming-pattern.md)
+- [Test Diagnostic Output Preservation](test-diagnostic-output-preservation.md)

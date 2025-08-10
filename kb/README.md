@@ -56,6 +56,10 @@ Each learning file contains:
 - [Documentation Completion Verification](documentation-completion-verification.md)
 - [Debug Output Preservation Strategy](debug-output-preservation-strategy.md)
 - [Context Parameter Convention](context-parameter-convention.md)
+- [Session-Start Priming Pattern](session-start-priming-pattern.md)
+- [Multi-Line Data Persistence Format](multi-line-data-persistence-format.md)
+- [Test File Cleanup Pattern](test-file-cleanup-pattern.md)
+- [Static Analyzer Stream Compliance](static-analyzer-stream-compliance.md)
 
 ### Memory Management
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)

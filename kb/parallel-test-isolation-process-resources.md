@@ -87,6 +87,8 @@ Despite having [Evidence-Based Debugging](evidence-based-debugging.md) guidance 
 
 ## Related Patterns
 - [Integration Test Binary Execution](integration-test-binary-execution.md)
+- [Test File Cleanup Pattern](test-file-cleanup-pattern.md)
+- [Test Isolation Through Commenting](test-isolation-through-commenting.md)
 - [Make-Only Test Execution](make-only-test-execution.md)
 - [Test Working Directory Verification](test-working-directory-verification.md)
 - [Evidence-Based Debugging](evidence-based-debugging.md) - Should have been consulted early
