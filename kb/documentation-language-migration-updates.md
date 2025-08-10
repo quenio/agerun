@@ -54,3 +54,4 @@ make check-docs  # Ensure all documentation remains valid
 - [Documentation Standards Integration](documentation-standards-integration.md) - Overall documentation requirements
 - [API Migration Completion Verification](api-migration-completion-verification.md) - Ensuring complete updates
 - [Module Removal Checklist](module-removal-checklist.md) - Systematic module removal process
+- [Documentation Update Cascade Pattern](documentation-update-cascade-pattern.md) - Systematic documentation updates

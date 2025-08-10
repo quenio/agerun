@@ -77,6 +77,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - **Preferred types**: `ar_data_t*`, `ar_agent_t*`, `ar_expression_ast_t*`, `ar_instruction_ast_t*`
 - **Helper reference**: `python3 scripts/get_real_types.py --guide` for available APIs
 - **Feature removal**: Question if "core" features are truly essential ([details](kb/architectural-simplification-through-feature-removal.md))
+**Doc updates**: Follow cascade order: methods→modules→project ([details](kb/documentation-update-cascade-pattern.md))
 
 ### 1. Memory Management (ZERO TOLERANCE FOR LEAKS)
 
@@ -146,11 +147,13 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Fixture dependencies**: Map which tests use which fixtures before changes ([details](kb/fixture-dependency-mapping.md))
 **Integration tests**: Run actual binary with popen(), verify output ([details](kb/integration-test-binary-execution.md))
 **Error marking**: Mark intentional errors clearly in tests ([details](kb/test-error-marking-strategy.md))
+**Test strings**: Use clearly synthetic test data, not system-like strings ([details](kb/test-string-selection-strategy.md))
 **Signal reporting**: Report signal numbers before assertions ([details](kb/test-signal-reporting-practice.md))
 **Whitelist specificity**: Use unique fields for test errors to prevent masking ([details](kb/whitelist-specificity-pattern.md))
 **Fixture ownership**: Tests bypassing system must manage message ownership ([details](kb/test-fixture-message-ownership.md))
 **Fixture modules**: Extract helpers into proper modules with opaque types ([details](kb/test-fixture-module-creation-pattern.md))
 **Fixture simplification**: Remove complex logic for obsolete features ([details](kb/test-fixture-simplification-pattern.md))
+**Regression test removal**: Delete tests verifying absence of removed features ([details](kb/regression-test-removal-criteria.md))
 **Advanced patterns**: ([details](kb/tdd-advanced-large-refactoring.md), [API changes](kb/tdd-api-simplification.md), [decoupling](kb/progressive-system-decoupling-tdd.md))
 
 ### 3. Parnas Design Principles (STRICT ENFORCEMENT) ✅

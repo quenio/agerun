@@ -55,3 +55,4 @@ When encountering complex system-level features:
 - [Non-Functional Code Detection Pattern](non-functional-code-detection-pattern.md)
 - [Systematic Parameter Removal Refactoring](systematic-parameter-removal-refactoring.md)
 - [Compilation-Based TDD Approach](compilation-based-tdd-approach.md)
+- [Regression Test Removal Criteria](regression-test-removal-criteria.md)

@@ -6,6 +6,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+### Knowledge Base Enhancement - Wake/Sleep Cleanup Patterns (Completed 2025-08-10)
+- [x] Created 3 new KB articles from wake/sleep cleanup session: test-string-selection-strategy.md for choosing clearly synthetic test data; regression-test-removal-criteria.md for identifying obsolete regression tests; documentation-update-cascade-pattern.md for systematic documentation updates; added cross-references to 4 existing KB articles; updated CLAUDE.md with references in TDD and Documentation sections
+
 ### Wake/Sleep Message Removal - TDD Cycle 4 (Completed 2025-08-10)
 - [x] Successfully removed all wake/sleep detection logic from 7 method files: bootstrap, echo, calculator, grade-evaluator, message-router, string-builder, and method-creator; updated ar_executable.c to remove hardcoded wake message handling and outdated comments; simplified all methods to directly access message fields without special case handling; all 68 tests pass with zero memory leaks
 

@@ -4,6 +4,18 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-08-10
 
+### ✅ Knowledge Base Enhancement - Wake/Sleep Cleanup Patterns
+- Created 3 new KB articles documenting patterns from wake/sleep cleanup:
+  - test-string-selection-strategy.md: Guidelines for choosing clearly synthetic test data
+  - regression-test-removal-criteria.md: When to remove tests for absent features
+  - documentation-update-cascade-pattern.md: Systematic documentation update ordering
+- Added cross-references to 4 existing KB articles:
+  - intentional-test-errors-filtering.md
+  - architectural-simplification-through-feature-removal.md
+  - documentation-language-migration-updates.md
+- Updated CLAUDE.md with references in TDD and Documentation sections
+- Updated kb/README.md index with new articles in appropriate categories
+
 ### ✅ Wake/Sleep Detection Removal from All Methods - TDD Cycle 4
 - Successfully removed all wake/sleep detection logic from 7 method files
   - bootstrap-1.0.0.method: Removed lines 1-4 (wake/sleep detection and initialized flag)

@@ -100,6 +100,7 @@ Each learning file contains:
 - [Test First Verification Practice](test-first-verification-practice.md)
 - [Method Test AST Verification](method-test-ast-verification.md)
 - [Test Error Marking Strategy](test-error-marking-strategy.md)
+- [Test String Selection Strategy](test-string-selection-strategy.md)
 - [Intentional Test Errors Filtering](intentional-test-errors-filtering.md)
 - [Whitelist Specificity Pattern](whitelist-specificity-pattern.md)
 - [Error Detection Validation Testing](error-detection-validation-testing.md)
@@ -116,6 +117,7 @@ Each learning file contains:
 - [Comprehensive Impact Analysis](comprehensive-impact-analysis.md)
 - [Test Fixture Simplification Pattern](test-fixture-simplification-pattern.md)
 - [Compilation-Based TDD Approach](compilation-based-tdd-approach.md)
+- [Regression Test Removal Criteria](regression-test-removal-criteria.md)
 
 ### Architecture & Design
 - [Opaque Types Pattern](opaque-types-pattern.md)
@@ -192,6 +194,7 @@ Each learning file contains:
 
 ### Development Practices
 - [Documentation Validation Enhancement Patterns](documentation-validation-enhancement-patterns.md)
+- [Documentation Update Cascade Pattern](documentation-update-cascade-pattern.md)
 - [Example Marker Granular Control](example-marker-granular-control.md)
 - [Multi-Language Documentation Validation](multi-language-documentation-validation.md)
 - [Documentation Standards Integration](documentation-standards-integration.md)

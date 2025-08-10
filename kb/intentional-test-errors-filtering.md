@@ -105,3 +105,4 @@ Benefits of the YAML approach:
 - [YAML String Matching Pitfalls](yaml-string-matching-pitfalls.md)
 - [Whitelist Specificity Pattern](whitelist-specificity-pattern.md)
 - [Error Detection Validation Testing](error-detection-validation-testing.md)
+- [Test String Selection Strategy](test-string-selection-strategy.md)
