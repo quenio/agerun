@@ -136,6 +136,8 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Complete ALL cycles** → Update docs/TODO/CHANGELOG → Single commit
 
 **Test Requirements**: BDD structure, one test per behavior, AR_ASSERT macros, zero leaks ([details](kb/bdd-test-structure.md), [assertions](kb/ar-assert-descriptive-failures.md))
+**Test simplification**: Use literals not complex expressions ([details](kb/test-input-simplification-pattern.md))
+**Context convention**: Pass 'context' not 'memory' ([details](kb/context-parameter-convention.md))
 **Requirement precision**: Verify exact requirements before implementing ([details](kb/requirement-precision-in-tdd.md))
 **Test completeness**: Enumerate & verify each outcome individually ([details](kb/test-completeness-enumeration.md))
 **Method tests**: Verify AST after loading to catch parse errors ([details](kb/method-test-ast-verification.md))
@@ -269,6 +271,7 @@ grep -r "function_name\|concept" modules/
 **Patterns**: Parse once→evaluate many, dynamic collections, string IDs ([details](kb/opaque-types-pattern.md))
 **Quality**: <50 lines/function, ≤5 params, validate docs ([details](kb/module-quality-checklist.md))
 **Instantiation**: Bottom-up by dependencies ([details](kb/module-instantiation-prerequisites.md))
+**Resources**: Use instance-specific not global ([details](kb/instance-vs-global-resource-pattern.md))
 
 ### 7. Method Development
 
@@ -295,6 +298,7 @@ grep -r "function_name\|concept" modules/
 **Scripts**: Add to `/scripts/` with make targets ([details](kb/progressive-tool-enhancement.md))
 **Shell scripts**: Use proper variable assignment for error handling ([details](kb/shell-script-command-substitution.md))
 **Debug**: `make sanitize-tests 2>&1`, redirect stderr, check syscall returns ([details](kb/development-debug-tools.md), [static](kb/static-analysis-error-handling.md))
+**Debug output**: Keep for future troubleshooting ([details](kb/debug-output-preservation-strategy.md))
 **Ownership debugging**: Add logging at transfer points to trace corruption ([details](kb/debug-logging-ownership-tracing.md))
 **Expression ownership**: References=borrowed, new objects=destroy ([details](kb/expression-ownership-rules.md))
 **Test error filtering**: Use context-aware filtering for intentional errors ([details](kb/intentional-test-errors-filtering.md))
@@ -360,7 +364,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 1. `make clean build 2>&1` → verify exit 0 → `make check-logs` ([details](kb/build-verification-before-commit.md))
 2. Update docs for API changes ([details](kb/documentation-language-migration-updates.md))
 3. Check outdated refs: `grep -l "old_name" modules/*.md`
-4. Update TODO.md & CHANGELOG.md in same commit ([details](kb/atomic-commit-documentation-pattern.md))
+4. Update TODO.md & CHANGELOG.md in same commit ([details](kb/atomic-commit-documentation-pattern.md), [verify](kb/documentation-completion-verification.md))
 5. `git diff` full review → clean temp files → commit
 
 **Remember**: Complete ALL TDD Cycles → Docs → TODO → CHANGELOG → Commit ([details](kb/tdd-feature-completion-before-commit.md))
@@ -446,6 +450,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 - **Send with memory references not supported** - send() needs ownership of message
 - **Message accessor** - `message.field` returns references like memory/context ([details](kb/expression-evaluator-accessor-extension.md))
 - **Language constraints** - No type checking, if() returns values ([details](kb/agerun-language-constraint-workarounds.md))
+- **No-op instructions** - spawn(0,..) & spawn("",..) return true ([details](kb/no-op-instruction-semantics.md))
 
 ## Method Test Template
 

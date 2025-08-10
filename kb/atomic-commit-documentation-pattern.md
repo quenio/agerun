@@ -94,3 +94,4 @@ git commit --amend  # GOOD: Keeps changes atomic
 - [Pre-Commit Checklist Detailed](pre-commit-checklist-detailed.md)
 - [TDD Feature Completion Before Commit](tdd-feature-completion-before-commit.md)
 - [Documentation Standards Integration](documentation-standards-integration.md)
+- [Documentation Completion Verification](documentation-completion-verification.md)

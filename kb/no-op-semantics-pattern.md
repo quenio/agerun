@@ -62,3 +62,4 @@ void handle_conditional_message(int64_t condition, ar_data_t *own_message) {
 - [System Message Flow Architecture](system-message-flow-architecture.md)
 - [Test Expectation Reality Alignment](test-expectation-reality-alignment.md)
 - [Message Processing Loop Pattern](message-processing-loop-pattern.md)
+- [No-op Instruction Semantics](no-op-instruction-semantics.md)

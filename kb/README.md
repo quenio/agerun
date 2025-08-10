@@ -53,6 +53,9 @@ Each learning file contains:
 - [Lifecycle Event Separation TDD](lifecycle-event-separation-tdd.md)
 - [Struggling Detection Pattern](struggling-detection-pattern.md)
 - [Phased Cleanup Pattern](phased-cleanup-pattern.md)
+- [Documentation Completion Verification](documentation-completion-verification.md)
+- [Debug Output Preservation Strategy](debug-output-preservation-strategy.md)
+- [Context Parameter Convention](context-parameter-convention.md)
 
 ### Memory Management
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)
@@ -77,6 +80,7 @@ Each learning file contains:
 - [Code Movement Verification](code-movement-verification.md)
 - [TDD Advanced Large Refactoring](tdd-advanced-large-refactoring.md)
 - [TDD Feature Completion Before Commit](tdd-feature-completion-before-commit.md)
+- [Test Input Simplification Pattern](test-input-simplification-pattern.md)
 - [Code Smell Quick Detection](code-smell-quick-detection.md)
 - [Module Quality Checklist](module-quality-checklist.md)
 - [Method Test Template](method-test-template.md)
@@ -128,6 +132,8 @@ Each learning file contains:
 - [Module Delegation with Error Propagation](module-delegation-error-propagation.md)
 - [Parser Function Alias Support](parser-function-alias-support.md)
 - [Refactoring Key Patterns](refactoring-key-patterns.md)
+- [Instance vs Global Resource Pattern](instance-vs-global-resource-pattern.md)
+- [No-op Instruction Semantics](no-op-instruction-semantics.md)
 - [Architectural Patterns Hierarchy](architectural-patterns-hierarchy.md)
 - [Architectural Simplification Through Feature Removal](architectural-simplification-through-feature-removal.md)
 - [Bug to Architecture Pattern](bug-to-architecture-pattern.md)
