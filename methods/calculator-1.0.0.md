@@ -17,27 +17,15 @@ The calculator performs the requested operation and sends the result back to the
 ## Implementation
 
 ```
-memory.is_wake := if(message = "__wake__", 1, 0)
-memory.is_sleep := if(message = "__sleep__", 1, 0)
-memory.is_special := memory.is_wake + memory.is_sleep
-memory.operation := if(memory.is_special > 0, "none", message.operation)
-memory.a := if(memory.is_special > 0, 0, message.a)
-memory.b := if(memory.is_special > 0, 0, message.b)
-memory.sender := if(memory.is_special > 0, 0, message.sender)
 memory.result := 0
-memory.result := if(memory.operation = "add", memory.a + memory.b, memory.result)
-memory.result := if(memory.operation = "multiply", memory.a * memory.b, memory.result)
-memory.result := if(memory.operation = "subtract", memory.a - memory.b, memory.result)
-memory.result := if(memory.operation = "divide", memory.a / memory.b, memory.result)
-send(memory.sender, memory.result)
+memory.result := if(message.operation = "add", message.a + message.b, memory.result)
+memory.result := if(message.operation = "multiply", message.a * message.b, memory.result)
+memory.result := if(message.operation = "subtract", message.a - message.b, memory.result)
+memory.result := if(message.operation = "divide", message.a / message.b, memory.result)
+send(message.sender, memory.result)
 ```
 
-The implementation handles special lifecycle messages (`__wake__` and `__sleep__`) which are strings, not maps. For these messages:
-- The operation is set to "none" (no calculation performed)
-- Operands a and b are set to 0
-- The sender is set to 0 (system)
-- Result 0 is sent back
-- This prevents errors when trying to access fields that don't exist on string messages
+The implementation checks the operation field and performs the corresponding arithmetic operation on the a and b operands. The result is sent back to the sender. If the operation is not recognized, the result defaults to 0.
 
 ## Usage
 

@@ -52,37 +52,15 @@ Output: true (no-op since target is 0)
 ## Implementation
 
 ```
-memory.is_wake := if(message = "__wake__", 1, 0)
-memory.is_sleep := if(message = "__sleep__", 1, 0)
-memory.is_special := memory.is_wake + memory.is_sleep
-memory.route := if(memory.is_special > 0, "none", message.route)
-memory.echo_agent := if(memory.is_special > 0, 0, message.echo_agent)
-memory.calc_agent := if(memory.is_special > 0, 0, message.calc_agent)
-memory.payload := if(memory.is_special > 0, message, message.payload)
-memory.sender := if(memory.is_special > 0, 0, message.sender)
-memory.is_echo := if(memory.route = "echo", 1, 0)
-memory.is_calc := if(memory.route = "calc", 1, 0)
-memory.target := if(memory.is_echo = 1, memory.echo_agent, 0)
-memory.target := if(memory.is_calc = 1, memory.calc_agent, memory.target)
-memory.sent := send(memory.target, memory.payload)
-send(memory.sender, memory.sent)
+memory.is_echo := if(message.route = "echo", 1, 0)
+memory.is_calc := if(message.route = "calc", 1, 0)
+memory.target := if(memory.is_echo = 1, message.echo_agent, 0)
+memory.target := if(memory.is_calc = 1, message.calc_agent, memory.target)
+memory.sent := send(memory.target, message.payload)
+send(message.sender, memory.sent)
 ```
 
-The implementation handles special lifecycle messages (`__wake__` and `__sleep__`) which are strings, not maps. For these messages:
-- The route is set to "none" (no routing performed)
-- Agent IDs are set to 0
-- The payload is the message itself
-- The sender is set to 0 (system)
-- Result of send (true for no-op) is sent back
-- This prevents errors when trying to access fields that don't exist on string messages
-
-## Special Messages
-
-The message router method handles lifecycle messages specially:
-- `__wake__`: Sent back to agent 0 (system) with result true (no-op send)
-- `__sleep__`: Sent back to agent 0 (system) with result true (no-op send)
-
-These special messages are strings, not maps, so the method detects them and provides default values to avoid field access errors.
+The implementation checks the route field to determine which agent to send the message to. It supports "echo" and "calc" routes, sending the payload to the corresponding agent. The result of the send operation (true/false) is returned to the original sender.
 
 ## Implementation Notes
 

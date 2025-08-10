@@ -11,18 +11,10 @@ When the echo agent receives a message, it extracts the content field and sends 
 ## Implementation
 
 ```
-memory.is_wake := if(message = "__wake__", 1, 0)
-memory.is_sleep := if(message = "__sleep__", 1, 0)
-memory.is_special := memory.is_wake + memory.is_sleep
-memory.sender := if(memory.is_special > 0, 0, message.sender)
-memory.content := if(memory.is_special > 0, message, message.content)
-send(memory.sender, memory.content)
+send(message.sender, message.content)
 ```
 
-The implementation handles special lifecycle messages (`__wake__` and `__sleep__`) which are strings, not maps. For these messages:
-- The sender is set to 0 (system)
-- The content is the message itself
-- This prevents errors when trying to access fields that don't exist on string messages
+The implementation is extremely simple - it directly accesses the sender and content fields from the message and sends the content back to the original sender.
 
 ## Usage
 
@@ -48,14 +40,6 @@ ar_agent__send(echo_agent, message);
 The echo method expects messages with the following structure:
 - `sender`: The ID of the sender (integer)
 - `content`: The actual content to echo back (any type)
-
-## Special Messages
-
-The echo method handles lifecycle messages specially:
-- `__wake__`: Sent back to agent 0 (system) with the message itself as content
-- `__sleep__`: Sent back to agent 0 (system) with the message itself as content
-
-These special messages are strings, not maps, so the method detects them and provides default values for the `sender` and `content` fields to avoid field access errors.
 
 ## Use Cases
 
