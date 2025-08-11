@@ -25,9 +25,6 @@
  * - MAX_AGENTS, MAX_METHOD_NAME_LENGTH in ar_agent.h
  */
 
-/* Static variables for commonly used messages */
-/* Removed - wake messages no longer sent by system */
-
 /* Memory Map structure is now defined in ar_map.h */
 
 /* Message Queue functionality is now provided by the list module */

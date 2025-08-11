@@ -172,7 +172,6 @@ bool ar_evaluator_fixture__check_memory(
  * Processes the next message in the system queue
  * @param mut_fixture The fixture managing the test
  * @return true if a message was processed, false if queue is empty
- * @note This is useful for processing wake messages after creating agents
  */
 bool ar_evaluator_fixture__process_next_message(
     ar_evaluator_fixture_t *mut_fixture

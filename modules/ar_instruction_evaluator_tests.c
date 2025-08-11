@@ -383,9 +383,6 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         int64_t agent_id = ar_agency__create_agent_with_instance(agency, "destroy_test_method", "1.0.0", NULL);
         assert(agent_id > 0);
         
-        // Process wake message to avoid leak
-        ar_system__process_next_message_with_instance(sys);
-        
         // Create destroy agent instruction AST
         char agent_id_str[32];
         snprintf(agent_id_str, sizeof(agent_id_str), "%" PRId64, agent_id);

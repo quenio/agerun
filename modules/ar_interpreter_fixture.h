@@ -62,7 +62,6 @@ ar_log_t* ar_interpreter_fixture__get_log(const ar_interpreter_fixture_t *ref_fi
  * @param ref_version Version of the method (defaults to "1.0.0" if NULL)
  * @return Agent ID if successful, 0 on error
  * @note The fixture handles method registration and agent cleanup
- * @note Processes the wake message automatically
  */
 int64_t ar_interpreter_fixture__create_agent(
     ar_interpreter_fixture_t *mut_fixture,

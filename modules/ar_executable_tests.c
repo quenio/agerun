@@ -231,7 +231,7 @@ static void test_bootstrap_agent_creation(ar_executable_fixture_t *mut_fixture) 
             found_agent_created = true;
         }
         
-        // Look for bootstrap wake message processing
+        // Look for bootstrap message processing
         if (strstr(line, "Bootstrap initialized")) {
             found_bootstrap_initialized = true;
         }
@@ -254,9 +254,9 @@ static void test_bootstrap_agent_creation(ar_executable_fixture_t *mut_fixture) 
     AR_ASSERT(found_creating_message, "Should see 'Creating bootstrap agent' message");
     AR_ASSERT(found_agent_created, "Should see 'Bootstrap agent created with ID' message");
     
-    // The wake message processing is automatic with system init
+    // Message processing is automatic with system init
     if (found_bootstrap_initialized) {
-        printf("Bootstrap wake message was processed successfully\n");
+        printf("Bootstrap agent was initialized successfully\n");
     } else {
         printf("Note: Bootstrap initialized message not found (may need message processing loop)\n");
     }
@@ -451,11 +451,10 @@ static void test_message_processing_loop(ar_executable_fixture_t *mut_fixture) {
     // Verify message processing occurred
     AR_ASSERT(found_processing_messages, "Should see 'Processing messages' indicating loop started");
     // Note: "Bootstrap initialized" won't appear because send(0, ...) is a no-op per CLAUDE.md
-    // After Cycle 1: No wake from agent creation, system's wake processed internally
     // So the message processing loop completes with 0 messages
     AR_ASSERT(found_messages_processed_count, "Should see count of messages processed");
-    // We expect 0 messages (wake removed from agent creation, system's wake processed internally)
-    AR_ASSERT(messages_processed == 0, "Should process 0 messages after Cycle 1 changes");
+    // We expect 0 messages (messages processed internally)
+    AR_ASSERT(messages_processed == 0, "Should process 0 messages");
     
     printf("Message processing loop test passed! Processed %d messages\n", messages_processed);
     
@@ -731,7 +730,7 @@ int main(void) {
     // When we initialize the system with this method
     int64_t initial_agent = ar_system__init_with_instance(mut_system, init_method, init_version);
     
-    // Process the wake message if an agent was created
+    // Process any initial messages if an agent was created
     if (initial_agent > 0) {
         ar_system__process_next_message_with_instance(mut_system);
     }

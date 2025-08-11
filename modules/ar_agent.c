@@ -57,8 +57,6 @@ ar_agent_t* ar_agent__create_with_method(const ar_method_t *ref_method, const ar
         return NULL;
     }
     
-    // No longer send wake message on creation - agents initialize themselves
-    
     return own_agent;
 }
 

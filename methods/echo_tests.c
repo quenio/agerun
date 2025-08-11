@@ -36,8 +36,7 @@ static void test_echo_simple_message(void) {
     assert(echo_agent > 0);
     // Note: Agent stores reference to context, don't destroy it here
     
-    // Process wake message
-    ar_method_fixture__process_next_message(own_fixture);
+    // No initial message processing needed
     
     // Verify agent memory was initialized
     const ar_data_t *agent_memory = ar_agency__get_agent_memory_with_instance(mut_agency, echo_agent);
@@ -119,8 +118,7 @@ static void test_echo_map_message(void) {
     assert(echo_agent > 0);
     // Note: Agent stores reference to context, don't destroy it here
     
-    // Process wake message
-    ar_method_fixture__process_next_message(own_fixture);
+    // No initial message processing needed
     
     // Verify agent memory was initialized
     const ar_data_t *agent_memory = ar_agency__get_agent_memory_with_instance(mut_agency, echo_agent);

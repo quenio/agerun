@@ -37,8 +37,7 @@ static void test_string_builder_parse_build(void) {
     assert(builder_agent > 0);
     // Note: Agent stores reference to context, don't destroy it here
     
-    // Process wake message
-    ar_method_fixture__process_next_message(own_fixture);
+    // No initial message processing needed
     
     // When we send a message to parse and build
     ar_data_t *own_message = ar_data__create_map();
@@ -174,8 +173,7 @@ __attribute__((unused)) static void test_string_builder_parse_failure(void) {
     assert(builder_agent > 0);
     // Note: Agent stores reference to context, don't destroy it here
     
-    // Process wake message
-    ar_method_fixture__process_next_message(own_fixture);
+    // No initial message processing needed
     
     // When we send a message where the template doesn't match the input
     ar_data_t *own_message = ar_data__create_map();

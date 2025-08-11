@@ -102,7 +102,7 @@ static void test_count_using_method(void) {
     ar_agency__create_agent_with_instance(mut_agency, "echo", "1.0.0", NULL);
     ar_agency__create_agent_with_instance(mut_agency, "echo", "1.0.0", NULL);
     ar_agency__create_agent_with_instance(mut_agency, "calc", "1.0.0", NULL);
-    ar_system_fixture__process_all_messages(own_fixture); // No messages to process (wake removed)
+    ar_system_fixture__process_all_messages(own_fixture); // Process any messages
     
     // Then counts should be correct
     assert(ar_agency__count_agents_using_method_with_instance(mut_agency, ref_echo) == 2);
@@ -152,7 +152,7 @@ static void test_update_without_lifecycle(void) {
     int64_t agent1 = ar_agency__create_agent_with_instance(mut_agency, "echo", "1.0.0", NULL);
     int64_t agent2 = ar_agency__create_agent_with_instance(mut_agency, "echo", "1.0.0", NULL);
     ar_agency__create_agent_with_instance(mut_agency, "calc", "1.0.0", NULL); // Different method - won't be updated
-    ar_system_fixture__process_all_messages(own_fixture); // No messages to process (wake removed)
+    ar_system_fixture__process_all_messages(own_fixture); // Process any messages
     
     // Verify initial state
     assert(ar_agency__get_agent_method_with_instance(mut_agency, agent1) == ref_v1_0);
@@ -211,7 +211,7 @@ static void test_update_with_lifecycle(void) {
     // Create agents using instance APIs
     int64_t agent1 = ar_agency__create_agent_with_instance(mut_agency, "echo", "1.0.0", NULL);
     int64_t agent2 = ar_agency__create_agent_with_instance(mut_agency, "echo", "1.0.0", NULL);
-    ar_system_fixture__process_all_messages(own_fixture); // No messages to process (wake removed from creation)
+    ar_system_fixture__process_all_messages(own_fixture); // Process any messages
     
     // Verify initial state using instance APIs
     assert(ar_agency__agent_has_messages_with_instance(mut_agency, agent1) == false);
@@ -222,7 +222,7 @@ static void test_update_with_lifecycle(void) {
     int count = ar_agency__update_agent_methods_with_instance(mut_agency, ref_v1_0, ref_v1_1);
     assert(count == 2);
     
-    // Then no messages should be queued (sleep/wake messages removed)
+    // Then no messages should be queued
     assert(ar_agency__agent_has_messages_with_instance(mut_agency, agent1) == false);
     assert(ar_agency__agent_has_messages_with_instance(mut_agency, agent2) == false);
     

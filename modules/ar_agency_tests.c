@@ -258,7 +258,7 @@ static void test_agency_instance_api(ar_system_fixture_t *own_fixture) {
     bool destroyed = ar_agency__destroy_agent_with_instance(mut_agency, agent_id);
     assert(destroyed);
     
-    // Process sleep message
+    // Process any cleanup messages
     ar_system_fixture__process_next_message(own_fixture);
     
     // Verify count decreased

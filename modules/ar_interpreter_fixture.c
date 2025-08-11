@@ -267,7 +267,7 @@ int64_t ar_interpreter_fixture__execute_with_message(
     char method_name[256];
     snprintf(method_name, sizeof(method_name), "__test_instruction_%d__", test_counter++);
     
-    // Build method body with wake message handling
+    // Build method body
     char method_body[4096];
     char modified_instruction[2048];
     
@@ -276,7 +276,7 @@ int64_t ar_interpreter_fixture__execute_with_message(
                                  "route", "echo_agent", "calc_agent", "payload", 
                                  "template", "input", "output_template", "type", "value"};
     
-    // Start with empty body (no wake/sleep detection needed)
+    // Start with empty body
     method_body[0] = '\0';
     
     // Copy the instruction for modification
@@ -289,7 +289,7 @@ int64_t ar_interpreter_fixture__execute_with_message(
         snprintf(search_pattern, sizeof(search_pattern), "message.%s", field_names[i]);
         
         if (strstr(ref_instruction, search_pattern) != NULL) {
-            // Add memory assignment for this field (no wake/sleep check needed)
+            // Add memory assignment for this field
             char field_assignment[512];
             snprintf(field_assignment, sizeof(field_assignment), 
                     "memory.%s := message.%s\n",
@@ -559,7 +559,7 @@ void ar_interpreter_fixture__destroy_temp_agent(
     // Destroy the agent first
     ar_agency__destroy_agent_with_instance(ref_agency, temp_agent_id);
     
-    // Process any remaining messages (including sleep messages)
+    // Process any remaining messages
     // Need to process all messages since destroy might generate multiple
     while (ar_system__process_next_message_with_instance(mut_fixture->own_system)) {
         // Keep processing

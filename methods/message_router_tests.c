@@ -52,10 +52,7 @@ static void test_message_router_routing(void) {
     assert(calc_agent > 0);
     // Note: Agent stores reference to context, don't destroy it here
     
-    // Process wake messages
-    ar_method_fixture__process_next_message(own_fixture); // router wake
-    ar_method_fixture__process_next_message(own_fixture); // echo wake
-    ar_method_fixture__process_next_message(own_fixture); // calc wake
+    // No initial message processing needed
     
     // Test routing to echo agent
     ar_data_t *own_message = ar_data__create_map();

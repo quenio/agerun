@@ -42,8 +42,7 @@ static void test_method_creator_create_simple(void) {
     assert(creator_agent > 0);
     // Note: Agent stores reference to context, don't destroy it here
     
-    // Process wake message
-    ar_method_fixture__process_next_message(own_fixture);
+    // No initial message processing needed
     
     // When we send a message to create a new method
     ar_data_t *own_message = ar_data__create_map();
@@ -163,8 +162,7 @@ static void test_method_creator_invalid_syntax(void) {
     assert(creator_agent > 0);
     // Note: Agent stores reference to context, don't destroy it here
     
-    // Process wake message
-    ar_method_fixture__process_next_message(own_fixture);
+    // No initial message processing needed
     
     // When we send a message to create a method with invalid syntax
     ar_data_t *own_message = ar_data__create_map();

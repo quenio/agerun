@@ -33,8 +33,7 @@ static void test_agent_manager_spawn_exit(void) {
     int64_t manager_agent = ar_agency__create_agent_with_instance(mut_agency, "agent-manager", "1.0.0", NULL);
     assert(manager_agent > 0);
     
-    // Process wake message
-    ar_method_fixture__process_next_message(own_fixture);
+    // No initial message processing needed
     
     // When we send a message to spawn an echo agent
     ar_data_t *own_message = ar_data__create_map();
@@ -156,8 +155,7 @@ static void test_agent_manager_invalid_action(void) {
     int64_t manager_agent = ar_agency__create_agent_with_instance(mut_agency, "agent-manager", "1.0.0", NULL);
     assert(manager_agent > 0);
     
-    // Process wake message
-    ar_method_fixture__process_next_message(own_fixture);
+    // No initial message processing needed
     
     // When we send a message with an invalid action
     ar_data_t *own_message = ar_data__create_map();

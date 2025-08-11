@@ -47,8 +47,7 @@ static void test_calculator_add(void) {
     assert(calc_agent != 0);
     printf("DEBUG: Created calc agent %lld\n", (long long)calc_agent);
     
-    // Process wake message
-    ar_method_fixture__process_next_message(own_fixture);
+    // No initial message processing needed
     
     // Create and send add operation message
     ar_data_t *own_message = ar_data__create_map();
@@ -86,7 +85,7 @@ static void test_calculator_add(void) {
     
     ar_agency__destroy_agent_with_instance(mut_agency, calc_agent);
     
-    // Process any remaining messages (including sleep messages)
+    // Process any remaining messages
     while (ar_method_fixture__process_next_message(own_fixture)) {
         // Keep processing
     }
@@ -148,8 +147,7 @@ static void test_calculator_multiply(void) {
     assert(calc_agent != 0);
     printf("DEBUG: Created calc agent %lld\n", (long long)calc_agent);
     
-    // Process wake message
-    ar_method_fixture__process_next_message(own_fixture);
+    // No initial message processing needed
     
     // Create and send multiply operation message
     ar_data_t *own_message = ar_data__create_map();
@@ -186,7 +184,7 @@ static void test_calculator_multiply(void) {
     
     ar_agency__destroy_agent_with_instance(mut_agency, calc_agent);
     
-    // Process any remaining messages (including sleep messages)
+    // Process any remaining messages
     while (ar_method_fixture__process_next_message(own_fixture)) {
         // Keep processing
     }
@@ -248,8 +246,7 @@ static void test_calculator_subtract(void) {
     assert(calc_agent != 0);
     printf("DEBUG: Created calc agent %lld\n", (long long)calc_agent);
     
-    // Process wake message
-    ar_method_fixture__process_next_message(own_fixture);
+    // No initial message processing needed
     
     // Create and send subtract operation message
     ar_data_t *own_message = ar_data__create_map();
@@ -287,7 +284,7 @@ static void test_calculator_subtract(void) {
     
     ar_agency__destroy_agent_with_instance(mut_agency, calc_agent);
     
-    // Process any remaining messages (including sleep messages)
+    // Process any remaining messages
     while (ar_method_fixture__process_next_message(own_fixture)) {
         // Keep processing
     }
@@ -349,8 +346,7 @@ static void test_calculator_divide(void) {
     assert(calc_agent != 0);
     printf("DEBUG: Created calc agent %lld\n", (long long)calc_agent);
     
-    // Process wake message
-    ar_method_fixture__process_next_message(own_fixture);
+    // No initial message processing needed
     
     // Create and send divide operation message
     ar_data_t *own_message = ar_data__create_map();
@@ -390,7 +386,7 @@ static void test_calculator_divide(void) {
     
     ar_agency__destroy_agent_with_instance(mut_agency, calc_agent);
     
-    // Process any remaining messages (including sleep messages)
+    // Process any remaining messages
     while (ar_method_fixture__process_next_message(own_fixture)) {
         // Keep processing
     }
@@ -452,8 +448,7 @@ static void test_calculator_unknown_operation(void) {
     assert(calc_agent != 0);
     printf("DEBUG: Created calc agent %lld\n", (long long)calc_agent);
     
-    // Process wake message
-    ar_method_fixture__process_next_message(own_fixture);
+    // No initial message processing needed
     
     // Create and send unknown operation message
     ar_data_t *own_message = ar_data__create_map();
@@ -491,7 +486,7 @@ static void test_calculator_unknown_operation(void) {
     
     ar_agency__destroy_agent_with_instance(mut_agency, calc_agent);
     
-    // Process any remaining messages (including sleep messages)
+    // Process any remaining messages
     while (ar_method_fixture__process_next_message(own_fixture)) {
         // Keep processing
     }

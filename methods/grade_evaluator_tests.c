@@ -48,20 +48,7 @@ static void test_grade_evaluator_grades(void) {
     int64_t evaluator_agent = ar_agency__create_agent_with_instance(mut_agency, "grade-evaluator", "1.0.0", own_initial_memory);
     assert(evaluator_agent > 0);
     
-    // Process wake message
-    printf("DEBUG: About to process wake message for agent %lld\n", (long long)evaluator_agent);
-    printf("DEBUG: Agent exists: %s\n", ar_agency__agent_exists(evaluator_agent) ? "yes" : "no");
-    
-    // Check if agent has messages before processing
-    bool has_messages = ar_agency__agent_has_messages(evaluator_agent);
-    printf("DEBUG: Agent has messages: %s\n", has_messages ? "yes" : "no");
-    
-    bool wake_processed = ar_method_fixture__process_next_message(own_fixture);
-    if (wake_processed) {
-        printf("Wake message processed successfully\n");
-    } else {
-        printf("WARNING: Failed to process wake message\n");
-    }
+    // No initial message processing needed
     
     // Verify agent memory was initialized
     const ar_data_t *agent_memory = ar_agency__get_agent_memory_with_instance(mut_agency, evaluator_agent);
@@ -165,7 +152,7 @@ static void test_grade_evaluator_grades(void) {
     // Clean up agent explicitly
     ar_agency__destroy_agent_with_instance(mut_agency, evaluator_agent);
     
-    // Process any remaining messages (including sleep messages)
+    // Process any remaining messages
     while (ar_method_fixture__process_next_message(own_fixture)) {
         // Keep processing
     }
@@ -224,19 +211,7 @@ static void test_grade_evaluator_status(void) {
     int64_t evaluator_agent = ar_agency__create_agent_with_instance(mut_agency, "grade-evaluator", "1.0.0", own_initial_memory);
     assert(evaluator_agent > 0);
     
-    // Process wake message
-    printf("DEBUG: About to process wake message for agent %lld\n", (long long)evaluator_agent);
-    printf("DEBUG: Agent exists: %s\n", ar_agency__agent_exists(evaluator_agent) ? "yes" : "no");
-    
-    bool has_messages = ar_agency__agent_has_messages(evaluator_agent);
-    printf("DEBUG: Agent has messages: %s\n", has_messages ? "yes" : "no");
-    
-    bool wake_processed = ar_method_fixture__process_next_message(own_fixture);
-    if (wake_processed) {
-        printf("Wake message processed successfully\n");
-    } else {
-        printf("WARNING: Failed to process wake message\n");
-    }
+    // No initial message processing needed
     
     // Test case 1: Status active (value > 0)
     ar_data_t *own_message = ar_data__create_map();
@@ -304,7 +279,7 @@ static void test_grade_evaluator_status(void) {
     // Clean up agent explicitly
     ar_agency__destroy_agent_with_instance(mut_agency, evaluator_agent);
     
-    // Process any remaining messages (including sleep messages)
+    // Process any remaining messages
     while (ar_method_fixture__process_next_message(own_fixture)) {
         // Keep processing
     }
