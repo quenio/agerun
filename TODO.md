@@ -702,6 +702,24 @@ Based on successful instantiation learnings:
 ### LOW - Create Method Files (After Architecture is Stable)
 - [x] Created additional method files for testing various agent behaviors (Completed)
 
+## HIGH PRIORITY - Agency Persistence in Executable
+
+### Objective
+Modify ar_executable.c to save and load the agerun.agency file for agent state persistence across sessions.
+
+### Requirements
+- [ ] On startup: Check for agerun.agency file and load agents if it exists
+- [ ] On shutdown: Save all active agents to agerun.agency file
+- [ ] Integrate with existing methodology persistence (agerun.methodology)
+- [ ] Ensure proper error handling if agency file is corrupted or invalid
+- [ ] Maintain backward compatibility - system should work without agency file
+
+### Implementation Tasks
+- [ ] Add agency loading after methodology loading in ar_executable.c
+- [ ] Add agency saving before system shutdown
+- [ ] Create tests for agency persistence scenarios
+- [ ] Update documentation to describe persistence behavior
+
 ## In Progress - Executable Transformation to Bootstrap System
 
 ### TDD Cycles for Single-Session Bootstrap Implementation
