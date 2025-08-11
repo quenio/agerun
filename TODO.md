@@ -752,8 +752,8 @@ Remove wake/sleep messages as system-level concepts since they're not essential 
 **Success**: ar_agent_tests, ar_agent_update_tests pass with zero memory leaks
 **Documentation**: Update ar_agent.md
 
-##### TDD Cycle 2: Remove wake messages from ar_system
-**Session tracking**: [ ] Started [ ] Completed
+##### TDD Cycle 2: Remove wake messages from ar_system  
+**Session tracking**: [x] Started [x] Completed (Already implemented - g_wake_message removed)
 
 ###### Iteration 2.1: Remove duplicate wake message bug from system init
 - **RED**: Modify ar_executable_tests.c:447 to expect 0 messages instead of 1 → FAIL
@@ -873,7 +873,7 @@ Remove wake/sleep messages as system-level concepts since they're not essential 
 **Success**: make check-docs passes
 
 ##### TDD Cycle 6: Update knowledge base
-**Session tracking**: [ ] Started [ ] Completed
+**Session tracking**: [x] Started [x] Completed (See "Knowledge Base Cleanup - TDD Cycle 6" in Completed Tasks)
 
 ###### Iteration 6.1: Update duplicate-wake-message-bug.md
 - **RED**: KB describes obsolete bug
@@ -920,7 +920,7 @@ Remove wake/sleep messages as system-level concepts since they're not essential 
 #### Phase 4: Complete Bootstrap System (Cycles 7-9)
 
 ##### TDD Cycle 7: Bootstrap spawns echo immediately
-**Session tracking**: [ ] Started [ ] Completed
+**Session tracking**: [x] Started [x] Completed (Bootstrap already spawns echo conditionally)
 
 ###### Iteration 7.1: Bootstrap spawns echo without wake trigger
 - **RED**: Test expects echo agent (ID 2) but not created
