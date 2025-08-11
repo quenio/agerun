@@ -203,6 +203,10 @@ Each learning file contains:
 - [File I/O Backup Mechanism](file-io-backup-mechanism.md)
 
 ### Development Practices
+- [Feature Remnant Cleanup Pattern](feature-remnant-cleanup-pattern.md)
+- [Verification Through Removal Technique](verification-through-removal-technique.md)
+- [Cross-File Pattern Propagation](cross-file-pattern-propagation.md)
+- [Commented Code Accumulation Antipattern](commented-code-accumulation-antipattern.md)
 - [Documentation Validation Enhancement Patterns](documentation-validation-enhancement-patterns.md)
 - [Documentation Update Cascade Pattern](documentation-update-cascade-pattern.md)
 - [Documentation-Only Change Pattern](documentation-only-change-pattern.md)

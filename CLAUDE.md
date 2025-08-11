@@ -398,6 +398,10 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 **Key patterns**: ([details](kb/refactoring-key-patterns.md))
 **Non-functional code**: Detect and remove code that never executes ([details](kb/non-functional-code-detection-pattern.md))
 **Parameter removal**: Systematically remove unused parameters across layers ([details](kb/systematic-parameter-removal-refactoring.md))
+**Feature remnants**: Clean ALL traces when removing features ([details](kb/feature-remnant-cleanup-pattern.md))
+**Verify by removal**: Test if code is needed by removing it ([details](kb/verification-through-removal-technique.md))
+**Pattern spread**: Technical debt propagates through copy-paste ([details](kb/cross-file-pattern-propagation.md))
+**Dead comments**: Delete commented code, don't accumulate ([details](kb/commented-code-accumulation-antipattern.md))
 
 ### 14. Plan Verification and Review ([details](kb/plan-verification-and-review.md))
 

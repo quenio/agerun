@@ -2,6 +2,24 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-08-11
+
+### ✅ Wake/Sleep Remnant Cleanup & Knowledge Base Enhancement
+- Completed comprehensive cleanup of wake/sleep feature remnants:
+  - Removed 195 lines across 19 files of obsolete comments, debug output, and test infrastructure
+  - Deleted 77-line commented-out test function waiting for "Cycle 5" that never came
+  - Removed unnecessary message processing code in ar_instruction_evaluator_tests.c
+  - All 68 tests continue to pass with zero memory leaks
+- Created 4 new KB articles documenting cleanup patterns:
+  - feature-remnant-cleanup-pattern.md: Comprehensive feature removal beyond just code
+  - verification-through-removal-technique.md: Empirical testing of code necessity
+  - cross-file-pattern-propagation.md: How technical debt spreads through copy-paste
+  - commented-code-accumulation-antipattern.md: Why commented code becomes permanent
+- Enhanced documentation:
+  - Updated kb/README.md index with new Development Practices articles
+  - Cross-referenced new articles with existing patterns
+  - Updated CLAUDE.md refactoring section with new cleanup patterns
+
 ## 2025-08-10
 
 ### ✅ Methodology Loading from Persisted File - TDD Cycle 9

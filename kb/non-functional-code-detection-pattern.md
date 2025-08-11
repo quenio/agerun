@@ -59,3 +59,5 @@ Before implementing complex migration strategies for removing features, verify t
 - [Systematic Parameter Removal Refactoring](systematic-parameter-removal-refactoring.md) - Removing unused parameters after feature removal
 - [Test Fixture Simplification Pattern](test-fixture-simplification-pattern.md) - Simplifying tests after removing non-functional code
 - [Architectural Simplification Through Feature Removal](architectural-simplification-through-feature-removal.md) - Broader simplification strategies
+- [Verification Through Removal Technique](verification-through-removal-technique.md) - Empirical method to verify code necessity
+- [Feature Remnant Cleanup Pattern](feature-remnant-cleanup-pattern.md) - Comprehensive cleanup after removal

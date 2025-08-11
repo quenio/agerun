@@ -78,3 +78,5 @@ make clean build 2>&1
 - [Test Expectation Reality Alignment](test-expectation-reality-alignment.md)
 - [Compilation-Based TDD Approach](compilation-based-tdd-approach.md)
 - [Non-Functional Code Detection Pattern](non-functional-code-detection-pattern.md)
+- [Feature Remnant Cleanup Pattern](feature-remnant-cleanup-pattern.md)
+- [Commented Code Accumulation Antipattern](commented-code-accumulation-antipattern.md)

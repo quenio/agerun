@@ -472,6 +472,7 @@ typedef struct {
 - **Primitive Obsession**: Leads to repeated validation/conversion logic ([details](code-smell-primitive-obsession.md))
 - **Shotgun Surgery**: Result of not eliminating duplication
 - **Comments**: Often used to explain duplicated but slightly different code
+- **Cross-File Pattern Propagation**: How duplication spreads ([details](cross-file-pattern-propagation.md))
 
 ## Verification Checklist
 - [ ] No identical code blocks exist in multiple locations

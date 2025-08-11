@@ -6,6 +6,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+### Wake/Sleep Remnant Cleanup (Completed 2025-08-11)
+- [x] Removed all wake/sleep message remnants from codebase (19 files, 195 lines removed); deleted 77-line commented-out test function from bootstrap_tests.c; removed unnecessary message processing from ar_instruction_evaluator_tests.c; cleaned up obsolete comments, debug output, and test infrastructure; created 4 new KB articles documenting cleanup patterns; all 68 tests continue to pass with zero memory leaks
+
 ### Bootstrap Agent Spawning - TDD Cycle 7 (Completed 2025-08-10)
 - [x] Fixed send_instruction_evaluator to use instance-specific agency for proper message routing instead of global agency; added spawn no-op behavior when method_name is 0 or empty string to allow conditional spawning; implemented bootstrap-1.0.0.method that spawns echo agent on __boot__ message and handles boomerang reply; added comprehensive tests for spawn no-op cases; updated SPEC.md to document spawn instruction's no-op behavior; all 69 tests passing with zero memory leaks
 
