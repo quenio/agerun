@@ -10,15 +10,16 @@ Memory duplication through intermediate string representations doubles the memor
 **Initial design (memory-inefficient)**:
 ```c
 // BAD: Creates intermediate string representation
-char* ar_yaml__to_string(const ar_data_t *ref_data) {
+// EXAMPLE: This shows what NOT to do - function does not exist in AgeRun
+char* yaml_to_string_bad_example(const ar_data_t *ref_data) {
     // Builds entire YAML string in memory
     char *buffer = malloc(LARGE_SIZE);
-    _build_yaml_string(buffer, ref_data);
+    build_yaml_string(buffer, ref_data);  // EXAMPLE: Hypothetical function
     return buffer;  // Caller must free
 }
 
-bool ar_yaml__write_to_file(const ar_data_t *ref_data, const char *filename) {
-    char *yaml_string = ar_yaml__to_string(ref_data);  // Duplicates memory
+bool yaml_write_inefficient(const ar_data_t *ref_data, const char *filename) {
+    char *yaml_string = yaml_to_string_bad_example(ref_data);  // Duplicates memory
     FILE *file = fopen(filename, "w");
     fprintf(file, "%s", yaml_string);
     fclose(file);
@@ -31,14 +32,12 @@ bool ar_yaml__write_to_file(const ar_data_t *ref_data, const char *filename) {
 ```c
 // GOOD: Streams directly to file
 bool ar_yaml__write_to_file(const ar_data_t *ref_data, const char *ref_filename) {
-    FILE *file = ar_io__open_file(ref_filename, "w");
+    FILE *file = fopen(ref_filename, "w");
     if (!file) return false;
     
     _write_yaml_to_file(file, ref_data, 0, false);  // Direct streaming
     
-    if (ar_io__close_file(file) != 0) {
-        return false;
-    }
+    fclose(file);
     return true;
 }
 
@@ -65,42 +64,46 @@ The streaming pattern applies to any file I/O operation:
 
 ## Implementation Guidelines
 ```c
-// Pattern for streaming complex structures
+// EXAMPLE: Pattern for streaming complex structures
 typedef struct {
     FILE *file;
     int indent_level;
     bool has_error;
     char error_message[256];
-} stream_context_t;
+} streaming_context;  // EXAMPLE: Hypothetical type
 
-void stream_data_structure(stream_context_t *ctx, const void *data) {
-    // Stream components directly
-    if (fprintf(ctx->file, "header: %s\n", get_header(data)) < 0) {
-        ctx->has_error = true;
-        return;
-    }
-    
-    // Stream collections iteratively
-    for (size_t i = 0; i < get_count(data); i++) {
-        stream_item(ctx, get_item(data, i));
-        if (ctx->has_error) return;
+// EXAMPLE: Conceptual streaming pattern
+void stream_data_example(FILE *file, const ar_data_t *ref_data) {
+    // Stream components directly based on type
+    switch (ar_data__get_type(ref_data)) {
+        case AR_DATA_TYPE__INTEGER:
+            fprintf(file, "%d", ar_data__get_integer(ref_data));
+            break;
+        case AR_DATA_TYPE__STRING:
+            fprintf(file, "%s", ar_data__get_string(ref_data));
+            break;
+        case AR_DATA_TYPE__LIST: {
+            size_t count = ar_data__list_count(ref_data);
+            ar_data_t **items = ar_data__list_items(ref_data);
+            for (size_t i = 0; i < count; i++) {
+                stream_data_example(file, items[i]);
+            }
+            break;
+        }
+        default:
+            break;
     }
 }
 
-// Usage pattern
-bool export_to_file(const void *data, const char *filename) {
-    stream_context_t ctx = {
-        .file = ar_io__open_file(filename, "w"),
-        .indent_level = 0,
-        .has_error = false
-    };
+// Usage pattern with actual AgeRun functions
+bool export_data_example(const ar_data_t *ref_data, const char *filename) {
+    FILE *file = fopen(filename, "w");
+    if (!file) return false;
     
-    if (!ctx.file) return false;
+    stream_data_example(file, ref_data);
     
-    stream_data_structure(&ctx, data);
-    
-    bool success = !ctx.has_error && (ar_io__close_file(ctx.file) == 0);
-    return success;
+    fclose(file);
+    return true;
 }
 ```
 
