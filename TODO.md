@@ -715,10 +715,162 @@ Modify ar_executable.c to save and load the agerun.agency file for agent state p
 - [ ] Maintain backward compatibility - system should work without agency file
 
 ### Implementation Tasks
+- [ ] Complete agent store load implementation (see detailed tasks below)
 - [ ] Add agency loading after methodology loading in ar_executable.c
 - [ ] Add agency saving before system shutdown
 - [ ] Create tests for agency persistence scenarios
 - [ ] Update documentation to describe persistence behavior
+
+## Agent Store Load Implementation (Current Session)
+
+### Phase 1 - ar_yaml Module Foundation ✅
+- [x] TDD Cycle 1: Create basic ar_yaml module structure
+  - [x] Design for direct file I/O (no memory duplication)
+  - [x] Implement ar_yaml__write_to_file()
+  - [x] Create comprehensive tests
+  - [x] Documentation (ar_yaml.md)
+
+### Phase 2 - Complete ar_yaml Module
+- [ ] TDD Cycle 2: Implement YAML reading into ar_data_t
+  - [ ] Parse YAML line by line with indentation tracking
+  - [ ] Build ar_data_t structure from parsed YAML
+  - [ ] Handle comments and empty lines
+  - [ ] Support type inference (unquoted numbers, quoted strings)
+  - [ ] Test round-trip (write then read back)
+
+### Phase 3 - Agent Store Infrastructure Updates
+- [ ] TDD Cycle 3: Fix filename constant
+  - [ ] Update AGENT_STORE_FILE_NAME from "agency.agerun" to "agerun.agency"
+  - [ ] Update all references in tests
+  - [ ] Verify file naming consistency
+
+- [ ] TDD Cycle 4: Add methodology reference to agent_store
+  - [ ] Update ar_agent_store__create() signature to accept methodology
+  - [ ] Add ar_methodology_t *ref_methodology field to struct
+  - [ ] Update ar_agency.c to pass methodology when creating agent_store
+  - [ ] Update all test callers
+
+### Phase 4 - Agent Store YAML Integration
+- [ ] TDD Cycle 5: Integrate ar_yaml into agent_store
+  - [ ] Replace custom file format with YAML
+  - [ ] Remove old parsing code
+  - [ ] Update ar_agent_store__save() to use ar_yaml
+  
+- [ ] TDD Cycle 6: Build agent data structure for save
+  - [ ] Create root map with version and agents list
+  - [ ] For each agent, create map with id, method, memory
+  - [ ] Method as nested map with name and version
+  - [ ] Test YAML output format
+
+- [ ] TDD Cycle 7: Save memory as list of key/type/value
+  - [ ] Convert agent memory map to list format
+  - [ ] Each item: {key: "name", type: "string", value: "value"}
+  - [ ] Handle all data types (string, integer, double)
+  - [ ] Verify memory persistence format
+
+### Phase 5 - Agent Store Load Implementation
+- [ ] TDD Cycle 8: Parse agent definitions from YAML
+  - [ ] Load YAML file using ar_yaml__read_from_file()
+  - [ ] Navigate ar_data_t structure to extract agents
+  - [ ] Extract agent_id, method_name, method_version
+  - [ ] Create temporary agent specification structures
+
+- [ ] TDD Cycle 9: Create agents with method lookup
+  - [ ] Use ar_methodology__get_method_with_instance() for lookup
+  - [ ] Create agent with ar_agent__create_with_method()
+  - [ ] Set agent ID using ar_agent__set_id()
+  - [ ] Register agent in registry
+
+- [ ] TDD Cycle 10: Restore agent memory from list
+  - [ ] Get mutable memory with ar_agent__get_mutable_memory()
+  - [ ] Iterate memory list items
+  - [ ] Parse key, type, value from each item
+  - [ ] Set values using appropriate ar_data__set_map_* functions
+
+- [ ] TDD Cycle 11: Handle multiple agents
+  - [ ] Test with 3+ agents with different methods
+  - [ ] Ensure proper resource management
+  - [ ] Verify all agents restored correctly
+  - [ ] Test agent ID preservation
+
+- [ ] TDD Cycle 12: Handle errors gracefully
+  - [ ] Test missing methods - log warning, skip agent
+  - [ ] Test corrupt YAML - return false
+  - [ ] Test missing fields - handle gracefully
+  - [ ] Ensure no memory leaks on error paths
+
+### Phase 6 - Integration and Documentation
+- [ ] TDD Cycle 13: Complete integration testing
+  - [ ] End-to-end test: create agents, save, destroy, load, verify
+  - [ ] Test with ar_executable
+  - [ ] Verify zero memory leaks
+  - [ ] Run full test suite
+
+- [ ] TDD Cycle 14: Documentation updates
+  - [ ] Update ar_agent_store.h with new API
+  - [ ] Document YAML file format in ar_agent_store.md
+  - [ ] Update ar_agency.md with persistence details
+  - [ ] Add examples of agency.yaml format
+
+### Success Criteria
+- [ ] Agents fully restored with correct methods and memory
+- [ ] Agent IDs preserved across save/load cycles
+- [ ] Missing methods handled gracefully with warnings
+- [ ] Zero memory leaks in all operations
+- [ ] All tests pass
+- [ ] YAML format is human-readable and editable
+
+## ar_yaml Module Improvements
+
+### Priority 1 - Critical Safety Issues
+- [ ] **Replace direct file I/O with ar_io functions**
+  - [ ] Use ar_io__open_file() instead of fopen()
+  - [ ] Use ar_io__close_file() instead of fclose()
+  - [ ] Ensures proper error handling and backup creation
+
+### Priority 2 - String Escaping Enhancements
+- [ ] **Improve YAML string escaping logic**
+  - [ ] Escape quotes within strings
+  - [ ] Escape backslashes
+  - [ ] Handle leading/trailing spaces
+  - [ ] Quote strings that look like numbers ("123")
+  - [ ] Quote YAML keywords ("true", "false", "null", "yes", "no")
+  - [ ] Consider always quoting strings for safety
+
+### Priority 3 - Test Coverage Improvements
+- [ ] **Add edge case tests**
+  - [ ] Empty strings
+  - [ ] Strings with special characters needing escaping
+  - [ ] Very large data structures
+  - [ ] Deeply nested structures (10+ levels)
+  - [ ] Maps with keys that need escaping
+- [ ] **Improve test cleanup**
+  - [ ] Clean up test files at start of tests
+  - [ ] Use cleanup handler for failed assertions
+
+### Priority 4 - Error Handling
+- [ ] **Enhance error reporting**
+  - [ ] Include errno in error messages
+  - [ ] Provide specific failure reasons
+  - [ ] Add file size limits to prevent DoS
+
+### Priority 5 - Code Quality
+- [ ] **Remove magic numbers in tests**
+  - [ ] Define constants for buffer sizes
+  - [ ] Use consistent sizing strategy
+- [ ] **Fix documentation inconsistencies**
+  - [ ] Remove incorrect "unused" comment for is_list_item
+  - [ ] Update comments to reflect actual usage
+- [ ] **Float precision**
+  - [ ] Use %.17g for doubles to prevent precision loss
+
+### Optional - Security Hardening
+- [ ] **Path validation**
+  - [ ] Validate filenames to prevent directory traversal
+  - [ ] Check for symlinks before writing
+- [ ] **File permissions**
+  - [ ] Set explicit file permissions on creation
+  - [ ] Consider umask implications
 
 ## In Progress - Executable Transformation to Bootstrap System
 
