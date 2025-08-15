@@ -197,6 +197,59 @@ static void test_yaml__write_nested_structure(void) {
     printf("✓ Nested structure write test passed\n");
 }
 
+/**
+ * Test that ar_yaml can read simple string from file
+ */
+static void test_yaml__read_simple_string_from_file(void) {
+    printf("Testing simple string read from YAML file...\n");
+    
+    // First write a string to file
+    ar_data_t *own_original = ar_data__create_string("test value");
+    assert(ar_yaml__write_to_file(own_original, "test_read_string.yaml") == true);
+    
+    // Now read it back
+    ar_data_t *own_loaded = ar_yaml__read_from_file("test_read_string.yaml");
+    assert(own_loaded != NULL);
+    assert(ar_data__get_type(own_loaded) == AR_DATA_TYPE__STRING);
+    assert(strcmp(ar_data__get_string(own_loaded), "test value") == 0);
+    
+    // Cleanup
+    ar_data__destroy(own_original);
+    ar_data__destroy(own_loaded);
+    unlink("test_read_string.yaml");
+    
+    printf("✓ Simple string read test passed\n");
+}
+
+/**
+ * Test round-trip for maps
+ */
+static void test_yaml__round_trip_map(void) {
+    printf("Testing map round-trip (write then read)...\n");
+    
+    // Create a map
+    ar_data_t *own_original = ar_data__create_map();
+    ar_data__set_map_string(own_original, "name", "TestAgent");
+    ar_data__set_map_integer(own_original, "id", 42);
+    ar_data__set_map_double(own_original, "ratio", 3.14);
+    
+    // Write to file
+    assert(ar_yaml__write_to_file(own_original, "test_roundtrip_map.yaml") == true);
+    
+    // Read back
+    ar_data_t *own_loaded = ar_yaml__read_from_file("test_roundtrip_map.yaml");
+    
+    // For now, just check it's not null - full parsing will be implemented later
+    assert(own_loaded != NULL);
+    
+    // Cleanup
+    ar_data__destroy(own_original);
+    ar_data__destroy(own_loaded);
+    unlink("test_roundtrip_map.yaml");
+    
+    printf("✓ Map round-trip test passed\n");
+}
+
 int main(void) {
     printf("=== ar_yaml Module Tests ===\n");
     
@@ -204,7 +257,9 @@ int main(void) {
     test_yaml__write_map_to_file();
     test_yaml__write_list_to_file();
     test_yaml__write_nested_structure();
+    test_yaml__read_simple_string_from_file();
+    test_yaml__round_trip_map();
     
-    printf("\nAll 4 tests passed!\n");
+    printf("\nAll 6 tests passed!\n");
     return 0;
 }

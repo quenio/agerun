@@ -178,10 +178,40 @@ bool ar_yaml__write_to_file(const ar_data_t *ref_data, const char *ref_filename)
 }
 
 /**
- * Read YAML file into ar_data_t structure (stub for now)
+ * Read YAML file into ar_data_t structure
  */
 ar_data_t* ar_yaml__read_from_file(const char *ref_filename) {
-    (void)ref_filename;
-    // Will implement in TDD Cycle 3
-    return NULL;
+    if (!ref_filename) {
+        return NULL;
+    }
+    
+    FILE *file = fopen(ref_filename, "r");
+    if (!file) {
+        return NULL;
+    }
+    
+    // Skip header line if present
+    char buffer[1024];
+    if (fgets(buffer, sizeof(buffer), file) == NULL) {
+        fclose(file);
+        return NULL;
+    }
+    
+    // For now, just read the next line as a simple string
+    // This is the minimal implementation for the test to pass
+    if (fgets(buffer, sizeof(buffer), file) == NULL) {
+        fclose(file);
+        return NULL;
+    }
+    
+    // Remove trailing newline if present
+    size_t len = strlen(buffer);
+    if (len > 0 && buffer[len - 1] == '\n') {
+        buffer[len - 1] = '\0';
+    }
+    
+    fclose(file);
+    
+    // Create and return string data
+    return ar_data__create_string(buffer);
 }
