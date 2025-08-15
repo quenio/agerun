@@ -60,6 +60,8 @@ Each learning file contains:
 - [Multi-Line Data Persistence Format](multi-line-data-persistence-format.md)
 - [Test File Cleanup Pattern](test-file-cleanup-pattern.md)
 - [Static Analyzer Stream Compliance](static-analyzer-stream-compliance.md)
+- [Issue Currency Verification Pattern](issue-currency-verification-pattern.md)
+- [Local-CI Discrepancy Investigation](local-ci-discrepancy-investigation.md)
 
 ### Memory Management
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)
@@ -197,6 +199,7 @@ Each learning file contains:
 - [Makefile POSIX Shell Compatibility](makefile-posix-shell-compatibility.md)
 - [Zig Test Build Integration](zig-test-build-integration.md)
 - [CI Debugging Artifact Upload](ci-debugging-artifact-upload.md)
+- [GitHub Actions Debugging Workflow](github-actions-debugging-workflow.md)
 - [Makefile Filtered Variables Pattern](makefile-filtered-variables-pattern.md)
 - [Sanitizer Test Exclusion Pattern](sanitizer-test-exclusion-pattern.md)
 - [Zig Static Analysis Tools](zig-static-analysis-tools.md)
@@ -259,6 +262,8 @@ Each learning file contains:
 - [Shell Script Command Substitution](shell-script-command-substitution.md)
 - [Comprehensive Output Review](comprehensive-output-review.md)
 - [Log Format Variation Handling](log-format-variation-handling.md)
+- [Error Message Source Tracing](error-message-source-tracing.md)
+- [Assumption Verification Before Action](assumption-verification-before-action.md)
 
 ### Code Quality & Smells
 - [Code Smell: Long Method](code-smell-long-method.md)

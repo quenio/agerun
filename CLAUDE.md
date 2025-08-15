@@ -327,6 +327,8 @@ grep -r "function_name\|concept" modules/
 **Struggling detection**: Stop after 3 failed attempts, ask for help ([details](kb/struggling-detection-pattern.md))
 **Phased cleanup**: Review→Fix critical→Defer non-critical with tracking ([details](kb/phased-cleanup-pattern.md))
 **Impact analysis**: Check main→tests→fixtures→entire codebase ([details](kb/comprehensive-impact-analysis.md))
+**CI debugging**: Use gh CLI for systematic investigation ([details](kb/github-actions-debugging-workflow.md), [discrepancies](kb/local-ci-discrepancy-investigation.md))
+**Error tracing**: Follow messages through build pipeline layers ([details](kb/error-message-source-tracing.md))
 
 ### 9. Error Propagation Pattern
 
@@ -370,7 +372,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 - **Session todos (TodoWrite/TodoRead)**: Current TDD cycles, implementations, bug fixes
 - **TODO.md file**: Long-term architecture, future features (check [ ] vs [x] for completion)
 - **Task authorization**: Wait for explicit instruction before starting tasks ([details](kb/task-authorization-pattern.md))
-- **User feedback**: May reveal design issues, not just implementation bugs. Listen for concerns about output/behavior/consistency. Verify assumptions before acting. ([details](kb/user-feedback-as-qa.md))
+- **User feedback**: May reveal design issues, not just implementation bugs. Listen for concerns about output/behavior/consistency. Verify assumptions before acting. ([details](kb/user-feedback-as-qa.md), [assumptions](kb/assumption-verification-before-action.md))
 - **Architectural insights**: User feedback often reveals bigger transformations ([details](kb/architectural-review-in-feedback.md))
 - **Be frank, not polite**: Only confirm correctness when certain - honest disagreement > polite agreement
 - **Todo list integrity**: Mark items complete, never remove them - preserves task history
@@ -485,7 +487,7 @@ Directory check, clean state, test code, init system ([details](kb/method-test-t
 - Remove final newlines
 - Use raw file operations
 - Create files unless necessary
-- Assume error causes - always verify with evidence
+- Assume error causes - always verify with evidence ([details](kb/issue-currency-verification-pattern.md))
 
 **Always**:
 - Use heap tracking macros

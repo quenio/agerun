@@ -6,6 +6,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+### Knowledge Base Enhancement - CI Debugging Patterns (Completed 2025-08-15)
+- [x] Created 5 new KB articles documenting CI debugging and verification patterns discovered during investigation of reported documentation errors; issue-currency-verification-pattern.md for verifying CI errors are current; local-ci-discrepancy-investigation.md for handling validation differences; error-message-source-tracing.md for tracking error transformations; github-actions-debugging-workflow.md for systematic CI investigation; assumption-verification-before-action.md for evidence-based debugging; updated kb/README.md index with new articles in appropriate sections; updated CLAUDE.md with references to new patterns; all documentation validated with make check-docs
+
 ### Wake/Sleep Remnant Cleanup (Completed 2025-08-11)
 - [x] Removed all wake/sleep message remnants from codebase (19 files, 195 lines removed); deleted 77-line commented-out test function from bootstrap_tests.c; removed unnecessary message processing from ar_instruction_evaluator_tests.c; cleaned up obsolete comments, debug output, and test infrastructure; created 4 new KB articles documenting cleanup patterns; all 68 tests continue to pass with zero memory leaks
 

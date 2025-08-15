@@ -2,6 +2,19 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-08-15
+
+### ✅ Knowledge Base Enhancement - CI Debugging & Verification Patterns
+- Created 5 comprehensive KB articles documenting CI debugging patterns:
+  - issue-currency-verification-pattern.md: Verify CI errors are from current runs, not historical
+  - local-ci-discrepancy-investigation.md: Trust local validation when environments match
+  - error-message-source-tracing.md: Trace error messages through build pipeline layers
+  - github-actions-debugging-workflow.md: Systematic CI investigation with gh CLI
+  - assumption-verification-before-action.md: Challenge assumptions with evidence before acting
+- Enhanced CLAUDE.md with references to new patterns in appropriate sections
+- Updated kb/README.md index with articles in Development Workflow, Tools & Automation, and Development Practices sections
+- All documentation validated with make check-docs
+
 ## 2025-08-14
 
 ### ✅ ar_yaml Module Implementation - Foundation for Agent Persistence
