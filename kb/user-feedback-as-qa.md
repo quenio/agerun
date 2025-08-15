@@ -67,3 +67,4 @@ Integrate user-as-QA pattern into development workflow:
 - [Comprehensive Output Review](comprehensive-output-review.md)
 - [Architectural Review in Feedback](architectural-review-in-feedback.md)
 - [Task Authorization Pattern](task-authorization-pattern.md)
+- [Resource-Aware API Design](resource-aware-api-design.md)

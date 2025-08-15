@@ -227,6 +227,7 @@ grep -r "function_name\|concept" modules/
 - **No Parallel Implementations**: Modify existing code, don't create _v2 versions ([details](kb/no-parallel-implementations-principle.md))
 - **Composition Over Inheritance**: Prefer composition patterns to create flexible, maintainable architectures ([details](kb/composition-over-inheritance-principle.md))
 - **Regression Investigation**: Trace root causes with git history ([details](kb/regression-root-cause-analysis.md))
+- **Resource-Aware APIs**: Design to avoid hidden memory costs ([details](kb/resource-aware-api-design.md))
 
 ### 4. Code Smells Detection and Prevention
 
@@ -381,10 +382,11 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 
 **Pre-Commit Checklist** (MANDATORY): ([details](kb/pre-commit-checklist-detailed.md))
 1. `make clean build 2>&1` → verify exit 0 → `make check-logs` ([details](kb/build-verification-before-commit.md))
-2. Update docs for API changes ([details](kb/documentation-language-migration-updates.md))
-3. Check outdated refs: `grep -l "old_name" modules/*.md`
-4. Update TODO.md & CHANGELOG.md in same commit ([details](kb/atomic-commit-documentation-pattern.md), [verify](kb/documentation-completion-verification.md))
-5. `git diff` full review → clean temp files → commit
+2. `make check-docs` → validate all documentation ([details](kb/documentation-validation-enhancement-patterns.md))
+3. Update docs for API changes ([details](kb/documentation-language-migration-updates.md))
+4. Check outdated refs: `grep -l "old_name" modules/*.md`
+5. Update TODO.md & CHANGELOG.md in same commit ([details](kb/atomic-commit-documentation-pattern.md), [verify](kb/documentation-completion-verification.md))
+6. `git diff` full review → clean temp files → commit
 
 **Remember**: Complete ALL TDD Cycles → Docs → TODO → CHANGELOG → Commit ([details](kb/tdd-feature-completion-before-commit.md))
 

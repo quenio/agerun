@@ -134,6 +134,7 @@ Each learning file contains:
 - [Opaque Types Pattern](opaque-types-pattern.md)
 - [Facade Pattern Coordination](facade-pattern-coordination.md)
 - [Error Propagation Pattern](error-propagation-pattern.md)
+- [Resource-Aware API Design](resource-aware-api-design.md)
 - [Expression Evaluator Accessor Extension](expression-evaluator-accessor-extension.md)
 - [Expression Evaluator Claim Behavior](expression-evaluator-claim-behavior.md)
 - [Instruction Behavior Simplification](instruction-behavior-simplification.md)

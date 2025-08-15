@@ -134,6 +134,7 @@ if (fprintf(file, "%s", data) < 0) {
 - [File I/O Backup Mechanism](file-io-backup-mechanism.md)
 - [Error Propagation Pattern](error-propagation-pattern.md)
 - [Ownership Pattern Extraction](ownership-pattern-extraction.md)
+- [Resource-Aware API Design](resource-aware-api-design.md)
 
 ## CLAUDE.md Reference
 This pattern is referenced in [CLAUDE.md](../CLAUDE.md) under Memory Management practices.

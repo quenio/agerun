@@ -14,24 +14,28 @@ Following the complete checklist prevents broken builds, memory leaks, outdated 
 # 1. Build verification (MANDATORY)
 make clean build 2>&1
 echo $?  # MUST be 0
-make check-logs  # NEW: Catches hidden issues
+make check-logs  # Catches hidden issues
 
-# 2. Documentation updates for API changes
+# 2. Documentation validation (MANDATORY)
+make check-docs  # Validates all code examples use real functions
+# Fix any errors before proceeding
+
+# 3. Documentation updates for API changes
 grep -l "old_function_name" modules/*.md  # Find docs to update
 # Update all references before commit
 
-# 3. Check for outdated references after refactoring
+# 4. Check for outdated references after refactoring
 grep -r "OldTypeName" modules/ methods/ docs/
 
-# 4. Update tracking files
+# 5. Update tracking files
 # TODO.md: Mark items [x] with completion date
 # CHANGELOG.md: Add entry for changes
 
-# 5. Verify changes
+# 6. Verify changes
 git diff  # Review ENTIRE diff, not just recent changes
 git diff --cached  # Check staged changes
 
-# 6. Clean up temporary files
+# 7. Clean up temporary files
 find . -name "*.log" -type f | grep -v bin/ | xargs rm -f
 find . -name "*.bak" -o -name "*.backup" | xargs rm -f
 ```
