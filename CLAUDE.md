@@ -118,6 +118,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - Context lifecycle: Destroy resources where variables are still in scope ([details](kb/context-ownership-lifecycle.md))
 - Shared context: System maintains ONE context for all agents ([details](kb/shared-context-architecture-pattern.md))
 - Frame prerequisites: ar_frame__create needs non-NULL memory, context, message ([details](kb/frame-creation-prerequisites.md))
+- Memory-efficient streaming: Direct file I/O without intermediate strings ([details](kb/memory-efficient-streaming-patterns.md))
 
 **Memory Leak Detection**:
 - Full test suite: Check console for "WARNING: X memory leaks detected"
@@ -320,6 +321,7 @@ grep -r "function_name\|concept" modules/
 **Whitelist simplification**: Start complex, simplify based on usage ([details](kb/whitelist-simplification-pattern.md))
 **Uniform filtering**: Apply whitelist consistently in all checks ([details](kb/uniform-filtering-application.md))
 **YAML string matching**: Watch for quote escaping issues ([details](kb/yaml-string-matching-pitfalls.md))
+**YAML serialization**: Direct file I/O for ar_data_t structures ([details](kb/yaml-serialization-direct-io-pattern.md))
 **Multi-line persistence**: Escape newlines & backslashes in file formats ([details](kb/multi-line-data-persistence-format.md))
 **Pattern discovery**: Check existing methods for solutions ([details](kb/cross-method-pattern-discovery.md))
 **Whitelist reduction**: Fix root causes, not symptoms ([details](kb/systematic-error-whitelist-reduction.md))
