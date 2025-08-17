@@ -156,6 +156,9 @@ void test_yaml__round_trip() {
 - [Multi-Line Data Persistence Format](multi-line-data-persistence-format.md)
 - [YAML String Matching Pitfalls](yaml-string-matching-pitfalls.md)
 - [Test File Cleanup Pattern](test-file-cleanup-pattern.md)
+- [YAML Indentation Consistency Pattern](yaml-indentation-consistency-pattern.md)
+- [Container Stack Parsing Pattern](container-stack-parsing-pattern.md)
+- [Test Complexity Reduction Pattern](test-complexity-reduction-pattern.md)
 
 ## CLAUDE.md Reference
 This pattern is referenced in [CLAUDE.md](../CLAUDE.md) under Development Practices for YAML serialization.

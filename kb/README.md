@@ -129,6 +129,8 @@ Each learning file contains:
 - [Regression Test Removal Criteria](regression-test-removal-criteria.md)
 - [Test Effectiveness Verification](test-effectiveness-verification.md)
 - [Permission-Based Failure Testing](permission-based-failure-testing.md)
+- [Debug Program Recompilation Pattern](debug-program-recompilation-pattern.md)
+- [Test Complexity Reduction Pattern](test-complexity-reduction-pattern.md)
 
 ### Architecture & Design
 - [Opaque Types Pattern](opaque-types-pattern.md)
@@ -169,6 +171,7 @@ Each learning file contains:
 - [Uniform Filtering Application](uniform-filtering-application.md)
 - [Shared Context Architecture Pattern](shared-context-architecture-pattern.md)
 - [Frame Creation Prerequisites](frame-creation-prerequisites.md)
+- [Container Stack Parsing Pattern](container-stack-parsing-pattern.md)
 
 ### Parnas Design Principles
 - [Information Hiding Principle](information-hiding-principle.md)
@@ -196,6 +199,8 @@ Each learning file contains:
 - [Settings File Merging Pattern](settings-file-merging-pattern.md)
 - [String Parsing Quote Tracking](string-parsing-quote-tracking.md)
 - [YAML String Matching Pitfalls](yaml-string-matching-pitfalls.md)
+- [YAML Indentation Consistency Pattern](yaml-indentation-consistency-pattern.md)
+- [YAML Serialization Direct I/O Pattern](yaml-serialization-direct-io-pattern.md)
 - [Makefile Environment Variable Directory Target Dependencies](makefile-environment-variable-directory-gotcha.md)
 - [Makefile POSIX Shell Compatibility](makefile-posix-shell-compatibility.md)
 - [Zig Test Build Integration](zig-test-build-integration.md)
