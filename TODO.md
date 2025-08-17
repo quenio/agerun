@@ -733,13 +733,13 @@ Modify ar_executable.c to save and load the agerun.agency file for agent state p
   - [x] Create comprehensive tests
   - [x] Documentation (ar_yaml.md)
 
-### Phase 2 - Complete ar_yaml Module
-- [ ] TDD Cycle 2: Implement YAML reading into ar_data_t
-  - [ ] Parse YAML line by line with indentation tracking
-  - [ ] Build ar_data_t structure from parsed YAML
-  - [ ] Handle comments and empty lines
-  - [ ] Support type inference (unquoted numbers, quoted strings)
-  - [ ] Test round-trip (write then read back)
+### Phase 2 - Complete ar_yaml Module (Completed 2025-08-17)
+- [x] TDD Cycle 2: Implement YAML reading into ar_data_t
+  - [x] Parse YAML line by line with indentation tracking
+  - [x] Build ar_data_t structure from parsed YAML
+  - [x] Handle comments and empty lines
+  - [x] Support type inference (unquoted numbers, quoted strings)
+  - [x] Test round-trip (write then read back)
 
 ### Phase 3 - Agent Store Infrastructure Updates
 - [ ] TDD Cycle 3: Fix filename constant

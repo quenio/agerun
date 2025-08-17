@@ -74,7 +74,7 @@ ar_yaml__write_to_file(own_data, "config.yaml");
 // Clean up
 ar_data__destroy(own_data);
 
-// Read from file (when implemented)
+// Read from file
 ar_data_t *own_loaded = ar_yaml__read_from_file("config.yaml");
 // Use the loaded data...
 ar_data__destroy(own_loaded);
@@ -85,16 +85,22 @@ ar_data__destroy(own_loaded);
 - The parser handles basic YAML syntax without full YAML 1.2 compliance
 - Type inference: Unquoted numbers become integers/doubles, quoted values are strings
 - Special characters in strings are properly escaped
-- Multi-line strings are supported with proper indentation
+- Nested structures are fully supported with proper indentation tracking
+- Comments and blank lines are automatically skipped during parsing
+- Empty containers ({} and []) are properly handled
+- Round-trip conversion preserves data types and structure
 
 ## Testing
 
 The module includes comprehensive tests in `ar_yaml_tests.c` covering:
-- Scalar value conversion
-- Map serialization
-- List handling
-- File I/O operations
-- Error cases and edge conditions
+- Round-trip conversion for all data types
+- Map and list serialization/deserialization
+- Nested structure handling
+- Type inference for unquoted values
+- Empty container support
+- Comment and blank line skipping
+- Complex agent structure persistence
+- File I/O operations with error handling
 
 ## Dependencies
 
