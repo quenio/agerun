@@ -741,6 +741,16 @@ Modify ar_executable.c to save and load the agerun.agency file for agent state p
   - [x] Support type inference (unquoted numbers, quoted strings)
   - [x] Test round-trip (write then read back)
 
+### Phase 2.5 - Split ar_yaml Module (Completed 2025-08-17)
+- [x] Split ar_yaml into ar_yaml_reader and ar_yaml_writer for separation of concerns
+  - [x] TDD Cycle 1: Create basic ar_yaml_writer structure
+  - [x] TDD Cycle 2: Migrate all 4 writer tests from ar_yaml_tests
+  - [x] TDD Cycle 3: Create basic ar_yaml_reader structure  
+  - [x] TDD Cycle 4: Migrate all 9 reader tests (simple read + 8 round-trip tests)
+  - [x] Verify exact code copying from original ar_yaml.c (move don't rewrite)
+  - [x] Ensure no cross-contamination (no read in writer, no write in reader)
+  - [x] All 13 tests passing with zero memory leaks
+
 ### Phase 3 - Agent Store Infrastructure Updates
 - [ ] TDD Cycle 3: Fix filename constant
   - [ ] Update AGENT_STORE_FILE_NAME from "agency.agerun" to "agerun.agency"
@@ -754,10 +764,11 @@ Modify ar_executable.c to save and load the agerun.agency file for agent state p
   - [ ] Update all test callers
 
 ### Phase 4 - Agent Store YAML Integration
-- [ ] TDD Cycle 5: Integrate ar_yaml into agent_store
+- [ ] TDD Cycle 5: Integrate ar_yaml_writer and ar_yaml_reader into agent_store
   - [ ] Replace custom file format with YAML
   - [ ] Remove old parsing code
-  - [ ] Update ar_agent_store__save() to use ar_yaml
+  - [ ] Update ar_agent_store__save() to use ar_yaml_writer
+  - [ ] Update ar_agent_store__load() to use ar_yaml_reader
   
 - [ ] TDD Cycle 6: Build agent data structure for save
   - [ ] Create root map with version and agents list
@@ -824,6 +835,12 @@ Modify ar_executable.c to save and load the agerun.agency file for agent state p
 - [ ] YAML format is human-readable and editable
 
 ## ar_yaml Module Improvements
+
+### Priority 0 - Module Cleanup
+- [ ] **Remove original ar_yaml module after ar_agent_store migration**
+  - [ ] Update Makefile to remove ar_yaml references
+  - [ ] Delete ar_yaml.c, ar_yaml.h, ar_yaml_tests.c
+  - [ ] Update any remaining references to use ar_yaml_reader/writer
 
 ### Priority 1 - Critical Safety Issues
 - [ ] **Replace direct file I/O with ar_io functions**

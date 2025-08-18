@@ -1045,6 +1045,38 @@ The [data module](ar_data.md) builds on the map and list modules to provide type
 - **Container Management**: Proper destruction sequence to prevent use-after-free issues
 - **Path-Based Access**: Supports dot-notation paths for accessing nested data structures
 
+### YAML Writer Module (`ar_yaml_writer`)
+
+The [YAML writer module](ar_yaml_writer.md) provides serialization of ar_data_t structures to YAML files:
+
+- **Direct File Streaming**: Writes directly to files without intermediate strings
+- **No Memory Duplication**: Efficient streaming avoids memory overhead
+- **Type Preservation**: Maintains data types in YAML output
+- **Nested Structure Support**: Handles maps and lists with proper indentation
+- **String Escaping**: Automatically quotes strings with special characters
+- **Single Responsibility**: Focuses solely on YAML serialization
+- **Clean Interface**: Single function API for writing
+- **Depends on Data**: Uses ar_data_t as input format
+- **Depends on Heap**: Uses heap tracking for memory management
+- **Depends on IO**: Uses IO for error reporting
+
+### YAML Reader Module (`ar_yaml_reader`)
+
+The [YAML reader module](ar_yaml_reader.md) provides parsing of YAML files into ar_data_t structures:
+
+- **Line-by-Line Parsing**: Memory-efficient incremental parsing
+- **Type Inference**: Automatically detects integers, doubles, and strings
+- **Indentation Tracking**: Manages nested structures via indentation
+- **Container Stack**: Handles nested maps and lists correctly
+- **Comment Handling**: Skips comments and blank lines
+- **Error Recovery**: Cleans up partial structures on parse failure
+- **Single Responsibility**: Focuses solely on YAML parsing
+- **Depends on Data**: Produces ar_data_t structures as output
+- **Depends on List**: Uses list for container stack management
+- **Depends on String**: Uses string utilities for parsing
+- **Depends on Heap**: Uses heap tracking for memory management
+- **Depends on IO**: Uses IO for file operations
+
 ### Expression Module (`ar_expression`)
 
 The [expression module](ar_expression.md) provides a recursive descent parser for evaluating expressions in the AgeRun agent system:

@@ -4,6 +4,26 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-08-17
 
+### ✅ ar_yaml Module Split - Separation of Concerns
+- Split ar_yaml into ar_yaml_reader and ar_yaml_writer modules:
+  - Improved separation of concerns (Single Responsibility Principle)
+  - ar_yaml_writer: 182 lines focused solely on writing YAML
+  - ar_yaml_reader: 468 lines focused solely on reading/parsing YAML
+- Migration process:
+  - Used "move don't rewrite" pattern from KB
+  - Exact code copying from original ar_yaml.c
+  - Only function names changed (ar_yaml__ → ar_yaml_reader__/ar_yaml_writer__)
+- Test migration:
+  - All 13 tests from ar_yaml_tests.c successfully migrated
+  - 4 write-only tests → ar_yaml_writer_tests.c
+  - 9 read/round-trip tests → ar_yaml_reader_tests.c
+  - All tests passing with zero memory leaks
+- Benefits:
+  - Cleaner module boundaries
+  - Easier to maintain and test independently
+  - Preparation for making modules instantiable
+  - No cross-contamination between read and write operations
+
 ### ✅ ar_yaml Module Complete - Full YAML Read/Write Support
 - Completed TDD Cycle 2 for ar_yaml module with 8 iterations:
   - Round-trip conversion for maps, lists, and scalar types
