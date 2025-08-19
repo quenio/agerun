@@ -2,6 +2,28 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-08-18
+
+### ✅ ar_yaml_reader Instantiation - Instance-Based Architecture
+- Made ar_yaml_reader module instantiable with opaque type pattern:
+  - Created ar_yaml_reader_t opaque type for encapsulation
+  - Accepts ar_log_t instance at creation for error reporting
+  - Instance-based API: ar_yaml_reader__read_from_file(reader, filename)
+- Implementation highlights:
+  - 13 TDD cycles for complete migration
+  - Migrated all tests to instance-based API
+  - Removed backward compatibility wrapper after full migration
+  - Container state management encapsulated in reader instance
+- Test coverage:
+  - 13 comprehensive tests all passing
+  - Zero memory leaks throughout
+  - Added new container state test
+- Benefits:
+  - Thread-safe design with no global state
+  - Proper dependency injection for logging
+  - Clean separation of concerns
+  - Foundation for future error reporting enhancements
+
 ## 2025-08-17
 
 ### ✅ ar_yaml Module Split - Separation of Concerns

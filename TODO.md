@@ -6,6 +6,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+### YAML Module Split and ar_yaml_reader Instantiation (Completed 2025-08-18)
+- [x] Split ar_yaml module into separate ar_yaml_reader and ar_yaml_writer modules following "move don't rewrite" pattern; made ar_yaml_reader instantiable with ar_log instance for error reporting; migrated all 13 tests to instance-based API with zero memory leaks; renamed read_from_file_with_instance to read_from_file as primary API; added container state management for parse operations; build time: 1m 27s
+
 ### Knowledge Base Enhancement - CI Debugging Patterns (Completed 2025-08-15)
 - [x] Created 5 new KB articles documenting CI debugging and verification patterns discovered during investigation of reported documentation errors; issue-currency-verification-pattern.md for verifying CI errors are current; local-ci-discrepancy-investigation.md for handling validation differences; error-message-source-tracing.md for tracking error transformations; github-actions-debugging-workflow.md for systematic CI investigation; assumption-verification-before-action.md for evidence-based debugging; updated kb/README.md index with new articles in appropriate sections; updated CLAUDE.md with references to new patterns; all documentation validated with make check-docs
 

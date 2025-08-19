@@ -1,6 +1,7 @@
 #include "ar_yaml_reader.h"
 #include "ar_data.h"
 #include "ar_heap.h"
+#include "ar_log.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -10,6 +11,12 @@
 
 /* Forward declaration of parse state */
 typedef struct ar_yaml_parse_state_s ar_yaml_parse_state_t;
+
+/* Opaque reader structure */
+struct ar_yaml_reader_s {
+    ar_log_t *ref_log;  /* Borrowed reference for error reporting */
+    ar_yaml_parse_state_t *own_state;  /* Owned parse state (created/destroyed per read) */
+};
 
 /* Forward declarations for internal functions */
 static int _get_indentation(const char *line);
@@ -42,9 +49,35 @@ static int _get_indentation(const char *line) {
 }
 
 /**
+ * Create a new YAML reader instance
+ */
+ar_yaml_reader_t* ar_yaml_reader__create(ar_log_t *ref_log) {
+    ar_yaml_reader_t *own_reader = AR__HEAP__MALLOC(sizeof(ar_yaml_reader_t), "ar_yaml_reader_t");
+    if (own_reader == NULL) {
+        return NULL;
+    }
+    
+    own_reader->ref_log = ref_log;
+    own_reader->own_state = NULL;  /* Will be created during read operations */
+    return own_reader;
+}
+
+/**
+ * Destroy a YAML reader instance
+ */
+void ar_yaml_reader__destroy(ar_yaml_reader_t *own_reader) {
+    if (own_reader == NULL) {
+        return;
+    }
+    
+    AR__HEAP__FREE(own_reader);
+}
+
+/**
  * Read YAML file into ar_data_t structure
  */
-ar_data_t* ar_yaml_reader__read_from_file(const char *ref_filename) {
+ar_data_t* ar_yaml_reader__read_from_file(ar_yaml_reader_t *mut_reader, const char *ref_filename) {
+    (void)mut_reader; // Will be used in later cycles
     if (!ref_filename) {
         return NULL;
     }
@@ -466,3 +499,4 @@ static bool _should_skip_line(const char *line) {
     return *line == '#';
 
 }
+

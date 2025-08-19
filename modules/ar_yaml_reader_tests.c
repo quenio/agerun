@@ -18,8 +18,12 @@ static void test_yaml_reader__read_simple_string_from_file(void) {
     ar_data_t *own_original = ar_data__create_string("test value");
     assert(ar_yaml_writer__write_to_file(own_original, "test_read_string.yaml") == true);
     
-    // Now read it back using reader
-    ar_data_t *own_loaded = ar_yaml_reader__read_from_file("test_read_string.yaml");
+    // Create reader instance
+    ar_yaml_reader_t *own_reader = ar_yaml_reader__create(NULL);
+    assert(own_reader != NULL);
+    
+    // Now read it back using reader instance
+    ar_data_t *own_loaded = ar_yaml_reader__read_from_file(own_reader, "test_read_string.yaml");
     assert(own_loaded != NULL);
     assert(ar_data__get_type(own_loaded) == AR_DATA_TYPE__STRING);
     assert(strcmp(ar_data__get_string(own_loaded), "test value") == 0);
@@ -27,6 +31,7 @@ static void test_yaml_reader__read_simple_string_from_file(void) {
     // Cleanup
     ar_data__destroy(own_original);
     ar_data__destroy(own_loaded);
+    ar_yaml_reader__destroy(own_reader);
     unlink("test_read_string.yaml");
     
     printf("✓ Simple string read test passed\n");
@@ -47,8 +52,12 @@ static void test_yaml_reader__round_trip_map(void) {
     // Write to file
     assert(ar_yaml_writer__write_to_file(own_original, "test_roundtrip_map.yaml") == true);
     
-    // Read back
-    ar_data_t *own_loaded = ar_yaml_reader__read_from_file("test_roundtrip_map.yaml");
+    // Create reader instance
+    ar_yaml_reader_t *own_reader = ar_yaml_reader__create(NULL);
+    assert(own_reader != NULL);
+    
+    // Read back using instance
+    ar_data_t *own_loaded = ar_yaml_reader__read_from_file(own_reader, "test_roundtrip_map.yaml");
     
     // Verify it's a map with correct values
     assert(own_loaded != NULL);
@@ -75,6 +84,7 @@ static void test_yaml_reader__round_trip_map(void) {
     // Cleanup
     ar_data__destroy(own_original);
     ar_data__destroy(own_loaded);
+    ar_yaml_reader__destroy(own_reader);
     unlink("test_roundtrip_map.yaml");
     
     printf("✓ Map round-trip test passed\n");
@@ -96,8 +106,12 @@ static void test_yaml_reader__round_trip_list(void) {
     // Write to file
     assert(ar_yaml_writer__write_to_file(own_original, "test_roundtrip_list.yaml") == true);
     
-    // Read back
-    ar_data_t *own_loaded = ar_yaml_reader__read_from_file("test_roundtrip_list.yaml");
+    // Create reader instance
+    ar_yaml_reader_t *own_reader = ar_yaml_reader__create(NULL);
+    assert(own_reader != NULL);
+    
+    // Read back using instance
+    ar_data_t *own_loaded = ar_yaml_reader__read_from_file(own_reader, "test_roundtrip_list.yaml");
     
     // Verify it's a list with correct values
     assert(own_loaded != NULL);
@@ -129,6 +143,7 @@ static void test_yaml_reader__round_trip_list(void) {
     // Cleanup
     ar_data__destroy(own_original);
     ar_data__destroy(own_loaded);
+    ar_yaml_reader__destroy(own_reader);
     unlink("test_roundtrip_list.yaml");
     
     printf("✓ List round-trip test passed\n");
@@ -155,8 +170,12 @@ static void test_yaml_reader__nested_map_with_list(void) {
     // Write to file
     assert(ar_yaml_writer__write_to_file(own_original, "test_nested_map_list.yaml") == true);
     
-    // Read back
-    ar_data_t *own_loaded = ar_yaml_reader__read_from_file("test_nested_map_list.yaml");
+    // Create reader instance
+    ar_yaml_reader_t *own_reader = ar_yaml_reader__create(NULL);
+    assert(own_reader != NULL);
+    
+    // Read back using instance
+    ar_data_t *own_loaded = ar_yaml_reader__read_from_file(own_reader, "test_nested_map_list.yaml");
     
     // Verify structure
     assert(own_loaded != NULL);
@@ -186,6 +205,7 @@ static void test_yaml_reader__nested_map_with_list(void) {
     // Cleanup
     ar_data__destroy(own_original);
     ar_data__destroy(own_loaded);
+    ar_yaml_reader__destroy(own_reader);
     unlink("test_nested_map_list.yaml");
     
     printf("✓ Nested map with list test passed\n");
@@ -215,8 +235,12 @@ static void test_yaml_reader__list_of_maps(void) {
     // Write to file
     assert(ar_yaml_writer__write_to_file(own_original, "test_list_of_maps.yaml") == true);
     
-    // Read back
-    ar_data_t *own_loaded = ar_yaml_reader__read_from_file("test_list_of_maps.yaml");
+    // Create reader instance
+    ar_yaml_reader_t *own_reader = ar_yaml_reader__create(NULL);
+    assert(own_reader != NULL);
+    
+    // Read back using instance
+    ar_data_t *own_loaded = ar_yaml_reader__read_from_file(own_reader, "test_list_of_maps.yaml");
     
     // Verify structure
     assert(own_loaded != NULL);
@@ -251,6 +275,7 @@ static void test_yaml_reader__list_of_maps(void) {
     // Cleanup
     ar_data__destroy(own_original);
     ar_data__destroy(own_loaded);
+    ar_yaml_reader__destroy(own_reader);
     unlink("test_list_of_maps.yaml");
     
     printf("✓ List of maps test passed\n");
@@ -266,7 +291,11 @@ static void test_yaml_reader__empty_containers(void) {
     ar_data_t *own_empty_map = ar_data__create_map();
     assert(ar_yaml_writer__write_to_file(own_empty_map, "test_empty_map.yaml") == true);
     
-    ar_data_t *own_loaded_map = ar_yaml_reader__read_from_file("test_empty_map.yaml");
+    // Create reader instance
+    ar_yaml_reader_t *own_reader = ar_yaml_reader__create(NULL);
+    assert(own_reader != NULL);
+    
+    ar_data_t *own_loaded_map = ar_yaml_reader__read_from_file(own_reader, "test_empty_map.yaml");
     assert(own_loaded_map != NULL);
     assert(ar_data__get_type(own_loaded_map) == AR_DATA_TYPE__MAP);
     
@@ -276,19 +305,25 @@ static void test_yaml_reader__empty_containers(void) {
     
     ar_data__destroy(own_empty_map);
     ar_data__destroy(own_loaded_map);
+    ar_yaml_reader__destroy(own_reader);
     unlink("test_empty_map.yaml");
     
     // Test empty list
     ar_data_t *own_empty_list = ar_data__create_list();
     assert(ar_yaml_writer__write_to_file(own_empty_list, "test_empty_list.yaml") == true);
     
-    ar_data_t *own_loaded_list = ar_yaml_reader__read_from_file("test_empty_list.yaml");
+    // Create another reader instance
+    ar_yaml_reader_t *own_reader2 = ar_yaml_reader__create(NULL);
+    assert(own_reader2 != NULL);
+    
+    ar_data_t *own_loaded_list = ar_yaml_reader__read_from_file(own_reader2, "test_empty_list.yaml");
     assert(own_loaded_list != NULL);
     assert(ar_data__get_type(own_loaded_list) == AR_DATA_TYPE__LIST);
     assert(ar_data__list_count(own_loaded_list) == 0);
     
     ar_data__destroy(own_empty_list);
     ar_data__destroy(own_loaded_list);
+    ar_yaml_reader__destroy(own_reader2);
     unlink("test_empty_list.yaml");
     
     // Test map with empty list value
@@ -299,7 +334,11 @@ static void test_yaml_reader__empty_containers(void) {
     
     assert(ar_yaml_writer__write_to_file(own_map_with_empty, "test_map_empty_list.yaml") == true);
     
-    ar_data_t *own_loaded_mixed = ar_yaml_reader__read_from_file("test_map_empty_list.yaml");
+    // Create another reader instance
+    ar_yaml_reader_t *own_reader3 = ar_yaml_reader__create(NULL);
+    assert(own_reader3 != NULL);
+    
+    ar_data_t *own_loaded_mixed = ar_yaml_reader__read_from_file(own_reader3, "test_map_empty_list.yaml");
     assert(own_loaded_mixed != NULL);
     assert(ar_data__get_type(own_loaded_mixed) == AR_DATA_TYPE__MAP);
     
@@ -310,6 +349,7 @@ static void test_yaml_reader__empty_containers(void) {
     
     ar_data__destroy(own_map_with_empty);
     ar_data__destroy(own_loaded_mixed);
+    ar_yaml_reader__destroy(own_reader3);
     unlink("test_map_empty_list.yaml");
     
     printf("✓ Empty containers test passed\n");
@@ -342,8 +382,12 @@ static void test_yaml_reader__type_inference_edge_cases(void) {
     fprintf(file, "scientific: 1.23e-4\n");         // Should become double
     fclose(file);
     
+    // Create reader instance
+    ar_yaml_reader_t *own_reader = ar_yaml_reader__create(NULL);
+    assert(own_reader != NULL);
+    
     // Read and verify types
-    ar_data_t *own_loaded = ar_yaml_reader__read_from_file("test_type_inference.yaml");
+    ar_data_t *own_loaded = ar_yaml_reader__read_from_file(own_reader, "test_type_inference.yaml");
     assert(own_loaded != NULL);
     assert(ar_data__get_type(own_loaded) == AR_DATA_TYPE__MAP);
     
@@ -416,6 +460,7 @@ static void test_yaml_reader__type_inference_edge_cases(void) {
     
     // Cleanup
     ar_data__destroy(own_loaded);
+    ar_yaml_reader__destroy(own_reader);
     unlink("test_type_inference.yaml");
     
     printf("✓ Type inference edge cases test passed\n");
@@ -445,8 +490,12 @@ static void test_yaml_reader__full_agent_structure(void) {
     // Write to file
     assert(ar_yaml_writer__write_to_file(own_agent, "test_agent_structure.yaml") == true);
     
-    // Read back
-    ar_data_t *own_loaded = ar_yaml_reader__read_from_file("test_agent_structure.yaml");
+    // Create reader instance
+    ar_yaml_reader_t *own_reader = ar_yaml_reader__create(NULL);
+    assert(own_reader != NULL);
+    
+    // Read back using instance
+    ar_data_t *own_loaded = ar_yaml_reader__read_from_file(own_reader, "test_agent_structure.yaml");
     assert(own_loaded != NULL);
     assert(ar_data__get_type(own_loaded) == AR_DATA_TYPE__MAP);
     
@@ -479,6 +528,7 @@ static void test_yaml_reader__full_agent_structure(void) {
     // Cleanup
     ar_data__destroy(own_agent);
     ar_data__destroy(own_loaded);
+    ar_yaml_reader__destroy(own_reader);
     unlink("test_agent_structure.yaml");
     
     printf("✓ Full agent structure test passed\n");
@@ -508,8 +558,12 @@ static void test_yaml_reader__comments_and_blanks(void) {
     fprintf(file, "  # Final comment\n");
     fclose(file);
     
+    // Create reader instance
+    ar_yaml_reader_t *own_reader = ar_yaml_reader__create(NULL);
+    assert(own_reader != NULL);
+    
     // Read and verify structure
-    ar_data_t *own_loaded = ar_yaml_reader__read_from_file("test_comments.yaml");
+    ar_data_t *own_loaded = ar_yaml_reader__read_from_file(own_reader, "test_comments.yaml");
     assert(own_loaded != NULL);
     assert(ar_data__get_type(own_loaded) == AR_DATA_TYPE__MAP);
     
@@ -534,14 +588,118 @@ static void test_yaml_reader__comments_and_blanks(void) {
     
     // Cleanup
     ar_data__destroy(own_loaded);
+    ar_yaml_reader__destroy(own_reader);
     unlink("test_comments.yaml");
     
     printf("✓ Comments and blanks test passed\n");
 }
 
+/**
+ * Test instance creation
+ */
+static void test_yaml_reader__create_instance(void) {
+    printf("Testing instance creation...\n");
+    
+    // Create instance without log
+    ar_yaml_reader_t *own_reader = ar_yaml_reader__create(NULL);
+    assert(own_reader != NULL);
+    
+    // Destroy instance
+    ar_yaml_reader__destroy(own_reader);
+    
+    printf("✓ Instance creation test passed\n");
+}
+
+/**
+ * Test instance destruction with NULL
+ */
+static void test_yaml_reader__destroy_null(void) {
+    printf("Testing NULL destruction...\n");
+    
+    // Should not crash on NULL
+    ar_yaml_reader__destroy(NULL);
+    
+    printf("✓ NULL destruction test passed\n");
+}
+
+/**
+ * Test reading with instance
+ */
+static void test_yaml_reader__read_with_instance(void) {
+    printf("Testing reading with instance...\n");
+    
+    // Create a simple YAML file
+    ar_data_t *own_original = ar_data__create_string("test instance");
+    assert(ar_yaml_writer__write_to_file(own_original, "test_instance.yaml") == true);
+    
+    // Create reader instance
+    ar_yaml_reader_t *own_reader = ar_yaml_reader__create(NULL);
+    assert(own_reader != NULL);
+    
+    // Read using instance
+    ar_data_t *own_loaded = ar_yaml_reader__read_from_file(own_reader, "test_instance.yaml");
+    assert(own_loaded != NULL);
+    assert(ar_data__get_type(own_loaded) == AR_DATA_TYPE__STRING);
+    assert(strcmp(ar_data__get_string(own_loaded), "test instance") == 0);
+    
+    // Cleanup
+    ar_data__destroy(own_original);
+    ar_data__destroy(own_loaded);
+    ar_yaml_reader__destroy(own_reader);
+    unlink("test_instance.yaml");
+    
+    printf("✓ Reading with instance test passed\n");
+}
+
+/**
+ * Test that reader maintains container state across reads
+ */
+static void test_yaml_reader__container_state(void) {
+    printf("Testing container state management...\n");
+    
+    // Create reader instance
+    ar_yaml_reader_t *own_reader = ar_yaml_reader__create(NULL);
+    assert(own_reader != NULL);
+    
+    // First read - should succeed
+    ar_data_t *own_data1 = ar_data__create_map();
+    ar_data__set_map_string(own_data1, "key1", "value1");
+    assert(ar_yaml_writer__write_to_file(own_data1, "test_state1.yaml") == true);
+    
+    ar_data_t *own_loaded1 = ar_yaml_reader__read_from_file(own_reader, "test_state1.yaml");
+    assert(own_loaded1 != NULL);
+    
+    // Second read with same instance - should also succeed
+    ar_data_t *own_data2 = ar_data__create_list();
+    ar_data__list_add_last_string(own_data2, "item1");
+    assert(ar_yaml_writer__write_to_file(own_data2, "test_state2.yaml") == true);
+    
+    ar_data_t *own_loaded2 = ar_yaml_reader__read_from_file(own_reader, "test_state2.yaml");
+    assert(own_loaded2 != NULL);
+    
+    // Verify both reads succeeded independently
+    assert(ar_data__get_type(own_loaded1) == AR_DATA_TYPE__MAP);
+    assert(ar_data__get_type(own_loaded2) == AR_DATA_TYPE__LIST);
+    
+    // Cleanup
+    ar_data__destroy(own_data1);
+    ar_data__destroy(own_data2);
+    ar_data__destroy(own_loaded1);
+    ar_data__destroy(own_loaded2);
+    ar_yaml_reader__destroy(own_reader);
+    unlink("test_state1.yaml");
+    unlink("test_state2.yaml");
+    
+    printf("✓ Container state test passed\n");
+}
+
 int main(void) {
     printf("Running ar_yaml_reader tests...\n\n");
     
+    test_yaml_reader__create_instance();
+    test_yaml_reader__destroy_null();
+    test_yaml_reader__read_with_instance();
+    test_yaml_reader__container_state();
     test_yaml_reader__read_simple_string_from_file();
     test_yaml_reader__round_trip_map();
     test_yaml_reader__round_trip_list();
@@ -552,6 +710,6 @@ int main(void) {
     test_yaml_reader__full_agent_structure();
     test_yaml_reader__comments_and_blanks();
     
-    printf("\nAll 9 tests passed!\n");
+    printf("\nAll 13 tests passed!\n");
     return 0;
 }
