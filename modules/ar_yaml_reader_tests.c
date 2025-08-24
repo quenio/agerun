@@ -7,6 +7,7 @@
 #include "ar_yaml_writer.h"
 #include "ar_data.h"
 #include "ar_heap.h"
+#include "ar_log.h"
 
 /**
  * Helper function to write data to YAML file using instance-based API
@@ -666,6 +667,79 @@ static void test_yaml_reader__read_with_instance(void) {
 }
 
 /**
+ * Test error logging when file cannot be opened
+ */
+static void test_yaml_reader__error_logging_file_open(void) {
+    printf("Testing error logging for file open failure...\n");
+    
+    // Given a log instance
+    ar_log_t *own_log = ar_log__create();
+    assert(own_log != NULL);
+    
+    // And a reader instance with the log
+    ar_yaml_reader_t *own_reader = ar_yaml_reader__create(own_log);
+    assert(own_reader != NULL);
+    
+    // When trying to read from a non-existent file
+    const char *bad_path = "/nonexistent/directory/file.yaml";
+    ar_data_t *result = ar_yaml_reader__read_from_file(own_reader, bad_path);
+    
+    // Then the read should fail
+    assert(result == NULL);
+    
+    // And an error should be logged
+    const char *error_msg = ar_log__get_last_error_message(own_log);
+    assert(error_msg != NULL);
+    assert(strstr(error_msg, "Failed to open file for reading") != NULL);
+    assert(strstr(error_msg, bad_path) != NULL);
+    
+    // Clean up
+    ar_yaml_reader__destroy(own_reader);
+    ar_log__destroy(own_log);
+    
+    printf("✓ File open error logging test passed\n");
+}
+
+/**
+ * Test error logging when file is empty
+ */
+static void test_yaml_reader__error_logging_empty_file(void) {
+    printf("Testing error logging for empty file...\n");
+    
+    // Given a log instance
+    ar_log_t *own_log = ar_log__create();
+    assert(own_log != NULL);
+    
+    // And a reader instance with the log
+    ar_yaml_reader_t *own_reader = ar_yaml_reader__create(own_log);
+    assert(own_reader != NULL);
+    
+    // Create an empty file
+    const char *empty_file = "test_empty.yaml";
+    FILE *file = fopen(empty_file, "w");
+    assert(file != NULL);
+    fclose(file);
+    
+    // When trying to read from the empty file
+    ar_data_t *result = ar_yaml_reader__read_from_file(own_reader, empty_file);
+    
+    // Then the read should fail
+    assert(result == NULL);
+    
+    // And an error should be logged
+    const char *error_msg = ar_log__get_last_error_message(own_log);
+    assert(error_msg != NULL);
+    assert(strstr(error_msg, "File is empty") != NULL);
+    
+    // Clean up
+    unlink(empty_file);
+    ar_yaml_reader__destroy(own_reader);
+    ar_log__destroy(own_log);
+    
+    printf("✓ Empty file error logging test passed\n");
+}
+
+/**
  * Test that reader maintains container state across reads
  */
 static void test_yaml_reader__container_state(void) {
@@ -713,6 +787,8 @@ int main(void) {
     test_yaml_reader__create_instance();
     test_yaml_reader__destroy_null();
     test_yaml_reader__read_with_instance();
+    test_yaml_reader__error_logging_file_open();
+    test_yaml_reader__error_logging_empty_file();
     test_yaml_reader__container_state();
     test_yaml_reader__read_simple_string_from_file();
     test_yaml_reader__round_trip_map();
@@ -724,6 +800,6 @@ int main(void) {
     test_yaml_reader__full_agent_structure();
     test_yaml_reader__comments_and_blanks();
     
-    printf("\nAll 13 tests passed!\n");
+    printf("\nAll 15 tests passed!\n");
     return 0;
 }

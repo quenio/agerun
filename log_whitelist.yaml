@@ -682,6 +682,20 @@ ignored_errors:
     message: "Warning: Could not load methods from file"
     comment: "Expected warning in grade evaluator tests"
 
+  # ar_yaml_reader_tests
+  - context: "ar_yaml_reader_tests"
+    message: "ERROR: Failed to open file for reading: /nonexistent/directory/file.yaml"
+    comment: "Testing error logging when file cannot be opened"
+  - context: "ar_yaml_reader_tests"
+    message: "ERROR: File is empty: test_empty.yaml"
+    comment: "Testing error logging when file is empty"
+  - context: "ar_yaml_reader_tests"
+    message: "Testing error logging for file open failure..."
+    comment: "Test status message for file open error test"
+  - context: "ar_yaml_reader_tests"
+    message: "Testing error logging for empty file..."
+    comment: "Test status message for empty file error test"
+
   # ar_yaml_writer_tests
   - context: "ar_yaml_writer_tests"
     message: "ERROR: Failed to open file for writing: /nonexistent/directory/file.yaml"

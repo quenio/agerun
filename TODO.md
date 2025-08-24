@@ -6,6 +6,9 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+### ar_yaml_reader Error Logging Implementation (Completed 2025-08-24)
+- [x] Added comprehensive error logging to ar_yaml_reader using existing ar_log instance; implemented error messages for 3 failure conditions: file open failure, empty file, and NULL filename; added 2 new tests specifically for error logging verification; updated documentation to reflect 15 total tests and error handling details; added whitelist entries for intentional test errors; removed unused ar_io dependency; all tests pass with zero memory leaks; build time: 1m 25s
+
 ### ar_yaml_writer Module Instantiation (Completed 2025-08-24)
 - [x] Made ar_yaml_writer instantiable with opaque type pattern for encapsulation; migrated all 4 original tests plus added 3 new tests (7 total) to instance-based API; removed backward compatibility wrapper after updating ar_yaml_reader_tests; renamed write_to_file_with_instance to write_to_file as primary API; added ar_log support for error reporting with dedicated test; removed unused ar_io dependency; all tests pass with zero memory leaks; build time: 1m 24s
 

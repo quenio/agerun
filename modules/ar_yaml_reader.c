@@ -77,19 +77,31 @@ void ar_yaml_reader__destroy(ar_yaml_reader_t *own_reader) {
  * Read YAML file into ar_data_t structure
  */
 ar_data_t* ar_yaml_reader__read_from_file(ar_yaml_reader_t *mut_reader, const char *ref_filename) {
-    (void)mut_reader; // Will be used in later cycles
-    if (!ref_filename) {
+    if (!mut_reader || !ref_filename) {
+        if (mut_reader && mut_reader->ref_log && !ref_filename) {
+            ar_log__error(mut_reader->ref_log, "NULL filename provided to YAML reader");
+        }
         return NULL;
     }
     
     FILE *file = fopen(ref_filename, "r");
     if (!file) {
+        if (mut_reader->ref_log) {
+            char error_msg[256];
+            snprintf(error_msg, sizeof(error_msg), "Failed to open file for reading: %s", ref_filename);
+            ar_log__error(mut_reader->ref_log, error_msg);
+        }
         return NULL;
     }
     
     // Skip header line if present  
     char buffer[1024];
     if (fgets(buffer, sizeof(buffer), file) == NULL) {
+        if (mut_reader->ref_log) {
+            char error_msg[256];
+            snprintf(error_msg, sizeof(error_msg), "File is empty: %s", ref_filename);
+            ar_log__error(mut_reader->ref_log, error_msg);
+        }
         fclose(file);
         return NULL;
     }

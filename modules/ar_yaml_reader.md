@@ -74,7 +74,12 @@ if (own_loaded != NULL) {
 
 ## Testing
 
-The module includes 9 comprehensive tests in `ar_yaml_reader_tests.c`:
+The module includes 15 comprehensive tests in `ar_yaml_reader_tests.c`:
+- Instance creation and destruction
+- Reading with instance-based API
+- Error logging for file open failures
+- Error logging for empty files
+- Container state management
 - Simple string reading
 - Round-trip tests for maps and lists
 - Nested structure handling
@@ -87,15 +92,19 @@ The module includes 9 comprehensive tests in `ar_yaml_reader_tests.c`:
 
 - `ar_data`: For data structure representation
 - `ar_heap`: For memory management
-- `ar_io`: For file operations
+- `ar_log`: For error reporting
 - `ar_list`: For container stack management
 - `ar_string`: For string manipulation
 
 ## Error Handling
 
 - Returns NULL if file cannot be opened
+- Returns NULL if file is empty
 - Returns NULL if parsing fails
-- Logs errors via `ar_io__error()`
+- Logs errors via ar_log instance when available:
+  - "Failed to open file for reading: <filename>"
+  - "File is empty: <filename>"
+  - "NULL filename provided to YAML reader"
 - Cleans up partial structures on failure
 
 ## See Also
