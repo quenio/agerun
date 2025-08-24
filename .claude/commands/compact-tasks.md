@@ -1,6 +1,6 @@
-**Role: Documentation Specialist**
-
 Compact the TODO.md file by condensing completed tasks while keeping incomplete tasks untouched.
+
+**Role: Documentation Specialist**
 
 This uses the selective compaction pattern for mixed-state documents ([details](../../kb/selective-compaction-pattern.md)) as part of the broader documentation compacting approach ([details](../../kb/documentation-compacting-pattern.md)).
 

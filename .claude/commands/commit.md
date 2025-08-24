@@ -1,6 +1,6 @@
-**Role: Release Manager**
-
 Create a git commit following the exact workflow specified in CLAUDE.md.
+
+**Role: Release Manager**
 
 ## Pre-Commit Checklist (MANDATORY - ALWAYS CHECK THIS)
 

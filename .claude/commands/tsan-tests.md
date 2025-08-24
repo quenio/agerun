@@ -1,6 +1,6 @@
-**Role: QA Engineer**
-
 Run thread sanitizer on all tests for detecting data races.
+
+**Role: QA Engineer**
 
 ```bash
 make tsan-tests 2>&1

@@ -1,6 +1,6 @@
-**Role: Performance Analyst**
-
 Run static analysis on the executable code.
+
+**Role: Performance Analyst**
 
 ```bash
 make analyze-exec 2>&1

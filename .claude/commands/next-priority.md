@@ -1,6 +1,6 @@
-**Role: Project Manager**
-
 Read CLAUDE.md in order to prepare yourself for this new session. Then, suggest the next priority based on the TODO.md file. 
+
+**Role: Project Manager**
 
 When determining priority, use quantitative metrics where available ([details](../../kb/quantitative-priority-setting.md)):
 - Error rates (e.g., "97.6% silent failures")

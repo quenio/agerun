@@ -1,6 +1,6 @@
-**Role: Performance Analyst**
-
 Run static analysis on the test code.
+
+**Role: Performance Analyst**
 
 ```bash
 make analyze-tests 2>&1

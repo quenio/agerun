@@ -1,6 +1,6 @@
-**Role: QA Engineer**
-
 Build and run all tests.
+
+**Role: QA Engineer**
 
 ```bash
 make run-tests 2>&1

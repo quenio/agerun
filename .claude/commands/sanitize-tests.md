@@ -1,6 +1,6 @@
-**Role: QA Engineer**
-
 Run address sanitizer on all tests for detecting memory issues.
+
+**Role: QA Engineer**
 
 ```bash
 make sanitize-tests 2>&1
