@@ -78,3 +78,4 @@ See [Migration Script Systematic Updates](migration-script-systematic-updates.md
 - [Module Instantiation Prerequisites](module-instantiation-prerequisites.md)
 - [Instance Association Pattern](instance-association-pattern.md)
 - [Global Instance Wrapper Anti-Pattern](global-instance-wrapper-anti-pattern.md)
+- [Stateless Module Verification](stateless-module-verification.md)

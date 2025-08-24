@@ -288,6 +288,9 @@ grep -r "function_name\|concept" modules/
 **Quality**: <50 lines/function, ≤5 params, validate docs ([details](kb/module-quality-checklist.md))
 **Instantiation**: Bottom-up by dependencies ([details](kb/module-instantiation-prerequisites.md))
 **Resources**: Use instance-specific not global ([details](kb/instance-vs-global-resource-pattern.md))
+**Error logging**: Utilize ar_log instances for all error conditions ([details](kb/error-logging-instance-utilization.md))
+**Consistency**: Verify sister modules need same improvements ([details](kb/module-consistency-verification.md))
+**Stateless**: Ensure no global state beyond instance management ([details](kb/stateless-module-verification.md))
 
 ### 7. Method Development
 
