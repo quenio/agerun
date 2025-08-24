@@ -92,6 +92,7 @@ EOF
 ```
 
 ## Related Patterns
+- [Quantitative Priority Setting](quantitative-priority-setting.md)
 - [Error Logging Instance Utilization](error-logging-instance-utilization.md)
 - [Global to Instance API Migration](global-to-instance-api-migration.md)
 - [Cross-Module Pattern Discovery](cross-method-pattern-discovery.md)

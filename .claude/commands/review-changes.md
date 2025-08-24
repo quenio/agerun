@@ -31,6 +31,7 @@ This command performs a comprehensive review of all uncommitted changes across m
 - **Test Results**: Checks for memory leaks and test failures
 - **File Hygiene**: Identifies backup/temporary files that shouldn't be committed
 - **Documentation Sync**: Ensures docs match code changes
+- **Task Planning**: For large changes, checks for analysis report ([details](../../kb/report-driven-task-planning.md))
 
 ## Usage:
 
@@ -44,7 +45,7 @@ This command performs a comprehensive review of all uncommitted changes across m
 2. **Pattern Detection**: Scans for known issues and anti-patterns
 3. **Compliance Check**: Verifies against architectural principles
 4. **Documentation Validation**: Ensures docs are accurate and complete
-5. **Quality Metrics**: Reports on code quality indicators
+5. **Quality Metrics**: Reports on code quality indicators with quantitative data ([details](../../kb/quantitative-priority-setting.md))
 6. **Memory Leak Check**: Scans memory_report_*.log files for leaks
 7. **Test Effectiveness**: Verifies tests actually catch failures
 8. **Refactoring Safety**: Uses diff to verify code moves (not rewrites)

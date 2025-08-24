@@ -96,6 +96,8 @@ echo "Build completed at $(date)"
 - Memory: "reduced from X MB to Y MB (Z% savings)"
 
 ## Related Patterns
+- [Quantitative Priority Setting](quantitative-priority-setting.md)
+- [Report-Driven Task Planning](report-driven-task-planning.md)
 - [Self-Documenting Modifications Pattern](self-documenting-modifications-pattern.md)
 - [Retroactive Task Documentation](retroactive-task-documentation.md)
 - [Documentation Compacting Pattern](documentation-compacting-pattern.md)

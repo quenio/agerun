@@ -56,6 +56,7 @@ git commit -m "feat: complete TDD Cycle N - [description]"
 ```
 
 ## Related Patterns
+- [TDD Cycle Effort Estimation](tdd-cycle-effort-estimation.md)
 - [TDD Advanced Large Refactoring](tdd-advanced-large-refactoring.md)
 - [TDD Cycle Detailed Explanation](tdd-cycle-detailed-explanation.md)
 - [Progressive System Decoupling TDD](progressive-system-decoupling-tdd.md)

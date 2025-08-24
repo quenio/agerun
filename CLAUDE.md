@@ -72,8 +72,10 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Documentation compaction**: Extract verbose content to KB while preserving links ([details](kb/documentation-compacting-pattern.md))
 **Selective compaction**: Compact only completed items in mixed-state documents ([details](kb/selective-compaction-pattern.md))
 **Quantitative metrics**: Use specific numbers instead of vague descriptions ([details](kb/quantitative-documentation-metrics.md))
+**Priority setting**: Use metrics like "97.6% failures" for objective prioritization ([details](kb/quantitative-priority-setting.md))
 **Self-documenting changes**: Add entries for significant modifications ([details](kb/self-documenting-modifications-pattern.md))
 **Retroactive tracking**: Add completed unplanned tasks to TODO.md ([details](kb/retroactive-task-documentation.md))
+**Report-driven planning**: Create analysis reports before large task sets ([details](kb/report-driven-task-planning.md))
 **Learning extraction**: Multi-pass review reveals hidden patterns ([details](kb/comprehensive-learning-extraction-pattern.md))
 
 **Documentation Standards (MANDATORY)** ([details](kb/documentation-standards-integration.md)):
@@ -140,6 +142,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Test effectiveness**: Break implementation to verify tests catch failures ([details](kb/test-effectiveness-verification.md))
 **Documentation validation**: Tests verify documented behavior is accurate ([details](kb/test-driven-documentation-validation.md))
 **Multi-session**: Use session tracking for large changes ([details](kb/multi-session-tdd-planning.md))
+**Effort estimation**: Estimate in TDD cycles not hours/days ([details](kb/tdd-cycle-effort-estimation.md))
 **Lifecycle separation**: Handle creation/destruction in separate cycles ([details](kb/lifecycle-event-separation-tdd.md))
 **Test modification**: Ask permission before changing tests ([details](kb/permission-based-test-modification.md))
 **Compilation-based TDD**: Use compilation failure as RED phase for infrastructure removal ([details](kb/compilation-based-tdd-approach.md))
