@@ -326,7 +326,101 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 **Estimated Timeline**: 3-5 sessions depending on discoveries during implementation
 
-### 2. PREREQUISITE - Remove Global APIs from Core Modules
+### 2. HIGH PRIORITY - Parser Module Error Logging Enhancement
+
+**Rationale**: Module consistency analysis (reports/module-consistency-analysis-2025-08-24.md) revealed severe underutilization of error logging across 11 parser modules. The ar_expression_parser has 41 error conditions but only 1 is logged (97.6% silent failures).
+
+**Impact**: Silent failures make debugging extremely difficult, wasting 50-70% more time on parser-related issues.
+
+**Execution Plan** (45-55 TDD cycles total):
+
+#### Phase 1: Critical Parsers (Week 1 - 11-14 cycles)
+- [ ] **ar_expression_parser** (8-10 TDD cycles) - MOST CRITICAL
+  - [ ] Add error logging for NULL parameters (1 cycle)
+  - [ ] Add error logging for memory allocation failures (2 cycles)
+  - [ ] Add error logging for invalid token types (2 cycles)
+  - [ ] Add error logging for unexpected end of input (2 cycles)
+  - [ ] Add error logging for parse state errors (2 cycles)
+  - [ ] Update documentation with error handling section
+  - [ ] Verify all 41 error conditions are logged
+  - [ ] Zero memory leaks verification
+  
+- [ ] **ar_instruction_parser** (3-4 TDD cycles)
+  - [ ] Add error logging for NULL parameters (1 cycle)
+  - [ ] Add error logging for invalid instruction types (1 cycle)
+  - [ ] Add error logging for parse failures (1 cycle)
+  - [ ] Update documentation with error handling section
+  - [ ] Verify all 8 error conditions are logged
+  - [ ] Zero memory leaks verification
+
+#### Phase 2: Instruction-Specific Parsers (Week 2-3 - 18-27 cycles)
+Each parser needs 2-3 TDD cycles for comprehensive error logging:
+
+- [ ] **ar_assignment_instruction_parser** (2-3 cycles)
+  - [ ] Add NULL parameter logging
+  - [ ] Add parse failure logging
+  - [ ] Update documentation
+  
+- [ ] **ar_build_instruction_parser** (2-3 cycles)
+  - [ ] Add NULL parameter logging
+  - [ ] Add parse failure logging
+  - [ ] Update documentation
+  
+- [ ] **ar_compile_instruction_parser** (2-3 cycles)
+  - [ ] Add NULL parameter logging
+  - [ ] Add parse failure logging
+  - [ ] Update documentation
+  
+- [ ] **ar_condition_instruction_parser** (2-3 cycles)
+  - [ ] Add NULL parameter logging
+  - [ ] Add parse failure logging
+  - [ ] Update documentation
+  
+- [ ] **ar_deprecate_instruction_parser** (2-3 cycles)
+  - [ ] Add NULL parameter logging
+  - [ ] Add parse failure logging
+  - [ ] Update documentation
+  
+- [ ] **ar_exit_instruction_parser** (2-3 cycles)
+  - [ ] Add NULL parameter logging
+  - [ ] Add parse failure logging
+  - [ ] Update documentation
+  
+- [ ] **ar_parse_instruction_parser** (2-3 cycles)
+  - [ ] Add NULL parameter logging
+  - [ ] Add parse failure logging
+  - [ ] Update documentation
+  
+- [ ] **ar_send_instruction_parser** (2-3 cycles)
+  - [ ] Add NULL parameter logging
+  - [ ] Add parse failure logging
+  - [ ] Update documentation
+  
+- [ ] **ar_spawn_instruction_parser** (2-3 cycles)
+  - [ ] Add NULL parameter logging
+  - [ ] Add parse failure logging
+  - [ ] Update documentation
+
+#### Phase 3: Verification and Documentation (Week 3 - 2 cycles)
+- [ ] Run module consistency check to verify all parsers have adequate logging
+- [ ] Update log_whitelist.yaml with any new intentional test errors
+- [ ] Create KB article documenting parser error logging patterns
+- [ ] Update CLAUDE.md if new patterns emerge
+
+**Success Criteria** (per reports/module-consistency-analysis-2025-08-24.md Section 4):
+- All NULL returns have associated error logging (when instance exists)
+- Error messages follow consistent format across all parsers
+- Documentation includes error handling sections
+- Zero memory leaks maintained
+- Log whitelist updated for test errors
+
+**Estimated Benefits** (per report Section 7):
+- Reduce debugging time by 50-70% for parser issues
+- Eliminate silent failures in 11 modules
+- Improve test coverage with error condition tests
+- Enable better error reporting in user tools
+
+### 3. PREREQUISITE - Remove Global APIs from Core Modules
 
 **Rationale**: Before decomposing the system module, removing all global functions and instances will create a cleaner architecture. This forces all code to use instance-based APIs and makes decomposition more straightforward.
 
@@ -387,7 +481,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
 **Estimated Impact**: ~50 files need updates
 **Estimated Timeline**: 2-3 sessions
 
-### 3. System Module Decomposition (Depends on Global API Removal)
+### 4. System Module Decomposition (Depends on Global API Removal)
 
 **Current State**: Both ar_agency and ar_system have been successfully made instantiable (completed 2025-08-02).
 - ar_agency uses methodology as borrowed reference (completed 2025-08-01)
