@@ -79,3 +79,4 @@ See [Migration Script Systematic Updates](migration-script-systematic-updates.md
 - [Instance Association Pattern](instance-association-pattern.md)
 - [Global Instance Wrapper Anti-Pattern](global-instance-wrapper-anti-pattern.md)
 - [Stateless Module Verification](stateless-module-verification.md)
+- [API Suffix Cleanup Pattern](api-suffix-cleanup-pattern.md)

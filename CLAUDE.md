@@ -137,6 +137,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Verify fix**: Run single test first, then full suite ([details](kb/test-first-verification-practice.md))
 **Test reality**: Align expectations with actual behavior ([details](kb/test-expectation-reality-alignment.md))
 **Test effectiveness**: Break implementation to verify tests catch failures ([details](kb/test-effectiveness-verification.md))
+**Documentation validation**: Tests verify documented behavior is accurate ([details](kb/test-driven-documentation-validation.md))
 **Multi-session**: Use session tracking for large changes ([details](kb/multi-session-tdd-planning.md))
 **Lifecycle separation**: Handle creation/destruction in separate cycles ([details](kb/lifecycle-event-separation-tdd.md))
 **Test modification**: Ask permission before changing tests ([details](kb/permission-based-test-modification.md))
@@ -291,6 +292,8 @@ grep -r "function_name\|concept" modules/
 **Error logging**: Utilize ar_log instances for all error conditions ([details](kb/error-logging-instance-utilization.md))
 **Consistency**: Verify sister modules need same improvements ([details](kb/module-consistency-verification.md))
 **Stateless**: Ensure no global state beyond instance management ([details](kb/stateless-module-verification.md))
+**API cleanup**: Remove suffixes after migration complete ([details](kb/api-suffix-cleanup-pattern.md))
+**Null instance**: Silent failure acceptable when instance is NULL ([details](kb/error-logging-null-instance-limitation.md))
 
 ### 7. Method Development
 
