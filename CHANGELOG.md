@@ -2,6 +2,33 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-08-24
+
+### ✅ ar_yaml_writer Instantiation - Instance-Based Architecture
+- Made ar_yaml_writer module instantiable with opaque type pattern:
+  - Created ar_yaml_writer_t opaque type for encapsulation
+  - Accepts ar_log_t instance at creation for error reporting
+  - Instance-based API: ar_yaml_writer__write_to_file(writer, data, filename)
+- Implementation highlights:
+  - 10 TDD cycles for complete refactoring
+  - Migrated all 4 original tests to instance-based API
+  - Added 3 new tests (7 total) including error logging test
+  - Removed backward compatibility wrapper after migration
+  - Function renamed from write_to_file_with_instance to write_to_file
+- Error reporting improvements:
+  - Uses ar_log instance for all error messages
+  - Removed dependency on ar_io for error handling
+  - Added dedicated test for error logging functionality
+- Test coverage:
+  - 7 comprehensive tests all passing
+  - Zero memory leaks throughout
+  - Updated ar_yaml_reader_tests to use new API
+- Benefits:
+  - Consistent with ar_yaml_reader's instantiable design
+  - Thread-safe with no global state
+  - Proper dependency injection for logging
+  - Ready for integration with ar_agent_store
+
 ## 2025-08-18
 
 ### ✅ ar_yaml_reader Instantiation - Instance-Based Architecture

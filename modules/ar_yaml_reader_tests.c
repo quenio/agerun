@@ -9,6 +9,20 @@
 #include "ar_heap.h"
 
 /**
+ * Helper function to write data to YAML file using instance-based API
+ */
+static bool _write_yaml_file(const ar_data_t *ref_data, const char *ref_filename) {
+    ar_yaml_writer_t *own_writer = ar_yaml_writer__create(NULL);
+    if (own_writer == NULL) {
+        return false;
+    }
+    
+    bool result = ar_yaml_writer__write_to_file(own_writer, ref_data, ref_filename);
+    ar_yaml_writer__destroy(own_writer);
+    return result;
+}
+
+/**
  * Test that ar_yaml_reader can read simple string from file
  */
 static void test_yaml_reader__read_simple_string_from_file(void) {
@@ -16,7 +30,7 @@ static void test_yaml_reader__read_simple_string_from_file(void) {
     
     // First write a string to file using writer
     ar_data_t *own_original = ar_data__create_string("test value");
-    assert(ar_yaml_writer__write_to_file(own_original, "test_read_string.yaml") == true);
+    assert(_write_yaml_file(own_original, "test_read_string.yaml") == true);
     
     // Create reader instance
     ar_yaml_reader_t *own_reader = ar_yaml_reader__create(NULL);
@@ -50,7 +64,7 @@ static void test_yaml_reader__round_trip_map(void) {
     ar_data__set_map_double(own_original, "ratio", 3.14);
     
     // Write to file
-    assert(ar_yaml_writer__write_to_file(own_original, "test_roundtrip_map.yaml") == true);
+    assert(_write_yaml_file(own_original, "test_roundtrip_map.yaml") == true);
     
     // Create reader instance
     ar_yaml_reader_t *own_reader = ar_yaml_reader__create(NULL);
@@ -104,7 +118,7 @@ static void test_yaml_reader__round_trip_list(void) {
     ar_data__list_add_last_string(own_original, "last");
     
     // Write to file
-    assert(ar_yaml_writer__write_to_file(own_original, "test_roundtrip_list.yaml") == true);
+    assert(_write_yaml_file(own_original, "test_roundtrip_list.yaml") == true);
     
     // Create reader instance
     ar_yaml_reader_t *own_reader = ar_yaml_reader__create(NULL);
@@ -168,7 +182,7 @@ static void test_yaml_reader__nested_map_with_list(void) {
     ar_data__set_map_data(own_original, "items", own_list);
     
     // Write to file
-    assert(ar_yaml_writer__write_to_file(own_original, "test_nested_map_list.yaml") == true);
+    assert(_write_yaml_file(own_original, "test_nested_map_list.yaml") == true);
     
     // Create reader instance
     ar_yaml_reader_t *own_reader = ar_yaml_reader__create(NULL);
@@ -233,7 +247,7 @@ static void test_yaml_reader__list_of_maps(void) {
     ar_data__list_add_last_data(own_original, own_map2);
     
     // Write to file
-    assert(ar_yaml_writer__write_to_file(own_original, "test_list_of_maps.yaml") == true);
+    assert(_write_yaml_file(own_original, "test_list_of_maps.yaml") == true);
     
     // Create reader instance
     ar_yaml_reader_t *own_reader = ar_yaml_reader__create(NULL);
@@ -289,7 +303,7 @@ static void test_yaml_reader__empty_containers(void) {
     
     // Test empty map
     ar_data_t *own_empty_map = ar_data__create_map();
-    assert(ar_yaml_writer__write_to_file(own_empty_map, "test_empty_map.yaml") == true);
+    assert(_write_yaml_file(own_empty_map, "test_empty_map.yaml") == true);
     
     // Create reader instance
     ar_yaml_reader_t *own_reader = ar_yaml_reader__create(NULL);
@@ -310,7 +324,7 @@ static void test_yaml_reader__empty_containers(void) {
     
     // Test empty list
     ar_data_t *own_empty_list = ar_data__create_list();
-    assert(ar_yaml_writer__write_to_file(own_empty_list, "test_empty_list.yaml") == true);
+    assert(_write_yaml_file(own_empty_list, "test_empty_list.yaml") == true);
     
     // Create another reader instance
     ar_yaml_reader_t *own_reader2 = ar_yaml_reader__create(NULL);
@@ -332,7 +346,7 @@ static void test_yaml_reader__empty_containers(void) {
     ar_data_t *own_empty_items = ar_data__create_list();
     ar_data__set_map_data(own_map_with_empty, "items", own_empty_items);
     
-    assert(ar_yaml_writer__write_to_file(own_map_with_empty, "test_map_empty_list.yaml") == true);
+    assert(_write_yaml_file(own_map_with_empty, "test_map_empty_list.yaml") == true);
     
     // Create another reader instance
     ar_yaml_reader_t *own_reader3 = ar_yaml_reader__create(NULL);
@@ -488,7 +502,7 @@ static void test_yaml_reader__full_agent_structure(void) {
     ar_data__set_map_data(own_agent, "memory", own_memory);
     
     // Write to file
-    assert(ar_yaml_writer__write_to_file(own_agent, "test_agent_structure.yaml") == true);
+    assert(_write_yaml_file(own_agent, "test_agent_structure.yaml") == true);
     
     // Create reader instance
     ar_yaml_reader_t *own_reader = ar_yaml_reader__create(NULL);
@@ -630,7 +644,7 @@ static void test_yaml_reader__read_with_instance(void) {
     
     // Create a simple YAML file
     ar_data_t *own_original = ar_data__create_string("test instance");
-    assert(ar_yaml_writer__write_to_file(own_original, "test_instance.yaml") == true);
+    assert(_write_yaml_file(own_original, "test_instance.yaml") == true);
     
     // Create reader instance
     ar_yaml_reader_t *own_reader = ar_yaml_reader__create(NULL);
@@ -664,7 +678,7 @@ static void test_yaml_reader__container_state(void) {
     // First read - should succeed
     ar_data_t *own_data1 = ar_data__create_map();
     ar_data__set_map_string(own_data1, "key1", "value1");
-    assert(ar_yaml_writer__write_to_file(own_data1, "test_state1.yaml") == true);
+    assert(_write_yaml_file(own_data1, "test_state1.yaml") == true);
     
     ar_data_t *own_loaded1 = ar_yaml_reader__read_from_file(own_reader, "test_state1.yaml");
     assert(own_loaded1 != NULL);
@@ -672,7 +686,7 @@ static void test_yaml_reader__container_state(void) {
     // Second read with same instance - should also succeed
     ar_data_t *own_data2 = ar_data__create_list();
     ar_data__list_add_last_string(own_data2, "item1");
-    assert(ar_yaml_writer__write_to_file(own_data2, "test_state2.yaml") == true);
+    assert(_write_yaml_file(own_data2, "test_state2.yaml") == true);
     
     ar_data_t *own_loaded2 = ar_yaml_reader__read_from_file(own_reader, "test_state2.yaml");
     assert(own_loaded2 != NULL);

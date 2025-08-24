@@ -1,15 +1,46 @@
 #include "ar_yaml_writer.h"
 #include "ar_data.h"
 #include "ar_heap.h"
-#include "ar_io.h"
+#include "ar_log.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <inttypes.h>
 
+/* Opaque writer structure */
+struct ar_yaml_writer_s {
+    ar_log_t *ref_log;  /* Borrowed reference for error reporting */
+};
+
 /* Forward declarations for internal functions */
 static void _write_yaml_to_file(FILE *file, const ar_data_t *ref_data, int indent_level, bool is_list_item);
 static void _write_indent(FILE *file, int indent_level);
+
+/**
+ * Create a new YAML writer instance
+ */
+ar_yaml_writer_t* ar_yaml_writer__create(ar_log_t *ref_log) {
+    ar_yaml_writer_t *own_writer = AR__HEAP__MALLOC(sizeof(ar_yaml_writer_t), "ar_yaml_writer_t");
+    if (own_writer == NULL) {
+        return NULL;
+    }
+    
+    own_writer->ref_log = ref_log;  /* Borrowed reference - NOT owned */
+    return own_writer;  /* Ownership transferred to caller */
+}
+
+/**
+ * Destroy a YAML writer instance
+ */
+void ar_yaml_writer__destroy(ar_yaml_writer_t *own_writer) {
+    if (own_writer == NULL) {
+        return;
+    }
+    
+    /* Note: ref_log is a borrowed reference - do NOT destroy it */
+    
+    AR__HEAP__FREE(own_writer);
+}
 
 /**
  * Write indentation to file
@@ -157,16 +188,22 @@ static void _write_yaml_to_file(FILE *file, const ar_data_t *ref_data, int inden
 }
 
 /**
- * Write ar_data_t structure directly to YAML file
+ * Write ar_data_t structure to YAML file
  */
-bool ar_yaml_writer__write_to_file(const ar_data_t *ref_data, const char *ref_filename) {
-    if (!ref_data || !ref_filename) {
+bool ar_yaml_writer__write_to_file(ar_yaml_writer_t *mut_writer, 
+                                    const ar_data_t *ref_data, 
+                                    const char *ref_filename) {
+    if (!mut_writer || !ref_data || !ref_filename) {
         return false;
     }
     
     FILE *file = fopen(ref_filename, "w");
     if (!file) {
-        ar_io__error("Failed to open file for writing: %s", ref_filename);
+        if (mut_writer->ref_log) {
+            char error_msg[256];
+            snprintf(error_msg, sizeof(error_msg), "Failed to open file for writing: %s", ref_filename);
+            ar_log__error(mut_writer->ref_log, error_msg);
+        }
         return false;
     }
     
@@ -180,3 +217,4 @@ bool ar_yaml_writer__write_to_file(const ar_data_t *ref_data, const char *ref_fi
     fclose(file);
     return true;
 }
+
