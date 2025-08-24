@@ -218,7 +218,7 @@ If you're tempted to use hypothetical types, replace with real ones:
 
 ## Step 6: Update Existing KB Articles with Cross-References
 
-**MANDATORY**: Add cross-references to create a web of knowledge:
+**CRITICAL - OFTEN MISSED**: Add cross-references to create a web of knowledge ([details](../../kb/new-learnings-complete-integration-pattern.md)):
 
 1. **For each new article created**:
    - Find related existing articles
@@ -237,7 +237,7 @@ If you're tempted to use hypothetical types, replace with real ones:
 
 ## Step 7: Review and Update Existing Commands
 
-**NEW: Check if any Claude commands should be updated based on learnings**:
+**CRITICAL - OFTEN MISSED**: Check if any Claude commands should be updated based on learnings ([details](../../kb/new-learnings-complete-integration-pattern.md)):
 
 1. **Search for relevant commands**:
    ```bash
@@ -319,7 +319,29 @@ If updates are needed to CLAUDE.md:
 
 2. **Never reference non-existent articles in Related Patterns sections**
 
-## Step 11: Automatic Commit and Push
+## Step 11: Pre-Commit Integration Verification
+
+**CRITICAL**: Before committing, verify complete integration:
+
+```bash
+# Check that cross-references were added
+echo "=== Cross-References Added ==="
+git diff --name-only | grep "kb.*\.md" | wc -l
+echo "KB articles modified (should be > just new articles)"
+
+# Check that commands were updated if relevant
+echo "=== Commands Updated ==="
+git diff --name-only | grep ".claude/commands" | wc -l
+echo "Commands modified"
+
+# Verify bidirectional linking
+echo "=== Integration Completeness ==="
+if [ $(git diff --name-only | grep -c "kb/") -le $(git status --short | grep -c "^A.*kb") ]; then
+    echo "WARNING: Only new articles modified - missing cross-references!"
+fi
+```
+
+## Step 12: Automatic Commit and Push
 
 **EXECUTE THE FOLLOWING SEQUENCE AUTOMATICALLY:**
 

@@ -105,6 +105,7 @@ Signs of comprehensive extraction:
 - Patterns range from specific to general to meta
 
 ## Related Patterns
+- [New Learnings Complete Integration Pattern](new-learnings-complete-integration-pattern.md)
 - [User Feedback as QA](user-feedback-as-qa.md)
 - [Documentation Compacting Pattern](documentation-compacting-pattern.md)
 - [Self-Documenting Modifications Pattern](self-documenting-modifications-pattern.md)

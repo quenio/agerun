@@ -66,6 +66,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **When reading TODO.md**: Check [ ] = incomplete, [x] = complete. Read completion dates. Be explicit - list all components.
 **KB articles need CLAUDE.md references** to be accessible in future sessions ([details](kb/claude-md-reference-requirement.md))
 **Cross-reference new KB articles**: MANDATORY bidirectional linking when creating KB articles ([details](kb/new-learnings-cross-reference-requirement.md))
+**Complete integration**: Cross-refs + command updates often missed ([details](kb/new-learnings-complete-integration-pattern.md))
 **Evidence-based debugging**: Always verify with concrete evidence, not assumptions ([details](kb/evidence-based-debugging.md))
 **Bug-to-architecture**: Bugs can reveal architectural improvements ([details](kb/bug-to-architecture-pattern.md))
 **Build output review**: Review complete command output, not just final status ([details](kb/comprehensive-output-review.md))

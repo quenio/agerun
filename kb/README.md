@@ -51,6 +51,7 @@ Each learning file contains:
 - [Task Authorization Pattern](task-authorization-pattern.md)
 - [Atomic Commit Documentation Pattern](atomic-commit-documentation-pattern.md)
 - [Comprehensive Learning Extraction Pattern](comprehensive-learning-extraction-pattern.md)
+- [New Learnings Complete Integration Pattern](new-learnings-complete-integration-pattern.md)
 - [Multi-Session TDD Planning](multi-session-tdd-planning.md)
 - [Lifecycle Event Separation TDD](lifecycle-event-separation-tdd.md)
 - [Struggling Detection Pattern](struggling-detection-pattern.md)
