@@ -1,3 +1,5 @@
+**Role: Documentation Validator**
+
 Run documentation validation and fix any errors found using an iterative approach, then commit and push the fixes.
 
 ## Process:

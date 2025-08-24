@@ -1,3 +1,5 @@
+**Role: Knowledge Manager**
+
 ---
 description: Analyze session for new learnings and create properly validated kb articles
 ---

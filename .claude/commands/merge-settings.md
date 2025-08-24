@@ -1,3 +1,5 @@
+**Role: Configuration Manager**
+
 Merge ./.claude/settings.local.json into ./.claude/settings.json and remove the local file.
 
 Follow these steps:

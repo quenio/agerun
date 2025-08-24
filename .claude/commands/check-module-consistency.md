@@ -1,3 +1,5 @@
+**Role: Software Architect**
+
 ---
 description: Check for consistency improvements needed across related modules
 ---

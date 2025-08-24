@@ -1,3 +1,5 @@
+**Role: Documentation Specialist**
+
 Compact the CHANGELOG.md file by condensing completed milestones while preserving key information.
 
 Follow these steps:

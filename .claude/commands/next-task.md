@@ -1,3 +1,5 @@
+**Role: Task Coordinator**
+
 Read CLAUDE.md in order to prepare yourself for this new session. Then check the session's todo list using TodoRead. If no items are found in the session's todo list, stop and inform me that all session tasks are complete. If session tasks exist, work on the next task found in the session's todo list. 
 
 Before proceeding to execute the next task:

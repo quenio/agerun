@@ -1,3 +1,5 @@
+**Role: Code Reviewer**
+
 Review uncommitted changes for code quality, architectural compliance, and documentation accuracy.
 
 ## What it does:

@@ -1,3 +1,5 @@
+**Role: Project Manager**
+
 Read CLAUDE.md in order to prepare yourself for this new session. Then, suggest the next priority based on the TODO.md file. 
 
 When determining priority, use quantitative metrics where available ([details](../../kb/quantitative-priority-setting.md)):

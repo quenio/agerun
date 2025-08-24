@@ -1,3 +1,5 @@
+**Role: Quality Assurance Specialist**
+
 Check build logs for hidden issues that might not be caught by the build summary.
 
 ## What it does:
