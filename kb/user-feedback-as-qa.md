@@ -26,6 +26,11 @@ During ar_method_resolver implementation:
 - **Missing test**: "You did not do the following: Now let me add a test specifically for partial version resolution" → Added test
 - **Spec compliance**: "Does the spec say anything about wildcard support in version numbers?" → Check SPEC.md first
 
+During slash command role clarification:
+- **Feature utility question**: "Are any of these names actually helping the agent?" → Revealed decorative nature
+- **Simplification insight**: User question led to complete removal instead of improvement
+- **Functional validation**: Roles provided no execution value, just perceived clarity
+
 ## Generalization
 Integrate user-as-QA pattern into development workflow:
 1. **Present plans before implementation**: Share detailed implementation plans with domain experts
@@ -34,6 +39,8 @@ Integrate user-as-QA pattern into development workflow:
 4. **Validate assumptions**: "Does this approach fit the existing architecture?"
 5. **Check completeness**: "Are there other similar cases I should consider?"
 6. **Update plans immediately**: Incorporate feedback before starting implementation
+7. **Question feature utility**: When users ask "Is this actually helping?", validate functional value
+8. **Consider removal**: User questions about utility often reveal unnecessary complexity
 
 ## Implementation
 ```markdown
@@ -68,3 +75,4 @@ Integrate user-as-QA pattern into development workflow:
 - [Architectural Review in Feedback](architectural-review-in-feedback.md)
 - [Task Authorization Pattern](task-authorization-pattern.md)
 - [Resource-Aware API Design](resource-aware-api-design.md)
+- [Functional Value Validation Pattern](functional-value-validation-pattern.md)

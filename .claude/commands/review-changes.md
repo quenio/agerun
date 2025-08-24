@@ -9,6 +9,7 @@ This command performs a comprehensive review of all uncommitted changes across m
 - **Naming Conventions**: ar_module__function pattern, proper prefixes, consistent style
 - **Error Handling**: Proper propagation, single print location, graceful degradation
 - **Test Coverage**: BDD structure, memory leak verification, one test per behavior
+- **Feature Value**: Validate features provide functional value, not just decoration ([details](../../kb/functional-value-validation-pattern.md))
 
 ### 2. Architectural Compliance
 - **Parnas Principles**: Information hiding, single responsibility, no circular dependencies

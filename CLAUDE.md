@@ -236,6 +236,7 @@ grep -r "function_name\|concept" modules/
 - **Composition Over Inheritance**: Prefer composition patterns to create flexible, maintainable architectures ([details](kb/composition-over-inheritance-principle.md))
 - **Regression Investigation**: Trace root causes with git history ([details](kb/regression-root-cause-analysis.md))
 - **Resource-Aware APIs**: Design to avoid hidden memory costs ([details](kb/resource-aware-api-design.md))
+- **Functional Value**: Validate features provide value, not decoration ([details](kb/functional-value-validation-pattern.md))
 
 ### 4. Code Smells Detection and Prevention
 

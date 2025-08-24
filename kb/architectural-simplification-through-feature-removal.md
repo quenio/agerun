@@ -56,3 +56,4 @@ When encountering complex system-level features:
 - [Systematic Parameter Removal Refactoring](systematic-parameter-removal-refactoring.md)
 - [Compilation-Based TDD Approach](compilation-based-tdd-approach.md)
 - [Regression Test Removal Criteria](regression-test-removal-criteria.md)
+- [Functional Value Validation Pattern](functional-value-validation-pattern.md)

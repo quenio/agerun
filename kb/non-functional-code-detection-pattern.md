@@ -61,3 +61,4 @@ Before implementing complex migration strategies for removing features, verify t
 - [Architectural Simplification Through Feature Removal](architectural-simplification-through-feature-removal.md) - Broader simplification strategies
 - [Verification Through Removal Technique](verification-through-removal-technique.md) - Empirical method to verify code necessity
 - [Feature Remnant Cleanup Pattern](feature-remnant-cleanup-pattern.md) - Comprehensive cleanup after removal
+- [Functional Value Validation Pattern](functional-value-validation-pattern.md) - Validating features provide actual value beyond decoration
