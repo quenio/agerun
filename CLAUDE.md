@@ -74,6 +74,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Quantitative metrics**: Use specific numbers instead of vague descriptions ([details](kb/quantitative-documentation-metrics.md))
 **Self-documenting changes**: Add entries for significant modifications ([details](kb/self-documenting-modifications-pattern.md))
 **Retroactive tracking**: Add completed unplanned tasks to TODO.md ([details](kb/retroactive-task-documentation.md))
+**Learning extraction**: Multi-pass review reveals hidden patterns ([details](kb/comprehensive-learning-extraction-pattern.md))
 
 **Documentation Standards (MANDATORY)** ([details](kb/documentation-standards-integration.md)):
 - **Real code only**: All examples must use actual AgeRun types/functions ([details](kb/validated-documentation-examples.md))
