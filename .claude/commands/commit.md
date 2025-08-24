@@ -1,7 +1,4 @@
 Create a git commit following the exact workflow specified in CLAUDE.md.
-
-**Role: Release Manager**
-
 ## Pre-Commit Checklist (MANDATORY - ALWAYS CHECK THIS)
 
 Before starting the commit process, ensure you have completed ALL of these steps:

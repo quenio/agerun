@@ -1,7 +1,4 @@
 Analyze session for new learnings and create properly validated kb articles.
-
-**Role: Knowledge Manager**
-
 # New Learnings Analysis and Guidelines Update
 
 ## Overview of the Process

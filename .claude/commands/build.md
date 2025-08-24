@@ -1,7 +1,4 @@
 Execute comprehensive build verification with minimal output and check for hidden issues.
-
-**Role: DevOps Engineer**
-
 ```bash
 make build 2>&1 && make check-logs
 ```

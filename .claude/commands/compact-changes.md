@@ -1,7 +1,4 @@
 Compact the CHANGELOG.md file by condensing completed milestones while preserving key information.
-
-**Role: Documentation Specialist**
-
 Follow these steps:
 1. Read the CHANGELOG.md file and measure initial metrics (line count)
 2. For each date section, identify completed milestones

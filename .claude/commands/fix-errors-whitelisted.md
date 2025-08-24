@@ -1,7 +1,4 @@
 # Fix Errors Whitelisted
-
-**Role: Debugging Specialist**
-
 Systematically analyze and fix errors in the whitelist file to reduce technical debt.
 
 ## Process Overview

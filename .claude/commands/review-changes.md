@@ -1,7 +1,4 @@
 Review uncommitted changes for code quality, architectural compliance, and documentation accuracy.
-
-**Role: Code Reviewer**
-
 ## What it does:
 
 This command performs a comprehensive review of all uncommitted changes across multiple quality dimensions:

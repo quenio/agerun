@@ -1,7 +1,4 @@
 Check build logs for hidden issues that might not be caught by the build summary.
-
-**Role: Quality Assurance Specialist**
-
 ## What it does:
 
 This command performs a two-phase analysis of build log files:

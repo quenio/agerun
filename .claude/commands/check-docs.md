@@ -1,7 +1,4 @@
 Run documentation validation and fix any errors found using an iterative approach, then commit and push the fixes.
-
-**Role: Documentation Validator**
-
 ## Process:
 
 1. **Initial Check**: Run `make check-docs` to identify all documentation errors

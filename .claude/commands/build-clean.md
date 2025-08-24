@@ -1,7 +1,4 @@
 Execute a clean build for comprehensive build verification with minimal output and check for hidden issues.
-
-**Role: DevOps Engineer**
-
 ```bash
 make clean build 2>&1 && make check-logs
 ```

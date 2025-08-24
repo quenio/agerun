@@ -1,6 +1,4 @@
 ---
-
-**Role: Documentation Specialist**
 description: Make CLAUDE.md guidelines more concise by moving details to knowledge base
 ---
 

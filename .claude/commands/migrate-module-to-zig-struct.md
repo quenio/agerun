@@ -1,7 +1,4 @@
 # Migrate to Zig Struct Module
-
-**Role: Migration Specialist**
-
 {{#if 1}}
 Migrate the **ar_{{1}}** module from a C-ABI compatible Zig module to a pure Zig struct module following the pattern documented in kb/zig-struct-modules-pattern.md.
 

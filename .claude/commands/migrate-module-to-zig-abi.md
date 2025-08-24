@@ -1,7 +1,4 @@
 # Migrate Module to Zig
-
-**Role: Migration Specialist**
-
 {{#if 1}}
 First, check if `modules/{{1}}.zig` already exists. If it does, inform the user about the migration status instead of creating a new plan.
 

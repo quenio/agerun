@@ -1,7 +1,4 @@
 Build and run the agerun executable.
-
-**Role: QA Engineer**
-
 ```bash
 make run-exec 2>&1
 ```
