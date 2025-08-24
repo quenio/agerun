@@ -248,6 +248,75 @@ static void test_yaml_writer__error_logging(void) {
 }
 
 /**
+ * Test error logging when data is NULL
+ */
+static void test_yaml_writer__error_logging_null_data(void) {
+    printf("Testing error logging for NULL data...\n");
+    
+    // Given a log instance
+    ar_log_t *own_log = ar_log__create();
+    assert(own_log != NULL);
+    
+    // And a writer instance with the log
+    ar_yaml_writer_t *own_writer = ar_yaml_writer__create(own_log);
+    assert(own_writer != NULL);
+    
+    // When trying to write NULL data
+    bool result = ar_yaml_writer__write_to_file(own_writer, NULL, "test.yaml");
+    
+    // Then the write should fail
+    assert(result == false);
+    
+    // And an error should be logged
+    const char *error_msg = ar_log__get_last_error_message(own_log);
+    assert(error_msg != NULL);
+    assert(strstr(error_msg, "NULL data provided to YAML writer") != NULL);
+    
+    // Clean up
+    ar_yaml_writer__destroy(own_writer);
+    ar_log__destroy(own_log);
+    
+    printf("✓ NULL data error logging test passed\n");
+}
+
+/**
+ * Test error logging when filename is NULL
+ */
+static void test_yaml_writer__error_logging_null_filename(void) {
+    printf("Testing error logging for NULL filename...\n");
+    
+    // Given a log instance
+    ar_log_t *own_log = ar_log__create();
+    assert(own_log != NULL);
+    
+    // And a writer instance with the log
+    ar_yaml_writer_t *own_writer = ar_yaml_writer__create(own_log);
+    assert(own_writer != NULL);
+    
+    // And some data to write
+    ar_data_t *own_data = ar_data__create_string("test");
+    assert(own_data != NULL);
+    
+    // When trying to write with NULL filename
+    bool result = ar_yaml_writer__write_to_file(own_writer, own_data, NULL);
+    
+    // Then the write should fail
+    assert(result == false);
+    
+    // And an error should be logged
+    const char *error_msg = ar_log__get_last_error_message(own_log);
+    assert(error_msg != NULL);
+    assert(strstr(error_msg, "NULL filename provided to YAML writer") != NULL);
+    
+    // Clean up
+    ar_data__destroy(own_data);
+    ar_yaml_writer__destroy(own_writer);
+    ar_log__destroy(own_log);
+    
+    printf("✓ NULL filename error logging test passed\n");
+}
+
+/**
  * Test that ar_yaml_writer can write nested structures
  */
 static void test_yaml_writer__write_nested_structure(void) {
@@ -321,8 +390,10 @@ int main(void) {
     test_yaml_writer__write_map_to_file();
     test_yaml_writer__write_list_to_file();
     test_yaml_writer__error_logging();
+    test_yaml_writer__error_logging_null_data();
+    test_yaml_writer__error_logging_null_filename();
     test_yaml_writer__write_nested_structure();
     
-    printf("\nAll 7 tests passed!\n");
+    printf("\nAll 9 tests passed!\n");
     return 0;
 }

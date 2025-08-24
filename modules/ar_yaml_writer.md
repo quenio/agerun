@@ -94,20 +94,33 @@ ar_yaml_writer__destroy(own_writer);
 
 ## Testing
 
-The module includes 7 comprehensive tests in `ar_yaml_writer_tests.c`:
+The module includes 9 comprehensive tests in `ar_yaml_writer_tests.c`:
 - Instance creation and destruction
 - Instance-based writing
 - Simple string writing
 - Map serialization
 - List serialization
-- Error logging with ar_log
+- Error logging for file open failures
+- Error logging for NULL data parameter
+- Error logging for NULL filename parameter
 - Nested structure handling
 
 ## Dependencies
 
 - `ar_data`: For data structure representation
 - `ar_heap`: For memory management
-- `ar_io`: For file operations (error reporting)
+- `ar_log`: For error reporting
+
+## Error Handling
+
+- Returns false if writer instance is NULL
+- Returns false if data parameter is NULL
+- Returns false if filename parameter is NULL
+- Returns false if file cannot be opened for writing
+- Logs errors via ar_log instance when available:
+  - "NULL data provided to YAML writer"
+  - "NULL filename provided to YAML writer"
+  - "Failed to open file for writing: <filename>"
 
 ## See Also
 

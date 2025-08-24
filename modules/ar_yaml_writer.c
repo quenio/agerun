@@ -194,6 +194,13 @@ bool ar_yaml_writer__write_to_file(ar_yaml_writer_t *mut_writer,
                                     const ar_data_t *ref_data, 
                                     const char *ref_filename) {
     if (!mut_writer || !ref_data || !ref_filename) {
+        if (mut_writer && mut_writer->ref_log) {
+            if (!ref_data) {
+                ar_log__error(mut_writer->ref_log, "NULL data provided to YAML writer");
+            } else if (!ref_filename) {
+                ar_log__error(mut_writer->ref_log, "NULL filename provided to YAML writer");
+            }
+        }
         return false;
     }
     
