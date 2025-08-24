@@ -36,6 +36,8 @@ Before listing learnings, take time to:
 - What assumptions were challenged by user feedback?
 - What systematic approaches could prevent similar issues?
 - What subtle patterns appeared across multiple files?
+- What meta-patterns emerged about the learning process itself?
+- What consistency issues were found between related modules?
 
 Please analyze this session and identify any new learnings, patterns, or insights that emerged. Consider:
 
@@ -47,8 +49,10 @@ Please analyze this session and identify any new learnings, patterns, or insight
 6. **Architectural insights**: Larger patterns revealed through specific work
 7. **Debugging revelations**: Approaches that led to breakthrough solutions
 8. **Testing strategies**: Patterns for simplifying or improving tests
+9. **Module consistency**: Patterns about maintaining consistency across sister modules ([details](../../kb/module-consistency-verification.md))
+10. **Meta-learnings**: Patterns about the learning extraction process itself
 
-**Remember**: Initial analysis often misses 50% of learnings. After your first pass, review again and ask "What else did I learn that I'm not seeing?"
+**Remember**: Initial analysis often misses 50% of learnings. After your first pass, review again and ask "What else did I learn that I'm not seeing?" ([details](../../kb/comprehensive-learning-extraction-pattern.md))
 
 For each learning, provide:
 - A clear description of what was learned
