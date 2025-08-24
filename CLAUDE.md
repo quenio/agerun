@@ -30,7 +30,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - **/methods**: Method definitions (.method files with docs and tests)
 - **/scripts**: Build and utility scripts (run via make targets, not directly - includes slash commands)
 - **/reports**: Analysis reports and technical comparisons (all .md analysis files go here)
-- **.claude/commands**: Slash command definitions (must use make targets, not direct scripts)
+- **.claude/commands**: Slash command definitions (must use make targets, not direct scripts) ([role clarity](kb/role-clarification-pattern.md))
 
 ## Critical Development Rules
 
@@ -322,7 +322,7 @@ grep -r "function_name\|concept" modules/
 **Navigation**: Use absolute paths only ([details](kb/absolute-path-navigation.md))
 **Backups**: Use git stash/diff, never .bak files (ar_io creates them automatically - [details](kb/file-io-backup-mechanism.md))
 **Stubs**: Comment unready features with dependency notes ([details](kb/stub-and-revisit-pattern.md))
-**Scripts**: Add to `/scripts/` with make targets ([details](kb/progressive-tool-enhancement.md))
+**Scripts**: Add to `/scripts/` with make targets ([details](kb/progressive-tool-enhancement.md), [batch](kb/batch-update-script-pattern.md))
 **Shell scripts**: Use proper variable assignment for error handling ([details](kb/shell-script-command-substitution.md))
 **Debug**: `make sanitize-tests 2>&1`, redirect stderr, check syscall returns ([details](kb/development-debug-tools.md), [static](kb/static-analysis-error-handling.md))
 **Static compliance**: Restructure stream ops for analyzer satisfaction ([details](kb/static-analyzer-stream-compliance.md))
@@ -414,7 +414,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 ### 13. Refactoring Patterns
 
 **Principles**: Preserve behavior, move don't rewrite, verify moves ([details](kb/refactoring-patterns-detailed.md))
-**Bulk ops**: Use scripts not sed - `rename_symbols.py`, `batch_fix_docs.py` ([details](kb/script-enhancement-over-one-off.md))
+**Bulk ops**: Use scripts not sed - `rename_symbols.py`, `batch_fix_docs.py` ([details](kb/script-enhancement-over-one-off.md), [workflow](kb/systematic-file-modification-workflow.md))
 **Verification**: `diff -u <(sed -n '130,148p' old.c) <(sed -n '11,29p' new.c)` ([details](kb/code-movement-verification.md))
 **Key patterns**: ([details](kb/refactoring-key-patterns.md))
 **Non-functional code**: Detect and remove code that never executes ([details](kb/non-functional-code-detection-pattern.md))

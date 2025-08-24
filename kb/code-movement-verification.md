@@ -31,6 +31,7 @@ diff -u /tmp/original_function /tmp/moved_function
 ```
 
 ## Related Patterns
+- [Systematic File Modification Workflow](systematic-file-modification-workflow.md)
 - Refactoring safety practices
 - Behavior preservation
 - Mechanical transformations

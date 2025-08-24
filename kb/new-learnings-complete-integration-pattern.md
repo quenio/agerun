@@ -43,7 +43,7 @@ Missing: Command updates ✗
 ### 3. Slash Command Updates (CRITICAL - OFTEN MISSED)
 - [ ] Search commands for relevant keywords
 - [ ] Identify commands that could use new patterns
-- [ ] Add references with `([details](../../kb/pattern.md))`
+- [ ] Add references with `([details](actual-pattern-file.md))` // EXAMPLE: Replace with actual filename
 - [ ] Update command logic if patterns change approach
 
 ### 4. Documentation Updates

@@ -45,3 +45,5 @@ Invest in tool enhancement rather than quick fixes to build systematic capabilit
 - [Script Backward Compatibility Testing](script-backward-compatibility-testing.md)
 - [Batch Documentation Fix Enhancement](batch-documentation-fix-enhancement.md)
 - [Migration Script Systematic Updates](migration-script-systematic-updates.md)
+- [Batch Update Script Pattern](batch-update-script-pattern.md)
+- [Systematic File Modification Workflow](systematic-file-modification-workflow.md)
