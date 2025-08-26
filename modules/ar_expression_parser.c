@@ -36,17 +36,26 @@ static ar_expression_ast_t* _parse_equality(ar_expression_parser_t *mut_parser);
  */
 ar_expression_parser_t* ar_expression_parser__create(ar_log_t *ref_log, const char *ref_expression) {
     if (!ref_expression) {
+        if (ref_log) {
+            ar_log__error(ref_log, "NULL expression provided to expression parser");
+        }
         return NULL;
     }
     
     ar_expression_parser_t *own_parser = AR__HEAP__MALLOC(sizeof(ar_expression_parser_t), "Expression parser");
     if (!own_parser) {
+        if (ref_log) {
+            ar_log__error(ref_log, "Failed to allocate memory for expression parser");
+        }
         return NULL;
     }
     
     own_parser->ref_log = ref_log;
     own_parser->own_expression = AR__HEAP__STRDUP(ref_expression, "Parser expression copy");
     if (!own_parser->own_expression) {
+        if (ref_log) {
+            ar_log__error(ref_log, "Failed to allocate memory for expression copy");
+        }
         AR__HEAP__FREE(own_parser);
         return NULL;
     }
@@ -501,6 +510,9 @@ static ar_expression_ast_t* _parse_term(ar_expression_parser_t *mut_parser) {
         ar_expression_ast_t *own_right = _parse_primary(mut_parser);
         if (!own_right) {
             ar_expression_ast__destroy(own_left);
+            _set_error(mut_parser, op == AR_BINARY_OPERATOR__MULTIPLY ? 
+                      "Failed to parse right operand of multiplication" :
+                      "Failed to parse right operand of division");
             return NULL;
         }
         
@@ -547,6 +559,9 @@ static ar_expression_ast_t* _parse_additive(ar_expression_parser_t *mut_parser) 
         ar_expression_ast_t *own_right = _parse_term(mut_parser);
         if (!own_right) {
             ar_expression_ast__destroy(own_left);
+            _set_error(mut_parser, op == AR_BINARY_OPERATOR__ADD ? 
+                      "Failed to parse right operand of addition" :
+                      "Failed to parse right operand of subtraction");
             return NULL;
         }
         
@@ -604,6 +619,13 @@ static ar_expression_ast_t* _parse_relational(ar_expression_parser_t *mut_parser
         ar_expression_ast_t *own_right = _parse_additive(mut_parser);
         if (!own_right) {
             ar_expression_ast__destroy(own_left);
+            const char *op_name = (op == AR_BINARY_OPERATOR__LESS) ? "less than" :
+                                  (op == AR_BINARY_OPERATOR__LESS_EQ) ? "less than or equal" :
+                                  (op == AR_BINARY_OPERATOR__GREATER_EQ) ? "greater than or equal" :
+                                  "greater than";
+            char error_msg[128];
+            snprintf(error_msg, sizeof(error_msg), "Failed to parse right operand of %s comparison", op_name);
+            _set_error(mut_parser, error_msg);
             return NULL;
         }
         
@@ -647,6 +669,9 @@ static ar_expression_ast_t* _parse_equality(ar_expression_parser_t *mut_parser) 
         ar_expression_ast_t *own_right = _parse_relational(mut_parser);
         if (!own_right) {
             ar_expression_ast__destroy(own_left);
+            _set_error(mut_parser, op == AR_BINARY_OPERATOR__EQUAL ? 
+                      "Failed to parse right operand of equality comparison" :
+                      "Failed to parse right operand of inequality comparison");
             return NULL;
         }
         

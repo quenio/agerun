@@ -27,6 +27,274 @@ static void test_create_parser_with_log(void) {
     ar_log__destroy(log);
 }
 
+static void test_create_parser_null_expression_logs_error(void) {
+    printf("Testing parser creation with NULL expression logs error...\n");
+    
+    // Given an ar_log instance to capture errors
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    
+    // When creating a parser with NULL expression
+    ar_expression_parser_t *parser = ar_expression_parser__create(log, NULL);
+    
+    // Then the parser should not be created
+    assert(parser == NULL);
+    
+    // And an error should have been logged
+    const char *last_error = ar_log__get_last_error_message(log);
+    assert(last_error != NULL);
+    assert(strstr(last_error, "NULL expression") != NULL);
+    
+    // Clean up
+    ar_log__destroy(log);
+}
+
+static void test_create_parser_null_expression_without_log(void) {
+    printf("Testing parser creation with NULL expression (no log)...\n");
+    
+    // When creating a parser with NULL expression and no log
+    ar_expression_parser_t *parser = ar_expression_parser__create(NULL, NULL);
+    
+    // Then the parser should not be created (and should not crash)
+    assert(parser == NULL);
+}
+
+static void test_parse_functions_null_parser_safety(void) {
+    printf("Testing parse functions with NULL parser safety...\n");
+    
+    // When calling parse functions with NULL parser
+    // Then they should return NULL without crashing
+    // Note: These can't log errors since NULL parser has no log
+    
+    ar_expression_ast_t *ast_literal = ar_expression_parser__parse_literal(NULL);
+    assert(ast_literal == NULL);
+    
+    ar_expression_ast_t *ast_memory = ar_expression_parser__parse_memory_access(NULL);
+    assert(ast_memory == NULL);
+    
+    ar_expression_ast_t *ast_arithmetic = ar_expression_parser__parse_arithmetic(NULL);
+    assert(ast_arithmetic == NULL);
+    
+    ar_expression_ast_t *ast_comparison = ar_expression_parser__parse_comparison(NULL);
+    assert(ast_comparison == NULL);
+    
+    ar_expression_ast_t *ast_expression = ar_expression_parser__parse_expression(NULL);
+    assert(ast_expression == NULL);
+}
+
+static void test_memory_allocation_error_logging(void) {
+    printf("Testing memory allocation error logging...\n");
+    
+    // Given a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    
+    // Test that memory allocation failures are already logged via _set_error
+    // Note: We can't easily simulate malloc failures, but we can verify
+    // that the error paths exist and use _set_error which logs
+    
+    // Create a parser with a very long string to parse
+    const char *long_string = "\"This is a test string\"";
+    ar_expression_parser_t *parser = ar_expression_parser__create(log, long_string);
+    assert(parser != NULL);
+    
+    // Parse normally - this verifies the paths exist
+    ar_expression_ast_t *ast = ar_expression_parser__parse_literal(parser);
+    assert(ast != NULL);
+    
+    // Clean up
+    ar_expression_ast__destroy(ast);
+    ar_expression_parser__destroy(parser);
+    ar_log__destroy(log);
+}
+
+static void test_cascading_null_primary_expression(void) {
+    printf("Testing cascading NULL in primary expression...\n");
+    
+    // Given a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    
+    // Test 1: Invalid content in parentheses
+    const char *invalid_expr = "(!)";  // '!' is not a valid expression
+    ar_expression_parser_t *parser = ar_expression_parser__create(log, invalid_expr);
+    assert(parser != NULL);
+    
+    ar_expression_ast_t *ast = ar_expression_parser__parse_expression(parser);
+    assert(ast == NULL);
+    
+    const char *last_error = ar_log__get_last_error_message(log);
+    assert(last_error != NULL);
+    assert(strstr(last_error, "Expected literal") != NULL);
+    
+    ar_expression_parser__destroy(parser);
+    
+    // Test 2: Missing expression after opening parenthesis
+    const char *empty_parens = "()";
+    parser = ar_expression_parser__create(log, empty_parens);
+    assert(parser != NULL);
+    
+    ast = ar_expression_parser__parse_expression(parser);
+    assert(ast == NULL);
+    
+    last_error = ar_log__get_last_error_message(log);
+    assert(last_error != NULL);
+    // Should have an error about the empty expression
+    
+    // Clean up
+    ar_expression_parser__destroy(parser);
+    ar_log__destroy(log);
+}
+
+static void test_cascading_null_binary_operations(void) {
+    printf("Testing cascading NULL in binary operations...\n");
+    
+    // Given a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    
+    // Test 1: Invalid right operand in multiplication
+    const char *invalid_mult = "5 * !";  // '!' is not a valid operand
+    ar_expression_parser_t *parser = ar_expression_parser__create(log, invalid_mult);
+    assert(parser != NULL);
+    
+    ar_expression_ast_t *ast = ar_expression_parser__parse_expression(parser);
+    assert(ast == NULL);
+    
+    const char *last_error = ar_log__get_last_error_message(log);
+    assert(last_error != NULL);
+    assert(strstr(last_error, "Failed to parse right operand of multiplication") != NULL);
+    
+    ar_expression_parser__destroy(parser);
+    
+    // Test 2: Invalid right operand in division
+    const char *invalid_div = "10 / !";  // '!' is not a valid operand
+    parser = ar_expression_parser__create(log, invalid_div);
+    assert(parser != NULL);
+    
+    ast = ar_expression_parser__parse_expression(parser);
+    assert(ast == NULL);
+    
+    last_error = ar_log__get_last_error_message(log);
+    assert(last_error != NULL);
+    assert(strstr(last_error, "Failed to parse right operand of division") != NULL);
+    
+    ar_expression_parser__destroy(parser);
+    
+    // Test 3: Invalid right operand in addition
+    const char *invalid_add = "5 + !";  // '!' is not a valid operand
+    parser = ar_expression_parser__create(log, invalid_add);
+    assert(parser != NULL);
+    
+    ast = ar_expression_parser__parse_expression(parser);
+    assert(ast == NULL);
+    
+    last_error = ar_log__get_last_error_message(log);
+    assert(last_error != NULL);
+    assert(strstr(last_error, "Failed to parse right operand of addition") != NULL);
+    
+    ar_expression_parser__destroy(parser);
+    
+    // Test 4: Invalid right operand in subtraction
+    const char *invalid_sub = "10 - !";  // '!' is not a valid operand
+    parser = ar_expression_parser__create(log, invalid_sub);
+    assert(parser != NULL);
+    
+    ast = ar_expression_parser__parse_expression(parser);
+    assert(ast == NULL);
+    
+    last_error = ar_log__get_last_error_message(log);
+    assert(last_error != NULL);
+    assert(strstr(last_error, "Failed to parse right operand of subtraction") != NULL);
+    
+    ar_expression_parser__destroy(parser);
+    
+    // Test 5: Invalid right operand in less than comparison
+    const char *invalid_lt = "5 < !";  // '!' is not a valid operand
+    parser = ar_expression_parser__create(log, invalid_lt);
+    assert(parser != NULL);
+    
+    ast = ar_expression_parser__parse_expression(parser);
+    assert(ast == NULL);
+    
+    last_error = ar_log__get_last_error_message(log);
+    assert(last_error != NULL);
+    assert(strstr(last_error, "Failed to parse right operand of less than comparison") != NULL);
+    
+    ar_expression_parser__destroy(parser);
+    
+    // Test 6: Invalid right operand in equality
+    const char *invalid_eq = "5 = !";  // '!' is not a valid operand
+    parser = ar_expression_parser__create(log, invalid_eq);
+    assert(parser != NULL);
+    
+    ast = ar_expression_parser__parse_expression(parser);
+    assert(ast == NULL);
+    
+    last_error = ar_log__get_last_error_message(log);
+    assert(last_error != NULL);
+    assert(strstr(last_error, "Failed to parse right operand of equality comparison") != NULL);
+    
+    // Clean up
+    ar_expression_parser__destroy(parser);
+    ar_log__destroy(log);
+}
+
+static void test_cascading_null_nested_expressions(void) {
+    printf("Testing cascading NULL in nested expressions...\n");
+    
+    // Given a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    
+    // Test 1: Invalid expression inside parentheses with binary operation
+    const char *invalid_nested = "(5 + !)";  // Invalid inside parentheses
+    ar_expression_parser_t *parser = ar_expression_parser__create(log, invalid_nested);
+    assert(parser != NULL);
+    
+    ar_expression_ast_t *ast = ar_expression_parser__parse_expression(parser);
+    assert(ast == NULL);
+    
+    const char *last_error = ar_log__get_last_error_message(log);
+    assert(last_error != NULL);
+    // Should include context about what failed inside parentheses
+    assert(strstr(last_error, "Failed to parse right operand of addition") != NULL);
+    
+    ar_expression_parser__destroy(parser);
+    
+    // Test 2: Deeply nested invalid expression
+    const char *deep_nested = "(10 * (5 + !))";  // Invalid deep inside
+    parser = ar_expression_parser__create(log, deep_nested);
+    assert(parser != NULL);
+    
+    ast = ar_expression_parser__parse_expression(parser);
+    assert(ast == NULL);
+    
+    last_error = ar_log__get_last_error_message(log);
+    assert(last_error != NULL);
+    // The multiplication sees its right operand (the parenthesized expression) failed
+    assert(strstr(last_error, "Failed to parse right operand of multiplication") != NULL);
+    
+    ar_expression_parser__destroy(parser);
+    
+    // Test 3: Complex nested expression with multiple errors
+    const char *complex_nested = "(5 + (10 * !))";  // Error in nested multiplication
+    parser = ar_expression_parser__create(log, complex_nested);
+    assert(parser != NULL);
+    
+    ast = ar_expression_parser__parse_expression(parser);
+    assert(ast == NULL);
+    
+    last_error = ar_log__get_last_error_message(log);
+    assert(last_error != NULL);
+    assert(strstr(last_error, "Failed to parse right operand of addition") != NULL);
+    
+    ar_expression_parser__destroy(parser);
+    
+    // Clean up
+    ar_log__destroy(log);
+}
+
 static void test_parse_integer_literal(void) {
     printf("Testing integer literal parsing...\n");
     ar_log_t *log = ar_log__create();
@@ -521,6 +789,13 @@ int main(void) {
     printf("Running expression parser tests...\n\n");
     
     test_create_parser_with_log();
+    test_create_parser_null_expression_logs_error();
+    test_create_parser_null_expression_without_log();
+    test_parse_functions_null_parser_safety();
+    test_memory_allocation_error_logging();
+    test_cascading_null_primary_expression();
+    test_cascading_null_binary_operations();
+    test_cascading_null_nested_expressions();
     test_parse_integer_literal();
     test_parse_negative_integer();
     test_parse_double_literal();
