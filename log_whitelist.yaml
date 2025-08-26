@@ -316,6 +316,18 @@ ignored_errors:
   - context: "ar_instruction_parser_tests"
     message: "Testing error handling..."
     comment: "Test status message for instruction parser error handling"
+  - context: "ar_instruction_parser_tests"
+    message: "ERROR: NULL instruction provided to instruction parser"
+    comment: "Testing NULL instruction parameter error logging"
+  - context: "ar_instruction_parser_tests"
+    message: "Testing NULL instruction parameter error logging..."
+    comment: "Test status message from ar_instruction_parser_tests"
+  - context: "ar_instruction_parser_tests"
+    message: "Testing memory allocation error logging..."
+    comment: "Test status message from ar_instruction_parser_tests"
+  - context: "ar_instruction_parser_tests"
+    message: "Testing unknown function type error logging..."
+    comment: "Test status message from ar_instruction_parser_tests"
 
   # ar_interpreter_fixture_tests
   - context: "ar_interpreter_fixture_tests"
@@ -836,8 +848,16 @@ ignored_errors:
     message: "Found expected warning: Warning: Failed to save methodology to agerun.methodology"
     comment: "Test output from test_executable__continues_on_save_failure - deliberately triggers save failure"
 
-# Total entries: 214
-# Test entries: 209
+  # ar_expression_parser test status messages
+  - context: "ar_expression_parser_tests"
+    message: "Testing parser creation with NULL expression logs error..."
+    comment: "Test status message from ar_expression_parser_tests"
+  - context: "ar_expression_parser_tests"
+    message: "Testing memory allocation error logging..."
+    comment: "Test status message from ar_expression_parser_tests"
+
+# Total entries: 220
+# Test entries: 215
 # Executable entries: 7
 # Context-free entries: 0
 

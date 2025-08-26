@@ -323,6 +323,9 @@ static ar_instruction_ast_t* _dispatch_function(ar_instruction_parser_t *mut_par
  */
 ar_instruction_ast_t* ar_instruction_parser__parse(ar_instruction_parser_t *mut_parser, const char *ref_instruction) {
     if (!mut_parser || !ref_instruction) {
+        if (mut_parser && mut_parser->ref_log && !ref_instruction) {
+            ar_log__error(mut_parser->ref_log, "NULL instruction provided to instruction parser");
+        }
         return NULL;
     }
     
