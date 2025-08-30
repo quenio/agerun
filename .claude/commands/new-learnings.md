@@ -8,50 +8,30 @@ Analyze session for new learnings and create properly validated kb articles.
 ### Initialize Progress Tracking (EXECUTE THIS FIRST)
 
 ```bash
-# EXECUTE THIS IMMEDIATELY to initialize tracking
-cat > /tmp/new_learnings_progress.txt << 'EOF'
-STEP_1=pending    # Identify New Learnings
-STEP_2=pending    # Determine KB Article Strategy  
-STEP_3=pending    # Knowledge Base Article Creation
-STEP_4=pending    # Validation Before Saving
-STEP_5=pending    # Update Knowledge Base Index
-STEP_6=pending    # Update Existing KB Articles (3-5 minimum)
-STEP_7=pending    # Review and Update Commands (3-4 minimum)
-STEP_8=pending    # Review Existing Guidelines
-STEP_9=pending    # Update Guidelines
-STEP_10=pending   # Validate No Broken Links
-STEP_11=pending   # Pre-Commit Integration Verification
-STEP_12=pending   # Automatic Commit and Push
-EOF
-
-echo "=== New Learnings Progress Tracking Initialized ==="
-cat /tmp/new_learnings_progress.txt
+# Initialize tracking with all 12 steps
+bash scripts/checkpoint_init.sh new-learnings \
+    "Identify New Learnings" \
+    "Determine KB Article Strategy" \
+    "Knowledge Base Article Creation" \
+    "Validation Before Saving" \
+    "Update Knowledge Base Index" \
+    "Update Existing KB Articles (3-5 minimum)" \
+    "Review and Update Commands (3-4 minimum)" \
+    "Review Existing Guidelines" \
+    "Update Guidelines" \
+    "Validate No Broken Links" \
+    "Pre-Commit Integration Verification" \
+    "Automatic Commit and Push"
 ```
 
-### Progress Check Function (Use Throughout)
+### Check Progress at Any Time
 
 ```bash
-# Function to check progress at any time
-check_progress() {
-    echo "=== Current Progress ==="
-    cat /tmp/new_learnings_progress.txt | while read line; do
-        if [[ $line == *"complete"* ]]; then
-            echo "✓ $line"
-        else
-            echo "⏳ $line"
-        fi
-    done
-    
-    PENDING=$(grep -c "pending" /tmp/new_learnings_progress.txt)
-    if [ $PENDING -gt 0 ]; then
-        echo ""
-        echo "⚠️ WARNING: $PENDING steps still pending!"
-        echo "Next pending step: $(grep "pending" /tmp/new_learnings_progress.txt | head -1)"
-    fi
-}
+# Show current progress
+bash scripts/checkpoint_status.sh new-learnings
 
-# Call it now
-check_progress
+# Show detailed progress with all steps
+bash scripts/checkpoint_status.sh new-learnings --verbose
 ```
 
 ## Overview of the Process
@@ -127,8 +107,7 @@ For each learning, provide:
 **[CHECKPOINT END - STEP 1]**
 ```bash
 # Mark Step 1 complete
-sed -i '' 's/STEP_1=pending/STEP_1=complete/' /tmp/new_learnings_progress.txt
-echo "✓ Step 1 complete: Learnings identified"
+bash scripts/checkpoint_update.sh new-learnings 1
 ```
 
 ## Step 2: Determine KB Article Strategy
@@ -164,8 +143,7 @@ echo "✓ Step 1 complete: Learnings identified"
 **[CHECKPOINT END - STEP 2]**
 ```bash
 # Mark Step 2 complete
-sed -i '' 's/STEP_2=pending/STEP_2=complete/' /tmp/new_learnings_progress.txt
-echo "✓ Step 2 complete: KB strategy determined"
+bash scripts/checkpoint_update.sh new-learnings 2
 ```
 
 ## Step 3: Knowledge Base Article Creation
@@ -268,8 +246,7 @@ If you're tempted to use hypothetical types, replace with real ones:
 **[CHECKPOINT END - STEP 3]**
 ```bash
 # Mark Step 3 complete
-sed -i '' 's/STEP_3=pending/STEP_3=complete/' /tmp/new_learnings_progress.txt
-echo "✓ Step 3 complete: KB articles created/updated"
+bash scripts/checkpoint_update.sh new-learnings 3
 check_progress  # Show current status
 ```
 
@@ -296,22 +273,14 @@ check_progress  # Show current status
 **[CHECKPOINT END - STEP 4]**
 ```bash
 # Mark Step 4 complete
-sed -i '' 's/STEP_4=pending/STEP_4=complete/' /tmp/new_learnings_progress.txt
-echo "✓ Step 4 complete: Documentation validated"
+bash scripts/checkpoint_update.sh new-learnings 4
 ```
 
 ## GATE 1: ARTICLE CREATION VERIFICATION
 
 ```bash
 # MANDATORY GATE - Cannot proceed without articles
-echo "=== GATE 1: Checking Steps 1-4 Completion ==="
-if grep -q "STEP_1=pending\|STEP_2=pending\|STEP_3=pending\|STEP_4=pending" /tmp/new_learnings_progress.txt; then
-    echo "❌ BLOCKED: Cannot proceed! Complete these steps first:"
-    grep "STEP_[1-4]=pending" /tmp/new_learnings_progress.txt
-    echo "STOP HERE and complete the missing steps!"
-else
-    echo "✅ GATE 1 PASSED: Articles created and validated. Proceeding to integration steps."
-fi
+bash scripts/checkpoint_gate.sh new-learnings "Article Creation" "1,2,3,4"
 ```
 
 ## Step 5: Update Knowledge Base Index
@@ -334,8 +303,7 @@ fi
 **[CHECKPOINT END - STEP 5]**
 ```bash
 # Mark Step 5 complete
-sed -i '' 's/STEP_5=pending/STEP_5=complete/' /tmp/new_learnings_progress.txt
-echo "✓ Step 5 complete: KB index updated"
+bash scripts/checkpoint_update.sh new-learnings 5
 ```
 
 ## Step 6: Update Existing KB Articles with Cross-References (THOROUGH EXECUTION REQUIRED)
@@ -382,8 +350,7 @@ echo "✓ Step 5 complete: KB index updated"
 **[CHECKPOINT END - STEP 6]**
 ```bash
 # Mark Step 6 complete
-sed -i '' 's/STEP_6=pending/STEP_6=complete/' /tmp/new_learnings_progress.txt
-echo "✓ Step 6 complete: Cross-references added (3-5 minimum)"
+bash scripts/checkpoint_update.sh new-learnings 6
 ```
 
 ## Step 7: Review and Update Existing Commands (THOROUGH EXECUTION REQUIRED)
@@ -435,8 +402,7 @@ echo "✓ Step 6 complete: Cross-references added (3-5 minimum)"
 **[CHECKPOINT END - STEP 7]**
 ```bash
 # Mark Step 7 complete
-sed -i '' 's/STEP_7=pending/STEP_7=complete/' /tmp/new_learnings_progress.txt
-echo "✓ Step 7 complete: Commands updated (3-4 minimum)"
+bash scripts/checkpoint_update.sh new-learnings 7
 ```
 
 ## Step 8: Review Existing Guidelines
@@ -451,8 +417,7 @@ Check CLAUDE.md to see if these learnings should be referenced:
 **[CHECKPOINT END - STEP 8]**
 ```bash
 # Mark Step 8 complete
-sed -i '' 's/STEP_8=pending/STEP_8=complete/' /tmp/new_learnings_progress.txt
-echo "✓ Step 8 complete: CLAUDE.md reviewed"
+bash scripts/checkpoint_update.sh new-learnings 8
 ```
 
 ## Step 9: Update Guidelines
@@ -495,22 +460,14 @@ If updates are needed to CLAUDE.md:
 **[CHECKPOINT END - STEP 9]**
 ```bash
 # Mark Step 9 complete
-sed -i '' 's/STEP_9=pending/STEP_9=complete/' /tmp/new_learnings_progress.txt
-echo "✓ Step 9 complete: CLAUDE.md updated"
+bash scripts/checkpoint_update.sh new-learnings 9
 ```
 
 ## GATE 2: INTEGRATION VERIFICATION
 
 ```bash
 # MANDATORY GATE - Check integration completeness
-echo "=== GATE 2: Checking Steps 5-9 Completion ==="
-if grep -q "STEP_[5-9]=pending" /tmp/new_learnings_progress.txt; then
-    echo "❌ BLOCKED: Cannot proceed! Complete these integration steps:"
-    grep "STEP_[5-9]=pending" /tmp/new_learnings_progress.txt
-    echo "STOP HERE and complete the missing steps!"
-else
-    echo "✅ GATE 2 PASSED: Integration complete. Proceeding to validation."
-fi
+bash scripts/checkpoint_gate.sh new-learnings "Integration" "5,6,7,8,9"
 ```
 
 ## Step 10: Validate No Broken Links
@@ -533,8 +490,7 @@ fi
 **[CHECKPOINT END - STEP 10]**
 ```bash
 # Mark Step 10 complete
-sed -i '' 's/STEP_10=pending/STEP_10=complete/' /tmp/new_learnings_progress.txt
-echo "✓ Step 10 complete: All links validated"
+bash scripts/checkpoint_update.sh new-learnings 10
 ```
 
 ## Step 11: Pre-Commit Integration Verification (MANDATORY EXECUTION)
@@ -593,28 +549,20 @@ fi
 **[CHECKPOINT END - STEP 11]**
 ```bash
 # Mark Step 11 complete
-sed -i '' 's/STEP_11=pending/STEP_11=complete/' /tmp/new_learnings_progress.txt
-echo "✓ Step 11 complete: Pre-commit verification passed"
+bash scripts/checkpoint_update.sh new-learnings 11
 ```
 
 ## FINAL GATE: COMMIT READINESS CHECK
 
 ```bash
 # FINAL MANDATORY GATE - All steps must be complete
-echo "=== FINAL GATE: Checking ALL Steps Completion ==="
-INCOMPLETE=$(grep -c "pending" /tmp/new_learnings_progress.txt)
-if [ $INCOMPLETE -gt 0 ]; then
-    echo "❌ CANNOT COMMIT: $INCOMPLETE steps are still incomplete!"
+bash scripts/checkpoint_gate.sh new-learnings "Final Commit Readiness" "1,2,3,4,5,6,7,8,9,10,11"
+
+# If gate passes, show final status
+if [ $? -eq 0 ]; then
     echo ""
-    echo "Incomplete steps:"
-    grep "pending" /tmp/new_learnings_progress.txt
-    echo ""
-    echo "⛔ STOP: Go back and complete ALL missing steps before proceeding!"
-    echo "This is a HARD STOP - do not attempt to commit."
-else
-    echo "✅ ALL GATES PASSED: All 12 steps complete!"
-    echo "✅ READY FOR FINAL COMMIT"
-    cat /tmp/new_learnings_progress.txt | sed 's/^/  ✓ /'
+    echo "✅ ALL GATES PASSED: Ready for Step 12 (Commit and Push)"
+    bash scripts/checkpoint_status.sh new-learnings
 fi
 ```
 
@@ -671,35 +619,19 @@ fi
 **[CHECKPOINT END - STEP 12]**
 ```bash
 # Mark Step 12 complete
-sed -i '' 's/STEP_12=pending/STEP_12=complete/' /tmp/new_learnings_progress.txt
-echo "✓ Step 12 complete: Changes committed and pushed"
+bash scripts/checkpoint_update.sh new-learnings 12
 ```
 
 ## COMMAND COMPLETION VERIFICATION
 
 ```bash
-# Final completion report
-echo "========================================="
-echo "   NEW LEARNINGS COMMAND COMPLETED"
-echo "========================================="
-echo ""
-echo "Final Status:"
-cat /tmp/new_learnings_progress.txt | sed 's/^/  ✓ /'
-echo ""
-echo "Summary:"
-echo "  ✓ All 12 steps completed successfully"
-echo "  ✓ Knowledge base articles created/updated"
-echo "  ✓ Cross-references added to existing articles"
-echo "  ✓ Commands updated with new references"
-echo "  ✓ CLAUDE.md updated"
-echo "  ✓ All documentation validated"
-echo "  ✓ Changes committed and pushed"
-echo ""
-echo "Command execution complete!"
+# Show final completion report
+bash scripts/checkpoint_status.sh new-learnings --verbose
 
 # Clean up tracking file
-rm /tmp/new_learnings_progress.txt
-echo "Progress tracking file cleaned up."
+bash scripts/checkpoint_cleanup.sh new-learnings
+echo ""
+echo "✅ NEW LEARNINGS COMMAND FULLY COMPLETED!"
 ```
 
 ## Documentation Validation Details
