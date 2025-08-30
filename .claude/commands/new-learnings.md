@@ -436,7 +436,7 @@ make checkpoint-update CMD=new-learnings STEP=6
    - `fix-errors-whitelisted.md` - Needs whitelist context
 
 3. **Specific updates to make**:
-   - Add references to new KB articles: `([details](../../kb/new-article.md))`
+   - Add references to new KB articles: `([details](../../kb/actual-article-you-created.md))` // EXAMPLE: Replace with real filename
    - Add context about CI requirements where relevant
    - Update test-related commands with new testing techniques
    - Add warnings about check-logs blocking CI where appropriate
