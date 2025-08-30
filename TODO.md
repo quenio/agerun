@@ -988,17 +988,17 @@ Apply the checkpoint tracking system developed in the session to all 26 commands
   - [x] Add memory leak verification requirements
   - [x] Add migration completion verification
 
-- [ ] **Update migrate-module-to-zig-abi.md** (10 sections)
-  - [ ] Similar checkpoint structure to zig-struct migration
-  - [ ] Add pre-migration verification gate
-  - [ ] Add post-migration validation requirements
-  - [ ] Add API compatibility verification
+- [x] **Update migrate-module-to-zig-abi.md** (10 sections) - Completed 2025-08-30
+  - [x] Similar checkpoint structure to zig-struct migration
+  - [x] Add pre-migration verification gate
+  - [x] Add post-migration validation requirements
+  - [x] Add API compatibility verification
 
-- [ ] **Update check-logs.md** (8 sections)
-  - [ ] Add checkpoints for: Initial Check, Analyze Errors, Fix Issues, Re-check
-  - [ ] Add gate if errors found
-  - [ ] Add expected output documentation
-  - [ ] Add CI impact warnings
+- [x] **Update check-logs.md** (8 sections) - Completed 2025-08-30
+  - [x] Add checkpoints for: Initial Check, Analyze Errors, Fix Issues, Re-check
+  - [x] Add gate if errors found
+  - [x] Add expected output documentation
+  - [x] Add CI impact warnings
 
 #### Phase 2: Medium Complexity Commands (5 commands, ~1.25 hours)
 - [ ] **Update commit.md**
