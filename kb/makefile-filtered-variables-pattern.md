@@ -65,3 +65,4 @@ check-filtering:
 ## Related Patterns
 - [Makefile Pattern Rule Management](makefile-pattern-rule-management.md)
 - [Sanitizer Test Exclusion Pattern](sanitizer-test-exclusion-pattern.md)
+- [Generic Make Targets Pattern](generic-make-targets-pattern.md)

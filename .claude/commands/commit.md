@@ -1,7 +1,7 @@
 Create a git commit following the exact workflow specified in CLAUDE.md.
 ## Pre-Commit Checklist (MANDATORY - ALWAYS CHECK THIS)
 
-Before starting the commit process, ensure you have completed ALL of these steps:
+Before starting the commit process, ensure you have completed ALL of these steps. This checklist acts as a quality gate to prevent incomplete commits ([details](../../kb/gate-enforcement-exit-codes-pattern.md)):
 
 1. **Run Tests**: Use `make clean build` for comprehensive build verification (~20 lines output) to ensure all changes work correctly and no memory leaks. **ALWAYS follow with `make check-logs` to catch hidden issues!** **If clean build fails OR check-logs finds issues, STOP - do not proceed with commit until all issues are fixed.** ([details](../../kb/build-verification-before-commit.md), [CI requirement](../../kb/ci-check-logs-requirement.md))
    - **Note**: `make build` includes documentation validation (`make check-docs`). If docs fail, use `python3 scripts/batch_fix_docs.py` to fix automatically ([details](../../kb/batch-documentation-fix-enhancement.md))

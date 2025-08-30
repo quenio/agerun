@@ -22,7 +22,7 @@ Run documentation validation and fix any errors found using an iterative approac
    - Verify push completed with `git status`
 
 ## What the batch fix script handles:
-- **Non-existent function/type references**: Adds EXAMPLE tags or replaces with real types
+- **Non-existent function/type references**: Adds EXAMPLE tags or replaces with real types ([details](../../kb/documentation-placeholder-validation-pattern.md))
 - **Broken relative markdown links**: Calculates and fixes correct relative paths
 - **Absolute paths**: Converts to relative paths
 - **Additional contexts** (enhanced): Struct fields, function params, sizeof, type casts, variable declarations ([details](../../kb/batch-documentation-fix-enhancement.md))

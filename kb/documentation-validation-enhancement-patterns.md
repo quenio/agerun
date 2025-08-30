@@ -47,3 +47,4 @@ make check-docs  # Ensure no false positives introduced
 ## Related Patterns
 - [Documentation Standards Integration](documentation-standards-integration.md)
 - [Markdown Link Resolution Patterns](markdown-link-resolution-patterns.md)
+- [Documentation Placeholder Validation Pattern](documentation-placeholder-validation-pattern.md)

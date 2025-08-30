@@ -3,7 +3,7 @@ Build and run all tests.
 make run-tests 2>&1
 ```
 
-Note: Using `2>&1` to capture stderr ensures memory leak warnings and other diagnostic messages are visible.
+Note: Using `2>&1` to capture stderr ensures memory leak warnings and other diagnostic messages are visible. Commands should document expected outputs to help users recognize success vs failure conditions ([details](../../kb/command-output-documentation-pattern.md)).
 
 **Test Infrastructure**: Tests requiring shared setup/teardown should use fixture modules with opaque types and proper lifecycle management ([details](../../kb/test-fixture-module-creation-pattern.md)). Fixtures should evolve organically by adding helper methods as needs arise ([details](../../kb/test-fixture-evolution-pattern.md)).
 

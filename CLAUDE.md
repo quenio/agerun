@@ -78,11 +78,13 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Self-documenting changes**: Add entries for significant modifications ([details](kb/self-documenting-modifications-pattern.md))
 **Retroactive tracking**: Add completed unplanned tasks to TODO.md ([details](kb/retroactive-task-documentation.md))
 **Report-driven planning**: Create analysis reports before large task sets ([details](kb/report-driven-task-planning.md))
-**Learning extraction**: Multi-pass review reveals hidden patterns ([details](kb/comprehensive-learning-extraction-pattern.md))
+**Learning extraction**: Multi-pass review reveals hidden patterns ([details](kb/comprehensive-learning-extraction-pattern.md), [thoroughness](kb/command-thoroughness-requirements-pattern.md))
 
 **Documentation Standards (MANDATORY)** ([details](kb/documentation-standards-integration.md)):
 - **Real code only**: All examples must use actual AgeRun types/functions ([details](kb/validated-documentation-examples.md))
 - **Validation required**: Run `make check-docs` before committing any .md files ([details](kb/documentation-validation-enhancement-patterns.md))
+- **Placeholder marking**: Use EXAMPLE tags for hypothetical references ([details](kb/documentation-placeholder-validation-pattern.md))
+- **Command outputs**: Document expected outputs for all scripts/tools ([details](kb/command-output-documentation-pattern.md))
 - **Specification consistency**: Keep SPEC.md updated after language changes ([details](kb/specification-consistency-maintenance.md))
 - **Proper tagging**: Use `// EXAMPLE:`, `// BAD:`, `// ERROR:` for hypothetical code ([details](kb/example-marker-granular-control.md))
 - **Markdown links**: Use relative paths only - see link resolution rules ([details](kb/markdown-link-resolution-patterns.md))
@@ -268,6 +270,7 @@ grep -r "function_name\|concept" modules/
 ### 5. Coding Standards
 
 **String Parsing**: Track quote state when scanning for operators ([details](kb/string-parsing-quote-tracking.md))
+**Make targets**: Use generic parameterized targets, avoid duplication ([details](kb/generic-make-targets-pattern.md))
 
 **Naming Patterns** (verify with grep before large changes; fix errors before warnings):
 | Type | Pattern | Example |
@@ -326,8 +329,9 @@ grep -r "function_name\|concept" modules/
 **Navigation**: Use absolute paths only ([details](kb/absolute-path-navigation.md))
 **Backups**: Use git stash/diff, never .bak files (ar_io creates them automatically - [details](kb/file-io-backup-mechanism.md))
 **Stubs**: Comment unready features with dependency notes ([details](kb/stub-and-revisit-pattern.md))
-**Scripts**: Add to `/scripts/` with make targets ([details](kb/progressive-tool-enhancement.md), [batch](kb/batch-update-script-pattern.md))
+**Scripts**: Add to `/scripts/` with make targets ([details](kb/progressive-tool-enhancement.md), [batch](kb/batch-update-script-pattern.md), [reusable](kb/script-reusability-parameters-pattern.md))
 **Shell scripts**: Use proper variable assignment for error handling ([details](kb/shell-script-command-substitution.md))
+**Multi-step processes**: Use checkpoint tracking for complex commands ([details](kb/multi-step-checkpoint-tracking-pattern.md), [gates](kb/gate-enforcement-exit-codes-pattern.md), [progress](kb/progress-visualization-ascii-pattern.md))
 **Debug**: `make sanitize-tests 2>&1`, redirect stderr, check syscall returns ([details](kb/development-debug-tools.md), [static](kb/static-analysis-error-handling.md))
 **Static compliance**: Restructure stream ops for analyzer satisfaction ([details](kb/static-analyzer-stream-compliance.md))
 **Debug output**: Keep for future troubleshooting ([details](kb/debug-output-preservation-strategy.md))

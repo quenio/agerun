@@ -24,6 +24,10 @@ Each learning file contains:
 - [API Suffix Cleanup Pattern](api-suffix-cleanup-pattern.md)
 - [Build Verification Before Commit](build-verification-before-commit.md)
 - [Build Time Reporting](build-time-reporting.md)
+- [Gate Enforcement Exit Codes Pattern](gate-enforcement-exit-codes-pattern.md)
+- [Multi-Step Checkpoint Tracking Pattern](multi-step-checkpoint-tracking-pattern.md)
+- [Progress Visualization ASCII Pattern](progress-visualization-ascii-pattern.md)
+- [Command Thoroughness Requirements Pattern](command-thoroughness-requirements-pattern.md)
 - [Documentation Language Migration Updates](documentation-language-migration-updates.md)
 - [Make-Only Test Execution](make-only-test-execution.md)
 - [Git Push Verification](git-push-verification.md)
@@ -206,7 +210,9 @@ Each learning file contains:
 ### Tools & Automation
 - [Automated Batch Documentation Fixes](automated-batch-documentation-fixes.md)
 - [Batch Documentation Fix Enhancement](batch-documentation-fix-enhancement.md)
+- [Generic Make Targets Pattern](generic-make-targets-pattern.md)
 - [Progressive Tool Enhancement](progressive-tool-enhancement.md)
+- [Script Reusability Parameters Pattern](script-reusability-parameters-pattern.md)
 - [Command Continuous Improvement Pattern](command-continuous-improvement-pattern.md)
 - [Module Renaming Script Enhancement](module-renaming-script-enhancement.md)
 - [Script Enhancement Over One Off](script-enhancement-over-one-off.md)
@@ -232,6 +238,8 @@ Each learning file contains:
 - [File I/O Backup Mechanism](file-io-backup-mechanism.md)
 
 ### Development Practices
+- [Command Output Documentation Pattern](command-output-documentation-pattern.md)
+- [Documentation Placeholder Validation Pattern](documentation-placeholder-validation-pattern.md)
 - [Feature Remnant Cleanup Pattern](feature-remnant-cleanup-pattern.md)
 - [Verification Through Removal Technique](verification-through-removal-technique.md)
 - [Cross-File Pattern Propagation](cross-file-pattern-propagation.md)

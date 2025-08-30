@@ -109,3 +109,4 @@ Signs of comprehensive extraction:
 - [User Feedback as QA](user-feedback-as-qa.md)
 - [Documentation Compacting Pattern](documentation-compacting-pattern.md)
 - [Self-Documenting Modifications Pattern](self-documenting-modifications-pattern.md)
+- [Command Thoroughness Requirements Pattern](command-thoroughness-requirements-pattern.md)
