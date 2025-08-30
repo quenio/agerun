@@ -24,6 +24,22 @@ bash scripts/checkpoint_init.sh new-learnings \
     "Automatic Commit and Push"
 ```
 
+**Expected output:**
+```
+========================================
+   CHECKPOINT TRACKING INITIALIZED
+========================================
+
+Command: new-learnings
+Tracking file: /tmp/new-learnings_progress.txt
+Total steps: 12
+
+Steps to complete:
+  1. Identify New Learnings
+  2. Determine KB Article Strategy
+  ... (all 12 steps listed)
+```
+
 ### Check Progress at Any Time
 
 ```bash
@@ -32,6 +48,23 @@ bash scripts/checkpoint_status.sh new-learnings
 
 # Show detailed progress with all steps
 bash scripts/checkpoint_status.sh new-learnings --verbose
+```
+
+**Expected output:**
+```
+========================================
+   PROGRESS STATUS: new-learnings
+========================================
+
+Started: [timestamp]
+Progress: 3/12 steps (25%)
+
+[█████░░░░░░░░░░░░░░░] 25%
+
+Next Action:
+  → Step 4: Validation Before Saving
+
+Run: checkpoint_update.sh new-learnings 4
 ```
 
 ## Overview of the Process
@@ -108,6 +141,14 @@ For each learning, provide:
 ```bash
 # Mark Step 1 complete
 bash scripts/checkpoint_update.sh new-learnings 1
+```
+
+**Expected output:**
+```
+✓ Step 1 marked as complete: Identify New Learnings
+
+Progress: 1/12 completed
+Next pending: Determine KB Article Strategy
 ```
 
 ## Step 2: Determine KB Article Strategy
@@ -281,6 +322,39 @@ bash scripts/checkpoint_update.sh new-learnings 4
 ```bash
 # MANDATORY GATE - Cannot proceed without articles
 bash scripts/checkpoint_gate.sh new-learnings "Article Creation" "1,2,3,4"
+```
+
+**Expected output when PASSING:**
+```
+========================================
+   GATE: Article Creation
+========================================
+
+✅ GATE PASSED: All required steps are complete!
+
+Verified steps:
+  ✓ Step 1: Identify New Learnings
+  ✓ Step 2: Determine KB Article Strategy
+  ✓ Step 3: Knowledge Base Article Creation
+  ✓ Step 4: Validation Before Saving
+
+You may proceed to the next section.
+```
+
+**Expected output when BLOCKED:**
+```
+========================================
+   GATE: Article Creation
+========================================
+
+❌ GATE BLOCKED: Cannot proceed!
+
+The following steps must be completed first:
+  ⏳ Step 3: Knowledge Base Article Creation
+  ⏳ Step 4: Validation Before Saving
+
+⛔ STOP: Complete the missing steps before continuing.
+[Exit code: 1]
 ```
 
 ## Step 5: Update Knowledge Base Index
@@ -632,6 +706,28 @@ bash scripts/checkpoint_status.sh new-learnings --verbose
 bash scripts/checkpoint_cleanup.sh new-learnings
 echo ""
 echo "✅ NEW LEARNINGS COMMAND FULLY COMPLETED!"
+```
+
+**Expected final output:**
+```
+========================================
+   PROGRESS STATUS: new-learnings
+========================================
+
+Progress: 12/12 steps (100%)
+
+[████████████████████] 100%
+
+Step Details:
+  ✓ Step 1: Identify New Learnings
+  ✓ Step 2: Determine KB Article Strategy
+  ... (all 12 steps shown as ✓)
+
+✅ ALL STEPS COMPLETE!
+
+✓ Tracking file removed: /tmp/new-learnings_progress.txt
+
+✅ NEW LEARNINGS COMMAND FULLY COMPLETED!
 ```
 
 ## Documentation Validation Details
