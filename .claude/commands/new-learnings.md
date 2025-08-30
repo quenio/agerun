@@ -8,20 +8,8 @@ Analyze session for new learnings and create properly validated kb articles.
 ### Initialize Progress Tracking (EXECUTE THIS FIRST)
 
 ```bash
-# Initialize tracking with all 12 steps
-bash scripts/checkpoint_init.sh new-learnings \
-    "Identify New Learnings" \
-    "Determine KB Article Strategy" \
-    "Knowledge Base Article Creation" \
-    "Validation Before Saving" \
-    "Update Knowledge Base Index" \
-    "Update Existing KB Articles (3-5 minimum)" \
-    "Review and Update Commands (3-4 minimum)" \
-    "Review Existing Guidelines" \
-    "Update Guidelines" \
-    "Validate No Broken Links" \
-    "Pre-Commit Integration Verification" \
-    "Automatic Commit and Push"
+# Initialize tracking with all 12 steps (note: this is a single command line)
+make checkpoint-init CMD=new-learnings STEPS='"Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"'
 ```
 
 **Expected output:**
@@ -43,11 +31,8 @@ Steps to complete:
 ### Check Progress at Any Time
 
 ```bash
-# Show current progress
-bash scripts/checkpoint_status.sh new-learnings
-
-# Show detailed progress with all steps
-bash scripts/checkpoint_status.sh new-learnings --verbose
+# Show current progress (with details)
+make checkpoint-status CMD=new-learnings VERBOSE=--verbose
 ```
 
 **Expected output:**
@@ -140,7 +125,7 @@ For each learning, provide:
 **[CHECKPOINT END - STEP 1]**
 ```bash
 # Mark Step 1 complete
-bash scripts/checkpoint_update.sh new-learnings 1
+make checkpoint-update CMD=new-learnings STEP=1
 ```
 
 **Expected output:**
@@ -184,7 +169,7 @@ Next pending: Determine KB Article Strategy
 **[CHECKPOINT END - STEP 2]**
 ```bash
 # Mark Step 2 complete
-bash scripts/checkpoint_update.sh new-learnings 2
+make checkpoint-update CMD=new-learnings STEP=2
 ```
 
 ## Step 3: Knowledge Base Article Creation
@@ -287,8 +272,7 @@ If you're tempted to use hypothetical types, replace with real ones:
 **[CHECKPOINT END - STEP 3]**
 ```bash
 # Mark Step 3 complete
-bash scripts/checkpoint_update.sh new-learnings 3
-check_progress  # Show current status
+make checkpoint-update CMD=new-learnings STEP=3
 ```
 
 ## Step 4: Validation Before Saving
@@ -314,14 +298,14 @@ check_progress  # Show current status
 **[CHECKPOINT END - STEP 4]**
 ```bash
 # Mark Step 4 complete
-bash scripts/checkpoint_update.sh new-learnings 4
+make checkpoint-update CMD=new-learnings STEP=4
 ```
 
 ## GATE 1: ARTICLE CREATION VERIFICATION
 
 ```bash
 # MANDATORY GATE - Cannot proceed without articles
-bash scripts/checkpoint_gate.sh new-learnings "Article Creation" "1,2,3,4"
+make checkpoint-gate CMD=new-learnings GATE="Article Creation" REQUIRED="1,2,3,4"
 ```
 
 **Expected output when PASSING:**
@@ -377,7 +361,7 @@ The following steps must be completed first:
 **[CHECKPOINT END - STEP 5]**
 ```bash
 # Mark Step 5 complete
-bash scripts/checkpoint_update.sh new-learnings 5
+make checkpoint-update CMD=new-learnings STEP=5
 ```
 
 ## Step 6: Update Existing KB Articles with Cross-References (THOROUGH EXECUTION REQUIRED)
@@ -424,7 +408,7 @@ bash scripts/checkpoint_update.sh new-learnings 5
 **[CHECKPOINT END - STEP 6]**
 ```bash
 # Mark Step 6 complete
-bash scripts/checkpoint_update.sh new-learnings 6
+make checkpoint-update CMD=new-learnings STEP=6
 ```
 
 ## Step 7: Review and Update Existing Commands (THOROUGH EXECUTION REQUIRED)
@@ -476,7 +460,7 @@ bash scripts/checkpoint_update.sh new-learnings 6
 **[CHECKPOINT END - STEP 7]**
 ```bash
 # Mark Step 7 complete
-bash scripts/checkpoint_update.sh new-learnings 7
+make checkpoint-update CMD=new-learnings STEP=7
 ```
 
 ## Step 8: Review Existing Guidelines
@@ -491,7 +475,7 @@ Check CLAUDE.md to see if these learnings should be referenced:
 **[CHECKPOINT END - STEP 8]**
 ```bash
 # Mark Step 8 complete
-bash scripts/checkpoint_update.sh new-learnings 8
+make checkpoint-update CMD=new-learnings STEP=8
 ```
 
 ## Step 9: Update Guidelines
@@ -534,14 +518,14 @@ If updates are needed to CLAUDE.md:
 **[CHECKPOINT END - STEP 9]**
 ```bash
 # Mark Step 9 complete
-bash scripts/checkpoint_update.sh new-learnings 9
+make checkpoint-update CMD=new-learnings STEP=9
 ```
 
 ## GATE 2: INTEGRATION VERIFICATION
 
 ```bash
 # MANDATORY GATE - Check integration completeness
-bash scripts/checkpoint_gate.sh new-learnings "Integration" "5,6,7,8,9"
+make checkpoint-gate CMD=new-learnings GATE="Integration" REQUIRED="5,6,7,8,9"
 ```
 
 ## Step 10: Validate No Broken Links
@@ -564,7 +548,7 @@ bash scripts/checkpoint_gate.sh new-learnings "Integration" "5,6,7,8,9"
 **[CHECKPOINT END - STEP 10]**
 ```bash
 # Mark Step 10 complete
-bash scripts/checkpoint_update.sh new-learnings 10
+make checkpoint-update CMD=new-learnings STEP=10
 ```
 
 ## Step 11: Pre-Commit Integration Verification (MANDATORY EXECUTION)
@@ -623,20 +607,20 @@ fi
 **[CHECKPOINT END - STEP 11]**
 ```bash
 # Mark Step 11 complete
-bash scripts/checkpoint_update.sh new-learnings 11
+make checkpoint-update CMD=new-learnings STEP=11
 ```
 
 ## FINAL GATE: COMMIT READINESS CHECK
 
 ```bash
 # FINAL MANDATORY GATE - All steps must be complete
-bash scripts/checkpoint_gate.sh new-learnings "Final Commit Readiness" "1,2,3,4,5,6,7,8,9,10,11"
+make checkpoint-gate CMD=new-learnings GATE="Final Commit Readiness" REQUIRED="1,2,3,4,5,6,7,8,9,10,11"
 
 # If gate passes, show final status
 if [ $? -eq 0 ]; then
     echo ""
     echo "✅ ALL GATES PASSED: Ready for Step 12 (Commit and Push)"
-    bash scripts/checkpoint_status.sh new-learnings
+    make checkpoint-status CMD=new-learnings
 fi
 ```
 
@@ -693,17 +677,17 @@ fi
 **[CHECKPOINT END - STEP 12]**
 ```bash
 # Mark Step 12 complete
-bash scripts/checkpoint_update.sh new-learnings 12
+make checkpoint-update CMD=new-learnings STEP=12
 ```
 
 ## COMMAND COMPLETION VERIFICATION
 
 ```bash
 # Show final completion report
-bash scripts/checkpoint_status.sh new-learnings --verbose
+make checkpoint-status CMD=new-learnings VERBOSE=--verbose
 
 # Clean up tracking file
-bash scripts/checkpoint_cleanup.sh new-learnings
+make checkpoint-cleanup CMD=new-learnings
 echo ""
 echo "✅ NEW LEARNINGS COMMAND FULLY COMPLETED!"
 ```

@@ -684,6 +684,12 @@ install-scan-build:
 fi
 
 # Checkpoint tracking utilities for multi-step commands
+# Usage examples:
+#   make checkpoint-init CMD=new-learnings STEPS='"Step 1" "Step 2" "Step 3"'
+#   make checkpoint-update CMD=new-learnings STEP=1
+#   make checkpoint-status CMD=new-learnings
+#   make checkpoint-gate CMD=new-learnings GATE="Article Creation" REQUIRED="1,2,3,4"
+#   make checkpoint-cleanup CMD=new-learnings
 checkpoint-init:
 	@bash scripts/checkpoint_init.sh $(CMD) $(STEPS)
 
@@ -694,29 +700,7 @@ checkpoint-status:
 	@bash scripts/checkpoint_status.sh $(CMD) $(VERBOSE)
 
 checkpoint-gate:
-	@bash scripts/checkpoint_gate.sh $(CMD) $(GATE) $(REQUIRED)
+	@bash scripts/checkpoint_gate.sh $(CMD) "$(GATE)" "$(REQUIRED)"
 
 checkpoint-cleanup:
 	@bash scripts/checkpoint_cleanup.sh $(CMD)
-
-# Example usage for new-learnings command
-new-learnings-init:
-	@bash scripts/checkpoint_init.sh new-learnings \
-		"Identify New Learnings" \
-		"Determine KB Article Strategy" \
-		"Knowledge Base Article Creation" \
-		"Validation Before Saving" \
-		"Update Knowledge Base Index" \
-		"Update Existing KB Articles (3-5 minimum)" \
-		"Review and Update Commands (3-4 minimum)" \
-		"Review Existing Guidelines" \
-		"Update Guidelines" \
-		"Validate No Broken Links" \
-		"Pre-Commit Integration Verification" \
-		"Automatic Commit and Push"
-
-new-learnings-status:
-	@bash scripts/checkpoint_status.sh new-learnings --verbose
-
-new-learnings-cleanup:
-	@bash scripts/checkpoint_cleanup.sh new-learnings
