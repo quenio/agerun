@@ -68,6 +68,8 @@ Each learning file contains:
 - [Static Analyzer Stream Compliance](static-analyzer-stream-compliance.md)
 - [Issue Currency Verification Pattern](issue-currency-verification-pattern.md)
 - [Local-CI Discrepancy Investigation](local-ci-discrepancy-investigation.md)
+- [Build-Logs Relationship Principle](build-logs-relationship-principle.md)
+- [CI Check-Logs Requirement](ci-check-logs-requirement.md)
 
 ### Memory Management
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)
@@ -138,6 +140,9 @@ Each learning file contains:
 - [Debug Program Recompilation Pattern](debug-program-recompilation-pattern.md)
 - [Test Complexity Reduction Pattern](test-complexity-reduction-pattern.md)
 - [Test-Driven Documentation Validation](test-driven-documentation-validation.md)
+- [Test Assertion Strength Patterns](test-assertion-strength-patterns.md)
+- [DLSym Test Interception Technique](dlsym-test-interception-technique.md)
+- [Sanitizer Test Exclusion Pattern](sanitizer-test-exclusion-pattern.md)
 
 ### Architecture & Design
 - [Opaque Types Pattern](opaque-types-pattern.md)
@@ -222,8 +227,8 @@ Each learning file contains:
 - [CI Debugging Artifact Upload](ci-debugging-artifact-upload.md)
 - [GitHub Actions Debugging Workflow](github-actions-debugging-workflow.md)
 - [Makefile Filtered Variables Pattern](makefile-filtered-variables-pattern.md)
-- [Sanitizer Test Exclusion Pattern](sanitizer-test-exclusion-pattern.md)
 - [Zig Static Analysis Tools](zig-static-analysis-tools.md)
+- [Whitelist Success Message Management](whitelist-success-message-management.md)
 - [File I/O Backup Mechanism](file-io-backup-mechanism.md)
 
 ### Development Practices

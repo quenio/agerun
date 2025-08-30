@@ -64,3 +64,4 @@ grep "dlsym_tests" logs/sanitize-tests.log  # Should find nothing
 ## Related Patterns
 - [Makefile Pattern Rule Management](makefile-pattern-rule-management.md)
 - [Memory Debugging Comprehensive Guide](memory-debugging-comprehensive-guide.md)
+- [DLSym Test Interception Technique](dlsym-test-interception-technique.md)

@@ -16,11 +16,11 @@ Weak tests provide false confidence:
 ### Pattern 1: Success-Only Verification
 ```c
 // WEAK: Only tests happy path, no error verification
-static void test_parser__create_succeeds(void) {
+static void test_instruction_parser__create_succeeds(void) {
     ar_log_t* log = ar_log__create();
-    ar_parser_t* parser = ar_parser__create(log);
+    ar_instruction_parser_t* parser = ar_instruction_parser__create(log);
     assert(parser != NULL);  // Minimal assertion
-    ar_parser__destroy(parser);
+    ar_instruction_parser__destroy(parser);
     ar_log__destroy(log);
 }
 ```
@@ -28,21 +28,24 @@ static void test_parser__create_succeeds(void) {
 ### Pattern 2: Non-Specific Error Checking
 ```c
 // WEAK: Knows it failed but not why
-static void test_parser__fails_somehow(void) {
-    ar_parser_t* parser = ar_parser__parse(NULL, "invalid");
-    assert(parser == NULL);  // Doesn't verify error message
+static void test_instruction_parser__fails_somehow(void) {
+    ar_instruction_parser_t* parser = ar_instruction_parser__create(NULL);
+    ar_instruction_ast_t* ast = ar_instruction_parser__parse(parser, "invalid", NULL);
+    assert(ast == NULL);  // Doesn't verify error message
+    ar_instruction_parser__destroy(parser);
 }
 ```
 
 ### Pattern 3: Incomplete State Verification
 ```c
 // WEAK: Doesn't verify all affected state
-static void test_data__update(void) {
-    ar_data_t* data = ar_data__create_int(42);
-    ar_data__update(data, 100);
-    assert(ar_data__get_int(data) == 100);
-    // Doesn't check: ownership, type, error state
-    ar_data__destroy(data);
+static void test_data__shallow_copy(void) {
+    ar_data_t* original = ar_data__create_integer(42);
+    ar_data_t* copy = ar_data__shallow_copy(original);
+    assert(ar_data__get_integer(copy) == 42);
+    // Doesn't check: ownership status, type preservation, reference counting
+    ar_data__destroy(original);
+    ar_data__destroy(copy);
 }
 ```
 
@@ -51,11 +54,11 @@ static void test_data__update(void) {
 ### Pattern 1: Specific Error Message Verification
 ```c
 // STRONG: Verifies exact error and location
-static void test_parser__logs_null_input_error(void) {
+static void test_instruction_parser__logs_null_input_error(void) {
     ar_log_t* log = ar_log__create();
-    ar_parser_t* parser = ar_parser__create(log);
+    ar_instruction_parser_t* parser = ar_instruction_parser__create(log);
     
-    ar_instruction_ast_t* ast = ar_parser__parse(parser, NULL);
+    ar_instruction_ast_t* ast = ar_instruction_parser__parse(parser, NULL, NULL);
     assert(ast == NULL);
     
     // Verify specific error message
@@ -66,7 +69,7 @@ static void test_parser__logs_null_input_error(void) {
     // Verify error position if applicable
     assert(ar_log__get_last_error_position(log) == 0);
     
-    ar_parser__destroy(parser);
+    ar_instruction_parser__destroy(parser);
     ar_log__destroy(log);
 }
 ```
@@ -74,46 +77,48 @@ static void test_parser__logs_null_input_error(void) {
 ### Pattern 2: Cleanup Verification
 ```c
 // STRONG: Verifies proper resource cleanup on failure
-static void test_parser__cleans_up_on_partial_failure(void) {
-    // Track allocations
-    int initial_allocations = get_allocation_count();
+static void test_instruction_parser__cleans_up_on_partial_failure(void) {
+    // Track allocations  // EXAMPLE: Hypothetical tracking for demonstration
+    int initial_allocations = get_allocation_count();  // EXAMPLE: Hypothetical function
     
     // Simulate failure at specific point
-    simulate_failure_at_allocation(5);
+    simulate_failure_at_allocation(5);  // EXAMPLE: Hypothetical function
     
-    ar_parser_t* parser = ar_parser__create(NULL);
+    ar_instruction_parser_t* parser = ar_instruction_parser__create(NULL);
     assert(parser == NULL);  // Expected failure
     
     // Verify no leaks despite failure
-    assert(get_allocation_count() == initial_allocations);
+    assert(get_allocation_count() == initial_allocations);  // EXAMPLE: Hypothetical function
 }
 ```
 
 ### Pattern 3: Behavior Chain Verification
 ```c
 // STRONG: Verifies complete behavior sequence
-static void test_agent__message_handling(void) {
-    ar_system_t* system = ar_system__create();
-    ar_agent_t* agent = ar_agent__create(system, "test", "1.0.0");
+static void test_data__map_operations(void) {
+    // Create and verify initial state
+    ar_data_t* map = ar_data__create_map();
+    assert(map != NULL);
+    assert(ar_data__get_type(map) == AR_DATA_TYPE_MAP);
     
-    // Send message
-    ar_message_t* msg = ar_message__create("test", NULL);
-    ar_agent__send(agent, msg);
+    // Add values and verify each step
+    ar_data__set_map_string(map, "name", "test");
+    const char* name = ar_data__get_map_string(map, "name");
+    assert(name != NULL);
+    assert(strcmp(name, "test") == 0);
     
-    // Verify message queued
-    assert(ar_agent__has_pending_messages(agent));
+    ar_data__set_map_integer(map, "count", 42);
+    int count = ar_data__get_map_integer(map, "count");
+    assert(count == 42);
     
-    // Process message
-    ar_system__process_next_message(system);
+    // Verify complete state
+    ar_data_t* keys = ar_data__get_map_keys(map);
+    assert(keys != NULL);
+    assert(ar_data__get_type(keys) == AR_DATA_TYPE_LIST);
     
-    // Verify message processed
-    assert(!ar_agent__has_pending_messages(agent));
-    
-    // Verify side effects
-    assert(ar_agent__get_message_count(agent) == 1);
-    
-    ar_agent__destroy(agent);
-    ar_system__destroy(system);
+    // Clean up
+    ar_data__destroy(keys);
+    ar_data__destroy(map);
 }
 ```
 
