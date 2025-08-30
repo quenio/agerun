@@ -16,6 +16,18 @@ This command guides you through a comprehensive process to:
 
 **IMPORTANT**: Always consider updating existing KB articles before creating new ones, and ensure all articles are properly cross-referenced to create a web of knowledge.
 
+## Minimum Requirements for Thorough Execution
+
+**These are MANDATORY minimums for each execution:**
+- **Step 6**: Update at least 3-5 existing KB articles with cross-references
+- **Step 7**: Update at least 3-4 existing commands with new KB references  
+- **Step 11**: Execute verification script and confirm "READY TO COMMIT" status
+
+**Quality Indicators:**
+- More KB articles modified than created (shows good cross-referencing)
+- Multiple commands updated (shows good integration)
+- Verification script passes all checks before commit
+
 ## Step 1: Identify New Learnings
 
 **CRITICAL: Think deeply and thoroughly about what was learned in this session.**
@@ -213,17 +225,32 @@ If you're tempted to use hypothetical types, replace with real ones:
    - [Article Title](article-filename.md)
    ```
 
-## Step 6: Update Existing KB Articles with Cross-References
+## Step 6: Update Existing KB Articles with Cross-References (THOROUGH EXECUTION REQUIRED)
 
 **CRITICAL - OFTEN MISSED**: Add cross-references to create a web of knowledge ([details](../../kb/new-learnings-complete-integration-pattern.md)):
 
+**MINIMUM REQUIREMENT**: Update at least 3-5 existing KB articles with cross-references.
+
 1. **For each new article created**:
-   - Find related existing articles
+   - Search comprehensively for related topics:
+     ```bash
+     # Search for articles mentioning related concepts
+     grep -l "keyword1\|keyword2\|keyword3" kb/*.md | head -10
+     ```
    - Add reference to new article in their Related Patterns section
+   - Target articles that would genuinely benefit from the reference
    
-2. **For each updated article**:
-   - Add references to other updated articles if relevant
-   - Ensure bidirectional linking where appropriate
+2. **Specific searches to perform**:
+   ```bash
+   # For test-related articles
+   grep -l "test.*strength\|assertion\|weak.*test" kb/*.md
+   
+   # For build/CI articles  
+   grep -l "build.*verification\|check.*logs\|CI" kb/*.md
+   
+   # For error/whitelist articles
+   grep -l "whitelist\|intentional.*error" kb/*.md
+   ```
 
 3. **Cross-reference pattern**:
    ```markdown
@@ -232,32 +259,54 @@ If you're tempted to use hypothetical types, replace with real ones:
    - [New Pattern You Created](new-pattern.md)
    ```
 
-## Step 7: Review and Update Existing Commands
+4. **Verification**: Count modified KB articles - should exceed new articles:
+   ```bash
+   git diff --name-only | grep "kb.*\.md" | wc -l  # Should be > new articles
+   ```
+
+## Step 7: Review and Update Existing Commands (THOROUGH EXECUTION REQUIRED)
 
 **CRITICAL - OFTEN MISSED**: Check if any Claude commands should be updated based on learnings ([details](../../kb/new-learnings-complete-integration-pattern.md)):
 
-1. **Search for relevant commands**:
+**MINIMUM REQUIREMENT**: Update at least 3-4 relevant commands with new KB references.
+
+1. **Comprehensive search for relevant commands**:
    ```bash
-   grep -l "relevant_keyword" .claude/commands/*.md
+   # Search for all potentially related commands
+   for keyword in "test" "build" "check" "log" "error" "whitelist" "assert"; do
+     echo "=== Commands mentioning '$keyword' ==="
+     grep -l "$keyword" .claude/commands/*.md | head -5
+   done
    ```
 
-2. **Review commands that might benefit from updates**:
-   - Commands that use patterns discovered/improved in this session
-   - Commands that could reference new KB articles
-   - Commands with outdated approaches that could be modernized
-   
-3. **Common commands to check**:
-   - `/build` - If build process improvements were discovered
-   - `/test` - If testing patterns were enhanced
-   - `/refactor` - If refactoring techniques were improved
-   - `/migrate` - If migration strategies were updated
-   - `/debug` - If debugging approaches were enhanced
+2. **Priority commands to ALWAYS check**:
+   - `commit.md` - Often needs CI/build references
+   - `build.md` - Needs build/logs relationship updates
+   - `run-tests.md` - Needs test technique references
+   - `sanitize-tests.md` - Needs dlsym/exclusion updates
+   - `fix-errors-whitelisted.md` - Needs whitelist context
 
-4. **Update command files as needed**:
-   - Add references to new KB articles: `([details](../../kb/specific-pattern.md))` // EXAMPLE: Replace with actual KB filename
-   - Update outdated patterns with new learnings
-   - Add new steps or modify existing ones based on discoveries
-   - Ensure consistency with updated CLAUDE.md guidelines
+3. **Specific updates to make**:
+   - Add references to new KB articles: `([details](../../kb/new-article.md))`
+   - Add context about CI requirements where relevant
+   - Update test-related commands with new testing techniques
+   - Add warnings about check-logs blocking CI where appropriate
+   
+4. **Update patterns**:
+   ```markdown
+   # Example: Adding to existing text
+   Old: "Run tests to verify"
+   New: "Run tests to verify ([details](../../kb/test-assertion-strength-patterns.md))"
+   
+   # Example: Adding context
+   Old: "Check logs for errors"  
+   New: "Check logs for errors. Note: check-logs must pass or CI will fail ([details](../../kb/ci-check-logs-requirement.md))"
+   ```
+
+5. **Verification**: Count modified commands:
+   ```bash
+   git diff --name-only | grep ".claude/commands" | wc -l  # Should be >= 3
+   ```
 
 ## Step 8: Review Existing Guidelines
 
@@ -316,27 +365,58 @@ If updates are needed to CLAUDE.md:
 
 2. **Never reference non-existent articles in Related Patterns sections**
 
-## Step 11: Pre-Commit Integration Verification
+## Step 11: Pre-Commit Integration Verification (MANDATORY EXECUTION)
 
-**CRITICAL**: Before committing, verify complete integration:
+**CRITICAL**: You MUST execute this verification script before committing:
 
 ```bash
+# EXECUTE THIS ENTIRE SCRIPT - DO NOT SKIP
+echo "=== Step 11: Pre-Commit Integration Verification ==="
+echo ""
+
 # Check that cross-references were added
 echo "=== Cross-References Added ==="
-git diff --name-only | grep "kb.*\.md" | wc -l
-echo "KB articles modified (should be > just new articles)"
+MODIFIED_KB=$(git diff --name-only | grep "kb.*\.md" | wc -l)
+echo "KB articles modified: $MODIFIED_KB"
+if [ $MODIFIED_KB -lt 3 ]; then
+    echo "⚠️ WARNING: Only $MODIFIED_KB KB articles modified - need at least 3-5 cross-references!"
+else
+    echo "✓ Good: $MODIFIED_KB KB articles have cross-references"
+fi
+echo ""
 
-# Check that commands were updated if relevant
+# Check that commands were updated
 echo "=== Commands Updated ==="
-git diff --name-only | grep ".claude/commands" | wc -l
-echo "Commands modified"
+MODIFIED_CMDS=$(git diff --name-only | grep ".claude/commands" | wc -l)
+echo "Commands modified: $MODIFIED_CMDS"
+if [ $MODIFIED_CMDS -lt 3 ]; then
+    echo "⚠️ WARNING: Only $MODIFIED_CMDS commands updated - need at least 3-4!"
+else
+    echo "✓ Good: $MODIFIED_CMDS commands updated"
+fi
+echo ""
 
-# Verify bidirectional linking
-echo "=== Integration Completeness ==="
-if [ $(git diff --name-only | grep -c "kb/") -le $(git status --short | grep -c "^A.*kb") ]; then
-    echo "WARNING: Only new articles modified - missing cross-references!"
+# List what was modified for review
+echo "=== Modified Files Summary ==="
+echo "KB Articles:"
+git diff --name-only | grep "kb.*\.md" | sed 's/^/  - /'
+echo ""
+echo "Commands:"
+git diff --name-only | grep ".claude/commands" | sed 's/^/  - /'
+echo ""
+
+# Final check
+echo "=== Integration Status ==="
+if [ $MODIFIED_KB -ge 3 ] && [ $MODIFIED_CMDS -ge 3 ]; then
+    echo "✓ READY TO COMMIT: Thorough integration completed"
+else
+    echo "⚠️ NOT READY: Need more cross-references and command updates"
+    echo "  - Add more KB cross-references (currently: $MODIFIED_KB, need: 3+)"
+    echo "  - Update more commands (currently: $MODIFIED_CMDS, need: 3+)"
 fi
 ```
+
+**DO NOT PROCEED TO STEP 12 UNLESS THIS SCRIPT SHOWS "READY TO COMMIT"**
 
 ## Step 12: Automatic Commit and Push
 
@@ -408,4 +488,23 @@ The enhanced documentation system provides:
 - **Linked**: Guidelines link to detailed articles when more context needed
 - **Validated**: `make check-docs` ensures all references are correct
 
-Remember: The goal is to create learnings with working code examples that developers can actually use, making future sessions more efficient and error-free.
+## Execution Checklist
+
+Use this checklist to ensure thorough execution:
+
+- [ ] **Step 1**: Identified multiple learnings from deep analysis
+- [ ] **Step 2**: Searched for existing KB articles to update
+- [ ] **Step 3**: Created/updated KB articles with real AgeRun code
+- [ ] **Step 4**: Ran `make check-docs` and fixed all validation errors
+- [ ] **Step 5**: Added new articles to kb/README.md index
+- [ ] **Step 6**: ✅ Updated 3-5+ existing KB articles with cross-references
+- [ ] **Step 7**: ✅ Updated 3-4+ commands with new KB references
+- [ ] **Step 8**: Reviewed CLAUDE.md for update locations
+- [ ] **Step 9**: Updated CLAUDE.md with new KB references
+- [ ] **Step 10**: Validated no broken links exist
+- [ ] **Step 11**: ✅ Executed verification script showing "READY TO COMMIT"
+- [ ] **Step 12**: Committed and pushed all changes
+
+**Remember**: Steps 6, 7, and 11 are the most commonly under-executed. Ensure these are done thoroughly.
+
+The goal is to create learnings with working code examples that developers can actually use, making future sessions more efficient and error-free.
