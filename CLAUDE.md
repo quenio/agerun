@@ -8,8 +8,9 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
 
 ## Quick Start
 
-**Primary**: `make build 2>&1` → `make check-logs` (MANDATORY sequence) ([details](kb/quick-start-commands.md))
+**Primary**: `make build 2>&1` → `make check-logs` (MANDATORY sequence) ([details](kb/quick-start-commands.md), [relationship](kb/build-logs-relationship-principle.md))
 **Clean build**: `make clean build 2>&1` → `make check-logs`  
+**CI requirement**: `check-logs` must pass or CI will fail ([details](kb/ci-check-logs-requirement.md))
 **Help**: `make` shows all targets
 **Scripts**: Use make targets, not direct execution from `/scripts/`
 
@@ -141,6 +142,8 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Verify fix**: Run single test first, then full suite ([details](kb/test-first-verification-practice.md))
 **Test reality**: Align expectations with actual behavior ([details](kb/test-expectation-reality-alignment.md))
 **Test effectiveness**: Break implementation to verify tests catch failures ([details](kb/test-effectiveness-verification.md))
+**Test assertion strength**: Verify specific outcomes, not just success/failure ([details](kb/test-assertion-strength-patterns.md))
+**DLSym interception**: Test untestable conditions with function mocking ([details](kb/dlsym-test-interception-technique.md))
 **Documentation validation**: Tests verify documented behavior is accurate ([details](kb/test-driven-documentation-validation.md))
 **Multi-session**: Use session tracking for large changes ([details](kb/multi-session-tdd-planning.md))
 **Effort estimation**: Estimate in TDD cycles not hours/days ([details](kb/tdd-cycle-effort-estimation.md))
@@ -334,6 +337,7 @@ grep -r "function_name\|concept" modules/
 **Log format variations**: Test names vary by environment, verify actual content ([details](kb/log-format-variation-handling.md))
 **Whitelist reduction**: Systematically fix root causes to reduce technical debt ([details](kb/systematic-whitelist-error-resolution.md))
 **Whitelist simplification**: Start complex, simplify based on usage ([details](kb/whitelist-simplification-pattern.md))
+**Whitelist success messages**: Include diagnostic output and success indicators ([details](kb/whitelist-success-message-management.md))
 **Uniform filtering**: Apply whitelist consistently in all checks ([details](kb/uniform-filtering-application.md))
 **YAML string matching**: Watch for quote escaping issues ([details](kb/yaml-string-matching-pitfalls.md))
 **YAML serialization**: Direct file I/O for ar_data_t structures ([details](kb/yaml-serialization-direct-io-pattern.md))

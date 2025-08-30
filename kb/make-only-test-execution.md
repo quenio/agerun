@@ -1,21 +1,24 @@
 # Make-Only Test Execution
 
 ## Learning
-Always use make targets for building and running tests, never compile directly with gcc/zig or run binaries directly. The Makefile handles dependencies, flags, environment setup, and ensures consistent execution.
+Always use make targets for building and running tests, never compile directly with gcc/zig or run binaries directly. The Makefile handles dependencies, flags, environment setup, and ensures consistent execution. This is a strict discipline that must be followed even when it seems unnecessary.
 
 ## Importance
-Direct compilation or execution bypasses critical setup: missing flags, wrong working directory, outdated dependencies, incorrect linking. This leads to mysterious failures and wasted debugging time.
+Direct compilation or execution bypasses critical setup: missing flags, wrong working directory, outdated dependencies, incorrect linking. This leads to mysterious failures and wasted debugging time. Even experienced developers must resist the temptation to run binaries directly.
 
 ## Example
 ```bash
-# WRONG: Direct execution
+# WRONG: Direct execution (even if it seems to work)
 ./bin/run-tests/method_creator_tests  # May fail with directory issues
+./bin/run-tests/ar_instruction_parser_dlsym_tests  # Bypasses make orchestration
 
 # WRONG: Direct compilation  
 gcc -o test method_creator_tests.c -lar  # Missing critical flags and dependencies
+zig build-exe test.zig  # Wrong flags, no dependency tracking
 
 # CORRECT: Always use make
 make method_creator_tests 2>&1  # Builds and runs with proper setup
+make ar_instruction_parser_dlsym_tests 2>&1  # Handles all dlsym test needs
 
 # The Makefile handles:
 # 1. Rebuilding changed dependencies
@@ -30,13 +33,24 @@ make method_creator_tests 2>&1 | grep "DEBUG"
 make method_creator_tests 2>&1 | tail -50
 ```
 
-## Generalization
+## The Discipline
+
+This is not just a guideline - it's a strict discipline:
+1. **No exceptions**: Even if you "know" the binary is up-to-date
+2. **Resist shortcuts**: The few seconds saved aren't worth the risk
+3. **Interrupt reminders**: Expect to be interrupted if you try direct execution
+4. **Consistency matters**: Following this discipline prevents subtle bugs
+
+## Why Make Is Essential
+
 Make provides essential build orchestration:
 - **Dependencies**: Automatically rebuilds changed modules
 - **Flags**: Consistent compilation flags across all targets
 - **Environment**: Runs tests from correct working directory
 - **Reports**: Generates memory leak reports automatically
 - **Isolation**: Parallel builds use separate directories
+- **Linking**: Correct library order and paths
+- **Sanitizers**: Proper exclusion of incompatible tests (dlsym)
 
 Never bypass make, even when debugging specific issues.
 
