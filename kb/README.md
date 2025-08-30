@@ -239,6 +239,7 @@ Each learning file contains:
 
 ### Development Practices
 - [Command Output Documentation Pattern](command-output-documentation-pattern.md)
+- [Checkpoint Implementation Guide](checkpoint-implementation-guide.md)
 - [Documentation Placeholder Validation Pattern](documentation-placeholder-validation-pattern.md)
 - [Feature Remnant Cleanup Pattern](feature-remnant-cleanup-pattern.md)
 - [Verification Through Removal Technique](verification-through-removal-technique.md)

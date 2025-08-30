@@ -1,0 +1,116 @@
+# Checkpoint Implementation Guide
+
+## Learning
+When implementing checkpoint tracking in existing commands, structure the command into logical phases with numbered steps, add gates between phases, document expected outputs, and define minimum requirements for thoroughness.
+
+## Importance
+Converting monolithic commands to checkpoint-tracked processes ensures systematic execution, prevents skipping critical steps, enables progress resumption, and enforces quality standards through gates.
+
+## Example
+```markdown
+## Review Process:
+
+### Phase 1: Code Quality Review (Steps 1-6)
+
+**[CHECKPOINT START - PHASE 1]**
+
+1. **Diff Analysis**: Reviews git diff for all changes
+   \`\`\`bash
+   # After completing diff analysis
+   make checkpoint-update CMD=review-changes STEP=1
+   \`\`\`
+
+2. **Code Smells Detection**: Scans for issues
+   \`\`\`bash
+   make checkpoint-update CMD=review-changes STEP=2
+   \`\`\`
+
+**[QUALITY GATE 1: Code Quality Complete]**
+\`\`\`bash
+# MANDATORY: Must pass before proceeding
+make checkpoint-gate CMD=review-changes GATE="Code Quality" REQUIRED="1,2,3,4,5,6"
+\`\`\`
+
+**Expected gate output:**
+\`\`\`
+========================================
+   GATE: Code Quality
+========================================
+
+✅ GATE PASSED: All code quality checks complete!
+\`\`\`
+
+**Minimum Requirements for Phase 1:**
+- [ ] Check at least 3 types of code smells
+- [ ] Verify ownership prefixes in all changed files
+- [ ] Document all issues found with file:line references
+```
+
+## Generalization
+
+### Step 1: Analyze Command Structure
+1. **Count existing sections**: Identify logical groupings
+2. **Define phases**: Group related sections (3-6 steps per phase)
+3. **Identify critical points**: Where gates should enforce completion
+4. **Map to checkpoints**: Each section becomes a numbered step
+
+### Step 2: Add Infrastructure
+```bash
+# Initialize with all steps
+make checkpoint-init CMD=command-name STEPS='"Step 1" "Step 2" ...'
+
+# Update after each step
+make checkpoint-update CMD=command-name STEP=N
+
+# Status display
+make checkpoint-status CMD=command-name
+
+# Gates between phases
+make checkpoint-gate CMD=command-name GATE="Phase Name" REQUIRED="1,2,3"
+
+# Cleanup when done
+make checkpoint-cleanup CMD=command-name
+```
+
+### Step 3: Document Expected Outputs
+For each checkpoint operation, show:
+- Success output format
+- Failure conditions
+- Progress visualization
+- Gate enforcement messages
+
+### Step 4: Define Requirements
+Each phase needs:
+- **Minimum thresholds**: "At least 3 checks"
+- **Quality criteria**: "All tests must pass"
+- **Verification methods**: "Run make check-docs"
+- **Success indicators**: "READY TO COMMIT"
+
+## Implementation Checklist
+
+When adding checkpoints to a command:
+- [ ] Count total sections/steps in command
+- [ ] Group into logical phases (3-6 steps each)
+- [ ] Add initialization at command start
+- [ ] Add update calls after each step
+- [ ] Add gates between phases
+- [ ] Document expected outputs for all operations
+- [ ] Define minimum requirements per phase
+- [ ] Add troubleshooting section
+- [ ] Test the full workflow
+- [ ] Update related KB articles
+
+## Command Size Guidelines
+
+Based on complexity:
+- **Simple commands** (1-5 steps): Optional checkpoints
+- **Medium commands** (6-12 steps): Recommended, 1-2 gates
+- **Complex commands** (13+ steps): Required, 3-4 gates
+- **Critical commands**: Always use gates regardless of size
+
+## Related Patterns
+- [Multi-Step Checkpoint Tracking Pattern](multi-step-checkpoint-tracking-pattern.md)
+- [Gate Enforcement Exit Codes Pattern](gate-enforcement-exit-codes-pattern.md)
+- [Command Output Documentation Pattern](command-output-documentation-pattern.md)
+- [Command Thoroughness Requirements Pattern](command-thoroughness-requirements-pattern.md)
+- [Progress Visualization ASCII Pattern](progress-visualization-ascii-pattern.md)

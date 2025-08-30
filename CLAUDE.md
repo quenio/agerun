@@ -331,7 +331,7 @@ grep -r "function_name\|concept" modules/
 **Stubs**: Comment unready features with dependency notes ([details](kb/stub-and-revisit-pattern.md))
 **Scripts**: Add to `/scripts/` with make targets ([details](kb/progressive-tool-enhancement.md), [batch](kb/batch-update-script-pattern.md), [reusable](kb/script-reusability-parameters-pattern.md))
 **Shell scripts**: Use proper variable assignment for error handling ([details](kb/shell-script-command-substitution.md))
-**Multi-step processes**: Use checkpoint tracking for complex commands ([details](kb/multi-step-checkpoint-tracking-pattern.md), [gates](kb/gate-enforcement-exit-codes-pattern.md), [progress](kb/progress-visualization-ascii-pattern.md))
+**Multi-step processes**: Use checkpoint tracking for complex commands ([details](kb/multi-step-checkpoint-tracking-pattern.md), [gates](kb/gate-enforcement-exit-codes-pattern.md), [progress](kb/progress-visualization-ascii-pattern.md), [implementation](kb/checkpoint-implementation-guide.md))
 **Debug**: `make sanitize-tests 2>&1`, redirect stderr, check syscall returns ([details](kb/development-debug-tools.md), [static](kb/static-analysis-error-handling.md))
 **Static compliance**: Restructure stream ops for analyzer satisfaction ([details](kb/static-analyzer-stream-compliance.md))
 **Debug output**: Keep for future troubleshooting ([details](kb/debug-output-preservation-strategy.md))
