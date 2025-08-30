@@ -1,6 +1,59 @@
 Analyze session for new learnings and create properly validated kb articles.
 # New Learnings Analysis and Guidelines Update
 
+## MANDATORY STEP TRACKING SYSTEM
+
+**CRITICAL**: You MUST complete ALL 12 steps in order. NO STEPS CAN BE SKIPPED.
+
+### Initialize Progress Tracking (EXECUTE THIS FIRST)
+
+```bash
+# EXECUTE THIS IMMEDIATELY to initialize tracking
+cat > /tmp/new_learnings_progress.txt << 'EOF'
+STEP_1=pending    # Identify New Learnings
+STEP_2=pending    # Determine KB Article Strategy  
+STEP_3=pending    # Knowledge Base Article Creation
+STEP_4=pending    # Validation Before Saving
+STEP_5=pending    # Update Knowledge Base Index
+STEP_6=pending    # Update Existing KB Articles (3-5 minimum)
+STEP_7=pending    # Review and Update Commands (3-4 minimum)
+STEP_8=pending    # Review Existing Guidelines
+STEP_9=pending    # Update Guidelines
+STEP_10=pending   # Validate No Broken Links
+STEP_11=pending   # Pre-Commit Integration Verification
+STEP_12=pending   # Automatic Commit and Push
+EOF
+
+echo "=== New Learnings Progress Tracking Initialized ==="
+cat /tmp/new_learnings_progress.txt
+```
+
+### Progress Check Function (Use Throughout)
+
+```bash
+# Function to check progress at any time
+check_progress() {
+    echo "=== Current Progress ==="
+    cat /tmp/new_learnings_progress.txt | while read line; do
+        if [[ $line == *"complete"* ]]; then
+            echo "✓ $line"
+        else
+            echo "⏳ $line"
+        fi
+    done
+    
+    PENDING=$(grep -c "pending" /tmp/new_learnings_progress.txt)
+    if [ $PENDING -gt 0 ]; then
+        echo ""
+        echo "⚠️ WARNING: $PENDING steps still pending!"
+        echo "Next pending step: $(grep "pending" /tmp/new_learnings_progress.txt | head -1)"
+    fi
+}
+
+# Call it now
+check_progress
+```
+
 ## Overview of the Process
 
 This command guides you through a comprehensive process to:
@@ -29,6 +82,8 @@ This command guides you through a comprehensive process to:
 - Verification script passes all checks before commit
 
 ## Step 1: Identify New Learnings
+
+**[CHECKPOINT START - STEP 1]**
 
 **CRITICAL: Think deeply and thoroughly about what was learned in this session.**
 
@@ -69,7 +124,16 @@ For each learning, provide:
 - Specific examples from this session (if applicable)
 - How it can be generalized for future use
 
+**[CHECKPOINT END - STEP 1]**
+```bash
+# Mark Step 1 complete
+sed -i '' 's/STEP_1=pending/STEP_1=complete/' /tmp/new_learnings_progress.txt
+echo "✓ Step 1 complete: Learnings identified"
+```
+
 ## Step 2: Determine KB Article Strategy
+
+**[CHECKPOINT START - STEP 2]**
 
 ### First Decision: New Articles vs Update Existing
 
@@ -97,7 +161,16 @@ For each learning, provide:
 - Existing articles should be updated with references to new articles
 - Create a bidirectional web of knowledge
 
+**[CHECKPOINT END - STEP 2]**
+```bash
+# Mark Step 2 complete
+sed -i '' 's/STEP_2=pending/STEP_2=complete/' /tmp/new_learnings_progress.txt
+echo "✓ Step 2 complete: KB strategy determined"
+```
+
 ## Step 3: Knowledge Base Article Creation
+
+**[CHECKPOINT START - STEP 3]**
 
 **CRITICAL: All code examples MUST use real AgeRun types and functions** ([details](../../kb/validated-documentation-examples.md))
 
@@ -192,7 +265,17 @@ If you're tempted to use hypothetical types, replace with real ones:
 - `processor_t` → `ar_expression_evaluator_t*` or `ar_instruction_evaluator_t*`  // EXAMPLE: Hypothetical type mapping
 - `context_t` → `ar_data_t*`  // EXAMPLE: Hypothetical type mapping
 
+**[CHECKPOINT END - STEP 3]**
+```bash
+# Mark Step 3 complete
+sed -i '' 's/STEP_3=pending/STEP_3=complete/' /tmp/new_learnings_progress.txt
+echo "✓ Step 3 complete: KB articles created/updated"
+check_progress  # Show current status
+```
+
 ## Step 4: Validation Before Saving
+
+**[CHECKPOINT START - STEP 4]**
 
 **MANDATORY: Test articles before committing**
 
@@ -210,7 +293,30 @@ If you're tempted to use hypothetical types, replace with real ones:
 - Use `ar_data_t*` as the universal fallback type
 - Reference actual functions from `modules/*.h` files
 
+**[CHECKPOINT END - STEP 4]**
+```bash
+# Mark Step 4 complete
+sed -i '' 's/STEP_4=pending/STEP_4=complete/' /tmp/new_learnings_progress.txt
+echo "✓ Step 4 complete: Documentation validated"
+```
+
+## GATE 1: ARTICLE CREATION VERIFICATION
+
+```bash
+# MANDATORY GATE - Cannot proceed without articles
+echo "=== GATE 1: Checking Steps 1-4 Completion ==="
+if grep -q "STEP_1=pending\|STEP_2=pending\|STEP_3=pending\|STEP_4=pending" /tmp/new_learnings_progress.txt; then
+    echo "❌ BLOCKED: Cannot proceed! Complete these steps first:"
+    grep "STEP_[1-4]=pending" /tmp/new_learnings_progress.txt
+    echo "STOP HERE and complete the missing steps!"
+else
+    echo "✅ GATE 1 PASSED: Articles created and validated. Proceeding to integration steps."
+fi
+```
+
 ## Step 5: Update Knowledge Base Index
+
+**[CHECKPOINT START - STEP 5]**
 
 **MANDATORY: Add new articles to kb/README.md**
 
@@ -225,7 +331,16 @@ If you're tempted to use hypothetical types, replace with real ones:
    - [Article Title](article-filename.md)
    ```
 
+**[CHECKPOINT END - STEP 5]**
+```bash
+# Mark Step 5 complete
+sed -i '' 's/STEP_5=pending/STEP_5=complete/' /tmp/new_learnings_progress.txt
+echo "✓ Step 5 complete: KB index updated"
+```
+
 ## Step 6: Update Existing KB Articles with Cross-References (THOROUGH EXECUTION REQUIRED)
+
+**[CHECKPOINT START - STEP 6]**
 
 **CRITICAL - OFTEN MISSED**: Add cross-references to create a web of knowledge ([details](../../kb/new-learnings-complete-integration-pattern.md)):
 
@@ -264,7 +379,16 @@ If you're tempted to use hypothetical types, replace with real ones:
    git diff --name-only | grep "kb.*\.md" | wc -l  # Should be > new articles
    ```
 
+**[CHECKPOINT END - STEP 6]**
+```bash
+# Mark Step 6 complete
+sed -i '' 's/STEP_6=pending/STEP_6=complete/' /tmp/new_learnings_progress.txt
+echo "✓ Step 6 complete: Cross-references added (3-5 minimum)"
+```
+
 ## Step 7: Review and Update Existing Commands (THOROUGH EXECUTION REQUIRED)
+
+**[CHECKPOINT START - STEP 7]**
 
 **CRITICAL - OFTEN MISSED**: Check if any Claude commands should be updated based on learnings ([details](../../kb/new-learnings-complete-integration-pattern.md)):
 
@@ -308,14 +432,32 @@ If you're tempted to use hypothetical types, replace with real ones:
    git diff --name-only | grep ".claude/commands" | wc -l  # Should be >= 3
    ```
 
+**[CHECKPOINT END - STEP 7]**
+```bash
+# Mark Step 7 complete
+sed -i '' 's/STEP_7=pending/STEP_7=complete/' /tmp/new_learnings_progress.txt
+echo "✓ Step 7 complete: Commands updated (3-4 minimum)"
+```
+
 ## Step 8: Review Existing Guidelines
+
+**[CHECKPOINT START - STEP 8]**
 
 Check CLAUDE.md to see if these learnings should be referenced:
 - Determine if existing documentation needs links to new kb articles
 - Identify appropriate sections where kb articles should be referenced
 - Note any gaps that need new content with kb links
 
+**[CHECKPOINT END - STEP 8]**
+```bash
+# Mark Step 8 complete
+sed -i '' 's/STEP_8=pending/STEP_8=complete/' /tmp/new_learnings_progress.txt
+echo "✓ Step 8 complete: CLAUDE.md reviewed"
+```
+
 ## Step 9: Update Guidelines
+
+**[CHECKPOINT START - STEP 9]**
 
 **CRITICAL**: CLAUDE.md updates are MANDATORY for new KB articles ([details](../../kb/claude-md-reference-requirement.md))
 
@@ -350,7 +492,30 @@ If updates are needed to CLAUDE.md:
    - Include new kb articles in relevant sections (e.g., Script Development, Documentation Protocol)
    - Maintain two-tier system: brief guidelines with links to comprehensive details
 
+**[CHECKPOINT END - STEP 9]**
+```bash
+# Mark Step 9 complete
+sed -i '' 's/STEP_9=pending/STEP_9=complete/' /tmp/new_learnings_progress.txt
+echo "✓ Step 9 complete: CLAUDE.md updated"
+```
+
+## GATE 2: INTEGRATION VERIFICATION
+
+```bash
+# MANDATORY GATE - Check integration completeness
+echo "=== GATE 2: Checking Steps 5-9 Completion ==="
+if grep -q "STEP_[5-9]=pending" /tmp/new_learnings_progress.txt; then
+    echo "❌ BLOCKED: Cannot proceed! Complete these integration steps:"
+    grep "STEP_[5-9]=pending" /tmp/new_learnings_progress.txt
+    echo "STOP HERE and complete the missing steps!"
+else
+    echo "✅ GATE 2 PASSED: Integration complete. Proceeding to validation."
+fi
+```
+
 ## Step 10: Validate No Broken Links
+
+**[CHECKPOINT START - STEP 10]**
 
 **CRITICAL**: Before committing, verify all links work:
 
@@ -364,6 +529,13 @@ If updates are needed to CLAUDE.md:
    ```
 
 2. **Never reference non-existent articles in Related Patterns sections**
+
+**[CHECKPOINT END - STEP 10]**
+```bash
+# Mark Step 10 complete
+sed -i '' 's/STEP_10=pending/STEP_10=complete/' /tmp/new_learnings_progress.txt
+echo "✓ Step 10 complete: All links validated"
+```
 
 ## Step 11: Pre-Commit Integration Verification (MANDATORY EXECUTION)
 
@@ -418,7 +590,39 @@ fi
 
 **DO NOT PROCEED TO STEP 12 UNLESS THIS SCRIPT SHOWS "READY TO COMMIT"**
 
+**[CHECKPOINT END - STEP 11]**
+```bash
+# Mark Step 11 complete
+sed -i '' 's/STEP_11=pending/STEP_11=complete/' /tmp/new_learnings_progress.txt
+echo "✓ Step 11 complete: Pre-commit verification passed"
+```
+
+## FINAL GATE: COMMIT READINESS CHECK
+
+```bash
+# FINAL MANDATORY GATE - All steps must be complete
+echo "=== FINAL GATE: Checking ALL Steps Completion ==="
+INCOMPLETE=$(grep -c "pending" /tmp/new_learnings_progress.txt)
+if [ $INCOMPLETE -gt 0 ]; then
+    echo "❌ CANNOT COMMIT: $INCOMPLETE steps are still incomplete!"
+    echo ""
+    echo "Incomplete steps:"
+    grep "pending" /tmp/new_learnings_progress.txt
+    echo ""
+    echo "⛔ STOP: Go back and complete ALL missing steps before proceeding!"
+    echo "This is a HARD STOP - do not attempt to commit."
+else
+    echo "✅ ALL GATES PASSED: All 12 steps complete!"
+    echo "✅ READY FOR FINAL COMMIT"
+    cat /tmp/new_learnings_progress.txt | sed 's/^/  ✓ /'
+fi
+```
+
 ## Step 12: Automatic Commit and Push
+
+**[CHECKPOINT START - STEP 12]**
+
+**CRITICAL**: Only execute if FINAL GATE shows "ALL GATES PASSED"
 
 **EXECUTE THE FOLLOWING SEQUENCE AUTOMATICALLY:**
 
@@ -463,6 +667,40 @@ fi
    ```bash
    git status
    ```
+
+**[CHECKPOINT END - STEP 12]**
+```bash
+# Mark Step 12 complete
+sed -i '' 's/STEP_12=pending/STEP_12=complete/' /tmp/new_learnings_progress.txt
+echo "✓ Step 12 complete: Changes committed and pushed"
+```
+
+## COMMAND COMPLETION VERIFICATION
+
+```bash
+# Final completion report
+echo "========================================="
+echo "   NEW LEARNINGS COMMAND COMPLETED"
+echo "========================================="
+echo ""
+echo "Final Status:"
+cat /tmp/new_learnings_progress.txt | sed 's/^/  ✓ /'
+echo ""
+echo "Summary:"
+echo "  ✓ All 12 steps completed successfully"
+echo "  ✓ Knowledge base articles created/updated"
+echo "  ✓ Cross-references added to existing articles"
+echo "  ✓ Commands updated with new references"
+echo "  ✓ CLAUDE.md updated"
+echo "  ✓ All documentation validated"
+echo "  ✓ Changes committed and pushed"
+echo ""
+echo "Command execution complete!"
+
+# Clean up tracking file
+rm /tmp/new_learnings_progress.txt
+echo "Progress tracking file cleaned up."
+```
 
 ## Documentation Validation Details
 
