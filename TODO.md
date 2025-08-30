@@ -950,6 +950,141 @@ Modify ar_executable.c to save and load the agerun.agency file for agent state p
 - [ ] All tests pass
 - [ ] YAML format is human-readable and editable
 
+## HIGHEST PRIORITY - Command Enhancement with Checkpoint Tracking System
+
+### Overview
+Apply the checkpoint tracking system developed in the session to all 26 commands in `.claude/commands/` to improve reliability, user experience, and quality enforcement for multi-step processes.
+
+### Implementation Tasks
+
+#### Phase 1: Complex Multi-Step Commands (7 commands, ~3.5 hours)
+- [ ] **Update review-changes.md** (22 sections)
+  - [ ] Add checkpoints for: Code Quality Review, Architectural Compliance, Documentation Review, Pre-Commit Verification
+  - [ ] Add gates after each major review phase
+  - [ ] Add progress visualization with ASCII bars
+  - [ ] Document expected outputs for each checkpoint
+
+- [ ] **Update fix-errors-whitelisted.md** (16 sections)
+  - [ ] Add checkpoints for: Analyze Whitelist, Identify Pattern, Develop Strategy, Implement Fixes, Verify, Remove Entries
+  - [ ] Add gate before implementation phase
+  - [ ] Add minimum requirements (e.g., "Fix at least 5 errors")
+  - [ ] Add verification script for removed entries
+
+- [ ] **Update compact-guidelines.md** (15 sections)
+  - [ ] Add checkpoints for: Identify Sections, Create KB Articles, Update References, Validate, Commit
+  - [ ] Add gate after KB article creation
+  - [ ] Add verification script for broken links
+  - [ ] Add minimum article creation requirements
+
+- [ ] **Update check-module-consistency.md** (15 sections)
+  - [ ] Add checkpoints for: Identify Improvement, Find Modules, Check Each Module, Create Plan
+  - [ ] Add progress tracking for each module checked
+  - [ ] Add minimum requirements (check 3+ related modules)
+  - [ ] Add verification for consistency findings
+
+- [ ] **Update migrate-module-to-zig-struct.md** (11 sections)
+  - [ ] Add checkpoints for: Assessment, Implementation, Testing, Documentation, Cleanup
+  - [ ] Add gates after assessment and testing phases
+  - [ ] Add memory leak verification requirements
+  - [ ] Add migration completion verification
+
+- [ ] **Update migrate-module-to-zig-abi.md** (10 sections)
+  - [ ] Similar checkpoint structure to zig-struct migration
+  - [ ] Add pre-migration verification gate
+  - [ ] Add post-migration validation requirements
+  - [ ] Add API compatibility verification
+
+- [ ] **Update check-logs.md** (8 sections)
+  - [ ] Add checkpoints for: Initial Check, Analyze Errors, Fix Issues, Re-check
+  - [ ] Add gate if errors found
+  - [ ] Add expected output documentation
+  - [ ] Add CI impact warnings
+
+#### Phase 2: Medium Complexity Commands (5 commands, ~1.25 hours)
+- [ ] **Update commit.md**
+  - [ ] Add checkpoints for each pre-commit checklist item
+  - [ ] Add mandatory gate before actual commit
+  - [ ] Add CHANGELOG update verification
+  - [ ] Document expected outputs
+
+- [ ] **Update check-docs.md**
+  - [ ] Add checkpoints for: Initial Check, Fix Errors, Verify, Commit
+  - [ ] Add gate if errors found
+  - [ ] Integrate with existing good structure
+  - [ ] Add validation success criteria
+
+- [ ] **Update compact-tasks.md**
+  - [ ] Add checkpoints for: Read TODO, Identify Completed, Compact, Verify, Commit
+  - [ ] Add verification for untouched incomplete tasks
+  - [ ] Add compaction metrics reporting
+
+- [ ] **Update compact-changes.md**
+  - [ ] Similar checkpoint structure to compact-tasks
+  - [ ] Add verification for proper compaction
+  - [ ] Add before/after comparison
+
+- [ ] **Update merge-settings.md**
+  - [ ] Add checkpoints for: Read Settings, Identify Conflicts, Merge, Validate
+  - [ ] Add conflict resolution verification
+  - [ ] Add merge success criteria
+
+#### Phase 3: Simple Commands Enhancement (14 commands, ~1.2 hours)
+- [ ] **Add expected output documentation to simple commands**
+  - [ ] build.md, build-clean.md
+  - [ ] run-tests.md, run-exec.md
+  - [ ] sanitize-tests.md, sanitize-exec.md
+  - [ ] tsan-tests.md, tsan-exec.md
+  - [ ] analyze-tests.md, analyze-exec.md
+  - [ ] check-naming.md
+  - [ ] next-task.md, next-priority.md
+  - [ ] Document success/failure states for each
+
+### Technical Implementation Details
+
+#### Checkpoint Integration Pattern
+```bash
+# Initialize at command start
+make checkpoint-init CMD=<command> STEPS='"Step 1" "Step 2" ...'
+
+# Update after each major step
+make checkpoint-update CMD=<command> STEP=<number>
+
+# Gate at critical points
+make checkpoint-gate CMD=<command> GATE="<name>" REQUIRED="<steps>"
+
+# Show progress
+make checkpoint-status CMD=<command>
+
+# Cleanup at end
+make checkpoint-cleanup CMD=<command>
+```
+
+#### Expected Benefits
+1. **Consistent Progress Tracking**: All complex commands show real-time progress
+2. **Prevention of Skipped Steps**: Gates enforce thorough completion
+3. **Clear Success Criteria**: Minimum requirements and verification scripts
+4. **Better User Experience**: Visual progress bars and status updates
+5. **Quality Enforcement**: Can't proceed without meeting requirements
+6. **Documentation of Expectations**: Expected outputs for all operations
+
+### Success Criteria
+- [ ] All complex commands have checkpoint tracking
+- [ ] All gates properly block incomplete steps
+- [ ] Progress visualization works correctly
+- [ ] Expected outputs documented for all checkpoints
+- [ ] Minimum requirements defined where applicable
+- [ ] Verification scripts added for critical steps
+- [ ] All commands tested with new checkpoint system
+
+### References
+- [Multi-Step Checkpoint Tracking Pattern](kb/multi-step-checkpoint-tracking-pattern.md)
+- [Gate Enforcement Exit Codes Pattern](kb/gate-enforcement-exit-codes-pattern.md)
+- [Progress Visualization ASCII Pattern](kb/progress-visualization-ascii-pattern.md)
+- [Command Thoroughness Requirements Pattern](kb/command-thoroughness-requirements-pattern.md)
+- [Command Output Documentation Pattern](kb/command-output-documentation-pattern.md)
+
+---
+
 ## ar_yaml Module Improvements
 
 ### Priority 0 - Module Cleanup
