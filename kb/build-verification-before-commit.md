@@ -45,3 +45,5 @@ This is especially important after the build system issue discovered on 2025-07-
 - [Build System Exit Code Verification](build-system-exit-code-verification.md)
 - [Build Time Reporting](build-time-reporting.md)
 - [Build Log Verification Requirement](build-log-verification-requirement.md)
+- [Build-Logs Relationship Principle](build-logs-relationship-principle.md)
+- [CI Check-Logs Requirement](ci-check-logs-requirement.md)

@@ -72,3 +72,4 @@ AR_ASSERT(valid_signal, "Process should terminate by SIGTERM or SIGALRM");
 - [BDD Test Structure](bdd-test-structure.md)
 - [Test Error Marking Strategy](test-error-marking-strategy.md)
 - [Evidence-based Debugging](evidence-based-debugging.md)
+- [Test Assertion Strength Patterns](test-assertion-strength-patterns.md)

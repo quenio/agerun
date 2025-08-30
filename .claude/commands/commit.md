@@ -3,7 +3,7 @@ Create a git commit following the exact workflow specified in CLAUDE.md.
 
 Before starting the commit process, ensure you have completed ALL of these steps:
 
-1. **Run Tests**: Use `make clean build` for comprehensive build verification (~20 lines output) to ensure all changes work correctly and no memory leaks. **ALWAYS follow with `make check-logs` to catch hidden issues!** **If clean build fails OR check-logs finds issues, STOP - do not proceed with commit until all issues are fixed.** ([details](../../kb/build-verification-before-commit.md))
+1. **Run Tests**: Use `make clean build` for comprehensive build verification (~20 lines output) to ensure all changes work correctly and no memory leaks. **ALWAYS follow with `make check-logs` to catch hidden issues!** **If clean build fails OR check-logs finds issues, STOP - do not proceed with commit until all issues are fixed.** ([details](../../kb/build-verification-before-commit.md), [CI requirement](../../kb/ci-check-logs-requirement.md))
    - **Note**: `make build` includes documentation validation (`make check-docs`). If docs fail, use `python3 scripts/batch_fix_docs.py` to fix automatically ([details](../../kb/batch-documentation-fix-enhancement.md))
 2. **Update Module Documentation**: If you changed a module's interface, update its .md file
 3. **Update System Documentation**: For major refactoring, check modules/README.md and dependency trees ([details](../../kb/refactoring-phase-completion-checklist.md))

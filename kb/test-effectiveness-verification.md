@@ -45,6 +45,10 @@ For every new test, especially those testing error conditions:
 4. Restore correct implementation and verify test passes
 5. This meta-testing ensures test quality
 
+## Related Patterns
+- [Test Assertion Strength Patterns](test-assertion-strength-patterns.md)
+- [DLSym Test Interception Technique](dlsym-test-interception-technique.md)
+
 ## Implementation
 ```bash
 # Workflow for verifying test effectiveness

@@ -101,6 +101,8 @@ Benefits of the YAML approach:
 - [Development Debug Tools](development-debug-tools.md)
 - [Whitelist Simplification Pattern](whitelist-simplification-pattern.md)
 - [Uniform Filtering Application](uniform-filtering-application.md)
+- [Whitelist Success Message Management](whitelist-success-message-management.md)
+- [CI Check-Logs Requirement](ci-check-logs-requirement.md)
 - [Log Format Variation Handling](log-format-variation-handling.md)
 - [YAML String Matching Pitfalls](yaml-string-matching-pitfalls.md)
 - [Whitelist Specificity Pattern](whitelist-specificity-pattern.md)

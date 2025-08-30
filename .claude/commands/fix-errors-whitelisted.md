@@ -10,6 +10,10 @@ This command guides you through:
 4. Removing whitelist entries
 5. Tracking progress
 
+## Important Context
+
+The whitelist contains both intentional test errors AND success messages that check-logs flags. Not all entries represent problems - many are necessary for testing error handling ([details](../../kb/whitelist-success-message-management.md)). Check-logs failures will block CI ([details](../../kb/ci-check-logs-requirement.md)).
+
 ## Step 1: Analyze Current Whitelist
 
 Run these commands to understand the current state:
