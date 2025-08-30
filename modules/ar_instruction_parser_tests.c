@@ -764,6 +764,78 @@ static void test_instruction_parser__verifies_unknown_function_error(void) {
     ar_log__destroy(log);
 }
 
+static void test_instruction_parser__verifies_invalid_assignment_error(void) {
+    printf("Testing invalid assignment operator error logging...\n");
+    
+    // Given a parser with log
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(log);
+    assert(own_parser != NULL);
+    
+    // When parsing with = instead of :=
+    const char *instruction = "memory.x = 42";
+    ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
+    
+    // Then it should return NULL
+    assert(own_ast == NULL);
+    
+    // And should log an error about invalid assignment operator
+    const char *error_msg = ar_log__get_last_error_message(log);
+    assert(error_msg != NULL);
+    assert(strstr(error_msg, "Invalid assignment operator") != NULL);
+    assert(ar_log__get_last_error_position(log) == 9); // Position of '='
+    
+    ar_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
+static void test_instruction_parser__verifies_unknown_instruction_error(void) {
+    printf("Testing unknown instruction type error logging...\n");
+    
+    // Given a parser with log
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(log);
+    assert(own_parser != NULL);
+    
+    // When parsing an instruction that doesn't match any pattern
+    const char *instruction = "invalid syntax here";
+    ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
+    
+    // Then it should return NULL
+    assert(own_ast == NULL);
+    
+    // And should log an error about unknown instruction type
+    const char *error_msg = ar_log__get_last_error_message(log);
+    assert(error_msg != NULL);
+    assert(strstr(error_msg, "Unknown instruction type") != NULL);
+    
+    ar_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
+static void test_instruction_parser__creation_with_log(void) {
+    printf("Testing parser creation with error logging capability...\n");
+    
+    // Given a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    
+    // When creating a parser with log
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(log);
+    
+    // Then it should create successfully
+    assert(own_parser != NULL);
+    
+    // This test documents that parser creation failures should be logged
+    // In case of failure, errors like "Failed to create assignment instruction parser"
+    // should be logged to the provided log instance
+    
+    ar_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
 int main(void) {
     printf("Running instruction parser tests...\n\n");
     
@@ -814,6 +886,9 @@ int main(void) {
     test_instruction_parser__logs_error_for_null_instruction();
     test_instruction_parser__verifies_memory_allocation_error();
     test_instruction_parser__verifies_unknown_function_error();
+    test_instruction_parser__verifies_invalid_assignment_error();
+    test_instruction_parser__verifies_unknown_instruction_error();
+    test_instruction_parser__creation_with_log();
     
     printf("\nAll instruction_parser tests passed!\n");
     return 0;

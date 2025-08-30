@@ -79,6 +79,9 @@ static void _destroy_specialized_parsers(ar_instruction_parser_t *mut_parser) {
 ar_instruction_parser_t* ar_instruction_parser__create(ar_log_t *ref_log) {
     ar_instruction_parser_t *own_parser = AR__HEAP__MALLOC(sizeof(ar_instruction_parser_t), "instruction_parser");
     if (!own_parser) {
+        if (ref_log) {
+            ar_log__error(ref_log, "Failed to allocate memory for instruction parser");
+        }
         return NULL;
     }
     
@@ -91,54 +94,81 @@ ar_instruction_parser_t* ar_instruction_parser__create(ar_log_t *ref_log) {
     // Create assignment parser
     own_parser->own_assignment_parser = ar_assignment_instruction_parser__create(ref_log);
     if (!own_parser->own_assignment_parser) {
+        if (ref_log) {
+            ar_log__error(ref_log, "Failed to create assignment instruction parser");
+        }
         goto error;
     }
     
     // Create send parser
     own_parser->own_send_parser = ar_send_instruction_parser__create(ref_log);
     if (!own_parser->own_send_parser) {
+        if (ref_log) {
+            ar_log__error(ref_log, "Failed to create send instruction parser");
+        }
         goto error;
     }
     
     // Create condition parser
     own_parser->own_condition_parser = ar_condition_instruction_parser__create(ref_log);
     if (!own_parser->own_condition_parser) {
+        if (ref_log) {
+            ar_log__error(ref_log, "Failed to create condition instruction parser");
+        }
         goto error;
     }
     
     // Create parse parser
     own_parser->own_parse_parser = ar_parse_instruction_parser__create(ref_log);
     if (!own_parser->own_parse_parser) {
+        if (ref_log) {
+            ar_log__error(ref_log, "Failed to create parse instruction parser");
+        }
         goto error;
     }
     
     // Create build parser
     own_parser->own_build_parser = ar_build_instruction_parser__create(ref_log);
     if (!own_parser->own_build_parser) {
+        if (ref_log) {
+            ar_log__error(ref_log, "Failed to create build instruction parser");
+        }
         goto error;
     }
     
     // Create method parser
     own_parser->own_method_parser = ar_compile_instruction_parser__create(ref_log);
     if (!own_parser->own_method_parser) {
+        if (ref_log) {
+            ar_log__error(ref_log, "Failed to create compile instruction parser");
+        }
         goto error;
     }
     
     // Create spawn parser
     own_parser->own_spawn_parser = ar_spawn_instruction_parser__create(ref_log);
     if (!own_parser->own_spawn_parser) {
+        if (ref_log) {
+            ar_log__error(ref_log, "Failed to create spawn instruction parser");
+        }
         goto error;
     }
     
     // Create exit parser
     own_parser->own_exit_parser = ar_exit_instruction_parser__create(ref_log);
     if (!own_parser->own_exit_parser) {
+        if (ref_log) {
+            ar_log__error(ref_log, "Failed to create exit instruction parser");
+        }
         goto error;
     }
     
     // Create destroy method parser
     own_parser->own_deprecate_parser = ar_deprecate_instruction_parser__create(ref_log);
     if (!own_parser->own_deprecate_parser) {
+        if (ref_log) {
+            ar_log__error(ref_log, "Failed to create deprecate instruction parser");
+        }
         goto error;
     }
     
