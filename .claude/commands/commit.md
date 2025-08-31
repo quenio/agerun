@@ -1,5 +1,6 @@
 Create a git commit following the exact workflow specified in CLAUDE.md.
 
+**Important**: The build must pass all checks including command excellence scores ([details](../../kb/command-documentation-excellence-gate.md)). Always test with proper make targets ([details](../../kb/make-target-testing-discipline.md)).
 
 # Commit
 ## Checkpoint Tracking

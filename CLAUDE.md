@@ -330,6 +330,7 @@ grep -r "function_name\|concept" modules/
 **Backups**: Use git stash/diff, never .bak files (ar_io creates them automatically - [details](kb/file-io-backup-mechanism.md))
 **Stubs**: Comment unready features with dependency notes ([details](kb/stub-and-revisit-pattern.md))
 **Scripts**: Add to `/scripts/` with make targets ([details](kb/progressive-tool-enhancement.md), [batch](kb/batch-update-script-pattern.md), [reusable](kb/script-reusability-parameters-pattern.md))
+**Build system**: Parallel jobs for efficiency ([details](kb/parallel-build-job-integration.md)), always use make targets ([details](kb/make-target-testing-discipline.md))
 **Shell scripts**: Use proper variable assignment for error handling ([details](kb/shell-script-command-substitution.md))
 **Multi-step processes**: Use checkpoint tracking for complex commands ([details](kb/multi-step-checkpoint-tracking-pattern.md), [gates](kb/gate-enforcement-exit-codes-pattern.md), [progress](kb/progress-visualization-ascii-pattern.md), [implementation](kb/checkpoint-implementation-guide.md))
 **Debug**: `make sanitize-tests 2>&1`, redirect stderr, check syscall returns ([details](kb/development-debug-tools.md), [static](kb/static-analysis-error-handling.md))
@@ -339,6 +340,7 @@ grep -r "function_name\|concept" modules/
 **Expression ownership**: References=borrowed, new objects=destroy ([details](kb/expression-ownership-rules.md))
 **Test error filtering**: Use context-aware filtering for intentional errors ([details](kb/intentional-test-errors-filtering.md))
 **Log format variations**: Test names vary by environment, verify actual content ([details](kb/log-format-variation-handling.md))
+**Log extraction**: Use precise grep patterns for metrics ([details](kb/build-log-extraction-patterns.md))
 **Whitelist reduction**: Systematically fix root causes to reduce technical debt ([details](kb/systematic-whitelist-error-resolution.md))
 **Whitelist simplification**: Start complex, simplify based on usage ([details](kb/whitelist-simplification-pattern.md))
 **Whitelist success messages**: Include diagnostic output and success indicators ([details](kb/whitelist-success-message-management.md))
@@ -407,10 +409,11 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 **Pre-Commit Checklist** (MANDATORY): ([details](kb/pre-commit-checklist-detailed.md))
 1. `make clean build 2>&1` → verify exit 0 → `make check-logs` ([details](kb/build-verification-before-commit.md))
 2. `make check-docs` → validate all documentation ([details](kb/documentation-validation-enhancement-patterns.md))
-3. Update docs for API changes ([details](kb/documentation-language-migration-updates.md))
-4. Check outdated refs: `grep -l "old_name" modules/*.md`
-5. Update TODO.md & CHANGELOG.md in same commit ([details](kb/atomic-commit-documentation-pattern.md), [verify](kb/documentation-completion-verification.md))
-6. `git diff` full review → clean temp files → commit
+3. `make check-commands` → ensure 90%+ excellence ([details](kb/command-documentation-excellence-gate.md))
+4. Update docs for API changes ([details](kb/documentation-language-migration-updates.md))
+5. Check outdated refs: `grep -l "old_name" modules/*.md`
+6. Update TODO.md & CHANGELOG.md in same commit ([details](kb/atomic-commit-documentation-pattern.md), [verify](kb/documentation-completion-verification.md))
+7. `git diff` full review → clean temp files → commit
 
 **Remember**: Complete ALL TDD Cycles → Docs → TODO → CHANGELOG → Commit ([details](kb/tdd-feature-completion-before-commit.md))
 
@@ -423,6 +426,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 ### 13. Refactoring Patterns
 
 **Principles**: Preserve behavior, move don't rewrite, verify moves ([details](kb/refactoring-patterns-detailed.md))
+**Renaming**: Systematic approach for features/commands ([details](kb/comprehensive-renaming-workflow.md))
 **Bulk ops**: Use scripts not sed - `rename_symbols.py`, `batch_fix_docs.py` ([details](kb/script-enhancement-over-one-off.md), [workflow](kb/systematic-file-modification-workflow.md))
 **Verification**: `diff -u <(sed -n '130,148p' old.c) <(sed -n '11,29p' new.c)` ([details](kb/code-movement-verification.md))
 **Key patterns**: ([details](kb/refactoring-key-patterns.md))

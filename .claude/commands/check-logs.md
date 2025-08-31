@@ -1,5 +1,6 @@
 Check build logs for hidden issues that might not be caught by the build summary.
 
+**Critical**: This check must pass or CI will fail. The log parser uses precise patterns to extract metrics ([details](../../kb/build-log-extraction-patterns.md)). Build checks run in parallel for efficiency ([details](../../kb/parallel-build-job-integration.md)).
 
 # Check Logs
 ## Checkpoint Tracking

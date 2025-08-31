@@ -48,3 +48,5 @@ make check-docs  # Ensure no false positives introduced
 - [Documentation Standards Integration](documentation-standards-integration.md)
 - [Markdown Link Resolution Patterns](markdown-link-resolution-patterns.md)
 - [Documentation Placeholder Validation Pattern](documentation-placeholder-validation-pattern.md)
+- [Command Documentation Excellence Gate](command-documentation-excellence-gate.md)
+- [Build Log Extraction Patterns](build-log-extraction-patterns.md)

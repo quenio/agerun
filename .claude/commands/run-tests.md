@@ -1,5 +1,6 @@
 Build and run all tests.
 
+**Important**: Always use `make run-tests` instead of running tests directly ([details](../../kb/make-target-testing-discipline.md)). Tests run in parallel with other build checks for efficiency ([details](../../kb/parallel-build-job-integration.md)).
 
 # Run Tests
 ## Checkpoint Tracking

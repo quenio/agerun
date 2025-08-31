@@ -63,3 +63,5 @@ This double-verification ensures no issues slip through.
 - [Test Diagnostic Output Preservation](test-diagnostic-output-preservation.md)
 - [Makefile Environment Variable Directory Target Dependencies](makefile-environment-variable-directory-gotcha.md) - Directory target dependencies with environment variable overrides
 - [Gate Enforcement Exit Codes Pattern](gate-enforcement-exit-codes-pattern.md)
+- [Command Documentation Excellence Gate](command-documentation-excellence-gate.md)
+- [Parallel Build Job Integration](parallel-build-job-integration.md)

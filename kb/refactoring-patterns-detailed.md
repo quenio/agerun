@@ -113,3 +113,4 @@ make clean build 2>&1
 - [API Migration Completion Verification](api-migration-completion-verification.md)
 - [Module Removal Checklist](module-removal-checklist.md)
 - [Refactoring Systematic Cleanup](refactoring-systematic-cleanup.md)
+- [Comprehensive Renaming Workflow](comprehensive-renaming-workflow.md)

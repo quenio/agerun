@@ -74,6 +74,11 @@ Each learning file contains:
 - [Local-CI Discrepancy Investigation](local-ci-discrepancy-investigation.md)
 - [Build-Logs Relationship Principle](build-logs-relationship-principle.md)
 - [CI Check-Logs Requirement](ci-check-logs-requirement.md)
+- [Command Documentation Excellence Gate](command-documentation-excellence-gate.md)
+- [Parallel Build Job Integration](parallel-build-job-integration.md)
+- [Make Target Testing Discipline](make-target-testing-discipline.md)
+- [Build Log Extraction Patterns](build-log-extraction-patterns.md)
+- [Comprehensive Renaming Workflow](comprehensive-renaming-workflow.md)
 
 ### Memory Management
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)

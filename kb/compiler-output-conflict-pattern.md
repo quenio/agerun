@@ -89,3 +89,4 @@ rm -rf "$BUILD_DIR"
 - [Parallel Test Isolation Process Resources](parallel-test-isolation-process-resources.md)
 - [Makefile Pattern Rule Management](makefile-pattern-rule-management.md)
 - [Test Working Directory Verification](test-working-directory-verification.md)
+- [Parallel Build Job Integration](parallel-build-job-integration.md)

@@ -17,9 +17,10 @@ Never assume completion without full verification
 # MANDATORY before every commit
 make clean build
 make check-logs  # NEW: Always check logs for hidden issues!
+make check-commands  # Ensure all command docs meet excellence standards
 
-# If clean build fails OR check-logs finds issues, fix ALL before committing
-# No exceptions - broken builds or hidden failures block other developers
+# If clean build fails OR check-logs finds issues OR commands < 90%, fix ALL before committing
+# No exceptions - broken builds, hidden failures, or poor documentation block other developers
 
 # For faster development iteration (not pre-commit):
 make build       # builds from current state, no clean
@@ -47,3 +48,5 @@ This is especially important after the build system issue discovered on 2025-07-
 - [Build Log Verification Requirement](build-log-verification-requirement.md)
 - [Build-Logs Relationship Principle](build-logs-relationship-principle.md)
 - [CI Check-Logs Requirement](ci-check-logs-requirement.md)
+- [Command Documentation Excellence Gate](command-documentation-excellence-gate.md)
+- [Make Target Testing Discipline](make-target-testing-discipline.md)

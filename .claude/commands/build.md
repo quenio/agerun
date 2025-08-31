@@ -1,5 +1,6 @@
 Execute comprehensive build verification with minimal output and check for hidden issues.
 
+**Note**: The build runs all checks in parallel for efficiency ([details](../../kb/parallel-build-job-integration.md)). Always use `make build` rather than running scripts directly ([details](../../kb/make-target-testing-discipline.md)). All command documentation must achieve 90%+ scores or the build fails ([details](../../kb/command-documentation-excellence-gate.md)).
 
 # Build
 ## Checkpoint Tracking
