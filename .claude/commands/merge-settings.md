@@ -1,4 +1,4 @@
-# Merge Settings
+Merge ./.claude/settings.local.json into ./.claude/settings.json and remove the local file.
 
 ## Checkpoint Tracking
 
@@ -62,8 +62,6 @@ Next Action:
 - [ ] Valid JSON after merge
 - [ ] Local file removed
 - [ ] Changes committed and pushed
-
-Merge ./.claude/settings.local.json into ./.claude/settings.json and remove the local file.
 ## Phase 1: Discovery (Step 1)
 
 **[CHECKPOINT START - PHASE 1]**

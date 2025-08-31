@@ -1,4 +1,4 @@
-# Migrate Module to Zig
+Migrate a C module to Zig while maintaining C API compatibility.
 
 ## Checkpoint Tracking
 

@@ -1,4 +1,4 @@
-# Check Documentation
+Run documentation validation and fix any errors found using an iterative approach, then commit and push the fixes.
 
 ## Checkpoint Tracking
 
@@ -61,8 +61,6 @@ Next Action:
 - [ ] make check-docs passes
 - [ ] Changes committed and pushed
 - [ ] Git status shows clean tree
-
-Run documentation validation and fix any errors found using an iterative approach, then commit and push the fixes.
 ## Phase 1: Initial Check (Step 1)
 
 **[CHECKPOINT START - PHASE 1]**

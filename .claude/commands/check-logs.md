@@ -1,4 +1,4 @@
-# Check Logs
+Check build logs for hidden issues that might not be caught by the build summary.
 
 ## Checkpoint Tracking
 

@@ -1,4 +1,4 @@
-# Compact Tasks
+Compact the TODO.md file by condensing completed tasks while keeping incomplete tasks untouched.
 
 ## Checkpoint Tracking
 
@@ -64,7 +64,6 @@ Next Action:
 - [ ] Document structure preserved
 - [ ] Changes committed and pushed
 
-Compact the TODO.md file by condensing completed tasks while keeping incomplete tasks untouched.
 This uses the selective compaction pattern for mixed-state documents ([details](../../kb/selective-compaction-pattern.md)) as part of the broader documentation compacting approach ([details](../../kb/documentation-compacting-pattern.md)).
 
 ## Phase 1: Analysis (Steps 1-2)

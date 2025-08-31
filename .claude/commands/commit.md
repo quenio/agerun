@@ -1,4 +1,4 @@
-# Commit
+Create a git commit following the exact workflow specified in CLAUDE.md.
 
 ## Checkpoint Tracking
 
@@ -70,8 +70,6 @@ Next Action:
 - [ ] CHANGELOG.md updated
 - [ ] All changes reviewed
 - [ ] Git push verified
-
-Create a git commit following the exact workflow specified in CLAUDE.md.
 ## Phase 1: Pre-Commit Verification (Steps 1-5)
 
 **[CHECKPOINT START - PHASE 1]**
