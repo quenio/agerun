@@ -1,5 +1,7 @@
 Create a git commit following the exact workflow specified in CLAUDE.md.
 
+
+# Commit
 ## Checkpoint Tracking
 
 This command uses checkpoint tracking to ensure thorough pre-commit verification and proper git workflow. The process has 9 checkpoints across 3 phases with critical quality gates.

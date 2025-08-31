@@ -1,5 +1,7 @@
 Compact the TODO.md file by condensing completed tasks while keeping incomplete tasks untouched.
 
+
+# Compact Tasks
 ## Checkpoint Tracking
 
 This command uses checkpoint tracking to ensure safe and systematic TODO.md compaction. The process has 6 checkpoints across 3 phases with verification gates.

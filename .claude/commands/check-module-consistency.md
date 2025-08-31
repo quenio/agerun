@@ -1,5 +1,7 @@
 Check for consistency improvements needed across related modules.
 
+
+# Check Module Consistency
 ## Checkpoint Tracking
 
 This command uses checkpoint tracking to ensure systematic consistency checking across related modules. The process has 15 checkpoints across 5 phases.

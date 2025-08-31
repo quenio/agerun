@@ -1,5 +1,7 @@
 Migrate a Zig C-ABI module to a pure Zig struct module.
 
+
+# Migrate Module to Zig Struct
 ## Checkpoint Tracking
 
 This command uses checkpoint tracking to ensure safe and systematic module migration. The process has 11 checkpoints across 4 phases with critical safety gates.

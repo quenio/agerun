@@ -1,5 +1,7 @@
 Check build logs for hidden issues that might not be caught by the build summary.
 
+
+# Check Logs
 ## Checkpoint Tracking
 
 This command uses checkpoint tracking to ensure systematic log verification and issue resolution. The process has 8 checkpoints across 4 phases with critical error handling gates.

@@ -1,5 +1,7 @@
 Read CLAUDE.md in order to prepare yourself for this new session. Then, suggest the next priority based on the TODO.md file.
 
+
+# Next Priority
 ## Expected Behavior
 
 ### Priority Analysis Output

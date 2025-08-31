@@ -1,5 +1,7 @@
 Make CLAUDE.md guidelines more concise by moving details to knowledge base.
 
+
+# Compact Guidelines
 ## Checkpoint Tracking
 
 This command uses checkpoint tracking to ensure systematic documentation compacting with link verification. The process has 15 checkpoints across 6 phases.

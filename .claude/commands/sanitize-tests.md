@@ -1,5 +1,7 @@
 Run address sanitizer on all tests for detecting memory issues.
 
+
+# Sanitize Tests
 ## Command
 ```bash
 make sanitize-tests 2>&1

@@ -1,5 +1,7 @@
 Merge ./.claude/settings.local.json into ./.claude/settings.json and remove the local file.
 
+
+# Merge Settings
 ## Checkpoint Tracking
 
 This command uses checkpoint tracking to ensure safe merging of local settings into the main settings file. The process has 5 checkpoints across 3 phases with verification gates.

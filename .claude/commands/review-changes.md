@@ -1,5 +1,7 @@
 Review uncommitted changes for code quality, architectural compliance, and documentation accuracy.
 
+
+# Review Changes
 ## Checkpoint Tracking
 
 This command uses checkpoint tracking to ensure thorough review across all quality dimensions. The review process is divided into 4 major phases with 22 checkpoints total.

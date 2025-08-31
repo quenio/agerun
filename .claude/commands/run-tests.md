@@ -1,5 +1,7 @@
 Build and run all tests.
 
+
+# Run Tests
 ## Command
 ```bash
 make run-tests 2>&1

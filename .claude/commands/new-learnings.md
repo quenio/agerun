@@ -1,6 +1,8 @@
 Analyze session for new learnings and create properly validated kb articles.
 # New Learnings Analysis and Guidelines Update
 
+
+# New Learnings
 ## MANDATORY STEP TRACKING SYSTEM
 
 **CRITICAL**: You MUST complete ALL 12 steps in order. NO STEPS CAN BE SKIPPED.

@@ -1,5 +1,7 @@
 Execute a clean build for comprehensive build verification with minimal output and check for hidden issues.
 
+
+# Clean Build
 ## Command
 ```bash
 make clean build 2>&1 && make check-logs

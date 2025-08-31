@@ -1,5 +1,7 @@
 Migrate a C module to Zig while maintaining C API compatibility.
 
+
+# Migrate Module to Zig ABI
 ## Checkpoint Tracking
 
 This command uses checkpoint tracking to ensure systematic C-to-Zig migration while maintaining C API compatibility. The process has 10 checkpoints across 4 phases with critical verification gates.

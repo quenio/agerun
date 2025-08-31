@@ -1,5 +1,7 @@
 Run naming convention validation to check for typedef and function naming issues.
 
+
+# Check Naming Conventions
 ## Command
 ```bash
 make check-naming

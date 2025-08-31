@@ -1,5 +1,7 @@
 Run thread sanitizer on all tests for detecting data races.
 
+
+# Thread Sanitizer Tests
 ## Command
 ```bash
 make tsan-tests 2>&1

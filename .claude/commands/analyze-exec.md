@@ -1,5 +1,7 @@
 Run static analysis on the executable code.
 
+
+# Analyze Executable
 ## Command
 ```bash
 make analyze-exec 2>&1

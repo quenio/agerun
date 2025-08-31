@@ -1,5 +1,7 @@
 Run static analysis on the test code.
 
+
+# Analyze Tests
 ## Command
 ```bash
 make analyze-tests 2>&1

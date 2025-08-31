@@ -1,5 +1,7 @@
 Run thread sanitizer on the executable for detecting data races.
 
+
+# Thread Sanitizer Executable
 ## Command
 ```bash
 make tsan-exec 2>&1

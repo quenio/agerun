@@ -1,5 +1,7 @@
 Run documentation validation and fix any errors found using an iterative approach, then commit and push the fixes.
 
+
+# Check Documentation
 ## Checkpoint Tracking
 
 This command uses checkpoint tracking to ensure systematic documentation validation and error resolution. The process has 5 checkpoints across 3 phases with error-driven gates.

@@ -1,5 +1,7 @@
 Run address sanitizer on the executable for detecting memory issues.
 
+
+# Sanitize Executable
 ## Command
 ```bash
 make sanitize-exec 2>&1
