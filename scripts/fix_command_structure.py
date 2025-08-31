@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Enhance all command documentation to follow the comprehensive structure
+Fix all command documentation to follow the comprehensive structure
 exemplified by new-learnings.md.
 
 This script adds missing structural elements while preserving existing content.

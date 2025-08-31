@@ -710,7 +710,7 @@ checkpoint-cleanup:
 check-command-structure:
 	@python3 scripts/check_command_structure.py $(if $(VERBOSE),--verbose) $(if $(FIX),--fix)
 
-# Enhance command documentation structure to match comprehensive standards
-# Usage: make enhance-command-structure
-enhance-command-structure:
-	@python3 scripts/enhance_command_structure.py
+# Fix command documentation structure to match comprehensive standards
+# Usage: make fix-command-structure
+fix-command-structure:
+	@python3 scripts/fix_command_structure.py
