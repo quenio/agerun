@@ -1000,33 +1000,33 @@ Apply the checkpoint tracking system developed in the session to all 26 commands
   - [x] Add expected output documentation
   - [x] Add CI impact warnings
 
-#### Phase 2: Medium Complexity Commands (5 commands, ~1.25 hours)
-- [ ] **Update commit.md**
-  - [ ] Add checkpoints for each pre-commit checklist item
-  - [ ] Add mandatory gate before actual commit
-  - [ ] Add CHANGELOG update verification
-  - [ ] Document expected outputs
+#### Phase 2: Medium Complexity Commands (5 commands, ~1.25 hours) - Completed 2025-08-30
+- [x] **Update commit.md** - Completed 2025-08-30
+  - [x] Add checkpoints for each pre-commit checklist item (9 checkpoints)
+  - [x] Add mandatory gate before actual commit (2 gates: Build Quality, Documentation)
+  - [x] Add CHANGELOG update verification
+  - [x] Document expected outputs
 
-- [ ] **Update check-docs.md**
-  - [ ] Add checkpoints for: Initial Check, Fix Errors, Verify, Commit
-  - [ ] Add gate if errors found
-  - [ ] Integrate with existing good structure
-  - [ ] Add validation success criteria
+- [x] **Update check-docs.md** - Completed 2025-08-30
+  - [x] Add checkpoints for: Initial Check, Preview Fixes, Apply Fixes, Verify Resolution, Commit and Push (5 checkpoints)
+  - [x] Add gate if errors found (Error Gate, Resolution Gate)
+  - [x] Integrate with existing good structure
+  - [x] Add validation success criteria
 
-- [ ] **Update compact-tasks.md**
-  - [ ] Add checkpoints for: Read TODO, Identify Completed, Compact, Verify, Commit
-  - [ ] Add verification for untouched incomplete tasks
-  - [ ] Add compaction metrics reporting
+- [x] **Update compact-tasks.md** - Completed 2025-08-30
+  - [x] Add checkpoints for: Read TODO, Identify Completed, Compact Entries, Verify Integrity, Write Changes, Commit and Push (6 checkpoints)
+  - [x] Add verification for untouched incomplete tasks (Integrity Gate)
+  - [x] Add compaction metrics reporting
 
-- [ ] **Update compact-changes.md**
-  - [ ] Similar checkpoint structure to compact-tasks
-  - [ ] Add verification for proper compaction
-  - [ ] Add before/after comparison
+- [x] **Update compact-changes.md** - Completed 2025-08-30
+  - [x] Similar checkpoint structure to compact-tasks (7 checkpoints)
+  - [x] Add verification for proper compaction (Metrics Gate)
+  - [x] Add before/after comparison
 
-- [ ] **Update merge-settings.md**
-  - [ ] Add checkpoints for: Read Settings, Identify Conflicts, Merge, Validate
-  - [ ] Add conflict resolution verification
-  - [ ] Add merge success criteria
+- [x] **Update merge-settings.md** - Completed 2025-08-30
+  - [x] Add checkpoints for: Check Files, Read Settings, Merge Permissions, Validate Result, Commit and Cleanup (5 checkpoints)
+  - [x] Add conflict resolution verification (Merge Validation Gate)
+  - [x] Add merge success criteria
 
 #### Phase 3: Simple Commands Enhancement (14 commands, ~1.2 hours)
 - [ ] **Add expected output documentation to simple commands**
