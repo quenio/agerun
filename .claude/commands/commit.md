@@ -74,7 +74,7 @@ Next Action:
 
 **[CHECKPOINT START - PHASE 1]**
 
-## Pre-Commit Checklist (MANDATORY - ALWAYS CHECK THIS)
+### Pre-Commit Checklist (MANDATORY - ALWAYS CHECK THIS)
 
 Before starting the commit process, ensure you have completed ALL of these steps. This checklist acts as a quality gate to prevent incomplete commits ([details](../../kb/gate-enforcement-exit-codes-pattern.md)):
 
@@ -249,7 +249,7 @@ Ready for commit.
 
 **[CHECKPOINT START - PHASE 3]**
 
-## Commit Workflow
+### Commit Workflow
 
 After completing the checklist above, follow these steps precisely:
 

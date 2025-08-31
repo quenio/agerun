@@ -72,7 +72,7 @@ Next Action:
 - [ ] Update all documentation
 - [ ] Ensure build remains clean
 
-## Process Overview
+### Process Overview
 
 This command guides you through:
 1. Analyzing the whitelist for patterns
@@ -81,7 +81,7 @@ This command guides you through:
 4. Removing whitelist entries
 5. Tracking progress
 
-## Important Context
+### Important Context
 
 The whitelist contains both intentional test errors AND success messages that check-logs flags. Not all entries represent problems - many are necessary for testing error handling ([details](../../kb/whitelist-success-message-management.md)). Check-logs failures will block CI ([details](../../kb/ci-check-logs-requirement.md)).
 
@@ -89,7 +89,7 @@ The whitelist contains both intentional test errors AND success messages that ch
 
 **[CHECKPOINT START - PHASE 1]**
 
-### Step 1: Analyze Current Whitelist
+#### Step 1: Analyze Current Whitelist
 
 **Checkpoint 1: Count Errors**
 
@@ -153,7 +153,7 @@ You may proceed to pattern selection.
 
 **[CHECKPOINT START - PHASE 2]**
 
-### Step 2: Identify Target Pattern
+#### Step 2: Identify Target Pattern
 
 **Checkpoint 4: Select Target**
 
@@ -191,7 +191,7 @@ echo "3. How many entries are affected?"
 make checkpoint-update CMD=fix-errors-whitelisted STEP=5
 ```
 
-### Step 3: Develop Fix Strategy
+#### Step 3: Develop Fix Strategy
 
 **Checkpoint 6: Choose Strategy**
 
@@ -284,7 +284,7 @@ Checklist:
 Proceed with caution.
 ```
 
-### Step 4: Implement Fixes
+#### Step 4: Implement Fixes
 
 **Checkpoint 8: Verify Current State**
 
@@ -350,7 +350,7 @@ make checkpoint-update CMD=fix-errors-whitelisted STEP=11
 
 **[CHECKPOINT START - PHASE 4]**
 
-### Step 5: Update Documentation
+#### Step 5: Update Documentation
 
 **Checkpoint 12: Update Whitelist Total**
 
@@ -418,7 +418,7 @@ Verified steps:
 Ready for final verification.
 ```
 
-### Step 6: Verify and Commit
+#### Step 6: Verify and Commit
 
 **Checkpoint 15: Final Verification**
 

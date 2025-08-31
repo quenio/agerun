@@ -84,7 +84,7 @@ Please provide the module name (without the `ar_` prefix). For example:
 Which module would you like to migrate to Zig?
 {{/if}}
 
-## Migration Requirements
+### Migration Requirements
 
 1. **Follow the migration guide**: Use kb/c-to-zig-module-migration.md as your primary reference
 2. **Maintain C API compatibility**: The Zig implementation must be a drop-in replacement
@@ -96,7 +96,7 @@ Which module would you like to migrate to Zig?
 
 **[CHECKPOINT START - PHASE 1]**
 
-### Pre-Migration Checklist
+#### Pre-Migration Checklist
 
 **Checkpoint 1: Check Existing**
 

@@ -80,7 +80,7 @@ Migrate the **ar_{{1}}** module from a C-ABI compatible Zig module to a pure Zig
 
 **[CHECKPOINT START - PHASE 1]**
 
-### Read KB Article First
+#### Read KB Article First
 
 **Checkpoint 1: Read KB Article**
 
@@ -119,7 +119,7 @@ Zig struct module patterns understood.
 Proceeding to dependency assessment.
 ```
 
-### Pre-Migration Dependency Check
+#### Pre-Migration Dependency Check
 
 **Checkpoint 2: Check Current Implementation**
 
@@ -177,7 +177,7 @@ make checkpoint-update CMD=migrate-module-to-zig-struct STEP=4
 
 4. **Module's Own Dependencies**: Check if ar_{{1}} depends on C-ABI modules (would block migration)
 
-### Dependency Analysis Steps:
+#### Dependency Analysis Steps
 
 ```bash
 # Check what C headers ar_{{1}} itself imports (these would block migration)
@@ -229,13 +229,13 @@ Proceeding to implementation phase.
 
 **[CHECKPOINT START - PHASE 2]**
 
-### Migration Plan (if dependencies allow)
+#### Migration Plan
 
 If the module is safe to migrate:
 
 **Checkpoint 6: Create Struct Module**
 
-#### Create New Zig Struct Module
+##### Create New Zig Struct Module
 1. Create `modules/{{1|pascal}}.zig` following TitleCase naming
 
 ```bash

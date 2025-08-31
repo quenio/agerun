@@ -77,7 +77,7 @@ Next Action:
 - [ ] Create actionable improvement plan
 - [ ] Estimate effort for each module needing update
 
-## Overview
+### Overview
 
 After making improvements to one module, use this command to systematically check if related or sister modules need the same improvements. This prevents technical debt from accumulating and maintains architectural coherence. ([details](../../kb/module-consistency-verification.md))
 
@@ -85,7 +85,7 @@ After making improvements to one module, use this command to systematically chec
 
 **[CHECKPOINT START - PHASE 1]**
 
-### Step 1: Identify the Improvement Made
+#### Step 1: Identify the Improvement Made
 
 **Checkpoint 1: Describe Improvement**
 
@@ -146,13 +146,13 @@ You may proceed to module discovery.
 
 **[CHECKPOINT START - PHASE 2]**
 
-### Step 2: Find Related Modules
+#### Step 2: Find Related Modules
 
 Identify modules that should be checked for consistency:
 
 **Checkpoint 3: Find Sister Modules**
 
-### Sister Modules (reader/writer pairs, parser/evaluator pairs)
+#### Sister Modules
 ```bash
 # Find paired modules
 SISTER_MODULES=$(ls modules/ar_*_reader.* modules/ar_*_writer.* 2>/dev/null | wc -l)
@@ -166,7 +166,7 @@ make checkpoint-update CMD=check-module-consistency STEP=3
 
 **Checkpoint 4: Find Similar Purpose**
 
-### Similar Purpose Modules
+#### Similar Purpose Modules
 ```bash
 # Find modules with similar patterns
 SIMILAR_MODULES=$(grep -l "ar_log\|instance\|create" modules/*.c | wc -l)
@@ -179,7 +179,7 @@ make checkpoint-update CMD=check-module-consistency STEP=4
 
 **Checkpoint 5: Find Same Subsystem**
 
-### Modules in Same Subsystem
+#### Modules in Same Subsystem
 ```bash
 # Check which modules include the improved module
 SUBSYSTEM_MODULES=$(grep -l "#include.*improved_module.h" modules/*.c | wc -l)
@@ -230,7 +230,7 @@ You may proceed to module analysis.
 
 **[CHECKPOINT START - PHASE 3]**
 
-### Step 3: Check Each Related Module
+#### Step 3: Check Each Related Module
 
 **Module Tracking Function**:
 ```bash
@@ -370,7 +370,7 @@ grep -A 5 "if.*!.*\|\|.*!.*)" modules/MODULE.c
 
 **[CHECKPOINT START - PHASE 4]**
 
-### Step 4: Create Improvement Plan
+#### Step 4: Create Improvement Plan
 
 **Checkpoint 11: Analyze Findings**
 
@@ -532,7 +532,7 @@ make checkpoint-cleanup CMD=check-module-consistency
 rm -f /tmp/check-consistency-tracking.txt
 ```
 
-### Step 5: Apply Improvements Systematically
+#### Step 5: Apply Improvements Systematically
 
 Use TDD to apply the same pattern to each module:
 - Create similar tests as the original improvement

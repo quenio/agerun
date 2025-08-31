@@ -66,7 +66,7 @@ Next Action:
 - [ ] Final check must pass (CI ready)
 
 Check build logs for hidden issues that might not be caught by the build summary.
-## What it does:
+### What it does
 
 This command performs a two-phase analysis of build log files:
 
@@ -349,7 +349,7 @@ make checkpoint-cleanup CMD=check-logs
 rm -f /tmp/check-logs-*.txt /tmp/deep-analysis.txt
 ```
 
-## Usage:
+### Usage
 
 ```bash
 make check-logs

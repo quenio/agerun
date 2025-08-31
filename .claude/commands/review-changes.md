@@ -78,11 +78,11 @@ Next Action:
   → Step 7: Parnas Principles
 ```
 
-## What it does:
+### What it does
 
 This command performs a comprehensive review of all uncommitted changes across multiple quality dimensions:
 
-### 1. Code Quality Review
+#### 1. Code Quality Review
 - **Code Smells Detection**: Long methods (>50 lines), large modules (>850 lines), excessive parameters (>5), duplication
 - **Memory Management**: Ownership prefixes (own_, mut_, ref_), heap tracking macros, NULL after transfer
 - **Naming Conventions**: ar_module__function pattern, proper prefixes, consistent style
@@ -90,21 +90,21 @@ This command performs a comprehensive review of all uncommitted changes across m
 - **Test Coverage**: BDD structure, memory leak verification, one test per behavior
 - **Feature Value**: Validate features provide functional value, not just decoration ([details](../../kb/functional-value-validation-pattern.md))
 
-### 2. Architectural Compliance
+#### 2. Architectural Compliance
 - **Parnas Principles**: Information hiding, single responsibility, no circular dependencies
 - **Module Hierarchy**: Foundation → Data → Core → System layer ordering
 - **Interface Design**: Minimal interfaces, opaque types where needed, const-correctness
 - **Dependency Management**: No upward dependencies, proper abstraction levels
 - **Design Patterns**: Registry for ownership, facade for coordination only
 
-### 3. Documentation Review
+#### 3. Documentation Review
 - **Real Code Only**: All examples use actual AgeRun types/functions
 - **Validation**: Runs make check-docs to verify documentation
 - **Cross-References**: Checks for related KB articles and links
 - **Completeness**: TODO.md and CHANGELOG.md updates for changes
 - **Relative Links**: Ensures markdown links use relative paths
 
-### 4. Pre-Commit Verification
+#### 4. Pre-Commit Verification
 - **Build Status**: Verifies clean build with make clean build
 - **Hidden Issues**: Runs make check-logs for concealed problems
 - **Test Results**: Checks for memory leaks and test failures
@@ -112,13 +112,13 @@ This command performs a comprehensive review of all uncommitted changes across m
 - **Documentation Sync**: Ensures docs match code changes
 - **Task Planning**: For large changes, checks for analysis report ([details](../../kb/report-driven-task-planning.md))
 
-## Usage:
+### Usage
 
 ```bash
 /review-changes
 ```
 
-## Review Process:
+### Review Process
 
 ### Phase 1: Code Quality Review (Steps 1-6)
 
