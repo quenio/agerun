@@ -706,11 +706,11 @@ checkpoint-cleanup:
 	@bash scripts/checkpoint_cleanup.sh $(CMD)
 
 # Check command documentation structure
-# Usage: make check-command-structure [VERBOSE=1] [FIX=1]
-check-command-structure:
-	@python3 scripts/check_command_structure.py $(if $(VERBOSE),--verbose) $(if $(FIX),--fix)
+# Usage: make check-commands [VERBOSE=1] [FIX=1]
+check-commands:
+	@python3 scripts/check_commands.py $(if $(VERBOSE),--verbose) $(if $(FIX),--fix)
 
 # Fix command documentation structure to match comprehensive standards
-# Usage: make fix-command-structure
-fix-command-structure:
-	@python3 scripts/fix_command_structure.py
+# Usage: make fix-commands
+fix-commands:
+	@python3 scripts/fix_commands.py

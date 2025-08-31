@@ -262,9 +262,15 @@ else:
     print("\nRun with --fix to generate a fix report")
     print("Run with --verbose to see detailed issues")
 
-# Exit with error if average is too low
-if avg_score < 70:
-    print(f"\n❌ Structure validation failed: Average score {avg_score:.1f}% is below 70%")
+# Exit with error if any command is not excellent
+non_excellent = needs_work + poor + good
+if non_excellent > 0:
+    print(f"\n❌ Structure validation failed: {non_excellent} commands are not excellent (90%+ required)")
+    print(f"Commands must achieve excellent scores to ensure quality and consistency.")
+    sys.exit(1)
+elif avg_score < 90:
+    print(f"\n❌ Structure validation failed: Average score {avg_score:.1f}% is below 90%")
     sys.exit(1)
 else:
     print(f"\n✅ Structure validation passed with average score {avg_score:.1f}%")
+    print(f"All {len(all_commands)} commands have excellent structure!")

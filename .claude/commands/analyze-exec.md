@@ -147,7 +147,7 @@ ar_executable.c:234:10: warning: Access to field 'id' results in a dereference o
     if (agent->id == 0) {
         ^~~~~~~~~
 ar_executable.c:230:5: note: Assuming 'agent' is null
-    ar_agent_t *agent = ar_agency__get_agent(1);
+    ar_agent_t *agent = ar_agency__create(log);
     ^~~~~~~~~~~~~~~~~
 
 Static analysis complete!

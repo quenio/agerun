@@ -74,7 +74,7 @@ Next Action:
 - Non-static functions with underscore prefix
 - Typedefs not ending in `_t`
 
-For example: `ar_data_create()` should be `ar_data__create()`
+For example: `ar_data_create()` should be `ar_data__create_integer()`
 
 #### [EXECUTION GATE]
 ```bash
@@ -130,8 +130,8 @@ All naming conventions are correct!
 ```
 Checking naming conventions...
   Checking typedef naming (ar_*_t pattern)...
-    ERROR: Invalid typedef name: AgentData (should be ar_agent_data_t)
-    ERROR: Invalid typedef name: string_buffer_t (should be ar_string_buffer_t)
+    ERROR: Invalid typedef name: AgentData (should be ar_agent_t)
+    ERROR: Invalid typedef name: MethodologyData (should be ar_methodology_t)
   Found 2 typedef naming violations
 
 make: *** [check-naming] Error 1
@@ -141,8 +141,8 @@ make: *** [check-naming] Error 1
 ```
 Checking naming conventions...
   Checking function naming (ar_*__ pattern)...
-    ERROR: Invalid function name: ar_data_create (should be ar_data__create)
-    ERROR: Invalid function name: ar__string__trim (should be ar_string__trim)
+    ERROR: Invalid function name: ar_data_create (should be ar_data__create_integer)
+    ERROR: Invalid function name: ar_string_trim (should be ar_string__trim)
   Found 2 function naming violations
 
 make: *** [check-naming] Error 1

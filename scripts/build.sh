@@ -51,6 +51,7 @@ mkdir -p logs
 echo "Launching parallel builds..."
 run_job "check-naming" "make check-naming" "logs/check-naming.log"
 run_job "check-docs" "make check-docs" "logs/check-docs.log"
+run_job "check-commands" "make check-commands" "logs/check-commands.log"
 run_job "analyze-exec" "make analyze-exec" "logs/analyze-exec.log"
 run_job "analyze-tests" "make analyze-tests" "logs/analyze-tests.log"
 run_job "run-tests" "make run-tests" "logs/run-tests.log"
@@ -109,6 +110,16 @@ show_results() {
                             echo "  All checks passed"
                         fi
                         ;;
+                    "check-commands")
+                        # Extract average score and excellent count
+                        avg_score=$(grep "Average Score:" "$log" 2>/dev/null | awk '{print $3}')
+                        excellent_count=$(grep "🌟 Excellent (90-100%):" "$log" 2>/dev/null | awk '{print $4}')
+                        total_commands=$(grep "Total Commands:" "$log" 2>/dev/null | awk '{print $3}')
+                        if [ -n "$avg_score" ]; then
+                            echo "  Average score: $avg_score"
+                            echo "  Excellent commands: ${excellent_count:-0}/${total_commands:-26}"
+                        fi
+                        ;;
                 esac
             else
                 echo "✗ $name: FAILED"
@@ -150,6 +161,16 @@ show_results() {
                             grep -E "(ERROR:|Invalid|FAILED)" "$log" 2>/dev/null | head -5 | sed 's/^/    /'
                         fi
                         ;;
+                    "check-commands")
+                        # Show commands that are not excellent
+                        echo "    Commands below excellent score:"
+                        grep -E "⚠️ Needs Work|❌ Poor|✅ Good" "$log" 2>/dev/null | head -10 | sed 's/^/      /'
+                        # Show top issues
+                        if grep -q "Top issues to address:" "$log" 2>/dev/null; then
+                            echo "    Top issues:"
+                            grep -A 5 "Top issues to address:" "$log" 2>/dev/null | tail -n +2 | head -5 | sed 's/^/    /'
+                        fi
+                        ;;
                     *)
                         grep -E "(ERROR:|FAILED:|error:|failed)" "$log" 2>/dev/null | head -5 | sed 's/^/    /'
                         ;;
@@ -160,7 +181,7 @@ show_results() {
 }
 
 # Display results in order: checks → analysis → runs → sanitizers → tsan
-show_results "Code Quality Checks" "logs/check-naming.log" "logs/check-docs.log"
+show_results "Code Quality Checks" "logs/check-naming.log" "logs/check-docs.log" "logs/check-commands.log"
 show_results "Static Analysis" "logs/analyze-exec.log" "logs/analyze-tests.log"
 show_results "Build and Run" "logs/run-tests.log" "logs/run-exec.log"
 show_results "Sanitizers (ASan + UBSan)" "logs/sanitize-tests.log" "logs/sanitize-exec.log"
