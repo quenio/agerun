@@ -1028,16 +1028,16 @@ Apply the checkpoint tracking system developed in the session to all 26 commands
   - [x] Add conflict resolution verification (Merge Validation Gate)
   - [x] Add merge success criteria
 
-#### Phase 3: Simple Commands Enhancement (14 commands, ~1.2 hours)
-- [ ] **Add expected output documentation to simple commands**
-  - [ ] build.md, build-clean.md
-  - [ ] run-tests.md, run-exec.md
-  - [ ] sanitize-tests.md, sanitize-exec.md
-  - [ ] tsan-tests.md, tsan-exec.md
-  - [ ] analyze-tests.md, analyze-exec.md
-  - [ ] check-naming.md
-  - [ ] next-task.md, next-priority.md
-  - [ ] Document success/failure states for each
+#### Phase 3: Simple Commands Enhancement (14 commands, ~1.2 hours) - Completed 2025-08-31
+- [x] **Add expected output documentation to simple commands** - Completed 2025-08-31
+  - [x] build.md, build-clean.md (success/failure states, timing info)
+  - [x] run-tests.md, run-exec.md (test results, memory leaks)
+  - [x] sanitize-tests.md, sanitize-exec.md (ASAN output examples)
+  - [x] tsan-tests.md, tsan-exec.md (TSAN race detection examples)
+  - [x] analyze-tests.md, analyze-exec.md (static analysis warnings)
+  - [x] check-naming.md (convention violations)
+  - [x] next-task.md, next-priority.md (workflow examples)
+  - [x] new-learnings.md (already had comprehensive outputs)
 
 ### Technical Implementation Details
 
