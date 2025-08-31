@@ -80,11 +80,11 @@ Migrate the **ar_{{1}}** module from a C-ABI compatible Zig module to a pure Zig
 
 ## Phase 1: Assessment (Steps 1-5)
 
-**[CHECKPOINT START - PHASE 1]**
+#### [CHECKPOINT START - PHASE 1]
 
 #### Read KB Article First
 
-**Checkpoint 1: Read KB Article**
+#### Checkpoint 1: Read KB Article
 
 I'll start by reading the knowledge base article to understand the proper patterns for implementing Zig struct modules.
 
@@ -103,7 +103,7 @@ echo "FUNCTIONS_CONVERTED=0" >> /tmp/migration-tracking.txt
 make checkpoint-update CMD=migrate-module-to-zig-struct STEP=1
 ```
 
-**[KNOWLEDGE GATE]**
+#### [KNOWLEDGE GATE]
 ```bash
 # Confirm KB article was read and understood
 make checkpoint-gate CMD=migrate-module-to-zig-struct GATE="Knowledge" REQUIRED="1"
@@ -123,7 +123,7 @@ Proceeding to dependency assessment.
 
 #### Pre-Migration Dependency Check
 
-**Checkpoint 2: Check Current Implementation**
+#### Checkpoint 2: Check Current Implementation
 
 First, I need to verify that ar_{{1}} is safe to migrate by checking:
 
@@ -141,7 +141,7 @@ else
 fi
 ```
 
-**Checkpoint 3: Check C Dependencies**
+#### Checkpoint 3: Check C Dependencies
 
 2. **C Module Dependencies**: Search for any C modules (.c files) that include or depend on ar_{{1}}
 
@@ -160,7 +160,7 @@ else
 fi
 ```
 
-**Checkpoint 4: Check Zig Dependencies**
+#### Checkpoint 4: Check Zig Dependencies
 
 3. **Zig Module Dependencies**: Identify Zig modules that depend on ar_{{1}} (these can be updated)
 
@@ -175,7 +175,7 @@ echo "UPDATED_DEPS=$ZIG_DEPS" >> /tmp/migration-tracking.txt
 make checkpoint-update CMD=migrate-module-to-zig-struct STEP=4
 ```
 
-**Checkpoint 5: Verify Safety**
+#### Checkpoint 5: Verify Safety
 
 4. **Module's Own Dependencies**: Check if ar_{{1}} depends on C-ABI modules (would block migration)
 
@@ -196,7 +196,7 @@ else
 fi
 ```
 
-**[CRITICAL SAFETY GATE]**
+#### [CRITICAL SAFETY GATE]
 ```bash
 # ⚠️ CRITICAL: Verify migration is safe
 make checkpoint-gate CMD=migrate-module-to-zig-struct GATE="Safety" REQUIRED="2,3,4,5"
@@ -229,13 +229,13 @@ Proceeding to implementation phase.
 
 ## Phase 2: Implementation (Steps 6-7)
 
-**[CHECKPOINT START - PHASE 2]**
+#### [CHECKPOINT START - PHASE 2]
 
 #### Migration Plan
 
 If the module is safe to migrate:
 
-**Checkpoint 6: Create Struct Module**
+#### Checkpoint 6: Create Struct Module
 
 ##### Create New Zig Struct Module
 1. Create `modules/{{1|pascal}}.zig` following TitleCase naming
@@ -252,7 +252,7 @@ echo "CREATED_FILES=$CREATED_FILES" >> /tmp/migration-tracking.txt
 make checkpoint-update CMD=migrate-module-to-zig-struct STEP=6
 ```
 
-**Checkpoint 7: Convert Functions**
+#### Checkpoint 7: Convert Functions
 
 2. Convert the module to use idiomatic Zig patterns:
    - Change from `export fn` to `pub fn`
@@ -275,7 +275,7 @@ echo "✅ Converted $FUNCTIONS_CONVERTED functions"
 make checkpoint-update CMD=migrate-module-to-zig-struct STEP=7
 ```
 
-**[IMPLEMENTATION GATE]**
+#### [IMPLEMENTATION GATE]
 ```bash
 # Verify implementation is complete
 make checkpoint-gate CMD=migrate-module-to-zig-struct GATE="Implementation" REQUIRED="6,7"
@@ -300,9 +300,9 @@ Ready for dependency updates and testing.
 
 ## Phase 3: Testing (Steps 8-9)
 
-**[CHECKPOINT START - PHASE 3]**
+#### [CHECKPOINT START - PHASE 3]
 
-**Checkpoint 8: Update Dependencies**
+#### Checkpoint 8: Update Dependencies
 
 ### Update Zig Dependencies
 For each Zig module that depends on ar_{{1}}:
@@ -321,7 +321,7 @@ echo "✅ Updated $UPDATED_DEPS modules to use {{1|pascal}}.zig"
 make checkpoint-update CMD=migrate-module-to-zig-struct STEP=8
 ```
 
-**Checkpoint 9: Run Tests**
+#### Checkpoint 9: Run Tests
 
 ```bash
 # Run tests and verify no memory leaks
@@ -338,7 +338,7 @@ else
 fi
 ```
 
-**[CRITICAL TESTING GATE]**
+#### [CRITICAL TESTING GATE]
 ```bash
 # ⚠️ CRITICAL: Verify all tests pass with no leaks
 make checkpoint-gate CMD=migrate-module-to-zig-struct GATE="Testing" REQUIRED="8,9"
@@ -366,9 +366,9 @@ Proceeding to cleanup phase.
 
 ## Phase 4: Cleanup (Steps 10-11)
 
-**[CHECKPOINT START - PHASE 4]**
+#### [CHECKPOINT START - PHASE 4]
 
-**Checkpoint 10: Remove Old Module**
+#### Checkpoint 10: Remove Old Module
 
 ### Remove Old Module
 1. Delete `modules/ar_{{1}}.zig`
@@ -393,7 +393,7 @@ echo "✅ Removed $DELETED_FILES old files"
 make checkpoint-update CMD=migrate-module-to-zig-struct STEP=10
 ```
 
-**Checkpoint 11: Update Documentation**
+#### Checkpoint 11: Update Documentation
 
 ### Update Documentation
 1. Update module documentation to reflect new API
@@ -410,7 +410,7 @@ echo "- Added KB article references"
 make checkpoint-update CMD=migrate-module-to-zig-struct STEP=11
 ```
 
-**[CHECKPOINT COMPLETE]**
+#### [CHECKPOINT COMPLETE]
 ```bash
 # Show final summary
 make checkpoint-status CMD=migrate-module-to-zig-struct

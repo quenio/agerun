@@ -70,11 +70,11 @@ Next Action:
 - [ ] Changes committed and pushed
 ## Phase 1: Analysis (Steps 1-2)
 
-**[CHECKPOINT START - PHASE 1]**
+#### [CHECKPOINT START - PHASE 1]
 
 Follow these steps:
 
-**Checkpoint 1: Read CHANGELOG**
+#### Checkpoint 1: Read CHANGELOG
 
 ```bash
 # Read and measure CHANGELOG.md
@@ -93,7 +93,7 @@ make checkpoint-update CMD=compact-changes STEP=1
 
 1. Read the CHANGELOG.md file and measure initial metrics (line count)
 
-**Checkpoint 2: Analyze Content**
+#### Checkpoint 2: Analyze Content
 
 ```bash
 # Analyze content structure
@@ -116,7 +116,7 @@ make checkpoint-update CMD=compact-changes STEP=2
 
 2. For each date section, identify completed milestones
 
-**[ANALYSIS GATE]**
+#### [ANALYSIS GATE]
 ```bash
 # Verify analysis before proceeding
 make checkpoint-gate CMD=compact-changes GATE="Analysis" REQUIRED="1,2"
@@ -141,9 +141,9 @@ Ready for compaction.
 
 ## Phase 2: Compaction (Steps 3-6)
 
-**[CHECKPOINT START - PHASE 2]**
+#### [CHECKPOINT START - PHASE 2]
 
-**Checkpoint 3: Compact Milestones**
+#### Checkpoint 3: Compact Milestones
 
 ```bash
 # Compact milestone sections
@@ -166,7 +166,7 @@ make checkpoint-update CMD=compact-changes STEP=3
    - Remove detailed sub-bullets but keep critical achievements
    - Combine benefits into single line if multiple exist
 
-**Checkpoint 4: Preserve Metrics**
+#### Checkpoint 4: Preserve Metrics
 
 ```bash
 # Verify all metrics preserved
@@ -193,7 +193,7 @@ make checkpoint-update CMD=compact-changes STEP=4
    - Key metrics and numbers ([details](../../kb/quantitative-documentation-metrics.md))
    - Technology transitions mentioned
 
-**Checkpoint 5: Add Self-Entry**
+#### Checkpoint 5: Add Self-Entry
 
 ```bash
 # Add self-documenting entry
@@ -212,7 +212,7 @@ make checkpoint-update CMD=compact-changes STEP=5
 
 5. Add self-documenting entry to CHANGELOG for the compaction ([details](../../kb/self-documenting-modifications-pattern.md))
 
-**Checkpoint 6: Update TODO**
+#### Checkpoint 6: Update TODO
 
 ```bash
 # Update TODO.md
@@ -229,7 +229,7 @@ make checkpoint-update CMD=compact-changes STEP=6
 7. Show quantitative summary: "Reduced from X to Y lines (Z% reduction)"
 8. Update TODO.md with completed task ([details](../../kb/retroactive-task-documentation.md))
 
-**[METRICS GATE]**
+#### [METRICS GATE]
 ```bash
 # ⚠️ CRITICAL: Verify sufficient reduction and metric preservation
 source /tmp/compact-changes-stats.txt
@@ -244,9 +244,9 @@ make checkpoint-gate CMD=compact-changes GATE="Compaction Quality" REQUIRED="3,4
 
 ## Phase 3: Commit (Step 7)
 
-**[CHECKPOINT START - PHASE 3]**
+#### [CHECKPOINT START - PHASE 3]
 
-**Checkpoint 7: Commit and Push**
+#### Checkpoint 7: Commit and Push
 
 ```bash
 # Commit and push changes
@@ -277,7 +277,7 @@ make checkpoint-update CMD=compact-changes STEP=7
 ```
 
 9. Commit and push the changes:
-**[CHECKPOINT COMPLETE]**
+#### [CHECKPOINT COMPLETE]
 ```bash
 # Show final summary
 make checkpoint-status CMD=compact-changes

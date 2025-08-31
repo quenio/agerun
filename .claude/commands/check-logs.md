@@ -95,9 +95,9 @@ Performs additional thorough analysis to catch edge cases:
 
 ## Phase 1: Initial Check (Steps 1-2)
 
-**[CHECKPOINT START - PHASE 1]**
+#### [CHECKPOINT START - PHASE 1]
 
-**Checkpoint 1: Run Build**
+#### Checkpoint 1: Run Build
 
 ```bash
 # Ensure fresh build before checking
@@ -111,7 +111,7 @@ echo "✅ Build completed successfully"
 make checkpoint-update CMD=check-logs STEP=1
 ```
 
-**Checkpoint 2: Standard Checks**
+#### Checkpoint 2: Standard Checks
 
 ```bash
 # Run Phase 1 log analysis
@@ -129,7 +129,7 @@ echo "ERROR_COUNT=$ERROR_COUNT" > /tmp/check-logs-stats.txt
 make checkpoint-update CMD=check-logs STEP=2
 ```
 
-**[BUILD GATE]**
+#### [BUILD GATE]
 ```bash
 # Verify build is clean before deeper analysis
 make checkpoint-gate CMD=check-logs GATE="Build" REQUIRED="1"
@@ -153,9 +153,9 @@ Ready for log analysis.
 
 ## Phase 2: Analysis (Steps 3-4)
 
-**[CHECKPOINT START - PHASE 2]**
+#### [CHECKPOINT START - PHASE 2]
 
-**Checkpoint 3: Deep Analysis**
+#### Checkpoint 3: Deep Analysis
 
 ```bash
 # Run Phase 2 deep analysis if standard passed
@@ -177,7 +177,7 @@ fi
 make checkpoint-update CMD=check-logs STEP=3
 ```
 
-**Checkpoint 4: Categorize Errors**
+#### Checkpoint 4: Categorize Errors
 
 ```bash
 # Categorize errors found
@@ -209,7 +209,7 @@ fi
 make checkpoint-update CMD=check-logs STEP=4
 ```
 
-**[CRITICAL ERROR GATE]**
+#### [CRITICAL ERROR GATE]
 ```bash
 # ⚠️ CRITICAL: If errors found, must resolve before proceeding
 source /tmp/check-logs-stats.txt
@@ -238,9 +238,9 @@ Proceed to resolution phase.
 
 ## Phase 3: Resolution (Steps 5-6)
 
-**[CHECKPOINT START - PHASE 3]**
+#### [CHECKPOINT START - PHASE 3]
 
-**Checkpoint 5: Fix Issues**
+#### Checkpoint 5: Fix Issues
 
 ```bash
 # Fix real errors (manual step)
@@ -257,7 +257,7 @@ fi
 make checkpoint-update CMD=check-logs STEP=5
 ```
 
-**Checkpoint 6: Update Whitelist**
+#### Checkpoint 6: Update Whitelist
 
 ```bash
 # Update whitelist for intentional errors
@@ -280,9 +280,9 @@ make checkpoint-update CMD=check-logs STEP=6
 
 ## Phase 4: Verification (Steps 7-8)
 
-**[CHECKPOINT START - PHASE 4]**
+#### [CHECKPOINT START - PHASE 4]
 
-**Checkpoint 7: Re-check Logs**
+#### Checkpoint 7: Re-check Logs
 
 ```bash
 # Re-run checks after fixes
@@ -300,7 +300,7 @@ echo "FINAL_STATUS=$FINAL_STATUS" >> /tmp/check-logs-stats.txt
 make checkpoint-update CMD=check-logs STEP=7
 ```
 
-**Checkpoint 8: Final Validation**
+#### Checkpoint 8: Final Validation
 
 ```bash
 # Final CI readiness check
@@ -318,7 +318,7 @@ fi
 make checkpoint-update CMD=check-logs STEP=8
 ```
 
-**[CHECKPOINT COMPLETE]**
+#### [CHECKPOINT COMPLETE]
 ```bash
 # Show final summary
 make checkpoint-status CMD=check-logs

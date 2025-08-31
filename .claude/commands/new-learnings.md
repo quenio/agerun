@@ -83,7 +83,7 @@ This command guides you through a comprehensive process to:
 
 ## Step 1: Identify New Learnings
 
-**[CHECKPOINT START - STEP 1]**
+#### [CHECKPOINT START - STEP 1]
 
 **CRITICAL: Think deeply and thoroughly about what was learned in this session.**
 
@@ -124,7 +124,7 @@ For each learning, provide:
 - Specific examples from this session (if applicable)
 - How it can be generalized for future use
 
-**[CHECKPOINT END - STEP 1]**
+#### [CHECKPOINT END - STEP 1]
 ```bash
 # Mark Step 1 complete
 make checkpoint-update CMD=new-learnings STEP=1
@@ -140,7 +140,7 @@ Next pending: Determine KB Article Strategy
 
 ## Step 2: Determine KB Article Strategy
 
-**[CHECKPOINT START - STEP 2]**
+#### [CHECKPOINT START - STEP 2]
 
 ### First Decision: New Articles vs Update Existing
 
@@ -168,7 +168,7 @@ Next pending: Determine KB Article Strategy
 - Existing articles should be updated with references to new articles
 - Create a bidirectional web of knowledge
 
-**[CHECKPOINT END - STEP 2]**
+#### [CHECKPOINT END - STEP 2]
 ```bash
 # Mark Step 2 complete
 make checkpoint-update CMD=new-learnings STEP=2
@@ -176,7 +176,7 @@ make checkpoint-update CMD=new-learnings STEP=2
 
 ## Step 3: Knowledge Base Article Creation
 
-**[CHECKPOINT START - STEP 3]**
+#### [CHECKPOINT START - STEP 3]
 
 **CRITICAL: All code examples MUST use real AgeRun types and functions** ([details](../../kb/validated-documentation-examples.md))
 
@@ -271,7 +271,7 @@ If you're tempted to use hypothetical types, replace with real ones:
 - `processor_t` → `ar_expression_evaluator_t*` or `ar_instruction_evaluator_t*`  // EXAMPLE: Hypothetical type mapping
 - `context_t` → `ar_data_t*`  // EXAMPLE: Hypothetical type mapping
 
-**[CHECKPOINT END - STEP 3]**
+#### [CHECKPOINT END - STEP 3]
 ```bash
 # Mark Step 3 complete
 make checkpoint-update CMD=new-learnings STEP=3
@@ -279,7 +279,7 @@ make checkpoint-update CMD=new-learnings STEP=3
 
 ## Step 4: Validation Before Saving
 
-**[CHECKPOINT START - STEP 4]**
+#### [CHECKPOINT START - STEP 4]
 
 **MANDATORY: Test articles before committing**
 
@@ -297,7 +297,7 @@ make checkpoint-update CMD=new-learnings STEP=3
 - Use `ar_data_t*` as the universal fallback type
 - Reference actual functions from `modules/*.h` files
 
-**[CHECKPOINT END - STEP 4]**
+#### [CHECKPOINT END - STEP 4]
 ```bash
 # Mark Step 4 complete
 make checkpoint-update CMD=new-learnings STEP=4
@@ -345,7 +345,7 @@ The following steps must be completed first:
 
 ## Step 5: Update Knowledge Base Index
 
-**[CHECKPOINT START - STEP 5]**
+#### [CHECKPOINT START - STEP 5]
 
 **MANDATORY: Add new articles to kb/README.md**
 
@@ -360,7 +360,7 @@ The following steps must be completed first:
    - [Article Title](article-filename.md)
    ```
 
-**[CHECKPOINT END - STEP 5]**
+#### [CHECKPOINT END - STEP 5]
 ```bash
 # Mark Step 5 complete
 make checkpoint-update CMD=new-learnings STEP=5
@@ -368,7 +368,7 @@ make checkpoint-update CMD=new-learnings STEP=5
 
 ## Step 6: Update Existing KB Articles with Cross-References (THOROUGH EXECUTION REQUIRED)
 
-**[CHECKPOINT START - STEP 6]**
+#### [CHECKPOINT START - STEP 6]
 
 **CRITICAL - OFTEN MISSED**: Add cross-references to create a web of knowledge ([details](../../kb/new-learnings-complete-integration-pattern.md)):
 
@@ -407,7 +407,7 @@ make checkpoint-update CMD=new-learnings STEP=5
    git diff --name-only | grep "kb.*\.md" | wc -l  # Should be > new articles
    ```
 
-**[CHECKPOINT END - STEP 6]**
+#### [CHECKPOINT END - STEP 6]
 ```bash
 # Mark Step 6 complete
 make checkpoint-update CMD=new-learnings STEP=6
@@ -415,7 +415,7 @@ make checkpoint-update CMD=new-learnings STEP=6
 
 ## Step 7: Review and Update Existing Commands (THOROUGH EXECUTION REQUIRED)
 
-**[CHECKPOINT START - STEP 7]**
+#### [CHECKPOINT START - STEP 7]
 
 **CRITICAL - OFTEN MISSED**: Check if any Claude commands should be updated based on learnings ([details](../../kb/new-learnings-complete-integration-pattern.md)):
 
@@ -459,7 +459,7 @@ make checkpoint-update CMD=new-learnings STEP=6
    git diff --name-only | grep ".claude/commands" | wc -l  # Should be >= 3
    ```
 
-**[CHECKPOINT END - STEP 7]**
+#### [CHECKPOINT END - STEP 7]
 ```bash
 # Mark Step 7 complete
 make checkpoint-update CMD=new-learnings STEP=7
@@ -467,14 +467,14 @@ make checkpoint-update CMD=new-learnings STEP=7
 
 ## Step 8: Review Existing Guidelines
 
-**[CHECKPOINT START - STEP 8]**
+#### [CHECKPOINT START - STEP 8]
 
 Check CLAUDE.md to see if these learnings should be referenced:
 - Determine if existing documentation needs links to new kb articles
 - Identify appropriate sections where kb articles should be referenced
 - Note any gaps that need new content with kb links
 
-**[CHECKPOINT END - STEP 8]**
+#### [CHECKPOINT END - STEP 8]
 ```bash
 # Mark Step 8 complete
 make checkpoint-update CMD=new-learnings STEP=8
@@ -482,7 +482,7 @@ make checkpoint-update CMD=new-learnings STEP=8
 
 ## Step 9: Update Guidelines
 
-**[CHECKPOINT START - STEP 9]**
+#### [CHECKPOINT START - STEP 9]
 
 **CRITICAL**: CLAUDE.md updates are MANDATORY for new KB articles ([details](../../kb/claude-md-reference-requirement.md))
 
@@ -517,7 +517,7 @@ If updates are needed to CLAUDE.md:
    - Include new kb articles in relevant sections (e.g., Script Development, Documentation Protocol)
    - Maintain two-tier system: brief guidelines with links to comprehensive details
 
-**[CHECKPOINT END - STEP 9]**
+#### [CHECKPOINT END - STEP 9]
 ```bash
 # Mark Step 9 complete
 make checkpoint-update CMD=new-learnings STEP=9
@@ -532,7 +532,7 @@ make checkpoint-gate CMD=new-learnings GATE="Integration" REQUIRED="5,6,7,8,9"
 
 ## Step 10: Validate No Broken Links
 
-**[CHECKPOINT START - STEP 10]**
+#### [CHECKPOINT START - STEP 10]
 
 **CRITICAL**: Before committing, verify all links work:
 
@@ -547,7 +547,7 @@ make checkpoint-gate CMD=new-learnings GATE="Integration" REQUIRED="5,6,7,8,9"
 
 2. **Never reference non-existent articles in Related Patterns sections**
 
-**[CHECKPOINT END - STEP 10]**
+#### [CHECKPOINT END - STEP 10]
 ```bash
 # Mark Step 10 complete
 make checkpoint-update CMD=new-learnings STEP=10
@@ -606,7 +606,7 @@ fi
 
 **DO NOT PROCEED TO STEP 12 UNLESS THIS SCRIPT SHOWS "READY TO COMMIT"**
 
-**[CHECKPOINT END - STEP 11]**
+#### [CHECKPOINT END - STEP 11]
 ```bash
 # Mark Step 11 complete
 make checkpoint-update CMD=new-learnings STEP=11
@@ -628,7 +628,7 @@ fi
 
 ## Step 12: Automatic Commit and Push
 
-**[CHECKPOINT START - STEP 12]**
+#### [CHECKPOINT START - STEP 12]
 
 **CRITICAL**: Only execute if FINAL GATE shows "ALL GATES PASSED"
 
@@ -676,7 +676,7 @@ fi
    git status
    ```
 
-**[CHECKPOINT END - STEP 12]**
+#### [CHECKPOINT END - STEP 12]
 ```bash
 # Mark Step 12 complete
 make checkpoint-update CMD=new-learnings STEP=12

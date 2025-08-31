@@ -74,13 +74,13 @@ Next Action:
 - [ ] Git push verified
 ## Phase 1: Pre-Commit Verification (Steps 1-5)
 
-**[CHECKPOINT START - PHASE 1]**
+#### [CHECKPOINT START - PHASE 1]
 
 ### Pre-Commit Checklist (MANDATORY - ALWAYS CHECK THIS)
 
 Before starting the commit process, ensure you have completed ALL of these steps. This checklist acts as a quality gate to prevent incomplete commits ([details](../../kb/gate-enforcement-exit-codes-pattern.md)):
 
-**Checkpoint 1: Run Tests**
+#### Checkpoint 1: Run Tests
 
 ```bash
 # Run comprehensive build verification
@@ -94,7 +94,7 @@ echo "✅ Build completed successfully"
 make checkpoint-update CMD=commit STEP=1
 ```
 
-**Checkpoint 2: Check Logs**
+#### Checkpoint 2: Check Logs
 
 ```bash
 # Verify no hidden issues in logs
@@ -110,7 +110,7 @@ make checkpoint-update CMD=commit STEP=2
 
 1. **Run Tests**: Use `make clean build` for comprehensive build verification (~20 lines output) to ensure all changes work correctly and no memory leaks. **ALWAYS follow with `make check-logs` to catch hidden issues!** **If clean build fails OR check-logs finds issues, STOP - do not proceed with commit until all issues are fixed.** ([details](../../kb/build-verification-before-commit.md), [CI requirement](../../kb/ci-check-logs-requirement.md))
    - **Note**: `make build` includes documentation validation (`make check-docs`). If docs fail, use `python3 scripts/batch_fix_docs.py` to fix automatically ([details](../../kb/batch-documentation-fix-enhancement.md))
-**Checkpoint 3: Update Docs**
+#### Checkpoint 3: Update Docs
 
 ```bash
 # Check if documentation needs updates
@@ -135,7 +135,7 @@ make checkpoint-update CMD=commit STEP=3
 2. **Update Module Documentation**: If you changed a module's interface, update its .md file
 3. **Update System Documentation**: For major refactoring, check modules/README.md and dependency trees ([details](../../kb/refactoring-phase-completion-checklist.md))
 
-**Checkpoint 4: Update TODO**
+#### Checkpoint 4: Update TODO
 
 ```bash
 # Verify TODO.md is updated
@@ -151,7 +151,7 @@ make checkpoint-update CMD=commit STEP=4
 
 4. **Update TODO.md**: Mark completed tasks and add any new tasks identified
 
-**Checkpoint 5: Update CHANGELOG**
+#### Checkpoint 5: Update CHANGELOG
 
 ```bash
 # Verify CHANGELOG.md is updated
@@ -167,7 +167,7 @@ make checkpoint-update CMD=commit STEP=5
 
 5. **Update CHANGELOG.md**: Document completed milestones and achievements (NON-NEGOTIABLE)
    - **IMPORTANT**: Include all documentation updates in the same commit as implementation ([details](../../kb/atomic-commit-documentation-pattern.md))
-**[BUILD GATE]**
+#### [BUILD GATE]
 ```bash
 # Verify build and logs are clean before proceeding
 make checkpoint-gate CMD=commit GATE="Build Quality" REQUIRED="1,2"
@@ -193,9 +193,9 @@ Proceed to review phase.
 
 ## Phase 2: Review and Stage (Step 6-7)
 
-**[CHECKPOINT START - PHASE 2]**
+#### [CHECKPOINT START - PHASE 2]
 
-**Checkpoint 6: Review Changes**
+#### Checkpoint 6: Review Changes
 
 ```bash
 # Review all changes
@@ -223,7 +223,7 @@ make checkpoint-update CMD=commit STEP=6
 - Never skip the checklist
 - Report build time from output (e.g., "took 1m 3s") ([details](../../kb/build-time-reporting.md))
 
-**[DOCUMENTATION GATE]**
+#### [DOCUMENTATION GATE]
 ```bash
 # ⚠️ CRITICAL: Verify documentation is complete
 make checkpoint-gate CMD=commit GATE="Documentation" REQUIRED="3,4,5"
@@ -249,13 +249,13 @@ Ready for commit.
 
 ## Phase 3: Commit and Push (Steps 7-9)
 
-**[CHECKPOINT START - PHASE 3]**
+#### [CHECKPOINT START - PHASE 3]
 
 ### Commit Workflow
 
 After completing the checklist above, follow these steps precisely:
 
-**Checkpoint 7: Stage Files**
+#### Checkpoint 7: Stage Files
 
 ```bash
 # Analyze and stage changes
@@ -286,7 +286,7 @@ make checkpoint-update CMD=commit STEP=7
    - Ensure the message accurately reflects ALL changes
    - Verify full scope of architectural changes ([details](../../kb/commit-scope-verification.md))
 
-**Checkpoint 8: Create Commit**
+#### Checkpoint 8: Create Commit
 
 ```bash
 # Create the commit
@@ -340,7 +340,7 @@ make checkpoint-update CMD=commit STEP=8
    - If it fails again, report the error
    - If it succeeds but files were modified by hooks, amend the commit to include them
 
-**Checkpoint 9: Push and Verify**
+#### Checkpoint 9: Push and Verify
 
 ```bash
 # Push to remote
@@ -368,7 +368,7 @@ make checkpoint-update CMD=commit STEP=9
 
 **Important:** Never skip the final `git status` verification - this is a critical step per CLAUDE.md.
 
-**[CHECKPOINT COMPLETE]**
+#### [CHECKPOINT COMPLETE]
 ```bash
 # Show final summary
 make checkpoint-status CMD=commit

@@ -124,7 +124,7 @@ This command performs a comprehensive review of all uncommitted changes across m
 
 ### Phase 1: Code Quality Review (Steps 1-6)
 
-**[CHECKPOINT START - PHASE 1]**
+#### [CHECKPOINT START - PHASE 1]
 
 1. **Diff Analysis**: Reviews git diff for all changes
    ```bash
@@ -198,7 +198,7 @@ You may proceed to architectural compliance review.
 
 ### Phase 2: Architectural Compliance (Steps 7-11)
 
-**[CHECKPOINT START - PHASE 2]**
+#### [CHECKPOINT START - PHASE 2]
 
 7. **Parnas Principles Check**: Verifies design principles
    - Information hiding
@@ -263,7 +263,7 @@ You may proceed to documentation review.
 
 ### Phase 3: Documentation Review (Steps 12-16)
 
-**[CHECKPOINT START - PHASE 3]**
+#### [CHECKPOINT START - PHASE 3]
 
 12. **Real Code Check**: Validates documentation examples
     - All examples use actual AgeRun types/functions
@@ -324,7 +324,7 @@ You may proceed to pre-commit verification.
 
 ### Phase 4: Pre-Commit Verification (Steps 17-22)
 
-**[CHECKPOINT START - PHASE 4]**
+#### [CHECKPOINT START - PHASE 4]
 
 17. **Build Status Check**: Verifies clean build
     ```bash
@@ -389,7 +389,7 @@ Ready to generate final review report.
     make checkpoint-update CMD=review-changes STEP=22
     ```
 
-**[CHECKPOINT COMPLETE]**
+#### [CHECKPOINT COMPLETE]
 ```bash
 # Show final status
 make checkpoint-status CMD=review-changes

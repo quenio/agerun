@@ -70,11 +70,11 @@ This uses the selective compaction pattern for mixed-state documents ([details](
 
 ## Phase 1: Analysis (Steps 1-2)
 
-**[CHECKPOINT START - PHASE 1]**
+#### [CHECKPOINT START - PHASE 1]
 
 Follow these steps:
 
-**Checkpoint 1: Read TODO**
+#### Checkpoint 1: Read TODO
 
 ```bash
 # Read and analyze TODO.md
@@ -93,7 +93,7 @@ make checkpoint-update CMD=compact-tasks STEP=1
 
 1. Read the TODO.md file
 
-**Checkpoint 2: Identify Completed**
+#### Checkpoint 2: Identify Completed
 
 ```bash
 # Count completed vs incomplete tasks
@@ -113,7 +113,7 @@ make checkpoint-update CMD=compact-tasks STEP=2
 
 2. For each section, identify completed tasks (marked with [x])
 
-**[ANALYSIS GATE]**
+#### [ANALYSIS GATE]
 ```bash
 # Verify analysis before proceeding
 make checkpoint-gate CMD=compact-tasks GATE="Analysis" REQUIRED="1,2"
@@ -137,9 +137,9 @@ Ready for compaction.
 
 ## Phase 2: Compaction (Steps 3-4)
 
-**[CHECKPOINT START - PHASE 2]**
+#### [CHECKPOINT START - PHASE 2]
 
-**Checkpoint 3: Compact Entries**
+#### Checkpoint 3: Compact Entries
 
 ```bash
 # Compact completed tasks
@@ -168,7 +168,7 @@ make checkpoint-update CMD=compact-tasks STEP=3
    - KEEP COMPLETELY UNTOUCHED including all sub-items
    - Do not modify or compact these in any way
 
-**Checkpoint 4: Verify Integrity**
+#### Checkpoint 4: Verify Integrity
 
 ```bash
 # Verify no incomplete tasks were modified
@@ -192,7 +192,7 @@ make checkpoint-update CMD=compact-tasks STEP=4
 
 5. Preserve section headers and overall structure
 
-**[INTEGRITY GATE]**
+#### [INTEGRITY GATE]
 ```bash
 # ⚠️ CRITICAL: Verify incomplete tasks untouched
 source /tmp/compact-tasks-stats.txt
@@ -205,9 +205,9 @@ make checkpoint-gate CMD=compact-tasks GATE="Integrity" REQUIRED="3,4"
 
 ## Phase 3: Commit (Steps 5-6)
 
-**[CHECKPOINT START - PHASE 3]**
+#### [CHECKPOINT START - PHASE 3]
 
-**Checkpoint 5: Write Changes**
+#### Checkpoint 5: Write Changes
 
 ```bash
 # Write compacted version
@@ -230,7 +230,7 @@ make checkpoint-update CMD=compact-tasks STEP=5
 6. Write the compacted version back to TODO.md
 7. Show a summary of changes (completed tasks compacted, incomplete preserved)
 
-**Checkpoint 6: Commit and Push**
+#### Checkpoint 6: Commit and Push
 
 ```bash
 # Commit and push changes
@@ -251,7 +251,7 @@ make checkpoint-update CMD=compact-tasks STEP=6
    - `git commit -m "docs: compact completed tasks in TODO.md"`
    - `git push`
 
-**[CHECKPOINT COMPLETE]**
+#### [CHECKPOINT COMPLETE]
 ```bash
 # Show final summary
 make checkpoint-status CMD=compact-tasks

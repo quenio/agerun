@@ -65,11 +65,11 @@ Next Action:
 - [ ] Git status shows clean tree
 ## Phase 1: Initial Check (Step 1)
 
-**[CHECKPOINT START - PHASE 1]**
+#### [CHECKPOINT START - PHASE 1]
 
 ### Process
 
-**Checkpoint 1: Initial Check**
+#### Checkpoint 1: Initial Check
 
 ```bash
 # Run initial documentation validation
@@ -93,7 +93,7 @@ fi
 
 1. **Initial Check**: Run `make check-docs` to identify all documentation errors
 
-**[ERROR GATE]**
+#### [ERROR GATE]
 ```bash
 # If errors found, proceed to fixing phase
 source /tmp/check-docs-stats.txt 2>/dev/null || ERROR_COUNT=0
@@ -121,9 +121,9 @@ Proceeding to fix phase.
 
 ## Phase 2: Fix Errors (Steps 2-3)
 
-**[CHECKPOINT START - PHASE 2]**
+#### [CHECKPOINT START - PHASE 2]
 
-**Checkpoint 2: Preview Fixes**
+#### Checkpoint 2: Preview Fixes
 
 ```bash
 # Preview what the batch fix script would change
@@ -146,7 +146,7 @@ make checkpoint-update CMD=check-docs STEP=2
    - First run `python3 scripts/batch_fix_docs.py --dry-run` to preview what changes would be made
    - Review the proposed changes to ensure they look correct
 
-**Checkpoint 3: Apply Fixes**
+#### Checkpoint 3: Apply Fixes
 
 ```bash
 # Apply the fixes
@@ -170,9 +170,9 @@ make checkpoint-update CMD=check-docs STEP=3
 
 ## Phase 3: Verify and Commit (Steps 4-5)
 
-**[CHECKPOINT START - PHASE 3]**
+#### [CHECKPOINT START - PHASE 3]
 
-**Checkpoint 4: Verify Resolution**
+#### Checkpoint 4: Verify Resolution
 
 ```bash
 # Verify all errors are fixed
@@ -196,7 +196,7 @@ make checkpoint-update CMD=check-docs STEP=4
    - Run the batch fix script again (with dry-run first, then for real)
    - Continue until all errors are resolved or identify which errors need manual intervention
 
-**[RESOLUTION GATE]**
+#### [RESOLUTION GATE]
 ```bash
 # ⚠️ CRITICAL: Verify all errors resolved
 source /tmp/check-docs-stats.txt
@@ -207,7 +207,7 @@ fi
 make checkpoint-gate CMD=check-docs GATE="Resolution" REQUIRED="4"
 ```
 
-**Checkpoint 5: Commit and Push**
+#### Checkpoint 5: Commit and Push
 
 ```bash
 # Commit and push fixes if any
@@ -236,7 +236,7 @@ make checkpoint-update CMD=check-docs STEP=5
    - Push to the remote repository
    - Verify push completed with `git status`
 
-**[CHECKPOINT COMPLETE]**
+#### [CHECKPOINT COMPLETE]
 ```bash
 # Show final summary
 make checkpoint-status CMD=check-docs

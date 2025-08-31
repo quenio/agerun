@@ -66,11 +66,11 @@ Next Action:
 - [ ] Changes committed and pushed
 ## Phase 1: Discovery (Step 1)
 
-**[CHECKPOINT START - PHASE 1]**
+#### [CHECKPOINT START - PHASE 1]
 
 Follow these steps:
 
-**Checkpoint 1: Check Files**
+#### Checkpoint 1: Check Files
 
 ```bash
 # Check if local settings file exists
@@ -97,7 +97,7 @@ make checkpoint-update CMD=merge-settings STEP=1
 
 1. Check if ./.claude/settings.local.json exists
 
-**[DISCOVERY GATE]**
+#### [DISCOVERY GATE]
 ```bash
 # If no local file, skip remaining steps
 source /tmp/merge-settings-stats.txt
@@ -113,9 +113,9 @@ make checkpoint-gate CMD=merge-settings GATE="Discovery" REQUIRED="1"
 
 ## Phase 2: Merge (Steps 2-4)
 
-**[CHECKPOINT START - PHASE 2]**
+#### [CHECKPOINT START - PHASE 2]
 
-**Checkpoint 2: Read Settings**
+#### Checkpoint 2: Read Settings
 
 ```bash
 # Read both settings files
@@ -141,7 +141,7 @@ make checkpoint-update CMD=merge-settings STEP=2
 
 2. If it exists, read both settings files
 
-**Checkpoint 3: Merge Permissions**
+#### Checkpoint 3: Merge Permissions
 
 ```bash
 # Merge permissions
@@ -169,7 +169,7 @@ make checkpoint-update CMD=merge-settings STEP=3
 
 3. Merge the permissions from local into main settings
 
-**Checkpoint 4: Validate Result**
+#### Checkpoint 4: Validate Result
 
 ```bash
 # Validate merged JSON
@@ -195,7 +195,7 @@ make checkpoint-update CMD=merge-settings STEP=4
 
 4. Write the merged settings back to ./.claude/settings.json
 
-**[MERGE GATE]**
+#### [MERGE GATE]
 ```bash
 # ⚠️ CRITICAL: Verify merge success
 source /tmp/merge-settings-stats.txt
@@ -208,9 +208,9 @@ make checkpoint-gate CMD=merge-settings GATE="Merge Validation" REQUIRED="2,3,4"
 
 ## Phase 3: Cleanup (Step 5)
 
-**[CHECKPOINT START - PHASE 3]**
+#### [CHECKPOINT START - PHASE 3]
 
-**Checkpoint 5: Commit and Cleanup**
+#### Checkpoint 5: Commit and Cleanup
 
 ```bash
 # Remove local file and commit
@@ -245,7 +245,7 @@ make checkpoint-update CMD=merge-settings STEP=5
    - `git push`
 7. If local file doesn't exist, inform that no merge is needed
 
-**[CHECKPOINT COMPLETE]**
+#### [CHECKPOINT COMPLETE]
 ```bash
 # Show final summary
 make checkpoint-status CMD=merge-settings

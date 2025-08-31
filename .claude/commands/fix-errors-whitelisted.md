@@ -89,11 +89,11 @@ The whitelist contains both intentional test errors AND success messages that ch
 
 ## Phase 1: Analysis (Steps 1-3)
 
-**[CHECKPOINT START - PHASE 1]**
+#### [CHECKPOINT START - PHASE 1]
 
 #### Step 1: Analyze Current Whitelist
 
-**Checkpoint 1: Count Errors**
+#### Checkpoint 1: Count Errors
 
 Run these commands to understand the current state:
 
@@ -109,7 +109,7 @@ echo "BEFORE_COUNT=$BEFORE_COUNT" > /tmp/fix-errors-whitelisted-counts.txt
 make checkpoint-update CMD=fix-errors-whitelisted STEP=1
 ```
 
-**Checkpoint 2: Group by Test**
+#### Checkpoint 2: Group by Test
 
 ```bash
 # Group by test context (top 10)
@@ -119,7 +119,7 @@ grep "context:" log_whitelist.yaml | sed 's/.*context: "//' | sed 's/".*//' | so
 make checkpoint-update CMD=fix-errors-whitelisted STEP=2
 ```
 
-**Checkpoint 3: Find Patterns**
+#### Checkpoint 3: Find Patterns
 
 ```bash
 # Find common error patterns (top 10)
@@ -129,7 +129,7 @@ grep "message:" log_whitelist.yaml | sed 's/.*message: "//' | sed 's/".*//' | so
 make checkpoint-update CMD=fix-errors-whitelisted STEP=3
 ```
 
-**[ANALYSIS GATE]**
+#### [ANALYSIS GATE]
 ```bash
 # MANDATORY: Must complete analysis before proceeding
 make checkpoint-gate CMD=fix-errors-whitelisted GATE="Analysis" REQUIRED="1,2,3"
@@ -153,11 +153,11 @@ You may proceed to pattern selection.
 
 ## Phase 2: Strategy Development (Steps 4-7)
 
-**[CHECKPOINT START - PHASE 2]**
+#### [CHECKPOINT START - PHASE 2]
 
 #### Step 2: Identify Target Pattern
 
-**Checkpoint 4: Select Target**
+#### Checkpoint 4: Select Target
 
 Based on the analysis, identify which errors to fix. Look for:
 - **Similar errors** across multiple tests (e.g., wake message field access)
@@ -181,7 +181,7 @@ make checkpoint-update CMD=fix-errors-whitelisted STEP=4
 
 **IMPORTANT**: Select errors that affect at least 5 whitelist entries to meet minimum requirements.
 
-**Checkpoint 5: Analyze Root Cause**
+#### Checkpoint 5: Analyze Root Cause
 
 Document the root cause of the selected error pattern:
 ```bash
@@ -195,7 +195,7 @@ make checkpoint-update CMD=fix-errors-whitelisted STEP=5
 
 #### Step 3: Develop Fix Strategy
 
-**Checkpoint 6: Choose Strategy**
+#### Checkpoint 6: Choose Strategy
 
 Based on the pattern identified, determine the fix approach:
 
@@ -221,7 +221,7 @@ Based on the pattern identified, determine the fix approach:
 make checkpoint-update CMD=fix-errors-whitelisted STEP=6
 ```
 
-**Checkpoint 7: Plan Implementation**
+#### Checkpoint 7: Plan Implementation
 
 Create detailed implementation plan:
 ```bash
@@ -234,7 +234,7 @@ echo "4. Entries to remove: [count]"
 make checkpoint-update CMD=fix-errors-whitelisted STEP=7
 ```
 
-**[STRATEGY GATE]**
+#### [STRATEGY GATE]
 ```bash
 # MANDATORY: Must have clear strategy before implementation
 make checkpoint-gate CMD=fix-errors-whitelisted GATE="Strategy" REQUIRED="4,5,6,7"
@@ -259,9 +259,9 @@ You may proceed to implementation.
 
 ## Phase 3: Implementation (Steps 8-11)
 
-**[CHECKPOINT START - PHASE 3]**
+#### [CHECKPOINT START - PHASE 3]
 
-**[CRITICAL IMPLEMENTATION GATE]**
+#### [CRITICAL IMPLEMENTATION GATE]
 ```bash
 # ⚠️ CRITICAL: Final check before modifying code
 make checkpoint-gate CMD=fix-errors-whitelisted GATE="Implementation Ready" REQUIRED="1,2,3,4,5,6,7"
@@ -288,7 +288,7 @@ Proceed with caution.
 
 #### Step 4: Implement Fixes
 
-**Checkpoint 8: Verify Current State**
+#### Checkpoint 8: Verify Current State
 
 For each identified issue:
 
@@ -300,7 +300,7 @@ make check-logs | grep -A5 "context_name"
 make checkpoint-update CMD=fix-errors-whitelisted STEP=8
 ```
 
-**Checkpoint 9: Apply Fix**
+#### Checkpoint 9: Apply Fix
 
 ```bash
 # 2. Apply fix to the source file
@@ -312,7 +312,7 @@ git diff --name-only
 make checkpoint-update CMD=fix-errors-whitelisted STEP=9
 ```
 
-**Checkpoint 10: Test Fix**
+#### Checkpoint 10: Test Fix
 
 ```bash
 # 3. Verify fix worked
@@ -326,7 +326,7 @@ fi
 make checkpoint-update CMD=fix-errors-whitelisted STEP=10
 ```
 
-**Checkpoint 11: Remove Whitelist Entries**
+#### Checkpoint 11: Remove Whitelist Entries
 
 ```bash
 # 4. Remove whitelist entries
@@ -350,11 +350,11 @@ make checkpoint-update CMD=fix-errors-whitelisted STEP=11
 
 ## Phase 4: Documentation & Commit (Steps 12-16)
 
-**[CHECKPOINT START - PHASE 4]**
+#### [CHECKPOINT START - PHASE 4]
 
 #### Step 5: Update Documentation
 
-**Checkpoint 12: Update Whitelist Total**
+#### Checkpoint 12: Update Whitelist Total
 
 After fixing errors:
 
@@ -370,7 +370,7 @@ After fixing errors:
    make checkpoint-update CMD=fix-errors-whitelisted STEP=12
    ```
 
-**Checkpoint 13: Update TODO.md**
+#### Checkpoint 13: Update TODO.md
 
 2. **Update TODO.md**:
    ```markdown
@@ -381,7 +381,7 @@ After fixing errors:
    make checkpoint-update CMD=fix-errors-whitelisted STEP=13
    ```
 
-**Checkpoint 14: Update CHANGELOG.md**
+#### Checkpoint 14: Update CHANGELOG.md
 
 3. **Update CHANGELOG.md** if significant (>10 entries removed):
    ```bash
@@ -398,7 +398,7 @@ After fixing errors:
    make checkpoint-update CMD=fix-errors-whitelisted STEP=14
    ```
 
-**[DOCUMENTATION GATE]**
+#### [DOCUMENTATION GATE]
 ```bash
 # MANDATORY: Ensure all documentation is updated
 make checkpoint-gate CMD=fix-errors-whitelisted GATE="Documentation" REQUIRED="12,13,14"
@@ -422,7 +422,7 @@ Ready for final verification.
 
 #### Step 6: Verify and Commit
 
-**Checkpoint 15: Final Verification**
+#### Checkpoint 15: Final Verification
 
 ```bash
 # Final verification
@@ -436,7 +436,7 @@ echo "✅ Build verification passed"
 make checkpoint-update CMD=fix-errors-whitelisted STEP=15
 ```
 
-**Checkpoint 16: Create Commit**
+#### Checkpoint 16: Create Commit
 
 ```bash
 # Review changes
@@ -463,7 +463,7 @@ Whitelist reduced from $BEFORE_COUNT to $AFTER_COUNT entries."
 make checkpoint-update CMD=fix-errors-whitelisted STEP=16
 ```
 
-**[CHECKPOINT COMPLETE]**
+#### [CHECKPOINT COMPLETE]
 ```bash
 # Show final summary
 make checkpoint-status CMD=fix-errors-whitelisted

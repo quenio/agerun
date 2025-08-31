@@ -96,11 +96,11 @@ Which module would you like to migrate to Zig?
 
 ## Phase 1: Assessment (Steps 1-4)
 
-**[CHECKPOINT START - PHASE 1]**
+#### [CHECKPOINT START - PHASE 1]
 
 #### Pre-Migration Checklist
 
-**Checkpoint 1: Check Existing**
+#### Checkpoint 1: Check Existing
 
 {{#if 1}}
 Before creating the plan, verify:
@@ -127,7 +127,7 @@ fi
 make checkpoint-update CMD=migrate-module-to-zig-abi STEP=1
 ```
 
-**Checkpoint 2: Analyze Dependencies**
+#### Checkpoint 2: Analyze Dependencies
 
 ```bash
 # Audit dependencies
@@ -142,7 +142,7 @@ echo "DEP_COUNT=$DEP_COUNT" > /tmp/migration-stats.txt
 make checkpoint-update CMD=migrate-module-to-zig-abi STEP=2
 ```
 
-**Checkpoint 3: Identify Challenges**
+#### Checkpoint 3: Identify Challenges
 
 ```bash
 # Check for migration challenges
@@ -166,7 +166,7 @@ fi
 make checkpoint-update CMD=migrate-module-to-zig-abi STEP=3
 ```
 
-**Checkpoint 4: Review API**
+#### Checkpoint 4: Review API
 
 ```bash
 # Review current API
@@ -181,7 +181,7 @@ grep -c "own_\|mut_\|ref_" modules/{{1}}.c
 make checkpoint-update CMD=migrate-module-to-zig-abi STEP=4
 ```
 
-**[ASSESSMENT GATE]**
+#### [ASSESSMENT GATE]
 ```bash
 # Verify assessment is complete
 make checkpoint-gate CMD=migrate-module-to-zig-abi GATE="Assessment" REQUIRED="1,2,3,4"
@@ -211,11 +211,11 @@ If `modules/{{1}}.zig` already exists:
 
 ## Phase 2: Implementation (Steps 5-7)
 
-**[CHECKPOINT START - PHASE 2]**
+#### [CHECKPOINT START - PHASE 2]
 
 ### Implementation Strategy
 
-**Checkpoint 5: Create Zig File**
+#### Checkpoint 5: Create Zig File
 
 ```bash
 # Create Zig file with proper structure
@@ -231,7 +231,7 @@ echo "// Migrated from {{1}}.c - maintains C API compatibility" >> modules/{{1}}
 make checkpoint-update CMD=migrate-module-to-zig-abi STEP=5
 ```
 
-**Checkpoint 6: Map Types**
+#### Checkpoint 6: Map Types
 
 ```bash
 # Document type mappings
@@ -250,7 +250,7 @@ echo "FUNC_COUNT=$FUNC_COUNT" >> /tmp/migration-stats.txt
 make checkpoint-update CMD=migrate-module-to-zig-abi STEP=6
 ```
 
-**Checkpoint 7: Implement Functions**
+#### Checkpoint 7: Implement Functions
 
 ```bash
 # Track implementation progress
@@ -264,7 +264,7 @@ echo "Maintained C API compatibility with export fn"
 make checkpoint-update CMD=migrate-module-to-zig-abi STEP=7
 ```
 
-**[IMPLEMENTATION GATE]**
+#### [IMPLEMENTATION GATE]
 ```bash
 # Verify implementation is complete
 make checkpoint-gate CMD=migrate-module-to-zig-abi GATE="Implementation" REQUIRED="5,6,7"
@@ -289,11 +289,11 @@ Ready for testing phase.
 
 ## Phase 3: Testing (Steps 8-9)
 
-**[CHECKPOINT START - PHASE 3]**
+#### [CHECKPOINT START - PHASE 3]
 
 ### Testing Approach
 
-**Checkpoint 8: Run Tests**
+#### Checkpoint 8: Run Tests
 
 ```bash
 # Rename C file to allow Zig to take over
@@ -312,7 +312,7 @@ echo "✅ All tests passed!"
 make checkpoint-update CMD=migrate-module-to-zig-abi STEP=8
 ```
 
-**Checkpoint 9: Verify Memory**
+#### Checkpoint 9: Verify Memory
 
 ```bash
 # Check memory report
@@ -330,7 +330,7 @@ fi
 make checkpoint-update CMD=migrate-module-to-zig-abi STEP=9
 ```
 
-**[CRITICAL TESTING GATE]**
+#### [CRITICAL TESTING GATE]
 ```bash
 # ⚠️ CRITICAL: Verify all tests pass with no leaks
 make checkpoint-gate CMD=migrate-module-to-zig-abi GATE="Testing" REQUIRED="8,9"
@@ -357,11 +357,11 @@ The Zig implementation is ready for deployment.
 
 ## Phase 4: Cleanup (Step 10)
 
-**[CHECKPOINT START - PHASE 4]**
+#### [CHECKPOINT START - PHASE 4]
 
 ### Cleanup Plan
 
-**Checkpoint 10: Cleanup and Document**
+#### Checkpoint 10: Cleanup and Document
 
 ```bash
 # Remove backup file
@@ -390,7 +390,7 @@ echo "✅ Migration complete!"
 make checkpoint-update CMD=migrate-module-to-zig-abi STEP=10
 ```
 
-**[CHECKPOINT COMPLETE]**
+#### [CHECKPOINT COMPLETE]
 ```bash
 # Show final summary
 make checkpoint-status CMD=migrate-module-to-zig-abi
