@@ -1,5 +1,4 @@
 Analyze session for new learnings and create properly validated kb articles.
-# New Learnings Analysis and Guidelines Update
 
 
 # New Learnings
