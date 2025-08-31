@@ -59,12 +59,51 @@ Next Action:
 - [ ] No unexpected warnings or issues
 
 
+
+
+**CRITICAL**: Test code quality matters as much as production code. Poor test quality leads to false confidence.
+
+**Before running**: Review test coverage to identify gaps. The analyzer checks for:
+- Memory leaks in test fixtures
+- Improper cleanup
+- Test logic errors
+- Resource management issues
+
+**Questions to consider**:
+- Do all tests properly clean up resources?
+- Are test assertions actually testing the right things?
+- Is there dead code in the tests?
+
+#### [EXECUTION GATE]
+```bash
+# Verify ready to execute
+make checkpoint-gate CMD=analyze_tests GATE="Ready" REQUIRED="1"
+```
+
+**Expected gate output:**
+```
+========================================
+   GATE: Ready
+========================================
+
+✅ GATE PASSED: Ready to execute!
+
+Prerequisites verified:
+  ✓ Environment prepared
+  ✓ Dependencies available
+  
+Proceed with execution.
+```
+
 ## Command
 
 #### [CHECKPOINT START - EXECUTION]
 
 ```bash
 make analyze-tests 2>&1
+
+# Mark execution complete
+make checkpoint-update CMD=analyze_tests STEP=2
 ```
 
 
@@ -125,6 +164,38 @@ ar_data_tests.c:156:1: warning: Potential leak of memory pointed to by 'data'
 
 Static analysis complete!
 Found 1 potential leak in test code.
+```
+
+
+#### [CHECKPOINT COMPLETE]
+```bash
+# Show final summary
+make checkpoint-status CMD=analyze_tests
+```
+
+**Expected completion output:**
+```
+========================================
+   CHECKPOINT STATUS: analyze_tests
+========================================
+
+Progress: 3/3 steps (100%)
+
+[████████████████████] 100%
+
+✅ ALL CHECKPOINTS COMPLETE!
+
+Summary:
+  Preparation: ✓ Complete
+  Execution: ✓ Complete  
+  Verification: ✓ Complete
+
+The analyze tests completed successfully!
+```
+
+```bash
+# Clean up tracking
+make checkpoint-cleanup CMD=analyze_tests
 ```
 
 ## Key Points

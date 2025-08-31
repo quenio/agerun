@@ -59,12 +59,53 @@ Next Action:
 - [ ] No unexpected warnings or issues
 
 
+
+
+**MANDATORY**: Always run check-logs after clean build. CI will reject builds that fail log checks.
+
+**IMPORTANT**: Clean builds are required when:
+- Changing dependencies
+- Major refactoring
+- Suspicious incremental build behavior
+- Before final commit
+
+**Critical questions**:
+- Did the previous incremental build behave unexpectedly?
+- Have you changed any header files?
+- Are you seeing strange linker errors?
+
+For example, if you see "undefined reference" errors in incremental builds, a clean build often resolves them.
+
+#### [EXECUTION GATE]
+```bash
+# Verify ready to execute
+make checkpoint-gate CMD=build_clean GATE="Ready" REQUIRED="1"
+```
+
+**Expected gate output:**
+```
+========================================
+   GATE: Ready
+========================================
+
+✅ GATE PASSED: Ready to execute!
+
+Prerequisites verified:
+  ✓ Environment prepared
+  ✓ Dependencies available
+  
+Proceed with execution.
+```
+
 ## Command
 
 #### [CHECKPOINT START - EXECUTION]
 
 ```bash
 make clean build 2>&1 && make check-logs
+
+# Mark execution complete
+make checkpoint-update CMD=build_clean STEP=2
 ```
 
 
@@ -102,6 +143,38 @@ Cleaning logs directory...
 Building library...
 modules/ar_data.c:123: error: 'ar_data_t' undeclared
 make: *** [build] Error 1
+```
+
+
+#### [CHECKPOINT COMPLETE]
+```bash
+# Show final summary
+make checkpoint-status CMD=build_clean
+```
+
+**Expected completion output:**
+```
+========================================
+   CHECKPOINT STATUS: build_clean
+========================================
+
+Progress: 3/3 steps (100%)
+
+[████████████████████] 100%
+
+✅ ALL CHECKPOINTS COMPLETE!
+
+Summary:
+  Preparation: ✓ Complete
+  Execution: ✓ Complete  
+  Verification: ✓ Complete
+
+The build clean completed successfully!
+```
+
+```bash
+# Clean up tracking
+make checkpoint-cleanup CMD=build_clean
 ```
 
 ## Key Points

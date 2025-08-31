@@ -59,12 +59,37 @@ Next Action:
 - [ ] No unexpected warnings or issues
 
 
+
+#### [EXECUTION GATE]
+```bash
+# Verify ready to execute
+make checkpoint-gate CMD=sanitize_tests GATE="Ready" REQUIRED="1"
+```
+
+**Expected gate output:**
+```
+========================================
+   GATE: Ready
+========================================
+
+✅ GATE PASSED: Ready to execute!
+
+Prerequisites verified:
+  ✓ Environment prepared
+  ✓ Dependencies available
+  
+Proceed with execution.
+```
+
 ## Command
 
 #### [CHECKPOINT START - EXECUTION]
 
 ```bash
 make sanitize-tests 2>&1
+
+# Mark execution complete
+make checkpoint-update CMD=sanitize_tests STEP=2
 ```
 
 
@@ -128,6 +153,38 @@ WRITE of size 1 at 0x60200000eff1 thread T0
     #1 0x4... in ar_string__copy ar_string.c:45
 
 SUMMARY: AddressSanitizer: heap-buffer-overflow
+```
+
+
+#### [CHECKPOINT COMPLETE]
+```bash
+# Show final summary
+make checkpoint-status CMD=sanitize_tests
+```
+
+**Expected completion output:**
+```
+========================================
+   CHECKPOINT STATUS: sanitize_tests
+========================================
+
+Progress: 3/3 steps (100%)
+
+[████████████████████] 100%
+
+✅ ALL CHECKPOINTS COMPLETE!
+
+Summary:
+  Preparation: ✓ Complete
+  Execution: ✓ Complete  
+  Verification: ✓ Complete
+
+The sanitize tests completed successfully!
+```
+
+```bash
+# Clean up tracking
+make checkpoint-cleanup CMD=sanitize_tests
 ```
 
 ## Key Points

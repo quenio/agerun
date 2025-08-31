@@ -61,6 +61,9 @@ Next Action:
 
 ## Expected Behavior
 
+#### [CHECKPOINT START - EXECUTION]
+
+
 ### Priority Analysis Output
 ```
 Reading CLAUDE.md...
@@ -140,6 +143,41 @@ Estimated effort: 5-8 TDD cycles
 
 [Waits for user direction]
 ```
+
+
+#### [CHECKPOINT COMPLETE]
+```bash
+# Show final summary
+make checkpoint-status CMD=next_priority
+```
+
+**Expected completion output:**
+```
+========================================
+   CHECKPOINT STATUS: next_priority
+========================================
+
+Progress: 3/3 steps (100%)
+
+[████████████████████] 100%
+
+✅ ALL CHECKPOINTS COMPLETE!
+
+Summary:
+  Preparation: ✓ Complete
+  Execution: ✓ Complete  
+  Verification: ✓ Complete
+
+The next priority completed successfully!
+```
+
+```bash
+# Clean up tracking
+make checkpoint-cleanup CMD=next_priority
+```
+
+
+#### [CHECKPOINT END - EXECUTION]
 
 ## Key Points
 

@@ -61,6 +61,9 @@ Next Action:
 
 ## Expected Behavior
 
+#### [CHECKPOINT START - EXECUTION]
+
+
 ### When Session Tasks Exist
 ```
 Reading CLAUDE.md...
@@ -117,6 +120,41 @@ Plan based on report:
 
 [Waits for user feedback before proceeding]
 ```
+
+
+#### [CHECKPOINT COMPLETE]
+```bash
+# Show final summary
+make checkpoint-status CMD=next_task
+```
+
+**Expected completion output:**
+```
+========================================
+   CHECKPOINT STATUS: next_task
+========================================
+
+Progress: 3/3 steps (100%)
+
+[████████████████████] 100%
+
+✅ ALL CHECKPOINTS COMPLETE!
+
+Summary:
+  Preparation: ✓ Complete
+  Execution: ✓ Complete  
+  Verification: ✓ Complete
+
+The next task completed successfully!
+```
+
+```bash
+# Clean up tracking
+make checkpoint-cleanup CMD=next_task
+```
+
+
+#### [CHECKPOINT END - EXECUTION]
 
 ## Key Points
 

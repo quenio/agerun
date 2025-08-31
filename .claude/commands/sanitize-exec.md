@@ -59,12 +59,53 @@ Next Action:
 - [ ] No unexpected warnings or issues
 
 
+
+
+**CRITICAL**: AddressSanitizer catches runtime memory errors that tests might miss.
+
+**MANDATORY**: Fix any errors immediately - they indicate serious bugs:
+- Use-after-free: Using memory after it's freed
+- Double-free: Freeing the same memory twice
+- Buffer overflow: Writing past allocated bounds
+- Memory leaks: Unreachable allocated memory
+
+**Important notes**:
+- Methodology leaks are a known issue (not yet fixed)
+- ASAN makes execution ~5x slower but catches critical bugs
+- Exit on first error - don't ignore them
+
+For example: "heap-use-after-free" means you're accessing freed memory.
+
+#### [EXECUTION GATE]
+```bash
+# Verify ready to execute
+make checkpoint-gate CMD=sanitize_exec GATE="Ready" REQUIRED="1"
+```
+
+**Expected gate output:**
+```
+========================================
+   GATE: Ready
+========================================
+
+✅ GATE PASSED: Ready to execute!
+
+Prerequisites verified:
+  ✓ Environment prepared
+  ✓ Dependencies available
+  
+Proceed with execution.
+```
+
 ## Command
 
 #### [CHECKPOINT START - EXECUTION]
 
 ```bash
 make sanitize-exec 2>&1
+
+# Mark execution complete
+make checkpoint-update CMD=sanitize_exec STEP=2
 ```
 
 
@@ -130,6 +171,38 @@ previously allocated by thread T0 here:
     #1 0x4... in ar_data__create_string ar_data.c:123
 
 SUMMARY: AddressSanitizer: double-free
+```
+
+
+#### [CHECKPOINT COMPLETE]
+```bash
+# Show final summary
+make checkpoint-status CMD=sanitize_exec
+```
+
+**Expected completion output:**
+```
+========================================
+   CHECKPOINT STATUS: sanitize_exec
+========================================
+
+Progress: 3/3 steps (100%)
+
+[████████████████████] 100%
+
+✅ ALL CHECKPOINTS COMPLETE!
+
+Summary:
+  Preparation: ✓ Complete
+  Execution: ✓ Complete  
+  Verification: ✓ Complete
+
+The sanitize exec completed successfully!
+```
+
+```bash
+# Clean up tracking
+make checkpoint-cleanup CMD=sanitize_exec
 ```
 
 ## Key Points

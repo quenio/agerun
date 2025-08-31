@@ -59,12 +59,52 @@ Next Action:
 - [ ] No unexpected warnings or issues
 
 
+
+
+**CRITICAL**: Always use `2>&1` to capture all analyzer output. Static analysis can reveal bugs that tests don't catch.
+
+**Before running**: Ensure you have clang installed. The analyzer checks for:
+- NULL pointer dereferences
+- Use-after-free
+- Resource leaks
+- Dead code
+- Logic errors
+
+**Questions to consider**:
+- Are there any unchecked return values?
+- Do all malloc calls have corresponding frees?
+- Are there any unreachable code blocks?
+
+#### [EXECUTION GATE]
+```bash
+# Verify ready to execute
+make checkpoint-gate CMD=analyze_exec GATE="Ready" REQUIRED="1"
+```
+
+**Expected gate output:**
+```
+========================================
+   GATE: Ready
+========================================
+
+✅ GATE PASSED: Ready to execute!
+
+Prerequisites verified:
+  ✓ Environment prepared
+  ✓ Dependencies available
+  
+Proceed with execution.
+```
+
 ## Command
 
 #### [CHECKPOINT START - EXECUTION]
 
 ```bash
 make analyze-exec 2>&1
+
+# Mark execution complete
+make checkpoint-update CMD=analyze_exec STEP=2
 ```
 
 
@@ -125,6 +165,38 @@ ar_executable.c:345:5: warning: This statement is never executed
 
 Static analysis complete!
 Found 1 code quality issue.
+```
+
+
+#### [CHECKPOINT COMPLETE]
+```bash
+# Show final summary
+make checkpoint-status CMD=analyze_exec
+```
+
+**Expected completion output:**
+```
+========================================
+   CHECKPOINT STATUS: analyze_exec
+========================================
+
+Progress: 3/3 steps (100%)
+
+[████████████████████] 100%
+
+✅ ALL CHECKPOINTS COMPLETE!
+
+Summary:
+  Preparation: ✓ Complete
+  Execution: ✓ Complete  
+  Verification: ✓ Complete
+
+The analyze exec completed successfully!
+```
+
+```bash
+# Clean up tracking
+make checkpoint-cleanup CMD=analyze_exec
 ```
 
 ## Key Points

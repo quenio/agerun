@@ -59,12 +59,52 @@ Next Action:
 - [ ] No unexpected warnings or issues
 
 
+
+
+**IMPORTANT**: ThreadSanitizer prepares us for future multi-threading.
+
+**CRITICAL**: Even in single-threaded code, TSAN can detect:
+- Potential race conditions in design
+- Missing synchronization points
+- Lock ordering issues
+
+**Future considerations**:
+- Which operations will need mutex protection?
+- What data structures will be shared?
+- How will agents communicate safely?
+
+For example, if agents share a message queue, it needs proper locking.
+
+#### [EXECUTION GATE]
+```bash
+# Verify ready to execute
+make checkpoint-gate CMD=tsan_exec GATE="Ready" REQUIRED="1"
+```
+
+**Expected gate output:**
+```
+========================================
+   GATE: Ready
+========================================
+
+✅ GATE PASSED: Ready to execute!
+
+Prerequisites verified:
+  ✓ Environment prepared
+  ✓ Dependencies available
+  
+Proceed with execution.
+```
+
 ## Command
 
 #### [CHECKPOINT START - EXECUTION]
 
 ```bash
 make tsan-exec 2>&1
+
+# Mark execution complete
+make checkpoint-update CMD=tsan_exec STEP=2
 ```
 
 
@@ -133,6 +173,38 @@ WARNING: ThreadSanitizer: data race (pid=12345)
 
 SUMMARY: ThreadSanitizer: data race ar_system.c:345
 ==================
+```
+
+
+#### [CHECKPOINT COMPLETE]
+```bash
+# Show final summary
+make checkpoint-status CMD=tsan_exec
+```
+
+**Expected completion output:**
+```
+========================================
+   CHECKPOINT STATUS: tsan_exec
+========================================
+
+Progress: 3/3 steps (100%)
+
+[████████████████████] 100%
+
+✅ ALL CHECKPOINTS COMPLETE!
+
+Summary:
+  Preparation: ✓ Complete
+  Execution: ✓ Complete  
+  Verification: ✓ Complete
+
+The tsan exec completed successfully!
+```
+
+```bash
+# Clean up tracking
+make checkpoint-cleanup CMD=tsan_exec
 ```
 
 ## Key Points

@@ -59,12 +59,52 @@ Next Action:
 - [ ] No unexpected warnings or issues
 
 
+
+
+**IMPORTANT**: Monitor for memory leaks at shutdown. Any leaks indicate ownership issues.
+
+**CRITICAL**: The executable processes messages until none remain. Watch for:
+- Infinite message loops
+- Memory growth over time
+- Unprocessed messages at shutdown
+
+**Debugging questions**:
+- Are all agents processing their messages?
+- Is the message queue draining properly?
+- Are there any orphaned agents?
+
+For example, if you see "X messages remaining" at shutdown, there's a message routing issue.
+
+#### [EXECUTION GATE]
+```bash
+# Verify ready to execute
+make checkpoint-gate CMD=run_exec GATE="Ready" REQUIRED="1"
+```
+
+**Expected gate output:**
+```
+========================================
+   GATE: Ready
+========================================
+
+✅ GATE PASSED: Ready to execute!
+
+Prerequisites verified:
+  ✓ Environment prepared
+  ✓ Dependencies available
+  
+Proceed with execution.
+```
+
 ## Command
 
 #### [CHECKPOINT START - EXECUTION]
 
 ```bash
 make run-exec 2>&1
+
+# Mark execution complete
+make checkpoint-update CMD=run_exec STEP=2
 ```
 
 
@@ -120,6 +160,38 @@ WARNING: 2 memory leaks detected!
 Saving methodology to agerun.methodology
 Warning: Could not save methodology: Permission denied
 Shutdown complete
+```
+
+
+#### [CHECKPOINT COMPLETE]
+```bash
+# Show final summary
+make checkpoint-status CMD=run_exec
+```
+
+**Expected completion output:**
+```
+========================================
+   CHECKPOINT STATUS: run_exec
+========================================
+
+Progress: 3/3 steps (100%)
+
+[████████████████████] 100%
+
+✅ ALL CHECKPOINTS COMPLETE!
+
+Summary:
+  Preparation: ✓ Complete
+  Execution: ✓ Complete  
+  Verification: ✓ Complete
+
+The run exec completed successfully!
+```
+
+```bash
+# Clean up tracking
+make checkpoint-cleanup CMD=run_exec
 ```
 
 ## Key Points

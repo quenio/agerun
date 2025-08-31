@@ -59,12 +59,52 @@ Next Action:
 - [ ] No unexpected warnings or issues
 
 
+
+
+**MANDATORY**: Design tests with thread safety in mind, even if currently single-threaded.
+
+**CRITICAL**: TSAN in tests helps validate thread-safe design patterns:
+- Proper mutex usage
+- Atomic operations
+- Lock-free data structures
+
+**Test design questions**:
+- Could this test expose race conditions?
+- Are we testing thread-safe interfaces?
+- Do fixtures need synchronization?
+
+For example, concurrent agent tests will need careful synchronization.
+
+#### [EXECUTION GATE]
+```bash
+# Verify ready to execute
+make checkpoint-gate CMD=tsan_tests GATE="Ready" REQUIRED="1"
+```
+
+**Expected gate output:**
+```
+========================================
+   GATE: Ready
+========================================
+
+✅ GATE PASSED: Ready to execute!
+
+Prerequisites verified:
+  ✓ Environment prepared
+  ✓ Dependencies available
+  
+Proceed with execution.
+```
+
 ## Command
 
 #### [CHECKPOINT START - EXECUTION]
 
 ```bash
 make tsan-tests 2>&1
+
+# Mark execution complete
+make checkpoint-update CMD=tsan_tests STEP=2
 ```
 
 
@@ -129,6 +169,38 @@ WARNING: ThreadSanitizer: lock-order-inversion (potential deadlock)
     #1 ar_agent__send ar_agent.c:198
 
 SUMMARY: ThreadSanitizer: lock-order-inversion (potential deadlock)
+```
+
+
+#### [CHECKPOINT COMPLETE]
+```bash
+# Show final summary
+make checkpoint-status CMD=tsan_tests
+```
+
+**Expected completion output:**
+```
+========================================
+   CHECKPOINT STATUS: tsan_tests
+========================================
+
+Progress: 3/3 steps (100%)
+
+[████████████████████] 100%
+
+✅ ALL CHECKPOINTS COMPLETE!
+
+Summary:
+  Preparation: ✓ Complete
+  Execution: ✓ Complete  
+  Verification: ✓ Complete
+
+The tsan tests completed successfully!
+```
+
+```bash
+# Clean up tracking
+make checkpoint-cleanup CMD=tsan_tests
 ```
 
 ## Key Points

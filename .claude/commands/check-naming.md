@@ -59,12 +59,53 @@ Next Action:
 - [ ] No unexpected warnings or issues
 
 
+
+
+**MANDATORY**: Fix all naming violations before committing. Consistent naming prevents confusion.
+
+**CRITICAL**: The naming conventions are:
+- Typedefs: `ar_<module>_t`
+- Functions: `ar_<module>__<function>`
+- Static functions: `_<function>`
+
+**Common violations to watch for**:
+- Missing double underscore in function names
+- Static functions without underscore prefix
+- Non-static functions with underscore prefix
+- Typedefs not ending in `_t`
+
+For example: `ar_data_create()` should be `ar_data__create()`
+
+#### [EXECUTION GATE]
+```bash
+# Verify ready to execute
+make checkpoint-gate CMD=check_naming GATE="Ready" REQUIRED="1"
+```
+
+**Expected gate output:**
+```
+========================================
+   GATE: Ready
+========================================
+
+✅ GATE PASSED: Ready to execute!
+
+Prerequisites verified:
+  ✓ Environment prepared
+  ✓ Dependencies available
+  
+Proceed with execution.
+```
+
 ## Command
 
 #### [CHECKPOINT START - EXECUTION]
 
 ```bash
 make check-naming
+
+# Mark execution complete
+make checkpoint-update CMD=check_naming STEP=2
 ```
 
 
@@ -116,6 +157,38 @@ Checking naming conventions...
   Found 2 static function naming violations
 
 make: *** [check-naming] Error 1
+```
+
+
+#### [CHECKPOINT COMPLETE]
+```bash
+# Show final summary
+make checkpoint-status CMD=check_naming
+```
+
+**Expected completion output:**
+```
+========================================
+   CHECKPOINT STATUS: check_naming
+========================================
+
+Progress: 3/3 steps (100%)
+
+[████████████████████] 100%
+
+✅ ALL CHECKPOINTS COMPLETE!
+
+Summary:
+  Preparation: ✓ Complete
+  Execution: ✓ Complete  
+  Verification: ✓ Complete
+
+The check naming completed successfully!
+```
+
+```bash
+# Clean up tracking
+make checkpoint-cleanup CMD=check_naming
 ```
 
 ## Key Points
