@@ -95,6 +95,8 @@ When you see KB article links (formatted with parentheses and "details" text poi
 
 #### [CHECKPOINT START - PHASE 1]
 
+#### [CHECKPOINT END]
+
 #### Step 1: Identify Verbose Sections
 
 #### Checkpoint 1: Analyze CLAUDE.md
@@ -169,6 +171,8 @@ You may proceed to planning phase.
 
 #### [CHECKPOINT START - PHASE 2]
 
+#### [CHECKPOINT END]
+
 #### Checkpoint 4: Check Existing KB Articles
 
 ```bash
@@ -242,6 +246,8 @@ You may proceed to article creation.
 ## Phase 3: Creation (Steps 6-8)
 
 #### [CHECKPOINT START - PHASE 3]
+
+#### [CHECKPOINT END]
 
 #### 4. Knowledge Base Article Creation ([details](../../kb/validated-documentation-examples.md))
 
@@ -345,6 +351,8 @@ Proceed to integration phase.
 ## Phase 4: Integration (Steps 9-11)
 
 #### [CHECKPOINT START - PHASE 4]
+
+#### [CHECKPOINT END]
 
 #### Checkpoint 9: Update CLAUDE.md References
 
@@ -506,6 +514,8 @@ After compacting each section:
 
 #### [CHECKPOINT START - PHASE 5]
 
+#### [CHECKPOINT END]
+
 #### Checkpoint 12: Run Documentation Validation
 
 ```bash
@@ -593,6 +603,8 @@ Ready to commit!
 ## Phase 6: Commit (Step 15)
 
 #### [CHECKPOINT START - PHASE 6]
+
+#### [CHECKPOINT END]
 
 #### 10. Commit Strategy
 

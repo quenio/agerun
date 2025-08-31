@@ -70,6 +70,8 @@ Next Action:
 
 Follow these steps:
 
+#### [CHECKPOINT END]
+
 #### Checkpoint 1: Check Files
 
 ```bash
@@ -114,6 +116,8 @@ make checkpoint-gate CMD=merge-settings GATE="Discovery" REQUIRED="1"
 ## Phase 2: Merge (Steps 2-4)
 
 #### [CHECKPOINT START - PHASE 2]
+
+#### [CHECKPOINT END]
 
 #### Checkpoint 2: Read Settings
 
@@ -209,6 +213,8 @@ make checkpoint-gate CMD=merge-settings GATE="Merge Validation" REQUIRED="2,3,4"
 ## Phase 3: Cleanup (Step 5)
 
 #### [CHECKPOINT START - PHASE 3]
+
+#### [CHECKPOINT END]
 
 #### Checkpoint 5: Commit and Cleanup
 

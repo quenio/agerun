@@ -2,11 +2,73 @@ Run address sanitizer on all tests for detecting memory issues.
 
 
 # Sanitize Tests
+## Checkpoint Tracking
+
+This command uses checkpoint tracking to ensure systematic execution and verification.
+
+### Initialize Tracking
+```bash
+# Start the sanitize tests process
+make checkpoint-init CMD=sanitize_tests STEPS='"Prepare" "Execute" "Verify"'
+```
+
+**Expected output:**
+```
+========================================
+   CHECKPOINT TRACKING INITIALIZED
+========================================
+
+Command: sanitize_tests
+Tracking file: /tmp/sanitize_tests_progress.txt
+Total steps: 3
+
+Steps to complete:
+  1. Prepare
+  2. Execute
+  3. Verify
+
+Goal: Complete sanitize tests successfully
+```
+
+### Check Progress
+```bash
+make checkpoint-status CMD=sanitize_tests
+```
+
+**Expected output (example at 33% completion):**
+```
+========================================
+   CHECKPOINT STATUS: sanitize_tests
+========================================
+
+Progress: 1/3 steps (33%)
+
+[██████░░░░░░░░░░░░] 33%
+
+Current Status: Preparing...
+
+Next Action:
+  → Step 2: Execute
+```
+
+## Minimum Requirements
+
+**MANDATORY for successful completion:**
+- [ ] Command executes without errors
+- [ ] Expected output is produced
+- [ ] No unexpected warnings or issues
+
+
 ## Command
+
+#### [CHECKPOINT START - EXECUTION]
+
 ```bash
 make sanitize-tests 2>&1
 ```
 
+
+#### [CHECKPOINT END - EXECUTION]
 ## Expected Output
 
 ### Success State

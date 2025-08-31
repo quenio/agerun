@@ -91,6 +91,8 @@ The whitelist contains both intentional test errors AND success messages that ch
 
 #### [CHECKPOINT START - PHASE 1]
 
+#### [CHECKPOINT END]
+
 #### Step 1: Analyze Current Whitelist
 
 #### Checkpoint 1: Count Errors
@@ -154,6 +156,8 @@ You may proceed to pattern selection.
 ## Phase 2: Strategy Development (Steps 4-7)
 
 #### [CHECKPOINT START - PHASE 2]
+
+#### [CHECKPOINT END]
 
 #### Step 2: Identify Target Pattern
 
@@ -261,6 +265,8 @@ You may proceed to implementation.
 
 #### [CHECKPOINT START - PHASE 3]
 
+#### [CHECKPOINT END]
+
 #### [CRITICAL IMPLEMENTATION GATE]
 ```bash
 # ⚠️ CRITICAL: Final check before modifying code
@@ -351,6 +357,8 @@ make checkpoint-update CMD=fix-errors-whitelisted STEP=11
 ## Phase 4: Documentation & Commit (Steps 12-16)
 
 #### [CHECKPOINT START - PHASE 4]
+
+#### [CHECKPOINT END]
 
 #### Step 5: Update Documentation
 

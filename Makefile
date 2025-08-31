@@ -704,3 +704,13 @@ checkpoint-gate:
 
 checkpoint-cleanup:
 	@bash scripts/checkpoint_cleanup.sh $(CMD)
+
+# Check command documentation structure
+# Usage: make check-command-structure [VERBOSE=1] [FIX=1]
+check-command-structure:
+	@python3 scripts/check_command_structure.py $(if $(VERBOSE),--verbose) $(if $(FIX),--fix)
+
+# Enhance command documentation structure to match comprehensive standards
+# Usage: make enhance-command-structure
+enhance-command-structure:
+	@python3 scripts/enhance_command_structure.py

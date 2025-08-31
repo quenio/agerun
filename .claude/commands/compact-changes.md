@@ -74,6 +74,8 @@ Next Action:
 
 Follow these steps:
 
+#### [CHECKPOINT END]
+
 #### Checkpoint 1: Read CHANGELOG
 
 ```bash
@@ -142,6 +144,8 @@ Ready for compaction.
 ## Phase 2: Compaction (Steps 3-6)
 
 #### [CHECKPOINT START - PHASE 2]
+
+#### [CHECKPOINT END]
 
 #### Checkpoint 3: Compact Milestones
 
@@ -245,6 +249,8 @@ make checkpoint-gate CMD=compact-changes GATE="Compaction Quality" REQUIRED="3,4
 ## Phase 3: Commit (Step 7)
 
 #### [CHECKPOINT START - PHASE 3]
+
+#### [CHECKPOINT END]
 
 #### Checkpoint 7: Commit and Push
 

@@ -67,6 +67,8 @@ Next Action:
 
 #### [CHECKPOINT START - PHASE 1]
 
+#### [CHECKPOINT END]
+
 ### Process
 
 #### Checkpoint 1: Initial Check
@@ -123,6 +125,8 @@ Proceeding to fix phase.
 
 #### [CHECKPOINT START - PHASE 2]
 
+#### [CHECKPOINT END]
+
 #### Checkpoint 2: Preview Fixes
 
 ```bash
@@ -171,6 +175,8 @@ make checkpoint-update CMD=check-docs STEP=3
 ## Phase 3: Verify and Commit (Steps 4-5)
 
 #### [CHECKPOINT START - PHASE 3]
+
+#### [CHECKPOINT END]
 
 #### Checkpoint 4: Verify Resolution
 

@@ -82,6 +82,8 @@ Migrate the **ar_{{1}}** module from a C-ABI compatible Zig module to a pure Zig
 
 #### [CHECKPOINT START - PHASE 1]
 
+#### [CHECKPOINT END]
+
 #### Read KB Article First
 
 #### Checkpoint 1: Read KB Article
@@ -231,6 +233,8 @@ Proceeding to implementation phase.
 
 #### [CHECKPOINT START - PHASE 2]
 
+#### [CHECKPOINT END]
+
 #### Migration Plan
 
 If the module is safe to migrate:
@@ -302,6 +306,8 @@ Ready for dependency updates and testing.
 
 #### [CHECKPOINT START - PHASE 3]
 
+#### [CHECKPOINT END]
+
 #### Checkpoint 8: Update Dependencies
 
 ### Update Zig Dependencies
@@ -367,6 +373,8 @@ Proceeding to cleanup phase.
 ## Phase 4: Cleanup (Steps 10-11)
 
 #### [CHECKPOINT START - PHASE 4]
+
+#### [CHECKPOINT END]
 
 #### Checkpoint 10: Remove Old Module
 

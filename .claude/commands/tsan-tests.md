@@ -2,11 +2,73 @@ Run thread sanitizer on all tests for detecting data races.
 
 
 # Thread Sanitizer Tests
+## Checkpoint Tracking
+
+This command uses checkpoint tracking to ensure systematic execution and verification.
+
+### Initialize Tracking
+```bash
+# Start the tsan tests process
+make checkpoint-init CMD=tsan_tests STEPS='"Prepare" "Execute" "Verify"'
+```
+
+**Expected output:**
+```
+========================================
+   CHECKPOINT TRACKING INITIALIZED
+========================================
+
+Command: tsan_tests
+Tracking file: /tmp/tsan_tests_progress.txt
+Total steps: 3
+
+Steps to complete:
+  1. Prepare
+  2. Execute
+  3. Verify
+
+Goal: Complete tsan tests successfully
+```
+
+### Check Progress
+```bash
+make checkpoint-status CMD=tsan_tests
+```
+
+**Expected output (example at 33% completion):**
+```
+========================================
+   CHECKPOINT STATUS: tsan_tests
+========================================
+
+Progress: 1/3 steps (33%)
+
+[██████░░░░░░░░░░░░] 33%
+
+Current Status: Preparing...
+
+Next Action:
+  → Step 2: Execute
+```
+
+## Minimum Requirements
+
+**MANDATORY for successful completion:**
+- [ ] Command executes without errors
+- [ ] Expected output is produced
+- [ ] No unexpected warnings or issues
+
+
 ## Command
+
+#### [CHECKPOINT START - EXECUTION]
+
 ```bash
 make tsan-tests 2>&1
 ```
 
+
+#### [CHECKPOINT END - EXECUTION]
 ## Expected Output
 
 ### Success State

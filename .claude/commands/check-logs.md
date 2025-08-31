@@ -97,6 +97,8 @@ Performs additional thorough analysis to catch edge cases:
 
 #### [CHECKPOINT START - PHASE 1]
 
+#### [CHECKPOINT END]
+
 #### Checkpoint 1: Run Build
 
 ```bash
@@ -154,6 +156,8 @@ Ready for log analysis.
 ## Phase 2: Analysis (Steps 3-4)
 
 #### [CHECKPOINT START - PHASE 2]
+
+#### [CHECKPOINT END]
 
 #### Checkpoint 3: Deep Analysis
 
@@ -240,6 +244,8 @@ Proceed to resolution phase.
 
 #### [CHECKPOINT START - PHASE 3]
 
+#### [CHECKPOINT END]
+
 #### Checkpoint 5: Fix Issues
 
 ```bash
@@ -281,6 +287,8 @@ make checkpoint-update CMD=check-logs STEP=6
 ## Phase 4: Verification (Steps 7-8)
 
 #### [CHECKPOINT START - PHASE 4]
+
+#### [CHECKPOINT END]
 
 #### Checkpoint 7: Re-check Logs
 

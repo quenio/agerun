@@ -196,6 +196,8 @@ You may proceed to architectural compliance review.
 - [ ] Identify any naming violations
 - [ ] Document all issues found with file:line references
 
+#### [CHECKPOINT END]
+
 ### Phase 2: Architectural Compliance (Steps 7-11)
 
 #### [CHECKPOINT START - PHASE 2]
@@ -261,6 +263,8 @@ You may proceed to documentation review.
 - [ ] Validate interface minimality
 - [ ] Document any architectural violations
 
+#### [CHECKPOINT END]
+
 ### Phase 3: Documentation Review (Steps 12-16)
 
 #### [CHECKPOINT START - PHASE 3]
@@ -321,6 +325,8 @@ You may proceed to pre-commit verification.
 - [ ] Verify TODO.md and CHANGELOG.md updated
 - [ ] Check for broken links
 - [ ] Ensure all examples use real code
+
+#### [CHECKPOINT END]
 
 ### Phase 4: Pre-Commit Verification (Steps 17-22)
 
@@ -388,6 +394,8 @@ Ready to generate final review report.
     ```bash
     make checkpoint-update CMD=review-changes STEP=22
     ```
+
+#### [CHECKPOINT END]
 
 #### [CHECKPOINT COMPLETE]
 ```bash

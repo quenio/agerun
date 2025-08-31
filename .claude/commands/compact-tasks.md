@@ -74,6 +74,8 @@ This uses the selective compaction pattern for mixed-state documents ([details](
 
 Follow these steps:
 
+#### [CHECKPOINT END]
+
 #### Checkpoint 1: Read TODO
 
 ```bash
@@ -138,6 +140,8 @@ Ready for compaction.
 ## Phase 2: Compaction (Steps 3-4)
 
 #### [CHECKPOINT START - PHASE 2]
+
+#### [CHECKPOINT END]
 
 #### Checkpoint 3: Compact Entries
 
@@ -206,6 +210,8 @@ make checkpoint-gate CMD=compact-tasks GATE="Integrity" REQUIRED="3,4"
 ## Phase 3: Commit (Steps 5-6)
 
 #### [CHECKPOINT START - PHASE 3]
+
+#### [CHECKPOINT END]
 
 #### Checkpoint 5: Write Changes
 

@@ -2,6 +2,63 @@ Read CLAUDE.md in order to prepare yourself for this new session. Then check the
 
 
 # Next Task
+## Checkpoint Tracking
+
+This command uses checkpoint tracking to ensure systematic execution and verification.
+
+### Initialize Tracking
+```bash
+# Start the next task process
+make checkpoint-init CMD=next_task STEPS='"Prepare" "Execute" "Verify"'
+```
+
+**Expected output:**
+```
+========================================
+   CHECKPOINT TRACKING INITIALIZED
+========================================
+
+Command: next_task
+Tracking file: /tmp/next_task_progress.txt
+Total steps: 3
+
+Steps to complete:
+  1. Prepare
+  2. Execute
+  3. Verify
+
+Goal: Complete next task successfully
+```
+
+### Check Progress
+```bash
+make checkpoint-status CMD=next_task
+```
+
+**Expected output (example at 33% completion):**
+```
+========================================
+   CHECKPOINT STATUS: next_task
+========================================
+
+Progress: 1/3 steps (33%)
+
+[██████░░░░░░░░░░░░] 33%
+
+Current Status: Preparing...
+
+Next Action:
+  → Step 2: Execute
+```
+
+## Minimum Requirements
+
+**MANDATORY for successful completion:**
+- [ ] Command executes without errors
+- [ ] Expected output is produced
+- [ ] No unexpected warnings or issues
+
+
 ## Expected Behavior
 
 ### When Session Tasks Exist

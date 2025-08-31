@@ -76,6 +76,8 @@ Next Action:
 
 #### [CHECKPOINT START - PHASE 1]
 
+#### [CHECKPOINT END]
+
 ### Pre-Commit Checklist (MANDATORY - ALWAYS CHECK THIS)
 
 Before starting the commit process, ensure you have completed ALL of these steps. This checklist acts as a quality gate to prevent incomplete commits ([details](../../kb/gate-enforcement-exit-codes-pattern.md)):
@@ -195,6 +197,8 @@ Proceed to review phase.
 
 #### [CHECKPOINT START - PHASE 2]
 
+#### [CHECKPOINT END]
+
 #### Checkpoint 6: Review Changes
 
 ```bash
@@ -250,6 +254,8 @@ Ready for commit.
 ## Phase 3: Commit and Push (Steps 7-9)
 
 #### [CHECKPOINT START - PHASE 3]
+
+#### [CHECKPOINT END]
 
 ### Commit Workflow
 

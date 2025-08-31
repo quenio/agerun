@@ -87,6 +87,8 @@ After making improvements to one module, use this command to systematically chec
 
 #### [CHECKPOINT START - PHASE 1]
 
+#### [CHECKPOINT END]
+
 #### Step 1: Identify the Improvement Made
 
 #### Checkpoint 1: Describe Improvement
@@ -147,6 +149,8 @@ You may proceed to module discovery.
 ## Phase 2: Discovery (Steps 3-5)
 
 #### [CHECKPOINT START - PHASE 2]
+
+#### [CHECKPOINT END]
 
 #### Step 2: Find Related Modules
 
@@ -231,6 +235,8 @@ You may proceed to module analysis.
 ## Phase 3: Analysis (Steps 6-10)
 
 #### [CHECKPOINT START - PHASE 3]
+
+#### [CHECKPOINT END]
 
 #### Step 3: Check Each Related Module
 
@@ -372,6 +378,8 @@ grep -A 5 "if.*!.*\|\|.*!.*)" modules/MODULE.c
 
 #### [CHECKPOINT START - PHASE 4]
 
+#### [CHECKPOINT END]
+
 #### Step 4: Create Improvement Plan
 
 #### Checkpoint 11: Analyze Findings
@@ -460,6 +468,8 @@ Ready to document.
 ## Phase 5: Documentation (Step 15)
 
 #### [CHECKPOINT START - PHASE 5]
+
+#### [CHECKPOINT END]
 
 #### Checkpoint 15: Document Plan
 

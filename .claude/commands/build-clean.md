@@ -2,11 +2,73 @@ Execute a clean build for comprehensive build verification with minimal output a
 
 
 # Clean Build
+## Checkpoint Tracking
+
+This command uses checkpoint tracking to ensure systematic execution and verification.
+
+### Initialize Tracking
+```bash
+# Start the build clean process
+make checkpoint-init CMD=build_clean STEPS='"Prepare" "Execute" "Verify"'
+```
+
+**Expected output:**
+```
+========================================
+   CHECKPOINT TRACKING INITIALIZED
+========================================
+
+Command: build_clean
+Tracking file: /tmp/build_clean_progress.txt
+Total steps: 3
+
+Steps to complete:
+  1. Prepare
+  2. Execute
+  3. Verify
+
+Goal: Complete build clean successfully
+```
+
+### Check Progress
+```bash
+make checkpoint-status CMD=build_clean
+```
+
+**Expected output (example at 33% completion):**
+```
+========================================
+   CHECKPOINT STATUS: build_clean
+========================================
+
+Progress: 1/3 steps (33%)
+
+[██████░░░░░░░░░░░░] 33%
+
+Current Status: Preparing...
+
+Next Action:
+  → Step 2: Execute
+```
+
+## Minimum Requirements
+
+**MANDATORY for successful completion:**
+- [ ] Command executes without errors
+- [ ] Expected output is produced
+- [ ] No unexpected warnings or issues
+
+
 ## Command
+
+#### [CHECKPOINT START - EXECUTION]
+
 ```bash
 make clean build 2>&1 && make check-logs
 ```
 
+
+#### [CHECKPOINT END - EXECUTION]
 ## Expected Output
 
 ### Success State

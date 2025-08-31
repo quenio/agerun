@@ -2,11 +2,73 @@ Execute comprehensive build verification with minimal output and check for hidde
 
 
 # Build
+## Checkpoint Tracking
+
+This command uses checkpoint tracking to ensure systematic execution and verification.
+
+### Initialize Tracking
+```bash
+# Start the build process
+make checkpoint-init CMD=build STEPS='"Prepare" "Execute" "Verify"'
+```
+
+**Expected output:**
+```
+========================================
+   CHECKPOINT TRACKING INITIALIZED
+========================================
+
+Command: build
+Tracking file: /tmp/build_progress.txt
+Total steps: 3
+
+Steps to complete:
+  1. Prepare
+  2. Execute
+  3. Verify
+
+Goal: Complete build successfully
+```
+
+### Check Progress
+```bash
+make checkpoint-status CMD=build
+```
+
+**Expected output (example at 33% completion):**
+```
+========================================
+   CHECKPOINT STATUS: build
+========================================
+
+Progress: 1/3 steps (33%)
+
+[██████░░░░░░░░░░░░] 33%
+
+Current Status: Preparing...
+
+Next Action:
+  → Step 2: Execute
+```
+
+## Minimum Requirements
+
+**MANDATORY for successful completion:**
+- [ ] Command executes without errors
+- [ ] Expected output is produced
+- [ ] No unexpected warnings or issues
+
+
 ## Command
+
+#### [CHECKPOINT START - EXECUTION]
+
 ```bash
 make build 2>&1 && make check-logs
 ```
 
+
+#### [CHECKPOINT END - EXECUTION]
 ## Expected Output
 
 ### Success State

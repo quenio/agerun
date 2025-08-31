@@ -98,6 +98,8 @@ Which module would you like to migrate to Zig?
 
 #### [CHECKPOINT START - PHASE 1]
 
+#### [CHECKPOINT END]
+
 #### Pre-Migration Checklist
 
 #### Checkpoint 1: Check Existing
@@ -213,6 +215,8 @@ If `modules/{{1}}.zig` already exists:
 
 #### [CHECKPOINT START - PHASE 2]
 
+#### [CHECKPOINT END]
+
 ### Implementation Strategy
 
 #### Checkpoint 5: Create Zig File
@@ -291,6 +295,8 @@ Ready for testing phase.
 
 #### [CHECKPOINT START - PHASE 3]
 
+#### [CHECKPOINT END]
+
 ### Testing Approach
 
 #### Checkpoint 8: Run Tests
@@ -358,6 +364,8 @@ The Zig implementation is ready for deployment.
 ## Phase 4: Cleanup (Step 10)
 
 #### [CHECKPOINT START - PHASE 4]
+
+#### [CHECKPOINT END]
 
 ### Cleanup Plan
 
