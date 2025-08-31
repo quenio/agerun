@@ -1,4 +1,4 @@
-# Migrate to Zig Struct Module
+Migrate a Zig C-ABI module to a pure Zig struct module.
 
 ## Checkpoint Tracking
 

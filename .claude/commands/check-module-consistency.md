@@ -1,8 +1,4 @@
----
-description: Check for consistency improvements needed across related modules
----
-
-# Module Consistency Verification
+Check for consistency improvements needed across related modules.
 
 ## Checkpoint Tracking
 

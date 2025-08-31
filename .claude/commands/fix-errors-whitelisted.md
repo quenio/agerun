@@ -1,4 +1,3 @@
-# Fix Errors Whitelisted
 Systematically analyze and fix errors in the whitelist file to reduce technical debt.
 
 ## Checkpoint Tracking

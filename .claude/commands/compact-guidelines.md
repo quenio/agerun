@@ -1,8 +1,4 @@
----
-description: Make CLAUDE.md guidelines more concise by moving details to knowledge base
----
-
-# Compact Guidelines Command
+Make CLAUDE.md guidelines more concise by moving details to knowledge base.
 
 ## Checkpoint Tracking
 
