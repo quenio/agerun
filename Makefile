@@ -20,6 +20,8 @@ help:
 	@echo "  make analyze-tests - Run static analysis on tests"
 	@echo "  make check-naming - Check naming conventions"
 	@echo "  make check-docs   - Check documentation validity"
+	@echo "  make check-kb-links - Check KB article cross-references"
+	@echo "  make check-kb-integration - Verify KB integration quality"
 	@echo "  make check-all    - Run all code quality checks"
 	@echo "  make build        - Run complete build with all checks and tests"
 	@echo ""
@@ -714,3 +716,13 @@ check-commands:
 # Usage: make fix-commands
 fix-commands:
 	@python3 scripts/fix_commands.py
+
+# Check KB article cross-references and links
+# Usage: make check-kb-links
+check-kb-links:
+	@python3 scripts/check_kb_links.py
+
+# Verify KB integration quality (cross-refs, command updates, etc)
+# Usage: make check-kb-integration
+check-kb-integration:
+	@python3 scripts/check_kb_integration.py
