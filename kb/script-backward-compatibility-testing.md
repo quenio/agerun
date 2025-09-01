@@ -32,8 +32,8 @@ def create_test_file():
     """Create test file covering all original functionality"""
     content = """
 # Test all original features
-- Broken link: [details](wrong/path.md)
-- Absolute path: [guide](/absolute/path.md)
+- Broken link: [details](wrong/path.md)  // EXAMPLE: Intentional broken link for testing
+- Absolute path: [guide](/absolute/path.md)  // EXAMPLE: Intentional absolute path for testing
 - Function call: test_function()
 - Continuation line: long line \\
   test_function() should not be tagged

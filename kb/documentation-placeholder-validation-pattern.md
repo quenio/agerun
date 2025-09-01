@@ -11,7 +11,7 @@ Without proper marking, validation cannot distinguish between broken references 
 # In documentation files
 
 ## BAD: Unmarked placeholder fails validation
-Add references to new KB articles: \`([details](../../kb/new-article.md))\`
+Add references to new KB articles: \`([details](../../kb/new-article.md))\`  // EXAMPLE: Replace with actual article
 
 ## GOOD: EXAMPLE tag indicates intentional placeholder  
 Add references to new KB articles: \`([details](../../kb/actual-article-you-created.md))\` // EXAMPLE: Replace with real filename

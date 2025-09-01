@@ -24,12 +24,12 @@ Apply cross-referencing pattern to any technical documentation:
 ## Implementation
 ```markdown
 # In main guidelines (CLAUDE.md)
-- Concept explanation ([details](kb/detailed-article.md))
+- Concept explanation ([details](kb/detailed-article.md))  // EXAMPLE: Replace with actual article
 
 # In KB articles - standard sections
 ## Related Code Smells/Patterns
-- **Related Concept**: Brief explanation ([details](kb/related-article.md))
-- **Another Concept**: Brief explanation ([details](kb/another-article.md))
+- **Related Concept**: Brief explanation ([details](kb/related-article.md))  // EXAMPLE: Replace with actual article
+- **Another Concept**: Brief explanation ([details](kb/another-article.md))  // EXAMPLE: Replace with actual article
 
 # Cross-reference verification
 grep -r "kb/" . --include="*.md" | grep -v "^./kb/" | sort

@@ -10,7 +10,7 @@ Reading all kb links immediately creates information overload and reduces effici
 ```markdown
 // In CLAUDE.md:
 **Memory Leak Detection**:
-- Check test reports: `bin/memory_report_<test_name>.log` ([details](kb/memory-leak-detection-workflow.md))
+- Check test reports: `bin/memory_report_<test_name>.log` ([details](memory-leak-detection-workflow.md))
 
 // When Claude encounters this:
 1. DON'T immediately read kb/memory-leak-detection-workflow.md

@@ -33,7 +33,7 @@ Apply to any complex technical domain requiring systematic knowledge organizatio
 # Documentation phase
 # 3. Create KB articles with standard structure:
 #    - Overview, Identification, Examples, Detection, Benefits, Prevention
-# 4. Update main guidelines with links: ([details](kb/article.md))
+# 4. Update main guidelines with links: ([details](kb/article.md))  // EXAMPLE: Replace with actual article
 # 5. Add cross-references between related articles
 
 # Validation phase  

@@ -10,12 +10,12 @@ Incorrect link resolution leads to broken documentation, frustrated users, and m
 Consider a file at `/docs/api/endpoints.md` with these links:
 ```markdown
 <!-- Correct relative paths -->
-[Authentication](../guides/auth.md)        # → /docs/guides/auth.md ✓
-[Rate Limits](./rate-limits.md)           # → /docs/api/rate-limits.md ✓
-[Examples](examples/rest.md)              # → /docs/api/examples/rest.md ✓
+[Authentication](../guides/auth.md)        # → /docs/guides/auth.md ✓  // EXAMPLE: Outside KB directory
+[Rate Limits](./rate-limits.md)           # → /docs/api/rate-limits.md ✓  // EXAMPLE: Same directory
+[Examples](examples/rest.md)              # → /docs/api/examples/rest.md ✓  // EXAMPLE: Subdirectory
 
 <!-- Incorrect absolute path -->
-[Overview](/docs/overview.md)             # → GitHub 404 error ✗
+[Overview](/docs/overview.md)             # → GitHub 404 error ✗  // EXAMPLE: Absolute path (invalid)
 ```
 
 The absolute path fails because GitHub constructs URLs differently than local filesystem paths.

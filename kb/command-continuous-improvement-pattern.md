@@ -14,10 +14,10 @@ grep -l "relevant_keyword" .claude/commands/*.md
 
 # Then updated /migrate-module-to-zig with new KB references:
 # Added error path testing reference
-- Error path testing for complex modules ([details](../../kb/zig-error-path-testing-pattern.md))
+- Error path testing for complex modules ([details](../../kb/zig-error-path-testing-pattern.md))  // EXAMPLE: Future article
 
 # Added errdefer warning in critical reminders
-- **Error cleanup**: Use errdefer but beware it doesn't work with `orelse return null` ([details](../../kb/zig-errdefer-value-capture-pattern.md))
+- **Error cleanup**: Use errdefer but beware it doesn't work with `orelse return null` ([details](../../kb/zig-errdefer-value-capture-pattern.md))  // EXAMPLE: Future article
 ```
 
 ## Generalization
@@ -41,7 +41,7 @@ grep -l "zig\|migrate\|error" .claude/commands/*.md
 # - /debug - for debugging approach enhancements
 
 # Update pattern for commands:
-# 1. Add KB references: ([details](../../kb/article-name.md))
+# 1. Add KB references: ([details](../../kb/article-name.md))  // EXAMPLE: Replace with actual article
 # 2. Update steps with new discoveries
 # 3. Add warnings about gotchas
 # 4. Ensure consistency with CLAUDE.md

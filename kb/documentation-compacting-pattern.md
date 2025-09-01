@@ -25,9 +25,9 @@ Long, detailed documentation in main guidelines creates cognitive overload and m
 
 // After (in CLAUDE.md - 3 lines):
 **Memory Leak Detection**:
-- Check test reports: `bin/memory_report_<test_name>.log` ([details](kb/memory-leak-detection-workflow.md))
+- Check test reports: `bin/memory_report_<test_name>.log` ([details](memory-leak-detection-workflow.md))
 - Always run `make sanitize-tests` before committing
-- Debug strategy: Check report → Trace source → Fix naming → Add cleanup ([details](kb/memory-debugging-comprehensive-guide.md))
+- Debug strategy: Check report → Trace source → Fix naming → Add cleanup ([details](memory-debugging-comprehensive-guide.md))
 ```
 
 **Historical record compaction (CHANGELOG.md)**:
