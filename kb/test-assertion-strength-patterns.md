@@ -148,6 +148,18 @@ assert(error_position == 5);
 assert(error_count == 1);
 ```
 
+### Real Session Example: Strengthening Error Assertions
+```c
+// BEFORE (Weak - partial string match)
+assert(strstr(error, "NULL") != NULL || strstr(error, "null") != NULL);
+
+// AFTER (Strong - exact message verification)
+AR_ASSERT(strcmp(error, "NULL parameter provided") == 0,
+         "Error message should be exactly 'NULL parameter provided'");
+AR_ASSERT(ar_log__get_last_error_position(log) == 0,
+         "Error position should be 0 for NULL parameter");
+```
+
 ### From Weak to Strong: Check Side Effects
 ```c
 // BEFORE (Weak)
@@ -195,3 +207,4 @@ For conditions that can't be naturally triggered:
 - [AR Assert Descriptive Failures](ar-assert-descriptive-failures.md)
 - [DLSym Test Interception Technique](dlsym-test-interception-technique.md)
 - [Test Completeness Enumeration](test-completeness-enumeration.md)
+- [Mock at Right Level Pattern](mock-at-right-level-pattern.md)

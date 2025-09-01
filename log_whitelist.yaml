@@ -105,6 +105,11 @@ ignored_errors:
   - context: "ar_assignment_instruction_parser_tests"
     message: "ERROR: NULL parameter provided (at position 0)"
     comment: "Testing NULL instruction parameter error logging"
+  
+  # ar_assignment_instruction_parser_dlsym_tests
+  - context: "ar_assignment_instruction_parser_dlsym_tests"
+    message: "ERROR: Failed to allocate memory for assignment instruction parser"
+    comment: "DLSym test intentionally simulates memory allocation failure"
 
   # ar_build_instruction_parser_tests
   - context: "ar_build_instruction_parser_tests"

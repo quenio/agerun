@@ -112,6 +112,7 @@ sanitize-tests: $(SANITIZER_TEST_BIN)
 3. **Leak Tracking**: Count created/destroyed resources to verify cleanup
 4. **Systematic Testing**: Test each failure point individually
 5. **Output Clarity**: Use descriptive printf statements for debugging
+6. **Mock at Function Level**: Avoid mocking system calls like malloc - mock the functions that use them instead
 
 ## Example Test Output
 ```
@@ -129,3 +130,5 @@ Cleanup tracking:
 - [Sanitizer Test Exclusion Pattern](sanitizer-test-exclusion-pattern.md)
 - [Test Effectiveness Verification](test-effectiveness-verification.md)
 - [Memory Debugging Comprehensive Guide](memory-debugging-comprehensive-guide.md)
+- [Mock at Right Level Pattern](mock-at-right-level-pattern.md)
+- [Test Complexity as Code Smell](test-complexity-as-code-smell.md)

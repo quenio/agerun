@@ -73,3 +73,4 @@ AR_ASSERT(valid_signal, "Process should terminate by SIGTERM or SIGALRM");
 - [Test Error Marking Strategy](test-error-marking-strategy.md)
 - [Evidence-based Debugging](evidence-based-debugging.md)
 - [Test Assertion Strength Patterns](test-assertion-strength-patterns.md)
+- [Test Complexity as Code Smell](test-complexity-as-code-smell.md)

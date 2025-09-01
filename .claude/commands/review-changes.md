@@ -566,6 +566,11 @@ The original review process still works without checkpoints, but you lose progre
 - [Test Effectiveness Verification](../../kb/test-effectiveness-verification.md)
 - [Red-Green-Refactor Cycle](../../kb/red-green-refactor-cycle.md)
 - [TDD Cycle Detailed Explanation](../../kb/tdd-cycle-detailed-explanation.md)
+- [Mock at Right Level Pattern](../../kb/mock-at-right-level-pattern.md)
+- [Test Complexity as Code Smell](../../kb/test-complexity-as-code-smell.md)
+- [Check Existing Solutions First](../../kb/check-existing-solutions-first.md)
+- [Test Assertion Strength Patterns](../../kb/test-assertion-strength-patterns.md)
+- [DLSym Test Interception Technique](../../kb/dlsym-test-interception-technique.md)
 
 ### Documentation
 - [Documentation Standards Integration](../../kb/documentation-standards-integration.md)

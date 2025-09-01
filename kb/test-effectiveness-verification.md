@@ -45,10 +45,6 @@ For every new test, especially those testing error conditions:
 4. Restore correct implementation and verify test passes
 5. This meta-testing ensures test quality
 
-## Related Patterns
-- [Test Assertion Strength Patterns](test-assertion-strength-patterns.md)
-- [DLSym Test Interception Technique](dlsym-test-interception-technique.md)
-
 ## Implementation
 ```bash
 # Workflow for verifying test effectiveness
@@ -60,7 +56,15 @@ For every new test, especially those testing error conditions:
 6. make test_name 2>&1  # Should pass again
 ```
 
+## Mock Complexity Warning
+When tests become overly complex (retry loops, state tracking, conditional logic), it often indicates mocking at the wrong level. Check existing solutions first rather than creating complex mocks. See [Test Complexity as Code Smell](test-complexity-as-code-smell.md) and [Mock at Right Level Pattern](mock-at-right-level-pattern.md).
+
 ## Related Patterns
+- [Test Assertion Strength Patterns](test-assertion-strength-patterns.md)
+- [DLSym Test Interception Technique](dlsym-test-interception-technique.md)
 - [Test Expectation Reality Alignment](test-expectation-reality-alignment.md)
 - [Evidence-Based Debugging](evidence-based-debugging.md)
 - [Test Completeness Enumeration](test-completeness-enumeration.md)
+- [Mock at Right Level Pattern](mock-at-right-level-pattern.md)
+- [Test Complexity as Code Smell](test-complexity-as-code-smell.md)
+- [Check Existing Solutions First](check-existing-solutions-first.md)

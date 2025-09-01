@@ -67,6 +67,13 @@ This questioning pattern transforms bug fixes into architectural improvements by
 - Simplifying system design
 - Reducing maintenance burden
 
+**Another example - Test complexity**:
+1. Initial approach: Complex malloc interception with retry loops
+2. User feedback: "Why is that necessary?"
+3. Investigation: Checked other dlsym tests
+4. Discovery: They mock at function level, not system calls
+5. Architectural insight: Mock at the right abstraction level
+
 ## Implementation
 
 ```bash
@@ -92,6 +99,8 @@ git commit --amend  # Update to reflect architectural scope
 - [User Feedback as QA](user-feedback-as-qa.md)
 - [Commit Scope Verification](commit-scope-verification.md)
 - [Refactoring Phase Completion Checklist](refactoring-phase-completion-checklist.md)
+- [Mock at Right Level Pattern](mock-at-right-level-pattern.md)
+- [Check Existing Solutions First](check-existing-solutions-first.md)
 - [Observable Internal State](observable-internal-state.md)
 - [Architectural Simplification Through Feature Removal](architectural-simplification-through-feature-removal.md)
 - [Struggling Detection Pattern](struggling-detection-pattern.md)
