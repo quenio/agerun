@@ -76,3 +76,4 @@ Integrate user-as-QA pattern into development workflow:
 - [Task Authorization Pattern](task-authorization-pattern.md)
 - [Resource-Aware API Design](resource-aware-api-design.md)
 - [Functional Value Validation Pattern](functional-value-validation-pattern.md)
+- [Tool Version Selection Due Diligence](tool-version-selection-due-diligence.md)

@@ -93,6 +93,8 @@ make build 2>&1 && make check-logs
 make checkpoint-update CMD=build STEP=2
 ```
 
+**Note**: If build fails due to CI network timeouts, see ([details](../../kb/ci-network-timeout-diagnosis.md))
+
 
 #### [CHECKPOINT END - EXECUTION]
 ## Expected Output

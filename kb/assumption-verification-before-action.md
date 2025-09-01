@@ -78,3 +78,4 @@ gh run list --limit=5  # Recent CI status?
 - [Evidence-Based Debugging](evidence-based-debugging.md)
 - [User Feedback as QA](user-feedback-as-qa.md)
 - [Local-CI Discrepancy Investigation](local-ci-discrepancy-investigation.md)
+- [Tool Version Selection Due Diligence](tool-version-selection-due-diligence.md)

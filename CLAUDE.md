@@ -10,7 +10,7 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
 
 **Primary**: `make build 2>&1` → `make check-logs` (MANDATORY sequence) ([details](kb/quick-start-commands.md), [relationship](kb/build-logs-relationship-principle.md))
 **Clean build**: `make clean build 2>&1` → `make check-logs`  
-**CI requirement**: `check-logs` must pass or CI will fail ([details](kb/ci-check-logs-requirement.md), [deep analysis](kb/check-logs-deep-analysis-pattern.md))
+**CI requirement**: `check-logs` must pass or CI will fail ([details](kb/ci-check-logs-requirement.md), [deep analysis](kb/check-logs-deep-analysis-pattern.md), [network timeouts](kb/ci-network-timeout-diagnosis.md))
 **Help**: `make` shows all targets
 **Scripts**: Use make targets, not direct execution from `/scripts/`
 
@@ -362,7 +362,8 @@ grep -r "function_name\|concept" modules/
 **Struggling detection**: Stop after 3 failed attempts, ask for help ([details](kb/struggling-detection-pattern.md))
 **Phased cleanup**: Review→Fix critical→Defer non-critical with tracking ([details](kb/phased-cleanup-pattern.md))
 **Impact analysis**: Check main→tests→fixtures→entire codebase ([details](kb/comprehensive-impact-analysis.md))
-**CI debugging**: Use gh CLI for systematic investigation ([details](kb/github-actions-debugging-workflow.md), [discrepancies](kb/local-ci-discrepancy-investigation.md))
+**CI debugging**: Use gh CLI for systematic investigation ([details](kb/github-actions-debugging-workflow.md), [discrepancies](kb/local-ci-discrepancy-investigation.md), [deprecated actions](kb/github-actions-deprecated-tool-migration.md))
+**Tool updates**: Verify latest versions & maintainer credibility ([details](kb/tool-version-selection-due-diligence.md), [maintainer](kb/tool-maintainer-verification-pattern.md))
 **Error tracing**: Follow messages through build pipeline layers ([details](kb/error-message-source-tracing.md))
 
 ### 9. Error Propagation Pattern

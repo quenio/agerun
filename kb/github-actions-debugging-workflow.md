@@ -78,3 +78,5 @@ gh workflow view <workflow_name>
 
 - [CI Debugging Artifact Upload](ci-debugging-artifact-upload.md)
 - [Issue Currency Verification Pattern](issue-currency-verification-pattern.md)
+- [GitHub Actions Deprecated Tool Migration](github-actions-deprecated-tool-migration.md)
+- [CI Network Timeout Diagnosis](ci-network-timeout-diagnosis.md)

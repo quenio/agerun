@@ -62,3 +62,5 @@ diff .github/workflows/ci.yml Makefile
 
 - [Issue Currency Verification Pattern](issue-currency-verification-pattern.md)
 - [Evidence-Based Debugging](evidence-based-debugging.md)
+- [CI Network Timeout Diagnosis](ci-network-timeout-diagnosis.md)
+- [GitHub Actions Deprecated Tool Migration](github-actions-deprecated-tool-migration.md)

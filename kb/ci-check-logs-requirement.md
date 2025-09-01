@@ -144,3 +144,5 @@ make check-logs             # Verify CI compatibility
 - [GitHub Actions Debugging Workflow](github-actions-debugging-workflow.md)
 - [Check-Logs Deep Analysis Pattern](check-logs-deep-analysis-pattern.md)
 - [Whitelist vs Pattern Filtering](whitelist-vs-pattern-filtering.md)
+- [GitHub Actions Deprecated Tool Migration](github-actions-deprecated-tool-migration.md)
+- [CI Network Timeout Diagnosis](ci-network-timeout-diagnosis.md)

@@ -212,6 +212,14 @@ Based on the pattern identified, determine the fix approach:
 4. Test and remove whitelist entries
 ```
 
+### For CI Network Timeouts ([details](../../kb/ci-network-timeout-diagnosis.md))
+```
+1. Check if action is deprecated
+2. Find recommended replacement
+3. Verify maintainer credibility ([details](../../kb/tool-maintainer-verification-pattern.md))
+4. Update to latest version ([details](../../kb/tool-version-selection-due-diligence.md))
+```
+
 ### For Overly Broad Patterns ([details](../../kb/whitelist-specificity-pattern.md))
 ```
 1. Make error messages more specific
