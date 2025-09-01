@@ -102,6 +102,9 @@ ignored_errors:
   - context: "ar_assignment_instruction_parser_tests"
     message: "Testing error handling - invalid memory path..."
     comment: "Test status message for memory path error handling"
+  - context: "ar_assignment_instruction_parser_tests"
+    message: "ERROR: NULL parameter provided (at position 0)"
+    comment: "Testing NULL instruction parameter error logging"
 
   # ar_build_instruction_parser_tests
   - context: "ar_build_instruction_parser_tests"

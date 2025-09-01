@@ -105,6 +105,9 @@ ar_assignment_instruction_parser_t* ar_assignment_instruction_parser__create(ar_
         "assignment_instruction_parser"
     );
     if (!own_parser) {
+        if (ref_log) {
+            ar_log__error(ref_log, "Failed to allocate memory for assignment instruction parser");
+        }
         return NULL;
     }
     
@@ -132,6 +135,7 @@ ar_instruction_ast_t* ar_assignment_instruction_parser__parse(
     const char *ref_instruction
 ) {
     if (!mut_parser || !ref_instruction) {
+        _log_error(mut_parser, "NULL parameter provided", 0);
         return NULL;
     }
     

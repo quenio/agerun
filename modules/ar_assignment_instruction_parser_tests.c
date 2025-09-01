@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include "ar_assert.h"
 #include "ar_assignment_instruction_parser.h"
 #include "ar_instruction_ast.h"
 #include "ar_expression_ast.h"
@@ -298,6 +299,52 @@ static void test_assignment_instruction_parser__parse_with_expression_ast(void) 
     ar_log__destroy(log);
 }
 
+/**
+ * Tests NULL parameter error logging following patterns from:
+ * - kb/test-assertion-strength-patterns.md
+ * - kb/bdd-test-structure.md
+ */
+static void test_assignment_instruction_parser__parse_null_instruction(void) {
+    printf("Testing NULL instruction parameter error logging...\n");
+    
+    // Given a log instance and a parser
+    ar_log_t *log = ar_log__create();
+    AR_ASSERT(log != NULL, "Log creation should succeed");
+    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(log);
+    AR_ASSERT(own_parser != NULL, "Parser creation should succeed");
+    
+    // When parsing with NULL instruction
+    ar_instruction_ast_t *own_ast = ar_assignment_instruction_parser__parse(own_parser, NULL);
+    
+    // Then it should return NULL
+    AR_ASSERT(own_ast == NULL, "Parse should fail with NULL instruction");
+    
+    // And a specific error should be logged
+    const char *error = ar_log__get_last_error_message(log);
+    AR_ASSERT(error != NULL, "Error should be logged for NULL parameter");
+    AR_ASSERT(strcmp(error, "NULL parameter provided") == 0, 
+             "Error message should be exactly 'NULL parameter provided'");
+    AR_ASSERT(ar_log__get_last_error_position(log) == 0,
+             "Error position should be 0 for NULL parameter");
+    
+    ar_assignment_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
+static void test_assignment_instruction_parser__parse_null_parser(void) {
+    printf("Testing NULL parser parameter handling...\n");
+    
+    // Given a valid instruction but NULL parser
+    const char *instruction = "memory.x := 42";
+    
+    // When parsing with NULL parser
+    ar_instruction_ast_t *own_ast = ar_assignment_instruction_parser__parse(NULL, instruction);
+    
+    // Then it should return NULL (can't log error without parser)
+    AR_ASSERT(own_ast == NULL, "Parse should fail with NULL parser");
+}
+
+
 int main(void) {
     printf("Running assignment instruction parser tests...\n\n");
     
@@ -320,6 +367,10 @@ int main(void) {
     
     // Expression AST integration
     test_assignment_instruction_parser__parse_with_expression_ast();
+    
+    // Error logging tests
+    test_assignment_instruction_parser__parse_null_instruction();
+    test_assignment_instruction_parser__parse_null_parser();
     
     printf("\nAll assignment_instruction_parser tests passed!\n");
     return 0;

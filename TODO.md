@@ -363,10 +363,10 @@ This document tracks pending tasks and improvements for the AgeRun project.
 #### Phase 2: Instruction-Specific Parsers (Week 2-3 - 18-27 cycles)
 Each parser needs 2-3 TDD cycles for comprehensive error logging:
 
-- [ ] **ar_assignment_instruction_parser** (2-3 cycles)
-  - [ ] Add NULL parameter logging
-  - [ ] Add parse failure logging
-  - [ ] Update documentation
+- [x] **ar_assignment_instruction_parser** (2 cycles) - Completed 2025-09-01
+  - [x] Add NULL parameter logging
+  - [x] Verify all error conditions logged (11 of 12 now logged)
+  - [x] Update documentation and add tests
   
 - [ ] **ar_build_instruction_parser** (2-3 cycles)
   - [ ] Add NULL parameter logging
