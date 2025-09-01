@@ -142,3 +142,5 @@ make check-logs             # Verify CI compatibility
 - [Build Verification Before Commit](build-verification-before-commit.md)
 - [Pre-Commit Checklist Detailed](pre-commit-checklist-detailed.md)
 - [GitHub Actions Debugging Workflow](github-actions-debugging-workflow.md)
+- [Check-Logs Deep Analysis Pattern](check-logs-deep-analysis-pattern.md)
+- [Whitelist vs Pattern Filtering](whitelist-vs-pattern-filtering.md)

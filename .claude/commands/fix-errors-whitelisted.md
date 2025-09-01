@@ -575,5 +575,7 @@ Continue fixing more errors of the same type or select an additional pattern tha
 - [Test Fixture Message Ownership](../../kb/test-fixture-message-ownership.md)
 - [Whitelist Specificity Pattern](../../kb/whitelist-specificity-pattern.md)
 - [Systematic Error Whitelist Reduction](../../kb/systematic-error-whitelist-reduction.md)
+- [Check-Logs Deep Analysis Pattern](../../kb/check-logs-deep-analysis-pattern.md)
+- [Whitelist vs Pattern Filtering](../../kb/whitelist-vs-pattern-filtering.md)
 
 Remember: Every fixed error improves code quality and reduces technical debt!

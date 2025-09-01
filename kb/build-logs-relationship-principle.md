@@ -120,3 +120,5 @@ make check-logs  # Verify fix worked
 - [Quick Start Commands](quick-start-commands.md)
 - [CI Debugging Workflow](github-actions-debugging-workflow.md)
 - [Build Log Verification Requirement](build-log-verification-requirement.md)
+- [Check-Logs Deep Analysis Pattern](check-logs-deep-analysis-pattern.md)
+- [Whitelist vs Pattern Filtering](whitelist-vs-pattern-filtering.md)

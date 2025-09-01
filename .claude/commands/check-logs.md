@@ -448,6 +448,8 @@ make check-logs
 - [Whitelist Simplification Pattern](../../kb/whitelist-simplification-pattern.md)
 - [Systematic Error Whitelist Reduction](../../kb/systematic-error-whitelist-reduction.md)
 - [Uniform Filtering Application](../../kb/uniform-filtering-application.md)
+- [Check-Logs Deep Analysis Pattern](../../kb/check-logs-deep-analysis-pattern.md)
+- [Whitelist vs Pattern Filtering](../../kb/whitelist-vs-pattern-filtering.md)
 
 ## Managing Intentional Errors
 

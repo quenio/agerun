@@ -105,6 +105,8 @@ Benefits of the YAML approach:
 - [CI Check-Logs Requirement](ci-check-logs-requirement.md)
 - [Log Format Variation Handling](log-format-variation-handling.md)
 - [YAML String Matching Pitfalls](yaml-string-matching-pitfalls.md)
+- [Check-Logs Deep Analysis Pattern](check-logs-deep-analysis-pattern.md)
+- [Whitelist vs Pattern Filtering](whitelist-vs-pattern-filtering.md)
 - [Whitelist Specificity Pattern](whitelist-specificity-pattern.md)
 - [Error Detection Validation Testing](error-detection-validation-testing.md)
 - [Test String Selection Strategy](test-string-selection-strategy.md)

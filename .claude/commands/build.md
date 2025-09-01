@@ -185,6 +185,7 @@ make checkpoint-cleanup CMD=build
 - **Always follow with `make check-logs`** to catch hidden issues
 - Logs are only updated during build, not by check-logs ([details](../../kb/build-logs-relationship-principle.md))
 - The build must pass check-logs or CI will fail ([details](../../kb/ci-check-logs-requirement.md))
+- Check-logs includes deep analysis that can flag test output ([details](../../kb/check-logs-deep-analysis-pattern.md))
 - Build time varies: ~20s for incremental, ~1m 24s for full build 
 
 The Makefile uses generic parameterized targets to avoid duplication ([details](../../kb/generic-make-targets-pattern.md)). Commands should document expected outputs for clarity ([details](../../kb/command-output-documentation-pattern.md)).

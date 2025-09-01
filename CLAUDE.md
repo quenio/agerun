@@ -10,7 +10,7 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
 
 **Primary**: `make build 2>&1` → `make check-logs` (MANDATORY sequence) ([details](kb/quick-start-commands.md), [relationship](kb/build-logs-relationship-principle.md))
 **Clean build**: `make clean build 2>&1` → `make check-logs`  
-**CI requirement**: `check-logs` must pass or CI will fail ([details](kb/ci-check-logs-requirement.md))
+**CI requirement**: `check-logs` must pass or CI will fail ([details](kb/ci-check-logs-requirement.md), [deep analysis](kb/check-logs-deep-analysis-pattern.md))
 **Help**: `make` shows all targets
 **Scripts**: Use make targets, not direct execution from `/scripts/`
 
@@ -23,6 +23,8 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
    - No uncommitted changes remain
 
 This is a MANDATORY verification step. Never assume a push succeeded without checking. ([details](kb/git-push-verification.md))
+
+**Preserving Changes**: Always create patches BEFORE reverting files ([details](kb/git-patch-preservation-workflow.md))
 
 ## Project Structure
 
@@ -355,6 +357,7 @@ grep -r "function_name\|concept" modules/
 **Multi-line persistence**: Escape newlines & backslashes in file formats ([details](kb/multi-line-data-persistence-format.md))
 **Pattern discovery**: Check existing methods for solutions ([details](kb/cross-method-pattern-discovery.md))
 **Whitelist reduction**: Fix root causes, not symptoms ([details](kb/systematic-error-whitelist-reduction.md))
+**Pattern filtering**: Consider filtering at source vs extensive whitelisting ([details](kb/whitelist-vs-pattern-filtering.md))
 **Detection validation**: Test that whitelists don't mask real errors ([details](kb/error-detection-validation-testing.md))
 **Struggling detection**: Stop after 3 failed attempts, ask for help ([details](kb/struggling-detection-pattern.md))
 **Phased cleanup**: Review→Fix critical→Defer non-critical with tracking ([details](kb/phased-cleanup-pattern.md))

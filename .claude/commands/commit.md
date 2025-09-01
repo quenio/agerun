@@ -411,6 +411,15 @@ The commit has been successfully completed!
 make checkpoint-cleanup CMD=commit
 ```
 
+## Related Documentation
+
+### CI and Build Patterns
+- [CI Check-Logs Requirement](../../kb/ci-check-logs-requirement.md)
+- [Check-Logs Deep Analysis Pattern](../../kb/check-logs-deep-analysis-pattern.md)
+- [Build Verification Before Commit](../../kb/build-verification-before-commit.md)
+- [Git Push Verification](../../kb/git-push-verification.md)
+- [Git Patch Preservation Workflow](../../kb/git-patch-preservation-workflow.md)
+
 ## Custom Instructions
 
 If available, the instructions below may override some of the instructions above.

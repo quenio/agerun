@@ -88,3 +88,5 @@ Benefits of simplification:
 - [Uniform Filtering Application](uniform-filtering-application.md)
 - [YAML String Matching Pitfalls](yaml-string-matching-pitfalls.md)
 - [Systematic Error Whitelist Reduction](systematic-error-whitelist-reduction.md)
+- [Check-Logs Deep Analysis Pattern](check-logs-deep-analysis-pattern.md)
+- [Whitelist vs Pattern Filtering](whitelist-vs-pattern-filtering.md)
