@@ -97,12 +97,6 @@ ignored_errors:
     message: "ERROR: Expected ':=' operator (at position 9)"
     comment: "Testing missing assignment operator"
   - context: "ar_assignment_instruction_parser_tests"
-    message: "Testing error handling - invalid assignment operator..."
-    comment: "Test status message for error handling tests"
-  - context: "ar_assignment_instruction_parser_tests"
-    message: "Testing error handling - invalid memory path..."
-    comment: "Test status message for memory path error handling"
-  - context: "ar_assignment_instruction_parser_tests"
     message: "ERROR: NULL parameter provided (at position 0)"
     comment: "Testing NULL instruction parameter error logging"
   
@@ -125,15 +119,6 @@ ignored_errors:
     message: "ERROR: Failed to parse build arguments (at position 38)"
     comment: "Testing build argument parsing error at position 38"
   - context: "ar_build_instruction_parser_tests"
-    message: "Testing error on missing parenthesis..."
-    comment: "Test status message for missing parenthesis error"
-  - context: "ar_build_instruction_parser_tests"
-    message: "Testing error on wrong argument count..."
-    comment: "Test status message for argument count error"
-  - context: "ar_build_instruction_parser_tests"
-    message: "Testing error on wrong function name..."
-    comment: "Test status message for function name error"
-
   # ar_compile_instruction_evaluator_tests
   - context: "ar_compile_instruction_evaluator_tests"
     message: "ERROR: Unknown instruction type (at position 0)"
@@ -164,15 +149,6 @@ ignored_errors:
     message: "ERROR: Failed to parse if arguments (at position 17)"
     comment: "Testing if condition argument parsing error"
   - context: "ar_condition_instruction_parser_tests"
-    message: "Testing error handling for missing parenthesis..."
-    comment: "Test status message for missing parenthesis in condition"
-  - context: "ar_condition_instruction_parser_tests"
-    message: "Testing error handling for wrong argument count..."
-    comment: "Test status message for argument count in condition"
-  - context: "ar_condition_instruction_parser_tests"
-    message: "Testing error handling for wrong function..."
-    comment: "Test status message for wrong function error"
-
   # ar_deprecate_instruction_parser_tests
   - context: "ar_deprecate_instruction_parser_tests"
     message: "ERROR: Expected '(' after 'deprecate' (at position 10)"
@@ -190,9 +166,6 @@ ignored_errors:
     message: "ERROR: Failed to parse method name argument (at position 19)"
     comment: "Testing deprecate method name parsing error"
   - context: "ar_deprecate_instruction_parser_tests"
-    message: "Testing deprecate parser error handling..."
-    comment: "Test status message for deprecate parser errors"
-
   # ar_executable_tests
   - context: "ar_executable_tests"
     message: "ERROR: Failed to create execution frame"
@@ -219,9 +192,6 @@ ignored_errors:
     message: "/tmp/agerun_test_"
     comment: "Expected temporary directory usage in isolated test builds"
   - context: "ar_executable_tests"
-    message: "Testing executable"
-    comment: "Expected test status messages in executable tests"
-
   # ar_exit_instruction_parser_tests
   - context: "ar_exit_instruction_parser_tests"
     message: "ERROR: Expected '(' after 'exit' (at position 5)"
@@ -236,14 +206,8 @@ ignored_errors:
     message: "ERROR: exit() expects exactly one argument (at position 5)"
     comment: "Testing exit argument count error"
   - context: "ar_exit_instruction_parser_tests"
-    message: "Testing exit agent parser error handling..."
-    comment: "Test status message for exit parser errors"
-
   # ar_expression_evaluator_tests
   - context: "ar_expression_evaluator_tests"
-    message: "Testing expression evaluator type mismatch error message..."
-    comment: "Test status message for type mismatch errors"
-
   # ar_expression_parser_tests
   - context: "ar_expression_parser_tests"
     message: "ERROR: NULL expression provided to expression parser"
@@ -294,20 +258,8 @@ ignored_errors:
     message: "ERROR: Unterminated string literal (at position 6)"
     comment: "Testing unterminated string error"
   - context: "ar_expression_parser_tests"
-    message: "Testing invalid expression error..."
-    comment: "Test status message for invalid expression test"
-  - context: "ar_expression_parser_tests"
-    message: "Testing trailing characters error..."
-    comment: "Test status message for trailing characters test"
-  - context: "ar_expression_parser_tests"
-    message: "Testing unterminated string error..."
-    comment: "Test status message for unterminated string test"
-
   # ar_expression_tests
   - context: "ar_expression_tests"
-    message: "Testing function call as expression (should fail)..."
-    comment: "Test status message for function call expression test"
-
   # ar_instruction_parser_dlsym_tests
   - context: "ar_instruction_parser_dlsym_tests"
     message: "ERROR: Failed to create assignment instruction parser"
@@ -378,33 +330,12 @@ ignored_errors:
     message: "ERROR: Unknown function type (at position 0)"
     comment: "Testing unknown function type"
   - context: "ar_instruction_parser_tests"
-    message: "Testing error handling..."
-    comment: "Test status message for instruction parser error handling"
-  - context: "ar_instruction_parser_tests"
     message: "ERROR: NULL instruction provided to instruction parser"
     comment: "Testing NULL instruction parameter error logging"
-  - context: "ar_instruction_parser_tests"
-    message: "Testing NULL instruction parameter error logging..."
-    comment: "Test status message from ar_instruction_parser_tests"
-  - context: "ar_instruction_parser_tests"
-    message: "Testing memory allocation error logging..."
-    comment: "Test status message from ar_instruction_parser_tests"
-  - context: "ar_instruction_parser_tests"
-    message: "Testing unknown function type error logging..."
-    comment: "Test status message from ar_instruction_parser_tests"
-  - context: "ar_instruction_parser_tests"
-    message: "Testing invalid assignment operator error logging..."
-    comment: "Test status message from ar_instruction_parser_tests"
-  - context: "ar_instruction_parser_tests"
-    message: "Testing unknown instruction type error logging..."
-    comment: "Test status message from ar_instruction_parser_tests"
   - context: "ar_instruction_parser_tests"
     message: "ERROR: Unknown instruction type (at position 0)"
     comment: "Testing unknown instruction type error - from new error logging test"
   - context: "ar_instruction_parser_tests"
-    message: "Testing parser creation with error logging capability..."
-    comment: "Test status message from ar_instruction_parser_tests"
-
   # ar_interpreter_fixture_tests
   - context: "ar_interpreter_fixture_tests"
     message: "ERROR: Failed to evaluate expression"
@@ -445,9 +376,6 @@ ignored_errors:
     message: "Error: Unexpected end of file in agency.agerun"
     comment: "Testing EOF error in interpreter tests"
   - context: "ar_interpreter_tests"
-    message: "Testing interpreter error logging..."
-    comment: "Test status message for interpreter error logging"
-  - context: "ar_interpreter_tests"
     message: "Warning: Agent store file does not exist"
     comment: "Expected agent store warning in interpreter"
   - context: "ar_interpreter_tests"
@@ -474,12 +402,6 @@ ignored_errors:
     message: "Error: Invalid parameters for safe_write_file"
     comment: "Testing invalid parameters for write"
   - context: "ar_io_tests"
-    message: "Testing ar_io__error_message() with AR_FILE_RESULT__SUCCESS..."
-    comment: "Test status message for IO error message test"
-  - context: "ar_io_tests"
-    message: "Testing ar_io__error_message() with all error codes..."
-    comment: "Test status message for all IO error codes test"
-
   # ar_log_tests
   - context: "ar_log_tests"
     message: "ERROR: Error at position (at position 42)"
@@ -586,9 +508,6 @@ ignored_errors:
     message: "ERROR: Method evaluation failed at line 2"
     comment: "Testing invalid assignment target error handling"
   - context: "ar_method_evaluator_tests"
-    message: "Testing method evaluator with failing instruction..."
-    comment: "Test status message for failing instruction test"
-
   # ar_method_fixture_tests
   - context: "ar_method_fixture_tests"
     message: "Warning: Agent store file does not exist"
@@ -607,9 +526,6 @@ ignored_errors:
   - context: "ar_method_parser_tests"
     message: "ERROR: Unknown parse error (at position 2)"
     comment: "Testing parse error at position 2"
-  - context: "ar_method_parser_tests"
-    message: "Testing method parser successful parse after failure..."
-    comment: "Test status message for parser recovery test"
   - context: "ar_method_parser_tests"
     message: "✓ test_method_parser__successful_parse_after_failure passed"
     comment: "Test pass message treated as error by pattern"
@@ -662,15 +578,6 @@ ignored_errors:
     message: "ERROR: Failed to parse parse arguments (at position 17)"
     comment: "Testing parse argument parsing error"
   - context: "ar_parse_instruction_parser_tests"
-    message: "Testing error on missing parenthesis..."
-    comment: "Test status message for parse missing parenthesis"
-  - context: "ar_parse_instruction_parser_tests"
-    message: "Testing error on wrong argument count..."
-    comment: "Test status message for parse argument count error"
-  - context: "ar_parse_instruction_parser_tests"
-    message: "Testing error on wrong function name..."
-    comment: "Test status message for parse function name error"
-
   # ar_send_instruction_parser_tests
   - context: "ar_send_instruction_parser_tests"
     message: "ERROR: Failed to parse send arguments (at position 6)"
@@ -679,12 +586,6 @@ ignored_errors:
     message: "ERROR: Failed to parse send arguments (at position 7)"
     comment: "Testing send argument parsing error at position 7"
   - context: "ar_send_instruction_parser_tests"
-    message: "Testing error handling - invalid syntax..."
-    comment: "Test status message for send invalid syntax"
-  - context: "ar_send_instruction_parser_tests"
-    message: "Testing error handling - missing arguments..."
-    comment: "Test status message for send missing arguments"
-
   # ar_spawn_instruction_parser_tests
   - context: "ar_spawn_instruction_parser_tests"
     message: "ERROR: Expected '(' after 'create' (at position 5)"
@@ -702,9 +603,6 @@ ignored_errors:
     message: "ERROR: Failed to parse create arguments (at position 7)"
     comment: "Testing spawn/create argument parsing error at position 7"
   - context: "ar_spawn_instruction_parser_tests"
-    message: "Testing create parser error handling..."
-    comment: "Test status message for spawn/create parser errors"
-
   # ar_system_fixture_tests
   - context: "ar_system_fixture_tests"
     message: "Warning: Agent store file does not exist"
@@ -817,12 +715,6 @@ ignored_errors:
     message: "ERROR: File is empty: test_empty.yaml"
     comment: "Testing error logging when file is empty"
   - context: "ar_yaml_reader_tests"
-    message: "Testing error logging for file open failure..."
-    comment: "Test status message for file open error test"
-  - context: "ar_yaml_reader_tests"
-    message: "Testing error logging for empty file..."
-    comment: "Test status message for empty file error test"
-
   # ar_yaml_writer_tests
   - context: "ar_yaml_writer_tests"
     message: "ERROR: Failed to open file for writing: /nonexistent/directory/file.yaml"
@@ -834,15 +726,6 @@ ignored_errors:
     message: "ERROR: NULL filename provided to YAML writer"
     comment: "Testing error logging when filename is NULL"
   - context: "ar_yaml_writer_tests"
-    message: "Testing error logging..."
-    comment: "Test status message for error logging functionality"
-  - context: "ar_yaml_writer_tests"
-    message: "Testing error logging for NULL data..."
-    comment: "Test status message for NULL data error test"
-  - context: "ar_yaml_writer_tests"
-    message: "Testing error logging for NULL filename..."
-    comment: "Test status message for NULL filename error test"
-
   # message_router_tests
   - context: "message_router_tests"
     message: "ERROR: Method evaluation failed"
@@ -926,12 +809,6 @@ ignored_errors:
 
   # ar_expression_parser test status messages
   - context: "ar_expression_parser_tests"
-    message: "Testing parser creation with NULL expression logs error..."
-    comment: "Test status message from ar_expression_parser_tests"
-  - context: "ar_expression_parser_tests"
-    message: "Testing memory allocation error logging..."
-    comment: "Test status message from ar_expression_parser_tests"
-
 # Total entries: 242
 # Test entries: 237
 # Executable entries: 7

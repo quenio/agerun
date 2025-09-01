@@ -560,6 +560,15 @@ def check_deep_analysis_errors(whitelist):
                 lines = f.readlines()
                 for i, line in enumerate(lines):
                     if pattern.search(line) and test_pattern.search(line):
+                        # Skip only very specific test framework output patterns
+                        if (line.strip().startswith('Testing ') or          # Test status messages
+                            line.strip().startswith('=== Test') or          # Test section headers (both "Test:" and "Testing")
+                            line.strip().startswith('✓ Test passed:') or    # Success indicators
+                            line.strip().startswith('Running test:') or     # Test execution status
+                            re.match(r'^\s*Test \d+ of \d+:', line)):      # Test progress indicators
+                            continue  # Skip these specific patterns
+                        
+                        # Apply existing filters for everything else
                         if ('test.*failed.*passed' not in line and 
                             'expected.*fail' not in line and
                             'ERROR: Test error message' not in line and
