@@ -30,7 +30,7 @@ jobs:
           find /usr/include -name stdio.h 2>/dev/null | head -5
 
       - name: Install Zig 0.14.1
-        uses: goto-bus-stop/setup-zig@v2
+        uses: mlugg/setup-zig@v1
         with:
           version: 0.14.1
 
