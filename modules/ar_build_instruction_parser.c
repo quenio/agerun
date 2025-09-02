@@ -304,7 +304,12 @@ ar_instruction_ast_t* ar_build_instruction_parser__parse(
     const char *ref_instruction,
     const char *ref_result_path
 ) {
-    if (!mut_parser || !ref_instruction) {
+    if (!mut_parser) {
+        return NULL;  // Can't log without parser
+    }
+    
+    if (!ref_instruction) {
+        _log_error(mut_parser, "NULL instruction parameter", 0);
         return NULL;
     }
     

@@ -335,6 +335,38 @@ static void test_build_instruction_parser__parser_reusability(void) {
     ar_log__destroy(log);
 }
 
+static void test_build_instruction_parser__null_instruction_error(void) {
+    printf("Testing NULL instruction parameter error logging...\n");
+    
+    // Given a log instance and parser
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    ar_build_instruction_parser_t *own_parser = ar_build_instruction_parser__create(log);
+    assert(own_parser != NULL);
+    
+    // When parsing with NULL instruction
+    ar_instruction_ast_t *own_ast = ar_build_instruction_parser__parse(own_parser, NULL, NULL);
+    
+    // Then it should fail and log an error
+    assert(own_ast == NULL);
+    assert(ar_log__get_last_error_message(log) != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "NULL instruction") != NULL);
+    
+    ar_build_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
+static void test_build_instruction_parser__null_parser_no_crash(void) {
+    printf("Testing NULL parser parameter doesn't crash...\n");
+    
+    // When parsing with NULL parser
+    const char *instruction = "build(\"Hello\", memory.data)";
+    ar_instruction_ast_t *own_ast = ar_build_instruction_parser__parse(NULL, instruction, NULL);
+    
+    // Then it should return NULL without crashing
+    assert(own_ast == NULL);
+}
+
 static void test_build_instruction_parser__parse_with_expression_asts(void) {
     printf("Testing build instruction with expression ASTs...\n");
     
@@ -403,6 +435,10 @@ int main(void) {
     test_build_instruction_parser__parse_error_missing_parenthesis();
     test_build_instruction_parser__parse_error_wrong_arg_count();
     test_build_instruction_parser__parser_reusability();
+    
+    // NULL parameter tests
+    test_build_instruction_parser__null_instruction_error();
+    test_build_instruction_parser__null_parser_no_crash();
     
     // Expression AST integration
     test_build_instruction_parser__parse_with_expression_asts();

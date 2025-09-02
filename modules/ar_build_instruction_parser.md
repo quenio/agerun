@@ -84,8 +84,15 @@ The parser:
 ## Error Handling
 
 The parser reports errors through the ar_log instance provided during creation:
-- Errors include position and description information
-- Validation of argument count (must be exactly 2)
+- NULL instruction parameter: "NULL instruction parameter"
+- Wrong function name: "Expected 'build' function"
+- Missing parenthesis: "Expected '(' after 'build'"
+- Parse failures: "Failed to parse build arguments"
+- Argument count validation (must be exactly 2)
+- Memory allocation failures
+- AST creation failures
+- Expression parsing failures within arguments
+- All errors include position information for precise debugging
 - The deprecated get_error() and get_error_position() functions always return NULL and 0
 
 ## Memory Management

@@ -119,6 +119,8 @@ ignored_errors:
     message: "ERROR: Failed to parse build arguments (at position 38)"
     comment: "Testing build argument parsing error at position 38"
   - context: "ar_build_instruction_parser_tests"
+    message: "ERROR: NULL instruction parameter (at position 0)"
+    comment: "Testing NULL instruction parameter error logging"
   # ar_compile_instruction_evaluator_tests
   - context: "ar_compile_instruction_evaluator_tests"
     message: "ERROR: Unknown instruction type (at position 0)"
