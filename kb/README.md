@@ -82,6 +82,10 @@ Each learning file contains:
 - [Make Target Testing Discipline](make-target-testing-discipline.md)
 - [Build Log Extraction Patterns](build-log-extraction-patterns.md)
 - [Comprehensive Renaming Workflow](comprehensive-renaming-workflow.md)
+- [Knowledge Base Search Patterns](kb-search-patterns.md)
+- [Plan Verification Checklist](plan-verification-checklist.md)
+- [Development Practice Groups](development-practice-groups.md)
+- [Dependency Management Examples](dependency-management-examples.md)
 
 ### Memory Management
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)

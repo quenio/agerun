@@ -39,28 +39,9 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 ### Knowledge Base Usage (MANDATORY - SHOW SEARCHES IN CONVERSATION)
 
-**Make KB searches VISIBLE - don't just think about searching, actually DO it and SHOW it**:
-- **Session start**: Prime with explicit reminders ([details](kb/session-start-priming-pattern.md))
-- **Before Edit/Write**: "Let me search KB first..." → `grep -r "module_name" kb/*.md` → show results
-- **After test fails**: "Searching KB for this error..." → `grep -r "error" kb/*.md` → read findings
-- **User corrects you**: IMMEDIATELY search → `grep -r "what_user_said" kb/*.md` → apply pattern
-- **Mid-implementation doubt**: STOP → search KB → show what you found → then continue
-- **Choosing approach**: "Let me check KB for patterns..." → actually run grep → discuss findings
-
-**Wrong**: "Let me fix this..." [starts coding immediately]
-**Right**: "Let me search KB..." [runs grep] "Found 3 articles..." [reads] "KB says to..." [then codes]
-
-**Trigger words that REQUIRE KB search**:
-- User: "Why are you..." / "You should..." / "Actually..." → Search that topic NOW
-- You: "Let me fix..." / "The problem is..." / "I'll implement..." → Search FIRST
-
-**Make it conversational**: "According to kb/pattern.md..." "The KB article suggests..." "I found in KB..."
-
-**Markdown Link Resolution** ([details](kb/markdown-link-resolution-patterns.md)):
-- **Always use relative paths** - Never use `/path` format which breaks on GitHub
-- **Resolve from file location** - `kb/article.md` from CLAUDE.md → `./kb/article.md`
-- **Navigate directories** - Use `../kb/article.md` from subdirectories
-- **Validation** - Links must work identically on GitHub, VS Code, and Claude Code
+**Make KB searches VISIBLE**: Run grep, show results, quote guidance, apply patterns ([details](kb/kb-search-patterns.md), [priming](kb/session-start-priming-pattern.md))
+**Trigger words**: "Why are you"/"Actually"/"You should" → Search NOW
+**Markdown links**: Use relative paths only, resolve from file location ([details](kb/markdown-link-resolution-patterns.md))
 
 ### 0. Documentation Protocol
 
@@ -214,28 +195,11 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 ### Preventing Circular Dependencies & Code Duplication
 
-**Dependency Management**:
-```bash
-# Check before adding includes:
-grep -n "#include.*ar_" module.h module.c
-# Verify hierarchy: Foundation (io/list/map) → Data (heap/data) → Core (agent/method) → System (agency/interpreter)
-```
-
-
-**Note**: Examples assume `own_system`, `mut_agency`, and other instance variables are available. In practice, these would be created via fixtures or passed as parameters.
-**Architectural Patterns**: Interface segregation > Registry > Facade (coordinate only) > Parser/Executor > Callbacks ([details](kb/architectural-patterns-hierarchy.md))
-
-**Code Duplication Prevention (DRY - Don't Repeat Yourself)**:
-```bash
-# Before writing code, search for existing:
-grep -r "function_name\|concept" modules/
-```
-
-**DRY**: Stop copying → extract common functions → use data tables → parameterize → verify moves with diff
-**Domain types**: Create type-safe abstractions instead of primitive obsession ([details](kb/domain-specific-type-creation.md))
-
-**Red Flags**: Module A→B→C→A cycles, repeated validation logic, similar function names (_for_int, _for_string), parsing+execution together
-
+**Dependency hierarchy**: Foundation → Data → Core → System ([details](kb/dependency-management-examples.md))
+**Check dependencies**: `grep -n "#include.*ar_" module.h module.c`
+**Architectural patterns**: Interface segregation > Registry > Facade > Parser/Executor > Callbacks ([details](kb/architectural-patterns-hierarchy.md))
+**DRY principle**: Search existing → extract functions → use data tables → parameterize ([details](kb/domain-specific-type-creation.md))
+**Red flags**: A→B→C→A cycles, validation duplication, _for_int/_for_string patterns
 **Exception**: heap ↔ io circular dependency is accepted and documented.
 
 ### Additional Design Principles
@@ -250,27 +214,11 @@ grep -r "function_name\|concept" modules/
 
 ### 4. Code Smells Detection and Prevention
 
-**Code smells** are surface indicators of deeper problems in code design. Based on Martin Fowler's Refactoring catalog, watch for these common issues:
-
-**Bloaters** (code that has grown too large):
-- **Long Method**: Methods > 20 lines should be broken down ([details](kb/code-smell-long-method.md))
-- **Large Class**: Modules > 800 lines or > 12 functions need decomposition ([details](kb/code-smell-large-class.md))
-- **Long Parameter List**: Functions with > 4 parameters need parameter objects ([details](kb/code-smell-long-parameter-list.md))
-- **Data Clumps**: Related parameters appearing together frequently ([details](kb/code-smell-data-clumps.md))
-- **Primitive Obsession**: Using primitives instead of domain objects ([details](kb/code-smell-primitive-obsession.md))
-
-**Duplication** (most critical smell):
-- **Duplicate Code**: Identical logic in multiple places - extract common functions ([details](kb/code-smell-duplicate-code.md))
-
-**Change Preventers** (code that resists modification):
-- **Divergent Change**: One module changing for multiple reasons
-- **Shotgun Surgery**: One change requiring edits across many modules
-
-**Couplers** (excessive coupling between modules):
-- **Feature Envy**: Method using more data from another module than its own ([details](kb/code-smell-feature-envy.md))
-- **Message Chains**: Long chains of method calls across modules
-
-**Quick Detection**: Use automated scripts to find long methods, parameter issues, duplicate errors ([details](kb/code-smell-quick-detection.md))
+**Bloaters**: Long methods (>20 lines), large modules (>800 lines), long parameters (>4), data clumps, primitive obsession
+**Duplication**: Most critical smell - extract common functions ([details](kb/code-smell-duplicate-code.md))
+**Change preventers**: Divergent change, shotgun surgery
+**Couplers**: Feature envy, message chains ([details](kb/code-smell-feature-envy.md))
+**Detection**: Automated scripts for quick identification ([details](kb/code-smell-quick-detection.md))
 
 ### 5. Coding Standards
 
@@ -331,40 +279,15 @@ grep -r "function_name\|concept" modules/
 
 ### 8. Development Practices
 
-**Navigation**: Use absolute paths only ([details](kb/absolute-path-navigation.md))
-**Backups**: Use git stash/diff, never .bak files (ar_io creates them automatically - [details](kb/file-io-backup-mechanism.md))
-**Stubs**: Comment unready features with dependency notes ([details](kb/stub-and-revisit-pattern.md))
-**Scripts**: Add to `/scripts/` with make targets ([details](kb/progressive-tool-enhancement.md), [batch](kb/batch-update-script-pattern.md), [reusable](kb/script-reusability-parameters-pattern.md))
-**Build system**: Parallel jobs for efficiency ([details](kb/parallel-build-job-integration.md)), always use make targets ([details](kb/make-target-testing-discipline.md))
-**Shell scripts**: Use proper variable assignment for error handling ([details](kb/shell-script-command-substitution.md))
-**Multi-step processes**: Use checkpoint tracking for complex commands ([details](kb/multi-step-checkpoint-tracking-pattern.md), [gates](kb/gate-enforcement-exit-codes-pattern.md), [progress](kb/progress-visualization-ascii-pattern.md), [implementation](kb/checkpoint-implementation-guide.md))
-**Debug**: `make sanitize-tests 2>&1`, redirect stderr, check syscall returns ([details](kb/development-debug-tools.md), [static](kb/static-analysis-error-handling.md))
-**Static compliance**: Restructure stream ops for analyzer satisfaction ([details](kb/static-analyzer-stream-compliance.md))
-**Debug output**: Keep for future troubleshooting ([details](kb/debug-output-preservation-strategy.md))
-**Ownership debugging**: Add logging at transfer points to trace corruption ([details](kb/debug-logging-ownership-tracing.md))
-**Expression ownership**: References=borrowed, new objects=destroy ([details](kb/expression-ownership-rules.md))
-**Test error filtering**: Use context-aware filtering for intentional errors ([details](kb/intentional-test-errors-filtering.md))
-**Log format variations**: Test names vary by environment, verify actual content ([details](kb/log-format-variation-handling.md))
-**Log extraction**: Use precise grep patterns for metrics ([details](kb/build-log-extraction-patterns.md))
-**Whitelist reduction**: Systematically fix root causes to reduce technical debt ([details](kb/systematic-whitelist-error-resolution.md))
-**Whitelist simplification**: Start complex, simplify based on usage ([details](kb/whitelist-simplification-pattern.md))
-**Whitelist success messages**: Include diagnostic output and success indicators ([details](kb/whitelist-success-message-management.md))
-**Uniform filtering**: Apply whitelist consistently in all checks ([details](kb/uniform-filtering-application.md))
-**YAML string matching**: Watch for quote escaping issues ([details](kb/yaml-string-matching-pitfalls.md))
-**YAML serialization**: Direct file I/O for ar_data_t structures ([details](kb/yaml-serialization-direct-io-pattern.md))
-**YAML indentation**: Consistent 2-space indentation for parsing ([details](kb/yaml-indentation-consistency-pattern.md))
-**Container stack parsing**: Track nested structures with depth stack ([details](kb/container-stack-parsing-pattern.md))
-**Multi-line persistence**: Escape newlines & backslashes in file formats ([details](kb/multi-line-data-persistence-format.md))
-**Pattern discovery**: Check existing methods for solutions ([details](kb/cross-method-pattern-discovery.md))
-**Whitelist reduction**: Fix root causes, not symptoms ([details](kb/systematic-error-whitelist-reduction.md))
-**Pattern filtering**: Consider filtering at source vs extensive whitelisting ([details](kb/whitelist-vs-pattern-filtering.md))
-**Detection validation**: Test that whitelists don't mask real errors ([details](kb/error-detection-validation-testing.md))
-**Struggling detection**: Stop after 3 failed attempts, ask for help ([details](kb/struggling-detection-pattern.md))
-**Phased cleanup**: Review→Fix critical→Defer non-critical with tracking ([details](kb/phased-cleanup-pattern.md))
-**Impact analysis**: Check main→tests→fixtures→entire codebase ([details](kb/comprehensive-impact-analysis.md))
-**CI debugging**: Use gh CLI for systematic investigation ([details](kb/github-actions-debugging-workflow.md), [discrepancies](kb/local-ci-discrepancy-investigation.md), [deprecated actions](kb/github-actions-deprecated-tool-migration.md))
-**Tool updates**: Verify latest versions & maintainer credibility ([details](kb/tool-version-selection-due-diligence.md), [maintainer](kb/tool-maintainer-verification-pattern.md))
-**Error tracing**: Follow messages through build pipeline layers ([details](kb/error-message-source-tracing.md))
+**Grouped by category** for easier reference ([details](kb/development-practice-groups.md)):
+
+**Navigation & Files**: Absolute paths, git not .bak, ar_io backups ([details](kb/absolute-path-navigation.md), [backups](kb/file-io-backup-mechanism.md))
+**Build & Debug**: `make sanitize-tests 2>&1`, make targets only, parallel jobs ([details](kb/development-debug-tools.md), [make](kb/make-target-testing-discipline.md))
+**Checkpoints**: Track complex tasks, gates, progress ([details](kb/multi-step-checkpoint-tracking-pattern.md), [gates](kb/gate-enforcement-exit-codes-pattern.md))
+**YAML & Persistence**: 2-space indent, escape multiline, direct I/O ([details](kb/yaml-serialization-direct-io-pattern.md), [multiline](kb/multi-line-data-persistence-format.md))
+**Error & Logs**: Context filtering, precise grep, fix root causes ([details](kb/systematic-whitelist-error-resolution.md), [logs](kb/build-log-extraction-patterns.md))
+**CI/CD**: gh CLI debugging, version verification ([details](kb/github-actions-debugging-workflow.md), [versions](kb/tool-version-selection-due-diligence.md))
+**Quality**: Stop after 3 failures, phased cleanup, impact analysis ([details](kb/struggling-detection-pattern.md), [impact](kb/comprehensive-impact-analysis.md))
 
 ### 9. Error Propagation Pattern
 
@@ -444,39 +367,12 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 **Pattern spread**: Technical debt propagates through copy-paste ([details](kb/cross-file-pattern-propagation.md))
 **Dead comments**: Delete commented code, don't accumulate ([details](kb/commented-code-accumulation-antipattern.md))
 
-### 14. Plan Verification and Review ([details](kb/plan-verification-and-review.md))
+### 14. Plan Verification and Review
 
-**When Creating Development Plans**:
-- **Single task focus**: Create plans for one todo item at a time, not multi-task plans
-- **Always include critical verification steps**: Plans must include diff verification, test running, memory checking
-- **User feedback is valuable**: If user points out missing steps, update the plan immediately ([details](kb/user-feedback-as-qa.md))
-- **Example**: "We're missing the comparison of previous and new implementation" - this feedback prevents bugs
-- **Documentation oversight**: User catching missing docs is common - verify docs are part of plan
-- **Debugging assumptions**: Challenge all hypotheses with evidence ([details](kb/user-feedback-debugging-pattern.md))
-- **Plan completeness checklist**:
-  - [ ] Verification steps included (diff, tests, memory)
-  - [ ] Documentation updates specified for interface changes
-  - [ ] File paths and line numbers specified
-  - [ ] Success criteria defined
-  - [ ] Error handling considered
-
-**Module-Specific Requirements**:
-- **Different modules have different constraints**: Not all modules follow identical patterns
-- **Examples**:
-  - Some parsers accept only strings (method parser: all 3 args must be quoted)
-  - Some accept expressions (build parser: second arg must be expression)
-  - Some have fixed argument counts (method: exactly 3, build: exactly 2)
-- **Always check**: Read existing tests to understand specific requirements
-
-**Generic Module Design Patterns**:
-- **Consider generic solutions**: User may suggest specific module (e.g., memory_path), but generic approach may be better
-- **Example**: Creating ar_path instead of ar_memory_path provides broader utility
-- **Benefits of generic design**:
-  - Reduces overall code duplication
-  - Provides reusable functionality
-  - Supports multiple use cases (variable paths, file paths)
-  - Better long-term maintainability
-- **Always propose generic alternative**: When user suggests specific module, explain generic benefits ([details](kb/oo-to-c-adaptation.md))
+**Single task focus**: One TODO = one plan, include verification steps ([details](kb/plan-verification-checklist.md), [review](kb/plan-verification-and-review.md))
+**User feedback**: Valuable QA - update plans immediately when corrected ([details](kb/user-feedback-as-qa.md))
+**Module constraints**: Different modules have different requirements - check tests
+**Generic design**: Consider ar_path vs ar_memory_path for broader utility ([details](kb/oo-to-c-adaptation.md))
 
 ### 15. Task Tool Guidelines
 

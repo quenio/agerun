@@ -71,3 +71,4 @@ The key is making the priming explicit and actionable rather than assuming guide
 - [Debug Output Preservation Strategy](debug-output-preservation-strategy.md)
 - [Test Diagnostic Output Preservation](test-diagnostic-output-preservation.md)
 - [Evidence-Based Debugging](evidence-based-debugging.md)
+- [Knowledge Base Search Patterns](kb-search-patterns.md)
