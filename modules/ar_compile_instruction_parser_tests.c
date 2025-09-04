@@ -313,6 +313,50 @@ static void test_compile_instruction_parser__multiline_code(void) {
 }
 
 /**
+ * Test error when NULL instruction is passed
+ */
+static void test_compile_instruction_parser__null_instruction(void) {
+    printf("Testing compile parser with NULL instruction...\n");
+    
+    // Given a parser with a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    ar_compile_instruction_parser_t *own_parser = ar_compile_instruction_parser__create(log);
+    assert(own_parser != NULL);
+    
+    // When parsing a NULL instruction
+    ar_instruction_ast_t *own_ast = ar_compile_instruction_parser__parse(own_parser, NULL, NULL);
+    
+    // Then it should fail
+    assert(own_ast == NULL);
+    
+    // And an error should be logged
+    assert(ar_log__get_last_error_message(log) != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "NULL instruction") != NULL);
+    
+    ar_compile_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
+/**
+ * Test safe handling when NULL parser is passed
+ */
+static void test_compile_instruction_parser__null_parser(void) {
+    printf("Testing compile parser with NULL parser...\n");
+    
+    // Given a valid instruction
+    const char *instruction = "compile(\"test\", \"code\", \"1.0.0\")";
+    
+    // When parsing with a NULL parser
+    ar_instruction_ast_t *own_ast = ar_compile_instruction_parser__parse(NULL, instruction, NULL);
+    
+    // Then it should fail safely
+    assert(own_ast == NULL);
+    
+    // Note: Cannot verify error logging since we don't have a log instance
+}
+
+/**
  * Test method parsing with expression ASTs
  */
 static void test_compile_instruction_parser__parse_with_expression_asts(void) {
@@ -383,6 +427,8 @@ int main(void) {
     test_compile_instruction_parser__malformed_syntax();
     test_compile_instruction_parser__reusability();
     test_compile_instruction_parser__multiline_code();
+    test_compile_instruction_parser__null_instruction();
+    test_compile_instruction_parser__null_parser();
     
     // Expression AST integration
     test_compile_instruction_parser__parse_with_expression_asts();

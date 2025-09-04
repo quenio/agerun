@@ -139,6 +139,9 @@ ignored_errors:
   - context: "ar_compile_instruction_parser_tests"
     message: "ERROR: Failed to parse compile arguments (at position 23)"
     comment: "Testing compile argument parsing error"
+  - context: "ar_compile_instruction_parser_tests"
+    message: "ERROR: NULL instruction provided to compile parser (at position 0)"
+    comment: "Testing NULL instruction parameter error logging"
 
   # ar_condition_instruction_parser_tests
   - context: "ar_condition_instruction_parser_tests"
