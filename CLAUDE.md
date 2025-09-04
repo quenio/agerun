@@ -126,6 +126,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Cycle**: Red→Green→Refactor for EACH behavior, NO commits during ([details](kb/red-green-refactor-cycle.md), [cycle details](kb/tdd-cycle-detailed-explanation.md))
 **Verify fix**: Run single test first, then full suite ([details](kb/test-first-verification-practice.md))
 **Test reality**: Align expectations with actual behavior ([details](kb/test-expectation-reality-alignment.md))
+**Coverage verification**: Check existing implementations before adding ([details](kb/error-coverage-verification-before-enhancement.md))
 **Test effectiveness**: Break implementation to verify tests catch failures ([details](kb/test-effectiveness-verification.md))
 **Test assertion strength**: Verify specific outcomes, not just success/failure ([details](kb/test-assertion-strength-patterns.md))
 **DLSym interception**: Test untestable conditions with function mocking ([details](kb/dlsym-test-interception-technique.md))

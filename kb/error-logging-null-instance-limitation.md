@@ -8,7 +8,7 @@ Understanding this limitation prevents attempts to "fix" what isn't broken. It's
 
 ## Example
 ```c
-// The limitation in practice
+// The limitation in practice - YAML reader
 ar_data_t* ar_yaml_reader__read_from_file(ar_yaml_reader_t *mut_reader, 
                                           const char *ref_filename) {
     if (!mut_reader || !ref_filename) {
@@ -17,6 +17,23 @@ ar_data_t* ar_yaml_reader__read_from_file(ar_yaml_reader_t *mut_reader,
             ar_log__error(mut_reader->ref_log, "NULL filename provided");
         }
         // CANNOT log if mut_reader is NULL - no access to log!
+        return NULL;
+    }
+    // ...
+}
+
+// Parser example - same pattern
+ar_instruction_ast_t* ar_compile_instruction_parser__parse(
+    ar_compile_instruction_parser_t *mut_parser,
+    const char *ref_instruction,
+    const char *ref_result_path) {
+    
+    if (!mut_parser) {
+        return NULL;  // Cannot log - no log instance available
+    }
+    
+    if (!ref_instruction) {
+        _log_error(mut_parser, "NULL instruction provided", 0);  // CAN log
         return NULL;
     }
     // ...
@@ -114,3 +131,4 @@ TEST(module, logs_error_for_null_parameter) {
 - [Error Logging Instance Utilization](error-logging-instance-utilization.md)
 - [Graceful Degradation Pattern](graceful-degradation-pattern.md)
 - [Null Dependency Fallback Pattern](null-dependency-fallback-pattern.md)
+- [Error Coverage Verification Before Enhancement](error-coverage-verification-before-enhancement.md)

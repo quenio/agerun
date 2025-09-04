@@ -162,6 +162,7 @@ Each learning file contains:
 - [Test Assertion Strength Patterns](test-assertion-strength-patterns.md)
 - [DLSym Test Interception Technique](dlsym-test-interception-technique.md)
 - [Sanitizer Test Exclusion Pattern](sanitizer-test-exclusion-pattern.md)
+- [Error Coverage Verification Before Enhancement](error-coverage-verification-before-enhancement.md)
 
 ### Architecture & Design
 - [Opaque Types Pattern](opaque-types-pattern.md)

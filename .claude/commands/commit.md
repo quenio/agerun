@@ -111,7 +111,7 @@ echo "✅ Logs are clean - CI ready"
 make checkpoint-update CMD=commit STEP=2
 ```
 
-1. **Run Tests**: Use `make clean build` for comprehensive build verification (~20 lines output) to ensure all changes work correctly and no memory leaks. **ALWAYS follow with `make check-logs` to catch hidden issues!** **If clean build fails OR check-logs finds issues, STOP - do not proceed with commit until all issues are fixed.** ([details](../../kb/build-verification-before-commit.md), [CI requirement](../../kb/ci-check-logs-requirement.md), [deprecated tools](../../kb/github-actions-deprecated-tool-migration.md))
+1. **Run Tests**: Use `make clean build` for comprehensive build verification (~20 lines output) to ensure all changes work correctly and no memory leaks. **ALWAYS follow with `make check-logs` to catch hidden issues!** Note: check-logs only works after full build, NOT after individual test runs ([details](../../kb/build-logs-relationship-principle.md)). **If clean build fails OR check-logs finds issues, STOP - do not proceed with commit until all issues are fixed.** ([details](../../kb/build-verification-before-commit.md), [CI requirement](../../kb/ci-check-logs-requirement.md), [coverage verification](../../kb/error-coverage-verification-before-enhancement.md))
    - **Note**: `make build` includes documentation validation (`make check-docs`). If docs fail, use `python3 scripts/batch_fix_docs.py` to fix automatically ([details](../../kb/batch-documentation-fix-enhancement.md))
 #### Checkpoint 3: Update Docs
 

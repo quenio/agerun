@@ -50,6 +50,13 @@ make build 2>&1
 make check-logs  # Still checking logs from last build!
 ```
 
+### Mistake 4: check-logs After Individual Tests
+```bash
+# WRONG - individual test runs don't update build logs
+make ar_compile_instruction_parser_tests
+make check-logs  # No new logs - only full build updates them!
+```
+
 ## Log File Locations
 
 The build process generates logs in:
@@ -122,3 +129,4 @@ make check-logs  # Verify fix worked
 - [Build Log Verification Requirement](build-log-verification-requirement.md)
 - [Check-Logs Deep Analysis Pattern](check-logs-deep-analysis-pattern.md)
 - [Whitelist vs Pattern Filtering](whitelist-vs-pattern-filtering.md)
+- [Error Coverage Verification Before Enhancement](error-coverage-verification-before-enhancement.md)

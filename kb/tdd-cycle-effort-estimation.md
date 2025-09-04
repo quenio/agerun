@@ -134,9 +134,17 @@ done
 - Count integration testing as 1-2 extra cycles
 - Documentation is typically 0.5 cycles worth of effort
 
+## Analysis-Driven Accuracy
+Careful upfront analysis dramatically improves estimation accuracy:
+- **Verify existing implementations** before estimating new work
+- **Question inconsistencies** (e.g., "5 error classes but only 2 cycles?")
+- **Map each condition** to specific cycles rather than guessing
+- **Example**: ar_compile_instruction_parser seemed to need 2-3 cycles, but thorough analysis revealed only 2 were needed (5 of 7 conditions already handled)
+
 ## Related Patterns
 - [Report-Driven Task Planning](report-driven-task-planning.md)
 - [Quantitative Priority Setting](quantitative-priority-setting.md)
 - [Red-Green-Refactor Cycle](red-green-refactor-cycle.md)
 - [TDD Cycle Detailed Explanation](tdd-cycle-detailed-explanation.md)
 - [Multi-Session TDD Planning](multi-session-tdd-planning.md)
+- [Error Coverage Verification Before Enhancement](error-coverage-verification-before-enhancement.md)

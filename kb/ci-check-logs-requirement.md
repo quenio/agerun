@@ -23,14 +23,22 @@ This requirement serves as a local CI compatibility gate:
 
 If step 4 fails, the entire pipeline fails and the commit is rejected.
 
+## When check-logs Produces Results
+
+**CRITICAL**: `make check-logs` only produces meaningful results after a full build:
+- After `make build 2>&1` or `make clean build 2>&1`
+- NOT after individual test runs (`make some_test`)
+- NOT after partial builds
+- NOT on its own without prior build
+
 ## Local Verification Before Push
 
 ### Mandatory Pre-Push Checklist
 ```bash
-# 1. Clean build to ensure fresh state
+# 1. Clean build to ensure fresh state (generates logs)
 make clean build 2>&1
 
-# 2. Check logs - MUST succeed
+# 2. Check logs - MUST succeed (analyzes logs from step 1)
 make check-logs
 
 # 3. Only if check-logs passes, proceed to commit
@@ -146,3 +154,4 @@ make check-logs             # Verify CI compatibility
 - [Whitelist vs Pattern Filtering](whitelist-vs-pattern-filtering.md)
 - [GitHub Actions Deprecated Tool Migration](github-actions-deprecated-tool-migration.md)
 - [CI Network Timeout Diagnosis](ci-network-timeout-diagnosis.md)
+- [Error Coverage Verification Before Enhancement](error-coverage-verification-before-enhancement.md)
