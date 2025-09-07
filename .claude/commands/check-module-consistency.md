@@ -117,8 +117,8 @@ make checkpoint-gate CMD=check-module-consistency GATE="Understanding" REQUIRED=
 
 **Expected gate output:**
 ```
-✅ GATE 'Gate Name' - PASSED
-   Verified: Steps 1,2,3
+✅ GATE 'Understanding' - PASSED
+   Verified: Steps 1,2
 ```
 
 ## Phase 2: Discovery (Steps 3-5)
@@ -190,8 +190,8 @@ make checkpoint-gate CMD=check-module-consistency GATE="Discovery" REQUIRED="3,4
 
 **Expected gate output:**
 ```
-✅ GATE 'Gate Name' - PASSED
-   Verified: Steps 1,2,3
+✅ GATE 'Discovery' - PASSED
+   Verified: Steps 3,4,5
 ```
 
 ## Phase 3: Analysis (Steps 6-10)
@@ -292,8 +292,8 @@ make checkpoint-gate CMD=check-module-consistency GATE="Analysis" REQUIRED="6,7,
 
 **Expected gate output:**
 ```
-✅ GATE 'Gate Name' - PASSED
-   Verified: Steps 1,2,3
+✅ GATE 'Analysis' - PASSED
+   Verified: Steps 6,7,8,9,10
 ```
 
 For each related module identified, check if it needs the same improvement:
@@ -397,8 +397,8 @@ make checkpoint-gate CMD=check-module-consistency GATE="Planning" REQUIRED="11,1
 
 **Expected gate output:**
 ```
-✅ GATE 'Gate Name' - PASSED
-   Verified: Steps 1,2,3
+✅ GATE 'Planning' - PASSED
+   Verified: Steps 11,12,13,14
 ```
 
 ## Phase 5: Documentation (Step 15)

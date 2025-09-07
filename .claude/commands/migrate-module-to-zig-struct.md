@@ -80,8 +80,8 @@ make checkpoint-gate CMD=migrate-module-to-zig-struct GATE="Knowledge" REQUIRED=
 
 **Expected gate output:**
 ```
-✅ GATE 'Gate Name' - PASSED
-   Verified: Steps 1,2,3
+✅ GATE 'Knowledge' - PASSED
+   Verified: Steps 1
 ```
 
 #### Pre-Migration Dependency Check
@@ -167,8 +167,8 @@ make checkpoint-gate CMD=migrate-module-to-zig-struct GATE="Safety" REQUIRED="2,
 
 **Expected gate output:**
 ```
-✅ GATE 'Gate Name' - PASSED
-   Verified: Steps 1,2,3
+✅ GATE 'Safety' - PASSED
+   Verified: Steps 2,3,4,5
 ```
 
 **Migration Blockers**:
@@ -233,8 +233,8 @@ make checkpoint-gate CMD=migrate-module-to-zig-struct GATE="Implementation" REQU
 
 **Expected gate output:**
 ```
-✅ GATE 'Gate Name' - PASSED
-   Verified: Steps 1,2,3
+✅ GATE 'Implementation' - PASSED
+   Verified: Steps 6,7
 ```
 
 ## Phase 3: Testing (Steps 8-9)
@@ -287,8 +287,8 @@ make checkpoint-gate CMD=migrate-module-to-zig-struct GATE="Testing" REQUIRED="8
 
 **Expected gate output:**
 ```
-✅ GATE 'Gate Name' - PASSED
-   Verified: Steps 1,2,3
+✅ GATE 'Testing' - PASSED
+   Verified: Steps 8,9
 ```
 
 ## Phase 4: Cleanup (Steps 10-11)

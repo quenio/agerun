@@ -98,8 +98,8 @@ make checkpoint-gate CMD=compact-changes GATE="Analysis" REQUIRED="1,2"
 
 **Expected gate output:**
 ```
-✅ GATE 'Gate Name' - PASSED
-   Verified: Steps 1,2,3
+✅ GATE 'Analysis' - PASSED
+   Verified: Steps 1,2
 ```
 
 ## Phase 2: Compaction (Steps 3-6)

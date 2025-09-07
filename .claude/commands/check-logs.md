@@ -114,8 +114,8 @@ make checkpoint-gate CMD=check-logs GATE="Build" REQUIRED="1"
 
 **Expected gate output:**
 ```
-✅ GATE 'Gate Name' - PASSED
-   Verified: Steps 1,2,3
+✅ GATE 'Build' - PASSED
+   Verified: Steps 1
 ```
 
 ## Phase 2: Analysis (Steps 3-4)

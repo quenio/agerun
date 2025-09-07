@@ -173,7 +173,7 @@ make checkpoint-gate CMD=review-changes GATE="Code Quality" REQUIRED="1,2,3,4,5,
 **Expected gate output:**
 ```
 ✅ GATE 'Code Quality' - PASSED
-   Verified: Steps 1,2,3
+   Verified: Steps 1,2,3,4,5,6
 ```
 
 **Minimum Requirements for Phase 1:**
@@ -235,8 +235,8 @@ make checkpoint-gate CMD=review-changes GATE="Architecture" REQUIRED="7,8,9,10,1
 
 **Expected gate output:**
 ```
-✅ GATE 'Code Quality' - PASSED
-   Verified: Steps 1,2,3
+✅ GATE 'Architecture' - PASSED
+   Verified: Steps 7,8,9,10,11
 ```
 
 **Minimum Requirements for Phase 2:**
@@ -293,8 +293,8 @@ make checkpoint-gate CMD=review-changes GATE="Documentation" REQUIRED="12,13,14,
 
 **Expected gate output:**
 ```
-✅ GATE 'Code Quality' - PASSED
-   Verified: Steps 1,2,3
+✅ GATE 'Documentation' - PASSED
+   Verified: Steps 12,13,14,15,16
 ```
 
 **Minimum Requirements for Phase 3:**
@@ -352,8 +352,8 @@ make checkpoint-gate CMD=review-changes GATE="Pre-Commit" REQUIRED="17,18,19,20,
 
 **Expected gate output:**
 ```
-✅ GATE 'Code Quality' - PASSED
-   Verified: Steps 1,2,3
+✅ GATE 'Pre-Commit' - PASSED
+   Verified: Steps 17,18,19,20,21
 ```
 
 **Minimum Requirements for Phase 4:**
@@ -377,24 +377,8 @@ make checkpoint-status CMD=review-changes
 
 **Expected completion output:**
 ```
-========================================
-       CHECKPOINT STATUS: review-changes
-========================================
-
-Progress: 22/22 steps (100%)
-
-[████████████████████] 100%
-
-✅ ALL CHECKPOINTS COMPLETE!
-
-Review Summary:
-- Code Quality: 6/6 checks complete
-- Architecture: 5/5 checks complete
-- Documentation: 5/5 checks complete
-- Pre-Commit: 5/5 checks complete
-- Final Report: Generated
-
-Next step: Review the report and address any issues found.
+🎆 All 22 steps complete!
+✓ Run: make checkpoint-cleanup CMD=review-changes
 ```
 
 ```bash

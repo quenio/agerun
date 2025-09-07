@@ -104,7 +104,7 @@ make checkpoint-gate CMD=fix-errors-whitelisted GATE="Analysis" REQUIRED="1,2,3"
 
 **Expected gate output:**
 ```
-✅ GATE 'Gate Name' - PASSED
+✅ GATE 'Analysis' - PASSED
    Verified: Steps 1,2,3
 ```
 
@@ -209,8 +209,8 @@ make checkpoint-gate CMD=fix-errors-whitelisted GATE="Strategy" REQUIRED="4,5,6,
 
 **Expected gate output:**
 ```
-✅ GATE 'Gate Name' - PASSED
-   Verified: Steps 1,2,3
+✅ GATE 'Strategy' - PASSED
+   Verified: Steps 4,5,6,7
 ```
 
 ## Phase 3: Implementation (Steps 8-11)
@@ -227,8 +227,8 @@ make checkpoint-gate CMD=fix-errors-whitelisted GATE="Implementation Ready" REQU
 
 **Expected gate output:**
 ```
-✅ GATE 'Gate Name' - PASSED
-   Verified: Steps 1,2,3
+✅ GATE 'Implementation Ready' - PASSED
+   Verified: Steps 1,2,3,4,5,6,7
 ```
 
 #### Step 4: Implement Fixes
@@ -353,8 +353,8 @@ make checkpoint-gate CMD=fix-errors-whitelisted GATE="Documentation" REQUIRED="1
 
 **Expected gate output:**
 ```
-✅ GATE 'Gate Name' - PASSED
-   Verified: Steps 1,2,3
+✅ GATE 'Documentation' - PASSED
+   Verified: Steps 12,13,14
 ```
 
 #### Step 6: Verify and Commit

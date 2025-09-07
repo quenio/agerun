@@ -161,8 +161,8 @@ make checkpoint-gate CMD=migrate-module-to-zig-abi GATE="Assessment" REQUIRED="1
 
 **Expected gate output:**
 ```
-✅ GATE 'Gate Name' - PASSED
-   Verified: Steps 1,2,3
+✅ GATE 'Assessment' - PASSED
+   Verified: Steps 1,2,3,4
 ```
 
 If `modules/{{1}}.zig` already exists:
@@ -235,8 +235,8 @@ make checkpoint-gate CMD=migrate-module-to-zig-abi GATE="Implementation" REQUIRE
 
 **Expected gate output:**
 ```
-✅ GATE 'Gate Name' - PASSED
-   Verified: Steps 1,2,3
+✅ GATE 'Implementation' - PASSED
+   Verified: Steps 5,6,7
 ```
 
 ## Phase 3: Testing (Steps 8-9)
@@ -292,8 +292,8 @@ make checkpoint-gate CMD=migrate-module-to-zig-abi GATE="Testing" REQUIRED="8,9"
 
 **Expected gate output:**
 ```
-✅ GATE 'Gate Name' - PASSED
-   Verified: Steps 1,2,3
+✅ GATE 'Testing' - PASSED
+   Verified: Steps 8,9
 ```
 
 ## Phase 4: Cleanup (Step 10)

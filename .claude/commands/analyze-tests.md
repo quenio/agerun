@@ -62,8 +62,8 @@ make checkpoint-gate CMD=analyze_tests GATE="Ready" REQUIRED="1"
 
 **Expected gate output:**
 ```
-✅ GATE 'Gate Name' - PASSED
-   Verified: Steps 1,2,3
+✅ GATE 'Ready' - PASSED
+   Verified: Steps 1
 ```
 
 ## Command
@@ -157,9 +157,9 @@ Progress: 3/3 steps (100%)
 ✅ ALL CHECKPOINTS COMPLETE!
 
 Summary:
-  Preparation: ✓ Complete
-  Execution: ✓ Complete  
-  Verification: ✓ Complete
+  Prepare: ✓ Complete
+  Execute: ✓ Complete  
+  Verify: ✓ Complete
 
 The analyze tests completed successfully!
 ```

@@ -141,7 +141,7 @@ make checkpoint-gate CMD=compact-guidelines GATE="Analysis" REQUIRED="1,2,3"
 
 **Expected gate output:**
 ```
-✅ GATE 'Gate Name' - PASSED
+✅ GATE 'Analysis' - PASSED
    Verified: Steps 1,2,3
 ```
 
@@ -190,8 +190,8 @@ make checkpoint-gate CMD=compact-guidelines GATE="Planning" REQUIRED="4,5"
 
 **Expected gate output:**
 ```
-✅ GATE 'Gate Name' - PASSED
-   Verified: Steps 1,2,3
+✅ GATE 'Planning' - PASSED
+   Verified: Steps 4,5
 ```
 
 #### 2. Space-Conscious Editing (CRITICAL) ([details](../../kb/documentation-standards-integration.md))
@@ -300,8 +300,8 @@ make checkpoint-gate CMD=compact-guidelines GATE="Creation" REQUIRED="6,7,8"
 
 **Expected gate output:**
 ```
-✅ GATE 'Gate Name' - PASSED
-   Verified: Steps 1,2,3
+✅ GATE 'Creation' - PASSED
+   Verified: Steps 6,7,8
 ```
 
 ## Phase 4: Integration (Steps 9-11)
@@ -365,8 +365,8 @@ make checkpoint-gate CMD=compact-guidelines GATE="Integration" REQUIRED="9,10,11
 
 **Expected gate output:**
 ```
-✅ GATE 'Gate Name' - PASSED
-   Verified: Steps 1,2,3
+✅ GATE 'Integration' - PASSED
+   Verified: Steps 9,10,11
 ```
 
 #### 5. Preserve Critical Information
@@ -525,8 +525,8 @@ make checkpoint-gate CMD=compact-guidelines GATE="Validation" REQUIRED="12,13,14
 
 **Expected gate output:**
 ```
-✅ GATE 'Gate Name' - PASSED
-   Verified: Steps 1,2,3
+✅ GATE 'Validation' - PASSED
+   Verified: Steps 12,13,14
 ```
 
 ## Phase 6: Commit (Step 15)
