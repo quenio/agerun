@@ -2,6 +2,23 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-09-07
+
+### ✅ ar_condition_instruction_parser Error Logging Enhancement
+- **Enhanced error logging** in ar_condition_instruction_parser (6 of 11 parsers now complete)
+- **Added NULL instruction parameter check** with clear error message (1 TDD cycle)
+- **Created test coverage**: test_condition_parser__null_instruction added
+- **Updated whitelist**: Added entry for intentional test error
+- **Zero memory leaks**: All 11 tests passing with clean memory
+- **Build time**: 1m 26s
+
+### ✅ review-changes Command Documentation Enhancement
+- **Fixed checkpoint tracking issue** in review-changes.md command documentation
+- **Added MANDATORY warnings** at the top of the file to prevent skipping checkpoints
+- **Created prominent REQUIRED section** with DO NOT PROCEED warning
+- **Added Execution Order section** with numbered mandatory steps
+- **Improved clarity**: Made it impossible to miss that checkpoint tracking is required
+
 ## 2025-09-03
 
 ### ✅ ar_compile_instruction_parser Error Logging Enhancement

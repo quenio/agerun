@@ -154,6 +154,9 @@ ignored_errors:
     message: "ERROR: Failed to parse if arguments (at position 17)"
     comment: "Testing if condition argument parsing error"
   - context: "ar_condition_instruction_parser_tests"
+    message: "ERROR: NULL instruction provided to condition parser (at position 0)"
+    comment: "Testing NULL instruction parameter error"
+  - context: "ar_condition_instruction_parser_tests"
   # ar_deprecate_instruction_parser_tests
   - context: "ar_deprecate_instruction_parser_tests"
     message: "ERROR: Expected '(' after 'deprecate' (at position 10)"

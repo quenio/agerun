@@ -1,16 +1,19 @@
 Review uncommitted changes for code quality, architectural compliance, and documentation accuracy.
 
+**MANDATORY**: This command MUST use checkpoint tracking. Start by running the checkpoint initialization below.
 
 # Review Changes
-## Checkpoint Tracking
 
-This command uses checkpoint tracking to ensure thorough review across all quality dimensions. The review process is divided into 4 major phases with 22 checkpoints total.
+## ⚠️ REQUIRED: Initialize Checkpoint Tracking First
 
-### Initialize Tracking
+**DO NOT PROCEED WITHOUT RUNNING THIS COMMAND:**
+
 ```bash
-# Start review process with checkpoint tracking
+# MANDATORY: Initialize checkpoint tracking (22 steps)
 make checkpoint-init CMD=review-changes STEPS='"Diff Analysis" "Code Smells" "Memory Management" "Naming Conventions" "Error Handling" "Test Coverage" "Parnas Principles" "Module Hierarchy" "Interface Design" "Dependency Check" "Design Patterns" "Real Code Check" "Doc Validation" "Cross-References" "Completeness" "Link Validation" "Build Status" "Hidden Issues" "Test Results" "File Hygiene" "Doc Sync" "Final Report"'
 ```
+
+This command uses checkpoint tracking to ensure thorough review across all quality dimensions. The review process is divided into 4 major phases with 22 checkpoints total.
 
 **Expected output:**
 ```
@@ -114,11 +117,21 @@ This command performs a comprehensive review of all uncommitted changes across m
 - **Documentation Sync**: Ensures docs match code changes
 - **Task Planning**: For large changes, checks for analysis report ([details](../../kb/report-driven-task-planning.md))
 
+### Execution Order (MANDATORY)
+
+1. **FIRST**: Run the checkpoint initialization command above
+2. **SECOND**: Follow the review process below, updating checkpoints after each step
+3. **THIRD**: Check progress with `make checkpoint-status CMD=review-changes`
+4. **FOURTH**: Complete all 22 steps before generating final report
+5. **LAST**: Clean up with `make checkpoint-cleanup CMD=review-changes`
+
 ### Usage
 
 ```bash
 /review-changes
 ```
+
+**IMPORTANT**: Running `/review-changes` alone is NOT sufficient. You MUST initialize checkpoints first as shown above.
 
 ### Review Process
 

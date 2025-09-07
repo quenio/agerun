@@ -247,10 +247,14 @@ ar_instruction_ast_t* ar_condition_instruction_parser__parse(
     const char *ref_instruction,
     const char *ref_result_path
 ) {
-    if (!mut_parser || !ref_instruction) {
+    if (!mut_parser) {
         return NULL;
     }
     
+    if (!ref_instruction) {
+        _log_error(mut_parser, "NULL instruction provided to condition parser", 0);
+        return NULL;
+    }
     
     size_t pos = 0;
     
