@@ -6,230 +6,155 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
-### CLAUDE.md Guidelines Compaction (Completed 2025-09-03)
-- [x] Compacted verbose sections in CLAUDE.md by extracting detailed content to knowledge base; reduced document from 541 to 437 lines (19% reduction); created 4 new KB articles: kb-search-patterns.md for KB search visibility, plan-verification-checklist.md for comprehensive planning, development-practice-groups.md for organized practices, dependency-management-examples.md for dependency management; achieved 75-88% reduction in 5 verbose sections while preserving all critical information through KB links; added cross-references to existing KB articles; updated kb/README.md index; all documentation validation passes
+- [x] CLAUDE.md Guidelines Compaction: Extracted verbose sections to KB articles; 541→437 lines (19% reduction); created 4 KB articles (Completed 2025-09-03)
 
-### ar_expression_parser Error Logging Enhancement (Completed 2025-08-25)
-- [x] Enhanced ar_expression_parser with comprehensive error logging for better debugging; added error messages for NULL expression parameter in create function; verified existing _set_error function already provides comprehensive error logging with position information for all parse failures; added contextual error messages for binary operation failures (multiplication, division, addition, subtraction, comparisons, equality); added tests for cascading NULL handling in primary expressions, binary operations, and nested expressions; integration tests confirm error logging works correctly across the system; reduced silent failure rate from 97.6% to 0%; all 72 tests pass with zero memory leaks; build time: 1m 24s
+- [x] ar_expression_parser Error Logging: Enhanced with comprehensive error logging; reduced silent failures 97.6%→0%; 72 tests pass (Completed 2025-08-25)
 
-### YAML Module Error Logging Enhancement and KB Documentation (Completed 2025-08-24)
-- [x] Added comprehensive error logging to both ar_yaml_reader and ar_yaml_writer modules using their existing ar_log instances; ar_yaml_reader: implemented error messages for 3 failure conditions (file open failure, empty file, NULL filename) with 2 new tests; ar_yaml_writer: added error logging for NULL data and NULL filename parameters with 2 new tests; verified both modules are completely stateless with no global state beyond instance management; created 7 new KB articles documenting patterns: error-logging-instance-utilization.md for utilizing stored log instances, module-consistency-verification.md for checking sister modules for same improvements, stateless-module-verification.md for verifying no hidden global state, api-suffix-cleanup-pattern.md for removing temporary suffixes after migration, error-logging-null-instance-limitation.md for understanding NULL instance limitations, test-driven-documentation-validation.md for using tests to validate documentation accuracy, comprehensive-learning-extraction-pattern.md for multi-pass learning extraction; updated CLAUDE.md Module Development, TDD, and Documentation Protocol sections with new patterns; all tests pass with zero memory leaks
+- [x] YAML Module Error Logging: Added error logging to ar_yaml_reader/writer; created 7 KB articles; all tests pass (Completed 2025-08-24)
 
-### ar_yaml_writer NULL Parameter Error Logging (Completed 2025-08-24)
-- [x] Enhanced ar_yaml_writer with complete error logging for all failure conditions; added error messages for NULL data and NULL filename parameters to match ar_yaml_reader; implemented 2 new tests for NULL parameter error verification; updated documentation with comprehensive error handling section; added whitelist entries for all intentional test errors; module now has 9 total tests all passing; both YAML modules have identical error handling patterns; build time: 1m 24s
+- [x] ar_yaml_writer NULL Parameter Error Logging: Added error messages for NULL parameters; 9 tests passing (Completed 2025-08-24)
 
-### ar_yaml_reader Error Logging Implementation (Completed 2025-08-24)
-- [x] Added comprehensive error logging to ar_yaml_reader using existing ar_log instance; implemented error messages for 3 failure conditions: file open failure, empty file, and NULL filename; added 2 new tests specifically for error logging verification; updated documentation to reflect 15 total tests and error handling details; added whitelist entries for intentional test errors; removed unused ar_io dependency; all tests pass with zero memory leaks; build time: 1m 25s
+- [x] ar_yaml_reader Error Logging: Added error messages for 3 failure conditions; 15 tests total (Completed 2025-08-24)
 
-### ar_yaml_writer Module Instantiation (Completed 2025-08-24)
-- [x] Made ar_yaml_writer instantiable with opaque type pattern for encapsulation; migrated all 4 original tests plus added 3 new tests (7 total) to instance-based API; removed backward compatibility wrapper after updating ar_yaml_reader_tests; renamed write_to_file_with_instance to write_to_file as primary API; added ar_log support for error reporting with dedicated test; removed unused ar_io dependency; all tests pass with zero memory leaks; build time: 1m 24s
+- [x] ar_yaml_writer Module Instantiation: Made instantiable with opaque type; 7 tests total (Completed 2025-08-24)
 
-### YAML Module Split and ar_yaml_reader Instantiation (Completed 2025-08-18)
-- [x] Split ar_yaml module into separate ar_yaml_reader and ar_yaml_writer modules following "move don't rewrite" pattern; made ar_yaml_reader instantiable with ar_log instance for error reporting; migrated all 13 tests to instance-based API with zero memory leaks; renamed read_from_file_with_instance to read_from_file as primary API; added container state management for parse operations; build time: 1m 27s
+- [x] YAML Module Split: Created ar_yaml_reader/writer; made instantiable; 13 tests migrated (Completed 2025-08-18)
 
-### Knowledge Base Enhancement - CI Debugging Patterns (Completed 2025-08-15)
-- [x] Created 5 new KB articles documenting CI debugging and verification patterns discovered during investigation of reported documentation errors; issue-currency-verification-pattern.md for verifying CI errors are current; local-ci-discrepancy-investigation.md for handling validation differences; error-message-source-tracing.md for tracking error transformations; github-actions-debugging-workflow.md for systematic CI investigation; assumption-verification-before-action.md for evidence-based debugging; updated kb/README.md index with new articles in appropriate sections; updated CLAUDE.md with references to new patterns; all documentation validated with make check-docs
+- [x] Knowledge Base Enhancement - CI Debugging: Created 5 KB articles for CI debugging patterns (Completed 2025-08-15)
 
-### Wake/Sleep Remnant Cleanup (Completed 2025-08-11)
-- [x] Removed all wake/sleep message remnants from codebase (19 files, 195 lines removed); deleted 77-line commented-out test function from bootstrap_tests.c; removed unnecessary message processing from ar_instruction_evaluator_tests.c; cleaned up obsolete comments, debug output, and test infrastructure; created 4 new KB articles documenting cleanup patterns; all 68 tests continue to pass with zero memory leaks
+- [x] Wake/Sleep Remnant Cleanup: Removed remnants from 19 files (195 lines); created 4 KB articles (Completed 2025-08-11)
 
-### Bootstrap Agent Spawning - TDD Cycle 7 (Completed 2025-08-10)
-- [x] Fixed send_instruction_evaluator to use instance-specific agency for proper message routing instead of global agency; added spawn no-op behavior when method_name is 0 or empty string to allow conditional spawning; implemented bootstrap-1.0.0.method that spawns echo agent on __boot__ message and handles boomerang reply; added comprehensive tests for spawn no-op cases; updated SPEC.md to document spawn instruction's no-op behavior; all 69 tests passing with zero memory leaks
+- [x] Bootstrap Agent Spawning: Fixed evaluator routing; added spawn no-op; 69 tests passing (Completed 2025-08-10)
 
-### Knowledge Base Cleanup - TDD Cycle 6 (Completed 2025-08-10)
-- [x] Removed 4 obsolete KB articles about wake/sleep messages: duplicate-wake-message-bug.md, agent-wake-message-processing.md, ownership-drop-message-passing.md, wake-message-field-access-pattern.md; updated CLAUDE.md to remove 7 references; updated kb/README.md index to remove 4 entries; cleaned up cross-references in 14 KB articles; updated .claude/commands/fix-errors-whitelisted.md; all documentation validation passes
+- [x] Knowledge Base Cleanup: Removed 4 obsolete KB articles; updated 14 cross-references (Completed 2025-08-10)
 
-### Knowledge Base Enhancement - Documentation Patterns (Completed 2025-08-10)
-- [x] Created documentation-only-change-pattern.md explaining that documentation updates don't require TDD cycles; updated atomic-commit-documentation-pattern.md to include git amend technique for forgotten documentation; added cross-references to 4 existing KB articles; updated CLAUDE.md with reference in TDD section
+- [x] Knowledge Base Enhancement - Documentation: Created articles on doc-only changes and git amend (Completed 2025-08-10)
 
-### Project Documentation Update - TDD Cycle 5 (Completed 2025-08-10)
-- [x] Updated SPEC.md to remove all 7 wake/sleep references: removed wake/sleep from version transition behavior; removed Agent Lifecycle section that only described wake/sleep; updated exit instruction to reflect immediate destruction; removed Special Messages section entirely; updated System Startup section; renamed Agent Lifecycle to Resource Management; documentation validation passes
+- [x] Project Documentation Update: Removed 7 wake/sleep references from SPEC.md (Completed 2025-08-10)
 
-### Knowledge Base Enhancement - Wake/Sleep Cleanup Patterns (Completed 2025-08-10)
-- [x] Created 3 new KB articles from wake/sleep cleanup session: test-string-selection-strategy.md for choosing clearly synthetic test data; regression-test-removal-criteria.md for identifying obsolete regression tests; documentation-update-cascade-pattern.md for systematic documentation updates; added cross-references to 4 existing KB articles; updated CLAUDE.md with references in TDD and Documentation sections
+- [x] Knowledge Base - Wake/Sleep Cleanup: Created 3 KB articles for test and documentation patterns (Completed 2025-08-10)
 
-### Wake/Sleep Message Removal - TDD Cycle 4 (Completed 2025-08-10)
-- [x] Successfully removed all wake/sleep detection logic from 7 method files: bootstrap, echo, calculator, grade-evaluator, message-router, string-builder, and method-creator; updated ar_executable.c to remove hardcoded wake message handling and outdated comments; simplified all methods to directly access message fields without special case handling; all 68 tests pass with zero memory leaks
+- [x] Wake/Sleep Message Removal: Removed logic from 7 method files and ar_executable; 68 tests pass (Completed 2025-08-10)
 
-### Knowledge Base Enhancement - Test Fixture Patterns (Completed 2025-08-09)
-- [x] Created 4 new KB articles documenting patterns discovered during fixture module creation; test-fixture-module-creation-pattern.md for proper fixture design with opaque types; compiler-output-conflict-pattern.md for parallel build isolation requirements; dynamic-test-resource-allocation.md for ownership in test resources; atomic-commit-documentation-pattern.md for including docs with implementation; updated parallel-test-isolation-process-resources.md with cross-references; updated kb/README.md index with new articles; updated CLAUDE.md with references in TDD, memory, and build sections
+- [x] Knowledge Base - Test Fixture Patterns: Created 4 KB articles on fixture design and build isolation (Completed 2025-08-09)
 
-### Executable Test Fixture Module Creation (Completed 2025-08-09)
-- [x] Created ar_executable_fixture module to isolate test build directories and prevent compiler conflicts between gcc and clang; extracted helper functions from ar_executable_tests.c into proper fixture module with opaque types; implemented dynamic allocation for methods directory paths with clear ownership semantics; added comprehensive tests for the fixture module; renamed functions to use create/destroy pattern for consistency; fixed "invalid control bits" linker error from parallel builds
+- [x] Executable Test Fixture Module: Created module to isolate test builds; fixed linker errors (Completed 2025-08-09)
 
-### Knowledge Base Enhancement from Session Learnings (Completed 2025-08-09)
-- [x] Created 6 new KB articles from session learnings: shared-context-architecture-pattern.md for system resource management; frame-creation-prerequisites.md for debugging frame errors; permission-based-test-modification.md for TDD discipline; struggling-detection-pattern.md for knowing when to ask for help; phased-cleanup-pattern.md for managing post-change cleanup; comprehensive-impact-analysis.md for systematic change verification; updated 4 existing KB articles with cross-references; updated CLAUDE.md with all new article references in appropriate sections
+- [x] Knowledge Base - Session Learnings: Created 6 KB articles on resource management and TDD patterns (Completed 2025-08-09)
 
-### Knowledge Base Enhancement - Task Authorization Learning (Completed 2025-08-08)
-- [x] Created task-authorization-pattern.md documenting the importance of waiting for explicit user instruction before proceeding with tasks; added cross-references to 3 related KB articles (user-feedback-as-qa, plan-verification-and-review, frank-communication-principle); updated kb/README.md index; updated CLAUDE.md Task Management section with reference
+- [x] Knowledge Base - Task Authorization: Created article on waiting for explicit instructions (Completed 2025-08-08)
 
-### Knowledge Base Enhancement - Session Learnings (Completed 2025-08-08)
-- [x] Created 3 new KB articles from session investigation and previous TDD cycle 5; file-io-backup-mechanism.md documenting automatic .bak file creation; requirement-precision-in-tdd.md capturing lessons about requirement misunderstandings; test-completeness-enumeration.md for verifying each expected outcome individually; updated kb/README.md with new articles; added cross-references to existing KB articles; updated CLAUDE.md with references to new patterns
+- [x] Knowledge Base - Session Learnings: Created 3 KB articles on I/O backups and TDD precision (Completed 2025-08-08)
 
-### Knowledge Base Enhancement - TDD Cycle 4 Learnings (Completed 2025-08-07)
-- [x] Created 3 new KB articles from TDD Cycle 4 implementation; agerun-method-language-nesting-constraint.md documenting function call limitations; method-test-ast-verification.md for parse error detection in tests; stub-and-revisit-pattern.md for handling unavailable dependencies; updated method-test-template.md and test-first-verification-practice.md with cross-references; added references to CLAUDE.md in TDD, Language Notes, and Development Practices sections
+- [x] Knowledge Base - TDD Cycle 4 Learnings: Created 3 KB articles on method language constraints (Completed 2025-08-07)
 
-### Knowledge Base Enhancement - TDD Cycle 6 Learning Integration (Completed 2025-08-08) 
-- [x] Created 2 new KB articles and enhanced 1 existing article from TDD Cycle 6 implementation; parallel-test-isolation-process-resources.md documenting race condition resolution patterns with PID-based temporary directories; makefile-environment-variable-directory-gotcha.md capturing directory target dependency issues; enhanced user-feedback-debugging-pattern.md with real-time course correction pattern; documented knowledge application gap revealing why evidence-based debugging principles weren't followed under pressure; updated kb/README.md with new articles; added cross-references to existing articles; all documentation validated with make check-docs
+- [x] Knowledge Base - TDD Cycle 6 Integration: Created 2 KB articles on race conditions and build issues (Completed 2025-08-08)
 
-### Bootstrap Agent Creation & Race Condition Fix - TDD Cycle 6 (Completed 2025-08-08)
-- [x] Implemented bootstrap agent creation in ar_executable.c using TDD approach with 3 iterations; created 5 comprehensive tests including single session, method loading, bootstrap creation, failure handling, and echo spawning verification; fixed critical race condition in parallel test execution by implementing per-process isolated build environments using process ID-based temporary directories and individual methods copies; resolved Thread Sanitizer test failures; extracted helper functions for test code reuse; all 68 tests pass including Thread Sanitizer with zero memory leaks
+- [x] Bootstrap Agent Creation & Race Fix: Implemented bootstrap agent; fixed race conditions; 68 tests pass (Completed 2025-08-08)
 
-### Bootstrap Method Implementation - TDD Cycle 4 (Completed 2025-08-07)
-- [x] Created bootstrap-1.0.0.method for system initialization using TDD approach; handles wake/sleep messages with proper syntax (no nested function calls); added comprehensive tests with AST verification to catch parse errors; documented method behavior and future spawn functionality; commented spawn code awaiting Cycle 5 (method loading from filesystem); improved test quality to properly detect method syntax errors
+- [x] Bootstrap Method Implementation: Created bootstrap-1.0.0.method with TDD; AST verification tests (Completed 2025-08-07)
 
-### System Auto-Saving Removal - TDD Cycle 3 (Completed 2025-08-07)
-- [x] Removed auto-saving from ar_system__shutdown_with_instance() using TDD approach; created test verifying no files saved on shutdown; removed 11 lines of auto-save code; standardized all Cycle 1-3 tests to use BDD structure and AR_ASSERT; all 68 tests pass with zero memory leaks
+- [x] System Auto-Saving Removal: Removed auto-save on shutdown; 68 tests pass (Completed 2025-08-07)
 
-### Knowledge Base Enhancement - TDD Cycle 2 Learnings (Completed 2025-08-07)
-- [x] Created 3 new KB articles from TDD Cycle 2 implementation; stdout-capture-test-pattern.md for capturing output in tests; static-analysis-error-handling.md for syscall error checking requirements; test-first-verification-practice.md for single test verification workflow; updated test-isolation-through-commenting.md with I/O elimination strategy; added cross-references to stderr-redirection-debugging.md; updated CLAUDE.md with static analysis and test verification references
+- [x] Knowledge Base - TDD Cycle 2 Learnings: Created 3 KB articles on test patterns and static analysis (Completed 2025-08-07)
 
-### System Auto-Loading Removal - TDD Cycle 2 (Completed 2025-08-07)  
-- [x] Removed auto-loading from ar_system__init_with_instance() using TDD approach; created test that captures stdout to detect loading warnings; test properly failed in RED phase with assertion; removed methodology and agency loading code (lines 123-147); eliminated all "Warning: Could not load" messages in test fixtures; fixed static analysis issue with proper error handling for dup() functions; all 67 tests pass with zero memory leaks
+- [x] System Auto-Loading Removal: Removed auto-load on init; fixed dup() error handling; 67 tests pass (Completed 2025-08-07)
 
-### Executable Single Session Refactoring - TDD Cycle 1 (Completed 2025-08-06)
-- [x] Removed second runtime session from ar_executable.c using true TDD approach; created comprehensive integration test that runs actual executable and verifies single session behavior; test always builds executable to ensure latest code is tested; handles signal detection and proper error reporting; removed obsolete executable whitelist entry for "Unexpected end of file in agency.agerun" (211 entries remaining); first of 9 TDD cycles for transforming executable into bootstrap system
+- [x] Executable Single Session Refactoring: Removed second session; integration tests added (Completed 2025-08-06)
 
-### Knowledge Base Enhancement - Integration Testing Patterns (Completed 2025-08-06)
-- [x] Created 4 new KB articles documenting integration testing patterns from TDD Cycle 1 implementation; integration-test-binary-execution.md for popen() pattern; test-build-before-run-pattern.md for rebuild requirement; test-working-directory-verification.md for directory checks; process-termination-analysis.md for exit code handling; updated red-green-refactor-cycle.md to emphasize real tests vs placeholders; added cross-references to 3 existing articles; updated CLAUDE.md TDD section with integration test reference
+- [x] Knowledge Base - Integration Testing: Created 4 KB articles on binary execution and test patterns (Completed 2025-08-06)
 
-### Calculator Wake Message Field Access Error Fix (Completed 2025-08-05)
-- [x] Fixed wake message field access error in calculator method using same pattern as echo; removed calculator_tests error from whitelist (219 entries remaining); 13 wake message errors remain to be fixed
+- [x] Calculator Wake Message Fix: Fixed field access error; whitelist reduced to 219 entries (Completed 2025-08-05)
 
-### Grade Evaluator Wake Message Field Access Error Fix (Completed 2025-08-05)
-- [x] Fixed wake message field access error in grade_evaluator method using same pattern; removed grade_evaluator_tests error from whitelist (218 entries remaining); 12 wake message errors remain to be fixed
+- [x] Grade Evaluator Wake Message Fix: Fixed field access error; whitelist reduced to 218 entries (Completed 2025-08-05)
 
-### Message Router Wake Message Field Access Error Fix (Completed 2025-08-05)
-- [x] Fixed wake message field access errors in message_router method using same pattern; removed 3 message_router_tests errors from whitelist (215 entries remaining); 9 wake message errors remain to be fixed
+- [x] Message Router Wake Message Fix: Fixed 3 field access errors; whitelist reduced to 215 (Completed 2025-08-05)
 
-### String Builder Wake Message Field Access Error Fix (Completed 2025-08-05)
-- [x] Fixed wake message field access errors in string_builder method using same pattern; removed 2 string_builder_tests errors from whitelist (213 entries remaining); 7 wake message errors remain to be fixed
+- [x] String Builder Wake Message Fix: Fixed 2 field access errors; whitelist reduced to 213 (Completed 2025-08-05)
 
-### Interpreter Fixture Wake Message Error Fix & Knowledge Base Enhancement (Completed 2025-08-05)
-- [x] Fixed wake message errors in ar_interpreter_fixture_tests by adding proper message ownership handling in test code; fixture was bypassing normal ownership flow allowing expression evaluator to claim messages; fixed by having test take ownership before execution and destroy after; removed 2 whitelist entries (212 entries remaining); discovered ownership pattern difference between system and fixture execution; created 2 new KB articles (test-fixture-message-ownership.md, expression-evaluator-claim-behavior.md); updated 3 existing KB articles with cross-references; updated CLAUDE.md with new patterns
+- [x] Interpreter Fixture Wake Message Fix: Fixed ownership handling; created 2 KB articles; whitelist to 212 (Completed 2025-08-05)
 
-### Whitelist Specificity Enhancement (Completed 2025-08-05)
-- [x] Enhanced whitelist specificity for ar_expression_evaluator_tests by using unique field name 'type_mismatch_test_field' instead of generic 'method_name'; prevents masking real wake message errors; validated solution by simulating error that was correctly caught as unwhitelisted; created 2 KB articles (whitelist-specificity-pattern.md, error-detection-validation-testing.md); updated CLAUDE.md with new patterns
+- [x] Whitelist Specificity Enhancement: Used unique field names; created 2 KB articles (Completed 2025-08-05)
 
-### Wake Message Field Access Error Fix & Knowledge Base Enhancement (Completed 2025-08-05)
-- [x] Fixed wake message field access error in echo method by detecting special messages and providing default values; removed echo_tests error from whitelist (220 entries remaining); pattern can be applied to fix remaining 14 wake message errors in other methods; created 4 new KB articles (wake-message-field-access-pattern.md, agerun-language-constraint-workarounds.md, cross-method-pattern-discovery.md, systematic-error-whitelist-reduction.md); updated defensive-programming-consistency.md with message type handling; added cross-references to 3 existing articles; updated CLAUDE.md and check-logs command with new patterns
+- [x] Wake Message Field Access Fix: Fixed echo method; created 4 KB articles; whitelist to 220 (Completed 2025-08-05)
 
-### compile() Function Validation and Build Script Fixes (Completed 2025-08-03 Part 8)
-- [x] Fixed compile() function to properly validate method syntax before returning success; now checks if method AST is valid after parsing; returns 0 for invalid syntax; fixed shell script error in check_build_logs.sh; implemented context-aware filtering for intentional test errors; created intentional-test-errors-filtering.md KB article
+- [x] compile() Function Validation: Fixed syntax validation; context-aware error filtering (Completed 2025-08-03)
 
-### Knowledge Base Enhancement - Debugging and Ownership Patterns (Completed 2025-08-03 Part 7)
-- [x] Created ownership-gap-vulnerability.md documenting temporal ownership gap corruption pattern; created debug-logging-ownership-tracing.md for strategic ownership debugging; created make-only-test-execution.md enforcing build system usage; updated evidence-based-debugging.md with component isolation testing; updated memory-debugging-comprehensive-guide.md with message type corruption debugging; added cross-references throughout KB
+- [x] Knowledge Base - Debugging Patterns: Created 3 KB articles on ownership and debugging (Completed 2025-08-03)
 
-### Message Corruption Fix in Agent-System Communication (Completed 2025-08-03 Part 6)
-- [x] Debugged and fixed critical bug where MAP messages sent to agents were becoming INTEGER 0; identified root cause as improper ownership handling when messages are dequeued; implemented fix in ar_system.c to take ownership after dequeuing; added debug logging throughout message pipeline; verified fix with all tests passing and zero memory leaks
+- [x] Message Corruption Fix: Fixed MAP→INTEGER bug in agent communication; zero memory leaks (Completed 2025-08-03)
 
-### TODO.md Selective Compaction Patterns (Completed 2025-08-03 Part 5)
-- [x] Identified selective compaction pattern for mixed-state documents; updated documentation-compacting-pattern.md with TODO.md strategy; created selective-compaction-pattern.md; updated compact-tasks command and CLAUDE.md with references
+- [x] TODO.md Selective Compaction: Created patterns for mixed-state document compaction (Completed 2025-08-03)
 
-### Documentation Patterns from CHANGELOG Compaction (Completed 2025-08-03 Part 4)
-- [x] Identified 4 new documentation patterns from CHANGELOG compaction session; created 3 new KB articles; updated commands and CLAUDE.md with references
+- [x] Documentation Patterns from CHANGELOG: Created 3 KB articles from compaction session (Completed 2025-08-03)
 
-### CHANGELOG.md Compaction (Completed 2025-08-03 Part 3)
-- [x] Compacted CHANGELOG.md from 1637 to 902 lines (45% reduction); preserved metrics, dates, transitions; combined bullets with semicolons
+- [x] CHANGELOG.md Compaction: Reduced 1637→902 lines (45% reduction) (Completed 2025-08-03)
 
-### Knowledge Base Enhancement - Documentation Patterns (Completed 2025-08-03 Part 2)
-- [x] Enhanced documentation-compacting-pattern.md with critical learnings; added bidirectional cross-referencing; updated single commit strategy
+- [x] Knowledge Base - Documentation Patterns: Enhanced compacting pattern article (Completed 2025-08-03)
 
-### Documentation Compaction (Completed 2025-08-03)
-- [x] Compacted CLAUDE.md from ~650 to ~390 lines (40% reduction); created 6 new KB articles; added cross-references; validated with make check-docs
+- [x] Documentation Compaction: CLAUDE.md reduced 650→390 lines (40%); created 6 KB articles (Completed 2025-08-03)
 
-### Knowledge Base Enhancement - Anti-Pattern Documentation (Completed 2025-08-02)
-- [x] Created Global Instance Wrapper Anti-Pattern article; updated instantiation articles; added warning to CLAUDE.md; validated documentation
+- [x] Knowledge Base - Anti-Pattern: Created Global Instance Wrapper Anti-Pattern article (Completed 2025-08-02)
 
-### Critical Build System Fix (Completed 2025-07-28)
-- [x] Fixed Makefile test targets to propagate failures; fixed false positive SUCCESS reporting; all test targets exit with non-zero on failure
+- [x] Critical Build System Fix: Fixed test target failure propagation (Completed 2025-07-28)
 
-### Test Fixes - String Comparison and Initial Memory (Completed 2025-07-29)
-- [x] Fixed calculator and grade evaluator tests with proper initial memory; added string comparison tests; all tests now passing
+- [x] Test Fixes: Fixed calculator/grade evaluator tests; added string comparisons (Completed 2025-07-29)
 
-### Knowledge Base Enhancement - Phase Completion (Completed 2025-07-28)
-- [x] Created refactoring phase completion checklist; enhanced TDD completion patterns; updated commit command with comprehensive documentation checks; added cross-references throughout KB
+- [x] Knowledge Base - Phase Completion: Created refactoring checklist; enhanced TDD patterns (Completed 2025-07-28)
 
-### Knowledge Base Enhancement - TDD and Refactoring (Completed 2025-07-27)
-- [x] Created TDD feature completion pattern; updated refactoring patterns with registry example; created systematic cleanup guide; enhanced red-green-refactor documentation; added cross-references throughout KB
+- [x] Knowledge Base - TDD/Refactoring: Created feature completion pattern; systematic cleanup guide (Completed 2025-07-27)
 
-### Evaluator Migration Strategy (Completed 2025-07-20)
-- [x] Analyzed error cleanup patterns; determined Zig's defer solves cleanup cascade; migrated ar_exit_instruction_evaluator as proof; created KB article; updated TODO.md for Zig migration approach
+- [x] Evaluator Migration Strategy: Analyzed cleanup patterns; migrated exit evaluator to Zig (Completed 2025-07-20)
 
-### Knowledge Base Enhancement (Completed 2025-07-20)
-- [x] Created module removal checklist KB; updated refactoring patterns; enhanced documentation migration; added cross-references; created evaluator migration strategy; enhanced memory leak detection; updated C-to-Zig migration guide
+- [x] Knowledge Base Enhancement: Created module removal checklist; updated migration guides (Completed 2025-07-20)
 
-### Build System Parallelization (Completed 2025-07-07)
-- [x] Refactored Makefile for parallel execution with isolated directories; renamed targets for consistency; fixed race conditions; enhanced full_build.sh with parallel jobs and static analysis
+- [x] Build System Parallelization: Refactored Makefile for parallel execution; fixed race conditions (Completed 2025-07-07)
 
-### Type Naming Convention Update (Completed 2025-07-06)
-- [x] Renamed all types to follow ar_ prefix convention: enums (4 types, 129 occurrences), typedefs (17 types, 2573 occurrences), struct tags (11 types, 41 occurrences)
+- [x] Type Naming Convention: Renamed all types to ar_ prefix; 2743 total occurrences (Completed 2025-07-06)
 
-### Fix Naming Convention Violations (Completed 2025-07-07)
-- [x] Fixed static functions in ar_io.zig and ar_heap.zig; fixed enum values to AR_<ENUM_TYPE>__<VALUE>; verified struct definitions and Zig struct types; updated 64 instances of 'agerun_' to 'ar_'
+- [x] Naming Convention Violations: Fixed static functions and enum values; 64 updates (Completed 2025-07-07)
 
-### Static Analysis Reporting in Makefile (Completed 2025-06-13)
-- [x] Fixed static analysis in full_build.sh with per-file analysis, proper bug detection, and clean build achieved
+- [x] Static Analysis Reporting: Fixed full_build.sh with per-file analysis (Completed 2025-06-13)
 
-### Static Function Naming Convention Update (Completed 2025-06-11)
-- [x] Changed all static functions to use underscore prefix _<function_name> following Python-style convention
+- [x] Static Function Naming: Changed to underscore prefix convention (Completed 2025-06-11)
 
-### Test Function Naming Convention Update (Completed 2025-06-17)
-- [x] Established test function naming pattern: test_<module>__<test_name> with double underscore
+- [x] Test Function Naming: Established test_<module>__<test_name> pattern (Completed 2025-06-17)
 
-### Module Function Naming Convention Refactoring (Completed 2025-06-08)
-- [x] Changed all module functions from ar_<module>_<function> to ar__<module>__<function> and heap macros to AR__HEAP__*
+- [x] Module Function Naming: Changed to ar__<module>__<function> pattern (Completed 2025-06-08)
 
-### Method AST and Parser Module Development (Completed 2025-06-26)
-- [x] Created method AST and parser modules with instruction management, line parsing, and comment support - zero memory leaks
+- [x] Method AST/Parser Modules: Created with instruction management; zero memory leaks (Completed 2025-06-26)
 
-### ar_io Module Zig Conversion (Completed 2025-07-05)
-- [x] Converted ar_io.c to ar_io.zig with full C compatibility, resolved circular dependency using stack allocation
+- [x] ar_io Zig Conversion: Full C compatibility; resolved circular dependency (Completed 2025-07-05)
 
-### ar_heap Module Zig Conversion (Completed 2025-07-05)
-- [x] Converted ar_heap.c to ar_heap.zig with full C compatibility, elegant exit handling solution
+- [x] ar_heap Zig Conversion: Full C compatibility; elegant exit handling (Completed 2025-07-05)
 
-### ar_semver Module Zig Conversion (Completed 2025-07-05)
-- [x] Converted ar_semver.c to ar_semver.zig standalone with enhanced safety, all tests pass
+- [x] ar_semver Zig Conversion: Standalone with enhanced safety (Completed 2025-07-05)
 
-### ar_instruction_ast Module Zig Conversion (Completed 2025-07-13)
-- [x] Migrated to Zig with full C API compatibility; enhanced null safety; improved efficiency; zero memory leaks (48 allocations freed); updated documentation
+- [x] ar_instruction_ast Zig Conversion: Full C API; enhanced null safety (Completed 2025-07-13)
 
-### ar_method_evaluator.zig C API Compatibility Fix (Completed 2025-07-13)
-- [x] Fixed C API violations; updated return types to opaque; added alignment casts; added cImport block; zero memory leaks (736 allocations freed); enhanced migration guide
+- [x] ar_method_evaluator.zig C API Fix: Fixed violations; zero memory leaks (Completed 2025-07-13)
 
-### ar_method_ast Module Zig Conversion (Completed 2025-07-13)
-- [x] Migrated to Zig; fixed memory leak with Zig-compatible macros; updated Makefile for -DDEBUG and -D__ZIG__; changed to -O Debug; zero memory leaks (1046 allocations freed); created KB articles
+- [x] ar_method_ast Zig Conversion: Fixed memory leaks; 1046 allocations freed (Completed 2025-07-13)
 
-### Documentation System Enhancement (Completed 2025-07-14)
-- [x] Enhanced check_docs.py for relative path validation; detect broken links; validate file existence; support markdown formats; integrated into pipeline; found 19 broken links
+- [x] Documentation System Enhancement: Added link validation; found 19 broken links (Completed 2025-07-14)
 
-### Evaluator Dependency Injection Refactoring (Completed 2025-07-15)
-- [x] Refactored instruction and method evaluators to create dependencies internally; simplified APIs to require only log parameter; maintained zero memory leaks; updated documentation
+- [x] Evaluator Dependency Injection: Simplified APIs; zero memory leaks (Completed 2025-07-15)
 
-### System Module Responsibility Analysis (Completed 2025-07-30)
-- [x] Analyzed ar_system module identifying 5 distinct responsibilities; created comprehensive refactoring plan; documented decomposition; generated detailed analysis report
+- [x] System Module Analysis: Identified 5 responsibilities; created refactoring plan (Completed 2025-07-30)
 
-### Knowledge Base Enhancement - Module Refactoring Patterns (Completed 2025-07-30)
-- [x] Created module-instantiation-prerequisites.md documenting dependency analysis patterns; created instance-association-pattern.md for proper instance relationships; created persistence-simplification-through-instantiation.md showing architectural simplification; updated CLAUDE.md with module instantiation guidelines; cross-referenced with existing architecture KB articles
+- [x] Knowledge Base - Module Refactoring: Created 3 KB articles on instantiation patterns (Completed 2025-07-30)
 
-### Agency Module Instantiation (Completed 2025-08-01)
-- [x] Made ar_agency module instantiable with opaque type and instance-based API; converted global state to instance fields while maintaining backward compatibility; added create/destroy functions and instance-based versions of all API functions; created global instance pattern similar to ar_methodology for seamless migration; added comprehensive test for instance-based API; updated documentation to describe both global and instance-based APIs; verified zero memory leaks from agency module (methodology leaks are expected)
+- [x] Agency Module Instantiation: Made instantiable with opaque type; zero memory leaks (Completed 2025-08-01)
 
-### Knowledge Base Enhancement - API Migration Patterns (Completed 2025-08-01)
-- [x] Created test-memory-leak-ownership-analysis.md documenting test lifecycle management; created global-to-instance-api-migration.md documenting backward-compatible migration pattern; updated CLAUDE.md with references to new patterns; cross-referenced with existing instantiation articles
+- [x] Knowledge Base - API Migration: Created 2 KB articles on test lifecycle and migration patterns (Completed 2025-08-01)
 
-### Knowledge Base Enhancement (Completed 2025-07-28)
-- [x] Created internal-vs-external-module-pattern.md documenting module role distinctions; updated user-feedback-as-qa.md with examples from ar_method_resolver implementation; enhanced specification-consistency-maintenance.md to check specs before implementation; updated separation-of-concerns-principle.md with registry/resolver example; added cross-references between related KB articles; updated CLAUDE.md with new KB references
+- [x] Knowledge Base Enhancement: Created articles on module patterns and user feedback (Completed 2025-07-28)
 
-### System Module Instantiation (Completed 2025-08-02)
-- [x] Made ar_system module instantiable with opaque type and instance-based API; implemented single global instance pattern where g_system owns everything; converted global functions to delegate to instance functions through g_system; added create/destroy functions and instance-based versions of all API functions; created comprehensive test for instance-based API (ar_system_instance_tests.c); updated documentation to describe both global and instance-based APIs; removed old global variables (g_interpreter, g_log, is_initialized); verified zero memory leaks in all tests
+- [x] System Module Instantiation: Made instantiable with single global instance pattern (Completed 2025-08-02)
 
-### Knowledge Base Enhancement - Instance API Patterns (Completed 2025-08-02)
-- [x] Updated global-instance-wrapper-anti-pattern.md with successful single global instance pattern; created instance-api-resource-cleanup-pattern.md documenting ownership responsibility; created null-dependency-fallback-pattern.md for handling NULL dependencies; updated kb/README.md index with new articles; added references to CLAUDE.md for module instantiation patterns
+- [x] Knowledge Base - Instance API: Created 2 KB articles on resource cleanup and NULL handling (Completed 2025-08-02)
 
-### System-Wide Migration to Instance-Based APIs (Completed 2025-08-02)
-- [x] Migrated all tests and modules to use instance-based APIs throughout; updated ar_agent_store to simplified instance-based implementation; fixed all memory leaks in test files (0 leaks remaining); enhanced test fixtures with instance management capabilities; updated all parsers and evaluators to accept instance parameters; removed obsolete ar_instruction module and related files (~6,730 lines); created 7 migration scripts for systematic updates; updated 15+ knowledge base articles with instance patterns; completed foundation for multi-instance runtime support
+- [x] System-Wide Instance API Migration: Migrated all modules; removed ~6,730 lines; 0 memory leaks (Completed 2025-08-02)
 
 ## Critical Compliance Tasks
 
@@ -237,57 +162,41 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 **Problem**: Extensive code duplication across 9+ evaluators violates DRY principle and creates maintenance burden.
 
-#### 1. Extract Common Error Handling Module
-- [x] Created ar_event module for event representation with timestamps and position tracking (Completed 2025-06-29)
-- [x] Created ar_log module with buffering, auto-flush, and integration with all evaluators/parsers; propagated through method hierarchy; removed legacy error handling (Completed 2025-07-02)
+- [x] Extract Common Error Handling: Created ar_event and ar_log modules (Completed 2025-06-29, 2025-07-02)
 
-#### 2. Extract Memory Path Utilities Module  
-- [x] Created ar_path module for generic path operations with segment caching (Completed 2025-07-03)
-- [x] Migrated all 9 evaluators to use ar_path instead of string manipulation (Completed 2025-07-05)
-- [x] Created ar_memory_accessor module eliminating _get_memory_key_path duplication (Completed 2025-07-06)
+- [x] Extract Memory Path Utilities: Created ar_path and ar_memory_accessor modules (Completed 2025-07-03 to 2025-07-06)
 
-### Zig Module Conversion Experiment (Completed 2025-07-05)
-- [x] Converted ar_string module to Zig with full C compatibility, established patterns for future conversions
+- [x] Zig Module Conversion Experiment: Converted ar_string to Zig with C compatibility (Completed 2025-07-05)
 
-#### 3. Extract Ownership Handling Functions (Completed 2025-07-19)
-- [x] Added ar_data__claim_or_copy() and ar_data__destroy_if_owned() to ar_data module; replaced ownership patterns across 11 files; maintained zero memory leaks; updated documentation
+- [x] Extract Ownership Functions: Added claim_or_copy and destroy_if_owned to ar_data (Completed 2025-07-19)
 
-#### 4. Extract Result Storage Functions (Completed 2025-07-20)
-- [x] Created ar_path__get_suffix_after_root() and ar_data__set_map_data_if_root_matched(); updated 6 evaluators; maintained zero memory leaks; updated documentation
+- [x] Extract Result Storage Functions: Added path suffix and map data functions (Completed 2025-07-20)
 
 #### 5. Migrate Evaluators to Zig for Error Cleanup Simplification (NEW APPROACH)
 
 **Rationale**: Instead of extracting C helper functions, migrate evaluators to Zig to leverage `defer` for automatic cleanup, eliminating ~100+ lines of duplicated cleanup code per evaluator ([details](kb/zig-defer-error-cleanup-pattern.md)).
 
-- [x] Migrated ar_exit_instruction_evaluator to Zig as proof of concept; demonstrated defer eliminates cleanup cascades; zero memory leaks (Completed 2025-07-20)
+- [x] Migrate ar_exit_instruction_evaluator to Zig: Proof of concept with defer (Completed 2025-07-20)
 
-- [x] Migrated all remaining evaluators to Zig: send, assignment, deprecate (2025-07-20); spawn (2025-07-21); condition, build, parse, compile (2025-07-23); expression (2025-07-25); instruction (2025-07-26)
+- [x] Migrate All Evaluators to Zig: 10 evaluators total (Completed 2025-07-20 to 2025-07-26)
 
-#### 6. Create Base Evaluator Structure
-- [x] Designed base evaluator pattern using ar_log composition (Completed 2025-06-30)
+- [x] Create Base Evaluator Structure: Designed pattern using ar_log composition (Completed 2025-06-30)
 
-#### 7. Refactor All Evaluators to Use Shared Components
-- [x] Updated all evaluators with ar_log, ownership patterns, result storage patterns; completed Zig migration eliminating ~100+ lines cleanup duplication per evaluator (Completed 2025-07-26)
+- [x] Refactor All Evaluators: Updated with shared components; eliminated ~100+ lines duplication each (Completed 2025-07-26)
 
-### Parnas Principles - Interface Violations (HIGH PRIORITY)
-- [x] Fixed all interface violations: removed internal functions, made modules opaque, achieved zero circular dependencies (Completed 2025-06-08)
+- [x] Parnas Principles - Interface Violations: Fixed all violations; zero circular dependencies (Completed 2025-06-08)
 
-### Completed Parnas Tasks
-- [x] Audited modules, eliminated circular dependencies, ensured abstract interfaces (Completed 2025-06-08)
+- [x] Completed Parnas Tasks: Audited modules; eliminated circular dependencies (Completed 2025-06-08)
 
-### Documentation and Process Tasks
-- [x] Verified complete documentation, created missing docs, removed PARNAS_AUDIT_RESULTS.md (Completed 2025-06-14)
+- [x] Documentation and Process Tasks: Verified complete documentation (Completed 2025-06-14)
 
-### Parnas Architecture Guidelines
-- [x] Established NO internal headers policy, documented enum guidelines, enforced opaque types, established TDD compliance (Completed 2025-06-08)
+- [x] Parnas Architecture Guidelines: Established NO internal headers policy (Completed 2025-06-08)
 
 ## Recent Completions
 
-### Parse and Build Functions Implementation (Completed 2025-06-12)
-- [x] Fixed parse/build functions, updated tests, achieved clean build with 29 tests passing
+- [x] Parse and Build Functions: Fixed functions; 29 tests passing (Completed 2025-06-12)
 
-### Instruction Module Refactoring (Completed 2025-06-12)
-- [x] Separated parsing and execution phases, fixed invalid syntax handling, all tests passing
+- [x] Instruction Module Refactoring: Separated parsing/execution phases (Completed 2025-06-12)
 
 ## Immediate Priorities (Re-prioritized 2025-07-27)
 
@@ -306,21 +215,16 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 **Decomposition Plan**:
 
-#### Phase 1: Create ar_method_registry Module (Completed 2025-07-27)
-- [x] Design interface, implement with dynamic 2D array, multiple version support, memory management, integration with ar_semver, dynamic storage growth, 10 comprehensive tests
+- [x] Phase 1 - ar_method_registry Module: Dynamic 2D array; 10 tests (Completed 2025-07-27)
 
-#### Phase 2: Create ar_method_resolver Module (Completed 2025-07-28)
-- [x] Design interface for version resolution, implement semver-based matching, partial version support ("1", "1.2"), latest version selection logic, 6 comprehensive tests
+- [x] Phase 2 - ar_method_resolver Module: Semver-based matching; 6 tests (Completed 2025-07-28)
 
-#### Phase 3: Create ar_method_store Module (Completed 2025-07-28)
-- [x] Design instantiable interface, implement TDD cycles 1-12, log support, comprehensive tests (11), integrate with ar_methodology
+- [x] Phase 3 - ar_method_store Module: Instantiable interface; 11 tests (Completed 2025-07-28)
 - [ ] Convert to use ar_io module instead of direct file operations
 
-#### Phase 4: Refactor ar_methodology as Facade (Completed 2025-07-28)
-- [x] Refactor to delegate to sub-modules, keep existing public API unchanged, remove direct storage/resolution logic, ensure zero changes needed in client code
+- [x] Phase 4 - ar_methodology Facade: Delegated to sub-modules; API unchanged (Completed 2025-07-28)
 
-#### Phase 5: Integration and Verification (Completed 2025-07-28)
-- [x] Run full test suite with sanitizers, verify zero memory leaks, check module size metrics, update all documentation, performance comparison complete
+- [x] Phase 5 - Integration/Verification: Zero memory leaks; documentation updated (Completed 2025-07-28)
 
 **Success Criteria**:
 - Each new module follows single responsibility principle
@@ -341,45 +245,18 @@ This document tracks pending tasks and improvements for the AgeRun project.
 **Execution Plan** (45-55 TDD cycles total):
 
 #### Phase 1: Critical Parsers (Week 1 - 11-14 cycles)
-- [x] **ar_expression_parser** (8 TDD cycles) - COMPLETED 2025-08-25
-  - [x] Add error logging for NULL parameters (1 cycle)
-  - [x] Add error logging for memory allocation failures (verified existing)
-  - [x] Add error logging for cascading NULL in primary expressions (1 cycle)
-  - [x] Add error logging for cascading NULL in binary operations (1 cycle)
-  - [x] Add error logging for cascading NULL in nested expressions (1 cycle)
-  - [x] Integration testing (1 cycle)
-  - [x] Update documentation with error handling
-  - [x] Verify error conditions are logged with context
-  - [x] Zero memory leaks verification
+- [x] ar_expression_parser (8 TDD cycles): Added comprehensive error logging (Completed 2025-08-25)
   
-- [x] **ar_instruction_parser** (8 TDD cycles) - Completed 2025-08-30
-  - [x] Add error logging for NULL parameters (1 cycle) - Completed 2025-08-25
-  - [x] Verify memory allocation error logging exists - Completed 2025-08-25
-  - [x] Verify unknown function type error logging exists - Completed 2025-08-25
-  - [x] Verify invalid assignment operator error logging - Completed 2025-08-30
-  - [x] Verify unknown instruction type error logging - Completed 2025-08-30
-  - [x] Add error logging for all 10 parser creation failures - Completed 2025-08-30
-  - [x] Create comprehensive dlsym test for parser creation failures - Completed 2025-08-30
-  - [x] Zero memory leaks verification
-  - Note: Documentation already has error handling section, no update needed
+- [x] ar_instruction_parser (8 TDD cycles): Added error logging for all failure conditions (Completed 2025-08-30)
 
 #### Phase 2: Instruction-Specific Parsers (Week 2-3 - 18-27 cycles)
 Each parser needs 2-3 TDD cycles for comprehensive error logging:
 
-- [x] **ar_assignment_instruction_parser** (2 cycles) - Completed 2025-09-01
-  - [x] Add NULL parameter logging
-  - [x] Verify all error conditions logged (11 of 12 now logged)
-  - [x] Update documentation and add tests
+- [x] ar_assignment_instruction_parser (2 cycles): 11 of 12 errors logged (Completed 2025-09-01)
   
-- [x] **ar_build_instruction_parser** (1 cycle) - Completed 2025-09-02
-  - [x] Add NULL parameter logging
-  - [x] Verify all error conditions logged (11 total now logged)
-  - [x] Update documentation
+- [x] ar_build_instruction_parser (1 cycle): 11 errors logged (Completed 2025-09-02)
   
-- [x] **ar_compile_instruction_parser** (2 cycles) - Completed 2025-09-03
-  - [x] Add NULL parameter logging
-  - [x] Add parse failure logging (already implemented)
-  - [x] Update documentation
+- [x] ar_compile_instruction_parser (2 cycles): NULL parameter and parse failure logging (Completed 2025-09-03)
   
 - [ ] **ar_condition_instruction_parser** (2-3 cycles)
   - [ ] Add NULL parameter logging
@@ -515,14 +392,7 @@ Based on successful instantiation learnings:
 - **ar_system**: Remains as coordinating facade using current instance-based design
 
 **Tasks**:
-- [x] Analyze current system module responsibilities (Completed 2025-07-30)
-- [x] Phase 0: Make ar_agency instantiable (Completed 2025-08-01)
-- [x] Phase 1: Make ar_system instantiable (Completed 2025-08-02)
-  - [x] Created ar_system_t opaque type with single g_system instance
-  - [x] System owns interpreter/log, borrows agency reference
-  - [x] Converted global functions to delegate through g_system
-  - [x] Maintained full backward compatibility
-  - [x] All tests pass with zero memory leaks
+- [x] System Module Decomposition: Made agency/system instantiable; single g_system pattern (Completed 2025-07-30 to 08-02)
 
 **Remaining Decomposition Tasks**:
 - [ ] Phase 2: Create ar_runtime module
@@ -676,40 +546,25 @@ Based on successful instantiation learnings:
 - [ ] Verify backward compatibility
 - [ ] Update documentation
 
-### Language Enhancement Tasks (NEW)
-- [x] Rename the `method` instruction to `compile` (Completed 2025-07-13)
-- [x] Rename the `agent` instruction to `create` (Completed 2025-07-13)
-- [x] Rename the `destroy` method instruction to `deprecate` (Completed 2025-07-13)  
-- [x] Rename the destroy agent parser/evaluator to simply `destroy` (Completed 2025-07-13)
-- [x] Rename `create()` instruction to `spawn()` for Erlang terminology alignment (Completed 2025-07-13)
-- [x] Rename `destroy()` instruction to `exit()` for Erlang terminology alignment (Completed 2025-07-13)
+- [x] Language Enhancement: Renamed 6 instructions for Erlang alignment (Completed 2025-07-13)
 
-### Knowledge Base Integration (Completed 2025-07-13)
-- [x] Created knowledge base articles documenting instruction renaming patterns and systematic approaches; added reference articles for specification consistency maintenance and search-replace precision; updated CLAUDE.md to integrate references to new knowledge base articles for systematic guideline enhancement
+- [x] Knowledge Base Integration: Created articles on renaming patterns and consistency (Completed 2025-07-13)
 
-### Simplify Deprecate Instruction Behavior (Completed 2025-07-19)
-- [x] Modified deprecate evaluator to only unregister methods; updated methodology module; fixed memory leaks; updated documentation; zero memory leaks
+- [x] Simplify Deprecate Instruction: Unregister-only behavior; zero memory leaks (Completed 2025-07-19)
 
-### Knowledge Base Enhancement - C/Zig Build Precedence (Completed 2025-07-20)
-- [x] Updated c-to-zig-module-migration.md with build precedence handling; added Phase 6 with .bak renaming; enhanced verification checklist; updated CLAUDE.md; validated docs
+- [x] Knowledge Base - C/Zig Build: Added build precedence handling documentation (Completed 2025-07-20)
 
-### Knowledge Base Enhancement from Session Learnings (Completed 2025-07-19)
-- [x] Created 5 new KB articles documenting patterns from method evaluator integration; updated 10 existing KB articles with new sections and cross-references
+- [x] Knowledge Base - Session Learnings: Created 5 KB articles on method evaluator patterns (Completed 2025-07-19)
 
-### Zig Struct Modules Implementation (Completed 2025-07-27)
-- [x] Created TitleCase Zig struct modules; updated validation scripts; created DataStore example; integrated Zig tests into Makefile; fixed POSIX compatibility; created KB articles; updated CLAUDE.md
+- [x] Zig Struct Modules: Created TitleCase modules; DataStore example; POSIX fixes (Completed 2025-07-27)
 
-### Complete Evaluator Migration to Zig (Completed 2025-07-26)
-- [x] Migrated ar_instruction_evaluator with errdefer pattern; fixed errdefer with orelse return null; implemented private _create() pattern; created error path testing; updated KB articles; all 10 evaluators migrated
+- [x] Complete Evaluator Migration to Zig: All 10 evaluators with errdefer pattern (Completed 2025-07-26)
 
-### Knowledge Base Enhancement - Frank Communication (Completed 2025-07-23)
-- [x] Created frank-communication-principle.md; enhanced zig-memory-allocation-with-ar-allocator.md; updated CLAUDE.md; validated all documentation
+- [x] Knowledge Base - Frank Communication: Created principle article (Completed 2025-07-23)
 
-### Knowledge Base Enhancement - High Value Articles (Completed 2025-07-27)
-- [x] Created evidence-based-debugging.md, domain-specific-type-creation.md, plan-verification-and-review.md; updated CLAUDE.md; fixed validation errors with EXAMPLE markers
+- [x] Knowledge Base - High Value Articles: Created debugging, type creation, plan review articles (Completed 2025-07-27)
 
-### Zig Evaluator Pattern Improvements (Completed 2025-07-20)
-- [x] Migrated ar_assignment_instruction_evaluator; discovered new patterns (concrete types, eliminate helpers, const params); applied to existing evaluators; created KB articles; updated CLAUDE.md; zero memory leaks
+- [x] Zig Evaluator Pattern Improvements: Discovered concrete types pattern; zero memory leaks (Completed 2025-07-20)
 
 ### HIGHEST PRIORITY - Frame-Based Execution Implementation (Revised Plan)
 
@@ -717,33 +572,25 @@ Based on successful instantiation learnings:
 
 **Core Principle**: Modify in place - No parallel implementations. Each change replaces existing code.
 
-#### Phase 0: Create Method Evaluator (Completed 2025-07-10)
-- [x] Created ar_method_evaluator in Zig with frame-based execution; evaluated empty/single/multiple instructions; established top-down pattern; comprehensive error handling; stress tested; zero memory leaks
+- [x] Phase 0 - Method Evaluator: Created in Zig with frame-based execution (Completed 2025-07-10)
 
-#### Phase 1: Create Frame Abstraction (Completed 2025-06-28)
-- [x] Created ar_frame module with memory/context/message bundling and comprehensive documentation
+- [x] Phase 1 - Frame Abstraction: Created ar_frame module (Completed 2025-06-28)
 
 #### Phase 2: Update Expression Evaluator (Foundation)
 
 **Note**: Before implementing frame-based execution, must first implement ownership semantics in data module.
 
-**Ownership Implementation (Completed 2025-06-28)**
-- [x] Added ownership tracking to data module with hold/transfer functions and collection support
+- [x] Ownership Implementation: Added tracking to data module (Completed 2025-06-28)
 
-**Expression Evaluator Update (Completed 2025-06-28)**
-- [x] Expression evaluator uses ownership: memory access returns references, operations return owned values
+- [x] Expression Evaluator Update: Implemented ownership semantics (Completed 2025-06-28)
 
-**Code Duplication Cleanup (Completed 2025-06-29)**
-- [x] Created ar_data__shallow_copy() eliminating _copy_data_value duplication across evaluators
+- [x] Code Duplication Cleanup: Created ar_data__shallow_copy() (Completed 2025-06-29)
 
-#### Phase 3: Update Instruction Evaluators (One by One)
-- [x] Updated all 9 instruction evaluators to frame-based pattern with generic fixture (Completed 2025-07-12)
+- [x] Phase 3 - Instruction Evaluators: Updated all 9 to frame-based pattern (Completed 2025-07-12)
 
-#### Phase 4: Update Facades
-- [x] Updated instruction evaluator facade with lazy initialization; updated expression evaluator to frame-based API; removed old parameter-based code (Completed 2025-07-12)
+- [x] Phase 4 - Update Facades: Instruction/expression evaluators to frame-based API (Completed 2025-07-12)
 
-#### Phase 5: Integrate into Interpreter (Completed 2025-07-19)
-- [x] Updated interpreter with log parameter; integrated method evaluator; fixed expression evaluator message accessor; fixed ownership issues; all tests pass with zero memory leaks
+- [x] Phase 5 - Interpreter Integration: Method evaluator integrated; zero memory leaks (Completed 2025-07-19)
 
 **Success Criteria**:
 - Zero parallel code: No `_with_frame` variants
@@ -759,26 +606,15 @@ Based on successful instantiation learnings:
 4. No shortcuts - implement all cases
 5. Frame owns nothing - it's just a context bundle
 
-### HIGH PRIORITY - Method Parser and AST Implementation (Completed 2025-07-27)
+- [x] Method Parser and AST: Implemented modules; methods store parsed ASTs (Completed 2025-07-27)
 
-**Status**: Successfully implemented method_ast and method_parser modules with full integration into method module. Methods now store parsed ASTs instead of just source text.
-
-**Completed**:
-- [x] Created method_ast and method_parser modules with full functionality; added error handling tests; integrated with method module (Completed 2025-07-27)
-
-### HIGH PRIORITY - Refactor Methodology Module to Instantiable (Completed 2025-07-06)
-- [x] Made methodology instantiable with backward-compatible global instance pattern
+- [x] Methodology Module Instantiable: Backward-compatible global instance pattern (Completed 2025-07-06)
 
 ### ARCHIVED - Instruction and Expression Module Refactoring (Completed through AST/Evaluator implementation)
 
 **Note**: This section previously contained plans for "Parser Integration into Interpreter" which is now obsolete. The architecture has evolved to use AST modules and evaluators directly, without parser integration into the interpreter. The frame-based execution model (see "Frame-Based Execution Implementation" section above) supersedes this approach.
 
-**What was completed**:
-- [x] Created 9 specialized parser modules (COMPLETED 2025-06-21)
-- [x] Integrated expression parser into all instruction parsers, updated ASTs to hold expressions (COMPLETED 2025-06-22)
-- [x] Created unified evaluate method, removed individual functions, made true facade pattern (COMPLETED 2025-06-23)
-- [x] Created 9 specialized evaluators, removed legacy wrappers, eliminated 2500+ line function, zero memory leaks
-- [x] Eliminated _copy_data_value pattern with ar_data__shallow_copy (Completed 2025-06-29)
+- [x] Instruction/Expression Refactoring: Created 9 parsers and evaluators; eliminated 2500+ line function (Completed 2025-06-21 to 06-29)
 
 **Current Architecture**: 
 - Parsers create AST structures
@@ -786,43 +622,29 @@ Based on successful instantiation learnings:
 - Interpreter works with evaluators (not parsers)
 - Frame-based execution is the active implementation approach
 
-### LOW - Remaining circular dependency (heap ↔ io)
-- [x] Accepted as necessary coupling - memory tracking needs error reporting (Completed analysis)
+- [x] Circular Dependency Analysis: Accepted heap ↔ io as necessary coupling (Completed)
 
-### LOW - Architecture improvements from dependency analysis
-- [x] Documented implementation-only patterns and clean hierarchy (Completed analysis)
+- [x] Architecture Improvements: Documented patterns and clean hierarchy (Completed)
 
-### LOW - Clean up temporary analysis files
-- [x] Removed module_dependency_report.md (Completed)
+- [x] Clean Up Analysis Files: Removed module_dependency_report.md (Completed)
 
-### CRITICAL - Standardize Test Output Format (HIGHEST PRIORITY) - COMPLETED 2025-06-12
-- [x] Made all 29 test files print consistent "All X tests passed!" message
+- [x] Standardize Test Output: All 29 test files print consistent format (Completed 2025-06-12)
 
-### CRITICAL - Resolve All Circular Dependencies (HIGHEST PRIORITY)
-- [x] Resolved all circular dependencies through module refactoring (Completed 2025-06-14)
+- [x] Resolve Circular Dependencies: All resolved through module refactoring (Completed 2025-06-14)
 
-### HIGH - Fix Code Smells (After Circular Dependencies)
-- [x] Implemented comprehensive instruction module tests (Completed 2025-06-14)
+- [x] Fix Code Smells: Implemented comprehensive instruction module tests (Completed 2025-06-14)
 
-### CRITICAL - Refactor instruction module FIRST (Required before completing expression refactoring)
-- [x] Created instruction AST structures, parser, and evaluator modules (Completed 2025-06-19)
-- [x] Extracted 9 specialized evaluators, refactored to instantiable pattern (Completed 2025-06-21)
+- [x] Instruction Module Refactoring: Created AST/parser/evaluator modules; 9 evaluators (Completed 2025-06-19 to 06-21)
 
-### THEN - Complete expression module refactoring:
-- [x] Created expression AST, parser, and evaluator modules with full integration (Completed 2025-06-15)
-- [x] Eliminated massive ar_instruction_run function and moved ownership handling (Completed 2025-06-18)
+- [x] Expression Module Refactoring: Created AST/parser/evaluator; eliminated massive function (Completed 2025-06-15 to 06-18)
 
-### MEDIUM - Instruction Parser Improvements (Discovered 2025-06-14)
-- [x] Improved parser validation: proper operators, memory prefix, function names, quotes, parentheses (Completed)
+- [x] Instruction Parser Improvements: Enhanced validation for operators and syntax (Completed 2025-06-14)
 
-### MEDIUM - Language Specification and Semantics
-- [x] Specified reference vs value semantics, documented ownership rules, supported optional parameters (Completed)
+- [x] Language Specification: Documented reference/value semantics and ownership (Completed)
 
-### MEDIUM - Complete Documentation and Testing
-- [x] Created IO module tests, verified documentation, documented enum guidelines (Completed 2025-06-14)
+- [x] Complete Documentation and Testing: Created IO tests; documented enum guidelines (Completed 2025-06-14)
 
-### LOW - Create Method Files (After Architecture is Stable)
-- [x] Created additional method files for testing various agent behaviors (Completed)
+- [x] Create Method Files: Created additional files for agent testing (Completed)
 
 ## HIGH PRIORITY - Agency Persistence in Executable
 
@@ -845,30 +667,11 @@ Modify ar_executable.c to save and load the agerun.agency file for agent state p
 
 ## Agent Store Load Implementation (Current Session)
 
-### Phase 1 - ar_yaml Module Foundation ✅
-- [x] TDD Cycle 1: Create basic ar_yaml module structure
-  - [x] Design for direct file I/O (no memory duplication)
-  - [x] Implement ar_yaml__write_to_file()
-  - [x] Create comprehensive tests
-  - [x] Documentation (ar_yaml.md)
+- [x] Phase 1 - ar_yaml Module Foundation: Created basic structure with direct I/O (Completed)
 
-### Phase 2 - Complete ar_yaml Module (Completed 2025-08-17)
-- [x] TDD Cycle 2: Implement YAML reading into ar_data_t
-  - [x] Parse YAML line by line with indentation tracking
-  - [x] Build ar_data_t structure from parsed YAML
-  - [x] Handle comments and empty lines
-  - [x] Support type inference (unquoted numbers, quoted strings)
-  - [x] Test round-trip (write then read back)
+- [x] Phase 2 - ar_yaml Module Complete: YAML reading with type inference (Completed 2025-08-17)
 
-### Phase 2.5 - Split ar_yaml Module (Completed 2025-08-17)
-- [x] Split ar_yaml into ar_yaml_reader and ar_yaml_writer for separation of concerns
-  - [x] TDD Cycle 1: Create basic ar_yaml_writer structure
-  - [x] TDD Cycle 2: Migrate all 4 writer tests from ar_yaml_tests
-  - [x] TDD Cycle 3: Create basic ar_yaml_reader structure  
-  - [x] TDD Cycle 4: Migrate all 9 reader tests (simple read + 8 round-trip tests)
-  - [x] Verify exact code copying from original ar_yaml.c (move don't rewrite)
-  - [x] Ensure no cross-contamination (no read in writer, no write in reader)
-  - [x] All 13 tests passing with zero memory leaks
+- [x] Phase 2.5 - Split ar_yaml: Created separate reader/writer modules; 13 tests pass (Completed 2025-08-17)
 
 ### Phase 3 - Agent Store Infrastructure Updates
 - [ ] TDD Cycle 3: Fix filename constant
@@ -960,87 +763,11 @@ Apply the checkpoint tracking system developed in the session to all 26 commands
 
 ### Implementation Tasks
 
-#### Phase 1: Complex Multi-Step Commands (7 commands, ~3.5 hours)
-- [x] **Update review-changes.md** (22 sections) - Completed 2025-08-30
-  - [x] Add checkpoints for: Code Quality Review, Architectural Compliance, Documentation Review, Pre-Commit Verification
-  - [x] Add gates after each major review phase
-  - [x] Add progress visualization with ASCII bars
-  - [x] Document expected outputs for each checkpoint
+- [x] Phase 1 - Complex Commands: Updated 7 commands with checkpoint tracking (Completed 2025-08-30)
 
-- [x] **Update fix-errors-whitelisted.md** (16 sections) - Completed 2025-08-30
-  - [x] Add checkpoints for: Analyze Whitelist, Identify Pattern, Develop Strategy, Implement Fixes, Verify, Remove Entries
-  - [x] Add gate before implementation phase
-  - [x] Add minimum requirements (e.g., "Fix at least 5 errors")
-  - [x] Add verification script for removed entries
+- [x] Phase 2 - Medium Commands: Updated 5 commands with checkpoints and gates (Completed 2025-08-30)
 
-- [x] **Update compact-guidelines.md** (15 sections) - Completed 2025-08-30
-  - [x] Add checkpoints for: Identify Sections, Create KB Articles, Update References, Validate, Commit
-  - [x] Add gate after KB article creation
-  - [x] Add verification script for broken links
-  - [x] Add minimum article creation requirements
-
-- [x] **Update check-module-consistency.md** (15 sections) - Completed 2025-08-30
-  - [x] Add checkpoints for: Identify Improvement, Find Modules, Check Each Module, Create Plan
-  - [x] Add progress tracking for each module checked
-  - [x] Add minimum requirements (check 3+ related modules)
-  - [x] Add verification for consistency findings
-
-- [x] **Update migrate-module-to-zig-struct.md** (11 sections) - Completed 2025-08-30
-  - [x] Add checkpoints for: Assessment, Implementation, Testing, Documentation, Cleanup
-  - [x] Add gates after assessment and testing phases
-  - [x] Add memory leak verification requirements
-  - [x] Add migration completion verification
-
-- [x] **Update migrate-module-to-zig-abi.md** (10 sections) - Completed 2025-08-30
-  - [x] Similar checkpoint structure to zig-struct migration
-  - [x] Add pre-migration verification gate
-  - [x] Add post-migration validation requirements
-  - [x] Add API compatibility verification
-
-- [x] **Update check-logs.md** (8 sections) - Completed 2025-08-30
-  - [x] Add checkpoints for: Initial Check, Analyze Errors, Fix Issues, Re-check
-  - [x] Add gate if errors found
-  - [x] Add expected output documentation
-  - [x] Add CI impact warnings
-
-#### Phase 2: Medium Complexity Commands (5 commands, ~1.25 hours) - Completed 2025-08-30
-- [x] **Update commit.md** - Completed 2025-08-30
-  - [x] Add checkpoints for each pre-commit checklist item (9 checkpoints)
-  - [x] Add mandatory gate before actual commit (2 gates: Build Quality, Documentation)
-  - [x] Add CHANGELOG update verification
-  - [x] Document expected outputs
-
-- [x] **Update check-docs.md** - Completed 2025-08-30
-  - [x] Add checkpoints for: Initial Check, Preview Fixes, Apply Fixes, Verify Resolution, Commit and Push (5 checkpoints)
-  - [x] Add gate if errors found (Error Gate, Resolution Gate)
-  - [x] Integrate with existing good structure
-  - [x] Add validation success criteria
-
-- [x] **Update compact-tasks.md** - Completed 2025-08-30
-  - [x] Add checkpoints for: Read TODO, Identify Completed, Compact Entries, Verify Integrity, Write Changes, Commit and Push (6 checkpoints)
-  - [x] Add verification for untouched incomplete tasks (Integrity Gate)
-  - [x] Add compaction metrics reporting
-
-- [x] **Update compact-changes.md** - Completed 2025-08-30
-  - [x] Similar checkpoint structure to compact-tasks (7 checkpoints)
-  - [x] Add verification for proper compaction (Metrics Gate)
-  - [x] Add before/after comparison
-
-- [x] **Update merge-settings.md** - Completed 2025-08-30
-  - [x] Add checkpoints for: Check Files, Read Settings, Merge Permissions, Validate Result, Commit and Cleanup (5 checkpoints)
-  - [x] Add conflict resolution verification (Merge Validation Gate)
-  - [x] Add merge success criteria
-
-#### Phase 3: Simple Commands Enhancement (14 commands, ~1.2 hours) - Completed 2025-08-31
-- [x] **Add expected output documentation to simple commands** - Completed 2025-08-31
-  - [x] build.md, build-clean.md (success/failure states, timing info)
-  - [x] run-tests.md, run-exec.md (test results, memory leaks)
-  - [x] sanitize-tests.md, sanitize-exec.md (ASAN output examples)
-  - [x] tsan-tests.md, tsan-exec.md (TSAN race detection examples)
-  - [x] analyze-tests.md, analyze-exec.md (static analysis warnings)
-  - [x] check-naming.md (convention violations)
-  - [x] next-task.md, next-priority.md (workflow examples)
-  - [x] new-learnings.md (already had comprehensive outputs)
+- [x] Phase 3 - Simple Commands: Added expected output documentation to 14 commands (Completed 2025-08-31)
 
 ### Technical Implementation Details
 
@@ -1151,28 +878,10 @@ make checkpoint-cleanup CMD=<command>
 ### TDD Cycles for Single-Session Bootstrap Implementation
 Transforming ar_executable.c from two-session demo to single-session bootstrap system using strict TDD methodology.
 
-**Completed Cycles:**
-- [x] Cycle 1: Remove second session - executable runs once (Completed 2025-08-06)
-- [x] Cycle 2: Remove auto-loading from system - no files loaded on init (Completed 2025-08-07)
-- [x] Cycle 3: Remove auto-saving from system - no files saved on shutdown (Completed 2025-08-07)
-- [x] Cycle 4: Create bootstrap method - foundation for system init (Completed 2025-08-07)
+- [x] Completed Cycles 1-4: Removed double session, auto-loading, auto-saving; created bootstrap (Completed 2025-08-06 to 08-07)
 
 **Remaining Cycles:**
-- [x] Cycle 5: Load methods from directory (Completed 2025-08-07)
-  - Test: Verify system loads all .method files from methods/ directory  
-  - Implementation: Add directory scanning and method loading to executable
-  - Note: Executable now always loads from directory (no persistence files)
-  
-- [x] Cycle 6: Add bootstrap agent creation in executable (Completed 2025-08-08)
-  - Test: Verify executable creates bootstrap agent on startup
-  - Implementation: Create bootstrap agent with proper context for echo
-  - Bootstrap will spawn echo and other system agents
-  
-- [x] Cycle 7: Add message processing loop (Completed 2025-08-09)
-  - Test: Verify executable processes messages until none remain
-  - Implementation: Add while loop processing all messages
-  - Ensures all agent interactions complete
-  - Note: Discovered duplicate wake message bug in ar_system__init
+- [x] Cycles 5-7: Method loading, bootstrap agent creation, message processing loop (Completed 2025-08-07 to 08-09)
 
 ## In Progress - Remove Wake/Sleep Messages from System
 
@@ -1183,40 +892,11 @@ Remove wake/sleep messages as system-level concepts since they're not essential 
 
 #### Phase 1: Remove Wake/Sleep from Core Modules (Cycles 1-3)
 
-##### TDD Cycle 1: Remove wake messages from ar_agent (Completed 2025-08-09)
-**Session tracking**: [x] Started [x] Completed
+- [x] TDD Cycle 1: Removed wake messages from ar_agent (Completed 2025-08-09)
 
-###### Iteration 1.1: Remove wake message sending from agent creation
-- **RED**: Modify ar_agent_tests.c to expect no wake message sent on creation → Test FAILS
-- **GREEN**: Remove wake message sending from ar_agent__create (lines 65-71)
-- **REFACTOR**: Clean up initialization flow, remove wake-related comments
+- [x] TDD Cycle 2: Removed wake messages from ar_system (Completed)
 
-###### Iteration 1.2: Update ar_system_fixture to not expect wake messages
-- **RED**: Tests using ar_system_fixture fail because fixture expects wake messages
-- **GREEN**: Update ar_system_fixture__process_wake_messages to be a no-op
-- **REFACTOR**: Consider renaming or removing the function entirely
-
-**Success**: ar_agent_tests, ar_agent_update_tests pass with zero memory leaks
-**Documentation**: Update ar_agent.md
-
-##### TDD Cycle 2: Remove wake messages from ar_system  
-**Session tracking**: [x] Started [x] Completed (Already implemented - g_wake_message removed)
-
-###### Iteration 2.1: Remove duplicate wake message bug from system init
-- **RED**: Modify ar_executable_tests.c:447 to expect 0 messages instead of 1 → FAIL
-- **GREEN**: Remove wake message sending from ar_system__init_with_instance (lines 135-144)
-- **REFACTOR**: Clean up initialization flow
-
-###### Iteration 2.2: Remove wake message global constant
-- **RED**: Compilation fails with undefined reference to g_wake_message
-- **GREEN**: Remove g_wake_message from ar_agent.h/.c (line 29) and all references
-- **REFACTOR**: Clean up includes, simplify code
-
-**Success**: ar_system_tests, ar_executable_tests pass
-**Documentation**: Update ar_system.md
-
-##### TDD Cycle 3: Remove sleep messages from ar_agent and ar_agency
-**Session tracking**: [x] Started [x] Completed 2025-08-10
+- [x] TDD Cycle 3: Removed sleep messages from ar_agent and ar_agency (Completed 2025-08-10)
 
 ###### Iteration 3.1: Remove sleep message sending from agent destruction
 - **RED**: Create test verifying no sleep message on destruction → FAIL
@@ -1243,8 +923,7 @@ Remove wake/sleep messages as system-level concepts since they're not essential 
 
 #### Phase 2: Update Method Implementations (Cycle 4)
 
-##### TDD Cycle 4: Update all methods to remove wake/sleep detection (Completed 2025-08-10)
-**Session tracking**: [x] Started [x] Completed
+- [x] TDD Cycle 4: Updated all methods to remove wake/sleep detection (Completed 2025-08-10)
 
 ###### Iteration 4.1: Update bootstrap method
 - **RED**: bootstrap_tests.c fails with wake/sleep checks → FAIL
@@ -1299,8 +978,7 @@ Remove wake/sleep messages as system-level concepts since they're not essential 
 
 #### Phase 3: Update Documentation (Cycles 5-6)
 
-##### TDD Cycle 5: Update project documentation
-**Session tracking**: [x] Started [x] Completed
+- [x] TDD Cycle 5: Updated project documentation (Completed)
 
 ###### Iteration 5.1: Update SPEC.md
 - **RED**: make check-docs fails with wake/sleep references
@@ -1319,8 +997,7 @@ Remove wake/sleep messages as system-level concepts since they're not essential 
 
 **Success**: make check-docs passes
 
-##### TDD Cycle 6: Update knowledge base
-**Session tracking**: [x] Started [x] Completed (See "Knowledge Base Cleanup - TDD Cycle 6" in Completed Tasks)
+- [x] TDD Cycle 6: Updated knowledge base (Completed)
 
 ###### Iteration 6.1: Update duplicate-wake-message-bug.md
 - **RED**: KB describes obsolete bug
@@ -1366,8 +1043,7 @@ Remove wake/sleep messages as system-level concepts since they're not essential 
 
 #### Phase 4: Complete Bootstrap System (Cycles 7-9)
 
-##### TDD Cycle 7: Bootstrap spawns echo immediately
-**Session tracking**: [x] Started [x] Completed (Bootstrap already spawns echo conditionally)
+- [x] TDD Cycle 7: Bootstrap spawns echo immediately (Completed)
 
 ###### Iteration 7.1: Bootstrap spawns echo without wake trigger
 - **RED**: Test expects echo agent (ID 2) but not created
@@ -1376,8 +1052,7 @@ Remove wake/sleep messages as system-level concepts since they're not essential 
 
 **Success**: Bootstrap spawns echo correctly
 
-##### TDD Cycle 8: Save methodology after processing (Completed 2025-08-10)
-**Session tracking**: [x] Started [x] Completed
+- [x] TDD Cycle 8: Save methodology after processing (Completed 2025-08-10)
 
 ###### Iteration 8.1: Basic save after processing
 - **RED**: Create test `test_executable__saves_methodology_file()` that runs executable and verifies `agerun.methodology` file exists with all 8 methods from `methods/` directory
@@ -1391,9 +1066,7 @@ Remove wake/sleep messages as system-level concepts since they're not essential 
 
 **Success**: Methodology persisted reliably with proper error handling
 
-##### TDD Cycle 9: Load methodology when exists
-**Session tracking**: [x] Started [x] Completed (2025-08-10)
-**KB articles created**: session-start-priming-pattern, multi-line-data-persistence-format, test-file-cleanup-pattern, static-analyzer-stream-compliance
+- [x] TDD Cycle 9: Load methodology when exists; created 4 KB articles (Completed 2025-08-10)
 
 ###### Iteration 9.1: Load persisted methodology
 - **RED**: Test expects methods from agerun.methodology file to be loaded on startup
@@ -1417,35 +1090,25 @@ Remove wake/sleep messages as system-level concepts since they're not essential 
 
 ## Pending Features
 
-### Interpreter Function Implementations (Tests Temporarily Removed)
-- [x] Implemented destroy() with agent/method destruction; ownership transfer; error handling; string comparison in if(); agent persistence; designed distributed architecture (Completed)
+- [x] Interpreter Functions: Implemented destroy() with ownership transfer and persistence (Completed)
 
-## Documentation Tasks
-- [x] Created memory ownership diagrams and improved module documentation (Completed)
+- [x] Documentation Tasks: Created memory ownership diagrams (Completed)
 
-## Testing and Quality
-- [x] Improved memory leak detection with per-test reports; enhanced test coverage; implemented memory failure testing (Completed)
+- [x] Testing and Quality: Improved memory leak detection with per-test reports (Completed)
 
-## Method Development
-- [x] Created 5 additional method files using TDD methodology (Completed)
+- [x] Method Development: Created 5 additional method files with TDD (Completed)
 
 ## Test Infrastructure - System Test Fixture Strategy
 
-### Analysis Required
-- [x] Evaluated fixture strategy - decided on dedicated fixtures following instruction pattern (Completed)
+- [x] Test Fixture Analysis: Decided on dedicated fixtures pattern (Completed)
 
-### High Priority (System modules that need runtime)
-- [x] Created dedicated instruction test fixture eliminating 200+ lines of boilerplate (Completed)
-- [x] Migrated all system module tests to appropriate test fixtures (Completed)
+- [x] Test Fixtures: Created instruction fixture; eliminated 200+ lines boilerplate (Completed)
 
 ## Code Quality - Instruction Module Refactoring
 
-### High Priority (Included in "Fix Code Smells" above)
-- [x] Broke down massive ar_instruction_run function into specialized evaluators (Completed)
+- [x] Code Quality - Instruction: Broke down 2500+ line function into evaluators (Completed)
 
-### Medium Priority
-- [x] Created error handling system, reduced duplication, improved naming, added tests (Completed)
-- [x] Eliminated _copy_data_value duplication with ar_data__shallow_copy (Completed 2025-06-29)
+- [x] Code Quality - Medium: Created error handling; eliminated duplication (Completed)
 
 ### Low Priority
 - [x] Performance optimization considerations documented (Future work)
@@ -1469,49 +1132,38 @@ Remove wake/sleep messages as system-level concepts since they're not essential 
 ### Medium Priority
 - [x] Added validation and improved error reporting capabilities (Completed)
 
-### Low Priority
-- [x] Advanced features documented for future implementation (Completed)
+- [x] Advanced Features: Documented for future implementation (Completed)
 
 ## Code Quality - Methodology Module Refactoring
 
 ### High Priority (Included in "Fix Code Smells" above)
 - [x] Fixed ownership issues and documented map semantics (Completed)
 
-### Medium Priority
-- [x] Improved version management and persistence format (Completed)
+- [x] Code Quality - Methodology Medium: Improved version management (Completed)
 
-### Low Priority
-- [x] Advanced features documented for future work (Completed)
+- [x] Advanced Features - Methodology: Documented for future work (Completed)
 
 ## Code Quality - Expression Module Refactoring
 
-### High Priority (Included in "Fix Code Smells" above)
-- [x] Documented ownership patterns and improved error messages (Completed)
+- [x] Code Quality - Expression: Documented ownership patterns (Completed)
 
-### Medium Priority
-- [x] Optimized parsing and added type checking infrastructure (Completed)
+- [x] Code Quality - Expression Medium: Optimized parsing and type checking (Completed)
 
-### Low Priority
-- [x] Advanced features documented for future implementation (Completed)
+- [x] Advanced Features: Documented for future implementation (Completed)
 
 ## Module Cohesion Improvements
 
-### Completed - Agency Module Refactoring (2025-06-03)
-- [x] Split agency into 4 focused modules: registry, store, update, facade (850+ → 81 lines)
+- [x] Agency Module Refactoring: Split into 4 modules; 850+→81 lines (Completed 2025-06-03)
 
-### Completed - Untangle Agent Registry Circular Dependency (2025-06-07)
-- [x] Moved registry ownership to agency module eliminating circular dependency
+- [x] Agent Registry Untangle: Moved ownership to agency module (Completed 2025-06-07)
 
-### Completed - Move Agent Functionality to New Modules
-- [x] Moved all registry and update functionality to dedicated modules (Completed)
+- [x] Agent Functionality Move: Created dedicated registry and update modules (Completed)
 
-### Low Priority - Agent Module Refactoring
-- [x] Evaluated split - current design maintains good cohesion (Completed)
+- [x] Agent Module Refactoring: Evaluated split; design maintains cohesion (Completed)
 
 ## Knowledge Base Enhancement (Lower Priority)
 
-### High Value Articles (Completed 2025-07-27)
-- [x] **Evidence-Based Debugging**, **Domain-specific Type Creation**, **Plan Verification and Review** - All created with proper documentation
+- [x] High Value KB Articles: Evidence-Based Debugging, Domain-specific Type Creation, Plan Verification (Completed 2025-07-27)
 
 ## Migration Details
 
@@ -1546,8 +1198,7 @@ Once all modules are migrated to Zig with C-ABI compatibility, identify internal
 
 ## Low Priority Tasks
 
-### Fix check-logs Script Exit Code for Test Failures
-- [x] Update scripts/check_build_logs.sh to exit with error code 1 when test failures are detected (Completed 2025-08-04: Migrated to check_logs.py with proper exit codes)
+- [x] Fix check-logs Script: Migrated to check_logs.py with proper exit codes (Completed 2025-08-04)
 
 ## Notes
 
