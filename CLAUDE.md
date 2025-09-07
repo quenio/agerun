@@ -12,7 +12,7 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
 **Clean build**: `make clean build 2>&1` → `make check-logs`  
 **CI requirement**: `check-logs` must pass or CI will fail ([details](kb/ci-check-logs-requirement.md), [deep analysis](kb/check-logs-deep-analysis-pattern.md), [network timeouts](kb/ci-network-timeout-diagnosis.md))
 **Help**: `make` shows all targets
-**Scripts**: Use make targets, not direct execution from `/scripts/`
+**Scripts**: Use make targets, not direct execution; dry-run mode essential ([details](kb/dry-run-mode-requirement.md))
 
 ## Git Workflow (CRITICAL)
 
@@ -63,7 +63,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Report-driven planning**: Create analysis reports before large task sets ([details](kb/report-driven-task-planning.md))
 **Learning extraction**: Multi-pass review reveals hidden patterns ([details](kb/comprehensive-learning-extraction-pattern.md), [thoroughness](kb/command-thoroughness-requirements-pattern.md))
 
-**Documentation Standards (MANDATORY)** ([details](kb/documentation-standards-integration.md)):
+**Documentation Standards (MANDATORY)** ([details](kb/documentation-standards-integration.md), [unmissable](kb/unmissable-documentation-pattern.md), [sync](kb/documentation-implementation-sync.md)):
 - **Real code only**: All examples must use actual AgeRun types/functions ([details](kb/validated-documentation-examples.md))
 - **Validation required**: Run `make check-docs` before committing any .md files ([details](kb/documentation-validation-enhancement-patterns.md))
 - **Placeholder marking**: Use EXAMPLE tags for hypothetical references ([details](kb/documentation-placeholder-validation-pattern.md))
@@ -256,7 +256,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Instantiation**: Bottom-up by dependencies ([details](kb/module-instantiation-prerequisites.md))
 **Resources**: Use instance-specific not global ([details](kb/instance-vs-global-resource-pattern.md))
 **Error logging**: Utilize ar_log instances for all error conditions ([details](kb/error-logging-instance-utilization.md))
-**Consistency**: Verify sister modules need same improvements ([details](kb/module-consistency-verification.md))
+**Consistency**: Verify sister modules need same improvements ([details](kb/module-consistency-verification.md), [systematic](kb/systematic-consistency-verification.md))
 **Stateless**: Ensure no global state beyond instance management ([details](kb/stateless-module-verification.md))
 **API cleanup**: Remove suffixes after migration complete ([details](kb/api-suffix-cleanup-pattern.md))
 **Null instance**: Silent failure acceptable when instance is NULL ([details](kb/error-logging-null-instance-limitation.md))
@@ -284,7 +284,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 **Navigation & Files**: Absolute paths, git not .bak, ar_io backups ([details](kb/absolute-path-navigation.md), [backups](kb/file-io-backup-mechanism.md))
 **Build & Debug**: `make sanitize-tests 2>&1`, make targets only, parallel jobs ([details](kb/development-debug-tools.md), [make](kb/make-target-testing-discipline.md))
-**Checkpoints**: Track complex tasks, gates, progress ([details](kb/multi-step-checkpoint-tracking-pattern.md), [gates](kb/gate-enforcement-exit-codes-pattern.md))
+**Checkpoints**: Track complex tasks, gates, progress, concise output ([details](kb/multi-step-checkpoint-tracking-pattern.md), [gates](kb/gate-enforcement-exit-codes-pattern.md), [concise](kb/concise-script-output-principle.md))
 **YAML & Persistence**: 2-space indent, escape multiline, direct I/O ([details](kb/yaml-serialization-direct-io-pattern.md), [multiline](kb/multi-line-data-persistence-format.md))
 **Error & Logs**: Context filtering, precise grep, fix root causes ([details](kb/systematic-whitelist-error-resolution.md), [logs](kb/build-log-extraction-patterns.md))
 **CI/CD**: gh CLI debugging, version verification ([details](kb/github-actions-debugging-workflow.md), [versions](kb/tool-version-selection-due-diligence.md))

@@ -141,6 +141,7 @@ All documentation errors have been fixed! ✓
 - [Automated Batch Documentation Fixes](automated-batch-documentation-fixes.md) - Original batch fix approach
 - [Progressive Tool Enhancement](progressive-tool-enhancement.md) - Evolving tools with usage
 - [Script Backward Compatibility Testing](script-backward-compatibility-testing.md) - Testing enhanced scripts
+- [Dry Run Mode Requirement](dry-run-mode-requirement.md) - Essential safety pattern for scripts
 
 ## References
 

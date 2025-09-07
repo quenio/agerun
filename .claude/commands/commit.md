@@ -188,6 +188,7 @@ make checkpoint-update CMD=commit STEP=6
 - Clean build MUST pass before committing - no exceptions
 - CHANGELOG update is MANDATORY for every commit that completes tasks
 - Report build time from output (e.g., "took 1m 3s") ([details](../../kb/build-time-reporting.md))
+- Ensure documentation stays in sync with implementation ([details](../../kb/documentation-implementation-sync.md))
 
 #### [DOCUMENTATION GATE]
 ```bash

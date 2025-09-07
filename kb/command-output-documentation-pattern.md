@@ -64,3 +64,6 @@ echo "[Exit code: $?]"
 ## Related Patterns
 - [AR Assert Descriptive Failures](ar-assert-descriptive-failures.md)
 - [Documentation Validation Enhancement Patterns](documentation-validation-enhancement-patterns.md)
+- [Concise Script Output Principle](concise-script-output-principle.md)
+- [Documentation Implementation Sync](documentation-implementation-sync.md)
+- [Unmissable Documentation Pattern](unmissable-documentation-pattern.md)

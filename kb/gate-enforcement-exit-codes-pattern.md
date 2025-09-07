@@ -79,3 +79,5 @@ make checkpoint-update CMD=build STEP=5
 - [Build System Exit Code Verification](build-system-exit-code-verification.md)
 - [Multi-Step Checkpoint Tracking Pattern](multi-step-checkpoint-tracking-pattern.md)
 - [Exit Code Propagation Popen](exit-code-propagation-popen.md)
+- [Concise Script Output Principle](concise-script-output-principle.md)
+- [Unmissable Documentation Pattern](unmissable-documentation-pattern.md)

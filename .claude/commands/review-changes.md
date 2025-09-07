@@ -1,6 +1,6 @@
 Review uncommitted changes for code quality, architectural compliance, and documentation accuracy.
 
-**MANDATORY**: This command MUST use checkpoint tracking. Start by running the checkpoint initialization below.
+**MANDATORY**: This command MUST use checkpoint tracking. Start by running the checkpoint initialization below. ([details](../../kb/unmissable-documentation-pattern.md))
 
 # Review Changes
 

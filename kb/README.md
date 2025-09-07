@@ -226,6 +226,8 @@ Each learning file contains:
 ### Tools & Automation
 - [Automated Batch Documentation Fixes](automated-batch-documentation-fixes.md)
 - [Batch Documentation Fix Enhancement](batch-documentation-fix-enhancement.md)
+- [Concise Script Output Principle](concise-script-output-principle.md)
+- [Dry Run Mode Requirement](dry-run-mode-requirement.md)
 - [Generic Make Targets Pattern](generic-make-targets-pattern.md)
 - [Progressive Tool Enhancement](progressive-tool-enhancement.md)
 - [Script Reusability Parameters Pattern](script-reusability-parameters-pattern.md)
@@ -236,6 +238,7 @@ Each learning file contains:
 - [Script Backward Compatibility Testing](script-backward-compatibility-testing.md)
 - [Settings File Merging Pattern](settings-file-merging-pattern.md)
 - [String Parsing Quote Tracking](string-parsing-quote-tracking.md)
+- [Systematic Consistency Verification](systematic-consistency-verification.md)
 - [Role Clarification Pattern](role-clarification-pattern.md)
 - [Batch Update Script Pattern](batch-update-script-pattern.md)
 - [Systematic File Modification Workflow](systematic-file-modification-workflow.md)
@@ -260,6 +263,7 @@ Each learning file contains:
 ### Development Practices
 - [Command Output Documentation Pattern](command-output-documentation-pattern.md)
 - [Checkpoint Implementation Guide](checkpoint-implementation-guide.md)
+- [Documentation Implementation Sync](documentation-implementation-sync.md)
 - [Documentation Placeholder Validation Pattern](documentation-placeholder-validation-pattern.md)
 - [Feature Remnant Cleanup Pattern](feature-remnant-cleanup-pattern.md)
 - [Verification Through Removal Technique](verification-through-removal-technique.md)
@@ -276,6 +280,7 @@ Each learning file contains:
 - [Validated Documentation Examples](validated-documentation-examples.md)
 - [Absolute Path Navigation](absolute-path-navigation.md)
 - [Systematic Guideline Enhancement](systematic-guideline-enhancement.md)
+- [Unmissable Documentation Pattern](unmissable-documentation-pattern.md)
 - [CLAUDE.md Reference Requirement](claude-md-reference-requirement.md)
 - [Cross-Referencing Knowledge Base](cross-referencing-knowledge-base.md)
 - [New Learnings Cross-Reference Requirement](new-learnings-cross-reference-requirement.md)

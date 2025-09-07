@@ -63,7 +63,7 @@ Detects known critical issues including:
 ### Phase 2: Deep Analysis (if standard checks pass)
 Performs additional thorough analysis to catch edge cases:
 - Scans for any ERROR/WARNING patterns that might have been missed
-- Verifies test output consistency
+- Verifies test output consistency ([details](../../kb/systematic-consistency-verification.md))
 - Checks for suspicious patterns in test-related output
 - Searches for failure indicators (Cannot, Unable to, Failed to)
 - Provides detailed counts and examples of any anomalies found

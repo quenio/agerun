@@ -110,3 +110,5 @@ Signs of comprehensive extraction:
 - [Documentation Compacting Pattern](documentation-compacting-pattern.md)
 - [Self-Documenting Modifications Pattern](self-documenting-modifications-pattern.md)
 - [Command Thoroughness Requirements Pattern](command-thoroughness-requirements-pattern.md)
+- [Systematic Consistency Verification](systematic-consistency-verification.md)
+- [Unmissable Documentation Pattern](unmissable-documentation-pattern.md)
