@@ -57,4 +57,9 @@ fi
 if [ "$COMPLETED" -eq "$TOTAL_STEPS" ]; then
     echo ""
     echo "🎆 All $TOTAL_STEPS steps complete!"
+else
+    # Show progress bar for better visibility
+    echo ""
+    # Call checkpoint_status to show the progress bar (suppress any exit code)
+    "$(dirname "$0")/checkpoint_status.sh" "$COMMAND_NAME" || true
 fi
