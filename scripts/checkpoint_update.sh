@@ -38,23 +38,23 @@ else
     sed -i "s/STEP_${STEP_NUMBER}=.*/STEP_${STEP_NUMBER}=${STATUS}    # ${STEP_DESC}/" "$TRACKING_FILE"
 fi
 
-# Display update
-echo "✓ Step $STEP_NUMBER marked as ${STATUS}: ${STEP_DESC}"
-
-# Show quick status
+# Get current status
 TOTAL_STEPS=$(grep -c "^STEP_" "$TRACKING_FILE")
 COMPLETED=$(grep -c "=complete" "$TRACKING_FILE" || true)
 PENDING=$(grep -c "=pending" "$TRACKING_FILE" || true)
 
-echo ""
-echo "Progress: $COMPLETED/$TOTAL_STEPS completed"
+# Display update
+echo "✅ Step $STEP_NUMBER: ${STEP_DESC}"
+echo "   Progress: $COMPLETED/$TOTAL_STEPS steps"
 
 if [ "$PENDING" -gt 0 ]; then
-    echo "Next pending: $(grep "=pending" "$TRACKING_FILE" | head -1 | sed 's/.*# //')"
+    NEXT_STEP_NUM=$(grep "=pending" "$TRACKING_FILE" | head -1 | sed 's/STEP_//' | sed 's/=.*//')
+    NEXT_DESC=$(grep "=pending" "$TRACKING_FILE" | head -1 | sed 's/.*# //')
+    echo "   Next: Step $NEXT_STEP_NUM - $NEXT_DESC"
 fi
 
 # Check if all steps are complete
 if [ "$COMPLETED" -eq "$TOTAL_STEPS" ]; then
     echo ""
-    echo "🎉 ALL STEPS COMPLETE! Ready for final actions."
+    echo "🎆 All $TOTAL_STEPS steps complete!"
 fi

@@ -33,19 +33,11 @@ TRACKING_FILE="/tmp/${COMMAND_NAME}_progress.txt"
 } > "$TRACKING_FILE"
 
 # Display initialization
-echo "========================================"
-echo "   CHECKPOINT TRACKING INITIALIZED"
-echo "========================================"
+echo "📍 Starting: $COMMAND_NAME (${#STEPS[@]} steps)"
 echo ""
-echo "Command: $COMMAND_NAME"
-echo "Tracking file: $TRACKING_FILE"
-echo "Total steps: ${#STEPS[@]}"
-echo ""
-echo "Steps to complete:"
 for i in "${!STEPS[@]}"; do
     STEP_NUM=$((i + 1))
-    echo "  $STEP_NUM. ${STEPS[$i]}"
+    echo "  [ ] Step $STEP_NUM: ${STEPS[$i]}"
 done
 echo ""
-echo "Use 'checkpoint_update.sh $COMMAND_NAME <step_number>' to mark steps complete"
-echo "Use 'checkpoint_status.sh $COMMAND_NAME' to check progress"
+echo "📁 Tracking: $TRACKING_FILE"

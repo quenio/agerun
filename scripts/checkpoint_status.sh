@@ -30,16 +30,10 @@ SKIPPED=$(grep -c "=skipped" "$TRACKING_FILE" || true)
 PERCENTAGE=$((COMPLETED * 100 / TOTAL_STEPS))
 
 # Display header
-echo "========================================"
-echo "   PROGRESS STATUS: $COMMAND_NAME"
-echo "========================================"
-echo ""
-echo "Started: $START_TIME"
-echo "Progress: $COMPLETED/$TOTAL_STEPS steps ($PERCENTAGE%)"
-echo ""
+echo "📈 $COMMAND_NAME: $COMPLETED/$TOTAL_STEPS steps ($PERCENTAGE%)"
 
 # Progress bar
-echo -n "["
+echo -n "   ["
 FILLED=$((PERCENTAGE / 5))  # 20 chars total
 for i in $(seq 1 20); do
     if [ $i -le $FILLED ]; then

@@ -38,31 +38,18 @@ for step in "${STEPS[@]}"; do
 done
 
 # Display gate check result
-echo "========================================"
-echo "   GATE: $GATE_NAME"
-echo "========================================"
-echo ""
-
 if [ ${#INCOMPLETE_STEPS[@]} -eq 0 ]; then
-    echo "✅ GATE PASSED: All required steps are complete!"
-    echo ""
-    echo "Verified steps:"
-    for step in "${STEPS[@]}"; do
-        step=$(echo "$step" | tr -d ' ')
-        DESC=$(grep "STEP_${step}=" "$TRACKING_FILE" | sed 's/.*# //')
-        echo "  ✓ Step $step: $DESC"
-    done
-    echo ""
-    echo "You may proceed to the next section."
+    echo "✅ GATE '$GATE_NAME' - PASSED"
+    echo "   Verified: Steps ${REQUIRED_STEPS}"
     exit 0
 else
-    echo "❌ GATE BLOCKED: Cannot proceed!"
+    echo "❌ GATE '$GATE_NAME' - BLOCKED"
     echo ""
-    echo "The following steps must be completed first:"
+    echo "   Missing steps:"
     for i in "${!INCOMPLETE_STEPS[@]}"; do
-        echo "  ⏳ Step ${INCOMPLETE_STEPS[$i]}: ${INCOMPLETE_DESCS[$i]}"
+        echo "   - Step ${INCOMPLETE_STEPS[$i]}: ${INCOMPLETE_DESCS[$i]}"
     done
     echo ""
-    echo "⛔ STOP: Complete the missing steps before continuing."
+    echo "   ⛔ Complete these before continuing."
     exit 1
 fi
