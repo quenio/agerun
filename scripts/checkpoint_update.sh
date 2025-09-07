@@ -41,25 +41,12 @@ fi
 # Get current status
 TOTAL_STEPS=$(grep -c "^STEP_" "$TRACKING_FILE")
 COMPLETED=$(grep -c "=complete" "$TRACKING_FILE" || true)
-PENDING=$(grep -c "=pending" "$TRACKING_FILE" || true)
-
-# Display update
-echo "✅ Step $STEP_NUMBER: ${STEP_DESC}"
-echo "   Progress: $COMPLETED/$TOTAL_STEPS steps"
-
-if [ "$PENDING" -gt 0 ]; then
-    NEXT_STEP_NUM=$(grep "=pending" "$TRACKING_FILE" | head -1 | sed 's/STEP_//' | sed 's/=.*//')
-    NEXT_DESC=$(grep "=pending" "$TRACKING_FILE" | head -1 | sed 's/.*# //')
-    echo "   Next: Step $NEXT_STEP_NUM - $NEXT_DESC"
-fi
 
 # Check if all steps are complete
 if [ "$COMPLETED" -eq "$TOTAL_STEPS" ]; then
-    echo ""
     echo "🎆 All $TOTAL_STEPS steps complete!"
+    echo "✓ Run: make checkpoint-cleanup CMD=$COMMAND_NAME"
 else
-    # Show progress bar for better visibility
-    echo ""
-    # Call checkpoint_status to show the progress bar (suppress any exit code)
-    "$(dirname "$0")/checkpoint_status.sh" "$COMMAND_NAME" || true
+    # Just show the progress bar (3 lines from checkpoint_status)
+    "$(dirname "$0")/checkpoint_status.sh" "$COMMAND_NAME" --compact || true
 fi

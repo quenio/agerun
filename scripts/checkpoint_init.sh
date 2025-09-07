@@ -32,12 +32,7 @@ TRACKING_FILE="/tmp/${COMMAND_NAME}_progress.txt"
     done
 } > "$TRACKING_FILE"
 
-# Display initialization
+# Display initialization (max 3 lines)
 echo "📍 Starting: $COMMAND_NAME (${#STEPS[@]} steps)"
-echo ""
-for i in "${!STEPS[@]}"; do
-    STEP_NUM=$((i + 1))
-    echo "  [ ] Step $STEP_NUM: ${STEPS[$i]}"
-done
-echo ""
 echo "📁 Tracking: $TRACKING_FILE"
+echo "→ Run: make checkpoint-update CMD=$COMMAND_NAME STEP=1"

@@ -37,19 +37,14 @@ for step in "${STEPS[@]}"; do
     fi
 done
 
-# Display gate check result
+# Display gate check result (max 3 lines)
 if [ ${#INCOMPLETE_STEPS[@]} -eq 0 ]; then
     echo "✅ GATE '$GATE_NAME' - PASSED"
     echo "   Verified: Steps ${REQUIRED_STEPS}"
     exit 0
 else
     echo "❌ GATE '$GATE_NAME' - BLOCKED"
-    echo ""
-    echo "   Missing steps:"
-    for i in "${!INCOMPLETE_STEPS[@]}"; do
-        echo "   - Step ${INCOMPLETE_STEPS[$i]}: ${INCOMPLETE_DESCS[$i]}"
-    done
-    echo ""
+    echo "   Missing: Steps $(IFS=,; echo "${INCOMPLETE_STEPS[*]}")"
     echo "   ⛔ Complete these before continuing."
     exit 1
 fi

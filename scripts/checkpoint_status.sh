@@ -7,7 +7,7 @@ set -e
 
 # Get parameters
 COMMAND_NAME=${1:-"command"}
-VERBOSE=${2:-""}
+MODE=${2:-""}  # Can be --verbose or --compact
 
 # Tracking file
 TRACKING_FILE="/tmp/${COMMAND_NAME}_progress.txt"
@@ -29,7 +29,31 @@ SKIPPED=$(grep -c "=skipped" "$TRACKING_FILE" || true)
 # Calculate percentage
 PERCENTAGE=$((COMPLETED * 100 / TOTAL_STEPS))
 
-# Display header
+# Compact mode: only 3 lines
+if [ "$MODE" == "--compact" ]; then
+    echo "📈 $COMMAND_NAME: $COMPLETED/$TOTAL_STEPS steps ($PERCENTAGE%)"
+    
+    # Progress bar on one line
+    echo -n "   ["
+    FILLED=$((PERCENTAGE / 5))  # 20 chars total
+    for i in $(seq 1 20); do
+        if [ $i -le $FILLED ]; then
+            echo -n "█"
+        else
+            echo -n "░"
+        fi
+    done
+    echo "] $PERCENTAGE%"
+    
+    # Next action on one line
+    if [ "$PENDING" -gt 0 ]; then
+        NEXT_NUM=$(grep "=pending" "$TRACKING_FILE" | head -1 | sed 's/STEP_\([0-9]*\).*/\1/')
+        echo "→ Next: make checkpoint-update CMD=$COMMAND_NAME STEP=$NEXT_NUM"
+    fi
+    exit 0
+fi
+
+# Normal mode
 echo "📈 $COMMAND_NAME: $COMPLETED/$TOTAL_STEPS steps ($PERCENTAGE%)"
 
 # Progress bar
@@ -46,7 +70,7 @@ echo "] $PERCENTAGE%"
 echo ""
 
 # Show step details
-if [ "$VERBOSE" == "--verbose" ] || [ "$PENDING" -gt 0 ]; then
+if [ "$MODE" == "--verbose" ] || [ "$PENDING" -gt 0 ]; then
     echo "Step Details:"
     while IFS= read -r line; do
         if [[ $line == STEP_* ]]; then

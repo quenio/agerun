@@ -9,15 +9,14 @@ set -e
 COMMAND_NAME=${1:-""}
 
 if [ -z "$COMMAND_NAME" ]; then
-    echo "Cleaning up all checkpoint tracking files..."
     rm -f /tmp/*_progress.txt
     echo "✓ All tracking files removed"
 else
     TRACKING_FILE="/tmp/${COMMAND_NAME}_progress.txt"
     if [ -f "$TRACKING_FILE" ]; then
         rm -f "$TRACKING_FILE"
-        echo "✓ Tracking file removed: $TRACKING_FILE"
+        echo "✓ Cleaned up: $COMMAND_NAME"
     else
-        echo "No tracking file found for: $COMMAND_NAME"
+        echo "No tracking for: $COMMAND_NAME"
     fi
 fi
