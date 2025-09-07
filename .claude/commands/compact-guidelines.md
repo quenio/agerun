@@ -50,21 +50,9 @@ make checkpoint-status CMD=compact-guidelines
 
 **Expected output (example at 53% completion):**
 ```
-========================================
-   CHECKPOINT STATUS: compact-guidelines
-========================================
-
-Progress: 8/15 steps (53%)
-
-[██████████░░░░░░░░] 53%
-
-Current Phase: Creating KB Articles
-Articles Created: 2/3
-Line Reduction: 127 lines (32%)
-Links Verified: ✓
-
-Next Action:
-  → Step 9: Update CLAUDE.md References
+📈 command: X/Y steps (Z%)
+   [████░░░░░░░░░░░░░░░░] Z%
+→ Next: make checkpoint-update CMD=command STEP=N
 ```
 
 ## Minimum Requirements
@@ -153,18 +141,8 @@ make checkpoint-gate CMD=compact-guidelines GATE="Analysis" REQUIRED="1,2,3"
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Analysis
-========================================
-
-✅ GATE PASSED: Analysis complete!
-
-Verified steps:
-  ✓ Step 1: Analyze CLAUDE.md
-  ✓ Step 2: Identify Verbose Sections
-  ✓ Step 3: List Extraction Targets
-
-You may proceed to planning phase.
+✅ GATE 'Gate Name' - PASSED
+   Verified: Steps 1,2,3
 ```
 
 ## Phase 2: Planning (Steps 4-5)
@@ -212,18 +190,8 @@ make checkpoint-gate CMD=compact-guidelines GATE="Planning" REQUIRED="4,5"
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Planning
-========================================
-
-✅ GATE PASSED: Planning complete!
-
-Verified steps:
-  ✓ Step 4: Check Existing KB Articles
-  ✓ Step 5: Plan New Articles
-
-No duplicate articles will be created.
-You may proceed to article creation.
+✅ GATE 'Gate Name' - PASSED
+   Verified: Steps 1,2,3
 ```
 
 #### 2. Space-Conscious Editing (CRITICAL) ([details](../../kb/documentation-standards-integration.md))
@@ -332,20 +300,8 @@ make checkpoint-gate CMD=compact-guidelines GATE="Creation" REQUIRED="6,7,8"
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Creation
-========================================
-
-⚠️ CRITICAL: All KB articles must exist before updating references!
-
-Articles created:
-  ✓ kb/article1.md
-  ✓ kb/article2.md
-  ✓ kb/article3.md (optional)
-
-✅ GATE PASSED: Safe to update CLAUDE.md references
-
-Proceed to integration phase.
+✅ GATE 'Gate Name' - PASSED
+   Verified: Steps 1,2,3
 ```
 
 ## Phase 4: Integration (Steps 9-11)
@@ -409,18 +365,8 @@ make checkpoint-gate CMD=compact-guidelines GATE="Integration" REQUIRED="9,10,11
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Integration
-========================================
-
-✅ GATE PASSED: Integration complete!
-
-Verified steps:
-  ✓ Step 9: Update CLAUDE.md References
-  ✓ Step 10: Add Cross-References
-  ✓ Step 11: Update kb/README.md
-
-Ready for validation.
+✅ GATE 'Gate Name' - PASSED
+   Verified: Steps 1,2,3
 ```
 
 #### 5. Preserve Critical Information
@@ -579,25 +525,8 @@ make checkpoint-gate CMD=compact-guidelines GATE="Validation" REQUIRED="12,13,14
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Validation
-========================================
-
-✅ GATE PASSED: Validation complete!
-
-Verified steps:
-  ✓ Step 12: Run Documentation Validation
-  ✓ Step 13: Verify Link Coverage
-  ✓ Step 14: Review Changes
-
-Validation Summary:
-- Documentation check: ✓ Passed
-- Broken links: 0
-- Line reduction: 145 lines (35%)
-- Articles created: 3
-- Cross-references added: 7
-
-Ready to commit!
+✅ GATE 'Gate Name' - PASSED
+   Verified: Steps 1,2,3
 ```
 
 ## Phase 6: Commit (Step 15)

@@ -14,20 +14,9 @@ make checkpoint-init CMD=analyze_tests STEPS='"Prepare" "Execute" "Verify"'
 
 **Expected output:**
 ```
-========================================
-   CHECKPOINT TRACKING INITIALIZED
-========================================
-
-Command: analyze_tests
-Tracking file: /tmp/analyze_tests_progress.txt
-Total steps: 3
-
-Steps to complete:
-  1. Prepare
-  2. Execute
-  3. Verify
-
-Goal: Complete analyze tests successfully
+📍 Starting: analyze_tests (3 steps)
+📁 Tracking: /tmp/analyze_tests_progress.txt
+→ Run: make checkpoint-update CMD=analyze_tests STEP=1
 ```
 
 ### Check Progress
@@ -37,18 +26,9 @@ make checkpoint-status CMD=analyze_tests
 
 **Expected output (example at 33% completion):**
 ```
-========================================
-   CHECKPOINT STATUS: analyze_tests
-========================================
-
-Progress: 1/3 steps (33%)
-
-[██████░░░░░░░░░░░░] 33%
-
-Current Status: Preparing...
-
-Next Action:
-  → Step 2: Execute
+📈 command: X/Y steps (Z%)
+   [████░░░░░░░░░░░░░░░░] Z%
+→ Next: make checkpoint-update CMD=command STEP=N
 ```
 
 ## Minimum Requirements
@@ -82,17 +62,8 @@ make checkpoint-gate CMD=analyze_tests GATE="Ready" REQUIRED="1"
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Ready
-========================================
-
-✅ GATE PASSED: Ready to execute!
-
-Prerequisites verified:
-  ✓ Environment prepared
-  ✓ Dependencies available
-  
-Proceed with execution.
+✅ GATE 'Gate Name' - PASSED
+   Verified: Steps 1,2,3
 ```
 
 ## Command

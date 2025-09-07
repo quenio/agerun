@@ -14,20 +14,9 @@ make checkpoint-init CMD=build_clean STEPS='"Prepare" "Execute" "Verify"'
 
 **Expected output:**
 ```
-========================================
-   CHECKPOINT TRACKING INITIALIZED
-========================================
-
-Command: build_clean
-Tracking file: /tmp/build_clean_progress.txt
-Total steps: 3
-
-Steps to complete:
-  1. Prepare
-  2. Execute
-  3. Verify
-
-Goal: Complete build clean successfully
+📍 Starting: build_clean (3 steps)
+📁 Tracking: /tmp/build_clean_progress.txt
+→ Run: make checkpoint-update CMD=build_clean STEP=1
 ```
 
 ### Check Progress
@@ -37,18 +26,9 @@ make checkpoint-status CMD=build_clean
 
 **Expected output (example at 33% completion):**
 ```
-========================================
-   CHECKPOINT STATUS: build_clean
-========================================
-
-Progress: 1/3 steps (33%)
-
-[██████░░░░░░░░░░░░] 33%
-
-Current Status: Preparing...
-
-Next Action:
-  → Step 2: Execute
+📈 command: X/Y steps (Z%)
+   [████░░░░░░░░░░░░░░░░] Z%
+→ Next: make checkpoint-update CMD=command STEP=N
 ```
 
 ## Minimum Requirements
@@ -84,17 +64,8 @@ make checkpoint-gate CMD=build_clean GATE="Ready" REQUIRED="1"
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Ready
-========================================
-
-✅ GATE PASSED: Ready to execute!
-
-Prerequisites verified:
-  ✓ Environment prepared
-  ✓ Dependencies available
-  
-Proceed with execution.
+✅ GATE 'Gate Name' - PASSED
+   Verified: Steps 1,2,3
 ```
 
 ## Command

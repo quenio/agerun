@@ -50,24 +50,9 @@ make checkpoint-status CMD=check-module-consistency
 
 **Expected output (example at 53% completion):**
 ```
-========================================
-   CHECKPOINT STATUS: check-module-consistency
-========================================
-
-Progress: 8/15 steps (53%)
-
-[██████████░░░░░░░░░░] 53%
-
-Current Phase: Checking Modules
-Modules Found: 7
-Modules Checked: 3/7
-Needing Update: 2
-
-Currently Checking: ar_yaml_writer
-Next: ar_json_reader
-
-Next Action:
-  → Step 9: Check Module 4
+📈 command: X/Y steps (Z%)
+   [████░░░░░░░░░░░░░░░░] Z%
+→ Next: make checkpoint-update CMD=command STEP=N
 ```
 
 ## Minimum Requirements
@@ -132,18 +117,8 @@ make checkpoint-gate CMD=check-module-consistency GATE="Understanding" REQUIRED=
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Understanding
-========================================
-
-✅ GATE PASSED: Understanding complete!
-
-Verified steps:
-  ✓ Step 1: Describe Improvement
-  ✓ Step 2: Identify Pattern
-
-Pattern is well-defined.
-You may proceed to module discovery.
+✅ GATE 'Gate Name' - PASSED
+   Verified: Steps 1,2,3
 ```
 
 ## Phase 2: Discovery (Steps 3-5)
@@ -215,21 +190,8 @@ make checkpoint-gate CMD=check-module-consistency GATE="Discovery" REQUIRED="3,4
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Discovery
-========================================
-
-✅ GATE PASSED: Discovery complete!
-
-Verified steps:
-  ✓ Step 3: Find Sister Modules
-  ✓ Step 4: Find Similar Purpose
-  ✓ Step 5: Find Same Subsystem
-
-Found 7 related modules to check.
-Minimum requirement (3) met.
-
-You may proceed to module analysis.
+✅ GATE 'Gate Name' - PASSED
+   Verified: Steps 1,2,3
 ```
 
 ## Phase 3: Analysis (Steps 6-10)
@@ -330,20 +292,8 @@ make checkpoint-gate CMD=check-module-consistency GATE="Analysis" REQUIRED="6,7,
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Analysis
-========================================
-
-✅ GATE PASSED: Analysis complete!
-
-Verified steps:
-  ✓ Step 6-10: Module checks complete
-
-Modules Analyzed: 5
-Needing Update: 3
-Consistent: 2
-
-You may proceed to planning.
+✅ GATE 'Gate Name' - PASSED
+   Verified: Steps 1,2,3
 ```
 
 For each related module identified, check if it needs the same improvement:
@@ -447,22 +397,8 @@ make checkpoint-gate CMD=check-module-consistency GATE="Planning" REQUIRED="11,1
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Planning
-========================================
-
-✅ GATE PASSED: Planning complete!
-
-Verified steps:
-  ✓ Step 11: Analyze Findings
-  ✓ Step 12: List Modules Needing Update
-  ✓ Step 13: Estimate Effort
-  ✓ Step 14: Create Priority Order
-
-Improvement plan created.
-Total effort: 6 TDD cycles
-
-Ready to document.
+✅ GATE 'Gate Name' - PASSED
+   Verified: Steps 1,2,3
 ```
 
 ## Phase 5: Documentation (Step 15)

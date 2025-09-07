@@ -57,30 +57,9 @@ make checkpoint-status CMD=review-changes
 
 **Expected output (example at 27% completion):**
 ```
-========================================
-       CHECKPOINT STATUS: review-changes
-========================================
-
-Started: [timestamp]
-Progress: 6/22 steps (27%)
-
-[█████░░░░░░░░░░░░░░░] 27%
-
-Completed:
-  ✓ Step 1: Diff Analysis
-  ✓ Step 2: Code Smells
-  ✓ Step 3: Memory Management
-  ✓ Step 4: Naming Conventions
-  ✓ Step 5: Error Handling
-  ✓ Step 6: Test Coverage
-
-Pending:
-  ⏸ Step 7: Parnas Principles
-  ⏸ Step 8: Module Hierarchy
-  ... (14 more)
-
-Next Action:
-  → Step 7: Parnas Principles
+📈 review-changes: 6/22 steps (27%)
+   [█████░░░░░░░░░░░░░░░] 27%
+→ Next: make checkpoint-update CMD=review-changes STEP=7
 ```
 
 ### What it does
@@ -193,13 +172,8 @@ make checkpoint-gate CMD=review-changes GATE="Code Quality" REQUIRED="1,2,3,4,5,
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Code Quality
-========================================
-
-✅ GATE PASSED: All code quality checks complete!
-
-You may proceed to architectural compliance review.
+✅ GATE 'Code Quality' - PASSED
+   Verified: Steps 1,2,3
 ```
 
 **Minimum Requirements for Phase 1:**
@@ -261,13 +235,8 @@ make checkpoint-gate CMD=review-changes GATE="Architecture" REQUIRED="7,8,9,10,1
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Architecture
-========================================
-
-✅ GATE PASSED: All architectural checks complete!
-
-You may proceed to documentation review.
+✅ GATE 'Code Quality' - PASSED
+   Verified: Steps 1,2,3
 ```
 
 **Minimum Requirements for Phase 2:**
@@ -324,13 +293,8 @@ make checkpoint-gate CMD=review-changes GATE="Documentation" REQUIRED="12,13,14,
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Documentation
-========================================
-
-✅ GATE PASSED: All documentation checks complete!
-
-You may proceed to pre-commit verification.
+✅ GATE 'Code Quality' - PASSED
+   Verified: Steps 1,2,3
 ```
 
 **Minimum Requirements for Phase 3:**
@@ -388,13 +352,8 @@ make checkpoint-gate CMD=review-changes GATE="Pre-Commit" REQUIRED="17,18,19,20,
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Pre-Commit
-========================================
-
-✅ GATE PASSED: All pre-commit checks complete!
-
-Ready to generate final review report.
+✅ GATE 'Code Quality' - PASSED
+   Verified: Steps 1,2,3
 ```
 
 **Minimum Requirements for Phase 4:**

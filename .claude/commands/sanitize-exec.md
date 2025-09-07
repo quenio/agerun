@@ -14,20 +14,9 @@ make checkpoint-init CMD=sanitize_exec STEPS='"Prepare" "Execute" "Verify"'
 
 **Expected output:**
 ```
-========================================
-   CHECKPOINT TRACKING INITIALIZED
-========================================
-
-Command: sanitize_exec
-Tracking file: /tmp/sanitize_exec_progress.txt
-Total steps: 3
-
-Steps to complete:
-  1. Prepare
-  2. Execute
-  3. Verify
-
-Goal: Complete sanitize exec successfully
+📍 Starting: sanitize_exec (3 steps)
+📁 Tracking: /tmp/sanitize_exec_progress.txt
+→ Run: make checkpoint-update CMD=sanitize_exec STEP=1
 ```
 
 ### Check Progress
@@ -37,18 +26,9 @@ make checkpoint-status CMD=sanitize_exec
 
 **Expected output (example at 33% completion):**
 ```
-========================================
-   CHECKPOINT STATUS: sanitize_exec
-========================================
-
-Progress: 1/3 steps (33%)
-
-[██████░░░░░░░░░░░░] 33%
-
-Current Status: Preparing...
-
-Next Action:
-  → Step 2: Execute
+📈 command: X/Y steps (Z%)
+   [████░░░░░░░░░░░░░░░░] Z%
+→ Next: make checkpoint-update CMD=command STEP=N
 ```
 
 ## Minimum Requirements
@@ -84,17 +64,8 @@ make checkpoint-gate CMD=sanitize_exec GATE="Ready" REQUIRED="1"
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Ready
-========================================
-
-✅ GATE PASSED: Ready to execute!
-
-Prerequisites verified:
-  ✓ Environment prepared
-  ✓ Dependencies available
-  
-Proceed with execution.
+✅ GATE 'Gate Name' - PASSED
+   Verified: Steps 1,2,3
 ```
 
 ## Command

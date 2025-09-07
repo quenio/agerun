@@ -14,22 +14,9 @@ make checkpoint-init CMD=check-docs STEPS='"Initial Check" "Preview Fixes" "Appl
 
 **Expected output:**
 ```
-========================================
-   CHECKPOINT TRACKING INITIALIZED
-========================================
-
-Command: check-docs
-Tracking file: /tmp/check-docs_progress.txt
-Total steps: 5
-
-Steps to complete:
-  1. Initial Check
-  2. Preview Fixes
-  3. Apply Fixes
-  4. Verify Resolution
-  5. Commit and Push
-
-Goal: Ensure all documentation validates correctly
+📍 Starting: check-docs (5 steps)
+📁 Tracking: /tmp/check-docs_progress.txt
+→ Run: make checkpoint-update CMD=check-docs STEP=1
 ```
 
 ### Check Progress
@@ -39,21 +26,9 @@ make checkpoint-status CMD=check-docs
 
 **Expected output (example at 60% completion):**
 ```
-========================================
-   CHECKPOINT STATUS: check-docs
-========================================
-
-Progress: 3/5 steps (60%)
-
-[████████████░░░░░░░░] 60%
-
-Current Phase: Fixing
-Errors Found: 12
-Errors Fixed: 12
-Status: Verifying...
-
-Next Action:
-  → Step 4: Verify Resolution
+📈 command: X/Y steps (Z%)
+   [████░░░░░░░░░░░░░░░░] Z%
+→ Next: make checkpoint-update CMD=command STEP=N
 ```
 
 ## Minimum Requirements

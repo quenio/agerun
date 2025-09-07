@@ -15,25 +15,9 @@ make checkpoint-init CMD=check-logs STEPS='"Run Build" "Standard Checks" "Deep A
 
 **Expected output:**
 ```
-========================================
-   CHECKPOINT TRACKING INITIALIZED
-========================================
-
-Command: check-logs
-Tracking file: /tmp/check-logs_progress.txt
-Total steps: 8
-
-Steps to complete:
-  1. Run Build
-  2. Standard Checks
-  3. Deep Analysis
-  4. Categorize Errors
-  5. Fix Issues
-  6. Update Whitelist
-  7. Re-check Logs
-  8. Final Validation
-
-Goal: Ensure build logs are clean for CI
+📍 Starting: check-logs (8 steps)
+📁 Tracking: /tmp/check-logs_progress.txt
+→ Run: make checkpoint-update CMD=check-logs STEP=1
 ```
 
 ### Check Progress
@@ -43,21 +27,9 @@ make checkpoint-status CMD=check-logs
 
 **Expected output (example at 50% completion):**
 ```
-========================================
-   CHECKPOINT STATUS: check-logs
-========================================
-
-Progress: 4/8 steps (50%)
-
-[████████████████░░░░░░░░░░░░░░░░] 50%
-
-Current Phase: Analysis
-Errors Found: 12
-  Real errors: 3
-  Intentional errors: 9
-
-Next Action:
-  → Step 5: Fix Issues
+📈 command: X/Y steps (Z%)
+   [████░░░░░░░░░░░░░░░░] Z%
+→ Next: make checkpoint-update CMD=command STEP=N
 ```
 
 ## Minimum Requirements
@@ -142,18 +114,8 @@ make checkpoint-gate CMD=check-logs GATE="Build" REQUIRED="1"
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Build
-========================================
-
-✅ GATE PASSED: Build verified!
-
-Build Status:
-  ✓ Clean build completed
-  ✓ All modules compiled
-  ✓ Tests executed
-
-Ready for log analysis.
+✅ GATE 'Gate Name' - PASSED
+   Verified: Steps 1,2,3
 ```
 
 ## Phase 2: Analysis (Steps 3-4)

@@ -14,22 +14,9 @@ make checkpoint-init CMD=merge-settings STEPS='"Check Files" "Read Settings" "Me
 
 **Expected output:**
 ```
-========================================
-   CHECKPOINT TRACKING INITIALIZED
-========================================
-
-Command: merge-settings
-Tracking file: /tmp/merge-settings_progress.txt
-Total steps: 5
-
-Steps to complete:
-  1. Check Files
-  2. Read Settings
-  3. Merge Permissions
-  4. Validate Result
-  5. Commit and Cleanup
-
-Goal: Merge local settings and remove duplicate file
+📍 Starting: merge-settings (5 steps)
+📁 Tracking: /tmp/merge-settings_progress.txt
+→ Run: make checkpoint-update CMD=merge-settings STEP=1
 ```
 
 ### Check Progress
@@ -39,21 +26,9 @@ make checkpoint-status CMD=merge-settings
 
 **Expected output (example at 60% completion):**
 ```
-========================================
-   CHECKPOINT STATUS: merge-settings
-========================================
-
-Progress: 3/5 steps (60%)
-
-[████████████░░░░░░░░] 60%
-
-Current Phase: Merging
-Local File: Found
-Permissions to merge: 8
-Conflicts: 0
-
-Next Action:
-  → Step 4: Validate Result
+📈 command: X/Y steps (Z%)
+   [████░░░░░░░░░░░░░░░░] Z%
+→ Next: make checkpoint-update CMD=command STEP=N
 ```
 
 ## Minimum Requirements

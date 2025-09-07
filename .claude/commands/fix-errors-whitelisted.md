@@ -14,33 +14,9 @@ make checkpoint-init CMD=fix-errors-whitelisted STEPS='"Count Errors" "Group by 
 
 **Expected output:**
 ```
-========================================
-   CHECKPOINT TRACKING INITIALIZED
-========================================
-
-Command: fix-errors-whitelisted
-Tracking file: /tmp/fix-errors-whitelisted_progress.txt
-Total steps: 16
-
-Steps to complete:
-  1. Count Errors
-  2. Group by Test
-  3. Find Patterns
-  4. Select Target
-  5. Analyze Root Cause
-  6. Choose Strategy
-  7. Plan Implementation
-  8. Verify Current State
-  9. Apply Fix
-  10. Test Fix
-  11. Remove Whitelist Entries
-  12. Update Whitelist Total
-  13. Update TODO.md
-  14. Update CHANGELOG
-  15. Final Verification
-  16. Create Commit
-
-Goal: Fix at least 5 whitelist errors (MANDATORY)
+📍 Starting: fix-errors-whitelisted (16 steps)
+📁 Tracking: /tmp/fix-errors-whitelisted_progress.txt
+→ Run: make checkpoint-update CMD=fix-errors-whitelisted STEP=1
 ```
 
 ### Check Progress
@@ -50,20 +26,9 @@ make checkpoint-status CMD=fix-errors-whitelisted
 
 **Expected output (example at 50% completion):**
 ```
-========================================
-   CHECKPOINT STATUS: fix-errors-whitelisted
-========================================
-
-Progress: 8/16 steps (50%)
-
-[██████████░░░░░░░░░░] 50%
-
-Current Phase: Implementation
-Errors Fixed: 3/5 (minimum requirement)
-Whitelist Entries: 271 → 268 (3 removed)
-
-Next Action:
-  → Step 9: Apply Fix
+📈 command: X/Y steps (Z%)
+   [████░░░░░░░░░░░░░░░░] Z%
+→ Next: make checkpoint-update CMD=command STEP=N
 ```
 
 ## Minimum Requirements
@@ -139,18 +104,8 @@ make checkpoint-gate CMD=fix-errors-whitelisted GATE="Analysis" REQUIRED="1,2,3"
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Analysis
-========================================
-
-✅ GATE PASSED: Analysis complete!
-
-Verified steps:
-  ✓ Step 1: Count Errors
-  ✓ Step 2: Group by Test
-  ✓ Step 3: Find Patterns
-
-You may proceed to pattern selection.
+✅ GATE 'Gate Name' - PASSED
+   Verified: Steps 1,2,3
 ```
 
 ## Phase 2: Strategy Development (Steps 4-7)
@@ -254,19 +209,8 @@ make checkpoint-gate CMD=fix-errors-whitelisted GATE="Strategy" REQUIRED="4,5,6,
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Strategy
-========================================
-
-✅ GATE PASSED: Strategy defined!
-
-Verified steps:
-  ✓ Step 4: Select Target
-  ✓ Step 5: Analyze Root Cause
-  ✓ Step 6: Choose Strategy
-  ✓ Step 7: Plan Implementation
-
-You may proceed to implementation.
+✅ GATE 'Gate Name' - PASSED
+   Verified: Steps 1,2,3
 ```
 
 ## Phase 3: Implementation (Steps 8-11)
@@ -283,21 +227,8 @@ make checkpoint-gate CMD=fix-errors-whitelisted GATE="Implementation Ready" REQU
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Implementation Ready
-========================================
-
-⚠️ CRITICAL: You are about to modify code!
-
-Checklist:
-  ✓ Error pattern identified
-  ✓ Fix strategy documented
-  ✓ Root cause understood
-  ✓ Implementation plan ready
-
-✅ GATE PASSED: Ready to implement fixes
-
-Proceed with caution.
+✅ GATE 'Gate Name' - PASSED
+   Verified: Steps 1,2,3
 ```
 
 #### Step 4: Implement Fixes
@@ -422,18 +353,8 @@ make checkpoint-gate CMD=fix-errors-whitelisted GATE="Documentation" REQUIRED="1
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Documentation
-========================================
-
-✅ GATE PASSED: Documentation complete!
-
-Verified steps:
-  ✓ Step 12: Update Whitelist Total
-  ✓ Step 13: Update TODO.md
-  ✓ Step 14: Update CHANGELOG
-
-Ready for final verification.
+✅ GATE 'Gate Name' - PASSED
+   Verified: Steps 1,2,3
 ```
 
 #### Step 6: Verify and Commit

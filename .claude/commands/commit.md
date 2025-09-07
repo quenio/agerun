@@ -15,26 +15,9 @@ make checkpoint-init CMD=commit STEPS='"Run Tests" "Check Logs" "Update Docs" "U
 
 **Expected output:**
 ```
-========================================
-   CHECKPOINT TRACKING INITIALIZED
-========================================
-
-Command: commit
-Tracking file: /tmp/commit_progress.txt
-Total steps: 9
-
-Steps to complete:
-  1. Run Tests
-  2. Check Logs
-  3. Update Docs
-  4. Update TODO
-  5. Update CHANGELOG
-  6. Review Changes
-  7. Stage Files
-  8. Create Commit
-  9. Push and Verify
-
-Goal: Complete git commit with all quality checks
+📍 Starting: commit (9 steps)
+📁 Tracking: /tmp/commit_progress.txt
+→ Run: make checkpoint-update CMD=commit STEP=1
 ```
 
 ### Check Progress
@@ -44,23 +27,9 @@ make checkpoint-status CMD=commit
 
 **Expected output (example at 56% completion):**
 ```
-========================================
-   CHECKPOINT STATUS: commit
-========================================
-
-Progress: 5/9 steps (56%)
-
-[██████████░░░░░░░░] 56%
-
-Current Phase: Documentation
-Tests: Passed
-Logs: Clean
-Docs: Updated
-TODO: Updated
-CHANGELOG: In progress...
-
-Next Action:
-  → Step 6: Review Changes
+📈 commit: 5/9 steps (56%)
+   [███████████░░░░░░░░░] 56%
+→ Next: make checkpoint-update CMD=commit STEP=6
 ```
 
 ## Minimum Requirements
@@ -183,20 +152,8 @@ make checkpoint-gate CMD=commit GATE="Build Quality" REQUIRED="1,2"
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Build Quality
-========================================
-
-✅ GATE PASSED: Build verified!
-
-Build Status:
-  ✓ Clean build completed
-  ✓ All tests passed
-  ✓ Zero memory leaks
-  ✓ Logs are clean
-  ✓ CI ready
-
-Proceed to review phase.
+✅ GATE 'Build Quality' - PASSED
+   Verified: Steps 1,2
 ```
 
 ## Phase 2: Review and Stage (Steps 6-7)
@@ -240,20 +197,8 @@ make checkpoint-gate CMD=commit GATE="Documentation" REQUIRED="3,4,5"
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Documentation
-========================================
-
-⚠️ CRITICAL VERIFICATION
-
-Documentation Status:
-  ✓ Module docs updated (if needed)
-  ✓ TODO.md updated
-  ✓ CHANGELOG.md updated
-  
-✅ GATE PASSED: Documentation complete!
-
-Ready for commit.
+✅ GATE 'Documentation' - PASSED
+   Verified: Steps 3,4,5
 ```
 
 ## Phase 3: Commit and Push (Steps 8-9)
@@ -387,27 +332,8 @@ make checkpoint-status CMD=commit
 
 **Expected completion output:**
 ```
-========================================
-   CHECKPOINT STATUS: commit
-========================================
-
-Progress: 9/9 steps (100%)
-
-[████████████████████] 100%
-
-✅ ALL CHECKPOINTS COMPLETE!
-
-Commit Summary:
-  Build: Clean
-  Tests: All passing
-  Logs: No issues
-  Documentation: Updated
-  TODO: Updated
-  CHANGELOG: Updated
-  Commit: Created
-  Push: Verified
-
-The commit has been successfully completed!
+🎆 All 9 steps complete!
+✓ Run: make checkpoint-cleanup CMD=commit
 ```
 
 ```bash

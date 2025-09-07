@@ -15,18 +15,9 @@ make checkpoint-init CMD=new-learnings STEPS='"Identify New Learnings" "Determin
 
 **Expected output:**
 ```
-========================================
-   CHECKPOINT TRACKING INITIALIZED
-========================================
-
-Command: new-learnings
-Tracking file: /tmp/new-learnings_progress.txt
-Total steps: 12
-
-Steps to complete:
-  1. Identify New Learnings
-  2. Determine KB Article Strategy
-  ... (all 12 steps listed)
+📍 Starting: new-learnings (12 steps)
+📁 Tracking: /tmp/new-learnings_progress.txt
+→ Run: make checkpoint-update CMD=new-learnings STEP=1
 ```
 
 ### Check Progress at Any Time

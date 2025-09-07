@@ -14,20 +14,9 @@ make checkpoint-init CMD=next_task STEPS='"Prepare" "Execute" "Verify"'
 
 **Expected output:**
 ```
-========================================
-   CHECKPOINT TRACKING INITIALIZED
-========================================
-
-Command: next_task
-Tracking file: /tmp/next_task_progress.txt
-Total steps: 3
-
-Steps to complete:
-  1. Prepare
-  2. Execute
-  3. Verify
-
-Goal: Complete next task successfully
+📍 Starting: next_task (3 steps)
+📁 Tracking: /tmp/next_task_progress.txt
+→ Run: make checkpoint-update CMD=next_task STEP=1
 ```
 
 ### Check Progress
@@ -37,18 +26,9 @@ make checkpoint-status CMD=next_task
 
 **Expected output (example at 33% completion):**
 ```
-========================================
-   CHECKPOINT STATUS: next_task
-========================================
-
-Progress: 1/3 steps (33%)
-
-[██████░░░░░░░░░░░░] 33%
-
-Current Status: Preparing...
-
-Next Action:
-  → Step 2: Execute
+📈 command: X/Y steps (Z%)
+   [████░░░░░░░░░░░░░░░░] Z%
+→ Next: make checkpoint-update CMD=command STEP=N
 ```
 
 ## Minimum Requirements

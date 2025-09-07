@@ -15,27 +15,9 @@ make checkpoint-init CMD=migrate-module-to-zig-abi STEPS='"Check Existing" "Anal
 
 **Expected output:**
 ```
-========================================
-   CHECKPOINT TRACKING INITIALIZED
-========================================
-
-Command: migrate-module-to-zig-abi
-Tracking file: /tmp/migrate-module-to-zig-abi_progress.txt
-Total steps: 10
-
-Steps to complete:
-  1. Check Existing
-  2. Analyze Dependencies
-  3. Identify Challenges
-  4. Review API
-  5. Create Zig File
-  6. Map Types
-  7. Implement Functions
-  8. Run Tests
-  9. Verify Memory
-  10. Cleanup and Document
-
-Goal: Migrate {{1}} module from C to Zig with C API compatibility
+📍 Starting: migrate-module-to-zig-abi (10 steps)
+📁 Tracking: /tmp/migrate-module-to-zig-abi_progress.txt
+→ Run: make checkpoint-update CMD=migrate-module-to-zig-abi STEP=1
 ```
 
 ### Check Progress
@@ -45,21 +27,9 @@ make checkpoint-status CMD=migrate-module-to-zig-abi
 
 **Expected output (example at 50% completion):**
 ```
-========================================
-   CHECKPOINT STATUS: migrate-module-to-zig-abi
-========================================
-
-Progress: 5/10 steps (50%)
-
-[██████████░░░░░░░░░░] 50%
-
-Current Phase: Implementation
-Module: {{1}} → {{1}}.zig
-Functions Migrated: 12/20
-Tests Status: Building...
-
-Next Action:
-  → Step 6: Map Types
+📈 command: X/Y steps (Z%)
+   [████░░░░░░░░░░░░░░░░] Z%
+→ Next: make checkpoint-update CMD=command STEP=N
 ```
 
 ## Minimum Requirements
@@ -191,19 +161,8 @@ make checkpoint-gate CMD=migrate-module-to-zig-abi GATE="Assessment" REQUIRED="1
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Assessment
-========================================
-
-✅ GATE PASSED: Assessment complete!
-
-Module Status:
-  ✓ Source files verified
-  ✓ Dependencies analyzed: 5 includes
-  ✓ Challenges identified: None critical
-  ✓ API reviewed: 20 functions
-
-Ready for implementation planning.
+✅ GATE 'Gate Name' - PASSED
+   Verified: Steps 1,2,3
 ```
 
 If `modules/{{1}}.zig` already exists:
@@ -276,19 +235,8 @@ make checkpoint-gate CMD=migrate-module-to-zig-abi GATE="Implementation" REQUIRE
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Implementation
-========================================
-
-✅ GATE PASSED: Implementation complete!
-
-Migration Status:
-  ✓ Zig file created
-  ✓ Types mapped correctly
-  ✓ All 20 functions implemented
-  ✓ C API compatibility maintained
-
-Ready for testing phase.
+✅ GATE 'Gate Name' - PASSED
+   Verified: Steps 1,2,3
 ```
 
 ## Phase 3: Testing (Steps 8-9)
@@ -344,21 +292,8 @@ make checkpoint-gate CMD=migrate-module-to-zig-abi GATE="Testing" REQUIRED="8,9"
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Testing
-========================================
-
-⚠️ CRITICAL VERIFICATION
-
-Test Results:
-  ✓ All tests passed
-  ✓ Zero memory leaks
-  ✓ Behavior matches C implementation
-  ✓ Performance acceptable
-
-✅ GATE PASSED: Migration verified!
-
-The Zig implementation is ready for deployment.
+✅ GATE 'Gate Name' - PASSED
+   Verified: Steps 1,2,3
 ```
 
 ## Phase 4: Cleanup (Step 10)

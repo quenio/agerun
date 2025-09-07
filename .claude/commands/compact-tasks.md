@@ -14,23 +14,9 @@ make checkpoint-init CMD=compact-tasks STEPS='"Read TODO" "Identify Completed" "
 
 **Expected output:**
 ```
-========================================
-   CHECKPOINT TRACKING INITIALIZED
-========================================
-
-Command: compact-tasks
-Tracking file: /tmp/compact-tasks_progress.txt
-Total steps: 6
-
-Steps to complete:
-  1. Read TODO
-  2. Identify Completed
-  3. Compact Entries
-  4. Verify Integrity
-  5. Write Changes
-  6. Commit and Push
-
-Goal: Compact completed tasks while preserving incomplete
+📍 Starting: compact-tasks (6 steps)
+📁 Tracking: /tmp/compact-tasks_progress.txt
+→ Run: make checkpoint-update CMD=compact-tasks STEP=1
 ```
 
 ### Check Progress
@@ -40,21 +26,9 @@ make checkpoint-status CMD=compact-tasks
 
 **Expected output (example at 50% completion):**
 ```
-========================================
-   CHECKPOINT STATUS: compact-tasks
-========================================
-
-Progress: 3/6 steps (50%)
-
-[██████████░░░░░░░░░░] 50%
-
-Current Phase: Compaction
-Completed Tasks: 42
-Compacted: 42
-Incomplete Tasks: 18 (untouched)
-
-Next Action:
-  → Step 4: Verify Integrity
+📈 command: X/Y steps (Z%)
+   [████░░░░░░░░░░░░░░░░] Z%
+→ Next: make checkpoint-update CMD=command STEP=N
 ```
 
 ## Minimum Requirements
@@ -123,18 +97,8 @@ make checkpoint-gate CMD=compact-tasks GATE="Analysis" REQUIRED="1,2"
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Analysis
-========================================
-
-✅ GATE PASSED: Analysis complete!
-
-File Status:
-  ✓ TODO.md loaded: 1850 lines
-  ✓ Completed tasks: 42
-  ✓ Incomplete tasks: 18
-
-Ready for compaction.
+✅ GATE 'Gate Name' - PASSED
+   Verified: Steps 1,2,3
 ```
 
 ## Phase 2: Compaction (Steps 3-4)

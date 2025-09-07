@@ -14,24 +14,9 @@ make checkpoint-init CMD=compact-changes STEPS='"Read CHANGELOG" "Analyze Conten
 
 **Expected output:**
 ```
-========================================
-   CHECKPOINT TRACKING INITIALIZED
-========================================
-
-Command: compact-changes
-Tracking file: /tmp/compact-changes_progress.txt
-Total steps: 7
-
-Steps to complete:
-  1. Read CHANGELOG
-  2. Analyze Content
-  3. Compact Milestones
-  4. Preserve Metrics
-  5. Add Self-Entry
-  6. Update TODO
-  7. Commit and Push
-
-Goal: Compact CHANGELOG while preserving key information
+📍 Starting: compact-changes (7 steps)
+📁 Tracking: /tmp/compact-changes_progress.txt
+→ Run: make checkpoint-update CMD=compact-changes STEP=1
 ```
 
 ### Check Progress
@@ -41,22 +26,9 @@ make checkpoint-status CMD=compact-changes
 
 **Expected output (example at 57% completion):**
 ```
-========================================
-   CHECKPOINT STATUS: compact-changes
-========================================
-
-Progress: 4/7 steps (57%)
-
-[███████████░░░░░░░░░] 57%
-
-Current Phase: Compaction
-Original Lines: 1637
-Current Lines: 902
-Reduction: 45%
-Metrics Preserved: 100%
-
-Next Action:
-  → Step 5: Add Self-Entry
+📈 command: X/Y steps (Z%)
+   [████░░░░░░░░░░░░░░░░] Z%
+→ Next: make checkpoint-update CMD=command STEP=N
 ```
 
 ## Minimum Requirements
@@ -126,19 +98,8 @@ make checkpoint-gate CMD=compact-changes GATE="Analysis" REQUIRED="1,2"
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Analysis
-========================================
-
-✅ GATE PASSED: Analysis complete!
-
-File Status:
-  ✓ CHANGELOG.md loaded: 1637 lines
-  ✓ Date sections: 45
-  ✓ Milestones: 68
-  ✓ Metrics found: 127
-
-Ready for compaction.
+✅ GATE 'Gate Name' - PASSED
+   Verified: Steps 1,2,3
 ```
 
 ## Phase 2: Compaction (Steps 3-6)

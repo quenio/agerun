@@ -15,28 +15,9 @@ make checkpoint-init CMD=migrate-module-to-zig-struct STEPS='"Read KB Article" "
 
 **Expected output:**
 ```
-========================================
-   CHECKPOINT TRACKING INITIALIZED
-========================================
-
-Command: migrate-module-to-zig-struct
-Tracking file: /tmp/migrate-module-to-zig-struct_progress.txt
-Total steps: 11
-
-Steps to complete:
-  1. Read KB Article
-  2. Check Current Implementation
-  3. Check C Dependencies
-  4. Check Zig Dependencies
-  5. Verify Safety
-  6. Create Struct Module
-  7. Convert Functions
-  8. Update Dependencies
-  9. Run Tests
-  10. Remove Old Module
-  11. Update Documentation
-
-Goal: Safely migrate ar_{{1}} to {{1|pascal}}.zig
+📍 Starting: migrate-module-to-zig-struct (11 steps)
+📁 Tracking: /tmp/migrate-module-to-zig-struct_progress.txt
+→ Run: make checkpoint-update CMD=migrate-module-to-zig-struct STEP=1
 ```
 
 ### Check Progress
@@ -46,23 +27,9 @@ make checkpoint-status CMD=migrate-module-to-zig-struct
 
 **Expected output (example at 64% completion):**
 ```
-========================================
-   CHECKPOINT STATUS: migrate-module-to-zig-struct
-========================================
-
-Progress: 7/11 steps (64%)
-
-[████████████░░░░░░░░] 64%
-
-Current Phase: Implementation
-Module: ar_{{1}} → {{1|pascal}}.zig
-Functions Converted: 8/12
-Dependencies Updated: 3/5
-
-Safety Status: ✅ Safe to migrate
-
-Next Action:
-  → Step 8: Update Dependencies
+📈 command: X/Y steps (Z%)
+   [████░░░░░░░░░░░░░░░░] Z%
+→ Next: make checkpoint-update CMD=command STEP=N
 ```
 
 ## Minimum Requirements
@@ -113,14 +80,8 @@ make checkpoint-gate CMD=migrate-module-to-zig-struct GATE="Knowledge" REQUIRED=
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Knowledge
-========================================
-
-✅ GATE PASSED: KB article reviewed!
-
-Zig struct module patterns understood.
-Proceeding to dependency assessment.
+✅ GATE 'Gate Name' - PASSED
+   Verified: Steps 1,2,3
 ```
 
 #### Pre-Migration Dependency Check
@@ -206,23 +167,8 @@ make checkpoint-gate CMD=migrate-module-to-zig-struct GATE="Safety" REQUIRED="2,
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Safety Assessment
-========================================
-
-⚠️ CRITICAL SAFETY CHECK
-
-Checking migration safety...
-✓ Module exists: ar_{{1}}.zig
-✓ No C module dependencies
-✓ No @cImport usage
-✓ Not part of public API
-✓ Found 3 Zig dependencies (can be updated)
-
-✅ GATE PASSED: Safe to migrate!
-
-Module ar_{{1}} can be migrated to {{1|pascal}}.zig
-Proceeding to implementation phase.
+✅ GATE 'Gate Name' - PASSED
+   Verified: Steps 1,2,3
 ```
 
 **Migration Blockers**:
@@ -287,19 +233,8 @@ make checkpoint-gate CMD=migrate-module-to-zig-struct GATE="Implementation" REQU
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Implementation
-========================================
-
-✅ GATE PASSED: Implementation complete!
-
-Verified:
-✓ New module created: {{1|pascal}}.zig
-✓ Functions converted: 12
-✓ Ownership prefixes maintained
-✓ Zig idioms applied
-
-Ready for dependency updates and testing.
+✅ GATE 'Gate Name' - PASSED
+   Verified: Steps 1,2,3
 ```
 
 ## Phase 3: Testing (Steps 8-9)
@@ -352,22 +287,8 @@ make checkpoint-gate CMD=migrate-module-to-zig-struct GATE="Testing" REQUIRED="8
 
 **Expected gate output:**
 ```
-========================================
-   GATE: Testing
-========================================
-
-⚠️ CRITICAL TEST VERIFICATION
-
-Test Results:
-✓ All tests passed (15/15)
-✓ No memory leaks detected
-✓ Functionality preserved
-✓ Dependencies updated successfully
-
-✅ GATE PASSED: Migration verified!
-
-The migrated module is working correctly.
-Proceeding to cleanup phase.
+✅ GATE 'Gate Name' - PASSED
+   Verified: Steps 1,2,3
 ```
 
 ## Phase 4: Cleanup (Steps 10-11)
