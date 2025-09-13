@@ -41,10 +41,11 @@ static size_t _skip_whitespace(const char *ref_str, size_t pos) {
 /**
  * Parse a string argument (handles quoted strings with escapes).
  */
-static char* _parse_string_argument(const char *ref_str, size_t *pos) {
+static char* _parse_string_argument(ar_build_instruction_parser_t *mut_parser, const char *ref_str, size_t *pos) {
     size_t start = *pos;
     
     if (ref_str[start] != '"') {
+        _log_error(mut_parser, "Expected quoted string", start);
         return NULL;
     }
     
@@ -65,12 +66,14 @@ static char* _parse_string_argument(const char *ref_str, size_t *pos) {
     }
     
     if (ref_str[i] != '"') {
+        _log_error(mut_parser, "Unterminated string", start);
         return NULL;  /* Unterminated string */
     }
     
     /* Allocate buffer for content + quotes + null terminator */
     char *own_result = AR__HEAP__MALLOC(len + 3, "string argument");
     if (!own_result) {
+        _log_error(mut_parser, "Memory allocation failed", start);
         return NULL;
     }
     
@@ -98,7 +101,7 @@ static char* _parse_string_argument(const char *ref_str, size_t *pos) {
 /**
  * Parse a non-string argument (like memory.data).
  */
-static char* _parse_expression_argument(const char *ref_str, size_t *pos) {
+static char* _parse_expression_argument(ar_build_instruction_parser_t *mut_parser, const char *ref_str, size_t *pos) {
     size_t start = *pos;
     size_t end = start;
     
@@ -108,12 +111,14 @@ static char* _parse_expression_argument(const char *ref_str, size_t *pos) {
     }
     
     if (end == start) {
+        _log_error(mut_parser, "Empty expression argument", start);
         return NULL;
     }
     
     size_t len = end - start;
     char *own_result = AR__HEAP__MALLOC(len + 1, "expression argument");
     if (!own_result) {
+        _log_error(mut_parser, "Memory allocation failed", start);
         return NULL;
     }
     
@@ -127,13 +132,14 @@ static char* _parse_expression_argument(const char *ref_str, size_t *pos) {
 /**
  * Parse function arguments.
  */
-static bool _parse_arguments(const char *ref_str, size_t *pos, char ***out_args, size_t *out_count, size_t expected_count) {
+static bool _parse_arguments(ar_build_instruction_parser_t *mut_parser, const char *ref_str, size_t *pos, char ***out_args, size_t *out_count, size_t expected_count) {
     char **args = NULL;
     size_t count = 0;
     size_t capacity = 2;
     
     args = AR__HEAP__MALLOC(capacity * sizeof(char*), "args array");
     if (!args) {
+        _log_error(mut_parser, "Memory allocation failed", *pos);
         return false;
     }
     
@@ -148,9 +154,9 @@ static bool _parse_arguments(const char *ref_str, size_t *pos, char ***out_args,
         
         /* Parse argument based on type */
         if (ref_str[*pos] == '"') {
-            arg = _parse_string_argument(ref_str, pos);
+            arg = _parse_string_argument(mut_parser, ref_str, pos);
         } else {
-            arg = _parse_expression_argument(ref_str, pos);
+            arg = _parse_expression_argument(mut_parser, ref_str, pos);
         }
         
         if (!arg) {
@@ -167,6 +173,7 @@ static bool _parse_arguments(const char *ref_str, size_t *pos, char ***out_args,
             capacity *= 2;
             char **new_args = AR__HEAP__REALLOC(args, capacity * sizeof(char*), "args array resize");
             if (!new_args) {
+                _log_error(mut_parser, "Memory reallocation failed", *pos);
                 AR__HEAP__FREE(arg);
                 for (size_t i = 0; i < count; i++) {
                     AR__HEAP__FREE(args[i]);
@@ -186,6 +193,7 @@ static bool _parse_arguments(const char *ref_str, size_t *pos, char ***out_args,
             (*pos)++;
         } else if (ref_str[*pos] != ')') {
             /* Invalid separator */
+            _log_error(mut_parser, "Expected ',' or ')' after argument", *pos);
             for (size_t i = 0; i < count; i++) {
                 AR__HEAP__FREE(args[i]);
             }
@@ -196,6 +204,7 @@ static bool _parse_arguments(const char *ref_str, size_t *pos, char ***out_args,
     
     /* Check expected count */
     if (expected_count > 0 && count != expected_count) {
+        _log_error(mut_parser, "build() expects exactly 2 arguments", *pos);
         for (size_t i = 0; i < count; i++) {
             AR__HEAP__FREE(args[i]);
         }
@@ -349,8 +358,8 @@ ar_instruction_ast_t* ar_build_instruction_parser__parse(
     /* Parse arguments */
     char **args = NULL;
     size_t arg_count = 0;
-    if (!_parse_arguments(ref_instruction, &pos, &args, &arg_count, 2)) {
-        _log_error(mut_parser, "Failed to parse build arguments", pos);
+    if (!_parse_arguments(mut_parser, ref_instruction, &pos, &args, &arg_count, 2)) {
+        /* Error already logged by _parse_arguments */
         return NULL;
     }
     

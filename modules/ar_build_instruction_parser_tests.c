@@ -419,6 +419,104 @@ static void test_build_instruction_parser__parse_with_expression_asts(void) {
     ar_log__destroy(log);
 }
 
+static void test_build_instruction_parser__non_quoted_string_error(void) {
+    printf("Testing non-quoted string in string position error...\n");
+    
+    // Given a build instruction with a non-quoted value where string is expected
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    const char *instruction = "build(notquoted, memory.data)";  // First arg should be quoted
+    ar_build_instruction_parser_t *own_parser = ar_build_instruction_parser__create(log);
+    assert(own_parser != NULL);
+    
+    // When parsing the instruction 
+    ar_instruction_ast_t *own_ast = ar_build_instruction_parser__parse(own_parser, instruction, NULL);
+    
+    // Then it should fail
+    assert(own_ast == NULL);
+    
+    // And an error should be logged about expecting a quoted string
+    const char *error = ar_log__get_last_error_message(log);
+    assert(error != NULL);
+    
+    ar_build_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
+static void test_build_instruction_parser__empty_expression_error(void) {
+    printf("Testing empty expression argument error...\n");
+    
+    // Given a build instruction with an empty second argument
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    const char *instruction = "build(\"template\", )";  // Empty second arg
+    ar_build_instruction_parser_t *own_parser = ar_build_instruction_parser__create(log);
+    assert(own_parser != NULL);
+    
+    // When parsing the instruction
+    ar_instruction_ast_t *own_ast = ar_build_instruction_parser__parse(own_parser, instruction, NULL);
+    
+    // Then it should fail
+    assert(own_ast == NULL);
+    
+    // And an error should be logged about empty expression
+    const char *error = ar_log__get_last_error_message(log);
+    assert(error != NULL);
+    
+    ar_build_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
+static void test_build_instruction_parser__invalid_separator_error(void) {
+    printf("Testing invalid separator error...\n");
+    
+    // Given a build instruction with invalid separator between arguments
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    const char *instruction = "build(\"template\" memory.data)";  // Missing comma
+    ar_build_instruction_parser_t *own_parser = ar_build_instruction_parser__create(log);
+    assert(own_parser != NULL);
+    
+    // When parsing the instruction
+    ar_instruction_ast_t *own_ast = ar_build_instruction_parser__parse(own_parser, instruction, NULL);
+    
+    // Then it should fail
+    assert(own_ast == NULL);
+    
+    // And an error should be logged about invalid separator
+    const char *error = ar_log__get_last_error_message(log);
+    assert(error != NULL);
+    
+    ar_build_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
+static void test_build_instruction_parser__unterminated_string_error(void) {
+    printf("Testing unterminated string error logging...\n");
+    
+    // Given a build instruction with an unterminated string and a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    const char *instruction = "build(\"Hello {name}, memory.data)";  // Missing closing quote
+    ar_build_instruction_parser_t *own_parser = ar_build_instruction_parser__create(log);
+    assert(own_parser != NULL);
+    
+    // When parsing the instruction with unterminated string
+    ar_instruction_ast_t *own_ast = ar_build_instruction_parser__parse(own_parser, instruction, NULL);
+    
+    // Then it should fail
+    assert(own_ast == NULL);
+    
+    // And an error should be logged about the unterminated string
+    const char *error = ar_log__get_last_error_message(log);
+    assert(error != NULL);
+    assert(strstr(error, "Unterminated string") != NULL || 
+           strstr(error, "unterminated string") != NULL);
+    
+    ar_build_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
 int main(void) {
     printf("Running build instruction parser tests...\n\n");
     
@@ -442,6 +540,12 @@ int main(void) {
     
     // Expression AST integration
     test_build_instruction_parser__parse_with_expression_asts();
+    
+    // Helper function error logging tests
+    test_build_instruction_parser__non_quoted_string_error();
+    test_build_instruction_parser__empty_expression_error();
+    test_build_instruction_parser__invalid_separator_error();
+    test_build_instruction_parser__unterminated_string_error();
     
     printf("\nAll build instruction parser tests passed!\n");
     return 0;

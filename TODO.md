@@ -293,17 +293,14 @@ Each parser needs 2-3 TDD cycles for comprehensive error logging:
 
 ##### Parsers with partial helper function logging (need completion):
 
-- [ ] **ar_assignment_instruction_parser** (1-2 cycles) 
-  - Note: Already has 11 of 12 errors logged
-  - [ ] TDD Cycle 1: Add missing error case logging
-  - [ ] TDD Cycle 2: Verify comprehensive test coverage
+- [x] **ar_assignment_instruction_parser** - Already has 11 of 12 errors logged, 12th is deprecated (Completed 2025-09-13)
 
-- [ ] **ar_build_instruction_parser** (3-4 cycles)
-  - Note: Helper functions like _extract_string() return NULL without logging
-  - [ ] TDD Cycle 1: Add unterminated string error logging in _extract_string()
-  - [ ] TDD Cycle 2: Add memory allocation failure logging in _extract_string()
-  - [ ] TDD Cycle 3: Add delimiter not found logging in _extract_argument()
-  - [ ] TDD Cycle 4: Add comprehensive test coverage for all error paths
+- [x] **ar_build_instruction_parser** - Added error logging for all 10 helper function failures (Completed 2025-09-13)
+  - [x] Added error logging to _parse_string_argument (3 conditions)
+  - [x] Added error logging to _parse_expression_argument (2 conditions)  
+  - [x] Added error logging to _parse_arguments (5 conditions)
+  - [x] Added comprehensive test coverage for all error paths
+  - [x] Removed redundant "Failed to parse build arguments" error
 
 - [ ] **ar_compile_instruction_parser** (2-3 cycles)
   - Note: May have helper functions needing error logging
