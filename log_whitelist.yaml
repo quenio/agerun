@@ -162,6 +162,9 @@ ignored_errors:
     message: "ERROR: Expected '(' after 'deprecate' (at position 10)"
     comment: "Testing missing parenthesis after deprecate"
   - context: "ar_deprecate_instruction_parser_tests"
+    message: "ERROR: NULL instruction provided to deprecate parser (at position 0)"
+    comment: "Testing NULL instruction parameter error logging"
+  - context: "ar_deprecate_instruction_parser_tests"
     message: "ERROR: Expected 'deprecate' function (at position 0)"
     comment: "Testing missing deprecate function"
   - context: "ar_deprecate_instruction_parser_tests"
@@ -817,8 +820,8 @@ ignored_errors:
 
   # ar_expression_parser test status messages
   - context: "ar_expression_parser_tests"
-# Total entries: 242
-# Test entries: 237
+# Total entries: 243
+# Test entries: 238
 # Executable entries: 7
 # Context-free entries: 0
 

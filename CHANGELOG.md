@@ -2,6 +2,16 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-09-13
+
+### ✅ ar_deprecate_instruction_parser Error Logging Enhancement
+- **Enhanced error logging** in ar_deprecate_instruction_parser (7 of 11 parsers now complete)
+- **Added NULL instruction parameter check** with clear error message (1 TDD cycle)
+- **Created test coverage**: test_deprecate_parser__null_instruction added
+- **Updated whitelist**: Added entry for intentional test error (243 total entries)
+- **Zero memory leaks**: All tests passing with clean memory
+- **Build time**: 1m 26s
+
 ## 2025-09-07
 
 ### ✅ ar_condition_instruction_parser Error Logging Enhancement

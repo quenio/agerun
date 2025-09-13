@@ -207,6 +207,32 @@ static void test_deprecate_parser__complex_strings(void) {
 }
 
 /**
+ * Test parsing with NULL instruction
+ */
+static void test_deprecate_parser__null_instruction(void) {
+    printf("Testing deprecate parser with NULL instruction...\n");
+    
+    // Given a parser with a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    ar_deprecate_instruction_parser_t *own_parser = ar_deprecate_instruction_parser__create(log);
+    assert(own_parser != NULL);
+    
+    // When parsing a NULL instruction
+    ar_instruction_ast_t *own_ast = ar_deprecate_instruction_parser__parse(own_parser, NULL, NULL);
+    
+    // Then it should fail
+    assert(own_ast == NULL);
+    
+    // And an error should be logged
+    assert(ar_log__get_last_error_message(log) != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "NULL instruction") != NULL);
+    
+    ar_deprecate_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
+/**
  * Test destroy method parsing with expression ASTs
  */
 static void test_deprecate_parser__parse_with_expression_asts(void) {
@@ -294,6 +320,7 @@ int main(void) {
     test_deprecate_parser__parse_with_assignment();
     test_deprecate_parser__error_handling();
     test_deprecate_parser__complex_strings();
+    test_deprecate_parser__null_instruction();
     
     // Expression AST integration
     test_deprecate_parser__parse_with_expression_asts();

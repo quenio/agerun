@@ -263,7 +263,7 @@ Each parser needs 2-3 TDD cycles for comprehensive error logging:
   - [x] Test added and passing
   - [x] Whitelist updated
   
-- [ ] **ar_deprecate_instruction_parser** (2-3 cycles)
+- [x] **ar_deprecate_instruction_parser** - Added NULL instruction error logging (Completed 2025-09-13)
   - [ ] Add NULL parameter logging
   - [ ] Add parse failure logging
   - [ ] Update documentation
