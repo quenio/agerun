@@ -247,9 +247,9 @@ static void test_parse_instruction_parser__error_wrong_arg_count(void) {
     // Then it should fail
     assert(own_ast == NULL);
     
-    // And provide an error about argument parsing
+    // And provide an error about delimiter not found
     assert(ar_log__get_last_error_message(log) != NULL);
-    assert(strstr(ar_log__get_last_error_message(log), "Failed to parse parse arguments") != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "Expected delimiter not found") != NULL);
     
     ar_parse_instruction_parser__destroy(own_parser);
     ar_log__destroy(log);
@@ -391,6 +391,34 @@ static void test_parse_instruction_parser__parse_with_expression_asts(void) {
     ar_log__destroy(log);
 }
 
+/**
+ * Test that empty argument error is logged.
+ */
+static void test_parse_parser__empty_argument_error(void) {
+    printf("Testing empty argument error logging...\n");
+    
+    // Given a parse instruction with empty first argument
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    const char *instruction = "parse(, \"output\")";  // Empty first argument
+    
+    // When parsing
+    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create(log);
+    assert(own_parser != NULL);
+    
+    ar_instruction_ast_t *own_ast = ar_parse_instruction_parser__parse(own_parser, instruction, NULL);
+    
+    // Then it should fail
+    assert(own_ast == NULL);
+    
+    // And error should be logged
+    assert(ar_log__get_last_error_message(log) != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "Empty argument") != NULL);
+    
+    ar_parse_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
 int main(void) {
     printf("Running parse instruction parser tests...\n\n");
     
@@ -421,6 +449,9 @@ int main(void) {
     
     // Expression AST integration
     test_parse_instruction_parser__parse_with_expression_asts();
+    
+    // Helper function error tests
+    test_parse_parser__empty_argument_error();
     
     printf("\nAll parse instruction parser tests passed!\n");
     return 0;

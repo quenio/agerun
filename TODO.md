@@ -302,54 +302,51 @@ Each parser needs 2-3 TDD cycles for comprehensive error logging:
   - [x] Added comprehensive test coverage for all error paths
   - [x] Removed redundant "Failed to parse build arguments" error
 
-- [ ] **ar_compile_instruction_parser** (2-3 cycles)
-  - Note: May have helper functions needing error logging
-  - [ ] TDD Cycle 1: Audit helper functions for silent failures
-  - [ ] TDD Cycle 2: Add missing error logging in helper functions
-  - [ ] TDD Cycle 3: Add comprehensive test coverage
+- [x] **ar_compile_instruction_parser** (3 cycles) - Completed 2025-09-13
+  - [x] Added error logging to _extract_argument (3 conditions: empty arg, delimiter not found, malloc fail)
+  - [x] Added error logging to _parse_arguments (2 conditions: malloc fail, cleanup on error)
+  - [x] Added tests for user-facing errors (empty argument, invalid delimiter)
+  - Note: Memory allocation failures not testable per established patterns (would require heap-level mocking)
 
-- [ ] **ar_condition_instruction_parser** (2-3 cycles)
-  - Note: May have helper functions needing error logging
-  - [ ] TDD Cycle 1: Audit helper functions for silent failures
-  - [ ] TDD Cycle 2: Add missing error logging in helper functions
-  - [ ] TDD Cycle 3: Add comprehensive test coverage
+- [x] **ar_condition_instruction_parser** (1 cycle) - Completed 2025-09-13
+  - [x] Added error logging to _extract_argument (2 conditions: delimiter not found, malloc fail)
+  - [x] Added error logging to _parse_arguments (1 condition: malloc fail)
+  - [x] Added test for delimiter not found error (1 of 3 new conditions tested)
+  - [x] Removed redundant "Failed to parse if arguments" error
+  - Note: Memory allocation failures (2 of 3 conditions) not testable per established patterns
 
 ##### Parsers with only NULL instruction logging (need full helper function logging):
 
-- [ ] **ar_deprecate_instruction_parser** (4-5 cycles)
-  - [ ] TDD Cycle 1: Add memory allocation failure logging in _extract_argument()
-  - [ ] TDD Cycle 2: Add delimiter not found logging in _extract_argument()
-  - [ ] TDD Cycle 3: Add empty argument detection logging
-  - [ ] TDD Cycle 4: Add parser creation failure logging
-  - [ ] TDD Cycle 5: Add comprehensive test coverage for all error paths
+- [x] **ar_deprecate_instruction_parser** - Added error logging for all 3 helper function failures (Completed 2025-09-13)
+  - Added error logging to _extract_argument (3 conditions: empty arg, delimiter not found, malloc fail)
+  - Added 2 tests for user-facing errors (empty argument, delimiter not found)
+  - Updated log_whitelist.yaml with new error messages
+  - Note: Memory allocation failures not testable per established patterns
 
-- [ ] **ar_exit_instruction_parser** (4-5 cycles)
-  - [ ] TDD Cycle 1: Add memory allocation failure logging in _extract_argument()
-  - [ ] TDD Cycle 2: Add delimiter not found logging in _extract_argument()
-  - [ ] TDD Cycle 3: Add empty argument detection logging
-  - [ ] TDD Cycle 4: Add parser creation failure logging
-  - [ ] TDD Cycle 5: Add comprehensive test coverage for all error paths
+- [x] **ar_exit_instruction_parser** - Added error logging for all 3 helper function failures (Completed 2025-09-13)
+  - Added error logging to _extract_argument (3 conditions: empty arg, delimiter not found, malloc fail)
+  - Added 1 test for delimiter not found error
+  - Updated log_whitelist.yaml with new error messages
+  - Note: Memory allocation failures not testable per established patterns
 
-- [ ] **ar_parse_instruction_parser** (4-5 cycles)
-  - [ ] TDD Cycle 1: Add memory allocation failure logging in _extract_argument()
-  - [ ] TDD Cycle 2: Add delimiter not found logging in _extract_argument()
-  - [ ] TDD Cycle 3: Add empty argument detection logging in _parse_arguments()
-  - [ ] TDD Cycle 4: Add parser creation failure logging
-  - [ ] TDD Cycle 5: Add comprehensive test coverage for all error paths
+- [x] **ar_parse_instruction_parser** - Added error logging for all 4 helper function failures (Completed 2025-09-13)
+  - Added error logging to _extract_argument (3 conditions: empty arg, delimiter not found, malloc fail)
+  - Added error logging to _parse_arguments (1 condition: malloc fail)
+  - Added 1 test for empty argument error
+  - Updated log_whitelist.yaml with new error messages
+  - Note: Memory allocation failures not testable per established patterns
 
-- [ ] **ar_send_instruction_parser** (4-5 cycles)
-  - [ ] TDD Cycle 1: Add memory allocation failure logging in _extract_argument()
-  - [ ] TDD Cycle 2: Add delimiter not found logging in _extract_argument()
-  - [ ] TDD Cycle 3: Add empty argument detection logging in _parse_arguments()
-  - [ ] TDD Cycle 4: Add parser creation failure logging
-  - [ ] TDD Cycle 5: Add comprehensive test coverage for all error paths
+- [x] **ar_send_instruction_parser** - Added error logging for all 4 helper function failures (Completed 2025-09-13)
+  - Added error logging to _extract_argument (3 conditions: empty arg, delimiter not found, malloc fail)
+  - Added error logging to _parse_arguments (1 condition: malloc fail)
+  - Updated log_whitelist.yaml with new error messages
+  - Note: Memory allocation failures not testable per established patterns
 
-- [ ] **ar_spawn_instruction_parser** (4-5 cycles)
-  - [ ] TDD Cycle 1: Add memory allocation failure logging in _extract_argument()
-  - [ ] TDD Cycle 2: Add delimiter not found logging in _extract_argument()
-  - [ ] TDD Cycle 3: Add empty argument detection logging in _parse_create_arguments()
-  - [ ] TDD Cycle 4: Add parser creation failure logging
-  - [ ] TDD Cycle 5: Add comprehensive test coverage for all error paths
+- [x] **ar_spawn_instruction_parser** - Added error logging for all 4 helper function failures (Completed 2025-09-13)
+  - Added error logging to _extract_argument (3 conditions: empty arg, delimiter not found, malloc fail)
+  - Added error logging to _parse_create_arguments (1 condition: malloc fail)
+  - Updated log_whitelist.yaml with new error messages
+  - Note: Memory allocation failures not testable per established patterns
 
 **Success Criteria**:
 - All helper function failures have associated error logging

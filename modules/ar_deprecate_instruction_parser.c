@@ -74,7 +74,7 @@ static size_t _skip_whitespace(const char *str, size_t pos) {
  * Internal: Extract a single argument from function call.
  * Handles nested parentheses and quoted strings.
  */
-static char* _extract_argument(const char *str, size_t *pos, char delimiter) {
+static char* _extract_argument(ar_deprecate_instruction_parser_t *mut_parser, const char *str, size_t *pos, char delimiter) {
     size_t start = *pos;
     int paren_depth = 0;
     bool in_quotes = false;
@@ -103,6 +103,7 @@ static char* _extract_argument(const char *str, size_t *pos, char delimiter) {
     }
     
     if (str[*pos] != delimiter) {
+        _log_error(mut_parser, "Expected delimiter not found", *pos);
         return NULL;
     }
     
@@ -114,6 +115,7 @@ static char* _extract_argument(const char *str, size_t *pos, char delimiter) {
     
     /* Check for empty argument */
     if (start == end) {
+        _log_error(mut_parser, "Empty argument", start);
         return NULL;
     }
     
@@ -121,6 +123,7 @@ static char* _extract_argument(const char *str, size_t *pos, char delimiter) {
     size_t len = end - start;
     char *arg = AR__HEAP__MALLOC(len + 1, "function argument");
     if (!arg) {
+        _log_error(mut_parser, "Memory allocation failed", start);
         return NULL;
     }
     memcpy(arg, str + start, len);
@@ -242,9 +245,9 @@ ar_instruction_ast_t* ar_deprecate_instruction_parser__parse(
     pos++;
     
     /* Parse first argument (method name) */
-    char *arg1 = _extract_argument(ref_instruction, &pos, ',');
+    char *arg1 = _extract_argument(mut_parser, ref_instruction, &pos, ',');
     if (!arg1) {
-        _log_error(mut_parser, "Failed to parse method name argument", pos);
+        /* Error already logged by _extract_argument */
         return NULL;
     }
     
@@ -253,10 +256,10 @@ ar_instruction_ast_t* ar_deprecate_instruction_parser__parse(
     pos = _skip_whitespace(ref_instruction, pos);
     
     /* Parse second argument (version) */
-    char *arg2 = _extract_argument(ref_instruction, &pos, ')');
+    char *arg2 = _extract_argument(mut_parser, ref_instruction, &pos, ')');
     if (!arg2) {
         AR__HEAP__FREE(arg1);
-        _log_error(mut_parser, "Failed to parse version argument", pos);
+        /* Error already logged by _extract_argument */
         return NULL;
     }
     

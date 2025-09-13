@@ -158,7 +158,7 @@ static void test_deprecate_parser__error_handling(void) {
     // Test 3: Single argument (should fail)
     ast = ar_deprecate_instruction_parser__parse(own_parser, "deprecate(\"method\")", NULL);
     assert(ast == NULL);
-    assert(strstr(ar_log__get_last_error_message(log), "Failed to parse method name argument") != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "Expected delimiter not found") != NULL);
     
     // Test 4: Non-string arguments - now properly rejected by expression parser
     ast = ar_deprecate_instruction_parser__parse(own_parser, "deprecate(method, version)", NULL);
@@ -311,6 +311,62 @@ static void test_deprecate_parser__parse_with_expression_asts(void) {
     ar_log__destroy(log);
 }
 
+/**
+ * Test that delimiter not found error is logged.
+ */
+static void test_deprecate_parser__delimiter_not_found_error(void) {
+    printf("Testing delimiter not found error logging...\n");
+    
+    // Given a deprecate instruction with missing comma delimiter
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    const char *instruction = "deprecate(\"method\" \"1.0.0\")";  // Missing comma
+    
+    // When parsing
+    ar_deprecate_instruction_parser_t *own_parser = ar_deprecate_instruction_parser__create(log);
+    assert(own_parser != NULL);
+    
+    ar_instruction_ast_t *own_ast = ar_deprecate_instruction_parser__parse(own_parser, instruction, NULL);
+    
+    // Then it should fail
+    assert(own_ast == NULL);
+    
+    // And error should be logged
+    assert(ar_log__get_last_error_message(log) != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "Expected delimiter not found") != NULL);
+    
+    ar_deprecate_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
+/**
+ * Test that empty argument error is logged.
+ */
+static void test_deprecate_parser__empty_argument_error(void) {
+    printf("Testing empty argument error logging...\n");
+    
+    // Given a deprecate instruction with empty first argument
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    const char *instruction = "deprecate(, \"1.0.0\")";  // Empty first argument
+    
+    // When parsing
+    ar_deprecate_instruction_parser_t *own_parser = ar_deprecate_instruction_parser__create(log);
+    assert(own_parser != NULL);
+    
+    ar_instruction_ast_t *own_ast = ar_deprecate_instruction_parser__parse(own_parser, instruction, NULL);
+    
+    // Then it should fail
+    assert(own_ast == NULL);
+    
+    // And error should be logged
+    assert(ar_log__get_last_error_message(log) != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "Empty argument") != NULL);
+    
+    ar_deprecate_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
 int main(void) {
     // Test with ar_log
     test_create_parser_with_log();
@@ -324,6 +380,10 @@ int main(void) {
     
     // Expression AST integration
     test_deprecate_parser__parse_with_expression_asts();
+    
+    // Helper function error tests
+    test_deprecate_parser__delimiter_not_found_error();
+    test_deprecate_parser__empty_argument_error();
     
     printf("All deprecate instruction parser tests passed!\n");
     

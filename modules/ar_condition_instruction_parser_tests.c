@@ -349,6 +349,34 @@ static void test_condition_parser__parse_with_expression_asts(void) {
     ar_condition_instruction_parser__destroy(own_parser);
 }
 
+/**
+ * Test that delimiter not found error is logged.
+ */
+static void test_condition_parser__delimiter_not_found_error(void) {
+    printf("Testing delimiter not found error logging...\n");
+    
+    // Given an if instruction with missing comma delimiter
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    const char *instruction = "if(true false true)";  // Missing commas between arguments
+    
+    // When parsing
+    ar_condition_instruction_parser_t *own_parser = ar_condition_instruction_parser__create(log);
+    assert(own_parser != NULL);
+    
+    ar_instruction_ast_t *own_ast = ar_condition_instruction_parser__parse(own_parser, instruction, NULL);
+    
+    // Then it should fail
+    assert(own_ast == NULL);
+    
+    // And error should be logged
+    assert(ar_log__get_last_error_message(log) != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "Expected delimiter not found") != NULL);
+    
+    ar_condition_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
 int main(void) {
     printf("Running condition instruction parser tests...\n\n");
     
@@ -373,6 +401,9 @@ int main(void) {
     
     // Expression AST integration
     test_condition_parser__parse_with_expression_asts();
+    
+    // Helper function error tests
+    test_condition_parser__delimiter_not_found_error();
     
     printf("\nAll condition_instruction_parser tests passed!\n");
     return 0;

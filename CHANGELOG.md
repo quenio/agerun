@@ -4,6 +4,44 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-09-13
 
+### ✅ Helper Function Error Logging Complete - All Remaining Parsers
+- **Completed error logging enhancement** for 5 instruction parsers:
+  - ar_deprecate_instruction_parser: 3 conditions in _extract_argument
+  - ar_exit_instruction_parser: 3 conditions in _extract_argument  
+  - ar_parse_instruction_parser: 4 conditions (_extract_argument + _parse_arguments)
+  - ar_send_instruction_parser: 4 conditions (_extract_argument + _parse_arguments)
+  - ar_spawn_instruction_parser: 4 conditions (_extract_argument + _parse_create_arguments)
+- **Added specific error messages** replacing generic "Failed to parse" errors:
+  - "Empty argument" with position information
+  - "Expected delimiter not found" with position information
+  - "Memory allocation failed" with context
+- **Test coverage added**: 7 new test functions with BDD structure
+- **Updated log_whitelist.yaml** with all new error messages for tests
+- **Zero memory leaks** maintained across all changes
+- **Note**: Memory allocation failures not directly testable per established patterns
+- **Impact**: All instruction parsers now provide precise error diagnostics
+
+### ✅ Helper Function Error Logging - ar_condition_instruction_parser
+- **Added error logging** to helper functions (3 conditions total):
+  - _extract_argument: 2 error conditions (delimiter not found, allocation failure)
+  - _parse_arguments: 1 error condition (allocation failure)
+- **Added test coverage** for delimiter not found error (1 of 3 conditions)
+- **Removed redundant error logging** ("Failed to parse if arguments")
+- **Updated log_whitelist.yaml** with 2 new error messages
+- **Zero memory leaks** maintained
+- **Note**: Memory allocation failures (2 of 3) not testable per established patterns
+- **Impact**: Better error diagnostics for condition instruction parsing
+
+### ✅ Helper Function Error Logging - ar_compile_instruction_parser
+- **Added comprehensive error logging** to helper functions (5 conditions total):
+  - _extract_argument: 3 error conditions (empty arg, delimiter not found, allocation failure)
+  - _parse_arguments: 2 error conditions (allocation failure, cleanup on error)
+- **Added test coverage** for user-facing error conditions (2 new tests)
+- **Updated log_whitelist.yaml** with 3 new error messages
+- **Zero memory leaks** maintained
+- **Note**: Memory allocation failures not directly testable per established patterns
+- **Impact**: Better error diagnostics for compile instruction parsing
+
 ### ✅ Helper Function Error Logging - ar_build_instruction_parser
 - **Added comprehensive error logging** to all helper functions (10 conditions total):
   - _parse_string_argument: 3 error conditions (non-quoted, unterminated, allocation failure)

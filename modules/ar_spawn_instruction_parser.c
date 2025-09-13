@@ -40,7 +40,7 @@ static size_t _skip_whitespace(const char *str, size_t pos) {
     return pos;
 }
 
-static char* _extract_argument(const char *str, size_t *pos, char delimiter) {
+static char* _extract_argument(ar_spawn_instruction_parser_t *mut_parser, const char *str, size_t *pos, char delimiter) {
     size_t start = *pos;
     int paren_depth = 0;
     bool in_quotes = false;
@@ -49,6 +49,12 @@ static char* _extract_argument(const char *str, size_t *pos, char delimiter) {
     while (str[*pos] && isspace((unsigned char)str[*pos])) {
         (*pos)++;
         start++;
+    }
+    
+    /* Check for empty argument */
+    if (str[*pos] == delimiter) {
+        _log_error(mut_parser, "Empty argument", *pos);
+        return NULL;
     }
     
     /* Find delimiter or end */
@@ -69,6 +75,7 @@ static char* _extract_argument(const char *str, size_t *pos, char delimiter) {
     }
     
     if (str[*pos] != delimiter) {
+        _log_error(mut_parser, "Expected delimiter not found", *pos);
         return NULL;
     }
     
@@ -82,6 +89,7 @@ static char* _extract_argument(const char *str, size_t *pos, char delimiter) {
     size_t len = end - start;
     char *arg = AR__HEAP__MALLOC(len + 1, "function argument");
     if (!arg) {
+        _log_error(mut_parser, "Memory allocation failed", start);
         return NULL;
     }
     memcpy(arg, str + start, len);
@@ -106,18 +114,19 @@ static void _cleanup_parsed_args(char ***args, size_t count) {
     }
 }
 
-static bool _parse_create_arguments(const char *str, size_t *pos, char ***out_args, size_t *out_count) {
+static bool _parse_create_arguments(ar_spawn_instruction_parser_t *mut_parser, const char *str, size_t *pos, char ***out_args, size_t *out_count) {
     // For create(), we support 2 or 3 arguments
     const size_t max_args = 3;
     *out_args = AR__HEAP__MALLOC(max_args * sizeof(char*), "function arguments array");
     if (!*out_args) {
+        _log_error(mut_parser, "Memory allocation failed", *pos);
         return false;
     }
     
     *out_count = 0;
     
     // Parse first argument (method name)
-    char *arg = _extract_argument(str, pos, ',');
+    char *arg = _extract_argument(mut_parser, str, pos, ',');
     if (!arg) {
         AR__HEAP__FREE(*out_args);
         *out_args = NULL;
@@ -132,7 +141,7 @@ static bool _parse_create_arguments(const char *str, size_t *pos, char ***out_ar
     // Parse second argument (version)
     // First, check ahead to see if there's a comma or closing paren after this argument
     size_t look_ahead = *pos;
-    arg = _extract_argument(str, &look_ahead, ',');
+    arg = _extract_argument(NULL, str, &look_ahead, ',');  /* Pass NULL to suppress error logging for lookahead */
     if (arg && str[look_ahead] == ',') {
         // Found a comma, this is a 3-argument call
         (*out_args)[1] = arg;
@@ -141,7 +150,7 @@ static bool _parse_create_arguments(const char *str, size_t *pos, char ***out_ar
     } else {
         // No comma found, try parsing until closing paren (2-argument call)
         AR__HEAP__FREE(arg); // Free the lookahead result
-        arg = _extract_argument(str, pos, ')');
+        arg = _extract_argument(mut_parser, str, pos, ')');
         if (!arg) {
             _cleanup_parsed_args(out_args, *out_count);
             return false;
@@ -154,7 +163,7 @@ static bool _parse_create_arguments(const char *str, size_t *pos, char ***out_ar
     *pos = _skip_whitespace(str, *pos);
     
     // Parse third argument (context)
-    arg = _extract_argument(str, pos, ')');
+    arg = _extract_argument(mut_parser, str, pos, ')');
     if (!arg) {
         _cleanup_parsed_args(out_args, *out_count);
         return false;
@@ -306,8 +315,8 @@ ar_instruction_ast_t* ar_spawn_instruction_parser__parse(
     /* Parse arguments */
     char **args = NULL;
     size_t arg_count = 0;
-    if (!_parse_create_arguments(ref_instruction, &pos, &args, &arg_count)) {
-        _log_error(mut_parser, "Failed to parse create arguments", pos);
+    if (!_parse_create_arguments(mut_parser, ref_instruction, &pos, &args, &arg_count)) {
+        /* Error already logged by _parse_create_arguments */
         return NULL;
     }
     

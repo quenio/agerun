@@ -193,7 +193,7 @@ static void test_exit_agent_parser__error_handling(void) {
     // Test 3: Empty arguments
     ast = ar_exit_instruction_parser__parse(own_parser, "exit()", NULL);
     assert(ast == NULL);
-    assert(strstr(ar_log__get_last_error_message(log), "Failed to parse exit argument") != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "Empty argument") != NULL);
     
     // Test 4: Multiple arguments - should fail because exit() only accepts one argument
     ast = ar_exit_instruction_parser__parse(own_parser, "exit(123, 456)", NULL);
@@ -310,6 +310,34 @@ static void test_exit_agent_parser__parse_with_expression_asts(void) {
     ar_log__destroy(log);
 }
 
+/**
+ * Test that delimiter not found error is logged.
+ */
+static void test_exit_parser__delimiter_not_found_error(void) {
+    printf("Testing delimiter not found error logging...\n");
+    
+    // Given an exit instruction with missing closing parenthesis
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    const char *instruction = "exit(123";  // Missing closing parenthesis
+    
+    // When parsing
+    ar_exit_instruction_parser_t *own_parser = ar_exit_instruction_parser__create(log);
+    assert(own_parser != NULL);
+    
+    ar_instruction_ast_t *own_ast = ar_exit_instruction_parser__parse(own_parser, instruction, NULL);
+    
+    // Then it should fail
+    assert(own_ast == NULL);
+    
+    // And error should be logged
+    assert(ar_log__get_last_error_message(log) != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "Expected delimiter not found") != NULL);
+    
+    ar_exit_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
 int main(void) {
     // Test with ar_log
     test_create_parser_with_log();
@@ -323,6 +351,9 @@ int main(void) {
     
     // Expression AST integration
     test_exit_agent_parser__parse_with_expression_asts();
+    
+    // Helper function error tests
+    test_exit_parser__delimiter_not_found_error();
     
     printf("All exit agent instruction parser tests passed!\n");
     

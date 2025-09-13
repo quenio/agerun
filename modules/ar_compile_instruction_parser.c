@@ -41,7 +41,7 @@ static size_t _skip_whitespace(const char *ref_str, size_t pos) {
  * Extract a single argument from function call.
  * Handles nested parentheses and quoted strings.
  */
-static char* _extract_argument(const char *ref_str, size_t *pos, char delimiter) {
+static char* _extract_argument(ar_compile_instruction_parser_t *mut_parser, const char *ref_str, size_t *pos, char delimiter) {
     int paren_depth = 0;
     bool in_quotes = false;
     
@@ -51,6 +51,7 @@ static char* _extract_argument(const char *ref_str, size_t *pos, char delimiter)
     
     /* Check for empty argument */
     if (ref_str[*pos] == delimiter) {
+        _log_error(mut_parser, "Empty argument", *pos);
         return NULL;
     }
     
@@ -72,6 +73,7 @@ static char* _extract_argument(const char *ref_str, size_t *pos, char delimiter)
     }
     
     if (ref_str[*pos] != delimiter) {
+        _log_error(mut_parser, "Expected delimiter not found", *pos);
         return NULL;
     }
     
@@ -85,6 +87,7 @@ static char* _extract_argument(const char *ref_str, size_t *pos, char delimiter)
     size_t len = end - start;
     char *arg = AR__HEAP__MALLOC(len + 1, "function argument");
     if (!arg) {
+        _log_error(mut_parser, "Memory allocation failed", start);
         return NULL;
     }
     memcpy(arg, ref_str + start, len);
@@ -96,9 +99,10 @@ static char* _extract_argument(const char *ref_str, size_t *pos, char delimiter)
 /**
  * Parse function arguments.
  */
-static bool _parse_arguments(const char *ref_str, size_t *pos, char ***out_args, size_t *out_count, size_t expected_count) {
+static bool _parse_arguments(ar_compile_instruction_parser_t *mut_parser, const char *ref_str, size_t *pos, char ***out_args, size_t *out_count, size_t expected_count) {
     *out_args = AR__HEAP__MALLOC(expected_count * sizeof(char*), "function arguments array");
     if (!*out_args) {
+        _log_error(mut_parser, "Memory allocation failed", *pos);
         return false;
     }
     
@@ -106,8 +110,9 @@ static bool _parse_arguments(const char *ref_str, size_t *pos, char ***out_args,
     
     for (size_t i = 0; i < expected_count; i++) {
         char delimiter = (i < expected_count - 1) ? ',' : ')';
-        char *arg = _extract_argument(ref_str, pos, delimiter);
+        char *arg = _extract_argument(mut_parser, ref_str, pos, delimiter);
         if (!arg) {
+            /* Error already logged by _extract_argument */
             /* Clean up on failure */
             for (size_t j = 0; j < *out_count; j++) {
                 AR__HEAP__FREE((*out_args)[j]);
@@ -271,8 +276,8 @@ ar_instruction_ast_t* ar_compile_instruction_parser__parse(
     /* Parse arguments */
     char **args = NULL;
     size_t arg_count = 0;
-    if (!_parse_arguments(ref_instruction, &pos, &args, &arg_count, 3)) {
-        _log_error(mut_parser, "Failed to parse compile arguments", pos);
+    if (!_parse_arguments(mut_parser, ref_instruction, &pos, &args, &arg_count, 3)) {
+        /* Error already logged by _parse_arguments */
         return NULL;
     }
     

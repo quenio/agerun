@@ -74,7 +74,7 @@ static size_t _skip_whitespace(const char *str, size_t pos) {
  * Internal: Extract a single argument from function call.
  * Handles nested parentheses and quoted strings.
  */
-static char* _extract_argument(const char *str, size_t *pos, char delimiter) {
+static char* _extract_argument(ar_exit_instruction_parser_t *mut_parser, const char *str, size_t *pos, char delimiter) {
     size_t start = *pos;
     int paren_depth = 0;
     bool in_quotes = false;
@@ -103,6 +103,7 @@ static char* _extract_argument(const char *str, size_t *pos, char delimiter) {
     }
     
     if (str[*pos] != delimiter) {
+        _log_error(mut_parser, "Expected delimiter not found", *pos);
         return NULL;
     }
     
@@ -114,6 +115,7 @@ static char* _extract_argument(const char *str, size_t *pos, char delimiter) {
     
     /* Check for empty argument */
     if (start == end) {
+        _log_error(mut_parser, "Empty argument", start);
         return NULL;
     }
     
@@ -121,6 +123,7 @@ static char* _extract_argument(const char *str, size_t *pos, char delimiter) {
     size_t len = end - start;
     char *arg = AR__HEAP__MALLOC(len + 1, "function argument");
     if (!arg) {
+        _log_error(mut_parser, "Memory allocation failed", start);
         return NULL;
     }
     memcpy(arg, str + start, len);
@@ -245,7 +248,7 @@ ar_instruction_ast_t* ar_exit_instruction_parser__parse(
     
     /* Parse arguments - check for comma to detect multiple arguments */
     size_t saved_pos = pos;
-    char *arg = _extract_argument(ref_instruction, &pos, ',');
+    char *arg = _extract_argument(NULL, ref_instruction, &pos, ',');  /* Pass NULL to suppress error logging */
     if (arg && ref_instruction[pos] == ',') {
         /* Found a comma - multiple arguments provided */
         AR__HEAP__FREE(arg);
@@ -259,9 +262,9 @@ ar_instruction_ast_t* ar_exit_instruction_parser__parse(
         /* Safety: free previous allocation before reusing variable */
         AR__HEAP__FREE(arg);
     }
-    arg = _extract_argument(ref_instruction, &pos, ')');
+    arg = _extract_argument(mut_parser, ref_instruction, &pos, ')');
     if (!arg) {
-        _log_error(mut_parser, "Failed to parse exit argument", pos);
+        /* Error already logged by _extract_argument */
         return NULL;
     }
     

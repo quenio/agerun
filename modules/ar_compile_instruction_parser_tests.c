@@ -206,7 +206,7 @@ static void test_compile_instruction_parser__wrong_arg_count(void) {
     assert(own_ast == NULL);
     
     assert(ar_log__get_last_error_message(log) != NULL);
-    assert(strstr(ar_log__get_last_error_message(log), "argument") != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "Expected delimiter not found") != NULL);
     
     ar_compile_instruction_parser__destroy(own_parser);
     ar_log__destroy(log);
@@ -412,6 +412,54 @@ static void test_compile_instruction_parser__parse_with_expression_asts(void) {
     ar_log__destroy(log);
 }
 
+static void test_compile_instruction_parser__empty_argument_error(void) {
+    printf("Testing empty argument error logging...\n");
+    
+    // Given a compile instruction with an empty argument
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    const char *instruction = "compile(\"test\", , \"1.0.0\")";  // Empty second argument
+    ar_compile_instruction_parser_t *own_parser = ar_compile_instruction_parser__create(log);
+    assert(own_parser != NULL);
+    
+    // When parsing the instruction
+    ar_instruction_ast_t *own_ast = ar_compile_instruction_parser__parse(own_parser, instruction, NULL);
+    
+    // Then it should fail
+    assert(own_ast == NULL);
+    
+    // And an error should be logged
+    const char *error = ar_log__get_last_error_message(log);
+    assert(error != NULL);
+    
+    ar_compile_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
+static void test_compile_instruction_parser__invalid_delimiter_error(void) {
+    printf("Testing invalid delimiter error logging...\n");
+    
+    // Given a compile instruction with missing comma between arguments
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    const char *instruction = "compile(\"test\" \"code\" \"1.0.0\")";  // Missing commas
+    ar_compile_instruction_parser_t *own_parser = ar_compile_instruction_parser__create(log);
+    assert(own_parser != NULL);
+    
+    // When parsing the instruction
+    ar_instruction_ast_t *own_ast = ar_compile_instruction_parser__parse(own_parser, instruction, NULL);
+    
+    // Then it should fail
+    assert(own_ast == NULL);
+    
+    // And an error should be logged
+    const char *error = ar_log__get_last_error_message(log);
+    assert(error != NULL);
+    
+    ar_compile_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
 int main(void) {
     printf("\n=== Running Method Instruction Parser Tests ===\n\n");
     
@@ -432,6 +480,10 @@ int main(void) {
     
     // Expression AST integration
     test_compile_instruction_parser__parse_with_expression_asts();
+    
+    // Helper function error logging tests
+    test_compile_instruction_parser__empty_argument_error();
+    test_compile_instruction_parser__invalid_delimiter_error();
     
     printf("\nAll compile instruction parser tests passed!\n");
     
