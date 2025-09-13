@@ -16,6 +16,16 @@ This document tracks completed milestones and major achievements for the AgeRun 
 - **Zero memory leaks** in all modified tests
 - **Build time**: 1m 25s
 
+### 📋 Parser Error Logging Task Planning
+- **Analyzed remaining error logging gaps** across all 11 parsers
+- **Identified ~40% of error conditions** still lacking logging in helper functions
+- **Created comprehensive task plan** with 30-35 TDD cycles for complete coverage
+- **Categorized parsers** by completion level:
+  - 2 fully complete (ar_expression_parser, ar_instruction_parser)
+  - 4 mostly complete (need 1-4 cycles each)
+  - 5 partially complete (need 4-5 cycles each)
+- **Updated TODO.md** with detailed Phase 2.5 implementation plan
+
 ## 2025-09-07
 
 ### ✅ ar_condition_instruction_parser Error Logging Enhancement

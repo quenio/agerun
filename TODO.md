@@ -288,6 +288,81 @@ Each parser needs 2-3 TDD cycles for comprehensive error logging:
   - [ ] Add parse failure logging
   - [ ] Update documentation
 
+#### Phase 2.5: Helper Function Error Logging Enhancement (30-35 TDD cycles)
+**Based on Analysis Report 2025-09-13**: ~40% of error conditions still lack logging
+
+##### Parsers with partial helper function logging (need completion):
+
+- [ ] **ar_assignment_instruction_parser** (1-2 cycles) 
+  - Note: Already has 11 of 12 errors logged
+  - [ ] TDD Cycle 1: Add missing error case logging
+  - [ ] TDD Cycle 2: Verify comprehensive test coverage
+
+- [ ] **ar_build_instruction_parser** (3-4 cycles)
+  - Note: Helper functions like _extract_string() return NULL without logging
+  - [ ] TDD Cycle 1: Add unterminated string error logging in _extract_string()
+  - [ ] TDD Cycle 2: Add memory allocation failure logging in _extract_string()
+  - [ ] TDD Cycle 3: Add delimiter not found logging in _extract_argument()
+  - [ ] TDD Cycle 4: Add comprehensive test coverage for all error paths
+
+- [ ] **ar_compile_instruction_parser** (2-3 cycles)
+  - Note: May have helper functions needing error logging
+  - [ ] TDD Cycle 1: Audit helper functions for silent failures
+  - [ ] TDD Cycle 2: Add missing error logging in helper functions
+  - [ ] TDD Cycle 3: Add comprehensive test coverage
+
+- [ ] **ar_condition_instruction_parser** (2-3 cycles)
+  - Note: May have helper functions needing error logging
+  - [ ] TDD Cycle 1: Audit helper functions for silent failures
+  - [ ] TDD Cycle 2: Add missing error logging in helper functions
+  - [ ] TDD Cycle 3: Add comprehensive test coverage
+
+##### Parsers with only NULL instruction logging (need full helper function logging):
+
+- [ ] **ar_deprecate_instruction_parser** (4-5 cycles)
+  - [ ] TDD Cycle 1: Add memory allocation failure logging in _extract_argument()
+  - [ ] TDD Cycle 2: Add delimiter not found logging in _extract_argument()
+  - [ ] TDD Cycle 3: Add empty argument detection logging
+  - [ ] TDD Cycle 4: Add parser creation failure logging
+  - [ ] TDD Cycle 5: Add comprehensive test coverage for all error paths
+
+- [ ] **ar_exit_instruction_parser** (4-5 cycles)
+  - [ ] TDD Cycle 1: Add memory allocation failure logging in _extract_argument()
+  - [ ] TDD Cycle 2: Add delimiter not found logging in _extract_argument()
+  - [ ] TDD Cycle 3: Add empty argument detection logging
+  - [ ] TDD Cycle 4: Add parser creation failure logging
+  - [ ] TDD Cycle 5: Add comprehensive test coverage for all error paths
+
+- [ ] **ar_parse_instruction_parser** (4-5 cycles)
+  - [ ] TDD Cycle 1: Add memory allocation failure logging in _extract_argument()
+  - [ ] TDD Cycle 2: Add delimiter not found logging in _extract_argument()
+  - [ ] TDD Cycle 3: Add empty argument detection logging in _parse_arguments()
+  - [ ] TDD Cycle 4: Add parser creation failure logging
+  - [ ] TDD Cycle 5: Add comprehensive test coverage for all error paths
+
+- [ ] **ar_send_instruction_parser** (4-5 cycles)
+  - [ ] TDD Cycle 1: Add memory allocation failure logging in _extract_argument()
+  - [ ] TDD Cycle 2: Add delimiter not found logging in _extract_argument()
+  - [ ] TDD Cycle 3: Add empty argument detection logging in _parse_arguments()
+  - [ ] TDD Cycle 4: Add parser creation failure logging
+  - [ ] TDD Cycle 5: Add comprehensive test coverage for all error paths
+
+- [ ] **ar_spawn_instruction_parser** (4-5 cycles)
+  - [ ] TDD Cycle 1: Add memory allocation failure logging in _extract_argument()
+  - [ ] TDD Cycle 2: Add delimiter not found logging in _extract_argument()
+  - [ ] TDD Cycle 3: Add empty argument detection logging in _parse_create_arguments()
+  - [ ] TDD Cycle 4: Add parser creation failure logging
+  - [ ] TDD Cycle 5: Add comprehensive test coverage for all error paths
+
+**Success Criteria**:
+- All helper function failures have associated error logging
+- Memory allocation failures are logged with appropriate context
+- Delimiter/syntax errors provide specific diagnostic information
+- Empty arguments are detected and reported clearly
+- Parser creation failures are logged (when appropriate)
+- Zero memory leaks maintained
+- Test coverage includes all error paths
+
 #### Phase 3: Verification and Documentation (Week 3 - 2 cycles)
 - [ ] Run module consistency check to verify all parsers have adequate logging
 - [ ] Update log_whitelist.yaml with any new intentional test errors
