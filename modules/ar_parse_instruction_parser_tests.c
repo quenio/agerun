@@ -280,6 +280,29 @@ static void test_parse_instruction_parser__error_missing_parenthesis(void) {
     ar_log__destroy(log);
 }
 
+static void test_parse_instruction_parser__null_instruction(void) {
+    printf("Testing parse parser with NULL instruction...\n");
+    
+    // Given a parser with a log instance
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    ar_parse_instruction_parser_t *own_parser = ar_parse_instruction_parser__create(log);
+    assert(own_parser != NULL);
+    
+    // When parsing a NULL instruction
+    ar_instruction_ast_t *own_ast = ar_parse_instruction_parser__parse(own_parser, NULL, NULL);
+    
+    // Then it should fail
+    assert(own_ast == NULL);
+    
+    // And an error should be logged
+    assert(ar_log__get_last_error_message(log) != NULL);
+    assert(strstr(ar_log__get_last_error_message(log), "NULL instruction") != NULL);
+    
+    ar_parse_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
 static void test_parse_instruction_parser__reusability(void) {
     printf("Testing parser reusability...\n");
     
@@ -393,6 +416,7 @@ int main(void) {
     test_parse_instruction_parser__error_wrong_function();
     test_parse_instruction_parser__error_wrong_arg_count();
     test_parse_instruction_parser__error_missing_parenthesis();
+    test_parse_instruction_parser__null_instruction();
     test_parse_instruction_parser__reusability();
     
     // Expression AST integration

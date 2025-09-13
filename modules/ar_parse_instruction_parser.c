@@ -226,7 +226,12 @@ void ar_parse_instruction_parser__destroy(ar_parse_instruction_parser_t *own_par
 }
 
 ar_instruction_ast_t* ar_parse_instruction_parser__parse(ar_parse_instruction_parser_t *mut_parser, const char *ref_instruction, const char *ref_result_path) {
-    if (!mut_parser || !ref_instruction) {
+    if (!mut_parser) {
+        return NULL;
+    }
+    
+    if (!ref_instruction) {
+        _log_error(mut_parser, "NULL instruction provided to parse parser", 0);
         return NULL;
     }
     

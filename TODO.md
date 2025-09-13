@@ -264,27 +264,27 @@ Each parser needs 2-3 TDD cycles for comprehensive error logging:
   - [x] Whitelist updated
   
 - [x] **ar_deprecate_instruction_parser** - Added NULL instruction error logging (Completed 2025-09-13)
-  - [ ] Add NULL parameter logging
+  - [x] Add NULL parameter logging
   - [ ] Add parse failure logging
   - [ ] Update documentation
   
-- [ ] **ar_exit_instruction_parser** (2-3 cycles)
-  - [ ] Add NULL parameter logging
+- [x] **ar_exit_instruction_parser** - Added NULL instruction error logging (Completed 2025-09-13)
+  - [x] Add NULL parameter logging
   - [ ] Add parse failure logging
   - [ ] Update documentation
   
-- [ ] **ar_parse_instruction_parser** (2-3 cycles)
-  - [ ] Add NULL parameter logging
+- [x] **ar_parse_instruction_parser** - Added NULL instruction error logging (Completed 2025-09-13)
+  - [x] Add NULL parameter logging
   - [ ] Add parse failure logging
   - [ ] Update documentation
   
-- [ ] **ar_send_instruction_parser** (2-3 cycles)
-  - [ ] Add NULL parameter logging
+- [x] **ar_send_instruction_parser** - Added NULL instruction error logging (Completed 2025-09-13)
+  - [x] Add NULL parameter logging
   - [ ] Add parse failure logging
   - [ ] Update documentation
   
-- [ ] **ar_spawn_instruction_parser** (2-3 cycles)
-  - [ ] Add NULL parameter logging
+- [x] **ar_spawn_instruction_parser** - Added NULL instruction error logging (Completed 2025-09-13)
+  - [x] Add NULL parameter logging
   - [ ] Add parse failure logging
   - [ ] Update documentation
 
