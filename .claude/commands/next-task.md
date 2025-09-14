@@ -47,7 +47,7 @@ make checkpoint-status CMD=next_task
 ### When Session Tasks Exist
 ```
 Reading CLAUDE.md...
-Checking session todo list...
+Checking session todo list... ([details](../../kb/task-verification-before-execution.md))
 
 Found 3 tasks in session:
 1. [in_progress] Implement error logging for ar_parser

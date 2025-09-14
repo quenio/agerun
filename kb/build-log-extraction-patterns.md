@@ -50,3 +50,4 @@ grep -c "^PASS:" log.txt                       # Count matching lines
 - [Log Format Variation Handling](log-format-variation-handling.md)
 - [Comprehensive Output Review](comprehensive-output-review.md)
 - [Error Message Source Tracing](error-message-source-tracing.md)
+- [Grep OR Syntax Differences](grep-or-syntax-differences.md)

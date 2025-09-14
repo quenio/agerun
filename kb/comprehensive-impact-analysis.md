@@ -95,3 +95,5 @@ grep -rl "$SEARCH_TERM" . --include="*.c" --include="*.h" | head -20
 - [Phased Cleanup Pattern](phased-cleanup-pattern.md)
 - [Fixture Dependency Mapping](fixture-dependency-mapping.md)
 - [Code Movement Verification](code-movement-verification.md)
+- [Script Archaeology Pattern](script-archaeology-pattern.md)
+- [Task Verification Before Execution](task-verification-before-execution.md)

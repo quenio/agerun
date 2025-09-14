@@ -2,6 +2,28 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-09-14
+
+### ✅ Knowledge Base Enhancement - Phase 2b Session Learnings
+- **Created 3 new KB articles** capturing important patterns:
+  - task-verification-before-execution.md: Pattern for verifying tasks before implementing
+  - grep-or-syntax-differences.md: Clarifies basic grep `\|` vs extended grep `|` syntax
+  - script-archaeology-pattern.md: Using scripts to understand what work was actually done
+- **Updated 3 existing KB articles** with cross-references:
+  - build-verification-before-commit.md: Added task verification reference
+  - comprehensive-impact-analysis.md: Added script archaeology and task verification refs
+  - build-log-extraction-patterns.md: Added grep syntax reference
+- **Updated 4 commands** with new KB references:
+  - next-task.md: Added task verification pattern
+  - build-clean.md: Added build verification reference
+  - check-logs.md: Added grep syntax reference
+  - new-learnings.md: Already had comprehensive KB references
+- **Updated CLAUDE.md** with 3 new pattern references:
+  - Task verification before execution in TODO.md section
+  - Script archaeology in documentation protocols
+  - Grep syntax differences in error & logs section
+- **Impact**: Better guidance for future sessions on task verification and understanding completed work
+
 ## 2025-09-13
 
 ### ✅ Global API Removal Phase 2b - ar_agency Module

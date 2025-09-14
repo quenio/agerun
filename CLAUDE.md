@@ -47,7 +47,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 **Always search CLAUDE.md first** when asked about procedures. Don't overthink - start with exact keywords.
 **Check SPEC.md before implementing** features to avoid unnecessary work ([details](kb/specification-consistency-maintenance.md))
-**When reading TODO.md**: Check [ ] = incomplete, [x] = complete. Read completion dates. Be explicit - list all components.
+**When reading TODO.md**: Check [ ] = incomplete, [x] = complete. Read completion dates. Be explicit - list all components. Verify tasks are actually needed before implementing ([details](kb/task-verification-before-execution.md)).
 **KB articles need CLAUDE.md references** to be accessible in future sessions ([details](kb/claude-md-reference-requirement.md))
 **Cross-reference new KB articles**: MANDATORY bidirectional linking when creating KB articles ([details](kb/new-learnings-cross-reference-requirement.md))
 **Complete integration**: Cross-refs + command updates often missed ([details](kb/new-learnings-complete-integration-pattern.md))
@@ -61,6 +61,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Self-documenting changes**: Add entries for significant modifications ([details](kb/self-documenting-modifications-pattern.md))
 **Retroactive tracking**: Add completed unplanned tasks to TODO.md ([details](kb/retroactive-task-documentation.md))
 **Report-driven planning**: Create analysis reports before large task sets ([details](kb/report-driven-task-planning.md))
+**Script archaeology**: Examine scripts to understand what work was actually completed ([details](kb/script-archaeology-pattern.md))
 **Learning extraction**: Multi-pass review reveals hidden patterns ([details](kb/comprehensive-learning-extraction-pattern.md), [thoroughness](kb/command-thoroughness-requirements-pattern.md))
 
 **Documentation Standards (MANDATORY)** ([details](kb/documentation-standards-integration.md), [unmissable](kb/unmissable-documentation-pattern.md), [sync](kb/documentation-implementation-sync.md)):
@@ -288,7 +289,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Build & Debug**: `make sanitize-tests 2>&1`, make targets only, parallel jobs ([details](kb/development-debug-tools.md), [make](kb/make-target-testing-discipline.md), [compile](kb/compilation-driven-refactoring-pattern.md))
 **Checkpoints**: Track complex tasks, gates, progress, concise output ([details](kb/multi-step-checkpoint-tracking-pattern.md), [gates](kb/gate-enforcement-exit-codes-pattern.md), [concise](kb/concise-script-output-principle.md))
 **YAML & Persistence**: 2-space indent, escape multiline, direct I/O ([details](kb/yaml-serialization-direct-io-pattern.md), [multiline](kb/multi-line-data-persistence-format.md))
-**Error & Logs**: Context filtering, precise grep, fix root causes ([details](kb/systematic-whitelist-error-resolution.md), [logs](kb/build-log-extraction-patterns.md))
+**Error & Logs**: Context filtering, precise grep, fix root causes ([details](kb/systematic-whitelist-error-resolution.md), [logs](kb/build-log-extraction-patterns.md), [grep](kb/grep-or-syntax-differences.md))
 **CI/CD**: gh CLI debugging, version verification ([details](kb/github-actions-debugging-workflow.md), [versions](kb/tool-version-selection-due-diligence.md))
 **Quality**: Stop after 3 failures, phased cleanup, impact analysis ([details](kb/struggling-detection-pattern.md), [impact](kb/comprehensive-impact-analysis.md))
 

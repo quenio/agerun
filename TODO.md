@@ -6,6 +6,8 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+- [x] Knowledge Base - Phase 2b Session Learnings: Created 3 KB articles (task-verification-before-execution, grep-or-syntax-differences, script-archaeology-pattern); updated 3 existing KB articles with cross-references; updated 4 commands and CLAUDE.md with new patterns (Completed 2025-09-14)
+
 - [x] Global API Removal Phase 2 (ar_agency): All phases completed - removed all 25 global functions, global state variables, updated tests and documentation; all tests passing with zero memory leaks (Completed 2025-09-14)
 
 - [x] Global API Removal Phase 1 (ar_system): Verified no global APIs exist; ar_executable already uses instances; all tests passing (Completed 2025-09-13)

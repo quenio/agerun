@@ -52,3 +52,4 @@ This is especially important after the build system issue discovered on 2025-07-
 - [Error Coverage Verification Before Enhancement](error-coverage-verification-before-enhancement.md)
 - [Command Documentation Excellence Gate](command-documentation-excellence-gate.md)
 - [Make Target Testing Discipline](make-target-testing-discipline.md)
+- [Task Verification Before Execution](task-verification-before-execution.md)
