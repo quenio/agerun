@@ -6,6 +6,8 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+- [x] Global API Removal Phase 3 (ar_methodology): Removed all 7 global functions (create_method, get_method, save_methods, load_methods, cleanup, register_method, unregister_method); updated all tests to use instance-based APIs; all 18 tests passing (Completed 2025-09-14)
+
 - [x] Knowledge Base - Phase 2b Session Learnings: Created 3 KB articles (task-verification-before-execution, grep-or-syntax-differences, script-archaeology-pattern); updated 3 existing KB articles with cross-references; updated 4 commands and CLAUDE.md with new patterns (Completed 2025-09-14)
 
 - [x] Global API Removal Phase 2 (ar_agency): All phases completed - removed all 25 global functions, global state variables, updated tests and documentation; all tests passing with zero memory leaks (Completed 2025-09-14)
@@ -482,12 +484,12 @@ Each parser needs 2-3 TDD cycles for comprehensive error logging:
   - [x] Fixed all compilation errors
   - [x] Verified all tests pass (74 tests)
   - [x] Checked for memory leaks - zero leaks
-- [ ] Phase 3: Remove global APIs from ar_methodology
-  - [ ] Remove 7 global functions from header
-  - [ ] Remove implementations and g_methodology static variable
-  - [ ] Update ar_executable.c to pass methodology instance
-  - [ ] Update ~15 test files to use instance APIs
-  - [ ] Update all method tests
+- [x] Phase 3: Remove global APIs from ar_methodology (Completed 2025-09-14)
+  - [x] Remove 7 global functions from header
+  - [x] Remove implementations and g_methodology static variable
+  - [x] Update ar_agency.c to remove global methodology fallback
+  - [x] Update all test files to use instance APIs
+  - [x] Convert tests to use instance-based functions instead of commenting out
 - [ ] Phase 4: Cleanup and verification
   - [ ] Update all module documentation
   - [ ] Remove global API examples from CLAUDE.md

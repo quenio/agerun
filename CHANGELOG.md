@@ -4,6 +4,27 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-09-14
 
+### ✅ Global API Removal Phase 3 - ar_methodology Module
+- **Removed all 7 global functions** from ar_methodology:
+  - ar_methodology__create_method
+  - ar_methodology__get_method
+  - ar_methodology__save_methods
+  - ar_methodology__load_methods
+  - ar_methodology__cleanup
+  - ar_methodology__register_method
+  - ar_methodology__unregister_method
+- **Removed global state**: Eliminated g_default_methodology static variable and _get_global_instance()
+- **Updated ar_agency.c**: Removed fallback to global methodology
+- **Updated all test files** to use instance-based APIs:
+  - ar_compile_instruction_evaluator_tests.c
+  - ar_exit_instruction_evaluator_tests.c
+  - ar_spawn_instruction_evaluator_tests.c
+  - ar_deprecate_instruction_evaluator_tests.c
+  - ar_system_tests.c
+  - ar_methodology_tests.c (converted tests to use instances instead of commenting out)
+- **Also removed ar_agent__create**: No longer needed since ar_agency handles agent creation
+- **Impact**: Complete removal of global state from methodology module; all tests passing (18 tests)
+
 ### ✅ Knowledge Base Enhancement - Phase 2b Session Learnings
 - **Created 3 new KB articles** capturing important patterns:
   - task-verification-before-execution.md: Pattern for verifying tasks before implementing

@@ -54,7 +54,7 @@ static void test_exit_agent_instruction_evaluator__evaluate_with_instance(void) 
     remove("agency.agerun");
     
     // Clean up any existing methodology state
-    ar_methodology__cleanup();
+    /* ar_methodology__cleanup() removed - fixture handles cleanup */
     
     // Initialize system for agent operations
     
@@ -127,7 +127,7 @@ static void test_exit_agent_instruction_evaluator__evaluate_with_instance(void) 
     // Shutdown system
     
     // Clean up methodology after each test to prevent accumulation
-    ar_methodology__cleanup();
+    /* ar_methodology__cleanup() removed - fixture handles cleanup */
 }
 
 // Test frame-based evaluation with literal agent ID
@@ -205,7 +205,7 @@ static void test_exit_agent_instruction_evaluator__evaluate_literal_id(void) {
     // Shutdown system
     
     // Clean up methodology after each test to prevent accumulation
-    ar_methodology__cleanup();
+    /* ar_methodology__cleanup() removed - fixture handles cleanup */
 }
 
 // Test exit agent with result assignment
@@ -289,7 +289,7 @@ static void test_exit_agent_instruction_evaluator__evaluate_with_result(void) {
     // Shutdown system
     
     // Clean up methodology after each test to prevent accumulation
-    ar_methodology__cleanup();
+    /* ar_methodology__cleanup() removed - fixture handles cleanup */
 }
 
 // Test exit nonexistent agent
@@ -358,7 +358,7 @@ static void test_exit_agent_instruction_evaluator__evaluate_nonexistent(void) {
     // Shutdown system
     
     // Clean up methodology after each test to prevent accumulation
-    ar_methodology__cleanup();
+    /* ar_methodology__cleanup() removed - fixture handles cleanup */
 }
 
 // Test exit with invalid agent ID type
@@ -478,7 +478,7 @@ int main(void) {
     }
     
     // Clean up any existing state at the start
-    ar_methodology__cleanup();
+    /* ar_methodology__cleanup() removed - fixture handles cleanup */
     // ar_agency__reset(); // Global API removed - fixtures handle their own agencies
     remove("methodology.agerun");
     remove("agency.agerun");
@@ -507,7 +507,7 @@ int main(void) {
     printf("All exit agent instruction evaluator tests passed!\n");
     
     // Clean up after tests
-    ar_methodology__cleanup();
+    /* ar_methodology__cleanup() removed - fixture handles cleanup */
     // ar_agency__reset(); // Global API removed - fixtures handle their own agencies
     
     return 0;

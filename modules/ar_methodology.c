@@ -49,19 +49,7 @@ struct ar_methodology_s {
     ar_method_store_t *own_default_store; /* Owned method store for default persistence */
 };
 
-/* Global default instance for backward compatibility */
-static ar_methodology_t *g_default_methodology = NULL;
-
-/**
- * Get or create the global methodology instance
- * @return The global methodology instance (borrowed reference)
- */
-static ar_methodology_t* _get_global_instance(void) {
-    if (!g_default_methodology) {
-        g_default_methodology = ar_methodology__create(NULL);
-    }
-    return g_default_methodology;
-}
+/* Global instance removed - use ar_methodology__create to create instances */
 
 
 
@@ -74,15 +62,7 @@ static ar_methodology_t* _get_global_instance(void) {
  * @note Ownership: This function creates and takes ownership of the method.
  *       The caller should not worry about destroying the method.
  */
-bool ar_methodology__create_method(const char *ref_name, const char *ref_instructions, 
-                              const char *ref_version) {
-    ar_methodology_t *mut_instance = _get_global_instance();
-    if (!mut_instance) {
-        return false;
-    }
-    
-    return ar_methodology__create_method_with_instance(mut_instance, ref_name, ref_instructions, ref_version);
-}
+/* ar_methodology__create_method removed - use instance-based API */
 
 
 
@@ -96,71 +76,17 @@ bool ar_methodology__create_method(const char *ref_name, const char *ref_instruc
 
 // Functions removed - were exposing internal state
 
-// Main method access function
-ar_method_t* ar_methodology__get_method(const char *ref_name, const char *ref_version) {
-    ar_methodology_t *ref_instance = _get_global_instance();
-    if (!ref_instance) {
-        return NULL;
-    }
-    
-    return ar_methodology__get_method_with_instance(ref_instance, ref_name, ref_version);
-}
+/* ar_methodology__get_method removed - use instance-based API */
 
-bool ar_methodology__save_methods(void) {
-    ar_methodology_t *ref_instance = _get_global_instance();
-    if (!ref_instance) {
-        return false;
-    }
-    
-    // Delegate to the instance version
-    return ar_methodology__save_methods_with_instance(ref_instance, METHODOLOGY_FILE_NAME);
-}
+/* ar_methodology__save_methods removed - use instance-based API */
 
-void ar_methodology__cleanup(void) {
-    // Clean up the global instance if it exists
-    if (g_default_methodology) {
-        ar_methodology__destroy(g_default_methodology);
-        g_default_methodology = NULL;
-    }
-}
+/* ar_methodology__cleanup removed - use ar_methodology__destroy on your instance */
 
-void ar_methodology__register_method(ar_method_t *own_method) {
-    ar_methodology_t *mut_instance = _get_global_instance();
-    if (!mut_instance) {
-        if (own_method) {
-            ar_method__destroy(own_method);
-        }
-        return;
-    }
-    
-    ar_methodology__register_method_with_instance(mut_instance, own_method);
-}
+/* ar_methodology__register_method removed - use instance-based API */
 
-bool ar_methodology__load_methods(void) {
-    ar_methodology_t *mut_instance = _get_global_instance();
-    if (!mut_instance) {
-        return false;
-    }
-    
-    // Delegate to the instance version
-    return ar_methodology__load_methods_with_instance(mut_instance, METHODOLOGY_FILE_NAME);
-}
+/* ar_methodology__load_methods removed - use instance-based API */
 
-/**
- * Unregister a method from the methodology
- * @param ref_name Method name (borrowed reference)
- * @param ref_version Version string of the method to unregister
- * @return true if method was successfully unregistered, false otherwise
- * @note This will fail if there are active agents using this method
- */
-bool ar_methodology__unregister_method(const char *ref_name, const char *ref_version) {
-    ar_methodology_t *mut_instance = _get_global_instance();
-    if (!mut_instance) {
-        return false;
-    }
-    
-    return ar_methodology__unregister_method_with_instance(mut_instance, ref_name, ref_version);
-}
+/* ar_methodology__unregister_method removed - use instance-based API */
 
 ar_methodology_t* ar_methodology__create(ar_log_t *ref_log) {
     // Allocate memory for the methodology instance

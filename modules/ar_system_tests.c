@@ -343,7 +343,7 @@ int main(void) {
     ar_system__destroy(mut_system);
     
     // Global cleanup
-    ar_methodology__cleanup();
+    /* ar_methodology__cleanup() removed - system handles cleanup */
     // ar_agency__reset(); // Global API removed
     
     // And report success

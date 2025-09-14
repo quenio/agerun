@@ -96,7 +96,7 @@ static void test_compile_instruction_evaluator__evaluate_with_instance(void) {
     ar_evaluator_fixture__destroy(own_fixture);
     
     // Clean up the method we registered
-    ar_methodology__cleanup();
+    /* ar_methodology__cleanup() removed - fixture handles cleanup */
 }
 
 static void test_compile_instruction_evaluator__evaluate_legacy(void) {
@@ -158,7 +158,7 @@ static void test_compile_instruction_evaluator__evaluate_legacy(void) {
     ar_evaluator_fixture__destroy(own_fixture);
     
     // Clean up the method we registered
-    ar_methodology__cleanup();
+    /* ar_methodology__cleanup() removed - fixture handles cleanup */
 }
 
 static void test_instruction_evaluator__evaluate_method_simple(void) {
@@ -213,7 +213,7 @@ static void test_instruction_evaluator__evaluate_method_simple(void) {
     ar_evaluator_fixture__destroy(own_fixture);
     
     // Clean up the method we registered
-    ar_methodology__cleanup();
+    /* ar_methodology__cleanup() removed - fixture handles cleanup */
 }
 
 static void test_instruction_evaluator__evaluate_method_with_result(void) {
@@ -273,7 +273,7 @@ static void test_instruction_evaluator__evaluate_method_with_result(void) {
     ar_evaluator_fixture__destroy(own_fixture);
     
     // Clean up the method we registered
-    ar_methodology__cleanup();
+    /* ar_methodology__cleanup() removed - fixture handles cleanup */
 }
 
 static void test_instruction_evaluator__evaluate_method_invalid_instructions(void) {
@@ -329,7 +329,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_instructions(voi
     ar_evaluator_fixture__destroy(own_fixture);
     
     // Clean up the method we registered
-    ar_methodology__cleanup();
+    /* ar_methodology__cleanup() removed - fixture handles cleanup */
 }
 
 static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
@@ -461,7 +461,7 @@ static void test_instruction_evaluator__evaluate_method_invalid_args(void) {
     ar_evaluator_fixture__destroy(own_fixture);
     
     // Clean up any methods that might have been registered
-    ar_methodology__cleanup();
+    /* ar_methodology__cleanup() removed - fixture handles cleanup */
 }
 
 int main(void) {
@@ -479,7 +479,7 @@ int main(void) {
     }
     
     // Clean up any existing state at the start
-    ar_methodology__cleanup();
+    /* ar_methodology__cleanup() removed - fixture handles cleanup */
     // ar_agency__reset(); // Global API removed - fixtures handle their own agencies
     remove("methodology.agerun");
     remove("agency.agerun");
@@ -508,7 +508,7 @@ int main(void) {
     printf("All compile instruction evaluator tests passed!\n");
     
     // Clean up after tests
-    ar_methodology__cleanup();
+    /* ar_methodology__cleanup() removed - fixture handles cleanup */
     
     return 0;
 }

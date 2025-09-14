@@ -189,13 +189,11 @@ int64_t ar_agency__create_agent_with_instance(ar_agency_t *mut_agency,
             return 0;
         }
     } else {
-        // Fallback to global methodology for backward compatibility
-        ref_method = ar_methodology__get_method(ref_method_name, ref_version);
-        if (!ref_method) {
-            printf("Agency: Method '%s' version '%s' not found in global methodology\n", 
-                   ref_method_name, ref_version ? ref_version : "latest");
-            return 0;
+        // No methodology instance available
+        if (mut_agency->ref_log) {
+            ar_log__error(mut_agency->ref_log, "Agency: No methodology instance available");
         }
+        return 0;
     }
     
     // Create the agent using the method reference we found

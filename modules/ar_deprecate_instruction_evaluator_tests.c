@@ -128,7 +128,7 @@ static void test_deprecate_instruction_evaluator__evaluate_with_instance(void) {
     // Shutdown system
     
     // Clean up methodology after each test to prevent accumulation
-    ar_methodology__cleanup();
+    /* ar_methodology__cleanup() removed - fixture handles cleanup */
 }
 
 // Test frame-based evaluation
@@ -206,7 +206,7 @@ static void test_deprecate_instruction_evaluator__evaluate_frame_based(void) {
     // Shutdown system
     
     // Clean up methodology after each test to prevent accumulation
-    ar_methodology__cleanup();
+    /* ar_methodology__cleanup() removed - fixture handles cleanup */
 }
 
 // Test deprecate method with agents using it (agents should remain active)
@@ -375,7 +375,7 @@ static void test_deprecate_instruction_evaluator__evaluate_nonexistent(void) {
     // Shutdown system
     
     // Clean up methodology after each test to prevent accumulation
-    ar_methodology__cleanup();
+    /* ar_methodology__cleanup() removed - fixture handles cleanup */
 }
 
 // Test destroy with invalid method name type
@@ -499,7 +499,7 @@ int main(void) {
     }
     
     // Clean up any existing state at the start
-    ar_methodology__cleanup();
+    /* ar_methodology__cleanup() removed - fixture handles cleanup */
     // ar_agency__reset(); // Global API removed - fixtures handle their own agencies
     remove("methodology.agerun");
     remove("agency.agerun");
@@ -528,7 +528,7 @@ int main(void) {
     printf("All deprecate instruction evaluator tests passed!\n");
     
     // Clean up after tests
-    ar_methodology__cleanup();
+    /* ar_methodology__cleanup() removed - fixture handles cleanup */
     // ar_agency__reset(); // Global API removed - fixtures handle their own agencies
     
     return 0;

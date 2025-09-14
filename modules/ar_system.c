@@ -1,7 +1,6 @@
 /* Agerun Runtime System Implementation */
 #include "ar_system.h"
 #include "ar_method.h"
-#include "ar_methodology.h"
 #include "ar_data.h"
 #include "ar_agent.h"
 #include "ar_agency.h"
@@ -153,16 +152,8 @@ void ar_system__shutdown_with_instance(ar_system_t *mut_system) {
     
     // Auto-saving removed - executable now has full control over when to save files
     
-    // Shut down agency properly
-    ar_methodology_t *ref_methodology = ar_agency__get_methodology(mut_system->own_agency);
-
     // Reset the agency to clean up all agents
     ar_agency__reset_with_instance(mut_system->own_agency);
-
-    // Clean up methodology if we were using the global one
-    if (!ref_methodology) {
-        ar_methodology__cleanup();
-    }
     
     mut_system->is_initialized = false;
 }
