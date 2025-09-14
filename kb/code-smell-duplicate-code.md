@@ -42,7 +42,7 @@ ar_agent_t* ar_agent__create(const char* method_name, const char* version) {
 }
 
 // In ar_methodology.c
-bool ar_methodology__register_method(ar_methodology_t* methodology, const char* name, const char* version, const char* content) {
+bool ar_methodology__register_method_with_instance(ar_methodology_t* methodology, const char* name, const char* version, const char* content) {
     if (name == NULL) {
         ar_log__error("Method name cannot be NULL");
         return false;

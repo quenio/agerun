@@ -88,8 +88,8 @@ void system__cleanup_resources(system_t *mut_system) {  // EXAMPLE: Generic syst
         ar_methodology__save_methods_with_instance(mut_system->ref_methodology, NULL);
     } else {
         // Using global methodology - we're responsible
-        ar_methodology__save_methods();
-        ar_methodology__cleanup();  // Global cleanup is OK here
+        ar_methodology__save_methods_with_instance();
+        ar_methodology__cleanup_with_instance();  // Global cleanup is OK here
     }
 }
 ```

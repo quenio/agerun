@@ -16,7 +16,7 @@ typedef struct ar_agency_s {  // EXAMPLE: Future type after refactoring
 
 ar_method_t* _get_method_for_agent(const char* name) {
     // Hidden dependency on global methodology
-    return ar_methodology__get_method(name, NULL);  
+    return ar_methodology__get_method_with_instance(name, NULL);  
 }
 
 // GOOD: Explicit instance association

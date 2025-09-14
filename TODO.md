@@ -6,6 +6,8 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+- [x] Documentation - Global API Reference Cleanup: Fixed 25 documentation files with outdated global function references; all documentation now references instance-based APIs correctly; check-docs validation passes (Completed 2025-09-14)
+
 - [x] Global API Removal Phase 3 (ar_methodology): Removed all 7 global functions (create_method, get_method, save_methods, load_methods, cleanup, register_method, unregister_method); updated all tests to use instance-based APIs; all 18 tests passing (Completed 2025-09-14)
 
 - [x] Knowledge Base - Phase 2b Session Learnings: Created 3 KB articles (task-verification-before-execution, grep-or-syntax-differences, script-archaeology-pattern); updated 3 existing KB articles with cross-references; updated 4 commands and CLAUDE.md with new patterns (Completed 2025-09-14)

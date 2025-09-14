@@ -47,7 +47,7 @@ struct ar_methodology_s {
 };
 
 // Public API unchanged:
-ar_method_t* ar_methodology__get_method(const char *name, const char *version) {
+ar_method_t* ar_methodology__get_method_with_instance(const char *name, const char *version) {
     // Now delegates to registry internally
 }
 

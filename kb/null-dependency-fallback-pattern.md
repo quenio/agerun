@@ -21,14 +21,14 @@ void ar_system__init_with_instance(ar_system_t *mut_system,
             ar_methodology__load_methods_with_instance(ref_methodology, NULL);
         } else {
             // Agency exists but has NULL methodology - use global
-            ar_methodology__load_methods();
+            ar_methodology__load_methods_with_instance();
         }
         
         // Always use instance agency when available
         ar_agency__load_agents_with_instance(mut_system->ref_agency, NULL);
     } else {
         // NULL agency - use all global functions
-        ar_methodology__load_methods();
+        ar_methodology__load_methods_with_instance();
         ar_agency__load_agents_with_instance();
     }
 }
@@ -42,18 +42,18 @@ void ar_system__shutdown_with_instance(ar_system_t *mut_system) {
             ar_methodology__save_methods_with_instance(ref_methodology, NULL);
         } else {
             // CRITICAL: Must use global save to match global load
-            ar_methodology__save_methods();
-            ar_methodology__cleanup();  // And cleanup global
+            ar_methodology__save_methods_with_instance();
+            ar_methodology__cleanup_with_instance();  // And cleanup global
         }
         
         ar_agency__save_agents_with_instance(mut_system->ref_agency, NULL);
         ar_agency__reset_with_instance(mut_system->ref_agency);
     } else {
         // NULL agency - use all global functions
-        ar_methodology__save_methods();
+        ar_methodology__save_methods_with_instance();
         ar_agency__save_agents_with_instance();
-        ar_agency__reset();
-        ar_methodology__cleanup();
+        ar_agency__reset_with_instance();
+        ar_methodology__cleanup_with_instance();
     }
 }
 

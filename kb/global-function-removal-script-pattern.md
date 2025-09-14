@@ -41,7 +41,7 @@ def remove_function(content, func_name):
 
 # List of functions to remove
 FUNCTIONS_TO_REMOVE = [
-    "ar_agency__reset",
+    "ar_agency__reset_with_instance",
     "ar_agency__count_agents",
     # ... more functions
 ]

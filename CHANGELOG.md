@@ -4,6 +4,15 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-09-14
 
+### ✅ Documentation - Global API Reference Cleanup
+- **Fixed 25 documentation files** with outdated global function references
+- **Created fix_kb_global_refs.py script** to systematically update all references
+- **Updated function references** to use instance-based API names:
+  - ar_methodology functions: get_method, create_method, register_method, unregister_method, save_methods, load_methods, cleanup
+  - ar_agency functions: create_agent, destroy_agent, send_to_agent, get_agent, reset
+- **Files updated**: 24 KB articles + README.md
+- **Impact**: All documentation now correctly references instance-based APIs; check-docs validation passes
+
 ### ✅ Global API Removal Phase 3 - ar_methodology Module
 - **Removed all 7 global functions** from ar_methodology:
   - ar_methodology__create_method

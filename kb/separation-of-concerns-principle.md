@@ -52,8 +52,8 @@ ar_data_t* ar_expression_processor__parse_and_evaluate(
 **Good Separation**:
 ```c
 // ar_methodology.h - Method management logic (public facade)
-ar_method_t* ar_methodology__get_method(const char* name, const char* version);
-bool ar_methodology__create_method(const char* name, const char* instructions, const char* version);
+ar_method_t* ar_methodology__get_method_with_instance(const char* name, const char* version);
+bool ar_methodology__create_method_with_instance(const char* name, const char* instructions, const char* version);
 
 // Internal modules with separated concerns:
 // ar_method_registry.c - Storage concern (internal)
@@ -317,7 +317,7 @@ bool ar_method__parse_validate_and_register(  // EXAMPLE: Hypothetical function
 // GOOD: Each function handles one concern
 ar_method_ast_t* ast = ar_method_parser__parse(content);                  // Parsing
 bool valid = ar_method_validator__check(ast);                            // Validation
-bool registered = ar_methodology__register_method(name, version, ast);   // Registration
+bool registered = ar_methodology__register_method_with_instance(name, version, ast);   // Registration
 bool saved = ar_io__save_file(ast, storage_path);                 // Storage  // EXAMPLE: Hypothetical function
 ```
 

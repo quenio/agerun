@@ -38,7 +38,7 @@ void ar_string__append(ar_string_t* string, const char* suffix);  // EXAMPLE: Hy
 // GOOD: const return for borrowed data
 const char* ar_data__get_string(const ar_data_t* data);
 const char* ar_string__get_text(const ar_string_t* string);  // EXAMPLE: Hypothetical function
-const ar_method_t* ar_methodology__get_method(const char* name, const char* version);
+const ar_method_t* ar_methodology__get_method_with_instance(const char* name, const char* version);
 ```
 
 **Returning Mutable Objects**:

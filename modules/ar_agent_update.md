@@ -44,9 +44,12 @@ The module follows Parnas principles:
 ## Usage Example
 
 ```c
+// Get methodology instance from agency
+ar_methodology_t *ref_methodology = ar_agency__get_methodology(mut_agency);
+
 // Get references to old and new methods
-const ar_method_t *ref_old = ar_methodology__get_method("echo", "1.0.0");
-const ar_method_t *ref_new = ar_methodology__get_method("echo", "1.1.0");
+const ar_method_t *ref_old = ar_methodology__get_method_with_instance(ref_methodology, "echo", "1.0.0");
+const ar_method_t *ref_new = ar_methodology__get_method_with_instance(ref_methodology, "echo", "1.1.0");
 
 // Check compatibility
 if (ar_agent_update__are_compatible(ref_old, ref_new)) {

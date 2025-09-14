@@ -47,7 +47,7 @@ grep -r "@v[0-9]" .github/workflows/
 For AgeRun development, always check method versions:
 ```c
 // When loading methods, verify version compatibility
-ar_method_t* method = ar_methodology__get_method(
+ar_method_t* method = ar_methodology__get_method_with_instance(
     "method_name", 
     "2.0.0"  // Always use explicit version strings
 );

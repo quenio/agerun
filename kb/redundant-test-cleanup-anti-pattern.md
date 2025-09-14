@@ -56,7 +56,7 @@ void destroy_fixture(InterpreterFixture* own_fixture) {
 ## Implementation
 ```bash
 # Find potentially redundant cleanup in tests
-grep -n "ar_agency__reset\|ar_methodology__cleanup" *_tests.c | \
+grep -n "ar_agency__reset_with_instance\|ar_methodology__cleanup_with_instance" *_tests.c | \
   while read line; do
     file=$(echo $line | cut -d: -f1)
     # Check if file uses fixtures

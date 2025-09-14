@@ -33,7 +33,7 @@ int64_t ar_interpreter_fixture__execute_instruction(
     );
     
     // Register and create agent
-    ar_methodology__register_method(own_method);
+    ar_methodology__register_method_with_instance(own_method);
     int64_t temp_agent_id = ar_agency__create_agent_with_instance(method_name, "1.0.0");
     
     // Execute and return agent ID for verification
@@ -57,7 +57,7 @@ void ar_interpreter_fixture__destroy_temp_agent(
     
     ar_agency__destroy_agent_with_instance(temp_agent_id);
     if (method_name && method_version) {
-        ar_methodology__unregister_method(method_name, method_version);
+        ar_methodology__unregister_method_with_instance(method_name, method_version);
     }
 }
 ```

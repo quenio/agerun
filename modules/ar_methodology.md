@@ -55,105 +55,125 @@ void ar_methodology__destroy(ar_methodology_t *own_methodology);
 
 ```c
 /**
- * Get a method definition by name and version
+ * Get a method definition by name and version using a specific instance
+ * @param ref_methodology The methodology instance to search in (borrowed reference)
  * @param ref_name Method name (borrowed reference)
  * @param ref_version Method version string (NULL for latest)
  * @return Pointer to method definition (borrowed reference), or NULL if not found
- * @note Ownership: Returns a borrowed reference to the internal method. The caller
- *       should not modify or free the returned method.
+ * @note Ownership: Returns a borrowed reference to the internal method
  */
-ar_method_t* ar_methodology__get_method(const char *ref_name, const char *ref_version);
+ar_method_t* ar_methodology__get_method_with_instance(ar_methodology_t *ref_methodology,
+                                                       const char *ref_name,
+                                                       const char *ref_version);
 ```
 
 #### Method Creation and Registration
 
 ```c
 /**
- * Creates a new method object and registers it with the methodology module
+ * Create and register a method with a specific methodology instance
+ * @param mut_methodology The methodology instance to use (mutable reference)
  * @param ref_name Method name (borrowed reference)
  * @param ref_instructions The method implementation code (borrowed reference)
  * @param ref_version Semantic version string for this method (e.g., "1.0.0")
  * @return true if method was created and registered successfully, false otherwise
- * @note Ownership: This function creates and takes ownership of the method.
- *       The caller should not worry about destroying the method.
  */
-bool ar_methodology__create_method(const char *ref_name, const char *ref_instructions, 
-                                const char *ref_version);
+bool ar_methodology__create_method_with_instance(ar_methodology_t *mut_methodology,
+                                                 const char *ref_name,
+                                                 const char *ref_instructions,
+                                                 const char *ref_version);
 
 /**
- * Register a method with the methodology module
- * @param own_method The method to register (ownership is transferred to methodology)
- * @note Ownership: The methodology module takes ownership of the method.
- *       The caller should not access or free the method after this call.
+ * Register a method with a specific methodology instance
+ * @param mut_methodology The methodology instance to register to (mutable reference)
+ * @param own_method The method to register (ownership is transferred)
  */
-void ar_methodology__register_method(ar_method_t *own_method);
+void ar_methodology__register_method_with_instance(ar_methodology_t *mut_methodology,
+                                                   ar_method_t *own_method);
 
 /**
- * Unregister a method from the methodology
+ * Unregister a method from a specific methodology instance
+ * @param mut_methodology The methodology instance to unregister from (mutable reference)
  * @param ref_name Method name (borrowed reference)
  * @param ref_version Version string of the method to unregister
  * @return true if method was successfully unregistered, false otherwise
- * @note This will succeed even if there are active agents using this method,
- *       allowing deprecation of methods that are in use
  */
-bool ar_methodology__unregister_method(const char *ref_name, const char *ref_version);
+bool ar_methodology__unregister_method_with_instance(ar_methodology_t *mut_methodology,
+                                                     const char *ref_name,
+                                                     const char *ref_version);
 ```
 
 #### Persistence
 
 ```c
 /**
- * Save all method definitions to disk
+ * Save methods from a specific instance to disk
+ * @param ref_methodology The methodology instance to save (borrowed reference)
+ * @param ref_filename The filename to save to (borrowed reference)
  * @return true if successful, false otherwise
  */
-bool ar_methodology__save_methods(void);
+bool ar_methodology__save_methods_with_instance(ar_methodology_t *ref_methodology,
+                                                const char *ref_filename);
 
 /**
- * Load all method definitions from disk
+ * Load methods from disk into a specific instance
+ * @param mut_methodology The methodology instance to load into (mutable reference)
+ * @param ref_filename The filename to load from (borrowed reference)
  * @return true if successful, false otherwise
  */
-bool ar_methodology__load_methods(void);
+bool ar_methodology__load_methods_with_instance(ar_methodology_t *mut_methodology,
+                                                const char *ref_filename);
 ```
 
 #### Lifecycle Management
 
 ```c
 /**
- * Clean up all method definitions and free resources
- * This should be called during system shutdown
+ * Clean up all method definitions and free resources in a specific methodology instance
+ * @param mut_methodology The methodology instance to cleanup (mutable reference)
+ * @note This should be called before destroying the methodology instance
  */
-void ar_methodology__cleanup(void);
+void ar_methodology__cleanup_with_instance(ar_methodology_t *mut_methodology);
 ```
 
 ## Usage Examples
+
+### Creating a Methodology Instance
+
+```c
+// Create a methodology instance with optional logging
+ar_log_t *ref_log = ar_log__create();
+ar_methodology_t *mut_methodology = ar_methodology__create(ref_log);
+```
 
 ### Getting a Method
 
 ```c
 // Get the latest version of a method
-ar_method_t *ref_method = ar_methodology__get_method("echo_method", NULL);
+ar_method_t *ref_method = ar_methodology__get_method_with_instance(mut_methodology, "echo_method", NULL);
 if (ref_method) {
     // Use the method (borrowed reference - do not free)
 }
 
 // Get a specific version of a method
-ar_method_t *ref_specific_method = ar_methodology__get_method("echo_method", "2.0.0");
+ar_method_t *ref_specific_method = ar_methodology__get_method_with_instance(mut_methodology, "echo_method", "2.0.0");
 ```
 
 ### Creating and Registering Methods
 
 ```c
 // Create and register a new method directly
-bool created = ar_methodology__create_method("custom_method", 
-                                          "memory.result = memory.input", 
-                                          "1.0.0");
+bool created = ar_methodology__create_method_with_instance(mut_methodology,
+                                                           "custom_method",
+                                                           "memory.result = memory.input",
+                                                           "1.0.0");
 
 // Or create a method object and register it
-ar_method_t *own_method = ar_method__create("another_method", 
-                                      "memory.result = \"Hello\"", 
-                                      "1.0.0");
+ar_method_t *own_method = ar_method__create("another_method",
+                                            "memory.result = \"Hello\"",
+                                            "1.0.0");
 if (own_method) {
-    ar_methodology__register_method(own_method);
+    ar_methodology__register_method_with_instance(mut_methodology, own_method);
     // ownership transferred - do not use own_method after this
 }
 ```
@@ -162,17 +182,21 @@ if (own_method) {
 
 ```c
 // Save all methods to disk
-bool save_result = ar_methodology__save_methods();
+bool save_result = ar_methodology__save_methods_with_instance(mut_methodology, "methodology.agerun");
 
 // Load methods from disk
-bool load_result = ar_methodology__load_methods();
+bool load_result = ar_methodology__load_methods_with_instance(mut_methodology, "methodology.agerun");
 ```
 
 ### Cleanup
 
 ```c
-// Clean up all methods during shutdown
-ar_methodology__cleanup();
+// Clean up all method definitions before destroying the instance
+ar_methodology__cleanup_with_instance(mut_methodology);
+
+// Destroy the methodology instance
+ar_methodology__destroy(mut_methodology);
+ar_log__destroy(ref_log);
 ```
 
 ## Implementation Details

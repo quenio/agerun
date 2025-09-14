@@ -30,7 +30,7 @@ Similarly for methodology:
 // PUBLIC: ar_methodology (facade coordinating both)
 
 // Users only interact with:
-ar_methodology__get_method("name", "1.2");  // Public API
+ar_methodology__get_method_with_instance("name", "1.2");  // Public API
 // Not with:
 ar_method_registry__get_latest_version(...);  // Internal
 ```

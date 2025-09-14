@@ -153,7 +153,7 @@ ar_agent__send(counter_id, "get");
 ```c
 // Save agents and methods to disk
 ar_agency__save_agents_with_instance();
-ar_methodology__save_methods();
+ar_methodology__save_methods_with_instance();
 
 // Shutdown the runtime (assuming system instance is available)
 // ar_system__shutdown_with_instance(own_system);

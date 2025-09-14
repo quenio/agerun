@@ -87,8 +87,8 @@ typedef struct ar_methodology_s ar_methodology_t;  // EXAMPLE: Focused module
 
 ar_methodology_t* ar_methodology__create();  // EXAMPLE: Focused functionality
 void ar_methodology__destroy(ar_methodology_t* methodology);  // EXAMPLE: Focused functionality
-bool ar_methodology__register_method(ar_methodology_t* methodology, const char* name, const char* version, const char* content);
-ar_method_t* ar_methodology__get_method(ar_methodology_t* methodology, const char* name, const char* version);  // EXAMPLE: Focused functionality
+bool ar_methodology__register_method_with_instance(ar_methodology_t* methodology, const char* name, const char* version, const char* content);
+ar_method_t* ar_methodology__get_method_with_instance(ar_methodology_t* methodology, const char* name, const char* version);  // EXAMPLE: Focused functionality
 bool ar_methodology__save_to_file(ar_methodology_t* methodology, const char* filename);  // EXAMPLE: Focused functionality
 bool ar_methodology__load_from_file(ar_methodology_t* methodology, const char* filename);  // EXAMPLE: Focused functionality
 
@@ -99,7 +99,7 @@ ar_agency_t* ar_agency__create();  // EXAMPLE: Focused functionality
 void ar_agency__destroy(ar_agency_t* agency);  // EXAMPLE: Focused functionality
 ar_agent_t* ar_agency__create_agent_with_instance(ar_agency_t* agency, const char* method_name, const char* version);  // EXAMPLE: Focused functionality
 void ar_agency__destroy_agent_with_instance(ar_agency_t* agency, uint64_t agent_id);  // EXAMPLE: Focused functionality
-ar_agent_t* ar_agency__get_agent(ar_agency_t* agency, uint64_t agent_id);  // EXAMPLE: Focused functionality
+ar_agent_t* ar_agency__get_agent_with_instance(ar_agency_t* agency, uint64_t agent_id);  // EXAMPLE: Focused functionality
 
 // ar_event.h - Message processing
 typedef struct ar_messaging_s ar_messaging_t;  // EXAMPLE: Focused module

@@ -11,7 +11,7 @@ This pattern prevents subtle bugs where code appears to succeed but contains inv
 // BAD: Only checking object existence
 ar_method_t* own_method = ar_method__create_with_log(name, instructions, version, log);
 if (own_method != null) {
-    ar_methodology__register_method(methodology, own_method);
+    ar_methodology__register_method_with_instance(methodology, own_method);
     success = true;  // BAD: Method might have invalid AST
 }
 
@@ -21,7 +21,7 @@ if (own_method != null) {
     // Check if the method has a valid AST (parsing succeeded)
     const ar_method_ast_t* ref_ast = ar_method__get_ast(own_method);
     if (ref_ast != null) {
-        ar_methodology__register_method(methodology, own_method);
+        ar_methodology__register_method_with_instance(methodology, own_method);
         success = true;
     } else {
         // Parsing failed, destroy the invalid method

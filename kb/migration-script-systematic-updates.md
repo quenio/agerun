@@ -31,7 +31,7 @@ def update_system_calls(content):
          'ar_agency__create_agent_with_instance(ar_system__get_agency(mut_system), '),
         
         # Methodology operations through agency
-        ('ar_methodology__register_method(',
+        ('ar_methodology__register_method_with_instance(',
          'ar_methodology__register_method_with_instance('
          'ar_agency__get_methodology(ar_system__get_agency(mut_system)), ')
     ]

@@ -87,6 +87,9 @@ const char* ar_method__get_instructions(const ar_method_t *ref_method);
 
 ```c
 // Create a method object
+// Get methodology instance from your agency or system
+ar_methodology_t *mut_methodology = /* obtained from ar_agency__get_methodology() */;
+
 const char *name = "echo_method";
 const char *instructions = "memory.result := message";
 const char *version = "1.0.0"; // Using semantic versioning
@@ -94,10 +97,10 @@ ar_method_t *own_method = ar_method__create(name, instructions, version);
 
 if (own_method) {
     // Register the method with methodology (methodology takes ownership)
-    ar_methodology__register_method(own_method);
+    ar_methodology__register_method_with_instance(mut_methodology, own_method);
     own_method = NULL; // Mark as transferred
-    
-    // Or manage it yourself 
+
+    // Or manage it yourself
     // (remember to call ar_method__destroy when you're done with it)
 }
 ```

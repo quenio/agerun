@@ -19,7 +19,7 @@ static ar_agency_t* _get_global_instance() {
 }
 
 // The compiler also found all call sites needing updates:
-// ar_system.c:146: error: 'ar_agency__create_agent' undeclared
+// ar_system.c:146: error: 'ar_agency__create_agent_with_instance' undeclared
 // Led to update: ar_agency__create_agent_with_instance(mut_system->own_agency, ...)
 ```
 

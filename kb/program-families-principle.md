@@ -153,7 +153,7 @@ methods/calculator-1.1.0.method    // Family member: added trigonometry
 methods/calculator-2.0.0.method    // Family member: added scripting
 
 // Common family interface maintained across versions
-ar_method_t* ar_methodology__get_method(const char* name, const char* version);
+ar_method_t* ar_methodology__get_method_with_instance(const char* name, const char* version);
 ```
 
 ### Configuration Families

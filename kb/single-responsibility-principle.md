@@ -117,7 +117,7 @@ void system_init_example();
 void ar_system__cleanup();  // EXAMPLE: Hypothetical function
 
 // ar_methodology.h - Method management
-void ar_methodology__register_method(const char* name, const char* version, const char* content);
+void ar_methodology__register_method_with_instance(const char* name, const char* version, const char* content);
 
 // ar_agency.h - Agent management  
 ar_agent_t* ar_agency__create_agent_with_instance(const char* method_name, const char* version);
