@@ -6,6 +6,8 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+- [x] Global API Removal Phase 1 (ar_system): Verified no global APIs exist; ar_executable already uses instances; all tests passing (Completed 2025-09-13)
+
 - [x] Parser Module Error Logging Enhancement: All 11 parsers now have comprehensive error logging; reduced silent failures from 97.6%→0%; created verification script and KB documentation (Completed 2025-09-13)
 
 - [x] CLAUDE.md Guidelines Compaction: Extracted verbose sections to KB articles; 541→437 lines (19% reduction); created 4 KB articles (Completed 2025-09-03)
@@ -392,10 +394,10 @@ Each parser needs 2-3 TDD cycles for comprehensive error logging:
 
 **Rationale**: Before decomposing the system module, removing all global functions and instances will create a cleaner architecture. This forces all code to use instance-based APIs and makes decomposition more straightforward.
 
-**Current State**: All three core modules have both global and instance-based APIs:
-- ar_system: Uses single g_system instance with delegation (8 global functions)
-- ar_agency: Uses g_agency instance with delegation (20+ global functions)
-- ar_methodology: Uses g_methodology instance with delegation (7 global functions)
+**Current State**:
+- ar_system: ✅ COMPLETE - No global APIs, all functions use instance-based APIs (Completed 2025-09-13)
+- ar_agency: ❌ Has 23 global functions that need removal (lines 40-232 in ar_agency.h)
+- ar_methodology: Not yet analyzed (7 global functions expected)
 
 **Benefits**:
 1. **Cleaner architecture** - No hidden global state
@@ -408,31 +410,54 @@ Each parser needs 2-3 TDD cycles for comprehensive error logging:
 2. **ar_agency second** - Used by system but not methodology
 3. **ar_methodology last** - Most widely used across codebase
 
-**Phase 1 Progress (ar_system)**:
+**Phase 1 (ar_system) - COMPLETED 2025-09-13**:
 - [x] Remove ar_instruction module files and references
 - [x] Update all tests to use instance-based APIs
 - [x] Fix memory leaks in various tests
 - [x] Add ar_methodology__cleanup_with_instance function
 - [x] Add ar_agency__agent_exists_with_instance function
-- [ ] Remove global APIs from ar_system header
-- [ ] Remove implementations and g_system static variable
-- [ ] Update ar_executable.c to create and manage instances
-- [ ] Run make clean build 2>&1 and fix all errors
-
-**Remaining Tasks**:
-- [ ] Fix method_creator_tests - missing method() instruction implementation
-- [ ] Fix string_builder_tests - missing parse() and build() instruction implementations
-- [ ] Fix message_router_tests - send() function failures
-- [ ] Expose system/agency through interpreter fixture for method verification in tests
+- [x] Remove global APIs from ar_system header (verified - no global APIs exist)
+- [x] Remove implementations and g_system static variable (verified - no g_system exists)
+- [x] Update ar_executable.c to create and manage instances (already uses instance APIs)
+- [x] Run make clean build 2>&1 and fix all errors (build passing)
+- [x] Fix method_creator_tests (tests passing)
+- [x] Fix string_builder_tests (tests passing)
+- [x] Fix message_router_tests (tests passing with minor warnings)
+- [x] Expose system/agency through interpreter fixture (tests working)
 
 **Tasks**:
-- [ ] Phase 1: Remove global APIs from ar_system (IN PROGRESS)
+- [x] Phase 1: Remove global APIs from ar_system (COMPLETED 2025-09-13)
 - [ ] Phase 2: Remove global APIs from ar_agency
-  - [ ] Remove 20+ global functions from header
-  - [ ] Remove implementations and g_agency static variable
-  - [ ] Update ar_executable.c to pass agency instance
-  - [ ] Update ~20 test files to use instance APIs
-  - [ ] Update method test fixtures
+
+  **Phase 2a - Analysis and Documentation**:
+  - [ ] Document which of the 23 global APIs are actively used
+  - [ ] Map each global function to its instance-based equivalent
+  - [ ] Identify which files need updates (currently 9 files identified)
+
+  **Phase 2b - Remove Simple Delegations**:
+  - [ ] Remove global functions that simply delegate to _with_instance variants
+  - [ ] Update callers in ar_system.c to use instance APIs
+  - [ ] Update callers in ar_interpreter.c to use instance APIs
+
+  **Phase 2c - Remove Complex Global Functions**:
+  - [ ] Remove g_agency static variable from ar_agency.c
+  - [ ] Remove global functions that access g_agency directly
+  - [ ] Remove all 23 global function declarations from ar_agency.h
+  - [ ] Remove all global function implementations from ar_agency.c
+
+  **Phase 2d - Update Test Files**:
+  - [ ] Update ar_agency_tests.c to use instance APIs
+  - [ ] Update ar_system_tests.c agency calls to use instance APIs
+  - [ ] Update ar_spawn_instruction_evaluator_tests.c
+  - [ ] Update ar_exit_instruction_evaluator_tests.c
+  - [ ] Update ar_deprecate_instruction_evaluator_tests.c
+  - [ ] Update ar_compile_instruction_evaluator_tests.c
+
+  **Phase 2e - Verification**:
+  - [ ] Run make clean build 2>&1 to verify compilation
+  - [ ] Fix any remaining compilation errors
+  - [ ] Verify all tests pass
+  - [ ] Check for memory leaks
 - [ ] Phase 3: Remove global APIs from ar_methodology
   - [ ] Remove 7 global functions from header
   - [ ] Remove implementations and g_methodology static variable
@@ -445,9 +470,17 @@ Each parser needs 2-3 TDD cycles for comprehensive error logging:
   - [ ] Verify zero memory leaks in all tests
   - [ ] Update README.md with new usage patterns
 
-**Key Challenge**: ar_executable.c needs complete rewrite to manage instances
-**Estimated Impact**: ~50 files need updates
-**Estimated Timeline**: 2-3 sessions
+**Key Challenges**:
+- Phase 2: Update 9 files to remove ar_agency global API usage (23 functions)
+- Phase 3: Update methodology callers across ~15 files
+
+**Estimated Impact**:
+- Phase 2: 9 files need updates for ar_agency
+- Phase 3: ~15 files need updates for ar_methodology
+
+**Estimated Timeline**:
+- Phase 2: 1-2 sessions (16 subtasks)
+- Phase 3: 1 session (methodology has fewer dependencies)
 
 ### 4. System Module Decomposition (Depends on Global API Removal)
 
