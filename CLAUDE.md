@@ -256,6 +256,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Instantiation**: Bottom-up by dependencies ([details](kb/module-instantiation-prerequisites.md))
 **Resources**: Use instance-specific not global ([details](kb/instance-vs-global-resource-pattern.md))
 **Error logging**: Utilize ar_log instances for all error conditions ([details](kb/error-logging-instance-utilization.md))
+**Parser errors**: Comprehensive logging with position info ([details](kb/parser-error-logging-enhancement-pattern.md))
 **Consistency**: Verify sister modules need same improvements ([details](kb/module-consistency-verification.md), [systematic](kb/systematic-consistency-verification.md))
 **Stateless**: Ensure no global state beyond instance management ([details](kb/stateless-module-verification.md))
 **API cleanup**: Remove suffixes after migration complete ([details](kb/api-suffix-cleanup-pattern.md))
