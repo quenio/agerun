@@ -20,7 +20,7 @@ This verification prevents:
 
 // Step 1: Check if function exists locally
 // grep "update_agent_method" modules/ar_agency.h
-// Result: ar_agency__update_agent_methods_with_instance exists (plural)
+// Result: ar_agency__update_agent_methods_with_instance_with_instance exists (plural)
 
 // Step 2: Verify error is current
 // gh run list --limit=5  # Check recent runs

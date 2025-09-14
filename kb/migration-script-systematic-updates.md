@@ -28,7 +28,7 @@ def update_system_calls(content):
         
         # Agency operations through system
         ('ar_agency__create_agent_with_instance(', 
-         'ar_agency__create_agent_with_instance_with_instance(ar_system__get_agency(mut_system), '),
+         'ar_agency__create_agent_with_instance(ar_system__get_agency(mut_system), '),
         
         # Methodology operations through agency
         ('ar_methodology__register_method(',
@@ -137,3 +137,5 @@ if __name__ == '__main__':
 - [Script Enhancement Over One-Off](script-enhancement-over-one-off.md)
 - [Progressive Tool Enhancement](progressive-tool-enhancement.md)
 - [Systematic Function Renaming Pattern](systematic-function-renaming-pattern.md)
+- [Global Function Removal Script Pattern](global-function-removal-script-pattern.md)
+- [Compilation-Driven Refactoring Pattern](compilation-driven-refactoring-pattern.md)

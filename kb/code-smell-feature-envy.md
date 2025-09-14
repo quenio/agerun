@@ -216,7 +216,7 @@ bool ar_system__optimize_agents(ar_data_t* system) {  // EXAMPLE: Hypothetical f
     ar_data_t* agency = ar_system__get_agency(system);  // EXAMPLE: Hypothetical function using real type
     
     // Envying agency internals
-    ar_agent_registry_t* registry = ar_agency__get_registry(agency);  // EXAMPLE: Hypothetical function
+    ar_agent_registry_t* registry = ar_agency__get_registry_with_instance(agency);  // EXAMPLE: Hypothetical function
     ar_list_t* agents = ar_agent_registry__get_all_agents(registry);  // EXAMPLE: Hypothetical function
     
     size_t agent_count = ar_list__get_count(agents);  // EXAMPLE: Hypothetical function

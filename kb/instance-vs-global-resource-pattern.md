@@ -21,7 +21,7 @@ typedef struct {
 } evaluator_t;  // EXAMPLE: Hypothetical type for demonstration
 
 // In the evaluate function:
-ar_agency__send_to_agent_with_instance_with_instance(
+ar_agency__send_to_agent_with_instance(
     evaluator->ref_agency,  // EXAMPLE: Using instance from struct
     agent_id, 
     message

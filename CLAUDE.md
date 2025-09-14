@@ -151,6 +151,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Messages**: Process all messages to prevent memory leaks
 **Test isolation**: Comment out tests to isolate error sources ([details](kb/test-isolation-through-commenting.md))
 **Test cleanup**: Remove persisted files before tests run ([details](kb/test-file-cleanup-pattern.md))
+**Test redundancy**: Avoid cleanup already handled by fixtures ([details](kb/redundant-test-cleanup-anti-pattern.md))
 **Test updates**: Apply improvements retroactively to all tests ([details](kb/test-standardization-retroactive.md))
 **Test complexity**: Simplify to minimal failing case for debugging ([details](kb/test-complexity-reduction-pattern.md))
 **Test complexity smell**: Complex tests with retry loops indicate wrong abstraction ([details](kb/test-complexity-as-code-smell.md))
@@ -284,7 +285,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Grouped by category** for easier reference ([details](kb/development-practice-groups.md)):
 
 **Navigation & Files**: Absolute paths, git not .bak, ar_io backups ([details](kb/absolute-path-navigation.md), [backups](kb/file-io-backup-mechanism.md))
-**Build & Debug**: `make sanitize-tests 2>&1`, make targets only, parallel jobs ([details](kb/development-debug-tools.md), [make](kb/make-target-testing-discipline.md))
+**Build & Debug**: `make sanitize-tests 2>&1`, make targets only, parallel jobs ([details](kb/development-debug-tools.md), [make](kb/make-target-testing-discipline.md), [compile](kb/compilation-driven-refactoring-pattern.md))
 **Checkpoints**: Track complex tasks, gates, progress, concise output ([details](kb/multi-step-checkpoint-tracking-pattern.md), [gates](kb/gate-enforcement-exit-codes-pattern.md), [concise](kb/concise-script-output-principle.md))
 **YAML & Persistence**: 2-space indent, escape multiline, direct I/O ([details](kb/yaml-serialization-direct-io-pattern.md), [multiline](kb/multi-line-data-persistence-format.md))
 **Error & Logs**: Context filtering, precise grep, fix root causes ([details](kb/systematic-whitelist-error-resolution.md), [logs](kb/build-log-extraction-patterns.md))
@@ -359,7 +360,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 
 **Principles**: Preserve behavior, move don't rewrite, verify moves ([details](kb/refactoring-patterns-detailed.md))
 **Renaming**: Systematic approach for features/commands ([details](kb/comprehensive-renaming-workflow.md))
-**Bulk ops**: Use scripts not sed - `rename_symbols.py`, `batch_fix_docs.py` ([details](kb/script-enhancement-over-one-off.md), [workflow](kb/systematic-file-modification-workflow.md))
+**Bulk ops**: Use scripts not sed - `rename_symbols.py`, `batch_fix_docs.py` ([details](kb/script-enhancement-over-one-off.md), [workflow](kb/systematic-file-modification-workflow.md), [removal](kb/global-function-removal-script-pattern.md))
 **Verification**: `diff -u <(sed -n '130,148p' old.c) <(sed -n '11,29p' new.c)` ([details](kb/code-movement-verification.md))
 **Key patterns**: ([details](kb/refactoring-key-patterns.md))
 **Non-functional code**: Detect and remove code that never executes ([details](kb/non-functional-code-detection-pattern.md))

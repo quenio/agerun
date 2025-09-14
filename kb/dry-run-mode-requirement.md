@@ -75,3 +75,4 @@ fi
 - [Script Backward Compatibility Testing](script-backward-compatibility-testing.md)
 - [Batch Documentation Fix Enhancement](batch-documentation-fix-enhancement.md)
 - [Migration Script Systematic Updates](migration-script-systematic-updates.md)
+- [Global Function Removal Script Pattern](global-function-removal-script-pattern.md)

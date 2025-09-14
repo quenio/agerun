@@ -11,7 +11,7 @@ Look for boolean parameters that control removed features:
 ```c
 // Parameter that's always passed as false or true
 ar_agent__update_method(mut_agent, ref_method, false);  // send_sleep_wake never true
-ar_agency__create_agent_with_instance_with_instance(mut_agency, "echo", "1.0.0", false);  // send_wake always false
+ar_agency__create_agent_with_instance(mut_agency, "echo", "1.0.0", false);  // send_wake always false
 ```
 
 ### Step 2: Trace All Call Sites
@@ -78,12 +78,11 @@ Removing `send_lifecycle_events` parameter cascade:
 
 ### 1. Identified unused parameter
 ```c
-ar_agency__update_agent_methods(ref_old, ref_new, false);  // Always false
+ar_agency__update_agent_methods_with_instance(ref_old, ref_new, false);  // Always false
 ```
 
 ### 2. Found cascade chain
-- `ar_agency__update_agent_methods()` → public API
-- `ar_agency__update_agent_methods_with_instance()` → instance variant
+- `ar_agency__update_agent_methods_with_instance()` → instance API
 - `ar_agent__update_method()` → core implementation
 
 ### 3. Removed systematically

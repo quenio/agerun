@@ -80,3 +80,5 @@ See [Migration Script Systematic Updates](migration-script-systematic-updates.md
 - [Global Instance Wrapper Anti-Pattern](global-instance-wrapper-anti-pattern.md)
 - [Stateless Module Verification](stateless-module-verification.md)
 - [API Suffix Cleanup Pattern](api-suffix-cleanup-pattern.md)
+- [Global Function Removal Script Pattern](global-function-removal-script-pattern.md)
+- [Compilation-Driven Refactoring Pattern](compilation-driven-refactoring-pattern.md)

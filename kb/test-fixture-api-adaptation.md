@@ -53,9 +53,9 @@ void ar_interpreter_fixture__destroy_temp_agent(
 ) {
     const char *method_name = NULL;
     const char *method_version = NULL;
-    ar_agency__get_agent_method_with_instance_info(temp_agent_id, &method_name, &method_version);
+    ar_agency__get_agent_method_with_instance(temp_agent_id, &method_name, &method_version);
     
-    ar_agency__destroy_agent(temp_agent_id);
+    ar_agency__destroy_agent_with_instance(temp_agent_id);
     if (method_name && method_version) {
         ar_methodology__unregister_method(method_name, method_version);
     }

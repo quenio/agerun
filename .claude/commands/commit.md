@@ -110,6 +110,8 @@ make checkpoint-update CMD=commit STEP=3
 **Documentation Notes**:
 - If you changed a module's interface, update its .md file
 - For major refactoring, check modules/README.md and dependency trees ([details](../../kb/refactoring-phase-completion-checklist.md))
+- When removing global APIs, use systematic scripts ([details](../../kb/global-function-removal-script-pattern.md))
+- Let compiler errors guide refactoring completion ([details](../../kb/compilation-driven-refactoring-pattern.md))
 
 #### Checkpoint 4: Update TODO
 

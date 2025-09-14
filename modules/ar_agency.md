@@ -56,7 +56,7 @@ ar_agency_t* own_agency = ar_agency__create(ref_methodology);
 
 // Use instance-based functions
 int count = ar_agency__count_agents_with_instance(own_agency);
-int64_t id = ar_agency__create_agent_with_instance_with_instance(own_agency, "method", "1.0.0", NULL);
+int64_t id = ar_agency__create_agent_with_instance(own_agency, "method", "1.0.0", NULL);
 
 // Clean up when done
 ar_agency__destroy(own_agency);
@@ -68,56 +68,49 @@ All global API functions delegate to their instance-based counterparts using an 
 
 ### Initialization and Reset
 
-- `ar_agency__set_initialized(bool initialized)` - Initialize or shutdown the agency
-- `ar_agency__reset()` - Destroy all agents and clear registry
+- `ar_agency__reset_with_instance()` - Destroy all agents and clear registry
 
 ### Agent Creation and Destruction
 
 - `ar_agency__create_agent_with_instance()` - Create a new agent with automatic ID allocation
-- `ar_agency__destroy_agent()` - Destroy an agent by ID
+- `ar_agency__destroy_agent_with_instance()` - Destroy an agent by ID
 
 ### Agent Communication
 
 - `ar_agency__send_to_agent_with_instance()` - Send a message to an agent
-- `ar_agency__agent_has_messages()` - Check if agent has pending messages
+- `ar_agency__agent_has_messages_with_instance()` - Check if agent has pending messages
 - `ar_agency__get_agent_message_with_instance()` - Retrieve and remove a message from agent's queue
 
 ### Agent Information
 
-- `ar_agency__agent_exists()` - Check if an agent exists
-- `ar_agency__count_agents()` - Get total number of agents
-- `ar_agency__count_active_agents()` - Get number of active agents
-- `ar_agency__is_agent_active()` - Check if specific agent is active
+- `ar_agency__agent_exists_with_instance()` - Check if an agent exists
+- `ar_agency__count_agents_with_instance()` - Get total number of agents
 
 ### Agent Iteration
 
-- `ar_agency__get_first_agent()` - Get first agent ID
-- `ar_agency__get_next_agent()` - Get next agent ID in iteration order
+- `ar_agency__get_first_agent_with_instance()` - Get first agent ID
+- `ar_agency__get_next_agent_with_instance()` - Get next agent ID in iteration order
 
 ### Agent Properties
 
-- `ar_agency__get_agent_memory()` - Get agent's memory (read-only)
+- `ar_agency__get_agent_memory_with_instance()` - Get agent's memory (read-only)
 - `ar_agency__get_agent_mutable_memory_with_instance()` - Get agent's memory (mutable)
 - `ar_agency__get_agent_context_with_instance()` - Get agent's context
 - `ar_agency__get_agent_method_with_instance()` - Get agent's method reference
-- `ar_agency__get_agent_method_with_instance_info()` - Get method name and version
 
 ### Agent Updates
 
-- `ar_agency__update_agent_method()` - Update single agent's method
-- `ar_agency__update_agent_methods()` - Bulk update agents using a method
+- `ar_agency__update_agent_methods_with_instance()` - Bulk update agents using a method
 - `ar_agency__count_agents_using_method_with_instance()` - Count agents using specific method
-- `ar_agency__set_agent_active()` - Change agent's active status
-- `ar_agency__set_agent_id()` - Change agent's ID (for persistence)
 
 ### Persistence
 
 - `ar_agency__save_agents_with_instance()` - Save all persistent agents to disk
-- `ar_agency__load_agents()` - Load agents from disk
+- `ar_agency__load_agents_with_instance()` - Load agents from disk
 
 ### Internal Access
 
-- `ar_agency__get_registry()` - Get registry reference (for internal modules)
+- `ar_agency__get_registry_with_instance()` - Get registry reference (for internal modules)
 
 ## Usage Examples
 
@@ -125,7 +118,7 @@ All global API functions delegate to their instance-based counterparts using an 
 
 ```c
 // Create an agent with the latest version of "echo" method
-int64_t agent_id = ar_agency__create_agent_with_instance("echo", NULL, NULL);
+int64_t agent_id = ar_agency__create_agent_with_instance(own_agency, "echo", NULL, NULL);
 if (agent_id == 0) {
     printf("Failed to create agent\n");
     return;
@@ -134,7 +127,7 @@ if (agent_id == 0) {
 // Create an agent with specific version and context
 ar_data_t *own_context = ar_data__create_map();
 ar_data__set_map_integer(own_context, "max_retries", 3);
-int64_t agent_id2 = ar_agency__create_agent_with_instance("router", "1.2.0", own_context);
+int64_t agent_id2 = ar_agency__create_agent_with_instance(own_agency, "router", "1.2.0", own_context);
 ar_data__destroy(own_context);  // Agency doesn't take ownership
 ```
 
@@ -143,7 +136,7 @@ ar_data__destroy(own_context);  // Agency doesn't take ownership
 ```c
 // Send a message to an agent
 ar_data_t *own_message = ar_data__create_string("Hello, agent!");
-if (!ar_agency__send_to_agent_with_instance(agent_id, own_message)) {
+if (!ar_agency__send_to_agent_with_instance(mut_agency, agent_id, own_message)) {
     ar_data__destroy(own_message);  // Clean up on failure
     printf("Failed to send message\n");
 }
@@ -154,8 +147,8 @@ if (!ar_agency__send_to_agent_with_instance(agent_id, own_message)) {
 
 ```c
 // Check for messages
-if (ar_agency__agent_has_messages(agent_id)) {
-    ar_data_t *own_message = ar_agency__get_agent_message_with_instance(agent_id);
+if (ar_agency__agent_has_messages_with_instance(ref_agency, agent_id)) {
+    ar_data_t *own_message = ar_agency__get_agent_message_with_instance(mut_agency, agent_id);
     if (own_message) {
         // Process the message...
         ar_data__destroy(own_message);  // Caller owns the message
@@ -167,16 +160,15 @@ if (ar_agency__agent_has_messages(agent_id)) {
 
 ```c
 // Iterate over all agents
-int64_t agent_id = ar_agency__get_first_agent();
+int64_t agent_id = ar_agency__get_first_agent_with_instance(ref_agency);
 while (agent_id != 0) {
     // Process agent...
-    const char *method_name = NULL;
-    const char *method_version = NULL;
-    if (ar_agency__get_agent_method_with_instance_info(agent_id, &method_name, &method_version)) {
-        printf("Agent %lld uses %s v%s\n", agent_id, method_name, method_version);
+    const ar_method_t *ref_method = ar_agency__get_agent_method_with_instance(ref_agency, agent_id);
+    if (ref_method) {
+        printf("Agent %lld uses method\n", agent_id);
     }
-    
-    agent_id = ar_agency__get_next_agent(agent_id);
+
+    agent_id = ar_agency__get_next_agent_with_instance(ref_agency, agent_id);
 }
 ```
 
@@ -184,16 +176,16 @@ while (agent_id != 0) {
 
 ```c
 // Update all agents using old version to new version
-const ar_method_t *ref_old = ar_methodology__get_method("calc", "1.0.0");
-const ar_method_t *ref_new = ar_methodology__get_method("calc", "1.1.0");
+const ar_method_t *ref_old = ar_methodology__get_method_with_instance(ref_methodology, "calc", "1.0.0");
+const ar_method_t *ref_new = ar_methodology__get_method_with_instance(ref_methodology, "calc", "1.1.0");
 
 // Update with lifecycle events
-int count = ar_agency__update_agent_methods(ref_old, ref_new, true);
+int count = ar_agency__update_agent_methods_with_instance(mut_agency, ref_old, ref_new);
 printf("Updated %d agents\n", count);
 
 // Process the lifecycle messages (2 per agent)
 for (int i = 0; i < count * 2; i++) {
-    ar_system__process_next_message_with_instance(own_system));
+    ar_system__process_next_message_with_instance(own_system);
 }
 ```
 
@@ -201,12 +193,12 @@ for (int i = 0; i < count * 2; i++) {
 
 ```c
 // Save all agents to disk
-if (!ar_agency__save_agents_with_instance()) {
+if (!ar_agency__save_agents_with_instance(ref_agency, "agency.agerun")) {
     printf("Failed to save agents\n");
 }
 
 // Load agents from disk (typically at startup)
-if (!ar_agency__load_agents()) {
+if (!ar_agency__load_agents_with_instance(mut_agency, "agency.agerun")) {
     printf("Failed to load agents\n");
 }
 ```

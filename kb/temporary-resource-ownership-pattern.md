@@ -18,7 +18,7 @@ ar_data_t *own_default_context = ar_data__create_map();  // Create context
 int64_t temp_agent_id = ar_agency__create_agent_with_instance(method_name, "1.0.0", own_default_context);
 // Agent stores context as ref_context - doesn't take ownership
 
-// Later: ar_agency__destroy_agent(temp_agent_id)
+// Later: ar_agency__destroy_agent_with_instance(temp_agent_id)
 // Agent destructor: "We don't own the context, just clear the reference"
 // Result: Context is orphaned and leaks
 ```
@@ -34,7 +34,7 @@ void ar_interpreter_fixture__destroy_temp_agent(
     const ar_data_t *ref_context = ar_agency__get_agent_context_with_instance(temp_agent_id);
     
     // Destroy agent (handles its own resources)
-    ar_agency__destroy_agent(temp_agent_id);
+    ar_agency__destroy_agent_with_instance(temp_agent_id);
     
     // Process remaining messages
     while (system_process_next_message_example()) {

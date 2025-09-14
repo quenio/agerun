@@ -156,7 +156,7 @@ make checkpoint-cleanup CMD=run_tests
 - **Zero tolerance for leaks** - any leak should be fixed immediately
 - Tests run in isolated processes for safety
 
-**Test Infrastructure**: Tests requiring shared setup/teardown should use fixture modules with opaque types and proper lifecycle management ([details](../../kb/test-fixture-module-creation-pattern.md)). Fixtures should evolve organically by adding helper methods as needs arise ([details](../../kb/test-fixture-evolution-pattern.md)).
+**Test Infrastructure**: Tests requiring shared setup/teardown should use fixture modules with opaque types and proper lifecycle management ([details](../../kb/test-fixture-module-creation-pattern.md)). Fixtures should evolve organically by adding helper methods as needs arise ([details](../../kb/test-fixture-evolution-pattern.md)). Avoid redundant cleanup that fixtures already handle ([details](../../kb/redundant-test-cleanup-anti-pattern.md)).
 
 **Test Effectiveness**: When testing error paths, temporarily break implementation to verify tests detect failures ([details](../../kb/test-effectiveness-verification.md)). Use filesystem permissions (chmod) to create predictable failure conditions ([details](../../kb/permission-based-failure-testing.md)). For untestable conditions, use dlsym interception ([details](../../kb/dlsym-test-interception-technique.md)), but mock at the right level - avoid mocking system calls when function-level mocking works ([details](../../kb/mock-at-right-level-pattern.md)).
 

@@ -106,6 +106,7 @@ Each learning file contains:
 - [Test Standardization Retroactive Application](test-standardization-retroactive.md)
 - [Mock at Right Level Pattern](mock-at-right-level-pattern.md)
 - [Test Complexity as Code Smell](test-complexity-as-code-smell.md)
+- [Redundant Test Cleanup Anti-Pattern](redundant-test-cleanup-anti-pattern.md)
 - [Check Existing Solutions First](check-existing-solutions-first.md)
 - [Progressive System Decoupling via TDD](progressive-system-decoupling-tdd.md)
 - [Test Memory Leak Ownership Analysis](test-memory-leak-ownership-analysis.md)
@@ -167,6 +168,7 @@ Each learning file contains:
 ### Architecture & Design
 - [Opaque Types Pattern](opaque-types-pattern.md)
 - [Facade Pattern Coordination](facade-pattern-coordination.md)
+- [Compilation-Driven Refactoring Pattern](compilation-driven-refactoring-pattern.md)
 - [Error Propagation Pattern](error-propagation-pattern.md)
 - [Error Logging Instance Utilization](error-logging-instance-utilization.md)
 - [Error Logging NULL Instance Limitation](error-logging-null-instance-limitation.md)
@@ -229,6 +231,7 @@ Each learning file contains:
 - [Concise Script Output Principle](concise-script-output-principle.md)
 - [Dry Run Mode Requirement](dry-run-mode-requirement.md)
 - [Generic Make Targets Pattern](generic-make-targets-pattern.md)
+- [Global Function Removal Script Pattern](global-function-removal-script-pattern.md)
 - [Progressive Tool Enhancement](progressive-tool-enhancement.md)
 - [Script Reusability Parameters Pattern](script-reusability-parameters-pattern.md)
 - [Command Continuous Improvement Pattern](command-continuous-improvement-pattern.md)

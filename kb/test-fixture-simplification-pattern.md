@@ -135,9 +135,10 @@ process_normally();
 
 ## Related Patterns
 
-- **Dead Code Elimination**: Remove unreachable fixture code
-- **Test Clarity**: Make test intent obvious
-- **Single Responsibility**: Each fixture should have one job
+- [Test Fixture Evolution Pattern](test-fixture-evolution-pattern.md)
+- [Test Fixture Module Creation Pattern](test-fixture-module-creation-pattern.md)
+- [Redundant Test Cleanup Anti-Pattern](redundant-test-cleanup-anti-pattern.md)
+- [Non-Functional Code Detection Pattern](non-functional-code-detection-pattern.md)
 
 ## Key Takeaway
 

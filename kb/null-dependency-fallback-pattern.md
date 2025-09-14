@@ -29,7 +29,7 @@ void ar_system__init_with_instance(ar_system_t *mut_system,
     } else {
         // NULL agency - use all global functions
         ar_methodology__load_methods();
-        ar_agency__load_agents();
+        ar_agency__load_agents_with_instance();
     }
 }
 
@@ -46,7 +46,7 @@ void ar_system__shutdown_with_instance(ar_system_t *mut_system) {
             ar_methodology__cleanup();  // And cleanup global
         }
         
-        ar_agency__save_agents_with_instance_with_instance(mut_system->ref_agency, NULL);
+        ar_agency__save_agents_with_instance(mut_system->ref_agency, NULL);
         ar_agency__reset_with_instance(mut_system->ref_agency);
     } else {
         // NULL agency - use all global functions
@@ -68,7 +68,7 @@ bool ar_system__process_next_message_with_instance(ar_system_t *mut_system) {
         // ... process with instance functions
     } else {
         // Use global agency functions
-        agent_id = ar_agency__get_first_agent();
+        agent_id = ar_agency__get_first_agent_with_instance();
         // ... process with global functions
     }
     
