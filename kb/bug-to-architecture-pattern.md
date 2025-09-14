@@ -10,11 +10,11 @@ Treating bugs as symptoms rather than isolated problems can lead to systemic imp
 ```c
 // Original bug: Duplicate wake message
 void ar_system__init_with_instance(ar_system_t *mut_system, const char *method) {
-    int64_t agent_id = ar_agency__create_agent(mut_system->own_agency, method);
+    int64_t agent_id = ar_agency__create_agent_with_instance(mut_system->own_agency, method);
     
     // BUG: Agent already sent wake to itself, system sends another
     ar_data_t *own_wake = ar_data__create_string("__wake__");
-    ar_agency__send_to_agent(mut_system->own_agency, agent_id, own_wake);
+    ar_agency__send_to_agent_with_instance(mut_system->own_agency, agent_id, own_wake);
 }
 
 // Question progression:
@@ -25,7 +25,7 @@ void ar_system__init_with_instance(ar_system_t *mut_system, const char *method) 
 
 // Architectural solution: Remove wake/sleep entirely
 void ar_system__init_with_instance(ar_system_t *mut_system, const char *method) {
-    int64_t agent_id = ar_agency__create_agent(mut_system->own_agency, method);
+    int64_t agent_id = ar_agency__create_agent_with_instance(mut_system->own_agency, method);
     // No wake messages - simpler, cleaner architecture
 }
 ```

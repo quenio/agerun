@@ -11,7 +11,7 @@ Understanding the message flow architecture is crucial for debugging and testing
 // Message flow: Agent -> System -> Output/Agent
 void demonstrate_message_flow(void) {
     // 1. Agent sends message
-    ar_agency__send_to_agent(target_id, own_message);
+    ar_agency__send_to_agent_with_instance(target_id, own_message);
     
     // 2. System processes message (ar_system.c)
     if (own_message) {
@@ -37,7 +37,7 @@ if (agent_id == 0) {
     send_result = true;
 } else {
     // Normal agent: message is sent
-    send_result = c.ar_agency__send_to_agent(agent_id, own_message);
+    send_result = c.ar_agency__send_to_agent_with_instance(agent_id, own_message);
 }
 ```
 

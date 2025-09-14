@@ -46,7 +46,7 @@ bool process_next_message_global(void) {  // EXAMPLE: Old pattern
     }
     // Direct implementation using global state
     // No fake instance, no shared ownership
-    ar_data_t *own_message = ar_agency__get_agent_message(agent_id);
+    ar_data_t *own_message = ar_agency__get_agent_message_with_instance(agent_id);
     if (own_message) {
         ar_interpreter__execute_method(g_interpreter, agent_id, own_message);
         ar_data__destroy(own_message);

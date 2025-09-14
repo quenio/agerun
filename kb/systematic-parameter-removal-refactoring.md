@@ -11,14 +11,14 @@ Look for boolean parameters that control removed features:
 ```c
 // Parameter that's always passed as false or true
 ar_agent__update_method(mut_agent, ref_method, false);  // send_sleep_wake never true
-ar_agency__create_agent_with_instance(mut_agency, "echo", "1.0.0", false);  // send_wake always false
+ar_agency__create_agent_with_instance_with_instance(mut_agency, "echo", "1.0.0", false);  // send_wake always false
 ```
 
 ### Step 2: Trace All Call Sites
 Use grep to find all callers:
 ```bash
 grep -r "ar_agent__update_method" modules/
-grep -r "ar_agency__create_agent" modules/
+grep -r "ar_agency__create_agent_with_instance" modules/
 ```
 
 ### Step 3: Update in Coordinated Phases
@@ -61,7 +61,7 @@ ar_agent__update_method(mut_agent, ref_method);
 Parameters often cascade through multiple layers:
 ```c
 // Layer 1: Public API
-ar_agency__create_agent(..., bool send_wake)
+ar_agency__create_agent_with_instance(..., bool send_wake)
     ↓
 // Layer 2: Internal helper
 _create_agent_internal(..., bool send_wake)

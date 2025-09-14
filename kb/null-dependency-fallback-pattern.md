@@ -46,12 +46,12 @@ void ar_system__shutdown_with_instance(ar_system_t *mut_system) {
             ar_methodology__cleanup();  // And cleanup global
         }
         
-        ar_agency__save_agents_with_instance(mut_system->ref_agency, NULL);
+        ar_agency__save_agents_with_instance_with_instance(mut_system->ref_agency, NULL);
         ar_agency__reset_with_instance(mut_system->ref_agency);
     } else {
         // NULL agency - use all global functions
         ar_methodology__save_methods();
-        ar_agency__save_agents();
+        ar_agency__save_agents_with_instance();
         ar_agency__reset();
         ar_methodology__cleanup();
     }

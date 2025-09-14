@@ -18,7 +18,7 @@ This pattern prevents:
 // message_router_tests.c - Complex version with 15 memory leaks
 static void test_router_handles_multiple_messages(void) {
     // Over-engineered with handler agent and payload
-    int64_t handler = ar_agency__create_agent_with_instance(mut_agency, 
+    int64_t handler = ar_agency__create_agent_with_instance_with_instance(mut_agency, 
                                                            "handler", "1.0.0", NULL);
     
     ar_data_t *own_payload = ar_data__create_map();

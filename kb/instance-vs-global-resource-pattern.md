@@ -13,7 +13,7 @@ Global resource access creates several problems:
 ## Example
 ```c
 // BAD: Using global function (will fail in tests)
-ar_agency__send_to_agent(agent_id, message);  // Global singleton access
+ar_agency__send_to_agent_with_instance(agent_id, message);  // Global singleton access
 
 // GOOD: Using instance passed during creation  
 typedef struct {
@@ -21,7 +21,7 @@ typedef struct {
 } evaluator_t;  // EXAMPLE: Hypothetical type for demonstration
 
 // In the evaluate function:
-ar_agency__send_to_agent_with_instance(
+ar_agency__send_to_agent_with_instance_with_instance(
     evaluator->ref_agency,  // EXAMPLE: Using instance from struct
     agent_id, 
     message
@@ -40,7 +40,7 @@ When designing modules:
 To refactor from global to instance-based:
 ```bash
 # Find global function usage
-grep -r "ar_agency__send_to_agent[^_]" modules/
+grep -r "ar_agency__send_to_agent_with_instance[^_]" modules/
 
 # Look for _with_instance variants
 grep -r "_with_instance" modules/*.h

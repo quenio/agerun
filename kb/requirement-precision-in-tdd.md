@@ -18,11 +18,11 @@ int ar_executable__main(void) {
     ar_methodology_t *mut_methodology = /* ... */;
     
     // BAD: This was never required!
-    ar_agent_t *own_bootstrap = ar_agency__create_agent("bootstrap", "1.0.0");
-    ar_agent_t *own_echo = ar_agency__create_agent("echo", "1.0.0");
+    ar_agent_t *own_bootstrap = ar_agency__create_agent_with_instance("bootstrap", "1.0.0");
+    ar_agent_t *own_echo = ar_agency__create_agent_with_instance("echo", "1.0.0");
     
     // BAD: Saving was not required either!
-    ar_agency__save_agents_with_instance(mut_agency, "agency.agerun");
+    ar_agency__save_agents_with_instance_with_instance(mut_agency, "agency.agerun");
 }
 
 // RIGHT: After clarification - executable only loads methods

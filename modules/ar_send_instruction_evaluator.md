@@ -67,7 +67,7 @@ Key features:
 The module follows strict memory ownership rules:
 - The evaluator instance owns its internal structure but not the dependencies
 - Expression evaluator, memory, and log are borrowed references stored in the instance
-- Message ownership is transferred to `ar_agency__send_to_agent()`
+- Message ownership is transferred to `ar_agency__send_to_agent_with_instance()`
 - If send fails, the message is properly destroyed
 - Result values are created and stored when assignment is specified
 - The create function returns ownership to the caller

@@ -137,7 +137,7 @@ static void test_agency_persistence(ar_system_fixture_t *own_fixture) {
 */
 
 static void test_agency_reset(ar_system_fixture_t *own_fixture) {
-    printf("Testing ar_agency__reset()...\n");
+    printf("Testing ar_agency__reset_with_instance()...\n");
     
     // Get the fixture's agency
     ar_agency_t *mut_agency = ar_system_fixture__get_agency(own_fixture);
@@ -172,7 +172,7 @@ static void test_agency_reset(ar_system_fixture_t *own_fixture) {
     int count = ar_agency__count_agents_with_instance(mut_agency);
     assert(count == 0);
     
-    printf("ar_agency__reset() test passed!\n");
+    printf("ar_agency__reset_with_instance() test passed!\n");
 }
 
 int main(void) {

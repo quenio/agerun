@@ -480,7 +480,7 @@ int main(void) {
     
     // Clean up any existing state at the start
     ar_methodology__cleanup();
-    ar_agency__reset();
+    // ar_agency__reset(); // Global API removed - fixtures handle their own agencies
     remove("methodology.agerun");
     remove("agency.agerun");
     

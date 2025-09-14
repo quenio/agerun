@@ -14,7 +14,7 @@ bool evaluate_deprecate(evaluator, method_name, version) {
     // Complex behavior:
     // 1. Get method and count agents using it
     ar_method_t *method = ar_methodology__get_method(method_name, version);
-    int count = ar_agency__count_agents_using_method(method);
+    int count = ar_agency__count_agents_using_method_with_instance(method);
     
     // 2. Send sleep messages to all agents
     // (iterate through all agents, check if using this method)
@@ -43,7 +43,7 @@ bool evaluate_deprecate(evaluator, method_name, version) {
 // Also simplified ar_methodology__unregister_method
 // BEFORE: Checked if agents were using the method
 bool ar_methodology__unregister_method(name, version) {
-    if (ar_agency__count_agents_using_method(name, version) > 0) {
+    if (ar_agency__count_agents_using_method_with_instance(name, version) > 0) {
         return false;  // Refused to unregister
     }
     // ... unregister logic

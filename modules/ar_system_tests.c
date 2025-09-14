@@ -344,7 +344,7 @@ int main(void) {
     
     // Global cleanup
     ar_methodology__cleanup();
-    ar_agency__reset();
+    // ar_agency__reset(); // Global API removed
     
     // And report success
     printf("All tests passed!\n");

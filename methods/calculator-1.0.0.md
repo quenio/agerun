@@ -44,21 +44,21 @@ ar_data__set_map_data(msg, "operation", ar_data__create_string("add"));
 ar_data__set_map_data(msg, "a", ar_data__create_integer(10));
 ar_data__set_map_data(msg, "b", ar_data__create_integer(5));
 ar_data__set_map_data(msg, "sender", ar_data__create_integer(my_agent_id));
-ar_agency__send_to_agent(calc, msg);
+ar_agency__send_to_agent_with_instance(calc, msg);
 // Receives back: 15
 
 // Multiplication: 7 * 8 = 56
 ar_data__set_map_data(msg, "operation", ar_data__create_string("multiply"));
 ar_data__set_map_data(msg, "a", ar_data__create_integer(7));
 ar_data__set_map_data(msg, "b", ar_data__create_integer(8));
-ar_agency__send_to_agent(calc, msg);
+ar_agency__send_to_agent_with_instance(calc, msg);
 // Receives back: 56
 
 // Division: 100 / 4 = 25
 ar_data__set_map_data(msg, "operation", ar_data__create_string("divide"));
 ar_data__set_map_data(msg, "a", ar_data__create_integer(100));
 ar_data__set_map_data(msg, "b", ar_data__create_integer(4));
-ar_agency__send_to_agent(calc, msg);
+ar_agency__send_to_agent_with_instance(calc, msg);
 // Receives back: 25
 ```
 

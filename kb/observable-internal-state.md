@@ -26,7 +26,7 @@ if (!agent_memory) {
 }
 
 // Check if agent has required method
-const ar_method_t* agent_method = ar_agency__get_agent_method_with_instance(agency, agent_id);
+const ar_method_t* agent_method = ar_agency__get_agent_method_with_instance_with_instance(agency, agent_id);
 if (!agent_method) {
     // Agent has no method assigned
     return false;

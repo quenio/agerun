@@ -27,8 +27,8 @@ def update_system_calls(content):
         ('ar_system__shutdown()', 'ar_system__shutdown_with_instance(mut_system)'),  // EXAMPLE: Global API no longer exists
         
         # Agency operations through system
-        ('ar_agency__create_agent(', 
-         'ar_agency__create_agent_with_instance(ar_system__get_agency(mut_system), '),
+        ('ar_agency__create_agent_with_instance(', 
+         'ar_agency__create_agent_with_instance_with_instance(ar_system__get_agency(mut_system), '),
         
         # Methodology operations through agency
         ('ar_methodology__register_method(',

@@ -4,6 +4,28 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-09-13
 
+### ✅ Global API Removal Phase 2b - ar_agency Module
+- **Removed all simple global API delegations** from ar_agency:
+  - Removed 25 global functions that delegated to instance-based equivalents
+  - Removed static global variables: g_is_initialized, g_own_registry, g_default_agency
+  - Removed _get_global_instance() helper function
+  - Module size reduced from 722 to 505 lines (30% reduction)
+- **Updated callers** to use instance-based APIs:
+  - ar_system.c: 6 calls updated to use mut_system->own_agency
+  - ar_interpreter.c: 3 calls updated with NULL check for ref_agency
+  - Test files: Removed 20 redundant ar_agency__reset_with_instance calls
+- **Documentation updates**:
+  - Created scripts/update_agency_docs.py for systematic updates
+  - Updated 39 .md files to reference _with_instance versions
+  - All documentation now validates with make check-docs
+- **Scripts created** for future use:
+  - scripts/remove_global_functions.py: Removes global functions with dry-run mode
+  - scripts/update_agency_docs.py: Updates documentation references
+- **Impact**: Cleaner architecture with no hidden global state in agency module
+- **All tests passing** with zero memory leaks
+
+## 2025-09-13
+
 ### ✅ Parser Error Logging Enhancement - Phase 3 Complete
 - **Verification and documentation phase completed**:
   - Created `scripts/verify_parser_error_logging.py` for systematic verification
@@ -699,7 +721,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
 ### ✅ Bootstrap Agent Spawning - TDD Cycle 7
 - Fixed send_instruction_evaluator to use instance-specific agency:
   - Added ref_agency field to evaluator struct
-  - Changed from global ar_agency__send_to_agent to ar_agency__send_to_agent_with_instance
+  - Changed from global ar_agency__send_to_agent_with_instance to ar_agency__send_to_agent_with_instance_with_instance
   - Updated all tests to pass agency parameter
 - Implemented spawn no-op behavior for conditional spawning:
   - Returns true when method_name is 0 (integer) or "" (empty string)

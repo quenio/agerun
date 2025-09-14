@@ -97,7 +97,7 @@ typedef struct ar_agency_s ar_agency_t;  // EXAMPLE: Focused module
 
 ar_agency_t* ar_agency__create();  // EXAMPLE: Focused functionality
 void ar_agency__destroy(ar_agency_t* agency);  // EXAMPLE: Focused functionality
-ar_agent_t* ar_agency__create_agent(ar_agency_t* agency, const char* method_name, const char* version);  // EXAMPLE: Focused functionality
+ar_agent_t* ar_agency__create_agent_with_instance(ar_agency_t* agency, const char* method_name, const char* version);  // EXAMPLE: Focused functionality
 void ar_agency__destroy_agent(ar_agency_t* agency, uint64_t agent_id);  // EXAMPLE: Focused functionality
 ar_agent_t* ar_agency__get_agent(ar_agency_t* agency, uint64_t agent_id);  // EXAMPLE: Focused functionality
 

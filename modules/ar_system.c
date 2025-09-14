@@ -135,16 +135,11 @@ int64_t ar_system__init_with_instance(ar_system_t *mut_system, const char *ref_m
     if (ref_method_name != NULL) {
         int64_t initial_agent;
         
-        if (mut_system->own_agency) {
-            // Use instance-based agency with shared context
-            initial_agent = ar_agency__create_agent_with_instance(mut_system->own_agency, 
-                                                                 ref_method_name, 
-                                                                 ref_version, 
-                                                                 mut_system->own_context);
-        } else {
-            // Use global agency with shared context
-            initial_agent = ar_agency__create_agent(ref_method_name, ref_version, mut_system->own_context);
-        }
+        // Use instance-based agency with shared context
+        initial_agent = ar_agency__create_agent_with_instance(mut_system->own_agency,
+                                                             ref_method_name,
+                                                             ref_version,
+                                                             mut_system->own_context);
         return initial_agent;
     }
     
@@ -158,20 +153,14 @@ void ar_system__shutdown_with_instance(ar_system_t *mut_system) {
     
     // Auto-saving removed - executable now has full control over when to save files
     
-    // If we have an agency instance, shut it down properly
-    if (mut_system->own_agency) {
-        ar_methodology_t *ref_methodology = ar_agency__get_methodology(mut_system->own_agency);
-        
-        // Reset the agency to clean up all agents
-        ar_agency__reset_with_instance(mut_system->own_agency);
-        
-        // Clean up methodology if we were using the global one
-        if (!ref_methodology) {
-            ar_methodology__cleanup();
-        }
-    } else {
-        // Use global methodology and agency
-        ar_agency__reset();
+    // Shut down agency properly
+    ar_methodology_t *ref_methodology = ar_agency__get_methodology(mut_system->own_agency);
+
+    // Reset the agency to clean up all agents
+    ar_agency__reset_with_instance(mut_system->own_agency);
+
+    // Clean up methodology if we were using the global one
+    if (!ref_methodology) {
         ar_methodology__cleanup();
     }
     
@@ -187,30 +176,16 @@ bool ar_system__process_next_message_with_instance(ar_system_t *mut_system) {
     int64_t agent_id;
     ar_data_t *own_message = NULL;
     
-    if (mut_system->own_agency) {
-        // Use instance-based agency
-        agent_id = ar_agency__get_first_agent_with_instance(mut_system->own_agency);
-        while (agent_id != 0) {
-            if (ar_agency__agent_has_messages_with_instance(mut_system->own_agency, agent_id)) {
-                own_message = ar_agency__get_agent_message_with_instance(mut_system->own_agency, agent_id);
-                if (own_message) {
-                    break;
-                }
+    // Use instance-based agency
+    agent_id = ar_agency__get_first_agent_with_instance(mut_system->own_agency);
+    while (agent_id != 0) {
+        if (ar_agency__agent_has_messages_with_instance(mut_system->own_agency, agent_id)) {
+            own_message = ar_agency__get_agent_message_with_instance(mut_system->own_agency, agent_id);
+            if (own_message) {
+                break;
             }
-            agent_id = ar_agency__get_next_agent_with_instance(mut_system->own_agency, agent_id);
         }
-    } else {
-        // Use global agency
-        agent_id = ar_agency__get_first_agent();
-        while (agent_id != 0) {
-            if (ar_agency__agent_has_messages(agent_id)) {
-                own_message = ar_agency__get_agent_message(agent_id);
-                if (own_message) {
-                    break;
-                }
-            }
-            agent_id = ar_agency__get_next_agent(agent_id);
-        }
+        agent_id = ar_agency__get_next_agent_with_instance(mut_system->own_agency, agent_id);
     }
     
     if (own_message) {

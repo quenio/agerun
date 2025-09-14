@@ -87,8 +87,7 @@ static void test_spawn_instruction_evaluator__evaluate_with_context(void) {
     ar_spawn_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(fixture);
     
-    // Clean up agency before shutting down
-    ar_agency__reset();
+    // Agency cleanup handled by fixture destroy
     
     // Shutdown system
     
@@ -164,8 +163,7 @@ static void test_spawn_instruction_evaluator__evaluate_with_result(void) {
     ar_spawn_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(fixture);
     
-    // Clean up agency before shutting down
-    ar_agency__reset();
+    // Agency cleanup handled by fixture destroy
     
     // Shutdown system
     
@@ -210,8 +208,7 @@ static void test_spawn_instruction_evaluator__evaluate_invalid_method(void) {
     ar_spawn_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(fixture);
     
-    // Clean up agency before shutting down
-    ar_agency__reset();
+    // Agency cleanup handled by fixture destroy
     
     // Shutdown system
     
@@ -384,8 +381,7 @@ static void test_spawn_instruction_evaluator__evaluate_with_instance(void) {
     ar_spawn_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(fixture);
     
-    // Clean up agency before shutting down
-    ar_agency__reset();
+    // Agency cleanup handled by fixture destroy
     
     // Shutdown system
     
@@ -461,8 +457,7 @@ static void test_spawn_instruction_evaluator__legacy_evaluate_function(void) {
     ar_spawn_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(fixture);
     
-    // Clean up agency before shutting down
-    ar_agency__reset();
+    // Agency cleanup handled by fixture destroy
     
     // Shutdown system
     
@@ -618,7 +613,7 @@ int main(void) {
     
     // Clean up any existing state at the start
     ar_methodology__cleanup();
-    ar_agency__reset();
+    // ar_agency__reset(); // Global API removed - fixtures handle their own agencies
     remove("methodology.agerun");
     remove("agency.agerun");
     
@@ -650,7 +645,7 @@ int main(void) {
     
     // Final cleanup to ensure no agents are left running
     ar_methodology__cleanup();
-    ar_agency__reset();
+    // ar_agency__reset(); // Global API removed - fixtures handle their own agencies
     remove("methodology.agerun");
     remove("agency.agerun");
     

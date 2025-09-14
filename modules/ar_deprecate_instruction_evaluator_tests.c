@@ -123,8 +123,7 @@ static void test_deprecate_instruction_evaluator__evaluate_with_instance(void) {
     ar_deprecate_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(fixture);
     
-    // Clean up agency before shutting down
-    ar_agency__reset();
+    // Agency cleanup handled by fixture destroy
     
     // Shutdown system
     
@@ -202,8 +201,7 @@ static void test_deprecate_instruction_evaluator__evaluate_frame_based(void) {
     ar_deprecate_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(fixture);
     
-    // Clean up agency before shutting down
-    ar_agency__reset();
+    // Agency cleanup handled by fixture destroy
     
     // Shutdown system
     
@@ -372,8 +370,7 @@ static void test_deprecate_instruction_evaluator__evaluate_nonexistent(void) {
     ar_deprecate_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(fixture);
     
-    // Clean up agency before shutting down
-    ar_agency__reset();
+    // Agency cleanup handled by fixture destroy
     
     // Shutdown system
     
@@ -503,7 +500,7 @@ int main(void) {
     
     // Clean up any existing state at the start
     ar_methodology__cleanup();
-    ar_agency__reset();
+    // ar_agency__reset(); // Global API removed - fixtures handle their own agencies
     remove("methodology.agerun");
     remove("agency.agerun");
     
@@ -532,7 +529,7 @@ int main(void) {
     
     // Clean up after tests
     ar_methodology__cleanup();
-    ar_agency__reset();
+    // ar_agency__reset(); // Global API removed - fixtures handle their own agencies
     
     return 0;
 }

@@ -105,10 +105,11 @@ bool ar_interpreter__execute_method(ar_interpreter_t *mut_interpreter,
         mut_memory = ar_agency__get_agent_mutable_memory_with_instance(mut_interpreter->ref_agency, agent_id);
         ref_context = ar_agency__get_agent_context_with_instance(mut_interpreter->ref_agency, agent_id);
     } else {
-        // Use global agency functions
-        ref_method = ar_agency__get_agent_method(agent_id);
-        mut_memory = ar_agency__get_agent_mutable_memory(agent_id);
-        ref_context = ar_agency__get_agent_context(agent_id);
+        // Agency is required - cannot proceed without it
+        char error_msg[256];
+        snprintf(error_msg, sizeof(error_msg), "No agency instance available for agent %" PRId64, agent_id);
+        ar_log__error(mut_interpreter->ref_log, error_msg);
+        return false;
     }
     
     if (!ref_method) {

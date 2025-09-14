@@ -113,7 +113,7 @@ int main(void) {
 
     // Send a message to the echo agent
     ar_agency_t *mut_agency = ar_system__get_agency(own_system);
-    ar_agency__send_to_agent_with_instance(mut_agency, initial_agent, 
+    ar_agency__send_to_agent_with_instance_with_instance(mut_agency, initial_agent, 
                                             ar_data__create_string("Hello, AgeRun!"));
 
     // Process all messages
@@ -152,7 +152,7 @@ ar_agent__send(counter_id, "get");
 
 ```c
 // Save agents and methods to disk
-ar_agency__save_agents();
+ar_agency__save_agents_with_instance();
 ar_methodology__save_methods();
 
 // Shutdown the runtime (assuming system instance is available)

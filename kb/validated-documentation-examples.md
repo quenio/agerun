@@ -10,8 +10,8 @@ Documentation with real, working code examples provides immediate value to devel
 ```c
 // GOOD: Real types and functions that actually exist
 ar_data_t* data = ar_data__create_string("hello");
-int64_t agent_id = ar_agency__create_agent("calculator", "1.0.0", data);
-ar_agency__send_to_agent(agent_id, ar_data__create_string("message"));
+int64_t agent_id = ar_agency__create_agent_with_instance("calculator", "1.0.0", data);
+ar_agency__send_to_agent_with_instance(agent_id, ar_data__create_string("message"));
 ar_data__destroy(data);
 
 // ACCEPTABLE: Hypothetical examples with proper tagging
@@ -53,7 +53,7 @@ make check-docs
 
 ### Preferred Real Functions
 - `ar_data__create_*()`, `ar_data__get_*()`, `ar_data__destroy()`
-- `ar_agency__create_agent()`, `ar_agency__send_to_agent()`
+- `ar_agency__create_agent_with_instance()`, `ar_agency__send_to_agent_with_instance()`
 - `ar_agent__get_*()` family
 - `ar_methodology__*()` family
 - `ar_heap__malloc()`, `ar_heap__free()` for memory management

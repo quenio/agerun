@@ -232,7 +232,7 @@ void ar_agent__register(ar_agent_t* agent, ar_agency_t* agency);  // EXAMPLE: Hy
 
 // ar_agency.h  
 #include "ar_agent.h"  // Full include when needed
-ar_agent_t* ar_agency__create_agent(const char* method_name);
+ar_agent_t* ar_agency__create_agent_with_instance(const char* method_name);
 ```
 
 ## Verification Checklist

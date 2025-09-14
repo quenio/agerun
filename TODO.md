@@ -6,6 +6,8 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+- [x] Global API Removal Phase 2b (ar_agency): Removed 25 global functions and global state; updated documentation; all tests passing (Completed 2025-09-13)
+
 - [x] Global API Removal Phase 1 (ar_system): Verified no global APIs exist; ar_executable already uses instances; all tests passing (Completed 2025-09-13)
 
 - [x] Parser Module Error Logging Enhancement: All 11 parsers now have comprehensive error logging; reduced silent failures from 97.6%→0%; created verification script and KB documentation (Completed 2025-09-13)
@@ -429,31 +431,57 @@ Each parser needs 2-3 TDD cycles for comprehensive error logging:
 - [x] Phase 1: Remove global APIs from ar_system (COMPLETED 2025-09-13)
 - [ ] Phase 2: Remove global APIs from ar_agency
 
-  **Phase 2a - Analysis and Documentation**:
-  - [ ] Document which of the 23 global APIs are actively used
-  - [ ] Map each global function to its instance-based equivalent
-  - [ ] Identify which files need updates (currently 9 files identified)
+  **Phase 2a - Analysis and Documentation** (COMPLETED 2025-09-13):
+  - [x] Document which of the 23 global APIs are actively used
+  - [x] Map each global function to its instance-based equivalent
+  - [x] Identify which files need updates (9 files identified)
 
-  **Phase 2b - Remove Simple Delegations**:
-  - [ ] Remove global functions that simply delegate to _with_instance variants
-  - [ ] Update callers in ar_system.c to use instance APIs
-  - [ ] Update callers in ar_interpreter.c to use instance APIs
+  **Phase 2b - Remove Simple Delegations** (COMPLETED 2025-09-13):
+  - [x] Remove ar_agency__reset() and update 6 test files
+  - [x] Remove ar_agency__count_agents() and update callers
+  - [x] Remove ar_agency__save_agents_with_instance() and update callers
+  - [x] Remove ar_agency__load_agents() and update callers
+  - [x] Remove ar_agency__create_agent_with_instance() and update ar_system.c line 146
+  - [x] Remove ar_agency__destroy_agent() and update callers
+  - [x] Remove ar_agency__send_to_agent_with_instance() and update callers
+  - [x] Remove ar_agency__agent_exists() and update callers
+  - [x] Remove ar_agency__get_agent_memory() and update callers
+  - [x] Remove ar_agency__get_first_agent() and update ar_system.c line 204
+  - [x] Remove ar_agency__get_next_agent() and update ar_system.c line 212
+  - [x] Remove ar_agency__agent_has_messages() and update ar_system.c line 206
+  - [x] Remove ar_agency__get_agent_message_with_instance() and update ar_system.c line 207
+  - [x] Remove ar_agency__get_agent_method_with_instance() and update ar_interpreter.c line 109
+  - [x] Remove ar_agency__set_initialized() and cleanup global state variables
+  - [x] Remove _get_global_instance() helper function
+  - [x] Update 39 documentation files to use _with_instance versions
 
-  **Phase 2c - Remove Complex Global Functions**:
-  - [ ] Remove g_agency static variable from ar_agency.c
-  - [ ] Remove global functions that access g_agency directly
-  - [ ] Remove all 23 global function declarations from ar_agency.h
-  - [ ] Remove all global function implementations from ar_agency.c
+  **Phase 2c - Add Missing Instance Functions & Remove Complex Functions** (12 functions):
+  - [ ] Create ar_agency__get_agent_context_with_instance_with_instance() and remove global version
+  - [ ] Create ar_agency__is_agent_active_with_instance() and remove global version
+  - [ ] Create ar_agency__get_agent_method_with_instance_info_with_instance() and remove global version
+  - [ ] Remove ar_agency__get_agent_mutable_memory_with_instance() (use existing _with_instance)
+  - [ ] Create ar_agency__update_agent_method_with_instance() and remove global version
+  - [ ] Create ar_agency__set_agent_active_with_instance() and remove global version
+  - [ ] Remove ar_agency__count_active_agents() (duplicate of count_agents)
+  - [ ] Create ar_agency__set_agent_id_with_instance() and remove global version
+  - [ ] Remove ar_agency__get_registry() (internal use only)
+  - [ ] Handle ar_agency__set_initialized() special case (system lifecycle management)
+  - [ ] Create ar_agency__update_agent_methods_with_instance() and remove global version
+  - [ ] Create ar_agency__count_agents_using_method_with_instance_with_instance() (already exists, just remove global)
 
   **Phase 2d - Update Test Files**:
   - [ ] Update ar_agency_tests.c to use instance APIs
-  - [ ] Update ar_system_tests.c agency calls to use instance APIs
-  - [ ] Update ar_spawn_instruction_evaluator_tests.c
-  - [ ] Update ar_exit_instruction_evaluator_tests.c
-  - [ ] Update ar_deprecate_instruction_evaluator_tests.c
-  - [ ] Update ar_compile_instruction_evaluator_tests.c
+  - [ ] Update ar_system_tests.c to replace ar_agency__reset() calls
+  - [ ] Update ar_spawn_instruction_evaluator_tests.c (7 ar_agency__reset() calls)
+  - [ ] Update ar_exit_instruction_evaluator_tests.c to remove ar_agency__reset()
+  - [ ] Update ar_deprecate_instruction_evaluator_tests.c to remove ar_agency__reset()
+  - [ ] Update ar_compile_instruction_evaluator_tests.c to remove ar_agency__reset()
 
-  **Phase 2e - Verification**:
+  **Phase 2e - Final Cleanup & Verification**:
+  - [ ] Remove g_agency static variable from ar_agency.c
+  - [ ] Remove g_own_registry static variable from ar_agency.c
+  - [ ] Remove g_is_initialized static variable from ar_agency.c
+  - [ ] Remove _get_global_instance() static function from ar_agency.c
   - [ ] Run make clean build 2>&1 to verify compilation
   - [ ] Fix any remaining compilation errors
   - [ ] Verify all tests pass

@@ -22,7 +22,7 @@ struct ar_system_s {
 int64_t ar_system__init_with_instance(ar_system_t *mut_system, const char *method, const char *version) {
     // BAD: Creating new context for each agent
     ar_data_t *own_context = ar_data__create_map();  // Memory leak!
-    int64_t agent = ar_agency__create_agent_with_instance(mut_system->own_agency, 
+    int64_t agent = ar_agency__create_agent_with_instance_with_instance(mut_system->own_agency, 
                                                          method, version, own_context);
     // Context ownership unclear, likely leaked
 }
@@ -48,7 +48,7 @@ ar_system_t* ar_system__create(void) {
 
 int64_t ar_system__init_with_instance(ar_system_t *mut_system, const char *method, const char *version) {
     // Use shared context for agent creation
-    int64_t agent = ar_agency__create_agent_with_instance(mut_system->own_agency, 
+    int64_t agent = ar_agency__create_agent_with_instance_with_instance(mut_system->own_agency, 
                                                          method, version, 
                                                          mut_system->own_context);
     // Context properly shared, no leak

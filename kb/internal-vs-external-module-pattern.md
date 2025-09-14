@@ -20,7 +20,7 @@ ar_agent_store__save_all_agents(filename);  // Public API for persistence
 
 // FACADE module (public interface):
 // ar_agency - coordinates internal modules
-ar_agency__create_agent(name, method, version);  // Public API
+ar_agency__create_agent_with_instance(name, method, version);  // Public API
 ```
 
 Similarly for methodology:

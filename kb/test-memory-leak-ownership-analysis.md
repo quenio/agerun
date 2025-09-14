@@ -15,7 +15,7 @@ static void test_agency_functionality(void) {
     ar_methodology__register_method(own_method);  // Ownership transferred to methodology
     
     // Run test operations...
-    int64_t agent_id = ar_agency__create_agent("test_method", "1.0.0", NULL);
+    int64_t agent_id = ar_agency__create_agent_with_instance("test_method", "1.0.0", NULL);
     
     // Initially added manual cleanup (redundant):
     ar_methodology__unregister_method("test_method", "1.0.0");  // NOT NEEDED
