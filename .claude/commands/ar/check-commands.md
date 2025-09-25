@@ -314,6 +314,3 @@ make check-commands
 - [Multi-Step Checkpoint Tracking Pattern](../../../kb/multi-step-checkpoint-tracking-pattern.md)
 
 ### Quality Standards
-- [Comprehensive Structure Validation](../../../kb/comprehensive-structure-validation.md)
-- [Expected Output Documentation Pattern](../../../kb/expected-output-documentation-pattern.md)
-- [Troubleshooting Section Requirements](../../../kb/troubleshooting-section-requirements.md)
