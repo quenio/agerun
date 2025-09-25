@@ -165,9 +165,20 @@ def calculate_structure_score(analysis):
 def get_all_commands():
     """Get all command files."""
     commands = []
-    for filename in os.listdir(commands_dir):
-        if filename.endswith('.md'):
-            commands.append(filename)
+
+    # Check direct files in commands_dir
+    if os.path.exists(commands_dir):
+        for filename in os.listdir(commands_dir):
+            if filename.endswith('.md'):
+                commands.append(filename)
+
+    # Check ar/ subdirectory (new namespace structure)
+    ar_dir = os.path.join(commands_dir, 'ar')
+    if os.path.exists(ar_dir):
+        for filename in os.listdir(ar_dir):
+            if filename.endswith('.md'):
+                commands.append(os.path.join('ar', filename))
+
     return sorted(commands)
 
 def categorize_score(score):
@@ -220,7 +231,7 @@ print("=" * 80)
 
 # Statistics
 scores = [a['structure_score'] for a in results.values()]
-avg_score = sum(scores) / len(scores)
+avg_score = sum(scores) / len(scores) if scores else 0
 excellent = sum(1 for s in scores if s >= 90)
 good = sum(1 for s in scores if 70 <= s < 90)
 needs_work = sum(1 for s in scores if 50 <= s < 70)
