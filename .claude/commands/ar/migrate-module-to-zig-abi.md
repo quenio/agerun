@@ -44,7 +44,7 @@ make checkpoint-status CMD=migrate-module-to-zig-abi
 {{#if 1}}
 First, check if `modules/{{1}}.zig` already exists. If it does, inform the user about the migration status instead of creating a new plan.
 
-If the module hasn't been migrated yet, migrate the implementation of the **{{1}}** module from C to Zig following the systematic approach documented in CLAUDE.md and the comprehensive migration guide at kb/c-to-zig-module-migration.md. For complete integration details, see ([details](../../kb/zig-integration-comprehensive.md)).
+If the module hasn't been migrated yet, migrate the implementation of the **{{1}}** module from C to Zig following the systematic approach documented in CLAUDE.md and the comprehensive migration guide at kb/c-to-zig-module-migration.md. For complete integration details, see ([details](../../../kb/zig-integration-comprehensive.md)).
 {{else}}
 Before I can create a migration plan, I need to know which module you'd like to migrate to Zig.
 
@@ -372,13 +372,13 @@ rm -f /tmp/migration-stats.txt
 
 - **All parameters must be nullable** for C API compatibility
 - **Reserved keywords** like 'type' need renaming (e.g., 'node_type')
-- **Match C behavior exactly** for ownership transfer functions ([details](../../kb/zig-migration-memory-debugging.md))
+- **Match C behavior exactly** for ownership transfer functions ([details](../../../kb/zig-migration-memory-debugging.md))
 - **Use C types directly** to minimize casting
 - **Compare implementations line-by-line** when debugging
-- **Memory allocation**: Use ar_allocator for type-safe operations ([details](../../kb/zig-memory-allocation-with-ar-allocator.md))
-- **Debug consistency**: Ensure -DDEBUG -D__ZIG__ flags ([details](../../kb/zig-c-memory-tracking-consistency.md))
-- **Build configuration**: Follow proper Zig build flags ([details](../../kb/zig-build-flag-configuration.md))
-- **Error cleanup**: Use errdefer but beware it doesn't work with `orelse return null` ([details](../../kb/zig-errdefer-value-capture-pattern.md))
+- **Memory allocation**: Use ar_allocator for type-safe operations ([details](../../../kb/zig-memory-allocation-with-ar-allocator.md))
+- **Debug consistency**: Ensure -DDEBUG -D__ZIG__ flags ([details](../../../kb/zig-c-memory-tracking-consistency.md))
+- **Build configuration**: Follow proper Zig build flags ([details](../../../kb/zig-build-flag-configuration.md))
+- **Error cleanup**: Use errdefer but beware it doesn't work with `orelse return null` ([details](../../../kb/zig-errdefer-value-capture-pattern.md))
 
 ## User Approval
 
@@ -446,16 +446,16 @@ make checkpoint-cleanup CMD=migrate-module-to-zig-abi
 ## Related Documentation
 
 ### Checkpoint Patterns
-- [Multi-Step Checkpoint Tracking Pattern](../../kb/multi-step-checkpoint-tracking-pattern.md)
-- [Gate Enforcement Exit Codes Pattern](../../kb/gate-enforcement-exit-codes-pattern.md)
-- [Command Thoroughness Requirements Pattern](../../kb/command-thoroughness-requirements-pattern.md)
+- [Multi-Step Checkpoint Tracking Pattern](../../../kb/multi-step-checkpoint-tracking-pattern.md)
+- [Gate Enforcement Exit Codes Pattern](../../../kb/gate-enforcement-exit-codes-pattern.md)
+- [Command Thoroughness Requirements Pattern](../../../kb/command-thoroughness-requirements-pattern.md)
 
 ### Zig Migration Patterns
-- [C to Zig Module Migration](../../kb/c-to-zig-module-migration.md)
-- [Zig Integration Comprehensive](../../kb/zig-integration-comprehensive.md)
-- [Zig Migration Memory Debugging](../../kb/zig-migration-memory-debugging.md)
-- [Zig Memory Allocation with ar_allocator](../../kb/zig-memory-allocation-with-ar-allocator.md)
-- [Zig C Memory Tracking Consistency](../../kb/zig-c-memory-tracking-consistency.md)
-- [Zig Build Flag Configuration](../../kb/zig-build-flag-configuration.md)
-- [Zig Error Path Testing Pattern](../../kb/zig-error-path-testing-pattern.md)
-- [Zig Errdefer Value Capture Pattern](../../kb/zig-errdefer-value-capture-pattern.md)
+- [C to Zig Module Migration](../../../kb/c-to-zig-module-migration.md)
+- [Zig Integration Comprehensive](../../../kb/zig-integration-comprehensive.md)
+- [Zig Migration Memory Debugging](../../../kb/zig-migration-memory-debugging.md)
+- [Zig Memory Allocation with ar_allocator](../../../kb/zig-memory-allocation-with-ar-allocator.md)
+- [Zig C Memory Tracking Consistency](../../../kb/zig-c-memory-tracking-consistency.md)
+- [Zig Build Flag Configuration](../../../kb/zig-build-flag-configuration.md)
+- [Zig Error Path Testing Pattern](../../../kb/zig-error-path-testing-pattern.md)
+- [Zig Errdefer Value Capture Pattern](../../../kb/zig-errdefer-value-capture-pattern.md)

@@ -1,6 +1,6 @@
 Review uncommitted changes for code quality, architectural compliance, and documentation accuracy.
 
-**MANDATORY**: This command MUST use checkpoint tracking. Start by running the checkpoint initialization below. ([details](../../kb/unmissable-documentation-pattern.md))
+**MANDATORY**: This command MUST use checkpoint tracking. Start by running the checkpoint initialization below. ([details](../../../kb/unmissable-documentation-pattern.md))
 
 # Review Changes
 
@@ -72,7 +72,7 @@ This command performs a comprehensive review of all uncommitted changes across m
 - **Naming Conventions**: ar_module__function pattern, proper prefixes, consistent style
 - **Error Handling**: Proper propagation, single print location, graceful degradation
 - **Test Coverage**: BDD structure, memory leak verification, one test per behavior
-- **Feature Value**: Validate features provide functional value, not just decoration ([details](../../kb/functional-value-validation-pattern.md))
+- **Feature Value**: Validate features provide functional value, not just decoration ([details](../../../kb/functional-value-validation-pattern.md))
 
 #### 2. Architectural Compliance
 - **Parnas Principles**: Information hiding, single responsibility, no circular dependencies
@@ -94,7 +94,7 @@ This command performs a comprehensive review of all uncommitted changes across m
 - **Test Results**: Checks for memory leaks and test failures
 - **File Hygiene**: Identifies backup/temporary files that shouldn't be committed
 - **Documentation Sync**: Ensures docs match code changes
-- **Task Planning**: For large changes, checks for analysis report ([details](../../kb/report-driven-task-planning.md))
+- **Task Planning**: For large changes, checks for analysis report ([details](../../../kb/report-driven-task-planning.md))
 
 ### Execution Order (MANDATORY)
 
@@ -390,7 +390,7 @@ make checkpoint-cleanup CMD=review-changes
 
 The enhanced review process tracks quantitative metrics:
 
-### Quality Metrics ([details](../../kb/quantitative-priority-setting.md))
+### Quality Metrics ([details](../../../kb/quantitative-priority-setting.md))
 - **Code Quality Score**: Percentage of checks passed
 - **Issue Density**: Issues per 100 lines changed
 - **Memory Safety**: Percentage of proper ownership usage
@@ -492,54 +492,54 @@ The original review process still works without checkpoints, but you lose progre
 ## Related KB Articles:
 
 ### Checkpoint and Progress Patterns
-- [Multi-Step Checkpoint Tracking Pattern](../../kb/multi-step-checkpoint-tracking-pattern.md)
-- [Gate Enforcement Exit Codes Pattern](../../kb/gate-enforcement-exit-codes-pattern.md)
-- [Progress Visualization ASCII Pattern](../../kb/progress-visualization-ascii-pattern.md)
-- [Command Thoroughness Requirements Pattern](../../kb/command-thoroughness-requirements-pattern.md)
-- [Command Output Documentation Pattern](../../kb/command-output-documentation-pattern.md)
+- [Multi-Step Checkpoint Tracking Pattern](../../../kb/multi-step-checkpoint-tracking-pattern.md)
+- [Gate Enforcement Exit Codes Pattern](../../../kb/gate-enforcement-exit-codes-pattern.md)
+- [Progress Visualization ASCII Pattern](../../../kb/progress-visualization-ascii-pattern.md)
+- [Command Thoroughness Requirements Pattern](../../../kb/command-thoroughness-requirements-pattern.md)
+- [Command Output Documentation Pattern](../../../kb/command-output-documentation-pattern.md)
 
 ### Core Review Patterns
-- [Pre-Commit Checklist Detailed](../../kb/pre-commit-checklist-detailed.md)
-- [Comprehensive Output Review](../../kb/comprehensive-output-review.md)
-- [Code Smell Quick Detection](../../kb/code-smell-quick-detection.md)
-- [Module Quality Checklist](../../kb/module-quality-checklist.md)
-- [Quantitative Priority Setting](../../kb/quantitative-priority-setting.md)
+- [Pre-Commit Checklist Detailed](../../../kb/pre-commit-checklist-detailed.md)
+- [Comprehensive Output Review](../../../kb/comprehensive-output-review.md)
+- [Code Smell Quick Detection](../../../kb/code-smell-quick-detection.md)
+- [Module Quality Checklist](../../../kb/module-quality-checklist.md)
+- [Quantitative Priority Setting](../../../kb/quantitative-priority-setting.md)
 
 ### Memory Management
-- [Ownership Naming Conventions](../../kb/ownership-naming-conventions.md)
-- [Ownership Pattern Extraction](../../kb/ownership-pattern-extraction.md)
-- [Memory Leak Detection Workflow](../../kb/memory-leak-detection-workflow.md)
-- [Memory Debugging Comprehensive Guide](../../kb/memory-debugging-comprehensive-guide.md)
+- [Ownership Naming Conventions](../../../kb/ownership-naming-conventions.md)
+- [Ownership Pattern Extraction](../../../kb/ownership-pattern-extraction.md)
+- [Memory Leak Detection Workflow](../../../kb/memory-leak-detection-workflow.md)
+- [Memory Debugging Comprehensive Guide](../../../kb/memory-debugging-comprehensive-guide.md)
 
 ### Architecture & Design
-- [Architectural Patterns Hierarchy](../../kb/architectural-patterns-hierarchy.md)
-- [No Circular Dependencies Principle](../../kb/no-circular-dependencies-principle.md)
-- [Single Responsibility Principle](../../kb/single-responsibility-principle.md)
-- [Information Hiding Principle](../../kb/information-hiding-principle.md)
+- [Architectural Patterns Hierarchy](../../../kb/architectural-patterns-hierarchy.md)
+- [No Circular Dependencies Principle](../../../kb/no-circular-dependencies-principle.md)
+- [Single Responsibility Principle](../../../kb/single-responsibility-principle.md)
+- [Information Hiding Principle](../../../kb/information-hiding-principle.md)
 
 ### Testing Patterns
-- [BDD Test Structure](../../kb/bdd-test-structure.md)
-- [Test Effectiveness Verification](../../kb/test-effectiveness-verification.md)
-- [Red-Green-Refactor Cycle](../../kb/red-green-refactor-cycle.md)
-- [TDD Cycle Detailed Explanation](../../kb/tdd-cycle-detailed-explanation.md)
-- [Mock at Right Level Pattern](../../kb/mock-at-right-level-pattern.md)
-- [Test Complexity as Code Smell](../../kb/test-complexity-as-code-smell.md)
-- [Check Existing Solutions First](../../kb/check-existing-solutions-first.md)
-- [Test Assertion Strength Patterns](../../kb/test-assertion-strength-patterns.md)
-- [DLSym Test Interception Technique](../../kb/dlsym-test-interception-technique.md)
+- [BDD Test Structure](../../../kb/bdd-test-structure.md)
+- [Test Effectiveness Verification](../../../kb/test-effectiveness-verification.md)
+- [Red-Green-Refactor Cycle](../../../kb/red-green-refactor-cycle.md)
+- [TDD Cycle Detailed Explanation](../../../kb/tdd-cycle-detailed-explanation.md)
+- [Mock at Right Level Pattern](../../../kb/mock-at-right-level-pattern.md)
+- [Test Complexity as Code Smell](../../../kb/test-complexity-as-code-smell.md)
+- [Check Existing Solutions First](../../../kb/check-existing-solutions-first.md)
+- [Test Assertion Strength Patterns](../../../kb/test-assertion-strength-patterns.md)
+- [DLSym Test Interception Technique](../../../kb/dlsym-test-interception-technique.md)
 
 ### Documentation
-- [Documentation Standards Integration](../../kb/documentation-standards-integration.md)
-- [Documentation Validation Enhancement Patterns](../../kb/documentation-validation-enhancement-patterns.md)
-- [Documentation Completion Verification](../../kb/documentation-completion-verification.md)
+- [Documentation Standards Integration](../../../kb/documentation-standards-integration.md)
+- [Documentation Validation Enhancement Patterns](../../../kb/documentation-validation-enhancement-patterns.md)
+- [Documentation Completion Verification](../../../kb/documentation-completion-verification.md)
 
 ### Refactoring
-- [Refactoring Patterns Detailed](../../kb/refactoring-patterns-detailed.md)
-- [Code Movement Verification](../../kb/code-movement-verification.md)
-- [Refactoring Key Patterns](../../kb/refactoring-key-patterns.md)
+- [Refactoring Patterns Detailed](../../../kb/refactoring-patterns-detailed.md)
+- [Code Movement Verification](../../../kb/code-movement-verification.md)
+- [Refactoring Key Patterns](../../../kb/refactoring-key-patterns.md)
 
 ### Error Handling
-- [Error Propagation Pattern](../../kb/error-propagation-pattern.md)
-- [Graceful Degradation Pattern](../../kb/graceful-degradation-pattern.md)
+- [Error Propagation Pattern](../../../kb/error-propagation-pattern.md)
+- [Graceful Degradation Pattern](../../../kb/graceful-degradation-pattern.md)
 
 $ARGUMENTS

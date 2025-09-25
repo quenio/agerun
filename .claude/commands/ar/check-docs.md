@@ -251,24 +251,24 @@ rm -f /tmp/check-docs-*.txt /tmp/fix-preview.txt
 ```
 
 ### What the batch fix script handles
-- **Non-existent function/type references**: Adds EXAMPLE tags or replaces with real types ([details](../../kb/documentation-placeholder-validation-pattern.md))
+- **Non-existent function/type references**: Adds EXAMPLE tags or replaces with real types ([details](../../../kb/documentation-placeholder-validation-pattern.md))
 - **Broken relative markdown links**: Calculates and fixes correct relative paths
 - **Absolute paths**: Converts to relative paths
-- **Additional contexts** (enhanced): Struct fields, function params, sizeof, type casts, variable declarations ([details](../../kb/batch-documentation-fix-enhancement.md))
+- **Additional contexts** (enhanced): Struct fields, function params, sizeof, type casts, variable declarations ([details](../../../kb/batch-documentation-fix-enhancement.md))
 
 ### Important notes
 - Always use `--dry-run` first to preview changes before applying them
 - The script only modifies `.md` files
 - Some complex errors may require manual intervention
-- If the script can't fix all errors, enhance it rather than fixing manually ([details](../../kb/script-enhancement-over-one-off.md))
+- If the script can't fix all errors, enhance it rather than fixing manually ([details](../../../kb/script-enhancement-over-one-off.md))
 
 This validation ensures:
-- All code examples use real AgeRun types ([details](../../kb/validated-documentation-examples.md))
+- All code examples use real AgeRun types ([details](../../../kb/validated-documentation-examples.md))
 - File references are valid
 - Function names exist in the codebase
 - Support for both C and Zig documentation
-- Markdown links follow GitHub-compatible patterns ([details](../../kb/markdown-link-resolution-patterns.md))
+- Markdown links follow GitHub-compatible patterns ([details](../../../kb/markdown-link-resolution-patterns.md))
 
 For manual fixing of validation errors, see:
-- [Documentation Validation Error Patterns](../../kb/documentation-validation-error-patterns.md)
-- [Documentation Validation Enhancement Patterns](../../kb/documentation-validation-enhancement-patterns.md)
+- [Documentation Validation Error Patterns](../../../kb/documentation-validation-error-patterns.md)
+- [Documentation Validation Enhancement Patterns](../../../kb/documentation-validation-enhancement-patterns.md)

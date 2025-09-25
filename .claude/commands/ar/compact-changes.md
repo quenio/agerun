@@ -155,7 +155,7 @@ make checkpoint-update CMD=compact-changes STEP=4
 4. Preserve:
    - All date headers
    - Overall document structure
-   - Key metrics and numbers ([details](../../kb/quantitative-documentation-metrics.md))
+   - Key metrics and numbers ([details](../../../kb/quantitative-documentation-metrics.md))
    - Technology transitions mentioned
 
 #### Checkpoint 5: Add Self-Entry
@@ -175,7 +175,7 @@ echo "REDUCTION=$REDUCTION" >> /tmp/compact-changes-stats.txt
 make checkpoint-update CMD=compact-changes STEP=5
 ```
 
-5. Add self-documenting entry to CHANGELOG for the compaction ([details](../../kb/self-documenting-modifications-pattern.md))
+5. Add self-documenting entry to CHANGELOG for the compaction ([details](../../../kb/self-documenting-modifications-pattern.md))
 
 #### Checkpoint 6: Update TODO
 
@@ -192,7 +192,7 @@ make checkpoint-update CMD=compact-changes STEP=6
 
 6. Write the compacted version back to CHANGELOG.md
 7. Show quantitative summary: "Reduced from X to Y lines (Z% reduction)"
-8. Update TODO.md with completed task ([details](../../kb/retroactive-task-documentation.md))
+8. Update TODO.md with completed task ([details](../../../kb/retroactive-task-documentation.md))
 
 #### [METRICS GATE]
 ```bash

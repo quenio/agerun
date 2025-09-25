@@ -261,4 +261,4 @@ make checkpoint-cleanup CMD=merge-settings
 rm -f /tmp/merge-settings-stats.txt
 ```
 
-See [Settings File Merging Pattern](../../kb/settings-file-merging-pattern.md) for details.
+See [Settings File Merging Pattern](../../../kb/settings-file-merging-pattern.md) for details.

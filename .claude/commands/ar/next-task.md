@@ -140,6 +140,6 @@ make checkpoint-cleanup CMD=next_task
 
 Before proceeding to execute the next task:
 1. Check the TODO.md file to have more context
-2. If the task references a report, review the relevant sections ([details](../../kb/report-driven-task-planning.md))
-3. Define a plan with effort estimated in TDD cycles ([details](../../kb/tdd-cycle-effort-estimation.md))
+2. If the task references a report, review the relevant sections ([details](../../../kb/report-driven-task-planning.md))
+3. Define a plan with effort estimated in TDD cycles ([details](../../../kb/tdd-cycle-effort-estimation.md))
 4. Explain your strategy and wait for my feedback

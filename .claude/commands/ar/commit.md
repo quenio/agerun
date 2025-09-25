@@ -1,6 +1,6 @@
 Create a git commit following the exact workflow specified in CLAUDE.md.
 
-**Important**: The build must pass all checks including command excellence scores ([details](../../kb/command-documentation-excellence-gate.md)). Always test with proper make targets ([details](../../kb/make-target-testing-discipline.md)).
+**Important**: The build must pass all checks including command excellence scores ([details](../../../kb/command-documentation-excellence-gate.md)). Always test with proper make targets ([details](../../../kb/make-target-testing-discipline.md)).
 
 # Commit
 ## Checkpoint Tracking
@@ -50,7 +50,7 @@ make checkpoint-status CMD=commit
 
 ### Pre-Commit Checklist (MANDATORY - ALWAYS CHECK THIS)
 
-Before starting the commit process, ensure you have completed ALL of these steps. This checklist acts as a quality gate to prevent incomplete commits ([details](../../kb/gate-enforcement-exit-codes-pattern.md)):
+Before starting the commit process, ensure you have completed ALL of these steps. This checklist acts as a quality gate to prevent incomplete commits ([details](../../../kb/gate-enforcement-exit-codes-pattern.md)):
 
 #### Checkpoint 1: Run Tests
 
@@ -81,9 +81,9 @@ make checkpoint-update CMD=commit STEP=2
 ```
 
 **Additional Notes**:
-- Check-logs only works after full build, NOT after individual test runs ([details](../../kb/build-logs-relationship-principle.md))
-- If clean build fails OR check-logs finds issues, STOP - do not proceed ([details](../../kb/build-verification-before-commit.md))
-- `make build` includes documentation validation (`make check-docs`) ([details](../../kb/batch-documentation-fix-enhancement.md))
+- Check-logs only works after full build, NOT after individual test runs ([details](../../../kb/build-logs-relationship-principle.md))
+- If clean build fails OR check-logs finds issues, STOP - do not proceed ([details](../../../kb/build-verification-before-commit.md))
+- `make build` includes documentation validation (`make check-docs`) ([details](../../../kb/batch-documentation-fix-enhancement.md))
 
 #### Checkpoint 3: Update Docs
 
@@ -109,9 +109,9 @@ make checkpoint-update CMD=commit STEP=3
 
 **Documentation Notes**:
 - If you changed a module's interface, update its .md file
-- For major refactoring, check modules/README.md and dependency trees ([details](../../kb/refactoring-phase-completion-checklist.md))
-- When removing global APIs, use systematic scripts ([details](../../kb/global-function-removal-script-pattern.md))
-- Let compiler errors guide refactoring completion ([details](../../kb/compilation-driven-refactoring-pattern.md))
+- For major refactoring, check modules/README.md and dependency trees ([details](../../../kb/refactoring-phase-completion-checklist.md))
+- When removing global APIs, use systematic scripts ([details](../../../kb/global-function-removal-script-pattern.md))
+- Let compiler errors guide refactoring completion ([details](../../../kb/compilation-driven-refactoring-pattern.md))
 
 #### Checkpoint 4: Update TODO
 
@@ -144,7 +144,7 @@ make checkpoint-update CMD=commit STEP=5
 ```
 
 **CHANGELOG Note**: Document completed milestones and achievements (NON-NEGOTIABLE)
-- Include all documentation updates in the same commit as implementation ([details](../../kb/atomic-commit-documentation-pattern.md))
+- Include all documentation updates in the same commit as implementation ([details](../../../kb/atomic-commit-documentation-pattern.md))
 
 #### [BUILD GATE]
 ```bash
@@ -184,13 +184,13 @@ make checkpoint-update CMD=commit STEP=6
 **Review Notes**:
 - Use `git diff` to verify all changes are intentional
 - Check for temporary/backup files - NEVER commit backup files (*.backup, *.bak, *.tmp, etc.)
-- If you enhanced any scripts, verify they preserve original functionality ([details](../../kb/script-backward-compatibility-testing.md))
+- If you enhanced any scripts, verify they preserve original functionality ([details](../../../kb/script-backward-compatibility-testing.md))
 
 **IMPORTANT REMINDERS**: 
 - Clean build MUST pass before committing - no exceptions
 - CHANGELOG update is MANDATORY for every commit that completes tasks
-- Report build time from output (e.g., "took 1m 3s") ([details](../../kb/build-time-reporting.md))
-- Ensure documentation stays in sync with implementation ([details](../../kb/documentation-implementation-sync.md))
+- Report build time from output (e.g., "took 1m 3s") ([details](../../../kb/build-time-reporting.md))
+- Ensure documentation stays in sync with implementation ([details](../../../kb/documentation-implementation-sync.md))
 
 #### [DOCUMENTATION GATE]
 ```bash
@@ -243,7 +243,7 @@ make checkpoint-update CMD=commit STEP=7
    - Keep it concise (1-2 sentences)
    - Check for any sensitive information that shouldn't be committed
    - Ensure the message accurately reflects ALL changes
-   - Verify full scope of architectural changes ([details](../../kb/commit-scope-verification.md))
+   - Verify full scope of architectural changes ([details](../../../kb/commit-scope-verification.md))
 
 #### Checkpoint 8: Create Commit
 
@@ -322,7 +322,7 @@ make checkpoint-update CMD=commit STEP=9
 
 5. **Push and verify:**
    - Run `git push`
-   - **MANDATORY**: Run `git status` after push to verify it completed successfully ([details](../../kb/git-push-verification.md))
+   - **MANDATORY**: Run `git status` after push to verify it completed successfully ([details](../../../kb/git-push-verification.md))
    - Confirm the working tree is clean and branch is up to date
 
 **Important:** Never skip the final `git status` verification - this is a critical step per CLAUDE.md.
@@ -347,15 +347,14 @@ make checkpoint-cleanup CMD=commit
 ## Related Documentation
 
 ### CI and Build Patterns
-- [CI Check-Logs Requirement](../../kb/ci-check-logs-requirement.md)
-- [Check-Logs Deep Analysis Pattern](../../kb/check-logs-deep-analysis-pattern.md)
-- [Build Verification Before Commit](../../kb/build-verification-before-commit.md)
-- [Git Push Verification](../../kb/git-push-verification.md)
-- [Git Patch Preservation Workflow](../../kb/git-patch-preservation-workflow.md)
+- [CI Check-Logs Requirement](../../../kb/ci-check-logs-requirement.md)
+- [Check-Logs Deep Analysis Pattern](../../../kb/check-logs-deep-analysis-pattern.md)
+- [Build Verification Before Commit](../../../kb/build-verification-before-commit.md)
+- [Git Push Verification](../../../kb/git-push-verification.md)
+- [Git Patch Preservation Workflow](../../../kb/git-patch-preservation-workflow.md)
 
 ## Custom Instructions
 
 If available, the instructions below may override some of the instructions above.
 
 $ARGUMENTS
-

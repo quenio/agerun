@@ -181,8 +181,8 @@ make checkpoint-cleanup CMD=analyze_tests
 
 Beyond static analysis, ensure test quality by following these patterns:
 
-- **Test complexity warning**: If tests have retry loops or complex state tracking, see [Test Complexity as Code Smell](../../kb/test-complexity-as-code-smell.md)
-- **Mock at the right level**: Avoid mocking system calls when function-level mocking suffices. See [Mock at Right Level Pattern](../../kb/mock-at-right-level-pattern.md)
-- **Check existing solutions**: Before creating complex test infrastructure, see how other tests solve similar problems. See [Check Existing Solutions First](../../kb/check-existing-solutions-first.md)
-- **Strong assertions**: Use AR_ASSERT with descriptive messages. See [Test Assertion Strength Patterns](../../kb/test-assertion-strength-patterns.md)
-- **Test effectiveness**: Verify tests actually catch failures. See [Test Effectiveness Verification](../../kb/test-effectiveness-verification.md)
+- **Test complexity warning**: If tests have retry loops or complex state tracking, see [Test Complexity as Code Smell](../../../kb/test-complexity-as-code-smell.md)
+- **Mock at the right level**: Avoid mocking system calls when function-level mocking suffices. See [Mock at Right Level Pattern](../../../kb/mock-at-right-level-pattern.md)
+- **Check existing solutions**: Before creating complex test infrastructure, see how other tests solve similar problems. See [Check Existing Solutions First](../../../kb/check-existing-solutions-first.md)
+- **Strong assertions**: Use AR_ASSERT with descriptive messages. See [Test Assertion Strength Patterns](../../../kb/test-assertion-strength-patterns.md)
+- **Test effectiveness**: Verify tests actually catch failures. See [Test Effectiveness Verification](../../../kb/test-effectiveness-verification.md)

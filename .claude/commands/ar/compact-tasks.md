@@ -40,7 +40,7 @@ make checkpoint-status CMD=compact-tasks
 - [ ] Document structure preserved
 - [ ] Changes committed and pushed
 
-This uses the selective compaction pattern for mixed-state documents ([details](../../kb/selective-compaction-pattern.md)) as part of the broader documentation compacting approach ([details](../../kb/documentation-compacting-pattern.md)).
+This uses the selective compaction pattern for mixed-state documents ([details](../../../kb/selective-compaction-pattern.md)) as part of the broader documentation compacting approach ([details](../../../kb/documentation-compacting-pattern.md)).
 
 ## Phase 1: Analysis (Steps 1-2)
 

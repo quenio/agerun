@@ -439,14 +439,14 @@ grep "@cImport" modules/ar_${MODULE}.zig  # Check for C imports
 ## Related Documentation
 
 ### Checkpoint Patterns
-- [Multi-Step Checkpoint Tracking Pattern](../../kb/multi-step-checkpoint-tracking-pattern.md)
-- [Gate Enforcement Exit Codes Pattern](../../kb/gate-enforcement-exit-codes-pattern.md)
-- [Command Thoroughness Requirements Pattern](../../kb/command-thoroughness-requirements-pattern.md)
+- [Multi-Step Checkpoint Tracking Pattern](../../../kb/multi-step-checkpoint-tracking-pattern.md)
+- [Gate Enforcement Exit Codes Pattern](../../../kb/gate-enforcement-exit-codes-pattern.md)
+- [Command Thoroughness Requirements Pattern](../../../kb/command-thoroughness-requirements-pattern.md)
 
 ### Zig Migration Patterns
-- [Zig Struct Modules Pattern](../../kb/zig-struct-modules-pattern.md)
-- [Zig Integration Comprehensive](../../kb/zig-integration-comprehensive.md)
-- [C to Zig Module Migration](../../kb/c-to-zig-module-migration.md)
+- [Zig Struct Modules Pattern](../../../kb/zig-struct-modules-pattern.md)
+- [Zig Integration Comprehensive](../../../kb/zig-integration-comprehensive.md)
+- [C to Zig Module Migration](../../../kb/c-to-zig-module-migration.md)
 
 ## Important Constraints
 

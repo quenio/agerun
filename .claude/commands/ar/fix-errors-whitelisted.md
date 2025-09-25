@@ -50,7 +50,7 @@ This command guides you through:
 
 ### Important Context
 
-The whitelist contains both intentional test errors AND success messages that check-logs flags. Not all entries represent problems - many are necessary for testing error handling ([details](../../kb/whitelist-success-message-management.md)). Check-logs failures will block CI ([details](../../kb/ci-check-logs-requirement.md)). Some errors may come from redundant test cleanup that can be removed ([details](../../kb/redundant-test-cleanup-anti-pattern.md)).
+The whitelist contains both intentional test errors AND success messages that check-logs flags. Not all entries represent problems - many are necessary for testing error handling ([details](../../../kb/whitelist-success-message-management.md)). Check-logs failures will block CI ([details](../../../kb/ci-check-logs-requirement.md)). Some errors may come from redundant test cleanup that can be removed ([details](../../../kb/redundant-test-cleanup-anti-pattern.md)).
 
 ## Phase 1: Analysis (Steps 1-3)
 
@@ -159,7 +159,7 @@ make checkpoint-update CMD=fix-errors-whitelisted STEP=5
 Based on the pattern identified, determine the fix approach:
 
 
-### For Test Ownership Issues ([details](../../kb/test-fixture-message-ownership.md))
+### For Test Ownership Issues ([details](../../../kb/test-fixture-message-ownership.md))
 ```
 1. Identify tests bypassing system flow
 2. Add ownership management before execution
@@ -167,7 +167,7 @@ Based on the pattern identified, determine the fix approach:
 4. Test and remove whitelist entries
 ```
 
-### For CI Network Timeouts ([details](../../kb/ci-network-timeout-diagnosis.md))
+### For CI Network Timeouts ([details](../../../kb/ci-network-timeout-diagnosis.md))
 ```
 1. Check if action is deprecated
 2. Find recommended replacement
@@ -175,7 +175,7 @@ Based on the pattern identified, determine the fix approach:
 4. Update to latest version ([details](../../kb/tool-version-selection-due-diligence.md))
 ```
 
-### For Overly Broad Patterns ([details](../../kb/whitelist-specificity-pattern.md))
+### For Overly Broad Patterns ([details](../../../kb/whitelist-specificity-pattern.md))
 ```
 1. Make error messages more specific
 2. Use unique field names in tests
@@ -495,16 +495,16 @@ Continue fixing more errors of the same type or select an additional pattern tha
 ## Related Documentation
 
 ### Checkpoint Patterns
-- [Multi-Step Checkpoint Tracking Pattern](../../kb/multi-step-checkpoint-tracking-pattern.md)
-- [Gate Enforcement Exit Codes Pattern](../../kb/gate-enforcement-exit-codes-pattern.md)
-- [Command Thoroughness Requirements Pattern](../../kb/command-thoroughness-requirements-pattern.md)
+- [Multi-Step Checkpoint Tracking Pattern](../../../kb/multi-step-checkpoint-tracking-pattern.md)
+- [Gate Enforcement Exit Codes Pattern](../../../kb/gate-enforcement-exit-codes-pattern.md)
+- [Command Thoroughness Requirements Pattern](../../../kb/command-thoroughness-requirements-pattern.md)
 
 ### Error Fixing Patterns
-- [Systematic Whitelist Error Resolution](../../kb/systematic-whitelist-error-resolution.md)
-- [Test Fixture Message Ownership](../../kb/test-fixture-message-ownership.md)
-- [Whitelist Specificity Pattern](../../kb/whitelist-specificity-pattern.md)
-- [Systematic Error Whitelist Reduction](../../kb/systematic-error-whitelist-reduction.md)
-- [Check-Logs Deep Analysis Pattern](../../kb/check-logs-deep-analysis-pattern.md)
-- [Whitelist vs Pattern Filtering](../../kb/whitelist-vs-pattern-filtering.md)
+- [Systematic Whitelist Error Resolution](../../../kb/systematic-whitelist-error-resolution.md)
+- [Test Fixture Message Ownership](../../../kb/test-fixture-message-ownership.md)
+- [Whitelist Specificity Pattern](../../../kb/whitelist-specificity-pattern.md)
+- [Systematic Error Whitelist Reduction](../../../kb/systematic-error-whitelist-reduction.md)
+- [Check-Logs Deep Analysis Pattern](../../../kb/check-logs-deep-analysis-pattern.md)
+- [Whitelist vs Pattern Filtering](../../../kb/whitelist-vs-pattern-filtering.md)
 
 Remember: Every fixed error improves code quality and reduces technical debt!

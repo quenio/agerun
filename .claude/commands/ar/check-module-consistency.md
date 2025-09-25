@@ -66,7 +66,7 @@ make checkpoint-status CMD=check-module-consistency
 
 ### Overview
 
-After making improvements to one module, use this command to systematically check if related or sister modules need the same improvements. This prevents technical debt from accumulating and maintains architectural coherence. ([details](../../kb/module-consistency-verification.md))
+After making improvements to one module, use this command to systematically check if related or sister modules need the same improvements. This prevents technical debt from accumulating and maintains architectural coherence. ([details](../../../kb/module-consistency-verification.md))
 
 ## Phase 1: Understanding (Steps 1-2)
 
@@ -298,7 +298,7 @@ make checkpoint-gate CMD=check-module-consistency GATE="Analysis" REQUIRED="6,7,
 
 For each related module identified, check if it needs the same improvement:
 
-### Error Logging Check ([details](../../kb/error-logging-instance-utilization.md))
+### Error Logging Check ([details](../../../kb/error-logging-instance-utilization.md))
 ```bash
 # Check if module has ar_log but isn't using it
 grep -l "ar_log_t.*ref_log" modules/MODULE.c
@@ -311,7 +311,7 @@ grep -c "ar_log__error" modules/MODULE.c
 grep "^static.*g_\|^[^/]*g_" modules/MODULE.c | grep -v "g_default_instance"
 ```
 
-### Stateless Verification ([details](../../kb/stateless-module-verification.md))
+### Stateless Verification ([details](../../../kb/stateless-module-verification.md))
 ```bash
 # Check for hidden global state
 grep -n "^static.*[^(]$\|^[^/]*g_" modules/MODULE.c | \
@@ -572,13 +572,13 @@ echo "Modules checked so far: $MODULES_CHECKED"
 ## Related Documentation
 
 ### Checkpoint Patterns
-- [Multi-Step Checkpoint Tracking Pattern](../../kb/multi-step-checkpoint-tracking-pattern.md)
-- [Gate Enforcement Exit Codes Pattern](../../kb/gate-enforcement-exit-codes-pattern.md)
-- [Command Thoroughness Requirements Pattern](../../kb/command-thoroughness-requirements-pattern.md)
+- [Multi-Step Checkpoint Tracking Pattern](../../../kb/multi-step-checkpoint-tracking-pattern.md)
+- [Gate Enforcement Exit Codes Pattern](../../../kb/gate-enforcement-exit-codes-pattern.md)
+- [Command Thoroughness Requirements Pattern](../../../kb/command-thoroughness-requirements-pattern.md)
 
 ### Consistency Patterns
-- [Module Consistency Verification](../../kb/module-consistency-verification.md)
-- [Error Logging Instance Utilization](../../kb/error-logging-instance-utilization.md)
-- [Stateless Module Verification](../../kb/stateless-module-verification.md)
+- [Module Consistency Verification](../../../kb/module-consistency-verification.md)
+- [Error Logging Instance Utilization](../../../kb/error-logging-instance-utilization.md)
+- [Stateless Module Verification](../../../kb/stateless-module-verification.md)
 
-Remember: When you improve one module, always ask "What other modules need this same improvement?" ([details](../../kb/module-consistency-verification.md))
+Remember: When you improve one module, always ask "What other modules need this same improvement?" ([details](../../../kb/module-consistency-verification.md))

@@ -66,7 +66,7 @@ make checkpoint-status CMD=compact-guidelines
 
 ### Objective
 
-Make CLAUDE.md guidelines more concise and actionable by moving detailed explanations, examples, and implementation details to the knowledge base (./kb directory). For the complete compacting technique including document-specific strategies, see ([details](../../kb/documentation-compacting-pattern.md)).
+Make CLAUDE.md guidelines more concise and actionable by moving detailed explanations, examples, and implementation details to the knowledge base (./kb directory). For the complete compacting technique including document-specific strategies, see ([details](../../../kb/documentation-compacting-pattern.md)).
 
 **CRITICAL PRINCIPLE**: Never create broken links. Every kb article you reference MUST either:
 1. Already exist (verify with `ls kb/article-name.md`), OR
@@ -194,7 +194,7 @@ make checkpoint-gate CMD=compact-guidelines GATE="Planning" REQUIRED="4,5"
    Verified: Steps 4,5
 ```
 
-#### 2. Space-Conscious Editing (CRITICAL) ([details](../../kb/documentation-standards-integration.md))
+#### 2. Space-Conscious Editing (CRITICAL) ([details](../../../kb/documentation-standards-integration.md))
 
 - **Target reduction**: Aim for 30-50% reduction in verbose sections
 - **Preserve essential information**: Keep all critical rules and requirements
@@ -217,7 +217,7 @@ make checkpoint-gate CMD=compact-guidelines GATE="Planning" REQUIRED="4,5"
 
 #### [CHECKPOINT END]
 
-#### 4. Knowledge Base Article Creation ([details](../../kb/validated-documentation-examples.md))
+#### 4. Knowledge Base Article Creation ([details](../../../kb/validated-documentation-examples.md))
 
 #### Checkpoint 6: Create KB Article 1
 
@@ -653,7 +653,7 @@ Before finalizing:
 - Ensure new developers can follow guidelines effectively
 - **Confirm no details are lost** - every moved piece has a link
 - Test link accessibility from compressed guidelines
-- Run `make check-docs` to validate all documentation ([details](../../kb/documentation-validation-enhancement-patterns.md))
+- Run `make check-docs` to validate all documentation ([details](../../../kb/documentation-validation-enhancement-patterns.md))
 
 ## Expected Outcomes
 
@@ -667,15 +667,15 @@ Before finalizing:
 ## Related Documentation
 
 ### Checkpoint Patterns
-- [Multi-Step Checkpoint Tracking Pattern](../../kb/multi-step-checkpoint-tracking-pattern.md)
-- [Gate Enforcement Exit Codes Pattern](../../kb/gate-enforcement-exit-codes-pattern.md)
-- [Command Thoroughness Requirements Pattern](../../kb/command-thoroughness-requirements-pattern.md)
+- [Multi-Step Checkpoint Tracking Pattern](../../../kb/multi-step-checkpoint-tracking-pattern.md)
+- [Gate Enforcement Exit Codes Pattern](../../../kb/gate-enforcement-exit-codes-pattern.md)
+- [Command Thoroughness Requirements Pattern](../../../kb/command-thoroughness-requirements-pattern.md)
 
 ### Documentation Patterns
-- [Documentation Compacting Pattern](../../kb/documentation-compacting-pattern.md)
-- [Documentation Standards Integration](../../kb/documentation-standards-integration.md)
-- [Validated Documentation Examples](../../kb/validated-documentation-examples.md)
-- [Documentation Validation Enhancement Patterns](../../kb/documentation-validation-enhancement-patterns.md)
+- [Documentation Compacting Pattern](../../../kb/documentation-compacting-pattern.md)
+- [Documentation Standards Integration](../../../kb/documentation-standards-integration.md)
+- [Validated Documentation Examples](../../../kb/validated-documentation-examples.md)
+- [Documentation Validation Enhancement Patterns](../../../kb/documentation-validation-enhancement-patterns.md)
 
 ## Usage Notes
 

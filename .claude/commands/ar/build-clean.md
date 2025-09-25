@@ -41,7 +41,7 @@ make checkpoint-status CMD=build_clean
 
 
 
-**MANDATORY**: Always run check-logs after clean build. CI will reject builds that fail log checks. ([details](../../kb/build-verification-before-commit.md))
+**MANDATORY**: Always run check-logs after clean build. CI will reject builds that fail log checks. ([details](../../../kb/build-verification-before-commit.md))
 
 **IMPORTANT**: Clean builds are required when:
 - Changing dependencies

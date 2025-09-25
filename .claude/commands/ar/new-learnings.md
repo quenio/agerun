@@ -103,10 +103,10 @@ Please analyze this session and identify any new learnings, patterns, or insight
 6. **Architectural insights**: Larger patterns revealed through specific work
 7. **Debugging revelations**: Approaches that led to breakthrough solutions
 8. **Testing strategies**: Patterns for simplifying or improving tests
-9. **Module consistency**: Patterns about maintaining consistency across sister modules ([details](../../kb/module-consistency-verification.md))
+9. **Module consistency**: Patterns about maintaining consistency across sister modules ([details](../../../kb/module-consistency-verification.md))
 10. **Meta-learnings**: Patterns about the learning extraction process itself
 
-**Remember**: Initial analysis often misses 50% of learnings. After your first pass, review again and ask "What else did I learn that I'm not seeing?" ([details](../../kb/comprehensive-learning-extraction-pattern.md))
+**Remember**: Initial analysis often misses 50% of learnings. After your first pass, review again and ask "What else did I learn that I'm not seeing?" ([details](../../../kb/comprehensive-learning-extraction-pattern.md))
 
 For each learning, provide:
 - A clear description of what was learned
@@ -168,7 +168,7 @@ make checkpoint-update CMD=new-learnings STEP=2
 
 #### [CHECKPOINT START - STEP 3]
 
-**CRITICAL: All code examples MUST use real AgeRun types and functions** ([details](../../kb/validated-documentation-examples.md))
+**CRITICAL: All code examples MUST use real AgeRun types and functions** ([details](../../../kb/validated-documentation-examples.md))
 
 ### Format for Knowledge Base Files
 Each learning should be saved as an individual .md file in `./kb/` directory with this structure:
@@ -281,7 +281,7 @@ make checkpoint-update CMD=new-learnings STEP=3
 3. **Fix any validation errors** - the script will tell you exactly what's wrong
 4. **Re-run validation** until it passes
 
-**Common validation fixes:** ([details](../../kb/documentation-validation-error-patterns.md))
+**Common validation fixes:** ([details](../../../kb/documentation-validation-error-patterns.md))
 - Replace hypothetical types with real ones from the list above
 - Add `// EXAMPLE:` tags to hypothetical functions
 - Use `ar_data_t*` as the universal fallback type
@@ -360,7 +360,7 @@ make checkpoint-update CMD=new-learnings STEP=5
 
 #### [CHECKPOINT START - STEP 6]
 
-**CRITICAL - OFTEN MISSED**: Add cross-references to create a web of knowledge ([details](../../kb/new-learnings-complete-integration-pattern.md)):
+**CRITICAL - OFTEN MISSED**: Add cross-references to create a web of knowledge ([details](../../../kb/new-learnings-complete-integration-pattern.md)):
 
 **MINIMUM REQUIREMENT**: Update at least 3-5 existing KB articles with cross-references.
 
@@ -407,7 +407,7 @@ make checkpoint-update CMD=new-learnings STEP=6
 
 #### [CHECKPOINT START - STEP 7]
 
-**CRITICAL - OFTEN MISSED**: Check if any Claude commands should be updated based on learnings ([details](../../kb/new-learnings-complete-integration-pattern.md)):
+**CRITICAL - OFTEN MISSED**: Check if any Claude commands should be updated based on learnings ([details](../../../kb/new-learnings-complete-integration-pattern.md)):
 
 **MINIMUM REQUIREMENT**: Update at least 3-4 relevant commands with new KB references.
 
@@ -474,7 +474,7 @@ make checkpoint-update CMD=new-learnings STEP=8
 
 #### [CHECKPOINT START - STEP 9]
 
-**CRITICAL**: CLAUDE.md updates are MANDATORY for new KB articles ([details](../../kb/claude-md-reference-requirement.md))
+**CRITICAL**: CLAUDE.md updates are MANDATORY for new KB articles ([details](../../../kb/claude-md-reference-requirement.md))
 
 If updates are needed to CLAUDE.md:
 
@@ -499,7 +499,7 @@ If updates are needed to CLAUDE.md:
    ```markdown
    - Guideline text ([details](kb/filename.md))
    ```
-   - Use relative paths only - see [Markdown Link Resolution Patterns](../../kb/markdown-link-resolution-patterns.md)
+   - Use relative paths only - see [Markdown Link Resolution Patterns](../../../kb/markdown-link-resolution-patterns.md)
 
 5. **Reference integration strategies**:
    - Add `([details](../../kb/actual-article-you-created.md))` links ONLY for articles you actually created in this session // EXAMPLE: Replace with real filename

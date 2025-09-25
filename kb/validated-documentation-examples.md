@@ -90,6 +90,6 @@ ar_example__func();  // EXAMPLE: This needs to be on same line
 ## Related Patterns
 - [Complete Documentation Principle](complete-documentation-principle.md)
 - [Markdown Link Resolution Patterns](markdown-link-resolution-patterns.md)
-- [New Learnings Command](../.claude/commands/new-learnings.md)
+- [New Learnings Command](../.claude/commands/ar/new-learnings.md)
 - [Automated Documentation Validation](../scripts/check_docs.py)
 - [Type Replacement Guide](../scripts/batch_fix_docs.py)
