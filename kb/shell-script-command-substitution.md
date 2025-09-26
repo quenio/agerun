@@ -64,3 +64,4 @@ get_test_status() {
 - [Makefile POSIX Shell Compatibility](makefile-posix-shell-compatibility.md)
 - [Build System Exit Code Verification](build-system-exit-code-verification.md)
 - [Development Debug Tools](development-debug-tools.md)
+- [Bash Command Parsing Patterns](bash-command-parsing-patterns.md)

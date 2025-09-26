@@ -326,6 +326,7 @@ Each learning file contains:
 - [Build Log Verification Requirement](build-log-verification-requirement.md)
 - [Regression Root Cause Analysis](regression-root-cause-analysis.md)
 - [Shell Script Command Substitution](shell-script-command-substitution.md)
+- [Bash Command Parsing Patterns](bash-command-parsing-patterns.md)
 - [Comprehensive Output Review](comprehensive-output-review.md)
 - [Log Format Variation Handling](log-format-variation-handling.md)
 - [Error Message Source Tracing](error-message-source-tracing.md)

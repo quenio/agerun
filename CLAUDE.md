@@ -324,6 +324,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 - Pattern rules compile object files - update these directly for consistent flags (not target-specific vars)
 - **Pattern rule updates**: Change all 6 targets when updating Zig flags ([details](kb/makefile-pattern-rule-management.md))
 - **POSIX shell only**: Use `case` not `[[ ]]` - Make uses sh, not bash ([details](kb/makefile-posix-shell-compatibility.md))
+- **Bash parsing**: Avoid complex chained commands, use sequential steps ([details](kb/bash-command-parsing-patterns.md))
 - **Filtered variables**: Use `filter-out` for conditional compilation ([details](kb/makefile-filtered-variables-pattern.md))
 - Example: `make ar_string_tests 2>&1` will:
   1. Rebuild any changed modules
