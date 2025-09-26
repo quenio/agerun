@@ -5,7 +5,7 @@ Validate that all Claude Code commands follow comprehensive structure standards.
 # Check Commands
 ## Checkpoint Tracking
 
-This command validates the structure and quality of all Claude Code commands. The process has 5 checkpoints to ensure systematic validation and improvement.
+This command validates the structure and quality of all Claude Code commands. The process has 5 checkpoints to ensure systematic validation and improvement using iterative feedback loops ([details](../../../kb/validation-feedback-loop-effectiveness.md)).
 
 ### Initialize Tracking
 ```bash

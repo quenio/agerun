@@ -114,3 +114,4 @@ TEST(module, error_file_open) { /* validates third error */ }
 - [Test-First Verification Practice](test-first-verification-practice.md)
 - [Documentation Standards Integration](documentation-standards-integration.md)
 - [Test Completeness Enumeration](test-completeness-enumeration.md)
+- [Validation Feedback Loop Effectiveness](validation-feedback-loop-effectiveness.md)

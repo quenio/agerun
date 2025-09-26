@@ -121,6 +121,40 @@ Fixed 19 files
 All documentation errors have been fixed! ✓
 ```
 
+## Script Limitations and Manual Intervention
+
+### When Scripts Cannot Fix Errors
+
+Some documentation errors require human judgment and cannot be automated:
+
+**Broken Links to Non-Existent Files**:
+```markdown
+- [Missing Pattern](../kb/nonexistent-file.md)  // EXAMPLE: File never existed
+```
+**Resolution**: Remove broken references or create appropriate content
+
+**Content Structure Decisions**:
+- Whether to create missing KB files or remove references
+- Reorganizing section hierarchies
+- Determining cross-reference appropriateness
+
+**Complex Context Dependencies**:
+- References that depend on architectural decisions
+- Links that became obsolete due to design changes
+
+### Manual Intervention Strategy
+
+```bash
+# 1. Let script handle automatable errors first
+python3 scripts/batch_fix_docs.py
+
+# 2. Analyze remaining errors for type classification
+make check-docs 2>&1 | grep "broken link\|structural"
+
+# 3. Apply manual fixes for judgment-based errors
+# Edit files directly for content decisions
+```
+
 ## When to Apply
 
 - Batch fix script leaves errors unfixed

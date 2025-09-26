@@ -160,6 +160,7 @@ make checkpoint-cleanup CMD=build
 - Logs are only updated during build, not by check-logs ([details](../../../kb/build-logs-relationship-principle.md))
 - The build must pass check-logs or CI will fail ([details](../../../kb/ci-check-logs-requirement.md))
 - Check-logs includes deep analysis that can flag test output ([details](../../../kb/check-logs-deep-analysis-pattern.md))
+- Use systematic build → check → fix → re-build validation loops ([details](../../../kb/validation-feedback-loop-effectiveness.md))
 - Build time varies: ~20s for incremental, ~1m 24s for full build
 - Use compiler errors to guide refactoring ([details](../../../kb/compilation-driven-refactoring-pattern.md)) 
 

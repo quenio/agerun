@@ -67,6 +67,8 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Documentation Standards (MANDATORY)** ([details](kb/documentation-standards-integration.md), [unmissable](kb/unmissable-documentation-pattern.md), [sync](kb/documentation-implementation-sync.md)):
 - **Real code only**: All examples must use actual AgeRun types/functions ([details](kb/validated-documentation-examples.md))
 - **Validation required**: Run `make check-docs` before committing any .md files ([details](kb/documentation-validation-enhancement-patterns.md))
+- **Error classification**: Categorize doc errors as automatable vs judgment-based ([details](kb/documentation-error-type-classification.md))
+- **Validation loops**: Use iterate validate→fix→re-validate cycles ([details](kb/validation-feedback-loop-effectiveness.md))
 - **Placeholder marking**: Use EXAMPLE tags for hypothetical references ([details](kb/documentation-placeholder-validation-pattern.md))
 - **Command outputs**: Document expected outputs for all scripts/tools ([details](kb/command-output-documentation-pattern.md))
 - **Specification consistency**: Keep SPEC.md updated after language changes ([details](kb/specification-consistency-maintenance.md))

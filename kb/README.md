@@ -125,6 +125,8 @@ Each learning file contains:
 - [Refactoring Systematic Cleanup](refactoring-systematic-cleanup.md)
 - [Test Diagnostic Output Preservation](test-diagnostic-output-preservation.md)
 - [Test Simplification Through Reversion](test-simplification-through-reversion.md)
+- [Documentation Error Type Classification](documentation-error-type-classification.md)
+- [Validation Feedback Loop Effectiveness](validation-feedback-loop-effectiveness.md)
 - [Test Execution Order Dependencies](test-execution-order-dependencies.md)
 - [Test Isolation Through Strategic Commenting](test-isolation-through-commenting.md)
 - [Integration Test Binary Execution](integration-test-binary-execution.md)

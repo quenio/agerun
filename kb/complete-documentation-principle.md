@@ -282,6 +282,11 @@ build: check-docs run-tests
 - **Minimal Interfaces**: Reduces documentation burden ([details](minimal-interfaces-principle.md))
 - **Single Responsibility**: Clarifies module purpose ([details](single-responsibility-principle.md))
 
+## Related Patterns
+
+- [Documentation Error Type Classification](documentation-error-type-classification.md)
+- [Validation Feedback Loop Effectiveness](validation-feedback-loop-effectiveness.md)
+
 ## Examples
 
 **Good Complete Documentation**:

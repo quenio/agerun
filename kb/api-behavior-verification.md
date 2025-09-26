@@ -57,3 +57,4 @@ Common AgeRun APIs that handle null gracefully:
 - [Zig Type Usage Patterns](zig-type-usage-patterns.md) - Skip unnecessary null checks
 - [Defensive Programming Consistency](defensive-programming-consistency.md) - When to be defensive
 - [User Feedback as QA](user-feedback-as-qa.md) - Learning from corrections
+- [Validation Feedback Loop Effectiveness](validation-feedback-loop-effectiveness.md)

@@ -50,7 +50,7 @@ This command guides you through:
 
 ### Important Context
 
-The whitelist contains both intentional test errors AND success messages that check-logs flags. Not all entries represent problems - many are necessary for testing error handling ([details](../../../kb/whitelist-success-message-management.md)). Check-logs failures will block CI ([details](../../../kb/ci-check-logs-requirement.md)). Some errors may come from redundant test cleanup that can be removed ([details](../../../kb/redundant-test-cleanup-anti-pattern.md)).
+The whitelist contains both intentional test errors AND success messages that check-logs flags. Not all entries represent problems - many are necessary for testing error handling ([details](../../../kb/whitelist-success-message-management.md)). Classify errors by type to determine appropriate fixing strategies ([details](../../../kb/documentation-error-type-classification.md)). Check-logs failures will block CI ([details](../../../kb/ci-check-logs-requirement.md)). Some errors may come from redundant test cleanup that can be removed ([details](../../../kb/redundant-test-cleanup-anti-pattern.md)).
 
 ## Phase 1: Analysis (Steps 1-3)
 

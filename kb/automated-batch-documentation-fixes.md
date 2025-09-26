@@ -90,3 +90,4 @@ make check-docs
 - [Progressive Tool Enhancement](progressive-tool-enhancement.md)
 - [Documentation Standards Integration](documentation-standards-integration.md)
 - [Markdown Link Resolution Patterns](markdown-link-resolution-patterns.md)
+- [Documentation Error Type Classification](documentation-error-type-classification.md)

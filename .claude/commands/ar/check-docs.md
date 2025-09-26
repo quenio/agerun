@@ -259,8 +259,9 @@ rm -f /tmp/check-docs-*.txt /tmp/fix-preview.txt
 ### Important notes
 - Always use `--dry-run` first to preview changes before applying them
 - The script only modifies `.md` files
-- Some complex errors may require manual intervention
+- Some complex errors may require manual intervention ([details](../../../kb/documentation-error-type-classification.md))
 - If the script can't fix all errors, enhance it rather than fixing manually ([details](../../../kb/script-enhancement-over-one-off.md))
+- Use iterative validation feedback loops for systematic error resolution ([details](../../../kb/validation-feedback-loop-effectiveness.md))
 
 This validation ensures:
 - All code examples use real AgeRun types ([details](../../../kb/validated-documentation-examples.md))
