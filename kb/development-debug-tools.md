@@ -77,3 +77,5 @@ ASAN_OPTIONS=detect_leaks=1:leak_check_at_exit=1 ./bin/ar_string_tests  # Comple
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)
 - [Build Verification Before Commit](build-verification-before-commit.md)
 - [Absolute Path Navigation](absolute-path-navigation.md)
+- [Shell Configuration Diagnostic Troubleshooting](shell-configuration-diagnostic-troubleshooting.md)
+- [Configuration Migration Troubleshooting Strategy](configuration-migration-troubleshooting-strategy.md)

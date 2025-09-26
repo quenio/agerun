@@ -59,3 +59,5 @@ esac
 - [Makefile Pattern Rule Management](makefile-pattern-rule-management.md)
 - [Makefile Environment Variable Directory Target Dependencies](makefile-environment-variable-directory-gotcha.md) - Directory target gotchas with environment overrides
 - [Bash Command Parsing Patterns](bash-command-parsing-patterns.md)
+- [Shell Loading Order and Tool Detection](shell-loading-order-tool-detection.md)
+- [Shell Configuration Diagnostic Troubleshooting](shell-configuration-diagnostic-troubleshooting.md)

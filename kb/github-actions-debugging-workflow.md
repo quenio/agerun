@@ -80,3 +80,5 @@ gh workflow view <workflow_name>
 - [Issue Currency Verification Pattern](issue-currency-verification-pattern.md)
 - [GitHub Actions Deprecated Tool Migration](github-actions-deprecated-tool-migration.md)
 - [CI Network Timeout Diagnosis](ci-network-timeout-diagnosis.md)
+- [Shell Configuration Diagnostic Troubleshooting](shell-configuration-diagnostic-troubleshooting.md)
+- [Configuration Migration Troubleshooting Strategy](configuration-migration-troubleshooting-strategy.md)

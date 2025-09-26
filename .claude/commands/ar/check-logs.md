@@ -415,6 +415,10 @@ make check-logs
 - [Check-Logs Deep Analysis Pattern](../../../kb/check-logs-deep-analysis-pattern.md)
 - [Whitelist vs Pattern Filtering](../../../kb/whitelist-vs-pattern-filtering.md)
 
+### Diagnostic Troubleshooting
+- [Shell Configuration Diagnostic Troubleshooting](../../../kb/shell-configuration-diagnostic-troubleshooting.md)
+- [Configuration Migration Troubleshooting Strategy](../../../kb/configuration-migration-troubleshooting-strategy.md)
+
 ## Managing Intentional Errors
 
 If `make check-logs` reports errors that are intentional (e.g., testing error handling), you should add them to the whitelist:

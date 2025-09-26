@@ -88,3 +88,5 @@ fi
 - [Shell Script Command Substitution](shell-script-command-substitution.md)
 - [Makefile POSIX Shell Compatibility](makefile-posix-shell-compatibility.md)
 - [Development Debug Tools](development-debug-tools.md)
+- [Shell Loading Order and Tool Detection](shell-loading-order-tool-detection.md)
+- [Configuration Migration Troubleshooting Strategy](configuration-migration-troubleshooting-strategy.md)

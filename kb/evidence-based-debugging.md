@@ -231,3 +231,5 @@ Before claiming to understand a bug:
 - [Debug Logging for Ownership Tracing](debug-logging-ownership-tracing.md) - Strategic logging for ownership issues
 - [Make-Only Test Execution](make-only-test-execution.md) - Always use make for testing
 - [Parallel Test Isolation with Process-Based Resource Copying](parallel-test-isolation-process-resources.md) - Example of knowledge application gap in practice
+- [Shell Configuration Diagnostic Troubleshooting](shell-configuration-diagnostic-troubleshooting.md)
+- [Configuration Migration Troubleshooting Strategy](configuration-migration-troubleshooting-strategy.md)
