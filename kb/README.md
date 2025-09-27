@@ -54,6 +54,7 @@ Each learning file contains:
 - [Cross-Method Pattern Discovery](cross-method-pattern-discovery.md)
 - [Stub and Revisit Pattern](stub-and-revisit-pattern.md)
 - [Task Authorization Pattern](task-authorization-pattern.md)
+- [Task Verification Before Execution](task-verification-before-execution.md)
 - [Atomic Commit Documentation Pattern](atomic-commit-documentation-pattern.md)
 - [Comprehensive Learning Extraction Pattern](comprehensive-learning-extraction-pattern.md)
 - [New Learnings Complete Integration Pattern](new-learnings-complete-integration-pattern.md)
@@ -84,6 +85,7 @@ Each learning file contains:
 - [Comprehensive Renaming Workflow](comprehensive-renaming-workflow.md)
 - [Knowledge Base Search Patterns](kb-search-patterns.md)
 - [Plan Verification Checklist](plan-verification-checklist.md)
+- [Plan Verification and Review](plan-verification-and-review.md)
 - [Development Practice Groups](development-practice-groups.md)
 - [Dependency Management Examples](dependency-management-examples.md)
 
@@ -98,6 +100,7 @@ Each learning file contains:
 - [Debug Logging for Ownership Tracing](debug-logging-ownership-tracing.md)
 - [Refactoring Ownership Transitions](refactoring-ownership-transitions.md)
 - [API Ownership on Failure](api-ownership-on-failure.md)
+- [Memory-Efficient Streaming Patterns](memory-efficient-streaming-patterns.md)
 
 ### Code Quality & Testing
 - [BDD Test Structure](bdd-test-structure.md)
@@ -108,6 +111,7 @@ Each learning file contains:
 - [Test Complexity as Code Smell](test-complexity-as-code-smell.md)
 - [Redundant Test Cleanup Anti-Pattern](redundant-test-cleanup-anti-pattern.md)
 - [Check Existing Solutions First](check-existing-solutions-first.md)
+- [Evidence-Based Debugging](evidence-based-debugging.md)
 - [Progressive System Decoupling via TDD](progressive-system-decoupling-tdd.md)
 - [Test Memory Leak Ownership Analysis](test-memory-leak-ownership-analysis.md)
 - [Test Function Naming Accuracy](test-function-naming-accuracy.md)
@@ -169,6 +173,7 @@ Each learning file contains:
 
 ### Architecture & Design
 - [Opaque Types Pattern](opaque-types-pattern.md)
+- [Domain-Specific Type Creation](domain-specific-type-creation.md)
 - [Facade Pattern Coordination](facade-pattern-coordination.md)
 - [Compilation-Driven Refactoring Pattern](compilation-driven-refactoring-pattern.md)
 - [Error Propagation Pattern](error-propagation-pattern.md)
@@ -182,6 +187,7 @@ Each learning file contains:
 - [Module Consistency Verification](module-consistency-verification.md)
 - [Module Delegation with Error Propagation](module-delegation-error-propagation.md)
 - [Parser Function Alias Support](parser-function-alias-support.md)
+- [Parser Error Logging Enhancement Pattern](parser-error-logging-enhancement-pattern.md)
 - [Refactoring Key Patterns](refactoring-key-patterns.md)
 - [Instance vs Global Resource Pattern](instance-vs-global-resource-pattern.md)
 - [No-op Instruction Semantics](no-op-instruction-semantics.md)
@@ -239,6 +245,7 @@ Each learning file contains:
 - [Command Continuous Improvement Pattern](command-continuous-improvement-pattern.md)
 - [Module Renaming Script Enhancement](module-renaming-script-enhancement.md)
 - [Script Enhancement Over One Off](script-enhancement-over-one-off.md)
+- [Script Archaeology Pattern](script-archaeology-pattern.md)
 - [Migration Script Systematic Updates](migration-script-systematic-updates.md)
 - [Script Backward Compatibility Testing](script-backward-compatibility-testing.md)
 - [Settings File Merging Pattern](settings-file-merging-pattern.md)
@@ -249,6 +256,7 @@ Each learning file contains:
 - [Configuration Migration Troubleshooting Strategy](configuration-migration-troubleshooting-strategy.md)
 - [Shell Configuration Diagnostic Troubleshooting](shell-configuration-diagnostic-troubleshooting.md)
 - [Shell Loading Order and Tool Detection](shell-loading-order-tool-detection.md)
+- [Grep OR Syntax Differences](grep-or-syntax-differences.md)
 - [Systematic File Modification Workflow](systematic-file-modification-workflow.md)
 - [Help System Dependency Pattern](help-system-dependency-pattern.md)
 - [YAML String Matching Pitfalls](yaml-string-matching-pitfalls.md)
@@ -283,6 +291,7 @@ Each learning file contains:
 - [Documentation-Only Change Pattern](documentation-only-change-pattern.md)
 - [Example Marker Granular Control](example-marker-granular-control.md)
 - [Multi-Language Documentation Validation](multi-language-documentation-validation.md)
+- [Markdown Link Resolution Patterns](markdown-link-resolution-patterns.md)
 - [Exit Code Propagation Through popen](exit-code-propagation-popen.md)
 - [Documentation Standards Integration](documentation-standards-integration.md)
 - [Validated Documentation Examples](validated-documentation-examples.md)

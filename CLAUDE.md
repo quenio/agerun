@@ -39,6 +39,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 ### Knowledge Base Usage (MANDATORY - SHOW SEARCHES IN CONVERSATION)
 
+**Check KB index FIRST**: Before any task, grep kb/README.md for relevant patterns ([details](kb/knowledge-base-consultation-protocol.md))
 **Make KB searches VISIBLE**: Run grep, show results, quote guidance, apply patterns ([details](kb/kb-search-patterns.md), [priming](kb/session-start-priming-pattern.md))
 **Trigger words**: "Why are you"/"Actually"/"You should" → Search NOW
 **Markdown links**: Use relative paths only, resolve from file location ([details](kb/markdown-link-resolution-patterns.md))

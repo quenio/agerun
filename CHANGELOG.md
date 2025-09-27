@@ -2,6 +2,24 @@
 
 This document tracks completed milestones and major achievements for the AgeRun project.
 
+## 2025-09-27
+
+### ✅ Knowledge Base Reference Resolution
+- **Enhanced CLAUDE.md** with "Check KB index FIRST" guideline for systematic knowledge discovery
+- **Updated kb/README.md** to include all 317 KB articles (was missing 9 articles)
+- **Added missing articles** categorized by topic:
+  - Evidence-Based Debugging (Code Quality & Testing)
+  - Task Verification Before Execution (Development Workflow)
+  - Script Archaeology Pattern (Tools & Automation)
+  - Domain-Specific Type Creation (Architecture & Design)
+  - Memory-Efficient Streaming Patterns (Memory Management)
+  - Parser Error Logging Enhancement Pattern (Architecture & Design)
+  - Plan Verification and Review (Development Workflow)
+  - Markdown Link Resolution Patterns (Development Practices)
+  - Grep OR Syntax Differences (Tools & Automation)
+- **Established protocol**: AI now checks kb/README.md index before any task for relevant patterns
+- **Impact**: 100% KB article discoverability; improved session continuity and knowledge application
+
 ## 2025-09-14
 
 ### ✅ Documentation - Global API Reference Cleanup

@@ -6,6 +6,8 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+- [x] Knowledge Base Reference Resolution: Added "Check KB index FIRST" guideline to CLAUDE.md; updated kb/README.md to include all 317 KB articles (was missing 9); established systematic KB discovery protocol (Completed 2025-09-27)
+
 - [x] Documentation - Global API Reference Cleanup: Fixed 25 documentation files with outdated global function references; all documentation now references instance-based APIs correctly; check-docs validation passes (Completed 2025-09-14)
 
 - [x] Global API Removal Phase 3 (ar_methodology): Removed all 7 global functions (create_method, get_method, save_methods, load_methods, cleanup, register_method, unregister_method); updated all tests to use instance-based APIs; all 18 tests passing (Completed 2025-09-14)
