@@ -263,9 +263,14 @@ If you're tempted to use hypothetical types, replace with real ones:
 
 #### [CHECKPOINT END - STEP 3]
 ```bash
-# Mark Step 3 complete
-make checkpoint-update CMD=new-learnings STEP=3
+# Mark Step 3 complete with evidence verification
+make checkpoint-update-verified CMD=new-learnings STEP=3 EVIDENCE="kb/new-article-filename.md" SUMMARY="Created KB article with real AgeRun types and comprehensive examples"
 ```
+
+**CRITICAL**: Replace `new-article-filename.md` with the actual filename of the KB article you created. The system will verify:
+- File exists and contains real AgeRun types
+- Documentation follows KB article format
+- All code examples use valid AgeRun functions
 
 ## Step 4: Validation Before Saving
 
@@ -289,9 +294,11 @@ make checkpoint-update CMD=new-learnings STEP=3
 
 #### [CHECKPOINT END - STEP 4]
 ```bash
-# Mark Step 4 complete
-make checkpoint-update CMD=new-learnings STEP=4
+# Mark Step 4 complete - verification automated
+make checkpoint-update-verified CMD=new-learnings STEP=4 SUMMARY="Documentation validation passed with make check-docs"
 ```
+
+**AUTOMATIC VERIFICATION**: The system will automatically run `make check-docs` and block completion if validation fails.
 
 ## GATE 1: ARTICLE CREATION VERIFICATION
 
@@ -399,9 +406,11 @@ make checkpoint-update CMD=new-learnings STEP=5
 
 #### [CHECKPOINT END - STEP 6]
 ```bash
-# Mark Step 6 complete
-make checkpoint-update CMD=new-learnings STEP=6
+# Mark Step 6 complete with cross-reference verification
+make checkpoint-update-verified CMD=new-learnings STEP=6 SUMMARY="Updated X KB articles with bidirectional cross-references"
 ```
+
+**AUTOMATIC VERIFICATION**: The system will verify at least 3 KB articles were modified and block completion if insufficient cross-references were added.
 
 ## Step 7: Review and Update Existing Commands (THOROUGH EXECUTION REQUIRED)
 
@@ -451,9 +460,11 @@ make checkpoint-update CMD=new-learnings STEP=6
 
 #### [CHECKPOINT END - STEP 7]
 ```bash
-# Mark Step 7 complete
-make checkpoint-update CMD=new-learnings STEP=7
+# Mark Step 7 complete with command update verification
+make checkpoint-update-verified CMD=new-learnings STEP=7 SUMMARY="Updated X commands with new KB references and enhanced guidance"
 ```
+
+**AUTOMATIC VERIFICATION**: The system will verify at least 3 command files were modified and block completion if insufficient updates were made.
 
 ## Step 8: Review Existing Guidelines
 
@@ -598,9 +609,11 @@ fi
 
 #### [CHECKPOINT END - STEP 11]
 ```bash
-# Mark Step 11 complete
-make checkpoint-update CMD=new-learnings STEP=11
+# Mark Step 11 complete with integration verification
+make checkpoint-update-verified CMD=new-learnings STEP=11 SUMMARY="Integration verification passed - ready to commit"
 ```
+
+**AUTOMATIC VERIFICATION**: The system will verify integration completeness automatically and only allow completion if status shows "READY TO COMMIT".
 
 ## FINAL GATE: COMMIT READINESS CHECK
 

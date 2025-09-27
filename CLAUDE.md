@@ -344,6 +344,14 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 - **Be frank, not polite**: Only confirm correctness when certain - honest disagreement > polite agreement
 - **Todo list integrity**: Mark items complete, never remove them - preserves task history
 
+**Checkpoint Process Discipline** (MANDATORY):
+- **Work verification required**: NEVER mark steps complete without actual work ([details](kb/checkpoint-work-verification-antipattern.md))
+- **Evidence-based completion**: Critical steps require evidence files and work summaries
+- **No shortcut marking**: `make checkpoint-update` only after completing required work
+- **Step instruction reading**: Always understand what each step requires before executing
+- **Audit trail logging**: All checkpoint completions are logged with timestamps and evidence
+- **Question step applicability**: If step seems irrelevant, document why rather than skip it
+
 **Pre-Commit Checklist** (MANDATORY): ([details](kb/pre-commit-checklist-detailed.md))
 1. `make clean build 2>&1` → verify exit 0 → `make check-logs` ([details](kb/build-verification-before-commit.md))
 2. `make check-docs` → validate all documentation ([details](kb/documentation-validation-enhancement-patterns.md))

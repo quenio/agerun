@@ -63,7 +63,7 @@ if ! make clean build 2>&1; then
 fi
 
 echo "✅ Build completed successfully"
-make checkpoint-update CMD=commit STEP=1
+make checkpoint-update-verified CMD=commit STEP=1 SUMMARY="Clean build completed with all checks passed"
 ```
 
 #### Checkpoint 2: Check Logs
@@ -77,7 +77,7 @@ if ! make check-logs; then
 fi
 
 echo "✅ Logs are clean - CI ready"
-make checkpoint-update CMD=commit STEP=2
+make checkpoint-update-verified CMD=commit STEP=2 SUMMARY="Build logs verified clean - no hidden issues"
 ```
 
 **Additional Notes**:

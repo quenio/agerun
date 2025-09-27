@@ -689,6 +689,7 @@ fi
 # Usage examples:
 #   make checkpoint-init CMD=new-learnings STEPS='"Step 1" "Step 2" "Step 3"'
 #   make checkpoint-update CMD=new-learnings STEP=1
+#   make checkpoint-update-verified CMD=new-learnings STEP=3 EVIDENCE="kb/article.md" SUMMARY="Work description"
 #   make checkpoint-status CMD=new-learnings
 #   make checkpoint-gate CMD=new-learnings GATE="Article Creation" REQUIRED="1,2,3,4"
 #   make checkpoint-cleanup CMD=new-learnings
@@ -697,6 +698,9 @@ checkpoint-init:
 
 checkpoint-update:
 	@bash scripts/checkpoint_update.sh $(CMD) $(STEP)
+
+checkpoint-update-verified:
+	@bash scripts/checkpoint_update_enhanced.sh $(CMD) $(STEP) "$(EVIDENCE)" "$(SUMMARY)"
 
 checkpoint-status:
 	@bash scripts/checkpoint_status.sh $(CMD) $(VERBOSE)
