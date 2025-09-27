@@ -151,20 +151,30 @@ ar_agent__send(counter_id, "get");
 ### Persistence
 
 ```c
-// Save agents and methods to disk
-ar_agency__save_agents_with_instance();
-ar_methodology__save_methods_with_instance();
+// Create system instance and get agency/methodology references
+ar_system_t *own_system = ar_system__create();
+ar_agency_t *mut_agency = ar_system__get_agency(own_system);
+ar_methodology_t *mut_methodology = ar_agency__get_methodology(mut_agency);
 
-// Shutdown the runtime (assuming system instance is available)
-// ar_system__shutdown_with_instance(own_system);
+// Save agents and methods to disk
+ar_agency__save_agents_with_instance(mut_agency);
+ar_methodology__save_methods_with_instance(mut_methodology);
+
+// Shutdown the runtime
+ar_system__destroy(own_system);
 
 // Later, in a new session:
 
-// Load methods (assuming methodology instance is available)
-// ar_methodology__load_methods_with_instance(own_methodology);
+// Create new system instance
+ar_system_t *own_new_system = ar_system__create();
+ar_agency_t *mut_new_agency = ar_system__get_agency(own_new_system);
+ar_methodology_t *mut_new_methodology = ar_agency__get_methodology(mut_new_agency);
 
-// Initialize runtime (will also load persistent agents)
-// ar_system__init_with_instance(own_system, "some_method", some_version);
+// Load methods
+ar_methodology__load_methods_with_instance(mut_new_methodology);
+
+// Initialize runtime with bootstrap agent
+int64_t bootstrap_agent = ar_system__init_with_instance(own_new_system, "bootstrap", "1.0.0");
 ```
 
 ## Method Expressions and Instructions

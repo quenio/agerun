@@ -151,7 +151,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Requirement precision**: Verify exact requirements before implementing ([details](kb/requirement-precision-in-tdd.md))
 **Test completeness**: Enumerate & verify each outcome individually ([details](kb/test-completeness-enumeration.md))
 **Method tests**: Verify AST after loading to catch parse errors ([details](kb/method-test-ast-verification.md))
-**Cleanup**: `ar_methodology__cleanup()` & `ar_agency__reset()`
+**Cleanup**: `ar_methodology__cleanup_with_instance()` & `ar_agency__reset_with_instance()`
 **Messages**: Process all messages to prevent memory leaks
 **Test isolation**: Comment out tests to isolate error sources ([details](kb/test-isolation-through-commenting.md))
 **Test cleanup**: Remove persisted files before tests run ([details](kb/test-file-cleanup-pattern.md))

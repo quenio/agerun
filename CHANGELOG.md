@@ -4,6 +4,14 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-09-27
 
+### ✅ Global API Removal - Phase 4 Cleanup
+- **Completed final cleanup phase** for global API removal project
+- **Updated CLAUDE.md** to use instance-based API examples (`ar_methodology__cleanup_with_instance()` & `ar_agency__reset_with_instance()`)
+- **Enhanced README.md persistence examples** with complete instance-based workflow showing proper system/agency/methodology coordination
+- **Verified zero memory leaks** across all 74 tests with clean build validation
+- **Documentation consistency achieved** - all 519 documentation files pass validation
+- **Impact**: Clean architecture foundation with explicit dependencies, ready for system module decomposition
+
 ### ✅ Knowledge Base Reference Resolution
 - **Enhanced CLAUDE.md** with "Check KB index FIRST" guideline for systematic knowledge discovery
 - **Updated kb/README.md** to include all 317 KB articles (was missing 9 articles)
