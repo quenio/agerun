@@ -78,3 +78,6 @@ Integrate user-as-QA pattern into development workflow:
 - [Resource-Aware API Design](resource-aware-api-design.md)
 - [Functional Value Validation Pattern](functional-value-validation-pattern.md)
 - [Tool Version Selection Due Diligence](tool-version-selection-due-diligence.md)
+- [User Architectural Alternative Evaluation](user-architectural-alternative-evaluation.md)
+- [Index-Based Knowledge Discovery Pattern](index-based-knowledge-discovery-pattern.md)
+- [Assumption Verification Before Action](assumption-verification-before-action.md)

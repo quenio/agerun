@@ -78,3 +78,5 @@ grep -r "similar_concept" kb/*.md
 - [Cross-Method Pattern Discovery](cross-method-pattern-discovery.md)
 - [Module Consistency Verification](module-consistency-verification.md)
 - [Research-Driven Development](research-driven-development.md)
+- [Index-Based Knowledge Discovery Pattern](index-based-knowledge-discovery-pattern.md)
+- [User Architectural Alternative Evaluation](user-architectural-alternative-evaluation.md)
