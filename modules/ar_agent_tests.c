@@ -37,18 +37,18 @@ static void test_agent_create_destroy(ar_system_fixture_t *own_fixture) {
     assert(mut_agency != NULL);
     
     // When we create an agent with this method
-    int64_t agent_id = ar_agency__create_agent_with_instance(mut_agency, method_name, version, NULL);
+    int64_t agent_id = ar_agency__create_agent(mut_agency, method_name, version, NULL);
     
     // Then the agent should be created successfully
     assert(agent_id > 0);
     
     // And the agent should exist in the system
-    ar_agent_registry_t *ref_registry = ar_agency__get_registry_with_instance(mut_agency);
+    ar_agent_registry_t *ref_registry = ar_agency__get_registry(mut_agency);
     bool exists = ar_agent_registry__is_registered(ref_registry, agent_id);
     assert(exists);
     
     // When we destroy the agent
-    ar_agency__destroy_agent_with_instance(mut_agency, agent_id);
+    ar_agency__destroy_agent(mut_agency, agent_id);
     
     // Then the agent should be destroyed successfully
     // Agency destroy returns void
@@ -76,13 +76,13 @@ static void test_agent_send(ar_system_fixture_t *own_fixture) {
     ar_agency_t *mut_agency = ar_system_fixture__get_agency(own_fixture);
     assert(mut_agency != NULL);
     
-    int64_t agent_id = ar_agency__create_agent_with_instance(mut_agency, method_name, version, NULL);
+    int64_t agent_id = ar_agency__create_agent(mut_agency, method_name, version, NULL);
     assert(agent_id > 0);
     
     // When we send a message to the agent
     ar_data_t *own_message_data = ar_data__create_string(g_hello_message);
     assert(own_message_data != NULL);
-    bool send_result = ar_agency__send_to_agent_with_instance(mut_agency, agent_id, own_message_data);
+    bool send_result = ar_agency__send_to_agent(mut_agency, agent_id, own_message_data);
     own_message_data = NULL; // Mark as transferred
     
     // Then the message should be sent successfully
@@ -94,7 +94,7 @@ static void test_agent_send(ar_system_fixture_t *own_fixture) {
     // Since we can't directly access the message queue in an opaque map,
     // we'll verify the agent was created (which was already tested)
     // and that the message was sent (which was verified by send_result)
-    ar_agent_registry_t *ref_registry = ar_agency__get_registry_with_instance(mut_agency);
+    ar_agent_registry_t *ref_registry = ar_agency__get_registry(mut_agency);
     assert(ar_agent_registry__is_registered(ref_registry, agent_id));
     
     // Note: We don't destroy the agent - fixture handles cleanup
@@ -118,11 +118,11 @@ static void test_agent_exists(ar_system_fixture_t *own_fixture) {
     ar_agency_t *mut_agency = ar_system_fixture__get_agency(own_fixture);
     assert(mut_agency != NULL);
     
-    int64_t agent_id = ar_agency__create_agent_with_instance(mut_agency, method_name, version, NULL);
+    int64_t agent_id = ar_agency__create_agent(mut_agency, method_name, version, NULL);
     assert(agent_id > 0);
     
     // When we check if the valid agent ID exists
-    ar_agent_registry_t *ref_registry = ar_agency__get_registry_with_instance(mut_agency);
+    ar_agent_registry_t *ref_registry = ar_agency__get_registry(mut_agency);
     bool exists = ar_agent_registry__is_registered(ref_registry, agent_id);
     
     // Then it should exist
@@ -137,7 +137,7 @@ static void test_agent_exists(ar_system_fixture_t *own_fixture) {
     assert(!exists_large);
     
     // When we destroy the agent
-    ar_agency__destroy_agent_with_instance(mut_agency, agent_id);
+    ar_agency__destroy_agent(mut_agency, agent_id);
     // Agency destroy returns void
     
     // And check if it still exists
@@ -175,11 +175,11 @@ static void test_agent_persistence(ar_system_fixture_t *own_fixture) {
     ar_data__set_map_string(own_context, "test_key", "test_value");
     
     // And an agent created with this persistent method - agent doesn't take ownership
-    int64_t agent_id = ar_agency__create_agent_with_instance(mut_agency, method_name, version, own_context);
+    int64_t agent_id = ar_agency__create_agent(mut_agency, method_name, version, own_context);
     assert(agent_id > 0);
     
     // When we save agents to disk using instance API
-    bool save_result = ar_agency__save_agents_with_instance(mut_agency, "agency.agerun");
+    bool save_result = ar_agency__save_agents(mut_agency, "agency.agerun");
     
     // Then the save operation should succeed
     assert(save_result);
@@ -189,7 +189,7 @@ static void test_agent_persistence(ar_system_fixture_t *own_fixture) {
     assert(stat("agency.agerun", &st) == 0);
     
     // Verify the agent still exists in memory
-    ar_agent_registry_t *ref_registry = ar_agency__get_registry_with_instance(mut_agency);
+    ar_agent_registry_t *ref_registry = ar_agency__get_registry(mut_agency);
     bool exists = ar_agent_registry__is_registered(ref_registry, agent_id);
     assert(exists);
     

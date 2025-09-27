@@ -15,15 +15,15 @@ def update_file(filepath):
     # Replace global system calls
     replacements = [
         # Direct replacements
-        (r'ar_system__init\("', r'ar_system__init_with_instance(own_system, "'),
-        (r'ar_system__init\(NULL', r'ar_system__init_with_instance(own_system, NULL'),
-        (r'ar_system__shutdown\(\)', r'ar_system__shutdown_with_instance(own_system)'),
-        (r'ar_system__process_next_message\(\)', r'ar_system__process_next_message_with_instance(own_system)'),
-        (r'ar_system__process_all_messages\(\)', r'ar_system__process_all_messages_with_instance(own_system)'),
+        (r'ar_system__init\("', r'ar_system__init(own_system, "'),
+        (r'ar_system__init\(NULL', r'ar_system__init(own_system, NULL'),
+        (r'ar_system__shutdown\(\)', r'ar_system__shutdown(own_system)'),
+        (r'ar_system__process_next_message\(\)', r'ar_system__process_next_message(own_system)'),
+        (r'ar_system__process_all_messages\(\)', r'ar_system__process_all_messages(own_system)'),
         
         # For examples where system is referenced
         (r'while \(ar_system__process_next_message\(\)\)', 
-         r'while (ar_system__process_next_message_with_instance(own_system))'),
+         r'while (ar_system__process_next_message(own_system))'),
     ]
     
     for old_pattern, new_pattern in replacements:
@@ -32,7 +32,7 @@ def update_file(filepath):
     # For agent creation patterns, use fixture or instance versions
     content = re.sub(
         r'ar_agency__create_agent\(',
-        r'ar_agency__create_agent_with_instance(mut_agency, ',
+        r'ar_agency__create_agent(mut_agency, ',
         content
     )
     

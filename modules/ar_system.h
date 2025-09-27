@@ -30,14 +30,14 @@ void ar_system__destroy(ar_system_t *own_system);
  * @return ID of the created initial agent, or 0 on failure
  * @note Ownership: Function copies the method name; does not take ownership of ref_method_name.
  */
-int64_t ar_system__init_with_instance(ar_system_t *mut_system, const char *ref_method_name, const char *ref_version);
+int64_t ar_system__init(ar_system_t *mut_system, const char *ref_method_name, const char *ref_version);
 
 /**
  * Shut down a system instance
  * @param mut_system The system instance to shut down (mutable reference)
  * @note Ownership: Saves persistent data but does not destroy the system instance itself.
  */
-void ar_system__shutdown_with_instance(ar_system_t *mut_system);
+void ar_system__shutdown(ar_system_t *mut_system);
 
 /**
  * Process the next pending message in the system instance
@@ -45,7 +45,7 @@ void ar_system__shutdown_with_instance(ar_system_t *mut_system);
  * @return true if a message was processed, false if no messages
  * @note Ownership: Takes ownership of and destroys the processed message.
  */
-bool ar_system__process_next_message_with_instance(ar_system_t *mut_system);
+bool ar_system__process_next_message(ar_system_t *mut_system);
 
 /**
  * Process all pending messages in the system instance
@@ -53,7 +53,7 @@ bool ar_system__process_next_message_with_instance(ar_system_t *mut_system);
  * @return Number of messages processed
  * @note Ownership: Takes ownership of and destroys all processed messages.
  */
-int ar_system__process_all_messages_with_instance(ar_system_t *mut_system);
+int ar_system__process_all_messages(ar_system_t *mut_system);
 
 /**
  * Get the agency instance from a system

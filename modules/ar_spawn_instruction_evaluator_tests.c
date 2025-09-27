@@ -48,7 +48,7 @@ static void test_spawn_instruction_evaluator__evaluate_with_context(void) {
     // Register a method to create agents with using instance APIs
     ar_method_t *method = ar_method__create("worker", "send(0, context.config)", "2.0.0");
     assert(method != NULL);
-    ar_methodology__register_method_with_instance(mut_methodology, method);
+    ar_methodology__register_method(mut_methodology, method);
     
     // When evaluating a create instruction with context: spawn("worker", "2.0.0", memory)
     const char *args[] = {"\"worker\"", "\"2.0.0\"", "memory"};
@@ -119,7 +119,7 @@ static void test_spawn_instruction_evaluator__evaluate_with_result(void) {
     // Register a method to create agents with using instance APIs
     ar_method_t *method = ar_method__create("counter", "memory.count := memory.count + 1", "1.0.0");
     assert(method != NULL);
-    ar_methodology__register_method_with_instance(mut_methodology, method);
+    ar_methodology__register_method(mut_methodology, method);
     
     // When evaluating a create instruction with result assignment: memory.agent_id := spawn("counter", "1.0.0", memory)
     const char *args[] = {"\"counter\"", "\"1.0.0\"", "memory"};
@@ -342,7 +342,7 @@ static void test_spawn_instruction_evaluator__evaluate_with_instance(void) {
     // Register a method to create agents with
     ar_method_t *method = ar_method__create("tester", "send(0, memory.config)", "1.0.0");
     assert(method != NULL);
-    ar_methodology__register_method_with_instance(mut_methodology, method);
+    ar_methodology__register_method(mut_methodology, method);
     
     // When evaluating an agent instruction with the instance: agent("tester", "1.0.0", memory)
     const char *args[] = {"\"tester\"", "\"1.0.0\"", "memory"};
@@ -418,7 +418,7 @@ static void test_spawn_instruction_evaluator__legacy_evaluate_function(void) {
     // Register a method to create agents with
     ar_method_t *method = ar_method__create("legacy_worker", "send(0, memory.status)", "1.0.0");
     assert(method != NULL);
-    ar_methodology__register_method_with_instance(mut_methodology, method);
+    ar_methodology__register_method(mut_methodology, method);
     
     // When calling the instance-based evaluate function: agent("legacy_worker", "1.0.0", memory)
     const char *args[] = {"\"legacy_worker\"", "\"1.0.0\"", "memory"};

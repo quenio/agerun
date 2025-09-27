@@ -59,7 +59,7 @@ ar_agent_t* ar_agent__create_with_method(const ar_method_t *ref_method, const ar
     return own_agent;
 }
 
-/* ar_agent__create removed - use ar_agency__create_agent_with_instance instead */
+/* ar_agent__create removed - use ar_agency__create_agent instead */
 
 void ar_agent__destroy(ar_agent_t *own_agent) {
     if (!own_agent) {

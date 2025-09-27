@@ -41,7 +41,7 @@ ar_data_t* ar_agent__get_message(ar_agent_t *mut_agent) {
 }
 
 // 3. System takes ownership after dequeuing (ar_system.c)
-bool ar_system__process_next_message_with_instance(ar_system_t *mut_system) {
+bool ar_system__process_next_message(ar_system_t *mut_system) {
     // ... get message from agent ...
     
     if (own_message) {

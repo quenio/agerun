@@ -144,7 +144,7 @@ ar_message_queue_t* ar_agent__get_queue(ar_agent_t* agent);  // EXAMPLE: Hypothe
 
 // CORRECT: Hide communication behind interface
 void ar_agent__send_message(uint64_t agent_id, ar_data_t* message);  // EXAMPLE: Hypothetical function
-bool ar_system__process_next_message_with_instance(own_system);
+bool ar_system__process_next_message(own_system);
 
 // Implementation can change without affecting clients
 ```

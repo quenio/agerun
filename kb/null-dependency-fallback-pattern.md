@@ -9,7 +9,7 @@ Without consistent fallback behavior, resources may not be properly initialized 
 ## Example
 ```c
 // From ar_system module - handling NULL agency and NULL methodology
-void ar_system__init_with_instance(ar_system_t *mut_system, 
+void ar_system__init(ar_system_t *mut_system, 
                                    const char *ref_method_name, 
                                    const char *ref_version) {
     if (mut_system->ref_agency) {
@@ -18,57 +18,57 @@ void ar_system__init_with_instance(ar_system_t *mut_system,
         
         if (ref_methodology) {
             // Use instance methodology
-            ar_methodology__load_methods_with_instance(ref_methodology, NULL);
+            ar_methodology__load_methods(ref_methodology, NULL);
         } else {
             // Agency exists but has NULL methodology - use global
-            ar_methodology__load_methods_with_instance();
+            ar_methodology__load_methods();
         }
         
         // Always use instance agency when available
-        ar_agency__load_agents_with_instance(mut_system->ref_agency, NULL);
+        ar_agency__load_agents(mut_system->ref_agency, NULL);
     } else {
         // NULL agency - use all global functions
-        ar_methodology__load_methods_with_instance();
-        ar_agency__load_agents_with_instance();
+        ar_methodology__load_methods();
+        ar_agency__load_agents();
     }
 }
 
-void ar_system__shutdown_with_instance(ar_system_t *mut_system) {
+void ar_system__shutdown(ar_system_t *mut_system) {
     if (mut_system->ref_agency) {
         ar_methodology_t *ref_methodology = ar_agency__get_methodology(mut_system->ref_agency);
         
         if (ref_methodology) {
             // Save using instance methodology
-            ar_methodology__save_methods_with_instance(ref_methodology, NULL);
+            ar_methodology__save_methods(ref_methodology, NULL);
         } else {
             // CRITICAL: Must use global save to match global load
-            ar_methodology__save_methods_with_instance();
-            ar_methodology__cleanup_with_instance();  // And cleanup global
+            ar_methodology__save_methods();
+            ar_methodology__cleanup();  // And cleanup global
         }
         
-        ar_agency__save_agents_with_instance(mut_system->ref_agency, NULL);
-        ar_agency__reset_with_instance(mut_system->ref_agency);
+        ar_agency__save_agents(mut_system->ref_agency, NULL);
+        ar_agency__reset(mut_system->ref_agency);
     } else {
         // NULL agency - use all global functions
-        ar_methodology__save_methods_with_instance();
-        ar_agency__save_agents_with_instance();
-        ar_agency__reset_with_instance();
-        ar_methodology__cleanup_with_instance();
+        ar_methodology__save_methods();
+        ar_agency__save_agents();
+        ar_agency__reset();
+        ar_methodology__cleanup();
     }
 }
 
 // Message processing also follows the pattern
-bool ar_system__process_next_message_with_instance(ar_system_t *mut_system) {
+bool ar_system__process_next_message(ar_system_t *mut_system) {
     int64_t agent_id;
     ar_data_t *own_message = NULL;
     
     if (mut_system->ref_agency) {
         // Use instance-based agency functions
-        agent_id = ar_agency__get_first_agent_with_instance(mut_system->ref_agency);
+        agent_id = ar_agency__get_first_agent(mut_system->ref_agency);
         // ... process with instance functions
     } else {
         // Use global agency functions
-        agent_id = ar_agency__get_first_agent_with_instance();
+        agent_id = ar_agency__get_first_agent();
         // ... process with global functions
     }
     

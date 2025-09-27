@@ -123,8 +123,8 @@ pub export fn ar_send_instruction_evaluator__evaluate(
         c.ar_data__destroy_if_owned(own_message, ref_evaluator);
         send_result = true;
     } else {
-        // Send message (ownership transferred to ar_agency__send_to_agent_with_instance)
-        send_result = c.ar_agency__send_to_agent_with_instance(ref_evaluator.?.ref_agency, agent_id, own_message);
+        // Send message (ownership transferred to ar_agency__send_to_agent)
+        send_result = c.ar_agency__send_to_agent(ref_evaluator.?.ref_agency, agent_id, own_message);
     }
     
     // Handle result assignment if present

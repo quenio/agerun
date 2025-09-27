@@ -38,17 +38,17 @@ static void test_message_router_routing(void) {
     assert(own_calc_context != NULL);
     
     // Create router agent
-    int64_t router_agent = ar_agency__create_agent_with_instance(mut_agency, "message-router", "1.0.0", own_router_context);
+    int64_t router_agent = ar_agency__create_agent(mut_agency, "message-router", "1.0.0", own_router_context);
     assert(router_agent > 0);
     // Note: Agent stores reference to context, don't destroy it here
     
     // Create echo agent
-    int64_t echo_agent = ar_agency__create_agent_with_instance(mut_agency, "echo", "1.0.0", own_echo_context);
+    int64_t echo_agent = ar_agency__create_agent(mut_agency, "echo", "1.0.0", own_echo_context);
     assert(echo_agent > 0);
     // Note: Agent stores reference to context, don't destroy it here
     
     // Create calculator agent
-    int64_t calc_agent = ar_agency__create_agent_with_instance(mut_agency, "calculator", "1.0.0", own_calc_context);
+    int64_t calc_agent = ar_agency__create_agent(mut_agency, "calculator", "1.0.0", own_calc_context);
     assert(calc_agent > 0);
     // Note: Agent stores reference to context, don't destroy it here
     
@@ -63,7 +63,7 @@ static void test_message_router_routing(void) {
     ar_data__set_map_integer(own_message, "calc_agent", (int)calc_agent);
     ar_data__set_map_string(own_message, "content", "Hello from router!");
     
-    bool sent = ar_agency__send_to_agent_with_instance(mut_agency, router_agent, own_message);
+    bool sent = ar_agency__send_to_agent(mut_agency, router_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
@@ -78,7 +78,7 @@ static void test_message_router_routing(void) {
     // Note: The router's memory is not the message - we need to check what happened during evaluation
     
     // Check router memory
-    const ar_data_t *router_memory = ar_agency__get_agent_memory_with_instance(mut_agency, router_agent);
+    const ar_data_t *router_memory = ar_agency__get_agent_memory(mut_agency, router_agent);
     assert(router_memory != NULL);
     
     const ar_data_t *is_echo = ar_data__get_map_data(router_memory, "is_echo");
@@ -113,7 +113,7 @@ static void test_message_router_routing(void) {
     ar_data__set_map_integer(own_message2, "a", 10);
     ar_data__set_map_integer(own_message2, "b", 20);
     
-    sent = ar_agency__send_to_agent_with_instance(mut_agency, router_agent, own_message2);
+    sent = ar_agency__send_to_agent(mut_agency, router_agent, own_message2);
     assert(sent);
     own_message2 = NULL; // Ownership transferred
     
@@ -129,7 +129,7 @@ static void test_message_router_routing(void) {
     ar_data__set_map_integer(own_message3, "echo_agent", (int)echo_agent);
     ar_data__set_map_integer(own_message3, "calc_agent", (int)calc_agent);
     
-    sent = ar_agency__send_to_agent_with_instance(mut_agency, router_agent, own_message3);
+    sent = ar_agency__send_to_agent(mut_agency, router_agent, own_message3);
     assert(sent);
     own_message3 = NULL; // Ownership transferred
     

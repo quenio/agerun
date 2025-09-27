@@ -101,7 +101,7 @@ static int _load_methods_from_directory(ar_methodology_t *mut_methodology) {
         ar_io__close_file(fp, filepath);
         
         // Create method in methodology
-        if (ar_methodology__create_method_with_instance(mut_methodology, method_name, own_content, version)) {
+        if (ar_methodology__create_method(mut_methodology, method_name, own_content, version)) {
             printf("Loaded method '%s' version '%s' from directory\n", method_name, version);
             loaded_count++;
         } else {
@@ -138,7 +138,7 @@ int ar_executable__main(void) {
     ar_agency_t *mut_agency = ar_system__get_agency(mut_system);
     if (!mut_agency) {
         printf("Error: Failed to get agency instance\n");
-        ar_system__shutdown_with_instance(mut_system);
+        ar_system__shutdown(mut_system);
         ar_system__destroy(mut_system);
         return 1;
     }
@@ -147,7 +147,7 @@ int ar_executable__main(void) {
     ar_methodology_t *mut_methodology = ar_agency__get_methodology(mut_agency);
     if (!mut_methodology) {
         printf("Error: Failed to get methodology instance\n");
-        ar_system__shutdown_with_instance(mut_system);
+        ar_system__shutdown(mut_system);
         ar_system__destroy(mut_system);
         return 1;
     }
@@ -159,7 +159,7 @@ int ar_executable__main(void) {
     if (stat(METHODOLOGY_FILE_NAME, &st) == 0) {
         // Load from persisted file
         printf("Loading methods from persisted methodology...\n");
-        if (ar_methodology__load_methods_with_instance(mut_methodology, METHODOLOGY_FILE_NAME)) {
+        if (ar_methodology__load_methods(mut_methodology, METHODOLOGY_FILE_NAME)) {
             printf("Successfully loaded methods from %s\n", METHODOLOGY_FILE_NAME);
             loaded_from_file = true;
             // We don't know the exact count when loading from file, but that's OK
@@ -183,9 +183,9 @@ int ar_executable__main(void) {
         const char *ref_echo_instructions = "send(0, message)";
         const char *ref_echo_version = "1.0.0";
         
-        if (!ar_methodology__create_method_with_instance(mut_methodology, "echo", ref_echo_instructions, ref_echo_version)) {
+        if (!ar_methodology__create_method(mut_methodology, "echo", ref_echo_instructions, ref_echo_version)) {
             printf("Failed to create echo method\n");
-            ar_system__shutdown_with_instance(mut_system);
+            ar_system__shutdown(mut_system);
             ar_system__destroy(mut_system);
             return 1;
         }
@@ -197,9 +197,9 @@ int ar_executable__main(void) {
         const char *ref_counter_code = "send(0, \"Hello from counter!\")";
         const char *ref_counter_version = "1.0.0";
         
-        if (!ar_methodology__create_method_with_instance(mut_methodology, "counter", ref_counter_code, ref_counter_version)) {
+        if (!ar_methodology__create_method(mut_methodology, "counter", ref_counter_code, ref_counter_version)) {
             printf("Failed to create counter method\n");
-            ar_system__shutdown_with_instance(mut_system);
+            ar_system__shutdown(mut_system);
             ar_system__destroy(mut_system);
             return 1;
         }
@@ -212,10 +212,10 @@ int ar_executable__main(void) {
     
     // Initialize the system and create bootstrap agent
     printf("Creating bootstrap agent...\n");
-    int64_t initial_agent = ar_system__init_with_instance(mut_system, BOOTSTRAP_METHOD_NAME, BOOTSTRAP_METHOD_VERSION);
+    int64_t initial_agent = ar_system__init(mut_system, BOOTSTRAP_METHOD_NAME, BOOTSTRAP_METHOD_VERSION);
     if (initial_agent <= 0) {
         printf("Error: Failed to create bootstrap agent\n");
-        ar_system__shutdown_with_instance(mut_system);
+        ar_system__shutdown(mut_system);
         ar_system__destroy(mut_system);
         return 1;
     }
@@ -223,7 +223,7 @@ int ar_executable__main(void) {
     
     // Process all messages until none remain
     printf("Processing messages...\n");
-    int messages_processed = ar_system__process_all_messages_with_instance(mut_system);
+    int messages_processed = ar_system__process_all_messages(mut_system);
     if (messages_processed > 0) {
         printf("Processed %d message%s\n", messages_processed, 
                messages_processed == 1 ? "" : "s");
@@ -233,7 +233,7 @@ int ar_executable__main(void) {
     
     // Save methodology to file after processing
     printf("Saving methodology to file...\n");
-    if (ar_methodology__save_methods_with_instance(mut_methodology, METHODOLOGY_FILE_NAME)) {
+    if (ar_methodology__save_methods(mut_methodology, METHODOLOGY_FILE_NAME)) {
         printf("Methodology saved to %s\n", METHODOLOGY_FILE_NAME);
     } else {
         printf("Warning: Failed to save methodology to %s\n", METHODOLOGY_FILE_NAME);
@@ -241,7 +241,7 @@ int ar_executable__main(void) {
     
     // Shutdown the runtime
     printf("Shutting down runtime...\n");
-    ar_system__shutdown_with_instance(mut_system);
+    ar_system__shutdown(mut_system);
     ar_system__destroy(mut_system);
     printf("Runtime shutdown complete\n\n");
     

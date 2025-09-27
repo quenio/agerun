@@ -28,7 +28,7 @@ Review found:
 // Phase 2: Fix Critical Items (1 & 4)
 // ar_system_tests.c - Remove outdated comments
 -    // Process the wake message that the agent sent to itself
--    ar_system__process_next_message_with_instance(mut_system);
+-    ar_system__process_next_message(mut_system);
 +    // No wake message to process (removed in TDD Cycle 1)
 
 // Phase 3: Track Deferred Items in TODO.md

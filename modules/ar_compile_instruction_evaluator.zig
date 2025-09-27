@@ -192,7 +192,7 @@ pub export fn ar_compile_instruction_evaluator__evaluate(
             // Check if the method has a valid AST (parsing succeeded)
             const ref_method_ast = c.ar_method__get_ast(own_method);
             if (ref_method_ast != null) {
-                c.ar_methodology__register_method_with_instance(ref_evaluator.?.ref_methodology, own_method);
+                c.ar_methodology__register_method(ref_evaluator.?.ref_methodology, own_method);
                 // Ownership transferred to methodology
                 success = true;
             } else {

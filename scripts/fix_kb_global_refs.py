@@ -8,20 +8,20 @@ import sys
 # Mapping of old global functions to new instance-based functions
 REPLACEMENTS = {
     # Methodology functions
-    r'ar_methodology__get_method\b': 'ar_methodology__get_method_with_instance',
-    r'ar_methodology__create_method\b': 'ar_methodology__create_method_with_instance',
-    r'ar_methodology__register_method\b': 'ar_methodology__register_method_with_instance',
-    r'ar_methodology__unregister_method\b': 'ar_methodology__unregister_method_with_instance',
-    r'ar_methodology__save_methods\b': 'ar_methodology__save_methods_with_instance',
-    r'ar_methodology__load_methods\b': 'ar_methodology__load_methods_with_instance',
-    r'ar_methodology__cleanup\b': 'ar_methodology__cleanup_with_instance',
+    r'ar_methodology__get_method\b': 'ar_methodology__get_method',
+    r'ar_methodology__create_method\b': 'ar_methodology__create_method',
+    r'ar_methodology__register_method\b': 'ar_methodology__register_method',
+    r'ar_methodology__unregister_method\b': 'ar_methodology__unregister_method',
+    r'ar_methodology__save_methods\b': 'ar_methodology__save_methods',
+    r'ar_methodology__load_methods\b': 'ar_methodology__load_methods',
+    r'ar_methodology__cleanup\b': 'ar_methodology__cleanup',
 
     # Agency functions
-    r'ar_agency__create_agent\b': 'ar_agency__create_agent_with_instance',
-    r'ar_agency__destroy_agent\b': 'ar_agency__destroy_agent_with_instance',
-    r'ar_agency__send_to_agent\b': 'ar_agency__send_to_agent_with_instance',
+    r'ar_agency__create_agent\b': 'ar_agency__create_agent',
+    r'ar_agency__destroy_agent\b': 'ar_agency__destroy_agent',
+    r'ar_agency__send_to_agent\b': 'ar_agency__send_to_agent',
     r'ar_agency__get_agent\b': 'ar_agency__get_agent_with_instance',
-    r'ar_agency__reset\b': 'ar_agency__reset_with_instance',
+    r'ar_agency__reset\b': 'ar_agency__reset',
 }
 
 def fix_file(filepath):

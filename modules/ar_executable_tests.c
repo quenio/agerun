@@ -724,19 +724,19 @@ int main(void) {
     // Register with methodology using instance API
     ar_agency_t *ref_agency = ar_system__get_agency(mut_system);
     ar_methodology_t *ref_methodology = ar_agency__get_methodology(ref_agency);
-    ar_methodology__register_method_with_instance(ref_methodology, own_method);
+    ar_methodology__register_method(ref_methodology, own_method);
     own_method = NULL; // Mark as transferred
     
     // When we initialize the system with this method
-    int64_t initial_agent = ar_system__init_with_instance(mut_system, init_method, init_version);
+    int64_t initial_agent = ar_system__init(mut_system, init_method, init_version);
     
     // Process any initial messages if an agent was created
     if (initial_agent > 0) {
-        ar_system__process_next_message_with_instance(mut_system);
+        ar_system__process_next_message(mut_system);
     }
     
     // Then we clean up the system
-    ar_system__shutdown_with_instance(mut_system);
+    ar_system__shutdown(mut_system);
     ar_system__destroy(mut_system);
     
     // Destroy the fixture (also cleans up temp build directory)

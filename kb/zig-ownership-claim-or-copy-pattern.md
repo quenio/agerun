@@ -76,7 +76,7 @@ defer c.ar_data__destroy_if_owned(own_arg1, @constCast(@ptrCast(self)));
 // Context is borrowed - no claim_or_copy needed
 const ref_context = c.ar_expression_evaluator__evaluate(evaluator, frame, context_ast);
 // Pass directly - agency expects borrowed reference
-ar_agency__create_agent_with_instance(method, version, ref_context);
+ar_agency__create_agent(method, version, ref_context);
 ```
 
 ## Related Patterns

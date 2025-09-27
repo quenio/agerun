@@ -13,7 +13,7 @@ bool ar_interpreter__execute_method(ar_interpreter_t *mut_interpreter,
                                    int64_t agent_id, 
                                    const ar_data_t *ref_message) {
     // Retrieve method from agent
-    ar_method_t *ref_method = ar_agency__get_agent_method_with_instance(agent_id);
+    ar_method_t *ref_method = ar_agency__get_agent_method(agent_id);
     if (!ref_method) {
         ar_log__error(mut_interpreter->ref_log, 0, 
                      "Agent %ld has no method", agent_id);
@@ -21,8 +21,8 @@ bool ar_interpreter__execute_method(ar_interpreter_t *mut_interpreter,
     }
     
     // Retrieve agent's memory and context
-    ar_data_t *mut_memory = ar_agency__get_agent_mutable_memory_with_instance(agent_id);
-    const ar_data_t *ref_context = ar_agency__get_agent_context_with_instance(agent_id);
+    ar_data_t *mut_memory = ar_agency__get_agent_mutable_memory(agent_id);
+    const ar_data_t *ref_context = ar_agency__get_agent_context(agent_id);
     
     // Create frame for execution
     ar_frame_t *own_frame = ar_frame__create(mut_memory, ref_context, ref_message);

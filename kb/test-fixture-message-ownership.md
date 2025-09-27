@@ -72,7 +72,7 @@ void test_with_message(ar_interpreter_fixture_t *own_fixture) {
     // Continue with verification...
 }
 
-// System pattern shown in ar_system__process_next_message_with_instance:
+// System pattern shown in ar_system__process_next_message:
 // 1. Dequeue message from agent (agent drops ownership)
 // 2. System takes ownership of the dequeued message
 ar_data__take_ownership(own_message, mut_system);

@@ -109,18 +109,18 @@ int main(void) {
     ar_system_t *own_system = ar_system__create();
 
     // Initialize the runtime with the echo method
-    int64_t initial_agent = ar_system__init_with_instance(own_system, "echo", echo_version);
+    int64_t initial_agent = ar_system__init(own_system, "echo", echo_version);
 
     // Send a message to the echo agent
     ar_agency_t *mut_agency = ar_system__get_agency(own_system);
-    ar_agency__send_to_agent_with_instance(mut_agency, initial_agent, 
+    ar_agency__send_to_agent(mut_agency, initial_agent, 
                                             ar_data__create_string("Hello, AgeRun!"));
 
     // Process all messages
-    ar_system__process_all_messages_with_instance(own_system);
+    ar_system__process_all_messages(own_system);
 
     // Shutdown and cleanup (system handles all cleanup)
-    ar_system__shutdown_with_instance(own_system);
+    ar_system__shutdown(own_system);
     ar_system__destroy(own_system);
 
     return 0;
@@ -145,7 +145,7 @@ ar_agent__send(counter_id, "increment");
 ar_agent__send(counter_id, "get");
 
 // Process all messages (assuming system instance is available)
-// ar_system__process_all_messages_with_instance(own_system);
+// ar_system__process_all_messages(own_system);
 ```
 
 ### Persistence
@@ -157,8 +157,8 @@ ar_agency_t *mut_agency = ar_system__get_agency(own_system);
 ar_methodology_t *mut_methodology = ar_agency__get_methodology(mut_agency);
 
 // Save agents and methods to disk
-ar_agency__save_agents_with_instance(mut_agency);
-ar_methodology__save_methods_with_instance(mut_methodology);
+ar_agency__save_agents(mut_agency);
+ar_methodology__save_methods(mut_methodology);
 
 // Shutdown the runtime
 ar_system__destroy(own_system);
@@ -171,10 +171,10 @@ ar_agency_t *mut_new_agency = ar_system__get_agency(own_new_system);
 ar_methodology_t *mut_new_methodology = ar_agency__get_methodology(mut_new_agency);
 
 // Load methods
-ar_methodology__load_methods_with_instance(mut_new_methodology);
+ar_methodology__load_methods(mut_new_methodology);
 
 // Initialize runtime with bootstrap agent
-int64_t bootstrap_agent = ar_system__init_with_instance(own_new_system, "bootstrap", "1.0.0");
+int64_t bootstrap_agent = ar_system__init(own_new_system, "bootstrap", "1.0.0");
 ```
 
 ## Method Expressions and Instructions

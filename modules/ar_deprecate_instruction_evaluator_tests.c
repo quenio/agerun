@@ -76,10 +76,10 @@ static void test_deprecate_instruction_evaluator__evaluate_with_instance(void) {
     // Create a test method using instance APIs
     ar_method_t *own_method = ar_method__create("test_destroyer", "memory.x := 1", "1.0.0");
     assert(own_method != NULL);
-    ar_methodology__register_method_with_instance(mut_methodology, own_method);
+    ar_methodology__register_method(mut_methodology, own_method);
     
     // Verify method exists
-    ar_method_t *method = ar_methodology__get_method_with_instance(mut_methodology, "test_destroyer", "1.0.0");
+    ar_method_t *method = ar_methodology__get_method(mut_methodology, "test_destroyer", "1.0.0");
     assert(method != NULL);
     
     // Create destroy AST with method name and version
@@ -115,7 +115,7 @@ static void test_deprecate_instruction_evaluator__evaluate_with_instance(void) {
     assert(result == true);
     
     // And the method should be destroyed (not exist anymore)
-    method = ar_methodology__get_method_with_instance(mut_methodology, "test_destroyer", "1.0.0");
+    method = ar_methodology__get_method(mut_methodology, "test_destroyer", "1.0.0");
     assert(method == NULL);
     
     // Cleanup
@@ -158,7 +158,7 @@ static void test_deprecate_instruction_evaluator__evaluate_frame_based(void) {
     // Create a test method using instance APIs
     ar_method_t *own_method = ar_method__create("test_destroyer", "memory.x := 1", "1.0.0");
     assert(own_method != NULL);
-    ar_methodology__register_method_with_instance(mut_methodology, own_method);
+    ar_methodology__register_method(mut_methodology, own_method);
     
     // Create destroy AST with method name and version
     const char *args[] = {"\"test_destroyer\"", "\"1.0.0\""};
@@ -193,7 +193,7 @@ static void test_deprecate_instruction_evaluator__evaluate_frame_based(void) {
     assert(result == true);
     
     // And the method should be destroyed
-    ar_method_t *method = ar_methodology__get_method_with_instance(mut_methodology, "test_destroyer", "1.0.0");
+    ar_method_t *method = ar_methodology__get_method(mut_methodology, "test_destroyer", "1.0.0");
     assert(method == NULL);
     
     // Cleanup
@@ -240,11 +240,11 @@ static void test_deprecate_instruction_evaluator__evaluate_with_agents(void) {
     // Create a test method using instance APIs
     ar_method_t *own_method = ar_method__create("test_destroyer", "memory.x := 1", "1.0.0");
     assert(own_method != NULL);
-    ar_methodology__register_method_with_instance(mut_methodology, own_method);
+    ar_methodology__register_method(mut_methodology, own_method);
     
     // Create agents using instance APIs
-    int64_t agent1 = ar_agency__create_agent_with_instance(mut_agency, "test_destroyer", "1.0.0", NULL);
-    int64_t agent2 = ar_agency__create_agent_with_instance(mut_agency, "test_destroyer", "1.0.0", NULL);
+    int64_t agent1 = ar_agency__create_agent(mut_agency, "test_destroyer", "1.0.0", NULL);
+    int64_t agent2 = ar_agency__create_agent(mut_agency, "test_destroyer", "1.0.0", NULL);
     assert(agent1 > 0);
     assert(agent2 > 0);
     
@@ -287,12 +287,12 @@ static void test_deprecate_instruction_evaluator__evaluate_with_agents(void) {
     assert(ar_data__get_integer(result_value) == 1);
     
     // The agents should still exist (deprecate no longer destroys agents)
-    ar_agent_registry_t *registry = ar_agency__get_registry_with_instance(mut_agency);
+    ar_agent_registry_t *registry = ar_agency__get_registry(mut_agency);
     assert(ar_agent_registry__is_registered(registry, agent1) == true);
     assert(ar_agent_registry__is_registered(registry, agent2) == true);
     
     // And the method should be destroyed
-    ar_method_t *method = ar_methodology__get_method_with_instance(mut_methodology, "test_destroyer", "1.0.0");
+    ar_method_t *method = ar_methodology__get_method(mut_methodology, "test_destroyer", "1.0.0");
     assert(method == NULL);
     
     // Cleanup

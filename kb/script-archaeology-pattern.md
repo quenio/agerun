@@ -25,8 +25,8 @@ git show HEAD:scripts/remove_global_functions.py | grep -A 30 "FUNCTIONS_TO_REMO
 Script revealed Phase 2b removed ALL functions:
 ```python
 FUNCTIONS_TO_REMOVE = [
-    'ar_agency__create_agent_with_instance',           # Phase 2b
-    'ar_agency__destroy_agent_with_instance',          # Phase 2b
+    'ar_agency__create_agent',           # Phase 2b
+    'ar_agency__destroy_agent',          # Phase 2b
     # ... 18 more from Phase 2b ...
     'ar_agency__is_agent_active',        # Phase 2c (already done!)
     'ar_agency__set_agent_active',       # Phase 2c (already done!)

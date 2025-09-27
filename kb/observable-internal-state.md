@@ -20,13 +20,13 @@ if (!ast) {
 }
 
 // Another example with agent validation through agency
-const ar_data_t* agent_memory = ar_agency__get_agent_memory_with_instance(agency, agent_id);
+const ar_data_t* agent_memory = ar_agency__get_agent_memory(agency, agent_id);
 if (!agent_memory) {
     return false;  // Agent doesn't exist or has no memory
 }
 
 // Check if agent has required method
-const ar_method_t* agent_method = ar_agency__get_agent_method_with_instance(agency, agent_id);
+const ar_method_t* agent_method = ar_agency__get_agent_method(agency, agent_id);
 if (!agent_method) {
     // Agent has no method assigned
     return false;

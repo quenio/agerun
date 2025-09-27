@@ -16,7 +16,7 @@ AR_ASSERT(ar_method_fixture__load_method(own_fixture, "bootstrap",
 // Verify the method parsed successfully (has AST)
 ar_agency_t *mut_agency = ar_method_fixture__get_agency(own_fixture);
 ar_methodology_t *mut_methodology = ar_agency__get_methodology(mut_agency);
-ar_method_t *ref_method = ar_methodology__get_method_with_instance(
+ar_method_t *ref_method = ar_methodology__get_method(
     mut_methodology, "bootstrap", "1.0.0");
 AR_ASSERT(ref_method != NULL, "Bootstrap method should be found");
 AR_ASSERT(ar_method__get_ast(ref_method) != NULL, 
@@ -35,7 +35,7 @@ All method-loading tests should:
 // Standard pattern for method test AST verification
 static void verify_method_parses(ar_methodology_t *mut_methodology, 
                                  const char *name, const char *version) {
-    ar_method_t *ref_method = ar_methodology__get_method_with_instance(
+    ar_method_t *ref_method = ar_methodology__get_method(
         mut_methodology, name, version);
     AR_ASSERT(ref_method != NULL, "Method should be registered");
     AR_ASSERT(ar_method__get_ast(ref_method) != NULL, 

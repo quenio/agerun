@@ -20,7 +20,7 @@ ar_agent_store__save_all_agents(filename);  // Public API for persistence
 
 // FACADE module (public interface):
 // ar_agency - coordinates internal modules
-ar_agency__create_agent_with_instance(name, method, version);  // Public API
+ar_agency__create_agent(name, method, version);  // Public API
 ```
 
 Similarly for methodology:
@@ -30,7 +30,7 @@ Similarly for methodology:
 // PUBLIC: ar_methodology (facade coordinating both)
 
 // Users only interact with:
-ar_methodology__get_method_with_instance("name", "1.2");  // Public API
+ar_methodology__get_method("name", "1.2");  // Public API
 // Not with:
 ar_method_registry__get_latest_version(...);  // Internal
 ```

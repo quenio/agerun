@@ -43,7 +43,7 @@ static void test_calculator_add(void) {
 
     
     // Create calculator agent with initial memory using the fixture\'s agency
-    int64_t calc_agent = ar_agency__create_agent_with_instance(mut_agency, "calculator", "1.0.0", own_initial_memory);
+    int64_t calc_agent = ar_agency__create_agent(mut_agency, "calculator", "1.0.0", own_initial_memory);
     assert(calc_agent != 0);
     printf("DEBUG: Created calc agent %lld\n", (long long)calc_agent);
     
@@ -58,7 +58,7 @@ static void test_calculator_add(void) {
     ar_data__set_map_integer(own_message, "b", 3);
     
     printf("DEBUG: About to process calculator message\n");
-    bool sent = ar_agency__send_to_agent_with_instance(mut_agency, calc_agent, own_message);
+    bool sent = ar_agency__send_to_agent(mut_agency, calc_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
@@ -67,7 +67,7 @@ static void test_calculator_add(void) {
     assert(processed);
     
     // Get agent memory to check result
-    const ar_data_t *agent_memory = ar_agency__get_agent_memory_with_instance(mut_agency, calc_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory(mut_agency, calc_agent);
     assert(agent_memory != NULL);
     assert(ar_data__get_type(agent_memory) == AR_DATA_TYPE__MAP);
     
@@ -81,9 +81,9 @@ static void test_calculator_add(void) {
     
     // Clean up
     // Get the agent's context before destroying it (we created it, we must destroy it)
-    const ar_data_t *ref_context = ar_agency__get_agent_context_with_instance(mut_agency, calc_agent);
+    const ar_data_t *ref_context = ar_agency__get_agent_context(mut_agency, calc_agent);
     
-    ar_agency__destroy_agent_with_instance(mut_agency, calc_agent);
+    ar_agency__destroy_agent(mut_agency, calc_agent);
     
     // Process any remaining messages
     while (ar_method_fixture__process_next_message(own_fixture)) {
@@ -143,7 +143,7 @@ static void test_calculator_multiply(void) {
 
     
     // Create calculator agent with initial memory using the fixture\'s agency
-    int64_t calc_agent = ar_agency__create_agent_with_instance(mut_agency, "calculator", "1.0.0", own_initial_memory);
+    int64_t calc_agent = ar_agency__create_agent(mut_agency, "calculator", "1.0.0", own_initial_memory);
     assert(calc_agent != 0);
     printf("DEBUG: Created calc agent %lld\n", (long long)calc_agent);
     
@@ -158,7 +158,7 @@ static void test_calculator_multiply(void) {
     ar_data__set_map_integer(own_message, "b", 2);
     
     printf("DEBUG: About to process calculator message\n");
-    bool sent = ar_agency__send_to_agent_with_instance(mut_agency, calc_agent, own_message);
+    bool sent = ar_agency__send_to_agent(mut_agency, calc_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
@@ -167,7 +167,7 @@ static void test_calculator_multiply(void) {
     assert(processed);
     
     // Get agent memory to check result
-    const ar_data_t *agent_memory = ar_agency__get_agent_memory_with_instance(mut_agency, calc_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory(mut_agency, calc_agent);
     assert(agent_memory != NULL);
     
     // Check if result exists
@@ -180,9 +180,9 @@ static void test_calculator_multiply(void) {
     
     // Clean up
     // Get the agent's context before destroying it (we created it, we must destroy it)
-    const ar_data_t *ref_context = ar_agency__get_agent_context_with_instance(mut_agency, calc_agent);
+    const ar_data_t *ref_context = ar_agency__get_agent_context(mut_agency, calc_agent);
     
-    ar_agency__destroy_agent_with_instance(mut_agency, calc_agent);
+    ar_agency__destroy_agent(mut_agency, calc_agent);
     
     // Process any remaining messages
     while (ar_method_fixture__process_next_message(own_fixture)) {
@@ -242,7 +242,7 @@ static void test_calculator_subtract(void) {
 
     
     // Create calculator agent with initial memory using the fixture\'s agency
-    int64_t calc_agent = ar_agency__create_agent_with_instance(mut_agency, "calculator", "1.0.0", own_initial_memory);
+    int64_t calc_agent = ar_agency__create_agent(mut_agency, "calculator", "1.0.0", own_initial_memory);
     assert(calc_agent != 0);
     printf("DEBUG: Created calc agent %lld\n", (long long)calc_agent);
     
@@ -257,7 +257,7 @@ static void test_calculator_subtract(void) {
     ar_data__set_map_integer(own_message, "b", 7);
     
     printf("DEBUG: About to process calculator message\n");
-    bool sent = ar_agency__send_to_agent_with_instance(mut_agency, calc_agent, own_message);
+    bool sent = ar_agency__send_to_agent(mut_agency, calc_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
@@ -266,7 +266,7 @@ static void test_calculator_subtract(void) {
     assert(processed);
     
     // Get agent memory to check result
-    const ar_data_t *agent_memory = ar_agency__get_agent_memory_with_instance(mut_agency, calc_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory(mut_agency, calc_agent);
     assert(agent_memory != NULL);
     
     // Check if result exists
@@ -280,9 +280,9 @@ static void test_calculator_subtract(void) {
     
     // Clean up
     // Get the agent's context before destroying it (we created it, we must destroy it)
-    const ar_data_t *ref_context = ar_agency__get_agent_context_with_instance(mut_agency, calc_agent);
+    const ar_data_t *ref_context = ar_agency__get_agent_context(mut_agency, calc_agent);
     
-    ar_agency__destroy_agent_with_instance(mut_agency, calc_agent);
+    ar_agency__destroy_agent(mut_agency, calc_agent);
     
     // Process any remaining messages
     while (ar_method_fixture__process_next_message(own_fixture)) {
@@ -342,7 +342,7 @@ static void test_calculator_divide(void) {
 
     
     // Create calculator agent with initial memory using the fixture\'s agency
-    int64_t calc_agent = ar_agency__create_agent_with_instance(mut_agency, "calculator", "1.0.0", own_initial_memory);
+    int64_t calc_agent = ar_agency__create_agent(mut_agency, "calculator", "1.0.0", own_initial_memory);
     assert(calc_agent != 0);
     printf("DEBUG: Created calc agent %lld\n", (long long)calc_agent);
     
@@ -357,7 +357,7 @@ static void test_calculator_divide(void) {
     ar_data__set_map_integer(own_message, "b", 2);
     
     printf("DEBUG: About to process calculator message\n");
-    bool sent = ar_agency__send_to_agent_with_instance(mut_agency, calc_agent, own_message);
+    bool sent = ar_agency__send_to_agent(mut_agency, calc_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
@@ -366,7 +366,7 @@ static void test_calculator_divide(void) {
     assert(processed);
     
     // Get agent memory to check result
-    const ar_data_t *agent_memory = ar_agency__get_agent_memory_with_instance(mut_agency, calc_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory(mut_agency, calc_agent);
     assert(agent_memory != NULL);
     
     // Check if result exists (integer division)
@@ -382,9 +382,9 @@ static void test_calculator_divide(void) {
     
     // Clean up
     // Get the agent's context before destroying it (we created it, we must destroy it)
-    const ar_data_t *ref_context = ar_agency__get_agent_context_with_instance(mut_agency, calc_agent);
+    const ar_data_t *ref_context = ar_agency__get_agent_context(mut_agency, calc_agent);
     
-    ar_agency__destroy_agent_with_instance(mut_agency, calc_agent);
+    ar_agency__destroy_agent(mut_agency, calc_agent);
     
     // Process any remaining messages
     while (ar_method_fixture__process_next_message(own_fixture)) {
@@ -444,7 +444,7 @@ static void test_calculator_unknown_operation(void) {
 
     
     // Create calculator agent with initial memory using the fixture\'s agency
-    int64_t calc_agent = ar_agency__create_agent_with_instance(mut_agency, "calculator", "1.0.0", own_initial_memory);
+    int64_t calc_agent = ar_agency__create_agent(mut_agency, "calculator", "1.0.0", own_initial_memory);
     assert(calc_agent != 0);
     printf("DEBUG: Created calc agent %lld\n", (long long)calc_agent);
     
@@ -459,7 +459,7 @@ static void test_calculator_unknown_operation(void) {
     ar_data__set_map_integer(own_message, "b", 3);
     
     printf("DEBUG: About to process calculator message\n");
-    bool sent = ar_agency__send_to_agent_with_instance(mut_agency, calc_agent, own_message);
+    bool sent = ar_agency__send_to_agent(mut_agency, calc_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
@@ -468,7 +468,7 @@ static void test_calculator_unknown_operation(void) {
     assert(processed);
     
     // Get agent memory to check result
-    const ar_data_t *agent_memory = ar_agency__get_agent_memory_with_instance(mut_agency, calc_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory(mut_agency, calc_agent);
     assert(agent_memory != NULL);
     
     // Check if result exists (should be 0 for unknown operations)
@@ -482,9 +482,9 @@ static void test_calculator_unknown_operation(void) {
     
     // Clean up
     // Get the agent's context before destroying it (we created it, we must destroy it)
-    const ar_data_t *ref_context = ar_agency__get_agent_context_with_instance(mut_agency, calc_agent);
+    const ar_data_t *ref_context = ar_agency__get_agent_context(mut_agency, calc_agent);
     
-    ar_agency__destroy_agent_with_instance(mut_agency, calc_agent);
+    ar_agency__destroy_agent(mut_agency, calc_agent);
     
     // Process any remaining messages
     while (ar_method_fixture__process_next_message(own_fixture)) {

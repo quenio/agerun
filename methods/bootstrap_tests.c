@@ -27,18 +27,18 @@ static void test_bootstrap_spawns_echo_on_boot(void) {
     // GIVEN: Bootstrap agent exists
     ar_agency_t *mut_agency = ar_method_fixture__get_agency(own_fixture);
     ar_data_t *own_context = ar_data__create_map();
-    int64_t bootstrap_id = ar_agency__create_agent_with_instance(
+    int64_t bootstrap_id = ar_agency__create_agent(
         mut_agency, "bootstrap", "1.0.0", own_context);
     AR_ASSERT(bootstrap_id == 1, "Bootstrap should be agent 1");
     
     // WHEN: Bootstrap receives "__boot__" message
     ar_data_t *own_boot = ar_data__create_string("__boot__");
-    ar_agency__send_to_agent_with_instance(mut_agency, bootstrap_id, own_boot);
+    ar_agency__send_to_agent(mut_agency, bootstrap_id, own_boot);
     bool processed = ar_method_fixture__process_next_message(own_fixture);
     AR_ASSERT(processed, "Boot message should be processed");
     
     // THEN: Bootstrap memory should reflect boot processing
-    const ar_data_t *bootstrap_memory = ar_agency__get_agent_memory_with_instance(
+    const ar_data_t *bootstrap_memory = ar_agency__get_agent_memory(
         mut_agency, bootstrap_id);
     
     const ar_data_t *is_boot = ar_data__get_map_data(bootstrap_memory, "is_boot");
@@ -78,7 +78,7 @@ static void test_bootstrap_spawns_echo_on_boot(void) {
     AR_ASSERT(processed, "Echo should receive message");
     
     // THEN: Echo memory should exist
-    const ar_data_t *echo_memory = ar_agency__get_agent_memory_with_instance(
+    const ar_data_t *echo_memory = ar_agency__get_agent_memory(
         mut_agency, 2);  // Echo is agent 2
     AR_ASSERT(echo_memory != NULL, "Echo agent should exist");
     AR_ASSERT(ar_data__get_type(echo_memory) == AR_DATA_TYPE__MAP,
@@ -89,7 +89,7 @@ static void test_bootstrap_spawns_echo_on_boot(void) {
     AR_ASSERT(processed, "Bootstrap should receive reply");
     
     // THEN: Bootstrap memory should reflect boomerang receipt
-    bootstrap_memory = ar_agency__get_agent_memory_with_instance(
+    bootstrap_memory = ar_agency__get_agent_memory(
         mut_agency, bootstrap_id);
     
     is_boot = ar_data__get_map_data(bootstrap_memory, "is_boot");

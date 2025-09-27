@@ -154,7 +154,7 @@ void ar_methodology__destroy(ar_methodology_t *own_methodology) {
 
 /* Instance-aware versions of public functions */
 
-ar_method_t* ar_methodology__get_method_with_instance(ar_methodology_t *ref_methodology, 
+ar_method_t* ar_methodology__get_method(ar_methodology_t *ref_methodology, 
                                                    const char *ref_name, 
                                                    const char *ref_version) {
     if (!ref_methodology) {
@@ -165,7 +165,7 @@ ar_method_t* ar_methodology__get_method_with_instance(ar_methodology_t *ref_meth
     return ar_method_resolver__resolve_method(ref_methodology->own_resolver, ref_name, ref_version);
 }
 
-void ar_methodology__register_method_with_instance(ar_methodology_t *mut_methodology, 
+void ar_methodology__register_method(ar_methodology_t *mut_methodology, 
                                                    ar_method_t *own_method) {
     if (!mut_methodology || !own_method) {
         if (own_method) {
@@ -189,7 +189,7 @@ void ar_methodology__register_method_with_instance(ar_methodology_t *mut_methodo
     // Ownership transferred to registry
 }
 
-bool ar_methodology__create_method_with_instance(ar_methodology_t *mut_methodology,
+bool ar_methodology__create_method(ar_methodology_t *mut_methodology,
                                                  const char *ref_name, 
                                                  const char *ref_instructions,
                                                  const char *ref_version) {
@@ -203,13 +203,13 @@ bool ar_methodology__create_method_with_instance(ar_methodology_t *mut_methodolo
         return false;
     }
     
-    ar_methodology__register_method_with_instance(mut_methodology, own_method);
+    ar_methodology__register_method(mut_methodology, own_method);
     // ownership transferred
     
     return true;
 }
 
-bool ar_methodology__save_methods_with_instance(ar_methodology_t *ref_methodology, 
+bool ar_methodology__save_methods(ar_methodology_t *ref_methodology, 
                                                 const char *ref_filename) {
     if (!ref_methodology || !ref_filename) {
         return false;
@@ -236,7 +236,7 @@ bool ar_methodology__save_methods_with_instance(ar_methodology_t *ref_methodolog
     }
 }
 
-bool ar_methodology__load_methods_with_instance(ar_methodology_t *mut_methodology, 
+bool ar_methodology__load_methods(ar_methodology_t *mut_methodology, 
                                                 const char *ref_filename) {
     if (!mut_methodology || !ref_filename) {
         return false;
@@ -263,7 +263,7 @@ bool ar_methodology__load_methods_with_instance(ar_methodology_t *mut_methodolog
     }
 }
 
-bool ar_methodology__unregister_method_with_instance(ar_methodology_t *mut_methodology,
+bool ar_methodology__unregister_method(ar_methodology_t *mut_methodology,
                                                      const char *ref_name,
                                                      const char *ref_version) {
     if (!mut_methodology || !ref_name || !ref_version) {
@@ -286,7 +286,7 @@ bool ar_methodology__unregister_method_with_instance(ar_methodology_t *mut_metho
  * @note This should be called before destroying the methodology instance
  * @note Ownership: This cleans up all methods owned by the instance
  */
-void ar_methodology__cleanup_with_instance(ar_methodology_t *mut_methodology) {
+void ar_methodology__cleanup(ar_methodology_t *mut_methodology) {
     if (!mut_methodology) {
         return;
     }

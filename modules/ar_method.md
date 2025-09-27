@@ -97,7 +97,7 @@ ar_method_t *own_method = ar_method__create(name, instructions, version);
 
 if (own_method) {
     // Register the method with methodology (methodology takes ownership)
-    ar_methodology__register_method_with_instance(mut_methodology, own_method);
+    ar_methodology__register_method(mut_methodology, own_method);
     own_method = NULL; // Mark as transferred
 
     // Or manage it yourself

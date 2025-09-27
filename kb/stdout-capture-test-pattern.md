@@ -35,7 +35,7 @@ static void test_no_output_during_operation(void) {
     
     // Perform operation that should not print
     ar_system_t *mut_system = ar_system__create();
-    ar_system__init_with_instance(mut_system, NULL, NULL);
+    ar_system__init(mut_system, NULL, NULL);
     
     // Restore stdout
     fflush(stdout);

@@ -24,22 +24,22 @@ def update_file(filepath):
         # For other files, update to instance versions
         content = re.sub(
             r'ar_system__init\(',
-            r'ar_system__init_with_instance(own_system, ',
+            r'ar_system__init(own_system, ',
             content
         )
         content = re.sub(
             r'ar_system__shutdown\(',
-            r'ar_system__shutdown_with_instance(own_system)',
+            r'ar_system__shutdown(own_system)',
             content
         )
         content = re.sub(
             r'ar_system__process_next_message\(',
-            r'ar_system__process_next_message_with_instance(own_system)',
+            r'ar_system__process_next_message(own_system)',
             content
         )
         content = re.sub(
             r'ar_system__process_all_messages\(',
-            r'ar_system__process_all_messages_with_instance(own_system)',
+            r'ar_system__process_all_messages(own_system)',
             content
         )
     

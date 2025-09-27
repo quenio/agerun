@@ -51,7 +51,7 @@ ar_methodology_t* mut_methodology = ar_methodology__create();
 // Example workflow:
 if (user_instruction_received) {
     // Proceed with requested task
-    ar_method_t* own_method = ar_methodology__get_method_with_instance(
+    ar_method_t* own_method = ar_methodology__get_method(
         mut_methodology, "requested_task", "1.0.0"
     );
 } else {

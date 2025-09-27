@@ -131,7 +131,7 @@ Executes a complete method.
   - Message being processed (borrowed reference)
 - **Returns**: true on success, false on failure
 - **Process**:
-  1. Retrieves method from agent using ar_agency__get_agent_method_with_instance()
+  1. Retrieves method from agent using ar_agency__get_agent_method()
   2. Delegates execution to the method evaluator
   3. The method evaluator handles all parsing and execution
   4. Errors are logged through the log instance

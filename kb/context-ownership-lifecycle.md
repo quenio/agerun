@@ -20,14 +20,14 @@ static void run_first_session(void) {
     ar_data_t *own_echo_context = ar_data__create_map();
     ar_data_t *own_counter_context = ar_data__create_map();
     
-    int64_t echo_agent = ar_agency__create_agent_with_instance(
+    int64_t echo_agent = ar_agency__create_agent(
         mut_agency, "echo", "1.0.0", own_echo_context);
-    int64_t counter_agent = ar_agency__create_agent_with_instance(
+    int64_t counter_agent = ar_agency__create_agent(
         mut_agency, "counter", "1.0.0", own_counter_context);
     
     // ... use agents ...
     
-    ar_system__shutdown_with_instance(mut_system);
+    ar_system__shutdown(mut_system);
     // Variables own_echo_context, own_counter_context out of scope!
 }
 
@@ -44,16 +44,16 @@ int main() {
     ar_data_t *own_counter_context = ar_data__create_map();
     
     // Initialize and run
-    ar_system__init_with_instance(mut_system, "main", "1.0.0");
+    ar_system__init(mut_system, "main", "1.0.0");
     
     // Create agents with contexts
-    int64_t echo_agent = ar_agency__create_agent_with_instance(
+    int64_t echo_agent = ar_agency__create_agent(
         mut_agency, "echo", "1.0.0", own_echo_context);
     
     // ... run session ...
     
     // Shutdown FIRST (while agents still exist)
-    ar_system__shutdown_with_instance(mut_system);
+    ar_system__shutdown(mut_system);
     
     // NOW destroy contexts (variables still in scope)
     ar_data__destroy(own_echo_context);
@@ -87,14 +87,14 @@ void process_with_proper_lifecycle(void) {
     ar_data_t *own_context = ar_data__create_map();
     
     // 2. Use resource (may pass references down)
-    int64_t agent = ar_agency__create_agent_with_instance(
+    int64_t agent = ar_agency__create_agent(
         mut_agency, "worker", "1.0.0", own_context);
     
     // 3. Process (resource may be borrowed internally)
-    ar_system__process_next_message_with_instance(mut_system);
+    ar_system__process_next_message(mut_system);
     
     // 4. Cleanup in reverse order
-    ar_agency__destroy_agent_with_instance(mut_agency, agent);
+    ar_agency__destroy_agent(mut_agency, agent);
     
     // 5. Destroy where created (variables in scope)
     ar_data__destroy(own_context);

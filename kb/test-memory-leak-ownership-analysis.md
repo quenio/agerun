@@ -12,16 +12,16 @@ This prevents adding redundant cleanup code that obscures the actual ownership m
 static void test_agency_functionality(void) {
     // Create and register a method
     ar_method_t *own_method = ar_method__create("test_method", "message -> \"Test\"", "1.0.0");
-    ar_methodology__register_method_with_instance(own_method);  // Ownership transferred to methodology
+    ar_methodology__register_method(own_method);  // Ownership transferred to methodology
     
     // Run test operations...
-    int64_t agent_id = ar_agency__create_agent_with_instance("test_method", "1.0.0", NULL);
+    int64_t agent_id = ar_agency__create_agent("test_method", "1.0.0", NULL);
     
     // Initially added manual cleanup (redundant):
-    ar_methodology__unregister_method_with_instance("test_method", "1.0.0");  // NOT NEEDED
+    ar_methodology__unregister_method("test_method", "1.0.0");  // NOT NEEDED
     
     // System shutdown cleans up methodology and all registered methods
-    ar_system__shutdown_with_instance(own_system));  // Calls ar_methodology__cleanup_with_instance() which frees all methods
+    ar_system__shutdown(own_system));  // Calls ar_methodology__cleanup() which frees all methods
 }
 ```
 
@@ -38,8 +38,8 @@ When analyzing memory leaks in tests:
 cat bin/run-tests/memory_report_*.log | grep "Allocated at:"
 
 # Trace ownership chain
-grep -r "ar_methodology__register_method_with_instance" modules/
-grep -r "ar_methodology__cleanup_with_instance" modules/
+grep -r "ar_methodology__register_method" modules/
+grep -r "ar_methodology__cleanup" modules/
 
 # Verify lifecycle management
 grep -A 10 "ar_system__shutdown" modules/ar_system.c

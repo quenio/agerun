@@ -39,14 +39,14 @@ void ar_system__destroy_instance(ar_data_t *own_system) {  // EXAMPLE: Hypotheti
 
 // CORRECT: Keep instance and global completely separate
 // Note: This shows the old global API pattern (now removed)
-// In current code, use ar_system__process_next_message_with_instance()
+// In current code, use ar_system__process_next_message()
 bool process_next_message_global(void) {  // EXAMPLE: Old pattern
     if (!is_initialized) {
         return false;
     }
     // Direct implementation using global state
     // No fake instance, no shared ownership
-    ar_data_t *own_message = ar_agency__get_agent_message_with_instance(agent_id);
+    ar_data_t *own_message = ar_agency__get_agent_message(agent_id);
     if (own_message) {
         ar_interpreter__execute_method(g_interpreter, agent_id, own_message);
         ar_data__destroy(own_message);
@@ -103,7 +103,7 @@ ar_data_t* ar_system__create_instance(ar_agency_t *ref_agency) {  // EXAMPLE: Fu
 int ar_agency__count_agents(void) {
     // This works because agency's global instance owns its registry
     ar_agency_t *ref_agency = ar_agency__get_global_instance();  // EXAMPLE: Safe delegation
-    return ref_agency ? ar_agency__count_agents_with_instance(ref_agency) : 0;
+    return ref_agency ? ar_agency__count_agents(ref_agency) : 0;
 }
 
 // 4. CORRECT: Single global instance pattern (from ar_system refactoring)
@@ -124,7 +124,7 @@ int64_t init_global_example(const char *ref_method_name, const char *ref_version
     }
     
     // Delegate to instance function
-    return ar_system__init_with_instance(g_system, ref_method_name, ref_version);  // EXAMPLE: Safe delegation
+    return ar_system__init(g_system, ref_method_name, ref_version);  // EXAMPLE: Safe delegation
 }
 ```
 

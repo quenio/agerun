@@ -15,12 +15,12 @@ struct ar_system_s {
     ar_log_t *own_log;               // Owned by system
 };
 
-void ar_system__shutdown_with_instance(ar_system_t *mut_system) {
+void ar_system__shutdown(ar_system_t *mut_system) {
     // WRONG: Trying to get methodology from agency
     ar_methodology_t *ref_methodology = ar_agency__get_methodology(mut_system->ref_agency);
     if (ref_methodology) {
         // WRONG: System doesn't own methodology!
-        ar_methodology__cleanup_with_instance(ref_methodology);  // EXAMPLE: Don't do this!
+        ar_methodology__cleanup(ref_methodology);  // EXAMPLE: Don't do this!
     }
     
     // CORRECT: Only clean up owned resources
@@ -85,11 +85,11 @@ void system__cleanup_resources(system_t *mut_system) {  // EXAMPLE: Generic syst
     // If using instance methodology, let owner handle cleanup
     if (mut_system->ref_methodology) {
         // Just save, don't cleanup - not owned
-        ar_methodology__save_methods_with_instance(mut_system->ref_methodology, NULL);
+        ar_methodology__save_methods(mut_system->ref_methodology, NULL);
     } else {
         // Using global methodology - we're responsible
-        ar_methodology__save_methods_with_instance();
-        ar_methodology__cleanup_with_instance();  // Global cleanup is OK here
+        ar_methodology__save_methods();
+        ar_methodology__cleanup();  // Global cleanup is OK here
     }
 }
 ```

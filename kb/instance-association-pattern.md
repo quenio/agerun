@@ -16,7 +16,7 @@ typedef struct ar_agency_s {  // EXAMPLE: Future type after refactoring
 
 ar_method_t* _get_method_for_agent(const char* name) {
     // Hidden dependency on global methodology
-    return ar_methodology__get_method_with_instance(name, NULL);  
+    return ar_methodology__get_method(name, NULL);  
 }
 
 // GOOD: Explicit instance association
@@ -34,7 +34,7 @@ ar_agency_t* ar_agency__create(ar_methodology_t* methodology) {  // EXAMPLE: Fut
 
 // Now agency methods use associated instance:
 ar_method_t* _get_method_for_agent(ar_agency_t* agency, const char* name) {  // EXAMPLE: Using future type
-    return ar_methodology__get_method_with_instance(
+    return ar_methodology__get_method(
         agency->own_methodology, name, NULL
     );
 }

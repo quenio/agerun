@@ -14,18 +14,18 @@ files_to_fix = [
 # Replacements to make
 replacements = {
     # Fix double _with_instance
-    "ar_agency__send_to_agent_with_instance_with_instance": "ar_agency__send_to_agent_with_instance",
-    "ar_agency__create_agent_with_instance_with_instance": "ar_agency__create_agent_with_instance",
-    "ar_agency__save_agents_with_instance_with_instance": "ar_agency__save_agents_with_instance",
-    "ar_agency__get_agent_method_with_instance_with_instance": "ar_agency__get_agent_method_with_instance",
+    "ar_agency__send_to_agent_with_instance_with_instance": "ar_agency__send_to_agent",
+    "ar_agency__create_agent_with_instance_with_instance": "ar_agency__create_agent",
+    "ar_agency__save_agents_with_instance_with_instance": "ar_agency__save_agents",
+    "ar_agency__get_agent_method_with_instance_with_instance": "ar_agency__get_agent_method",
 
     # Fix functions that need _with_instance added
-    "ar_agency__load_agents": "ar_agency__load_agents_with_instance",
-    "ar_agency__get_first_agent": "ar_agency__get_first_agent_with_instance",
-    "ar_agency__destroy_agent": "ar_agency__destroy_agent_with_instance",
-    "ar_agency__update_agent_methods": "ar_agency__update_agent_methods_with_instance",
-    "ar_agency__get_agent_method_with_instance_info": "ar_agency__get_agent_method_with_instance",
-    "ar_agency__get_registry": "ar_agency__get_registry_with_instance"
+    "ar_agency__load_agents": "ar_agency__load_agents",
+    "ar_agency__get_first_agent": "ar_agency__get_first_agent",
+    "ar_agency__destroy_agent": "ar_agency__destroy_agent",
+    "ar_agency__update_agent_methods": "ar_agency__update_agent_methods",
+    "ar_agency__get_agent_method_with_instance_info": "ar_agency__get_agent_method",
+    "ar_agency__get_registry": "ar_agency__get_registry"
 }
 
 # Process files

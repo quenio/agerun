@@ -33,7 +33,7 @@ When writing AgeRun methods:
 ## Implementation
 ```bash
 # Validate method syntax before runtime
-ar_method_t *ref_method = ar_methodology__get_method_with_instance(methodology, "name", "1.0.0");
+ar_method_t *ref_method = ar_methodology__get_method(methodology, "name", "1.0.0");
 if (ar_method__get_ast(ref_method) == NULL) {
     // Method has parse errors - check for nested functions
 }

@@ -35,7 +35,7 @@ static void test_method_create(ar_system_t *ref_system) {
     // Register with methodology
     ar_agency_t *ref_agency = ar_system__get_agency(ref_system);
     ar_methodology_t *ref_methodology = ar_agency__get_methodology(ref_agency);
-    ar_methodology__register_method_with_instance(ref_methodology, own_method);
+    ar_methodology__register_method(ref_methodology, own_method);
     own_method = NULL; // Mark as transferred
     
     printf("ar_method__create() test passed!\n");
@@ -55,7 +55,7 @@ static void test_method_create_with_previous_version(ar_system_t *ref_system) {
     // Register with methodology
     ar_agency_t *ref_agency = ar_system__get_agency(ref_system);
     ar_methodology_t *ref_methodology = ar_agency__get_methodology(ref_agency);
-    ar_methodology__register_method_with_instance(ref_methodology, own_method_v1);
+    ar_methodology__register_method(ref_methodology, own_method_v1);
     own_method_v1 = NULL; // Mark as transferred
     
     // For test purposes, we assume registration succeeds and creates version 1.0.0
@@ -67,7 +67,7 @@ static void test_method_create_with_previous_version(ar_system_t *ref_system) {
     assert(own_method_v2 != NULL);
     
     // Register with methodology
-    ar_methodology__register_method_with_instance(ref_methodology, own_method_v2);
+    ar_methodology__register_method(ref_methodology, own_method_v2);
     own_method_v2 = NULL; // Mark as transferred
     
     // Then the new version should be created successfully
@@ -95,33 +95,33 @@ static void test_method_run(ar_system_t *mut_system) {
     // Register with methodology
     ar_agency_t *ref_agency = ar_system__get_agency(mut_system);
     ar_methodology_t *ref_methodology = ar_agency__get_methodology(ref_agency);
-    ar_methodology__register_method_with_instance(ref_methodology, own_method);
+    ar_methodology__register_method(ref_methodology, own_method);
     own_method = NULL; // Mark as transferred
     
     // For test purposes, we assume registration succeeds and creates version "1.0.0"
     const char *version = "1.0.0";
     
     // And an agent created with this method
-    int64_t agent_id = ar_agency__create_agent_with_instance(ref_agency, method_name, version, NULL);
+    int64_t agent_id = ar_agency__create_agent(ref_agency, method_name, version, NULL);
     assert(agent_id > 0);
     
     // Check that the agent exists using instance API
-    assert(ar_agency__agent_exists_with_instance(ref_agency, agent_id));
+    assert(ar_agency__agent_exists(ref_agency, agent_id));
     
     // When we send a message to the agent
     static const char *test_message_text = "test_message"; // Just a test message
     ar_data_t *test_message = ar_data__create_string(test_message_text);
     assert(test_message != NULL);
-    bool result = ar_agency__send_to_agent_with_instance(ref_agency, agent_id, test_message);
+    bool result = ar_agency__send_to_agent(ref_agency, agent_id, test_message);
     
     // Then the method should run successfully
     assert(result);
     
     // Process the message to prevent memory leaks
-    ar_system__process_next_message_with_instance(mut_system);
+    ar_system__process_next_message(mut_system);
     
     // When we clean up the agent
-    ar_agency__destroy_agent_with_instance(ref_agency, agent_id);
+    ar_agency__destroy_agent(ref_agency, agent_id);
     
     // Agency destroy returns void, cleanup is done
     
@@ -145,7 +145,7 @@ static void test_method_persistence(ar_system_t *ref_system) {
     // Register with methodology
     ar_agency_t *ref_agency = ar_system__get_agency(ref_system);
     ar_methodology_t *ref_methodology = ar_agency__get_methodology(ref_agency);
-    ar_methodology__register_method_with_instance(ref_methodology, own_method);
+    ar_methodology__register_method(ref_methodology, own_method);
     own_method = NULL; // Mark as transferred
     
     // For test purposes, we assume registration succeeds and creates version 1.0.0
@@ -160,14 +160,14 @@ static void test_method_persistence(ar_system_t *ref_system) {
     assert(own_method2 != NULL);
     
     // Register with methodology
-    ar_methodology__register_method_with_instance(ref_methodology, own_method2);
+    ar_methodology__register_method(ref_methodology, own_method2);
     own_method2 = NULL; // Mark as transferred
     
     // For test purposes, we assume registration succeeds and creates version 1.0.0
     const char *version2 = "1.0.0";
     
     // Save methods to disk
-    bool save_result = ar_methodology__save_methods_with_instance(ref_methodology, "methodology.agerun");
+    bool save_result = ar_methodology__save_methods(ref_methodology, "methodology.agerun");
     assert(save_result);
     
     // Note: We skip clearing the methodology here to avoid use-after-free issues
@@ -175,11 +175,11 @@ static void test_method_persistence(ar_system_t *ref_system) {
     // than a complete fresh start scenario.
     
     // Load methods from disk (this will merge with existing methods)
-    bool load_result = ar_methodology__load_methods_with_instance(ref_methodology, "methodology.agerun");
+    bool load_result = ar_methodology__load_methods(ref_methodology, "methodology.agerun");
     assert(load_result);
     
     // Verify methods were loaded correctly
-    ar_method_t *method = ar_methodology__get_method_with_instance(ref_methodology, name, version);
+    ar_method_t *method = ar_methodology__get_method(ref_methodology, name, version);
     if (method == NULL) {
         printf("Warning: Method %s not loaded correctly, skipping detailed check\n", name);
     } else {
@@ -198,7 +198,7 @@ static void test_method_persistence(ar_system_t *ref_system) {
         // assert(strcmp(ar_method__get_instructions(method), instructions) == 0);
     }
     
-    ar_method_t *method2 = ar_methodology__get_method_with_instance(ref_methodology, name2, version2);
+    ar_method_t *method2 = ar_methodology__get_method(ref_methodology, name2, version2);
     if (method2 == NULL) {
         printf("Warning: Method %s not loaded correctly, skipping detailed check\n", name2);
     } else {
@@ -339,14 +339,14 @@ int main(void) {
     // Register with methodology
     ar_agency_t *ref_agency = ar_system__get_agency(mut_system);
     ar_methodology_t *ref_methodology = ar_agency__get_methodology(ref_agency);
-    ar_methodology__register_method_with_instance(ref_methodology, own_method);
+    ar_methodology__register_method(ref_methodology, own_method);
     own_method = NULL; // Mark as transferred
     
     // For test purposes, we assume registration succeeds and creates version 1.0.0
     const char *init_version = "1.0.0";
     
     // When we initialize the system
-    ar_system__init_with_instance(mut_system, init_method, init_version);
+    ar_system__init(mut_system, init_method, init_version);
     
     // And we run all method tests
     test_method_create(mut_system);
@@ -364,7 +364,7 @@ int main(void) {
     // And report success
     printf("All 10 tests passed!\n");
     // Clean up system instance
-    ar_system__shutdown_with_instance(mut_system);
+    ar_system__shutdown(mut_system);
     ar_system__destroy(mut_system);
     
     return 0;

@@ -34,7 +34,7 @@ static ar_agency_t* _get_global_instance(void) {
 }
 
 // Step 4: Add instance-based functions
-int ar_agency__count_agents_with_instance(ar_agency_t *ref_agency) {
+int ar_agency__count_agents(ar_agency_t *ref_agency) {
     if (!ref_agency || !ref_agency->is_initialized || !ref_agency->own_registry) {
         return 0;
     }
@@ -44,7 +44,7 @@ int ar_agency__count_agents_with_instance(ar_agency_t *ref_agency) {
 // Step 5: Delegate existing functions
 int ar_agency__count_agents(void) {
     ar_agency_t *ref_agency = _get_global_instance();
-    return ref_agency ? ar_agency__count_agents_with_instance(ref_agency) : 0;
+    return ref_agency ? ar_agency__count_agents(ref_agency) : 0;
 }
 ```
 

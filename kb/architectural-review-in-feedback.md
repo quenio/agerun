@@ -27,8 +27,8 @@ ar_methodology_t *mut_methodology = ar_agency__get_methodology(mut_agency);
 
 // 2. Removal of global state dependencies
 // Before: ar_system__init(); ar_system__shutdown();  // EXAMPLE: Global APIs removed
-// After: ar_system__init_with_instance(mut_system, "main", "1.0.0");
-//        ar_system__shutdown_with_instance(mut_system);
+// After: ar_system__init(mut_system, "main", "1.0.0");
+//        ar_system__shutdown(mut_system);
 
 // 3. Test infrastructure updates
 ar_method_fixture_t *own_fixture = ar_method_fixture__create();

@@ -26,7 +26,7 @@ typedef struct ar_agent_s ar_agent_t;
  */
 ar_agent_t* ar_agent__create_with_method(const ar_method_t *ref_method, const ar_data_t *ref_context);
 
-/* ar_agent__create removed - use ar_agency__create_agent_with_instance instead */
+/* ar_agent__create removed - use ar_agency__create_agent instead */
 
 /**
  * Destroy an agent instance

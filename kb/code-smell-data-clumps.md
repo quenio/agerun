@@ -102,14 +102,14 @@ ar_agent_t* ar_agent__create_with_config(const char* method_name, const char* ve
 // BAD: Same method identification parameters everywhere
 
 // In ar_methodology.c
-bool ar_methodology__register_method_with_instance(  // BAD: Repeated parameters
+bool ar_methodology__register_method(  // BAD: Repeated parameters
     ar_methodology_t* methodology,
     const char* method_name,
     const char* method_version,
     const char* method_content
 );
 
-ar_method_t* ar_methodology__get_method_with_instance(  // BAD: Repeated parameters
+ar_method_t* ar_methodology__get_method(  // BAD: Repeated parameters
     ar_methodology_t* methodology,
     const char* method_name,
     const char* method_version
@@ -166,13 +166,13 @@ char* ar_method_id__to_string(const ar_method_id_t* id);  // EXAMPLE: Helper fun
 ar_method_id_t* ar_method_id__from_string(const char* id_string);  // EXAMPLE: Helper function
 
 // Now functions use method ID object
-bool ar_methodology__register_method_with_instance(  // EXAMPLE: Clean interface
+bool ar_methodology__register_method(  // EXAMPLE: Clean interface
     ar_methodology_t* methodology,
     const ar_method_id_t* method_id,  // EXAMPLE: Grouped data
     const char* method_content
 );
 
-ar_method_t* ar_methodology__get_method_with_instance(  // EXAMPLE: Clean interface
+ar_method_t* ar_methodology__get_method(  // EXAMPLE: Clean interface
     ar_methodology_t* methodology,
     const ar_method_id_t* method_id  // EXAMPLE: Grouped data
 );

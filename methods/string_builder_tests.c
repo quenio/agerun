@@ -33,7 +33,7 @@ static void test_string_builder_parse_build(void) {
     ar_data_t *own_context = ar_data__create_map();
     assert(own_context != NULL);
     
-    int64_t builder_agent = ar_agency__create_agent_with_instance(mut_agency, "string-builder", "1.0.0", own_context);
+    int64_t builder_agent = ar_agency__create_agent(mut_agency, "string-builder", "1.0.0", own_context);
     assert(builder_agent > 0);
     // Note: Agent stores reference to context, don't destroy it here
     
@@ -48,7 +48,7 @@ static void test_string_builder_parse_build(void) {
     ar_data__set_map_string(own_message, "output_template", "Welcome {username}! Your role is: {role}");
     ar_data__set_map_integer(own_message, "sender", 0); // 0 = system, which can handle the response
     
-    bool sent = ar_agency__send_to_agent_with_instance(mut_agency, builder_agent, own_message);
+    bool sent = ar_agency__send_to_agent(mut_agency, builder_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
@@ -60,7 +60,7 @@ static void test_string_builder_parse_build(void) {
     // Expected: "Welcome alice! Your role is: admin"
     
     // Verify agent memory state
-    const ar_data_t *agent_memory = ar_agency__get_agent_memory_with_instance(mut_agency, builder_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory(mut_agency, builder_agent);
     assert(agent_memory != NULL);
     
     // Verify method execution by checking agent's memory
@@ -169,7 +169,7 @@ __attribute__((unused)) static void test_string_builder_parse_failure(void) {
     ar_data_t *own_context = ar_data__create_map();
     assert(own_context != NULL);
     
-    int64_t builder_agent = ar_agency__create_agent_with_instance(mut_agency, "string-builder", "1.0.0", own_context);
+    int64_t builder_agent = ar_agency__create_agent(mut_agency, "string-builder", "1.0.0", own_context);
     assert(builder_agent > 0);
     // Note: Agent stores reference to context, don't destroy it here
     
@@ -184,7 +184,7 @@ __attribute__((unused)) static void test_string_builder_parse_failure(void) {
     ar_data__set_map_string(own_message, "output_template", "Hello {name}, you are {age} years old");
     ar_data__set_map_integer(own_message, "sender", 0); // 0 = system, which can handle the response
     
-    bool sent = ar_agency__send_to_agent_with_instance(mut_agency, builder_agent, own_message);
+    bool sent = ar_agency__send_to_agent(mut_agency, builder_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
@@ -196,7 +196,7 @@ __attribute__((unused)) static void test_string_builder_parse_failure(void) {
     // Expected: "Hello , you are  years old"
     
     // Verify agent memory state
-    const ar_data_t *agent_memory = ar_agency__get_agent_memory_with_instance(mut_agency, builder_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory(mut_agency, builder_agent);
     assert(agent_memory != NULL);
     
     // Verify method execution with mismatched template

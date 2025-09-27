@@ -33,8 +33,8 @@ int64_t ar_interpreter_fixture__execute_instruction(
     );
     
     // Register and create agent
-    ar_methodology__register_method_with_instance(own_method);
-    int64_t temp_agent_id = ar_agency__create_agent_with_instance(method_name, "1.0.0");
+    ar_methodology__register_method(own_method);
+    int64_t temp_agent_id = ar_agency__create_agent(method_name, "1.0.0");
     
     // Execute and return agent ID for verification
     bool result = ar_interpreter__execute_method(
@@ -53,11 +53,11 @@ void ar_interpreter_fixture__destroy_temp_agent(
 ) {
     const char *method_name = NULL;
     const char *method_version = NULL;
-    ar_agency__get_agent_method_with_instance(temp_agent_id, &method_name, &method_version);
+    ar_agency__get_agent_method(temp_agent_id, &method_name, &method_version);
     
-    ar_agency__destroy_agent_with_instance(temp_agent_id);
+    ar_agency__destroy_agent(temp_agent_id);
     if (method_name && method_version) {
-        ar_methodology__unregister_method_with_instance(method_name, method_version);
+        ar_methodology__unregister_method(method_name, method_version);
     }
 }
 ```
@@ -87,14 +87,14 @@ fixture_cleanup_operation(fixture, handle);
 When creating agents in fixtures, always provide a proper context instead of NULL:
 ```c
 // WRONG: NULL context can cause expression evaluation failures
-int64_t agent_id = ar_agency__create_agent_with_instance(method_name, version, NULL);
+int64_t agent_id = ar_agency__create_agent(method_name, version, NULL);
 
 // CORRECT: Create empty map for context
 ar_data_t *own_context = ar_data__create_map();
 if (!own_context) {
     return 0;
 }
-int64_t agent_id = ar_agency__create_agent_with_instance(method_name, version, own_context);
+int64_t agent_id = ar_agency__create_agent(method_name, version, own_context);
 // Agency takes ownership of context
 ```
 

@@ -23,16 +23,16 @@ def update_system_calls(content):
     """Update global system calls to instance-based APIs"""
     replacements = [
         # Basic system operations
-        ('ar_system__init()', 'ar_system__init_with_instance(mut_system)'),  // EXAMPLE: Global API no longer exists
-        ('ar_system__shutdown()', 'ar_system__shutdown_with_instance(mut_system)'),  // EXAMPLE: Global API no longer exists
+        ('ar_system__init()', 'ar_system__init(mut_system)'),  // EXAMPLE: Global API no longer exists
+        ('ar_system__shutdown()', 'ar_system__shutdown(mut_system)'),  // EXAMPLE: Global API no longer exists
         
         # Agency operations through system
-        ('ar_agency__create_agent_with_instance(', 
-         'ar_agency__create_agent_with_instance(ar_system__get_agency(mut_system), '),
+        ('ar_agency__create_agent(', 
+         'ar_agency__create_agent(ar_system__get_agency(mut_system), '),
         
         # Methodology operations through agency
-        ('ar_methodology__register_method_with_instance(',
-         'ar_methodology__register_method_with_instance('
+        ('ar_methodology__register_method(',
+         'ar_methodology__register_method('
          'ar_agency__get_methodology(ar_system__get_agency(mut_system)), ')
     ]
     

@@ -38,7 +38,7 @@ static void test_method_creator_create_simple(void) {
     ar_data_t *own_context = ar_data__create_map();
     assert(own_context != NULL);
     
-    int64_t creator_agent = ar_agency__create_agent_with_instance(mut_agency, "method-creator", "1.0.0", own_context);
+    int64_t creator_agent = ar_agency__create_agent(mut_agency, "method-creator", "1.0.0", own_context);
     assert(creator_agent > 0);
     // Note: Agent stores reference to context, don't destroy it here
     
@@ -53,7 +53,7 @@ static void test_method_creator_create_simple(void) {
     ar_data__set_map_string(own_message, "version", "1.0.0");
     ar_data__set_map_integer(own_message, "sender", 0); // 0 = system, which can handle the response
     
-    bool sent = ar_agency__send_to_agent_with_instance(mut_agency, creator_agent, own_message);
+    bool sent = ar_agency__send_to_agent(mut_agency, creator_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
@@ -77,7 +77,7 @@ static void test_method_creator_create_simple(void) {
     // 3. Send the result back to the sender
     
     // Get agent memory for verification
-    const ar_data_t *agent_memory = ar_agency__get_agent_memory_with_instance(mut_agency, creator_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory(mut_agency, creator_agent);
     assert(agent_memory != NULL);
     
     // Debug: Check what's in agent memory
@@ -93,7 +93,7 @@ static void test_method_creator_create_simple(void) {
         // Check if the method might have been registered
         ar_methodology_t *ref_methodology = ar_agency__get_methodology(mut_agency);
         if (ref_methodology) {
-            ar_method_t *test_method = ar_methodology__get_method_with_instance(ref_methodology, "doubler", "1.0.0");
+            ar_method_t *test_method = ar_methodology__get_method(ref_methodology, "doubler", "1.0.0");
             if (test_method) {
                 fprintf(stderr, "DEBUG: Method 'doubler' was successfully registered!\n");
             } else {
@@ -158,7 +158,7 @@ static void test_method_creator_invalid_syntax(void) {
     ar_data_t *own_context = ar_data__create_map();
     assert(own_context != NULL);
     
-    int64_t creator_agent = ar_agency__create_agent_with_instance(mut_agency, "method-creator", "1.0.0", own_context);
+    int64_t creator_agent = ar_agency__create_agent(mut_agency, "method-creator", "1.0.0", own_context);
     assert(creator_agent > 0);
     // Note: Agent stores reference to context, don't destroy it here
     
@@ -175,7 +175,7 @@ static void test_method_creator_invalid_syntax(void) {
     
     // UNCOMMENTED - Adding debug
     fprintf(stderr, "DEBUG: About to send message to creator_agent=%lld\n", (long long)creator_agent);
-    bool sent = ar_agency__send_to_agent_with_instance(mut_agency, creator_agent, own_message);
+    bool sent = ar_agency__send_to_agent(mut_agency, creator_agent, own_message);
     fprintf(stderr, "DEBUG: Send result: %s\n", sent ? "true" : "false");
     assert(sent);
     own_message = NULL; // Ownership transferred
@@ -197,7 +197,7 @@ static void test_method_creator_invalid_syntax(void) {
     // The compile() function should validate syntax and return 0 for invalid instructions
     
     // Get agent memory for verification
-    const ar_data_t *agent_memory = ar_agency__get_agent_memory_with_instance(mut_agency, creator_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory(mut_agency, creator_agent);
     assert(agent_memory != NULL);
     
     // Debug: Check what's in agent memory
@@ -213,7 +213,7 @@ static void test_method_creator_invalid_syntax(void) {
         // Check if the method might have been registered
         ar_methodology_t *ref_methodology = ar_agency__get_methodology(mut_agency);
         if (ref_methodology) {
-            ar_method_t *test_method = ar_methodology__get_method_with_instance(ref_methodology, "doubler", "1.0.0");
+            ar_method_t *test_method = ar_methodology__get_method(ref_methodology, "doubler", "1.0.0");
             if (test_method) {
                 fprintf(stderr, "DEBUG: Method 'doubler' was successfully registered!\n");
             } else {

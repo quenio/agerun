@@ -90,8 +90,8 @@ Beyond commenting out tests, another isolation approach is eliminating unwanted 
 
 ```c
 // Example: System module auto-loading caused test fixture warnings
-// BEFORE: Auto-loading in ar_system__init_with_instance()
-if (!ar_methodology__load_methods_with_instance(ref_methodology, NULL)) {
+// BEFORE: Auto-loading in ar_system__init()
+if (!ar_methodology__load_methods(ref_methodology, NULL)) {
     printf("Warning: Could not load methods from file\n");  // Unwanted in tests
 }
 

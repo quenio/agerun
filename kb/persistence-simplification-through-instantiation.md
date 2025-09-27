@@ -33,7 +33,7 @@ bool ar_agency__save_all_with_instance(ar_agency_t* agency,  // EXAMPLE: Future 
     }
     
     // Save methods via methodology's store
-    return ar_methodology__save_methods_with_instance(
+    return ar_methodology__save_methods(
         agency->own_methodology, method_file
     );
 }

@@ -13,7 +13,7 @@ The ar_frame__create function requires ALL three parameters (memory, context, me
 ## Example
 ```c
 // WRONG: Passing NULL context causes frame creation failure
-int64_t agent_id = ar_agency__create_agent_with_instance(mut_agency, 
+int64_t agent_id = ar_agency__create_agent(mut_agency, 
                                                         "test_method", 
                                                         "1.0.0", 
                                                         NULL);  // NULL context!
@@ -36,7 +36,7 @@ if (!own_frame) {
 // For agents, ensure system provides context:
 ar_system_t *own_system = ar_system__create();
 // System internally creates shared context
-int64_t agent_id = ar_system__init_with_instance(own_system, "bootstrap", "1.0.0");
+int64_t agent_id = ar_system__init(own_system, "bootstrap", "1.0.0");
 // Agent receives system's shared context, frame creation will work
 ```
 

@@ -33,7 +33,7 @@ static void test_no_auto_loading_on_init(void) {
     int original_stdout = dup(1);
     // ... redirect stdout to pipe ...
     
-    ar_system__init_with_instance(mut_system, NULL, NULL);
+    ar_system__init(mut_system, NULL, NULL);
     
     // ... restore stdout and read buffer ...
     bool loading_attempted = (strstr(buffer, "Warning: Could not load") != NULL);
@@ -43,7 +43,7 @@ static void test_no_auto_loading_on_init(void) {
 // Cycle 3: Remove auto-saving from system  
 static void test_no_auto_saving_on_shutdown(void) {
     // ... create system with data ...
-    ar_system__shutdown_with_instance(mut_system);
+    ar_system__shutdown(mut_system);
     
     struct stat st;
     bool files_exist = (stat("methodology.agerun", &st) == 0);
@@ -74,7 +74,7 @@ Break large transformations into TDD cycles:
 // RED: Write test for absence/presence
 static void test_feature_removed(void) {
     ar_system_t *system = ar_system__create();
-    ar_system__init_with_instance(system, NULL, NULL);
+    ar_system__init(system, NULL, NULL);
     
     // Verify feature no longer happens
     bool feature_occurred = check_for_feature();
@@ -84,7 +84,7 @@ static void test_feature_removed(void) {
 }
 
 // GREEN: Remove just enough code to pass
-void ar_system__init_with_instance(...) {
+void ar_system__init(...) {
     // Comment out or remove feature code
     // feature_code(); // REMOVED in Cycle X
 }

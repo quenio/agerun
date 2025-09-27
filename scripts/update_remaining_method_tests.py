@@ -18,21 +18,21 @@ def update_test_file(filepath):
     # Replace with instance version
     def replace_agent_create(match):
         var_name = match.group(1)
-        return f'int64_t {var_name} = ar_agency__create_agent_with_instance(mut_agency, '
+        return f'int64_t {var_name} = ar_agency__create_agent(mut_agency, '
     
     content = re.sub(agent_create_pattern, replace_agent_create, content)
     
     # Pattern to find destroy agent calls
     destroy_pattern = r'ar_agency__destroy_agent\s*\('
-    content = re.sub(destroy_pattern, 'ar_agency__destroy_agent_with_instance(mut_agency, ', content)
+    content = re.sub(destroy_pattern, 'ar_agency__destroy_agent(mut_agency, ', content)
     
     # Pattern to find send to agent calls
     send_pattern = r'ar_agency__send_to_agent\s*\('
-    content = re.sub(send_pattern, 'ar_agency__send_to_agent_with_instance(mut_agency, ', content)
+    content = re.sub(send_pattern, 'ar_agency__send_to_agent(mut_agency, ', content)
     
     # Pattern to find get agent memory calls
     memory_pattern = r'ar_agency__get_agent_memory\s*\('
-    content = re.sub(memory_pattern, 'ar_agency__get_agent_memory_with_instance(mut_agency, ', content)
+    content = re.sub(memory_pattern, 'ar_agency__get_agent_memory(mut_agency, ', content)
     
     # Add agency retrieval before agent creation if not already present
     # Look for patterns where we create agents
@@ -43,7 +43,7 @@ def update_test_file(filepath):
         line = lines[i]
         
         # Check if this line creates an agent
-        if 'ar_agency__create_agent_with_instance' in line and i > 0:
+        if 'ar_agency__create_agent' in line and i > 0:
             # Look backwards to see if we already get the agency
             found_agency = False
             for j in range(max(0, i-10), i):

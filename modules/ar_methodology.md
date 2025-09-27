@@ -62,7 +62,7 @@ void ar_methodology__destroy(ar_methodology_t *own_methodology);
  * @return Pointer to method definition (borrowed reference), or NULL if not found
  * @note Ownership: Returns a borrowed reference to the internal method
  */
-ar_method_t* ar_methodology__get_method_with_instance(ar_methodology_t *ref_methodology,
+ar_method_t* ar_methodology__get_method(ar_methodology_t *ref_methodology,
                                                        const char *ref_name,
                                                        const char *ref_version);
 ```
@@ -78,7 +78,7 @@ ar_method_t* ar_methodology__get_method_with_instance(ar_methodology_t *ref_meth
  * @param ref_version Semantic version string for this method (e.g., "1.0.0")
  * @return true if method was created and registered successfully, false otherwise
  */
-bool ar_methodology__create_method_with_instance(ar_methodology_t *mut_methodology,
+bool ar_methodology__create_method(ar_methodology_t *mut_methodology,
                                                  const char *ref_name,
                                                  const char *ref_instructions,
                                                  const char *ref_version);
@@ -88,7 +88,7 @@ bool ar_methodology__create_method_with_instance(ar_methodology_t *mut_methodolo
  * @param mut_methodology The methodology instance to register to (mutable reference)
  * @param own_method The method to register (ownership is transferred)
  */
-void ar_methodology__register_method_with_instance(ar_methodology_t *mut_methodology,
+void ar_methodology__register_method(ar_methodology_t *mut_methodology,
                                                    ar_method_t *own_method);
 
 /**
@@ -98,7 +98,7 @@ void ar_methodology__register_method_with_instance(ar_methodology_t *mut_methodo
  * @param ref_version Version string of the method to unregister
  * @return true if method was successfully unregistered, false otherwise
  */
-bool ar_methodology__unregister_method_with_instance(ar_methodology_t *mut_methodology,
+bool ar_methodology__unregister_method(ar_methodology_t *mut_methodology,
                                                      const char *ref_name,
                                                      const char *ref_version);
 ```
@@ -112,7 +112,7 @@ bool ar_methodology__unregister_method_with_instance(ar_methodology_t *mut_metho
  * @param ref_filename The filename to save to (borrowed reference)
  * @return true if successful, false otherwise
  */
-bool ar_methodology__save_methods_with_instance(ar_methodology_t *ref_methodology,
+bool ar_methodology__save_methods(ar_methodology_t *ref_methodology,
                                                 const char *ref_filename);
 
 /**
@@ -121,7 +121,7 @@ bool ar_methodology__save_methods_with_instance(ar_methodology_t *ref_methodolog
  * @param ref_filename The filename to load from (borrowed reference)
  * @return true if successful, false otherwise
  */
-bool ar_methodology__load_methods_with_instance(ar_methodology_t *mut_methodology,
+bool ar_methodology__load_methods(ar_methodology_t *mut_methodology,
                                                 const char *ref_filename);
 ```
 
@@ -133,7 +133,7 @@ bool ar_methodology__load_methods_with_instance(ar_methodology_t *mut_methodolog
  * @param mut_methodology The methodology instance to cleanup (mutable reference)
  * @note This should be called before destroying the methodology instance
  */
-void ar_methodology__cleanup_with_instance(ar_methodology_t *mut_methodology);
+void ar_methodology__cleanup(ar_methodology_t *mut_methodology);
 ```
 
 ## Usage Examples
@@ -150,20 +150,20 @@ ar_methodology_t *mut_methodology = ar_methodology__create(ref_log);
 
 ```c
 // Get the latest version of a method
-ar_method_t *ref_method = ar_methodology__get_method_with_instance(mut_methodology, "echo_method", NULL);
+ar_method_t *ref_method = ar_methodology__get_method(mut_methodology, "echo_method", NULL);
 if (ref_method) {
     // Use the method (borrowed reference - do not free)
 }
 
 // Get a specific version of a method
-ar_method_t *ref_specific_method = ar_methodology__get_method_with_instance(mut_methodology, "echo_method", "2.0.0");
+ar_method_t *ref_specific_method = ar_methodology__get_method(mut_methodology, "echo_method", "2.0.0");
 ```
 
 ### Creating and Registering Methods
 
 ```c
 // Create and register a new method directly
-bool created = ar_methodology__create_method_with_instance(mut_methodology,
+bool created = ar_methodology__create_method(mut_methodology,
                                                            "custom_method",
                                                            "memory.result = memory.input",
                                                            "1.0.0");
@@ -173,7 +173,7 @@ ar_method_t *own_method = ar_method__create("another_method",
                                             "memory.result = \"Hello\"",
                                             "1.0.0");
 if (own_method) {
-    ar_methodology__register_method_with_instance(mut_methodology, own_method);
+    ar_methodology__register_method(mut_methodology, own_method);
     // ownership transferred - do not use own_method after this
 }
 ```
@@ -182,17 +182,17 @@ if (own_method) {
 
 ```c
 // Save all methods to disk
-bool save_result = ar_methodology__save_methods_with_instance(mut_methodology, "methodology.agerun");
+bool save_result = ar_methodology__save_methods(mut_methodology, "methodology.agerun");
 
 // Load methods from disk
-bool load_result = ar_methodology__load_methods_with_instance(mut_methodology, "methodology.agerun");
+bool load_result = ar_methodology__load_methods(mut_methodology, "methodology.agerun");
 ```
 
 ### Cleanup
 
 ```c
 // Clean up all method definitions before destroying the instance
-ar_methodology__cleanup_with_instance(mut_methodology);
+ar_methodology__cleanup(mut_methodology);
 
 // Destroy the methodology instance
 ar_methodology__destroy(mut_methodology);

@@ -190,10 +190,10 @@ pub export fn ar_spawn_instruction_evaluator__evaluate(
             
             // Get methodology from agency and check if method exists
             const ref_methodology = c.ar_agency__get_methodology(ref_evaluator.?.ref_agency);
-            const ref_method = c.ar_methodology__get_method_with_instance(ref_methodology, method_name, version);
+            const ref_method = c.ar_methodology__get_method(ref_methodology, method_name, version);
             if (ref_method != null) {
                 // Create the agent - context is borrowed, not owned
-                agent_id = c.ar_agency__create_agent_with_instance(ref_evaluator.?.ref_agency, method_name, version, ref_context_data);
+                agent_id = c.ar_agency__create_agent(ref_evaluator.?.ref_agency, method_name, version, ref_context_data);
                 if (agent_id > 0) {
                     success = true;
                 }

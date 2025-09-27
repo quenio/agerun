@@ -32,14 +32,14 @@ static void test_echo_simple_message(void) {
     assert(own_context != NULL);
     
     // Create echo agent using the fixture's agency
-    int64_t echo_agent = ar_agency__create_agent_with_instance(mut_agency, "echo", "1.0.0", own_context);
+    int64_t echo_agent = ar_agency__create_agent(mut_agency, "echo", "1.0.0", own_context);
     assert(echo_agent > 0);
     // Note: Agent stores reference to context, don't destroy it here
     
     // No initial message processing needed
     
     // Verify agent memory was initialized
-    const ar_data_t *agent_memory = ar_agency__get_agent_memory_with_instance(mut_agency, echo_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory(mut_agency, echo_agent);
     assert(agent_memory != NULL);
     
     // When we send a message with sender field
@@ -56,7 +56,7 @@ static void test_echo_simple_message(void) {
     ar_data__set_map_data(own_message, "content", own_content);
     own_content = NULL; // Ownership transferred
     
-    bool sent = ar_agency__send_to_agent_with_instance(mut_agency, echo_agent, own_message);
+    bool sent = ar_agency__send_to_agent(mut_agency, echo_agent, own_message);
     assert(sent);
     own_message = NULL; // Ownership transferred
     
@@ -75,7 +75,7 @@ static void test_echo_simple_message(void) {
     (void)processed;  // Suppress unused variable warning
     
     // Clean up
-    ar_agency__destroy_agent_with_instance(mut_agency, echo_agent);
+    ar_agency__destroy_agent(mut_agency, echo_agent);
     
     // Now destroy the context we created (agent only stores a reference)
     ar_data__destroy(own_context);
@@ -114,14 +114,14 @@ static void test_echo_map_message(void) {
     assert(own_context != NULL);
     
     // Create echo agent using the fixture's agency
-    int64_t echo_agent = ar_agency__create_agent_with_instance(mut_agency, "echo", "1.0.0", own_context);
+    int64_t echo_agent = ar_agency__create_agent(mut_agency, "echo", "1.0.0", own_context);
     assert(echo_agent > 0);
     // Note: Agent stores reference to context, don't destroy it here
     
     // No initial message processing needed
     
     // Verify agent memory was initialized
-    const ar_data_t *agent_memory = ar_agency__get_agent_memory_with_instance(mut_agency, echo_agent);
+    const ar_data_t *agent_memory = ar_agency__get_agent_memory(mut_agency, echo_agent);
     assert(agent_memory != NULL);
     
     // When we send a map message
@@ -132,7 +132,7 @@ static void test_echo_map_message(void) {
     ar_data__set_map_string(own_map_message, "content", "Hello from map!");
     ar_data__set_map_integer(own_map_message, "count", 42);
     
-    bool sent = ar_agency__send_to_agent_with_instance(mut_agency, echo_agent, own_map_message);
+    bool sent = ar_agency__send_to_agent(mut_agency, echo_agent, own_map_message);
     assert(sent);
     own_map_message = NULL; // Ownership transferred
     
@@ -148,7 +148,7 @@ static void test_echo_map_message(void) {
     assert(!processed);  // Expected to fail due to ownership limitations
     
     // Clean up
-    ar_agency__destroy_agent_with_instance(mut_agency, echo_agent);
+    ar_agency__destroy_agent(mut_agency, echo_agent);
     
     // Now destroy the context we created (agent only stores a reference)
     ar_data__destroy(own_context);

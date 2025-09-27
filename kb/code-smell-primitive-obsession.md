@@ -21,7 +21,7 @@ Primitive Obsession occurs when primitive types (strings, integers, booleans) ar
 // BAD: Using raw strings for method identification everywhere
 
 // In ar_methodology.c
-bool ar_methodology__register_method_with_instance(ar_methodology_t* methodology, const char* name, const char* version, const char* content) {
+bool ar_methodology__register_method(ar_methodology_t* methodology, const char* name, const char* version, const char* content) {
     // Repeated validation everywhere
     if (name == NULL || strlen(name) == 0) {
         return false;
@@ -128,7 +128,7 @@ ar_method_id_t* ar_method_id__create(const char* name, const char* version) {  /
 }
 
 // Now all modules use the proper type
-bool ar_methodology__register_method_with_instance(ar_methodology_t* methodology, ar_method_id_t* method_id, const char* content) {  // EXAMPLE: Hypothetical function
+bool ar_methodology__register_method(ar_methodology_t* methodology, ar_method_id_t* method_id, const char* content) {  // EXAMPLE: Hypothetical function
     // No validation needed - method_id is already validated
     const char* key = ar_method_id__to_string(method_id);
     ar_method_t* method = ar_method__create(method_id, content);

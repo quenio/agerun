@@ -19,14 +19,14 @@ static void test_executable__continues_on_save_failure(ar_executable_fixture_t *
 
 // STEP 2: Temporarily break implementation to verify test catches it
 // Change from warning + continue:
-if (ar_methodology__save_methods_with_instance(mut_methodology, METHODOLOGY_FILE_NAME)) {
+if (ar_methodology__save_methods(mut_methodology, METHODOLOGY_FILE_NAME)) {
     printf("Methodology saved to %s\n", METHODOLOGY_FILE_NAME);
 } else {
     printf("Warning: Failed to save methodology to %s\n", METHODOLOGY_FILE_NAME);
 }
 
 // To error + exit:
-if (!ar_methodology__save_methods_with_instance(mut_methodology, METHODOLOGY_FILE_NAME)) {
+if (!ar_methodology__save_methods(mut_methodology, METHODOLOGY_FILE_NAME)) {
     printf("Error: Failed to save methodology to %s\n", METHODOLOGY_FILE_NAME);
     return 1;  // Exit with error - test should now FAIL
 }

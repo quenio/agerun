@@ -13,44 +13,44 @@ Instructions that do too much (like destroying agents AND unregistering methods)
 bool evaluate_deprecate(evaluator, method_name, version) {
     // Complex behavior:
     // 1. Get method and count agents using it
-    ar_method_t *method = ar_methodology__get_method_with_instance(method_name, version);
-    int count = ar_agency__count_agents_using_method_with_instance(method);
+    ar_method_t *method = ar_methodology__get_method(method_name, version);
+    int count = ar_agency__count_agents_using_method(method);
     
     // 2. Send sleep messages to all agents
     // (iterate through all agents, check if using this method)
     
     // 3. Process all sleep messages
-    while (ar_system__process_next_message_with_instance(own_system));
+    while (ar_system__process_next_message(own_system));
     
     // 4. Destroy all agents using this method
     // (iterate and destroy each one)
     
     // 5. Finally unregister the method
-    return ar_methodology__unregister_method_with_instance(method_name, version);
+    return ar_methodology__unregister_method(method_name, version);
 }
 
 // AFTER: Simplified to single responsibility
 // From new ar_deprecate_instruction_evaluator.c
 bool evaluate_deprecate(evaluator, method_name, version) {
     // Simple behavior: just unregister the method
-    ar_method_t *ref_method = ar_methodology__get_method_with_instance(method_name, version);
+    ar_method_t *ref_method = ar_methodology__get_method(method_name, version);
     if (ref_method) {
-        return ar_methodology__unregister_method_with_instance(method_name, version);
+        return ar_methodology__unregister_method(method_name, version);
     }
     return false;
 }
 
-// Also simplified ar_methodology__unregister_method_with_instance
+// Also simplified ar_methodology__unregister_method
 // BEFORE: Checked if agents were using the method
-bool ar_methodology__unregister_method_with_instance(name, version) {
-    if (ar_agency__count_agents_using_method_with_instance(name, version) > 0) {
+bool ar_methodology__unregister_method(name, version) {
+    if (ar_agency__count_agents_using_method(name, version) > 0) {
         return false;  // Refused to unregister
     }
     // ... unregister logic
 }
 
 // AFTER: Allows unregistering regardless of usage
-bool ar_methodology__unregister_method_with_instance(name, version) {
+bool ar_methodology__unregister_method(name, version) {
     // Simply unregister - no side effects or checks
     // ... unregister logic
     return true;

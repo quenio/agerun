@@ -18,7 +18,7 @@ if (agent_id == 0) {
     send_result = true;  // Always returns success
 } else {
     // Normal case: send to actual agent
-    send_result = c.ar_agency__send_to_agent_with_instance(agent_id, own_message);
+    send_result = c.ar_agency__send_to_agent(agent_id, own_message);
 }
 
 // Method using send(0, ...) for output (bootstrap.method)
@@ -44,7 +44,7 @@ However, no-ops can be confusing when:
 void handle_conditional_message(int64_t condition, ar_data_t *own_message) {
     // Pattern 1: Use agent 0 as conditional sink
     int64_t target = condition ? real_agent_id : 0;
-    ar_agency__send_to_agent_with_instance(target, own_message);
+    ar_agency__send_to_agent(target, own_message);
     // Message is sent if condition true, destroyed if false
     
     // Pattern 2: Document no-op behavior in tests
@@ -53,8 +53,8 @@ void handle_conditional_message(int64_t condition, ar_data_t *own_message) {
     
     // Pattern 3: Use non-zero agent for debugging output
     // Create a dedicated debug agent instead of using agent 0
-    int64_t debug_agent = ar_agency__create_agent_with_instance("debug", "1.0.0", NULL);
-    ar_agency__send_to_agent_with_instance(debug_agent, own_debug_message);
+    int64_t debug_agent = ar_agency__create_agent("debug", "1.0.0", NULL);
+    ar_agency__send_to_agent(debug_agent, own_debug_message);
 }
 ```
 

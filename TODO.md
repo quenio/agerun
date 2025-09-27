@@ -6,6 +6,8 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+- [x] API Suffix Cleanup: Removed "_with_instance" suffix from all 30 functions; updated 132 files (source, documentation, tests, KB articles); clean final API established (Completed 2025-09-27)
+
 - [x] Knowledge Base Reference Resolution: Added "Check KB index FIRST" guideline to CLAUDE.md; updated kb/README.md to include all 317 KB articles (was missing 9); established systematic KB discovery protocol (Completed 2025-09-27)
 
 - [x] Documentation - Global API Reference Cleanup: Fixed 25 documentation files with outdated global function references; all documentation now references instance-based APIs correctly; check-docs validation passes (Completed 2025-09-14)
@@ -424,8 +426,8 @@ Each parser needs 2-3 TDD cycles for comprehensive error logging:
 - [x] Remove ar_instruction module files and references
 - [x] Update all tests to use instance-based APIs
 - [x] Fix memory leaks in various tests
-- [x] Add ar_methodology__cleanup_with_instance function
-- [x] Add ar_agency__agent_exists_with_instance function
+- [x] Add ar_methodology__cleanup function
+- [x] Add ar_agency__agent_exists function
 - [x] Remove global APIs from ar_system header (verified - no global APIs exist)
 - [x] Remove implementations and g_system static variable (verified - no g_system exists)
 - [x] Update ar_executable.c to create and manage instances (already uses instance APIs)
@@ -447,18 +449,18 @@ Each parser needs 2-3 TDD cycles for comprehensive error logging:
   **Phase 2b - Remove Simple Delegations** (COMPLETED 2025-09-13):
   - [x] Remove ar_agency__reset() and update 6 test files
   - [x] Remove ar_agency__count_agents() and update callers
-  - [x] Remove ar_agency__save_agents_with_instance() and update callers
+  - [x] Remove ar_agency__save_agents() and update callers
   - [x] Remove ar_agency__load_agents() and update callers
-  - [x] Remove ar_agency__create_agent_with_instance() and update ar_system.c line 146
+  - [x] Remove ar_agency__create_agent() and update ar_system.c line 146
   - [x] Remove ar_agency__destroy_agent() and update callers
-  - [x] Remove ar_agency__send_to_agent_with_instance() and update callers
+  - [x] Remove ar_agency__send_to_agent() and update callers
   - [x] Remove ar_agency__agent_exists() and update callers
   - [x] Remove ar_agency__get_agent_memory() and update callers
   - [x] Remove ar_agency__get_first_agent() and update ar_system.c line 204
   - [x] Remove ar_agency__get_next_agent() and update ar_system.c line 212
   - [x] Remove ar_agency__agent_has_messages() and update ar_system.c line 206
-  - [x] Remove ar_agency__get_agent_message_with_instance() and update ar_system.c line 207
-  - [x] Remove ar_agency__get_agent_method_with_instance() and update ar_interpreter.c line 109
+  - [x] Remove ar_agency__get_agent_message() and update ar_system.c line 207
+  - [x] Remove ar_agency__get_agent_method() and update ar_interpreter.c line 109
   - [x] Remove ar_agency__set_initialized() and cleanup global state variables
   - [x] Remove _get_global_instance() helper function
   - [x] Update 39 documentation files to use _with_instance versions
@@ -472,7 +474,7 @@ Each parser needs 2-3 TDD cycles for comprehensive error logging:
   - [x] Build and all tests pass without these functions
 
   **Phase 2d - Update Test Files** (COMPLETED in Phase 2b - 2025-09-13):
-  - [x] Updated ar_agency_tests.c to use instance APIs (now uses ar_agency__reset_with_instance)
+  - [x] Updated ar_agency_tests.c to use instance APIs (now uses ar_agency__reset)
   - [x] Updated ar_system_tests.c - ar_agency__reset() calls commented out
   - [x] Updated ar_spawn_instruction_evaluator_tests.c - ar_agency__reset() calls commented out
   - [x] Updated ar_exit_instruction_evaluator_tests.c - ar_agency__reset() calls commented out
@@ -856,7 +858,7 @@ Modify ar_executable.c to save and load the agerun.agency file for agent state p
   - [ ] Create temporary agent specification structures
 
 - [ ] TDD Cycle 9: Create agents with method lookup
-  - [ ] Use ar_methodology__get_method_with_instance() for lookup
+  - [ ] Use ar_methodology__get_method() for lookup
   - [ ] Create agent with ar_agent__create_with_method()
   - [ ] Set agent ID using ar_agent__set_id()
   - [ ] Register agent in registry
@@ -1200,7 +1202,7 @@ Remove wake/sleep messages as system-level concepts since they're not essential 
 
 ###### Iteration 8.1: Basic save after processing
 - **RED**: Create test `test_executable__saves_methodology_file()` that runs executable and verifies `agerun.methodology` file exists with all 8 methods from `methods/` directory
-- **GREEN**: Add `ar_methodology__save_methods_with_instance()` call after message processing in ar_executable.c; update filename to `agerun.methodology` in ar_methodology.h
+- **GREEN**: Add `ar_methodology__save_methods()` call after message processing in ar_executable.c; update filename to `agerun.methodology` in ar_methodology.h
 - **REFACTOR**: Check for Long Method (>20 lines), Duplicate Code, Long Parameter List (>4 params) code smells per KB articles
 
 ###### Iteration 8.2: Handle save failures gracefully

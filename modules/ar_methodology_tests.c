@@ -59,26 +59,26 @@ static void test_methodology__global_instance(void) {
     assert(mut_methodology != NULL);
 
     // When we register a method through the instance API
-    bool result = ar_methodology__create_method_with_instance(mut_methodology, "instance_test", "message -> \"Test\"", "1.0.0");
+    bool result = ar_methodology__create_method(mut_methodology, "instance_test", "message -> \"Test\"", "1.0.0");
     assert(result == true);
 
     // Then the method should be accessible
-    ar_method_t *method = ar_methodology__get_method_with_instance(mut_methodology, "instance_test", "1.0.0");
+    ar_method_t *method = ar_methodology__get_method(mut_methodology, "instance_test", "1.0.0");
     assert(method != NULL);
 
     // And when we cleanup the instance
-    ar_methodology__cleanup_with_instance(mut_methodology);
+    ar_methodology__cleanup(mut_methodology);
 
     // And register another method
-    result = ar_methodology__create_method_with_instance(mut_methodology, "after_cleanup", "message -> \"After\"", "1.0.0");
+    result = ar_methodology__create_method(mut_methodology, "after_cleanup", "message -> \"After\"", "1.0.0");
     assert(result == true);
 
     // Then the new method should be accessible
-    method = ar_methodology__get_method_with_instance(mut_methodology, "after_cleanup", "1.0.0");
+    method = ar_methodology__get_method(mut_methodology, "after_cleanup", "1.0.0");
     assert(method != NULL);
 
     // But the old method should be gone
-    method = ar_methodology__get_method_with_instance(mut_methodology, "instance_test", "1.0.0");
+    method = ar_methodology__get_method(mut_methodology, "instance_test", "1.0.0");
     assert(method == NULL);
 
     // Clean up
@@ -88,7 +88,7 @@ static void test_methodology__global_instance(void) {
 }
 
 static void test_methodology_get_method(void) {
-    printf("Testing ar_methodology__get_method_with_instance()...\n");
+    printf("Testing ar_methodology__get_method()...\n");
 
     // Given a methodology instance
     ar_methodology_t *mut_methodology = ar_methodology__create(NULL);
@@ -103,13 +103,13 @@ static void test_methodology_get_method(void) {
     assert(own_method != NULL);
 
     // Register with methodology
-    ar_methodology__register_method_with_instance(mut_methodology, own_method);
+    ar_methodology__register_method(mut_methodology, own_method);
     own_method = NULL; // Mark as transferred
 
     // For test purposes, we use version "1.0.0" for this test
 
     // When we get the method by name and specific version
-    ar_method_t *method = ar_methodology__get_method_with_instance(mut_methodology, name, "1.0.0");
+    ar_method_t *method = ar_methodology__get_method(mut_methodology, name, "1.0.0");
 
     // Then the method should be found
     assert(method != NULL);
@@ -121,7 +121,7 @@ static void test_methodology_get_method(void) {
            ar_method__get_version(method));
 
     // When we get the method by name and request the latest version (version = NULL)
-    method = ar_methodology__get_method_with_instance(mut_methodology, name, NULL);
+    method = ar_methodology__get_method(mut_methodology, name, NULL);
 
     // Then the latest version of the method should be found
     assert(method != NULL);
@@ -130,7 +130,7 @@ static void test_methodology_get_method(void) {
            ar_method__get_version(method));
 
     // When we try to get a non-existent method
-    method = ar_methodology__get_method_with_instance(mut_methodology, "non_existent_method", NULL);
+    method = ar_methodology__get_method(mut_methodology, "non_existent_method", NULL);
 
     // Then null should be returned
     assert(method == NULL);
@@ -138,12 +138,12 @@ static void test_methodology_get_method(void) {
     // Clean up
     ar_methodology__destroy(mut_methodology);
 
-    printf("ar_methodology__get_method_with_instance() test passed!\n");
+    printf("ar_methodology__get_method() test passed!\n");
 }
 
 
 static void test_methodology_register_and_get(void) {
-    printf("Testing ar_methodology__register_method_with_instance() and get...\n");
+    printf("Testing ar_methodology__register_method() and get...\n");
 
     // Given a methodology instance
     ar_methodology_t *mut_methodology = ar_methodology__create(NULL);
@@ -158,13 +158,13 @@ static void test_methodology_register_and_get(void) {
     assert(own_method != NULL);
 
     // Register with methodology
-    ar_methodology__register_method_with_instance(mut_methodology, own_method);
+    ar_methodology__register_method(mut_methodology, own_method);
     own_method = NULL; // Mark as transferred
 
     // For test purposes, we use version "1.0.0" for this test
 
     // When we get the method
-    ar_method_t *method = ar_methodology__get_method_with_instance(mut_methodology, name, "1.0.0");
+    ar_method_t *method = ar_methodology__get_method(mut_methodology, name, "1.0.0");
 
     // Then the method storage should be returned
     assert(method != NULL);
@@ -181,7 +181,7 @@ static void test_methodology_register_and_get(void) {
 }
 
 static void test_methodology_save_load(void) {
-    printf("Testing ar_methodology__save_methods_with_instance() and ar_methodology__load_methods_with_instance()...\n");
+    printf("Testing ar_methodology__save_methods() and ar_methodology__load_methods()...\n");
 
     // Create a methodology instance for testing
     ar_methodology_t *mut_methodology = ar_methodology__create(NULL);
@@ -196,28 +196,28 @@ static void test_methodology_save_load(void) {
     assert(own_method != NULL);
 
     // Register with methodology
-    ar_methodology__register_method_with_instance(mut_methodology, own_method);
+    ar_methodology__register_method(mut_methodology, own_method);
     own_method = NULL; // Mark as transferred
 
     // For test purposes, we use version "1.0.0" for this test
 
     // When we save methods to disk
-    bool save_result = ar_methodology__save_methods_with_instance(mut_methodology, "test_methodology.agerun");
+    bool save_result = ar_methodology__save_methods(mut_methodology, "test_methodology.agerun");
 
     // Then the save operation should succeed
     assert(save_result);
 
     // Clear the methodology to simulate a fresh start
-    ar_methodology__cleanup_with_instance(mut_methodology);
+    ar_methodology__cleanup(mut_methodology);
 
     // And load methods from disk
-    bool load_result = ar_methodology__load_methods_with_instance(mut_methodology, "test_methodology.agerun");
+    bool load_result = ar_methodology__load_methods(mut_methodology, "test_methodology.agerun");
 
     // Then the load operation should succeed
     assert(load_result);
 
     // And the previously saved method should be available
-    ar_method_t *method = ar_methodology__get_method_with_instance(mut_methodology, name, "1.0.0");
+    ar_method_t *method = ar_methodology__get_method(mut_methodology, name, "1.0.0");
     if (method == NULL) {
         printf("Warning: Method %s not loaded correctly, skipping detailed check\n", name);
     } else {
@@ -232,7 +232,7 @@ static void test_methodology_save_load(void) {
     // Remove test file
     remove("test_methodology.agerun");
 
-    printf("ar_methodology__save_methods_with_instance() and ar_methodology__load_methods_with_instance() tests passed!\n");
+    printf("ar_methodology__save_methods() and ar_methodology__load_methods() tests passed!\n");
 }
 
 static void test_method_counts(void) {
@@ -261,7 +261,7 @@ static void test_method_counts(void) {
     assert(own_method != NULL);
 
     // Register with methodology
-    ar_methodology__register_method_with_instance(mut_methodology, own_method);
+    ar_methodology__register_method(mut_methodology, own_method);
     own_method = NULL; // Mark as transferred
 
     // For test purposes, we use version "1.0.0" for this test
@@ -269,28 +269,28 @@ static void test_method_counts(void) {
     // Method should be registered successfully
 
     // When we try to get the method we just registered
-    ar_method_t *registered_method = ar_methodology__get_method_with_instance(mut_methodology, unique_name, "1.0.0");
+    ar_method_t *registered_method = ar_methodology__get_method(mut_methodology, unique_name, "1.0.0");
 
     // Then we should get a valid method
     assert(registered_method != NULL);
 
     // And we should be able to retrieve the method we just registered
-    assert(ar_methodology__get_method_with_instance(mut_methodology, unique_name, "1.0.0") != NULL);
+    assert(ar_methodology__get_method(mut_methodology, unique_name, "1.0.0") != NULL);
 
     // When we create another version of the same method
     ar_method_t *own_method2 = ar_method__create(unique_name, "message -> \"Unique V2\"", "2.0.0");
     assert(own_method2 != NULL);
 
     // Register with methodology
-    ar_methodology__register_method_with_instance(mut_methodology, own_method2);
+    ar_methodology__register_method(mut_methodology, own_method2);
     own_method2 = NULL; // Mark as transferred
 
     // For documentation purposes only, version2 would be 2
     // (We don't actually use this variable in assertions)
 
     // And both versions should be retrievable
-    assert(ar_methodology__get_method_with_instance(mut_methodology, unique_name, "1.0.0") != NULL);
-    assert(ar_methodology__get_method_with_instance(mut_methodology, unique_name, "2.0.0") != NULL);
+    assert(ar_methodology__get_method(mut_methodology, unique_name, "1.0.0") != NULL);
+    assert(ar_methodology__get_method(mut_methodology, unique_name, "2.0.0") != NULL);
     
     // Both versions should be accessible
 
@@ -301,7 +301,7 @@ static void test_method_counts(void) {
 }
 
 static void test_methodology__get_method_with_instance(void) {
-    printf("Testing ar_methodology__get_method_with_instance()...\n");
+    printf("Testing ar_methodology__get_method()...\n");
     
     // Given a methodology instance
     ar_methodology_t *own_methodology = ar_methodology__create(NULL);
@@ -310,18 +310,18 @@ static void test_methodology__get_method_with_instance(void) {
     // And a method registered to this instance
     ar_method_t *own_method = ar_method__create("instance_method", "memory.result = \"Instance\"", "1.0.0");
     assert(own_method != NULL);
-    ar_methodology__register_method_with_instance(own_methodology, own_method);
+    ar_methodology__register_method(own_methodology, own_method);
     own_method = NULL; // ownership transferred
     
     // When we get the method using the instance
-    ar_method_t *ref_method = ar_methodology__get_method_with_instance(own_methodology, "instance_method", "1.0.0");
+    ar_method_t *ref_method = ar_methodology__get_method(own_methodology, "instance_method", "1.0.0");
     
     // Then we should get the method
     assert(ref_method != NULL);
     assert(strcmp(ar_method__get_name(ref_method), "instance_method") == 0);
     
     // And when we get with NULL version (latest)
-    ref_method = ar_methodology__get_method_with_instance(own_methodology, "instance_method", NULL);
+    ref_method = ar_methodology__get_method(own_methodology, "instance_method", NULL);
     assert(ref_method != NULL);
     
     // Clean up
@@ -331,7 +331,7 @@ static void test_methodology__get_method_with_instance(void) {
 }
 
 static void test_methodology__register_method_with_instance(void) {
-    printf("Testing ar_methodology__register_method_with_instance()...\n");
+    printf("Testing ar_methodology__register_method()...\n");
     
     // Given a methodology instance
     ar_methodology_t *own_methodology = ar_methodology__create(NULL);
@@ -342,11 +342,11 @@ static void test_methodology__register_method_with_instance(void) {
     assert(own_method != NULL);
     
     // When we register the method to the instance
-    ar_methodology__register_method_with_instance(own_methodology, own_method);
+    ar_methodology__register_method(own_methodology, own_method);
     own_method = NULL; // ownership transferred
     
     // Then we should be able to retrieve it
-    ar_method_t *ref_method = ar_methodology__get_method_with_instance(own_methodology, "register_test", "1.0.0");
+    ar_method_t *ref_method = ar_methodology__get_method(own_methodology, "register_test", "1.0.0");
     assert(ref_method != NULL);
     assert(strcmp(ar_method__get_name(ref_method), "register_test") == 0);
     
@@ -357,7 +357,7 @@ static void test_methodology__register_method_with_instance(void) {
 }
 
 static void test_methodology__create_method_with_instance(void) {
-    printf("Testing ar_methodology__create_method_with_instance()...\n");
+    printf("Testing ar_methodology__create_method()...\n");
     
     // Given a methodology instance with a log
     ar_log_t *own_log = ar_log__create();
@@ -366,7 +366,7 @@ static void test_methodology__create_method_with_instance(void) {
     assert(own_methodology != NULL);
     
     // When we create and register a method in one step
-    bool result = ar_methodology__create_method_with_instance(own_methodology, 
+    bool result = ar_methodology__create_method(own_methodology, 
                                                              "create_test", 
                                                              "memory.result = \"Created\"", 
                                                              "1.0.0");
@@ -375,7 +375,7 @@ static void test_methodology__create_method_with_instance(void) {
     assert(result == true);
     
     // And the method should be retrievable
-    ar_method_t *ref_method = ar_methodology__get_method_with_instance(own_methodology, "create_test", "1.0.0");
+    ar_method_t *ref_method = ar_methodology__get_method(own_methodology, "create_test", "1.0.0");
     assert(ref_method != NULL);
     assert(strcmp(ar_method__get_name(ref_method), "create_test") == 0);
     assert(strcmp(ar_method__get_instructions(ref_method), "memory.result = \"Created\"") == 0);
@@ -395,13 +395,13 @@ static void test_methodology__save_load_with_instance(void) {
     assert(own_methodology1 != NULL);
     
     // Add multiple methods
-    bool result = ar_methodology__create_method_with_instance(own_methodology1, 
+    bool result = ar_methodology__create_method(own_methodology1, 
                                                              "save_test1", 
                                                              "memory.result = \"Save1\"", 
                                                              "1.0.0");
     assert(result == true);
     
-    result = ar_methodology__create_method_with_instance(own_methodology1, 
+    result = ar_methodology__create_method(own_methodology1, 
                                                         "save_test2", 
                                                         "memory.result = \"Save2\"", 
                                                         "1.0.0");
@@ -409,7 +409,7 @@ static void test_methodology__save_load_with_instance(void) {
     
     // When we save to a custom file
     const char *test_filename = "test_methodology.agerun";
-    result = ar_methodology__save_methods_with_instance(own_methodology1, test_filename);
+    result = ar_methodology__save_methods(own_methodology1, test_filename);
     assert(result == true);
     
     // And create a new instance
@@ -417,15 +417,15 @@ static void test_methodology__save_load_with_instance(void) {
     assert(own_methodology2 != NULL);
     
     // And load from the custom file
-    result = ar_methodology__load_methods_with_instance(own_methodology2, test_filename);
+    result = ar_methodology__load_methods(own_methodology2, test_filename);
     assert(result == true);
     
     // Then both methods should be available in the new instance
-    ar_method_t *ref_method = ar_methodology__get_method_with_instance(own_methodology2, "save_test1", "1.0.0");
+    ar_method_t *ref_method = ar_methodology__get_method(own_methodology2, "save_test1", "1.0.0");
     assert(ref_method != NULL);
     assert(strcmp(ar_method__get_instructions(ref_method), "memory.result = \"Save1\"") == 0);
     
-    ref_method = ar_methodology__get_method_with_instance(own_methodology2, "save_test2", "1.0.0");
+    ref_method = ar_methodology__get_method(own_methodology2, "save_test2", "1.0.0");
     assert(ref_method != NULL);
     assert(strcmp(ar_method__get_instructions(ref_method), "memory.result = \"Save2\"") == 0);
     
@@ -448,7 +448,7 @@ static void test_methodology__ar_log_propagation(void) {
     assert(own_methodology != NULL);
     
     // When we create a method with invalid syntax
-    bool result = ar_methodology__create_method_with_instance(own_methodology,
+    bool result = ar_methodology__create_method(own_methodology,
                                                              "error_test",
                                                              "invalid syntax here!@#$",
                                                              "1.0.0");
@@ -474,7 +474,7 @@ static void test_methodology__ar_log_propagation(void) {
 }
 
 static void test_methodology__ar_log_propagation_on_load(void) {
-    printf("Testing ar_log propagation during ar_methodology__load_methods_with_instance()...\n");
+    printf("Testing ar_log propagation during ar_methodology__load_methods()...\n");
 
     // Create a methodology instance with a log
     ar_log_t *own_log = ar_log__create();
@@ -487,18 +487,18 @@ static void test_methodology__ar_log_propagation_on_load(void) {
     remove("test_methodology_load.agerun");
 
     // Given a methodology file with a method that has invalid syntax
-    bool result = ar_methodology__create_method_with_instance(mut_methodology, "load_test", "invalid @#$ syntax!", "1.0.0");
+    bool result = ar_methodology__create_method(mut_methodology, "load_test", "invalid @#$ syntax!", "1.0.0");
     assert(result == true);
-    result = ar_methodology__save_methods_with_instance(mut_methodology, "test_methodology_load.agerun");
+    result = ar_methodology__save_methods(mut_methodology, "test_methodology_load.agerun");
     assert(result == true);
-    ar_methodology__cleanup_with_instance(mut_methodology);
+    ar_methodology__cleanup(mut_methodology);
 
     // When we load methods using the instance function
-    result = ar_methodology__load_methods_with_instance(mut_methodology, "test_methodology_load.agerun");
+    result = ar_methodology__load_methods(mut_methodology, "test_methodology_load.agerun");
     assert(result == true);
 
     // Then the method should be loaded
-    ar_method_t *method = ar_methodology__get_method_with_instance(mut_methodology, "load_test", "1.0.0");
+    ar_method_t *method = ar_methodology__get_method(mut_methodology, "load_test", "1.0.0");
     assert(method != NULL);
 
     // Then the method should have NULL AST due to parse errors
@@ -521,7 +521,7 @@ static void test_methodology__ar_log_propagation_on_load(void) {
 }
 
 static void test_methodology__ar_log_propagation_on_load_with_instance(void) {
-    printf("Testing ar_log propagation during ar_methodology__load_methods_with_instance()...\n");
+    printf("Testing ar_log propagation during ar_methodology__load_methods()...\n");
     
     // Given an ar_log instance
     ar_log_t *own_log = ar_log__create();
@@ -532,7 +532,7 @@ static void test_methodology__ar_log_propagation_on_load_with_instance(void) {
     assert(own_methodology1 != NULL);
     
     // When we create a method with invalid syntax
-    bool result = ar_methodology__create_method_with_instance(own_methodology1,
+    bool result = ar_methodology__create_method(own_methodology1,
                                                              "instance_load_test",
                                                              "bad syntax %^&*",
                                                              "2.0.0");
@@ -540,7 +540,7 @@ static void test_methodology__ar_log_propagation_on_load_with_instance(void) {
     
     // And save to a custom file
     const char *test_file = "test_methodology_instance.agerun";
-    result = ar_methodology__save_methods_with_instance(own_methodology1, test_file);
+    result = ar_methodology__save_methods(own_methodology1, test_file);
     assert(result == true);
     
     // Destroy the first instance and create a new one with a fresh log
@@ -556,7 +556,7 @@ static void test_methodology__ar_log_propagation_on_load_with_instance(void) {
     assert(own_methodology2 != NULL);
     
     // When we load methods from the custom file
-    result = ar_methodology__load_methods_with_instance(own_methodology2, test_file);
+    result = ar_methodology__load_methods(own_methodology2, test_file);
     assert(result == true);
     
     // Then the parse error should be logged to our ar_log instance
@@ -588,66 +588,66 @@ static void test_methodology__partial_version_resolution(void) {
     assert(own_methodology != NULL);
     
     // Register multiple versions of the same method
-    bool result = ar_methodology__create_method_with_instance(own_methodology,
+    bool result = ar_methodology__create_method(own_methodology,
                                                              "version_test",
                                                              "memory.result = \"v1.0.0\"",
                                                              "1.0.0");
     assert(result == true);
     
-    result = ar_methodology__create_method_with_instance(own_methodology,
+    result = ar_methodology__create_method(own_methodology,
                                                         "version_test",
                                                         "memory.result = \"v1.2.0\"",
                                                         "1.2.0");
     assert(result == true);
     
-    result = ar_methodology__create_method_with_instance(own_methodology,
+    result = ar_methodology__create_method(own_methodology,
                                                         "version_test",
                                                         "memory.result = \"v1.2.3\"",
                                                         "1.2.3");
     assert(result == true);
     
-    result = ar_methodology__create_method_with_instance(own_methodology,
+    result = ar_methodology__create_method(own_methodology,
                                                         "version_test",
                                                         "memory.result = \"v2.0.0\"",
                                                         "2.0.0");
     assert(result == true);
     
-    result = ar_methodology__create_method_with_instance(own_methodology,
+    result = ar_methodology__create_method(own_methodology,
                                                         "version_test",
                                                         "memory.result = \"v2.1.0\"",
                                                         "2.1.0");
     assert(result == true);
     
     // Test NULL version returns latest
-    ar_method_t *ref_method = ar_methodology__get_method_with_instance(own_methodology,
+    ar_method_t *ref_method = ar_methodology__get_method(own_methodology,
                                                                        "version_test",
                                                                        NULL);
     assert(ref_method != NULL);
     assert(strcmp(ar_method__get_version(ref_method), "2.1.0") == 0);
     
     // Test single digit partial version "1" returns latest 1.x.x
-    ref_method = ar_methodology__get_method_with_instance(own_methodology,
+    ref_method = ar_methodology__get_method(own_methodology,
                                                           "version_test",
                                                           "1");
     assert(ref_method != NULL);
     assert(strcmp(ar_method__get_version(ref_method), "1.2.3") == 0);
     
     // Test two digit partial version "1.2" returns latest 1.2.x
-    ref_method = ar_methodology__get_method_with_instance(own_methodology,
+    ref_method = ar_methodology__get_method(own_methodology,
                                                           "version_test",
                                                           "1.2");
     assert(ref_method != NULL);
     assert(strcmp(ar_method__get_version(ref_method), "1.2.3") == 0);
     
     // Test single digit partial version "2" returns latest 2.x.x
-    ref_method = ar_methodology__get_method_with_instance(own_methodology,
+    ref_method = ar_methodology__get_method(own_methodology,
                                                           "version_test",
                                                           "2");
     assert(ref_method != NULL);
     assert(strcmp(ar_method__get_version(ref_method), "2.1.0") == 0);
     
     // Test exact version match
-    ref_method = ar_methodology__get_method_with_instance(own_methodology,
+    ref_method = ar_methodology__get_method(own_methodology,
                                                           "version_test",
                                                           "1.2.0");
     assert(ref_method != NULL);
@@ -684,7 +684,7 @@ int main(void) {
     const char *init_instructions = "memory.result = \"Test methodology\"";
 
     // Create and register method with instance methodology
-    bool result = ar_methodology__create_method_with_instance(
+    bool result = ar_methodology__create_method(
         mut_methodology, init_method, init_instructions, "1.0.0"
     );
     assert(result);
@@ -693,7 +693,7 @@ int main(void) {
     const char *init_version = "1.0.0";
 
     // When we initialize the system
-    ar_system__init_with_instance(mut_system, init_method, init_version);
+    ar_system__init(mut_system, init_method, init_version);
     
     // And we run all methodology tests
     test_methodology_get_method();
@@ -718,7 +718,7 @@ int main(void) {
     // And report success
     printf("All 18 tests passed!\n");
     // Clean up system instance
-    ar_system__shutdown_with_instance(mut_system);
+    ar_system__shutdown(mut_system);
     ar_system__destroy(mut_system);
     
     return 0;

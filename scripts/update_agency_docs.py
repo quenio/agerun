@@ -16,14 +16,14 @@ from pathlib import Path
 
 # Mapping of old global functions to their instance equivalents
 FUNCTION_MAPPINGS = {
-    'ar_agency__create_agent': 'ar_agency__create_agent_with_instance',
-    'ar_agency__save_agents': 'ar_agency__save_agents_with_instance',
-    'ar_agency__send_to_agent': 'ar_agency__send_to_agent_with_instance',
-    'ar_agency__get_agent_context': 'ar_agency__get_agent_context_with_instance',
-    'ar_agency__get_agent_mutable_memory': 'ar_agency__get_agent_mutable_memory_with_instance',
-    'ar_agency__get_agent_method': 'ar_agency__get_agent_method_with_instance',
-    'ar_agency__get_agent_message': 'ar_agency__get_agent_message_with_instance',
-    'ar_agency__count_agents_using_method': 'ar_agency__count_agents_using_method_with_instance',
+    'ar_agency__create_agent': 'ar_agency__create_agent',
+    'ar_agency__save_agents': 'ar_agency__save_agents',
+    'ar_agency__send_to_agent': 'ar_agency__send_to_agent',
+    'ar_agency__get_agent_context': 'ar_agency__get_agent_context',
+    'ar_agency__get_agent_mutable_memory': 'ar_agency__get_agent_mutable_memory',
+    'ar_agency__get_agent_method': 'ar_agency__get_agent_method',
+    'ar_agency__get_agent_message': 'ar_agency__get_agent_message',
+    'ar_agency__count_agents_using_method': 'ar_agency__count_agents_using_method',
 }
 
 def update_file(filepath, dry_run=True):

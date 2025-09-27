@@ -52,7 +52,7 @@ static void test_no_auto_loading_on_init(void) {
     ar_system_t *mut_system = ar_system__create();
     AR_ASSERT(mut_system != NULL, "System creation should succeed");
     
-    ar_system__init_with_instance(mut_system, NULL, NULL);
+    ar_system__init(mut_system, NULL, NULL);
     
     // Restore stdout
     fflush(stdout);
@@ -74,7 +74,7 @@ static void test_no_auto_loading_on_init(void) {
     AR_ASSERT(!loading_attempted, "System should NOT attempt to load files during init");
     
     // Clean up
-    ar_system__shutdown_with_instance(mut_system);
+    ar_system__shutdown(mut_system);
     ar_system__destroy(mut_system);
     
     // Remove temp files
@@ -102,7 +102,7 @@ static void test_method_creation(ar_system_t *mut_system) {
     assert(own_method != NULL);
     
     // Register with the system's methodology
-    ar_methodology__register_method_with_instance(mut_methodology, own_method);
+    ar_methodology__register_method(mut_methodology, own_method);
     own_method = NULL; // Mark as transferred
     
     // For test purposes, we use version "1.0.0"
@@ -116,7 +116,7 @@ static void test_method_creation(ar_system_t *mut_system) {
     assert(own_method2 != NULL);
     
     // Register with the system's methodology
-    ar_methodology__register_method_with_instance(mut_methodology, own_method2);
+    ar_methodology__register_method(mut_methodology, own_method2);
     own_method2 = NULL; // Mark as transferred
     
     // For test purposes, we use version "2.0.0"
@@ -144,35 +144,35 @@ static void test_agent_creation(ar_system_t *mut_system) {
     assert(own_method != NULL);
     
     // Register with the system's methodology
-    ar_methodology__register_method_with_instance(mut_methodology, own_method);
+    ar_methodology__register_method(mut_methodology, own_method);
     own_method = NULL; // Mark as transferred
     
     // For test purposes, we use version "1.0.0"
     const char *version = "1.0.0";
     
     // When we create an agent with this method using the system's agency
-    int64_t agent_id = ar_agency__create_agent_with_instance(mut_agency, method_name, version, NULL);
+    int64_t agent_id = ar_agency__create_agent(mut_agency, method_name, version, NULL);
     
     // Then the agent should be created successfully
     assert(agent_id > 0);
     
     // And the agent should exist in the system
-    ar_agent_registry_t *ref_registry = ar_agency__get_registry_with_instance(mut_agency);
+    ar_agent_registry_t *ref_registry = ar_agency__get_registry(mut_agency);
     assert(ar_agent_registry__is_registered(ref_registry, agent_id));
     
     // When we send a message to the agent
     ar_data_t *test_message = ar_data__create_string(g_test_message);
     assert(test_message != NULL);
-    bool send_result = ar_agency__send_to_agent_with_instance(mut_agency, agent_id, test_message);
+    bool send_result = ar_agency__send_to_agent(mut_agency, agent_id, test_message);
     
     // Then the message should be sent successfully
     assert(send_result);
     
     // When we process the test message
-    ar_system__process_next_message_with_instance(mut_system);
+    ar_system__process_next_message(mut_system);
     
     // When we destroy the agent
-    ar_agency__destroy_agent_with_instance(mut_agency, agent_id);
+    ar_agency__destroy_agent(mut_agency, agent_id);
     
     // Then the destruction should succeed
     // Agency destroy returns void
@@ -196,7 +196,7 @@ static void test_message_passing(ar_system_t *mut_system) {
     assert(own_sender_method != NULL);
     
     // Register with the system's methodology
-    ar_methodology__register_method_with_instance(mut_methodology, own_sender_method);
+    ar_methodology__register_method(mut_methodology, own_sender_method);
     own_sender_method = NULL; // Mark as transferred
     
     // For test purposes, we use version "1.0.0"
@@ -207,28 +207,28 @@ static void test_message_passing(ar_system_t *mut_system) {
     assert(own_receiver_method != NULL);
     
     // Register with the system's methodology
-    ar_methodology__register_method_with_instance(mut_methodology, own_receiver_method);
+    ar_methodology__register_method(mut_methodology, own_receiver_method);
     own_receiver_method = NULL; // Mark as transferred
     
     // For test purposes, we use version "1.0.0"
     const char *receiver_version = "1.0.0";
     
     // And a receiver agent created with the receiver method
-    int64_t receiver_id = ar_agency__create_agent_with_instance(mut_agency, "receiver", receiver_version, NULL);
+    int64_t receiver_id = ar_agency__create_agent(mut_agency, "receiver", receiver_version, NULL);
     assert(receiver_id > 0);
     
     // And a sender agent created with the sender method
     // Note: In the full implementation, a context with receiver ID would be passed
-    int64_t sender_id = ar_agency__create_agent_with_instance(mut_agency, "sender", sender_version, NULL);
+    int64_t sender_id = ar_agency__create_agent(mut_agency, "sender", sender_version, NULL);
     assert(sender_id > 0);
     
     // When we process all pending messages
     // With opaque ar_map_t, we can't rely on the exact count
-    ar_system__process_all_messages_with_instance(mut_system);
+    ar_system__process_all_messages(mut_system);
     
     // When we clean up the agents
-    ar_agency__destroy_agent_with_instance(mut_agency, sender_id);
-    ar_agency__destroy_agent_with_instance(mut_agency, receiver_id);
+    ar_agency__destroy_agent(mut_agency, sender_id);
+    ar_agency__destroy_agent(mut_agency, receiver_id);
     
     // Then the destruction should succeed
     // Agency destroy returns void
@@ -246,7 +246,7 @@ static void test_no_auto_saving_on_shutdown(void) {
     // And a system with methodology and agents
     ar_system_t *mut_system = ar_system__create();
     assert(mut_system != NULL);
-    ar_system__init_with_instance(mut_system, NULL, NULL);
+    ar_system__init(mut_system, NULL, NULL);
     
     ar_agency_t *mut_agency = ar_system__get_agency(mut_system);
     assert(mut_agency != NULL);
@@ -257,14 +257,14 @@ static void test_no_auto_saving_on_shutdown(void) {
     // And the methodology has methods
     ar_method_t *own_method = ar_method__create("test_method", "send(0, \"test\")", "1.0.0");
     assert(own_method != NULL);
-    ar_methodology__register_method_with_instance(mut_methodology, own_method);
+    ar_methodology__register_method(mut_methodology, own_method);
     
     // And the agency has active agents
-    int64_t agent_id = ar_agency__create_agent_with_instance(mut_agency, "test_method", "1.0.0", NULL);
+    int64_t agent_id = ar_agency__create_agent(mut_agency, "test_method", "1.0.0", NULL);
     assert(agent_id > 0);
     
     // When the system is shut down
-    ar_system__shutdown_with_instance(mut_system);
+    ar_system__shutdown(mut_system);
     ar_system__destroy(mut_system);
     
     // Then no files should be saved
@@ -295,7 +295,7 @@ int main(void) {
     }
     
     // Initialize the system with no initial agent
-    ar_system__init_with_instance(mut_system, NULL, NULL);
+    ar_system__init(mut_system, NULL, NULL);
     
     // Given we create a test method
     ar_method_t *own_method = ar_method__create("test_init", "send(0, \"Runtime initialized\")", "1.0.0");
@@ -303,7 +303,7 @@ int main(void) {
     // Then the method should be created successfully
     if (own_method == NULL) {
         printf("Error: Failed to create test_init method\n");
-        ar_system__shutdown_with_instance(mut_system);
+        ar_system__shutdown(mut_system);
         ar_system__destroy(mut_system);
         return 1;
     }
@@ -313,19 +313,19 @@ int main(void) {
     ar_methodology_t *mut_methodology = ar_agency__get_methodology(mut_agency);
     
     // Register with the system's methodology
-    ar_methodology__register_method_with_instance(mut_methodology, own_method);
+    ar_methodology__register_method(mut_methodology, own_method);
     own_method = NULL; // Mark as transferred
     
     // For test purposes, we use version "1.0.0"
     const char *version = "1.0.0";
     
     // When we create an initial agent with this method using the system's agency
-    int64_t initial_agent = ar_agency__create_agent_with_instance(mut_agency, "test_init", version, NULL);
+    int64_t initial_agent = ar_agency__create_agent(mut_agency, "test_init", version, NULL);
     
     // Then the agent should be created successfully
     if (initial_agent == 0) {
         printf("Error: Failed to create initial agent\n");
-        ar_system__shutdown_with_instance(mut_system);
+        ar_system__shutdown(mut_system);
         ar_system__destroy(mut_system);
         return 1;
     }
@@ -336,10 +336,10 @@ int main(void) {
     test_message_passing(mut_system);
     
     // Clean up the initial agent using the system's agency
-    ar_agency__destroy_agent_with_instance(mut_agency, initial_agent);
+    ar_agency__destroy_agent(mut_agency, initial_agent);
     
     // Then clean up the system
-    ar_system__shutdown_with_instance(mut_system);
+    ar_system__shutdown(mut_system);
     ar_system__destroy(mut_system);
     
     // Global cleanup

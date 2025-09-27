@@ -9,11 +9,11 @@ Code can appear necessary through comments and context, but may actually be obso
 ## Example
 ```c
 // ar_instruction_evaluator_tests.c - Original code
-int64_t agent_id = ar_agency__create_agent_with_instance(agency, "destroy_test_method", "1.0.0", NULL);
+int64_t agent_id = ar_agency__create_agent(agency, "destroy_test_method", "1.0.0", NULL);
 assert(agent_id > 0);
 
 // Process any initial messages
-ar_system__process_next_message_with_instance(sys);  // Is this needed?
+ar_system__process_next_message(sys);  // Is this needed?
 
 // Create destroy agent instruction AST
 ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(...);

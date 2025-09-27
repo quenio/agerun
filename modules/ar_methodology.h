@@ -11,22 +11,22 @@
 /* Opaque type for methodology instance */
 typedef struct ar_methodology_s ar_methodology_t;
 
-/* ar_methodology__create_method removed - use ar_methodology__create_method_with_instance instead */
+/* ar_methodology__create_method removed - use ar_methodology__create_method instead */
 
-/* ar_methodology__get_method removed - use ar_methodology__get_method_with_instance instead */
+/* ar_methodology__get_method removed - use ar_methodology__get_method instead */
 
 
 /* Internal functions removed to comply with Parnas principles */
 
-/* ar_methodology__save_methods removed - use ar_methodology__save_methods_with_instance instead */
+/* ar_methodology__save_methods removed - use ar_methodology__save_methods instead */
 
-/* ar_methodology__load_methods removed - use ar_methodology__load_methods_with_instance instead */
+/* ar_methodology__load_methods removed - use ar_methodology__load_methods instead */
 
-/* ar_methodology__cleanup removed - use ar_methodology__cleanup_with_instance instead */
+/* ar_methodology__cleanup removed - use ar_methodology__cleanup instead */
 
-/* ar_methodology__register_method removed - use ar_methodology__register_method_with_instance instead */
+/* ar_methodology__register_method removed - use ar_methodology__register_method instead */
 
-/* ar_methodology__unregister_method removed - use ar_methodology__unregister_method_with_instance instead */
+/* ar_methodology__unregister_method removed - use ar_methodology__unregister_method instead */
 
 /**
  * Create a new methodology instance
@@ -53,7 +53,7 @@ void ar_methodology__destroy(ar_methodology_t *own_methodology);
  * @return Pointer to method definition (borrowed reference), or NULL if not found
  * @note Ownership: Returns a borrowed reference to the internal method
  */
-ar_method_t* ar_methodology__get_method_with_instance(ar_methodology_t *ref_methodology, 
+ar_method_t* ar_methodology__get_method(ar_methodology_t *ref_methodology, 
                                                    const char *ref_name, 
                                                    const char *ref_version);
 
@@ -63,7 +63,7 @@ ar_method_t* ar_methodology__get_method_with_instance(ar_methodology_t *ref_meth
  * @param own_method The method to register (ownership is transferred)
  * @note Ownership: The methodology instance takes ownership of the method
  */
-void ar_methodology__register_method_with_instance(ar_methodology_t *mut_methodology, 
+void ar_methodology__register_method(ar_methodology_t *mut_methodology, 
                                                    ar_method_t *own_method);
 
 /**
@@ -75,7 +75,7 @@ void ar_methodology__register_method_with_instance(ar_methodology_t *mut_methodo
  * @return true if method was created and registered successfully, false otherwise
  * @note Ownership: This function creates and takes ownership of the method
  */
-bool ar_methodology__create_method_with_instance(ar_methodology_t *mut_methodology,
+bool ar_methodology__create_method(ar_methodology_t *mut_methodology,
                                                  const char *ref_name, 
                                                  const char *ref_instructions,
                                                  const char *ref_version);
@@ -86,7 +86,7 @@ bool ar_methodology__create_method_with_instance(ar_methodology_t *mut_methodolo
  * @param ref_filename The filename to save to (borrowed reference)
  * @return true if successful, false otherwise
  */
-bool ar_methodology__save_methods_with_instance(ar_methodology_t *ref_methodology, 
+bool ar_methodology__save_methods(ar_methodology_t *ref_methodology, 
                                                 const char *ref_filename);
 
 /**
@@ -95,7 +95,7 @@ bool ar_methodology__save_methods_with_instance(ar_methodology_t *ref_methodolog
  * @param ref_filename The filename to load from (borrowed reference)
  * @return true if successful, false otherwise
  */
-bool ar_methodology__load_methods_with_instance(ar_methodology_t *mut_methodology, 
+bool ar_methodology__load_methods(ar_methodology_t *mut_methodology, 
                                                 const char *ref_filename);
 
 /**
@@ -106,7 +106,7 @@ bool ar_methodology__load_methods_with_instance(ar_methodology_t *mut_methodolog
  * @return true if method was successfully unregistered, false otherwise
  * @note This will fail if there are active agents using this method
  */
-bool ar_methodology__unregister_method_with_instance(ar_methodology_t *mut_methodology,
+bool ar_methodology__unregister_method(ar_methodology_t *mut_methodology,
                                                      const char *ref_name,
                                                      const char *ref_version);
 
@@ -116,6 +116,6 @@ bool ar_methodology__unregister_method_with_instance(ar_methodology_t *mut_metho
  * @note This should be called before destroying the methodology instance
  * @note Ownership: This cleans up all methods owned by the instance
  */
-void ar_methodology__cleanup_with_instance(ar_methodology_t *mut_methodology);
+void ar_methodology__cleanup(ar_methodology_t *mut_methodology);
 
 #endif /* AGERUN_METHODOLOGY_H */

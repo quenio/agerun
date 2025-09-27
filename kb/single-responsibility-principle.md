@@ -78,7 +78,7 @@ ar_data_t* ar_expression_evaluator__evaluate(ar_expression_ast_t* ast, ar_data_t
 **Problem**: Module managing both lifecycle and business logic
 ```c
 // BAD: Mixed agent creation and message routing
-ar_agent_t* ar_agency__create_agent_with_instance(const char* method_name);
+ar_agent_t* ar_agency__create_agent(const char* method_name);
 void ar_agency__send_message(uint64_t agent_id, ar_data_t* message);  // EXAMPLE: Hypothetical function
 void ar_agency__route_message(ar_event_t* event);  // EXAMPLE: Hypothetical function
 ```
@@ -117,10 +117,10 @@ void system_init_example();
 void ar_system__cleanup();  // EXAMPLE: Hypothetical function
 
 // ar_methodology.h - Method management
-void ar_methodology__register_method_with_instance(const char* name, const char* version, const char* content);
+void ar_methodology__register_method(const char* name, const char* version, const char* content);
 
 // ar_agency.h - Agent management  
-ar_agent_t* ar_agency__create_agent_with_instance(const char* method_name, const char* version);
+ar_agent_t* ar_agency__create_agent(const char* method_name, const char* version);
 ```
 
 ### Mixed Abstraction Levels

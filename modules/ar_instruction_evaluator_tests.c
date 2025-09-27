@@ -365,7 +365,7 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         
         // And the method should be registered in methodology
         ar_methodology_t *methodology = ar_agency__get_methodology(agency);
-        ar_method_t *method = ar_methodology__get_method_with_instance(methodology, "test_method", "1.0.0");
+        ar_method_t *method = ar_methodology__get_method(methodology, "test_method", "1.0.0");
         assert(method != NULL);
         assert(strcmp(ar_method__get_name(method), "test_method") == 0);
         assert(strcmp(ar_method__get_version(method), "1.0.0") == 0);
@@ -379,8 +379,8 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         ar_methodology_t *mut_methodology = ar_agency__get_methodology(agency);
         
         // Create a test method and agent first
-        ar_methodology__create_method_with_instance(mut_methodology, "destroy_test_method", "memory.x := 1", "1.0.0");
-        int64_t agent_id = ar_agency__create_agent_with_instance(agency, "destroy_test_method", "1.0.0", NULL);
+        ar_methodology__create_method(mut_methodology, "destroy_test_method", "memory.x := 1", "1.0.0");
+        int64_t agent_id = ar_agency__create_agent(agency, "destroy_test_method", "1.0.0", NULL);
         assert(agent_id > 0);
         
         // Create destroy agent instruction AST
@@ -419,7 +419,7 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         assert(ar_data__get_integer(value) == 1);
         
         // And the agent should be destroyed
-        ar_agent_registry_t *ref_registry = ar_agency__get_registry_with_instance(agency);
+        ar_agent_registry_t *ref_registry = ar_agency__get_registry(agency);
         assert(ar_agent_registry__is_registered(ref_registry, agent_id) == false);
         
         ar_instruction_ast__destroy(ast);
@@ -430,10 +430,10 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         // Use the same methodology from the evaluator
         ar_methodology_t *mut_methodology = ar_agency__get_methodology(agency);
         
-        ar_methodology__create_method_with_instance(mut_methodology, "destroy_method_test", "memory.x := 1", "1.0.0");
+        ar_methodology__create_method(mut_methodology, "destroy_method_test", "memory.x := 1", "1.0.0");
         
         // Verify method exists
-        ar_method_t *method = ar_methodology__get_method_with_instance(mut_methodology, "destroy_method_test", "1.0.0");
+        ar_method_t *method = ar_methodology__get_method(mut_methodology, "destroy_method_test", "1.0.0");
         assert(method != NULL);
         
         // Create destroy method instruction AST
@@ -472,7 +472,7 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         assert(ar_data__get_integer(value) == 1);
         
         // And the method should be destroyed
-        ar_method_t *destroyed_method = ar_methodology__get_method_with_instance(mut_methodology, "destroy_method_test", "1.0.0");
+        ar_method_t *destroyed_method = ar_methodology__get_method(mut_methodology, "destroy_method_test", "1.0.0");
         assert(destroyed_method == NULL);
         
         ar_instruction_ast__destroy(ast);

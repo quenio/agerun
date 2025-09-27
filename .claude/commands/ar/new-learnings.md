@@ -213,7 +213,7 @@ Each learning should be saved as an individual .md file in `./kb/` directory wit
 
 **✅ PREFERRED Real Functions:**
 - `ar_data__create_*()`, `ar_data__get_*()`, `ar_data__destroy()`
-- `ar_agency__create_agent_with_instance()`, `ar_agency__get_agent_*()` functions
+- `ar_agency__create_agent()`, `ar_agency__get_agent_*()` functions
 - `ar_agent__get_*()`, `ar_agent__set_*()`
 - `ar_methodology__*()` functions
 - `ar_heap__malloc()`, `ar_heap__free()` (memory management)

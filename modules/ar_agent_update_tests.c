@@ -95,21 +95,21 @@ static void test_count_using_method(void) {
     assert(mut_agency != NULL);
     
     // When no agents exist
-    assert(ar_agency__count_agents_using_method_with_instance(mut_agency, ref_echo) == 0);
-    assert(ar_agency__count_agents_using_method_with_instance(mut_agency, ref_calc) == 0);
+    assert(ar_agency__count_agents_using_method(mut_agency, ref_echo) == 0);
+    assert(ar_agency__count_agents_using_method(mut_agency, ref_calc) == 0);
     
     // When creating agents
-    ar_agency__create_agent_with_instance(mut_agency, "echo", "1.0.0", NULL);
-    ar_agency__create_agent_with_instance(mut_agency, "echo", "1.0.0", NULL);
-    ar_agency__create_agent_with_instance(mut_agency, "calc", "1.0.0", NULL);
+    ar_agency__create_agent(mut_agency, "echo", "1.0.0", NULL);
+    ar_agency__create_agent(mut_agency, "echo", "1.0.0", NULL);
+    ar_agency__create_agent(mut_agency, "calc", "1.0.0", NULL);
     ar_system_fixture__process_all_messages(own_fixture); // Process any messages
     
     // Then counts should be correct
-    assert(ar_agency__count_agents_using_method_with_instance(mut_agency, ref_echo) == 2);
-    assert(ar_agency__count_agents_using_method_with_instance(mut_agency, ref_calc) == 1);
+    assert(ar_agency__count_agents_using_method(mut_agency, ref_echo) == 2);
+    assert(ar_agency__count_agents_using_method(mut_agency, ref_calc) == 1);
     
     // When checking with null
-    assert(ar_agency__count_agents_using_method_with_instance(mut_agency, NULL) == 0);
+    assert(ar_agency__count_agents_using_method(mut_agency, NULL) == 0);
     
     // Check for memory leaks
     assert(ar_system_fixture__check_memory(own_fixture));
@@ -149,28 +149,28 @@ static void test_update_without_lifecycle(void) {
     assert(mut_agency != NULL);
     
     // Create agents with v1.0
-    int64_t agent1 = ar_agency__create_agent_with_instance(mut_agency, "echo", "1.0.0", NULL);
-    int64_t agent2 = ar_agency__create_agent_with_instance(mut_agency, "echo", "1.0.0", NULL);
-    ar_agency__create_agent_with_instance(mut_agency, "calc", "1.0.0", NULL); // Different method - won't be updated
+    int64_t agent1 = ar_agency__create_agent(mut_agency, "echo", "1.0.0", NULL);
+    int64_t agent2 = ar_agency__create_agent(mut_agency, "echo", "1.0.0", NULL);
+    ar_agency__create_agent(mut_agency, "calc", "1.0.0", NULL); // Different method - won't be updated
     ar_system_fixture__process_all_messages(own_fixture); // Process any messages
     
     // Verify initial state
-    assert(ar_agency__get_agent_method_with_instance(mut_agency, agent1) == ref_v1_0);
-    assert(ar_agency__get_agent_method_with_instance(mut_agency, agent2) == ref_v1_0);
+    assert(ar_agency__get_agent_method(mut_agency, agent1) == ref_v1_0);
+    assert(ar_agency__get_agent_method(mut_agency, agent2) == ref_v1_0);
     
     // When updating
-    int count = ar_agency__update_agent_methods_with_instance(mut_agency, ref_v1_0, ref_v1_1);
+    int count = ar_agency__update_agent_methods(mut_agency, ref_v1_0, ref_v1_1);
     
     // Then correct number should be updated
     assert(count == 2);
     
     // Then methods should be updated
-    assert(ar_agency__get_agent_method_with_instance(mut_agency, agent1) == ref_v1_1);
-    assert(ar_agency__get_agent_method_with_instance(mut_agency, agent2) == ref_v1_1);
+    assert(ar_agency__get_agent_method(mut_agency, agent1) == ref_v1_1);
+    assert(ar_agency__get_agent_method(mut_agency, agent2) == ref_v1_1);
     
     // Then no messages should be queued
-    assert(!ar_agency__agent_has_messages_with_instance(mut_agency, agent1));
-    assert(!ar_agency__agent_has_messages_with_instance(mut_agency, agent2));
+    assert(!ar_agency__agent_has_messages(mut_agency, agent1));
+    assert(!ar_agency__agent_has_messages(mut_agency, agent2));
     
     // Check for memory leaks
     assert(ar_system_fixture__check_memory(own_fixture));
@@ -209,30 +209,30 @@ static void test_update_with_lifecycle(void) {
     assert(mut_agency != NULL);
     
     // Create agents using instance APIs
-    int64_t agent1 = ar_agency__create_agent_with_instance(mut_agency, "echo", "1.0.0", NULL);
-    int64_t agent2 = ar_agency__create_agent_with_instance(mut_agency, "echo", "1.0.0", NULL);
+    int64_t agent1 = ar_agency__create_agent(mut_agency, "echo", "1.0.0", NULL);
+    int64_t agent2 = ar_agency__create_agent(mut_agency, "echo", "1.0.0", NULL);
     ar_system_fixture__process_all_messages(own_fixture); // Process any messages
     
     // Verify initial state using instance APIs
-    assert(ar_agency__agent_has_messages_with_instance(mut_agency, agent1) == false);
-    assert(ar_agency__agent_has_messages_with_instance(mut_agency, agent2) == false);
+    assert(ar_agency__agent_has_messages(mut_agency, agent1) == false);
+    assert(ar_agency__agent_has_messages(mut_agency, agent2) == false);
     
     // When updating using instance API
     // (Note: lifecycle events are no longer sent)
-    int count = ar_agency__update_agent_methods_with_instance(mut_agency, ref_v1_0, ref_v1_1);
+    int count = ar_agency__update_agent_methods(mut_agency, ref_v1_0, ref_v1_1);
     assert(count == 2);
     
     // Then no messages should be queued
-    assert(ar_agency__agent_has_messages_with_instance(mut_agency, agent1) == false);
-    assert(ar_agency__agent_has_messages_with_instance(mut_agency, agent2) == false);
+    assert(ar_agency__agent_has_messages(mut_agency, agent1) == false);
+    assert(ar_agency__agent_has_messages(mut_agency, agent2) == false);
     
     // Then no messages to process
-    assert(ar_agency__agent_has_messages_with_instance(mut_agency, agent1) == false);
-    assert(ar_agency__agent_has_messages_with_instance(mut_agency, agent2) == false);
+    assert(ar_agency__agent_has_messages(mut_agency, agent1) == false);
+    assert(ar_agency__agent_has_messages(mut_agency, agent2) == false);
     
     // And methods should be updated using instance API
-    assert(ar_agency__get_agent_method_with_instance(mut_agency, agent1) == ref_v1_1);
-    assert(ar_agency__get_agent_method_with_instance(mut_agency, agent2) == ref_v1_1);
+    assert(ar_agency__get_agent_method(mut_agency, agent1) == ref_v1_1);
+    assert(ar_agency__get_agent_method(mut_agency, agent2) == ref_v1_1);
     
     // Check for memory leaks
     assert(ar_system_fixture__check_memory(own_fixture));
@@ -272,20 +272,20 @@ static void test_update_incompatible(void) {
     assert(mut_agency != NULL);
     
     // Create agents using instance APIs
-    ar_agency__create_agent_with_instance(mut_agency, "echo", "1.0.0", NULL);
-    ar_agency__create_agent_with_instance(mut_agency, "echo", "1.0.0", NULL);
+    ar_agency__create_agent(mut_agency, "echo", "1.0.0", NULL);
+    ar_agency__create_agent(mut_agency, "echo", "1.0.0", NULL);
     ar_system_fixture__process_all_messages(own_fixture);
     
     // When attempting incompatible updates using instance API
     // Then major version change should fail
-    assert(ar_agency__update_agent_methods_with_instance(mut_agency, ref_v1_0, ref_v2_0) == 0);
+    assert(ar_agency__update_agent_methods(mut_agency, ref_v1_0, ref_v2_0) == 0);
     
     // Then different method should fail
-    assert(ar_agency__update_agent_methods_with_instance(mut_agency, ref_v1_0, ref_other) == 0);
+    assert(ar_agency__update_agent_methods(mut_agency, ref_v1_0, ref_other) == 0);
     
     // Then null methods should fail
-    assert(ar_agency__update_agent_methods_with_instance(mut_agency, NULL, ref_v1_0) == 0);
-    assert(ar_agency__update_agent_methods_with_instance(mut_agency, ref_v1_0, NULL) == 0);
+    assert(ar_agency__update_agent_methods(mut_agency, NULL, ref_v1_0) == 0);
+    assert(ar_agency__update_agent_methods(mut_agency, ref_v1_0, NULL) == 0);
     
     // Check for memory leaks
     assert(ar_system_fixture__check_memory(own_fixture));
@@ -320,7 +320,7 @@ static void test_update_no_agents(void) {
     assert(mut_agency != NULL);
     
     // When updating with no agents using instance API
-    int count = ar_agency__update_agent_methods_with_instance(mut_agency, ref_v1_0, ref_v1_1);
+    int count = ar_agency__update_agent_methods(mut_agency, ref_v1_0, ref_v1_1);
     
     // Then no agents should be updated
     assert(count == 0);

@@ -45,21 +45,21 @@ static void test_system_instance_with_custom_agency(void) {
     // When we initialize the system with a method
     ar_method_t *own_method = ar_method__create("instance_test", "send(0, \"Instance test\")", "1.0.0");
     assert(own_method != NULL);
-    ar_methodology__register_method_with_instance(mut_methodology, own_method);
+    ar_methodology__register_method(mut_methodology, own_method);
     own_method = NULL; // Ownership transferred
     
-    int64_t agent_id = ar_system__init_with_instance(own_system, "instance_test", "1.0.0");
+    int64_t agent_id = ar_system__init(own_system, "instance_test", "1.0.0");
     
     // Then an agent should be created
     assert(agent_id > 0);
     
     // System processes messages internally during init
     // No additional messages to process
-    bool processed = ar_system__process_next_message_with_instance(own_system);
+    bool processed = ar_system__process_next_message(own_system);
     assert(!processed); // No messages left to process
     
     // When we shut down the system
-    ar_system__shutdown_with_instance(own_system);
+    ar_system__shutdown(own_system);
     
     // And destroy the system (also destroys the internal agency)
     ar_system__destroy(own_system);
@@ -87,14 +87,14 @@ static void test_system_instance_parallel_systems(void) {
     ar_method_t *own_method2 = ar_method__create("system2_test", "memory[\"system\"] := \"two\"", "1.0.0");
     assert(own_method1 != NULL);
     assert(own_method2 != NULL);
-    ar_methodology__register_method_with_instance(mut_methodology1, own_method1);
-    ar_methodology__register_method_with_instance(mut_methodology2, own_method2);
+    ar_methodology__register_method(mut_methodology1, own_method1);
+    ar_methodology__register_method(mut_methodology2, own_method2);
     own_method1 = NULL; // Ownership transferred
     own_method2 = NULL; // Ownership transferred
     
     // When we initialize both systems with different methods
-    int64_t agent1_id = ar_system__init_with_instance(own_system1, "system1_test", "1.0.0");
-    int64_t agent2_id = ar_system__init_with_instance(own_system2, "system2_test", "1.0.0");
+    int64_t agent1_id = ar_system__init(own_system1, "system1_test", "1.0.0");
+    int64_t agent2_id = ar_system__init(own_system2, "system2_test", "1.0.0");
     
     // Then both should create agents
     assert(agent1_id > 0);
@@ -106,8 +106,8 @@ static void test_system_instance_parallel_systems(void) {
     // System processes messages internally during init
     
     // Clean up
-    ar_system__shutdown_with_instance(own_system1);
-    ar_system__shutdown_with_instance(own_system2);
+    ar_system__shutdown(own_system1);
+    ar_system__shutdown(own_system2);
     ar_system__destroy(own_system1);  // Also destroys its internal agency
     ar_system__destroy(own_system2);  // Also destroys its internal agency
     
@@ -129,39 +129,39 @@ static void test_system_instance_message_processing(void) {
     ar_method_t *own_method = ar_method__create("msg_test", 
         "memory[\"processed\"] := \"true\"", "1.0.0");
     assert(own_method != NULL);
-    ar_methodology__register_method_with_instance(mut_methodology, own_method);
+    ar_methodology__register_method(mut_methodology, own_method);
     own_method = NULL; // Ownership transferred
     
     // Initialize with the method
-    int64_t agent_id = ar_system__init_with_instance(own_system, "msg_test", "1.0.0");
+    int64_t agent_id = ar_system__init(own_system, "msg_test", "1.0.0");
     assert(agent_id > 0);
     
     // System processes messages internally during init
     // Try to process but expect no messages
-    bool processed = ar_system__process_next_message_with_instance(own_system);
+    bool processed = ar_system__process_next_message(own_system);
     assert(!processed);
     
     // Verify the method was executed by checking agent memory
     ar_agency_t *ref_agency = ar_system__get_agency(own_system);
-    const ar_data_t *ref_memory = ar_agency__get_agent_memory_with_instance(ref_agency, agent_id);
+    const ar_data_t *ref_memory = ar_agency__get_agent_memory(ref_agency, agent_id);
     assert(ref_memory != NULL);
     assert(ar_data__get_type(ref_memory) == AR_DATA_TYPE__MAP);
     
     // Send a manual message to the agent
     ar_data_t *own_test_msg = ar_data__create_string("test message");
-    bool sent = ar_agency__send_to_agent_with_instance(ref_agency, agent_id, own_test_msg);
+    bool sent = ar_agency__send_to_agent(ref_agency, agent_id, own_test_msg);
     assert(sent);
     
     // Process the test message
-    processed = ar_system__process_next_message_with_instance(own_system);
+    processed = ar_system__process_next_message(own_system);
     assert(processed);
     
     // Process all should return 0 when no messages
-    int count = ar_system__process_all_messages_with_instance(own_system);
+    int count = ar_system__process_all_messages(own_system);
     assert(count == 0);
     
     // Clean up
-    ar_system__shutdown_with_instance(own_system);
+    ar_system__shutdown(own_system);
     ar_system__destroy(own_system);  // Also destroys the internal agency
     
     printf("Instance-based message processing test passed.\n");

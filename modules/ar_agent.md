@@ -122,7 +122,7 @@ ar_data__set_map_integer(own_message, "sender", 0);
 
 if (ar_agent__send(echo_agent, own_message)) {
     // Message sent successfully (ownership transferred)
-    ar_system__process_next_message_with_instance(own_system));
+    ar_system__process_next_message(own_system));
 } else {
     // Failed to send (message was still destroyed)
 }

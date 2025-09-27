@@ -87,7 +87,7 @@ void ar_agent__register_with_agency(ar_agency_t* agency);  // EXAMPLE: Hypotheti
 
 // ar_agency.h
 #include "ar_agent.h"  // Only Agency depends on Agent
-ar_agent_t* ar_agency__create_agent_with_instance(const char* method_name);
+ar_agent_t* ar_agency__create_agent(const char* method_name);
 ```
 
 ### Indirect Circular Dependencies

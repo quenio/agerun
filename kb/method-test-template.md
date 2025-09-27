@@ -26,22 +26,22 @@ int main() {
     }
 
     // Clean state - prevent pollution from previous runs
-    ar_system__shutdown_with_instance(own_system);
-    ar_methodology__cleanup_with_instance();
-    ar_agency__reset_with_instance();
+    ar_system__shutdown(own_system);
+    ar_methodology__cleanup();
+    ar_agency__reset();
     remove("methodology.agerun");
     remove("agency.agerun");
 
     // Test setup
-    ar_methodology__register_method_with_instance("test", "1.0.0", "../methods/test-1.0.0.method");
+    ar_methodology__register_method("test", "1.0.0", "../methods/test-1.0.0.method");
     
     // ... test code ...
     
     // Process all messages before cleanup
-    while (ar_system__process_next_message_with_instance(own_system));
+    while (ar_system__process_next_message(own_system));
     
     // Initialize system after creating methods
-    ar_system__init_with_instance(own_system, NULL, NULL);
+    ar_system__init(own_system, NULL, NULL);
     
     return 0;
 }

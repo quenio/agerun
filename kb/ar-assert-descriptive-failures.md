@@ -17,10 +17,10 @@ static void test_no_auto_saving_on_shutdown(void) {
     ar_system_t *mut_system = ar_system__create();
     AR_ASSERT(mut_system != NULL, "System creation should succeed");
     
-    ar_system__init_with_instance(mut_system, NULL, NULL);
+    ar_system__init(mut_system, NULL, NULL);
     
     // When the system is shut down
-    ar_system__shutdown_with_instance(mut_system);
+    ar_system__shutdown(mut_system);
     ar_system__destroy(mut_system);
     
     // Then no files should be saved

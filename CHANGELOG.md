@@ -4,9 +4,18 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-09-27
 
+### ✅ API Suffix Cleanup - Final API Naming
+- **Removed "_with_instance" suffix** from all 30 functions across ar_agency, ar_system, and ar_methodology modules
+- **Updated 132 files** systematically: source code, headers, Zig files, tests, documentation, and knowledge base articles
+- **Clean API established** - functions now have their final, elegant names (e.g., `ar_agency__create_agent()` instead of `ar_agency__create_agent_with_instance()`)
+- **Python script created** (`scripts/remove_with_instance_suffix.py`) with dry-run mode for safe systematic renaming
+- **Zero functional changes** - purely cosmetic API cleanup following global API removal completion
+- **Documentation validation** - all 519 files pass check-docs with updated function references
+- **Impact**: Establishes the definitive API design users will rely on long-term
+
 ### ✅ Global API Removal - Phase 4 Cleanup
 - **Completed final cleanup phase** for global API removal project
-- **Updated CLAUDE.md** to use instance-based API examples (`ar_methodology__cleanup_with_instance()` & `ar_agency__reset_with_instance()`)
+- **Updated CLAUDE.md** to use instance-based API examples (`ar_methodology__cleanup()` & `ar_agency__reset()`)
 - **Enhanced README.md persistence examples** with complete instance-based workflow showing proper system/agency/methodology coordination
 - **Verified zero memory leaks** across all 74 tests with clean build validation
 - **Documentation consistency achieved** - all 519 documentation files pass validation
@@ -91,7 +100,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
 - **Updated callers** to use instance-based APIs:
   - ar_system.c: 6 calls updated to use mut_system->own_agency
   - ar_interpreter.c: 3 calls updated with NULL check for ref_agency
-  - Test files: Removed 20 redundant ar_agency__reset_with_instance calls
+  - Test files: Removed 20 redundant ar_agency__reset calls
 - **Documentation updates**:
   - Created scripts/update_agency_docs.py for systematic updates
   - Updated 39 .md files to reference _with_instance versions
@@ -782,7 +791,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
 - Implemented methodology save functionality after message processing:
   - Executable saves all loaded methods to `agerun.methodology` file
   - Changed filename from `methodology.agerun` to `agerun.methodology` for clarity
-  - Added `ar_methodology__save_methods_with_instance()` call in ar_executable.c
+  - Added `ar_methodology__save_methods()` call in ar_executable.c
 - Added comprehensive error handling for save failures:
   - Executable continues gracefully if save fails
   - Prints warning message but completes shutdown normally
@@ -799,7 +808,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
 ### ✅ Bootstrap Agent Spawning - TDD Cycle 7
 - Fixed send_instruction_evaluator to use instance-specific agency:
   - Added ref_agency field to evaluator struct
-  - Changed from global ar_agency__send_to_agent_with_instance to ar_agency__send_to_agent_with_instance_with_instance
+  - Changed from global ar_agency__send_to_agent to ar_agency__send_to_agent_with_instance_with_instance
   - Updated all tests to pass agency parameter
 - Implemented spawn no-op behavior for conditional spawning:
   - Returns true when method_name is 0 (integer) or "" (empty string)
@@ -908,7 +917,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
 - Successfully removed wake messages from ar_system using strict TDD methodology
   - RED phase: Added test `test_no_wake_message_from_init_with_agent` that detects wake messages → FAILED
   - Context fix: Fixed ar_system to provide shared context to agents (was passing NULL)
-  - GREEN phase: Removed wake message sending from `ar_system__init_with_instance` → Tests PASSED
+  - GREEN phase: Removed wake message sending from `ar_system__init` → Tests PASSED
   - REFACTOR phase: Updated ar_system.md documentation to remove wake references
 - Comprehensive cleanup of wake message processing across test suite
   - Removed 17 unnecessary `process_next_message` calls from test files:
@@ -981,7 +990,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
 ### ✅ Message Processing Loop Implementation - TDD Cycle 7
 - Implemented message processing loop in executable using strict TDD methodology
   - RED phase: Created test verifying messages are processed until queue is empty
-  - GREEN phase: Added ar_system__process_all_messages_with_instance() call after bootstrap creation
+  - GREEN phase: Added ar_system__process_all_messages() call after bootstrap creation
   - REFACTOR phase: Improved output formatting with singular/plural handling for message count
 - Discovered architectural issues during implementation
   - Duplicate wake message bug: ar_system__init sends extra wake even though agents auto-send wake to themselves
@@ -1097,7 +1106,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - Created test that captures stdout to detect file loading warnings
   - Test uses pipe() and dup2() to redirect and capture output
   - RED phase: Test failed with assertion when warnings detected
-  - GREEN phase: Removed auto-loading code from ar_system__init_with_instance()
+  - GREEN phase: Removed auto-loading code from ar_system__init()
 - Eliminated methodology and agency file loading on initialization
   - Removed 24 lines of auto-loading code (lines 123-147)
   - System no longer attempts to load "methodology.agerun" or "agency.agerun"

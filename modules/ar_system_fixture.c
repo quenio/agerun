@@ -49,7 +49,7 @@ void ar_system_fixture__destroy(ar_system_fixture_t *own_fixture) {
     
     // If initialized, perform cleanup
     if (own_fixture->initialized && own_fixture->own_system) {
-        ar_system__shutdown_with_instance(own_fixture->own_system);
+        ar_system__shutdown(own_fixture->own_system);
         ar_system__destroy(own_fixture->own_system);
         
         // Remove persistence files
@@ -68,7 +68,7 @@ bool ar_system_fixture__initialize(ar_system_fixture_t *mut_fixture) {
     
     // Clean shutdown of any existing state
     if (mut_fixture->own_system) {
-        ar_system__shutdown_with_instance(mut_fixture->own_system);
+        ar_system__shutdown(mut_fixture->own_system);
         ar_system__destroy(mut_fixture->own_system);
         mut_fixture->own_system = NULL;
     }
@@ -84,7 +84,7 @@ bool ar_system_fixture__initialize(ar_system_fixture_t *mut_fixture) {
     }
     
     // Initialize system with no persistence files
-    ar_system__init_with_instance(mut_fixture->own_system, NULL, NULL);
+    ar_system__init(mut_fixture->own_system, NULL, NULL);
     
     mut_fixture->initialized = true;
     
@@ -124,7 +124,7 @@ ar_method_t* ar_system_fixture__register_method(ar_system_fixture_t *mut_fixture
     }
     
     // Register with the system's methodology
-    ar_methodology__register_method_with_instance(mut_methodology, own_method);
+    ar_methodology__register_method(mut_methodology, own_method);
     
     // Note: ownership was transferred to methodology, but we return the pointer
     // for the test to use (as a borrowed reference)
@@ -158,7 +158,7 @@ void ar_system_fixture__reset_system(ar_system_fixture_t *mut_fixture) {
     
     // Clean shutdown of existing state
     if (mut_fixture->own_system) {
-        ar_system__shutdown_with_instance(mut_fixture->own_system);
+        ar_system__shutdown(mut_fixture->own_system);
         ar_system__destroy(mut_fixture->own_system);
         mut_fixture->own_system = NULL;
     }
@@ -171,7 +171,7 @@ void ar_system_fixture__reset_system(ar_system_fixture_t *mut_fixture) {
     mut_fixture->own_system = ar_system__create();
     if (mut_fixture->own_system) {
         // Reinitialize
-        ar_system__init_with_instance(mut_fixture->own_system, NULL, NULL);
+        ar_system__init(mut_fixture->own_system, NULL, NULL);
         mut_fixture->initialized = true;
     }
 }
@@ -182,7 +182,7 @@ void ar_system_fixture__shutdown_preserve_files(ar_system_fixture_t *mut_fixture
     }
     
     // Just shutdown the system - this will save files
-    ar_system__shutdown_with_instance(mut_fixture->own_system);
+    ar_system__shutdown(mut_fixture->own_system);
     ar_system__destroy(mut_fixture->own_system);
     mut_fixture->own_system = NULL;
     
@@ -195,7 +195,7 @@ bool ar_system_fixture__process_next_message(ar_system_fixture_t *mut_fixture) {
         return false;
     }
     
-    return ar_system__process_next_message_with_instance(mut_fixture->own_system);
+    return ar_system__process_next_message(mut_fixture->own_system);
 }
 
 int ar_system_fixture__process_all_messages(ar_system_fixture_t *mut_fixture) {
@@ -203,7 +203,7 @@ int ar_system_fixture__process_all_messages(ar_system_fixture_t *mut_fixture) {
         return 0;
     }
     
-    return ar_system__process_all_messages_with_instance(mut_fixture->own_system);
+    return ar_system__process_all_messages(mut_fixture->own_system);
 }
 
 ar_agency_t* ar_system_fixture__get_agency(ar_system_fixture_t *ref_fixture) {

@@ -80,9 +80,9 @@ static void test_exit_agent_instruction_evaluator__evaluate_with_instance(void) 
     // Create a test method using instance APIs
     ar_method_t *own_method = ar_method__create("test_method", "memory.x := 1", "1.0.0");
     assert(own_method != NULL);
-    ar_methodology__register_method_with_instance(mut_methodology, own_method);
+    ar_methodology__register_method(mut_methodology, own_method);
     
-    int64_t agent_id = ar_agency__create_agent_with_instance(mut_agency, "test_method", "1.0.0", NULL);
+    int64_t agent_id = ar_agency__create_agent(mut_agency, "test_method", "1.0.0", NULL);
     assert(agent_id > 0);
     
     // Set the agent ID in memory for evaluation
@@ -114,7 +114,7 @@ static void test_exit_agent_instruction_evaluator__evaluate_with_instance(void) 
     assert(result == true);
     
     // And the agent should be exited (not exist anymore)  
-    ar_agent_registry_t *registry = ar_agency__get_registry_with_instance(mut_agency);
+    ar_agent_registry_t *registry = ar_agency__get_registry(mut_agency);
     assert(ar_agent_registry__is_registered(registry, agent_id) == false);
     
     // Cleanup
@@ -160,9 +160,9 @@ static void test_exit_agent_instruction_evaluator__evaluate_literal_id(void) {
     // Create a test method using instance APIs
     ar_method_t *own_method = ar_method__create("test_method", "memory.x := 1", "1.0.0");
     assert(own_method != NULL);
-    ar_methodology__register_method_with_instance(mut_methodology, own_method);
+    ar_methodology__register_method(mut_methodology, own_method);
     
-    int64_t agent_id = ar_agency__create_agent_with_instance(mut_agency, "test_method", "1.0.0", NULL);
+    int64_t agent_id = ar_agency__create_agent(mut_agency, "test_method", "1.0.0", NULL);
     assert(agent_id > 0);
     
     // Create exit AST with agent ID
@@ -192,7 +192,7 @@ static void test_exit_agent_instruction_evaluator__evaluate_literal_id(void) {
     assert(result == true);
     
     // And the agent should be exited
-    ar_agent_registry_t *registry = ar_agency__get_registry_with_instance(mut_agency);
+    ar_agent_registry_t *registry = ar_agency__get_registry(mut_agency);
     assert(ar_agent_registry__is_registered(registry, agent_id) == false);
     
     // Cleanup
@@ -238,9 +238,9 @@ static void test_exit_agent_instruction_evaluator__evaluate_with_result(void) {
     // Create a test method using instance APIs
     ar_method_t *own_method = ar_method__create("test_method", "memory.x := 1", "1.0.0");
     assert(own_method != NULL);
-    ar_methodology__register_method_with_instance(mut_methodology, own_method);
+    ar_methodology__register_method(mut_methodology, own_method);
     
-    int64_t agent_id = ar_agency__create_agent_with_instance(mut_agency, "test_method", "1.0.0", NULL);
+    int64_t agent_id = ar_agency__create_agent(mut_agency, "test_method", "1.0.0", NULL);
     assert(agent_id > 0);
     
     // Create exit AST with result assignment
@@ -276,7 +276,7 @@ static void test_exit_agent_instruction_evaluator__evaluate_with_result(void) {
     assert(ar_data__get_integer(result_value) == 1);
     
     // And the agent should be exited
-    ar_agent_registry_t *registry = ar_agency__get_registry_with_instance(mut_agency);
+    ar_agent_registry_t *registry = ar_agency__get_registry(mut_agency);
     assert(ar_agent_registry__is_registered(registry, agent_id) == false);
     
     // Cleanup

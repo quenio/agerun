@@ -11,7 +11,7 @@ Systems should be resilient to non-essential failures. A failed log write, cache
 // Saving methodology is helpful but not critical to executable operation
 // GOOD: Warn and continue pattern
 printf("Saving methodology to file...\n");
-if (ar_methodology__save_methods_with_instance(mut_methodology, METHODOLOGY_FILE_NAME)) {
+if (ar_methodology__save_methods(mut_methodology, METHODOLOGY_FILE_NAME)) {
     printf("Methodology saved to %s\n", METHODOLOGY_FILE_NAME);
 } else {
     // Non-critical failure: warn but continue
@@ -20,13 +20,13 @@ if (ar_methodology__save_methods_with_instance(mut_methodology, METHODOLOGY_FILE
 
 // Continue with shutdown regardless
 printf("Shutting down runtime...\n");
-ar_system__shutdown_with_instance(mut_system);
+ar_system__shutdown(mut_system);
 ar_system__destroy(mut_system);
 printf("Runtime shutdown complete\n\n");
 return 0;  // Exit successfully - primary purpose completed
 
 // BAD: Fail entire operation for non-critical issue
-if (!ar_methodology__save_methods_with_instance(mut_methodology, METHODOLOGY_FILE_NAME)) {
+if (!ar_methodology__save_methods(mut_methodology, METHODOLOGY_FILE_NAME)) {
     printf("Error: Failed to save methodology\n");
     return 1;  // BAD: Entire executable fails for auxiliary operation
 }

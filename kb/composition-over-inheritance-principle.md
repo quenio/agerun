@@ -132,7 +132,7 @@ typedef struct ar_agency_s ar_data_t;  // EXAMPLE: Using real type
 ar_agency_t* ar_agency__create();  // EXAMPLE: Hypothetical function
 
 // Facade delegates to specialized components
-ar_agent_t* ar_agency__create_agent_with_instance(ar_data_t* agency, const char* method_name);  // EXAMPLE: Using real type
+ar_agent_t* ar_agency__create_agent(ar_data_t* agency, const char* method_name);  // EXAMPLE: Using real type
 void ar_agency__send_message(ar_agency_t* agency, uint64_t agent_id, ar_data_t* message);  // EXAMPLE: Hypothetical function
 ```
 
@@ -146,7 +146,7 @@ struct ar_agency_s {
     // Each component has single responsibility
 };
 
-ar_agent_t* ar_agency__create_agent_with_instance(ar_data_t* agency, const char* method_name) {  // EXAMPLE: Using real type
+ar_agent_t* ar_agency__create_agent(ar_data_t* agency, const char* method_name) {  // EXAMPLE: Using real type
     // Delegates to appropriate component
     ar_agent_t* agent = ar_agent_registry__create_agent(agency->registry, method_name);
     ar_agent_store__save_agent(agency->store, agent);

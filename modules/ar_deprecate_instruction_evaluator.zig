@@ -134,8 +134,8 @@ pub export fn ar_deprecate_instruction_evaluator__evaluate(
     const method_version = c.ar_data__get_string(own_version);
     
     // Get the method to check if it exists
-    const ref_method = c.ar_methodology__get_method_with_instance(ref_evaluator.?.ref_methodology, method_name, method_version);
-    const destroy_result = if (ref_method != null) c.ar_methodology__unregister_method_with_instance(ref_evaluator.?.ref_methodology, method_name, method_version) else false;
+    const ref_method = c.ar_methodology__get_method(ref_evaluator.?.ref_methodology, method_name, method_version);
+    const destroy_result = if (ref_method != null) c.ar_methodology__unregister_method(ref_evaluator.?.ref_methodology, method_name, method_version) else false;
     
     // Store result if assigned
     if (c.ar_instruction_ast__has_result_assignment(ref_ast)) {

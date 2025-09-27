@@ -101,7 +101,7 @@ pub export fn ar_exit_instruction_evaluator__evaluate(
         
         if (c.ar_data__get_type(own_agent_id) == c.AR_DATA_TYPE__INTEGER) {
             const agent_id: i64 = @intCast(c.ar_data__get_integer(own_agent_id));
-            destroy_result = c.ar_agency__destroy_agent_with_instance(ref_evaluator.?.ref_agency, agent_id);
+            destroy_result = c.ar_agency__destroy_agent(ref_evaluator.?.ref_agency, agent_id);
             success = true;
         }
     }

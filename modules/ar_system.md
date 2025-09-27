@@ -62,7 +62,7 @@ void ar_system__destroy(ar_system_t *own_system);
  * @param ref_version Version string of the method (NULL for latest)
  * @return ID of the created initial agent, or 0 on failure
  */
-int64_t ar_system__init_with_instance(ar_system_t *mut_system, 
+int64_t ar_system__init(ar_system_t *mut_system, 
                                       const char *ref_method_name, 
                                       const char *ref_version);
 
@@ -70,21 +70,21 @@ int64_t ar_system__init_with_instance(ar_system_t *mut_system,
  * Shut down a system instance.
  * @param mut_system The system instance to shut down
  */
-void ar_system__shutdown_with_instance(ar_system_t *mut_system);
+void ar_system__shutdown(ar_system_t *mut_system);
 
 /**
  * Process the next pending message in the system instance.
  * @param mut_system The system instance
  * @return true if a message was processed, false if no messages
  */
-bool ar_system__process_next_message_with_instance(ar_system_t *mut_system);
+bool ar_system__process_next_message(ar_system_t *mut_system);
 
 /**
  * Process all pending messages in the system instance.
  * @param mut_system The system instance
  * @return Number of messages processed
  */
-int ar_system__process_all_messages_with_instance(ar_system_t *mut_system);
+int ar_system__process_all_messages(ar_system_t *mut_system);
 ```
 
 
@@ -144,13 +144,13 @@ Each system instance owns and manages its own interpreter:
 ar_system_t *own_system = ar_system__create();
 
 // Initialize with a method
-int64_t agent_id = ar_system__init_with_instance(own_system, "worker", "1.0.0");
+int64_t agent_id = ar_system__init(own_system, "worker", "1.0.0");
 
 // Process messages for this instance
-int count = ar_system__process_all_messages_with_instance(own_system);
+int count = ar_system__process_all_messages(own_system);
 
 // Clean shutdown
-ar_system__shutdown_with_instance(own_system);
+ar_system__shutdown(own_system);
 ar_system__destroy(own_system);  // This also destroys the internal agency
 ```
 
@@ -162,16 +162,16 @@ ar_system_t *own_system1 = ar_system__create();
 ar_system_t *own_system2 = ar_system__create();
 
 // Initialize each with different methods
-ar_system__init_with_instance(own_system1, "producer", "1.0.0");
-ar_system__init_with_instance(own_system2, "consumer", "1.0.0");
+ar_system__init(own_system1, "producer", "1.0.0");
+ar_system__init(own_system2, "consumer", "1.0.0");
 
 // Process messages independently
-ar_system__process_all_messages_with_instance(own_system1);
-ar_system__process_all_messages_with_instance(own_system2);
+ar_system__process_all_messages(own_system1);
+ar_system__process_all_messages(own_system2);
 
 // Clean up both systems (also destroys their internal agencies)
-ar_system__shutdown_with_instance(own_system1);
-ar_system__shutdown_with_instance(own_system2);
+ar_system__shutdown(own_system1);
+ar_system__shutdown(own_system2);
 ar_system__destroy(own_system1);
 ar_system__destroy(own_system2);
 ```
@@ -180,18 +180,18 @@ ar_system__destroy(own_system2);
 
 ```c
 // Single message processing
-if (ar_system__process_next_message_with_instance(own_system))) {
+if (ar_system__process_next_message(own_system))) {
     printf("Processed one message\n");
 }
 
 // Instance-based single message
-if (ar_system__process_next_message_with_instance(mut_system)) {
+if (ar_system__process_next_message(mut_system)) {
     printf("Processed one message in instance\n");
 }
 
 // Process all pending
-int all = ar_system__process_all_messages_with_instance(own_system));
-int instance_all = ar_system__process_all_messages_with_instance(mut_system);
+int all = ar_system__process_all_messages(own_system));
+int instance_all = ar_system__process_all_messages(mut_system);
 ```
 
 ## Memory Management

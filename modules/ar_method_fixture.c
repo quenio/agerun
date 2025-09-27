@@ -50,7 +50,7 @@ void ar_method_fixture__destroy(ar_method_fixture_t *own_fixture) {
     
     // If initialized, perform cleanup
     if (own_fixture->initialized && own_fixture->own_system) {
-        ar_system__shutdown_with_instance(own_fixture->own_system);
+        ar_system__shutdown(own_fixture->own_system);
         ar_system__destroy(own_fixture->own_system);
         
         // Remove persistence files
@@ -69,7 +69,7 @@ bool ar_method_fixture__initialize(ar_method_fixture_t *mut_fixture) {
     
     // Clean shutdown of any existing state
     if (mut_fixture->own_system) {
-        ar_system__shutdown_with_instance(mut_fixture->own_system);
+        ar_system__shutdown(mut_fixture->own_system);
         ar_system__destroy(mut_fixture->own_system);
         mut_fixture->own_system = NULL;
     }
@@ -85,7 +85,7 @@ bool ar_method_fixture__initialize(ar_method_fixture_t *mut_fixture) {
     }
     
     // Initialize system with no persistence files
-    ar_system__init_with_instance(mut_fixture->own_system, NULL, NULL);
+    ar_system__init(mut_fixture->own_system, NULL, NULL);
     
     mut_fixture->initialized = true;
     
@@ -148,7 +148,7 @@ bool ar_method_fixture__load_method(ar_method_fixture_t *mut_fixture,
     }
     
     // Register method using instance methodology
-    bool registered = ar_methodology__create_method_with_instance(mut_methodology, ref_method_name, own_content, ref_version);
+    bool registered = ar_methodology__create_method(mut_methodology, ref_method_name, own_content, ref_version);
     
     if (registered) {
         printf("Method fixture: Successfully registered method '%s' version '%s'\n", ref_method_name, ref_version ? ref_version : "latest");
@@ -205,7 +205,7 @@ bool ar_method_fixture__process_next_message(ar_method_fixture_t *mut_fixture) {
         return false;
     }
     
-    return ar_system__process_next_message_with_instance(mut_fixture->own_system);
+    return ar_system__process_next_message(mut_fixture->own_system);
 }
 
 int ar_method_fixture__process_all_messages(ar_method_fixture_t *mut_fixture) {
@@ -213,7 +213,7 @@ int ar_method_fixture__process_all_messages(ar_method_fixture_t *mut_fixture) {
         return 0;
     }
     
-    return ar_system__process_all_messages_with_instance(mut_fixture->own_system);
+    return ar_system__process_all_messages(mut_fixture->own_system);
 }
 
 ar_agency_t* ar_method_fixture__get_agency(const ar_method_fixture_t *ref_fixture) {

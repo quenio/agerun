@@ -132,14 +132,14 @@ void ar_agency__destroy(ar_agency_t *own_agency) {
 
 /* Instance-based API implementation */
 
-int ar_agency__count_agents_with_instance(ar_agency_t *ref_agency) {
+int ar_agency__count_agents(ar_agency_t *ref_agency) {
     if (!ref_agency || !ref_agency->is_initialized || !ref_agency->own_registry) {
         return 0;
     }
     return ar_agent_registry__count(ref_agency->own_registry);
 }
 
-int ar_agency__count_agents_using_method_with_instance(ar_agency_t *ref_agency, const ar_method_t *ref_method) {
+int ar_agency__count_agents_using_method(ar_agency_t *ref_agency, const ar_method_t *ref_method) {
     if (!ref_agency || !ref_agency->is_initialized || !ref_agency->own_registry) {
         return 0;
     }
@@ -148,7 +148,7 @@ int ar_agency__count_agents_using_method_with_instance(ar_agency_t *ref_agency, 
     return ar_agent_update__count_using_method(ref_agency->own_registry, ref_method);
 }
 
-int ar_agency__update_agent_methods_with_instance(ar_agency_t *mut_agency, const ar_method_t *ref_old_method, const ar_method_t *ref_new_method) {
+int ar_agency__update_agent_methods(ar_agency_t *mut_agency, const ar_method_t *ref_old_method, const ar_method_t *ref_new_method) {
     if (!mut_agency || !mut_agency->is_initialized || !mut_agency->own_registry) {
         return 0;
     }
@@ -157,7 +157,7 @@ int ar_agency__update_agent_methods_with_instance(ar_agency_t *mut_agency, const
     return ar_agent_update__update_methods(mut_agency->own_registry, ref_old_method, ref_new_method);
 }
 
-int64_t ar_agency__create_agent_with_instance(ar_agency_t *mut_agency, 
+int64_t ar_agency__create_agent(ar_agency_t *mut_agency, 
                                                const char *ref_method_name, 
                                                const char *ref_version, 
                                                const ar_data_t *ref_context) {
@@ -177,7 +177,7 @@ int64_t ar_agency__create_agent_with_instance(ar_agency_t *mut_agency,
             ar_log__info(mut_agency->ref_log, debug_msg);
         }
         
-        ref_method = ar_methodology__get_method_with_instance(mut_agency->own_methodology, ref_method_name, ref_version);
+        ref_method = ar_methodology__get_method(mut_agency->own_methodology, ref_method_name, ref_version);
         if (!ref_method) {
             if (mut_agency->ref_log) {
                 char error_msg[256];
@@ -235,7 +235,7 @@ int64_t ar_agency__create_agent_with_instance(ar_agency_t *mut_agency,
     return agent_id;
 }
 
-bool ar_agency__destroy_agent_with_instance(ar_agency_t *mut_agency, int64_t agent_id) {
+bool ar_agency__destroy_agent(ar_agency_t *mut_agency, int64_t agent_id) {
     if (!mut_agency || !mut_agency->is_initialized || !mut_agency->own_registry) {
         return false;
     }
@@ -255,7 +255,7 @@ bool ar_agency__destroy_agent_with_instance(ar_agency_t *mut_agency, int64_t age
     return true;
 }
 
-bool ar_agency__send_to_agent_with_instance(ar_agency_t *mut_agency, 
+bool ar_agency__send_to_agent(ar_agency_t *mut_agency, 
                                              int64_t agent_id, 
                                              ar_data_t *own_message) {
     if (!mut_agency || !mut_agency->is_initialized || !mut_agency->own_registry) {
@@ -301,7 +301,7 @@ bool ar_agency__send_to_agent_with_instance(ar_agency_t *mut_agency,
     return ar_agent__send(mut_agent, own_message);
 }
 
-const ar_data_t* ar_agency__get_agent_memory_with_instance(ar_agency_t *ref_agency, 
+const ar_data_t* ar_agency__get_agent_memory(ar_agency_t *ref_agency, 
                                                             int64_t agent_id) {
     if (!ref_agency || !ref_agency->is_initialized || !ref_agency->own_registry) {
         return NULL;
@@ -315,7 +315,7 @@ const ar_data_t* ar_agency__get_agent_memory_with_instance(ar_agency_t *ref_agen
     return ar_agent__get_memory(ref_agent);
 }
 
-void ar_agency__reset_with_instance(ar_agency_t *mut_agency) {
+void ar_agency__reset(ar_agency_t *mut_agency) {
     if (!mut_agency || !mut_agency->is_initialized || !mut_agency->own_registry) {
         return;
     }
@@ -324,7 +324,7 @@ void ar_agency__reset_with_instance(ar_agency_t *mut_agency) {
     int64_t agent_id = ar_agent_registry__get_first(mut_agency->own_registry);
     while (agent_id != 0) {
         int64_t next_id = ar_agent_registry__get_next(mut_agency->own_registry, agent_id);
-        ar_agency__destroy_agent_with_instance(mut_agency, agent_id);
+        ar_agency__destroy_agent(mut_agency, agent_id);
         agent_id = next_id;
     }
     
@@ -332,7 +332,7 @@ void ar_agency__reset_with_instance(ar_agency_t *mut_agency) {
     ar_agent_registry__clear(mut_agency->own_registry);
 }
 
-bool ar_agency__save_agents_with_instance(ar_agency_t *ref_agency, const char *ref_filename) {
+bool ar_agency__save_agents(ar_agency_t *ref_agency, const char *ref_filename) {
     if (!ref_agency || !ref_agency->is_initialized) {
         return false;
     }
@@ -343,7 +343,7 @@ bool ar_agency__save_agents_with_instance(ar_agency_t *ref_agency, const char *r
     return ar_agent_store__save(ref_agency->own_agent_store);
 }
 
-bool ar_agency__load_agents_with_instance(ar_agency_t *mut_agency, const char *ref_filename) {
+bool ar_agency__load_agents(ar_agency_t *mut_agency, const char *ref_filename) {
     if (!mut_agency || !mut_agency->is_initialized) {
         return false;
     }
@@ -354,7 +354,7 @@ bool ar_agency__load_agents_with_instance(ar_agency_t *mut_agency, const char *r
     return ar_agent_store__load(mut_agency->own_agent_store);
 }
 
-ar_agent_registry_t* ar_agency__get_registry_with_instance(ar_agency_t *ref_agency) {
+ar_agent_registry_t* ar_agency__get_registry(ar_agency_t *ref_agency) {
     if (!ref_agency || !ref_agency->is_initialized) {
         return NULL;
     }
@@ -368,21 +368,21 @@ ar_methodology_t* ar_agency__get_methodology(ar_agency_t *ref_agency) {
     return ref_agency->own_methodology;
 }
 
-int64_t ar_agency__get_first_agent_with_instance(ar_agency_t *ref_agency) {
+int64_t ar_agency__get_first_agent(ar_agency_t *ref_agency) {
     if (!ref_agency || !ref_agency->is_initialized || !ref_agency->own_registry) {
         return 0;
     }
     return ar_agent_registry__get_first(ref_agency->own_registry);
 }
 
-int64_t ar_agency__get_next_agent_with_instance(ar_agency_t *ref_agency, int64_t current_id) {
+int64_t ar_agency__get_next_agent(ar_agency_t *ref_agency, int64_t current_id) {
     if (!ref_agency || !ref_agency->is_initialized || !ref_agency->own_registry) {
         return 0;
     }
     return ar_agent_registry__get_next(ref_agency->own_registry, current_id);
 }
 
-bool ar_agency__agent_has_messages_with_instance(ar_agency_t *ref_agency, int64_t agent_id) {
+bool ar_agency__agent_has_messages(ar_agency_t *ref_agency, int64_t agent_id) {
     if (!ref_agency || !ref_agency->is_initialized || !ref_agency->own_registry) {
         return false;
     }
@@ -395,7 +395,7 @@ bool ar_agency__agent_has_messages_with_instance(ar_agency_t *ref_agency, int64_
     return ar_agent__has_messages(ref_agent);
 }
 
-ar_data_t* ar_agency__get_agent_message_with_instance(ar_agency_t *mut_agency, int64_t agent_id) {
+ar_data_t* ar_agency__get_agent_message(ar_agency_t *mut_agency, int64_t agent_id) {
     if (!mut_agency || !mut_agency->is_initialized || !mut_agency->own_registry) {
         return NULL;
     }
@@ -408,7 +408,7 @@ ar_data_t* ar_agency__get_agent_message_with_instance(ar_agency_t *mut_agency, i
     return ar_agent__get_message(mut_agent);
 }
 
-const ar_method_t* ar_agency__get_agent_method_with_instance(ar_agency_t *ref_agency, int64_t agent_id) {
+const ar_method_t* ar_agency__get_agent_method(ar_agency_t *ref_agency, int64_t agent_id) {
     if (!ref_agency || !ref_agency->is_initialized || !ref_agency->own_registry) {
         return NULL;
     }
@@ -421,7 +421,7 @@ const ar_method_t* ar_agency__get_agent_method_with_instance(ar_agency_t *ref_ag
     return ar_agent__get_method(ref_agent);
 }
 
-ar_data_t* ar_agency__get_agent_mutable_memory_with_instance(ar_agency_t *mut_agency, int64_t agent_id) {
+ar_data_t* ar_agency__get_agent_mutable_memory(ar_agency_t *mut_agency, int64_t agent_id) {
     if (!mut_agency || !mut_agency->is_initialized || !mut_agency->own_registry) {
         return NULL;
     }
@@ -434,7 +434,7 @@ ar_data_t* ar_agency__get_agent_mutable_memory_with_instance(ar_agency_t *mut_ag
     return ar_agent__get_mutable_memory(mut_agent);
 }
 
-const ar_data_t* ar_agency__get_agent_context_with_instance(ar_agency_t *ref_agency, int64_t agent_id) {
+const ar_data_t* ar_agency__get_agent_context(ar_agency_t *ref_agency, int64_t agent_id) {
     if (!ref_agency || !ref_agency->is_initialized || !ref_agency->own_registry) {
         return NULL;
     }
@@ -447,7 +447,7 @@ const ar_data_t* ar_agency__get_agent_context_with_instance(ar_agency_t *ref_age
     return ar_agent__get_context(ref_agent);
 }
 
-bool ar_agency__agent_exists_with_instance(ar_agency_t *ref_agency, int64_t agent_id) {
+bool ar_agency__agent_exists(ar_agency_t *ref_agency, int64_t agent_id) {
     if (!ref_agency || !ref_agency->is_initialized || !ref_agency->own_registry) {
         return false;
     }

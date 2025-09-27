@@ -115,7 +115,7 @@ void ar_system__destroy(ar_system_t *own_system) {
     AR__HEAP__FREE(own_system);
 }
 
-int64_t ar_system__init_with_instance(ar_system_t *mut_system, const char *ref_method_name, const char *ref_version) {
+int64_t ar_system__init(ar_system_t *mut_system, const char *ref_method_name, const char *ref_version) {
     if (!mut_system) {
         return 0;
     }
@@ -135,7 +135,7 @@ int64_t ar_system__init_with_instance(ar_system_t *mut_system, const char *ref_m
         int64_t initial_agent;
         
         // Use instance-based agency with shared context
-        initial_agent = ar_agency__create_agent_with_instance(mut_system->own_agency,
+        initial_agent = ar_agency__create_agent(mut_system->own_agency,
                                                              ref_method_name,
                                                              ref_version,
                                                              mut_system->own_context);
@@ -145,7 +145,7 @@ int64_t ar_system__init_with_instance(ar_system_t *mut_system, const char *ref_m
     return 0;
 }
 
-void ar_system__shutdown_with_instance(ar_system_t *mut_system) {
+void ar_system__shutdown(ar_system_t *mut_system) {
     if (!mut_system || !mut_system->is_initialized) {
         return;
     }
@@ -153,12 +153,12 @@ void ar_system__shutdown_with_instance(ar_system_t *mut_system) {
     // Auto-saving removed - executable now has full control over when to save files
     
     // Reset the agency to clean up all agents
-    ar_agency__reset_with_instance(mut_system->own_agency);
+    ar_agency__reset(mut_system->own_agency);
     
     mut_system->is_initialized = false;
 }
 
-bool ar_system__process_next_message_with_instance(ar_system_t *mut_system) {
+bool ar_system__process_next_message(ar_system_t *mut_system) {
     if (!mut_system || !mut_system->is_initialized) {
         return false;
     }
@@ -168,15 +168,15 @@ bool ar_system__process_next_message_with_instance(ar_system_t *mut_system) {
     ar_data_t *own_message = NULL;
     
     // Use instance-based agency
-    agent_id = ar_agency__get_first_agent_with_instance(mut_system->own_agency);
+    agent_id = ar_agency__get_first_agent(mut_system->own_agency);
     while (agent_id != 0) {
-        if (ar_agency__agent_has_messages_with_instance(mut_system->own_agency, agent_id)) {
-            own_message = ar_agency__get_agent_message_with_instance(mut_system->own_agency, agent_id);
+        if (ar_agency__agent_has_messages(mut_system->own_agency, agent_id)) {
+            own_message = ar_agency__get_agent_message(mut_system->own_agency, agent_id);
             if (own_message) {
                 break;
             }
         }
-        agent_id = ar_agency__get_next_agent_with_instance(mut_system->own_agency, agent_id);
+        agent_id = ar_agency__get_next_agent(mut_system->own_agency, agent_id);
     }
     
     if (own_message) {
@@ -207,10 +207,10 @@ bool ar_system__process_next_message_with_instance(ar_system_t *mut_system) {
     return false; // No messages to process
 }
 
-int ar_system__process_all_messages_with_instance(ar_system_t *mut_system) {
+int ar_system__process_all_messages(ar_system_t *mut_system) {
     int count = 0;
     
-    while (ar_system__process_next_message_with_instance(mut_system)) {
+    while (ar_system__process_next_message(mut_system)) {
         count++;
     }
     

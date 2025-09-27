@@ -101,9 +101,9 @@ bool ar_interpreter__execute_method(ar_interpreter_t *mut_interpreter,
     
     if (mut_interpreter->ref_agency) {
         // Use instance-based agency functions
-        ref_method = ar_agency__get_agent_method_with_instance(mut_interpreter->ref_agency, agent_id);
-        mut_memory = ar_agency__get_agent_mutable_memory_with_instance(mut_interpreter->ref_agency, agent_id);
-        ref_context = ar_agency__get_agent_context_with_instance(mut_interpreter->ref_agency, agent_id);
+        ref_method = ar_agency__get_agent_method(mut_interpreter->ref_agency, agent_id);
+        mut_memory = ar_agency__get_agent_mutable_memory(mut_interpreter->ref_agency, agent_id);
+        ref_context = ar_agency__get_agent_context(mut_interpreter->ref_agency, agent_id);
     } else {
         // Agency is required - cannot proceed without it
         char error_msg[256];

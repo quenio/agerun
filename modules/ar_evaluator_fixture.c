@@ -384,5 +384,5 @@ bool ar_evaluator_fixture__process_next_message(
         return false;
     }
     
-    return ar_system__process_next_message_with_instance(mut_fixture->own_system);
+    return ar_system__process_next_message(mut_fixture->own_system);
 }

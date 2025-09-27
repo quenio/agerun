@@ -17,7 +17,7 @@ Accurate commit messages are crucial for:
 ```c
 // Initial focus: Fix memory leaks in ar_executable.c
 ar_data_t *own_context = ar_data__create_map();
-ar_system__shutdown_with_instance(mut_system);
+ar_system__shutdown(mut_system);
 ar_data__destroy(own_context);  // Fixed leak
 
 // But the actual scope included:
