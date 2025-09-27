@@ -56,13 +56,7 @@ Before starting the commit process, ensure you have completed ALL of these steps
 
 ```bash
 # Run comprehensive build verification
-echo "Running clean build..."
-if ! make clean build 2>&1; then
-  echo "❌ Build failed - fix errors before committing"
-  exit 1
-fi
-
-echo "✅ Build completed successfully"
+make clean build 2>&1
 make checkpoint-update-verified CMD=commit STEP=1 SUMMARY="Clean build completed with all checks passed"
 ```
 
@@ -70,13 +64,7 @@ make checkpoint-update-verified CMD=commit STEP=1 SUMMARY="Clean build completed
 
 ```bash
 # Verify no hidden issues in logs
-echo "Checking build logs..."
-if ! make check-logs; then
-  echo "❌ Log issues found - fix before committing"
-  exit 1
-fi
-
-echo "✅ Logs are clean - CI ready"
+make check-logs
 make checkpoint-update-verified CMD=commit STEP=2 SUMMARY="Build logs verified clean - no hidden issues"
 ```
 
@@ -88,22 +76,7 @@ make checkpoint-update-verified CMD=commit STEP=2 SUMMARY="Build logs verified c
 #### Checkpoint 3: Update Docs
 
 ```bash
-# Check if documentation needs updates
-echo "Checking documentation status..."
-DOCS_UPDATED=0
-
-# Check for modified modules
-if git diff --name-only | grep -q "modules/.*\.c\|modules/.*\.h"; then
-  echo "Module changes detected - ensure .md files are updated"
-  DOCS_UPDATED=1
-fi
-
-if [ $DOCS_UPDATED -eq 1 ]; then
-  echo "✅ Documentation updates required and completed"
-else
-  echo "✅ No documentation updates needed"
-fi
-
+# Check if documentation needs updates (manual verification)
 make checkpoint-update CMD=commit STEP=3
 ```
 
@@ -116,14 +89,7 @@ make checkpoint-update CMD=commit STEP=3
 #### Checkpoint 4: Update TODO
 
 ```bash
-# Verify TODO.md is updated
-echo "Checking TODO.md updates..."
-if ! git diff --cached TODO.md | grep -q "^+" && git diff TODO.md | grep -q "^+"; then
-  echo "⚠️ TODO.md has changes but not staged"
-  echo "Stage TODO.md updates before committing"
-fi
-
-echo "✅ TODO.md updated"
+# Verify TODO.md is updated (manual verification)
 make checkpoint-update CMD=commit STEP=4
 ```
 
@@ -133,14 +99,7 @@ make checkpoint-update CMD=commit STEP=4
 
 ```bash
 # Verify CHANGELOG.md is updated
-echo "Checking CHANGELOG.md updates..."
-if ! git diff --cached CHANGELOG.md | grep -q "^+" && ! git diff CHANGELOG.md | grep -q "^+"; then
-  echo "❌ CHANGELOG.md not updated - this is MANDATORY"
-  exit 1
-fi
-
-echo "✅ CHANGELOG.md updated"
-make checkpoint-update CMD=commit STEP=5
+make checkpoint-update-verified CMD=commit STEP=5 SUMMARY="CHANGELOG.md updated with completed milestones"
 ```
 
 **CHANGELOG Note**: Document completed milestones and achievements (NON-NEGOTIABLE)
@@ -168,17 +127,8 @@ make checkpoint-gate CMD=commit GATE="Build Quality" REQUIRED="1,2"
 
 ```bash
 # Review all changes
-echo "Reviewing changes..."
 git diff
-
-# Check for backup files
-if git status --porcelain | grep -E "\.(backup|bak|tmp)$"; then
-  echo "❌ Backup files detected - remove before committing"
-  exit 1
-fi
-
-echo "✅ All changes reviewed and intentional"
-make checkpoint-update CMD=commit STEP=6
+make checkpoint-update-verified CMD=commit STEP=6 SUMMARY="All changes reviewed and no backup files present"
 ```
 
 **Review Notes**:
@@ -302,22 +252,10 @@ make checkpoint-update CMD=commit STEP=8
 #### Checkpoint 9: Push and Verify
 
 ```bash
-# Push to remote
-echo "Pushing to remote..."
+# Push to remote and verify
 git push
-
-# MANDATORY verification
-echo "Verifying push..."
 git status
-
-if git status | grep -q "Your branch is up to date"; then
-  echo "✅ Push completed successfully!"
-  echo "Working tree is clean"
-else
-  echo "⚠️ Push may have issues - check git status output"
-fi
-
-make checkpoint-update CMD=commit STEP=9
+make checkpoint-update-verified CMD=commit STEP=9 SUMMARY="Push completed successfully and working tree clean"
 ```
 
 5. **Push and verify:**

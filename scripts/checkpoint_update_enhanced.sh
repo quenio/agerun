@@ -106,14 +106,22 @@ verify_work() {
         return 0
     fi
 
-    # For commit command - check build logs
+    # For commit command - check build logs and success
     if [ "$COMMAND_NAME" = "commit" ]; then
         case "$STEP_NUMBER" in
             "1") # Run Tests
+                # Check that build logs exist and indicate success
                 if [ ! -d "logs" ] || [ ! -f "logs/run-tests.log" ]; then
                     echo "❌ VERIFICATION FAILED: Step 1 requires successful build"
                     echo "   Missing: Build logs indicating clean build completion"
-                    echo "   Required: make clean build 2>&1 && make check-logs"
+                    echo "   Required: make clean build 2>&1"
+                    return 1
+                fi
+                # Check for build success indicators
+                if ! grep -q "Overall status: ✓ SUCCESS" logs/run-tests.log 2>/dev/null; then
+                    echo "❌ VERIFICATION FAILED: Build did not complete successfully"
+                    echo "   Check logs/ directory for errors"
+                    echo "   Required: Successful build with clean exit"
                     return 1
                 fi
                 ;;
@@ -122,6 +130,39 @@ verify_work() {
                     echo "❌ VERIFICATION FAILED: Step 2 requires clean logs"
                     echo "   Run: make check-logs"
                     echo "   Fix any issues before proceeding"
+                    return 1
+                fi
+                ;;
+            "5") # Update CHANGELOG
+                # Check that CHANGELOG.md has been updated
+                if ! git diff --cached CHANGELOG.md | grep -q "^+" && ! git diff CHANGELOG.md | grep -q "^+"; then
+                    echo "❌ VERIFICATION FAILED: CHANGELOG.md not updated - this is MANDATORY"
+                    echo "   Document completed milestones and achievements"
+                    echo "   Required: Update CHANGELOG.md with changes"
+                    return 1
+                fi
+                ;;
+            "6") # Review Changes
+                # Check for backup files
+                if git status --porcelain | grep -E "\.(backup|bak|tmp)$"; then
+                    echo "❌ VERIFICATION FAILED: Backup files detected - remove before committing"
+                    echo "   Found backup files that should not be committed"
+                    echo "   Required: Remove all *.backup, *.bak, *.tmp files"
+                    return 1
+                fi
+                ;;
+            "9") # Push and Verify
+                # Check that push was successful and working tree is clean
+                if ! git status | grep -q "Your branch is up to date"; then
+                    echo "❌ VERIFICATION FAILED: Push may not have completed successfully"
+                    echo "   Check git status output for issues"
+                    echo "   Required: Branch up to date with remote"
+                    return 1
+                fi
+                if ! git status | grep -q "working tree clean"; then
+                    echo "❌ VERIFICATION FAILED: Working tree is not clean after push"
+                    echo "   Unexpected changes remain after push"
+                    echo "   Required: Clean working tree"
                     return 1
                 fi
                 ;;
