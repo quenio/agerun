@@ -7,6 +7,7 @@
 /* Forward declarations */
 typedef struct ar_agent_registry_s ar_agent_registry_t;
 typedef struct ar_agent_store_s ar_agent_store_t;
+typedef struct ar_methodology_s ar_methodology_t;
 
 /**
  * @file ar_agent_store.h
@@ -24,10 +25,11 @@ typedef struct ar_agent_store_s ar_agent_store_t;
 /**
  * Create a new agent store instance
  * @param ref_registry The agent registry to work with (borrowed reference)
+ * @param ref_methodology The methodology for method lookups (borrowed reference)
  * @return New agent store instance (ownership transferred), or NULL on failure
  * @note Ownership: Caller must destroy the returned agent store
  */
-ar_agent_store_t* ar_agent_store__create(ar_agent_registry_t *ref_registry);
+ar_agent_store_t* ar_agent_store__create(ar_agent_registry_t *ref_registry, ar_methodology_t *ref_methodology);
 
 /**
  * Destroy an agent store instance
@@ -75,5 +77,12 @@ bool ar_agent_store__delete(ar_agent_store_t *ref_store);
  * @return Path to the store file (constant string)
  */
 const char* ar_agent_store__get_path(ar_agent_store_t *ref_store);
+
+/**
+ * Get the methodology reference from agent store
+ * @param ref_store The agent store instance (borrowed reference)
+ * @return Methodology reference (borrowed), or NULL if not set
+ */
+ar_methodology_t* ar_agent_store__get_methodology(ar_agent_store_t *ref_store);
 
 #endif /* AGERUN_AGENT_STORE_H */

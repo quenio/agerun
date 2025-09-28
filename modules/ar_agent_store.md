@@ -2,13 +2,13 @@
 
 ## Overview
 
-The agent store module (`ar_agent_store`) handles the persistence of agent state to and from disk storage. It manages the `agerun.agency` file format, ensuring data integrity and providing backup capabilities.
+The agent store module (`ar_agent_store`) handles the persistence of agent state to and from disk storage. It manages the `agerun.agency` file format, ensuring data integrity and providing backup capabilities. The module requires a methodology reference for method lookups during agent loading.
 
 ## Purpose
 
 This module was created as part of the agency module refactoring to improve cohesion and separate concerns. It handles:
 - Saving agent state to persistent storage
-- Loading agent state from disk
+- Loading agent state from disk (requires methodology for method lookups)
 - File format validation and error recovery
 - Backup and restore operations
 
@@ -75,6 +75,7 @@ The module follows Parnas principles:
 
 - `ar_agent` - For agent operations
 - `ar_method` - For method information
+- `ar_methodology` - For method lookups during agent loading
 - `ar_data` - For agent memory data
 - `ar_list` - For collection operations
 - `ar_io` - For safe file operations
@@ -97,23 +98,27 @@ The module provides robust error handling:
 ## Usage Example
 
 ```c
+// Create agent store with methodology
+ar_agent_store_t *own_store = ar_agent_store__create(own_registry, own_methodology);
+
 // Save current agents
-if (!ar_agent_store__save()) {
+if (!ar_agent_store__save(own_store)) {
     // Handle save error
 }
 
 // Load agents on startup
-if (!ar_agent_store__load()) {
+if (!ar_agent_store__load(own_store)) {
     // Handle load error
 }
 
 // Check if we have persisted state
-if (ar_agent_store__exists()) {
+if (ar_agent_store__exists(own_store)) {
     // Load existing agents
 }
 
 // Clean up persisted state
-ar_agent_store__delete();
+ar_agent_store__delete(own_store);
+ar_agent_store__destroy(own_store);
 ```
 
 ## Memory Management

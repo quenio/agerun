@@ -7,6 +7,7 @@
 #include "ar_agent.h"
 #include "ar_agent_registry.h"
 #include "ar_method.h"
+#include "ar_methodology.h"
 #include "ar_data.h"
 #include "ar_list.h"
 #include "ar_io.h"
@@ -26,8 +27,9 @@
 
 /* Agent store structure */
 struct ar_agent_store_s {
-    ar_agent_registry_t *ref_registry;  /* Borrowed reference to registry */
-    const char *filename;               /* Store filename */
+    ar_agent_registry_t *ref_registry;      /* Borrowed reference to registry */
+    ar_methodology_t *ref_methodology;      /* Borrowed reference to methodology */
+    const char *filename;                   /* Store filename */
 };
 
 /* Context structure for save operations */
@@ -128,8 +130,8 @@ static bool _save_agent_memory(FILE *file, ar_data_t *ref_memory) {
 }
 
 /* Create a new agent store instance */
-ar_agent_store_t* ar_agent_store__create(ar_agent_registry_t *ref_registry) {
-    if (!ref_registry) {
+ar_agent_store_t* ar_agent_store__create(ar_agent_registry_t *ref_registry, ar_methodology_t *ref_methodology) {
+    if (!ref_registry || !ref_methodology) {
         return NULL;
     }
     
@@ -138,7 +140,8 @@ ar_agent_store_t* ar_agent_store__create(ar_agent_registry_t *ref_registry) {
         return NULL;
     }
     
-    own_store->ref_registry = ref_registry;  /* Store borrowed reference */
+    own_store->ref_registry = ref_registry;      /* Store borrowed reference */
+    own_store->ref_methodology = ref_methodology; /* Store borrowed reference */
     own_store->filename = AGENT_STORE_FILE_NAME;
     
     return own_store;
@@ -308,4 +311,13 @@ const char* ar_agent_store__get_path(ar_agent_store_t *ref_store) {
     }
     
     return ref_store->filename;
+}
+
+/* Get the methodology reference from agent store */
+ar_methodology_t* ar_agent_store__get_methodology(ar_agent_store_t *ref_store) {
+    if (!ref_store) {
+        return NULL;
+    }
+    
+    return ref_store->ref_methodology;
 }

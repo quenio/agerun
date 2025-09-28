@@ -53,8 +53,8 @@ ar_agency_t* ar_agency__create(ar_log_t *ref_log) {
         return NULL;
     }
     
-    // Create owned agent store with the registry
-    own_agency->own_agent_store = ar_agent_store__create(own_agency->own_registry);
+    // Create owned agent store with the registry and methodology
+    own_agency->own_agent_store = ar_agent_store__create(own_agency->own_registry, own_agency->own_methodology);
     if (!own_agency->own_agent_store) {
         if (ref_log) {
             ar_log__error(ref_log, "Agency: Failed to create agent store");

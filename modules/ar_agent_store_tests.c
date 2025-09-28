@@ -19,11 +19,14 @@
 static void test_store_basics(void) {
     printf("Testing store basic operations...\n");
     
-    // Given a registry and store
+    // Given a registry and methodology
     ar_agent_registry_t *own_registry = ar_agent_registry__create();
     assert(own_registry != NULL);
     
-    ar_agent_store_t *own_store = ar_agent_store__create(own_registry);
+    ar_methodology_t *own_methodology = ar_methodology__create(NULL);
+    assert(own_methodology != NULL);
+    
+    ar_agent_store_t *own_store = ar_agent_store__create(own_registry, own_methodology);
     assert(own_store != NULL);
     
     // Test basic save/load operations
@@ -35,6 +38,7 @@ static void test_store_basics(void) {
     
     // Clean up
     ar_agent_store__destroy(own_store);
+    ar_methodology__destroy(own_methodology);
     ar_agent_registry__destroy(own_registry);
     
     printf("✓ Store basic operations test passed\n");
@@ -47,7 +51,10 @@ static void test_store_empty_save_load(void) {
     ar_agent_registry_t *own_registry = ar_agent_registry__create();
     assert(own_registry != NULL);
     
-    ar_agent_store_t *own_store = ar_agent_store__create(own_registry);
+    ar_methodology_t *own_methodology = ar_methodology__create(NULL);
+    assert(own_methodology != NULL);
+    
+    ar_agent_store_t *own_store = ar_agent_store__create(own_registry, own_methodology);
     assert(own_store != NULL);
     
     // When saving empty state
@@ -61,6 +68,7 @@ static void test_store_empty_save_load(void) {
     
     // Clean up
     ar_agent_store__destroy(own_store);
+    ar_methodology__destroy(own_methodology);
     ar_agent_registry__destroy(own_registry);
     
     printf("✓ Empty store save/load test passed\n");
@@ -77,7 +85,10 @@ static void test_store_single_agent(void) {
     ar_agent_registry_t *own_registry = ar_agent_registry__create();
     assert(own_registry != NULL);
     
-    ar_agent_store_t *own_store = ar_agent_store__create(own_registry);
+    ar_methodology_t *own_methodology = ar_methodology__create(NULL);
+    assert(own_methodology != NULL);
+    
+    ar_agent_store_t *own_store = ar_agent_store__create(own_registry, own_methodology);
     assert(own_store != NULL);
     
     // Create an agent directly
@@ -118,6 +129,7 @@ static void test_store_single_agent(void) {
     ar_agent_store__destroy(own_store);
     ar_agent_registry__destroy(own_registry);
     ar_method__destroy(own_method);
+    ar_methodology__destroy(own_methodology);
     
     printf("✓ Single agent persistence test passed\n");
 }
@@ -135,7 +147,10 @@ static void test_store_multiple_agents(void) {
     ar_agent_registry_t *own_registry = ar_agent_registry__create();
     assert(own_registry != NULL);
     
-    ar_agent_store_t *own_store = ar_agent_store__create(own_registry);
+    ar_methodology_t *own_methodology = ar_methodology__create(NULL);
+    assert(own_methodology != NULL);
+    
+    ar_agent_store_t *own_store = ar_agent_store__create(own_registry, own_methodology);
     assert(own_store != NULL);
     
     // Clean up any existing store
@@ -200,6 +215,7 @@ static void test_store_multiple_agents(void) {
     ar_agent_registry__destroy(own_registry);
     ar_method__destroy(own_echo);
     ar_method__destroy(own_calc);
+    ar_methodology__destroy(own_methodology);
     
     printf("✓ Multiple agent persistence test passed\n");
 }
@@ -211,7 +227,10 @@ static void test_store_file_corruption(void) {
     ar_agent_registry_t *own_registry = ar_agent_registry__create();
     assert(own_registry != NULL);
     
-    ar_agent_store_t *own_store = ar_agent_store__create(own_registry);
+    ar_methodology_t *own_methodology = ar_methodology__create(NULL);
+    assert(own_methodology != NULL);
+    
+    ar_agent_store_t *own_store = ar_agent_store__create(own_registry, own_methodology);
     assert(own_store != NULL);
     
     // Clean up any existing store
@@ -239,6 +258,7 @@ static void test_store_file_corruption(void) {
     // Clean up
     ar_agent_store__destroy(own_store);
     ar_agent_registry__destroy(own_registry);
+    ar_methodology__destroy(own_methodology);
     
     printf("✓ Store file corruption handling test passed\n");
 }
@@ -254,7 +274,10 @@ static void test_store_missing_method(void) {
     ar_agent_registry_t *own_registry = ar_agent_registry__create();
     assert(own_registry != NULL);
     
-    ar_agent_store_t *own_store = ar_agent_store__create(own_registry);
+    ar_methodology_t *own_methodology = ar_methodology__create(NULL);
+    assert(own_methodology != NULL);
+    
+    ar_agent_store_t *own_store = ar_agent_store__create(own_registry, own_methodology);
     assert(own_store != NULL);
     
     // Clean up any existing store
@@ -286,6 +309,7 @@ static void test_store_missing_method(void) {
     ar_agent_store__destroy(own_store);
     ar_agent_registry__destroy(own_registry);
     ar_method__destroy(own_method);
+    ar_methodology__destroy(own_methodology);
     
     printf("✓ Store with missing method test passed\n");
 }
@@ -301,7 +325,10 @@ static void test_store_id_preservation(void) {
     ar_agent_registry_t *own_registry = ar_agent_registry__create();
     assert(own_registry != NULL);
     
-    ar_agent_store_t *own_store = ar_agent_store__create(own_registry);
+    ar_methodology_t *own_methodology = ar_methodology__create(NULL);
+    assert(own_methodology != NULL);
+    
+    ar_agent_store_t *own_store = ar_agent_store__create(own_registry, own_methodology);
     assert(own_store != NULL);
     
     // Clean up any existing store
@@ -348,8 +375,35 @@ static void test_store_id_preservation(void) {
     ar_agent_store__destroy(own_store);
     ar_agent_registry__destroy(own_registry);
     ar_method__destroy(own_method);
+    ar_methodology__destroy(own_methodology);
     
     printf("✓ Agent ID preservation test passed\n");
+}
+
+static void test_store_methodology_support(void) {
+    printf("Testing agent store methodology support...\n");
+    
+    // Given a registry and methodology
+    ar_agent_registry_t *own_registry = ar_agent_registry__create();
+    assert(own_registry != NULL);
+    
+    ar_methodology_t *own_methodology = ar_methodology__create(NULL);
+    assert(own_methodology != NULL);
+    
+    // When creating agent store with methodology
+    ar_agent_store_t *own_store = ar_agent_store__create(own_registry, own_methodology);
+    assert(own_store != NULL);
+    
+    // Then methodology should be accessible from agent store
+    ar_methodology_t *ref_methodology = ar_agent_store__get_methodology(own_store);
+    assert(ref_methodology == own_methodology);
+    
+    // Clean up
+    ar_agent_store__destroy(own_store);
+    ar_methodology__destroy(own_methodology);
+    ar_agent_registry__destroy(own_registry);
+    
+    printf("✓ Agent store methodology support test passed\n");
 }
 
 int main(void) {
@@ -362,7 +416,8 @@ int main(void) {
     test_store_file_corruption();
     test_store_missing_method();
     test_store_id_preservation();
+    test_store_methodology_support();
     
-    printf("All 7 tests passed!\n");
+    printf("All 9 tests passed!\n");
     return 0;
 }
