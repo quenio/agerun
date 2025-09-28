@@ -4,7 +4,7 @@ Run naming convention validation to check for typedef and function naming issues
 
 Before checking:
 1. Search: `grep "naming\|convention\|pattern" kb/README.md`
-2. Review naming standards in CLAUDE.md Section 5
+2. Review naming standards in AGENTS.md Section 5
 3. Check for KB articles about:
    - Naming convention patterns
    - Function naming standards

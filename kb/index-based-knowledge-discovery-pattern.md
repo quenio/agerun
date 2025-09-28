@@ -10,7 +10,7 @@ Using a single index file with a guideline to check it first is more scalable th
 - **Discoverability**: Systematic search process vs. random discovery
 
 ## Example
-Instead of adding 317 individual references to CLAUDE.md:
+Instead of adding 317 individual references to AGENTS.md:
 ```markdown
 // BAD: Scattered references requiring constant maintenance
 - Memory patterns ([details](kb/ownership-naming-conventions.md))

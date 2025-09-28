@@ -1,4 +1,4 @@
-Read CLAUDE.md in order to prepare yourself for this new session. Then check the session's todo list using TodoRead. If no items are found in the session's todo list, stop and inform me that all session tasks are complete. If session tasks exist, work on the next task found in the session's todo list.
+Read AGENTS.md in order to prepare yourself for this new session. Then check the session's todo list using TodoRead. If no items are found in the session's todo list, stop and inform me that all session tasks are complete. If session tasks exist, work on the next task found in the session's todo list.
 
 ## MANDATORY KB Consultation
 
@@ -52,7 +52,7 @@ make checkpoint-status CMD=next_task
 
 ### When Session Tasks Exist
 ```
-Reading CLAUDE.md...
+Reading AGENTS.md...
 Checking session todo list... ([details](../../kb/task-verification-before-execution.md))
 
 Found 3 tasks in session:
@@ -74,7 +74,7 @@ Estimated effort: 3 TDD cycles
 
 ### When No Session Tasks
 ```
-Reading CLAUDE.md...
+Reading AGENTS.md...
 Checking session todo list...
 
 ✅ All session tasks are complete!
@@ -88,7 +88,7 @@ Would you like to:
 
 ### When Task References Report
 ```
-Reading CLAUDE.md...
+Reading AGENTS.md...
 Checking session todo list...
 
 Found task: Fix parser silent failures (references: parser-analysis-report.md)

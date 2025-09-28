@@ -7,9 +7,9 @@ How to effectively compress verbose documentation by extracting detailed content
 Long, detailed documentation in main guidelines creates cognitive overload and makes it harder to quickly find and follow essential rules. Compacting improves scanability while preserving comprehensive information.
 
 ## Example
-**Reference documentation compaction (CLAUDE.md)**:
+**Reference documentation compaction (AGENTS.md)**:
 ```markdown
-// Before (in CLAUDE.md - 15 lines):
+// Before (in AGENTS.md - 15 lines):
 **Memory Leak Detection**:
 - Full test suite: Check console for "WARNING: X memory leaks detected"
 - Individual test memory reports: Located at `bin/memory_report_<test_name>.log`
@@ -23,7 +23,7 @@ Long, detailed documentation in main guidelines creates cognitive overload and m
   - `ASAN_OPTIONS=halt_on_error=0` to continue after first error
   - `ASAN_OPTIONS=detect_leaks=1:leak_check_at_exit=1` for complex leaks
 
-// After (in CLAUDE.md - 3 lines):
+// After (in AGENTS.md - 3 lines):
 **Memory Leak Detection**:
 - Check test reports: `bin/memory_report_<test_name>.log` ([details](memory-leak-detection-workflow.md))
 - Always run `make sanitize-tests` before committing
@@ -83,7 +83,7 @@ Long, detailed documentation in main guidelines creates cognitive overload and m
 
 **How to compact - Strategy depends on document type**:
 
-**For reference documentation (e.g., CLAUDE.md)**:
+**For reference documentation (e.g., AGENTS.md)**:
 1. Identify core actionable rules (keep these)
 2. **PRESERVE ALL EXISTING KB REFERENCES** - they ARE the detailed docs
 3. Create KB articles BEFORE adding any links to them

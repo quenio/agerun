@@ -1,4 +1,4 @@
-Make CLAUDE.md guidelines more concise by moving details to knowledge base.
+Make AGENTS.md guidelines more concise by moving details to knowledge base.
 
 ## MANDATORY KB Consultation
 
@@ -17,7 +17,7 @@ This command uses checkpoint tracking to ensure systematic documentation compact
 ### Initialize Tracking
 ```bash
 # Start the compacting process
-make checkpoint-init CMD=compact-guidelines STEPS='"Analyze CLAUDE.md" "Identify Verbose Sections" "List Extraction Targets" "Check Existing KB Articles" "Plan New Articles" "Create KB Article 1" "Create KB Article 2" "Create KB Article 3" "Update CLAUDE.md References" "Add Cross-References" "Update kb/README.md" "Run Documentation Validation" "Verify Link Coverage" "Review Changes" "Create Commit"'
+make checkpoint-init CMD=compact-guidelines STEPS='"Analyze AGENTS.md" "Identify Verbose Sections" "List Extraction Targets" "Check Existing KB Articles" "Plan New Articles" "Create KB Article 1" "Create KB Article 2" "Create KB Article 3" "Update AGENTS.md References" "Add Cross-References" "Update kb/README.md" "Run Documentation Validation" "Verify Link Coverage" "Review Changes" "Create Commit"'
 ```
 
 **Expected output:**
@@ -31,7 +31,7 @@ Tracking file: /tmp/compact-guidelines_progress.txt
 Total steps: 15
 
 Steps to complete:
-  1. Analyze CLAUDE.md
+  1. Analyze AGENTS.md
   2. Identify Verbose Sections
   3. List Extraction Targets
   4. Check Existing KB Articles
@@ -39,7 +39,7 @@ Steps to complete:
   6. Create KB Article 1
   7. Create KB Article 2
   8. Create KB Article 3
-  9. Update CLAUDE.md References
+  9. Update AGENTS.md References
   10. Add Cross-References
   11. Update kb/README.md
   12. Run Documentation Validation
@@ -47,7 +47,7 @@ Steps to complete:
   14. Review Changes
   15. Create Commit
 
-Goal: Compact CLAUDE.md by 30-50%
+Goal: Compact AGENTS.md by 30-50%
 Minimum: Create 2+ KB articles
 ```
 
@@ -74,16 +74,16 @@ make checkpoint-status CMD=compact-guidelines
 
 ### Objective
 
-Make CLAUDE.md guidelines more concise and actionable by moving detailed explanations, examples, and implementation details to the knowledge base (./kb directory). For the complete compacting technique including document-specific strategies, see ([details](../../../kb/documentation-compacting-pattern.md)).
+Make AGENTS.md guidelines more concise and actionable by moving detailed explanations, examples, and implementation details to the knowledge base (./kb directory). For the complete compacting technique including document-specific strategies, see ([details](../../../kb/documentation-compacting-pattern.md)).
 
 **CRITICAL PRINCIPLE**: Never create broken links. Every kb article you reference MUST either:
 1. Already exist (verify with `ls kb/article-name.md`), OR
 2. Be created by you BEFORE adding any links to it
 
 **CRITICAL**: PRESERVE ALL EXISTING KB REFERENCES
-When you see KB article links (formatted with parentheses and "details" text pointing to kb/ files) in CLAUDE.md, these links MUST be preserved. They are not redundant - they ARE the detailed documentation. The goal is to make CLAUDE.md more concise while keeping all KB links that provide the depth.
+When you see KB article links (formatted with parentheses and "details" text pointing to kb/ files) in AGENTS.md, these links MUST be preserved. They are not redundant - they ARE the detailed documentation. The goal is to make AGENTS.md more concise while keeping all KB links that provide the depth.
 
-**IMPORTANT**: Before extracting kb articles from CLAUDE.md, read `.claude/commands/new-learnings.md` to understand the proper format and validation requirements for creating kb articles. This ensures extracted content follows established standards.
+**IMPORTANT**: Before extracting kb articles from AGENTS.md, read `.claude/commands/new-learnings.md` to understand the proper format and validation requirements for creating kb articles. This ensures extracted content follows established standards.
 
 ### Guidelines for Compacting
 
@@ -95,12 +95,12 @@ When you see KB article links (formatted with parentheses and "details" text poi
 
 #### Step 1: Identify Verbose Sections
 
-#### Checkpoint 1: Analyze CLAUDE.md
+#### Checkpoint 1: Analyze AGENTS.md
 
 ```bash
 # Calculate current size
-BEFORE_LINES=$(wc -l < CLAUDE.md)
-echo "Current CLAUDE.md size: $BEFORE_LINES lines"
+BEFORE_LINES=$(wc -l < AGENTS.md)
+echo "Current AGENTS.md size: $BEFORE_LINES lines"
 echo "BEFORE_LINES=$BEFORE_LINES" > /tmp/compact-guidelines-metrics.txt
 
 make checkpoint-update CMD=compact-guidelines STEP=1
@@ -108,7 +108,7 @@ make checkpoint-update CMD=compact-guidelines STEP=1
 
 #### Checkpoint 2: Identify Verbose Sections
 
-Look for sections in CLAUDE.md that contain:
+Look for sections in AGENTS.md that contain:
 - Long explanations that could be summarized in 1-2 lines
 - Detailed examples that illustrate rather than specify
 - Implementation details that belong in knowledge base
@@ -213,7 +213,7 @@ make checkpoint-gate CMD=compact-guidelines GATE="Planning" REQUIRED="4,5"
 
 #### 3. Knowledge Base Article References (CRITICAL)
 
-**PRESERVE ALL EXISTING KB REFERENCES**: When compacting CLAUDE.md, you MUST:
+**PRESERVE ALL EXISTING KB REFERENCES**: When compacting AGENTS.md, you MUST:
 - Keep all existing KB references intact (the parentheses-style links to kb/ files)
 - Never remove KB references - they are the detailed documentation
 - If moving content that already has KB links, keep those links with the content
@@ -318,16 +318,16 @@ make checkpoint-gate CMD=compact-guidelines GATE="Creation" REQUIRED="6,7,8"
 
 #### [CHECKPOINT END]
 
-#### Checkpoint 9: Update CLAUDE.md References
+#### Checkpoint 9: Update AGENTS.md References
 
 ```bash
-# Update CLAUDE.md with KB links
-echo "Updating CLAUDE.md with KB references..."
-# Edit CLAUDE.md to add links to new KB articles
+# Update AGENTS.md with KB links
+echo "Updating AGENTS.md with KB references..."
+# Edit AGENTS.md to add links to new KB articles
 
 # Verify no broken links
 BROKEN=0
-for link in $(grep -o 'kb/[^)]*\.md' CLAUDE.md); do
+for link in $(grep -o 'kb/[^)]*\.md' AGENTS.md); do
   if [ ! -f "$link" ]; then
     echo "❌ BROKEN LINK: $link"
     BROKEN=$((BROKEN + 1))
@@ -425,7 +425,7 @@ make checkpoint-gate CMD=compact-guidelines GATE="Integration" REQUIRED="9,10,11
 
 #### 7. Section-by-Section Approach
 
-Work through CLAUDE.md systematically:
+Work through AGENTS.md systematically:
 
 **CRITICAL**: Only reference kb articles that actually exist or that you create:
 
@@ -457,10 +457,10 @@ After compacting each section:
    ```
 
 2. **If it doesn't exist, CREATE IT**:
-   - Extract the relevant content from CLAUDE.md
+   - Extract the relevant content from AGENTS.md
    - Create the kb article with proper format
    - Validate with `make check-docs`
-   - Only then add the link in CLAUDE.md
+   - Only then add the link in AGENTS.md
 
 3. **Never leave placeholder links**
 
@@ -491,7 +491,7 @@ echo "Verifying link coverage..."
 
 # Check that every major compaction has a corresponding link
 COMPACTED_SECTIONS=3  # Number of sections you compacted
-KB_LINKS=$(grep -c '\[details\](.*kb/.*\.md)' CLAUDE.md)
+KB_LINKS=$(grep -c '\[details\](.*kb/.*\.md)' AGENTS.md)
 
 if [ $KB_LINKS -ge $COMPACTED_SECTIONS ]; then
   echo "✅ Link coverage adequate: $KB_LINKS links for $COMPACTED_SECTIONS compactions"
@@ -506,7 +506,7 @@ fi
 ```bash
 # Calculate final metrics
 source /tmp/compact-guidelines-metrics.txt
-AFTER_LINES=$(wc -l < CLAUDE.md)
+AFTER_LINES=$(wc -l < AGENTS.md)
 REDUCTION=$((BEFORE_LINES - AFTER_LINES))
 PERCENT=$((REDUCTION * 100 / BEFORE_LINES))
 
@@ -554,21 +554,21 @@ make checkpoint-gate CMD=compact-guidelines GATE="Validation" REQUIRED="12,13,14
 make check-docs  # Ensure no validation errors
 
 # 2. Stage all related changes together
-git add kb/ CLAUDE.md TODO.md CHANGELOG.md
+git add kb/ AGENTS.md TODO.md CHANGELOG.md
 
 # 3. Single comprehensive commit
 git commit -m "docs: compact guidelines with comprehensive knowledge base articles
 
-- Reduced CLAUDE.md from X to Y lines (Z% reduction)
+- Reduced AGENTS.md from X to Y lines (Z% reduction)
 - Created N new KB articles extracting verbose content:
   - article1.md: Brief description
   - article2.md: Brief description
-- Preserved all existing KB references in CLAUDE.md
+- Preserved all existing KB references in AGENTS.md
 - Added cross-references between new and existing KB articles
 - Updated kb/README.md index with new entries
 - Validated all documentation with make check-docs
 
-Impact: CLAUDE.md is now more scannable and actionable while detailed
+Impact: AGENTS.md is now more scannable and actionable while detailed
 information remains accessible through KB links.
 
 🤖 Generated with [Claude Code](https://claude.ai/code)
@@ -608,7 +608,7 @@ Summary:
 - Documentation: ✓ Valid
 - Commit: ✓ Created
 
-CLAUDE.md successfully compacted!
+AGENTS.md successfully compacted!
 ```
 
 ```bash
@@ -625,7 +625,7 @@ rm -f /tmp/compact-guidelines-metrics.txt
 # If it fails, you MUST create the KB articles first:
 1. Create any missing KB articles
 2. Verify they exist: ls kb/article-name.md
-3. Only then proceed to update CLAUDE.md references
+3. Only then proceed to update AGENTS.md references
 ```
 
 ### If check-docs fails:
@@ -639,7 +639,7 @@ rm -f /tmp/compact-guidelines-metrics.txt
 ### If link verification fails:
 ```bash
 # Check for broken links
-for link in $(grep -o 'kb/[^)]*\.md' CLAUDE.md); do
+for link in $(grep -o 'kb/[^)]*\.md' AGENTS.md); do
   [ ! -f "$link" ] && echo "Missing: $link"
 done
 ```
@@ -665,7 +665,7 @@ Before finalizing:
 
 ## Expected Outcomes
 
-- **CLAUDE.md**: Concise, scannable, action-oriented guidelines **with links to detailed articles**
+- **AGENTS.md**: Concise, scannable, action-oriented guidelines **with links to detailed articles**
 - **Knowledge base**: Comprehensive details with examples
 - **Improved usability**: Quick reference + deep dive when needed via links
 - **Maintained completeness**: No loss of essential information (all accessible via links)
@@ -687,6 +687,6 @@ Before finalizing:
 
 ## Usage Notes
 
-This command should be used periodically to prevent CLAUDE.md from becoming unwieldy as new learnings are added. The goal is maintaining the two-tier documentation system with optimal balance between conciseness and completeness.
+This command should be used periodically to prevent AGENTS.md from becoming unwieldy as new learnings are added. The goal is maintaining the two-tier documentation system with optimal balance between conciseness and completeness.
 
-**Remember**: The Creation Gate is critical - it ensures all KB articles exist BEFORE any references are added to CLAUDE.md, preventing broken links.
+**Remember**: The Creation Gate is critical - it ensures all KB articles exist BEFORE any references are added to AGENTS.md, preventing broken links.

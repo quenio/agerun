@@ -10,7 +10,7 @@ When users suggest architectural alternatives to proposed plans, evaluate them s
 - **Collaboration**: Shows respect for user input and domain knowledge
 
 ## Example
-Original plan: Add 104+ individual KB article references to CLAUDE.md
+Original plan: Add 104+ individual KB article references to AGENTS.md
 ```markdown
 // ORIGINAL APPROACH: Individual enumeration
 - Memory patterns ([details](kb/ownership-naming-conventions.md))

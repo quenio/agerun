@@ -63,7 +63,7 @@ This command guides you through a comprehensive process to:
 5. Add proper cross-references between articles
 6. Update kb/README.md index
 7. Review and update existing Claude commands based on learnings
-8. Update CLAUDE.md with references
+8. Update AGENTS.md with references
 9. Commit and push all changes
 
 **IMPORTANT**: Always consider updating existing KB articles before creating new ones, and ensure all articles are properly cross-referenced to create a web of knowledge.
@@ -479,7 +479,7 @@ make checkpoint-update-verified CMD=new-learnings STEP=7 SUMMARY="Updated X comm
 
 #### [CHECKPOINT START - STEP 8]
 
-Check CLAUDE.md to see if these learnings should be referenced:
+Check AGENTS.md to see if these learnings should be referenced:
 - Determine if existing documentation needs links to new kb articles
 - Identify appropriate sections where kb articles should be referenced
 - Note any gaps that need new content with kb links
@@ -494,9 +494,9 @@ make checkpoint-update CMD=new-learnings STEP=8
 
 #### [CHECKPOINT START - STEP 9]
 
-**CRITICAL**: CLAUDE.md updates are MANDATORY for new KB articles ([details](../../../kb/claude-md-reference-requirement.md))
+**CRITICAL**: AGENTS.md updates are MANDATORY for new KB articles ([details](../../../kb/claude-md-reference-requirement.md))
 
-If updates are needed to CLAUDE.md:
+If updates are needed to AGENTS.md:
 
 1. **Space-conscious writing** (CRITICAL):
    - Keep additions under 50 bytes when possible
@@ -654,7 +654,7 @@ fi
 
 2. **Stage all knowledge base work**:
    ```bash
-   git add kb/ CLAUDE.md TODO.md CHANGELOG.md
+   git add kb/ AGENTS.md TODO.md CHANGELOG.md
    # If any commands were updated:
    git add .claude/commands/
    ```
@@ -665,7 +665,7 @@ fi
    docs: integrate knowledge base articles from session learnings
    
    - Created comprehensive knowledge base articles documenting new patterns
-   - Updated CLAUDE.md with references to new articles in appropriate sections
+   - Updated AGENTS.md with references to new articles in appropriate sections
    - Enhanced kb/README.md index with new Development Workflow articles
    - Updated TODO.md and CHANGELOG.md to document completion
    - All code examples use real AgeRun types and functions
@@ -745,7 +745,7 @@ The enhanced documentation system ensures:
 ## Knowledge Base Benefits
 
 The enhanced documentation system provides:
-- **CLAUDE.md**: Concise, actionable guidelines for quick reference
+- **AGENTS.md**: Concise, actionable guidelines for quick reference
 - **./kb/ files**: Detailed context with VALIDATED examples
 - **Real code**: All examples work with actual AgeRun codebase
 - **Searchable**: `grep -r "keyword" ./kb/` finds relevant patterns
@@ -763,8 +763,8 @@ Use this checklist to ensure thorough execution:
 - [ ] **Step 5**: Added new articles to kb/README.md index
 - [ ] **Step 6**: ✅ Updated 3-5+ existing KB articles with cross-references
 - [ ] **Step 7**: ✅ Updated 3-4+ commands with new KB references
-- [ ] **Step 8**: Reviewed CLAUDE.md for update locations
-- [ ] **Step 9**: Updated CLAUDE.md with new KB references
+- [ ] **Step 8**: Reviewed AGENTS.md for update locations
+- [ ] **Step 9**: Updated AGENTS.md with new KB references
 - [ ] **Step 10**: Validated no broken links exist
 - [ ] **Step 11**: ✅ Executed verification script showing "READY TO COMMIT"
 - [ ] **Step 12**: Committed and pushed all changes

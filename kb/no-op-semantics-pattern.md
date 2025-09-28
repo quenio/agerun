@@ -4,7 +4,7 @@
 In AgeRun, send(0, message) is implemented as a no-op that destroys the message without processing or output. Agent ID 0 serves as a "null destination" or message sink, useful for conditional message handling and failure cases.
 
 ## Importance
-Understanding no-op semantics prevents confusion when messages seem to "disappear" without output. This pattern is documented in CLAUDE.md but often surprises developers who expect agent 0 to represent console output or debugging.
+Understanding no-op semantics prevents confusion when messages seem to "disappear" without output. This pattern is documented in AGENTS.md but often surprises developers who expect agent 0 to represent console output or debugging.
 
 ## Example
 ```c
@@ -48,7 +48,7 @@ void handle_conditional_message(int64_t condition, ar_data_t *own_message) {
     // Message is sent if condition true, destroyed if false
     
     // Pattern 2: Document no-op behavior in tests
-    // Note: send(0, ...) is a no-op per CLAUDE.md
+    // Note: send(0, ...) is a no-op per AGENTS.md
     // Don't expect console output from send(0, ...)
     
     // Pattern 3: Use non-zero agent for debugging output

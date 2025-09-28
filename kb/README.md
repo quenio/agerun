@@ -298,7 +298,7 @@ Each learning file contains:
 - [Absolute Path Navigation](absolute-path-navigation.md)
 - [Systematic Guideline Enhancement](systematic-guideline-enhancement.md)
 - [Unmissable Documentation Pattern](unmissable-documentation-pattern.md)
-- [CLAUDE.md Reference Requirement](claude-md-reference-requirement.md)
+- [AGENTS.md Reference Requirement](claude-md-reference-requirement.md)
 - [Cross-Referencing Knowledge Base](cross-referencing-knowledge-base.md)
 - [New Learnings Cross-Reference Requirement](new-learnings-cross-reference-requirement.md)
 - [Frank Communication Principle](frank-communication-principle.md)

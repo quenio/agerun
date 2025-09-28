@@ -97,10 +97,10 @@ def main():
         else:
             print(f"  - No changes needed for {kb_file}")
     
-    # Also update CLAUDE.md
-    print(f"Processing CLAUDE.md...")
-    if update_file('CLAUDE.md'):
-        print(f"  ✓ Updated CLAUDE.md")
+    # Also update AGENTS.md
+    print(f"Processing AGENTS.md...")
+    if update_file('AGENTS.md'):
+        print(f"  ✓ Updated AGENTS.md")
         updated_count += 1
     
     print(f"\nSummary: Updated {updated_count} files")

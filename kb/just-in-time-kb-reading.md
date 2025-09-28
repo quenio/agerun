@@ -8,7 +8,7 @@ Reading all kb links immediately creates information overload and reduces effici
 
 ## Example
 ```markdown
-// In CLAUDE.md:
+// In AGENTS.md:
 **Memory Leak Detection**:
 - Check test reports: `bin/memory_report_<test_name>.log` ([details](memory-leak-detection-workflow.md))
 
@@ -37,7 +37,7 @@ Task: Debug memory leak in ar_string_tests
 - When encountering errors related to the topic
 
 **When NOT to read kb articles**:
-- While initially scanning CLAUDE.md
+- While initially scanning AGENTS.md
 - When the guideline is clear enough for the current need
 - For unrelated tasks
 
@@ -58,7 +58,7 @@ Claude: I'll help you refactor the agency module. Let me create a plan:
 4. **Execution phase**: Read article, then apply knowledge immediately
 5. **Reference back**: Re-read specific sections if needed during execution
 
-**Search strategy**: When asked about a topic, search CLAUDE.md for kb links first
+**Search strategy**: When asked about a topic, search AGENTS.md for kb links first
 **Memory efficiency**: Only load detailed knowledge when actively using it
 
 ## Related Patterns

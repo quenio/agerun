@@ -16,7 +16,7 @@ ar_io__info("method_store_load: Reading method %s", name);  // Assistant tries t
 // "I meant: keep all messages we added to the method store"
 
 // Guidelines exist but aren't consulted:
-// CLAUDE.md line 311: "Debug output: Keep for future troubleshooting"
+// AGENTS.md line 311: "Debug output: Keep for future troubleshooting"
 // kb/debug-output-preservation-strategy.md: Explicit preservation rules
 ```
 
@@ -30,7 +30,7 @@ Effective session-start priming strategies:
 
 2. **Recitation request**:
    ```
-   "What does CLAUDE.md say about debug output and KB consultation?"
+   "What does AGENTS.md say about debug output and KB consultation?"
    ```
 
 3. **Session-specific ground rules**:
@@ -43,7 +43,7 @@ Effective session-start priming strategies:
 
 4. **Pre-work checklist**:
    ```
-   "Before any code changes, show me your checklist from CLAUDE.md"
+   "Before any code changes, show me your checklist from AGENTS.md"
    ```
 
 5. **Trigger phrase**:

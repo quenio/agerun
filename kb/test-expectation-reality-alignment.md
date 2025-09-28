@@ -63,7 +63,7 @@ void test_actual_behavior(void) {
     AR_ASSERT(actual_value == observed_value, "Document actual behavior");
     
     // Step 3: Add comments explaining why behavior differs from intuition
-    // Note: send(0, ...) is a no-op per CLAUDE.md
+    // Note: send(0, ...) is a no-op per AGENTS.md
     // Currently processes duplicate wake message (bug in ar_system__init)
 }
 ```

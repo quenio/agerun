@@ -5,7 +5,7 @@ Verify KB article integration is thorough.
 This script checks:
 1. Minimum number of KB articles modified with cross-references
 2. Minimum number of commands updated with KB references
-3. CLAUDE.md updated with new KB references
+3. AGENTS.md updated with new KB references
 4. Overall integration quality score
 """
 
@@ -53,7 +53,7 @@ def get_modified_files() -> Dict[str, List[str]]:
             files['kb'].append(filepath)
         elif filepath.startswith('.claude/commands/') and filepath.endswith('.md'):
             files['commands'].append(filepath)
-        elif filepath == 'CLAUDE.md':
+        elif filepath == 'AGENTS.md':
             files['claude_md'] = True
     
     return files
@@ -107,22 +107,22 @@ def check_command_kb_references(cmd_files: List[str]) -> Tuple[int, List[str]]:
     return valid_count, issues
 
 def check_claude_md_updates(updated: bool) -> Tuple[bool, List[str]]:
-    """Check that CLAUDE.md has been updated with new KB references."""
+    """Check that AGENTS.md has been updated with new KB references."""
     if not updated:
-        return False, ["CLAUDE.md not updated"]
+        return False, ["AGENTS.md not updated"]
     
     # Check diff for new KB references
-    diff = run_git_command(["git", "diff", "CLAUDE.md"])
+    diff = run_git_command(["git", "diff", "AGENTS.md"])
     
     # Look for added KB references
     added_refs = re.findall(r'^\+.*\(\[details\]\(kb/[^)]+\.md\)\)', diff, re.MULTILINE)
     
     if added_refs:
-        print(f"  ✓ CLAUDE.md: {len(added_refs)} KB references added")
+        print(f"  ✓ AGENTS.md: {len(added_refs)} KB references added")
         return True, []
     else:
-        print(f"  ⚠️ CLAUDE.md: Updated but no KB references added")
-        return False, ["CLAUDE.md updated but no KB references added"]
+        print(f"  ⚠️ AGENTS.md: Updated but no KB references added")
+        return False, ["AGENTS.md updated but no KB references added"]
 
 def calculate_integration_score(kb_count: int, cmd_count: int, claude_updated: bool) -> int:
     """Calculate integration quality score (0-100)."""
@@ -136,7 +136,7 @@ def calculate_integration_score(kb_count: int, cmd_count: int, claude_updated: b
     cmd_points = min(40, (cmd_count / MIN_COMMANDS_MODIFIED) * 40)
     score += cmd_points
     
-    # CLAUDE.md update (20 points)
+    # AGENTS.md update (20 points)
     if claude_updated:
         score += 20
     
@@ -156,7 +156,7 @@ def main():
     print(f"Modified files summary:")
     print(f"  KB articles: {len(files['kb'])}")
     print(f"  Commands: {len(files['commands'])}")
-    print(f"  CLAUDE.md: {'Yes' if files['claude_md'] else 'No'}\n")
+    print(f"  AGENTS.md: {'Yes' if files['claude_md'] else 'No'}\n")
     
     issues = []
     
@@ -178,8 +178,8 @@ def main():
         cmd_valid = 0
         print("  No commands modified")
     
-    # Check CLAUDE.md
-    print("\n=== CLAUDE.md Update ===")
+    # Check AGENTS.md
+    print("\n=== AGENTS.md Update ===")
     claude_valid, claude_issues = check_claude_md_updates(files['claude_md'])
     issues.extend(claude_issues)
     
@@ -192,7 +192,7 @@ def main():
     print(f"\nMetrics:")
     print(f"  KB articles with cross-refs: {kb_valid}/{MIN_KB_MODIFIED} minimum")
     print(f"  Commands with KB refs: {cmd_valid}/{MIN_COMMANDS_MODIFIED} minimum")
-    print(f"  CLAUDE.md updated: {'✓' if claude_valid else '✗'}")
+    print(f"  AGENTS.md updated: {'✓' if claude_valid else '✗'}")
     
     if kb_valid >= MIN_KB_MODIFIED and cmd_valid >= MIN_COMMANDS_MODIFIED:
         print(f"\n✅ READY TO COMMIT: Thorough integration completed (Score: {score}/100)")
@@ -205,7 +205,7 @@ def main():
         if cmd_valid < MIN_COMMANDS_MODIFIED:
             print(f"  - Update {MIN_COMMANDS_MODIFIED - cmd_valid} more commands with KB references")
         if not claude_valid:
-            print(f"  - Add KB references to CLAUDE.md")
+            print(f"  - Add KB references to AGENTS.md")
         return 1
 
 if __name__ == "__main__":

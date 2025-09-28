@@ -15,14 +15,14 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ### ✅ Global API Removal - Phase 4 Cleanup
 - **Completed final cleanup phase** for global API removal project
-- **Updated CLAUDE.md** to use instance-based API examples (`ar_methodology__cleanup()` & `ar_agency__reset()`)
+- **Updated AGENTS.md** to use instance-based API examples (`ar_methodology__cleanup()` & `ar_agency__reset()`)
 - **Enhanced README.md persistence examples** with complete instance-based workflow showing proper system/agency/methodology coordination
 - **Verified zero memory leaks** across all 74 tests with clean build validation
 - **Documentation consistency achieved** - all 519 documentation files pass validation
 - **Impact**: Clean architecture foundation with explicit dependencies, ready for system module decomposition
 
 ### ✅ Knowledge Base Reference Resolution
-- **Enhanced CLAUDE.md** with "Check KB index FIRST" guideline for systematic knowledge discovery
+- **Enhanced AGENTS.md** with "Check KB index FIRST" guideline for systematic knowledge discovery
 - **Updated kb/README.md** to include all 317 KB articles (was missing 9 articles)
 - **Added missing articles** categorized by topic:
   - Evidence-Based Debugging (Code Quality & Testing)
@@ -83,7 +83,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - build-clean.md: Added build verification reference
   - check-logs.md: Added grep syntax reference
   - new-learnings.md: Already had comprehensive KB references
-- **Updated CLAUDE.md** with 3 new pattern references:
+- **Updated AGENTS.md** with 3 new pattern references:
   - Task verification before execution in TODO.md section
   - Script archaeology in documentation protocols
   - Grep syntax differences in error & logs section
@@ -124,7 +124,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - No new unwhitelisted errors found in build logs
 - **Documentation created**:
   - kb/parser-error-logging-enhancement-pattern.md captures implementation patterns
-  - CLAUDE.md updated with reference to parser error logging pattern
+  - AGENTS.md updated with reference to parser error logging pattern
 - **Overall achievement**: Reduced parser silent failures from 97.6% → 0%
 - **Impact**: 50-70% reduction in debugging time for parser-related issues
 
@@ -229,8 +229,8 @@ This document tracks completed milestones and major achievements for the AgeRun 
 - **Zero memory leaks**: All 11 tests passing with clean memory
 - **Build time**: 1m 32s
 
-### ✅ CLAUDE.md Guidelines Compaction
-- **Reduced CLAUDE.md from 541 to 437 lines** (19% overall, 75-88% in verbose sections)
+### ✅ AGENTS.md Guidelines Compaction
+- **Reduced AGENTS.md from 541 to 437 lines** (19% overall, 75-88% in verbose sections)
 - **Created 4 new KB articles** for extracted content:
   - kb-search-patterns.md: KB search visibility and trigger patterns
   - plan-verification-checklist.md: Comprehensive planning checklists
@@ -571,9 +571,9 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - test-driven-documentation-validation.md: Using tests to validate documentation
   - comprehensive-learning-extraction-pattern.md: Multi-pass learning extraction process
 - Documentation improvements:
-  - Updated CLAUDE.md Module Development section with new patterns
-  - Updated CLAUDE.md TDD section with documentation validation pattern
-  - Updated CLAUDE.md Documentation Protocol with learning extraction pattern
+  - Updated AGENTS.md Module Development section with new patterns
+  - Updated AGENTS.md TDD section with documentation validation pattern
+  - Updated AGENTS.md Documentation Protocol with learning extraction pattern
   - Added cross-references to existing KB articles
   - All patterns include real AgeRun code examples
 - Benefits:
@@ -725,7 +725,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - error-message-source-tracing.md: Trace error messages through build pipeline layers
   - github-actions-debugging-workflow.md: Systematic CI investigation with gh CLI
   - assumption-verification-before-action.md: Challenge assumptions with evidence before acting
-- Enhanced CLAUDE.md with references to new patterns in appropriate sections
+- Enhanced AGENTS.md with references to new patterns in appropriate sections
 - Updated kb/README.md index with articles in Development Workflow, Tools & Automation, and Development Practices sections
 - All documentation validated with make check-docs
 
@@ -763,7 +763,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
 - Enhanced documentation:
   - Updated kb/README.md index with new Development Practices articles
   - Cross-referenced new articles with existing patterns
-  - Updated CLAUDE.md refactoring section with new cleanup patterns
+  - Updated AGENTS.md refactoring section with new cleanup patterns
 
 ## 2025-08-10
 
@@ -827,7 +827,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - agent-wake-message-processing.md: Processing pattern for removed feature
   - ownership-drop-message-passing.md: Ownership pattern primarily for wake/sleep
   - wake-message-field-access-pattern.md: Workaround for removed functionality
-- Updated CLAUDE.md to remove 7 references to deleted articles
+- Updated AGENTS.md to remove 7 references to deleted articles
 - Updated kb/README.md index to remove 4 entries
 - Cleaned up cross-references in 14 KB articles
 - Updated .claude/commands/fix-errors-whitelisted.md command documentation
@@ -841,7 +841,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - Added git commit --amend technique for forgotten documentation
   - Prevents separate "fix docs" commits
 - Added cross-references to 4 existing KB articles
-- Updated CLAUDE.md with reference in TDD section
+- Updated AGENTS.md with reference in TDD section
 
 ### ✅ Project Documentation Update - TDD Cycle 5
 - Updated SPEC.md to remove all wake/sleep references:
@@ -862,7 +862,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - intentional-test-errors-filtering.md
   - architectural-simplification-through-feature-removal.md
   - documentation-language-migration-updates.md
-- Updated CLAUDE.md with references in TDD and Documentation sections
+- Updated AGENTS.md with references in TDD and Documentation sections
 - Updated kb/README.md index with new articles in appropriate categories
 
 ### ✅ Wake/Sleep Detection Removal from All Methods - TDD Cycle 4
@@ -910,7 +910,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - phased-cleanup-pattern.md: Review→Fix critical→Defer non-critical with tracking
   - comprehensive-impact-analysis.md: Systematically check main→tests→fixtures→entire codebase
 - Updated 4 existing KB articles with cross-references for knowledge connectivity
-- Enhanced CLAUDE.md with references to all new articles in appropriate sections
+- Enhanced AGENTS.md with references to all new articles in appropriate sections
 - All documentation validated with make check-docs using EXAMPLE tags for hypothetical types
 
 ### ✅ Wake Message Removal from System - TDD Cycle 2 & Cleanup
@@ -968,7 +968,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
 - Enhanced existing documentation with cross-references
   - Updated parallel-test-isolation-process-resources.md with compiler conflict references
   - Added references to kb/README.md in appropriate categories
-  - Updated CLAUDE.md with new patterns in TDD, memory management, and build sections
+  - Updated AGENTS.md with new patterns in TDD, memory management, and build sections
 - **Key Insight**: Splitting implementation and documentation into separate commits violates atomic commit principles
 
 ### ✅ Executable Test Fixture Module Creation
@@ -994,7 +994,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - REFACTOR phase: Improved output formatting with singular/plural handling for message count
 - Discovered architectural issues during implementation
   - Duplicate wake message bug: ar_system__init sends extra wake even though agents auto-send wake to themselves
-  - send(0, ...) is correctly implemented as no-op per CLAUDE.md but tests expect console output
+  - send(0, ...) is correctly implemented as no-op per AGENTS.md but tests expect console output
   - Current workaround processes duplicate wake message; proper fix requires removing duplicate send from ar_system__init
 - Test improvements
   - Updated test to handle both singular and plural message output formats
@@ -1048,7 +1048,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - Updated frank-communication-principle.md with reference
 - Updated documentation indices
   - Added to kb/README.md in Development Workflow section
-  - Updated CLAUDE.md Task Management section with reference
+  - Updated AGENTS.md Task Management section with reference
 - All documentation validated with make check-docs
 
 ### ✅ Knowledge Base Enhancement - Session Learnings
@@ -1061,7 +1061,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - Updated test-first-verification-practice.md with test completeness link
 - Updated documentation indices
   - Added new articles to kb/README.md in appropriate sections
-  - Updated CLAUDE.md with references to new KB patterns
+  - Updated AGENTS.md with references to new KB patterns
 - All documentation validated with make check-docs
 
 ## 2025-08-07
@@ -1097,7 +1097,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
 - Updated existing documentation
   - Enhanced test-isolation-through-commenting.md with I/O elimination strategy
   - Added cross-references to stderr-redirection-debugging.md
-  - Updated CLAUDE.md with static analysis and test verification guidelines
+  - Updated AGENTS.md with static analysis and test verification guidelines
 - All examples use real AgeRun types and functions
 - Validated with make check-docs
 
@@ -1134,7 +1134,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
 - Updated existing documentation
   - Enhanced red-green-refactor-cycle.md to emphasize real tests
   - Added cross-references to 3 related KB articles
-  - Updated CLAUDE.md TDD section with integration testing
+  - Updated AGENTS.md TDD section with integration testing
 - All examples use real AgeRun types and functions
 - Validated with make check-docs
 
@@ -1182,7 +1182,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - Created test-fixture-message-ownership.md documenting fixture ownership pattern
   - Created expression-evaluator-claim-behavior.md explaining claim mechanism
   - Updated 3 existing KB articles with cross-references and new insights
-  - Added references to CLAUDE.md in TDD and Memory Management sections
+  - Added references to AGENTS.md in TDD and Memory Management sections
 
 ### ✅ Whitelist Specificity Enhancement for ar_expression_evaluator_tests
 - Made wake message error whitelisting more specific to prevent masking real bugs
@@ -1268,7 +1268,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - Added cross-references to agent-wake-message-processing.md and whitelist-simplification-pattern.md
   - Updated kb/README.md index with new articles in appropriate categories
 - Updated development guidelines
-  - Added wake message handling to Method Development in CLAUDE.md
+  - Added wake message handling to Method Development in AGENTS.md
   - Added pattern discovery and whitelist reduction to Development Practices
   - Added language constraints reference to AgeRun Language Notes
   - Enhanced check-logs command with systematic reduction reference
@@ -1281,7 +1281,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
 - Created log-format-variation-handling.md for handling environment-specific log variations
 - Created uniform-filtering-application.md on applying filters consistently across code paths
 - Created yaml-string-matching-pitfalls.md documenting YAML quote escaping issues
-- Updated CLAUDE.md with references to new patterns in Development Practices section
+- Updated AGENTS.md with references to new patterns in Development Practices section
 - Updated check-logs command documentation to reflect simplified whitelist format
 
 ### ✅ Simplified and Enhanced Log Whitelist System
@@ -1360,7 +1360,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
 ### ✅ Knowledge Base Enhancement - Debugging and Ownership Patterns
 - Created 3 new KB articles: ownership-gap-vulnerability.md, debug-logging-ownership-tracing.md, make-only-test-execution.md
 - Updated 2 existing articles: evidence-based-debugging.md (component isolation), memory-debugging-comprehensive-guide.md (type corruption)
-- Added references to CLAUDE.md: ownership gap vulnerability, debug logging strategy, make-only test execution
+- Added references to AGENTS.md: ownership gap vulnerability, debug logging strategy, make-only test execution
 - Enhanced cross-references between ownership-related KB articles for better knowledge connectivity
 - **Impact**: Provides comprehensive debugging strategies for ownership issues, preventing future corruption bugs
 
@@ -1380,7 +1380,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
 - Discovered selective compaction pattern for mixed-state documents from TODO.md compaction
 - Updated documentation-compacting-pattern.md with third category for mixed-state documents
 - Created selective-compaction-pattern.md documenting state-based selective processing
-- Updated compact-tasks command and CLAUDE.md with pattern references
+- Updated compact-tasks command and AGENTS.md with pattern references
 - **Impact**: Provides guidance for handling documents with both active and historical content
 
 ## 2025-08-03 (Part 4)
@@ -1405,23 +1405,23 @@ This document tracks completed milestones and major achievements for the AgeRun 
 ### ✅ Enhanced Documentation Patterns from Session Learnings
 - Updated documentation-compacting-pattern.md with critical insights: preserving KB references, create-before-link, bidirectional cross-referencing, single commit strategy
 - Updated compact-guidelines command: bidirectional requirements, single commit approach, validation-first emphasis
-- Enhanced CLAUDE.md: added documentation compaction reference to protocol section
+- Enhanced AGENTS.md: added documentation compaction reference to protocol section
 - **Impact**: Improves documentation maintenance practices and ensures robust cross-referencing between knowledge base articles
 
 ## 2025-08-03
 
 ### ✅ Documentation Compaction for Improved Readability
-- Compacted CLAUDE.md from ~650 to ~390 lines (40% reduction); extracted verbose content to 6 new KB articles
+- Compacted AGENTS.md from ~650 to ~390 lines (40% reduction); extracted verbose content to 6 new KB articles
 - Created comprehensive KB articles: quick-start-commands, tdd-cycle-detailed-explanation, pre-commit-checklist-detailed, module-development-patterns, zig-module-development-guide, refactoring-patterns-detailed
 - Enhanced knowledge base connectivity with cross-references and kb/README.md index updates
-- **Impact**: Makes CLAUDE.md more actionable while providing detailed references, improving developer onboarding and reducing cognitive load
+- **Impact**: Makes AGENTS.md more actionable while providing detailed references, improving developer onboarding and reducing cognitive load
 
 ## 2025-08-02 (Part 3)
 
 ### ✅ Enhanced Log Module with Debug Output
 - Added stderr output to ar_log module when compiled in DEBUG mode; events print to both log file and stderr
 - Uses preprocessor directive (#ifdef DEBUG); default behavior for all make targets
-- Updated documentation: ar_log.md and CLAUDE.md debug tools section
+- Updated documentation: ar_log.md and AGENTS.md debug tools section
 
 ## 2025-08-02 (Part 2)
 
@@ -1456,7 +1456,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
 ### ✅ Knowledge Base Enhancement - Anti-Pattern Documentation
 - Created Global Instance Wrapper Anti-Pattern article documenting dangerous shared ownership
 - Updated existing instantiation articles with cross-references; enhanced kb/README.md index
-- Updated CLAUDE.md with warning about avoiding shared ownership in Module Instantiation section
+- Updated AGENTS.md with warning about avoiding shared ownership in Module Instantiation section
 
 ## 2025-08-01
 
@@ -1467,7 +1467,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ### ✅ Knowledge Base Enhancement - API Migration Patterns
 - Documented patterns: test-memory-leak-ownership-analysis.md, global-to-instance-api-migration.md
-- Updated CLAUDE.md with new references in Memory Management and Module Development sections
+- Updated AGENTS.md with new references in Memory Management and Module Development sections
 
 ## 2025-07-30
 
@@ -1483,7 +1483,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ### ✅ Knowledge Base Enhancement - Module Refactoring Patterns
 - Created articles: module instantiation prerequisites, instance association pattern, persistence simplification through instantiation
-- Enhanced documentation: updated CLAUDE.md with module instantiation guidelines, cross-referenced articles
+- Enhanced documentation: updated AGENTS.md with module instantiation guidelines, cross-referenced articles
 
 ## 2025-07-29
 
@@ -1534,7 +1534,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
 ### ✅ Knowledge Base Enhancement - TDD and Refactoring Patterns
 - Created comprehensive TDD documentation: completing all cycles before commits, enhanced red-green-refactor cycle
 - Created systematic cleanup guide for post-refactoring: removing ALL obsolete helper functions
-- Enhanced cross-references throughout knowledge base; updated CLAUDE.md with links
+- Enhanced cross-references throughout knowledge base; updated AGENTS.md with links
 
 ### ✅ COMPLETED: Updated ar_methodology to use ar_method_registry
 - Successfully refactored ar_methodology to use ar_method_registry: replaced 2D array with registry instance
@@ -1615,7 +1615,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
 ### ✅ COMPLETED: Knowledge Base Enhancement - Frank Communication
 - Created frank-communication-principle.md documenting importance of direct technical communication
 - Enhanced zig-memory-allocation-with-ar-allocator.md emphasizing ar_allocator.free usage
-- Updated CLAUDE.md with memory allocation reference for Zig modules
+- Updated AGENTS.md with memory allocation reference for Zig modules
 
 ### ✅ COMPLETED: Migrate ar_parse_instruction_evaluator to Zig
 - Successfully migrated handling complex template parsing; simplified ~340 lines of C
@@ -1647,7 +1647,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
 - Discovered and documented new Zig best practices during code review
 - Type usage patterns: concrete Zig types for own module, C types for others
 - Applied patterns to ALL existing Zig evaluators; created kb/zig-type-usage-patterns.md
-- Added "Zig Best Practices" section to CLAUDE.md; all 63 tests pass
+- Added "Zig Best Practices" section to AGENTS.md; all 63 tests pass
 
 ### ✅ COMPLETED: Migrate ar_assignment_instruction_evaluator to Zig
 - Successfully migrated as third evaluator; leveraged defer for automatic cleanup
@@ -1710,7 +1710,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
 ### ✅ COMPLETED: Knowledge Base Enhancement from Session Learnings
 - Created 5 new KB articles: Agent Wake Message Processing, Ownership Transfer in Message Passing, Module Delegation with Error Propagation, Instruction Behavior Simplification, Expression Evaluator Accessor Extension
 - Updated 10 existing KB articles with new sections and cross-references
-- Enhanced CLAUDE.md with references to new KB articles; all documentation validated
+- Enhanced AGENTS.md with references to new KB articles; all documentation validated
 
 ## 2025-07-17
 
@@ -1722,7 +1722,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ### ✅ COMPLETED: Knowledge Base Enhancement
 - Created kb articles: knowledge-base-consultation-protocol, test-fixture-api-adaptation, parser-function-alias-support
-- Updated CLAUDE.md with references to new KB articles; enhanced kb/README.md index
+- Updated AGENTS.md with references to new KB articles; enhanced kb/README.md index
 
 ## 2025-07-16
 
@@ -1771,7 +1771,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
 ### ✅ COMPLETED: Knowledge Base Enhancement from Session Learnings
 - Created kb/zig-migration-memory-debugging.md documenting ownership discovery pattern
 - Updated kb/validated-documentation-examples.md with EXAMPLE tag placement rules
-- Enhanced CLAUDE.md with reference to memory debugging pattern for Zig migrations
+- Enhanced AGENTS.md with reference to memory debugging pattern for Zig migrations
 
 ### ✅ COMPLETED: ar_instruction_ast Module Zig Conversion
 - Successfully migrated with full C API compatibility; enhanced null argument checking
@@ -1793,7 +1793,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ### ✅ COMPLETED: Knowledge Base Integration for Systematic Guidelines Enhancement
 - Created comprehensive knowledge base articles: language-instruction-renaming-pattern, search-replace-precision, specification-consistency-maintenance
-- Updated CLAUDE.md with knowledge base references in appropriate sections
+- Updated AGENTS.md with knowledge base references in appropriate sections
 - Enhanced knowledge base index; all documentation validated
 
 ### ✅ COMPLETED: Renamed destroy agent instruction to simply 'destroy'
@@ -1980,7 +1980,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
 - First C module converted to Zig with zero interface changes; all 30 tests pass
 - Created ar_assert.zig for Zig modules; maintained C macros for C modules
 - Updated Makefile for hybrid C/Zig compilation; automatic C source exclusion
-- Added Zig development guidelines to CLAUDE.md section 15
+- Added Zig development guidelines to AGENTS.md section 15
 
 ## 2025-07-03
 

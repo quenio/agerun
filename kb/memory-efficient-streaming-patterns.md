@@ -136,5 +136,5 @@ if (fprintf(file, "%s", data) < 0) {
 - [Ownership Pattern Extraction](ownership-pattern-extraction.md)
 - [Resource-Aware API Design](resource-aware-api-design.md)
 
-## CLAUDE.md Reference
-This pattern is referenced in [CLAUDE.md](../CLAUDE.md) under Memory Management practices.
+## AGENTS.md Reference
+This pattern is referenced in [AGENTS.md](../AGENTS.md) under Memory Management practices.

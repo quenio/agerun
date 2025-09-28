@@ -10,7 +10,7 @@ Knowledge that isn't properly integrated is effectively lost. Cross-references c
 ```bash
 # INCOMPLETE execution (what often happens):
 1. Create new KB articles ✓
-2. Update CLAUDE.md ✓
+2. Update AGENTS.md ✓
 3. Update kb/README.md ✓
 4. Commit and push ✓
 Missing: Cross-references ✗
@@ -21,7 +21,7 @@ Missing: Command updates ✗
 2. Add cross-references FROM new articles TO existing ✓
 3. Add cross-references FROM existing articles TO new ✓
 4. Search and update relevant slash commands ✓
-5. Update CLAUDE.md ✓
+5. Update AGENTS.md ✓
 6. Update kb/README.md ✓
 7. Validate all documentation ✓
 8. Commit with detailed message ✓
@@ -47,7 +47,7 @@ Missing: Command updates ✗
 - [ ] Update command logic if patterns change approach
 
 ### 4. Documentation Updates
-- [ ] Update CLAUDE.md with pattern references
+- [ ] Update AGENTS.md with pattern references
 - [ ] Update kb/README.md index
 - [ ] Update TODO.md if relevant
 - [ ] Update CHANGELOG.md
@@ -92,7 +92,7 @@ grep -l "$keywords" .claude/commands/*.md
 1. **Creating articles in isolation**: No references to/from existing patterns
 2. **Forgetting command updates**: New patterns not applied in practice
 3. **One-way references**: New articles reference old, but not vice versa
-4. **Missing CLAUDE.md updates**: Patterns not discoverable in main guide
+4. **Missing AGENTS.md updates**: Patterns not discoverable in main guide
 5. **Incomplete commit messages**: Not listing all integration work done
 
 ## Prevention Strategy
@@ -103,7 +103,7 @@ grep -l "$keywords" .claude/commands/*.md
 
 ## Quality Indicators
 Signs of complete integration:
-- Git diff shows changes in kb/, .claude/commands/, and CLAUDE.md
+- Git diff shows changes in kb/, .claude/commands/, and AGENTS.md
 - Commit message lists cross-references and command updates
 - New patterns appear in multiple existing documents
 - Commands reference new KB articles

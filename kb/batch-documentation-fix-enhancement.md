@@ -181,4 +181,4 @@ make check-docs 2>&1 | grep "broken link\|structural"
 
 - scripts/batch_fix_docs.py - The enhanced implementation
 - scripts/check_docs.py - Documentation validation tool
-- CLAUDE.md - Documentation standards section
+- AGENTS.md - Documentation standards section

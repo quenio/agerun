@@ -2,19 +2,19 @@
 
 This document tracks pending tasks and improvements for the AgeRun project.
 
-**IMPORTANT**: All development MUST follow the mandatory Parnas Design Principles and Test-Driven Development (TDD) methodology as specified in CLAUDE.md. Pull requests violating these principles will be REJECTED.
+**IMPORTANT**: All development MUST follow the mandatory Parnas Design Principles and Test-Driven Development (TDD) methodology as specified in AGENTS.md. Pull requests violating these principles will be REJECTED.
 
 ## Completed Tasks
 
 - [x] API Suffix Cleanup: Removed "_with_instance" suffix from all 30 functions; updated 132 files (source, documentation, tests, KB articles); clean final API established (Completed 2025-09-27)
 
-- [x] Knowledge Base Reference Resolution: Added "Check KB index FIRST" guideline to CLAUDE.md; updated kb/README.md to include all 317 KB articles (was missing 9); established systematic KB discovery protocol (Completed 2025-09-27)
+- [x] Knowledge Base Reference Resolution: Added "Check KB index FIRST" guideline to AGENTS.md; updated kb/README.md to include all 317 KB articles (was missing 9); established systematic KB discovery protocol (Completed 2025-09-27)
 
 - [x] Documentation - Global API Reference Cleanup: Fixed 25 documentation files with outdated global function references; all documentation now references instance-based APIs correctly; check-docs validation passes (Completed 2025-09-14)
 
 - [x] Global API Removal Phase 3 (ar_methodology): Removed all 7 global functions (create_method, get_method, save_methods, load_methods, cleanup, register_method, unregister_method); updated all tests to use instance-based APIs; all 18 tests passing (Completed 2025-09-14)
 
-- [x] Knowledge Base - Phase 2b Session Learnings: Created 3 KB articles (task-verification-before-execution, grep-or-syntax-differences, script-archaeology-pattern); updated 3 existing KB articles with cross-references; updated 4 commands and CLAUDE.md with new patterns (Completed 2025-09-14)
+- [x] Knowledge Base - Phase 2b Session Learnings: Created 3 KB articles (task-verification-before-execution, grep-or-syntax-differences, script-archaeology-pattern); updated 3 existing KB articles with cross-references; updated 4 commands and AGENTS.md with new patterns (Completed 2025-09-14)
 
 - [x] Global API Removal Phase 2 (ar_agency): All phases completed - removed all 25 global functions, global state variables, updated tests and documentation; all tests passing with zero memory leaks (Completed 2025-09-14)
 
@@ -22,7 +22,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 - [x] Parser Module Error Logging Enhancement: All 11 parsers now have comprehensive error logging; reduced silent failures from 97.6%→0%; created verification script and KB documentation (Completed 2025-09-13)
 
-- [x] CLAUDE.md Guidelines Compaction: Extracted verbose sections to KB articles; 541→437 lines (19% reduction); created 4 KB articles (Completed 2025-09-03)
+- [x] AGENTS.md Guidelines Compaction: Extracted verbose sections to KB articles; 541→437 lines (19% reduction); created 4 KB articles (Completed 2025-09-03)
 
 - [x] ar_expression_parser Error Logging: Enhanced with comprehensive error logging; reduced silent failures 97.6%→0%; 72 tests pass (Completed 2025-08-25)
 
@@ -108,7 +108,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 - [x] Knowledge Base - Documentation Patterns: Enhanced compacting pattern article (Completed 2025-08-03)
 
-- [x] Documentation Compaction: CLAUDE.md reduced 650→390 lines (40%); created 6 KB articles (Completed 2025-08-03)
+- [x] Documentation Compaction: AGENTS.md reduced 650→390 lines (40%); created 6 KB articles (Completed 2025-08-03)
 
 - [x] Knowledge Base - Anti-Pattern: Created Global Instance Wrapper Anti-Pattern article (Completed 2025-08-02)
 
@@ -386,7 +386,7 @@ Each parser needs 2-3 TDD cycles for comprehensive error logging:
 - [x] Create KB article documenting parser error logging patterns
   - Created kb/parser-error-logging-enhancement-pattern.md
   - Documented both _log_error pattern and direct ar_log pattern
-- [x] Update CLAUDE.md if new patterns emerge
+- [x] Update AGENTS.md if new patterns emerge
   - Added reference to parser error logging pattern
 
 **Success Criteria** (per reports/module-consistency-analysis-2025-08-24.md Section 4):
@@ -498,7 +498,7 @@ Each parser needs 2-3 TDD cycles for comprehensive error logging:
   - [x] Convert tests to use instance-based functions instead of commenting out
 - [x] Phase 4: Cleanup and verification (Completed 2025-09-27)
   - [x] Update all module documentation
-  - [x] Remove global API examples from CLAUDE.md
+  - [x] Remove global API examples from AGENTS.md
   - [x] Verify zero memory leaks in all tests
   - [x] Update README.md with new usage patterns
 
@@ -1180,7 +1180,7 @@ Remove wake/sleep messages as system-level concepts since they're not essential 
 - **GREEN**: Find different examples
 - **REFACTOR**: Improve clarity
 
-###### Iteration 6.8: Update CLAUDE.md
+###### Iteration 6.8: Update AGENTS.md
 - **RED**: Multiple wake/sleep references
 - **GREEN**: Remove from all sections
 - **REFACTOR**: Consolidate patterns

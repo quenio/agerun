@@ -53,7 +53,7 @@ make checkpoint-status CMD=migrate-module-to-zig-abi
 {{#if 1}}
 First, check if `modules/{{1}}.zig` already exists. If it does, inform the user about the migration status instead of creating a new plan.
 
-If the module hasn't been migrated yet, migrate the implementation of the **{{1}}** module from C to Zig following the systematic approach documented in CLAUDE.md and the comprehensive migration guide at kb/c-to-zig-module-migration.md. For complete integration details, see ([details](../../../kb/zig-integration-comprehensive.md)).
+If the module hasn't been migrated yet, migrate the implementation of the **{{1}}** module from C to Zig following the systematic approach documented in AGENTS.md and the comprehensive migration guide at kb/c-to-zig-module-migration.md. For complete integration details, see ([details](../../../kb/zig-integration-comprehensive.md)).
 {{else}}
 Before I can create a migration plan, I need to know which module you'd like to migrate to Zig.
 

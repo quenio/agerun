@@ -160,5 +160,5 @@ void test_yaml__round_trip() {
 - [Container Stack Parsing Pattern](container-stack-parsing-pattern.md)
 - [Test Complexity Reduction Pattern](test-complexity-reduction-pattern.md)
 
-## CLAUDE.md Reference
-This pattern is referenced in [CLAUDE.md](../CLAUDE.md) under Development Practices for YAML serialization.
+## AGENTS.md Reference
+This pattern is referenced in [AGENTS.md](../AGENTS.md) under Development Practices for YAML serialization.

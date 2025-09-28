@@ -38,7 +38,7 @@ Group tasks by:
 
 ### 3. Evidence-Based Verification
 
-Apply CLAUDE.md principles:
+Apply AGENTS.md principles:
 - **"Always verify with concrete evidence, not assumptions"**
 - **Show quantitative metrics** where available
 - **Question unexpected results** (e.g., very few/many tasks)

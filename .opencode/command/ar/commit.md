@@ -1,4 +1,4 @@
-Create a git commit following the exact workflow specified in CLAUDE.md.
+Create a git commit following the exact workflow specified in AGENTS.md.
 
 **Important**: The build must pass all checks including command excellence scores ([details](../../../kb/command-documentation-excellence-gate.md)). Always test with proper make targets ([details](../../../kb/make-target-testing-discipline.md)).
 
@@ -273,7 +273,7 @@ make checkpoint-update-verified CMD=commit STEP=9 SUMMARY="Push completed succes
    - **MANDATORY**: Run `git status` after push to verify it completed successfully ([details](../../../kb/git-push-verification.md))
    - Confirm the working tree is clean and branch is up to date
 
-**Important:** Never skip the final `git status` verification - this is a critical step per CLAUDE.md.
+**Important:** Never skip the final `git status` verification - this is a critical step per AGENTS.md.
 
 #### [CHECKPOINT COMPLETE]
 ```bash

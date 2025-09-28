@@ -117,7 +117,7 @@ def get_files_to_process() -> List[str]:
         files.extend(str(f) for f in methods_dir.glob("*.md"))
 
     # Project documentation
-    for doc_file in ["README.md", "TODO.md", "CLAUDE.md", "CHANGELOG.md", "SPEC.md", "MMM.md"]:
+    for doc_file in ["README.md", "TODO.md", "AGENTS.md", "CHANGELOG.md", "SPEC.md", "MMM.md"]:
         if Path(doc_file).exists():
             files.append(doc_file)
 

@@ -1,4 +1,4 @@
-Read CLAUDE.md in order to prepare yourself for this new session. Then, suggest the next priority based on the TODO.md file.
+Read AGENTS.md in order to prepare yourself for this new session. Then, suggest the next priority based on the TODO.md file.
 
 ## MANDATORY FIRST STEP - KB Consultation
 
@@ -59,7 +59,7 @@ make checkpoint-status CMD=next_priority
 
 ### Priority Analysis Output
 ```
-Reading CLAUDE.md...
+Reading AGENTS.md...
 Analyzing TODO.md for priorities...
 
 PRIORITY RECOMMENDATION: Parser Error Logging Enhancement
@@ -112,7 +112,7 @@ Ready to begin implementation?
 
 ### Low Priority Scenario
 ```
-Reading CLAUDE.md...
+Reading AGENTS.md...
 Analyzing TODO.md for priorities...
 
 ANALYSIS COMPLETE:

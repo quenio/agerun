@@ -18,7 +18,7 @@ Vague descriptions like "significantly reduced" or "improved performance" provid
 - Reduced CHANGELOG.md from 1637 to 902 lines (45% reduction)
 - Improved build time from 3m 45s to 1m 12s (68% faster)
 - Fixed 12 memory leaks totaling 3.2KB
-- Compacted CLAUDE.md from ~650 to ~390 lines (40% reduction)
+- Compacted AGENTS.md from ~650 to ~390 lines (40% reduction)
 ```
 
 ```c

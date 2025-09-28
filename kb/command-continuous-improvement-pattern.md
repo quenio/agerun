@@ -44,7 +44,7 @@ grep -l "zig\|migrate\|error" .claude/commands/*.md
 # 1. Add KB references: ([details](../../kb/article-name.md))  // EXAMPLE: Replace with actual article
 # 2. Update steps with new discoveries
 # 3. Add warnings about gotchas
-# 4. Ensure consistency with CLAUDE.md
+# 4. Ensure consistency with AGENTS.md
 ```
 
 ## Related Patterns

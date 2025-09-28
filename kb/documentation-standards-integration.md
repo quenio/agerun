@@ -9,10 +9,10 @@ Embedded standards become automatic habits, prevent documentation debt, maintain
 ## Example
 Integration across multiple touchpoints:
 
-**Core Guidelines (CLAUDE.md)**
+**Core Guidelines (AGENTS.md)**
 ```markdown
 ### 0. Documentation Protocol
-**Always search CLAUDE.md first** when asked about procedures.
+**Always search AGENTS.md first** when asked about procedures.
 **When reading TODO.md**: Check [ ] = incomplete, [x] = complete.
 
 ### Module Development quality checklist:
@@ -79,7 +79,7 @@ def pre_commit_hook():
 
 **Standards Documentation Pattern:**
 ```markdown
-# In CLAUDE.md Section 0: Documentation Protocol
+# In AGENTS.md Section 0: Documentation Protocol
 **Documentation Standards** (CRITICAL for all .md files):
 - Use real types/functions from codebase - no hypotheticals without tags
 - Tag intentional examples: // EXAMPLE:, // BAD:, // ERROR:
