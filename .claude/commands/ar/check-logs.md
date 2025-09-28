@@ -2,6 +2,16 @@ Check build logs for hidden issues that might not be caught by the build summary
 
 **Critical**: This check must pass or CI will fail. The log parser uses precise patterns to extract metrics ([details](../../../kb/build-log-extraction-patterns.md), [syntax](../../../kb/grep-or-syntax-differences.md)). Build checks run in parallel for efficiency ([details](../../../kb/parallel-build-job-integration.md)). CI may fail with network timeouts from deprecated actions ([details](../../../kb/github-actions-deprecated-tool-migration.md)).
 
+## MANDATORY KB Consultation
+
+Before analysis:
+1. Search: `grep "log\|analysis\|build" kb/README.md`
+2. Must read:
+   - check-logs-deep-analysis-pattern
+   - build-log-extraction-patterns
+   - ci-network-timeout-diagnosis
+3. Apply deep analysis patterns
+
 # Check Logs
 ## Checkpoint Tracking
 

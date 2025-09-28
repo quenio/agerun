@@ -1,5 +1,13 @@
 Migrate a Zig C-ABI module to a pure Zig struct module.
 
+## MANDATORY KB Consultation
+
+Before starting migration:
+1. Search: `grep "zig.*struct\|TitleCase" kb/README.md`
+2. Must read:
+   - zig-struct-modules-pattern
+   - zig-integration-comprehensive
+3. Apply struct module conventions
 
 # Migrate Module to Zig Struct
 ## Checkpoint Tracking

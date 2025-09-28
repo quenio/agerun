@@ -1,5 +1,18 @@
 Read CLAUDE.md in order to prepare yourself for this new session. Then, suggest the next priority based on the TODO.md file.
 
+## MANDATORY FIRST STEP - KB Consultation
+
+Before analyzing priorities, you MUST:
+1. Search the KB index: `grep "priority\|task\|analysis\|systematic" kb/README.md`
+2. Read relevant articles, especially:
+   - systematic-task-analysis-protocol
+   - quantitative-priority-setting
+   - task-verification-before-execution
+   - report-driven-task-planning
+3. Show your KB searches and findings in the conversation
+4. Apply the protocols from these articles
+
+Only after completing KB consultation should you proceed to analyze TODO.md.
 
 # Next Priority
 ## Checkpoint Tracking

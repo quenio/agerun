@@ -1,5 +1,13 @@
 Check for consistency improvements needed across related modules.
 
+## MANDATORY KB Consultation
+
+Before checking consistency:
+1. Search: `grep "consistency\|module\|systematic" kb/README.md`
+2. Must read:
+   - module-consistency-verification
+   - systematic-consistency-verification
+3. Apply systematic verification approach
 
 # Check Module Consistency
 ## Checkpoint Tracking

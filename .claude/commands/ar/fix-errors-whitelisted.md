@@ -1,5 +1,13 @@
 Systematically analyze and fix errors in the whitelist file to reduce technical debt.
 
+## MANDATORY KB Consultation
+
+Before starting error analysis:
+1. Search: `grep "whitelist\|error\|systematic" kb/README.md`
+2. Must read these specific articles:
+   - systematic-whitelist-error-resolution
+   - systematic-error-whitelist-reduction
+3. Apply the systematic approach from these articles
 
 # Fix Whitelisted Errors
 ## Checkpoint Tracking

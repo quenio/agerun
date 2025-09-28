@@ -1,5 +1,13 @@
 Make CLAUDE.md guidelines more concise by moving details to knowledge base.
 
+## MANDATORY KB Consultation
+
+Before compacting:
+1. Search: `grep "compact\|documentation" kb/README.md`
+2. Must read:
+   - documentation-compacting-pattern
+   - selective-compaction-pattern
+3. Apply compaction best practices
 
 # Compact Guidelines
 ## Checkpoint Tracking

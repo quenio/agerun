@@ -2,6 +2,16 @@ Validate that all Claude Code commands follow comprehensive structure standards.
 
 **Excellence Gate**: Commands must achieve 90%+ average score for quality documentation. The checker validates checkpoint tracking, expected outputs, troubleshooting sections, and minimum requirements ([details](../../../kb/command-documentation-excellence-gate.md)).
 
+## MANDATORY KB Consultation
+
+Before validation:
+1. Search: `grep "command\|excellence\|validation" kb/README.md`
+2. Must read:
+   - command-documentation-excellence-gate
+   - validation-feedback-loop-effectiveness
+   - command-output-documentation-pattern
+3. Apply command quality standards
+
 # Check Commands
 ## Checkpoint Tracking
 

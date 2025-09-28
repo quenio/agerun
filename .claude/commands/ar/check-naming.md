@@ -1,5 +1,15 @@
 Run naming convention validation to check for typedef and function naming issues.
 
+## MANDATORY KB Consultation
+
+Before checking:
+1. Search: `grep "naming\|convention\|pattern" kb/README.md`
+2. Review naming standards in CLAUDE.md Section 5
+3. Check for KB articles about:
+   - Naming convention patterns
+   - Function naming standards
+   - Type naming rules
+4. Apply all naming standards
 
 # Check Naming Conventions
 ## Checkpoint Tracking

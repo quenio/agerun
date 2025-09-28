@@ -1,5 +1,13 @@
 Compact the TODO.md file by condensing completed tasks while keeping incomplete tasks untouched.
 
+## MANDATORY KB Consultation
+
+Before compacting:
+1. Search: `grep "compact\|selective\|task" kb/README.md`
+2. Must read:
+   - selective-compaction-pattern
+   - retroactive-task-documentation
+3. Apply selective compaction (completed items only)
 
 # Compact Tasks
 ## Checkpoint Tracking

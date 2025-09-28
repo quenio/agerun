@@ -2,6 +2,16 @@ Create a git commit following the exact workflow specified in CLAUDE.md.
 
 **Important**: The build must pass all checks including command excellence scores ([details](../../../kb/command-documentation-excellence-gate.md)). Always test with proper make targets ([details](../../../kb/make-target-testing-discipline.md)).
 
+## MANDATORY KB Consultation
+
+Before committing:
+1. Search: `grep "commit\|pre-commit\|checklist" kb/README.md`
+2. Must read:
+   - pre-commit-checklist-detailed
+   - atomic-commit-documentation-pattern
+   - tdd-feature-completion-before-commit
+3. Apply all pre-commit requirements
+
 # Commit
 ## Checkpoint Tracking
 

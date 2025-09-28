@@ -1,5 +1,11 @@
 Read CLAUDE.md in order to prepare yourself for this new session. Then check the session's todo list using TodoRead. If no items are found in the session's todo list, stop and inform me that all session tasks are complete. If session tasks exist, work on the next task found in the session's todo list.
 
+## MANDATORY KB Consultation
+
+Before starting task execution, search KB for relevant patterns:
+1. Search: `grep "tdd\|task\|test\|implementation" kb/README.md`
+2. Look for patterns related to the specific task type
+3. Apply relevant protocols found
 
 # Next Task
 ## Checkpoint Tracking

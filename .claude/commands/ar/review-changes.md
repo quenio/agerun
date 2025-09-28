@@ -2,6 +2,16 @@ Review uncommitted changes for code quality, architectural compliance, and docum
 
 **MANDATORY**: This command MUST use checkpoint tracking. Start by running the checkpoint initialization below. ([details](../../../kb/unmissable-documentation-pattern.md))
 
+## KB Consultation Required
+
+Before reviewing:
+1. Search: `grep "parnas\|principle\|smell\|architecture" kb/README.md`
+2. Review relevant principles:
+   - Parnas design principles
+   - Code smell patterns
+   - Architecture patterns
+3. Apply these standards during review
+
 # Review Changes
 
 ## ⚠️ REQUIRED: Initialize Checkpoint Tracking First

@@ -1,5 +1,13 @@
 Compact the CHANGELOG.md file by condensing completed milestones while preserving key information.
 
+## MANDATORY KB Consultation
+
+Before compacting:
+1. Search: `grep "compact\|documentation\|changelog" kb/README.md`
+2. Must read:
+   - documentation-compacting-pattern
+   - selective-compaction-pattern
+3. Apply compaction best practices
 
 # Compact Changelog
 ## Checkpoint Tracking

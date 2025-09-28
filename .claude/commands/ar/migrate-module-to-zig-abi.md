@@ -1,5 +1,14 @@
 Migrate a C module to Zig while maintaining C API compatibility.
 
+## MANDATORY KB Consultation
+
+Before starting migration:
+1. Search: `grep "zig\|migration\|c-to-zig" kb/README.md`
+2. Must read these articles:
+   - c-to-zig-module-migration
+   - zig-integration-comprehensive
+   - zig-module-development-guide
+3. Apply migration patterns and best practices
 
 # Migrate Module to Zig ABI
 ## Checkpoint Tracking

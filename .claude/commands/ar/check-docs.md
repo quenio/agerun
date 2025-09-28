@@ -1,5 +1,14 @@
 Run documentation validation and fix any errors found using an iterative approach, then commit and push the fixes.
 
+## MANDATORY KB Consultation
+
+Before validation:
+1. Search: `grep "documentation\|validation\|example" kb/README.md`
+2. Must read:
+   - documentation-validation-enhancement-patterns
+   - validated-documentation-examples
+   - validation-feedback-loop-effectiveness
+3. Apply iterative validation approach
 
 # Check Documentation
 ## Checkpoint Tracking
