@@ -41,8 +41,17 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 **Check KB index FIRST**: Before any task, grep kb/README.md for relevant patterns ([details](kb/knowledge-base-consultation-protocol.md))
 **Make KB searches VISIBLE**: Run grep, show results, quote guidance, apply patterns ([details](kb/kb-search-patterns.md), [priming](kb/session-start-priming-pattern.md))
+**Systematic analysis required**: Apply [systematic task analysis protocol](kb/systematic-task-analysis-protocol.md) for priority decisions
 **Trigger words**: "Why are you"/"Actually"/"You should" → Search NOW
 **Markdown links**: Use relative paths only, resolve from file location ([details](kb/markdown-link-resolution-patterns.md))
+
+### Systematic Task Analysis (MANDATORY - PREVENT INCOMPLETE ANALYSIS)
+
+**Complete data gathering FIRST**: Before priority recommendations, get full scope with `grep "^- \[ \]" TODO.md | wc -l` ([details](kb/systematic-task-analysis-protocol.md))
+**Categorize before prioritizing**: Group tasks by complexity/dependencies, never rush to conclusions
+**Evidence-based verification**: Apply quantitative metrics, question unexpected results (e.g., very few tasks in active project)
+**Show methodology**: Present data gathering process and categorization logic, not just conclusions
+**Cross-verify searches**: Use multiple grep patterns to ensure comprehensive coverage
 
 ### 0. Documentation Protocol
 
