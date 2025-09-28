@@ -23,6 +23,9 @@ import sys
 import re
 
 commands_dir = '.claude/commands'
+
+# Also check legacy location
+legacy_commands_dir = '.opencode/command/ar'
 verbose = '--verbose' in sys.argv
 fix_mode = '--fix' in sys.argv
 
@@ -179,6 +182,12 @@ def get_all_commands():
             if filename.endswith('.md'):
                 commands.append(os.path.join('ar', filename))
 
+    # Check legacy location
+    if os.path.exists(legacy_commands_dir):
+        for filename in os.listdir(legacy_commands_dir):
+            if filename.endswith('.md'):
+                commands.append(os.path.join('legacy', filename))
+
     return sorted(commands)
 
 def categorize_score(score):
@@ -203,7 +212,10 @@ results = {}
 needs_fixing = []
 
 for filename in all_commands:
-    filepath = os.path.join(commands_dir, filename)
+    if filename.startswith('legacy/'):
+        filepath = os.path.join(legacy_commands_dir, filename[7:])  # Remove 'legacy/' prefix
+    else:
+        filepath = os.path.join(commands_dir, filename)
     analysis = analyze_file(filepath)
     results[filename] = analysis
     
