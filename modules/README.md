@@ -1438,7 +1438,7 @@ The agent registry module manages agent ID allocation and runtime agent tracking
 
 The agent store module handles persistence of agent state:
 
-- **Agent Persistence**: Saves all active agents to agency.agerun file
+- **Agent Persistence**: Saves all active agents to agerun.agency file
 - **Agent Restoration**: Loads agents from disk on system startup
 - **File Format Management**: Handles the agency file format with proper versioning
 - **Backup Support**: Creates backups before modifying persistence files

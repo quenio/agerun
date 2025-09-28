@@ -13,8 +13,8 @@ Understanding this mechanism is crucial for:
 ## Example
 ```c
 // When ar_io__write_file is called
-ar_file_result_t result = ar_io__write_file("agency.agerun", write_func, context);
-// This internally creates agency.agerun.bak before writing
+ar_file_result_t result = ar_io__write_file("agerun.agency", write_func, context);
+// This internally creates agerun.agency.bak before writing
 
 // In ar_agent_store.c, the save operation triggers this:
 bool ar_agent_store__save(ar_agent_store_t *ref_store) {
@@ -28,8 +28,8 @@ bool ar_agent_store__save(ar_agent_store_t *ref_store) {
 }
 
 // Test cleanup should remove both files:
-remove("agency.agerun");
-remove("agency.agerun.bak");  // Don't forget the backup!
+remove("agerun.agency");
+remove("agerun.agency.bak");  // Don't forget the backup!
 ```
 
 ## Generalization

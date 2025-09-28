@@ -49,7 +49,7 @@ The main function that:
    - Tests agent lifecycle management
 
 4. **Persistence**
-   - Saves all agents to agency.agerun
+   - Saves all agents to agerun.agency
    - Saves all methods to methodology.agerun
    - On subsequent runs, loads saved state instead of creating new agents
 

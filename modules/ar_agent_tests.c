@@ -179,14 +179,14 @@ static void test_agent_persistence(ar_system_fixture_t *own_fixture) {
     assert(agent_id > 0);
     
     // When we save agents to disk using instance API
-    bool save_result = ar_agency__save_agents(mut_agency, "agency.agerun");
+    bool save_result = ar_agency__save_agents(mut_agency, "agerun.agency");
     
     // Then the save operation should succeed
     assert(save_result);
     
     // Verify the agency file was created
     struct stat st;
-    assert(stat("agency.agerun", &st) == 0);
+    assert(stat("agerun.agency", &st) == 0);
     
     // Verify the agent still exists in memory
     ar_agent_registry_t *ref_registry = ar_agency__get_registry(mut_agency);

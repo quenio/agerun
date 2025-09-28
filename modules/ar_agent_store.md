@@ -2,7 +2,7 @@
 
 ## Overview
 
-The agent store module (`ar_agent_store`) handles the persistence of agent state to and from disk storage. It manages the `agency.agerun` file format, ensuring data integrity and providing backup capabilities.
+The agent store module (`ar_agent_store`) handles the persistence of agent state to and from disk storage. It manages the `agerun.agency` file format, ensuring data integrity and providing backup capabilities.
 
 ## Purpose
 
@@ -14,7 +14,7 @@ This module was created as part of the agency module refactoring to improve cohe
 
 ## File Format
 
-The `agency.agerun` file uses a simple text format:
+The `agerun.agency` file uses a simple text format:
 
 ```
 <agent_count>

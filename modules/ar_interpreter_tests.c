@@ -40,7 +40,7 @@ int main(void) {
     
     // Clean state - remove persistence files
     remove("methodology.agerun");
-    remove("agency.agerun");
+    remove("agerun.agency");
     
     // System is managed internally by fixtures
     
@@ -57,7 +57,7 @@ int main(void) {
     
     // Cleanup is handled internally by fixtures
     remove("methodology.agerun");
-    remove("agency.agerun");
+    remove("agerun.agency");
     
     printf("All interpreter tests passed!\n");
     return 0;

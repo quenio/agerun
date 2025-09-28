@@ -44,7 +44,7 @@ ignored_errors:
 
   # ar_agent_store_tests
   - context: "ar_agent_store_tests"
-    message: "Error: Unexpected end of file in agency.agerun"
+    message: "Error: Unexpected end of file in agerun.agency"
     comment: "Testing EOF error handling in agent store"
 
   # ar_agent_tests
@@ -407,7 +407,7 @@ ignored_errors:
     message: "ERROR: evaluate_binary_op: Failed to evaluate right operand"
     comment: "Testing binary operation failure after field access error"
   - context: "ar_interpreter_fixture_tests"
-    message: "Error: Unexpected end of file in agency.agerun"
+    message: "Error: Unexpected end of file in agerun.agency"
     comment: "Testing EOF error in interpreter fixture"
   - context: "ar_interpreter_fixture_tests"
     message: "Warning: Agent store file does not exist"
@@ -427,7 +427,7 @@ ignored_errors:
     message: "Error: Method versioned version 3.0.0 already exists"
     comment: "Testing duplicate versioned method error"
   - context: "ar_interpreter_tests"
-    message: "Error: Unexpected end of file in agency.agerun"
+    message: "Error: Unexpected end of file in agerun.agency"
     comment: "Testing EOF error in interpreter tests"
   - context: "ar_interpreter_tests"
     message: "Warning: Agent store file does not exist"
@@ -682,7 +682,7 @@ ignored_errors:
     message: "ERROR: Method has no AST"
     comment: "Testing method execution without AST in system instance tests"
   - context: "ar_system_instance_tests"
-    message: "Error: Unexpected end of file in agency.agerun"
+    message: "Error: Unexpected end of file in agerun.agency"
     comment: "Testing EOF error in system instance tests"
   - context: "ar_system_instance_tests"
     message: "Warning: Agent store file does not exist"

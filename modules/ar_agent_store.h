@@ -13,12 +13,12 @@ typedef struct ar_agent_store_s ar_agent_store_t;
  * @brief Agent store module for persisting and loading agent state
  * 
  * This module handles saving and loading agent state to/from persistent storage.
- * It manages the agency.agerun file format and ensures data integrity during
+ * It manages the agerun.agency file format and ensures data integrity during
  * persistence operations.
  */
 
 /* Constants */
-#define AGENT_STORE_FILE_NAME "agency.agerun"
+#define AGENT_STORE_FILE_NAME "agerun.agency"
 #define AGENT_STORE_BACKUP_EXT ".bak"
 
 /**

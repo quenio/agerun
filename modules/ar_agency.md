@@ -193,12 +193,12 @@ for (int i = 0; i < count * 2; i++) {
 
 ```c
 // Save all agents to disk
-if (!ar_agency__save_agents(ref_agency, "agency.agerun")) {
+if (!ar_agency__save_agents(ref_agency, "agerun.agency")) {
     printf("Failed to save agents\n");
 }
 
 // Load agents from disk (typically at startup)
-if (!ar_agency__load_agents(mut_agency, "agency.agerun")) {
+if (!ar_agency__load_agents(mut_agency, "agerun.agency")) {
     printf("Failed to load agents\n");
 }
 ```
@@ -252,4 +252,4 @@ Most functions return:
 
 ## File Format
 
-Agents are persisted to `agency.agerun` in the current directory. The file format is managed by the agent_store module.
+Agents are persisted to `agerun.agency` in the current directory. The file format is managed by the agent_store module.

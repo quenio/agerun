@@ -54,7 +54,7 @@ void ar_system_fixture__destroy(ar_system_fixture_t *own_fixture) {
         
         // Remove persistence files
         remove("methodology.agerun");
-        remove("agency.agerun");
+        remove("agerun.agency");
     }
     
     AR__HEAP__FREE(own_fixture->own_test_name);
@@ -75,7 +75,7 @@ bool ar_system_fixture__initialize(ar_system_fixture_t *mut_fixture) {
     
     // Remove persistence files
     remove("methodology.agerun");
-    remove("agency.agerun");
+    remove("agerun.agency");
     
     // Create new system instance
     mut_fixture->own_system = ar_system__create();
@@ -165,7 +165,7 @@ void ar_system_fixture__reset_system(ar_system_fixture_t *mut_fixture) {
     
     // Remove persistence files
     remove("methodology.agerun");
-    remove("agency.agerun");
+    remove("agerun.agency");
     
     // Create new system instance
     mut_fixture->own_system = ar_system__create();

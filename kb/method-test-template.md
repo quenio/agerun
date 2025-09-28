@@ -30,7 +30,7 @@ int main() {
     ar_methodology__cleanup();
     ar_agency__reset();
     remove("methodology.agerun");
-    remove("agency.agerun");
+    remove("agerun.agency");
 
     // Test setup
     ar_methodology__register_method("test", "1.0.0", "../methods/test-1.0.0.method");

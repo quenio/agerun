@@ -615,7 +615,7 @@ int main(void) {
     /* ar_methodology__cleanup() removed - fixture handles cleanup */
     // ar_agency__reset(); // Global API removed - fixtures handle their own agencies
     remove("methodology.agerun");
-    remove("agency.agerun");
+    remove("agerun.agency");
     
     test_spawn_instruction_evaluator__evaluate_with_context();
     printf("test_spawn_instruction_evaluator__evaluate_with_context passed!\n");
@@ -647,7 +647,7 @@ int main(void) {
     /* ar_methodology__cleanup() removed - fixture handles cleanup */
     // ar_agency__reset(); // Global API removed - fixtures handle their own agencies
     remove("methodology.agerun");
-    remove("agency.agerun");
+    remove("agerun.agency");
     
     return 0;
 }

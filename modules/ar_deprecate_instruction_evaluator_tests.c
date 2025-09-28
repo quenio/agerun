@@ -54,7 +54,7 @@ static void test_deprecate_instruction_evaluator__create_destroy(void) {
 static void test_deprecate_instruction_evaluator__evaluate_with_instance(void) {
     // Clean up any existing persistence files
     remove("methodology.agerun");
-    remove("agency.agerun");
+    remove("agerun.agency");
     
     // Initialize system for method operations
     
@@ -135,7 +135,7 @@ static void test_deprecate_instruction_evaluator__evaluate_with_instance(void) {
 static void test_deprecate_instruction_evaluator__evaluate_frame_based(void) {
     // Clean up any existing persistence files
     remove("methodology.agerun");
-    remove("agency.agerun");
+    remove("agerun.agency");
     
     // Initialize system for method operations
     
@@ -213,7 +213,7 @@ static void test_deprecate_instruction_evaluator__evaluate_frame_based(void) {
 static void test_deprecate_instruction_evaluator__evaluate_with_agents(void) {
     // Clean up any existing persistence files
     remove("methodology.agerun");
-    remove("agency.agerun");
+    remove("agerun.agency");
     
     // Initialize system for method operations
     
@@ -307,7 +307,7 @@ static void test_deprecate_instruction_evaluator__evaluate_with_agents(void) {
 static void test_deprecate_instruction_evaluator__evaluate_nonexistent(void) {
     // Clean up any existing persistence files
     remove("methodology.agerun");
-    remove("agency.agerun");
+    remove("agerun.agency");
     
     // Initialize system for method operations
     
@@ -502,7 +502,7 @@ int main(void) {
     /* ar_methodology__cleanup() removed - fixture handles cleanup */
     // ar_agency__reset(); // Global API removed - fixtures handle their own agencies
     remove("methodology.agerun");
-    remove("agency.agerun");
+    remove("agerun.agency");
     
     test_deprecate_instruction_evaluator__create_destroy();
     printf("test_deprecate_instruction_evaluator__create_destroy passed!\n");

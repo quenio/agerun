@@ -820,10 +820,10 @@ Modify ar_executable.c to save and load the agerun.agency file for agent state p
 - [x] Phase 2.5 - Split ar_yaml: Created separate reader/writer modules; 13 tests pass (Completed 2025-08-17)
 
 ### Phase 3 - Agent Store Infrastructure Updates
-- [ ] TDD Cycle 3: Fix filename constant
-  - [ ] Update AGENT_STORE_FILE_NAME from "agency.agerun" to "agerun.agency"
-  - [ ] Update all references in tests
-  - [ ] Verify file naming consistency
+- [x] TDD Cycle 3: Fix filename constant (Completed 2025-09-28)
+  - [x] Update AGENT_STORE_FILE_NAME from "agency.agerun" to "agerun.agency"
+  - [x] Update all references in tests
+  - [x] Verify file naming consistency
 
 - [ ] TDD Cycle 4: Add methodology reference to agent_store
   - [ ] Update ar_agent_store__create() signature to accept methodology

@@ -22,7 +22,7 @@ int ar_executable__main(void) {
     ar_agent_t *own_echo = ar_agency__create_agent("echo", "1.0.0");
     
     // BAD: Saving was not required either!
-    ar_agency__save_agents(mut_agency, "agency.agerun");
+    ar_agency__save_agents(mut_agency, "agerun.agency");
 }
 
 // RIGHT: After clarification - executable only loads methods

@@ -56,7 +56,7 @@ Integration testing pattern:
 // Helper function for integration tests
 bool run_and_verify_executable(const char* ref_expected, const char* ref_unexpected) {
     // Clean environment
-    system("rm -f methodology.agerun agency.agerun 2>/dev/null");
+    system("rm -f methodology.agerun agerun.agency 2>/dev/null");
     
     // Build fresh
     if (system("make -s executable > /dev/null 2>&1") != 0) {

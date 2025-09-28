@@ -16,7 +16,7 @@ typedef struct ar_methodology_s ar_methodology_t;
 typedef struct ar_agency_s ar_agency_t;
 
 /* Constants */
-#define AGENCY_FILE_NAME "agency.agerun"
+#define AGENCY_FILE_NAME "agerun.agency"
 
 /**
  * Create a new agency instance

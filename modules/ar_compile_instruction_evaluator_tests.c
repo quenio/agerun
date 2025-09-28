@@ -482,7 +482,7 @@ int main(void) {
     /* ar_methodology__cleanup() removed - fixture handles cleanup */
     // ar_agency__reset(); // Global API removed - fixtures handle their own agencies
     remove("methodology.agerun");
-    remove("agency.agerun");
+    remove("agerun.agency");
     
     test_compile_instruction_evaluator__create_destroy();
     printf("test_compile_instruction_evaluator__create_destroy passed!\n");

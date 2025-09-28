@@ -31,7 +31,7 @@ int main(void) {
     
     // Clean state - remove persistence files
     remove("methodology.agerun");
-    remove("agency.agerun");
+    remove("agerun.agency");
     
     // Initialize system
     
@@ -43,7 +43,7 @@ int main(void) {
     
     // Cleanup - remove persistence files
     remove("methodology.agerun");
-    remove("agency.agerun");
+    remove("agerun.agency");
     
     printf("All 8 tests passed!\n");
     return 0;

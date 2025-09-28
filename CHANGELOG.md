@@ -4,7 +4,18 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-09-28
 
+### ✅ Agent Store Filename Update - Cycle 3 Complete
+- **Updated AGENT_STORE_FILE_NAME** from "agency.agerun" to "agerun.agency" for clearer naming
+- **Updated all 55+ references** across codebase: core modules, tests, documentation, and configuration files
+- **Updated error messages** in log_whitelist.yaml to reflect new filename for proper error filtering
+- **Verified functionality** with agent store tests passing and zero memory leaks
+- **Impact**: Establishes consistent filename convention (agerun.<component>) for all AgeRun persistence files
+
 ### ✅ Enhanced Command Validation Script
+- **Updated scripts/check_commands.py** to support both legacy `.opencode/command/ar/` and new `.claude/commands/` locations
+- **Improved validation coverage** from 0 to 27 commands with comprehensive structure analysis
+- **Achieved 94.8% excellence score** across all Claude Code commands meeting quality standards
+- **Impact**: Ensures all command documentation follows comprehensive structure standards with checkpoint tracking, expected outputs, and troubleshooting guidance
 - **Updated scripts/check_commands.py** to support both legacy `.opencode/command/ar/` and new `.claude/commands/` locations
 - **Improved validation coverage** from 0 to 27 commands with comprehensive structure analysis
 - **Achieved 94.8% excellence score** across all Claude Code commands meeting quality standards
@@ -1117,7 +1128,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - GREEN phase: Removed auto-loading code from ar_system__init()
 - Eliminated methodology and agency file loading on initialization
   - Removed 24 lines of auto-loading code (lines 123-147)
-  - System no longer attempts to load "methodology.agerun" or "agency.agerun"
+  - System no longer attempts to load "methodology.agerun" or "agerun.agency"
   - Executable now has full control over persistence loading
 - Fixed all test fixture warnings
   - No more "Warning: Could not load methods from file" messages
@@ -1163,7 +1174,7 @@ This document tracks completed milestones and major achievements for the AgeRun 
   - Includes pre-test cleanup for proper isolation
   - Validates test runs from correct directory
 - Cleaned up obsolete whitelist entry
-  - Removed "Unexpected end of file in agency.agerun" for executable context
+  - Removed "Unexpected end of file in agerun.agency" for executable context
   - Whitelist reduced from 212 to 211 entries (7→6 executable entries)
 - First of 9 planned TDD cycles for bootstrap system transformation
   - Cycle 2: Remove auto-loading from system

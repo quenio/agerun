@@ -26,10 +26,10 @@ static void test_no_auto_saving_on_shutdown(void) {
     // Then no files should be saved
     struct stat st;
     bool methodology_exists = (stat("methodology.agerun", &st) == 0);
-    bool agency_exists = (stat("agency.agerun", &st) == 0);
+    bool agency_exists = (stat("agerun.agency", &st) == 0);
     
     AR_ASSERT(!methodology_exists, "methodology.agerun should NOT have been saved on shutdown");
-    AR_ASSERT(!agency_exists, "agency.agerun should NOT have been saved on shutdown");
+    AR_ASSERT(!agency_exists, "agerun.agency should NOT have been saved on shutdown");
 }
 ```
 
