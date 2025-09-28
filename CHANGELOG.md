@@ -4,6 +4,15 @@ This document tracks completed milestones and major achievements for the AgeRun 
 
 ## 2025-09-28
 
+### ✅ Agent Store Methodology Support - Cycle 4 Complete
+- **Updated ar_agent_store__create()** to accept methodology parameter for method lookups during agent loading
+- **Added methodology field** to agent store structure for persistence operations
+- **Updated agency integration** to pass methodology when creating agent store
+- **Updated all 8 agent store tests** to create and pass methodology instances
+- **Added accessor function** `ar_agent_store__get_methodology()` for testing methodology access
+- **Updated module documentation** to reflect methodology requirement and new API
+- **Impact**: Agent store now has access to methodology for future agent restoration from disk
+
 ### ✅ Agent Store Filename Update - Cycle 3 Complete
 - **Updated AGENT_STORE_FILE_NAME** from "agency.agerun" to "agerun.agency" for clearer naming
 - **Updated all 55+ references** across codebase: core modules, tests, documentation, and configuration files

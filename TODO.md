@@ -825,11 +825,11 @@ Modify ar_executable.c to save and load the agerun.agency file for agent state p
   - [x] Update all references in tests
   - [x] Verify file naming consistency
 
-- [ ] TDD Cycle 4: Add methodology reference to agent_store
-  - [ ] Update ar_agent_store__create() signature to accept methodology
-  - [ ] Add ar_methodology_t *ref_methodology field to struct
-  - [ ] Update ar_agency.c to pass methodology when creating agent_store
-  - [ ] Update all test callers
+- [x] TDD Cycle 4: Add methodology reference to agent_store (Completed 2025-09-28)
+  - [x] Update ar_agent_store__create() signature to accept methodology
+  - [x] Add ar_methodology_t *ref_methodology field to struct
+  - [x] Update ar_agency.c to pass methodology when creating agent_store
+  - [x] Update all test callers
 
 ### Phase 4 - Agent Store YAML Integration
 - [ ] TDD Cycle 5: Integrate ar_yaml_writer and ar_yaml_reader into agent_store
