@@ -11,6 +11,7 @@
 #include "ar_data.h"
 #include "ar_list.h"
 #include "ar_io.h"
+#include "ar_yaml_writer.h"
 #include "ar_heap.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,11 +32,6 @@ struct ar_agent_store_s {
     ar_methodology_t *ref_methodology;      /* Borrowed reference to methodology */
     const char *filename;                   /* Store filename */
 };
-
-/* Context structure for save operations */
-typedef struct {
-    const char *filename;
-} store_save_context_t;
 
 /* Helper function to get list of all active agent IDs */
 static ar_list_t* _get_active_agent_list(ar_agent_registry_t *ref_registry) {
@@ -84,7 +80,7 @@ static ar_data_t* _get_agent_memory(ar_agent_registry_t *ref_registry, int64_t a
     return ar_agent__get_mutable_memory(ref_agent);
 }
 
-/* Helper function to create backup file */
+/* Helper to create backup file */
 static bool _create_backup(const char *filename) {
     if (!filename) {
         return false;
@@ -100,33 +96,128 @@ static bool _create_backup(const char *filename) {
     return (result == AR_FILE_RESULT__SUCCESS);
 }
 
-/* Helper to save agent memory data to file */
-static bool _save_agent_memory(FILE *file, ar_data_t *ref_memory) {
+/* Helper function to build YAML root structure */
+static ar_data_t* _build_yaml_root_structure(void) {
+    /* Create root map */
+    ar_data_t *own_root = ar_data__create_map();
+    if (!own_root) {
+        return NULL;
+    }
+    
+    /* Create agents list */
+    ar_data_t *own_agents_list = ar_data__create_list();
+    if (!own_agents_list) {
+        ar_data__destroy(own_root);
+        return NULL;
+    }
+    
+    /* Add agents list to root */
+    ar_data__set_map_data(own_root, "agents", own_agents_list);
+    return own_root;
+}
+
+/* Helper function to copy agent memory to YAML format */
+static ar_data_t* _copy_agent_memory_to_yaml(ar_data_t *ref_memory) {
     if (!ref_memory || ar_data__get_type(ref_memory) != AR_DATA_TYPE__MAP) {
-        fprintf(file, "memory_items=0\n");
-        return true; /* No memory or not a map - nothing to save */
+        /* Empty memory map */
+        return ar_data__create_map();
+    }
+    
+    /* Create a fresh memory map and copy key-value pairs */
+    ar_data_t *own_memory_map = ar_data__create_map();
+    if (!own_memory_map) {
+        return NULL;
     }
     
     ar_data_t *own_keys = ar_data__get_map_keys(ref_memory);
-    if (!own_keys) {
-        fprintf(file, "memory_items=0\n");
-        return true; /* No keys - nothing to save */
+    if (own_keys) {
+        size_t key_count = ar_data__list_count(own_keys);
+        if (key_count <= MAX_MEMORY_ITEMS) {
+            ar_data_t **key_items = ar_data__list_items(own_keys);
+            for (size_t k = 0; k < key_count; k++) {
+                const char *key = ar_data__get_string(key_items[k]);
+                if (key) {
+                    ar_data_t *ref_value = ar_data__get_map_data(ref_memory, key);
+                    if (ref_value) {
+                        // Copy based on type
+                        if (ar_data__get_type(ref_value) == AR_DATA_TYPE__STRING) {
+                            ar_data__set_map_string(own_memory_map, key, ar_data__get_string(ref_value));
+                        } else if (ar_data__get_type(ref_value) == AR_DATA_TYPE__INTEGER) {
+                            ar_data__set_map_integer(own_memory_map, key, ar_data__get_integer(ref_value));
+                        } else if (ar_data__get_type(ref_value) == AR_DATA_TYPE__DOUBLE) {
+                            ar_data__set_map_double(own_memory_map, key, ar_data__get_double(ref_value));
+                        }
+                        // Skip complex types for now (maps, lists)
+                    }
+                }
+            }
+            if (key_items) AR__HEAP__FREE(key_items);
+        }
+        ar_data__destroy(own_keys);
     }
     
-    size_t key_count = ar_data__list_count(own_keys);
-    if (key_count > MAX_MEMORY_ITEMS) {
-        ar_data__destroy(own_keys);
+    return own_memory_map;
+}
+
+/* Helper function to build YAML data for a single agent */
+static ar_data_t* _build_agent_yaml_data(ar_agent_registry_t *ref_registry, int64_t agent_id) {
+    /* Get method info */
+    const char *method_name = NULL;
+    const char *version = NULL;
+    if (!_get_agent_method_info(ref_registry, agent_id, &method_name, &version)) {
+        return NULL;
+    }
+    
+    /* Create agent map */
+    ar_data_t *own_agent_map = ar_data__create_map();
+    if (!own_agent_map) {
+        return NULL;
+    }
+    
+    /* Add agent properties */
+    ar_data__set_map_integer(own_agent_map, "id", (int)agent_id);
+    if (method_name) {
+        ar_data__set_map_string(own_agent_map, "method_name", method_name);
+    }
+    if (version) {
+        ar_data__set_map_string(own_agent_map, "method_version", version);
+    }
+    
+    /* Add agent memory */
+    ar_data_t *ref_memory = _get_agent_memory(ref_registry, agent_id);
+    ar_data_t *own_memory_map = _copy_agent_memory_to_yaml(ref_memory);
+    if (own_memory_map) {
+        ar_data__set_map_data(own_agent_map, "memory", own_memory_map);
+    }
+    
+    return own_agent_map;
+}
+
+/* Helper function to write YAML data to file */
+static bool _write_yaml_to_file(ar_data_t *ref_root, const char *filename) {
+    ar_yaml_writer_t *own_writer = ar_yaml_writer__create(NULL);
+    if (!own_writer) {
         return false;
     }
     
-    fprintf(file, "memory_items=%zu\n", key_count);
+    bool success = ar_yaml_writer__write_to_file(own_writer, ref_root, filename);
+    ar_yaml_writer__destroy(own_writer);
     
-    /* Save each memory item using simple approach - skip iteration for now */
-    /* TODO: Implement proper memory saving once key iteration is working */
-    (void)key_count; /* Suppress unused variable warning */
-    
-    ar_data__destroy(own_keys);
-    return true;
+    return success;
+}
+
+/* Helper function to clean up agent list resources */
+static void _cleanup_agent_list_resources(ar_list_t *own_agent_list, void **items, int agent_count) {
+    if (items) {
+        for (int i = 0; i < agent_count; i++) {
+            ar_data_t *own_id_data = (ar_data_t*)items[i];
+            if (own_id_data) {
+                ar_data__destroy(own_id_data);
+            }
+        }
+        AR__HEAP__FREE(items);
+    }
+    ar_list__destroy(own_agent_list);
 }
 
 /* Create a new agent store instance */
@@ -162,7 +253,7 @@ bool ar_agent_store__save(ar_agent_store_t *ref_store) {
         return false;
     }
     
-    /* Get list of active agents */
+    /* Get and validate agent list */
     ar_list_t *own_agent_list = _get_active_agent_list(ref_store->ref_registry);
     if (!own_agent_list) {
         return false;
@@ -176,70 +267,46 @@ bool ar_agent_store__save(ar_agent_store_t *ref_store) {
     int agent_count = (int)agent_count_size;
     
     /* Create backup */
-    _create_backup(ref_store->filename);
-    
-    /* Open file for writing */
-    FILE *file = NULL;
-    ar_file_result_t open_result = ar_io__open_file(ref_store->filename, "w", &file);
-    if (open_result != AR_FILE_RESULT__SUCCESS || !file) {
+    if (!_create_backup(ref_store->filename)) {
         ar_list__destroy(own_agent_list);
         return false;
     }
     
-    /* Write header */
-    fprintf(file, "# AgeRun Agent Store\n");
-    fprintf(file, "version=1\n");
-    fprintf(file, "agent_count=%d\n", agent_count);
+    /* Build YAML root structure */
+    ar_data_t *own_root = _build_yaml_root_structure();
+    if (!own_root) {
+        ar_list__destroy(own_agent_list);
+        return false;
+    }
     
-    /* Get array of items for iteration */
+    /* Get agents list and prepare for iteration */
+    ar_data_t *ref_agents_list = ar_data__get_map_data(own_root, "agents");
     void **items = ar_list__items(own_agent_list);
     if (!items && agent_count > 0) {
-        ar_io__close_file(file, ref_store->filename);
+        ar_data__destroy(own_root);
         ar_list__destroy(own_agent_list);
         return false;
     }
     
-    /* Write each agent */
+    /* Build agent data structures */
     for (int i = 0; i < agent_count; i++) {
-        ar_data_t *ref_id_data = (ar_data_t*)items[i];
-        if (!ref_id_data) continue;
-        
-        int64_t agent_id = ar_data__get_integer(ref_id_data);
-        
-        /* Get method info */
-        const char *method_name = NULL;
-        const char *version = NULL;
-        if (!_get_agent_method_info(ref_store->ref_registry, agent_id, &method_name, &version)) {
-            continue;
+        int64_t agent_id = ar_data__get_integer((ar_data_t*)items[i]);
+        ar_data_t *own_agent_map = _build_agent_yaml_data(ref_store->ref_registry, agent_id);
+        if (own_agent_map) {
+            ar_data__list_add_last_data(ref_agents_list, own_agent_map);
         }
-        
-        fprintf(file, "\n# Agent %" PRId64 "\n", agent_id);
-        fprintf(file, "agent_id=%" PRId64 "\n", agent_id);
-        fprintf(file, "method_name=%s\n", method_name ? method_name : "");
-        fprintf(file, "method_version=%s\n", version ? version : "");
-        
-        /* Save agent memory */
-        ar_data_t *ref_memory = _get_agent_memory(ref_store->ref_registry, agent_id);
-        _save_agent_memory(file, ref_memory);
     }
     
-    /* Free the items array and the data objects it contains */
-    if (items) {
-        for (int i = 0; i < agent_count; i++) {
-            ar_data_t *own_id_data = (ar_data_t*)items[i];
-            if (own_id_data) {
-                ar_data__destroy(own_id_data);
-            }
-        }
-        AR__HEAP__FREE(items);
+    /* Write to file and cleanup */
+    bool success = _write_yaml_to_file(own_root, ref_store->filename);
+    ar_data__destroy(own_root);
+    _cleanup_agent_list_resources(own_agent_list, items, agent_count);
+    
+    if (success) {
+        ar_io__info("Successfully saved %d agents to YAML file", agent_count);
     }
     
-    ar_io__close_file(file, ref_store->filename);
-    ar_list__destroy(own_agent_list);
-    
-    int count = ar_agent_registry__count(ref_store->ref_registry);
-    ar_io__info("Successfully saved %d agents to file", count);
-    return true;
+    return success;
 }
 
 /* Load all agents from persistent storage */

@@ -14,45 +14,34 @@ This module was created as part of the agency module refactoring to improve cohe
 
 ## File Format
 
-The `agerun.agency` file uses a simple text format:
+The `agerun.agency` file uses a YAML format:
 
-```
-<agent_count>
-<agent_id> <method_name> <method_version>
-<memory_item_count>
-<key> <type>
-<value>
-...
+```yaml
+agents:
+  - id: 1
+    method_name: echo
+    method_version: "1.0.0"
+    memory:
+      name: "Echo Agent"
+      count: 42
+      value: 3.14159
+  - id: 2
+    method_name: calculator
+    method_version: "1.0.0"
+    memory: {}
+  - id: 3
+    method_name: logger
+    method_version: "2.1.0"
+    memory:
+      level: "debug"
 ```
 
 Where:
-- `<agent_count>` - Number of agents stored in the file
-- `<agent_id>` - Unique identifier for the agent
-- `<method_name>` - Name of the method the agent is running
-- `<method_version>` - Version of the method (semantic versioning)
-- `<memory_item_count>` - Number of memory items for this agent
-- `<key>` - Memory item key name
-- `<type>` - Data type: `int`, `double`, or `string`
-- `<value>` - The actual value on a separate line
-
-Example:
-```
-3
-1 echo 1.0.0
-3
-name string
-Echo Agent
-count int
-42
-value double
-3.14159
-2 calculator 1.0.0
-0
-3 logger 2.1.0
-1
-level string
-debug
-```
+- `agents` - List of agent objects
+- `id` - Unique identifier for the agent
+- `method_name` - Name of the method the agent is running
+- `method_version` - Version of the method (semantic versioning)
+- `memory` - Agent's memory data as key-value pairs (supports int, double, string types)
 
 ## Key Functions
 

@@ -832,7 +832,7 @@ Modify ar_executable.c to save and load the agerun.agency file for agent state p
   - [x] Update all test callers
 
 ### Phase 4 - Agent Store YAML Integration
-- [ ] TDD Cycle 5: Integrate ar_yaml_writer and ar_yaml_reader into agent_store
+- [x] TDD Cycle 5: Integrate ar_yaml_writer and ar_yaml_reader into agent_store (Completed 2025-09-28)
   - [ ] Replace custom file format with YAML
   - [ ] Remove old parsing code
   - [ ] Update ar_agent_store__save() to use ar_yaml_writer

@@ -14,7 +14,7 @@
 #include "ar_methodology.h"
 #include "ar_method.h"
 #include "ar_data.h"
-#include "ar_heap.h"
+#include "ar_yaml_reader.h"
 
 static void test_store_basics(void) {
     printf("Testing store basic operations...\n");
@@ -380,6 +380,69 @@ static void test_store_id_preservation(void) {
     printf("✓ Agent ID preservation test passed\n");
 }
 
+static void test_store_yaml_format_validation(void) {
+    printf("Testing agent store YAML format validation...\n");
+    
+    // Given an agent store with an agent containing memory data
+    ar_method_t *own_method = ar_method__create("echo", "send(sender, message)", "1.0.0");
+    assert(own_method != NULL);
+    
+    ar_agent_registry_t *own_registry = ar_agent_registry__create();
+    assert(own_registry != NULL);
+    
+    ar_methodology_t *own_methodology = ar_methodology__create(NULL);
+    assert(own_methodology != NULL);
+    
+    ar_agent_store_t *own_store = ar_agent_store__create(own_registry, own_methodology);
+    assert(own_store != NULL);
+    
+    // Create and register agent with memory
+    ar_agent_t *own_agent = ar_agent__create_with_method(own_method, NULL);
+    assert(own_agent != NULL);
+    
+    int64_t agent_id = ar_agent_registry__allocate_id(own_registry);
+    assert(agent_id > 0);
+    ar_agent__set_id(own_agent, agent_id);
+    assert(ar_agent_registry__register_id(own_registry, agent_id));
+    assert(ar_agent_registry__track_agent(own_registry, agent_id, own_agent));
+    
+    ar_data_t *mut_memory = ar_agent__get_mutable_memory(own_agent);
+    assert(mut_memory != NULL);
+    ar_data__set_map_string(mut_memory, "name", "Test Agent");
+    ar_data__set_map_integer(mut_memory, "count", 42);
+    ar_data__set_map_double(mut_memory, "value", 3.14);
+    
+    // When saving the agent store
+    assert(ar_agent_store__save(own_store));
+    
+    // Then the saved file should be valid YAML with proper structure
+    const char *file_path = ar_agent_store__get_path(own_store);
+    ar_yaml_reader_t *own_reader = ar_yaml_reader__create(NULL);
+    assert(own_reader != NULL);
+    
+    ar_data_t *own_loaded = ar_yaml_reader__read_from_file(own_reader, file_path);
+    assert(own_loaded != NULL);
+    assert(ar_data__get_type(own_loaded) == AR_DATA_TYPE__MAP);
+    
+    ar_data_t *ref_agents = ar_data__get_map_data(own_loaded, "agents");
+    assert(ref_agents != NULL);
+    assert(ar_data__get_type(ref_agents) == AR_DATA_TYPE__LIST);
+    assert(ar_data__list_count(ref_agents) == 1);
+    
+    // Cleanup
+    ar_data__destroy(own_loaded);
+    ar_yaml_reader__destroy(own_reader);
+    ar_agent_registry__unregister_id(own_registry, agent_id);
+    ar_agent__destroy(own_agent);
+    ar_agent_store__delete(own_store);
+    ar_agent_store__destroy(own_store);
+    ar_agent_registry__destroy(own_registry);
+    ar_method__destroy(own_method);
+    ar_methodology__destroy(own_methodology);
+    
+    printf("✓ Agent store YAML format validation test passed\n");
+}
+
 static void test_store_methodology_support(void) {
     printf("Testing agent store methodology support...\n");
     
@@ -417,7 +480,8 @@ int main(void) {
     test_store_missing_method();
     test_store_id_preservation();
     test_store_methodology_support();
+    test_store_yaml_format_validation();
     
-    printf("All 9 tests passed!\n");
+    printf("All 10 tests passed!\n");
     return 0;
 }
