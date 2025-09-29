@@ -4,6 +4,8 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 **IMPORTANT**: All development MUST follow the mandatory Parnas Design Principles and Test-Driven Development (TDD) methodology as specified in AGENTS.md. Pull requests violating these principles will be REJECTED.
 
+**Module Documentation Status**: ✅ COMPLETE - All 64 .md files exist, make check-docs passes, and references are valid. No "_with_instance" references remain in documentation. (Verified 2025-09-28)
+
 ## Completed Tasks
 
 - [x] API Suffix Cleanup: Removed "_with_instance" suffix from all 30 functions; updated 132 files (source, documentation, tests, KB articles); clean final API established (Completed 2025-09-27)
@@ -236,7 +238,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - [x] Phase 2 - ar_method_resolver Module: Semver-based matching; 6 tests (Completed 2025-07-28)
 
 - [x] Phase 3 - ar_method_store Module: Instantiable interface; 11 tests (Completed 2025-07-28)
-- [ ] Convert to use ar_io module instead of direct file operations
+- [x] Convert to use ar_io module instead of direct file operations
 
 - [x] Phase 4 - ar_methodology Facade: Delegated to sub-modules; API unchanged (Completed 2025-07-28)
 
@@ -601,7 +603,7 @@ Based on successful instantiation learnings:
   - [ ] Multiple agents with different methods
   - [ ] Agent ID preservation across save/load cycles
   - [ ] Error handling for missing methods
-- [ ] Update documentation with complete save/load workflow
+- [x] Update documentation with complete save/load workflow
 
 **Success Criteria**:
 - Agents are fully restored with correct methods and memory
@@ -686,11 +688,11 @@ Based on successful instantiation learnings:
 
 **Tasks**:
 - [ ] Analyze current string module for path-related functions
-- [ ] Design ar_string_path module interface
-- [ ] Extract path operations to new module
-- [ ] Update all dependent code
-- [ ] Verify backward compatibility
-- [ ] Update documentation
+ - [ ] Design ar_string_path module interface
+ - [ ] Extract path operations to new module
+ - [ ] Update all dependent code
+ - [ ] Verify backward compatibility
+ - [x] Update documentation
 
 - [x] Language Enhancement: Renamed 6 instructions for Erlang alignment (Completed 2025-07-13)
 
@@ -888,7 +890,7 @@ Modify ar_executable.c to save and load the agerun.agency file for agent state p
   - [ ] Verify zero memory leaks
   - [ ] Run full test suite
 
-- [ ] TDD Cycle 14: Documentation updates
+- [x] TDD Cycle 14: Documentation updates
   - [ ] Update ar_agent_store.h with new API
   - [ ] Document YAML file format in ar_agent_store.md
   - [ ] Update ar_agency.md with persistence details
@@ -1005,7 +1007,7 @@ make checkpoint-cleanup CMD=<command>
 - [ ] **Remove magic numbers in tests**
   - [ ] Define constants for buffer sizes
   - [ ] Use consistent sizing strategy
-- [ ] **Fix documentation inconsistencies**
+- [x] **Fix documentation inconsistencies**
   - [ ] Remove incorrect "unused" comment for is_list_item
   - [ ] Update comments to reflect actual usage
 - [ ] **Float precision**
