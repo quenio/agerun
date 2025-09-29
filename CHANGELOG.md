@@ -1,6 +1,20 @@
 # AgeRun CHANGELOG
 
-## 2025-09-28
+## 2025-09-29
+
+### ✅ Agent Store Shallow Copy Implementation Complete
+- **Fixed NULL owner parameter issue** in `_copy_agent_memory_to_yaml()` that prevented shallow copying
+- **Updated function signatures** to pass `ar_agent_store_t *ref_store` as owner parameter to `ar_data__claim_or_copy()`
+- **Implemented shallow copy logic** replacing manual type-specific copying with unified `ar_data__claim_or_copy()` calls
+- **Verified functionality** with all agent store tests passing and zero memory leaks in both regular and sanitizer builds
+- **Impact**: Agent memory now properly shallow-copied during YAML persistence, supporting complex data structures beyond simple primitives
+- **Implemented YAML data structure creation** for agent persistence with proper memory copying
+- **Created root YAML map** with version field and agents list for structured storage
+- **Built agent data maps** containing id, method name/version, and memory data for each agent
+- **Implemented memory copying** from agent memory maps to YAML-compatible structures
+- **Added comprehensive test validation** verifying YAML structure and memory data preservation
+- **Maintained backward compatibility** with existing save/load infrastructure
+- **Impact**: Agent store now creates proper YAML data structures ready for file serialization
 
 ### ✅ Code Review Issues Resolution - All 7 Issues Fixed
 - **Resolved all critical and warning issues** from comprehensive code review:

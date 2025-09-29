@@ -429,6 +429,40 @@ static void test_store_yaml_format_validation(void) {
     assert(ar_data__get_type(ref_agents) == AR_DATA_TYPE__LIST);
     assert(ar_data__list_count(ref_agents) == 1);
     
+    // Verify agent data structure
+    ar_data_t *ref_agent_data = ar_data__list_first(ref_agents);
+    assert(ref_agent_data != NULL);
+    assert(ar_data__get_type(ref_agent_data) == AR_DATA_TYPE__MAP);
+    
+    // Verify agent ID
+    int loaded_id = ar_data__get_map_integer(ref_agent_data, "id");
+    assert(loaded_id == (int)agent_id);
+    
+    // Verify method info
+    const char *loaded_method_name = ar_data__get_map_string(ref_agent_data, "method_name");
+    assert(loaded_method_name != NULL);
+    assert(strcmp(loaded_method_name, "echo") == 0);
+    
+    const char *loaded_method_version = ar_data__get_map_string(ref_agent_data, "method_version");
+    assert(loaded_method_version != NULL);
+    assert(strcmp(loaded_method_version, "1.0.0") == 0);
+    
+    // Verify memory data (shallow copy)
+    ar_data_t *ref_memory_data = ar_data__get_map_data(ref_agent_data, "memory");
+    assert(ref_memory_data != NULL);
+    assert(ar_data__get_type(ref_memory_data) == AR_DATA_TYPE__MAP);
+    
+    // Verify memory contents are preserved
+    const char *loaded_name = ar_data__get_map_string(ref_memory_data, "name");
+    assert(loaded_name != NULL);
+    assert(strcmp(loaded_name, "Test Agent") == 0);
+    
+    int loaded_count = ar_data__get_map_integer(ref_memory_data, "count");
+    assert(loaded_count == 42);
+    
+    double loaded_value = ar_data__get_map_double(ref_memory_data, "value");
+    assert(loaded_value == 3.14);
+    
     // Cleanup
     ar_data__destroy(own_loaded);
     ar_yaml_reader__destroy(own_reader);

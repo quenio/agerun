@@ -41,7 +41,7 @@ Where:
 - `id` - Unique identifier for the agent
 - `method_name` - Name of the method the agent is running
 - `method_version` - Version of the method (semantic versioning)
-- `memory` - Agent's memory data as key-value pairs (supports int, double, string types)
+- `memory` - Agent's memory data as key-value pairs (supports int, double, string, and nested map/list structures)
 
 ## Key Functions
 
@@ -122,5 +122,4 @@ The module follows the project's memory management conventions:
 
 - Maximum 10,000 agents can be stored
 - Maximum 1,000 memory items per agent
-- Only supports basic data types (int, double, string)
-- Nested maps and lists in agent memory are not persisted (only flat map values)
+- Supports all data types including nested maps and lists in agent memory

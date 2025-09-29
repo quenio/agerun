@@ -840,11 +840,12 @@ Modify ar_executable.c to save and load the agerun.agency file for agent state p
   - [ ] Update ar_agent_store__save() to use ar_yaml_writer
   - [ ] Update ar_agent_store__load() to use ar_yaml_reader
   
-- [ ] TDD Cycle 6: Build agent data structure for save
-  - [ ] Create root map with version and agents list
-  - [ ] For each agent, create map with id, method, memory
-  - [ ] Method as nested map with name and version
-  - [ ] Test YAML output format
+- [x] TDD Cycle 6: Build agent data structure for save (Completed 2025-09-28)
+  - [x] Create root map with version and agents list
+  - [x] For each agent, create map with id, method, memory
+  - [x] Method as nested map with name and version
+  - [x] Test YAML output format
+  - [x] **BONUS**: Fixed shallow copy NULL owner issue - now uses ar_data__claim_or_copy() with proper store reference
 
 - [ ] TDD Cycle 7: Save memory as list of key/type/value
   - [ ] Convert agent memory map to list format

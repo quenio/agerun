@@ -117,7 +117,7 @@ static ar_data_t* _build_yaml_root_structure(void) {
 }
 
 /* Helper function to copy agent memory to YAML format */
-static ar_data_t* _copy_agent_memory_to_yaml(ar_data_t *ref_memory) {
+static ar_data_t* _copy_agent_memory_to_yaml(ar_data_t *ref_memory, ar_agent_store_t *ref_store) {
     if (!ref_memory || ar_data__get_type(ref_memory) != AR_DATA_TYPE__MAP) {
         /* Empty memory map */
         return ar_data__create_map();
@@ -139,15 +139,10 @@ static ar_data_t* _copy_agent_memory_to_yaml(ar_data_t *ref_memory) {
                 if (key) {
                     ar_data_t *ref_value = ar_data__get_map_data(ref_memory, key);
                     if (ref_value) {
-                        // Copy based on type
-                        if (ar_data__get_type(ref_value) == AR_DATA_TYPE__STRING) {
-                            ar_data__set_map_string(own_memory_map, key, ar_data__get_string(ref_value));
-                        } else if (ar_data__get_type(ref_value) == AR_DATA_TYPE__INTEGER) {
-                            ar_data__set_map_integer(own_memory_map, key, ar_data__get_integer(ref_value));
-                        } else if (ar_data__get_type(ref_value) == AR_DATA_TYPE__DOUBLE) {
-                            ar_data__set_map_double(own_memory_map, key, ar_data__get_double(ref_value));
+                        ar_data_t *own_copied_value = ar_data__claim_or_copy(ref_value, ref_store);
+                        if (own_copied_value) {
+                            ar_data__set_map_data(own_memory_map, key, own_copied_value);
                         }
-                        // Skip complex types for now (maps, lists)
                     }
                 }
             }
@@ -160,11 +155,11 @@ static ar_data_t* _copy_agent_memory_to_yaml(ar_data_t *ref_memory) {
 }
 
 /* Helper function to build YAML data for a single agent */
-static ar_data_t* _build_agent_yaml_data(ar_agent_registry_t *ref_registry, int64_t agent_id) {
+static ar_data_t* _build_agent_yaml_data(ar_agent_store_t *ref_store, int64_t agent_id) {
     /* Get method info */
     const char *method_name = NULL;
     const char *version = NULL;
-    if (!_get_agent_method_info(ref_registry, agent_id, &method_name, &version)) {
+    if (!_get_agent_method_info(ref_store->ref_registry, agent_id, &method_name, &version)) {
         return NULL;
     }
     
@@ -184,8 +179,8 @@ static ar_data_t* _build_agent_yaml_data(ar_agent_registry_t *ref_registry, int6
     }
     
     /* Add agent memory */
-    ar_data_t *ref_memory = _get_agent_memory(ref_registry, agent_id);
-    ar_data_t *own_memory_map = _copy_agent_memory_to_yaml(ref_memory);
+    ar_data_t *ref_memory = _get_agent_memory(ref_store->ref_registry, agent_id);
+    ar_data_t *own_memory_map = _copy_agent_memory_to_yaml(ref_memory, ref_store);
     if (own_memory_map) {
         ar_data__set_map_data(own_agent_map, "memory", own_memory_map);
     }
@@ -291,7 +286,7 @@ bool ar_agent_store__save(ar_agent_store_t *ref_store) {
     /* Build agent data structures */
     for (int i = 0; i < agent_count; i++) {
         int64_t agent_id = ar_data__get_integer((ar_data_t*)items[i]);
-        ar_data_t *own_agent_map = _build_agent_yaml_data(ref_store->ref_registry, agent_id);
+        ar_data_t *own_agent_map = _build_agent_yaml_data(ref_store, agent_id);
         if (own_agent_map) {
             ar_data__list_add_last_data(ref_agents_list, own_agent_map);
         }
