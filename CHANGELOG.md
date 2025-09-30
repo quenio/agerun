@@ -2,6 +2,18 @@
 
 ## 2025-09-29
 
+### ✅ Memory Leak Resolution and YAML Validation Enhancement
+- **Fixed 90 memory leaks** caused by unnecessary `load()` calls in save-focused tests
+- **Root cause identified**: Old `load()` was a no-op stub; new YAML parsing creates complex data structures
+- **Solution**: Removed `load()` calls from 6 tests that only verify save functionality
+- **Enhanced YAML validation**: Added `_validate_yaml_structure()` helper to validate expected structure
+- **Replaced FILE* reading** with ar_yaml_reader instance-based API for proper YAML parsing
+- **Added test coverage**: New `test_store_invalid_yaml_structure` test (11 tests total, up from 10)
+- **Updated documentation**: ar_agent_store.md now lists ar_yaml_writer and ar_yaml_reader dependencies
+- **Marked TDD Cycle 7 complete**: Documented design decision to use map format instead of list format
+- **Result**: All 74 tests passing with 0 memory leaks (1257 allocations, 200234 bytes tracked)
+- **Impact**: Agent store YAML parsing now properly validates structure and handles errors without memory leaks
+
 ### ✅ Agent Store Shallow Copy Implementation Complete
 - **Fixed NULL owner parameter issue** in `_copy_agent_memory_to_yaml()` that prevented shallow copying
 - **Updated function signatures** to pass `ar_agent_store_t *ref_store` as owner parameter to `ar_data__claim_or_copy()`
