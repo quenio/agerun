@@ -12,8 +12,8 @@
 #include "ar_list.h"
 #include "ar_io.h"
 #include "ar_yaml_writer.h"
+#include "ar_yaml_reader.h"
 #include "ar_heap.h"
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -23,7 +23,6 @@
 
 /* Maximum reasonable limits */
 #define MAX_STORE_AGENTS 10000
-#define MAX_LINE_LENGTH 256
 #define MAX_MEMORY_ITEMS 1000
 
 /* Agent store structure */
@@ -85,15 +84,29 @@ static bool _create_backup(const char *filename) {
     if (!filename) {
         return false;
     }
-    
+
     /* Check if original file exists using access() */
     if (access(filename, F_OK) != 0) {
         return true; /* No backup needed - file doesn't exist */
     }
-    
+
     /* Use ar_io backup functionality */
     ar_file_result_t result = ar_io__create_backup(filename);
     return (result == AR_FILE_RESULT__SUCCESS);
+}
+
+/* Helper to validate YAML structure for agent store */
+static bool _validate_yaml_structure(ar_data_t *ref_root) {
+    if (!ref_root || ar_data__get_type(ref_root) != AR_DATA_TYPE__MAP) {
+        return false;
+    }
+
+    ar_data_t *ref_agents = ar_data__get_map_data(ref_root, "agents");
+    if (!ref_agents || ar_data__get_type(ref_agents) != AR_DATA_TYPE__LIST) {
+        return false;
+    }
+
+    return true;
 }
 
 /* Helper function to build YAML root structure */
@@ -309,36 +322,29 @@ bool ar_agent_store__load(ar_agent_store_t *mut_store) {
     if (!mut_store || !mut_store->ref_registry) {
         return false;
     }
-    
-    /* Check if file exists using access() */
+
+    /* Check if file exists */
     if (access(mut_store->filename, F_OK) != 0) {
         ar_io__info("Warning: Agent store file does not exist");
         return true; /* Not an error if file doesn't exist */
     }
-    
-    /* Open file for reading */
-    FILE *file = NULL;
-    ar_file_result_t open_result = ar_io__open_file(mut_store->filename, "r", &file);
-    if (open_result != AR_FILE_RESULT__SUCCESS || !file) {
+
+    /* Parse YAML file */
+    ar_yaml_reader_t *own_reader = ar_yaml_reader__create(NULL);
+    if (!own_reader) {
         return false;
     }
-    
-    char line[MAX_LINE_LENGTH];
-    int agent_count = 0;
-    
-    /* Parse file and load agents */
-    while (ar_io__read_line(file, line, sizeof(line), mut_store->filename)) {
-        if (strncmp(line, "agent_count=", 12) == 0) {
-            agent_count = (int)strtol(line + 12, NULL, 10);
-            if (agent_count > MAX_STORE_AGENTS) {
-                ar_io__close_file(file, mut_store->filename);
-                return false;
-            }
-        }
-        /* Additional parsing logic would go here */
+
+    ar_data_t *own_root = ar_yaml_reader__read_from_file(own_reader, mut_store->filename);
+    ar_yaml_reader__destroy(own_reader);
+
+    if (!own_root || !_validate_yaml_structure(own_root)) {
+        if (own_root) ar_data__destroy(own_root);
+        return false; /* YAML parsing failed or invalid structure */
     }
-    
-    ar_io__close_file(file, mut_store->filename);
+
+    /* For now, just destroy and return success (agent creation in next cycle) */
+    ar_data__destroy(own_root);
     return true;
 }
 

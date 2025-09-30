@@ -145,7 +145,7 @@ ar_data_t* ar_data__create_map(void) {
  */
 void ar_data__destroy(ar_data_t *own_data) {
     if (!own_data) return;
-    
+
     // Can only destroy unowned data
     if (own_data->owner != NULL) {
         fprintf(stderr, "ar_data__destroy: Cannot destroy owned data\n");
@@ -205,7 +205,7 @@ void ar_data__destroy(ar_data_t *own_data) {
         if (own_data->own_keys) {
             void **own_key_ptrs = ar_list__items(own_data->own_keys);
             size_t key_count = ar_list__count(own_data->own_keys);
-            
+
             if (own_key_ptrs) {
                 for (size_t i = 0; i < key_count; i++) {
                     AR__HEAP__FREE(own_key_ptrs[i]); // Free each key string
@@ -213,7 +213,7 @@ void ar_data__destroy(ar_data_t *own_data) {
                 AR__HEAP__FREE(own_key_ptrs); // Free the array itself
                 own_key_ptrs = NULL; // Mark as freed
             }
-            
+
             // Destroy the key tracking list
             ar_list__destroy(own_data->own_keys);
             own_data->own_keys = NULL;

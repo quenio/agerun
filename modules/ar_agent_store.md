@@ -68,6 +68,8 @@ The module follows Parnas principles:
 - `ar_data` - For agent memory data
 - `ar_list` - For collection operations
 - `ar_io` - For safe file operations
+- `ar_yaml_writer` - For writing YAML format
+- `ar_yaml_reader` - For parsing YAML format
 - `ar_heap` - For memory management
 
 ## Error Handling

@@ -847,11 +847,12 @@ Modify ar_executable.c to save and load the agerun.agency file for agent state p
   - [x] Test YAML output format
   - [x] **BONUS**: Fixed shallow copy NULL owner issue - now uses ar_data__claim_or_copy() with proper store reference
 
-- [ ] TDD Cycle 7: Save memory as list of key/type/value
-  - [ ] Convert agent memory map to list format
-  - [ ] Each item: {key: "name", type: "string", value: "value"}
-  - [ ] Handle all data types (string, integer, double)
-  - [ ] Verify memory persistence format
+- [x] TDD Cycle 7: Save memory format decision (Completed 2025-09-29)
+  - [x] **DECISION**: Skip list-based format - current map format is sufficient
+  - [x] YAML already preserves types (string, integer, double) through its type system
+  - [x] Test `test_store_yaml_format_validation` verifies types are preserved correctly
+  - [x] Map format is simpler, more readable, and human-editable
+  - [x] No explicit type field needed - YAML handles type inference on load
 
 ### Phase 5 - Agent Store Load Implementation
 - [ ] TDD Cycle 8: Parse agent definitions from YAML
@@ -866,11 +867,11 @@ Modify ar_executable.c to save and load the agerun.agency file for agent state p
   - [ ] Set agent ID using ar_agent__set_id()
   - [ ] Register agent in registry
 
-- [ ] TDD Cycle 10: Restore agent memory from list
+- [ ] TDD Cycle 10: Restore agent memory from map
   - [ ] Get mutable memory with ar_agent__get_mutable_memory()
-  - [ ] Iterate memory list items
-  - [ ] Parse key, type, value from each item
-  - [ ] Set values using appropriate ar_data__set_map_* functions
+  - [ ] Iterate memory map key-value pairs
+  - [ ] Use ar_data__get_map_keys() to get all keys
+  - [ ] Copy each value using ar_data__set_map_data()
 
 - [ ] TDD Cycle 11: Handle multiple agents
   - [ ] Test with 3+ agents with different methods

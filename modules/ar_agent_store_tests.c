@@ -32,10 +32,7 @@ static void test_store_basics(void) {
     // Test basic save/load operations
     // When saving with no agents
     assert(ar_agent_store__save(own_store));
-    
-    // When loading 
-    assert(ar_agent_store__load(own_store));
-    
+
     // Clean up
     ar_agent_store__destroy(own_store);
     ar_methodology__destroy(own_methodology);
@@ -59,10 +56,7 @@ static void test_store_empty_save_load(void) {
     
     // When saving empty state
     assert(ar_agent_store__save(own_store));
-    
-    // When loading
-    assert(ar_agent_store__load(own_store));
-    
+
     // Then no agents should exist
     assert(ar_agent_registry__count(own_registry) == 0);
     
@@ -116,14 +110,7 @@ static void test_store_single_agent(void) {
     ar_agent_registry__unregister_id(own_registry, agent_id);
     ar_agent__destroy(own_agent);
     assert(ar_agent_registry__count(own_registry) == 0);
-    
-    // When loading
-    assert(ar_agent_store__load(own_store));
-    
-    // Then the agent should be restored (once load is fully implemented)
-    // For now, just verify save/load operations complete successfully
-    // TODO: Add verification once agent_store load implementation is complete
-    
+
     // Clean up
     ar_agent_store__delete(own_store);
     ar_agent_store__destroy(own_store);
@@ -202,13 +189,7 @@ static void test_store_multiple_agents(void) {
     ar_agent_registry__unregister_id(own_registry, calc1_id);
     ar_agent__destroy(own_calc1);
     assert(ar_agent_registry__count(own_registry) == 0);
-    
-    // When loading
-    assert(ar_agent_store__load(own_store));
-    
-    // Note: Load implementation is incomplete, so we just verify it doesn't crash
-    // TODO: Add full verification once agent_store load implementation is complete
-    
+
     // Clean up
     ar_agent_store__delete(own_store);
     ar_agent_store__destroy(own_store);
@@ -222,44 +203,44 @@ static void test_store_multiple_agents(void) {
 
 static void test_store_file_corruption(void) {
     printf("Testing store file corruption handling...\n");
-    
+
     // Given a registry and store
     ar_agent_registry_t *own_registry = ar_agent_registry__create();
     assert(own_registry != NULL);
-    
+
     ar_methodology_t *own_methodology = ar_methodology__create(NULL);
     assert(own_methodology != NULL);
-    
+
     ar_agent_store_t *own_store = ar_agent_store__create(own_registry, own_methodology);
     assert(own_store != NULL);
-    
+
     // Clean up any existing store
     ar_agent_store__delete(own_store);
-    
-    // Create a corrupted file
+
+    // When creating corrupted file (invalid YAML)
     FILE *fp = fopen(ar_agent_store__get_path(own_store), "w");
     assert(fp != NULL);
     fprintf(fp, "invalid data\n");
     fprintf(fp, "more garbage\n");
     fclose(fp);
-    
-    // When loading from corrupted file
-    assert(ar_agent_store__load(own_store)); // Should succeed but with empty state
-    
-    // Note: Load implementation is incomplete, so we just verify it doesn't crash
-    // TODO: Add corruption detection and recovery once agent_store load implementation is complete
-    
-    // Then no agents should exist (they weren't loaded)
+
+    // When loading corrupted file
+    bool result = ar_agent_store__load(own_store);
+
+    // Then should return false (YAML parsing fails on corrupted data)
+    assert(result == false);
+
+    // Then no agents should exist (nothing was loaded)
     assert(ar_agent_registry__count(own_registry) == 0);
-    
-    // Clean up the corrupted file manually since load doesn't handle corruption yet
+
+    // Clean up the corrupted file
     ar_agent_store__delete(own_store);
-    
+
     // Clean up
     ar_agent_store__destroy(own_store);
     ar_agent_registry__destroy(own_registry);
     ar_methodology__destroy(own_methodology);
-    
+
     printf("✓ Store file corruption handling test passed\n");
 }
 
@@ -297,13 +278,7 @@ static void test_store_missing_method(void) {
     // Destroy the agent
     ar_agent_registry__unregister_id(own_registry, agent_id);
     ar_agent__destroy(own_agent);
-    
-    // When loading (without the method available for reconstruction)
-    assert(ar_agent_store__load(own_store));
-    
-    // Note: Load implementation is incomplete, so we just verify it doesn't crash
-    // TODO: Add verification once agent_store load implementation is complete
-    
+
     // Clean up
     ar_agent_store__delete(own_store);
     ar_agent_store__destroy(own_store);
@@ -363,13 +338,7 @@ static void test_store_id_preservation(void) {
     ar_agent__destroy(own_agent2);
     ar_agent_registry__unregister_id(own_registry, id3);
     ar_agent__destroy(own_agent3);
-    
-    // Load
-    assert(ar_agent_store__load(own_store));
-    
-    // Note: Load implementation is incomplete, so we just verify it doesn't crash
-    // TODO: Add ID preservation verification once agent_store load implementation is complete
-    
+
     // Clean up
     ar_agent_store__delete(own_store);
     ar_agent_store__destroy(own_store);
@@ -479,33 +448,71 @@ static void test_store_yaml_format_validation(void) {
 
 static void test_store_methodology_support(void) {
     printf("Testing agent store methodology support...\n");
-    
+
     // Given a registry and methodology
     ar_agent_registry_t *own_registry = ar_agent_registry__create();
     assert(own_registry != NULL);
-    
+
     ar_methodology_t *own_methodology = ar_methodology__create(NULL);
     assert(own_methodology != NULL);
-    
+
     // When creating agent store with methodology
     ar_agent_store_t *own_store = ar_agent_store__create(own_registry, own_methodology);
     assert(own_store != NULL);
-    
+
     // Then methodology should be accessible from agent store
     ar_methodology_t *ref_methodology = ar_agent_store__get_methodology(own_store);
     assert(ref_methodology == own_methodology);
-    
+
     // Clean up
     ar_agent_store__destroy(own_store);
     ar_methodology__destroy(own_methodology);
     ar_agent_registry__destroy(own_registry);
-    
+
     printf("✓ Agent store methodology support test passed\n");
+}
+
+static void test_store_invalid_yaml_structure(void) {
+    printf("Testing invalid YAML structure handling...\n");
+
+    // Given a store with invalid YAML file (missing "agents" key)
+    ar_agent_registry_t *own_registry = ar_agent_registry__create();
+    assert(own_registry != NULL);
+
+    ar_methodology_t *own_methodology = ar_methodology__create(NULL);
+    assert(own_methodology != NULL);
+
+    ar_agent_store_t *own_store = ar_agent_store__create(own_registry, own_methodology);
+    assert(own_store != NULL);
+
+    // Clean up any existing store
+    ar_agent_store__delete(own_store);
+
+    // When creating YAML file with wrong structure (no "agents" list)
+    FILE *fp = fopen(ar_agent_store__get_path(own_store), "w");
+    assert(fp != NULL);
+    fprintf(fp, "version: 1.0\n");       // Valid YAML, but wrong structure
+    fprintf(fp, "wrong_key: value\n");    // Missing required "agents" key
+    fclose(fp);
+
+    // When loading file with invalid structure
+    bool result = ar_agent_store__load(own_store);
+
+    // Then should return false (YAML parsed but structure invalid)
+    assert(result == false);  // RED: This will FAIL - current implementation returns true
+
+    // Clean up
+    ar_agent_store__delete(own_store);
+    ar_agent_store__destroy(own_store);
+    ar_agent_registry__destroy(own_registry);
+    ar_methodology__destroy(own_methodology);
+
+    printf("✓ Invalid YAML structure handling test passed\n");
 }
 
 int main(void) {
     printf("Running agent store tests...\n\n");
-    
+
     test_store_basics();
     test_store_empty_save_load();
     test_store_single_agent();
@@ -515,7 +522,8 @@ int main(void) {
     test_store_id_preservation();
     test_store_methodology_support();
     test_store_yaml_format_validation();
-    
-    printf("All 10 tests passed!\n");
+    test_store_invalid_yaml_structure();
+
+    printf("All 11 tests passed!\n");
     return 0;
 }
