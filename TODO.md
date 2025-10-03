@@ -977,11 +977,11 @@ make checkpoint-cleanup CMD=<command>
   - [ ] Update any remaining references to use ar_yaml_reader/writer
 
 ### Priority 1 - Critical Safety Issues
-- [ ] **Fix YAML list indentation parsing bug** (BLOCKS: Agent Store multiple agent load verification)
-  - [ ] **Problem**: ar_yaml_writer indents list items (`  - id: 10`) but ar_yaml_reader can only parse first item
-  - [ ] **Impact**: Cannot load multiple agents from manually-written or spec-compliant YAML files
-  - [ ] **Current workaround**: Save/load cycle works because both modules have same bug
-  - [ ] **Test blocked**: `test_store_load_creates_multiple_agents()` commented out in ar_agent_store_tests.c:592
+- [x] **Fix YAML list indentation parsing bug** (Completed 2025-10-02)
+  - [x] **Fixed**: Added `_update_container_stack(&state, indent);` call in ar_yaml_reader.c line 275
+  - [x] **Root cause**: Missing stack management when processing list items with nested maps
+  - [x] **Test enabled**: `test_store_load_creates_multiple_agents()` now passes (13 tests total)
+  - [x] **Additional fix**: Corrected test data indentation in ar_agent_store_tests.c lines 539-544
   - [ ] Fix ar_yaml_reader to parse indented list items correctly
   - [ ] Update ar_yaml_writer to match YAML spec (list items at key level: `- id:`)
   - [ ] Uncomment and run `test_store_load_creates_multiple_agents()`

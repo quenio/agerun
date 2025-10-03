@@ -1,5 +1,7 @@
 # YAML List Indentation Bug
 
+**Status**: ✅ RESOLVED (2025-10-02)
+
 **Context**: Discovered during TDD Cycle 9 Iteration 9.5 (multiple agent load verification)
 
 **Problem**: `ar_yaml_reader` cannot parse indented YAML list items, only reading the first item in any list.
@@ -21,10 +23,13 @@ Result: Only first agent (id: 10) is loaded, despite YAML containing 3 agents.
 
 ## Root Cause
 
-**Inconsistency between writer and reader**:
-- `ar_yaml_writer` outputs indented list items: `agents: \n  - id: 10` (2 spaces before dash)
-- `ar_yaml_reader` cannot parse indented lists - only reads first item
-- Both violate YAML spec in different ways
+**Missing stack management in ar_yaml_reader**:
+- When parsing list items containing nested maps, the reader failed to pop the previous map container from the stack before processing the next list item
+- **Location**: `ar_yaml_reader.c` line 272 (before the fix at line 275)
+- **Issue**: Missing `_update_container_stack(&state, indent);` call before processing list items
+- This caused subsequent list items to be incorrectly nested under the previous item's map instead of being siblings
+
+**Additional issue**: Test data indentation error in `ar_agent_store_tests.c` (lines 539-544) had 2 extra spaces, making single-agent test non-spec-compliant
 
 ## Why Save/Load Cycle Works
 
@@ -77,11 +82,15 @@ Test `test_store_load_creates_multiple_agents()` commented out:
 - Single agent load (tested by `test_store_load_creates_single_agent()`)
 - Agent store implementation (verified to be correct)
 
-## Fix Required
+## Fix Applied
 
-1. **ar_yaml_reader**: Update parser to handle indented list items
-2. **ar_yaml_writer**: Output list items at key level per YAML spec
-3. **Verify**: Uncomment and run `test_store_load_creates_multiple_agents()`
+1. **ar_yaml_reader.c line 275**: Added `_update_container_stack(&state, indent);` before processing list items to properly pop nested map containers from the stack
+2. **ar_agent_store_tests.c lines 539-544**: Fixed YAML indentation (removed 2 extra spaces) to be spec-compliant
+3. **ar_agent_store_tests.c lines 592-674**: Created complete test `test_store_load_creates_multiple_agents()` with proper method registration
+4. **ar_agent_store_tests.c line 685**: Enabled the new test
+5. **ar_agent_store_tests.c line 687**: Updated test count from 12 to 13
+
+**Verification**: All 13 tests pass, including multiple agent loading
 
 ## Technical Details
 

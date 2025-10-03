@@ -2,6 +2,19 @@
 
 ## 2025-10-02
 
+### ✅ YAML List Parsing Bug Fix
+- **Fixed critical parser bug** preventing multiple agent loading from YAML files
+- **Root cause identified**: Missing `_update_container_stack(&state, indent);` call in ar_yaml_reader.c line 272
+  - When parsing list items containing nested maps, the reader failed to pop previous map container from stack
+  - Caused subsequent list items to be incorrectly nested instead of treated as siblings
+- **Fixes applied**:
+  - Added stack update call at line 275 in ar_yaml_reader.c
+  - Fixed test data indentation in ar_agent_store_tests.c lines 539-544 (removed 2 extra spaces)
+  - Created complete test `test_store_load_creates_multiple_agents()` with proper method registration (lines 592-674)
+  - Enabled new test (line 685) and updated test count to 13 (line 687)
+- **Result**: All 13 agent store tests passing with 0 memory leaks
+- **Impact**: Agent store can now load multiple agents from manually-written and spec-compliant YAML files
+
 ### ✅ TDD Cycle 9: Agent Store Load Implementation - Single Agent Support Complete
 - **Completed Iteration 9.1**: Single agent load functionality verified with `test_store_load_creates_single_agent()`
 - **Implementation verified**: `ar_agent_store__load()` successfully:
@@ -12,13 +25,7 @@
   - Sets agent ID using `ar_agent__set_id()`
   - Registers agent in registry
   - Restores agent memory from YAML map
-- **Discovered YAML parser bug**: ar_yaml_reader cannot parse indented list items
-  - Blocks Iteration 9.5 (multiple agent load verification)
-  - Test `test_store_load_creates_multiple_agents()` commented out at line 592
-  - Implementation is correct (verified by `test_store_multiple_agents()` save/load cycle)
-  - Bug documented in TODO.md under "ar_yaml Module Improvements - Priority 1"
-- **Result**: 12 tests passing with 0 memory leaks (was 13, one test blocked by YAML parser bug)
-- **Impact**: Agent store can load single agents from YAML; multiple agent loading works but cannot be verified with manually-written YAML
+- **Impact**: Agent store can load agents from YAML files
 
 ## 2025-09-29
 

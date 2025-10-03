@@ -272,6 +272,9 @@ ar_data_t* ar_yaml_reader__read_from_file(ar_yaml_reader_t *mut_reader, const ch
         else if (content[0] == '-' && content[1] == ' ') {
             char *value = content + 2;
             
+            // Update stack based on indentation
+            _update_container_stack(&state, indent);
+            
             // If we were expecting a value for a map key, create a list
             if (state.current_key && state.stack_size > 0) {
                 ar_data_t *mut_parent = state.containers[state.stack_size - 1];

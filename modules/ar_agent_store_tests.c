@@ -8,6 +8,7 @@
 #include <string.h>
 #include <assert.h>
 #include <unistd.h>
+#include <inttypes.h>
 #include "ar_agent_store.h"
 #include "ar_agent_registry.h"
 #include "ar_agent.h"
@@ -535,13 +536,13 @@ static void test_store_load_creates_single_agent(void) {
     FILE *fp = fopen(ar_agent_store__get_path(own_store), "w");
     assert(fp != NULL);
     fprintf(fp, "# AgeRun YAML File\n");
-    fprintf(fp, "agents: \n");
-    fprintf(fp, "  - id: 42\n");
-    fprintf(fp, "    method_name: echo\n");
-    fprintf(fp, "    method_version: 1.0.0\n");
-    fprintf(fp, "    memory: \n");
-    fprintf(fp, "      count: 5\n");
-    fprintf(fp, "      name: test_agent\n");
+    fprintf(fp, "agents:\n");
+    fprintf(fp, "- id: 42\n");
+    fprintf(fp, "  method_name: echo\n");
+    fprintf(fp, "  method_version: 1.0.0\n");
+    fprintf(fp, "  memory:\n");
+    fprintf(fp, "    count: 5\n");
+    fprintf(fp, "    name: test_agent\n");
     fclose(fp);
 
     // When loading store
@@ -589,11 +590,96 @@ static void test_store_load_creates_single_agent(void) {
     printf("✓ Store load creates single agent test passed\n");
 }
 
-// NOTE: Multiple agent load disabled due to YAML parser bug
-// The ar_yaml_writer produces indented list items (  - id:) which ar_yaml_reader
-// cannot parse correctly - it only reads the first item.
-// This is covered by test_store_multiple_agents() which uses save/load cycle
-// and works because both modules have the same bug.
+static void test_store_load_creates_multiple_agents(void) {
+    ar_methodology_t *own_methodology = ar_methodology__create(NULL);
+    assert(own_methodology != NULL);
+    
+    ar_method_t *own_echo_method = ar_method__create("echo", "send(sender, message)", "1.0.0");
+    assert(own_echo_method != NULL);
+    ar_methodology__register_method(own_methodology, own_echo_method);
+    
+    ar_method_t *own_calc_method = ar_method__create("calculator", "send(sender, result)", "1.0.0");
+    assert(own_calc_method != NULL);
+    ar_methodology__register_method(own_methodology, own_calc_method);
+    
+    ar_agent_registry_t *own_registry = ar_agent_registry__create();
+    assert(own_registry != NULL);
+    
+    ar_agent_store_t *own_store = ar_agent_store__create(own_registry, own_methodology);
+    assert(own_store != NULL);
+    
+    ar_agent_store__delete(own_store);
+    
+    FILE *fp = fopen(ar_agent_store__get_path(own_store), "w");
+    assert(fp != NULL);
+    fprintf(fp, "# AgeRun YAML File\n");
+    fprintf(fp, "agents:\n");
+    fprintf(fp, "- id: 10\n");
+    fprintf(fp, "  method_name: echo\n");
+    fprintf(fp, "  method_version: 1.0.0\n");
+    fprintf(fp, "  memory:\n");
+    fprintf(fp, "    message: first_agent\n");
+    fprintf(fp, "- id: 20\n");
+    fprintf(fp, "  method_name: calculator\n");
+    fprintf(fp, "  method_version: 1.0.0\n");
+    fprintf(fp, "  memory:\n");
+    fprintf(fp, "    result: 100\n");
+    fprintf(fp, "- id: 30\n");
+    fprintf(fp, "  method_name: echo\n");
+    fprintf(fp, "  method_version: 1.0.0\n");
+    fprintf(fp, "  memory:\n");
+    fprintf(fp, "    message: third_agent\n");
+    fclose(fp);
+    
+    bool result = ar_agent_store__load(own_store);
+    assert(result == true);
+    
+    int64_t first_id = ar_agent_registry__get_first(own_registry);
+    assert(first_id == 10);
+    
+    ar_agent_t *ref_agent1 = (ar_agent_t*)ar_agent_registry__find_agent(own_registry, 10);
+    assert(ref_agent1 != NULL);
+    const ar_method_t *ref_method1 = ar_agent__get_method(ref_agent1);
+    assert(ref_method1 != NULL);
+    assert(strcmp(ar_method__get_name(ref_method1), "echo") == 0);
+    
+    ar_agent_t *ref_agent2 = (ar_agent_t*)ar_agent_registry__find_agent(own_registry, 20);
+    assert(ref_agent2 != NULL);
+    const ar_method_t *ref_method2 = ar_agent__get_method(ref_agent2);
+    assert(ref_method2 != NULL);
+    assert(strcmp(ar_method__get_name(ref_method2), "calculator") == 0);
+    
+    ar_agent_t *ref_agent3 = (ar_agent_t*)ar_agent_registry__find_agent(own_registry, 30);
+    assert(ref_agent3 != NULL);
+    const ar_method_t *ref_method3 = ar_agent__get_method(ref_agent3);
+    assert(ref_method3 != NULL);
+    assert(strcmp(ar_method__get_name(ref_method3), "echo") == 0);
+    
+    int64_t next_id = ar_agent_registry__get_next_id(own_registry);
+    assert(next_id == 31);
+    
+    ar_agent_t *own_agent1 = (ar_agent_t*)ar_agent_registry__find_agent(own_registry, 10);
+    if (own_agent1) {
+        ar_agent_registry__unregister_id(own_registry, 10);
+        ar_agent__destroy(own_agent1);
+    }
+    ar_agent_t *own_agent2 = (ar_agent_t*)ar_agent_registry__find_agent(own_registry, 20);
+    if (own_agent2) {
+        ar_agent_registry__unregister_id(own_registry, 20);
+        ar_agent__destroy(own_agent2);
+    }
+    ar_agent_t *own_agent3 = (ar_agent_t*)ar_agent_registry__find_agent(own_registry, 30);
+    if (own_agent3) {
+        ar_agent_registry__unregister_id(own_registry, 30);
+        ar_agent__destroy(own_agent3);
+    }
+    ar_agent_store__delete(own_store);
+    ar_agent_store__destroy(own_store);
+    ar_agent_registry__destroy(own_registry);
+    ar_methodology__destroy(own_methodology);
+    
+    printf("✓ Store load creates multiple agents test passed\n");
+}
 
 int main(void) {
     printf("Running agent store tests...\n\n");
@@ -609,8 +695,8 @@ int main(void) {
     test_store_yaml_format_validation();
     test_store_invalid_yaml_structure();
     test_store_load_creates_single_agent();
-    // test_store_load_creates_multiple_agents(); // Disabled - YAML parser bug
+    test_store_load_creates_multiple_agents();
 
-    printf("All 12 tests passed!\n");
+    printf("All 13 tests passed!\n");
     return 0;
 }
