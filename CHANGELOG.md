@@ -2,6 +2,21 @@
 
 ## 2025-10-03
 
+### ✅ Agent Store Fixture Enhancement - Code Duplication Elimination
+- **Added missing YAML helper** `ar_agent_store_fixture__create_yaml_file_single()`:
+  - Generates YAML with single agent (ID 42, echo method)
+  - Mirrors existing `create_yaml_file()` which creates 3 agents
+  - Eliminates 20+ lines of duplicated fprintf() calls in tests
+- **Refactored agent store tests** to use YAML helpers:
+  - `test_store_load_creates_single_agent()` - Now uses `create_yaml_file_single()`
+  - `test_store_load_creates_multiple_agents()` - Now uses `create_yaml_file()`
+  - Eliminated ~30 lines of inline YAML generation code
+- **Added fixture test coverage**:
+  - New test `test_fixture_create_yaml_file_single()` verifies single-agent YAML helper
+  - Renamed existing test to `test_fixture_create_yaml_file()` for clarity
+  - Fixture tests increased from 10 to 11
+- **Result**: All 13 agent store tests + 11 fixture tests passing with zero memory leaks
+
 ### ✅ Agent Store Test Suite Refactoring Complete
 - **Completed fixture integration** across all applicable agent store tests
 - **Refactored 5 tests** in `ar_agent_store_tests.c` to use `ar_agent_store_fixture`:

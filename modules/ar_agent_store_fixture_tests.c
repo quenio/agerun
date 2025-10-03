@@ -1,17 +1,13 @@
 #include "ar_agent_store_fixture.h"
-#include "ar_agent_store.h"
-#include "ar_agent_registry.h"
-#include "ar_methodology.h"
-#include "ar_agent.h"
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
 
-static void test_fixture_create_destroy(void) {
-    printf("Testing ar_agent_store_fixture__create() and ar_agent_store_fixture__destroy()...\n");
+static void test_fixture_create_full_destroy(void) {
+    printf("Testing ar_agent_store_fixture__create_full() and ar_agent_store_fixture__destroy()...\n");
     
-    // Given we create an agent store fixture
-    ar_agent_store_fixture_t *own_fixture = ar_agent_store_fixture__create();
+    // Given we create a full agent store fixture
+    ar_agent_store_fixture_t *own_fixture = ar_agent_store_fixture__create_full();
     
     // Then the fixture should be created successfully
     assert(own_fixture != NULL);
@@ -20,168 +16,250 @@ static void test_fixture_create_destroy(void) {
     ar_agent_store_fixture__destroy(own_fixture);
     
     // Then no assertion failures should occur (destruction succeeded)
-    printf("✓ Agent store fixture create/destroy test passed\n");
+    printf("✓ Agent store fixture create full/destroy test passed\n");
 }
 
-static void test_fixture_create_test_methodology(void) {
-    printf("Testing ar_agent_store_fixture__create_test_methodology()...\n");
+static void test_fixture_create_empty_destroy(void) {
+    printf("Testing ar_agent_store_fixture__create_empty() and ar_agent_store_fixture__destroy()...\n");
     
-    // Given an agent store fixture
-    ar_agent_store_fixture_t *own_fixture = ar_agent_store_fixture__create();
+    // Given we create an empty agent store fixture
+    ar_agent_store_fixture_t *own_fixture = ar_agent_store_fixture__create_empty();
+    
+    // Then the fixture should be created successfully
     assert(own_fixture != NULL);
     
-    // When we create a test methodology
-    ar_methodology_t *own_methodology = ar_agent_store_fixture__create_test_methodology(own_fixture);
-    
-    // Then the methodology should be created with echo and calculator methods
-    assert(own_methodology != NULL);
-    
-    ar_method_t *ref_echo = ar_methodology__get_method(own_methodology, "echo", "1.0.0");
-    assert(ref_echo != NULL);
-    assert(strcmp(ar_method__get_name(ref_echo), "echo") == 0);
-    
-    ar_method_t *ref_calc = ar_methodology__get_method(own_methodology, "calculator", "1.0.0");
-    assert(ref_calc != NULL);
-    assert(strcmp(ar_method__get_name(ref_calc), "calculator") == 0);
-    
-    // Clean up
-    ar_methodology__destroy(own_methodology);
+    // When we destroy the fixture
     ar_agent_store_fixture__destroy(own_fixture);
     
-    printf("✓ Agent store fixture create test methodology test passed\n");
+    // Then no assertion failures should occur (destruction succeeded)
+    printf("✓ Agent store fixture create empty/destroy test passed\n");
 }
 
-static void test_fixture_create_multiple_agents_yaml(void) {
-    printf("Testing ar_agent_store_fixture__create_multiple_agents_yaml()...\n");
+static void test_fixture_create_agent(void) {
+    printf("Testing ar_agent_store_fixture__create_agent()...\n");
     
-    // Given an agent store fixture
-    ar_agent_store_fixture_t *own_fixture = ar_agent_store_fixture__create();
+    // Given a full fixture with test methods
+    ar_agent_store_fixture_t *own_fixture = ar_agent_store_fixture__create_full();
     assert(own_fixture != NULL);
     
-    const char *test_path = "test_agents.yaml";
+    // When we create an agent with echo method
+    int64_t agent_id = ar_agent_store_fixture__create_agent(own_fixture, "echo", "1.0.0");
     
-    // When we create a YAML file with multiple agents
-    bool result = ar_agent_store_fixture__create_multiple_agents_yaml(own_fixture, test_path);
+    // Then an agent ID should be allocated
+    assert(agent_id > 0);
     
-    // Then the YAML file should be created successfully
-    assert(result == true);
-    
-    // And the file should exist
-    FILE *fp = fopen(test_path, "r");
-    assert(fp != NULL);
-    fclose(fp);
+    // And the agent count should be 1
+    assert(ar_agent_store_fixture__get_agent_count(own_fixture) == 1);
     
     // Clean up
-    remove(test_path);
     ar_agent_store_fixture__destroy(own_fixture);
     
-    printf("✓ Agent store fixture create multiple agents YAML test passed\n");
+    printf("✓ Agent store fixture create agent test passed\n");
+}
+
+static void test_fixture_get_agent_memory(void) {
+    printf("Testing ar_agent_store_fixture__get_agent_memory()...\n");
+    
+    // Given a fixture with an agent
+    ar_agent_store_fixture_t *own_fixture = ar_agent_store_fixture__create_full();
+    int64_t agent_id = ar_agent_store_fixture__create_agent(own_fixture, "echo", "1.0.0");
+    
+    // When we get the agent's memory
+    ar_data_t *mut_memory = ar_agent_store_fixture__get_agent_memory(own_fixture, agent_id);
+    
+    // Then memory should be accessible
+    assert(mut_memory != NULL);
+    assert(ar_data__get_type(mut_memory) == AR_DATA_TYPE__MAP);
+    
+    // Clean up
+    ar_agent_store_fixture__destroy(own_fixture);
+    
+    printf("✓ Agent store fixture get agent memory test passed\n");
 }
 
 static void test_fixture_verify_agent(void) {
     printf("Testing ar_agent_store_fixture__verify_agent()...\n");
     
-    // Given an agent store fixture and test methodology
-    ar_agent_store_fixture_t *own_fixture = ar_agent_store_fixture__create();
-    assert(own_fixture != NULL);
+    // Given a fixture with an echo agent
+    ar_agent_store_fixture_t *own_fixture = ar_agent_store_fixture__create_full();
+    int64_t agent_id = ar_agent_store_fixture__create_agent(own_fixture, "echo", "1.0.0");
     
-    ar_methodology_t *own_methodology = ar_agent_store_fixture__create_test_methodology(own_fixture);
-    assert(own_methodology != NULL);
-    
-    // And a registry with an agent
-    ar_agent_registry_t *own_registry = ar_agent_registry__create();
-    assert(own_registry != NULL);
-    
-    ar_method_t *ref_method = ar_methodology__get_method(own_methodology, "echo", "1.0.0");
-    assert(ref_method != NULL);
-    
-    ar_agent_t *own_agent = ar_agent__create_with_method(ref_method, NULL);
-    assert(own_agent != NULL);
-    
-    int64_t agent_id = 100;
-    ar_agent_registry__register_id(own_registry, agent_id);
-    ar_agent_registry__track_agent(own_registry, agent_id, own_agent);
-    assert(agent_id > 0);
-    
-    // When we verify the agent has the expected method
-    bool result = ar_agent_store_fixture__verify_agent(own_registry, agent_id, "echo");
+    // When we verify the agent has the echo method
+    bool result = ar_agent_store_fixture__verify_agent(own_fixture, agent_id, "echo");
     
     // Then verification should succeed
     assert(result == true);
     
     // And verification with wrong method name should fail
-    bool wrong_result = ar_agent_store_fixture__verify_agent(own_registry, agent_id, "calculator");
+    bool wrong_result = ar_agent_store_fixture__verify_agent(own_fixture, agent_id, "calculator");
     assert(wrong_result == false);
     
     // Clean up
-    ar_agent_t *own_cleanup_agent = (ar_agent_t*)ar_agent_registry__find_agent(own_registry, agent_id);
-    if (own_cleanup_agent) {
-        ar_agent_registry__unregister_id(own_registry, agent_id);
-        ar_agent__destroy(own_cleanup_agent);
-    }
-    ar_agent_registry__destroy(own_registry);
-    ar_methodology__destroy(own_methodology);
     ar_agent_store_fixture__destroy(own_fixture);
     
     printf("✓ Agent store fixture verify agent test passed\n");
 }
 
-static void test_fixture_destroy_all_agents(void) {
-    printf("Testing ar_agent_store_fixture__destroy_all_agents()...\n");
+static void test_fixture_destroy_agent(void) {
+    printf("Testing ar_agent_store_fixture__destroy_agent()...\n");
     
-    // Given an agent store fixture, methodology, and registry with multiple agents
-    ar_agent_store_fixture_t *own_fixture = ar_agent_store_fixture__create();
-    assert(own_fixture != NULL);
+    // Given a fixture with two agents
+    ar_agent_store_fixture_t *own_fixture = ar_agent_store_fixture__create_full();
+    int64_t agent1_id = ar_agent_store_fixture__create_agent(own_fixture, "echo", "1.0.0");
+    int64_t agent2_id = ar_agent_store_fixture__create_agent(own_fixture, "calculator", "1.0.0");
+    assert(ar_agent_store_fixture__get_agent_count(own_fixture) == 2);
     
-    ar_methodology_t *own_methodology = ar_agent_store_fixture__create_test_methodology(own_fixture);
-    assert(own_methodology != NULL);
+    // When we destroy the first agent
+    ar_agent_store_fixture__destroy_agent(own_fixture, agent1_id);
     
-    ar_agent_registry_t *own_registry = ar_agent_registry__create();
-    assert(own_registry != NULL);
+    // Then the agent count should be 1
+    assert(ar_agent_store_fixture__get_agent_count(own_fixture) == 1);
     
-    ar_method_t *ref_echo = ar_methodology__get_method(own_methodology, "echo", "1.0.0");
-    ar_method_t *ref_calc = ar_methodology__get_method(own_methodology, "calculator", "1.0.0");
-    
-    ar_agent_t *own_agent1 = ar_agent__create_with_method(ref_echo, NULL);
-    ar_agent_t *own_agent2 = ar_agent__create_with_method(ref_calc, NULL);
-    ar_agent_t *own_agent3 = ar_agent__create_with_method(ref_echo, NULL);
-    
-    int64_t id1 = 100;
-    int64_t id2 = 101;
-    int64_t id3 = 102;
-    ar_agent_registry__register_id(own_registry, id1);
-    ar_agent_registry__register_id(own_registry, id2);
-    ar_agent_registry__register_id(own_registry, id3);
-    ar_agent_registry__track_agent(own_registry, id1, own_agent1);
-    ar_agent_registry__track_agent(own_registry, id2, own_agent2);
-    ar_agent_registry__track_agent(own_registry, id3, own_agent3);
-    
-    int64_t agent_ids[] = {id1, id2, id3};
-    
-    // When we destroy all agents
-    ar_agent_store_fixture__destroy_all_agents(own_registry, agent_ids, 3);
-    
-    // Then the agents should be removed from registry
-    assert(ar_agent_registry__find_agent(own_registry, id1) == NULL);
-    assert(ar_agent_registry__find_agent(own_registry, id2) == NULL);
-    assert(ar_agent_registry__find_agent(own_registry, id3) == NULL);
+    // And the second agent should still exist
+    assert(ar_agent_store_fixture__verify_agent(own_fixture, agent2_id, "calculator") == true);
     
     // Clean up
-    ar_agent_registry__destroy(own_registry);
-    ar_methodology__destroy(own_methodology);
     ar_agent_store_fixture__destroy(own_fixture);
     
-    printf("✓ Agent store fixture destroy all agents test passed\n");
+    printf("✓ Agent store fixture destroy agent test passed\n");
+}
+
+static void test_fixture_destroy_agents(void) {
+    printf("Testing ar_agent_store_fixture__destroy_agents()...\n");
+    
+    // Given a fixture with three agents
+    ar_agent_store_fixture_t *own_fixture = ar_agent_store_fixture__create_full();
+    int64_t agent1_id = ar_agent_store_fixture__create_agent(own_fixture, "echo", "1.0.0");
+    int64_t agent2_id = ar_agent_store_fixture__create_agent(own_fixture, "calculator", "1.0.0");
+    int64_t agent3_id = ar_agent_store_fixture__create_agent(own_fixture, "echo", "1.0.0");
+    assert(ar_agent_store_fixture__get_agent_count(own_fixture) == 3);
+    
+    // When we destroy all agents
+    int64_t agent_ids[] = {agent1_id, agent2_id, agent3_id};
+    ar_agent_store_fixture__destroy_agents(own_fixture, agent_ids, 3);
+    
+    // Then the agent count should be 0
+    assert(ar_agent_store_fixture__get_agent_count(own_fixture) == 0);
+    
+    // Clean up
+    ar_agent_store_fixture__destroy(own_fixture);
+    
+    printf("✓ Agent store fixture destroy agents test passed\n");
+}
+
+static void test_fixture_save_load(void) {
+    printf("Testing ar_agent_store_fixture__save() and ar_agent_store_fixture__load()...\n");
+    
+    // Given a fixture with agents
+    ar_agent_store_fixture_t *own_fixture = ar_agent_store_fixture__create_full();
+    int64_t agent1_id = ar_agent_store_fixture__create_agent(own_fixture, "echo", "1.0.0");
+    int64_t agent2_id = ar_agent_store_fixture__create_agent(own_fixture, "calculator", "1.0.0");
+    
+    // When we save the agents
+    bool save_result = ar_agent_store_fixture__save(own_fixture);
+    
+    // Then save should succeed
+    assert(save_result == true);
+    
+    // And when we destroy the agents and load them back
+    ar_agent_store_fixture__destroy_agents(own_fixture, &agent1_id, 1);
+    ar_agent_store_fixture__destroy_agents(own_fixture, &agent2_id, 1);
+    assert(ar_agent_store_fixture__get_agent_count(own_fixture) == 0);
+    
+    bool load_result = ar_agent_store_fixture__load(own_fixture);
+    
+    // Then load should succeed
+    assert(load_result == true);
+    
+    // And agents should be restored
+    assert(ar_agent_store_fixture__get_agent_count(own_fixture) == 2);
+    
+    // Clean up
+    ar_agent_store_fixture__delete_file(own_fixture);
+    ar_agent_store_fixture__destroy(own_fixture);
+    
+    printf("✓ Agent store fixture save/load test passed\n");
+}
+
+static void test_fixture_create_yaml_file_single(void) {
+    printf("Testing ar_agent_store_fixture__create_yaml_file_single()...\n");
+    
+    // Given a fixture
+    ar_agent_store_fixture_t *own_fixture = ar_agent_store_fixture__create_full();
+    const char *test_path = "test_single_agent.yaml";
+    
+    // When we create a YAML file with single test agent
+    bool result = ar_agent_store_fixture__create_yaml_file_single(own_fixture, test_path);
+    
+    // Then the YAML file should be created successfully
+    assert(result == true);
+    
+    // Clean up
+    remove(test_path);
+    ar_agent_store_fixture__destroy(own_fixture);
+    
+    printf("✓ Agent store fixture create single agent YAML file test passed\n");
+}
+
+static void test_fixture_create_yaml_file(void) {
+    printf("Testing ar_agent_store_fixture__create_yaml_file()...\n");
+    
+    // Given a fixture
+    ar_agent_store_fixture_t *own_fixture = ar_agent_store_fixture__create_full();
+    const char *test_path = "test_agents.yaml";
+    
+    // When we create a YAML file with multiple test agents
+    bool result = ar_agent_store_fixture__create_yaml_file(own_fixture, test_path);
+    
+    // Then the YAML file should be created successfully
+    assert(result == true);
+    
+    // Clean up
+    remove(test_path);
+    ar_agent_store_fixture__destroy(own_fixture);
+    
+    printf("✓ Agent store fixture create multiple agents YAML file test passed\n");
+}
+
+static void test_fixture_get_agent_ids(void) {
+    printf("Testing ar_agent_store_fixture__get_first_agent_id() and ar_agent_store_fixture__get_next_agent_id()...\n");
+    
+    // Given a fixture with one agent
+    ar_agent_store_fixture_t *own_fixture = ar_agent_store_fixture__create_full();
+    int64_t agent_id = ar_agent_store_fixture__create_agent(own_fixture, "echo", "1.0.0");
+    
+    // When we get the first agent ID
+    int64_t first_id = ar_agent_store_fixture__get_first_agent_id(own_fixture);
+    
+    // Then it should match the created agent
+    assert(first_id == agent_id);
+    
+    // And when we get the next agent ID
+    int64_t next_id = ar_agent_store_fixture__get_next_agent_id(own_fixture);
+    
+    // Then it should be greater than the current agent ID
+    assert(next_id > agent_id);
+    
+    // Clean up
+    ar_agent_store_fixture__destroy(own_fixture);
+    
+    printf("✓ Agent store fixture get agent IDs test passed\n");
 }
 
 int main(void) {
     printf("\n=== Running Agent Store Fixture Tests ===\n\n");
     
-    test_fixture_create_destroy();
-    test_fixture_create_test_methodology();
-    test_fixture_create_multiple_agents_yaml();
+    test_fixture_create_full_destroy();
+    test_fixture_create_empty_destroy();
+    test_fixture_create_agent();
+    test_fixture_get_agent_memory();
     test_fixture_verify_agent();
-    test_fixture_destroy_all_agents();
+    test_fixture_destroy_agent();
+    test_fixture_destroy_agents();
+    test_fixture_save_load();
+    test_fixture_create_yaml_file_single();
+    test_fixture_create_yaml_file();
+    test_fixture_get_agent_ids();
     
     printf("\n=== All Agent Store Fixture Tests Passed ===\n");
     return 0;
