@@ -343,7 +343,103 @@ bool ar_agent_store__load(ar_agent_store_t *mut_store) {
         return false; /* YAML parsing failed or invalid structure */
     }
 
-    /* For now, just destroy and return success (agent creation in next cycle) */
+    /* Get agents list */
+    ar_data_t *ref_agents = ar_data__get_map_data(own_root, "agents");
+    if (!ref_agents || ar_data__get_type(ref_agents) != AR_DATA_TYPE__LIST) {
+        ar_data__destroy(own_root);
+        return false;
+    }
+
+    size_t agent_count = ar_data__list_count(ref_agents);
+    ar_data_t **agent_items = ar_data__list_items(ref_agents);
+    int64_t max_agent_id = 0;
+    
+    for (size_t i = 0; i < agent_count; i++) {
+        ar_data_t *ref_agent_data = agent_items[i];
+        if (!ref_agent_data || ar_data__get_type(ref_agent_data) != AR_DATA_TYPE__MAP) {
+            continue;
+        }
+
+        /* Extract agent ID */
+        int64_t agent_id = ar_data__get_map_integer(ref_agent_data, "id");
+        if (agent_id <= 0) {
+            continue;
+        }
+
+        /* Extract method name and version */
+        const char *ref_method_name = ar_data__get_map_string(ref_agent_data, "method_name");
+        const char *ref_method_version = ar_data__get_map_string(ref_agent_data, "method_version");
+        
+        if (!ref_method_name || !ref_method_version) {
+            continue;
+        }
+
+        /* Lookup method in methodology */
+        ar_method_t *ref_method = ar_methodology__get_method(mut_store->ref_methodology, 
+                                                            ref_method_name, 
+                                                            ref_method_version);
+        if (!ref_method) {
+            continue;
+        }
+
+        /* Create agent with method (context will be NULL for now) */
+        ar_agent_t *own_agent = ar_agent__create_with_method(ref_method, NULL);
+        if (!own_agent) {
+            continue;
+        }
+
+        /* Set agent ID */
+        ar_agent__set_id(own_agent, agent_id);
+
+        /* Extract and restore agent memory */
+        ar_data_t *ref_memory_data = ar_data__get_map_data(ref_agent_data, "memory");
+        if (ref_memory_data && ar_data__get_type(ref_memory_data) == AR_DATA_TYPE__MAP) {
+            ar_data_t *mut_agent_memory = ar_agent__get_mutable_memory(own_agent);
+            ar_data_t *own_keys = ar_data__get_map_keys(ref_memory_data);
+            
+            if (own_keys) {
+                size_t key_count = ar_data__list_count(own_keys);
+                ar_data_t **key_items = ar_data__list_items(own_keys);
+                
+                for (size_t j = 0; j < key_count; j++) {
+                    const char *ref_key = ar_data__get_string(key_items[j]);
+                    if (!ref_key) continue;
+                    
+                    ar_data_t *ref_value = ar_data__get_map_data(ref_memory_data, ref_key);
+                    if (ref_value) {
+                        ar_data_t *own_value_copy = ar_data__shallow_copy(ref_value);
+                        if (own_value_copy) {
+                            ar_data__set_map_data(mut_agent_memory, ref_key, own_value_copy);
+                        }
+                    }
+                }
+                
+                if (key_items) {
+                    AR__HEAP__FREE(key_items);
+                }
+                ar_data__destroy(own_keys);
+            }
+        }
+
+        /* Register the ID and track the agent */
+        ar_agent_registry__register_id(mut_store->ref_registry, agent_id);
+        ar_agent_registry__track_agent(mut_store->ref_registry, agent_id, own_agent);
+        
+        /* Track maximum agent ID */
+        if (agent_id > max_agent_id) {
+            max_agent_id = agent_id;
+        }
+    }
+
+    /* Update next_id to prevent collisions with loaded agents */
+    if (max_agent_id > 0) {
+        ar_agent_registry__set_next_id(mut_store->ref_registry, max_agent_id + 1);
+    }
+
+    if (agent_items) {
+        AR__HEAP__FREE(agent_items);
+    }
+
     ar_data__destroy(own_root);
     return true;
 }

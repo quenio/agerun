@@ -262,6 +262,7 @@ Each learning file contains:
 - [YAML String Matching Pitfalls](yaml-string-matching-pitfalls.md)
 - [YAML Indentation Consistency Pattern](yaml-indentation-consistency-pattern.md)
 - [YAML Serialization Direct I/O Pattern](yaml-serialization-direct-io-pattern.md)
+- [YAML List Indentation Bug](yaml-list-indentation-bug.md)
 - [Makefile Environment Variable Directory Target Dependencies](makefile-environment-variable-directory-gotcha.md)
 - [Makefile POSIX Shell Compatibility](makefile-posix-shell-compatibility.md)
 - [Zig Test Build Integration](zig-test-build-integration.md)
