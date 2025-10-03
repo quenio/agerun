@@ -73,52 +73,50 @@ static void test_store_empty_save_load(void) {
 static void test_store_single_agent(void) {
     printf("Testing single agent persistence...\n");
     
-    // Create a test method directly (not using global methodology)
-    ar_method_t *own_method = ar_method__create("echo", "send(sender, message)", "1.0.0");
-    assert(own_method != NULL);
+    // Given an agent store fixture with test methodology
+    ar_agent_store_fixture_t *own_fixture = ar_agent_store_fixture__create();
+    assert(own_fixture != NULL);
     
-    // Given a registry and store
+    ar_methodology_t *own_methodology = ar_agent_store_fixture__create_test_methodology(own_fixture);
+    assert(own_methodology != NULL);
+    
     ar_agent_registry_t *own_registry = ar_agent_registry__create();
     assert(own_registry != NULL);
-    
-    ar_methodology_t *own_methodology = ar_methodology__create(NULL);
-    assert(own_methodology != NULL);
     
     ar_agent_store_t *own_store = ar_agent_store__create(own_registry, own_methodology);
     assert(own_store != NULL);
     
-    // Create an agent directly
-    ar_agent_t *own_agent = ar_agent__create_with_method(own_method, NULL);
+    // When creating an agent with memory data
+    const ar_method_t *ref_method = ar_methodology__get_method(own_methodology, "echo", "1.0.0");
+    assert(ref_method != NULL);
+    
+    ar_agent_t *own_agent = ar_agent__create_with_method(ref_method, NULL);
     assert(own_agent != NULL);
     
-    // Register the agent
     int64_t agent_id = ar_agent_registry__allocate_id(own_registry);
     assert(agent_id > 0);
     ar_agent__set_id(own_agent, agent_id);
     assert(ar_agent_registry__register_id(own_registry, agent_id));
     assert(ar_agent_registry__track_agent(own_registry, agent_id, own_agent));
     
-    // Add some data to agent memory
     ar_data_t *mut_memory = ar_agent__get_mutable_memory(own_agent);
     assert(mut_memory != NULL);
     ar_data__set_map_string(mut_memory, "name", "Test Agent");
     ar_data__set_map_integer(mut_memory, "count", 42);  
     ar_data__set_map_double(mut_memory, "value", 3.14);
     
-    // When saving
+    // Then saving should succeed
     assert(ar_agent_store__save(own_store));
     
-    // Destroy the agent
+    // Clean up
     ar_agent_registry__unregister_id(own_registry, agent_id);
     ar_agent__destroy(own_agent);
     assert(ar_agent_registry__count(own_registry) == 0);
-
-    // Clean up
     ar_agent_store__delete(own_store);
     ar_agent_store__destroy(own_store);
     ar_agent_registry__destroy(own_registry);
-    ar_method__destroy(own_method);
     ar_methodology__destroy(own_methodology);
+    ar_agent_store_fixture__destroy(own_fixture);
     
     printf("✓ Single agent persistence test passed\n");
 }
@@ -126,48 +124,48 @@ static void test_store_single_agent(void) {
 static void test_store_multiple_agents(void) {
     printf("Testing multiple agent persistence...\n");
     
-    // Create methods directly (not using global methodology)
-    ar_method_t *own_echo = ar_method__create("echo", "send(sender, message)", "1.0.0");
-    assert(own_echo != NULL);
-    ar_method_t *own_calc = ar_method__create("calc", "send(sender, \"result: \" + (2 + 2))", "2.0.0");
-    assert(own_calc != NULL);
+    // Given an agent store fixture with test methodology
+    ar_agent_store_fixture_t *own_fixture = ar_agent_store_fixture__create();
+    assert(own_fixture != NULL);
     
-    // Given a registry and store
+    ar_methodology_t *own_methodology = ar_agent_store_fixture__create_test_methodology(own_fixture);
+    assert(own_methodology != NULL);
+    
     ar_agent_registry_t *own_registry = ar_agent_registry__create();
     assert(own_registry != NULL);
-    
-    ar_methodology_t *own_methodology = ar_methodology__create(NULL);
-    assert(own_methodology != NULL);
     
     ar_agent_store_t *own_store = ar_agent_store__create(own_registry, own_methodology);
     assert(own_store != NULL);
     
-    // Clean up any existing store
     ar_agent_store__delete(own_store);
     
-    // Create agents
-    ar_agent_t *own_echo1 = ar_agent__create_with_method(own_echo, NULL);
+    // When creating multiple agents with different methods
+    const ar_method_t *ref_echo = ar_methodology__get_method(own_methodology, "echo", "1.0.0");
+    assert(ref_echo != NULL);
+    const ar_method_t *ref_calc = ar_methodology__get_method(own_methodology, "calculator", "1.0.0");
+    assert(ref_calc != NULL);
+    
+    ar_agent_t *own_echo1 = ar_agent__create_with_method(ref_echo, NULL);
     assert(own_echo1 != NULL);
     int64_t echo1_id = ar_agent_registry__allocate_id(own_registry);
     ar_agent__set_id(own_echo1, echo1_id);
     assert(ar_agent_registry__register_id(own_registry, echo1_id));
     assert(ar_agent_registry__track_agent(own_registry, echo1_id, own_echo1));
     
-    ar_agent_t *own_echo2 = ar_agent__create_with_method(own_echo, NULL);
+    ar_agent_t *own_echo2 = ar_agent__create_with_method(ref_echo, NULL);
     assert(own_echo2 != NULL);
     int64_t echo2_id = ar_agent_registry__allocate_id(own_registry);
     ar_agent__set_id(own_echo2, echo2_id);
     assert(ar_agent_registry__register_id(own_registry, echo2_id));
     assert(ar_agent_registry__track_agent(own_registry, echo2_id, own_echo2));
     
-    ar_agent_t *own_calc1 = ar_agent__create_with_method(own_calc, NULL);
+    ar_agent_t *own_calc1 = ar_agent__create_with_method(ref_calc, NULL);
     assert(own_calc1 != NULL);
     int64_t calc1_id = ar_agent_registry__allocate_id(own_registry);
     ar_agent__set_id(own_calc1, calc1_id);
     assert(ar_agent_registry__register_id(own_registry, calc1_id));
     assert(ar_agent_registry__track_agent(own_registry, calc1_id, own_calc1));
     
-    // Add unique data to each agent
     ar_data_t *mut_memory1 = ar_agent__get_mutable_memory(own_echo1);
     ar_data__set_map_string(mut_memory1, "name", "Echo One");
     ar_data__set_map_integer(mut_memory1, "id", 1);
@@ -180,25 +178,18 @@ static void test_store_multiple_agents(void) {
     ar_data__set_map_string(mut_memory3, "name", "Calculator");
     ar_data__set_map_double(mut_memory3, "pi", 3.14159);
     
-    // When saving
+    // Then saving should succeed
     assert(ar_agent_store__save(own_store));
     
-    // Destroy all agents
-    ar_agent_registry__unregister_id(own_registry, echo1_id);
-    ar_agent__destroy(own_echo1);
-    ar_agent_registry__unregister_id(own_registry, echo2_id);
-    ar_agent__destroy(own_echo2);
-    ar_agent_registry__unregister_id(own_registry, calc1_id);
-    ar_agent__destroy(own_calc1);
-    assert(ar_agent_registry__count(own_registry) == 0);
-
     // Clean up
+    int64_t agent_ids[] = {echo1_id, echo2_id, calc1_id};
+    ar_agent_store_fixture__destroy_all_agents(own_registry, agent_ids, 3);
+    assert(ar_agent_registry__count(own_registry) == 0);
     ar_agent_store__delete(own_store);
     ar_agent_store__destroy(own_store);
     ar_agent_registry__destroy(own_registry);
-    ar_method__destroy(own_echo);
-    ar_method__destroy(own_calc);
     ar_methodology__destroy(own_methodology);
+    ar_agent_store_fixture__destroy(own_fixture);
     
     printf("✓ Multiple agent persistence test passed\n");
 }
@@ -294,16 +285,18 @@ static void test_store_missing_method(void) {
 static void test_store_id_preservation(void) {
     printf("Testing agent ID preservation...\n");
     
-    // Create method directly
-    ar_method_t *own_method = ar_method__create("test", "send(0, \"ok\")", "1.0.0");
-    assert(own_method != NULL);
+    // Given an agent store fixture with test methodology
+    ar_agent_store_fixture_t *own_fixture = ar_agent_store_fixture__create();
+    assert(own_fixture != NULL);
     
-    // Given a registry and store
+    ar_methodology_t *own_methodology = ar_agent_store_fixture__create_test_methodology(own_fixture);
+    assert(own_methodology != NULL);
+    
+    ar_method_t *ref_method = ar_methodology__get_method(own_methodology, "echo", "1.0.0");
+    assert(ref_method != NULL);
+    
     ar_agent_registry_t *own_registry = ar_agent_registry__create();
     assert(own_registry != NULL);
-    
-    ar_methodology_t *own_methodology = ar_methodology__create(NULL);
-    assert(own_methodology != NULL);
     
     ar_agent_store_t *own_store = ar_agent_store__create(own_registry, own_methodology);
     assert(own_store != NULL);
@@ -312,19 +305,19 @@ static void test_store_id_preservation(void) {
     ar_agent_store__delete(own_store);
     
     // Create agents and remember their IDs
-    ar_agent_t *own_agent1 = ar_agent__create_with_method(own_method, NULL);
+    ar_agent_t *own_agent1 = ar_agent__create_with_method(ref_method, NULL);
     int64_t id1 = ar_agent_registry__allocate_id(own_registry);
     ar_agent__set_id(own_agent1, id1);
     assert(ar_agent_registry__register_id(own_registry, id1));
     assert(ar_agent_registry__track_agent(own_registry, id1, own_agent1));
     
-    ar_agent_t *own_agent2 = ar_agent__create_with_method(own_method, NULL);
+    ar_agent_t *own_agent2 = ar_agent__create_with_method(ref_method, NULL);
     int64_t id2 = ar_agent_registry__allocate_id(own_registry);
     ar_agent__set_id(own_agent2, id2);
     assert(ar_agent_registry__register_id(own_registry, id2));
     assert(ar_agent_registry__track_agent(own_registry, id2, own_agent2));
     
-    ar_agent_t *own_agent3 = ar_agent__create_with_method(own_method, NULL);
+    ar_agent_t *own_agent3 = ar_agent__create_with_method(ref_method, NULL);
     int64_t id3 = ar_agent_registry__allocate_id(own_registry);
     ar_agent__set_id(own_agent3, id3);
     assert(ar_agent_registry__register_id(own_registry, id3));
@@ -333,20 +326,14 @@ static void test_store_id_preservation(void) {
     // Save
     assert(ar_agent_store__save(own_store));
     
-    // Destroy all agents
-    ar_agent_registry__unregister_id(own_registry, id1);
-    ar_agent__destroy(own_agent1);
-    ar_agent_registry__unregister_id(own_registry, id2);
-    ar_agent__destroy(own_agent2);
-    ar_agent_registry__unregister_id(own_registry, id3);
-    ar_agent__destroy(own_agent3);
-
     // Clean up
+    int64_t agent_ids[] = {id1, id2, id3};
+    ar_agent_store_fixture__destroy_all_agents(own_registry, agent_ids, 3);
     ar_agent_store__delete(own_store);
     ar_agent_store__destroy(own_store);
     ar_agent_registry__destroy(own_registry);
-    ar_method__destroy(own_method);
     ar_methodology__destroy(own_methodology);
+    ar_agent_store_fixture__destroy(own_fixture);
     
     printf("✓ Agent ID preservation test passed\n");
 }
@@ -354,21 +341,24 @@ static void test_store_id_preservation(void) {
 static void test_store_yaml_format_validation(void) {
     printf("Testing agent store YAML format validation...\n");
     
-    // Given an agent store with an agent containing memory data
-    ar_method_t *own_method = ar_method__create("echo", "send(sender, message)", "1.0.0");
-    assert(own_method != NULL);
+    // Given an agent store fixture with test methodology
+    ar_agent_store_fixture_t *own_fixture = ar_agent_store_fixture__create();
+    assert(own_fixture != NULL);
+    
+    ar_methodology_t *own_methodology = ar_agent_store_fixture__create_test_methodology(own_fixture);
+    assert(own_methodology != NULL);
     
     ar_agent_registry_t *own_registry = ar_agent_registry__create();
     assert(own_registry != NULL);
     
-    ar_methodology_t *own_methodology = ar_methodology__create(NULL);
-    assert(own_methodology != NULL);
-    
     ar_agent_store_t *own_store = ar_agent_store__create(own_registry, own_methodology);
     assert(own_store != NULL);
     
-    // Create and register agent with memory
-    ar_agent_t *own_agent = ar_agent__create_with_method(own_method, NULL);
+    // When creating and registering agent with memory
+    const ar_method_t *ref_method = ar_methodology__get_method(own_methodology, "echo", "1.0.0");
+    assert(ref_method != NULL);
+    
+    ar_agent_t *own_agent = ar_agent__create_with_method(ref_method, NULL);
     assert(own_agent != NULL);
     
     int64_t agent_id = ar_agent_registry__allocate_id(own_registry);
@@ -383,7 +373,6 @@ static void test_store_yaml_format_validation(void) {
     ar_data__set_map_integer(mut_memory, "count", 42);
     ar_data__set_map_double(mut_memory, "value", 3.14);
     
-    // When saving the agent store
     assert(ar_agent_store__save(own_store));
     
     // Then the saved file should be valid YAML with proper structure
@@ -400,16 +389,13 @@ static void test_store_yaml_format_validation(void) {
     assert(ar_data__get_type(ref_agents) == AR_DATA_TYPE__LIST);
     assert(ar_data__list_count(ref_agents) == 1);
     
-    // Verify agent data structure
     ar_data_t *ref_agent_data = ar_data__list_first(ref_agents);
     assert(ref_agent_data != NULL);
     assert(ar_data__get_type(ref_agent_data) == AR_DATA_TYPE__MAP);
     
-    // Verify agent ID
     int loaded_id = ar_data__get_map_integer(ref_agent_data, "id");
     assert(loaded_id == (int)agent_id);
     
-    // Verify method info
     const char *loaded_method_name = ar_data__get_map_string(ref_agent_data, "method_name");
     assert(loaded_method_name != NULL);
     assert(strcmp(loaded_method_name, "echo") == 0);
@@ -418,12 +404,10 @@ static void test_store_yaml_format_validation(void) {
     assert(loaded_method_version != NULL);
     assert(strcmp(loaded_method_version, "1.0.0") == 0);
     
-    // Verify memory data (shallow copy)
     ar_data_t *ref_memory_data = ar_data__get_map_data(ref_agent_data, "memory");
     assert(ref_memory_data != NULL);
     assert(ar_data__get_type(ref_memory_data) == AR_DATA_TYPE__MAP);
     
-    // Verify memory contents are preserved
     const char *loaded_name = ar_data__get_map_string(ref_memory_data, "name");
     assert(loaded_name != NULL);
     assert(strcmp(loaded_name, "Test Agent") == 0);
@@ -442,8 +426,8 @@ static void test_store_yaml_format_validation(void) {
     ar_agent_store__delete(own_store);
     ar_agent_store__destroy(own_store);
     ar_agent_registry__destroy(own_registry);
-    ar_method__destroy(own_method);
     ar_methodology__destroy(own_methodology);
+    ar_agent_store_fixture__destroy(own_fixture);
     
     printf("✓ Agent store YAML format validation test passed\n");
 }
@@ -515,22 +499,19 @@ static void test_store_invalid_yaml_structure(void) {
 static void test_store_load_creates_single_agent(void) {
     printf("Testing store load creates single agent...\n");
 
-    // Given a methodology with echo method
-    ar_methodology_t *own_methodology = ar_methodology__create(NULL);
-    assert(own_methodology != NULL);
+    // Given an agent store fixture with test methodology
+    ar_agent_store_fixture_t *own_fixture = ar_agent_store_fixture__create();
+    assert(own_fixture != NULL);
     
-    ar_method_t *own_method = ar_method__create("echo", "send(sender, message)", "1.0.0");
-    assert(own_method != NULL);
-    ar_methodology__register_method(own_methodology, own_method);
+    ar_methodology_t *own_methodology = ar_agent_store_fixture__create_test_methodology(own_fixture);
+    assert(own_methodology != NULL);
 
-    // Given a registry and store
     ar_agent_registry_t *own_registry = ar_agent_registry__create();
     assert(own_registry != NULL);
 
     ar_agent_store_t *own_store = ar_agent_store__create(own_registry, own_methodology);
     assert(own_store != NULL);
 
-    // Clean up any existing store
     ar_agent_store__delete(own_store);
 
     // When creating YAML file with single agent (with memory data)
@@ -546,47 +527,31 @@ static void test_store_load_creates_single_agent(void) {
     fprintf(fp, "    name: test_agent\n");
     fclose(fp);
 
-    // When loading store
     bool result = ar_agent_store__load(own_store);
+
+    // Then agent should be loaded successfully
     assert(result == true);
-
-    // Then first agent ID should be 42
-    int64_t first_id = ar_agent_registry__get_first(own_registry);
-    assert(first_id == 42);
-
-    // Then agent should have correct method
-    ar_agent_t *ref_agent = (ar_agent_t*)ar_agent_registry__find_agent(own_registry, first_id);
-    assert(ref_agent != NULL);
-    const ar_method_t *ref_method = ar_agent__get_method(ref_agent);
-    assert(ref_method != NULL);
-    assert(strcmp(ar_method__get_name(ref_method), "echo") == 0);
+    assert(ar_agent_registry__get_first(own_registry) == 42);
+    assert(ar_agent_store_fixture__verify_agent(own_registry, 42, "echo") == true);
     
-    // Then agent memory should contain restored data
-    const ar_data_t *ref_memory = ar_agent__get_memory(ref_agent);
+    const ar_data_t *ref_memory = ar_agent__get_memory((ar_agent_t*)ar_agent_registry__find_agent(own_registry, 42));
     assert(ref_memory != NULL);
     assert(ar_data__get_type(ref_memory) == AR_DATA_TYPE__MAP);
-    
-    int64_t count = ar_data__get_map_integer(ref_memory, "count");
-    assert(count == 5);  // RED: Will FAIL - memory not restored yet
+    assert(ar_data__get_map_integer(ref_memory, "count") == 5);
     
     const char *ref_name = ar_data__get_map_string(ref_memory, "name");
     assert(ref_name != NULL);
     assert(strcmp(ref_name, "test_agent") == 0);
-    
-    // Then registry next_id should be updated to prevent collisions
-    int64_t next_id = ar_agent_registry__get_next_id(own_registry);
-    assert(next_id == 43);  // RED: Will FAIL - next_id not updated yet
+    assert(ar_agent_registry__get_next_id(own_registry) == 43);
 
     // Clean up
-    ar_agent_t *own_agent = (ar_agent_t*)ar_agent_registry__find_agent(own_registry, first_id);
-    if (own_agent) {
-        ar_agent_registry__unregister_id(own_registry, first_id);
-        ar_agent__destroy(own_agent);
-    }
+    int64_t agent_ids[] = {42};
+    ar_agent_store_fixture__destroy_all_agents(own_registry, agent_ids, 1);
     ar_agent_store__delete(own_store);
     ar_agent_store__destroy(own_store);
     ar_agent_registry__destroy(own_registry);
     ar_methodology__destroy(own_methodology);
+    ar_agent_store_fixture__destroy(own_fixture);
 
     printf("✓ Store load creates single agent test passed\n");
 }

@@ -1,5 +1,22 @@
 # AgeRun CHANGELOG
 
+## 2025-10-03
+
+### ✅ Agent Store Test Suite Refactoring Complete
+- **Completed fixture integration** across all applicable agent store tests
+- **Refactored 5 tests** in `ar_agent_store_tests.c` to use `ar_agent_store_fixture`:
+  1. `test_store_multiple_agents()` - Replaced manual method creation with fixture methodology
+  2. `test_store_single_agent()` - Uses fixture methodology for echo method
+  3. `test_store_load_creates_single_agent()` - Added `verify_agent()` for cleaner assertions
+  4. `test_store_yaml_format_validation()` - Replaced manual setup with fixture
+  5. `test_store_id_preservation()` - Uses fixture methodology and cleanup helpers
+- **Total impact**: ~50 lines reduced across 5 tests, bringing total reduction to ~90 lines
+- **Quality improvements**:
+  - Consistent test structure using fixture helpers
+  - Proper ownership transfer with fixture methodology
+  - Centralized cleanup using `destroy_all_agents()` helper
+- **Result**: All 13 tests passing with zero memory leaks, full sanitizer compliance
+
 ## 2025-10-02
 
 ### ✅ Agent Store Test Fixture Module
@@ -13,7 +30,7 @@
   - `create_multiple_agents_yaml()` - Generates YAML file with 3 test agents
   - `verify_agent()` - Verifies agent has expected method
   - `destroy_all_agents()` - Cleanup helper for batch agent destruction
-- **Refactored test**: `test_store_load_creates_multiple_agents()` reduced from 90 to 37 lines (59% reduction)
+- **Initial refactoring**: `test_store_load_creates_multiple_agents()` reduced from 90 to 37 lines (59% reduction)
 - **Result**: All tests passing with zero memory leaks, improved BDD structure
 - **Impact**: Reduced test duplication, easier maintenance, cleaner test organization
 
