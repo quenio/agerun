@@ -1583,6 +1583,19 @@ The executable test fixture module provides infrastructure for testing the AgeRu
 - **Opaque Type**: Executable fixture structure is opaque, following Parnas principles
 - **Designed for Executable Tests**: Specifically tailored for testing the AgeRun executable behavior
 
+### Agent Store Fixture Module (`ar_agent_store_fixture`)
+
+The agent store test fixture module provides reusable infrastructure for testing agent store functionality:
+
+- **Test Methodology Creation**: Creates methodology instances with echo and calculator methods for testing
+- **Multi-Agent YAML Generation**: Generates YAML files with multiple test agents for persistence testing
+- **Agent Verification**: Provides helper to verify agents have expected method assignments
+- **Batch Cleanup**: Simplifies destroying multiple test agents with single call
+- **Memory Tracking**: Uses heap tracking macros for leak-free test execution
+- **Opaque Type**: Fixture structure is opaque, following Parnas principles
+- **Reduces Test Duplication**: Extracted common patterns from agent store tests (59% code reduction)
+- **BDD Structure Support**: Enables cleaner Given/When/Then test organization
+
 ## Zig Struct Modules
 
 Zig struct modules are a new category of modules that leverage Zig's native patterns for internal components. These modules are not part of the core runtime but provide utilities and tools for other Zig modules.
