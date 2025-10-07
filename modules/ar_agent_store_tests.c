@@ -12,6 +12,7 @@
 #include "ar_agent_store_fixture.h"
 #include "ar_data.h"
 #include "ar_yaml_reader.h"
+#include "ar_assert.h"
 
 static void test_store_basics(void) {
     printf("Testing store basic operations...\n");
@@ -404,7 +405,25 @@ static void test_store_load_creates_multiple_agents(void) {
     assert(ar_agent_store_fixture__verify_agent(own_fixture, 10, "echo"));
     assert(ar_agent_store_fixture__verify_agent(own_fixture, 20, "calculator"));
     assert(ar_agent_store_fixture__verify_agent(own_fixture, 30, "echo"));
-    
+
+    // Then memory should be restored for all agents
+    ar_data_t *mut_memory_10 = ar_agent_store_fixture__get_agent_memory(own_fixture, 10);
+    AR_ASSERT(mut_memory_10 != NULL, "Agent 10 should have memory");
+    const char *msg_10 = ar_data__get_map_string(mut_memory_10, "message");
+    AR_ASSERT(msg_10 != NULL, "Agent 10 should have 'message' key");
+    AR_ASSERT(strcmp(msg_10, "first_agent") == 0, "Agent 10 message should be 'first_agent'");
+
+    ar_data_t *mut_memory_20 = ar_agent_store_fixture__get_agent_memory(own_fixture, 20);
+    AR_ASSERT(mut_memory_20 != NULL, "Agent 20 should have memory");
+    int64_t result_20 = ar_data__get_map_integer(mut_memory_20, "result");
+    AR_ASSERT(result_20 == 100, "Agent 20 result should be 100");
+
+    ar_data_t *mut_memory_30 = ar_agent_store_fixture__get_agent_memory(own_fixture, 30);
+    AR_ASSERT(mut_memory_30 != NULL, "Agent 30 should have memory");
+    const char *msg_30 = ar_data__get_map_string(mut_memory_30, "message");
+    AR_ASSERT(msg_30 != NULL, "Agent 30 should have 'message' key");
+    AR_ASSERT(strcmp(msg_30, "third_agent") == 0, "Agent 30 message should be 'third_agent'");
+
     // Then next ID should be after all loaded agents
     int64_t next_id = ar_agent_store_fixture__get_next_agent_id(own_fixture);
     assert(next_id == 31);

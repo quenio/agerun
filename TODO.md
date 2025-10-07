@@ -877,11 +877,11 @@ Modify ar_executable.c to save and load the agerun.agency file for agent state p
   - [x] Implementation complete in ar_agent_store.c lines 394-422
   - [x] Test `test_store_memory_persistence()` passes
 
-- [ ] TDD Cycle 11: Handle multiple agents with memory
+- [x] TDD Cycle 11: Handle multiple agents with memory (Completed 2025-10-06)
   - [x] Test with 3+ agents with different methods (done in test_store_load_creates_multiple_agents)
   - [x] Ensure proper resource management
   - [x] Test agent ID preservation
-  - [ ] Verify memory restoration for all loaded agents (YAML fixture includes memory but test doesn't verify it)
+  - [x] Verify memory restoration for all loaded agents using AR_ASSERT with descriptive messages
 
 - [ ] TDD Cycle 12: Handle errors gracefully
   - [ ] Test missing methods - log warning, skip agent
