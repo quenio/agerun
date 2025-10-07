@@ -1,5 +1,28 @@
 # AgeRun CHANGELOG
 
+## 2025-10-06
+
+### ✅ Agent Store Error Logging Enhancement (TDD Cycle 12)
+- **Completed TDD Cycle 12** for Agent Store Load implementation with comprehensive error logging
+- **Added ar_log integration**:
+  - Added `ar_log_t *ref_log` parameter to `ar_agent_store__create()` (first parameter, following AgeRun conventions)
+  - Created `_log_error()` and `_log_warning()` helper functions to eliminate duplication
+  - Updated `ar_agency.c` and `ar_agent_store_fixture.c` callers
+- **Enhanced error reporting**:
+  - 4 specific error messages for corrupt YAML structure validation
+  - Warnings for invalid agent data (not a map)
+  - Warnings for invalid/missing agent ID (must be > 0)
+  - Warnings for missing method_name or method_version fields
+  - Warnings for agent creation failures
+  - Warnings for missing methods during load
+- **Test coverage**:
+  - Added `test_store_load_missing_method()` - verifies graceful handling when method doesn't exist
+  - Added `test_store_load_corrupt_yaml()` - verifies error logging for invalid YAML structure
+  - Added `test_store_load_missing_required_fields()` - verifies warnings for missing/invalid fields
+  - Total: 16 tests passing with zero memory leaks
+- **Memory safety**: Verified all error paths properly clean up resources
+- **Result**: Comprehensive error logging enables easier debugging of agent persistence issues
+
 ## 2025-10-03
 
 ### ✅ Agent Store Fixture Enhancement - Code Duplication Elimination

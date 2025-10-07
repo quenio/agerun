@@ -513,9 +513,131 @@ static void test_store_yaml_format_validation(void) {
     printf("✓ Agent store YAML format validation test passed\n");
 }
 
+static void test_store_load_missing_method(void) {
+    printf("Testing store load with missing method...\n");
+
+    // Given a fixture with full methodology
+    ar_agent_store_fixture_t *own_fixture = ar_agent_store_fixture__create_full();
+    assert(own_fixture != NULL);
+
+    // Clean up any existing store
+    ar_agent_store_fixture__delete_file(own_fixture);
+
+    // When creating YAML file with non-existent method
+    const char *store_path = ar_agent_store_fixture__get_store_path(own_fixture);
+    FILE *file = fopen(store_path, "w");
+    assert(file != NULL);
+
+    fprintf(file, "version: \"1.0\"\n");
+    fprintf(file, "agents:\n");
+    fprintf(file, "  - id: 99\n");
+    fprintf(file, "    method_name: \"nonexistent\"\n");
+    fprintf(file, "    method_version: \"1.0.0\"\n");
+    fprintf(file, "    memory: {}\n");
+
+    fclose(file);
+
+    // When loading store with missing method
+    bool result = ar_agent_store_fixture__load(own_fixture);
+
+    // Then load should succeed (skip bad agents gracefully)
+    AR_ASSERT(result == true, "Load should succeed despite missing method");
+
+    // Then agent should not be created
+    int64_t agent_count = ar_agent_store_fixture__get_agent_count(own_fixture);
+    AR_ASSERT(agent_count == 0, "No agents should be created for missing methods");
+
+    // Clean up
+    ar_agent_store_fixture__destroy(own_fixture);
+
+    printf("✓ Store load missing method test passed\n");
+}
+
+static void test_store_load_corrupt_yaml(void) {
+    printf("Testing store load with corrupt YAML structure...\n");
+
+    // Given a fixture with full methodology
+    ar_agent_store_fixture_t *own_fixture = ar_agent_store_fixture__create_full();
+    assert(own_fixture != NULL);
+
+    // Clean up any existing store
+    ar_agent_store_fixture__delete_file(own_fixture);
+
+    // When creating YAML file with invalid structure (agents is a map instead of list)
+    const char *store_path = ar_agent_store_fixture__get_store_path(own_fixture);
+    FILE *file = fopen(store_path, "w");
+    assert(file != NULL);
+
+    fprintf(file, "version: \"1.0\"\n");
+    fprintf(file, "agents: {bad: structure}\n");  // Should be a list, not a map
+
+    fclose(file);
+
+    // When loading store with corrupt YAML
+    bool result = ar_agent_store_fixture__load(own_fixture);
+
+    // Then load should fail
+    AR_ASSERT(result == false, "Load should fail for corrupt YAML structure");
+
+    // Then no agents should be created
+    int64_t agent_count = ar_agent_store_fixture__get_agent_count(own_fixture);
+    AR_ASSERT(agent_count == 0, "No agents should be created for corrupt YAML");
+
+    // Clean up
+    ar_agent_store_fixture__destroy(own_fixture);
+
+    printf("✓ Store load corrupt YAML test passed\n");
+}
+
+static void test_store_load_missing_required_fields(void) {
+    printf("Testing store load with missing required fields...\n");
+
+    // Given a fixture with full methodology
+    ar_agent_store_fixture_t *own_fixture = ar_agent_store_fixture__create_full();
+    assert(own_fixture != NULL);
+
+    // Clean up any existing store
+    ar_agent_store_fixture__delete_file(own_fixture);
+
+    // When creating YAML file with agents missing required fields
+    const char *store_path = ar_agent_store_fixture__get_store_path(own_fixture);
+    FILE *file = fopen(store_path, "w");
+    assert(file != NULL);
+
+    fprintf(file, "version: \"1.0\"\n");
+    fprintf(file, "agents:\n");
+    fprintf(file, "  - id: 0\n");  // Invalid ID (must be > 0)
+    fprintf(file, "    method_name: \"echo\"\n");
+    fprintf(file, "    method_version: \"1.0.0\"\n");
+    fprintf(file, "    memory: {}\n");
+    fprintf(file, "  - id: 10\n");
+    fprintf(file, "    method_version: \"1.0.0\"\n");  // Missing method_name
+    fprintf(file, "    memory: {}\n");
+    fprintf(file, "  - id: 20\n");
+    fprintf(file, "    method_name: \"echo\"\n");  // Missing method_version
+    fprintf(file, "    memory: {}\n");
+
+    fclose(file);
+
+    // When loading store with missing fields
+    bool result = ar_agent_store_fixture__load(own_fixture);
+
+    // Then load should succeed (skip bad agents gracefully)
+    AR_ASSERT(result == true, "Load should succeed and skip agents with missing fields");
+
+    // Then no agents should be created (all had missing/invalid fields)
+    int64_t agent_count = ar_agent_store_fixture__get_agent_count(own_fixture);
+    AR_ASSERT(agent_count == 0, "No agents should be created when fields are missing");
+
+    // Clean up
+    ar_agent_store_fixture__destroy(own_fixture);
+
+    printf("✓ Store load missing required fields test passed\n");
+}
+
 int main(void) {
     printf("\n=== Running Agent Store Tests ===\n\n");
-    
+
     test_store_basics();
     test_store_empty_save_load();
     test_store_single_agent();
@@ -529,7 +651,10 @@ int main(void) {
     test_store_load_creates_single_agent();
     test_store_load_creates_multiple_agents();
     test_store_yaml_format_validation();
-    
+    test_store_load_missing_method();
+    test_store_load_corrupt_yaml();
+    test_store_load_missing_required_fields();
+
     printf("\n=== All Agent Store Tests Passed ===\n");
     return 0;
 }

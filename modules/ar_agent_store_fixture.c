@@ -56,14 +56,14 @@ ar_agent_store_fixture_t* ar_agent_store_fixture__create_full(void) {
         return NULL;
     }
     
-    own_fixture->own_store = ar_agent_store__create(own_fixture->own_registry, own_fixture->own_methodology);
+    own_fixture->own_store = ar_agent_store__create(NULL, own_fixture->own_registry, own_fixture->own_methodology);
     if (!own_fixture->own_store) {
         ar_agent_registry__destroy(own_fixture->own_registry);
         ar_methodology__destroy(own_fixture->own_methodology);
         AR__HEAP__FREE(own_fixture);
         return NULL;
     }
-    
+
     return own_fixture;
 }
 
@@ -72,21 +72,21 @@ ar_agent_store_fixture_t* ar_agent_store_fixture__create_empty(void) {
     if (!own_fixture) {
         return NULL;
     }
-    
+
     own_fixture->own_methodology = ar_methodology__create(NULL);
     if (!own_fixture->own_methodology) {
         AR__HEAP__FREE(own_fixture);
         return NULL;
     }
-    
+
     own_fixture->own_registry = ar_agent_registry__create();
     if (!own_fixture->own_registry) {
         ar_methodology__destroy(own_fixture->own_methodology);
         AR__HEAP__FREE(own_fixture);
         return NULL;
     }
-    
-    own_fixture->own_store = ar_agent_store__create(own_fixture->own_registry, own_fixture->own_methodology);
+
+    own_fixture->own_store = ar_agent_store__create(NULL, own_fixture->own_registry, own_fixture->own_methodology);
     if (!own_fixture->own_store) {
         ar_agent_registry__destroy(own_fixture->own_registry);
         ar_methodology__destroy(own_fixture->own_methodology);

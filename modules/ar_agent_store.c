@@ -13,6 +13,7 @@
 #include "ar_io.h"
 #include "ar_yaml_writer.h"
 #include "ar_yaml_reader.h"
+#include "ar_log.h"
 #include "ar_heap.h"
 #include <stdlib.h>
 #include <string.h>
@@ -25,8 +26,26 @@
 #define MAX_STORE_AGENTS 10000
 #define MAX_MEMORY_ITEMS 1000
 
+/* Error message buffer size */
+#define ERROR_MSG_BUFFER_SIZE 256
+
+/* Helper to log error if log exists */
+static void _log_error(ar_log_t *ref_log, const char *message) {
+    if (ref_log) {
+        ar_log__error(ref_log, message);
+    }
+}
+
+/* Helper to log warning if log exists */
+static void _log_warning(ar_log_t *ref_log, const char *message) {
+    if (ref_log) {
+        ar_log__warning(ref_log, message);
+    }
+}
+
 /* Agent store structure */
 struct ar_agent_store_s {
+    ar_log_t *ref_log;                      /* Borrowed reference for error reporting */
     ar_agent_registry_t *ref_registry;      /* Borrowed reference to registry */
     ar_methodology_t *ref_methodology;      /* Borrowed reference to methodology */
     const char *filename;                   /* Store filename */
@@ -96,13 +115,25 @@ static bool _create_backup(const char *filename) {
 }
 
 /* Helper to validate YAML structure for agent store */
-static bool _validate_yaml_structure(ar_data_t *ref_root) {
-    if (!ref_root || ar_data__get_type(ref_root) != AR_DATA_TYPE__MAP) {
+static bool _validate_yaml_structure(ar_data_t *ref_root, ar_log_t *ref_log) {
+    if (!ref_root) {
+        _log_error(ref_log, "Agent store YAML root is NULL");
+        return false;
+    }
+
+    if (ar_data__get_type(ref_root) != AR_DATA_TYPE__MAP) {
+        _log_error(ref_log, "Agent store YAML root must be a map");
         return false;
     }
 
     ar_data_t *ref_agents = ar_data__get_map_data(ref_root, "agents");
-    if (!ref_agents || ar_data__get_type(ref_agents) != AR_DATA_TYPE__LIST) {
+    if (!ref_agents) {
+        _log_error(ref_log, "Agent store YAML missing 'agents' field");
+        return false;
+    }
+
+    if (ar_data__get_type(ref_agents) != AR_DATA_TYPE__LIST) {
+        _log_error(ref_log, "Agent store YAML 'agents' field must be a list");
         return false;
     }
 
@@ -229,20 +260,21 @@ static void _cleanup_agent_list_resources(ar_list_t *own_agent_list, void **item
 }
 
 /* Create a new agent store instance */
-ar_agent_store_t* ar_agent_store__create(ar_agent_registry_t *ref_registry, ar_methodology_t *ref_methodology) {
+ar_agent_store_t* ar_agent_store__create(ar_log_t *ref_log, ar_agent_registry_t *ref_registry, ar_methodology_t *ref_methodology) {
     if (!ref_registry || !ref_methodology) {
         return NULL;
     }
-    
+
     ar_agent_store_t *own_store = AR__HEAP__MALLOC(sizeof(ar_agent_store_t), "agent store");
     if (!own_store) {
         return NULL;
     }
-    
+
+    own_store->ref_log = ref_log;                 /* Store borrowed reference */
     own_store->ref_registry = ref_registry;      /* Store borrowed reference */
     own_store->ref_methodology = ref_methodology; /* Store borrowed reference */
     own_store->filename = AGENT_STORE_FILE_NAME;
-    
+
     return own_store;
 }
 
@@ -338,7 +370,7 @@ bool ar_agent_store__load(ar_agent_store_t *mut_store) {
     ar_data_t *own_root = ar_yaml_reader__read_from_file(own_reader, mut_store->filename);
     ar_yaml_reader__destroy(own_reader);
 
-    if (!own_root || !_validate_yaml_structure(own_root)) {
+    if (!own_root || !_validate_yaml_structure(own_root, mut_store->ref_log)) {
         if (own_root) ar_data__destroy(own_root);
         return false; /* YAML parsing failed or invalid structure */
     }
@@ -357,34 +389,52 @@ bool ar_agent_store__load(ar_agent_store_t *mut_store) {
     for (size_t i = 0; i < agent_count; i++) {
         ar_data_t *ref_agent_data = agent_items[i];
         if (!ref_agent_data || ar_data__get_type(ref_agent_data) != AR_DATA_TYPE__MAP) {
+            _log_warning(mut_store->ref_log, "Agent entry is not a map, skipping");
             continue;
         }
 
         /* Extract agent ID */
         int64_t agent_id = ar_data__get_map_integer(ref_agent_data, "id");
         if (agent_id <= 0) {
+            _log_warning(mut_store->ref_log, "Agent has invalid or missing ID, skipping");
             continue;
         }
 
         /* Extract method name and version */
         const char *ref_method_name = ar_data__get_map_string(ref_agent_data, "method_name");
         const char *ref_method_version = ar_data__get_map_string(ref_agent_data, "method_version");
-        
+
         if (!ref_method_name || !ref_method_version) {
+            char warning_msg[ERROR_MSG_BUFFER_SIZE];
+            snprintf(warning_msg, sizeof(warning_msg),
+                    "Agent %lld missing method_name or method_version, skipping",
+                    (long long)agent_id);
+            _log_warning(mut_store->ref_log, warning_msg);
             continue;
         }
 
         /* Lookup method in methodology */
-        ar_method_t *ref_method = ar_methodology__get_method(mut_store->ref_methodology, 
-                                                            ref_method_name, 
+        ar_method_t *ref_method = ar_methodology__get_method(mut_store->ref_methodology,
+                                                            ref_method_name,
                                                             ref_method_version);
         if (!ref_method) {
+            /* Log warning about missing method */
+            char warning_msg[ERROR_MSG_BUFFER_SIZE];
+            snprintf(warning_msg, sizeof(warning_msg),
+                    "Agent %lld references missing method '%s' version '%s', skipping",
+                    (long long)agent_id, ref_method_name, ref_method_version);
+            _log_warning(mut_store->ref_log, warning_msg);
             continue;
         }
 
         /* Create agent with method (context will be NULL for now) */
         ar_agent_t *own_agent = ar_agent__create_with_method(ref_method, NULL);
         if (!own_agent) {
+            char warning_msg[ERROR_MSG_BUFFER_SIZE];
+            snprintf(warning_msg, sizeof(warning_msg),
+                    "Failed to create agent %lld with method '%s', skipping",
+                    (long long)agent_id, ref_method_name);
+            _log_warning(mut_store->ref_log, warning_msg);
             continue;
         }
 

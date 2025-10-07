@@ -883,11 +883,15 @@ Modify ar_executable.c to save and load the agerun.agency file for agent state p
   - [x] Test agent ID preservation
   - [x] Verify memory restoration for all loaded agents using AR_ASSERT with descriptive messages
 
-- [ ] TDD Cycle 12: Handle errors gracefully
-  - [ ] Test missing methods - log warning, skip agent
-  - [ ] Test corrupt YAML - return false
-  - [ ] Test missing fields - handle gracefully
-  - [ ] Ensure no memory leaks on error paths
+- [x] TDD Cycle 12: Handle errors gracefully (Completed 2025-10-06)
+  - [x] Test missing methods - log warning, skip agent
+  - [x] Test corrupt YAML - return false (logs error)
+  - [x] Test missing fields - handle gracefully (logs warnings)
+  - [x] Ensure no memory leaks on error paths
+  - Added ar_log_t parameter to ar_agent_store__create()
+  - Created _log_error() and _log_warning() helper functions
+  - Enhanced _validate_yaml_structure() with 4 specific error messages
+  - Added warnings for: invalid agent data, missing ID, missing method fields, agent creation failures
 
 ### Phase 6 - Integration and Documentation
 - [ ] TDD Cycle 13: Complete integration testing
