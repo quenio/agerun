@@ -867,20 +867,21 @@ Modify ar_executable.c to save and load the agerun.agency file for agent state p
   - [x] Set agent ID using ar_agent__set_id()
   - [x] Register agent in registry
   - [x] Iteration 9.1: Single agent load - `test_store_load_creates_single_agent()` passes
-  - [ ] Iteration 9.5: Multiple agent load - BLOCKED by YAML parser bug (see ar_yaml Module Improvements)
-  - **NOTE**: Multiple agent load test `test_store_load_creates_multiple_agents()` is commented out because ar_yaml_reader cannot parse indented list items. The implementation is correct and works with ar_yaml_writer output (verified by `test_store_multiple_agents()`), but manually-written YAML or spec-compliant YAML won't load correctly.
+  - [x] Iteration 9.5: Multiple agent load - `test_store_load_creates_multiple_agents()` passes (YAML parser bug fixed in commit 5ef1ce6)
 
-- [ ] TDD Cycle 10: Restore agent memory from map
-  - [ ] Get mutable memory with ar_agent__get_mutable_memory()
-  - [ ] Iterate memory map key-value pairs
-  - [ ] Use ar_data__get_map_keys() to get all keys
-  - [ ] Copy each value using ar_data__set_map_data()
+- [x] TDD Cycle 10: Restore agent memory from map (Completed 2025-10-06)
+  - [x] Get mutable memory with ar_agent__get_mutable_memory()
+  - [x] Iterate memory map key-value pairs
+  - [x] Use ar_data__get_map_keys() to get all keys
+  - [x] Copy each value using ar_data__set_map_data()
+  - [x] Implementation complete in ar_agent_store.c lines 394-422
+  - [x] Test `test_store_memory_persistence()` passes
 
-- [ ] TDD Cycle 11: Handle multiple agents
-  - [ ] Test with 3+ agents with different methods
-  - [ ] Ensure proper resource management
-  - [ ] Verify all agents restored correctly
-  - [ ] Test agent ID preservation
+- [ ] TDD Cycle 11: Handle multiple agents with memory
+  - [x] Test with 3+ agents with different methods (done in test_store_load_creates_multiple_agents)
+  - [x] Ensure proper resource management
+  - [x] Test agent ID preservation
+  - [ ] Verify memory restoration for all loaded agents (YAML fixture includes memory but test doesn't verify it)
 
 - [ ] TDD Cycle 12: Handle errors gracefully
   - [ ] Test missing methods - log warning, skip agent
