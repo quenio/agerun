@@ -2,6 +2,16 @@
 
 ## 2025-10-06
 
+### ✅ Checkpoint Verification Script Bug Fix
+- **Fixed `checkpoint-update-verified` for commit step 1** - build verification now works correctly
+- **Root cause**: Script checked for "Overall status: ✓ SUCCESS" text pattern in `logs/run-tests.log`, but that message only appears in stdout, not in log files
+- **Solution**: Replaced text pattern check with robust exit code verification:
+  - Checks all `*.exitcode` files in logs/ directory for success (exit code 0)
+  - Runs `make check-logs` to catch hidden issues
+  - Reports specific failed steps when build doesn't succeed
+- **Benefits**: More reliable, language-independent, uses existing infrastructure
+- **File**: `scripts/checkpoint_update_enhanced.sh` (lines 112-146)
+
 ### ✅ Agent Store Error Logging Enhancement (TDD Cycle 12)
 - **Completed TDD Cycle 12** for Agent Store Load implementation with comprehensive error logging
 - **Added ar_log integration**:

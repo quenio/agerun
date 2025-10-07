@@ -110,18 +110,37 @@ verify_work() {
     if [ "$COMMAND_NAME" = "commit" ]; then
         case "$STEP_NUMBER" in
             "1") # Run Tests
-                # Check that build logs exist and indicate success
-                if [ ! -d "logs" ] || [ ! -f "logs/run-tests.log" ]; then
-                    echo "❌ VERIFICATION FAILED: Step 1 requires successful build"
-                    echo "   Missing: Build logs indicating clean build completion"
+                # Check that build logs directory exists
+                if [ ! -d "logs" ]; then
+                    echo "❌ VERIFICATION FAILED: No logs directory - build not run"
                     echo "   Required: make clean build 2>&1"
                     return 1
                 fi
-                # Check for build success indicators
-                if ! grep -q "Overall status: ✓ SUCCESS" logs/run-tests.log 2>/dev/null; then
-                    echo "❌ VERIFICATION FAILED: Build did not complete successfully"
-                    echo "   Check logs/ directory for errors"
-                    echo "   Required: Successful build with clean exit"
+
+                # Check all exit code files indicate success (exit code 0)
+                local failed_steps=""
+                for exitcode_file in logs/*.exitcode; do
+                    if [ -f "$exitcode_file" ]; then
+                        local exit_code=$(cat "$exitcode_file" 2>/dev/null || echo "1")
+                        if [ "$exit_code" != "0" ]; then
+                            local step_name=$(basename "$exitcode_file" .log.exitcode)
+                            failed_steps="${failed_steps}${step_name} "
+                        fi
+                    fi
+                done
+
+                if [ -n "$failed_steps" ]; then
+                    echo "❌ VERIFICATION FAILED: Build step(s) failed: $failed_steps"
+                    echo "   Check logs/ directory for error details"
+                    echo "   Required: All build steps must exit with code 0"
+                    return 1
+                fi
+
+                # Verify check-logs would pass (ensures no hidden issues)
+                if ! make check-logs >/dev/null 2>&1; then
+                    echo "❌ VERIFICATION FAILED: Build logs contain issues"
+                    echo "   Run: make check-logs"
+                    echo "   Fix any issues before proceeding"
                     return 1
                 fi
                 ;;
