@@ -170,6 +170,27 @@ verify_work() {
                     return 1
                 fi
                 ;;
+            "8") # Create Commit
+                # Check that commit was created successfully
+                if ! git log -1 --oneline >/dev/null 2>&1; then
+                    echo "❌ VERIFICATION FAILED: No commits found in repository"
+                    echo "   Commit creation may have failed"
+                    echo "   Required: Successful git commit"
+                    return 1
+                fi
+                # Check that working tree is clean (commit succeeded)
+                if ! git status | grep -q "nothing to commit, working tree clean"; then
+                    echo "❌ VERIFICATION FAILED: Working tree not clean after commit"
+                    echo "   Commit may have failed or files remain unstaged"
+                    echo "   Run: git status"
+                    return 1
+                fi
+                # Check that branch is ahead (new commit exists)
+                if ! git status | grep -q "Your branch is ahead"; then
+                    echo "⚠️  WARNING: Branch not ahead of remote"
+                    echo "   This may be expected if working on a new branch"
+                fi
+                ;;
             "9") # Push and Verify
                 # Check that push was successful and working tree is clean
                 if ! git status | grep -q "Your branch is up to date"; then

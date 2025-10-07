@@ -2,6 +2,15 @@
 
 ## 2025-10-06
 
+### ✅ Checkpoint Verification Script Enhancement - Step 8 Automation
+- **Added automated verification for commit step 8** (Create Commit) in `scripts/checkpoint_update_enhanced.sh`
+- **Verification checks**:
+  - Confirms commit was created successfully (`git log -1`)
+  - Verifies working tree is clean after commit
+  - Warns if branch is not ahead of remote (may be expected for new branches)
+- **Benefits**: Eliminates need for manual exit code checks in commit workflow, maintains consistency with automation principle
+- **File**: `scripts/checkpoint_update_enhanced.sh` (lines 173-193)
+
 ### ✅ Checkpoint Verification Script Bug Fix
 - **Fixed `checkpoint-update-verified` for commit step 1** - build verification now works correctly
 - **Root cause**: Script checked for "Overall status: ✓ SUCCESS" text pattern in `logs/run-tests.log`, but that message only appears in stdout, not in log files
