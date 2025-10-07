@@ -2,13 +2,13 @@ Read AGENTS.md in order to prepare yourself for this new session. Then, suggest 
 
 ## MANDATORY FIRST STEP - KB Consultation
 
-Before analyzing priorities, you MUST:
+Before analyzing priorities, you MUST ([details](../../../kb/kb-consultation-before-planning-requirement.md)):
 1. Search the KB index: `grep "priority\|task\|analysis\|systematic" kb/README.md`
 2. Read relevant articles, especially:
-   - systematic-task-analysis-protocol
-   - quantitative-priority-setting
-   - task-verification-before-execution
-   - report-driven-task-planning
+   - systematic-task-analysis-protocol ([details](../../../kb/systematic-task-analysis-protocol.md))
+   - quantitative-priority-setting ([details](../../../kb/quantitative-priority-setting.md))
+   - task-verification-before-execution ([details](../../../kb/task-verification-before-execution.md))
+   - report-driven-task-planning ([details](../../../kb/report-driven-task-planning.md))
 3. Show your KB searches and findings in the conversation
 4. Apply the protocols from these articles
 

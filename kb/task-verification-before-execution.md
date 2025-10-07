@@ -4,7 +4,12 @@
 Before implementing any planned task from TODO.md or other documentation, always verify the task is actually needed by checking the current code state. Documentation can become outdated when implementation exceeds initial planning.
 
 ## Importance
-Prevents wasted effort on unnecessary tasks. In this session, Phase 2c was planned to create 5 instance functions, but investigation revealed they were already removed in Phase 2b, saving significant implementation time.
+Prevents wasted effort on unnecessary tasks. Examples:
+- Phase 2c was planned to create 5 instance functions, but they were already removed in Phase 2b
+- TDD Cycle 10 was listed as incomplete, but implementation and tests already existed
+- YAML parser bug blocking Cycle 9 was already fixed in commit 5ef1ce6
+
+Verification can reveal work is 50-75% more complete than documentation indicates.
 
 ## Example
 Verifying if functions need to be created:
@@ -39,9 +44,12 @@ void ar_agent__set_active(ar_agent_t *mut_agent, bool is_active);
 1. Read the task description from TODO/documentation
 2. Check if the code already handles this case
 3. Search for existing implementations
-4. Verify build/tests pass without the "missing" functionality
+4. **Run tests to verify current state**
 5. Check git history to understand what was actually done
-6. Only proceed if verification confirms the task is needed
+6. Verify build/tests pass without the "missing" functionality
+7. Only proceed if verification confirms the task is needed
+
+**Discovery pattern**: Tasks marked incomplete often have implementation that's further along than documented
 
 ## Implementation
 ```bash
@@ -62,7 +70,23 @@ grep -i "error\|undefined" build.log
 # Mark as [x] with explanation of why not needed
 ```
 
+**Discovering already-complete work**:
+```bash
+# Example: Verifying TDD Cycle status
+make module_tests 2>&1 | tail -20  # Check if tests pass
+
+# Check implementation exists
+grep -A 30 "function_name" modules/module.c
+
+# Verify in memory report
+grep "Actual memory leaks:" bin/run-tests/memory_report_module_tests.log
+
+# If all pass: Work is complete, update TODO.md
+```
+
 ## Related Patterns
+- [Systematic Task Analysis Protocol](systematic-task-analysis-protocol.md)
+- [Evidence-Based Debugging](evidence-based-debugging.md)
 - [Documentation Completion Verification](documentation-completion-verification.md)
 - [Retroactive Task Documentation](retroactive-task-documentation.md)
 - [Commit Scope Verification](commit-scope-verification.md)

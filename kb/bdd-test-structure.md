@@ -33,10 +33,13 @@ Structure tests to clearly communicate setup, action, and verification phases
 - **When**: Describe the action being tested
 - **Then**: Describe the expected result and verification
 - Use these exact comment patterns in ALL tests
+- **REQUIRED**: Use AR_ASSERT macros, not plain assert() (AGENTS.md requirement)
 - One test per behavior (focused testing)
 - Keep tests isolated and fast
 
 ## Related Patterns
 - [AR_ASSERT for Descriptive Failures](ar-assert-descriptive-failures.md)
+- [Test Assertion Strength Patterns](test-assertion-strength-patterns.md)
+- [Standards Over Expediency Principle](standards-over-expediency-principle.md)
 - [Test Standardization Retroactive Application](test-standardization-retroactive.md)
 - [Test Signal Reporting Practice](test-signal-reporting-practice.md)

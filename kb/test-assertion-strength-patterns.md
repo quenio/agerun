@@ -203,6 +203,8 @@ For conditions that can't be naturally triggered:
 7. **Chain verification**: Test complete workflows, not just units
 
 ## Related Patterns
+- [BDD Test Structure](bdd-test-structure.md)
+- [Standards Over Expediency Principle](standards-over-expediency-principle.md)
 - [Test Effectiveness Verification](test-effectiveness-verification.md)
 - [AR Assert Descriptive Failures](ar-assert-descriptive-failures.md)
 - [DLSym Test Interception Technique](dlsym-test-interception-technique.md)

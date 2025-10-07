@@ -4,12 +4,13 @@ Review uncommitted changes for code quality, architectural compliance, and docum
 
 ## KB Consultation Required
 
-Before reviewing:
+Before reviewing ([details](../../../kb/kb-consultation-before-planning-requirement.md)):
 1. Search: `grep "parnas\|principle\|smell\|architecture" kb/README.md`
 2. Review relevant principles:
    - Parnas design principles
    - Code smell patterns
    - Architecture patterns
+   - Standards over expediency ([details](../../../kb/standards-over-expediency-principle.md))
 3. Apply these standards during review
 
 # Review Changes

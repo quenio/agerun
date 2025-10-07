@@ -42,5 +42,7 @@ grep -r "topic\|keyword" AGENTS.md | grep "kb/"
 ```
 
 ## Related Patterns
+- [KB Consultation Before Planning Requirement](kb-consultation-before-planning-requirement.md)
+- [Systematic Task Analysis Protocol](systematic-task-analysis-protocol.md)
 - [Systematic Guideline Enhancement](systematic-guideline-enhancement.md)
 - [User Feedback as QA](user-feedback-as-qa.md)

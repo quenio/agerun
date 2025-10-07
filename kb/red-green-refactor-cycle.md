@@ -60,6 +60,10 @@ ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, void *owner) {
 ```
 
 ## Related Patterns
+- [BDD Test Structure](bdd-test-structure.md)
+- [Test Assertion Strength Patterns](test-assertion-strength-patterns.md)
+- [Standards Over Expediency Principle](standards-over-expediency-principle.md)
+- [KB Consultation Before Planning Requirement](kb-consultation-before-planning-requirement.md)
 - [TDD Advanced Large Refactoring](tdd-advanced-large-refactoring.md)
 - [Ownership Pattern Extraction](ownership-pattern-extraction.md)
 - [TDD Cycle Detailed Explanation](tdd-cycle-detailed-explanation.md)

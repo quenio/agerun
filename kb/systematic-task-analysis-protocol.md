@@ -108,3 +108,10 @@ Present methodology:
 5. **Scope Minimization** - Assuming simple explanations without evidence
 
 This protocol ensures comprehensive, evidence-based task analysis that reflects actual project state rather than partial perspectives.
+
+## Related Patterns
+- [KB Consultation Before Planning Requirement](kb-consultation-before-planning-requirement.md)
+- [Task Verification Before Execution](task-verification-before-execution.md)
+- [Quantitative Priority Setting](quantitative-priority-setting.md)
+- [Report-Driven Task Planning](report-driven-task-planning.md)
+- [Knowledge Base Consultation Protocol](knowledge-base-consultation-protocol.md)

@@ -2,10 +2,11 @@ Read AGENTS.md in order to prepare yourself for this new session. Then check the
 
 ## MANDATORY KB Consultation
 
-Before starting task execution, search KB for relevant patterns:
+Before starting task execution, search KB for relevant patterns ([details](../../../kb/kb-consultation-before-planning-requirement.md)):
 1. Search: `grep "tdd\|task\|test\|implementation" kb/README.md`
 2. Look for patterns related to the specific task type
-3. Apply relevant protocols found
+3. Apply relevant protocols found (e.g., [red-green-refactor](../../../kb/red-green-refactor-cycle.md), [test-assertion-strength](../../../kb/test-assertion-strength-patterns.md))
+4. Verify task is still needed ([details](../../../kb/task-verification-before-execution.md))
 
 # Next Task
 ## Checkpoint Tracking

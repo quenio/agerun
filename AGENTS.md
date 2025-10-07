@@ -39,7 +39,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 ### Knowledge Base Usage (MANDATORY - SHOW SEARCHES IN CONVERSATION)
 
-**Check KB index FIRST**: Before any task, grep kb/README.md for relevant patterns ([details](kb/knowledge-base-consultation-protocol.md))
+**Check KB BEFORE planning**: grep kb/README.md before creating any plan ([details](kb/kb-consultation-before-planning-requirement.md), [protocol](kb/knowledge-base-consultation-protocol.md))
 **Make KB searches VISIBLE**: Run grep, show results, quote guidance, apply patterns ([details](kb/kb-search-patterns.md), [priming](kb/session-start-priming-pattern.md))
 **Systematic analysis required**: Apply [systematic task analysis protocol](kb/systematic-task-analysis-protocol.md) for priority decisions
 **Trigger words**: "Why are you"/"Actually"/"You should" → Search NOW
@@ -154,7 +154,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Documentation-only changes**: Skip TDD for .md updates, use direct editing ([details](kb/documentation-only-change-pattern.md))
 **Complete ALL cycles** → Update docs/TODO/CHANGELOG → Single commit
 
-**Test Requirements**: BDD structure, one test per behavior, AR_ASSERT macros, zero leaks ([details](kb/bdd-test-structure.md), [assertions](kb/ar-assert-descriptive-failures.md))
+**Test Requirements**: BDD structure, one test per behavior, AR_ASSERT macros (never plain assert()), zero leaks ([details](kb/bdd-test-structure.md), [assertions](kb/ar-assert-descriptive-failures.md), [standards](kb/standards-over-expediency-principle.md))
 **Test simplification**: Use literals not complex expressions ([details](kb/test-input-simplification-pattern.md))
 **Context convention**: Pass 'context' not 'memory' ([details](kb/context-parameter-convention.md))
 **Requirement precision**: Verify exact requirements before implementing ([details](kb/requirement-precision-in-tdd.md))
