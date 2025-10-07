@@ -209,7 +209,6 @@ make checkpoint-update CMD=commit STEP=7
 
 ```bash
 # Create the commit
-echo "Creating commit..."
 git commit -m "$(cat <<'EOF'
 [Your commit message here]
 
@@ -217,47 +216,15 @@ git commit -m "$(cat <<'EOF'
 
 Co-Authored-By: Claude <noreply@anthropic.com>
 EOF
-)"
-
-# Verify commit succeeded
-if [ $? -eq 0 ]; then
-  echo "✅ Commit created successfully"
-else
-  echo "❌ Commit failed - check pre-commit hooks"
-  # Retry once for hook changes
-  git add -A
-  git commit -m "$(cat <<'EOF'
-[Your commit message here]
-
-🤖 Generated with [Claude Code](https://claude.ai/code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
-EOF
-  )"
-fi
-
-make checkpoint-update CMD=commit STEP=8
+)" && make checkpoint-update-verified CMD=commit STEP=8 SUMMARY="Commit created successfully"
 ```
 
-3. **Execute these commands:**
-   - Add all relevant files: `git add -A`
-   - Create the commit using HEREDOC format:
-   ```bash
-   git commit -m "$(cat <<'EOF'
-   [Your commit message here]
-
-   🤖 Generated with [Claude Code](https://claude.ai/code)
-
-   Co-Authored-By: Claude <noreply@anthropic.com>
-   EOF
-   )"
-   ```
-   - Run `git status` to verify the commit succeeded
-
-4. **If the commit fails due to pre-commit hooks:**
-   - Retry the commit ONCE to include any automated changes
-   - If it fails again, report the error
-   - If it succeeds but files were modified by hooks, amend the commit to include them
+3. **Execute the commit:**
+   - Create the commit using HEREDOC format with checkpoint verification
+   - The `checkpoint-update-verified` will automatically verify:
+     - Commit was created successfully
+     - Working tree is clean after commit
+     - Branch is ahead of remote (or warn if not)
 
 #### Checkpoint 9: Push and Verify
 
