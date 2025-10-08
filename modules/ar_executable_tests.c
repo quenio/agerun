@@ -706,7 +706,7 @@ int main(void) {
     
     // Test that executable loads from persisted methodology
     test_executable__loads_persisted_methodology(own_fixture);
-    
+
     // Now run a separate test with a system instance
     // Create system instance for tests
     ar_system_t *mut_system = ar_system__create();
