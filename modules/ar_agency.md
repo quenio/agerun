@@ -105,8 +105,9 @@ All global API functions delegate to their instance-based counterparts using an 
 
 ### Persistence
 
-- `ar_agency__save_agents()` - Save all persistent agents to disk
-- `ar_agency__load_agents()` - Load agents from disk
+- `ar_agency__save_agents()` - Save all agents to disk via agent_store
+- `ar_agency__load_agents()` - Load agents from disk via agent_store
+- `ar_agency__get_agent_store()` - Get agent_store reference (for advanced usage)
 
 ### Internal Access
 
@@ -189,16 +190,16 @@ for (int i = 0; i < count * 2; i++) {
 }
 ```
 
-### Persistence
+### Agent Persistence
 
 ```c
 // Save all agents to disk
-if (!ar_agency__save_agents(ref_agency, "agerun.agency")) {
+if (!ar_agency__save_agents(ref_agency)) {
     printf("Failed to save agents\n");
 }
 
 // Load agents from disk (typically at startup)
-if (!ar_agency__load_agents(mut_agency, "agerun.agency")) {
+if (!ar_agency__load_agents(mut_agency)) {
     printf("Failed to load agents\n");
 }
 ```
@@ -250,6 +251,85 @@ Most functions return:
 - `int64_t` - Non-zero ID on success, 0 on failure
 - Pointers - Valid pointer on success, NULL on failure
 
-## File Format
+## Agent Persistence Integration
 
-Agents are persisted to `agerun.agency` in the current directory. The file format is managed by the agent_store module.
+The agency module delegates all persistence operations to the **ar_agent_store** module, which handles the low-level details of saving and loading agent state.
+
+### Persistence Lifecycle
+
+```c
+// 1. At application startup - Load existing agents
+ar_agency_t *own_agency = ar_agency__create(ref_methodology);
+
+if (ar_agent_store__exists(ar_agency__get_agent_store(own_agency))) {
+    printf("Loading existing agents from disk...\n");
+    if (!ar_agency__load_agents(own_agency)) {
+        printf("Warning: Failed to load agents\n");
+    }
+}
+
+// 2. During application runtime - Agents are created and managed
+int64_t agent_id = ar_agency__create_agent(own_agency, "worker", "1.0.0", NULL);
+
+// 3. At application shutdown - Save current state
+printf("Saving agents to disk...\n");
+if (!ar_agency__save_agents(own_agency)) {
+    printf("Warning: Failed to save agents\n");
+}
+
+ar_agency__destroy(own_agency);
+```
+
+### When to Save
+
+The agency module does **not** automatically save agents. The application must explicitly call `ar_agency__save_agents()` at appropriate times:
+
+- **On shutdown**: Save before destroying the agency to persist current state
+- **Periodically**: Save at intervals to minimize data loss on crashes
+- **After significant changes**: Save after creating/destroying many agents
+
+### When to Load
+
+Loading should typically happen once at application startup:
+
+```c
+// Check if persisted state exists
+if (ar_agent_store__exists(ar_agency__get_agent_store(ref_agency))) {
+    // Load agents from last session
+    ar_agency__load_agents(mut_agency);
+}
+```
+
+### Error Recovery
+
+Both save and load operations create automatic backups:
+
+```c
+// Save creates agerun.agency.bak before writing agerun.agency
+if (!ar_agency__save_agents(ref_agency)) {
+    // Original file (if it existed) is still intact
+    // Backup file still contains previous state
+    printf("Save failed, previous state preserved\n");
+}
+
+// Load validates file format before creating agents
+if (!ar_agency__load_agents(mut_agency)) {
+    // No agents created if file is invalid
+    // Can recover from backup manually if needed
+    printf("Load failed, no agents created\n");
+}
+```
+
+### Integration with ar_agent_store
+
+The agency module uses the agent_store module internally:
+
+- **Filename**: Always uses `agerun.agency` (defined in `ar_agent_store.h`)
+- **Backup**: Automatically creates `agerun.agency.bak` before modifications
+- **Format**: Uses human-readable YAML (see ar_agent_store.md for details)
+- **Validation**: Validates file structure and data types on load
+- **Error Logging**: Detailed error and warning messages via ar_log
+
+### File Location
+
+Agents are persisted to `agerun.agency` in the current working directory. The file format and structure are managed by the agent_store module. See `ar_agent_store.md` for complete file format documentation.

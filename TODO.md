@@ -900,11 +900,11 @@ Modify ar_executable.c to save and load the agerun.agency file for agent state p
   - [x] Verify zero memory leaks
   - [x] Run full test suite
 
-- [x] TDD Cycle 14: Documentation updates
-  - [ ] Update ar_agent_store.h with new API
-  - [ ] Document YAML file format in ar_agent_store.md
-  - [ ] Update ar_agency.md with persistence details
-  - [ ] Add examples of agency.yaml format
+- [x] TDD Cycle 14: Documentation updates (Completed 2025-10-07)
+  - [x] Update ar_agent_store.h with new API (already complete)
+  - [x] Document YAML file format in ar_agent_store.md (enhanced with edge cases)
+  - [x] Update ar_agency.md with persistence details (added comprehensive integration section)
+  - [x] Add examples of agency.yaml format (multiple examples with data types, edge cases, backups)
 
 ### Success Criteria
 - [x] Agents fully restored with correct methods and memory

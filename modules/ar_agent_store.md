@@ -14,7 +14,9 @@ This module was created as part of the agency module refactoring to improve cohe
 
 ## File Format
 
-The `agerun.agency` file uses a YAML format:
+The `agerun.agency` file uses a human-readable YAML format for agent persistence.
+
+### Basic Structure
 
 ```yaml
 agents:
@@ -36,12 +38,68 @@ agents:
       level: "debug"
 ```
 
-Where:
-- `agents` - List of agent objects
-- `id` - Unique identifier for the agent
-- `method_name` - Name of the method the agent is running
-- `method_version` - Version of the method (semantic versioning)
-- `memory` - Agent's memory data as key-value pairs (supports int, double, string, and nested map/list structures)
+### Field Descriptions
+
+- **`agents`** - Root-level list containing all persisted agents
+- **`id`** - Unique integer identifier for the agent (preserved across restarts)
+- **`method_name`** - Name of the method the agent is running
+- **`method_version`** - Version of the method using semantic versioning (e.g., "1.0.0")
+- **`memory`** - Agent's memory data as key-value pairs
+
+### Supported Data Types in Memory
+
+The `memory` field supports all ar_data types:
+
+```yaml
+agents:
+  - id: 42
+    method_name: data_showcase
+    method_version: "1.0.0"
+    memory:
+      # String values
+      message: "Hello, World!"
+      status: "active"
+
+      # Integer values
+      count: 100
+      attempts: 3
+
+      # Double values
+      pi: 3.14159
+      ratio: 0.618
+
+      # Empty memory (no data)
+  - id: 43
+    method_name: simple_agent
+    method_version: "1.0.0"
+    memory: {}
+```
+
+### Edge Cases
+
+#### Empty Agent List
+
+```yaml
+agents: []
+```
+
+#### Agent with Minimal Data
+
+```yaml
+agents:
+  - id: 1
+    method_name: bootstrap
+    method_version: "1.0.0"
+    memory: {}
+```
+
+#### Missing Method Handling
+
+If an agent references a method that doesn't exist in the methodology, the agent store logs a warning and skips that agent during load:
+
+```
+Warning: Cannot create agent 5: method 'obsolete-method' version '1.0.0' not found
+```
 
 ## Key Functions
 
@@ -72,6 +130,38 @@ The module follows Parnas principles:
 - `ar_yaml_reader` - For parsing YAML format
 - `ar_heap` - For memory management
 
+## Backup and Recovery
+
+The agent store automatically creates backups before any destructive operations:
+
+### Automatic Backup Creation
+
+Before saving or deleting `agerun.agency`, a backup is created as `agerun.agency.bak`:
+
+```c
+// Backup created automatically before save
+ar_agent_store__save(own_store);  // Creates agerun.agency.bak first
+
+// Backup created automatically before delete
+ar_agent_store__delete(own_store);  // Creates agerun.agency.bak first
+```
+
+### Manual Recovery
+
+If the main file becomes corrupted, you can manually recover from the backup:
+
+```bash
+# Check if backup exists
+ls -la agerun.agency.bak
+
+# Restore from backup
+mv agerun.agency.bak agerun.agency
+```
+
+### Backup File Format
+
+The backup file (`agerun.agency.bak`) uses the same YAML format as the main file and can be inspected or edited manually if needed.
+
 ## Error Handling
 
 The module provides robust error handling:
@@ -79,6 +169,32 @@ The module provides robust error handling:
 - Automatic backup creation before modifications
 - Corrupted file detection and recovery
 - Detailed error messages via `ar_io__error()`
+- Warning messages for non-critical issues (missing methods, etc.)
+
+### Load Error Handling
+
+```c
+if (!ar_agent_store__load(mut_store)) {
+    // Possible causes:
+    // - File doesn't exist (not an error, returns false)
+    // - File is corrupted (YAML parse error)
+    // - File has invalid structure (missing required fields)
+    // - Permission denied
+    // Check logs for specific error details
+}
+```
+
+### Save Error Handling
+
+```c
+if (!ar_agent_store__save(ref_store)) {
+    // Possible causes:
+    // - Permission denied
+    // - Disk full
+    // - I/O error
+    // Original file remains intact (atomic write)
+}
+```
 
 ## Security
 
