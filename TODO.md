@@ -1267,6 +1267,74 @@ Remove wake/sleep messages as system-level concepts since they're not essential 
 
 - [x] Method Development: Created 5 additional method files with TDD (Completed)
 
+## Medium Priority - YAML Module Improvements (From 2025-10-08 Session)
+
+### YAML Header Validation
+**Context**: Discovered during executable integration - missing YAML header caused silent parsing failures.
+
+- [ ] **Add validation for missing YAML header in ar_yaml_reader**
+  - Currently silently skips first line assuming it's a header
+  - Should detect if header is missing and provide clear error message
+  - Would have caught the test file bug immediately
+  - Error message: "Invalid YAML format: Expected '# AgeRun YAML File' header"
+  - File: modules/ar_yaml_reader.c (around line 97-99)
+  - Related to existing Priority 1 item about replacing direct file I/O
+
+**Success Criteria**:
+- Clear error when YAML file missing header
+- Test coverage for missing header scenario
+- Updated ar_yaml_reader.md documentation
+
+## Medium Priority - Test Infrastructure Improvements (From 2025-10-08 Session)
+
+### Test Isolation and Cleanup
+**Context**: Tests share build directory; missing cleanup causes test interdependencies.
+
+- [ ] **Establish systematic test file cleanup pattern**
+  - Current approach: Manual cleanup helpers (e.g., `ar_executable_fixture__clean_persisted_files()`)
+  - Problem: Easy to forget cleanup in new tests, causing test interdependencies
+  - Consider test setup/teardown framework or automatic cleanup
+  - Alternative: Use unique temp directories per test (like ar_executable_fixture does)
+  - Files affected: All persistence-related tests (ar_executable_tests, ar_agent_store_tests, ar_methodology_tests)
+
+**Success Criteria**:
+- Document cleanup pattern in AGENTS.md testing section
+- All persistence tests use consistent cleanup approach
+- No test interdependencies due to shared files
+
+### Comprehensive Corruption Scenario Tests
+**Context**: Basic corruption handled, but need more edge cases.
+
+- [ ] **Add comprehensive corruption scenario tests**
+  - Current: Basic corruption handled (missing fields, invalid YAML structure)
+  - Gap: Need more edge cases:
+    - Truncated YAML files (partial writes during save)
+    - Valid YAML but wrong structure (e.g., root is list instead of map)
+    - Mixed valid/corrupt agents (some loadable, some not)
+    - Very large agent counts or memory structures
+    - Invalid agent IDs (0, negative, duplicates)
+  - Location: ar_agent_store_tests.c
+
+**Success Criteria**:
+- 5+ new corruption scenario tests
+- All scenarios handled gracefully with warnings
+- Zero memory leaks on all error paths
+
+## Low Priority - Documentation Improvements (From 2025-10-08 Session)
+
+- [ ] **Document YAML header requirement explicitly**
+  - Add to ar_yaml_reader.md: "First line must be '# AgeRun YAML File'"
+  - Add to ar_yaml_writer.md: "Automatically adds header line"
+  - Add example showing what happens if header is missing
+  - Reference: Bug discovered in modules/ar_executable_tests.c (lines 485, 538, 643, 828)
+
+- [ ] **Document test isolation requirements for persistence tests**
+  - Add to AGENTS.md testing section
+  - Explain why cleanup is needed (shared build directory)
+  - Show `clean_persisted_files()` pattern as example
+  - Recommend unique temp directories for new persistence tests
+  - Cross-reference ar_executable_fixture implementation
+
 ## Test Infrastructure - System Test Fixture Strategy
 
 - [x] Test Fixture Analysis: Decided on dedicated fixtures pattern (Completed)
