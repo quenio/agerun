@@ -635,6 +635,111 @@ static void test_store_load_missing_required_fields(void) {
     printf("✓ Store load missing required fields test passed\n");
 }
 
+static void test_store_complete_lifecycle_integration(void) {
+    printf("Testing complete agent lifecycle integration (end-to-end)...\n");
+
+    // Step 1: Create empty fixture - Start fresh
+    ar_agent_store_fixture_t *own_fixture = ar_agent_store_fixture__create_full();
+    assert(own_fixture != NULL);
+
+    // Clean up any existing store
+    ar_agent_store_fixture__delete_file(own_fixture);
+
+    // Step 2: Create 3 agents with different methods
+    int64_t agent_1 = ar_agent_store_fixture__create_agent(own_fixture, "echo", "1.0.0");
+    AR_ASSERT(agent_1 > 0, "Agent 1 should be created");
+
+    int64_t agent_2 = ar_agent_store_fixture__create_agent(own_fixture, "calculator", "1.0.0");
+    AR_ASSERT(agent_2 > 0, "Agent 2 should be created");
+
+    int64_t agent_3 = ar_agent_store_fixture__create_agent(own_fixture, "echo", "1.0.0");
+    AR_ASSERT(agent_3 > 0, "Agent 3 should be created");
+
+    // Step 3: Populate distinct memory for each agent
+    ar_data_t *mut_memory_1 = ar_agent_store_fixture__get_agent_memory(own_fixture, agent_1);
+    AR_ASSERT(mut_memory_1 != NULL, "Agent 1 should have memory");
+    ar_data__set_map_string(mut_memory_1, "message", "first");
+    ar_data__set_map_integer(mut_memory_1, "count", 10);
+
+    ar_data_t *mut_memory_2 = ar_agent_store_fixture__get_agent_memory(own_fixture, agent_2);
+    AR_ASSERT(mut_memory_2 != NULL, "Agent 2 should have memory");
+    ar_data__set_map_integer(mut_memory_2, "result", 42);
+    ar_data__set_map_double(mut_memory_2, "pi", 3.14);
+
+    ar_data_t *mut_memory_3 = ar_agent_store_fixture__get_agent_memory(own_fixture, agent_3);
+    AR_ASSERT(mut_memory_3 != NULL, "Agent 3 should have memory");
+    ar_data__set_map_string(mut_memory_3, "message", "third");
+    ar_data__set_map_double(mut_memory_3, "value", 99.9);
+
+    // Step 4: Save - Persist to agerun.agency
+    bool save_result = ar_agent_store_fixture__save(own_fixture);
+    AR_ASSERT(save_result == true, "Save should succeed");
+
+    // Step 5: Destroy all - Simulate shutdown
+    int64_t all_ids[] = {agent_1, agent_2, agent_3};
+    ar_agent_store_fixture__destroy_agents(own_fixture, all_ids, 3);
+
+    // Step 6: Verify empty - Count == 0
+    int64_t empty_count = ar_agent_store_fixture__get_agent_count(own_fixture);
+    AR_ASSERT(empty_count == 0, "All agents should be destroyed");
+
+    // Step 7: Load - Restore from file
+    bool load_result = ar_agent_store_fixture__load(own_fixture);
+    AR_ASSERT(load_result == true, "Load should succeed");
+
+    // Step 8: Enumerate verification (following KB Test Completeness Enumeration pattern)
+
+    // Verify count
+    int64_t loaded_count = ar_agent_store_fixture__get_agent_count(own_fixture);
+    AR_ASSERT(loaded_count == 3, "Should restore exactly 3 agents");
+
+    // Verify Agent 1: ID, method, memory
+    bool agent_1_exists = ar_agent_store_fixture__verify_agent(own_fixture, agent_1, "echo");
+    AR_ASSERT(agent_1_exists, "Agent 1 should exist with echo method");
+
+    ar_data_t *mut_restored_1 = ar_agent_store_fixture__get_agent_memory(own_fixture, agent_1);
+    AR_ASSERT(mut_restored_1 != NULL, "Agent 1 should have restored memory");
+
+    const char *message_1 = ar_data__get_map_string(mut_restored_1, "message");
+    AR_ASSERT(message_1 != NULL, "Agent 1 should have 'message' field");
+    AR_ASSERT(strcmp(message_1, "first") == 0, "Agent 1 message should be 'first'");
+
+    int64_t count_1 = ar_data__get_map_integer(mut_restored_1, "count");
+    AR_ASSERT(count_1 == 10, "Agent 1 count should be 10");
+
+    // Verify Agent 2: ID, method, memory
+    bool agent_2_exists = ar_agent_store_fixture__verify_agent(own_fixture, agent_2, "calculator");
+    AR_ASSERT(agent_2_exists, "Agent 2 should exist with calculator method");
+
+    ar_data_t *mut_restored_2 = ar_agent_store_fixture__get_agent_memory(own_fixture, agent_2);
+    AR_ASSERT(mut_restored_2 != NULL, "Agent 2 should have restored memory");
+
+    int64_t result_2 = ar_data__get_map_integer(mut_restored_2, "result");
+    AR_ASSERT(result_2 == 42, "Agent 2 result should be 42");
+
+    double pi_2 = ar_data__get_map_double(mut_restored_2, "pi");
+    AR_ASSERT(pi_2 == 3.14, "Agent 2 pi should be 3.14");
+
+    // Verify Agent 3: ID, method, memory
+    bool agent_3_exists = ar_agent_store_fixture__verify_agent(own_fixture, agent_3, "echo");
+    AR_ASSERT(agent_3_exists, "Agent 3 should exist with echo method");
+
+    ar_data_t *mut_restored_3 = ar_agent_store_fixture__get_agent_memory(own_fixture, agent_3);
+    AR_ASSERT(mut_restored_3 != NULL, "Agent 3 should have restored memory");
+
+    const char *message_3 = ar_data__get_map_string(mut_restored_3, "message");
+    AR_ASSERT(message_3 != NULL, "Agent 3 should have 'message' field");
+    AR_ASSERT(strcmp(message_3, "third") == 0, "Agent 3 message should be 'third'");
+
+    double value_3 = ar_data__get_map_double(mut_restored_3, "value");
+    AR_ASSERT(value_3 == 99.9, "Agent 3 value should be 99.9");
+
+    // Clean up
+    ar_agent_store_fixture__destroy(own_fixture);
+
+    printf("✓ Complete lifecycle integration test passed\n");
+}
+
 int main(void) {
     printf("\n=== Running Agent Store Tests ===\n\n");
 
@@ -654,6 +759,7 @@ int main(void) {
     test_store_load_missing_method();
     test_store_load_corrupt_yaml();
     test_store_load_missing_required_fields();
+    test_store_complete_lifecycle_integration();
 
     printf("\n=== All Agent Store Tests Passed ===\n");
     return 0;
