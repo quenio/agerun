@@ -1,5 +1,49 @@
 # AgeRun CHANGELOG
 
+## 2025-10-08
+
+### ✅ Agent Persistence Integration in Executable (TDD Cycles 2-4)
+- **Completed agent persistence integration in ar_executable.c**
+- **Agent loading on startup**:
+  - Check for `agerun.agency` file using `stat()`
+  - Load agents if file exists with `ar_agency__load_agents()`
+  - Graceful handling if load fails (warning, continues execution)
+  - File: `modules/ar_executable.c` (lines 164-172)
+- **Conditional bootstrap creation**:
+  - Only create bootstrap agent if no agents were loaded
+  - Prevents duplicate agents when restoring from disk
+  - Check agent count before creating bootstrap
+  - File: `modules/ar_executable.c` (lines 175-188)
+- **Agent saving on shutdown**:
+  - Save all agents before system shutdown
+  - Uses `ar_agency__save_agents()` to persist to `agerun.agency`
+  - Graceful handling if save fails (warning, continues shutdown)
+  - File: `modules/ar_executable.c` (lines 248-254)
+- **Test coverage**:
+  - `test_executable__loads_agents_on_startup()` - Verifies agent loading from disk
+  - `test_executable__skips_bootstrap_when_agents_loaded()` - Verifies conditional bootstrap
+  - `test_executable__saves_agents_on_shutdown()` - Verifies agent saving
+  - `test_executable__handles_corrupted_agency_file()` - Verifies graceful error handling
+  - Total: 12 executable tests passing with zero memory leaks
+- **YAML header bug fix**:
+  - **Root cause**: YAML writer adds `# AgeRun YAML File\n` header, reader expects it
+  - **Solution**: Added header to all manually-created test YAML files
+  - Fixed test crashes in agent loading tests
+  - File: `modules/ar_executable_tests.c` (lines 485, 538, 643, 828)
+- **Test infrastructure enhancement**:
+  - Added `ar_executable_fixture__clean_persisted_files()` helper
+  - Eliminates code duplication across test cleanup
+  - Removes both `agerun.methodology` and `agerun.agency` files
+  - Files: `modules/ar_executable_fixture.c` (lines 165-180), `modules/ar_executable_fixture.h` (line 91)
+- **Debug output cleanup**:
+  - Removed all debug output from `ar_agency.c` after testing
+  - File: `modules/ar_agency.c` (line 305)
+- **Documentation fix**:
+  - Removed non-existent `ar_agency__get_agent_store()` function from documentation
+  - Updated examples to use `stat()` for checking file existence
+  - Fixed 3 instances across `ar_agency.md`
+- **Result**: Complete agent lifecycle persistence - agents survive executable restarts
+
 ## 2025-10-07
 
 ### ✅ Agent Store Documentation Completion (TDD Cycle 14)
