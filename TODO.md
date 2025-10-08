@@ -8,207 +8,50 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
-- [x] API Suffix Cleanup: Removed "_with_instance" suffix from all 30 functions; updated 132 files (source, documentation, tests, KB articles); clean final API established (Completed 2025-09-27)
+- [x] API Suffix Cleanup: Removed "_with_instance" suffix from 30 functions; updated 132 files; clean final API (Completed 2025-09-27)
+- [x] Knowledge Base Reference Resolution: Added "Check KB index FIRST" guideline; updated kb/README.md to 317 KB articles; systematic discovery protocol (Completed 2025-09-27)
+- [x] Global API Removal (All Phases): Removed global functions from ar_methodology (7), ar_agency (25), ar_system; updated 25 documentation files; all tests passing with zero memory leaks (Completed 2025-09-13 to 2025-09-14)
+- [x] Parser Module Error Logging: All 11 parsers with comprehensive error logging; reduced silent failures 97.6%→0%; verification script and KB docs (Completed 2025-09-13)
 
-- [x] Knowledge Base Reference Resolution: Added "Check KB index FIRST" guideline to AGENTS.md; updated kb/README.md to include all 317 KB articles (was missing 9); established systematic KB discovery protocol (Completed 2025-09-27)
+- [x] AGENTS.md Guidelines Compaction: Extracted verbose sections to KB; 541→437 lines (19% reduction); 4 KB articles (Completed 2025-09-03)
+- [x] ar_expression_parser Error Logging: Comprehensive error logging; 97.6%→0% silent failures; 72 tests pass (Completed 2025-08-25)
+- [x] YAML Module Enhancement: Split into ar_yaml_reader/writer; made instantiable; added error logging; 7 KB articles; all tests pass (Completed 2025-08-18 to 2025-08-24)
+- [x] Knowledge Base - CI Debugging: Created 5 KB articles for CI debugging patterns (Completed 2025-08-15)
 
-- [x] Documentation - Global API Reference Cleanup: Fixed 25 documentation files with outdated global function references; all documentation now references instance-based APIs correctly; check-docs validation passes (Completed 2025-09-14)
+- [x] Wake/Sleep System Removal: Removed from 19 files (195 lines), 7 method files, SPEC.md; created 7 KB articles; removed 4 obsolete KB articles; 69 tests passing (Completed 2025-08-10 to 2025-08-11)
 
-- [x] Global API Removal Phase 3 (ar_methodology): Removed all 7 global functions (create_method, get_method, save_methods, load_methods, cleanup, register_method, unregister_method); updated all tests to use instance-based APIs; all 18 tests passing (Completed 2025-09-14)
-
-- [x] Knowledge Base - Phase 2b Session Learnings: Created 3 KB articles (task-verification-before-execution, grep-or-syntax-differences, script-archaeology-pattern); updated 3 existing KB articles with cross-references; updated 4 commands and AGENTS.md with new patterns (Completed 2025-09-14)
-
-- [x] Global API Removal Phase 2 (ar_agency): All phases completed - removed all 25 global functions, global state variables, updated tests and documentation; all tests passing with zero memory leaks (Completed 2025-09-14)
-
-- [x] Global API Removal Phase 1 (ar_system): Verified no global APIs exist; ar_executable already uses instances; all tests passing (Completed 2025-09-13)
-
-- [x] Parser Module Error Logging Enhancement: All 11 parsers now have comprehensive error logging; reduced silent failures from 97.6%→0%; created verification script and KB documentation (Completed 2025-09-13)
-
-- [x] AGENTS.md Guidelines Compaction: Extracted verbose sections to KB articles; 541→437 lines (19% reduction); created 4 KB articles (Completed 2025-09-03)
-
-- [x] ar_expression_parser Error Logging: Enhanced with comprehensive error logging; reduced silent failures 97.6%→0%; 72 tests pass (Completed 2025-08-25)
-
-- [x] YAML Module Error Logging: Added error logging to ar_yaml_reader/writer; created 7 KB articles; all tests pass (Completed 2025-08-24)
-
-- [x] ar_yaml_writer NULL Parameter Error Logging: Added error messages for NULL parameters; 9 tests passing (Completed 2025-08-24)
-
-- [x] ar_yaml_reader Error Logging: Added error messages for 3 failure conditions; 15 tests total (Completed 2025-08-24)
-
-- [x] ar_yaml_writer Module Instantiation: Made instantiable with opaque type; 7 tests total (Completed 2025-08-24)
-
-- [x] YAML Module Split: Created ar_yaml_reader/writer; made instantiable; 13 tests migrated (Completed 2025-08-18)
-
-- [x] Knowledge Base Enhancement - CI Debugging: Created 5 KB articles for CI debugging patterns (Completed 2025-08-15)
-
-- [x] Wake/Sleep Remnant Cleanup: Removed remnants from 19 files (195 lines); created 4 KB articles (Completed 2025-08-11)
-
-- [x] Bootstrap Agent Spawning: Fixed evaluator routing; added spawn no-op; 69 tests passing (Completed 2025-08-10)
-
-- [x] Knowledge Base Cleanup: Removed 4 obsolete KB articles; updated 14 cross-references (Completed 2025-08-10)
-
-- [x] Knowledge Base Enhancement - Documentation: Created articles on doc-only changes and git amend (Completed 2025-08-10)
-
-- [x] Project Documentation Update: Removed 7 wake/sleep references from SPEC.md (Completed 2025-08-10)
-
-- [x] Knowledge Base - Wake/Sleep Cleanup: Created 3 KB articles for test and documentation patterns (Completed 2025-08-10)
-
-- [x] Wake/Sleep Message Removal: Removed logic from 7 method files and ar_executable; 68 tests pass (Completed 2025-08-10)
-
-- [x] Knowledge Base - Test Fixture Patterns: Created 4 KB articles on fixture design and build isolation (Completed 2025-08-09)
-
+- [x] Bootstrap System Implementation: Created bootstrap-1.0.0.method with TDD; implemented agent; fixed race conditions; removed auto-load/save; 68 tests pass (Completed 2025-08-07 to 2025-08-08)
+- [x] Knowledge Base - Bootstrap & TDD: Created 14 KB articles on test fixtures, resource management, TDD cycles, I/O backups, method language constraints, race conditions (Completed 2025-08-07 to 2025-08-09)
 - [x] Executable Test Fixture Module: Created module to isolate test builds; fixed linker errors (Completed 2025-08-09)
 
-- [x] Knowledge Base - Session Learnings: Created 6 KB articles on resource management and TDD patterns (Completed 2025-08-09)
+- [x] Executable Single Session Refactoring: Removed second session; integration tests added; 4 KB articles on binary execution (Completed 2025-08-06)
+- [x] Wake Message Field Access Fixes: Fixed echo, calculator, grade evaluator, message router, string builder, interpreter fixture; 8 KB articles; whitelist 220→212 entries (Completed 2025-08-05)
 
-- [x] Knowledge Base - Task Authorization: Created article on waiting for explicit instructions (Completed 2025-08-08)
-
-- [x] Knowledge Base - Session Learnings: Created 3 KB articles on I/O backups and TDD precision (Completed 2025-08-08)
-
-- [x] Knowledge Base - TDD Cycle 4 Learnings: Created 3 KB articles on method language constraints (Completed 2025-08-07)
-
-- [x] Knowledge Base - TDD Cycle 6 Integration: Created 2 KB articles on race conditions and build issues (Completed 2025-08-08)
-
-- [x] Bootstrap Agent Creation & Race Fix: Implemented bootstrap agent; fixed race conditions; 68 tests pass (Completed 2025-08-08)
-
-- [x] Bootstrap Method Implementation: Created bootstrap-1.0.0.method with TDD; AST verification tests (Completed 2025-08-07)
-
-- [x] System Auto-Saving Removal: Removed auto-save on shutdown; 68 tests pass (Completed 2025-08-07)
-
-- [x] Knowledge Base - TDD Cycle 2 Learnings: Created 3 KB articles on test patterns and static analysis (Completed 2025-08-07)
-
-- [x] System Auto-Loading Removal: Removed auto-load on init; fixed dup() error handling; 67 tests pass (Completed 2025-08-07)
-
-- [x] Executable Single Session Refactoring: Removed second session; integration tests added (Completed 2025-08-06)
-
-- [x] Knowledge Base - Integration Testing: Created 4 KB articles on binary execution and test patterns (Completed 2025-08-06)
-
-- [x] Calculator Wake Message Fix: Fixed field access error; whitelist reduced to 219 entries (Completed 2025-08-05)
-
-- [x] Grade Evaluator Wake Message Fix: Fixed field access error; whitelist reduced to 218 entries (Completed 2025-08-05)
-
-- [x] Message Router Wake Message Fix: Fixed 3 field access errors; whitelist reduced to 215 (Completed 2025-08-05)
-
-- [x] String Builder Wake Message Fix: Fixed 2 field access errors; whitelist reduced to 213 (Completed 2025-08-05)
-
-- [x] Interpreter Fixture Wake Message Fix: Fixed ownership handling; created 2 KB articles; whitelist to 212 (Completed 2025-08-05)
-
-- [x] Whitelist Specificity Enhancement: Used unique field names; created 2 KB articles (Completed 2025-08-05)
-
-- [x] Wake Message Field Access Fix: Fixed echo method; created 4 KB articles; whitelist to 220 (Completed 2025-08-05)
-
+- [x] Documentation Compaction: AGENTS.md 650→390 lines (40%); CHANGELOG.md 1637→902 lines (45%); created 9 KB articles on compaction patterns (Completed 2025-08-03)
+- [x] Message Corruption Fix: Fixed MAP→INTEGER bug in agent communication; zero memory leaks (Completed 2025-08-03)
 - [x] compile() Function Validation: Fixed syntax validation; context-aware error filtering (Completed 2025-08-03)
 
-- [x] Knowledge Base - Debugging Patterns: Created 3 KB articles on ownership and debugging (Completed 2025-08-03)
+- [x] Build System & Test Fixes: Parallelized Makefile; fixed test target failure propagation; fixed calculator/grade evaluator tests (Completed 2025-07-07 to 2025-07-29)
+- [x] Evaluator Migration to Zig: Analyzed cleanup patterns; migrated exit evaluator; created migration guides and KB articles (Completed 2025-07-20)
+- [x] Knowledge Base - TDD/Refactoring: Created articles on anti-patterns, refactoring checklist, feature completion, systematic cleanup (Completed 2025-07-27 to 2025-08-02)
 
-- [x] Message Corruption Fix: Fixed MAP→INTEGER bug in agent communication; zero memory leaks (Completed 2025-08-03)
-
-- [x] TODO.md Selective Compaction: Created patterns for mixed-state document compaction (Completed 2025-08-03)
-
-- [x] Documentation Patterns from CHANGELOG: Created 3 KB articles from compaction session (Completed 2025-08-03)
-
-- [x] CHANGELOG.md Compaction: Reduced 1637→902 lines (45% reduction) (Completed 2025-08-03)
-
-- [x] Knowledge Base - Documentation Patterns: Enhanced compacting pattern article (Completed 2025-08-03)
-
-- [x] Documentation Compaction: AGENTS.md reduced 650→390 lines (40%); created 6 KB articles (Completed 2025-08-03)
-
-- [x] Knowledge Base - Anti-Pattern: Created Global Instance Wrapper Anti-Pattern article (Completed 2025-08-02)
-
-- [x] Critical Build System Fix: Fixed test target failure propagation (Completed 2025-07-28)
-
-- [x] Test Fixes: Fixed calculator/grade evaluator tests; added string comparisons (Completed 2025-07-29)
-
-- [x] Knowledge Base - Phase Completion: Created refactoring checklist; enhanced TDD patterns (Completed 2025-07-28)
-
-- [x] Knowledge Base - TDD/Refactoring: Created feature completion pattern; systematic cleanup guide (Completed 2025-07-27)
-
-- [x] Evaluator Migration Strategy: Analyzed cleanup patterns; migrated exit evaluator to Zig (Completed 2025-07-20)
-
-- [x] Knowledge Base Enhancement: Created module removal checklist; updated migration guides (Completed 2025-07-20)
-
-- [x] Build System Parallelization: Refactored Makefile for parallel execution; fixed race conditions (Completed 2025-07-07)
-
-- [x] Type Naming Convention: Renamed all types to ar_ prefix; 2743 total occurrences (Completed 2025-07-06)
-
-- [x] Naming Convention Violations: Fixed static functions and enum values; 64 updates (Completed 2025-07-07)
-
+- [x] Naming Convention Standardization: Renamed all types to ar_ prefix (2743 occurrences); static functions to underscore prefix; test/module function patterns; 64 violation fixes (Completed 2025-06-08 to 2025-07-07)
 - [x] Static Analysis Reporting: Fixed full_build.sh with per-file analysis (Completed 2025-06-13)
 
-- [x] Static Function Naming: Changed to underscore prefix convention (Completed 2025-06-11)
-
-- [x] Test Function Naming: Established test_<module>__<test_name> pattern (Completed 2025-06-17)
-
-- [x] Module Function Naming: Changed to ar__<module>__<function> pattern (Completed 2025-06-08)
-
 - [x] Method AST/Parser Modules: Created with instruction management; zero memory leaks (Completed 2025-06-26)
-
-- [x] ar_io Zig Conversion: Full C compatibility; resolved circular dependency (Completed 2025-07-05)
-
-- [x] ar_heap Zig Conversion: Full C compatibility; elegant exit handling (Completed 2025-07-05)
-
-- [x] ar_semver Zig Conversion: Standalone with enhanced safety (Completed 2025-07-05)
-
-- [x] ar_instruction_ast Zig Conversion: Full C API; enhanced null safety (Completed 2025-07-13)
-
-- [x] ar_method_evaluator.zig C API Fix: Fixed violations; zero memory leaks (Completed 2025-07-13)
-
-- [x] ar_method_ast Zig Conversion: Fixed memory leaks; 1046 allocations freed (Completed 2025-07-13)
+- [x] Zig Conversions: ar_io, ar_heap, ar_semver (full C compatibility); ar_instruction_ast, ar_method_ast, ar_method_evaluator (enhanced null safety, 1046 allocations freed) (Completed 2025-07-05 to 2025-07-13)
 
 - [x] Documentation System Enhancement: Added link validation; found 19 broken links (Completed 2025-07-14)
-
 - [x] Evaluator Dependency Injection: Simplified APIs; zero memory leaks (Completed 2025-07-15)
-
-- [x] System Module Analysis: Identified 5 responsibilities; created refactoring plan (Completed 2025-07-30)
-
-- [x] Knowledge Base - Module Refactoring: Created 3 KB articles on instantiation patterns (Completed 2025-07-30)
-
-- [x] Agency Module Instantiation: Made instantiable with opaque type; zero memory leaks (Completed 2025-08-01)
-
-- [x] Knowledge Base - API Migration: Created 2 KB articles on test lifecycle and migration patterns (Completed 2025-08-01)
-
-- [x] Knowledge Base Enhancement: Created articles on module patterns and user feedback (Completed 2025-07-28)
-
-- [x] System Module Instantiation: Made instantiable with single global instance pattern (Completed 2025-08-02)
-
-- [x] Knowledge Base - Instance API: Created 2 KB articles on resource cleanup and NULL handling (Completed 2025-08-02)
-
-- [x] System-Wide Instance API Migration: Migrated all modules; removed ~6,730 lines; 0 memory leaks (Completed 2025-08-02)
+- [x] Module Instantiation: Made ar_agency and ar_system instantiable with opaque types; system-wide instance API migration; removed ~6,730 lines; 0 memory leaks; 7 KB articles (Completed 2025-07-28 to 2025-08-02)
 
 ## Critical Compliance Tasks
 
-### CRITICAL - Evaluator Code Duplication Refactoring (HIGHEST PRIORITY)
+### CRITICAL - Evaluator Code Duplication Refactoring ✅ COMPLETED
 
-**Problem**: Extensive code duplication across 9+ evaluators violates DRY principle and creates maintenance burden.
-
-- [x] Extract Common Error Handling: Created ar_event and ar_log modules (Completed 2025-06-29, 2025-07-02)
-
-- [x] Extract Memory Path Utilities: Created ar_path and ar_memory_accessor modules (Completed 2025-07-03 to 2025-07-06)
-
-- [x] Zig Module Conversion Experiment: Converted ar_string to Zig with C compatibility (Completed 2025-07-05)
-
-- [x] Extract Ownership Functions: Added claim_or_copy and destroy_if_owned to ar_data (Completed 2025-07-19)
-
-- [x] Extract Result Storage Functions: Added path suffix and map data functions (Completed 2025-07-20)
-
-#### 5. Migrate Evaluators to Zig for Error Cleanup Simplification (NEW APPROACH)
-
-**Rationale**: Instead of extracting C helper functions, migrate evaluators to Zig to leverage `defer` for automatic cleanup, eliminating ~100+ lines of duplicated cleanup code per evaluator ([details](kb/zig-defer-error-cleanup-pattern.md)).
-
-- [x] Migrate ar_exit_instruction_evaluator to Zig: Proof of concept with defer (Completed 2025-07-20)
-
-- [x] Migrate All Evaluators to Zig: 10 evaluators total (Completed 2025-07-20 to 2025-07-26)
-
-- [x] Create Base Evaluator Structure: Designed pattern using ar_log composition (Completed 2025-06-30)
-
-- [x] Refactor All Evaluators: Updated with shared components; eliminated ~100+ lines duplication each (Completed 2025-07-26)
-
-- [x] Parnas Principles - Interface Violations: Fixed all violations; zero circular dependencies (Completed 2025-06-08)
-
-- [x] Completed Parnas Tasks: Audited modules; eliminated circular dependencies (Completed 2025-06-08)
-
-- [x] Documentation and Process Tasks: Verified complete documentation (Completed 2025-06-14)
-
-- [x] Parnas Architecture Guidelines: Established NO internal headers policy (Completed 2025-06-08)
+- [x] Extract Common Utilities: Created ar_event, ar_log, ar_path, ar_memory_accessor modules; added ownership functions to ar_data (Completed 2025-06-29 to 2025-07-20)
+- [x] Migrate All Evaluators to Zig: 10 evaluators migrated using defer pattern; eliminated ~100+ lines duplication each; base evaluator structure with ar_log composition (Completed 2025-06-20 to 2025-07-26)
+- [x] Parnas Principles Compliance: Fixed all interface violations; eliminated circular dependencies; verified complete documentation; NO internal headers policy (Completed 2025-06-08 to 2025-06-14)
 
 ## Recent Completions
 
