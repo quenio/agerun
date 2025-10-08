@@ -212,11 +212,13 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Recent Completions
 
+- [x] Agent Store Load Implementation: Full YAML-based persistence; 17 tests passing; zero memory leaks (Completed 2025-10-07)
+
 - [x] Parse and Build Functions: Fixed functions; 29 tests passing (Completed 2025-06-12)
 
 - [x] Instruction Module Refactoring: Separated parsing/execution phases (Completed 2025-06-12)
 
-## Immediate Priorities (Re-prioritized 2025-07-27)
+## Immediate Priorities (Re-prioritized 2025-10-08)
 
 ### 1. HIGHEST PRIORITY - Methodology Module Refactoring
 
@@ -516,7 +518,7 @@ Each parser needs 2-3 TDD cycles for comprehensive error logging:
 - Phase 2: 1-2 sessions (16 subtasks)
 - Phase 3: 1 session (methodology has fewer dependencies)
 
-### 4. System Module Decomposition (Depends on Global API Removal)
+### 4. MEDIUM PRIORITY - System Module Decomposition (Depends on Global API Removal)
 
 **Current State**: Both ar_agency and ar_system have been successfully made instantiable (completed 2025-08-02).
 - ar_agency uses methodology as borrowed reference (completed 2025-08-01)
@@ -569,48 +571,6 @@ Based on successful instantiation learnings:
   - [ ] Update ar_system.md documentation
   - [ ] Create ar_runtime.md and ar_message_broker.md
   - [ ] Update module dependency diagram
-
-### 4. Complete Agent Store Load Implementation
-
-**Rationale**: The agent store save functionality works correctly, but the load implementation is incomplete. It only reads the agent count from the file but doesn't actually recreate agents with their methods and memory.
-
-**Current State**: 
-- Agent store is now instantiable with registry dependency injection (completed 2025-08-02)
-- Save functionality works: writes agent ID, method name/version, and memory to file
-- Load functionality is stub: only reads agent count, doesn't recreate agents
-- Tests updated to work with instantiable API without methodology dependency
-
-**Design Challenge**: The agent store has no access to methodology for method lookup, by design to avoid circular dependencies. The load implementation needs to either:
-1. **Have agency coordinate loading** - agency looks up methods and passes them to agent store
-2. **Store method definitions in file** - make agent store files self-contained
-3. **Accept method lookup callback** - inject methodology interface during load
-
-**Recommended Approach**: Option 1 (agency coordination) aligns with current architecture where agency owns both methodology and agent store.
-
-**Tasks**:
-- [ ] Design load coordination between agency and agent store
-  - [ ] Agency provides method lookup during load operation
-  - [ ] Agent store requests method by name/version from agency
-  - [ ] Agency creates agents and passes them to registry
-- [ ] Implement complete load functionality in ar_agent_store.c
-  - [ ] Parse agent definitions (ID, method name/version, memory items)
-  - [ ] Create agents using provided method references
-  - [ ] Restore agent memory from saved state
-  - [ ] Register agents in the provided registry
-- [ ] Update agency save/load functions to coordinate with agent store
-- [ ] Add comprehensive load tests verifying agent restoration
-  - [ ] Single agent with memory persistence
-  - [ ] Multiple agents with different methods
-  - [ ] Agent ID preservation across save/load cycles
-  - [ ] Error handling for missing methods
-- [x] Update documentation with complete save/load workflow
-
-**Success Criteria**:
-- Agents are fully restored with correct methods and memory
-- Agent IDs are preserved across save/load cycles
-- Missing methods during load are handled gracefully
-- Zero memory leaks in save/load operations
-- Tests verify complete agent lifecycle persistence
 
 ### 5. System-Wide Integration Testing and Verification
 
@@ -857,11 +817,11 @@ Modify ar_executable.c to save and load the agerun.agency file for agent state p
   - [x] No explicit type field needed - YAML handles type inference on load
 
 ### Phase 5 - Agent Store Load Implementation
-- [ ] TDD Cycle 8: Parse agent definitions from YAML
-  - [ ] Load YAML file using ar_yaml__read_from_file()
-  - [ ] Navigate ar_data_t structure to extract agents
-  - [ ] Extract agent_id, method_name, method_version
-  - [ ] Create temporary agent specification structures
+- [x] TDD Cycle 8: Parse agent definitions from YAML (Completed 2025-10-07)
+  - [x] Load YAML file using ar_yaml_reader__read_from_file()
+  - [x] Navigate ar_data_t structure to extract agents
+  - [x] Extract agent_id, method_name, method_version
+  - [x] Implementation complete in ar_agent_store.c lines 353-495
 
 - [x] TDD Cycle 9: Create agents with method lookup (Completed 2025-10-02)
   - [x] Use ar_methodology__get_method() for lookup
