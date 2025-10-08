@@ -80,5 +80,7 @@ EOF
 ```
 
 ## Related Patterns
+- [Incomplete Commit Message Recovery Pattern](incomplete-commit-message-recovery-pattern.md)
+- [Atomic Commit Documentation Pattern](atomic-commit-documentation-pattern.md)
 - [Build Verification Before Commit](build-verification-before-commit.md)
 - [Refactoring Phase Completion Checklist](refactoring-phase-completion-checklist.md)

@@ -83,6 +83,8 @@ git status  # Should show clean tree with staged changes
 ```
 
 ## Related Patterns
+- [Incomplete Commit Message Recovery Pattern](incomplete-commit-message-recovery-pattern.md)
+- [Atomic Commit Documentation Pattern](atomic-commit-documentation-pattern.md)
 - [Build Verification Before Commit](build-verification-before-commit.md)
 - [Build System Exit Code Verification](build-system-exit-code-verification.md)
 - [Build Log Verification Requirement](build-log-verification-requirement.md)

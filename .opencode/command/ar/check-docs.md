@@ -3,12 +3,14 @@ Run documentation validation and fix any errors found using an iterative approac
 ## MANDATORY KB Consultation
 
 Before validation:
-1. Search: `grep "documentation\|validation\|example" kb/README.md`
+1. Search: `grep "documentation\|validation\|example\|contract" kb/README.md`
 2. Must read:
    - documentation-validation-enhancement-patterns
    - validated-documentation-examples
+   - yaml-implicit-contract-validation-pattern
    - validation-feedback-loop-effectiveness
 3. Apply iterative validation approach
+4. For YAML files: Ensure reader/writer contracts are explicit ([details](../../../kb/yaml-implicit-contract-validation-pattern.md))
 
 # Check Documentation
 ## Checkpoint Tracking

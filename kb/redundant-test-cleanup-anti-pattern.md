@@ -67,6 +67,5 @@ grep -n "ar_agency__reset\|ar_methodology__cleanup" *_tests.c | \
 ```
 
 ## Related Patterns
-- [Test Fixture Simplification Pattern](test-fixture-simplification-pattern.md)
-- [Test Fixture Evolution Pattern](test-fixture-evolution-pattern.md)
+- [Test Isolation Shared Directory Pattern](test-isolation-shared-directory-pattern.md)
 - [Test Fixture Module Creation Pattern](test-fixture-module-creation-pattern.md)

@@ -77,7 +77,8 @@ git commit -m "feat: complete implementation with documentation"
 ```
 
 ### Fixing Forgotten Documentation
-If you forget to include TODO.md/CHANGELOG.md in your commit:
+
+**If not yet pushed to remote**:
 ```bash
 # DON'T create a separate commit
 git add TODO.md CHANGELOG.md
@@ -89,7 +90,22 @@ git commit --amend  # GOOD: Keeps changes atomic
 # This opens your editor to update the commit message if needed
 ```
 
+**If already pushed to remote** (cannot safely amend):
+```bash
+# DON'T rewrite published history
+git commit --amend && git push --force  # BAD: Breaks shared repository
+
+# DO create supplemental documentation commit
+# See: Incomplete Commit Message Recovery Pattern
+git add CHANGELOG.md TODO.md
+git commit -m "docs: Add comprehensive documentation for commit <sha>
+
+The previous commit included [major work] but message was incomplete.
+This commit adds proper documentation of all changes."
+```
+
 ## Related Patterns
+- [Incomplete Commit Message Recovery Pattern](incomplete-commit-message-recovery-pattern.md)
 - [Commit Scope Verification](commit-scope-verification.md)
 - [Pre-Commit Checklist Detailed](pre-commit-checklist-detailed.md)
 - [TDD Feature Completion Before Commit](tdd-feature-completion-before-commit.md)

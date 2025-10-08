@@ -150,3 +150,11 @@ Before proceeding to execute the next task:
 2. If the task references a report, review the relevant sections ([details](../../../kb/report-driven-task-planning.md))
 3. Define a plan with effort estimated in TDD cycles ([details](../../../kb/tdd-cycle-effort-estimation.md))
 4. Explain your strategy and wait for my feedback
+
+## End of Session
+
+When completing a task or ending a session:
+1. Ask "What improvements did this work reveal?" ([details](../../../kb/post-session-task-extraction-pattern.md))
+2. Capture discovered issues as prioritized TODO items with context
+3. Document why each improvement matters and what triggered the discovery
+4. Add success criteria for each task to make them actionable

@@ -9,8 +9,10 @@ Before committing:
 2. Must read:
    - pre-commit-checklist-detailed
    - atomic-commit-documentation-pattern
+   - incomplete-commit-message-recovery-pattern
    - tdd-feature-completion-before-commit
 3. Apply all pre-commit requirements
+4. If commit message incomplete after push: use supplemental documentation commit ([details](../../../kb/incomplete-commit-message-recovery-pattern.md))
 
 # Commit
 ## Checkpoint Tracking

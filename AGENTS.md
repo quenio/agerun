@@ -162,7 +162,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Method tests**: Verify AST after loading to catch parse errors ([details](kb/method-test-ast-verification.md))
 **Cleanup**: `ar_methodology__cleanup()` & `ar_agency__reset()`
 **Messages**: Process all messages to prevent memory leaks
-**Test isolation**: Comment out tests to isolate error sources ([details](kb/test-isolation-through-commenting.md))
+**Test isolation**: Comment out tests to isolate errors ([details](kb/test-isolation-through-commenting.md)); cleanup shared files ([details](kb/test-isolation-shared-directory-pattern.md))
 **Test cleanup**: Remove persisted files before tests run ([details](kb/test-file-cleanup-pattern.md))
 **Test redundancy**: Avoid cleanup already handled by fixtures ([details](kb/redundant-test-cleanup-anti-pattern.md))
 **Test updates**: Apply improvements retroactively to all tests ([details](kb/test-standardization-retroactive.md))
@@ -300,7 +300,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Navigation & Files**: Absolute paths, git not .bak, ar_io backups ([details](kb/absolute-path-navigation.md), [backups](kb/file-io-backup-mechanism.md))
 **Build & Debug**: `make sanitize-tests 2>&1`, make targets only, parallel jobs ([details](kb/development-debug-tools.md), [make](kb/make-target-testing-discipline.md), [compile](kb/compilation-driven-refactoring-pattern.md), [shell diagnostics](kb/shell-configuration-diagnostic-troubleshooting.md))
 **Checkpoints**: Track complex tasks, gates, progress, concise output ([details](kb/multi-step-checkpoint-tracking-pattern.md), [gates](kb/gate-enforcement-exit-codes-pattern.md), [concise](kb/concise-script-output-principle.md))
-**YAML & Persistence**: 2-space indent, escape multiline, direct I/O, list bug ([details](kb/yaml-serialization-direct-io-pattern.md), [multiline](kb/multi-line-data-persistence-format.md), [list bug](kb/yaml-list-indentation-bug.md))
+**YAML & Persistence**: 2-space indent, escape multiline, direct I/O, validate contracts ([details](kb/yaml-serialization-direct-io-pattern.md), [multiline](kb/multi-line-data-persistence-format.md), [contracts](kb/yaml-implicit-contract-validation-pattern.md))
 **Error & Logs**: Context filtering, precise grep, fix root causes ([details](kb/systematic-whitelist-error-resolution.md), [logs](kb/build-log-extraction-patterns.md), [grep](kb/grep-or-syntax-differences.md), [config migration](kb/configuration-migration-troubleshooting-strategy.md))
 **CI/CD**: gh CLI debugging, version verification ([details](kb/github-actions-debugging-workflow.md), [versions](kb/tool-version-selection-due-diligence.md))
 **Quality**: Stop after 3 failures, phased cleanup, impact analysis ([details](kb/struggling-detection-pattern.md), [impact](kb/comprehensive-impact-analysis.md))
@@ -368,14 +368,15 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 4. Update docs for API changes ([details](kb/documentation-language-migration-updates.md))
 5. Check outdated refs: `grep -l "old_name" modules/*.md`
 6. Update TODO.md & CHANGELOG.md in same commit ([details](kb/atomic-commit-documentation-pattern.md), [verify](kb/documentation-completion-verification.md))
-7. `git diff` full review → clean temp files → commit
+7. `git diff --stat` review full scope → verify message describes ALL changes ([details](kb/incomplete-commit-message-recovery-pattern.md))
+8. Clean temp files → commit
 
 **Remember**: Complete ALL TDD Cycles → Docs → TODO → CHANGELOG → Commit ([details](kb/tdd-feature-completion-before-commit.md))
 
 **After Completing Major Tasks**:
 - Document completion date in TODO.md (e.g., "Completed 2025-06-11")
 - Move tasks from "In Progress" to "Completed Tasks" section
-- Include brief summary of what was accomplished
+- Capture improvements discovered during work as new TODO items ([details](kb/post-session-task-extraction-pattern.md))
 - Update AGENTS.md with any new patterns or learnings from the session ([details](kb/systematic-guideline-enhancement.md))
 
 ### 13. Refactoring Patterns
