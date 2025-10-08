@@ -13,6 +13,7 @@
 #include "ar_executable.h"
 #include "ar_heap.h"
 #include "ar_io.h"
+#include "ar_agent_store.h"
 
 /* Bootstrap agent configuration */
 static const char *BOOTSTRAP_METHOD_NAME = "bootstrap";
@@ -209,17 +210,32 @@ int ar_executable__main(void) {
         printf("Successfully loaded %d methods from directory\n\n", methods_loaded);
     }
     // If loaded_from_file is true, we already printed the success message above
-    
-    // Initialize the system and create bootstrap agent
-    printf("Creating bootstrap agent...\n");
-    int64_t initial_agent = ar_system__init(mut_system, BOOTSTRAP_METHOD_NAME, BOOTSTRAP_METHOD_VERSION);
-    if (initial_agent <= 0) {
-        printf("Error: Failed to create bootstrap agent\n");
-        ar_system__shutdown(mut_system);
-        ar_system__destroy(mut_system);
-        return 1;
+
+    // Check if persisted agency file exists and load agents
+    struct stat agency_stat;
+    if (stat(AGENT_STORE_FILE_NAME, &agency_stat) == 0) {
+        printf("Loading agents from persisted agency...\n");
+        if (ar_agency__load_agents(mut_agency, AGENT_STORE_FILE_NAME)) {
+            printf("Successfully loaded agents from %s\n", AGENT_STORE_FILE_NAME);
+        } else {
+            printf("Warning: Failed to load agents from %s\n", AGENT_STORE_FILE_NAME);
+        }
     }
-    printf("Bootstrap agent created with ID: %" PRId64 "\n", initial_agent);
+
+    // Only create bootstrap if no agents were loaded
+    if (ar_agency__count_agents(mut_agency) == 0) {
+        printf("Creating bootstrap agent...\n");
+        int64_t initial_agent = ar_system__init(mut_system, BOOTSTRAP_METHOD_NAME, BOOTSTRAP_METHOD_VERSION);
+        if (initial_agent <= 0) {
+            printf("Error: Failed to create bootstrap agent\n");
+            ar_system__shutdown(mut_system);
+            ar_system__destroy(mut_system);
+            return 1;
+        }
+        printf("Bootstrap agent created with ID: %" PRId64 "\n", initial_agent);
+    } else {
+        printf("Agents loaded from disk, skipping bootstrap creation\n");
+    }
     
     // Process all messages until none remain
     printf("Processing messages...\n");
@@ -238,7 +254,15 @@ int ar_executable__main(void) {
     } else {
         printf("Warning: Failed to save methodology to %s\n", METHODOLOGY_FILE_NAME);
     }
-    
+
+    // Save agents to file before shutdown
+    printf("Saving agents to file...\n");
+    if (ar_agency__save_agents(mut_agency, AGENT_STORE_FILE_NAME)) {
+        printf("Agents saved to %s\n", AGENT_STORE_FILE_NAME);
+    } else {
+        printf("Warning: Failed to save agents to %s\n", AGENT_STORE_FILE_NAME);
+    }
+
     // Shutdown the runtime
     printf("Shutting down runtime...\n");
     ar_system__shutdown(mut_system);

@@ -26,6 +26,9 @@ static void test_bootstrap_spawns_echo(ar_executable_fixture_t *mut_fixture);
 static void test_message_processing_loop(ar_executable_fixture_t *mut_fixture);
 static void test_executable__saves_methodology_file(ar_executable_fixture_t *mut_fixture);
 static void test_executable__continues_on_save_failure(ar_executable_fixture_t *mut_fixture);
+static void test_executable__loads_agents_on_startup(ar_executable_fixture_t *mut_fixture);
+static void test_executable__skips_bootstrap_when_agents_loaded(ar_executable_fixture_t *mut_fixture);
+static void test_executable__saves_agents_on_shutdown(ar_executable_fixture_t *mut_fixture);
 
 
 // Stub function to avoid linking with the actual executable
@@ -197,15 +200,10 @@ static void test_loading_methods_from_directory(ar_executable_fixture_t *mut_fix
 // Test that the executable creates a bootstrap agent
 static void test_bootstrap_agent_creation(ar_executable_fixture_t *mut_fixture) {
     printf("Testing executable creates bootstrap agent...\n");
-    
-    // Remove any existing methodology file to ensure clean test
-    const char *build_dir = ar_executable_fixture__get_build_dir(mut_fixture);
-    if (build_dir) {
-        char methodology_path[512];
-        snprintf(methodology_path, sizeof(methodology_path), "%s/agerun.methodology", build_dir);
-        remove(methodology_path);
-    }
-    
+
+    // Remove any existing persisted files to ensure clean test
+    ar_executable_fixture__clean_persisted_files(mut_fixture);
+
     // When we build and run the executable using make
     printf("Building and running executable to test bootstrap agent creation...\n");
     char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
@@ -269,20 +267,15 @@ static void test_bootstrap_agent_creation(ar_executable_fixture_t *mut_fixture) 
 // Test that the executable handles bootstrap agent creation failure gracefully
 static void test_bootstrap_agent_creation_failure(ar_executable_fixture_t *mut_fixture) {
     printf("Testing executable handles bootstrap creation failure...\n");
-    
+
     // Given we're running from the correct test directory
     char cwd[1024];
     AR_ASSERT(getcwd(cwd, sizeof(cwd)) != NULL, "Should be able to get current directory");
     AR_ASSERT(strstr(cwd, "/bin/") != NULL, "Test must be run from bin directory");
-    
-    // Remove any existing methodology file to ensure clean test
-    const char *build_dir = ar_executable_fixture__get_build_dir(mut_fixture);
-    if (build_dir) {
-        char methodology_path[512];
-        snprintf(methodology_path, sizeof(methodology_path), "%s/agerun.methodology", build_dir);
-        remove(methodology_path);
-    }
-    
+
+    // Remove any existing persisted files to ensure clean test
+    ar_executable_fixture__clean_persisted_files(mut_fixture);
+
     // Copy methods and then hide bootstrap to simulate it missing
     printf("Setting up temp methods directory and hiding bootstrap method file...\n");
     char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
@@ -338,12 +331,15 @@ static void test_bootstrap_agent_creation_failure(ar_executable_fixture_t *mut_f
 // Test that bootstrap agent spawns echo agent
 static void test_bootstrap_spawns_echo(ar_executable_fixture_t *mut_fixture) {
     printf("Testing bootstrap spawns echo agent...\n");
-    
+
     // Given we're running from the correct test directory
     char cwd[1024];
     AR_ASSERT(getcwd(cwd, sizeof(cwd)) != NULL, "Should be able to get current directory");
     AR_ASSERT(strstr(cwd, "/bin/") != NULL, "Test must be run from bin directory");
-    
+
+    // Remove any existing persisted files to ensure clean test
+    ar_executable_fixture__clean_persisted_files(mut_fixture);
+
     // When we build and run the executable using make
     printf("Building and running executable to test echo agent spawning...\n");
     char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
@@ -663,6 +659,230 @@ static void test_executable__continues_on_save_failure(ar_executable_fixture_t *
     printf("✓ Executable continues gracefully when save fails\n");
 }
 
+static void test_executable__loads_agents_on_startup(ar_executable_fixture_t *mut_fixture) {
+    printf("\n=== Testing executable loads agents on startup ===\n");
+
+    const char *build_dir = ar_executable_fixture__get_build_dir(mut_fixture);
+    AR_ASSERT(build_dir != NULL, "Should have build directory");
+
+    char agency_path[512];
+    snprintf(agency_path, sizeof(agency_path), "%s/agerun.agency", build_dir);
+
+    // Given: An agerun.agency file exists with a bootstrap agent
+    FILE *agency_file = fopen(agency_path, "w");
+    AR_ASSERT(agency_file != NULL, "Should be able to create agency file");
+    fprintf(agency_file, "# AgeRun YAML File\n");  // Header required by YAML reader
+    fprintf(agency_file, "agents:\n");
+    fprintf(agency_file, "  - id: 1\n");
+    fprintf(agency_file, "    method_name: bootstrap\n");
+    fprintf(agency_file, "    method_version: \"1.0.0\"\n");
+    fprintf(agency_file, "    memory: {}\n");
+    fclose(agency_file);
+
+    // When: The executable runs
+    char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
+    FILE *pipe = ar_executable_fixture__build_and_run(mut_fixture, own_methods_dir);
+    AR_ASSERT(pipe != NULL, "Should be able to run executable");
+
+    char line[512];
+    bool found_loading_agents = false;
+    while (fgets(line, sizeof(line), pipe) != NULL) {
+        if (strstr(line, "Loading agents from persisted agency")) {
+            found_loading_agents = true;
+        }
+    }
+
+    int exit_status = pclose(pipe);
+    AR_ASSERT(exit_status == 0, "Executable should exit successfully");
+
+    // Then: It should load agents from the file
+    AR_ASSERT(found_loading_agents, "Should load agents from agerun.agency file");
+
+    // Cleanup
+    ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
+    printf("✓ Agent loading on startup test passed\n");
+}
+
+static void test_executable__skips_bootstrap_when_agents_loaded(ar_executable_fixture_t *mut_fixture) {
+    printf("\n=== Testing executable skips bootstrap when agents loaded ===\n");
+
+    const char *build_dir = ar_executable_fixture__get_build_dir(mut_fixture);
+    AR_ASSERT(build_dir != NULL, "Should have build directory");
+
+    char agency_path[512];
+    snprintf(agency_path, sizeof(agency_path), "%s/agerun.agency", build_dir);
+
+    // Given: An agerun.agency file exists with agents
+    FILE *agency_file = fopen(agency_path, "w");
+    AR_ASSERT(agency_file != NULL, "Should be able to create agency file");
+    fprintf(agency_file, "# AgeRun YAML File\n");  // Header required by YAML reader
+    fprintf(agency_file, "agents:\n");
+    fprintf(agency_file, "  - id: 1\n");
+    fprintf(agency_file, "    method_name: bootstrap\n");
+    fprintf(agency_file, "    method_version: \"1.0.0\"\n");
+    fprintf(agency_file, "    memory: {}\n");
+    fclose(agency_file);
+
+    // When: The executable runs
+    char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
+    FILE *pipe = ar_executable_fixture__build_and_run(mut_fixture, own_methods_dir);
+    AR_ASSERT(pipe != NULL, "Should be able to run executable");
+
+    char line[512];
+    bool found_skipping_bootstrap = false;
+    bool found_creating_bootstrap = false;
+    while (fgets(line, sizeof(line), pipe) != NULL) {
+        if (strstr(line, "Agents loaded from disk, skipping bootstrap creation")) {
+            found_skipping_bootstrap = true;
+        }
+        if (strstr(line, "Creating bootstrap agent")) {
+            found_creating_bootstrap = true;
+        }
+    }
+
+    int exit_status = pclose(pipe);
+    AR_ASSERT(exit_status == 0, "Executable should exit successfully");
+
+    // Then: It should skip bootstrap creation
+    AR_ASSERT(found_skipping_bootstrap, "Should skip bootstrap when agents loaded");
+    AR_ASSERT(!found_creating_bootstrap, "Should NOT create bootstrap when agents loaded");
+
+    // Cleanup
+    ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
+    printf("✓ Skip bootstrap test passed\n");
+}
+
+static void test_executable__saves_agents_on_shutdown(ar_executable_fixture_t *mut_fixture) {
+    printf("\n=== Testing executable saves agents on shutdown ===\n");
+
+    const char *build_dir = ar_executable_fixture__get_build_dir(mut_fixture);
+    AR_ASSERT(build_dir != NULL, "Should have build directory");
+
+    char agency_path[512];
+    snprintf(agency_path, sizeof(agency_path), "%s/agerun.agency", build_dir);
+
+    // Given: No agency file exists before running
+    unlink(agency_path);  // Remove any existing agency file
+
+    // Given: The executable runs (which creates a bootstrap agent)
+    char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
+    FILE *pipe = ar_executable_fixture__build_and_run(mut_fixture, own_methods_dir);
+    AR_ASSERT(pipe != NULL, "Should be able to run executable");
+
+    // Wait for executable to finish
+    char line[512];
+    while (fgets(line, sizeof(line), pipe) != NULL) {
+        // Just consume output
+    }
+
+    int exit_status = pclose(pipe);
+    AR_ASSERT(exit_status == 0, "Executable should exit successfully");
+
+    // When: The executable has shut down
+
+    // Then: The agerun.agency file should exist with agent data
+    struct stat file_stat;
+    AR_ASSERT(stat(agency_path, &file_stat) == 0, "Should create agerun.agency file");
+    AR_ASSERT(file_stat.st_size > 0, "Agency file should not be empty");
+
+    // Verify file contains expected YAML structure
+    FILE *agency_file = fopen(agency_path, "r");
+    AR_ASSERT(agency_file != NULL, "Should be able to read agency file");
+
+    bool found_header = false;
+    bool found_agents = false;
+    bool found_bootstrap = false;
+
+    while (fgets(line, sizeof(line), agency_file) != NULL) {
+        if (strstr(line, "# AgeRun YAML File")) {
+            found_header = true;
+        }
+        if (strstr(line, "agents:")) {
+            found_agents = true;
+        }
+        if (strstr(line, "method_name: bootstrap")) {
+            found_bootstrap = true;
+        }
+    }
+
+    fclose(agency_file);
+
+    AR_ASSERT(found_header, "Agency file should have YAML header");
+    AR_ASSERT(found_agents, "Agency file should have agents section");
+    AR_ASSERT(found_bootstrap, "Agency file should contain bootstrap agent");
+
+    // Cleanup
+    ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
+    printf("✓ Agent save on shutdown test passed\n");
+}
+
+// Test that executable handles corrupted agency file gracefully
+static void test_executable__handles_corrupted_agency_file(ar_executable_fixture_t *mut_fixture) {
+    printf("\n=== Testing executable handles corrupted agency file ===\n");
+
+    // Clean up any existing persisted files
+    ar_executable_fixture__clean_persisted_files(mut_fixture);
+
+    // Given: A corrupted agency file exists
+    const char *build_dir = ar_executable_fixture__get_build_dir(mut_fixture);
+    AR_ASSERT(build_dir != NULL, "Should have build directory");
+
+    char agency_path[512];
+    snprintf(agency_path, sizeof(agency_path), "%s/agerun.agency", build_dir);
+
+    // Create a corrupted agency file (missing required fields)
+    FILE *agency_file = fopen(agency_path, "w");
+    AR_ASSERT(agency_file != NULL, "Should be able to create corrupted agency file");
+    fprintf(agency_file, "# AgeRun YAML File\n");
+    fprintf(agency_file, "agents:\n");
+    fprintf(agency_file, "  - id: 1\n");
+    fprintf(agency_file, "    method_name: bootstrap\n");
+    // Missing method_version - this should cause loading to skip the agent
+    fprintf(agency_file, "    memory: {}\n");
+    fclose(agency_file);
+
+    // When: We run the executable
+    char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
+    FILE *pipe = ar_executable_fixture__build_and_run(mut_fixture, own_methods_dir);
+    AR_ASSERT(pipe != NULL, "Should be able to run executable");
+
+    // Then: Executable should handle gracefully
+    char line[512];
+    bool found_loading_agents = false;
+    bool found_bootstrap_creation = false;
+    bool found_shutdown = false;
+
+    while (fgets(line, sizeof(line), pipe) != NULL) {
+        if (strstr(line, "Loading agents from persisted agency")) {
+            found_loading_agents = true;
+        }
+        if (strstr(line, "Creating bootstrap agent")) {
+            found_bootstrap_creation = true;
+        }
+        if (strstr(line, "Runtime shutdown complete")) {
+            found_shutdown = true;
+        }
+    }
+
+    int status = pclose(pipe);
+
+    // Verify executable handled corruption gracefully
+    if (WIFEXITED(status)) {
+        int exit_code = WEXITSTATUS(status);
+        AR_ASSERT(exit_code == 0, "Should exit successfully despite corrupted file");
+    } else {
+        AR_ASSERT(false, "Executable should exit normally");
+    }
+
+    AR_ASSERT(found_loading_agents, "Should attempt to load agents");
+    AR_ASSERT(found_bootstrap_creation, "Should create bootstrap agent when load skips corrupted agent");
+    AR_ASSERT(found_shutdown, "Should shutdown normally");
+
+    // Cleanup
+    ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
+    printf("✓ Corrupted agency file handled gracefully\n");
+}
+
 int main(void) {
     printf("Starting Executable Module Tests...\n");
     
@@ -707,6 +927,18 @@ int main(void) {
     // Test that executable loads from persisted methodology
     test_executable__loads_persisted_methodology(own_fixture);
 
+    // Test that executable loads agents on startup
+    test_executable__loads_agents_on_startup(own_fixture);
+
+    // Test that executable skips bootstrap when agents loaded
+    test_executable__skips_bootstrap_when_agents_loaded(own_fixture);
+
+    // Test that executable saves agents on shutdown
+    test_executable__saves_agents_on_shutdown(own_fixture);
+
+    // Test that executable handles corrupted agency file
+    test_executable__handles_corrupted_agency_file(own_fixture);
+
     // Now run a separate test with a system instance
     // Create system instance for tests
     ar_system_t *mut_system = ar_system__create();
@@ -743,7 +975,7 @@ int main(void) {
     ar_executable_fixture__destroy(own_fixture);
     
     // And report success
-    printf("All 8 tests passed!\n");
+    printf("All 12 tests passed!\n");
     return 0;
 }
 

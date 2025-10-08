@@ -107,7 +107,6 @@ All global API functions delegate to their instance-based counterparts using an 
 
 - `ar_agency__save_agents()` - Save all agents to disk via agent_store
 - `ar_agency__load_agents()` - Load agents from disk via agent_store
-- `ar_agency__get_agent_store()` - Get agent_store reference (for advanced usage)
 
 ### Internal Access
 
@@ -261,9 +260,11 @@ The agency module delegates all persistence operations to the **ar_agent_store**
 // 1. At application startup - Load existing agents
 ar_agency_t *own_agency = ar_agency__create(ref_methodology);
 
-if (ar_agent_store__exists(ar_agency__get_agent_store(own_agency))) {
+// Check if agency file exists using stat
+struct stat st;
+if (stat("agerun.agency", &st) == 0) {
     printf("Loading existing agents from disk...\n");
-    if (!ar_agency__load_agents(own_agency)) {
+    if (!ar_agency__load_agents(own_agency, "agerun.agency")) {
         printf("Warning: Failed to load agents\n");
     }
 }
@@ -294,9 +295,10 @@ Loading should typically happen once at application startup:
 
 ```c
 // Check if persisted state exists
-if (ar_agent_store__exists(ar_agency__get_agent_store(ref_agency))) {
+struct stat st;
+if (stat("agerun.agency", &st) == 0) {
     // Load agents from last session
-    ar_agency__load_agents(mut_agency);
+    ar_agency__load_agents(mut_agency, "agerun.agency");
 }
 ```
 

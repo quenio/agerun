@@ -347,7 +347,7 @@ bool ar_agency__load_agents(ar_agency_t *mut_agency, const char *ref_filename) {
     if (!mut_agency || !mut_agency->is_initialized) {
         return false;
     }
-    
+
     // Use the agency's own agent store instance
     // In future, this could support custom filenames
     (void)ref_filename; // Unused for now

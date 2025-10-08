@@ -68,4 +68,12 @@ void ar_executable_fixture__destroy_methods_dir(ar_executable_fixture_t *mut_fix
  */
 const char* ar_executable_fixture__get_build_dir(const ar_executable_fixture_t *ref_fixture);
 
+/**
+ * Removes persisted files from the build directory to ensure clean test state
+ * @param ref_fixture The fixture managing the test
+ * @note Removes agerun.methodology and agerun.agency files if they exist
+ * @note Does not fail if files don't exist
+ */
+void ar_executable_fixture__clean_persisted_files(const ar_executable_fixture_t *ref_fixture);
+
 #endif /* AGERUN_EXECUTABLE_FIXTURE_H */

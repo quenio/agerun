@@ -163,3 +163,19 @@ const char* ar_executable_fixture__get_build_dir(const ar_executable_fixture_t *
     }
     return ref_fixture->temp_build_dir;
 }
+
+void ar_executable_fixture__clean_persisted_files(const ar_executable_fixture_t *ref_fixture) {
+    if (!ref_fixture || !ref_fixture->initialized) {
+        return;
+    }
+
+    // Remove methodology file
+    char methodology_path[512];
+    snprintf(methodology_path, sizeof(methodology_path), "%s/agerun.methodology", ref_fixture->temp_build_dir);
+    remove(methodology_path);
+
+    // Remove agency file
+    char agency_path[512];
+    snprintf(agency_path, sizeof(agency_path), "%s/agerun.agency", ref_fixture->temp_build_dir);
+    remove(agency_path);
+}
