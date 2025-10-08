@@ -80,7 +80,7 @@ verify_work() {
 
     # Review and Update Commands verification
     if [[ "$step_desc" == *"Review and Update Commands"* ]]; then
-        local modified_cmds=$(git diff --name-only 2>/dev/null | grep ".claude/commands" | wc -l || echo 0)
+        local modified_cmds=$(git diff --name-only 2>/dev/null | grep -E "\.claude/commands|\.opencode/command" | wc -l || echo 0)
         if [ "$modified_cmds" -lt 3 ]; then
             echo "❌ VERIFICATION FAILED: Command updates require modifying 3-4 commands"
             echo "   Currently modified: $modified_cmds commands"
@@ -94,7 +94,7 @@ verify_work() {
     if [[ "$step_desc" == *"Integration Verification"* ]]; then
         echo "Verifying integration completeness..."
         local modified_kb=$(git diff --name-only 2>/dev/null | grep "kb.*\.md" | wc -l || echo 0)
-        local modified_cmds=$(git diff --name-only 2>/dev/null | grep ".claude/commands" | wc -l || echo 0)
+        local modified_cmds=$(git diff --name-only 2>/dev/null | grep -E "\.claude/commands|\.opencode/command" | wc -l || echo 0)
         if [ "$modified_kb" -lt 3 ] || [ "$modified_cmds" -lt 3 ]; then
             echo "❌ VERIFICATION FAILED: Integration incomplete"
             echo "   KB articles modified: $modified_kb (need: 3+)"
