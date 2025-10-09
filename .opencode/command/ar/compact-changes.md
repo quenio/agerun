@@ -3,16 +3,24 @@ Compact the CHANGELOG.md file by condensing completed milestones while preservin
 ## MANDATORY KB Consultation
 
 Before compacting, you MUST:
-1. Search: `grep "compact\|documentation\|changelog" kb/README.md`
+1. Search: `grep "compact\|documentation\|changelog\|script\|systematic\|dry.*run" kb/README.md`
 2. Read these KB articles IN FULL using the read tool:
-   - `kb/documentation-compacting-pattern.md`
-   - `kb/selective-compaction-pattern.md`
-   - `kb/quantitative-documentation-metrics.md`
+   - `kb/documentation-compacting-pattern.md` - for compaction targets and guidelines
+   - `kb/selective-compaction-pattern.md` - for selection criteria
+   - `kb/quantitative-documentation-metrics.md` - for metric preservation
+   - `kb/systematic-file-modification-workflow.md` - for script workflow (Enumerate → Script → Apply → Verify → Commit)
+   - `kb/batch-update-script-pattern.md` - for creating automated scripts
+   - `kb/dry-run-mode-requirement.md` - **CRITICAL**: All file-modifying scripts MUST implement dry-run mode
 3. In your response, quote these specific items from the KB:
    - The target reduction percentage for historical records (from documentation-compacting-pattern)
    - The 5 guidelines for "For historical records" section
-   - Example of before/after compaction from the KB
-4. Apply ALL guidelines - if you achieve less than 40% reduction, you have NOT followed the KB
+   - The 5-step workflow from systematic-file-modification-workflow
+   - The 5 dry-run principles from dry-run-mode-requirement (default to dry-run, explicit --apply flag, etc.)
+4. If writing a script:
+   - MUST implement dry-run mode (default=dry-run, use --apply to execute)
+   - Follow systematic workflow: Enumerate → Script → Apply → Verify → Commit
+   - Run in dry-run mode FIRST, review output, then run with --apply
+5. Apply ALL guidelines - if you achieve less than 40% reduction, you have NOT followed the KB
 
 **Example of proper KB consultation:**
 ```

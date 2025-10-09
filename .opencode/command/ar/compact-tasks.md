@@ -3,16 +3,24 @@ Compact the TODO.md file by condensing completed tasks while keeping incomplete 
 ## MANDATORY KB Consultation
 
 Before compacting, you MUST:
-1. Search: `grep "compact\|selective\|task" kb/README.md`
+1. Search: `grep "compact\|selective\|task\|script\|systematic\|dry.*run" kb/README.md`
 2. Read these KB articles IN FULL using the read tool:
-   - `kb/selective-compaction-pattern.md`
-   - `kb/retroactive-task-documentation.md`
-   - `kb/documentation-compacting-pattern.md`
+   - `kb/selective-compaction-pattern.md` - for preservation rules
+   - `kb/retroactive-task-documentation.md` - for task documentation
+   - `kb/documentation-compacting-pattern.md` - for reduction targets
+   - `kb/systematic-file-modification-workflow.md` - for script workflow (Enumerate → Script → Apply → Verify → Commit)
+   - `kb/batch-update-script-pattern.md` - for creating automated scripts
+   - `kb/dry-run-mode-requirement.md` - **CRITICAL**: All file-modifying scripts MUST implement dry-run mode
 3. In your response, quote these specific items from the KB:
    - The target reduction percentage for mixed-state docs (from documentation-compacting-pattern)
-   - The key principle about "Never modify preserved content" from selective-compaction-pattern
-   - The example showing before/after selective compaction
-4. Apply ALL guidelines - incomplete tasks must remain EXACTLY unchanged
+   - The key principle "Never modify preserved content - not even whitespace" from selective-compaction-pattern
+   - The 5-step workflow from systematic-file-modification-workflow
+   - The 5 dry-run principles from dry-run-mode-requirement (default to dry-run, explicit --apply flag, etc.)
+4. If writing a script:
+   - MUST implement dry-run mode (default=dry-run, use --apply to execute)
+   - Follow systematic workflow: Enumerate → Script → Apply → Verify → Commit
+   - Run in dry-run mode FIRST, review output, then run with --apply
+5. Apply ALL guidelines - incomplete tasks must remain EXACTLY unchanged
 
 **Example of proper KB consultation:**
 ```
