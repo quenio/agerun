@@ -1,62 +1,72 @@
 Compact the TODO.md file by condensing completed tasks while keeping incomplete tasks untouched.
 
+## CRITICAL: Mixed-State Document Strategy
+
+**Key Learning from Session 2025-10-08**: TODO.md is a **mixed-state document** requiring selective compaction + manual semantic analysis for completed tasks only.
+
+**Mixed-State Document Constraints**:
+- TODO.md contains both completed [x] and incomplete [ ] tasks
+- **MANDATORY**: ALL incomplete tasks must remain **completely untouched** (not even whitespace)
+- Only completed tasks can be compacted
+- Target: 10-20% reduction (lower than pure historical records due to preservation needs)
+
+**Selective Compaction + Manual Analysis**:
+1. **Categorize first**: Separate completed [x] from incomplete [ ] tasks
+2. **Preserve incomplete**: Leave ALL [ ] tasks exactly as they are - structure, sub-items, whitespace
+3. **Manual analysis for completed**: Apply semantic grouping/rewriting ONLY to [x] tasks
+   - Merge related completed sub-tasks into parent descriptions
+   - Combine similar completed efforts with semicolons
+   - Add completion dates and preserve metrics
+4. **Verify integrity**: Ensure incomplete task count unchanged
+
+**When to Use Scripts vs. Manual**:
+- **Scripts**: For mechanical merging of completed task sub-items (helps with 5-10%)
+- **Manual**: For semantic grouping of related completed tasks (achieves full 10-20%)
+- **Best Practice**: Manual editing with careful preservation of ALL incomplete work
+
 ## MANDATORY KB Consultation
 
 Before compacting, you MUST:
-1. Search: `grep "compact\|selective\|task\|script\|systematic\|dry.*run\|target.*compliance\|search.*result" kb/README.md`
+1. Search: `grep "compact\|selective\|mixed.*state\|manual.*semantic" kb/README.md`
 2. Read these KB articles IN FULL using the read tool:
-   - `kb/selective-compaction-pattern.md` - for preservation rules
+   - `kb/selective-compaction-pattern.md` - **CRITICAL**: preservation rules for mixed-state docs
+   - `kb/documentation-compacting-pattern.md` - **UPDATED**: automation vs. manual for mixed-state docs
    - `kb/retroactive-task-documentation.md` - for task documentation
-   - `kb/documentation-compacting-pattern.md` - for reduction targets
-   - `kb/systematic-file-modification-workflow.md` - for script workflow (Enumerate → Script → Apply → Verify → Commit)
-   - `kb/batch-update-script-pattern.md` - for creating automated scripts
-   - `kb/dry-run-mode-requirement.md` - **CRITICAL**: All file-modifying scripts MUST implement dry-run mode
-   - `kb/kb-target-compliance-enforcement.md` - **MANDATORY**: How to enforce KB targets with FAIL gates
-   - `kb/search-result-completeness-verification.md` - Never limit search results without checking totals
+   - `kb/kb-target-compliance-enforcement.md` - **MANDATORY**: How to enforce KB targets
 3. **Check Related Patterns sections** in each article above and read any additional relevant articles found there
-4. In your response, quote these specific items from the KB:
-   - The target reduction percentage for mixed-state docs (from documentation-compacting-pattern)
+4. In your response, quote:
    - The key principle "Never modify preserved content - not even whitespace" from selective-compaction-pattern
-   - The 5-step workflow from systematic-file-modification-workflow
-   - The 5 dry-run principles from dry-run-mode-requirement (default to dry-run, explicit --apply flag, etc.)
-   - The enforcement pattern from kb-target-compliance-enforcement (FAIL not warn when target missed)
-4. If writing a script:
-   - MUST implement dry-run mode (default=dry-run, use --apply to execute)
-   - Follow systematic workflow: Enumerate → Script → Apply → Verify → Commit
-   - Run in dry-run mode FIRST, review output, then run with --apply
-5. Apply ALL guidelines - incomplete tasks must remain EXACTLY unchanged
-6. **ENFORCE targets with gates**: Use exit 1 to FAIL if target not met, not just warnings
+   - The target reduction percentage for mixed-state docs (10-20% from documentation-compacting-pattern)
+   - The difference between selective compaction (what) vs. manual semantic analysis (how)
+5. For 10-20% reduction: **Use selective compaction + manual semantic analysis** (only on completed tasks)
+6. **ENFORCE targets with gates**: Verify 10% minimum achieved AND incomplete tasks untouched
 
-**Example of proper KB consultation:**
+**Example of proper approach:**
 ```
-I've read selective-compaction-pattern.md which states:
+TODO.md has 150 completed [x] tasks and 75 incomplete [ ] tasks. I will:
+1. Apply manual semantic analysis ONLY to the 150 completed tasks
+2. Leave ALL 75 incomplete tasks completely untouched
+3. Merge related completed sub-tasks into parent descriptions
+4. Verify that all 75 incomplete tasks remain after compaction
 
-"Key principles:
-- Never modify preserved content - not even whitespace"
-
-And documentation-compacting-pattern.md which states:
-
-"For mixed-state documents (e.g., TODO.md):
-...
-- Expect lower reduction (10-20%) due to preservation needs"
-
-The target for TODO.md is 10-20% reduction, and ALL incomplete tasks must remain unchanged.
+This achieves 10-20% reduction while preserving all active work.
 ```
 
-# Compact Tasks
+# Compact Tasks - Selective Compaction with Manual Semantic Analysis
+
 ## Checkpoint Tracking
 
-This command uses checkpoint tracking to ensure safe and systematic TODO.md compaction. The process has 6 checkpoints across 3 phases with verification gates.
+This command uses checkpoint tracking to ensure safe and systematic TODO.md compaction through selective compaction + manual semantic analysis. The process has 7 checkpoints across 3 phases with verification gates.
 
 ### Initialize Tracking
 ```bash
 # Start the task compaction process
-make checkpoint-init CMD=compact-tasks STEPS='"Read TODO" "Identify Completed" "Compact Entries" "Verify Integrity" "Write Changes" "Commit and Push"'
+make checkpoint-init CMD=compact-tasks STEPS='"Measure Baseline" "Categorize Tasks" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Commit Changes" "Final Verification"'
 ```
 
 **Expected output:**
 ```
-📍 Starting: compact-tasks (6 steps)
+📍 Starting: compact-tasks (7 steps)
 📁 Tracking: /tmp/compact-tasks_progress.txt
 → Run: make checkpoint-update CMD=compact-tasks STEP=1
 ```
@@ -66,136 +76,202 @@ make checkpoint-init CMD=compact-tasks STEPS='"Read TODO" "Identify Completed" "
 make checkpoint-status CMD=compact-tasks
 ```
 
-**Expected output (example at 50% completion):**
+**Expected output (example at 43% completion):**
 ```
-📈 command: X/Y steps (Z%)
-   [████░░░░░░░░░░░░░░░░] Z%
-→ Next: make checkpoint-update CMD=command STEP=N
+📈 compact-tasks: 3/7 steps (43%)
+   [████████░░░░░░░░░░░░] 43%
+→ Next: make checkpoint-update CMD=compact-tasks STEP=4
 ```
 
 ## Minimum Requirements
 
 **MANDATORY for successful compaction (per KB documentation-compacting-pattern):**
-- [ ] **10-20% line reduction achieved** (TODO.md is a mixed-state document - target is 10-20%, NOT 30-50%)
-- [ ] All [x] tasks compacted to single lines
+- [ ] **10-20% line reduction achieved** (TODO.md is a mixed-state document)
+- [ ] All [x] tasks compacted using manual semantic analysis
 - [ ] All [ ] tasks remain **completely untouched** - not even whitespace changes
-- [ ] No incomplete tasks modified
+- [ ] Incomplete task count verified unchanged
 - [ ] Document structure preserved
-- [ ] Changes committed and pushed
+- [ ] Changes committed
 
-**CRITICAL per KB selective-compaction-pattern**: "Never modify preserved content - not even whitespace". Incomplete tasks ([ ]) must remain EXACTLY as they are.
+**CRITICAL per KB selective-compaction-pattern**: "Never modify preserved content - not even whitespace". Incomplete tasks ([ ]) must remain EXACTLY as they are. Only apply manual semantic analysis to completed tasks.
 
-This uses the selective compaction pattern for mixed-state documents ([details](../../../kb/selective-compaction-pattern.md)) as part of the broader documentation compacting approach ([details](../../../kb/documentation-compacting-pattern.md)).
+This uses selective compaction for mixed-state documents ([details](../../../kb/selective-compaction-pattern.md)) combined with manual semantic analysis ([details](../../../kb/documentation-compacting-pattern.md)).
 
 ## Phase 1: Analysis (Steps 1-2)
 
 #### [CHECKPOINT START - PHASE 1]
 
-Follow these steps:
-
-#### [CHECKPOINT END]
-
-#### Checkpoint 1: Read TODO
+#### Checkpoint 1: Measure Baseline
 
 ```bash
-# Read and analyze TODO.md
-echo "Reading TODO.md..."
-if [ ! -f TODO.md ]; then
-  echo "❌ TODO.md not found"
-  exit 1
-fi
+# Measure initial state
+echo "Measuring TODO.md baseline..."
 
-TOTAL_LINES=$(wc -l < TODO.md)
-echo "TODO.md has $TOTAL_LINES lines"
-echo "TOTAL_LINES=$TOTAL_LINES" > /tmp/compact-tasks-stats.txt
+ORIGINAL_LINES=$(wc -l < TODO.md)
+ORIGINAL_BYTES=$(wc -c < TODO.md)
+
+echo "Original: $ORIGINAL_LINES lines, $ORIGINAL_BYTES bytes"
+
+# Save for later verification
+echo "ORIGINAL_LINES=$ORIGINAL_LINES" > /tmp/compact-tasks-stats.txt
+echo "ORIGINAL_BYTES=$ORIGINAL_BYTES" >> /tmp/compact-tasks-stats.txt
 
 make checkpoint-update CMD=compact-tasks STEP=1
 ```
 
-1. Read the TODO.md file
+**Expected output:**
+```
+Measuring TODO.md baseline...
+Original: 1324 lines, 85432 bytes
+✓ Updated checkpoint 1/7 for compact-tasks
+```
 
-#### Checkpoint 2: Identify Completed
+#### Checkpoint 2: Categorize Tasks
 
 ```bash
-# Count completed vs incomplete tasks
-echo "Analyzing task status..."
+# Categorize completed vs incomplete tasks
+echo "Categorizing tasks..."
 
 COMPLETED=$(grep -c "^- \[x\]" TODO.md || echo "0")
 INCOMPLETE=$(grep -c "^- \[ \]" TODO.md || echo "0")
 
-echo "Completed tasks: $COMPLETED"
-echo "Incomplete tasks: $INCOMPLETE (will remain untouched)"
+echo "Completed tasks: $COMPLETED (can be compacted)"
+echo "Incomplete tasks: $INCOMPLETE (MUST remain untouched)"
 
 echo "COMPLETED=$COMPLETED" >> /tmp/compact-tasks-stats.txt
 echo "INCOMPLETE=$INCOMPLETE" >> /tmp/compact-tasks-stats.txt
 
+# Identify patterns in completed tasks
+echo ""
+echo "Analysis questions for completed tasks:"
+echo "1. Which completed tasks have verbose sub-items that can be merged?"
+echo "2. Are there related completed tasks that can be combined?"
+echo "3. Do all completed tasks have completion dates?"
+echo "4. Which sections contain only completed tasks?"
+
 make checkpoint-update CMD=compact-tasks STEP=2
 ```
 
-2. For each section, identify completed tasks (marked with [x])
+**Expected output:**
+```
+Categorizing tasks...
+Completed tasks: 150 (can be compacted)
+Incomplete tasks: 75 (MUST remain untouched)
 
-#### [ANALYSIS GATE]
+Analysis questions for completed tasks:
+[...]
+✓ Updated checkpoint 2/7 for compact-tasks
+```
+
+#### [CATEGORIZATION GATE]
 ```bash
-# Verify analysis before proceeding
-make checkpoint-gate CMD=compact-tasks GATE="Analysis" REQUIRED="1,2"
+# Verify categorization before proceeding to manual work
+make checkpoint-gate CMD=compact-tasks GATE="Categorization Complete" REQUIRED="1,2"
 ```
 
 **Expected gate output:**
 ```
-✅ GATE 'Analysis' - PASSED
+✅ GATE 'Categorization Complete' - PASSED
    Verified: Steps 1,2
 ```
 
-## Phase 2: Compaction (Steps 3-4)
+#### [CHECKPOINT END]
+
+## Phase 2: Manual Selective Compaction (Steps 3-4)
 
 #### [CHECKPOINT START - PHASE 2]
 
-#### [CHECKPOINT END]
+#### Checkpoint 3: Manual Semantic Compaction
 
-#### Checkpoint 3: Compact Entries
+**MANUAL WORK REQUIRED**: Edit TODO.md using your text editor. Apply these strategies to **COMPLETED TASKS ONLY**:
+
+**Merging Completed Sub-Tasks**:
+```markdown
+# Before:
+- [x] Agent Store Load Implementation (Completed 2025-10-07)
+  - [x] TDD Cycle 9: Create agents with method lookup
+  - [x] TDD Cycle 10: Restore agent memory from map
+  - [x] TDD Cycle 11: Handle multiple agents with memory
+  - [x] Test with 3+ agents with different methods
+  - [x] Ensure proper resource management
+
+# After (single line):
+- [x] Agent Store Load Implementation: Completed TDD Cycles 9-11 with method lookup, memory restoration, and multi-agent handling; verified proper resource management with 3+ agents; zero memory leaks (Completed 2025-10-07)
+```
+
+**Combining Related Completed Tasks**:
+```markdown
+# Before (multiple completed tasks):
+- [x] Fixed memory leaks in agent module
+- [x] Updated documentation for new API
+- [x] Added comprehensive test coverage
+
+# After (combined if closely related):
+- [x] Agent Module Cleanup: Fixed memory leaks; updated documentation for new API; added comprehensive test coverage (Completed 2025-MM-DD)
+```
+
+**CRITICAL - Incomplete Tasks**:
+```markdown
+# NEVER change these - leave EXACTLY as they are:
+- [ ] Implement new feature X
+  - [ ] Design interface
+  - [ ] Write implementation  
+  - [ ] Add tests
+
+# Not even whitespace - preserve structure, formatting, everything
+```
+
+**Compaction Guidelines for Completed Tasks**:
+- Merge sub-items into parent description with semicolons
+- Preserve completion dates: `(Completed YYYY-MM-DD)`
+- Keep all metrics: file counts, test counts, reduction percentages
+- Remove verbose sub-bullets but preserve key outcomes
+- Add context if the parent task name alone isn't clear
 
 ```bash
-# Compact completed tasks
-echo "Compacting completed tasks..."
-source /tmp/compact-tasks-stats.txt
-
-# Here you would perform the actual compaction
-# For tracking purposes, we record the action
-echo "- Merging sub-items into top-level descriptions"
-echo "- Adding completion dates"
-echo "- Preserving all incomplete tasks untouched"
-
-COMPACTED=$COMPLETED
-echo "COMPACTED=$COMPACTED" >> /tmp/compact-tasks-stats.txt
-echo "✅ Compacted $COMPACTED completed tasks"
-
+# After completing manual edits
+echo "✅ Manual semantic compaction of completed tasks complete"
+echo "Review changes with: git diff TODO.md"
 make checkpoint-update CMD=compact-tasks STEP=3
 ```
 
-3. For completed top-level tasks with sub-items:
-   - Merge key information from sub-items into the top-level description
-   - Add completion date if present
-   - Remove all sub-items
-   - Keep as single-line entry
-4. For incomplete tasks (marked with [ ]):
-   - KEEP COMPLETELY UNTOUCHED including all sub-items
-   - Do not modify or compact these in any way
-
-#### Checkpoint 4: Verify Integrity
+#### Checkpoint 4: Verify Preservation
 
 ```bash
-# Verify no incomplete tasks were modified
-echo "Verifying integrity..."
+# Verify all incomplete tasks preserved and reduction achieved
+echo "Verifying preservation..."
 source /tmp/compact-tasks-stats.txt
 
-# Check that incomplete tasks remain
-NEW_INCOMPLETE=$(grep -c "^- \[ \]" TODO.md.compacted 2>/dev/null || echo "$INCOMPLETE")
+NEW_LINES=$(wc -l < TODO.md)
+NEW_BYTES=$(wc -c < TODO.md)
+NEW_INCOMPLETE=$(grep -c "^- \[ \]" TODO.md || echo "0")
+NEW_COMPLETED=$(grep -c "^- \[x\]" TODO.md || echo "0")
 
+echo "New: $NEW_LINES lines, $NEW_BYTES bytes"
+echo "Incomplete tasks: $NEW_INCOMPLETE (expected: $INCOMPLETE)"
+echo "Completed tasks: $NEW_COMPLETED (some may have been merged)"
+
+# Calculate reduction
+LINE_REDUCTION=$(( (ORIGINAL_LINES - NEW_LINES) * 100 / ORIGINAL_LINES ))
+SIZE_REDUCTION=$(( (ORIGINAL_BYTES - NEW_BYTES) * 100 / ORIGINAL_BYTES ))
+
+echo "Line reduction: $LINE_REDUCTION%"
+echo "File size reduction: $SIZE_REDUCTION%"
+
+# Save results
+echo "NEW_LINES=$NEW_LINES" >> /tmp/compact-tasks-stats.txt
+echo "NEW_BYTES=$NEW_BYTES" >> /tmp/compact-tasks-stats.txt
+echo "NEW_INCOMPLETE=$NEW_INCOMPLETE" >> /tmp/compact-tasks-stats.txt
+echo "LINE_REDUCTION=$LINE_REDUCTION" >> /tmp/compact-tasks-stats.txt
+echo "SIZE_REDUCTION=$SIZE_REDUCTION" >> /tmp/compact-tasks-stats.txt
+
+# Verify incomplete tasks untouched
 if [ "$NEW_INCOMPLETE" -eq "$INCOMPLETE" ]; then
   echo "✅ All $INCOMPLETE incomplete tasks preserved"
   INTEGRITY="PASS"
 else
-  echo "❌ Incomplete task count mismatch!"
+  echo "❌ CRITICAL: Incomplete task count changed!"
+  echo "   Original: $INCOMPLETE, New: $NEW_INCOMPLETE"
   INTEGRITY="FAIL"
 fi
 
@@ -203,68 +279,129 @@ echo "INTEGRITY=$INTEGRITY" >> /tmp/compact-tasks-stats.txt
 make checkpoint-update CMD=compact-tasks STEP=4
 ```
 
-5. Preserve section headers and overall structure
+**Expected output:**
+```
+Verifying preservation...
+New: 1120 lines, 72548 bytes
+Incomplete tasks: 75 (expected: 75)
+Completed tasks: 95 (some may have been merged)
+Line reduction: 15%
+File size reduction: 15%
+✅ All 75 incomplete tasks preserved
+✓ Updated checkpoint 4/7 for compact-tasks
+```
 
 #### [INTEGRITY GATE]
 ```bash
-# ⚠️ CRITICAL: Verify incomplete tasks untouched
+# ⚠️ CRITICAL: Verify incomplete tasks untouched and minimum reduction
 source /tmp/compact-tasks-stats.txt
+
 if [ "$INTEGRITY" != "PASS" ]; then
   echo "❌ CRITICAL: Incomplete tasks were modified!"
+  echo "Per selective-compaction-pattern.md: 'Never modify preserved content - not even whitespace'"
   exit 1
 fi
-make checkpoint-gate CMD=compact-tasks GATE="Integrity" REQUIRED="3,4"
+
+if [ $LINE_REDUCTION -lt 10 ]; then
+  echo "❌ FAILURE: Only ${LINE_REDUCTION}% line reduction (KB target: 10-20%)"
+  echo "Per documentation-compacting-pattern.md, TODO.md requires 10-20% reduction"
+  exit 1
+fi
+
+echo "✅ Integrity verified and reduction target met"
+make checkpoint-gate CMD=compact-tasks GATE="Selective Compaction Quality" REQUIRED="3,4"
 ```
 
-## Phase 3: Commit (Steps 5-6)
-
-#### [CHECKPOINT START - PHASE 3]
+**Expected gate output:**
+```
+✅ Integrity verified and reduction target met
+✅ GATE 'Selective Compaction Quality' - PASSED
+   Verified: Steps 3,4
+```
 
 #### [CHECKPOINT END]
 
-#### Checkpoint 5: Write Changes
+## Phase 3: Documentation and Commit (Steps 5-7)
+
+#### [CHECKPOINT START - PHASE 3]
+
+#### Checkpoint 5: Add Self-Entry
 
 ```bash
-# Write compacted version
-echo "Writing changes to TODO.md..."
+# Add self-documenting entry
+echo "Adding self-documenting entry to TODO.md..."
 source /tmp/compact-tasks-stats.txt
 
-# Show summary
-echo "\nCompaction Summary:"
-echo "  Original lines: $TOTAL_LINES"
-NEW_LINES=$(wc -l < TODO.md)
-echo "  New lines: $NEW_LINES"
-REDUCTION=$((TOTAL_LINES - NEW_LINES))
-echo "  Reduction: $REDUCTION lines"
-echo "  Completed tasks compacted: $COMPACTED"
-echo "  Incomplete tasks preserved: $INCOMPLETE"
+echo ""
+echo "Add this entry under 'Completed Tasks' section in TODO.md:"
+echo ""
+echo "- [x] TODO.md Selective Compaction: Reduced from $ORIGINAL_LINES to $NEW_LINES lines (${LINE_REDUCTION}% reduction) through manual semantic analysis of ${COMPLETED} completed tasks; preserved all ${INCOMPLETE} incomplete tasks untouched per selective-compaction-pattern.md; merged sub-tasks into parent descriptions with semicolons; maintained completion dates and metrics (Completed $(date +%Y-%m-%d))"
+echo ""
+
+read -p "Press Enter after adding the entry..."
 
 make checkpoint-update CMD=compact-tasks STEP=5
 ```
 
-6. Write the compacted version back to TODO.md
-7. Show a summary of changes (completed tasks compacted, incomplete preserved)
-
-#### Checkpoint 6: Commit and Push
+#### Checkpoint 6: Commit Changes
 
 ```bash
-# Commit and push changes
+# Commit documentation updates
 echo "Committing changes..."
-git add TODO.md
-git commit -m "docs: compact completed tasks in TODO.md"
-git push
+source /tmp/compact-tasks-stats.txt
 
-# Verify
+git add TODO.md
+git commit -m "Compact completed tasks in TODO.md using selective compaction
+
+Applied manual semantic analysis to ${COMPLETED} completed tasks while preserving all ${INCOMPLETE} incomplete tasks completely untouched. Merged sub-items into parent descriptions, maintained completion dates and metrics.
+
+Reduction: $ORIGINAL_LINES→$NEW_LINES lines (${LINE_REDUCTION}%)
+Completed tasks compacted: ${COMPLETED}
+Incomplete tasks preserved: ${INCOMPLETE}
+
+Per selective-compaction-pattern.md: 'Never modify preserved content - not even whitespace'"
+
 git status
-echo "✅ Changes committed and pushed"
+echo ""
+echo "✅ Changes committed"
 
 make checkpoint-update CMD=compact-tasks STEP=6
 ```
 
-8. Commit and push the changes:
-   - `git add TODO.md`
-   - `git commit -m "docs: compact completed tasks in TODO.md"`
-   - `git push`
+**Expected output:**
+```
+[main abc1234] Compact completed tasks in TODO.md using selective compaction
+ 1 file changed, 95 insertions(+), 204 deletions(-)
+On branch main
+Your branch is ahead of 'origin/main' by 1 commit.
+[...]
+✅ Changes committed
+✓ Updated checkpoint 6/7 for compact-tasks
+```
+
+#### Checkpoint 7: Final Verification
+
+```bash
+# Verify commit and incomplete tasks one final time
+echo "Final verification..."
+source /tmp/compact-tasks-stats.txt
+
+# Check incomplete tasks after commit
+FINAL_INCOMPLETE=$(grep -c "^- \[ \]" TODO.md || echo "0")
+
+if [ "$FINAL_INCOMPLETE" -ne "$INCOMPLETE" ]; then
+  echo "❌ CRITICAL: Incomplete tasks changed after commit!"
+  echo "   Expected: $INCOMPLETE, Found: $FINAL_INCOMPLETE"
+  exit 1
+fi
+
+echo "✅ Final verification passed"
+echo "   Incomplete tasks: $FINAL_INCOMPLETE (unchanged)"
+echo "   Line reduction: ${LINE_REDUCTION}%"
+echo "   Commit status: Clean"
+
+make checkpoint-update CMD=compact-tasks STEP=7
+```
 
 #### [CHECKPOINT COMPLETE]
 ```bash
@@ -278,17 +415,19 @@ make checkpoint-status CMD=compact-tasks
    CHECKPOINT STATUS: compact-tasks
 ========================================
 
-Progress: 6/6 steps (100%)
+Progress: 7/7 steps (100%)
 
 [████████████████████] 100%
 
 ✅ ALL CHECKPOINTS COMPLETE!
 
 Compaction Results:
-  Completed tasks compacted: 42
-  Incomplete tasks preserved: 18
-  Line reduction: 350 lines
-  Changes pushed: Yes
+  Original: 1324 lines (85,432 bytes)
+  Final: 1120 lines (72,548 bytes)
+  Line reduction: 15%
+  Completed tasks compacted: 150
+  Incomplete tasks preserved: 75
+  Changes committed: Yes
 
 TODO.md successfully compacted!
 ```
@@ -299,11 +438,38 @@ make checkpoint-cleanup CMD=compact-tasks
 rm -f /tmp/compact-tasks-stats.txt
 ```
 
-Guidelines for compaction:
-- ONLY compact tasks marked with [x]
-- NEVER modify tasks marked with [ ]
-- Keep completion dates in format "(Completed YYYY-MM-DD)"
-- Merge critical details into single-line descriptions
-- Use semicolons to separate merged details
-- Remove empty sections only if all tasks are completed
-- Preserve all priority indicators and "In Progress" markers
+#### [CHECKPOINT END]
+
+## Key Compaction Techniques for Mixed-State Documents
+
+**Selective Compaction (What to Compact)**:
+- ONLY compact completed tasks marked with [x]
+- NEVER modify incomplete tasks marked with [ ]
+- Preserve ALL structure, sub-items, whitespace for incomplete tasks
+- Verify incomplete task count remains unchanged
+
+**Manual Semantic Analysis (How to Compact Completed Tasks)**:
+- Merge sub-items into parent descriptions using semicolons
+- Combine closely related completed tasks if appropriate
+- Preserve completion dates: `(Completed YYYY-MM-DD)`
+- Keep all metrics: file counts, test counts, percentages
+- Ensure parent task description is clear and contextual
+
+**Preservation Strategy**:
+- Incomplete tasks: 100% untouched (structure, whitespace, everything)
+- Completed tasks: Compact while preserving dates, metrics, key outcomes
+- Section headers: Keep all, even if section becomes smaller
+- Priority indicators: Preserve in both completed and incomplete tasks
+
+## Why Selective Compaction + Manual Analysis?
+
+**Mixed-state constraint**:
+- TODO.md contains active work (incomplete tasks) that must remain fully detailed
+- Cannot extract to external files - this IS the active work tracker
+- Lower reduction target (10-20%) reflects this preservation requirement
+
+**Manual analysis adds value**:
+- Identifies which completed sub-tasks can be meaningfully merged
+- Preserves context while reducing verbosity
+- Ensures completed task descriptions remain clear and useful
+- Achieves target reduction without compromising incomplete work

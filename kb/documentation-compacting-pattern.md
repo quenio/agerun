@@ -69,7 +69,7 @@ Long, detailed documentation in main guidelines creates cognitive overload and m
 **Key difference**: Scripts can do the first example (mechanical combination). Only humans can do the second example (semantic analysis to identify that entries from different dates are actually the same work and should be grouped).
 
 
-**Mixed-state document compaction (TODO.md)**:
+**Mixed-state document compaction (TODO.md) - Selective compaction**:
 ```markdown
 // Before:
 ### Agency Module Instantiation (Completed 2025-08-01)
@@ -87,8 +87,9 @@ Long, detailed documentation in main guidelines creates cognitive overload and m
 - [ ] Design load coordination between agency and agent store
   - [ ] Agency provides method lookup during load operation
   - [ ] Agent store requests method by name/version from agency
+  - [ ] Handle missing methods gracefully with warnings
 
-// After:
+// After (only completed task compacted, incomplete preserved):
 ### Agency Module Instantiation (Completed 2025-08-01)
 - [x] Made ar_agency module instantiable with opaque type and instance-based API; converted global state to instance fields while maintaining backward compatibility; added create/destroy functions and instance-based versions of all API functions; created global instance pattern similar to ar_methodology for seamless migration; added comprehensive test for instance-based API; updated documentation to describe both global and instance-based APIs; verified zero memory leaks from agency module (methodology leaks are expected)
 
@@ -98,7 +99,12 @@ Long, detailed documentation in main guidelines creates cognitive overload and m
 - [ ] Design load coordination between agency and agent store
   - [ ] Agency provides method lookup during load operation
   - [ ] Agent store requests method by name/version from agency
+  - [ ] Handle missing methods gracefully with warnings
+  
+  ↑ INCOMPLETE SECTION REMAINS 100% UNTOUCHED - structure, whitespace, sub-items all preserved
 ```
+
+**Key principle**: Selective compaction = compact completed items + manual semantic analysis + preserve incomplete items completely.
 
 ## Generalization
 **When to compact**:
@@ -139,13 +145,29 @@ Long, detailed documentation in main guidelines creates cognitive overload and m
 8. Example: "Fixed X; resolved Y; updated Z" instead of 3 bullets
 
 **For mixed-state documents (e.g., TODO.md)**:
-1. Apply selective compaction - only compact completed items
-2. Preserve ALL incomplete/active items completely untouched
-3. Keep all sub-items and formatting for active work
-4. Merge completed sub-tasks into parent task description
-5. Expect lower reduction (10-20%) due to preservation needs
-6. Maintain clear state indicators ([x] vs [ ])
-7. See [Selective Compaction Pattern](selective-compaction-pattern.md) for details
+
+**Selective Compaction + Manual Analysis** (learned 2025-10-08):
+- Selective compaction determines **what** to compact (completed vs. incomplete)
+- Manual semantic analysis determines **how** to compact completed items
+- **MANDATORY**: ALL incomplete [ ] tasks remain 100% untouched (not even whitespace)
+
+**Process**:
+1. **Categorize first**: Count completed [x] vs. incomplete [ ] tasks
+2. **Apply manual analysis to completed only**: 
+   - Merge sub-items into parent descriptions with semicolons
+   - Combine related completed tasks if closely related
+   - Preserve completion dates and metrics
+3. **Preserve ALL incomplete work**: Structure, sub-items, whitespace, everything
+4. **Verify integrity**: Incomplete task count must remain unchanged
+5. **Target**: 10-20% reduction (lower due to preservation needs)
+6. **Maintain state indicators**: [x] vs [ ] must be clear
+
+**Key difference from pure historical records**:
+- Historical records: Can compact everything → 40-50% reduction
+- Mixed-state docs: Can only compact completed items → 10-20% reduction
+- Both benefit from manual semantic analysis, but mixed-state has stricter constraints
+
+See [Selective Compaction Pattern](selective-compaction-pattern.md) for preservation rules.
 
 **What to preserve inline**:
 - Mandatory requirements (MUST, MANDATORY, CRITICAL)
@@ -201,11 +223,21 @@ Long, detailed documentation in main guidelines creates cognitive overload and m
 6. **Document work**: Add self-documenting entry, update TODO.md
 7. **Commit**: Single atomic commit with both files
 
-**For mixed-state documents**:
-1. **Categorize content**: Separate complete vs incomplete items
-2. **Apply selective compaction**: Only compact completed items
-3. **Preserve ALL incomplete work**: Untouched formatting, sub-items, state markers
-4. **Expect lower reduction**: 10-20% due to preservation needs
+**For mixed-state documents (manual process)**:
+1. **Measure baseline**: Line count, completed vs. incomplete task counts
+2. **Categorize content**: Identify all completed [x] and incomplete [ ] items
+3. **Manual compaction of completed only**: Read and edit directly
+   - Merge completed sub-tasks into parent descriptions
+   - Combine related completed tasks with semicolons
+   - Preserve completion dates and metrics
+   - Apply semantic analysis ONLY to completed items
+4. **Preserve ALL incomplete work**: 
+   - Leave 100% untouched (structure, whitespace, everything)
+   - Verify incomplete task count remains unchanged
+5. **Verify preservation**: Count incomplete tasks before and after
+6. **Calculate reduction**: Must achieve 10-20% line reduction
+7. **Add self-entry**: Document the compaction in completed tasks section
+8. **Commit**: Single atomic commit with verification
 
 **Target reduction**: 
 - Reference docs: 30-50% reduction

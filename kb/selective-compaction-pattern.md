@@ -106,10 +106,53 @@ if [[ $(line_count "$section") -gt 20 ]]; then compact; else preserve; fi
 
 **Manual semantic analysis** is about *how* to compact (grouping related entries across dates, rewriting coherently).
 
-These are complementary:
-- **Mixed-state documents**: Use selective compaction to choose items + manual analysis for deep reduction
-- **Pure historical records**: Use manual semantic analysis (all content is compactable)
-- **Reference documentation**: Extract to KB articles (different strategy entirely)
+These are complementary, especially for mixed-state documents:
+
+### For Mixed-State Documents (e.g., TODO.md)
+
+**Use BOTH selective compaction + manual semantic analysis**:
+
+1. **Selective compaction determines scope**:
+   - Categorize: completed [x] vs. incomplete [ ] tasks
+   - Selection rule: Only completed tasks can be compacted
+   - Preservation rule: ALL incomplete tasks remain 100% untouched
+
+2. **Manual semantic analysis applied to selected items**:
+   - For completed tasks: Merge sub-items, combine related efforts, preserve metrics
+   - For incomplete tasks: No analysis needed - they're preserved entirely
+   - Result: Meaningful reduction (10-20%) while maintaining all active work
+
+**Example workflow**:
+```bash
+# Step 1: Selective compaction (what)
+Categorize: 150 completed tasks, 75 incomplete tasks
+Decision: Compact the 150 completed, preserve the 75 incomplete
+
+# Step 2: Manual semantic analysis (how)
+For each of the 150 completed tasks:
+  - Merge verbose sub-items into concise parent description
+  - Combine related completed tasks with semicolons
+  - Preserve completion dates and metrics
+
+# Step 3: Verification
+Verify: All 75 incomplete tasks still present and unchanged
+Result: 15% reduction achieved while preserving all active work
+```
+
+### For Pure Historical Records (e.g., CHANGELOG.md)
+
+**Use manual semantic analysis only** (selective compaction not needed):
+- All content is historical and can be compacted
+- No preservation constraints
+- Apply semantic grouping across dates freely
+- Result: Higher reduction (40-50%+) through intelligent synthesis
+
+### For Reference Documentation (e.g., AGENTS.md)
+
+**Use KB extraction** (different strategy entirely):
+- Extract verbose content to KB articles
+- Compress main doc to essential rules + links
+- Result: 30-50% reduction through delegation
 
 See [Documentation Compacting Pattern](documentation-compacting-pattern.md) for the full decision tree of when to use each approach.
 
