@@ -301,11 +301,11 @@ Messages can be any of the supported data types:
 
 ### Proxy Interface (C/Zig Implementation)
 ```c
-typedef struct ar_proxy_s ar_proxy_t;
+typedef struct ar_proxy_s ar_proxy_t;  // EXAMPLE: Planned proxy type for future implementation
 
-ar_proxy_t* ar_proxy__create(const char* type, ar_log_t* log);
-void ar_proxy__destroy(ar_proxy_t* proxy);
-bool ar_proxy__handle_message(ar_proxy_t* proxy, ar_data_t* message, ar_agent_t* sender);
+ar_proxy_t* ar_proxy__create(const char* type, ar_log_t* log);  // EXAMPLE: Future proxy creation
+void ar_proxy__destroy(ar_proxy_t* proxy);  // EXAMPLE: Future proxy cleanup
+bool ar_proxy__handle_message(ar_proxy_t* proxy, ar_data_t* message, ar_agent_t* sender);  // EXAMPLE: Future message handling
 ```
 
 ## System Startup
