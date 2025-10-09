@@ -364,4 +364,4 @@ Each learning file contains:
 Search for relevant patterns when facing similar challenges:
 ```bash
 grep -r "keyword" ./kb/
-```
+```- [Command KB Consultation Enforcement](command-kb-consultation-enforcement.md)
