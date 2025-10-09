@@ -58,10 +58,11 @@ The target for CHANGELOG.md is 40-50% reduction (not 30%).
 
 **Enforcement mechanisms**:
 1. **Explicit read requirement**: "Read these KB articles IN FULL using the read tool"
-2. **Quote requirement**: "In your response, quote these specific items from the KB:"
-3. **Verification gates**: Automated checks that fail if targets not met
-4. **Example format**: Show exactly what proper consultation looks like
-5. **Consequence statement**: "if you achieve less than X%, you have NOT followed the KB"
+2. **Related Patterns discovery**: "Check Related Patterns sections in each article and read any additional relevant articles found there"
+3. **Quote requirement**: "In your response, quote these specific items from the KB:"
+4. **Verification gates**: Automated checks that fail if targets not met
+5. **Example format**: Show exactly what proper consultation looks like
+6. **Consequence statement**: "if you achieve less than X%, you have NOT followed the KB"
 
 **What to require quoting**:
 - Quantitative targets (percentages, numbers, thresholds)
@@ -72,10 +73,17 @@ The target for CHANGELOG.md is 40-50% reduction (not 30%).
 ## Implementation
 1. **Identify weak consultation sections**: Look for commands that just list KB articles
 2. **Add explicit read requirements**: Specify using "read tool" and full article names
-3. **Add quote requirements**: List 2-3 specific items that must be quoted
-4. **Add example**: Show what proper consultation response looks like
-5. **Add enforcement gates**: Automated checks that fail if targets missed
-6. **Update minimum requirements**: Include quantitative targets from KB
+3. **Add Related Patterns discovery**: "Check Related Patterns sections in each article and read any additional relevant articles found there"
+4. **Add quote requirements**: List 2-3 specific items that must be quoted
+5. **Add example**: Show what proper consultation response looks like
+6. **Add enforcement gates**: Automated checks that fail if targets missed
+7. **Update minimum requirements**: Include quantitative targets from KB
+
+**Why Related Patterns matter**:
+- KB articles evolve over time with new cross-references
+- A command written today might miss guidance added tomorrow
+- Related Patterns sections capture domain knowledge connections
+- Discovering related articles prevents missing critical patterns
 
 **Gate pattern for quantitative targets**:
 ```bash
