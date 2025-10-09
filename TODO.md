@@ -8,6 +8,8 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+- [x] Documentation Validation Fix for SPEC.md: Fixed 4 validation errors by adding EXAMPLE tags to proxy interface references (ar_proxy_t, ar_proxy__create, ar_proxy__destroy, ar_proxy__handle_message); marked as planned future implementations per validated-documentation-examples.md; make check-docs now passes (Completed 2025-10-08 Part 4)
+- [x] Command Documentation Enhancement for Selective Compaction: Updated compact-tasks command with Mixed-State Document Strategy and 7 checkpoint steps; enhanced documentation-compacting-pattern.md with selective compaction + manual semantic analysis guidance; updated selective-compaction-pattern.md with relationship sections; documented that mixed-state documents require both selective compaction (what) and manual semantic analysis (how) with incomplete tasks preserved 100% untouched (Completed 2025-10-08 Part 3)
 - [x] CHANGELOG.md Comprehensive Compaction (Session 2): Reduced CHANGELOG.md 2506→1273 lines (49% reduction); preserved original 106 date sections and 225 milestone headers while adding this entry; maintained ≥154 metric references (now 157) with automated gate; created `scripts/compact_changelog.py` with dry-run default/`--apply` gate; added self-documenting entry and retroactive TODO update (Completed 2025-10-08 Part 2)
 - [x] API Suffix Cleanup: Removed "_with_instance" suffix from 30 functions; updated 132 files; clean final API (Completed 2025-09-27)
 - [x] Knowledge Base Reference Resolution: Added "Check KB index FIRST" guideline; updated kb/README.md to 317 KB articles; systematic discovery protocol (Completed 2025-09-27)
