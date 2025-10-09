@@ -2,12 +2,33 @@ Compact the TODO.md file by condensing completed tasks while keeping incomplete 
 
 ## MANDATORY KB Consultation
 
-Before compacting:
+Before compacting, you MUST:
 1. Search: `grep "compact\|selective\|task" kb/README.md`
-2. Must read:
-   - selective-compaction-pattern
-   - retroactive-task-documentation
-3. Apply selective compaction (completed items only)
+2. Read these KB articles IN FULL using the read tool:
+   - `kb/selective-compaction-pattern.md`
+   - `kb/retroactive-task-documentation.md`
+   - `kb/documentation-compacting-pattern.md`
+3. In your response, quote these specific items from the KB:
+   - The target reduction percentage for mixed-state docs (from documentation-compacting-pattern)
+   - The key principle about "Never modify preserved content" from selective-compaction-pattern
+   - The example showing before/after selective compaction
+4. Apply ALL guidelines - incomplete tasks must remain EXACTLY unchanged
+
+**Example of proper KB consultation:**
+```
+I've read selective-compaction-pattern.md which states:
+
+"Key principles:
+- Never modify preserved content - not even whitespace"
+
+And documentation-compacting-pattern.md which states:
+
+"For mixed-state documents (e.g., TODO.md):
+...
+- Expect lower reduction (10-20%) due to preservation needs"
+
+The target for TODO.md is 10-20% reduction, and ALL incomplete tasks must remain unchanged.
+```
 
 # Compact Tasks
 ## Checkpoint Tracking
@@ -41,12 +62,15 @@ make checkpoint-status CMD=compact-tasks
 
 ## Minimum Requirements
 
-**MANDATORY for successful compaction:**
+**MANDATORY for successful compaction (per KB documentation-compacting-pattern):**
+- [ ] **10-20% line reduction achieved** (TODO.md is a mixed-state document - target is 10-20%, NOT 30-50%)
 - [ ] All [x] tasks compacted to single lines
-- [ ] All [ ] tasks remain completely untouched
+- [ ] All [ ] tasks remain **completely untouched** - not even whitespace changes
 - [ ] No incomplete tasks modified
 - [ ] Document structure preserved
 - [ ] Changes committed and pushed
+
+**CRITICAL per KB selective-compaction-pattern**: "Never modify preserved content - not even whitespace". Incomplete tasks ([ ]) must remain EXACTLY as they are.
 
 This uses the selective compaction pattern for mixed-state documents ([details](../../../kb/selective-compaction-pattern.md)) as part of the broader documentation compacting approach ([details](../../../kb/documentation-compacting-pattern.md)).
 

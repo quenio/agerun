@@ -2,12 +2,31 @@ Compact the CHANGELOG.md file by condensing completed milestones while preservin
 
 ## MANDATORY KB Consultation
 
-Before compacting:
+Before compacting, you MUST:
 1. Search: `grep "compact\|documentation\|changelog" kb/README.md`
-2. Must read:
-   - documentation-compacting-pattern
-   - selective-compaction-pattern
-3. Apply compaction best practices
+2. Read these KB articles IN FULL using the read tool:
+   - `kb/documentation-compacting-pattern.md`
+   - `kb/selective-compaction-pattern.md`
+   - `kb/quantitative-documentation-metrics.md`
+3. In your response, quote these specific items from the KB:
+   - The target reduction percentage for historical records (from documentation-compacting-pattern)
+   - The 5 guidelines for "For historical records" section
+   - Example of before/after compaction from the KB
+4. Apply ALL guidelines - if you achieve less than 40% reduction, you have NOT followed the KB
+
+**Example of proper KB consultation:**
+```
+I've read documentation-compacting-pattern.md which states:
+
+"For historical records (e.g., CHANGELOG.md):
+1. Preserve chronological order - never extract to external files
+2. Combine related bullet points with semicolons
+3. Merge sub-bullets into parent bullet when possible
+4. Keep all dates, metrics, and key transitions inline
+5. Target 40-50% reduction while keeping all information"
+
+The target for CHANGELOG.md is 40-50% reduction (not 30%).
+```
 
 # Compact Changelog
 ## Checkpoint Tracking
@@ -41,13 +60,16 @@ make checkpoint-status CMD=compact-changes
 
 ## Minimum Requirements
 
-**MANDATORY for successful compaction:**
-- [ ] At least 30% line reduction achieved
-- [ ] All metrics and numbers preserved
+**MANDATORY for successful compaction (per KB documentation-compacting-pattern):**
+- [ ] **40-50% line reduction achieved** (CHANGELOG is a historical record - target is 40-50%, NOT 30%)
+- [ ] All metrics and numbers preserved (verify with grep)
 - [ ] All dates maintained
+- [ ] Chronological order preserved
 - [ ] Self-documenting entry added
-- [ ] TODO.md updated
+- [ ] TODO.md updated with retroactive task documentation
 - [ ] Changes committed and pushed
+
+**CRITICAL**: The KB clearly states that for historical records like CHANGELOG.md, the target is **40-50% reduction**. Anything less than 40% means the compaction is incomplete and should continue.
 ## Phase 1: Analysis (Steps 1-2)
 
 #### [CHECKPOINT START - PHASE 1]
@@ -206,8 +228,11 @@ make checkpoint-update CMD=compact-changes STEP=6
 ```bash
 # ⚠️ CRITICAL: Verify sufficient reduction and metric preservation
 source /tmp/compact-changes-stats.txt
-if [ $REDUCTION -lt 30 ]; then
-  echo "⚠️ WARNING: Only $REDUCTION% reduction achieved (target: 30%+)"
+if [ $REDUCTION -lt 40 ]; then
+  echo "❌ FAILURE: Only $REDUCTION% reduction achieved (KB target: 40-50% for historical records)"
+  echo "Per documentation-compacting-pattern.md, CHANGELOG.md requires 40-50% reduction"
+  echo "Current compaction is INCOMPLETE - continue compacting until 40% is reached"
+  exit 1
 fi
 if [ "$METRICS_OK" != "PASS" ]; then
   echo "⚠️ WARNING: Some metrics may not be preserved"
