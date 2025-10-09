@@ -793,9 +793,9 @@ make checkpoint-cleanup CMD=<command>
   - [x] **Root cause**: Missing stack management when processing list items with nested maps
   - [x] **Test enabled**: `test_store_load_creates_multiple_agents()` now passes (13 tests total)
   - [x] **Additional fix**: Corrected test data indentation in ar_agent_store_tests.c lines 539-544
-  - [ ] Fix ar_yaml_reader to parse indented list items correctly
-  - [ ] Update ar_yaml_writer to match YAML spec (list items at key level: `- id:`)
-  - [ ] Uncomment and run `test_store_load_creates_multiple_agents()`
+  - [x] Fix ar_yaml_reader to parse indented list items correctly (Completed 2025-10-02)
+  - [x] Update ar_yaml_writer to match YAML spec (list items at key level: `- id:`) (Completed 2025-10-02)
+  - [x] Uncomment and run `test_store_load_creates_multiple_agents()` (Completed 2025-10-02)
 
 - [ ] **Replace direct file I/O with ar_io functions**
   - [ ] Use ar_io__open_file() instead of fopen()
@@ -1240,6 +1240,62 @@ Once all modules are migrated to Zig with C-ABI compatibility, identify internal
 ## Low Priority Tasks
 
 - [x] Fix check-logs Script: Migrated to check_logs.py with proper exit codes (Completed 2025-08-04)
+
+### HIGHEST PRIORITY - Proxy System Implementation
+
+**Rationale**: To enable safe external communication, implement the proxy system as defined in SPEC.md. This provides a generic mechanism for pluggable communication channels while maintaining the agent sandbox.
+
+**Execution Plan** (25-35 TDD cycles total):
+
+#### Phase 1: Proxy Infrastructure (8-10 cycles)
+- [ ] Create ar_proxy module with opaque ar_proxy_t type
+- [ ] Implement proxy interface: ar_proxy__create(), ar_proxy__destroy(), ar_proxy__handle_message()
+- [ ] Add proxy registration system to ar_system (register_proxy function)
+- [ ] Update message routing in ar_system to handle reserved proxy IDs (-100, -101, etc.)
+- [ ] Add proxy instance management (creation, lookup, destruction)
+
+#### Phase 2: Built-in Proxies (10-15 cycles)
+- [ ] Implement FileProxy (ar_file_proxy.c/.zig)
+  - Handle file read/write operations with path validation
+  - Enforce security policies (allowed paths, file size limits)
+  - Return structured responses via messages
+- [ ] Implement NetworkProxy (ar_network_proxy.c/.zig)
+  - Handle HTTP GET/POST with URL whitelisting
+  - Implement timeouts and response size limits
+  - Parse responses into structured data
+- [ ] Implement LogProxy (ar_log_proxy.c/.zig)
+  - Provide structured logging with levels (info, warn, error)
+  - Support console and file output
+  - Include agent context in log messages
+
+#### Phase 3: Security and Validation (4-6 cycles)
+- [ ] Implement security policy framework
+  - Path validation for file operations
+  - URL whitelisting for network requests
+  - Resource limits (file sizes, request timeouts)
+- [ ] Add comprehensive input validation
+- [ ] Implement audit logging for proxy operations
+
+#### Phase 4: System Integration (2-3 cycles)
+- [ ] Register built-in proxies at system startup in ar_system
+- [ ] Update ar_executable to initialize proxy system
+- [ ] Add proxy state to system persistence if needed
+
+#### Phase 5: Testing and Documentation (1-2 cycles)
+- [ ] Write comprehensive TDD tests for each proxy
+- [ ] Create example methods demonstrating proxy usage
+- [ ] Update SPEC.md with implementation details and examples
+- [ ] Add proxy usage patterns to AGENTS.md
+
+**Success Criteria**:
+- All proxies communicate exclusively via messages
+- Security policies prevent unauthorized external access
+- Zero memory leaks in proxy operations
+- Comprehensive test coverage with TDD
+- Backward compatibility maintained
+- External communication is pluggable and extensible
+
+**Estimated Timeline**: 4-6 sessions (25-35 TDD cycles)
 
 ## Notes
 
