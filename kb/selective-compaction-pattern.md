@@ -100,6 +100,19 @@ if [[ $(line_count "$section") -gt 20 ]]; then compact; else preserve; fi
 - Consider reversibility - can compaction be undone if needed?
 - Test with real documents to verify utility is maintained
 
+## Relationship to Manual Semantic Analysis
+
+**Selective compaction** is about *what* to compact (choosing which items based on state/criteria).
+
+**Manual semantic analysis** is about *how* to compact (grouping related entries across dates, rewriting coherently).
+
+These are complementary:
+- **Mixed-state documents**: Use selective compaction to choose items + manual analysis for deep reduction
+- **Pure historical records**: Use manual semantic analysis (all content is compactable)
+- **Reference documentation**: Extract to KB articles (different strategy entirely)
+
+See [Documentation Compacting Pattern](documentation-compacting-pattern.md) for the full decision tree of when to use each approach.
+
 ## Related Patterns
-- [Documentation Compacting Pattern](documentation-compacting-pattern.md)
-- [Quantitative Documentation Metrics](quantitative-documentation-metrics.md)
+- [Documentation Compacting Pattern](documentation-compacting-pattern.md) - When to use automation vs. manual
+- [Quantitative Documentation Metrics](quantitative-documentation-metrics.md) - What to preserve during compaction
