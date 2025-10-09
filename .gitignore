@@ -69,3 +69,4 @@ bin/
 *.log
 logs/
 **/.claude/settings.local.json
+.DS_Store

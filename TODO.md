@@ -8,6 +8,7 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Completed Tasks
 
+- [x] CHANGELOG.md Comprehensive Compaction (Session 2): Reduced CHANGELOG.md 2506→1273 lines (49% reduction); preserved original 106 date sections and 225 milestone headers while adding this entry; maintained ≥154 metric references (now 157) with automated gate; created `scripts/compact_changelog.py` with dry-run default/`--apply` gate; added self-documenting entry and retroactive TODO update (Completed 2025-10-08 Part 2)
 - [x] API Suffix Cleanup: Removed "_with_instance" suffix from 30 functions; updated 132 files; clean final API (Completed 2025-09-27)
 - [x] Knowledge Base Reference Resolution: Added "Check KB index FIRST" guideline; updated kb/README.md to 317 KB articles; systematic discovery protocol (Completed 2025-09-27)
 - [x] Global API Removal (All Phases): Removed global functions from ar_methodology (7), ar_agency (25), ar_system; updated 25 documentation files; all tests passing with zero memory leaks (Completed 2025-09-13 to 2025-09-14)

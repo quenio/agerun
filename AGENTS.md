@@ -14,6 +14,12 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
 **Help**: `make` shows all targets
 **Scripts**: Use make targets, not direct execution; dry-run mode essential ([details](kb/dry-run-mode-requirement.md))
 
+## Command Execution Protocol
+
+**When user asks you to execute a command**: Look for a markdown file with the command name under `.opencode/command/ar/`, read this file, and follow its instructions.
+
+**When user asks to list commands**: List the files under `.opencode/command/ar/` folder.
+
 ## Git Workflow (CRITICAL)
 
 **After Every Git Push**:
