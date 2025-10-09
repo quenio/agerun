@@ -81,3 +81,4 @@ make checkpoint-update CMD=build STEP=5
 - [Exit Code Propagation Popen](exit-code-propagation-popen.md)
 - [Concise Script Output Principle](concise-script-output-principle.md)
 - [Unmissable Documentation Pattern](unmissable-documentation-pattern.md)
+- [KB Target Compliance Enforcement](kb-target-compliance-enforcement.md) - Enforce quantitative targets with gates

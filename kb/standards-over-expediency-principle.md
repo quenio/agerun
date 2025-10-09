@@ -141,3 +141,4 @@ Signs of proper standards application:
 - [BDD Test Structure](bdd-test-structure.md)
 - [AR Assert Descriptive Failures](ar-assert-descriptive-failures.md)
 - [Test Assertion Strength Patterns](test-assertion-strength-patterns.md)
+- [KB Target Compliance Enforcement](kb-target-compliance-enforcement.md) - Standards include KB target requirements

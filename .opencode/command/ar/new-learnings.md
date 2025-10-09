@@ -3,12 +3,16 @@ Analyze session for new learnings and create properly validated kb articles.
 ## MANDATORY KB Consultation FIRST
 
 Before starting analysis:
-1. Search: `grep "learning\|knowledge\|cross-reference" kb/README.md`
+1. Search: `grep "learning\|knowledge\|cross-reference\|search.*result\|target.*compliance" kb/README.md`
 2. Must read these articles:
-   - new-learnings-cross-reference-requirement
-   - new-learnings-complete-integration-pattern
-   - comprehensive-learning-extraction-pattern
-3. Apply all KB creation and cross-reference patterns
+   - new-learnings-cross-reference-requirement - bidirectional linking requirements
+   - new-learnings-complete-integration-pattern - complete integration checklist
+   - comprehensive-learning-extraction-pattern - multi-pass extraction strategy
+   - search-result-completeness-verification - never limit search results without checking totals
+   - kb-target-compliance-enforcement - enforce quantitative targets with FAIL gates
+   - command-kb-consultation-enforcement - strong KB consultation mechanisms
+3. **Check Related Patterns sections** in each article above and read any additional relevant articles found there
+4. Apply all KB creation and cross-reference patterns
 
 # New Learnings
 ## MANDATORY STEP TRACKING SYSTEM

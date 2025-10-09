@@ -92,6 +92,8 @@ Each learning file contains:
 - [Plan Verification and Review](plan-verification-and-review.md)
 - [Development Practice Groups](development-practice-groups.md)
 - [Dependency Management Examples](dependency-management-examples.md)
+- [Search Result Completeness Verification](search-result-completeness-verification.md)
+- [KB Target Compliance Enforcement](kb-target-compliance-enforcement.md)
 
 ### Memory Management
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)

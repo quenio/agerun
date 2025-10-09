@@ -146,3 +146,4 @@ Long, detailed documentation in main guidelines creates cognitive overload and m
 - [Self-Documenting Modifications Pattern](self-documenting-modifications-pattern.md)
 - [Quantitative Documentation Metrics](quantitative-documentation-metrics.md)
 - [Selective Compaction Pattern](selective-compaction-pattern.md)
+- [KB Target Compliance Enforcement](kb-target-compliance-enforcement.md) - Enforce compaction targets (40-50% for historical)

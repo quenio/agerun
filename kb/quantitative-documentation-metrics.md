@@ -101,3 +101,4 @@ echo "Build completed at $(date)"
 - [Self-Documenting Modifications Pattern](self-documenting-modifications-pattern.md)
 - [Retroactive Task Documentation](retroactive-task-documentation.md)
 - [Documentation Compacting Pattern](documentation-compacting-pattern.md)
+- [KB Target Compliance Enforcement](kb-target-compliance-enforcement.md) - Use metrics to enforce targets

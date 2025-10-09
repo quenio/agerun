@@ -3,11 +3,18 @@ Make AGENTS.md guidelines more concise by moving details to knowledge base.
 ## MANDATORY KB Consultation
 
 Before compacting:
-1. Search: `grep "compact\|documentation" kb/README.md`
+1. Search: `grep "compact\|documentation\|target.*compliance\|search.*result" kb/README.md`
 2. Must read:
-   - documentation-compacting-pattern
-   - selective-compaction-pattern
-3. Apply compaction best practices
+   - documentation-compacting-pattern - for compaction targets (30-50% for reference docs)
+   - selective-compaction-pattern - for preservation rules
+   - kb-target-compliance-enforcement - **MANDATORY**: How to enforce KB targets with FAIL gates
+   - search-result-completeness-verification - Never limit search results without checking totals
+3. **Check Related Patterns sections** in each article above and read any additional relevant articles found there
+4. In your response, quote these specific items from the KB:
+   - The target reduction percentage for reference documentation (from documentation-compacting-pattern)
+   - The enforcement pattern from kb-target-compliance-enforcement (FAIL not warn when target missed)
+5. Apply compaction best practices
+6. **ENFORCE targets with gates**: Use exit 1 to FAIL if target not met, not just warnings
 
 # Compact Guidelines
 ## Checkpoint Tracking

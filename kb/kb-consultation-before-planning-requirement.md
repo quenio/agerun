@@ -123,3 +123,5 @@ echo "→ Now safe to create plan"
 - [Systematic Task Analysis Protocol](systematic-task-analysis-protocol.md)
 - [Session Start Priming Pattern](session-start-priming-pattern.md)
 - [Index-Based Knowledge Discovery Pattern](index-based-knowledge-discovery-pattern.md)
+- [Command KB Consultation Enforcement](command-kb-consultation-enforcement.md) - Strong enforcement in commands
+- [Search Result Completeness Verification](search-result-completeness-verification.md) - Check all results when consulting

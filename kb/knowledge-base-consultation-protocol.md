@@ -46,3 +46,4 @@ grep -r "topic\|keyword" AGENTS.md | grep "kb/"
 - [Systematic Task Analysis Protocol](systematic-task-analysis-protocol.md)
 - [Systematic Guideline Enhancement](systematic-guideline-enhancement.md)
 - [User Feedback as QA](user-feedback-as-qa.md)
+- [Command KB Consultation Enforcement](command-kb-consultation-enforcement.md) - Strong enforcement mechanisms

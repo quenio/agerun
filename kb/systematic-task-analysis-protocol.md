@@ -115,3 +115,4 @@ This protocol ensures comprehensive, evidence-based task analysis that reflects 
 - [Quantitative Priority Setting](quantitative-priority-setting.md)
 - [Report-Driven Task Planning](report-driven-task-planning.md)
 - [Knowledge Base Consultation Protocol](knowledge-base-consultation-protocol.md)
+- [Search Result Completeness Verification](search-result-completeness-verification.md) - Never limit searches without checking totals

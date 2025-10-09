@@ -39,11 +39,12 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 ### Knowledge Base Usage (MANDATORY - SHOW SEARCHES IN CONVERSATION)
 
-**Check KB BEFORE planning**: grep kb/README.md before creating any plan ([details](kb/kb-consultation-before-planning-requirement.md), [protocol](kb/knowledge-base-consultation-protocol.md))
+**Check KB BEFORE planning**: grep kb/README.md before creating any plan ([details](kb/kb-consultation-before-planning-requirement.md), [protocol](kb/knowledge-base-consultation-protocol.md), [enforcement](kb/command-kb-consultation-enforcement.md))
 **Make KB searches VISIBLE**: Run grep, show results, quote guidance, apply patterns ([details](kb/kb-search-patterns.md), [priming](kb/session-start-priming-pattern.md))
 **Systematic analysis required**: Apply [systematic task analysis protocol](kb/systematic-task-analysis-protocol.md) for priority decisions
 **Trigger words**: "Why are you"/"Actually"/"You should" → Search NOW
 **Markdown links**: Use relative paths only, resolve from file location ([details](kb/markdown-link-resolution-patterns.md))
+**Complete searches**: Never limit results without checking totals ([details](kb/search-result-completeness-verification.md))
 
 ### Systematic Task Analysis (MANDATORY - PREVENT INCOMPLETE ANALYSIS)
 
@@ -52,6 +53,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Evidence-based verification**: Apply quantitative metrics, question unexpected results (e.g., very few tasks in active project)
 **Show methodology**: Present data gathering process and categorization logic, not just conclusions
 **Cross-verify searches**: Use multiple grep patterns to ensure comprehensive coverage
+**KB target enforcement**: Enforce quantitative targets with FAIL gates, not warnings ([details](kb/kb-target-compliance-enforcement.md))
 
 ### 0. Documentation Protocol
 

@@ -74,3 +74,5 @@ bash scripts/verify_thoroughness.sh
 - [Comprehensive Learning Extraction Pattern](comprehensive-learning-extraction-pattern.md)
 - [Multi-Step Checkpoint Tracking Pattern](multi-step-checkpoint-tracking-pattern.md)
 - [Gate Enforcement Exit Codes Pattern](gate-enforcement-exit-codes-pattern.md)
+- [Search Result Completeness Verification](search-result-completeness-verification.md) - Enforce complete data gathering
+- [KB Target Compliance Enforcement](kb-target-compliance-enforcement.md) - Enforce quantitative targets with gates

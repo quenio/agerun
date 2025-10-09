@@ -233,3 +233,4 @@ Before claiming to understand a bug:
 - [Parallel Test Isolation with Process-Based Resource Copying](parallel-test-isolation-process-resources.md) - Example of knowledge application gap in practice
 - [Shell Configuration Diagnostic Troubleshooting](shell-configuration-diagnostic-troubleshooting.md)
 - [Configuration Migration Troubleshooting Strategy](configuration-migration-troubleshooting-strategy.md)
+- [Search Result Completeness Verification](search-result-completeness-verification.md) - Complete evidence gathering before conclusions

@@ -113,3 +113,4 @@ Signs of comprehensive extraction:
 - [Command Thoroughness Requirements Pattern](command-thoroughness-requirements-pattern.md)
 - [Systematic Consistency Verification](systematic-consistency-verification.md)
 - [Unmissable Documentation Pattern](unmissable-documentation-pattern.md)
+- [Search Result Completeness Verification](search-result-completeness-verification.md) - Complete searches prevent missing patterns

@@ -3,7 +3,7 @@ Compact the CHANGELOG.md file by condensing completed milestones while preservin
 ## MANDATORY KB Consultation
 
 Before compacting, you MUST:
-1. Search: `grep "compact\|documentation\|changelog\|script\|systematic\|dry.*run" kb/README.md`
+1. Search: `grep "compact\|documentation\|changelog\|script\|systematic\|dry.*run\|target.*compliance\|search.*result" kb/README.md`
 2. Read these KB articles IN FULL using the read tool:
    - `kb/documentation-compacting-pattern.md` - for compaction targets and guidelines
    - `kb/selective-compaction-pattern.md` - for selection criteria
@@ -11,17 +11,21 @@ Before compacting, you MUST:
    - `kb/systematic-file-modification-workflow.md` - for script workflow (Enumerate → Script → Apply → Verify → Commit)
    - `kb/batch-update-script-pattern.md` - for creating automated scripts
    - `kb/dry-run-mode-requirement.md` - **CRITICAL**: All file-modifying scripts MUST implement dry-run mode
+   - `kb/kb-target-compliance-enforcement.md` - **MANDATORY**: How to enforce KB targets with FAIL gates
+   - `kb/search-result-completeness-verification.md` - Never limit search results without checking totals
 3. **Check Related Patterns sections** in each article above and read any additional relevant articles found there
 4. In your response, quote these specific items from the KB:
    - The target reduction percentage for historical records (from documentation-compacting-pattern)
    - The 5 guidelines for "For historical records" section
    - The 5-step workflow from systematic-file-modification-workflow
    - The 5 dry-run principles from dry-run-mode-requirement (default to dry-run, explicit --apply flag, etc.)
+   - The enforcement pattern from kb-target-compliance-enforcement (FAIL not warn when target missed)
 4. If writing a script:
    - MUST implement dry-run mode (default=dry-run, use --apply to execute)
    - Follow systematic workflow: Enumerate → Script → Apply → Verify → Commit
    - Run in dry-run mode FIRST, review output, then run with --apply
 5. Apply ALL guidelines - if you achieve less than 40% reduction, you have NOT followed the KB
+6. **ENFORCE targets with gates**: Use exit 1 to FAIL if target not met, not just warnings
 
 **Example of proper KB consultation:**
 ```
