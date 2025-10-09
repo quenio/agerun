@@ -11,7 +11,8 @@ Before compacting, you MUST:
    - `kb/systematic-file-modification-workflow.md` - for script workflow (Enumerate → Script → Apply → Verify → Commit)
    - `kb/batch-update-script-pattern.md` - for creating automated scripts
    - `kb/dry-run-mode-requirement.md` - **CRITICAL**: All file-modifying scripts MUST implement dry-run mode
-3. In your response, quote these specific items from the KB:
+3. **Check Related Patterns sections** in each article above and read any additional relevant articles found there
+4. In your response, quote these specific items from the KB:
    - The target reduction percentage for historical records (from documentation-compacting-pattern)
    - The 5 guidelines for "For historical records" section
    - The 5-step workflow from systematic-file-modification-workflow
