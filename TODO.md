@@ -6,6 +6,14 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 **Module Documentation Status**: ✅ COMPLETE - All 64 .md files exist, make check-docs passes, and references are valid. No "_with_instance" references remain in documentation. (Verified 2025-09-28)
 
+## Priority Snapshot (Updated 2025-10-10)
+
+1. **System Module Decomposition** – Finish creating `ar_runtime`, `ar_message_broker`, and refactor `ar_system` into a thin façade (see “4. MEDIUM PRIORITY - System Module Decomposition”). This block holds 26 unchecked subtasks and clears the main architectural bottleneck now that all global APIs are gone.
+2. **System-Wide Integration Testing & Performance** – Build the full integration, stress, edge-case, and benchmarking suites (see “5. System-Wide Integration Testing and Verification”). Sequencing it after the system split prevents duplicate effort.
+3. **Proxy System Implementation** – Deliver the proxy infrastructure and built-in proxies (see “HIGHEST PRIORITY - Proxy System Implementation”). Depends on the decomposed message-routing surface for clean integration.
+4. **Parser Error Logging Finalization** – Close the remaining documentation/logging follow-ups to lock in the 2025-09-13 analysis wins (see “2. HIGH PRIORITY - Parser Module Error Logging Enhancement” residual items).
+5. **YAML Hardening & Quality Improvements** – Apply the clustered persistence safety and testing tasks (see “Priority 1–5” subsections in the YAML section) once higher-level work is stable.
+
 ## Completed Tasks
 
 - [x] Documentation Validation Fix for SPEC.md: Fixed 4 validation errors by adding EXAMPLE tags to proxy interface references (ar_proxy_t, ar_proxy__create, ar_proxy__destroy, ar_proxy__handle_message); marked as planned future implementations per validated-documentation-examples.md; make check-docs now passes (Completed 2025-10-08 Part 4)
@@ -64,20 +72,51 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 - [x] Instruction Module Refactoring: Separated parsing/execution phases (Completed 2025-06-12)
 
-## Immediate Priorities (Re-prioritized 2025-10-08)
+## Immediate Priorities (Re-prioritized 2025-10-10)
 
-### 1. HIGHEST PRIORITY - Methodology Module Refactoring
+### 1. System Module Decomposition (Top Priority)
 
-**Rationale**: The methodology module has grown large and handles multiple responsibilities. Splitting it into focused components will improve maintainability and follow Parnas principles.
+**Objective**: Complete the creation of `ar_runtime` and `ar_message_broker`, then refactor `ar_system` into a thin façade that composes those modules (`TODO.md:394-414`).
 
-**Current State Analysis**:
-- The ar_methodology module currently handles:
-  - Method storage and retrieval
-  - Version management and resolution
-  - Method registration and lookup
-  - Persistence (save/load operations)
-  - Method compilation and deprecation
-  - Internal caching and optimization
+**Why now**:
+- Largest remaining work block: 26 unchecked subtasks and explicit integration criteria.
+- All prerequisite global API removals are finished, so no hidden blockers remain.
+- Unlocks cleaner seams for proxies, integration tests, and future migrations.
+
+**Success gates**:
+- New modules fully tested with dedicated TDD cycles.
+- `ar_system` reduced to coordination logic (~50–75 lines target).
+- Documentation updates (`ar_system.md`, `ar_runtime.md`, `ar_message_broker.md`) and module diagram refreshed.
+- `make clean build 2>&1` and `make check-logs` succeed with zero leaks.
+
+### 2. System-Wide Integration Testing & Performance
+
+**Objective**: Build the comprehensive integration suite covering interaction, stress, edge-case, and performance scenarios (`TODO.md:431-446`).
+
+**Why second**:
+- Dependent on the refactored runtime/message broker surfaces to avoid double work.
+- Quantitatively large: 19 tasks spanning functional, stress, and benchmarking coverage.
+- Provides measurable confidence (pass/fail dashboards, perf baselines) before proxy features land.
+
+**Success gates**:
+- All four sub-bullets (integration, stress, edge cases, benchmarking) have passing make targets.
+- Document performance baselines and place artifacts in `/reports`.
+- Verify zero leaks via `make run-tests 2>&1` and related sanitizer logs.
+
+### 3. Proxy System Implementation
+
+**Objective**: Implement the proxy framework and built-in proxies with security policies, tests, and documentation (`TODO.md:1253-1290`).
+
+**Why third**:
+- Estimated 25–35 TDD cycles; keeping it after architectural/testing groundwork reduces churn.
+- Requires stable message routing and runtime orchestration from Priority #1.
+- High strategic value once foundation and coverage are in place.
+
+**Success gates**:
+- Proxy API (`ar_proxy__*`) implemented with ownership annotations and zero leaks.
+- File/Network/Log proxies ship with policy enforcement and audit logging.
+- SPEC.md, AGENTS.md, and KB references updated with usage patterns.
+- Example methods and persistence hooks validated via integration tests.
 
 **Decomposition Plan**:
 
