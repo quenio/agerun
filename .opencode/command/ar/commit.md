@@ -17,7 +17,7 @@ Before committing:
 # Commit
 ## Checkpoint Tracking
 
-This command uses checkpoint tracking to ensure thorough pre-commit verification and proper git workflow. The process has 9 checkpoints across 3 phases with critical quality gates.
+This command uses checkpoint tracking to ensure thorough pre-commit verification and proper git workflow. The process has 9 checkpoints across 3 phases with critical quality gates ([details](../../../kb/checkpoint-based-workflow-pattern.md)).
 
 ### Initialize Tracking
 ```bash
@@ -223,6 +223,7 @@ EOF
 
 3. **Execute the commit:**
    - Create the commit using HEREDOC format with checkpoint verification
+   - Include Claude Code attribution footer ([details](../../../kb/claude-code-commit-attribution.md))
    - The `checkpoint-update-verified` will automatically verify:
      - Commit was created successfully
      - Working tree is clean after commit

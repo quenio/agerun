@@ -43,9 +43,41 @@ if (own_wake_msg) {
 
 This ownership must be properly transferred when the system processes messages to avoid "Cannot destroy owned data" errors.
 
+## Function Documentation
+Document ownership semantics explicitly in function comments:
+
+```c
+/**
+ * Get the proxy registry instance from a system
+ * @param ref_system The system instance (borrowed reference)
+ * @return The proxy registry instance (borrowed reference), or NULL if system is NULL
+ * @note Ownership: Returns a borrowed reference - do not destroy
+ */
+ar_proxy_registry_t* ar_system__get_proxy_registry(const ar_system_t *ref_system);
+
+/**
+ * Register a proxy with the system
+ * @param mut_system The system instance (mutable reference)
+ * @param proxy_id The proxy ID (negative by convention)
+ * @param own_proxy The proxy to register (ownership transferred on success)
+ * @return true if successful, false otherwise
+ * @note Ownership: Takes ownership of own_proxy on success, caller must destroy on failure
+ */
+bool ar_system__register_proxy(ar_system_t *mut_system,
+                                int64_t proxy_id,
+                                ar_proxy_t *own_proxy);
+```
+
+**Ownership Documentation Patterns:**
+- "Returns a borrowed reference - do not destroy"
+- "Takes ownership of X on success, caller must destroy on failure"
+- "Caller retains ownership - must destroy X after call"
+- "Transfers ownership of X to Y"
+
 ## Related Patterns
 - Memory Management Model (MMM)
 - Zero memory leak tolerance
 - Explicit resource management
 - Debug assertions for ownership validation
 - [Ownership Pattern Extraction](ownership-pattern-extraction.md)
+- [Context Ownership Lifecycle](context-ownership-lifecycle.md)

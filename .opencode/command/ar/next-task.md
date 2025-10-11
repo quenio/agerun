@@ -1,4 +1,4 @@
-Read AGENTS.md in order to prepare yourself for this new session. Then check the session's todo list using TodoRead. If no items are found in the session's todo list, check TODO.md for incomplete tasks (marked with `- [ ]`). If TODO.md has incomplete tasks, present them and ask which to work on. If both session todo list and TODO.md are empty, inform me that all tasks are complete. If session tasks exist, work on the next task found in the session's todo list.
+Read AGENTS.md in order to prepare yourself for this new session ([details](../../../kb/context-preservation-across-sessions.md)). Then check the session's todo list using TodoRead. If no items are found in the session's todo list, check TODO.md for incomplete tasks (marked with `- [ ]`). If TODO.md has incomplete tasks, present them and ask which to work on. If both session todo list and TODO.md are empty, inform me that all tasks are complete. If session tasks exist, work on the next task found in the session's todo list.
 
 ## MANDATORY KB Consultation
 

@@ -25,6 +25,9 @@ Each learning file contains:
 - [Atomic Commit Documentation Pattern](atomic-commit-documentation-pattern.md)
 - [Build Verification Before Commit](build-verification-before-commit.md)
 - [Build Time Reporting](build-time-reporting.md)
+- [Checkpoint-Based Workflow Pattern](checkpoint-based-workflow-pattern.md)
+- [Claude Code Commit Attribution](claude-code-commit-attribution.md)
+- [Context Preservation Across Sessions](context-preservation-across-sessions.md)
 - [Gate Enforcement Exit Codes Pattern](gate-enforcement-exit-codes-pattern.md)
 - [Incomplete Commit Message Recovery Pattern](incomplete-commit-message-recovery-pattern.md)
 - [Multi-Step Checkpoint Tracking Pattern](multi-step-checkpoint-tracking-pattern.md)
@@ -111,6 +114,7 @@ Each learning file contains:
 ### Code Quality & Testing
 - [BDD Test Structure](bdd-test-structure.md)
 - [AR_ASSERT for Descriptive Failures](ar-assert-descriptive-failures.md)
+- [TDD RED Phase Assertion Requirement](tdd-red-phase-assertion-requirement.md)
 - [Test Isolation Shared Directory Pattern](test-isolation-shared-directory-pattern.md)
 - [Test Signal Reporting Practice](test-signal-reporting-practice.md)
 - [Test Standardization Retroactive Application](test-standardization-retroactive.md)
@@ -180,6 +184,7 @@ Each learning file contains:
 - [Error Coverage Verification Before Enhancement](error-coverage-verification-before-enhancement.md)
 
 ### Architecture & Design
+- [Header Inclusion Over Forward Declaration](header-inclusion-over-forward-declaration.md)
 - [Opaque Types Pattern](opaque-types-pattern.md)
 - [Domain-Specific Type Creation](domain-specific-type-creation.md)
 - [Facade Pattern Coordination](facade-pattern-coordination.md)

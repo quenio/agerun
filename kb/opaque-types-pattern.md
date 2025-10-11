@@ -34,6 +34,7 @@ Hide implementation details behind stable interfaces to enable independent evolu
 - Required for complex data structures
 
 ## Related Patterns
+- [Header Inclusion Over Forward Declaration](header-inclusion-over-forward-declaration.md) - When to include vs forward declare
 - Information hiding principle ([details](information-hiding-principle.md))
 - Parnas design principles - see [Opaque Types Principle](opaque-types-principle.md) for comprehensive coverage
 - Interface stability

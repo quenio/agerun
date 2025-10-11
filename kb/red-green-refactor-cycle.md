@@ -60,6 +60,7 @@ ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, void *owner) {
 ```
 
 ## Related Patterns
+- [TDD RED Phase Assertion Requirement](tdd-red-phase-assertion-requirement.md) - **Proper RED phase execution**
 - [BDD Test Structure](bdd-test-structure.md)
 - [Test Assertion Strength Patterns](test-assertion-strength-patterns.md)
 - [Standards Over Expediency Principle](standards-over-expediency-principle.md)
@@ -69,6 +70,7 @@ ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, void *owner) {
 - [TDD Cycle Detailed Explanation](tdd-cycle-detailed-explanation.md)
 - [Integration Test Binary Execution](integration-test-binary-execution.md)
 - [Permission-Based Test Modification](permission-based-test-modification.md)
+- [Compilation-Based TDD Approach](compilation-based-tdd-approach.md) - Exception for removal work
 - Test-driven development methodology
 - Incremental feature development
 - Code quality maintenance

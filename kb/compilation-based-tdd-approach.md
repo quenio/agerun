@@ -2,7 +2,9 @@
 
 ## Context
 
-Traditional TDD uses failing tests as the RED phase. However, when removing infrastructure code (like global constants or function parameters), behavior tests may not be possible. In these cases, we can use compilation failure as our RED phase test.
+**IMPORTANT**: This is an EXCEPTION to normal TDD. For adding features, use [TDD RED Phase Assertion Requirement](tdd-red-phase-assertion-requirement.md) instead.
+
+Traditional TDD uses failing tests (assertion failures) as the RED phase. However, when removing infrastructure code (like global constants or function parameters), behavior tests may not be possible. In these specific cases, we can use compilation failure as our RED phase test.
 
 ## The Pattern
 
@@ -91,6 +93,7 @@ Removing sleep messages using compilation-based TDD:
 
 ## Related Patterns
 
+- [TDD RED Phase Assertion Requirement](tdd-red-phase-assertion-requirement.md) - **Normal TDD approach (use this for feature development)**
 - [Non-Functional Code Detection Pattern](non-functional-code-detection-pattern.md) - Identifying code that can be safely removed
 - [Systematic Parameter Removal Refactoring](systematic-parameter-removal-refactoring.md) - Removing parameters using compilation-based approach
 - [Red Green Refactor Cycle](red-green-refactor-cycle.md) - Traditional TDD cycle comparison

@@ -81,6 +81,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Report-driven planning**: Create analysis reports before large task sets ([details](kb/report-driven-task-planning.md))
 **Script archaeology**: Examine scripts to understand what work was actually completed ([details](kb/script-archaeology-pattern.md))
 **Learning extraction**: Multi-pass review reveals hidden patterns ([details](kb/comprehensive-learning-extraction-pattern.md), [thoroughness](kb/command-thoroughness-requirements-pattern.md))
+**Session continuity**: Preserve context across session boundaries ([details](kb/context-preservation-across-sessions.md))
 
 **Documentation Standards (MANDATORY)** ([details](kb/documentation-standards-integration.md), [unmissable](kb/unmissable-documentation-pattern.md), [sync](kb/documentation-implementation-sync.md)):
 - **Real code only**: All examples must use actual AgeRun types/functions ([details](kb/validated-documentation-examples.md))
@@ -145,6 +146,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 **Pre-modification**: Run module tests BEFORE changes
 **Cycle**: Red→Green→Refactor for EACH behavior, NO commits during ([details](kb/red-green-refactor-cycle.md), [cycle details](kb/tdd-cycle-detailed-explanation.md))
+**RED phase**: Must produce assertion failures, not compilation errors ([details](kb/tdd-red-phase-assertion-requirement.md))
 **Verify fix**: Run single test first, then full suite ([details](kb/test-first-verification-practice.md))
 **Test reality**: Align expectations with actual behavior ([details](kb/test-expectation-reality-alignment.md))
 **Coverage verification**: Check existing implementations before adding ([details](kb/error-coverage-verification-before-enhancement.md))
@@ -231,6 +233,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - **Const-Correctness**: NEVER cast away const - fix interfaces instead ([details](kb/const-correctness-principle.md))
 - **No Parallel Implementations**: Modify existing code, don't create _v2 versions ([details](kb/no-parallel-implementations-principle.md))
 - **Composition Over Inheritance**: Prefer composition patterns to create flexible, maintainable architectures ([details](kb/composition-over-inheritance-principle.md))
+- **Header Inclusion**: Include actual headers, not forward declarations ([details](kb/header-inclusion-over-forward-declaration.md))
 - **Regression Investigation**: Trace root causes with git history ([details](kb/regression-root-cause-analysis.md))
 - **Resource-Aware APIs**: Design to avoid hidden memory costs ([details](kb/resource-aware-api-design.md))
 - **Functional Value**: Validate features provide value, not decoration ([details](kb/functional-value-validation-pattern.md))
@@ -307,7 +310,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 **Navigation & Files**: Absolute paths, git not .bak, ar_io backups ([details](kb/absolute-path-navigation.md), [backups](kb/file-io-backup-mechanism.md))
 **Build & Debug**: `make sanitize-tests 2>&1`, make targets only, parallel jobs ([details](kb/development-debug-tools.md), [make](kb/make-target-testing-discipline.md), [compile](kb/compilation-driven-refactoring-pattern.md), [shell diagnostics](kb/shell-configuration-diagnostic-troubleshooting.md))
-**Checkpoints**: Track complex tasks, gates, progress, concise output ([details](kb/multi-step-checkpoint-tracking-pattern.md), [gates](kb/gate-enforcement-exit-codes-pattern.md), [concise](kb/concise-script-output-principle.md))
+**Checkpoints**: Track complex tasks, gates, progress, concise output ([details](kb/multi-step-checkpoint-tracking-pattern.md), [workflows](kb/checkpoint-based-workflow-pattern.md), [gates](kb/gate-enforcement-exit-codes-pattern.md), [concise](kb/concise-script-output-principle.md))
 **YAML & Persistence**: 2-space indent, escape multiline, direct I/O, validate contracts ([details](kb/yaml-serialization-direct-io-pattern.md), [multiline](kb/multi-line-data-persistence-format.md), [contracts](kb/yaml-implicit-contract-validation-pattern.md))
 **Error & Logs**: Context filtering, precise grep, fix root causes ([details](kb/systematic-whitelist-error-resolution.md), [logs](kb/build-log-extraction-patterns.md), [grep](kb/grep-or-syntax-differences.md), [config migration](kb/configuration-migration-troubleshooting-strategy.md))
 **CI/CD**: gh CLI debugging, version verification ([details](kb/github-actions-debugging-workflow.md), [versions](kb/tool-version-selection-due-diligence.md))
@@ -377,7 +380,8 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 5. Check outdated refs: `grep -l "old_name" modules/*.md`
 6. Update TODO.md & CHANGELOG.md in same commit ([details](kb/atomic-commit-documentation-pattern.md), [verify](kb/documentation-completion-verification.md))
 7. `git diff --stat` review full scope → verify message describes ALL changes ([details](kb/incomplete-commit-message-recovery-pattern.md))
-8. Clean temp files → commit
+8. Include Claude Code attribution in commit message ([details](kb/claude-code-commit-attribution.md))
+9. Clean temp files → commit
 
 **Remember**: Complete ALL TDD Cycles → Docs → TODO → CHANGELOG → Commit ([details](kb/tdd-feature-completion-before-commit.md))
 

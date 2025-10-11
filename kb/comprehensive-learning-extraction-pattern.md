@@ -105,6 +105,7 @@ Signs of comprehensive extraction:
 - Patterns range from specific to general to meta
 
 ## Related Patterns
+- [Context Preservation Across Sessions](context-preservation-across-sessions.md) - Preserving learnings across context boundaries
 - [Post-Session Task Extraction Pattern](post-session-task-extraction-pattern.md)
 - [New Learnings Complete Integration Pattern](new-learnings-complete-integration-pattern.md)
 - [User Feedback as QA](user-feedback-as-qa.md)

@@ -111,8 +111,10 @@ make checkpoint-gate CMD=check-docs GATE="Resolution" REQUIRED="4"
 ```
 
 ## Related Patterns
+- [Checkpoint-Based Workflow Pattern](checkpoint-based-workflow-pattern.md) - Comprehensive workflow structure
 - [Gate Enforcement Exit Codes Pattern](gate-enforcement-exit-codes-pattern.md)
 - [Progress Visualization ASCII Pattern](progress-visualization-ascii-pattern.md)
 - [Command Thoroughness Requirements Pattern](command-thoroughness-requirements-pattern.md)
 - [Validation Feedback Loop Effectiveness](validation-feedback-loop-effectiveness.md)
 - [Documentation Error Type Classification](documentation-error-type-classification.md)
+- [Context Preservation Across Sessions](context-preservation-across-sessions.md) - Resumable multi-step work
