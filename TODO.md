@@ -8,11 +8,13 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Priority Snapshot (Updated 2025-10-10)
 
-1. **System Module Decomposition** – Finish creating `ar_runtime`, `ar_message_broker`, and refactor `ar_system` into a thin façade (see “4. MEDIUM PRIORITY - System Module Decomposition”). This block holds 26 unchecked subtasks and clears the main architectural bottleneck now that all global APIs are gone.
-2. **System-Wide Integration Testing & Performance** – Build the full integration, stress, edge-case, and benchmarking suites (see “5. System-Wide Integration Testing and Verification”). Sequencing it after the system split prevents duplicate effort.
-3. **Proxy System Implementation** – Deliver the proxy infrastructure and built-in proxies (see “HIGHEST PRIORITY - Proxy System Implementation”). Depends on the decomposed message-routing surface for clean integration.
-4. **Parser Error Logging Finalization** – Close the remaining documentation/logging follow-ups to lock in the 2025-09-13 analysis wins (see “2. HIGH PRIORITY - Parser Module Error Logging Enhancement” residual items).
-5. **YAML Hardening & Quality Improvements** – Apply the clustered persistence safety and testing tasks (see “Priority 1–5” subsections in the YAML section) once higher-level work is stable.
+**Note**: System Module Decomposition removed - original justification (persistence coordination) eliminated by removal of auto-loading/saving. Current ar_system.c is well-factored at 236 lines with clear responsibilities.
+
+1. **System-Wide Integration Testing & Performance** – Build the full integration, stress, edge-case, and benchmarking suites (see "5. System-Wide Integration Testing and Verification"). Foundation work is stable and ready for comprehensive testing.
+2. **Proxy System Implementation** – Deliver the proxy infrastructure and built-in proxies (see "HIGHEST PRIORITY - Proxy System Implementation"). Current message routing architecture is ready for proxy integration.
+3. **Parser Error Logging Finalization** – Close the remaining documentation/logging follow-ups to lock in the 2025-09-13 analysis wins (see "2. HIGH PRIORITY - Parser Module Error Logging Enhancement" residual items).
+4. **YAML Hardening & Quality Improvements** – Apply the clustered persistence safety and testing tasks (see "Priority 1–5" subsections in the YAML section).
+5. **C to Zig Migration** – Continue foundation layer migration (see "6. Complete C to Zig ABI-Compatible Migration") to enable future architectural improvements.
 
 ## Completed Tasks
 
@@ -74,49 +76,36 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Immediate Priorities (Re-prioritized 2025-10-10)
 
-### 1. System Module Decomposition (Top Priority)
-
-**Objective**: Complete the creation of `ar_runtime` and `ar_message_broker`, then refactor `ar_system` into a thin façade that composes those modules (`TODO.md:394-414`).
-
-**Why now**:
-- Largest remaining work block: 26 unchecked subtasks and explicit integration criteria.
-- All prerequisite global API removals are finished, so no hidden blockers remain.
-- Unlocks cleaner seams for proxies, integration tests, and future migrations.
-
-**Success gates**:
-- New modules fully tested with dedicated TDD cycles.
-- `ar_system` reduced to coordination logic (~50–75 lines target).
-- Documentation updates (`ar_system.md`, `ar_runtime.md`, `ar_message_broker.md`) and module diagram refreshed.
-- `make clean build 2>&1` and `make check-logs` succeed with zero leaks.
-
-### 2. System-Wide Integration Testing & Performance
+### 1. System-Wide Integration Testing & Performance
 
 **Objective**: Build the comprehensive integration suite covering interaction, stress, edge-case, and performance scenarios (`TODO.md:431-446`).
 
-**Why second**:
-- Dependent on the refactored runtime/message broker surfaces to avoid double work.
-- Quantitatively large: 19 tasks spanning functional, stress, and benchmarking coverage.
-- Provides measurable confidence (pass/fail dashboards, perf baselines) before proxy features land.
+**Why now**:
+- Foundation work complete: All evaluators migrated to Zig, frame-based execution implemented
+- Quantitatively large: 19 tasks spanning functional, stress, and benchmarking coverage
+- Provides measurable confidence (pass/fail dashboards, perf baselines) before proxy features land
+- Current architecture is stable and ready for comprehensive testing
 
 **Success gates**:
-- All four sub-bullets (integration, stress, edge cases, benchmarking) have passing make targets.
-- Document performance baselines and place artifacts in `/reports`.
-- Verify zero leaks via `make run-tests 2>&1` and related sanitizer logs.
+- All four sub-bullets (integration, stress, edge cases, benchmarking) have passing make targets
+- Document performance baselines and place artifacts in `/reports`
+- Verify zero leaks via `make run-tests 2>&1` and related sanitizer logs
 
-### 3. Proxy System Implementation
+### 2. Proxy System Implementation
 
 **Objective**: Implement the proxy framework and built-in proxies with security policies, tests, and documentation (`TODO.md:1253-1290`).
 
-**Why third**:
-- Estimated 25–35 TDD cycles; keeping it after architectural/testing groundwork reduces churn.
-- Requires stable message routing and runtime orchestration from Priority #1.
-- High strategic value once foundation and coverage are in place.
+**Why now**:
+- Estimated 25–35 TDD cycles; current architecture is stable and ready
+- Message routing in ar_system is clean and ready for proxy integration
+- High strategic value for enabling safe external communication
+- Foundation and testing can proceed in parallel
 
 **Success gates**:
-- Proxy API (`ar_proxy__*`) implemented with ownership annotations and zero leaks.
-- File/Network/Log proxies ship with policy enforcement and audit logging.
-- SPEC.md, AGENTS.md, and KB references updated with usage patterns.
-- Example methods and persistence hooks validated via integration tests.
+- Proxy API (`ar_proxy__*`) implemented with ownership annotations and zero leaks
+- File/Network/Log proxies ship with policy enforcement and audit logging
+- SPEC.md, AGENTS.md, and KB references updated with usage patterns
+- Example methods and persistence hooks validated via integration tests
 
 **Decomposition Plan**:
 
@@ -403,59 +392,21 @@ Each parser needs 2-3 TDD cycles for comprehensive error logging:
 - Phase 2: 1-2 sessions (16 subtasks)
 - Phase 3: 1 session (methodology has fewer dependencies)
 
-### 4. MEDIUM PRIORITY - System Module Decomposition (Depends on Global API Removal)
+### 4. REMOVED - System Module Decomposition (Obsolete as of 2025-10-10)
 
-**Current State**: Both ar_agency and ar_system have been successfully made instantiable (completed 2025-08-02).
-- ar_agency uses methodology as borrowed reference (completed 2025-08-01)
-- ar_system uses single global instance pattern with g_system owning everything (completed 2025-08-02)
-- Full backward compatibility maintained with zero memory leaks
+**Decision**: Decomposition cancelled - original justification (persistence coordination) no longer applies.
 
-**Original Analysis**: Comprehensive analysis completed 2025-07-30 ([details](reports/system-module-responsibility-analysis.md))
-- Identified 5 distinct responsibilities violating Single Responsibility Principle
-- Module remains small (191 lines) but has mixed abstraction levels
+**Analysis**:
+- Original 2025-07-30 analysis identified 5 responsibilities, but key responsibility (persistence coordination) was eliminated by removal of auto-loading/saving (lines 131, 153 in ar_system.c)
+- Current ar_system.c is well-factored at 236 lines (73% below 850-line threshold)
+- Remaining responsibilities are clean: lifecycle (29 lines), message processing (58 lines), resource management (boilerplate)
+- No actual SRP violations in current form - module has clear, focused purpose
 
-**Revised Decomposition Plan**:
-Based on successful instantiation learnings:
-1. **Single global instance pattern works well** - Continue with g_system approach
-2. **Simpler architecture** - Only need ar_runtime and ar_message_broker modules
-3. **No persistence coordinator** - Agency already manages its own persistence
-4. **Clear ownership model** - System owns interpreter/log, borrows agency
+**Completed Work**:
+- [x] Phase 1: Made agency/system instantiable with single global instance pattern (Completed 2025-07-30 to 08-02)
+- This was the only necessary architectural improvement
 
-**Proposed Architecture**:
-- **ar_runtime**: Lifecycle management (initialization state, startup/shutdown sequences)
-- **ar_message_broker**: Message routing and processing orchestration
-- **ar_system**: Remains as coordinating facade using current instance-based design
-
-**Tasks**:
-- [x] System Module Decomposition: Made agency/system instantiable; single g_system pattern (Completed 2025-07-30 to 08-02)
-
-**Remaining Decomposition Tasks**:
-- [ ] Phase 2: Create ar_runtime module
-  - [ ] Design interface: ar_runtime_t opaque type
-  - [ ] Extract initialization state tracking from ar_system
-  - [ ] Move startup/shutdown sequencing logic
-  - [ ] Functions: create/destroy, is_initialized, get_log
-  - [ ] Use TDD: Write ar_runtime_tests.c first
-  - [ ] System will own runtime instance
-- [ ] Phase 3: Create ar_message_broker module  
-  - [ ] Design interface: ar_message_broker_t opaque type
-  - [ ] Extract message processing loop from ar_system
-  - [ ] Move agent iteration and message routing logic
-  - [ ] Functions: create/destroy, process_next, process_all
-  - [ ] Accept agency and interpreter as borrowed references
-  - [ ] Use TDD: Write ar_message_broker_tests.c first
-- [ ] Phase 4: Refactor ar_system as thin facade
-  - [ ] Update ar_system_s to compose runtime and message_broker
-  - [ ] Replace direct implementation with delegation
-  - [ ] Target: ~50-75 lines after refactoring
-  - [ ] Maintain all existing APIs unchanged
-  - [ ] Update ar_system_instance_tests.c as needed
-- [ ] Phase 5: Integration and verification
-  - [ ] Run make clean build 2>&1 with zero failures
-  - [ ] Verify zero memory leaks in all tests
-  - [ ] Update ar_system.md documentation
-  - [ ] Create ar_runtime.md and ar_message_broker.md
-  - [ ] Update module dependency diagram
+**Reference**: Analysis report preserved at reports/system-module-responsibility-analysis.md for historical context.
 
 ### 5. System-Wide Integration Testing and Verification
 
