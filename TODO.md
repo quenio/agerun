@@ -1246,7 +1246,7 @@ Once all modules are migrated to Zig with C-ABI compatibility, identify internal
 **Files to Create**: `modules/ar_proxy.h`, `modules/ar_proxy.c`, `modules/ar_proxy_tests.c`
 **Files to Modify**: `modules/ar_system.h`, `modules/ar_system.c`, `Makefile`
 
-- [ ] **TDD Cycle 1**: Create ar_proxy module with opaque type
+- [x] **TDD Cycle 1**: Create ar_proxy module with opaque type (Completed 2025-10-10)
   - **RED**: Write test `test_proxy__create_and_destroy()` → FAIL (module doesn't exist)
   - **GREEN**: Create ar_proxy.h with `typedef struct ar_proxy_s ar_proxy_t;`, create/destroy functions
   - **GREEN**: Implement basic create/destroy in ar_proxy.c with heap tracking
