@@ -1265,12 +1265,14 @@ Once all modules are migrated to Zig with C-ABI compatibility, identify internal
   - **REFACTOR**: Document ownership - proxy borrows message, does not take ownership
   - **Note**: Proper TDD RED phase requires assertion failure, not compilation error
 
-- [ ] **TDD Cycle 4**: Add proxy registry to ar_system
-  - **RED**: Write test `test_system__register_proxy()` in ar_system_tests.c → FAIL
-  - **GREEN**: Add `ar_map_t *own_proxy_registry` field to ar_system_s struct
-  - **GREEN**: Create registry in ar_system__create(), destroy in ar_system__destroy()
-  - **GREEN**: Add `ar_system__register_proxy(ar_system_t*, int64_t proxy_id, ar_proxy_t*)` function
-  - **REFACTOR**: Verify zero leaks, check map stores proxy instances correctly
+- [x] **TDD Cycle 4**: Create ar_proxy_registry module (Completed 2025-10-11)
+  - **Architectural Decision**: Created separate ar_proxy_registry module instead of embedding in ar_system (follows ar_agent_registry pattern, maintains separation of concerns)
+  - **RED**: Write test `test_proxy_registry__register_and_find()` → assertion failure (stub returns false)
+  - **GREEN**: Implement ar_proxy_registry with list+map internal structure (333 lines)
+  - **GREEN**: 8 public functions: create, destroy, register, unregister, find, is_registered, count, clear
+  - **REFACTOR**: 6 comprehensive tests, zero memory leaks, complete module documentation
+  - **Files Created**: ar_proxy_registry.{h,c,md}, ar_proxy_registry_tests.c
+  - **Result**: Registry owns proxies (vs agent_registry which doesn't own agents), ready for ar_system integration
 
 - [ ] **TDD Cycle 5**: Add proxy lookup to ar_system
   - **RED**: Write test `test_system__get_proxy()` → FAIL
