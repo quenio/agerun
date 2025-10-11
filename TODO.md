@@ -1240,54 +1240,245 @@ Once all modules are migrated to Zig with C-ABI compatibility, identify internal
 **Execution Plan** (25-35 TDD cycles total):
 
 #### Phase 1: Proxy Infrastructure (8-10 cycles)
-- [ ] Create ar_proxy module with opaque ar_proxy_t type
-- [ ] Implement proxy interface: ar_proxy__create(), ar_proxy__destroy(), ar_proxy__handle_message()
-- [ ] Add proxy registration system to ar_system (register_proxy function)
-- [ ] Update message routing in ar_system to handle reserved proxy IDs (-100, -101, etc.)
-- [ ] Add proxy instance management (creation, lookup, destruction)
+
+**Files to Create**: `modules/ar_proxy.h`, `modules/ar_proxy.c`, `modules/ar_proxy_tests.c`
+**Files to Modify**: `modules/ar_system.h`, `modules/ar_system.c`, `Makefile`
+
+- [ ] **TDD Cycle 1**: Create ar_proxy module with opaque type
+  - **RED**: Write test `test_proxy__create_and_destroy()` → FAIL (module doesn't exist)
+  - **GREEN**: Create ar_proxy.h with `typedef struct ar_proxy_s ar_proxy_t;`, create/destroy functions
+  - **GREEN**: Implement basic create/destroy in ar_proxy.c with heap tracking
+  - **REFACTOR**: Verify zero memory leaks with `make ar_proxy_tests 2>&1`
+
+- [ ] **TDD Cycle 2**: Add proxy type and log to ar_proxy
+  - **RED**: Write test `test_proxy__stores_type_and_log()` → FAIL
+  - **GREEN**: Add `const char *type` and `ar_log_t *ref_log` fields to struct
+  - **GREEN**: Update ar_proxy__create() signature to accept type and log
+  - **REFACTOR**: Add ownership annotations, verify zero leaks
+
+- [ ] **TDD Cycle 3**: Implement proxy message handler interface
+  - **RED**: Write test `test_proxy__handle_message_returns_false()` → FAIL
+  - **GREEN**: Add `ar_proxy__handle_message(ar_proxy_t*, ar_data_t*, int64_t sender_id)` to header
+  - **GREEN**: Implement stub that returns false (no handler set yet)
+  - **REFACTOR**: Document ownership - proxy borrows message, does not take ownership
+
+- [ ] **TDD Cycle 4**: Add proxy registry to ar_system
+  - **RED**: Write test `test_system__register_proxy()` in ar_system_tests.c → FAIL
+  - **GREEN**: Add `ar_map_t *own_proxy_registry` field to ar_system_s struct
+  - **GREEN**: Create registry in ar_system__create(), destroy in ar_system__destroy()
+  - **GREEN**: Add `ar_system__register_proxy(ar_system_t*, int64_t proxy_id, ar_proxy_t*)` function
+  - **REFACTOR**: Verify zero leaks, check map stores proxy instances correctly
+
+- [ ] **TDD Cycle 5**: Add proxy lookup to ar_system
+  - **RED**: Write test `test_system__get_proxy()` → FAIL
+  - **GREEN**: Implement `ar_system__get_proxy(const ar_system_t*, int64_t proxy_id)` → ar_proxy_t*
+  - **GREEN**: Return NULL if proxy_id not in registry
+  - **REFACTOR**: Add const correctness, document borrowed reference return
+
+- [ ] **TDD Cycle 6**: Update message routing to detect negative agent IDs
+  - **RED**: Write test `test_system__process_message_to_proxy()` → FAIL
+  - **GREEN**: In `ar_system__process_next_message()`, check if agent_id < 0
+  - **GREEN**: If negative, look up proxy using ar_system__get_proxy()
+  - **REFACTOR**: Extract routing logic to helper function if needed (avoid Long Method)
+
+- [ ] **TDD Cycle 7**: Route messages to proxy handler
+  - **RED**: Extend test to verify proxy receives message → FAIL
+  - **GREEN**: Call `ar_proxy__handle_message(proxy, message, sender_id)` for negative IDs
+  - **GREEN**: Return true if proxy handled message, false otherwise
+  - **REFACTOR**: Verify message ownership flow (system still owns, proxy borrows)
+
+- [ ] **TDD Cycle 8**: Add proxy unregistration
+  - **RED**: Write test `test_system__unregister_proxy()` → FAIL
+  - **GREEN**: Implement `ar_system__unregister_proxy(ar_system_t*, int64_t proxy_id)`
+  - **GREEN**: Remove from registry, destroy proxy instance
+  - **REFACTOR**: Verify no memory leaks when proxies are unregistered
 
 #### Phase 2: Built-in Proxies (10-15 cycles)
-- [ ] Implement FileProxy (ar_file_proxy.c/.zig)
-  - Handle file read/write operations with path validation
-  - Enforce security policies (allowed paths, file size limits)
-  - Return structured responses via messages
-- [ ] Implement NetworkProxy (ar_network_proxy.c/.zig)
-  - Handle HTTP GET/POST with URL whitelisting
-  - Implement timeouts and response size limits
-  - Parse responses into structured data
-- [ ] Implement LogProxy (ar_log_proxy.c/.zig)
-  - Provide structured logging with levels (info, warn, error)
-  - Support console and file output
-  - Include agent context in log messages
+
+##### FileProxy (4-5 cycles)
+
+**Files to Create**: `modules/ar_file_proxy.h`, `modules/ar_file_proxy.c`, `modules/ar_file_proxy_tests.c`
+
+- [ ] **TDD Cycle 9**: Create FileProxy module with basic structure
+  - **RED**: Write test `test_file_proxy__create_and_destroy()` → FAIL
+  - **GREEN**: Create ar_file_proxy.h with opaque type `ar_file_proxy_t`
+  - **GREEN**: Implement create/destroy with ar_proxy_t* wrapper
+  - **REFACTOR**: Verify zero leaks
+
+- [ ] **TDD Cycle 10**: Implement file read operation
+  - **RED**: Write test `test_file_proxy__handle_read_message()` → FAIL
+  - **GREEN**: Parse MAP message with `{"action": "read", "path": "test.txt"}`
+  - **GREEN**: Use ar_io__open_file() to read file contents
+  - **GREEN**: Return MAP response `{"status": "success", "content": "..."}`
+  - **REFACTOR**: Handle errors gracefully, return error status if file not found
+
+- [ ] **TDD Cycle 11**: Add path validation for file operations
+  - **RED**: Write test `test_file_proxy__rejects_directory_traversal()` → FAIL
+  - **GREEN**: Validate path doesn't contain ".." or absolute paths
+  - **GREEN**: Return `{"status": "error", "message": "Invalid path"}` for bad paths
+  - **REFACTOR**: Extract path validation to helper function
+
+- [ ] **TDD Cycle 12**: Implement file write operation
+  - **RED**: Write test `test_file_proxy__handle_write_message()` → FAIL
+  - **GREEN**: Parse MAP message with `{"action": "write", "path": "test.txt", "content": "data"}`
+  - **GREEN**: Use ar_io__open_file() to write file contents
+  - **GREEN**: Return MAP response `{"status": "success"}`
+  - **REFACTOR**: Apply same path validation, verify ar_io creates backups
+
+- [ ] **TDD Cycle 13**: Add file size limits
+  - **RED**: Write test `test_file_proxy__rejects_large_files()` → FAIL
+  - **GREEN**: Add MAX_FILE_SIZE constant (e.g., 10MB)
+  - **GREEN**: Check file size before reading, return error if too large
+  - **REFACTOR**: Make size limit configurable in file_proxy__create()
+
+##### NetworkProxy (4-5 cycles)
+
+**Files to Create**: `modules/ar_network_proxy.h`, `modules/ar_network_proxy.c`, `modules/ar_network_proxy_tests.c`
+
+- [ ] **TDD Cycle 14**: Create NetworkProxy module with basic structure
+  - **RED**: Write test `test_network_proxy__create_and_destroy()` → FAIL
+  - **GREEN**: Create ar_network_proxy.h with opaque type
+  - **GREEN**: Implement create/destroy with ar_proxy_t* wrapper
+  - **REFACTOR**: Verify zero leaks
+
+- [ ] **TDD Cycle 15**: Implement HTTP GET operation (stub for now)
+  - **RED**: Write test `test_network_proxy__handle_get_message()` → FAIL
+  - **GREEN**: Parse MAP message with `{"action": "GET", "url": "http://..."}`
+  - **GREEN**: Return stub response `{"status": "success", "content": "stub"}` (actual HTTP later)
+  - **REFACTOR**: Document that actual HTTP implementation deferred
+
+- [ ] **TDD Cycle 16**: Add URL whitelisting
+  - **RED**: Write test `test_network_proxy__rejects_non_whitelisted_url()` → FAIL
+  - **GREEN**: Add whitelist of allowed URL patterns/domains to proxy
+  - **GREEN**: Return `{"status": "error", "message": "URL not whitelisted"}` for invalid URLs
+  - **REFACTOR**: Extract URL validation to helper function
+
+- [ ] **TDD Cycle 17**: Add request timeouts and size limits
+  - **RED**: Write test `test_network_proxy__respects_size_limit()` → FAIL
+  - **GREEN**: Add MAX_RESPONSE_SIZE constant (e.g., 1MB)
+  - **GREEN**: Add timeout configuration (e.g., 30 seconds)
+  - **REFACTOR**: Document limits in ar_network_proxy.md
+
+- [ ] **TDD Cycle 18**: Implement HTTP POST operation (stub)
+  - **RED**: Write test `test_network_proxy__handle_post_message()` → FAIL
+  - **GREEN**: Parse MAP message with `{"action": "POST", "url": "...", "body": "..."}`
+  - **GREEN**: Return stub response (actual HTTP later)
+  - **REFACTOR**: Apply same whitelist and size limits
+
+##### LogProxy (2-3 cycles)
+
+**Files to Create**: `modules/ar_log_proxy.h`, `modules/ar_log_proxy.c`, `modules/ar_log_proxy_tests.c`
+
+- [ ] **TDD Cycle 19**: Create LogProxy module with basic structure
+  - **RED**: Write test `test_log_proxy__create_and_destroy()` → FAIL
+  - **GREEN**: Create ar_log_proxy.h with opaque type
+  - **GREEN**: Implement create/destroy with ar_proxy_t* wrapper
+  - **REFACTOR**: Verify zero leaks
+
+- [ ] **TDD Cycle 20**: Implement structured logging with levels
+  - **RED**: Write test `test_log_proxy__handle_log_message()` → FAIL
+  - **GREEN**: Parse MAP message with `{"level": "info", "message": "text", "agent_id": 123}`
+  - **GREEN**: Format log entry with timestamp, level, agent context, message
+  - **GREEN**: Write to console via ar_log instance
+  - **REFACTOR**: Support levels: info, warn, error
+
+- [ ] **TDD Cycle 21**: Add file output support
+  - **RED**: Write test `test_log_proxy__writes_to_file()` → FAIL
+  - **GREEN**: Add optional log file path to log_proxy__create()
+  - **GREEN**: Write log entries to file using ar_io__open_file() (append mode)
+  - **REFACTOR**: Make file output optional, verify ar_io creates backups
 
 #### Phase 3: Security and Validation (4-6 cycles)
-- [ ] Implement security policy framework
-  - Path validation for file operations
-  - URL whitelisting for network requests
-  - Resource limits (file sizes, request timeouts)
-- [ ] Add comprehensive input validation
-- [ ] Implement audit logging for proxy operations
+
+**Files to Create**: `modules/ar_proxy_policy.h`, `modules/ar_proxy_policy.c`, `modules/ar_proxy_policy_tests.c`
+
+- [ ] **TDD Cycle 22**: Create security policy framework
+  - **RED**: Write test `test_proxy_policy__validate_path()` → FAIL
+  - **GREEN**: Create ar_proxy_policy module with path validation functions
+  - **GREEN**: Implement `ar_proxy_policy__is_valid_path(const char*)` → bool
+  - **REFACTOR**: Centralize validation logic used by FileProxy
+
+- [ ] **TDD Cycle 23**: Add URL validation to policy framework
+  - **RED**: Write test `test_proxy_policy__validate_url()` → FAIL
+  - **GREEN**: Implement `ar_proxy_policy__is_valid_url(const char*, const char** whitelist)` → bool
+  - **GREEN**: Support domain matching and pattern matching
+  - **REFACTOR**: Extract common validation patterns
+
+- [ ] **TDD Cycle 24**: Add resource limit validation
+  - **RED**: Write test `test_proxy_policy__validate_size()` → FAIL
+  - **GREEN**: Implement `ar_proxy_policy__is_within_size_limit(size_t, size_t limit)` → bool
+  - **GREEN**: Add timeout validation functions
+  - **REFACTOR**: Document all policy functions in ar_proxy_policy.md
+
+- [ ] **TDD Cycle 25**: Implement audit logging
+  - **RED**: Write test `test_proxy__logs_access_attempts()` → FAIL
+  - **GREEN**: Add audit log to ar_proxy that records all handle_message calls
+  - **GREEN**: Log: timestamp, proxy_id, action, sender_id, result
+  - **REFACTOR**: Make audit logging optional via create() parameter
+
+- [ ] **TDD Cycle 26**: Add comprehensive input validation
+  - **RED**: Write test `test_proxy__rejects_malformed_messages()` → FAIL
+  - **GREEN**: Validate message is MAP type before processing
+  - **GREEN**: Validate required fields exist ("action" field, etc.)
+  - **GREEN**: Return clear error messages for invalid input
+  - **REFACTOR**: Extract message validation to helper functions
+
+- [ ] **TDD Cycle 27**: Security testing and hardening
+  - **RED**: Write security tests for edge cases → FAIL
+  - **GREEN**: Test null bytes in paths, overly long strings, nested paths
+  - **GREEN**: Ensure all validation prevents security vulnerabilities
+  - **REFACTOR**: Document security assumptions in AGENTS.md
 
 #### Phase 4: System Integration (2-3 cycles)
-- [ ] Register built-in proxies at system startup in ar_system
-- [ ] Update ar_executable to initialize proxy system
-- [ ] Add proxy state to system persistence if needed
+
+- [ ] **TDD Cycle 28**: Register built-in proxies at system startup
+  - **RED**: Write test `test_system__has_builtin_proxies()` → FAIL
+  - **GREEN**: In ar_system__create(), instantiate FileProxy (-100), NetworkProxy (-101), LogProxy (-102)
+  - **GREEN**: Register each proxy with ar_system__register_proxy()
+  - **REFACTOR**: Verify all proxies are created and registered correctly
+
+- [ ] **TDD Cycle 29**: Update ar_executable to support proxies
+  - **RED**: Write integration test in ar_executable_tests.c → FAIL
+  - **GREEN**: Verify ar_executable creates system with proxies automatically
+  - **GREEN**: Test that agents can send messages to negative IDs
+  - **REFACTOR**: No changes needed - proxies initialized via ar_system__create()
+
+- [ ] **TDD Cycle 30**: Consider proxy state persistence (if needed)
+  - **Analysis**: Determine if proxy state needs persistence across sessions
+  - **Decision**: Likely NO - proxies are stateless, recreated at startup
+  - **Document**: Add note in SPEC.md that proxies are ephemeral
 
 #### Phase 5: Testing and Documentation (1-2 cycles)
-- [ ] Write comprehensive TDD tests for each proxy
-- [ ] Create example methods demonstrating proxy usage
-- [ ] Update SPEC.md with implementation details and examples
-- [ ] Add proxy usage patterns to AGENTS.md
+
+- [ ] **TDD Cycle 31**: Create example methods demonstrating proxy usage
+  - Create `methods/file-reader-1.0.0.method` - reads file via FileProxy
+  - Create `methods/http-client-1.0.0.method` - fetches URL via NetworkProxy
+  - Create `methods/logger-1.0.0.method` - logs structured messages via LogProxy
+  - Create corresponding test files and .md documentation
+  - Verify all examples work end-to-end with `make run-tests 2>&1`
+
+- [ ] **TDD Cycle 32**: Update documentation
+  - **SPEC.md**: Remove EXAMPLE tags from proxy interface (lines 304-308)
+  - **SPEC.md**: Add implementation details and usage examples
+  - **AGENTS.md**: Add proxy usage patterns and guidelines
+  - **KB**: Create `kb/proxy-implementation-pattern.md`
+  - **KB**: Create `kb/proxy-security-patterns.md`
+  - Run `make check-docs` to verify all documentation is valid
+  - Update TODO.md to mark all proxy tasks complete
+  - Update CHANGELOG.md with proxy system completion entry
 
 **Success Criteria**:
-- All proxies communicate exclusively via messages
-- Security policies prevent unauthorized external access
-- Zero memory leaks in proxy operations
-- Comprehensive test coverage with TDD
-- Backward compatibility maintained
-- External communication is pluggable and extensible
+- ✅ All proxies communicate exclusively via messages
+- ✅ Security policies prevent unauthorized external access
+- ✅ Zero memory leaks in all proxy operations
+- ✅ Comprehensive test coverage with TDD (all 32 cycles tested)
+- ✅ Backward compatibility maintained
+- ✅ External communication is pluggable and extensible
+- ✅ `make check-docs` passes with updated documentation
 
-**Estimated Timeline**: 4-6 sessions (25-35 TDD cycles)
+**Estimated Timeline**: 4-6 sessions (32 TDD cycles total)
+
+**Current Status**: Not started - ready to begin Phase 1, Cycle 1
 
 ## Notes
 
