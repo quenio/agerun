@@ -1274,6 +1274,15 @@ Once all modules are migrated to Zig with C-ABI compatibility, identify internal
   - **Files Created**: ar_proxy_registry.{h,c,md}, ar_proxy_registry_tests.c
   - **Result**: Registry owns proxies (vs agent_registry which doesn't own agents), ready for ar_system integration
 
+- [x] **TDD Cycle 4.5**: Integrate ar_proxy_registry into ar_system (Completed 2025-10-11)
+  - **Purpose**: Complete the original TDD Cycle 4 objective by integrating the registry into the system
+  - **RED**: Added stubs returning NULL/false, tests fail with assertions (not compilation errors)
+  - **GREEN**: Added own_proxy_registry field to ar_system_s, updated create/destroy lifecycle
+  - **GREEN**: Implemented ar_system__get_proxy_registry() and ar_system__register_proxy()
+  - **REFACTOR**: 2 new tests pass, zero memory leaks (527 allocations), updated ar_system.md
+  - **Files Modified**: ar_system.{h,c}, ar_system_tests.c, ar_system.md
+  - **Result**: System owns proxy registry, follows ar_agency pattern exactly, ready for message routing
+
 - [ ] **TDD Cycle 5**: Add proxy lookup to ar_system
   - **RED**: Write test `test_system__get_proxy()` → FAIL
   - **GREEN**: Implement `ar_system__get_proxy(const ar_system_t*, int64_t proxy_id)` → ar_proxy_t*

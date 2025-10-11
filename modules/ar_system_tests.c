@@ -3,6 +3,8 @@
 #include "ar_methodology.h"
 #include "ar_agency.h"
 #include "ar_agent_registry.h"
+#include "ar_proxy.h"
+#include "ar_proxy_registry.h"
 #include "ar_assert.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -238,54 +240,110 @@ static void test_message_passing(ar_system_t *mut_system) {
 
 static void test_no_auto_saving_on_shutdown(void) {
     printf("Testing that system does NOT auto-save on shutdown...\n");
-    
+
     // Given a clean environment with no existing files
     remove("methodology.agerun");
     remove("agerun.agency");
-    
+
     // And a system with methodology and agents
     ar_system_t *mut_system = ar_system__create();
     assert(mut_system != NULL);
     ar_system__init(mut_system, NULL, NULL);
-    
+
     ar_agency_t *mut_agency = ar_system__get_agency(mut_system);
     assert(mut_agency != NULL);
-    
+
     ar_methodology_t *mut_methodology = ar_agency__get_methodology(mut_agency);
     assert(mut_methodology != NULL);
-    
+
     // And the methodology has methods
     ar_method_t *own_method = ar_method__create("test_method", "send(0, \"test\")", "1.0.0");
     assert(own_method != NULL);
     ar_methodology__register_method(mut_methodology, own_method);
-    
+
     // And the agency has active agents
     int64_t agent_id = ar_agency__create_agent(mut_agency, "test_method", "1.0.0", NULL);
     assert(agent_id > 0);
-    
+
     // When the system is shut down
     ar_system__shutdown(mut_system);
     ar_system__destroy(mut_system);
-    
+
     // Then no files should be saved
     struct stat st;
     bool methodology_exists = (stat("methodology.agerun", &st) == 0);
     bool agency_exists = (stat("agerun.agency", &st) == 0);
-    
+
     AR_ASSERT(!methodology_exists, "methodology.agerun should NOT have been saved on shutdown");
     AR_ASSERT(!agency_exists, "agerun.agency should NOT have been saved on shutdown");
-    
+
     printf("No auto-saving test passed.\n");
+}
+
+static void test_system__has_proxy_registry(void) {
+    printf("Testing that system has proxy registry...\n");
+
+    // Given a system instance
+    ar_system_t *mut_system = ar_system__create();
+    AR_ASSERT(mut_system != NULL, "System creation should succeed");
+
+    // When we get the proxy registry
+    ar_proxy_registry_t *ref_registry = ar_system__get_proxy_registry(mut_system);
+
+    // Then the registry should exist
+    AR_ASSERT(ref_registry != NULL, "System should have a proxy registry");
+
+    // Clean up
+    ar_system__destroy(mut_system);
+
+    printf("Proxy registry test passed.\n");
+}
+
+static void test_system__register_proxy(void) {
+    printf("Testing proxy registration in system...\n");
+
+    // Given a system instance
+    ar_system_t *mut_system = ar_system__create();
+    AR_ASSERT(mut_system != NULL, "System creation should succeed");
+
+    // And a log instance for the proxy
+    ar_log_t *ref_log = ar_system__get_log(mut_system);
+    AR_ASSERT(ref_log != NULL, "System should have a log");
+
+    // And a test proxy
+    ar_proxy_t *own_proxy = ar_proxy__create(ref_log, "test");
+    AR_ASSERT(own_proxy != NULL, "Proxy creation should succeed");
+
+    // When we register the proxy with ID -100
+    bool result = ar_system__register_proxy(mut_system, -100, own_proxy);
+
+    // Then the registration should succeed
+    AR_ASSERT(result, "Proxy registration should succeed");
+
+    // And we should be able to find it in the registry
+    ar_proxy_registry_t *ref_registry = ar_system__get_proxy_registry(mut_system);
+    ar_proxy_t *ref_found = ar_proxy_registry__find(ref_registry, -100);
+    AR_ASSERT(ref_found != NULL, "Registered proxy should be findable");
+    AR_ASSERT(strcmp(ar_proxy__get_type(ref_found), "test") == 0, "Found proxy should have correct type");
+
+    // Clean up (system owns proxy now, will destroy it)
+    ar_system__destroy(mut_system);
+
+    printf("Proxy registration test passed.\n");
 }
 
 int main(void) {
     printf("Starting Agerun tests...\n");
-    
+
     // Test that system does NOT auto-load files
     test_no_auto_loading_on_init();
-    
+
     // Test that system does NOT auto-save files
     test_no_auto_saving_on_shutdown();
+
+    // Test proxy registry integration
+    test_system__has_proxy_registry();
+    test_system__register_proxy();
     
     // Create system instance
     ar_system_t *mut_system = ar_system__create();

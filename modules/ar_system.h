@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "ar_agency.h"
+#include "ar_proxy.h"
+#include "ar_proxy_registry.h"
 
 /* Opaque type declaration */
 typedef struct ar_system_s ar_system_t;
@@ -70,5 +72,23 @@ ar_agency_t* ar_system__get_agency(const ar_system_t *ref_system);
  * @note Ownership: Returns a borrowed reference - do not destroy
  */
 ar_log_t* ar_system__get_log(const ar_system_t *ref_system);
+
+/**
+ * Get the proxy registry instance from a system
+ * @param ref_system The system instance (borrowed reference)
+ * @return The proxy registry instance (borrowed reference), or NULL if system is NULL
+ * @note Ownership: Returns a borrowed reference - do not destroy
+ */
+ar_proxy_registry_t* ar_system__get_proxy_registry(const ar_system_t *ref_system);
+
+/**
+ * Register a proxy with the system
+ * @param mut_system The system instance (mutable reference)
+ * @param proxy_id The proxy ID (negative by convention)
+ * @param own_proxy The proxy to register (ownership transferred on success)
+ * @return true if successful, false otherwise
+ * @note Ownership: Takes ownership of own_proxy on success, caller must destroy on failure
+ */
+bool ar_system__register_proxy(ar_system_t *mut_system, int64_t proxy_id, ar_proxy_t *own_proxy);
 
 #endif /* AGERUN_SYSTEM_H */
