@@ -1252,11 +1252,11 @@ Once all modules are migrated to Zig with C-ABI compatibility, identify internal
   - **GREEN**: Implement basic create/destroy in ar_proxy.c with heap tracking
   - **REFACTOR**: Verify zero memory leaks with `make ar_proxy_tests 2>&1`
 
-- [ ] **TDD Cycle 2**: Add proxy type and log to ar_proxy
-  - **RED**: Write test `test_proxy__stores_type_and_log()` → FAIL
-  - **GREEN**: Add `const char *type` and `ar_log_t *ref_log` fields to struct
-  - **GREEN**: Update ar_proxy__create() signature to accept type and log
-  - **REFACTOR**: Add ownership annotations, verify zero leaks
+- [x] **TDD Cycle 2**: Add proxy type and log to ar_proxy (Completed 2025-10-10)
+  - **RED**: Added skeleton getters, test executes and fails at assertion (not compilation)
+  - **GREEN**: Added `ar_log_t *ref_log` and `const char *type` fields to struct
+  - **GREEN**: Updated ar_proxy__create() signature (log first, type second)
+  - **REFACTOR**: Added ownership documentation, verified zero leaks, created ar_proxy.md
 
 - [ ] **TDD Cycle 3**: Implement proxy message handler interface
   - **RED**: Write test `test_proxy__handle_message_returns_false()` → FAIL
