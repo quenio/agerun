@@ -5,10 +5,12 @@
 #include "ar_heap.h"
 #include "ar_assert.h"
 #include "ar_log.h"
+#include "ar_data.h"
 
 // Test function declarations
 static void test_proxy__create_and_destroy(void);
 static void test_proxy__stores_log_and_type(void);
+static void test_proxy__handle_message_returns_false(void);
 
 int main(void) {
     // Directory check
@@ -27,6 +29,7 @@ int main(void) {
     // Run tests
     test_proxy__create_and_destroy();
     test_proxy__stores_log_and_type();
+    test_proxy__handle_message_returns_false();
 
     printf("All proxy tests passed!\n");
     return 0;
@@ -74,6 +77,30 @@ static void test_proxy__stores_log_and_type(void) {
     // Clean up
     ar_proxy__destroy(own_proxy);
     ar_log__destroy(own_log);
+
+    printf("    PASS\n");
+}
+
+static void test_proxy__handle_message_returns_false(void) {
+    printf("  test_proxy__handle_message_returns_false...\n");
+
+    // Given a proxy instance and a test message
+    ar_proxy_t *own_proxy = ar_proxy__create(NULL, "test");
+    AR_ASSERT(own_proxy != NULL, "Proxy creation should succeed");
+
+    ar_data_t *own_message = ar_data__create_string("test message");
+    AR_ASSERT(own_message != NULL, "Message creation should succeed");
+
+    // When calling handle_message with no handler set
+    int64_t sender_id = 123;
+    bool result = ar_proxy__handle_message(own_proxy, own_message, sender_id);
+
+    // Then it should return false (no handler configured)
+    AR_ASSERT(result == false, "handle_message should return false when no handler is set");
+
+    // Clean up
+    ar_data__destroy(own_message);
+    ar_proxy__destroy(own_proxy);
 
     printf("    PASS\n");
 }

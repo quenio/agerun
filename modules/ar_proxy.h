@@ -10,7 +10,10 @@
 #ifndef AGERUN_PROXY_H
 #define AGERUN_PROXY_H
 
+#include <stdbool.h>
+#include <stdint.h>
 #include "ar_log.h"
+#include "ar_data.h"
 
 /**
  * Opaque type for a proxy instance
@@ -50,5 +53,16 @@ ar_log_t* ar_proxy__get_log(const ar_proxy_t *ref_proxy);
  * @note Ownership: Returns a borrowed reference. Do not destroy.
  */
 const char* ar_proxy__get_type(const ar_proxy_t *ref_proxy);
+
+/**
+ * Handles a message sent to this proxy
+ * @param ref_proxy The proxy instance
+ * @param ref_message The message to handle (borrowed reference)
+ * @param sender_id The ID of the agent sending the message
+ * @return true if message was handled, false otherwise
+ * @note Ownership: Proxy borrows the message, does not take ownership.
+ *       Caller retains ownership and must destroy the message.
+ */
+bool ar_proxy__handle_message(ar_proxy_t *ref_proxy, ar_data_t *ref_message, int64_t sender_id);
 
 #endif /* AGERUN_PROXY_H */

@@ -1,5 +1,6 @@
 #include "ar_proxy.h"
 #include "ar_heap.h"
+#include <stdbool.h>
 #include <stdlib.h>
 
 struct ar_proxy_s {
@@ -41,4 +42,16 @@ const char* ar_proxy__get_type(const ar_proxy_t *ref_proxy) {
     }
 
     return ref_proxy->type;
+}
+
+bool ar_proxy__handle_message(ar_proxy_t *ref_proxy, ar_data_t *ref_message, int64_t sender_id) {
+    (void)ref_message;
+    (void)sender_id;
+
+    if (!ref_proxy) {
+        return false;
+    }
+
+    // No handler configured yet, return false
+    return false;
 }
