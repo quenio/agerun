@@ -1,4 +1,4 @@
-Read AGENTS.md in order to prepare yourself for this new session. Then check the session's todo list using TodoRead. If no items are found in the session's todo list, stop and inform me that all session tasks are complete. If session tasks exist, work on the next task found in the session's todo list.
+Read AGENTS.md in order to prepare yourself for this new session. Then check the session's todo list using TodoRead. If no items are found in the session's todo list, check TODO.md for incomplete tasks (marked with `- [ ]`). If TODO.md has incomplete tasks, present them and ask which to work on. If both session todo list and TODO.md are empty, inform me that all tasks are complete. If session tasks exist, work on the next task found in the session's todo list.
 
 ## MANDATORY KB Consultation
 
@@ -73,18 +73,38 @@ Estimated effort: 3 TDD cycles
 [Proceeds with implementation]
 ```
 
-### When No Session Tasks
+### When No Session Tasks (with TODO.md tasks)
 ```
 Reading AGENTS.md...
 Checking session todo list...
+No session tasks found.
 
-✅ All session tasks are complete!
+Checking TODO.md for incomplete tasks...
 
-No pending tasks found in the current session.
+Found 5 incomplete tasks in TODO.md:
+1. [ ] Implement error logging for all parsers
+2. [ ] Add test coverage for edge cases
+3. [ ] Update documentation for new features
+4. [ ] Refactor agent lifecycle management
+5. [ ] Optimize memory allocation patterns
+
+Which task would you like to work on?
+```
+
+### When No Session Tasks (TODO.md also empty)
+```
+Reading AGENTS.md...
+Checking session todo list...
+No session tasks found.
+
+Checking TODO.md for incomplete tasks...
+No incomplete tasks found in TODO.md.
+
+✅ All tasks are complete!
+
 Would you like to:
-1. Check TODO.md for project-level tasks
-2. Review recent changes
-3. Start a new feature
+1. Review recent changes
+2. Start a new feature
 ```
 
 ### When Task References Report
@@ -145,11 +165,17 @@ make checkpoint-cleanup CMD=next_task
 
 ## Key Points
 
-Before proceeding to execute the next task:
-1. Check the TODO.md file to have more context
+Task discovery workflow:
+1. Check session todo list first
+2. If session list is empty, automatically check TODO.md for incomplete tasks (marked with `- [ ]`)
+3. Present TODO.md tasks to user and ask which to work on
+4. Only report "all tasks complete" when both lists are empty
+
+Before proceeding to execute a task:
+1. Review the task context from TODO.md or session notes
 2. If the task references a report, review the relevant sections ([details](../../../kb/report-driven-task-planning.md))
 3. Define a plan with effort estimated in TDD cycles ([details](../../../kb/tdd-cycle-effort-estimation.md))
-4. Explain your strategy and wait for my feedback
+4. Explain your strategy and wait for user feedback
 
 ## End of Session
 

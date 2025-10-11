@@ -725,6 +725,8 @@ Apply the checkpoint tracking system developed in the session to all 26 commands
 
 - [x] Phase 3 - Simple Commands: Added expected output documentation to 14 commands (Completed 2025-08-31)
 
+- [x] Phase 4 - Workflow Improvements: Enhanced next-task command to automatically check TODO.md when session todo list is empty (Completed 2025-10-10)
+
 ### Technical Implementation Details
 
 #### Checkpoint Integration Pattern

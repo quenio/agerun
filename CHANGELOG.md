@@ -1,5 +1,8 @@
 # AgeRun CHANGELOG
 
+## 2025-10-10
+- **Command Workflow Enhancement**: Updated next-task command to automatically check TODO.md for incomplete tasks when session todo list is empty; **User Experience**: Seamless transition from session tasks to project-level tasks eliminates manual workflow steps; **Result**: Improved task discovery with automatic fallback to TODO.md incomplete items
+
 ## 2025-10-08
 - **Documentation Validation Fix**: Fixed 4 validation errors in SPEC.md by adding EXAMPLE tags to proxy interface references (ar_proxy_t, ar_proxy__create, ar_proxy__destroy, ar_proxy__handle_message); **Compliance**: All references marked as planned future implementations per validated-documentation-examples.md; **Result**: make check-docs now passes
 - **Command Documentation Enhancement**: Updated compact-tasks command with Mixed-State Document Strategy, expanded to 7 checkpoint steps; **KB Updates**: Enhanced documentation-compacting-pattern.md with selective compaction + manual semantic analysis guidance for mixed-state documents, added relationship sections to selective-compaction-pattern.md; **Key Learning**: Mixed-state documents require both selective compaction (what to compact) and manual semantic analysis (how to compact), with incomplete tasks preserved 100% untouched
