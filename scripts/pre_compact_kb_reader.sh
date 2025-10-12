@@ -28,11 +28,20 @@ read_kb_article() {
 
     if [ -f "$kb_file" ]; then
         echo -e "${GREEN}📖 ${article}${NC}"
-        # Extract key sections (Learning, Importance, first few points)
+        echo ""
+        # Extract Learning and Importance sections
         awk '
-            /^## Learning/,/^## / { if (!/^## Learning/ && !/^##/) print "  " $0 }
-            /^## Importance/,/^## / { if (!/^## Importance/ && !/^##/) print "  " $0 }
-        ' "$kb_file" | head -10
+            BEGIN { in_learning = 0; in_importance = 0; line_count = 0 }
+            /^## Learning$/ { in_learning = 1; next }
+            /^## Importance$/ { in_importance = 1; in_learning = 0; next }
+            /^## / { in_learning = 0; in_importance = 0 }
+            in_learning || in_importance {
+                if (line_count < 20) {
+                    print "  " $0
+                    if (length($0) > 0) line_count++
+                }
+            }
+        ' "$kb_file"
         echo ""
     fi
 }
@@ -44,13 +53,6 @@ echo ""
 read_kb_article "context-preservation-across-sessions"
 read_kb_article "session-resumption-without-prompting"
 read_kb_article "post-session-task-extraction-pattern"
-
-echo ""
-echo "🔍 Searching for additional relevant articles..."
-grep -l "session\|context\|continuation\|resumption" "$PROJECT_DIR/kb"/*.md 2>/dev/null | \
-    while read file; do
-        basename "$file" .md
-    done | head -5
 
 echo ""
 echo -e "${BLUE}========================================${NC}"
