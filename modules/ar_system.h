@@ -6,6 +6,7 @@
 #include "ar_agency.h"
 #include "ar_delegate.h"
 #include "ar_delegate_registry.h"
+#include "ar_delegation.h"
 
 /* Opaque type declaration */
 typedef struct ar_system_s ar_system_t;
@@ -72,6 +73,14 @@ ar_agency_t* ar_system__get_agency(const ar_system_t *ref_system);
  * @note Ownership: Returns a borrowed reference - do not destroy
  */
 ar_log_t* ar_system__get_log(const ar_system_t *ref_system);
+
+/**
+ * Get the delegation instance from a system
+ * @param ref_system The system instance (borrowed reference)
+ * @return The delegation instance (borrowed reference), or NULL if system is NULL
+ * @note Ownership: Returns a borrowed reference - do not destroy
+ */
+ar_delegation_t* ar_system__get_delegation(const ar_system_t *ref_system);
 
 /**
  * Get the proxy registry instance from a system

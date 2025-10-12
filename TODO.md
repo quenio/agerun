@@ -1312,14 +1312,14 @@ Once all modules are migrated to Zig with C-ABI compatibility, identify internal
   - **Files Created**: ar_delegation.{h,c,md}, ar_delegation_tests.c (280 lines total)
   - **Note**: System will own both ar_agency and ar_delegation as peers
 
-- [ ] **TDD Cycle 6**: Integrate ar_delegation into ar_system
-  - **RED**: Write test `test_system__has_delegation()` → FAIL
-  - **GREEN**: Move own_delegate_registry from ar_system_s to ar_delegation_s (delegation now owns registry)
-  - **GREEN**: Add own_delegation field to ar_system_s, update create/destroy lifecycle
-  - **GREEN**: Update ar_system__get_delegate_registry() to call ar_delegation__get_registry()
-  - **GREEN**: Update ar_system__register_delegate() to call ar_delegation__register_delegate()
-  - **GREEN**: Implement ar_system__get_delegation() returning borrowed reference
-  - **REFACTOR**: System coordinates both agency and delegation (Facade pattern)
+- [x] **TDD Cycle 6**: Integrate ar_delegation into ar_system (Completed 2025-10-11)
+  - **Architectural Achievement**: System now owns delegation as peer to agency following symmetric pattern
+  - **Implementation**: Moved registry ownership from system to delegation; system coordinates via facade
+  - **Result**: 3 iterations (RED-GREEN-REFACTOR), 0 memory leaks (567 allocations), complete documentation
+  - **Files Modified**: ar_system.{h,c,md}, modules/README.md, ar_system_tests.c
+  - **Tests**: Added test_system__has_delegation(), updated test_system__has_delegate_registry() and test_system__register_proxy()
+  - **Documentation**: Updated ar_system.md with delegation architecture, API docs, examples, ownership hierarchy
+  - **Index Update**: Added delegation to dependency tree in modules/README.md
 
 - [ ] **TDD Cycle 7**: Update evaluators to route messages via delegation
   - **RED**: Write test for send evaluator routing negative IDs to delegation → FAIL

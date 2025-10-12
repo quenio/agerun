@@ -5,6 +5,7 @@
 #include "ar_agent_registry.h"
 #include "ar_delegate.h"
 #include "ar_delegate_registry.h"
+#include "ar_delegation.h"
 #include "ar_assert.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,6 +23,7 @@ static void test_no_auto_loading_on_init(void);
 static void test_method_creation(ar_system_t *mut_system);
 static void test_agent_creation(ar_system_t *mut_system);
 static void test_message_passing(ar_system_t *mut_system);
+static void test_system__has_delegation(void);
 
 static void test_no_auto_loading_on_init(void) {
     printf("Testing that system does NOT auto-load files on init...\n");
@@ -332,6 +334,25 @@ static void test_system__register_proxy(void) {
     printf("Proxy registration test passed.\n");
 }
 
+static void test_system__has_delegation(void) {
+    printf("Testing that system has delegation...\n");
+
+    // Given a system instance
+    ar_system_t *mut_system = ar_system__create();
+    AR_ASSERT(mut_system != NULL, "System creation should succeed");
+
+    // When we get the delegation
+    ar_delegation_t *ref_delegation = ar_system__get_delegation(mut_system);
+
+    // Then the delegation should exist
+    AR_ASSERT(ref_delegation != NULL, "System should have a delegation");
+
+    // Clean up
+    ar_system__destroy(mut_system);
+
+    printf("Delegation test passed.\n");
+}
+
 int main(void) {
     printf("Starting Agerun tests...\n");
 
@@ -344,7 +365,8 @@ int main(void) {
     // Test proxy registry integration
     test_system__has_delegate_registry();
     test_system__register_proxy();
-    
+    test_system__has_delegation();
+
     // Create system instance
     ar_system_t *mut_system = ar_system__create();
     if (mut_system == NULL) {

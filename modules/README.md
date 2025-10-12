@@ -191,6 +191,12 @@ ar_system
 │               ├──c──> ar_agent
 │               ├──c──> ar_semver
 │               └──c──> ar_io (Zig/C)
+├──c──> ar_delegation
+│       ├──h──> ar_delegate_registry
+│       │       ├──h──> ar_delegate
+│       │       ├──c──> ar_list
+│       │       └──c──> ar_map
+│       └──c──> ar_log
 ├──c──> ar_data
 ├──c──> ar_list
 └──c──> ar_map
@@ -1470,9 +1476,11 @@ The [system module](ar_system.md) provides the high-level API and runtime enviro
 - **Message Processing**: Processes messages between agents asynchronously
 - **System Lifecycle**: Handles system startup, running, and shutdown phases
 - **Initial Agent**: Creates and manages the initial system agent
+- **Delegation Management**: Owns and coordinates the delegation subsystem for external communication channels
+- **Facade Pattern**: Coordinates agency (agents with ID >= 0) and delegation (delegates with ID < 0) as peer subsystems
 - **Integration Point**: Serves as the main integration point for external applications
 - **Zero Memory Leaks**: Ensures proper cleanup of all system resources
-- **Depends on Multiple**: Integrates agent, method, methodology, agency, data, and list modules
+- **Depends on Multiple**: Integrates agent, method, methodology, agency, delegation, data, and list modules
 
 For detailed API documentation, see [ar_system.md](ar_system.md).
 
