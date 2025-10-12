@@ -78,7 +78,7 @@ static void test_interpreter_create_destroy(void) {
     assert(own_log != NULL);
 
     // When we create an interpreter with the log, agency, and delegation
-    ar_interpreter_t *own_interpreter = ar_interpreter__create_with_agency(own_log, ref_agency, ref_delegation);
+    ar_interpreter_t *own_interpreter = ar_interpreter__create(own_log, ref_agency, ref_delegation);
     
     // Then it should be created successfully
     assert(own_interpreter != NULL);
@@ -148,7 +148,7 @@ static void test_interpreter_error_logging(void) {
     assert(own_log != NULL);
 
     // And an interpreter with that log, agency, and delegation
-    ar_interpreter_t *own_interpreter = ar_interpreter__create_with_agency(own_log, ref_agency, ref_delegation);
+    ar_interpreter_t *own_interpreter = ar_interpreter__create(own_log, ref_agency, ref_delegation);
     assert(own_interpreter != NULL);
     
     // When we try to execute a method for a non-existent agent

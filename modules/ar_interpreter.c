@@ -21,12 +21,7 @@ struct ar_interpreter_s {
 /**
  * Creates a new interpreter instance
  */
-ar_interpreter_t* ar_interpreter__create(ar_log_t *ref_log) {
-    // Keep old signature for backward compatibility
-    return ar_interpreter__create_with_agency(ref_log, NULL, NULL);
-}
-
-ar_interpreter_t* ar_interpreter__create_with_agency(ar_log_t *ref_log, ar_agency_t *ref_agency, ar_delegation_t *ref_delegation) {
+ar_interpreter_t* ar_interpreter__create(ar_log_t *ref_log, ar_agency_t *ref_agency, ar_delegation_t *ref_delegation) {
     if (!ref_log) {
         return NULL;
     }

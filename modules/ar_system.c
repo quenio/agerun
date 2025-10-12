@@ -90,7 +90,7 @@ ar_system_t* ar_system__create(void) {
         return NULL;
     }
 
-    own_system->own_interpreter = ar_interpreter__create_with_agency(own_system->own_log, own_system->own_agency, own_system->own_delegation);
+    own_system->own_interpreter = ar_interpreter__create(own_system->own_log, own_system->own_agency, own_system->own_delegation);
     if (!own_system->own_interpreter) {
         ar_agency__destroy(own_system->own_agency);
         ar_delegation__destroy(own_system->own_delegation);

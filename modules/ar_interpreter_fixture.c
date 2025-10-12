@@ -67,7 +67,7 @@ ar_interpreter_fixture_t* ar_interpreter_fixture__create(const char *ref_test_na
     // Create interpreter with agency and delegation from system
     ar_agency_t *ref_agency = ar_system__get_agency(own_fixture->own_system);
     ar_delegation_t *ref_delegation = ar_system__get_delegation(own_fixture->own_system);
-    own_fixture->own_interpreter = ar_interpreter__create_with_agency(own_fixture->own_log, ref_agency, ref_delegation);
+    own_fixture->own_interpreter = ar_interpreter__create(own_fixture->own_log, ref_agency, ref_delegation);
     if (!own_fixture->own_interpreter) {
         ar_system__shutdown(own_fixture->own_system);
         ar_system__destroy(own_fixture->own_system);
