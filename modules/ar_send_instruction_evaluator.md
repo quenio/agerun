@@ -27,10 +27,12 @@ An opaque type representing a send instruction evaluator instance.
 ```c
 ar_send_instruction_evaluator_t* ar_send_instruction_evaluator__create(
     ar_log_t *ref_log,
-    ar_expression_evaluator_t *ref_expr_evaluator
+    ar_expression_evaluator_t *ref_expr_evaluator,
+    ar_agency_t *ref_agency,
+    ar_delegation_t *ref_delegation
 );
 ```
-Creates a new send instruction evaluator with the provided log and expression evaluator. The evaluator follows the frame-based execution pattern and does not store memory references.
+Creates a new send instruction evaluator with the provided log, expression evaluator, agency, and delegation instances. The evaluator borrows all dependencies and follows the frame-based execution pattern.
 
 ```c
 void ar_send_instruction_evaluator__destroy(
@@ -59,8 +61,9 @@ Key features:
 1. **Agent ID Evaluation**: Evaluates the agent ID expression to an integer
 2. **Message Evaluation**: Evaluates the message expression to any data type
 3. **Special Case ID 0**: Treats sends to agent 0 as no-op (returns true)
-4. **Result Assignment**: Stores the send result (boolean) when assignment is specified
-5. **Ownership Transfer**: Transfers message ownership to the agency
+4. **Delegation Routing**: Routes negative IDs through the delegation subsystem and forwards the sender ID extracted from the frame context
+5. **Result Assignment**: Stores the send result (boolean) when assignment is specified
+6. **Ownership Coordination**: Transfers message ownership to the agency for positive IDs and borrows for delegation sends before destroying the local copy
 
 ### Memory Management
 
@@ -80,7 +83,8 @@ The module follows strict memory ownership rules:
 - `ar_expression_parser`: For parsing expression strings
 - `ar_expression_ast`: For expression AST nodes
 - `ar_instruction_ast`: For accessing instruction AST structure
-- `ar_agency`: For sending messages to agents
+- `ar_agency`: For sending messages to agents (IDs >= 0)
+- `ar_delegation`: For routing messages to delegates (IDs < 0) with sender metadata
 - `ar_data`: For data manipulation
 - `ar_string`: For string operations
 - `ar_heap`: For memory tracking
@@ -91,7 +95,8 @@ The module evaluates both arguments:
 1. Agent ID must evaluate to an integer
 2. Message can be any data type
 3. Uses helper functions for expression parsing and evaluation
-4. Handles result storage for assigned sends
+4. Routes based on ID sign (>= 0 to agency, < 0 to delegation)
+5. Handles result storage for assigned sends
 
 ## Usage Example
 
@@ -100,17 +105,21 @@ The module evaluates both arguments:
 ar_log_t *log = ar_log__create();
 ar_data_t *memory = ar_data__create_map();
 ar_data_t *context = ar_data__create_map();
+ar_system_t *system = ar_system__create();
 ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, context);
 
 // Create send instruction evaluator
+ar_agency_t *agency = ar_system__get_agency(system);
+ar_delegation_t *delegation = ar_system__get_delegation(system);
 ar_send_instruction_evaluator_t *send_eval = ar_send_instruction_evaluator__create(
-    log, expr_eval
+    log, expr_eval, agency, delegation
 );
 
 // Parse send instruction: send(1, "Hello")
 ar_instruction_ast_t *ast = ar_instruction_parser__parse_send(parser);
 
-// Create a frame for evaluation
+// Create a frame for evaluation (context stores sending agent for delegation)
+ar_data__set_map_integer(context, "agent_id", agent_id);
 ar_data_t *message = ar_data__create_string("test");
 ar_frame_t *frame = ar_frame__create(memory, context, message);
 
@@ -124,6 +133,7 @@ ar_frame__destroy(frame);
 ar_data__destroy(message);
 ar_send_instruction_evaluator__destroy(send_eval);
 ar_expression_evaluator__destroy(expr_eval);
+ar_system__destroy(system);
 ar_data__destroy(context);
 ar_data__destroy(memory);
 ar_log__destroy(log);

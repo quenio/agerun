@@ -33,6 +33,7 @@ ar_interpreter
 ├──c──> ar_log
 ├──c──> ar_method_evaluator (Zig)
 ├──c──> ar_agency
+├──c──> ar_delegation
 ├──c──> ar_data
 └──c──> ar_heap (Zig)
 ```
@@ -110,11 +111,20 @@ The interpreter module provides a minimal public interface with just three funct
 
 ### Core Functions
 
-#### `ar_interpreter__create`
-Creates a new interpreter instance.
-- **Parameters**: Log instance for error reporting (borrowed reference)
+#### `ar_interpreter__create_with_agency`
+Creates a new interpreter instance with explicit dependencies.
+- **Parameters**:
+  - Log instance for error reporting (borrowed reference)
+  - Agency instance for agent routing (borrowed reference)
+  - Delegation instance for delegate routing (borrowed reference)
 - **Returns**: New interpreter or NULL on failure
-- **Ownership**: Caller owns returned interpreter, borrows log reference
+- **Ownership**: Caller owns returned interpreter, borrows all references
+
+#### `ar_interpreter__create`
+Backward-compatible wrapper that delegates to `ar_interpreter__create_with_agency`.
+- **Parameters**: Log instance for error reporting
+- **Returns**: New interpreter when agency/delegation provided globally, NULL otherwise
+- **Note**: Prefer `ar_interpreter__create_with_agency` for explicit dependency wiring
 
 #### `ar_interpreter__destroy`
 Destroys an interpreter instance.
@@ -199,8 +209,11 @@ The interpreter ensures memory safety through:
 // Create a log instance for error reporting
 ar_log_t *log = ar_log__create();
 
-// Create interpreter with log
-ar_interpreter_t *interpreter = ar_interpreter__create(log);
+// Create interpreter with explicit dependencies
+ar_system_t *system = ar_system__create();
+ar_agency_t *agency = ar_system__get_agency(system);
+ar_delegation_t *delegation = ar_system__get_delegation(system);
+ar_interpreter_t *interpreter = ar_interpreter__create_with_agency(log, agency, delegation);
 
 // Execute method for an agent
 // The method is retrieved automatically from the agent
@@ -220,6 +233,7 @@ if (!success) {
 
 // Cleanup
 ar_interpreter__destroy(interpreter);
+ar_system__destroy(system);
 ar_log__destroy(log);
 ```
 

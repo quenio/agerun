@@ -1321,11 +1321,11 @@ Once all modules are migrated to Zig with C-ABI compatibility, identify internal
   - **Documentation**: Updated ar_system.md with delegation architecture, API docs, examples, ownership hierarchy
   - **Index Update**: Added delegation to dependency tree in modules/README.md
 
-- [ ] **TDD Cycle 7**: Update evaluators to route messages via delegation
-  - **RED**: Write test for send evaluator routing negative IDs to delegation → FAIL
-  - **GREEN**: Send evaluator checks ID: >= 0 routes to agency, < 0 routes to delegation
-  - **GREEN**: Delegation handles message delivery to delegates
-  - **REFACTOR**: Verify message ownership flow (delegation borrows, delegates borrow)
+- [x] **TDD Cycle 7**: Update evaluators to route messages via delegation (Completed 2025-10-12)
+  - **Result**: Send instruction evaluator extracts sender ID from frame context and forwards it through `ar_delegation__send_to_delegate`
+  - **Tests**: Added negative ID routing test capturing delegate sender IDs (4242) to confirm delegation path
+  - **Refactor**: Cleaned message ownership with Zig `defer` pattern for delegation/agent 0 sends
+  - **Docs**: Updated send/instruction/method/interpreter docs for delegation dependencies
 
 #### Phase 2: Built-in Delegates (13 cycles - REVISED)
 

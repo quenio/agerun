@@ -22,13 +22,15 @@ The method evaluator is responsible for:
 ### ar_method_evaluator__create
 ```c
 ar_method_evaluator_t* ar_method_evaluator__create(
-    ar_log_t *ref_log
+    ar_log_t *ref_log,
+    ar_agency_t *ref_agency,
+    ar_delegation_t *ref_delegation
 );
 ```
-Creates a new method evaluator with the given log.
+Creates a new method evaluator with the given log, agency, and delegation instances.
 - **Ownership**: Returns owned value that caller must destroy
-- **Parameters**: Borrows reference to log
-- **Behavior**: Creates and owns its instruction evaluator internally
+- **Parameters**: Borrows references to log, agency, and delegation
+- **Behavior**: Creates and owns its instruction evaluator internally using the provided dependencies
 
 ### ar_method_evaluator__destroy
 ```c
@@ -77,9 +79,12 @@ The method evaluator provides detailed error reporting:
 ## Usage Example
 
 ```c
-// Create method evaluator with just a log
+// Create method evaluator with log, agency, and delegation
 ar_log_t *log = ar_log__create();
-ar_method_evaluator_t *method_eval = ar_method_evaluator__create(log);
+ar_system_t *system = ar_system__create();
+ar_agency_t *agency = ar_system__get_agency(system);
+ar_delegation_t *delegation = ar_system__get_delegation(system);
+ar_method_evaluator_t *method_eval = ar_method_evaluator__create(log, agency, delegation);
 
 // Create frame with execution context
 ar_frame_t *frame = ar_frame__create(memory, context, message);
@@ -91,6 +96,7 @@ bool success = ar_method_evaluator__evaluate(method_eval, frame, method_ast);
 // Cleanup
 ar_method_evaluator__destroy(method_eval);
 ar_frame__destroy(frame);
+ar_system__destroy(system);
 ar_log__destroy(log);
 ```
 
@@ -104,7 +110,9 @@ ar_log__destroy(log);
 ## Dependencies
 
 - ar_log: For error reporting
-- ar_instruction_evaluator: Created and owned internally for evaluating instructions
+- ar_instruction_evaluator: Created and owned internally for evaluating instructions (shares agency/delegation)
+- ar_agency: Borrowed reference for routing agent sends
+- ar_delegation: Borrowed reference for delegate routing
 - ar_method_ast: For method representation
 - ar_frame: For execution context
 - ar_heap: For memory allocation (via Zig's C imports)

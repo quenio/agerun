@@ -4,6 +4,7 @@ const c = @cImport({
     @cInclude("ar_send_instruction_evaluator.h");
     @cInclude("ar_expression_ast.h");
     @cInclude("ar_agency.h");
+    @cInclude("ar_delegation.h");
     @cInclude("ar_list.h");
     @cInclude("ar_log.h");
     @cInclude("ar_frame.h");
@@ -15,15 +16,40 @@ const ar_send_instruction_evaluator_t = struct {
     ref_log: ?*c.ar_log_t,                              // Borrowed reference to log instance
     ref_expr_evaluator: ?*c.ar_expression_evaluator_t,  // Expression evaluator (borrowed reference)
     ref_agency: ?*c.ar_agency_t,                        // Agency instance (borrowed reference)
+    ref_delegation: ?*c.ar_delegation_t,                // Delegation instance (borrowed reference)
 };
+
+fn get_sender_id(ref_frame: ?*const c.ar_frame_t) i64 {
+    if (ref_frame == null) {
+        return 0;
+    }
+
+    const ref_context = c.ar_frame__get_context(ref_frame);
+    if (ref_context == null) {
+        return 0;
+    }
+
+    if (c.ar_data__get_type(ref_context) != c.AR_DATA_TYPE__MAP) {
+        return 0;
+    }
+
+    const ref_agent_id = c.ar_data__get_map_data(ref_context, "agent_id");
+    if (ref_agent_id != null and c.ar_data__get_type(ref_agent_id) == c.AR_DATA_TYPE__INTEGER) {
+        return c.ar_data__get_integer(ref_agent_id);
+    }
+
+    const raw_agent_id: c_int = c.ar_data__get_map_integer(ref_context, "agent_id");
+    return @intCast(i64, raw_agent_id);
+}
 
 /// Creates a new send instruction evaluator
 pub export fn ar_send_instruction_evaluator__create(
     ref_log: ?*c.ar_log_t,
     ref_expr_evaluator: ?*c.ar_expression_evaluator_t,
-    ref_agency: ?*c.ar_agency_t
+    ref_agency: ?*c.ar_agency_t,
+    ref_delegation: ?*c.ar_delegation_t
 ) ?*ar_send_instruction_evaluator_t {
-    if (ref_expr_evaluator == null or ref_agency == null) {
+    if (ref_expr_evaluator == null or ref_agency == null or ref_delegation == null) {
         return null;
     }
     
@@ -32,6 +58,7 @@ pub export fn ar_send_instruction_evaluator__create(
     own_evaluator.ref_log = ref_log;
     own_evaluator.ref_expr_evaluator = ref_expr_evaluator;
     own_evaluator.ref_agency = ref_agency;
+    own_evaluator.ref_delegation = ref_delegation;
     
     // Ownership transferred to caller
     return own_evaluator;
@@ -114,19 +141,35 @@ pub export fn ar_send_instruction_evaluator__evaluate(
         return false;
     };
     
+    const sender_id = get_sender_id(ref_frame);
+
     // Send the message
-    var send_result: bool = undefined;
+    var send_result: bool = false;
+    var cleanup_message: bool = false;
     if (agent_id == 0) {
         // Special case: agent_id 0 is a no-op that always returns true
-        // We need to destroy the message since it won't be sent
         std.debug.print("DEBUG [SEND_EVAL]: Sending to agent 0 - destroying message type={}\n", .{c.ar_data__get_type(own_message)});
-        c.ar_data__destroy_if_owned(own_message, ref_evaluator);
+        cleanup_message = true;
         send_result = true;
-    } else {
+    } else if (agent_id > 0) {
         // Send message (ownership transferred to ar_agency__send_to_agent)
         send_result = c.ar_agency__send_to_agent(ref_evaluator.?.ref_agency, agent_id, own_message);
+    } else {
+        cleanup_message = true;
+        if (ref_evaluator.?.ref_delegation == null) {
+            c.ar_log__error(ref_evaluator.?.ref_log, "Delegation not available for negative ID send");
+            send_result = false;
+        } else {
+            send_result = c.ar_delegation__send_to_delegate(
+                ref_evaluator.?.ref_delegation,
+                agent_id,
+                own_message,
+                sender_id);
+        }
     }
-    
+
+    defer if (cleanup_message) c.ar_data__destroy_if_owned(own_message, ref_evaluator);
+
     // Handle result assignment if present
     const ref_result_path = c.ar_instruction_ast__get_function_result_path(ref_ast);
     if (ref_result_path != null) {

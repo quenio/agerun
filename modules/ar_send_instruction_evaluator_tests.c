@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include <stdint.h>
 #include "ar_send_instruction_evaluator.h"
 #include "ar_expression_evaluator.h"
 #include "ar_instruction_ast.h"
@@ -12,6 +13,21 @@
 #include "ar_event.h"
 #include "ar_evaluator_fixture.h"
 #include "ar_frame.h"
+#include "ar_delegate.h"
+#include "ar_delegation.h"
+
+static bool g_delegate_called = false;
+static int64_t g_delegate_sender_id = 0;
+
+static bool _routing_delegate_handler(ar_delegate_t *ref_delegate,
+                                      ar_data_t *ref_message,
+                                      int64_t sender_id) {
+    (void)ref_delegate;
+    (void)sender_id;
+    g_delegate_called = (ref_message != NULL);
+    g_delegate_sender_id = sender_id;
+    return true;
+}
 
 static void test_send_instruction_evaluator__create_destroy(void) {
     // Given a test fixture
@@ -21,10 +37,11 @@ static void test_send_instruction_evaluator__create_destroy(void) {
     ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
     ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
     ar_agency_t *mut_agency = ar_evaluator_fixture__get_agency(own_fixture);
+    ar_delegation_t *mut_delegation = ar_evaluator_fixture__get_delegation(own_fixture);
     
     // When creating a send instruction evaluator
     ar_send_instruction_evaluator_t *own_evaluator = ar_send_instruction_evaluator__create(
-        ref_log, ref_expr_eval, mut_agency
+        ref_log, ref_expr_eval, mut_agency, mut_delegation
     );
     
     // Then it should succeed
@@ -43,11 +60,12 @@ static void test_send_instruction_evaluator__evaluate_with_instance(void) {
     ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
     ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
     ar_agency_t *mut_agency = ar_evaluator_fixture__get_agency(own_fixture);
+    ar_delegation_t *mut_delegation = ar_evaluator_fixture__get_delegation(own_fixture);
     ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
-    
+
     // When creating a send instruction evaluator
     ar_send_instruction_evaluator_t *own_evaluator = ar_send_instruction_evaluator__create(
-        ref_log, ref_expr_eval, mut_agency
+        ref_log, ref_expr_eval, mut_agency, mut_delegation
     );
     assert(own_evaluator != NULL);
     
@@ -93,10 +111,13 @@ static void test_instruction_evaluator__evaluate_send_integer_message(void) {
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     ar_agency_t *mut_agency = ar_evaluator_fixture__get_agency(fixture);
+    ar_delegation_t *mut_delegation = ar_evaluator_fixture__get_delegation(fixture);
+    assert(mut_agency != NULL);
+    assert(mut_delegation != NULL);
     ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
     
     ar_send_instruction_evaluator_t *evaluator = ar_send_instruction_evaluator__create(
-        log, expr_eval, mut_agency
+        log, expr_eval, mut_agency, mut_delegation
     );
     assert(evaluator != NULL);
     
@@ -142,10 +163,11 @@ static void test_instruction_evaluator__evaluate_send_string_message(void) {
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     ar_agency_t *mut_agency = ar_evaluator_fixture__get_agency(fixture);
+    ar_delegation_t *mut_delegation = ar_evaluator_fixture__get_delegation(fixture);
     ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
     
     ar_send_instruction_evaluator_t *evaluator = ar_send_instruction_evaluator__create(
-        log, expr_eval, mut_agency
+        log, expr_eval, mut_agency, mut_delegation
     );
     assert(evaluator != NULL);
     
@@ -191,11 +213,12 @@ static void test_instruction_evaluator__evaluate_send_with_result(void) {
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     ar_agency_t *mut_agency = ar_evaluator_fixture__get_agency(fixture);
+    ar_delegation_t *mut_delegation = ar_evaluator_fixture__get_delegation(fixture);
     ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
     ar_data_t *memory = ar_evaluator_fixture__get_memory(fixture);
     
     ar_send_instruction_evaluator_t *evaluator = ar_send_instruction_evaluator__create(
-        log, expr_eval, mut_agency
+        log, expr_eval, mut_agency, mut_delegation
     );
     assert(evaluator != NULL);
     
@@ -247,6 +270,7 @@ static void test_instruction_evaluator__evaluate_send_memory_reference(void) {
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     ar_agency_t *mut_agency = ar_evaluator_fixture__get_agency(fixture);
+    ar_delegation_t *mut_delegation = ar_evaluator_fixture__get_delegation(fixture);
     ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
     ar_data_t *memory = ar_evaluator_fixture__get_memory(fixture);
     
@@ -254,7 +278,7 @@ static void test_instruction_evaluator__evaluate_send_memory_reference(void) {
     ar_data__set_map_data(memory, "msg", msg_value);
     
     ar_send_instruction_evaluator_t *evaluator = ar_send_instruction_evaluator__create(
-        log, expr_eval, mut_agency
+        log, expr_eval, mut_agency, mut_delegation
     );
     assert(evaluator != NULL);
     
@@ -301,10 +325,11 @@ static void test_instruction_evaluator__evaluate_send_invalid_args(void) {
     ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
     ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
     ar_agency_t *mut_agency = ar_evaluator_fixture__get_agency(fixture);
+    ar_delegation_t *mut_delegation = ar_evaluator_fixture__get_delegation(fixture);
     ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
-    
+
     ar_send_instruction_evaluator_t *evaluator = ar_send_instruction_evaluator__create(
-        log, expr_eval, mut_agency
+        log, expr_eval, mut_agency, mut_delegation
     );
     assert(evaluator != NULL);
     
@@ -338,6 +363,76 @@ static void test_instruction_evaluator__evaluate_send_invalid_args(void) {
     ar_evaluator_fixture__destroy(fixture);
 }
 
+static void test_instruction_evaluator__routes_negative_id_to_delegation(void) {
+    ar_evaluator_fixture_t *fixture = ar_evaluator_fixture__create("test_send_negative_id_delegation");
+    assert(fixture != NULL);
+
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_agency_t *mut_agency = ar_evaluator_fixture__get_agency(fixture);
+    ar_delegation_t *mut_delegation = ar_evaluator_fixture__get_delegation(fixture);
+    ar_data_t *context = ar_data__create_map();
+    assert(context != NULL);
+    ar_data__set_map_integer(context, "agent_id", 4242);
+
+    ar_data_t *message_placeholder = ar_data__create_string("");
+    assert(message_placeholder != NULL);
+
+    ar_frame_t *frame = ar_frame__create(
+        ar_evaluator_fixture__get_memory(fixture),
+        context,
+        message_placeholder
+    );
+    assert(frame != NULL);
+
+    ar_delegate_t *own_delegate = ar_delegate__create(log, "test");
+    assert(own_delegate != NULL);
+    bool set_handler = ar_delegate__set_handler(own_delegate, _routing_delegate_handler);
+    assert(set_handler == true);
+    bool registered = ar_delegation__register_delegate(mut_delegation, -100, own_delegate);
+    assert(registered == true);
+
+    ar_send_instruction_evaluator_t *evaluator = ar_send_instruction_evaluator__create(
+        log, expr_eval, mut_agency, mut_delegation
+    );
+    assert(evaluator != NULL);
+
+    const char *args[] = {"-100", "42"};
+    ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
+        AR_INSTRUCTION_AST_TYPE__SEND, "send", args, 2, NULL
+    );
+    assert(ast != NULL);
+
+    ar_list_t *arg_asts = ar_list__create();
+    assert(arg_asts != NULL);
+
+    ar_expression_ast_t *agent_ast = ar_expression_ast__create_literal_int(-100);
+    assert(agent_ast != NULL);
+    ar_list__add_last(arg_asts, agent_ast);
+
+    ar_expression_ast_t *msg_ast = ar_expression_ast__create_literal_int(42);
+    assert(msg_ast != NULL);
+    ar_list__add_last(arg_asts, msg_ast);
+
+    bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
+    assert(ast_set == true);
+
+    g_delegate_called = false;
+    g_delegate_sender_id = 0;
+    bool result = ar_send_instruction_evaluator__evaluate(evaluator, frame, ast);
+
+    assert(result == true);
+    assert(g_delegate_called == true);
+    assert(g_delegate_sender_id == 4242);
+
+    ar_instruction_ast__destroy(ast);
+    ar_send_instruction_evaluator__destroy(evaluator);
+    ar_frame__destroy(frame);
+    ar_data__destroy(message_placeholder);
+    ar_data__destroy(context);
+    ar_evaluator_fixture__destroy(fixture);
+}
+
 int main(void) {
     printf("Starting send instruction_evaluator tests...\n");
     
@@ -361,7 +456,10 @@ int main(void) {
     
     test_instruction_evaluator__evaluate_send_invalid_args();
     printf("test_instruction_evaluator__evaluate_send_invalid_args passed!\n");
-    
+
+    test_instruction_evaluator__routes_negative_id_to_delegation();
+    printf("test_instruction_evaluator__routes_negative_id_to_delegation passed!\n");
+
     printf("All send instruction_evaluator tests passed!\n");
     
     return 0;
