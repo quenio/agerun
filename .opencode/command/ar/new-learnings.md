@@ -438,7 +438,7 @@ make checkpoint-update-verified CMD=new-learnings STEP=6 SUMMARY="Updated X KB a
    # Search for all potentially related commands
    for keyword in "test" "build" "check" "log" "error" "whitelist" "assert"; do
      echo "=== Commands mentioning '$keyword' ==="
-     grep -l "$keyword" .claude/commands/*.md | head -5
+     grep -l "$keyword" .opencode/command/ar/*.md | head -5
    done
    ```
 
@@ -468,7 +468,7 @@ make checkpoint-update-verified CMD=new-learnings STEP=6 SUMMARY="Updated X KB a
 
 5. **Verification**: Count modified commands:
    ```bash
-   git diff --name-only | grep ".claude/commands" | wc -l  # Should be >= 3
+   git diff --name-only | grep ".opencode/command" | wc -l  # Should be >= 3
    ```
 
 #### [CHECKPOINT END - STEP 7]
@@ -569,54 +569,37 @@ make checkpoint-update CMD=new-learnings STEP=10
 
 ## Step 11: Pre-Commit Integration Verification (MANDATORY EXECUTION)
 
-**CRITICAL**: You MUST execute this verification script before committing:
+**CRITICAL**: You MUST execute this verification before committing.
+
+Execute these commands sequentially:
 
 ```bash
-# EXECUTE THIS ENTIRE SCRIPT - DO NOT SKIP
-echo "=== Step 11: Pre-Commit Integration Verification ==="
-echo ""
-
-# Check that cross-references were added
-echo "=== Cross-References Added ==="
-MODIFIED_KB=$(git diff --name-only | grep "kb.*\.md" | wc -l)
-echo "KB articles modified: $MODIFIED_KB"
-if [ $MODIFIED_KB -lt 3 ]; then
-    echo "⚠️ WARNING: Only $MODIFIED_KB KB articles modified - need at least 3-5 cross-references!"
-else
-    echo "✓ Good: $MODIFIED_KB KB articles have cross-references"
-fi
-echo ""
-
-# Check that commands were updated
-echo "=== Commands Updated ==="
-MODIFIED_CMDS=$(git diff --name-only | grep ".claude/commands" | wc -l)
-echo "Commands modified: $MODIFIED_CMDS"
-if [ $MODIFIED_CMDS -lt 3 ]; then
-    echo "⚠️ WARNING: Only $MODIFIED_CMDS commands updated - need at least 3-4!"
-else
-    echo "✓ Good: $MODIFIED_CMDS commands updated"
-fi
-echo ""
-
-# List what was modified for review
-echo "=== Modified Files Summary ==="
-echo "KB Articles:"
-git diff --name-only | grep "kb.*\.md" | sed 's/^/  - /'
-echo ""
-echo "Commands:"
-git diff --name-only | grep ".claude/commands" | sed 's/^/  - /'
-echo ""
-
-# Final check
-echo "=== Integration Status ==="
-if [ $MODIFIED_KB -ge 3 ] && [ $MODIFIED_CMDS -ge 3 ]; then
-    echo "✓ READY TO COMMIT: Thorough integration completed"
-else
-    echo "⚠️ NOT READY: Need more cross-references and command updates"
-    echo "  - Add more KB cross-references (currently: $MODIFIED_KB, need: 3+)"
-    echo "  - Update more commands (currently: $MODIFIED_CMDS, need: 3+)"
-fi
+# Step 1: Count KB articles modified
+git diff --name-only | grep "kb.*\.md" | wc -l
 ```
+
+```bash
+# Step 2: Count commands modified
+git diff --name-only | grep ".opencode/command" | wc -l
+```
+
+```bash
+# Step 3: List modified KB articles
+echo "=== Modified KB Articles ===" && git diff --name-only | grep "kb.*\.md" | sed 's/^/  - /'
+```
+
+```bash
+# Step 4: List modified commands
+echo "=== Modified Commands ===" && git diff --name-only | grep ".opencode/command" | sed 's/^/  - /'
+```
+
+**Minimum Requirements Check:**
+- KB articles modified: Should be 3+ (for cross-references)
+- Commands modified: Should be 3+ (for integration)
+
+**Status Decision:**
+- If BOTH minimums met → ✓ READY TO COMMIT
+- If either below minimum → ⚠️ NOT READY (add more cross-references/command updates)
 
 **DO NOT PROCEED TO STEP 12 UNLESS THIS SCRIPT SHOWS "READY TO COMMIT"**
 
@@ -660,7 +643,7 @@ fi
    ```bash
    git add kb/ AGENTS.md TODO.md CHANGELOG.md
    # If any commands were updated:
-   git add .claude/commands/
+   git add .opencode/command/
    ```
 
 3. **Commit with comprehensive message**:
