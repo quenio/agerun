@@ -51,8 +51,50 @@ UNAME_S := $(shell uname -s)
 # Default compiler
 CC = gcc-13
 
-# Zig compiler
-ZIG = zig
+# Zig toolchain configuration
+ZIG_VERSION = 0.14.1
+ZIG_INSTALL_ROOT = tools
+ZIG_INSTALL_DIR = $(ZIG_INSTALL_ROOT)/zig-$(ZIG_VERSION)
+ZIG_SYSTEM_PATH := $(shell command -v zig 2>/dev/null)
+ZIG_LOCAL_BIN = $(ZIG_INSTALL_DIR)/zig
+ifeq ($(ZIG_SYSTEM_PATH),)
+ZIG = $(CURDIR)/$(ZIG_LOCAL_BIN)
+else
+ZIG = $(ZIG_SYSTEM_PATH)
+endif
+ZIG_MACHINE := $(shell uname -m)
+ifeq ($(ZIG_MACHINE),arm64)
+    ZIG_MACHINE = aarch64
+endif
+ifeq ($(ZIG_MACHINE),x86_64)
+    ZIG_ARCH_TAG = x86_64
+else ifeq ($(ZIG_MACHINE),aarch64)
+    ZIG_ARCH_TAG = aarch64
+else
+    ZIG_ARCH_TAG = $(ZIG_MACHINE)
+endif
+
+ifeq ($(UNAME_S),Darwin)
+    ZIG_PLATFORM_TAG = macos
+else ifeq ($(UNAME_S),Linux)
+    ZIG_PLATFORM_TAG = linux
+else
+    ZIG_PLATFORM_TAG = $(shell echo $(UNAME_S) | tr '[:upper:]' '[:lower:]')
+endif
+
+ZIG_TARBALL_BASE = zig-$(ZIG_ARCH_TAG)-$(ZIG_PLATFORM_TAG)-$(ZIG_VERSION)
+ZIG_TARBALL_FILE = $(ZIG_TARBALL_BASE).tar.xz
+ZIG_CUSTOM_MIRROR := $(strip $(ZIG_MIRROR))
+ZIG_MIRRORS_DEFAULT = https://pkg.machengine.org/zig https://zigmirror.hryx.net/zig https://zig.linus.dev/zig https://zig.squirl.dev https://zig.florent.dev https://zig.mirror.mschae23.de/zig https://zigmirror.meox.dev
+ZIG_MIRROR_SOURCES = $(strip $(if $(ZIG_CUSTOM_MIRROR),$(ZIG_CUSTOM_MIRROR),) $(ZIG_MIRRORS_DEFAULT) https://ziglang.org/download/$(ZIG_VERSION) https://ziglang.org/builds)
+ZIG_BIN_PREREQ =
+ifeq ($(ZIG_SYSTEM_PATH),)
+ZIG_BIN_PREREQ = $(ZIG_LOCAL_BIN)
+endif
+ZIG_BIN_ORDER_ONLY =
+ifeq ($(ZIG_SYSTEM_PATH),)
+ZIG_BIN_ORDER_ONLY = | $(ZIG_BIN_PREREQ)
+endif
 
 # Sanitizer compiler selection based on OS
 ifeq ($(UNAME_S),Darwin)
@@ -401,19 +443,19 @@ $(TSAN_TESTS_DIR)/%_tests: $(TSAN_TESTS_DIR)/obj/%_tests.o tsan_tests_lib
 	@# Target completed by dependency
 
 # Build and run individual Zig test with bin/ prefix
-bin/%Tests: modules/%Tests.zig
+bin/%Tests: modules/%Tests.zig $(ZIG_BIN_ORDER_ONLY)
 	@echo "Building and running Zig test: $*Tests"
 	@cd $(RUN_TESTS_DIR) && $(ZIG) test ../../modules/$*Tests.zig -femit-bin=$*Tests
 	@cd $(RUN_TESTS_DIR) && ./$*Tests
 
 # Directory-specific Zig test binaries
-$(RUN_TESTS_DIR)/%Tests: modules/%Tests.zig | $(RUN_TESTS_DIR)
+$(RUN_TESTS_DIR)/%Tests: modules/%Tests.zig | $(RUN_TESTS_DIR) $(ZIG_BIN_PREREQ)
 	$(ZIG) test $< -femit-bin=$@
 
-$(SANITIZE_TESTS_DIR)/%Tests: modules/%Tests.zig | $(SANITIZE_TESTS_DIR)
+$(SANITIZE_TESTS_DIR)/%Tests: modules/%Tests.zig | $(SANITIZE_TESTS_DIR) $(ZIG_BIN_PREREQ)
 	$(ZIG) test $< -femit-bin=$@ -fsanitize-c
 
-$(TSAN_TESTS_DIR)/%Tests: modules/%Tests.zig | $(TSAN_TESTS_DIR)
+$(TSAN_TESTS_DIR)/%Tests: modules/%Tests.zig | $(TSAN_TESTS_DIR) $(ZIG_BIN_PREREQ)
 	$(ZIG) test $< -femit-bin=$@ -fsanitize-thread
 
 # Note: Individual test builds use bin/run-tests/ directory via the bin/%_tests target above
@@ -424,7 +466,7 @@ $(TSAN_TESTS_DIR)/%Tests: modules/%Tests.zig | $(TSAN_TESTS_DIR)
 $(RUN_TESTS_DIR)/obj/%.o: modules/%.c | $(RUN_TESTS_DIR)
 	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) -c $< -o $@
 
-$(RUN_TESTS_DIR)/obj/%.o: modules/%.zig | $(RUN_TESTS_DIR)
+$(RUN_TESTS_DIR)/obj/%.o: modules/%.zig | $(RUN_TESTS_DIR) $(ZIG_BIN_PREREQ)
 	$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target $(ZIG_TARGET) -mcpu=native -fno-stack-check -lc -I./modules $< -femit-bin=$@
 
 $(RUN_TESTS_DIR)/obj/%_tests.o: modules/%_tests.c | $(RUN_TESTS_DIR)
@@ -437,14 +479,14 @@ $(RUN_TESTS_DIR)/obj/%_tests.o: methods/%_tests.c | $(RUN_TESTS_DIR)
 $(RUN_EXEC_DIR)/obj/%.o: modules/%.c | $(RUN_EXEC_DIR)
 	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) -c $< -o $@
 
-$(RUN_EXEC_DIR)/obj/%.o: modules/%.zig | $(RUN_EXEC_DIR)
+$(RUN_EXEC_DIR)/obj/%.o: modules/%.zig | $(RUN_EXEC_DIR) $(ZIG_BIN_PREREQ)
 	$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target $(ZIG_TARGET) -mcpu=native -fno-stack-check -lc -I./modules $< -femit-bin=$@
 
 # Sanitize tests directory
 $(SANITIZE_TESTS_DIR)/obj/%.o: modules/%.c | $(SANITIZE_TESTS_DIR)
 	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(SANITIZER_FLAGS) $(SANITIZER_EXTRA_FLAGS) -c $< -o $@
 
-$(SANITIZE_TESTS_DIR)/obj/%.o: modules/%.zig | $(SANITIZE_TESTS_DIR)
+$(SANITIZE_TESTS_DIR)/obj/%.o: modules/%.zig | $(SANITIZE_TESTS_DIR) $(ZIG_BIN_PREREQ)
 	$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target $(ZIG_TARGET) -mcpu=native -fno-stack-check -lc -I./modules $< -femit-bin=$@
 
 $(SANITIZE_TESTS_DIR)/obj/%_tests.o: modules/%_tests.c | $(SANITIZE_TESTS_DIR)
@@ -457,14 +499,14 @@ $(SANITIZE_TESTS_DIR)/obj/%_tests.o: methods/%_tests.c | $(SANITIZE_TESTS_DIR)
 $(SANITIZE_EXEC_DIR)/obj/%.o: modules/%.c | $(SANITIZE_EXEC_DIR)
 	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(SANITIZER_FLAGS) $(SANITIZER_EXTRA_FLAGS) -c $< -o $@
 
-$(SANITIZE_EXEC_DIR)/obj/%.o: modules/%.zig | $(SANITIZE_EXEC_DIR)
+$(SANITIZE_EXEC_DIR)/obj/%.o: modules/%.zig | $(SANITIZE_EXEC_DIR) $(ZIG_BIN_PREREQ)
 	$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target $(ZIG_TARGET) -mcpu=native -fno-stack-check -lc -I./modules $< -femit-bin=$@
 
 # TSan tests directory
 $(TSAN_TESTS_DIR)/obj/%.o: modules/%.c | $(TSAN_TESTS_DIR)
 	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS) $(SANITIZER_EXTRA_FLAGS) -c $< -o $@
 
-$(TSAN_TESTS_DIR)/obj/%.o: modules/%.zig | $(TSAN_TESTS_DIR)
+$(TSAN_TESTS_DIR)/obj/%.o: modules/%.zig | $(TSAN_TESTS_DIR) $(ZIG_BIN_PREREQ)
 	$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target $(ZIG_TARGET) -mcpu=native -fno-stack-check -lc -I./modules $< -femit-bin=$@
 
 $(TSAN_TESTS_DIR)/obj/%_tests.o: modules/%_tests.c | $(TSAN_TESTS_DIR)
@@ -477,7 +519,7 @@ $(TSAN_TESTS_DIR)/obj/%_tests.o: methods/%_tests.c | $(TSAN_TESTS_DIR)
 $(TSAN_EXEC_DIR)/obj/%.o: modules/%.c | $(TSAN_EXEC_DIR)
 	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS) $(SANITIZER_EXTRA_FLAGS) -c $< -o $@
 
-$(TSAN_EXEC_DIR)/obj/%.o: modules/%.zig | $(TSAN_EXEC_DIR)
+$(TSAN_EXEC_DIR)/obj/%.o: modules/%.zig | $(TSAN_EXEC_DIR) $(ZIG_BIN_PREREQ)
 	$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target $(ZIG_TARGET) -mcpu=native -fno-stack-check -lc -I./modules $< -femit-bin=$@
 
 # Clean target
@@ -598,7 +640,7 @@ check-all: check-naming check-docs
 	@echo "All code quality checks completed!"
 
 # Run build script (static analysis, all tests, sanitizers, doc validation)
-build: install-scan-build
+build: install-scan-build install-zig
 	@if [ -x ./scripts/build.sh ]; then \
 		./scripts/build.sh; \
 	else \
@@ -631,7 +673,7 @@ add-newline:
 		exit 1; \
 	fi
 
-.PHONY: help clean build add-newline check-naming check-docs check-all analyze-exec analyze-tests run-exec run-tests sanitize-exec sanitize-tests tsan-exec tsan-tests install-scan-build print-src print-obj
+.PHONY: help clean build add-newline check-naming check-docs check-all analyze-exec analyze-tests run-exec run-tests sanitize-exec sanitize-tests tsan-exec tsan-tests install-scan-build install-zig print-src print-obj
 
 # Debug targets
 print-src:
@@ -644,46 +686,111 @@ print-obj:
 # Helper to install scan-build based on OS
 install-scan-build:
 	@if command -v /opt/homebrew/opt/llvm/bin/scan-build >/dev/null 2>&1 || command -v scan-build >/dev/null 2>&1; then \
-		echo "scan-build is already installed."; \
+	        echo "scan-build is already installed."; \
 	else \
-		echo "Installing clang-tools for static analysis..."; \
-		if [ "$(UNAME_S)" = "Darwin" ]; then \
-			if command -v brew >/dev/null 2>&1; then \
-				echo "Updating Homebrew..."; \
-				brew update || { echo "Failed to update Homebrew"; exit 1; }; \
-				echo "Installing LLVM via Homebrew..."; \
-				brew install llvm || { echo "Failed to install LLVM"; exit 1; }; \
-				echo ""; \
-				echo "LLVM installed successfully!"; \
-				echo "To use scan-build, add LLVM to your PATH:"; \
-				echo "  export PATH=\"/opt/homebrew/opt/llvm/bin:\$$PATH\""; \
-				echo ""; \
-				echo "After adding to PATH, run 'make analyze' again."; \
-			else \
-				echo "Homebrew not found. Please install Homebrew first:"; \
-				echo "  /bin/bash -c \"\$$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""; \
-				exit 1; \
-			fi; \
+	        echo "Installing clang-tools for static analysis..."; \
+	        if [ "$(UNAME_S)" = "Darwin" ]; then \
+	                if command -v brew >/dev/null 2>&1; then \
+	                        echo "Updating Homebrew..."; \
+	                        brew update || { echo "Failed to update Homebrew"; exit 1; }; \
+	                        echo "Installing LLVM via Homebrew..."; \
+	                        brew install llvm || { echo "Failed to install LLVM"; exit 1; }; \
+	                        echo ""; \
+	                        echo "LLVM installed successfully!"; \
+	                        echo "To use scan-build, add LLVM to your PATH:"; \
+	                        echo "  export PATH=\"/opt/homebrew/opt/llvm/bin:\$$PATH\""; \
+	                        echo ""; \
+	                        echo "After adding to PATH, run 'make analyze' again."; \
+	                else \
+	                        echo "Homebrew not found. Please install Homebrew first:"; \
+	                        echo "  /bin/bash -c \"\$$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""; \
+	                        exit 1; \
+	                fi; \
 	elif [ -f /etc/os-release ] && (grep -q "ubuntu\|debian" /etc/os-release 2>/dev/null); then \
-		if command -v apt-get >/dev/null 2>&1; then \
-			echo "Installing clang-tools via apt-get..."; \
-			echo "This requires sudo access."; \
-			sudo apt-get update && sudo apt-get install -y clang-tools || { echo "Failed to install clang-tools"; exit 1; }; \
-			echo ""; \
-			echo "clang-tools installed successfully!"; \
-			echo "scan-build should now be available in your PATH."; \
-		else \
-			echo "apt-get not found on Ubuntu/Debian system."; \
-			exit 1; \
-		fi; \
+	        if command -v apt-get >/dev/null 2>&1; then \
+	                echo "Installing clang-tools via apt-get..."; \
+	                echo "This requires sudo access."; \
+	                sudo apt-get update && sudo apt-get install -y clang-tools || { echo "Failed to install clang-tools"; exit 1; }; \
+	                echo ""; \
+	                echo "clang-tools installed successfully!"; \
+	                echo "scan-build should now be available in your PATH."; \
+	        else \
+	                echo "apt-get not found on Ubuntu/Debian system."; \
+	                exit 1; \
+	        fi; \
 	else \
-		echo "Unable to auto-install. Please install manually:"; \
-		echo "- On macOS: brew install llvm"; \
-		echo "- On Ubuntu/Debian: sudo apt-get install clang-tools"; \
-		echo "- On other systems: install clang-tools or llvm package"; \
-		exit 1; \
+	        echo "Unable to auto-install. Please install manually:"; \
+	        echo "- On macOS: brew install llvm"; \
+	        echo "- On Ubuntu/Debian: sudo apt-get install clang-tools"; \
+	        echo "- On other systems: install clang-tools or llvm package"; \
+	        exit 1; \
 	fi; \
 fi
+
+install-zig:
+	@if command -v zig >/dev/null 2>&1; then \
+	        echo "Zig already installed at $(ZIG_SYSTEM_PATH)."; \
+	else \
+	        if [ -x "$(ZIG_LOCAL_BIN)" ]; then \
+	                echo "Using Zig already installed at $(ZIG_LOCAL_BIN)."; \
+	        else \
+	                if ! command -v curl >/dev/null 2>&1; then \
+	                        echo "ERROR: curl is required to download Zig."; \
+	                        exit 1; \
+	                fi; \
+	                if [ -z "$(ZIG_ARCH_TAG)" ] || [ -z "$(ZIG_PLATFORM_TAG)" ]; then \
+	                        echo "ERROR: Unsupported platform '$$(uname -s) $$(uname -m)' for Zig auto-install."; \
+	                        exit 1; \
+	                fi; \
+	                mirrors="$(ZIG_MIRROR_SOURCES)"; \
+	                if [ -z "$$mirrors" ]; then \
+	                        echo "ERROR: No Zig download mirrors configured."; \
+	                        exit 1; \
+	                fi; \
+	                if [ -n "$(ZIG_CUSTOM_MIRROR)" ]; then \
+	                        echo "Using custom Zig mirror override: $(ZIG_CUSTOM_MIRROR)"; \
+	                fi; \
+	                echo "Zig not found. Installing Zig $(ZIG_VERSION) to $(ZIG_INSTALL_DIR)..."; \
+	                tmp_dir=$$(mktemp -d); \
+	                archive_name=$(ZIG_TARBALL_FILE); \
+	                download_success=0; \
+	                for mirror in $$mirrors; do \
+	                        base=$${mirror%/}; \
+	                        url="$$base/$$archive_name"; \
+	                        echo "Attempting download from $$url"; \
+	                        if curl -L --fail --retry 2 --connect-timeout 10 "$${url}" -o "$$tmp_dir/$$archive_name"; then \
+	                                echo "Download succeeded from $$base"; \
+	                                download_success=1; \
+	                                break; \
+	                        else \
+	                                echo "  Download failed from $$base"; \
+	                        fi; \
+	                done; \
+	                if [ $$download_success -ne 1 ]; then \
+	                        echo "ERROR: Unable to download Zig $(ZIG_VERSION)."; \
+	                        echo "Tried mirrors: $$mirrors"; \
+	                        echo "You can set ZIG_MIRROR to specify an accessible mirror."; \
+	                        rm -rf "$$tmp_dir"; \
+	                        exit 1; \
+	                fi; \
+	                echo "Extracting Zig archive..."; \
+	                if ! tar -xJf "$$tmp_dir/$$archive_name" -C "$$tmp_dir"; then \
+	                        echo "ERROR: Failed to extract Zig archive"; \
+	                        rm -rf "$$tmp_dir"; \
+	                        exit 1; \
+	                fi; \
+	                mkdir -p $(ZIG_INSTALL_ROOT); \
+	                rm -rf $(ZIG_INSTALL_DIR); \
+	                mv "$$tmp_dir/$(ZIG_TARBALL_BASE)" $(ZIG_INSTALL_DIR); \
+	                rm -rf "$$tmp_dir"; \
+	                chmod +x $(ZIG_LOCAL_BIN); \
+	                echo "Zig $(ZIG_VERSION) installed at $(ZIG_LOCAL_BIN)."; \
+	        fi; \
+	fi
+ifeq ($(ZIG_SYSTEM_PATH),)
+$(ZIG_LOCAL_BIN):
+	@$(MAKE) install-zig
+endif
 
 # Checkpoint tracking utilities for multi-step commands
 # Usage examples:

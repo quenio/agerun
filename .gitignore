@@ -64,6 +64,7 @@ dkms.conf
 # Build directories
 build/
 bin/
+tools/
 
 # Log files
 *.log
