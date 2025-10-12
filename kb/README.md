@@ -77,6 +77,7 @@ Each learning file contains:
 - [Knowledge Base Search Patterns](kb-search-patterns.md)
 - [New Learnings Complete Integration Pattern](new-learnings-complete-integration-pattern.md)
 - [New Learnings Cross-Reference Requirement](new-learnings-cross-reference-requirement.md)
+- [Pre-Compact Hook KB Consultation](pre-compact-hook-kb-consultation.md)
 - [Search Result Completeness Verification](search-result-completeness-verification.md)
 
 ### 2. QUALITY ASSURANCE
