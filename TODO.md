@@ -10,11 +10,11 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 **Note**: System Module Decomposition removed - original justification (persistence coordination) eliminated by removal of auto-loading/saving. Current ar_system.c is well-factored at 236 lines with clear responsibilities.
 
-1. **System-Wide Integration Testing & Performance** – Build the full integration, stress, edge-case, and benchmarking suites (see "5. System-Wide Integration Testing and Verification"). Foundation work is stable and ready for comprehensive testing.
-2. **Delegate System Implementation** – Deliver the delegate infrastructure and built-in delegates (see "HIGHEST PRIORITY - Delegate System Implementation"). Architecture revised to use ar_delegation module as peer to ar_agency. Current message routing architecture is ready for delegation integration.
-3. **Parser Error Logging Finalization** – Close the remaining documentation/logging follow-ups to lock in the 2025-09-13 analysis wins (see "2. HIGH PRIORITY - Parser Module Error Logging Enhancement" residual items).
-4. **YAML Hardening & Quality Improvements** – Apply the clustered persistence safety and testing tasks (see "Priority 1–5" subsections in the YAML section).
-5. **C to Zig Migration** – Continue foundation layer migration (see "6. Complete C to Zig ABI-Compatible Migration") to enable future architectural improvements.
+1. **Delegate System Implementation** – Deliver the delegate infrastructure and built-in delegates (see "HIGHEST PRIORITY - Delegate System Implementation"). Architecture revised to use ar_delegation module as peer to ar_agency. Current message routing architecture is ready for delegation integration.
+2. **Parser Error Logging Finalization** – Close the remaining documentation/logging follow-ups to lock in the 2025-09-13 analysis wins (see "2. HIGH PRIORITY - Parser Module Error Logging Enhancement" residual items).
+3. **YAML Hardening & Quality Improvements** – Apply the clustered persistence safety and testing tasks (see "Priority 1–5" subsections in the YAML section).
+4. **C to Zig Migration** – Continue foundation layer migration (see "6. Complete C to Zig ABI-Compatible Migration") to enable future architectural improvements.
+5. **System-Wide Integration Testing & Performance** – Build the full integration, stress, edge-case, and benchmarking suites (see "5. System-Wide Integration Testing and Verification"). Foundation work is stable and ready for comprehensive testing.
 
 ## Completed Tasks
 
