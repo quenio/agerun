@@ -27,12 +27,14 @@ static void test_method_evaluator__create_destroy(void) {
     assert(own_system != NULL);
     ar_agency_t *ref_agency = ar_system__get_agency(own_system);
     assert(ref_agency != NULL);
-    
+    ar_delegation_t *ref_delegation = ar_system__get_delegation(own_system);
+    assert(ref_delegation != NULL);
+
     ar_log_t *own_log = ar_log__create();
     assert(own_log != NULL);
-    
-    // When creating a method evaluator with log and agency
-    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, ref_agency);
+
+    // When creating a method evaluator with log, agency, and delegation
+    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, ref_agency, ref_delegation);
     
     // Then it should be created successfully
     assert(own_evaluator != NULL);
@@ -53,11 +55,13 @@ static void test_method_evaluator__evaluate_empty_method(void) {
     assert(own_system != NULL);
     ar_agency_t *ref_agency = ar_system__get_agency(own_system);
     assert(ref_agency != NULL);
-    
+    ar_delegation_t *ref_delegation = ar_system__get_delegation(own_system);
+    assert(ref_delegation != NULL);
+
     ar_log_t *own_log = ar_log__create();
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
-    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, ref_agency);
+    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, ref_agency, ref_delegation);
     
     // Create a frame
     ar_data_t *own_message = ar_data__create_string("test message");
@@ -98,11 +102,13 @@ static void test_method_evaluator__evaluate_single_instruction_method(void) {
     assert(own_system != NULL);
     ar_agency_t *ref_agency = ar_system__get_agency(own_system);
     assert(ref_agency != NULL);
-    
+    ar_delegation_t *ref_delegation = ar_system__get_delegation(own_system);
+    assert(ref_delegation != NULL);
+
     ar_log_t *own_log = ar_log__create();
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
-    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, ref_agency);
+    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, ref_agency, ref_delegation);
     
     // Create a frame
     ar_data_t *own_message = ar_data__create_string("test message");
@@ -150,11 +156,13 @@ static void test_method_evaluator__evaluate_multiple_instructions(void) {
     assert(own_system != NULL);
     ar_agency_t *ref_agency = ar_system__get_agency(own_system);
     assert(ref_agency != NULL);
-    
+    ar_delegation_t *ref_delegation = ar_system__get_delegation(own_system);
+    assert(ref_delegation != NULL);
+
     ar_log_t *own_log = ar_log__create();
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
-    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, ref_agency);
+    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, ref_agency, ref_delegation);
     
     // Create a frame
     ar_data_t *own_message = ar_data__create_string("test message");
@@ -216,11 +224,13 @@ static void test_method_evaluator__evaluate_null_parameters(void) {
     assert(own_system != NULL);
     ar_agency_t *ref_agency = ar_system__get_agency(own_system);
     assert(ref_agency != NULL);
-    
+    ar_delegation_t *ref_delegation = ar_system__get_delegation(own_system);
+    assert(ref_delegation != NULL);
+
     ar_log_t *own_log = ar_log__create();
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
-    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, ref_agency);
+    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, ref_agency, ref_delegation);
     
     // Create valid frame and AST for testing
     ar_data_t *own_message = ar_data__create_string("test message");
@@ -266,11 +276,13 @@ static void test_method_evaluator__evaluate_with_failing_instruction(void) {
     assert(own_system != NULL);
     ar_agency_t *ref_agency = ar_system__get_agency(own_system);
     assert(ref_agency != NULL);
-    
+    ar_delegation_t *ref_delegation = ar_system__get_delegation(own_system);
+    assert(ref_delegation != NULL);
+
     ar_log_t *own_log = ar_log__create();
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
-    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, ref_agency);
+    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, ref_agency, ref_delegation);
     
     // Create a frame
     ar_data_t *own_message = ar_data__create_string("test message");
@@ -331,11 +343,13 @@ static void test_method_evaluator__memory_stress_test(void) {
     assert(own_system != NULL);
     ar_agency_t *ref_agency = ar_system__get_agency(own_system);
     assert(ref_agency != NULL);
-    
+    ar_delegation_t *ref_delegation = ar_system__get_delegation(own_system);
+    assert(ref_delegation != NULL);
+
     ar_log_t *own_log = ar_log__create();
     ar_data_t *own_memory = ar_data__create_map();
     ar_data_t *own_context = ar_data__create_map();
-    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, ref_agency);
+    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(own_log, ref_agency, ref_delegation);
     
     // Create a frame
     ar_data_t *own_message = ar_data__create_string("test message");

@@ -23,31 +23,33 @@ struct ar_interpreter_s {
  */
 ar_interpreter_t* ar_interpreter__create(ar_log_t *ref_log) {
     // Keep old signature for backward compatibility
-    return ar_interpreter__create_with_agency(ref_log, NULL);
+    return ar_interpreter__create_with_agency(ref_log, NULL, NULL);
 }
 
-ar_interpreter_t* ar_interpreter__create_with_agency(ar_log_t *ref_log, ar_agency_t *ref_agency) {
+ar_interpreter_t* ar_interpreter__create_with_agency(ar_log_t *ref_log, ar_agency_t *ref_agency, ar_delegation_t *ref_delegation) {
     if (!ref_log) {
         return NULL;
     }
-    
+
     ar_interpreter_t *own_interpreter = AR__HEAP__MALLOC(sizeof(ar_interpreter_t), "interpreter");
     if (!own_interpreter) {
         return NULL;
     }
-    
+
     own_interpreter->ref_log = ref_log;
     own_interpreter->ref_agency = ref_agency;
-    
-    // Use the agency from parameter, or get the global one for backward compatibility
+
+    // Use the agency and delegation from parameters
     ar_agency_t *agency_to_use = ref_agency;
-    if (!agency_to_use) {
-        // For backward compatibility, we need a way to get the global agency
-        // This will be NULL if no global system exists
-        return NULL; // Can't create evaluator without agency
+    ar_delegation_t *delegation_to_use = ref_delegation;
+    if (!agency_to_use || !delegation_to_use) {
+        // For backward compatibility, we need agency and delegation
+        // Can't create evaluator without both
+        AR__HEAP__FREE(own_interpreter);
+        return NULL;
     }
-    
-    own_interpreter->own_evaluator = ar_method_evaluator__create(ref_log, agency_to_use);
+
+    own_interpreter->own_evaluator = ar_method_evaluator__create(ref_log, agency_to_use, delegation_to_use);
     
     if (!own_interpreter->own_evaluator) {
         AR__HEAP__FREE(own_interpreter);

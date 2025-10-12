@@ -201,6 +201,15 @@ ar_agency_t* ar_evaluator_fixture__get_agency(
     return ar_system__get_agency(ref_fixture->own_system);
 }
 
+ar_delegation_t* ar_evaluator_fixture__get_delegation(
+    const ar_evaluator_fixture_t *ref_fixture
+) {
+    if (!ref_fixture || !ref_fixture->own_system) {
+        return NULL;
+    }
+    return ar_system__get_delegation(ref_fixture->own_system);
+}
+
 ar_methodology_t* ar_evaluator_fixture__get_methodology(
     const ar_evaluator_fixture_t *ref_fixture
 ) {

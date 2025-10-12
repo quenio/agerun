@@ -64,7 +64,9 @@ An opaque type representing an instruction evaluator instance.
 
 ```c
 ar_instruction_evaluator_t* ar_instruction_evaluator__create(
-    ar_log_t *ref_log
+    ar_log_t *ref_log,
+    ar_agency_t *ref_agency,
+    ar_delegation_t *ref_delegation
 );
 ```
 
@@ -72,6 +74,8 @@ Creates a new instruction evaluator instance.
 
 **Parameters:**
 - `ref_log`: Log instance for error reporting (required, borrowed reference)
+- `ref_agency`: Agency instance for agent operations (required, borrowed reference)
+- `ref_delegation`: Delegation instance for delegate operations (required, borrowed reference)
 
 **Returns:** New evaluator instance or NULL on failure
 
@@ -80,8 +84,8 @@ Creates a new instruction evaluator instance.
 **Behavior:**
 - Creates and owns an expression evaluator internally
 - Creates all specialized instruction evaluators immediately
-- All sub-evaluators share the same log and expression evaluator
-- Returns NULL if log or expression evaluator is NULL
+- All sub-evaluators share the same log, agency, delegation, and expression evaluator
+- Returns NULL if any of log, agency, or delegation is NULL
 
 #### ar_instruction_evaluator__destroy
 
@@ -135,8 +139,8 @@ Evaluates any instruction AST node by dispatching to the appropriate specialized
 ### Basic Assignment
 
 ```c
-// Create evaluator with just a log
-ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log);
+// Create evaluator with log, agency, and delegation
+ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log, agency, delegation);
 
 // Create assignment AST: memory.count := 10
 ar_instruction_ast_t *ast = ar_instruction_ast__create_assignment(
@@ -180,7 +184,7 @@ The instruction evaluator demonstrates the **facade pattern** by providing a uni
 
 ```c
 // Create evaluator - it manages its own expression evaluator
-ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log);
+ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log, agency, delegation);
 
 // Create frame for evaluation
 ar_frame_t *frame = ar_frame__create(memory, context, message);

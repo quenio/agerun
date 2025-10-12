@@ -22,13 +22,15 @@ The method evaluator is responsible for:
 ### ar_method_evaluator__create
 ```c
 ar_method_evaluator_t* ar_method_evaluator__create(
-    ar_log_t *ref_log
+    ar_log_t *ref_log,
+    ar_agency_t *ref_agency,
+    ar_delegation_t *ref_delegation
 );
 ```
-Creates a new method evaluator with the given log.
+Creates a new method evaluator with the given log, agency, and delegation.
 - **Ownership**: Returns owned value that caller must destroy
-- **Parameters**: Borrows reference to log
-- **Behavior**: Creates and owns its instruction evaluator internally
+- **Parameters**: Borrows references to log, agency, and delegation
+- **Behavior**: Creates and owns its instruction evaluator internally, passing all dependencies
 
 ### ar_method_evaluator__destroy
 ```c
@@ -77,9 +79,11 @@ The method evaluator provides detailed error reporting:
 ## Usage Example
 
 ```c
-// Create method evaluator with just a log
+// Create method evaluator with log, agency, and delegation
 ar_log_t *log = ar_log__create();
-ar_method_evaluator_t *method_eval = ar_method_evaluator__create(log);
+ar_agency_t *agency = /* from system */;
+ar_delegation_t *delegation = /* from system */;
+ar_method_evaluator_t *method_eval = ar_method_evaluator__create(log, agency, delegation);
 
 // Create frame with execution context
 ar_frame_t *frame = ar_frame__create(memory, context, message);

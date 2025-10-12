@@ -14,6 +14,7 @@ const c = @cImport({
     @cInclude("ar_exit_instruction_evaluator.h");
     @cInclude("ar_deprecate_instruction_evaluator.h");
     @cInclude("ar_agency.h");
+    @cInclude("ar_delegation.h");
     @cInclude("ar_methodology.h");
 });
 const ar_allocator = @import("ar_allocator.zig");
@@ -22,6 +23,7 @@ const ar_allocator = @import("ar_allocator.zig");
 const ar_instruction_evaluator_t = struct {
     ref_log: ?*c.ar_log_t,                                              // Log instance (borrowed reference)
     ref_agency: ?*c.ar_agency_t,                                        // Agency instance (borrowed reference)
+    ref_delegation: ?*c.ar_delegation_t,                                // Delegation instance (borrowed reference)
     own_expr_evaluator: ?*c.ar_expression_evaluator_t,                  // Expression evaluator (owned)
     own_assignment_evaluator: ?*c.ar_assignment_instruction_evaluator_t, // Assignment evaluator (owned)
     own_send_evaluator: ?*c.ar_send_instruction_evaluator_t,            // Send evaluator (owned)
@@ -35,8 +37,8 @@ const ar_instruction_evaluator_t = struct {
 };
 
 /// Private implementation that uses error unions for proper cleanup
-fn _create(ref_log: ?*c.ar_log_t, ref_agency: ?*c.ar_agency_t) !*ar_instruction_evaluator_t {
-    if (ref_log == null or ref_agency == null) return error.NullParameter;
+fn _create(ref_log: ?*c.ar_log_t, ref_agency: ?*c.ar_agency_t, ref_delegation: ?*c.ar_delegation_t) !*ar_instruction_evaluator_t {
+    if (ref_log == null or ref_agency == null or ref_delegation == null) return error.NullParameter;
     
     const own_evaluator = ar_allocator.create(ar_instruction_evaluator_t, "instruction_evaluator") orelse 
         return error.OutOfMemory;
@@ -44,23 +46,25 @@ fn _create(ref_log: ?*c.ar_log_t, ref_agency: ?*c.ar_agency_t) !*ar_instruction_
     
     own_evaluator.ref_log = ref_log;
     own_evaluator.ref_agency = ref_agency;
-    
+    own_evaluator.ref_delegation = ref_delegation;
+
     // Create the expression evaluator internally
-    own_evaluator.own_expr_evaluator = c.ar_expression_evaluator__create(ref_log) orelse 
+    own_evaluator.own_expr_evaluator = c.ar_expression_evaluator__create(ref_log) orelse
         return error.ExpressionEvaluatorCreationFailed;
     errdefer c.ar_expression_evaluator__destroy(own_evaluator.own_expr_evaluator);
-    
+
     // Create all instruction evaluators
     own_evaluator.own_assignment_evaluator = c.ar_assignment_instruction_evaluator__create(
         ref_log,
         own_evaluator.own_expr_evaluator
     ) orelse return error.AssignmentEvaluatorCreationFailed;
     errdefer c.ar_assignment_instruction_evaluator__destroy(own_evaluator.own_assignment_evaluator);
-    
+
     own_evaluator.own_send_evaluator = c.ar_send_instruction_evaluator__create(
         ref_log,
         own_evaluator.own_expr_evaluator,
-        ref_agency
+        ref_agency,
+        ref_delegation
     ) orelse return error.SendEvaluatorCreationFailed;
     errdefer c.ar_send_instruction_evaluator__destroy(own_evaluator.own_send_evaluator);
     
@@ -119,9 +123,10 @@ fn _create(ref_log: ?*c.ar_log_t, ref_agency: ?*c.ar_agency_t) !*ar_instruction_
 /// Creates a new instruction evaluator facade (ABI-compatible)
 export fn ar_instruction_evaluator__create(
     ref_log: ?*c.ar_log_t,
-    ref_agency: ?*c.ar_agency_t
+    ref_agency: ?*c.ar_agency_t,
+    ref_delegation: ?*c.ar_delegation_t
 ) ?*ar_instruction_evaluator_t {
-    return _create(ref_log, ref_agency) catch null;
+    return _create(ref_log, ref_agency, ref_delegation) catch null;
 }
 
 /// Destroys an instruction evaluator facade

@@ -4,6 +4,9 @@ const c = @cImport({
     @cInclude("ar_send_instruction_evaluator.h");
     @cInclude("ar_expression_ast.h");
     @cInclude("ar_agency.h");
+    @cInclude("ar_delegation.h");
+    @cInclude("ar_delegate.h");
+    @cInclude("ar_delegate_registry.h");
     @cInclude("ar_list.h");
     @cInclude("ar_log.h");
     @cInclude("ar_frame.h");
@@ -15,24 +18,27 @@ const ar_send_instruction_evaluator_t = struct {
     ref_log: ?*c.ar_log_t,                              // Borrowed reference to log instance
     ref_expr_evaluator: ?*c.ar_expression_evaluator_t,  // Expression evaluator (borrowed reference)
     ref_agency: ?*c.ar_agency_t,                        // Agency instance (borrowed reference)
+    ref_delegation: ?*c.ar_delegation_t,                // Delegation instance (borrowed reference)
 };
 
 /// Creates a new send instruction evaluator
 pub export fn ar_send_instruction_evaluator__create(
     ref_log: ?*c.ar_log_t,
     ref_expr_evaluator: ?*c.ar_expression_evaluator_t,
-    ref_agency: ?*c.ar_agency_t
+    ref_agency: ?*c.ar_agency_t,
+    ref_delegation: ?*c.ar_delegation_t
 ) ?*ar_send_instruction_evaluator_t {
-    if (ref_expr_evaluator == null or ref_agency == null) {
+    if (ref_expr_evaluator == null or ref_agency == null or ref_delegation == null) {
         return null;
     }
-    
+
     const own_evaluator = ar_allocator.create(ar_send_instruction_evaluator_t, "send instruction evaluator") orelse return null;
-    
+
     own_evaluator.ref_log = ref_log;
     own_evaluator.ref_expr_evaluator = ref_expr_evaluator;
     own_evaluator.ref_agency = ref_agency;
-    
+    own_evaluator.ref_delegation = ref_delegation;
+
     // Ownership transferred to caller
     return own_evaluator;
 }

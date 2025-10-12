@@ -8,6 +8,7 @@ const c = @cImport({
     @cInclude("ar_method_ast.h");
     @cInclude("ar_frame.h");
     @cInclude("ar_agency.h");
+    @cInclude("ar_delegation.h");
     @cInclude("stdio.h");
 });
 
@@ -15,30 +16,33 @@ const c = @cImport({
 const ar_method_evaluator_t = struct {
     ref_log: *c.ar_log_t,
     ref_agency: ?*c.ar_agency_t,
+    ref_delegation: ?*c.ar_delegation_t,
     own_instruction_evaluator: ?*c.ar_instruction_evaluator_t,
 };
 
 /// Creates a new method evaluator
 export fn ar_method_evaluator__create(
     ref_log: ?*c.ar_log_t,
-    ref_agency: ?*c.ar_agency_t
+    ref_agency: ?*c.ar_agency_t,
+    ref_delegation: ?*c.ar_delegation_t
 ) ?*ar_method_evaluator_t {
-    if (ref_log == null or ref_agency == null) return null;
-    
+    if (ref_log == null or ref_agency == null or ref_delegation == null) return null;
+
     // Allocate evaluator
     const own_evaluator = ar_allocator.create(ar_method_evaluator_t, "method_evaluator") orelse return null;
-    
+
     // Initialize fields
     own_evaluator.ref_log = ref_log.?;
     own_evaluator.ref_agency = ref_agency;
-    
+    own_evaluator.ref_delegation = ref_delegation;
+
     // Create the instruction evaluator internally
-    own_evaluator.own_instruction_evaluator = c.ar_instruction_evaluator__create(ref_log, ref_agency);
+    own_evaluator.own_instruction_evaluator = c.ar_instruction_evaluator__create(ref_log, ref_agency, ref_delegation);
     if (own_evaluator.own_instruction_evaluator == null) {
         ar_allocator.free(own_evaluator);
         return null;
     }
-    
+
     return own_evaluator; // Ownership transferred to caller
 }
 

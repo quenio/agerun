@@ -141,7 +141,7 @@ The following BNF grammar defines the syntax of individual instructions allowed 
 Instructions in an agent method can be of two types:
 - An assignment, which stores the result of an expression in the agent's memory using the `:=` operator
 - A function call instruction, which must be one of the supported system functions:
-  - `send` - Send a message to another agent
+  - `send` - Send a message to an agent or delegate
   - `parse` - Extract values from a string using a template
   - `build` - Construct a string using a template and values
   - `method` - Define a new agent method
@@ -221,11 +221,17 @@ The expression evaluator follows these rules:
 
 ### 2. Messaging
 
-- `send(agent_id: integer, message: data) → boolean`:
-  - If `agent_id == 0`: No operation is performed; returns `true`.
-  - If `agent_id != 0` and the target agent's queue exists: Enqueues the message; returns `true`.
-  - If `agent_id != 0` and the target agent's queue does not exist: Returns `false`.
-  - The `message` parameter can be any supported data type (INTEGER, DOUBLE, STRING, LIST, or MAP).
+- `send(recipient_id: integer, message: data) → boolean`:
+  - **Routing by ID**:
+    - `recipient_id == 0`: No operation (no-op); returns `true`
+    - `recipient_id > 0`: Routes to agent's message queue
+    - `recipient_id < 0`: Routes to delegate's message queue
+  - **Asynchronous Delivery**: All messages are enqueued for non-blocking operation
+  - **Return Value**:
+    - Returns `true` if the recipient exists and message is enqueued
+    - Returns `false` if the recipient does not exist
+  - The `message` parameter can be any supported data type (INTEGER, DOUBLE, STRING, LIST, or MAP)
+  - **Ownership**: Message ownership transfers to the recipient's queue
 
 ### 3. Memory Access
 
@@ -279,6 +285,7 @@ Messages can be any of the supported data types:
 **Key Characteristics**:
 - Implemented as C/Zig modules following Parnas principles
 - Registered with the system at startup
+- **Asynchronous Message Queues**: Delegates have FIFO message queues like agents for non-blocking I/O
 - Communicate with agents exclusively via messages
 - Enforce security policies (validation, limits, timeouts)
 - Maintain the agent sandbox
@@ -289,24 +296,38 @@ Messages can be any of the supported data types:
 - **Custom Delegates**: Applications can register additional delegate types
 
 ### Delegate Communication Protocol
-- **Delegate Instances**: Each delegate type has instances identified by reserved agent IDs (e.g., FileDelegate = -100, NetworkDelegate = -101)
-- **Message Format**: Agents send structured MAP messages:
+- **Delegate IDs**: Negative integers identify delegates (e.g., FileDelegate = -100, NetworkDelegate = -101)
+- **Message Queuing**: Delegates have FIFO queues enabling asynchronous, non-blocking communication
+- **Request Format**: Agents send MAP messages with action and parameters:
   ```
   send(-100, {"action": "read", "path": "/data.txt", "reply_to": agent_id})
   ```
-- **Response Format**: Delegates reply with operation results:
+- **Response Format**: Delegates reply by sending messages back to the requesting agent:
   ```
-  {"action": "read", "status": "success", "content": "file data"}
+  send(agent_id, {"action": "read", "status": "success", "content": "file data"})
   ```
+- **Processing**: The system processes both agent and delegate message queues
 
 ### Delegate Interface (C/Zig Implementation)
-```c
-typedef struct ar_delegate_s ar_delegate_t;  // EXAMPLE: Planned delegate type for future implementation
 
-ar_delegate_t* ar_delegate__create(const char* type, ar_log_t* log);  // EXAMPLE: Future delegate creation
-void ar_delegate__destroy(ar_delegate_t* delegate);  // EXAMPLE: Future delegate cleanup
-bool ar_delegate__handle_message(ar_delegate_t* delegate, ar_data_t* message, ar_agent_t* sender);  // EXAMPLE: Future message handling
+```c
+typedef struct ar_delegate_s ar_delegate_t;
+
+// Lifecycle management
+ar_delegate_t* ar_delegate__create(ar_log_t* ref_log, const char* type);
+void ar_delegate__destroy(ar_delegate_t* own_delegate);
+
+// Property access
+ar_log_t* ar_delegate__get_log(const ar_delegate_t* ref_delegate);
+const char* ar_delegate__get_type(const ar_delegate_t* ref_delegate);
+
+// Message handling (called by system when processing delegate's message queue)
+bool ar_delegate__handle_message(ar_delegate_t* ref_delegate,
+                                  ar_data_t* ref_message,
+                                  int64_t sender_id);
 ```
+
+**Note**: The `handle_message()` function is called by the system when processing a message from the delegate's queue, similar to how agent methods are invoked.
 
 ## System Startup
 

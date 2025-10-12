@@ -23,9 +23,10 @@ static void test_instruction_evaluator__create_destroy(void) {
     ar_system_t *sys = ar_system__create();
     assert(sys != NULL);
     ar_agency_t *agency = ar_system__get_agency(sys);
-    
-    // When creating an instruction evaluator with log and agency
-    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log, agency);
+    ar_delegation_t *delegation = ar_system__get_delegation(sys);
+
+    // When creating an instruction evaluator with log, agency, and delegation
+    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log, agency, delegation);
     
     // Then it should be created successfully
     assert(evaluator != NULL);
@@ -42,13 +43,14 @@ static void test_instruction_evaluator__create_with_null_context(void) {
     // Given a log and system
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
-    
+
     ar_system_t *sys = ar_system__create();
     assert(sys != NULL);
     ar_agency_t *agency = ar_system__get_agency(sys);
-    
+    ar_delegation_t *delegation = ar_system__get_delegation(sys);
+
     // When creating an instruction evaluator
-    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log, agency);
+    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log, agency, delegation);
     
     // Then it should be created successfully
     assert(evaluator != NULL);
@@ -78,9 +80,10 @@ static void test_instruction_evaluator__create_with_null_memory(void) {
     ar_system_t *sys = ar_system__create();
     assert(sys != NULL);
     ar_agency_t *agency = ar_system__get_agency(sys);
+    ar_delegation_t *delegation = ar_system__get_delegation(sys);
     
     // When creating an instruction evaluator (memory comes from frame now)
-    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log, agency);
+    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log, agency, delegation);
     
     // Then it should succeed (memory is no longer required at creation)
     assert(evaluator != NULL);
@@ -103,9 +106,10 @@ static void test_instruction_evaluator__stores_evaluator_instances_internally(vo
     ar_system_t *sys = ar_system__create();
     assert(sys != NULL);
     ar_agency_t *agency = ar_system__get_agency(sys);
+    ar_delegation_t *delegation = ar_system__get_delegation(sys);
     
     // When creating an instruction evaluator
-    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log, agency);
+    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log, agency, delegation);
     assert(evaluator != NULL);
     
     // Then it should work with all instruction types through the unified interface
@@ -160,8 +164,9 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
     ar_system_t *sys = ar_system__create();
     assert(sys != NULL);
     ar_agency_t *agency = ar_system__get_agency(sys);
+    ar_delegation_t *delegation = ar_system__get_delegation(sys);
     
-    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log, agency);
+    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log, agency, delegation);
     assert(evaluator != NULL);
     
     // Test 1: Send instruction
@@ -501,8 +506,9 @@ static void test_instruction_evaluator__only_unified_interface_exposed(void) {
     ar_system_t *sys = ar_system__create();
     assert(sys != NULL);
     ar_agency_t *agency = ar_system__get_agency(sys);
+    ar_delegation_t *delegation = ar_system__get_delegation(sys);
     
-    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log, agency);
+    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log, agency, delegation);
     assert(evaluator != NULL);
     
     // When we have various instruction ASTs
@@ -577,8 +583,9 @@ static void test_instruction_evaluator__unified_evaluate_assignment(void) {
     ar_system_t *sys = ar_system__create();
     assert(sys != NULL);
     ar_agency_t *agency = ar_system__get_agency(sys);
+    ar_delegation_t *delegation = ar_system__get_delegation(sys);
     
-    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log, agency);
+    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log, agency, delegation);
     assert(evaluator != NULL);
     
     // Create an assignment AST: memory.x := 42

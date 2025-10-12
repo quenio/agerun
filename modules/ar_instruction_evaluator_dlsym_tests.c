@@ -35,6 +35,7 @@
 #include "ar_frame.h"
 #include "ar_system.h"
 #include "ar_agency.h"
+#include "ar_delegation.h"
 #include "ar_methodology.h"
 
 // Define the interceptor functions that will override the real ones
@@ -100,8 +101,8 @@ void ar_assignment_instruction_evaluator__destroy(ar_assignment_instruction_eval
 
 // Send evaluator interceptors
 ar_send_instruction_evaluator_t* ar_send_instruction_evaluator__create(
-    ar_log_t* log, ar_expression_evaluator_t* expr, ar_agency_t* agency) {
-    (void)log; (void)expr; (void)agency; // Suppress unused warnings
+    ar_log_t* log, ar_expression_evaluator_t* expr, ar_agency_t* agency, ar_delegation_t* delegation) {
+    (void)log; (void)expr; (void)agency; (void)delegation; // Suppress unused warnings
     current_evaluator++;
     if (current_evaluator == fail_at_evaluator) {
         printf("  Mock: Failing send evaluator creation (#%d)\n", current_evaluator);
@@ -257,7 +258,8 @@ static void run_test(const char* test_name, int fail_at) {
     ar_log_t* log = ar_log__create();
     ar_system_t* sys = ar_system__create();
     ar_agency_t* agency = ar_system__get_agency(sys);
-    ar_instruction_evaluator_t* evaluator = ar_instruction_evaluator__create(log, agency);
+    ar_delegation_t* delegation = ar_system__get_delegation(sys);
+    ar_instruction_evaluator_t* evaluator = ar_instruction_evaluator__create(log, agency, delegation);
     
     if (evaluator) {
         printf("Result: SUCCESS - evaluator created\n");

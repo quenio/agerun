@@ -6,6 +6,7 @@
 #include "ar_log.h"
 #include "ar_expression_evaluator.h"
 #include "ar_agency.h"
+#include "ar_delegation.h"
 #include "ar_methodology.h"
 /* Individual evaluator headers should be included by test files */
 #include "ar_frame.h"
@@ -82,6 +83,16 @@ ar_log_t* ar_evaluator_fixture__get_log(
  * @note Ownership: Returns a borrowed reference; do not destroy
  */
 ar_agency_t* ar_evaluator_fixture__get_agency(
+    const ar_evaluator_fixture_t *ref_fixture
+);
+
+/**
+ * Gets the delegation instance from the fixture
+ * @param ref_fixture The fixture to query
+ * @return The delegation (borrowed reference)
+ * @note Ownership: Returns a borrowed reference; do not destroy
+ */
+ar_delegation_t* ar_evaluator_fixture__get_delegation(
     const ar_evaluator_fixture_t *ref_fixture
 );
 

@@ -71,12 +71,14 @@ static void test_interpreter_create_destroy(void) {
     assert(own_system != NULL);
     ar_agency_t *ref_agency = ar_system__get_agency(own_system);
     assert(ref_agency != NULL);
-    
+    ar_delegation_t *ref_delegation = ar_system__get_delegation(own_system);
+    assert(ref_delegation != NULL);
+
     ar_log_t *own_log = ar_log__create();
     assert(own_log != NULL);
-    
-    // When we create an interpreter with the log and agency
-    ar_interpreter_t *own_interpreter = ar_interpreter__create_with_agency(own_log, ref_agency);
+
+    // When we create an interpreter with the log, agency, and delegation
+    ar_interpreter_t *own_interpreter = ar_interpreter__create_with_agency(own_log, ref_agency, ref_delegation);
     
     // Then it should be created successfully
     assert(own_interpreter != NULL);
@@ -139,12 +141,14 @@ static void test_interpreter_error_logging(void) {
     assert(own_system != NULL);
     ar_agency_t *ref_agency = ar_system__get_agency(own_system);
     assert(ref_agency != NULL);
-    
+    ar_delegation_t *ref_delegation = ar_system__get_delegation(own_system);
+    assert(ref_delegation != NULL);
+
     ar_log_t *own_log = ar_log__create();
     assert(own_log != NULL);
-    
-    // And an interpreter with that log and agency
-    ar_interpreter_t *own_interpreter = ar_interpreter__create_with_agency(own_log, ref_agency);
+
+    // And an interpreter with that log, agency, and delegation
+    ar_interpreter_t *own_interpreter = ar_interpreter__create_with_agency(own_log, ref_agency, ref_delegation);
     assert(own_interpreter != NULL);
     
     // When we try to execute a method for a non-existent agent
