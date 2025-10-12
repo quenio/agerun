@@ -6,19 +6,19 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 **Module Documentation Status**: ✅ COMPLETE - All 64 .md files exist, make check-docs passes, and references are valid. No "_with_instance" references remain in documentation. (Verified 2025-09-28)
 
-## Priority Snapshot (Updated 2025-10-10)
+## Priority Snapshot (Updated 2025-10-11)
 
 **Note**: System Module Decomposition removed - original justification (persistence coordination) eliminated by removal of auto-loading/saving. Current ar_system.c is well-factored at 236 lines with clear responsibilities.
 
 1. **System-Wide Integration Testing & Performance** – Build the full integration, stress, edge-case, and benchmarking suites (see "5. System-Wide Integration Testing and Verification"). Foundation work is stable and ready for comprehensive testing.
-2. **Proxy System Implementation** – Deliver the proxy infrastructure and built-in proxies (see "HIGHEST PRIORITY - Proxy System Implementation"). Current message routing architecture is ready for proxy integration.
+2. **Delegate System Implementation** – Deliver the delegate infrastructure and built-in delegates (see "HIGHEST PRIORITY - Delegate System Implementation"). Architecture revised to use ar_delegation module as peer to ar_agency. Current message routing architecture is ready for delegation integration.
 3. **Parser Error Logging Finalization** – Close the remaining documentation/logging follow-ups to lock in the 2025-09-13 analysis wins (see "2. HIGH PRIORITY - Parser Module Error Logging Enhancement" residual items).
 4. **YAML Hardening & Quality Improvements** – Apply the clustered persistence safety and testing tasks (see "Priority 1–5" subsections in the YAML section).
 5. **C to Zig Migration** – Continue foundation layer migration (see "6. Complete C to Zig ABI-Compatible Migration") to enable future architectural improvements.
 
 ## Completed Tasks
 
-- [x] Documentation Validation Fix for SPEC.md: Fixed 4 validation errors by adding EXAMPLE tags to proxy interface references (ar_proxy_t, ar_proxy__create, ar_proxy__destroy, ar_proxy__handle_message); marked as planned future implementations per validated-documentation-examples.md; make check-docs now passes (Completed 2025-10-08 Part 4)
+- [x] Documentation Validation Fix for SPEC.md: Fixed 4 validation errors by adding EXAMPLE tags to delegate interface references (ar_delegate_t, ar_delegate__create, ar_delegate__destroy, ar_delegate__handle_message); marked as planned future implementations per validated-documentation-examples.md; make check-docs now passes (Completed 2025-10-08 Part 4; updated to delegate terminology 2025-10-11)
 - [x] Command Documentation Enhancement for Selective Compaction: Updated compact-tasks command with Mixed-State Document Strategy and 7 checkpoint steps; enhanced documentation-compacting-pattern.md with selective compaction + manual semantic analysis guidance; updated selective-compaction-pattern.md with relationship sections; documented that mixed-state documents require both selective compaction (what) and manual semantic analysis (how) with incomplete tasks preserved 100% untouched (Completed 2025-10-08 Part 3)
 - [x] CHANGELOG.md Comprehensive Compaction (Session 2): Reduced CHANGELOG.md 2506→1273 lines (49% reduction); preserved original 106 date sections and 225 milestone headers while adding this entry; maintained ≥154 metric references (now 157) with automated gate; created `scripts/compact_changelog.py` with dry-run default/`--apply` gate; added self-documenting entry and retroactive TODO update (Completed 2025-10-08 Part 2)
 - [x] API Suffix Cleanup: Removed "_with_instance" suffix from 30 functions; updated 132 files; clean final API (Completed 2025-09-27)
@@ -91,19 +91,22 @@ This document tracks pending tasks and improvements for the AgeRun project.
 - Document performance baselines and place artifacts in `/reports`
 - Verify zero leaks via `make run-tests 2>&1` and related sanitizer logs
 
-### 2. Proxy System Implementation
+### 2. Delegate System Implementation
 
-**Objective**: Implement the proxy framework and built-in proxies with security policies, tests, and documentation (`TODO.md:1238-1540`).
+**Objective**: Implement the delegate framework and built-in delegates with security policies, tests, and documentation (`TODO.md:1238-1540`).
+
+**Architecture Revision (2025-10-11)**: Changed from system-embedded delegates to ar_delegation module as peer to ar_agency, following symmetric Agency:Agents :: Delegation:Delegates pattern.
 
 **Why now**:
 - Estimated 31 TDD cycles; current architecture is stable and ready
-- Message routing in ar_system is clean and ready for proxy integration
+- Message routing architecture ready for delegation integration
 - High strategic value for enabling safe external communication
 - Foundation and testing can proceed in parallel
 
 **Success gates**:
-- Proxy API (`ar_proxy__*`) implemented with ownership annotations and zero leaks
-- File/Network/Log proxies ship with policy enforcement and audit logging
+- Delegate API (`ar_delegate__*`) implemented with ownership annotations and zero leaks
+- ar_delegation module created as peer to ar_agency
+- File/Network/Log delegates ship with policy enforcement and audit logging
 - SPEC.md, AGENTS.md, and KB references updated with usage patterns
 - Example methods and persistence hooks validated via integration tests
 
@@ -1235,214 +1238,217 @@ Once all modules are migrated to Zig with C-ABI compatibility, identify internal
 
 - [x] Fix check-logs Script: Migrated to check_logs.py with proper exit codes (Completed 2025-08-04)
 
-### HIGHEST PRIORITY - Proxy System Implementation
+### HIGHEST PRIORITY - Delegate System Implementation
 
-**Rationale**: To enable safe external communication, implement the proxy system as defined in SPEC.md. This provides a generic mechanism for pluggable communication channels while maintaining the agent sandbox.
+**ARCHITECTURAL REVISION (2025-10-11)**: Architecture changed from embedding delegates in system to creating ar_delegation module as peer to ar_agency. The delegation module manages delegates via ar_delegate_registry, following the same pattern as agency manages agents via ar_agent_registry. System owns both agency and delegation, and evaluators route messages based on ID: agent_id >= 0 routes to agency, agent_id < 0 routes to delegation.
+
+**Rationale**: To enable safe external communication, implement the delegate system as defined in SPEC.md. This provides a generic mechanism for pluggable communication channels while maintaining the agent sandbox. Delegates act on behalf of agents to interact with external resources.
 
 **Execution Plan** (31 TDD cycles total):
 
-#### Phase 1: Proxy Infrastructure (7 cycles)
+#### Phase 1: Delegate Infrastructure (7 cycles)
 
-**Files to Create**: `modules/ar_proxy.h`, `modules/ar_proxy.c`, `modules/ar_proxy_tests.c`
+**Files to Create**: `modules/ar_delegate.h`, `modules/ar_delegate.c`, `modules/ar_delegate_tests.c`
 **Files to Modify**: `modules/ar_system.h`, `modules/ar_system.c`, `Makefile`
 
-- [x] **TDD Cycle 1**: Create ar_proxy module with opaque type (Completed 2025-10-10)
-  - **RED**: Write test `test_proxy__create_and_destroy()` → FAIL (module doesn't exist)
-  - **GREEN**: Create ar_proxy.h with `typedef struct ar_proxy_s ar_proxy_t;`, create/destroy functions
-  - **GREEN**: Implement basic create/destroy in ar_proxy.c with heap tracking
-  - **REFACTOR**: Verify zero memory leaks with `make ar_proxy_tests 2>&1`
+- [x] **TDD Cycle 1**: Create ar_delegate module with opaque type (Completed 2025-10-10)
+  - **RED**: Write test `test_delegate__create_and_destroy()` → FAIL (module doesn't exist)
+  - **GREEN**: Create ar_delegate.h with `typedef struct ar_delegate_s ar_delegate_t;`, create/destroy functions
+  - **GREEN**: Implement basic create/destroy in ar_delegate.c with heap tracking
+  - **REFACTOR**: Verify zero memory leaks with `make ar_delegate_tests 2>&1`
 
-- [x] **TDD Cycle 2**: Add proxy type and log to ar_proxy (Completed 2025-10-10)
+- [x] **TDD Cycle 2**: Add delegate type and log to ar_delegate (Completed 2025-10-10)
   - **RED**: Added skeleton getters, test executes and fails at assertion (not compilation)
   - **GREEN**: Added `ar_log_t *ref_log` and `const char *type` fields to struct
-  - **GREEN**: Updated ar_proxy__create() signature (log first, type second)
-  - **REFACTOR**: Added ownership documentation, verified zero leaks, created ar_proxy.md
+  - **GREEN**: Updated ar_delegate__create() signature (log first, type second)
+  - **REFACTOR**: Added ownership documentation, verified zero leaks, created ar_delegate.md
 
-- [x] **TDD Cycle 3**: Implement proxy message handler interface (Completed 2025-10-11)
-  - **RED**: Write test `test_proxy__handle_message_returns_false()` → assertion failure (stub returns true)
-  - **GREEN**: Add `ar_proxy__handle_message(ar_proxy_t*, ar_data_t*, int64_t sender_id)` to header
+- [x] **TDD Cycle 3**: Implement delegate message handler interface (Completed 2025-10-11)
+  - **RED**: Write test `test_delegate__handle_message_returns_false()` → assertion failure (stub returns true)
+  - **GREEN**: Add `ar_delegate__handle_message(ar_delegate_t*, ar_data_t*, int64_t sender_id)` to header
   - **GREEN**: Implement stub that returns false (no handler set yet)
-  - **REFACTOR**: Document ownership - proxy borrows message, does not take ownership
+  - **REFACTOR**: Document ownership - delegate borrows message, does not take ownership
   - **Note**: Proper TDD RED phase requires assertion failure, not compilation error
 
-- [x] **TDD Cycle 4**: Create ar_proxy_registry module (Completed 2025-10-11)
-  - **Architectural Decision**: Created separate ar_proxy_registry module instead of embedding in ar_system (follows ar_agent_registry pattern, maintains separation of concerns)
-  - **RED**: Write test `test_proxy_registry__register_and_find()` → assertion failure (stub returns false)
-  - **GREEN**: Implement ar_proxy_registry with list+map internal structure (333 lines)
+- [x] **TDD Cycle 4**: Create ar_delegate_registry module (Completed 2025-10-11)
+  - **Architectural Decision**: Created separate ar_delegate_registry module instead of embedding in ar_system (follows ar_agent_registry pattern, maintains separation of concerns)
+  - **RED**: Write test `test_delegate_registry__register_and_find()` → assertion failure (stub returns false)
+  - **GREEN**: Implement ar_delegate_registry with list+map internal structure (333 lines)
   - **GREEN**: 8 public functions: create, destroy, register, unregister, find, is_registered, count, clear
   - **REFACTOR**: 6 comprehensive tests, zero memory leaks, complete module documentation
-  - **Files Created**: ar_proxy_registry.{h,c,md}, ar_proxy_registry_tests.c
-  - **Result**: Registry owns proxies (vs agent_registry which doesn't own agents), ready for ar_system integration
+  - **Files Created**: ar_delegate_registry.{h,c,md}, ar_delegate_registry_tests.c
+  - **Result**: Registry owns delegates (vs agent_registry which doesn't own agents), ready for ar_system integration
 
-- [x] **TDD Cycle 4.5**: Integrate ar_proxy_registry into ar_system (Completed 2025-10-11)
+- [x] **TDD Cycle 4.5**: Integrate ar_delegate_registry into ar_system (Completed 2025-10-11)
   - **Purpose**: Complete the original TDD Cycle 4 objective by integrating the registry into the system
   - **RED**: Added stubs returning NULL/false, tests fail with assertions (not compilation errors)
-  - **GREEN**: Added own_proxy_registry field to ar_system_s, updated create/destroy lifecycle
-  - **GREEN**: Implemented ar_system__get_proxy_registry() and ar_system__register_proxy()
+  - **GREEN**: Added own_delegate_registry field to ar_system_s, updated create/destroy lifecycle
+  - **GREEN**: Implemented ar_system__get_delegate_registry() and ar_system__register_delegate()
   - **REFACTOR**: 2 new tests pass, zero memory leaks (527 allocations), updated ar_system.md
   - **Files Modified**: ar_system.{h,c}, ar_system_tests.c, ar_system.md
-  - **Result**: System owns proxy registry, follows ar_agency pattern exactly, ready for message routing
+  - **Result**: System owns delegate registry, follows ar_agency pattern exactly, ready for message routing
 
-- **ARCHITECTURAL DECISION (2025-10-11)**: Removed TDD Cycle 5 (`ar_system__get_proxy()`)
+- **ARCHITECTURAL DECISION (2025-10-11)**: Removed TDD Cycle 5 (`ar_system__get_delegate()`)
   - **Rationale**: No public getter needed - system uses Facade pattern, not wrapper pattern
-  - **Verification**: Confirmed no `ar_system__get_agent()` exists; system exposes subsystems via `ar_system__get_agency()` and `ar_system__get_proxy_registry()`
-  - **Internal usage**: `ar_system__process_next_message()` can access `own_proxy_registry` directly
-  - **External usage**: Callers use `ar_proxy_registry__find(ar_system__get_proxy_registry(system), id)`
+  - **Verification**: Confirmed no `ar_system__get_agent()` exists; system exposes subsystems via `ar_system__get_agency()` and `ar_system__get_delegate_registry()`
+  - **Internal usage**: `ar_system__process_next_message()` can access `own_delegate_registry` directly
+  - **External usage**: Callers use `ar_delegate_registry__find(ar_system__get_delegate_registry(system), id)`
   - **Lesson**: Always verify patterns exist before copying them; avoid YAGNI violations
 
-- [ ] **TDD Cycle 5**: Update message routing to detect negative agent IDs
-  - **RED**: Write test `test_system__process_message_to_proxy()` → FAIL
-  - **GREEN**: In `ar_system__process_next_message()`, check if agent_id < 0
-  - **GREEN**: If negative, look up proxy using `ar_proxy_registry__find(own_proxy_registry, proxy_id)`
-  - **REFACTOR**: Extract routing logic to helper function if needed (avoid Long Method)
+- [ ] **TDD Cycle 5 - REVISED**: Create ar_delegation module (Architecture changed to delegation pattern)
+  - **RED**: Write test `test_delegation__create_and_destroy()` → FAIL
+  - **GREEN**: Create ar_delegation module following ar_agency pattern
+  - **GREEN**: Implement delegation with ar_delegate_registry ownership
+  - **REFACTOR**: ar_delegation manages delegates like ar_agency manages agents
+  - **Note**: System will own both ar_agency and ar_delegation as peers
 
-- [ ] **TDD Cycle 6**: Route messages to proxy handler
-  - **RED**: Extend test to verify proxy receives message → FAIL
-  - **GREEN**: Call `ar_proxy__handle_message(proxy, message, sender_id)` for negative IDs
-  - **GREEN**: Return true if proxy handled message, false otherwise
-  - **REFACTOR**: Verify message ownership flow (system still owns, proxy borrows)
+- [ ] **TDD Cycle 6**: Integrate ar_delegation into ar_system
+  - **RED**: Write test `test_system__has_delegation()` → FAIL
+  - **GREEN**: Add own_delegation field to ar_system_s, update create/destroy lifecycle
+  - **GREEN**: Implement ar_system__get_delegation() returning borrowed reference
+  - **REFACTOR**: System coordinates both agency and delegation (Facade pattern)
 
-- [ ] **TDD Cycle 7**: Add proxy unregistration
-  - **RED**: Write test `test_system__unregister_proxy()` → FAIL
-  - **GREEN**: Implement `ar_system__unregister_proxy(ar_system_t*, int64_t proxy_id)`
-  - **GREEN**: Remove from registry, destroy proxy instance
-  - **REFACTOR**: Verify no memory leaks when proxies are unregistered
+- [ ] **TDD Cycle 7**: Update evaluators to route messages via delegation
+  - **RED**: Write test for send evaluator routing negative IDs to delegation → FAIL
+  - **GREEN**: Send evaluator checks ID: >= 0 routes to agency, < 0 routes to delegation
+  - **GREEN**: Delegation handles message delivery to delegates
+  - **REFACTOR**: Verify message ownership flow (delegation borrows, delegates borrow)
 
-#### Phase 2: Built-in Proxies (13 cycles - REVISED)
+#### Phase 2: Built-in Delegates (13 cycles - REVISED)
 
 **Revision Notes (2025-10-11)**:
-- Defer actual HTTP implementation - NetworkProxy remains stubbed until HTTP library decision
-- Simplify FileProxy - start read-only, add write after validation
-- LogProxy integration with existing ar_log infrastructure
+- Defer actual HTTP implementation - NetworkDelegate remains stubbed until HTTP library decision
+- Simplify FileDelegate - start read-only, add write after validation
+- LogDelegate integration with existing ar_log infrastructure
 - Total revised to 13 cycles (was 10-15)
 
-##### FileProxy (4-5 cycles)
+##### FileDelegate (4-5 cycles)
 
-**Files to Create**: `modules/ar_file_proxy.h`, `modules/ar_file_proxy.c`, `modules/ar_file_proxy_tests.c`
+**Files to Create**: `modules/ar_file_delegate.h`, `modules/ar_file_delegate.c`, `modules/ar_file_delegate_tests.c`
 
-- [ ] **TDD Cycle 8**: Create FileProxy module with basic structure
-  - **RED**: Write test `test_file_proxy__create_and_destroy()` → FAIL
-  - **GREEN**: Create ar_file_proxy.h with opaque type `ar_file_proxy_t`
-  - **GREEN**: Implement create/destroy with ar_proxy_t* wrapper
+- [ ] **TDD Cycle 8**: Create FileDelegate module with basic structure
+  - **RED**: Write test `test_file_delegate__create_and_destroy()` → FAIL
+  - **GREEN**: Create ar_file_delegate.h with opaque type `ar_file_delegate_t`
+  - **GREEN**: Implement create/destroy with ar_delegate_t* wrapper
   - **REFACTOR**: Verify zero leaks
 
 - [ ] **TDD Cycle 9**: Implement file read operation
-  - **RED**: Write test `test_file_proxy__handle_read_message()` → FAIL
+  - **RED**: Write test `test_file_delegate__handle_read_message()` → FAIL
   - **GREEN**: Parse MAP message with `{"action": "read", "path": "test.txt"}`
   - **GREEN**: Use ar_io__open_file() to read file contents
   - **GREEN**: Return MAP response `{"status": "success", "content": "..."}`
   - **REFACTOR**: Handle errors gracefully, return error status if file not found
 
 - [ ] **TDD Cycle 10**: Add path validation for file operations
-  - **RED**: Write test `test_file_proxy__rejects_directory_traversal()` → FAIL
+  - **RED**: Write test `test_file_delegate__rejects_directory_traversal()` → FAIL
   - **GREEN**: Validate path doesn't contain ".." or absolute paths
   - **GREEN**: Return `{"status": "error", "message": "Invalid path"}` for bad paths
   - **REFACTOR**: Extract path validation to helper function
 
 - [ ] **TDD Cycle 11**: Implement file write operation
-  - **RED**: Write test `test_file_proxy__handle_write_message()` → FAIL
+  - **RED**: Write test `test_file_delegate__handle_write_message()` → FAIL
   - **GREEN**: Parse MAP message with `{"action": "write", "path": "test.txt", "content": "data"}`
   - **GREEN**: Use ar_io__open_file() to write file contents
   - **GREEN**: Return MAP response `{"status": "success"}`
   - **REFACTOR**: Apply same path validation, verify ar_io creates backups
 
 - [ ] **TDD Cycle 12**: Add file size limits
-  - **RED**: Write test `test_file_proxy__rejects_large_files()` → FAIL
+  - **RED**: Write test `test_file_delegate__rejects_large_files()` → FAIL
   - **GREEN**: Add MAX_FILE_SIZE constant (e.g., 10MB)
   - **GREEN**: Check file size before reading, return error if too large
-  - **REFACTOR**: Make size limit configurable in file_proxy__create()
+  - **REFACTOR**: Make size limit configurable in file_delegate__create()
 
-##### NetworkProxy (5 cycles - HTTP stubbed)
+##### NetworkDelegate (5 cycles - HTTP stubbed)
 
-**Files to Create**: `modules/ar_network_proxy.h`, `modules/ar_network_proxy.c`, `modules/ar_network_proxy_tests.c`
+**Files to Create**: `modules/ar_network_delegate.h`, `modules/ar_network_delegate.c`, `modules/ar_network_delegate_tests.c`
 
 **IMPORTANT**: Actual HTTP implementation deferred pending HTTP library selection (libcurl, custom, etc.). This phase focuses on validation, security patterns, and message protocol.
 
-- [ ] **TDD Cycle 13**: Create NetworkProxy module with basic structure
-  - **RED**: Write test `test_network_proxy__create_and_destroy()` → FAIL
-  - **GREEN**: Create ar_network_proxy.h with opaque type
-  - **GREEN**: Implement create/destroy with ar_proxy_t* wrapper
+- [ ] **TDD Cycle 13**: Create NetworkDelegate module with basic structure
+  - **RED**: Write test `test_network_delegate__create_and_destroy()` → FAIL
+  - **GREEN**: Create ar_network_delegate.h with opaque type
+  - **GREEN**: Implement create/destroy with ar_delegate_t* wrapper
   - **REFACTOR**: Verify zero leaks
 
 - [ ] **TDD Cycle 14**: Implement HTTP GET operation (stubbed response)
-  - **RED**: Write test `test_network_proxy__handle_get_message()` → FAIL
+  - **RED**: Write test `test_network_delegate__handle_get_message()` → FAIL
   - **GREEN**: Parse MAP message with `{"action": "GET", "url": "http://..."}`
   - **GREEN**: Return stub response `{"status": "success", "content": "stub", "stubbed": true}`
   - **REFACTOR**: Document that actual HTTP requires separate library integration session
 
 - [ ] **TDD Cycle 15**: Add URL whitelisting
-  - **RED**: Write test `test_network_proxy__rejects_non_whitelisted_url()` → FAIL
-  - **GREEN**: Add whitelist of allowed URL patterns/domains to proxy
+  - **RED**: Write test `test_network_delegate__rejects_non_whitelisted_url()` → FAIL
+  - **GREEN**: Add whitelist of allowed URL patterns/domains to delegate
   - **GREEN**: Return `{"status": "error", "message": "URL not whitelisted"}` for invalid URLs
   - **REFACTOR**: Extract URL validation to helper function
 
 - [ ] **TDD Cycle 16**: Add request timeouts and size limits
-  - **RED**: Write test `test_network_proxy__respects_size_limit()` → FAIL
+  - **RED**: Write test `test_network_delegate__respects_size_limit()` → FAIL
   - **GREEN**: Add MAX_RESPONSE_SIZE constant (e.g., 1MB)
   - **GREEN**: Add timeout configuration (e.g., 30 seconds)
-  - **REFACTOR**: Document limits in ar_network_proxy.md
+  - **REFACTOR**: Document limits in ar_network_delegate.md
 
 - [ ] **TDD Cycle 17**: Implement HTTP POST operation (stub)
-  - **RED**: Write test `test_network_proxy__handle_post_message()` → FAIL
+  - **RED**: Write test `test_network_delegate__handle_post_message()` → FAIL
   - **GREEN**: Parse MAP message with `{"action": "POST", "url": "...", "body": "..."}`
   - **GREEN**: Return stub response (actual HTTP later)
   - **REFACTOR**: Apply same whitelist and size limits
 
-##### LogProxy (3 cycles - ar_log integration)
+##### LogDelegate (3 cycles - ar_log integration)
 
-**Files to Create**: `modules/ar_log_proxy.h`, `modules/ar_log_proxy.c`, `modules/ar_log_proxy_tests.c`
+**Files to Create**: `modules/ar_log_delegate.h`, `modules/ar_log_delegate.c`, `modules/ar_log_delegate_tests.c`
 
-**Design**: LogProxy wraps existing ar_log infrastructure to provide agents with structured logging via messages.
+**Design**: LogDelegate wraps existing ar_log infrastructure to provide agents with structured logging via messages.
 
-- [ ] **TDD Cycle 18**: Create LogProxy module with basic structure
-  - **RED**: Write test `test_log_proxy__create_and_destroy()` → FAIL
-  - **GREEN**: Create ar_log_proxy.h with opaque type
-  - **GREEN**: Implement create/destroy with ar_proxy_t* wrapper + ar_log_t* field
+- [ ] **TDD Cycle 18**: Create LogDelegate module with basic structure
+  - **RED**: Write test `test_log_delegate__create_and_destroy()` → FAIL
+  - **GREEN**: Create ar_log_delegate.h with opaque type
+  - **GREEN**: Implement create/destroy with ar_delegate_t* wrapper + ar_log_t* field
   - **REFACTOR**: Verify zero leaks
 
 - [ ] **TDD Cycle 19**: Implement structured logging via ar_log
-  - **RED**: Write test `test_log_proxy__handle_log_message()` → FAIL
+  - **RED**: Write test `test_log_delegate__handle_log_message()` → FAIL
   - **GREEN**: Parse MAP message with `{"level": "info", "message": "text", "agent_id": 123}`
   - **GREEN**: Format log entry with timestamp, level, agent context
   - **GREEN**: Route to ar_log__info(), ar_log__warning(), or ar_log__error() based on level
   - **REFACTOR**: Support levels: info, warning, error
 
 - [ ] **TDD Cycle 20**: Add level filtering
-  - **RED**: Write test `test_log_proxy__filters_by_level()` → FAIL
-  - **GREEN**: Add minimum log level to log_proxy__create() (default: info)
+  - **RED**: Write test `test_log_delegate__filters_by_level()` → FAIL
+  - **GREEN**: Add minimum log level to log_delegate__create() (default: info)
   - **GREEN**: Reject messages below minimum level
-  - **REFACTOR**: Document filtering behavior in ar_log_proxy.md
+  - **REFACTOR**: Document filtering behavior in ar_log_delegate.md
 
 #### Phase 3: Security and Validation (4-6 cycles)
 
-**Files to Create**: `modules/ar_proxy_policy.h`, `modules/ar_proxy_policy.c`, `modules/ar_proxy_policy_tests.c`
+**Files to Create**: `modules/ar_delegate_policy.h`, `modules/ar_delegate_policy.c`, `modules/ar_delegate_policy_tests.c`
 
 - [ ] **TDD Cycle 21**: Create security policy framework
-  - **RED**: Write test `test_proxy_policy__validate_path()` → FAIL
-  - **GREEN**: Create ar_proxy_policy module with path validation functions
-  - **GREEN**: Implement `ar_proxy_policy__is_valid_path(const char*)` → bool
-  - **REFACTOR**: Centralize validation logic used by FileProxy
+  - **RED**: Write test `test_delegate_policy__validate_path()` → FAIL
+  - **GREEN**: Create ar_delegate_policy module with path validation functions
+  - **GREEN**: Implement `ar_delegate_policy__is_valid_path(const char*)` → bool
+  - **REFACTOR**: Centralize validation logic used by FileDelegate
 
 - [ ] **TDD Cycle 22**: Add URL validation to policy framework
-  - **RED**: Write test `test_proxy_policy__validate_url()` → FAIL
-  - **GREEN**: Implement `ar_proxy_policy__is_valid_url(const char*, const char** whitelist)` → bool
+  - **RED**: Write test `test_delegate_policy__validate_url()` → FAIL
+  - **GREEN**: Implement `ar_delegate_policy__is_valid_url(const char*, const char** whitelist)` → bool
   - **GREEN**: Support domain matching and pattern matching
   - **REFACTOR**: Extract common validation patterns
 
 - [ ] **TDD Cycle 23**: Add resource limit validation
-  - **RED**: Write test `test_proxy_policy__validate_size()` → FAIL
-  - **GREEN**: Implement `ar_proxy_policy__is_within_size_limit(size_t, size_t limit)` → bool
+  - **RED**: Write test `test_delegate_policy__validate_size()` → FAIL
+  - **GREEN**: Implement `ar_delegate_policy__is_within_size_limit(size_t, size_t limit)` → bool
   - **GREEN**: Add timeout validation functions
-  - **REFACTOR**: Document all policy functions in ar_proxy_policy.md
+  - **REFACTOR**: Document all policy functions in ar_delegate_policy.md
 
 - [ ] **TDD Cycle 24**: Implement audit logging
-  - **RED**: Write test `test_proxy__logs_access_attempts()` → FAIL
-  - **GREEN**: Add audit log to ar_proxy that records all handle_message calls
-  - **GREEN**: Log: timestamp, proxy_id, action, sender_id, result
+  - **RED**: Write test `test_delegate__logs_access_attempts()` → FAIL
+  - **GREEN**: Add audit log to ar_delegate that records all handle_message calls
+  - **GREEN**: Log: timestamp, delegate_id, action, sender_id, result
   - **REFACTOR**: Make audit logging optional via create() parameter
 
 - [ ] **TDD Cycle 25**: Add comprehensive input validation
-  - **RED**: Write test `test_proxy__rejects_malformed_messages()` → FAIL
+  - **RED**: Write test `test_delegate__rejects_malformed_messages()` → FAIL
   - **GREEN**: Validate message is MAP type before processing
   - **GREEN**: Validate required fields exist ("action" field, etc.)
   - **GREEN**: Return clear error messages for invalid input
@@ -1456,49 +1462,49 @@ Once all modules are migrated to Zig with C-ABI compatibility, identify internal
 
 #### Phase 4: System Integration (2-3 cycles)
 
-- [ ] **TDD Cycle 27**: Register built-in proxies at system startup
-  - **RED**: Write test `test_system__has_builtin_proxies()` → FAIL
-  - **GREEN**: In ar_system__create(), instantiate FileProxy (-100), NetworkProxy (-101), LogProxy (-102)
-  - **GREEN**: Register each proxy with ar_system__register_proxy()
-  - **REFACTOR**: Verify all proxies are created and registered correctly
+- [ ] **TDD Cycle 27**: Register built-in delegates at system startup
+  - **RED**: Write test `test_system__has_builtin_delegates()` → FAIL
+  - **GREEN**: In ar_system__create(), instantiate FileDelegate (-100), NetworkDelegate (-101), LogDelegate (-102)
+  - **GREEN**: Register each delegate with delegation via ar_delegation__register_delegate()
+  - **REFACTOR**: Verify all delegates are created and registered correctly
 
-- [ ] **TDD Cycle 28**: Update ar_executable to support proxies
+- [ ] **TDD Cycle 28**: Update ar_executable to support delegates
   - **RED**: Write integration test in ar_executable_tests.c → FAIL
-  - **GREEN**: Verify ar_executable creates system with proxies automatically
+  - **GREEN**: Verify ar_executable creates system with delegates automatically
   - **GREEN**: Test that agents can send messages to negative IDs
-  - **REFACTOR**: No changes needed - proxies initialized via ar_system__create()
+  - **REFACTOR**: No changes needed - delegates initialized via ar_system__create()
 
-- [ ] **TDD Cycle 29**: Consider proxy state persistence (if needed)
-  - **Analysis**: Determine if proxy state needs persistence across sessions
-  - **Decision**: Likely NO - proxies are stateless, recreated at startup
-  - **Document**: Add note in SPEC.md that proxies are ephemeral
+- [ ] **TDD Cycle 29**: Consider delegate state persistence (if needed)
+  - **Analysis**: Determine if delegate state needs persistence across sessions
+  - **Decision**: Likely NO - delegates are stateless, recreated at startup
+  - **Document**: Add note in SPEC.md that delegates are ephemeral
 
 #### Phase 5: Testing and Documentation (2 cycles - ENHANCED)
 
 - [ ] **TDD Cycle 30**: Create example methods and integration tests
-  - Create `methods/file-reader-1.0.0.method` - reads file via FileProxy
-  - Create `methods/http-client-1.0.0.method` - fetches URL via NetworkProxy (stub)
-  - Create `methods/logger-1.0.0.method` - logs structured messages via LogProxy
-  - Create integration test demonstrating all 3 proxies working together
+  - Create `methods/file-reader-1.0.0.method` - reads file via FileDelegate
+  - Create `methods/http-client-1.0.0.method` - fetches URL via NetworkDelegate (stub)
+  - Create `methods/logger-1.0.0.method` - logs structured messages via LogDelegate
+  - Create integration test demonstrating all 3 delegates working together
   - Create corresponding test files and .md documentation
   - Verify all examples work end-to-end with `make run-tests 2>&1`
 
 - [ ] **TDD Cycle 31**: Complete documentation updates
-  - **SPEC.md**: Remove EXAMPLE tags from proxy interface (lines 304-308) - now implemented!
+  - **SPEC.md**: Remove EXAMPLE tags from delegate interface (lines 304-308) - now implemented!
   - **SPEC.md**: Add implementation details and usage examples
-  - **AGENTS.md**: Add proxy usage patterns and guidelines
-  - **AGENTS.md**: Add troubleshooting section for common proxy issues
-  - **KB**: Create `kb/proxy-implementation-pattern.md` documenting TDD journey
-  - **KB**: Create `kb/proxy-security-patterns.md` with validation examples
-  - **KB**: Create `kb/proxy-message-protocol.md` documenting message formats
+  - **AGENTS.md**: Add delegate usage patterns and guidelines
+  - **AGENTS.md**: Add troubleshooting section for common delegate issues
+  - **KB**: Create `kb/delegate-implementation-pattern.md` documenting TDD journey
+  - **KB**: Create `kb/delegate-security-patterns.md` with validation examples
+  - **KB**: Create `kb/delegate-message-protocol.md` documenting message formats
   - Run `make check-docs` to verify all documentation is valid
-  - Update TODO.md to mark all proxy tasks complete
-  - Update CHANGELOG.md with proxy system completion entry
+  - Update TODO.md to mark all delegate tasks complete
+  - Update CHANGELOG.md with delegate system completion entry
 
 **Success Criteria**:
-- ✅ All proxies communicate exclusively via messages
+- ✅ All delegates communicate exclusively via messages
 - ✅ Security policies prevent unauthorized external access
-- ✅ Zero memory leaks in all proxy operations
+- ✅ Zero memory leaks in all delegate operations
 - ✅ Comprehensive test coverage with TDD (all 31 cycles tested)
 - ✅ Backward compatibility maintained
 - ✅ External communication is pluggable and extensible
@@ -1507,37 +1513,39 @@ Once all modules are migrated to Zig with C-ABI compatibility, identify internal
 **Estimated Timeline**: 6-8 sessions remaining (26.5 cycles remaining of 31 total)
 
 **Revised Cycle Breakdown (2025-10-11)**:
-- Phase 1: 7 cycles → 4.5 completed, 2.5 remaining (message routing)
-- Phase 2: 13 cycles (FileProxy, NetworkProxy stubbed, LogProxy)
+- Phase 1: 7 cycles → 4.5 completed, 2.5 REVISED (ar_delegation architecture)
+- Phase 2: 13 cycles (FileDelegate, NetworkDelegate stubbed, LogDelegate)
 - Phase 3: 6 cycles (security and validation)
 - Phase 4: 3 cycles (system integration)
 - Phase 5: 2 cycles (documentation and examples)
 - **Total: 31 cycles** (15% complete)
 
-**Current Status**: Phase 1 is 64% complete (Cycles 1-4.5 done). Ready for Cycle 5 (message routing).
+**Current Status**: Phase 1 is 64% complete (Cycles 1-4.5 done). Cycles 5-7 REVISED for ar_delegation architecture. Ready to implement ar_delegation module as peer to ar_agency.
 
-**Completed Work Summary**:
-- ar_proxy module: 57 lines, 6 tests, complete documentation
-- ar_proxy_registry module: 333 lines, 12 tests, complete documentation
-- ar_system integration: registry ownership, registration functions
+**Completed Work Summary** (TO BE REVISED):
+- ar_delegate module: 57 lines, 6 tests, complete documentation (was ar_proxy)
+- ar_delegate_registry module: 333 lines, 12 tests, complete documentation (was ar_proxy_registry)
+- ar_system integration: registry ownership, registration functions (will be moved to ar_delegation)
 - Total: 728 lines implemented with zero memory leaks
-- Architecture: Clean separation following agent_registry pattern
+- Architecture: Transitioning from system-embedded to ar_delegation peer module
 
-**Next Immediate Step**: TDD Cycle 5 - Update message routing to detect negative agent IDs (estimated 1 session for Cycles 5-7)
+**Next Immediate Step**: TDD Cycle 5 - Create ar_delegation module as peer to ar_agency (estimated 1 session for Cycles 5-7)
 
 **Key Architectural Decisions (2025-10-11 Review)**:
-1. ✅ Separate proxy_registry module (vs embedding in system) - maintains SoC
-2. ✅ Registry owns proxies (vs agent pattern) - simpler lifecycle management
-3. ✅ No `ar_system__get_proxy()` wrapper - follows Facade pattern (exposes subsystems, not individual lookups)
-4. 🔄 HTTP implementation deferred - requires library selection session
-5. 🔄 LogProxy wraps ar_log - leverages existing infrastructure
-6. ⏭️ Message routing in Cycle 5 modifies critical path - needs careful testing
+1. ✅ Separate delegate_registry module (vs embedding in system) - maintains SoC
+2. ✅ Registry owns delegates (vs agent pattern) - simpler lifecycle management
+3. ✅ No `ar_system__get_delegate()` wrapper - follows Facade pattern (exposes subsystems, not individual lookups)
+4. 🔄 **NEW**: ar_delegation module as peer to ar_agency - symmetric architecture
+5. 🔄 **NEW**: Send evaluator routes based on ID: >= 0 to agency, < 0 to delegation
+6. 🔄 HTTP implementation deferred - requires library selection session
+7. 🔄 LogDelegate wraps ar_log - leverages existing infrastructure
 
 **Recommendations**:
-- Complete Phase 1 (Cycles 5-7) before starting Phase 2 - enables end-to-end testing
-- FileProxy first in Phase 2 - provides immediate value and establishes patterns
-- Schedule HTTP library selection session before implementing NetworkProxy fully
-- Consider integration test after Phase 2 to validate all proxies together
+- Complete Phase 1 (Cycles 5-7) with new ar_delegation architecture before starting Phase 2
+- Create ar_delegation following ar_agency pattern exactly - enables symmetric design
+- FileDelegate first in Phase 2 - provides immediate value and establishes patterns
+- Schedule HTTP library selection session before implementing NetworkDelegate fully
+- Consider integration test after Phase 2 to validate all delegates together
 
 ## Notes
 

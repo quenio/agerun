@@ -270,11 +270,11 @@ Messages can be any of the supported data types:
 - **Horizontal and Vertical Scaling**: The agent system supports both horizontal and vertical scaling.
 - **Agent Awareness**: Agents are designed to be unaware of the underlying scaling mechanisms, ensuring seamless scalability.
 
-## External Communication via Proxies
+## External Communication via Delegates
 
-### Proxy Concept
+### Delegate Concept
 
-**Definition**: Proxies are specialized system components that mediate between agents and external resources. Each proxy type handles a specific communication channel (file, network, logging, etc.) with built-in security controls.
+**Definition**: Delegates are specialized system components that act on behalf of agents to interact with external resources. Each delegate type handles a specific communication channel (file, network, logging, etc.) with built-in security controls.
 
 **Key Characteristics**:
 - Implemented as C/Zig modules following Parnas principles
@@ -283,29 +283,29 @@ Messages can be any of the supported data types:
 - Enforce security policies (validation, limits, timeouts)
 - Maintain the agent sandbox
 
-### Proxy Registration
-- **System Interface**: Runtime provides `register_proxy(type: string, handler: function)` for registering proxy implementations
-- **Built-in Proxies**: Standard proxies (FileProxy, NetworkProxy, LogProxy) are pre-registered
-- **Custom Proxies**: Applications can register additional proxy types
+### Delegate Registration
+- **System Interface**: Runtime provides `register_delegate(type: string, handler: function)` for registering delegate implementations
+- **Built-in Delegates**: Standard delegates (FileDelegate, NetworkDelegate, LogDelegate) are pre-registered
+- **Custom Delegates**: Applications can register additional delegate types
 
-### Proxy Communication Protocol
-- **Proxy Instances**: Each proxy type has instances identified by reserved agent IDs (e.g., FileProxy = -100, NetworkProxy = -101)
+### Delegate Communication Protocol
+- **Delegate Instances**: Each delegate type has instances identified by reserved agent IDs (e.g., FileDelegate = -100, NetworkDelegate = -101)
 - **Message Format**: Agents send structured MAP messages:
   ```
   send(-100, {"action": "read", "path": "/data.txt", "reply_to": agent_id})
   ```
-- **Response Format**: Proxies reply with operation results:
+- **Response Format**: Delegates reply with operation results:
   ```
   {"action": "read", "status": "success", "content": "file data"}
   ```
 
-### Proxy Interface (C/Zig Implementation)
+### Delegate Interface (C/Zig Implementation)
 ```c
-typedef struct ar_proxy_s ar_proxy_t;  // EXAMPLE: Planned proxy type for future implementation
+typedef struct ar_delegate_s ar_delegate_t;  // EXAMPLE: Planned delegate type for future implementation
 
-ar_proxy_t* ar_proxy__create(const char* type, ar_log_t* log);  // EXAMPLE: Future proxy creation
-void ar_proxy__destroy(ar_proxy_t* proxy);  // EXAMPLE: Future proxy cleanup
-bool ar_proxy__handle_message(ar_proxy_t* proxy, ar_data_t* message, ar_agent_t* sender);  // EXAMPLE: Future message handling
+ar_delegate_t* ar_delegate__create(const char* type, ar_log_t* log);  // EXAMPLE: Future delegate creation
+void ar_delegate__destroy(ar_delegate_t* delegate);  // EXAMPLE: Future delegate cleanup
+bool ar_delegate__handle_message(ar_delegate_t* delegate, ar_data_t* message, ar_agent_t* sender);  // EXAMPLE: Future message handling
 ```
 
 ## System Startup
