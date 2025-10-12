@@ -96,6 +96,7 @@ git commit --amend  # Update to reflect architectural scope
 ```
 
 ## Related Patterns
+- [User Feedback as Architecture Gate](user-feedback-as-architecture-gate.md)
 - [User Feedback as QA](user-feedback-as-qa.md)
 - [Commit Scope Verification](commit-scope-verification.md)
 - [Refactoring Phase Completion Checklist](refactoring-phase-completion-checklist.md)

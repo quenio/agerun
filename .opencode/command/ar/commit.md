@@ -293,6 +293,11 @@ make checkpoint-cleanup CMD=commit
 - [Git Push Verification](../../../kb/git-push-verification.md)
 - [Git Patch Preservation Workflow](../../../kb/git-patch-preservation-workflow.md)
 
+### Refactoring Patterns
+- [Dead Code After Mandatory Parameters](../../../kb/dead-code-after-mandatory-parameters.md)
+- [API Suffix Cleanup After Consolidation](../../../kb/api-suffix-cleanup-after-consolidation.md)
+- [Compilation-Driven Refactoring Pattern](../../../kb/compilation-driven-refactoring-pattern.md)
+
 ### Workflow and Session Patterns
 - [Checkpoint-Based Workflow Pattern](../../../kb/checkpoint-based-workflow-pattern.md)
 - [Context Preservation Across Sessions](../../../kb/context-preservation-across-sessions.md)

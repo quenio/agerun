@@ -455,6 +455,7 @@ grep "@cImport" modules/ar_${MODULE}.zig  # Check for C imports
 - [Zig Struct Modules Pattern](../../../kb/zig-struct-modules-pattern.md)
 - [Zig Integration Comprehensive](../../../kb/zig-integration-comprehensive.md)
 - [C to Zig Module Migration](../../../kb/c-to-zig-module-migration.md)
+- [Implementation Plan Line References](../../../kb/implementation-plan-line-references.md)
 
 ## Important Constraints
 

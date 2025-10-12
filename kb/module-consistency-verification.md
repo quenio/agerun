@@ -96,6 +96,7 @@ EOF
 - [Error Logging Instance Utilization](error-logging-instance-utilization.md)
 - [Global to Instance API Migration](global-to-instance-api-migration.md)
 - [Cross-Module Pattern Discovery](cross-method-pattern-discovery.md)
+- [Symmetric Module Architecture Pattern](symmetric-module-architecture-pattern.md)
 - [Systematic Consistency Verification](systematic-consistency-verification.md)
 - [Documentation Implementation Sync](documentation-implementation-sync.md)
 - [Documentation Index Consistency Pattern](documentation-index-consistency-pattern.md)

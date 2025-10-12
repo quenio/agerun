@@ -108,6 +108,7 @@ Signs of comprehensive extraction:
 - [Context Preservation Across Sessions](context-preservation-across-sessions.md) - Preserving learnings across context boundaries
 - [Post-Session Task Extraction Pattern](post-session-task-extraction-pattern.md)
 - [New Learnings Complete Integration Pattern](new-learnings-complete-integration-pattern.md)
+- [User Feedback as Architecture Gate](user-feedback-as-architecture-gate.md)
 - [User Feedback as QA](user-feedback-as-qa.md)
 - [Documentation Compacting Pattern](documentation-compacting-pattern.md)
 - [Self-Documenting Modifications Pattern](self-documenting-modifications-pattern.md)

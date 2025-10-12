@@ -175,7 +175,7 @@ Before proceeding to execute a task:
 1. Review the task context from TODO.md or session notes
 2. If the task references a report, review the relevant sections ([details](../../../kb/report-driven-task-planning.md))
 3. Define a plan with effort estimated in TDD cycles ([details](../../../kb/tdd-cycle-effort-estimation.md))
-4. Explain your strategy and wait for user feedback
+4. Explain your strategy and wait for user feedback ([details](../../../kb/user-feedback-as-architecture-gate.md))
 
 ## End of Session
 

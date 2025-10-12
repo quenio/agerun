@@ -282,9 +282,9 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Resources**: Use instance-specific not global ([details](kb/instance-vs-global-resource-pattern.md))
 **Error logging**: Utilize ar_log instances for all error conditions ([details](kb/error-logging-instance-utilization.md))
 **Parser errors**: Comprehensive logging with position info ([details](kb/parser-error-logging-enhancement-pattern.md))
-**Consistency**: Verify sister modules need same improvements; update modules/README.md after integration ([details](kb/module-consistency-verification.md), [systematic](kb/systematic-consistency-verification.md), [index](kb/documentation-index-consistency-pattern.md))
+**Consistency**: Verify sister modules need same improvements; update modules/README.md after integration ([details](kb/module-consistency-verification.md), [symmetric](kb/symmetric-module-architecture-pattern.md), [systematic](kb/systematic-consistency-verification.md), [index](kb/documentation-index-consistency-pattern.md))
 **Stateless**: Ensure no global state beyond instance management ([details](kb/stateless-module-verification.md))
-**API cleanup**: Remove suffixes after migration complete ([details](kb/api-suffix-cleanup-pattern.md))
+**API cleanup**: Remove suffixes & dead code after migration ([details](kb/api-suffix-cleanup-pattern.md), [dead params](kb/dead-code-after-mandatory-parameters.md), [suffix consolidation](kb/api-suffix-cleanup-after-consolidation.md))
 **Null instance**: Silent failure acceptable when instance is NULL ([details](kb/error-logging-null-instance-limitation.md))
 
 ### 7. Method Development
@@ -359,7 +359,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 - **Session todos (TodoWrite/TodoRead)**: Current TDD cycles, implementations, bug fixes
 - **TODO.md file**: Long-term architecture, future features (check [ ] vs [x] for completion)
 - **Task authorization**: Wait for explicit instruction before starting tasks ([details](kb/task-authorization-pattern.md))
-- **User feedback**: May reveal design issues, not just implementation bugs. Listen for concerns about output/behavior/consistency. Verify assumptions before acting. ([details](kb/user-feedback-as-qa.md), [assumptions](kb/assumption-verification-before-action.md))
+- **User feedback**: May reveal design issues, not just implementation bugs. Listen for concerns about output/behavior/consistency. Verify assumptions before acting. ([details](kb/user-feedback-as-qa.md), [architecture gate](kb/user-feedback-as-architecture-gate.md), [assumptions](kb/assumption-verification-before-action.md))
 - **Architectural insights**: User feedback often reveals bigger transformations ([details](kb/architectural-review-in-feedback.md))
 - **Be frank, not polite**: Only confirm correctness when certain - honest disagreement > polite agreement
 - **Todo list integrity**: Mark items complete, never remove them - preserves task history
@@ -397,7 +397,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 **Renaming**: Systematic approach for features/commands ([details](kb/comprehensive-renaming-workflow.md))
 **Bulk ops**: Use scripts not sed - `rename_symbols.py`, `batch_fix_docs.py` ([details](kb/script-enhancement-over-one-off.md), [workflow](kb/systematic-file-modification-workflow.md), [removal](kb/global-function-removal-script-pattern.md))
 **Verification**: `diff -u <(sed -n '130,148p' old.c) <(sed -n '11,29p' new.c)` ([details](kb/code-movement-verification.md))
-**Key patterns**: ([details](kb/refactoring-key-patterns.md))
+**Key patterns**: ([details](kb/refactoring-key-patterns.md), [line refs](kb/implementation-plan-line-references.md))
 **Non-functional code**: Detect and remove code that never executes ([details](kb/non-functional-code-detection-pattern.md))
 **Parameter removal**: Systematically remove unused parameters across layers ([details](kb/systematic-parameter-removal-refactoring.md))
 **Feature remnants**: Clean ALL traces when removing features ([details](kb/feature-remnant-cleanup-pattern.md))

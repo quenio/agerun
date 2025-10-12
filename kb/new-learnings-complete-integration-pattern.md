@@ -111,4 +111,5 @@ Signs of complete integration:
 ## Related Patterns
 - [Comprehensive Learning Extraction Pattern](comprehensive-learning-extraction-pattern.md)
 - [New Learnings Cross-Reference Requirement](new-learnings-cross-reference-requirement.md)
+- [Implementation Plan Line References](implementation-plan-line-references.md)
 - [Claude MD Reference Requirement](claude-md-reference-requirement.md)

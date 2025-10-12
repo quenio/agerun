@@ -586,6 +586,7 @@ echo "Modules checked so far: $MODULES_CHECKED"
 
 ### Consistency Patterns
 - [Module Consistency Verification](../../../kb/module-consistency-verification.md)
+- [Symmetric Module Architecture Pattern](../../../kb/symmetric-module-architecture-pattern.md)
 - [Error Logging Instance Utilization](../../../kb/error-logging-instance-utilization.md)
 - [Stateless Module Verification](../../../kb/stateless-module-verification.md)
 - [Documentation Index Consistency Pattern](../../../kb/documentation-index-consistency-pattern.md)

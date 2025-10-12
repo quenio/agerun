@@ -47,6 +47,7 @@ Each learning file contains:
 - [Task Authorization Pattern](task-authorization-pattern.md)
 - [Task Verification Before Execution](task-verification-before-execution.md)
 - [User Architectural Alternative Evaluation](user-architectural-alternative-evaluation.md)
+- [User Feedback as Architecture Gate](user-feedback-as-architecture-gate.md)
 - [User Feedback as QA](user-feedback-as-qa.md)
 
 #### 1.2 Session & Context Management
@@ -235,6 +236,7 @@ Each learning file contains:
 - [Parser Function Alias Support](parser-function-alias-support.md)
 - [Resource-Aware API Design](resource-aware-api-design.md)
 - [Stateless Module Verification](stateless-module-verification.md)
+- [Symmetric Module Architecture Pattern](symmetric-module-architecture-pattern.md)
 - [Systematic Consistency Verification](systematic-consistency-verification.md)
 
 ### 4. IMPLEMENTATION
@@ -262,6 +264,7 @@ Each learning file contains:
 - [Graceful Degradation Pattern](graceful-degradation-pattern.md)
 
 #### 4.3 Code Quality & Refactoring
+- [API Suffix Cleanup After Consolidation](api-suffix-cleanup-after-consolidation.md)
 - [API Suffix Cleanup Pattern](api-suffix-cleanup-pattern.md)
 - [Code Movement Verification](code-movement-verification.md)
 - [Code Smell Quick Detection](code-smell-quick-detection.md)
@@ -276,6 +279,7 @@ Each learning file contains:
 - [Compilation-Driven Refactoring Pattern](compilation-driven-refactoring-pattern.md)
 - [Comprehensive Renaming Workflow](comprehensive-renaming-workflow.md)
 - [Cross-File Pattern Propagation](cross-file-pattern-propagation.md)
+- [Dead Code After Mandatory Parameters](dead-code-after-mandatory-parameters.md)
 - [Defensive Programming Consistency](defensive-programming-consistency.md)
 - [Feature Remnant Cleanup Pattern](feature-remnant-cleanup-pattern.md)
 - [Phased Cleanup Pattern](phased-cleanup-pattern.md)
@@ -296,6 +300,7 @@ Each learning file contains:
 - [Command Documentation Excellence Gate](command-documentation-excellence-gate.md)
 - [Command Output Documentation Pattern](command-output-documentation-pattern.md)
 - [Documentation Standards Integration](documentation-standards-integration.md)
+- [Implementation Plan Line References](implementation-plan-line-references.md)
 - [Markdown Link Resolution Patterns](markdown-link-resolution-patterns.md)
 - [Multi-Language Documentation Validation](multi-language-documentation-validation.md)
 - [Specification Consistency Maintenance](specification-consistency-maintenance.md)

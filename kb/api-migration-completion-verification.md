@@ -20,6 +20,7 @@ grep -r "old_api_pattern" .
 ```
 
 ## Related Patterns
-- Interface changes require comprehensive verification
-- Build failures often indicate missed client updates
-- Systematic verification prevents integration issues
+- [API Suffix Cleanup After Consolidation](api-suffix-cleanup-after-consolidation.md)
+- [Dead Code After Mandatory Parameters](dead-code-after-mandatory-parameters.md)
+- [Compilation-Driven Refactoring Pattern](compilation-driven-refactoring-pattern.md)
+- [Build Verification Before Commit](build-verification-before-commit.md)
