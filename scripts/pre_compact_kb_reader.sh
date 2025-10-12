@@ -65,7 +65,7 @@ echo "✓ Maintain checkpoint tracking state if active"
 echo "✓ Keep references to KB articles consulted"
 echo "✓ Document any pending decisions or blockers"
 echo ""
-echo -e "${GREEN}✅ KB consultation complete. Proceeding with context compaction...${NC}"
+echo -e "${GREEN}✅ These KB articles were consulted before compaction.${NC}"
 echo ""
 
 exit 0
