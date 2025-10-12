@@ -27,6 +27,7 @@ Each learning file contains:
 - [Assumption Verification Before Action](assumption-verification-before-action.md)
 - [Check Existing Solutions First](check-existing-solutions-first.md)
 - [Checkpoint Implementation Guide](checkpoint-implementation-guide.md)
+- [Checkpoint Work Verification Anti-Pattern](checkpoint-work-verification-antipattern.md)
 - [Checkpoint-Based Workflow Pattern](checkpoint-based-workflow-pattern.md)
 - [Command Thoroughness Requirements Pattern](command-thoroughness-requirements-pattern.md)
 - [Development Practice Groups](development-practice-groups.md)
@@ -42,8 +43,10 @@ Each learning file contains:
 - [Research-Driven Development](research-driven-development.md)
 - [Struggling Detection Pattern](struggling-detection-pattern.md)
 - [Stub and Revisit Pattern](stub-and-revisit-pattern.md)
+- [Systematic Task Analysis Protocol](systematic-task-analysis-protocol.md)
 - [Task Authorization Pattern](task-authorization-pattern.md)
 - [Task Verification Before Execution](task-verification-before-execution.md)
+- [User Architectural Alternative Evaluation](user-architectural-alternative-evaluation.md)
 - [User Feedback as QA](user-feedback-as-qa.md)
 
 #### 1.2 Session & Context Management
@@ -66,6 +69,7 @@ Each learning file contains:
 - [Comprehensive Learning Extraction Pattern](comprehensive-learning-extraction-pattern.md)
 - [Cross-Method Pattern Discovery](cross-method-pattern-discovery.md)
 - [Cross-Referencing Knowledge Base](cross-referencing-knowledge-base.md)
+- [Index-Based Knowledge Discovery Pattern](index-based-knowledge-discovery-pattern.md)
 - [Just-In-Time KB Reading](just-in-time-kb-reading.md)
 - [KB Consultation Before Planning Requirement](kb-consultation-before-planning-requirement.md)
 - [KB Target Compliance Enforcement](kb-target-compliance-enforcement.md)
