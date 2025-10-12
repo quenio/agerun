@@ -359,11 +359,13 @@ The following steps must be completed first:
 
 **MANDATORY: Add new articles to kb/README.md**
 
-1. **Categorize appropriately** in kb/README.md:
-   - Tools & Automation: Scripts, build tools, automation workflows
-   - Development Practices: Documentation, workflows, methodologies  
-   - Architecture & Design: Patterns, principles, structures
-   - Code Quality & Testing: Validation, testing, best practices
+1. **Categorize appropriately** in kb/README.md (two-level structure):
+   - 1. DEVELOPMENT PROCESS: Workflow, Session Management, Commits, Knowledge Management
+   - 2. QUALITY ASSURANCE: Test Design, Implementation, Maintenance, Debugging
+   - 3. ARCHITECTURE & DESIGN: Architectural Patterns, Design Principles, Module Design
+   - 4. IMPLEMENTATION: Memory Management, Error Handling, Code Quality & Refactoring
+   - 5. DOCUMENTATION: Standards, Maintenance, Communication
+   - 6. TOOLS & INFRASTRUCTURE: Build/CI, Automation, Platform Specific
 
 2. **Add to correct section** with proper link format:
    ```markdown
