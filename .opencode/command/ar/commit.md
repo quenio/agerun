@@ -271,6 +271,12 @@ make checkpoint-cleanup CMD=commit
 - [Git Push Verification](../../../kb/git-push-verification.md)
 - [Git Patch Preservation Workflow](../../../kb/git-patch-preservation-workflow.md)
 
+### Workflow and Session Patterns
+- [Checkpoint-Based Workflow Pattern](../../../kb/checkpoint-based-workflow-pattern.md)
+- [Context Preservation Across Sessions](../../../kb/context-preservation-across-sessions.md)
+- [Session Resumption Without Prompting](../../../kb/session-resumption-without-prompting.md)
+- [Claude Code Commit Attribution](../../../kb/claude-code-commit-attribution.md)
+
 ## Custom Instructions
 
 If available, the instructions below may override some of the instructions above.

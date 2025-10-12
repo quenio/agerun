@@ -284,3 +284,7 @@ This validation ensures:
 For manual fixing of validation errors, see:
 - [Documentation Validation Error Patterns](../../../kb/documentation-validation-error-patterns.md)
 - [Documentation Validation Enhancement Patterns](../../../kb/documentation-validation-enhancement-patterns.md)
+
+For module documentation consistency:
+- [Documentation Index Consistency Pattern](../../../kb/documentation-index-consistency-pattern.md) - Update modules/README.md after integration
+- [Documentation Implementation Sync](../../../kb/documentation-implementation-sync.md) - Keep docs in sync with code

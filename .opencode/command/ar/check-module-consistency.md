@@ -588,5 +588,6 @@ echo "Modules checked so far: $MODULES_CHECKED"
 - [Module Consistency Verification](../../../kb/module-consistency-verification.md)
 - [Error Logging Instance Utilization](../../../kb/error-logging-instance-utilization.md)
 - [Stateless Module Verification](../../../kb/stateless-module-verification.md)
+- [Documentation Index Consistency Pattern](../../../kb/documentation-index-consistency-pattern.md)
 
-Remember: When you improve one module, always ask "What other modules need this same improvement?" ([details](../../../kb/module-consistency-verification.md))
+Remember: When you improve one module, always ask "What other modules need this same improvement?" ([details](../../../kb/module-consistency-verification.md)). After integration, update modules/README.md index ([details](../../../kb/documentation-index-consistency-pattern.md))

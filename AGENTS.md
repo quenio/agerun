@@ -81,7 +81,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Report-driven planning**: Create analysis reports before large task sets ([details](kb/report-driven-task-planning.md))
 **Script archaeology**: Examine scripts to understand what work was actually completed ([details](kb/script-archaeology-pattern.md))
 **Learning extraction**: Multi-pass review reveals hidden patterns ([details](kb/comprehensive-learning-extraction-pattern.md), [thoroughness](kb/command-thoroughness-requirements-pattern.md))
-**Session continuity**: Preserve context across session boundaries ([details](kb/context-preservation-across-sessions.md))
+**Session continuity**: Preserve context across session boundaries; resume without prompting when context clear ([details](kb/context-preservation-across-sessions.md), [resumption](kb/session-resumption-without-prompting.md))
 
 **Documentation Standards (MANDATORY)** ([details](kb/documentation-standards-integration.md), [unmissable](kb/unmissable-documentation-pattern.md), [sync](kb/documentation-implementation-sync.md)):
 - **Real code only**: All examples must use actual AgeRun types/functions ([details](kb/validated-documentation-examples.md))
@@ -222,7 +222,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 **Dependency hierarchy**: Foundation → Data → Core → System ([details](kb/dependency-management-examples.md))
 **Check dependencies**: `grep -n "#include.*ar_" module.h module.c`
-**Architectural patterns**: Interface segregation > Registry > Facade > Parser/Executor > Callbacks ([details](kb/architectural-patterns-hierarchy.md))
+**Architectural patterns**: Interface segregation > Registry > Facade > Parser/Executor > Callbacks; ID sign routing for subsystems ([details](kb/architectural-patterns-hierarchy.md), [facade](kb/facade-pattern-coordination.md), [routing](kb/id-based-message-routing-pattern.md))
 **DRY principle**: Search existing → extract functions → use data tables → parameterize ([details](kb/domain-specific-type-creation.md))
 **Red flags**: A→B→C→A cycles, validation duplication, _for_int/_for_string patterns
 **Exception**: heap ↔ io circular dependency is accepted and documented.
@@ -282,7 +282,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Resources**: Use instance-specific not global ([details](kb/instance-vs-global-resource-pattern.md))
 **Error logging**: Utilize ar_log instances for all error conditions ([details](kb/error-logging-instance-utilization.md))
 **Parser errors**: Comprehensive logging with position info ([details](kb/parser-error-logging-enhancement-pattern.md))
-**Consistency**: Verify sister modules need same improvements ([details](kb/module-consistency-verification.md), [systematic](kb/systematic-consistency-verification.md))
+**Consistency**: Verify sister modules need same improvements; update modules/README.md after integration ([details](kb/module-consistency-verification.md), [systematic](kb/systematic-consistency-verification.md), [index](kb/documentation-index-consistency-pattern.md))
 **Stateless**: Ensure no global state beyond instance management ([details](kb/stateless-module-verification.md))
 **API cleanup**: Remove suffixes after migration complete ([details](kb/api-suffix-cleanup-pattern.md))
 **Null instance**: Silent failure acceptable when instance is NULL ([details](kb/error-logging-null-instance-limitation.md))

@@ -66,3 +66,4 @@ if verify_sync():
 - [Comprehensive Impact Analysis](comprehensive-impact-analysis.md)
 - [Module Consistency Verification](module-consistency-verification.md)
 - [Global Function Removal Script Pattern](global-function-removal-script-pattern.md)
+- [Documentation Index Consistency Pattern](documentation-index-consistency-pattern.md)

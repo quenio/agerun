@@ -136,3 +136,5 @@ Organize complex workflows into phases with gates:
 - [Command Thoroughness Requirements Pattern](command-thoroughness-requirements-pattern.md)
 - [Systematic Task Analysis Protocol](systematic-task-analysis-protocol.md)
 - [KB Target Compliance Enforcement](kb-target-compliance-enforcement.md)
+- [Context Preservation Across Sessions](context-preservation-across-sessions.md)
+- [Session Resumption Without Prompting](session-resumption-without-prompting.md)

@@ -97,6 +97,8 @@ Each learning file contains:
 - [Dependency Management Examples](dependency-management-examples.md)
 - [Search Result Completeness Verification](search-result-completeness-verification.md)
 - [KB Target Compliance Enforcement](kb-target-compliance-enforcement.md)
+- [Documentation Index Consistency Pattern](documentation-index-consistency-pattern.md)
+- [Session Resumption Without Prompting](session-resumption-without-prompting.md)
 
 ### Memory Management
 - [Memory Leak Detection Workflow](memory-leak-detection-workflow.md)
@@ -188,6 +190,7 @@ Each learning file contains:
 - [Opaque Types Pattern](opaque-types-pattern.md)
 - [Domain-Specific Type Creation](domain-specific-type-creation.md)
 - [Facade Pattern Coordination](facade-pattern-coordination.md)
+- [ID-Based Message Routing Pattern](id-based-message-routing-pattern.md)
 - [Compilation-Driven Refactoring Pattern](compilation-driven-refactoring-pattern.md)
 - [Error Propagation Pattern](error-propagation-pattern.md)
 - [Error Logging Instance Utilization](error-logging-instance-utilization.md)

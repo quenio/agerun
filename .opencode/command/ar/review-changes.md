@@ -543,6 +543,7 @@ The original review process still works without checkpoints, but you lose progre
 - [Documentation Standards Integration](../../../kb/documentation-standards-integration.md)
 - [Documentation Validation Enhancement Patterns](../../../kb/documentation-validation-enhancement-patterns.md)
 - [Documentation Completion Verification](../../../kb/documentation-completion-verification.md)
+- [Documentation Index Consistency Pattern](../../../kb/documentation-index-consistency-pattern.md)
 
 ### Refactoring
 - [Refactoring Patterns Detailed](../../../kb/refactoring-patterns-detailed.md)

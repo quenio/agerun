@@ -181,3 +181,4 @@ Signs of good session preservation:
 - [Comprehensive Learning Extraction Pattern](comprehensive-learning-extraction-pattern.md) - Extracting knowledge
 - [Systematic Task Analysis Protocol](systematic-task-analysis-protocol.md) - Understanding requirements
 - [Command Thoroughness Requirements Pattern](command-thoroughness-requirements-pattern.md) - Complete execution
+- [Session Resumption Without Prompting](session-resumption-without-prompting.md) - Immediate continuation from summaries

@@ -98,3 +98,4 @@ EOF
 - [Cross-Module Pattern Discovery](cross-method-pattern-discovery.md)
 - [Systematic Consistency Verification](systematic-consistency-verification.md)
 - [Documentation Implementation Sync](documentation-implementation-sync.md)
+- [Documentation Index Consistency Pattern](documentation-index-consistency-pattern.md)

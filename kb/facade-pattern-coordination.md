@@ -69,3 +69,4 @@ bool ar_interpreter__execute_method(ar_interpreter_t *mut_interpreter,
 - [Instance Association Pattern](instance-association-pattern.md)
 - [Persistence Simplification Through Instantiation](persistence-simplification-through-instantiation.md)
 - [Module Delegation Error Propagation](module-delegation-error-propagation.md)
+- [ID-Based Message Routing Pattern](id-based-message-routing-pattern.md)
