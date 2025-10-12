@@ -1,10 +1,10 @@
 /**
- * @file ar_proxy_registry.c
- * @brief Implementation of the proxy registry module
+ * @file ar_delegate_registry.c
+ * @brief Implementation of the delegate registry module
  */
 
-#include "ar_proxy_registry.h"
-#include "ar_proxy.h"
+#include "ar_delegate_registry.h"
+#include "ar_delegate.h"
 #include "ar_data.h"
 #include "ar_heap.h"
 #include "ar_list.h"
@@ -16,14 +16,14 @@
 #include <inttypes.h>
 
 /* Proxy registry structure */
-struct ar_proxy_registry_s {
-    ar_list_t *own_registered_ids;  // List of registered proxy IDs (negative integers)
-    ar_map_t *own_proxy_map;        // Map of proxy_id -> ar_proxy_t pointer
+struct ar_delegate_registry_s {
+    ar_list_t *own_registered_ids;  // List of registered delegate IDs (negative integers)
+    ar_map_t *own_delegate_map;        // Map of delegate_id -> ar_delegate_t pointer
 };
 
-/* Create a new proxy registry */
-ar_proxy_registry_t* ar_proxy_registry__create(void) {
-    ar_proxy_registry_t *own_registry = AR__HEAP__MALLOC(sizeof(ar_proxy_registry_t), "proxy registry");
+/* Create a new delegate registry */
+ar_delegate_registry_t* ar_delegate_registry__create(void) {
+    ar_delegate_registry_t *own_registry = AR__HEAP__MALLOC(sizeof(ar_delegate_registry_t), "delegate registry");
     if (!own_registry) {
         return NULL;
     }
@@ -34,8 +34,8 @@ ar_proxy_registry_t* ar_proxy_registry__create(void) {
         return NULL;
     }
 
-    own_registry->own_proxy_map = ar_map__create();
-    if (!own_registry->own_proxy_map) {
+    own_registry->own_delegate_map = ar_map__create();
+    if (!own_registry->own_delegate_map) {
         ar_list__destroy(own_registry->own_registered_ids);
         AR__HEAP__FREE(own_registry);
         return NULL;
@@ -44,14 +44,14 @@ ar_proxy_registry_t* ar_proxy_registry__create(void) {
     return own_registry;
 }
 
-/* Destroy a proxy registry */
-void ar_proxy_registry__destroy(ar_proxy_registry_t *own_registry) {
+/* Destroy a delegate registry */
+void ar_delegate_registry__destroy(ar_delegate_registry_t *own_registry) {
     if (!own_registry) {
         return;
     }
 
-    // Destroy all registered proxies
-    if (own_registry->own_registered_ids && own_registry->own_proxy_map) {
+    // Destroy all registered delegates
+    if (own_registry->own_registered_ids && own_registry->own_delegate_map) {
         void **items = ar_list__items(own_registry->own_registered_ids);
         if (items) {
             size_t count = ar_list__count(own_registry->own_registered_ids);
@@ -60,10 +60,10 @@ void ar_proxy_registry__destroy(ar_proxy_registry_t *own_registry) {
                 if (ref_data) {
                     const char *id_str = ar_data__get_string(ref_data);
                     if (id_str) {
-                        // Get and destroy the proxy
-                        ar_proxy_t *own_proxy = (ar_proxy_t*)ar_map__get(own_registry->own_proxy_map, id_str);
-                        if (own_proxy) {
-                            ar_proxy__destroy(own_proxy);
+                        // Get and destroy the delegate
+                        ar_delegate_t *own_delegate = (ar_delegate_t*)ar_map__get(own_registry->own_delegate_map, id_str);
+                        if (own_delegate) {
+                            ar_delegate__destroy(own_delegate);
                         }
                     }
                 }
@@ -83,23 +83,23 @@ void ar_proxy_registry__destroy(ar_proxy_registry_t *own_registry) {
         ar_list__destroy(own_registry->own_registered_ids);
     }
 
-    if (own_registry->own_proxy_map) {
-        ar_map__destroy(own_registry->own_proxy_map);
+    if (own_registry->own_delegate_map) {
+        ar_map__destroy(own_registry->own_delegate_map);
     }
 
     AR__HEAP__FREE(own_registry);
 }
 
-/* Get the number of registered proxies */
-int ar_proxy_registry__count(const ar_proxy_registry_t *ref_registry) {
+/* Get the number of registered delegates */
+int ar_delegate_registry__count(const ar_delegate_registry_t *ref_registry) {
     if (!ref_registry || !ref_registry->own_registered_ids) {
         return 0;
     }
     return (int)ar_list__count(ref_registry->own_registered_ids);
 }
 
-/* Helper function to get string key for proxy_id from the registered list */
-static const char* _get_proxy_key_from_list(const ar_proxy_registry_t *ref_registry, int64_t proxy_id) {
+/* Helper function to get string key for delegate_id from the registered list */
+static const char* _get_delegate_key_from_list(const ar_delegate_registry_t *ref_registry, int64_t delegate_id) {
     if (!ref_registry || !ref_registry->own_registered_ids) {
         return NULL;
     }
@@ -124,7 +124,7 @@ static const char* _get_proxy_key_from_list(const ar_proxy_registry_t *ref_regis
         }
 
         int64_t id = strtoll(id_str, NULL, 10);
-        if (id == proxy_id) {
+        if (id == delegate_id) {
             key = id_str;
             break;
         }
@@ -134,20 +134,20 @@ static const char* _get_proxy_key_from_list(const ar_proxy_registry_t *ref_regis
     return key;
 }
 
-/* Register a proxy */
-bool ar_proxy_registry__register(ar_proxy_registry_t *mut_registry, int64_t proxy_id, ar_proxy_t *own_proxy) {
-    if (!mut_registry || !mut_registry->own_registered_ids || !mut_registry->own_proxy_map || !own_proxy) {
+/* Register a delegate */
+bool ar_delegate_registry__register(ar_delegate_registry_t *mut_registry, int64_t delegate_id, ar_delegate_t *own_delegate) {
+    if (!mut_registry || !mut_registry->own_registered_ids || !mut_registry->own_delegate_map || !own_delegate) {
         return false;
     }
 
     // Check if already registered
-    if (ar_proxy_registry__is_registered(mut_registry, proxy_id)) {
+    if (ar_delegate_registry__is_registered(mut_registry, delegate_id)) {
         return false;
     }
 
     // Create string representation of the ID
     char id_str[32];
-    snprintf(id_str, sizeof(id_str), "%" PRId64, proxy_id);
+    snprintf(id_str, sizeof(id_str), "%" PRId64, delegate_id);
 
     // Create string data for the ID (ar_data__create_string copies the string)
     ar_data_t *own_id_data = ar_data__create_string(id_str);
@@ -162,7 +162,7 @@ bool ar_proxy_registry__register(ar_proxy_registry_t *mut_registry, int64_t prox
     }
 
     // Get the key from the list (which owns the string now)
-    const char *ref_key = _get_proxy_key_from_list(mut_registry, proxy_id);
+    const char *ref_key = _get_delegate_key_from_list(mut_registry, delegate_id);
     if (!ref_key) {
         // Should not happen, but handle gracefully
         ar_list__remove(mut_registry->own_registered_ids, own_id_data);
@@ -170,34 +170,34 @@ bool ar_proxy_registry__register(ar_proxy_registry_t *mut_registry, int64_t prox
         return false;
     }
 
-    // Store the proxy pointer in the map
-    if (!ar_map__set(mut_registry->own_proxy_map, ref_key, own_proxy)) {
+    // Store the delegate pointer in the map
+    if (!ar_map__set(mut_registry->own_delegate_map, ref_key, own_delegate)) {
         ar_list__remove(mut_registry->own_registered_ids, own_id_data);
         ar_data__destroy(own_id_data);
         return false;
     }
 
-    // Registry now owns the proxy
+    // Registry now owns the delegate
     return true;
 }
 
-/* Unregister a proxy */
-bool ar_proxy_registry__unregister(ar_proxy_registry_t *mut_registry, int64_t proxy_id) {
-    if (!mut_registry || !mut_registry->own_registered_ids || !mut_registry->own_proxy_map) {
+/* Unregister a delegate */
+bool ar_delegate_registry__unregister(ar_delegate_registry_t *mut_registry, int64_t delegate_id) {
+    if (!mut_registry || !mut_registry->own_registered_ids || !mut_registry->own_delegate_map) {
         return false;
     }
 
     // Get the string key from the registered list
-    const char *ref_key = _get_proxy_key_from_list(mut_registry, proxy_id);
+    const char *ref_key = _get_delegate_key_from_list(mut_registry, delegate_id);
     if (!ref_key) {
         return false;
     }
 
-    // Get and destroy the proxy
-    ar_proxy_t *own_proxy = (ar_proxy_t*)ar_map__get(mut_registry->own_proxy_map, ref_key);
-    if (own_proxy) {
-        ar_proxy__destroy(own_proxy);
-        ar_map__set(mut_registry->own_proxy_map, ref_key, NULL);
+    // Get and destroy the delegate
+    ar_delegate_t *own_delegate = (ar_delegate_t*)ar_map__get(mut_registry->own_delegate_map, ref_key);
+    if (own_delegate) {
+        ar_delegate__destroy(own_delegate);
+        ar_map__set(mut_registry->own_delegate_map, ref_key, NULL);
     }
 
     // Find and remove the ID from the list
@@ -221,7 +221,7 @@ bool ar_proxy_registry__unregister(ar_proxy_registry_t *mut_registry, int64_t pr
         }
 
         int64_t id = strtoll(id_str, NULL, 10);
-        if (id == proxy_id) {
+        if (id == delegate_id) {
             target = ref_data;
             break;
         }
@@ -240,23 +240,23 @@ bool ar_proxy_registry__unregister(ar_proxy_registry_t *mut_registry, int64_t pr
     return false;
 }
 
-/* Find a proxy */
-ar_proxy_t* ar_proxy_registry__find(const ar_proxy_registry_t *ref_registry, int64_t proxy_id) {
-    if (!ref_registry || !ref_registry->own_proxy_map) {
+/* Find a delegate */
+ar_delegate_t* ar_delegate_registry__find(const ar_delegate_registry_t *ref_registry, int64_t delegate_id) {
+    if (!ref_registry || !ref_registry->own_delegate_map) {
         return NULL;
     }
 
     // Get the string key from the registered list
-    const char *ref_key = _get_proxy_key_from_list(ref_registry, proxy_id);
+    const char *ref_key = _get_delegate_key_from_list(ref_registry, delegate_id);
     if (!ref_key) {
         return NULL;
     }
 
-    return (ar_proxy_t*)ar_map__get(ref_registry->own_proxy_map, ref_key);
+    return (ar_delegate_t*)ar_map__get(ref_registry->own_delegate_map, ref_key);
 }
 
 /* Check if registered */
-bool ar_proxy_registry__is_registered(const ar_proxy_registry_t *ref_registry, int64_t proxy_id) {
+bool ar_delegate_registry__is_registered(const ar_delegate_registry_t *ref_registry, int64_t delegate_id) {
     if (!ref_registry || !ref_registry->own_registered_ids) {
         return false;
     }
@@ -281,7 +281,7 @@ bool ar_proxy_registry__is_registered(const ar_proxy_registry_t *ref_registry, i
         }
 
         int64_t id = strtoll(id_str, NULL, 10);
-        if (id == proxy_id) {
+        if (id == delegate_id) {
             found = true;
             break;
         }
@@ -291,13 +291,13 @@ bool ar_proxy_registry__is_registered(const ar_proxy_registry_t *ref_registry, i
     return found;
 }
 
-/* Clear all proxies */
-void ar_proxy_registry__clear(ar_proxy_registry_t *mut_registry) {
-    if (!mut_registry || !mut_registry->own_registered_ids || !mut_registry->own_proxy_map) {
+/* Clear all delegates */
+void ar_delegate_registry__clear(ar_delegate_registry_t *mut_registry) {
+    if (!mut_registry || !mut_registry->own_registered_ids || !mut_registry->own_delegate_map) {
         return;
     }
 
-    // Destroy all registered proxies first
+    // Destroy all registered delegates first
     void **items = ar_list__items(mut_registry->own_registered_ids);
     if (items) {
         size_t count = ar_list__count(mut_registry->own_registered_ids);
@@ -306,10 +306,10 @@ void ar_proxy_registry__clear(ar_proxy_registry_t *mut_registry) {
             if (ref_data) {
                 const char *id_str = ar_data__get_string(ref_data);
                 if (id_str) {
-                    // Get and destroy the proxy
-                    ar_proxy_t *own_proxy = (ar_proxy_t*)ar_map__get(mut_registry->own_proxy_map, id_str);
-                    if (own_proxy) {
-                        ar_proxy__destroy(own_proxy);
+                    // Get and destroy the delegate
+                    ar_delegate_t *own_delegate = (ar_delegate_t*)ar_map__get(mut_registry->own_delegate_map, id_str);
+                    if (own_delegate) {
+                        ar_delegate__destroy(own_delegate);
                     }
                 }
             }
@@ -325,9 +325,9 @@ void ar_proxy_registry__clear(ar_proxy_registry_t *mut_registry) {
         }
     }
 
-    // Clear the proxy map by destroying and recreating it
-    if (mut_registry->own_proxy_map) {
-        ar_map__destroy(mut_registry->own_proxy_map);
-        mut_registry->own_proxy_map = ar_map__create();
+    // Clear the delegate map by destroying and recreating it
+    if (mut_registry->own_delegate_map) {
+        ar_map__destroy(mut_registry->own_delegate_map);
+        mut_registry->own_delegate_map = ar_map__create();
     }
 }

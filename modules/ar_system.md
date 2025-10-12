@@ -12,7 +12,7 @@ The system module is responsible for:
 2. **Message Processing**: Managing the inter-agent message queue and processing loop
 3. **Persistence Coordination**: Orchestrating save/load operations for agents and methods
 4. **Interpreter Management**: Creating and managing the instruction interpreter
-5. **Proxy Management**: Managing the proxy registry for external communication channels
+5. **Delegate Management**: Managing the delegate registry for external communication channels
 6. **Lifecycle Management**: Ensuring proper startup and shutdown sequences
 
 ## Architecture
@@ -27,13 +27,13 @@ The system module acts as a facade that coordinates several subsystems:
 │ - Message Loop   │
 │ - Persistence    │
 │ - Interpreter    │
-│ - Proxy Registry │
+│ - Delegate Registry │
 └────────┬─────────┘
          │ Coordinates
     ┌────┴────┬────────┬───────────┬───────────────┐
     ▼         ▼        ▼           ▼               ▼
 ┌─────────┐┌──────┐┌──────────┐┌────────────┐┌──────────────┐
-│ Agency  ││Agent ││Methodology││Interpreter ││Proxy Registry│
+│ Agency  ││Agent ││Methodology││Interpreter ││Delegate Registry│
 └─────────┘└──────┘└──────────┘└────────────┘└──────────────┘
 ```
 
@@ -89,20 +89,20 @@ bool ar_system__process_next_message(ar_system_t *mut_system);
 int ar_system__process_all_messages(ar_system_t *mut_system);
 
 /**
- * Get the proxy registry instance from a system.
+ * Get the delegate registry instance from a system.
  * @param ref_system The system instance (borrowed reference)
- * @return The proxy registry instance (borrowed reference), or NULL if system is NULL
+ * @return The delegate registry instance (borrowed reference), or NULL if system is NULL
  */
-ar_proxy_registry_t* ar_system__get_proxy_registry(const ar_system_t *ref_system);
+ar_delegate_registry_t* ar_system__get_delegate_registry(const ar_system_t *ref_system);
 
 /**
- * Register a proxy with the system.
+ * Register a delegate with the system.
  * @param mut_system The system instance (mutable reference)
- * @param proxy_id The proxy ID (negative by convention)
- * @param own_proxy The proxy to register (ownership transferred on success)
+ * @param delegate_id The delegate ID (negative by convention)
+ * @param own_delegate The delegate to register (ownership transferred on success)
  * @return true if successful, false otherwise
  */
-bool ar_system__register_proxy(ar_system_t *mut_system, int64_t proxy_id, ar_proxy_t *own_proxy);
+bool ar_system__register_delegate(ar_system_t *mut_system, int64_t delegate_id, ar_delegate_t *own_delegate);
 ```
 
 
@@ -123,7 +123,7 @@ Each system instance contains:
 - `own_agency`: Owned agency instance
 - `own_interpreter`: Owned interpreter instance
 - `own_log`: Owned log instance
-- `own_proxy_registry`: Owned proxy registry instance
+- `own_delegate_registry`: Owned delegate registry instance
 - `own_context`: Shared context for all agents
 
 ### Initialization Sequence
@@ -214,26 +214,26 @@ int all = ar_system__process_all_messages(own_system));
 int instance_all = ar_system__process_all_messages(mut_system);
 ```
 
-### Proxy Registration
+### Delegate Registration
 
 ```c
 // Create a system instance
 ar_system_t *own_system = ar_system__create();
 
-// Get the log for proxy creation
+// Get the log for delegate creation
 ar_log_t *ref_log = ar_system__get_log(own_system);
 
-// Create a file proxy
-ar_proxy_t *own_file_proxy = ar_proxy__create(ref_log, "file");
+// Create a file delegate
+ar_delegate_t *own_file_delegate = ar_delegate__create(ref_log, "file");
 
-// Register the proxy with a negative ID
-bool success = ar_system__register_proxy(own_system, -100, own_file_proxy);
+// Register the delegate with a negative ID
+bool success = ar_system__register_delegate(own_system, -100, own_file_delegate);
 if (success) {
-    // Proxy is now owned by the system
-    // Messages to agent ID -100 will be routed to the file proxy
+    // Delegate is now owned by the system
+    // Messages to agent ID -100 will be routed to the file delegate
 }
 
-// The proxy will be automatically destroyed when the system is destroyed
+// The delegate will be automatically destroyed when the system is destroyed
 ar_system__destroy(own_system);
 ```
 
@@ -245,7 +245,7 @@ The system module follows strict ownership rules:
 - **Agency Ownership**: Each system instance owns and destroys its agency
 - **Interpreter Ownership**: Each system instance owns and destroys its interpreter
 - **Log Ownership**: Each system instance owns and destroys its log
-- **Proxy Registry Ownership**: Each system instance owns and destroys its proxy registry (and all registered proxies)
+- **Delegate Registry Ownership**: Each system instance owns and destroys its delegate registry (and all registered proxies)
 - **Context Ownership**: Each system instance owns and destroys the shared context
 - **No Message Ownership**: Messages are owned by the agent module
 
@@ -266,8 +266,8 @@ The system module depends on:
 - `ar_agency`: For agent persistence operations
 - `ar_methodology`: For method persistence operations
 - `ar_interpreter`: For executing agent methods
-- `ar_proxy`: For proxy instance management
-- `ar_proxy_registry`: For managing registered proxies
+- `ar_delegate`: For delegate instance management
+- `ar_delegate_registry`: For managing registered proxies
 - `ar_data`: For creating and managing shared context
 - `ar_log`: For logging operations
 

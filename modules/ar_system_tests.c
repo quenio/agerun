@@ -3,8 +3,8 @@
 #include "ar_methodology.h"
 #include "ar_agency.h"
 #include "ar_agent_registry.h"
-#include "ar_proxy.h"
-#include "ar_proxy_registry.h"
+#include "ar_delegate.h"
+#include "ar_delegate_registry.h"
 #include "ar_assert.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -280,7 +280,7 @@ static void test_no_auto_saving_on_shutdown(void) {
     printf("No auto-saving test passed.\n");
 }
 
-static void test_system__has_proxy_registry(void) {
+static void test_system__has_delegate_registry(void) {
     printf("Testing that system has proxy registry...\n");
 
     // Given a system instance
@@ -288,7 +288,7 @@ static void test_system__has_proxy_registry(void) {
     AR_ASSERT(mut_system != NULL, "System creation should succeed");
 
     // When we get the proxy registry
-    ar_proxy_registry_t *ref_registry = ar_system__get_proxy_registry(mut_system);
+    ar_delegate_registry_t *ref_registry = ar_system__get_delegate_registry(mut_system);
 
     // Then the registry should exist
     AR_ASSERT(ref_registry != NULL, "System should have a proxy registry");
@@ -311,20 +311,20 @@ static void test_system__register_proxy(void) {
     AR_ASSERT(ref_log != NULL, "System should have a log");
 
     // And a test proxy
-    ar_proxy_t *own_proxy = ar_proxy__create(ref_log, "test");
+    ar_delegate_t *own_proxy = ar_delegate__create(ref_log, "test");
     AR_ASSERT(own_proxy != NULL, "Proxy creation should succeed");
 
     // When we register the proxy with ID -100
-    bool result = ar_system__register_proxy(mut_system, -100, own_proxy);
+    bool result = ar_system__register_delegate(mut_system, -100, own_proxy);
 
     // Then the registration should succeed
     AR_ASSERT(result, "Proxy registration should succeed");
 
     // And we should be able to find it in the registry
-    ar_proxy_registry_t *ref_registry = ar_system__get_proxy_registry(mut_system);
-    ar_proxy_t *ref_found = ar_proxy_registry__find(ref_registry, -100);
+    ar_delegate_registry_t *ref_registry = ar_system__get_delegate_registry(mut_system);
+    ar_delegate_t *ref_found = ar_delegate_registry__find(ref_registry, -100);
     AR_ASSERT(ref_found != NULL, "Registered proxy should be findable");
-    AR_ASSERT(strcmp(ar_proxy__get_type(ref_found), "test") == 0, "Found proxy should have correct type");
+    AR_ASSERT(strcmp(ar_delegate__get_type(ref_found), "test") == 0, "Found proxy should have correct type");
 
     // Clean up (system owns proxy now, will destroy it)
     ar_system__destroy(mut_system);
@@ -342,7 +342,7 @@ int main(void) {
     test_no_auto_saving_on_shutdown();
 
     // Test proxy registry integration
-    test_system__has_proxy_registry();
+    test_system__has_delegate_registry();
     test_system__register_proxy();
     
     // Create system instance

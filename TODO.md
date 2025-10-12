@@ -1295,13 +1295,13 @@ Once all modules are migrated to Zig with C-ABI compatibility, identify internal
   - **External usage**: Callers use `ar_delegate_registry__find(ar_system__get_delegate_registry(system), id)`
   - **Lesson**: Always verify patterns exist before copying them; avoid YAGNI violations
 
-- [ ] **PREREQUISITE - Rename proxy modules to delegate**: Before implementing ar_delegation
-  - Rename all ar_proxy* files to ar_delegate* (8 files total)
-  - Update all references in code: ar_proxy → ar_delegate, ar_proxy_registry → ar_delegate_registry
-  - Run `make clean && make build 2>&1` to verify compilation
-  - Run `make run-tests 2>&1` to verify all tests pass
-  - Note: Makefile uses pattern-based rules and automatically picks up renamed files - no Makefile changes needed
-  - Note: This makes Cycles 1-4.5 reflect the delegate terminology before architectural revision
+- [x] **PREREQUISITE - Rename proxy modules to delegate**: Completed 2025-10-11 (Before implementing ar_delegation)
+  - [x] Renamed all ar_proxy* files to ar_delegate* (8 files total)
+  - [x] Updated all references in code: ar_proxy → ar_delegate, ar_proxy_registry → ar_delegate_registry
+  - [x] Verified compilation with `make clean && make build 2>&1` - all targets pass
+  - [x] Verified all tests pass with `make run-tests 2>&1` - 77 tests passing, zero memory leaks
+  - [x] Confirmed Makefile pattern-based rules automatically picked up renamed files - no Makefile changes needed
+  - [x] Cycles 1-4.5 now reflect delegate terminology throughout codebase
 
 - [ ] **TDD Cycle 5 - REVISED**: Create ar_delegation module (Architecture changed to delegation pattern)
   - **RED**: Write test `test_delegation__create_and_destroy()` → FAIL

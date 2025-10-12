@@ -13,7 +13,7 @@ Transparency in development practices is essential for understanding project his
 git commit -m "$(cat <<'EOF'
 feat: integrate proxy registry into system (TDD Cycle 4.5)
 
-Integrate ar_proxy_registry into ar_system following the established
+Integrate ar_delegate_registry into ar_system following the established
 ar_agency pattern. System now owns and manages the proxy registry with
 proper lifecycle handling and ownership semantics.
 
@@ -23,7 +23,7 @@ Implementation Details:
 - REFACTOR Phase: 2 new tests pass with zero leaks (527 allocations)
 
 Modified Files:
-- modules/ar_system.h: Added ar_system__get_proxy_registry()
+- modules/ar_system.h: Added ar_system__get_delegate_registry()
 - modules/ar_system.c: Added registry field and lifecycle management
 - modules/ar_system_tests.c: Added 2 BDD-style tests
 
@@ -130,7 +130,7 @@ make checkpoint-update CMD=commit STEP=8
 git commit -m "$(cat <<'EOF'
 feat: integrate proxy registry into system (TDD Cycle 4.5)
 
-Integrate ar_proxy_registry into ar_system following the established ar_agency
+Integrate ar_delegate_registry into ar_system following the established ar_agency
 pattern. System now owns and manages the proxy registry with proper lifecycle
 handling and ownership semantics.
 
@@ -140,7 +140,7 @@ Implementation Details:
 - REFACTOR Phase: 2 new tests pass with zero leaks (527 allocations)
 
 Modified Files:
-- modules/ar_system.h: Added ar_system__get_proxy_registry(), register_proxy()
+- modules/ar_system.h: Added ar_system__get_delegate_registry(), register_proxy()
 - modules/ar_system.c: Added registry field, lifecycle management
 - modules/ar_system_tests.c: Added test_system__has_proxy_registry(), register
 

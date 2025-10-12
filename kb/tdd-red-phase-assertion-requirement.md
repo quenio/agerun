@@ -12,20 +12,20 @@ Proper TDD RED phase validates that tests are actually testing something and can
 // In ar_system_tests.c:
 static void test_system__has_proxy_registry(void) {
     ar_system_t *mut_system = ar_system__create();
-    ar_proxy_registry_t *ref_registry = ar_system__get_proxy_registry(mut_system);
+    ar_delegate_registry_t *ref_registry = ar_system__get_delegate_registry(mut_system);
     AR_ASSERT(ref_registry != NULL, "System should have a proxy registry");
     ar_system__destroy(mut_system);
 }
-// RESULT: Compilation fails because ar_system__get_proxy_registry() doesn't exist
+// RESULT: Compilation fails because ar_system__get_delegate_registry() doesn't exist
 // PROBLEM: We don't know if the test logic is correct
 
 // CORRECT RED Phase: Stub exists → assertion failure
 
 // Step 1: Add function declaration to header (ar_system.h)
-ar_proxy_registry_t* ar_system__get_proxy_registry(const ar_system_t *ref_system);
+ar_delegate_registry_t* ar_system__get_delegate_registry(const ar_system_t *ref_system);
 
 // Step 2: Add stub implementation (ar_system.c)
-ar_proxy_registry_t* ar_system__get_proxy_registry(const ar_system_t *ref_system) {
+ar_delegate_registry_t* ar_system__get_delegate_registry(const ar_system_t *ref_system) {
     return NULL;  // Stub always returns NULL
 }
 
@@ -36,7 +36,7 @@ static void test_system__has_proxy_registry(void) {
     AR_ASSERT(mut_system != NULL, "System creation should succeed");
 
     // When we get the proxy registry
-    ar_proxy_registry_t *ref_registry = ar_system__get_proxy_registry(mut_system);
+    ar_delegate_registry_t *ref_registry = ar_system__get_delegate_registry(mut_system);
 
     // Then the registry should exist
     AR_ASSERT(ref_registry != NULL, "System should have a proxy registry");
@@ -56,17 +56,17 @@ static void test_system__has_proxy_registry(void) {
 1. **Add Function Declaration** (header file):
    ```c
    // In modules/ar_system.h
-   bool ar_system__register_proxy(ar_system_t *mut_system,
+   bool ar_system__register_delegate(ar_system_t *mut_system,
                                    int64_t proxy_id,
-                                   ar_proxy_t *own_proxy);
+                                   ar_delegate_t *own_proxy);
    ```
 
 2. **Implement Stub** (implementation file):
    ```c
    // In modules/ar_system.c
-   bool ar_system__register_proxy(ar_system_t *mut_system,
+   bool ar_system__register_delegate(ar_system_t *mut_system,
                                    int64_t proxy_id,
-                                   ar_proxy_t *own_proxy) {
+                                   ar_delegate_t *own_proxy) {
        return false;  // Stub returns failure
    }
    ```
@@ -78,10 +78,10 @@ static void test_system__has_proxy_registry(void) {
        // Given a system and proxy
        ar_system_t *mut_system = ar_system__create();
        ar_log_t *ref_log = ar_system__get_log(mut_system);
-       ar_proxy_t *own_proxy = ar_proxy__create(ref_log, "test");
+       ar_delegate_t *own_proxy = ar_delegate__create(ref_log, "test");
 
        // When we register the proxy
-       bool result = ar_system__register_proxy(mut_system, -100, own_proxy);
+       bool result = ar_system__register_delegate(mut_system, -100, own_proxy);
 
        // Then registration should succeed
        AR_ASSERT(result, "Proxy registration should succeed");
@@ -107,7 +107,7 @@ static void test_system__has_proxy_registry(void) {
 # RED Phase execution order (from TDD Cycle 4.5)
 
 # 1. Add function declarations to header
-# modules/ar_system.h: Add ar_system__get_proxy_registry() signature
+# modules/ar_system.h: Add ar_system__get_delegate_registry() signature
 
 # 2. Add stub implementations
 # modules/ar_system.c: Return NULL for getter, false for register

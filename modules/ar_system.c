@@ -9,7 +9,7 @@
 #include "ar_heap.h"
 #include "ar_interpreter.h"
 #include "ar_log.h"
-#include "ar_proxy_registry.h"
+#include "ar_delegate_registry.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,7 +39,7 @@ struct ar_system_s {
     ar_agency_t *own_agency;         // Always owned by the system
     ar_interpreter_t *own_interpreter; // Always owned by the system
     ar_log_t *own_log;                // Always owned by the system
-    ar_proxy_registry_t *own_proxy_registry; // Always owned by the system
+    ar_delegate_registry_t *own_delegate_registry; // Always owned by the system
     ar_data_t *own_context;           // Shared context for all agents
 };
 
@@ -72,8 +72,8 @@ ar_system_t* ar_system__create(void) {
     }
 
     // Create proxy registry
-    own_system->own_proxy_registry = ar_proxy_registry__create();
-    if (!own_system->own_proxy_registry) {
+    own_system->own_delegate_registry = ar_delegate_registry__create();
+    if (!own_system->own_delegate_registry) {
         ar_log__destroy(own_system->own_log);
         ar_data__destroy(own_system->own_context);
         AR__HEAP__FREE(own_system);
@@ -83,7 +83,7 @@ ar_system_t* ar_system__create(void) {
     // Create agency with our log (it will create its own methodology)
     own_system->own_agency = ar_agency__create(own_system->own_log);
     if (!own_system->own_agency) {
-        ar_proxy_registry__destroy(own_system->own_proxy_registry);
+        ar_delegate_registry__destroy(own_system->own_delegate_registry);
         ar_log__destroy(own_system->own_log);
         ar_data__destroy(own_system->own_context);
         AR__HEAP__FREE(own_system);
@@ -93,7 +93,7 @@ ar_system_t* ar_system__create(void) {
     own_system->own_interpreter = ar_interpreter__create_with_agency(own_system->own_log, own_system->own_agency);
     if (!own_system->own_interpreter) {
         ar_agency__destroy(own_system->own_agency);
-        ar_proxy_registry__destroy(own_system->own_proxy_registry);
+        ar_delegate_registry__destroy(own_system->own_delegate_registry);
         ar_log__destroy(own_system->own_log);
         ar_data__destroy(own_system->own_context);
         AR__HEAP__FREE(own_system);
@@ -117,8 +117,8 @@ void ar_system__destroy(ar_system_t *own_system) {
         ar_agency__destroy(own_system->own_agency);
     }
 
-    if (own_system->own_proxy_registry) {
-        ar_proxy_registry__destroy(own_system->own_proxy_registry);
+    if (own_system->own_delegate_registry) {
+        ar_delegate_registry__destroy(own_system->own_delegate_registry);
     }
 
     if (own_system->own_log) {
@@ -250,19 +250,19 @@ ar_log_t* ar_system__get_log(const ar_system_t *ref_system) {
     return ref_system->own_log;
 }
 
-ar_proxy_registry_t* ar_system__get_proxy_registry(const ar_system_t *ref_system) {
+ar_delegate_registry_t* ar_system__get_delegate_registry(const ar_system_t *ref_system) {
     if (!ref_system) {
         return NULL;
     }
 
-    return ref_system->own_proxy_registry;
+    return ref_system->own_delegate_registry;
 }
 
-bool ar_system__register_proxy(ar_system_t *mut_system, int64_t proxy_id, ar_proxy_t *own_proxy) {
-    if (!mut_system || !mut_system->own_proxy_registry) {
+bool ar_system__register_delegate(ar_system_t *mut_system, int64_t proxy_id, ar_delegate_t *own_proxy) {
+    if (!mut_system || !mut_system->own_delegate_registry) {
         return false;
     }
 
-    return ar_proxy_registry__register(mut_system->own_proxy_registry, proxy_id, own_proxy);
+    return ar_delegate_registry__register(mut_system->own_delegate_registry, proxy_id, own_proxy);
 }
 
