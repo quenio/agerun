@@ -1295,6 +1295,14 @@ Once all modules are migrated to Zig with C-ABI compatibility, identify internal
   - **External usage**: Callers use `ar_delegate_registry__find(ar_system__get_delegate_registry(system), id)`
   - **Lesson**: Always verify patterns exist before copying them; avoid YAGNI violations
 
+- [ ] **PREREQUISITE - Rename proxy modules to delegate**: Before implementing ar_delegation
+  - Rename all ar_proxy* files to ar_delegate* (8 files total)
+  - Update all references in code: ar_proxy → ar_delegate, ar_proxy_registry → ar_delegate_registry
+  - Run `make clean && make build 2>&1` to verify compilation
+  - Run `make run-tests 2>&1` to verify all tests pass
+  - Note: Makefile uses pattern-based rules and automatically picks up renamed files - no Makefile changes needed
+  - Note: This makes Cycles 1-4.5 reflect the delegate terminology before architectural revision
+
 - [ ] **TDD Cycle 5 - REVISED**: Create ar_delegation module (Architecture changed to delegation pattern)
   - **RED**: Write test `test_delegation__create_and_destroy()` → FAIL
   - **GREEN**: Create ar_delegation module following ar_agency pattern
@@ -1304,7 +1312,10 @@ Once all modules are migrated to Zig with C-ABI compatibility, identify internal
 
 - [ ] **TDD Cycle 6**: Integrate ar_delegation into ar_system
   - **RED**: Write test `test_system__has_delegation()` → FAIL
+  - **GREEN**: Move own_delegate_registry from ar_system_s to ar_delegation_s (delegation now owns registry)
   - **GREEN**: Add own_delegation field to ar_system_s, update create/destroy lifecycle
+  - **GREEN**: Update ar_system__get_delegate_registry() to call ar_delegation__get_registry()
+  - **GREEN**: Update ar_system__register_delegate() to call ar_delegation__register_delegate()
   - **GREEN**: Implement ar_system__get_delegation() returning borrowed reference
   - **REFACTOR**: System coordinates both agency and delegation (Facade pattern)
 
