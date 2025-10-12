@@ -4,15 +4,37 @@ Create a git commit following the exact workflow specified in AGENTS.md.
 
 ## MANDATORY KB Consultation
 
-Before committing:
+Before committing, you MUST:
 1. Search: `grep "commit\|pre-commit\|checklist" kb/README.md`
-2. Must read:
-   - pre-commit-checklist-detailed
-   - atomic-commit-documentation-pattern
-   - incomplete-commit-message-recovery-pattern
-   - tdd-feature-completion-before-commit
-3. Apply all pre-commit requirements
-4. If commit message incomplete after push: use supplemental documentation commit ([details](../../../kb/incomplete-commit-message-recovery-pattern.md))
+2. Read these KB articles IN FULL using the Read tool:
+   - `kb/pre-commit-checklist-detailed.md`
+   - `kb/atomic-commit-documentation-pattern.md`
+   - `kb/incomplete-commit-message-recovery-pattern.md`
+   - `kb/tdd-feature-completion-before-commit.md`
+   - `kb/documentation-index-consistency-pattern.md` (if module integration involved)
+3. Check Related Patterns sections in each article and read any additional relevant articles found there
+4. In your response, quote these specific items from the KB:
+   - The complete pre-commit checklist steps
+   - Requirements for CHANGELOG.md updates (NON-NEGOTIABLE)
+   - When to use supplemental documentation commits
+   - Module integration documentation requirements
+5. Apply ALL pre-commit requirements from the KB
+
+**Example of proper KB consultation:**
+```
+I've read pre-commit-checklist-detailed.md which requires:
+
+"Pre-Commit Checklist (MANDATORY):
+1. make clean build 2>&1 → verify exit 0 → make check-logs
+2. make check-docs → validate all documentation
+3. Update docs for API changes
+4. Update TODO.md & CHANGELOG.md in same commit"
+
+The CHANGELOG.md update is NON-NEGOTIABLE per atomic-commit-documentation-pattern.md.
+After module integration, modules/README.md must be updated per documentation-index-consistency-pattern.md.
+```
+
+**CRITICAL**: If you skip reading these KB articles, you risk incomplete commits that may fail CI or violate project standards.
 
 # Commit
 ## Checkpoint Tracking
