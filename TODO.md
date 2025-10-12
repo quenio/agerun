@@ -1328,7 +1328,72 @@ Once all modules are migrated to Zig with C-ABI compatibility, identify internal
   - **Files Modified**: 17 files total
     - Production: ar_send_instruction_evaluator.{h,zig}, ar_instruction_evaluator.{h,zig}, ar_method_evaluator.{h,zig}, ar_interpreter.{h,c}, ar_system.c, ar_evaluator_fixture.{h,c}
     - Tests: ar_send_instruction_evaluator_tests.c, ar_instruction_evaluator_tests.c, ar_instruction_evaluator_dlsym_tests.c, ar_method_evaluator_tests.c, ar_interpreter_fixture.c, ar_interpreter_tests.c
-  - **Result**: Clean build (1m 36s), 78 tests passing, zero memory leaks, ready for TDD Cycle 7
+  - **Result**: Clean build (1m 36s), 78 tests passing, zero memory leaks, ready for TDD Cycle 6.5
+
+- [ ] **TDD Cycle 6.5**: Add message queue infrastructure to ar_delegation (PREREQUISITE for Cycle 7)
+  - **Rationale**: Delegates need message queues just like agents - without this, routing has nowhere to deliver messages
+  - **Architecture**: Follow ar_agent/ar_agency pattern exactly - each delegate gets a message queue (ar_list)
+
+  - **Implementation Details** (based on ar_agent.c lines 21-89):
+    - Add `ar_list_t *own_message_queue` field to `struct ar_delegate_s` in ar_delegate.c:6-9
+    - Initialize queue in `ar_delegate__create()`: `own_delegate->own_message_queue = ar_list__create()`
+    - Cleanup in `ar_delegate__destroy()`: destroy all messages in queue, then destroy queue itself
+    - Pattern: ar_agent.c:79-89 shows proper cleanup with ownership handling
+
+  - **RED Phase**: Write test `test_delegation__send_to_delegate()` in ar_delegation_tests.c
+    - Test pattern: Create delegation, register delegate, send message, verify delivery
+    - Should FAIL because functions don't exist yet
+
+  - **GREEN Phase - ar_delegate module** (add to ar_delegate.h and ar_delegate.c):
+    - `bool ar_delegate__send(ar_delegate_t *mut_delegate, ar_data_t *own_message)`
+      - Pattern: ar_agent.c:96-150 (takes ownership, adds to queue via ar_list__add_last)
+      - Ownership: Takes ownership of message, stores in queue owned by delegate
+      - Returns false and destroys message if queue doesn't exist
+    - `bool ar_delegate__has_messages(const ar_delegate_t *ref_delegate)`
+      - Pattern: ar_agent.c:221-227 (checks ar_list__count() > 0)
+      - Returns true if delegate has messages in queue
+    - `ar_data_t* ar_delegate__get_message(ar_delegate_t *mut_delegate)`
+      - Pattern: ar_agent.c:229-242 (removes first message via ar_list__remove_first)
+      - Ownership: Removes from queue, drops ownership from delegate, caller must destroy
+      - Returns NULL if no messages available
+
+  - **GREEN Phase - ar_delegation module** (add to ar_delegation.h and ar_delegation.c):
+    - `bool ar_delegation__send_to_delegate(ar_delegation_t *mut_delegation, int64_t delegate_id, ar_data_t *own_message)`
+      - Pattern: ar_agency.c:258-302 (finds delegate in registry, calls delegate send)
+      - Finds delegate via `ar_delegate_registry__find(own_registry, delegate_id)`
+      - Calls `ar_delegate__send(mut_delegate, own_message)` - ownership transferred
+      - Destroys message if delegate not found
+      - Returns true on success, false on failure
+    - `bool ar_delegation__delegate_has_messages(ar_delegation_t *ref_delegation, int64_t delegate_id)`
+      - Pattern: ar_agency.c:385-396 (finds delegate, calls has_messages)
+      - Returns false if delegate not found
+    - `ar_data_t* ar_delegation__get_delegate_message(ar_delegation_t *mut_delegation, int64_t delegate_id)`
+      - Pattern: ar_agency.c:398-409 (finds delegate, calls get_message)
+      - Returns NULL if delegate not found or no messages
+      - Ownership: Caller must destroy returned message
+
+  - **REFACTOR Phase**:
+    - Verify zero memory leaks with all tests
+    - Verify message ownership transfers correctly (delegate owns while queued, caller owns after get)
+    - Test edge cases: send to non-existent delegate, get from empty queue, destroy delegate with queued messages
+    - Update ar_delegate.md with message queue semantics
+
+  - **Files Modified**:
+    - modules/ar_delegate.{h,c} - add message queue field and send/has/get functions
+    - modules/ar_delegation.{h,c} - add send_to_delegate, delegate_has_messages, get_delegate_message
+    - modules/ar_delegation_tests.c - add comprehensive tests
+    - modules/ar_delegate.md - document message queue behavior
+
+  - **Pattern Match Summary**:
+    - `ar_agent_t` (agent.c:15-24) ↔ `ar_delegate_t` (delegate.c:6-9) - add own_message_queue field
+    - `ar_agent__send()` (agent.c:96) ↔ `ar_delegate__send()` - takes ownership, adds to queue
+    - `ar_agent__has_messages()` (agent.c:221) ↔ `ar_delegate__has_messages()` - checks queue count
+    - `ar_agent__get_message()` (agent.c:229) ↔ `ar_delegate__get_message()` - removes from queue
+    - `ar_agency__send_to_agent()` (agency.c:258) ↔ `ar_delegation__send_to_delegate()` - routes to delegate
+    - `ar_agency__agent_has_messages()` (agency.c:385) ↔ `ar_delegation__delegate_has_messages()` - checks delegate
+    - `ar_agency__get_agent_message()` (agency.c:398) ↔ `ar_delegation__get_delegate_message()` - gets from delegate
+
+  - **Result**: Delegates can receive and queue messages, ready for routing implementation in Cycle 7
 
 - [ ] **TDD Cycle 7**: Update evaluators to route messages via delegation
   - **RED**: Write test for send evaluator routing negative IDs to delegation → FAIL
