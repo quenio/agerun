@@ -51,8 +51,8 @@ def find_documentation_files():
     """Find all documentation files: markdown files, Zig source files, and test files (for comment validation)"""
     doc_files = []
     for root, dirs, files in os.walk("."):
-        # Skip bin directory
-        if "/bin/" in root or root.endswith("/bin"):
+        # Skip bin and plans directories
+        if "/bin/" in root or root.endswith("/bin") or "/plans/" in root or root.endswith("/plans"):
             continue
         for file in files:
             # Include markdown files (except TODO.md and CHANGELOG.md)

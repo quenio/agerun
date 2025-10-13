@@ -1,5 +1,7 @@
 # TDD Cycle 6.5: Add Message Queue Infrastructure to ar_delegation
 
+**Note**: This is an implementation plan. All function references (`ar_delegate__send`, `ar_delegate__has_messages`, `ar_delegate__take_message`, `ar_delegation__send_to_delegate`, `ar_delegation__delegate_has_messages`, `ar_delegation__take_delegate_message`) are planned implementations, not yet created. This plan documents the TDD methodology for creating these functions.
+
 ## Overview
 Implement message queuing for delegates with proper ownership semantics. Each iteration has ONE assertion, GREEN implements ONLY enough to pass that assertion. All tests use BDD structure.
 
