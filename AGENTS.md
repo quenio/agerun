@@ -108,6 +108,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
   - `mut_`: Mutable references (read-write access)
   - `ref_`: Borrowed references (read-only access)
   - Apply to ALL variables, parameters, and struct fields (including local variables)
+  - Use `take_` for ownership transfer, `get_` for read-only access ([details](kb/function-naming-state-change-convention.md))
   - **IMPORTANT**: When receiving ownership (e.g., from malloc/create functions), use `own_` prefix immediately
   - Consistent across .h, .c, and _tests.c files
 - Set pointers to NULL after ownership transfer
@@ -158,6 +159,8 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Documentation validation**: Tests verify documented behavior is accurate ([details](kb/test-driven-documentation-validation.md))
 **Multi-session**: Use session tracking for large changes ([details](kb/multi-session-tdd-planning.md))
 **Effort estimation**: Estimate in TDD cycles not hours/days ([details](kb/tdd-cycle-effort-estimation.md))
+**Iteration planning**: One assertion per iteration ([details](kb/tdd-iteration-planning-pattern.md))
+**GREEN minimalism**: Hardcoded returns valid if they pass tests ([details](kb/tdd-green-phase-minimalism.md))
 **Lifecycle separation**: Handle creation/destruction in separate cycles ([details](kb/lifecycle-event-separation-tdd.md))
 **Test modification**: Ask permission before changing tests ([details](kb/permission-based-test-modification.md))
 **Compilation-based TDD**: Use compilation failure as RED phase for infrastructure removal ([details](kb/compilation-based-tdd-approach.md))
@@ -408,6 +411,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 ### 14. Plan Verification and Review
 
 **Single task focus**: One TODO = one plan, include verification steps ([details](kb/plan-verification-checklist.md), [review](kb/plan-verification-and-review.md))
+**Iterative refinement**: Expect multiple feedback rounds to get methodology right ([details](kb/iterative-plan-refinement-pattern.md))
 **User feedback**: Valuable QA - update plans immediately when corrected ([details](kb/user-feedback-as-qa.md))
 **Module constraints**: Different modules have different requirements - check tests
 **Generic design**: Consider ar_path vs ar_memory_path for broader utility ([details](kb/oo-to-c-adaptation.md))

@@ -166,10 +166,11 @@ Next pending: Determine KB Article Strategy
 
 ### Second Decision: Cross-References
 
-**CRITICAL**: Plan cross-references between articles:
+**CRITICAL**: Plan cross-references between articles ([details](../../../kb/iterative-plan-refinement-pattern.md)):
 - New articles should reference related existing articles
 - Existing articles should be updated with references to new articles
 - Create a bidirectional web of knowledge
+- Expect multiple refinement iterations to get methodology right
 
 #### [CHECKPOINT END - STEP 2]
 ```bash

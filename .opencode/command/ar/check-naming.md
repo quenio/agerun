@@ -58,11 +58,12 @@ make checkpoint-status CMD=check_naming
 - Functions: `ar_<module>__<function>`
 - Static functions: `_<function>`
 
-**Common violations to watch for**:
+**Common violations to watch for** ([details](../../../kb/function-naming-state-change-convention.md)):
 - Missing double underscore in function names
 - Static functions without underscore prefix
 - Non-static functions with underscore prefix
 - Typedefs not ending in `_t`
+- Using `get_` for state-changing operations (should be `take_` for ownership transfer)
 
 For example: `ar_data_create()` should be `ar_data__create_integer()`
 

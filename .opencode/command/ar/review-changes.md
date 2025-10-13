@@ -80,7 +80,7 @@ This command performs a comprehensive review of all uncommitted changes across m
 #### 1. Code Quality Review
 - **Code Smells Detection**: Long methods (>50 lines), large modules (>850 lines), excessive parameters (>5), duplication
 - **Memory Management**: Ownership prefixes (own_, mut_, ref_), heap tracking macros, NULL after transfer
-- **Naming Conventions**: ar_module__function pattern, proper prefixes, consistent style
+- **Naming Conventions**: ar_module__function pattern, proper prefixes, consistent style, take_ vs get_ distinction ([details](../../../kb/function-naming-state-change-convention.md))
 - **Error Handling**: Proper propagation, single print location, graceful degradation
 - **Test Coverage**: BDD structure, memory leak verification, one test per behavior
 - **Feature Value**: Validate features provide functional value, not just decoration ([details](../../../kb/functional-value-validation-pattern.md))

@@ -7,7 +7,7 @@ The RED phase of TDD must produce **assertion failures**, not compilation errors
 Proper TDD RED phase validates that tests are actually testing something and can detect failures. Compilation errors don't verify test logic works correctly. Assertion failures prove the test can catch bugs when the implementation is wrong.
 
 ## Example
-```c
+```c  // EXAMPLE: TDD Cycle 6.5 planned functions
 // WRONG RED Phase: Function doesn't exist → compilation error
 // In ar_system_tests.c:
 static void test_system__has_proxy_registry(void) {
@@ -102,6 +102,41 @@ static void test_system__has_proxy_registry(void) {
 - Integer functions → return `0` or error code
 - Enum functions → return error/invalid state
 
+### Explicit Failing Assertion Comments
+
+**Note**: Example below uses `ar_delegate__send()` which is a function planned for implementation in TDD Cycle 6.5, not yet implemented.  // EXAMPLE: TDD Cycle 6.5
+
+**Best Practice**: In TDD plans and RED phase documentation, add explicit comments showing which assertion will fail and why:
+
+```c  // EXAMPLE: TDD Cycle 6.5 planned functions
+// RED Phase test with explicit failure indicator
+static void test_delegate__send_returns_true(void) {
+    // Given a delegate instance
+    ar_log_t *ref_log = ar_log__create();
+    ar_delegate_t *own_delegate = ar_delegate__create(ref_log, "test");
+
+    // When sending a message
+    ar_data_t *own_message = ar_data__create_string("hello");
+    bool result = ar_delegate__send(own_delegate, own_message);
+
+    // Then send should return true
+    AR_ASSERT(result, "Send should return true");  // ← FAILS (stub returns false)
+
+    // Cleanup
+    ar_delegate__destroy(own_delegate);
+    ar_log__destroy(ref_log);
+}
+```
+
+**Pattern**: `// ← FAILS (reason)` immediately after failing assertion
+
+This makes TDD plans reviewable and executable. Anyone can verify the RED phase will actually fail as intended. Common failure reasons:
+- `// ← FAILS (stub returns false)`
+- `// ← FAILS (stub returns NULL)`
+- `// ← FAILS (stub returns 0)`
+- `// ← FAILS (queue not implemented yet)`
+- `// ← FAILS (ownership not transferred yet)`
+
 ## Implementation
 ```bash
 # RED Phase execution order (from TDD Cycle 4.5)
@@ -140,7 +175,7 @@ Compilation errors in RED phase have several problems:
 4. **Poor assertions**: Might have weak assertions that don't catch bugs
 
 Example of why this matters:
-```c
+```c  // EXAMPLE: TDD Cycle 6.5 planned functions
 // Test written against non-existent function
 static void test_agent__send_message(void) {  // EXAMPLE: Hypothetical test
     ar_agent_t *mut_agent = ar_agent__create(NULL, "test");
@@ -161,6 +196,9 @@ static void test_agent__send_message(void) {  // EXAMPLE: Hypothetical test
 Note: [Compilation-Based TDD Approach](compilation-based-tdd-approach.md) is valid for **infrastructure removal** (removing parameters, global constants, fields), but normal feature development should use assertion-based RED phase.
 
 ## Related Patterns
+- [TDD Iteration Planning Pattern](tdd-iteration-planning-pattern.md) - One assertion per iteration
+- [TDD GREEN Phase Minimalism](tdd-green-phase-minimalism.md) - Minimal GREEN implementations
+- [Iterative Plan Refinement Pattern](iterative-plan-refinement-pattern.md) - Refining TDD plans
 - [Compilation-Based TDD Approach](compilation-based-tdd-approach.md) - Exception for removal work
 - [Red-Green-Refactor Cycle](red-green-refactor-cycle.md) - Complete TDD cycle
 - [BDD Test Structure](bdd-test-structure.md) - Test organization
