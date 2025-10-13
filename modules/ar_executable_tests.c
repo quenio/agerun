@@ -613,7 +613,7 @@ static void test_executable__continues_on_save_failure(ar_executable_fixture_t *
     // Remove any existing file first to avoid mkdir errors
     remove(methodology_path);
     if (mkdir(methodology_path, 0555) != 0) {
-        printf("WARNING: Failed to create blocking directory for methodology save\n");
+        perror("WARNING: Failed to create blocking directory for methodology save");
     }
     
     // When: Build and run the executable
