@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdbool.h>
+#include <errno.h>
 #include <signal.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -608,14 +609,12 @@ static void test_executable__continues_on_save_failure(ar_executable_fixture_t *
     char methodology_path[512];
     snprintf(methodology_path, sizeof(methodology_path), "%s/agerun.methodology", build_dir);
     
-    // Given: Create a read-only file to force save failure
-    // First create the file
-    FILE *fp = fopen(methodology_path, "w");
-    if (fp) {
-        fprintf(fp, "This file is read-only\n");
-        fclose(fp);
-        // Make it read-only (remove write permissions)
-        chmod(methodology_path, 0444);
+    // Given: Block creation of the methodology file to force save failure
+    // Use a directory with the same name so fopen() fails with EISDIR
+    // Remove any existing file first to avoid mkdir errors
+    remove(methodology_path);
+    if (mkdir(methodology_path, 0555) != 0) {
+        fprintf(stderr, "WARNING: Failed to create blocking directory for methodology save at '%s' (%s) - test may not properly validate save failure behavior\n", methodology_path, strerror(errno));
     }
     
     // When: Build and run the executable
@@ -641,9 +640,10 @@ static void test_executable__continues_on_save_failure(ar_executable_fixture_t *
     // Close pipe and check exit status
     int exit_status = pclose(pipe);
     
-    // Clean up - restore write permissions and remove file
-    chmod(methodology_path, 0644);
-    remove(methodology_path);
+    // Clean up - remove the blocking directory so future tests can create the file
+    if (rmdir(methodology_path) != 0) {
+        fprintf(stderr, "WARNING: Failed to remove blocking directory for methodology save - may affect subsequent test runs\n");
+    }
     
     // Clean up methods directory
     ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
