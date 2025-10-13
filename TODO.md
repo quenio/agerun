@@ -1331,6 +1331,7 @@ Once all modules are migrated to Zig with C-ABI compatibility, identify internal
   - **Result**: Clean build (1m 36s), 78 tests passing, zero memory leaks, ready for TDD Cycle 6.5
 
 - [ ] **TDD Cycle 6.5**: Add message queue infrastructure to ar_delegation (PREREQUISITE for Cycle 7)
+  - **Plan**: See [plans/tdd_cycle_6_5_plan.md](plans/tdd_cycle_6_5_plan.md) for complete 14-iteration implementation plan
   - **Rationale**: Delegates need message queues just like agents - without this, routing has nowhere to deliver messages
   - **Architecture**: Follow ar_agent/ar_agency pattern exactly - each delegate gets a message queue (ar_list)
 
