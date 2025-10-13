@@ -641,7 +641,7 @@ static void test_executable__continues_on_save_failure(ar_executable_fixture_t *
     
     // Clean up - remove the blocking directory so future tests can create the file
     if (rmdir(methodology_path) != 0) {
-        printf("WARNING: Failed to remove blocking directory for methodology save\n");
+        printf("WARNING: Failed to remove blocking directory for methodology save - may affect subsequent test runs\n");
     }
     
     // Clean up methods directory
