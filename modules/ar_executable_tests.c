@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdbool.h>
+#include <errno.h>
 #include <signal.h>
 #include <unistd.h>
 #include <sys/types.h>
