@@ -1,6 +1,7 @@
 /* AgeRun Delegation Implementation */
 #include "ar_delegation.h"
 #include "ar_delegate_registry.h"
+#include "ar_data.h"
 #include "ar_heap.h"
 #include <stdbool.h>
 
@@ -62,4 +63,47 @@ bool ar_delegation__register_delegate(ar_delegation_t *mut_delegation,
 
     // Delegate to the registry
     return ar_delegate_registry__register(mut_delegation->own_registry, delegate_id, own_delegate);
+}
+
+bool ar_delegation__send_to_delegate(ar_delegation_t *mut_delegation,
+                                      int64_t delegate_id,
+                                      ar_data_t *own_message) {
+    if (!mut_delegation || !mut_delegation->own_registry) {
+        if (own_message) {
+            ar_data__destroy(own_message);
+        }
+        return false;
+    }
+    ar_delegate_t *mut_delegate = ar_delegate_registry__find(mut_delegation->own_registry, delegate_id);
+    if (!mut_delegate) {
+        if (own_message) {
+            ar_data__destroy(own_message);
+        }
+        return false;
+    }
+    return ar_delegate__send(mut_delegate, own_message);
+}
+
+bool ar_delegation__delegate_has_messages(ar_delegation_t *ref_delegation,
+                                           int64_t delegate_id) {
+    if (!ref_delegation || !ref_delegation->own_registry) {
+        return false;
+    }
+    ar_delegate_t *ref_delegate = ar_delegate_registry__find(ref_delegation->own_registry, delegate_id);
+    if (!ref_delegate) {
+        return false;
+    }
+    return ar_delegate__has_messages(ref_delegate);
+}
+
+ar_data_t* ar_delegation__take_delegate_message(ar_delegation_t *mut_delegation,
+                                                 int64_t delegate_id) {
+    if (!mut_delegation || !mut_delegation->own_registry) {
+        return NULL;
+    }
+    ar_delegate_t *mut_delegate = ar_delegate_registry__find(mut_delegation->own_registry, delegate_id);
+    if (!mut_delegate) {
+        return NULL;
+    }
+    return ar_delegate__take_message(mut_delegate);
 }

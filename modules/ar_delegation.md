@@ -88,6 +88,81 @@ Registers a delegate with the delegation.
 
 **Ownership**: Takes ownership of delegate on success. Caller must destroy on failure.
 
+### ar_delegation__send_to_delegate
+
+```c
+bool ar_delegation__send_to_delegate(ar_delegation_t *mut_delegation,
+                                      int64_t delegate_id,
+                                      ar_data_t *own_message);
+```
+
+Sends a message to a delegate via delegation.
+
+**Parameters**:
+- `mut_delegation`: Delegation instance (mutable reference)
+- `delegate_id`: Delegate ID to send to (negative)
+- `own_message`: Message to send (ownership transferred)
+
+**Returns**: true if message was queued successfully, false otherwise
+
+**Ownership**: Takes ownership of message. Delegates to `ar_delegate__send()`.
+
+### ar_delegation__delegate_has_messages
+
+```c
+bool ar_delegation__delegate_has_messages(ar_delegation_t *ref_delegation,
+                                           int64_t delegate_id);
+```
+
+Checks if a delegate has queued messages.
+
+**Parameters**:
+- `ref_delegation`: Delegation instance (borrowed reference)
+- `delegate_id`: Delegate ID to check (negative)
+
+**Returns**: true if delegate has messages, false otherwise
+
+**Ownership**: Borrows references. Delegates to `ar_delegate__has_messages()`.
+
+### ar_delegation__take_delegate_message
+
+```c
+ar_data_t* ar_delegation__take_delegate_message(ar_delegation_t *mut_delegation,
+                                                 int64_t delegate_id);
+```
+
+Takes the next message from a delegate's queue.
+
+**Parameters**:
+- `mut_delegation`: Delegation instance (mutable reference)
+- `delegate_id`: Delegate ID to take from (negative)
+
+**Returns**: Next queued message (ownership transferred), or NULL if empty
+
+**Ownership**: **Caller MUST destroy returned message**. Delegates to `ar_delegate__take_message()`.
+
+## Message Queue Pattern
+
+The delegation layer provides routing to delegate message queues:
+
+```c
+// Send message to delegate
+ar_delegation__send_to_delegate(delegation, -100, ar_data__create_string("hello"));
+
+// Check for messages
+if (ar_delegation__delegate_has_messages(delegation, -100)) {
+    // Take message (caller owns it)
+    ar_data_t *own_msg = ar_delegation__take_delegate_message(delegation, -100);
+
+    // Process message...
+
+    // MUST destroy (caller owns it)
+    ar_data__destroy(own_msg);
+}
+```
+
+See `ar_delegate.md` for detailed message queue ownership semantics.
+
 ## Usage Example
 
 ```c

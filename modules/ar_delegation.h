@@ -46,4 +46,35 @@ bool ar_delegation__register_delegate(ar_delegation_t *mut_delegation,
                                        int64_t delegate_id,
                                        ar_delegate_t *own_delegate);
 
+/**
+ * Send a message to a delegate via delegation
+ * @param mut_delegation The delegation instance (mutable reference)
+ * @param delegate_id The delegate ID to send to
+ * @param own_message The message to send (ownership transferred)
+ * @return true if message was queued successfully, false otherwise
+ * @note Ownership: Takes ownership of own_message
+ */
+bool ar_delegation__send_to_delegate(ar_delegation_t *mut_delegation,
+                                      int64_t delegate_id,
+                                      ar_data_t *own_message);
+
+/**
+ * Check if a delegate has queued messages
+ * @param ref_delegation The delegation instance (borrowed reference)
+ * @param delegate_id The delegate ID to check
+ * @return true if delegate has messages, false otherwise
+ */
+bool ar_delegation__delegate_has_messages(ar_delegation_t *ref_delegation,
+                                           int64_t delegate_id);
+
+/**
+ * Take the next message from a delegate's queue
+ * @param mut_delegation The delegation instance (mutable reference)
+ * @param delegate_id The delegate ID to take from
+ * @return The next queued message (ownership transferred), or NULL if empty
+ * @note Ownership: Caller MUST destroy returned message
+ */
+ar_data_t* ar_delegation__take_delegate_message(ar_delegation_t *mut_delegation,
+                                                 int64_t delegate_id);
+
 #endif /* AGERUN_DELEGATION_H */
