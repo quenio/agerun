@@ -11,6 +11,12 @@
 static void test_delegate__create_and_destroy(void);
 static void test_delegate__stores_log_and_type(void);
 static void test_delegate__handle_message_returns_false(void);
+static void test_delegate__send_returns_true(void);
+static void test_delegate__has_no_messages_initially(void);
+static void test_delegate__has_messages_after_send(void);
+static void test_delegate__take_message_returns_null_when_empty(void);
+static void test_delegate__take_message_returns_sent_message(void);
+static void test_delegate__take_message_removes_from_queue(void);
 
 int main(void) {
     // Directory check
@@ -30,6 +36,12 @@ int main(void) {
     test_delegate__create_and_destroy();
     test_delegate__stores_log_and_type();
     test_delegate__handle_message_returns_false();
+    test_delegate__send_returns_true();
+    test_delegate__has_no_messages_initially();
+    test_delegate__has_messages_after_send();
+    test_delegate__take_message_returns_null_when_empty();
+    test_delegate__take_message_returns_sent_message();
+    test_delegate__take_message_removes_from_queue();
 
     printf("All delegate tests passed!\n");
     return 0;
@@ -101,6 +113,133 @@ static void test_delegate__handle_message_returns_false(void) {
     // Clean up
     ar_data__destroy(own_message);
     ar_delegate__destroy(own_delegate);
+
+    printf("    PASS\n");
+}
+
+static void test_delegate__send_returns_true(void) {
+    printf("  test_delegate__send_returns_true...\n");
+
+    // Given a delegate instance
+    ar_log_t *ref_log = ar_log__create();
+    ar_delegate_t *own_delegate = ar_delegate__create(ref_log, "test");
+
+    // When sending a message
+    ar_data_t *own_message = ar_data__create_string("hello");
+    bool result = ar_delegate__send(own_delegate, own_message);
+
+    // Then send should return true
+    AR_ASSERT(result, "Send should return true");
+
+    // Cleanup
+    ar_delegate__destroy(own_delegate);
+    ar_log__destroy(ref_log);
+
+    printf("    PASS\n");
+}
+
+static void test_delegate__has_no_messages_initially(void) {
+    printf("  test_delegate__has_no_messages_initially...\n");
+
+    // Given a delegate instance with no messages sent
+    ar_log_t *ref_log = ar_log__create();
+    ar_delegate_t *own_delegate = ar_delegate__create(ref_log, "test");
+
+    // When checking if delegate has messages
+    bool has_messages = ar_delegate__has_messages(own_delegate);
+
+    // Then it should return false
+    AR_ASSERT(!has_messages, "Should have no messages initially");
+
+    // Cleanup
+    ar_delegate__destroy(own_delegate);
+    ar_log__destroy(ref_log);
+
+    printf("    PASS\n");
+}
+
+static void test_delegate__has_messages_after_send(void) {
+    printf("  test_delegate__has_messages_after_send...\n");
+
+    // Given a delegate with a sent message
+    ar_log_t *ref_log = ar_log__create();
+    ar_delegate_t *own_delegate = ar_delegate__create(ref_log, "test");
+
+    // When sending a message and checking if delegate has messages
+    ar_delegate__send(own_delegate, ar_data__create_string("hello"));
+    bool has_messages = ar_delegate__has_messages(own_delegate);
+
+    // Then it should return true
+    AR_ASSERT(has_messages, "Should have messages after send");
+
+    // Cleanup
+    ar_delegate__destroy(own_delegate);
+    ar_log__destroy(ref_log);
+
+    printf("    PASS\n");
+}
+
+static void test_delegate__take_message_returns_null_when_empty(void) {
+    printf("  test_delegate__take_message_returns_null_when_empty...\n");
+
+    // Given a delegate with no messages
+    ar_log_t *ref_log = ar_log__create();
+    ar_delegate_t *own_delegate = ar_delegate__create(ref_log, "test");
+
+    // When taking a message
+    ar_data_t *own_message = ar_delegate__take_message(own_delegate);
+
+    // Then it should return NULL
+    AR_ASSERT(own_message == NULL, "Should return NULL when empty");
+
+    // Cleanup (no message to destroy - returned NULL)
+    ar_delegate__destroy(own_delegate);
+    ar_log__destroy(ref_log);
+
+    printf("    PASS\n");
+}
+
+static void test_delegate__take_message_returns_sent_message(void) {
+    printf("  test_delegate__take_message_returns_sent_message...\n");
+
+    // Given a delegate with a sent message
+    ar_log_t *ref_log = ar_log__create();
+    ar_delegate_t *own_delegate = ar_delegate__create(ref_log, "test");
+    ar_delegate__send(own_delegate, ar_data__create_string("hello"));
+
+    // When taking a message
+    ar_data_t *own_received = ar_delegate__take_message(own_delegate);
+
+    // Then it should return the message
+    AR_ASSERT(own_received != NULL, "Should return message");
+
+    // Cleanup - MUST destroy message (delegate dropped ownership)
+    ar_data__destroy(own_received);
+    ar_delegate__destroy(own_delegate);
+    ar_log__destroy(ref_log);
+
+    printf("    PASS\n");
+}
+
+static void test_delegate__take_message_removes_from_queue(void) {
+    printf("  test_delegate__take_message_removes_from_queue...\n");
+
+    // Given a delegate with a sent message
+    ar_log_t *ref_log = ar_log__create();
+    ar_delegate_t *own_delegate = ar_delegate__create(ref_log, "test");
+    ar_delegate__send(own_delegate, ar_data__create_string("hello"));
+
+    // When taking the message and checking queue
+    ar_data_t *own_message = ar_delegate__take_message(own_delegate);
+    ar_data__destroy(own_message);  // MUST destroy (delegate dropped ownership)
+    bool has_messages = ar_delegate__has_messages(own_delegate);
+
+    // Then the queue should be empty
+    AR_ASSERT(!has_messages, "Queue should be empty after take");
+
+    // Cleanup
+    ar_delegate__destroy(own_delegate);
+    ar_log__destroy(ref_log);
 
     printf("    PASS\n");
 }

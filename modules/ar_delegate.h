@@ -65,4 +65,30 @@ const char* ar_delegate__get_type(const ar_delegate_t *ref_delegate);
  */
 bool ar_delegate__handle_message(ar_delegate_t *ref_delegate, ar_data_t *ref_message, int64_t sender_id);
 
+/**
+ * Sends a message to this delegate's queue
+ * @param mut_delegate The delegate instance to receive the message
+ * @param own_message The message to send (takes ownership)
+ * @return true if message was queued successfully, false otherwise
+ * @note Ownership: Takes ownership of the message. Message will be destroyed
+ *       by delegate if send fails, or when queue is destroyed.
+ */
+bool ar_delegate__send(ar_delegate_t *mut_delegate, ar_data_t *own_message);
+
+/**
+ * Checks if this delegate has any queued messages
+ * @param ref_delegate The delegate instance to check
+ * @return true if delegate has queued messages, false otherwise
+ */
+bool ar_delegate__has_messages(const ar_delegate_t *ref_delegate);
+
+/**
+ * Takes the next message from this delegate's queue
+ * @param mut_delegate The delegate instance
+ * @return The next queued message, or NULL if queue is empty
+ * @note Ownership: Returns an owned value. Caller MUST destroy the returned message.
+ *       Delegate drops ownership when returning the message.
+ */
+ar_data_t* ar_delegate__take_message(ar_delegate_t *mut_delegate);
+
 #endif /* AGERUN_DELEGATE_H */
