@@ -111,6 +111,127 @@ Gets the type identifier from a delegate.
 **Ownership:**
 - Returns a borrowed reference. Do not destroy.
 
+#### ar_delegate__send
+
+```c
+bool ar_delegate__send(ar_delegate_t *mut_delegate, ar_data_t *own_message);
+```
+
+Sends a message to this delegate's queue.
+
+**Parameters:**
+- `mut_delegate`: The delegate instance to receive the message
+- `own_message`: The message to send (takes ownership)
+
+**Returns:**
+- `true` if message was queued successfully, `false` otherwise
+
+**Ownership:**
+- Takes ownership of the message
+- Message will be destroyed by delegate if send fails
+- Delegate owns message while queued
+
+**Example:**
+```c
+ar_delegate_t *own_delegate = ar_delegate__create(log, "file");
+ar_data_t *own_message = ar_data__create_string("hello");
+
+if (ar_delegate__send(own_delegate, own_message)) {
+    // Message successfully queued
+    // Delegate now owns the message
+} else {
+    // Send failed, message already destroyed by delegate
+}
+```
+
+#### ar_delegate__has_messages
+
+```c
+bool ar_delegate__has_messages(const ar_delegate_t *ref_delegate);
+```
+
+Checks if this delegate has any queued messages.
+
+**Parameters:**
+- `ref_delegate`: The delegate instance to check
+
+**Returns:**
+- `true` if delegate has queued messages, `false` otherwise
+
+**Example:**
+```c
+if (ar_delegate__has_messages(delegate)) {
+    ar_data_t *own_msg = ar_delegate__take_message(delegate);
+    // Process message...
+    ar_data__destroy(own_msg);
+}
+```
+
+#### ar_delegate__take_message
+
+```c
+ar_data_t* ar_delegate__take_message(ar_delegate_t *mut_delegate);
+```
+
+Takes the next message from this delegate's queue.
+
+**Parameters:**
+- `mut_delegate`: The delegate instance
+
+**Returns:**
+- The next queued message, or NULL if queue is empty
+
+**Ownership:**
+- Returns an owned value - **caller MUST destroy the returned message**
+- Delegate drops ownership when returning the message
+
+**Example:**
+```c
+ar_data_t *own_message = ar_delegate__take_message(delegate);
+if (own_message) {
+    // Process message...
+
+    // MUST destroy message - caller now owns it
+    ar_data__destroy(own_message);
+}
+```
+
+## Message Queue Semantics
+
+### Ownership Flow
+
+The message queue follows strict ownership semantics:
+
+1. **Sending**: `ar_delegate__send()` takes ownership of the message
+2. **Queued**: Delegate owns all messages in its queue
+3. **Taking**: `ar_delegate__take_message()` drops ownership and returns message to caller
+4. **Caller Responsibility**: Caller MUST destroy all non-NULL messages from `take_message()`
+
+### Queue Cleanup
+
+When a delegate is destroyed, all queued messages are automatically cleaned up:
+
+```c
+ar_delegate__send(delegate, ar_data__create_string("msg1"));
+ar_delegate__send(delegate, ar_data__create_string("msg2"));
+
+// Destroy delegate - both messages automatically cleaned up
+ar_delegate__destroy(delegate);  // No memory leaks
+```
+
+### Error Handling
+
+- `send()` returns `false` and destroys message if:
+  - Delegate is NULL
+  - Message is NULL
+  - Queue doesn't exist
+  - Queue add operation fails
+
+- `take_message()` returns `NULL` if:
+  - Delegate is NULL
+  - Queue doesn't exist
+  - Queue is empty
+
 ## Usage Pattern
 
 ### Basic Usage
@@ -197,12 +318,21 @@ Test file: `modules/ar_delegate_tests.c`
 
 ## Implementation Status
 
-**Completed (TDD Cycles 1-2):**
+**Completed (TDD Cycles 1-2, 6.5 partial):**
 - ✅ Basic delegate creation and destruction
 - ✅ Log and type storage
 - ✅ Getter functions
+- ✅ **Message queue infrastructure (TDD Cycle 6.5, Iterations 1-6)**
+  - `ar_delegate__send()` - queue messages with ownership transfer
+  - `ar_delegate__has_messages()` - check for queued messages
+  - `ar_delegate__take_message()` - retrieve messages from queue
+  - Proper ownership semantics (take → own → drop)
+  - 9 tests passing with zero memory leaks
 - ✅ Zero memory leaks verified
 - ✅ Documentation complete
+
+**In Progress (TDD Cycle 6.5, Iterations 7-14):**
+- Delegation layer integration (functions will be added to ar_delegation module)
 
 **Planned (TDD Cycles 3+):**
 - Message handler interface
