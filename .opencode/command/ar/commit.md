@@ -11,6 +11,8 @@ Before committing, you MUST:
    - `kb/atomic-commit-documentation-pattern.md`
    - `kb/incomplete-commit-message-recovery-pattern.md`
    - `kb/tdd-feature-completion-before-commit.md`
+   - `kb/tdd-cycle-completion-verification-pattern.md` (if TDD cycle work)
+   - `kb/plan-document-completion-status-pattern.md` (if following a plan)
    - `kb/documentation-index-consistency-pattern.md` (if module integration involved)
 3. Check Related Patterns sections in each article and read any additional relevant articles found there
 4. In your response, quote these specific items from the KB:

@@ -70,6 +70,7 @@ Integrate user-as-QA pattern into development workflow:
 ## Related Patterns
 - [Plan Verification and Review](plan-verification-and-review.md)
 - [Plan Verification Checklist](plan-verification-checklist.md)
+- [TDD Cycle Completion Verification Pattern](tdd-cycle-completion-verification-pattern.md)
 - [User Feedback Debugging Pattern](user-feedback-debugging-pattern.md)
 - [Specification Consistency Maintenance](specification-consistency-maintenance.md)
 - [Comprehensive Output Review](comprehensive-output-review.md)

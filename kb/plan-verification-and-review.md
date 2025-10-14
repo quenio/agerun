@@ -249,6 +249,8 @@ When reviewing plans with others:
 - [User Feedback as QA](user-feedback-as-qa.md)
 - [Evidence-Based Debugging](evidence-based-debugging.md)
 - [TDD Red-Green-Refactor Cycle](red-green-refactor-cycle.md)
+- [TDD Cycle Completion Verification Pattern](tdd-cycle-completion-verification-pattern.md)
+- [Plan Document Completion Status Pattern](plan-document-completion-status-pattern.md)
 - [Build Verification Before Commit](build-verification-before-commit.md)
 - [Task Authorization Pattern](task-authorization-pattern.md)
 - [Multi-Session TDD Planning](multi-session-tdd-planning.md)

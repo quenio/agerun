@@ -162,7 +162,9 @@ make checkpoint-cleanup CMD=build
 - Check-logs includes deep analysis that can flag test output ([details](../../../kb/check-logs-deep-analysis-pattern.md))
 - Use systematic build → check → fix → re-build validation loops ([details](../../../kb/validation-feedback-loop-effectiveness.md))
 - Build time varies: ~20s for incremental, ~1m 24s for full build
-- Use compiler errors to guide refactoring ([details](../../../kb/compilation-driven-refactoring-pattern.md)) 
+- Use compiler errors to guide refactoring ([details](../../../kb/compilation-driven-refactoring-pattern.md))
+- When verifying TDD cycle completion, build is part of systematic verification ([details](../../../kb/tdd-cycle-completion-verification-pattern.md))
+- After completing TDD work, update plan documents with completion status ([details](../../../kb/plan-document-completion-status-pattern.md)) 
 
 The Makefile uses generic parameterized targets to avoid duplication ([details](../../../kb/generic-make-targets-pattern.md)). Commands should document expected outputs for clarity ([details](../../../kb/command-output-documentation-pattern.md)) and follow the concise output principle ([details](../../../kb/concise-script-output-principle.md)).
 

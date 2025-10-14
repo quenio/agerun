@@ -65,6 +65,8 @@ Key indicators you're ready to commit:
 
 ## Related Patterns
 - [Red Green Refactor Cycle](red-green-refactor-cycle.md)
+- [TDD Cycle Completion Verification Pattern](tdd-cycle-completion-verification-pattern.md)
+- [Plan Document Completion Status Pattern](plan-document-completion-status-pattern.md)
 - [Build Verification Before Commit](build-verification-before-commit.md)
 - [TDD Advanced Large Refactoring](tdd-advanced-large-refactoring.md)
 - [Refactoring Phase Completion Checklist](refactoring-phase-completion-checklist.md)

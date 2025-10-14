@@ -165,6 +165,8 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Test modification**: Ask permission before changing tests ([details](kb/permission-based-test-modification.md))
 **Compilation-based TDD**: Use compilation failure as RED phase for infrastructure removal ([details](kb/compilation-based-tdd-approach.md))
 **Documentation-only changes**: Skip TDD for .md updates, use direct editing ([details](kb/documentation-only-change-pattern.md))
+**Cycle verification**: Systematically verify all iterations complete ([details](kb/tdd-cycle-completion-verification-pattern.md))
+**Plan completion**: Update plan docs with completion status ([details](kb/plan-document-completion-status-pattern.md))
 **Complete ALL cycles** → Update docs/TODO/CHANGELOG → Single commit
 
 **Test Requirements**: BDD structure, one test per behavior, AR_ASSERT macros (never plain assert()), zero leaks ([details](kb/bdd-test-structure.md), [assertions](kb/ar-assert-descriptive-failures.md), [standards](kb/standards-over-expediency-principle.md))
@@ -411,6 +413,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 ### 14. Plan Verification and Review
 
 **Single task focus**: One TODO = one plan, include verification steps ([details](kb/plan-verification-checklist.md), [review](kb/plan-verification-and-review.md))
+**Completion tracking**: Update plan docs with completion status after verification ([details](kb/plan-document-completion-status-pattern.md))
 **Iterative refinement**: Expect multiple feedback rounds to get methodology right ([details](kb/iterative-plan-refinement-pattern.md))
 **User feedback**: Valuable QA - update plans immediately when corrected ([details](kb/user-feedback-as-qa.md))
 **Module constraints**: Different modules have different requirements - check tests

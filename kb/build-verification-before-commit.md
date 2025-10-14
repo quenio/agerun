@@ -41,6 +41,8 @@ This is especially important after the build system issue discovered on 2025-07-
 - Integration failures often reveal missed dependencies
 - Comprehensive verification catches edge cases
 - CI/CD relies on clean builds from main branch
+- [TDD Cycle Completion Verification Pattern](tdd-cycle-completion-verification-pattern.md)
+- [Plan Document Completion Status Pattern](plan-document-completion-status-pattern.md)
 - [CI Debugging Artifact Upload](ci-debugging-artifact-upload.md)
 - [Quick Start Commands](quick-start-commands.md)
 - [Pre-Commit Checklist Detailed](pre-commit-checklist-detailed.md)
