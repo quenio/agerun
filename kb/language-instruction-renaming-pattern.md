@@ -8,21 +8,21 @@ Language-level changes affect multiple layers of the system. Missing updates in 
 
 ## Example
 ```c
-// Phase 1: Update enum definition
+// Stage 1: Update enum definition
 typedef enum {
     AR_INSTRUCTION_AST_TYPE__SPAWN,  // Changed from CREATE
     AR_INSTRUCTION_AST_TYPE__EXIT,   // Changed from DESTROY
     // ...
 } ar_instruction_ast_type_t;
 
-// Phase 2: Update parser string matching
+// Stage 2: Update parser string matching
 if (strncmp(ref_instruction + pos, "spawn", 5) != 0) {  // Changed from "create", 6
     _log_error(mut_parser, "Expected 'spawn' function", pos);
     return NULL;
 }
 pos += 5;  // Changed from 6
 
-// Phase 3: Update facade dispatch
+// Stage 3: Update facade dispatch
 if (func_len == 5 && strncmp(func_name, "spawn", 5) == 0) {  // Changed from "create", 6
     ar_instruction_ast_t *own_ast = ar_spawn_instruction_parser__parse(
         mut_parser->own_spawn_parser,  // Changed from create_parser

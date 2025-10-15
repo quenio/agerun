@@ -56,7 +56,7 @@ python3 scripts/batch_fix_docs_enhanced.py --dry-run
 
 ## Implementation Pattern
 
-### Phase 1: Track Type Declarations
+### Stage 1: Track Type Declarations
 ```python
 # First pass to identify hypothetical types
 for line in lines:
@@ -64,7 +64,7 @@ for line in lines:
         hypothetical_types.add(name)
 ```
 
-### Phase 2: Handle All Contexts
+### Stage 2: Handle All Contexts
 ```python
 # Comprehensive type reference handling
 contexts = [
@@ -78,7 +78,7 @@ contexts = [
 ]
 ```
 
-### Phase 3: Apply Appropriate Tags
+### Stage 3: Apply Appropriate Tags
 ```python
 # Context-aware tagging
 if typ in hypothetical_types:

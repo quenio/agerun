@@ -66,21 +66,21 @@ Test ordering principles:
 int main(void) {
     printf("Starting Test Suite...\n");
     
-    // Phase 1: Process/fork tests (no allocations)
+    // Stage 1: Process/fork tests (no allocations)
     test_process_fork();
     test_signal_handling();
     
-    // Phase 2: Standalone tests (own allocations)
+    // Stage 2: Standalone tests (own allocations)
     test_data_structures();
     test_algorithms();
     
-    // Phase 3: System tests (shared resources)
+    // Stage 3: System tests (shared resources)
     ar_system_t *mut_system = ar_system__create();
     test_with_system(mut_system);
     test_integration(mut_system);
     ar_system__destroy(mut_system);
     
-    // Phase 4: Cleanup verification
+    // Stage 4: Cleanup verification
     test_all_resources_freed();
     
     printf("All tests passed!\n");

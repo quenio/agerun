@@ -14,7 +14,7 @@ After major structural changes, perform cleanup in multiple phases: first review
 ```c
 // Scenario: After removing wake messages from ar_system (TDD Cycle 2)
 
-// Phase 1: Comprehensive Review
+// Stage 1: Comprehensive Review
 /*
 Review found:
 1. ✅ Inconsistent test comments in ar_system_tests.c 
@@ -25,13 +25,13 @@ Review found:
 
 // User direction: "Ignore items 2 & 3, as they will be addressed in the next cycles"
 
-// Phase 2: Fix Critical Items (1 & 4)
+// Stage 2: Fix Critical Items (1 & 4)
 // ar_system_tests.c - Remove outdated comments
 -    // Process the wake message that the agent sent to itself
 -    ar_system__process_next_message(mut_system);
 +    // No wake message to process (removed in TDD Cycle 1)
 
-// Phase 3: Track Deferred Items in TODO.md
+// Stage 3: Track Deferred Items in TODO.md
 /*
 ##### TDD Cycle 3: Remove sleep messages from ar_agent and ar_agency
 - Will address sleep messages (item 2)
@@ -74,7 +74,7 @@ typedef struct {
 } cleanup_item_t;  // EXAMPLE: Hypothetical struct for teaching
 
 void perform_phased_cleanup(cleanup_item_t *items, int count) {  // EXAMPLE: Using hypothetical types
-    // Phase 1: Review and categorize
+    // Stage 1: Review and categorize
     printf("=== Cleanup Review ===\n");
     for (int i = 0; i < count; i++) {
         printf("%d. %s at %s [%s]\n", 
@@ -82,7 +82,7 @@ void perform_phased_cleanup(cleanup_item_t *items, int count) {  // EXAMPLE: Usi
                priority_to_string(items[i].priority));
     }
     
-    // Phase 2: Fix critical only
+    // Stage 2: Fix critical only
     printf("\n=== Fixing Critical Items ===\n");
     for (int i = 0; i < count; i++) {
         if (items[i].priority == PRIORITY_CRITICAL) {
@@ -90,7 +90,7 @@ void perform_phased_cleanup(cleanup_item_t *items, int count) {  // EXAMPLE: Usi
         }
     }
     
-    // Phase 3: Track deferred
+    // Stage 3: Track deferred
     printf("\n=== Tracking Deferred Items ===\n");
     for (int i = 0; i < count; i++) {
         if (items[i].priority == PRIORITY_DEFERRED) {

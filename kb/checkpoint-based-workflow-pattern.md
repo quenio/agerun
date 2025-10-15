@@ -106,15 +106,15 @@ make checkpoint-cleanup CMD=commit
 ## Workflow Structure Pattern
 Organize complex workflows into phases with gates:
 
-**Phase 1: Pre-Flight Checks**
+**Stage 1: Pre-Flight Checks**
 - Steps: Validation, prerequisites, environment setup
 - Gate: "Ready to Execute"
 
-**Phase 2: Core Execution**
+**Stage 2: Core Execution**
 - Steps: Main work, intermediate verification
 - Gate: "Quality Standards Met"
 
-**Phase 3: Finalization**
+**Stage 3: Finalization**
 - Steps: Documentation, commit, publish
 - Gate: "Complete and Verified"
 

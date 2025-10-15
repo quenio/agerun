@@ -52,7 +52,7 @@ grep -n "#include.*ar_" module.h module.c
 
 ## Migration Process
 
-### Phase 1: Preparation
+### Stage 1: Preparation
 
 1. **Run full test suite** to establish baseline behavior
 2. **Document current API** and all function signatures
@@ -60,7 +60,7 @@ grep -n "#include.*ar_" module.h module.c
 4. **Check for circular dependencies** that need stack allocation fixes
 5. **Create backup** via git commit
 
-### Phase 2: Create Zig Implementation
+### Stage 2: Create Zig Implementation
 
 1. **Create the .zig file** with same module name:
    ```bash
@@ -87,7 +87,7 @@ grep -n "#include.*ar_" module.h module.c
    - `c_uchar` → `u8`
    - String literals → `@as([*c]const u8, "str")`
 
-### Phase 3: Function Migration
+### Stage 3: Function Migration
 
 1. **Use consistent naming**:
    - Public functions: `ar_<module>__<function>` (same as C)
@@ -225,7 +225,7 @@ grep -n "#include.*ar_" module.h module.c
    - Complement AgeRun's error propagation pattern
    - Set errors at source, propagate via get_error()
 
-### Phase 4: Platform Compatibility
+### Stage 4: Platform Compatibility
 
 1. **Handle platform differences**:
    ```zig

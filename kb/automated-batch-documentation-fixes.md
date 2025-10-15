@@ -9,20 +9,20 @@ Saves massive development time (hours to minutes), reduces human error in repeti
 ## Example
 Documentation validation revealed 370 errors across 26 files. Using progressive automation:
 
-**Phase 1: Simple Pattern Fixes (83% reduction)**
+**Stage 1: Simple Pattern Fixes (83% reduction)**
 ```bash
 python3 scripts/batch_fix_docs.py
 # Result: 370 → 61 errors by adding EXAMPLE tags
 ```
 
-**Phase 2: Manual Complex Cases (46% additional reduction)**  
+**Stage 2: Manual Complex Cases (46% additional reduction)**  
 ```c
 // Replace hypothetical types with real ones
 ar_expression_ast_t* → ar_expression_ast_t*  // EXAMPLE: Using real type
 ar_data_t* → ar_data_t*  // EXAMPLE: Using real type
 ```
 
-**Phase 3: Enhanced Script with Type Mapping (100% completion)**
+**Stage 3: Enhanced Script with Type Mapping (100% completion)**
 ```python
 TYPE_REPLACEMENTS = {
     'ar_expression_ast_t': 'ar_expression_ast_t',  // EXAMPLE: Using real type

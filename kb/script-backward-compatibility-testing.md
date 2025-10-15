@@ -82,7 +82,7 @@ for func in functions:  # O(n) instead of O(n²)
 
 ## Implementation Pattern
 
-### Phase 1: Document Original Behavior
+### Stage 1: Document Original Behavior
 ```python
 # Document key features as comments
 # 1. Processing order matters
@@ -91,7 +91,7 @@ for func in functions:  # O(n) instead of O(n²)
 # 4. Reverse sorting for line-based edits
 ```
 
-### Phase 2: Enhance Without Breaking
+### Stage 2: Enhance Without Breaking
 ```python
 # Preserve original structure
 changes = []
@@ -105,7 +105,7 @@ if errors.get('non_existent'):
     # Enhanced type handling...
 ```
 
-### Phase 3: Comprehensive Testing
+### Stage 3: Comprehensive Testing
 ```bash
 # Test with original test cases
 make test_original_cases

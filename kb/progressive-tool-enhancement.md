@@ -9,13 +9,13 @@ Tool enhancement compounds value over time - initial investment in automation pa
 ## Example
 Converting shell script to Python for cross-platform compatibility:
 
-**Phase 1: Immediate Problem**
+**Stage 1: Immediate Problem**
 ```bash
 # Shell script works on macOS but fails on Linux CI
 # Different regex behavior between BSD and GNU tools
 ```
 
-**Phase 2: Systematic Solution**
+**Stage 2: Systematic Solution**
 ```python
 # Python script provides consistent behavior across platforms
 # Enhanced with additional validation features
@@ -24,7 +24,7 @@ def validate_function_references(content, all_functions):
     # Unified validation logic works everywhere
 ```
 
-**Phase 3: Feature Enhancement**
+**Stage 3: Feature Enhancement**
 ```python
 # Added support for tagging intentional errors
 if ('// ERROR:' in line or '/* ERROR:' in line or 
