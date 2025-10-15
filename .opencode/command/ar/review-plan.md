@@ -165,6 +165,25 @@ This command performs a comprehensive review of TDD plan documents to ensure:
 - **Ownership semantics**: Proper own_, ref_, mut_ prefixes
 - **Memory management**: Zero leak policy maintained throughout
 
+### Status Marker Lifecycle
+
+This command reviews plans and updates iteration status markers. These markers track progress through the complete TDD workflow:
+
+| Status | Used By | Meaning | Next Step |
+|--------|---------|---------|-----------|
+| `PENDING REVIEW` | create-plan | Newly created iteration awaiting review | Review with ar:review-plan |
+| `REVIEWED` | review-plan | Iteration approved, ready for implementation | Execute with ar:execute-plan |
+| `REVISED` | review-plan | Iteration updated after review, ready for implementation | Execute with ar:execute-plan |
+| `IMPLEMENTED` | execute-plan | RED-GREEN-REFACTOR complete, awaiting commit | Commit preparation |
+| `✅ COMMITTED` | execute-plan | Iteration committed to git | Done (or continue with next iteration) |
+| `✅ COMPLETE` | execute-plan | Full plan complete (plan-level marker) | Documentation only |
+
+**Important Notes:**
+- **Iterations only**: Status markers appear ONLY on iteration headings (not phase/section headings)
+- **REVISED meaning**: Changes applied and ready for implementation (ar:execute-plan processes REVISED same as REVIEWED)
+- **Two-phase updates**: During execution, iterations update REVIEWED/REVISED → IMPLEMENTED immediately; before commit, all IMPLEMENTED → ✅ COMMITTED in batch
+- **Complete vs Committed**: ✅ COMPLETE is optional plan-level header; ✅ COMMITTED marks individual iterations in git
+
 ### Execution Order (MANDATORY)
 
 1. **FIRST**: Run the checkpoint initialization command above
@@ -217,7 +236,7 @@ make checkpoint-update CMD=review-plan STEP=2
 
 Extract only iterations marked with "- PENDING REVIEW" status. Skip iterations already marked as:
 - "- REVIEWED" (already accepted in previous review)
-- "- REVISED" (being worked on)
+- "- REVISED" (updated after review, ready for implementation)
 - "- ✅ COMPLETE" (implementation complete)
 
 **Example filtering:**
@@ -527,59 +546,24 @@ make checkpoint-gate CMD=review-plan GATE="TDD Methodology" REQUIRED="4,5,6,7"
 **Check review status markers:**
 
 - [ ] Plan has status markers (REVIEWED/PENDING REVIEW/REVISED)
-- [ ] Status markers at both section and iteration level
+- [ ] Status markers appear ONLY on iteration headings
 - [ ] Status progression follows rules:
-  - Sections marked REVIEWED only when all iterations within are REVIEWED
-  - Changed iterations marked REVISED
-  - Unreviewed content marked PENDING REVIEW
+  - New iterations start with PENDING REVIEW
+  - Accepted iterations marked REVIEWED
+  - Revised iterations marked REVISED (ready for implementation)
 
 **Status marker validation:**
 ```markdown
-❌ WRONG: Section marked REVIEWED with PENDING iterations
+❌ WRONG: Status markers on phase headings
 ### Phase 0: Setup - REVIEWED
 #### Iteration 0.1: Basic - REVIEWED
-#### Iteration 0.2: Advanced - PENDING REVIEW  # Inconsistent!
+#### Iteration 0.2: Advanced - PENDING REVIEW
 
-✅ CORRECT: Section matches iteration status
-### Phase 0: Setup - PENDING REVIEW
+✅ CORRECT: Status markers ONLY on iterations
+### Phase 0: Setup
 #### Iteration 0.1: Basic - REVIEWED
 #### Iteration 0.2: Advanced - PENDING REVIEW
 ```
-
-**Update Section Status Markers:**
-
-After updating iteration status markers in Checkpoint 4, verify and update section status markers:
-
-1. **Check each phase/section:**
-   - Count iterations with REVIEWED status
-   - Count iterations with PENDING REVIEW status
-   - Count iterations with REVISED status
-
-2. **Update section markers:**
-   - If ALL iterations are REVIEWED → Mark section as REVIEWED
-   - If ANY iteration is PENDING REVIEW → Mark section as PENDING REVIEW
-   - If ANY iteration is REVISED → Mark section as REVISED (takes precedence)
-
-3. **Section Status Update Example:**
-```bash
-# Before (all iterations now reviewed):
-### Phase 0: Message Queue Infrastructure - PENDING REVIEW
-#### Iteration 0.1: send() returns true - REVIEWED
-#### Iteration 0.2: has_messages() initially false - REVIEWED
-#### Iteration 0.3: has_messages() after send - REVIEWED
-
-# After (update section to match):
-# Use Edit tool:
-old_string: "### Phase 0: Message Queue Infrastructure - PENDING REVIEW"
-new_string: "### Phase 0: Message Queue Infrastructure - REVIEWED"
-```
-
-**Section Status Update Checklist:**
-- [ ] For each phase, count iteration status distribution
-- [ ] Update section markers to match iteration status
-- [ ] Use Edit tool to update section headings in plan file
-- [ ] Verify consistency between section and iteration status
-- [ ] Track section status updates for final report
 
 ```bash
 make checkpoint-update CMD=review-plan STEP=8

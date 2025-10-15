@@ -171,6 +171,25 @@ This command creates TDD plan documents following strict methodology:
 - **Real types**: Use actual AgeRun types (ar_*_t) not placeholders
 - **Cross-references**: Link to relevant KB articles
 
+### Status Marker Lifecycle
+
+This command creates plans with iterations marked `PENDING REVIEW`. These markers track progress through the complete TDD workflow:
+
+| Status | Used By | Meaning | Next Step |
+|--------|---------|---------|-----------|
+| `PENDING REVIEW` | create-plan | Newly created iteration awaiting review | Review with ar:review-plan |
+| `REVIEWED` | review-plan | Iteration approved, ready for implementation | Execute with ar:execute-plan |
+| `REVISED` | review-plan | Iteration updated after review, ready for implementation | Execute with ar:execute-plan |
+| `IMPLEMENTED` | execute-plan | RED-GREEN-REFACTOR complete, awaiting commit | Commit preparation |
+| `✅ COMMITTED` | execute-plan | Iteration committed to git | Done (or continue with next iteration) |
+| `✅ COMPLETE` | execute-plan | Full plan complete (plan-level marker) | Documentation only |
+
+**Important Notes:**
+- **Iterations only**: Status markers appear ONLY on iteration headings (not phase/section headings)
+- **REVISED meaning**: Changes applied and ready for implementation (ar:execute-plan processes REVISED same as REVIEWED)
+- **Two-phase updates**: During execution, iterations update REVIEWED/REVISED → IMPLEMENTED immediately; before commit, all IMPLEMENTED → ✅ COMMITTED in batch
+- **Complete vs Committed**: ✅ COMPLETE is optional plan-level header; ✅ COMMITTED marks individual iterations in git
+
 ### Execution Order (MANDATORY)
 
 1. **FIRST**: Run the checkpoint initialization command above
@@ -736,10 +755,12 @@ make checkpoint-update CMD=create-plan STEP=9
 
 **MANDATORY: Add PENDING REVIEW markers to all iterations:**
 
-**CRITICAL REQUIREMENT**: Every single iteration and phase heading MUST end with " - PENDING REVIEW" suffix. This is non-negotiable and required for proper review tracking.
+**CRITICAL REQUIREMENT**: Every single iteration heading MUST end with " - PENDING REVIEW" suffix. This is non-negotiable and required for proper review tracking.
+
+**Note**: Status markers appear ONLY on iteration headings, NOT on phase/section headings.
 
 ```markdown
-### Phase 0: Basic Functionality - PENDING REVIEW
+### Phase 0: Basic Functionality
 
 #### Iteration 0.1: send() returns true - PENDING REVIEW
 [...]
@@ -747,17 +768,17 @@ make checkpoint-update CMD=create-plan STEP=9
 #### Iteration 0.2: has_messages() returns false - PENDING REVIEW
 [...]
 
-### Phase 1: Message Retrieval - PENDING REVIEW
+### Phase 1: Message Retrieval
 
 #### Iteration 1.1: take_message() returns NULL - PENDING REVIEW
 [...]
 ```
 
 **Status marker rules:**
-- All new plans start with PENDING REVIEW
-- Section status = PENDING REVIEW if any iteration is PENDING REVIEW
-- Will be updated to REVIEWED during review process
-- Will be marked REVISED if changes needed after review
+- All new plan iterations start with `PENDING REVIEW`
+- Iterations will be updated to `REVIEWED` or `REVISED` during review process (ar:review-plan)
+- Iterations will be updated to `IMPLEMENTED` during execution (ar:execute-plan)
+- Iterations will be updated to `✅ COMMITTED` before git commit
 
 **CRITICAL**: Every iteration created must have "- PENDING REVIEW" suffix in the heading. This is MANDATORY and must not be omitted.
 
@@ -988,7 +1009,7 @@ make checkpoint-cleanup CMD=create-plan
 - Phases: [count]
 - Review status: 0% (all PENDING REVIEW)
 
-### Phase 0: [Phase Name] - PENDING REVIEW
+### Phase 0: [Phase Name]
 
 #### Iteration 0.1: [Behavior description] - PENDING REVIEW
 

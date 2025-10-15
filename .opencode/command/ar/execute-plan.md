@@ -168,6 +168,43 @@ This command executes TDD plan documents following the RED-GREEN-REFACTOR cycle:
 - **Documentation**: Update plan with completion status header
 - **Build verification**: Ensure full build passes
 
+### Status Marker Lifecycle
+
+This command executes plan iterations and updates status markers through implementation to commit. These markers track progress through the complete TDD workflow:
+
+| Status | Used By | Meaning | Next Step |
+|--------|---------|---------|-----------|
+| `PENDING REVIEW` | create-plan | Newly created iteration awaiting review | Review with ar:review-plan |
+| `REVIEWED` | review-plan | Iteration approved, ready for implementation | Execute with ar:execute-plan |
+| `REVISED` | review-plan | Iteration updated after review, ready for implementation | Execute with ar:execute-plan |
+| `IMPLEMENTED` | execute-plan | RED-GREEN-REFACTOR complete, awaiting commit | Commit preparation |
+| `✅ COMMITTED` | execute-plan | Iteration committed to git | Done (or continue with next iteration) |
+| `✅ COMPLETE` | execute-plan | Full plan complete (plan-level marker) | Documentation only |
+
+**Important Notes:**
+- **Iterations only**: Status markers appear ONLY on iteration headings (not phase/section headings)
+- **REVISED meaning**: Changes applied and ready for implementation (ar:execute-plan processes REVISED same as REVIEWED)
+- **Two-phase updates**: During execution, iterations update REVIEWED/REVISED → IMPLEMENTED immediately; before commit, all IMPLEMENTED → ✅ COMMITTED in batch
+- **Complete vs Committed**: ✅ COMPLETE is optional plan-level header; ✅ COMMITTED marks individual iterations in git
+
+**Two-Phase Plan Update Strategy:**
+
+This command updates the plan file in TWO distinct phases:
+
+1. **During Iteration Execution (Incremental Updates)**:
+   - After each iteration's RED-GREEN-REFACTOR cycle completes
+   - Immediately update: REVIEWED/REVISED → IMPLEMENTED
+   - Purpose: Track which iterations have been implemented in this session
+   - Timing: Right after REFACTOR phase, before moving to next iteration
+
+2. **Before Git Commit (Batch Update)**:
+   - After all iterations executed, just before creating git commit
+   - Batch update all: IMPLEMENTED → ✅ COMMITTED
+   - Purpose: Mark which iterations are included in this specific commit
+   - Timing: Checkpoint 7A (before git commit)
+
+**Both phases are MANDATORY** but serve different purposes: incremental for execution tracking, batch for commit tracking.
+
 ### Execution Order (MANDATORY)
 
 1. **FIRST**: Run the checkpoint initialization command above
@@ -628,10 +665,6 @@ make checkpoint-gate CMD=execute-plan GATE="Implementation" REQUIRED="4,5,6"
    - Change: "#### Iteration X.Y: description - IMPLEMENTED"
    - To:     "#### Iteration X.Y: description - ✅ COMMITTED"
 
-3. **Update section markers**:
-   - If all iterations in a section are COMMITTED → Mark section as ✅ COMMITTED
-   - If any iteration is still IMPLEMENTED → Keep section as IMPLEMENTED
-
 **Pre-Commit Status Update Example:**
 ```bash
 # Before commit (from plan file):
@@ -641,25 +674,14 @@ make checkpoint-gate CMD=execute-plan GATE="Implementation" REQUIRED="4,5,6"
 old_string: "#### Iteration 0.1: send() returns true - IMPLEMENTED"
 new_string: "#### Iteration 0.1: send() returns true - ✅ COMMITTED"
 
-# For all iterations:
-# IMPLEMENTED → ✅ COMMITTED (before git commit)
-
-# Section status update:
-# Before:
-### Phase 0: Message Queue Infrastructure - IMPLEMENTED
-
-# After (if all iterations committed):
-# Use Edit tool:
-old_string: "### Phase 0: Message Queue Infrastructure - IMPLEMENTED"
-new_string: "### Phase 0: Message Queue Infrastructure - ✅ COMMITTED"
+# Repeat for all IMPLEMENTED iterations (batch update)
 ```
 
 **Pre-Commit Update Checklist:**
 - [ ] Identify all iterations with IMPLEMENTED status
-- [ ] Update each IMPLEMENTED iteration to ✅ COMMITTED
-- [ ] Update section markers to match iteration status
+- [ ] Update each IMPLEMENTED iteration to ✅ COMMITTED (batch update)
 - [ ] Verify all changes to be committed are marked ✅ COMMITTED
-- [ ] Include plan file in git commit
+- [ ] Include updated plan file in git commit
 
 **MANDATORY**: This MUST be done BEFORE creating the git commit. The plan file with COMMITTED markers must be included in the same commit as the implementation.
 
