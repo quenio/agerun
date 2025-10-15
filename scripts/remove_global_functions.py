@@ -2,7 +2,7 @@
 """
 Remove global API functions from ar_agency.c that delegate to instance-based versions.
 
-This script is part of the global API removal refactoring (Phase 2b).
+This script is part of the global API removal refactoring (Stage 2b).
 It identifies and removes function implementations that are simple delegations
 to their _with_instance counterparts.
 
