@@ -105,7 +105,7 @@ grep -l "REVIEWED" plans/tdd_cycle_*_plan.md | xargs ls -t | head -1
 make checkpoint-init CMD=execute-plan STEPS='"KB Consultation" "Read Plan" "Extract Iterations" "Execute Iterations" "Run Tests" "Verify Memory" "Update Plan Status" "Summary"'
 ```
 
-This command uses checkpoint tracking to ensure systematic plan execution. The execution process is divided into 3 major phases with 8 checkpoints total.
+This command uses checkpoint tracking to ensure systematic plan execution. The execution process is divided into 3 major stages with 8 checkpoints total.
 
 **Expected output:**
 ```
@@ -228,9 +228,9 @@ This command updates the plan file in TWO distinct phases:
 
 ## Plan Execution Process
 
-### Phase 1: Plan Reading and Setup (Steps 1-3)
+### Stage 1: Plan Reading and Setup (Steps 1-3)
 
-#### [CHECKPOINT START - PHASE 1]
+#### [CHECKPOINT START - STAGE 1]
 
 #### Checkpoint 1: KB Consultation
 
@@ -254,7 +254,7 @@ make checkpoint-update CMD=execute-plan STEP=2
 
 **Extract key information:**
 - Total iteration count
-- Phase structure
+- Section structure
 - Test module names (e.g., ar_delegate_tests.c)
 - Implementation modules (e.g., ar_delegate.c, ar_delegate.h)
 - Expected test function names
@@ -346,14 +346,14 @@ make checkpoint-gate CMD=execute-plan GATE="Setup" REQUIRED="1,2,3"
    Verified: Steps 1,2,3
 ```
 
-**Minimum Requirements for Phase 1:**
+**Minimum Requirements for Stage 1:**
 - [ ] All 8 KB articles read and quoted
 - [ ] Plan document read completely
 - [ ] All iterations extracted and verified REVIEWED
 
-### Phase 2: Iteration Execution (Steps 4-6)
+### Stage 2: Iteration Execution (Steps 4-6)
 
-#### [CHECKPOINT START - PHASE 2]
+#### [CHECKPOINT START - STAGE 2]
 
 #### Checkpoint 4: Execute Iterations
 
@@ -637,14 +637,14 @@ make checkpoint-gate CMD=execute-plan GATE="Implementation" REQUIRED="4,5,6"
    Verified: Steps 4,5,6
 ```
 
-**Minimum Requirements for Phase 2:**
+**Minimum Requirements for Stage 2:**
 - [ ] All iterations executed with RED-GREEN-REFACTOR
 - [ ] All tests passing
 - [ ] Zero memory leaks across all tests
 
-### Phase 3: Completion and Documentation (Steps 7-8)
+### Stage 3: Completion and Documentation (Steps 7-8)
 
-#### [CHECKPOINT START - PHASE 3]
+#### [CHECKPOINT START - STAGE 3]
 
 #### Checkpoint 7: Update Plan Status
 
