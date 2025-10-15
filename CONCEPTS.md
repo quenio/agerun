@@ -1,6 +1,6 @@
-# AgeRun Terminology Glossary
+# AgeRun Concepts
 
-This glossary defines the standard terminology used throughout the AgeRun project. These terms have specific meanings and are used consistently across documentation, commands, and code.
+This document defines the core concepts, terminology, and organizational principles used throughout the AgeRun project. These concepts form the foundation for understanding the project's architecture, development workflows, and documentation structure.
 
 ## TDD Planning Hierarchy
 

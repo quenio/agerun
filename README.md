@@ -214,7 +214,7 @@ Agents use a simple expression and instruction language for their methods:
 
 AgeRun maintains comprehensive documentation for developers:
 
-- **[GLOSSARY.md](GLOSSARY.md)**: Standard terminology definitions (Cycles, Iterations, Phases, Stages, Steps, etc.)
+- **[CONCEPTS.md](CONCEPTS.md)**: Core concepts and terminology (Cycles, Iterations, Phases, Stages, Steps, etc.)
 - **[AGENTS.md](AGENTS.md)**: Development workflows and agent guidelines
 - **[MMM.md](MMM.md)**: Memory Management Model and ownership patterns
 - **[kb/](kb/)**: Knowledge base with development patterns and best practices
