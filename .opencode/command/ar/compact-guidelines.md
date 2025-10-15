@@ -94,7 +94,7 @@ When you see KB article links (formatted with parentheses and "details" text poi
 
 ### Guidelines for Compacting
 
-## Stage 1: Analysis (Steps 1-3)
+### Stage 1: Analysis (Steps 1-3)
 
 #### [CHECKPOINT START - STAGE 1]
 
@@ -102,7 +102,7 @@ When you see KB article links (formatted with parentheses and "details" text poi
 
 #### Step 1: Identify Verbose Sections
 
-#### Checkpoint 1: Analyze AGENTS.md
+#### Step 1: Analyze AGENTS.md
 
 ```bash
 # Calculate current size
@@ -113,7 +113,7 @@ echo "BEFORE_LINES=$BEFORE_LINES" > /tmp/compact-guidelines-metrics.txt
 make checkpoint-update CMD=compact-guidelines STEP=1
 ```
 
-#### Checkpoint 2: Identify Verbose Sections
+#### Step 2: Identify Verbose Sections
 
 Look for sections in AGENTS.md that contain:
 - Long explanations that could be summarized in 1-2 lines
@@ -132,7 +132,7 @@ echo "3. [Section name] - [lines that can be reduced]"
 make checkpoint-update CMD=compact-guidelines STEP=2
 ```
 
-#### Checkpoint 3: List Extraction Targets
+#### Step 3: List Extraction Targets
 
 ```bash
 # List specific content to extract
@@ -160,13 +160,13 @@ make checkpoint-gate CMD=compact-guidelines GATE="Analysis" REQUIRED="1,2,3"
    Verified: Steps 1,2,3
 ```
 
-## Stage 2: Planning (Steps 4-5)
+### Stage 2: Planning (Steps 4-5)
 
 #### [CHECKPOINT START - STAGE 2]
 
 #### [CHECKPOINT END]
 
-#### Checkpoint 4: Check Existing KB Articles
+#### Step 4: Check Existing KB Articles
 
 ```bash
 # Check which KB articles already exist
@@ -182,7 +182,7 @@ done
 make checkpoint-update CMD=compact-guidelines STEP=4
 ```
 
-#### Checkpoint 5: Plan New Articles
+#### Step 5: Plan New Articles
 
 ```bash
 # Plan which new articles to create
@@ -226,7 +226,7 @@ make checkpoint-gate CMD=compact-guidelines GATE="Planning" REQUIRED="4,5"
 - If moving content that already has KB links, keep those links with the content
 - Only add new KB links when creating new articles
 
-## Stage 3: Creation (Steps 6-8)
+### Stage 3: Creation (Steps 6-8)
 
 #### [CHECKPOINT START - STAGE 3]
 
@@ -234,7 +234,7 @@ make checkpoint-gate CMD=compact-guidelines GATE="Planning" REQUIRED="4,5"
 
 #### 4. Knowledge Base Article Creation ([details](../../../kb/validated-documentation-examples.md))
 
-#### Checkpoint 6: Create KB Article 1
+#### Step 6: Create KB Article 1
 
 For each section being compacted:
 
@@ -282,7 +282,7 @@ else
 fi
 ```
 
-#### Checkpoint 7: Create KB Article 2
+#### Step 7: Create KB Article 2
 
 ```bash
 # After creating second KB article
@@ -295,7 +295,7 @@ else
 fi
 ```
 
-#### Checkpoint 8: Create KB Article 3 (Optional)
+#### Step 8: Create KB Article 3 (Optional)
 
 ```bash
 # After creating third KB article (if needed)
@@ -319,13 +319,13 @@ make checkpoint-gate CMD=compact-guidelines GATE="Creation" REQUIRED="6,7,8"
    Verified: Steps 6,7,8
 ```
 
-## Stage 4: Integration (Steps 9-11)
+### Stage 4: Integration (Steps 9-11)
 
 #### [CHECKPOINT START - STAGE 4]
 
 #### [CHECKPOINT END]
 
-#### Checkpoint 9: Update AGENTS.md References
+#### Step 9: Update AGENTS.md References
 
 ```bash
 # Update AGENTS.md with KB links
@@ -350,7 +350,7 @@ else
 fi
 ```
 
-#### Checkpoint 10: Add Cross-References
+#### Step 10: Add Cross-References
 
 ```bash
 # Update existing KB articles with cross-references
@@ -362,7 +362,7 @@ echo "- kb/existing2.md: Added reference to new article"
 make checkpoint-update CMD=compact-guidelines STEP=10
 ```
 
-#### Checkpoint 11: Update kb/README.md
+#### Step 11: Update kb/README.md
 
 ```bash
 # Update the KB index
@@ -471,13 +471,13 @@ After compacting each section:
 
 3. **Never leave placeholder links**
 
-## Stage 5: Validation (Steps 12-14)
+### Stage 5: Validation (Steps 12-14)
 
 #### [CHECKPOINT START - STAGE 5]
 
 #### [CHECKPOINT END]
 
-#### Checkpoint 12: Run Documentation Validation
+#### Step 12: Run Documentation Validation
 
 ```bash
 # Run documentation validation
@@ -490,7 +490,7 @@ else
 fi
 ```
 
-#### Checkpoint 13: Verify Link Coverage
+#### Step 13: Verify Link Coverage
 
 ```bash
 # Verify all compacted sections have KB links
@@ -508,7 +508,7 @@ else
 fi
 ```
 
-#### Checkpoint 14: Review Changes
+#### Step 14: Review Changes
 
 ```bash
 # Calculate final metrics
@@ -544,7 +544,7 @@ make checkpoint-gate CMD=compact-guidelines GATE="Validation" REQUIRED="12,13,14
    Verified: Steps 12,13,14
 ```
 
-## Stage 6: Commit (Step 15)
+### Stage 6: Commit (Step 15)
 
 #### [CHECKPOINT START - STAGE 6]
 
@@ -552,7 +552,7 @@ make checkpoint-gate CMD=compact-guidelines GATE="Validation" REQUIRED="12,13,14
 
 #### 10. Commit Strategy
 
-#### Checkpoint 15: Create Commit
+#### Step 15: Create Commit
 
 **CRITICAL**: Use SINGLE commit for all related documentation changes:
 

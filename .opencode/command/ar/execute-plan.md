@@ -232,7 +232,7 @@ This command updates the plan file in TWO distinct phases:
 
 #### [CHECKPOINT START - STAGE 1]
 
-#### Checkpoint 1: KB Consultation
+#### Step 1: KB Consultation
 
 **Mandatory KB Reading:**
 Read all 8 KB articles listed above and quote the 4 specific items.
@@ -242,7 +242,7 @@ Read all 8 KB articles listed above and quote the 4 specific items.
 make checkpoint-update CMD=execute-plan STEP=1
 ```
 
-#### Checkpoint 2: Read Plan
+#### Step 2: Read Plan
 
 **Read the entire plan document:**
 ```bash
@@ -260,7 +260,7 @@ make checkpoint-update CMD=execute-plan STEP=2
 - Expected test function names
 - Expected implementation function names
 
-#### Checkpoint 3: Extract Iterations
+#### Step 3: Extract Iterations
 
 **CRITICAL: Filter for REVIEWED or REVISED iterations:**
 
@@ -355,7 +355,7 @@ make checkpoint-gate CMD=execute-plan GATE="Setup" REQUIRED="1,2,3"
 
 #### [CHECKPOINT START - STAGE 2]
 
-#### Checkpoint 4: Execute Iterations
+#### Step 4: Execute Iterations
 
 **CHECKPOINT: Initialize Iteration Tracking**
 
@@ -552,7 +552,7 @@ make checkpoint-cleanup CMD=execute-plan-iterations
 make checkpoint-update CMD=execute-plan STEP=4
 ```
 
-#### Checkpoint 5: Run Tests
+#### Step 5: Run Tests
 
 **Run complete test suite after all iterations:**
 
@@ -587,7 +587,7 @@ All tests passing: 12/12
 make checkpoint-update CMD=execute-plan STEP=5
 ```
 
-#### Checkpoint 6: Verify Memory
+#### Step 6: Verify Memory
 
 **Check for memory leaks:**
 
@@ -646,7 +646,7 @@ make checkpoint-gate CMD=execute-plan GATE="Implementation" REQUIRED="4,5,6"
 
 #### [CHECKPOINT START - STAGE 3]
 
-#### Checkpoint 7: Update Plan Status
+#### Step 7: Update Plan Status
 
 **IMPORTANT**: This checkpoint has TWO distinct steps that happen at different times:
 
@@ -738,7 +738,7 @@ grep "Actual memory leaks:" bin/run-tests/memory_report_ar_delegate_tests.log
 make checkpoint-update CMD=execute-plan STEP=7
 ```
 
-#### Checkpoint 8: Summary
+#### Step 8: Summary
 
 **Generate execution summary:**
 

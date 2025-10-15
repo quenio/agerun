@@ -217,7 +217,7 @@ This command creates plans with iterations marked `PENDING REVIEW`. These marker
 
 #### [CHECKPOINT START - STAGE 1]
 
-#### Checkpoint 1: KB Consultation
+#### Step 1: KB Consultation
 
 **Mandatory KB Reading:**
 Read all 10 KB articles listed above and quote the 5 specific items.
@@ -227,7 +227,7 @@ Read all 10 KB articles listed above and quote the 5 specific items.
 make checkpoint-update CMD=create-plan STEP=1
 ```
 
-#### Checkpoint 2: Gather Requirements
+#### Step 2: Gather Requirements
 
 **Collect feature requirements:**
 - [ ] What is the feature name?
@@ -259,7 +259,7 @@ make checkpoint-update CMD=create-plan STEP=1
 make checkpoint-update CMD=create-plan STEP=2
 ```
 
-#### Checkpoint 3: Identify Behaviors
+#### Step 3: Identify Behaviors
 
 **List ALL expected behaviors:**
 
@@ -292,7 +292,7 @@ For each function to be implemented, list what it should do:
 make checkpoint-update CMD=create-plan STEP=3
 ```
 
-#### Checkpoint 4: Count Assertions
+#### Step 4: Count Assertions
 
 **Convert behaviors to assertions:**
 
@@ -322,7 +322,7 @@ Total iterations: 12
 make checkpoint-update CMD=create-plan STEP=4
 ```
 
-#### Checkpoint 5: Define Cycles
+#### Step 5: Define Cycles
 
 **Group iterations into logical cycles (3-5 iterations each):**
 
@@ -382,7 +382,7 @@ make checkpoint-gate CMD=create-plan GATE="Requirements" REQUIRED="1,2,3,4,5"
 
 #### [CHECKPOINT START - STAGE 2]
 
-#### Checkpoint 6: Plan Iterations
+#### Step 6: Plan Iterations
 
 **CRITICAL: Per-Iteration Progress Tracking**
 
@@ -567,7 +567,7 @@ make checkpoint-cleanup CMD=create-plan-iterations
 make checkpoint-update CMD=create-plan STEP=6
 ```
 
-#### Checkpoint 7: Structure RED Phases
+#### Step 7: Structure RED Phases
 
 **CRITICAL: Per-Iteration Verification Tracking**
 
@@ -623,7 +623,7 @@ make checkpoint-cleanup CMD=create-plan-red-phases
 make checkpoint-update CMD=create-plan STEP=7
 ```
 
-#### Checkpoint 8: Structure GREEN Phases
+#### Step 8: Structure GREEN Phases
 
 **CRITICAL: Per-Iteration Verification Tracking**
 
@@ -715,7 +715,7 @@ make checkpoint-gate CMD=create-plan GATE="Iterations" REQUIRED="6,7,8"
 
 #### [CHECKPOINT START - STAGE 3]
 
-#### Checkpoint 9: Add Cleanup
+#### Step 9: Add Cleanup
 
 **Add proper cleanup to all iterations:**
 
@@ -751,7 +751,7 @@ ar_log__destroy(ref_log);
 make checkpoint-update CMD=create-plan STEP=9
 ```
 
-#### Checkpoint 10: Add Status Markers
+#### Step 10: Add Status Markers
 
 **MANDATORY: Add PENDING REVIEW markers to all iterations:**
 
@@ -786,7 +786,7 @@ make checkpoint-update CMD=create-plan STEP=9
 make checkpoint-update CMD=create-plan STEP=10
 ```
 
-#### Checkpoint 11: Add Cross-References
+#### Step 11: Add Cross-References
 
 **Add Related Patterns section:**
 
@@ -835,7 +835,7 @@ make checkpoint-gate CMD=create-plan GATE="Documentation" REQUIRED="9,10,11"
 
 #### [CHECKPOINT START - STAGE 4]
 
-#### Checkpoint 12: Validate Plan
+#### Step 12: Validate Plan
 
 **Run self-validation checks:**
 
@@ -877,7 +877,7 @@ grep -E "// Given|// When|// Then|// Cleanup" <plan-file>
 make checkpoint-update CMD=create-plan STEP=12
 ```
 
-#### Checkpoint 13: Save Plan
+#### Step 13: Save Plan
 
 **Write plan to file:**
 
@@ -914,7 +914,7 @@ make checkpoint-update CMD=create-plan STEP=12
 make checkpoint-update CMD=create-plan STEP=13
 ```
 
-#### Checkpoint 14: Summary
+#### Step 14: Summary
 
 **Generate creation summary:**
 

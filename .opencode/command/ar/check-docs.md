@@ -49,7 +49,7 @@ make checkpoint-status CMD=check-docs
 - [ ] make check-docs passes
 - [ ] Changes committed and pushed
 - [ ] Git status shows clean tree
-## Stage 1: Initial Check (Step 1)
+### Stage 1: Initial Check (Step 1)
 
 #### [CHECKPOINT START - STAGE 1]
 
@@ -57,7 +57,7 @@ make checkpoint-status CMD=check-docs
 
 ### Process
 
-#### Checkpoint 1: Initial Check
+#### Step 1: Initial Check
 
 ```bash
 # Run initial documentation validation
@@ -107,13 +107,13 @@ Error Summary:
 Proceeding to fix phase.
 ```
 
-## Stage 2: Fix Errors (Steps 2-3)
+### Stage 2: Fix Errors (Steps 2-3)
 
 #### [CHECKPOINT START - STAGE 2]
 
 #### [CHECKPOINT END]
 
-#### Checkpoint 2: Preview Fixes
+#### Step 2: Preview Fixes
 
 ```bash
 # Preview what the batch fix script would change
@@ -136,7 +136,7 @@ make checkpoint-update CMD=check-docs STEP=2
    - First run `python3 scripts/batch_fix_docs.py --dry-run` to preview what changes would be made
    - Review the proposed changes to ensure they look correct
 
-#### Checkpoint 3: Apply Fixes
+#### Step 3: Apply Fixes
 
 ```bash
 # Apply the fixes
@@ -158,13 +158,13 @@ make checkpoint-update CMD=check-docs STEP=3
    - If the changes look good, run `python3 scripts/batch_fix_docs.py` to apply the fixes
    - Run `make check-docs` again to verify the fixes worked
 
-## Stage 3: Verify and Commit (Steps 4-5)
+### Stage 3: Verify and Commit (Steps 4-5)
 
 #### [CHECKPOINT START - STAGE 3]
 
 #### [CHECKPOINT END]
 
-#### Checkpoint 4: Verify Resolution
+#### Step 4: Verify Resolution
 
 ```bash
 # Verify all errors are fixed
@@ -199,7 +199,7 @@ fi
 make checkpoint-gate CMD=check-docs GATE="Resolution" REQUIRED="4"
 ```
 
-#### Checkpoint 5: Commit and Push
+#### Step 5: Commit and Push
 
 ```bash
 # Commit and push fixes if any

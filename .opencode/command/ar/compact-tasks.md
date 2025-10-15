@@ -97,11 +97,11 @@ make checkpoint-status CMD=compact-tasks
 
 This uses selective compaction for mixed-state documents ([details](../../../kb/selective-compaction-pattern.md)) combined with manual semantic analysis ([details](../../../kb/documentation-compacting-pattern.md)).
 
-## Stage 1: Analysis (Steps 1-2)
+### Stage 1: Analysis (Steps 1-2)
 
 #### [CHECKPOINT START - STAGE 1]
 
-#### Checkpoint 1: Measure Baseline
+#### Step 1: Measure Baseline
 
 ```bash
 # Measure initial state
@@ -126,7 +126,7 @@ Original: 1324 lines, 85432 bytes
 ✓ Updated checkpoint 1/7 for compact-tasks
 ```
 
-#### Checkpoint 2: Categorize Tasks
+#### Step 2: Categorize Tasks
 
 ```bash
 # Categorize completed vs incomplete tasks
@@ -177,11 +177,11 @@ make checkpoint-gate CMD=compact-tasks GATE="Categorization Complete" REQUIRED="
 
 #### [CHECKPOINT END]
 
-## Stage 2: Manual Selective Compaction (Steps 3-4)
+### Stage 2: Manual Selective Compaction (Steps 3-4)
 
 #### [CHECKPOINT START - STAGE 2]
 
-#### Checkpoint 3: Manual Semantic Compaction
+#### Step 3: Manual Semantic Compaction
 
 **MANUAL WORK REQUIRED**: Edit TODO.md using your text editor. Apply these strategies to **COMPLETED TASKS ONLY**:
 
@@ -235,7 +235,7 @@ echo "Review changes with: git diff TODO.md"
 make checkpoint-update CMD=compact-tasks STEP=3
 ```
 
-#### Checkpoint 4: Verify Preservation
+#### Step 4: Verify Preservation
 
 ```bash
 # Verify all incomplete tasks preserved and reduction achieved
@@ -321,11 +321,11 @@ make checkpoint-gate CMD=compact-tasks GATE="Selective Compaction Quality" REQUI
 
 #### [CHECKPOINT END]
 
-## Stage 3: Documentation and Commit (Steps 5-7)
+### Stage 3: Documentation and Commit (Steps 5-7)
 
 #### [CHECKPOINT START - STAGE 3]
 
-#### Checkpoint 5: Add Self-Entry
+#### Step 5: Add Self-Entry
 
 ```bash
 # Add self-documenting entry
@@ -343,7 +343,7 @@ read -p "Press Enter after adding the entry..."
 make checkpoint-update CMD=compact-tasks STEP=5
 ```
 
-#### Checkpoint 6: Commit Changes
+#### Step 6: Commit Changes
 
 ```bash
 # Commit documentation updates
@@ -379,7 +379,7 @@ Your branch is ahead of 'origin/main' by 1 commit.
 ✓ Updated checkpoint 6/7 for compact-tasks
 ```
 
-#### Checkpoint 7: Final Verification
+#### Step 7: Final Verification
 
 ```bash
 # Verify commit and incomplete tasks one final time

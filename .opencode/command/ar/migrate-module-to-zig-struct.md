@@ -53,7 +53,7 @@ make checkpoint-status CMD=migrate-module-to-zig-struct
 {{#if 1}}
 Migrate the **ar_{{1}}** module from a C-ABI compatible Zig module to a pure Zig struct module following the pattern documented in kb/zig-struct-modules-pattern.md.
 
-## Stage 1: Assessment (Steps 1-5)
+### Stage 1: Assessment (Steps 1-5)
 
 #### [CHECKPOINT START - STAGE 1]
 
@@ -61,7 +61,7 @@ Migrate the **ar_{{1}}** module from a C-ABI compatible Zig module to a pure Zig
 
 #### Read KB Article First
 
-#### Checkpoint 1: Read KB Article
+#### Step 1: Read KB Article
 
 I'll start by reading the knowledge base article to understand the proper patterns for implementing Zig struct modules.
 
@@ -94,7 +94,7 @@ make checkpoint-gate CMD=migrate-module-to-zig-struct GATE="Knowledge" REQUIRED=
 
 #### Pre-Migration Dependency Check
 
-#### Checkpoint 2: Check Current Implementation
+#### Step 2: Check Current Implementation
 
 First, I need to verify that ar_{{1}} is safe to migrate by checking:
 
@@ -112,7 +112,7 @@ else
 fi
 ```
 
-#### Checkpoint 3: Check C Dependencies
+#### Step 3: Check C Dependencies
 
 2. **C Module Dependencies**: Search for any C modules (.c files) that include or depend on ar_{{1}}
 
@@ -131,7 +131,7 @@ else
 fi
 ```
 
-#### Checkpoint 4: Check Zig Dependencies
+#### Step 4: Check Zig Dependencies
 
 3. **Zig Module Dependencies**: Identify Zig modules that depend on ar_{{1}} (these can be updated)
 
@@ -146,7 +146,7 @@ echo "UPDATED_DEPS=$ZIG_DEPS" >> /tmp/migration-tracking.txt
 make checkpoint-update CMD=migrate-module-to-zig-struct STEP=4
 ```
 
-#### Checkpoint 5: Verify Safety
+#### Step 5: Verify Safety
 
 4. **Module's Own Dependencies**: Check if ar_{{1}} depends on C-ABI modules (would block migration)
 
@@ -183,7 +183,7 @@ make checkpoint-gate CMD=migrate-module-to-zig-struct GATE="Safety" REQUIRED="2,
 - If any C modules depend on ar_{{1}}, migration cannot proceed
 - If ar_{{1}} itself uses `@cImport` to depend on C-ABI modules, migration cannot proceed due to type incompatibility issues between different `@cImport` namespaces
 
-## Stage 2: Implementation (Steps 6-7)
+### Stage 2: Implementation (Steps 6-7)
 
 #### [CHECKPOINT START - STAGE 2]
 
@@ -193,7 +193,7 @@ make checkpoint-gate CMD=migrate-module-to-zig-struct GATE="Safety" REQUIRED="2,
 
 If the module is safe to migrate:
 
-#### Checkpoint 6: Create Struct Module
+#### Step 6: Create Struct Module
 
 ##### Create New Zig Struct Module
 1. Create `modules/{{1|pascal}}.zig` following TitleCase naming
@@ -210,7 +210,7 @@ echo "CREATED_FILES=$CREATED_FILES" >> /tmp/migration-tracking.txt
 make checkpoint-update CMD=migrate-module-to-zig-struct STEP=6
 ```
 
-#### Checkpoint 7: Convert Functions
+#### Step 7: Convert Functions
 
 2. Convert the module to use idiomatic Zig patterns:
    - Change from `export fn` to `pub fn`
@@ -245,13 +245,13 @@ make checkpoint-gate CMD=migrate-module-to-zig-struct GATE="Implementation" REQU
    Verified: Steps 6,7
 ```
 
-## Stage 3: Testing (Steps 8-9)
+### Stage 3: Testing (Steps 8-9)
 
 #### [CHECKPOINT START - STAGE 3]
 
 #### [CHECKPOINT END]
 
-#### Checkpoint 8: Update Dependencies
+#### Step 8: Update Dependencies
 
 ### Update Zig Dependencies
 For each Zig module that depends on ar_{{1}}:
@@ -270,7 +270,7 @@ echo "✅ Updated $UPDATED_DEPS modules to use {{1|pascal}}.zig"
 make checkpoint-update CMD=migrate-module-to-zig-struct STEP=8
 ```
 
-#### Checkpoint 9: Run Tests
+#### Step 9: Run Tests
 
 ```bash
 # Run tests and verify no memory leaks
@@ -299,13 +299,13 @@ make checkpoint-gate CMD=migrate-module-to-zig-struct GATE="Testing" REQUIRED="8
    Verified: Steps 8,9
 ```
 
-## Stage 4: Cleanup (Steps 10-11)
+### Stage 4: Cleanup (Steps 10-11)
 
 #### [CHECKPOINT START - STAGE 4]
 
 #### [CHECKPOINT END]
 
-#### Checkpoint 10: Remove Old Module
+#### Step 10: Remove Old Module
 
 ### Remove Old Module
 1. Delete `modules/ar_{{1}}.zig`
@@ -330,7 +330,7 @@ echo "✅ Removed $DELETED_FILES old files"
 make checkpoint-update CMD=migrate-module-to-zig-struct STEP=10
 ```
 
-#### Checkpoint 11: Update Documentation
+#### Step 11: Update Documentation
 
 ### Update Documentation
 1. Update module documentation to reflect new API

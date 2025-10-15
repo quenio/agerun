@@ -75,13 +75,13 @@ Assigns scores based on:
 - Troubleshooting guidance (20%)
 - Requirements clarity (20%)
 
-## Stage 1: Scanning (Step 1)
+### Stage 1: Scanning (Step 1)
 
 #### [CHECKPOINT START - STAGE 1]
 
 #### [CHECKPOINT END]
 
-#### Checkpoint 1: Scan Commands
+#### Step 1: Scan Commands
 
 ```bash
 # Scan for all command files
@@ -98,13 +98,13 @@ echo "✅ Successfully found $COMMAND_COUNT commands"
 make checkpoint-update CMD=check-commands STEP=1
 ```
 
-## Stage 2: Validation (Steps 2-3)
+### Stage 2: Validation (Steps 2-3)
 
 #### [CHECKPOINT START - STAGE 2]
 
 #### [CHECKPOINT END]
 
-#### Checkpoint 2: Validate Structure
+#### Step 2: Validate Structure
 
 ```bash
 # Run structure validation
@@ -119,7 +119,7 @@ fi
 make checkpoint-update CMD=check-commands STEP=2
 ```
 
-#### Checkpoint 3: Calculate Scores
+#### Step 3: Calculate Scores
 
 ```bash
 # Extract and analyze scores
@@ -150,13 +150,13 @@ echo "STATUS=$STATUS" >> /tmp/check-commands-stats.txt
 make checkpoint-update CMD=check-commands STEP=3
 ```
 
-## Stage 3: Analysis (Steps 4-5)
+### Stage 3: Analysis (Steps 4-5)
 
 #### [CHECKPOINT START - STAGE 3]
 
 #### [CHECKPOINT END]
 
-#### Checkpoint 4: Identify Issues
+#### Step 4: Identify Issues
 
 ```bash
 # Identify commands needing improvement
@@ -185,7 +185,7 @@ fi
 make checkpoint-update CMD=check-commands STEP=4
 ```
 
-#### Checkpoint 5: Generate Report
+#### Step 5: Generate Report
 
 ```bash
 # Generate final report

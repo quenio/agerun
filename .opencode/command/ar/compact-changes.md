@@ -91,11 +91,11 @@ make checkpoint-status CMD=compact-changes
 
 **CRITICAL**: Achieving 40-50% reduction requires manual semantic analysis to identify and combine related entries across different dates. Automated scripts cannot perform this level of semantic understanding.
 
-## Stage 1: Analysis (Steps 1-2)
+### Stage 1: Analysis (Steps 1-2)
 
 #### [CHECKPOINT START - STAGE 1]
 
-#### Checkpoint 1: Measure Baseline
+#### Step 1: Measure Baseline
 
 ```bash
 # Measure initial state
@@ -124,7 +124,7 @@ Metrics to preserve: 157
 ✓ Updated checkpoint 1/7 for compact-changes
 ```
 
-#### Checkpoint 2: Analyze Patterns
+#### Step 2: Analyze Patterns
 
 ```bash
 # Identify compaction opportunities
@@ -178,11 +178,11 @@ make checkpoint-gate CMD=compact-changes GATE="Analysis Complete" REQUIRED="1,2"
 
 #### [CHECKPOINT END]
 
-## Stage 2: Manual Compaction (Steps 3-5)
+### Stage 2: Manual Compaction (Steps 3-5)
 
 #### [CHECKPOINT START - STAGE 2]
 
-#### Checkpoint 3: Manual Semantic Compaction
+#### Step 3: Manual Semantic Compaction
 
 **MANUAL WORK REQUIRED**: Edit CHANGELOG.md using your text editor. Apply these strategies:
 
@@ -230,7 +230,7 @@ echo "Review changes with: git diff CHANGELOG.md"
 make checkpoint-update CMD=compact-changes STEP=3
 ```
 
-#### Checkpoint 4: Verify Preservation
+#### Step 4: Verify Preservation
 
 ```bash
 # Verify all critical information preserved
@@ -288,7 +288,7 @@ Date sections remaining: 16
 ✓ Updated checkpoint 4/7 for compact-changes
 ```
 
-#### Checkpoint 5: Add Self-Entry
+#### Step 5: Add Self-Entry
 
 ```bash
 # Add self-documenting entry to CHANGELOG
@@ -340,11 +340,11 @@ make checkpoint-gate CMD=compact-changes GATE="Compaction Quality" REQUIRED="3,4
 
 #### [CHECKPOINT END]
 
-## Stage 3: Documentation and Commit (Steps 6-7)
+### Stage 3: Documentation and Commit (Steps 6-7)
 
 #### [CHECKPOINT START - STAGE 3]
 
-#### Checkpoint 6: Update TODO
+#### Step 6: Update TODO
 
 ```bash
 # Update TODO.md with completion
@@ -365,7 +365,7 @@ read -p "Press Enter after updating TODO.md..."
 make checkpoint-update CMD=compact-changes STEP=6
 ```
 
-#### Checkpoint 7: Commit Changes
+#### Step 7: Commit Changes
 
 ```bash
 # Commit documentation updates

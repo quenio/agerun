@@ -78,13 +78,13 @@ Performs additional thorough analysis to catch edge cases:
 - Searches for failure indicators (Cannot, Unable to, Failed to)
 - Provides detailed counts and examples of any anomalies found
 
-## Stage 1: Initial Check (Steps 1-2)
+### Stage 1: Initial Check (Steps 1-2)
 
 #### [CHECKPOINT START - STAGE 1]
 
 #### [CHECKPOINT END]
 
-#### Checkpoint 1: Run Build
+#### Step 1: Run Build
 
 ```bash
 # Ensure fresh build before checking
@@ -98,7 +98,7 @@ echo "✅ Build completed successfully"
 make checkpoint-update CMD=check-logs STEP=1
 ```
 
-#### Checkpoint 2: Standard Checks
+#### Step 2: Standard Checks
 
 ```bash
 # Run Stage 1 log analysis
@@ -128,13 +128,13 @@ make checkpoint-gate CMD=check-logs GATE="Build" REQUIRED="1"
    Verified: Steps 1
 ```
 
-## Stage 2: Analysis (Steps 3-4)
+### Stage 2: Analysis (Steps 3-4)
 
 #### [CHECKPOINT START - STAGE 2]
 
 #### [CHECKPOINT END]
 
-#### Checkpoint 3: Deep Analysis
+#### Step 3: Deep Analysis
 
 ```bash
 # Run Stage 2 deep analysis if standard passed
@@ -156,7 +156,7 @@ fi
 make checkpoint-update CMD=check-logs STEP=3
 ```
 
-#### Checkpoint 4: Categorize Errors
+#### Step 4: Categorize Errors
 
 ```bash
 # Categorize errors found
@@ -215,13 +215,13 @@ Error Summary:
 Proceed to resolution phase.
 ```
 
-## Stage 3: Resolution (Steps 5-6)
+### Stage 3: Resolution (Steps 5-6)
 
 #### [CHECKPOINT START - STAGE 3]
 
 #### [CHECKPOINT END]
 
-#### Checkpoint 5: Fix Issues
+#### Step 5: Fix Issues
 
 ```bash
 # Fix real errors (manual step)
@@ -238,7 +238,7 @@ fi
 make checkpoint-update CMD=check-logs STEP=5
 ```
 
-#### Checkpoint 6: Update Whitelist
+#### Step 6: Update Whitelist
 
 ```bash
 # Update whitelist for intentional errors
@@ -259,13 +259,13 @@ fi
 make checkpoint-update CMD=check-logs STEP=6
 ```
 
-## Stage 4: Verification (Steps 7-8)
+### Stage 4: Verification (Steps 7-8)
 
 #### [CHECKPOINT START - STAGE 4]
 
 #### [CHECKPOINT END]
 
-#### Checkpoint 7: Re-check Logs
+#### Step 7: Re-check Logs
 
 ```bash
 # Re-run checks after fixes
@@ -283,7 +283,7 @@ echo "FINAL_STATUS=$FINAL_STATUS" >> /tmp/check-logs-stats.txt
 make checkpoint-update CMD=check-logs STEP=7
 ```
 
-#### Checkpoint 8: Final Validation
+#### Step 8: Final Validation
 
 ```bash
 # Final CI readiness check

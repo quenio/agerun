@@ -39,7 +39,7 @@ make checkpoint-status CMD=merge-settings
 - [ ] Valid JSON after merge
 - [ ] Local file removed
 - [ ] Changes committed and pushed
-## Stage 1: Discovery (Step 1)
+### Stage 1: Discovery (Step 1)
 
 #### [CHECKPOINT START - STAGE 1]
 
@@ -47,7 +47,7 @@ Follow these steps:
 
 #### [CHECKPOINT END]
 
-#### Checkpoint 1: Check Files
+#### Step 1: Check Files
 
 ```bash
 # Check if local settings file exists
@@ -88,13 +88,13 @@ fi
 make checkpoint-gate CMD=merge-settings GATE="Discovery" REQUIRED="1"
 ```
 
-## Stage 2: Merge (Steps 2-4)
+### Stage 2: Merge (Steps 2-4)
 
 #### [CHECKPOINT START - STAGE 2]
 
 #### [CHECKPOINT END]
 
-#### Checkpoint 2: Read Settings
+#### Step 2: Read Settings
 
 ```bash
 # Read both settings files
@@ -120,7 +120,7 @@ make checkpoint-update CMD=merge-settings STEP=2
 
 2. If it exists, read both settings files
 
-#### Checkpoint 3: Merge Permissions
+#### Step 3: Merge Permissions
 
 ```bash
 # Merge permissions
@@ -148,7 +148,7 @@ make checkpoint-update CMD=merge-settings STEP=3
 
 3. Merge the permissions from local into main settings
 
-#### Checkpoint 4: Validate Result
+#### Step 4: Validate Result
 
 ```bash
 # Validate merged JSON
@@ -185,13 +185,13 @@ fi
 make checkpoint-gate CMD=merge-settings GATE="Merge Validation" REQUIRED="2,3,4"
 ```
 
-## Stage 3: Cleanup (Step 5)
+### Stage 3: Cleanup (Step 5)
 
 #### [CHECKPOINT START - STAGE 3]
 
 #### [CHECKPOINT END]
 
-#### Checkpoint 5: Commit and Cleanup
+#### Step 5: Commit and Cleanup
 
 ```bash
 # Remove local file and commit

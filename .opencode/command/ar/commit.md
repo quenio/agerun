@@ -78,7 +78,7 @@ make checkpoint-status CMD=commit
 - [ ] CHANGELOG.md updated
 - [ ] All changes reviewed
 - [ ] Git push verified
-## Stage 1: Pre-Commit Verification (Steps 1-5)
+### Stage 1: Pre-Commit Verification (Steps 1-5)
 
 #### [CHECKPOINT START - STAGE 1]
 
@@ -88,7 +88,7 @@ make checkpoint-status CMD=commit
 
 Before starting the commit process, ensure you have completed ALL of these steps. This checklist acts as a quality gate to prevent incomplete commits ([details](../../../kb/gate-enforcement-exit-codes-pattern.md)):
 
-#### Checkpoint 1: Run Tests
+#### Step 1: Run Tests
 
 ```bash
 # Run comprehensive build verification
@@ -96,7 +96,7 @@ make clean build 2>&1
 make checkpoint-update-verified CMD=commit STEP=1 SUMMARY="Clean build completed with all checks passed"
 ```
 
-#### Checkpoint 2: Check Logs
+#### Step 2: Check Logs
 
 ```bash
 # Verify no hidden issues in logs
@@ -109,7 +109,7 @@ make checkpoint-update-verified CMD=commit STEP=2 SUMMARY="Build logs verified c
 - If clean build fails OR check-logs finds issues, STOP - do not proceed ([details](../../../kb/build-verification-before-commit.md))
 - `make build` includes documentation validation (`make check-docs`) ([details](../../../kb/batch-documentation-fix-enhancement.md))
 
-#### Checkpoint 3: Update Docs
+#### Step 3: Update Docs
 
 ```bash
 # Check if documentation needs updates (manual verification)
@@ -122,7 +122,7 @@ make checkpoint-update CMD=commit STEP=3
 - When removing global APIs, use systematic scripts ([details](../../../kb/global-function-removal-script-pattern.md))
 - Let compiler errors guide refactoring completion ([details](../../../kb/compilation-driven-refactoring-pattern.md))
 
-#### Checkpoint 4: Update TODO
+#### Step 4: Update TODO
 
 ```bash
 # Verify TODO.md is updated (manual verification)
@@ -131,7 +131,7 @@ make checkpoint-update CMD=commit STEP=4
 
 **TODO Note**: Mark completed tasks and add any new tasks identified
 
-#### Checkpoint 5: Update CHANGELOG
+#### Step 5: Update CHANGELOG
 
 ```bash
 # Verify CHANGELOG.md is updated
@@ -153,13 +153,13 @@ make checkpoint-gate CMD=commit GATE="Build Quality" REQUIRED="1,2"
    Verified: Steps 1,2
 ```
 
-## Stage 2: Review and Stage (Steps 6-7)
+### Stage 2: Review and Stage (Steps 6-7)
 
 #### [CHECKPOINT START - STAGE 2]
 
 #### [CHECKPOINT END]
 
-#### Checkpoint 6: Review Changes
+#### Step 6: Review Changes
 
 ```bash
 # Review all changes
@@ -190,7 +190,7 @@ make checkpoint-gate CMD=commit GATE="Documentation" REQUIRED="3,4,5"
    Verified: Steps 3,4,5
 ```
 
-## Stage 3: Commit and Push (Steps 8-9)
+### Stage 3: Commit and Push (Steps 8-9)
 
 #### [CHECKPOINT START - STAGE 3]
 
@@ -200,7 +200,7 @@ make checkpoint-gate CMD=commit GATE="Documentation" REQUIRED="3,4,5"
 
 After completing the checklist above, follow these steps precisely:
 
-#### Checkpoint 7: Stage Files
+#### Step 7: Stage Files
 
 ```bash
 # Analyze and stage changes
@@ -231,7 +231,7 @@ make checkpoint-update CMD=commit STEP=7
    - Ensure the message accurately reflects ALL changes
    - Verify full scope of architectural changes ([details](../../../kb/commit-scope-verification.md))
 
-#### Checkpoint 8: Create Commit
+#### Step 8: Create Commit
 
 ```bash
 # Create the commit
@@ -253,7 +253,7 @@ EOF
      - Working tree is clean after commit
      - Branch is ahead of remote (or warn if not)
 
-#### Checkpoint 9: Push and Verify
+#### Step 9: Push and Verify
 
 ```bash
 # Push to remote and verify

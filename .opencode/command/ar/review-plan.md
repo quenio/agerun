@@ -206,7 +206,7 @@ This command reviews plans and updates iteration status markers. These markers t
 
 #### [CHECKPOINT START - STAGE 1]
 
-#### Checkpoint 1: KB Consultation
+#### Step 1: KB Consultation
 
 **Mandatory KB Reading:**
 Read all 8 KB articles listed above and quote the 4 specific items.
@@ -216,7 +216,7 @@ Read all 8 KB articles listed above and quote the 4 specific items.
 make checkpoint-update CMD=review-plan STEP=1
 ```
 
-#### Checkpoint 2: Read Plan
+#### Step 2: Read Plan
 
 **Read the entire plan document:**
 ```bash
@@ -260,7 +260,7 @@ Extract only iterations marked with "- PENDING REVIEW" status. Skip iterations a
 - [ ] Note total iterations needing review vs. total iterations
 - [ ] Skip all non-PENDING iterations from review scope
 
-#### Checkpoint 3: Verify Completeness
+#### Step 3: Verify Completeness
 
 **Check plan document structure:**
 - [ ] Has clear objective/overview
@@ -295,7 +295,7 @@ make checkpoint-gate CMD=review-plan GATE="Plan Basics" REQUIRED="1,2,3"
 
 #### [CHECKPOINT START - STAGE 2]
 
-#### Checkpoint 4: Check Iteration Structure
+#### Step 4: Check Iteration Structure
 
 **IMPORTANT: Review ONLY iterations with PENDING REVIEW status.**
 
@@ -445,7 +445,7 @@ make checkpoint-cleanup CMD=review-plan-iterations
 make checkpoint-update CMD=review-plan STEP=4
 ```
 
-#### Checkpoint 5: Verify TDD Methodology
+#### Step 5: Verify TDD Methodology
 
 **Check TDD cycle compliance:**
 
@@ -468,7 +468,7 @@ Original: 0.6 → Split into: 0.6.1, 0.6.2, then 0.7 stays 0.7
 make checkpoint-update CMD=review-plan STEP=5
 ```
 
-#### Checkpoint 6: Check GREEN Minimalism
+#### Step 6: Check GREEN Minimalism
 
 **Verify minimal implementations:**
 
@@ -489,7 +489,7 @@ For each GREEN phase:
 make checkpoint-update CMD=review-plan STEP=6
 ```
 
-#### Checkpoint 7: Verify Memory Management
+#### Step 7: Verify Memory Management
 
 **Check zero leak policy compliance:**
 
@@ -541,7 +541,7 @@ make checkpoint-gate CMD=review-plan GATE="TDD Methodology" REQUIRED="4,5,6,7"
 
 #### [CHECKPOINT START - STAGE 3]
 
-#### Checkpoint 8: Review Status Tracking
+#### Step 8: Review Status Tracking
 
 **Check review status markers:**
 
@@ -569,7 +569,7 @@ make checkpoint-gate CMD=review-plan GATE="TDD Methodology" REQUIRED="4,5,6,7"
 make checkpoint-update CMD=review-plan STEP=8
 ```
 
-#### Checkpoint 9: Verify Cross-References
+#### Step 9: Verify Cross-References
 
 **Check KB article references:**
 
@@ -611,7 +611,7 @@ make checkpoint-gate CMD=review-plan GATE="Status Tracking" REQUIRED="8,9"
 
 #### [CHECKPOINT START - STAGE 4]
 
-#### Checkpoint 10: Document Issues
+#### Step 10: Document Issues
 
 **Compile all findings:**
 
@@ -639,7 +639,7 @@ Create a structured report of all issues found:
 make checkpoint-update CMD=review-plan STEP=10
 ```
 
-#### Checkpoint 11: Generate Report
+#### Step 11: Generate Report
 
 **Create final review summary:**
 

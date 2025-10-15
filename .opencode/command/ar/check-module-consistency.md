@@ -76,7 +76,7 @@ make checkpoint-status CMD=check-module-consistency
 
 After making improvements to one module, use this command to systematically check if related or sister modules need the same improvements. This prevents technical debt from accumulating and maintains architectural coherence. ([details](../../../kb/module-consistency-verification.md))
 
-## Stage 1: Understanding (Steps 1-2)
+### Stage 1: Understanding (Steps 1-2)
 
 #### [CHECKPOINT START - STAGE 1]
 
@@ -84,7 +84,7 @@ After making improvements to one module, use this command to systematically chec
 
 #### Step 1: Identify the Improvement Made
 
-#### Checkpoint 1: Describe Improvement
+#### Step 1: Describe Improvement
 
 First, clearly describe what improvement was just made:
 - What module was improved?
@@ -105,7 +105,7 @@ echo "MODULES_NEEDING_UPDATE=0" >> /tmp/check-consistency-tracking.txt
 make checkpoint-update CMD=check-module-consistency STEP=1
 ```
 
-#### Checkpoint 2: Identify Pattern
+#### Step 2: Identify Pattern
 
 ```bash
 # Identify the specific pattern to check for
@@ -129,7 +129,7 @@ make checkpoint-gate CMD=check-module-consistency GATE="Understanding" REQUIRED=
    Verified: Steps 1,2
 ```
 
-## Stage 2: Discovery (Steps 3-5)
+### Stage 2: Discovery (Steps 3-5)
 
 #### [CHECKPOINT START - STAGE 2]
 
@@ -139,7 +139,7 @@ make checkpoint-gate CMD=check-module-consistency GATE="Understanding" REQUIRED=
 
 Identify modules that should be checked for consistency:
 
-#### Checkpoint 3: Find Sister Modules
+#### Step 3: Find Sister Modules
 
 #### Sister Modules
 ```bash
@@ -153,7 +153,7 @@ ls modules/ar_*_ast.* modules/ar_*_evaluator.* 2>/dev/null
 make checkpoint-update CMD=check-module-consistency STEP=3
 ```
 
-#### Checkpoint 4: Find Similar Purpose
+#### Step 4: Find Similar Purpose
 
 #### Similar Purpose Modules
 ```bash
@@ -166,7 +166,7 @@ grep -l "similar_pattern" modules/*.c | head -10
 make checkpoint-update CMD=check-module-consistency STEP=4
 ```
 
-#### Checkpoint 5: Find Same Subsystem
+#### Step 5: Find Same Subsystem
 
 #### Modules in Same Subsystem
 ```bash
@@ -202,7 +202,7 @@ make checkpoint-gate CMD=check-module-consistency GATE="Discovery" REQUIRED="3,4
    Verified: Steps 3,4,5
 ```
 
-## Stage 3: Analysis (Steps 6-10)
+### Stage 3: Analysis (Steps 6-10)
 
 #### [CHECKPOINT START - STAGE 3]
 
@@ -247,7 +247,7 @@ check_module_consistency() {
 }
 ```
 
-#### Checkpoint 6: Check Module 1
+#### Step 6: Check Module 1
 
 ```bash
 MODULE1="modules/ar_[module1]"
@@ -332,7 +332,7 @@ grep -n "^static.*[^(]$\|^[^/]*g_" modules/MODULE.c | \
 grep -A 5 "if.*!.*\|\|.*!.*)" modules/MODULE.c
 ```
 
-## Stage 4: Planning (Steps 11-14)
+### Stage 4: Planning (Steps 11-14)
 
 #### [CHECKPOINT START - STAGE 4]
 
@@ -340,7 +340,7 @@ grep -A 5 "if.*!.*\|\|.*!.*)" modules/MODULE.c
 
 #### Step 4: Create Improvement Plan
 
-#### Checkpoint 11: Analyze Findings
+#### Step 11: Analyze Findings
 
 ```bash
 echo "Analyzing consistency findings..."
@@ -354,7 +354,7 @@ echo "- Consistency rate: $((100 * (MODULES_CHECKED - MODULES_NEEDING_UPDATE) / 
 make checkpoint-update CMD=check-module-consistency STEP=11
 ```
 
-#### Checkpoint 12: List Modules Needing Update
+#### Step 12: List Modules Needing Update
 
 For modules that need the same improvement:
 
@@ -368,7 +368,7 @@ For modules that need the same improvement:
    make checkpoint-update CMD=check-module-consistency STEP=12
    ```
 
-#### Checkpoint 13: Estimate Effort
+#### Step 13: Estimate Effort
 
 2. **Estimate TDD cycles required** for each
    ```bash
@@ -381,7 +381,7 @@ For modules that need the same improvement:
    make checkpoint-update CMD=check-module-consistency STEP=13
    ```
 
-#### Checkpoint 14: Create Priority Order
+#### Step 14: Create Priority Order
 
 3. **Prioritize by**:
    - User-facing impact
@@ -409,13 +409,13 @@ make checkpoint-gate CMD=check-module-consistency GATE="Planning" REQUIRED="11,1
    Verified: Steps 11,12,13,14
 ```
 
-## Stage 5: Documentation (Step 15)
+### Stage 5: Documentation (Step 15)
 
 #### [CHECKPOINT START - STAGE 5]
 
 #### [CHECKPOINT END]
 
-#### Checkpoint 15: Document Plan
+#### Step 15: Document Plan
 
 ```bash
 # Create comprehensive improvement plan
