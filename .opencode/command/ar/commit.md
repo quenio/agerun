@@ -78,9 +78,9 @@ make checkpoint-status CMD=commit
 - [ ] CHANGELOG.md updated
 - [ ] All changes reviewed
 - [ ] Git push verified
-## Phase 1: Pre-Commit Verification (Steps 1-5)
+## Stage 1: Pre-Commit Verification (Steps 1-5)
 
-#### [CHECKPOINT START - PHASE 1]
+#### [CHECKPOINT START - STAGE 1]
 
 #### [CHECKPOINT END]
 
@@ -153,9 +153,9 @@ make checkpoint-gate CMD=commit GATE="Build Quality" REQUIRED="1,2"
    Verified: Steps 1,2
 ```
 
-## Phase 2: Review and Stage (Steps 6-7)
+## Stage 2: Review and Stage (Steps 6-7)
 
-#### [CHECKPOINT START - PHASE 2]
+#### [CHECKPOINT START - STAGE 2]
 
 #### [CHECKPOINT END]
 
@@ -190,9 +190,9 @@ make checkpoint-gate CMD=commit GATE="Documentation" REQUIRED="3,4,5"
    Verified: Steps 3,4,5
 ```
 
-## Phase 3: Commit and Push (Steps 8-9)
+## Stage 3: Commit and Push (Steps 8-9)
 
-#### [CHECKPOINT START - PHASE 3]
+#### [CHECKPOINT START - STAGE 3]
 
 #### [CHECKPOINT END]
 

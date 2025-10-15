@@ -76,9 +76,9 @@ make checkpoint-status CMD=check-module-consistency
 
 After making improvements to one module, use this command to systematically check if related or sister modules need the same improvements. This prevents technical debt from accumulating and maintains architectural coherence. ([details](../../../kb/module-consistency-verification.md))
 
-## Phase 1: Understanding (Steps 1-2)
+## Stage 1: Understanding (Steps 1-2)
 
-#### [CHECKPOINT START - PHASE 1]
+#### [CHECKPOINT START - STAGE 1]
 
 #### [CHECKPOINT END]
 
@@ -129,9 +129,9 @@ make checkpoint-gate CMD=check-module-consistency GATE="Understanding" REQUIRED=
    Verified: Steps 1,2
 ```
 
-## Phase 2: Discovery (Steps 3-5)
+## Stage 2: Discovery (Steps 3-5)
 
-#### [CHECKPOINT START - PHASE 2]
+#### [CHECKPOINT START - STAGE 2]
 
 #### [CHECKPOINT END]
 
@@ -202,9 +202,9 @@ make checkpoint-gate CMD=check-module-consistency GATE="Discovery" REQUIRED="3,4
    Verified: Steps 3,4,5
 ```
 
-## Phase 3: Analysis (Steps 6-10)
+## Stage 3: Analysis (Steps 6-10)
 
-#### [CHECKPOINT START - PHASE 3]
+#### [CHECKPOINT START - STAGE 3]
 
 #### [CHECKPOINT END]
 
@@ -332,9 +332,9 @@ grep -n "^static.*[^(]$\|^[^/]*g_" modules/MODULE.c | \
 grep -A 5 "if.*!.*\|\|.*!.*)" modules/MODULE.c
 ```
 
-## Phase 4: Planning (Steps 11-14)
+## Stage 4: Planning (Steps 11-14)
 
-#### [CHECKPOINT START - PHASE 4]
+#### [CHECKPOINT START - STAGE 4]
 
 #### [CHECKPOINT END]
 
@@ -409,7 +409,7 @@ make checkpoint-gate CMD=check-module-consistency GATE="Planning" REQUIRED="11,1
    Verified: Steps 11,12,13,14
 ```
 
-## Phase 5: Documentation (Step 15)
+## Stage 5: Documentation (Step 15)
 
 #### [CHECKPOINT START - PHASE 5]
 

@@ -97,9 +97,9 @@ make checkpoint-status CMD=compact-tasks
 
 This uses selective compaction for mixed-state documents ([details](../../../kb/selective-compaction-pattern.md)) combined with manual semantic analysis ([details](../../../kb/documentation-compacting-pattern.md)).
 
-## Phase 1: Analysis (Steps 1-2)
+## Stage 1: Analysis (Steps 1-2)
 
-#### [CHECKPOINT START - PHASE 1]
+#### [CHECKPOINT START - STAGE 1]
 
 #### Checkpoint 1: Measure Baseline
 
@@ -177,9 +177,9 @@ make checkpoint-gate CMD=compact-tasks GATE="Categorization Complete" REQUIRED="
 
 #### [CHECKPOINT END]
 
-## Phase 2: Manual Selective Compaction (Steps 3-4)
+## Stage 2: Manual Selective Compaction (Steps 3-4)
 
-#### [CHECKPOINT START - PHASE 2]
+#### [CHECKPOINT START - STAGE 2]
 
 #### Checkpoint 3: Manual Semantic Compaction
 
@@ -321,9 +321,9 @@ make checkpoint-gate CMD=compact-tasks GATE="Selective Compaction Quality" REQUI
 
 #### [CHECKPOINT END]
 
-## Phase 3: Documentation and Commit (Steps 5-7)
+## Stage 3: Documentation and Commit (Steps 5-7)
 
-#### [CHECKPOINT START - PHASE 3]
+#### [CHECKPOINT START - STAGE 3]
 
 #### Checkpoint 5: Add Self-Entry
 

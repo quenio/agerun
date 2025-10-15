@@ -60,9 +60,9 @@ This command guides you through:
 
 The whitelist contains both intentional test errors AND success messages that check-logs flags. Not all entries represent problems - many are necessary for testing error handling ([details](../../../kb/whitelist-success-message-management.md)). Classify errors by type to determine appropriate fixing strategies ([details](../../../kb/documentation-error-type-classification.md)). Check-logs failures will block CI ([details](../../../kb/ci-check-logs-requirement.md)). Some errors may come from redundant test cleanup that can be removed ([details](../../../kb/redundant-test-cleanup-anti-pattern.md)).
 
-## Phase 1: Analysis (Steps 1-3)
+## Stage 1: Analysis (Steps 1-3)
 
-#### [CHECKPOINT START - PHASE 1]
+#### [CHECKPOINT START - STAGE 1]
 
 #### [CHECKPOINT END]
 
@@ -116,9 +116,9 @@ make checkpoint-gate CMD=fix-errors-whitelisted GATE="Analysis" REQUIRED="1,2,3"
    Verified: Steps 1,2,3
 ```
 
-## Phase 2: Strategy Development (Steps 4-7)
+## Stage 2: Strategy Development (Steps 4-7)
 
-#### [CHECKPOINT START - PHASE 2]
+#### [CHECKPOINT START - STAGE 2]
 
 #### [CHECKPOINT END]
 
@@ -221,9 +221,9 @@ make checkpoint-gate CMD=fix-errors-whitelisted GATE="Strategy" REQUIRED="4,5,6,
    Verified: Steps 4,5,6,7
 ```
 
-## Phase 3: Implementation (Steps 8-11)
+## Stage 3: Implementation (Steps 8-11)
 
-#### [CHECKPOINT START - PHASE 3]
+#### [CHECKPOINT START - STAGE 3]
 
 #### [CHECKPOINT END]
 
@@ -301,9 +301,9 @@ fi
 make checkpoint-update CMD=fix-errors-whitelisted STEP=11
 ```
 
-## Phase 4: Documentation & Commit (Steps 12-16)
+## Stage 4: Documentation & Commit (Steps 12-16)
 
-#### [CHECKPOINT START - PHASE 4]
+#### [CHECKPOINT START - STAGE 4]
 
 #### [CHECKPOINT END]
 

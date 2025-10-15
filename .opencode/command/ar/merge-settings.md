@@ -39,9 +39,9 @@ make checkpoint-status CMD=merge-settings
 - [ ] Valid JSON after merge
 - [ ] Local file removed
 - [ ] Changes committed and pushed
-## Phase 1: Discovery (Step 1)
+## Stage 1: Discovery (Step 1)
 
-#### [CHECKPOINT START - PHASE 1]
+#### [CHECKPOINT START - STAGE 1]
 
 Follow these steps:
 
@@ -88,9 +88,9 @@ fi
 make checkpoint-gate CMD=merge-settings GATE="Discovery" REQUIRED="1"
 ```
 
-## Phase 2: Merge (Steps 2-4)
+## Stage 2: Merge (Steps 2-4)
 
-#### [CHECKPOINT START - PHASE 2]
+#### [CHECKPOINT START - STAGE 2]
 
 #### [CHECKPOINT END]
 
@@ -185,9 +185,9 @@ fi
 make checkpoint-gate CMD=merge-settings GATE="Merge Validation" REQUIRED="2,3,4"
 ```
 
-## Phase 3: Cleanup (Step 5)
+## Stage 3: Cleanup (Step 5)
 
-#### [CHECKPOINT START - PHASE 3]
+#### [CHECKPOINT START - STAGE 3]
 
 #### [CHECKPOINT END]
 

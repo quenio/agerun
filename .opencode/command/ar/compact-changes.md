@@ -91,9 +91,9 @@ make checkpoint-status CMD=compact-changes
 
 **CRITICAL**: Achieving 40-50% reduction requires manual semantic analysis to identify and combine related entries across different dates. Automated scripts cannot perform this level of semantic understanding.
 
-## Phase 1: Analysis (Steps 1-2)
+## Stage 1: Analysis (Steps 1-2)
 
-#### [CHECKPOINT START - PHASE 1]
+#### [CHECKPOINT START - STAGE 1]
 
 #### Checkpoint 1: Measure Baseline
 
@@ -178,9 +178,9 @@ make checkpoint-gate CMD=compact-changes GATE="Analysis Complete" REQUIRED="1,2"
 
 #### [CHECKPOINT END]
 
-## Phase 2: Manual Compaction (Steps 3-5)
+## Stage 2: Manual Compaction (Steps 3-5)
 
-#### [CHECKPOINT START - PHASE 2]
+#### [CHECKPOINT START - STAGE 2]
 
 #### Checkpoint 3: Manual Semantic Compaction
 
@@ -340,9 +340,9 @@ make checkpoint-gate CMD=compact-changes GATE="Compaction Quality" REQUIRED="3,4
 
 #### [CHECKPOINT END]
 
-## Phase 3: Documentation and Commit (Steps 6-7)
+## Stage 3: Documentation and Commit (Steps 6-7)
 
-#### [CHECKPOINT START - PHASE 3]
+#### [CHECKPOINT START - STAGE 3]
 
 #### Checkpoint 6: Update TODO
 

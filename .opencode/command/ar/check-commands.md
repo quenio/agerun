@@ -56,7 +56,7 @@ make checkpoint-status CMD=check-commands
 
 This command performs comprehensive validation of all Claude Code commands:
 
-### Phase 1: Structure Analysis
+### Stage 1: Structure Analysis
 Validates each command has:
 - First-line description
 - Single h1 title
@@ -68,16 +68,16 @@ Validates each command has:
 - Minimum requirements section
 - Troubleshooting section
 
-### Phase 2: Score Calculation
+### Stage 2: Score Calculation
 Assigns scores based on:
 - Checkpoint presence and quality (40%)
 - Expected outputs documentation (20%)
 - Troubleshooting guidance (20%)
 - Requirements clarity (20%)
 
-## Phase 1: Scanning (Step 1)
+## Stage 1: Scanning (Step 1)
 
-#### [CHECKPOINT START - PHASE 1]
+#### [CHECKPOINT START - STAGE 1]
 
 #### [CHECKPOINT END]
 
@@ -98,9 +98,9 @@ echo "✅ Successfully found $COMMAND_COUNT commands"
 make checkpoint-update CMD=check-commands STEP=1
 ```
 
-## Phase 2: Validation (Steps 2-3)
+## Stage 2: Validation (Steps 2-3)
 
-#### [CHECKPOINT START - PHASE 2]
+#### [CHECKPOINT START - STAGE 2]
 
 #### [CHECKPOINT END]
 
@@ -150,9 +150,9 @@ echo "STATUS=$STATUS" >> /tmp/check-commands-stats.txt
 make checkpoint-update CMD=check-commands STEP=3
 ```
 
-## Phase 3: Analysis (Steps 4-5)
+## Stage 3: Analysis (Steps 4-5)
 
-#### [CHECKPOINT START - PHASE 3]
+#### [CHECKPOINT START - STAGE 3]
 
 #### [CHECKPOINT END]
 

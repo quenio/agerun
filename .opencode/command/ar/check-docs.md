@@ -49,9 +49,9 @@ make checkpoint-status CMD=check-docs
 - [ ] make check-docs passes
 - [ ] Changes committed and pushed
 - [ ] Git status shows clean tree
-## Phase 1: Initial Check (Step 1)
+## Stage 1: Initial Check (Step 1)
 
-#### [CHECKPOINT START - PHASE 1]
+#### [CHECKPOINT START - STAGE 1]
 
 #### [CHECKPOINT END]
 
@@ -107,9 +107,9 @@ Error Summary:
 Proceeding to fix phase.
 ```
 
-## Phase 2: Fix Errors (Steps 2-3)
+## Stage 2: Fix Errors (Steps 2-3)
 
-#### [CHECKPOINT START - PHASE 2]
+#### [CHECKPOINT START - STAGE 2]
 
 #### [CHECKPOINT END]
 
@@ -158,9 +158,9 @@ make checkpoint-update CMD=check-docs STEP=3
    - If the changes look good, run `python3 scripts/batch_fix_docs.py` to apply the fixes
    - Run `make check-docs` again to verify the fixes worked
 
-## Phase 3: Verify and Commit (Steps 4-5)
+## Stage 3: Verify and Commit (Steps 4-5)
 
-#### [CHECKPOINT START - PHASE 3]
+#### [CHECKPOINT START - STAGE 3]
 
 #### [CHECKPOINT END]
 

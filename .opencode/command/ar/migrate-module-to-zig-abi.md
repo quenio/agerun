@@ -73,9 +73,9 @@ Which module would you like to migrate to Zig?
 4. **Zero memory leaks**: Verify with individual test memory reports
 5. **Validate documentation**: Ensure all documentation passes `make check-docs`
 
-## Phase 1: Assessment (Steps 1-4)
+## Stage 1: Assessment (Steps 1-4)
 
-#### [CHECKPOINT START - PHASE 1]
+#### [CHECKPOINT START - STAGE 1]
 
 #### [CHECKPOINT END]
 
@@ -179,9 +179,9 @@ If `modules/{{1}}.zig` already exists:
 - If `modules/{{1}}.c` doesn't exist: "The {{1}} module has already been migrated to Zig. The implementation is in `modules/{{1}}.zig`."
 {{/if}}
 
-## Phase 2: Implementation (Steps 5-7)
+## Stage 2: Implementation (Steps 5-7)
 
-#### [CHECKPOINT START - PHASE 2]
+#### [CHECKPOINT START - STAGE 2]
 
 #### [CHECKPOINT END]
 
@@ -248,9 +248,9 @@ make checkpoint-gate CMD=migrate-module-to-zig-abi GATE="Implementation" REQUIRE
    Verified: Steps 5,6,7
 ```
 
-## Phase 3: Testing (Steps 8-9)
+## Stage 3: Testing (Steps 8-9)
 
-#### [CHECKPOINT START - PHASE 3]
+#### [CHECKPOINT START - STAGE 3]
 
 #### [CHECKPOINT END]
 
@@ -305,9 +305,9 @@ make checkpoint-gate CMD=migrate-module-to-zig-abi GATE="Testing" REQUIRED="8,9"
    Verified: Steps 8,9
 ```
 
-## Phase 4: Cleanup (Step 10)
+## Stage 4: Cleanup (Step 10)
 
-#### [CHECKPOINT START - PHASE 4]
+#### [CHECKPOINT START - STAGE 4]
 
 #### [CHECKPOINT END]
 

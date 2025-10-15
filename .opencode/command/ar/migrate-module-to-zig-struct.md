@@ -53,9 +53,9 @@ make checkpoint-status CMD=migrate-module-to-zig-struct
 {{#if 1}}
 Migrate the **ar_{{1}}** module from a C-ABI compatible Zig module to a pure Zig struct module following the pattern documented in kb/zig-struct-modules-pattern.md.
 
-## Phase 1: Assessment (Steps 1-5)
+## Stage 1: Assessment (Steps 1-5)
 
-#### [CHECKPOINT START - PHASE 1]
+#### [CHECKPOINT START - STAGE 1]
 
 #### [CHECKPOINT END]
 
@@ -183,9 +183,9 @@ make checkpoint-gate CMD=migrate-module-to-zig-struct GATE="Safety" REQUIRED="2,
 - If any C modules depend on ar_{{1}}, migration cannot proceed
 - If ar_{{1}} itself uses `@cImport` to depend on C-ABI modules, migration cannot proceed due to type incompatibility issues between different `@cImport` namespaces
 
-## Phase 2: Implementation (Steps 6-7)
+## Stage 2: Implementation (Steps 6-7)
 
-#### [CHECKPOINT START - PHASE 2]
+#### [CHECKPOINT START - STAGE 2]
 
 #### [CHECKPOINT END]
 
@@ -245,9 +245,9 @@ make checkpoint-gate CMD=migrate-module-to-zig-struct GATE="Implementation" REQU
    Verified: Steps 6,7
 ```
 
-## Phase 3: Testing (Steps 8-9)
+## Stage 3: Testing (Steps 8-9)
 
-#### [CHECKPOINT START - PHASE 3]
+#### [CHECKPOINT START - STAGE 3]
 
 #### [CHECKPOINT END]
 
@@ -299,9 +299,9 @@ make checkpoint-gate CMD=migrate-module-to-zig-struct GATE="Testing" REQUIRED="8
    Verified: Steps 8,9
 ```
 
-## Phase 4: Cleanup (Steps 10-11)
+## Stage 4: Cleanup (Steps 10-11)
 
-#### [CHECKPOINT START - PHASE 4]
+#### [CHECKPOINT START - STAGE 4]
 
 #### [CHECKPOINT END]
 
