@@ -213,6 +213,277 @@ A link between related KB articles or from commands/AGENTS.md to KB articles.
 **Wrong:** Using "phase" and "stage" interchangeably in the same document
 **Correct:** Use "stage" consistently for workflows, "phase" only for TDD
 
+## Agent System Concepts
+
+### Agent
+A runtime entity that executes methods and processes messages. Agents are the fundamental units of computation in AgeRun.
+
+**Usage:**
+- Created with `ar_agency__create_agent(agency, method_name, version, context)`
+- Each agent has a unique ID (int64_t)
+- Maintains its own memory state
+- Processes messages asynchronously through a queue
+
+**Context:** Runtime execution, message-driven architecture
+
+### Method
+A versioned, executable definition that specifies an agent's behavior. Methods are written in AgeRun's instruction language.
+
+**Usage:**
+- Defined with semantic versioning: `echo-1.0.0`
+- Stored as `.method` files or compiled at runtime
+- Contains instructions for processing messages
+- Supports versioned upgrades and backward compatibility
+
+**Context:** Agent behavior definition, method versioning
+
+### Message
+Data passed asynchronously between agents. Messages drive all agent interactions in the system.
+
+**Usage:**
+- Created as `ar_data_t*` values
+- Sent with `ar_agency__send_to_agent(agency, agent_id, own_message)`
+- Ownership transferred to receiving agent's queue
+- Processed in FIFO order
+
+**Context:** Inter-agent communication, asynchronous processing
+
+### Agency
+The collection and manager of all active agents in the runtime environment.
+
+**Usage:**
+- Created with `ar_agency__create(methodology)`
+- Maintains agent registry and message routing
+- Handles agent lifecycle (create, pause, resume, destroy)
+- Routes messages between agents
+
+**Context:** Agent management, runtime coordination
+
+### Methodology
+The registry of all method definitions available in the system.
+
+**Usage:**
+- Contains versioned method definitions
+- Supports method lookup by name and version
+- Can be persisted to disk and restored
+- Shared across all agents in an agency
+
+**Context:** Method registry, version management
+
+## Build & Verification Concepts
+
+### Make Target
+Standard build commands accessed through the Makefile that provide consistent build operations.
+
+**Usage:**
+- `make build` - Full build with all tests and checks
+- `make clean` - Remove all build artifacts
+- `make run-tests` - Execute test suite only
+- `make run-exec` - Build and run the executable
+- `make sanitize-tests` - Run tests with AddressSanitizer
+- `make analyze-exec` - Run static analysis
+
+**Context:** Build system, development workflow
+
+### Sanitizer
+Runtime error detection tools that catch memory and threading issues during execution.
+
+**Usage:**
+- **AddressSanitizer (ASan)**: Detects memory errors (use-after-free, leaks, overflows)
+- **ThreadSanitizer (TSan)**: Detects data races and threading issues
+- Enabled with `make sanitize-tests` or `make tsan-tests`
+- macOS uses clang for sanitizers, Linux uses gcc-13
+
+**Context:** Memory safety, runtime verification
+
+### Static Analysis
+Compile-time code analysis that identifies potential issues without executing code.
+
+**Usage:**
+- Clang Static Analyzer examines code paths
+- Detects null pointer dereferences, memory leaks, logic errors
+- Run with `make analyze-exec` or `make analyze-tests`
+- Results in HTML reports (with scan-build) or console output
+
+**Context:** Compile-time verification, bug detection
+
+### Check-Logs
+A CI gate requirement that analyzes build logs for hidden errors that don't fail the build.
+
+**Usage:**
+- Run with `make check-logs` (after `make build`)
+- Detects errors in test output, warnings, unexpected messages
+- Uses `log_whitelist.yaml` to filter known intentional errors
+- **Must pass** or CI will fail - non-negotiable requirement
+
+**Context:** CI/CD, quality gates, hidden issue detection
+
+## File Naming Conventions
+
+### Module Files
+Source code files following the standard AgeRun module structure.
+
+**Usage:**
+- **Header**: `ar_module.h` - Public API declarations
+- **Implementation**: `ar_module.c` - Module implementation
+- **Tests**: `ar_module_tests.c` - Test suite for the module
+- **Documentation**: `ar_module.md` - Module documentation
+
+**Example:** `ar_data.h`, `ar_data.c`, `ar_data_tests.c`, `ar_data.md`
+
+**Context:** Code organization, module structure
+
+### Method Files
+Standalone method definition files with semantic versioning.
+
+**Usage:**
+- Format: `<method-name>-<version>.method`
+- Example: `echo-1.0.0.method`, `counter-2.1.0.method`
+- Contains method instructions in plain text
+- One instruction per line with newline termination
+- Located in `methods/` directory
+
+**Context:** Method definitions, reusable behaviors
+
+### Plan Files
+TDD plan documents describing test-driven development cycles.
+
+**Usage:**
+- Format: `<task-name>_plan.md`
+- Example: `agent_store_fixture_plan.md`, `message_queue_plan.md`
+- Contains cycles, iterations, RED/GREEN phases
+- Tracks status with markers (PENDING REVIEW, REVIEWED, etc.)
+- Located in `plans/` directory
+
+**Context:** TDD planning, development plans
+
+### Documentation Files
+Module documentation following consistent structure.
+
+**Usage:**
+- Format: `<module-name>.md` in `modules/` directory
+- Example: `modules/ar_data.md`, `modules/ar_agent.md`
+- Documents module purpose, API, dependencies, examples
+- Must pass `make check-docs` validation
+- Uses real AgeRun types in examples
+
+**Context:** Module documentation, API reference
+
+## Data Type Concepts
+
+### ar_data_t
+The universal data container that can hold any type of value (string, integer, list, map, etc.).
+
+**Usage:**
+- Type-safe value storage with runtime type checking
+- Created with `ar_data__create_string()`, `ar_data__create_integer()`, etc.
+- Accessed with `ar_data__get_string()`, `ar_data__is_integer()`, etc.
+- Ownership-aware with reference counting
+- Destroyed with `ar_data__destroy()`
+
+**Context:** Data representation, type system
+
+### Opaque Type
+A type whose internal structure is hidden from clients, exposing only through API functions.
+
+**Usage:**
+- Declared as `typedef struct module_name_s module_name_t;`
+- Implementation details in `.c` file only
+- Enforces information hiding (Parnas principle)
+- Example: `ar_agent_t`, `ar_method_t`, `ar_list_t`
+
+**Context:** Information hiding, module encapsulation
+
+### Type-Safe Wrapper
+Functions that provide type-safe access to ar_data_t contents.
+
+**Usage:**
+- Check type: `ar_data__is_string(data)`
+- Get value: `ar_data__get_string(data)` (returns NULL if wrong type)
+- Set value: `ar_data__set_map_string(map, key, value)`
+- Prevents type confusion errors at runtime
+
+**Context:** Type safety, runtime validation
+
+## Semantic Versioning
+
+### Version Format
+AgeRun methods use semantic versioning to manage compatibility and evolution.
+
+**Usage:**
+- Format: `major.minor.patch` (e.g., "1.2.3")
+- **Major**: Breaking changes (incompatible API changes)
+- **Minor**: New features (backward-compatible additions)
+- **Patch**: Bug fixes (backward-compatible corrections)
+
+**Context:** Method versioning, compatibility management
+
+### Version Compatibility
+Rules for determining which method versions can work together.
+
+**Usage:**
+- Same major version → compatible (1.0.0 works with 1.5.3)
+- Different major version → incompatible (1.x.x vs 2.x.x)
+- Higher minor/patch → safe upgrade (1.2.0 → 1.2.1)
+- Method calls specify exact or minimum version
+
+**Context:** Runtime method selection, upgrades
+
+### Version Selection
+Strategy for choosing which method version to use when multiple versions exist.
+
+**Usage:**
+- Exact match: Use specific version (e.g., "1.2.3")
+- Latest compatible: Use highest compatible version
+- Fallback: Use older version if newer not available
+- Stored in methodology registry
+
+**Context:** Method lookup, runtime selection
+
+## Workflow Status Markers
+
+### Plan Status Markers
+Lifecycle indicators tracking the progress of TDD plan iterations.
+
+**Usage:**
+- `PENDING REVIEW` - Newly created, awaiting review
+- `REVIEWED` - Approved, ready for implementation
+- `REVISED` - Updated after review, ready for implementation
+- `IMPLEMENTED` - RED-GREEN-REFACTOR complete, awaiting commit
+- `✅ COMMITTED` - Committed to git
+- `✅ COMPLETE` - Full plan complete (plan-level marker)
+
+**Context:** TDD plan tracking, iteration status
+
+### Status Lifecycle
+The progression of an iteration through the development workflow.
+
+**Usage:**
+```
+Creation → PENDING REVIEW (by ar:create-plan)
+         ↓
+Review → REVIEWED or REVISED (by ar:review-plan)
+         ↓
+Implementation → IMPLEMENTED (by ar:execute-plan)
+         ↓
+Commit → ✅ COMMITTED (before git commit)
+         ↓
+Completion → ✅ COMPLETE (plan-level, optional)
+```
+
+**Context:** Development workflow, progress tracking
+
+### Marker Placement
+Where status markers appear in plan documents.
+
+**Usage:**
+- Iteration headings only: `#### Iteration 1.1: Description - PENDING REVIEW`
+- NOT on cycle headings: `### Cycle 1: Basic Functionality` (no marker)
+- Plan-level completion: `# Plan - ✅ COMPLETE` (optional)
+- Batch updates before commit: all IMPLEMENTED → ✅ COMMITTED
+
+**Context:** Plan formatting, status tracking
+
 ## Quick Reference
 
 | Term | Context | Example | Reserved? |
@@ -224,6 +495,9 @@ A link between related KB articles or from commands/AGENTS.md to KB articles.
 | **Stage** | Workflow | "Stage 1: Pre-Commit" | No |
 | **Step** | Checkpoint | "Step 3: Update Docs" | No |
 | **Gate** | Verification | "Build Quality Gate" | No |
+| **Agent** | Runtime Entity | "agent_id: 12345" | No |
+| **Method** | Behavior Definition | "echo-1.0.0" | No |
+| **Message** | Agent Communication | `ar_data_t* own_msg` | No |
 
 ## Related Documentation
 
