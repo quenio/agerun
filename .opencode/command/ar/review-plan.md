@@ -155,9 +155,9 @@ This command performs a comprehensive review of TDD plan documents to ensure:
 
 #### 2. Structure and Organization
 - **BDD test structure**: All tests follow Given/When/Then/Cleanup ([details](../../../kb/bdd-test-structure.md))
-- **Section organization**: Iterations grouped into logical sections
+- **Cycle organization**: Iterations grouped into logical cycles
 - **Review status markers**: REVIEWED/PENDING/REVISED markers present ([details](../../../kb/plan-review-status-tracking.md))
-- **Section sizing**: Sections contain 3-5 iterations for optimal review ([details](../../../kb/iterative-plan-review-protocol.md))
+- **Cycle sizing**: Cycles contain 3-5 iterations for optimal review ([details](../../../kb/iterative-plan-review-protocol.md))
 
 #### 3. Completeness and Quality
 - **RED phase assertions**: Every iteration has explicit failure comment (// ← FAILS)
@@ -228,7 +228,7 @@ make checkpoint-update CMD=review-plan STEP=2
 
 **Scanning for:**
 - Total iteration count
-- Section structure
+- Cycle structure
 - Review status markers
 - Completion status (if present)
 
@@ -554,15 +554,15 @@ make checkpoint-gate CMD=review-plan GATE="TDD Methodology" REQUIRED="4,5,6,7"
 
 **Status marker validation:**
 ```markdown
-❌ WRONG: Status markers on section headings
-### Section 0: Setup - REVIEWED
-#### Iteration 0.1: Basic - REVIEWED
-#### Iteration 0.2: Advanced - PENDING REVIEW
+❌ WRONG: Status markers on cycle headings
+### Cycle 1: Setup - REVIEWED
+#### Iteration 1.1: Basic - REVIEWED
+#### Iteration 1.2: Advanced - PENDING REVIEW
 
 ✅ CORRECT: Status markers ONLY on iterations
-### Section 0: Setup
-#### Iteration 0.1: Basic - REVIEWED
-#### Iteration 0.2: Advanced - PENDING REVIEW
+### Cycle 1: Setup
+#### Iteration 1.1: Basic - REVIEWED
+#### Iteration 1.2: Advanced - PENDING REVIEW
 ```
 
 ```bash
@@ -669,9 +669,9 @@ make checkpoint-update CMD=review-plan STEP=10
 - Iteration A.C: [description] - REVISED ⚠️ [reason]
 ...
 
-### Section-by-Section Status
-- Section 0: [status] ([X/Y iterations REVIEWED])
-- Section 1: [status] ([X/Y iterations REVIEWED])
+### Cycle-by-Cycle Status
+- Cycle 1: [status] ([X/Y iterations REVIEWED])
+- Cycle 2: [status] ([X/Y iterations REVIEWED])
 ...
 
 ### Critical Issues Found: [count]
@@ -753,7 +753,7 @@ The plan review tracks these quality metrics:
 ### Progress Indicators
 - **Iterations Reviewed**: X/Y complete
 - **Critical Issues**: Count requiring fixes
-- **Section Completion**: Sections with all iterations REVIEWED
+- **Cycle Completion**: Cycles with all iterations REVIEWED
 
 ## Output Format
 
@@ -776,10 +776,10 @@ The review provides:
 - Missing BDD structure (Given/When/Then/Cleanup)
 
 ### Warnings (Should Fix)
-- Sections too large (>7 iterations, causes reviewer fatigue)
-- Sections too small (1-2 iterations, excessive overhead)
+- Cycles too large (>7 iterations, causes reviewer fatigue)
+- Cycles too small (1-2 iterations, excessive overhead)
 - Missing review status markers
-- Inconsistent status (section REVIEWED with PENDING iterations)
+- Inconsistent status (cycle REVIEWED with PENDING iterations)
 - Hardcoded returns not used when valid
 - Future-proofing in GREEN phase
 
@@ -797,7 +797,7 @@ The review provides:
 - **Before starting TDD implementation**: Catch methodology issues early
 - **During iterative plan refinement**: Verify corrections applied
 - **After plan updates**: Ensure changes maintain methodology
-- **For large plans**: Section-by-section review across sessions
+- **For large plans**: Cycle-by-cycle review across sessions
 
 ### Workflow Integration
 
