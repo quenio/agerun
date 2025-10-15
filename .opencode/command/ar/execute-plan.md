@@ -225,9 +225,42 @@ make checkpoint-update CMD=execute-plan STEP=2
 
 #### Checkpoint 3: Extract Iterations
 
+**CRITICAL: Filter for REVIEWED or REVISED iterations:**
+
+Extract only iterations marked with:
+- "- REVIEWED" (approved in review, ready for implementation)
+- "- REVISED" (revised and ready for implementation)
+
+Skip iterations marked as:
+- "- PENDING REVIEW" (not yet reviewed)
+- "- IMPLEMENTED" (already implemented, waiting for commit)
+- "- ✅ COMMITTED" (already committed)
+- "- ✅ COMPLETE" (fully complete)
+
+**Example filtering:**
+```markdown
+# IMPLEMENT THIS (has REVIEWED status):
+#### Iteration 0.1: send() returns true - REVIEWED
+
+# IMPLEMENT THIS (has REVISED status):
+#### Iteration 0.2: has_messages() returns false - REVISED
+
+# SKIP THIS (not yet reviewed):
+#### Iteration 0.3: message queue implementation - PENDING REVIEW
+
+# SKIP THIS (already implemented):
+#### Iteration 0.4: cleanup - IMPLEMENTED
+
+# SKIP THIS (already committed):
+#### Iteration 0.5: refactoring - ✅ COMMITTED
+
+# SKIP THIS (fully complete):
+#### Iteration 0.6: documentation - ✅ COMPLETE
+```
+
 **Create iteration execution list:**
 
-For EACH iteration in the plan, extract:
+For EACH iteration marked REVIEWED or REVISED, extract:
 ```markdown
 ## Iteration Execution List
 
@@ -241,19 +274,22 @@ For EACH iteration in the plan, extract:
 - Test file: modules/ar_delegate_tests.c
 - Test name: test_delegate__has_no_messages_initially
 - Implementation: ar_delegate__has_messages() in modules/ar_delegate.c
-- Status: REVIEWED (ready to implement)
+- Status: REVISED (ready to implement)
 
-[... continue for all iterations ...]
+[... continue for all REVIEWED or REVISED iterations ...]
 
-Total iterations to implement: 12
+Total iterations to implement: 10 (REVIEWED: 8, REVISED: 2)
 ```
 
 **Extraction checklist:**
-- [ ] All iterations extracted from plan
-- [ ] Test file paths identified
-- [ ] Test function names extracted
-- [ ] Implementation functions identified
-- [ ] All iterations marked REVIEWED (not PENDING)
+- [ ] Identify all iterations with "- REVIEWED" status
+- [ ] Identify all iterations with "- REVISED" status
+- [ ] Create list of iterations to execute (REVIEWED or REVISED only)
+- [ ] Note total iterations needing implementation vs. total iterations
+- [ ] Skip all non-executable iterations from execution scope
+- [ ] Test file paths identified for each iteration
+- [ ] Test function names extracted for each iteration
+- [ ] Implementation functions identified for each iteration
 
 ```bash
 make checkpoint-update CMD=execute-plan STEP=3
@@ -342,6 +378,54 @@ make ar_delegate_tests 2>&1
 - [ ] Ready for memory verification
 ```
 
+**CRITICAL: Update Iteration Status to IMPLEMENTED**
+
+**After completing each iteration's RED-GREEN-REFACTOR cycle, update the plan file:**
+
+**For EACH iteration implemented:**
+
+1. **Verify Iteration Complete**:
+   - RED phase passed (test failed for right reason)
+   - GREEN phase passed (test now passes)
+   - REFACTOR phase completed (even if no changes)
+   - Tests still passing after refactor
+
+2. **Update Status in Plan File**:
+   - Use Edit tool to update iteration status
+   - Change: "#### Iteration X.Y: description - REVIEWED"
+   - To:     "#### Iteration X.Y: description - IMPLEMENTED"
+   - OR Change: "#### Iteration X.Y: description - REVISED"
+   - To:     "#### Iteration X.Y: description - IMPLEMENTED"
+
+**Status Update Example:**
+```bash
+# Before (from plan file):
+#### Iteration 0.1: send() returns true - REVIEWED
+
+# After implementation:
+# Use Edit tool:
+old_string: "#### Iteration 0.1: send() returns true - REVIEWED"
+new_string: "#### Iteration 0.1: send() returns true - IMPLEMENTED"
+
+# For REVISED iterations:
+# Before:
+#### Iteration 0.2: has_messages() returns false - REVISED
+
+# After implementation:
+# Use Edit tool:
+old_string: "#### Iteration 0.2: has_messages() returns false - REVISED"
+new_string: "#### Iteration 0.2: has_messages() returns false - IMPLEMENTED"
+```
+
+**Implementation Status Update Checklist:**
+- [ ] Complete RED-GREEN-REFACTOR cycle for iteration
+- [ ] Update plan file immediately after iteration completes
+- [ ] Change status from REVIEWED or REVISED to IMPLEMENTED
+- [ ] Track implemented iteration for final report
+- [ ] Continue to next iteration
+
+**MANDATORY**: You MUST update the plan file with IMPLEMENTED status after each iteration completes. Do not batch updates—update immediately after each iteration's REFACTOR phase.
+
 **Iteration execution loop:**
 ```bash
 # For each iteration:
@@ -359,6 +443,9 @@ for iteration in $(seq 1 12); do
     # REFACTOR: Improve
     # <apply improvements if any>
     make <test_module> 2>&1 | grep "All tests"
+
+    # UPDATE STATUS: Mark as IMPLEMENTED in plan file
+    # <use Edit tool to change REVIEWED/REVISED → IMPLEMENTED>
 
     # Verify memory (next checkpoint)
 done
@@ -464,7 +551,61 @@ make checkpoint-gate CMD=execute-plan GATE="Implementation" REQUIRED="4,5,6"
 
 #### Checkpoint 7: Update Plan Status
 
-**Add completion status header to plan document:**
+**IMPORTANT**: This checkpoint has TWO distinct steps that happen at different times:
+
+**STEP 7A: Before Commit - Update to COMMITTED Status**
+
+**CRITICAL: Before creating the git commit, update all IMPLEMENTED iterations to COMMITTED:**
+
+**Pre-Commit Status Update:**
+
+1. **Identify IMPLEMENTED iterations**:
+   - Find all iterations currently marked "- IMPLEMENTED"
+   - These are iterations that were implemented in this session
+
+2. **Update to COMMITTED status**:
+   - Use Edit tool to update each IMPLEMENTED iteration
+   - Change: "#### Iteration X.Y: description - IMPLEMENTED"
+   - To:     "#### Iteration X.Y: description - ✅ COMMITTED"
+
+3. **Update section markers**:
+   - If all iterations in a section are COMMITTED → Mark section as ✅ COMMITTED
+   - If any iteration is still IMPLEMENTED → Keep section as IMPLEMENTED
+
+**Pre-Commit Status Update Example:**
+```bash
+# Before commit (from plan file):
+#### Iteration 0.1: send() returns true - IMPLEMENTED
+
+# Before creating git commit, use Edit tool:
+old_string: "#### Iteration 0.1: send() returns true - IMPLEMENTED"
+new_string: "#### Iteration 0.1: send() returns true - ✅ COMMITTED"
+
+# For all iterations:
+# IMPLEMENTED → ✅ COMMITTED (before git commit)
+
+# Section status update:
+# Before:
+### Phase 0: Message Queue Infrastructure - IMPLEMENTED
+
+# After (if all iterations committed):
+# Use Edit tool:
+old_string: "### Phase 0: Message Queue Infrastructure - IMPLEMENTED"
+new_string: "### Phase 0: Message Queue Infrastructure - ✅ COMMITTED"
+```
+
+**Pre-Commit Update Checklist:**
+- [ ] Identify all iterations with IMPLEMENTED status
+- [ ] Update each IMPLEMENTED iteration to ✅ COMMITTED
+- [ ] Update section markers to match iteration status
+- [ ] Verify all changes to be committed are marked ✅ COMMITTED
+- [ ] Include plan file in git commit
+
+**MANDATORY**: This MUST be done BEFORE creating the git commit. The plan file with COMMITTED markers must be included in the same commit as the implementation.
+
+**STEP 7B: Add Completion Status Header (Optional)**
+
+**If ALL plan iterations are now complete, add completion status header:**
 
 ```markdown
 ## Completion Status
@@ -497,25 +638,20 @@ grep "Actual memory leaks:" bin/run-tests/memory_report_ar_delegate_tests.log
 ```
 ```
 
-**Update iteration status markers:**
-```markdown
-# Change all iterations from:
-#### Iteration 0.1: send() returns true - REVIEWED
-
-# To:
-#### Iteration 0.1: send() returns true - ✅ COMPLETE
-```
+**NOTE**: Only add completion status header if ALL iterations in the plan are ✅ COMMITTED. If some iterations remain PENDING REVIEW, REVIEWED, REVISED, or IMPLEMENTED, skip the completion header.
 
 **Plan status update checklist:**
-- [ ] Completion status header added at top of plan
-- [ ] All iterations marked ✅ COMPLETE
-- [ ] Test results documented
-- [ ] Memory verification results included
-- [ ] Implementation summary provided
+- [ ] **MANDATORY**: Update all IMPLEMENTED → ✅ COMMITTED before git commit
+- [ ] **MANDATORY**: Include updated plan file in git commit
+- [ ] If all iterations complete: Add completion status header
+- [ ] If all iterations complete: Mark all iterations ✅ COMMITTED
+- [ ] If all iterations complete: Document test results and memory verification
+- [ ] If all iterations complete: Provide implementation summary
 
 ```bash
 # Update the plan file
-# <use Edit tool to add completion status>
+# <use Edit tool to update IMPLEMENTED → ✅ COMMITTED>
+# <if all complete, add completion status header>
 
 make checkpoint-update CMD=execute-plan STEP=7
 ```
@@ -531,13 +667,24 @@ make checkpoint-update CMD=execute-plan STEP=7
 **Executed**: 2025-10-15
 **Feature**: Message queue infrastructure
 
+### Status Updates Made This Session
+**Iterations Implemented**: [count of REVIEWED/REVISED → IMPLEMENTED]
+**Iterations Committed**: [count of IMPLEMENTED → ✅ COMMITTED]
+**Remaining to Implement**: [count still REVIEWED or REVISED]
+
+**Newly Implemented Iterations:**
+- Iteration X.Y: [description] - IMPLEMENTED → ✅ COMMITTED
+- Iteration X.Z: [description] - IMPLEMENTED → ✅ COMMITTED
+...
+
 ### Execution Metrics
-- Total iterations: 12
-- Iterations completed: 12 (100%)
+- Total iterations in plan: 12
+- Iterations executed this session: 10 (83%)
+- Iterations committed this session: 10 (83%)
 - Test modules modified: 1 (ar_delegate_tests.c)
 - Implementation modules modified: 2 (ar_delegate.c, ar_delegate.h)
-- Total test functions added: 12
-- RED-GREEN-REFACTOR cycles: 12
+- Total test functions added: 10
+- RED-GREEN-REFACTOR cycles: 10
 - REFACTOR improvements applied: 3
 - Memory leaks detected: 0
 - All tests passing: ✅
@@ -569,11 +716,17 @@ make 2>&1
 # Output: Build successful ✅
 ```
 
+### Plan File Updates
+**IMPORTANT**: The plan file has been updated with status markers:
+- File: [plan-file-path]
+- Status updates: [count] iterations marked IMPLEMENTED, then ✅ COMMITTED
+- Use `git diff [plan-file]` to review changes
+
 ### Files Modified
-1. modules/ar_delegate_tests.c (12 test functions added)
+1. modules/ar_delegate_tests.c (10 test functions added)
 2. modules/ar_delegate.c (4 functions implemented)
 3. modules/ar_delegate.h (4 function declarations added)
-4. plans/tdd_cycle_7_plan.md (completion status updated)
+4. plans/tdd_cycle_7_plan.md (status markers updated: REVIEWED/REVISED → IMPLEMENTED → ✅ COMMITTED)
 
 ### Next Steps
 1. ✅ Plan execution complete
