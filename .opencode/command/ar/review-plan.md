@@ -105,7 +105,7 @@ ls -t plans/tdd_cycle_*_plan.md | head -1
 make checkpoint-init CMD=review-plan STEPS='"KB Consultation" "Read Plan" "Verify Completeness" "Check Iteration Structure" "Verify TDD Methodology" "Check GREEN Minimalism" "Verify Memory Management" "Review Status Tracking" "Verify Cross-References" "Document Issues" "Generate Report"'
 ```
 
-This command uses checkpoint tracking to ensure thorough plan review across all methodology dimensions. The review process is divided into 4 major phases with 11 checkpoints total.
+This command uses checkpoint tracking to ensure thorough plan review across all methodology dimensions. The review process is divided into 4 major stages with 11 checkpoints total.
 
 **Expected output:**
 ```
@@ -155,9 +155,9 @@ This command performs a comprehensive review of TDD plan documents to ensure:
 
 #### 2. Structure and Organization
 - **BDD test structure**: All tests follow Given/When/Then/Cleanup ([details](../../../kb/bdd-test-structure.md))
-- **Phase organization**: Iterations grouped into logical phases
+- **Section organization**: Iterations grouped into logical sections
 - **Review status markers**: REVIEWED/PENDING/REVISED markers present ([details](../../../kb/plan-review-status-tracking.md))
-- **Section sizing**: Phases contain 3-5 iterations for optimal review ([details](../../../kb/section-by-section-review-protocol.md))
+- **Section sizing**: Sections contain 3-5 iterations for optimal review ([details](../../../kb/section-by-section-review-protocol.md))
 
 #### 3. Completeness and Quality
 - **RED phase assertions**: Every iteration has explicit failure comment (// ← FAILS)
@@ -202,9 +202,9 @@ This command reviews plans and updates iteration status markers. These markers t
 
 ## Review Process
 
-### Phase 1: KB Consultation and Plan Reading (Steps 1-3)
+### Stage 1: KB Consultation and Plan Reading (Steps 1-3)
 
-#### [CHECKPOINT START - PHASE 1]
+#### [CHECKPOINT START - STAGE 1]
 
 #### Checkpoint 1: KB Consultation
 
@@ -228,7 +228,7 @@ make checkpoint-update CMD=review-plan STEP=2
 
 **Scanning for:**
 - Total iteration count
-- Phase structure
+- Section structure
 - Review status markers
 - Completion status (if present)
 
@@ -286,14 +286,14 @@ make checkpoint-gate CMD=review-plan GATE="Plan Basics" REQUIRED="1,2,3"
    Verified: Steps 1,2,3
 ```
 
-**Minimum Requirements for Phase 1:**
+**Minimum Requirements for Stage 1:**
 - [ ] All 8 KB articles read and quoted
 - [ ] Plan document read completely
 - [ ] Document structure verified
 
-### Phase 2: TDD Methodology Review (Steps 4-7)
+### Stage 2: TDD Methodology Review (Steps 4-7)
 
-#### [CHECKPOINT START - PHASE 2]
+#### [CHECKPOINT START - STAGE 2]
 
 #### Checkpoint 4: Check Iteration Structure
 
@@ -531,15 +531,15 @@ make checkpoint-gate CMD=review-plan GATE="TDD Methodology" REQUIRED="4,5,6,7"
    Verified: Steps 4,5,6,7
 ```
 
-**Minimum Requirements for Phase 2:**
+**Minimum Requirements for Stage 2:**
 - [ ] All iterations checked for structure compliance
 - [ ] TDD cycle verified (RED-GREEN proper)
 - [ ] GREEN minimalism confirmed
 - [ ] Memory management verified (zero leaks)
 
-### Phase 3: Review Status Tracking (Steps 8-9)
+### Stage 3: Review Status Tracking (Steps 8-9)
 
-#### [CHECKPOINT START - PHASE 3]
+#### [CHECKPOINT START - STAGE 3]
 
 #### Checkpoint 8: Review Status Tracking
 
@@ -554,13 +554,13 @@ make checkpoint-gate CMD=review-plan GATE="TDD Methodology" REQUIRED="4,5,6,7"
 
 **Status marker validation:**
 ```markdown
-❌ WRONG: Status markers on phase headings
-### Phase 0: Setup - REVIEWED
+❌ WRONG: Status markers on section headings
+### Section 0: Setup - REVIEWED
 #### Iteration 0.1: Basic - REVIEWED
 #### Iteration 0.2: Advanced - PENDING REVIEW
 
 ✅ CORRECT: Status markers ONLY on iterations
-### Phase 0: Setup
+### Section 0: Setup
 #### Iteration 0.1: Basic - REVIEWED
 #### Iteration 0.2: Advanced - PENDING REVIEW
 ```
@@ -603,13 +603,13 @@ make checkpoint-gate CMD=review-plan GATE="Status Tracking" REQUIRED="8,9"
    Verified: Steps 8,9
 ```
 
-**Minimum Requirements for Phase 3:**
+**Minimum Requirements for Stage 3:**
 - [ ] Review status markers present and consistent
 - [ ] Cross-references verified
 
-### Phase 4: Final Report (Steps 10-11)
+### Stage 4: Final Report (Steps 10-11)
 
-#### [CHECKPOINT START - PHASE 4]
+#### [CHECKPOINT START - STAGE 4]
 
 #### Checkpoint 10: Document Issues
 
@@ -669,9 +669,9 @@ make checkpoint-update CMD=review-plan STEP=10
 - Iteration A.C: [description] - REVISED ⚠️ [reason]
 ...
 
-### Phase-by-Phase Status
-- Phase 0: [status] ([X/Y iterations REVIEWED])
-- Phase 1: [status] ([X/Y iterations REVIEWED])
+### Section-by-Section Status
+- Section 0: [status] ([X/Y iterations REVIEWED])
+- Section 1: [status] ([X/Y iterations REVIEWED])
 ...
 
 ### Critical Issues Found: [count]
@@ -753,7 +753,7 @@ The plan review tracks these quality metrics:
 ### Progress Indicators
 - **Iterations Reviewed**: X/Y complete
 - **Critical Issues**: Count requiring fixes
-- **Phase Completion**: Phases with all iterations REVIEWED
+- **Section Completion**: Sections with all iterations REVIEWED
 
 ## Output Format
 
