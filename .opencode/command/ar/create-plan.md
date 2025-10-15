@@ -100,7 +100,7 @@ Before creating the plan, identify which task to plan:
 
 ```bash
 # MANDATORY: Initialize checkpoint tracking (14 steps)
-make checkpoint-init CMD=create-plan STEPS='"KB Consultation" "Gather Requirements" "Identify Behaviors" "Count Assertions" "Define Sections" "Plan Iterations" "Structure RED Phases" "Structure GREEN Phases" "Add Cleanup" "Add Status Markers" "Add Cross-References" "Validate Plan" "Save Plan" "Summary"'
+make checkpoint-init CMD=create-plan STEPS='"KB Consultation" "Gather Requirements" "Identify Behaviors" "Count Assertions" "Define Cycles" "Plan Iterations" "Structure RED Phases" "Structure GREEN Phases" "Add Cleanup" "Add Status Markers" "Add Cross-References" "Validate Plan" "Save Plan" "Summary"'
 ```
 
 This command uses checkpoint tracking to ensure systematic plan creation. The creation process is divided into 4 major stages with 14 checkpoints total.
@@ -120,7 +120,7 @@ Steps to complete:
   2. Gather Requirements
   3. Identify Behaviors
   4. Count Assertions
-  5. Define Sections
+  5. Define Cycles
   6. Plan Iterations
   7. Structure RED Phases
   8. Structure GREEN Phases
@@ -151,7 +151,7 @@ This command creates TDD plan documents following strict methodology:
 #### 1. Requirements Analysis
 - **Behavior identification**: List all expected behaviors
 - **Assertion counting**: One assertion per iteration
-- **Section organization**: Group related behaviors (3-5 iterations per section)
+- **Cycle organization**: Group related behaviors (3-5 iterations per cycle)
 - **API design**: Ensure return types enable verification
 
 #### 2. Iteration Structure
@@ -185,7 +185,7 @@ This command creates plans with iterations marked `PENDING REVIEW`. These marker
 | `✅ COMPLETE` | execute-plan | Full plan complete (plan-level marker) | Documentation only |
 
 **Important Notes:**
-- **Iterations only**: Status markers appear ONLY on iteration headings (not phase/section headings)
+- **Iterations only**: Status markers appear ONLY on iteration headings (not phase/cycle headings)
 - **REVISED meaning**: Changes applied and ready for implementation (ar:execute-plan processes REVISED same as REVIEWED)
 - **Two-phase updates**: During execution, iterations update REVIEWED/REVISED → IMPLEMENTED immediately; before commit, all IMPLEMENTED → ✅ COMMITTED in batch
 - **Complete vs Committed**: ✅ COMPLETE is optional plan-level header; ✅ COMMITTED marks individual iterations in git
@@ -322,33 +322,33 @@ Total iterations: 12
 make checkpoint-update CMD=create-plan STEP=4
 ```
 
-#### Checkpoint 5: Define Sections
+#### Checkpoint 5: Define Cycles
 
-**Group iterations into logical sections (3-5 iterations each):**
+**Group iterations into logical cycles (3-5 iterations each):**
 
 ```markdown
-## Section Organization
+## Cycle Organization
 
-### Section 0: Basic Functionality (3 iterations)
-- 0.1: send() returns true
-- 0.2: has_messages() returns false initially
-- 0.3: has_messages() returns true after send
+### Cycle 1: Basic Functionality (3 iterations)
+- 1.1: send() returns true
+- 1.2: has_messages() returns false initially
+- 1.3: has_messages() returns true after send
 
-### Section 1: Message Retrieval (3 iterations)
-- 1.1: take_message() returns NULL when empty
-- 1.2: take_message() returns message when available
-- 1.3: take_message() removes from queue
+### Cycle 2: Message Retrieval (3 iterations)
+- 2.1: take_message() returns NULL when empty
+- 2.2: take_message() returns message when available
+- 2.3: take_message() removes from queue
 
-### Section 2: Error Handling (2 iterations)
-- 2.1: send() returns false with NULL delegate
-- 2.2: send() returns false with NULL message
+### Cycle 3: Error Handling (2 iterations)
+- 3.1: send() returns false with NULL delegate
+- 3.2: send() returns false with NULL message
 
-### Section 3: Ownership Management (2 iterations)
-- 3.1: send() transfers ownership to delegate
-- 3.2: take_message() transfers ownership to caller
+### Cycle 4: Ownership Management (2 iterations)
+- 4.1: send() transfers ownership to delegate
+- 4.2: take_message() transfers ownership to caller
 ```
 
-**Verify section sizes:**
+**Verify cycle sizes:**
 - ⚠️ Too small: 1-2 iterations (excessive overhead)
 - ✅ Optimal: 3-5 iterations (focused review)
 - ⚠️ Too large: 8+ iterations (reviewer fatigue)
@@ -376,7 +376,7 @@ make checkpoint-gate CMD=create-plan GATE="Requirements" REQUIRED="1,2,3,4,5"
 - [ ] Requirements documented
 - [ ] All behaviors identified and listed
 - [ ] Assertions counted (one per iteration)
-- [ ] Sections defined (3-5 iterations each)
+- [ ] Cycles defined (3-5 iterations each)
 
 ### Stage 2: Iteration Planning (Steps 6-8)
 
@@ -402,7 +402,7 @@ make checkpoint-status CMD=create-plan-iterations
 
 For EACH iteration, create:
 ```markdown
-#### Iteration 0.1: send() returns true - PENDING REVIEW
+#### Iteration 1.1: send() returns true - PENDING REVIEW
 
 **Objective**: Verify ar_delegate__send() returns success value
 
@@ -441,7 +441,7 @@ bool ar_delegate__send(ar_delegate_t *mut_delegate, ar_data_t *own_message) {
 
 **For iterations with .1/.2 splits:**
 ```markdown
-#### Iteration 0.6.1: create_and_register_agent() returns valid ID - PENDING REVIEW
+#### Iteration 1.6.1: create_and_register_agent() returns valid ID - PENDING REVIEW
 
 **Objective**: Verify function returns non-zero agent ID (minimal)
 
@@ -471,7 +471,7 @@ int64_t ar_agent_store_fixture__create_agent(...) {
 }
 ```
 
-#### Iteration 0.6.2: Agent is actually registered - PENDING REVIEW
+#### Iteration 1.6.2: Agent is actually registered - PENDING REVIEW
 
 **Objective**: Verify registration happens (ownership transfer)
 
@@ -518,9 +518,9 @@ int64_t ar_agent_store_fixture__create_agent(...) {
 
 ```bash
 # Mark iteration as complete immediately after creation
-make checkpoint-update CMD=create-plan-iterations STEP=1  # After Iteration 0.1
-make checkpoint-update CMD=create-plan-iterations STEP=2  # After Iteration 0.2
-make checkpoint-update CMD=create-plan-iterations STEP=3  # After Iteration 0.3
+make checkpoint-update CMD=create-plan-iterations STEP=1  # After Iteration 1.1
+make checkpoint-update CMD=create-plan-iterations STEP=2  # After Iteration 1.2
+make checkpoint-update CMD=create-plan-iterations STEP=3  # After Iteration 1.3
 # ... continue for each iteration
 ```
 
@@ -603,8 +603,8 @@ For EACH iteration:
 **MANDATORY: After verifying EACH iteration's RED phase:**
 ```bash
 # Mark RED phase verification complete
-make checkpoint-update CMD=create-plan-red-phases STEP=1  # After verifying Iteration 0.1
-make checkpoint-update CMD=create-plan-red-phases STEP=2  # After verifying Iteration 0.2
+make checkpoint-update CMD=create-plan-red-phases STEP=1  # After verifying Iteration 1.1
+make checkpoint-update CMD=create-plan-red-phases STEP=2  # After verifying Iteration 1.2
 # ... continue for each iteration
 ```
 
@@ -671,8 +671,8 @@ Iteration N.3: Actual logic (forced by test)
 **MANDATORY: After verifying EACH iteration's GREEN phase:**
 ```bash
 # Mark GREEN phase verification complete
-make checkpoint-update CMD=create-plan-green-phases STEP=1  # After verifying Iteration 0.1
-make checkpoint-update CMD=create-plan-green-phases STEP=2  # After verifying Iteration 0.2
+make checkpoint-update CMD=create-plan-green-phases STEP=1  # After verifying Iteration 1.1
+make checkpoint-update CMD=create-plan-green-phases STEP=2  # After verifying Iteration 1.2
 # ... continue for each iteration
 ```
 
@@ -757,20 +757,20 @@ make checkpoint-update CMD=create-plan STEP=9
 
 **CRITICAL REQUIREMENT**: Every single iteration heading MUST end with " - PENDING REVIEW" suffix. This is non-negotiable and required for proper review tracking.
 
-**Note**: Status markers appear ONLY on iteration headings, NOT on section headings.
+**Note**: Status markers appear ONLY on iteration headings, NOT on cycle headings.
 
 ```markdown
-### Section 0: Basic Functionality
+### Cycle 1: Basic Functionality
 
-#### Iteration 0.1: send() returns true - PENDING REVIEW
+#### Iteration 1.1: send() returns true - PENDING REVIEW
 [...]
 
-#### Iteration 0.2: has_messages() returns false - PENDING REVIEW
+#### Iteration 1.2: has_messages() returns false - PENDING REVIEW
 [...]
 
-### Section 1: Message Retrieval
+### Cycle 2: Message Retrieval
 
-#### Iteration 1.1: take_message() returns NULL - PENDING REVIEW
+#### Iteration 2.1: take_message() returns NULL - PENDING REVIEW
 [...]
 ```
 
@@ -882,7 +882,7 @@ make checkpoint-update CMD=create-plan STEP=12
 **Write plan to file:**
 
 ```markdown
-# TDD Cycle N: [Feature Name]
+# [Feature Name] Plan
 
 ## Overview
 [Feature description]
@@ -893,7 +893,7 @@ make checkpoint-update CMD=create-plan STEP=12
 
 ## Plan Status
 - Total iterations: [count]
-- Sections: [count]
+- Cycles: [count]
 - Review status: 0% (all PENDING REVIEW)
 
 [... all iterations ...]
@@ -903,8 +903,8 @@ make checkpoint-update CMD=create-plan STEP=12
 ```
 
 **File location:**
-- Save to: `plans/tdd_cycle_N_plan.md`
-- Use next available cycle number
+- Save to: `plans/[feature_name]_plan.md`
+- Use descriptive task-based name (e.g., agent_store_fixture_plan.md, message_queue_plan.md)
 - Follow naming convention
 
 ```bash
@@ -921,13 +921,13 @@ make checkpoint-update CMD=create-plan STEP=13
 ```markdown
 ## Plan Creation Summary
 
-**Plan**: tdd_cycle_7_plan.md
+**Plan**: message_queue_plan.md
 **Created**: 2025-10-15
 **Feature**: Message queue infrastructure
 
 ### Statistics
 - Total iterations: 12
-- Sections: 3
+- Cycles: 3
 - .1/.2 splits: 2
 - Temporary cleanup locations: 2
 
@@ -942,7 +942,7 @@ make checkpoint-update CMD=create-plan STEP=13
 ✅ Status markers (PENDING REVIEW)
 
 ### Next Steps
-1. Review plan with: /review-plan plans/tdd_cycle_7_plan.md
+1. Review plan with: /review-plan plans/message_queue_plan.md
 2. Apply feedback from review
 3. Get plan approval (all iterations REVIEWED)
 4. Begin implementation following plan
@@ -980,7 +980,7 @@ make checkpoint-cleanup CMD=create-plan
 ### Complete Plan Template
 
 ```markdown
-# TDD Cycle N: [Feature Name]
+# [Feature Name] Plan
 
 ## Overview
 [1-2 sentence description of what will be implemented]
@@ -1006,12 +1006,12 @@ make checkpoint-cleanup CMD=create-plan
 
 ## Plan Status
 - Total iterations: [count]
-- Sections: [count]
+- Cycles: [count]
 - Review status: 0% (all PENDING REVIEW)
 
-### Section 0: [Section Name]
+### Cycle 1: [Cycle Name]
 
-#### Iteration 0.1: [Behavior description] - PENDING REVIEW
+#### Iteration 1.1: [Behavior description] - PENDING REVIEW
 
 **Objective**: [What this iteration tests]
 
@@ -1065,7 +1065,7 @@ A well-created plan shows:
 - ✅ BDD structure throughout (Given/When/Then/Cleanup)
 - ✅ Real AgeRun types (ar_*_t) not placeholders
 - ✅ Proper ownership prefixes (own_, ref_, mut_)
-- ✅ Sections sized 3-5 iterations (optimal for review)
+- ✅ Cycles sized 3-5 iterations (optimal for review)
 - ✅ Decimal numbering for splits (N.1, N.2)
 - ✅ Status markers (PENDING REVIEW)
 - ✅ Cross-references to KB articles
@@ -1156,20 +1156,20 @@ ar_agent_t *agent = ar_agent__create("echo", "1.0");
 
 ## Integration with Workflow
 
-### Complete TDD Cycle Workflow
+### Complete TDD Workflow
 
 ```bash
 # 1. Create plan
-/create-plan "message queue infrastructure" plans/tdd_cycle_7_plan.md
+/create-plan "message queue infrastructure" plans/message_queue_plan.md
 
 # 2. Review plan
-/review-plan plans/tdd_cycle_7_plan.md
+/review-plan plans/message_queue_plan.md
 
 # 3. Apply feedback (iterative refinement)
 # <update plan based on review findings>
 
 # 4. Re-review until approved
-/review-plan plans/tdd_cycle_7_plan.md
+/review-plan plans/message_queue_plan.md
 # Continue until all iterations marked REVIEWED
 
 # 5. Implement following plan
