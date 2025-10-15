@@ -187,7 +187,7 @@ make checkpoint-gate CMD=review-changes GATE="Code Quality" REQUIRED="1,2,3,4,5,
    Verified: Steps 1,2,3,4,5,6
 ```
 
-**Minimum Requirements for Phase 1:**
+**Minimum Requirements for Stage 1:**
 - [ ] Check at least 3 types of code smells
 - [ ] Verify ownership prefixes in all changed files
 - [ ] Review memory_report_*.log files for leaks
@@ -250,7 +250,7 @@ make checkpoint-gate CMD=review-changes GATE="Architecture" REQUIRED="7,8,9,10,1
    Verified: Steps 7,8,9,10,11
 ```
 
-**Minimum Requirements for Phase 2:**
+**Minimum Requirements for Stage 2:**
 - [ ] Verify no new circular dependencies introduced
 - [ ] Check module hierarchy compliance
 - [ ] Validate interface minimality
@@ -308,7 +308,7 @@ make checkpoint-gate CMD=review-changes GATE="Documentation" REQUIRED="12,13,14,
    Verified: Steps 12,13,14,15,16
 ```
 
-**Minimum Requirements for Phase 3:**
+**Minimum Requirements for Stage 3:**
 - [ ] Run and pass `make check-docs`
 - [ ] Verify TODO.md and CHANGELOG.md updated
 - [ ] Check for broken links
@@ -367,7 +367,7 @@ make checkpoint-gate CMD=review-changes GATE="Pre-Commit" REQUIRED="17,18,19,20,
    Verified: Steps 17,18,19,20,21
 ```
 
-**Minimum Requirements for Phase 4:**
+**Minimum Requirements for Stage 4:**
 - [ ] Clean build with no errors
 - [ ] Pass `make check-logs`
 - [ ] No memory leaks detected

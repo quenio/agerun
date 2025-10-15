@@ -80,7 +80,7 @@ Performs additional thorough analysis to catch edge cases:
 
 ## Stage 1: Initial Check (Steps 1-2)
 
-#### [CHECKPOINT START - PHASE 1]
+#### [CHECKPOINT START - STAGE 1]
 
 #### [CHECKPOINT END]
 
@@ -130,7 +130,7 @@ make checkpoint-gate CMD=check-logs GATE="Build" REQUIRED="1"
 
 ## Stage 2: Analysis (Steps 3-4)
 
-#### [CHECKPOINT START - PHASE 2]
+#### [CHECKPOINT START - STAGE 2]
 
 #### [CHECKPOINT END]
 
@@ -217,7 +217,7 @@ Proceed to resolution phase.
 
 ## Stage 3: Resolution (Steps 5-6)
 
-#### [CHECKPOINT START - PHASE 3]
+#### [CHECKPOINT START - STAGE 3]
 
 #### [CHECKPOINT END]
 
@@ -261,7 +261,7 @@ make checkpoint-update CMD=check-logs STEP=6
 
 ## Stage 4: Verification (Steps 7-8)
 
-#### [CHECKPOINT START - PHASE 4]
+#### [CHECKPOINT START - STAGE 4]
 
 #### [CHECKPOINT END]
 

@@ -96,7 +96,7 @@ When you see KB article links (formatted with parentheses and "details" text poi
 
 ## Stage 1: Analysis (Steps 1-3)
 
-#### [CHECKPOINT START - PHASE 1]
+#### [CHECKPOINT START - STAGE 1]
 
 #### [CHECKPOINT END]
 
@@ -162,7 +162,7 @@ make checkpoint-gate CMD=compact-guidelines GATE="Analysis" REQUIRED="1,2,3"
 
 ## Stage 2: Planning (Steps 4-5)
 
-#### [CHECKPOINT START - PHASE 2]
+#### [CHECKPOINT START - STAGE 2]
 
 #### [CHECKPOINT END]
 
@@ -228,7 +228,7 @@ make checkpoint-gate CMD=compact-guidelines GATE="Planning" REQUIRED="4,5"
 
 ## Stage 3: Creation (Steps 6-8)
 
-#### [CHECKPOINT START - PHASE 3]
+#### [CHECKPOINT START - STAGE 3]
 
 #### [CHECKPOINT END]
 
@@ -321,7 +321,7 @@ make checkpoint-gate CMD=compact-guidelines GATE="Creation" REQUIRED="6,7,8"
 
 ## Stage 4: Integration (Steps 9-11)
 
-#### [CHECKPOINT START - PHASE 4]
+#### [CHECKPOINT START - STAGE 4]
 
 #### [CHECKPOINT END]
 
@@ -473,7 +473,7 @@ After compacting each section:
 
 ## Stage 5: Validation (Steps 12-14)
 
-#### [CHECKPOINT START - PHASE 5]
+#### [CHECKPOINT START - STAGE 5]
 
 #### [CHECKPOINT END]
 
@@ -546,7 +546,7 @@ make checkpoint-gate CMD=compact-guidelines GATE="Validation" REQUIRED="12,13,14
 
 ## Stage 6: Commit (Step 15)
 
-#### [CHECKPOINT START - PHASE 6]
+#### [CHECKPOINT START - STAGE 6]
 
 #### [CHECKPOINT END]
 

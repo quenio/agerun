@@ -411,7 +411,7 @@ make checkpoint-gate CMD=check-module-consistency GATE="Planning" REQUIRED="11,1
 
 ## Stage 5: Documentation (Step 15)
 
-#### [CHECKPOINT START - PHASE 5]
+#### [CHECKPOINT START - STAGE 5]
 
 #### [CHECKPOINT END]
 
