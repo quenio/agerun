@@ -100,10 +100,10 @@ Before creating the plan, identify which task to plan:
 
 ```bash
 # MANDATORY: Initialize checkpoint tracking (14 steps)
-make checkpoint-init CMD=create-plan STEPS='"KB Consultation" "Gather Requirements" "Identify Behaviors" "Count Assertions" "Define Phases" "Plan Iterations" "Structure RED Phases" "Structure GREEN Phases" "Add Cleanup" "Add Status Markers" "Add Cross-References" "Validate Plan" "Save Plan" "Summary"'
+make checkpoint-init CMD=create-plan STEPS='"KB Consultation" "Gather Requirements" "Identify Behaviors" "Count Assertions" "Define Sections" "Plan Iterations" "Structure RED Phases" "Structure GREEN Phases" "Add Cleanup" "Add Status Markers" "Add Cross-References" "Validate Plan" "Save Plan" "Summary"'
 ```
 
-This command uses checkpoint tracking to ensure systematic plan creation. The creation process is divided into 4 major phases with 14 checkpoints total.
+This command uses checkpoint tracking to ensure systematic plan creation. The creation process is divided into 4 major stages with 14 checkpoints total.
 
 **Expected output:**
 ```
@@ -120,7 +120,7 @@ Steps to complete:
   2. Gather Requirements
   3. Identify Behaviors
   4. Count Assertions
-  5. Define Phases
+  5. Define Sections
   6. Plan Iterations
   7. Structure RED Phases
   8. Structure GREEN Phases
@@ -151,7 +151,7 @@ This command creates TDD plan documents following strict methodology:
 #### 1. Requirements Analysis
 - **Behavior identification**: List all expected behaviors
 - **Assertion counting**: One assertion per iteration
-- **Phase organization**: Group related behaviors (3-5 iterations per phase)
+- **Section organization**: Group related behaviors (3-5 iterations per section)
 - **API design**: Ensure return types enable verification
 
 #### 2. Iteration Structure
@@ -213,9 +213,9 @@ This command creates plans with iterations marked `PENDING REVIEW`. These marker
 
 ## Plan Creation Process
 
-### Phase 1: Requirements and Analysis (Steps 1-5)
+### Stage 1: Requirements and Analysis (Steps 1-5)
 
-#### [CHECKPOINT START - PHASE 1]
+#### [CHECKPOINT START - STAGE 1]
 
 #### Checkpoint 1: KB Consultation
 
@@ -322,33 +322,33 @@ Total iterations: 12
 make checkpoint-update CMD=create-plan STEP=4
 ```
 
-#### Checkpoint 5: Define Phases
+#### Checkpoint 5: Define Sections
 
-**Group iterations into logical phases (3-5 iterations each):**
+**Group iterations into logical sections (3-5 iterations each):**
 
 ```markdown
-## Phase Organization
+## Section Organization
 
-### Phase 0: Basic Functionality (3 iterations)
+### Section 0: Basic Functionality (3 iterations)
 - 0.1: send() returns true
 - 0.2: has_messages() returns false initially
 - 0.3: has_messages() returns true after send
 
-### Phase 1: Message Retrieval (3 iterations)
+### Section 1: Message Retrieval (3 iterations)
 - 1.1: take_message() returns NULL when empty
 - 1.2: take_message() returns message when available
 - 1.3: take_message() removes from queue
 
-### Phase 2: Error Handling (2 iterations)
+### Section 2: Error Handling (2 iterations)
 - 2.1: send() returns false with NULL delegate
 - 2.2: send() returns false with NULL message
 
-### Phase 3: Ownership Management (2 iterations)
+### Section 3: Ownership Management (2 iterations)
 - 3.1: send() transfers ownership to delegate
 - 3.2: take_message() transfers ownership to caller
 ```
 
-**Verify phase sizes:**
+**Verify section sizes:**
 - ⚠️ Too small: 1-2 iterations (excessive overhead)
 - ✅ Optimal: 3-5 iterations (focused review)
 - ⚠️ Too large: 8+ iterations (reviewer fatigue)
@@ -371,16 +371,16 @@ make checkpoint-gate CMD=create-plan GATE="Requirements" REQUIRED="1,2,3,4,5"
    Verified: Steps 1,2,3,4,5
 ```
 
-**Minimum Requirements for Phase 1:**
+**Minimum Requirements for Stage 1:**
 - [ ] All 10 KB articles read and quoted
 - [ ] Requirements documented
 - [ ] All behaviors identified and listed
 - [ ] Assertions counted (one per iteration)
-- [ ] Phases defined (3-5 iterations each)
+- [ ] Sections defined (3-5 iterations each)
 
-### Phase 2: Iteration Planning (Steps 6-8)
+### Stage 2: Iteration Planning (Steps 6-8)
 
-#### [CHECKPOINT START - PHASE 2]
+#### [CHECKPOINT START - STAGE 2]
 
 #### Checkpoint 6: Plan Iterations
 
@@ -705,15 +705,15 @@ make checkpoint-gate CMD=create-plan GATE="Iterations" REQUIRED="6,7,8"
    Verified: Steps 6,7,8
 ```
 
-**Minimum Requirements for Phase 2:**
+**Minimum Requirements for Stage 2:**
 - [ ] All iterations written with RED and GREEN phases
 - [ ] All RED phases have BDD structure and failure comments
 - [ ] All GREEN phases follow minimalism (hardcoded when valid)
 - [ ] Decimal numbering used for splits (N.1, N.2)
 
-### Phase 3: Cleanup and Documentation (Steps 9-11)
+### Stage 3: Cleanup and Documentation (Steps 9-11)
 
-#### [CHECKPOINT START - PHASE 3]
+#### [CHECKPOINT START - STAGE 3]
 
 #### Checkpoint 9: Add Cleanup
 
@@ -757,10 +757,10 @@ make checkpoint-update CMD=create-plan STEP=9
 
 **CRITICAL REQUIREMENT**: Every single iteration heading MUST end with " - PENDING REVIEW" suffix. This is non-negotiable and required for proper review tracking.
 
-**Note**: Status markers appear ONLY on iteration headings, NOT on phase/section headings.
+**Note**: Status markers appear ONLY on iteration headings, NOT on section headings.
 
 ```markdown
-### Phase 0: Basic Functionality
+### Section 0: Basic Functionality
 
 #### Iteration 0.1: send() returns true - PENDING REVIEW
 [...]
@@ -768,7 +768,7 @@ make checkpoint-update CMD=create-plan STEP=9
 #### Iteration 0.2: has_messages() returns false - PENDING REVIEW
 [...]
 
-### Phase 1: Message Retrieval
+### Section 1: Message Retrieval
 
 #### Iteration 1.1: take_message() returns NULL - PENDING REVIEW
 [...]
@@ -825,15 +825,15 @@ make checkpoint-gate CMD=create-plan GATE="Documentation" REQUIRED="9,10,11"
    Verified: Steps 9,10,11
 ```
 
-**Minimum Requirements for Phase 3:**
+**Minimum Requirements for Stage 3:**
 - [ ] All iterations have proper cleanup
 - [ ] Temporary cleanup uses MANDATORY comment format
 - [ ] All iterations marked PENDING REVIEW
 - [ ] Related Patterns section added
 
-### Phase 4: Validation and Saving (Steps 12-14)
+### Stage 4: Validation and Saving (Steps 12-14)
 
-#### [CHECKPOINT START - PHASE 4]
+#### [CHECKPOINT START - STAGE 4]
 
 #### Checkpoint 12: Validate Plan
 
@@ -870,7 +870,7 @@ grep -E "// Given|// When|// Then|// Cleanup" <plan-file>
 - [ ] All tests have BDD structure (Given/When/Then/Cleanup)
 - [ ] All types are real AgeRun types (ar_*_t)
 - [ ] All ownership prefixes present (own_, ref_, mut_)
-- [ ] Phases are 3-5 iterations each
+- [ ] Sections are 3-5 iterations each
 - [ ] Decimal numbering used for splits
 
 ```bash
@@ -893,7 +893,7 @@ make checkpoint-update CMD=create-plan STEP=12
 
 ## Plan Status
 - Total iterations: [count]
-- Phases: [count]
+- Sections: [count]
 - Review status: 0% (all PENDING REVIEW)
 
 [... all iterations ...]
@@ -927,7 +927,7 @@ make checkpoint-update CMD=create-plan STEP=13
 
 ### Statistics
 - Total iterations: 12
-- Phases: 3
+- Sections: 3
 - .1/.2 splits: 2
 - Temporary cleanup locations: 2
 
@@ -1006,10 +1006,10 @@ make checkpoint-cleanup CMD=create-plan
 
 ## Plan Status
 - Total iterations: [count]
-- Phases: [count]
+- Sections: [count]
 - Review status: 0% (all PENDING REVIEW)
 
-### Phase 0: [Phase Name]
+### Section 0: [Section Name]
 
 #### Iteration 0.1: [Behavior description] - PENDING REVIEW
 
@@ -1065,7 +1065,7 @@ A well-created plan shows:
 - ✅ BDD structure throughout (Given/When/Then/Cleanup)
 - ✅ Real AgeRun types (ar_*_t) not placeholders
 - ✅ Proper ownership prefixes (own_, ref_, mut_)
-- ✅ Phases sized 3-5 iterations (optimal for review)
+- ✅ Sections sized 3-5 iterations (optimal for review)
 - ✅ Decimal numbering for splits (N.1, N.2)
 - ✅ Status markers (PENDING REVIEW)
 - ✅ Cross-references to KB articles
