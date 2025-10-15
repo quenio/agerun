@@ -417,7 +417,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 **Single task focus**: One TODO = one plan, include verification steps ([details](kb/plan-verification-checklist.md), [review](kb/plan-verification-and-review.md))
 **Completion tracking**: Update plan docs with completion status after verification ([details](kb/plan-document-completion-status-pattern.md))
 **Review status tracking**: Use REVIEWED/PENDING markers for multi-session reviews ([details](kb/plan-review-status-tracking.md))
-**Section-by-section review**: Review 3-5 iterations per session to maintain quality ([details](kb/section-by-section-review-protocol.md))
+**Iteration-by-iteration review**: Review 3-5 iterations per session to maintain quality ([details](kb/iterative-plan-review-protocol.md))
 **Iterative refinement**: Expect multiple feedback rounds to get methodology right ([details](kb/iterative-plan-refinement-pattern.md))
 **User feedback**: Valuable QA - update plans immediately when corrected ([details](kb/user-feedback-as-qa.md))
 **Module constraints**: Different modules have different requirements - check tests

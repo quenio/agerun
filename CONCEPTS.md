@@ -129,9 +129,10 @@ Variable name prefixes that indicate ownership semantics for memory management.
 
 **Example:**
 ```c
-ar_data_t *own_message = ar_data__create_string("hello");
-ar_data_t *ref_log = ar_log__get_data(log);
-ar_data_t *mut_list = ar_list__get(list, 0);
+// EXAMPLE: Ownership prefix patterns
+ar_data_t *own_message = ar_data__create_string("hello");  // Real function - owns data
+ar_log_t *ref_log = ar_agent__get_log(agent);  // EXAMPLE: Returns borrowed reference
+ar_data_t *mut_value = ar_map__get(map, "key");  // Real function - mutable access
 ```
 
 **Context:** Memory management, ownership semantics
@@ -153,9 +154,9 @@ The hierarchical organization of modules in the AgeRun architecture.
 The `ar_` prefix used for all AgeRun types, functions, and modules.
 
 **Usage:**
-- Types: `ar_module_t*`
-- Functions: `ar_module__function()`
-- Constants: `AR_MODULE_CONSTANT`
+- Types: `ar_data_t*`, `ar_agent_t*`, `ar_map_t*`  // EXAMPLE: Real types
+- Functions: `ar_data__create_string()`, `ar_agent__get_log()`  // EXAMPLE: Real functions
+- Constants: `AR_DATA_TYPE_STRING`, `AR_ASSERT`  // EXAMPLE: Real constants
 
 **Context:** Naming conventions, code organization
 
@@ -166,11 +167,12 @@ The Given-When-Then-Cleanup pattern used in all AgeRun tests.
 
 **Usage:**
 ```c
+// EXAMPLE: Conceptual test structure (not actual AgeRun code)
 // Given [setup state]
-ar_data_t *own_data = ar_data__create_string("test");
+ar_data_t *own_data = ar_data__create_string("test");  // EXAMPLE
 
 // When [action being tested]
-bool result = ar_data__is_string(own_data);
+bool result = (ar_data__get_type(own_data) == AR_DATA_TYPE_STRING);  // Real function
 
 // Then [verification]
 AR_ASSERT(result, "Should be string");
@@ -208,8 +210,8 @@ A knowledge base article in the `kb/` directory documenting patterns, learnings,
 A link between related KB articles or from commands/AGENTS.md to KB articles.
 
 **Usage:**
-- Inline: `([details](kb/article-name.md))`
-- Related Patterns section: `- [Article Title](article-name.md)`
+- Inline: `([details](kb/tdd-iteration-planning-pattern.md))`  // EXAMPLE: Real KB article
+- Related Patterns section: `- [Ownership Naming Conventions](kb/ownership-naming-conventions.md)`  // EXAMPLE
 - Must use relative paths
 
 **Context:** Documentation, knowledge integration
@@ -420,7 +422,7 @@ Knowledge base articles documenting patterns, learnings, and best practices.
 - Common suffixes: `-pattern.md`, `-guide.md`, `-principle.md`
 - Indexed in `kb/README.md` under category sections
 - Must use real AgeRun types and functions in code examples
-- Cross-referenced from commands via `([details](kb/article.md))`
+- Cross-referenced from commands via `([details](kb/checkpoint-based-workflow-pattern.md))`  // EXAMPLE: Real KB article
 - Include "Related Patterns" section linking to other KB articles
 
 **Context:** Knowledge management, development patterns, best practices
@@ -433,7 +435,8 @@ The universal data container that can hold any type of value (string, integer, l
 **Usage:**
 - Type-safe value storage with runtime type checking
 - Created with `ar_data__create_string()`, `ar_data__create_integer()`, etc.
-- Accessed with `ar_data__get_string()`, `ar_data__is_integer()`, etc.
+- Type checked with `ar_data__get_type()` returning `ar_data_type_t` enum
+- Accessed with `ar_data__get_string()`, `ar_data__get_integer()`, etc.
 - Ownership-aware with reference counting
 - Destroyed with `ar_data__destroy()`
 
@@ -443,10 +446,10 @@ The universal data container that can hold any type of value (string, integer, l
 A type whose internal structure is hidden from clients, exposing only through API functions.
 
 **Usage:**
-- Declared as `typedef struct module_name_s module_name_t;`
+- Declared as `typedef struct ar_data_s ar_data_t;`  // EXAMPLE: Real pattern
 - Implementation details in `.c` file only
 - Enforces information hiding (Parnas principle)
-- Example: `ar_agent_t`, `ar_method_t`, `ar_list_t`
+- Example: `ar_agent_t`, `ar_method_t`, `ar_list_t`  // Real types
 
 **Context:** Information hiding, module encapsulation
 
@@ -454,9 +457,9 @@ A type whose internal structure is hidden from clients, exposing only through AP
 Functions that provide type-safe access to ar_data_t contents.
 
 **Usage:**
-- Check type: `ar_data__is_string(data)`
+- Check type: `ar_data__get_type(data) == AR_DATA_TYPE_STRING`  // Real function
 - Get value: `ar_data__get_string(data)` (returns NULL if wrong type)
-- Set value: `ar_data__set_map_string(map, key, value)`
+- Set value: `ar_map__set(map, key, value)`  // Real function
 - Prevents type confusion errors at runtime
 
 **Context:** Type safety, runtime validation
