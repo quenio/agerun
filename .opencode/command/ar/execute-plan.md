@@ -52,7 +52,7 @@ Before executing, identify which plan file to implement:
 1. **User-provided file path** (supersedes everything)
    - Check if the user provided an explicit file path via command arguments
    - Format: `/execute-plan <path-to-plan-file>`
-   - Example: `/execute-plan plans/tdd_cycle_7_plan.md`
+   - Example: `/execute-plan plans/message_queue_plan.md`
 
 2. **Inferred from user description or context**
    - If no explicit path, infer from user's description or recent context
@@ -67,20 +67,20 @@ Before executing, identify which plan file to implement:
 **Example file identification:**
 ```bash
 # User provides explicit path:
-/execute-plan plans/tdd_cycle_7_plan.md
-→ Use: plans/tdd_cycle_7_plan.md
+/execute-plan plans/message_queue_plan.md
+→ Use: plans/message_queue_plan.md
 
 # User provides description:
 "Execute the message queue plan"
 → Search: grep -l "message queue" plans/*.md
-→ Use: plans/tdd_cycle_7_plan.md (if match found)
+→ Use: plans/message_queue_plan.md (if match found)
 
 # From ar:review-plan context:
-"Review complete for plans/tdd_cycle_8_plan.md - APPROVED"
-→ Use: plans/tdd_cycle_8_plan.md
+"Review complete for plans/agent_store_fixture_plan.md - APPROVED"
+→ Use: plans/agent_store_fixture_plan.md
 
 # Find most recent reviewed plan:
-grep -l "REVIEWED" plans/tdd_cycle_*_plan.md | xargs ls -t | head -1
+grep -l "REVIEWED" plans/*_plan.md | xargs ls -t | head -1
 → Use: most recently reviewed plan
 ```
 
@@ -221,7 +221,7 @@ This command updates the plan file in TWO distinct phases:
 
 **Example:**
 ```bash
-/execute-plan plans/tdd_cycle_7_plan.md
+/execute-plan plans/message_queue_plan.md
 ```
 
 **IMPORTANT**: Running `/execute-plan` alone is NOT sufficient. You MUST initialize checkpoints first as shown above.
@@ -254,7 +254,7 @@ make checkpoint-update CMD=execute-plan STEP=2
 
 **Extract key information:**
 - Total iteration count
-- Section structure
+- Cycle structure
 - Test module names (e.g., ar_delegate_tests.c)
 - Implementation modules (e.g., ar_delegate.c, ar_delegate.h)
 - Expected test function names
@@ -745,7 +745,7 @@ make checkpoint-update CMD=execute-plan STEP=7
 ```markdown
 ## Plan Execution Summary
 
-**Plan**: tdd_cycle_7_plan.md
+**Plan**: message_queue_plan.md
 **Executed**: 2025-10-15
 **Feature**: Message queue infrastructure
 
@@ -808,7 +808,7 @@ make 2>&1
 1. modules/ar_delegate_tests.c (10 test functions added)
 2. modules/ar_delegate.c (4 functions implemented)
 3. modules/ar_delegate.h (4 function declarations added)
-4. plans/tdd_cycle_7_plan.md (status markers updated: REVIEWED/REVISED → IMPLEMENTED → ✅ COMMITTED)
+4. plans/message_queue_plan.md (status markers updated: REVIEWED/REVISED → IMPLEMENTED → ✅ COMMITTED)
 
 ### Next Steps
 1. ✅ Plan execution complete
@@ -1124,8 +1124,8 @@ When you invoke this command with `/execute-plan <arguments>`, everything after 
 
 **Examples:**
 ```
-/execute-plan plans/tdd_cycle_7_plan.md
-→ Arguments: "plans/tdd_cycle_7_plan.md"
+/execute-plan plans/message_queue_plan.md
+→ Arguments: "plans/message_queue_plan.md"
 → Use: Explicit path to plan file for execution
 
 /execute-plan "message queue plan"
