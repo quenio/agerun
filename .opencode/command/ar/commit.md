@@ -295,6 +295,15 @@ make checkpoint-cleanup CMD=commit
 - [Git Push Verification](../../../kb/git-push-verification.md)
 - [Git Patch Preservation Workflow](../../../kb/git-patch-preservation-workflow.md)
 
+### TDD and Planning Patterns
+- [TDD Plan Iteration Split Pattern](../../../kb/tdd-plan-iteration-split-pattern.md)
+- [TDD GREEN Phase Minimalism](../../../kb/tdd-green-phase-minimalism.md)
+- [TDD Iteration Planning Pattern](../../../kb/tdd-iteration-planning-pattern.md)
+- [Temporary Test Cleanup Pattern](../../../kb/temporary-test-cleanup-pattern.md)
+- [Plan Review Status Tracking Pattern](../../../kb/plan-review-status-tracking.md)
+- [Section-by-Section Review Protocol](../../../kb/section-by-section-review-protocol.md)
+- [Iterative Plan Refinement Pattern](../../../kb/iterative-plan-refinement-pattern.md)
+
 ### Refactoring Patterns
 - [Dead Code After Mandatory Parameters](../../../kb/dead-code-after-mandatory-parameters.md)
 - [API Suffix Cleanup After Consolidation](../../../kb/api-suffix-cleanup-after-consolidation.md)

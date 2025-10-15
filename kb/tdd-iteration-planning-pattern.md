@@ -122,7 +122,10 @@ wc -l assertions.txt  # 6 iterations = approximately 1-2 hours
 ## Related Patterns
 - [TDD RED Phase Assertion Requirement](tdd-red-phase-assertion-requirement.md) - How to write proper RED phases
 - [TDD GREEN Phase Minimalism](tdd-green-phase-minimalism.md) - Minimal implementation per iteration
+- [TDD Plan Iteration Split Pattern](tdd-plan-iteration-split-pattern.md) - Splitting iterations to maintain one assertion per iteration
+- [Temporary Test Cleanup Pattern](temporary-test-cleanup-pattern.md) - Managing memory in split iterations
 - [TDD Cycle Detailed Explanation](tdd-cycle-detailed-explanation.md) - Overall TDD cycle structure
 - [Red-Green-Refactor Cycle](red-green-refactor-cycle.md) - The three phases
 - [TDD Cycle Effort Estimation](tdd-cycle-effort-estimation.md) - Estimating TDD work
 - [Requirement Precision in TDD](requirement-precision-in-tdd.md) - Breaking down requirements
+- [Iterative Plan Refinement Pattern](iterative-plan-refinement-pattern.md) - Refining iteration plans

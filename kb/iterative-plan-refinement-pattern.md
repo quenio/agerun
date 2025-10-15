@@ -188,8 +188,12 @@ Keep a log of refinements:
 ## Related Patterns
 - [KB Consultation Before Planning Requirement](kb-consultation-before-planning-requirement.md) - Consult KB first
 - [TDD Iteration Planning Pattern](tdd-iteration-planning-pattern.md) - One assertion per iteration
+- [TDD Plan Iteration Split Pattern](tdd-plan-iteration-split-pattern.md) - Splitting iterations following minimalism
 - [TDD GREEN Phase Minimalism](tdd-green-phase-minimalism.md) - Minimal implementations
 - [TDD RED Phase Assertion Requirement](tdd-red-phase-assertion-requirement.md) - Proper RED phases
+- [Temporary Test Cleanup Pattern](temporary-test-cleanup-pattern.md) - Memory management in minimal implementations
+- [Plan Review Status Tracking Pattern](plan-review-status-tracking.md) - Tracking multi-session reviews
+- [Section-by-Section Review Protocol](section-by-section-review-protocol.md) - Incremental plan approval
 - [BDD Test Structure](bdd-test-structure.md) - Test organization
 - [API Behavior Verification](api-behavior-verification.md) - Verify API before use
 - [Assumption Verification Before Action](assumption-verification-before-action.md) - Check assumptions

@@ -515,6 +515,9 @@ The original review process still works without checkpoints, but you lose progre
 - [Code Smell Quick Detection](../../../kb/code-smell-quick-detection.md)
 - [Module Quality Checklist](../../../kb/module-quality-checklist.md)
 - [Quantitative Priority Setting](../../../kb/quantitative-priority-setting.md)
+- [Plan Review Status Tracking Pattern](../../../kb/plan-review-status-tracking.md)
+- [Section-by-Section Review Protocol](../../../kb/section-by-section-review-protocol.md)
+- [Iterative Plan Refinement Pattern](../../../kb/iterative-plan-refinement-pattern.md)
 
 ### Memory Management
 - [Ownership Naming Conventions](../../../kb/ownership-naming-conventions.md)
@@ -533,6 +536,10 @@ The original review process still works without checkpoints, but you lose progre
 - [Test Effectiveness Verification](../../../kb/test-effectiveness-verification.md)
 - [Red-Green-Refactor Cycle](../../../kb/red-green-refactor-cycle.md)
 - [TDD Cycle Detailed Explanation](../../../kb/tdd-cycle-detailed-explanation.md)
+- [TDD Plan Iteration Split Pattern](../../../kb/tdd-plan-iteration-split-pattern.md)
+- [TDD GREEN Phase Minimalism](../../../kb/tdd-green-phase-minimalism.md)
+- [TDD Iteration Planning Pattern](../../../kb/tdd-iteration-planning-pattern.md)
+- [Temporary Test Cleanup Pattern](../../../kb/temporary-test-cleanup-pattern.md)
 - [Mock at Right Level Pattern](../../../kb/mock-at-right-level-pattern.md)
 - [Test Complexity as Code Smell](../../../kb/test-complexity-as-code-smell.md)
 - [Check Existing Solutions First](../../../kb/check-existing-solutions-first.md)

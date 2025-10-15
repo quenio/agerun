@@ -193,7 +193,10 @@ git diff modules/ar_delegate.c | grep "^+" | wc -l
 
 ## Related Patterns
 - [TDD Iteration Planning Pattern](tdd-iteration-planning-pattern.md) - Planning one assertion per iteration
+- [TDD Plan Iteration Split Pattern](tdd-plan-iteration-split-pattern.md) - Splitting to maintain minimalism
+- [Temporary Test Cleanup Pattern](temporary-test-cleanup-pattern.md) - Memory management in minimal implementations
 - [TDD RED Phase Assertion Requirement](tdd-red-phase-assertion-requirement.md) - Proper RED phase execution
 - [Red-Green-Refactor Cycle](red-green-refactor-cycle.md) - The complete TDD cycle
 - [TDD Cycle Detailed Explanation](tdd-cycle-detailed-explanation.md) - TDD methodology overview
 - [Requirement Precision in TDD](requirement-precision-in-tdd.md) - Breaking down requirements precisely
+- [Iterative Plan Refinement Pattern](iterative-plan-refinement-pattern.md) - Refining plans for minimalism

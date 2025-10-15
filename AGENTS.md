@@ -160,7 +160,9 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Multi-session**: Use session tracking for large changes ([details](kb/multi-session-tdd-planning.md))
 **Effort estimation**: Estimate in TDD cycles not hours/days ([details](kb/tdd-cycle-effort-estimation.md))
 **Iteration planning**: One assertion per iteration ([details](kb/tdd-iteration-planning-pattern.md))
+**Iteration splitting**: Split multi-assertion iterations into .1/.2 sub-iterations ([details](kb/tdd-plan-iteration-split-pattern.md))
 **GREEN minimalism**: Hardcoded returns valid if they pass tests ([details](kb/tdd-green-phase-minimalism.md))
+**Temporary cleanup**: Add manual cleanup in .1 iterations, remove in .2 ([details](kb/temporary-test-cleanup-pattern.md))
 **Lifecycle separation**: Handle creation/destruction in separate cycles ([details](kb/lifecycle-event-separation-tdd.md))
 **Test modification**: Ask permission before changing tests ([details](kb/permission-based-test-modification.md))
 **Compilation-based TDD**: Use compilation failure as RED phase for infrastructure removal ([details](kb/compilation-based-tdd-approach.md))
@@ -414,6 +416,8 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 
 **Single task focus**: One TODO = one plan, include verification steps ([details](kb/plan-verification-checklist.md), [review](kb/plan-verification-and-review.md))
 **Completion tracking**: Update plan docs with completion status after verification ([details](kb/plan-document-completion-status-pattern.md))
+**Review status tracking**: Use REVIEWED/PENDING markers for multi-session reviews ([details](kb/plan-review-status-tracking.md))
+**Section-by-section review**: Review 3-5 iterations per session to maintain quality ([details](kb/section-by-section-review-protocol.md))
 **Iterative refinement**: Expect multiple feedback rounds to get methodology right ([details](kb/iterative-plan-refinement-pattern.md))
 **User feedback**: Valuable QA - update plans immediately when corrected ([details](kb/user-feedback-as-qa.md))
 **Module constraints**: Different modules have different requirements - check tests

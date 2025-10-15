@@ -80,8 +80,10 @@ Each learning file contains:
 - [Knowledge Base Search Patterns](kb-search-patterns.md)
 - [New Learnings Complete Integration Pattern](new-learnings-complete-integration-pattern.md)
 - [New Learnings Cross-Reference Requirement](new-learnings-cross-reference-requirement.md)
+- [Plan Review Status Tracking Pattern](plan-review-status-tracking.md)
 - [Pre-Compact Hook KB Consultation](pre-compact-hook-kb-consultation.md)
 - [Search Result Completeness Verification](search-result-completeness-verification.md)
+- [Section-by-Section Review Protocol](section-by-section-review-protocol.md)
 
 ### 2. QUALITY ASSURANCE
 
@@ -101,8 +103,10 @@ Each learning file contains:
 - [TDD Feature Completion Before Commit](tdd-feature-completion-before-commit.md)
 - [TDD GREEN Phase Minimalism](tdd-green-phase-minimalism.md)
 - [TDD Iteration Planning Pattern](tdd-iteration-planning-pattern.md)
+- [TDD Plan Iteration Split Pattern](tdd-plan-iteration-split-pattern.md)
 - [TDD RED Phase Assertion Requirement](tdd-red-phase-assertion-requirement.md)
 - [TDD for API Simplification](tdd-api-simplification.md)
+- [Temporary Test Cleanup Pattern](temporary-test-cleanup-pattern.md)
 - [Test Completeness Enumeration](test-completeness-enumeration.md)
 - [Test First Verification Practice](test-first-verification-practice.md)
 

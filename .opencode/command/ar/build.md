@@ -173,3 +173,16 @@ The Makefile uses generic parameterized targets to avoid duplication ([details](
 **Exit Code Handling**: When using popen() to run processes, remember that exit codes are multiplied by 256 ([details](../../../kb/exit-code-propagation-popen.md)). Non-critical operations should follow graceful degradation patterns ([details](../../../kb/graceful-degradation-pattern.md)).
 
 **Shell Diagnostic Troubleshooting**: When build tools report configuration issues despite working setups, investigate diagnostic detection methods ([details](../../../kb/shell-configuration-diagnostic-troubleshooting.md)). Configuration migration between shell files may resolve tool detection problems ([details](../../../kb/configuration-migration-troubleshooting-strategy.md)).
+
+## Related Documentation
+
+### TDD and Testing Patterns
+- [TDD Cycle Completion Verification Pattern](../../../kb/tdd-cycle-completion-verification-pattern.md)
+- [Plan Document Completion Status Pattern](../../../kb/plan-document-completion-status-pattern.md)
+- [TDD Plan Iteration Split Pattern](../../../kb/tdd-plan-iteration-split-pattern.md)
+- [TDD GREEN Phase Minimalism](../../../kb/tdd-green-phase-minimalism.md)
+- [TDD Iteration Planning Pattern](../../../kb/tdd-iteration-planning-pattern.md)
+- [Temporary Test Cleanup Pattern](../../../kb/temporary-test-cleanup-pattern.md)
+- [Plan Review Status Tracking Pattern](../../../kb/plan-review-status-tracking.md)
+- [Section-by-Section Review Protocol](../../../kb/section-by-section-review-protocol.md)
+- [Iterative Plan Refinement Pattern](../../../kb/iterative-plan-refinement-pattern.md)
