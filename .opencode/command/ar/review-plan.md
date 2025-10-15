@@ -680,4 +680,39 @@ Review the Minimum Requirements for each phase and ensure all checkboxes are ver
 - [Command Thoroughness Requirements Pattern](../../../kb/command-thoroughness-requirements-pattern.md)
 - [Multi-Step Checkpoint Tracking Pattern](../../../kb/multi-step-checkpoint-tracking-pattern.md)
 
+---
+
+## Command Arguments
+
+**IMPORTANT**: The text following this command execution is passed as arguments.
+
+When you invoke this command with `/review-plan <arguments>`, everything after `/review-plan` is treated as command arguments and will be available for processing.
+
+**Argument format:**
+```
+/review-plan <plan-file-path-or-description>
+```
+
+**Examples:**
+```
+/review-plan plans/tdd_cycle_7_plan.md
+→ Arguments: "plans/tdd_cycle_7_plan.md"
+→ Use: Explicit path to plan file
+
+/review-plan "message queue plan"
+→ Arguments: "message queue plan"
+→ Use: Search plans/ directory for matching files
+
+/review-plan
+→ Arguments: (empty - will infer from recent ar:create-plan context)
+→ Use: Most recent plan from conversation context
+```
+
+**How arguments are used:**
+1. Arguments are checked FIRST in plan file identification priority order
+2. If arguments contain a valid file path, use that path directly
+3. If arguments contain a description, search for matching plan files
+4. If no arguments, the command falls back to context extraction
+5. Arguments can be either explicit paths or descriptive text
+
 $ARGUMENTS

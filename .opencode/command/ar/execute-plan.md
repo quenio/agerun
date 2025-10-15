@@ -874,4 +874,40 @@ make checkpoint-init CMD=execute-plan STEPS='...'
 - [Command KB Consultation Enforcement](../../../kb/command-kb-consultation-enforcement.md)
 - [Multi-Step Checkpoint Tracking Pattern](../../../kb/multi-step-checkpoint-tracking-pattern.md)
 
+---
+
+## Command Arguments
+
+**IMPORTANT**: The text following this command execution is passed as arguments.
+
+When you invoke this command with `/execute-plan <arguments>`, everything after `/execute-plan` is treated as command arguments and will be available for processing.
+
+**Argument format:**
+```
+/execute-plan <plan-file-path-or-description>
+```
+
+**Examples:**
+```
+/execute-plan plans/tdd_cycle_7_plan.md
+→ Arguments: "plans/tdd_cycle_7_plan.md"
+→ Use: Explicit path to plan file for execution
+
+/execute-plan "message queue plan"
+→ Arguments: "message queue plan"
+→ Use: Search plans/ directory for matching reviewed plan
+
+/execute-plan
+→ Arguments: (empty - will infer from recent ar:review-plan context)
+→ Use: Most recently reviewed plan from conversation context
+```
+
+**How arguments are used:**
+1. Arguments are checked FIRST in plan file identification priority order
+2. If arguments contain a valid file path, use that path directly
+3. If arguments contain a description, search for matching plan files with REVIEWED status
+4. If no arguments, the command falls back to context extraction (ar:review-plan output)
+5. Arguments can be either explicit paths or descriptive text
+6. The command verifies the plan has REVIEWED status before execution
+
 $ARGUMENTS

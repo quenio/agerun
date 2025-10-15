@@ -1096,4 +1096,35 @@ Use the simplest possible implementation:
 - [Command Thoroughness Requirements Pattern](../../../kb/command-thoroughness-requirements-pattern.md)
 - [Multi-Step Checkpoint Tracking Pattern](../../../kb/multi-step-checkpoint-tracking-pattern.md)
 
+---
+
+## Command Arguments
+
+**IMPORTANT**: The text following this command execution is passed as arguments.
+
+When you invoke this command with `/create-plan <arguments>`, everything after `/create-plan` is treated as command arguments and will be available for processing.
+
+**Argument format:**
+```
+/create-plan <task-description> [additional-instructions]
+```
+
+**Examples:**
+```
+/create-plan "implement message queue infrastructure"
+→ Arguments: "implement message queue infrastructure"
+
+/create-plan "fixture lifecycle management" "focus on ownership transfer"
+→ Arguments: "fixture lifecycle management" "focus on ownership transfer"
+
+/create-plan
+→ Arguments: (empty - will use context from ar:next-priority/ar:next-task)
+```
+
+**How arguments are used:**
+1. Arguments are checked FIRST in task identification priority order
+2. If arguments provided, they supersede context from ar:next-priority/ar:next-task
+3. If no arguments, the command falls back to context extraction
+4. Arguments can include task name and additional instructions/constraints
+
 $ARGUMENTS
