@@ -616,7 +616,9 @@ make checkpoint-update CMD=create-plan STEP=9
 
 #### Checkpoint 10: Add Status Markers
 
-**Add PENDING REVIEW markers to all iterations:**
+**MANDATORY: Add PENDING REVIEW markers to all iterations:**
+
+**CRITICAL REQUIREMENT**: Every single iteration and phase heading MUST end with " - PENDING REVIEW" suffix. This is non-negotiable and required for proper review tracking.
 
 ```markdown
 ### Phase 0: Basic Functionality - PENDING REVIEW
@@ -635,9 +637,11 @@ make checkpoint-update CMD=create-plan STEP=9
 
 **Status marker rules:**
 - All new plans start with PENDING REVIEW
-- Section status = PENDING if any iteration is PENDING
+- Section status = PENDING REVIEW if any iteration is PENDING REVIEW
 - Will be updated to REVIEWED during review process
 - Will be marked REVISED if changes needed after review
+
+**CRITICAL**: Every iteration created must have "- PENDING REVIEW" suffix in the heading. This is MANDATORY and must not be omitted.
 
 ```bash
 make checkpoint-update CMD=create-plan STEP=10
