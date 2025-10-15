@@ -1,0 +1,1929 @@
+# TDD Cycle 7: Message Routing via Delegation
+
+**Status**: READY TO EXECUTE
+**Created**: 2025-10-14
+**Estimated Effort**: 16 iterations (~5-6 hours)
+
+## Objective
+
+Implement ID-based message routing in `ar_send_instruction_evaluator.zig` to route messages to delegates when target ID is negative, while preserving existing agent routing for non-negative IDs.
+
+## Context
+
+### KB Articles Consulted
+- ✅ [ID-Based Message Routing Pattern](../kb/id-based-message-routing-pattern.md) - Core routing pattern
+- ✅ [TDD Iteration Planning Pattern](../kb/tdd-iteration-planning-pattern.md) - One assertion per iteration
+- ✅ [TDD Cycle Detailed Explanation](../kb/tdd-cycle-detailed-explanation.md) - RED-GREEN-REFACTOR structure
+- ✅ [Red-Green-Refactor Cycle](../kb/red-green-refactor-cycle.md) - Three phase requirement
+- ✅ [Message Ownership Flow](../kb/message-ownership-flow.md) - Ownership transfer patterns
+- ✅ [System Message Flow Architecture](../kb/system-message-flow-architecture.md) - System coordination
+- ✅ [TDD RED Phase Assertion Requirement](../kb/tdd-red-phase-assertion-requirement.md) - Proper RED phase with assertion failures
+- ✅ [AR_ASSERT for Descriptive Failures](../kb/ar-assert-descriptive-failures.md) - Use AR_ASSERT with descriptive messages
+- ✅ [Test Assertion Strength Patterns](../kb/test-assertion-strength-patterns.md) - Strong assertions verify specific outcomes
+
+### Current Implementation State
+
+**File**: `modules/ar_send_instruction_evaluator.zig`
+
+**Current Routing Logic** (lines 124-134):
+```zig
+// Send the message
+var send_result: bool = undefined;
+if (agent_id == 0) {
+    // Special case: agent_id 0 is a no-op that always returns true
+    std.debug.print("DEBUG [SEND_EVAL]: Sending to agent 0...\n", .{...});
+    c.ar_data__destroy_if_owned(own_message, ref_evaluator);
+    send_result = true;
+} else {
+    // Send message (ownership transferred to ar_agency__send_to_agent)
+    send_result = c.ar_agency__send_to_agent(ref_evaluator.?.ref_agency, agent_id, own_message);
+}
+```
+
+**Problem**: All non-zero IDs route to agency. Negative IDs should route to delegation.
+
+**Dependencies Available**:
+- ✅ `ref_delegation` field (line 21) - Already propagated through evaluator chain
+- ✅ `ar_delegation__send_to_delegate()` - Implemented in TDD Cycle 6.5
+- ✅ `ar_agency__send_to_agent()` - Existing agent routing
+
+### Architecture Pattern
+
+Following **ID-Based Message Routing Pattern** (kb/id-based-message-routing-pattern.md):
+
+```
+Message Routing by ID Sign:
+├── agent_id = 0    → No-op (destroy message, return true)
+├── agent_id > 0    → Route to ar_agency__send_to_agent()
+└── agent_id < 0    → Route to ar_delegation__send_to_delegate()
+```
+
+## Preconditions
+
+- [x] All tests currently passing (78 tests)
+- [x] Zero memory leaks confirmed
+- [x] Delegation parameter propagated through evaluator chain (completed in Phase 2)
+- [x] Delegation message queue infrastructure complete (TDD Cycle 6.5)
+- [x] `ar_delegation__send_to_delegate()` implemented and tested
+
+## Detailed Implementation Plan
+
+### Iteration 0.1: Fixture helper returns non-NULL evaluator (RED-GREEN-REFACTOR)
+
+**Review Status**: REVIEWED
+
+**Objective**: Create fixture helper that returns a valid send evaluator.
+
+#### RED Phase
+
+**Step 1**: Create fixture header with function declarations
+```c
+// File: modules/ar_send_evaluator_fixture.h (NEW)
+#ifndef AGERUN_SEND_EVALUATOR_FIXTURE_H
+#define AGERUN_SEND_EVALUATOR_FIXTURE_H
+
+#include "ar_send_instruction_evaluator.h"
+#include "ar_frame.h"
+
+/**
+ * Opaque type for send evaluator fixture
+ */
+typedef struct ar_send_evaluator_fixture_s ar_send_evaluator_fixture_t;
+
+/**
+ * Creates a send evaluator fixture
+ * @param ref_test_name Name of the test for identification
+ * @return A newly created fixture
+ * @note Ownership: Returns owned fixture that caller must destroy
+ */
+ar_send_evaluator_fixture_t* ar_send_evaluator_fixture__create(
+    const char *ref_test_name
+);
+
+/**
+ * Destroys a send evaluator fixture
+ * @param own_fixture The fixture to destroy
+ * @note Ownership: Takes ownership and destroys fixture and all resources
+ */
+void ar_send_evaluator_fixture__destroy(
+    ar_send_evaluator_fixture_t *own_fixture
+);
+
+/**
+ * Creates a send evaluator from the fixture
+ * @param ref_fixture The fixture to use
+ * @return A newly created send evaluator
+ * @note Ownership: Returns owned evaluator that caller must destroy
+ */
+ar_send_instruction_evaluator_t* ar_send_evaluator_fixture__create_evaluator(
+    const ar_send_evaluator_fixture_t *ref_fixture
+);
+
+/**
+ * Creates a frame for evaluation
+ * @param ref_fixture The fixture to query
+ * @return A frame (borrowed reference)
+ * @note Ownership: Returns borrowed reference; fixture manages lifecycle
+ */
+ar_frame_t* ar_send_evaluator_fixture__create_frame(
+    ar_send_evaluator_fixture_t *ref_fixture
+);
+
+/**
+ * Gets the delegation instance
+ * @param ref_fixture The fixture to query
+ * @return The delegation instance (borrowed reference)
+ * @note Ownership: Returns borrowed reference; fixture manages lifecycle
+ */
+ar_delegation_t* ar_send_evaluator_fixture__get_delegation(
+    const ar_send_evaluator_fixture_t *ref_fixture
+);
+
+/**
+ * Gets the agency instance
+ * @param ref_fixture The fixture to query
+ * @return The agency instance (borrowed reference)
+ * @note Ownership: Returns borrowed reference; fixture manages lifecycle
+ */
+ar_agency_t* ar_send_evaluator_fixture__get_agency(
+    const ar_send_evaluator_fixture_t *ref_fixture
+);
+
+/**
+ * Creates and registers a delegate
+ * @param ref_fixture The fixture to use
+ * @param delegate_id The ID for the delegate (negative)
+ * @param ref_name The name for the delegate
+ * @return The created delegate (borrowed reference), or NULL on failure
+ * @note Ownership: Returns borrowed reference; fixture manages lifecycle
+ */
+ar_delegate_t* ar_send_evaluator_fixture__create_and_register_delegate(
+    ar_send_evaluator_fixture_t *ref_fixture,
+    int64_t delegate_id,
+    const char *ref_name
+);
+
+/**
+ * Creates and registers an agent
+ * @param ref_fixture The fixture to use
+ * @param agent_id The ID for the agent (positive)
+ * @param ref_behavior The behavior file path (can be NULL)
+ * @return The created agent (borrowed reference), or NULL on failure
+ * @note Ownership: Returns borrowed reference; fixture manages lifecycle
+ */
+ar_agent_t* ar_send_evaluator_fixture__create_and_register_agent(
+    ar_send_evaluator_fixture_t *ref_fixture,
+    int64_t agent_id,
+    const char *ref_behavior
+);
+
+#endif /* AGERUN_SEND_EVALUATOR_FIXTURE_H */
+```
+
+**Step 2**: Create stub implementation
+```c
+// File: modules/ar_send_evaluator_fixture.c (NEW)
+#include "ar_send_evaluator_fixture.h"
+
+ar_send_evaluator_fixture_t* ar_send_evaluator_fixture__create(
+    const char *ref_test_name
+) {
+    return NULL;  // Stub returns NULL
+}
+
+void ar_send_evaluator_fixture__destroy(
+    ar_send_evaluator_fixture_t *own_fixture
+) {
+    // Stub does nothing
+}
+
+ar_send_instruction_evaluator_t* ar_send_evaluator_fixture__create_evaluator(
+    const ar_send_evaluator_fixture_t *ref_fixture
+) {
+    return NULL;  // Stub returns NULL
+}
+
+ar_frame_t* ar_send_evaluator_fixture__create_frame(
+    ar_send_evaluator_fixture_t *ref_fixture
+) {
+    return NULL;  // Stub returns NULL
+}
+
+ar_delegation_t* ar_send_evaluator_fixture__get_delegation(
+    const ar_send_evaluator_fixture_t *ref_fixture
+) {
+    return NULL;  // Stub returns NULL
+}
+
+ar_agency_t* ar_send_evaluator_fixture__get_agency(
+    const ar_send_evaluator_fixture_t *ref_fixture
+) {
+    return NULL;  // Stub returns NULL
+}
+
+ar_delegate_t* ar_send_evaluator_fixture__create_and_register_delegate(
+    ar_send_evaluator_fixture_t *ref_fixture,
+    int64_t delegate_id,
+    const char *ref_name
+) {
+    return NULL;  // Stub returns NULL
+}
+
+ar_agent_t* ar_send_evaluator_fixture__create_and_register_agent(
+    ar_send_evaluator_fixture_t *ref_fixture,
+    int64_t agent_id,
+    const char *ref_behavior
+) {
+    return NULL;  // Stub returns NULL
+}
+```
+
+**Step 3**: Create test file
+```c
+// File: modules/ar_send_evaluator_fixture_tests.c (NEW)
+#include <stdio.h>
+#include "ar_send_evaluator_fixture.h"
+#include "ar_assert.h"
+
+static void test_send_evaluator_fixture__create_returns_non_null(void) {
+    // When creating a send evaluator fixture
+    ar_send_evaluator_fixture_t *fixture = ar_send_evaluator_fixture__create("test_fixture_create");
+
+    // Then it should return a valid fixture
+    AR_ASSERT(fixture != NULL, "Fixture creation should succeed");  // ← FAILS (stub returns NULL)
+
+    // Cleanup
+    ar_send_evaluator_fixture__destroy(fixture);
+}
+
+int main(void) {
+    printf("Starting send evaluator fixture tests...\n");
+
+    test_send_evaluator_fixture__create_returns_non_null();
+    printf("test_send_evaluator_fixture__create_returns_non_null passed!\n");
+
+    printf("All send evaluator fixture tests passed!\n");
+    return 0;
+}
+```
+
+**Expected RED**: Test compiles but FAILS at marked assertion because stub returns NULL.
+
+**Run**: `make ar_send_evaluator_fixture_tests 2>&1`
+
+#### GREEN Phase
+
+```c
+// File: modules/ar_send_evaluator_fixture.c
+// Implement minimal fixture structure - just enough to return non-NULL
+#include "ar_send_evaluator_fixture.h"
+#include "ar_heap.h"
+
+// Define opaque structure
+struct ar_send_evaluator_fixture_s {
+    ar_evaluator_fixture_t *own_evaluator_fixture;
+};
+
+ar_send_evaluator_fixture_t* ar_send_evaluator_fixture__create(
+    const char *ref_test_name
+) {
+    ar_send_evaluator_fixture_t *own_fixture = AR__HEAP__MALLOC(
+        sizeof(ar_send_evaluator_fixture_t),
+        "Send evaluator fixture"
+    );
+    if (!own_fixture) {
+        return NULL;
+    }
+
+    // Minimal implementation: just allocate structure, don't populate yet
+    own_fixture->own_evaluator_fixture = NULL;
+
+    return own_fixture;  // Returns non-NULL, but not functional yet
+}
+
+void ar_send_evaluator_fixture__destroy(
+    ar_send_evaluator_fixture_t *own_fixture
+) {
+    if (!own_fixture) {
+        return;
+    }
+
+    // Cleanup evaluator fixture (will be implemented in Iteration 0.2)
+    if (own_fixture->own_evaluator_fixture) {
+        ar_evaluator_fixture__destroy(own_fixture->own_evaluator_fixture);
+    }
+
+    ar_heap__free(own_fixture);
+}
+
+ar_send_instruction_evaluator_t* ar_send_evaluator_fixture__create_evaluator(
+    const ar_send_evaluator_fixture_t *ref_fixture
+) {
+    if (!ref_fixture) {
+        return NULL;
+    }
+    return NULL;  // Returns NULL until Iteration 0.2 implements creation logic
+}
+
+ar_frame_t* ar_send_evaluator_fixture__create_frame(
+    ar_send_evaluator_fixture_t *ref_fixture
+) {
+    if (!ref_fixture) {
+        return NULL;
+    }
+    return NULL;  // Returns NULL until Iteration 0.2
+}
+```
+
+**Expected GREEN**: Test PASSES - fixture creates successfully and returns non-NULL structure.
+
+**Run**: `make ar_send_evaluator_fixture_tests 2>&1`
+
+#### REFACTOR Phase
+
+**Analysis**:
+1. Check for code duplication: None - encapsulates common pattern of creating send evaluator with all dependencies
+2. Check for clarity: Good - opaque type properly encapsulates internal fixture
+3. Check for edge cases: NULL checks added for all allocations and parameters
+
+**Actions**: No refactoring needed - implementation is minimal and clean.
+
+**Verification**: Test still passes, zero memory leaks.
+
+**Run**: `make ar_send_evaluator_fixture_tests 2>&1 && grep "Actual memory leaks:" bin/run-tests/memory_report_ar_send_evaluator_fixture_tests.log`
+
+---
+
+### Iteration 0.2: Fixture create_evaluator() returns non-NULL (RED-GREEN-REFACTOR)
+
+**Review Status**: REVIEWED
+
+**Objective**: Test that create_evaluator() returns a valid evaluator.
+
+#### RED Phase
+
+```c
+// File: modules/ar_send_evaluator_fixture_tests.c
+// Add new test function
+
+static void test_send_evaluator_fixture__create_evaluator_returns_non_null(void) {
+    // Given a send evaluator fixture
+    ar_send_evaluator_fixture_t *fixture = ar_send_evaluator_fixture__create("test_create_evaluator");
+    AR_ASSERT(fixture != NULL, "Fixture creation should succeed");
+
+    // When creating an evaluator from the fixture
+    ar_send_instruction_evaluator_t *own_evaluator = ar_send_evaluator_fixture__create_evaluator(fixture);
+
+    // Then it should return a valid evaluator
+    AR_ASSERT(own_evaluator != NULL, "Fixture should create evaluator");  // ← FAILS (stub returns NULL)
+
+    // Cleanup
+    ar_send_instruction_evaluator__destroy(own_evaluator);
+    ar_send_evaluator_fixture__destroy(fixture);
+}
+
+// Update main()
+int main(void) {
+    printf("Starting send evaluator fixture tests...\n");
+
+    test_send_evaluator_fixture__create_returns_non_null();
+    printf("test_send_evaluator_fixture__create_returns_non_null passed!\n");
+
+    test_send_evaluator_fixture__create_evaluator_returns_non_null();
+    printf("test_send_evaluator_fixture__create_evaluator_returns_non_null passed!\n");
+
+    printf("All send evaluator fixture tests passed!\n");
+    return 0;
+}
+```
+
+**Expected RED**: Test compiles but FAILS at marked assertion because create_evaluator() returns NULL (from Iteration 0.1 stub).
+
+**Run**: `make ar_send_evaluator_fixture_tests 2>&1`
+
+#### GREEN Phase
+
+```c
+// File: modules/ar_send_evaluator_fixture.c
+// Implement evaluator creation - populate internal fixture and create evaluator
+#include "ar_send_evaluator_fixture.h"
+#include "ar_evaluator_fixture.h"
+#include "ar_heap.h"
+
+// Structure already defined in Iteration 0.1
+
+ar_send_evaluator_fixture_t* ar_send_evaluator_fixture__create(
+    const char *ref_test_name
+) {
+    ar_send_evaluator_fixture_t *own_fixture = AR__HEAP__MALLOC(
+        sizeof(ar_send_evaluator_fixture_t),
+        "Send evaluator fixture"
+    );
+    if (!own_fixture) {
+        return NULL;
+    }
+
+    // NOW: Create and populate internal evaluator fixture
+    own_fixture->own_evaluator_fixture = ar_evaluator_fixture__create(ref_test_name);
+    if (!own_fixture->own_evaluator_fixture) {
+        ar_heap__free(own_fixture);
+        return NULL;
+    }
+
+    return own_fixture;
+}
+
+// destroy() already has proper implementation from Iteration 0.1
+
+ar_send_instruction_evaluator_t* ar_send_evaluator_fixture__create_evaluator(
+    const ar_send_evaluator_fixture_t *ref_fixture
+) {
+    if (!ref_fixture || !ref_fixture->own_evaluator_fixture) {
+        return NULL;
+    }
+
+    // Create new evaluator from internal fixture dependencies
+    ar_log_t *log = ar_evaluator_fixture__get_log(ref_fixture->own_evaluator_fixture);
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(ref_fixture->own_evaluator_fixture);
+    ar_agency_t *mut_agency = ar_evaluator_fixture__get_agency(ref_fixture->own_evaluator_fixture);
+    ar_delegation_t *mut_delegation = ar_evaluator_fixture__get_delegation(ref_fixture->own_evaluator_fixture);
+
+    return ar_send_instruction_evaluator__create(
+        log, expr_eval, mut_agency, mut_delegation
+    );
+}
+
+// create_frame() still returns NULL - will be implemented in Iteration 0.3
+```
+
+**Expected GREEN**: Test PASSES - fixture now creates functional evaluator.
+
+**Run**: `make ar_send_evaluator_fixture_tests 2>&1`
+
+#### REFACTOR Phase
+
+**Analysis**:
+1. Check for code duplication: None - encapsulates common pattern of creating send evaluator
+2. Check for clarity: Good - clear dependency extraction from internal fixture
+3. Check for edge cases: NULL checks present for all parameters
+
+**Actions**: No refactoring needed - implementation is clean.
+
+**Verification**: Both tests still pass, zero memory leaks.
+
+**Run**: `make ar_send_evaluator_fixture_tests 2>&1 && grep "Actual memory leaks:" bin/run-tests/memory_report_ar_send_evaluator_fixture_tests.log`
+
+---
+
+### Iteration 0.3: Fixture create_frame() returns non-NULL (RED-GREEN-REFACTOR)
+
+**Review Status**: REVIEWED
+
+**Objective**: Test that create_frame() returns a valid frame.
+
+#### RED Phase
+
+```c
+// File: modules/ar_send_evaluator_fixture_tests.c
+// Add new test function
+
+static void test_send_evaluator_fixture__create_frame_returns_non_null(void) {
+    // Given a send evaluator fixture
+    ar_send_evaluator_fixture_t *fixture = ar_send_evaluator_fixture__create("test_create_frame");
+    AR_ASSERT(fixture != NULL, "Fixture creation should succeed");
+
+    // When creating a frame from the fixture
+    ar_frame_t *frame = ar_send_evaluator_fixture__create_frame(fixture);
+
+    // Then it should return a valid frame
+    AR_ASSERT(frame != NULL, "Fixture should create frame");  // ← FAILS (stub returns NULL)
+
+    // Cleanup
+    ar_send_evaluator_fixture__destroy(fixture);
+}
+
+// Update main()
+int main(void) {
+    printf("Starting send evaluator fixture tests...\n");
+
+    test_send_evaluator_fixture__create_returns_non_null();
+    printf("test_send_evaluator_fixture__create_returns_non_null passed!\n");
+
+    test_send_evaluator_fixture__create_evaluator_returns_non_null();
+    printf("test_send_evaluator_fixture__create_evaluator_returns_non_null passed!\n");
+
+    test_send_evaluator_fixture__create_frame_returns_non_null();
+    printf("test_send_evaluator_fixture__create_frame_returns_non_null passed!\n");
+
+    printf("All send evaluator fixture tests passed!\n");
+    return 0;
+}
+```
+
+**Expected RED**: Test compiles but FAILS at marked assertion because create_frame() returns NULL (from Iteration 0.1 stub).
+
+**Run**: `make ar_send_evaluator_fixture_tests 2>&1`
+
+#### GREEN Phase
+
+```c
+// File: modules/ar_send_evaluator_fixture.c
+// Implement frame creation
+
+ar_frame_t* ar_send_evaluator_fixture__create_frame(
+    ar_send_evaluator_fixture_t *ref_fixture
+) {
+    if (!ref_fixture || !ref_fixture->own_evaluator_fixture) {
+        return NULL;
+    }
+    return ar_evaluator_fixture__create_frame(ref_fixture->own_evaluator_fixture);
+}
+```
+
+**Expected GREEN**: Test PASSES - fixture now creates frame correctly.
+
+**Run**: `make ar_send_evaluator_fixture_tests 2>&1`
+
+#### REFACTOR Phase
+
+**Analysis**:
+1. Check for code duplication: None - simple delegation to internal fixture
+2. Check for clarity: Good - clear delegation pattern
+3. Check for edge cases: NULL checks present
+
+**Actions**: No refactoring needed - implementation is minimal and correct.
+
+**Verification**: All three tests still pass, zero memory leaks.
+
+**Run**: `make ar_send_evaluator_fixture_tests 2>&1 && grep "Actual memory leaks:" bin/run-tests/memory_report_ar_send_evaluator_fixture_tests.log`
+
+---
+
+### Iteration 0.4: Fixture get_delegation() returns non-NULL (RED-GREEN-REFACTOR)
+
+**Review Status**: REVIEWED
+
+**Objective**: Test that get_delegation() returns a valid delegation instance.
+
+#### RED Phase
+
+```c
+// File: modules/ar_send_evaluator_fixture_tests.c
+// Add new test function
+
+static void test_send_evaluator_fixture__get_delegation_returns_non_null(void) {
+    // Given a send evaluator fixture
+    ar_send_evaluator_fixture_t *fixture = ar_send_evaluator_fixture__create("test_get_delegation");
+    AR_ASSERT(fixture != NULL, "Fixture creation should succeed");
+
+    // When getting the delegation from the fixture
+    ar_delegation_t *delegation = ar_send_evaluator_fixture__get_delegation(fixture);
+
+    // Then it should return a valid delegation
+    AR_ASSERT(delegation != NULL, "Fixture should return delegation");  // ← FAILS (stub returns NULL)
+
+    // Cleanup
+    ar_send_evaluator_fixture__destroy(fixture);
+}
+
+// Update main()
+int main(void) {
+    printf("Starting send evaluator fixture tests...\n");
+
+    test_send_evaluator_fixture__create_returns_non_null();
+    printf("test_send_evaluator_fixture__create_returns_non_null passed!\n");
+
+    test_send_evaluator_fixture__create_evaluator_returns_non_null();
+    printf("test_send_evaluator_fixture__create_evaluator_returns_non_null passed!\n");
+
+    test_send_evaluator_fixture__create_frame_returns_non_null();
+    printf("test_send_evaluator_fixture__create_frame_returns_non_null passed!\n");
+
+    test_send_evaluator_fixture__get_delegation_returns_non_null();
+    printf("test_send_evaluator_fixture__get_delegation_returns_non_null passed!\n");
+
+    printf("All send evaluator fixture tests passed!\n");
+    return 0;
+}
+```
+
+**Expected RED**: Test compiles but FAILS at marked assertion because get_delegation() returns NULL (from Iteration 0.1 stub).
+
+**Run**: `make ar_send_evaluator_fixture_tests 2>&1`
+
+#### GREEN Phase
+
+```c
+// File: modules/ar_send_evaluator_fixture.c
+// Implement delegation getter
+
+ar_delegation_t* ar_send_evaluator_fixture__get_delegation(
+    const ar_send_evaluator_fixture_t *ref_fixture
+) {
+    if (!ref_fixture || !ref_fixture->own_evaluator_fixture) {
+        return NULL;
+    }
+    return ar_evaluator_fixture__get_delegation(ref_fixture->own_evaluator_fixture);
+}
+```
+
+**Expected GREEN**: Test PASSES - fixture now returns delegation correctly.
+
+**Run**: `make ar_send_evaluator_fixture_tests 2>&1`
+
+#### REFACTOR Phase
+
+**Analysis**:
+1. Check for code duplication: None - simple delegation to internal fixture
+2. Check for clarity: Good - clear accessor pattern
+3. Check for edge cases: NULL checks present
+
+**Actions**: No refactoring needed - implementation is minimal and correct.
+
+**Verification**: All four tests still pass, zero memory leaks.
+
+**Run**: `make ar_send_evaluator_fixture_tests 2>&1 && grep "Actual memory leaks:" bin/run-tests/memory_report_ar_send_evaluator_fixture_tests.log`
+
+---
+
+### Iteration 0.5: Fixture get_agency() returns non-NULL (RED-GREEN-REFACTOR)
+
+**Review Status**: REVIEWED
+
+**Objective**: Test that get_agency() returns a valid agency instance.
+
+#### RED Phase
+
+```c
+// File: modules/ar_send_evaluator_fixture_tests.c
+// Add new test function
+
+static void test_send_evaluator_fixture__get_agency_returns_non_null(void) {
+    // Given a send evaluator fixture
+    ar_send_evaluator_fixture_t *fixture = ar_send_evaluator_fixture__create("test_get_agency");
+    AR_ASSERT(fixture != NULL, "Fixture creation should succeed");
+
+    // When getting the agency from the fixture
+    ar_agency_t *agency = ar_send_evaluator_fixture__get_agency(fixture);
+
+    // Then it should return a valid agency
+    AR_ASSERT(agency != NULL, "Fixture should return agency");  // ← FAILS (stub returns NULL)
+
+    // Cleanup
+    ar_send_evaluator_fixture__destroy(fixture);
+}
+
+// Update main()
+int main(void) {
+    printf("Starting send evaluator fixture tests...\n");
+
+    test_send_evaluator_fixture__create_returns_non_null();
+    printf("test_send_evaluator_fixture__create_returns_non_null passed!\n");
+
+    test_send_evaluator_fixture__create_evaluator_returns_non_null();
+    printf("test_send_evaluator_fixture__create_evaluator_returns_non_null passed!\n");
+
+    test_send_evaluator_fixture__create_frame_returns_non_null();
+    printf("test_send_evaluator_fixture__create_frame_returns_non_null passed!\n");
+
+    test_send_evaluator_fixture__get_delegation_returns_non_null();
+    printf("test_send_evaluator_fixture__get_delegation_returns_non_null passed!\n");
+
+    test_send_evaluator_fixture__get_agency_returns_non_null();
+    printf("test_send_evaluator_fixture__get_agency_returns_non_null passed!\n");
+
+    printf("All send evaluator fixture tests passed!\n");
+    return 0;
+}
+```
+
+**Expected RED**: Test compiles but FAILS at marked assertion because get_agency() returns NULL (from Iteration 0.1 stub).
+
+**Run**: `make ar_send_evaluator_fixture_tests 2>&1`
+
+#### GREEN Phase
+
+```c
+// File: modules/ar_send_evaluator_fixture.c
+// Implement agency getter
+
+ar_agency_t* ar_send_evaluator_fixture__get_agency(
+    const ar_send_evaluator_fixture_t *ref_fixture
+) {
+    if (!ref_fixture || !ref_fixture->own_evaluator_fixture) {
+        return NULL;
+    }
+    return ar_evaluator_fixture__get_agency(ref_fixture->own_evaluator_fixture);
+}
+```
+
+**Expected GREEN**: Test PASSES - fixture now returns agency correctly.
+
+**Run**: `make ar_send_evaluator_fixture_tests 2>&1`
+
+#### REFACTOR Phase
+
+**Analysis**:
+1. Check for code duplication: None - simple delegation to internal fixture
+2. Check for clarity: Good - clear accessor pattern
+3. Check for edge cases: NULL checks present
+
+**Actions**: No refactoring needed - implementation is minimal and correct.
+
+**Verification**: All five tests still pass, zero memory leaks.
+
+**Run**: `make ar_send_evaluator_fixture_tests 2>&1 && grep "Actual memory leaks:" bin/run-tests/memory_report_ar_send_evaluator_fixture_tests.log`
+
+---
+
+### Iteration 0.6.1: Fixture create_and_register_delegate() returns non-NULL (RED-GREEN-REFACTOR)
+
+**Review Status**: REVIEWED
+
+**Objective**: Test that create_and_register_delegate() returns a non-NULL delegate instance.
+
+#### RED Phase
+
+```c
+// File: modules/ar_send_evaluator_fixture_tests.c
+// Add new test function
+
+static void test_send_evaluator_fixture__create_and_register_delegate_succeeds(void) {
+    // Given a send evaluator fixture
+    ar_send_evaluator_fixture_t *fixture = ar_send_evaluator_fixture__create("test_register_delegate");
+    AR_ASSERT(fixture != NULL, "Fixture creation should succeed");
+
+    // When creating and registering a delegate
+    ar_delegate_t *delegate = ar_send_evaluator_fixture__create_and_register_delegate(fixture, -1, "test_delegate");
+
+    // Then it should return a valid delegate
+    AR_ASSERT(delegate != NULL, "Delegate creation and registration should succeed");  // ← FAILS (stub returns NULL)
+
+    // Cleanup (temporary: manually destroy delegate since not registered yet)
+    ar_delegate__destroy(delegate);
+    ar_send_evaluator_fixture__destroy(fixture);
+}
+
+// Update main()
+int main(void) {
+    printf("Starting send evaluator fixture tests...\n");
+
+    test_send_evaluator_fixture__create_returns_non_null();
+    printf("test_send_evaluator_fixture__create_returns_non_null passed!\n");
+
+    test_send_evaluator_fixture__create_evaluator_returns_non_null();
+    printf("test_send_evaluator_fixture__create_evaluator_returns_non_null passed!\n");
+
+    test_send_evaluator_fixture__create_frame_returns_non_null();
+    printf("test_send_evaluator_fixture__create_frame_returns_non_null passed!\n");
+
+    test_send_evaluator_fixture__get_delegation_returns_non_null();
+    printf("test_send_evaluator_fixture__get_delegation_returns_non_null passed!\n");
+
+    test_send_evaluator_fixture__get_agency_returns_non_null();
+    printf("test_send_evaluator_fixture__get_agency_returns_non_null passed!\n");
+
+    test_send_evaluator_fixture__create_and_register_delegate_succeeds();
+    printf("test_send_evaluator_fixture__create_and_register_delegate_succeeds passed!\n");
+
+    printf("All send evaluator fixture tests passed!\n");
+    return 0;
+}
+```
+
+**Expected RED**: Test compiles but FAILS at marked assertion because create_and_register_delegate() returns NULL (from Iteration 0.1 stub).
+
+**Run**: `make ar_send_evaluator_fixture_tests 2>&1`
+
+#### GREEN Phase
+
+```c
+// File: modules/ar_send_evaluator_fixture.c
+// Implement minimal delegate creation - just enough to return non-NULL
+
+ar_delegate_t* ar_send_evaluator_fixture__create_and_register_delegate(
+    ar_send_evaluator_fixture_t *ref_fixture,
+    int64_t delegate_id,
+    const char *ref_name
+) {
+    if (!ref_fixture || !ref_fixture->own_evaluator_fixture) {
+        return NULL;
+    }
+
+    // Get log from internal fixture
+    ar_log_t *log = ar_evaluator_fixture__get_log(ref_fixture->own_evaluator_fixture);
+
+    // Create delegate and return it (minimal implementation - no registration yet)
+    // Registration will be added in Iteration 0.6.2 when we test for it
+    return ar_delegate__create(log, ref_name);
+}
+```
+
+**Expected GREEN**: Test PASSES - fixture now creates delegate (but doesn't register yet).
+
+**Run**: `make ar_send_evaluator_fixture_tests 2>&1`
+
+#### REFACTOR Phase
+
+**Analysis**:
+1. Check for code duplication: None - minimal implementation
+2. Check for clarity: Good - creates delegate but doesn't register yet (intentional)
+3. Check for edge cases: NULL checks present
+4. Check for memory leaks: Test manually destroys delegate to avoid leak (temporary until registration in 0.6.2)
+
+**Actions**: No refactoring needed - minimal implementation is clean.
+
+**Note**: The test temporarily calls `ar_delegate__destroy()` to clean up the unregistered delegate. This cleanup will be removed in Iteration 0.6.2 when registration takes over ownership.
+
+**Verification**: All six tests still pass, zero memory leaks.
+
+**Run**: `make ar_send_evaluator_fixture_tests 2>&1 && grep "Actual memory leaks:" bin/run-tests/memory_report_ar_send_evaluator_fixture_tests.log`
+
+---
+
+### Iteration 0.6.2: Delegate is registered in delegation (RED-GREEN-REFACTOR)
+
+**Review Status**: REVIEWED
+
+**Objective**: Verify that the delegate returned by create_and_register_delegate() is actually registered in the delegation.
+
+#### RED Phase
+
+```c
+// File: modules/ar_send_evaluator_fixture_tests.c
+// Modify existing test function by adding new assertion and removing manual cleanup
+
+static void test_send_evaluator_fixture__create_and_register_delegate_succeeds(void) {
+    // Given a send evaluator fixture
+    ar_send_evaluator_fixture_t *fixture = ar_send_evaluator_fixture__create("test_register_delegate");
+    AR_ASSERT(fixture != NULL, "Fixture creation should succeed");
+
+    // When creating and registering a delegate
+    ar_delegate_t *delegate = ar_send_evaluator_fixture__create_and_register_delegate(fixture, -1, "test_delegate");
+    AR_ASSERT(delegate != NULL, "Delegate creation and registration should succeed");
+
+    // Then the delegate should be registered in the delegation
+    ar_delegation_t *delegation = ar_send_evaluator_fixture__get_delegation(fixture);
+    ar_delegate_t *retrieved = ar_delegation__get_delegate(delegation, -1);
+    AR_ASSERT(retrieved == delegate, "Delegate should be registered in delegation");  // ← FAILS (new assertion)
+
+    // Cleanup (removed manual ar_delegate__destroy - delegation now owns it)
+    ar_send_evaluator_fixture__destroy(fixture);
+}
+```
+
+**Expected RED**: Test compiles but FAILS at new assertion (verifying delegate is in delegation registry).
+
+**Run**: `make ar_send_evaluator_fixture_tests 2>&1`
+
+#### GREEN Phase
+
+```c
+// File: modules/ar_send_evaluator_fixture.c
+// Add registration logic
+
+ar_delegate_t* ar_send_evaluator_fixture__create_and_register_delegate(
+    ar_send_evaluator_fixture_t *ref_fixture,
+    int64_t delegate_id,
+    const char *ref_name
+) {
+    if (!ref_fixture || !ref_fixture->own_evaluator_fixture) {
+        return NULL;
+    }
+
+    // Get dependencies from internal fixture
+    ar_log_t *log = ar_evaluator_fixture__get_log(ref_fixture->own_evaluator_fixture);
+    ar_delegation_t *mut_delegation = ar_evaluator_fixture__get_delegation(ref_fixture->own_evaluator_fixture);
+
+    // Create delegate
+    ar_delegate_t *own_delegate = ar_delegate__create(log, ref_name);
+    if (!own_delegate) {
+        return NULL;
+    }
+
+    // NOW: Register delegate (ownership transfers to delegation)
+    bool registered = ar_delegation__register_delegate(mut_delegation, delegate_id, own_delegate);
+    if (!registered) {
+        ar_delegate__destroy(own_delegate);  // Clean up if registration fails
+        return NULL;
+    }
+
+    // Return delegate for verification (delegation now owns it)
+    // Caller gets borrowed reference for verification only
+    return ar_delegation__get_delegate(mut_delegation, delegate_id);
+}
+```
+
+**Expected GREEN**: Test PASSES - delegate is now registered and can be retrieved from delegation.
+
+**Run**: `make ar_send_evaluator_fixture_tests 2>&1`
+
+#### REFACTOR Phase
+
+**Analysis**:
+1. Check for code duplication: None - encapsulates delegate creation and registration
+2. Check for clarity: Good - clear two-step process (create, register)
+3. Check for edge cases: NULL checks present, cleanup on registration failure
+4. Check for memory leaks: Delegate now properly owned by delegation - leak from 0.6.1 is fixed!
+
+**Actions**: No refactoring needed - implementation is clean.
+
+**Verification**: All six tests still pass, zero memory leaks (leak from 0.6.1 now resolved).
+
+**Run**: `make ar_send_evaluator_fixture_tests 2>&1 && grep "Actual memory leaks:" bin/run-tests/memory_report_ar_send_evaluator_fixture_tests.log`
+
+---
+
+### Iteration 0.7.1: Fixture create_and_register_agent() returns non-NULL (RED-GREEN-REFACTOR)
+
+**Review Status**: REVIEWED
+
+**Objective**: Test that create_and_register_agent() returns a non-NULL agent instance.
+
+#### RED Phase
+
+```c
+// File: modules/ar_send_evaluator_fixture_tests.c
+// Add new test function
+
+static void test_send_evaluator_fixture__create_and_register_agent_succeeds(void) {
+    // Given a send evaluator fixture
+    ar_send_evaluator_fixture_t *fixture = ar_send_evaluator_fixture__create("test_register_agent");
+    AR_ASSERT(fixture != NULL, "Fixture creation should succeed");
+
+    // When creating and registering an agent
+    ar_agent_t *agent = ar_send_evaluator_fixture__create_and_register_agent(fixture, 1, NULL);
+
+    // Then it should return a valid agent
+    AR_ASSERT(agent != NULL, "Agent creation and registration should succeed");  // ← FAILS (stub returns NULL)
+
+    // Cleanup (temporary: manually destroy agent since not registered yet)
+    ar_agent__destroy(agent);
+    ar_send_evaluator_fixture__destroy(fixture);
+}
+
+// Update main()
+int main(void) {
+    printf("Starting send evaluator fixture tests...\n");
+
+    test_send_evaluator_fixture__create_returns_non_null();
+    printf("test_send_evaluator_fixture__create_returns_non_null passed!\n");
+
+    test_send_evaluator_fixture__create_evaluator_returns_non_null();
+    printf("test_send_evaluator_fixture__create_evaluator_returns_non_null passed!\n");
+
+    test_send_evaluator_fixture__create_frame_returns_non_null();
+    printf("test_send_evaluator_fixture__create_frame_returns_non_null passed!\n");
+
+    test_send_evaluator_fixture__get_delegation_returns_non_null();
+    printf("test_send_evaluator_fixture__get_delegation_returns_non_null passed!\n");
+
+    test_send_evaluator_fixture__get_agency_returns_non_null();
+    printf("test_send_evaluator_fixture__get_agency_returns_non_null passed!\n");
+
+    test_send_evaluator_fixture__create_and_register_delegate_succeeds();
+    printf("test_send_evaluator_fixture__create_and_register_delegate_succeeds passed!\n");
+
+    test_send_evaluator_fixture__create_and_register_agent_succeeds();
+    printf("test_send_evaluator_fixture__create_and_register_agent_succeeds passed!\n");
+
+    printf("All send evaluator fixture tests passed!\n");
+    return 0;
+}
+```
+
+**Expected RED**: Test compiles but FAILS at marked assertion because create_and_register_agent() returns NULL (from Iteration 0.1 stub).
+
+**Run**: `make ar_send_evaluator_fixture_tests 2>&1`
+
+#### GREEN Phase
+
+```c
+// File: modules/ar_send_evaluator_fixture.c
+// Implement minimal agent creation - just enough to return non-NULL
+
+ar_agent_t* ar_send_evaluator_fixture__create_and_register_agent(
+    ar_send_evaluator_fixture_t *ref_fixture,
+    int64_t agent_id,
+    const char *ref_behavior
+) {
+    if (!ref_fixture || !ref_fixture->own_evaluator_fixture) {
+        return NULL;
+    }
+
+    // Get log from internal fixture
+    ar_log_t *log = ar_evaluator_fixture__get_log(ref_fixture->own_evaluator_fixture);
+
+    // Create agent and return it (minimal implementation - no registration yet)
+    // Registration will be added in Iteration 0.7.2 when we test for it
+    return ar_agent__create_with_id(agent_id, ref_behavior, log);
+}
+```
+
+**Expected GREEN**: Test PASSES - fixture now creates agent (but doesn't register yet).
+
+**Run**: `make ar_send_evaluator_fixture_tests 2>&1`
+
+#### REFACTOR Phase
+
+**Analysis**:
+1. Check for code duplication: None - minimal implementation
+2. Check for clarity: Good - creates agent but doesn't register yet (intentional)
+3. Check for edge cases: NULL checks present
+4. Check for memory leaks: Test manually destroys agent to avoid leak (temporary until registration in 0.7.2)
+
+**Actions**: No refactoring needed - minimal implementation is clean.
+
+**Note**: The test temporarily calls `ar_agent__destroy()` to clean up the unregistered agent. This cleanup will be removed in Iteration 0.7.2 when registration takes over ownership.
+
+**Verification**: All seven tests still pass, zero memory leaks.
+
+**Run**: `make ar_send_evaluator_fixture_tests 2>&1 && grep "Actual memory leaks:" bin/run-tests/memory_report_ar_send_evaluator_fixture_tests.log`
+
+---
+
+### Iteration 0.7.2: Agent is registered in agency (RED-GREEN-REFACTOR)
+
+**Review Status**: REVIEWED
+
+**Objective**: Verify that the agent returned by create_and_register_agent() is actually registered in the agency.
+
+#### RED Phase
+
+```c
+// File: modules/ar_send_evaluator_fixture_tests.c
+// Modify existing test function by adding new assertion and removing manual cleanup
+
+static void test_send_evaluator_fixture__create_and_register_agent_succeeds(void) {
+    // Given a send evaluator fixture
+    ar_send_evaluator_fixture_t *fixture = ar_send_evaluator_fixture__create("test_register_agent");
+    AR_ASSERT(fixture != NULL, "Fixture creation should succeed");
+
+    // When creating and registering an agent
+    ar_agent_t *agent = ar_send_evaluator_fixture__create_and_register_agent(fixture, 1, NULL);
+    AR_ASSERT(agent != NULL, "Agent creation and registration should succeed");
+
+    // Then the agent should be registered in the agency
+    ar_agency_t *agency = ar_send_evaluator_fixture__get_agency(fixture);
+    ar_agent_t *retrieved = ar_agency__get_agent(agency, 1);
+    AR_ASSERT(retrieved == agent, "Agent should be registered in agency");  // ← FAILS (new assertion)
+
+    // Cleanup (removed manual ar_agent__destroy - agency now owns it)
+    ar_send_evaluator_fixture__destroy(fixture);
+}
+```
+
+**Expected RED**: Test compiles but FAILS at new assertion (verifying agent is in agency registry).
+
+**Run**: `make ar_send_evaluator_fixture_tests 2>&1`
+
+#### GREEN Phase
+
+```c
+// File: modules/ar_send_evaluator_fixture.c
+// Add registration logic
+
+ar_agent_t* ar_send_evaluator_fixture__create_and_register_agent(
+    ar_send_evaluator_fixture_t *ref_fixture,
+    int64_t agent_id,
+    const char *ref_behavior
+) {
+    if (!ref_fixture || !ref_fixture->own_evaluator_fixture) {
+        return NULL;
+    }
+
+    // Get dependencies from internal fixture
+    ar_log_t *log = ar_evaluator_fixture__get_log(ref_fixture->own_evaluator_fixture);
+    ar_agency_t *mut_agency = ar_evaluator_fixture__get_agency(ref_fixture->own_evaluator_fixture);
+
+    // Create agent
+    ar_agent_t *own_agent = ar_agent__create_with_id(agent_id, ref_behavior, log);
+    if (!own_agent) {
+        return NULL;
+    }
+
+    // NOW: Register agent (ownership transfers to agency)
+    bool registered = ar_agency__register_agent(mut_agency, own_agent);
+    if (!registered) {
+        ar_agent__destroy(own_agent);  // Clean up if registration fails
+        return NULL;
+    }
+
+    // Return agent for verification (agency now owns it)
+    // Caller gets borrowed reference for verification only
+    return ar_agency__get_agent(mut_agency, agent_id);
+}
+```
+
+**Expected GREEN**: Test PASSES - agent is now registered and can be retrieved from agency.
+
+**Run**: `make ar_send_evaluator_fixture_tests 2>&1`
+
+#### REFACTOR Phase
+
+**Analysis**:
+1. Check for code duplication: None - encapsulates agent creation and registration
+2. Check for clarity: Good - clear two-step process (create, register)
+3. Check for edge cases: NULL checks present, cleanup on registration failure
+4. Check for memory leaks: Agent now properly owned by agency - leak from 0.7.1 is fixed!
+
+**Actions**: No refactoring needed - implementation is clean.
+
+**Verification**: All seven tests still pass, zero memory leaks (leak from 0.7.1 now resolved).
+
+**Run**: `make ar_send_evaluator_fixture_tests 2>&1 && grep "Actual memory leaks:" bin/run-tests/memory_report_ar_send_evaluator_fixture_tests.log`
+
+---
+
+### Iteration 0.8: Refactor existing tests to use fixture helper (REFACTOR only)
+
+**Review Status**: REVIEWED
+
+**Objective**: Update all 7 existing send evaluator tests to use the new fixture helper.
+
+#### Implementation
+
+**Step 1**: Add include to test file
+```c
+// File: modules/ar_send_instruction_evaluator_tests.c
+// Add after existing includes:
+#include "ar_send_evaluator_fixture.h"
+```
+
+**Step 2**: Update each test function (example for first test)
+```c
+// File: modules/ar_send_instruction_evaluator_tests.c
+// BEFORE:
+static void test_send_instruction_evaluator__create_destroy(void) {
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_send_create_destroy");
+    assert(own_fixture != NULL);
+
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_agency_t *mut_agency = ar_evaluator_fixture__get_agency(own_fixture);
+    ar_delegation_t *ref_delegation = ar_evaluator_fixture__get_delegation(own_fixture);
+
+    ar_send_instruction_evaluator_t *own_evaluator = ar_send_instruction_evaluator__create(
+        ref_log, ref_expr_eval, mut_agency, ref_delegation
+    );
+
+    assert(own_evaluator != NULL);
+
+    ar_send_instruction_evaluator__destroy(own_evaluator);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+// AFTER:
+static void test_send_instruction_evaluator__create_destroy(void) {
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_send_create_destroy");
+    assert(own_fixture != NULL);
+
+    // Use fixture helper - much simpler!
+    ar_send_instruction_evaluator_t *own_evaluator = ar_send_evaluator_fixture__create_evaluator(own_fixture);
+    assert(own_evaluator != NULL);
+
+    ar_send_instruction_evaluator__destroy(own_evaluator);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+```
+
+**Step 3**: Repeat for all 7 existing tests:
+1. `test_send_instruction_evaluator__create_destroy`
+2. `test_send_instruction_evaluator__evaluate_with_instance`
+3. `test_instruction_evaluator__evaluate_send_integer_message`
+4. `test_instruction_evaluator__evaluate_send_string_message`
+5. `test_instruction_evaluator__evaluate_send_with_result`
+6. `test_instruction_evaluator__evaluate_send_memory_reference`
+7. `test_instruction_evaluator__evaluate_send_invalid_args`
+
+**Verification**:
+```bash
+# Ensure all existing tests still pass after refactoring
+make ar_send_instruction_evaluator_tests 2>&1
+grep "All send instruction_evaluator tests passed!" bin/run-tests/ar_send_instruction_evaluator_tests.log
+
+# Verify no memory leaks
+grep "Actual memory leaks:" bin/run-tests/memory_report_ar_send_instruction_evaluator_tests.log
+# Expected: 0 (0 bytes)
+```
+
+**Note**: This is pure refactoring - no behavior changes, just code cleanup.
+
+---
+
+### Iteration 1.1: Send to delegate returns true (RED-GREEN-REFACTOR)
+
+**Review Status**: PENDING REVIEW
+
+**Objective**: Test that `send(-1, message)` returns true (routing succeeds).
+
+#### RED Phase
+
+**Step 1**: Add AR_ASSERT header (if not already present)
+```c
+// File: modules/ar_send_instruction_evaluator_tests.c
+// Add to includes section (after existing includes):
+#include "ar_assert.h"
+```
+
+**Step 2**: Add test function
+```c
+// File: modules/ar_send_instruction_evaluator_tests.c
+// Add new test function
+
+static void test_send_instruction_evaluator__routes_to_delegate(void) {
+    // Given a send evaluator fixture with a registered delegate
+    ar_send_evaluator_fixture_t *fixture = ar_send_evaluator_fixture__create("test_route_to_delegate");
+    AR_ASSERT(fixture != NULL, "Fixture creation should succeed");
+
+    // Register delegate using fixture helper
+    ar_delegate_t *delegate = ar_send_evaluator_fixture__create_and_register_delegate(fixture, -1, "test_delegate");
+    AR_ASSERT(delegate != NULL, "Delegate registration should succeed");
+
+    // Create evaluator and frame using fixture
+    ar_send_instruction_evaluator_t *evaluator = ar_send_evaluator_fixture__create_evaluator(fixture);
+    AR_ASSERT(evaluator != NULL, "Evaluator creation should succeed");
+
+    ar_frame_t *frame = ar_send_evaluator_fixture__create_frame(fixture);
+    AR_ASSERT(frame != NULL, "Frame creation should succeed");
+
+    // When creating a send AST node for "send(-1, \"test message\")"
+    const char *args[] = {"-1", "\"test message\""};
+    ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
+        AR_INSTRUCTION_AST_TYPE__SEND, "send", args, 2, NULL
+    );
+    AR_ASSERT(ast != NULL, "AST creation should succeed");
+
+    // Create and attach expression ASTs for arguments
+    ar_list_t *arg_asts = ar_list__create();
+    AR_ASSERT(arg_asts != NULL, "Argument list creation should succeed");
+
+    ar_expression_ast_t *delegate_id_ast = ar_expression_ast__create_literal_int(-1);
+    AR_ASSERT(delegate_id_ast != NULL, "Delegate ID AST creation should succeed");
+    ar_list__add_last(arg_asts, delegate_id_ast);
+
+    ar_expression_ast_t *msg_ast = ar_expression_ast__create_literal_string("test message");
+    AR_ASSERT(msg_ast != NULL, "Message AST creation should succeed");
+    ar_list__add_last(arg_asts, msg_ast);
+
+    bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
+    AR_ASSERT(ast_set == true, "Setting function arguments should succeed");
+
+    // When evaluating the send
+    bool result = ar_send_instruction_evaluator__evaluate(evaluator, frame, ast);
+
+    // Then it should succeed (negative ID should route to delegation)
+    AR_ASSERT(result == true, "Send to delegate should succeed");  // ← FAILS (routes to agency instead, returns false for non-existent agent -1)
+
+    // Cleanup
+    ar_instruction_ast__destroy(ast);
+    ar_send_instruction_evaluator__destroy(evaluator);
+    ar_send_evaluator_fixture__destroy(fixture);
+}
+```
+
+**Expected RED**: Test compiles but FAILS at marked assertion because negative IDs currently route to agency (which returns false for non-existent agent -1).
+
+**Run**: `make ar_send_instruction_evaluator_tests 2>&1`
+
+#### GREEN Phase
+```zig
+// File: modules/ar_send_instruction_evaluator.zig
+// Modify evaluate function (lines 124-134)
+
+// Send the message based on ID sign
+var send_result: bool = undefined;
+if (agent_id == 0) {
+    // Special case: agent_id 0 is a no-op that always returns true
+    std.debug.print("DEBUG [SEND_EVAL]: Sending to agent 0 - destroying message type={}\n", .{c.ar_data__get_type(own_message)});
+    c.ar_data__destroy_if_owned(own_message, ref_evaluator);
+    send_result = true;
+} else if (agent_id > 0) {
+    // Positive IDs route to agency (agents)
+    send_result = c.ar_agency__send_to_agent(ref_evaluator.?.ref_agency, agent_id, own_message);
+} else {
+    // Negative IDs route to delegation (delegates)
+    send_result = c.ar_delegation__send_to_delegate(ref_evaluator.?.ref_delegation, agent_id, own_message);
+}
+```
+
+**Expected GREEN**: Test PASSES - message routes to delegation correctly.
+
+**Run**: `make ar_send_instruction_evaluator_tests 2>&1`
+
+#### REFACTOR Phase
+
+**Analysis**:
+1. Check for code duplication: None - routing logic is simple and clear
+2. Check for clarity: Good - three distinct cases with comments
+3. Check for edge cases: Covered by existing ID=0 test and new negative ID test
+
+**Actions**:
+- Update comments to reflect new routing behavior
+- Ensure debug output (if any) is appropriate for both paths
+
+**Verification**: All tests still pass, zero memory leaks.
+
+**Run**: `make ar_send_instruction_evaluator_tests 2>&1 && grep "Actual memory leaks:" bin/run-tests/memory_report_ar_send_instruction_evaluator_tests.log`
+
+---
+
+### Iteration 1.2: Delegate receives message (RED-GREEN-REFACTOR)
+
+**Review Status**: PENDING REVIEW
+
+**Objective**: Test that delegate has_messages() returns true after send().
+
+#### RED Phase
+```c
+// File: modules/ar_send_instruction_evaluator_tests.c
+// Modify existing test function by adding new assertion
+
+static void test_send_instruction_evaluator__routes_to_delegate(void) {
+    // ... (all previous setup code remains the same) ...
+
+    // When evaluating the send
+    bool result = ar_send_instruction_evaluator__evaluate(evaluator, frame, ast);
+    AR_ASSERT(result == true, "Send to delegate should succeed");
+
+    // Then the delegate should have received the message
+    ar_delegation_t *delegation = ar_send_evaluator_fixture__get_delegation(fixture);
+    bool has_messages = ar_delegation__delegate_has_messages(delegation, -1);
+    AR_ASSERT(has_messages == true, "Delegate should have received message");  // ← FAILS (new assertion)
+
+    // Cleanup
+    ar_instruction_ast__destroy(ast);
+    ar_send_instruction_evaluator__destroy(evaluator);
+    ar_send_evaluator_fixture__destroy(fixture);
+}
+```
+
+**Expected RED**: Test compiles but FAILS at new assertion (has_messages check).
+
+**Run**: `make ar_send_instruction_evaluator_tests 2>&1`
+
+#### GREEN Phase
+
+**Action**: GREEN phase already done in Iteration 1.1 - the routing implementation ensures messages are delivered to delegation.
+
+**Verification**: Test should PASS without code changes.
+
+**Run**: `make ar_send_instruction_evaluator_tests 2>&1`
+
+#### REFACTOR Phase
+
+**Analysis**: No refactoring needed - assertion validates existing behavior.
+
+---
+
+### Iteration 1.3: Message can be retrieved from delegate (RED-GREEN-REFACTOR)
+
+**Review Status**: PENDING REVIEW
+
+**Objective**: Test that take_message() returns non-NULL message.
+
+#### RED Phase
+```c
+// File: modules/ar_send_instruction_evaluator_tests.c
+// Modify existing test function by adding new assertion
+
+static void test_send_instruction_evaluator__routes_to_delegate(void) {
+    // ... (all previous code remains) ...
+
+    ar_delegation_t *delegation = ar_send_evaluator_fixture__get_delegation(fixture);
+    bool has_messages = ar_delegation__delegate_has_messages(delegation, -1);
+    AR_ASSERT(has_messages == true, "Delegate should have received message");
+
+    // Verify message can be retrieved
+    ar_data_t *own_received = ar_delegation__take_delegate_message(delegation, -1);
+    AR_ASSERT(own_received != NULL, "Should be able to retrieve message from delegate");  // ← FAILS (new assertion)
+
+    // Cleanup
+    ar_data__destroy(own_received);
+    ar_instruction_ast__destroy(ast);
+    ar_send_instruction_evaluator__destroy(evaluator);
+    ar_send_evaluator_fixture__destroy(fixture);
+}
+```
+
+**Expected RED**: Test compiles but FAILS at new assertion (message retrieval check).
+
+**Run**: `make ar_send_instruction_evaluator_tests 2>&1`
+
+#### GREEN Phase
+
+**Action**: GREEN phase already done - delegation infrastructure from TDD Cycle 6.5 supports message retrieval.
+
+**Verification**: Test should PASS without code changes.
+
+**Run**: `make ar_send_instruction_evaluator_tests 2>&1`
+
+#### REFACTOR Phase
+
+**Analysis**: No refactoring needed - assertion validates message queue behavior.
+
+---
+
+### Iteration 1.4: Message type is correct (RED-GREEN-REFACTOR)
+
+**Review Status**: PENDING REVIEW
+
+**Objective**: Test that retrieved message has correct type (STRING).
+
+#### RED Phase
+```c
+// File: modules/ar_send_instruction_evaluator_tests.c
+// Modify existing test function by adding new assertion
+
+static void test_send_instruction_evaluator__routes_to_delegate(void) {
+    // ... (all previous code remains) ...
+
+    ar_data_t *own_received = ar_delegation__take_delegate_message(mut_delegation, -1);
+    AR_ASSERT(own_received != NULL, "Should be able to retrieve message from delegate");
+
+    // Verify message type
+    AR_ASSERT(ar_data__get_type(own_received) == AR_DATA_TYPE__STRING, "Message should be STRING type");  // ← FAILS (new assertion)
+
+    // Cleanup
+    ar_data__destroy(own_received);
+    ar_instruction_ast__destroy(ast);
+    ar_send_instruction_evaluator__destroy(evaluator);
+    ar_evaluator_fixture__destroy(fixture);
+}
+```
+
+**Expected RED**: Test compiles but FAILS at new assertion (type check).
+
+**Run**: `make ar_send_instruction_evaluator_tests 2>&1`
+
+#### GREEN Phase
+
+**Action**: GREEN phase already done - message type is preserved through routing.
+
+**Verification**: Test should PASS without code changes.
+
+**Run**: `make ar_send_instruction_evaluator_tests 2>&1`
+
+#### REFACTOR Phase
+
+**Analysis**: No refactoring needed - assertion validates type preservation.
+
+---
+
+### Iteration 1.5: Message content matches (RED-GREEN-REFACTOR)
+
+**Review Status**: PENDING REVIEW
+
+**Objective**: Test that retrieved message content matches sent value.
+
+#### RED Phase
+```c
+// File: modules/ar_send_instruction_evaluator_tests.c
+// Modify existing test function by adding new assertion
+
+static void test_send_instruction_evaluator__routes_to_delegate(void) {
+    // ... (all previous code remains) ...
+
+    AR_ASSERT(ar_data__get_type(own_received) == AR_DATA_TYPE__STRING, "Message should be STRING type");
+
+    // Verify message content
+    AR_ASSERT(strcmp(ar_data__get_string(own_received), "test message") == 0,
+              "Message content should match sent value");  // ← FAILS (new assertion)
+
+    // Cleanup
+    ar_data__destroy(own_received);
+    ar_instruction_ast__destroy(ast);
+    ar_send_instruction_evaluator__destroy(evaluator);
+    ar_evaluator_fixture__destroy(fixture);
+}
+```
+
+**Expected RED**: Test compiles but FAILS at new assertion (content check).
+
+**Run**: `make ar_send_instruction_evaluator_tests 2>&1`
+
+#### GREEN Phase
+
+**Action**: GREEN phase already done - message content is preserved through routing.
+
+**Verification**: Test should PASS without code changes.
+
+**Run**: `make ar_send_instruction_evaluator_tests 2>&1`
+
+#### REFACTOR Phase
+
+**Analysis**: No refactoring needed - final assertion completes test coverage for delegate routing.
+
+---
+
+### Iteration 2: Verify agent routing still works for positive IDs (RED-GREEN-REFACTOR)
+
+**Review Status**: PENDING REVIEW
+
+**Objective**: Ensure refactored routing doesn't break existing agent routing.
+
+#### RED Phase
+```c
+// File: modules/ar_send_instruction_evaluator_tests.c
+// Add new test function
+
+static void test_send_instruction_evaluator__routes_to_agent(void) {
+    // Given a send evaluator fixture with a registered agent
+    ar_send_evaluator_fixture_t *fixture = ar_send_evaluator_fixture__create("test_route_to_agent");
+    AR_ASSERT(fixture != NULL, "Fixture creation should succeed");
+
+    // Register agent using fixture helper
+    ar_agent_t *agent = ar_send_evaluator_fixture__create_and_register_agent(fixture, 1, NULL);
+    AR_ASSERT(agent != NULL, "Agent registration should succeed");
+
+    // Create evaluator and frame using fixture
+    ar_send_instruction_evaluator_t *evaluator = ar_send_evaluator_fixture__create_evaluator(fixture);
+    AR_ASSERT(evaluator != NULL, "Evaluator creation should succeed");
+
+    ar_frame_t *frame = ar_send_evaluator_fixture__create_frame(fixture);
+    AR_ASSERT(frame != NULL, "Frame creation should succeed");
+
+    // When creating a send AST node for "send(1, \"agent message\")"
+    const char *args[] = {"1", "\"agent message\""};
+    ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
+        AR_INSTRUCTION_AST_TYPE__SEND, "send", args, 2, NULL
+    );
+    AR_ASSERT(ast != NULL, "AST creation should succeed");
+
+    // Create and attach expression ASTs for arguments
+    ar_list_t *arg_asts = ar_list__create();
+    AR_ASSERT(arg_asts != NULL, "Argument list creation should succeed");
+
+    ar_expression_ast_t *agent_id_ast = ar_expression_ast__create_literal_int(1);
+    AR_ASSERT(agent_id_ast != NULL, "Agent ID AST creation should succeed");
+    ar_list__add_last(arg_asts, agent_id_ast);
+
+    ar_expression_ast_t *msg_ast = ar_expression_ast__create_literal_string("agent message");
+    AR_ASSERT(msg_ast != NULL, "Message AST creation should succeed");
+    ar_list__add_last(arg_asts, msg_ast);
+
+    bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
+    AR_ASSERT(ast_set == true, "Setting function arguments should succeed");
+
+    // When evaluating the send
+    bool result = ar_send_instruction_evaluator__evaluate(evaluator, frame, ast);
+
+    // Then it should succeed (positive ID should route to agency)
+    AR_ASSERT(result == true, "Send to agent should succeed");  // ← Test ensures routing logic works
+
+    // And the agent should have received the message
+    ar_agency_t *agency = ar_send_evaluator_fixture__get_agency(fixture);
+    bool has_messages = ar_agency__agent_has_messages(agency, 1);
+    AR_ASSERT(has_messages == true, "Agent should have received message");
+
+    // Verify message content and type
+    ar_data_t *own_received = ar_agency__take_agent_message(agency, 1);
+    AR_ASSERT(own_received != NULL, "Should be able to retrieve message from agent");
+    AR_ASSERT(ar_data__get_type(own_received) == AR_DATA_TYPE__STRING, "Message should be STRING type");
+    AR_ASSERT(strcmp(ar_data__get_string(own_received), "agent message") == 0,
+              "Message content should match sent value");
+
+    // Cleanup
+    ar_data__destroy(own_received);
+    ar_instruction_ast__destroy(ast);
+    ar_send_instruction_evaluator__destroy(evaluator);
+    ar_send_evaluator_fixture__destroy(fixture);
+}
+```
+
+**Expected RED**: Test compiles. Since this is a defensive test and the GREEN implementation from Iteration 1 includes `agent_id > 0` branch, this test will PASS immediately after Iteration 1's GREEN phase completes.
+
+**Run**: `make ar_send_instruction_evaluator_tests 2>&1`
+
+#### GREEN Phase
+
+**Action**: GREEN phase already done in Iteration 1 - the `agent_id > 0` branch handles this.
+
+**Verification**: Test should PASS without code changes.
+
+**Run**: `make ar_send_instruction_evaluator_tests 2>&1`
+
+#### REFACTOR Phase
+
+**Analysis**: No refactoring needed - this iteration validates existing behavior.
+
+---
+
+### Iteration 3: Handle non-existent delegate gracefully (RED-GREEN-REFACTOR)
+
+**Review Status**: PENDING REVIEW
+
+**Objective**: Verify that sending to a non-registered delegate ID returns false.
+
+#### RED Phase
+```c
+// File: modules/ar_send_instruction_evaluator_tests.c
+// Add new test function
+
+static void test_send_instruction_evaluator__nonexistent_delegate_returns_false(void) {
+    // Given a send evaluator fixture WITHOUT registering any delegates
+    ar_send_evaluator_fixture_t *fixture = ar_send_evaluator_fixture__create("test_nonexistent_delegate");
+    AR_ASSERT(fixture != NULL, "Fixture creation should succeed");
+
+    // Create evaluator and frame using fixture
+    ar_send_instruction_evaluator_t *evaluator = ar_send_evaluator_fixture__create_evaluator(fixture);
+    AR_ASSERT(evaluator != NULL, "Evaluator creation should succeed");
+
+    ar_frame_t *frame = ar_send_evaluator_fixture__create_frame(fixture);
+    AR_ASSERT(frame != NULL, "Frame creation should succeed");
+
+    // When creating a send AST node for "send(-99, \"message\")" (delegate -99 doesn't exist)
+    const char *args[] = {"-99", "\"message\""};
+    ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
+        AR_INSTRUCTION_AST_TYPE__SEND, "send", args, 2, NULL
+    );
+    AR_ASSERT(ast != NULL, "AST creation should succeed");
+
+    // Create and attach expression ASTs for arguments
+    ar_list_t *arg_asts = ar_list__create();
+    AR_ASSERT(arg_asts != NULL, "Argument list creation should succeed");
+
+    ar_expression_ast_t *delegate_id_ast = ar_expression_ast__create_literal_int(-99);
+    AR_ASSERT(delegate_id_ast != NULL, "Delegate ID AST creation should succeed");
+    ar_list__add_last(arg_asts, delegate_id_ast);
+
+    ar_expression_ast_t *msg_ast = ar_expression_ast__create_literal_string("message");
+    AR_ASSERT(msg_ast != NULL, "Message AST creation should succeed");
+    ar_list__add_last(arg_asts, msg_ast);
+
+    bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
+    AR_ASSERT(ast_set == true, "Setting function arguments should succeed");
+
+    // When evaluating the send to non-existent delegate
+    bool result = ar_send_instruction_evaluator__evaluate(evaluator, frame, ast);
+
+    // Then it should fail (return false) for non-existent delegate
+    AR_ASSERT(result == false, "Send to non-existent delegate should return false");  // ← Test verifies error handling
+
+    // Verify no messages were queued anywhere
+    ar_delegation_t *delegation = ar_send_evaluator_fixture__get_delegation(fixture);
+    bool delegate_has_messages = ar_delegation__delegate_has_messages(delegation, -99);
+    AR_ASSERT(delegate_has_messages == false, "Non-existent delegate should have no messages");
+
+    // Cleanup
+    ar_instruction_ast__destroy(ast);
+    ar_send_instruction_evaluator__destroy(evaluator);
+    ar_send_evaluator_fixture__destroy(fixture);
+}
+```
+
+**Expected RED**: Test compiles and should PASS immediately after Iteration 1's GREEN phase because `ar_delegation__send_to_delegate()` already handles non-existent delegates (returns false). This is a defensive test verifying error handling.
+
+**Run**: `make ar_send_instruction_evaluator_tests 2>&1`
+
+#### GREEN Phase
+
+**Action**: GREEN phase already done - `ar_delegation__send_to_delegate()` handles this case correctly (destroys message and returns false when delegate not found).
+
+**Verification**: Test should PASS without code changes.
+
+**Run**: `make ar_send_instruction_evaluator_tests 2>&1`
+
+#### REFACTOR Phase
+
+**Analysis**: No refactoring needed - this iteration validates error handling.
+
+---
+
+### Iteration 4: Update test main() and documentation (RED-GREEN-REFACTOR)
+
+**Review Status**: PENDING REVIEW
+
+**Objective**: Add new tests to main() and update module documentation.
+
+#### RED Phase
+
+N/A - This is a documentation/integration iteration, not a behavior test.
+
+#### GREEN Phase
+
+**Action 1**: Add new test calls to main()
+```c
+// File: modules/ar_send_instruction_evaluator_tests.c
+// Update main() function (around line 348)
+
+int main(void) {
+    printf("Starting send instruction_evaluator tests...\n");
+
+    // Existing tests...
+    test_send_instruction_evaluator__create_destroy();
+    printf("test_send_instruction_evaluator__create_destroy passed!\n");
+
+    test_send_instruction_evaluator__evaluate_with_instance();
+    printf("test_send_instruction_evaluator__evaluate_with_instance passed!\n");
+
+    test_instruction_evaluator__evaluate_send_integer_message();
+    printf("test_instruction_evaluator__evaluate_send_integer_message passed!\n");
+
+    test_instruction_evaluator__evaluate_send_string_message();
+    printf("test_instruction_evaluator__evaluate_send_string_message passed!\n");
+
+    test_instruction_evaluator__evaluate_send_with_result();
+    printf("test_instruction_evaluator__evaluate_send_with_result passed!\n");
+
+    test_instruction_evaluator__evaluate_send_memory_reference();
+    printf("test_instruction_evaluator__evaluate_send_memory_reference passed!\n");
+
+    test_instruction_evaluator__evaluate_send_invalid_args();
+    printf("test_instruction_evaluator__evaluate_send_invalid_args passed!\n");
+
+    // NEW TESTS FOR TDD CYCLE 7
+    test_send_instruction_evaluator__routes_to_delegate();
+    printf("test_send_instruction_evaluator__routes_to_delegate passed!\n");
+
+    test_send_instruction_evaluator__routes_to_agent();
+    printf("test_send_instruction_evaluator__routes_to_agent passed!\n");
+
+    test_send_instruction_evaluator__nonexistent_delegate_returns_false();
+    printf("test_send_instruction_evaluator__nonexistent_delegate_returns_false passed!\n");
+
+    printf("All send instruction_evaluator tests passed!\n");
+
+    return 0;
+}
+```
+
+**Action 2**: Update module documentation
+```markdown
+<!-- File: modules/ar_send_instruction_evaluator.md -->
+<!-- Add new section after existing routing description -->
+
+## Message Routing Architecture
+
+The send instruction evaluator implements **ID-based message routing** following the pattern documented in [id-based-message-routing-pattern.md](../kb/id-based-message-routing-pattern.md):
+
+### Routing Rules
+
+| Target ID | Destination | Function Called |
+|-----------|-------------|-----------------|
+| `0` | No-op (message destroyed) | N/A - returns `true` |
+| `> 0` | Agent via agency | `ar_agency__send_to_agent()` |
+| `< 0` | Delegate via delegation | `ar_delegation__send_to_delegate()` |
+
+### Example Usage
+
+```c
+// Send to agent ID 1
+send(1, "message to agent")
+
+// Send to delegate ID -1 (e.g., FileDelegate)
+send(-1, {"action": "read", "path": "data.txt"})
+
+// Send to agent 0 (no-op, always succeeds)
+send(0, "discarded message")
+```
+
+### Error Handling
+
+- **Non-existent agent/delegate**: Returns `false`, message is destroyed
+- **Invalid agent_id expression**: Returns `false`, message is destroyed
+- **Message ownership**: Evaluator claims or copies message before routing
+- **Result assignment**: If present, stores `1` (true) or `0` (false) in memory
+```
+
+**Verification**: Run `make check-docs` to validate documentation updates.
+
+#### REFACTOR Phase
+
+**Analysis**: Check for any remaining debug output that should be removed or updated.
+
+**Action**: Review and clean up any temporary debug statements.
+
+---
+
+## Success Criteria
+
+- [x] All existing tests continue to pass (7 existing tests)
+- [ ] Three new tests pass:
+  - `test_send_instruction_evaluator__routes_to_delegate` - Negative ID routing
+  - `test_send_instruction_evaluator__routes_to_agent` - Positive ID routing
+  - `test_send_instruction_evaluator__nonexistent_delegate_returns_false` - Error handling
+- [ ] Zero memory leaks: `grep "Actual memory leaks: 0" bin/run-tests/memory_report_ar_send_instruction_evaluator_tests.log`
+- [ ] Build passes: `make clean build 2>&1 | tee build.log && grep -i "error" build.log` (should be empty)
+- [ ] Documentation updated and validated: `make check-docs`
+
+## Verification Steps
+
+After completing all iterations:
+
+```bash
+# 1. Build and run tests
+make ar_send_instruction_evaluator_tests 2>&1
+
+# 2. Check memory leaks
+grep "Actual memory leaks:" bin/run-tests/memory_report_ar_send_instruction_evaluator_tests.log
+
+# 3. Expected output: "0 (0 bytes)"
+
+# 4. Verify all 10 tests pass (7 existing + 3 new)
+grep -c "passed!" bin/run-tests/ar_send_instruction_evaluator_tests.log
+# Expected: 10
+
+# 5. Validate documentation
+make check-docs
+
+# 6. Full build verification
+make clean build 2>&1 | tee build.log
+
+# 7. Run full test suite
+make run-tests 2>&1 | tee test_suite.log
+
+# 8. Check for any regression
+grep "tests passed" test_suite.log
+# Expected: All tests passing (should be 81 tests: 78 existing + 3 new)
+```
+
+## Rollback Strategy
+
+If issues arise during implementation:
+
+```bash
+# 1. Stash changes
+git stash save "TDD Cycle 7 - partial work"
+
+# 2. Verify clean state
+make clean build 2>&1
+make run-tests 2>&1
+
+# 3. Review stashed changes
+git stash show -p
+
+# 4. Restore if needed
+git stash pop
+```
+
+## Files Modified
+
+### Test Infrastructure (Iteration 0)
+1. `modules/ar_send_evaluator_fixture.h` (NEW) - Fixture helper header
+2. `modules/ar_send_evaluator_fixture.c` (NEW) - Fixture helper implementation
+3. `modules/ar_send_instruction_evaluator_tests.c` - Update existing tests to use fixture helper
+
+### Production Code (Iteration 1.1)
+4. `modules/ar_send_instruction_evaluator.zig` (lines 124-134) - Add ID-based routing logic
+
+### Test Code (Iterations 1.1-3)
+5. `modules/ar_send_instruction_evaluator_tests.c` - Add 3 new test functions + update main()
+
+### Documentation (Iteration 4)
+6. `modules/ar_send_instruction_evaluator.md` - Add routing architecture section
+
+## Dependencies
+
+### KB Articles
+- [ID-Based Message Routing Pattern](../kb/id-based-message-routing-pattern.md)
+- [Message Ownership Flow](../kb/message-ownership-flow.md)
+- [TDD Iteration Planning Pattern](../kb/tdd-iteration-planning-pattern.md)
+- [TDD RED Phase Assertion Requirement](../kb/tdd-red-phase-assertion-requirement.md)
+- [AR_ASSERT for Descriptive Failures](../kb/ar-assert-descriptive-failures.md)
+- [Test Assertion Strength Patterns](../kb/test-assertion-strength-patterns.md)
+
+### Modules
+- `ar_delegation` (peer to ar_agency, manages delegates)
+- `ar_agency` (manages agents, existing behavior)
+- `ar_delegate` (message queue infrastructure from TDD Cycle 6.5)
+
+## Risks and Mitigations
+
+| Risk | Impact | Mitigation |
+|------|--------|------------|
+| Breaking existing agent routing | HIGH | Iteration 2 explicitly tests positive IDs; all existing tests use agent_id=0 or positive |
+| Memory leaks in error paths | MEDIUM | ar_delegation__send_to_delegate() handles message cleanup on failure |
+| Fixture doesn't support delegates | MEDIUM | ar_evaluator_fixture already provides get_delegation() (verified in existing test code) |
+
+## Next Steps After Completion
+
+After TDD Cycle 7 completes successfully:
+
+1. **Commit** with message referencing TDD Cycle 7 completion
+2. **Update TODO.md**: Mark TDD Cycle 7 complete, note TDD Cycle 8 is next
+3. **Move to TDD Cycle 8**: Begin FileDelegate implementation (first built-in delegate)
+4. **Update CHANGELOG.md**: Add entry for delegate routing completion
+
+## Estimated Timeline
+
+- Iteration 0.1 (Fixture returns non-NULL): 15-20 minutes
+- Iteration 0.2 (create_evaluator() returns non-NULL): 10-15 minutes
+- Iteration 0.3 (create_frame() returns non-NULL): 10-15 minutes
+- Iteration 0.4 (Refactor existing tests): 30-45 minutes
+- Iteration 1.1 (Send returns true): 15-20 minutes
+- Iteration 1.2 (Has messages): 10-15 minutes
+- Iteration 1.3 (Message retrieval): 10-15 minutes
+- Iteration 1.4 (Message type): 10-15 minutes
+- Iteration 1.5 (Message content): 10-15 minutes
+- Iteration 2 (Agent routing verification): 30-45 minutes
+- Iteration 3 (Error handling): 20-30 minutes
+- Iteration 4 (Documentation): 30-45 minutes
+- **Total**: ~4-5 hours
+
+## Notes
+
+- **No commits during iterations**: Commit only after ALL 4 iterations complete
+- **Minimal GREEN implementations**: Don't add features not tested
+- **Refactor is MANDATORY**: Even if "No improvements identified", must explicitly state this
+- **Debug output**: Keep or remove debug print statement at line 128 based on preference (currently helps with tracing)

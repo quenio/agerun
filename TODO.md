@@ -1406,6 +1406,13 @@ Once all modules are migrated to Zig with C-ABI compatibility, identify internal
   - **Result**: Delegates can receive and queue messages, ready for routing implementation in Cycle 7
 
 - [ ] **TDD Cycle 7**: Update evaluators to route messages via delegation
+  - [x] **Plan Created**: See `plans/tdd_cycle_7_plan.md` for complete iteration breakdown
+  - [ ] **Complete plan review**: Review iterations 1.1 through 4 (iterations 0.1-0.8 already reviewed)
+  - [ ] **Follow plan**: Execute `plans/tdd_cycle_7_plan.md` in order starting from iteration 0.1
+    - Create ar_send_evaluator_fixture module (iterations 0.1-0.8)
+    - Implement ID-based routing in ar_send_instruction_evaluator.zig (iteration 1.1)
+    - Add comprehensive routing tests (iterations 1.2-3)
+    - Update documentation (iteration 4)
   - **RED**: Write test for send evaluator routing negative IDs to delegation → FAIL
   - **GREEN**: Send evaluator checks ID: >= 0 routes to agency, < 0 routes to delegation
   - **GREEN**: Delegation handles message delivery to delegates
