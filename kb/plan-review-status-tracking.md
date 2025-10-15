@@ -1,14 +1,14 @@
 # Plan Review Status Tracking Pattern
 
 ## Learning
-When reviewing large TDD plans that span multiple sessions, use explicit status markers (REVIEWED/PENDING REVIEW) at the section level to track progress. This prevents re-reviewing already-approved sections and provides clear visual indication of what still needs attention. Status is tracked using inline markers directly in the plan document.
+When reviewing large TDD plans that span multiple sessions, use explicit status markers (REVIEWED/PENDING REVIEW) at the cycle level to track progress. This prevents re-reviewing already-approved cycles and provides clear visual indication of what still needs attention. Status is tracked using inline markers directly in the plan document.
 
 ## Importance
-Large TDD plans (15+ iterations) cannot be reviewed in a single session due to cognitive load and time constraints. Without explicit tracking, reviewers must either re-read the entire document (wasting time) or rely on memory (risking missed issues). Status markers enable incremental review while maintaining quality and providing clear handoff points between sessions.
+Large TDD plans (15+ iterations) cannot be reviewed in a single session due to cognitive load and time constraints. Without explicit tracking, reviewers must either re-read the entire document (wasting time) or rely on memory (risking missed issues). Status markers enable incremental review while maintaining quality and providing clear handoff points between review sessions.
 
 ## Example
 ```markdown
-### Phase 0: Initial Fixture Setup - REVIEWED
+### Cycle 0: Initial Fixture Setup - REVIEWED
 
 #### Iteration 0.1: Basic fixture creation - REVIEWED
 **RED Phase:**
@@ -37,7 +37,7 @@ ar_agent_store_fixture_t* ar_agent_store_fixture__create_empty(void) {
 // ... (implementation details)
 
 
-### Phase 1: Delegation Infrastructure - PENDING REVIEW
+### Cycle 1: Delegation Infrastructure - PENDING REVIEW
 
 #### Iteration 0.5: get_agent_count() works - PENDING REVIEW
 **RED Phase:**
@@ -72,13 +72,13 @@ Use status markers when:
 ### Status Marker Conventions
 
 **Two-Level Tracking:**
-1. **Section Level** - Phase or major grouping
-   - Format: `### Phase N: Description - STATUS`
-   - Applied to major sections that group related iterations
+1. **Cycle Level** - Major grouping of related iterations
+   - Format: `### Cycle N: Description - STATUS`
+   - Applied to cycles that group related iterations
 
 2. **Iteration Level** - Individual TDD iteration
    - Format: `#### Iteration N.M: Description - STATUS`
-   - Applied to each iteration within a section
+   - Applied to each iteration within a cycle
 
 **Status Values:**
 - `REVIEWED` - Approved, ready for implementation
@@ -88,23 +88,23 @@ Use status markers when:
 ### Status Progression Rules
 
 ```markdown
-# Rule 1: Start all sections as PENDING REVIEW
-### Phase 0: Initial Setup - PENDING REVIEW
+# Rule 1: Start all cycles as PENDING REVIEW
+### Cycle 0: Initial Setup - PENDING REVIEW
 #### Iteration 0.1: Basic creation - PENDING REVIEW
 
 # Rule 2: Mark iterations REVIEWED only after explicit approval
-### Phase 0: Initial Setup - PENDING REVIEW  # Section still pending
+### Cycle 0: Initial Setup - PENDING REVIEW  # Cycle still pending
 #### Iteration 0.1: Basic creation - REVIEWED  # This iteration approved
 
-# Rule 3: Mark section REVIEWED only when ALL iterations within it are REVIEWED
-### Phase 0: Initial Setup - REVIEWED  # All iterations 0.1-0.4 approved
+# Rule 3: Mark cycle REVIEWED only when ALL iterations within it are REVIEWED
+### Cycle 0: Initial Setup - REVIEWED  # All iterations 0.1-0.4 approved
 #### Iteration 0.1: Basic creation - REVIEWED
 #### Iteration 0.2: Ownership - REVIEWED
 #### Iteration 0.3: Cleanup - REVIEWED
 #### Iteration 0.4: Validation - REVIEWED
 
 # Rule 4: If iteration changes after REVIEWED, mark as REVISED
-### Phase 0: Initial Setup - REVISED  # Contains revised iteration
+### Cycle 0: Initial Setup - REVISED  # Contains revised iteration
 #### Iteration 0.1: Basic creation - REVIEWED
 #### Iteration 0.2: Ownership - REVISED  # Changed after review
 ```
@@ -116,19 +116,19 @@ Use status markers when:
 # 1. Check current status
 grep -E "(REVIEWED|PENDING|REVISED)" plans/tdd_cycle_N_plan.md
 
-# 2. Find first PENDING section
+# 2. Find first PENDING cycle
 grep -n "PENDING REVIEW" plans/tdd_cycle_N_plan.md | head -1
 
-# 3. Jump to that section and begin review
+# 3. Jump to that cycle and begin review
 ```
 
 **During Review:**
-1. Review section thoroughly
+1. Review cycle thoroughly
 2. Request changes if needed
 3. Wait for updates
 4. Once satisfied, mark iteration as REVIEWED
 5. Move to next PENDING iteration
-6. When all iterations in section are REVIEWED, mark section REVIEWED
+6. When all iterations in cycle are REVIEWED, mark cycle REVIEWED
 
 **Ending a Review Session:**
 ```bash
@@ -136,12 +136,12 @@ grep -n "PENDING REVIEW" plans/tdd_cycle_N_plan.md | head -1
 git commit -m "docs: review TDD Cycle 7 iterations 0.1-0.4 (fixture infrastructure)
 
 Reviewed and approved:
-- Phase 0: Initial Fixture Setup (iterations 0.1-0.4)
+- Cycle 0: Initial Fixture Setup (iterations 0.1-0.4)
 - Split iteration 0.6 into 0.6.1/0.6.2 per TDD minimalism
 
 Remaining:
-- Phase 1: Delegation Infrastructure (iterations 0.5-0.8)
-- Phases 2-4 (iterations 0.9-1.5)
+- Cycle 1: Delegation Infrastructure (iterations 0.5-0.8)
+- Cycles 2-4 (iterations 0.9-1.5)
 
 Status: 4/15 iterations reviewed (27% complete)"
 ```
@@ -157,7 +157,7 @@ cat > plans/tdd_cycle_N_plan.md << 'EOF'
 
 ## Plan Status: DRAFT - PENDING REVIEW
 
-### Phase 0: Setup - PENDING REVIEW
+### Cycle 0: Setup - PENDING REVIEW
 
 #### Iteration 0.1: Basic creation - PENDING REVIEW
 **RED Phase:**
@@ -179,8 +179,8 @@ sed -i '' 's/Iteration 0.1: Basic creation - PENDING REVIEW/Iteration 0.1: Basic
 # Mark single iteration as REVIEWED
 sed -i '' 's/Iteration 0.3: Description - PENDING REVIEW/Iteration 0.3: Description - REVIEWED/' plan.md
 
-# Mark entire section as REVIEWED (after all iterations approved)
-sed -i '' 's/Phase 0: Setup - PENDING REVIEW/Phase 0: Setup - REVIEWED/' plan.md
+# Mark entire cycle as REVIEWED (after all iterations approved)
+sed -i '' 's/Cycle 0: Setup - PENDING REVIEW/Cycle 0: Setup - REVIEWED/' plan.md
 
 # Mark iteration as REVISED (after changes)
 sed -i '' 's/Iteration 0.2: Description - REVIEWED/Iteration 0.2: Description - REVISED/' plan.md
@@ -206,10 +206,10 @@ echo "Progress: $reviewed/$total iterations reviewed ($percentage% complete)"
 ### Before Committing Plan Updates
 
 ```bash
-# Verify all sections have status markers
-missing_section_status=$(grep "^### " plans/tdd_cycle_N_plan.md | grep -v -E "(REVIEWED|PENDING|REVISED)" | wc -l)
-if [ "$missing_section_status" -gt 0 ]; then
-    echo "ERROR: $missing_section_status sections missing status markers"
+# Verify all cycles have status markers
+missing_cycle_status=$(grep "^### " plans/tdd_cycle_N_plan.md | grep -v -E "(REVIEWED|PENDING|REVISED)" | wc -l)
+if [ "$missing_cycle_status" -gt 0 ]; then
+    echo "ERROR: $missing_cycle_status cycles missing status markers"
     grep "^### " plans/tdd_cycle_N_plan.md | grep -v -E "(REVIEWED|PENDING|REVISED)"
     exit 1
 fi
@@ -222,32 +222,32 @@ if [ "$missing_iteration_status" -gt 0 ]; then
     exit 1
 fi
 
-echo "✅ All sections and iterations have status markers"
+echo "✅ All cycles and iterations have status markers"
 ```
 
-### Section Consistency Check
+### Cycle Consistency Check
 
 ```bash
-# Verify section status matches iteration statuses
-# If all iterations in section are REVIEWED, section should be REVIEWED
+# Verify cycle status matches iteration statuses
+# If all iterations in cycle are REVIEWED, cycle should be REVIEWED
 
-check_section_consistency() {
+check_cycle_consistency() {
     local plan_file="$1"
-    local current_section=""
-    local section_status=""
+    local current_cycle=""
+    local cycle_status=""
     local all_iterations_reviewed=true
 
     while IFS= read -r line; do
         if [[ "$line" =~ ^###[[:space:]](.+)[[:space:]]-[[:space:]](REVIEWED|PENDING|REVISED) ]]; then
-            # New section found
-            if [ -n "$current_section" ]; then
-                # Check previous section
-                if $all_iterations_reviewed && [ "$section_status" != "REVIEWED" ]; then
-                    echo "WARNING: Section '$current_section' has all iterations REVIEWED but section is $section_status"
+            # New cycle found
+            if [ -n "$current_cycle" ]; then
+                # Check previous cycle
+                if $all_iterations_reviewed && [ "$cycle_status" != "REVIEWED" ]; then
+                    echo "WARNING: Cycle '$current_cycle' has all iterations REVIEWED but cycle is $cycle_status"
                 fi
             fi
-            current_section="${BASH_REMATCH[1]}"
-            section_status="${BASH_REMATCH[2]}"
+            current_cycle="${BASH_REMATCH[1]}"
+            cycle_status="${BASH_REMATCH[2]}"
             all_iterations_reviewed=true
 
         elif [[ "$line" =~ ^####[[:space:]]Iteration.*[[:space:]]-[[:space:]](REVIEWED|PENDING|REVISED) ]]; then
@@ -259,7 +259,7 @@ check_section_consistency() {
     done < "$plan_file"
 }
 
-check_section_consistency plans/tdd_cycle_N_plan.md
+check_cycle_consistency plans/tdd_cycle_N_plan.md
 ```
 
 ## Related Patterns
