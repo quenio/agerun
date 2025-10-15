@@ -2,6 +2,25 @@
 
 This document defines the core concepts, terminology, and organizational principles used throughout the AgeRun project. These concepts form the foundation for understanding the project's architecture, development workflows, and documentation structure.
 
+## Table of Contents
+
+- [TDD Planning Hierarchy](#tdd-planning-hierarchy)
+- [Command/Checkpoint Hierarchy](#commandcheckpoint-hierarchy)
+- [API Evolution Terms](#api-evolution-terms)
+- [Memory Management Terms](#memory-management-terms)
+- [Module Organization Terms](#module-organization-terms)
+- [Testing Terms](#testing-terms)
+- [Documentation Terms](#documentation-terms)
+- [Terminology Anti-Patterns](#terminology-anti-patterns)
+- [Agent System Concepts](#agent-system-concepts)
+- [Build & Verification Concepts](#build--verification-concepts)
+- [File Naming Conventions](#file-naming-conventions)
+- [Data Type Concepts](#data-type-concepts)
+- [Semantic Versioning](#semantic-versioning)
+- [Workflow Status Markers](#workflow-status-markers)
+- [Quick Reference](#quick-reference)
+- [Related Documentation](#related-documentation)
+
 ## TDD Planning Hierarchy
 
 ### Cycle
