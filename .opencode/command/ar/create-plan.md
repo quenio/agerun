@@ -1,0 +1,1057 @@
+Create a TDD plan document following strict methodology patterns and best practices.
+
+**MANDATORY**: This command MUST use checkpoint tracking. Start by running the checkpoint initialization below. ([details](../../../kb/unmissable-documentation-pattern.md))
+
+## KB Consultation Required
+
+Before creating any plan ([details](../../../kb/kb-consultation-before-planning-requirement.md)):
+1. Search: `grep "plan.*iteration\|TDD.*minimalism\|plan.*refinement" kb/README.md`
+2. Read these KB articles IN FULL using the Read tool:
+   - `kb/tdd-iteration-planning-pattern.md`
+   - `kb/tdd-plan-iteration-split-pattern.md`
+   - `kb/tdd-green-phase-minimalism.md`
+   - `kb/tdd-red-phase-assertion-requirement.md`
+   - `kb/temporary-test-cleanup-pattern.md`
+   - `kb/plan-review-status-tracking.md`
+   - `kb/section-by-section-review-protocol.md`
+   - `kb/iterative-plan-refinement-pattern.md`
+   - `kb/bdd-test-structure.md`
+   - `kb/ownership-naming-conventions.md`
+3. Check Related Patterns sections in each article and read any additional relevant articles found there
+4. In your response, quote these specific items from the KB:
+   - The one-assertion-per-iteration principle
+   - When to use hardcoded returns in GREEN phase
+   - The temporary cleanup comment format (MANDATORY)
+   - The BDD test structure sections (Given/When/Then/Cleanup)
+   - The ownership prefix conventions (own_, ref_, mut_)
+
+**Example of proper KB consultation:**
+```
+I've read tdd-iteration-planning-pattern.md which states:
+
+"Each TDD iteration should test exactly ONE assertion. When planning TDD work,
+count the number of assertions needed, not the number of features."
+
+And tdd-green-phase-minimalism.md which requires:
+
+"The GREEN phase should implement ONLY enough code to pass the specific assertion
+being tested, even if that means hardcoded return values. Later iterations force
+proper implementation by introducing new requirements."
+
+The temporary cleanup format from temporary-test-cleanup-pattern.md is:
+// Cleanup (temporary: manually destroy X since not registered yet)
+
+BDD structure from bdd-test-structure.md:
+// Given [setup state]
+// When [action being tested]
+// Then [verification]
+// Cleanup
+```
+
+**CRITICAL**: If you skip reading these KB articles, the plan will violate TDD methodology and require extensive revision.
+
+# Create Plan
+
+## ⚠️ REQUIRED: Initialize Checkpoint Tracking First
+
+**DO NOT PROCEED WITHOUT RUNNING THIS COMMAND:**
+
+```bash
+# MANDATORY: Initialize checkpoint tracking (14 steps)
+make checkpoint-init CMD=create-plan STEPS='"KB Consultation" "Gather Requirements" "Identify Behaviors" "Count Assertions" "Define Phases" "Plan Iterations" "Structure RED Phases" "Structure GREEN Phases" "Add Cleanup" "Add Status Markers" "Add Cross-References" "Validate Plan" "Save Plan" "Summary"'
+```
+
+This command uses checkpoint tracking to ensure systematic plan creation. The creation process is divided into 4 major phases with 14 checkpoints total.
+
+**Expected output:**
+```
+========================================
+   CHECKPOINT TRACKING INITIALIZED
+========================================
+
+Command: create-plan
+Tracking file: /tmp/create-plan_progress.txt
+Total steps: 14
+
+Steps to complete:
+  1. KB Consultation
+  2. Gather Requirements
+  3. Identify Behaviors
+  4. Count Assertions
+  5. Define Phases
+  6. Plan Iterations
+  7. Structure RED Phases
+  8. Structure GREEN Phases
+  9. Add Cleanup
+  10. Add Status Markers
+  11. Add Cross-References
+  12. Validate Plan
+  13. Save Plan
+  14. Summary
+```
+
+### Check Progress
+```bash
+make checkpoint-status CMD=create-plan
+```
+
+**Expected output (example at 50% completion):**
+```
+📈 create-plan: 7/14 steps (50%)
+   [██████████░░░░░░░░░░] 50%
+→ Next: make checkpoint-update CMD=create-plan STEP=8
+```
+
+### What it does
+
+This command creates TDD plan documents following strict methodology:
+
+#### 1. Requirements Analysis
+- **Behavior identification**: List all expected behaviors
+- **Assertion counting**: One assertion per iteration
+- **Phase organization**: Group related behaviors (3-5 iterations per phase)
+- **API design**: Ensure return types enable verification
+
+#### 2. Iteration Structure
+- **One assertion per iteration**: Never bundle multiple behaviors ([details](../../../kb/tdd-iteration-planning-pattern.md))
+- **Decimal numbering**: Use N.1, N.2 for splits, not renumbering ([details](../../../kb/tdd-plan-iteration-split-pattern.md))
+- **RED phase clarity**: Every iteration shows explicit failure (// ← FAILS)
+- **GREEN minimalism**: Hardcoded returns valid ([details](../../../kb/tdd-green-phase-minimalism.md))
+
+#### 3. Memory Management
+- **Temporary cleanup**: .1 iterations need manual cleanup ([details](../../../kb/temporary-test-cleanup-pattern.md))
+- **Zero leak policy**: Every iteration verified for leaks
+- **Ownership semantics**: Proper own_, ref_, mut_ prefixes ([details](../../../kb/ownership-naming-conventions.md))
+
+#### 4. Documentation and Tracking
+- **Status markers**: PENDING REVIEW for all iterations initially ([details](../../../kb/plan-review-status-tracking.md))
+- **BDD structure**: Given/When/Then/Cleanup throughout ([details](../../../kb/bdd-test-structure.md))
+- **Real types**: Use actual AgeRun types (ar_*_t) not placeholders
+- **Cross-references**: Link to relevant KB articles
+
+### Execution Order (MANDATORY)
+
+1. **FIRST**: Run the checkpoint initialization command above
+2. **SECOND**: Follow the creation process below, updating checkpoints after each step
+3. **THIRD**: Check progress with `make checkpoint-status CMD=create-plan`
+4. **FOURTH**: Complete all 14 steps before saving plan
+5. **LAST**: Clean up with `make checkpoint-cleanup CMD=create-plan`
+
+### Usage
+
+```bash
+/create-plan <feature-name> <output-file>
+```
+
+**Example:**
+```bash
+/create-plan "message queue infrastructure" plans/tdd_cycle_7_plan.md
+```
+
+**IMPORTANT**: Running `/create-plan` alone is NOT sufficient. You MUST initialize checkpoints first as shown above.
+
+## Plan Creation Process
+
+### Phase 1: Requirements and Analysis (Steps 1-5)
+
+#### [CHECKPOINT START - PHASE 1]
+
+#### Checkpoint 1: KB Consultation
+
+**Mandatory KB Reading:**
+Read all 10 KB articles listed above and quote the 5 specific items.
+
+```bash
+# After completing KB consultation
+make checkpoint-update CMD=create-plan STEP=1
+```
+
+#### Checkpoint 2: Gather Requirements
+
+**Collect feature requirements:**
+- [ ] What is the feature name?
+- [ ] What is the main objective?
+- [ ] What existing modules/types will be used?
+- [ ] What new modules/types will be created?
+- [ ] What patterns does this follow? (e.g., similar to ar_agent/ar_agency)
+
+**Document requirements:**
+```markdown
+## Feature: [Name]
+
+### Objective
+[1-2 sentence description]
+
+### Context
+- Existing types: ar_delegation_t, ar_delegate_t
+- Pattern: Similar to ar_agent/ar_agency message passing
+- Module: ar_delegation.h (new functions)
+
+### Success Criteria
+- Zero memory leaks
+- BDD test structure
+- One assertion per iteration
+- All tests pass
+```
+
+```bash
+make checkpoint-update CMD=create-plan STEP=2
+```
+
+#### Checkpoint 3: Identify Behaviors
+
+**List ALL expected behaviors:**
+
+For each function to be implemented, list what it should do:
+```markdown
+## Behaviors to Test
+
+### ar_delegate__send()
+1. Returns true when successful
+2. Queues the message
+3. Transfers ownership to delegate
+4. Returns false when delegate is NULL
+5. Returns false when message is NULL
+
+### ar_delegate__has_messages()
+1. Returns false when queue is empty
+2. Returns true after send()
+3. Returns false after take_message() empties queue
+
+### ar_delegate__take_message()
+1. Returns NULL when queue is empty
+2. Returns message when available
+3. Removes message from queue
+4. Transfers ownership to caller
+```
+
+**Critical: Each behavior becomes ONE iteration**
+
+```bash
+make checkpoint-update CMD=create-plan STEP=3
+```
+
+#### Checkpoint 4: Count Assertions
+
+**Convert behaviors to assertions:**
+
+For each behavior, write the exact assertion:
+```markdown
+## Iteration Mapping
+
+Iteration 1.1: ar_delegate__send() returns true
+  Assertion: AR_ASSERT(result, "Send should return true");
+
+Iteration 1.2: ar_delegate__has_messages() returns false initially
+  Assertion: AR_ASSERT(!has_messages, "Should have no messages initially");
+
+Iteration 1.3: ar_delegate__has_messages() returns true after send
+  Assertion: AR_ASSERT(has_messages, "Should have messages after send");
+
+[Continue for all behaviors...]
+
+Total iterations: 12
+```
+
+**Check for multi-assertion violations:**
+- ❌ WRONG: Test both creation AND registration in one iteration
+- ✅ CORRECT: Split into .1 (creation) and .2 (registration)
+
+```bash
+make checkpoint-update CMD=create-plan STEP=4
+```
+
+#### Checkpoint 5: Define Phases
+
+**Group iterations into logical phases (3-5 iterations each):**
+
+```markdown
+## Phase Organization
+
+### Phase 0: Basic Functionality (3 iterations)
+- 0.1: send() returns true
+- 0.2: has_messages() returns false initially
+- 0.3: has_messages() returns true after send
+
+### Phase 1: Message Retrieval (3 iterations)
+- 1.1: take_message() returns NULL when empty
+- 1.2: take_message() returns message when available
+- 1.3: take_message() removes from queue
+
+### Phase 2: Error Handling (2 iterations)
+- 2.1: send() returns false with NULL delegate
+- 2.2: send() returns false with NULL message
+
+### Phase 3: Ownership Management (2 iterations)
+- 3.1: send() transfers ownership to delegate
+- 3.2: take_message() transfers ownership to caller
+```
+
+**Verify phase sizes:**
+- ⚠️ Too small: 1-2 iterations (excessive overhead)
+- ✅ Optimal: 3-5 iterations (focused review)
+- ⚠️ Too large: 8+ iterations (reviewer fatigue)
+
+```bash
+make checkpoint-update CMD=create-plan STEP=5
+```
+
+#### [CHECKPOINT END]
+
+**[QUALITY GATE 1: Requirements Complete]**
+```bash
+# MANDATORY: Must pass before proceeding to iteration planning
+make checkpoint-gate CMD=create-plan GATE="Requirements" REQUIRED="1,2,3,4,5"
+```
+
+**Expected gate output:**
+```
+✅ GATE 'Requirements' - PASSED
+   Verified: Steps 1,2,3,4,5
+```
+
+**Minimum Requirements for Phase 1:**
+- [ ] All 10 KB articles read and quoted
+- [ ] Requirements documented
+- [ ] All behaviors identified and listed
+- [ ] Assertions counted (one per iteration)
+- [ ] Phases defined (3-5 iterations each)
+
+### Phase 2: Iteration Planning (Steps 6-8)
+
+#### [CHECKPOINT START - PHASE 2]
+
+#### Checkpoint 6: Plan Iterations
+
+**Write complete iteration structure:**
+
+For EACH iteration, create:
+```markdown
+#### Iteration 0.1: send() returns true - PENDING REVIEW
+
+**Objective**: Verify ar_delegate__send() returns success value
+
+**RED Phase:**
+```c
+static void test_delegate__send_returns_true(void) {
+    // Given a delegate instance
+    ar_log_t *ref_log = ar_log__create();
+    ar_delegate_t *own_delegate = ar_delegate__create(ref_log, "test");
+
+    // When sending a message
+    ar_data_t *own_message = ar_data__create_string("hello");
+    bool result = ar_delegate__send(own_delegate, own_message);
+
+    // Then send should return true
+    AR_ASSERT(result, "Send should return true");  // ← FAILS (stub returns false)
+
+    // Cleanup
+    ar_delegate__destroy(own_delegate);
+    ar_log__destroy(ref_log);
+}
+```
+
+**GREEN Phase:**
+```c
+bool ar_delegate__send(ar_delegate_t *mut_delegate, ar_data_t *own_message) {
+    if (own_message) ar_data__destroy(own_message);
+    return true;  // Hardcoded! Minimal implementation
+}
+```
+
+**Verification:**
+- Test passes
+- Memory leak check: 0 leaks
+```
+
+**For iterations with .1/.2 splits:**
+```markdown
+#### Iteration 0.6.1: create_and_register_agent() returns valid ID - PENDING REVIEW
+
+**Objective**: Verify function returns non-zero agent ID (minimal)
+
+**RED Phase:**
+```c
+static void test_fixture__create_and_register_agent(void) {
+    // Given empty fixture
+    ar_agent_store_fixture_t *fixture = ar_agent_store_fixture__create_empty();
+
+    // When creating agent
+    int64_t agent_id = ar_agent_store_fixture__create_agent(fixture, "echo", "1.0");
+
+    // Then should return valid ID
+    AR_ASSERT(agent_id > 0, "Should return agent ID");  // ← FAILS (stub returns 0)
+
+    // Cleanup (temporary: manually destroy agent since not registered yet)
+    ar_agent_store_fixture__destroy_agent(fixture, agent_id);
+    ar_agent_store_fixture__destroy(fixture);
+}
+```
+
+**GREEN Phase:**
+```c
+int64_t ar_agent_store_fixture__create_agent(...) {
+    // Minimal: just allocate ID, no registration yet
+    return ar_agent_store_fixture__get_next_agent_id(mut_fixture);
+}
+```
+
+#### Iteration 0.6.2: Agent is actually registered - PENDING REVIEW
+
+**Objective**: Verify registration happens (ownership transfer)
+
+**RED Phase:**
+```c
+static void test_fixture__create_and_register_agent(void) {
+    // Given empty fixture
+    ar_agent_store_fixture_t *fixture = ar_agent_store_fixture__create_empty();
+
+    // When creating agent
+    int64_t agent_id = ar_agent_store_fixture__create_agent(fixture, "echo", "1.0");
+    AR_ASSERT(agent_id > 0, "Should return agent ID");
+
+    // Then agent should be registered
+    AR_ASSERT(ar_agent_store_fixture__verify_agent(fixture, agent_id, "echo"),
+              "Should be registered");  // ← FAILS (not registered in 0.6.1)
+
+    // Cleanup (removed manual destroy_agent - fixture now owns it)
+    ar_agent_store_fixture__destroy(fixture);
+}
+```
+
+**GREEN Phase:**
+```c
+int64_t ar_agent_store_fixture__create_agent(...) {
+    int64_t agent_id = ar_agent_store_fixture__get_next_agent_id(mut_fixture);
+
+    ar_agent_t *own_agent = ar_agent__create(ref_method_name, ref_method_version);
+    if (!own_agent) return 0;
+
+    // NOW: Register (ownership transfer)
+    bool registered = ar_agent_registry__register(get_registry(mut_fixture), agent_id, own_agent);
+    if (!registered) {
+        ar_agent__destroy(own_agent);
+        return 0;
+    }
+
+    return agent_id;
+}
+```
+```
+
+```bash
+make checkpoint-update CMD=create-plan STEP=6
+```
+
+#### Checkpoint 7: Structure RED Phases
+
+**Verify all RED phases have:**
+
+For EACH iteration:
+- [ ] BDD structure (Given/When/Then/Cleanup comments)
+- [ ] Explicit failure indicator (// ← FAILS comment)
+- [ ] Failure reason documented (e.g., "stub returns false")
+- [ ] Real AgeRun types (ar_*_t) not placeholders
+- [ ] Proper ownership prefixes (own_, ref_, mut_)
+- [ ] Exactly ONE assertion (not multiple)
+
+**RED phase checklist per iteration:**
+```markdown
+✅ Has Given comment explaining setup
+✅ Has When comment explaining action
+✅ Has Then comment explaining verification
+✅ Has // ← FAILS (reason) on assertion line
+✅ Has Cleanup section with proper destroy calls
+✅ Uses real AgeRun types with ar_ prefix (not generic placeholders)
+✅ Uses ownership prefixes (own_message not message)
+✅ One assertion only (not multiple AR_ASSERT calls)
+```
+
+```bash
+make checkpoint-update CMD=create-plan STEP=7
+```
+
+#### Checkpoint 8: Structure GREEN Phases
+
+**Verify all GREEN phases follow minimalism:**
+
+For EACH iteration:
+- [ ] Implements ONLY what's needed to pass this iteration's assertion
+- [ ] Uses hardcoded returns when valid (return false;, return NULL;)
+- [ ] No "future-proofing" or untested features
+- [ ] No error handling before test demands it
+- [ ] Proper ownership transfer documented
+
+**GREEN phase minimalism checklist:**
+```markdown
+Iteration 1: Send returns true
+  ✅ return true;  // Hardcoded - minimal!
+  ❌ return queue_message(...);  // Too much - not tested yet
+
+Iteration 2: Has messages returns false
+  ✅ return false;  // Hardcoded - minimal!
+  ❌ return check_queue(...);  // Too much - not needed yet
+
+Iteration 3: Has messages returns true after send
+  ✅ NOW implement queue logic // Forced by this test
+```
+
+**Progression pattern verification:**
+```markdown
+Iteration N.1: Stub implementation
+  → return NULL; or return false;
+
+Iteration N.2: Hardcoded success
+  → return true; or create minimal object
+
+Iteration N.3: Actual logic (forced by test)
+  → Implement real behavior because test demands it
+```
+
+```bash
+make checkpoint-update CMD=create-plan STEP=8
+```
+
+#### [CHECKPOINT END]
+
+**[QUALITY GATE 2: Iterations Complete]**
+```bash
+# MANDATORY: Must pass before proceeding to cleanup/markers
+make checkpoint-gate CMD=create-plan GATE="Iterations" REQUIRED="6,7,8"
+```
+
+**Expected gate output:**
+```
+✅ GATE 'Iterations' - PASSED
+   Verified: Steps 6,7,8
+```
+
+**Minimum Requirements for Phase 2:**
+- [ ] All iterations written with RED and GREEN phases
+- [ ] All RED phases have BDD structure and failure comments
+- [ ] All GREEN phases follow minimalism (hardcoded when valid)
+- [ ] Decimal numbering used for splits (N.1, N.2)
+
+### Phase 3: Cleanup and Documentation (Steps 9-11)
+
+#### [CHECKPOINT START - PHASE 3]
+
+#### Checkpoint 9: Add Cleanup
+
+**Add proper cleanup to all iterations:**
+
+For .1 iterations (create but don't register):
+```c
+// Cleanup (temporary: manually destroy agent since not registered yet)
+ar_agent_store_fixture__destroy_agent(fixture, agent_id);
+ar_agent_store_fixture__destroy(fixture);
+```
+
+For .2 iterations (ownership transferred):
+```c
+// Cleanup (removed manual destroy_agent - fixture now owns it)
+ar_agent_store_fixture__destroy(fixture);
+```
+
+For normal iterations:
+```c
+// Cleanup
+ar_delegate__destroy(own_delegate);
+ar_log__destroy(ref_log);
+```
+
+**Cleanup verification checklist:**
+- [ ] Every test has Cleanup section
+- [ ] .1 iterations have "temporary:" comment (MANDATORY format)
+- [ ] .2 iterations have "removed manual..." comment
+- [ ] All owned objects destroyed (own_ prefix)
+- [ ] Borrowed objects NOT destroyed (ref_ prefix)
+- [ ] Destruction order is reverse of creation
+
+```bash
+make checkpoint-update CMD=create-plan STEP=9
+```
+
+#### Checkpoint 10: Add Status Markers
+
+**Add PENDING REVIEW markers to all iterations:**
+
+```markdown
+### Phase 0: Basic Functionality - PENDING REVIEW
+
+#### Iteration 0.1: send() returns true - PENDING REVIEW
+[...]
+
+#### Iteration 0.2: has_messages() returns false - PENDING REVIEW
+[...]
+
+### Phase 1: Message Retrieval - PENDING REVIEW
+
+#### Iteration 1.1: take_message() returns NULL - PENDING REVIEW
+[...]
+```
+
+**Status marker rules:**
+- All new plans start with PENDING REVIEW
+- Section status = PENDING if any iteration is PENDING
+- Will be updated to REVIEWED during review process
+- Will be marked REVISED if changes needed after review
+
+```bash
+make checkpoint-update CMD=create-plan STEP=10
+```
+
+#### Checkpoint 11: Add Cross-References
+
+**Add Related Patterns section:**
+
+```markdown
+## Related Patterns
+- [TDD Iteration Planning Pattern](../../../kb/tdd-iteration-planning-pattern.md)
+- [TDD GREEN Phase Minimalism](../../../kb/tdd-green-phase-minimalism.md)
+- [TDD RED Phase Assertion Requirement](../../../kb/tdd-red-phase-assertion-requirement.md)
+- [BDD Test Structure](../../../kb/bdd-test-structure.md)
+- [Ownership Naming Conventions](../../../kb/ownership-naming-conventions.md)
+- [Temporary Test Cleanup Pattern](../../../kb/temporary-test-cleanup-pattern.md)
+- [Red-Green-Refactor Cycle](../../../kb/red-green-refactor-cycle.md)
+```
+
+**Add pattern notes where relevant:**
+```markdown
+**Note**: This plan follows the ar_agent/ar_agency message passing pattern.
+See ar_agent.c and ar_agency.c for reference implementations.
+```
+
+```bash
+make checkpoint-update CMD=create-plan STEP=11
+```
+
+#### [CHECKPOINT END]
+
+**[QUALITY GATE 3: Documentation Complete]**
+```bash
+# MANDATORY: Must pass before validation
+make checkpoint-gate CMD=create-plan GATE="Documentation" REQUIRED="9,10,11"
+```
+
+**Expected gate output:**
+```
+✅ GATE 'Documentation' - PASSED
+   Verified: Steps 9,10,11
+```
+
+**Minimum Requirements for Phase 3:**
+- [ ] All iterations have proper cleanup
+- [ ] Temporary cleanup uses MANDATORY comment format
+- [ ] All iterations marked PENDING REVIEW
+- [ ] Related Patterns section added
+
+### Phase 4: Validation and Saving (Steps 12-14)
+
+#### [CHECKPOINT START - PHASE 4]
+
+#### Checkpoint 12: Validate Plan
+
+**Run self-validation checks:**
+
+```bash
+# Count assertions per iteration
+grep -c "AR_ASSERT" <each-iteration>
+# Should be exactly 1 per iteration (except .2 which has 2: one from .1 + new one)
+
+# Check for FAILS comments
+grep "// ← FAILS" <plan-file>
+# Should have one per RED phase
+
+# Check for temporary cleanup format
+grep "temporary:" <plan-file>
+# Should match: "// Cleanup (temporary: manually destroy X since not registered yet)"
+
+# Check for real types
+grep -E "ar_[a-z_]+_t" <plan-file>
+# Should find multiple real AgeRun types
+
+# Check for BDD structure
+grep -E "// Given|// When|// Then|// Cleanup" <plan-file>
+# Should find all four in each test
+```
+
+**Pre-review validation checklist:**
+- [ ] No iteration has multiple assertions (except .2 keeping .1's assertion)
+- [ ] All RED phases have // ← FAILS comments
+- [ ] All .1 iterations have temporary cleanup with correct format
+- [ ] All .2 iterations removed temporary cleanup
+- [ ] All GREEN phases use hardcoded returns when valid
+- [ ] All tests have BDD structure (Given/When/Then/Cleanup)
+- [ ] All types are real AgeRun types (ar_*_t)
+- [ ] All ownership prefixes present (own_, ref_, mut_)
+- [ ] Phases are 3-5 iterations each
+- [ ] Decimal numbering used for splits
+
+```bash
+make checkpoint-update CMD=create-plan STEP=12
+```
+
+#### Checkpoint 13: Save Plan
+
+**Write plan to file:**
+
+```markdown
+# TDD Cycle N: [Feature Name]
+
+## Overview
+[Feature description]
+
+**Pattern**: Similar to [reference pattern]
+**Modules**: [modules involved]
+**Status**: DRAFT - PENDING REVIEW
+
+## Plan Status
+- Total iterations: [count]
+- Phases: [count]
+- Review status: 0% (all PENDING REVIEW)
+
+[... all iterations ...]
+
+## Related Patterns
+[... cross-references ...]
+```
+
+**File location:**
+- Save to: `plans/tdd_cycle_N_plan.md`
+- Use next available cycle number
+- Follow naming convention
+
+```bash
+# Save the plan
+# <use Write tool with plan content>
+
+make checkpoint-update CMD=create-plan STEP=13
+```
+
+#### Checkpoint 14: Summary
+
+**Generate creation summary:**
+
+```markdown
+## Plan Creation Summary
+
+**Plan**: tdd_cycle_7_plan.md
+**Created**: 2025-10-15
+**Feature**: Message queue infrastructure
+
+### Statistics
+- Total iterations: 12
+- Phases: 3
+- .1/.2 splits: 2
+- Temporary cleanup locations: 2
+
+### Methodology Compliance
+✅ One assertion per iteration (12/12)
+✅ GREEN minimalism (hardcoded returns used)
+✅ Temporary cleanup with correct format (2/2)
+✅ BDD structure throughout (12/12)
+✅ Real AgeRun types (no placeholders)
+✅ Proper ownership prefixes (own_, ref_, mut_)
+✅ Decimal numbering for splits
+✅ Status markers (PENDING REVIEW)
+
+### Next Steps
+1. Review plan with: /review-plan plans/tdd_cycle_7_plan.md
+2. Apply feedback from review
+3. Get plan approval (all iterations REVIEWED)
+4. Begin implementation following plan
+5. Update plan with completion status when done
+
+### Validation
+Ready for review - all methodology requirements met
+```
+
+```bash
+make checkpoint-update CMD=create-plan STEP=14
+```
+
+#### [CHECKPOINT END]
+
+#### [CHECKPOINT COMPLETE]
+```bash
+# Show final summary
+make checkpoint-status CMD=create-plan
+```
+
+**Expected completion output:**
+```
+🎆 All 14 steps complete!
+✓ Run: make checkpoint-cleanup CMD=create-plan
+```
+
+```bash
+# Clean up tracking
+make checkpoint-cleanup CMD=create-plan
+```
+
+## Plan Template Structure
+
+### Complete Plan Template
+
+```markdown
+# TDD Cycle N: [Feature Name]
+
+## Overview
+[1-2 sentence description of what will be implemented]
+
+**Pattern**: Similar to [ar_agent/ar_agency | other reference]
+**Modules**: [ar_delegate.h | new/modified modules]
+**Status**: DRAFT - PENDING REVIEW
+
+## Objective
+[Detailed objective statement]
+
+## Context
+- Existing types: [list relevant types]
+- New functions: [list functions to implement]
+- Pattern reference: [point to similar implementation]
+
+## Success Criteria
+- All tests pass
+- Zero memory leaks
+- BDD test structure throughout
+- One assertion per iteration
+- GREEN minimalism followed
+
+## Plan Status
+- Total iterations: [count]
+- Phases: [count]
+- Review status: 0% (all PENDING REVIEW)
+
+### Phase 0: [Phase Name] - PENDING REVIEW
+
+#### Iteration 0.1: [Behavior description] - PENDING REVIEW
+
+**Objective**: [What this iteration tests]
+
+**RED Phase:**
+```c
+static void test_[function]__[behavior](void) {
+    // Given [setup description]
+    ar_[type]_t *ref_[name] = ar_[type]__create([params]);
+    ar_[type]_t *own_[name] = ar_[type]__create([params]);
+
+    // When [action description]
+    [type] result = ar_[function]__[operation]([params]);
+
+    // Then [expected outcome]
+    AR_ASSERT([condition], "[message]");  // ← FAILS ([reason])
+
+    // Cleanup
+    ar_[type]__destroy(own_[name]);
+    ar_[type]__destroy(ref_[name]);
+}
+```
+
+**GREEN Phase:**
+```c
+[return_type] ar_[function]__[operation]([params]) {
+    // Minimal implementation
+    return [hardcoded_value];  // Hardcoded - next iteration will force real impl
+}
+```
+
+**Verification:**
+- Test passes
+- Memory leak check: 0 leaks
+
+[... more iterations ...]
+
+## Related Patterns
+- [TDD Iteration Planning Pattern](../../kb/tdd-iteration-planning-pattern.md)
+- [TDD GREEN Phase Minimalism](../../kb/tdd-green-phase-minimalism.md)
+- [Temporary Test Cleanup Pattern](../../kb/temporary-test-cleanup-pattern.md)
+- [BDD Test Structure](../../kb/bdd-test-structure.md)
+- [Ownership Naming Conventions](../../kb/ownership-naming-conventions.md)
+```
+
+## Quality Indicators
+
+A well-created plan shows:
+- ✅ One assertion per iteration (no bundling)
+- ✅ Hardcoded returns in early iterations (minimalism)
+- ✅ Temporary cleanup in .1 iterations with correct format
+- ✅ BDD structure throughout (Given/When/Then/Cleanup)
+- ✅ Real AgeRun types (ar_*_t) not placeholders
+- ✅ Proper ownership prefixes (own_, ref_, mut_)
+- ✅ Phases sized 3-5 iterations (optimal for review)
+- ✅ Decimal numbering for splits (N.1, N.2)
+- ✅ Status markers (PENDING REVIEW)
+- ✅ Cross-references to KB articles
+
+## Common Planning Mistakes to Avoid
+
+### 1. Multiple Assertions Per Iteration
+❌ **WRONG**:
+```c
+// Iteration 1: create_and_register works
+AR_ASSERT(obj != NULL, "Should create");
+AR_ASSERT(registered, "Should register");  // TWO assertions!
+```
+
+✅ **CORRECT**:
+```c
+// Iteration 1.1: Returns non-NULL
+AR_ASSERT(obj != NULL, "Should create");
+
+// Iteration 1.2: Actually registers
+AR_ASSERT(registered, "Should register");
+```
+
+### 2. GREEN Phase Over-Implementation
+❌ **WRONG**:
+```c
+// Iteration 1 GREEN - implementing more than tested
+bool ar_delegate__send(ar_delegate_t *mut_d, ar_data_t *own_m) {
+    if (!mut_d || !own_m) return false;  // Not tested yet!
+    queue_message(mut_d->queue, own_m);   // Not tested yet!
+    return true;
+}
+```
+
+✅ **CORRECT**:
+```c
+// Iteration 1 GREEN - minimal
+bool ar_delegate__send(ar_delegate_t *mut_d, ar_data_t *own_m) {
+    if (own_m) ar_data__destroy(own_m);
+    return true;  // Hardcoded - next iteration will force more
+}
+```
+
+### 3. Missing Temporary Cleanup
+❌ **WRONG**:
+```c
+// Iteration 1.1 - creates but doesn't register
+int64_t agent_id = ar_agent_store_fixture__create_agent(fixture, "echo", "1.0");
+AR_ASSERT(agent_id > 0, "Should create");
+// Missing cleanup - will leak!
+ar_agent_store_fixture__destroy(fixture);
+```
+
+✅ **CORRECT**:
+```c
+// Iteration 1.1 - creates but doesn't register
+int64_t agent_id = ar_agent_store_fixture__create_agent(fixture, "echo", "1.0");
+AR_ASSERT(agent_id > 0, "Should create");
+// Cleanup (temporary: manually destroy agent since not registered yet)
+ar_agent_store_fixture__destroy_agent(fixture, agent_id);
+ar_agent_store_fixture__destroy(fixture);
+```
+
+### 4. Wrong Temporary Cleanup Format
+❌ **WRONG**:
+```c
+// Cleanup - temporary
+destroy_agent(fixture, agent_id);
+```
+
+✅ **CORRECT**:
+```c
+// Cleanup (temporary: manually destroy agent since not registered yet)
+ar_agent_store_fixture__destroy_agent(fixture, agent_id);
+```
+
+### 5. Placeholder Types Instead of Real Types
+❌ **WRONG**: Using generic types without ar_ prefix
+
+Don't use placeholders like "Thing", "Object", or types without the ar_ prefix. These are not real AgeRun types and will fail validation.
+
+✅ **CORRECT**: Using real AgeRun types
+```c
+// Always use actual AgeRun types with ar_ prefix
+ar_agent_store_fixture_t *fixture = ar_agent_store_fixture__create_empty();
+ar_agent_t *agent = ar_agent__create("echo", "1.0");
+```
+
+## Integration with Workflow
+
+### Complete TDD Cycle Workflow
+
+```bash
+# 1. Create plan
+/create-plan "message queue infrastructure" plans/tdd_cycle_7_plan.md
+
+# 2. Review plan
+/review-plan plans/tdd_cycle_7_plan.md
+
+# 3. Apply feedback (iterative refinement)
+# <update plan based on review findings>
+
+# 4. Re-review until approved
+/review-plan plans/tdd_cycle_7_plan.md
+# Continue until all iterations marked REVIEWED
+
+# 5. Implement following plan
+# <execute RED-GREEN-REFACTOR for each iteration>
+
+# 6. Update plan with completion status
+# <add completion status header>
+
+# 7. Commit
+/commit
+```
+
+## Troubleshooting
+
+### If checkpoint tracking gets stuck:
+```bash
+# Check current status
+make checkpoint-status CMD=create-plan
+
+# If needed, reset and start over
+make checkpoint-cleanup CMD=create-plan
+make checkpoint-init CMD=create-plan STEPS='...'
+```
+
+### If unsure about iteration splitting:
+Ask yourself:
+- Does this test multiple behaviors? → Split it
+- Would GREEN implement untested features? → Split it
+- Does function name have "and" in it? → Likely needs split
+
+### If unclear about GREEN minimalism:
+Use the simplest possible implementation:
+- Return hardcoded values (return false;, return NULL;)
+- Don't add error handling until test demands it
+- Don't add features until test demands them
+
+## Related Commands
+- `/review-plan` - Review created plan for methodology compliance
+- `/commit` - Create commit after plan is approved and implemented
+
+## Related KB Articles
+
+### TDD Planning Patterns
+- [TDD Iteration Planning Pattern](../../../kb/tdd-iteration-planning-pattern.md)
+- [TDD Plan Iteration Split Pattern](../../../kb/tdd-plan-iteration-split-pattern.md)
+- [TDD GREEN Phase Minimalism](../../../kb/tdd-green-phase-minimalism.md)
+- [TDD RED Phase Assertion Requirement](../../../kb/tdd-red-phase-assertion-requirement.md)
+- [Iterative Plan Refinement Pattern](../../../kb/iterative-plan-refinement-pattern.md)
+
+### Testing and Memory Patterns
+- [Temporary Test Cleanup Pattern](../../../kb/temporary-test-cleanup-pattern.md)
+- [BDD Test Structure](../../../kb/bdd-test-structure.md)
+- [Ownership Naming Conventions](../../../kb/ownership-naming-conventions.md)
+- [Memory Leak Detection Workflow](../../../kb/memory-leak-detection-workflow.md)
+- [Red-Green-Refactor Cycle](../../../kb/red-green-refactor-cycle.md)
+
+### Review and Documentation Patterns
+- [Plan Review Status Tracking Pattern](../../../kb/plan-review-status-tracking.md)
+- [Section-by-Section Review Protocol](../../../kb/section-by-section-review-protocol.md)
+- [Plan Verification and Review](../../../kb/plan-verification-and-review.md)
+- [Plan Document Completion Status Pattern](../../../kb/plan-document-completion-status-pattern.md)
+
+### Command Implementation Patterns
+- [Checkpoint Implementation Guide](../../../kb/checkpoint-implementation-guide.md)
+- [Command KB Consultation Enforcement](../../../kb/command-kb-consultation-enforcement.md)
+- [Command Output Documentation Pattern](../../../kb/command-output-documentation-pattern.md)
+- [Command Thoroughness Requirements Pattern](../../../kb/command-thoroughness-requirements-pattern.md)
+- [Multi-Step Checkpoint Tracking Pattern](../../../kb/multi-step-checkpoint-tracking-pattern.md)
+
+$ARGUMENTS
