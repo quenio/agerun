@@ -1,7 +1,7 @@
 # Checkpoint Implementation Guide
 
 ## Learning
-When implementing checkpoint tracking in existing commands, structure the command into logical phases with numbered steps, add gates between phases, document expected outputs, and define minimum requirements for thoroughness.
+When implementing checkpoint tracking in existing commands, structure the command into logical stages with numbered steps, add gates between stages, document expected outputs, and define minimum requirements for thoroughness.
 
 ## Importance
 Converting monolithic commands to checkpoint-tracked processes ensures systematic execution, prevents skipping critical steps, enables progress resumption, and enforces quality standards through gates.
@@ -10,9 +10,9 @@ Converting monolithic commands to checkpoint-tracked processes ensures systemati
 ```markdown
 ## Review Process:
 
-### Phase 1: Code Quality Review (Steps 1-6)
+### Stage 1: Code Quality Review (Steps 1-6)
 
-**[CHECKPOINT START - PHASE 1]**
+**[CHECKPOINT START - STAGE 1]**
 
 1. **Diff Analysis**: Reviews git diff for all changes
    \`\`\`bash
@@ -40,7 +40,7 @@ make checkpoint-gate CMD=review-changes GATE="Code Quality" REQUIRED="1,2,3,4,5,
 ✅ GATE PASSED: All code quality checks complete!
 \`\`\`
 
-**Minimum Requirements for Phase 1:**
+**Minimum Requirements for Stage 1:**
 - [ ] Check at least 3 types of code smells
 - [ ] Verify ownership prefixes in all changed files
 - [ ] Document all issues found with file:line references
@@ -50,7 +50,7 @@ make checkpoint-gate CMD=review-changes GATE="Code Quality" REQUIRED="1,2,3,4,5,
 
 ### Step 1: Analyze Command Structure
 1. **Count existing sections**: Identify logical groupings
-2. **Define phases**: Group related sections (3-6 steps per phase)
+2. **Define stages**: Group related sections (3-6 steps per stage)
 3. **Identify critical points**: Where gates should enforce completion
 4. **Map to checkpoints**: Each section becomes a numbered step
 
@@ -65,8 +65,8 @@ make checkpoint-update CMD=command-name STEP=N
 # Status display
 make checkpoint-status CMD=command-name
 
-# Gates between phases
-make checkpoint-gate CMD=command-name GATE="Phase Name" REQUIRED="1,2,3"
+# Gates between stages
+make checkpoint-gate CMD=command-name GATE="Stage Name" REQUIRED="1,2,3"
 
 # Cleanup when done
 make checkpoint-cleanup CMD=command-name
@@ -80,7 +80,7 @@ For each checkpoint operation, show:
 - Gate enforcement messages
 
 ### Step 4: Define Requirements
-Each phase needs:
+Each stage needs:
 - **Minimum thresholds**: "At least 3 checks"
 - **Quality criteria**: "All tests must pass"
 - **Verification methods**: "Run make check-docs"
@@ -90,12 +90,12 @@ Each phase needs:
 
 When adding checkpoints to a command:
 - [ ] Count total sections/steps in command
-- [ ] Group into logical phases (3-6 steps each)
+- [ ] Group into logical stages (3-6 steps each)
 - [ ] Add initialization at command start
 - [ ] Add update calls after each step
-- [ ] Add gates between phases
+- [ ] Add gates between stages
 - [ ] Document expected outputs for all operations
-- [ ] Define minimum requirements per phase
+- [ ] Define minimum requirements per stage
 - [ ] Add troubleshooting section
 - [ ] Test the full workflow
 - [ ] Update related KB articles
