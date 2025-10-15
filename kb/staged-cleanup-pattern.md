@@ -1,7 +1,7 @@
-# Phased Cleanup Pattern
+# Staged Cleanup Pattern
 
 ## Learning
-After major structural changes, perform cleanup in multiple phases: first review to identify all issues, then fix only critical items immediately, and defer non-critical items to appropriate future cycles with proper tracking. This prevents scope creep while ensuring critical issues are addressed.
+After major structural changes, perform cleanup in multiple stages: first review to identify all issues, then fix only critical items immediately, and defer non-critical items to appropriate future cycles with proper tracking. This prevents scope creep while ensuring critical issues are addressed.
 
 ## Importance
 - Prevents scope creep in current work
@@ -45,12 +45,12 @@ Review found:
 ```
 
 ## Generalization
-Phased cleanup process:
-1. **Review Phase**: Identify ALL issues comprehensively
-2. **Categorize Phase**: Mark items as critical vs. non-critical
-3. **Fix Phase**: Address only critical items for current scope
-4. **Track Phase**: Document deferred items in TODO/tracking system
-5. **Verify Phase**: Confirm deferred items have proper cycle assignment
+Staged cleanup process:
+1. **Review Stage**: Identify ALL issues comprehensively
+2. **Categorize Stage**: Mark items as critical vs. non-critical
+3. **Fix Stage**: Address only critical items for current scope
+4. **Track Stage**: Document deferred items in TODO/tracking system
+5. **Verify Stage**: Confirm deferred items have proper cycle assignment
 
 Critical vs. Non-critical:
 - Critical: Breaks current functionality, inconsistent with current changes
@@ -58,7 +58,7 @@ Critical vs. Non-critical:
 
 ## Implementation
 ```c
-// Pattern for phased cleanup:
+// Pattern for staged cleanup:
 
 typedef enum {
     PRIORITY_CRITICAL,    // Must fix now
@@ -73,7 +73,7 @@ typedef struct {
     int target_cycle;  // Which TDD cycle will address
 } cleanup_item_t;  // EXAMPLE: Hypothetical struct for teaching
 
-void perform_phased_cleanup(cleanup_item_t *items, int count) {  // EXAMPLE: Using hypothetical types
+void perform_staged_cleanup(cleanup_item_t *items, int count) {  // EXAMPLE: Using hypothetical types
     // Stage 1: Review and categorize
     printf("=== Cleanup Review ===\n");
     for (int i = 0; i < count; i++) {

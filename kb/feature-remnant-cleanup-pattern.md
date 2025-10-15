@@ -77,5 +77,5 @@ git diff --stat
 - [Regression Test Removal Criteria](regression-test-removal-criteria.md)
 - [Systematic Parameter Removal Refactoring](systematic-parameter-removal-refactoring.md)
 - [Non-Functional Code Detection Pattern](non-functional-code-detection-pattern.md)
-- [Phased Cleanup Pattern](phased-cleanup-pattern.md)
+- [Staged Cleanup Pattern](staged-cleanup-pattern.md)
 - [Comprehensive Impact Analysis](comprehensive-impact-analysis.md)

@@ -87,7 +87,7 @@ Pattern Discovery:
 
 **Quality Practices**:
 - Stop after 3 failed attempts ([details](struggling-detection-pattern.md))
-- Phased cleanup approach ([details](phased-cleanup-pattern.md))
+- Staged cleanup approach ([details](staged-cleanup-pattern.md))
 - Comprehensive impact analysis ([details](comprehensive-impact-analysis.md))
 
 ## Implementation

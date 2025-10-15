@@ -292,7 +292,7 @@ Each learning file contains:
 - [Dead Code After Mandatory Parameters](dead-code-after-mandatory-parameters.md)
 - [Defensive Programming Consistency](defensive-programming-consistency.md)
 - [Feature Remnant Cleanup Pattern](feature-remnant-cleanup-pattern.md)
-- [Phased Cleanup Pattern](phased-cleanup-pattern.md)
+- [Staged Cleanup Pattern](staged-cleanup-pattern.md)
 - [Refactoring Key Patterns](refactoring-key-patterns.md)
 - [Refactoring Patterns Detailed](refactoring-patterns-detailed.md)
 - [Refactoring Phase Completion Checklist](refactoring-phase-completion-checklist.md)

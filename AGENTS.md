@@ -321,7 +321,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **YAML & Persistence**: 2-space indent, escape multiline, direct I/O, validate contracts ([details](kb/yaml-serialization-direct-io-pattern.md), [multiline](kb/multi-line-data-persistence-format.md), [contracts](kb/yaml-implicit-contract-validation-pattern.md))
 **Error & Logs**: Context filtering, precise grep, fix root causes ([details](kb/systematic-whitelist-error-resolution.md), [logs](kb/build-log-extraction-patterns.md), [grep](kb/grep-or-syntax-differences.md), [config migration](kb/configuration-migration-troubleshooting-strategy.md))
 **CI/CD**: gh CLI debugging, version verification ([details](kb/github-actions-debugging-workflow.md), [versions](kb/tool-version-selection-due-diligence.md))
-**Quality**: Stop after 3 failures, phased cleanup, impact analysis ([details](kb/struggling-detection-pattern.md), [impact](kb/comprehensive-impact-analysis.md))
+**Quality**: Stop after 3 failures, staged cleanup, impact analysis ([details](kb/struggling-detection-pattern.md), [cleanup](kb/staged-cleanup-pattern.md), [impact](kb/comprehensive-impact-analysis.md))
 
 ### 9. Error Propagation Pattern
 

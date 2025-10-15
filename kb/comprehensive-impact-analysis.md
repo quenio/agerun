@@ -92,7 +92,7 @@ grep -rl "$SEARCH_TERM" . --include="*.c" --include="*.h" | head -20
 
 ## Related Patterns
 - [Report-Driven Task Planning](report-driven-task-planning.md)
-- [Phased Cleanup Pattern](phased-cleanup-pattern.md)
+- [Staged Cleanup Pattern](staged-cleanup-pattern.md)
 - [Fixture Dependency Mapping](fixture-dependency-mapping.md)
 - [Code Movement Verification](code-movement-verification.md)
 - [Script Archaeology Pattern](script-archaeology-pattern.md)
