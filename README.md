@@ -210,6 +210,17 @@ Agents use a simple expression and instruction language for their methods:
 - `create(method_name, version, context)`: Create a new agent using a method with specific version
 - `destroy(agent_id)`: Destroy an agent
 
+## Documentation
+
+AgeRun maintains comprehensive documentation for developers:
+
+- **[GLOSSARY.md](GLOSSARY.md)**: Standard terminology definitions (Cycles, Iterations, Phases, Stages, Steps, etc.)
+- **[AGENTS.md](AGENTS.md)**: Development workflows and agent guidelines
+- **[MMM.md](MMM.md)**: Memory Management Model and ownership patterns
+- **[kb/](kb/)**: Knowledge base with development patterns and best practices
+- **[modules/README.md](modules/README.md)**: Module architecture and dependencies
+- **[methods/README.md](methods/README.md)**: Method file format and examples
+
 ## Code Organization
 
 The AgeRun codebase is organized into modular components, each responsible for a specific aspect of the system.
