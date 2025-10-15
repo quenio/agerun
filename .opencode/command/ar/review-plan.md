@@ -44,6 +44,56 @@ The temporary cleanup comment format is:
 
 **CRITICAL**: If you skip reading these KB articles, you will miss critical methodology violations.
 
+## Plan File Identification
+
+Before reviewing, identify which plan file to review:
+
+### Priority Order (highest to lowest):
+
+1. **User-provided file path** (supersedes everything)
+   - Check if the user provided an explicit file path via command arguments
+   - Format: `/review-plan <path-to-plan-file>`
+   - Example: `/review-plan plans/tdd_cycle_7_plan.md`
+
+2. **Inferred from user description or context**
+   - If no explicit path, infer from user's description or recent context
+   - Check conversation history for recent ar:create-plan output (would mention the plan file)
+   - Search for plan files matching the description in `plans/` directory
+   - Use glob pattern: `plans/*plan*.md` or `plans/tdd_cycle_*.md`
+
+3. **Most recent plan file**
+   - If unclear, find the most recently modified plan file in `plans/`
+   - Confirm with user before proceeding
+
+**Example file identification:**
+```bash
+# User provides explicit path:
+/review-plan plans/tdd_cycle_7_plan.md
+→ Use: plans/tdd_cycle_7_plan.md
+
+# User provides description:
+"Review the message queue plan"
+→ Search: grep -l "message queue" plans/*.md
+→ Use: plans/tdd_cycle_7_plan.md (if match found)
+
+# From ar:create-plan context:
+"Plan saved to: plans/tdd_cycle_8_plan.md"
+→ Use: plans/tdd_cycle_8_plan.md
+
+# Find most recent:
+ls -t plans/tdd_cycle_*_plan.md | head -1
+→ Use: most recently modified plan
+```
+
+**Plan file identification checklist:**
+- [ ] Check for explicit file path in arguments
+- [ ] If none, check for plan file reference in recent conversation
+- [ ] Search plans/ directory for files matching user's description
+- [ ] Use Glob tool to find matching plan files: `plans/*plan*.md`
+- [ ] If multiple matches, ask user which plan to review
+- [ ] Confirm plan file path before proceeding
+- [ ] Verify file exists before starting review
+
 # Review Plan
 
 ## ⚠️ REQUIRED: Initialize Checkpoint Tracking First

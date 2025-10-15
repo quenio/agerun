@@ -50,6 +50,48 @@ BDD structure from bdd-test-structure.md:
 
 **CRITICAL**: If you skip reading these KB articles, the plan will violate TDD methodology and require extensive revision.
 
+## Task Identification
+
+Before creating the plan, identify which task to plan:
+
+### Priority Order (highest to lowest):
+
+1. **User-provided arguments** (supersedes everything)
+   - Check if the user provided task name and instructions via command arguments
+   - Format: `/create-plan <task-description> [additional-instructions]`
+   - Example: `/create-plan "implement message queue" "use FIFO ordering"`
+
+2. **Context from ar:next-priority or ar:next-task**
+   - If no user arguments, check conversation history for recent ar:next-priority or ar:next-task output
+   - These commands suggest which task to implement next based on priorities
+   - Extract the task description from their output
+
+3. **Ask the user**
+   - If neither user arguments nor context available, ask the user which task to plan
+
+**Example context extraction:**
+```
+# From ar:next-priority output:
+"Next priority: Implement delegate message queue infrastructure"
+→ Task: "delegate message queue infrastructure"
+
+# From ar:next-task output:
+"Recommended next task: Add error handling to ar_agent__create"
+→ Task: "error handling to ar_agent__create"
+
+# From user arguments:
+/create-plan "fixture lifecycle management" "focus on ownership transfer"
+→ Task: "fixture lifecycle management"
+→ Additional context: "focus on ownership transfer"
+```
+
+**Task identification checklist:**
+- [ ] Check for user-provided task name in arguments
+- [ ] If none, search conversation for ar:next-priority/ar:next-task output
+- [ ] Extract task description and any additional context
+- [ ] Confirm task understanding before proceeding
+- [ ] If unclear, ask user to clarify which task to plan
+
 # Create Plan
 
 ## ⚠️ REQUIRED: Initialize Checkpoint Tracking First
