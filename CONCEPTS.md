@@ -392,6 +392,20 @@ Module documentation following consistent structure.
 
 **Context:** Module documentation, API reference
 
+### KB Article Files
+Knowledge base articles documenting patterns, learnings, and best practices.
+
+**Usage:**
+- Format: `<topic-name>.md` in `kb/` directory (kebab-case)
+- Example: `kb/tdd-iteration-planning-pattern.md`, `kb/ownership-naming-conventions.md`
+- Common suffixes: `-pattern.md`, `-guide.md`, `-principle.md`
+- Indexed in `kb/README.md` under category sections
+- Must use real AgeRun types and functions in code examples
+- Cross-referenced from commands via `([details](kb/article.md))`
+- Include "Related Patterns" section linking to other KB articles
+
+**Context:** Knowledge management, development patterns, best practices
+
 ## Data Type Concepts
 
 ### ar_data_t
