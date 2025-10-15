@@ -53,7 +53,7 @@ Before reviewing, identify which plan file to review:
 1. **User-provided file path** (supersedes everything)
    - Check if the user provided an explicit file path via command arguments
    - Format: `/review-plan <path-to-plan-file>`
-   - Example: `/review-plan plans/tdd_cycle_7_plan.md`
+   - Example: `/review-plan plans/message_queue_plan.md`
 
 2. **Inferred from user description or context**
    - If no explicit path, infer from user's description or recent context
@@ -68,20 +68,20 @@ Before reviewing, identify which plan file to review:
 **Example file identification:**
 ```bash
 # User provides explicit path:
-/review-plan plans/tdd_cycle_7_plan.md
-→ Use: plans/tdd_cycle_7_plan.md
+/review-plan plans/message_queue_plan.md
+→ Use: plans/message_queue_plan.md
 
 # User provides description:
 "Review the message queue plan"
 → Search: grep -l "message queue" plans/*.md
-→ Use: plans/tdd_cycle_7_plan.md (if match found)
+→ Use: plans/message_queue_plan.md (if match found)
 
 # From ar:create-plan context:
-"Plan saved to: plans/tdd_cycle_8_plan.md"
-→ Use: plans/tdd_cycle_8_plan.md
+"Plan saved to: plans/agent_store_fixture_plan.md"
+→ Use: plans/agent_store_fixture_plan.md
 
 # Find most recent:
-ls -t plans/tdd_cycle_*_plan.md | head -1
+ls -t plans/*_plan.md | head -1
 → Use: most recently modified plan
 ```
 
@@ -806,13 +806,13 @@ The review provides:
 # <create plan document>
 
 # 2. Review plan with this command
-/review-plan plans/tdd_cycle_N_plan.md
+/review-plan plans/feature_name_plan.md
 
 # 3. Apply feedback from review
 # <update plan based on issues found>
 
 # 4. Re-review to verify fixes
-/review-plan plans/tdd_cycle_N_plan.md
+/review-plan plans/feature_name_plan.md
 
 # 5. When approved, begin implementation
 # <follow plan iterations>
@@ -895,8 +895,8 @@ When you invoke this command with `/review-plan <arguments>`, everything after `
 
 **Examples:**
 ```
-/review-plan plans/tdd_cycle_7_plan.md
-→ Arguments: "plans/tdd_cycle_7_plan.md"
+/review-plan plans/message_queue_plan.md
+→ Arguments: "plans/message_queue_plan.md"
 → Use: Explicit path to plan file
 
 /review-plan "message queue plan"
