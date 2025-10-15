@@ -8,9 +8,9 @@ Large TDD plans (15+ iterations) cannot be reviewed in a single session due to c
 
 ## Example
 ```markdown
-### Cycle 0: Initial Fixture Setup - REVIEWED
+### Cycle 1: Initial Fixture Setup - REVIEWED
 
-#### Iteration 0.1: Basic fixture creation - REVIEWED
+#### Iteration 1.1: Basic fixture creation - REVIEWED
 **RED Phase:**
 ```c
 static void test_fixture__create(void) {
@@ -33,13 +33,13 @@ ar_agent_store_fixture_t* ar_agent_store_fixture__create_empty(void) {
 }
 ```
 
-#### Iteration 0.2: Fixture owns evaluator_fixture - REVIEWED
+#### Iteration 1.2: Fixture owns evaluator_fixture - REVIEWED
 // ... (implementation details)
 
 
-### Cycle 1: Delegation Infrastructure - PENDING REVIEW
+### Cycle 2: Delegation Infrastructure - PENDING REVIEW
 
-#### Iteration 0.5: get_agent_count() works - PENDING REVIEW
+#### Iteration 2.1: get_agent_count() works - PENDING REVIEW
 **RED Phase:**
 ```c
 static void test_fixture__get_agent_count(void) {
@@ -89,24 +89,24 @@ Use status markers when:
 
 ```markdown
 # Rule 1: Start all cycles as PENDING REVIEW
-### Cycle 0: Initial Setup - PENDING REVIEW
-#### Iteration 0.1: Basic creation - PENDING REVIEW
+### Cycle 1: Initial Setup - PENDING REVIEW
+#### Iteration 1.1: Basic creation - PENDING REVIEW
 
 # Rule 2: Mark iterations REVIEWED only after explicit approval
-### Cycle 0: Initial Setup - PENDING REVIEW  # Cycle still pending
-#### Iteration 0.1: Basic creation - REVIEWED  # This iteration approved
+### Cycle 1: Initial Setup - PENDING REVIEW  # Cycle still pending
+#### Iteration 1.1: Basic creation - REVIEWED  # This iteration approved
 
 # Rule 3: Mark cycle REVIEWED only when ALL iterations within it are REVIEWED
-### Cycle 0: Initial Setup - REVIEWED  # All iterations 0.1-0.4 approved
-#### Iteration 0.1: Basic creation - REVIEWED
-#### Iteration 0.2: Ownership - REVIEWED
-#### Iteration 0.3: Cleanup - REVIEWED
-#### Iteration 0.4: Validation - REVIEWED
+### Cycle 1: Initial Setup - REVIEWED  # All iterations 1.1-1.4 approved
+#### Iteration 1.1: Basic creation - REVIEWED
+#### Iteration 1.2: Ownership - REVIEWED
+#### Iteration 1.3: Cleanup - REVIEWED
+#### Iteration 1.4: Validation - REVIEWED
 
 # Rule 4: If iteration changes after REVIEWED, mark as REVISED
-### Cycle 0: Initial Setup - REVISED  # Contains revised iteration
-#### Iteration 0.1: Basic creation - REVIEWED
-#### Iteration 0.2: Ownership - REVISED  # Changed after review
+### Cycle 1: Initial Setup - REVISED  # Contains revised iteration
+#### Iteration 1.1: Basic creation - REVIEWED
+#### Iteration 1.2: Ownership - REVISED  # Changed after review
 ```
 
 ### Review Session Protocol
@@ -133,15 +133,15 @@ grep -n "PENDING REVIEW" plans/tdd_cycle_N_plan.md | head -1
 **Ending a Review Session:**
 ```bash
 # Document progress in commit message
-git commit -m "docs: review TDD Cycle 7 iterations 0.1-0.4 (fixture infrastructure)
+git commit -m "docs: review agent store fixture plan iterations 1.1-1.4
 
 Reviewed and approved:
-- Cycle 0: Initial Fixture Setup (iterations 0.1-0.4)
-- Split iteration 0.6 into 0.6.1/0.6.2 per TDD minimalism
+- Cycle 1: Initial Fixture Setup (iterations 1.1-1.4)
+- Split iteration 1.6 into 1.6.1/1.6.2 per TDD minimalism
 
 Remaining:
-- Cycle 1: Delegation Infrastructure (iterations 0.5-0.8)
-- Cycles 2-4 (iterations 0.9-1.5)
+- Cycle 2: Delegation Infrastructure (iterations 2.1-2.4)
+- Cycles 3-4 (iterations 3.1-4.5)
 
 Status: 4/15 iterations reviewed (27% complete)"
 ```
@@ -152,48 +152,48 @@ Status: 4/15 iterations reviewed (27% complete)"
 
 ```bash
 # Step 1: Create plan with initial PENDING markers
-cat > plans/tdd_cycle_N_plan.md << 'EOF'
-# TDD Cycle N: Feature Name
+cat > plans/agent_store_fixture_plan.md << 'EOF'
+# Agent Store Fixture Plan
 
 ## Plan Status: DRAFT - PENDING REVIEW
 
-### Cycle 0: Setup - PENDING REVIEW
+### Cycle 1: Setup - PENDING REVIEW
 
-#### Iteration 0.1: Basic creation - PENDING REVIEW
+#### Iteration 1.1: Basic creation - PENDING REVIEW
 **RED Phase:**
 ...
 
-#### Iteration 0.2: Enhancement - PENDING REVIEW
+#### Iteration 1.2: Enhancement - PENDING REVIEW
 **RED Phase:**
 ...
 EOF
 
 # Step 2: Review begins - mark completed iterations
-# After approving iteration 0.1:
-sed -i '' 's/Iteration 0.1: Basic creation - PENDING REVIEW/Iteration 0.1: Basic creation - REVIEWED/' plans/tdd_cycle_N_plan.md
+# After approving iteration 1.1:
+sed -i '' 's/Iteration 1.1: Basic creation - PENDING REVIEW/Iteration 1.1: Basic creation - REVIEWED/' plans/agent_store_fixture_plan.md
 ```
 
 ### Updating Status During Review
 
 ```bash
 # Mark single iteration as REVIEWED
-sed -i '' 's/Iteration 0.3: Description - PENDING REVIEW/Iteration 0.3: Description - REVIEWED/' plan.md
+sed -i '' 's/Iteration 1.3: Description - PENDING REVIEW/Iteration 1.3: Description - REVIEWED/' plan.md
 
 # Mark entire cycle as REVIEWED (after all iterations approved)
-sed -i '' 's/Cycle 0: Setup - PENDING REVIEW/Cycle 0: Setup - REVIEWED/' plan.md
+sed -i '' 's/Cycle 1: Setup - PENDING REVIEW/Cycle 1: Setup - REVIEWED/' plan.md
 
 # Mark iteration as REVISED (after changes)
-sed -i '' 's/Iteration 0.2: Description - REVIEWED/Iteration 0.2: Description - REVISED/' plan.md
+sed -i '' 's/Iteration 1.2: Description - REVIEWED/Iteration 1.2: Description - REVISED/' plan.md
 ```
 
 ### Progress Reporting
 
 ```bash
 # Count total iterations
-total=$(grep -c "^#### Iteration" plans/tdd_cycle_N_plan.md)
+total=$(grep -c "^#### Iteration" plans/agent_store_fixture_plan.md)
 
 # Count reviewed iterations
-reviewed=$(grep -c "^#### Iteration.*REVIEWED" plans/tdd_cycle_N_plan.md)
+reviewed=$(grep -c "^#### Iteration.*REVIEWED" plans/agent_store_fixture_plan.md)
 
 # Calculate percentage
 percentage=$((reviewed * 100 / total))
@@ -207,18 +207,18 @@ echo "Progress: $reviewed/$total iterations reviewed ($percentage% complete)"
 
 ```bash
 # Verify all cycles have status markers
-missing_cycle_status=$(grep "^### " plans/tdd_cycle_N_plan.md | grep -v -E "(REVIEWED|PENDING|REVISED)" | wc -l)
+missing_cycle_status=$(grep "^### " plans/agent_store_fixture_plan.md | grep -v -E "(REVIEWED|PENDING|REVISED)" | wc -l)
 if [ "$missing_cycle_status" -gt 0 ]; then
     echo "ERROR: $missing_cycle_status cycles missing status markers"
-    grep "^### " plans/tdd_cycle_N_plan.md | grep -v -E "(REVIEWED|PENDING|REVISED)"
+    grep "^### " plans/agent_store_fixture_plan.md | grep -v -E "(REVIEWED|PENDING|REVISED)"
     exit 1
 fi
 
 # Verify all iterations have status markers
-missing_iteration_status=$(grep "^#### Iteration" plans/tdd_cycle_N_plan.md | grep -v -E "(REVIEWED|PENDING|REVISED)" | wc -l)
+missing_iteration_status=$(grep "^#### Iteration" plans/agent_store_fixture_plan.md | grep -v -E "(REVIEWED|PENDING|REVISED)" | wc -l)
 if [ "$missing_iteration_status" -gt 0 ]; then
     echo "ERROR: $missing_iteration_status iterations missing status markers"
-    grep "^#### Iteration" plans/tdd_cycle_N_plan.md | grep -v -E "(REVIEWED|PENDING|REVISED)"
+    grep "^#### Iteration" plans/agent_store_fixture_plan.md | grep -v -E "(REVIEWED|PENDING|REVISED)"
     exit 1
 fi
 
@@ -259,7 +259,7 @@ check_cycle_consistency() {
     done < "$plan_file"
 }
 
-check_cycle_consistency plans/tdd_cycle_N_plan.md
+check_cycle_consistency plans/agent_store_fixture_plan.md
 ```
 
 ## Related Patterns
