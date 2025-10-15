@@ -1474,7 +1474,7 @@ The [system module](ar_system.md) provides the high-level API and runtime enviro
 
 - **Runtime Management**: Initializes and manages the overall system runtime
 - **Message Processing**: Processes messages between agents asynchronously
-- **System Lifecycle**: Handles system startup, running, and shutdown phases
+- **System Lifecycle**: Handles system startup, running, and shutdown stages
 - **Initial Agent**: Creates and manages the initial system agent
 - **Delegation Management**: Owns and coordinates the delegation subsystem for external communication channels
 - **Facade Pattern**: Coordinates agency (agents with ID >= 0) and delegation (delegates with ID < 0) as peer subsystems
