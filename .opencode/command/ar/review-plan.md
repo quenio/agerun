@@ -213,6 +213,34 @@ make checkpoint-update CMD=review-plan STEP=2
 - Review status markers
 - Completion status (if present)
 
+**CRITICAL: Filter for PENDING REVIEW iterations:**
+
+Extract only iterations marked with "- PENDING REVIEW" status. Skip iterations already marked as:
+- "- REVIEWED" (already accepted in previous review)
+- "- REVISED" (being worked on)
+- "- ✅ COMPLETE" (implementation complete)
+
+**Example filtering:**
+```markdown
+# REVIEW THIS (has PENDING REVIEW):
+#### Iteration 0.1: send() returns true - PENDING REVIEW
+
+# SKIP THIS (already reviewed):
+#### Iteration 0.2: has_messages() returns false - REVIEWED
+
+# SKIP THIS (being revised):
+#### Iteration 0.3: message queue implementation - REVISED
+
+# SKIP THIS (completed):
+#### Iteration 0.4: error handling - ✅ COMPLETE
+```
+
+**Iteration filtering checklist:**
+- [ ] Identify all iterations with "- PENDING REVIEW" status
+- [ ] Create list of iterations to review (PENDING REVIEW only)
+- [ ] Note total iterations needing review vs. total iterations
+- [ ] Skip all non-PENDING iterations from review scope
+
 #### Checkpoint 3: Verify Completeness
 
 **Check plan document structure:**
@@ -250,9 +278,11 @@ make checkpoint-gate CMD=review-plan GATE="Plan Basics" REQUIRED="1,2,3"
 
 #### Checkpoint 4: Check Iteration Structure
 
-**Verify each iteration follows proper structure:**
+**IMPORTANT: Review ONLY iterations with PENDING REVIEW status.**
 
-For EVERY iteration in the plan:
+**Verify each PENDING REVIEW iteration follows proper structure:**
+
+For EVERY iteration marked "- PENDING REVIEW" in the plan:
 - [ ] Has RED phase with explicit failing assertion (// ← FAILS comment)
 - [ ] Has GREEN phase with minimal implementation
 - [ ] Has exactly ONE new assertion (not multiple)
@@ -272,6 +302,71 @@ Iteration 1.1: create_and_register returns non-NULL
 Iteration 1.2: Object is registered
   AR_ASSERT(registry_has(obj), "Should register");
 ```
+
+**CRITICAL: Iteration Acceptance and Status Update**
+
+**After verifying each PENDING REVIEW iteration, obtain user acceptance:**
+
+**For EACH iteration reviewed:**
+
+1. **Present Iteration Details**:
+   - Show iteration number and description
+   - Summarize RED phase (what assertion tests)
+   - Summarize GREEN phase (what minimal implementation does)
+   - Note any methodology compliance issues found
+
+2. **Request User Acknowledgment**:
+   Present the iteration to the user with one of these questions:
+   ```
+   "Iteration X.Y verified. Accept this iteration? (yes/no/revise)"
+   ```
+
+3. **Update Status Based on Response**:
+
+   **If user responds "yes" or "accept":**
+   - Use Edit tool to update iteration status in plan file
+   - Change: "#### Iteration X.Y: description - PENDING REVIEW"
+   - To:     "#### Iteration X.Y: description - REVIEWED"
+   - Track accepted iteration in review report
+
+   **If user responds "no" or "revise":**
+   - Use Edit tool to update iteration status in plan file
+   - Change: "#### Iteration X.Y: description - PENDING REVIEW"
+   - To:     "#### Iteration X.Y: description - REVISED"
+   - Ask user to specify what needs revision
+   - Document issues in Checkpoint 10 (Document Issues)
+   - Track revision needed in review report
+
+   **If user responds with specific feedback:**
+   - Mark as REVISED if changes needed
+   - Mark as REVIEWED if feedback is just notes/suggestions
+   - Document feedback for inclusion in final report
+
+**Status Update Example:**
+```bash
+# Before acceptance (from plan file):
+#### Iteration 0.1: send() returns true - PENDING REVIEW
+
+# After user accepts:
+# Use Edit tool:
+old_string: "#### Iteration 0.1: send() returns true - PENDING REVIEW"
+new_string: "#### Iteration 0.1: send() returns true - REVIEWED"
+
+# After user requests revision:
+# Use Edit tool:
+old_string: "#### Iteration 0.1: send() returns true - PENDING REVIEW"
+new_string: "#### Iteration 0.1: send() returns true - REVISED"
+```
+
+**Acceptance Tracking Checklist:**
+- [ ] Present each PENDING REVIEW iteration to user
+- [ ] Wait for user's acceptance response
+- [ ] Update plan file with new status marker (REVIEWED or REVISED)
+- [ ] Track acceptance count for final report
+- [ ] Document any revision requests for Checkpoint 10
+- [ ] Continue until all PENDING REVIEW iterations processed
+
+**MANDATORY**: You MUST update the plan file with new status markers after each acceptance/revision decision. Do not batch updates—update immediately after each user response.
 
 ```bash
 make checkpoint-update CMD=review-plan STEP=4
@@ -377,12 +472,12 @@ make checkpoint-gate CMD=review-plan GATE="TDD Methodology" REQUIRED="4,5,6,7"
 
 **Check review status markers:**
 
-- [ ] Plan has status markers (REVIEWED/PENDING/REVISED)
+- [ ] Plan has status markers (REVIEWED/PENDING REVIEW/REVISED)
 - [ ] Status markers at both section and iteration level
 - [ ] Status progression follows rules:
   - Sections marked REVIEWED only when all iterations within are REVIEWED
   - Changed iterations marked REVISED
-  - Unreviewed content marked PENDING
+  - Unreviewed content marked PENDING REVIEW
 
 **Status marker validation:**
 ```markdown
@@ -396,6 +491,41 @@ make checkpoint-gate CMD=review-plan GATE="TDD Methodology" REQUIRED="4,5,6,7"
 #### Iteration 0.1: Basic - REVIEWED
 #### Iteration 0.2: Advanced - PENDING REVIEW
 ```
+
+**Update Section Status Markers:**
+
+After updating iteration status markers in Checkpoint 4, verify and update section status markers:
+
+1. **Check each phase/section:**
+   - Count iterations with REVIEWED status
+   - Count iterations with PENDING REVIEW status
+   - Count iterations with REVISED status
+
+2. **Update section markers:**
+   - If ALL iterations are REVIEWED → Mark section as REVIEWED
+   - If ANY iteration is PENDING REVIEW → Mark section as PENDING REVIEW
+   - If ANY iteration is REVISED → Mark section as REVISED (takes precedence)
+
+3. **Section Status Update Example:**
+```bash
+# Before (all iterations now reviewed):
+### Phase 0: Message Queue Infrastructure - PENDING REVIEW
+#### Iteration 0.1: send() returns true - REVIEWED
+#### Iteration 0.2: has_messages() initially false - REVIEWED
+#### Iteration 0.3: has_messages() after send - REVIEWED
+
+# After (update section to match):
+# Use Edit tool:
+old_string: "### Phase 0: Message Queue Infrastructure - PENDING REVIEW"
+new_string: "### Phase 0: Message Queue Infrastructure - REVIEWED"
+```
+
+**Section Status Update Checklist:**
+- [ ] For each phase, count iteration status distribution
+- [ ] Update section markers to match iteration status
+- [ ] Use Edit tool to update section headings in plan file
+- [ ] Verify consistency between section and iteration status
+- [ ] Track section status updates for final report
 
 ```bash
 make checkpoint-update CMD=review-plan STEP=8
@@ -486,9 +616,24 @@ make checkpoint-update CMD=review-plan STEP=10
 ### Overall Assessment
 [APPROVED | NEEDS REVISION | MAJOR ISSUES]
 
+### Status Updates Made This Session
+**Iterations Reviewed**: [count of PENDING REVIEW → REVIEWED]
+**Iterations Needing Revision**: [count of PENDING REVIEW → REVISED]
+**Remaining PENDING REVIEW**: [count still pending]
+
+**Newly Reviewed Iterations:**
+- Iteration X.Y: [description] - REVIEWED ✅
+- Iteration X.Z: [description] - REVIEWED ✅
+...
+
+**Iterations Marked for Revision:**
+- Iteration A.B: [description] - REVISED ⚠️ [reason]
+- Iteration A.C: [description] - REVISED ⚠️ [reason]
+...
+
 ### Phase-by-Phase Status
-- Phase 0: [status]
-- Phase 1: [status]
+- Phase 0: [status] ([X/Y iterations REVIEWED])
+- Phase 1: [status] ([X/Y iterations REVIEWED])
 ...
 
 ### Critical Issues Found: [count]
@@ -507,6 +652,12 @@ make checkpoint-update CMD=review-plan STEP=10
 - ✅ Temporary cleanup present
 - ✅ Zero leak policy maintained
 
+### Plan File Updates
+**IMPORTANT**: The plan file has been updated with new status markers:
+- File: [plan-file-path]
+- Updates: [count] status markers changed
+- Use `git diff [plan-file]` to review changes
+
 ### Next Steps
 1. [Action item 1]
 2. [Action item 2]
@@ -515,6 +666,17 @@ make checkpoint-update CMD=review-plan STEP=10
 ### Review Notes
 [Any additional observations]
 ```
+
+**Report Generation Checklist:**
+- [ ] Count iterations reviewed in this session (PENDING REVIEW → REVIEWED)
+- [ ] Count iterations marked for revision (PENDING REVIEW → REVISED)
+- [ ] List all newly reviewed iterations by number
+- [ ] List all iterations needing revision with reasons
+- [ ] Calculate updated review status percentage
+- [ ] Document plan file path that was updated
+- [ ] Provide git diff command for user to review changes
+- [ ] Include all critical issues, warnings, and suggestions
+- [ ] Specify next steps based on status (approved vs. needs revision)
 
 ```bash
 make checkpoint-update CMD=review-plan STEP=11
