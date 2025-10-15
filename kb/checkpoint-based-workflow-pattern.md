@@ -1,10 +1,10 @@
 # Checkpoint-Based Workflow Pattern
 
 ## Learning
-Complex multi-step workflows should use checkpoint tracking with progress files, mandatory gates between phases, and verification steps to ensure all quality standards are met before proceeding.
+Complex multi-step workflows should use checkpoint tracking with progress files, mandatory gates between stages, and verification steps to ensure all quality standards are met before proceeding.
 
 ## Importance
-Structured workflows prevent incomplete execution by making progress visible, enforcing dependencies between steps, and blocking advancement when quality gates fail. This ensures consistent, thorough execution of complex operations like commits, releases, or multi-phase builds.
+Structured workflows prevent incomplete execution by making progress visible, enforcing dependencies between steps, and blocking advancement when quality gates fail. This ensures consistent, thorough execution of complex operations like commits, releases, or multi-stage builds.
 
 ## Example
 ```c
@@ -87,7 +87,7 @@ make checkpoint-update CMD=commit STEP=1
 make test  # Run tests
 make checkpoint-update-verified CMD=commit STEP=1  # Auto-verifies tests passed
 
-# 3. Enforce gate after phase
+# 3. Enforce gate after stage
 make checkpoint-gate CMD=commit GATE="Build Quality" REQUIRED="1,2"
 # Blocks if steps 1-2 not complete
 
@@ -104,7 +104,7 @@ make checkpoint-cleanup CMD=commit
 ```
 
 ## Workflow Structure Pattern
-Organize complex workflows into phases with gates:
+Organize complex workflows into stages with gates:
 
 **Stage 1: Pre-Flight Checks**
 - Steps: Validation, prerequisites, environment setup
