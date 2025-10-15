@@ -270,6 +270,29 @@ The registry of all method definitions available in the system.
 
 **Context:** Method registry, version management
 
+### Delegate
+A lightweight proxy that queues messages for an agent. Delegates enable asynchronous message passing without requiring direct agent access.
+
+**Usage:**
+- Created with `ar_delegate__create(ref_log, name)`
+- Queues messages with `ar_delegate__send(mut_delegate, own_message)`
+- Check for messages: `ar_delegate__has_messages(ref_delegate)`
+- Retrieve messages: `ar_delegate__take_message(mut_delegate)`
+- Transfers message ownership to/from agent
+
+**Context:** Message queuing, asynchronous communication
+
+### Delegation
+The system for managing delegates and routing messages between agents through indirect references.
+
+**Usage:**
+- Provides decoupling between message sender and receiver
+- Enables message queuing when agent is busy
+- Supports agent-to-agent communication patterns
+- Maintains message ordering (FIFO)
+
+**Context:** Message routing, agent communication patterns
+
 ## Build & Verification Concepts
 
 ### Make Target
@@ -498,6 +521,9 @@ Where status markers appear in plan documents.
 | **Agent** | Runtime Entity | "agent_id: 12345" | No |
 | **Method** | Behavior Definition | "echo-1.0.0" | No |
 | **Message** | Agent Communication | `ar_data_t* own_msg` | No |
+| **Delegate** | Message Queue Proxy | `ar_delegate_t* mut_del` | No |
+| **Agency** | Agent Manager | `ar_agency_t* mut_agency` | No |
+| **Methodology** | Method Registry | `ar_methodology_t* mut_meth` | No |
 
 ## Related Documentation
 
