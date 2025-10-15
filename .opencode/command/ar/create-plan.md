@@ -365,6 +365,20 @@ make checkpoint-gate CMD=create-plan GATE="Requirements" REQUIRED="1,2,3,4,5"
 
 #### Checkpoint 6: Plan Iterations
 
+**CRITICAL: Per-Iteration Progress Tracking**
+
+This checkpoint involves creating multiple iterations. To ensure the command doesn't lose track of progress, initialize a separate nested checkpoint instance for iteration tracking.
+
+**Initialize Iteration Tracking:**
+```bash
+# Initialize nested checkpoint for iteration tracking
+# After determining iteration count from Checkpoint 4
+make checkpoint-init CMD=create-plan-iterations STEPS='"Iteration 0.1" "Iteration 0.2" "Iteration 0.3" "Iteration 1.1" "Iteration 1.2" ... [all iteration names]'
+
+# Check iteration tracking status anytime
+make checkpoint-status CMD=create-plan-iterations
+```
+
 **Write complete iteration structure:**
 
 For EACH iteration, create:
@@ -481,11 +495,69 @@ int64_t ar_agent_store_fixture__create_agent(...) {
 ```
 ```
 
+**MANDATORY: After creating EACH iteration:**
+
 ```bash
+# Mark iteration as complete immediately after creation
+make checkpoint-update CMD=create-plan-iterations STEP=1  # After Iteration 0.1
+make checkpoint-update CMD=create-plan-iterations STEP=2  # After Iteration 0.2
+make checkpoint-update CMD=create-plan-iterations STEP=3  # After Iteration 0.3
+# ... continue for each iteration
+```
+
+**Progress Tracking Pattern:**
+
+For each iteration created:
+1. **Create the iteration** (RED phase, GREEN phase, verification)
+2. **Immediately update checkpoint** using `make checkpoint-update CMD=create-plan-iterations STEP=N`
+3. **Continue to next iteration**
+4. **DO NOT batch updates** - update after each iteration
+
+**Check Progress Anytime:**
+```bash
+# See current iteration progress
+make checkpoint-status CMD=create-plan-iterations
+
+# Example output:
+# 📈 create-plan-iterations: 5/12 steps (42%)
+#    [████████░░░░░░░░░░░░] 42%
+# → Next: make checkpoint-update CMD=create-plan-iterations STEP=6
+```
+
+**Resuming After Interruption:**
+```bash
+# Check which iterations are complete
+make checkpoint-status CMD=create-plan-iterations
+
+# The status will show which step to continue from
+# Resume creating iterations starting from the indicated step
+```
+
+**CRITICAL**: This iteration tracking uses a nested checkpoint instance (`create-plan-iterations`) independent of the main checkpoint tracking (`create-plan`). This allows resuming within Checkpoint 6 if interrupted mid-iteration creation.
+
+**After ALL iterations created:**
+```bash
+# The nested checkpoint system will show 100% when all iterations are done
+make checkpoint-status CMD=create-plan-iterations
+# Should show: 🎆 All 12 steps complete!
+
+# Clean up iteration tracking
+make checkpoint-cleanup CMD=create-plan-iterations
+
+# Mark main Checkpoint 6 as complete
 make checkpoint-update CMD=create-plan STEP=6
 ```
 
 #### Checkpoint 7: Structure RED Phases
+
+**CRITICAL: Per-Iteration Verification Tracking**
+
+**Initialize RED Phase Verification Tracking:**
+```bash
+# Initialize nested checkpoint for RED phase verification
+# Use same iteration list as Checkpoint 6
+make checkpoint-init CMD=create-plan-red-phases STEPS='"Iteration 0.1" "Iteration 0.2" "Iteration 0.3" ... [all iteration names]'
+```
 
 **Verify all RED phases have:**
 
@@ -509,11 +581,38 @@ For EACH iteration:
 ✅ One assertion only (not multiple AR_ASSERT calls)
 ```
 
+**MANDATORY: After verifying EACH iteration's RED phase:**
 ```bash
+# Mark RED phase verification complete
+make checkpoint-update CMD=create-plan-red-phases STEP=1  # After verifying Iteration 0.1
+make checkpoint-update CMD=create-plan-red-phases STEP=2  # After verifying Iteration 0.2
+# ... continue for each iteration
+```
+
+**CRITICAL**: Update checkpoint immediately after verifying each iteration's RED phase. DO NOT batch updates.
+
+**After ALL RED phases verified:**
+```bash
+# Verify all complete
+make checkpoint-status CMD=create-plan-red-phases
+# Should show: 🎆 All steps complete!
+
+# Clean up RED phase tracking
+make checkpoint-cleanup CMD=create-plan-red-phases
+
+# Mark main Checkpoint 7 as complete
 make checkpoint-update CMD=create-plan STEP=7
 ```
 
 #### Checkpoint 8: Structure GREEN Phases
+
+**CRITICAL: Per-Iteration Verification Tracking**
+
+**Initialize GREEN Phase Verification Tracking:**
+```bash
+# Initialize nested checkpoint for GREEN phase verification
+make checkpoint-init CMD=create-plan-green-phases STEPS='"Iteration 0.1" "Iteration 0.2" "Iteration 0.3" ... [all iteration names]'
+```
 
 **Verify all GREEN phases follow minimalism:**
 
@@ -550,7 +649,26 @@ Iteration N.3: Actual logic (forced by test)
   → Implement real behavior because test demands it
 ```
 
+**MANDATORY: After verifying EACH iteration's GREEN phase:**
 ```bash
+# Mark GREEN phase verification complete
+make checkpoint-update CMD=create-plan-green-phases STEP=1  # After verifying Iteration 0.1
+make checkpoint-update CMD=create-plan-green-phases STEP=2  # After verifying Iteration 0.2
+# ... continue for each iteration
+```
+
+**CRITICAL**: Update checkpoint immediately after verifying each iteration's GREEN phase. DO NOT batch updates.
+
+**After ALL GREEN phases verified:**
+```bash
+# Verify all complete
+make checkpoint-status CMD=create-plan-green-phases
+# Should show: 🎆 All steps complete!
+
+# Clean up GREEN phase tracking
+make checkpoint-cleanup CMD=create-plan-green-phases
+
+# Mark main Checkpoint 8 as complete
 make checkpoint-update CMD=create-plan STEP=8
 ```
 

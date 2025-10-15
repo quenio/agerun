@@ -303,6 +303,35 @@ Iteration 1.2: Object is registered
   AR_ASSERT(registry_has(obj), "Should register");
 ```
 
+**CHECKPOINT: Initialize Iteration Tracking**
+
+Before reviewing iterations, initialize nested checkpoint for iteration-level tracking:
+
+```bash
+# Initialize nested checkpoint for iteration review tracking
+# After extracting PENDING REVIEW iterations from Checkpoint 2
+# Use iteration descriptions from the plan file
+make checkpoint-init CMD=review-plan-iterations STEPS='"Iteration 0.1" "Iteration 0.2" "Iteration 0.3" "Iteration 1.1" "Iteration 1.2" ... [all PENDING REVIEW iteration descriptions]'
+```
+
+**Example initialization:**
+```bash
+# If plan has 8 PENDING REVIEW iterations:
+make checkpoint-init CMD=review-plan-iterations STEPS='"Iteration 0.1: send() returns true" "Iteration 0.2: has_messages() initially false" "Iteration 0.3: has_messages() after send" "Iteration 1.1: receive() returns message" "Iteration 1.2: queue empty after receive" "Iteration 2.1: error handling NULL delegate" "Iteration 2.2: error handling invalid message" "Iteration 3.1: cleanup destroys queue"'
+```
+
+**Check iteration review progress anytime:**
+```bash
+make checkpoint-status CMD=review-plan-iterations
+```
+
+**Expected output example (after 3/8 iterations reviewed):**
+```
+📈 review-plan-iterations: 3/8 steps (38%)
+   [████████░░░░░░░░░░░░] 38%
+→ Next: make checkpoint-update CMD=review-plan-iterations STEP=4
+```
+
 **CRITICAL: Iteration Acceptance and Status Update**
 
 **After verifying each PENDING REVIEW iteration, obtain user acceptance:**
@@ -327,12 +356,14 @@ Iteration 1.2: Object is registered
    - Use Edit tool to update iteration status in plan file
    - Change: "#### Iteration X.Y: description - PENDING REVIEW"
    - To:     "#### Iteration X.Y: description - REVIEWED"
+   - **Update iteration checkpoint**: `make checkpoint-update CMD=review-plan-iterations STEP=N` (where N is the iteration number in the PENDING REVIEW list)
    - Track accepted iteration in review report
 
    **If user responds "no" or "revise":**
    - Use Edit tool to update iteration status in plan file
    - Change: "#### Iteration X.Y: description - PENDING REVIEW"
    - To:     "#### Iteration X.Y: description - REVISED"
+   - **Update iteration checkpoint**: `make checkpoint-update CMD=review-plan-iterations STEP=N` (where N is the iteration number in the PENDING REVIEW list)
    - Ask user to specify what needs revision
    - Document issues in Checkpoint 10 (Document Issues)
    - Track revision needed in review report
@@ -340,6 +371,7 @@ Iteration 1.2: Object is registered
    **If user responds with specific feedback:**
    - Mark as REVISED if changes needed
    - Mark as REVIEWED if feedback is just notes/suggestions
+   - **Update iteration checkpoint**: `make checkpoint-update CMD=review-plan-iterations STEP=N`
    - Document feedback for inclusion in final report
 
 **Status Update Example:**
@@ -362,12 +394,34 @@ new_string: "#### Iteration 0.1: send() returns true - REVISED"
 - [ ] Present each PENDING REVIEW iteration to user
 - [ ] Wait for user's acceptance response
 - [ ] Update plan file with new status marker (REVIEWED or REVISED)
+- [ ] Update iteration checkpoint after each iteration
 - [ ] Track acceptance count for final report
 - [ ] Document any revision requests for Checkpoint 10
 - [ ] Continue until all PENDING REVIEW iterations processed
 
 **MANDATORY**: You MUST update the plan file with new status markers after each acceptance/revision decision. Do not batch updates—update immediately after each user response.
 
+**CHECKPOINT: Complete Iteration Tracking**
+
+After all PENDING REVIEW iterations have been reviewed:
+
+```bash
+# Check final iteration review status
+make checkpoint-status CMD=review-plan-iterations
+```
+
+**Expected output when all iterations reviewed:**
+```
+🎆 All 8 steps complete!
+✓ Run: make checkpoint-cleanup CMD=review-plan-iterations
+```
+
+```bash
+# Clean up iteration tracking
+make checkpoint-cleanup CMD=review-plan-iterations
+```
+
+**Then mark main Checkpoint 4 as complete:**
 ```bash
 make checkpoint-update CMD=review-plan STEP=4
 ```

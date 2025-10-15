@@ -320,6 +320,35 @@ make checkpoint-gate CMD=execute-plan GATE="Setup" REQUIRED="1,2,3"
 
 #### Checkpoint 4: Execute Iterations
 
+**CHECKPOINT: Initialize Iteration Tracking**
+
+Before executing iterations, initialize nested checkpoint for iteration-level tracking:
+
+```bash
+# Initialize nested checkpoint for iteration execution tracking
+# After extracting REVIEWED or REVISED iterations from Checkpoint 3
+# Use iteration descriptions from the plan file
+make checkpoint-init CMD=execute-plan-iterations STEPS='"Iteration 0.1" "Iteration 0.2" "Iteration 0.3" "Iteration 1.1" "Iteration 1.2" ... [all REVIEWED or REVISED iteration descriptions]'
+```
+
+**Example initialization:**
+```bash
+# If plan has 10 iterations to execute (8 REVIEWED + 2 REVISED):
+make checkpoint-init CMD=execute-plan-iterations STEPS='"Iteration 0.1: send() returns true" "Iteration 0.2: has_messages() initially false" "Iteration 0.3: has_messages() after send" "Iteration 1.1: receive() returns message" "Iteration 1.2: queue empty after receive" "Iteration 2.1: error handling NULL delegate" "Iteration 2.2: error handling invalid message" "Iteration 3.1: cleanup destroys queue" "Iteration 3.2: cleanup removes messages" "Iteration 4.1: refactoring extraction"'
+```
+
+**Check iteration execution progress anytime:**
+```bash
+make checkpoint-status CMD=execute-plan-iterations
+```
+
+**Expected output example (after 4/10 iterations executed):**
+```
+📈 execute-plan-iterations: 4/10 steps (40%)
+   [████████░░░░░░░░░░░░] 40%
+→ Next: make checkpoint-update CMD=execute-plan-iterations STEP=5
+```
+
 **For EACH iteration, execute RED-GREEN-REFACTOR cycle:**
 
 ```markdown
@@ -421,10 +450,17 @@ new_string: "#### Iteration 0.2: has_messages() returns false - IMPLEMENTED"
 - [ ] Complete RED-GREEN-REFACTOR cycle for iteration
 - [ ] Update plan file immediately after iteration completes
 - [ ] Change status from REVIEWED or REVISED to IMPLEMENTED
+- [ ] **Update iteration checkpoint**: `make checkpoint-update CMD=execute-plan-iterations STEP=N` (where N is the iteration number in the execution list)
 - [ ] Track implemented iteration for final report
 - [ ] Continue to next iteration
 
 **MANDATORY**: You MUST update the plan file with IMPLEMENTED status after each iteration completes. Do not batch updates—update immediately after each iteration's REFACTOR phase.
+
+**After marking iteration as IMPLEMENTED, update iteration checkpoint:**
+```bash
+# Update iteration checkpoint after marking iteration as IMPLEMENTED
+make checkpoint-update CMD=execute-plan-iterations STEP=N  # N is the iteration number (1, 2, 3, ...)
+```
 
 **Iteration execution loop:**
 ```bash
@@ -447,10 +483,34 @@ for iteration in $(seq 1 12); do
     # UPDATE STATUS: Mark as IMPLEMENTED in plan file
     # <use Edit tool to change REVIEWED/REVISED → IMPLEMENTED>
 
+    # UPDATE CHECKPOINT: Mark iteration complete
+    # make checkpoint-update CMD=execute-plan-iterations STEP=$iteration
+
     # Verify memory (next checkpoint)
 done
 ```
 
+**CHECKPOINT: Complete Iteration Tracking**
+
+After all iterations have been executed and marked IMPLEMENTED:
+
+```bash
+# Check final iteration execution status
+make checkpoint-status CMD=execute-plan-iterations
+```
+
+**Expected output when all iterations executed:**
+```
+🎆 All 10 steps complete!
+✓ Run: make checkpoint-cleanup CMD=execute-plan-iterations
+```
+
+```bash
+# Clean up iteration tracking
+make checkpoint-cleanup CMD=execute-plan-iterations
+```
+
+**Then mark main Checkpoint 4 as complete:**
 ```bash
 make checkpoint-update CMD=execute-plan STEP=4
 ```
