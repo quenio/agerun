@@ -280,7 +280,7 @@ Messages can be any of the supported data types:
 
 ### Delegate Concept
 
-**Definition**: Delegates are specialized system components that act on behalf of agents to interact with external resources. Each delegate type handles a specific communication channel (file, network, logging, etc.) with built-in security controls.
+**Definition**: Delegates are specialized system components that provide controlled access to external resources and services. Each delegate type handles a specific communication channel (file, network, logging, etc.) with built-in security controls, enabling agents to interact with the outside world through a secure, message-based interface.
 
 **Key Characteristics**:
 - Implemented as C/Zig modules following Parnas principles
