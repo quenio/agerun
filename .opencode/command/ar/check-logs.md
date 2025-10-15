@@ -57,7 +57,7 @@ Check build logs for hidden issues that might not be caught by the build summary
 
 This command performs a two-phase analysis of build log files:
 
-### Phase 1: Standard Checks
+### Stage 1: Standard Checks
 Detects known critical issues including:
 - Assertion failures
 - Segmentation faults or crashes
@@ -70,7 +70,7 @@ Detects known critical issues including:
 - Method evaluation failures
 - Missing AST errors
 
-### Phase 2: Deep Analysis (if standard checks pass)
+### Stage 2: Deep Analysis (if standard checks pass)
 Performs additional thorough analysis to catch edge cases:
 - Scans for any ERROR/WARNING patterns that might have been missed
 - Verifies test output consistency ([details](../../../kb/systematic-consistency-verification.md))
@@ -78,7 +78,7 @@ Performs additional thorough analysis to catch edge cases:
 - Searches for failure indicators (Cannot, Unable to, Failed to)
 - Provides detailed counts and examples of any anomalies found
 
-## Phase 1: Initial Check (Steps 1-2)
+## Stage 1: Initial Check (Steps 1-2)
 
 #### [CHECKPOINT START - PHASE 1]
 
@@ -128,7 +128,7 @@ make checkpoint-gate CMD=check-logs GATE="Build" REQUIRED="1"
    Verified: Steps 1
 ```
 
-## Phase 2: Analysis (Steps 3-4)
+## Stage 2: Analysis (Steps 3-4)
 
 #### [CHECKPOINT START - PHASE 2]
 
@@ -215,7 +215,7 @@ Error Summary:
 Proceed to resolution phase.
 ```
 
-## Phase 3: Resolution (Steps 5-6)
+## Stage 3: Resolution (Steps 5-6)
 
 #### [CHECKPOINT START - PHASE 3]
 
@@ -259,7 +259,7 @@ fi
 make checkpoint-update CMD=check-logs STEP=6
 ```
 
-## Phase 4: Verification (Steps 7-8)
+## Stage 4: Verification (Steps 7-8)
 
 #### [CHECKPOINT START - PHASE 4]
 

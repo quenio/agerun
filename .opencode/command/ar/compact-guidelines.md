@@ -94,7 +94,7 @@ When you see KB article links (formatted with parentheses and "details" text poi
 
 ### Guidelines for Compacting
 
-## Phase 1: Analysis (Steps 1-3)
+## Stage 1: Analysis (Steps 1-3)
 
 #### [CHECKPOINT START - PHASE 1]
 
@@ -160,7 +160,7 @@ make checkpoint-gate CMD=compact-guidelines GATE="Analysis" REQUIRED="1,2,3"
    Verified: Steps 1,2,3
 ```
 
-## Phase 2: Planning (Steps 4-5)
+## Stage 2: Planning (Steps 4-5)
 
 #### [CHECKPOINT START - PHASE 2]
 
@@ -226,7 +226,7 @@ make checkpoint-gate CMD=compact-guidelines GATE="Planning" REQUIRED="4,5"
 - If moving content that already has KB links, keep those links with the content
 - Only add new KB links when creating new articles
 
-## Phase 3: Creation (Steps 6-8)
+## Stage 3: Creation (Steps 6-8)
 
 #### [CHECKPOINT START - PHASE 3]
 
@@ -319,7 +319,7 @@ make checkpoint-gate CMD=compact-guidelines GATE="Creation" REQUIRED="6,7,8"
    Verified: Steps 6,7,8
 ```
 
-## Phase 4: Integration (Steps 9-11)
+## Stage 4: Integration (Steps 9-11)
 
 #### [CHECKPOINT START - PHASE 4]
 
@@ -471,7 +471,7 @@ After compacting each section:
 
 3. **Never leave placeholder links**
 
-## Phase 5: Validation (Steps 12-14)
+## Stage 5: Validation (Steps 12-14)
 
 #### [CHECKPOINT START - PHASE 5]
 
@@ -544,7 +544,7 @@ make checkpoint-gate CMD=compact-guidelines GATE="Validation" REQUIRED="12,13,14
    Verified: Steps 12,13,14
 ```
 
-## Phase 6: Commit (Step 15)
+## Stage 6: Commit (Step 15)
 
 #### [CHECKPOINT START - PHASE 6]
 

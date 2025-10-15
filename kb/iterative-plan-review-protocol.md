@@ -10,9 +10,9 @@ Reviewing 15+ iterations at once leads to diminished attention on later iteratio
 ```markdown
 # Session 1: Review Iterations 0.1-0.4
 
-Reviewer: "Let's review Section 0: Initial Fixture Setup (iterations 0.1-0.4)"
+Reviewer: "Let's review Cycle 1: Initial Fixture Setup (iterations 0.1-0.4)"
 
-### Section 0: Initial Fixture Setup
+### Cycle 1: Initial Fixture Setup
 
 #### Iteration 0.1: Basic fixture creation - PENDING REVIEW
 [Detailed review of 0.1...]
@@ -38,9 +38,9 @@ Let's pause here and continue with iterations 0.5-0.8 in the next session."
 
 # Session 2: Review Iterations 0.5-0.8 (starts fresh with focused attention)
 
-Reviewer: "Now let's review Section 1: Delegation Infrastructure (iterations 0.5-0.8)"
+Reviewer: "Now let's review Cycle 2: Delegation Infrastructure (iterations 0.5-0.8)"
 
-### Section 1: Delegation Infrastructure
+### Cycle 2: Delegation Infrastructure
 
 #### Iteration 0.5: get_delegation() works - PENDING REVIEW
 [Detailed review with full attention, not fatigued from reviewing 0.1-0.4...]
@@ -111,7 +111,7 @@ echo "- [ ] Review iterations 0.5-0.8 (Section 1)" >> TODO.md
 git add plans/tdd_cycle_N_plan.md TODO.md
 git commit -m "docs: review TDD Cycle N iterations 0.1-0.4
 
-Reviewed and approved Section 0: Initial Fixture Setup
+Reviewed and approved Cycle 1: Initial Fixture Setup
 - Iteration 0.1: Basic fixture creation - REVIEWED
 - Iteration 0.2: Fixture owns evaluator_fixture - REVIEWED (split into 0.2.1/0.2.2)
 - Iteration 0.3: Cleanup verification - REVIEWED
@@ -148,12 +148,12 @@ Status: 4/15 iterations reviewed (27%)"
 When iterations depend on each other:
 
 ```markdown
-### Section 0: Setup
+### Cycle 1: Setup
 
 #### Iteration 0.1: Create ar_delegate_t - REVIEWED
 #### Iteration 0.2: Register delegate - REVIEWED
 
-### Section 1: Operations
+### Cycle 2: Operations
 
 #### Iteration 1.1: Send message to delegate - PENDING REVIEW
 
@@ -162,11 +162,11 @@ When iterations depend on each other:
 
 ---
 
-### Section 0: Setup
+### Cycle 1: Setup
 
 #### Iteration 0.1: Create ar_delegate_t - PENDING REVIEW
 
-### Section 2: Advanced Features
+### Cycle 3: Advanced Features
 
 #### Iteration 2.1: Delegate proxy pattern - PENDING REVIEW
 
@@ -189,7 +189,7 @@ independently and explicitly approved before moving to the next.
 
 ## Plan Status: DRAFT - PENDING REVIEW
 
-### Section 0: Initial Setup (3 iterations)
+### Cycle 1: Initial Setup (3 iterations)
 Target: Review in Session 1
 
 #### Iteration 0.1: Basic creation - PENDING REVIEW
@@ -201,17 +201,17 @@ Target: Review in Session 1
 #### Iteration 0.3: Cleanup - PENDING REVIEW
 ...
 
-### Section 1: Core Functionality (4 iterations)
+### Cycle 2: Core Functionality (4 iterations)
 Target: Review in Session 2
 
 #### Iteration 1.1: Main feature - PENDING REVIEW
 ...
 
-### Section 2: Edge Cases (3 iterations)
+### Cycle 3: Edge Cases (3 iterations)
 Target: Review in Session 3
 ...
 
-### Section 3: Refactoring (2 iterations)
+### Cycle 4: Refactoring (2 iterations)
 Target: Review in Session 4
 ...
 EOF
@@ -257,8 +257,8 @@ cat > /tmp/review_progress.md << 'EOF'
 - Status: NOT STARTED
 
 ## Session 3 - TBD
-- [ ] Iterations 2.1-2.3 (Section 2: Edge Cases)
-- [ ] Iterations 3.1-3.2 (Section 3: Refactoring)
+- [ ] Iterations 2.1-2.3 (Cycle 3: Edge Cases)
+- [ ] Iterations 3.1-3.2 (Cycle 4: Refactoring)
 EOF
 ```
 
@@ -342,7 +342,7 @@ and continue with 1.4-1.5 in the next session."
 ### Pattern 2: Fast-Track Simple Iterations
 
 ```markdown
-### Section 3: Cleanup Refactoring
+### Cycle 4: Cleanup Refactoring
 
 #### Iteration 3.1: Extract helper function - PENDING REVIEW
 #### Iteration 3.2: Rename for clarity - PENDING REVIEW
