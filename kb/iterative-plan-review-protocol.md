@@ -104,8 +104,8 @@ Git commit with clear message about what was reviewed
 **After Session:**
 ```bash
 # Update TODO.md or progress tracker
-echo "- [x] Review iterations 0.1-0.4 (Section 0)" >> TODO.md
-echo "- [ ] Review iterations 0.5-0.8 (Section 1)" >> TODO.md
+echo "- [x] Review iterations 1.1-1.4 (Cycle 1)" >> TODO.md
+echo "- [ ] Review iterations 2.1-2.4 (Cycle 2)" >> TODO.md
 
 # Commit with progress summary
 git add plans/tdd_cycle_N_plan.md TODO.md

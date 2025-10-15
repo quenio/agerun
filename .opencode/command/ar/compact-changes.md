@@ -205,9 +205,9 @@ make checkpoint-gate CMD=compact-changes GATE="Analysis Complete" REQUIRED="1,2"
 ```markdown
 # Before (separate dates):
 ## 2025-09-27
-- Removed "_with_instance" suffix (Phase 1)
+- Removed "_with_instance" suffix (Stage 1)
 ## 2025-09-14
-- Removed global functions (Phase 2)  
+- Removed global functions (Stage 2)  
 ## 2025-09-13
 - Completed global API removal
 

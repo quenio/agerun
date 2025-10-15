@@ -7,7 +7,7 @@ When understanding what work was actually completed, examine the scripts that pe
 Documentation can become outdated or incomplete, especially when implementation exceeds planning. Scripts provide ground truth about what changes were actually made to the codebase. This prevents duplicating already-completed work.
 
 ## Example
-Investigating Phase 2b completion by examining scripts:
+Investigating Stage 2b completion by examining scripts:
 ```bash
 # Check what the removal script actually did
 grep "FUNCTIONS_TO_REMOVE" scripts/remove_global_functions.py
@@ -22,17 +22,17 @@ git show HEAD:scripts/remove_global_functions.py | grep -A 30 "FUNCTIONS_TO_REMO
 # Lists all functions that were removed
 ```
 
-Script revealed Phase 2b removed ALL functions:
+Script revealed Stage 2b removed ALL functions:
 ```python
 FUNCTIONS_TO_REMOVE = [
-    'ar_agency__create_agent',           # Phase 2b
-    'ar_agency__destroy_agent',          # Phase 2b
-    # ... 18 more from Phase 2b ...
-    'ar_agency__is_agent_active',        # Phase 2c (already done!)
-    'ar_agency__set_agent_active',       # Phase 2c (already done!)
-    'ar_agency__set_agent_id',           # Phase 2c (already done!)
-    'ar_agency__get_agent_method_info',  # Phase 2c (already done!)
-    'ar_agency__update_agent_method',    # Phase 2c (already done!)
+    'ar_agency__create_agent',           # Stage 2b
+    'ar_agency__destroy_agent',          # Stage 2b
+    # ... 18 more from Stage 2b ...
+    'ar_agency__is_agent_active',        # Stage 2c (already done!)
+    'ar_agency__set_agent_active',       # Stage 2c (already done!)
+    'ar_agency__set_agent_id',           # Stage 2c (already done!)
+    'ar_agency__get_agent_method_info',  # Stage 2c (already done!)
+    'ar_agency__update_agent_method',    # Stage 2c (already done!)
 ]
 ```
 

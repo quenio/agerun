@@ -35,10 +35,10 @@ ar_list__add_last(own_steps, ar_data__create_string("Update CHANGELOG"));
 ar_data__set_map_string(own_workflow, "step_1", ar_data__create_string("complete"));
 ar_data__set_map_string(own_workflow, "step_2", ar_data__create_string("complete"));
 
-// Gate enforcement between phases
-bool phase1_complete = check_steps_complete(own_workflow, 1, 2);  // EXAMPLE: Hypothetical function
-if (!phase1_complete) {
-    printf("❌ GATE BLOCKED: Complete steps 1-2 before Phase 2\n");
+// Gate enforcement between stages
+bool stage1_complete = check_steps_complete(own_workflow, 1, 2);  // EXAMPLE: Hypothetical function
+if (!stage1_complete) {
+    printf("❌ GATE BLOCKED: Complete steps 1-2 before Stage 2\n");
     return false;  // Cannot proceed
 }
 

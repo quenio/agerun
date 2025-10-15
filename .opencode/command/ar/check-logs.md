@@ -101,7 +101,7 @@ make checkpoint-update CMD=check-logs STEP=1
 #### Checkpoint 2: Standard Checks
 
 ```bash
-# Run Phase 1 log analysis
+# Run Stage 1 log analysis
 echo "Running standard log checks..."
 ERROR_COUNT=0
 
@@ -137,7 +137,7 @@ make checkpoint-gate CMD=check-logs GATE="Build" REQUIRED="1"
 #### Checkpoint 3: Deep Analysis
 
 ```bash
-# Run Phase 2 deep analysis if standard passed
+# Run Stage 2 deep analysis if standard passed
 source /tmp/check-logs-stats.txt
 
 if [ $ERROR_COUNT -eq 0 ]; then

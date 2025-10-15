@@ -5,7 +5,7 @@ Before implementing any planned task from TODO.md or other documentation, always
 
 ## Importance
 Prevents wasted effort on unnecessary tasks. Examples:
-- Phase 2c was planned to create 5 instance functions, but they were already removed in Phase 2b
+- Stage 2c was planned to create 5 instance functions, but they were already removed in Stage 2b
 - TDD Cycle 10 was listed as incomplete, but implementation and tests already existed
 - YAML parser bug blocking Cycle 9 was already fixed in commit 5ef1ce6
 

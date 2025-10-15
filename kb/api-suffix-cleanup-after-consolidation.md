@@ -10,10 +10,10 @@ Function names communicate purpose. A suffix like `_with_agency` suggests there'
 ```c
 // Historical evolution pattern (using generic names):
 
-// PHASE 1: Original simple API
+// Cycle 1: Original simple API
 ar_module__create(ar_log_t *ref_log);  // EXAMPLE: Simple version
 
-// PHASE 2: Added advanced API with more parameters
+// Cycle 2: Added advanced API with more parameters
 ar_module__create(ar_log_t *ref_log);  // EXAMPLE: Still exists but becoming dead code
 ar_module__create_with_suffix(  // EXAMPLE: New version with more parameters
     ar_log_t *ref_log,
@@ -21,7 +21,7 @@ ar_module__create_with_suffix(  // EXAMPLE: New version with more parameters
     ar_something_t *ref_dep2   // EXAMPLE: Generic dependency type
 );
 
-// PHASE 3: Simple API becomes dead code
+// Cycle 3: Simple API becomes dead code
 // - Remove simple version
 // - Remove "_with_suffix" from advanced version
 

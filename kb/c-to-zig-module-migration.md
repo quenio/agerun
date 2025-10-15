@@ -242,7 +242,7 @@ grep -n "#include.*ar_" module.h module.c
    - Use stack allocation to break heap→io→heap cycles
    - Avoid dynamic allocation where possible
 
-### Phase 5: Testing Integration
+### Stage 5: Testing Integration
 
 1. **Maintain existing test files** (.c tests can call Zig functions via C headers)
 2. **Add Zig's built-in testing** alongside AgeRun tests
@@ -288,7 +288,7 @@ grep -n "#include.*ar_" module.h module.c
    - Other modules continue to include the .h file
    - No source code changes needed in dependent modules
 
-### Phase 6: Testing and Verification
+### Stage 6: Testing and Verification
 
 **CRITICAL**: C files take precedence over Zig files when both exist. You must rename the C file before testing.
 
@@ -321,7 +321,7 @@ grep -n "#include.*ar_" module.h module.c
    rm modules/ar_module_name.c.bak  # EXAMPLE: Delete backup after confirming tests pass
    ```
 
-### Phase 7: Build Integration
+### Stage 7: Build Integration
 
 1. **Makefile behavior** (automatic detection):
    - Makefile will automatically detect .zig files
@@ -334,7 +334,7 @@ grep -n "#include.*ar_" module.h module.c
    make clean build
    ```
 
-### Phase 8: Cleanup and Documentation
+### Stage 8: Cleanup and Documentation
 
 1. **Delete the C file**:
    ```bash

@@ -65,7 +65,7 @@ Complete checkpoint system components:
 # Integration in commands:
 make checkpoint-init CMD=my-command STEPS='"Step 1" "Step 2" "Step 3"'
 make checkpoint-update CMD=my-command STEP=1
-make checkpoint-gate CMD=my-command GATE="Phase 1" REQUIRED="1,2"
+make checkpoint-gate CMD=my-command GATE="Stage 1" REQUIRED="1,2"
 make checkpoint-status CMD=my-command
 make checkpoint-cleanup CMD=my-command
 ```

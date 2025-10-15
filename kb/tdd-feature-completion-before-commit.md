@@ -30,7 +30,7 @@ When implementing ar_method_registry with 11 planned TDD cycles:
 // 1. Update documentation (ar_method_registry.md)
 // 2. Update TODO.md (mark completed)
 // 3. Update CHANGELOG.md
-// 4. git commit -m "feat: complete Phase 1 of methodology module refactoring"
+// 4. git commit -m "feat: complete Stage 1 of methodology module refactoring"
 ```
 
 ## Generalization

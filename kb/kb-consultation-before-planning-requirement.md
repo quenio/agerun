@@ -42,11 +42,11 @@ void plan_with_kb_consultation(void) {  // EXAMPLE: Metaphorical planning functi
     // 3. NOW create plan incorporating KB patterns
     ar_list_t* own_informed_steps = ar_list__create();
     ar_list__add_last(own_informed_steps,
-        ar_data__create_string("Phase 1 (RED): Add assertions per kb/red-green-refactor-cycle.md"));
+        ar_data__create_string("RED Phase: Add assertions per kb/red-green-refactor-cycle.md"));
     ar_list__add_last(own_informed_steps,
-        ar_data__create_string("Phase 2 (GREEN): Run tests per kb/tdd-cycle-detailed-explanation.md"));
+        ar_data__create_string("GREEN Phase: Run tests per kb/tdd-cycle-detailed-explanation.md"));
     ar_list__add_last(own_informed_steps,
-        ar_data__create_string("Phase 3 (REFACTOR): Review per kb/test-assertion-strength-patterns.md"));
+        ar_data__create_string("REFACTOR Phase: Review per kb/test-assertion-strength-patterns.md"));
 
     ar_list__destroy(own_informed_steps);
     ar_list__destroy(own_kb_articles);
