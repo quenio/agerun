@@ -516,7 +516,7 @@ The original review process still works without checkpoints, but you lose progre
 - [Module Quality Checklist](../../../kb/module-quality-checklist.md)
 - [Quantitative Priority Setting](../../../kb/quantitative-priority-setting.md)
 - [Plan Review Status Tracking Pattern](../../../kb/plan-review-status-tracking.md)
-- [Section-by-Section Review Protocol](../../../kb/section-by-section-review-protocol.md)
+- [Iterative Plan Review Protocol](../../../kb/iterative-plan-review-protocol.md)
 - [Iterative Plan Refinement Pattern](../../../kb/iterative-plan-refinement-pattern.md)
 
 ### Memory Management

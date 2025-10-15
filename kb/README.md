@@ -83,7 +83,7 @@ Each learning file contains:
 - [Plan Review Status Tracking Pattern](plan-review-status-tracking.md)
 - [Pre-Compact Hook KB Consultation](pre-compact-hook-kb-consultation.md)
 - [Search Result Completeness Verification](search-result-completeness-verification.md)
-- [Section-by-Section Review Protocol](section-by-section-review-protocol.md)
+- [Iterative Plan Review Protocol](iterative-plan-review-protocol.md)
 
 ### 2. QUALITY ASSURANCE
 

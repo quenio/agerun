@@ -301,7 +301,7 @@ make checkpoint-cleanup CMD=commit
 - [TDD Iteration Planning Pattern](../../../kb/tdd-iteration-planning-pattern.md)
 - [Temporary Test Cleanup Pattern](../../../kb/temporary-test-cleanup-pattern.md)
 - [Plan Review Status Tracking Pattern](../../../kb/plan-review-status-tracking.md)
-- [Section-by-Section Review Protocol](../../../kb/section-by-section-review-protocol.md)
+- [Iterative Plan Review Protocol](../../../kb/iterative-plan-review-protocol.md)
 - [Iterative Plan Refinement Pattern](../../../kb/iterative-plan-refinement-pattern.md)
 
 ### Refactoring Patterns

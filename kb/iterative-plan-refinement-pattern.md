@@ -193,7 +193,7 @@ Keep a log of refinements:
 - [TDD RED Phase Assertion Requirement](tdd-red-phase-assertion-requirement.md) - Proper RED phases
 - [Temporary Test Cleanup Pattern](temporary-test-cleanup-pattern.md) - Memory management in minimal implementations
 - [Plan Review Status Tracking Pattern](plan-review-status-tracking.md) - Tracking multi-session reviews
-- [Section-by-Section Review Protocol](section-by-section-review-protocol.md) - Incremental plan approval
+- [Iterative Plan Review Protocol](iterative-plan-review-protocol.md) - Incremental plan approval
 - [BDD Test Structure](bdd-test-structure.md) - Test organization
 - [API Behavior Verification](api-behavior-verification.md) - Verify API before use
 - [Assumption Verification Before Action](assumption-verification-before-action.md) - Check assumptions

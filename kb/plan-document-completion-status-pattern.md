@@ -174,6 +174,6 @@ A well-documented completion status includes:
 - [TDD Feature Completion Before Commit](tdd-feature-completion-before-commit.md)
 - [Plan Verification and Review](plan-verification-and-review.md)
 - [Plan Review Status Tracking Pattern](plan-review-status-tracking.md)
-- [Section-by-Section Review Protocol](section-by-section-review-protocol.md)
+- [Iterative Plan Review Protocol](iterative-plan-review-protocol.md)
 - [Atomic Commit Documentation Pattern](atomic-commit-documentation-pattern.md)
 - [Build Verification Before Commit](build-verification-before-commit.md)

@@ -13,7 +13,7 @@ Before creating any plan ([details](../../../kb/kb-consultation-before-planning-
    - `kb/tdd-red-phase-assertion-requirement.md`
    - `kb/temporary-test-cleanup-pattern.md`
    - `kb/plan-review-status-tracking.md`
-   - `kb/section-by-section-review-protocol.md`
+   - `kb/iterative-plan-review-protocol.md`
    - `kb/iterative-plan-refinement-pattern.md`
    - `kb/bdd-test-structure.md`
    - `kb/ownership-naming-conventions.md`
@@ -1228,7 +1228,7 @@ Use the simplest possible implementation:
 
 ### Review and Documentation Patterns
 - [Plan Review Status Tracking Pattern](../../../kb/plan-review-status-tracking.md)
-- [Section-by-Section Review Protocol](../../../kb/section-by-section-review-protocol.md)
+- [Iterative Plan Review Protocol](../../../kb/iterative-plan-review-protocol.md)
 - [Plan Verification and Review](../../../kb/plan-verification-and-review.md)
 - [Plan Document Completion Status Pattern](../../../kb/plan-document-completion-status-pattern.md)
 

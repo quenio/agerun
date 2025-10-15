@@ -263,7 +263,7 @@ check_section_consistency plans/tdd_cycle_N_plan.md
 ```
 
 ## Related Patterns
-- [Section-by-Section Review Protocol](section-by-section-review-protocol.md)
+- [Iterative Plan Review Protocol](iterative-plan-review-protocol.md)
 - [Plan Document Completion Status Pattern](plan-document-completion-status-pattern.md)
 - [Iterative Plan Refinement Pattern](iterative-plan-refinement-pattern.md)
 - [TDD Iteration Planning Pattern](tdd-iteration-planning-pattern.md)

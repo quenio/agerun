@@ -8,7 +8,7 @@ Before reviewing any plan ([details](../../../kb/kb-consultation-before-planning
 1. Search: `grep "plan.*review\|iteration.*split\|TDD.*minimalism" kb/README.md`
 2. Read these KB articles IN FULL using the Read tool:
    - `kb/plan-review-status-tracking.md`
-   - `kb/section-by-section-review-protocol.md`
+   - `kb/iterative-plan-review-protocol.md`
    - `kb/tdd-plan-iteration-split-pattern.md`
    - `kb/tdd-green-phase-minimalism.md`
    - `kb/tdd-iteration-planning-pattern.md`
@@ -17,19 +17,19 @@ Before reviewing any plan ([details](../../../kb/kb-consultation-before-planning
    - `kb/plan-verification-and-review.md`
 3. Check Related Patterns sections in each article and read any additional relevant articles found there
 4. In your response, quote these specific items from the KB:
-   - The section-by-section review optimal size (iterations per session)
+   - The iterative review optimal size (iterations per session)
    - When to split iterations into .1/.2 sub-iterations
    - The temporary cleanup comment format (MANDATORY)
    - The status marker conventions (REVIEWED/PENDING/REVISED)
 
 **Example of proper KB consultation:**
 ```
-I've read section-by-section-review-protocol.md which states:
+I've read iterative-plan-review-protocol.md which states:
 
-"Optimal section size: 3-5 iterations
+"Optimal session size: 3-5 iterations
 
-Too Small (1-2 iterations per section): Excessive overhead
-Too Large (8+ iterations per section): Reviewer fatigue"
+Too Small (1-2 iterations per session): Excessive overhead
+Too Large (8+ iterations per session): Reviewer fatigue"
 
 And tdd-plan-iteration-split-pattern.md which requires:
 
@@ -157,7 +157,7 @@ This command performs a comprehensive review of TDD plan documents to ensure:
 - **BDD test structure**: All tests follow Given/When/Then/Cleanup ([details](../../../kb/bdd-test-structure.md))
 - **Section organization**: Iterations grouped into logical sections
 - **Review status markers**: REVIEWED/PENDING/REVISED markers present ([details](../../../kb/plan-review-status-tracking.md))
-- **Section sizing**: Sections contain 3-5 iterations for optimal review ([details](../../../kb/section-by-section-review-protocol.md))
+- **Section sizing**: Sections contain 3-5 iterations for optimal review ([details](../../../kb/iterative-plan-review-protocol.md))
 
 #### 3. Completeness and Quality
 - **RED phase assertions**: Every iteration has explicit failure comment (// ← FAILS)
@@ -854,7 +854,7 @@ Review the Minimum Requirements for each phase and ensure all checkboxes are ver
 
 ### Plan Review Patterns
 - [Plan Review Status Tracking Pattern](../../../kb/plan-review-status-tracking.md)
-- [Section-by-Section Review Protocol](../../../kb/section-by-section-review-protocol.md)
+- [Iterative Plan Review Protocol](../../../kb/iterative-plan-review-protocol.md)
 - [Plan Verification and Review](../../../kb/plan-verification-and-review.md)
 - [Plan Document Completion Status Pattern](../../../kb/plan-document-completion-status-pattern.md)
 - [Iterative Plan Refinement Pattern](../../../kb/iterative-plan-refinement-pattern.md)
