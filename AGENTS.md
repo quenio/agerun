@@ -400,6 +400,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 - **Todo list integrity**: Mark items complete, never remove them - preserves task history
 
 **Checkpoint Process Discipline** (MANDATORY):
+- **Sequential execution required**: Work → Verify → Mark complete (never parallelize) ([details](kb/checkpoint-sequential-execution-discipline.md))
 - **Work verification required**: NEVER mark steps complete without actual work ([details](kb/checkpoint-work-verification-antipattern.md))
 - **Evidence-based completion**: Critical steps require evidence files and work summaries
 - **No shortcut marking**: `make checkpoint-update` only after completing required work

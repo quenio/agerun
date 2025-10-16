@@ -43,6 +43,7 @@ fi
 Before committing, you MUST:
 1. Search: `grep "commit\|pre-commit\|checklist" kb/README.md`
 2. Read these KB articles IN FULL using the Read tool:
+   - `kb/checkpoint-sequential-execution-discipline.md` - Sequential execution discipline for checkpoint workflows
    - `kb/pre-commit-checklist-detailed.md`
    - `kb/atomic-commit-documentation-pattern.md`
    - `kb/incomplete-commit-message-recovery-pattern.md`

@@ -14,7 +14,7 @@ Before validation:
 
 ## CHECKPOINT WORKFLOW ENFORCEMENT
 
-**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution. See [Checkpoint Sequential Execution Discipline](../../../kb/checkpoint-sequential-execution-discipline.md) for important requirements about sequential ordering and work verification.
 
 ### In-Progress Workflow Detection
 

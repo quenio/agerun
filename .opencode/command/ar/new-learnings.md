@@ -51,6 +51,7 @@ fi
 Before starting analysis:
 1. Search: `grep "learning\|knowledge\|cross-reference\|search.*result\|target.*compliance" kb/README.md`
 2. Must read these articles:
+   - checkpoint-sequential-execution-discipline - Sequential execution discipline for checkpoint workflows ([critical](../../../kb/checkpoint-sequential-execution-discipline.md))
    - new-learnings-cross-reference-requirement - bidirectional linking requirements
    - new-learnings-complete-integration-pattern - complete integration checklist
    - comprehensive-learning-extraction-pattern - multi-pass extraction strategy
