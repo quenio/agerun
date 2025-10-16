@@ -1,5 +1,39 @@
 Execute a TDD plan document by implementing each iteration following the RED-GREEN-REFACTOR cycle.
 
+## CHECKPOINT WORKFLOW ENFORCEMENT
+
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+
+### In-Progress Workflow Detection
+
+If an `/execute-plan` workflow is already in progress:
+
+```bash
+make checkpoint-status CMD=execute-plan VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=execute-plan STEP=N
+# Or reset: make checkpoint-cleanup CMD=execute-plan && make checkpoint-init CMD=execute-plan STEPS='"KB Consultation" "Read Plan" "Extract Iterations" "Execute Iterations" "Run Tests" "Verify Memory" "Update Plan Status" "Summary"'
+```
+
+### First-Time Initialization Check
+
+```bash
+if [ ! -f /tmp/execute-plan_progress.txt ]; then
+  echo "⚠️  Initializing checkpoint tracking..."
+  make checkpoint-init CMD=execute-plan STEPS='"KB Consultation" "Read Plan" "Extract Iterations" "Execute Iterations" "Run Tests" "Verify Memory" "Update Plan Status" "Summary"'
+else
+  make checkpoint-status CMD=execute-plan
+fi
+```
+
+## PRECONDITION: Checkpoint Tracking Must Be Initialized
+
+```bash
+if [ ! -f /tmp/execute-plan_progress.txt ]; then
+  echo "❌ ERROR: Checkpoint tracking not initialized!"
+  exit 1
+fi
+```
+
 **MANDATORY**: This command MUST use checkpoint tracking. Start by running the checkpoint initialization below. ([details](../../../kb/unmissable-documentation-pattern.md))
 
 ## KB Consultation Required

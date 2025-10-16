@@ -1,5 +1,39 @@
 Create a git commit following the exact workflow specified in AGENTS.md.
 
+## CHECKPOINT WORKFLOW ENFORCEMENT
+
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+
+### In-Progress Workflow Detection
+
+If a `/commit` workflow is already in progress:
+
+```bash
+make checkpoint-status CMD=commit VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=commit STEP=N
+# Or reset: make checkpoint-cleanup CMD=commit && make checkpoint-init CMD=commit STEPS='"Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"'
+```
+
+### First-Time Initialization Check
+
+```bash
+if [ ! -f /tmp/commit_progress.txt ]; then
+  echo "⚠️  Initializing checkpoint tracking..."
+  make checkpoint-init CMD=commit STEPS='"Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"'
+else
+  make checkpoint-status CMD=commit
+fi
+```
+
+## PRECONDITION: Checkpoint Tracking Must Be Initialized
+
+```bash
+if [ ! -f /tmp/commit_progress.txt ]; then
+  echo "❌ ERROR: Checkpoint tracking not initialized!"
+  exit 1
+fi
+```
+
 **Important**: The build must pass all checks including command excellence scores ([details](../../../kb/command-documentation-excellence-gate.md)). Always test with proper make targets ([details](../../../kb/make-target-testing-discipline.md)).
 
 ## MANDATORY KB Consultation

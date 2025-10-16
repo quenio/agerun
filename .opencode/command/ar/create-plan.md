@@ -1,5 +1,49 @@
 Create a TDD plan document following strict methodology patterns and best practices.
 
+## CHECKPOINT WORKFLOW ENFORCEMENT
+
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+
+### In-Progress Workflow Detection
+
+If a `/create-plan` workflow is already in progress:
+
+```bash
+# Check current progress
+make checkpoint-status CMD=create-plan VERBOSE=--verbose
+```
+
+Resume from the next pending step, or clean up and start fresh:
+```bash
+make checkpoint-cleanup CMD=create-plan
+make checkpoint-init CMD=create-plan STEPS='"KB Consultation" "Read Requirements" "Extract Iterations" "Structure Plan" "Validate Plan" "Summary"'
+```
+
+### First-Time Initialization Check
+
+**MANDATORY**: Before executing ANY steps, verify checkpoint tracking is initialized:
+
+```bash
+if [ ! -f /tmp/create-plan_progress.txt ]; then
+  echo "⚠️  Initializing checkpoint tracking..."
+  make checkpoint-init CMD=create-plan STEPS='"KB Consultation" "Read Requirements" "Extract Iterations" "Structure Plan" "Validate Plan" "Summary"'
+else
+  make checkpoint-status CMD=create-plan
+fi
+```
+
+## PRECONDITION: Checkpoint Tracking Must Be Initialized
+
+**BEFORE PROCEEDING**: Verify checkpoint tracking initialization:
+
+```bash
+if [ ! -f /tmp/create-plan_progress.txt ]; then
+  echo "❌ ERROR: Checkpoint tracking not initialized!"
+  echo "STOP: Initialize tracking with the command above before proceeding."
+  exit 1
+fi
+```
+
 **MANDATORY**: This command MUST use checkpoint tracking. Start by running the checkpoint initialization below. ([details](../../../kb/unmissable-documentation-pattern.md))
 
 ## KB Consultation Required

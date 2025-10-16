@@ -1,5 +1,39 @@
 Review a TDD plan document for methodology compliance, iteration structure, and completeness.
 
+## CHECKPOINT WORKFLOW ENFORCEMENT
+
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+
+### In-Progress Workflow Detection
+
+If a `/review-plan` workflow is already in progress, resume or reset:
+
+```bash
+make checkpoint-status CMD=review-plan VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=review-plan STEP=N (where N is next pending step)
+# Or reset: make checkpoint-cleanup CMD=review-plan && make checkpoint-init CMD=review-plan STEPS='"KB Consultation" "Read Plan" "Verify Completeness" "Check Iteration Structure" "Verify TDD Methodology" "Check GREEN Minimalism" "Verify Memory Management" "Review Status Tracking" "Verify Cross-References" "Document Issues" "Generate Report"'
+```
+
+### First-Time Initialization Check
+
+```bash
+if [ ! -f /tmp/review-plan_progress.txt ]; then
+  echo "⚠️  Initializing checkpoint tracking..."
+  make checkpoint-init CMD=review-plan STEPS='"KB Consultation" "Read Plan" "Verify Completeness" "Check Iteration Structure" "Verify TDD Methodology" "Check GREEN Minimalism" "Verify Memory Management" "Review Status Tracking" "Verify Cross-References" "Document Issues" "Generate Report"'
+else
+  make checkpoint-status CMD=review-plan
+fi
+```
+
+## PRECONDITION: Checkpoint Tracking Must Be Initialized
+
+```bash
+if [ ! -f /tmp/review-plan_progress.txt ]; then
+  echo "❌ ERROR: Checkpoint tracking not initialized!"
+  exit 1
+fi
+```
+
 **MANDATORY**: This command MUST use checkpoint tracking. Start by running the checkpoint initialization below. ([details](../../../kb/unmissable-documentation-pattern.md))
 
 ## Pre-Review Automation (RECOMMENDED)
