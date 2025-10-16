@@ -405,7 +405,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 - **Evidence-based completion**: Critical steps require evidence files and work summaries
 - **No shortcut marking**: `make checkpoint-update` ONLY after completing required work - read step instructions carefully
 - **Step instruction reading**: ALWAYS understand what each step requires BEFORE executing - skipping this causes missed work
-- **All 12 steps must execute**: No skipping, no batching - complete each step sequentially with actual output
+- **All steps must execute**: No skipping, no batching - complete each step sequentially with actual output
 - **Audit trail logging**: All checkpoint completions are logged with timestamps and evidence
 - **Gate checks MANDATORY**: Run `make checkpoint-gate` at required points - gates validate quality before proceeding
 - **Question step applicability**: If step seems irrelevant, document why rather than skip it
