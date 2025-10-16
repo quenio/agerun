@@ -7,6 +7,7 @@ Execute a TDD plan document by implementing each iteration following the RED-GRE
 Before executing any plan ([details](../../../kb/kb-consultation-before-planning-requirement.md)):
 1. Search: `grep "red.*green\|refactor\|iteration.*execution\|tdd.*cycle" kb/README.md`
 2. Read these KB articles IN FULL using the Read tool:
+   - `kb/tdd-plan-review-checklist.md` ⭐ **READ FIRST** - embeds all 14 TDD lessons
    - `kb/red-green-refactor-cycle.md`
    - `kb/tdd-cycle-detailed-explanation.md`
    - `kb/tdd-cycle-completion-verification-pattern.md`
@@ -17,10 +18,12 @@ Before executing any plan ([details](../../../kb/kb-consultation-before-planning
    - `kb/bdd-test-structure.md`
 3. Check Related Patterns sections in each article and read any additional relevant articles found there
 4. In your response, quote these specific items from the KB:
+   - The 14 critical TDD lessons (from tdd-plan-review-checklist.md)
    - The three mandatory phases of each TDD iteration
    - The requirement to complete ALL cycles before committing
    - The memory leak verification process
    - The GREEN phase minimalism principle
+   - **⭐ CRITICAL**: Assertion validity verification - RED phases MUST have temporary corruption documentation
 
 **Example of proper KB consultation:**
 ```
@@ -232,13 +235,43 @@ This command updates the plan file in TWO distinct phases:
 
 #### [CHECKPOINT START - STAGE 1]
 
-#### Step 1: KB Consultation
+#### Step 1: KB Consultation & 14 Lesson Verification
 
 **Mandatory KB Reading:**
-Read all 8 KB articles listed above and quote the 4 specific items.
+Read all 9 KB articles listed above and quote all 6 specific items.
+
+**CRITICAL: Verify All 14 TDD Lessons During Execution**
+
+Before executing iterations, confirm understanding of these 14 critical lessons:
+
+- [ ] **Lesson 1**: Iteration numbering sequential (1.1, 1.2, 1.3 not 1.1, 1.4, 1.7)
+- [ ] **Lesson 2**: One assertion per iteration
+- [ ] **Lesson 3**: GREEN uses hardcoded returns when valid
+- [ ] **Lesson 4**: Resource cleanup in minimal implementations
+- [ ] **Lesson 5**: Iteration N+1 RED fails with iteration N GREEN (forced progression)
+- [ ] **Lesson 6**: Integration tests verify module seams
+- [ ] **Lesson 7** ⭐ **CRITICAL DURING EXECUTION**:
+  - **VERIFY**: Plan's RED phases document temporary corruption
+  - **CHECK**: Each RED phase explains how test will fail BEFORE GREEN code written
+  - **VALIDATE**: Plan passed ./scripts/validate-tdd-plan.sh validator
+- [ ] **Lesson 8**: Temporary code marked in tests as temporary
+- [ ] **Lesson 9**: Independent assertions for each property
+- [ ] **Lesson 10**: TDD vs Validation vs Hybrid distinctions documented
+- [ ] **Lesson 11**: GREEN implements ONLY what RED tests (no over-implementation)
+- [ ] **Lesson 12**: Implementation demonstrates methodology
+- [ ] **Lesson 13**: No forward dependencies in plan
+- [ ] **Lesson 14**: Ownership naming (own_, ref_, mut_) throughout
+
+**PRE-EXECUTION VALIDATION - ⭐ LESSON 7 CHECK**:
+Verify plan has temporary corruption documentation in RED phases:
+```bash
+# Check that RED phases document temporary corruption/failure
+grep -E "Temporary|corrupt|Expected RED.*FAIL" <plan-file>
+# Should find documentation in EVERY RED phase showing how assertion will fail
+```
 
 ```bash
-# After completing KB consultation
+# After completing KB consultation and verifying all 14 lessons
 make checkpoint-update CMD=execute-plan STEP=1
 ```
 
@@ -260,7 +293,35 @@ make checkpoint-update CMD=execute-plan STEP=2
 - Expected test function names
 - Expected implementation function names
 
-#### Step 3: Extract Iterations
+#### Step 3: Extract Iterations & Validate Plan Compliance
+
+**PRE-EXECUTION COMPLIANCE CHECK (All 14 Lessons):**
+
+Before extracting iterations, validate that plan complies with new review-plan requirements:
+
+```bash
+# Run automated validator - ensures plan meets all 14 lessons
+./scripts/validate-tdd-plan.sh <plan-file>
+# Expected output: ✅ Plan validation PASSED
+# If FAILED: Plan has issues from create-plan or review-plan process
+```
+
+**Validator checks these areas (mapped to 14 lessons):**
+- ✅ Cycle Organization (Lesson 1)
+- ✅ **Assertion Validity** ⭐ (Lesson 7 - CRITICAL)
+  - RED phases document temporary corruption/failure
+  - Proves assertions catch real bugs
+- ✅ Minimalism (Lessons 3, 11)
+- ✅ Integration Testing (Lesson 6)
+- ✅ Status Tracking (Lessons 1-14)
+- ✅ Documentation Quality (Lessons 12-14)
+
+**If validator FAILS:**
+- ❌ Do NOT proceed with execution
+- Return plan to /review-plan for correction
+- Validator output identifies specific lesson violations
+
+**After validation passes:**
 
 **CRITICAL: Filter for REVIEWED or REVISED iterations:**
 
@@ -392,12 +453,17 @@ make checkpoint-status CMD=execute-plan-iterations
 === ITERATION N.M: [Behavior] ===
 
 **RED Phase:**
-1. Write failing test in test file
-2. Follow BDD structure (Given/When/Then/Cleanup)
-3. Use exact test name from plan
-4. Add // ← FAILS comment on assertion
-5. Run test to confirm failure: make <test_module> 2>&1
-6. Verify failure is for the RIGHT reason
+1. **⭐ LESSON 7 CHECK**: Verify plan's RED phase documents temporary corruption
+   - Read plan's RED phase for this iteration
+   - Confirm temporary code/break is documented
+   - Example: "Temporary: send() returns false (not implemented yet)"
+2. Write failing test in test file
+   - Include comment showing temporary corruption (from plan)
+3. Follow BDD structure (Given/When/Then/Cleanup)
+4. Use exact test name from plan
+5. Add // ← FAILS comment on assertion
+6. Run test to confirm failure: make <test_module> 2>&1
+7. Verify failure is for the RIGHT reason (matches plan's documented corruption)
 
 **Expected RED output:**
 ```bash
@@ -437,7 +503,9 @@ make ar_delegate_tests 2>&1
 ```
 
 **After completing iteration:**
+- [ ] **⭐ LESSON 7 VERIFIED**: Plan's RED phase had temporary corruption documented
 - [ ] RED phase executed (test failed for right reason)
+  - Failure matches temporary corruption described in plan
 - [ ] GREEN phase executed (test passes)
 - [ ] REFACTOR phase executed (even if no changes)
 - [ ] Tests still passing after refactor
@@ -771,14 +839,28 @@ make checkpoint-update CMD=execute-plan STEP=7
 - Memory leaks detected: 0
 - All tests passing: ✅
 
-### TDD Methodology Compliance
+### TDD Methodology Compliance (All 14 Lessons Verified)
+✅ **Lesson 1**: Numbering sequential (1.1, 1.2, 1.3 - no gaps)
+✅ **Lesson 2**: One assertion per iteration enforced during execution
+✅ **Lesson 3**: GREEN phases used hardcoded returns when valid
+✅ **Lesson 4**: Resource cleanup verified in all iterations (no leaks)
+✅ **Lesson 5**: Iteration progression forced real implementation (N+1 RED failed with N GREEN)
+✅ **Lesson 6**: Integration tests verify module seams
+✅ **⭐ Lesson 7 CRITICAL**: RED phases documented temporary corruption
+  - Each RED phase showed how assertion would fail BEFORE GREEN code
+  - Tests verified to fail for the right reason
+  - Proven assertions catch real bugs (not always-passing tests)
+✅ **Lesson 8**: Temporary code marked in tests as temporary
+✅ **Lesson 9**: Property validation through independent assertions
+✅ **Lesson 10**: Test type distinctions (TDD vs Validation) maintained
+✅ **Lesson 11**: GREEN phases minimal (no over-implementation)
+✅ **Lesson 12**: Implementation demonstrates methodology
+✅ **Lesson 13**: No forward dependencies in plan
+✅ **Lesson 14**: Ownership naming (own_, ref_, mut_) throughout
 ✅ RED phase executed for all iterations (tests failed before implementation)
-✅ GREEN phase minimal implementations (hardcoded returns used)
 ✅ REFACTOR phase mandatory completion (even when no changes)
 ✅ Zero memory leaks (verified via memory reports)
 ✅ BDD test structure throughout (Given/When/Then/Cleanup)
-✅ Temporary cleanup in .1 iterations (2 locations)
-✅ Cleanup removed in .2 iterations
 
 ### Test Execution Results
 ```bash
@@ -855,9 +937,27 @@ make checkpoint-cleanup CMD=execute-plan
 
 ### RED Phase Requirements
 
-**Test must ACTUALLY FAIL:**
+**⭐ LESSON 7 CRITICAL: Temporary Corruption Documentation MUST be Present**
+
+The plan's RED phases MUST document temporary code that will cause the assertion to fail. This proves the assertion catches real bugs. During execution:
+
+1. **Verify documentation exists** in the plan's RED phase
+2. **Implement the test** exactly as written
+3. **Temporarily apply the corruption** described (don't queue message, corrupt type field, etc.)
+4. **Verify test fails** for the right reason
+5. **Run test to see failure**
+
+**Example from plan (with Lesson 7 documentation):**
+```markdown
+#### RED Phase
+Add assertion: Check that message is queued
+Temporary corruption: Don't queue the message (destroy it instead) so assertion fails
+Expected RED: "Test FAILS because take_message() returns NULL instead of message"
+```
+
+**Real failing test:**
 ```c
-// ✅ CORRECT: Real failing test
+// ✅ CORRECT: Real failing test WITH temporary corruption documented in plan
 static void test_delegate__send_returns_true(void) {
     // Given a delegate instance
     ar_delegate_t *own_delegate = ar_delegate__create(...);
@@ -867,15 +967,25 @@ static void test_delegate__send_returns_true(void) {
 
     // Then send should return true
     AR_ASSERT(result, "Send should return true");  // ← FAILS (stub returns false)
+    // Temporary: send() returns false (not implemented yet)
 
     // Cleanup
     ar_delegate__destroy(own_delegate);
 }
 
-// ❌ WRONG: Placeholder test
+// ❌ WRONG: Placeholder test (no temporary corruption documented)
 static void test_placeholder(void) {
     // TODO: implement test
     AR_ASSERT(true, "Placeholder");  // Doesn't test actual behavior
+    // No documentation of how/why this will fail
+}
+
+// ❌ WRONG: Missing how assertion fails
+static void test_delegate__send_returns_true(void) {
+    ar_delegate_t *own_delegate = ar_delegate__create(...);
+    bool result = ar_delegate__send(own_delegate, message);
+    AR_ASSERT(result, "Send should return true");  // ← How does this fail? Unknown!
+    ar_delegate__destroy(own_delegate);
 }
 ```
 
@@ -954,6 +1064,37 @@ cat bin/run-tests/memory_report_ar_delegate_tests.log | grep "Actual memory leak
 4. Fix leak before proceeding to next iteration
 
 ## Common Execution Mistakes to Avoid
+
+### 0. ⭐ MOST CRITICAL - Skipping Plan Validation (Lesson 7 Compliance)
+
+**This is the MOST CRITICAL mistake.** Execute ONLY plans that have temporary corruption documentation in RED phases.
+
+❌ **WRONG** - Execute plan without validation:
+```bash
+# Don't do this - plan may not have Lesson 7 documentation
+/execute-plan plans/message_queue_plan.md
+# No verification that plan meets 14 lessons
+# RED phases may not document how tests will fail
+```
+
+✅ **CORRECT** - Validate plan first:
+```bash
+# Always validate plan compliance with all 14 lessons
+./scripts/validate-tdd-plan.sh plans/message_queue_plan.md
+# Should show: ✅ Plan validation PASSED
+
+# Verify RED phases have temporary corruption documentation
+grep -E "Temporary|corrupt|Expected RED.*FAIL" plans/message_queue_plan.md
+# Should find documentation in EVERY RED phase
+
+# Now safe to execute
+/execute-plan plans/message_queue_plan.md
+```
+
+**Why this matters**:
+- Plans without Lesson 7 documentation create "always-passing tests" that don't prove anything
+- Validated plans ensure assertions actually catch bugs
+- Saves rework during implementation
 
 ### 1. Skipping RED Phase Verification
 ❌ **WRONG**:
@@ -1087,6 +1228,7 @@ make checkpoint-init CMD=execute-plan STEPS='...'
 ## Related KB Articles
 
 ### TDD Execution Patterns
+- [TDD Plan Review Checklist](../../../kb/tdd-plan-review-checklist.md) ⭐ **Embeds all 14 TDD lessons**
 - [Red-Green-Refactor Cycle](../../../kb/red-green-refactor-cycle.md)
 - [TDD Cycle Detailed Explanation](../../../kb/tdd-cycle-detailed-explanation.md)
 - [TDD Cycle Completion Verification Pattern](../../../kb/tdd-cycle-completion-verification-pattern.md)
