@@ -18,6 +18,22 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
 
 See [CONCEPTS.md](CONCEPTS.md) for complete definitions and context.
 
+## Navigation Quick Reference
+
+**Finding TDD Plans**: Located in `plans/` directory with format `<task-name>_plan.md`. See [CONCEPTS.md - Plan Files](CONCEPTS.md#plan-files) for structure and status markers.
+
+**Finding Commands**: Located in `.opencode/command/ar/` directory. Invoked as `/ar:command-name`. Contains stages, steps, and checkpoint tracking. See [CONCEPTS.md - Command/Checkpoint Hierarchy](CONCEPTS.md#commandcheckpoint-hierarchy) for structure.
+
+**Finding Modules**: Located in `/modules` directory with pattern:
+- **Header**: `ar_<module>.h` - Public API declarations
+- **Implementation**: `ar_<module>.c` - Module implementation
+- **Tests**: `ar_<module>_tests.c` - Test suite for the module
+- **Documentation**: `ar_<module>.md` - Module documentation
+
+See [CONCEPTS.md - Module Organization Terms](CONCEPTS.md#module-organization-terms) and [CONCEPTS.md - File Naming Conventions](CONCEPTS.md#file-naming-conventions) for details.
+
+**Finding KB Articles**: Located in `kb/` directory with format `<topic-name>.md` (kebab-case). Indexed in `kb/README.md`. Referenced from AGENTS.md and commands via `([details](kb/article-name.md))` links. See [CONCEPTS.md - KB Article Files](CONCEPTS.md#kb-article-files) for details.
+
 ## Quick Start
 
 **Primary**: `make build 2>&1` → `make check-logs` (MANDATORY sequence) ([details](kb/quick-start-commands.md), [relationship](kb/build-logs-relationship-principle.md))
