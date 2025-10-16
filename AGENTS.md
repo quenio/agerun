@@ -399,13 +399,15 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 - **Be frank, not polite**: Only confirm correctness when certain - honest disagreement > polite agreement
 - **Todo list integrity**: Mark items complete, never remove them - preserves task history
 
-**Checkpoint Process Discipline** (MANDATORY):
+**Checkpoint Process Discipline** (MANDATORY - STRICTLY ENFORCED):
 - **Sequential execution required**: Work → Verify → Mark complete (never parallelize) ([details](kb/checkpoint-sequential-execution-discipline.md))
-- **Work verification required**: NEVER mark steps complete without actual work ([details](kb/checkpoint-work-verification-antipattern.md))
+- **⚠️ CRITICAL**: NEVER mark steps complete without actual work - this is the #1 quality enforcement rule ([details](kb/checkpoint-work-verification-antipattern.md))
 - **Evidence-based completion**: Critical steps require evidence files and work summaries
-- **No shortcut marking**: `make checkpoint-update` only after completing required work
-- **Step instruction reading**: Always understand what each step requires before executing
+- **No shortcut marking**: `make checkpoint-update` ONLY after completing required work - read step instructions carefully
+- **Step instruction reading**: ALWAYS understand what each step requires BEFORE executing - skipping this causes missed work
+- **All 12 steps must execute**: No skipping, no batching - complete each step sequentially with actual output
 - **Audit trail logging**: All checkpoint completions are logged with timestamps and evidence
+- **Gate checks MANDATORY**: Run `make checkpoint-gate` at required points - gates validate quality before proceeding
 - **Question step applicability**: If step seems irrelevant, document why rather than skip it
 - **Conditional flow pattern**: When workflow logic requires conditional step execution, follow two-phase validation→decision pattern ([details](kb/checkpoint-conditional-flow-pattern.md))
 
