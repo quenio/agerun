@@ -882,7 +882,7 @@ make checkpoint-update CMD=create-plan STEP=12
 **Write plan to file:**
 
 ```markdown
-# [Feature Name] Plan
+# Plan: [Feature Name]
 
 ## Overview
 [Feature description]
@@ -980,7 +980,7 @@ make checkpoint-cleanup CMD=create-plan
 ### Complete Plan Template
 
 ```markdown
-# [Feature Name] Plan
+# Plan: [Feature Name]
 
 ## Overview
 [1-2 sentence description of what will be implemented]
