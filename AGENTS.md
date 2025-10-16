@@ -6,6 +6,18 @@ This document contains essential instructions for Claude Code to assist with Age
 
 AgeRun is a lightweight, message-driven agent system where each agent is defined by a single method responsible for handling all incoming messages. Agents operate within a persistent runtime environment, allowing dynamic creation, versioning, pausing, resumption, and destruction.
 
+## Terminology Reference
+
+**TDD Planning**: **Cycle** = logical grouping of iterations (e.g., "Cycle 1: Basic Functionality"), **Iteration** = single test-implementation pair (e.g., "1.1", "1.2"), **Phase** = TDD stages (RED/GREEN/REFACTOR) *[Reserved exclusively for TDD]*
+
+**Workflows**: **Stage** = logical grouping of related steps (e.g., "Stage 1: Pre-Commit Verification"), **Step** = individual checkpoint action (e.g., "Step 1: Build"), **Gate** = verification checkpoint between stages (e.g., "Build Quality Gate")
+
+**Runtime System**: **Agent** = runtime entity executing methods and processing messages, **Method** = versioned executable definition (e.g., "echo-1.0.0"), **Message** = data passed asynchronously between agents, **Agency** = collection manager of active agents, **Methodology** = registry of method definitions, **Delegate** = lightweight proxy queuing messages for agents
+
+**Command**: Claude Code command that guides systematic execution (e.g., `/ar:commit`)
+
+See [CONCEPTS.md](CONCEPTS.md) for complete definitions and context.
+
 ## Quick Start
 
 **Primary**: `make build 2>&1` → `make check-logs` (MANDATORY sequence) ([details](kb/quick-start-commands.md), [relationship](kb/build-logs-relationship-principle.md))
