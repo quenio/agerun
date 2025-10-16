@@ -7,6 +7,7 @@ Create a TDD plan document following strict methodology patterns and best practi
 Before creating any plan ([details](../../../kb/kb-consultation-before-planning-requirement.md)):
 1. Search: `grep "plan.*iteration\|TDD.*minimalism\|plan.*refinement" kb/README.md`
 2. Read these KB articles IN FULL using the Read tool:
+   - `kb/tdd-plan-review-checklist.md` ⭐ **NEW - READ FIRST** - embeds all 14 TDD lessons
    - `kb/tdd-iteration-planning-pattern.md`
    - `kb/tdd-plan-iteration-split-pattern.md`
    - `kb/tdd-green-phase-minimalism.md`
@@ -19,11 +20,13 @@ Before creating any plan ([details](../../../kb/kb-consultation-before-planning-
    - `kb/ownership-naming-conventions.md`
 3. Check Related Patterns sections in each article and read any additional relevant articles found there
 4. In your response, quote these specific items from the KB:
+   - The 14 critical TDD lessons (from tdd-plan-review-checklist.md)
    - The one-assertion-per-iteration principle
    - When to use hardcoded returns in GREEN phase
    - The temporary cleanup comment format (MANDATORY)
    - The BDD test structure sections (Given/When/Then/Cleanup)
    - The ownership prefix conventions (own_, ref_, mut_)
+   - **⭐ CRITICAL**: Assertion validity verification - RED phases MUST document temporary corruption
 
 **Example of proper KB consultation:**
 ```
@@ -217,13 +220,37 @@ This command creates plans with iterations marked `PENDING REVIEW`. These marker
 
 #### [CHECKPOINT START - STAGE 1]
 
-#### Step 1: KB Consultation
+#### Step 1: KB Consultation & 14 Lesson Verification
 
 **Mandatory KB Reading:**
-Read all 10 KB articles listed above and quote the 5 specific items.
+Read all 11 KB articles listed above (with tdd-plan-review-checklist.md first) and quote all 7 specific items.
+
+**CRITICAL: Verify All 14 TDD Lessons Before Plan Creation**
+
+Before proceeding, confirm understanding of these 14 critical lessons from kb/tdd-plan-review-checklist.md:
+
+- [ ] **Lesson 1**: Iteration numbering clarity prevents confusion (sequential, no gaps)
+- [ ] **Lesson 2**: One assertion per iteration creates reliable pace
+- [ ] **Lesson 3**: Hardcoded returns are acceptable for minimalism
+- [ ] **Lesson 4**: Minimal implementations must still clean up resources
+- [ ] **Lesson 5**: Tests drive implementation through dependency chains
+- [ ] **Lesson 6**: Integration tests catch module seam bugs
+- [ ] **Lesson 7** ⭐ **CRITICAL**: Assertion validity MUST be verified via temporary corruption
+  - RED phases MUST document temporary code that BREAKS the feature
+  - This PROVES the assertion catches real bugs (not just always-passing tests)
+  - Example: "Don't queue message so assertion fails" or "Corrupt type field so assertion fails"
+- [ ] **Lesson 8**: Temporary code in tests is valid TDD technique (not a smell)
+- [ ] **Lesson 9**: Property validation through independent assertions
+- [ ] **Lesson 10**: Clear test type distinction (TDD vs Validation vs Hybrid)
+- [ ] **Lesson 11**: Over-implementation in GREEN violates minimalism
+- [ ] **Lesson 12**: Commit messages should document methodology
+- [ ] **Lesson 13**: Forward dependencies disable sequential reading
+- [ ] **Lesson 14**: Resource ownership naming conventions matter (own_, ref_, mut_)
+
+**Lesson 7 is MOST CRITICAL**: Every RED phase in the plan MUST include documentation of how the test will fail before GREEN code is written. This proves assertions actually catch bugs.
 
 ```bash
-# After completing KB consultation
+# After completing KB consultation and verifying all 14 lessons
 make checkpoint-update CMD=create-plan STEP=1
 ```
 
@@ -569,7 +596,9 @@ make checkpoint-update CMD=create-plan STEP=6
 
 #### Step 7: Structure RED Phases
 
-**CRITICAL: Per-Iteration Verification Tracking**
+**⭐ CRITICAL: Lesson 7 - Assertion Validity Verification Via Temporary Corruption**
+
+This step ensures generated plans follow the most critical lesson: Every RED phase MUST document temporary code/corruption that makes the assertion fail, proving the assertion actually catches bugs.
 
 **Initialize RED Phase Verification Tracking:**
 ```bash
@@ -583,7 +612,11 @@ make checkpoint-init CMD=create-plan-red-phases STEPS='"Iteration 0.1" "Iteratio
 For EACH iteration:
 - [ ] BDD structure (Given/When/Then/Cleanup comments)
 - [ ] Explicit failure indicator (// ← FAILS comment)
-- [ ] Failure reason documented (e.g., "stub returns false")
+- [ ] **⭐ LESSON 7 - CRITICAL**: RED phase MUST document temporary corruption/code-break
+  - **REQUIRED**: Include comment describing what code is temporarily broken
+  - **Example**: "Temporary: Don't queue the message (destroy it instead) so assertion fails"
+  - **Example**: "Temporary: Corrupt type field to INT so assertion fails"
+  - **Purpose**: This PROVES the assertion catches real bugs, not just always-passing tests
 - [ ] Real AgeRun types (ar_*_t) not placeholders
 - [ ] Proper ownership prefixes (own_, ref_, mut_)
 - [ ] Exactly ONE assertion (not multiple)
@@ -594,10 +627,25 @@ For EACH iteration:
 ✅ Has When comment explaining action
 ✅ Has Then comment explaining verification
 ✅ Has // ← FAILS (reason) on assertion line
-✅ Has Cleanup section with proper destroy calls
+✅ **CRITICAL**: RED phase documents temporary corruption/code-break that will make assertion fail
+✅ Cleanup section with proper destroy calls
 ✅ Uses real AgeRun types with ar_ prefix (not generic placeholders)
 ✅ Uses ownership prefixes (own_message not message)
 ✅ One assertion only (not multiple AR_ASSERT calls)
+```
+
+**Lesson 7 Documentation Template (MANDATORY):**
+```markdown
+#### RED Phase
+Add assertion: [what test checks]
+Temporary corruption: [describe code break that makes assertion fail]
+Expected RED: "Test FAILS at line X because [broken thing]"
+Verify: `make test` → assertion fails
+
+#### GREEN Phase
+Remove temporary corruption: [describe how code is fixed]
+Expected GREEN: "Test PASSES because [now works]"
+Verify: `make test` → assertion passes
 ```
 
 **MANDATORY: After verifying EACH iteration's RED phase:**
@@ -837,6 +885,14 @@ make checkpoint-gate CMD=create-plan GATE="Documentation" REQUIRED="9,10,11"
 
 #### Step 12: Validate Plan
 
+**⭐ LESSON 7 CRITICAL CHECK**: Run the automated validator to ensure plan will pass review-plan:
+
+```bash
+# Run automated validator - catches issues on first pass
+./scripts/validate-tdd-plan.sh <plan-file>
+# Expected: ✅ Plan validation PASSED
+```
+
 **Run self-validation checks:**
 
 ```bash
@@ -847,6 +903,11 @@ grep -c "AR_ASSERT" <each-iteration>
 # Check for FAILS comments
 grep "// ← FAILS" <plan-file>
 # Should have one per RED phase
+
+# **LESSON 7 CRITICAL**: Check for temporary corruption/failure documentation
+grep -E "Temporary|corrupt|break|Expected RED.*FAIL" <plan-file>
+# Should find documentation of how RED phase will fail for EACH iteration
+# This proves assertions catch bugs, not just always-passing tests
 
 # Check for temporary cleanup format
 grep "temporary:" <plan-file>
@@ -861,17 +922,23 @@ grep -E "// Given|// When|// Then|// Cleanup" <plan-file>
 # Should find all four in each test
 ```
 
-**Pre-review validation checklist:**
-- [ ] No iteration has multiple assertions (except .2 keeping .1's assertion)
-- [ ] All RED phases have // ← FAILS comments
-- [ ] All .1 iterations have temporary cleanup with correct format
-- [ ] All .2 iterations removed temporary cleanup
-- [ ] All GREEN phases use hardcoded returns when valid
-- [ ] All tests have BDD structure (Given/When/Then/Cleanup)
-- [ ] All types are real AgeRun types (ar_*_t)
-- [ ] All ownership prefixes present (own_, ref_, mut_)
-- [ ] Sections are 3-5 iterations each
-- [ ] Decimal numbering used for splits
+**Pre-review validation checklist (including all 14 lessons):**
+- [ ] No iteration has multiple assertions (except .2 keeping .1's assertion) - **Lesson 2**
+- [ ] All RED phases have // ← FAILS comments - **Lesson 2**
+- [ ] **⭐ LESSON 7 CRITICAL**: All RED phases document temporary corruption/failure
+  - Check: Does each RED phase explain how assertion will FAIL?
+  - Check: Is temporary code/break clearly documented?
+  - Check: Will GREEN phase remove it?
+- [ ] All .1 iterations have temporary cleanup with correct format - **Lesson 4**
+- [ ] All .2 iterations removed temporary cleanup - **Lesson 4, 8**
+- [ ] All GREEN phases use hardcoded returns when valid - **Lesson 3, 11**
+- [ ] All tests have BDD structure (Given/When/Then/Cleanup) - **Lesson 2**
+- [ ] All types are real AgeRun types (ar_*_t) - **Lesson 2**
+- [ ] All ownership prefixes present (own_, ref_, mut_) - **Lesson 14**
+- [ ] Sections are 3-5 iterations each - **Lesson 1**
+- [ ] Decimal numbering used for splits - **Lesson 1**
+- [ ] Iteration numbering sequential, no gaps - **Lesson 1, 13**
+- [ ] No forward references to unreviewed iterations - **Lesson 13**
 
 ```bash
 make checkpoint-update CMD=create-plan STEP=12
@@ -931,25 +998,40 @@ make checkpoint-update CMD=create-plan STEP=13
 - .1/.2 splits: 2
 - Temporary cleanup locations: 2
 
-### Methodology Compliance
-✅ One assertion per iteration (12/12)
-✅ GREEN minimalism (hardcoded returns used)
-✅ Temporary cleanup with correct format (2/2)
+### Methodology Compliance (14 TDD Lessons)
+✅ **Lesson 1**: Numbering sequential (1.1, 1.2, 1.3, etc. - no gaps)
+✅ **Lesson 2**: One assertion per iteration (12/12)
+✅ **Lesson 3**: GREEN minimalism (hardcoded returns used)
+✅ **Lesson 4**: Resource cleanup in all iterations (2/2 .1 cleanups)
+✅ **Lesson 5**: Iteration dependencies force real implementation
+✅ **Lesson 6**: Integration tests at module seams
+✅ **⭐ Lesson 7 CRITICAL**: RED phases document temporary corruption (12/12)
+✅ **Lesson 8**: Temporary code marked and documented
+✅ **Lesson 9**: Property validation through independent assertions
+✅ **Lesson 10**: Test type distinction (TDD vs Validation)
+✅ **Lesson 11**: No over-implementation in GREEN
+✅ **Lesson 12**: Commit messages (documented in methodology)
+✅ **Lesson 13**: No forward dependencies
+✅ **Lesson 14**: Ownership naming (own_, ref_, mut_)
+
+### Validation Results
+✅ Automated validator: `./scripts/validate-tdd-plan.sh` passed
 ✅ BDD structure throughout (12/12)
 ✅ Real AgeRun types (no placeholders)
-✅ Proper ownership prefixes (own_, ref_, mut_)
-✅ Decimal numbering for splits
 ✅ Status markers (PENDING REVIEW)
 
 ### Next Steps
-1. Review plan with: /review-plan plans/message_queue_plan.md
-2. Apply feedback from review
-3. Get plan approval (all iterations REVIEWED)
-4. Begin implementation following plan
-5. Update plan with completion status when done
+1. **Verify plan quality**: `./scripts/validate-tdd-plan.sh plans/message_queue_plan.md`
+2. **Review plan**: `/review-plan plans/message_queue_plan.md`
+3. **Apply feedback** from review (if needed)
+4. **Get approval** (all iterations REVIEWED)
+5. **Begin implementation** following plan
+6. **Update plan** with completion status when done
 
-### Validation
-Ready for review - all methodology requirements met
+### Validation Checklist
+- ✅ All 14 TDD lessons verified
+- ✅ Automated validator passed
+- ✅ Ready for /review-plan
 ```
 
 ```bash
@@ -1016,6 +1098,7 @@ make checkpoint-cleanup CMD=create-plan
 **Objective**: [What this iteration tests]
 
 **RED Phase:**
+⭐ **LESSON 7 CRITICAL**: Document temporary corruption that makes assertion fail
 ```c
 static void test_[function]__[behavior](void) {
     // Given [setup description]
@@ -1027,6 +1110,9 @@ static void test_[function]__[behavior](void) {
 
     // Then [expected outcome]
     AR_ASSERT([condition], "[message]");  // ← FAILS ([reason])
+    // Temporary: [describe code break that makes this assertion fail]
+    // Example: "Don't queue message so take_message() returns NULL"
+    // Example: "Corrupt type field to INT so type check fails"
 
     // Cleanup
     ar_[type]__destroy(own_[name]);
@@ -1039,6 +1125,7 @@ static void test_[function]__[behavior](void) {
 [return_type] ar_[function]__[operation]([params]) {
     // Minimal implementation
     return [hardcoded_value];  // Hardcoded - next iteration will force real impl
+    // Remove temporary corruption from RED phase
 }
 ```
 
@@ -1056,21 +1143,75 @@ static void test_[function]__[behavior](void) {
 - [Ownership Naming Conventions](../../kb/ownership-naming-conventions.md)
 ```
 
-## Quality Indicators
+## Quality Indicators (All 14 TDD Lessons)
 
-A well-created plan shows:
-- ✅ One assertion per iteration (no bundling)
-- ✅ Hardcoded returns in early iterations (minimalism)
-- ✅ Temporary cleanup in .1 iterations with correct format
+A well-created plan demonstrates compliance with all 14 critical TDD lessons:
+
+- ✅ **Lesson 1**: Iteration numbering sequential (N.1, N.2, N.3 - no gaps)
+- ✅ **Lesson 2**: One assertion per iteration (no bundling)
+- ✅ **Lesson 3**: Hardcoded returns in early iterations (minimalism)
+- ✅ **Lesson 4**: Temporary cleanup in .1 iterations with correct format
+- ✅ **Lesson 5**: Iteration N+1 RED would fail with iteration N GREEN
+- ✅ **Lesson 6**: Integration tests at module seams (not just unit tests)
+- ✅ **⭐ Lesson 7 CRITICAL**: RED phases document temporary corruption/failure
+  - Each RED phase explains how assertion will fail before GREEN code
+  - Proves assertion catches real bugs, not just always-passing tests
+- ✅ **Lesson 8**: Temporary code marked and clearly documented
+- ✅ **Lesson 9**: Property validation through independent assertions
+- ✅ **Lesson 10**: Clear distinction between TDD vs Validation vs Hybrid
+- ✅ **Lesson 11**: GREEN implements ONLY what RED assertion tests
+- ✅ **Lesson 12**: Documentation explains methodology ("why", not just "what")
+- ✅ **Lesson 13**: No forward references to unreviewed iterations
+- ✅ **Lesson 14**: Ownership prefixes (own_, ref_, mut_) throughout
+- ✅ Cycles sized 3-5 iterations (optimal for review)
 - ✅ BDD structure throughout (Given/When/Then/Cleanup)
 - ✅ Real AgeRun types (ar_*_t) not placeholders
-- ✅ Proper ownership prefixes (own_, ref_, mut_)
-- ✅ Cycles sized 3-5 iterations (optimal for review)
-- ✅ Decimal numbering for splits (N.1, N.2)
 - ✅ Status markers (PENDING REVIEW)
 - ✅ Cross-references to KB articles
+- ✅ Passes `./scripts/validate-tdd-plan.sh` validator
 
 ## Common Planning Mistakes to Avoid
+
+### 0. ⭐ MOST CRITICAL - Missing Temporary Corruption Documentation (Lesson 7)
+
+**This is the MOST CRITICAL mistake.** RED phases must document temporary code/corruption that makes assertions fail.
+
+❌ **WRONG** - No documentation of test failure:
+```c
+// RED Phase - Missing how assertion will fail
+static void test_delegate__send_returns_true(void) {
+    ar_delegate_t *own_delegate = ar_delegate__create(...);
+    ar_data_t *own_message = ar_data__create_string("hello");
+    bool result = ar_delegate__send(own_delegate, own_message);
+
+    AR_ASSERT(result, "Send should return true");  // ← How does this fail? Unknown!
+
+    ar_delegate__destroy(own_delegate);
+}
+```
+
+✅ **CORRECT** - Documents temporary corruption that causes failure:
+```c
+// RED Phase - With temporary corruption documentation
+static void test_delegate__send_returns_true(void) {
+    ar_delegate_t *own_delegate = ar_delegate__create(...);
+    ar_data_t *own_message = ar_data__create_string("hello");
+    bool result = ar_delegate__send(own_delegate, own_message);
+
+    // Temporary: send() returns false (not implemented yet)
+    AR_ASSERT(result, "Send should return true");  // ← FAILS (stub returns false)
+
+    ar_delegate__destroy(own_delegate);
+}
+
+// GREEN Phase
+bool ar_delegate__send(ar_delegate_t *mut_delegate, ar_data_t *own_message) {
+    if (own_message) ar_data__destroy(own_message);
+    return true;  // Remove temporary corruption - now test passes
+}
+```
+
+**Why this matters**: This proves the assertion actually catches bugs. Without it, you have "always-passing tests" that don't prove anything.
 
 ### 1. Multiple Assertions Per Iteration
 ❌ **WRONG**:
@@ -1213,6 +1354,7 @@ Use the simplest possible implementation:
 ## Related KB Articles
 
 ### TDD Planning Patterns
+- [TDD Plan Review Checklist](../../../kb/tdd-plan-review-checklist.md) ⭐ **NEW - Embeds all 14 TDD lessons**
 - [TDD Iteration Planning Pattern](../../../kb/tdd-iteration-planning-pattern.md)
 - [TDD Plan Iteration Split Pattern](../../../kb/tdd-plan-iteration-split-pattern.md)
 - [TDD GREEN Phase Minimalism](../../../kb/tdd-green-phase-minimalism.md)
