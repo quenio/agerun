@@ -8,6 +8,9 @@ Before executing any plan ([details](../../../kb/kb-consultation-before-planning
 1. Search: `grep "red.*green\|refactor\|iteration.*execution\|tdd.*cycle" kb/README.md`
 2. Read these KB articles IN FULL using the Read tool:
    - `kb/tdd-plan-review-checklist.md` ⭐ **READ FIRST** - embeds all 14 TDD lessons
+   - `kb/command-pipeline-methodology-enforcement.md` - How all three commands work together
+   - `kb/lesson-based-command-design-pattern.md` - Unified 14-lesson verification pattern
+   - `kb/pre-execution-plan-validation-requirement.md` - Show-stopper validation gates before execution
    - `kb/red-green-refactor-cycle.md`
    - `kb/tdd-cycle-detailed-explanation.md`
    - `kb/tdd-cycle-completion-verification-pattern.md`

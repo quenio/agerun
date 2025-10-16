@@ -25,6 +25,10 @@ This tool checks 6 critical sections and catches common issues on first pass:
 Before reviewing any plan ([details](../../../kb/kb-consultation-before-planning-requirement.md)):
 1. Search: `grep "plan.*review\|iteration.*split\|TDD.*minimalism" kb/README.md`
 2. Read these KB articles IN FULL using the Read tool:
+   - `kb/tdd-plan-review-checklist.md` ⭐ READ FIRST - embeds all 14 TDD lessons
+   - `kb/command-pipeline-methodology-enforcement.md` - How all three commands work together
+   - `kb/lesson-based-command-design-pattern.md` - Unified 14-lesson verification pattern
+   - `kb/pre-execution-plan-validation-requirement.md` - Show-stopper validation gates before execution
    - `kb/plan-review-status-tracking.md`
    - `kb/iterative-plan-review-protocol.md`
    - `kb/tdd-plan-iteration-split-pattern.md`
@@ -33,7 +37,6 @@ Before reviewing any plan ([details](../../../kb/kb-consultation-before-planning
    - `kb/temporary-test-cleanup-pattern.md`
    - `kb/iterative-plan-refinement-pattern.md`
    - `kb/plan-verification-and-review.md`
-   - `kb/tdd-plan-review-checklist.md` ⭐ NEW - comprehensive review checklist
 3. Check Related Patterns sections in each article and read any additional relevant articles found there
 4. In your response, quote these specific items from the KB:
    - The iterative review optimal size (iterations per session)

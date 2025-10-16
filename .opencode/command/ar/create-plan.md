@@ -8,6 +8,8 @@ Before creating any plan ([details](../../../kb/kb-consultation-before-planning-
 1. Search: `grep "plan.*iteration\|TDD.*minimalism\|plan.*refinement" kb/README.md`
 2. Read these KB articles IN FULL using the Read tool:
    - `kb/tdd-plan-review-checklist.md` ⭐ **NEW - READ FIRST** - embeds all 14 TDD lessons
+   - `kb/command-pipeline-methodology-enforcement.md` - How all three commands work together
+   - `kb/lesson-based-command-design-pattern.md` - Unified 14-lesson verification pattern
    - `kb/tdd-iteration-planning-pattern.md`
    - `kb/tdd-plan-iteration-split-pattern.md`
    - `kb/tdd-green-phase-minimalism.md`
