@@ -12,6 +12,40 @@ Before validation:
    - command-output-documentation-pattern
 3. Apply command quality standards
 
+## CHECKPOINT WORKFLOW ENFORCEMENT
+
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+
+### In-Progress Workflow Detection
+
+If a `/check-commands` workflow is already in progress:
+
+```bash
+make checkpoint-status CMD=check-commands VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=check-commands STEP=N
+# Or reset: make checkpoint-cleanup CMD=check-commands && make checkpoint-init CMD=check-commands STEPS='"Scan Commands" "Validate Structure" "Calculate Scores" "Identify Issues" "Generate Report"'
+```
+
+### First-Time Initialization Check
+
+```bash
+if [ ! -f /tmp/check_commands_progress.txt ]; then
+  echo "⚠️  Initializing checkpoint tracking..."
+  make checkpoint-init CMD=check-commands STEPS='"Scan Commands" "Validate Structure" "Calculate Scores" "Identify Issues" "Generate Report"'
+else
+  make checkpoint-status CMD=check-commands
+fi
+```
+
+## PRECONDITION: Checkpoint Tracking Must Be Initialized
+
+```bash
+if [ ! -f /tmp/check_commands_progress.txt ]; then
+  echo "❌ ERROR: Checkpoint tracking not initialized!"
+  exit 1
+fi
+```
+
 # Check Commands
 ## Checkpoint Tracking
 

@@ -10,6 +10,40 @@ Before starting migration:
    - zig-module-development-guide
 3. Apply migration patterns and best practices
 
+## CHECKPOINT WORKFLOW ENFORCEMENT
+
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+
+### In-Progress Workflow Detection
+
+If a `/migrate-module-to-zig-abi` workflow is already in progress:
+
+```bash
+make checkpoint-status CMD=migrate-module-to-zig-abi VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=migrate-module-to-zig-abi STEP=N
+# Or reset: make checkpoint-cleanup CMD=migrate-module-to-zig-abi && make checkpoint-init CMD=migrate-module-to-zig-abi STEPS='"Check Existing" "Analyze Dependencies" "Identify Challenges" "Review API" "Create Zig File" "Map Types" "Implement Functions" "Run Tests" "Verify Memory" "Cleanup and Document"'
+```
+
+### First-Time Initialization Check
+
+```bash
+if [ ! -f /tmp/migrate_module_to_zig_abi_progress.txt ]; then
+  echo "⚠️  Initializing checkpoint tracking..."
+  make checkpoint-init CMD=migrate-module-to-zig-abi STEPS='"Check Existing" "Analyze Dependencies" "Identify Challenges" "Review API" "Create Zig File" "Map Types" "Implement Functions" "Run Tests" "Verify Memory" "Cleanup and Document"'
+else
+  make checkpoint-status CMD=migrate-module-to-zig-abi
+fi
+```
+
+## PRECONDITION: Checkpoint Tracking Must Be Initialized
+
+```bash
+if [ ! -f /tmp/migrate_module_to_zig_abi_progress.txt ]; then
+  echo "❌ ERROR: Checkpoint tracking not initialized!"
+  exit 1
+fi
+```
+
 # Migrate Module to Zig ABI
 ## Checkpoint Tracking
 

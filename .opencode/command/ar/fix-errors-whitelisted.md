@@ -9,6 +9,40 @@ Before starting error analysis:
    - systematic-error-whitelist-reduction
 3. Apply the systematic approach from these articles
 
+## CHECKPOINT WORKFLOW ENFORCEMENT
+
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+
+### In-Progress Workflow Detection
+
+If a `/fix-errors-whitelisted` workflow is already in progress:
+
+```bash
+make checkpoint-status CMD=fix-errors-whitelisted VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=fix-errors-whitelisted STEP=N
+# Or reset: make checkpoint-cleanup CMD=fix-errors-whitelisted && make checkpoint-init CMD=fix-errors-whitelisted STEPS='"Count Errors" "Group by Test" "Find Patterns" "Select Target" "Analyze Root Cause" "Choose Strategy" "Plan Implementation" "Verify Current State" "Apply Fix" "Test Fix" "Remove Whitelist Entries" "Update Whitelist Total" "Update TODO.md" "Update CHANGELOG" "Final Verification" "Create Commit"'
+```
+
+### First-Time Initialization Check
+
+```bash
+if [ ! -f /tmp/fix_errors_whitelisted_progress.txt ]; then
+  echo "⚠️  Initializing checkpoint tracking..."
+  make checkpoint-init CMD=fix-errors-whitelisted STEPS='"Count Errors" "Group by Test" "Find Patterns" "Select Target" "Analyze Root Cause" "Choose Strategy" "Plan Implementation" "Verify Current State" "Apply Fix" "Test Fix" "Remove Whitelist Entries" "Update Whitelist Total" "Update TODO.md" "Update CHANGELOG" "Final Verification" "Create Commit"'
+else
+  make checkpoint-status CMD=fix-errors-whitelisted
+fi
+```
+
+## PRECONDITION: Checkpoint Tracking Must Be Initialized
+
+```bash
+if [ ! -f /tmp/fix_errors_whitelisted_progress.txt ]; then
+  echo "❌ ERROR: Checkpoint tracking not initialized!"
+  exit 1
+fi
+```
+
 # Fix Whitelisted Errors
 ## Checkpoint Tracking
 

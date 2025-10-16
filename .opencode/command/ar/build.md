@@ -2,6 +2,40 @@ Execute comprehensive build verification with minimal output and check for hidde
 
 **Note**: The build runs all checks in parallel for efficiency ([details](../../../kb/parallel-build-job-integration.md)). Always use `make build` rather than running scripts directly ([details](../../../kb/make-target-testing-discipline.md)). All command documentation must achieve 90%+ scores or the build fails ([details](../../../kb/command-documentation-excellence-gate.md)).
 
+## CHECKPOINT WORKFLOW ENFORCEMENT
+
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+
+### In-Progress Workflow Detection
+
+If a `/build` workflow is already in progress:
+
+```bash
+make checkpoint-status CMD=build VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=build STEP=N
+# Or reset: make checkpoint-cleanup CMD=build && make checkpoint-init CMD=build STEPS='"Prepare" "Execute" "Verify"'
+```
+
+### First-Time Initialization Check
+
+```bash
+if [ ! -f /tmp/build_progress.txt ]; then
+  echo "⚠️  Initializing checkpoint tracking..."
+  make checkpoint-init CMD=build STEPS='"Prepare" "Execute" "Verify"'
+else
+  make checkpoint-status CMD=build
+fi
+```
+
+## PRECONDITION: Checkpoint Tracking Must Be Initialized
+
+```bash
+if [ ! -f /tmp/build_progress.txt ]; then
+  echo "❌ ERROR: Checkpoint tracking not initialized!"
+  exit 1
+fi
+```
+
 # Build
 ## Checkpoint Tracking
 

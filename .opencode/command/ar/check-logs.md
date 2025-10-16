@@ -2,6 +2,40 @@ Check build logs for hidden issues that might not be caught by the build summary
 
 **Critical**: This check must pass or CI will fail. The log parser uses precise patterns to extract metrics ([details](../../../kb/build-log-extraction-patterns.md), [syntax](../../../kb/grep-or-syntax-differences.md)). Build checks run in parallel for efficiency ([details](../../../kb/parallel-build-job-integration.md)). CI may fail with network timeouts from deprecated actions ([details](../../../kb/github-actions-deprecated-tool-migration.md)).
 
+## CHECKPOINT WORKFLOW ENFORCEMENT
+
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+
+### In-Progress Workflow Detection
+
+If a `/check-logs` workflow is already in progress:
+
+```bash
+make checkpoint-status CMD=check-logs VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=check-logs STEP=N
+# Or reset: make checkpoint-cleanup CMD=check-logs && make checkpoint-init CMD=check-logs STEPS='"Run Build" "Standard Checks" "Deep Analysis" "Categorize Errors" "Fix Issues" "Update Whitelist" "Re-check Logs" "Final Validation"'
+```
+
+### First-Time Initialization Check
+
+```bash
+if [ ! -f /tmp/check_logs_progress.txt ]; then
+  echo "⚠️  Initializing checkpoint tracking..."
+  make checkpoint-init CMD=check-logs STEPS='"Run Build" "Standard Checks" "Deep Analysis" "Categorize Errors" "Fix Issues" "Update Whitelist" "Re-check Logs" "Final Validation"'
+else
+  make checkpoint-status CMD=check-logs
+fi
+```
+
+## PRECONDITION: Checkpoint Tracking Must Be Initialized
+
+```bash
+if [ ! -f /tmp/check_logs_progress.txt ]; then
+  echo "❌ ERROR: Checkpoint tracking not initialized!"
+  exit 1
+fi
+```
+
 ## MANDATORY KB Consultation
 
 Before analysis:

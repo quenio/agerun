@@ -1,5 +1,38 @@
 Run address sanitizer on all tests for detecting memory issues.
 
+## CHECKPOINT WORKFLOW ENFORCEMENT
+
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+
+### In-Progress Workflow Detection
+
+If a `/sanitize-tests` workflow is already in progress:
+
+```bash
+make checkpoint-status CMD=sanitize_tests VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=sanitize_tests STEP=N
+# Or reset: make checkpoint-cleanup CMD=sanitize_tests && make checkpoint-init CMD=sanitize_tests STEPS='"Prepare" "Execute" "Verify"'
+```
+
+### First-Time Initialization Check
+
+```bash
+if [ ! -f /tmp/sanitize_tests_progress.txt ]; then
+  echo "⚠️  Initializing checkpoint tracking..."
+  make checkpoint-init CMD=sanitize_tests STEPS='"Prepare" "Execute" "Verify"'
+else
+  make checkpoint-status CMD=sanitize_tests
+fi
+```
+
+## PRECONDITION: Checkpoint Tracking Must Be Initialized
+
+```bash
+if [ ! -f /tmp/sanitize_tests_progress.txt ]; then
+  echo "❌ ERROR: Checkpoint tracking not initialized!"
+  exit 1
+fi
+```
 
 # Sanitize Tests
 ## Checkpoint Tracking

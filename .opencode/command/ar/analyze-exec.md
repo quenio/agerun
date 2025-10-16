@@ -1,5 +1,38 @@
 Run static analysis on the executable code.
 
+## CHECKPOINT WORKFLOW ENFORCEMENT
+
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+
+### In-Progress Workflow Detection
+
+If a `/analyze-exec` workflow is already in progress:
+
+```bash
+make checkpoint-status CMD=analyze_exec VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=analyze_exec STEP=N
+# Or reset: make checkpoint-cleanup CMD=analyze_exec && make checkpoint-init CMD=analyze_exec STEPS='"Prepare" "Execute" "Verify"'
+```
+
+### First-Time Initialization Check
+
+```bash
+if [ ! -f /tmp/analyze_exec_progress.txt ]; then
+  echo "⚠️  Initializing checkpoint tracking..."
+  make checkpoint-init CMD=analyze_exec STEPS='"Prepare" "Execute" "Verify"'
+else
+  make checkpoint-status CMD=analyze_exec
+fi
+```
+
+## PRECONDITION: Checkpoint Tracking Must Be Initialized
+
+```bash
+if [ ! -f /tmp/analyze_exec_progress.txt ]; then
+  echo "❌ ERROR: Checkpoint tracking not initialized!"
+  exit 1
+fi
+```
 
 # Analyze Executable
 ## Checkpoint Tracking

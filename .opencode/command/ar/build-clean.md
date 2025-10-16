@@ -1,5 +1,38 @@
 Execute a clean build for comprehensive build verification with minimal output and check for hidden issues.
 
+## CHECKPOINT WORKFLOW ENFORCEMENT
+
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+
+### In-Progress Workflow Detection
+
+If a `/build-clean` workflow is already in progress:
+
+```bash
+make checkpoint-status CMD=build_clean VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=build_clean STEP=N
+# Or reset: make checkpoint-cleanup CMD=build_clean && make checkpoint-init CMD=build_clean STEPS='"Prepare" "Execute" "Verify"'
+```
+
+### First-Time Initialization Check
+
+```bash
+if [ ! -f /tmp/build_clean_progress.txt ]; then
+  echo "⚠️  Initializing checkpoint tracking..."
+  make checkpoint-init CMD=build_clean STEPS='"Prepare" "Execute" "Verify"'
+else
+  make checkpoint-status CMD=build_clean
+fi
+```
+
+## PRECONDITION: Checkpoint Tracking Must Be Initialized
+
+```bash
+if [ ! -f /tmp/build_clean_progress.txt ]; then
+  echo "❌ ERROR: Checkpoint tracking not initialized!"
+  exit 1
+fi
+```
 
 # Clean Build
 ## Checkpoint Tracking

@@ -1,5 +1,38 @@
 Merge ./.claude/settings.local.json into ./.claude/settings.json and remove the local file.
 
+## CHECKPOINT WORKFLOW ENFORCEMENT
+
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+
+### In-Progress Workflow Detection
+
+If a `/merge-settings` workflow is already in progress:
+
+```bash
+make checkpoint-status CMD=merge-settings VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=merge-settings STEP=N
+# Or reset: make checkpoint-cleanup CMD=merge-settings && make checkpoint-init CMD=merge-settings STEPS='"Check Files" "Read Settings" "Merge Permissions" "Validate Result" "Commit and Cleanup"'
+```
+
+### First-Time Initialization Check
+
+```bash
+if [ ! -f /tmp/merge_settings_progress.txt ]; then
+  echo "⚠️  Initializing checkpoint tracking..."
+  make checkpoint-init CMD=merge-settings STEPS='"Check Files" "Read Settings" "Merge Permissions" "Validate Result" "Commit and Cleanup"'
+else
+  make checkpoint-status CMD=merge-settings
+fi
+```
+
+## PRECONDITION: Checkpoint Tracking Must Be Initialized
+
+```bash
+if [ ! -f /tmp/merge_settings_progress.txt ]; then
+  echo "❌ ERROR: Checkpoint tracking not initialized!"
+  exit 1
+fi
+```
 
 # Merge Settings
 ## Checkpoint Tracking

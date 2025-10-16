@@ -11,6 +11,40 @@ Before checking:
    - Type naming rules
 4. Apply all naming standards
 
+## CHECKPOINT WORKFLOW ENFORCEMENT
+
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+
+### In-Progress Workflow Detection
+
+If a `/check-naming` workflow is already in progress:
+
+```bash
+make checkpoint-status CMD=check_naming VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=check_naming STEP=N
+# Or reset: make checkpoint-cleanup CMD=check_naming && make checkpoint-init CMD=check_naming STEPS='"Prepare" "Execute" "Verify"'
+```
+
+### First-Time Initialization Check
+
+```bash
+if [ ! -f /tmp/check_naming_progress.txt ]; then
+  echo "⚠️  Initializing checkpoint tracking..."
+  make checkpoint-init CMD=check_naming STEPS='"Prepare" "Execute" "Verify"'
+else
+  make checkpoint-status CMD=check_naming
+fi
+```
+
+## PRECONDITION: Checkpoint Tracking Must Be Initialized
+
+```bash
+if [ ! -f /tmp/check_naming_progress.txt ]; then
+  echo "❌ ERROR: Checkpoint tracking not initialized!"
+  exit 1
+fi
+```
+
 # Check Naming Conventions
 ## Checkpoint Tracking
 

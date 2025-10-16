@@ -9,6 +9,40 @@ Before checking consistency:
    - systematic-consistency-verification
 3. Apply systematic verification approach
 
+## CHECKPOINT WORKFLOW ENFORCEMENT
+
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+
+### In-Progress Workflow Detection
+
+If a `/check-module-consistency` workflow is already in progress:
+
+```bash
+make checkpoint-status CMD=check-module-consistency VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=check-module-consistency STEP=N
+# Or reset: make checkpoint-cleanup CMD=check-module-consistency && make checkpoint-init CMD=check-module-consistency STEPS='"Describe Improvement" "Identify Pattern" "Find Sister Modules" "Find Similar Purpose" "Find Same Subsystem" "Check Module 1" "Check Module 2" "Check Module 3" "Check Module 4" "Check Module 5" "Analyze Findings" "List Modules Needing Update" "Estimate Effort" "Create Priority Order" "Document Plan"'
+```
+
+### First-Time Initialization Check
+
+```bash
+if [ ! -f /tmp/check_module_consistency_progress.txt ]; then
+  echo "⚠️  Initializing checkpoint tracking..."
+  make checkpoint-init CMD=check-module-consistency STEPS='"Describe Improvement" "Identify Pattern" "Find Sister Modules" "Find Similar Purpose" "Find Same Subsystem" "Check Module 1" "Check Module 2" "Check Module 3" "Check Module 4" "Check Module 5" "Analyze Findings" "List Modules Needing Update" "Estimate Effort" "Create Priority Order" "Document Plan"'
+else
+  make checkpoint-status CMD=check-module-consistency
+fi
+```
+
+## PRECONDITION: Checkpoint Tracking Must Be Initialized
+
+```bash
+if [ ! -f /tmp/check_module_consistency_progress.txt ]; then
+  echo "❌ ERROR: Checkpoint tracking not initialized!"
+  exit 1
+fi
+```
+
 # Check Module Consistency
 ## Checkpoint Tracking
 

@@ -12,6 +12,40 @@ Before validation:
 3. Apply iterative validation approach
 4. For YAML files: Ensure reader/writer contracts are explicit ([details](../../../kb/yaml-implicit-contract-validation-pattern.md))
 
+## CHECKPOINT WORKFLOW ENFORCEMENT
+
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+
+### In-Progress Workflow Detection
+
+If a `/check-docs` workflow is already in progress:
+
+```bash
+make checkpoint-status CMD=check-docs VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=check-docs STEP=N
+# Or reset: make checkpoint-cleanup CMD=check-docs && make checkpoint-init CMD=check-docs STEPS='"Initial Check" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"'
+```
+
+### First-Time Initialization Check
+
+```bash
+if [ ! -f /tmp/check_docs_progress.txt ]; then
+  echo "⚠️  Initializing checkpoint tracking..."
+  make checkpoint-init CMD=check-docs STEPS='"Initial Check" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"'
+else
+  make checkpoint-status CMD=check-docs
+fi
+```
+
+## PRECONDITION: Checkpoint Tracking Must Be Initialized
+
+```bash
+if [ ! -f /tmp/check_docs_progress.txt ]; then
+  echo "❌ ERROR: Checkpoint tracking not initialized!"
+  exit 1
+fi
+```
+
 # Check Documentation
 ## Checkpoint Tracking
 

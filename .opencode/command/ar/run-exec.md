@@ -1,5 +1,38 @@
 Build and run the agerun executable.
 
+## CHECKPOINT WORKFLOW ENFORCEMENT
+
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+
+### In-Progress Workflow Detection
+
+If a `/run-exec` workflow is already in progress:
+
+```bash
+make checkpoint-status CMD=run_exec VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=run_exec STEP=N
+# Or reset: make checkpoint-cleanup CMD=run_exec && make checkpoint-init CMD=run_exec STEPS='"Prepare" "Execute" "Verify"'
+```
+
+### First-Time Initialization Check
+
+```bash
+if [ ! -f /tmp/run_exec_progress.txt ]; then
+  echo "⚠️  Initializing checkpoint tracking..."
+  make checkpoint-init CMD=run_exec STEPS='"Prepare" "Execute" "Verify"'
+else
+  make checkpoint-status CMD=run_exec
+fi
+```
+
+## PRECONDITION: Checkpoint Tracking Must Be Initialized
+
+```bash
+if [ ! -f /tmp/run_exec_progress.txt ]; then
+  echo "❌ ERROR: Checkpoint tracking not initialized!"
+  exit 1
+fi
+```
 
 # Run Executable
 ## Checkpoint Tracking

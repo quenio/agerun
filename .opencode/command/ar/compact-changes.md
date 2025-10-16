@@ -1,5 +1,39 @@
 Compact the CHANGELOG.md file by condensing completed milestones while preserving key information.
 
+## CHECKPOINT WORKFLOW ENFORCEMENT
+
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+
+### In-Progress Workflow Detection
+
+If a `/compact-changes` workflow is already in progress:
+
+```bash
+make checkpoint-status CMD=compact-changes VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=compact-changes STEP=N
+# Or reset: make checkpoint-cleanup CMD=compact-changes && make checkpoint-init CMD=compact-changes STEPS='"Measure Baseline" "Analyze Patterns" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Update TODO" "Commit Changes"'
+```
+
+### First-Time Initialization Check
+
+```bash
+if [ ! -f /tmp/compact_changes_progress.txt ]; then
+  echo "⚠️  Initializing checkpoint tracking..."
+  make checkpoint-init CMD=compact-changes STEPS='"Measure Baseline" "Analyze Patterns" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Update TODO" "Commit Changes"'
+else
+  make checkpoint-status CMD=compact-changes
+fi
+```
+
+## PRECONDITION: Checkpoint Tracking Must Be Initialized
+
+```bash
+if [ ! -f /tmp/compact_changes_progress.txt ]; then
+  echo "❌ ERROR: Checkpoint tracking not initialized!"
+  exit 1
+fi
+```
+
 ## CRITICAL: Manual Compaction Strategy
 
 **Key Learning from Session 2025-10-08**: Achieving 40-50%+ reduction in historical records requires **manual semantic analysis**, not automated scripts.

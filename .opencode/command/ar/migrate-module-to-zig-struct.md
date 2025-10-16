@@ -9,6 +9,40 @@ Before starting migration:
    - zig-integration-comprehensive
 3. Apply struct module conventions
 
+## CHECKPOINT WORKFLOW ENFORCEMENT
+
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+
+### In-Progress Workflow Detection
+
+If a `/migrate-module-to-zig-struct` workflow is already in progress:
+
+```bash
+make checkpoint-status CMD=migrate-module-to-zig-struct VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=migrate-module-to-zig-struct STEP=N
+# Or reset: make checkpoint-cleanup CMD=migrate-module-to-zig-struct && make checkpoint-init CMD=migrate-module-to-zig-struct STEPS='"Read KB Article" "Check Current Implementation" "Check C Dependencies" "Check Zig Dependencies" "Verify Safety" "Create Struct Module" "Convert Functions" "Update Dependencies" "Run Tests" "Remove Old Module" "Update Documentation"'
+```
+
+### First-Time Initialization Check
+
+```bash
+if [ ! -f /tmp/migrate_module_to_zig_struct_progress.txt ]; then
+  echo "⚠️  Initializing checkpoint tracking..."
+  make checkpoint-init CMD=migrate-module-to-zig-struct STEPS='"Read KB Article" "Check Current Implementation" "Check C Dependencies" "Check Zig Dependencies" "Verify Safety" "Create Struct Module" "Convert Functions" "Update Dependencies" "Run Tests" "Remove Old Module" "Update Documentation"'
+else
+  make checkpoint-status CMD=migrate-module-to-zig-struct
+fi
+```
+
+## PRECONDITION: Checkpoint Tracking Must Be Initialized
+
+```bash
+if [ ! -f /tmp/migrate_module_to_zig_struct_progress.txt ]; then
+  echo "❌ ERROR: Checkpoint tracking not initialized!"
+  exit 1
+fi
+```
+
 # Migrate Module to Zig Struct
 ## Checkpoint Tracking
 

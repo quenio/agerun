@@ -8,6 +8,40 @@ Before starting task execution, search KB for relevant patterns ([details](../..
 3. Apply relevant protocols found (e.g., [red-green-refactor](../../../kb/red-green-refactor-cycle.md), [test-assertion-strength](../../../kb/test-assertion-strength-patterns.md))
 4. Verify task is still needed ([details](../../../kb/task-verification-before-execution.md))
 
+## CHECKPOINT WORKFLOW ENFORCEMENT
+
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+
+### In-Progress Workflow Detection
+
+If a `/next-task` workflow is already in progress:
+
+```bash
+make checkpoint-status CMD=next_task VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=next_task STEP=N
+# Or reset: make checkpoint-cleanup CMD=next_task && make checkpoint-init CMD=next_task STEPS='"Prepare" "Execute" "Verify"'
+```
+
+### First-Time Initialization Check
+
+```bash
+if [ ! -f /tmp/next_task_progress.txt ]; then
+  echo "⚠️  Initializing checkpoint tracking..."
+  make checkpoint-init CMD=next_task STEPS='"Prepare" "Execute" "Verify"'
+else
+  make checkpoint-status CMD=next_task
+fi
+```
+
+## PRECONDITION: Checkpoint Tracking Must Be Initialized
+
+```bash
+if [ ! -f /tmp/next_task_progress.txt ]; then
+  echo "❌ ERROR: Checkpoint tracking not initialized!"
+  exit 1
+fi
+```
+
 # Next Task
 ## Checkpoint Tracking
 

@@ -1,5 +1,38 @@
 Run thread sanitizer on all tests for detecting data races.
 
+## CHECKPOINT WORKFLOW ENFORCEMENT
+
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+
+### In-Progress Workflow Detection
+
+If a `/tsan-tests` workflow is already in progress:
+
+```bash
+make checkpoint-status CMD=tsan_tests VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=tsan_tests STEP=N
+# Or reset: make checkpoint-cleanup CMD=tsan_tests && make checkpoint-init CMD=tsan_tests STEPS='"Prepare" "Execute" "Verify"'
+```
+
+### First-Time Initialization Check
+
+```bash
+if [ ! -f /tmp/tsan_tests_progress.txt ]; then
+  echo "⚠️  Initializing checkpoint tracking..."
+  make checkpoint-init CMD=tsan_tests STEPS='"Prepare" "Execute" "Verify"'
+else
+  make checkpoint-status CMD=tsan_tests
+fi
+```
+
+## PRECONDITION: Checkpoint Tracking Must Be Initialized
+
+```bash
+if [ ! -f /tmp/tsan_tests_progress.txt ]; then
+  echo "❌ ERROR: Checkpoint tracking not initialized!"
+  exit 1
+fi
+```
 
 # Thread Sanitizer Tests
 ## Checkpoint Tracking

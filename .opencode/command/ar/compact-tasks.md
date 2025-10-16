@@ -1,5 +1,39 @@
 Compact the TODO.md file by condensing completed tasks while keeping incomplete tasks untouched.
 
+## CHECKPOINT WORKFLOW ENFORCEMENT
+
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+
+### In-Progress Workflow Detection
+
+If a `/compact-tasks` workflow is already in progress:
+
+```bash
+make checkpoint-status CMD=compact-tasks VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=compact-tasks STEP=N
+# Or reset: make checkpoint-cleanup CMD=compact-tasks && make checkpoint-init CMD=compact-tasks STEPS='"Measure Baseline" "Categorize Tasks" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Commit Changes" "Final Verification"'
+```
+
+### First-Time Initialization Check
+
+```bash
+if [ ! -f /tmp/compact_tasks_progress.txt ]; then
+  echo "⚠️  Initializing checkpoint tracking..."
+  make checkpoint-init CMD=compact-tasks STEPS='"Measure Baseline" "Categorize Tasks" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Commit Changes" "Final Verification"'
+else
+  make checkpoint-status CMD=compact-tasks
+fi
+```
+
+## PRECONDITION: Checkpoint Tracking Must Be Initialized
+
+```bash
+if [ ! -f /tmp/compact_tasks_progress.txt ]; then
+  echo "❌ ERROR: Checkpoint tracking not initialized!"
+  exit 1
+fi
+```
+
 ## CRITICAL: Mixed-State Document Strategy
 
 **Key Learning from Session 2025-10-08**: TODO.md is a **mixed-state document** requiring selective compaction + manual semantic analysis for completed tasks only.

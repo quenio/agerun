@@ -13,6 +13,40 @@ Before reviewing ([details](../../../kb/kb-consultation-before-planning-requirem
    - Standards over expediency ([details](../../../kb/standards-over-expediency-principle.md))
 3. Apply these standards during review
 
+## CHECKPOINT WORKFLOW ENFORCEMENT
+
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+
+### In-Progress Workflow Detection
+
+If a `/review-changes` workflow is already in progress:
+
+```bash
+make checkpoint-status CMD=review-changes VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=review-changes STEP=N
+# Or reset: make checkpoint-cleanup CMD=review-changes && make checkpoint-init CMD=review-changes STEPS='"Diff Analysis" "Code Smells" "Memory Management" "Naming Conventions" "Error Handling" "Test Coverage" "Parnas Principles" "Module Hierarchy" "Interface Design" "Dependency Check" "Design Patterns" "Real Code Check" "Doc Validation" "Cross-References" "Completeness" "Link Validation" "Build Status" "Hidden Issues" "Test Results" "File Hygiene" "Doc Sync" "Final Report"'
+```
+
+### First-Time Initialization Check
+
+```bash
+if [ ! -f /tmp/review_changes_progress.txt ]; then
+  echo "⚠️  Initializing checkpoint tracking..."
+  make checkpoint-init CMD=review-changes STEPS='"Diff Analysis" "Code Smells" "Memory Management" "Naming Conventions" "Error Handling" "Test Coverage" "Parnas Principles" "Module Hierarchy" "Interface Design" "Dependency Check" "Design Patterns" "Real Code Check" "Doc Validation" "Cross-References" "Completeness" "Link Validation" "Build Status" "Hidden Issues" "Test Results" "File Hygiene" "Doc Sync" "Final Report"'
+else
+  make checkpoint-status CMD=review-changes
+fi
+```
+
+## PRECONDITION: Checkpoint Tracking Must Be Initialized
+
+```bash
+if [ ! -f /tmp/review_changes_progress.txt ]; then
+  echo "❌ ERROR: Checkpoint tracking not initialized!"
+  exit 1
+fi
+```
+
 # Review Changes
 
 ## ⚠️ REQUIRED: Initialize Checkpoint Tracking First

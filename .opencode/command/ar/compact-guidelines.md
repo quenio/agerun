@@ -1,5 +1,39 @@
 Make AGENTS.md guidelines more concise by moving details to knowledge base.
 
+## CHECKPOINT WORKFLOW ENFORCEMENT
+
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+
+### In-Progress Workflow Detection
+
+If a `/compact-guidelines` workflow is already in progress:
+
+```bash
+make checkpoint-status CMD=compact-guidelines VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=compact-guidelines STEP=N
+# Or reset: make checkpoint-cleanup CMD=compact-guidelines && make checkpoint-init CMD=compact-guidelines STEPS='"Analyze AGENTS.md" "Identify Verbose Sections" "List Extraction Targets" "Check Existing KB Articles" "Plan New Articles" "Create KB Article 1" "Create KB Article 2" "Create KB Article 3" "Update AGENTS.md References" "Add Cross-References" "Update kb/README.md" "Run Documentation Validation" "Verify Link Coverage" "Review Changes" "Create Commit"'
+```
+
+### First-Time Initialization Check
+
+```bash
+if [ ! -f /tmp/compact_guidelines_progress.txt ]; then
+  echo "⚠️  Initializing checkpoint tracking..."
+  make checkpoint-init CMD=compact-guidelines STEPS='"Analyze AGENTS.md" "Identify Verbose Sections" "List Extraction Targets" "Check Existing KB Articles" "Plan New Articles" "Create KB Article 1" "Create KB Article 2" "Create KB Article 3" "Update AGENTS.md References" "Add Cross-References" "Update kb/README.md" "Run Documentation Validation" "Verify Link Coverage" "Review Changes" "Create Commit"'
+else
+  make checkpoint-status CMD=compact-guidelines
+fi
+```
+
+## PRECONDITION: Checkpoint Tracking Must Be Initialized
+
+```bash
+if [ ! -f /tmp/compact_guidelines_progress.txt ]; then
+  echo "❌ ERROR: Checkpoint tracking not initialized!"
+  exit 1
+fi
+```
+
 ## MANDATORY KB Consultation
 
 Before compacting:

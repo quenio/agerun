@@ -14,6 +14,40 @@ Before analyzing priorities, you MUST ([details](../../../kb/kb-consultation-bef
 
 Only after completing KB consultation should you proceed to analyze TODO.md.
 
+## CHECKPOINT WORKFLOW ENFORCEMENT
+
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+
+### In-Progress Workflow Detection
+
+If a `/next-priority` workflow is already in progress:
+
+```bash
+make checkpoint-status CMD=next_priority VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=next_priority STEP=N
+# Or reset: make checkpoint-cleanup CMD=next_priority && make checkpoint-init CMD=next_priority STEPS='"Prepare" "Execute" "Verify"'
+```
+
+### First-Time Initialization Check
+
+```bash
+if [ ! -f /tmp/next_priority_progress.txt ]; then
+  echo "⚠️  Initializing checkpoint tracking..."
+  make checkpoint-init CMD=next_priority STEPS='"Prepare" "Execute" "Verify"'
+else
+  make checkpoint-status CMD=next_priority
+fi
+```
+
+## PRECONDITION: Checkpoint Tracking Must Be Initialized
+
+```bash
+if [ ! -f /tmp/next_priority_progress.txt ]; then
+  echo "❌ ERROR: Checkpoint tracking not initialized!"
+  exit 1
+fi
+```
+
 # Next Priority
 ## Checkpoint Tracking
 
