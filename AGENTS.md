@@ -32,7 +32,7 @@ See [CONCEPTS.md](CONCEPTS.md) for complete definitions and context.
 
 See [CONCEPTS.md - Module Organization Terms](CONCEPTS.md#module-organization-terms) and [CONCEPTS.md - File Naming Conventions](CONCEPTS.md#file-naming-conventions) for details.
 
-**Finding KB Articles**: Located in `kb/` directory with format `<topic-name>.md` (kebab-case). Indexed in `kb/README.md`. Referenced from AGENTS.md and commands via `([details](kb/article-name.md))` links. See [CONCEPTS.md - KB Article Files](CONCEPTS.md#kb-article-files) for details.
+**Finding KB Articles**: Located in `kb/` directory with format `<topic-name>.md` (kebab-case). Indexed in `kb/README.md`. Referenced from AGENTS.md and commands via links like `([details](kb/tdd-plan-review-checklist.md))`. See [CONCEPTS.md - KB Article Files](CONCEPTS.md#kb-article-files) for details.
 
 ## Quick Start
 
