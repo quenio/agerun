@@ -4,6 +4,8 @@ Execute a TDD plan document by implementing each iteration following the RED-GRE
 
 **CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
 
+This section implements the [Checkpoint Workflow Enforcement Pattern](../../../kb/checkpoint-workflow-enforcement-pattern.md) - preventing workflow bypasses through initialization and precondition enforcement.
+
 ### In-Progress Workflow Detection
 
 If an `/execute-plan` workflow is already in progress:

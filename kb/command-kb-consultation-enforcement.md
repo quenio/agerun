@@ -103,6 +103,7 @@ fi
 - Automated gates catch violations early
 
 ## Related Patterns
+- [Checkpoint Workflow Enforcement Pattern](checkpoint-workflow-enforcement-pattern.md) - Complementary enforcement for workflow initialization & preconditions
 - [Command Pipeline Methodology Enforcement](command-pipeline-methodology-enforcement.md) - How KB consultation creates unified enforcement across commands
 - [Knowledge Base Consultation Protocol](knowledge-base-consultation-protocol.md)
 - [KB Consultation Before Planning Requirement](kb-consultation-before-planning-requirement.md)

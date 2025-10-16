@@ -170,6 +170,7 @@ Test the pipeline integrity:
 If any step fails, the pipeline stops and provides clear guidance on which lesson(s) need attention.
 
 ## Related Patterns
+- [Checkpoint Workflow Enforcement Pattern](checkpoint-workflow-enforcement-pattern.md) - Infrastructure that enables this pipeline enforcement
 - [TDD Plan Review Checklist](tdd-plan-review-checklist.md) - The 14 lessons enforced by the pipeline
 - [KB Consultation Before Planning Requirement](kb-consultation-before-planning-requirement.md) - How consultation layer unifies commands
 - [KB Target Compliance Enforcement](kb-target-compliance-enforcement.md) - Quantitative targets for enforcement

@@ -4,6 +4,8 @@ Create a TDD plan document following strict methodology patterns and best practi
 
 **CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
 
+This section implements the [Checkpoint Workflow Enforcement Pattern](../../../kb/checkpoint-workflow-enforcement-pattern.md) - preventing workflow bypasses through initialization and precondition enforcement.
+
 ### In-Progress Workflow Detection
 
 If a `/create-plan` workflow is already in progress:

@@ -111,6 +111,7 @@ make checkpoint-gate CMD=check-docs GATE="Resolution" REQUIRED="4"
 ```
 
 ## Related Patterns
+- [Checkpoint Workflow Enforcement Pattern](checkpoint-workflow-enforcement-pattern.md) - Prevents bypassing checkpoints with initialization & precondition enforcement
 - [Checkpoint-Based Workflow Pattern](checkpoint-based-workflow-pattern.md) - Comprehensive workflow structure
 - [Gate Enforcement Exit Codes Pattern](gate-enforcement-exit-codes-pattern.md)
 - [Progress Visualization ASCII Pattern](progress-visualization-ascii-pattern.md)

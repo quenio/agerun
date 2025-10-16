@@ -132,6 +132,7 @@ Organize complex workflows into stages with gates:
 - **Analysis workflows**: Collect → process → analyze → report → archive
 
 ## Related Patterns
+- [Checkpoint Workflow Enforcement Pattern](checkpoint-workflow-enforcement-pattern.md) - Prevention mechanism for bypasses (initialization & precondition enforcement)
 - [Gate Enforcement Exit Codes Pattern](gate-enforcement-exit-codes-pattern.md)
 - [Command Thoroughness Requirements Pattern](command-thoroughness-requirements-pattern.md)
 - [Systematic Task Analysis Protocol](systematic-task-analysis-protocol.md)
