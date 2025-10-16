@@ -225,13 +225,64 @@ This command reviews plans and updates iteration status markers. These markers t
 
 #### [CHECKPOINT START - STAGE 1]
 
-#### Step 1: KB Consultation
+#### Step 1: KB Consultation & Lesson Verification
 
 **Mandatory KB Reading:**
 Read all 8 KB articles listed above and quote the 4 specific items.
 
+**CRITICAL: Verify all 14 TDD lessons before reviewing plan**
+
+Use this checklist to verify each lesson from the session learnings (kb/tdd-plan-review-checklist.md):
+
+- [ ] **Lesson 1**: Iteration numbering clarity prevents confusion
+  - Check: Are iterations numbered sequentially? (1.1, 1.2, 1.3 not 1.1, 1.4, 1.7)
+
+- [ ] **Lesson 2**: One assertion per iteration creates reliable pace
+  - Check: Each iteration tests exactly ONE behavior
+
+- [ ] **Lesson 3**: Hardcoded returns are acceptable for minimalism
+  - Check: GREEN phases use hardcoded returns when valid (return false;, return NULL;)
+
+- [ ] **Lesson 4**: Minimal implementations must still clean up resources
+  - Check: Resource cleanup present even in hardcoded implementations
+
+- [ ] **Lesson 5**: Tests drive implementation through dependency chains
+  - Check: Iteration N+1's RED fails if iteration N implements minimally
+
+- [ ] **Lesson 6**: Integration tests catch module seam bugs
+  - Check: Tests verify module boundaries, not just individual modules
+
+- [ ] **Lesson 7** ⭐ **CRITICAL**: Assertion validity MUST be verified via temporary corruption
+  - Check: RED phases document temporary code/corruption that makes assertion fail
+  - Check: GREEN phases remove temporary corruption
+  - Check: Plan explicitly states "Expected RED: Test FAILS..." for each assertion
+
+- [ ] **Lesson 8**: Temporary code in tests is valid TDD technique
+  - Check: Temporary corruption is documented and explicitly marked temporary
+
+- [ ] **Lesson 9**: Property validation through independent assertions
+  - Check: For data flow tests: message persistence, type preservation, content preservation
+  - Check: Each property is independent assertion
+
+- [ ] **Lesson 10**: Clear test type distinction (TDD vs Validation vs Hybrid)
+  - Check: Plan documents which iterations are true TDD vs validation vs hybrid
+
+- [ ] **Lesson 11**: Over-implementation in GREEN violates minimalism
+  - Check: GREEN phase only implements what RED assertion tests
+  - Check: No "future-proofing" or "while I'm here" additions
+
+- [ ] **Lesson 12**: Commit messages should document methodology
+  - Check: Commits explain not just "what changed" but "why it matters"
+
+- [ ] **Lesson 13**: Forward dependencies disable sequential reading
+  - Check: No iteration references later unreviewed iterations
+  - Check: Plan readable in sequential order
+
+- [ ] **Lesson 14**: Resource ownership naming conventions matter
+  - Check: Ownership prefixes present (own_, ref_, mut_) throughout plan
+
 ```bash
-# After completing KB consultation
+# After verifying all 14 lessons
 make checkpoint-update CMD=review-plan STEP=1
 ```
 
@@ -464,7 +515,33 @@ make checkpoint-cleanup CMD=review-plan-iterations
 make checkpoint-update CMD=review-plan STEP=4
 ```
 
-#### Step 5: Verify TDD Methodology
+#### Step 5: Verify TDD Methodology (Check All 14 Lessons Against Actual Plan)
+
+**For each PENDING REVIEW iteration, verify each lesson is applied:**
+
+**Lesson-by-Lesson Verification Against Plan:**
+
+- [ ] **Lesson 1 - Numbering**: Iteration numbering sequential and clear?
+- [ ] **Lesson 2 - One Assertion**: Exactly one new assertion per iteration?
+- [ ] **Lesson 3 - Hardcoded**: GREEN uses hardcoded returns where valid?
+- [ ] **Lesson 4 - Cleanup**: Resources cleaned up even in minimal GREEN?
+- [ ] **Lesson 5 - Dependencies**: Iteration N+1 RED would fail with iteration N GREEN?
+- [ ] **Lesson 6 - Integration**: Tests verify module seams, not just single modules?
+- [ ] **Lesson 7 ⭐ - Assertion Validity**: RED phase documents temporary corruption?
+  - ✅ RED shows what will FAIL
+  - ✅ GREEN shows what's removed/fixed
+  - ✅ Plan states "Expected RED: Test FAILS..."
+- [ ] **Lesson 8 - Temp Code**: Temporary corruption marked and documented?
+- [ ] **Lesson 9 - Properties**: Independent assertions for each property (persistence, type, content)?
+- [ ] **Lesson 10 - Test Types**: Plan distinguishes TDD vs Validation vs Hybrid iterations?
+- [ ] **Lesson 11 - Minimalism**: GREEN only implements tested behavior?
+  - ❌ NOT: Error handling before tested
+  - ❌ NOT: "Future-proofing" additions
+  - ✅ YES: Exactly what RED assertion requires
+- [ ] **Lesson 12 - Commits**: Commit messages document "why", not just "what"?
+- [ ] **Lesson 13 - Dependencies**: No forward references to unreviewed iterations?
+  - Plan readable sequentially without jumping ahead?
+- [ ] **Lesson 14 - Ownership**: Naming conventions present (own_, ref_, mut_)?
 
 **Check TDD cycle compliance:**
 
@@ -487,30 +564,65 @@ Original: 0.6 → Split into: 0.6.1, 0.6.2, then 0.7 stays 0.7
 make checkpoint-update CMD=review-plan STEP=5
 ```
 
-#### Step 6: Check GREEN Minimalism
+#### Step 6: Check GREEN Minimalism (Lessons 3, 11)
 
 **Verify minimal implementations:**
 
-For each GREEN phase:
-- [ ] Hardcoded returns used when valid (return false;, return NULL;)
-- [ ] No "future-proofing" or "while I'm here" additions
+For each GREEN phase, check **Lesson 3: Hardcoded Returns** and **Lesson 11: No Over-Implementation**:
+
+- [ ] **Lesson 3**: Hardcoded returns used when valid?
+  - ✅ `return false;` (valid for single assertion)
+  - ✅ `return NULL;` (valid for single assertion)
+  - ✅ `send_result = true;` (valid for single assertion)
+  - ❌ NOT: Full implementation when not tested
+
+- [ ] **Lesson 11**: No over-implementation in GREEN?
+  - [ ] No "future-proofing" additions
+  - [ ] No "while I'm here" enhancements
+  - [ ] No error handling before tested
+  - [ ] Only tested behavior is implemented
+
 - [ ] Implementation forces next iteration's RED to fail properly
-- [ ] Error handling not added before test demands it
+- [ ] Single assertion means single minimal change
 
 **Example validation:**
 ```c
 // Iteration 2 GREEN - Check if minimal
 ❌ TOO MUCH: if (!delegate || !message || !queue) return false;
 ✅ MINIMAL:  return false;  // Hardcoded! Next iteration will force real impl
+
+❌ TOO MUCH: int value = compute_expensive_calculation();
+✅ MINIMAL:  return computed_value;  // Hardcoded - next iteration forces real impl
 ```
+
+**Critical Red Flag for Lesson 11:**
+- If GREEN implements error handling not tested by RED → VIOLATION
+- If GREEN adds validation not required by RED → VIOLATION
+- If GREEN has conditional logic for untested scenarios → VIOLATION
 
 ```bash
 make checkpoint-update CMD=review-plan STEP=6
 ```
 
-#### Step 7: Verify Memory Management
+#### Step 7: Verify Memory Management (Lessons 4, 14)
 
 **Check zero leak policy compliance:**
+
+For all iterations, check **Lesson 4: Resource Cleanup** and **Lesson 14: Ownership Conventions**:
+
+**Lesson 4 - Resource Cleanup in Minimal Implementations:**
+- [ ] Resources cleaned up even in hardcoded GREEN?
+  - ✅ Hardcoded `return true;` still destroys message if needed
+  - ❌ NOT: "We'll clean up in next iteration"
+  - ✅ Minimal doesn't mean "leaked resources"
+
+**Lesson 14 - Ownership Naming Conventions:**
+- [ ] Ownership prefixes present throughout (own_, ref_, mut_)?
+  - ✅ `own_fixture` (owned, must destroy)
+  - ✅ `ref_delegate` (borrowed reference)
+  - ✅ `mut_agency` (mutable but not owned)
+
+**Full Memory Management Checklist:**
 
 For all iterations:
 - [ ] Ownership prefixes present (own_, ref_, mut_)
@@ -531,6 +643,11 @@ For all iterations:
 ✅ CORRECT: // Cleanup (removed manual destroy_agent - fixture now owns it)
            ar_agent_store_fixture__destroy(fixture);
 ```
+
+**Critical Check for Lesson 4:**
+- Even minimal hardcoded returns must not leak resources
+- Temporary cleanup prevents leaks until next iteration takes ownership
+- Cleanup comment format is MANDATORY
 
 ```bash
 make checkpoint-update CMD=review-plan STEP=7
@@ -560,9 +677,9 @@ make checkpoint-gate CMD=review-plan GATE="TDD Methodology" REQUIRED="4,5,6,7"
 
 #### [CHECKPOINT START - STAGE 3]
 
-#### Step 8: Review Status Tracking
+#### Step 8: Review Status Tracking (Lesson 1 - Numbering Clarity)
 
-**Check review status markers:**
+**Check review status markers and Lesson 1: Numbering Clarity:**
 
 - [ ] Plan has status markers (REVIEWED/PENDING REVIEW/REVISED)
 - [ ] Status markers appear ONLY on iteration headings
@@ -570,6 +687,12 @@ make checkpoint-gate CMD=review-plan GATE="TDD Methodology" REQUIRED="4,5,6,7"
   - New iterations start with PENDING REVIEW
   - Accepted iterations marked REVIEWED
   - Revised iterations marked REVISED (ready for implementation)
+
+- [ ] **Lesson 1**: Iteration numbering is clear and sequential?
+  - ✅ 0.1, 0.2, 0.3 (sequential, clear)
+  - ✅ 0.6.1, 0.6.2, 1.1, 1.2 (decimal for splits, clear)
+  - ❌ NOT: 0.1, 0.4, 0.7 (gaps are confusing)
+  - ❌ NOT: Mixed decimal notation inconsistent
 
 **Status marker validation:**
 ```markdown
@@ -588,14 +711,20 @@ make checkpoint-gate CMD=review-plan GATE="TDD Methodology" REQUIRED="4,5,6,7"
 make checkpoint-update CMD=review-plan STEP=8
 ```
 
-#### Step 9: Verify Cross-References
+#### Step 9: Verify Cross-References (Lesson 13 - Forward Dependencies)
 
-**Check KB article references:**
+**Check KB article references and Lesson 13: No Forward Dependencies:**
 
 - [ ] Plan references relevant KB articles
 - [ ] Related Patterns section present (if multi-iteration plan)
 - [ ] Cross-references use relative paths
 - [ ] Referenced articles actually exist
+
+- [ ] **Lesson 13**: No forward references to unreviewed iterations?
+  - ✅ Plan readable sequentially without jumping ahead
+  - ❌ NOT: "As we'll see in iteration 1.5..."
+  - ❌ NOT: References to iterations not yet introduced
+  - ✅ Each iteration stands alone until later
 
 **Recommended references for TDD plans:**
 - tdd-iteration-planning-pattern.md
@@ -603,6 +732,12 @@ make checkpoint-update CMD=review-plan STEP=8
 - tdd-red-phase-assertion-requirement.md
 - bdd-test-structure.md
 - ownership-naming-conventions.md
+- tdd-plan-review-checklist.md (NEW - all 14 lessons)
+
+**Critical Check for Lesson 13:**
+- Try reading plan start-to-finish linearly
+- If you get confused by forward references → VIOLATION
+- Plan should be understandable without jumping around
 
 ```bash
 make checkpoint-update CMD=review-plan STEP=9
@@ -630,28 +765,65 @@ make checkpoint-gate CMD=review-plan GATE="Status Tracking" REQUIRED="8,9"
 
 #### [CHECKPOINT START - STAGE 4]
 
-#### Step 10: Document Issues
+#### Step 10: Document Issues (Map Issues to Lessons Violated)
 
-**Compile all findings:**
+**Compile all findings with lesson references:**
 
-Create a structured report of all issues found:
+Create a structured report of all issues found, mapping each to the specific lesson(s) violated:
+
 - **Critical**: Must fix before implementation (methodology violations)
+  - Include which lesson(s) are violated
 - **Warning**: Should fix (style, clarity issues)
 - **Suggestion**: Consider (improvements)
 
-**Issue format:**
+**Issue format (with lesson mapping):**
 ```markdown
 ### Critical Issues (Must Fix)
 
 1. **Iteration 0.6 has multiple assertions** (line 145)
+   - Violation: **Lesson 2** (One Assertion Per Iteration)
    - Current: Tests both creation AND registration
    - Required: Split into 0.6.1 (creation) and 0.6.2 (registration)
    - Reference: kb/tdd-plan-iteration-split-pattern.md
 
 2. **Iteration 1.2.1 missing temporary cleanup** (line 203)
+   - Violations: **Lesson 4** (Resource Cleanup), **Lesson 7** (Assertion Validity)
    - Current: Creates object but no cleanup comment
    - Required: Add "// Cleanup (temporary: manually destroy...)"
    - Reference: kb/temporary-test-cleanup-pattern.md
+
+3. **Iteration 1.1 RED phase doesn't document temporary corruption** (line 187)
+   - Violation: **Lesson 7** ⭐ **CRITICAL** (Assertion Validity)
+   - Current: No mention of what will fail or how assertion proves bugs
+   - Required: Document temporary code that makes assertion fail
+   - Reference: kb/tdd-plan-review-checklist.md
+
+4. **GREEN phase implements error handling not tested by RED** (line 215)
+   - Violation: **Lesson 11** (No Over-Implementation)
+   - Current: Adds NULL checks not required by single assertion
+   - Required: Hardcoded return only, next iteration will force real logic
+   - Reference: kb/tdd-green-phase-minimalism.md
+```
+
+**Lesson-Indexed Summary:**
+Create section mapping issues by lesson:
+```markdown
+### Issues by Lesson Violated
+
+**Lesson 1 (Numbering)**: 0 issues
+**Lesson 2 (One Assertion)**: Iterations 0.6, 1.4
+**Lesson 3 (Hardcoded)**: Iteration 0.7
+**Lesson 4 (Resource Cleanup)**: Iterations 1.2.1, 2.1
+**Lesson 5 (Dependencies)**: Iteration 1.3 (next iteration doesn't force impl)
+**Lesson 6 (Integration)**: Iteration 2.1 (missing seam test)
+**Lesson 7 ⭐ (Assertion Validity)**: Iterations 1.1, 1.2, 2.1 (missing temp corruption docs)
+**Lesson 8 (Temp Code)**: Iteration 1.2 (not documented as temporary)
+**Lesson 9 (Properties)**: Iteration 1.5 (missing property independence)
+**Lesson 10 (Test Types)**: Cycles not distinguished
+**Lesson 11 (Minimalism)**: Iteration 0.7, 1.1 (over-implemented)
+**Lesson 12 (Commits)**: Previous commits (if applicable)
+**Lesson 13 (Forward Deps)**: Line 156 references unreviewed iteration
+**Lesson 14 (Ownership)**: Iteration 1.1 (missing mut_ prefix)
 ```
 
 ```bash
@@ -702,12 +874,24 @@ make checkpoint-update CMD=review-plan STEP=10
 ### Suggestions: [count]
 [List suggestions]
 
-### Methodology Compliance
-- ✅ One assertion per iteration
-- ✅ GREEN minimalism followed
-- ⚠️  2 iterations need splitting
-- ✅ Temporary cleanup present
-- ✅ Zero leak policy maintained
+### Methodology Compliance (14 Lessons Verification)
+
+- ✅ **Lesson 1**: Iteration numbering clear and sequential
+- ✅ **Lesson 2**: One assertion per iteration
+- ✅ **Lesson 3**: GREEN uses hardcoded returns where valid
+- ⚠️  **Lesson 4**: Resource cleanup present (3 minor issues)
+- ✅ **Lesson 5**: Iteration dependencies force implementation
+- ⚠️  **Lesson 6**: Integration tests need strengthening (2 iterations)
+- ❌ **Lesson 7** ⭐ **CRITICAL**: Temporary corruption not documented (4 iterations)
+- ⚠️  **Lesson 8**: Temporary code marked but inconsistent (2 iterations)
+- ✅ **Lesson 9**: Property validation through independent assertions
+- ⚠️  **Lesson 10**: Test type distinctions unclear (documentation needed)
+- ❌ **Lesson 11**: Over-implementation detected (3 iterations)
+- N/A **Lesson 12**: Commits not yet made (check on final report)
+- ✅ **Lesson 13**: No forward dependencies, plan readable sequentially
+- ✅ **Lesson 14**: Ownership naming conventions present
+
+**Summary**: 7/14 lessons fully compliant. **Lesson 7 (Assertion Validity)** and **Lesson 11 (Minimalism)** MUST be fixed before approval.
 
 ### Plan File Updates
 **IMPORTANT**: The plan file has been updated with new status markers:
