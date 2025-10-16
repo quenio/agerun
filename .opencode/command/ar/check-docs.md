@@ -100,26 +100,29 @@ ERROR_COUNT=0
 
 if make check-docs 2>&1 | tee /tmp/check-docs-output.txt; then
   echo "✅ No documentation errors found!"
-  # Skip to commit phase
-  make checkpoint-update CMD=check-docs STEP=1
-  make checkpoint-update CMD=check-docs STEP=2
-  make checkpoint-update CMD=check-docs STEP=3
-  make checkpoint-update CMD=check-docs STEP=4
+  echo "ERROR_COUNT=0" > /tmp/check-docs-stats.txt
 else
   ERROR_COUNT=$(grep -c "ERROR\|FAIL" /tmp/check-docs-output.txt || echo "0")
   echo "⚠️ Found $ERROR_COUNT documentation errors"
   echo "ERROR_COUNT=$ERROR_COUNT" > /tmp/check-docs-stats.txt
-  make checkpoint-update CMD=check-docs STEP=1
 fi
+
+make checkpoint-update CMD=check-docs STEP=1
 ```
 
 1. **Initial Check**: Run `make check-docs` to identify all documentation errors
 
-#### [ERROR GATE]
+#### [ERROR GATE - Conditional Flow]
 ```bash
-# If errors found, proceed to fixing phase
+# Determine flow: skip fix steps if no errors, proceed through them if errors found
 source /tmp/check-docs-stats.txt 2>/dev/null || ERROR_COUNT=0
-if [ $ERROR_COUNT -gt 0 ]; then
+
+if [ $ERROR_COUNT -eq 0 ]; then
+  echo "✅ No errors to fix - skipping to commit phase"
+  make checkpoint-update CMD=check-docs STEP=2
+  make checkpoint-update CMD=check-docs STEP=3
+  make checkpoint-update CMD=check-docs STEP=4
+else
   make checkpoint-gate CMD=check-docs GATE="Errors Found" REQUIRED="1"
 fi
 ```
