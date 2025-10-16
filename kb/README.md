@@ -68,6 +68,7 @@ Each learning file contains:
 
 #### 1.4 Knowledge Management
 - [Command KB Consultation Enforcement](command-kb-consultation-enforcement.md)
+- [Command Pipeline Methodology Enforcement](command-pipeline-methodology-enforcement.md) ⭐ NEW - Enforces 14 TDD lessons across create→review→execute pipeline
 - [Comprehensive Learning Extraction Pattern](comprehensive-learning-extraction-pattern.md)
 - [Cross-Method Pattern Discovery](cross-method-pattern-discovery.md)
 - [Cross-Referencing Knowledge Base](cross-referencing-knowledge-base.md)
@@ -76,10 +77,12 @@ Each learning file contains:
 - [Just-In-Time KB Reading](just-in-time-kb-reading.md)
 - [KB Consultation Before Planning Requirement](kb-consultation-before-planning-requirement.md)
 - [KB Target Compliance Enforcement](kb-target-compliance-enforcement.md)
+- [Lesson-Based Command Design Pattern](lesson-based-command-design-pattern.md) ⭐ NEW - Unified 14-lesson verification across all commands
 - [Knowledge Base Consultation Protocol](knowledge-base-consultation-protocol.md)
 - [Knowledge Base Search Patterns](kb-search-patterns.md)
 - [New Learnings Complete Integration Pattern](new-learnings-complete-integration-pattern.md)
 - [New Learnings Cross-Reference Requirement](new-learnings-cross-reference-requirement.md)
+- [Pre-Execution Plan Validation Requirement](pre-execution-plan-validation-requirement.md) ⭐ NEW - Show-stopper validation before plan execution
 - [Plan Review Status Tracking Pattern](plan-review-status-tracking.md)
 - [Pre-Compact Hook KB Consultation](pre-compact-hook-kb-consultation.md)
 - [Search Result Completeness Verification](search-result-completeness-verification.md)

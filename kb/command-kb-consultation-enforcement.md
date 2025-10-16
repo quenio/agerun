@@ -103,7 +103,9 @@ fi
 - Automated gates catch violations early
 
 ## Related Patterns
+- [Command Pipeline Methodology Enforcement](command-pipeline-methodology-enforcement.md) - How KB consultation creates unified enforcement across commands
 - [Knowledge Base Consultation Protocol](knowledge-base-consultation-protocol.md)
 - [KB Consultation Before Planning Requirement](kb-consultation-before-planning-requirement.md)
+- [Lesson-Based Command Design Pattern](lesson-based-command-design-pattern.md) - How all commands verify same 14 lessons
 - [Gate Enforcement Exit Codes Pattern](gate-enforcement-exit-codes-pattern.md)
 - [Quantitative Documentation Metrics](quantitative-documentation-metrics.md)
