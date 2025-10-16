@@ -1213,7 +1213,7 @@ grep "Actual memory leaks:" bin/run-tests/memory_report_ar_send_instruction_eval
 
 ### Iteration 1.1: Send to delegate returns true (RED-GREEN-REFACTOR)
 
-**Review Status**: PENDING REVIEW
+**Review Status**: REVISED
 
 **Objective**: Test that `send(-1, message)` returns true (routing succeeds).
 
@@ -1287,6 +1287,9 @@ static void test_send_instruction_evaluator__routes_to_delegate(void) {
 **Run**: `make ar_send_instruction_evaluator_tests 2>&1`
 
 #### GREEN Phase
+
+**Minimal Implementation** - Just enough to pass the assertion (hardcoded return):
+
 ```zig
 // File: modules/ar_send_instruction_evaluator.zig
 // Modify evaluate function (lines 124-134)
@@ -1302,27 +1305,33 @@ if (agent_id == 0) {
     // Positive IDs route to agency (agents)
     send_result = c.ar_agency__send_to_agent(ref_evaluator.?.ref_agency, agent_id, own_message);
 } else {
-    // Negative IDs route to delegation (delegates)
-    send_result = c.ar_delegation__send_to_delegate(ref_evaluator.?.ref_delegation, agent_id, own_message);
+    // Negative IDs: hardcoded return true for now
+    // Actual delegation routing will be tested in Iteration 1.2
+    c.ar_data__destroy_if_owned(own_message, ref_evaluator);
+    send_result = true;  // ← HARDCODED!
 }
 ```
 
-**Expected GREEN**: Test PASSES - message routes to delegation correctly.
+**Why this is minimal**:
+- Only passes THIS iteration's assertion (`result == true`)
+- Doesn't implement actual delivery yet
+- Next iteration (1.2) will test actual delivery and force real implementation
+- Message is destroyed to prevent leaks
+
+**Expected GREEN**: Test PASSES - send returns true for negative IDs.
 
 **Run**: `make ar_send_instruction_evaluator_tests 2>&1`
 
 #### REFACTOR Phase
 
 **Analysis**:
-1. Check for code duplication: None - routing logic is simple and clear
-2. Check for clarity: Good - three distinct cases with comments
-3. Check for edge cases: Covered by existing ID=0 test and new negative ID test
+1. Check for code duplication: None - straightforward return path
+2. Check for clarity: Good - clearly marked as temporary
+3. Check for edge cases: Message cleanup prevents leaks
 
-**Actions**:
-- Update comments to reflect new routing behavior
-- Ensure debug output (if any) is appropriate for both paths
+**Actions**: No refactoring needed - implementation is intentionally minimal.
 
-**Verification**: All tests still pass, zero memory leaks.
+**Verification**: Test passes, zero memory leaks.
 
 **Run**: `make ar_send_instruction_evaluator_tests 2>&1 && grep "Actual memory leaks:" bin/run-tests/memory_report_ar_send_instruction_evaluator_tests.log`
 
@@ -1330,11 +1339,12 @@ if (agent_id == 0) {
 
 ### Iteration 1.2: Delegate receives message (RED-GREEN-REFACTOR)
 
-**Review Status**: PENDING REVIEW
+**Review Status**: REVISED
 
-**Objective**: Test that delegate has_messages() returns true after send().
+**Objective**: Verify that delegate actually receives and queues the message (forces real routing implementation).
 
 #### RED Phase
+
 ```c
 // File: modules/ar_send_instruction_evaluator_tests.c
 // Modify existing test function by adding new assertion
@@ -1358,45 +1368,83 @@ static void test_send_instruction_evaluator__routes_to_delegate(void) {
 }
 ```
 
-**Expected RED**: Test compiles but FAILS at new assertion (has_messages check).
+**Expected RED**: Test compiles but FAILS at new assertion because Iteration 1.1's hardcoded `true` return doesn't actually route to delegation - message is just destroyed!
 
 **Run**: `make ar_send_instruction_evaluator_tests 2>&1`
 
 #### GREEN Phase
 
-**Action**: GREEN phase already done in Iteration 1.1 - the routing implementation ensures messages are delivered to delegation.
+**Now implement real delegation routing** - This assertion forces proper implementation:
 
-**Verification**: Test should PASS without code changes.
+```zig
+// File: modules/ar_send_instruction_evaluator.zig
+// Modify evaluate function (lines 124-134) - REPLACE Iteration 1.1's hardcoded return
+
+// Send the message based on ID sign
+var send_result: bool = undefined;
+if (agent_id == 0) {
+    // Special case: agent_id 0 is a no-op that always returns true
+    std.debug.print("DEBUG [SEND_EVAL]: Sending to agent 0 - destroying message type={}\n", .{c.ar_data__get_type(own_message)});
+    c.ar_data__destroy_if_owned(own_message, ref_evaluator);
+    send_result = true;
+} else if (agent_id > 0) {
+    // Positive IDs route to agency (agents)
+    send_result = c.ar_agency__send_to_agent(ref_evaluator.?.ref_agency, agent_id, own_message);
+} else {
+    // Negative IDs route to delegation (delegates)
+    send_result = c.ar_delegation__send_to_delegate(ref_evaluator.?.ref_delegation, agent_id, own_message);
+}
+```
+
+**Why now**: Iteration 1.2's new assertion (`has_messages == true`) forces us to actually route the message to delegation instead of just destroying it.
+
+**Expected GREEN**: Test PASSES - message now routes to delegation and is queued.
 
 **Run**: `make ar_send_instruction_evaluator_tests 2>&1`
 
 #### REFACTOR Phase
 
-**Analysis**: No refactoring needed - assertion validates existing behavior.
+**Analysis**:
+1. Check for code duplication: None - routing logic is clean
+2. Check for clarity: Good - three distinct cases with clear intent
+3. Check for edge cases: Will be tested in Iterations 1.3-1.5
+
+**Actions**: No refactoring needed - implementation is clean.
+
+**Verification**: Both Iterations 1.1-1.2 tests pass, zero memory leaks.
+
+**Run**: `make ar_send_instruction_evaluator_tests 2>&1 && grep "Actual memory leaks:" bin/run-tests/memory_report_ar_send_instruction_evaluator_tests.log`
 
 ---
 
-### Iteration 1.3: Message can be retrieved from delegate (RED-GREEN-REFACTOR)
+### Iteration 1.3.1: Message is actually queued (not just accepted) (RED-GREEN-REFACTOR)
 
-**Review Status**: PENDING REVIEW
+**Review Status**: REVISED
 
-**Objective**: Test that take_message() returns non-NULL message.
+**Objective**: Verify that the message is actually stored in the delegate's queue (not just discarded). This iteration proves the assertion catches real failures by temporarily breaking the implementation.
 
 #### RED Phase
+
+Add new assertion that will FAIL because we temporarily prevent queuing:
+
 ```c
 // File: modules/ar_send_instruction_evaluator_tests.c
 // Modify existing test function by adding new assertion
 
 static void test_send_instruction_evaluator__routes_to_delegate(void) {
-    // ... (all previous code remains) ...
+    // ... (all previous setup and send code remains) ...
+
+    // When evaluating the send
+    bool result = ar_send_instruction_evaluator__evaluate(evaluator, frame, ast);
+    AR_ASSERT(result == true, "Send to delegate should succeed");
 
     ar_delegation_t *delegation = ar_send_evaluator_fixture__get_delegation(fixture);
     bool has_messages = ar_delegation__delegate_has_messages(delegation, -1);
     AR_ASSERT(has_messages == true, "Delegate should have received message");
 
-    // Verify message can be retrieved
+    // NEW ASSERTION: Verify message actually exists and can be retrieved (not NULL)
     ar_data_t *own_received = ar_delegation__take_delegate_message(delegation, -1);
-    AR_ASSERT(own_received != NULL, "Should be able to retrieve message from delegate");  // ← FAILS (new assertion)
+    AR_ASSERT(own_received != NULL, "Should be able to retrieve the queued message from delegate");  // ← WILL FAIL
 
     // Cleanup
     ar_data__destroy(own_received);
@@ -1406,31 +1454,63 @@ static void test_send_instruction_evaluator__routes_to_delegate(void) {
 }
 ```
 
-**Expected RED**: Test compiles but FAILS at new assertion (message retrieval check).
+**Temporary Implementation to Verify RED Failure**:
+
+```zig
+// File: modules/ar_send_instruction_evaluator.zig
+// TEMPORARILY break routing to verify assertion fails
+
+} else {
+    // TEMPORARY: Don't actually queue - just destroy message
+    // This makes the test fail so we can verify the assertion catches the failure
+    c.ar_data__destroy_if_owned(own_message, ref_evaluator);
+    send_result = true;
+    // ^ Assertion MUST fail: take_delegate_message() will return NULL
+}
+```
+
+**Expected RED**: Test compiles but FAILS at new assertion because message was destroyed instead of queued (take_delegate_message returns NULL).
+
+**Verify**: `make ar_send_instruction_evaluator_tests 2>&1` → assertion fails with "Should be able to retrieve..."
 
 **Run**: `make ar_send_instruction_evaluator_tests 2>&1`
 
 #### GREEN Phase
 
-**Action**: GREEN phase already done - delegation infrastructure from TDD Cycle 6.5 supports message retrieval.
+Remove the temporary destruction and restore real delegation routing:
 
-**Verification**: Test should PASS without code changes.
+```zig
+// File: modules/ar_send_instruction_evaluator.zig
+// NOW: Real routing - queue the message properly
+
+} else {
+    // Negative IDs route to delegation (delegates)
+    send_result = c.ar_delegation__send_to_delegate(ref_evaluator.?.ref_delegation, agent_id, own_message);
+}
+```
+
+**Expected GREEN**: Test PASSES - message is now queued, retrieve succeeds.
+
+**Verification**: Test should PASS - assertion succeeds because take_delegate_message() returns the queued message.
 
 **Run**: `make ar_send_instruction_evaluator_tests 2>&1`
 
 #### REFACTOR Phase
 
-**Analysis**: No refactoring needed - assertion validates message queue behavior.
+**Analysis**: No refactoring needed - assertion validates message persistence and we've proven it catches real failures.
 
 ---
 
-### Iteration 1.4: Message type is correct (RED-GREEN-REFACTOR)
+### Iteration 1.3.2: Message type is preserved through routing (RED-GREEN-REFACTOR)
 
-**Review Status**: PENDING REVIEW
+**Review Status**: REVISED
 
-**Objective**: Test that retrieved message has correct type (STRING).
+**Objective**: Verify that the message type isn't lost or corrupted during the send/route process. This iteration proves the assertion catches type corruption bugs.
 
 #### RED Phase
+
+Add new assertion that will FAIL because we temporarily corrupt the type:
+
 ```c
 // File: modules/ar_send_instruction_evaluator_tests.c
 // Modify existing test function by adding new assertion
@@ -1438,45 +1518,79 @@ static void test_send_instruction_evaluator__routes_to_delegate(void) {
 static void test_send_instruction_evaluator__routes_to_delegate(void) {
     // ... (all previous code remains) ...
 
-    ar_data_t *own_received = ar_delegation__take_delegate_message(mut_delegation, -1);
-    AR_ASSERT(own_received != NULL, "Should be able to retrieve message from delegate");
+    ar_data_t *own_received = ar_delegation__take_delegate_message(delegation, -1);
+    AR_ASSERT(own_received != NULL, "Should be able to retrieve the queued message from delegate");
 
-    // Verify message type
-    AR_ASSERT(ar_data__get_type(own_received) == AR_DATA_TYPE__STRING, "Message should be STRING type");  // ← FAILS (new assertion)
+    // NEW ASSERTION: Verify message type is correct (not corrupted to wrong type)
+    ar_data_type_t received_type = ar_data__get_type(own_received);
+    AR_ASSERT(received_type == AR_DATA_TYPE__STRING, "Message type should be STRING, but got something else");  // ← WILL FAIL
 
     // Cleanup
     ar_data__destroy(own_received);
     ar_instruction_ast__destroy(ast);
     ar_send_instruction_evaluator__destroy(evaluator);
-    ar_evaluator_fixture__destroy(fixture);
+    ar_send_evaluator_fixture__destroy(fixture);
 }
 ```
 
-**Expected RED**: Test compiles but FAILS at new assertion (type check).
+**Temporary Implementation to Verify RED Failure**:
+
+Add temporary code that corrupts the type field to verify the assertion catches it. This can be done by temporarily modifying the data type after retrieval in the test or by adding temporary corruption in the routing code:
+
+```c
+// TEMPORARY: Corrupt the type to verify assertion catches it
+// Option 1: Modify in test (after take_delegate_message)
+ar_data_t *own_received = ar_delegation__take_delegate_message(delegation, -1);
+// Temporarily cast and change type to verify assertion catches corruption
+own_received->_type = AR_DATA_TYPE__INT;  // TEMPORARY corruption
+
+// Then assertion MUST fail:
+ar_data_type_t received_type = ar_data__get_type(own_received);
+AR_ASSERT(received_type == AR_DATA_TYPE__STRING, "...");  // ← FAILS: received INT not STRING
+```
+
+**Expected RED**: Test compiles but FAILS at type assertion because type was corrupted to INT instead of STRING.
+
+**Verify**: `make ar_send_instruction_evaluator_tests 2>&1` → assertion fails with "Message type should be STRING..."
 
 **Run**: `make ar_send_instruction_evaluator_tests 2>&1`
 
 #### GREEN Phase
 
-**Action**: GREEN phase already done - message type is preserved through routing.
+Remove the temporary type corruption:
 
-**Verification**: Test should PASS without code changes.
+```c
+// REMOVE temporary corruption
+ar_data_t *own_received = ar_delegation__take_delegate_message(delegation, -1);
+AR_ASSERT(own_received != NULL, "Should be able to retrieve the queued message from delegate");
+
+// Type is now correct (not corrupted)
+ar_data_type_t received_type = ar_data__get_type(own_received);
+AR_ASSERT(received_type == AR_DATA_TYPE__STRING, "Message type should be STRING, but got something else");
+```
+
+**Expected GREEN**: Test PASSES - message type is preserved as STRING.
+
+**Verification**: Assertion succeeds because type is correct (not corrupted).
 
 **Run**: `make ar_send_instruction_evaluator_tests 2>&1`
 
 #### REFACTOR Phase
 
-**Analysis**: No refactoring needed - assertion validates type preservation.
+**Analysis**: No refactoring needed - assertion validates type integrity and we've proven it catches type corruption.
 
 ---
 
-### Iteration 1.5: Message content matches (RED-GREEN-REFACTOR)
+### Iteration 1.3.3: Message content is preserved through routing (RED-GREEN-REFACTOR)
 
-**Review Status**: PENDING REVIEW
+**Review Status**: REVISED
 
-**Objective**: Test that retrieved message content matches sent value.
+**Objective**: Verify that the message content/value isn't lost or corrupted during send/route. This iteration proves the assertion catches content corruption bugs.
 
 #### RED Phase
+
+Add new assertion that will FAIL because we temporarily corrupt the content:
+
 ```c
 // File: modules/ar_send_instruction_evaluator_tests.c
 // Modify existing test function by adding new assertion
@@ -1484,41 +1598,81 @@ static void test_send_instruction_evaluator__routes_to_delegate(void) {
 static void test_send_instruction_evaluator__routes_to_delegate(void) {
     // ... (all previous code remains) ...
 
-    AR_ASSERT(ar_data__get_type(own_received) == AR_DATA_TYPE__STRING, "Message should be STRING type");
+    AR_ASSERT(received_type == AR_DATA_TYPE__STRING, "Message type should be STRING, but got something else");
 
-    // Verify message content
-    AR_ASSERT(strcmp(ar_data__get_string(own_received), "test message") == 0,
-              "Message content should match sent value");  // ← FAILS (new assertion)
+    // NEW ASSERTION: Verify message content matches what we sent
+    const char *received_string = ar_data__get_string(own_received);
+    AR_ASSERT(strcmp(received_string, "test message") == 0, "Message content should be 'test message' but got different content");  // ← WILL FAIL
 
     // Cleanup
     ar_data__destroy(own_received);
     ar_instruction_ast__destroy(ast);
     ar_send_instruction_evaluator__destroy(evaluator);
-    ar_evaluator_fixture__destroy(fixture);
+    ar_send_evaluator_fixture__destroy(fixture);
 }
 ```
 
-**Expected RED**: Test compiles but FAILS at new assertion (content check).
+**Temporary Implementation to Verify RED Failure**:
+
+Add temporary code that corrupts the string content to verify the assertion catches it:
+
+```c
+// TEMPORARY: Corrupt the string content to verify assertion catches it
+ar_data_t *own_received = ar_delegation__take_delegate_message(delegation, -1);
+AR_ASSERT(own_received != NULL, "...");
+
+ar_data_type_t received_type = ar_data__get_type(own_received);
+AR_ASSERT(received_type == AR_DATA_TYPE__STRING, "...");
+
+// Temporarily corrupt the content
+const char *received_string = ar_data__get_string(own_received);
+// Option: Modify string in-place (if mutable) or set a different value
+// For this test, we can cast and modify if the API allows, or replace the reference
+char *mutable_string = (char*)received_string;  // TEMPORARY cast
+strcpy(mutable_string, "wrong message");  // TEMPORARY corruption
+
+// Then assertion MUST fail:
+AR_ASSERT(strcmp(received_string, "test message") == 0, "...");  // ← FAILS: "wrong message" != "test message"
+```
+
+**Expected RED**: Test compiles but FAILS at content assertion because content was corrupted to "wrong message" instead of "test message".
+
+**Verify**: `make ar_send_instruction_evaluator_tests 2>&1` → assertion fails with "Message content should be 'test message'..."
 
 **Run**: `make ar_send_instruction_evaluator_tests 2>&1`
 
 #### GREEN Phase
 
-**Action**: GREEN phase already done - message content is preserved through routing.
+Remove the temporary content corruption:
 
-**Verification**: Test should PASS without code changes.
+```c
+// REMOVE temporary corruption
+ar_data_t *own_received = ar_delegation__take_delegate_message(delegation, -1);
+AR_ASSERT(own_received != NULL, "Should be able to retrieve the queued message from delegate");
+
+ar_data_type_t received_type = ar_data__get_type(own_received);
+AR_ASSERT(received_type == AR_DATA_TYPE__STRING, "Message type should be STRING, but got something else");
+
+// Content is now correct (not corrupted)
+const char *received_string = ar_data__get_string(own_received);
+AR_ASSERT(strcmp(received_string, "test message") == 0, "Message content should be 'test message' but got different content");
+```
+
+**Expected GREEN**: Test PASSES - message content is preserved as "test message".
+
+**Verification**: Assertion succeeds because content is correct (not corrupted).
 
 **Run**: `make ar_send_instruction_evaluator_tests 2>&1`
 
 #### REFACTOR Phase
 
-**Analysis**: No refactoring needed - final assertion completes test coverage for delegate routing.
+**Analysis**: No refactoring needed - assertion validates content integrity and we've proven it catches content corruption bugs (memory corruption, truncation, modification).
 
 ---
 
 ### Iteration 2: Verify agent routing still works for positive IDs (RED-GREEN-REFACTOR)
 
-**Review Status**: PENDING REVIEW
+**Review Status**: REVISED
 
 **Objective**: Ensure refactored routing doesn't break existing agent routing.
 
@@ -1611,7 +1765,7 @@ static void test_send_instruction_evaluator__routes_to_agent(void) {
 
 ### Iteration 3: Handle non-existent delegate gracefully (RED-GREEN-REFACTOR)
 
-**Review Status**: PENDING REVIEW
+**Review Status**: REVISED
 
 **Objective**: Verify that sending to a non-registered delegate ID returns false.
 
@@ -1692,7 +1846,7 @@ static void test_send_instruction_evaluator__nonexistent_delegate_returns_false(
 
 ### Iteration 4: Update test main() and documentation (RED-GREEN-REFACTOR)
 
-**Review Status**: PENDING REVIEW
+**Review Status**: REVISED
 
 **Objective**: Add new tests to main() and update module documentation.
 
