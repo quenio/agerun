@@ -133,6 +133,7 @@ Organize complex workflows into stages with gates:
 
 ## Related Patterns
 - [Checkpoint Workflow Enforcement Pattern](checkpoint-workflow-enforcement-pattern.md) - Prevention mechanism for bypasses (initialization & precondition enforcement)
+- [Checkpoint Sequential Execution Discipline](checkpoint-sequential-execution-discipline.md) - Execution discipline and sequential ordering requirements
 - [Gate Enforcement Exit Codes Pattern](gate-enforcement-exit-codes-pattern.md)
 - [Command Thoroughness Requirements Pattern](command-thoroughness-requirements-pattern.md)
 - [Systematic Task Analysis Protocol](systematic-task-analysis-protocol.md)

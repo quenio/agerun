@@ -265,4 +265,5 @@ Result: User CANNOT bypass checkpoints because:
 - [Gate Enforcement Exit Codes Pattern](gate-enforcement-exit-codes-pattern.md) - How gates provide show-stopper enforcement
 - [Multi-Step Checkpoint Tracking Pattern](multi-step-checkpoint-tracking-pattern.md) - How checkpoints organize multi-step workflows
 - [Checkpoint-Based Workflow Pattern](checkpoint-based-workflow-pattern.md) - General checkpoint pattern this enforces
+- [Checkpoint Sequential Execution Discipline](checkpoint-sequential-execution-discipline.md) - Sequential execution requirements that enforcement enables
 - [Unmissable Documentation Pattern](unmissable-documentation-pattern.md) - Related documentation requirement

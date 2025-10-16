@@ -73,6 +73,7 @@ When this anti-pattern is detected:
 5. **Verify completion**: Use verification scripts to ensure work is actually done
 
 ## Related Patterns
+- [Checkpoint Sequential Execution Discipline](checkpoint-sequential-execution-discipline.md) - Error-driven correction and sequential workflow enforcement
 - [Multi-Step Checkpoint Tracking Pattern](multi-step-checkpoint-tracking-pattern.md)
 - [Gate Enforcement Exit Codes Pattern](gate-enforcement-exit-codes-pattern.md)
 - [User Feedback as QA](user-feedback-as-qa.md)

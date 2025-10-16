@@ -29,6 +29,7 @@ Each learning file contains:
 - [Checkpoint Implementation Guide](checkpoint-implementation-guide.md)
 - [Checkpoint Work Verification Anti-Pattern](checkpoint-work-verification-antipattern.md)
 - [Checkpoint-Based Workflow Pattern](checkpoint-based-workflow-pattern.md)
+- [Checkpoint Sequential Execution Discipline](checkpoint-sequential-execution-discipline.md)
 - [Command Thoroughness Requirements Pattern](command-thoroughness-requirements-pattern.md)
 - [Development Practice Groups](development-practice-groups.md)
 - [Gate Enforcement Exit Codes Pattern](gate-enforcement-exit-codes-pattern.md)
