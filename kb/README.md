@@ -67,6 +67,7 @@ Each learning file contains:
 - [Pre-Commit Checklist Detailed](pre-commit-checklist-detailed.md)
 
 #### 1.4 Knowledge Management
+- [Checkpoint Workflow Enforcement Pattern](checkpoint-workflow-enforcement-pattern.md) ⭐ NEW - Prevention vs. detection: 3-section enforcement for all 31 checkpoint commands
 - [Command KB Consultation Enforcement](command-kb-consultation-enforcement.md)
 - [Command Pipeline Methodology Enforcement](command-pipeline-methodology-enforcement.md) ⭐ NEW - Enforces 14 TDD lessons across create→review→execute pipeline
 - [Comprehensive Learning Extraction Pattern](comprehensive-learning-extraction-pattern.md)
