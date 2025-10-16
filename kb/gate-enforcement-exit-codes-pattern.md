@@ -76,6 +76,7 @@ make checkpoint-update CMD=build STEP=5
 ```
 
 ## Related Patterns
+- [Checkpoint Conditional Flow Pattern](checkpoint-conditional-flow-pattern.md) - Using gates for conditional workflow branching
 - [Checkpoint Workflow Enforcement Pattern](checkpoint-workflow-enforcement-pattern.md) - Prevention-focused enforcement complementing gate detection
 - [Build System Exit Code Verification](build-system-exit-code-verification.md)
 - [Multi-Step Checkpoint Tracking Pattern](multi-step-checkpoint-tracking-pattern.md)

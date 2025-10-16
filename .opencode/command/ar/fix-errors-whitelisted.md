@@ -3,10 +3,11 @@ Systematically analyze and fix errors in the whitelist file to reduce technical 
 ## MANDATORY KB Consultation
 
 Before starting error analysis:
-1. Search: `grep "whitelist\|error\|systematic" kb/README.md`
+1. Search: `grep "whitelist\|error\|systematic\|checkpoint" kb/README.md`
 2. Must read these specific articles:
    - systematic-whitelist-error-resolution
    - systematic-error-whitelist-reduction
+   - checkpoint-conditional-flow-pattern - Understanding conditional skipping in checkpoint workflows
 3. Apply the systematic approach from these articles
 
 ## CHECKPOINT WORKFLOW ENFORCEMENT

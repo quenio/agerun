@@ -261,6 +261,7 @@ Result: User CANNOT bypass checkpoints because:
 
 ## Related Patterns
 
+- [Checkpoint Conditional Flow Pattern](checkpoint-conditional-flow-pattern.md) - Handling conditional step skipping while maintaining enforcement
 - [Command KB Consultation Enforcement](command-kb-consultation-enforcement.md) - Complementary enforcement for KB reading
 - [Gate Enforcement Exit Codes Pattern](gate-enforcement-exit-codes-pattern.md) - How gates provide show-stopper enforcement
 - [Multi-Step Checkpoint Tracking Pattern](multi-step-checkpoint-tracking-pattern.md) - How checkpoints organize multi-step workflows

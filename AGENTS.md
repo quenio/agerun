@@ -407,6 +407,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 - **Step instruction reading**: Always understand what each step requires before executing
 - **Audit trail logging**: All checkpoint completions are logged with timestamps and evidence
 - **Question step applicability**: If step seems irrelevant, document why rather than skip it
+- **Conditional flow pattern**: When workflow logic requires conditional step execution, follow two-phase validation→decision pattern ([details](kb/checkpoint-conditional-flow-pattern.md))
 
 **Pre-Commit Checklist** (MANDATORY): ([details](kb/pre-commit-checklist-detailed.md))
 1. `make clean build 2>&1` → verify exit 0 → `make check-logs` ([details](kb/build-verification-before-commit.md))

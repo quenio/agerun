@@ -14,7 +14,7 @@ Before validation:
 
 ## CHECKPOINT WORKFLOW ENFORCEMENT
 
-**CRITICAL**: This command MUST use checkpoint tracking for ALL execution. See [Checkpoint Sequential Execution Discipline](../../../kb/checkpoint-sequential-execution-discipline.md) for important requirements about sequential ordering and work verification.
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution. This command demonstrates the [Checkpoint Conditional Flow Pattern](../../../kb/checkpoint-conditional-flow-pattern.md) where steps are intelligently skipped based on error state. See [Checkpoint Sequential Execution Discipline](../../../kb/checkpoint-sequential-execution-discipline.md) for important requirements about sequential ordering and work verification.
 
 ### In-Progress Workflow Detection
 

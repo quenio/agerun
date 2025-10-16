@@ -25,6 +25,7 @@ Each learning file contains:
 - [Absolute Path Navigation](absolute-path-navigation.md)
 - [Architectural Review in Feedback](architectural-review-in-feedback.md)
 - [Assumption Verification Before Action](assumption-verification-before-action.md)
+- [Checkpoint Conditional Flow Pattern](checkpoint-conditional-flow-pattern.md) ⭐ NEW - Two-phase pattern for conditional step execution
 - [Check Existing Solutions First](check-existing-solutions-first.md)
 - [Checkpoint Implementation Guide](checkpoint-implementation-guide.md)
 - [Checkpoint Work Verification Anti-Pattern](checkpoint-work-verification-antipattern.md)
