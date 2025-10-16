@@ -1,5 +1,51 @@
 Analyze session for new learnings and create properly validated kb articles.
 
+## CHECKPOINT WORKFLOW ENFORCEMENT
+
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+
+### In-Progress Workflow Detection
+
+If a `/new-learnings` workflow is already in progress, you have two options:
+
+**Option 1: Resume the workflow** (RECOMMENDED)
+```bash
+# Check current progress
+make checkpoint-status CMD=new-learnings VERBOSE=--verbose
+
+# Resume from the next pending step
+# Example: if Step 4 is pending, run:
+make checkpoint-update CMD=new-learnings STEP=4
+```
+
+**Option 2: Start fresh** (only if you want to discard previous progress)
+```bash
+# Clean up old tracking
+make checkpoint-cleanup CMD=new-learnings
+
+# Then re-initialize for fresh start
+make checkpoint-init CMD=new-learnings STEPS='"Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"'
+```
+
+**CRITICAL**: If in-progress workflow exists with pending steps, **DO NOT PERFORM MANUAL KB UPDATES**. The checkpoint system will enforce all quality requirements and ensure no steps are skipped.
+
+### First-Time Initialization Check
+
+**MANDATORY**: Before executing ANY steps, you MUST initialize checkpoint tracking:
+
+```bash
+# FIRST: Check if tracking file exists
+if [ ! -f /tmp/new-learnings_progress.txt ]; then
+  echo "⚠️  No tracking file found. Initializing checkpoint tracking..."
+  make checkpoint-init CMD=new-learnings STEPS='"Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"'
+else
+  echo "📍 Checkpoint tracking found. Checking progress..."
+  make checkpoint-status CMD=new-learnings
+fi
+```
+
+**If this fails or tracking is not initialized, STOP and run the command above before proceeding.**
+
 ## MANDATORY KB Consultation FIRST
 
 Before starting analysis:
@@ -72,6 +118,79 @@ This command guides you through a comprehensive process to:
 
 **IMPORTANT**: Always consider updating existing KB articles before creating new ones, and ensure all articles are properly cross-referenced to create a web of knowledge.
 
+## STEP SKIP PREVENTION
+
+**NO STEPS CAN BE SKIPPED, NO EXCEPTIONS.**
+
+This is enforced through:
+
+1. **Sequential gate enforcement**:
+   - GATE 1 requires steps 1,2,3,4 to be complete
+   - GATE 2 requires steps 5,6,7,8,9 to be complete
+   - FINAL GATE requires ALL 1-11 steps to be complete
+   - Cannot proceed to next gate until current gate passes
+
+2. **Quality verification at each gate**:
+   - Step 3: Verifies KB files created (blocks if missing)
+   - Step 4: Runs `make check-docs` validation (blocks if fails)
+   - Step 6: Counts KB articles (blocks if fewer than 3)
+   - Step 7: Counts commands (blocks if fewer than 3)
+   - Step 11: Checks "READY TO COMMIT" status (blocks if not ready)
+
+3. **Manual enforcement**:
+   - Cannot run Step N until Step N-1 is marked complete
+   - Checkpoint system tracks progress and prevents jumping ahead
+   - Attempting to skip steps will result in gate failures
+
+**Remember**: The gates exist because skipping steps leads to incomplete integrations. Every step has a purpose for ensuring KB articles are properly integrated throughout the system.
+
+## ANTI-PATTERN: Manual KB Work Outside Checkpoint System
+
+❌ **DO NOT DO THIS** (What causes missed steps):
+
+```bash
+# ❌ WRONG: Creating KB articles manually without checkpoint tracking
+# Just edit files directly and commit without going through /new-learnings workflow
+
+# ❌ WRONG: Updating commands without step tracking
+# Modify commands based on "what seems right" instead of following steps
+
+# ❌ WRONG: Skipping quality verification
+# Skip GATE 1, GATE 2, and FINAL GATE checks
+# Commit without "READY TO COMMIT" verification in Step 11
+
+# ❌ WRONG: Partial execution
+# Do steps 1-5 through checkpoint system, then manually update commands
+# Skipping the structured KB cross-reference updates in Steps 6-7
+
+# ❌ WRONG: Ignoring existing in-progress workflows
+# See /tmp/new-learnings_progress.txt has pending steps
+# Decide "I'll just do it manually this time"
+# Result: Checkpoint system never reflects actual work done
+```
+
+✅ **CORRECT APPROACH**:
+
+```bash
+# ✅ ALWAYS use checkpoint tracking for ALL work
+make checkpoint-status CMD=new-learnings
+# Shows current progress and next required step
+
+# ✅ Follow the sequence strictly
+# Complete steps 1,2,3,4 → GATE 1 passes → Continue to 5,6,7,8,9 → GATE 2 passes
+
+# ✅ Let the quality gates enforce completeness
+# Cannot proceed unless quality requirements met (Step 6: 3+ KB articles, Step 7: 3+ commands)
+
+# ✅ Verify integration before commit
+# Step 11 verifies "READY TO COMMIT" with counts of modified files
+
+# ✅ Always run the initialization check if unsure
+if [ ! -f /tmp/new-learnings_progress.txt ]; then
+  make checkpoint-init CMD=new-learnings STEPS='"Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"'
+fi
+```
+
 ## Minimum Requirements for Thorough Execution
 
 **These are MANDATORY minimums for each execution:**
@@ -84,9 +203,38 @@ This command guides you through a comprehensive process to:
 - Multiple commands updated (shows good integration)
 - Verification script passes all checks before commit
 
+## PRECONDITION: Checkpoint Tracking Must Be Initialized
+
+**BEFORE PROCEEDING TO STEP 1:**
+
+Verify that checkpoint tracking is initialized by running:
+
+```bash
+# Check tracking file exists and shows pending steps
+if [ -f /tmp/new-learnings_progress.txt ]; then
+  make checkpoint-status CMD=new-learnings
+  # Should show progress bar and pending steps
+else
+  echo "❌ ERROR: Checkpoint tracking not initialized!"
+  echo ""
+  echo "STOP: You cannot proceed without initializing checkpoint tracking."
+  echo "Run this command FIRST:"
+  echo ""
+  echo 'make checkpoint-init CMD=new-learnings STEPS='"'"'Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push'"'"
+  echo ""
+  exit 1
+fi
+```
+
+**If this check fails, DO NOT PROCEED. Initialize checkpoint tracking using the command above.**
+
+**If this check passes, you may proceed to Step 1.**
+
 ## Step 1: Identify New Learnings
 
 #### [CHECKPOINT START - STEP 1]
+
+**PRECONDITION VERIFIED**: Checkpoint tracking is initialized and ready.
 
 **CRITICAL: Think deeply and thoroughly about what was learned in this session.**
 
