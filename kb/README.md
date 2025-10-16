@@ -104,6 +104,7 @@ Each learning file contains:
 - [TDD GREEN Phase Minimalism](tdd-green-phase-minimalism.md)
 - [TDD Iteration Planning Pattern](tdd-iteration-planning-pattern.md)
 - [TDD Plan Iteration Split Pattern](tdd-plan-iteration-split-pattern.md)
+- [TDD Plan Review Checklist](tdd-plan-review-checklist.md) ⭐ NEW - Comprehensive review checklist with 14 embedded TDD lessons
 - [TDD RED Phase Assertion Requirement](tdd-red-phase-assertion-requirement.md)
 - [TDD for API Simplification](tdd-api-simplification.md)
 - [Temporary Test Cleanup Pattern](temporary-test-cleanup-pattern.md)

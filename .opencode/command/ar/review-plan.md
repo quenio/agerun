@@ -2,6 +2,24 @@ Review a TDD plan document for methodology compliance, iteration structure, and 
 
 **MANDATORY**: This command MUST use checkpoint tracking. Start by running the checkpoint initialization below. ([details](../../../kb/unmissable-documentation-pattern.md))
 
+## Pre-Review Automation (RECOMMENDED)
+
+**Before starting manual review, use the automated validator:**
+
+```bash
+./scripts/validate-tdd-plan.sh plans/your_plan.md
+```
+
+This tool checks 6 critical sections and catches common issues on first pass:
+- 📋 Cycle Organization (naming, numbering)
+- ⭐ Assertion Validity (CRITICAL - temporary corruption verification)
+- 📝 Minimalism (hardcoded returns, resource cleanup)
+- 🔗 Integration Testing (seams, properties)
+- 📊 Status Tracking (REVIEWED/PENDING/REVISED markers)
+- 📖 Documentation (objectives, expectations, commands)
+
+**Reference during review:** [TDD Plan Review Checklist](../../../kb/tdd-plan-review-checklist.md)
+
 ## KB Consultation Required
 
 Before reviewing any plan ([details](../../../kb/kb-consultation-before-planning-requirement.md)):
@@ -15,6 +33,7 @@ Before reviewing any plan ([details](../../../kb/kb-consultation-before-planning
    - `kb/temporary-test-cleanup-pattern.md`
    - `kb/iterative-plan-refinement-pattern.md`
    - `kb/plan-verification-and-review.md`
+   - `kb/tdd-plan-review-checklist.md` ⭐ NEW - comprehensive review checklist
 3. Check Related Patterns sections in each article and read any additional relevant articles found there
 4. In your response, quote these specific items from the KB:
    - The iterative review optimal size (iterations per session)
@@ -845,10 +864,47 @@ make checkpoint-update CMD=review-plan STEP=N
 ### If review seems incomplete:
 Review the Minimum Requirements for each phase and ensure all checkboxes are verified.
 
+## New Review Tools (Added from Session Learnings)
+
+### TDD Plan Review Checklist
+**Location**: `kb/tdd-plan-review-checklist.md`
+
+Comprehensive 8-section checklist encoding 14 critical TDD design lessons:
+- Section 1: Cycle Organization
+- Section 2: Iteration Structure (minimalism)
+- Section 3: Assertion Quality (CRITICAL)
+- Section 4: Integration Testing
+- Section 5: Test Type Clarity
+- Section 6: Implementation Integrity
+- Section 7: Interdependency Management
+- Section 8: Documentation Quality
+
+**Print this before starting manual review:**
+```bash
+less kb/tdd-plan-review-checklist.md
+```
+
+### Automated Plan Validator
+**Location**: `scripts/validate-tdd-plan.sh`
+
+Validates plans against the review checklist automatically. Catches common issues on first pass:
+```bash
+# Run before starting review
+./scripts/validate-tdd-plan.sh plans/your_plan.md
+
+# Expected output shows status for 6 sections
+# ✅ Green checkmarks = OK
+# ⚠️  Warnings = issues to review
+# ❌ Errors = critical issues to fix
+```
+
+**Critical check (Section 2)**: Verifies RED phases document temporary corruption/failures that prove assertions catch real bugs.
+
 ## Related Commands
 - `/commit` - Create commit after plan approved
 - `/review-changes` - Review implementation changes
 - `/new-learnings` - Extract patterns from plan review findings
+- Validator script: `./scripts/validate-tdd-plan.sh` - Automated first-pass validation
 
 ## Related KB Articles
 
