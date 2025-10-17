@@ -1219,7 +1219,7 @@ grep "Actual memory leaks:" bin/run-tests/memory_report_ar_send_instruction_eval
 
 ### Iteration 1.1: Send to delegate returns true (RED-GREEN-REFACTOR)
 
-**Review Status**: REVIEWED
+**Review Status**: IMPLEMENTED
 
 **Objective**: Test that `send(-1, message)` returns true (routing succeeds).
 
@@ -1345,7 +1345,7 @@ if (agent_id == 0) {
 
 ### Iteration 1.2: Delegate receives message (RED-GREEN-REFACTOR)
 
-**Review Status**: REVIEWED
+**Review Status**: IMPLEMENTED
 
 **Objective**: Verify that delegate actually receives and queues the message (forces real routing implementation).
 

@@ -120,7 +120,7 @@ pub export fn ar_send_instruction_evaluator__evaluate(
         return false;
     };
     
-    // Send the message
+    // Send the message based on ID sign
     var send_result: bool = undefined;
     if (agent_id == 0) {
         // Special case: agent_id 0 is a no-op that always returns true
@@ -128,9 +128,12 @@ pub export fn ar_send_instruction_evaluator__evaluate(
         std.debug.print("DEBUG [SEND_EVAL]: Sending to agent 0 - destroying message type={}\n", .{c.ar_data__get_type(own_message)});
         c.ar_data__destroy_if_owned(own_message, ref_evaluator);
         send_result = true;
-    } else {
-        // Send message (ownership transferred to ar_agency__send_to_agent)
+    } else if (agent_id > 0) {
+        // Positive IDs route to agency (agents)
         send_result = c.ar_agency__send_to_agent(ref_evaluator.?.ref_agency, agent_id, own_message);
+    } else {
+        // Negative IDs route to delegation (delegates)
+        send_result = c.ar_delegation__send_to_delegate(ref_evaluator.?.ref_delegation, agent_id, own_message);
     }
     
     // Handle result assignment if present
