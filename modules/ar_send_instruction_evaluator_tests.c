@@ -353,9 +353,22 @@ static void test_send_instruction_evaluator__routes_to_delegate(void) {
     // Iteration 1.2: And the delegate should have received the message
     ar_delegation_t *delegation = ar_send_evaluator_fixture__get_delegation(fixture);
     bool has_messages = ar_delegation__delegate_has_messages(delegation, -1);
-    AR_ASSERT(has_messages == true, "Delegate should have received message");  // ← FAILS (hardcoded return doesn't actually queue)
+    AR_ASSERT(has_messages == true, "Delegate should have received message");
+
+    // Iteration 1.3.1: Verify message actually exists and can be retrieved (not NULL)
+    ar_data_t *own_received = ar_delegation__take_delegate_message(delegation, -1);
+    AR_ASSERT(own_received != NULL, "Should be able to retrieve the queued message from delegate");
+
+    // Iteration 1.3.2: Verify message type is correct (not corrupted to wrong type)
+    ar_data_type_t received_type = ar_data__get_type(own_received);
+    AR_ASSERT(received_type == AR_DATA_TYPE__STRING, "Message type should be STRING, but got something else");
+
+    // Iteration 1.3.3: Verify message content matches what we sent
+    const char *received_string = ar_data__get_string(own_received);
+    AR_ASSERT(strcmp(received_string, "test message") == 0, "Message content should be 'test message' but got different content");  // ← WILL FAIL if content corrupted
 
     // Cleanup
+    ar_data__destroy(own_received);
     ar_instruction_ast__destroy(ast);
     ar_send_instruction_evaluator__destroy(evaluator);
     ar_send_evaluator_fixture__destroy(fixture);
