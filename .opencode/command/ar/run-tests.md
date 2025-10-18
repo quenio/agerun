@@ -4,24 +4,21 @@ Build and run all tests.
 
 **Test Isolation**: If tests fail inconsistently or depend on execution order, check for shared directory issues ([details](../../../kb/test-isolation-shared-directory-pattern.md)).
 
+## ⚠️ CRITICAL: Let the script manage checkpoints
+
+**DO NOT manually initialize checkpoints before running this command.** The script handles all checkpoint initialization, execution, and cleanup automatically. Just run the script and let it complete.
+
+## Quick Start
+
+```bash
+./scripts/run-run-tests.sh
+```
+
+That's it! The script will handle everything automatically. Do not run any `make checkpoint-*` commands manually unless the script fails.
+
 ## CHECKPOINT WORKFLOW ENFORCEMENT
 
 **CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
-
-### In-Progress Workflow Detection
-
-If a `/run-tests` workflow is already in progress:
-
-```bash
-# Check current progress
-make checkpoint-status CMD=run-tests VERBOSE=--verbose
-
-# Resume from a specific step (if interrupted)
-make checkpoint-update CMD=run-tests STEP=N
-
-# Or reset and start over
-./scripts/init-checkpoint.sh run-tests '"Build Tests" "Run All Tests" "Verify Results"'
-```
 
 ## Checkpoint Tracking
 
@@ -57,25 +54,20 @@ This script handles all stages of test execution:
 3. **Verify Results**: Confirms all tests passed
 4. **Checkpoint Completion**: Marks the workflow as complete
 
-### Manual Checkpoint Control
+## Troubleshooting: Manual Checkpoint Control
 
-If you need to manually check progress or resume a workflow:
+Only use these commands if the script fails and you need to manually intervene:
 
 ```bash
-# Check current progress
+# Check current progress (if workflow interrupted)
 make checkpoint-status CMD=run-tests VERBOSE=--verbose
 
-# Resume from a specific step (if interrupted)
+# Resume from a specific step (only if you know it's stuck)
 make checkpoint-update CMD=run-tests STEP=N
 
-# Reset and start over using the wrapper script
-./scripts/init-checkpoint.sh run-tests '"Build Tests" "Run All Tests" "Verify Results"'
-
-# Verify checkpoint before running workflow
-./scripts/require-checkpoint.sh run-tests
-
-# Show completion and cleanup
-./scripts/complete-checkpoint.sh run-tests
+# ONLY use this if you need to reset everything and start over
+rm -f /tmp/run-tests-progress.txt
+./scripts/run-run-tests.sh
 ```
 
 ### Check Progress

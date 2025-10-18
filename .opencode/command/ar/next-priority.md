@@ -1,5 +1,17 @@
 Read AGENTS.md in order to prepare yourself for this new session. Then, suggest the next priority based on the TODO.md file.
 
+## ⚠️ CRITICAL: Let the script manage checkpoints
+
+**DO NOT manually initialize checkpoints before running this command.** The script handles all checkpoint initialization, execution, and cleanup automatically. Just run the script and let it complete.
+
+## Quick Start
+
+```bash
+./scripts/run-next-priority.sh
+```
+
+That's it! The script will handle everything automatically. Do not run any `make checkpoint-*` commands manually unless the script fails.
+
 ## MANDATORY FIRST STEP - KB Consultation
 
 Before analyzing priorities, you MUST ([details](../../../kb/kb-consultation-before-planning-requirement.md)):
@@ -17,21 +29,6 @@ Only after completing KB consultation should you proceed to analyze TODO.md.
 ## CHECKPOINT WORKFLOW ENFORCEMENT
 
 **CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
-
-### In-Progress Workflow Detection
-
-If a `/next-priority` workflow is already in progress:
-
-```bash
-# Check current progress
-make checkpoint-status CMD=next-priority VERBOSE=--verbose
-
-# Resume from a specific step (if interrupted)
-make checkpoint-update CMD=next-priority STEP=N
-
-# Or reset and start over
-./scripts/init-checkpoint.sh next-priority '"Read Context" "Analyze Priorities" "Generate Recommendation"'
-```
 
 ## Checkpoint Tracking
 
@@ -67,25 +64,20 @@ This script handles all stages of the priority analysis process:
 3. **Generate Recommendation**: Provides quantitative justification for priority choice
 4. **Checkpoint Completion**: Marks the workflow as complete
 
-### Manual Checkpoint Control
+## Troubleshooting: Manual Checkpoint Control
 
-If you need to manually check progress or resume a workflow:
+Only use these commands if the script fails and you need to manually intervene:
 
 ```bash
-# Check current progress
+# Check current progress (if workflow interrupted)
 make checkpoint-status CMD=next-priority VERBOSE=--verbose
 
-# Resume from a specific step (if interrupted)
+# Resume from a specific step (only if you know it's stuck)
 make checkpoint-update CMD=next-priority STEP=N
 
-# Reset and start over using the wrapper script
-./scripts/init-checkpoint.sh next-priority '"Read Context" "Analyze Priorities" "Generate Recommendation"'
-
-# Verify checkpoint before running workflow
-./scripts/require-checkpoint.sh next-priority
-
-# Show completion and cleanup
-./scripts/complete-checkpoint.sh next-priority
+# ONLY use this if you need to reset everything and start over
+rm -f /tmp/next-priority-progress.txt
+./scripts/run-next-priority.sh
 ```
 
 ## Minimum Requirements

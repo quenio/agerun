@@ -2,24 +2,21 @@ Execute comprehensive build verification with minimal output and check for hidde
 
 **Note**: The build runs all checks in parallel for efficiency ([details](../../../kb/parallel-build-job-integration.md)). Always use `make build` rather than running scripts directly ([details](../../../kb/make-target-testing-discipline.md)). All command documentation must achieve 90%+ scores or the build fails ([details](../../../kb/command-documentation-excellence-gate.md)).
 
+## ⚠️ CRITICAL: Let the script manage checkpoints
+
+**DO NOT manually initialize checkpoints before running this command.** The script handles all checkpoint initialization, execution, and cleanup automatically. Just run the script and let it complete.
+
+## Quick Start
+
+```bash
+./scripts/run-build.sh
+```
+
+That's it! The script will handle everything automatically. Do not run any `make checkpoint-*` commands manually unless the script fails.
+
 ## CHECKPOINT WORKFLOW ENFORCEMENT
 
 **CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
-
-### In-Progress Workflow Detection
-
-If a `/build` workflow is already in progress:
-
-```bash
-# Check current progress
-make checkpoint-status CMD=build VERBOSE=--verbose
-
-# Resume from a specific step (if interrupted)
-make checkpoint-update CMD=build STEP=N
-
-# Or reset and start over
-./scripts/init-checkpoint.sh build '"Compile Code" "Run Checks" "Verify Build"'
-```
 
 ## Checkpoint Tracking
 
@@ -55,25 +52,20 @@ This script handles all stages of the comprehensive build process:
 3. **Verify Build**: Confirms all artifacts and checks passed
 4. **Checkpoint Completion**: Marks the workflow as complete
 
-### Manual Checkpoint Control
+## Troubleshooting: Manual Checkpoint Control
 
-If you need to manually check progress or resume a workflow:
+Only use these commands if the script fails and you need to manually intervene:
 
 ```bash
-# Check current progress
+# Check current progress (if workflow interrupted)
 make checkpoint-status CMD=build VERBOSE=--verbose
 
-# Resume from a specific step (if interrupted)
+# Resume from a specific step (only if you know it's stuck)
 make checkpoint-update CMD=build STEP=N
 
-# Reset and start over using the wrapper script
-./scripts/init-checkpoint.sh build '"Compile Code" "Run Checks" "Verify Build"'
-
-# Verify checkpoint before running workflow
-./scripts/require-checkpoint.sh build
-
-# Show completion and cleanup
-./scripts/complete-checkpoint.sh build
+# ONLY use this if you need to reset everything and start over
+rm -f /tmp/build-progress.txt
+./scripts/run-build.sh
 ```
 
 ## Minimum Requirements

@@ -1,23 +1,20 @@
 Run static analysis on the executable code.
 
+## ⚠️ CRITICAL: Let the script manage checkpoints
+
+**DO NOT manually initialize checkpoints before running this command.** The script handles all checkpoint initialization, execution, and cleanup automatically. Just run the script and let it complete.
+
+## Quick Start
+
+```bash
+./scripts/run-analyze-exec.sh
+```
+
+That's it! The script will handle everything automatically. Do not run any `make checkpoint-*` commands manually unless the script fails.
+
 ## CHECKPOINT WORKFLOW ENFORCEMENT
 
 **CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
-
-### In-Progress Workflow Detection
-
-If a `/analyze-exec` workflow is already in progress:
-
-```bash
-# Check current progress
-make checkpoint-status CMD=analyze-exec VERBOSE=--verbose
-
-# Resume from a specific step (if interrupted)
-make checkpoint-update CMD=analyze-exec STEP=N
-
-# Or reset and start over
-./scripts/init-checkpoint.sh analyze-exec '"Build Executable" "Run Static Analysis" "Report Results"'
-```
 
 ## Checkpoint Tracking
 
@@ -53,25 +50,20 @@ This script handles all stages of the executable static analysis process:
 3. **Report Results**: Presents analysis findings and code quality metrics
 4. **Checkpoint Completion**: Marks the workflow as complete
 
-### Manual Checkpoint Control
+## Troubleshooting: Manual Checkpoint Control
 
-If you need to manually check progress or resume a workflow:
+Only use these commands if the script fails and you need to manually intervene:
 
 ```bash
-# Check current progress
+# Check current progress (if workflow interrupted)
 make checkpoint-status CMD=analyze-exec VERBOSE=--verbose
 
-# Resume from a specific step (if interrupted)
+# Resume from a specific step (only if you know it's stuck)
 make checkpoint-update CMD=analyze-exec STEP=N
 
-# Reset and start over using the wrapper script
-./scripts/init-checkpoint.sh analyze-exec '"Build Executable" "Run Static Analysis" "Report Results"'
-
-# Verify checkpoint before running workflow
-./scripts/require-checkpoint.sh analyze-exec
-
-# Show completion and cleanup
-./scripts/complete-checkpoint.sh analyze-exec
+# ONLY use this if you need to reset everything and start over
+rm -f /tmp/analyze-exec-progress.txt
+./scripts/run-analyze-exec.sh
 ```
 
 ## Minimum Requirements

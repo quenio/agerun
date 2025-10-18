@@ -1,5 +1,17 @@
 Read AGENTS.md in order to prepare yourself for this new session ([details](../../../kb/context-preservation-across-sessions.md)). Then check the session's todo list using TodoRead. If no items are found in the session's todo list, check TODO.md for incomplete tasks (marked with `- [ ]`). If TODO.md has incomplete tasks, present them and ask which to work on. If both session todo list and TODO.md are empty, inform me that all tasks are complete. If session tasks exist, work on the next task found in the session's todo list.
 
+## ⚠️ CRITICAL: Let the script manage checkpoints
+
+**DO NOT manually initialize checkpoints before running this command.** The script handles all checkpoint initialization, execution, and cleanup automatically. Just run the script and let it complete.
+
+## Quick Start
+
+```bash
+./scripts/run-next-task.sh
+```
+
+That's it! The script will handle everything automatically. Do not run any `make checkpoint-*` commands manually unless the script fails.
+
 ## MANDATORY KB Consultation
 
 Before starting task execution, search KB for relevant patterns ([details](../../../kb/kb-consultation-before-planning-requirement.md)):
@@ -11,21 +23,6 @@ Before starting task execution, search KB for relevant patterns ([details](../..
 ## CHECKPOINT WORKFLOW ENFORCEMENT
 
 **CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
-
-### In-Progress Workflow Detection
-
-If a `/next-task` workflow is already in progress:
-
-```bash
-# Check current progress
-make checkpoint-status CMD=next-task VERBOSE=--verbose
-
-# Resume from a specific step (if interrupted)
-make checkpoint-update CMD=next-task STEP=N
-
-# Or reset and start over
-./scripts/init-checkpoint.sh next-task '"Read Context" "Check Task Sources" "Discover Next Task"'
-```
 
 ## Checkpoint Tracking
 
@@ -61,25 +58,20 @@ This script handles all stages of the task discovery process:
 3. **Discover Next Task**: Identifies and presents the next task to work on
 4. **Checkpoint Completion**: Marks the workflow as complete
 
-### Manual Checkpoint Control
+## Troubleshooting: Manual Checkpoint Control
 
-If you need to manually check progress or resume a workflow:
+Only use these commands if the script fails and you need to manually intervene:
 
 ```bash
-# Check current progress
+# Check current progress (if workflow interrupted)
 make checkpoint-status CMD=next-task VERBOSE=--verbose
 
-# Resume from a specific step (if interrupted)
+# Resume from a specific step (only if you know it's stuck)
 make checkpoint-update CMD=next-task STEP=N
 
-# Reset and start over using the wrapper script
-./scripts/init-checkpoint.sh next-task '"Read Context" "Check Task Sources" "Discover Next Task"'
-
-# Verify checkpoint before running workflow
-./scripts/require-checkpoint.sh next-task
-
-# Show completion and cleanup
-./scripts/complete-checkpoint.sh next-task
+# ONLY use this if you need to reset everything and start over
+rm -f /tmp/next-task-progress.txt
+./scripts/run-next-task.sh
 ```
 
 ## Minimum Requirements

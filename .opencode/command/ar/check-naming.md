@@ -1,5 +1,17 @@
 Run naming convention validation to check for typedef and function naming issues.
 
+## ⚠️ CRITICAL: Let the script manage checkpoints
+
+**DO NOT manually initialize checkpoints before running this command.** The script handles all checkpoint initialization, execution, and cleanup automatically. Just run the script and let it complete.
+
+## Quick Start
+
+```bash
+./scripts/run-check-naming.sh
+```
+
+That's it! The script will handle everything automatically. Do not run any `make checkpoint-*` commands manually unless the script fails.
+
 ## MANDATORY KB Consultation
 
 Before checking:
@@ -14,21 +26,6 @@ Before checking:
 ## CHECKPOINT WORKFLOW ENFORCEMENT
 
 **CRITICAL**: This command MUST use checkpoint tracking for ALL execution. This command demonstrates the [Checkpoint Conditional Flow Pattern](../../../kb/checkpoint-conditional-flow-pattern.md) where naming violations trigger fix workflows. See [Checkpoint Sequential Execution Discipline](../../../kb/checkpoint-sequential-execution-discipline.md) for important requirements about sequential ordering and work verification.
-
-### In-Progress Workflow Detection
-
-If a `/check-naming` workflow is already in progress:
-
-```bash
-# Check current progress
-make checkpoint-status CMD=check-naming VERBOSE=--verbose
-
-# Resume from a specific step (if interrupted)
-make checkpoint-update CMD=check-naming STEP=N
-
-# Or reset and start over
-./scripts/init-checkpoint.sh check-naming '"Check Naming" "Analyze Violations" "Document Findings"'
-```
 
 ## Checkpoint Tracking
 
@@ -115,25 +112,20 @@ make: *** [check-naming] Error 1
 
 #### [CHECKPOINT END]
 
-### Manual Checkpoint Control
+## Troubleshooting: Manual Checkpoint Control
 
-If you need to manually check progress or resume a workflow:
+Only use these commands if the script fails and you need to manually intervene:
 
 ```bash
-# Check current progress
+# Check current progress (if workflow interrupted)
 make checkpoint-status CMD=check-naming VERBOSE=--verbose
 
-# Resume from a specific step (if interrupted)
+# Resume from a specific step (only if you know it's stuck)
 make checkpoint-update CMD=check-naming STEP=N
 
-# Reset and start over using the wrapper script
-./scripts/init-checkpoint.sh check-naming '"Check Naming" "Analyze Violations" "Document Findings"'
-
-# Verify checkpoint before running workflow
-./scripts/require-checkpoint.sh check-naming
-
-# Show completion and cleanup
-./scripts/complete-checkpoint.sh check-naming
+# ONLY use this if you need to reset everything and start over
+rm -f /tmp/check-naming-progress.txt
+./scripts/run-check-naming.sh
 ```
 
 ## Minimum Requirements

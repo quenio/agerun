@@ -1,23 +1,20 @@
 Build and run the agerun executable.
 
+## ⚠️ CRITICAL: Let the script manage checkpoints
+
+**DO NOT manually initialize checkpoints before running this command.** The script handles all checkpoint initialization, execution, and cleanup automatically. Just run the script and let it complete.
+
+## Quick Start
+
+```bash
+./scripts/run-run-exec.sh
+```
+
+That's it! The script will handle everything automatically. Do not run any `make checkpoint-*` commands manually unless the script fails.
+
 ## CHECKPOINT WORKFLOW ENFORCEMENT
 
 **CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
-
-### In-Progress Workflow Detection
-
-If a `/run-exec` workflow is already in progress:
-
-```bash
-# Check current progress
-make checkpoint-status CMD=run-exec VERBOSE=--verbose
-
-# Resume from a specific step (if interrupted)
-make checkpoint-update CMD=run-exec STEP=N
-
-# Or reset and start over
-./scripts/init-checkpoint.sh run-exec '"Build Executable" "Run Executable" "Verify Execution"'
-```
 
 ## Checkpoint Tracking
 
@@ -53,25 +50,21 @@ This script handles all stages of executable execution:
 3. **Verify Execution**: Confirms successful execution with exit code
 4. **Checkpoint Completion**: Marks the workflow as complete
 
-### Manual Checkpoint Control
+## Troubleshooting: Manual Checkpoint Control
 
-If you need to manually check progress or resume a workflow:
+Only use these commands if the script fails and you need to manually intervene:
 
 ```bash
-# Check current progress
+# Check current progress (if workflow interrupted)
 make checkpoint-status CMD=run-exec VERBOSE=--verbose
 
-# Resume from a specific step (if interrupted)
+# Resume from a specific step (only if you know it's stuck)
 make checkpoint-update CMD=run-exec STEP=N
 
-# Reset and start over using the wrapper script
-./scripts/init-checkpoint.sh run-exec '"Build Executable" "Run Executable" "Verify Execution"'
-
-# Verify checkpoint before running workflow
-./scripts/require-checkpoint.sh run-exec
-
-# Show completion and cleanup
-./scripts/complete-checkpoint.sh run-exec
+# ONLY use this if you need to reset everything and start over
+rm -f /tmp/run-exec-progress.txt
+./scripts/run-run-exec.sh
+```
 
 ## Minimum Requirements
 

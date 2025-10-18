@@ -1,23 +1,20 @@
 Run address sanitizer on all tests for detecting memory issues.
 
+## ⚠️ CRITICAL: Let the script manage checkpoints
+
+**DO NOT manually initialize checkpoints before running this command.** The script handles all checkpoint initialization, execution, and cleanup automatically. Just run the script and let it complete.
+
+## Quick Start
+
+```bash
+./scripts/run-sanitize-tests.sh
+```
+
+That's it! The script will handle everything automatically. Do not run any `make checkpoint-*` commands manually unless the script fails.
+
 ## CHECKPOINT WORKFLOW ENFORCEMENT
 
 **CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
-
-### In-Progress Workflow Detection
-
-If a `/sanitize-tests` workflow is already in progress:
-
-```bash
-# Check current progress
-make checkpoint-status CMD=sanitize-tests VERBOSE=--verbose
-
-# Resume from a specific step (if interrupted)
-make checkpoint-update CMD=sanitize-tests STEP=N
-
-# Or reset and start over
-./scripts/init-checkpoint.sh sanitize-tests '"Build Tests" "Run Sanitizer" "Report Results"'
-```
 
 ## Checkpoint Tracking
 
@@ -53,25 +50,20 @@ This script handles all stages of sanitizer execution:
 3. **Report Results**: Summarizes findings
 4. **Checkpoint Completion**: Marks the workflow as complete
 
-### Manual Checkpoint Control
+## Troubleshooting: Manual Checkpoint Control
 
-If you need to manually check progress or resume a workflow:
+Only use these commands if the script fails and you need to manually intervene:
 
 ```bash
-# Check current progress
+# Check current progress (if workflow interrupted)
 make checkpoint-status CMD=sanitize-tests VERBOSE=--verbose
 
-# Resume from a specific step (if interrupted)
+# Resume from a specific step (only if you know it's stuck)
 make checkpoint-update CMD=sanitize-tests STEP=N
 
-# Reset and start over using the wrapper script
-./scripts/init-checkpoint.sh sanitize-tests '"Build Tests" "Run Sanitizer" "Report Results"'
-
-# Verify checkpoint before running workflow
-./scripts/require-checkpoint.sh sanitize-tests
-
-# Show completion and cleanup
-./scripts/complete-checkpoint.sh sanitize-tests
+# ONLY use this if you need to reset everything and start over
+rm -f /tmp/sanitize-tests-progress.txt
+./scripts/run-sanitize-tests.sh
 ```
 
 #### [CHECKPOINT END]
