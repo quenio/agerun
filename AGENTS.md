@@ -389,7 +389,72 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
   3. Run the test automatically from the bin directory
   4. Generate a memory report specific to that test
 
-### 12. Session & Commit Management
+### 9. Bash Script Generation Guidelines
+
+**Exit Code Handling**:
+- **Use `set -o pipefail` for piped commands**: When capturing exit codes from commands that use pipes (e.g., `command | tee file`), add `set -o pipefail` at the start of the script. This ensures the exit code reflects the actual command failure, not the success of the piping utility ([details](kb/bash-exit-code-pipefail-pattern.md))
+- **Capture exit codes immediately**: Store `$?` right after the target command completes. Don't run additional commands between the target command and the `$?` capture, as `$?` only reflects the last executed command's exit code
+- **Avoid piping for critical exit codes**: When accurate exit codes are required, run the command normally, capture the exit code, then handle logging separately. Only use pipes like `tee` when the exit code is not critical
+
+**Script Quality & Validation**:
+- **Test syntax before returning**: Verify the script by running `bash -n <script>` to check for syntax errors before returning it
+- **Validate all shell constructs**:
+  - All `if` statements must have matching `then`, `fi`, and proper spacing
+  - No unintended characters or formatting breaks
+  - Consistent indentation (typically 2 or 4 spaces)
+- **Proper formatting**: Use clear line breaks and indentation for shell constructs:
+  - `if`/`then`/`fi` on separate lines or properly formatted on one line
+  - Loops with clear structure
+  - Function definitions properly scoped
+- **Avoid complex piping chains**: Break complex command sequences into sequential steps to prevent parse errors and improve maintainability ([details](kb/bash-command-parsing-patterns.md))
+- **POSIX shell compatibility**: Use `case` not `[[  ]]` when scripts run in sh context; Makefiles invoke sh by default ([details](kb/makefile-posix-shell-compatibility.md))
+
+**Error Prevention**:
+- Test problematic patterns:
+  - Multi-line if/then conditionals with pipes
+  - Commands with redirections and pipes combined
+  - Variable expansions in conditional expressions
+- Use explicit error messages when exit codes fail
+- Log diagnostic information before asserting success
+
+### 10. Error Propagation Pattern
+
+**Implementation**: Set errors at source → Store in struct → Propagate via get_error() → Print once at top level ([details](kb/error-propagation-pattern.md))
+**Key Rule**: Evaluators set errors, interpreter prints them. Never print errors where they occur.
+**Graceful degradation**: Non-critical ops warn & continue ([details](kb/graceful-degradation-pattern.md))
+
+### 11. Agent Lifecycle
+
+**Critical Points**:
+- ALWAYS process messages after sending to prevent leaks
+- Call `ar_system__process_next_message(own_system)` after `ar_agent__send()`
+
+### 12. Building Individual Tests
+
+Always use make to build tests:
+```bash
+make test_name 2>&1  # Build individual test (with stderr)
+```
+Never compile directly with gcc or run binaries directly ([details](kb/make-only-test-execution.md)).
+
+**Parallel Build System**: Targets use isolated directories (bin/run-tests/, bin/sanitize-tests/) to enable parallel execution without conflicts ([details](kb/compiler-output-conflict-pattern.md)).
+
+**Important Makefile Features**:
+- When building individual tests, the test is automatically executed after building
+- Module changes are automatically rebuilt (no need to rebuild the library separately)
+- The Makefile handles all dependencies and runs the test from the correct directory
+- Pattern rules compile object files - update these directly for consistent flags (not target-specific vars)
+- **Pattern rule updates**: Change all 6 targets when updating Zig flags ([details](kb/makefile-pattern-rule-management.md))
+- **POSIX shell only**: Use `case` not `[[ ]]` - Make uses sh, not bash ([details](kb/makefile-posix-shell-compatibility.md))
+- **Bash parsing**: Avoid complex chained commands, use sequential steps ([details](kb/bash-command-parsing-patterns.md))
+- **Filtered variables**: Use `filter-out` for conditional compilation ([details](kb/makefile-filtered-variables-pattern.md))
+- Example: `make ar_string_tests 2>&1` will:
+  1. Rebuild any changed modules
+  2. Rebuild the test
+  3. Run the test automatically from the bin directory
+  4. Generate a memory report specific to that test
+
+### 13. Session & Commit Management
 
 **Task Management**:
 - **Session todos (TodoWrite/TodoRead)**: Current TDD cycles, implementations, bug fixes
@@ -434,7 +499,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 - Capture improvements discovered during work as new TODO items ([details](kb/post-session-task-extraction-pattern.md))
 - Update AGENTS.md with any new patterns or learnings from the session ([details](kb/systematic-guideline-enhancement.md))
 
-### 13. Refactoring Patterns
+### 14. Refactoring Patterns
 
 **Principles**: Preserve behavior, move don't rewrite, verify moves ([details](kb/refactoring-patterns-detailed.md))
 **Renaming**: Systematic approach for features/commands ([details](kb/comprehensive-renaming-workflow.md))
@@ -448,7 +513,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 **Pattern spread**: Technical debt propagates through copy-paste ([details](kb/cross-file-pattern-propagation.md))
 **Dead comments**: Delete commented code, don't accumulate ([details](kb/commented-code-accumulation-antipattern.md))
 
-### 14. Plan Verification and Review
+### 15. Plan Verification and Review
 
 **Single task focus**: One TODO = one plan, include verification steps ([details](kb/plan-verification-checklist.md), [review](kb/plan-verification-and-review.md))
 **Completion tracking**: Update plan docs with completion status after verification ([details](kb/plan-document-completion-status-pattern.md))
@@ -459,7 +524,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 **Module constraints**: Different modules have different requirements - check tests
 **Generic design**: Consider ar_path vs ar_memory_path for broader utility ([details](kb/oo-to-c-adaptation.md))
 
-### 15. Task Tool Guidelines
+### 16. Task Tool Guidelines
 
 **Core Rule**: Read before write - examine Task output before modifying
 
@@ -469,7 +534,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 3. Use Edit (not Write) for improvements
 4. Be specific: "analyze only" vs "create files"
 
-### 16. Leveraging Zig for AgeRun Development
+### 17. Leveraging Zig for AgeRun Development
 
 **Docs**: https://ziglang.org/documentation/0.14.1/ (see #C for interop)
 **When**: Performance, cross-platform, safety needs, defer patterns ([details](kb/zig-module-development-guide.md))
