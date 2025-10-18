@@ -125,44 +125,11 @@ make checkpoint-status CMD=create-command
 COMMAND_NAME=$(echo "$ARGUMENTS" | awk '{print $1}')
 COMMAND_PURPOSE=$(echo "$ARGUMENTS" | sed 's/^[^ ]* //')
 
-# Validate command name
-if [ -z "$COMMAND_NAME" ]; then
-  echo "❌ ERROR: Command name is required!"
-  echo ""
-  echo "Usage: /create-command <command-name> <purpose>"
-  echo "Example: /create-command analyze-deps \"Analyze module dependencies\""
-  exit 1
-fi
+# Validate using helper script
+./scripts/validate-command-args.sh "$COMMAND_NAME" "$COMMAND_PURPOSE"
 
-# Validate purpose
-if [ -z "$COMMAND_PURPOSE" ] || [ "$COMMAND_PURPOSE" = "$COMMAND_NAME" ]; then
-  echo "❌ ERROR: Command purpose is required!"
-  echo ""
-  echo "Usage: /create-command <command-name> <purpose>"
-  echo "Example: /create-command analyze-deps \"Analyze module dependencies\""
-  exit 1
-fi
-
-# Validate command name format (lowercase, hyphens only)
-if ! echo "$COMMAND_NAME" | grep -qE '^[a-z][a-z0-9-]*$'; then
-  echo "❌ ERROR: Invalid command name format!"
-  echo "   Command names must be lowercase with hyphens only"
-  echo "   Valid examples: analyze-deps, check-config, run-validation"
-  echo "   Invalid: analyzeDeps, check_config, AnalyzeStuff"
-  exit 1
-fi
-
-# Check if command already exists
+# Set COMMAND_FILE for subsequent steps
 COMMAND_FILE=".opencode/command/ar/${COMMAND_NAME}.md"
-if [ -f "$COMMAND_FILE" ]; then
-  echo "❌ ERROR: Command already exists: $COMMAND_FILE"
-  echo "   Use a different name or delete the existing command first"
-  exit 1
-fi
-
-echo "✅ Arguments validated"
-echo "   Command name: $COMMAND_NAME"
-echo "   Purpose: $COMMAND_PURPOSE"
 echo "   Target file: $COMMAND_FILE"
 echo ""
 
@@ -456,37 +423,8 @@ make checkpoint-update CMD=create-command STEP=6
 **⚠️ CRITICAL: Must achieve 90%+ score**
 
 ```bash
-echo "🎯 Verify command meets excellence standards"
-echo ""
-
-# Run check-commands validator
-if make check-commands 2>&1 | tee /tmp/create-command-validation.txt; then
-  echo "✅ Command passes validation"
-else
-  echo "⚠️  Validation issues found - review output above"
-fi
-
-# Extract score for the new command
-SCORE=$(grep "$COMMAND_NAME" /tmp/create-command-validation.txt | grep -oE '[0-9]+%' || echo "0%")
-
-echo ""
-echo "Command: $COMMAND_NAME"
-echo "Score: $SCORE"
-echo ""
-
-if echo "$SCORE" | grep -qE '(9[0-9]|100)%'; then
-  echo "✅ EXCELLENT: Meets 90%+ threshold"
-else
-  echo "❌ NEEDS IMPROVEMENT: Below 90% threshold"
-  echo ""
-  echo "Common issues:"
-  echo "  • Missing expected output examples"
-  echo "  • Missing troubleshooting section"
-  echo "  • Missing minimum requirements"
-  echo "  • Incomplete checkpoint tracking"
-  echo ""
-  echo "Review: kb/command-documentation-excellence-gate.md"
-fi
+# Verify command quality using helper script
+./scripts/verify-command-quality.sh "$COMMAND_NAME"
 
 make checkpoint-update CMD=create-command STEP=7
 ```
