@@ -33,7 +33,7 @@ Steps to complete:
 **Expected output when failing:**
 \`\`\`
 Error: Tracking file already exists: /tmp/my-command_progress.txt
-Run 'checkpoint_cleanup.sh my-command' to reset
+Run 'checkpoint-cleanup.sh my-command' to reset
 [Exit code: 1]
 \`\`\`
 ```

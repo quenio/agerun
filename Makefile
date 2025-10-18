@@ -574,10 +574,10 @@ analyze-tests: $(ANALYZE_TESTS_DIR)
 
 # Check naming conventions across all source files
 check-naming:
-	@if [ -x ./scripts/check_naming_conventions.sh ]; then \
-		./scripts/check_naming_conventions.sh; \
+	@if [ -x ./scripts/check-naming-conventions.sh ]; then \
+		./scripts/check-naming-conventions.sh; \
 	else \
-		echo "ERROR: scripts/check_naming_conventions.sh not found or not executable"; \
+		echo "ERROR: scripts/check-naming-conventions.sh not found or not executable"; \
 		echo "Make sure the script exists and has execute permissions"; \
 		exit 1; \
 	fi
@@ -623,10 +623,10 @@ add-newline:
 		echo "Usage: make add-newline FILE=<filename>"; \
 		exit 1; \
 	fi
-	@if [ -x ./scripts/add_newline.sh ]; then \
-		./scripts/add_newline.sh "$(FILE)"; \
+	@if [ -x ./scripts/add-newline.sh ]; then \
+		./scripts/add-newline.sh "$(FILE)"; \
 	else \
-		echo "ERROR: scripts/add_newline.sh not found or not executable"; \
+		echo "ERROR: scripts/add-newline.sh not found or not executable"; \
 		echo "Make sure the script exists and has execute permissions"; \
 		exit 1; \
 	fi
@@ -694,22 +694,22 @@ fi
 #   make checkpoint-gate CMD=new-learnings GATE="Article Creation" REQUIRED="1,2,3,4"
 #   make checkpoint-cleanup CMD=new-learnings
 checkpoint-init:
-	@bash scripts/checkpoint_init.sh $(CMD) $(STEPS)
+	@bash scripts/checkpoint-init.sh $(CMD) $(STEPS)
 
 checkpoint-update:
-	@bash scripts/checkpoint_update.sh $(CMD) $(STEP)
+	@bash scripts/checkpoint-update.sh $(CMD) $(STEP)
 
 checkpoint-update-verified:
-	@bash scripts/checkpoint_update_enhanced.sh $(CMD) $(STEP) "$(EVIDENCE)" "$(SUMMARY)"
+	@bash scripts/checkpoint-update-enhanced.sh $(CMD) $(STEP) "$(EVIDENCE)" "$(SUMMARY)"
 
 checkpoint-status:
-	@bash scripts/checkpoint_status.sh $(CMD) $(VERBOSE)
+	@bash scripts/checkpoint-status.sh $(CMD) $(VERBOSE)
 
 checkpoint-gate:
-	@bash scripts/checkpoint_gate.sh $(CMD) "$(GATE)" "$(REQUIRED)"
+	@bash scripts/checkpoint-gate.sh $(CMD) "$(GATE)" "$(REQUIRED)"
 
 checkpoint-cleanup:
-	@bash scripts/checkpoint_cleanup.sh $(CMD)
+	@bash scripts/checkpoint-cleanup.sh $(CMD)
 
 # Check command documentation structure
 # Usage: make check-commands [VERBOSE=1] [FIX=1]

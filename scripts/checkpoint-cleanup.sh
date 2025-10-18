@@ -1,7 +1,7 @@
 #!/bin/bash
 # Clean up checkpoint tracking files
-# Usage: checkpoint_cleanup.sh <command_name>
-# Example: checkpoint_cleanup.sh new-learnings
+# Usage: checkpoint-cleanup.sh <command_name>
+# Example: checkpoint-cleanup.sh new-learnings
 
 set -e
 

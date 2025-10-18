@@ -56,14 +56,14 @@ ar_data__destroy(own_workflow);
    - STEP_N=complete/pending for each step
 
 2. **Step Management** (via Makefile targets → bash scripts):
-   - `checkpoint-init` → `scripts/checkpoint_init.sh`: Create tracking file with all steps
-   - `checkpoint-update` → `scripts/checkpoint_update.sh`: Mark step complete, show progress bar
-   - `checkpoint-update-verified` → `scripts/checkpoint_update_enhanced.sh`: Mark complete with automated verification
-   - `checkpoint-status` → `scripts/checkpoint_status.sh`: Show current progress (verbose mode available)
-   - `checkpoint-cleanup` → `scripts/checkpoint_cleanup.sh`: Remove tracking file when done
+   - `checkpoint-init` → `scripts/checkpoint-init.sh`: Create tracking file with all steps
+   - `checkpoint-update` → `scripts/checkpoint-update.sh`: Mark step complete, show progress bar
+   - `checkpoint-update-verified` → `scripts/checkpoint-update-enhanced.sh`: Mark complete with automated verification
+   - `checkpoint-status` → `scripts/checkpoint-status.sh`: Show current progress (verbose mode available)
+   - `checkpoint-cleanup` → `scripts/checkpoint-cleanup.sh`: Remove tracking file when done
 
 3. **Gate Enforcement** (via Makefile targets → bash scripts):
-   - `checkpoint-gate` → `scripts/checkpoint_gate.sh`: Block progress until required steps complete
+   - `checkpoint-gate` → `scripts/checkpoint-gate.sh`: Block progress until required steps complete
    - Exit with error code if gate fails
    - Named gates (e.g., "Build Quality", "Integration")
    - `checkpoint-gate CMD=name GATE="Gate Name" REQUIRED="1,2,3"`

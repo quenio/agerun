@@ -90,7 +90,7 @@ Progress: 3/12 steps (25%)
 Next Action:
   → Step 4: Validation Before Saving
 
-Run: checkpoint_update.sh new-learnings 4
+Run: checkpoint-update.sh new-learnings 4
 ```
 
 ## Overview of the Process

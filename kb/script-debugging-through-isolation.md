@@ -21,7 +21,7 @@ Isolation-based debugging leads to:
 ### Bad: Debug by Code Reading
 
 ```bash
-# Studying checkpoint_update.sh
+# Studying checkpoint-update.sh
 # Line 36: sed -i '' "s/STEP_${STEP_NUMBER}=.*/STEP_${STEP_NUMBER}=${STATUS}    # ${STEP_DESC}/" "$TRACKING_FILE"
 # Looks correct to me... Let me add debug output
 ```
@@ -206,7 +206,7 @@ STEP_1=pending    # Step 1 Description
 STEP_2=pending    # Step 2 Description
 EOF
 
-# Test the sed pattern used in checkpoint_update.sh
+# Test the sed pattern used in checkpoint-update.sh
 echo "Testing checkpoint sed pattern..."
 sed "s@STEP_${STEP}=.*@STEP_${STEP}=complete    # ${DESC}@" "$TRACKING_FILE"
 # Output: STEP_1=complete    # Step 1 Description
@@ -229,7 +229,7 @@ rm "$TRACKING_FILE"
 When we encountered the checkpoint sed error:
 
 ```bash
-# Step 1: Identified failing command in checkpoint_update.sh:36
+# Step 1: Identified failing command in checkpoint-update.sh:36
 sed -i '' "s/STEP_${STEP_NUMBER}=.*/STEP_${STEP_NUMBER}=${STATUS}    # ${STEP_DESC}/" "$TRACKING_FILE"
 
 # Step 2: Created isolation test with actual values

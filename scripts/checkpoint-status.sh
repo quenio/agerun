@@ -1,7 +1,7 @@
 #!/bin/bash
 # Display current progress status for a command
-# Usage: checkpoint_status.sh <command_name> [--verbose]
-# Example: checkpoint_status.sh new-learnings --verbose
+# Usage: checkpoint-status.sh <command_name> [--verbose]
+# Example: checkpoint-status.sh new-learnings --verbose
 set -o pipefail
 
 set -e
@@ -16,7 +16,7 @@ TRACKING_FILE="/tmp/${COMMAND_NAME}_progress.txt"
 # Check if tracking file exists
 if [ ! -f "$TRACKING_FILE" ]; then
     echo "Error: Tracking file not found: $TRACKING_FILE"
-    echo "Run 'checkpoint_init.sh $COMMAND_NAME ...' first to initialize tracking"
+    echo "Run 'checkpoint-init.sh $COMMAND_NAME ...' first to initialize tracking"
     exit 1
 fi
 
@@ -108,7 +108,7 @@ if [ "$PENDING" -gt 0 ]; then
     echo "Next Action:"
     echo "  → Step $NEXT_NUM: $NEXT_DESC"
     echo ""
-    echo "Run: checkpoint_update.sh $COMMAND_NAME $NEXT_NUM"
+    echo "Run: checkpoint-update.sh $COMMAND_NAME $NEXT_NUM"
 elif [ "$COMPLETED" -eq "$TOTAL_STEPS" ]; then
     echo "🎉 ALL STEPS COMPLETE!"
     echo ""

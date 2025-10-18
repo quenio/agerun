@@ -1,7 +1,7 @@
 #!/bin/bash
 # Verify that specific steps are complete before proceeding
-# Usage: checkpoint_gate.sh <command_name> <gate_name> <required_steps>
-# Example: checkpoint_gate.sh new-learnings "Article Creation" "1,2,3,4"
+# Usage: checkpoint-gate.sh <command_name> <gate_name> <required_steps>
+# Example: checkpoint-gate.sh new-learnings "Article Creation" "1,2,3,4"
 
 set -e
 
@@ -16,7 +16,7 @@ TRACKING_FILE="/tmp/${COMMAND_NAME}_progress.txt"
 # Check if tracking file exists
 if [ ! -f "$TRACKING_FILE" ]; then
     echo "Error: Tracking file not found: $TRACKING_FILE"
-    echo "Run 'checkpoint_init.sh $COMMAND_NAME ...' first to initialize tracking"
+    echo "Run 'checkpoint-init.sh $COMMAND_NAME ...' first to initialize tracking"
     exit 1
 fi
 

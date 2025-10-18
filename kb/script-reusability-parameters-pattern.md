@@ -18,7 +18,7 @@ fi
 
 #!/bin/bash
 # GOOD: Generic parameterized script
-# checkpoint_status.sh
+# checkpoint-status.sh
 COMMAND_NAME=${1:-"command"}
 VERBOSE=${2:-""}
 TRACKING_FILE="/tmp/${COMMAND_NAME}_progress.txt"

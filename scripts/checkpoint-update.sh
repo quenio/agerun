@@ -1,7 +1,7 @@
 #!/bin/bash
 # Update checkpoint status for a specific step
-# Usage: checkpoint_update.sh <command_name> <step_number> [status]
-# Example: checkpoint_update.sh new-learnings 1 complete
+# Usage: checkpoint-update.sh <command_name> <step_number> [status]
+# Example: checkpoint-update.sh new-learnings 1 complete
 set -o pipefail
 
 set -e
@@ -17,7 +17,7 @@ TRACKING_FILE="/tmp/${COMMAND_NAME}_progress.txt"
 # Check if tracking file exists
 if [ ! -f "$TRACKING_FILE" ]; then
     echo "Error: Tracking file not found: $TRACKING_FILE"
-    echo "Run 'checkpoint_init.sh $COMMAND_NAME ...' first to initialize tracking"
+    echo "Run 'checkpoint-init.sh $COMMAND_NAME ...' first to initialize tracking"
     exit 1
 fi
 
@@ -49,5 +49,5 @@ if [ "$COMPLETED" -eq "$TOTAL_STEPS" ]; then
     echo "✓ Run: make checkpoint-cleanup CMD=$COMMAND_NAME"
 else
     # Just show the progress bar (3 lines from checkpoint_status)
-    "$(dirname "$0")/checkpoint_status.sh" "$COMMAND_NAME" --compact || true
+    "$(dirname "$0")/checkpoint-status.sh" "$COMMAND_NAME" --compact || true
 fi

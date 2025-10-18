@@ -9,7 +9,7 @@ Without checkpoint tracking, multi-step commands often suffer from incomplete ex
 ## Example
 ```bash
 #!/bin/bash
-# checkpoint_init.sh - Initialize tracking for any multi-step command
+# checkpoint-init.sh - Initialize tracking for any multi-step command
 COMMAND_NAME=$1
 shift
 STEPS=("$@")
@@ -27,7 +27,7 @@ for i in "${!STEPS[@]}"; do
     echo "STEP_${STEP_NUM}=pending    # ${STEPS[$i]}" >> "$TRACKING_FILE"
 done
 
-# checkpoint_gate.sh - Enforce prerequisites
+# checkpoint-gate.sh - Enforce prerequisites
 REQUIRED_STEPS=$(echo $3 | tr ',' ' ')
 INCOMPLETE=()
 
@@ -56,11 +56,11 @@ exit 0
 ## Implementation
 Complete checkpoint system components:
 ```bash
-# 1. Initialize: checkpoint_init.sh
-# 2. Update: checkpoint_update.sh (marks steps complete)
-# 3. Status: checkpoint_status.sh (shows progress with ASCII bar)
-# 4. Gate: checkpoint_gate.sh (enforces prerequisites)
-# 5. Cleanup: checkpoint_cleanup.sh (removes tracking)
+# 1. Initialize: checkpoint-init.sh
+# 2. Update: checkpoint-update.sh (marks steps complete)
+# 3. Status: checkpoint-status.sh (shows progress with ASCII bar)
+# 4. Gate: checkpoint-gate.sh (enforces prerequisites)
+# 5. Cleanup: checkpoint-cleanup.sh (removes tracking)
 
 # Integration in commands:
 make checkpoint-init CMD=my-command STEPS='"Step 1" "Step 2" "Step 3"'

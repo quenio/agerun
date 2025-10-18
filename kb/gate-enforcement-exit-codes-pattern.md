@@ -9,7 +9,7 @@ Without enforcement gates, users can accidentally skip critical steps, leading t
 ## Example
 ```bash
 #!/bin/bash
-# checkpoint_gate.sh - Enforce completion of prerequisite steps
+# checkpoint-gate.sh - Enforce completion of prerequisite steps
 
 COMMAND_NAME=$1
 GATE_NAME=$2

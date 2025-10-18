@@ -10,17 +10,17 @@ Creating specific targets for each variation leads to Makefile bloat, maintenanc
 ```makefile
 # BAD: Specific targets for each command
 new-learnings-init:
-	@bash scripts/checkpoint_init.sh new-learnings "Step 1" "Step 2"
+	@bash scripts/checkpoint-init.sh new-learnings "Step 1" "Step 2"
 
 commit-init:
-	@bash scripts/checkpoint_init.sh commit "Stage" "Review" "Push"
+	@bash scripts/checkpoint-init.sh commit "Stage" "Review" "Push"
 
 build-init:
-	@bash scripts/checkpoint_init.sh build "Clean" "Compile" "Link"
+	@bash scripts/checkpoint-init.sh build "Clean" "Compile" "Link"
 
 # GOOD: Generic parameterized target
 checkpoint-init:
-	@bash scripts/checkpoint_init.sh $(CMD) $(STEPS)
+	@bash scripts/checkpoint-init.sh $(CMD) $(STEPS)
 
 # Usage examples in comments
 # make checkpoint-init CMD=new-learnings STEPS='"Step 1" "Step 2"'

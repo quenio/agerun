@@ -172,7 +172,7 @@ docker run -it --platform linux/amd64 ubuntu bash script.sh
 
 ### Real AgeRun Examples
 
-**Example 1: Checkpoint Update Script** (`scripts/checkpoint_update.sh`)
+**Example 1: Checkpoint Update Script** (`scripts/checkpoint-update.sh`)
 ```bash
 #!/bin/bash
 set -e
@@ -198,7 +198,7 @@ sed $SED_OPTS "s@STEP_${STEP_NUMBER}=.*@STEP_${STEP_NUMBER}=${STATUS}    # ${STE
 echo "✅ Step $STEP_NUMBER marked as $STATUS"
 ```
 
-**Example 2: Checkpoint Status Display** (`scripts/checkpoint_status.sh`)
+**Example 2: Checkpoint Status Display** (`scripts/checkpoint-status.sh`)
 ```bash
 #!/bin/bash
 set -e

@@ -20,7 +20,7 @@ AUDIT_FILE="/tmp/${COMMAND_NAME}_audit.txt"
 # Check if tracking file exists
 if [ ! -f "$TRACKING_FILE" ]; then
     echo "Error: Tracking file not found: $TRACKING_FILE"
-    echo "Run 'checkpoint_init.sh $COMMAND_NAME ...' first to initialize tracking"
+    echo "Run 'checkpoint-init.sh $COMMAND_NAME ...' first to initialize tracking"
     exit 1
 fi
 
@@ -253,5 +253,5 @@ if [ "$COMPLETED" -eq "$TOTAL_STEPS" ]; then
     echo "🎆 All $TOTAL_STEPS steps complete!"
     echo "✓ Run: make checkpoint-cleanup CMD=$COMMAND_NAME"
 else
-    "$(dirname "$0")/checkpoint_status.sh" "$COMMAND_NAME" --compact || true
+    "$(dirname "$0")/checkpoint-status.sh" "$COMMAND_NAME" --compact || true
 fi

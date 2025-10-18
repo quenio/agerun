@@ -61,23 +61,23 @@ All checkpoint functionality is implemented through bash scripts that are wrappe
 
 ```bash
 # Initialize with all steps
-# Uses: scripts/checkpoint_init.sh (creates /tmp/COMMAND_progress.txt)
+# Uses: scripts/checkpoint-init.sh (creates /tmp/COMMAND_progress.txt)
 make checkpoint-init CMD=command-name STEPS='"Step 1" "Step 2" ...'
 
 # Update after each step
-# Uses: scripts/checkpoint_update.sh (marks steps complete, shows progress)
+# Uses: scripts/checkpoint-update.sh (marks steps complete, shows progress)
 make checkpoint-update CMD=command-name STEP=N
 
 # Status display
-# Uses: scripts/checkpoint_status.sh (shows progress bar and next action)
+# Uses: scripts/checkpoint-status.sh (shows progress bar and next action)
 make checkpoint-status CMD=command-name
 
 # Gates between stages
-# Uses: scripts/checkpoint_gate.sh (verifies required steps before proceeding)
+# Uses: scripts/checkpoint-gate.sh (verifies required steps before proceeding)
 make checkpoint-gate CMD=command-name GATE="Stage Name" REQUIRED="1,2,3"
 
 # Cleanup when done
-# Uses: scripts/checkpoint_cleanup.sh (removes tracking file)
+# Uses: scripts/checkpoint-cleanup.sh (removes tracking file)
 make checkpoint-cleanup CMD=command-name
 ```
 
