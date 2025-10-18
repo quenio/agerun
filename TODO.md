@@ -875,6 +875,291 @@ Extract and consolidate reusable patterns from command files into standalone, pa
 
 ---
 
+## Cross-Command Pattern Extraction Opportunities
+
+### Overview
+Beyond execute-plan.md and review-plan.md, analysis of 30+ commands in `.opencode/command/ar/` reveals 15+ additional reusable patterns appearing across multiple commands. These patterns represent an opportunity to consolidate ~3,500-5,000 lines (23-33% reduction) across the command suite.
+
+### High-Impact Patterns (Priority 1-3)
+
+#### Pattern 1: Multi-File Iteration with Checkpoint Tracking
+**Appears in**: 15+ commands (create-plan, check-module-consistency, new-learnings, migrate-module-to-zig-abi, review-changes, check-docs, compact-changes, check-logs, etc.)
+
+**Current Implementation**: Manual per-iteration processing with explicit `make checkpoint-update` calls for each item
+
+**Proposed Helper**: `batch-process-with-checkpoints.sh`
+- Initialize nested checkpoint for item collection
+- Process each item with automatic status updates
+- Handle interruption/resumption
+- Cleanup nested checkpoint when complete
+- Report standardized progress
+
+**Expected Savings**: 50-100 lines per command × 15 commands = **750-1,500 lines total**
+
+**Implementation Strategy**:
+- Extract from create-plan.md (cleanest implementation)
+- Template other commands based on this pattern
+- Preserve domain-specific processing functions
+
+---
+
+#### Pattern 2: KB Consultation Enforcement & Tracking
+**Appears in**: 20+ commands (nearly universal requirement in command startup)
+
+**Current Implementation**: Repeated manual KB article read instructions, search patterns, quote requirements per command
+
+**Proposed Helper**: `kb-consultation-orchestrator.sh`
+- Accept configurable article list and search terms
+- Generate standardized mandatory reading instructions
+- Track which articles have been read (state management)
+- Generate quote templates with extraction
+- Verify KB consultation completeness before proceeding
+
+**Expected Savings**: 30-50 lines per command × 20 commands = **600-1,000 lines total**
+
+**Modules Benefiting**:
+- create-plan.md, execute-plan.md, review-plan.md
+- check-module-consistency.md, migrate-module-to-zig-abi.md
+- new-learnings.md, review-changes.md, compact-changes.md
+
+---
+
+#### Pattern 3: Checkpoint Progress Status Tracking
+**Appears in**: 25+ commands (nearly universal - checkpoint initialization boilerplate)
+
+**Current Implementation**: Repeated checkpoint init/status checks with identical logic in every command
+
+**Proposed Helper**: Enhance `checkpoint-status-quick.sh` to handle:
+- Smart initialization (detect if already initialized)
+- Conditional resumption (skip if complete)
+- Automatic cleanup (remove stale progress files)
+- Progress visualization (unified format across commands)
+
+**Expected Savings**: 10-20 lines per command × 25 commands = **250-500 lines total**
+
+---
+
+### Medium-Impact Patterns (Priority 4-8)
+
+#### Pattern 4: Batch File Processing with Pattern Matching
+**Appears in**: 8+ commands (check-docs, check-module-consistency, review-changes, check-logs)
+
+**Proposed Helper**: `batch-file-processor.sh`
+- Accept directory/file patterns, processing function
+- Sequential processing with status updates per item
+- Error aggregation and categorization
+- Summary reporting (X passed, Y failed, Z warnings)
+
+**Expected Savings**: 40-80 lines per command × 8 commands = **320-640 lines**
+
+---
+
+#### Pattern 5: Preservation Verification & Metric Validation
+**Appears in**: 6+ commands (compact-changes, new-learnings, check-logs, review-changes)
+
+**Proposed Helper**: Enhanced `verify-preservation.sh`
+- Accept configurable metric patterns
+- Compare before/after state
+- Generate comparison report
+- Support domain-specific metrics (percentages, counts, cycles)
+
+**Expected Savings**: 20-35 lines per command × 6 commands = **120-210 lines**
+
+---
+
+#### Pattern 6: Build/Test Execution & Result Interpretation
+**Appears in**: 8+ commands (run-tests, check-logs, sanitize-tests, tsan-tests, analyze-tests)
+
+**Proposed Helper**: `execute-and-parse-output.sh`
+- Execute command and capture output
+- Parse for error patterns
+- Categorize results (success, failures, warnings)
+- Generate standardized summary
+
+**Expected Savings**: 20-30 lines per command × 8 commands = **160-240 lines**
+
+---
+
+#### Pattern 7: Nested Iterator with Per-Item Verification
+**Appears in**: 5+ commands (create-plan iterations, red-phases, green-phases, execute-plan)
+
+**Proposed Helper**: `nested-iterator-with-verification.sh`
+- Support multiple nesting levels
+- Automatic checkpoint management for each level
+- Per-item verification callbacks
+- Rollback on failure
+
+**Expected Savings**: 40-60 lines per command × 5 commands = **200-300 lines**
+
+---
+
+#### Pattern 8: Cross-Reference Validation & Link Checking
+**Appears in**: 4+ commands (new-learnings, review-changes, check-docs, check-module-consistency)
+
+**Proposed Helper**: `validate-cross-references.sh`
+- Accept file globs and reference patterns
+- Check internal cross-references exist
+- Validate KB article links
+- Report broken references
+
+**Expected Savings**: 20-35 lines per command × 4 commands = **80-140 lines**
+
+---
+
+### Lower-Impact Patterns (Priority 9-15)
+
+#### Pattern 9: Module Discovery & Relationship Detection
+**Appears in**: 3+ commands (check-module-consistency, compact-changes analysis)
+
+**Status**: `discover-module-relationships.sh` exists but needs enhancement
+- Enhance: Sister module pattern detection (reader/writer, parser/evaluator pairs)
+- Enhance: Similar-purpose module clustering
+- Enhance: Subsystem dependency analysis
+- Add: Results caching for performance
+
+**Expected Savings**: 30-50 lines per command × 3 commands = **90-150 lines**
+
+---
+
+#### Pattern 10: Git Operations with Checkpoint Tracking
+**Appears in**: 6+ commands (compact-changes, check-docs, commit, new-learnings)
+
+**Proposed Helper**: `git-commit-with-checkpoint.sh`
+- Stage and commit with automatic progress tracking
+- Verify changes via git status
+- Generate standardized commit workflow
+- Handle multi-step commits atomically
+
+**Expected Savings**: 15-25 lines per command × 6 commands = **90-150 lines**
+
+---
+
+#### Pattern 11: Error Categorization & Issue Classification
+**Appears in**: 3+ commands (check-logs, fix-errors-whitelisted, analyze-exec)
+
+**Proposed Helper**: `categorize-errors.sh`
+- Accept error log/output
+- Detect error types (assertion failures, segfaults, memory errors, thread issues)
+- Classify by severity
+- Generate categorized report
+
+**Expected Savings**: 30-50 lines per command × 3 commands = **90-150 lines**
+
+---
+
+#### Pattern 12: Interactive Approval & User Confirmation
+**Appears in**: 4+ commands (migrate-module-to-zig-abi, next-priority, review-changes)
+
+**Proposed Helper**: `require-user-approval.sh`
+- Display decision options
+- Wait for user response
+- Track approval state
+- Conditional flow based on approval
+
+**Expected Savings**: 15-25 lines per command × 4 commands = **60-100 lines**
+
+---
+
+#### Pattern 13: Quality Gate Enforcement Enhancement
+**Status**: `enforce-quality-gate.sh` exists but needs enhancement
+**Appears in**: 10+ commands
+
+**Missing Features**:
+- Threshold comparison operators (ge, le, eq, etc.)
+- Human-readable context-aware failure messages
+- Multiple simultaneous gate checks
+- Integration with KB target requirements
+
+**Expected Savings**: 15-30 lines per command × 10 commands = **150-300 lines**
+
+---
+
+#### Pattern 14: Batch Documentation Fixing
+**Appears in**: 3+ commands (check-docs, new-learnings, compact-changes)
+
+**Proposed Helper**: `batch-fix-with-preview.sh`
+- Dry-run preview capability
+- Error counting and categorization
+- Iterative fix-and-verify loops
+- Rollback safety
+
+**Expected Savings**: 25-40 lines per command × 3 commands = **75-120 lines**
+
+---
+
+#### Pattern 15: Metric Collection & Quantitative Analysis
+**Appears in**: 6+ commands (compact-changes, new-learnings, check-logs, analyze-tests)
+
+**Proposed Helper**: `collect-metrics.sh`
+- Accept metric extraction patterns
+- Count occurrences, calculate percentages
+- Generate before/after comparisons
+- Store metrics for later reference
+
+**Expected Savings**: 20-35 lines per command × 6 commands = **120-210 lines**
+
+---
+
+### Implementation Priority Matrix
+
+| Priority | Pattern | Commands | LOC Savings | Complexity | Dependencies |
+|----------|---------|----------|-------------|-----------|--------------|
+| P1 | Multi-File Iteration + Checkpoint | 15+ | 750-1,500 | High | checkpoint helpers |
+| P2 | KB Consultation Orchestrator | 20+ | 600-1,000 | Medium | None |
+| P3 | Smart Checkpoint Tracking | 25+ | 250-500 | Simple | checkpoint helpers |
+| P4 | Batch File Processor | 8+ | 320-640 | Medium | None |
+| P5 | Preservation Verification | 6+ | 120-210 | Simple | metrics collection |
+| P6 | Build/Test Executor | 8+ | 160-240 | Simple | None |
+| P7 | Nested Iterator | 5+ | 200-300 | High | checkpoint helpers |
+| P8 | Cross-Reference Validator | 4+ | 80-140 | Medium | None |
+| P9 | Module Discovery Enhancement | 3+ | 90-150 | Medium | None |
+| P10 | Git + Checkpoint Integration | 6+ | 90-150 | Simple | checkpoint helpers |
+| P11 | Error Categorization | 3+ | 90-150 | Medium | None |
+| P12 | User Approval Flow | 4+ | 60-100 | Simple | None |
+| P13 | Quality Gate Enhancement | 10+ | 150-300 | Simple | existing helper |
+| P14 | Batch Fix Preview | 3+ | 75-120 | Medium | None |
+| P15 | Metrics Collection | 6+ | 120-210 | Simple | None |
+| **TOTAL** | **15 patterns** | **114+** | **~3,500-5,500** | **Varies** | **Minimal** |
+
+---
+
+### Phase Roadmap for Cross-Command Extraction
+
+**Phase 6a (Highest Impact)**: Multi-File Iteration + Checkpoint (P1, P2, P3)
+- Duration: 2-3 sessions
+- Expected savings: 1,600-3,000 lines
+- Commands affected: 60+ (40% of command suite)
+- Creates foundation for all other patterns
+
+**Phase 6b (Batch Processing Foundation)**: Batch File Processor + Build/Test (P4, P6)
+- Duration: 1-2 sessions
+- Expected savings: 480-880 lines
+- Commands affected: 16+
+- Enables systematic processing across commands
+
+**Phase 6c (Verification & Validation)**: Preservation + Cross-Reference + Metrics (P5, P8, P15)
+- Duration: 1-2 sessions
+- Expected savings: 320-560 lines
+- Commands affected: 16+
+- Improves quality validation consistency
+
+**Phase 6d (Enhancement of Existing Helpers)**: Module Discovery, Git Ops, Error Categorization, Approval Flow (P9-P12, P14)
+- Duration: 1 session
+- Expected savings: 315-540 lines
+- Commands affected: 16+
+- Completes cross-command consolidation
+
+---
+
+### Total Impact Projection
+
+**Before**: ~15,000 lines across 30 commands (average 500 lines/command)
+**After**: ~10,500 lines across 30 commands (average 350 lines/command)
+**Reduction**: 30% code consolidation, 100%+ improved maintainability (centralized patterns)
+**Timeline**: 6-8 sessions to complete all phases
+
+---
+
 ## ar_yaml Module Improvements
 
 ### Priority 0 - Module Cleanup
