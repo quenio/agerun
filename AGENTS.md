@@ -431,6 +431,14 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Quality**: Stop after 3 failures, staged cleanup, impact analysis ([details](kb/struggling-detection-pattern.md), [cleanup](kb/staged-cleanup-pattern.md), [impact](kb/comprehensive-impact-analysis.md))
 **Output & Temporary Files**: Output results directly to user, don't create temp files just for display. Only use `/tmp` for actual checkpoint tracking files and workflow outputs that are persistent system state. Never write audit results, analysis summaries, or temporary reports to `/tmp` - display directly in conversation instead.
 
+**Temporary File Naming Convention**: Use dash-based naming matching script conventions:
+- **Pattern**: `/tmp/<command-name>-<purpose>.<ext>` (e.g., `/tmp/check-logs-output.txt`, `/tmp/compact-tasks-stats.txt`)
+- **Checkpoint files**: `/tmp/<command-name>-progress.txt` (e.g., `/tmp/check-naming-progress.txt`)
+- **Stats/output files**: `/tmp/<command-name>-stats.txt`, `/tmp/<command-name>-output.txt`
+- ✅ Correct: `/tmp/check-logs-output.txt`, `/tmp/analyze-exec-progress.txt`, `/tmp/module-deps-$$.txt`
+- ❌ Incorrect: `/tmp/check_logs_output.txt`, `/tmp/analyze_exec_progress.txt`, `/tmp/module_deps_$$.txt`
+- Consistency: Temp files follow same dash convention as bash scripts (`checkpoint-init.sh`)
+
 ### 9. Error Propagation Pattern
 
 **Implementation**: Set errors at source → Store in struct → Propagate via get_error() → Print once at top level ([details](kb/error-propagation-pattern.md))
