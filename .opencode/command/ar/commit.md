@@ -11,9 +11,9 @@ This section implements the [Checkpoint Workflow Enforcement Pattern](../../../k
 If a `/commit` workflow is already in progress:
 
 ```bash
-make checkpoint-status CMD=commit VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=commit STEP=N
-# Or reset: make checkpoint-cleanup CMD=commit && make checkpoint-init CMD=commit STEPS='"Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"'
+./scripts/status-checkpoint.sh commit VERBOSE=--verbose
+# Resume: ./scripts/update-checkpoint.sh commit STEP=N
+# Or reset: ./scripts/cleanup-checkpoint.sh commit && ./scripts/init-checkpoint.sh commit STEPS='"Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"'
 ```
 
 ### First-Time Initialization Check
@@ -75,26 +75,26 @@ This command uses checkpoint tracking to ensure thorough pre-commit verification
 ### Initialize Tracking
 ```bash
 # Start the commit process
-make checkpoint-init CMD=commit STEPS='"Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"'
+./scripts/init-checkpoint.sh commit STEPS='"Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"'
 ```
 
 **Expected output:**
 ```
 📍 Starting: commit (9 steps)
 📁 Tracking: /tmp/commit-progress.txt
-→ Run: make checkpoint-update CMD=commit STEP=1
+→ Run: ./scripts/update-checkpoint.sh commit STEP=1
 ```
 
 ### Check Progress
 ```bash
-make checkpoint-status CMD=commit
+./scripts/status-checkpoint.sh commit
 ```
 
 **Expected output (example at 56% completion):**
 ```
 📈 commit: 5/9 steps (56%)
    [███████████░░░░░░░░░] 56%
-→ Next: make checkpoint-update CMD=commit STEP=6
+→ Next: ./scripts/update-checkpoint.sh commit STEP=6
 ```
 
 ## Minimum Requirements
@@ -142,7 +142,7 @@ make checkpoint-update-verified CMD=commit STEP=2 SUMMARY="Build logs verified c
 
 ```bash
 # Check if documentation needs updates (manual verification)
-make checkpoint-update CMD=commit STEP=3
+./scripts/update-checkpoint.sh commit STEP=3
 ```
 
 **Documentation Notes**:
@@ -155,7 +155,7 @@ make checkpoint-update CMD=commit STEP=3
 
 ```bash
 # Verify TODO.md is updated (manual verification)
-make checkpoint-update CMD=commit STEP=4
+./scripts/update-checkpoint.sh commit STEP=4
 ```
 
 **TODO Note**: Mark completed tasks and add any new tasks identified
@@ -243,7 +243,7 @@ echo "Staging files..."
 git add -A
 
 echo "✅ Files staged for commit"
-make checkpoint-update CMD=commit STEP=7
+./scripts/update-checkpoint.sh commit STEP=7
 ```
 
 1. **First, run these commands to analyze the current state:**
@@ -318,7 +318,7 @@ make checkpoint-update-verified CMD=commit STEP=9 SUMMARY="Push completed succes
 
 ```bash
 # Clean up tracking
-make checkpoint-cleanup CMD=commit
+./scripts/cleanup-checkpoint.sh commit
 ```
 
 ## Related Documentation

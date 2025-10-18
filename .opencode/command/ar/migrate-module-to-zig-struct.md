@@ -18,9 +18,9 @@ Before starting migration:
 If a `/migrate-module-to-zig-struct` workflow is already in progress:
 
 ```bash
-make checkpoint-status CMD=migrate-module-to-zig-struct VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=migrate-module-to-zig-struct STEP=N
-# Or reset: make checkpoint-cleanup CMD=migrate-module-to-zig-struct && make checkpoint-init CMD=migrate-module-to-zig-struct STEPS='"Read KB Article" "Check Current Implementation" "Check C Dependencies" "Check Zig Dependencies" "Verify Safety" "Create Struct Module" "Convert Functions" "Update Dependencies" "Run Tests" "Remove Old Module" "Update Documentation"'
+./scripts/status-checkpoint.sh migrate-module-to-zig-struct VERBOSE=--verbose
+# Resume: ./scripts/update-checkpoint.sh migrate-module-to-zig-struct STEP=N
+# Or reset: ./scripts/cleanup-checkpoint.sh migrate-module-to-zig-struct && ./scripts/init-checkpoint.sh migrate-module-to-zig-struct STEPS='"Read KB Article" "Check Current Implementation" "Check C Dependencies" "Check Zig Dependencies" "Verify Safety" "Create Struct Module" "Convert Functions" "Update Dependencies" "Run Tests" "Remove Old Module" "Update Documentation"'
 ```
 
 ### First-Time Initialization Check
@@ -44,26 +44,26 @@ This command uses checkpoint tracking to ensure safe and systematic module migra
 ```bash
 # Start the migration process (replace MODULE with actual module name)
 MODULE={{1}}  # Set the module name
-make checkpoint-init CMD=migrate-module-to-zig-struct STEPS='"Read KB Article" "Check Current Implementation" "Check C Dependencies" "Check Zig Dependencies" "Verify Safety" "Create Struct Module" "Convert Functions" "Update Dependencies" "Run Tests" "Remove Old Module" "Update Documentation"'
+./scripts/init-checkpoint.sh migrate-module-to-zig-struct STEPS='"Read KB Article" "Check Current Implementation" "Check C Dependencies" "Check Zig Dependencies" "Verify Safety" "Create Struct Module" "Convert Functions" "Update Dependencies" "Run Tests" "Remove Old Module" "Update Documentation"'
 ```
 
 **Expected output:**
 ```
 📍 Starting: migrate-module-to-zig-struct (11 steps)
 📁 Tracking: /tmp/migrate-module-to-zig-struct-progress.txt
-→ Run: make checkpoint-update CMD=migrate-module-to-zig-struct STEP=1
+→ Run: ./scripts/update-checkpoint.sh migrate-module-to-zig-struct STEP=1
 ```
 
 ### Check Progress
 ```bash
-make checkpoint-status CMD=migrate-module-to-zig-struct
+./scripts/status-checkpoint.sh migrate-module-to-zig-struct
 ```
 
 **Expected output (example at 64% completion):**
 ```
 📈 command: X/Y steps (Z%)
    [████░░░░░░░░░░░░░░░░] Z%
-→ Next: make checkpoint-update CMD=command STEP=N
+→ Next: ./scripts/update-checkpoint.sh command STEP=N
 ```
 
 ## Minimum Requirements
@@ -103,7 +103,7 @@ echo "DELETED_FILES=0" >> /tmp/migration-tracking.txt
 echo "UPDATED_DEPS=0" >> /tmp/migration-tracking.txt
 echo "FUNCTIONS_CONVERTED=0" >> /tmp/migration-tracking.txt
 
-make checkpoint-update CMD=migrate-module-to-zig-struct STEP=1
+./scripts/update-checkpoint.sh migrate-module-to-zig-struct STEP=1
 ```
 
 #### [KNOWLEDGE GATE]
@@ -130,7 +130,7 @@ First, I need to verify that ar_{{1}} is safe to migrate by checking:
 # Check if source module exists and is in Zig
 if [ -f "modules/ar_${MODULE}.zig" ]; then
   echo "✅ Module ar_${MODULE}.zig exists"
-  make checkpoint-update CMD=migrate-module-to-zig-struct STEP=2
+  ./scripts/update-checkpoint.sh migrate-module-to-zig-struct STEP=2
 else
   echo "❌ Module ar_${MODULE}.zig not found"
   echo "Migration requires existing Zig ABI module"
@@ -148,9 +148,9 @@ Run dependency analysis using helper script:
 
 # If script exits 0, migration is safe - mark steps complete
 if [ $? -eq 0 ]; then
-  make checkpoint-update CMD=migrate-module-to-zig-struct STEP=3
-  make checkpoint-update CMD=migrate-module-to-zig-struct STEP=4
-  make checkpoint-update CMD=migrate-module-to-zig-struct STEP=5
+  ./scripts/update-checkpoint.sh migrate-module-to-zig-struct STEP=3
+  ./scripts/update-checkpoint.sh migrate-module-to-zig-struct STEP=4
+  ./scripts/update-checkpoint.sh migrate-module-to-zig-struct STEP=5
 else
   echo "❌ Migration blocked - see errors above"
   exit 1
@@ -202,7 +202,7 @@ source /tmp/migration-tracking.txt
 CREATED_FILES=$((CREATED_FILES + 1))
 echo "CREATED_FILES=$CREATED_FILES" >> /tmp/migration-tracking.txt
 
-make checkpoint-update CMD=migrate-module-to-zig-struct STEP=6
+./scripts/update-checkpoint.sh migrate-module-to-zig-struct STEP=6
 ```
 
 #### Step 7: Convert Functions
@@ -225,7 +225,7 @@ FUNCTIONS_CONVERTED=$TOTAL_FUNCTIONS
 echo "FUNCTIONS_CONVERTED=$FUNCTIONS_CONVERTED" >> /tmp/migration-tracking.txt
 echo "✅ Converted $FUNCTIONS_CONVERTED functions"
 
-make checkpoint-update CMD=migrate-module-to-zig-struct STEP=7
+./scripts/update-checkpoint.sh migrate-module-to-zig-struct STEP=7
 ```
 
 #### [IMPLEMENTATION GATE]
@@ -262,7 +262,7 @@ echo "Updating $UPDATED_DEPS dependent Zig modules..."
 # After updating dependencies
 echo "✅ Updated $UPDATED_DEPS modules to use {{1|pascal}}.zig"
 
-make checkpoint-update CMD=migrate-module-to-zig-struct STEP=8
+./scripts/update-checkpoint.sh migrate-module-to-zig-struct STEP=8
 ```
 
 #### Step 9: Run Tests
@@ -278,7 +278,7 @@ if grep -q "memory leaks detected" test-output.log; then
   exit 1
 else
   echo "✅ No memory leaks - all tests passed"
-  make checkpoint-update CMD=migrate-module-to-zig-struct STEP=9
+  ./scripts/update-checkpoint.sh migrate-module-to-zig-struct STEP=9
 fi
 ```
 
@@ -322,7 +322,7 @@ DELETED_FILES=3
 echo "DELETED_FILES=$DELETED_FILES" >> /tmp/migration-tracking.txt
 echo "✅ Removed $DELETED_FILES old files"
 
-make checkpoint-update CMD=migrate-module-to-zig-struct STEP=10
+./scripts/update-checkpoint.sh migrate-module-to-zig-struct STEP=10
 ```
 
 #### Step 11: Update Documentation
@@ -339,7 +339,7 @@ echo "- Updated modules/{{1|pascal}}.md with new API"
 echo "- Added to Zig Struct Modules section in README.md"
 echo "- Added KB article references"
 
-make checkpoint-update CMD=migrate-module-to-zig-struct STEP=11
+./scripts/update-checkpoint.sh migrate-module-to-zig-struct STEP=11
 ```
 
 #### [CHECKPOINT COMPLETE]

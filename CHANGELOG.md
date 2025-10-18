@@ -1,5 +1,42 @@
 # AgeRun CHANGELOG
 
+## 2025-10-18 (Session 2b)
+
+- **Complex Command Wrapper Script Integration**
+
+  Updated all 17 complex commands (>15 steps with custom logic) to use standardized checkpoint wrapper scripts instead of direct make commands, maintaining their sophisticated documentation while centralizing checkpoint operations.
+
+  **Problem**: Complex commands used direct `make checkpoint-*` commands scattered throughout documentation, making it harder to maintain and update checkpoint behavior across the command suite.
+
+  **Solution**: Replaced all direct make commands with standardized wrapper scripts:
+  - `make checkpoint-status CMD=...` → `./scripts/status-checkpoint.sh ...`
+  - `make checkpoint-update CMD=...` → `./scripts/update-checkpoint.sh ...`
+  - `make checkpoint-gate CMD=...` → `./scripts/gate-checkpoint.sh ...`
+  - `make checkpoint-cleanup CMD=...` → `./scripts/cleanup-checkpoint.sh ...`
+  - `make checkpoint-init CMD=...` → `./scripts/init-checkpoint.sh ...`
+
+  **New Wrapper Scripts Created**:
+  - `scripts/status-checkpoint.sh` - Check checkpoint progress status
+  - `scripts/update-checkpoint.sh` - Update checkpoint to specific step
+  - `scripts/cleanup-checkpoint.sh` - Clean up checkpoint tracking
+  - `scripts/init-checkpoint.sh` - Initialize checkpoint (already existed, now used consistently)
+
+  **Commands Updated** (17 total):
+  - create-plan, execute-plan, review-plan, new-learnings, create-command
+  - review-changes, fix-errors-whitelisted, merge-settings
+  - check-commands, check-logs, check-module-consistency
+  - commit, compact-changes, compact-guidelines, compact-tasks
+  - migrate-module-to-zig-abi, migrate-module-to-zig-struct
+
+  **Changes**: 17 files updated with 366 insertions/deletions, all maintaining command-specific logic while using consistent checkpoint interface
+
+  **Benefits**:
+  - Centralized checkpoint management: Update behavior in wrapper scripts, affects all commands
+  - Consistency: All 31 commands (12 simple + 19 complex) now use standardized checkpoint scripts
+  - Maintainability: Wrapper scripts are the single source of truth for checkpoint operations
+  - Clarity: Commands focus on their logic, not checkpoint implementation details
+  - Scalability: Easy to add checkpoint features to wrapper scripts, benefit all commands
+
 ## 2025-10-18 (Session 2)
 
 - **Simple Command Wrapper Script Pattern**

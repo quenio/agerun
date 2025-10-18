@@ -22,9 +22,9 @@ Before reviewing ([details](../../../kb/kb-consultation-before-planning-requirem
 If a `/review-changes` workflow is already in progress:
 
 ```bash
-make checkpoint-status CMD=review-changes VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=review-changes STEP=N
-# Or reset: make checkpoint-cleanup CMD=review-changes && make checkpoint-init CMD=review-changes STEPS='"Diff Analysis" "Code Smells" "Memory Management" "Naming Conventions" "Error Handling" "Test Coverage" "Parnas Principles" "Module Hierarchy" "Interface Design" "Dependency Check" "Design Patterns" "Real Code Check" "Doc Validation" "Cross-References" "Completeness" "Link Validation" "Build Status" "Hidden Issues" "Test Results" "File Hygiene" "Doc Sync" "Final Report"'
+./scripts/status-checkpoint.sh review-changes VERBOSE=--verbose
+# Resume: ./scripts/update-checkpoint.sh review-changes STEP=N
+# Or reset: ./scripts/cleanup-checkpoint.sh review-changes && ./scripts/init-checkpoint.sh review-changes STEPS='"Diff Analysis" "Code Smells" "Memory Management" "Naming Conventions" "Error Handling" "Test Coverage" "Parnas Principles" "Module Hierarchy" "Interface Design" "Dependency Check" "Design Patterns" "Real Code Check" "Doc Validation" "Cross-References" "Completeness" "Link Validation" "Build Status" "Hidden Issues" "Test Results" "File Hygiene" "Doc Sync" "Final Report"'
 ```
 
 ### First-Time Initialization Check
@@ -47,7 +47,7 @@ make checkpoint-status CMD=review-changes VERBOSE=--verbose
 
 ```bash
 # MANDATORY: Initialize checkpoint tracking (22 steps)
-make checkpoint-init CMD=review-changes STEPS='"Diff Analysis" "Code Smells" "Memory Management" "Naming Conventions" "Error Handling" "Test Coverage" "Parnas Principles" "Module Hierarchy" "Interface Design" "Dependency Check" "Design Patterns" "Real Code Check" "Doc Validation" "Cross-References" "Completeness" "Link Validation" "Build Status" "Hidden Issues" "Test Results" "File Hygiene" "Doc Sync" "Final Report"'
+./scripts/init-checkpoint.sh review-changes STEPS='"Diff Analysis" "Code Smells" "Memory Management" "Naming Conventions" "Error Handling" "Test Coverage" "Parnas Principles" "Module Hierarchy" "Interface Design" "Dependency Check" "Design Patterns" "Real Code Check" "Doc Validation" "Cross-References" "Completeness" "Link Validation" "Build Status" "Hidden Issues" "Test Results" "File Hygiene" "Doc Sync" "Final Report"'
 ```
 
 This command uses checkpoint tracking to ensure thorough review across all quality dimensions. The review process is divided into 4 major phases with 22 checkpoints total.
@@ -89,14 +89,14 @@ Steps to complete:
 
 ### Check Progress
 ```bash
-make checkpoint-status CMD=review-changes
+./scripts/status-checkpoint.sh review-changes
 ```
 
 **Expected output (example at 27% completion):**
 ```
 📈 review-changes: 6/22 steps (27%)
    [█████░░░░░░░░░░░░░░░] 27%
-→ Next: make checkpoint-update CMD=review-changes STEP=7
+→ Next: ./scripts/update-checkpoint.sh review-changes STEP=7
 ```
 
 ### What it does
@@ -137,9 +137,9 @@ This command performs a comprehensive review of all uncommitted changes across m
 
 1. **FIRST**: Run the checkpoint initialization command above
 2. **SECOND**: Follow the review process below, updating checkpoints after each step
-3. **THIRD**: Check progress with `make checkpoint-status CMD=review-changes`
+3. **THIRD**: Check progress with `./scripts/status-checkpoint.sh review-changes`
 4. **FOURTH**: Complete all 22 steps before generating final report
-5. **LAST**: Clean up with `make checkpoint-cleanup CMD=review-changes`
+5. **LAST**: Clean up with `./scripts/cleanup-checkpoint.sh review-changes`
 
 ### Usage
 
@@ -158,7 +158,7 @@ This command performs a comprehensive review of all uncommitted changes across m
 1. **Diff Analysis**: Reviews git diff for all changes
    ```bash
    # After completing diff analysis
-   make checkpoint-update CMD=review-changes STEP=1
+   ./scripts/update-checkpoint.sh review-changes STEP=1
    ```
 2. **Code Smells Detection**: Scans for known issues and anti-patterns
    - Long methods (>50 lines)
@@ -173,7 +173,7 @@ This command performs a comprehensive review of all uncommitted changes across m
    ```
 
    ```bash
-   make checkpoint-update CMD=review-changes STEP=2
+   ./scripts/update-checkpoint.sh review-changes STEP=2
    ```
 3. **Memory Management Check**: Verifies ownership and heap tracking
    - Ownership prefixes (own_, mut_, ref_)
@@ -189,7 +189,7 @@ This command performs a comprehensive review of all uncommitted changes across m
    ```
 
    ```bash
-   make checkpoint-update CMD=review-changes STEP=3
+   ./scripts/update-checkpoint.sh review-changes STEP=3
    ```
 
 4. **Naming Conventions Check**: Validates consistent naming
@@ -205,7 +205,7 @@ This command performs a comprehensive review of all uncommitted changes across m
    ```
 
    ```bash
-   make checkpoint-update CMD=review-changes STEP=4
+   ./scripts/update-checkpoint.sh review-changes STEP=4
    ```
 
 5. **Error Handling Check**: Reviews error propagation
@@ -213,7 +213,7 @@ This command performs a comprehensive review of all uncommitted changes across m
    - Single print location
    - Graceful degradation
    ```bash
-   make checkpoint-update CMD=review-changes STEP=5
+   ./scripts/update-checkpoint.sh review-changes STEP=5
    ```
 
 6. **Test Coverage Check**: Validates test quality
@@ -229,7 +229,7 @@ This command performs a comprehensive review of all uncommitted changes across m
    ```
 
    ```bash
-   make checkpoint-update CMD=review-changes STEP=6
+   ./scripts/update-checkpoint.sh review-changes STEP=6
    ```
 
 **[QUALITY GATE 1: Code Quality Complete]**
@@ -262,14 +262,14 @@ This command performs a comprehensive review of all uncommitted changes across m
    - Single responsibility
    - No circular dependencies
    ```bash
-   make checkpoint-update CMD=review-changes STEP=7
+   ./scripts/update-checkpoint.sh review-changes STEP=7
    ```
 
 8. **Module Hierarchy Check**: Validates layer ordering
    - Foundation → Data → Core → System
    - No upward dependencies
    ```bash
-   make checkpoint-update CMD=review-changes STEP=8
+   ./scripts/update-checkpoint.sh review-changes STEP=8
    ```
 
 9. **Interface Design Check**: Reviews API minimality
@@ -277,7 +277,7 @@ This command performs a comprehensive review of all uncommitted changes across m
    - Opaque types where needed
    - Const-correctness
    ```bash
-   make checkpoint-update CMD=review-changes STEP=9
+   ./scripts/update-checkpoint.sh review-changes STEP=9
    ```
 
 10. **Dependency Management Check**: Analyzes module dependencies
@@ -292,7 +292,7 @@ This command performs a comprehensive review of all uncommitted changes across m
     ```
 
     ```bash
-    make checkpoint-update CMD=review-changes STEP=10
+    ./scripts/update-checkpoint.sh review-changes STEP=10
     ```
 
 11. **Design Patterns Check**: Reviews pattern usage
@@ -300,7 +300,7 @@ This command performs a comprehensive review of all uncommitted changes across m
     - Facade for coordination only
     - Parser/executor separation
     ```bash
-    make checkpoint-update CMD=review-changes STEP=11
+    ./scripts/update-checkpoint.sh review-changes STEP=11
     ```
 
 **[QUALITY GATE 2: Architecture Complete]**
@@ -331,34 +331,34 @@ This command performs a comprehensive review of all uncommitted changes across m
     - All examples use actual AgeRun types/functions
     - No placeholder code
     ```bash
-    make checkpoint-update CMD=review-changes STEP=12
+    ./scripts/update-checkpoint.sh review-changes STEP=12
     ```
 
 13. **Documentation Validation**: Runs validation checks
     ```bash
     make check-docs
-    make checkpoint-update CMD=review-changes STEP=13
+    ./scripts/update-checkpoint.sh review-changes STEP=13
     ```
 
 14. **Cross-References Check**: Verifies KB article links
     - Related articles linked
     - Bidirectional references
     ```bash
-    make checkpoint-update CMD=review-changes STEP=14
+    ./scripts/update-checkpoint.sh review-changes STEP=14
     ```
 
 15. **Completeness Check**: Ensures required docs updated
     - TODO.md updates for changes
     - CHANGELOG.md entries
     ```bash
-    make checkpoint-update CMD=review-changes STEP=15
+    ./scripts/update-checkpoint.sh review-changes STEP=15
     ```
 
 16. **Link Validation Check**: Verifies markdown links
     - Relative paths only
     - No broken links
     ```bash
-    make checkpoint-update CMD=review-changes STEP=16
+    ./scripts/update-checkpoint.sh review-changes STEP=16
     ```
 
 **[QUALITY GATE 3: Documentation Complete]**
@@ -388,13 +388,13 @@ This command performs a comprehensive review of all uncommitted changes across m
 17. **Build Status Check**: Verifies clean build
     ```bash
     make clean build 2>&1
-    make checkpoint-update CMD=review-changes STEP=17
+    ./scripts/update-checkpoint.sh review-changes STEP=17
     ```
 
 18. **Hidden Issues Check**: Runs log analysis
     ```bash
     make check-logs
-    make checkpoint-update CMD=review-changes STEP=18
+    ./scripts/update-checkpoint.sh review-changes STEP=18
     ```
 
 19. **Test Results Check**: Reviews test outcomes
@@ -402,7 +402,7 @@ This command performs a comprehensive review of all uncommitted changes across m
     - No memory leaks in reports
     - Test effectiveness verified
     ```bash
-    make checkpoint-update CMD=review-changes STEP=19
+    ./scripts/update-checkpoint.sh review-changes STEP=19
     ```
 
 20. **File Hygiene Check**: Identifies unwanted files
@@ -418,14 +418,14 @@ This command performs a comprehensive review of all uncommitted changes across m
     ```
 
     ```bash
-    make checkpoint-update CMD=review-changes STEP=20
+    ./scripts/update-checkpoint.sh review-changes STEP=20
     ```
 
 21. **Documentation Sync Check**: Final doc verification
     - Docs match code changes
     - All updates synchronized
     ```bash
-    make checkpoint-update CMD=review-changes STEP=21
+    ./scripts/update-checkpoint.sh review-changes STEP=21
     ```
 
 **[QUALITY GATE 4: Pre-Commit Complete]**
@@ -448,7 +448,7 @@ This command performs a comprehensive review of all uncommitted changes across m
 
 22. **Final Report Generation**: Compile review results
     ```bash
-    make checkpoint-update CMD=review-changes STEP=22
+    ./scripts/update-checkpoint.sh review-changes STEP=22
     ```
 
 #### [CHECKPOINT END]
@@ -473,7 +473,7 @@ This command performs a comprehensive review of all uncommitted changes across m
 
 ```bash
 # Clean up tracking file
-make checkpoint-cleanup CMD=review-changes
+./scripts/cleanup-checkpoint.sh review-changes
 ```
 
 ## Review Metrics and Quality Tracking
@@ -553,11 +553,11 @@ Run this command before `/commit` to ensure:
 ### If checkpoint tracking gets stuck:
 ```bash
 # Check current status
-make checkpoint-status CMD=review-changes
+./scripts/status-checkpoint.sh review-changes
 
 # If needed, reset and start over
-make checkpoint-cleanup CMD=review-changes
-make checkpoint-init CMD=review-changes STEPS='...'
+./scripts/cleanup-checkpoint.sh review-changes
+./scripts/init-checkpoint.sh review-changes STEPS='...'
 ```
 
 ### If a gate is blocking incorrectly:
@@ -566,7 +566,7 @@ make checkpoint-init CMD=review-changes STEPS='...'
 cat /tmp/review-changes-progress.txt
 
 # Update a specific step if it was completed
-make checkpoint-update CMD=review-changes STEP=N
+./scripts/update-checkpoint.sh review-changes STEP=N
 ```
 
 ### To skip checkpoint tracking (emergency only):

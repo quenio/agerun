@@ -21,9 +21,9 @@ Before validation:
 If a `/check-commands` workflow is already in progress:
 
 ```bash
-make checkpoint-status CMD=check-commands VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=check-commands STEP=N
-# Or reset: make checkpoint-cleanup CMD=check-commands && make checkpoint-init CMD=check-commands STEPS='"Scan Commands" "Validate Structure" "Calculate Scores" "Identify Issues" "Generate Report"'
+./scripts/status-checkpoint.sh check-commands VERBOSE=--verbose
+# Resume: ./scripts/update-checkpoint.sh check-commands STEP=N
+# Or reset: ./scripts/cleanup-checkpoint.sh check-commands && ./scripts/init-checkpoint.sh check-commands STEPS='"Scan Commands" "Validate Structure" "Calculate Scores" "Identify Issues" "Generate Report"'
 ```
 
 ### First-Time Initialization Check
@@ -46,26 +46,26 @@ This command validates the structure and quality of all Claude Code commands. Th
 ### Initialize Tracking
 ```bash
 # Start the command validation process
-make checkpoint-init CMD=check-commands STEPS='"Scan Commands" "Validate Structure" "Calculate Scores" "Identify Issues" "Generate Report"'
+./scripts/init-checkpoint.sh check-commands STEPS='"Scan Commands" "Validate Structure" "Calculate Scores" "Identify Issues" "Generate Report"'
 ```
 
 **Expected output:**
 ```
 📍 Starting: check-commands (5 steps)
 📁 Tracking: /tmp/check-commands-progress.txt
-→ Run: make checkpoint-update CMD=check-commands STEP=1
+→ Run: ./scripts/update-checkpoint.sh check-commands STEP=1
 ```
 
 ### Check Progress
 ```bash
-make checkpoint-status CMD=check-commands
+./scripts/status-checkpoint.sh check-commands
 ```
 
 **Expected output (example at 40% completion):**
 ```
 📈 check-commands: 2/5 steps (40%)
    [████████░░░░░░░░░░░░] 40%
-→ Next: make checkpoint-update CMD=check-commands STEP=3
+→ Next: ./scripts/update-checkpoint.sh check-commands STEP=3
 ```
 
 ## Minimum Requirements
@@ -121,7 +121,7 @@ if [ $COMMAND_COUNT -eq 0 ]; then
 fi
 
 echo "✅ Successfully found $COMMAND_COUNT commands"
-make checkpoint-update CMD=check-commands STEP=1
+./scripts/update-checkpoint.sh check-commands STEP=1
 ```
 
 ### Stage 2: Validation (Steps 2-3)
@@ -142,7 +142,7 @@ else
   echo "⚠️ Structure validation found issues"
 fi
 
-make checkpoint-update CMD=check-commands STEP=2
+./scripts/update-checkpoint.sh check-commands STEP=2
 ```
 
 #### Step 3: Calculate Scores
@@ -171,7 +171,7 @@ fi
 echo "AVG_SCORE=$AVG_SCORE" > /tmp/check-commands-stats.txt
 echo "STATUS=$STATUS" >> /tmp/check-commands-stats.txt
 
-make checkpoint-update CMD=check-commands STEP=3
+./scripts/update-checkpoint.sh check-commands STEP=3
 ```
 
 ### Stage 3: Analysis (Steps 4-5)
@@ -206,7 +206,7 @@ if [ "$NEEDS_WORK" -gt 0 ] || [ "$POOR" -gt 0 ]; then
   grep -E "⚠️|❌" /tmp/check-commands-output.txt | head -10
 fi
 
-make checkpoint-update CMD=check-commands STEP=4
+./scripts/update-checkpoint.sh check-commands STEP=4
 ```
 
 #### Step 5: Generate Report
@@ -233,7 +233,7 @@ else
   echo "  python3 scripts/check_commands.py --fix"
 fi
 
-make checkpoint-update CMD=check-commands STEP=5
+./scripts/update-checkpoint.sh check-commands STEP=5
 ```
 
 #### [CHECKPOINT COMPLETE]
@@ -264,7 +264,7 @@ make check-commands
 **Or with checkpoint tracking:**
 ```bash
 # Initialize and run through checkpoints
-make checkpoint-init CMD=check-commands STEPS='...'
+./scripts/init-checkpoint.sh check-commands STEPS='...'
 # Follow checkpoint steps above
 ```
 

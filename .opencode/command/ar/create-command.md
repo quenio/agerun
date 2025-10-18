@@ -40,9 +40,9 @@ Create a new Claude Code command following all quality standards and best practi
 If a `/create-command` workflow is already in progress:
 
 ```bash
-make checkpoint-status CMD=create-command VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=create-command STEP=N
-# Or reset: make checkpoint-cleanup CMD=create-command && make checkpoint-init CMD=create-command STEPS='"Validate Args" "KB Consultation" "Create Structure" "Add Checkpoints" "Add Quality Gates" "Add Documentation" "Verify Excellence"'
+./scripts/status-checkpoint.sh create-command VERBOSE=--verbose
+# Resume: ./scripts/update-checkpoint.sh create-command STEP=N
+# Or reset: ./scripts/cleanup-checkpoint.sh create-command && ./scripts/init-checkpoint.sh create-command STEPS='"Validate Args" "KB Consultation" "Create Structure" "Add Checkpoints" "Add Quality Gates" "Add Documentation" "Verify Excellence"'
 ```
 
 ### First-Time Initialization Check
@@ -66,26 +66,26 @@ This command creates a new command file with proper structure, checkpoint tracki
 ### Initialize Tracking
 ```bash
 # Start the command creation process
-make checkpoint-init CMD=create-command STEPS='"Validate Args" "KB Consultation" "Create Structure" "Add Checkpoints" "Add Quality Gates" "Add Documentation" "Verify Excellence"'
+./scripts/init-checkpoint.sh create-command STEPS='"Validate Args" "KB Consultation" "Create Structure" "Add Checkpoints" "Add Quality Gates" "Add Documentation" "Verify Excellence"'
 ```
 
 **Expected output:**
 ```
 📍 Starting: create-command (7 steps)
 📁 Tracking: /tmp/create-command-progress.txt
-→ Run: make checkpoint-update CMD=create-command STEP=1
+→ Run: ./scripts/update-checkpoint.sh create-command STEP=1
 ```
 
 ### Check Progress
 ```bash
-make checkpoint-status CMD=create-command
+./scripts/status-checkpoint.sh create-command
 ```
 
 **Expected output (example at 43% completion):**
 ```
 📈 create-command: 3/7 steps (43%)
    [████████░░░░░░░░░░░░] 43%
-→ Next: make checkpoint-update CMD=create-command STEP=4
+→ Next: ./scripts/update-checkpoint.sh create-command STEP=4
 ```
 
 ## Minimum Requirements
@@ -125,7 +125,7 @@ COMMAND_FILE=".opencode/command/ar/${COMMAND_NAME}.md"
 echo "   Target file: $COMMAND_FILE"
 echo ""
 
-make checkpoint-update CMD=create-command STEP=1
+./scripts/update-checkpoint.sh create-command STEP=1
 ```
 
 #### Step 2: KB Consultation
@@ -163,7 +163,7 @@ This is NOT optional - read these articles IN FULL:
 - Must achieve 90%+ score in `make check-commands`
 
 ```bash
-make checkpoint-update CMD=create-command STEP=2
+./scripts/update-checkpoint.sh create-command STEP=2
 ```
 
 #### [QUALITY GATE 1: Preparation Complete]
@@ -214,9 +214,9 @@ Before executing:
 If a \`/COMMAND_NAME\` workflow is already in progress:
 
 \`\`\`bash
-make checkpoint-status CMD=COMMAND_NAME VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=COMMAND_NAME STEP=N
-# Or reset: make checkpoint-cleanup CMD=COMMAND_NAME && make checkpoint-init CMD=COMMAND_NAME STEPS='"Step 1" "Step 2" "Step 3"'
+./scripts/status-checkpoint.sh COMMAND_NAME VERBOSE=--verbose
+# Resume: ./scripts/update-checkpoint.sh COMMAND_NAME STEP=N
+# Or reset: ./scripts/cleanup-checkpoint.sh COMMAND_NAME && ./scripts/init-checkpoint.sh COMMAND_NAME STEPS='"Step 1" "Step 2" "Step 3"'
 \`\`\`
 
 ### First-Time Initialization Check
@@ -224,9 +224,9 @@ make checkpoint-status CMD=COMMAND_NAME VERBOSE=--verbose
 \`\`\`bash
 if [ ! -f /tmp/COMMAND_NAME-progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=COMMAND_NAME STEPS='"Step 1" "Step 2" "Step 3"'
+  ./scripts/init-checkpoint.sh COMMAND_NAME STEPS='"Step 1" "Step 2" "Step 3"'
 else
-  make checkpoint-status CMD=COMMAND_NAME
+  ./scripts/status-checkpoint.sh COMMAND_NAME
 fi
 \`\`\`
 
@@ -248,26 +248,26 @@ This command [brief description of what it does].
 ### Initialize Tracking
 \`\`\`bash
 # Start the COMMAND_NAME process
-make checkpoint-init CMD=COMMAND_NAME STEPS='"Step 1" "Step 2" "Step 3"'
+./scripts/init-checkpoint.sh COMMAND_NAME STEPS='"Step 1" "Step 2" "Step 3"'
 \`\`\`
 
 **Expected output:**
 \`\`\`
 📍 Starting: COMMAND_NAME (3 steps)
 📁 Tracking: /tmp/COMMAND_NAME-progress.txt
-→ Run: make checkpoint-update CMD=COMMAND_NAME STEP=1
+→ Run: ./scripts/update-checkpoint.sh COMMAND_NAME STEP=1
 \`\`\`
 
 ### Check Progress
 \`\`\`bash
-make checkpoint-status CMD=COMMAND_NAME
+./scripts/status-checkpoint.sh COMMAND_NAME
 \`\`\`
 
 **Expected output (example at 33% completion):**
 \`\`\`
 📈 COMMAND_NAME: 1/3 steps (33%)
    [████████░░░░░░░░░░░░] 33%
-→ Next: make checkpoint-update CMD=COMMAND_NAME STEP=2
+→ Next: ./scripts/update-checkpoint.sh COMMAND_NAME STEP=2
 \`\`\`
 
 ## Minimum Requirements
@@ -289,7 +289,7 @@ make checkpoint-status CMD=COMMAND_NAME
 
 \`\`\`bash
 # Implement step logic here
-make checkpoint-update CMD=COMMAND_NAME STEP=1
+./scripts/update-checkpoint.sh COMMAND_NAME STEP=1
 \`\`\`
 
 #### [CHECKPOINT END]
@@ -315,7 +315,7 @@ echo "✅ Created command file: $COMMAND_FILE"
 echo "   Structure: Basic template with checkpoint tracking"
 echo ""
 
-make checkpoint-update CMD=create-command STEP=3
+./scripts/update-checkpoint.sh create-command STEP=3
 ```
 
 #### Step 4: Add Checkpoint Steps
@@ -339,7 +339,7 @@ echo "  2. Group into logical stages (3-6 steps per stage)"
 echo "  3. Add checkpoint-update calls after each step"
 echo ""
 
-make checkpoint-update CMD=create-command STEP=4
+./scripts/update-checkpoint.sh create-command STEP=4
 ```
 
 #### Step 5: Add Quality Gates
@@ -362,7 +362,7 @@ echo ""
 echo "Add gates to $COMMAND_FILE between stages"
 echo ""
 
-make checkpoint-update CMD=create-command STEP=5
+./scripts/update-checkpoint.sh create-command STEP=5
 ```
 
 #### [QUALITY GATE 2: Structure Complete]
@@ -407,7 +407,7 @@ echo ""
 echo "Edit $COMMAND_FILE to complete documentation"
 echo ""
 
-make checkpoint-update CMD=create-command STEP=6
+./scripts/update-checkpoint.sh create-command STEP=6
 ```
 
 #### Step 7: Verify Excellence Standards
@@ -418,7 +418,7 @@ make checkpoint-update CMD=create-command STEP=6
 # Verify command quality using helper script
 ./scripts/verify-command-quality.sh "$COMMAND_NAME"
 
-make checkpoint-update CMD=create-command STEP=7
+./scripts/update-checkpoint.sh create-command STEP=7
 ```
 
 #### [QUALITY GATE 3: Excellence Achieved]
@@ -461,7 +461,7 @@ make checkpoint-update CMD=create-command STEP=7
 
 ```bash
 # Clean up tracking file
-make checkpoint-cleanup CMD=create-command
+./scripts/cleanup-checkpoint.sh create-command
 ```
 
 ## Best Practice: Helper Scripts

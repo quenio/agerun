@@ -9,9 +9,9 @@ Compact the CHANGELOG.md file by condensing completed milestones while preservin
 If a `/compact-changes` workflow is already in progress:
 
 ```bash
-make checkpoint-status CMD=compact-changes VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=compact-changes STEP=N
-# Or reset: make checkpoint-cleanup CMD=compact-changes && make checkpoint-init CMD=compact-changes STEPS='"Measure Baseline" "Analyze Patterns" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Update TODO" "Commit Changes"'
+./scripts/status-checkpoint.sh compact-changes VERBOSE=--verbose
+# Resume: ./scripts/update-checkpoint.sh compact-changes STEP=N
+# Or reset: ./scripts/cleanup-checkpoint.sh compact-changes && ./scripts/init-checkpoint.sh compact-changes STEPS='"Measure Baseline" "Analyze Patterns" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Update TODO" "Commit Changes"'
 ```
 
 ### First-Time Initialization Check
@@ -96,26 +96,26 @@ This command uses checkpoint tracking to ensure systematic CHANGELOG.md compacti
 ### Initialize Tracking
 ```bash
 # Start the changelog compaction process
-make checkpoint-init CMD=compact-changes STEPS='"Measure Baseline" "Analyze Patterns" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Update TODO" "Commit Changes"'
+./scripts/init-checkpoint.sh compact-changes STEPS='"Measure Baseline" "Analyze Patterns" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Update TODO" "Commit Changes"'
 ```
 
 **Expected output:**
 ```
 📍 Starting: compact-changes (7 steps)
 📁 Tracking: /tmp/compact-changes-progress.txt
-→ Run: make checkpoint-update CMD=compact-changes STEP=1
+→ Run: ./scripts/update-checkpoint.sh compact-changes STEP=1
 ```
 
 ### Check Progress
 ```bash
-make checkpoint-status CMD=compact-changes
+./scripts/status-checkpoint.sh compact-changes
 ```
 
 **Expected output (example at 43% completion):**
 ```
 📈 compact-changes: 3/7 steps (43%)
    [████████░░░░░░░░░░░░] 43%
-→ Next: make checkpoint-update CMD=compact-changes STEP=4
+→ Next: ./scripts/update-checkpoint.sh compact-changes STEP=4
 ```
 
 ## Minimum Requirements
@@ -144,8 +144,8 @@ Run pattern analysis using helper script:
 ./scripts/analyze-changelog-patterns.sh CHANGELOG.md | tee /tmp/compact-changes-stats.txt
 
 # Mark both analysis steps complete
-make checkpoint-update CMD=compact-changes STEP=1
-make checkpoint-update CMD=compact-changes STEP=2
+./scripts/update-checkpoint.sh compact-changes STEP=1
+./scripts/update-checkpoint.sh compact-changes STEP=2
 ```
 
 The script provides:
@@ -272,7 +272,7 @@ Analysis questions to consider:
 # After completing manual edits
 echo "✅ Manual semantic compaction complete"
 echo "Review changes with: git diff CHANGELOG.md"
-make checkpoint-update CMD=compact-changes STEP=3
+./scripts/update-checkpoint.sh compact-changes STEP=3
 ```
 
 #### Step 4: Verify Preservation
@@ -281,7 +281,7 @@ make checkpoint-update CMD=compact-changes STEP=3
 # Verify all critical information preserved
 ./scripts/verify-changelog-preservation.sh /tmp/compact-changes-stats.txt
 
-make checkpoint-update CMD=compact-changes STEP=4
+./scripts/update-checkpoint.sh compact-changes STEP=4
 ```
 
 **Expected output:**
@@ -315,7 +315,7 @@ echo ""
 
 read -p "Press Enter after adding the entry..."
 
-make checkpoint-update CMD=compact-changes STEP=5
+./scripts/update-checkpoint.sh compact-changes STEP=5
 ```
 
 #### [COMPACTION QUALITY GATE]
@@ -368,7 +368,7 @@ echo ""
 
 read -p "Press Enter after updating TODO.md..."
 
-make checkpoint-update CMD=compact-changes STEP=6
+./scripts/update-checkpoint.sh compact-changes STEP=6
 ```
 
 #### Step 7: Commit Changes
@@ -391,7 +391,7 @@ git status
 echo ""
 echo "✅ Changes committed"
 
-make checkpoint-update CMD=compact-changes STEP=7
+./scripts/update-checkpoint.sh compact-changes STEP=7
 ```
 
 **Expected output:**

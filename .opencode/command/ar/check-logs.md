@@ -11,9 +11,9 @@ Check build logs for hidden issues that might not be caught by the build summary
 If a `/check-logs` workflow is already in progress:
 
 ```bash
-make checkpoint-status CMD=check-logs VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=check-logs STEP=N
-# Or reset: make checkpoint-cleanup CMD=check-logs && make checkpoint-init CMD=check-logs STEPS='"Run Build" "Standard Checks" "Deep Analysis" "Categorize Errors" "Fix Issues" "Update Whitelist" "Re-check Logs" "Final Validation"'
+./scripts/status-checkpoint.sh check-logs VERBOSE=--verbose
+# Resume: ./scripts/update-checkpoint.sh check-logs STEP=N
+# Or reset: ./scripts/cleanup-checkpoint.sh check-logs && ./scripts/init-checkpoint.sh check-logs STEPS='"Run Build" "Standard Checks" "Deep Analysis" "Categorize Errors" "Fix Issues" "Update Whitelist" "Re-check Logs" "Final Validation"'
 ```
 
 ### First-Time Initialization Check
@@ -46,26 +46,26 @@ This command uses checkpoint tracking to ensure systematic log verification and 
 ### Initialize Tracking
 ```bash
 # Start the log checking process
-make checkpoint-init CMD=check-logs STEPS='"Run Build" "Standard Checks" "Deep Analysis" "Categorize Errors" "Fix Issues" "Update Whitelist" "Re-check Logs" "Final Validation"'
+./scripts/init-checkpoint.sh check-logs STEPS='"Run Build" "Standard Checks" "Deep Analysis" "Categorize Errors" "Fix Issues" "Update Whitelist" "Re-check Logs" "Final Validation"'
 ```
 
 **Expected output:**
 ```
 📍 Starting: check-logs (8 steps)
 📁 Tracking: /tmp/check-logs-progress.txt
-→ Run: make checkpoint-update CMD=check-logs STEP=1
+→ Run: ./scripts/update-checkpoint.sh check-logs STEP=1
 ```
 
 ### Check Progress
 ```bash
-make checkpoint-status CMD=check-logs
+./scripts/status-checkpoint.sh check-logs
 ```
 
 **Expected output (example at 50% completion):**
 ```
 📈 command: X/Y steps (Z%)
    [████░░░░░░░░░░░░░░░░] Z%
-→ Next: make checkpoint-update CMD=command STEP=N
+→ Next: ./scripts/update-checkpoint.sh command STEP=N
 ```
 
 ## Minimum Requirements
@@ -121,7 +121,7 @@ if ! make clean build 2>&1; then
 fi
 
 echo "✅ Build completed successfully"
-make checkpoint-update CMD=check-logs STEP=1
+./scripts/update-checkpoint.sh check-logs STEP=1
 ```
 
 #### Step 2: Standard Checks
@@ -139,7 +139,7 @@ else
 fi
 
 echo "ERROR_COUNT=$ERROR_COUNT" > /tmp/check-logs-stats.txt
-make checkpoint-update CMD=check-logs STEP=2
+./scripts/update-checkpoint.sh check-logs STEP=2
 ```
 
 #### [BUILD GATE]
@@ -179,7 +179,7 @@ else
   echo "Skipping deep analysis - standard checks found issues"
 fi
 
-make checkpoint-update CMD=check-logs STEP=3
+./scripts/update-checkpoint.sh check-logs STEP=3
 ```
 
 #### Step 4: Categorize Errors
@@ -193,7 +193,7 @@ if [ $ERROR_COUNT -gt 0 ]; then
   ./scripts/categorize-log-errors.sh /tmp/check-logs-output.txt log_whitelist.yaml | tee -a /tmp/check-logs-stats.txt
 fi
 
-make checkpoint-update CMD=check-logs STEP=4
+./scripts/update-checkpoint.sh check-logs STEP=4
 ```
 
 #### [CRITICAL ERROR GATE]
@@ -243,7 +243,7 @@ else
   echo "✅ No real errors to fix"
 fi
 
-make checkpoint-update CMD=check-logs STEP=5
+./scripts/update-checkpoint.sh check-logs STEP=5
 ```
 
 #### Step 6: Update Whitelist
@@ -264,7 +264,7 @@ else
   echo "✅ No whitelist updates needed"
 fi
 
-make checkpoint-update CMD=check-logs STEP=6
+./scripts/update-checkpoint.sh check-logs STEP=6
 ```
 
 ### Stage 4: Verification (Steps 7-8)
@@ -288,7 +288,7 @@ else
 fi
 
 echo "FINAL_STATUS=$FINAL_STATUS" >> /tmp/check-logs-stats.txt
-make checkpoint-update CMD=check-logs STEP=7
+./scripts/update-checkpoint.sh check-logs STEP=7
 ```
 
 #### Step 8: Final Validation
@@ -306,7 +306,7 @@ else
   exit 1
 fi
 
-make checkpoint-update CMD=check-logs STEP=8
+./scripts/update-checkpoint.sh check-logs STEP=8
 ```
 
 #### [CHECKPOINT COMPLETE]
@@ -337,7 +337,7 @@ make check-logs
 **Or with checkpoint tracking:**
 ```bash
 # Initialize and run through checkpoints
-make checkpoint-init CMD=check-logs STEPS='...'
+./scripts/init-checkpoint.sh check-logs STEPS='...'
 # Follow checkpoint steps above
 ```
 

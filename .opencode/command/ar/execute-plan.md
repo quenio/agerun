@@ -11,9 +11,9 @@ This section implements the [Checkpoint Workflow Enforcement Pattern](../../../k
 If an `/execute-plan` workflow is already in progress:
 
 ```bash
-make checkpoint-status CMD=execute-plan VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=execute-plan STEP=N
-# Or reset: make checkpoint-cleanup CMD=execute-plan && make checkpoint-init CMD=execute-plan STEPS='"KB Consultation" "Read Plan" "Extract Iterations" "Execute Iterations" "Run Tests" "Verify Memory" "Update Plan Status" "Summary"'
+./scripts/status-checkpoint.sh execute-plan VERBOSE=--verbose
+# Resume: ./scripts/update-checkpoint.sh execute-plan STEP=N
+# Or reset: ./scripts/cleanup-checkpoint.sh execute-plan && ./scripts/init-checkpoint.sh execute-plan STEPS='"KB Consultation" "Read Plan" "Extract Iterations" "Execute Iterations" "Run Tests" "Verify Memory" "Update Plan Status" "Summary"'
 ```
 
 ### First-Time Initialization Check
@@ -137,7 +137,7 @@ grep -l "REVIEWED" plans/*_plan.md | xargs ls -t | head -1
 
 ```bash
 # MANDATORY: Initialize checkpoint tracking (12 steps)
-make checkpoint-init CMD=execute-plan STEPS='"KB Consultation" "Read Plan" "Validate Plan" "Check IMPLEMENTED" "Verify IMPLEMENTED" "Verify COMMITTED" "Extract REVIEWED/REVISED" "Execute Iterations" "Run Tests" "Verify Memory" "Update Plan Status" "Summary"'
+./scripts/init-checkpoint.sh execute-plan STEPS='"KB Consultation" "Read Plan" "Validate Plan" "Check IMPLEMENTED" "Verify IMPLEMENTED" "Verify COMMITTED" "Extract REVIEWED/REVISED" "Execute Iterations" "Run Tests" "Verify Memory" "Update Plan Status" "Summary"'
 ```
 
 This command uses checkpoint tracking to ensure systematic plan execution. The execution process is divided into 3 major stages with 12 checkpoints total.
@@ -176,14 +176,14 @@ Steps to complete:
 
 ### Check Progress
 ```bash
-make checkpoint-status CMD=execute-plan
+./scripts/status-checkpoint.sh execute-plan
 ```
 
 **Expected output (example at 58% completion):**
 ```
 📈 execute-plan: 7/12 steps (58%)
    [████████████░░░░░░░░] 58%
-→ Next: make checkpoint-update CMD=execute-plan STEP=8
+→ Next: ./scripts/update-checkpoint.sh execute-plan STEP=8
 ```
 
 ### What it does
@@ -259,9 +259,9 @@ This command updates the plan file in TWO distinct phases:
 
 1. **FIRST**: Run the checkpoint initialization command above (12 steps)
 2. **SECOND**: Follow the execution process below, updating checkpoints after each step
-3. **THIRD**: Check progress with `make checkpoint-status CMD=execute-plan`
+3. **THIRD**: Check progress with `./scripts/status-checkpoint.sh execute-plan`
 4. **FOURTH**: Complete all 12 steps before marking cycle complete
-5. **LAST**: Clean up with `make checkpoint-cleanup CMD=execute-plan`
+5. **LAST**: Clean up with `./scripts/cleanup-checkpoint.sh execute-plan`
 
 ### Usage
 
@@ -319,7 +319,7 @@ grep -E "Temporary|corrupt|Expected RED.*FAIL" <plan-file>
 
 ```bash
 # After completing KB consultation and verifying all 14 lessons
-make checkpoint-update CMD=execute-plan STEP=1
+./scripts/update-checkpoint.sh execute-plan STEP=1
 ```
 
 #### Step 2: Read Plan
@@ -329,7 +329,7 @@ make checkpoint-update CMD=execute-plan STEP=1
 # Read the plan file
 # <use Read tool with plan file path>
 
-make checkpoint-update CMD=execute-plan STEP=2
+./scripts/update-checkpoint.sh execute-plan STEP=2
 ```
 
 **Extract key information:**
@@ -403,7 +403,7 @@ Validate that plan complies with all 14 TDD lessons:
 **If validator passes:**
 
 ```bash
-make checkpoint-update CMD=execute-plan STEP=3
+./scripts/update-checkpoint.sh execute-plan STEP=3
 ```
 
 ---
@@ -429,10 +429,10 @@ Proceed to Step 5 below to verify the IMPLEMENTED iterations.
 Mark Step 4 complete and skip to Step 6 (no verification needed):
 
 ```bash
-make checkpoint-update CMD=execute-plan STEP=4
+./scripts/update-checkpoint.sh execute-plan STEP=4
 # Step 5 skipped (no IMPLEMENTED iterations)
-make checkpoint-update CMD=execute-plan STEP=5
-make checkpoint-update CMD=execute-plan STEP=6
+./scripts/update-checkpoint.sh execute-plan STEP=5
+./scripts/update-checkpoint.sh execute-plan STEP=6
 ```
 
 Then proceed to Step 7 (Extract REVIEWED/REVISED iterations).
@@ -443,7 +443,7 @@ Then proceed to Step 7 (Extract REVIEWED/REVISED iterations).
 # Show which IMPLEMENTED iterations exist
 ./scripts/filter-plan-items.sh <plan-file> "IMPLEMENTED" list
 
-make checkpoint-update CMD=execute-plan STEP=4
+./scripts/update-checkpoint.sh execute-plan STEP=4
 ```
 
 ---
@@ -620,12 +620,12 @@ For each IMPLEMENTED iteration found:
 **CASE 3: No REVIEWED/REVISED iterations AND no uncommitted IMPLEMENTED iterations**
 - ⚠️ **Classification**: Nothing to execute
 - ⚠️ **Action**: Report to user and clean up
-- ⚠️ **Command**: `make checkpoint-cleanup CMD=execute-plan`
+- ⚠️ **Command**: `./scripts/cleanup-checkpoint.sh execute-plan`
 
 **After classification:**
 
 ```bash
-make checkpoint-update CMD=execute-plan STEP=5
+./scripts/update-checkpoint.sh execute-plan STEP=5
 ```
 
 ---
@@ -654,7 +654,7 @@ grep -c "✅ COMMITTED" <plan-file>
 Skip verification and proceed to Step 7:
 
 ```bash
-make checkpoint-update CMD=execute-plan STEP=6
+./scripts/update-checkpoint.sh execute-plan STEP=6
 # No COMMITTED iterations to verify
 ```
 
@@ -805,7 +805,7 @@ Found discrepancies in plan vs. actual code:
 **After verification:**
 
 ```bash
-make checkpoint-update CMD=execute-plan STEP=6
+./scripts/update-checkpoint.sh execute-plan STEP=6
 ```
 
 ---
@@ -857,7 +857,7 @@ Ready for TDD execution:
 - [ ] Git commit status checked and classified (completed in Step 5)
 
 ```bash
-make checkpoint-update CMD=execute-plan STEP=7
+./scripts/update-checkpoint.sh execute-plan STEP=7
 ```
 
 #### [CHECKPOINT END - STAGE 1]
@@ -904,25 +904,25 @@ Before executing iterations, initialize nested checkpoint for iteration-level tr
 # Initialize nested checkpoint for iteration execution tracking
 # After extracting REVIEWED or REVISED iterations from Checkpoint 3
 # Use iteration descriptions from the plan file
-make checkpoint-init CMD=execute-plan-iterations STEPS='"Iteration 0.1" "Iteration 0.2" "Iteration 0.3" "Iteration 1.1" "Iteration 1.2" ... [all REVIEWED or REVISED iteration descriptions]'
+./scripts/init-checkpoint.sh execute-plan-iterations STEPS='"Iteration 0.1" "Iteration 0.2" "Iteration 0.3" "Iteration 1.1" "Iteration 1.2" ... [all REVIEWED or REVISED iteration descriptions]'
 ```
 
 **Example initialization:**
 ```bash
 # If plan has 10 iterations to execute (8 REVIEWED + 2 REVISED):
-make checkpoint-init CMD=execute-plan-iterations STEPS='"Iteration 0.1: send() returns true" "Iteration 0.2: has_messages() initially false" "Iteration 0.3: has_messages() after send" "Iteration 1.1: receive() returns message" "Iteration 1.2: queue empty after receive" "Iteration 2.1: error handling NULL delegate" "Iteration 2.2: error handling invalid message" "Iteration 3.1: cleanup destroys queue" "Iteration 3.2: cleanup removes messages" "Iteration 4.1: refactoring extraction"'
+./scripts/init-checkpoint.sh execute-plan-iterations STEPS='"Iteration 0.1: send() returns true" "Iteration 0.2: has_messages() initially false" "Iteration 0.3: has_messages() after send" "Iteration 1.1: receive() returns message" "Iteration 1.2: queue empty after receive" "Iteration 2.1: error handling NULL delegate" "Iteration 2.2: error handling invalid message" "Iteration 3.1: cleanup destroys queue" "Iteration 3.2: cleanup removes messages" "Iteration 4.1: refactoring extraction"'
 ```
 
 **Check iteration execution progress anytime:**
 ```bash
-make checkpoint-status CMD=execute-plan-iterations
+./scripts/status-checkpoint.sh execute-plan-iterations
 ```
 
 **Expected output example (after 4/10 iterations executed):**
 ```
 📈 execute-plan-iterations: 4/10 steps (40%)
    [████████░░░░░░░░░░░░] 40%
-→ Next: make checkpoint-update CMD=execute-plan-iterations STEP=5
+→ Next: ./scripts/update-checkpoint.sh execute-plan-iterations STEP=5
 ```
 
 **For EACH iteration, execute RED-GREEN-REFACTOR cycle:**
@@ -1217,7 +1217,7 @@ new_string: "#### Iteration 0.2: has_messages() returns false - IMPLEMENTED"
 - [ ] Complete RED-GREEN-REFACTOR cycle for iteration
 - [ ] Update plan file immediately after iteration completes
 - [ ] Change status from REVIEWED or REVISED to IMPLEMENTED
-- [ ] **Update iteration checkpoint**: `make checkpoint-update CMD=execute-plan-iterations STEP=N` (where N is the iteration number in the execution list)
+- [ ] **Update iteration checkpoint**: `./scripts/update-checkpoint.sh execute-plan-iterations STEP=N` (where N is the iteration number in the execution list)
 - [ ] Track implemented iteration for final report
 - [ ] Continue to next iteration
 
@@ -1226,7 +1226,7 @@ new_string: "#### Iteration 0.2: has_messages() returns false - IMPLEMENTED"
 **After marking iteration as IMPLEMENTED, update iteration checkpoint:**
 ```bash
 # Update iteration checkpoint after marking iteration as IMPLEMENTED
-make checkpoint-update CMD=execute-plan-iterations STEP=N  # N is the iteration number (1, 2, 3, ...)
+./scripts/update-checkpoint.sh execute-plan-iterations STEP=N  # N is the iteration number (1, 2, 3, ...)
 ```
 
 **Iteration execution loop:**
@@ -1251,7 +1251,7 @@ for iteration in $(seq 1 12); do
     # <use Edit tool to change REVIEWED/REVISED → IMPLEMENTED>
 
     # UPDATE CHECKPOINT: Mark iteration complete
-    # make checkpoint-update CMD=execute-plan-iterations STEP=$iteration
+    # ./scripts/update-checkpoint.sh execute-plan-iterations STEP=$iteration
 
     # Verify memory (next checkpoint)
 done
@@ -1263,23 +1263,23 @@ After all iterations have been executed and marked IMPLEMENTED:
 
 ```bash
 # Check final iteration execution status
-make checkpoint-status CMD=execute-plan-iterations
+./scripts/status-checkpoint.sh execute-plan-iterations
 ```
 
 **Expected output when all iterations executed:**
 ```
 🎆 All 10 steps complete!
-✓ Run: make checkpoint-cleanup CMD=execute-plan-iterations
+✓ Run: ./scripts/cleanup-checkpoint.sh execute-plan-iterations
 ```
 
 ```bash
 # Clean up iteration tracking
-make checkpoint-cleanup CMD=execute-plan-iterations
+./scripts/cleanup-checkpoint.sh execute-plan-iterations
 ```
 
 **Then mark main Checkpoint 8 as complete:**
 ```bash
-make checkpoint-update CMD=execute-plan STEP=8
+./scripts/update-checkpoint.sh execute-plan STEP=8
 ```
 
 #### Step 9: Run Tests
@@ -1314,7 +1314,7 @@ All tests passing: 12/12
 ```
 
 ```bash
-make checkpoint-update CMD=execute-plan STEP=8
+./scripts/update-checkpoint.sh execute-plan STEP=8
 ```
 
 #### Step 10: Verify Memory
@@ -1347,7 +1347,7 @@ make <test_module> 2>&1
 ```
 
 ```bash
-make checkpoint-update CMD=execute-plan STEP=10
+./scripts/update-checkpoint.sh execute-plan STEP=10
 ```
 
 #### [CHECKPOINT END - STAGE 2]
@@ -1468,7 +1468,7 @@ grep "Actual memory leaks:" bin/run-tests/memory_report_ar_delegate_tests.log
 # <use Edit tool to update IMPLEMENTED → ✅ COMMITTED>
 # <if all complete, add completion status header>
 
-make checkpoint-update CMD=execute-plan STEP=11
+./scripts/update-checkpoint.sh execute-plan STEP=11
 ```
 
 #### Step 12: Summary
@@ -1576,7 +1576,7 @@ make 2>&1
 ```
 
 ```bash
-make checkpoint-update CMD=execute-plan STEP=12
+./scripts/update-checkpoint.sh execute-plan STEP=12
 ```
 
 #### [CHECKPOINT END - STAGE 3]
@@ -1618,7 +1618,7 @@ make checkpoint-update CMD=execute-plan STEP=12
 
 ```bash
 # Clean up tracking
-make checkpoint-cleanup CMD=execute-plan
+./scripts/cleanup-checkpoint.sh execute-plan
 ```
 
 ### Automatic Commit (If Files Changed)
@@ -2130,11 +2130,11 @@ bool ar_delegate__send(...) {
 ### If checkpoint tracking gets stuck:
 ```bash
 # Check current status
-make checkpoint-status CMD=execute-plan
+./scripts/status-checkpoint.sh execute-plan
 
 # If needed, reset and start over
-make checkpoint-cleanup CMD=execute-plan
-make checkpoint-init CMD=execute-plan STEPS='...'
+./scripts/cleanup-checkpoint.sh execute-plan
+./scripts/init-checkpoint.sh execute-plan STEPS='...'
 ```
 
 ### If a test fails unexpectedly:

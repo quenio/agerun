@@ -18,9 +18,9 @@ Before checking consistency:
 If a `/check-module-consistency` workflow is already in progress:
 
 ```bash
-make checkpoint-status CMD=check-module-consistency VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=check-module-consistency STEP=N
-# Or reset: make checkpoint-cleanup CMD=check-module-consistency && make checkpoint-init CMD=check-module-consistency STEPS='"Describe Improvement" "Identify Pattern" "Find Sister Modules" "Find Similar Purpose" "Find Same Subsystem" "Check Module 1" "Check Module 2" "Check Module 3" "Check Module 4" "Check Module 5" "Analyze Findings" "List Modules Needing Update" "Estimate Effort" "Create Priority Order" "Document Plan"'
+./scripts/status-checkpoint.sh check-module-consistency VERBOSE=--verbose
+# Resume: ./scripts/update-checkpoint.sh check-module-consistency STEP=N
+# Or reset: ./scripts/cleanup-checkpoint.sh check-module-consistency && ./scripts/init-checkpoint.sh check-module-consistency STEPS='"Describe Improvement" "Identify Pattern" "Find Sister Modules" "Find Similar Purpose" "Find Same Subsystem" "Check Module 1" "Check Module 2" "Check Module 3" "Check Module 4" "Check Module 5" "Analyze Findings" "List Modules Needing Update" "Estimate Effort" "Create Priority Order" "Document Plan"'
 ```
 
 ### First-Time Initialization Check
@@ -43,7 +43,7 @@ This command uses checkpoint tracking to ensure systematic consistency checking 
 ### Initialize Tracking
 ```bash
 # Start the consistency checking process
-make checkpoint-init CMD=check-module-consistency STEPS='"Describe Improvement" "Identify Pattern" "Find Sister Modules" "Find Similar Purpose" "Find Same Subsystem" "Check Module 1" "Check Module 2" "Check Module 3" "Check Module 4" "Check Module 5" "Analyze Findings" "List Modules Needing Update" "Estimate Effort" "Create Priority Order" "Document Plan"'
+./scripts/init-checkpoint.sh check-module-consistency STEPS='"Describe Improvement" "Identify Pattern" "Find Sister Modules" "Find Similar Purpose" "Find Same Subsystem" "Check Module 1" "Check Module 2" "Check Module 3" "Check Module 4" "Check Module 5" "Analyze Findings" "List Modules Needing Update" "Estimate Effort" "Create Priority Order" "Document Plan"'
 ```
 
 **Expected output:**
@@ -79,14 +79,14 @@ Minimum: Check 3+ modules for same patterns
 
 ### Check Progress
 ```bash
-make checkpoint-status CMD=check-module-consistency
+./scripts/status-checkpoint.sh check-module-consistency
 ```
 
 **Expected output (example at 53% completion):**
 ```
 📈 command: X/Y steps (Z%)
    [████░░░░░░░░░░░░░░░░] Z%
-→ Next: make checkpoint-update CMD=command STEP=N
+→ Next: ./scripts/update-checkpoint.sh command STEP=N
 ```
 
 ## Minimum Requirements
@@ -128,7 +128,7 @@ echo "MODULES_FOUND=0" > /tmp/check-consistency-tracking.txt
 echo "MODULES_CHECKED=0" >> /tmp/check-consistency-tracking.txt
 echo "MODULES_NEEDING_UPDATE=0" >> /tmp/check-consistency-tracking.txt
 
-make checkpoint-update CMD=check-module-consistency STEP=1
+./scripts/update-checkpoint.sh check-module-consistency STEP=1
 ```
 
 #### Step 2: Identify Pattern
@@ -140,7 +140,7 @@ echo "- Check type: [error logging/API/state/docs]"
 echo "- Specific requirement: [description]"
 echo "- Expected behavior: [description]"
 
-make checkpoint-update CMD=check-module-consistency STEP=2
+./scripts/update-checkpoint.sh check-module-consistency STEP=2
 ```
 
 #### [UNDERSTANDING GATE]
@@ -176,9 +176,9 @@ Run relationship discovery using helper script:
 
 # If script exits 0, sufficient modules found - mark steps complete
 if [ $? -eq 0 ]; then
-  make checkpoint-update CMD=check-module-consistency STEP=3
-  make checkpoint-update CMD=check-module-consistency STEP=4
-  make checkpoint-update CMD=check-module-consistency STEP=5
+  ./scripts/update-checkpoint.sh check-module-consistency STEP=3
+  ./scripts/update-checkpoint.sh check-module-consistency STEP=4
+  ./scripts/update-checkpoint.sh check-module-consistency STEP=5
 else
   echo "❌ Insufficient modules found for consistency check"
   exit 1
@@ -234,7 +234,7 @@ fi
 MODULES_CHECKED=1
 echo "MODULES_CHECKED=$MODULES_CHECKED" >> /tmp/check-consistency-tracking.txt
 
-make checkpoint-update CMD=check-module-consistency STEP=6
+./scripts/update-checkpoint.sh check-module-consistency STEP=6
 ```
 
 **Checkpoint 7-10: Check Modules 2-5**
@@ -242,10 +242,10 @@ make checkpoint-update CMD=check-module-consistency STEP=6
 ```bash
 # Repeat for modules 2-5
 # After each check:
-make checkpoint-update CMD=check-module-consistency STEP=7  # Module 2
-make checkpoint-update CMD=check-module-consistency STEP=8  # Module 3
-make checkpoint-update CMD=check-module-consistency STEP=9  # Module 4
-make checkpoint-update CMD=check-module-consistency STEP=10 # Module 5
+./scripts/update-checkpoint.sh check-module-consistency STEP=7  # Module 2
+./scripts/update-checkpoint.sh check-module-consistency STEP=8  # Module 3
+./scripts/update-checkpoint.sh check-module-consistency STEP=9  # Module 4
+./scripts/update-checkpoint.sh check-module-consistency STEP=10 # Module 5
 ```
 
 **Module Analysis Summary**:
@@ -323,7 +323,7 @@ echo "- Total modules checked: $MODULES_CHECKED"
 echo "- Modules needing update: $MODULES_NEEDING_UPDATE"
 echo "- Consistency rate: $((100 * (MODULES_CHECKED - MODULES_NEEDING_UPDATE) / MODULES_CHECKED))%"
 
-make checkpoint-update CMD=check-module-consistency STEP=11
+./scripts/update-checkpoint.sh check-module-consistency STEP=11
 ```
 
 #### Step 12: List Modules Needing Update
@@ -337,7 +337,7 @@ For modules that need the same improvement:
    echo "2. ar_[module2] - Has global state"
    echo "3. ar_[module3] - Lacks NULL validation"
    
-   make checkpoint-update CMD=check-module-consistency STEP=12
+   ./scripts/update-checkpoint.sh check-module-consistency STEP=12
    ```
 
 #### Step 13: Estimate Effort
@@ -350,7 +350,7 @@ For modules that need the same improvement:
    echo "- ar_[module3]: 1 cycle (add validation)"
    echo "Total estimated effort: 6 TDD cycles"
    
-   make checkpoint-update CMD=check-module-consistency STEP=13
+   ./scripts/update-checkpoint.sh check-module-consistency STEP=13
    ```
 
 #### Step 14: Create Priority Order
@@ -366,7 +366,7 @@ For modules that need the same improvement:
    echo "2. MEDIUM: ar_[module1] - Important for debugging"
    echo "3. LOW: ar_[module3] - Internal module"
    
-   make checkpoint-update CMD=check-module-consistency STEP=14
+   ./scripts/update-checkpoint.sh check-module-consistency STEP=14
    ```
 
 #### [PLANNING GATE]
@@ -418,7 +418,7 @@ EOF
 
 echo "✓ Improvement plan documented"
 
-make checkpoint-update CMD=check-module-consistency STEP=15
+./scripts/update-checkpoint.sh check-module-consistency STEP=15
 ```
 
 #### [CHECKPOINT COMPLETE]
@@ -514,7 +514,7 @@ grep "if.*!" module.c          # Check validation
 ### To resume an interrupted session:
 ```bash
 # Check progress
-make checkpoint-status CMD=check-module-consistency
+./scripts/status-checkpoint.sh check-module-consistency
 
 # Load tracking data
 source /tmp/check-consistency-tracking.txt

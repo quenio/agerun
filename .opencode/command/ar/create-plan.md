@@ -12,13 +12,13 @@ If a `/create-plan` workflow is already in progress:
 
 ```bash
 # Check current progress
-make checkpoint-status CMD=create-plan VERBOSE=--verbose
+./scripts/status-checkpoint.sh create-plan VERBOSE=--verbose
 ```
 
 Resume from the next pending step, or clean up and start fresh:
 ```bash
-make checkpoint-cleanup CMD=create-plan
-make checkpoint-init CMD=create-plan STEPS='"KB Consultation" "Read Requirements" "Extract Iterations" "Structure Plan" "Validate Plan" "Summary"'
+./scripts/cleanup-checkpoint.sh create-plan
+./scripts/init-checkpoint.sh create-plan '"KB Consultation" "Read Requirements" "Extract Iterations" "Structure Plan" "Validate Plan" "Summary"'
 ```
 
 ### First-Time Initialization Check
@@ -143,7 +143,7 @@ Before creating the plan, identify which task to plan:
 
 ```bash
 # MANDATORY: Initialize checkpoint tracking (14 steps)
-make checkpoint-init CMD=create-plan STEPS='"KB Consultation" "Gather Requirements" "Identify Behaviors" "Count Assertions" "Define Cycles" "Plan Iterations" "Structure RED Phases" "Structure GREEN Phases" "Add Cleanup" "Add Status Markers" "Add Cross-References" "Validate Plan" "Save Plan" "Summary"'
+./scripts/init-checkpoint.sh create-plan STEPS='"KB Consultation" "Gather Requirements" "Identify Behaviors" "Count Assertions" "Define Cycles" "Plan Iterations" "Structure RED Phases" "Structure GREEN Phases" "Add Cleanup" "Add Status Markers" "Add Cross-References" "Validate Plan" "Save Plan" "Summary"'
 ```
 
 This command uses checkpoint tracking to ensure systematic plan creation. The creation process is divided into 4 major stages with 14 checkpoints total.
@@ -177,14 +177,14 @@ Steps to complete:
 
 ### Check Progress
 ```bash
-make checkpoint-status CMD=create-plan
+./scripts/status-checkpoint.sh create-plan
 ```
 
 **Expected output (example at 50% completion):**
 ```
 📈 create-plan: 7/14 steps (50%)
    [██████████░░░░░░░░░░] 50%
-→ Next: make checkpoint-update CMD=create-plan STEP=8
+→ Next: ./scripts/update-checkpoint.sh create-plan STEP=8
 ```
 
 ### What it does
@@ -237,9 +237,9 @@ This command creates plans with iterations marked `PENDING REVIEW`. These marker
 
 1. **FIRST**: Run the checkpoint initialization command above
 2. **SECOND**: Follow the creation process below, updating checkpoints after each step
-3. **THIRD**: Check progress with `make checkpoint-status CMD=create-plan`
+3. **THIRD**: Check progress with `./scripts/status-checkpoint.sh create-plan`
 4. **FOURTH**: Complete all 14 steps before saving plan
-5. **LAST**: Clean up with `make checkpoint-cleanup CMD=create-plan`
+5. **LAST**: Clean up with `./scripts/cleanup-checkpoint.sh create-plan`
 
 ### Usage
 
@@ -291,7 +291,7 @@ Before proceeding, confirm understanding of these 14 critical lessons from kb/td
 
 ```bash
 # After completing KB consultation and verifying all 14 lessons
-make checkpoint-update CMD=create-plan STEP=1
+./scripts/update-checkpoint.sh create-plan STEP=1
 ```
 
 #### Step 2: Gather Requirements
@@ -323,7 +323,7 @@ make checkpoint-update CMD=create-plan STEP=1
 ```
 
 ```bash
-make checkpoint-update CMD=create-plan STEP=2
+./scripts/update-checkpoint.sh create-plan STEP=2
 ```
 
 #### Step 3: Identify Behaviors
@@ -508,7 +508,7 @@ ar_foo_t* ar_foo__create(ar_log_t *ref_log, const char *ref_path) {  // EXAMPLE:
 **MANDATORY**: Before proceeding to Step 4, verify ALL functions have complete NULL parameter coverage.
 
 ```bash
-make checkpoint-update CMD=create-plan STEP=3
+./scripts/update-checkpoint.sh create-plan STEP=3
 ```
 
 #### Step 4: Count Assertions
@@ -538,7 +538,7 @@ Total iterations: 12
 - ✅ CORRECT: Split into .1 (creation) and .2 (registration)
 
 ```bash
-make checkpoint-update CMD=create-plan STEP=4
+./scripts/update-checkpoint.sh create-plan STEP=4
 ```
 
 #### Step 5: Define Cycles
@@ -573,7 +573,7 @@ make checkpoint-update CMD=create-plan STEP=4
 - ⚠️ Too large: 8+ iterations (reviewer fatigue)
 
 ```bash
-make checkpoint-update CMD=create-plan STEP=5
+./scripts/update-checkpoint.sh create-plan STEP=5
 ```
 
 #### [CHECKPOINT END]
@@ -611,10 +611,10 @@ This checkpoint involves creating multiple iterations. To ensure the command doe
 ```bash
 # Initialize nested checkpoint for iteration tracking
 # After determining iteration count from Checkpoint 4
-make checkpoint-init CMD=create-plan-iterations STEPS='"Iteration 0.1" "Iteration 0.2" "Iteration 0.3" "Iteration 1.1" "Iteration 1.2" ... [all iteration names]'
+./scripts/init-checkpoint.sh create-plan-iterations STEPS='"Iteration 0.1" "Iteration 0.2" "Iteration 0.3" "Iteration 1.1" "Iteration 1.2" ... [all iteration names]'
 
 # Check iteration tracking status anytime
-make checkpoint-status CMD=create-plan-iterations
+./scripts/status-checkpoint.sh create-plan-iterations
 ```
 
 **Write complete iteration structure:**
@@ -737,9 +737,9 @@ int64_t ar_agent_store_fixture__create_agent(...) {
 
 ```bash
 # Mark iteration as complete immediately after creation
-make checkpoint-update CMD=create-plan-iterations STEP=1  # After Iteration 1.1
-make checkpoint-update CMD=create-plan-iterations STEP=2  # After Iteration 1.2
-make checkpoint-update CMD=create-plan-iterations STEP=3  # After Iteration 1.3
+./scripts/update-checkpoint.sh create-plan-iterations STEP=1  # After Iteration 1.1
+./scripts/update-checkpoint.sh create-plan-iterations STEP=2  # After Iteration 1.2
+./scripts/update-checkpoint.sh create-plan-iterations STEP=3  # After Iteration 1.3
 # ... continue for each iteration
 ```
 
@@ -747,25 +747,25 @@ make checkpoint-update CMD=create-plan-iterations STEP=3  # After Iteration 1.3
 
 For each iteration created:
 1. **Create the iteration** (RED phase, GREEN phase, verification)
-2. **Immediately update checkpoint** using `make checkpoint-update CMD=create-plan-iterations STEP=N`
+2. **Immediately update checkpoint** using `./scripts/update-checkpoint.sh create-plan-iterations STEP=N`
 3. **Continue to next iteration**
 4. **DO NOT batch updates** - update after each iteration
 
 **Check Progress Anytime:**
 ```bash
 # See current iteration progress
-make checkpoint-status CMD=create-plan-iterations
+./scripts/status-checkpoint.sh create-plan-iterations
 
 # Example output:
 # 📈 create-plan-iterations: 5/12 steps (42%)
 #    [████████░░░░░░░░░░░░] 42%
-# → Next: make checkpoint-update CMD=create-plan-iterations STEP=6
+# → Next: ./scripts/update-checkpoint.sh create-plan-iterations STEP=6
 ```
 
 **Resuming After Interruption:**
 ```bash
 # Check which iterations are complete
-make checkpoint-status CMD=create-plan-iterations
+./scripts/status-checkpoint.sh create-plan-iterations
 
 # The status will show which step to continue from
 # Resume creating iterations starting from the indicated step
@@ -776,14 +776,14 @@ make checkpoint-status CMD=create-plan-iterations
 **After ALL iterations created:**
 ```bash
 # The nested checkpoint system will show 100% when all iterations are done
-make checkpoint-status CMD=create-plan-iterations
+./scripts/status-checkpoint.sh create-plan-iterations
 # Should show: 🎆 All 12 steps complete!
 
 # Clean up iteration tracking
-make checkpoint-cleanup CMD=create-plan-iterations
+./scripts/cleanup-checkpoint.sh create-plan-iterations
 
 # Mark main Checkpoint 6 as complete
-make checkpoint-update CMD=create-plan STEP=6
+./scripts/update-checkpoint.sh create-plan STEP=6
 ```
 
 **[QUALITY GATE 2: Plan Structure Validation]**
@@ -838,7 +838,7 @@ This step ensures generated plans follow the most critical lesson: Every RED pha
 ```bash
 # Initialize nested checkpoint for RED phase verification
 # Use same iteration list as Checkpoint 6
-make checkpoint-init CMD=create-plan-red-phases STEPS='"Iteration 0.1" "Iteration 0.2" "Iteration 0.3" ... [all iteration names]'
+./scripts/init-checkpoint.sh create-plan-red-phases STEPS='"Iteration 0.1" "Iteration 0.2" "Iteration 0.3" ... [all iteration names]'
 ```
 
 **Verify all RED phases have:**
@@ -954,8 +954,8 @@ echo "8.3: Return 'network' instead of 'file' to prove type check" >> /tmp/red-c
 ```bash
 # 1. Document corruption in evidence file (see above)
 # 2. Mark RED phase verification complete
-make checkpoint-update CMD=create-plan-red-phases STEP=1  # After verifying Iteration 1.1
-make checkpoint-update CMD=create-plan-red-phases STEP=2  # After verifying Iteration 1.2
+./scripts/update-checkpoint.sh create-plan-red-phases STEP=1  # After verifying Iteration 1.1
+./scripts/update-checkpoint.sh create-plan-red-phases STEP=2  # After verifying Iteration 1.2
 # ... continue for each iteration
 ```
 
@@ -964,7 +964,7 @@ make checkpoint-update CMD=create-plan-red-phases STEP=2  # After verifying Iter
 **After ALL RED phases verified:**
 ```bash
 # Verify all complete
-make checkpoint-status CMD=create-plan-red-phases
+./scripts/status-checkpoint.sh create-plan-red-phases
 # Should show: 🎆 All steps complete!
 
 # MANDATORY: Validate evidence file before proceeding
@@ -1003,10 +1003,10 @@ Checking corruption entries...
 
 ```bash
 # Clean up RED phase tracking
-make checkpoint-cleanup CMD=create-plan-red-phases
+./scripts/cleanup-checkpoint.sh create-plan-red-phases
 
 # Mark main Checkpoint 7 as complete
-make checkpoint-update CMD=create-plan STEP=7
+./scripts/update-checkpoint.sh create-plan STEP=7
 ```
 
 #### Step 8: Structure GREEN Phases
@@ -1016,7 +1016,7 @@ make checkpoint-update CMD=create-plan STEP=7
 **Initialize GREEN Phase Verification Tracking:**
 ```bash
 # Initialize nested checkpoint for GREEN phase verification
-make checkpoint-init CMD=create-plan-green-phases STEPS='"Iteration 0.1" "Iteration 0.2" "Iteration 0.3" ... [all iteration names]'
+./scripts/init-checkpoint.sh create-plan-green-phases STEPS='"Iteration 0.1" "Iteration 0.2" "Iteration 0.3" ... [all iteration names]'
 ```
 
 **Verify all GREEN phases follow minimalism:**
@@ -1057,8 +1057,8 @@ Iteration N.3: Actual logic (forced by test)
 **MANDATORY: After verifying EACH iteration's GREEN phase:**
 ```bash
 # Mark GREEN phase verification complete
-make checkpoint-update CMD=create-plan-green-phases STEP=1  # After verifying Iteration 1.1
-make checkpoint-update CMD=create-plan-green-phases STEP=2  # After verifying Iteration 1.2
+./scripts/update-checkpoint.sh create-plan-green-phases STEP=1  # After verifying Iteration 1.1
+./scripts/update-checkpoint.sh create-plan-green-phases STEP=2  # After verifying Iteration 1.2
 # ... continue for each iteration
 ```
 
@@ -1067,14 +1067,14 @@ make checkpoint-update CMD=create-plan-green-phases STEP=2  # After verifying It
 **After ALL GREEN phases verified:**
 ```bash
 # Verify all complete
-make checkpoint-status CMD=create-plan-green-phases
+./scripts/status-checkpoint.sh create-plan-green-phases
 # Should show: 🎆 All steps complete!
 
 # Clean up GREEN phase tracking
-make checkpoint-cleanup CMD=create-plan-green-phases
+./scripts/cleanup-checkpoint.sh create-plan-green-phases
 
 # Mark main Checkpoint 8 as complete
-make checkpoint-update CMD=create-plan STEP=8
+./scripts/update-checkpoint.sh create-plan STEP=8
 ```
 
 #### [CHECKPOINT END]
@@ -1134,7 +1134,7 @@ ar_log__destroy(ref_log);
 - [ ] Destruction order is reverse of creation
 
 ```bash
-make checkpoint-update CMD=create-plan STEP=9
+./scripts/update-checkpoint.sh create-plan STEP=9
 ```
 
 #### Step 10: Add Status Markers
@@ -1169,7 +1169,7 @@ make checkpoint-update CMD=create-plan STEP=9
 **CRITICAL**: Every iteration created must have "- PENDING REVIEW" suffix in the heading. This is MANDATORY and must not be omitted.
 
 ```bash
-make checkpoint-update CMD=create-plan STEP=10
+./scripts/update-checkpoint.sh create-plan STEP=10
 ```
 
 #### Step 11: Add Cross-References
@@ -1194,7 +1194,7 @@ See ar_agent.c and ar_agency.c for reference implementations.
 ```
 
 ```bash
-make checkpoint-update CMD=create-plan STEP=11
+./scripts/update-checkpoint.sh create-plan STEP=11
 ```
 
 #### [CHECKPOINT END]
@@ -1254,7 +1254,7 @@ make checkpoint-update CMD=create-plan STEP=11
 - [ ] No forward references to unreviewed iterations - **Lesson 13**
 
 ```bash
-make checkpoint-update CMD=create-plan STEP=12
+./scripts/update-checkpoint.sh create-plan STEP=12
 ```
 
 #### Step 13: Save Plan
@@ -1291,7 +1291,7 @@ make checkpoint-update CMD=create-plan STEP=12
 # Save the plan
 # <use Write tool with plan content>
 
-make checkpoint-update CMD=create-plan STEP=13
+./scripts/update-checkpoint.sh create-plan STEP=13
 ```
 
 #### Step 14: Summary
@@ -1348,7 +1348,7 @@ make checkpoint-update CMD=create-plan STEP=13
 ```
 
 ```bash
-make checkpoint-update CMD=create-plan STEP=14
+./scripts/update-checkpoint.sh create-plan STEP=14
 ```
 
 #### [CHECKPOINT END]
@@ -1373,7 +1373,7 @@ make checkpoint-update CMD=create-plan STEP=14
 
 ```bash
 # Clean up tracking
-make checkpoint-cleanup CMD=create-plan
+./scripts/cleanup-checkpoint.sh create-plan
 ```
 
 ## Plan Template Structure
@@ -1647,11 +1647,11 @@ ar_agent_t *agent = ar_agent__create("echo", "1.0");
 ### If checkpoint tracking gets stuck:
 ```bash
 # Check current status
-make checkpoint-status CMD=create-plan
+./scripts/status-checkpoint.sh create-plan
 
 # If needed, reset and start over
-make checkpoint-cleanup CMD=create-plan
-make checkpoint-init CMD=create-plan STEPS='...'
+./scripts/cleanup-checkpoint.sh create-plan
+./scripts/init-checkpoint.sh create-plan STEPS='...'
 ```
 
 ### If unsure about iteration splitting:
