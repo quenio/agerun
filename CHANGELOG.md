@@ -2,6 +2,29 @@
 
 ## 2025-10-18
 
+- **Temporary File Naming Standardization**
+
+  Standardized all temporary file naming across the project to use dash-based naming, matching bash script conventions and eliminating mixed naming patterns.
+
+  **Motivation**: Project had inconsistent temp file naming - checkpoint files used underscores (`/tmp/check_naming_progress.txt`), while scripts used dashes (`checkpoint-init.sh`). This created cognitive overhead and violated principle of least surprise.
+
+  **Implementation**: Four-commit sequence completing full standardization:
+  1. **Checkpoint tracking files** (commit 4dd5056): Updated 50 files - 12 checkpoint scripts (checkpoint-init.sh, checkpoint-update.sh, checkpoint-status.sh, checkpoint-gate.sh, checkpoint-cleanup.sh, plus enhanced variants), 30 command files (.opencode/command/ar/*.md), 9 KB articles with checkpoint references. Changed pattern from `/tmp/${COMMAND}_progress.txt` to `/tmp/${COMMAND}-progress.txt`.
+  2. **Other temp files** (commit e264d77): Updated 3 files - detect-circular-dependencies.sh (module_deps → module-deps), check_commands.py (structure_fix_report → structure-fix-report), fix_commands.py (structure_fix_report → structure-fix-report).
+  3. **Documentation alignment** (commit 85612e8): Updated 29 files - 22 command files with checkpoint progress file references and example output (e.g., "Starting: analyze_exec" → "Starting: analyze-exec"), 7 KB articles with temp file examples (delegate_results → delegate-results, ci_log → ci-log, test_output → test-output, changed_files → changed-files, test_tracking → test-tracking, debug_test → debug-test).
+  4. **Guidelines documentation** (commit 5ad576b): Added comprehensive temp file naming convention to AGENTS.md Section 8 with pattern definition (`/tmp/<command-name>-<purpose>.<ext>`), examples, and consistency notes.
+
+  **Three-Tier Naming Convention**:
+  - Bash scripts: `<action>-<object>.sh` (e.g., `checkpoint-init.sh`)
+  - Python scripts: `<verb>_<noun>.py` (e.g., `check_commands.py`, PEP 8)
+  - Temp files: `/tmp/<command-name>-<purpose>.<ext>` (e.g., `/tmp/check-logs-output.txt`)
+
+  **Files Modified**: 83 files total across all four commits (12 scripts, 52 command files, 16 KB articles, 1 guideline document, 2 Python scripts)
+
+  **Verification**: All checkpoint workflows tested and verified working correctly. Complete grep verification confirmed no remaining mixed naming patterns.
+
+  **Impact**: Complete project-wide naming consistency eliminates cognitive overhead, new developers see unified patterns, documentation accurately reflects implementation, temp files immediately identifiable by naming pattern.
+
 - **Check-Docs Workflow Script Extraction**
 
   Extracted checkpoint-based documentation validation and fix workflow from the check-docs command definition into a standalone, reusable script.
