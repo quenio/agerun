@@ -17,21 +17,13 @@ make checkpoint-status CMD=tsan-exec VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/tsan-exec-progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=tsan-exec STEPS='"Prepare" "Execute" "Verify"'
-else
-  make checkpoint-status CMD=tsan-exec
-fi
+./scripts/init-checkpoint.sh tsan-exec '"Prepare" "Execute" "Verify"'
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/tsan-exec-progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  exit 1
-fi
+./scripts/require-checkpoint.sh tsan-exec
 ```
 
 # Thread Sanitizer Executable
@@ -91,7 +83,7 @@ For example, if agents share a message queue, it needs proper locking.
 #### [EXECUTION GATE]
 ```bash
 # Verify ready to execute
-make checkpoint-gate CMD=tsan-exec GATE="Ready" REQUIRED="1"
+./scripts/gate-checkpoint.sh tsan-exec "Ready" "1"
 ```
 
 **Expected gate output:**

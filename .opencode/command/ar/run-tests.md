@@ -72,7 +72,7 @@ make checkpoint-status CMD=run-tests
 #### [EXECUTION GATE]
 ```bash
 # Verify ready to execute
-make checkpoint-gate CMD=run-tests GATE="Ready" REQUIRED="1"
+./scripts/gate-checkpoint.sh run-tests "Ready" "1"
 ```
 
 **Expected gate output:**

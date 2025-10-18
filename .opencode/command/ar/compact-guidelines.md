@@ -17,21 +17,13 @@ make checkpoint-status CMD=compact-guidelines VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/compact-guidelines-progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=compact-guidelines STEPS='"Analyze AGENTS.md" "Identify Verbose Sections" "List Extraction Targets" "Check Existing KB Articles" "Plan New Articles" "Create KB Article 1" "Create KB Article 2" "Create KB Article 3" "Update AGENTS.md References" "Add Cross-References" "Update kb/README.md" "Run Documentation Validation" "Verify Link Coverage" "Review Changes" "Create Commit"'
-else
-  make checkpoint-status CMD=compact-guidelines
-fi
+./scripts/init-checkpoint.sh compact-guidelines '"Analyze AGENTS.md" "Identify Verbose Sections" "List Extraction Targets" "Check Existing KB Articles" "Plan New Articles" "Create KB Article 1" "Create KB Article 2" "Create KB Article 3" "Update AGENTS.md References" "Add Cross-References" "Update kb/README.md" "Run Documentation Validation" "Verify Link Coverage" "Review Changes" "Create Commit"'
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/compact-guidelines-progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  exit 1
-fi
+./scripts/require-checkpoint.sh compact-guidelines
 ```
 
 ## MANDATORY KB Consultation
@@ -185,7 +177,7 @@ make checkpoint-update CMD=compact-guidelines STEP=3
 #### [ANALYSIS GATE]
 ```bash
 # MANDATORY: Complete analysis before proceeding
-make checkpoint-gate CMD=compact-guidelines GATE="Analysis" REQUIRED="1,2,3"
+./scripts/gate-checkpoint.sh compact-guidelines "Analysis" "1,2,3"
 ```
 
 **Expected gate output:**
@@ -234,7 +226,7 @@ make checkpoint-update CMD=compact-guidelines STEP=5
 #### [PLANNING GATE]
 ```bash
 # MANDATORY: Ensure no duplicate articles
-make checkpoint-gate CMD=compact-guidelines GATE="Planning" REQUIRED="4,5"
+./scripts/gate-checkpoint.sh compact-guidelines "Planning" "4,5"
 ```
 
 **Expected gate output:**
@@ -344,7 +336,7 @@ make checkpoint-update CMD=compact-guidelines STEP=8
 #### [CRITICAL CREATION GATE]
 ```bash
 # ⚠️ CRITICAL: All KB articles must exist before updating references!
-make checkpoint-gate CMD=compact-guidelines GATE="Creation" REQUIRED="6,7,8"
+./scripts/gate-checkpoint.sh compact-guidelines "Creation" "6,7,8"
 ```
 
 **Expected gate output:**
@@ -401,7 +393,7 @@ make checkpoint-update CMD=compact-guidelines STEP=11
 #### [INTEGRATION GATE]
 ```bash
 # MANDATORY: Ensure all references updated
-make checkpoint-gate CMD=compact-guidelines GATE="Integration" REQUIRED="9,10,11"
+./scripts/gate-checkpoint.sh compact-guidelines "Integration" "9,10,11"
 ```
 
 **Expected gate output:**
@@ -561,7 +553,7 @@ make checkpoint-update CMD=compact-guidelines STEP=14
 #### [VALIDATION GATE]
 ```bash
 # MANDATORY: Ensure no broken links before commit
-make checkpoint-gate CMD=compact-guidelines GATE="Validation" REQUIRED="12,13,14"
+./scripts/gate-checkpoint.sh compact-guidelines "Validation" "12,13,14"
 ```
 
 **Expected gate output:**

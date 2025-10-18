@@ -19,21 +19,13 @@ make checkpoint-status CMD=commit VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/commit-progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=commit STEPS='"Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"'
-else
-  make checkpoint-status CMD=commit
-fi
+./scripts/init-checkpoint.sh commit '"Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"'
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/commit-progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  exit 1
-fi
+./scripts/require-checkpoint.sh commit
 ```
 
 **Important**: The build must pass all checks including command excellence scores ([details](../../../kb/command-documentation-excellence-gate.md)). Always test with proper make targets ([details](../../../kb/make-target-testing-discipline.md)).
@@ -181,7 +173,7 @@ make checkpoint-update-verified CMD=commit STEP=5 SUMMARY="CHANGELOG.md updated 
 #### [BUILD GATE]
 ```bash
 # Verify build and logs are clean before proceeding
-make checkpoint-gate CMD=commit GATE="Build Quality" REQUIRED="1,2"
+./scripts/gate-checkpoint.sh commit "Build Quality" "1,2"
 ```
 
 **Expected gate output:**
@@ -218,7 +210,7 @@ make checkpoint-update-verified CMD=commit STEP=6 SUMMARY="All changes reviewed 
 #### [DOCUMENTATION GATE]
 ```bash
 # ⚠️ CRITICAL: Verify documentation is complete
-make checkpoint-gate CMD=commit GATE="Documentation" REQUIRED="3,4,5"
+./scripts/gate-checkpoint.sh commit "Documentation" "3,4,5"
 ```
 
 **Expected gate output:**

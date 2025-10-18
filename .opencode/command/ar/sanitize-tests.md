@@ -68,7 +68,7 @@ make checkpoint-status CMD=sanitize-tests
 #### [EXECUTION GATE]
 ```bash
 # Verify ready to execute
-make checkpoint-gate CMD=sanitize-tests GATE="Ready" REQUIRED="1"
+./scripts/gate-checkpoint.sh sanitize-tests "Ready" "1"
 ```
 
 **Expected gate output:**

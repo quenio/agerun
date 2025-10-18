@@ -27,21 +27,13 @@ make checkpoint-status CMD=fix-errors-whitelisted VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/fix-errors-whitelisted-progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=fix-errors-whitelisted STEPS='"Count Errors" "Group by Test" "Find Patterns" "Select Target" "Analyze Root Cause" "Choose Strategy" "Plan Implementation" "Verify Current State" "Apply Fix" "Test Fix" "Remove Whitelist Entries" "Update Whitelist Total" "Update TODO.md" "Update CHANGELOG" "Final Verification" "Create Commit"'
-else
-  make checkpoint-status CMD=fix-errors-whitelisted
-fi
+./scripts/init-checkpoint.sh fix-errors-whitelisted '"Count Errors" "Group by Test" "Find Patterns" "Select Target" "Analyze Root Cause" "Choose Strategy" "Plan Implementation" "Verify Current State" "Apply Fix" "Test Fix" "Remove Whitelist Entries" "Update Whitelist Total" "Update TODO.md" "Update CHANGELOG" "Final Verification" "Create Commit"'
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/fix-errors-whitelisted-progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  exit 1
-fi
+./scripts/require-checkpoint.sh fix-errors-whitelisted
 ```
 
 # Fix Whitelisted Errors
@@ -125,7 +117,7 @@ The script provides:
 #### [ANALYSIS GATE]
 ```bash
 # MANDATORY: Must complete analysis before proceeding
-make checkpoint-gate CMD=fix-errors-whitelisted GATE="Analysis" REQUIRED="1,2,3"
+./scripts/gate-checkpoint.sh fix-errors-whitelisted "Analysis" "1,2,3"
 ```
 
 **Expected gate output:**
@@ -230,7 +222,7 @@ make checkpoint-update CMD=fix-errors-whitelisted STEP=7
 #### [STRATEGY GATE]
 ```bash
 # MANDATORY: Must have clear strategy before implementation
-make checkpoint-gate CMD=fix-errors-whitelisted GATE="Strategy" REQUIRED="4,5,6,7"
+./scripts/gate-checkpoint.sh fix-errors-whitelisted "Strategy" "4,5,6,7"
 ```
 
 **Expected gate output:**
@@ -248,7 +240,7 @@ make checkpoint-gate CMD=fix-errors-whitelisted GATE="Strategy" REQUIRED="4,5,6,
 #### [CRITICAL IMPLEMENTATION GATE]
 ```bash
 # ⚠️ CRITICAL: Final check before modifying code
-make checkpoint-gate CMD=fix-errors-whitelisted GATE="Implementation Ready" REQUIRED="1,2,3,4,5,6,7"
+./scripts/gate-checkpoint.sh fix-errors-whitelisted "Implementation Ready" "1,2,3,4,5,6,7"
 ```
 
 **Expected gate output:**
@@ -374,7 +366,7 @@ After fixing errors:
 #### [DOCUMENTATION GATE]
 ```bash
 # MANDATORY: Ensure all documentation is updated
-make checkpoint-gate CMD=fix-errors-whitelisted GATE="Documentation" REQUIRED="12,13,14"
+./scripts/gate-checkpoint.sh fix-errors-whitelisted "Documentation" "12,13,14"
 ```
 
 **Expected gate output:**

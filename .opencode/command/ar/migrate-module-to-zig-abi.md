@@ -27,21 +27,13 @@ make checkpoint-status CMD=migrate-module-to-zig-abi VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/migrate-module-to-zig-abi-progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=migrate-module-to-zig-abi STEPS='"Check Existing" "Analyze Dependencies" "Identify Challenges" "Review API" "Create Zig File" "Map Types" "Implement Functions" "Run Tests" "Verify Memory" "Cleanup and Document"'
-else
-  make checkpoint-status CMD=migrate-module-to-zig-abi
-fi
+./scripts/init-checkpoint.sh migrate-module-to-zig-abi '"Check Existing" "Analyze Dependencies" "Identify Challenges" "Review API" "Create Zig File" "Map Types" "Implement Functions" "Run Tests" "Verify Memory" "Cleanup and Document"'
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/migrate-module-to-zig-abi-progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  exit 1
-fi
+./scripts/require-checkpoint.sh migrate-module-to-zig-abi
 ```
 
 # Migrate Module to Zig ABI
@@ -199,7 +191,7 @@ make checkpoint-update CMD=migrate-module-to-zig-abi STEP=4
 #### [ASSESSMENT GATE]
 ```bash
 # Verify assessment is complete
-make checkpoint-gate CMD=migrate-module-to-zig-abi GATE="Assessment" REQUIRED="1,2,3,4"
+./scripts/gate-checkpoint.sh migrate-module-to-zig-abi "Assessment" "1,2,3,4"
 ```
 
 **Expected gate output:**
@@ -273,7 +265,7 @@ make checkpoint-update CMD=migrate-module-to-zig-abi STEP=7
 #### [IMPLEMENTATION GATE]
 ```bash
 # Verify implementation is complete
-make checkpoint-gate CMD=migrate-module-to-zig-abi GATE="Implementation" REQUIRED="5,6,7"
+./scripts/gate-checkpoint.sh migrate-module-to-zig-abi "Implementation" "5,6,7"
 ```
 
 **Expected gate output:**
@@ -330,7 +322,7 @@ make checkpoint-update CMD=migrate-module-to-zig-abi STEP=9
 #### [CRITICAL TESTING GATE]
 ```bash
 # ⚠️ CRITICAL: Verify all tests pass with no leaks
-make checkpoint-gate CMD=migrate-module-to-zig-abi GATE="Testing" REQUIRED="8,9"
+./scripts/gate-checkpoint.sh migrate-module-to-zig-abi "Testing" "8,9"
 ```
 
 **Expected gate output:**

@@ -17,21 +17,13 @@ make checkpoint-status CMD=build-clean VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/build-clean-progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=build-clean STEPS='"Prepare" "Execute" "Verify"'
-else
-  make checkpoint-status CMD=build-clean
-fi
+./scripts/init-checkpoint.sh build-clean '"Prepare" "Execute" "Verify"'
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/build-clean-progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  exit 1
-fi
+./scripts/require-checkpoint.sh build-clean
 ```
 
 # Clean Build
@@ -92,7 +84,7 @@ For example, if you see "undefined reference" errors in incremental builds, a cl
 #### [EXECUTION GATE]
 ```bash
 # Verify ready to execute
-make checkpoint-gate CMD=build-clean GATE="Ready" REQUIRED="1"
+./scripts/gate-checkpoint.sh build-clean "Ready" "1"
 ```
 
 **Expected gate output:**

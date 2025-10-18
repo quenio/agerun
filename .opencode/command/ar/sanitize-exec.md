@@ -17,21 +17,13 @@ make checkpoint-status CMD=sanitize-exec VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/sanitize-exec-progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=sanitize-exec STEPS='"Prepare" "Execute" "Verify"'
-else
-  make checkpoint-status CMD=sanitize-exec
-fi
+./scripts/init-checkpoint.sh sanitize-exec '"Prepare" "Execute" "Verify"'
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/sanitize-exec-progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  exit 1
-fi
+./scripts/require-checkpoint.sh sanitize-exec
 ```
 
 # Sanitize Executable
@@ -92,7 +84,7 @@ For example: "heap-use-after-free" means you're accessing freed memory.
 #### [EXECUTION GATE]
 ```bash
 # Verify ready to execute
-make checkpoint-gate CMD=sanitize-exec GATE="Ready" REQUIRED="1"
+./scripts/gate-checkpoint.sh sanitize-exec "Ready" "1"
 ```
 
 **Expected gate output:**

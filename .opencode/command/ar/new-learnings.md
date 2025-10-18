@@ -176,9 +176,7 @@ make checkpoint-status CMD=new-learnings
 # Step 11 verifies "READY TO COMMIT" with counts of modified files
 
 # ✅ Always run the initialization check if unsure
-if [ ! -f /tmp/new-learnings-progress.txt ]; then
-  make checkpoint-init CMD=new-learnings STEPS='"Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"'
-fi
+./scripts/init-checkpoint.sh new-learnings '"Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"'
 ```
 
 ## Minimum Requirements for Thorough Execution
@@ -197,26 +195,11 @@ fi
 
 **BEFORE PROCEEDING TO STEP 1:**
 
-Verify that checkpoint tracking is initialized by running:
+Verify that checkpoint tracking is initialized:
 
 ```bash
-# Check tracking file exists and shows pending steps
-if [ -f /tmp/new-learnings-progress.txt ]; then
-  make checkpoint-status CMD=new-learnings
-  # Should show progress bar and pending steps
-else
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  echo ""
-  echo "STOP: You cannot proceed without initializing checkpoint tracking."
-  echo "Run this command FIRST:"
-  echo ""
-  echo 'make checkpoint-init CMD=new-learnings STEPS='"'"'Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push'"'"
-  echo ""
-  exit 1
-fi
+./scripts/require-checkpoint.sh new-learnings
 ```
-
-**If this check fails, DO NOT PROCEED. Initialize checkpoint tracking using the command above.**
 
 **If this check passes, you may proceed to Step 1.**
 
@@ -456,7 +439,7 @@ make checkpoint-update-verified CMD=new-learnings STEP=4 SUMMARY="Documentation 
 
 ```bash
 # MANDATORY GATE - Cannot proceed without articles
-make checkpoint-gate CMD=new-learnings GATE="Article Creation" REQUIRED="1,2,3,4"
+./scripts/gate-checkpoint.sh new-learnings "Article Creation" "1,2,3,4"
 ```
 
 **Expected output when PASSING:**
@@ -685,7 +668,7 @@ make checkpoint-update CMD=new-learnings STEP=9
 
 ```bash
 # MANDATORY GATE - Check integration completeness
-make checkpoint-gate CMD=new-learnings GATE="Integration" REQUIRED="5,6,7,8,9"
+./scripts/gate-checkpoint.sh new-learnings "Integration" "5,6,7,8,9"
 ```
 
 ## Step 10: Validate No Broken Links
@@ -745,7 +728,7 @@ make checkpoint-update-verified CMD=new-learnings STEP=11 SUMMARY="Integration v
 
 ```bash
 # FINAL MANDATORY GATE - All steps must be complete
-make checkpoint-gate CMD=new-learnings GATE="Final Commit Readiness" REQUIRED="1,2,3,4,5,6,7,8,9,10,11"
+./scripts/gate-checkpoint.sh new-learnings "Final Commit Readiness" "1,2,3,4,5,6,7,8,9,10,11"
 
 # If gate passes, show final status
 if [ $? -eq 0 ]; then

@@ -19,21 +19,13 @@ make checkpoint-status CMD=execute-plan VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/execute-plan-progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=execute-plan STEPS='"KB Consultation" "Read Plan" "Extract Iterations" "Execute Iterations" "Run Tests" "Verify Memory" "Update Plan Status" "Summary"'
-else
-  make checkpoint-status CMD=execute-plan
-fi
+./scripts/init-checkpoint.sh execute-plan '"KB Consultation" "Read Plan" "Extract Iterations" "Execute Iterations" "Run Tests" "Verify Memory" "Update Plan Status" "Summary"'
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/execute-plan-progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  exit 1
-fi
+./scripts/require-checkpoint.sh execute-plan
 ```
 
 **MANDATORY**: This command MUST use checkpoint tracking. Start by running the checkpoint initialization below. ([details](../../../kb/unmissable-documentation-pattern.md))
@@ -873,7 +865,7 @@ make checkpoint-update CMD=execute-plan STEP=7
 **[QUALITY GATE 1: Setup Complete]**
 ```bash
 # MANDATORY: Must pass before proceeding to execution
-make checkpoint-gate CMD=execute-plan GATE="Setup" REQUIRED="1,2,3,4,5,6,7"
+./scripts/gate-checkpoint.sh execute-plan "Setup" "1,2,3,4,5,6,7"
 ```
 
 **Expected gate output:**
@@ -1363,7 +1355,7 @@ make checkpoint-update CMD=execute-plan STEP=10
 **[QUALITY GATE 2: Implementation Complete]**
 ```bash
 # MANDATORY: Must pass before proceeding to plan update
-make checkpoint-gate CMD=execute-plan GATE="Implementation" REQUIRED="8,9,10"
+./scripts/gate-checkpoint.sh execute-plan "Implementation" "8,9,10"
 ```
 
 **Expected gate output:**
@@ -1592,7 +1584,7 @@ make checkpoint-update CMD=execute-plan STEP=12
 **[QUALITY GATE 3: Documentation Complete]**
 ```bash
 # MANDATORY: Must pass before declaring workflow complete
-make checkpoint-gate CMD=execute-plan GATE="Documentation" REQUIRED="11,12"
+./scripts/gate-checkpoint.sh execute-plan "Documentation" "11,12"
 ```
 
 **Expected gate output:**

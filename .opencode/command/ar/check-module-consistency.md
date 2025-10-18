@@ -26,21 +26,13 @@ make checkpoint-status CMD=check-module-consistency VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/check-module-consistency-progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=check-module-consistency STEPS='"Describe Improvement" "Identify Pattern" "Find Sister Modules" "Find Similar Purpose" "Find Same Subsystem" "Check Module 1" "Check Module 2" "Check Module 3" "Check Module 4" "Check Module 5" "Analyze Findings" "List Modules Needing Update" "Estimate Effort" "Create Priority Order" "Document Plan"'
-else
-  make checkpoint-status CMD=check-module-consistency
-fi
+./scripts/init-checkpoint.sh check-module-consistency '"Describe Improvement" "Identify Pattern" "Find Sister Modules" "Find Similar Purpose" "Find Same Subsystem" "Check Module 1" "Check Module 2" "Check Module 3" "Check Module 4" "Check Module 5" "Analyze Findings" "List Modules Needing Update" "Estimate Effort" "Create Priority Order" "Document Plan"'
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/check-module-consistency-progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  exit 1
-fi
+./scripts/require-checkpoint.sh check-module-consistency
 ```
 
 # Check Module Consistency
@@ -154,7 +146,7 @@ make checkpoint-update CMD=check-module-consistency STEP=2
 #### [UNDERSTANDING GATE]
 ```bash
 # MANDATORY: Clear understanding before searching
-make checkpoint-gate CMD=check-module-consistency GATE="Understanding" REQUIRED="1,2"
+./scripts/gate-checkpoint.sh check-module-consistency "Understanding" "1,2"
 ```
 
 **Expected gate output:**
@@ -201,7 +193,7 @@ The script discovers:
 #### [DISCOVERY GATE]
 ```bash
 # MANDATORY: Ensure enough modules found
-make checkpoint-gate CMD=check-module-consistency GATE="Discovery" REQUIRED="3,4,5"
+./scripts/gate-checkpoint.sh check-module-consistency "Discovery" "3,4,5"
 ```
 
 **Expected gate output:**
@@ -275,7 +267,7 @@ if [ $MODULES_CHECKED -lt 3 ]; then
   exit 1
 fi
 
-make checkpoint-gate CMD=check-module-consistency GATE="Analysis" REQUIRED="6,7,8,9,10"
+./scripts/gate-checkpoint.sh check-module-consistency "Analysis" "6,7,8,9,10"
 ```
 
 **Expected gate output:**
@@ -380,7 +372,7 @@ For modules that need the same improvement:
 #### [PLANNING GATE]
 ```bash
 # MANDATORY: Ensure comprehensive plan
-make checkpoint-gate CMD=check-module-consistency GATE="Planning" REQUIRED="11,12,13,14"
+./scripts/gate-checkpoint.sh check-module-consistency "Planning" "11,12,13,14"
 ```
 
 **Expected gate output:**

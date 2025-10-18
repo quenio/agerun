@@ -31,21 +31,13 @@ make checkpoint-status CMD=next-priority VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/next-priority-progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=next-priority STEPS='"Prepare" "Execute" "Verify"'
-else
-  make checkpoint-status CMD=next-priority
-fi
+./scripts/init-checkpoint.sh next-priority '"Prepare" "Execute" "Verify"'
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/next-priority-progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  exit 1
-fi
+./scripts/require-checkpoint.sh next-priority
 ```
 
 # Next Priority

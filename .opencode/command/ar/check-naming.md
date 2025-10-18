@@ -28,21 +28,7 @@ make checkpoint-status CMD=check-naming VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/check-naming-progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=check-naming STEPS='"Prepare" "Execute" "Verify"'
-else
-  make checkpoint-status CMD=check-naming
-fi
-```
-
-## PRECONDITION: Checkpoint Tracking Must Be Initialized
-
-```bash
-if [ ! -f /tmp/check-naming-progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  exit 1
-fi
+./scripts/init-checkpoint.sh check-naming '"Prepare" "Execute" "Verify"'
 ```
 
 # Check Naming Conventions
@@ -104,7 +90,7 @@ For example: `ar_data_create()` should be `ar_data__create_integer()`
 #### [EXECUTION GATE]
 ```bash
 # Verify ready to execute
-make checkpoint-gate CMD=check-naming GATE="Ready" REQUIRED="1"
+./scripts/gate-checkpoint.sh check-naming "Ready" "1"
 ```
 
 **Expected gate output:**

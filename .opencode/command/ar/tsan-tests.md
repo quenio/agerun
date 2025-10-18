@@ -83,7 +83,7 @@ For example, concurrent agent tests will need careful synchronization.
 #### [EXECUTION GATE]
 ```bash
 # Verify ready to execute
-make checkpoint-gate CMD=tsan-tests GATE="Ready" REQUIRED="1"
+./scripts/gate-checkpoint.sh tsan-tests "Ready" "1"
 ```
 
 **Expected gate output:**

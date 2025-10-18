@@ -19,21 +19,13 @@ make checkpoint-status CMD=review-plan VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/review-plan-progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=review-plan STEPS='"KB Consultation" "Read Plan and Extract PENDING" "Review Each Iteration" "Verify Cross-References" "Document Issues" "Generate Report"'
-else
-  make checkpoint-status CMD=review-plan
-fi
+./scripts/init-checkpoint.sh review-plan '"KB Consultation" "Read Plan and Extract PENDING" "Review Each Iteration" "Verify Cross-References" "Document Issues" "Generate Report"'
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/review-plan-progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  exit 1
-fi
+./scripts/require-checkpoint.sh review-plan
 ```
 
 **MANDATORY**: This command MUST use checkpoint tracking. Start by running the checkpoint initialization below. ([details](../../../kb/unmissable-documentation-pattern.md))
@@ -383,7 +375,7 @@ The helper automatically filters for "- PENDING REVIEW" status and skips:
 **[QUALITY GATE 1: Plan Basics Complete]**
 ```bash
 # MANDATORY: Must pass before proceeding to iteration review
-make checkpoint-gate CMD=review-plan GATE="Plan Basics" REQUIRED="1,2"
+./scripts/gate-checkpoint.sh review-plan "Plan Basics" "1,2"
 ```
 
 **Expected gate output:**
@@ -644,7 +636,7 @@ make checkpoint-update CMD=review-plan STEP=3
 **[QUALITY GATE 2: All Iterations Reviewed]**
 ```bash
 # MANDATORY: Must pass before proceeding to cross-reference verification
-make checkpoint-gate CMD=review-plan GATE="All Iterations Reviewed" REQUIRED="3"
+./scripts/gate-checkpoint.sh review-plan "All Iterations Reviewed" "3"
 ```
 
 **Expected gate output:**

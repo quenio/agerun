@@ -17,21 +17,13 @@ make checkpoint-status CMD=run-exec VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/run-exec-progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=run-exec STEPS='"Prepare" "Execute" "Verify"'
-else
-  make checkpoint-status CMD=run-exec
-fi
+./scripts/init-checkpoint.sh run-exec '"Prepare" "Execute" "Verify"'
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/run-exec-progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  exit 1
-fi
+./scripts/require-checkpoint.sh run-exec
 ```
 
 # Run Executable
@@ -91,7 +83,7 @@ For example, if you see "X messages remaining" at shutdown, there's a message ro
 #### [EXECUTION GATE]
 ```bash
 # Verify ready to execute
-make checkpoint-gate CMD=run-exec GATE="Ready" REQUIRED="1"
+./scripts/gate-checkpoint.sh run-exec "Ready" "1"
 ```
 
 **Expected gate output:**

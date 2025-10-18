@@ -2,6 +2,33 @@
 
 ## 2025-10-18
 
+- **Checkpoint Wrapper Script Standardization**
+
+  Migrated all 31 slash commands to use standardized checkpoint wrapper scripts, eliminating code duplication and ensuring consistent dash-based naming conventions.
+
+  **Problem**: Commands used manual if/then/else patterns for checkpoint initialization (7-8 lines), precondition checks (5 lines), and direct make calls for gates. This created duplication, inconsistency, and maintenance overhead across 30+ command files.
+
+  **Solution**: Replaced all manual patterns with wrapper script calls:
+  - Initialization: `./scripts/init-checkpoint.sh <cmd> '<steps>'` (replaces 7-8 line if/then/else)
+  - Preconditions: `./scripts/require-checkpoint.sh <cmd>` (replaces 5 line check)
+  - Gates: `./scripts/gate-checkpoint.sh <cmd> "<gate>" "<steps>"` (replaces make call)
+  - Completion: `./scripts/complete-checkpoint.sh <cmd>` (already standardized)
+
+  **Changes**:
+  - **60 gate commands** updated across 31 files (analyze-exec, analyze-tests, build, build-clean, check-commands, check-logs, check-module-consistency, check-naming, commit, compact-changes, compact-guidelines, compact-tasks, create-command, create-plan, execute-plan, fix-errors-whitelisted, merge-settings, migrate-module-to-zig-abi, migrate-module-to-zig-struct, new-learnings, next-priority, next-task, review-changes, review-plan, run-exec, run-tests, sanitize-exec, sanitize-tests, tsan-exec, tsan-tests, check-docs)
+  - **30 initialization patterns** simplified from multi-line to single-line wrapper calls
+  - **29 precondition patterns** simplified from 5 lines to 1 line
+  - **1 template pattern** updated in create-command.md to use new gate syntax
+
+  **Benefits**:
+  - Reduced code duplication: Initialization from 7-8 lines → 1 line per command
+  - Consistent naming: All wrapper scripts enforce dash-based temp file naming
+  - Centralized maintenance: Update behavior in one place, affects all commands
+  - Clearer documentation: Commands more concise and easier to understand
+  - Alignment with temp file naming standards (commits e264d77, 4dd5056)
+
+  **Impact**: All checkpoint operations now use standardized patterns defined in `/scripts/*-checkpoint.sh`, making it easier to maintain and update checkpoint behavior across the entire command suite.
+
 - **Checkpoint Command Name Validation**
 
   Added validation to all checkpoint scripts to detect and warn about underscore usage in command names, preventing tracking file naming inconsistencies.

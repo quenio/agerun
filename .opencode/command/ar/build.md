@@ -70,7 +70,7 @@ make checkpoint-status CMD=build
 #### [EXECUTION GATE]
 ```bash
 # Verify ready to execute
-make checkpoint-gate CMD=build GATE="Ready" REQUIRED="1"
+./scripts/gate-checkpoint.sh build "Ready" "1"
 ```
 
 **Expected gate output:**

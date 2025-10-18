@@ -26,12 +26,7 @@ make checkpoint-init CMD=create-plan STEPS='"KB Consultation" "Read Requirements
 **MANDATORY**: Before executing ANY steps, verify checkpoint tracking is initialized:
 
 ```bash
-if [ ! -f /tmp/create-plan-progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=create-plan STEPS='"KB Consultation" "Read Requirements" "Extract Iterations" "Structure Plan" "Validate Plan" "Summary"'
-else
-  make checkpoint-status CMD=create-plan
-fi
+./scripts/init-checkpoint.sh create-plan '"KB Consultation" "Read Requirements" "Extract Iterations" "Structure Plan" "Validate Plan" "Summary"'
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
@@ -39,11 +34,7 @@ fi
 **BEFORE PROCEEDING**: Verify checkpoint tracking initialization:
 
 ```bash
-if [ ! -f /tmp/create-plan-progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  echo "STOP: Initialize tracking with the command above before proceeding."
-  exit 1
-fi
+./scripts/require-checkpoint.sh create-plan
 ```
 
 **MANDATORY**: This command MUST use checkpoint tracking. Start by running the checkpoint initialization below. ([details](../../../kb/unmissable-documentation-pattern.md))
@@ -590,7 +581,7 @@ make checkpoint-update CMD=create-plan STEP=5
 **[QUALITY GATE 1: Requirements Complete]**
 ```bash
 # MANDATORY: Must pass before proceeding to iteration planning
-make checkpoint-gate CMD=create-plan GATE="Requirements" REQUIRED="1,2,3,4,5"
+./scripts/gate-checkpoint.sh create-plan "Requirements" "1,2,3,4,5"
 ```
 
 **Expected gate output:**
@@ -1091,7 +1082,7 @@ make checkpoint-update CMD=create-plan STEP=8
 **[QUALITY GATE 2: Iterations Complete]**
 ```bash
 # MANDATORY: Must pass before proceeding to cleanup/markers
-make checkpoint-gate CMD=create-plan GATE="Iterations" REQUIRED="6,7,8"
+./scripts/gate-checkpoint.sh create-plan "Iterations" "6,7,8"
 ```
 
 **Expected gate output:**
@@ -1211,7 +1202,7 @@ make checkpoint-update CMD=create-plan STEP=11
 **[QUALITY GATE 3: Documentation Complete]**
 ```bash
 # MANDATORY: Must pass before validation
-make checkpoint-gate CMD=create-plan GATE="Documentation" REQUIRED="9,10,11"
+./scripts/gate-checkpoint.sh create-plan "Documentation" "9,10,11"
 ```
 
 **Expected gate output:**

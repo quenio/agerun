@@ -17,21 +17,13 @@ make checkpoint-status CMD=analyze-exec VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/analyze-exec-progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=analyze-exec STEPS='"Prepare" "Execute" "Verify"'
-else
-  make checkpoint-status CMD=analyze-exec
-fi
+./scripts/init-checkpoint.sh analyze-exec '"Prepare" "Execute" "Verify"'
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/analyze-exec-progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  exit 1
-fi
+./scripts/require-checkpoint.sh analyze-exec
 ```
 
 # Analyze Executable
@@ -91,7 +83,7 @@ make checkpoint-status CMD=analyze-exec
 #### [EXECUTION GATE]
 ```bash
 # Verify ready to execute
-make checkpoint-gate CMD=analyze-exec GATE="Ready" REQUIRED="1"
+./scripts/gate-checkpoint.sh analyze-exec "Ready" "1"
 ```
 
 **Expected gate output:**

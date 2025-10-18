@@ -29,21 +29,13 @@ make checkpoint-status CMD=check-commands VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/check-commands-progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=check-commands STEPS='"Scan Commands" "Validate Structure" "Calculate Scores" "Identify Issues" "Generate Report"'
-else
-  make checkpoint-status CMD=check-commands
-fi
+./scripts/init-checkpoint.sh check-commands '"Scan Commands" "Validate Structure" "Calculate Scores" "Identify Issues" "Generate Report"'
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/check-commands-progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  exit 1
-fi
+./scripts/require-checkpoint.sh check-commands
 ```
 
 # Check Commands

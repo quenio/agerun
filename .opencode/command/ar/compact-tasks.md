@@ -17,21 +17,13 @@ make checkpoint-status CMD=compact-tasks VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/compact-tasks-progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=compact-tasks STEPS='"Measure Baseline" "Categorize Tasks" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Commit Changes" "Final Verification"'
-else
-  make checkpoint-status CMD=compact-tasks
-fi
+./scripts/init-checkpoint.sh compact-tasks '"Measure Baseline" "Categorize Tasks" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Commit Changes" "Final Verification"'
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/compact-tasks-progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  exit 1
-fi
+./scripts/require-checkpoint.sh compact-tasks
 ```
 
 ## CRITICAL: Mixed-State Document Strategy
@@ -200,7 +192,7 @@ Analysis questions for completed tasks:
 #### [CATEGORIZATION GATE]
 ```bash
 # Verify categorization before proceeding to manual work
-make checkpoint-gate CMD=compact-tasks GATE="Categorization Complete" REQUIRED="1,2"
+./scripts/gate-checkpoint.sh compact-tasks "Categorization Complete" "1,2"
 ```
 
 **Expected gate output:**
@@ -319,7 +311,7 @@ if [ $LINE_REDUCTION -lt 10 ]; then
 fi
 
 echo "✅ Integrity verified and reduction target met"
-make checkpoint-gate CMD=compact-tasks GATE="Selective Compaction Quality" REQUIRED="3,4"
+./scripts/gate-checkpoint.sh compact-tasks "Selective Compaction Quality" "3,4"
 ```
 
 **Expected gate output:**

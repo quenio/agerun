@@ -17,21 +17,13 @@ make checkpoint-status CMD=merge-settings VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/merge-settings-progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=merge-settings STEPS='"Check Files" "Read Settings" "Merge Permissions" "Validate Result" "Commit and Cleanup"'
-else
-  make checkpoint-status CMD=merge-settings
-fi
+./scripts/init-checkpoint.sh merge-settings '"Check Files" "Read Settings" "Merge Permissions" "Validate Result" "Commit and Cleanup"'
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/merge-settings-progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  exit 1
-fi
+./scripts/require-checkpoint.sh merge-settings
 ```
 
 # Merge Settings
@@ -118,7 +110,7 @@ if [ "$LOCAL_EXISTS" = "NO" ]; then
   done
   exit 0
 fi
-make checkpoint-gate CMD=merge-settings GATE="Discovery" REQUIRED="1"
+./scripts/gate-checkpoint.sh merge-settings "Discovery" "1"
 ```
 
 ### Stage 2: Merge (Steps 2-4)
@@ -215,7 +207,7 @@ if [ "$VALID" != "YES" ] && [ "$LOCAL_EXISTS" = "YES" ]; then
   echo "❌ CRITICAL: Merge validation failed!"
   exit 1
 fi
-make checkpoint-gate CMD=merge-settings GATE="Merge Validation" REQUIRED="2,3,4"
+./scripts/gate-checkpoint.sh merge-settings "Merge Validation" "2,3,4"
 ```
 
 ### Stage 3: Cleanup (Step 5)

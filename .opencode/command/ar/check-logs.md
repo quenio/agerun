@@ -19,21 +19,13 @@ make checkpoint-status CMD=check-logs VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/check-logs-progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=check-logs STEPS='"Run Build" "Standard Checks" "Deep Analysis" "Categorize Errors" "Fix Issues" "Update Whitelist" "Re-check Logs" "Final Validation"'
-else
-  make checkpoint-status CMD=check-logs
-fi
+./scripts/init-checkpoint.sh check-logs '"Run Build" "Standard Checks" "Deep Analysis" "Categorize Errors" "Fix Issues" "Update Whitelist" "Re-check Logs" "Final Validation"'
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/check-logs-progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  exit 1
-fi
+./scripts/require-checkpoint.sh check-logs
 ```
 
 ## MANDATORY KB Consultation
@@ -153,7 +145,7 @@ make checkpoint-update CMD=check-logs STEP=2
 #### [BUILD GATE]
 ```bash
 # Verify build is clean before deeper analysis
-make checkpoint-gate CMD=check-logs GATE="Build" REQUIRED="1"
+./scripts/gate-checkpoint.sh check-logs "Build" "1"
 ```
 
 **Expected gate output:**
@@ -209,7 +201,7 @@ make checkpoint-update CMD=check-logs STEP=4
 # ⚠️ CRITICAL: If errors found, must resolve before proceeding
 source /tmp/check-logs-stats.txt
 if [ ${ERROR_COUNT:-0} -gt 0 ]; then
-  make checkpoint-gate CMD=check-logs GATE="Error Analysis" REQUIRED="3,4"
+  ./scripts/gate-checkpoint.sh check-logs "Error Analysis" "3,4"
 fi
 ```
 

@@ -48,21 +48,13 @@ make checkpoint-status CMD=create-command VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/create-command-progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=create-command STEPS='"Validate Args" "KB Consultation" "Create Structure" "Add Checkpoints" "Add Quality Gates" "Add Documentation" "Verify Excellence"'
-else
-  make checkpoint-status CMD=create-command
-fi
+./scripts/init-checkpoint.sh create-command '"Validate Args" "KB Consultation" "Create Structure" "Add Checkpoints" "Add Quality Gates" "Add Documentation" "Verify Excellence"'
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/create-command-progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  exit 1
-fi
+./scripts/require-checkpoint.sh create-command
 ```
 
 # Create Command
@@ -177,7 +169,7 @@ make checkpoint-update CMD=create-command STEP=2
 #### [QUALITY GATE 1: Preparation Complete]
 ```bash
 # MANDATORY: Must pass before proceeding
-make checkpoint-gate CMD=create-command GATE="Preparation" REQUIRED="1,2"
+./scripts/gate-checkpoint.sh create-command "Preparation" "1,2"
 ```
 
 **Expected gate output:**
@@ -364,7 +356,7 @@ echo "  • Enforce minimum requirements"
 echo ""
 echo "Template pattern:"
 echo '  ```bash'
-echo '  make checkpoint-gate CMD=COMMAND_NAME GATE="Stage Name" REQUIRED="1,2,3"'
+echo '  ./scripts/gate-checkpoint.sh COMMAND_NAME "Stage Name" "1,2,3"'
 echo '  ```'
 echo ""
 echo "Add gates to $COMMAND_FILE between stages"
@@ -376,7 +368,7 @@ make checkpoint-update CMD=create-command STEP=5
 #### [QUALITY GATE 2: Structure Complete]
 ```bash
 # MANDATORY: Must pass before proceeding
-make checkpoint-gate CMD=create-command GATE="Structure" REQUIRED="3,4,5"
+./scripts/gate-checkpoint.sh create-command "Structure" "3,4,5"
 ```
 
 **Expected gate output:**
@@ -432,7 +424,7 @@ make checkpoint-update CMD=create-command STEP=7
 #### [QUALITY GATE 3: Excellence Achieved]
 ```bash
 # MANDATORY: Must pass before completion
-make checkpoint-gate CMD=create-command GATE="Excellence" REQUIRED="6,7"
+./scripts/gate-checkpoint.sh create-command "Excellence" "6,7"
 ```
 
 **Expected gate output:**

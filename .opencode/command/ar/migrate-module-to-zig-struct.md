@@ -26,21 +26,13 @@ make checkpoint-status CMD=migrate-module-to-zig-struct VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/migrate-module-to-zig-struct-progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=migrate-module-to-zig-struct STEPS='"Read KB Article" "Check Current Implementation" "Check C Dependencies" "Check Zig Dependencies" "Verify Safety" "Create Struct Module" "Convert Functions" "Update Dependencies" "Run Tests" "Remove Old Module" "Update Documentation"'
-else
-  make checkpoint-status CMD=migrate-module-to-zig-struct
-fi
+./scripts/init-checkpoint.sh migrate-module-to-zig-struct '"Read KB Article" "Check Current Implementation" "Check C Dependencies" "Check Zig Dependencies" "Verify Safety" "Create Struct Module" "Convert Functions" "Update Dependencies" "Run Tests" "Remove Old Module" "Update Documentation"'
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/migrate-module-to-zig-struct-progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  exit 1
-fi
+./scripts/require-checkpoint.sh migrate-module-to-zig-struct
 ```
 
 # Migrate Module to Zig Struct
@@ -117,7 +109,7 @@ make checkpoint-update CMD=migrate-module-to-zig-struct STEP=1
 #### [KNOWLEDGE GATE]
 ```bash
 # Confirm KB article was read and understood
-make checkpoint-gate CMD=migrate-module-to-zig-struct GATE="Knowledge" REQUIRED="1"
+./scripts/gate-checkpoint.sh migrate-module-to-zig-struct "Knowledge" "1"
 ```
 
 **Expected gate output:**
@@ -173,7 +165,7 @@ The script checks:
 #### [CRITICAL SAFETY GATE]
 ```bash
 # ⚠️ CRITICAL: Verify migration is safe
-make checkpoint-gate CMD=migrate-module-to-zig-struct GATE="Safety" REQUIRED="2,3,4,5"
+./scripts/gate-checkpoint.sh migrate-module-to-zig-struct "Safety" "2,3,4,5"
 ```
 
 **Expected gate output:**
@@ -239,7 +231,7 @@ make checkpoint-update CMD=migrate-module-to-zig-struct STEP=7
 #### [IMPLEMENTATION GATE]
 ```bash
 # Verify implementation is complete
-make checkpoint-gate CMD=migrate-module-to-zig-struct GATE="Implementation" REQUIRED="6,7"
+./scripts/gate-checkpoint.sh migrate-module-to-zig-struct "Implementation" "6,7"
 ```
 
 **Expected gate output:**
@@ -293,7 +285,7 @@ fi
 #### [CRITICAL TESTING GATE]
 ```bash
 # ⚠️ CRITICAL: Verify all tests pass with no leaks
-make checkpoint-gate CMD=migrate-module-to-zig-struct GATE="Testing" REQUIRED="8,9"
+./scripts/gate-checkpoint.sh migrate-module-to-zig-struct "Testing" "8,9"
 ```
 
 **Expected gate output:**

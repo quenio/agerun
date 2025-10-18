@@ -171,7 +171,7 @@ Analysis questions to consider:
 #### [ANALYSIS GATE]
 ```bash
 # Verify analysis before proceeding to manual work
-make checkpoint-gate CMD=compact-changes GATE="Analysis Complete" REQUIRED="1,2"
+./scripts/gate-checkpoint.sh compact-changes "Analysis Complete" "1,2"
 ```
 
 **Expected gate output:**
@@ -334,7 +334,7 @@ if [ "$METRICS_OK" != "PASS" ]; then
   echo "Review: grep -oE '[0-9]+[%]|[0-9]+ (files|lines)' CHANGELOG.md"
 fi
 
-make checkpoint-gate CMD=compact-changes GATE="Compaction Quality" REQUIRED="3,4,5"
+./scripts/gate-checkpoint.sh compact-changes "Compaction Quality" "3,4,5"
 ```
 
 **Expected gate output:**

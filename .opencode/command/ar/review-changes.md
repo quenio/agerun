@@ -30,21 +30,13 @@ make checkpoint-status CMD=review-changes VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/review-changes-progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=review-changes STEPS='"Diff Analysis" "Code Smells" "Memory Management" "Naming Conventions" "Error Handling" "Test Coverage" "Parnas Principles" "Module Hierarchy" "Interface Design" "Dependency Check" "Design Patterns" "Real Code Check" "Doc Validation" "Cross-References" "Completeness" "Link Validation" "Build Status" "Hidden Issues" "Test Results" "File Hygiene" "Doc Sync" "Final Report"'
-else
-  make checkpoint-status CMD=review-changes
-fi
+./scripts/init-checkpoint.sh review-changes '"Diff Analysis" "Code Smells" "Memory Management" "Naming Conventions" "Error Handling" "Test Coverage" "Parnas Principles" "Module Hierarchy" "Interface Design" "Dependency Check" "Design Patterns" "Real Code Check" "Doc Validation" "Cross-References" "Completeness" "Link Validation" "Build Status" "Hidden Issues" "Test Results" "File Hygiene" "Doc Sync" "Final Report"'
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/review-changes-progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  exit 1
-fi
+./scripts/require-checkpoint.sh review-changes
 ```
 
 # Review Changes
@@ -243,7 +235,7 @@ This command performs a comprehensive review of all uncommitted changes across m
 **[QUALITY GATE 1: Code Quality Complete]**
 ```bash
 # MANDATORY: Must pass before proceeding to architecture review
-make checkpoint-gate CMD=review-changes GATE="Code Quality" REQUIRED="1,2,3,4,5,6"
+./scripts/gate-checkpoint.sh review-changes "Code Quality" "1,2,3,4,5,6"
 ```
 
 **Expected gate output:**
@@ -314,7 +306,7 @@ make checkpoint-gate CMD=review-changes GATE="Code Quality" REQUIRED="1,2,3,4,5,
 **[QUALITY GATE 2: Architecture Complete]**
 ```bash
 # MANDATORY: Must pass before proceeding to documentation review
-make checkpoint-gate CMD=review-changes GATE="Architecture" REQUIRED="7,8,9,10,11"
+./scripts/gate-checkpoint.sh review-changes "Architecture" "7,8,9,10,11"
 ```
 
 **Expected gate output:**
@@ -372,7 +364,7 @@ make checkpoint-gate CMD=review-changes GATE="Architecture" REQUIRED="7,8,9,10,1
 **[QUALITY GATE 3: Documentation Complete]**
 ```bash
 # MANDATORY: Must pass before final verification
-make checkpoint-gate CMD=review-changes GATE="Documentation" REQUIRED="12,13,14,15,16"
+./scripts/gate-checkpoint.sh review-changes "Documentation" "12,13,14,15,16"
 ```
 
 **Expected gate output:**
@@ -439,7 +431,7 @@ make checkpoint-gate CMD=review-changes GATE="Documentation" REQUIRED="12,13,14,
 **[QUALITY GATE 4: Pre-Commit Complete]**
 ```bash
 # MANDATORY: Must pass before generating final report
-make checkpoint-gate CMD=review-changes GATE="Pre-Commit" REQUIRED="17,18,19,20,21"
+./scripts/gate-checkpoint.sh review-changes "Pre-Commit" "17,18,19,20,21"
 ```
 
 **Expected gate output:**
