@@ -1,5 +1,18 @@
 #!/usr/bin/env python3
-"""Compact CHANGELOG.md by merging milestone bullet lists into concise summaries."""
+"""
+DEPRECATED: This script compacts CHANGELOG to single-line format (hard to read).
+
+As of 2025-10-18, CHANGELOG.md uses multi-line format for better human readability.
+This script is preserved for reference but should NOT be used for CHANGELOG.md.
+
+For CHANGELOG compaction, use MANUAL editing following these principles:
+1. MAINTAIN multi-line format (do NOT compress to single lines)
+2. Reduce verbosity WITHIN sections, not by combining sections
+3. See: kb/documentation-compacting-pattern.md for guidance
+4. See: .opencode/command/ar/compact-changes.md for workflow
+
+This script may still be useful for OTHER documents that use single-line format.
+"""
 
 from __future__ import annotations
 

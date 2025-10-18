@@ -56,19 +56,33 @@ fi
 - **Manual**: For significant reduction (40-50%+) requiring human judgment and semantic understanding
 - **Best Practice**: Start with script for mechanical cleanup, then manual rewriting for deeper reduction
 
+## CRITICAL - Multi-Line Format Requirement
+
+**AS OF 2025-10-18**: CHANGELOG.md uses multi-line format for human readability.
+
+**DO NOT** use scripts/compact_changelog.py (deprecated - creates unreadable single-line format)
+
+**Compaction Strategy**:
+- Reduce verbosity WITHIN sections, not by combining sections
+- Maintain visual hierarchy (title, blank lines, labeled subsections)
+- Target: 30-50% reduction by trimming words, NOT removing structure
+
+See: `kb/changelog-multi-line-format.md` for complete format specification
+
 ## MANDATORY KB Consultation
 
 Before compacting, you MUST:
 1. Search: `grep "compact\|documentation\|changelog\|automation.*limitation\|manual.*semantic" kb/README.md`
 2. Read these KB articles IN FULL using the read tool:
-   - `kb/documentation-compacting-pattern.md` - **UPDATED**: automation vs. manual guidance
+   - `kb/changelog-multi-line-format.md` - **CRITICAL**: Multi-line format standard (added 2025-10-18)
+   - `kb/documentation-compacting-pattern.md` - **UPDATED**: automation vs. manual guidance with multi-line examples
    - `kb/selective-compaction-pattern.md` - for selection criteria
    - `kb/quantitative-documentation-metrics.md` - for metric preservation
    - `kb/kb-target-compliance-enforcement.md` - **MANDATORY**: How to enforce KB targets
 3. **Check Related Patterns sections** in each article above and read any additional relevant articles found there
-4. In your response, quote the automation limitations and when manual intervention is needed
-5. For 40-50%+ reduction: **Use manual compaction** with semantic analysis
-6. **ENFORCE targets with gates**: Verify 40% minimum achieved
+4. In your response, quote the multi-line format requirements
+5. For 30-50% reduction: **Use manual compaction** with semantic analysis while maintaining multi-line format
+6. **ENFORCE targets with gates**: Verify 30% minimum achieved
 
 **Example of proper approach:**
 ```
@@ -184,19 +198,60 @@ make checkpoint-gate CMD=compact-changes GATE="Analysis Complete" REQUIRED="1,2"
 
 **MANUAL WORK REQUIRED**: Edit CHANGELOG.md using your text editor. Apply these strategies:
 
-**Combining Repetitive Entries**:
-```markdown
-# Before (200+ entries across dates):
-## 2025-08-23
-- System module analysis revealed X
-## 2025-08-15  
-- Continued system module analysis for Y
-## 2025-08-10
-- Further system module analysis showed Z
+**CRITICAL - Multi-line Format**: ALWAYS maintain multi-line format for readability. Do NOT compress to single lines with semicolons.
 
-# After (single coherent entry):
+**Combining Repetitive Entries** (multi-line format):
+```markdown
+# Before (200+ verbose entries across dates):
+## 2025-08-23
+- System module analysis revealed X with detailed explanation...
+## 2025-08-15
+- Continued system module analysis for Y with more details...
+## 2025-08-10
+- Further system module analysis showed Z with lengthy description...
+
+# After (single coherent entry - MULTI-LINE FORMAT):
 ## 2025-08-23 to 2025-03-01
-- **System Module Architecture Analysis**: Comprehensive analysis across 200+ entries revealing architectural patterns, critical issues, and improvement opportunities; **KB Enhancement**: Added 12+ new articles covering system design patterns, error propagation, and development practices; **Impact**: Established clear architectural foundation with quantified improvement roadmap
+
+- **System Module Architecture Analysis**
+
+  Comprehensive analysis across 200+ entries revealing architectural patterns,
+  critical issues, and improvement opportunities.
+
+  **KB Enhancement**: Added 12+ new articles covering system design patterns,
+  error propagation, and development practices
+
+  **Impact**: Established clear architectural foundation with quantified
+  improvement roadmap
+```
+
+**Reducing Verbosity Within Entries** (keep multi-line structure):
+```markdown
+# Before (verbose but already multi-line - 18 lines):
+- **Feature Implementation**
+
+  This feature was implemented by creating three new modules and updating
+  five existing modules. The implementation involved adding comprehensive
+  error handling throughout the system. Detailed testing was performed to
+  ensure all edge cases were covered.
+
+  **Implementation Details**: Modified ar_system.c (45 lines), ar_agency.h
+  (12 lines), ar_interpreter.c (78 lines), and many other files with various
+  changes throughout the codebase.
+
+  **Quality Assurance**: Ran full test suite which showed 78 tests passing
+  with zero memory leaks detected and all sanitizers passing cleanly.
+
+# After (concise but still multi-line - 10 lines):
+- **Feature Implementation**
+
+  Created 3 new modules, updated 5 existing modules with comprehensive
+  error handling and edge case coverage.
+
+  **Implementation**: Core modules modified (ar_system.c, ar_agency.h,
+  ar_interpreter.c), added error handling, updated 12 tests
+
+  **Quality**: 78 tests passing, zero leaks, all sanitizers passed
 ```
 
 **Grouping Date Ranges**:

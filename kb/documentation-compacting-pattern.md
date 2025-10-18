@@ -30,17 +30,40 @@ Long, detailed documentation in main guidelines creates cognitive overload and m
 - Debug strategy: Check report → Trace source → Fix naming → Add cleanup ([details](memory-debugging-comprehensive-guide.md))
 ```
 
-**Historical record compaction (CHANGELOG.md) - Simple case**:
+**Historical record compaction (CHANGELOG.md) - Multi-line format (CURRENT STANDARD)**:
 ```markdown
-// Before (5 lines):
-- Updated documentation-compacting-pattern.md with critical insights
-- Added guidance on preserving existing KB references
-- Documented requirement to create KB articles before adding links
-- Emphasized bidirectional cross-referencing between articles
-- Added single commit strategy for related documentation changes
+// Before (verbose multi-line - 25 lines):
+- **Feature Name**
 
-// After (1 line):
-- Updated documentation-compacting-pattern.md with critical insights: preserving KB references, create-before-link, bidirectional cross-referencing, single commit strategy
+  Long descriptive paragraph explaining what was done in great detail with
+  multiple sentences covering implementation specifics that could be more
+  concise while still maintaining clarity and readability for future reference.
+
+  **Implementation Details**: Long paragraph about technical implementation
+  with excessive detail about every single file that was modified and every
+  single function that was changed and exactly how many lines were added.
+
+  **Additional Context**: Even more verbose explanation of context and
+  background information that could be summarized more concisely.
+
+  **Quality Metrics**: Detailed test results with unnecessary verbosity
+
+  **Impact**: Long explanation of impact
+
+// After (concise multi-line - 12 lines):
+- **Feature Name**
+
+  Brief overview paragraph with key information.
+
+  **Implementation**: Core modules modified (ar_system.c, ar_agency.h),
+  added 3 functions, updated 12 tests
+
+  **Quality**: Clean build, 78 tests passing, zero leaks
+
+  **Impact**: Clear outcome statement
+
+**Key**: Maintain multi-line structure for readability, reduce verbosity
+within each section
 ```
 
 **Historical record compaction (CHANGELOG.md) - Semantic grouping across dates**:
@@ -114,6 +137,30 @@ Long, detailed documentation in main guidelines creates cognitive overload and m
 - Has multiple sub-bullets explaining concepts
 
 **How to compact - Strategy depends on document type**:
+
+**For CHANGELOG.md (multi-line format) - CURRENT STANDARD**:
+1. **ALWAYS maintain multi-line format** - do NOT compress to single lines
+2. Reduce verbosity WITHIN sections, not by combining sections
+3. Compress verbose paragraphs to brief summaries (2-3 sentences max)
+4. Use concise labels (**Implementation**, **Quality**, **Impact** vs. verbose headers)
+5. Combine related bullet lists into compact prose
+6. Remove redundant qualifying statements ("that was", "which is", "in order to")
+7. **Target**: 30-50% reduction by trimming verbosity, NOT by removing structure
+
+**Example of CORRECT multi-line compaction**:
+```markdown
+// WRONG (converts to single-line - hard to read):
+- **Feature**: Implementation details; quality metrics; impact statement; more details; even more stuff
+
+// RIGHT (maintains multi-line - readable and concise):
+- **Feature**
+
+  Brief summary of what was done.
+
+  **Implementation**: Key changes without excessive detail
+
+  **Impact**: Clear outcome
+```
 
 **For reference documentation (e.g., AGENTS.md)**:
 1. Identify core actionable rules (keep these)

@@ -61,6 +61,7 @@ Each learning file contains:
 
 #### 1.3 Version Control & Commits
 - [Atomic Commit Documentation Pattern](atomic-commit-documentation-pattern.md)
+- [CHANGELOG Multi-Line Format](changelog-multi-line-format.md) - **CRITICAL**: Multi-line format standard for human readability (added 2025-10-18)
 - [Claude Code Commit Attribution](claude-code-commit-attribution.md)
 - [Commit Scope Verification](commit-scope-verification.md)
 - [Git Patch Preservation Workflow](git-patch-preservation-workflow.md)

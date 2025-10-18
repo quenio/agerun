@@ -418,7 +418,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 3. `make check-commands` → ensure 90%+ excellence ([details](kb/command-documentation-excellence-gate.md))
 4. Update docs for API changes ([details](kb/documentation-language-migration-updates.md))
 5. Check outdated refs: `grep -l "old_name" modules/*.md`
-6. **CRITICAL - NEVER FORGET**: Update CHANGELOG.md with date, summary, impact for ALL commits ([details](kb/atomic-commit-documentation-pattern.md), [verify](kb/documentation-completion-verification.md))
+6. **CRITICAL - NEVER FORGET**: Update CHANGELOG.md with date, summary, impact for ALL commits using multi-line format ([multi-line format](kb/changelog-multi-line-format.md), [atomic commits](kb/atomic-commit-documentation-pattern.md), [verify](kb/documentation-completion-verification.md))
 7. Update TODO.md if tasks completed or added
 8. `git diff --stat` review full scope → verify message describes ALL changes ([details](kb/incomplete-commit-message-recovery-pattern.md))
 9. Include Claude Code attribution in commit message ([details](kb/claude-code-commit-attribution.md))
