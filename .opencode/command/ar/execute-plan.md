@@ -567,15 +567,54 @@ $ git log --oneline --grep="TDD Cycle 7" -5
 
 **CASE 1: Git status is clean AND iterations found in git log**
 - ✅ **Classification**: Stale markers (code already committed)
-- ✅ **Action**: Skip to Step 7 to update markers: IMPLEMENTED → ✅ COMMITTED
-- ✅ **Skip**: Steps 4-6 (no implementation work needed)
+- ✅ **Action**: Automatically update markers: IMPLEMENTED → ✅ COMMITTED
+- ✅ **Skip**: Steps 6-10 (no implementation work needed)
 - ✅ **Reason**: Code is done and committed, just need to sync plan markers
+
+**CASE 1 AUTOMATIC UPDATE PROCEDURE:**
+
+For each IMPLEMENTED iteration found:
+
+1. **Extract iteration header**:
+   ```bash
+   # Find all IMPLEMENTED iteration headers
+   grep -B1 "IMPLEMENTED" <plan-file> | grep "^###"
+   ```
+
+2. **Update each marker automatically**:
+   ```bash
+   # Use Edit tool to update status markers
+   # Example for Iteration 2:
+   old_string: "**Review Status**: IMPLEMENTED"
+   new_string: "**Review Status**: ✅ COMMITTED"
+   ```
+
+3. **Report updates**:
+   ```markdown
+   Updated stale markers:
+   - Iteration 2: IMPLEMENTED → ✅ COMMITTED
+   - Iteration 3: IMPLEMENTED → ✅ COMMITTED
+   - Iteration 4: IMPLEMENTED → ✅ COMMITTED
+   ```
+
+**MANDATORY**: After updating all stale markers, proceed directly to Step 11 to add completion status header if all iterations are complete
 
 **CASE 2: Git status shows changes AND iterations not in git log**
 - ✅ **Classification**: Uncommitted work (code exists but not committed)
-- ✅ **Action**: Skip to Step 7 to commit: IMPLEMENTED → ✅ COMMITTED
-- ✅ **Skip**: Steps 4-6 (implementation already done)
+- ✅ **Action**: Skip Steps 8-10, proceed to Step 11 to update markers before auto-commit
+- ✅ **Skip**: Steps 8-10 (implementation already done, just needs commit)
 - ✅ **Reason**: Code is done but needs git commit
+
+**CASE 2 PROCEDURE:**
+
+1. **Update plan markers** (Step 11):
+   - Update IMPLEMENTED → ✅ COMMITTED before committing
+   - Include plan file in the commit
+
+2. **Automatic commit** (after Step 12):
+   - Auto-commit will detect uncommitted changes
+   - Creates commit with implementation + plan updates
+   - Commit message includes iteration details
 
 **CASE 3: No REVIEWED/REVISED iterations AND no uncommitted IMPLEMENTED iterations**
 - ⚠️ **Classification**: Nothing to execute
@@ -1409,6 +1448,100 @@ make checkpoint-status CMD=execute-plan
 ```bash
 # Clean up tracking
 make checkpoint-cleanup CMD=execute-plan
+```
+
+### Automatic Commit (If Files Changed)
+
+After completing all steps, check if any files were modified and automatically commit:
+
+```bash
+# Check if plan file or implementation files were modified
+git status --porcelain
+```
+
+**If git status shows changes:**
+
+```markdown
+✅ Files modified during execution - automatically creating commit
+```
+
+**Automatic commit procedure:**
+
+1. **Verify changes are plan updates only (CASE 1) or include implementation (CASE 2)**:
+   ```bash
+   # Check what files changed
+   git status --porcelain
+
+   # CASE 1: Only plan file changed (stale marker updates)
+   # M plans/message_routing_via_delegation_plan.md
+
+   # CASE 2: Plan + implementation files changed (new iterations executed)
+   # M plans/message_routing_via_delegation_plan.md
+   # M modules/ar_send_instruction_evaluator.zig
+   # M modules/ar_send_instruction_evaluator_tests.c
+   ```
+
+2. **Generate appropriate commit message**:
+
+   **For CASE 1 (plan updates only)**:
+   ```bash
+   # Commit message format:
+   "docs: update plan status markers to ✅ COMMITTED
+
+   Updated <plan-name> with corrected status markers:
+   - Iteration X: IMPLEMENTED → ✅ COMMITTED
+   - Iteration Y: IMPLEMENTED → ✅ COMMITTED
+
+   All iterations verified as already committed in git history.
+
+   🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+   Co-Authored-By: Claude <noreply@anthropic.com>"
+   ```
+
+   **For CASE 2 (implementation changes)**:
+   ```bash
+   # Commit message format:
+   "feat: complete TDD Cycle X - <Feature Name> (Iterations Y-Z)
+
+   Implemented iterations:
+   - Iteration Y: <description>
+   - Iteration Z: <description>
+
+   All tests passing with zero memory leaks.
+
+   🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+   Co-Authored-By: Claude <noreply@anthropic.com>"
+   ```
+
+3. **Execute automatic commit**:
+   ```bash
+   # Add all changes
+   git add <plan-file> <implementation-files>
+
+   # Create commit with appropriate message
+   git commit -m "$(cat <<'EOF'
+   <commit message from above>
+   EOF
+   )"
+   ```
+
+4. **Report commit result**:
+   ```markdown
+   ✅ Commit created successfully: <commit-hash>
+
+   Files committed:
+   - <plan-file>
+   - <implementation-files>
+
+   Run `git show` to review the commit.
+   ```
+
+**If git status is clean (no changes):**
+
+```markdown
+✅ No files modified - no commit needed
 ```
 
 ## TDD Execution Guidelines
