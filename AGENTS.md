@@ -424,6 +424,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Error & Logs**: Context filtering, precise grep, fix root causes ([details](kb/systematic-whitelist-error-resolution.md), [logs](kb/build-log-extraction-patterns.md), [grep](kb/grep-or-syntax-differences.md), [config migration](kb/configuration-migration-troubleshooting-strategy.md))
 **CI/CD**: gh CLI debugging, version verification ([details](kb/github-actions-debugging-workflow.md), [versions](kb/tool-version-selection-due-diligence.md))
 **Quality**: Stop after 3 failures, staged cleanup, impact analysis ([details](kb/struggling-detection-pattern.md), [cleanup](kb/staged-cleanup-pattern.md), [impact](kb/comprehensive-impact-analysis.md))
+**Output & Temporary Files**: Output results directly to user, don't create temp files just for display. Only use `/tmp` for actual checkpoint tracking files and workflow outputs that are persistent system state. Never write audit results, analysis summaries, or temporary reports to `/tmp` - display directly in conversation instead.
 
 ### 9. Error Propagation Pattern
 
@@ -652,6 +653,7 @@ Directory check, clean state, test code, init system ([details](kb/method-test-t
 - Use raw file operations
 - Create files unless necessary
 - Assume error causes - always verify with evidence ([details](kb/issue-currency-verification-pattern.md))
+- Write audit results, analysis summaries, or temporary reports to `/tmp` - output directly to user instead
 
 **Always**:
 - Use heap tracking macros
