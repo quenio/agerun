@@ -252,6 +252,7 @@ Commands like `/ar:check-docs`, `/ar:new-learnings`, and `/ar:commit` use these 
 - [ ] Error messages help diagnose platform issues
 
 ## Related Patterns
-- [Makefile POSIX Shell Compatibility](makefile-posix-shell-compatibility.md)
+- [Bash Pipefail Error Handling Patterns](bash-pipefail-error-handling-patterns.md) - **CRITICAL**: Grep, arithmetic, and character class errors with set -e/pipefail
 - [Bash Command Parsing Patterns](bash-command-parsing-patterns.md)
+- [Makefile POSIX Shell Compatibility](makefile-posix-shell-compatibility.md)
 - [Shell Loading Order and Tool Detection](shell-loading-order-tool-detection.md)

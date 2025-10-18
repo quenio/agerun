@@ -344,6 +344,11 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - **CRITICAL**: Use `[[ ]]` for pattern matching (POSIX `[ ]` doesn't support regex `=~` or glob patterns `*`)
   - ❌ WRONG: `[ "$var" =~ pattern ]` or `[ "$file" = *.txt ]`
   - ✅ RIGHT: `[[ "$var" =~ pattern ]]` and `[[ "$file" = *.txt ]]`
+- **CRITICAL pipefail patterns** ([details](kb/bash-pipefail-error-handling-patterns.md)):
+  - Wrap grep in pipelines: `{ grep "pattern" file || true; } | wc -l` (not `grep "pattern" file | wc -l`)
+  - Use assignment for arithmetic: `count=$((count + 1))` (not `((count++))`)
+  - Use `--` separator for patterns with dash: `grep -qE -- "-pattern"` (not `grep -qE "-pattern"`)
+  - Character classes must be double-bracketed: `[[:space:]]` (not `[:space:]`)
 - Use `@` or `|` delimiter in sed commands, not `/` (avoids escaping issues)
 - Detect OS platform: `if [[ "$OSTYPE" == darwin* ]]` for macOS-specific code
 - Test with bash: `bash -n script.sh` to verify syntax before committing

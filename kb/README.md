@@ -405,6 +405,7 @@ Each learning file contains:
 - [AgeRun Language Constraint Workarounds](agerun-language-constraint-workarounds.md)
 - [AgeRun Method Language Nesting Constraint](agerun-method-language-nesting-constraint.md)
 - [Bash Command Parsing Patterns](bash-command-parsing-patterns.md)
+- [Bash Pipefail Error Handling Patterns](bash-pipefail-error-handling-patterns.md) ⭐ **CRITICAL** - Prevent grep pipeline, arithmetic, and character class failures with set -e/pipefail
 - [C to Zig Module Migration](c-to-zig-module-migration.md)
 - [Configuration Migration Troubleshooting Strategy](configuration-migration-troubleshooting-strategy.md)
 - [Exit Code Propagation Through popen](exit-code-propagation-popen.md)
