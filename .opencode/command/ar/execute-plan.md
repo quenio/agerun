@@ -151,9 +151,11 @@ make checkpoint-init CMD=execute-plan STEPS='"KB Consultation" "Read Plan" "Vali
 This command uses checkpoint tracking to ensure systematic plan execution. The execution process is divided into 3 major stages with 11 checkpoints total.
 
 **Step Breakdown:**
-- **Steps 1-6**: Stage 1 - Plan Reading and Setup (includes IMPLEMENTED verification)
-- **Steps 7-9**: Stage 2 - Iteration Execution
-- **Steps 10-11**: Stage 3 - Completion and Documentation
+- **Steps 1-6**: Stage 1 - Plan Reading and Setup (includes IMPLEMENTED verification) + Quality Gate 1
+- **Steps 7-9**: Stage 2 - Iteration Execution + Quality Gate 2
+- **Steps 10-11**: Stage 3 - Completion and Documentation + Quality Gate 3
+
+**Quality Gates**: Each stage ends with a mandatory gate that verifies all steps in that stage completed before proceeding.
 
 **Expected output:**
 ```
@@ -1191,6 +1193,23 @@ make checkpoint-update CMD=execute-plan STEP=11
 ```
 
 #### [CHECKPOINT END - STAGE 3]
+
+**[QUALITY GATE 3: Documentation Complete]**
+```bash
+# MANDATORY: Must pass before declaring workflow complete
+make checkpoint-gate CMD=execute-plan GATE="Documentation" REQUIRED="10,11"
+```
+
+**Expected gate output:**
+```
+✅ GATE 'Documentation' - PASSED
+   Verified: Steps 10,11
+```
+
+**Minimum Requirements for Stage 3:**
+- [ ] Plan status markers updated (IMPLEMENTED → ✅ COMMITTED)
+- [ ] Completion status header added (if all iterations complete)
+- [ ] Execution summary generated with all metrics
 
 #### [CHECKPOINT COMPLETE]
 ```bash
