@@ -436,6 +436,7 @@ old_agerun=$({ grep -r "agerun_" modules/*.c modules/*.h methods/*.c 2>/dev/null
     { grep -v "memory_report_agerun" || true; } | \
     { grep -v "\"agerun\"" || true; } | \
     { grep -v "agerun\." || true; } | \
+    { grep -v '".*agerun_' || true; } | \
     wc -l)
 
 if [ $old_agerun -gt 0 ]; then
@@ -448,6 +449,7 @@ if [ $old_agerun -gt 0 ]; then
         { grep -v "memory_report_agerun" || true; } | \
         { grep -v "\"agerun\"" || true; } | \
         { grep -v "agerun\." || true; } | \
+        { grep -v '".*agerun_' || true; } | \
         head -5 | sed 's/^/      /'
 else
     print_success "No outdated 'agerun_' prefixes found"
