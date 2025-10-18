@@ -193,30 +193,12 @@ make checkpoint-update CMD=check-logs STEP=3
 #### Step 4: Categorize Errors
 
 ```bash
-# Categorize errors found
+# Categorize errors found using helper script
 source /tmp/check-logs-stats.txt
 
 if [ $ERROR_COUNT -gt 0 ]; then
-  echo "Categorizing $ERROR_COUNT errors..."
-  
-  # Count real vs intentional errors
-  REAL_ERRORS=0
-  INTENTIONAL_ERRORS=0
-  
-  # Check against whitelist
-  while IFS= read -r error; do
-    if grep -q "$error" log_whitelist.yaml; then
-      INTENTIONAL_ERRORS=$((INTENTIONAL_ERRORS + 1))
-    else
-      REAL_ERRORS=$((REAL_ERRORS + 1))
-    fi
-  done < <(grep "ERROR\|FAILURE" /tmp/check-logs-output.txt)
-  
-  echo "Real errors: $REAL_ERRORS"
-  echo "Intentional errors needing whitelist: $INTENTIONAL_ERRORS"
-  
-  echo "REAL_ERRORS=$REAL_ERRORS" >> /tmp/check-logs-stats.txt
-  echo "INTENTIONAL_ERRORS=$INTENTIONAL_ERRORS" >> /tmp/check-logs-stats.txt
+  # Run categorization and append results to stats file
+  ./scripts/categorize-log-errors.sh /tmp/check-logs-output.txt log_whitelist.yaml | tee -a /tmp/check-logs-stats.txt
 fi
 
 make checkpoint-update CMD=check-logs STEP=4
