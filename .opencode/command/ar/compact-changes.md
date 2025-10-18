@@ -129,60 +129,24 @@ make checkpoint-status CMD=compact-changes
 
 #### [CHECKPOINT START - STAGE 1]
 
-#### Step 1: Measure Baseline
+#### Steps 1-2: Analyze CHANGELOG
+
+Run pattern analysis using helper script:
 
 ```bash
-# Measure initial state
-echo "Measuring CHANGELOG.md baseline..."
+# Analyze CHANGELOG and save stats (Steps 1-2 combined)
+./scripts/analyze-changelog-patterns.sh CHANGELOG.md | tee /tmp/compact-changes-stats.txt
 
-ORIGINAL_LINES=$(wc -l < CHANGELOG.md)
-ORIGINAL_BYTES=$(wc -c < CHANGELOG.md)
-METRICS_COUNT=$(grep -oE "[0-9]+[%]|[0-9]+ (files|lines|occurrences|tests|modules|functions)" CHANGELOG.md | wc -l)
-
-echo "Original: $ORIGINAL_LINES lines, $ORIGINAL_BYTES bytes"
-echo "Metrics to preserve: $METRICS_COUNT"
-
-# Save for later verification
-echo "ORIGINAL_LINES=$ORIGINAL_LINES" > /tmp/compact-changes-stats.txt
-echo "ORIGINAL_BYTES=$ORIGINAL_BYTES" >> /tmp/compact-changes-stats.txt
-echo "METRICS_COUNT=$METRICS_COUNT" >> /tmp/compact-changes-stats.txt
-
+# Mark both analysis steps complete
 make checkpoint-update CMD=compact-changes STEP=1
-```
-
-**Expected output:**
-```
-Measuring CHANGELOG.md baseline...
-Original: 533 lines, 128652 bytes
-Metrics to preserve: 157
-✓ Updated checkpoint 1/7 for compact-changes
-```
-
-#### Step 2: Analyze Patterns
-
-```bash
-# Identify compaction opportunities
-echo "Analyzing CHANGELOG for patterns..."
-
-# Count date sections
-DATE_SECTIONS=$(grep -c "^## 2025-" CHANGELOG.md || echo "0")
-echo "Date sections: $DATE_SECTIONS"
-
-# Look for repetitive patterns (examples)
-echo "Repetitive patterns found:"
-echo "- System Module: $(grep -c "System Module" CHANGELOG.md) occurrences"
-echo "- Parser: $(grep -c "Parser" CHANGELOG.md) occurrences"
-echo "- Global API: $(grep -c "Global API" CHANGELOG.md) occurrences"
-
-echo ""
-echo "Analysis questions to consider:"
-echo "1. What patterns of repetitive work appear across multiple dates?"
-echo "2. Which entries describe the same architectural work?"
-echo "3. Can date ranges be grouped?"
-echo "4. Which verbose bullet lists need rewriting?"
-
 make checkpoint-update CMD=compact-changes STEP=2
 ```
+
+The script provides:
+1. **Baseline Measurements** - Lines, bytes, metrics count
+2. **Structural Analysis** - Date sections count
+3. **Repetitive Pattern Detection** - Common topics appearing frequently
+4. **Compaction Opportunities** - Analysis questions and recommendations
 
 **Expected output:**
 ```
