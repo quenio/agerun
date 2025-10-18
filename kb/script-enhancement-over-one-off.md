@@ -79,3 +79,4 @@ Manual fixes are appropriate when:
 - [Batch Update Script Pattern](batch-update-script-pattern.md)
 - [Systematic File Modification Workflow](systematic-file-modification-workflow.md)
 - [Script Reusability Parameters Pattern](script-reusability-parameters-pattern.md)
+- [Script Debugging Through Isolation](script-debugging-through-isolation.md) - Test script fixes in isolation before applying across codebase

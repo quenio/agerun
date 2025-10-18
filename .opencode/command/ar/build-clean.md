@@ -175,3 +175,8 @@ make: *** [build] Error 1
 - **Required for**: Major refactoring, dependency changes, CI verification
 - **Always use `2>&1`** to capture stderr for complete error visibility
 - **Always follow with `make check-logs`** to verify CI readiness
+
+## Related Patterns
+- [Build Verification Before Commit](../../../kb/build-verification-before-commit.md)
+- [Script Debugging Through Isolation](../../../kb/script-debugging-through-isolation.md) - When build errors occur, isolate the failure
+- [Cross-Platform Bash Script Patterns](../../../kb/cross-platform-bash-script-patterns.md) - Build scripts must work on macOS and Linux

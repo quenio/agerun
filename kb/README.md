@@ -188,6 +188,7 @@ Each learning file contains:
 - [Non-Functional Code Detection Pattern](non-functional-code-detection-pattern.md)
 - [Process Termination Analysis](process-termination-analysis.md)
 - [Regression Root Cause Analysis](regression-root-cause-analysis.md)
+- [Script Debugging Through Isolation](script-debugging-through-isolation.md) ⭐ NEW - Isolation-based debugging for shell scripts, sed, and text processing tools
 - [Stderr Redirection for Debugging](stderr-redirection-debugging.md)
 - [User Feedback Debugging Pattern](user-feedback-debugging-pattern.md)
 - [Verification Through Removal Technique](verification-through-removal-technique.md)
@@ -386,6 +387,7 @@ Each learning file contains:
 - [Batch Update Script Pattern](batch-update-script-pattern.md)
 - [Command Continuous Improvement Pattern](command-continuous-improvement-pattern.md)
 - [Concise Script Output Principle](concise-script-output-principle.md)
+- [Cross-Platform Bash Script Patterns](cross-platform-bash-script-patterns.md) ⭐ NEW - macOS vs Linux compatibility patterns for sed, pattern matching, and platform detection
 - [Dry Run Mode Requirement](dry-run-mode-requirement.md)
 - [File I/O Backup Mechanism](file-io-backup-mechanism.md)
 - [Global Function Removal Script Pattern](global-function-removal-script-pattern.md)

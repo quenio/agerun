@@ -90,3 +90,5 @@ fi
 - [Development Debug Tools](development-debug-tools.md)
 - [Shell Loading Order and Tool Detection](shell-loading-order-tool-detection.md)
 - [Configuration Migration Troubleshooting Strategy](configuration-migration-troubleshooting-strategy.md)
+- [Cross-Platform Bash Script Patterns](cross-platform-bash-script-patterns.md) - Platform-specific sed and pattern matching issues
+- [Script Debugging Through Isolation](script-debugging-through-isolation.md) - Reproducing bash errors in isolation

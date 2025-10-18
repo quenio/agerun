@@ -473,3 +473,8 @@ ignored_errors:
 - Test names may vary by environment (e.g., sanitizer tests append suffixes) ([details](../../../kb/log-format-variation-handling.md))
 - YAML quote handling can affect matching ([details](../../../kb/yaml-string-matching-pitfalls.md))
 - Whitelist is applied uniformly across all checks ([details](../../../kb/uniform-filtering-application.md))
+
+## Related Patterns
+- [Evidence-Based Debugging](../../../kb/evidence-based-debugging.md) - Use log output as evidence for debugging
+- [Script Debugging Through Isolation](../../../kb/script-debugging-through-isolation.md) - Isolate build failures before whitelisting
+- [Cross-Platform Bash Script Patterns](../../../kb/cross-platform-bash-script-patterns.md) - Ensure check-logs works on macOS and Linux

@@ -61,3 +61,4 @@ esac
 - [Bash Command Parsing Patterns](bash-command-parsing-patterns.md)
 - [Shell Loading Order and Tool Detection](shell-loading-order-tool-detection.md)
 - [Shell Configuration Diagnostic Troubleshooting](shell-configuration-diagnostic-troubleshooting.md)
+- [Cross-Platform Bash Script Patterns](cross-platform-bash-script-patterns.md) - Platform differences in sed, grep, and pattern matching
