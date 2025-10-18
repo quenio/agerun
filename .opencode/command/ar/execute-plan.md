@@ -423,9 +423,9 @@ make checkpoint-update CMD=execute-plan STEP=3
 Before extracting REVIEWED/REVISED iterations, you MUST check if any IMPLEMENTED iterations exist:
 
 ```bash
-# MANDATORY FIRST STEP: Check if any IMPLEMENTED iterations exist
-grep -c "IMPLEMENTED" <plan-file>
-# If count > 0, verification is REQUIRED before proceeding
+# Check if any IMPLEMENTED iterations exist
+IMPL_COUNT=$(./scripts/filter-plan-items.sh <plan-file> "IMPLEMENTED" count)
+echo "IMPLEMENTED iterations found: $IMPL_COUNT"
 ```
 
 **If IMPLEMENTED iterations found (count > 0):**
@@ -440,13 +440,17 @@ Mark Step 4 complete and skip to Step 6 (no verification needed):
 make checkpoint-update CMD=execute-plan STEP=4
 # Step 5 skipped (no IMPLEMENTED iterations)
 make checkpoint-update CMD=execute-plan STEP=5
+make checkpoint-update CMD=execute-plan STEP=6
 ```
 
-Then proceed to Step 6 (Extract REVIEWED/REVISED iterations).
+Then proceed to Step 7 (Extract REVIEWED/REVISED iterations).
 
 **If IMPLEMENTED iterations found:**
 
 ```bash
+# Show which IMPLEMENTED iterations exist
+./scripts/filter-plan-items.sh <plan-file> "IMPLEMENTED" list
+
 make checkpoint-update CMD=execute-plan STEP=4
 ```
 
@@ -816,78 +820,52 @@ make checkpoint-update CMD=execute-plan STEP=6
 
 #### Step 7: Extract REVIEWED or REVISED iterations
 
-Now extract iterations that need actual implementation:
+Now extract iterations that need actual implementation using the helper script:
 
-**Filter for REVIEWED or REVISED iterations:**
+**Extract REVIEWED and REVISED iterations:**
 
-Extract only iterations marked with:
-- "- REVIEWED" (approved in review, ready for implementation)
-- "- REVISED" (revised and ready for implementation)
-
-**Skip iterations marked as:**
-- "- PENDING REVIEW" (not yet reviewed)
-- "- IMPLEMENTED" (handled in Step 3B above)
-- "- ✅ COMMITTED" (already committed)
-- "- ✅ COMPLETE" (fully complete)
-
-**Example filtering:**
-```markdown
-# IMPLEMENT THIS (has REVIEWED status):
-#### Iteration 0.1: send() returns true - REVIEWED
-
-# IMPLEMENT THIS (has REVISED status):
-#### Iteration 0.2: has_messages() returns false - REVISED
-
-# SKIP THIS (not yet reviewed):
-#### Iteration 0.3: message queue implementation - PENDING REVIEW
-
-# SKIP THIS (already handled in Step 3B):
-#### Iteration 0.4: cleanup - IMPLEMENTED
-
-# SKIP THIS (already committed):
-#### Iteration 0.5: refactoring - ✅ COMMITTED
-
-# SKIP THIS (fully complete):
-#### Iteration 0.6: documentation - ✅ COMPLETE
+```bash
+# Extract all REVIEWED or REVISED iterations ready for implementation
+./scripts/extract-tdd-cycles.sh <plan-file> 'REVIEWED|REVISED'
 ```
 
-**Create iteration execution list:**
+This will show:
+- Iteration number and description
+- Current status (REVIEWED or REVISED)
+- Total count of iterations ready to execute
 
-For EACH iteration marked REVIEWED or REVISED, extract:
-```markdown
-## Iteration Execution List
+**Expected output:**
+```
+TDD Cycles Ready for Execution
+==============================
 
-### Iteration 0.1: send() returns true
-- Test file: modules/ar_delegate_tests.c
-- Test name: test_delegate__send_returns_true
-- Implementation: ar_delegate__send() in modules/ar_delegate.c
-- Status: REVIEWED (ready to implement)
+1. Iteration 0.1
+   Description: send() returns true
+   Status: REVIEWED
 
-### Iteration 0.2: has_messages() returns false initially
-- Test file: modules/ar_delegate_tests.c
-- Test name: test_delegate__has_no_messages_initially
-- Implementation: ar_delegate__has_messages() in modules/ar_delegate.c
-- Status: REVISED (ready to implement)
+2. Iteration 0.2
+   Description: has_messages() returns false initially
+   Status: REVISED
 
-[... continue for all REVIEWED or REVISED iterations ...]
+==============================
+Total TDD cycles: 2
 
-Total iterations to implement: 10 (REVIEWED: 8, REVISED: 2)
+Ready for TDD execution:
+  - RED phase: Write failing test
+  - GREEN phase: Implement minimal code to pass
+  - REFACTOR phase: Improve code quality
 ```
 
 **Extraction checklist:**
-- [ ] Identified all iterations with "- REVIEWED" status
-- [ ] Identified all iterations with "- REVISED" status
-- [ ] Created list of iterations to execute (REVIEWED or REVISED only)
-- [ ] Noted total iterations needing implementation vs. total iterations
-- [ ] Skipped all non-executable iterations from execution scope
-- [ ] Test file paths identified for each iteration
-- [ ] Test function names extracted for each iteration
-- [ ] Implementation functions identified for each iteration
+- [ ] Ran extract-tdd-cycles.sh to list REVIEWED/REVISED iterations
+- [ ] Verified total iterations to implement
+- [ ] Noted count of REVIEWED vs REVISED iterations
+- [ ] All non-executable iterations properly skipped (PENDING REVIEW, IMPLEMENTED, COMMITTED, COMPLETE)
 - [ ] ✅ **IMPLEMENTED iterations verified** (completed in Step 5)
 - [ ] Git commit status checked and classified (completed in Step 5)
 
 ```bash
-make checkpoint-update CMD=execute-plan STEP=6
+make checkpoint-update CMD=execute-plan STEP=7
 ```
 
 #### [CHECKPOINT END - STAGE 1]
@@ -1411,33 +1389,39 @@ make checkpoint-gate CMD=execute-plan GATE="Implementation" REQUIRED="8,9,10"
 
 **CRITICAL: Before creating the git commit, update all IMPLEMENTED iterations to COMMITTED:**
 
-**Pre-Commit Status Update:**
+**Pre-Commit Status Update (using helper script):**
 
-1. **Identify IMPLEMENTED iterations**:
-   - Find all iterations currently marked "- IMPLEMENTED"
-   - These are iterations that were implemented in this session
+```bash
+# Batch update all IMPLEMENTED iterations to ✅ COMMITTED
+./scripts/update-plan-markers.sh <plan-file> "IMPLEMENTED" "✅ COMMITTED"
+```
 
-2. **Update to COMMITTED status**:
-   - Use Edit tool to update each IMPLEMENTED iteration
-   - Change: "#### Iteration X.Y: description - IMPLEMENTED"
-   - To:     "#### Iteration X.Y: description - ✅ COMMITTED"
+This will:
+1. Find all iterations marked "- IMPLEMENTED"
+2. Update them to "- ✅ COMMITTED"
+3. Create a backup file for recovery
+4. Show which markers were changed
 
 **Pre-Commit Status Update Example:**
 ```bash
 # Before commit (from plan file):
 #### Iteration 0.1: send() returns true - IMPLEMENTED
+#### Iteration 0.2: has_messages() returns false - IMPLEMENTED
 
-# Before creating git commit, use Edit tool:
-old_string: "#### Iteration 0.1: send() returns true - IMPLEMENTED"
-new_string: "#### Iteration 0.1: send() returns true - ✅ COMMITTED"
+# Run helper:
+./scripts/update-plan-markers.sh plans/delegate.md "IMPLEMENTED" "✅ COMMITTED"
 
-# Repeat for all IMPLEMENTED iterations (batch update)
+# After helper (in plan file):
+#### Iteration 0.1: send() returns true - ✅ COMMITTED
+#### Iteration 0.2: has_messages() returns false - ✅ COMMITTED
+
+# Backup created at: plans/delegate.md.bak
 ```
 
 **Pre-Commit Update Checklist:**
-- [ ] Identify all iterations with IMPLEMENTED status
-- [ ] Update each IMPLEMENTED iteration to ✅ COMMITTED (batch update)
-- [ ] Verify all changes to be committed are marked ✅ COMMITTED
+- [ ] Run update-plan-markers.sh to batch update IMPLEMENTED → ✅ COMMITTED
+- [ ] Verify output shows all IMPLEMENTED iterations updated
+- [ ] Check git diff to confirm all markers changed correctly
 - [ ] Include updated plan file in git commit
 
 **MANDATORY**: This MUST be done BEFORE creating the git commit. The plan file with COMMITTED markers must be included in the same commit as the implementation.
