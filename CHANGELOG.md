@@ -2,6 +2,30 @@
 
 ## 2025-10-18 (Session 2f)
 
+- **Extract new-learnings Checkpoint Detection to Focused Helper Script**
+
+  Extracted multi-line bash logic from new-learnings command into focused helper script per command-helper-script-extraction-pattern.md.
+
+  **Problem**: The new-learnings command had embedded logic (10+ lines) for checkpoint detection directly in the command documentation:
+  - Checkpoint existence checking logic was embedded in markdown
+  - Conditional branching for resume/fresh start was not extracted
+  - Violated command-helper-script-extraction-pattern.md extraction discipline
+
+  **Solution**: Applied proper extraction discipline:
+  1. **Created check-new-learnings-checkpoint.sh** - Focused helper script for checkpoint status detection
+  2. **Refactored new-learnings.md** - Command file now calls helper script instead of embedding logic
+  3. **Simplified documentation** - Cleaner command file while maintaining all orchestration visibility
+
+  **Changes**:
+  - Created: scripts/check-new-learnings-checkpoint.sh (single responsibility: check checkpoint status)
+  - Modified: .opencode/command/ar/new-learnings.md (uses helper script)
+
+  **Benefits**:
+  - **Reusability**: Helper script can be used independently or in other commands
+  - **Testability**: Script can be tested in isolation
+  - **Clarity**: Command documentation cleaner while remaining the orchestrator
+  - **Compliance**: Follows extraction discipline: one script per shell block (10+ lines)
+
 - **Refactor check-naming Command to Follow Command Orchestrator Pattern**
 
   Refactored the check-naming.md command file to follow the command orchestrator pattern per command-helper-script-extraction-pattern.md, extracting multi-line bash logic into focused helper scripts and making all workflow orchestration visible in the command documentation.
