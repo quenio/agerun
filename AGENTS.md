@@ -348,7 +348,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
   - Wrap grep in pipelines: `{ grep "pattern" file || true; } | wc -l` (not `grep "pattern" file | wc -l`)
   - Use assignment for arithmetic: `count=$((count + 1))` (not `((count++))`)
   - Use `--` separator for patterns with dash: `grep -qE -- "-pattern"` (not `grep -qE "-pattern"`)
-  - Character classes must be double-bracketed: `[[:space:]]` (not `[:space:]`)
+  - Character classes must be double-bracketed: `[[:space:]]` not `[:space:]` (POSIX portable, works in sed/awk/grep)
 - Use `@` or `|` delimiter in sed commands, not `/` (avoids escaping issues)
 - Detect OS platform: `if [[ "$OSTYPE" == darwin* ]]` for macOS-specific code
 - Test with bash: `bash -n script.sh` to verify syntax before committing

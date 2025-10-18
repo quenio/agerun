@@ -131,6 +131,31 @@ set -e  # Exit on any error
 set -o pipefail  # Exit if any pipe command fails
 ```
 
+5. **POSIX Character Classes**:
+```bash
+# BAD: Single bracket character class (macOS and Linux behave differently)
+sed -E 's/^[:space:]*//'  # Error on both, but different error messages
+awk '/^[:digit:]+/ { print }'  # Matches literal : d i g i t : characters
+
+# GOOD: Double-bracketed POSIX character classes (portable)
+sed -E 's/^[[:space:]]*//'  # Removes leading whitespace on both
+awk '/^[[:digit:]]+/ { print }'  # Matches digits on both
+
+# Common POSIX character classes:
+# [[:space:]]  - whitespace (space, tab, newline)
+# [[:digit:]]  - digits 0-9
+# [[:alpha:]]  - alphabetic characters
+# [[:alnum:]]  - alphanumeric characters
+# [[:upper:]]  - uppercase letters
+# [[:lower:]]  - lowercase letters
+```
+
+**Why this matters:**
+- Single bracket `[:space:]` treats characters as literals: `:`, `s`, `p`, `a`, `c`, `e`, `:`
+- Double bracket `[[:space:]]` uses POSIX character class (works on both BSD/GNU)
+- Scripts may appear to work on one platform but fail silently on another
+- See [bash-pipefail-error-handling-patterns.md](bash-pipefail-error-handling-patterns.md) for error handling details
+
 ## Implementation
 
 ### Complete Example: Platform-Aware Script
