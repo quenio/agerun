@@ -10,7 +10,7 @@ Without regular updates, commands become outdated and may guide developers to us
 ```bash
 # From this session - updating /new-learnings command
 # Added Step 7 to check existing commands:
-grep -l "relevant_keyword" .claude/commands/*.md
+grep -l "relevant_keyword" .opencode/command/ar/*.md
 
 # Then updated /migrate-module-to-zig with new KB references:
 # Added error path testing reference
@@ -31,7 +31,7 @@ When creating or discovering new patterns:
 ## Implementation
 ```bash
 # Search for commands using specific patterns
-grep -l "zig\|migrate\|error" .claude/commands/*.md
+grep -l "zig\|migrate\|error" .opencode/command/ar/*.md
 
 # Common commands to review after discoveries:
 # - /build - for build process improvements

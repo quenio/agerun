@@ -10,7 +10,7 @@ import os
 import json
 import re
 
-commands_dir = '.claude/commands'
+commands_dir = '.opencode/command/ar'
 
 # Load the fix report
 try:

@@ -718,7 +718,7 @@ Modify ar_executable.c to save and load the agerun.agency file for agent state p
 ## HIGHEST PRIORITY - Command Enhancement with Checkpoint Tracking System
 
 ### Overview
-Apply the checkpoint tracking system developed in the session to all 26 commands in `.claude/commands/` to improve reliability, user experience, and quality enforcement for multi-step processes.
+Apply the checkpoint tracking system developed in the session to all 26 commands in `.opencode/command/ar/` to improve reliability, user experience, and quality enforcement for multi-step processes.
 
 ### Implementation Tasks
 

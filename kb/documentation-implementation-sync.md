@@ -12,7 +12,7 @@ Out-of-sync documentation is worse than no documentation - it actively misleads 
 # 26 command files needed updates
 
 # Systematic update approach:
-for file in .claude/commands/*.md; do
+for file in .opencode/command/ar/*.md; do
     if grep -q "checkpoint-init" "$file"; then
         # Update expected output sections
         sed -i 's/20+ lines of output/3 lines of output/g' "$file"
@@ -44,7 +44,7 @@ def verify_sync():
     actual_output = run_command("make checkpoint-status --compact")
     
     # Check each documentation file
-    for doc_file in Path(".claude/commands").glob("*.md"):
+    for doc_file in Path(".opencode/command/ar").glob("*.md"):
         content = doc_file.read_text()
         if "Expected output:" in content:
             # Extract expected output from docs

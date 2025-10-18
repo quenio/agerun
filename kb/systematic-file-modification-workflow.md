@@ -14,13 +14,13 @@ A systematic approach:
 ## Example
 ```bash
 # Step 1: Enumerate - List all target files
-ls -la .claude/commands/*.md | wc -l
+ls -la .opencode/command/ar/*.md | wc -l
 # Output: 26 files
 
 # Step 2: Script - Create automated update script
 cat > add_roles.sh << 'EOF'
 #!/bin/bash
-for file in .claude/commands/*.md; do
+for file in .opencode/command/ar/*.md; do
     if ! head -1 "$file" | grep -q "^\*\*Role:"; then
         # Add role logic here
         echo "Processing $file"
@@ -33,12 +33,12 @@ chmod +x add_roles.sh
 ./add_roles.sh
 
 # Step 4: Verify - Check all files were updated
-for file in .claude/commands/*.md; do
+for file in .opencode/command/ar/*.md; do
     head -1 "$file" | grep -q "^\*\*Role:" || echo "Missing: $file"
 done
 
 # Step 5: Commit - Stage and commit with clear message
-git add .claude/commands/*.md
+git add .opencode/command/ar/*.md
 git commit -m "feat: add role clarification to all slash commands"
 ```
 

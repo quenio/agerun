@@ -21,7 +21,7 @@ Integration across multiple touchpoints:
 ✓ Documentation validated with make check-docs
 ```
 
-**Slash Commands (.claude/commands/new-learnings.md)**
+**Slash Commands (.opencode/command/ar/new-learnings.md)**
 ```markdown
 ## Code Requirements
 - Use REAL types and functions from the AgeRun codebase

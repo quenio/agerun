@@ -133,7 +133,7 @@ def get_files_to_process() -> List[str]:
         files.extend(str(f) for f in scripts_dir.glob("*.sh"))
 
     # Commands
-    commands_dir = Path(".claude/commands")
+    commands_dir = Path(".opencode/command/ar")
     if commands_dir.exists():
         files.extend(str(f) for f in commands_dir.rglob("*.md"))
 

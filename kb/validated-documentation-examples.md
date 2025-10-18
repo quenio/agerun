@@ -28,7 +28,7 @@ Apply validated documentation standards to:
 - Knowledge base articles (kb/*.md) 
 - Method documentation (methods/*.md)
 - Architecture documents (MMM.md, etc.)
-- Slash command guidance (.claude/commands/*.md)
+- Slash command guidance (.opencode/command/ar/*.md)
 
 ## Implementation
 

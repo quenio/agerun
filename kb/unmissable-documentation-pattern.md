@@ -30,7 +30,7 @@ Place critical requirements:
 ## Implementation
 ```bash
 # Check if documentation makes requirements clear
-grep -A 2 "^#" .claude/commands/*.md | grep -i "mandatory\|critical\|required"
+grep -A 2 "^#" .opencode/command/ar/*.md | grep -i "mandatory\|critical\|required"
 
 # Ensure critical sections appear early
 head -20 documentation.md | grep -c "MANDATORY"

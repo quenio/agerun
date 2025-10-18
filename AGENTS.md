@@ -67,7 +67,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - **/methods**: Method definitions (.method files with docs and tests)
 - **/scripts**: Build and utility scripts (run via make targets, not directly - includes slash commands)
 - **/reports**: Analysis reports and technical comparisons (all .md analysis files go here)
-- **.claude/commands**: Slash command definitions (must use make targets, not direct scripts) ([role clarity](kb/role-clarification-pattern.md))
+- **.opencode/command/ar**: Slash command definitions (must use make targets, not direct scripts) ([role clarity](kb/role-clarification-pattern.md))
 
 ## Critical Development Rules
 

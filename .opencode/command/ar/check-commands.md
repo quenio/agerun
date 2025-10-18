@@ -120,7 +120,7 @@ Assigns scores based on:
 ```bash
 # Scan for all command files
 echo "Scanning for command files..."
-COMMAND_COUNT=$(find .claude/commands -name "*.md" -type f | wc -l)
+COMMAND_COUNT=$(find .opencode/command/ar -name "*.md" -type f | wc -l)
 echo "Found $COMMAND_COUNT command files"
 
 if [ $COMMAND_COUNT -eq 0 ]; then
@@ -343,7 +343,7 @@ python3 scripts/check_commands.py --fix > improvements.md
 ### Quick fixes:
 ```bash
 # For low-scoring commands, use template from high scorer:
-cp .claude/commands/ar/new-learnings.md template.md
+cp .opencode/command/ar/new-learnings.md template.md
 # Edit template.md and adapt for your command
 
 # Validate improvements:

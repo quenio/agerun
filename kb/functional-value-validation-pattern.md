@@ -18,7 +18,7 @@ Execute build verification...
 # - Just decorative labels
 
 # Solution: Remove entirely rather than improve
-for file in .claude/commands/*.md; do
+for file in .opencode/command/ar/*.md; do
     sed -i '/^\*\*Role:/d' "$file"
 done
 ```

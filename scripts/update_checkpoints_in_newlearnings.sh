@@ -1,7 +1,7 @@
 #!/bin/bash
 # Update all checkpoint commands in new-learnings.md to use the new scripts
 
-FILE=".claude/commands/new-learnings.md"
+FILE=".opencode/command/ar/new-learnings.md"
 
 # Replace all step completions
 for i in {2..12}; do

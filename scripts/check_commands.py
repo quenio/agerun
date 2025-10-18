@@ -22,10 +22,10 @@ import os
 import sys
 import re
 
-commands_dir = '.claude/commands'
+commands_dir = '.opencode/command/ar'
 
-# Also check legacy location
-legacy_commands_dir = '.opencode/command/ar'
+# Also check legacy symlink location
+legacy_commands_dir = '.claude/commands'
 verbose = '--verbose' in sys.argv
 fix_mode = '--fix' in sys.argv
 

@@ -58,7 +58,7 @@ get_modified_count() {
 
 # Usage
 kb_count=$(get_modified_count "kb.*\.md")
-cmd_count=$(get_modified_count ".claude/commands")
+cmd_count=$(get_modified_count ".opencode/command/ar")
 echo "KB: $kb_count, Commands: $cmd_count"
 
 # Pattern 3: Temporary Files for Complex Operations

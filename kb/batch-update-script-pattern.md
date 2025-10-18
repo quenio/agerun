@@ -16,7 +16,7 @@ Scripted batch updates:
 #!/bin/bash
 # Script to add role statements to all slash commands
 
-for file in .claude/commands/*.md; do
+for file in .opencode/command/ar/*.md; do
     # Check if role already exists
     if ! head -1 "$file" | grep -q "^\*\*Role:"; then
         # Determine appropriate role based on filename

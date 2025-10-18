@@ -124,7 +124,7 @@ Make AGENTS.md guidelines more concise and actionable by moving detailed explana
 **CRITICAL**: PRESERVE ALL EXISTING KB REFERENCES
 When you see KB article links (formatted with parentheses and "details" text pointing to kb/ files) in AGENTS.md, these links MUST be preserved. They are not redundant - they ARE the detailed documentation. The goal is to make AGENTS.md more concise while keeping all KB links that provide the depth.
 
-**IMPORTANT**: Before extracting kb articles from AGENTS.md, read `.claude/commands/new-learnings.md` to understand the proper format and validation requirements for creating kb articles. This ensures extracted content follows established standards.
+**IMPORTANT**: Before extracting kb articles from AGENTS.md, read `.opencode/command/ar/new-learnings.md` to understand the proper format and validation requirements for creating kb articles. This ensures extracted content follows established standards.
 
 ### Guidelines for Compacting
 

@@ -17,7 +17,7 @@ echo "**SUCCESS CRITERIA**: More articles modified than created."
 # Verification script with concrete metrics
 echo "=== Integration Verification ==="
 MODIFIED_KB=$(git diff --name-only | grep "kb.*\.md" | wc -l)
-MODIFIED_CMDS=$(git diff --name-only | grep ".claude/commands" | wc -l)
+MODIFIED_CMDS=$(git diff --name-only | grep ".opencode/command/ar" | wc -l)
 
 if [ $MODIFIED_KB -lt 3 ]; then
     echo "⚠️ WARNING: Only $MODIFIED_KB KB articles modified - need at least 3-5!"

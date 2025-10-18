@@ -51,7 +51,7 @@ def get_modified_files() -> Dict[str, List[str]]:
         
         if filepath.startswith('kb/') and filepath.endswith('.md'):
             files['kb'].append(filepath)
-        elif filepath.startswith('.claude/commands/') and filepath.endswith('.md'):
+        elif filepath.startswith('.opencode/command/') and filepath.endswith('.md'):
             files['commands'].append(filepath)
         elif filepath == 'AGENTS.md':
             files['claude_md'] = True

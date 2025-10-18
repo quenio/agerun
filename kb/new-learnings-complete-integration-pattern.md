@@ -72,7 +72,7 @@ for article in $(git diff --name-only | grep "kb.*\.md"); do
 done
 
 echo "=== Commands Updated ==="
-git diff --name-only | grep ".claude/commands"
+git diff --name-only | grep ".opencode/command/ar"
 
 echo "=== Missing Cross-References Check ==="
 # Find articles that might need cross-references
@@ -85,7 +85,7 @@ done
 echo "=== Commands That Might Need Updates ==="
 # Check for commands with relevant keywords
 keywords="priority|task|planning|estimation|report"
-grep -l "$keywords" .claude/commands/*.md
+grep -l "$keywords" .opencode/command/ar/*.md
 ```
 
 ## Common Integration Failures
@@ -97,13 +97,13 @@ grep -l "$keywords" .claude/commands/*.md
 
 ## Prevention Strategy
 1. **Use a checklist**: Follow the complete integration checklist above
-2. **Search before committing**: `grep -l "keyword" kb/*.md .claude/commands/*.md`
+2. **Search before committing**: `grep -l "keyword" kb/*.md .opencode/command/ar/*.md`
 3. **Review git diff**: Ensure changes span multiple directories
 4. **Explicit verification**: State "Added X cross-references, updated Y commands"
 
 ## Quality Indicators
 Signs of complete integration:
-- Git diff shows changes in kb/, .claude/commands/, and AGENTS.md
+- Git diff shows changes in kb/, .opencode/command/ar/, and AGENTS.md
 - Commit message lists cross-references and command updates
 - New patterns appear in multiple existing documents
 - Commands reference new KB articles

@@ -44,7 +44,7 @@ def check_checkpoint_consistency(filepath):
     return issues
 
 # Run across all files
-for md_file in Path(".claude/commands").glob("*.md"):
+for md_file in Path(".opencode/command/ar").glob("*.md"):
     issues = check_checkpoint_consistency(md_file)
     if issues:
         print(f"❌ {md_file.name}: {len(issues)} issues")
