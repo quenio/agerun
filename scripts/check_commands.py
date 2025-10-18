@@ -297,3 +297,125 @@ elif avg_score < 90:
 else:
     print(f"\n✅ Structure validation passed with average score {avg_score:.1f}%")
     print(f"All {len(all_commands)} commands have excellent structure!")
+
+# ============================================================================
+# CHECKPOINT SCRIPTS VALIDATION
+# ============================================================================
+print("\n" + "=" * 80)
+print("CHECKPOINT SCRIPTS QUALITY VALIDATION")
+print("=" * 80)
+
+def validate_checkpoint_scripts():
+    """Validate checkpoint scripts for proper patterns and error handling."""
+    import glob
+
+    checkpoint_scripts = glob.glob('scripts/checkpoint*.sh') + glob.glob('scripts/*checkpoint*.sh')
+    script_results = {}
+
+    required_patterns = {
+        'error_handling': {
+            'patterns': [r'set -e', r'set -o pipefail'],
+            'description': 'Error handling (set -e or set -o pipefail)',
+            'weight': 2
+        },
+        'ostype_pattern_matching': {
+            'patterns': [r'\[\[\s*.*OSTYPE.*==.*darwin\*\s*\]\]', r'\[\[\s*.*OSTYPE.*==\s*linux\*\s*\]\]'],
+            'description': 'OSTYPE pattern matching with [[ == ]] syntax',
+            'weight': 2
+        },
+        'sed_safe_delimiter': {
+            'patterns': [r"sed.*['\"]s[@|#][^/]*[@|#]"],
+            'description': 'Safe sed delimiter (@ or | instead of /)',
+            'weight': 2
+        }
+    }
+
+    for script_path in sorted(checkpoint_scripts):
+        with open(script_path, 'r') as f:
+            content = f.read()
+
+        issues = []
+        score = 100
+
+        # Check for required patterns
+        for pattern_type, pattern_data in required_patterns.items():
+            has_pattern = any(re.search(p, content, re.MULTILINE) for p in pattern_data['patterns'])
+
+            # Only flag as issue if script contains sed or OSTYPE references
+            if not has_pattern:
+                if pattern_type == 'ostype_pattern_matching' and 'OSTYPE' in content:
+                    # Check if it's using the WRONG pattern [ = ] instead of [[ == ]]
+                    if re.search(r'\[\s*"\$OSTYPE"\s*=\s*"darwin\*"', content):
+                        issues.append(f"Issue: Using [ = ] for OSTYPE (use [[ == ]] for pattern matching)")
+                        score -= pattern_data['weight'] * 5
+                    elif not re.search(r'\[\[.*OSTYPE.*==.*darwin', content):
+                        # Only warn if no proper pattern found
+                        issues.append(f"Missing: {pattern_data['description']}")
+                        score -= pattern_data['weight'] * 2
+                elif pattern_type == 'sed_safe_delimiter' and 'sed' in content:
+                    # Check if using unsafe delimiter - look for s/ pattern
+                    unsafe_sed = re.findall(r"sed[^|]*['\"]s/[^'\"]*['\"]", content)
+                    if unsafe_sed:
+                        issues.append(f"Issue: Using / delimiter with sed (use @ or | instead)")
+                        score -= pattern_data['weight'] * 5
+                elif pattern_type == 'error_handling' and any(x in script_path for x in ['init', 'update', 'status', 'gate', 'cleanup']):
+                    # Core checkpoint scripts should have error handling
+                    issues.append(f"Missing: {pattern_data['description']}")
+                    score -= pattern_data['weight'] * 3
+
+        script_results[script_path] = {
+            'score': max(0, score),
+            'issues': issues
+        }
+
+    # Report results
+    print("\n📊 CHECKPOINT SCRIPTS QUALITY")
+    print("-" * 80)
+
+    script_scores = []
+    for script_path in sorted(script_results.keys()):
+        result = script_results[script_path]
+        score = result['score']
+        script_scores.append(score)
+
+        if score >= 90:
+            status = "✅ Pass"
+        elif score >= 70:
+            status = "⚠️  Warn"
+        else:
+            status = "❌ Fail"
+
+        script_name = script_path.replace('scripts/', '')
+        print(f"{status} {script_name:45} {score:3}%")
+
+        if verbose and result['issues']:
+            for issue in result['issues']:
+                print(f"     - {issue}")
+
+    if script_scores:
+        avg_script_score = sum(script_scores) / len(script_scores)
+        failed_scripts = sum(1 for s in script_scores if s < 70)
+
+        print(f"\nAverage Script Score: {avg_script_score:.1f}%")
+        if failed_scripts > 0:
+            print(f"⚠️  {failed_scripts} scripts need attention")
+            return False
+        else:
+            print("✅ All checkpoint scripts pass validation")
+            return True
+
+    return True
+
+# Run checkpoint script validation
+scripts_pass = validate_checkpoint_scripts()
+
+# Final exit code
+print("\n" + "=" * 80)
+if not scripts_pass:
+    print("❌ Checkpoint scripts need improvements before CI can pass")
+    sys.exit(1)
+elif non_excellent > 0 or avg_score < 90:
+    sys.exit(1)
+else:
+    print("✅ ALL VALIDATIONS PASSED: Commands and checkpoint scripts are excellent!")
+    sys.exit(0)

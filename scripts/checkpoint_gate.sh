@@ -32,7 +32,7 @@ for step in "${STEPS[@]}"; do
     
     if grep -q "STEP_${step}=pending" "$TRACKING_FILE"; then
         INCOMPLETE_STEPS+=("$step")
-        DESC=$(grep "STEP_${step}=" "$TRACKING_FILE" | sed 's/.*# //')
+        DESC=$(grep "STEP_${step}=" "$TRACKING_FILE" | sed 's@.*# @@')
         INCOMPLETE_DESCS+=("$DESC")
     fi
 done

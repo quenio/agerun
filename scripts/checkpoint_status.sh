@@ -21,7 +21,7 @@ if [ ! -f "$TRACKING_FILE" ]; then
 fi
 
 # Get metadata
-START_TIME=$(grep "# Started:" "$TRACKING_FILE" 2>/dev/null | sed 's/# Started: //' || echo "Unknown")
+START_TIME=$(grep "# Started:" "$TRACKING_FILE" 2>/dev/null | sed 's@# Started: @@' || echo "Unknown")
 TOTAL_STEPS=$(grep -c "^STEP_" "$TRACKING_FILE")
 COMPLETED=$(grep -c "=complete" "$TRACKING_FILE" || true)
 PENDING=$(grep -c "=pending" "$TRACKING_FILE" || true)
@@ -48,7 +48,7 @@ if [ "$MODE" = "--compact" ]; then
     
     # Next action on one line
     if [ "$PENDING" -gt 0 ]; then
-        NEXT_NUM=$(grep "=pending" "$TRACKING_FILE" | head -1 | sed 's/STEP_\([0-9]*\).*/\1/')
+        NEXT_NUM=$(grep "=pending" "$TRACKING_FILE" | head -1 | sed 's@STEP_\([0-9]*\).*@\1@')
         echo "→ Next: make checkpoint-update CMD=$COMMAND_NAME STEP=$NEXT_NUM"
     fi
     exit 0
@@ -76,9 +76,9 @@ if [ "$MODE" = "--verbose" ] || [ "$PENDING" -gt 0 ]; then
     while IFS= read -r line; do
         case "$line" in
             STEP_*)
-                STEP_NUM=$(echo "$line" | sed 's/STEP_\([0-9]*\).*/\1/')
-                STATUS=$(echo "$line" | sed 's/.*=\([^[:space:]]*\).*/\1/')
-                DESC=$(echo "$line" | sed 's/.*# //')
+                STEP_NUM=$(echo "$line" | sed 's@STEP_\([0-9]*\).*@\1@')
+                STATUS=$(echo "$line" | sed 's@.*=\([^[:space:]]*\).*@\1@')
+                DESC=$(echo "$line" | sed 's@.*# @@')
 
                 case $STATUS in
                     complete)
@@ -103,8 +103,8 @@ fi
 # Show next action
 if [ "$PENDING" -gt 0 ]; then
     NEXT_STEP=$(grep "=pending" "$TRACKING_FILE" | head -1)
-    NEXT_NUM=$(echo "$NEXT_STEP" | sed 's/STEP_\([0-9]*\).*/\1/')
-    NEXT_DESC=$(echo "$NEXT_STEP" | sed 's/.*# //')
+    NEXT_NUM=$(echo "$NEXT_STEP" | sed 's@STEP_\([0-9]*\).*@\1@')
+    NEXT_DESC=$(echo "$NEXT_STEP" | sed 's@.*# @@')
     echo "Next Action:"
     echo "  → Step $NEXT_NUM: $NEXT_DESC"
     echo ""
