@@ -142,7 +142,7 @@ ERROR_COUNT=0
 if make check-logs 2>&1 | tee /tmp/check-logs-output.txt; then
   echo "✅ No errors found in standard checks"
 else
-  ERROR_COUNT=$(grep -c "ERROR\|FAILURE\|ASSERT" /tmp/check-logs-output.txt || echo "0")
+  ERROR_COUNT=$(grep -E "ERROR|FAILURE|ASSERT" /tmp/check-logs-output.txt | wc -l || echo "0")
   echo "⚠️ Found $ERROR_COUNT potential issues"
 fi
 
@@ -178,7 +178,7 @@ if [ $ERROR_COUNT -eq 0 ]; then
   echo "Running deep analysis..."
   python3 scripts/check_logs.py --deep 2>&1 | tee /tmp/deep-analysis.txt
   
-  if grep -q "WARNING\|suspicious" /tmp/deep-analysis.txt; then
+  if grep -E "WARNING|suspicious" /tmp/deep-analysis.txt > /dev/null 2>&1; then
     echo "⚠️ Deep analysis found warnings"
   else
     echo "✅ Deep analysis clean"

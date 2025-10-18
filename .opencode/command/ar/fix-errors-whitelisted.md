@@ -305,7 +305,7 @@ make checkpoint-update CMD=fix-errors-whitelisted STEP=10
 
 # Count removed entries
 source /tmp/fix-errors-whitelisted-counts.txt
-AFTER_COUNT=$(grep -c "^  -" log_whitelist.yaml)
+AFTER_COUNT=$(grep "^  -" log_whitelist.yaml | wc -l)
 REMOVED=$((BEFORE_COUNT - AFTER_COUNT))
 
 echo "Whitelist entries removed: $REMOVED"
@@ -337,7 +337,7 @@ After fixing errors:
    ```
    ```bash
    # Verify count matches
-   ACTUAL=$(grep -c "^  -" log_whitelist.yaml)
+   ACTUAL=$(grep "^  -" log_whitelist.yaml | wc -l)
    echo "Updated whitelist total to: $ACTUAL entries"
    
    make checkpoint-update CMD=fix-errors-whitelisted STEP=12
@@ -359,7 +359,7 @@ After fixing errors:
 3. **Update CHANGELOG.md** if significant (>10 entries removed):
    ```bash
    source /tmp/fix-errors-whitelisted-counts.txt
-   AFTER_COUNT=$(grep -c "^  -" log_whitelist.yaml)
+   AFTER_COUNT=$(grep "^  -" log_whitelist.yaml | wc -l)
    REMOVED=$((BEFORE_COUNT - AFTER_COUNT))
    
    if [ $REMOVED -ge 10 ]; then
@@ -408,7 +408,7 @@ git diff [modified files]
 
 # Verify minimum requirement met
 source /tmp/fix-errors-whitelisted-counts.txt
-AFTER_COUNT=$(grep -c "^  -" log_whitelist.yaml)
+AFTER_COUNT=$(grep "^  -" log_whitelist.yaml | wc -l)
 REMOVED=$((BEFORE_COUNT - AFTER_COUNT))
 
 if [ $REMOVED -lt 5 ]; then

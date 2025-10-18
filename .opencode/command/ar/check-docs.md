@@ -102,7 +102,7 @@ if make check-docs 2>&1 | tee /tmp/check-docs-output.txt; then
   echo "✅ No documentation errors found!"
   echo "ERROR_COUNT=0" > /tmp/check-docs-stats.txt
 else
-  ERROR_COUNT=$(grep -c "ERROR\|FAIL" /tmp/check-docs-output.txt || echo "0")
+  ERROR_COUNT=$(grep -E "ERROR|FAIL" /tmp/check-docs-output.txt | wc -l || echo "0")
   echo "⚠️ Found $ERROR_COUNT documentation errors"
   echo "ERROR_COUNT=$ERROR_COUNT" > /tmp/check-docs-stats.txt
 fi
@@ -210,7 +210,7 @@ if make check-docs 2>&1; then
   echo "✅ All documentation errors resolved!"
   FINAL_STATUS="PASS"
 else
-  REMAINING=$(make check-docs 2>&1 | grep -c "ERROR" || echo "0")
+  REMAINING=$(make check-docs 2>&1 | grep "ERROR" | wc -l || echo "0")
   echo "⚠️ $REMAINING errors still remain"
   echo "May need manual intervention or script enhancement"
   FINAL_STATUS="PARTIAL"

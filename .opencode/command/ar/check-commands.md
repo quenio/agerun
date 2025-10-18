@@ -199,10 +199,10 @@ source /tmp/check-commands-stats.txt
 echo "Identifying commands that need work..."
 
 # Count distribution
-EXCELLENT=$(grep -c "🌟 Excellent" /tmp/check-commands-output.txt || echo "0")
-GOOD=$(grep -c "✅ Good" /tmp/check-commands-output.txt || echo "0")
-NEEDS_WORK=$(grep -c "⚠️ Needs Work" /tmp/check-commands-output.txt || echo "0")
-POOR=$(grep -c "❌ Poor" /tmp/check-commands-output.txt || echo "0")
+EXCELLENT=$(grep "🌟 Excellent" /tmp/check-commands-output.txt | wc -l || echo "0")
+GOOD=$(grep "✅ Good" /tmp/check-commands-output.txt | wc -l || echo "0")
+NEEDS_WORK=$(grep "⚠️ Needs Work" /tmp/check-commands-output.txt | wc -l || echo "0")
+POOR=$(grep "❌ Poor" /tmp/check-commands-output.txt | wc -l || echo "0")
 
 echo "Distribution:"
 echo "  🌟 Excellent (90-100%): $EXCELLENT commands"

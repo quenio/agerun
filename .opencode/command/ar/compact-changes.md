@@ -323,7 +323,7 @@ fi
 echo "METRICS_OK=$METRICS_OK" >> /tmp/compact-changes-stats.txt
 
 # Verify dates preserved
-DATE_CHECK=$(grep -c "^## 2025-" CHANGELOG.md || echo "0")
+DATE_CHECK=$(grep "^## 2025-" CHANGELOG.md | wc -l || echo "0")
 echo "Date sections remaining: $DATE_CHECK"
 
 make checkpoint-update CMD=compact-changes STEP=4
@@ -348,7 +348,7 @@ Date sections remaining: 16
 echo "Adding self-documenting entry..."
 source /tmp/compact-changes-stats.txt
 
-SESSION_NUM=$(grep -c "CHANGELOG.md.*Compaction" CHANGELOG.md)
+SESSION_NUM=$(grep "CHANGELOG.md.*Compaction" CHANGELOG.md | wc -l)
 SESSION_NUM=$((SESSION_NUM + 1))
 
 echo ""
@@ -404,7 +404,7 @@ make checkpoint-gate CMD=compact-changes GATE="Compaction Quality" REQUIRED="3,4
 echo "Updating TODO.md..."
 source /tmp/compact-changes-stats.txt
 
-SESSION_NUM=$(grep -c "Session.*Manual semantic compaction" TODO.md)
+SESSION_NUM=$(grep "Session.*Manual semantic compaction" TODO.md | wc -l)
 SESSION_NUM=$((SESSION_NUM + 1))
 
 echo ""
@@ -425,7 +425,7 @@ make checkpoint-update CMD=compact-changes STEP=6
 echo "Committing changes..."
 source /tmp/compact-changes-stats.txt
 
-SESSION_NUM=$(grep -c "CHANGELOG.md.*Compaction" CHANGELOG.md)
+SESSION_NUM=$(grep "CHANGELOG.md.*Compaction" CHANGELOG.md | wc -l)
 
 git add CHANGELOG.md TODO.md
 git commit -m "Document CHANGELOG.md Session $SESSION_NUM manual compaction completion

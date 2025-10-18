@@ -166,8 +166,8 @@ Original: 1324 lines, 85432 bytes
 # Categorize completed vs incomplete tasks
 echo "Categorizing tasks..."
 
-COMPLETED=$(grep -c "^- \[x\]" TODO.md || echo "0")
-INCOMPLETE=$(grep -c "^- \[ \]" TODO.md || echo "0")
+COMPLETED=$(grep "^- \[x\]" TODO.md | wc -l || echo "0")
+INCOMPLETE=$(grep "^- \[ \]" TODO.md | wc -l || echo "0")
 
 echo "Completed tasks: $COMPLETED (can be compacted)"
 echo "Incomplete tasks: $INCOMPLETE (MUST remain untouched)"
@@ -397,7 +397,7 @@ echo "Final verification..."
 source /tmp/compact-tasks-stats.txt
 
 # Check incomplete tasks after commit
-FINAL_INCOMPLETE=$(grep -c "^- \[ \]" TODO.md || echo "0")
+FINAL_INCOMPLETE=$(grep "^- \[ \]" TODO.md | wc -l || echo "0")
 
 if [ "$FINAL_INCOMPLETE" -ne "$INCOMPLETE" ]; then
   echo "❌ CRITICAL: Incomplete tasks changed after commit!"
