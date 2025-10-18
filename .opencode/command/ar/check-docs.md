@@ -35,7 +35,7 @@ The `run-check-docs.sh` script uses the following standardized wrapper scripts:
 
 These wrappers provide centralized checkpoint management across all commands.
 
-## Initialization
+## Initialize Progress Tracking
 
 **MANDATORY**: Before executing ANY steps, you MUST initialize checkpoint tracking:
 
@@ -49,12 +49,19 @@ These wrappers provide centralized checkpoint management across all commands.
 ✅ Checkpoint tracking initialized for check-docs
 ```
 
-## Progress Check
+## Check Progress
 
 Check current progress at any time:
 
 ```bash
 ./scripts/status-checkpoint.sh check-docs
+```
+
+**Expected output:**
+```
+📈 check-docs: 2/6 steps (33%)
+   [██████░░░░░░░░░░░░░] 33%
+→ Next: ./scripts/checkpoint-update.sh check-docs 3
 ```
 
 ## Workflow Execution
