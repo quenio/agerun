@@ -315,6 +315,12 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 | Opaque types | `typedef struct ar_<module>_s ar_<module>_t;` | |
 | C-ABI files | `ar_<module>.{h,c,zig}` | `ar_data.h` |
 | Bash scripts | `<action>-<object>.sh` | `checkpoint-init.sh`, `add-newline.sh`, `validate-plan-structure.sh` |
+| Python scripts | `<verb>_<noun>.py` (PEP 8) | `check_commands.py`, `batch_fix_docs.py`, `rename_symbols.py` |
+
+**Script Naming Comparison**:
+- **Bash**: Use dashes (POSIX convention) - `checkpoint-init.sh` ✅
+- **Python**: Use underscores (PEP 8 convention) - `check_commands.py` ✅
+- **DO NOT MIX**: Don't use dashes in Python files or underscores in bash files
 
 **Key Standards**:
 - 4-space indent, 100-char lines, newline at EOF
@@ -343,6 +349,36 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - Use via Makefile targets, not direct invocation: `make checkpoint-init CMD=...` not `./scripts/checkpoint-init.sh`
 
 **Location**: All scripts in `scripts/` directory, called through Makefile targets
+
+### 5.1 Python Script Naming & Development
+
+**IMPORTANT**: Python scripts use DIFFERENT naming convention from bash scripts:
+
+**Naming Convention**: Use underscore-based naming with pattern `<verb>_<noun>.py` (PEP 8 compliant):
+- **Verb**: Action the script performs (`check`, `fix`, `update`, `batch`, `convert`, `verify`, etc.)
+- **Noun**: What the script operates on (e.g., `commands`, `docs`, `symbols`, `logs`)
+- ✅ Correct: `check_commands.py`, `batch_fix_docs.py`, `rename_symbols.py`
+- ❌ Incorrect: `check-commands.py`, `batch-fix-docs.py` (use dashes for bash, not Python)
+
+**Development Guidelines**:
+- `#!/usr/bin/env python3` shebang for cross-platform compatibility
+- Follow [PEP 8](https://www.python.org/dev/peps/pep-0008/) naming conventions:
+  - lowercase with underscores for module names (files)
+  - lowercase with underscores for function names
+  - CamelCase for class names
+- Use `argparse` for command-line arguments (not sys.argv parsing)
+- Add docstring at top explaining purpose and functionality
+- Use `import sys`, `import os`, `import re`, `import subprocess` as needed
+- Call via direct script or through Makefile wrapper targets
+- Test with: `python3 -m py_compile script.py` to verify syntax
+
+**Use Cases**:
+- Bulk file modifications: `batch_fix_docs.py`, `rename_symbols.py`
+- Validation & checking: `check_commands.py`, `check_kb_links.py`
+- Data transformation: `convert_expression_tests.py`, `update_agency_calls.py`
+- Verification: `verify_parser_error_logging.py`
+
+**Location**: All scripts in `scripts/` directory
 
 ### 6. Module Development
 
