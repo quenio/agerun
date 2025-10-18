@@ -1,5 +1,36 @@
 # AgeRun CHANGELOG
 
+## 2025-10-18 (Session 2d)
+
+- **Complex Command Pattern Migration: next-priority and next-task**
+
+  Migrated next-priority and next-task commands from simple single-script pattern to complex multi-step pattern, aligning with other complex commands like create-plan and execute-plan.
+
+  **Problem**: These commands had more sophisticated workflows than typical simple commands, but were using the run-*.sh script pattern designed for simple ≤15-step commands. This made it harder to customize their execution and didn't match the pattern used for similar complex commands.
+
+  **Solution**: Converted both commands to define their steps directly in the markdown files:
+  1. **next-priority** (3 steps):
+     - Read Context: Load AGENTS.md and TODO.md
+     - Analyze Priorities: Apply KB protocols and quantify metrics
+     - Generate Recommendation: Provide justification and wait for user feedback
+
+  2. **next-task** (3 steps):
+     - Read Context: Understand project state
+     - Check Task Sources: Check session todos and TODO.md
+     - Discover Next Task: Identify and present the next work item
+
+  **Changes**:
+  - Rewrote next-priority.md and next-task.md with step-by-step instructions
+  - Updated to use checkpoint wrapper scripts (init-checkpoint, require-checkpoint, update-checkpoint, complete-checkpoint)
+  - Removed run-next-priority.sh and run-next-task.sh scripts
+  - 2 files changed, 305 insertions/deletions
+
+  **Benefits**:
+  - Consistency: Now follows same pattern as other complex commands
+  - Flexibility: Steps can be customized without modifying scripts
+  - Clarity: Each step has clear instructions and examples
+  - Maintainability: Command logic is in markdown, not scattered across scripts
+
 ## 2025-10-18 (Session 2c)
 
 - **Command Documentation Clarity Improvements**
