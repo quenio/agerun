@@ -170,9 +170,16 @@ This command performs a comprehensive review of all uncommitted changes across m
    ```
 2. **Code Smells Detection**: Scans for known issues and anti-patterns
    - Long methods (>50 lines)
-   - Large modules (>850 lines)  
+   - Large modules (>850 lines)
    - Excessive parameters (>5)
    - Code duplication
+
+   **Helper script available:**
+   ```bash
+   ./scripts/detect-code-smells.sh [path]
+   # Returns: Exit 1 if code smells found, 0 if clean
+   ```
+
    ```bash
    make checkpoint-update CMD=review-changes STEP=2
    ```
@@ -181,6 +188,14 @@ This command performs a comprehensive review of all uncommitted changes across m
    - Heap tracking macros
    - NULL after transfer
    - Memory leak reports
+
+   **Helper script available:**
+   ```bash
+   ./scripts/verify-memory-management.sh [files...]
+   # Auto-detects changed files from git if no args provided
+   # Returns: Exit 1 if violations found, 0 if clean
+   ```
+
    ```bash
    make checkpoint-update CMD=review-changes STEP=3
    ```
@@ -189,6 +204,14 @@ This command performs a comprehensive review of all uncommitted changes across m
    - ar_module__function pattern
    - Proper prefixes
    - Consistent style
+
+   **Helper script available:**
+   ```bash
+   ./scripts/check-naming-conventions.sh [files...]
+   # Auto-detects changed files from git if no args provided
+   # Returns: Exit 1 if violations found, 0 if clean
+   ```
+
    ```bash
    make checkpoint-update CMD=review-changes STEP=4
    ```
@@ -205,6 +228,14 @@ This command performs a comprehensive review of all uncommitted changes across m
    - BDD structure
    - Memory leak verification
    - One test per behavior
+
+   **Helper script available:**
+   ```bash
+   ./scripts/verify-test-coverage.sh [test-files...]
+   # Auto-finds all *_tests.c files if no args provided
+   # Returns: Exit 1 if quality issues found, 0 if clean
+   ```
+
    ```bash
    make checkpoint-update CMD=review-changes STEP=6
    ```
@@ -260,6 +291,14 @@ make checkpoint-gate CMD=review-changes GATE="Code Quality" REQUIRED="1,2,3,4,5,
 10. **Dependency Management Check**: Analyzes module dependencies
     - No circular dependencies (except heap ↔ io)
     - Proper abstraction levels
+
+    **Helper script available:**
+    ```bash
+    ./scripts/detect-circular-dependencies.sh [modules-path]
+    # Builds dependency graph, detects cycles and upward dependencies
+    # Returns: Exit 1 if violations found, 0 if clean
+    ```
+
     ```bash
     make checkpoint-update CMD=review-changes STEP=10
     ```
@@ -378,6 +417,14 @@ make checkpoint-gate CMD=review-changes GATE="Documentation" REQUIRED="12,13,14,
     - No backup files (.bak)
     - No temporary files
     - No debug outputs
+
+    **Helper script available:**
+    ```bash
+    ./scripts/check-file-hygiene.sh [path]
+    # Finds backup, temp, debug, and core dump files
+    # Returns: Exit 1 if unwanted files found, 0 if clean
+    ```
+
     ```bash
     make checkpoint-update CMD=review-changes STEP=20
     ```
