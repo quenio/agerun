@@ -314,6 +314,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 | Assert macros | `AR_ASSERT_<TYPE>` | `AR_ASSERT_OWNERSHIP` |
 | Opaque types | `typedef struct ar_<module>_s ar_<module>_t;` | |
 | C-ABI files | `ar_<module>.{h,c,zig}` | `ar_data.h` |
+| Bash scripts | `<action>-<object>.sh` | `checkpoint-init.sh`, `add-newline.sh`, `validate-plan-structure.sh` |
 
 **Key Standards**:
 - 4-space indent, 100-char lines, newline at EOF
@@ -322,6 +323,26 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - Use `PRId64`/`PRIu64` for portability, never `%lld`
 - **Documentation**: Real AgeRun types/functions only, validate with `make check-docs`
 - **Doc checker supports**: C functions/types, Zig pub functions/types, and `module.function` syntax ([details](kb/multi-language-documentation-validation.md))
+
+### 5. Bash Script Naming & Development
+
+**Naming Convention**: Use dash-based naming with pattern `<action>-<object>.sh`:
+- **Action verbs**: `add`, `check`, `validate`, `checkpoint`, `update`, etc.
+- **Object**: What the script operates on (e.g., `newline`, `naming`, `plan-structure`)
+- ✅ Correct: `checkpoint-init.sh`, `add-newline.sh`, `validate-plan-structure.sh`
+- ❌ Incorrect: `checkpoint_init.sh`, `add_newline.sh`, `validate_plan_structure.sh`
+
+**Development Guidelines**:
+- `#!/bin/bash` shebang for bash-specific features like `[[ ]]`
+- Always include: `set -e` and `set -o pipefail` for error handling
+- Use `[[ ]]` for pattern matching (not `[ ]` which doesn't support `=~`)
+- Use `@` or `|` delimiter in sed commands, not `/` (avoids escaping issues)
+- Detect OS platform: `if [[ "$OSTYPE" == darwin* ]]` for macOS-specific code
+- Test with bash: `bash -n script.sh` to verify syntax before committing
+- Cross-platform: Test on both macOS and Linux - BSD sed ≠ GNU sed ([details](kb/cross-platform-bash-script-patterns.md))
+- Use via Makefile targets, not direct invocation: `make checkpoint-init CMD=...` not `./scripts/checkpoint-init.sh`
+
+**Location**: All scripts in `scripts/` directory, called through Makefile targets
 
 ### 6. Module Development
 
