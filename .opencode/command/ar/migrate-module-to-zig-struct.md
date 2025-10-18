@@ -146,60 +146,29 @@ else
 fi
 ```
 
-#### Step 3: Check C Dependencies
+#### Steps 3-5: Check Dependencies
 
-2. **C Module Dependencies**: Search for any C modules (.c files) that include or depend on ar_{{1}}
+Run dependency analysis using helper script:
 
 ```bash
-# Check for C module dependencies (these would block migration)
-C_DEPS=$(grep -l "ar_${MODULE}.h" modules/*.c | grep -v "_tests.c" | wc -l)
-if [ $C_DEPS -gt 0 ]; then
-  echo "❌ MIGRATION BLOCKED: $C_DEPS C modules depend on ar_${MODULE}"
-  echo "C modules found:"
-  grep -l "ar_${MODULE}.h" modules/*.c | grep -v "_tests.c"
-  echo "Migration cannot proceed - C modules cannot import Zig struct modules"
-  exit 1
-else
-  echo "✅ No C module dependencies found"
+# Check all dependencies (Steps 3-5 combined)
+./scripts/check-module-dependencies.sh ${MODULE} | tee -a /tmp/migration-tracking.txt
+
+# If script exits 0, migration is safe - mark steps complete
+if [ $? -eq 0 ]; then
   make checkpoint-update CMD=migrate-module-to-zig-struct STEP=3
-fi
-```
-
-#### Step 4: Check Zig Dependencies
-
-3. **Zig Module Dependencies**: Identify Zig modules that depend on ar_{{1}} (these can be updated)
-
-```bash
-# Check for Zig module dependencies (these can be updated)
-ZIG_DEPS=$(grep -l "ar_${MODULE}__\|@cImport.*ar_${MODULE}.h" modules/*.zig | grep -v "ar_${MODULE}.zig" | wc -l)
-echo "Found $ZIG_DEPS Zig modules that depend on ar_${MODULE}"
-echo "These will need to be updated:"
-grep -l "ar_${MODULE}__\|@cImport.*ar_${MODULE}.h" modules/*.zig | grep -v "ar_${MODULE}.zig"
-
-echo "UPDATED_DEPS=$ZIG_DEPS" >> /tmp/migration-tracking.txt
-make checkpoint-update CMD=migrate-module-to-zig-struct STEP=4
-```
-
-#### Step 5: Verify Safety
-
-4. **Module's Own Dependencies**: Check if ar_{{1}} depends on C-ABI modules (would block migration)
-
-#### Dependency Analysis Steps
-
-```bash
-# Check what C headers ar_{{1}} itself imports (these would block migration)
-echo "Checking ar_${MODULE}'s dependencies on C-ABI modules:"
-if grep -q "@cImport\|@cInclude" "modules/ar_${MODULE}.zig"; then
-  echo "❌ MIGRATION BLOCKED: Module uses @cImport for C dependencies"
-  echo "Found C imports:"
-  grep -n "@cImport\|@cInclude" "modules/ar_${MODULE}.zig" | head -10
-  echo "Type incompatibility prevents migration"
-  exit 1
-else
-  echo "✅ No @cImport usage found - module can be migrated"
+  make checkpoint-update CMD=migrate-module-to-zig-struct STEP=4
   make checkpoint-update CMD=migrate-module-to-zig-struct STEP=5
+else
+  echo "❌ Migration blocked - see errors above"
+  exit 1
 fi
 ```
+
+The script checks:
+1. **C Module Dependencies** - Any C modules that depend on this module (blocks migration)
+2. **Zig Module Dependencies** - Zig modules that need updates after migration
+3. **Module's Own Dependencies** - Whether module uses @cImport (blocks migration)
 
 #### [CRITICAL SAFETY GATE]
 ```bash
