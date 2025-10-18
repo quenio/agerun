@@ -1,5 +1,33 @@
 # AgeRun CHANGELOG
 
+## 2025-10-18 (Session 2)
+
+- **Simple Command Wrapper Script Pattern**
+
+  Standardized 12 simple commands (≤15 steps) to use checkpoint wrapper scripts with single `./scripts/run-<cmd>.sh` entry points for cleaner, more discoverable execution.
+
+  **Problem**: Simple commands had verbose checkpoint sections mixing direct make commands with script references, creating inconsistency with the check-docs.md pattern that cleanly separated concerns.
+
+  **Solution**: Applied unified checkpoint wrapper pattern to all simple commands:
+  - Single entry point: `./scripts/run-<cmd>.sh` orchestrates all stages
+  - Standardized sections: "Checkpoint Wrapper Scripts" documents 4 core scripts
+  - Cleaner documentation: Removed redundant checkpoint initialization code
+  - Centralized management: All checkpoint logic in reusable wrappers
+
+  **Changes**:
+  - **13 command documentation files** updated: check-naming, next-priority, next-task, analyze-exec, analyze-tests, build, build-clean, run-exec, run-tests, sanitize-exec, sanitize-tests, tsan-exec, tsan-tests
+  - **13 new wrapper scripts** created with standardized structure (3-stage execution)
+  - All wrappers use init-checkpoint.sh, require-checkpoint.sh, gate-checkpoint.sh, complete-checkpoint.sh
+
+  **Benefits**:
+  - Consistency: All simple commands follow identical pattern
+  - Simplicity: Users run single `./scripts/run-<cmd>.sh` instead of multiple commands
+  - Discoverability: Wrapper script existence signals checkpoint support
+  - Maintainability: Centralized checkpoint management
+  - Clarity: Each stage clearly documented (build, execute, verify/analyze)
+
+  **Scope**: Only applied to 12 simple commands; 19 complex commands (>15 steps) with custom logic retain their detailed documentation for specific methodologies.
+
 ## 2025-10-18
 
 - **Checkpoint Wrapper Script Standardization**

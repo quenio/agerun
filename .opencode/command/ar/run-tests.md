@@ -13,39 +13,69 @@ Build and run all tests.
 If a `/run-tests` workflow is already in progress:
 
 ```bash
+# Check current progress
 make checkpoint-status CMD=run-tests VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=run-tests STEP=N
-# Or reset: make checkpoint-cleanup CMD=run-tests && make checkpoint-init CMD=run-tests STEPS='"Prepare" "Execute" "Verify"'
+
+# Resume from a specific step (if interrupted)
+make checkpoint-update CMD=run-tests STEP=N
+
+# Or reset and start over
+./scripts/init-checkpoint.sh run-tests '"Build Tests" "Run All Tests" "Verify Results"'
 ```
 
-### First-Time Initialization Check
-
-```bash
-./scripts/init-checkpoint.sh run-tests '"Prepare" "Execute" "Verify"'
-```
-
-## PRECONDITION: Checkpoint Tracking Must Be Initialized
-
-```bash
-./scripts/require-checkpoint.sh run-tests
-```
-
-# Run Tests
 ## Checkpoint Tracking
 
-This command uses checkpoint tracking to ensure systematic execution and verification.
+This command uses checkpoint tracking via wrapper scripts to ensure systematic execution of tests.
 
-### Initialize Tracking
+### Checkpoint Wrapper Scripts
+
+The `run-run-tests.sh` script uses the following standardized wrapper scripts:
+
+- **`./scripts/init-checkpoint.sh`**: Initializes or resumes checkpoint tracking
+- **`./scripts/require-checkpoint.sh`**: Verifies checkpoint is ready before proceeding
+- **`./scripts/gate-checkpoint.sh`**: Validates gate conditions at workflow boundaries
+- **`./scripts/complete-checkpoint.sh`**: Shows completion summary and cleanup
+
+These wrappers provide centralized checkpoint management across all commands.
+
+## Workflow Execution
+
+Run the complete checkpoint-based workflow:
+
+#### [CHECKPOINT START]
+
 ```bash
-# Start the run tests process
-make checkpoint-init CMD=run-tests STEPS='"Prepare" "Execute" "Verify"'
+./scripts/run-run-tests.sh
 ```
 
-**Expected output:**
-```
-📍 Starting: run-tests (3 steps)
-📁 Tracking: /tmp/run-tests-progress.txt
-→ Run: make checkpoint-update CMD=run-tests STEP=1
+This script handles all stages of test execution:
+
+### What the Script Does
+
+1. **Build Tests**: Compiles all test binaries
+2. **Run All Tests**: Executes all tests with parallel job control
+3. **Verify Results**: Confirms all tests passed
+4. **Checkpoint Completion**: Marks the workflow as complete
+
+### Manual Checkpoint Control
+
+If you need to manually check progress or resume a workflow:
+
+```bash
+# Check current progress
+make checkpoint-status CMD=run-tests VERBOSE=--verbose
+
+# Resume from a specific step (if interrupted)
+make checkpoint-update CMD=run-tests STEP=N
+
+# Reset and start over using the wrapper script
+./scripts/init-checkpoint.sh run-tests '"Build Tests" "Run All Tests" "Verify Results"'
+
+# Verify checkpoint before running workflow
+./scripts/require-checkpoint.sh run-tests
+
+# Show completion and cleanup
+./scripts/complete-checkpoint.sh run-tests
 ```
 
 ### Check Progress

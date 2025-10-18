@@ -9,52 +9,69 @@ Execute a clean build for comprehensive build verification with minimal output a
 If a `/build-clean` workflow is already in progress:
 
 ```bash
+# Check current progress
 make checkpoint-status CMD=build-clean VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=build-clean STEP=N
-# Or reset: make checkpoint-cleanup CMD=build-clean && make checkpoint-init CMD=build-clean STEPS='"Prepare" "Execute" "Verify"'
+
+# Resume from a specific step (if interrupted)
+make checkpoint-update CMD=build-clean STEP=N
+
+# Or reset and start over
+./scripts/init-checkpoint.sh build-clean '"Clean Artifacts" "Compile Code" "Verify Build"'
 ```
 
-### First-Time Initialization Check
-
-```bash
-./scripts/init-checkpoint.sh build-clean '"Prepare" "Execute" "Verify"'
-```
-
-## PRECONDITION: Checkpoint Tracking Must Be Initialized
-
-```bash
-./scripts/require-checkpoint.sh build-clean
-```
-
-# Clean Build
 ## Checkpoint Tracking
 
-This command uses checkpoint tracking to ensure systematic execution and verification.
+This command uses checkpoint tracking via wrapper scripts to ensure systematic execution of clean builds.
 
-### Initialize Tracking
+### Checkpoint Wrapper Scripts
+
+The `run-build-clean.sh` script uses the following standardized wrapper scripts:
+
+- **`./scripts/init-checkpoint.sh`**: Initializes or resumes checkpoint tracking
+- **`./scripts/require-checkpoint.sh`**: Verifies checkpoint is ready before proceeding
+- **`./scripts/gate-checkpoint.sh`**: Validates gate conditions at workflow boundaries
+- **`./scripts/complete-checkpoint.sh`**: Shows completion summary and cleanup
+
+These wrappers provide centralized checkpoint management across all commands.
+
+## Workflow Execution
+
+Run the complete checkpoint-based workflow:
+
+#### [CHECKPOINT START]
+
 ```bash
-# Start the build clean process
-make checkpoint-init CMD=build-clean STEPS='"Prepare" "Execute" "Verify"'
+./scripts/run-build-clean.sh
 ```
 
-**Expected output:**
-```
-📍 Starting: build-clean (3 steps)
-📁 Tracking: /tmp/build-clean-progress.txt
-→ Run: make checkpoint-update CMD=build-clean STEP=1
-```
+This script handles all stages of the clean build process:
 
-### Check Progress
+### What the Script Does
+
+1. **Clean Artifacts**: Removes all build artifacts and intermediate files
+2. **Compile Code**: Compiles all modules and binaries from scratch
+3. **Verify Build**: Confirms all artifacts were rebuilt correctly
+4. **Checkpoint Completion**: Marks the workflow as complete
+
+### Manual Checkpoint Control
+
+If you need to manually check progress or resume a workflow:
+
 ```bash
-make checkpoint-status CMD=build-clean
-```
+# Check current progress
+make checkpoint-status CMD=build-clean VERBOSE=--verbose
 
-**Expected output (example at 33% completion):**
-```
-📈 command: X/Y steps (Z%)
-   [████░░░░░░░░░░░░░░░░] Z%
-→ Next: make checkpoint-update CMD=command STEP=N
-```
+# Resume from a specific step (if interrupted)
+make checkpoint-update CMD=build-clean STEP=N
+
+# Reset and start over using the wrapper script
+./scripts/init-checkpoint.sh build-clean '"Clean Artifacts" "Compile Code" "Verify Build"'
+
+# Verify checkpoint before running workflow
+./scripts/require-checkpoint.sh build-clean
+
+# Show completion and cleanup
+./scripts/complete-checkpoint.sh build-clean
 
 ## Minimum Requirements
 
@@ -105,7 +122,7 @@ make checkpoint-update CMD=build-clean STEP=2
 ```
 
 
-#### [CHECKPOINT END - EXECUTION]
+#### [CHECKPOINT END]
 ## Expected Output
 
 ### Success State
@@ -142,23 +159,6 @@ make: *** [build] Error 1
 ```
 
 
-#### [CHECKPOINT COMPLETE]
-```bash
-./scripts/complete-checkpoint.sh build-clean
-```
-
-**Expected completion output:**
-```
-========================================
-   CHECKPOINT COMPLETION SUMMARY
-========================================
-
-📈 build-clean: X/Y steps (Z%)
-   [████████████████████] 100%
-
-✅ Checkpoint workflow complete
-```
-```
 
 ## Key Points
 

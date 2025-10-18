@@ -9,52 +9,69 @@ Build and run the agerun executable.
 If a `/run-exec` workflow is already in progress:
 
 ```bash
+# Check current progress
 make checkpoint-status CMD=run-exec VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=run-exec STEP=N
-# Or reset: make checkpoint-cleanup CMD=run-exec && make checkpoint-init CMD=run-exec STEPS='"Prepare" "Execute" "Verify"'
+
+# Resume from a specific step (if interrupted)
+make checkpoint-update CMD=run-exec STEP=N
+
+# Or reset and start over
+./scripts/init-checkpoint.sh run-exec '"Build Executable" "Run Executable" "Verify Execution"'
 ```
 
-### First-Time Initialization Check
-
-```bash
-./scripts/init-checkpoint.sh run-exec '"Prepare" "Execute" "Verify"'
-```
-
-## PRECONDITION: Checkpoint Tracking Must Be Initialized
-
-```bash
-./scripts/require-checkpoint.sh run-exec
-```
-
-# Run Executable
 ## Checkpoint Tracking
 
-This command uses checkpoint tracking to ensure systematic execution and verification.
+This command uses checkpoint tracking via wrapper scripts to ensure systematic execution.
 
-### Initialize Tracking
+### Checkpoint Wrapper Scripts
+
+The `run-run-exec.sh` script uses the following standardized wrapper scripts:
+
+- **`./scripts/init-checkpoint.sh`**: Initializes or resumes checkpoint tracking
+- **`./scripts/require-checkpoint.sh`**: Verifies checkpoint is ready before proceeding
+- **`./scripts/gate-checkpoint.sh`**: Validates gate conditions at workflow boundaries
+- **`./scripts/complete-checkpoint.sh`**: Shows completion summary and cleanup
+
+These wrappers provide centralized checkpoint management across all commands.
+
+## Workflow Execution
+
+Run the complete checkpoint-based workflow:
+
+#### [CHECKPOINT START]
+
 ```bash
-# Start the run exec process
-make checkpoint-init CMD=run-exec STEPS='"Prepare" "Execute" "Verify"'
+./scripts/run-run-exec.sh
 ```
 
-**Expected output:**
-```
-📍 Starting: run-exec (3 steps)
-📁 Tracking: /tmp/run-exec-progress.txt
-→ Run: make checkpoint-update CMD=run-exec STEP=1
-```
+This script handles all stages of executable execution:
 
-### Check Progress
+### What the Script Does
+
+1. **Build Executable**: Compiles the agerun executable
+2. **Run Executable**: Executes the built executable
+3. **Verify Execution**: Confirms successful execution with exit code
+4. **Checkpoint Completion**: Marks the workflow as complete
+
+### Manual Checkpoint Control
+
+If you need to manually check progress or resume a workflow:
+
 ```bash
-make checkpoint-status CMD=run-exec
-```
+# Check current progress
+make checkpoint-status CMD=run-exec VERBOSE=--verbose
 
-**Expected output (example at 33% completion):**
-```
-📈 command: X/Y steps (Z%)
-   [████░░░░░░░░░░░░░░░░] Z%
-→ Next: make checkpoint-update CMD=command STEP=N
-```
+# Resume from a specific step (if interrupted)
+make checkpoint-update CMD=run-exec STEP=N
+
+# Reset and start over using the wrapper script
+./scripts/init-checkpoint.sh run-exec '"Build Executable" "Run Executable" "Verify Execution"'
+
+# Verify checkpoint before running workflow
+./scripts/require-checkpoint.sh run-exec
+
+# Show completion and cleanup
+./scripts/complete-checkpoint.sh run-exec
 
 ## Minimum Requirements
 
@@ -104,7 +121,7 @@ make checkpoint-update CMD=run-exec STEP=2
 ```
 
 
-#### [CHECKPOINT END - EXECUTION]
+#### [CHECKPOINT END]
 ## Expected Output
 
 ### Success State
@@ -159,22 +176,6 @@ Shutdown complete
 ```
 
 
-#### [CHECKPOINT COMPLETE]
-```bash
-./scripts/complete-checkpoint.sh run-exec
-```
-
-**Expected completion output:**
-```
-========================================
-   CHECKPOINT COMPLETION SUMMARY
-========================================
-
-📈 run-exec: X/Y steps (Z%)
-   [████████████████████] 100%
-
-✅ Checkpoint workflow complete
-```
 ```
 
 ## Key Points

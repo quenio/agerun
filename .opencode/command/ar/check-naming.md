@@ -13,108 +13,60 @@ Before checking:
 
 ## CHECKPOINT WORKFLOW ENFORCEMENT
 
-**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution. This command demonstrates the [Checkpoint Conditional Flow Pattern](../../../kb/checkpoint-conditional-flow-pattern.md) where naming violations trigger fix workflows. See [Checkpoint Sequential Execution Discipline](../../../kb/checkpoint-sequential-execution-discipline.md) for important requirements about sequential ordering and work verification.
 
 ### In-Progress Workflow Detection
 
 If a `/check-naming` workflow is already in progress:
 
 ```bash
+# Check current progress
 make checkpoint-status CMD=check-naming VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=check-naming STEP=N
-# Or reset: make checkpoint-cleanup CMD=check-naming && make checkpoint-init CMD=check-naming STEPS='"Prepare" "Execute" "Verify"'
+
+# Resume from a specific step (if interrupted)
+make checkpoint-update CMD=check-naming STEP=N
+
+# Or reset and start over
+./scripts/init-checkpoint.sh check-naming '"Check Naming" "Analyze Violations" "Document Findings"'
 ```
 
-### First-Time Initialization Check
-
-```bash
-./scripts/init-checkpoint.sh check-naming '"Prepare" "Execute" "Verify"'
-```
-
-# Check Naming Conventions
 ## Checkpoint Tracking
 
-This command uses checkpoint tracking to ensure systematic execution and verification.
+This command uses checkpoint tracking via wrapper scripts to ensure systematic execution of all naming convention validation steps.
 
-### Initialize Tracking
-```bash
-# Start the check naming process
-make checkpoint-init CMD=check-naming STEPS='"Prepare" "Execute" "Verify"'
-```
+### Checkpoint Wrapper Scripts
 
-**Expected output:**
-```
-📍 Starting: check-naming (3 steps)
-📁 Tracking: /tmp/check-naming-progress.txt
-→ Run: make checkpoint-update CMD=check-naming STEP=1
-```
+The `run-check-naming.sh` script uses the following standardized wrapper scripts:
 
-### Check Progress
-```bash
-make checkpoint-status CMD=check-naming
-```
+- **`./scripts/init-checkpoint.sh`**: Initializes or resumes checkpoint tracking
+- **`./scripts/require-checkpoint.sh`**: Verifies checkpoint is ready before proceeding
+- **`./scripts/gate-checkpoint.sh`**: Validates gate conditions at workflow boundaries
+- **`./scripts/complete-checkpoint.sh`**: Shows completion summary and cleanup
 
-**Expected output (example at 33% completion):**
-```
-📈 command: X/Y steps (Z%)
-   [████░░░░░░░░░░░░░░░░] Z%
-→ Next: make checkpoint-update CMD=command STEP=N
-```
+These wrappers provide centralized checkpoint management across all commands.
 
-## Minimum Requirements
+## Workflow Execution
 
-**MANDATORY for successful completion:**
-- [ ] Command executes without errors
-- [ ] Expected output is produced
-- [ ] No unexpected warnings or issues
+Run the complete checkpoint-based workflow:
 
-
-
-
-**MANDATORY**: Fix all naming violations before committing. Consistent naming prevents confusion.
-
-**CRITICAL**: The naming conventions are:
-- Typedefs: `ar_<module>_t`
-- Functions: `ar_<module>__<function>`
-- Static functions: `_<function>`
-
-**Common violations to watch for** ([details](../../../kb/function-naming-state-change-convention.md)):
-- Missing double underscore in function names
-- Static functions without underscore prefix
-- Non-static functions with underscore prefix
-- Typedefs not ending in `_t`
-- Using `get_` for state-changing operations (should be `take_` for ownership transfer)
-
-For example: `ar_data_create()` should be `ar_data__create_integer()`
-
-#### [EXECUTION GATE]
-```bash
-# Verify ready to execute
-./scripts/gate-checkpoint.sh check-naming "Ready" "1"
-```
-
-**Expected gate output:**
-```
-✅ GATE 'Ready' - PASSED
-   Verified: Steps 1
-```
-
-## Command
-
-#### [CHECKPOINT START - EXECUTION]
+#### [CHECKPOINT START]
 
 ```bash
-make check-naming
-
-# Mark execution complete
-make checkpoint-update CMD=check-naming STEP=2
+./scripts/run-check-naming.sh
 ```
 
+This script handles all stages of the naming convention validation process:
 
-#### [CHECKPOINT END - EXECUTION]
-## Expected Output
+### What the Script Does
 
-### Success State
+1. **Check Naming**: Runs `make check-naming` to validate all naming conventions
+2. **Analyze Violations**: Identifies and categorizes any naming violations found
+3. **Document Findings**: Reports results and next steps
+4. **Checkpoint Completion**: Marks the workflow as complete
+
+### Expected Output
+
+#### Success State
 ```
 Checking naming conventions...
   Checking typedef naming (ar_*_t pattern)...
@@ -123,10 +75,10 @@ Checking naming conventions...
   Checking test function naming (test_*__ pattern)...
   Checking heap macro naming (AR__HEAP__* pattern)...
 
-All naming conventions are correct!
+✅ All naming conventions are correct!
 ```
 
-### Failure States
+#### Failure States
 
 **Typedef Naming Violation:**
 ```
@@ -161,24 +113,52 @@ Checking naming conventions...
 make: *** [check-naming] Error 1
 ```
 
+#### [CHECKPOINT END]
 
-#### [CHECKPOINT COMPLETE]
+### Manual Checkpoint Control
+
+If you need to manually check progress or resume a workflow:
+
 ```bash
+# Check current progress
+make checkpoint-status CMD=check-naming VERBOSE=--verbose
+
+# Resume from a specific step (if interrupted)
+make checkpoint-update CMD=check-naming STEP=N
+
+# Reset and start over using the wrapper script
+./scripts/init-checkpoint.sh check-naming '"Check Naming" "Analyze Violations" "Document Findings"'
+
+# Verify checkpoint before running workflow
+./scripts/require-checkpoint.sh check-naming
+
+# Show completion and cleanup
 ./scripts/complete-checkpoint.sh check-naming
 ```
 
-**Expected completion output:**
-```
-========================================
-   CHECKPOINT COMPLETION SUMMARY
-========================================
+## Minimum Requirements
 
-📈 check-naming: X/Y steps (Z%)
-   [████████████████████] 100%
+**MANDATORY for successful completion:**
+- [ ] Command executes without errors
+- [ ] All naming conventions validated
+- [ ] Violations identified and documented
+- [ ] No unexpected warnings or issues
 
-✅ Checkpoint workflow complete
-```
-```
+**MANDATORY**: Fix all naming violations before committing. Consistent naming prevents confusion.
+
+**CRITICAL**: The naming conventions are:
+- Typedefs: `ar_<module>_t`
+- Functions: `ar_<module>__<function>`
+- Static functions: `_<function>`
+
+**Common violations to watch for** ([details](../../../kb/function-naming-state-change-convention.md)):
+- Missing double underscore in function names
+- Static functions without underscore prefix
+- Non-static functions with underscore prefix
+- Typedefs not ending in `_t`
+- Using `get_` for state-changing operations (should be `take_` for ownership transfer)
+
+For example: `ar_data_create()` should be `ar_data__create_integer()`
 
 ## Key Points
 

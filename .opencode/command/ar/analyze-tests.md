@@ -9,51 +9,69 @@ Run static analysis on the test code.
 If a `/analyze-tests` workflow is already in progress:
 
 ```bash
+# Check current progress
 make checkpoint-status CMD=analyze-tests VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=analyze-tests STEP=N
-# Or reset: make checkpoint-cleanup CMD=analyze-tests && make checkpoint-init CMD=analyze-tests STEPS='"Prepare" "Execute" "Verify"'
+
+# Resume from a specific step (if interrupted)
+make checkpoint-update CMD=analyze-tests STEP=N
+
+# Or reset and start over
+./scripts/init-checkpoint.sh analyze-tests '"Build Tests" "Run Static Analysis" "Report Results"'
 ```
 
-### First-Time Initialization Check
-
-```bash
-./scripts/init-checkpoint.sh analyze-tests '"Prepare" "Execute" "Verify"'
-```
-
-## PRECONDITION: Checkpoint Tracking Must Be Initialized
-
-```bash
-./scripts/require-checkpoint.sh analyze-tests
-```
-
-# Analyze Tests
 ## Checkpoint Tracking
 
-This command uses checkpoint tracking to ensure systematic execution and verification.
+This command uses checkpoint tracking via wrapper scripts to ensure systematic execution of static analysis.
 
-### Initialize Tracking
+### Checkpoint Wrapper Scripts
+
+The `run-analyze-tests.sh` script uses the following standardized wrapper scripts:
+
+- **`./scripts/init-checkpoint.sh`**: Initializes or resumes checkpoint tracking
+- **`./scripts/require-checkpoint.sh`**: Verifies checkpoint is ready before proceeding
+- **`./scripts/gate-checkpoint.sh`**: Validates gate conditions at workflow boundaries
+- **`./scripts/complete-checkpoint.sh`**: Shows completion summary and cleanup
+
+These wrappers provide centralized checkpoint management across all commands.
+
+## Workflow Execution
+
+Run the complete checkpoint-based workflow:
+
+#### [CHECKPOINT START]
+
 ```bash
-# Start the analyze tests process
-make checkpoint-init CMD=analyze-tests STEPS='"Prepare" "Execute" "Verify"'
+./scripts/run-analyze-tests.sh
 ```
 
-**Expected output:**
-```
-📍 Starting: analyze-tests (3 steps)
-📁 Tracking: /tmp/analyze-tests-progress.txt
-→ Run: make checkpoint-update CMD=analyze-tests STEP=1
-```
+This script handles all stages of the test static analysis process:
 
-### Check Progress
+### What the Script Does
+
+1. **Build Tests**: Compiles the test executable if needed
+2. **Run Static Analysis**: Executes static analysis tools on the test code
+3. **Report Results**: Presents analysis findings and code quality metrics
+4. **Checkpoint Completion**: Marks the workflow as complete
+
+### Manual Checkpoint Control
+
+If you need to manually check progress or resume a workflow:
+
 ```bash
-make checkpoint-status CMD=analyze-tests
-```
+# Check current progress
+make checkpoint-status CMD=analyze-tests VERBOSE=--verbose
 
-**Expected output (example at 33% completion):**
-```
-📈 command: X/Y steps (Z%)
-   [████░░░░░░░░░░░░░░░░] Z%
-→ Next: make checkpoint-update CMD=command STEP=N
+# Resume from a specific step (if interrupted)
+make checkpoint-update CMD=analyze-tests STEP=N
+
+# Reset and start over using the wrapper script
+./scripts/init-checkpoint.sh analyze-tests '"Build Tests" "Run Static Analysis" "Report Results"'
+
+# Verify checkpoint before running workflow
+./scripts/require-checkpoint.sh analyze-tests
+
+# Show completion and cleanup
+./scripts/complete-checkpoint.sh analyze-tests
 ```
 
 ## Minimum Requirements
@@ -163,23 +181,6 @@ Found 1 potential leak in test code.
 ```
 
 
-#### [CHECKPOINT COMPLETE]
-```bash
-./scripts/complete-checkpoint.sh analyze-tests
-```
-
-**Expected completion output:**
-```
-========================================
-   CHECKPOINT COMPLETION SUMMARY
-========================================
-
-📈 analyze-tests: X/Y steps (Z%)
-   [████████████████████] 100%
-
-✅ Checkpoint workflow complete
-```
-```
 
 ## Key Points
 

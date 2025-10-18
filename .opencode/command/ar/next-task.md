@@ -17,64 +17,82 @@ Before starting task execution, search KB for relevant patterns ([details](../..
 If a `/next-task` workflow is already in progress:
 
 ```bash
+# Check current progress
 make checkpoint-status CMD=next-task VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=next-task STEP=N
-# Or reset: make checkpoint-cleanup CMD=next-task && make checkpoint-init CMD=next-task STEPS='"Prepare" "Execute" "Verify"'
+
+# Resume from a specific step (if interrupted)
+make checkpoint-update CMD=next-task STEP=N
+
+# Or reset and start over
+./scripts/init-checkpoint.sh next-task '"Read Context" "Check Task Sources" "Discover Next Task"'
 ```
 
-### First-Time Initialization Check
-
-```bash
-./scripts/init-checkpoint.sh next-task '"Prepare" "Execute" "Verify"'
-```
-
-## PRECONDITION: Checkpoint Tracking Must Be Initialized
-
-```bash
-./scripts/require-checkpoint.sh next-task
-```
-
-# Next Task
 ## Checkpoint Tracking
 
-This command uses checkpoint tracking to ensure systematic execution and verification.
+This command uses checkpoint tracking via wrapper scripts to ensure systematic execution of task discovery.
 
-### Initialize Tracking
+### Checkpoint Wrapper Scripts
+
+The `run-next-task.sh` script uses the following standardized wrapper scripts:
+
+- **`./scripts/init-checkpoint.sh`**: Initializes or resumes checkpoint tracking
+- **`./scripts/require-checkpoint.sh`**: Verifies checkpoint is ready before proceeding
+- **`./scripts/gate-checkpoint.sh`**: Validates gate conditions at workflow boundaries
+- **`./scripts/complete-checkpoint.sh`**: Shows completion summary and cleanup
+
+These wrappers provide centralized checkpoint management across all commands.
+
+## Workflow Execution
+
+Run the complete checkpoint-based workflow:
+
+#### [CHECKPOINT START]
+
 ```bash
-# Start the next task process
-make checkpoint-init CMD=next-task STEPS='"Prepare" "Execute" "Verify"'
+./scripts/run-next-task.sh
 ```
 
-**Expected output:**
-```
-📍 Starting: next-task (3 steps)
-📁 Tracking: /tmp/next-task-progress.txt
-→ Run: make checkpoint-update CMD=next-task STEP=1
-```
+This script handles all stages of the task discovery process:
 
-### Check Progress
+### What the Script Does
+
+1. **Read Context**: Reads AGENTS.md and session context
+2. **Check Task Sources**: Checks session todo list and TODO.md for tasks
+3. **Discover Next Task**: Identifies and presents the next task to work on
+4. **Checkpoint Completion**: Marks the workflow as complete
+
+### Manual Checkpoint Control
+
+If you need to manually check progress or resume a workflow:
+
 ```bash
-make checkpoint-status CMD=next-task
-```
+# Check current progress
+make checkpoint-status CMD=next-task VERBOSE=--verbose
 
-**Expected output (example at 33% completion):**
-```
-📈 command: X/Y steps (Z%)
-   [████░░░░░░░░░░░░░░░░] Z%
-→ Next: make checkpoint-update CMD=command STEP=N
+# Resume from a specific step (if interrupted)
+make checkpoint-update CMD=next-task STEP=N
+
+# Reset and start over using the wrapper script
+./scripts/init-checkpoint.sh next-task '"Read Context" "Check Task Sources" "Discover Next Task"'
+
+# Verify checkpoint before running workflow
+./scripts/require-checkpoint.sh next-task
+
+# Show completion and cleanup
+./scripts/complete-checkpoint.sh next-task
 ```
 
 ## Minimum Requirements
 
 **MANDATORY for successful completion:**
 - [ ] Command executes without errors
-- [ ] Expected output is produced
+- [ ] Task discovery completed
+- [ ] Next task identified and presented
 - [ ] No unexpected warnings or issues
-
 
 ## Expected Behavior
 
-#### [CHECKPOINT START - EXECUTION]
+#### [CHECKPOINT END]
 
 
 ### When Session Tasks Exist
@@ -155,26 +173,6 @@ Plan based on report:
 ```
 
 
-#### [CHECKPOINT COMPLETE]
-```bash
-./scripts/complete-checkpoint.sh next-task
-```
-
-**Expected completion output:**
-```
-========================================
-   CHECKPOINT COMPLETION SUMMARY
-========================================
-
-📈 next-task: X/Y steps (Z%)
-   [████████████████████] 100%
-
-✅ Checkpoint workflow complete
-```
-```
-
-
-#### [CHECKPOINT END - EXECUTION]
 
 ## Key Points
 

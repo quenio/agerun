@@ -23,64 +23,82 @@ Only after completing KB consultation should you proceed to analyze TODO.md.
 If a `/next-priority` workflow is already in progress:
 
 ```bash
+# Check current progress
 make checkpoint-status CMD=next-priority VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=next-priority STEP=N
-# Or reset: make checkpoint-cleanup CMD=next-priority && make checkpoint-init CMD=next-priority STEPS='"Prepare" "Execute" "Verify"'
+
+# Resume from a specific step (if interrupted)
+make checkpoint-update CMD=next-priority STEP=N
+
+# Or reset and start over
+./scripts/init-checkpoint.sh next-priority '"Read Context" "Analyze Priorities" "Generate Recommendation"'
 ```
 
-### First-Time Initialization Check
-
-```bash
-./scripts/init-checkpoint.sh next-priority '"Prepare" "Execute" "Verify"'
-```
-
-## PRECONDITION: Checkpoint Tracking Must Be Initialized
-
-```bash
-./scripts/require-checkpoint.sh next-priority
-```
-
-# Next Priority
 ## Checkpoint Tracking
 
-This command uses checkpoint tracking to ensure systematic execution and verification.
+This command uses checkpoint tracking via wrapper scripts to ensure systematic execution of priority analysis.
 
-### Initialize Tracking
+### Checkpoint Wrapper Scripts
+
+The `run-next-priority.sh` script uses the following standardized wrapper scripts:
+
+- **`./scripts/init-checkpoint.sh`**: Initializes or resumes checkpoint tracking
+- **`./scripts/require-checkpoint.sh`**: Verifies checkpoint is ready before proceeding
+- **`./scripts/gate-checkpoint.sh`**: Validates gate conditions at workflow boundaries
+- **`./scripts/complete-checkpoint.sh`**: Shows completion summary and cleanup
+
+These wrappers provide centralized checkpoint management across all commands.
+
+## Workflow Execution
+
+Run the complete checkpoint-based workflow:
+
+#### [CHECKPOINT START]
+
 ```bash
-# Start the next priority process
-make checkpoint-init CMD=next-priority STEPS='"Prepare" "Execute" "Verify"'
+./scripts/run-next-priority.sh
 ```
 
-**Expected output:**
-```
-📍 Starting: next-priority (3 steps)
-📁 Tracking: /tmp/next-priority-progress.txt
-→ Run: make checkpoint-update CMD=next-priority STEP=1
-```
+This script handles all stages of the priority analysis process:
 
-### Check Progress
+### What the Script Does
+
+1. **Read Context**: Reads AGENTS.md and TODO.md to understand current state
+2. **Analyze Priorities**: Applies systematic analysis protocols from KB articles
+3. **Generate Recommendation**: Provides quantitative justification for priority choice
+4. **Checkpoint Completion**: Marks the workflow as complete
+
+### Manual Checkpoint Control
+
+If you need to manually check progress or resume a workflow:
+
 ```bash
-make checkpoint-status CMD=next-priority
-```
+# Check current progress
+make checkpoint-status CMD=next-priority VERBOSE=--verbose
 
-**Expected output (example at 33% completion):**
-```
-📈 command: X/Y steps (Z%)
-   [████░░░░░░░░░░░░░░░░] Z%
-→ Next: make checkpoint-update CMD=command STEP=N
+# Resume from a specific step (if interrupted)
+make checkpoint-update CMD=next-priority STEP=N
+
+# Reset and start over using the wrapper script
+./scripts/init-checkpoint.sh next-priority '"Read Context" "Analyze Priorities" "Generate Recommendation"'
+
+# Verify checkpoint before running workflow
+./scripts/require-checkpoint.sh next-priority
+
+# Show completion and cleanup
+./scripts/complete-checkpoint.sh next-priority
 ```
 
 ## Minimum Requirements
 
 **MANDATORY for successful completion:**
 - [ ] Command executes without errors
-- [ ] Expected output is produced
+- [ ] Priority analysis completed
+- [ ] Quantitative justification provided
 - [ ] No unexpected warnings or issues
-
 
 ## Expected Behavior
 
-#### [CHECKPOINT START - EXECUTION]
+#### [CHECKPOINT END]
 
 
 ### Priority Analysis Output
@@ -164,26 +182,6 @@ Estimated effort: 5-8 TDD cycles
 ```
 
 
-#### [CHECKPOINT COMPLETE]
-```bash
-./scripts/complete-checkpoint.sh next-priority
-```
-
-**Expected completion output:**
-```
-========================================
-   CHECKPOINT COMPLETION SUMMARY
-========================================
-
-📈 next-priority: X/Y steps (Z%)
-   [████████████████████] 100%
-
-✅ Checkpoint workflow complete
-```
-```
-
-
-#### [CHECKPOINT END - EXECUTION]
 
 ## Key Points
 

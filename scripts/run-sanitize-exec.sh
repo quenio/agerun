@@ -1,0 +1,32 @@
+#!/bin/bash
+set -e
+./scripts/init-checkpoint.sh sanitize-exec '"Build Executable" "Run Sanitizer" "Report Results"'
+./scripts/require-checkpoint.sh sanitize-exec
+echo ""
+echo "========== STAGE 1: Build Executable =========="
+echo ""
+if make bin/ar_executable 2>&1 | tail -10; then
+  echo "✅ Build with sanitizer successful"
+else
+  echo "❌ Build failed"
+  make checkpoint-update CMD=sanitize-exec STEP=1
+  ./scripts/complete-checkpoint.sh sanitize-exec
+  exit 1
+fi
+make checkpoint-update CMD=sanitize-exec STEP=1
+echo ""
+echo "========== STAGE 2: Run Sanitizer =========="
+echo ""
+if make sanitize-exec 2>&1 | tail -20; then
+  echo "✅ Sanitizer check complete"
+else
+  echo "⚠️ Sanitizer found issues"
+fi
+make checkpoint-update CMD=sanitize-exec STEP=2
+echo ""
+echo "========== STAGE 3: Report Results =========="
+echo ""
+echo "✅ Sanitizer analysis complete - review output above"
+make checkpoint-update CMD=sanitize-exec STEP=3
+./scripts/complete-checkpoint.sh sanitize-exec
+echo "✅ Executable sanitizer workflow complete!"

@@ -9,185 +9,69 @@ Run thread sanitizer on the executable for detecting data races.
 If a `/tsan-exec` workflow is already in progress:
 
 ```bash
+# Check current progress
 make checkpoint-status CMD=tsan-exec VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=tsan-exec STEP=N
-# Or reset: make checkpoint-cleanup CMD=tsan-exec && make checkpoint-init CMD=tsan-exec STEPS='"Prepare" "Execute" "Verify"'
+
+# Resume from a specific step (if interrupted)
+make checkpoint-update CMD=tsan-exec STEP=N
+
+# Or reset and start over
+./scripts/init-checkpoint.sh tsan-exec '"Build Tests" "Run Sanitizer" "Report Results"'
 ```
 
-### First-Time Initialization Check
-
-```bash
-./scripts/init-checkpoint.sh tsan-exec '"Prepare" "Execute" "Verify"'
-```
-
-## PRECONDITION: Checkpoint Tracking Must Be Initialized
-
-```bash
-./scripts/require-checkpoint.sh tsan-exec
-```
-
-# Thread Sanitizer Executable
 ## Checkpoint Tracking
 
-This command uses checkpoint tracking to ensure systematic execution and verification.
+This command uses checkpoint tracking via wrapper scripts to ensure systematic execution.
 
-### Initialize Tracking
-```bash
-# Start the tsan exec process
-make checkpoint-init CMD=tsan-exec STEPS='"Prepare" "Execute" "Verify"'
-```
+### Checkpoint Wrapper Scripts
 
-**Expected output:**
-```
-📍 Starting: tsan-exec (3 steps)
-📁 Tracking: /tmp/tsan-exec-progress.txt
-→ Run: make checkpoint-update CMD=tsan-exec STEP=1
-```
+The `run-tsan-exec.sh` script uses the following standardized wrapper scripts:
 
-### Check Progress
-```bash
-make checkpoint-status CMD=tsan-exec
-```
+- **`./scripts/init-checkpoint.sh`**: Initializes or resumes checkpoint tracking
+- **`./scripts/require-checkpoint.sh`**: Verifies checkpoint is ready before proceeding
+- **`./scripts/gate-checkpoint.sh`**: Validates gate conditions at workflow boundaries
+- **`./scripts/complete-checkpoint.sh`**: Shows completion summary and cleanup
 
-**Expected output (example at 33% completion):**
-```
-📈 command: X/Y steps (Z%)
-   [████░░░░░░░░░░░░░░░░] Z%
-→ Next: make checkpoint-update CMD=command STEP=N
-```
+These wrappers provide centralized checkpoint management across all commands.
 
-## Minimum Requirements
+## Workflow Execution
 
-**MANDATORY for successful completion:**
-- [ ] Command executes without errors
-- [ ] Expected output is produced
-- [ ] No unexpected warnings or issues
+Run the complete checkpoint-based workflow:
 
-
-
-
-**IMPORTANT**: ThreadSanitizer prepares us for future multi-threading.
-
-**CRITICAL**: Even in single-threaded code, TSAN can detect:
-- Potential race conditions in design
-- Missing synchronization points
-- Lock ordering issues
-
-**Future considerations**:
-- Which operations will need mutex protection?
-- What data structures will be shared?
-- How will agents communicate safely?
-
-For example, if agents share a message queue, it needs proper locking.
-
-#### [EXECUTION GATE]
-```bash
-# Verify ready to execute
-./scripts/gate-checkpoint.sh tsan-exec "Ready" "1"
-```
-
-**Expected gate output:**
-```
-✅ GATE 'Ready' - PASSED
-   Verified: Steps 1
-```
-
-## Command
-
-#### [CHECKPOINT START - EXECUTION]
+#### [CHECKPOINT START]
 
 ```bash
-make tsan-exec 2>&1
-
-# Mark execution complete
-make checkpoint-update CMD=tsan-exec STEP=2
+./scripts/run-tsan-exec.sh
 ```
 
+This script handles all stages of sanitizer execution:
 
-#### [CHECKPOINT END - EXECUTION]
-## Expected Output
+### What the Script Does
 
-### Success State
-```
-Building executable with ThreadSanitizer (clang)...
-Running agerun with thread sanitizer...
-Loading methods from directory: methods/
-  Loaded: bootstrap-1.0.0.method
-  Loaded: echo-1.0.0.method
-  ... (6 more methods)
-Creating bootstrap agent (ID: 1)
-Processing messages...
-  Agent 1 spawned echo agent (ID: 2)
-  Agent 2 processed message
-No more messages to process
-Saving methodology to agerun.methodology
-Shutdown complete
+1. **Build Tests**: Compiles with sanitizer enabled
+2. **Run Sanitizer**: Executes sanitizer with checks
+3. **Report Results**: Summarizes findings
+4. **Checkpoint Completion**: Marks the workflow as complete
 
-ThreadSanitizer: reported 0 warnings
-```
+### Manual Checkpoint Control
 
-### Failure States
+If you need to manually check progress or resume a workflow:
 
-**Data Race in Agent Communication:**
-```
-Building executable with ThreadSanitizer (clang)...
-Running agerun with thread sanitizer...
-... (startup messages)
-
-==================
-WARNING: ThreadSanitizer: data race (pid=12345)
-  Write of size 8 at 0x7b0400000800 by thread T1:
-    #0 ar_agent__send ar_agent.c:234
-    #1 process_message ar_executable.c:156
-
-  Previous read of size 8 at 0x7b0400000800 by thread T2:
-    #0 ar_agent__receive ar_agent.c:198
-    #1 agent_loop ar_executable.c:187
-
-  Location is heap block of size 128 at 0x7b0400000800 allocated by main thread:
-    #0 malloc
-    #1 ar_agent__create ar_agent.c:45
-    #2 main ar_executable.c:234
-
-SUMMARY: ThreadSanitizer: data race ar_agent.c:234
-==================
-ThreadSanitizer: reported 1 warnings
-make: *** [tsan-exec] Error 66
-```
-
-**Race Condition in Shutdown:**
-```
-==================
-WARNING: ThreadSanitizer: data race (pid=12345)
-  Write of size 1 at 0x7b0400000900 by main thread:
-    #0 ar_system__shutdown ar_system.c:345
-    #1 main ar_executable.c:289
-
-  Previous read of size 1 at 0x7b0400000900 by thread T1:
-    #0 ar_system__is_running ar_system.c:123
-    #1 message_loop ar_executable.c:167
-
-SUMMARY: ThreadSanitizer: data race ar_system.c:345
-==================
-```
-
-
-#### [CHECKPOINT COMPLETE]
 ```bash
+# Check current progress
+make checkpoint-status CMD=tsan-exec VERBOSE=--verbose
+
+# Resume from a specific step (if interrupted)
+make checkpoint-update CMD=tsan-exec STEP=N
+
+# Reset and start over using the wrapper script
+./scripts/init-checkpoint.sh tsan-exec '"Build Tests" "Run Sanitizer" "Report Results"'
+
+# Verify checkpoint before running workflow
+./scripts/require-checkpoint.sh tsan-exec
+
+# Show completion and cleanup
 ./scripts/complete-checkpoint.sh tsan-exec
-```
-
-**Expected completion output:**
-```
-========================================
-   CHECKPOINT COMPLETION SUMMARY
-========================================
-
-📈 tsan-exec: X/Y steps (Z%)
-   [████████████████████] 100%
-
-✅ Checkpoint workflow complete
-```
 ```
 
 ## Key Points

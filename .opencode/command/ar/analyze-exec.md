@@ -9,51 +9,69 @@ Run static analysis on the executable code.
 If a `/analyze-exec` workflow is already in progress:
 
 ```bash
+# Check current progress
 make checkpoint-status CMD=analyze-exec VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=analyze-exec STEP=N
-# Or reset: make checkpoint-cleanup CMD=analyze-exec && make checkpoint-init CMD=analyze-exec STEPS='"Prepare" "Execute" "Verify"'
+
+# Resume from a specific step (if interrupted)
+make checkpoint-update CMD=analyze-exec STEP=N
+
+# Or reset and start over
+./scripts/init-checkpoint.sh analyze-exec '"Build Executable" "Run Static Analysis" "Report Results"'
 ```
 
-### First-Time Initialization Check
-
-```bash
-./scripts/init-checkpoint.sh analyze-exec '"Prepare" "Execute" "Verify"'
-```
-
-## PRECONDITION: Checkpoint Tracking Must Be Initialized
-
-```bash
-./scripts/require-checkpoint.sh analyze-exec
-```
-
-# Analyze Executable
 ## Checkpoint Tracking
 
-This command uses checkpoint tracking to ensure systematic execution and verification.
+This command uses checkpoint tracking via wrapper scripts to ensure systematic execution of static analysis.
 
-### Initialize Tracking
+### Checkpoint Wrapper Scripts
+
+The `run-analyze-exec.sh` script uses the following standardized wrapper scripts:
+
+- **`./scripts/init-checkpoint.sh`**: Initializes or resumes checkpoint tracking
+- **`./scripts/require-checkpoint.sh`**: Verifies checkpoint is ready before proceeding
+- **`./scripts/gate-checkpoint.sh`**: Validates gate conditions at workflow boundaries
+- **`./scripts/complete-checkpoint.sh`**: Shows completion summary and cleanup
+
+These wrappers provide centralized checkpoint management across all commands.
+
+## Workflow Execution
+
+Run the complete checkpoint-based workflow:
+
+#### [CHECKPOINT START]
+
 ```bash
-# Start the analyze exec process
-make checkpoint-init CMD=analyze-exec STEPS='"Prepare" "Execute" "Verify"'
+./scripts/run-analyze-exec.sh
 ```
 
-**Expected output:**
-```
-📍 Starting: analyze-exec (3 steps)
-📁 Tracking: /tmp/analyze-exec-progress.txt
-→ Run: make checkpoint-update CMD=analyze-exec STEP=1
-```
+This script handles all stages of the executable static analysis process:
 
-### Check Progress
+### What the Script Does
+
+1. **Build Executable**: Compiles the executable if needed
+2. **Run Static Analysis**: Executes static analysis tools on the executable code
+3. **Report Results**: Presents analysis findings and code quality metrics
+4. **Checkpoint Completion**: Marks the workflow as complete
+
+### Manual Checkpoint Control
+
+If you need to manually check progress or resume a workflow:
+
 ```bash
-make checkpoint-status CMD=analyze-exec
-```
+# Check current progress
+make checkpoint-status CMD=analyze-exec VERBOSE=--verbose
 
-**Expected output (example at 33% completion):**
-```
-📈 command: X/Y steps (Z%)
-   [████░░░░░░░░░░░░░░░░] Z%
-→ Next: make checkpoint-update CMD=command STEP=N
+# Resume from a specific step (if interrupted)
+make checkpoint-update CMD=analyze-exec STEP=N
+
+# Reset and start over using the wrapper script
+./scripts/init-checkpoint.sh analyze-exec '"Build Executable" "Run Static Analysis" "Report Results"'
+
+# Verify checkpoint before running workflow
+./scripts/require-checkpoint.sh analyze-exec
+
+# Show completion and cleanup
+./scripts/complete-checkpoint.sh analyze-exec
 ```
 
 ## Minimum Requirements
@@ -164,23 +182,6 @@ Found 1 code quality issue.
 ```
 
 
-#### [CHECKPOINT COMPLETE]
-```bash
-./scripts/complete-checkpoint.sh analyze-exec
-```
-
-**Expected completion output:**
-```
-========================================
-   CHECKPOINT COMPLETION SUMMARY
-========================================
-
-📈 analyze-exec: X/Y steps (Z%)
-   [████████████████████] 100%
-
-✅ Checkpoint workflow complete
-```
-```
 
 ## Key Points
 
