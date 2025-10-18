@@ -375,7 +375,7 @@ For each function introduced in the plan:
 1. **Identify function signature**
    ```c
    // Example: create function with 2 parameters
-   ar_file_delegate_t* ar_file_delegate__create(ar_log_t *ref_log, const char *ref_path);
+   ar_file_delegate_t* ar_file_delegate__create(ar_log_t *ref_log, const char *ref_path);  // EXAMPLE: Hypothetical type
    ```
 
 2. **Count parameters**
@@ -411,23 +411,23 @@ For each function introduced in the plan:
 ```markdown
 ✅ CORRECT: Comprehensive NULL parameter coverage
 
-### ar_foo_t* ar_foo__create(ar_log_t *ref_log, const char *ref_path)
+### ar_foo_t* ar_foo__create(ar_log_t *ref_log, const char *ref_path)  // EXAMPLE: Hypothetical function
 Behaviors:
 1. create() returns non-NULL (main success case)
 2. create() handles NULL log         ← NULL parameter 1
 3. create() handles NULL path         ← NULL parameter 2
 4. create() handles malloc failure    ← Allocation failure (use dlsym technique)
 
-### void ar_foo__destroy(ar_foo_t *own_foo)
+### void ar_foo__destroy(ar_foo_t *own_foo)  // EXAMPLE: Hypothetical function
 Behaviors:
 1. destroy() handles NULL foo         ← NULL parameter 1
 
-### bool ar_foo__set_max_size(ar_foo_t *mut_foo, size_t max_size)
+### bool ar_foo__set_max_size(ar_foo_t *mut_foo, size_t max_size)  // EXAMPLE: Hypothetical function
 Behaviors:
 1. set_max_size() returns true (success case)
 2. set_max_size() handles NULL foo    ← NULL parameter 1
 
-### bool ar_foo__write(ar_foo_t *mut_foo, const char *ref_path, ar_data_t *ref_content)
+### bool ar_foo__write(ar_foo_t *mut_foo, const char *ref_path, ar_data_t *ref_content)  // EXAMPLE: Hypothetical function
 Behaviors:
 1. write() returns true (success case)
 2. write() handles NULL foo           ← NULL parameter 1
@@ -438,7 +438,7 @@ Behaviors:
 **❌ WRONG: Missing NULL parameter coverage**
 
 ```markdown
-### ar_foo_t* ar_foo__create(ar_log_t *ref_log, const char *ref_path)
+### ar_foo_t* ar_foo__create(ar_log_t *ref_log, const char *ref_path)  // EXAMPLE: Hypothetical function
 Behaviors:
 1. create() returns non-NULL
 
@@ -496,16 +496,16 @@ void* malloc(size_t size) {
 static void test_foo__create_handles_malloc_failure(void) {
     // Test malloc failure at each allocation point
     fail_at_malloc = 1;  // Fail first malloc
-    ar_foo_t *own_foo = ar_foo__create(ref_log, "test");
+    ar_foo_t *own_foo = ar_foo__create(ref_log, "test");  // EXAMPLE: Hypothetical function
     AR_ASSERT(own_foo == NULL, "Should return NULL on malloc failure");
 }
 ```
 
 **GREEN Phase:**
 ```c
-ar_foo_t* ar_foo__create(ar_log_t *ref_log, const char *ref_path) {
+ar_foo_t* ar_foo__create(ar_log_t *ref_log, const char *ref_path) {  // EXAMPLE: Hypothetical function
     // Check malloc result
-    ar_foo_t *own_foo = AR__HEAP__MALLOC(sizeof(ar_foo_t));
+    ar_foo_t *own_foo = AR__HEAP__MALLOC(sizeof(ar_foo_t));  // EXAMPLE: Using hypothetical type
     if (!own_foo) return NULL;  // Handle malloc failure
 
     // Continue with initialization...

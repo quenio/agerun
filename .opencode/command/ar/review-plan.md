@@ -493,17 +493,17 @@ Iteration 1.2: Object is registered
   AR_ASSERT(registry_has(obj), "Should register");
 
 ❌ WRONG: Over-implementation in GREEN (Lesson 11)
-ar_foo_t* ar_foo__create(ar_log_t *ref_log, const char *ref_path) {
+ar_foo_t* ar_foo__create(ar_log_t *ref_log, const char *ref_path) {  // EXAMPLE: Hypothetical function
     if (!ref_log || !ref_path) return NULL;  // NOT TESTED
-    ar_foo_t *own_foo = AR__HEAP__MALLOC(sizeof(ar_foo_t));
+    ar_foo_t *own_foo = AR__HEAP__MALLOC(sizeof(ar_foo_t));  // EXAMPLE: Using hypothetical type
     if (!own_foo) return NULL;  // NOT TESTED
     ...
 }
 
 ✅ CORRECT: Minimal GREEN
-ar_foo_t* ar_foo__create(ar_log_t *ref_log, const char *ref_path) {
+ar_foo_t* ar_foo__create(ar_log_t *ref_log, const char *ref_path) {  // EXAMPLE: Hypothetical function
     // Minimal: Just allocate and return
-    ar_foo_t *own_foo = AR__HEAP__MALLOC(sizeof(ar_foo_t));
+    ar_foo_t *own_foo = AR__HEAP__MALLOC(sizeof(ar_foo_t));  // EXAMPLE: Using hypothetical type
     own_foo->ref_log = ref_log;
     own_foo->own_path = AR__HEAP__STRDUP(ref_path);
     return own_foo;  // Non-NULL - passes the assertion

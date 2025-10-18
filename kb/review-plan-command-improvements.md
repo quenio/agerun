@@ -173,7 +173,7 @@ For EACH PENDING REVIEW iteration:
 **For each function introduced in the plan:**
 
 1. **Identify function signature**
-   - Example: `ar_foo_t* ar_foo__create(ar_log_t *ref_log, const char *ref_path)`
+   - Example: `ar_foo_t* ar_foo__create(ar_log_t *ref_log, const char *ref_path)`  // EXAMPLE: Future type
 
 2. **Count parameters**
    - ref_log (parameter 1)
@@ -325,4 +325,3 @@ Each iteration review checks:
 2. Test on a new plan to verify workflow
 3. Document any additional learnings
 4. Create automated validation scripts
-

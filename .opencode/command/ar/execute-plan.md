@@ -1067,7 +1067,7 @@ When executing NULL parameter iterations (e.g., "create() handles NULL log", "wr
 static void test_foo__create_handles_null_log(void) {
     // Given NULL log parameter
     // When calling create with NULL log
-    ar_foo_t *own_foo = ar_foo__create(NULL, "valid_path");
+    ar_foo_t *own_foo = ar_foo__create(NULL, "valid_path");  // EXAMPLE: Hypothetical function
 
     // Then should return NULL (graceful error)
     AR_ASSERT(own_foo == NULL, "Should return NULL for NULL log");  // ← FAILS
@@ -1076,12 +1076,12 @@ static void test_foo__create_handles_null_log(void) {
 
 **GREEN Phase - Minimal NULL Check:**
 ```c
-ar_foo_t* ar_foo__create(ar_log_t *ref_log, const char *ref_path) {
+ar_foo_t* ar_foo__create(ar_log_t *ref_log, const char *ref_path) {  // EXAMPLE: Hypothetical function
     // Add NULL check (minimal - just this parameter)
     if (!ref_log) return NULL;
 
     // ... rest of existing implementation (unchanged)
-    ar_foo_t *own_foo = AR__HEAP__MALLOC(sizeof(ar_foo_t));
+    ar_foo_t *own_foo = AR__HEAP__MALLOC(sizeof(ar_foo_t));  // EXAMPLE: Using hypothetical type
     own_foo->ref_log = ref_log;
     own_foo->own_path = AR__HEAP__STRDUP(ref_path);
     return own_foo;
@@ -1153,7 +1153,7 @@ static void test_foo__create_handles_malloc_failure(void) {
     ar_log_t *ref_log = ar_log__create();
 
     // When calling create (which calls malloc)
-    ar_foo_t *own_foo = ar_foo__create(ref_log, "test");
+    ar_foo_t *own_foo = ar_foo__create(ref_log, "test");  // EXAMPLE: Hypothetical function
 
     // Then should return NULL gracefully
     AR_ASSERT(own_foo == NULL, "Should return NULL on malloc failure");  // ← FAILS
@@ -1166,11 +1166,11 @@ static void test_foo__create_handles_malloc_failure(void) {
 **GREEN Phase - Check Malloc Result:**
 ```c
 // In modules/ar_foo.c (implementation file)
-ar_foo_t* ar_foo__create(ar_log_t *ref_log, const char *ref_path) {
+ar_foo_t* ar_foo__create(ar_log_t *ref_log, const char *ref_path) {  // EXAMPLE: Hypothetical function
     // ... existing NULL checks ...
 
     // Allocate memory
-    ar_foo_t *own_foo = AR__HEAP__MALLOC(sizeof(ar_foo_t));
+    ar_foo_t *own_foo = AR__HEAP__MALLOC(sizeof(ar_foo_t));  // EXAMPLE: Using hypothetical type
 
     // NEW: Check malloc result
     if (!own_foo) return NULL;  // Handle malloc failure
