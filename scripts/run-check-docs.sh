@@ -5,20 +5,11 @@ set -e
 # Documentation Check Workflow Script
 # This script runs the complete checkpoint-based documentation validation and fix workflow
 
-# Initialize checkpoint tracking if not already done
-if [ ! -f /tmp/check-docs-progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=check-docs STEPS='"Initial Check" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"'
-else
-  echo "📈 Checkpoint tracking already initialized"
-  make checkpoint-status CMD=check-docs
-fi
+# Initialize checkpoint tracking or show status if already initialized
+./scripts/init-checkpoint.sh check-docs '"Initial Check" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"'
 
-# Precondition check
-if [ ! -f /tmp/check-docs-progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  exit 1
-fi
+# Verify checkpoint tracking is ready
+./scripts/require-checkpoint.sh check-docs
 
 # ============================================================================
 # STAGE 1: Initial Check (Step 1)
