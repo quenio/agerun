@@ -62,6 +62,7 @@ Before reviewing any plan ([details](../../../kb/kb-consultation-before-planning
 1. Search: `grep "plan.*review\|iteration.*split\|TDD.*minimalism" kb/README.md`
 2. Read these KB articles IN FULL using the Read tool:
    - `kb/tdd-plan-review-checklist.md` ⭐ READ FIRST - embeds all 14 TDD lessons
+   - `kb/red-phase-dual-goals-pattern.md` ⭐ CRITICAL - Two independent goals of RED phase
    - `kb/command-pipeline-methodology-enforcement.md` - How all three commands work together
    - `kb/lesson-based-command-design-pattern.md` - Unified 14-lesson verification pattern
    - `kb/pre-execution-plan-validation-requirement.md` - Show-stopper validation gates before execution
@@ -292,9 +293,13 @@ Use this checklist to verify each lesson from the session learnings (kb/tdd-plan
   - Check: Tests verify module boundaries, not just individual modules
 
 - [ ] **Lesson 7** ⭐ **CRITICAL**: Assertion validity MUST be verified via temporary corruption
-  - Check: RED phases document temporary code/corruption that makes assertion fail
-  - Check: GREEN phases remove temporary corruption
+  - Check: RED phases document TWO independent goals (Goal 1 and Goal 2)
+  - Check: **GOAL 1** (Prove Test Validity) is ALWAYS present, even for verification iterations
+  - Check: **GOAL 2** (Identify Implementation) status is clearly stated (needs implementation vs already satisfied)
+  - Check: RED phases document temporary code/corruption that makes assertion fail (Goal 1)
+  - Check: GREEN phases remove temporary corruption OR implement minimal code (depending on Goal 2 status)
   - Check: Plan explicitly states "Expected RED: Test FAILS..." for each assertion
+  - Check: Verification iterations still have Goal 1 corruption steps (cannot skip)
 
 - [ ] **Lesson 8**: Temporary code in tests is valid TDD technique
   - Check: Temporary corruption is documented and explicitly marked temporary

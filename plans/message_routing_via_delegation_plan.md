@@ -1674,11 +1674,32 @@ Remove the temporary content corruption from the implementation:
 
 ### Iteration 2: Verify agent routing still works for positive IDs (RED-GREEN-REFACTOR)
 
-**Review Status**: REVIEWED
+**Review Status**: ✅ COMMITTED
 
 **Objective**: Ensure refactored routing doesn't break existing agent routing.
 
+**Iteration Type**: VERIFICATION (tests existing functionality from Iteration 1)
+
 #### RED Phase
+
+**RED Phase has TWO goals (both must be completed):**
+
+**GOAL 1: Prove Test Validity** (ALWAYS REQUIRED - even for verification iterations)
+- **Purpose**: Prove this test can actually catch routing bugs
+- **Method**: Apply temporary corruption, verify test FAILS
+- **Status**: Implementation already exists from Iteration 1, but test validity must still be proven
+
+**GOAL 2: Identify What to Implement** (CONDITIONAL - already satisfied for verification iterations)
+- **Purpose**: Determine what code needs to be written
+- **Method**: Observe what failing test expects
+- **Status**: ✅ ALREADY SATISFIED - Agent routing implemented in Iteration 1
+
+**CRITICAL**: Both goals are independent. Even though Goal 2 is satisfied (implementation exists), Goal 1 is STILL REQUIRED to prove the test works correctly.
+
+---
+
+**Step 1: Write the Test** (same for both new and verification iterations)
+
 ```c
 // File: modules/ar_send_instruction_evaluator_tests.c
 // Add new test function
@@ -1747,7 +1768,11 @@ static void test_send_instruction_evaluator__routes_to_agent(void) {
 }
 ```
 
-**Temporary Implementation to Verify RED Failure**:
+---
+
+**Step 2: Prove Test Validity (GOAL 1 - MANDATORY)**
+
+**This step is REQUIRED even though implementation exists. It proves the test can catch bugs.**
 
 Temporarily break agent routing to verify the assertion catches routing failures:
 
@@ -1773,9 +1798,24 @@ Temporarily break agent routing to verify the assertion catches routing failures
 
 **Run**: `make ar_send_instruction_evaluator_tests 2>&1`
 
+**Evidence of Goal 1 completion**: Test output showing FAILURE with message "Agent should have received message"
+
+---
+
 #### GREEN Phase
 
-Remove temporary corruption and restore correct agent routing:
+**GREEN Phase Goal: Make Test Pass**
+
+For **verification iterations** like this one:
+- **Goal 2** is already satisfied (implementation exists from Iteration 1)
+- Simply remove temporary corruption from Goal 1
+- Test should immediately PASS
+
+For **new implementation iterations**:
+- **Goal 2** needs satisfaction (write minimal implementation)
+- Use test failure to guide what to implement
+
+**This iteration**: Remove temporary corruption and verify existing routing works:
 
 ```zig
 // File: modules/ar_send_instruction_evaluator.zig
@@ -1799,7 +1839,7 @@ Remove temporary corruption and restore correct agent routing:
 
 ### Iteration 3: Handle non-existent delegate gracefully (RED-GREEN-REFACTOR)
 
-**Review Status**: REVIEWED
+**Review Status**: ✅ COMMITTED
 
 **Objective**: Verify that sending to a non-registered delegate ID returns false.
 
@@ -1915,7 +1955,7 @@ bool ar_delegation__send_to_delegate(...) {
 
 ### Iteration 4: Update test main() and documentation (RED-GREEN-REFACTOR)
 
-**Review Status**: REVIEWED
+**Review Status**: ✅ COMMITTED
 
 **Objective**: Add new tests to main() and update module documentation.
 

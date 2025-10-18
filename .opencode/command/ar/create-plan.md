@@ -54,6 +54,7 @@ Before creating any plan ([details](../../../kb/kb-consultation-before-planning-
 1. Search: `grep "plan.*iteration\|TDD.*minimalism\|plan.*refinement" kb/README.md`
 2. Read these KB articles IN FULL using the Read tool:
    - `kb/tdd-plan-review-checklist.md` ⭐ **NEW - READ FIRST** - embeds all 14 TDD lessons
+   - `kb/red-phase-dual-goals-pattern.md` ⭐ **CRITICAL** - Two independent goals of RED phase
    - `kb/command-pipeline-methodology-enforcement.md` - How all three commands work together
    - `kb/lesson-based-command-design-pattern.md` - Unified 14-lesson verification pattern
    - `kb/tdd-iteration-planning-pattern.md`
@@ -682,17 +683,67 @@ For EACH iteration:
 ✅ One assertion only (not multiple AR_ASSERT calls)
 ```
 
-**Lesson 7 Documentation Template (MANDATORY):**
+**Lesson 7 Documentation Template with Dual Goals (MANDATORY):**
+
+Every plan iteration MUST use this template structure:
+
 ```markdown
 #### RED Phase
-Add assertion: [what test checks]
-Temporary corruption: [describe code break that makes assertion fail]
-Expected RED: "Test FAILS at line X because [broken thing]"
-Verify: `make test` → assertion fails
+
+**RED Phase has TWO independent goals (both must be completed):**
+
+**GOAL 1: Prove Test Validity** (ALWAYS REQUIRED - even for verification iterations)
+- **Purpose**: Prove this test can actually catch [specific type of] bugs
+- **Method**: Apply temporary corruption, verify test FAILS
+- **Status**: [For NEW iterations: "Not yet proven" | For VERIFICATION iterations: "Implementation exists from Iteration X, but validity must still be proven"]
+
+**GOAL 2: Identify What to Implement** (CONDITIONAL)
+- **Purpose**: Determine what code needs to be written
+- **Method**: Observe what failing test expects
+- **Status**: [For NEW iterations: "Needs implementation" | For VERIFICATION iterations: "✅ ALREADY SATISFIED - Implemented in Iteration X"]
+
+**CRITICAL**: Both goals are independent. Even if Goal 2 is satisfied (implementation exists), Goal 1 is STILL REQUIRED to prove test validity.
+
+---
+
+**Step 1: Write the Test**
+
+[Test code with Given/When/Then/Cleanup structure]
+[Include // ← FAILS comment on assertion]
+
+---
+
+**Step 2: Prove Test Validity (GOAL 1 - MANDATORY)**
+
+**This step is REQUIRED even if implementation exists. It proves the test can catch bugs.**
+
+[Temporary corruption code]
+Temporary corruption: [describe exactly what code is broken and why]
+Expected RED: "Test FAILS because [specific failure reason]"
+Verify: `make test` → assertion fails with [expected message]
+
+**Evidence of Goal 1 completion**: Test output showing FAILURE
+
+---
 
 #### GREEN Phase
-Remove temporary corruption: [describe how code is fixed]
-Expected GREEN: "Test PASSES because [now works]"
+
+**GREEN Phase Goal: Make Test Pass**
+
+For **NEW implementation iterations**:
+- **Goal 2** needs satisfaction (write minimal implementation)
+- Use test failure to guide what to implement
+- Implement ONLY what's needed to pass this specific assertion
+
+For **VERIFICATION iterations**:
+- **Goal 2** already satisfied (implementation exists from previous iteration)
+- Simply remove temporary corruption from Goal 1
+- Test should immediately PASS
+
+**This iteration**: [State which case applies and what to do]
+
+[Implementation or corruption removal code]
+Expected GREEN: "Test PASSES because [reason]"
 Verify: `make test` → assertion passes
 ```
 

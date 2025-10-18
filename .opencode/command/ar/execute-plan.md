@@ -44,6 +44,7 @@ Before executing any plan ([details](../../../kb/kb-consultation-before-planning
 1. Search: `grep "red.*green\|refactor\|iteration.*execution\|tdd.*cycle" kb/README.md`
 2. Read these KB articles IN FULL using the Read tool:
    - `kb/tdd-plan-review-checklist.md` ⭐ **READ FIRST** - embeds all 14 TDD lessons
+   - `kb/red-phase-dual-goals-pattern.md` ⭐ **CRITICAL** - Two independent goals of RED phase
    - `kb/command-pipeline-methodology-enforcement.md` - How all three commands work together
    - `kb/lesson-based-command-design-pattern.md` - Unified 14-lesson verification pattern
    - `kb/pre-execution-plan-validation-requirement.md` - Show-stopper validation gates before execution
@@ -976,15 +977,59 @@ make checkpoint-cleanup CMD=execute-plan
 
 ### RED Phase Requirements
 
-**⭐ LESSON 7 CRITICAL: Temporary Corruption Documentation MUST be Present**
+**⭐ LESSON 7 CRITICAL: RED Phase Has TWO Independent Goals**
 
-The plan's RED phases MUST document temporary code that will cause the assertion to fail. This proves the assertion catches real bugs. During execution:
+Every RED phase serves TWO independent goals that must BOTH be completed, regardless of whether implementation already exists:
 
-1. **Verify documentation exists** in the plan's RED phase
-2. **Implement the test** exactly as written
-3. **Temporarily apply the corruption** described (don't queue message, corrupt type field, etc.)
-4. **Verify test fails** for the right reason
-5. **Run test to see failure**
+**GOAL 1: Prove Test Validity** (ALWAYS REQUIRED)
+- **Purpose**: Prove this specific test can catch bugs
+- **Method**: Apply temporary corruption → verify test FAILS → document evidence
+- **Applies to**: EVERY iteration (new, verification, regression, refactoring - no exceptions)
+- **Evidence required**: Test output showing FAILURE with expected message
+
+**GOAL 2: Identify What to Implement** (CONDITIONAL)
+- **Purpose**: Determine what code needs to be written
+- **Method**: Observe what failing test expects
+- **Applies to**:
+  - New iterations: Goal 2 needs satisfaction → implement code
+  - Verification iterations: Goal 2 already satisfied → just remove corruption
+
+**CRITICAL UNDERSTANDING**: These goals are INDEPENDENT. Goal 1 is ALWAYS required, even when Goal 2 is already satisfied (implementation exists).
+
+---
+
+**Execution Pattern for NEW Implementation Iterations:**
+
+During execution of new functionality:
+
+1. **Read plan's RED phase** - verify it documents both goals
+2. **Write the test** exactly as specified (Goal 1 Step 1)
+3. **Apply temporary corruption** from plan (Goal 1 Step 2)
+   - Add stub: `return NULL;` or `return false;`
+   - Or corrupt feature: wrong routing, wrong type, etc.
+4. **Run test** → MUST see FAILURE (Goal 1 completion)
+   - Verify failure message matches plan's prediction
+   - Document the failure evidence
+5. **Observe what test expects** (Goal 2 completion)
+   - What function should exist?
+   - What should it return?
+   - What should it do?
+
+**Execution Pattern for VERIFICATION Iterations:**
+
+During execution of tests for existing functionality:
+
+1. **Read plan's RED phase** - verify it documents both goals
+2. **Write the test** exactly as specified (Goal 1 Step 1)
+3. **Apply temporary corruption** from plan (Goal 1 Step 2 - MANDATORY)
+   - Even though implementation exists!
+   - Break the existing feature: wrong routing, corrupt data, etc.
+4. **Run test** → MUST see FAILURE (Goal 1 completion)
+   - Verify failure message matches plan's prediction
+   - This proves the test catches bugs
+5. **Note Goal 2 already satisfied** (implementation exists from earlier iteration)
+   - No new code needed
+   - Just remove corruption in GREEN phase
 
 **Example from plan (with Lesson 7 documentation):**
 ```markdown
