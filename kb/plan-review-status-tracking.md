@@ -80,10 +80,25 @@ Use status markers when:
    - Format: `#### Iteration N.M: Description - STATUS`
    - Applied to each iteration within a cycle
 
-**Status Values:**
-- `REVIEWED` - Approved, ready for implementation
+**Status Values (Complete Lifecycle):**
+
+Plan creation and review:
 - `PENDING REVIEW` - Needs review or has open questions
+- `REVIEWED` - Approved, ready for implementation
 - `REVISED` - Was reviewed, then changed, needs re-review
+
+Implementation and completion:
+- `IMPLEMENTED` - RED-GREEN-REFACTOR complete, awaiting commit
+- `✅ COMMITTED` - Implementation committed to git
+- `✅ COMPLETE` - Full plan complete (plan-level marker)
+
+**Status Flow:**
+```
+PENDING REVIEW → REVIEWED/REVISED → IMPLEMENTED → ✅ COMMITTED → ✅ COMPLETE
+   (creation)      (after review)    (after RED-   (after git    (all iterations
+                                      GREEN-        commit)        done)
+                                      REFACTOR)
+```
 
 ### Status Progression Rules
 
@@ -114,7 +129,7 @@ Use status markers when:
 **Starting a Review Session:**
 ```bash
 # 1. Check current status
-grep -E "(REVIEWED|PENDING|REVISED)" plans/tdd_cycle_N_plan.md
+grep -E "(REVIEWED|PENDING|REVISED|IMPLEMENTED|COMMITTED|COMPLETE)" plans/tdd_cycle_N_plan.md
 
 # 2. Find first PENDING cycle
 grep -n "PENDING REVIEW" plans/tdd_cycle_N_plan.md | head -1
@@ -207,18 +222,18 @@ echo "Progress: $reviewed/$total iterations reviewed ($percentage% complete)"
 
 ```bash
 # Verify all cycles have status markers
-missing_cycle_status=$(grep "^### " plans/agent_store_fixture_plan.md | grep -v -E "(REVIEWED|PENDING|REVISED)" | wc -l)
+missing_cycle_status=$(grep "^### " plans/agent_store_fixture_plan.md | grep -v -E "(REVIEWED|PENDING|REVISED|IMPLEMENTED|COMMITTED|COMPLETE)" | wc -l)
 if [ "$missing_cycle_status" -gt 0 ]; then
     echo "ERROR: $missing_cycle_status cycles missing status markers"
-    grep "^### " plans/agent_store_fixture_plan.md | grep -v -E "(REVIEWED|PENDING|REVISED)"
+    grep "^### " plans/agent_store_fixture_plan.md | grep -v -E "(REVIEWED|PENDING|REVISED|IMPLEMENTED|COMMITTED|COMPLETE)"
     exit 1
 fi
 
 # Verify all iterations have status markers
-missing_iteration_status=$(grep "^#### Iteration" plans/agent_store_fixture_plan.md | grep -v -E "(REVIEWED|PENDING|REVISED)" | wc -l)
+missing_iteration_status=$(grep "^#### Iteration" plans/agent_store_fixture_plan.md | grep -v -E "(REVIEWED|PENDING|REVISED|IMPLEMENTED|COMMITTED|COMPLETE)" | wc -l)
 if [ "$missing_iteration_status" -gt 0 ]; then
     echo "ERROR: $missing_iteration_status iterations missing status markers"
-    grep "^#### Iteration" plans/agent_store_fixture_plan.md | grep -v -E "(REVIEWED|PENDING|REVISED)"
+    grep "^#### Iteration" plans/agent_store_fixture_plan.md | grep -v -E "(REVIEWED|PENDING|REVISED|IMPLEMENTED|COMMITTED|COMPLETE)"
     exit 1
 fi
 

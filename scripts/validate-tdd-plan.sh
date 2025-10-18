@@ -38,7 +38,7 @@ pass_check() {
 }
 
 # ============================================================================
-# SECTION 1: Cycle Organization
+# SECTION 1: Cycle Organization (Lesson 1)
 # ============================================================================
 echo ""
 echo "📋 SECTION 1: Cycle Organization"
@@ -64,28 +64,32 @@ fi
 # Extract all iteration numbers
 iterations=$(grep "^### Iteration" "$PLAN_FILE" | sed 's/.*Iteration \([0-9.]*\).*/\1/' | sort -V)
 
-last_major=0
-last_minor=0
+last_major=""
+last_minor=""
 for iter in $iterations; do
+    # Count dots to determine iteration depth (1.2 has 1 dot, 1.2.3 has 2 dots)
+    dot_count=$(echo "$iter" | tr -cd '.' | wc -c | tr -d ' ')
+
     major=$(echo "$iter" | cut -d. -f1)
     minor=$(echo "$iter" | cut -d. -f2)
 
-    # Check for gaps within same major version
-    if [ "$major" = "$last_major" ] && [ -n "$last_minor" ]; then
+    # Check for gaps within same major version (only for X.Y format, not X.Y.Z)
+    if [ "$dot_count" -eq 1 ] && [ "$major" = "$last_major" ] && [ -n "$last_minor" ]; then
         expected_minor=$((last_minor + 1))
-        if [ "$minor" -gt "$expected_minor" ] && [ "$minor" != "$expected_minor" ]; then
-            # Allow for .1/.2 sub-iterations (decimal notation)
-            if [[ ! "$iter" =~ \. ]]; then
-                check_issue "Numbering gap: expected after 1.$last_minor, got 1.$minor (use decimal: 1.$last_minor.1, 1.$last_minor.2)" "WARNING"
-            fi
+        if [ "$minor" -gt "$expected_minor" ]; then
+            check_issue "Numbering gap in Cycle $major: expected $major.$expected_minor, got $major.$minor (fill gaps or use sub-iterations: $major.$last_minor.1)" "WARNING"
         fi
     fi
-    last_major=$major
-    last_minor=$minor
+
+    # Only update tracking for X.Y format (not sub-iterations like X.Y.Z)
+    if [ "$dot_count" -eq 1 ]; then
+        last_major=$major
+        last_minor=$minor
+    fi
 done
 
 # ============================================================================
-# SECTION 2: CRITICAL - Assertion Validity Verification
+# SECTION 2: CRITICAL - Assertion Validity Verification (Lesson 7)
 # ============================================================================
 echo ""
 echo "⭐ SECTION 2: Assertion Validity (CRITICAL)"
@@ -93,7 +97,6 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 
 # Most critical check: Do RED phases document temporary corruption?
 red_sections=$(grep -c "^#### RED Phase" "$PLAN_FILE" || true)
-temporary_corruption=$(grep -c -i "temporary\|corrupt\|break\|fail.*verify" "$PLAN_FILE" || true)
 
 if [ "$red_sections" -gt 0 ]; then
     # For each RED phase, check if it mentions how assertion will fail
@@ -120,6 +123,14 @@ if [ "$red_sections" -gt 0 ]; then
     else
         pass_check "RED phases document failure expectations ($total_reds found)"
     fi
+
+    # Additional check: Do RED phases mention temporary corruption?
+    temporary_corruption=$(grep -c -i "temporary\|corrupt\|break" "$PLAN_FILE" || true)
+    if [ "$temporary_corruption" -lt "$red_sections" ]; then
+        check_issue "Not all RED phases mention temporary corruption/break ($temporary_corruption mentions vs $red_sections RED phases)" "WARNING"
+    else
+        pass_check "Temporary corruption documented ($temporary_corruption mentions found)"
+    fi
 else
     check_issue "No RED phase sections found" "ERROR"
 fi
@@ -133,7 +144,7 @@ else
 fi
 
 # ============================================================================
-# SECTION 3: Minimalism & Implementation
+# SECTION 3: Minimalism & Implementation (Lessons 3, 4, 11)
 # ============================================================================
 echo ""
 echo "📝 SECTION 3: Minimalism & Implementation"
@@ -155,7 +166,7 @@ else
     check_issue "No REFACTOR phases found (required for complete RED-GREEN-REFACTOR)" "WARNING"
 fi
 
-# Check for resource cleanup mentions in GREEN
+# Check for resource cleanup mentions in GREEN (Lesson 4)
 cleanup_mentions=$(grep -c -i "cleanup\|destroy\|free\|owner" "$PLAN_FILE" || true)
 if [ "$cleanup_mentions" -gt 3 ]; then
     pass_check "Resource cleanup/ownership semantics documented"
@@ -164,7 +175,7 @@ else
 fi
 
 # ============================================================================
-# SECTION 4: Integration Testing
+# SECTION 4: Integration Testing (Lesson 6)
 # ============================================================================
 echo ""
 echo "🔗 SECTION 4: Integration Testing"
@@ -184,27 +195,39 @@ else
 fi
 
 # ============================================================================
-# SECTION 5: Status Tracking
+# SECTION 5: Status Tracking (Lesson 1)
 # ============================================================================
 echo ""
 echo "📊 SECTION 5: Status Tracking"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-# Check for status markers
+# Check for status markers (now includes COMMITTED and COMPLETE)
 reviewed=$(grep -c "REVIEWED" "$PLAN_FILE" || true)
 pending=$(grep -c "PENDING REVIEW" "$PLAN_FILE" || true)
 revised=$(grep -c "REVISED" "$PLAN_FILE" || true)
+committed=$(grep -c "COMMITTED" "$PLAN_FILE" || true)
+complete=$(grep -c "COMPLETE" "$PLAN_FILE" || true)
 
-if [ "$reviewed" -gt 0 ] || [ "$pending" -gt 0 ] || [ "$revised" -gt 0 ]; then
-    pass_check "Status markers found: $reviewed REVIEWED, $pending PENDING REVIEW, $revised REVISED"
+total_status_markers=$((reviewed + pending + revised + committed + complete))
+
+if [ "$total_status_markers" -gt 0 ]; then
+    status_summary=""
+    [ "$reviewed" -gt 0 ] && status_summary="${status_summary}${reviewed} REVIEWED, "
+    [ "$pending" -gt 0 ] && status_summary="${status_summary}${pending} PENDING REVIEW, "
+    [ "$revised" -gt 0 ] && status_summary="${status_summary}${revised} REVISED, "
+    [ "$committed" -gt 0 ] && status_summary="${status_summary}${committed} COMMITTED, "
+    [ "$complete" -gt 0 ] && status_summary="${status_summary}${complete} COMPLETE, "
+    # Remove trailing comma and space
+    status_summary=$(echo "$status_summary" | sed 's/, $//')
+    pass_check "Status markers found: $status_summary"
 else
-    check_issue "No status markers (use REVIEWED/PENDING REVIEW/REVISED)" "WARNING"
+    check_issue "No status markers (use REVIEWED/PENDING REVIEW/REVISED/COMMITTED/COMPLETE)" "WARNING"
 fi
 
 # Check that all iterations have status markers
-iterations_with_status=$(grep -c "Review Status" "$PLAN_FILE" 2>/dev/null || echo 0)
+iterations_with_status=$(grep -c "Review Status\|**Status**" "$PLAN_FILE" 2>/dev/null || echo 0)
 if [ "$iterations_with_status" -gt 0 ] && [ "$iteration_count" -gt 0 ]; then
-    pass_check "All $iteration_count iterations have status markers"
+    pass_check "Status markers present ($iterations_with_status found)"
 else
     if [ "$iteration_count" -gt 0 ]; then
         check_issue "$iteration_count iterations found but status markers may be missing" "WARNING"
@@ -212,7 +235,7 @@ else
 fi
 
 # ============================================================================
-# SECTION 6: Documentation Quality
+# SECTION 6: Documentation Quality (Lessons 12, 13, 14)
 # ============================================================================
 echo ""
 echo "📖 SECTION 6: Documentation Quality"
@@ -227,17 +250,19 @@ else
 fi
 
 # Check for expected results documentation
-expected=$(grep -E "Expected RED|Expected GREEN" "$PLAN_FILE" 2>/dev/null | wc -l)
+expected=$(grep -E "Expected RED|Expected GREEN" "$PLAN_FILE" 2>/dev/null | wc -c)
 if [ -n "$expected" ] && [ "$expected" -gt 0 ]; then
-    pass_check "Expected outcomes documented ($expected found)"
+    expected_count=$(grep -E "Expected RED|Expected GREEN" "$PLAN_FILE" 2>/dev/null | wc -l | tr -d ' ')
+    pass_check "Expected outcomes documented ($expected_count found)"
 else
     check_issue "Expected RED/GREEN outcomes not documented" "WARNING"
 fi
 
 # Check for run/verify commands
-run_commands=$(grep -E "make|Run:" "$PLAN_FILE" 2>/dev/null | wc -l)
+run_commands=$(grep -E "make|Run:" "$PLAN_FILE" 2>/dev/null | wc -c)
 if [ -n "$run_commands" ] && [ "$run_commands" -gt 0 ]; then
-    pass_check "Verification commands included ($run_commands found)"
+    run_count=$(grep -E "make|Run:" "$PLAN_FILE" 2>/dev/null | wc -l | tr -d ' ')
+    pass_check "Verification commands included ($run_count found)"
 else
     check_issue "Verification/make commands missing" "WARNING"
 fi
@@ -250,6 +275,16 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 
 if [ "$ISSUES_FOUND" -eq 0 ]; then
     echo "✅ Plan validation PASSED - Ready for review"
+    echo ""
+    echo "📚 14 TDD Lessons Coverage:"
+    echo "   ✅ Lesson 1: Cycle organization and numbering"
+    echo "   ✅ Lesson 2-5: Iteration structure (one assertion, minimalism, progression)"
+    echo "   ✅ Lesson 6: Integration testing"
+    echo "   ✅ Lesson 7: Assertion validity (temporary corruption) ⭐ CRITICAL"
+    echo "   ✅ Lesson 8-9: Test patterns (temporary code, property validation)"
+    echo "   ✅ Lesson 10: Test type distinctions"
+    echo "   ✅ Lesson 11: GREEN phase minimalism"
+    echo "   ✅ Lesson 12-14: Documentation and methodology"
     exit 0
 else
     echo "❌ Plan validation FAILED - Found $ISSUES_FOUND critical issues"

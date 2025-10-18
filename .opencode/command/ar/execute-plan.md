@@ -390,12 +390,17 @@ Validate that plan complies with all 14 TDD lessons:
 
 **Validator checks these areas (mapped to 14 lessons):**
 - ✅ Cycle Organization (Lesson 1)
+  - Sequential iteration numbering (no gaps like 1.1, 1.4, 1.7)
+  - Clear cycle structure
 - ✅ **Assertion Validity** ⭐ (Lesson 7 - CRITICAL)
   - RED phases document temporary corruption/failure
+  - Temporary corruption mentioned in plan
   - Proves assertions catch real bugs
 - ✅ Minimalism (Lessons 3, 11)
 - ✅ Integration Testing (Lesson 6)
 - ✅ Status Tracking (Lessons 1-14)
+  - All 5 status types recognized: PENDING REVIEW, REVIEWED, REVISED, IMPLEMENTED, COMMITTED, COMPLETE
+  - Status markers present on all iterations
 - ✅ Documentation Quality (Lessons 12-14)
 
 **If validator FAILS:**

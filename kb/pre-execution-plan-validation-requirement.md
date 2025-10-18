@@ -231,7 +231,12 @@ Pre-execution validation should check:
    - Each iteration tests exactly ONE behavior
    - Multiple behaviors split into .1/.2 sub-iterations
 
-6. **Status markers**: Proper PENDING REVIEW/REVIEWED/REVISED markers
+6. **Status markers**: Proper lifecycle status markers (5 types)
+   - Creation: PENDING REVIEW
+   - After review: REVIEWED or REVISED
+   - After implementation: IMPLEMENTED
+   - After commit: COMMITTED
+   - Plan complete: COMPLETE
    - Only iterations with REVIEWED or REVISED status can be executed
    - Status markers help trace implementation history
 

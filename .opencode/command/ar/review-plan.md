@@ -47,11 +47,11 @@ fi
 ```
 
 This tool checks 6 critical sections and catches common issues on first pass:
-- 📋 Cycle Organization (naming, numbering)
+- 📋 Cycle Organization (naming, sequential numbering without gaps)
 - ⭐ Assertion Validity (CRITICAL - temporary corruption verification)
 - 📝 Minimalism (hardcoded returns, resource cleanup)
 - 🔗 Integration Testing (seams, properties)
-- 📊 Status Tracking (REVIEWED/PENDING/REVISED markers)
+- 📊 Status Tracking (all 5 types: PENDING REVIEW, REVIEWED, REVISED, IMPLEMENTED, COMMITTED, COMPLETE)
 - 📖 Documentation (objectives, expectations, commands)
 
 **Reference during review:** [TDD Plan Review Checklist](../../../kb/tdd-plan-review-checklist.md)
@@ -79,7 +79,7 @@ Before reviewing any plan ([details](../../../kb/kb-consultation-before-planning
    - The iterative review optimal size (iterations per session)
    - When to split iterations into .1/.2 sub-iterations
    - The temporary cleanup comment format (MANDATORY)
-   - The status marker conventions (REVIEWED/PENDING/REVISED)
+   - The status marker conventions (all 5 types: PENDING REVIEW, REVIEWED, REVISED, IMPLEMENTED, COMMITTED, COMPLETE)
 
 **Example of proper KB consultation:**
 ```
