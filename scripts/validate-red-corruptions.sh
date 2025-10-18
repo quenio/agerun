@@ -49,7 +49,7 @@ echo "Checking corruption entries..."
 
 while IFS= read -r line; do
     # Skip comments and empty lines
-    [ "$line" =~ ^# ] && continue
+    [[ "$line" =~ ^# ]] && continue
     [ -z "$line" ] && continue
 
     # Check format: N.N: Description

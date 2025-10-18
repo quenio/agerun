@@ -204,13 +204,13 @@ if [ $bad_static_funcs -gt 0 ]; then
     # Show first few examples
     echo "    Examples:"
     for file in $non_test_files; do
-        if [ "$file" = *.c  ]; then
+        if [[ "$file" = *.c  ]]; then
             grep "^static.*(" "$file" 2>/dev/null | \
                 grep -v "^static inline" | \
                 grep -E "^static\s+[a-zA-Z_][a-zA-Z0-9_]*\s+[a-zA-Z_][a-zA-Z0-9_]*\s*\(" | \
                 grep -v -E "^static\s+[a-zA-Z_][a-zA-Z0-9_]*\s+_[a-zA-Z0-9_]+\s*\(" | \
                 sed "s|^|      $file: |"
-        elif [ "$file" = *.zig  ]; then
+        elif [[ "$file" = *.zig  ]]; then
             grep "^fn [a-zA-Z]" "$file" 2>/dev/null | \
                 grep -v "^fn _" | \
                 sed "s|^|      $file: |"

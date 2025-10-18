@@ -53,7 +53,7 @@ GOOD_KEYWORDS="hardcoded|minimal|only|forced by|simple|stub|returns (NULL|false|
 
 while IFS= read -r line; do
     # Skip comments and empty lines
-    [ "$line" =~ ^# ] && continue
+    [[ "$line" =~ ^# ]] && continue
     [ -z "$line" ] && continue
 
     # Check format: N.N: Description
