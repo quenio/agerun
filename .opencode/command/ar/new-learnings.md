@@ -24,7 +24,7 @@ If a `/new-learnings` workflow is already in progress, you have two options:
 ./scripts/cleanup-checkpoint.sh new-learnings
 
 # Then re-initialize for fresh start
-./scripts/init-checkpoint.sh new-learnings STEPS='"Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"'
+./scripts/init-checkpoint.sh new-learnings STEPS='"Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate Commands with check-commands" "Update CHANGELOG.md" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"'
 ```
 
 **CRITICAL**: If in-progress workflow exists with pending steps, **DO NOT PERFORM MANUAL KB UPDATES**. The checkpoint system will enforce all quality requirements and ensure no steps are skipped.
@@ -34,7 +34,7 @@ If a `/new-learnings` workflow is already in progress, you have two options:
 **MANDATORY**: Before executing ANY steps, you MUST initialize checkpoint tracking:
 
 ```bash
-./scripts/init-checkpoint.sh new-learnings '"Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"'
+./scripts/init-checkpoint.sh new-learnings '"Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate Commands with check-commands" "Update CHANGELOG.md" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"'
 ```
 
 **If this fails or tracking is not initialized, STOP and run the command above before proceeding.**
@@ -57,12 +57,12 @@ Before starting analysis:
 # New Learnings
 ## MANDATORY STEP TRACKING SYSTEM
 
-**CRITICAL**: You MUST complete ALL 12 steps in order. NO STEPS CAN BE SKIPPED.
+**CRITICAL**: You MUST complete ALL 14 steps in order. NO STEPS CAN BE SKIPPED.
 
 ### Initialize Progress Tracking (EXECUTE THIS FIRST)
 
 ```bash
-./scripts/init-checkpoint.sh new-learnings '"Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"'
+./scripts/init-checkpoint.sh new-learnings '"Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate Commands with check-commands" "Update CHANGELOG.md" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"'
 ```
 
 **Expected output:**
@@ -83,7 +83,7 @@ Before starting analysis:
 ========================================
 
 Started: [timestamp]
-Progress: 3/12 steps (25%)
+Progress: 3/14 steps (21%)
 
 [█████░░░░░░░░░░░░░░░] 25%
 
@@ -117,7 +117,8 @@ This is enforced through:
 1. **Sequential gate enforcement**:
    - GATE 1 requires steps 1,2,3,4 to be complete
    - GATE 2 requires steps 5,6,7,8,9 to be complete
-   - FINAL GATE requires ALL 1-11 steps to be complete
+   - GATE 3 requires steps 10,11 to be complete (quality gates for check-commands and CHANGELOG.md)
+   - FINAL GATE requires ALL 1-13 steps to be complete
    - Cannot proceed to next gate until current gate passes
 
 2. **Quality verification at each gate**:
@@ -125,7 +126,9 @@ This is enforced through:
    - Step 4: Runs `make check-docs` validation (blocks if fails)
    - Step 6: Counts KB articles (blocks if fewer than 3)
    - Step 7: Counts commands (blocks if fewer than 3)
-   - Step 11: Checks "READY TO COMMIT" status (blocks if not ready)
+   - Step 10: Runs `make check-commands` validation (blocks if fails)
+   - Step 11: Verifies CHANGELOG.md updated with session summary
+   - Step 13: Checks "READY TO COMMIT" status (blocks if not ready)
 
 3. **Manual enforcement**:
    - Cannot run Step N until Step N-1 is marked complete
@@ -671,9 +674,108 @@ If updates are needed to AGENTS.md:
 ./scripts/gate-checkpoint.sh new-learnings "Integration" "5,6,7,8,9"
 ```
 
-## Step 10: Validate No Broken Links
+## Step 10: Validate Commands with check-commands
 
 #### [CHECKPOINT START - STEP 10]
+
+**CRITICAL**: After updating commands in Step 7, validate them with the check-commands quality gate (just like Step 4 validates docs with check-docs):
+
+1. **Run command validation**:
+   ```bash
+   make check-commands
+   ```
+
+2. **Fix any validation errors**:
+   - Review any commands that score below 90%
+   - Update command documentation to meet excellence standards
+   - Re-run validation until it passes
+
+3. **Success criteria**:
+   - Average command score ≥ 90%
+   - All commands have comprehensive documentation
+   - Checkpoint tracking sections are properly structured
+
+#### [CHECKPOINT END - STEP 10]
+```bash
+# Mark Step 10 complete - validation automated
+./scripts/update-checkpoint.sh new-learnings STEP=10
+```
+
+**AUTOMATIC VERIFICATION**: The system will automatically run `make check-commands` and block completion if validation fails.
+
+## Step 11: Update CHANGELOG.md
+
+#### [CHECKPOINT START - STEP 11]
+
+**CRITICAL**: Record all session learnings and changes in CHANGELOG.md BEFORE committing.
+
+1. **Add session entry** at the top of CHANGELOG.md:
+   ```markdown
+   ## [Today's Date] (Session X - New Learnings)
+
+   - **[Session Title]**
+
+     [Brief overview of main learnings]
+
+     **Problem**: [What issue/gap was identified]
+
+     **Solution**: [How learnings address it]
+
+     **KB Articles Created**: [List of new KB files created]
+
+     **KB Articles Updated**: [List of existing KB files updated with cross-references]
+
+     **Commands Updated**: [List of command files updated]
+
+     **AGENTS.md Updates**: [Summary of guideline enhancements]
+
+     **Impact**: [How this improves the project]
+   ```
+
+2. **Use multi-line format** ([details](../../../kb/changelog-multi-line-format.md)):
+   - Clear title on first line
+   - Overview paragraph
+   - Labeled sections with bold headers
+   - Bullet lists for multiple items
+   - Blank lines between sections
+
+3. **Be comprehensive but concise**:
+   - Include all KB articles and commands modified
+   - Explain the session's purpose and outcomes
+   - Document any important patterns discovered
+   - Note any quality gates enforced or process improvements
+
+#### [CHECKPOINT END - STEP 11]
+```bash
+# Mark Step 11 complete
+./scripts/update-checkpoint.sh new-learnings STEP=11
+```
+
+## GATE 3: QUALITY GATES VERIFICATION
+
+```bash
+# MANDATORY GATE - Verify both check-commands and CHANGELOG.md
+./scripts/gate-checkpoint.sh new-learnings "Quality Gates" "10,11"
+```
+
+**Expected output when PASSING:**
+```
+========================================
+   GATE: Quality Gates
+========================================
+
+✅ GATE PASSED: All required steps are complete!
+
+Verified steps:
+  ✓ Step 10: Validate Commands with check-commands
+  ✓ Step 11: Update CHANGELOG.md
+
+You may proceed to the next section.
+```
+
+## Step 12: Validate No Broken Links
+
+#### [CHECKPOINT START - STEP 12]
 
 **CRITICAL**: Before committing, verify all links work:
 
@@ -688,13 +790,13 @@ If updates are needed to AGENTS.md:
 
 2. **Never reference non-existent articles in Related Patterns sections**
 
-#### [CHECKPOINT END - STEP 10]
+#### [CHECKPOINT END - STEP 12]
 ```bash
-# Mark Step 10 complete
-./scripts/update-checkpoint.sh new-learnings STEP=10
+# Mark Step 12 complete
+./scripts/update-checkpoint.sh new-learnings STEP=12
 ```
 
-## Step 11: Pre-Commit Integration Verification (MANDATORY EXECUTION)
+## Step 13: Pre-Commit Integration Verification (MANDATORY EXECUTION)
 
 **CRITICAL**: You MUST execute this verification before committing.
 
@@ -714,12 +816,12 @@ This script verifies:
 - If BOTH minimums met → ✅ READY TO COMMIT (script exits 0)
 - If either below minimum → ⚠️ NOT READY (script exits 1)
 
-**DO NOT PROCEED TO STEP 12 UNLESS THIS SCRIPT SHOWS "READY TO COMMIT"**
+**DO NOT PROCEED TO STEP 14 UNLESS THIS SCRIPT SHOWS "READY TO COMMIT"**
 
-#### [CHECKPOINT END - STEP 11]
+#### [CHECKPOINT END - STEP 13]
 ```bash
-# Mark Step 11 complete with integration verification
-make checkpoint-update-verified CMD=new-learnings STEP=11 SUMMARY="Integration verification passed - ready to commit"
+# Mark Step 13 complete with integration verification
+./scripts/update-checkpoint.sh new-learnings STEP=13
 ```
 
 **AUTOMATIC VERIFICATION**: The system will verify integration completeness automatically and only allow completion if status shows "READY TO COMMIT".
@@ -728,19 +830,19 @@ make checkpoint-update-verified CMD=new-learnings STEP=11 SUMMARY="Integration v
 
 ```bash
 # FINAL MANDATORY GATE - All steps must be complete
-./scripts/gate-checkpoint.sh new-learnings "Final Commit Readiness" "1,2,3,4,5,6,7,8,9,10,11"
+./scripts/gate-checkpoint.sh new-learnings "Final Commit Readiness" "1,2,3,4,5,6,7,8,9,10,11,12,13"
 
 # If gate passes, show final status
 if [ $? -eq 0 ]; then
     echo ""
-    echo "✅ ALL GATES PASSED: Ready for Step 12 (Commit and Push)"
+    echo "✅ ALL GATES PASSED: Ready for Step 14 (Commit and Push)"
     ./scripts/status-checkpoint.sh new-learnings
 fi
 ```
 
-## Step 12: Automatic Commit and Push
+## Step 14: Automatic Commit and Push
 
-#### [CHECKPOINT START - STEP 12]
+#### [CHECKPOINT START - STEP 14]
 
 **CRITICAL**: Only execute if FINAL GATE shows "ALL GATES PASSED"
 
@@ -763,16 +865,16 @@ fi
    ```bash
    git commit -m "$(cat <<'EOF'
    docs: integrate knowledge base articles from session learnings
-   
+
    - Created comprehensive knowledge base articles documenting new patterns
    - Updated AGENTS.md with references to new articles in appropriate sections
    - Enhanced kb/README.md index with new Development Workflow articles
    - Updated TODO.md and CHANGELOG.md to document completion
-   - All code examples use real AgeRun types and functions
+   - Validated all commands with make check-commands (90%+ quality gate)
    - All documentation validated with make check-docs
-   
+
    🤖 Generated with [Claude Code](https://claude.ai/code)
-   
+
    Co-Authored-By: Claude <noreply@anthropic.com>
    EOF
    )"
@@ -788,10 +890,10 @@ fi
    git status
    ```
 
-#### [CHECKPOINT END - STEP 12]
+#### [CHECKPOINT END - STEP 14]
 ```bash
-# Mark Step 12 complete
-./scripts/update-checkpoint.sh new-learnings STEP=12
+# Mark Step 14 complete
+./scripts/update-checkpoint.sh new-learnings STEP=14
 ```
 
 ## COMMAND COMPLETION VERIFICATION
@@ -812,14 +914,14 @@ echo "✅ NEW LEARNINGS COMMAND FULLY COMPLETED!"
    PROGRESS STATUS: new-learnings
 ========================================
 
-Progress: 12/12 steps (100%)
+Progress: 14/14 steps (100%)
 
 [████████████████████] 100%
 
 Step Details:
   ✓ Step 1: Identify New Learnings
   ✓ Step 2: Determine KB Article Strategy
-  ... (all 12 steps shown as ✓)
+  ... (all 14 steps shown as ✓)
 
 ✅ ALL STEPS COMPLETE!
 
@@ -865,10 +967,12 @@ Use this checklist to ensure thorough execution:
 - [ ] **Step 7**: ✅ Updated 3-4+ commands with new KB references
 - [ ] **Step 8**: Reviewed AGENTS.md for update locations
 - [ ] **Step 9**: Updated AGENTS.md with new KB references
-- [ ] **Step 10**: Validated no broken links exist
-- [ ] **Step 11**: ✅ Executed verification script showing "READY TO COMMIT"
-- [ ] **Step 12**: Committed and pushed all changes
+- [ ] **Step 10**: ✅ Validated commands with make check-commands (90%+ quality)
+- [ ] **Step 11**: ✅ Updated CHANGELOG.md with session summary
+- [ ] **Step 12**: Validated no broken links exist
+- [ ] **Step 13**: ✅ Executed verification script showing "READY TO COMMIT"
+- [ ] **Step 14**: Committed and pushed all changes
 
-**Remember**: Steps 6, 7, and 11 are the most commonly under-executed. Ensure these are done thoroughly.
+**Remember**: Steps 6, 7, 10, 11, and 13 are the most commonly under-executed. Ensure these are done thoroughly.
 
 The goal is to create learnings with working code examples that developers can actually use, making future sessions more efficient and error-free.
