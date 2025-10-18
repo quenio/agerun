@@ -173,56 +173,30 @@ make checkpoint-gate CMD=check-module-consistency GATE="Understanding" REQUIRED=
 
 Identify modules that should be checked for consistency:
 
-#### Step 3: Find Sister Modules
+#### Steps 3-5: Discover Module Relationships
 
-#### Sister Modules
+Run relationship discovery using helper script:
+
 ```bash
-# Find paired modules
-SISTER_MODULES=$(ls modules/ar_*_reader.* modules/ar_*_writer.* 2>/dev/null | wc -l)
-echo "Sister modules found: $SISTER_MODULES"
+# Discover related modules (Steps 3-5 combined)
+# Pass improved module name if doing consistency check on specific module
+./scripts/discover-module-relationships.sh [module-name] | tee /tmp/check-consistency-tracking.txt
 
-ls modules/ar_*_parser.* modules/ar_*_evaluator.* 2>/dev/null
-ls modules/ar_*_ast.* modules/ar_*_evaluator.* 2>/dev/null
-
-make checkpoint-update CMD=check-module-consistency STEP=3
-```
-
-#### Step 4: Find Similar Purpose
-
-#### Similar Purpose Modules
-```bash
-# Find modules with similar patterns
-SIMILAR_MODULES=$(grep -l "ar_log\|instance\|create" modules/*.c | wc -l)
-echo "Similar purpose modules found: $SIMILAR_MODULES"
-
-grep -l "similar_pattern" modules/*.c | head -10
-
-make checkpoint-update CMD=check-module-consistency STEP=4
-```
-
-#### Step 5: Find Same Subsystem
-
-#### Modules in Same Subsystem
-```bash
-# Check which modules include the improved module
-SUBSYSTEM_MODULES=$(grep -l "#include.*improved_module.h" modules/*.c | wc -l)
-echo "Same subsystem modules found: $SUBSYSTEM_MODULES"
-
-# Calculate total
-source /tmp/check-consistency-tracking.txt
-MODULES_FOUND=$((SISTER_MODULES + SIMILAR_MODULES + SUBSYSTEM_MODULES))
-echo "MODULES_FOUND=$MODULES_FOUND" > /tmp/check-consistency-tracking.txt
-echo "Total modules to check: $MODULES_FOUND"
-
-# Verify minimum requirement
-if [ $MODULES_FOUND -lt 3 ]; then
-  echo "⚠️ Only found $MODULES_FOUND modules (minimum: 3)"
-  echo "Try broader search patterns"
+# If script exits 0, sufficient modules found - mark steps complete
+if [ $? -eq 0 ]; then
+  make checkpoint-update CMD=check-module-consistency STEP=3
+  make checkpoint-update CMD=check-module-consistency STEP=4
+  make checkpoint-update CMD=check-module-consistency STEP=5
+else
+  echo "❌ Insufficient modules found for consistency check"
   exit 1
 fi
-
-make checkpoint-update CMD=check-module-consistency STEP=5
 ```
+
+The script discovers:
+1. **Sister Modules** - Paired patterns (reader/writer, parser/evaluator, ast/evaluator)
+2. **Similar Purpose** - Modules with common patterns (logging, instance management, create/destroy)
+3. **Same Subsystem** - Modules that depend on the improved module
 
 #### [DISCOVERY GATE]
 ```bash
