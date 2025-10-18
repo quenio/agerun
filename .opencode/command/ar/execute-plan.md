@@ -1399,10 +1399,10 @@ make 2>&1
 
 ### Next Steps
 1. ✅ Plan execution complete
-2. Update documentation: ar_delegate.md with usage examples
-3. Update TODO.md: Mark TDD Cycle 7 as 100% complete
-4. Update CHANGELOG.md: Document feature completion
-5. Commit changes: Use /commit command
+2. ✅ CHANGELOG.md updated automatically (during commit)
+3. ✅ TODO.md updated automatically (if cycle complete)
+4. ✅ Changes committed automatically (with CHANGELOG.md and TODO.md)
+5. Update documentation: ar_delegate.md with usage examples (if needed)
 6. Push to repository
 
 ### Completion Checklist
@@ -1486,7 +1486,75 @@ git status --porcelain
    # M modules/ar_send_instruction_evaluator_tests.c
    ```
 
-2. **Generate appropriate commit message**:
+2. **Update CHANGELOG.md** (MANDATORY for CASE 2, skip for CASE 1):
+
+   **For CASE 2 (implementation changes) - ADD CHANGELOG ENTRY:**
+
+   Extract information from Step 12 summary and add entry to CHANGELOG.md:
+
+   ```bash
+   # Use Edit tool to add entry at top of CHANGELOG.md
+   # Insert after "# AgeRun CHANGELOG" header
+   ```
+
+   **CHANGELOG.md entry format:**
+   ```markdown
+   ## YYYY-MM-DD
+   - **TDD Cycle X - <Feature Name> (Iteration Range)**: <Brief description>; **Implementation**: <Key implementation details>; **Files Modified**: <test files, implementation files, plan file>; **Quality Metrics**: <Tests passing, memory leaks, build time>; **Key Achievement**: <Main result from summary>
+   ```
+
+   **Information to extract from Step 12 summary:**
+   - Current date (YYYY-MM-DD format)
+   - TDD Cycle number and feature name (from plan file name or summary)
+   - Iteration range (e.g., "Iterations 2-4")
+   - Brief description of what was implemented
+   - Files modified (test files, implementation files)
+   - Quality metrics (tests passing, memory leaks, build time)
+   - Key achievement or result
+
+   **Example CHANGELOG.md entry:**
+   ```markdown
+   ## 2025-10-18
+   - **TDD Cycle 7 - Message Delegation Routing (Iterations 2-4)**: Completed verification and error handling for message routing via delegation following strict RED-GREEN-REFACTOR TDD methodology; **Implementation**: Added agent routing verification test, non-existent delegate error handling test, comprehensive error handling documentation; **Files Modified**: modules/ar_send_instruction_evaluator_tests.c (+2 test functions), modules/ar_send_instruction_evaluator.md (+Error Handling section), plans/message_routing_via_delegation_plan.md (status REVIEWED→IMPLEMENTED→COMMITTED); **Quality Metrics**: Clean build (1m 34s), 10/10 send evaluator tests passing (79 total), zero memory leaks, all sanitizers passed; **Key Achievement**: Complete message routing infrastructure with comprehensive test coverage and documentation
+   ```
+
+   **For CASE 1 (plan updates only) - SKIP CHANGELOG UPDATE:**
+
+   Plan marker updates alone don't warrant CHANGELOG entries. Only actual implementation work gets documented.
+
+3. **Update TODO.md** (if applicable):
+
+   **Check if TDD cycle is complete:**
+
+   ```bash
+   # If Step 11 marked the plan as ✅ COMPLETE, update TODO.md
+   # Look for "✅ COMPLETE" in the plan file
+   grep -c "✅ COMPLETE" <plan-file>
+   ```
+
+   **If cycle complete (count > 0):**
+
+   Update TODO.md to mark the cycle as complete:
+
+   ```bash
+   # Use Edit tool to update TODO.md
+   # Find the TODO item for this TDD cycle and mark it complete
+   ```
+
+   **TODO.md update format:**
+   ```markdown
+   # Before:
+   - [ ] TDD Cycle X: <Feature Name>
+
+   # After:
+   - [x] TDD Cycle X: <Feature Name> - ✅ COMPLETE (YYYY-MM-DD)
+   ```
+
+   **If cycle not complete (count = 0):**
+
+   Skip TODO.md update. Partial cycle completion doesn't warrant TODO updates.
+
+4. **Generate appropriate commit message**:
 
    **For CASE 1 (plan updates only)**:
    ```bash
@@ -1520,10 +1588,10 @@ git status --porcelain
    Co-Authored-By: Claude <noreply@anthropic.com>"
    ```
 
-3. **Execute automatic commit**:
+5. **Execute automatic commit**:
    ```bash
-   # Add all changes
-   git add <plan-file> <implementation-files>
+   # Add all changes (including CHANGELOG.md and TODO.md if modified)
+   git add <plan-file> <implementation-files> CHANGELOG.md TODO.md
 
    # Create commit with appropriate message
    git commit -m "$(cat <<'EOF'
@@ -1532,13 +1600,15 @@ git status --porcelain
    )"
    ```
 
-4. **Report commit result**:
+6. **Report commit result**:
    ```markdown
    ✅ Commit created successfully: <commit-hash>
 
    Files committed:
    - <plan-file>
    - <implementation-files>
+   - CHANGELOG.md (if modified)
+   - TODO.md (if modified)
 
    Run `git show` to review the commit.
    ```
