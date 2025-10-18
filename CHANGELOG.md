@@ -1,5 +1,37 @@
 # AgeRun CHANGELOG
 
+## 2025-10-18 (Session 2f)
+
+- **Refactor check-naming Command to Follow Command Orchestrator Pattern**
+
+  Refactored the check-naming.md command file to follow the command orchestrator pattern (similar to check-docs.md and check-commands.md), eliminating the wrapper script anti-pattern and making workflow orchestration visible in the command documentation.
+
+  **Problem**: The check-naming command used a wrapper script pattern:
+  - All orchestration logic was hidden in run-check-naming.sh (106 lines)
+  - Command documentation just delegated to the wrapper script
+  - Impossible to see gates and conditional flow from the command documentation
+  - Manual intervention between steps was difficult without reading wrapper script code
+  - Violated the "command file as orchestrator" pattern established in other commands
+
+  **Solution**: Refactored to follow the command orchestrator pattern:
+  1. **Deleted run-check-naming.sh** - Removed wrapper script anti-pattern
+  2. **Refactored check-naming.md** - Command file now shows all orchestration logic directly
+  3. **Created analyze-naming-violations.sh** - Extracted violation analysis into focused helper script
+  4. **Implemented conditional flow gate** - Step 2 conditionally skips Step 3 if no violations found
+
+  **Changes**:
+  - Deleted: scripts/run-check-naming.sh (wrapper script)
+  - Created: scripts/analyze-naming-violations.sh (focused helper script)
+  - Modified: .opencode/command/ar/check-naming.md (now shows all orchestration)
+  - All checkpoint markers and conditional logic now visible in command documentation
+
+  **Benefits**:
+  - **Visibility**: All workflow logic visible in markdown (no hidden scripts to read)
+  - **Consistency**: Matches check-docs.md and check-commands.md orchestrator pattern
+  - **Clarity**: Gates and conditional steps documented directly in command
+  - **Maintainability**: Single focused helper script instead of complex wrapper
+  - **Documentation**: Better KB pattern alignment per command-orchestrator-pattern.md
+
 ## 2025-10-18 (Session 2e)
 
 - **Extract check-commands Embedded Scripts into Reusable Modules**
