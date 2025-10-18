@@ -366,16 +366,8 @@ make checkpoint-gate CMD=compact-guidelines GATE="Creation" REQUIRED="6,7,8"
 echo "Updating AGENTS.md with KB references..."
 # Edit AGENTS.md to add links to new KB articles
 
-# Verify no broken links
-BROKEN=0
-for link in $(grep -o 'kb/[^)]*\.md' AGENTS.md); do
-  if [ ! -f "$link" ]; then
-    echo "❌ BROKEN LINK: $link"
-    BROKEN=$((BROKEN + 1))
-  fi
-done
-
-if [ $BROKEN -eq 0 ]; then
+# Verify no broken links using helper script
+if ./scripts/validate-kb-links.sh AGENTS.md; then
   echo "✅ All KB links valid"
   make checkpoint-update CMD=compact-guidelines STEP=9
 else
