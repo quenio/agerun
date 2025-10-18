@@ -331,9 +331,8 @@ make checkpoint-update CMD=compact-changes STEP=5
 # ⚠️ CRITICAL: Verify sufficient reduction and metric preservation
 source /tmp/compact-changes-stats.txt
 
-if [ $SIZE_REDUCTION -lt 40 ]; then
-  echo "❌ FAILURE: Only ${SIZE_REDUCTION}% file size reduction (KB target: 40-50%)"
-  echo "Per documentation-compacting-pattern.md, CHANGELOG.md requires 40-50% reduction"
+# Enforce minimum reduction target using quality gate helper
+if ! ./scripts/enforce-quality-gate.sh "File Size Reduction" "$SIZE_REDUCTION" "40" "ge" "Per documentation-compacting-pattern.md, CHANGELOG.md requires 40-50% reduction"; then
   echo "Current compaction is INCOMPLETE - continue until 40% is reached"
   exit 1
 fi
@@ -343,7 +342,6 @@ if [ "$METRICS_OK" != "PASS" ]; then
   echo "Review: grep -oE '[0-9]+[%]|[0-9]+ (files|lines)' CHANGELOG.md"
 fi
 
-echo "✅ Compaction quality verified"
 make checkpoint-gate CMD=compact-changes GATE="Compaction Quality" REQUIRED="3,4,5"
 ```
 

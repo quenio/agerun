@@ -169,12 +169,10 @@ fi
 
 echo "Average Score: $AVG_SCORE%"
 
-# Check if meets excellence threshold
-if (( $(echo "$AVG_SCORE >= 90" | bc -l) )); then
-  echo "✅ Excellent! Commands meet quality threshold"
+# Check if meets excellence threshold using quality gate helper
+if ./scripts/enforce-quality-gate.sh "Commands Score" "$AVG_SCORE" "90" "ge" "Commands must meet quality threshold of 90%+"; then
   STATUS="EXCELLENT"
 else
-  echo "⚠️ Commands need improvement (target: 90%+)"
   STATUS="NEEDS_WORK"
 fi
 
