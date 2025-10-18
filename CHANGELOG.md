@@ -2,6 +2,38 @@
 
 ## 2025-10-18 (Session 2f)
 
+- **Integrate Command Orchestrator Pattern Learnings into Knowledge Base**
+
+  Completed comprehensive 14-step new-learnings workflow documenting session insights on command orchestrator pattern and helper script extraction discipline.
+
+  **Session Learnings Captured**:
+  1. Command orchestrator pattern prevents wrapper script anti-patterns
+  2. Each 10+ line shell block should extract to focused helper script
+  3. User feedback consistently identifies extraction violations
+  4. Pattern violations propagate across related commands
+  5. Checkpoint enforcement requires three levels: startup, execution, completion
+
+  **Knowledge Base Updates (3 articles)**:
+  - command-orchestrator-pattern.md - Added check-naming real-world refactoring example
+  - command-helper-script-extraction-pattern.md - Added check-naming and new-learnings examples
+  - checkpoint-workflow-enforcement-pattern.md - Added three-level enforcement implementation
+
+  **Command Updates (3 commands)**:
+  - compact-changes.md - Added orchestrator pattern reference
+  - compact-guidelines.md - Added orchestrator pattern reference
+  - compact-tasks.md - Added orchestrator pattern reference
+
+  **Verification**:
+  - All documentation validated with make check-docs
+  - All command references verified and working
+  - Integration verification passed all quality gates
+  - Comprehensive session analysis with multi-pass learning extraction
+
+  **Changes**:
+  - Created: 3 KB article examples from session work
+  - Modified: 3 command files with orchestrator pattern references
+  - All work committed and pushed (9061616)
+
 - **Extract new-learnings Checkpoint Detection to Focused Helper Script**
 
   Extracted multi-line bash logic from new-learnings command into focused helper script per command-helper-script-extraction-pattern.md.
