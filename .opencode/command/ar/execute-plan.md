@@ -189,10 +189,13 @@ This command executes TDD plan documents following the RED-GREEN-REFACTOR cycle:
 
 #### 1. Plan Reading and Iteration Extraction
 - **Plan parsing**: Read plan document and extract all iterations
+- **⚠️ IMPLEMENTED verification (CRITICAL - DO FIRST)**: Check for IMPLEMENTED iterations before extracting REVIEWED/REVISED
+  - Verify code actually exists and matches plan claims
+  - Check git status: uncommitted work vs stale markers
+  - Classify and decide action (execute, update markers, or exit)
 - **Iteration identification**: Parse iteration numbers, names, and objectives
-- **Status verification**: Ensure iterations are marked REVIEWED or REVISED
+- **Status verification**: Extract iterations marked REVIEWED or REVISED for implementation
 - **Test module identification**: Identify which test files to modify
-- **⚠️ Code verification**: If iterations marked IMPLEMENTED exist, verify actual code matches plan claims
 
 #### 2. RED-GREEN-REFACTOR Execution
 - **RED phase**: Write failing test following BDD structure ([details](../../../kb/bdd-test-structure.md))
@@ -336,26 +339,29 @@ make checkpoint-update CMD=execute-plan STEP=2
 
 #### Step 3: Extract Iterations & Validate Plan Compliance
 
-**⚠️ FIRST: Check if Any Work Needs to be Done**
+**⚠️ CRITICAL: This step has 3 parts that MUST be done in THIS ORDER:**
 
-Before proceeding, verify there are actually iterations to execute:
+1. **Step 3A**: Check if IMPLEMENTED iterations exist (**MANDATORY FIRST STEP**)
+2. **Step 3B**: If IMPLEMENTED found, verify code and classify (uncommitted vs stale markers)
+3. **Step 3C**: Extract REVIEWED/REVISED iterations for implementation
 
-```bash
-# Check for REVIEWED or REVISED iterations
-grep -c "- REVIEWED\|- REVISED" <plan-file>
-# Expected: > 0 (at least one iteration ready for implementation)
-```
+**WHY THIS ORDER MATTERS:**
 
-**If count = 0** (no REVIEWED/REVISED iterations):
-- Plan has no iterations ready for execution
-- Check for IMPLEMENTED iterations (may need commit or have stale markers)
-- If IMPLEMENTED iterations exist, proceed to verify git status (see below)
-- If no IMPLEMENTED iterations either, exit gracefully
+The old order (extract REVIEWED/REVISED first, check IMPLEMENTED later) caused this mistake:
+- Saw "no REVIEWED/REVISED iterations"
+- Concluded "nothing to do" and stopped
+- Never checked IMPLEMENTED iterations
+- Missed that IMPLEMENTED markers were stale (already committed)
 
-**Early Exit Decision:**
-- ✅ **Has REVIEWED/REVISED**: Proceed with execution
-- ⚠️ **Has IMPLEMENTED only**: Verify git status to determine if stale markers or uncommitted work
-- ❌ **No executable work**: Clean up checkpoint and exit
+The new order (check IMPLEMENTED FIRST) prevents this:
+- Always check IMPLEMENTED first before deciding "nothing to do"
+- Verify if IMPLEMENTED means uncommitted work or stale markers
+- Only after IMPLEMENTED verification, check REVIEWED/REVISED
+- Make informed decision based on complete picture
+
+**DO NOT skip Step 3A/3B even if you see no REVIEWED/REVISED iterations.**
+
+---
 
 **PRE-EXECUTION COMPLIANCE CHECK (All 14 Lessons):**
 
@@ -385,81 +391,40 @@ Before extracting iterations, validate that plan complies with new review-plan r
 
 **After validation passes:**
 
-**CRITICAL: Filter for REVIEWED or REVISED iterations:**
+**⚠️ CRITICAL - STEP 3A: Check for IMPLEMENTED Iterations FIRST (MANDATORY)**
 
-Extract only iterations marked with:
-- "- REVIEWED" (approved in review, ready for implementation)
-- "- REVISED" (revised and ready for implementation)
-
-Skip iterations marked as:
-- "- PENDING REVIEW" (not yet reviewed)
-- "- IMPLEMENTED" (already implemented, waiting for commit)
-- "- ✅ COMMITTED" (already committed)
-- "- ✅ COMPLETE" (fully complete)
-
-**Example filtering:**
-```markdown
-# IMPLEMENT THIS (has REVIEWED status):
-#### Iteration 0.1: send() returns true - REVIEWED
-
-# IMPLEMENT THIS (has REVISED status):
-#### Iteration 0.2: has_messages() returns false - REVISED
-
-# SKIP THIS (not yet reviewed):
-#### Iteration 0.3: message queue implementation - PENDING REVIEW
-
-# SKIP THIS (already implemented):
-#### Iteration 0.4: cleanup - IMPLEMENTED
-
-# SKIP THIS (already committed):
-#### Iteration 0.5: refactoring - ✅ COMMITTED
-
-# SKIP THIS (fully complete):
-#### Iteration 0.6: documentation - ✅ COMPLETE
-```
-
-**Create iteration execution list:**
-
-For EACH iteration marked REVIEWED or REVISED, extract:
-```markdown
-## Iteration Execution List
-
-### Iteration 0.1: send() returns true
-- Test file: modules/ar_delegate_tests.c
-- Test name: test_delegate__send_returns_true
-- Implementation: ar_delegate__send() in modules/ar_delegate.c
-- Status: REVIEWED (ready to implement)
-
-### Iteration 0.2: has_messages() returns false initially
-- Test file: modules/ar_delegate_tests.c
-- Test name: test_delegate__has_no_messages_initially
-- Implementation: ar_delegate__has_messages() in modules/ar_delegate.c
-- Status: REVISED (ready to implement)
-
-[... continue for all REVIEWED or REVISED iterations ...]
-
-Total iterations to implement: 10 (REVIEWED: 8, REVISED: 2)
-```
-
-**Extraction checklist:**
-- [ ] Identify all iterations with "- REVIEWED" status
-- [ ] Identify all iterations with "- REVISED" status
-- [ ] Create list of iterations to execute (REVIEWED or REVISED only)
-- [ ] Note total iterations needing implementation vs. total iterations
-- [ ] Skip all non-executable iterations from execution scope
-- [ ] Test file paths identified for each iteration
-- [ ] Test function names extracted for each iteration
-- [ ] Implementation functions identified for each iteration
-
-**⚠️ CRITICAL: Verify IMPLEMENTED Iterations (If Any Exist)**
-
-If the plan contains iterations marked "- IMPLEMENTED" (already implemented but not committed), you MUST verify the implementation claims by reading the actual code:
+Before extracting REVIEWED/REVISED iterations, you MUST check if any IMPLEMENTED iterations exist and verify their status:
 
 ```bash
-# Check if any IMPLEMENTED iterations exist
-grep -c "- IMPLEMENTED" <plan-file>
-# If count > 0, verification is MANDATORY
+# MANDATORY FIRST STEP: Check if any IMPLEMENTED iterations exist
+grep -c "IMPLEMENTED" <plan-file>
+# If count > 0, verification is REQUIRED before proceeding
 ```
+
+**If IMPLEMENTED iterations found (count > 0):**
+
+**YOU MUST STOP and perform verification BEFORE extracting REVIEWED/REVISED iterations.**
+
+Proceed to "CRITICAL: Verify IMPLEMENTED Iterations" section below (Step 3B).
+
+**If NO IMPLEMENTED iterations found (count = 0):**
+
+Skip directly to "Extract REVIEWED or REVISED iterations" section below (Step 3C).
+
+---
+
+**⚠️ CRITICAL - STEP 3B: Verify IMPLEMENTED Iterations**
+
+**DO NOT ASSUME "IMPLEMENTED" means "skip and move on".**
+
+Status markers can be:
+- ✅ Accurate (code exists, uncommitted, ready for Step 7 commit)
+- ❌ Stale (code exists, already committed, markers not updated)
+- ❌ False (plan claims IMPLEMENTED but code doesn't exist)
+
+**You MUST verify which category applies.**
+
+**FIRST: Verify code exists**
 
 **For EACH IMPLEMENTED iteration, verify:**
 
@@ -505,18 +470,20 @@ Verification steps:
 - [ ] Implementation functions exist and work as described
 - [ ] No discrepancies found between plan and code
 
-**If discrepancies found:**
+**If code verification fails** (code doesn't match plan or doesn't exist):
 - Document what the plan claims vs. what code actually does
-- Do NOT mark as ✅ COMMITTED until discrepancies resolved
-- May need to update plan or fix implementation
+- Do NOT proceed with execution or Step 7 commit
+- Return to user: plan has inaccurate IMPLEMENTED markers
 
-**If verification passes:**
-- IMPLEMENTED iterations are ready for status update in Step 7
-- Proceed with confidence that code matches plan claims
+**If code verification passes** (code exists and matches plan):
 
-**⚠️ CRITICAL: Verify Git Commit Status for IMPLEMENTED Iterations**
+Proceed to SECOND verification step below (classify uncommitted vs stale).
 
-After verifying IMPLEMENTED iterations exist in code, check if they're actually uncommitted or already committed with stale markers:
+---
+
+**SECOND: Classify IMPLEMENTED iterations (uncommitted vs stale markers)**
+
+After verifying code exists, check git status to determine if iterations are uncommitted work or stale markers:
 
 ```bash
 # Step 1: Check for uncommitted changes
@@ -562,30 +529,100 @@ $ git log --oneline --grep="TDD Cycle 7" -5
 # Action: Update stale IMPLEMENTED markers → ✅ COMMITTED (no code commit needed)
 ```
 
-**Decision Logic:**
+**Decision Logic Based on Git Status:**
 
-- ✅ **If git status is clean AND iterations found in git log**:
-  - Iterations are already committed
-  - Plan has stale status markers
-  - Skip to Step 7 to update markers: IMPLEMENTED → ✅ COMMITTED
-  - DO NOT execute Step 4-6 (no implementation work needed)
+**CASE 1: Git status is clean AND iterations found in git log**
+- ✅ **Classification**: Stale markers (code already committed)
+- ✅ **Action**: Skip to Step 7 to update markers: IMPLEMENTED → ✅ COMMITTED
+- ✅ **Skip**: Steps 4-6 (no implementation work needed)
+- ✅ **Reason**: Code is done and committed, just need to sync plan markers
 
-- ✅ **If git status shows changes AND iterations not in git log**:
-  - Iterations are implemented but uncommitted
-  - Proceed normally through Steps 4-6
-  - Commit in Step 7: IMPLEMENTED → ✅ COMMITTED
+**CASE 2: Git status shows changes AND iterations not in git log**
+- ✅ **Classification**: Uncommitted work (code exists but not committed)
+- ✅ **Action**: Skip to Step 7 to commit: IMPLEMENTED → ✅ COMMITTED
+- ✅ **Skip**: Steps 4-6 (implementation already done)
+- ✅ **Reason**: Code is done but needs git commit
 
-- ⚠️ **If no REVIEWED/REVISED iterations AND no uncommitted IMPLEMENTED iterations**:
-  - Nothing to execute
-  - Clean up checkpoint tracking: `make checkpoint-cleanup CMD=execute-plan`
-  - Exit with message: "No iterations to execute. All iterations are already committed."
+**CASE 3: No REVIEWED/REVISED iterations AND no uncommitted IMPLEMENTED iterations**
+- ⚠️ **Classification**: Nothing to execute
+- ⚠️ **Action**: Report to user and clean up
+- ⚠️ **Command**: `make checkpoint-cleanup CMD=execute-plan`
 
-**Verification checklist for git commit status:**
-- [ ] `git status --porcelain` executed to check for uncommitted changes
-- [ ] `git log` searched for recent commits related to this plan/feature
-- [ ] Implementation files checked in git history
-- [ ] IMPLEMENTED iterations classified as "uncommitted" or "stale markers"
-- [ ] Decision made: proceed with execution OR update stale markers OR exit
+**After classification, proceed to Step 3C.**
+
+---
+
+**STEP 3C: Extract REVIEWED or REVISED iterations**
+
+Now extract iterations that need actual implementation:
+
+**Filter for REVIEWED or REVISED iterations:**
+
+Extract only iterations marked with:
+- "- REVIEWED" (approved in review, ready for implementation)
+- "- REVISED" (revised and ready for implementation)
+
+**Skip iterations marked as:**
+- "- PENDING REVIEW" (not yet reviewed)
+- "- IMPLEMENTED" (handled in Step 3B above)
+- "- ✅ COMMITTED" (already committed)
+- "- ✅ COMPLETE" (fully complete)
+
+**Example filtering:**
+```markdown
+# IMPLEMENT THIS (has REVIEWED status):
+#### Iteration 0.1: send() returns true - REVIEWED
+
+# IMPLEMENT THIS (has REVISED status):
+#### Iteration 0.2: has_messages() returns false - REVISED
+
+# SKIP THIS (not yet reviewed):
+#### Iteration 0.3: message queue implementation - PENDING REVIEW
+
+# SKIP THIS (already handled in Step 3B):
+#### Iteration 0.4: cleanup - IMPLEMENTED
+
+# SKIP THIS (already committed):
+#### Iteration 0.5: refactoring - ✅ COMMITTED
+
+# SKIP THIS (fully complete):
+#### Iteration 0.6: documentation - ✅ COMPLETE
+```
+
+**Create iteration execution list:**
+
+For EACH iteration marked REVIEWED or REVISED, extract:
+```markdown
+## Iteration Execution List
+
+### Iteration 0.1: send() returns true
+- Test file: modules/ar_delegate_tests.c
+- Test name: test_delegate__send_returns_true
+- Implementation: ar_delegate__send() in modules/ar_delegate.c
+- Status: REVIEWED (ready to implement)
+
+### Iteration 0.2: has_messages() returns false initially
+- Test file: modules/ar_delegate_tests.c
+- Test name: test_delegate__has_no_messages_initially
+- Implementation: ar_delegate__has_messages() in modules/ar_delegate.c
+- Status: REVISED (ready to implement)
+
+[... continue for all REVIEWED or REVISED iterations ...]
+
+Total iterations to implement: 10 (REVIEWED: 8, REVISED: 2)
+```
+
+**Extraction checklist:**
+- [ ] Identified all iterations with "- REVIEWED" status
+- [ ] Identified all iterations with "- REVISED" status
+- [ ] Created list of iterations to execute (REVIEWED or REVISED only)
+- [ ] Noted total iterations needing implementation vs. total iterations
+- [ ] Skipped all non-executable iterations from execution scope
+- [ ] Test file paths identified for each iteration
+- [ ] Test function names extracted for each iteration
+- [ ] Implementation functions identified for each iteration
+- [ ] ✅ **IMPLEMENTED iterations verified** (completed in Step 3B)
+- [ ] Git commit status checked and classified (completed in Step 3B)
 
 ```bash
 make checkpoint-update CMD=execute-plan STEP=3
@@ -606,9 +643,13 @@ make checkpoint-gate CMD=execute-plan GATE="Setup" REQUIRED="1,2,3"
 ```
 
 **Minimum Requirements for Stage 1:**
-- [ ] All 8 KB articles read and quoted
-- [ ] Plan document read completely
-- [ ] All iterations extracted and verified REVIEWED
+- [ ] All 9 KB articles read and quoted (Step 1)
+- [ ] Plan document read completely (Step 2)
+- [ ] ⭐ **IMPLEMENTED iterations verified** if any exist (Step 3A-3B - CRITICAL)
+  - [ ] Code existence verified
+  - [ ] Git status checked (uncommitted vs stale markers)
+  - [ ] Classification complete (CASE 1, 2, or 3)
+- [ ] REVIEWED/REVISED iterations extracted (Step 3C)
 
 ### Stage 2: Iteration Execution (Steps 4-6)
 
