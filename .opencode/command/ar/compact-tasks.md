@@ -272,46 +272,22 @@ make checkpoint-update CMD=compact-tasks STEP=3
 #### Step 4: Verify Preservation
 
 ```bash
-# Verify all incomplete tasks preserved and reduction achieved
-echo "Verifying preservation..."
-source /tmp/compact-tasks-stats.txt
+# Verify compaction using helper script
+./scripts/verify-compaction.sh /tmp/compact-tasks-stats.txt | tee -a /tmp/compact-tasks-stats.txt
 
-NEW_LINES=$(wc -l < TODO.md)
-NEW_BYTES=$(wc -c < TODO.md)
-NEW_INCOMPLETE=$(grep -c "^- \[ \]" TODO.md || echo "0")
-NEW_COMPLETED=$(grep -c "^- \[x\]" TODO.md || echo "0")
-
-echo "New: $NEW_LINES lines, $NEW_BYTES bytes"
-echo "Incomplete tasks: $NEW_INCOMPLETE (expected: $INCOMPLETE)"
-echo "Completed tasks: $NEW_COMPLETED (some may have been merged)"
-
-# Calculate reduction
-LINE_REDUCTION=$(( (ORIGINAL_LINES - NEW_LINES) * 100 / ORIGINAL_LINES ))
-SIZE_REDUCTION=$(( (ORIGINAL_BYTES - NEW_BYTES) * 100 / ORIGINAL_BYTES ))
-
-echo "Line reduction: $LINE_REDUCTION%"
-echo "File size reduction: $SIZE_REDUCTION%"
-
-# Save results
-echo "NEW_LINES=$NEW_LINES" >> /tmp/compact-tasks-stats.txt
-echo "NEW_BYTES=$NEW_BYTES" >> /tmp/compact-tasks-stats.txt
-echo "NEW_INCOMPLETE=$NEW_INCOMPLETE" >> /tmp/compact-tasks-stats.txt
-echo "LINE_REDUCTION=$LINE_REDUCTION" >> /tmp/compact-tasks-stats.txt
-echo "SIZE_REDUCTION=$SIZE_REDUCTION" >> /tmp/compact-tasks-stats.txt
-
-# Verify incomplete tasks untouched
-if [ "$NEW_INCOMPLETE" -eq "$INCOMPLETE" ]; then
-  echo "✅ All $INCOMPLETE incomplete tasks preserved"
-  INTEGRITY="PASS"
+# Only proceed if verification passes
+if [ $? -eq 0 ]; then
+  make checkpoint-update CMD=compact-tasks STEP=4
 else
-  echo "❌ CRITICAL: Incomplete task count changed!"
-  echo "   Original: $INCOMPLETE, New: $NEW_INCOMPLETE"
-  INTEGRITY="FAIL"
+  echo "❌ Verification failed - do not proceed"
+  exit 1
 fi
-
-echo "INTEGRITY=$INTEGRITY" >> /tmp/compact-tasks-stats.txt
-make checkpoint-update CMD=compact-tasks STEP=4
 ```
+
+The script verifies:
+1. **Size Comparison** - Original vs new lines/bytes
+2. **Reduction Achieved** - Percentage reductions calculated
+3. **Task Preservation** - All incomplete tasks preserved (CRITICAL)
 
 **Expected output:**
 ```
