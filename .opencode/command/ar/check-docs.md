@@ -26,9 +26,27 @@ make checkpoint-status CMD=check-docs VERBOSE=--verbose
 # Or reset: make checkpoint-cleanup CMD=check-docs && make checkpoint-init CMD=check-docs STEPS='"Initial Check" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"'
 ```
 
+## Checkpoint Tracking
+
+This command uses checkpoint tracking to ensure systematic execution of all documentation validation steps.
+
+### Initialize Tracking
+
+```bash
+make checkpoint-init CMD=check-docs STEPS='"Initial Check" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"'
+```
+
+### Check Progress
+
+```bash
+make checkpoint-status CMD=check-docs
+```
+
 ## Workflow Execution
 
 Run the complete checkpoint-based workflow:
+
+#### [CHECKPOINT START]
 
 ```bash
 ./scripts/run-check-docs.sh
@@ -46,7 +64,22 @@ This script handles all stages of the documentation validation and fix process:
 6. **Commit and Push**: Stages, commits, and pushes all documentation fixes
 7. **Checkpoint Completion**: Marks the workflow as complete
 
+### Expected Output
+
+```
+✅ All documentation checks passed
+- 579 files checked
+- All references valid
+- All module names exist
+- All links valid
+- No broken references
+```
+
+#### [CHECKPOINT END]
+
 ### Manual Checkpoint Control
+
+#### [CHECKPOINT GATE]
 
 If you need to manually check progress or resume a workflow:
 
@@ -60,6 +93,8 @@ make checkpoint-update CMD=check-docs STEP=N
 # Reset and start over
 make checkpoint-cleanup CMD=check-docs && make checkpoint-init CMD=check-docs STEPS='"Initial Check" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"'
 ```
+
+#### [CHECKPOINT COMPLETE]
 
 ## Minimum Requirements
 
