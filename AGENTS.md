@@ -341,7 +341,9 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Development Guidelines**:
 - `#!/bin/bash` shebang for bash-specific features like `[[ ]]`
 - Always include: `set -e` and `set -o pipefail` for error handling
-- Use `[[ ]]` for pattern matching (not `[ ]` which doesn't support `=~`)
+- **CRITICAL**: Use `[[ ]]` for pattern matching (POSIX `[ ]` doesn't support regex `=~` or glob patterns `*`)
+  - ❌ WRONG: `[ "$var" =~ pattern ]` or `[ "$file" = *.txt ]`
+  - ✅ RIGHT: `[[ "$var" =~ pattern ]]` and `[[ "$file" = *.txt ]]`
 - Use `@` or `|` delimiter in sed commands, not `/` (avoids escaping issues)
 - Detect OS platform: `if [[ "$OSTYPE" == darwin* ]]` for macOS-specific code
 - Test with bash: `bash -n script.sh` to verify syntax before committing

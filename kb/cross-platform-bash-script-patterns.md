@@ -16,8 +16,10 @@ Cross-platform compatibility issues are particularly dangerous because:
 ### Problem 1: OSTYPE Pattern Matching
 
 ```bash
-# BAD: Doesn't work on macOS
-# REASON: [ ] with = operator doesn't support glob patterns
+# BAD: Doesn't work on macOS (or any POSIX shell)
+# REASON: POSIX [ ] with = operator treats * as literal text, not a glob pattern
+#         The * is NOT interpreted as a wildcard - it's a literal asterisk
+#         This test will try to match the literal string "darwin*" which fails
 if [ "$OSTYPE" = "darwin"* ]; then
     echo "macOS"  # This branch never executes!
 else
