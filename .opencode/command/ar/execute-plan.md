@@ -144,11 +144,16 @@ grep -l "REVIEWED" plans/*_plan.md | xargs ls -t | head -1
 **DO NOT PROCEED WITHOUT RUNNING THIS COMMAND:**
 
 ```bash
-# MANDATORY: Initialize checkpoint tracking (8 steps)
-make checkpoint-init CMD=execute-plan STEPS='"KB Consultation" "Read Plan" "Extract Iterations" "Execute Iterations" "Run Tests" "Verify Memory" "Update Plan Status" "Summary"'
+# MANDATORY: Initialize checkpoint tracking (11 steps)
+make checkpoint-init CMD=execute-plan STEPS='"KB Consultation" "Read Plan" "Validate Plan" "Check IMPLEMENTED" "Verify IMPLEMENTED" "Extract REVIEWED/REVISED" "Execute Iterations" "Run Tests" "Verify Memory" "Update Plan Status" "Summary"'
 ```
 
-This command uses checkpoint tracking to ensure systematic plan execution. The execution process is divided into 3 major stages with 8 checkpoints total.
+This command uses checkpoint tracking to ensure systematic plan execution. The execution process is divided into 3 major stages with 11 checkpoints total.
+
+**Step Breakdown:**
+- **Steps 1-6**: Stage 1 - Plan Reading and Setup (includes IMPLEMENTED verification)
+- **Steps 7-9**: Stage 2 - Iteration Execution
+- **Steps 10-11**: Stage 3 - Completion and Documentation
 
 **Expected output:**
 ```
@@ -158,17 +163,20 @@ This command uses checkpoint tracking to ensure systematic plan execution. The e
 
 Command: execute-plan
 Tracking file: /tmp/execute-plan_progress.txt
-Total steps: 8
+Total steps: 11
 
 Steps to complete:
   1. KB Consultation
   2. Read Plan
-  3. Extract Iterations
-  4. Execute Iterations
-  5. Run Tests
-  6. Verify Memory
-  7. Update Plan Status
-  8. Summary
+  3. Validate Plan
+  4. Check IMPLEMENTED
+  5. Verify IMPLEMENTED
+  6. Extract REVIEWED/REVISED
+  7. Execute Iterations
+  8. Run Tests
+  9. Verify Memory
+  10. Update Plan Status
+  11. Summary
 ```
 
 ### Check Progress
@@ -176,11 +184,11 @@ Steps to complete:
 make checkpoint-status CMD=execute-plan
 ```
 
-**Expected output (example at 50% completion):**
+**Expected output (example at 55% completion):**
 ```
-📈 execute-plan: 4/8 steps (50%)
-   [██████████░░░░░░░░░░] 50%
-→ Next: make checkpoint-update CMD=execute-plan STEP=5
+📈 execute-plan: 6/11 steps (55%)
+   [███████████░░░░░░░░░] 55%
+→ Next: make checkpoint-update CMD=execute-plan STEP=7
 ```
 
 ### What it does
@@ -254,10 +262,10 @@ This command updates the plan file in TWO distinct phases:
 
 ### Execution Order (MANDATORY)
 
-1. **FIRST**: Run the checkpoint initialization command above
+1. **FIRST**: Run the checkpoint initialization command above (11 steps)
 2. **SECOND**: Follow the execution process below, updating checkpoints after each step
 3. **THIRD**: Check progress with `make checkpoint-status CMD=execute-plan`
-4. **FOURTH**: Complete all 8 steps before marking cycle complete
+4. **FOURTH**: Complete all 11 steps before marking cycle complete
 5. **LAST**: Clean up with `make checkpoint-cleanup CMD=execute-plan`
 
 ### Usage
@@ -275,7 +283,7 @@ This command updates the plan file in TWO distinct phases:
 
 ## Plan Execution Process
 
-### Stage 1: Plan Reading and Setup (Steps 1-3)
+### Stage 1: Plan Reading and Setup (Steps 1-6)
 
 #### [CHECKPOINT START - STAGE 1]
 
@@ -337,35 +345,36 @@ make checkpoint-update CMD=execute-plan STEP=2
 - Expected test function names
 - Expected implementation function names
 
-#### Step 3: Extract Iterations & Validate Plan Compliance
+#### Step 3: Validate Plan Compliance
 
-**⚠️ CRITICAL: This step has 3 parts that MUST be done in THIS ORDER:**
+**⚠️ CRITICAL: Steps 3-6 enforce IMPLEMENTED-first verification order**
 
-1. **Step 3A**: Check if IMPLEMENTED iterations exist (**MANDATORY FIRST STEP**)
-2. **Step 3B**: If IMPLEMENTED found, verify code and classify (uncommitted vs stale markers)
-3. **Step 3C**: Extract REVIEWED/REVISED iterations for implementation
+The following 4 steps (3-6) MUST be done in THIS ORDER to prevent assumption-based errors:
+
+- **Step 3**: Validate plan compliance (14 lessons)
+- **Step 4**: Check for IMPLEMENTED iterations (MANDATORY - do this BEFORE deciding "nothing to do")
+- **Step 5**: Verify IMPLEMENTED code and git status (if any found in Step 4)
+- **Step 6**: Extract REVIEWED/REVISED iterations (only after IMPLEMENTED verified)
 
 **WHY THIS ORDER MATTERS:**
 
-The old order (extract REVIEWED/REVISED first, check IMPLEMENTED later) caused this mistake:
+The old structure (extract REVIEWED/REVISED first) caused this mistake:
 - Saw "no REVIEWED/REVISED iterations"
 - Concluded "nothing to do" and stopped
 - Never checked IMPLEMENTED iterations
 - Missed that IMPLEMENTED markers were stale (already committed)
 
-The new order (check IMPLEMENTED FIRST) prevents this:
-- Always check IMPLEMENTED first before deciding "nothing to do"
-- Verify if IMPLEMENTED means uncommitted work or stale markers
-- Only after IMPLEMENTED verification, check REVIEWED/REVISED
-- Make informed decision based on complete picture
+The new structure (Steps 3→4→5→6) prevents this:
+- Always validate plan first (Step 3)
+- Always check IMPLEMENTED before deciding "nothing to do" (Step 4)
+- Verify if IMPLEMENTED means uncommitted work or stale markers (Step 5)
+- Only after IMPLEMENTED verification, extract REVIEWED/REVISED (Step 6)
 
-**DO NOT skip Step 3A/3B even if you see no REVIEWED/REVISED iterations.**
+**DO NOT skip Steps 4-5 even if you see no REVIEWED/REVISED iterations.**
 
 ---
 
-**PRE-EXECUTION COMPLIANCE CHECK (All 14 Lessons):**
-
-Before extracting iterations, validate that plan complies with new review-plan requirements:
+Validate that plan complies with all 14 TDD lessons:
 
 ```bash
 # Run automated validator - ensures plan meets all 14 lessons
@@ -389,11 +398,19 @@ Before extracting iterations, validate that plan complies with new review-plan r
 - Return plan to /review-plan for correction
 - Validator output identifies specific lesson violations
 
-**After validation passes:**
+**If validator passes:**
 
-**⚠️ CRITICAL - STEP 3A: Check for IMPLEMENTED Iterations FIRST (MANDATORY)**
+```bash
+make checkpoint-update CMD=execute-plan STEP=3
+```
 
-Before extracting REVIEWED/REVISED iterations, you MUST check if any IMPLEMENTED iterations exist and verify their status:
+---
+
+#### Step 4: Check for IMPLEMENTED Iterations
+
+**⚠️ MANDATORY FIRST CHECK - Do this BEFORE deciding "nothing to do"**
+
+Before extracting REVIEWED/REVISED iterations, you MUST check if any IMPLEMENTED iterations exist:
 
 ```bash
 # MANDATORY FIRST STEP: Check if any IMPLEMENTED iterations exist
@@ -403,17 +420,31 @@ grep -c "IMPLEMENTED" <plan-file>
 
 **If IMPLEMENTED iterations found (count > 0):**
 
-**YOU MUST STOP and perform verification BEFORE extracting REVIEWED/REVISED iterations.**
-
-Proceed to "CRITICAL: Verify IMPLEMENTED Iterations" section below (Step 3B).
+Proceed to Step 5 below to verify the IMPLEMENTED iterations.
 
 **If NO IMPLEMENTED iterations found (count = 0):**
 
-Skip directly to "Extract REVIEWED or REVISED iterations" section below (Step 3C).
+Mark Step 4 complete and skip to Step 6 (no verification needed):
+
+```bash
+make checkpoint-update CMD=execute-plan STEP=4
+# Step 5 skipped (no IMPLEMENTED iterations)
+make checkpoint-update CMD=execute-plan STEP=5
+```
+
+Then proceed to Step 6 (Extract REVIEWED/REVISED iterations).
+
+**If IMPLEMENTED iterations found:**
+
+```bash
+make checkpoint-update CMD=execute-plan STEP=4
+```
 
 ---
 
-**⚠️ CRITICAL - STEP 3B: Verify IMPLEMENTED Iterations**
+#### Step 5: Verify IMPLEMENTED Iterations
+
+**⚠️ CONDITIONAL STEP - Only if IMPLEMENTED iterations found in Step 4**
 
 **DO NOT ASSUME "IMPLEMENTED" means "skip and move on".**
 
@@ -548,11 +579,15 @@ $ git log --oneline --grep="TDD Cycle 7" -5
 - ⚠️ **Action**: Report to user and clean up
 - ⚠️ **Command**: `make checkpoint-cleanup CMD=execute-plan`
 
-**After classification, proceed to Step 3C.**
+**After classification:**
+
+```bash
+make checkpoint-update CMD=execute-plan STEP=5
+```
 
 ---
 
-**STEP 3C: Extract REVIEWED or REVISED iterations**
+#### Step 6: Extract REVIEWED or REVISED iterations
 
 Now extract iterations that need actual implementation:
 
@@ -621,41 +656,43 @@ Total iterations to implement: 10 (REVIEWED: 8, REVISED: 2)
 - [ ] Test file paths identified for each iteration
 - [ ] Test function names extracted for each iteration
 - [ ] Implementation functions identified for each iteration
-- [ ] ✅ **IMPLEMENTED iterations verified** (completed in Step 3B)
-- [ ] Git commit status checked and classified (completed in Step 3B)
+- [ ] ✅ **IMPLEMENTED iterations verified** (completed in Step 5)
+- [ ] Git commit status checked and classified (completed in Step 5)
 
 ```bash
-make checkpoint-update CMD=execute-plan STEP=3
+make checkpoint-update CMD=execute-plan STEP=6
 ```
 
-#### [CHECKPOINT END]
+#### [CHECKPOINT END - STAGE 1]
 
 **[QUALITY GATE 1: Setup Complete]**
 ```bash
 # MANDATORY: Must pass before proceeding to execution
-make checkpoint-gate CMD=execute-plan GATE="Setup" REQUIRED="1,2,3"
+make checkpoint-gate CMD=execute-plan GATE="Setup" REQUIRED="1,2,3,4,5,6"
 ```
 
 **Expected gate output:**
 ```
 ✅ GATE 'Setup' - PASSED
-   Verified: Steps 1,2,3
+   Verified: Steps 1,2,3,4,5,6
 ```
 
 **Minimum Requirements for Stage 1:**
 - [ ] All 9 KB articles read and quoted (Step 1)
 - [ ] Plan document read completely (Step 2)
-- [ ] ⭐ **IMPLEMENTED iterations verified** if any exist (Step 3A-3B - CRITICAL)
+- [ ] Plan validated with all 14 lessons (Step 3)
+- [ ] ⭐ **IMPLEMENTED iterations checked** (Step 4 - MANDATORY)
+- [ ] ⭐ **IMPLEMENTED iterations verified** if any exist (Step 5 - CRITICAL)
   - [ ] Code existence verified
   - [ ] Git status checked (uncommitted vs stale markers)
   - [ ] Classification complete (CASE 1, 2, or 3)
-- [ ] REVIEWED/REVISED iterations extracted (Step 3C)
+- [ ] REVIEWED/REVISED iterations extracted (Step 6)
 
-### Stage 2: Iteration Execution (Steps 4-6)
+### Stage 2: Iteration Execution (Steps 7-9)
 
 #### [CHECKPOINT START - STAGE 2]
 
-#### Step 4: Execute Iterations
+#### Step 7: Execute Iterations
 
 **CHECKPOINT: Initialize Iteration Tracking**
 
@@ -854,12 +891,12 @@ make checkpoint-status CMD=execute-plan-iterations
 make checkpoint-cleanup CMD=execute-plan-iterations
 ```
 
-**Then mark main Checkpoint 4 as complete:**
+**Then mark main Checkpoint 7 as complete:**
 ```bash
-make checkpoint-update CMD=execute-plan STEP=4
+make checkpoint-update CMD=execute-plan STEP=7
 ```
 
-#### Step 5: Run Tests
+#### Step 8: Run Tests
 
 **Run complete test suite after all iterations:**
 
@@ -891,10 +928,10 @@ All tests passing: 12/12
 ```
 
 ```bash
-make checkpoint-update CMD=execute-plan STEP=5
+make checkpoint-update CMD=execute-plan STEP=8
 ```
 
-#### Step 6: Verify Memory
+#### Step 9: Verify Memory
 
 **Check for memory leaks:**
 
@@ -927,21 +964,21 @@ make <test_module> 2>&1
 ```
 
 ```bash
-make checkpoint-update CMD=execute-plan STEP=6
+make checkpoint-update CMD=execute-plan STEP=9
 ```
 
-#### [CHECKPOINT END]
+#### [CHECKPOINT END - STAGE 2]
 
 **[QUALITY GATE 2: Implementation Complete]**
 ```bash
 # MANDATORY: Must pass before proceeding to plan update
-make checkpoint-gate CMD=execute-plan GATE="Implementation" REQUIRED="4,5,6"
+make checkpoint-gate CMD=execute-plan GATE="Implementation" REQUIRED="7,8,9"
 ```
 
 **Expected gate output:**
 ```
 ✅ GATE 'Implementation' - PASSED
-   Verified: Steps 4,5,6
+   Verified: Steps 7,8,9
 ```
 
 **Minimum Requirements for Stage 2:**
@@ -949,15 +986,15 @@ make checkpoint-gate CMD=execute-plan GATE="Implementation" REQUIRED="4,5,6"
 - [ ] All tests passing
 - [ ] Zero memory leaks across all tests
 
-### Stage 3: Completion and Documentation (Steps 7-8)
+### Stage 3: Completion and Documentation (Steps 10-11)
 
 #### [CHECKPOINT START - STAGE 3]
 
-#### Step 7: Update Plan Status
+#### Step 10: Update Plan Status
 
 **IMPORTANT**: This checkpoint has TWO distinct steps that happen at different times:
 
-**STEP 7A: Before Commit - Update to COMMITTED Status**
+**STEP 10A: Before Commit - Update to COMMITTED Status**
 
 **CRITICAL: Before creating the git commit, update all IMPLEMENTED iterations to COMMITTED:**
 
@@ -992,7 +1029,7 @@ new_string: "#### Iteration 0.1: send() returns true - ✅ COMMITTED"
 
 **MANDATORY**: This MUST be done BEFORE creating the git commit. The plan file with COMMITTED markers must be included in the same commit as the implementation.
 
-**STEP 7B: Add Completion Status Header (Optional)**
+**STEP 10B: Add Completion Status Header (Optional)**
 
 **If ALL plan iterations are now complete, add completion status header:**
 
@@ -1042,10 +1079,10 @@ grep "Actual memory leaks:" bin/run-tests/memory_report_ar_delegate_tests.log
 # <use Edit tool to update IMPLEMENTED → ✅ COMMITTED>
 # <if all complete, add completion status header>
 
-make checkpoint-update CMD=execute-plan STEP=7
+make checkpoint-update CMD=execute-plan STEP=10
 ```
 
-#### Step 8: Summary
+#### Step 11: Summary
 
 **Generate execution summary:**
 
@@ -1150,10 +1187,10 @@ make 2>&1
 ```
 
 ```bash
-make checkpoint-update CMD=execute-plan STEP=8
+make checkpoint-update CMD=execute-plan STEP=11
 ```
 
-#### [CHECKPOINT END]
+#### [CHECKPOINT END - STAGE 3]
 
 #### [CHECKPOINT COMPLETE]
 ```bash
@@ -1163,7 +1200,7 @@ make checkpoint-status CMD=execute-plan
 
 **Expected completion output:**
 ```
-🎆 All 8 steps complete!
+🎆 All 11 steps complete!
 ✓ Run: make checkpoint-cleanup CMD=execute-plan
 ```
 
