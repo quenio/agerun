@@ -336,6 +336,27 @@ make checkpoint-update CMD=execute-plan STEP=2
 
 #### Step 3: Extract Iterations & Validate Plan Compliance
 
+**⚠️ FIRST: Check if Any Work Needs to be Done**
+
+Before proceeding, verify there are actually iterations to execute:
+
+```bash
+# Check for REVIEWED or REVISED iterations
+grep -c "- REVIEWED\|- REVISED" <plan-file>
+# Expected: > 0 (at least one iteration ready for implementation)
+```
+
+**If count = 0** (no REVIEWED/REVISED iterations):
+- Plan has no iterations ready for execution
+- Check for IMPLEMENTED iterations (may need commit or have stale markers)
+- If IMPLEMENTED iterations exist, proceed to verify git status (see below)
+- If no IMPLEMENTED iterations either, exit gracefully
+
+**Early Exit Decision:**
+- ✅ **Has REVIEWED/REVISED**: Proceed with execution
+- ⚠️ **Has IMPLEMENTED only**: Verify git status to determine if stale markers or uncommitted work
+- ❌ **No executable work**: Clean up checkpoint and exit
+
 **PRE-EXECUTION COMPLIANCE CHECK (All 14 Lessons):**
 
 Before extracting iterations, validate that plan complies with new review-plan requirements:
@@ -492,6 +513,79 @@ Verification steps:
 **If verification passes:**
 - IMPLEMENTED iterations are ready for status update in Step 7
 - Proceed with confidence that code matches plan claims
+
+**⚠️ CRITICAL: Verify Git Commit Status for IMPLEMENTED Iterations**
+
+After verifying IMPLEMENTED iterations exist in code, check if they're actually uncommitted or already committed with stale markers:
+
+```bash
+# Step 1: Check for uncommitted changes
+git status --porcelain
+
+# Step 2: Search recent commits for iterations claimed as IMPLEMENTED
+# Look for commits mentioning the plan file or iteration numbers
+git log --oneline --all --grep="<feature-name>" -10
+
+# Step 3: Check if implementation files were recently committed
+# <implementation-file> examples: modules/ar_delegate.c, modules/ar_delegate_tests.c
+git log --oneline -- <implementation-file> <test-file> | head -5
+```
+
+**Classify IMPLEMENTED iterations:**
+
+1. **Actually uncommitted** (code exists but not in git):
+   - `git status` shows modified test/implementation files
+   - These iterations need to be committed in Step 7
+   - Status update: IMPLEMENTED → ✅ COMMITTED (during commit)
+
+2. **Already committed with stale markers** (code in git, plan markers not updated):
+   - `git status` is clean (no uncommitted changes)
+   - `git log` shows recent commits with the implementation
+   - These iterations have **stale status markers**
+   - Status update: IMPLEMENTED → ✅ COMMITTED (immediately, no commit needed)
+
+**Example verification:**
+
+```bash
+# Check git status
+$ git status --porcelain
+# Output: (clean) - No uncommitted changes
+
+# Check recent commits
+$ git log --oneline --grep="TDD Cycle 7" -5
+# Output:
+# e73843a feat: implement TDD Cycle 7 - Message Property Validation (Iteration 1.3.1-1.3.3)
+# a5c7391 feat: implement TDD Cycle 7 - Message Delegation Routing (Iteration 1.1-1.2)
+# 4263a14 feat: complete TDD Cycle 7 Fixture Infrastructure (Cycle 0)
+
+# Conclusion: Iterations 0.1-1.3.3 are ALREADY COMMITTED
+# Action: Update stale IMPLEMENTED markers → ✅ COMMITTED (no code commit needed)
+```
+
+**Decision Logic:**
+
+- ✅ **If git status is clean AND iterations found in git log**:
+  - Iterations are already committed
+  - Plan has stale status markers
+  - Skip to Step 7 to update markers: IMPLEMENTED → ✅ COMMITTED
+  - DO NOT execute Step 4-6 (no implementation work needed)
+
+- ✅ **If git status shows changes AND iterations not in git log**:
+  - Iterations are implemented but uncommitted
+  - Proceed normally through Steps 4-6
+  - Commit in Step 7: IMPLEMENTED → ✅ COMMITTED
+
+- ⚠️ **If no REVIEWED/REVISED iterations AND no uncommitted IMPLEMENTED iterations**:
+  - Nothing to execute
+  - Clean up checkpoint tracking: `make checkpoint-cleanup CMD=execute-plan`
+  - Exit with message: "No iterations to execute. All iterations are already committed."
+
+**Verification checklist for git commit status:**
+- [ ] `git status --porcelain` executed to check for uncommitted changes
+- [ ] `git log` searched for recent commits related to this plan/feature
+- [ ] Implementation files checked in git history
+- [ ] IMPLEMENTED iterations classified as "uncommitted" or "stale markers"
+- [ ] Decision made: proceed with execution OR update stale markers OR exit
 
 ```bash
 make checkpoint-update CMD=execute-plan STEP=3
