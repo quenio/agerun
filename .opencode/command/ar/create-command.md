@@ -572,7 +572,7 @@ After creating the command:
 ### Issue: "Invalid command name format"
 **Solution**: Use lowercase with hyphens only:
 - ✅ Valid: `analyze-deps`, `check-config`, `run-validation`
-- ❌ Invalid: `analyzeDeps`, `check_config`, `AnalyzeStuff`
+- ❌ Invalid: `analyzeDeps`, `check_config`, `AnalyzeStuff`  // EXAMPLE: Future type
 
 ### Issue: "Command already exists"
 **Solution**: Either:

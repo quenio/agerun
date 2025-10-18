@@ -132,7 +132,7 @@ Use descriptive verb-noun patterns:
 
 ### Before (Embedded in Command)
 
-```markdown
+````markdown
 #### Step 2: Code Smells Detection
 
 ```bash
@@ -168,7 +168,7 @@ done
 
 make checkpoint-update CMD=review-changes STEP=2
 ```
-\`\`\`
+````
 
 **Problems:**
 - 30+ lines of embedded bash

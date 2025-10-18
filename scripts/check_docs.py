@@ -622,11 +622,24 @@ def check_relative_links(doc_files):
         # Split content into lines for line number tracking
         lines = content.split('\n')
         in_code_block = False
-        
+        code_fence_length = 0
+
         for line_num, line in enumerate(lines, 1):
-            # Track code blocks
-            if '```' in line:
-                in_code_block = not in_code_block
+            # Track code blocks - match fence length to handle nested blocks
+            stripped = line.lstrip()
+            if stripped.startswith('```') or stripped.startswith('````'):
+                # Count the backticks
+                fence_len = len(stripped) - len(stripped.lstrip('`'))
+
+                if not in_code_block:
+                    # Opening fence
+                    in_code_block = True
+                    code_fence_length = fence_len
+                elif fence_len >= code_fence_length:
+                    # Closing fence (must be same or longer length)
+                    in_code_block = False
+                    code_fence_length = 0
+                # else: it's a shorter fence inside the block, ignore it
                 continue
             
             # Skip lines in code blocks or with special markers
