@@ -1,16 +1,8 @@
 Run documentation validation and fix any errors found using an iterative approach, then commit and push the fixes. Documentation quality is enhanced through systematic script extraction and domain-specific naming patterns ([details](../../../kb/command-helper-script-extraction-pattern.md), [naming](../../../kb/script-domain-naming-convention.md)).
 
-## ⚠️ CRITICAL: Let the script manage checkpoints
+## ⚠️ CRITICAL: Follow all steps sequentially
 
-**DO NOT manually initialize checkpoints before running this command.** The script handles all checkpoint initialization, execution, and cleanup automatically. Just run the script and let it complete.
-
-## Quick Start
-
-```bash
-./scripts/run-check-docs.sh
-```
-
-That's it! The script will handle everything automatically. Do not run any `make checkpoint-*` commands manually unless the script fails.
+**DO NOT skip steps or manually initialize checkpoints.** Execute each step in order. The checkpoint system enforces sequential execution and prevents jumping ahead.
 
 ## MANDATORY KB Consultation
 
@@ -45,19 +37,17 @@ These wrappers provide centralized checkpoint management across all commands.
 
 ## Workflow Execution
 
-Run the complete checkpoint-based workflow:
+Initialize checkpoint tracking:
 
 ```bash
-./scripts/init-checkpoint.sh check-docs '"Initial Check" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"'
+./scripts/init-checkpoint.sh check-docs '"Validate Docs" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"'
 ./scripts/require-checkpoint.sh check-docs
 ```
 
-Then execute the following steps:
-
-#### Step 1: Initial Check
+#### Step 1: Validate Docs
 
 ```bash
-./scripts/check-docs-initial.sh
+./scripts/validate-docs.sh
 ```
 
 Runs `make check-docs` to identify all documentation errors and saves error count.
@@ -68,10 +58,22 @@ Runs `make check-docs` to identify all documentation errors and saves error coun
 
 If no errors found, skip to Step 5. If errors found, continue to Step 3.
 
+```bash
+# Check error count to decide flow
+source /tmp/check-docs-stats.txt 2>/dev/null || ERROR_COUNT=0
+if [ $ERROR_COUNT -eq 0 ]; then
+  ./scripts/update-checkpoint.sh check-docs STEP=2
+  ./scripts/update-checkpoint.sh check-docs STEP=3
+  ./scripts/update-checkpoint.sh check-docs STEP=4
+else
+  ./scripts/gate-checkpoint.sh check-docs "Errors Found" "1"
+fi
+```
+
 #### Step 3: Preview Fixes
 
 ```bash
-./scripts/check-docs-preview-fixes.sh
+./scripts/preview-doc-fixes.sh
 ```
 
 Runs `python3 scripts/batch_fix_docs.py --dry-run` to preview changes before applying them (only if errors exist).
@@ -81,7 +83,7 @@ Runs `python3 scripts/batch_fix_docs.py --dry-run` to preview changes before app
 #### Step 4: Apply Fixes
 
 ```bash
-./scripts/check-docs-apply-fixes.sh
+./scripts/apply-doc-fixes.sh
 ```
 
 Runs the batch fix script to fix all identified documentation errors (only if errors exist).
@@ -91,17 +93,23 @@ Runs the batch fix script to fix all identified documentation errors (only if er
 #### Step 5: Verify Resolution
 
 ```bash
-./scripts/check-docs-verify.sh
+./scripts/verify-docs.sh
 ```
 
 Runs `make check-docs` again to verify all fixes were successful.
 
 **Expected output**: Shows final validation results (PASS or PARTIAL).
 
+#### [CHECKPOINT COMPLETE - Resolution Gate]
+
+```bash
+./scripts/gate-checkpoint.sh check-docs "Resolution" "4"
+```
+
 #### Step 6: Commit and Push
 
 ```bash
-./scripts/check-docs-commit.sh
+./scripts/commit-docs.sh
 ```
 
 Stages, commits, and pushes all documentation fixes.
@@ -138,7 +146,8 @@ make checkpoint-update CMD=check-docs STEP=N
 
 # ONLY use this if you need to reset everything and start over
 rm -f /tmp/check-docs-progress.txt
-./scripts/run-check-docs.sh
+./scripts/init-checkpoint.sh check-docs '"Validate Docs" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"'
+./scripts/require-checkpoint.sh check-docs
 ```
 
 #### [CHECKPOINT COMPLETE]
