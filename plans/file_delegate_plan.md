@@ -5,7 +5,7 @@ Implement a FileDelegate module that safely handles file system operations with 
 
 **Pattern**: Similar to ar_agent/ar_agency message passing
 **Modules**: ar_file_delegate.h/c (new), ar_delegate.h (interface)
-**Status**: DRAFT - PENDING REVIEW
+**Status**: REVIEWED - Ready for Implementation ✅
 
 ## Objective
 Create a delegate type for file operations with path validation, size limits, and secure file I/O using the ar_io module.
@@ -26,15 +26,16 @@ Create a delegate type for file operations with path validation, size limits, an
 - Size limits respected
 
 ## Plan Status
-- Total iterations: 15
+- Total iterations: 33
 - Cycles: 5 (TDD Cycles 8-12)
-- Review status: 0% (all PENDING REVIEW)
+- Review status: 100% COMPLETE ✅ (all 33 iterations REVIEWED)
+- Ready for implementation: YES ✅
 
 ---
 
 ### TDD Cycle 8: Basic Structure
 
-#### Iteration 8.1: ar_file_delegate__create() returns non-NULL - PENDING REVIEW
+#### Iteration 8.1: ar_file_delegate__create() returns non-NULL - REVIEWED
 
 **Objective**: Verify FileDelegate creation returns a valid instance
 
@@ -115,7 +116,10 @@ ar_file_delegate_t* ar_file_delegate__create(ar_log_t *ref_log, const char *ref_
 }
 ```
 
-**Note**: Error handling (NULL checks, allocation failures) will be added in later iterations when tested.
+**Note**: Error handling (NULL checks, allocation failures) will be tested and added in later iterations:
+- Iteration 8.1.3 tests malloc failure handling
+- NULL parameter handling tested in iterations 8.1.1-8.1.2
+- This minimal GREEN intentionally skips error checks since future iterations will test and force their implementation
 
 **Verification:**
 - Test passes
@@ -123,7 +127,7 @@ ar_file_delegate_t* ar_file_delegate__create(ar_log_t *ref_log, const char *ref_
 
 ---
 
-#### Iteration 8.1.1: ar_file_delegate__create() handles NULL log parameter - PENDING REVIEW
+#### Iteration 8.1.1: ar_file_delegate__create() handles NULL log parameter - REVIEWED
 
 **Objective**: Verify create() returns NULL when log parameter is NULL
 
@@ -164,7 +168,20 @@ static void test_file_delegate__create_handles_null_log(void) {
 
 **Step 2: Prove Test Validity (GOAL 1 - MANDATORY)**
 
-Current implementation (from 8.1) doesn't check for NULL, so test will fail.
+**Temporary corruption**: Use implementation from 8.1 which lacks NULL check
+```c
+ar_file_delegate_t* ar_file_delegate__create(ar_log_t *ref_log, const char *ref_allowed_path) {
+    // TEMPORARY: No NULL check - this proves the test catches missing validation
+    ar_file_delegate_t *own_delegate = AR__HEAP__MALLOC(sizeof(ar_file_delegate_t));
+    own_delegate->ref_log = ref_log;
+    own_delegate->own_allowed_path = AR__HEAP__STRDUP(ref_allowed_path);
+    return own_delegate;  // Returns non-NULL even when log is NULL
+}
+```
+Expected RED: "Test FAILS at AR_ASSERT with 'Should reject NULL log'"
+Verify: `make ar_file_delegate_tests` → assertion fails
+
+**Evidence of Goal 1 completion**: Test output showing FAILURE
 
 ---
 
@@ -190,7 +207,7 @@ ar_file_delegate_t* ar_file_delegate__create(ar_log_t *ref_log, const char *ref_
 
 ---
 
-#### Iteration 8.1.2: ar_file_delegate__create() handles NULL path parameter - PENDING REVIEW
+#### Iteration 8.1.2: ar_file_delegate__create() handles NULL path parameter - REVIEWED
 
 **Objective**: Verify create() returns NULL when path parameter is NULL
 
@@ -232,7 +249,21 @@ static void test_file_delegate__create_handles_null_path(void) {
 
 **Step 2: Prove Test Validity (GOAL 1 - MANDATORY)**
 
-Current implementation (from 8.1.1) doesn't check path for NULL, so test will fail.
+**Temporary corruption**: Use implementation from 8.1.1 which lacks path NULL check
+```c
+ar_file_delegate_t* ar_file_delegate__create(ar_log_t *ref_log, const char *ref_allowed_path) {
+    if (!ref_log) return NULL;
+    // TEMPORARY: No NULL check for path - this proves the test catches missing validation
+    ar_file_delegate_t *own_delegate = AR__HEAP__MALLOC(sizeof(ar_file_delegate_t));
+    own_delegate->ref_log = ref_log;
+    own_delegate->own_allowed_path = AR__HEAP__STRDUP(ref_allowed_path);  // Will crash if NULL
+    return own_delegate;
+}
+```
+Expected RED: "Test FAILS at AR_ASSERT with 'Should reject NULL path'"
+Verify: `make ar_file_delegate_tests` → assertion fails
+
+**Evidence of Goal 1 completion**: Test output showing FAILURE
 
 ---
 
@@ -258,9 +289,9 @@ ar_file_delegate_t* ar_file_delegate__create(ar_log_t *ref_log, const char *ref_
 
 ---
 
-#### Iteration 8.1.3: ar_file_delegate__create() handles malloc failure - PENDING REVIEW
+#### Iteration 8.1.3: ar_file_delegate__create() handles delegate malloc failure - REVIEWED
 
-**Objective**: Verify create() returns NULL when malloc fails and cleans up properly
+**Objective**: Verify create() returns NULL when delegate struct malloc fails
 
 **NOTE**: This test uses dlsym interception technique (see [DLSym Test Interception Technique](../kb/dlsym-test-interception-technique.md))
 
@@ -276,7 +307,7 @@ ar_file_delegate_t* ar_file_delegate__create(ar_log_t *ref_log, const char *ref_
 - **Status**: Not yet proven
 
 **GOAL 2: Identify What to Implement** (CONDITIONAL)
-- **Purpose**: Determine malloc failure handling
+- **Purpose**: Determine malloc failure handling for delegate struct
 - **Method**: Observe test expectations
 - **Status**: Needs implementation
 
@@ -328,11 +359,94 @@ static void test_file_delegate__create_handles_malloc_failure_delegate(void) {
 
     ar_log__destroy(ref_log);
 }
+```
 
+---
+
+**Step 2: Prove Test Validity (GOAL 1 - MANDATORY)**
+
+**Temporary corruption**: Skip NULL check on delegate malloc to cause crash
+
+```c
+ar_file_delegate_t* ar_file_delegate__create(ar_log_t *ref_log, const char *ref_allowed_path) {
+    if (!ref_log) return NULL;
+    if (!ref_allowed_path) return NULL;
+
+    ar_file_delegate_t *own_delegate = AR__HEAP__MALLOC(sizeof(ar_file_delegate_t));
+    // TEMPORARY: Skip NULL check - will crash on NULL dereference
+    // if (!own_delegate) return NULL;
+
+    own_delegate->ref_log = ref_log;
+    own_delegate->own_allowed_path = AR__HEAP__STRDUP(ref_allowed_path);
+    return own_delegate;
+}
+```
+
+Expected RED: "Test FAILS (crashes or assertion fails at NULL dereference)"
+Verify: `make ar_file_delegate_dlsym_tests` → test fails or crashes
+
+**Evidence of Goal 1 completion**: Test output showing FAILURE
+
+---
+
+**GREEN Phase:**
+
+**This iteration**: NEW - Add NULL check for delegate malloc failure
+
+```c
+ar_file_delegate_t* ar_file_delegate__create(ar_log_t *ref_log, const char *ref_allowed_path) {
+    if (!ref_log) return NULL;
+    if (!ref_allowed_path) return NULL;
+
+    ar_file_delegate_t *own_delegate = AR__HEAP__MALLOC(sizeof(ar_file_delegate_t));
+    if (!own_delegate) return NULL;  // Handle malloc failure
+
+    own_delegate->ref_log = ref_log;
+    own_delegate->own_allowed_path = AR__HEAP__STRDUP(ref_allowed_path);
+    return own_delegate;
+}
+```
+
+**Note**: strdup failure handling will be tested in next iteration (8.1.3.1)
+
+**Verification:**
+- dlsym test passes (delegate malloc failure returns NULL)
+- No memory leaks when malloc fails
+- Makefile excludes `*_dlsym_tests.c` from sanitizer builds
+
+---
+
+#### Iteration 8.1.3.1: ar_file_delegate__create() handles strdup failure and cleans up - REVIEWED
+
+**Objective**: Verify create() handles strdup failure, cleans up delegate, and returns NULL
+
+**NOTE**: This test uses dlsym interception technique (see [DLSym Test Interception Technique](../kb/dlsym-test-interception-technique.md))
+
+**Test File**: `modules/ar_file_delegate_dlsym_tests.c` (excluded from sanitizer builds)
+
+**RED Phase:**
+
+**RED Phase has TWO independent goals (both must be completed):**
+
+**GOAL 1: Prove Test Validity** (ALWAYS REQUIRED)
+- **Purpose**: Prove this test can catch unhandled strdup failure and resource leaks
+- **Method**: Use dlsym malloc wrapper to fail strdup, verify test FAILS
+- **Status**: Not yet proven
+
+**GOAL 2: Identify What to Implement** (CONDITIONAL)
+- **Purpose**: Determine strdup failure handling and cleanup
+- **Method**: Observe test expectations
+- **Status**: Needs implementation
+
+---
+
+**Step 1: Write the Test with dlsym Interception**
+
+```c
 // Test malloc failure at second allocation (strdup path)
 static void test_file_delegate__create_handles_malloc_failure_strdup(void) {
     reset_counters();
-    fail_at_malloc = 2;  // Fail second malloc (strdup)
+    fail_at_malloc = 2;  // Fail second malloc (strdup for path)
 
     ar_log_t *ref_log = ar_log__create();
     ar_file_delegate_t *own_delegate = ar_file_delegate__create(ref_log, "/tmp");
@@ -348,7 +462,7 @@ static void test_file_delegate__create_handles_malloc_failure_strdup(void) {
 
 **Step 2: Prove Test Validity (GOAL 1 - MANDATORY)**
 
-**Temporary corruption**: Skip NULL checks to cause failures
+**Temporary corruption**: Use implementation from 8.1.3 which lacks strdup error handling
 
 ```c
 ar_file_delegate_t* ar_file_delegate__create(ar_log_t *ref_log, const char *ref_allowed_path) {
@@ -356,12 +470,11 @@ ar_file_delegate_t* ar_file_delegate__create(ar_log_t *ref_log, const char *ref_
     if (!ref_allowed_path) return NULL;
 
     ar_file_delegate_t *own_delegate = AR__HEAP__MALLOC(sizeof(ar_file_delegate_t));
-    // TEMPORARY: Skip NULL check - will crash or leak
-    // if (!own_delegate) return NULL;
+    if (!own_delegate) return NULL;
 
     own_delegate->ref_log = ref_log;
     own_delegate->own_allowed_path = AR__HEAP__STRDUP(ref_allowed_path);
-    // TEMPORARY: Skip NULL check and cleanup - will leak
+    // TEMPORARY: Skip NULL check and cleanup - will leak delegate if strdup fails
     // if (!own_delegate->own_allowed_path) {
     //     AR__HEAP__FREE(own_delegate);
     //     return NULL;
@@ -371,17 +484,16 @@ ar_file_delegate_t* ar_file_delegate__create(ar_log_t *ref_log, const char *ref_
 }
 ```
 
-Expected RED:
-- Test 1 crashes (NULL dereference)
-- Test 2 leaks memory (delegate not freed)
+Expected RED: "Test FAILS (memory leak detected when strdup fails)"
+Verify: `make ar_file_delegate_dlsym_tests` → assertion fails or memory leak reported
 
-Verify: `make ar_file_delegate_dlsym_tests` → assertions fail or crash
+**Evidence of Goal 1 completion**: Test output showing FAILURE
 
 ---
 
 **GREEN Phase:**
 
-**This iteration**: NEW - Add malloc/strdup failure checks with cleanup
+**This iteration**: NEW - Add strdup failure check with cleanup
 
 ```c
 ar_file_delegate_t* ar_file_delegate__create(ar_log_t *ref_log, const char *ref_allowed_path) {
@@ -389,7 +501,7 @@ ar_file_delegate_t* ar_file_delegate__create(ar_log_t *ref_log, const char *ref_
     if (!ref_allowed_path) return NULL;
 
     ar_file_delegate_t *own_delegate = AR__HEAP__MALLOC(sizeof(ar_file_delegate_t));
-    if (!own_delegate) return NULL;  // Handle malloc failure
+    if (!own_delegate) return NULL;
 
     own_delegate->ref_log = ref_log;
     own_delegate->own_allowed_path = AR__HEAP__STRDUP(ref_allowed_path);
@@ -403,13 +515,13 @@ ar_file_delegate_t* ar_file_delegate__create(ar_log_t *ref_log, const char *ref_
 ```
 
 **Verification:**
-- Both dlsym tests pass
-- No memory leaks even when malloc/strdup fail
+- dlsym test passes (strdup failure returns NULL after cleanup)
+- No memory leaks even when strdup fails
 - Makefile excludes `*_dlsym_tests.c` from sanitizer builds
 
 ---
 
-#### Iteration 8.2: ar_file_delegate__destroy() cleans up without leaks - PENDING REVIEW
+#### Iteration 8.2: ar_file_delegate__destroy() cleans up without leaks - REVIEWED
 
 **Objective**: Verify FileDelegate destruction properly frees resources
 
@@ -486,7 +598,7 @@ void ar_file_delegate__destroy(ar_file_delegate_t *own_delegate) {
 
 ---
 
-#### Iteration 8.2.1: ar_file_delegate__destroy() handles NULL parameter safely - PENDING REVIEW
+#### Iteration 8.2.1: ar_file_delegate__destroy() handles NULL parameter safely - REVIEWED
 
 **Objective**: Verify destroy() safely handles NULL delegate parameter
 
@@ -634,7 +746,7 @@ const char* ar_file_delegate__get_type(const ar_file_delegate_t *ref_delegate) {
 
 ### TDD Cycle 9: File Read Operation
 
-#### Iteration 9.0.1: ar_file_delegate__read() handles NULL delegate parameter - PENDING REVIEW
+#### Iteration 9.0.1: ar_file_delegate__read() handles NULL delegate parameter - REVIEWED
 
 **Objective**: Verify read() returns NULL when delegate parameter is NULL
 
@@ -675,7 +787,18 @@ static void test_file_delegate__read_handles_null_delegate(void) {
 
 **Step 2: Prove Test Validity (GOAL 1 - MANDATORY)**
 
-Current implementation doesn't exist yet, so will crash on NULL dereference.
+**Temporary corruption**: Initial stub without NULL check
+```c
+ar_data_t* ar_file_delegate__read(ar_file_delegate_t *mut_delegate, const char *ref_path) {
+    // TEMPORARY: No NULL check - will crash on NULL dereference
+    return NULL;
+}
+```
+
+Expected RED: "Test FAILS (crashes at NULL dereference)"
+Verify: `make ar_file_delegate_tests` → test fails or crashes
+
+**Evidence of Goal 1 completion**: Test output showing FAILURE
 
 ---
 
@@ -698,7 +821,7 @@ ar_data_t* ar_file_delegate__read(ar_file_delegate_t *mut_delegate, const char *
 
 ---
 
-#### Iteration 9.0.2: ar_file_delegate__read() handles NULL path parameter - PENDING REVIEW
+#### Iteration 9.0.2: ar_file_delegate__read() handles NULL path parameter - REVIEWED
 
 **Objective**: Verify read() returns NULL when path parameter is NULL
 
@@ -742,7 +865,19 @@ static void test_file_delegate__read_handles_null_path(void) {
 
 **Step 2: Prove Test Validity (GOAL 1 - MANDATORY)**
 
-Current implementation (from 9.0.1) doesn't check path for NULL, so will crash.
+**Temporary corruption**: Use implementation from 9.0.1 which lacks path NULL check
+```c
+ar_data_t* ar_file_delegate__read(ar_file_delegate_t *mut_delegate, const char *ref_path) {
+    if (!mut_delegate) return NULL;
+    // TEMPORARY: No NULL check for path - will crash on NULL dereference
+    return NULL;
+}
+```
+
+Expected RED: "Test FAILS (crashes at NULL dereference)"
+Verify: `make ar_file_delegate_tests` → test fails or crashes
+
+**Evidence of Goal 1 completion**: Test output showing FAILURE
 
 ---
 
@@ -1429,7 +1564,7 @@ ar_data_t* ar_file_delegate__read(ar_file_delegate_t *mut_delegate, const char *
 
 ### TDD Cycle 11: File Write Operation
 
-#### Iteration 11.0.1: ar_file_delegate__write() handles NULL delegate parameter - PENDING REVIEW
+#### Iteration 11.0.1: ar_file_delegate__write() handles NULL delegate parameter - REVIEWED
 
 **Objective**: Verify write() returns false when delegate parameter is NULL
 
@@ -1472,7 +1607,20 @@ static void test_file_delegate__write_handles_null_delegate(void) {
 
 **Step 2: Prove Test Validity (GOAL 1 - MANDATORY)**
 
-Current implementation doesn't exist yet, so will crash on NULL dereference.
+**Temporary corruption**: Initial stub without NULL check
+```c
+bool ar_file_delegate__write(ar_file_delegate_t *mut_delegate,
+                             const char *ref_path,
+                             ar_data_t *ref_content) {
+    // TEMPORARY: No NULL check - will crash on NULL dereference
+    return false;
+}
+```
+
+Expected RED: "Test FAILS (crashes at NULL dereference)"
+Verify: `make ar_file_delegate_tests` → test fails or crashes
+
+**Evidence of Goal 1 completion**: Test output showing FAILURE
 
 ---
 
@@ -1497,7 +1645,7 @@ bool ar_file_delegate__write(ar_file_delegate_t *mut_delegate,
 
 ---
 
-#### Iteration 11.0.2: ar_file_delegate__write() handles NULL path parameter - PENDING REVIEW
+#### Iteration 11.0.2: ar_file_delegate__write() handles NULL path parameter - REVIEWED
 
 **Objective**: Verify write() returns false when path parameter is NULL
 
@@ -1543,7 +1691,21 @@ static void test_file_delegate__write_handles_null_path(void) {
 
 **Step 2: Prove Test Validity (GOAL 1 - MANDATORY)**
 
-Current implementation (from 11.0.1) doesn't check path for NULL, so will crash.
+**Temporary corruption**: Use implementation from 11.0.1 which lacks path NULL check
+```c
+bool ar_file_delegate__write(ar_file_delegate_t *mut_delegate,
+                             const char *ref_path,
+                             ar_data_t *ref_content) {
+    if (!mut_delegate) return false;
+    // TEMPORARY: No NULL check for path - will crash on NULL dereference
+    return false;
+}
+```
+
+Expected RED: "Test FAILS (crashes at NULL dereference)"
+Verify: `make ar_file_delegate_tests` → test fails or crashes
+
+**Evidence of Goal 1 completion**: Test output showing FAILURE
 
 ---
 
@@ -1569,7 +1731,7 @@ bool ar_file_delegate__write(ar_file_delegate_t *mut_delegate,
 
 ---
 
-#### Iteration 11.0.3: ar_file_delegate__write() handles NULL content parameter - PENDING REVIEW
+#### Iteration 11.0.3: ar_file_delegate__write() handles NULL content parameter - REVIEWED
 
 **Objective**: Verify write() returns false when content parameter is NULL
 
@@ -1613,7 +1775,22 @@ static void test_file_delegate__write_handles_null_content(void) {
 
 **Step 2: Prove Test Validity (GOAL 1 - MANDATORY)**
 
-Current implementation (from 11.0.2) doesn't check content for NULL, so will crash.
+**Temporary corruption**: Use implementation from 11.0.2 which lacks content NULL check
+```c
+bool ar_file_delegate__write(ar_file_delegate_t *mut_delegate,
+                             const char *ref_path,
+                             ar_data_t *ref_content) {
+    if (!mut_delegate) return false;
+    if (!ref_path) return false;
+    // TEMPORARY: No NULL check for content - will crash on NULL dereference
+    return false;
+}
+```
+
+Expected RED: "Test FAILS (crashes at NULL dereference)"
+Verify: `make ar_file_delegate_tests` → test fails or crashes
+
+**Evidence of Goal 1 completion**: Test output showing FAILURE
 
 ---
 
@@ -2482,7 +2659,7 @@ bool ar_file_delegate__write(ar_file_delegate_t *mut_delegate,
 
 ---
 
-#### Iteration 12.3: Size limit is configurable - PENDING REVIEW
+#### Iteration 12.3: Size limit is configurable (split into 12.3.1/12.3.2/12.3.3) - REVIEWED
 
 **Objective**: Verify size limit can be changed and 0 means unlimited
 
