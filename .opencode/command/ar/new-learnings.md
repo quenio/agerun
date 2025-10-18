@@ -723,35 +723,21 @@ make checkpoint-update CMD=new-learnings STEP=10
 
 **CRITICAL**: You MUST execute this verification before committing.
 
-Execute these commands sequentially:
-
 ```bash
-# Step 1: Count KB articles modified
-git diff --name-only | grep "kb.*\.md" | wc -l
+# Run integration verification script
+./scripts/verify-new-learnings-integration.sh
 ```
 
-```bash
-# Step 2: Count commands modified
-git diff --name-only | grep ".opencode/command" | wc -l
-```
-
-```bash
-# Step 3: List modified KB articles
-echo "=== Modified KB Articles ===" && git diff --name-only | grep "kb.*\.md" | sed 's/^/  - /'
-```
-
-```bash
-# Step 4: List modified commands
-echo "=== Modified Commands ===" && git diff --name-only | grep ".opencode/command" | sed 's/^/  - /'
-```
-
-**Minimum Requirements Check:**
-- KB articles modified: Should be 3+ (for cross-references)
-- Commands modified: Should be 3+ (for integration)
+This script verifies:
+1. Count of KB articles modified (minimum: 3)
+2. Count of commands modified (minimum: 3)
+3. Lists all modified KB articles
+4. Lists all modified commands
+5. Reports status: READY TO COMMIT or NOT READY
 
 **Status Decision:**
-- If BOTH minimums met → ✓ READY TO COMMIT
-- If either below minimum → ⚠️ NOT READY (add more cross-references/command updates)
+- If BOTH minimums met → ✅ READY TO COMMIT (script exits 0)
+- If either below minimum → ⚠️ NOT READY (script exits 1)
 
 **DO NOT PROCEED TO STEP 12 UNLESS THIS SCRIPT SHOWS "READY TO COMMIT"**
 
