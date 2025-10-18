@@ -777,6 +777,104 @@ make checkpoint-cleanup CMD=<command>
 
 ---
 
+## Script Extraction and Helper Refactoring
+
+### Overview
+Extract and consolidate reusable patterns from command files into standalone, parameterizable helper scripts to reduce duplication, improve maintainability, and simplify complex workflows.
+
+**Completed Phases (6 phases, 21 helpers created)**:
+- [x] Phase 1 - Core Utility Helpers: 8 helpers created (validate-command-args, verify-command-quality, etc.) - 2025-10-18
+- [x] Phase 2 - Quality Gate Helpers: 4 helpers created (calculate-metrics-reduction, enforce-quality-gate, etc.) - 2025-10-18
+- [x] Phase 3 - Checkpoint Pattern Helpers: 5 helpers created (init-checkpoint, require-checkpoint, etc.) - 2025-10-18
+- [x] Phase 4a - Checkpoint Integration: Applied 5 checkpoint helpers to all 30 command files (309 lines consolidated) - 2025-10-18
+- [x] Phase 4b - Iteration Pattern Extraction: 4 helpers created (iterate-plan-items, filter-plan-items, update-plan-markers, extract-tdd-cycles) - 2025-10-18
+- [x] Phase 4c - Iteration Integration: Integrated helpers into execute-plan.md (52 lines consolidated) and review-plan.md (enhanced with batch options) - 2025-10-18
+
+### Remaining Opportunities (Ready for Future Phases)
+
+#### Phase 5a - RED-GREEN-REFACTOR Cycle Patterns
+**Goal**: Extract RED-GREEN-REFACTOR cycle orchestration patterns from execute-plan.md Step 8
+
+- [ ] **Analyze Step 8 Structure**: Document the RED phase (write tests), GREEN phase (minimal implementation), REFACTOR phase (quality improvement) patterns
+- [ ] **Create `tdd-red-phase.sh`**: Helper for test writing phase with test file creation, assertion templates, and failure confirmation
+- [ ] **Create `tdd-green-phase.sh`**: Helper for minimal implementation phase with code generation templates and test passing verification
+- [ ] **Create `tdd-refactor-phase.sh`**: Helper for refactor phase with code quality checks and optimization patterns
+- [ ] **Integration**: Update execute-plan.md Step 8 to use phase helpers, reducing procedural documentation while preserving TDD discipline
+- **Expected Savings**: ~40-50 lines per step × 3 steps = 120-150 lines (20% file reduction)
+
+#### Phase 5b - Verification Loop Patterns
+**Goal**: Extract multi-step verification patterns used in execute-plan.md Step 9 and Step 10
+
+- [ ] **Analyze Verification Patterns**: Document gate checking, memory leak detection, and test result verification patterns
+- [ ] **Create `verify-test-results.sh`**: Helper for validating test execution output, capturing pass/fail counts, and flagging failures
+- [ ] **Create `verify-memory-leaks.sh`**: Helper for running memory sanitizer checks and parsing leak summaries
+- [ ] **Create `verify-build-quality.sh`**: Helper for build verification, including compilation warnings and code quality metrics
+- [ ] **Integration**: Create unified `verify-step-completion.sh` meta-helper that orchestrates all verifications
+- **Expected Savings**: ~35-45 lines per verification loop (multiple loops in both commands)
+
+#### Phase 5c - Custom Iteration Processor Scripts
+**Goal**: Build reusable processor script patterns for iterate-plan-items.sh
+
+- [ ] **Create `process-tdd-iteration.sh` template**: Generic processor for RED-GREEN-REFACTOR cycles that can be customized per plan
+- [ ] **Create `process-documentation-iteration.sh` template**: Generic processor for documentation writing/review cycles
+- [ ] **Create `process-integration-iteration.sh` template**: Generic processor for integration testing iterations
+- [ ] **Documentation**: Create kb/iteration-processor-patterns.md explaining how to create custom processors
+- **Impact**: Enables reuse of iterate-plan-items.sh across different workflow types (not just plan execution)
+
+#### Phase 5d - Workflow Templates
+**Goal**: Create composable workflow templates using extracted helpers as building blocks
+
+- [ ] **Create `workflow-tdd-execution.sh`**: Complete TDD workflow template using execute-plan.md patterns
+- [ ] **Create `workflow-plan-review.sh`**: Complete review workflow template using review-plan.md patterns
+- [ ] **Create `workflow-quality-gate.sh`**: Quality validation workflow combining verification and gate-checking helpers
+- [ ] **Create `workflow-batch-updates.sh`**: Batch processing workflow for systematic updates across multiple files/plans
+- **Documentation**: Create kb/workflow-templates.md with examples and customization guide
+- **Impact**: Enables new commands to be created by composing existing helpers rather than writing from scratch
+
+#### Phase 5e - Command Framework
+**Goal**: Build unified framework for creating new commands that leverage all extracted helpers
+
+- [ ] **Create `command-generator.sh`**: Framework script that scaffolds new command files with checkpoint tracking, helper integration, and gate enforcement
+- [ ] **Create `.opencode/templates/command-template.md`**: Template file showing best practices for command structure and helper usage
+- [ ] **Documentation**: Create kb/command-development-framework.md documenting how to create new commands efficiently
+- [ ] **Validation**: Test framework by creating 2-3 new example commands (e.g., analyze-plan.md, optimize-commands.md)
+- **Impact**: Reduces time to create new commands from 1-2 hours to 20-30 minutes; ensures consistency across command suite
+- **Success Criteria**: New commands inherit checkpoint tracking, quality gates, and helper integration automatically
+
+### Technical Details
+
+#### Helper Scripts Architecture
+- **Single Responsibility**: Each helper has one clear purpose
+- **POSIX Compliance**: All scripts use `set -e` and `set -o pipefail` as per section 9 guidelines
+- **Error Handling**: Meaningful error messages with proper exit codes
+- **Parameterization**: Flexible parameters for reuse across different workflows
+- **Documentation**: Each script has usage examples and parameter documentation
+
+#### Integration Strategy
+1. **Execute Helpers Aggressively**: Use helpers to replace procedural documentation where systematic batch operations are possible
+2. **Enhance Interactively**: Add helpers as optional enhancements for interactive workflows (preserve manual decision-making)
+3. **Compose Workflows**: Combine helpers to build higher-level workflow templates
+4. **Scaffold New Commands**: Use framework to generate new commands with helpers integrated from the start
+
+#### Code Consolidation Metrics
+| Phase | Helpers Created | Commands Updated | Lines Consolidated |
+|-------|-----------------|------------------|-------------------|
+| Phase 1 | 8 | N/A | ~200 |
+| Phase 2 | 4 | N/A | ~100 |
+| Phase 3 | 5 | N/A | ~150 |
+| Phase 4a | 0 | 30 | 309 |
+| Phase 4b | 4 | 2 | 52 |
+| Phase 4c | 0 | 2 | 52 |
+| **TOTAL** | **21** | **30+** | **~863** |
+
+### References
+- [Iteration Patterns Integration Guide](/tmp/ITERATION_HELPERS_INTEGRATION_GUIDE.md)
+- [execute-plan.md Integration Points](.opencode/command/ar/execute-plan.md)
+- [review-plan.md Integration Points](.opencode/command/ar/review-plan.md)
+- [Phase 4b Helper Scripts](scripts/extract-tdd-cycles.sh)
+
+---
+
 ## ar_yaml Module Improvements
 
 ### Priority 0 - Module Cleanup
