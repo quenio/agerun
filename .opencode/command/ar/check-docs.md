@@ -21,26 +21,30 @@ Before validation:
 If a `/check-docs` workflow is already in progress:
 
 ```bash
+# Check current progress
 make checkpoint-status CMD=check-docs VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=check-docs STEP=N
-# Or reset: make checkpoint-cleanup CMD=check-docs && make checkpoint-init CMD=check-docs STEPS='"Initial Check" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"'
+
+# Resume from a specific step (if interrupted)
+make checkpoint-update CMD=check-docs STEP=N
+
+# Or reset and start over
+./scripts/init-checkpoint.sh check-docs '"Initial Check" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"'
 ```
 
 ## Checkpoint Tracking
 
-This command uses checkpoint tracking to ensure systematic execution of all documentation validation steps.
+This command uses checkpoint tracking via wrapper scripts to ensure systematic execution of all documentation validation steps.
 
-### Initialize Tracking
+### Checkpoint Wrapper Scripts
 
-```bash
-make checkpoint-init CMD=check-docs STEPS='"Initial Check" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"'
-```
+The `run-check-docs.sh` script uses the following standardized wrapper scripts:
 
-### Check Progress
+- **`./scripts/init-checkpoint.sh`**: Initializes or resumes checkpoint tracking
+- **`./scripts/require-checkpoint.sh`**: Verifies checkpoint is ready before proceeding
+- **`./scripts/gate-checkpoint.sh`**: Validates gate conditions at workflow boundaries
+- **`./scripts/complete-checkpoint.sh`**: Shows completion summary and cleanup
 
-```bash
-make checkpoint-status CMD=check-docs
-```
+These wrappers provide centralized checkpoint management across all commands.
 
 ## Workflow Execution
 
@@ -85,13 +89,19 @@ If you need to manually check progress or resume a workflow:
 
 ```bash
 # Check current progress
-make checkpoint-status CMD=check-docs
+make checkpoint-status CMD=check-docs VERBOSE=--verbose
 
 # Resume from a specific step (if interrupted)
 make checkpoint-update CMD=check-docs STEP=N
 
-# Reset and start over
-make checkpoint-cleanup CMD=check-docs && make checkpoint-init CMD=check-docs STEPS='"Initial Check" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"'
+# Reset and start over using the wrapper script
+./scripts/init-checkpoint.sh check-docs '"Initial Check" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"'
+
+# Verify checkpoint before running workflow
+./scripts/require-checkpoint.sh check-docs
+
+# Show completion and cleanup
+./scripts/complete-checkpoint.sh check-docs
 ```
 
 #### [CHECKPOINT COMPLETE]
