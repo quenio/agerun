@@ -274,13 +274,13 @@ if needs_fixing:
 
 if fix_mode:
     print("\n🔧 FIX MODE: Creating fix report...")
-    with open('/tmp/structure_fix_report.json', 'w') as f:
+    with open('/tmp/structure-fix-report.json', 'w') as f:
         import json
         json.dump({
             'needs_fixing': [(f, a['missing_elements']) for f, a in needs_fixing],
             'scores': {f: a['structure_score'] for f, a in results.items()}
         }, f, indent=2)
-    print("Fix report saved to /tmp/structure_fix_report.json")
+    print("Fix report saved to /tmp/structure-fix-report.json")
 else:
     print("\nRun with --fix to generate a fix report")
     print("Run with --verbose to see detailed issues")

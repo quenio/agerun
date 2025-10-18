@@ -16,7 +16,7 @@ set -e
 
 MODULES_PATH=${1:-modules}
 CYCLES_FOUND=0
-DEPS_FILE="/tmp/module_deps_$$.txt"
+DEPS_FILE="/tmp/module-deps-$$.txt"
 
 echo "Circular Dependency Detection"
 echo "========================================"

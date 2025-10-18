@@ -14,7 +14,7 @@ commands_dir = '.opencode/command/ar'
 
 # Load the fix report
 try:
-    with open('/tmp/structure_fix_report.json', 'r') as f:
+    with open('/tmp/structure-fix-report.json', 'r') as f:
         fix_report = json.load(f)
 except FileNotFoundError:
     print("Error: Run 'make check-command-structure FIX=1' first to generate fix report")
