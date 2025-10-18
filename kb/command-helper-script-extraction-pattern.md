@@ -121,12 +121,32 @@ fi
 
 ### Script Naming Conventions
 
-Use descriptive verb-noun patterns:
+Use descriptive verb-domain patterns to improve discoverability and reusability:
+
+**Pattern**: `<action>-<domain>-<object>.sh` (domain is key for script discovery)
+
+**Action verbs**:
 - `detect-*.sh` - Finding issues (detect-code-smells.sh, detect-circular-dependencies.sh)
 - `verify-*.sh` - Validating correctness (verify-memory-management.sh, verify-test-coverage.sh)
 - `check-*.sh` - General checking (check-naming-conventions.sh, check-file-hygiene.sh)
 - `analyze-*.sh` - Analysis tasks (analyze-whitelist.sh, analyze-changelog-patterns.sh)
 - `validate-*.sh` - Schema/structure validation (validate-kb-links.sh, validate-tdd-plan.sh)
+- `scan-*.sh` - Enumeration/discovery (scan-commands.sh, scan-modules.sh)
+- `calculate-*.sh` - Metric computation (calculate-command-scores.sh)
+- `identify-*.sh` - Categorization (identify-command-issues.sh)
+- `generate-*.sh` - Output creation (generate-command-report.sh)
+
+**Domain inclusion** ([details](script-domain-naming-convention.md)):
+- Always include domain for discoverability: `validate-command-structure.sh` ✅ not `validate-structure.sh` ❌
+- Domain enables grep-based script discovery: `grep command scripts/*.sh` finds all command-related scripts
+- Real example from check-commands refactoring:
+  - ❌ WRONG: `step-1-scan.sh`, `step-2-validate.sh` (ordinal prefix, no domain)
+  - ✅ CORRECT: `scan-commands.sh`, `validate-command-structure.sh` (domain, no ordinal prefix)
+
+**Anti-patterns to avoid**:
+- ❌ Using step-N prefixes: `step-1-script.sh`, `step-2-script.sh` (prevents reuse, implies ordering)
+- ❌ Generic names without domain: `validate-structure.sh` (too vague - structure of what?)
+- ❌ Over-qualified names: `validate-claude-code-command-documentation-structure.sh` (too long)
 
 ## Example: Code Smell Detection
 
