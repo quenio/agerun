@@ -520,16 +520,14 @@ Proceed to SECOND verification step below (classify uncommitted vs stale).
 After verifying code exists, check git status to determine if iterations are uncommitted work or stale markers:
 
 ```bash
-# Step 1: Check for uncommitted changes
-git status --porcelain
+# Classify IMPLEMENTED status using helper script
+./scripts/classify-implemented-status.sh <implementation-file> <test-file> [feature-name]
 
-# Step 2: Search recent commits for iterations claimed as IMPLEMENTED
-# Look for commits mentioning the plan file or iteration numbers
-git log --oneline --all --grep="<feature-name>" -10
-
-# Step 3: Check if implementation files were recently committed
-# <implementation-file> examples: modules/ar_delegate.c, modules/ar_delegate_tests.c
-git log --oneline -- <implementation-file> <test-file> | head -5
+# Example:
+./scripts/classify-implemented-status.sh \
+  modules/ar_delegate.c \
+  modules/ar_delegate_tests.c \
+  "TDD Cycle 7"
 ```
 
 **Classify IMPLEMENTED iterations:**
@@ -643,21 +641,34 @@ Create a verification matrix showing plan claims vs. actual code:
    - Test file and test function name
    - Implementation files and function names
 
-2. **Verify test exists:**
+2. **Verify using helper script** (recommended):
+   ```bash
+   # Use verification script for automated checking
+   ./scripts/verify-committed-iteration.sh \
+     "<iteration-num>" \
+     "<test-file>" \
+     "<test-name>" \
+     "<impl-file>" \
+     "<impl-pattern>"
+   ```
+
+   **Or manually verify:**
+
+3. **Verify test exists:**
    ```bash
    # Search for test function in test file
    grep -n "test_<function_name>" <test-file>
    # Should find the test function
    ```
 
-3. **Verify implementation exists:**
+4. **Verify implementation exists:**
    ```bash
    # Search for implementation function
    grep -n "^<function_name>" <impl-file>
    # Should find the function implementation
    ```
 
-4. **Verify in git history:**
+5. **Verify in git history:**
    ```bash
    # Check if this iteration was committed
    git log --oneline --all --grep="<iteration-description>" -5
@@ -665,7 +676,7 @@ Create a verification matrix showing plan claims vs. actual code:
    git log --oneline -- <test-file> <impl-file> | head -5
    ```
 
-5. **Run tests to verify:**
+6. **Run tests to verify:**
    ```bash
    # Run test module to confirm test passes
    make <test_module> 2>&1 | grep "<test_name>"
@@ -682,37 +693,23 @@ Create a verification matrix showing plan claims vs. actual code:
 - Test file: modules/ar_send_instruction_evaluator_tests.c
 - Implementation: ID-based routing in ar_send_instruction_evaluator.zig
 
-**Verification:**
+**Verification using helper script:**
 
-1. Check test exists:
-   ```bash
-   grep -n "test_send_instruction_evaluator__routes_to_delegate" \
-     modules/ar_send_instruction_evaluator_tests.c
-   # Output: 309:static void test_send_instruction_evaluator__routes_to_delegate(void) {
-   # ✅ Test exists at line 309
-   ```
+```bash
+./scripts/verify-committed-iteration.sh \
+  "1.1" \
+  "modules/ar_send_instruction_evaluator_tests.c" \
+  "test_send_instruction_evaluator__routes_to_delegate" \
+  "modules/ar_send_instruction_evaluator.zig" \
+  "agent_id < 0"
 
-2. Check implementation exists:
-   ```bash
-   grep -n "agent_id < 0" modules/ar_send_instruction_evaluator.zig
-   # Output: 134:    } else if (agent_id < 0) {
-   # ✅ Implementation exists (negative ID routing)
-   ```
-
-3. Check git history:
-   ```bash
-   git log --oneline --grep="delegation routing" -3
-   # Output: a5c7391 feat: implement TDD Cycle 7 - Message Delegation Routing
-   # ✅ Found in commit a5c7391
-   ```
-
-4. Run test:
-   ```bash
-   make ar_send_instruction_evaluator_tests 2>&1 | \
-     grep "test_send_instruction_evaluator__routes_to_delegate"
-   # Output: test_send_instruction_evaluator__routes_to_delegate passed!
-   # ✅ Test passes
-   ```
+# Expected output:
+# Verifying Iteration 1.1...
+#   Checking test exists... ✅ Found at line 309
+#   Checking implementation exists... ✅ Found at line 134
+#   Checking git history... ✅ Found in commit a5c7391
+# ✅ Iteration 1.1 verification PASSED
+```
 
 **Verification Result:** ✅ VERIFIED - Iteration 1.1 correctly marked COMMITTED
 ```
@@ -1141,11 +1138,8 @@ grep "Actual memory leaks:" bin/run-tests/memory_report_ar_delegation_tests.log
 
 **If leaks detected:**
 ```bash
-# Find which test has leaks
-for report in bin/run-tests/memory_report_*.log; do
-    echo -n "$report: "
-    grep "Actual memory leaks:" "$report"
-done
+# Find which test has leaks (using helper script)
+./scripts/check-memory-leaks.sh
 
 # Fix leaks before proceeding
 # Re-run tests after fix
