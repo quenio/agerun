@@ -2,6 +2,25 @@
 
 ## 2025-10-18
 
+- **Checkpoint Command Name Validation**
+
+  Added validation to all checkpoint scripts to detect and warn about underscore usage in command names, preventing tracking file naming inconsistencies.
+
+  **Problem**: Commands could be invoked with either dashes or underscores (e.g., `check-naming` vs `check_naming`), creating tracking files with inconsistent names (`/tmp/check-naming-progress.txt` vs `/tmp/check_naming-progress.txt`). This caused checkpoint-update and complete-checkpoint scripts to fail with "Tracking file not found" errors.
+
+  **Solution**: Added validation block to all 5 checkpoint scripts that warns when command names contain underscores, pointing users to the dash-based naming standard.
+
+  **Files Modified**:
+  - `scripts/checkpoint-init.sh`: Added lines 19-27
+  - `scripts/checkpoint-update.sh`: Added lines 14-20
+  - `scripts/checkpoint-status.sh`: Added lines 13-19
+  - `scripts/checkpoint-cleanup.sh`: Added lines 15-21
+  - `scripts/checkpoint-gate.sh`: Added lines 13-19
+
+  **Warning Message**: Clear guidance pointing to dash-based convention: "Based on temp file naming standardization, use dashes instead. Example: 'check-naming' not 'check_naming'"
+
+  **Impact**: Prevents silent failures in checkpoint workflows by catching naming inconsistencies at the point of use, aligns with temporary file naming standardization (commits e264d77, 4dd5056).
+
 - **Temporary File Naming Standardization**
 
   Standardized all temporary file naming across the project to use dash-based naming, matching bash script conventions and eliminating mixed naming patterns.

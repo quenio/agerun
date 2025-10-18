@@ -10,6 +10,14 @@ set -e
 COMMAND_NAME=${1:-"command"}
 MODE=${2:-""}  # Can be --verbose or --compact
 
+# Validate command name follows dash-based convention
+if [[ "$COMMAND_NAME" == *_* ]]; then
+    echo "⚠️  WARNING: Command name contains underscores: '$COMMAND_NAME'"
+    echo "    Based on temp file naming standardization, use dashes instead."
+    echo "    Example: 'check-naming' not 'check_naming'"
+    echo ""
+fi
+
 # Tracking file
 TRACKING_FILE="/tmp/${COMMAND_NAME}-progress.txt"
 

@@ -16,6 +16,16 @@ if [ ${#STEPS[@]} -eq 0 ]; then
     exit 1
 fi
 
+# Validate command name follows dash-based convention
+if [[ "$COMMAND_NAME" == *_* ]]; then
+    echo "⚠️  WARNING: Command name contains underscores: '$COMMAND_NAME'"
+    echo "    Based on temp file naming standardization, use dashes instead."
+    echo "    Example: 'check-naming' not 'check_naming'"
+    echo ""
+    echo "    Proceeding anyway, but this may cause issues with completion scripts."
+    echo ""
+fi
+
 # Create tracking file
 TRACKING_FILE="/tmp/${COMMAND_NAME}-progress.txt"
 
