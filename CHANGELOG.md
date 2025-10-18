@@ -2,6 +2,18 @@
 
 ## 2025-10-18
 
+- **Check-Docs Workflow Script Extraction**
+
+  Extracted checkpoint-based documentation validation and fix workflow from the check-docs command definition into a standalone, reusable script.
+
+  **Implementation**: Created `scripts/run-check-docs.sh` containing all 5 checkpoint stages (Initial Check, Preview Fixes, Apply Fixes, Verify Resolution, Commit and Push) with proper gate checks and conditional flow logic. Simplified `.opencode/command/ar/check-docs.md` to delegate to the script instead of inline code.
+
+  **Benefits**: Improves maintainability, makes the workflow repeatable and version-controllable, simplifies command definition, preserves all checkpoint tracking and gate validation behavior, follows project pattern of extracting complex logic into reusable scripts.
+
+  **Files Modified**: `.opencode/command/ar/check-docs.md` (210 deletions of inline bash code), `scripts/run-check-docs.sh` (210 lines, new file).
+
+  **Verification**: Bash syntax validated, script ready for execution.
+
 - **Documentation Validation Error Fixes (Session 2025-10-18)**
 
   Fixed 12 documentation validation errors across 4 files identified by `make check-docs`.
