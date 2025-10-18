@@ -536,26 +536,24 @@ make checkpoint-update CMD=new-learnings STEP=5
 
 **MINIMUM REQUIREMENT**: Update at least 3-5 existing KB articles with cross-references.
 
-1. **For each new article created**:
-   - Search comprehensively for related topics:
-     ```bash
-     # Search for articles mentioning related concepts
-     grep -l "keyword1\|keyword2\|keyword3" kb/*.md | head -10
-     ```
-   - Add reference to new article in their Related Patterns section
-   - Target articles that would genuinely benefit from the reference
-   
-2. **Specific searches to perform**:
+1. **Find related content using helper script**:
    ```bash
-   # For test-related articles
-   grep -l "test.*strength\|assertion\|weak.*test" kb/*.md
-   
-   # For build/CI articles  
-   grep -l "build.*verification\|check.*logs\|CI" kb/*.md
-   
-   # For error/whitelist articles
-   grep -l "whitelist\|intentional.*error" kb/*.md
+   # Search for related KB articles and commands
+   ./scripts/find-related-content.sh keyword1 keyword2 keyword3
+
+   # Example for test-related article:
+   ./scripts/find-related-content.sh test assertion strength
+
+   # Example for build/CI article:
+   ./scripts/find-related-content.sh build verification check-logs CI
+
+   # Example for error/whitelist article:
+   ./scripts/find-related-content.sh whitelist intentional error
    ```
+
+2. **Review the output**:
+   - Add reference to new article in Related Patterns section of found articles
+   - Target articles that would genuinely benefit from the reference
 
 3. **Cross-reference pattern**:
    ```markdown
@@ -585,14 +583,19 @@ make checkpoint-update-verified CMD=new-learnings STEP=6 SUMMARY="Updated X KB a
 
 **MINIMUM REQUIREMENT**: Update at least 3-4 relevant commands with new KB references.
 
-1. **Comprehensive search for relevant commands**:
+1. **Find related commands using helper script**:
    ```bash
-   # Search for all potentially related commands
-   for keyword in "test" "build" "check" "log" "error" "whitelist" "assert"; do
-     echo "=== Commands mentioning '$keyword' ==="
-     grep -l "$keyword" .opencode/command/ar/*.md | head -5
-   done
+   # Search for commands related to your topic
+   ./scripts/find-related-content.sh test build check log error whitelist assert
+
+   # Or use specific keywords for your learnings:
+   ./scripts/find-related-content.sh [your-keywords-here]
    ```
+
+   The script will show:
+   - Related KB articles by keyword
+   - Related commands by keyword
+   - Priority commands to always review
 
 2. **Priority commands to ALWAYS check**:
    - `commit.md` - Often needs CI/build references
