@@ -17,21 +17,13 @@ make checkpoint-status CMD=compact-changes VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/compact_changes_progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=compact-changes STEPS='"Measure Baseline" "Analyze Patterns" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Update TODO" "Commit Changes"'
-else
-  make checkpoint-status CMD=compact-changes
-fi
+./scripts/init-checkpoint.sh compact-changes '"Measure Baseline" "Analyze Patterns" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Update TODO" "Commit Changes"'
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/compact_changes_progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  exit 1
-fi
+./scripts/require-checkpoint.sh compact-changes
 ```
 
 ## CRITICAL: Manual Compaction Strategy
@@ -415,37 +407,20 @@ Your branch is ahead of 'origin/main' by 1 commit.
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-# Show final summary
-make checkpoint-status CMD=compact-changes
+./scripts/complete-checkpoint.sh compact-changes
+rm -f /tmp/compact-changes-stats.txt
 ```
 
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT STATUS: compact-changes
+   CHECKPOINT COMPLETION SUMMARY
 ========================================
 
-Progress: 7/7 steps (100%)
+📈 compact-changes: 7/7 steps (100%)
+   [████████████████████] 100%
 
-[████████████████████] 100%
-
-✅ ALL CHECKPOINTS COMPLETE!
-
-Compaction Results:
-  Original: 533 lines (128,652 bytes)
-  Final: 129 lines (17,131 bytes)
-  Line reduction: 75%
-  File size reduction: 86%
-  Metrics preserved: 157
-  Changes committed: Yes
-
-CHANGELOG.md successfully compacted!
-```
-
-```bash
-# Clean up tracking
-make checkpoint-cleanup CMD=compact-changes
-rm -f /tmp/compact-changes-stats.txt
+✅ Checkpoint workflow complete
 ```
 
 #### [CHECKPOINT END]
