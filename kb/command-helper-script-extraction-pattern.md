@@ -296,6 +296,21 @@ This extraction from check-commands.md reduced the command documentation by 92 l
 
 **Key lesson**: Never combine multiple shell blocks into one monolithic wrapper. Each block = one script. Command file = orchestrator.
 
+### Check-Naming Command (2 scripts) - Session 2025-10-18
+
+**Extraction applied in Session 2f**:
+- `run-naming-check.sh` - Single responsibility: execute check and capture violations
+- `check-naming-conditional-flow.sh` - Single responsibility: implement conditional flow (skip analysis if no violations)
+
+**Application of extraction discipline**:
+- Each 10+ line embedded bash block extracted to its own script
+- NOT combined into one wrapper - maintained single responsibilities
+- check-naming.md simplified to show orchestration logic directly
+- Checkpoint workflow tested end-to-end with conditional step skipping
+- Verified proper script naming using action-verb patterns: `run-*` for execution, conditional logic name for logic
+
+**Pattern verification**: Demonstrates that extraction discipline prevents anti-patterns. When user feedback indicated embedded logic violations, extraction fixed them by creating focused scripts, not monolithic wrappers.
+
 ### Review-Changes Command (6 scripts)
 - `detect-code-smells.sh` - Finds long methods, large modules, excessive params
 - `verify-memory-management.sh` - Checks ownership prefixes, heap tracking
@@ -303,6 +318,13 @@ This extraction from check-commands.md reduced the command documentation by 92 l
 - `verify-test-coverage.sh` - Verifies BDD structure, AR_ASSERT usage
 - `detect-circular-dependencies.sh` - Builds dependency graph, detects cycles
 - `check-file-hygiene.sh` - Finds backup, temp, debug files
+
+### New-Learnings Command (1 script) - Session 2025-10-18
+
+**Extraction applied in Session 2f**:
+- `check-new-learnings-checkpoint.sh` - Single responsibility: check for existing checkpoint and show status/initialization options
+
+**Pattern demonstration**: Shows how even small checkpoint detection logic (10+ lines) should be extracted. The script detects if checkpoint tracking exists and provides appropriate guidance, making the command file cleaner while maintaining all orchestration visibility.
 
 ### Other Commands (12+ scripts)
 - `categorize-log-errors.sh` - From check-logs.md

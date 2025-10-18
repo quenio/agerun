@@ -173,6 +173,24 @@ This pattern emerged from refactoring the check-docs command:
 - All gates are visible
 - Operator can manually execute any step
 
+## Real-World Example: Check-Naming Refactoring
+
+Session 2f (2025-10-18) applied this pattern to check-naming:
+
+**Problem**: Command had embedded multi-line bash blocks (10+ lines) directly in markdown:
+- Naming check execution logic was embedded
+- Conditional flow logic was embedded
+- Violated extraction discipline from command-helper-script-extraction-pattern.md
+
+**Solution**: Extracted to focused helper scripts:
+- `run-naming-check.sh` - Execute check and capture violations (single responsibility)
+- `check-naming-conditional-flow.sh` - Handle conditional step skipping (single responsibility)
+- check-naming.md now shows orchestration directly with script references
+- All checkpoint markers and conditional logic visible in command documentation
+- Verified end-to-end checkpoint workflow with conditional step skipping
+
+**Key lesson**: Each 10+ line shell block gets its own focused script - never combine multiple blocks into one wrapper. Command file remains the orchestrator.
+
 ## Comparison with Check-Commands
 
 The check-commands command exemplifies the correct pattern:

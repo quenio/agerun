@@ -41,6 +41,7 @@ Before compacting:
    - The enforcement pattern from kb-target-compliance-enforcement (FAIL not warn when target missed)
 5. Apply compaction best practices
 6. **ENFORCE targets with gates**: Use exit 1 to FAIL if target not met, not just warnings
+7. **Command structure**: This command demonstrates the orchestrator pattern where documentation shows all steps directly ([details](../../../kb/command-orchestrator-pattern.md))
 
 # Compact Guidelines
 ## Checkpoint Tracking

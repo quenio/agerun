@@ -74,7 +74,8 @@ Before compacting, you MUST:
 3. **Check Related Patterns sections** in each article above and read any additional relevant articles found there
 4. In your response, quote the multi-line format requirements
 5. For 30-50% reduction: **Use manual compaction** with semantic analysis while maintaining multi-line format
-6. **ENFORCE targets with gates**: Verify 30% minimum achieved
+6. **Command structure**: Demonstrates command orchestrator pattern where workflow logic is visible in documentation ([details](../../../kb/command-orchestrator-pattern.md))
+7. **ENFORCE targets with gates**: Verify 30% minimum achieved
 
 **Example of proper approach:**
 ```

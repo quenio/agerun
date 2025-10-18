@@ -259,6 +259,27 @@ Result: User CANNOT bypass checkpoints because:
 - Cannot skip to manual work
 - All steps must complete sequentially
 
+## Real-World Implementation Example: Check-Naming and New-Learnings
+
+Session 2f (2025-10-18) demonstrated this enforcement pattern in practice:
+
+**Check-Naming Command**: Implements enforcement through:
+- Initialization check before Step 1 (prevents execution without checkpoint)
+- Conditional flow based on violation count
+- Extracted helper scripts with single responsibilities
+
+**New-Learnings Command**: Similar enforcement pattern:
+- Checkpoint detection at command start (`check-new-learnings-checkpoint.sh`)
+- Mandatory 12-step workflow with gates between stages
+- Prevents work starting without proper checkpoint initialization
+
+**Key learning**: Enforcement works best when applied at THREE levels:
+1. **Startup** - Prevent execution without initialization (most important)
+2. **Execution** - Prevent step skipping with gates
+3. **Completion** - Verify integration before commit
+
+Commands attempting only gates leave security gaps.
+
 ## Related Patterns
 
 - [Checkpoint Conditional Flow Pattern](checkpoint-conditional-flow-pattern.md) - Handling conditional step skipping while maintaining enforcement

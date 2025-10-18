@@ -65,7 +65,8 @@ Before compacting, you MUST:
    - The target reduction percentage for mixed-state docs (10-20% from documentation-compacting-pattern)
    - The difference between selective compaction (what) vs. manual semantic analysis (how)
 5. For 10-20% reduction: **Use selective compaction + manual semantic analysis** (only on completed tasks)
-6. **ENFORCE targets with gates**: Verify 10% minimum achieved AND incomplete tasks untouched
+6. **Command structure**: Follows the command orchestrator pattern - all steps visible inline in documentation ([details](../../../kb/command-orchestrator-pattern.md))
+7. **ENFORCE targets with gates**: Verify 10% minimum achieved AND incomplete tasks untouched
 
 **Example of proper approach:**
 ```
