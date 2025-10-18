@@ -26,7 +26,7 @@ make checkpoint-status CMD=migrate-module-to-zig-struct VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/migrate_module_to_zig_struct-progress.txt ]; then
+if [ ! -f /tmp/migrate-module-to-zig-struct-progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
   make checkpoint-init CMD=migrate-module-to-zig-struct STEPS='"Read KB Article" "Check Current Implementation" "Check C Dependencies" "Check Zig Dependencies" "Verify Safety" "Create Struct Module" "Convert Functions" "Update Dependencies" "Run Tests" "Remove Old Module" "Update Documentation"'
 else
@@ -37,7 +37,7 @@ fi
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/migrate_module_to_zig_struct-progress.txt ]; then
+if [ ! -f /tmp/migrate-module-to-zig-struct-progress.txt ]; then
   echo "❌ ERROR: Checkpoint tracking not initialized!"
   exit 1
 fi
@@ -278,10 +278,10 @@ make checkpoint-update CMD=migrate-module-to-zig-struct STEP=8
 ```bash
 # Run tests and verify no memory leaks
 echo "Running tests for migrated module..."
-make {{1|pascal}}Tests 2>&1 | tee test_output.log
+make {{1|pascal}}Tests 2>&1 | tee test-output.log
 
 # Check for memory leaks
-if grep -q "memory leaks detected" test_output.log; then
+if grep -q "memory leaks detected" test-output.log; then
   echo "❌ Memory leaks detected in migrated module"
   exit 1
 else
@@ -367,7 +367,7 @@ make checkpoint-update CMD=migrate-module-to-zig-struct STEP=11
 ✅ Checkpoint workflow complete
 ```
 rm -f /tmp/migration-tracking.txt
-rm -f test_output.log
+rm -f test-output.log
 ```
 
 ## Safety Checks

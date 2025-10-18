@@ -43,8 +43,8 @@ make checkpoint-init CMD=run-tests STEPS='"Prepare" "Execute" "Verify"'
 
 **Expected output:**
 ```
-📍 Starting: run_tests (3 steps)
-📁 Tracking: /tmp/run_tests-progress.txt
+📍 Starting: run-tests (3 steps)
+📁 Tracking: /tmp/run-tests-progress.txt
 → Run: make checkpoint-update CMD=run-tests STEP=1
 ```
 

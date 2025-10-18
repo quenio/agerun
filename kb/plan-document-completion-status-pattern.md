@@ -90,7 +90,7 @@ PLAN_FILE=$1
 COMPLETION_DATE=$(date +%Y-%m-%d)
 
 # Extract metrics from recent work
-TEST_COUNT=$(grep -c "PASS" /tmp/test_output.log)
+TEST_COUNT=$(grep -c "PASS" /tmp/test-output.log)
 MEMORY_LEAKS=$(grep "Actual memory leaks:" bin/run-tests/memory_report_*.log | grep -o "[0-9]* (")
 COMMIT_HASH=$(git log -1 --format="%h")
 COMMIT_MSG=$(git log -1 --format="%s")

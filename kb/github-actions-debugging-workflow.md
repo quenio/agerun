@@ -25,13 +25,13 @@ ar_data_t* own_run_id = ar_data__create_integer(16857175516);
 // gh run view 16857175516
 
 // Step 3: Get detailed logs
-// gh run view 16857175516 --log > ci_log.txt
+// gh run view 16857175516 --log > ci-log.txt
 
 // Step 4: Download artifacts
 // gh run download 16857175516 --name build-logs
 
 // Step 5: Search logs for errors
-// grep "error\|failed" ci_log.txt
+// grep "error\|failed" ci-log.txt
 
 ar_data__destroy(own_run_id);
 ```
@@ -62,7 +62,7 @@ gh run list --status=failure --limit=5
 gh run view <run_id>
 
 # Download logs for analysis
-gh run view <run_id> --log > /tmp/ci_log.txt
+gh run view <run_id> --log > /tmp/ci-log.txt
 
 # Download build artifacts
 gh run download <run_id> --name <artifact_name>

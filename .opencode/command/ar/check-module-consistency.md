@@ -26,7 +26,7 @@ make checkpoint-status CMD=check-module-consistency VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/check_module_consistency-progress.txt ]; then
+if [ ! -f /tmp/check-module-consistency-progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
   make checkpoint-init CMD=check-module-consistency STEPS='"Describe Improvement" "Identify Pattern" "Find Sister Modules" "Find Similar Purpose" "Find Same Subsystem" "Check Module 1" "Check Module 2" "Check Module 3" "Check Module 4" "Check Module 5" "Analyze Findings" "List Modules Needing Update" "Estimate Effort" "Create Priority Order" "Document Plan"'
 else
@@ -37,7 +37,7 @@ fi
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/check_module_consistency-progress.txt ]; then
+if [ ! -f /tmp/check-module-consistency-progress.txt ]; then
   echo "❌ ERROR: Checkpoint tracking not initialized!"
   exit 1
 fi

@@ -33,7 +33,7 @@ Isolation-based debugging leads to:
 cat > /tmp/test_checkpoint.sh << 'EOF'
 #!/bin/bash
 COMMAND_NAME="check-docs"
-TRACKING_FILE="/tmp/${COMMAND_NAME}_test-progress.txt"
+TRACKING_FILE="/tmp/${COMMAND_NAME}-test-progress.txt"
 STEP_NUMBER=1
 STATUS="complete"
 
@@ -148,12 +148,12 @@ TEST_NAME="Checkpoint sed command on macOS"
 
 # 2. Create minimal test case
 setup_test() {
-    mkdir -p /tmp/debug_test
-    cat > /tmp/debug_test/input.txt << 'EOF'
+    mkdir -p /tmp/debug-test
+    cat > /tmp/debug-test/input.txt << 'EOF'
 STEP_1=pending    # Initial Check
 STEP_2=pending    # Preview Fixes
 EOF
-    echo "Created test file: /tmp/debug_test/input.txt"
+    echo "Created test file: /tmp/debug-test/input.txt"
 }
 
 # 3. Run the test
@@ -164,21 +164,21 @@ run_test() {
 
     # Test different approaches
     echo "Attempt 1: Using / delimiter"
-    sed -i '' "s/STEP_1=.*/STEP_1=complete/" /tmp/debug_test/input.txt 2>&1 || echo "FAILED"
+    sed -i '' "s/STEP_1=.*/STEP_1=complete/" /tmp/debug-test/input.txt 2>&1 || echo "FAILED"
 
     echo "Attempt 2: Using @ delimiter"
-    sed -i '' "s@STEP_1=.*@STEP_1=complete@" /tmp/debug_test/input.txt 2>&1 && echo "SUCCESS"
+    sed -i '' "s@STEP_1=.*@STEP_1=complete@" /tmp/debug-test/input.txt 2>&1 && echo "SUCCESS"
 }
 
 # 4. Verify the results
 verify_test() {
     echo "File contents after test:"
-    cat /tmp/debug_test/input.txt
+    cat /tmp/debug-test/input.txt
 }
 
 # 5. Clean up
 cleanup_test() {
-    rm -rf /tmp/debug_test
+    rm -rf /tmp/debug-test
     echo "Cleaned up test files"
 }
 
@@ -236,7 +236,7 @@ sed -i '' "s/STEP_${STEP_NUMBER}=.*/STEP_${STEP_NUMBER}=${STATUS}    # ${STEP_DE
 STEP_NUMBER=1
 STEP_DESC="Initial Check"
 STATUS="complete"
-TRACKING_FILE="/tmp/test_tracking.txt"
+TRACKING_FILE="/tmp/test-tracking.txt"
 
 # Step 3: Tested systematically
 # Test 1: Does the basic pattern work?

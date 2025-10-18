@@ -39,8 +39,8 @@ make checkpoint-init CMD=tsan-tests STEPS='"Prepare" "Execute" "Verify"'
 
 **Expected output:**
 ```
-📍 Starting: tsan_tests (3 steps)
-📁 Tracking: /tmp/tsan_tests-progress.txt
+📍 Starting: tsan-tests (3 steps)
+📁 Tracking: /tmp/tsan-tests-progress.txt
 → Run: make checkpoint-update CMD=tsan-tests STEP=1
 ```
 

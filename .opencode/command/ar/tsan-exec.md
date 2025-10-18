@@ -17,7 +17,7 @@ make checkpoint-status CMD=tsan-exec VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/tsan_exec-progress.txt ]; then
+if [ ! -f /tmp/tsan-exec-progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
   make checkpoint-init CMD=tsan-exec STEPS='"Prepare" "Execute" "Verify"'
 else
@@ -28,7 +28,7 @@ fi
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/tsan_exec-progress.txt ]; then
+if [ ! -f /tmp/tsan-exec-progress.txt ]; then
   echo "❌ ERROR: Checkpoint tracking not initialized!"
   exit 1
 fi
@@ -47,8 +47,8 @@ make checkpoint-init CMD=tsan-exec STEPS='"Prepare" "Execute" "Verify"'
 
 **Expected output:**
 ```
-📍 Starting: tsan_exec (3 steps)
-📁 Tracking: /tmp/tsan_exec-progress.txt
+📍 Starting: tsan-exec (3 steps)
+📁 Tracking: /tmp/tsan-exec-progress.txt
 → Run: make checkpoint-update CMD=tsan-exec STEP=1
 ```
 

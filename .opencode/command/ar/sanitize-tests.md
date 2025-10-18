@@ -39,8 +39,8 @@ make checkpoint-init CMD=sanitize-tests STEPS='"Prepare" "Execute" "Verify"'
 
 **Expected output:**
 ```
-📍 Starting: sanitize_tests (3 steps)
-📁 Tracking: /tmp/sanitize_tests-progress.txt
+📍 Starting: sanitize-tests (3 steps)
+📁 Tracking: /tmp/sanitize-tests-progress.txt
 → Run: make checkpoint-update CMD=sanitize-tests STEP=1
 ```
 

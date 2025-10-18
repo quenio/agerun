@@ -17,7 +17,7 @@ make checkpoint-status CMD=build-clean VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/build_clean-progress.txt ]; then
+if [ ! -f /tmp/build-clean-progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
   make checkpoint-init CMD=build-clean STEPS='"Prepare" "Execute" "Verify"'
 else
@@ -28,7 +28,7 @@ fi
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/build_clean-progress.txt ]; then
+if [ ! -f /tmp/build-clean-progress.txt ]; then
   echo "❌ ERROR: Checkpoint tracking not initialized!"
   exit 1
 fi
@@ -47,8 +47,8 @@ make checkpoint-init CMD=build-clean STEPS='"Prepare" "Execute" "Verify"'
 
 **Expected output:**
 ```
-📍 Starting: build_clean (3 steps)
-📁 Tracking: /tmp/build_clean-progress.txt
+📍 Starting: build-clean (3 steps)
+📁 Tracking: /tmp/build-clean-progress.txt
 → Run: make checkpoint-update CMD=build-clean STEP=1
 ```
 

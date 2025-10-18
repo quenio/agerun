@@ -17,7 +17,7 @@ make checkpoint-status CMD=analyze-tests VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/analyze_tests-progress.txt ]; then
+if [ ! -f /tmp/analyze-tests-progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
   make checkpoint-init CMD=analyze-tests STEPS='"Prepare" "Execute" "Verify"'
 else
@@ -28,7 +28,7 @@ fi
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/analyze_tests-progress.txt ]; then
+if [ ! -f /tmp/analyze-tests-progress.txt ]; then
   echo "❌ ERROR: Checkpoint tracking not initialized!"
   exit 1
 fi
@@ -47,8 +47,8 @@ make checkpoint-init CMD=analyze-tests STEPS='"Prepare" "Execute" "Verify"'
 
 **Expected output:**
 ```
-📍 Starting: analyze_tests (3 steps)
-📁 Tracking: /tmp/analyze_tests-progress.txt
+📍 Starting: analyze-tests (3 steps)
+📁 Tracking: /tmp/analyze-tests-progress.txt
 → Run: make checkpoint-update CMD=analyze-tests STEP=1
 ```
 

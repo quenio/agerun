@@ -17,7 +17,7 @@ make checkpoint-status CMD=compact-guidelines VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/compact_guidelines-progress.txt ]; then
+if [ ! -f /tmp/compact-guidelines-progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
   make checkpoint-init CMD=compact-guidelines STEPS='"Analyze AGENTS.md" "Identify Verbose Sections" "List Extraction Targets" "Check Existing KB Articles" "Plan New Articles" "Create KB Article 1" "Create KB Article 2" "Create KB Article 3" "Update AGENTS.md References" "Add Cross-References" "Update kb/README.md" "Run Documentation Validation" "Verify Link Coverage" "Review Changes" "Create Commit"'
 else
@@ -28,7 +28,7 @@ fi
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/compact_guidelines-progress.txt ]; then
+if [ ! -f /tmp/compact-guidelines-progress.txt ]; then
   echo "❌ ERROR: Checkpoint tracking not initialized!"
   exit 1
 fi

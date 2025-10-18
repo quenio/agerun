@@ -107,8 +107,8 @@ for i in {1..14}; do
 done
 
 # Step 4: Run tests and capture results
-make ar_delegate_tests 2>&1 > /tmp/delegate_results.txt
-make ar_delegation_tests 2>&1 > /tmp/delegation_results.txt
+make ar_delegate_tests 2>&1 > /tmp/delegate-results.txt
+make ar_delegation_tests 2>&1 > /tmp/delegation-results.txt
 
 # Step 5: Check memory reports
 echo "=== Memory Safety ==="

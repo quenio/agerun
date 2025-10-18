@@ -17,7 +17,7 @@ make checkpoint-status CMD=merge-settings VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/merge_settings-progress.txt ]; then
+if [ ! -f /tmp/merge-settings-progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
   make checkpoint-init CMD=merge-settings STEPS='"Check Files" "Read Settings" "Merge Permissions" "Validate Result" "Commit and Cleanup"'
 else
@@ -28,7 +28,7 @@ fi
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/merge_settings-progress.txt ]; then
+if [ ! -f /tmp/merge-settings-progress.txt ]; then
   echo "❌ ERROR: Checkpoint tracking not initialized!"
   exit 1
 fi

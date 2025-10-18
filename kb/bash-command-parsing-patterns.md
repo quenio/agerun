@@ -62,9 +62,9 @@ cmd_count=$(get_modified_count ".opencode/command/ar")
 echo "KB: $kb_count, Commands: $cmd_count"
 
 # Pattern 3: Temporary Files for Complex Operations
-git diff --name-only > /tmp/changed_files.txt
-kb_files=$(grep "kb.*\.md" /tmp/changed_files.txt | wc -l)
-rm -f /tmp/changed_files.txt
+git diff --name-only > /tmp/changed-files.txt
+kb_files=$(grep "kb.*\.md" /tmp/changed-files.txt | wc -l)
+rm -f /tmp/changed-files.txt
 
 # Pattern 4: Conditional Logic with Clear Structure
 if command -v python3 >/dev/null 2>&1; then

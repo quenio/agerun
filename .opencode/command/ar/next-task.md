@@ -25,7 +25,7 @@ make checkpoint-status CMD=next-task VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/next_task-progress.txt ]; then
+if [ ! -f /tmp/next-task-progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
   make checkpoint-init CMD=next-task STEPS='"Prepare" "Execute" "Verify"'
 else
@@ -36,7 +36,7 @@ fi
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/next_task-progress.txt ]; then
+if [ ! -f /tmp/next-task-progress.txt ]; then
   echo "❌ ERROR: Checkpoint tracking not initialized!"
   exit 1
 fi
@@ -55,8 +55,8 @@ make checkpoint-init CMD=next-task STEPS='"Prepare" "Execute" "Verify"'
 
 **Expected output:**
 ```
-📍 Starting: next_task (3 steps)
-📁 Tracking: /tmp/next_task-progress.txt
+📍 Starting: next-task (3 steps)
+📁 Tracking: /tmp/next-task-progress.txt
 → Run: make checkpoint-update CMD=next-task STEP=1
 ```
 

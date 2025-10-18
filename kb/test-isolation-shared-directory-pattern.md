@@ -190,7 +190,7 @@ void ar_module_fixture__clean_persisted_files(  // EXAMPLE: Generic pattern - us
     const char* files[] = {
         "agerun.agency",
         "agerun.methodology",
-        "test_output.yaml",
+        "test-output.yaml",
         "temp_data.json",
         NULL
     };

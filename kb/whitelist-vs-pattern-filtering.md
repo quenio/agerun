@@ -26,14 +26,14 @@ test_errors:
 # After: Pattern filtering at the source
 def should_filter_line(line):
     # Filter specific patterns rather than whitelist each instance
-    test_output_patterns = [
+    test-output_patterns = [
         'Testing ',           # Test status messages
         '=== Test',          # Test section headers
         '✓ Test passed:',    # Success indicators
         'Running test:'      # Test execution status
     ]
     
-    for pattern in test_output_patterns:
+    for pattern in test-output_patterns:
         if line.strip().startswith(pattern):
             return True
     return False
