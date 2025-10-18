@@ -237,10 +237,12 @@ echo "✅ Work verification passed"
 } >> "$AUDIT_FILE"
 
 # Update step status (same as original)
-if [ "$OSTYPE" = "darwin"*  ]; then
-    sed -i '' "s/STEP_${STEP_NUMBER}=.*/STEP_${STEP_NUMBER}=${STATUS}    # ${STEP_DESC}/" "$TRACKING_FILE"
+if [[ "$OSTYPE" == darwin* ]]; then
+    # macOS - use @ as delimiter to avoid issues with forward slashes
+    sed -i '' "s@STEP_${STEP_NUMBER}=.*@STEP_${STEP_NUMBER}=${STATUS}    # ${STEP_DESC}@" "$TRACKING_FILE"
 else
-    sed -i "s/STEP_${STEP_NUMBER}=.*/STEP_${STEP_NUMBER}=${STATUS}    # ${STEP_DESC}/" "$TRACKING_FILE"
+    # Linux
+    sed -i "s@STEP_${STEP_NUMBER}=.*@STEP_${STEP_NUMBER}=${STATUS}    # ${STEP_DESC}@" "$TRACKING_FILE"
 fi
 
 # Get current status and show progress
