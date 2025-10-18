@@ -103,41 +103,24 @@ The whitelist contains both intentional test errors AND success messages that ch
 
 #### Step 1: Analyze Current Whitelist
 
-#### Step 1: Count Errors
+#### Steps 1-3: Analyze Whitelist
 
-Run these commands to understand the current state:
+Run analysis using helper script:
 
 ```bash
-# Show total count
-BEFORE_COUNT=$(grep -c "^  -" log_whitelist.yaml)
-echo "Total whitelisted errors: $BEFORE_COUNT"
+# Analyze whitelist and save counts
+./scripts/analyze-whitelist.sh log_whitelist.yaml | tee /tmp/fix-errors-whitelisted-counts.txt
 
-# Store for later verification
-echo "BEFORE_COUNT=$BEFORE_COUNT" > /tmp/fix-errors-whitelisted-counts.txt
-
-# Mark checkpoint complete
+# Mark all analysis steps complete
 make checkpoint-update CMD=fix-errors-whitelisted STEP=1
-```
-
-#### Step 2: Group by Test
-
-```bash
-# Group by test context (top 10)
-echo -e "\nTop 10 tests with most errors:"
-grep "context:" log_whitelist.yaml | sed 's/.*context: "//' | sed 's/".*//' | sort | uniq -c | sort -nr | head -10
-
 make checkpoint-update CMD=fix-errors-whitelisted STEP=2
-```
-
-#### Step 3: Find Patterns
-
-```bash
-# Find common error patterns (top 10)
-echo -e "\nTop 10 most common errors:"
-grep "message:" log_whitelist.yaml | sed 's/.*message: "//' | sed 's/".*//' | sort | uniq -c | sort -nr | head -10
-
 make checkpoint-update CMD=fix-errors-whitelisted STEP=3
 ```
+
+The script provides:
+1. Total count of whitelisted errors
+2. Top 10 tests with most errors
+3. Top 10 most common error messages
 
 #### [ANALYSIS GATE]
 ```bash
