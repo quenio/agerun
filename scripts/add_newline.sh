@@ -1,5 +1,6 @@
 #!/bin/bash
 # Script to ensure file ends with newline
+set -e
 
 # Check if running from repo root
 if [ ! -f "Makefile" ] || [ ! -d "modules" ] || [ ! -d "methods" ]; then
