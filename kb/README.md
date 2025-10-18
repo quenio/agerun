@@ -26,6 +26,7 @@ Each learning file contains:
 - [Architectural Review in Feedback](architectural-review-in-feedback.md)
 - [Assumption Verification Before Action](assumption-verification-before-action.md)
 - [Checkpoint Conditional Flow Pattern](checkpoint-conditional-flow-pattern.md) ⭐ NEW - Two-phase pattern for conditional step execution
+- [Checkpoint Step Consolidation Pattern](checkpoint-step-consolidation-pattern.md) ⭐ NEW - Consolidate per-item verification into interactive loops (session 2025-10-18)
 - [Check Existing Solutions First](check-existing-solutions-first.md)
 - [Checkpoint Implementation Guide](checkpoint-implementation-guide.md)
 - [Checkpoint Work Verification Anti-Pattern](checkpoint-work-verification-antipattern.md)
@@ -90,6 +91,7 @@ Each learning file contains:
 - [Pre-Execution Plan Validation Requirement](pre-execution-plan-validation-requirement.md) ⭐ NEW - Show-stopper validation before plan execution
 - [Plan Review Status Tracking Pattern](plan-review-status-tracking.md)
 - [Pre-Compact Hook KB Consultation](pre-compact-hook-kb-consultation.md)
+- [Review-Plan Command Improvements](review-plan-command-improvements.md) ⭐ NEW - Session 2025-10-18 learnings: interactive review, NULL validation, multi-line format
 - [Search Result Completeness Verification](search-result-completeness-verification.md)
 - [Iterative Plan Review Protocol](iterative-plan-review-protocol.md)
 

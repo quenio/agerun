@@ -369,6 +369,8 @@ Session: Review iteration 1.5 only (1 iteration, 30 min)
 ```
 
 ## Related Patterns
+- [Checkpoint Step Consolidation Pattern](checkpoint-step-consolidation-pattern.md) - Consolidate per-item verification into interactive loops
+- [Review-Plan Command Improvements](review-plan-command-improvements.md) - Session 2025-10-18 learnings from review-plan command
 - [Plan Review Status Tracking Pattern](plan-review-status-tracking.md)
 - [Iterative Plan Refinement Pattern](iterative-plan-refinement-pattern.md)
 - [TDD Plan Iteration Split Pattern](tdd-plan-iteration-split-pattern.md)

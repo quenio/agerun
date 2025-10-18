@@ -254,6 +254,7 @@ Use this template for each cycle:
 
 ## Related Patterns
 
+- [Review-Plan Command Improvements](review-plan-command-improvements.md) - Session 2025-10-18 learnings: interactive review, NULL validation
 - [Iterative Plan Review Protocol](iterative-plan-review-protocol.md) - Multi-session review approach
 - [TDD Plan Iteration Split Pattern](tdd-plan-iteration-split-pattern.md) - When to split iterations
 - [TDD GREEN Phase Minimalism](tdd-green-phase-minimalism.md) - What minimal means

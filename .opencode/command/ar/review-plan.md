@@ -13,7 +13,7 @@ If a `/review-plan` workflow is already in progress, resume or reset:
 ```bash
 make checkpoint-status CMD=review-plan VERBOSE=--verbose
 # Resume: make checkpoint-update CMD=review-plan STEP=N (where N is next pending step)
-# Or reset: make checkpoint-cleanup CMD=review-plan && make checkpoint-init CMD=review-plan STEPS='"KB Consultation" "Read Plan" "Verify Completeness" "Check Iteration Structure" "Verify TDD Methodology" "Check GREEN Minimalism" "Verify Memory Management" "Review Status Tracking" "Verify Cross-References" "Document Issues" "Generate Report"'
+# Or reset: make checkpoint-cleanup CMD=review-plan && make checkpoint-init CMD=review-plan STEPS='"KB Consultation" "Read Plan and Extract PENDING" "Review Each Iteration" "Verify Cross-References" "Document Issues" "Generate Report"'
 ```
 
 ### First-Time Initialization Check
@@ -21,7 +21,7 @@ make checkpoint-status CMD=review-plan VERBOSE=--verbose
 ```bash
 if [ ! -f /tmp/review-plan_progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=review-plan STEPS='"KB Consultation" "Read Plan" "Verify Completeness" "Check Iteration Structure" "Verify TDD Methodology" "Check GREEN Minimalism" "Verify Memory Management" "Review Status Tracking" "Verify Cross-References" "Document Issues" "Generate Report"'
+  make checkpoint-init CMD=review-plan STEPS='"KB Consultation" "Read Plan and Extract PENDING" "Review Each Iteration" "Verify Cross-References" "Document Issues" "Generate Report"'
 else
   make checkpoint-status CMD=review-plan
 fi
@@ -160,11 +160,13 @@ ls -t plans/*_plan.md | head -1
 **DO NOT PROCEED WITHOUT RUNNING THIS COMMAND:**
 
 ```bash
-# MANDATORY: Initialize checkpoint tracking (11 steps)
-make checkpoint-init CMD=review-plan STEPS='"KB Consultation" "Read Plan" "Verify Completeness" "Check Iteration Structure" "Verify TDD Methodology" "Check GREEN Minimalism" "Verify Memory Management" "Review Status Tracking" "Verify Cross-References" "Document Issues" "Generate Report"'
+# MANDATORY: Initialize checkpoint tracking (6 steps - streamlined for session 2025-10-18)
+make checkpoint-init CMD=review-plan STEPS='"KB Consultation" "Read Plan and Extract PENDING" "Review Each Iteration" "Verify Cross-References" "Document Issues" "Generate Report"'
 ```
 
-This command uses checkpoint tracking to ensure thorough plan review across all methodology dimensions. The review process is divided into 4 major stages with 11 checkpoints total.
+This command uses checkpoint tracking to ensure thorough plan review across all methodology dimensions. The review process is divided into 3 major stages with 6 checkpoints total (improved from 11 to prevent step-skipping).
+
+**Key Change (2025-10-18):** Step 3 "Review Each Iteration" is an **INTERACTIVE LOOP** that cannot be batched. Each iteration requires user acceptance before proceeding.
 
 **Expected output:**
 ```
@@ -174,20 +176,15 @@ This command uses checkpoint tracking to ensure thorough plan review across all 
 
 Command: review-plan
 Tracking file: /tmp/review-plan_progress.txt
-Total steps: 11
+Total steps: 6
 
 Steps to complete:
   1. KB Consultation
-  2. Read Plan
-  3. Verify Completeness
-  4. Check Iteration Structure
-  5. Verify TDD Methodology
-  6. Check GREEN Minimalism
-  7. Verify Memory Management
-  8. Review Status Tracking
-  9. Verify Cross-References
-  10. Document Issues
-  11. Generate Report
+  2. Read Plan and Extract PENDING
+  3. Review Each Iteration (INTERACTIVE LOOP)
+  4. Verify Cross-References
+  5. Document Issues
+  6. Generate Report
 ```
 
 ### Check Progress
@@ -195,11 +192,11 @@ Steps to complete:
 make checkpoint-status CMD=review-plan
 ```
 
-**Expected output (example at 36% completion):**
+**Expected output (example at 50% completion):**
 ```
-📈 review-plan: 4/11 steps (36%)
-   [███████░░░░░░░░░░░░░] 36%
-→ Next: make checkpoint-update CMD=review-plan STEP=5
+📈 review-plan: 3/6 steps (50%)
+   [██████████░░░░░░░░░░] 50%
+→ Next: make checkpoint-update CMD=review-plan STEP=4
 ```
 
 ### What it does
@@ -248,7 +245,7 @@ This command reviews plans and updates iteration status markers. These markers t
 1. **FIRST**: Run the checkpoint initialization command above
 2. **SECOND**: Follow the review process below, updating checkpoints after each step
 3. **THIRD**: Check progress with `make checkpoint-status CMD=review-plan`
-4. **FOURTH**: Complete all 11 steps before generating final report
+4. **FOURTH**: Complete all 6 steps before generating final report
 5. **LAST**: Clean up with `make checkpoint-cleanup CMD=review-plan`
 
 ### Usage
@@ -261,7 +258,7 @@ This command reviews plans and updates iteration status markers. These markers t
 
 ## Review Process
 
-### Stage 1: KB Consultation and Plan Reading (Steps 1-3)
+### Stage 1: KB Consultation and Plan Reading (Steps 1-2)
 
 #### [CHECKPOINT START - STAGE 1]
 
@@ -330,9 +327,9 @@ Use this checklist to verify each lesson from the session learnings (kb/tdd-plan
 make checkpoint-update CMD=review-plan STEP=1
 ```
 
-#### Step 2: Read Plan
+#### Step 2: Read Plan and Extract PENDING REVIEW Iterations
 
-**Read the entire plan document:**
+**Read the entire plan document and filter for PENDING REVIEW iterations:**
 ```bash
 # Read the plan file
 # <use Read tool with plan file path>
@@ -383,57 +380,108 @@ Extract only iterations marked with "- PENDING REVIEW" status. Skip iterations a
 - [ ] Note total iterations needing review vs. total iterations
 - [ ] Skip all non-PENDING iterations from review scope
 
-#### Step 3: Verify Completeness
+**Scanning for:**
+- Total iteration count (from count script)
+- Cycle structure
+- Review status markers (from list scripts)
+- Completion status (if present)
 
-**Check plan document structure:**
+**Document structure verification:**
 - [ ] Has clear objective/overview
 - [ ] Organized into phases
 - [ ] Each iteration numbered (N.M format)
 - [ ] Has Related Patterns section (if applicable)
 
-```bash
-make checkpoint-update CMD=review-plan STEP=3
-```
-
 #### [CHECKPOINT END]
 
 **[QUALITY GATE 1: Plan Basics Complete]**
 ```bash
-# MANDATORY: Must pass before proceeding to methodology review
-make checkpoint-gate CMD=review-plan GATE="Plan Basics" REQUIRED="1,2,3"
+# MANDATORY: Must pass before proceeding to iteration review
+make checkpoint-gate CMD=review-plan GATE="Plan Basics" REQUIRED="1,2"
 ```
 
 **Expected gate output:**
 ```
 ✅ GATE 'Plan Basics' - PASSED
-   Verified: Steps 1,2,3
+   Verified: Steps 1,2
 ```
 
 **Minimum Requirements for Stage 1:**
 - [ ] All 8 KB articles read and quoted
 - [ ] Plan document read completely
+- [ ] PENDING REVIEW iterations identified and extracted
 - [ ] Document structure verified
 
-### Stage 2: TDD Methodology Review (Steps 4-7)
+### Stage 2: Interactive Iteration Review (Step 3)
 
 #### [CHECKPOINT START - STAGE 2]
 
-#### Step 4: Check Iteration Structure
+#### Step 3: Review Each Iteration (INTERACTIVE LOOP - CANNOT BATCH)
+
+**CRITICAL**: This step CANNOT be batched. You MUST review iterations ONE AT A TIME with user acceptance.
 
 **IMPORTANT: Review ONLY iterations with PENDING REVIEW status.**
 
-**Verify each PENDING REVIEW iteration follows proper structure:**
+**For EACH PENDING REVIEW iteration, perform ALL verification checks:**
 
-For EVERY iteration marked "- PENDING REVIEW" in the plan:
-- [ ] Has RED phase with explicit failing assertion (// ← FAILS comment)
-- [ ] Has GREEN phase with minimal implementation
-- [ ] Has exactly ONE new assertion (not multiple)
-- [ ] Uses real AgeRun types (ar_*_t) not placeholders
-- [ ] Follows BDD structure (Given/When/Then/Cleanup)
+This step consolidates the old Steps 4-7 (Iteration Structure, TDD Methodology, GREEN Minimalism, Memory Management) into a single per-iteration review loop. Each iteration gets a comprehensive review covering all 14 TDD lessons.
+
+**Per-Iteration Comprehensive Checklist:**
+
+For EVERY iteration marked "- PENDING REVIEW" in the plan, verify:
+
+1. **Structure (from old Step 4):**
+   - [ ] Has RED phase with explicit failing assertion (// ← FAILS comment)
+   - [ ] Has GREEN phase with minimal implementation
+   - [ ] Has exactly ONE new assertion (not multiple)
+   - [ ] Uses real AgeRun types (ar_*_t) not placeholders
+   - [ ] Follows BDD structure (Given/When/Then/Cleanup)
+
+2. **TDD Methodology - All 14 Lessons (from old Step 5):**
+   - [ ] **Lesson 1**: Iteration numbering sequential and clear
+   - [ ] **Lesson 2**: Exactly one new assertion per iteration
+   - [ ] **Lesson 3**: GREEN uses hardcoded returns where valid
+   - [ ] **Lesson 4**: Resources cleaned up even in minimal GREEN
+   - [ ] **Lesson 5**: Iteration N+1 RED would fail with iteration N GREEN
+   - [ ] **Lesson 6**: Tests verify module seams, not just single modules
+   - [ ] **Lesson 7** ⭐ **CRITICAL**: RED documents temporary corruption (Goal 1 & Goal 2)
+   - [ ] **Lesson 8**: Temporary corruption marked and documented
+   - [ ] **Lesson 9**: Independent assertions for each property
+   - [ ] **Lesson 10**: Plan distinguishes TDD vs Validation vs Hybrid
+   - [ ] **Lesson 11**: GREEN only implements tested behavior (no over-implementation)
+   - [ ] **Lesson 12**: Commit messages document "why", not just "what"
+   - [ ] **Lesson 13**: No forward references to unreviewed iterations
+   - [ ] **Lesson 14**: Naming conventions present (own_, ref_, mut_)
+
+3. **GREEN Minimalism - Lessons 3 & 11 (from old Step 6):**
+   - [ ] Hardcoded returns used when valid?
+   - [ ] No "future-proofing" additions
+   - [ ] No "while I'm here" enhancements
+   - [ ] No error handling before tested
+   - [ ] Only tested behavior is implemented
+
+4. **Memory Management - Lessons 4 & 14 (from old Step 7):**
+   - [ ] Ownership prefixes present (own_, ref_, mut_)
+   - [ ] Resources cleaned up even in hardcoded GREEN
+   - [ ] .1 iterations have temporary cleanup if needed
+   - [ ] Temporary cleanup uses MANDATORY comment format
+   - [ ] .2 iterations remove temporary cleanup
+   - [ ] No memory leaks in any iteration
+
+5. **NULL Parameter Coverage (from session improvements):**
+   - [ ] For each function with parameters, check for NULL handling iterations
+   - [ ] Pattern: For function foo(a, b, c), expect foo handles NULL a/b/c iterations
+   - [ ] If missing, add NULL parameter iterations immediately
+
+6. **Common Violations Check:**
+   - [ ] Multiple assertions? (Lesson 2 violation → split iteration)
+   - [ ] Over-implementation? (Lesson 11 violation → remove untested code)
+   - [ ] NULL params handled? (Add missing NULL iterations)
+   - [ ] Temporary corruption documented? (Lesson 7 violation → add Goal 1/Goal 2)
 
 **Common violations to check:**
 ```markdown
-❌ WRONG: Iteration tests multiple behaviors
+❌ WRONG: Iteration tests multiple behaviors (Lesson 2)
 Iteration 1: create_and_register works
   AR_ASSERT(obj != NULL, "Should create");
   AR_ASSERT(registry_has(obj), "Should register");
@@ -443,6 +491,60 @@ Iteration 1.1: create_and_register returns non-NULL
   AR_ASSERT(obj != NULL, "Should create");
 Iteration 1.2: Object is registered
   AR_ASSERT(registry_has(obj), "Should register");
+
+❌ WRONG: Over-implementation in GREEN (Lesson 11)
+ar_foo_t* ar_foo__create(ar_log_t *ref_log, const char *ref_path) {
+    if (!ref_log || !ref_path) return NULL;  // NOT TESTED
+    ar_foo_t *own_foo = AR__HEAP__MALLOC(sizeof(ar_foo_t));
+    if (!own_foo) return NULL;  // NOT TESTED
+    ...
+}
+
+✅ CORRECT: Minimal GREEN
+ar_foo_t* ar_foo__create(ar_log_t *ref_log, const char *ref_path) {
+    // Minimal: Just allocate and return
+    ar_foo_t *own_foo = AR__HEAP__MALLOC(sizeof(ar_foo_t));
+    own_foo->ref_log = ref_log;
+    own_foo->own_path = AR__HEAP__STRDUP(ref_path);
+    return own_foo;  // Non-NULL - passes the assertion
+}
+// NULL checks and malloc failures tested in subsequent iterations
+```
+
+**Multi-Line Presentation Format (from session improvements):**
+
+When presenting iteration findings to the user, use this multi-line format for readability:
+
+```markdown
+### Iteration X.Y: [description]
+
+**Review Findings:**
+
+**Structure:**
+- ✅ Proper RED-GREEN structure
+- ✅ RED Phase Dual Goals documented (Goal 1: Prove Test Validity, Goal 2: Identify Implementation)
+- ✅ BDD test structure (Given/When/Then/Cleanup)
+
+**Assertions:**
+- ✅ Exactly one assertion (Lesson 2)
+- ✅ Assertion validity via temporary corruption (Lesson 7)
+
+**GREEN Minimalism:**
+- ✅ Hardcoded return used (Lesson 3)
+- ✅ No over-implementation (Lesson 11)
+- ✅ No untested NULL checks
+- ✅ No untested error handling
+
+**Memory Management:**
+- ✅ Ownership prefixes present (Lesson 14)
+- ✅ Resource cleanup present (Lesson 4)
+
+**NULL Parameter Coverage:**
+- ✅ NULL handling iterations exist (see iterations X.Y.1, X.Y.2)
+
+**Verdict:** APPROVED / NEEDS REVISION
+
+**Issues Found:** [list specific issues or "None"]
 ```
 
 **CHECKPOINT: Initialize Iteration Tracking**
@@ -451,7 +553,7 @@ Before reviewing iterations, initialize nested checkpoint for iteration-level tr
 
 ```bash
 # Initialize nested checkpoint for iteration review tracking
-# After extracting PENDING REVIEW iterations from Checkpoint 2
+# After extracting PENDING REVIEW iterations from Step 2
 # Use iteration descriptions from the plan file
 make checkpoint-init CMD=review-plan-iterations STEPS='"Iteration 0.1" "Iteration 0.2" "Iteration 0.3" "Iteration 1.1" "Iteration 1.2" ... [all PENDING REVIEW iteration descriptions]'
 ```
@@ -474,71 +576,44 @@ make checkpoint-status CMD=review-plan-iterations
 → Next: make checkpoint-update CMD=review-plan-iterations STEP=4
 ```
 
-**CRITICAL: Iteration Acceptance and Status Update**
+**ITERATION REVIEW LOOP (MANDATORY - Cannot Skip or Batch):**
 
-**After verifying each PENDING REVIEW iteration, obtain user acceptance:**
+For EACH PENDING REVIEW iteration:
 
-**For EACH iteration reviewed:**
-
-1. **Present Iteration Details**:
+1. **Present Iteration** (using multi-line format above):
    - Show iteration number and description
-   - Summarize RED phase (what assertion tests)
-   - Summarize GREEN phase (what minimal implementation does)
-   - Note any methodology compliance issues found
+   - Present all verification findings
+   - List any issues found or "None"
+   - State verdict: APPROVED or NEEDS REVISION
 
-2. **Request User Acknowledgment**:
-   Present the iteration to the user with one of these questions:
+2. **Wait for User Response** - Do not proceed to next iteration until user responds
+
+3. **Handle Response:**
+   - "accepted" → Mark REVIEWED, update checkpoint, continue to next iteration
+   - "fix it" or "revise it" → Fix the issue, re-present, get acceptance
+   - Specific feedback → Make changes, re-present, wait for acceptance
+
+4. **Update Status Immediately:**
+   ```bash
+   # Use Edit tool to update plan file
+   old_string: "#### Iteration X.Y: ... - PENDING REVIEW"
+   new_string: "#### Iteration X.Y: ... - REVIEWED"
+
+   # Update iteration checkpoint
+   make checkpoint-update CMD=review-plan-iterations STEP=N
    ```
-   "Iteration X.Y verified. Accept this iteration? (yes/no/revise)"
-   ```
 
-3. **Update Status Based on Response**:
+5. **Repeat** until all PENDING REVIEW iterations processed
 
-   **If user responds "yes" or "accept":**
-   - Use Edit tool to update iteration status in plan file
-   - Change: "#### Iteration X.Y: description - PENDING REVIEW"
-   - To:     "#### Iteration X.Y: description - REVIEWED"
-   - **Update iteration checkpoint**: `make checkpoint-update CMD=review-plan-iterations STEP=N` (where N is the iteration number in the PENDING REVIEW list)
-   - Track accepted iteration in review report
-
-   **If user responds "no" or "revise":**
-   - Use Edit tool to update iteration status in plan file
-   - Change: "#### Iteration X.Y: description - PENDING REVIEW"
-   - To:     "#### Iteration X.Y: description - REVISED"
-   - **Update iteration checkpoint**: `make checkpoint-update CMD=review-plan-iterations STEP=N` (where N is the iteration number in the PENDING REVIEW list)
-   - Ask user to specify what needs revision
-   - Document issues in Checkpoint 10 (Document Issues)
-   - Track revision needed in review report
-
-   **If user responds with specific feedback:**
-   - Mark as REVISED if changes needed
-   - Mark as REVIEWED if feedback is just notes/suggestions
-   - **Update iteration checkpoint**: `make checkpoint-update CMD=review-plan-iterations STEP=N`
-   - Document feedback for inclusion in final report
-
-**Status Update Example:**
-```bash
-# Before acceptance (from plan file):
-#### Iteration 0.1: send() returns true - PENDING REVIEW
-
-# After user accepts:
-# Use Edit tool:
-old_string: "#### Iteration 0.1: send() returns true - PENDING REVIEW"
-new_string: "#### Iteration 0.1: send() returns true - REVIEWED"
-
-# After user requests revision:
-# Use Edit tool:
-old_string: "#### Iteration 0.1: send() returns true - PENDING REVIEW"
-new_string: "#### Iteration 0.1: send() returns true - REVISED"
-```
+**This loop CANNOT be batched or skipped. You MUST present each iteration and wait for user acceptance before proceeding.**
 
 **Acceptance Tracking Checklist:**
-- [ ] Present each PENDING REVIEW iteration to user
+- [ ] Present each PENDING REVIEW iteration to user (multi-line format)
 - [ ] Wait for user's acceptance response
 - [ ] Update plan file with new status marker (REVIEWED or REVISED)
 - [ ] Update iteration checkpoint after each iteration
 - [ ] Track acceptance count for final report
-- [ ] Document any revision requests for Checkpoint 10
+- [ ] Document any revision requests for Step 5 (Document Issues)
 - [ ] Continue until all PENDING REVIEW iterations processed
 
 **MANDATORY**: You MUST update the plan file with new status markers after each acceptance/revision decision. Do not batch updates—update immediately after each user response.
@@ -561,210 +636,40 @@ make checkpoint-status CMD=review-plan-iterations
 ```bash
 # Clean up iteration tracking
 make checkpoint-cleanup CMD=review-plan-iterations
-```
 
-**Then mark main Checkpoint 4 as complete:**
-```bash
-make checkpoint-update CMD=review-plan STEP=4
-```
-
-#### Step 5: Verify TDD Methodology (Check All 14 Lessons Against Actual Plan)
-
-**For each PENDING REVIEW iteration, verify each lesson is applied:**
-
-**Lesson-by-Lesson Verification Against Plan:**
-
-- [ ] **Lesson 1 - Numbering**: Iteration numbering sequential and clear?
-- [ ] **Lesson 2 - One Assertion**: Exactly one new assertion per iteration?
-- [ ] **Lesson 3 - Hardcoded**: GREEN uses hardcoded returns where valid?
-- [ ] **Lesson 4 - Cleanup**: Resources cleaned up even in minimal GREEN?
-- [ ] **Lesson 5 - Dependencies**: Iteration N+1 RED would fail with iteration N GREEN?
-- [ ] **Lesson 6 - Integration**: Tests verify module seams, not just single modules?
-- [ ] **Lesson 7 ⭐ - Assertion Validity**: RED phase documents temporary corruption?
-  - ✅ RED shows what will FAIL
-  - ✅ GREEN shows what's removed/fixed
-  - ✅ Plan states "Expected RED: Test FAILS..."
-- [ ] **Lesson 8 - Temp Code**: Temporary corruption marked and documented?
-- [ ] **Lesson 9 - Properties**: Independent assertions for each property (persistence, type, content)?
-- [ ] **Lesson 10 - Test Types**: Plan distinguishes TDD vs Validation vs Hybrid iterations?
-- [ ] **Lesson 11 - Minimalism**: GREEN only implements tested behavior?
-  - ❌ NOT: Error handling before tested
-  - ❌ NOT: "Future-proofing" additions
-  - ✅ YES: Exactly what RED assertion requires
-- [ ] **Lesson 12 - Commits**: Commit messages document "why", not just "what"?
-- [ ] **Lesson 13 - Dependencies**: No forward references to unreviewed iterations?
-  - Plan readable sequentially without jumping ahead?
-- [ ] **Lesson 14 - Ownership**: Naming conventions present (own_, ref_, mut_)?
-
-**Check TDD cycle compliance:**
-
-For each iteration:
-- [ ] RED phase shows what would fail
-- [ ] GREEN phase implements ONLY what's needed to pass
-- [ ] No over-implementation (implementing untested features)
-- [ ] Proper progression from stub → hardcoded → real implementation
-
-**Check for decimal numbering violations:**
-```markdown
-❌ WRONG: Renumbering all iterations after split
-Original: 0.6 → Split into: 0.6, 0.7, then renumbered 0.7→0.8, 0.8→0.9
-
-✅ CORRECT: Decimal numbering
-Original: 0.6 → Split into: 0.6.1, 0.6.2, then 0.7 stays 0.7
-```
-
-```bash
-make checkpoint-update CMD=review-plan STEP=5
-```
-
-#### Step 6: Check GREEN Minimalism (Lessons 3, 11)
-
-**Verify minimal implementations:**
-
-For each GREEN phase, check **Lesson 3: Hardcoded Returns** and **Lesson 11: No Over-Implementation**:
-
-- [ ] **Lesson 3**: Hardcoded returns used when valid?
-  - ✅ `return false;` (valid for single assertion)
-  - ✅ `return NULL;` (valid for single assertion)
-  - ✅ `send_result = true;` (valid for single assertion)
-  - ❌ NOT: Full implementation when not tested
-
-- [ ] **Lesson 11**: No over-implementation in GREEN?
-  - [ ] No "future-proofing" additions
-  - [ ] No "while I'm here" enhancements
-  - [ ] No error handling before tested
-  - [ ] Only tested behavior is implemented
-
-- [ ] Implementation forces next iteration's RED to fail properly
-- [ ] Single assertion means single minimal change
-
-**Example validation:**
-```c
-// Iteration 2 GREEN - Check if minimal
-❌ TOO MUCH: if (!delegate || !message || !queue) return false;
-✅ MINIMAL:  return false;  // Hardcoded! Next iteration will force real impl
-
-❌ TOO MUCH: int value = compute_expensive_calculation();
-✅ MINIMAL:  return computed_value;  // Hardcoded - next iteration forces real impl
-```
-
-**Critical Red Flag for Lesson 11:**
-- If GREEN implements error handling not tested by RED → VIOLATION
-- If GREEN adds validation not required by RED → VIOLATION
-- If GREEN has conditional logic for untested scenarios → VIOLATION
-
-```bash
-make checkpoint-update CMD=review-plan STEP=6
-```
-
-#### Step 7: Verify Memory Management (Lessons 4, 14)
-
-**Check zero leak policy compliance:**
-
-For all iterations, check **Lesson 4: Resource Cleanup** and **Lesson 14: Ownership Conventions**:
-
-**Lesson 4 - Resource Cleanup in Minimal Implementations:**
-- [ ] Resources cleaned up even in hardcoded GREEN?
-  - ✅ Hardcoded `return true;` still destroys message if needed
-  - ❌ NOT: "We'll clean up in next iteration"
-  - ✅ Minimal doesn't mean "leaked resources"
-
-**Lesson 14 - Ownership Naming Conventions:**
-- [ ] Ownership prefixes present throughout (own_, ref_, mut_)?
-  - ✅ `own_fixture` (owned, must destroy)
-  - ✅ `ref_delegate` (borrowed reference)
-  - ✅ `mut_agency` (mutable but not owned)
-
-**Full Memory Management Checklist:**
-
-For all iterations:
-- [ ] Ownership prefixes present (own_, ref_, mut_)
-- [ ] .1 iterations have temporary cleanup if needed
-- [ ] Temporary cleanup uses MANDATORY comment format
-- [ ] .2 iterations remove temporary cleanup
-- [ ] No memory leaks in any iteration
-
-**Temporary cleanup validation:**
-```c
-// .1 iteration - Check for this pattern:
-❌ MISSING: No cleanup comment
-✅ CORRECT: // Cleanup (temporary: manually destroy agent since not registered yet)
-           ar_agent_store_fixture__destroy_agent(fixture, agent_id);
-
-// .2 iteration - Check cleanup removed:
-❌ WRONG: Still has temporary cleanup
-✅ CORRECT: // Cleanup (removed manual destroy_agent - fixture now owns it)
-           ar_agent_store_fixture__destroy(fixture);
-```
-
-**Critical Check for Lesson 4:**
-- Even minimal hardcoded returns must not leak resources
-- Temporary cleanup prevents leaks until next iteration takes ownership
-- Cleanup comment format is MANDATORY
-
-```bash
-make checkpoint-update CMD=review-plan STEP=7
+# Then mark main Step 3 as complete
+make checkpoint-update CMD=review-plan STEP=3
 ```
 
 #### [CHECKPOINT END]
 
-**[QUALITY GATE 2: TDD Methodology Complete]**
+**[QUALITY GATE 2: All Iterations Reviewed]**
 ```bash
-# MANDATORY: Must pass before proceeding to status review
-make checkpoint-gate CMD=review-plan GATE="TDD Methodology" REQUIRED="4,5,6,7"
+# MANDATORY: Must pass before proceeding to cross-reference verification
+make checkpoint-gate CMD=review-plan GATE="All Iterations Reviewed" REQUIRED="3"
 ```
 
 **Expected gate output:**
 ```
-✅ GATE 'TDD Methodology' - PASSED
-   Verified: Steps 4,5,6,7
+✅ GATE 'All Iterations Reviewed' - PASSED
+   Verified: Step 3
 ```
 
 **Minimum Requirements for Stage 2:**
-- [ ] All iterations checked for structure compliance
+- [ ] All PENDING REVIEW iterations reviewed one-by-one
+- [ ] User acceptance obtained for each iteration
+- [ ] Plan file updated with REVIEWED/REVISED markers
+- [ ] All 14 TDD lessons checked per iteration
 - [ ] TDD cycle verified (RED-GREEN proper)
 - [ ] GREEN minimalism confirmed
 - [ ] Memory management verified (zero leaks)
+- [ ] NULL parameter coverage validated
 
-### Stage 3: Review Status Tracking (Steps 8-9)
+### Stage 3: Final Verification and Reporting (Steps 4-6)
 
 #### [CHECKPOINT START - STAGE 3]
 
-#### Step 8: Review Status Tracking (Lesson 1 - Numbering Clarity)
-
-**Check review status markers and Lesson 1: Numbering Clarity:**
-
-- [ ] Plan has status markers (REVIEWED/PENDING REVIEW/REVISED)
-- [ ] Status markers appear ONLY on iteration headings
-- [ ] Status progression follows rules:
-  - New iterations start with PENDING REVIEW
-  - Accepted iterations marked REVIEWED
-  - Revised iterations marked REVISED (ready for implementation)
-
-- [ ] **Lesson 1**: Iteration numbering is clear and sequential?
-  - ✅ 0.1, 0.2, 0.3 (sequential, clear)
-  - ✅ 0.6.1, 0.6.2, 1.1, 1.2 (decimal for splits, clear)
-  - ❌ NOT: 0.1, 0.4, 0.7 (gaps are confusing)
-  - ❌ NOT: Mixed decimal notation inconsistent
-
-**Status marker validation:**
-```markdown
-❌ WRONG: Status markers on cycle headings
-### Cycle 1: Setup - REVIEWED
-#### Iteration 1.1: Basic - REVIEWED
-#### Iteration 1.2: Advanced - PENDING REVIEW
-
-✅ CORRECT: Status markers ONLY on iterations
-### Cycle 1: Setup
-#### Iteration 1.1: Basic - REVIEWED
-#### Iteration 1.2: Advanced - PENDING REVIEW
-```
-
-```bash
-make checkpoint-update CMD=review-plan STEP=8
-```
-
-#### Step 9: Verify Cross-References (Lesson 13 - Forward Dependencies)
+#### Step 4: Verify Cross-References (Lesson 13 - Forward Dependencies)
 
 **Check KB article references and Lesson 13: No Forward Dependencies:**
 
@@ -793,32 +698,10 @@ make checkpoint-update CMD=review-plan STEP=8
 - Plan should be understandable without jumping around
 
 ```bash
-make checkpoint-update CMD=review-plan STEP=9
+make checkpoint-update CMD=review-plan STEP=4
 ```
 
-#### [CHECKPOINT END]
-
-**[QUALITY GATE 3: Status Tracking Complete]**
-```bash
-# MANDATORY: Must pass before final report
-make checkpoint-gate CMD=review-plan GATE="Status Tracking" REQUIRED="8,9"
-```
-
-**Expected gate output:**
-```
-✅ GATE 'Status Tracking' - PASSED
-   Verified: Steps 8,9
-```
-
-**Minimum Requirements for Stage 3:**
-- [ ] Review status markers present and consistent
-- [ ] Cross-references verified
-
-### Stage 4: Final Report (Steps 10-11)
-
-#### [CHECKPOINT START - STAGE 4]
-
-#### Step 10: Document Issues (Map Issues to Lessons Violated)
+#### Step 5: Document Issues (Map Issues to Lessons Violated)
 
 **Compile all findings with lesson references:**
 
@@ -880,10 +763,10 @@ Create section mapping issues by lesson:
 ```
 
 ```bash
-make checkpoint-update CMD=review-plan STEP=10
+make checkpoint-update CMD=review-plan STEP=5
 ```
 
-#### Step 11: Generate Report
+#### Step 6: Generate Report
 
 **Create final review summary:**
 
@@ -973,7 +856,7 @@ make checkpoint-update CMD=review-plan STEP=10
 - [ ] Specify next steps based on status (approved vs. needs revision)
 
 ```bash
-make checkpoint-update CMD=review-plan STEP=11
+make checkpoint-update CMD=review-plan STEP=6
 ```
 
 #### [CHECKPOINT END]
@@ -986,7 +869,7 @@ make checkpoint-status CMD=review-plan
 
 **Expected completion output:**
 ```
-🎆 All 11 steps complete!
+🎆 All 6 steps complete!
 ✓ Run: make checkpoint-cleanup CMD=review-plan
 ```
 
@@ -1167,6 +1050,8 @@ Validates plans against the review checklist automatically. Catches common issue
 - [TDD Cycle Detailed Explanation](../../../kb/tdd-cycle-detailed-explanation.md)
 
 ### Command Patterns
+- [Review-Plan Command Improvements](../../../kb/review-plan-command-improvements.md) ⭐ Session 2025-10-18 learnings and design rationale
+- [Checkpoint Step Consolidation Pattern](../../../kb/checkpoint-step-consolidation-pattern.md) ⭐ Why steps were consolidated from 11 to 6
 - [Checkpoint Implementation Guide](../../../kb/checkpoint-implementation-guide.md)
 - [Command KB Consultation Enforcement](../../../kb/command-kb-consultation-enforcement.md)
 - [Command Output Documentation Pattern](../../../kb/command-output-documentation-pattern.md)

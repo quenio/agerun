@@ -278,6 +278,7 @@ check_cycle_consistency plans/agent_store_fixture_plan.md
 ```
 
 ## Related Patterns
+- [Review-Plan Command Improvements](review-plan-command-improvements.md) - Session 2025-10-18 learnings from review-plan workflow
 - [Iterative Plan Review Protocol](iterative-plan-review-protocol.md)
 - [Plan Document Completion Status Pattern](plan-document-completion-status-pattern.md)
 - [Iterative Plan Refinement Pattern](iterative-plan-refinement-pattern.md)

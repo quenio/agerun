@@ -1020,6 +1020,190 @@ make ar_delegate_tests 2>&1
 - [ ] Ready for memory verification
 ```
 
+---
+
+**⭐ Iteration Completion Summary Format (from session 2025-10-18)**
+
+After each iteration completes, report using this structured format:
+
+```markdown
+=== Iteration X.Y: [description] - COMPLETED ===
+
+**RED Phase:**
+- ✅ Test written and failed for correct reason
+- ✅ Failure matches plan's documented temporary corruption (Lesson 7)
+- ✅ Test: test_[function_name] in [test_file]
+
+**GREEN Phase:**
+- ✅ Minimal implementation added to [impl_file]
+- ✅ Test now passes
+- ✅ No over-implementation (Lesson 11)
+
+**REFACTOR Phase:**
+- ✅ Code reviewed for improvements
+- [No refactoring needed / Refactored: extracted helper function / improved naming]
+
+**Verification:**
+- ✅ All tests passing
+- ✅ No memory leaks
+- ✅ Status updated: REVIEWED/REVISED → IMPLEMENTED
+```
+
+This format provides clear visibility to the user of what was accomplished per iteration.
+
+---
+
+**⭐ Special Case: NULL Parameter Iterations (from session 2025-10-18)**
+
+When executing NULL parameter iterations (e.g., "create() handles NULL log", "write() handles NULL path"):
+
+**Pattern Recognition:**
+- Iteration description contains "handles NULL [parameter]"
+- Tests defensive error handling (not happy path)
+- Expect function to return error value gracefully
+
+**RED Phase:**
+```c
+static void test_foo__create_handles_null_log(void) {
+    // Given NULL log parameter
+    // When calling create with NULL log
+    ar_foo_t *own_foo = ar_foo__create(NULL, "valid_path");
+
+    // Then should return NULL (graceful error)
+    AR_ASSERT(own_foo == NULL, "Should return NULL for NULL log");  // ← FAILS
+}
+```
+
+**GREEN Phase - Minimal NULL Check:**
+```c
+ar_foo_t* ar_foo__create(ar_log_t *ref_log, const char *ref_path) {
+    // Add NULL check (minimal - just this parameter)
+    if (!ref_log) return NULL;
+
+    // ... rest of existing implementation (unchanged)
+    ar_foo_t *own_foo = AR__HEAP__MALLOC(sizeof(ar_foo_t));
+    own_foo->ref_log = ref_log;
+    own_foo->own_path = AR__HEAP__STRDUP(ref_path);
+    return own_foo;
+}
+```
+
+**Key Points:**
+- ✅ Add NULL check for ONLY the parameter being tested
+- ✅ Return appropriate error value (NULL, false, 0)
+- ❌ DON'T add checks for other parameters (Lesson 11 violation)
+- ❌ DON'T add error logging yet (test it in separate iteration)
+- ✅ Verify no crash or undefined behavior
+
+**REFACTOR Phase:**
+- Usually no refactoring for NULL checks (they're already minimal)
+- State: "No refactoring needed - NULL check is minimal"
+
+---
+
+**⭐ Special Case: Malloc Failure Iterations (from session 2025-10-18)**
+
+When executing malloc failure iterations using dlsym technique (e.g., "create() handles malloc failure"):
+
+**⚠️ File Naming Convention (CRITICAL):**
+- Test file MUST end with `_dlsym_tests.c`
+- Example: `modules/ar_foo_dlsym_tests.c` (separate from main test file)
+- Reason: dlsym tests excluded from sanitizer builds automatically
+
+**Pattern Recognition:**
+- Iteration description contains "handles malloc failure" or "handles allocation failure"
+- Plan references [dlsym-test-interception-technique.md](../../../kb/dlsym-test-interception-technique.md)
+- Tests memory allocation failure scenarios
+
+**RED Phase - dlsym Wrapper:**
+```c
+// In modules/ar_foo_dlsym_tests.c (separate file!)
+#include <dlfcn.h>
+#include <stdio.h>
+
+// Control which malloc call should fail
+static int fail_at_malloc = -1;
+static int current_malloc = 0;
+
+// Mock malloc using dlsym
+void* malloc(size_t size) {
+    typedef void* (*malloc_fn)(size_t);
+    static malloc_fn real_malloc = NULL;
+
+    if (!real_malloc) {
+        union { void* obj; malloc_fn func; } converter;
+        converter.obj = dlsym(RTLD_NEXT, "malloc");
+        real_malloc = converter.func;
+    }
+
+    current_malloc++;
+    if (current_malloc == fail_at_malloc) {
+        printf("  Mock: Failing malloc #%d\n", current_malloc);
+        return NULL;  // Simulate malloc failure
+    }
+
+    return real_malloc(size);
+}
+
+static void test_foo__create_handles_malloc_failure(void) {
+    // Given malloc will fail on first allocation
+    current_malloc = 0;
+    fail_at_malloc = 1;
+
+    ar_log_t *ref_log = ar_log__create();
+
+    // When calling create (which calls malloc)
+    ar_foo_t *own_foo = ar_foo__create(ref_log, "test");
+
+    // Then should return NULL gracefully
+    AR_ASSERT(own_foo == NULL, "Should return NULL on malloc failure");  // ← FAILS
+
+    // Cleanup
+    ar_log__destroy(ref_log);
+}
+```
+
+**GREEN Phase - Check Malloc Result:**
+```c
+// In modules/ar_foo.c (implementation file)
+ar_foo_t* ar_foo__create(ar_log_t *ref_log, const char *ref_path) {
+    // ... existing NULL checks ...
+
+    // Allocate memory
+    ar_foo_t *own_foo = AR__HEAP__MALLOC(sizeof(ar_foo_t));
+
+    // NEW: Check malloc result
+    if (!own_foo) return NULL;  // Handle malloc failure
+
+    // Continue with initialization
+    own_foo->ref_log = ref_log;
+    own_foo->own_path = AR__HEAP__STRDUP(ref_path);
+    return own_foo;
+}
+```
+
+**Key Points:**
+- ✅ Use separate `_dlsym_tests.c` file (MANDATORY)
+- ✅ Implement dlsym malloc wrapper as shown above
+- ✅ Set fail_at_malloc to target specific allocation
+- ✅ Check malloc result and return NULL on failure
+- ✅ Clean up any partial allocations if needed
+- ⚠️ Test runs in regular test suite but excluded from sanitizers
+- 📖 Reference: [dlsym-test-interception-technique.md](../../../kb/dlsym-test-interception-technique.md)
+
+**Build Integration:**
+```makefile
+# Makefile automatically excludes dlsym tests from sanitizer builds
+SANITIZER_TEST_SRC = $(filter-out %_dlsym_tests.c,$(TEST_SRC))
+```
+
+**REFACTOR Phase:**
+- Check if multiple malloc calls need failure handling
+- Consider extracting cleanup logic if allocation failure is complex
+- Usually minimal for simple create() functions
+
+---
+
 **CRITICAL: Update Iteration Status to IMPLEMENTED**
 
 **After completing each iteration's RED-GREEN-REFACTOR cycle, update the plan file:**
@@ -2011,6 +2195,7 @@ make checkpoint-init CMD=execute-plan STEPS='...'
 - [Iterative Plan Refinement Pattern](../../../kb/iterative-plan-refinement-pattern.md)
 
 ### Command Patterns
+- [Checkpoint Step Consolidation Pattern](../../../kb/checkpoint-step-consolidation-pattern.md) ⭐ Pattern for consolidating per-item verification steps
 - [Checkpoint Implementation Guide](../../../kb/checkpoint-implementation-guide.md)
 - [Command KB Consultation Enforcement](../../../kb/command-kb-consultation-enforcement.md)
 - [Multi-Step Checkpoint Tracking Pattern](../../../kb/multi-step-checkpoint-tracking-pattern.md)

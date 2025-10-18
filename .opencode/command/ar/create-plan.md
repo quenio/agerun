@@ -364,6 +364,158 @@ For each function to be implemented, list what it should do:
 
 **Critical: Each behavior becomes ONE iteration**
 
+**⭐ MANDATORY: NULL Parameter Validation (from session 2025-10-18)**
+
+For EVERY function in your plan, systematically verify NULL parameter handling coverage:
+
+**Systematic NULL Parameter Coverage Check:**
+
+For each function introduced in the plan:
+
+1. **Identify function signature**
+   ```c
+   // Example: create function with 2 parameters
+   ar_file_delegate_t* ar_file_delegate__create(ar_log_t *ref_log, const char *ref_path);
+   ```
+
+2. **Count parameters**
+   - ref_log (parameter 1)
+   - ref_path (parameter 2)
+
+3. **Verify NULL handling iterations exist:**
+   - [ ] Iteration X.Y.1: create() handles NULL log
+   - [ ] Iteration X.Y.2: create() handles NULL path
+
+4. **Pattern for each parameter:**
+   ```markdown
+   #### Iteration X.Y.1: create() handles NULL log - PENDING REVIEW
+
+   **Objective**: Verify function handles NULL log parameter gracefully
+
+   **RED Phase:**
+   - Call function with NULL log parameter
+   - Assert function returns NULL (or appropriate error value)
+
+   **GREEN Phase:**
+   - Add NULL check for log parameter
+   - Return NULL if log is NULL
+   ```
+
+5. **If missing NULL iterations:**
+   - STOP behavior listing
+   - Add NULL parameter iterations immediately
+   - Pattern: One iteration per NULL-able parameter
+
+**Common Functions Needing NULL Checks:**
+
+```markdown
+✅ CORRECT: Comprehensive NULL parameter coverage
+
+### ar_foo_t* ar_foo__create(ar_log_t *ref_log, const char *ref_path)
+Behaviors:
+1. create() returns non-NULL (main success case)
+2. create() handles NULL log         ← NULL parameter 1
+3. create() handles NULL path         ← NULL parameter 2
+4. create() handles malloc failure    ← Allocation failure (use dlsym technique)
+
+### void ar_foo__destroy(ar_foo_t *own_foo)
+Behaviors:
+1. destroy() handles NULL foo         ← NULL parameter 1
+
+### bool ar_foo__set_max_size(ar_foo_t *mut_foo, size_t max_size)
+Behaviors:
+1. set_max_size() returns true (success case)
+2. set_max_size() handles NULL foo    ← NULL parameter 1
+
+### bool ar_foo__write(ar_foo_t *mut_foo, const char *ref_path, ar_data_t *ref_content)
+Behaviors:
+1. write() returns true (success case)
+2. write() handles NULL foo           ← NULL parameter 1
+3. write() handles NULL path          ← NULL parameter 2
+4. write() handles NULL content       ← NULL parameter 3
+```
+
+**❌ WRONG: Missing NULL parameter coverage**
+
+```markdown
+### ar_foo_t* ar_foo__create(ar_log_t *ref_log, const char *ref_path)
+Behaviors:
+1. create() returns non-NULL
+
+Problem: Missing NULL checks for both ref_log and ref_path parameters!
+Required: Add iterations for NULL log, NULL path, and malloc failure
+```
+
+**NULL Parameter Coverage Checklist:**
+
+For EVERY function in the plan, verify:
+- [ ] Function signature identified
+- [ ] Parameter count determined
+- [ ] NULL handling iteration exists for EACH parameter
+- [ ] Allocation failure iteration exists if function calls malloc/STRDUP
+- [ ] destroy() functions have NULL parameter check
+- [ ] setter functions have NULL object parameter check
+- [ ] operation functions have NULL checks for all pointer parameters
+
+**Allocation Failure Testing:**
+
+For functions that allocate memory (malloc/STRDUP), add allocation failure iterations:
+
+```markdown
+#### Iteration X.Y.3: create() handles malloc failure - PENDING REVIEW
+
+**Objective**: Verify function handles memory allocation failure gracefully
+
+**Note**: This test uses the dlsym technique to intercept malloc calls.
+See [dlsym-test-interception-technique.md](../kb/dlsym-test-interception-technique.md)
+
+**RED Phase:**
+```c
+// Control which malloc call should fail
+static int fail_at_malloc = -1;
+static int current_malloc = 0;
+
+void* malloc(size_t size) {
+    typedef void* (*malloc_fn)(size_t);
+    static malloc_fn real_malloc = NULL;
+
+    if (!real_malloc) {
+        union { void* obj; malloc_fn func; } converter;
+        converter.obj = dlsym(RTLD_NEXT, "malloc");
+        real_malloc = converter.func;
+    }
+
+    current_malloc++;
+    if (current_malloc == fail_at_malloc) {
+        return NULL;  // Simulate failure
+    }
+
+    return real_malloc(size);
+}
+
+static void test_foo__create_handles_malloc_failure(void) {
+    // Test malloc failure at each allocation point
+    fail_at_malloc = 1;  // Fail first malloc
+    ar_foo_t *own_foo = ar_foo__create(ref_log, "test");
+    AR_ASSERT(own_foo == NULL, "Should return NULL on malloc failure");
+}
+```
+
+**GREEN Phase:**
+```c
+ar_foo_t* ar_foo__create(ar_log_t *ref_log, const char *ref_path) {
+    // Check malloc result
+    ar_foo_t *own_foo = AR__HEAP__MALLOC(sizeof(ar_foo_t));
+    if (!own_foo) return NULL;  // Handle malloc failure
+
+    // Continue with initialization...
+    return own_foo;
+}
+```
+```
+
+**MANDATORY**: Before proceeding to Step 4, verify ALL functions have complete NULL parameter coverage.
+
 ```bash
 make checkpoint-update CMD=create-plan STEP=3
 ```
@@ -1545,6 +1697,7 @@ Use the simplest possible implementation:
 - [Plan Document Completion Status Pattern](../../../kb/plan-document-completion-status-pattern.md)
 
 ### Command Implementation Patterns
+- [Checkpoint Step Consolidation Pattern](../../../kb/checkpoint-step-consolidation-pattern.md) ⭐ Pattern for consolidating per-item verification steps
 - [Checkpoint Implementation Guide](../../../kb/checkpoint-implementation-guide.md)
 - [Command KB Consultation Enforcement](../../../kb/command-kb-consultation-enforcement.md)
 - [Command Output Documentation Pattern](../../../kb/command-output-documentation-pattern.md)

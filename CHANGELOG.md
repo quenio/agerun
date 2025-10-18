@@ -2,6 +2,26 @@
 
 ## 2025-10-18
 
+- **Plan Command Improvements from Session 2025-10-18**
+
+  Implemented comprehensive improvements to all three plan commands based on session learnings about checkpoint discipline, NULL parameter validation, and workflow consolidation.
+
+  **Review-Plan Command Restructuring**: Consolidated checkpoint structure from 11 steps to 6 steps by merging per-iteration verification aspects (Steps 4-7: Iteration Structure, TDD Methodology, GREEN Minimalism, Memory Management) into single interactive Step 3 "Review Each Iteration" with mandatory one-at-a-time user acceptance loop. Added multi-line presentation format for findings, NULL parameter validation checklist, comprehensive per-iteration verification covering all 14 TDD lessons. Prevents checkpoint discipline violations where steps were batch-marked complete without reviewing all iterations.
+
+  **Create-Plan Command Enhancement**: Added mandatory NULL parameter validation to Step 3 with systematic coverage check requiring one iteration per parameter, malloc failure iterations using dlsym technique, complete error handling for all public functions (create, destroy, setters, operations). Includes comprehensive examples showing correct vs incorrect coverage, allocation failure testing templates, and validation requirements before proceeding to Step 4.
+
+  **Execute-Plan Command Enhancement**: Added three special case execution guidance sections to Step 8: iteration completion summary format (structured RED/GREEN/REFACTOR reporting), NULL parameter iteration execution pattern (minimal NULL checks without over-implementation), malloc failure iteration execution using dlsym technique (separate `_dlsym_tests.c` files, wrapper implementation, build integration notes). Ensures consistent execution of error handling iterations across all plans.
+
+  **New KB Articles**:
+  - [checkpoint-step-consolidation-pattern.md](kb/checkpoint-step-consolidation-pattern.md): Documents pattern for consolidating per-item verification steps into interactive loops, preventing checkpoint batching violations. Includes review-plan example (11→6 steps), consolidation decision criteria, implementation guidance.
+  - [review-plan-command-improvements.md](kb/review-plan-command-improvements.md): Documents session 2025-10-18 learnings including what worked (interactive review, fixing during review, multi-line format), what didn't (checkpoint violations, missing proactive validation), 8 recommended improvements with implementation priority, example improved workflow.
+
+  **KB Integration**: Updated KB index (kb/README.md) adding new articles to sections 1.1 (Workflow & Planning) and 1.4 (Knowledge Management). Added cross-references to 4 existing KB articles (checkpoint-implementation-guide.md, iterative-plan-review-protocol.md, tdd-plan-review-checklist.md, plan-review-status-tracking.md). Updated all three plan commands' "Related KB Articles" sections referencing new patterns.
+
+  **Files Modified**: 3 command files (review-plan.md, create-plan.md, execute-plan.md), 2 new KB articles, KB index, 4 KB articles with cross-references
+
+  **Impact**: Commands now enforce NULL parameter coverage proactively, prevent checkpoint discipline violations through consolidated interactive loops, provide consistent guidance for error handling execution. Session improvements captured as reusable patterns for future command development.
+
 - **FileDelegate TDD Plan Review Complete**
 
   Completed comprehensive review of FileDelegate implementation plan (15 iterations across Cycles 8-12) following strict TDD methodology with all 14 lessons enforced.
