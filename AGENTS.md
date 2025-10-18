@@ -66,8 +66,16 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - **/bin**: Generated binaries (ignored by git, NEVER read these files)
 - **/methods**: Method definitions (.method files with docs and tests)
 - **/scripts**: Build and utility scripts (run via make targets, not directly - includes slash commands)
+  - **Checkpoint scripts** (`checkpoint_*.sh`): Implement multi-step workflow tracking
+    - `checkpoint_init.sh`: Initialize progress tracking file with all steps
+    - `checkpoint_update.sh`: Mark steps complete and show progress (uses safe sed with `@` delimiter)
+    - `checkpoint_status.sh`: Display current progress with progress bar
+    - `checkpoint_gate.sh`: Enforce gates between workflow stages
+    - `checkpoint_cleanup.sh`: Remove tracking file when done
+    - All scripts use cross-platform patterns: `[[ == ]]` for OSTYPE detection, `set -e`, error handling ([details](kb/cross-platform-bash-script-patterns.md))
 - **/reports**: Analysis reports and technical comparisons (all .md analysis files go here)
 - **.opencode/command/ar**: Slash command definitions (must use make targets, not direct scripts) ([role clarity](kb/role-clarification-pattern.md))
+  - Commands using checkpoints (e.g., `/ar:new-learnings`, `/ar:check-docs`, `/ar:commit`) initialize and update progress via Makefile checkpoint targets
 
 ## Critical Development Rules
 
@@ -346,7 +354,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 **Navigation & Files**: Absolute paths, git not .bak, ar_io backups ([details](kb/absolute-path-navigation.md), [backups](kb/file-io-backup-mechanism.md))
 **Build & Debug**: `make sanitize-tests 2>&1`, make targets only, parallel jobs ([details](kb/development-debug-tools.md), [make](kb/make-target-testing-discipline.md), [compile](kb/compilation-driven-refactoring-pattern.md), [shell diagnostics](kb/shell-configuration-diagnostic-troubleshooting.md))
-**Checkpoints**: Track complex tasks, gates, progress, concise output ([details](kb/multi-step-checkpoint-tracking-pattern.md), [workflows](kb/checkpoint-based-workflow-pattern.md), [gates](kb/gate-enforcement-exit-codes-pattern.md), [concise](kb/concise-script-output-principle.md))
+**Checkpoints**: Track complex tasks via bash scripts and make targets. Use through Makefile: `make checkpoint-init CMD=cmd STEPS='...'`, `make checkpoint-update CMD=cmd STEP=N`, `make checkpoint-status CMD=cmd`, `make checkpoint-gate CMD=cmd GATE="Name" REQUIRED="1,2,3"` ([implementation](kb/checkpoint-based-workflow-pattern.md), [enforcement](kb/checkpoint-workflow-enforcement-pattern.md), [scripts](kb/cross-platform-bash-script-patterns.md) use safe patterns for macOS/Linux)
 **YAML & Persistence**: 2-space indent, escape multiline, direct I/O, validate contracts ([details](kb/yaml-serialization-direct-io-pattern.md), [multiline](kb/multi-line-data-persistence-format.md), [contracts](kb/yaml-implicit-contract-validation-pattern.md))
 **Error & Logs**: Context filtering, precise grep, fix root causes ([details](kb/systematic-whitelist-error-resolution.md), [logs](kb/build-log-extraction-patterns.md), [grep](kb/grep-or-syntax-differences.md), [config migration](kb/configuration-migration-troubleshooting-strategy.md))
 **CI/CD**: gh CLI debugging, version verification ([details](kb/github-actions-debugging-workflow.md), [versions](kb/tool-version-selection-due-diligence.md))
