@@ -409,6 +409,12 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 - **Avoid complex piping chains**: Break complex command sequences into sequential steps to prevent parse errors and improve maintainability ([details](kb/bash-command-parsing-patterns.md))
 - **POSIX shell compatibility**: Use `case` not `[[  ]]` when scripts run in sh context; Makefiles invoke sh by default ([details](kb/makefile-posix-shell-compatibility.md))
 
+**macOS Compatibility**:
+- **Default shell consideration**: If the script will run on macOS's default shell, write it for zsh instead of bash
+- **Explicit bash shebang**: If the script must be bash, include `#!/bin/bash` at the top to ensure it runs in bash mode
+- **BSD vs GNU tools**: macOS uses BSD tools, not GNU tools—verify that commands like `sed`, `awk`, and `grep` use macOS-compatible flags (e.g., `sed -E` instead of `sed -r` for extended regex)
+- **Exit code handling still applies**: Continue to use `set -o pipefail` for exit code handling even on macOS
+
 **Error Prevention**:
 - Test problematic patterns:
   - Multi-line if/then conditionals with pipes
