@@ -47,36 +47,81 @@ These wrappers provide centralized checkpoint management across all commands.
 
 Run the complete checkpoint-based workflow:
 
-#### [CHECKPOINT START]
+```bash
+./scripts/init-checkpoint.sh check-docs '"Initial Check" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"'
+./scripts/require-checkpoint.sh check-docs
+```
+
+Then execute the following steps:
+
+#### Step 1: Initial Check
 
 ```bash
-./scripts/run-check-docs.sh
+./scripts/check-docs-initial.sh
 ```
 
-This script handles all stages of the documentation validation and fix process:
+Runs `make check-docs` to identify all documentation errors and saves error count.
 
-### What the Script Does
+**Expected output**: Shows validation results and saves ERROR_COUNT to stats file.
 
-1. **Initial Check**: Runs `make check-docs` to identify all documentation errors
-2. **Conditional Flow**: Skips fix steps if no errors found, proceeds through them if errors exist
-3. **Preview Fixes**: Runs `python3 scripts/batch_fix_docs.py --dry-run` to preview changes
-4. **Apply Fixes**: Runs the batch fix script to fix identified errors
-5. **Verify Resolution**: Runs `make check-docs` again to verify all fixes worked
-6. **Commit and Push**: Stages, commits, and pushes all documentation fixes
-7. **Checkpoint Completion**: Marks the workflow as complete
+#### Step 2: Conditional Flow (Error Gate)
 
-### Expected Output
+If no errors found, skip to Step 5. If errors found, continue to Step 3.
 
-```
-✅ All documentation checks passed
-- 579 files checked
-- All references valid
-- All module names exist
-- All links valid
-- No broken references
+#### Step 3: Preview Fixes
+
+```bash
+./scripts/check-docs-preview-fixes.sh
 ```
 
-#### [CHECKPOINT END]
+Runs `python3 scripts/batch_fix_docs.py --dry-run` to preview changes before applying them (only if errors exist).
+
+**Expected output**: Shows preview of proposed fixes.
+
+#### Step 4: Apply Fixes
+
+```bash
+./scripts/check-docs-apply-fixes.sh
+```
+
+Runs the batch fix script to fix all identified documentation errors (only if errors exist).
+
+**Expected output**: Shows count of fixed documentation files.
+
+#### Step 5: Verify Resolution
+
+```bash
+./scripts/check-docs-verify.sh
+```
+
+Runs `make check-docs` again to verify all fixes were successful.
+
+**Expected output**: Shows final validation results (PASS or PARTIAL).
+
+#### Step 6: Commit and Push
+
+```bash
+./scripts/check-docs-commit.sh
+```
+
+Stages, commits, and pushes all documentation fixes.
+
+**Expected output**:
+```
+✅ Documentation fixes committed and pushed
+```
+
+#### [CHECKPOINT COMPLETE]
+
+```bash
+./scripts/complete-checkpoint.sh check-docs
+rm -f /tmp/check-docs-*.txt /tmp/fix-preview.txt
+```
+
+**Expected output:**
+```
+✅ Documentation check workflow complete!
+```
 
 ## Troubleshooting: Manual Checkpoint Control
 
