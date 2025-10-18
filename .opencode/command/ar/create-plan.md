@@ -643,6 +643,48 @@ make checkpoint-cleanup CMD=create-plan-iterations
 make checkpoint-update CMD=create-plan STEP=6
 ```
 
+**[QUALITY GATE 2: Plan Structure Validation]**
+
+**MANDATORY VALIDATION**: Before proceeding to Step 7, run structural validation:
+
+```bash
+# Validate plan structure (checks all iterations have required sections)
+./scripts/validate_plan_structure.sh plans/[plan-file].md [expected-iteration-count]
+
+# Example:
+# ./scripts/validate_plan_structure.sh plans/file_delegate_plan.md 15
+```
+
+**Expected output:**
+```
+🔍 Validating plan structure: plans/file_delegate_plan.md
+Expected iterations: 15
+Found iterations: 15
+✅ Iteration count matches
+
+Checking iteration structure...
+  Iteration 8.1: ✅
+  Iteration 8.2: ✅
+  ...
+  Iteration 12.3: ✅
+
+✅ All iterations have required structure
+✅ PLAN STRUCTURE VALIDATION PASSED
+```
+
+**What this validates:**
+- Correct number of iterations exist in the file
+- Each iteration has Objective, RED Phase, GREEN Phase, Verification sections
+- Each iteration has GOAL 1 and GOAL 2 markers in RED phase
+- Each iteration has PENDING REVIEW status marker
+
+**If validation fails:**
+- DO NOT proceed to Step 7
+- Review and fix structural issues in the plan
+- Re-run validation until it passes
+
+This gate prevents proceeding with incomplete or structurally invalid plans.
+
 #### Step 7: Structure RED Phases
 
 **⭐ CRITICAL: Lesson 7 - Assertion Validity Verification Via Temporary Corruption**
@@ -747,9 +789,28 @@ Expected GREEN: "Test PASSES because [reason]"
 Verify: `make test` → assertion passes
 ```
 
+**MANDATORY EVIDENCE REQUIREMENT**: As you verify each RED phase, document the corruption in an evidence file:
+
+```bash
+# Create evidence file before starting RED phase verification
+cat > /tmp/red-corruptions-evidence.txt << 'EOF'
+# RED Phase Corruptions Evidence
+# One entry per iteration documenting how assertion will fail
+# Format: N.N: Description of temporary corruption
+
+EOF
+
+# After verifying each iteration's RED phase, append to evidence file:
+echo "8.1: Stub returns NULL to prove test catches creation failures" >> /tmp/red-corruptions-evidence.txt
+echo "8.2: Skip freeing own_allowed_path to cause memory leak" >> /tmp/red-corruptions-evidence.txt
+echo "8.3: Return 'network' instead of 'file' to prove type check" >> /tmp/red-corruptions-evidence.txt
+# ... continue for each iteration
+```
+
 **MANDATORY: After verifying EACH iteration's RED phase:**
 ```bash
-# Mark RED phase verification complete
+# 1. Document corruption in evidence file (see above)
+# 2. Mark RED phase verification complete
 make checkpoint-update CMD=create-plan-red-phases STEP=1  # After verifying Iteration 1.1
 make checkpoint-update CMD=create-plan-red-phases STEP=2  # After verifying Iteration 1.2
 # ... continue for each iteration
@@ -763,6 +824,41 @@ make checkpoint-update CMD=create-plan-red-phases STEP=2  # After verifying Iter
 make checkpoint-status CMD=create-plan-red-phases
 # Should show: 🎆 All steps complete!
 
+# MANDATORY: Validate evidence file before proceeding
+./scripts/validate_red_corruptions.sh /tmp/red-corruptions-evidence.txt [expected-iteration-count]
+
+# Example:
+# ./scripts/validate_red_corruptions.sh /tmp/red-corruptions-evidence.txt 15
+```
+
+**Expected validation output:**
+```
+🔍 Validating RED corruption evidence: /tmp/red-corruptions-evidence.txt
+Expected entries: 15
+Found entries: 15
+✅ Corruption entry count matches
+
+Checking corruption entries...
+  ✅ 8.1
+  ✅ 8.2
+  ...
+  ✅ 12.3
+
+✅ All corruption entries are properly formatted
+✅ RED CORRUPTION EVIDENCE VALIDATION PASSED
+```
+
+**What this validates:**
+- Evidence file contains correct number of corruption entries
+- Each entry has iteration number and meaningful description
+- Descriptions are substantial (not just placeholders)
+
+**If validation fails:**
+- DO NOT proceed to Step 8
+- Add missing or fix invalid corruption entries
+- Re-run validation until it passes
+
+```bash
 # Clean up RED phase tracking
 make checkpoint-cleanup CMD=create-plan-red-phases
 
