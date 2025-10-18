@@ -2,6 +2,7 @@
 # Update checkpoint status for a specific step
 # Usage: checkpoint_update.sh <command_name> <step_number> [status]
 # Example: checkpoint_update.sh new-learnings 1 complete
+set -o pipefail
 
 set -e
 
@@ -30,7 +31,7 @@ fi
 STEP_DESC=$(grep "STEP_${STEP_NUMBER}=" "$TRACKING_FILE" | sed 's/.*# //')
 
 # Update step status
-if [[ "$OSTYPE" == "darwin"* ]]; then
+if [ "$OSTYPE" = "darwin"*  ]; then
     # macOS
     sed -i '' "s/STEP_${STEP_NUMBER}=.*/STEP_${STEP_NUMBER}=${STATUS}    # ${STEP_DESC}/" "$TRACKING_FILE"
 else

@@ -4,6 +4,7 @@
 #
 # This script performs quick pattern-based checks to verify plan structure.
 # For comprehensive validation, use ./scripts/validate-tdd-plan.sh
+set -o pipefail
 
 set -e
 

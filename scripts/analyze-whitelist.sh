@@ -10,6 +10,7 @@
 # Returns:
 # - Exit 0 always
 # - Outputs analysis to stdout
+set -o pipefail
 
 set -e
 

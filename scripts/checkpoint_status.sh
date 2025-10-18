@@ -2,6 +2,7 @@
 # Display current progress status for a command
 # Usage: checkpoint_status.sh <command_name> [--verbose]
 # Example: checkpoint_status.sh new-learnings --verbose
+set -o pipefail
 
 set -e
 
@@ -30,7 +31,7 @@ SKIPPED=$(grep -c "=skipped" "$TRACKING_FILE" || true)
 PERCENTAGE=$((COMPLETED * 100 / TOTAL_STEPS))
 
 # Compact mode: only 3 lines
-if [ "$MODE" == "--compact" ]; then
+if [ "$MODE" = "--compact" ]; then
     echo "📈 $COMMAND_NAME: $COMPLETED/$TOTAL_STEPS steps ($PERCENTAGE%)"
     
     # Progress bar on one line
@@ -70,29 +71,31 @@ echo "] $PERCENTAGE%"
 echo ""
 
 # Show step details
-if [ "$MODE" == "--verbose" ] || [ "$PENDING" -gt 0 ]; then
+if [ "$MODE" = "--verbose" ] || [ "$PENDING" -gt 0 ]; then
     echo "Step Details:"
     while IFS= read -r line; do
-        if [[ $line == STEP_* ]]; then
-            STEP_NUM=$(echo "$line" | sed 's/STEP_\([0-9]*\).*/\1/')
-            STATUS=$(echo "$line" | sed 's/.*=\([^[:space:]]*\).*/\1/')
-            DESC=$(echo "$line" | sed 's/.*# //')
-            
-            case $STATUS in
-                complete)
-                    echo "  ✓ Step $STEP_NUM: $DESC"
-                    ;;
-                pending)
-                    echo "  ⏳ Step $STEP_NUM: $DESC"
-                    ;;
-                skipped)
-                    echo "  ⊘ Step $STEP_NUM: $DESC (skipped)"
-                    ;;
-                *)
-                    echo "  ? Step $STEP_NUM: $DESC ($STATUS)"
-                    ;;
-            esac
-        fi
+        case "$line" in
+            STEP_*)
+                STEP_NUM=$(echo "$line" | sed 's/STEP_\([0-9]*\).*/\1/')
+                STATUS=$(echo "$line" | sed 's/.*=\([^[:space:]]*\).*/\1/')
+                DESC=$(echo "$line" | sed 's/.*# //')
+
+                case $STATUS in
+                    complete)
+                        echo "  ✓ Step $STEP_NUM: $DESC"
+                        ;;
+                    pending)
+                        echo "  ⏳ Step $STEP_NUM: $DESC"
+                        ;;
+                    skipped)
+                        echo "  ⊘ Step $STEP_NUM: $DESC (skipped)"
+                        ;;
+                    *)
+                        echo "  ? Step $STEP_NUM: $DESC ($STATUS)"
+                        ;;
+                esac
+                ;;
+        esac
     done < "$TRACKING_FILE"
     echo ""
 fi

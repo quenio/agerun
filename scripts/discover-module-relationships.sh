@@ -10,6 +10,7 @@
 # Returns:
 # - Exit 0 if minimum modules found
 # - Exit 1 if insufficient modules for consistency check
+set -o pipefail
 
 set -e
 

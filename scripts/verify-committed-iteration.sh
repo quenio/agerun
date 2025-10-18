@@ -8,6 +8,7 @@
 #   test-name: Test function name (e.g., "test_delegate__send_returns_true")
 #   impl-file: Path to implementation file (e.g., "modules/ar_delegate.c")
 #   impl-pattern: Grep pattern for implementation (e.g., "ar_delegate__send")
+set -o pipefail
 
 set -e
 

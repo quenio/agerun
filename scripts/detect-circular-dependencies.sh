@@ -10,6 +10,7 @@
 # Returns:
 # - Exit 0 if no circular dependencies found
 # - Exit 1 if circular dependencies detected
+set -o pipefail
 
 set -e
 

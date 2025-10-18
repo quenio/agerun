@@ -7,6 +7,7 @@
 # Returns:
 # - Exit 0 always (categorization complete)
 # - Outputs: REAL_ERRORS and INTENTIONAL_ERRORS counts to stdout
+set -o pipefail
 
 set -e
 

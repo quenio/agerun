@@ -11,6 +11,7 @@
 # Returns:
 # - Exit 0 if all checks pass
 # - Exit 1 if violations found
+set -o pipefail
 
 set -e
 

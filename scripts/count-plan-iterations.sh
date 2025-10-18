@@ -1,6 +1,7 @@
 #!/bin/bash
 # Count iterations by status in a TDD plan file
 # Usage: ./scripts/count-plan-iterations.sh <plan-file>
+set -o pipefail
 
 set -e
 

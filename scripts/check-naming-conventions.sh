@@ -11,6 +11,7 @@
 # Returns:
 # - Exit 0 if all conventions followed
 # - Exit 1 if violations found
+set -o pipefail
 
 set -e
 
@@ -89,7 +90,7 @@ echo ""
 
 PREFIX_VIOLATIONS=0
 for file in $FILES; do
-    if [ ! -f "$file" ] || [[ ! "$file" =~ \.h$ ]]; then
+    if [ ! -f "$file" ] || [ ! "$file" =~ \.h$ ]; then
         continue
     fi
 
@@ -186,7 +187,7 @@ for file in $FILES; do
     fi
 
     # Look for camelCase in function/variable names
-    grep -n "[a-z][A-Z]" "$file" 2>/dev/null | grep -v "^[[:space:]]*//\|^[[:space:]]*\*" | while read -r line; do
+    grep -n "[a-z][A-Z]" "$file" 2>/dev/null | grep -v "^[:space:]*//\|^[:space:]*\*" | while read -r line; do
         LINE_NUM=$(echo "$line" | cut -d: -f1)
         CONTENT=$(echo "$line" | cut -d: -f2-)
 

@@ -1,6 +1,7 @@
 #!/bin/bash
 # Validate GREEN phase minimalism evidence after Step 8 (Structure GREEN Phases)
 # Usage: validate_green_minimalism.sh <evidence-file> <expected-count>
+set -o pipefail
 
 set -e
 
@@ -52,8 +53,8 @@ GOOD_KEYWORDS="hardcoded|minimal|only|forced by|simple|stub|returns (NULL|false|
 
 while IFS= read -r line; do
     # Skip comments and empty lines
-    [[ "$line" =~ ^# ]] && continue
-    [[ -z "$line" ]] && continue
+    [ "$line" =~ ^# ] && continue
+    [ -z "$line" ] && continue
 
     # Check format: N.N: Description
     if ! echo "$line" | grep -q "^[0-9]\+\.[0-9]\+:"; then

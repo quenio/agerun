@@ -12,6 +12,7 @@
 # - Exit 0 if no smells found
 # - Exit 1 if code smells detected
 # - Outputs violations with file:line references
+set -o pipefail
 
 set -e
 

@@ -2,6 +2,7 @@
 # Enhanced checkpoint update with work verification
 # Usage: checkpoint_update_enhanced.sh <command_name> <step_number> [evidence_file] [work_summary]
 # Example: checkpoint_update_enhanced.sh new-learnings 3 "kb/new-article.md" "Created new KB article with real AgeRun examples"
+set -o pipefail
 
 set -e
 
@@ -39,7 +40,7 @@ verify_work() {
     local step_desc="$3"
 
     # Knowledge Base Article Creation verification
-    if [[ "$step_desc" == *"Knowledge Base Article Creation"* ]]; then
+    if [ "$step_desc" = *"Knowledge Base Article Creation"*  ]; then
         if [ -z "$evidence" ] || [ ! -f "$evidence" ]; then
             echo "❌ VERIFICATION FAILED: Knowledge Base Article Creation requires evidence file"
             echo "   Usage: make checkpoint-update-verified CMD=$COMMAND_NAME STEP=$STEP_NUMBER EVIDENCE=kb/new-article.md SUMMARY='Created article with real AgeRun examples'"
@@ -55,7 +56,7 @@ verify_work() {
     fi
 
     # Validation Before Saving verification
-    if [[ "$step_desc" == *"Validation Before Saving"* ]]; then
+    if [ "$step_desc" = *"Validation Before Saving"*  ]; then
         echo "Verifying documentation validation..."
         if ! make check-docs >/dev/null 2>&1; then
             echo "❌ VERIFICATION FAILED: make check-docs must pass before marking validation step complete"
@@ -67,7 +68,7 @@ verify_work() {
     fi
 
     # Update Existing KB Articles verification
-    if [[ "$step_desc" == *"Update Existing KB Articles"* ]]; then
+    if [ "$step_desc" = *"Update Existing KB Articles"*  ]; then
         local modified_kb=$(git diff --name-only 2>/dev/null | grep "kb.*\.md" | wc -l || echo 0)
         if [ "$modified_kb" -lt 3 ]; then
             echo "❌ VERIFICATION FAILED: KB article updates require modifying 3-5 existing articles"
@@ -79,7 +80,7 @@ verify_work() {
     fi
 
     # Review and Update Commands verification
-    if [[ "$step_desc" == *"Review and Update Commands"* ]]; then
+    if [ "$step_desc" = *"Review and Update Commands"*  ]; then
         local modified_cmds=$(git diff --name-only 2>/dev/null | grep -E "\.claude/commands|\.opencode/command" | wc -l || echo 0)
         if [ "$modified_cmds" -lt 3 ]; then
             echo "❌ VERIFICATION FAILED: Command updates require modifying 3-4 commands"
@@ -91,7 +92,7 @@ verify_work() {
     fi
 
     # Integration Verification
-    if [[ "$step_desc" == *"Integration Verification"* ]]; then
+    if [ "$step_desc" = *"Integration Verification"*  ]; then
         echo "Verifying integration completeness..."
         local modified_kb=$(git diff --name-only 2>/dev/null | grep "kb.*\.md" | wc -l || echo 0)
         local modified_cmds=$(git diff --name-only 2>/dev/null | grep -E "\.claude/commands|\.opencode/command" | wc -l || echo 0)
@@ -236,7 +237,7 @@ echo "✅ Work verification passed"
 } >> "$AUDIT_FILE"
 
 # Update step status (same as original)
-if [[ "$OSTYPE" == "darwin"* ]]; then
+if [ "$OSTYPE" = "darwin"*  ]; then
     sed -i '' "s/STEP_${STEP_NUMBER}=.*/STEP_${STEP_NUMBER}=${STATUS}    # ${STEP_DESC}/" "$TRACKING_FILE"
 else
     sed -i "s/STEP_${STEP_NUMBER}=.*/STEP_${STEP_NUMBER}=${STATUS}    # ${STEP_DESC}/" "$TRACKING_FILE"

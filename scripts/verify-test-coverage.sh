@@ -11,6 +11,7 @@
 # Returns:
 # - Exit 0 if all quality checks pass
 # - Exit 1 if quality issues found
+set -o pipefail
 
 set -e
 

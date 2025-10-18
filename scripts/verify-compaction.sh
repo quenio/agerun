@@ -10,6 +10,7 @@
 # Returns:
 # - Exit 0 if integrity check passes
 # - Exit 1 if incomplete tasks lost
+set -o pipefail
 
 set -e
 

@@ -9,6 +9,7 @@
 # Returns:
 # - Exit 0 if ready to commit (both minimums met)
 # - Exit 1 if not ready (needs more integration)
+set -o pipefail
 
 set -e
 

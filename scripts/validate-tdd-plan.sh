@@ -1,4 +1,5 @@
 #!/bin/bash
+set -o pipefail
 
 # TDD Plan Validator - Checks TDD plans against quality checklist
 # Catches common issues on first pass using lessons from authentic TDD practice

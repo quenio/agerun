@@ -10,6 +10,7 @@
 # Returns:
 # - Exit 0 if migration is safe
 # - Exit 1 if migration is blocked
+set -o pipefail
 
 set -e
 

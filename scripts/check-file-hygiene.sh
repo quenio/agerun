@@ -12,6 +12,7 @@
 # Returns:
 # - Exit 0 if no unwanted files found
 # - Exit 1 if files should be cleaned up
+set -o pipefail
 
 set -e
 

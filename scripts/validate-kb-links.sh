@@ -7,6 +7,7 @@
 # Returns:
 # - Exit 0 if all links valid
 # - Exit 1 if broken links found
+set -o pipefail
 
 set -e
 

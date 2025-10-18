@@ -1,6 +1,7 @@
 #!/bin/bash
 # Validate RED phase corruption evidence after Step 7 (Structure RED Phases)
 # Usage: validate_red_corruptions.sh <evidence-file> <expected-count>
+set -o pipefail
 
 set -e
 
@@ -48,8 +49,8 @@ echo "Checking corruption entries..."
 
 while IFS= read -r line; do
     # Skip comments and empty lines
-    [[ "$line" =~ ^# ]] && continue
-    [[ -z "$line" ]] && continue
+    [ "$line" =~ ^# ] && continue
+    [ -z "$line" ] && continue
 
     # Check format: N.N: Description
     if ! echo "$line" | grep -q "^[0-9]\+\.[0-9]\+:"; then

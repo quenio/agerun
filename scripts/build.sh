@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e
+set -o pipefail
 
 # Build Script for AgeRun
 # Performs complete build with all tests, checks, and validations in parallel

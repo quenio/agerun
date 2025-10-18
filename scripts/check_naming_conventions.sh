@@ -1,4 +1,6 @@
 #!/bin/bash
+set -e
+set -o pipefail
 
 # Naming Convention Checker for AgeRun
 # Verifies that all source files follow the established naming conventions
@@ -51,17 +53,17 @@ for file in $module_files; do
     basename=$(basename "$file")
     
     # Check if this is a Zig file
-    if [[ "$basename" == *.zig ]]; then
+    if [ "$basename" = *.zig  ]; then
         # Zig files can follow either pattern:
         # 1. C-ABI modules: ar_<module>.zig
         # 2. Struct modules: TitleCase.zig (PascalCase)
-        if [[ ! "$basename" =~ ^ar_ ]] && [[ ! "$basename" =~ ^[A-Z][a-zA-Z0-9]*\.zig$ ]]; then
+        if ! echo "$basename" | grep -qE ^ar_  && [ ! "$basename" =~ ^[A-Z][a-zA-Z0-9]*\.zig$ ]; then
             print_error "Zig module '$file' doesn't follow ar_<module> or TitleCase naming convention"
             ((bad_module_files++))
         fi
     else
         # C/H files should always start with ar_
-        if [[ ! "$basename" =~ ^ar_ ]]; then
+        if ! echo "$basename" | grep -qE ^ar_ ; then
             print_error "Module file '$file' doesn't follow ar_<module> naming convention"
             ((bad_module_files++))
         fi
@@ -83,7 +85,7 @@ bad_test_files=0
 for file in $c_test_files; do
     basename=$(basename "$file")
     # Test files should be <module>_tests.c
-    if [[ ! "$basename" =~ ^[a-zA-Z0-9_]+_tests\.c$ ]]; then
+    if [ ! "$basename" =~ ^[a-zA-Z0-9_]+_tests\.c$ ]; then
         print_error "Test file '$file' doesn't follow <module>_tests.c convention"
         ((bad_test_files++))
     fi
@@ -93,7 +95,7 @@ done
 for file in $zig_test_files; do
     basename=$(basename "$file")
     # Zig test files should be <ModuleName>Tests.zig (TitleCase)
-    if [[ ! "$basename" =~ ^[A-Z][a-zA-Z0-9]*Tests\.zig$ ]]; then
+    if [ ! "$basename" =~ ^[A-Z][a-zA-Z0-9]*Tests\.zig$ ]; then
         print_error "Test file '$file' doesn't follow <ModuleName>Tests.zig convention"
         ((bad_test_files++))
     fi
@@ -181,14 +183,14 @@ echo -n "  Static functions... "
 non_test_files=$(find modules -name "*.c" -o -name "*.zig" | grep -v "_tests")
 bad_static_funcs=0
 for file in $non_test_files; do
-    if [[ "$file" == *.c ]]; then
+    if [ "$file" = *.c  ]; then
         count=$(grep "^static.*(" "$file" 2>/dev/null | \
             grep -v "^static inline" | \
             grep -E "^static\s+[a-zA-Z_][a-zA-Z0-9_]*\s+[a-zA-Z_][a-zA-Z0-9_]*\s*\(" | \
             grep -v -E "^static\s+[a-zA-Z_][a-zA-Z0-9_]*\s+_[a-zA-Z0-9_]+\s*\(" | \
             wc -l)
         bad_static_funcs=$((bad_static_funcs + count))
-    elif [[ "$file" == *.zig ]]; then
+    elif [ "$file" = *.zig  ]; then
         # Zig uses fn for private functions, they should also use _
         count=$(grep "^fn [a-zA-Z]" "$file" 2>/dev/null | \
             grep -v "^fn _" | \
@@ -202,13 +204,13 @@ if [ $bad_static_funcs -gt 0 ]; then
     # Show first few examples
     echo "    Examples:"
     for file in $non_test_files; do
-        if [[ "$file" == *.c ]]; then
+        if [ "$file" = *.c  ]; then
             grep "^static.*(" "$file" 2>/dev/null | \
                 grep -v "^static inline" | \
                 grep -E "^static\s+[a-zA-Z_][a-zA-Z0-9_]*\s+[a-zA-Z_][a-zA-Z0-9_]*\s*\(" | \
                 grep -v -E "^static\s+[a-zA-Z_][a-zA-Z0-9_]*\s+_[a-zA-Z0-9_]+\s*\(" | \
                 sed "s|^|      $file: |"
-        elif [[ "$file" == *.zig ]]; then
+        elif [ "$file" = *.zig  ]; then
             grep "^fn [a-zA-Z]" "$file" 2>/dev/null | \
                 grep -v "^fn _" | \
                 sed "s|^|      $file: |"
@@ -265,7 +267,7 @@ for file in modules/*.h; do
             # Extract enum values from the block
             # Look for enum values - they start with uppercase letters followed by comma or comment
             # Use awk to reliably extract just the enum name
-            enum_values=$(echo "$enum_block" | awk '/^[[:space:]]*[A-Z][A-Z0-9_]+[[:space:]]*(,|\/\*)/ { gsub(/^[[:space:]]*/, ""); gsub(/[[:space:],].*/, ""); print }')
+            enum_values=$(echo "$enum_block" | awk '/^[:space:]*[A-Z][A-Z0-9_]+[:space:]*(,|\/\*)/ { gsub(/^[:space:]*/, ""); gsub(/[:space:],].*/, ""); print }')
             
             # Convert type name to expected prefix: ar_data_type_t -> AR_DATA_TYPE
             expected_prefix=$(echo "$enum_type" | sed -E 's/^ar_//; s/_t$//' | tr '[:lower:]' '[:upper:]')
@@ -302,7 +304,7 @@ for file in modules/*.zig; do
                 
                 # Extract enum values from the Zig enum block
                 # Zig format: VALUE_NAME = number,
-                enum_values=$(echo "$enum_block" | grep -E '^[[:space:]]*[A-Z][A-Z0-9_]+[[:space:]]*=' | sed -E 's/^[[:space:]]*([A-Z][A-Z0-9_]+)[[:space:]]*=.*/\1/')
+                enum_values=$(echo "$enum_block" | grep -E '^[:space:]*[A-Z][A-Z0-9_]+[:space:]*=' | sed -E 's/^[:space:]*([A-Z][A-Z0-9_]+)[:space:]*=.*/\1/')
                 
                 # Convert type name to expected prefix: ar_file_result_t -> AR_FILE_RESULT
                 expected_prefix=$(echo "$enum_type" | sed -E 's/^ar_//; s/_t$//' | tr '[:lower:]' '[:upper:]')
@@ -507,9 +509,9 @@ struct_module_zig_files=""
 for file in modules/*.zig; do
     if [ -f "$file" ]; then
         basename=$(basename "$file")
-        if [[ "$basename" =~ ^ar_ ]]; then
+        if echo "$basename" | grep -qE ^ar_ ; then
             c_abi_zig_files="$c_abi_zig_files $file"
-        elif [[ "$basename" =~ ^[A-Z][a-zA-Z0-9]*\.zig$ ]] && [[ ! "$basename" =~ Tests\.zig$ ]]; then
+        elif [ "$basename" =~ ^[A-Z][a-zA-Z0-9]*\.zig$ ] && [ ! "$basename" =~ Tests\.zig$ ]; then
             struct_module_zig_files="$struct_module_zig_files $file"
         fi
     fi

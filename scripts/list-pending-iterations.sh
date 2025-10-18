@@ -1,6 +1,7 @@
 #!/bin/bash
 # List all PENDING REVIEW iterations from a TDD plan file
 # Usage: ./scripts/list-pending-iterations.sh <plan-file>
+set -o pipefail
 
 set -e
 
@@ -24,8 +25,8 @@ echo ""
 grep -n "PENDING REVIEW" "$PLAN_FILE" 2>/dev/null | while IFS=: read -r line_num line_content; do
     # Extract iteration number and description
     # Format: #### Iteration X.Y: Description - PENDING REVIEW
-    iteration=$(echo "$line_content" | sed -E 's/^#+[[:space:]]*Iteration[[:space:]]+([0-9.]+):.*/\1/')
-    description=$(echo "$line_content" | sed -E 's/^#+[[:space:]]*Iteration[[:space:]]+[0-9.]+:[[:space:]]*(.*)[[:space:]]-[[:space:]]*PENDING REVIEW/\1/')
+    iteration=$(echo "$line_content" | sed -E 's/^#+[:space:]*Iteration[:space:]+([0-9.]+):.*/\1/')
+    description=$(echo "$line_content" | sed -E 's/^#+[:space:]*Iteration[:space:]+[0-9.]+:[:space:]*(.*)[:space:]-[:space:]*PENDING REVIEW/\1/')
 
     echo "[$line_num] Iteration $iteration: $description"
 done

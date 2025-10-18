@@ -9,6 +9,7 @@
 # Returns:
 # - Exit 0 always
 # - Outputs related content grouped by type
+set -o pipefail
 
 set -e
 

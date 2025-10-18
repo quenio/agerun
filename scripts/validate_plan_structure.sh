@@ -1,6 +1,7 @@
 #!/bin/bash
 # Validate TDD plan structure after Step 6 (Plan Iterations)
 # Usage: validate_plan_structure.sh <plan-file> <expected-iteration-count>
+set -o pipefail
 
 set -e
 

@@ -5,6 +5,7 @@
 # Arguments:
 #   plan-file: Path to the plan file
 #   status-filter: (Optional) Filter by status: PENDING, REVIEWED, REVISED, IMPLEMENTED, COMMITTED
+set -o pipefail
 
 set -e
 
@@ -35,11 +36,11 @@ echo ""
 # Format: ### Iteration X.Y: Description - STATUS
 grep -E "^###+ Iteration" "$PLAN_FILE" 2>/dev/null | while IFS= read -r line; do
     # Extract components
-    iteration=$(echo "$line" | sed -E 's/^#+[[:space:]]*Iteration[[:space:]]+([0-9.]+):.*/\1/')
+    iteration=$(echo "$line" | sed -E 's/^#+[:space:]*Iteration[:space:]+([0-9.]+):.*/\1/')
 
     # Extract description (everything between ": " and last " - ")
-    description=$(echo "$line" | sed -E 's/^#+[[:space:]]*Iteration[[:space:]]+[0-9.]+:[[:space:]]*(.*)/\1/')
-    description=$(echo "$description" | sed -E 's/[[:space:]]-[[:space:]]*(PENDING REVIEW|REVIEWED|REVISED|IMPLEMENTED|✅ COMMITTED).*//')
+    description=$(echo "$line" | sed -E 's/^#+[:space:]*Iteration[:space:]+[0-9.]+:[:space:]*(.*)/\1/')
+    description=$(echo "$description" | sed -E 's/[:space:]-[:space:]*(PENDING REVIEW|REVIEWED|REVISED|IMPLEMENTED|✅ COMMITTED).*//')
 
     # Extract status (after last " - ")
     status=$(echo "$line" | grep -oE "(PENDING REVIEW|REVIEWED|REVISED|IMPLEMENTED|✅ COMMITTED)" | tail -1)
