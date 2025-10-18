@@ -984,41 +984,16 @@ make checkpoint-gate CMD=create-plan GATE="Documentation" REQUIRED="9,10,11"
 
 #### Step 12: Validate Plan
 
-**⭐ LESSON 7 CRITICAL CHECK**: Run the automated validator to ensure plan will pass review-plan:
+**⭐ LESSON 7 CRITICAL CHECK**: Run validation to ensure plan will pass review-plan:
 
 ```bash
-# Run automated validator - catches issues on first pass
+# Quick sanity check - fast pattern verification
+./scripts/plan-sanity-check.sh <plan-file>
+# Shows: assertion counts, FAILS comments, Lesson 7 corruption docs, etc.
+
+# Comprehensive automated validator - catches all issues
 ./scripts/validate-tdd-plan.sh <plan-file>
 # Expected: ✅ Plan validation PASSED
-```
-
-**Run self-validation checks:**
-
-```bash
-# Count assertions per iteration
-grep -c "AR_ASSERT" <each-iteration>
-# Should be exactly 1 per iteration (except .2 which has 2: one from .1 + new one)
-
-# Check for FAILS comments
-grep "// ← FAILS" <plan-file>
-# Should have one per RED phase
-
-# **LESSON 7 CRITICAL**: Check for temporary corruption/failure documentation
-grep -E "Temporary|corrupt|break|Expected RED.*FAIL" <plan-file>
-# Should find documentation of how RED phase will fail for EACH iteration
-# This proves assertions catch bugs, not just always-passing tests
-
-# Check for temporary cleanup format
-grep "temporary:" <plan-file>
-# Should match: "// Cleanup (temporary: manually destroy X since not registered yet)"
-
-# Check for real types
-grep -E "ar_[a-z_]+_t" <plan-file>
-# Should find multiple real AgeRun types
-
-# Check for BDD structure
-grep -E "// Given|// When|// Then|// Cleanup" <plan-file>
-# Should find all four in each test
 ```
 
 **Pre-review validation checklist (including all 14 lessons):**
