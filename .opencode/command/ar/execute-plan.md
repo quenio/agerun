@@ -350,30 +350,32 @@ make checkpoint-update CMD=execute-plan STEP=2
 
 #### Step 3: Validate Plan Compliance
 
-**⚠️ CRITICAL: Steps 3-6 enforce IMPLEMENTED-first verification order**
+**⚠️ CRITICAL: Steps 3-7 enforce IMPLEMENTED-first verification order**
 
-The following 4 steps (3-6) MUST be done in THIS ORDER to prevent assumption-based errors:
+The following 5 steps (3-7) MUST be done in THIS ORDER to prevent assumption-based errors:
 
 - **Step 3**: Validate plan compliance (14 lessons)
 - **Step 4**: Check for IMPLEMENTED iterations (MANDATORY - do this BEFORE deciding "nothing to do")
 - **Step 5**: Verify IMPLEMENTED code and git status (if any found in Step 4)
-- **Step 6**: Extract REVIEWED/REVISED iterations (only after IMPLEMENTED verified)
+- **Step 6**: Verify COMMITTED iterations (check for stale markers)
+- **Step 7**: Extract REVIEWED/REVISED iterations (only after IMPLEMENTED and COMMITTED verified)
 
 **WHY THIS ORDER MATTERS:**
 
 The old structure (extract REVIEWED/REVISED first) caused this mistake:
 - Saw "no REVIEWED/REVISED iterations"
 - Concluded "nothing to do" and stopped
-- Never checked IMPLEMENTED iterations
-- Missed that IMPLEMENTED markers were stale (already committed)
+- Never checked IMPLEMENTED or COMMITTED iterations
+- Missed that IMPLEMENTED/COMMITTED markers were stale (already committed)
 
-The new structure (Steps 3→4→5→6) prevents this:
+The new structure (Steps 3→4→5→6→7) prevents this:
 - Always validate plan first (Step 3)
 - Always check IMPLEMENTED before deciding "nothing to do" (Step 4)
 - Verify if IMPLEMENTED means uncommitted work or stale markers (Step 5)
-- Only after IMPLEMENTED verification, extract REVIEWED/REVISED (Step 6)
+- Verify if COMMITTED markers are accurate or stale (Step 6)
+- Only after IMPLEMENTED and COMMITTED verification, extract REVIEWED/REVISED (Step 7)
 
-**DO NOT skip Steps 4-5 even if you see no REVIEWED/REVISED iterations.**
+**DO NOT skip Steps 4-6 even if you see no REVIEWED/REVISED iterations.**
 
 ---
 
