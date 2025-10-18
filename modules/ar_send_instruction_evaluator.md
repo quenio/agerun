@@ -163,6 +163,20 @@ bool success = ar_send_instruction_evaluator__evaluate(send_eval, frame, ast);
 // Result (true/false) is now stored in memory.result
 ```
 
+## Error Handling
+
+The send instruction evaluator handles errors gracefully:
+
+| Error Case | Behavior | Return Value | Message Handling |
+|------------|----------|--------------|------------------|
+| Non-existent agent | Agent not found in agency | `false` | Message destroyed |
+| Non-existent delegate | Delegate not found in delegation | `false` | Message destroyed |
+| Invalid agent_id expression | Expression evaluation fails | `false` | Message destroyed |
+| Invalid message expression | Expression evaluation fails | `false` | No message created |
+| agent_id == 0 | No-op (special case) | `true` | Message destroyed |
+
+All error paths ensure proper memory cleanup - messages are destroyed when delivery fails to prevent memory leaks.
+
 ## Testing
 
 The module includes comprehensive tests covering:

@@ -129,7 +129,7 @@ pub export fn ar_send_instruction_evaluator__evaluate(
         c.ar_data__destroy_if_owned(own_message, ref_evaluator);
         send_result = true;
     } else if (agent_id > 0) {
-        // Positive IDs route to agency (agents)
+        // Positive IDs route to agency (agents) - CORRECT routing restored
         send_result = c.ar_agency__send_to_agent(ref_evaluator.?.ref_agency, agent_id, own_message);
     } else {
         // Negative IDs route to delegation (delegates)

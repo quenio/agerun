@@ -374,6 +374,120 @@ static void test_send_instruction_evaluator__routes_to_delegate(void) {
     ar_send_evaluator_fixture__destroy(fixture);
 }
 
+static void test_send_instruction_evaluator__routes_to_agent(void) {
+    // Given a send evaluator fixture with a registered agent
+    ar_send_evaluator_fixture_t *fixture = ar_send_evaluator_fixture__create("test_route_to_agent");
+    AR_ASSERT(fixture != NULL, "Fixture creation should succeed");
+
+    // Register agent using fixture helper
+    ar_agent_t *agent = ar_send_evaluator_fixture__create_and_register_agent(fixture, 1, NULL);
+    AR_ASSERT(agent != NULL, "Agent registration should succeed");
+
+    // Create evaluator and frame using fixture
+    ar_send_instruction_evaluator_t *evaluator = ar_send_evaluator_fixture__create_evaluator(fixture);
+    AR_ASSERT(evaluator != NULL, "Evaluator creation should succeed");
+
+    ar_frame_t *frame = ar_send_evaluator_fixture__create_frame(fixture);
+    AR_ASSERT(frame != NULL, "Frame creation should succeed");
+
+    // When creating a send AST node for "send(1, \"agent message\")"
+    const char *args[] = {"1", "\"agent message\""};
+    ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
+        AR_INSTRUCTION_AST_TYPE__SEND, "send", args, 2, NULL
+    );
+    AR_ASSERT(ast != NULL, "AST creation should succeed");
+
+    // Create and attach expression ASTs for arguments
+    ar_list_t *arg_asts = ar_list__create();
+    AR_ASSERT(arg_asts != NULL, "Argument list creation should succeed");
+
+    ar_expression_ast_t *agent_id_ast = ar_expression_ast__create_literal_int(1);
+    AR_ASSERT(agent_id_ast != NULL, "Agent ID AST creation should succeed");
+    ar_list__add_last(arg_asts, agent_id_ast);
+
+    ar_expression_ast_t *msg_ast = ar_expression_ast__create_literal_string("agent message");
+    AR_ASSERT(msg_ast != NULL, "Message AST creation should succeed");
+    ar_list__add_last(arg_asts, msg_ast);
+
+    bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
+    AR_ASSERT(ast_set == true, "Setting function arguments should succeed");
+
+    // When evaluating the send
+    bool result = ar_send_instruction_evaluator__evaluate(evaluator, frame, ast);
+
+    // Then it should succeed (positive ID should route to agency)
+    AR_ASSERT(result == true, "Send to agent should succeed");
+
+    // And the agent should have received the message
+    ar_agency_t *agency = ar_send_evaluator_fixture__get_agency(fixture);
+    bool has_messages = ar_agency__agent_has_messages(agency, 1);
+    AR_ASSERT(has_messages == true, "Agent should have received message");
+
+    // Verify message content and type
+    ar_data_t *own_received = ar_agency__get_agent_message(agency, 1);
+    AR_ASSERT(own_received != NULL, "Should be able to retrieve message from agent");
+    AR_ASSERT(ar_data__get_type(own_received) == AR_DATA_TYPE__STRING, "Message should be STRING type");
+    AR_ASSERT(strcmp(ar_data__get_string(own_received), "agent message") == 0,
+              "Message content should match sent value");
+
+    // Cleanup
+    ar_data__destroy(own_received);
+    ar_instruction_ast__destroy(ast);
+    ar_send_instruction_evaluator__destroy(evaluator);
+    ar_send_evaluator_fixture__destroy(fixture);
+}
+
+static void test_send_instruction_evaluator__nonexistent_delegate_returns_false(void) {
+    // Given a send evaluator fixture WITHOUT registering any delegates
+    ar_send_evaluator_fixture_t *fixture = ar_send_evaluator_fixture__create("test_nonexistent_delegate");
+    AR_ASSERT(fixture != NULL, "Fixture creation should succeed");
+
+    // Create evaluator and frame using fixture
+    ar_send_instruction_evaluator_t *evaluator = ar_send_evaluator_fixture__create_evaluator(fixture);
+    AR_ASSERT(evaluator != NULL, "Evaluator creation should succeed");
+
+    ar_frame_t *frame = ar_send_evaluator_fixture__create_frame(fixture);
+    AR_ASSERT(frame != NULL, "Frame creation should succeed");
+
+    // When creating a send AST node for "send(-99, \"message\")" (delegate -99 doesn't exist)
+    const char *args[] = {"-99", "\"message\""};
+    ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
+        AR_INSTRUCTION_AST_TYPE__SEND, "send", args, 2, NULL
+    );
+    AR_ASSERT(ast != NULL, "AST creation should succeed");
+
+    // Create and attach expression ASTs for arguments
+    ar_list_t *arg_asts = ar_list__create();
+    AR_ASSERT(arg_asts != NULL, "Argument list creation should succeed");
+
+    ar_expression_ast_t *delegate_id_ast = ar_expression_ast__create_literal_int(-99);
+    AR_ASSERT(delegate_id_ast != NULL, "Delegate ID AST creation should succeed");
+    ar_list__add_last(arg_asts, delegate_id_ast);
+
+    ar_expression_ast_t *msg_ast = ar_expression_ast__create_literal_string("message");
+    AR_ASSERT(msg_ast != NULL, "Message AST creation should succeed");
+    ar_list__add_last(arg_asts, msg_ast);
+
+    bool ast_set = ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
+    AR_ASSERT(ast_set == true, "Setting function arguments should succeed");
+
+    // When evaluating the send to non-existent delegate
+    bool result = ar_send_instruction_evaluator__evaluate(evaluator, frame, ast);
+
+    // Then it should fail (return false) for non-existent delegate
+    AR_ASSERT(result == false, "Send to non-existent delegate should return false");
+
+    // Verify no messages were queued anywhere
+    ar_delegation_t *delegation = ar_send_evaluator_fixture__get_delegation(fixture);
+    bool delegate_has_messages = ar_delegation__delegate_has_messages(delegation, -99);
+    AR_ASSERT(delegate_has_messages == false, "Non-existent delegate should have no messages");
+
+    // Cleanup
+    ar_instruction_ast__destroy(ast);
+    ar_send_instruction_evaluator__destroy(evaluator);
+    ar_send_evaluator_fixture__destroy(fixture);
+}
+
 int main(void) {
     printf("Starting send instruction_evaluator tests...\n");
 
@@ -398,9 +512,17 @@ int main(void) {
     test_instruction_evaluator__evaluate_send_invalid_args();
     printf("test_instruction_evaluator__evaluate_send_invalid_args passed!\n");
 
-    // Iteration 1.1: Routes to delegate
+    // Iteration 1.1-1.3.3: Routes to delegate
     test_send_instruction_evaluator__routes_to_delegate();
     printf("test_send_instruction_evaluator__routes_to_delegate passed!\n");
+
+    // Iteration 2: Verify agent routing
+    test_send_instruction_evaluator__routes_to_agent();
+    printf("test_send_instruction_evaluator__routes_to_agent passed!\n");
+
+    // Iteration 3: Error handling for non-existent delegate
+    test_send_instruction_evaluator__nonexistent_delegate_returns_false();
+    printf("test_send_instruction_evaluator__nonexistent_delegate_returns_false passed!\n");
 
     printf("All send instruction_evaluator tests passed!\n");
 

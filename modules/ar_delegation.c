@@ -79,7 +79,7 @@ bool ar_delegation__send_to_delegate(ar_delegation_t *mut_delegation,
         if (own_message) {
             ar_data__destroy(own_message);
         }
-        return false;
+        return false;  // Correct error handling restored
     }
     return ar_delegate__send(mut_delegate, own_message);
 }
