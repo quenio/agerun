@@ -112,6 +112,7 @@ Each learning file contains:
 - [TDD Plan Iteration Split Pattern](tdd-plan-iteration-split-pattern.md)
 - [TDD Plan Review Checklist](tdd-plan-review-checklist.md) ⭐ NEW - Comprehensive review checklist with 14 embedded TDD lessons
 - [TDD RED Phase Assertion Requirement](tdd-red-phase-assertion-requirement.md)
+- [RED Phase Dual Goals Pattern](red-phase-dual-goals-pattern.md) ⭐ NEW - Two independent goals: prove test validity (always) and identify implementation (conditional)
 - [TDD for API Simplification](tdd-api-simplification.md)
 - [Temporary Test Cleanup Pattern](temporary-test-cleanup-pattern.md)
 - [Test Completeness Enumeration](test-completeness-enumeration.md)
