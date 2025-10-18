@@ -1589,9 +1589,33 @@ git status --porcelain
    ```
 
 5. **Execute automatic commit**:
+
+   **Identify all modified files:**
    ```bash
-   # Add all changes (including CHANGELOG.md and TODO.md if modified)
-   git add <plan-file> <implementation-files> CHANGELOG.md TODO.md
+   # Get list of all modified files from git status
+   git status --porcelain
+
+   # Will show files like:
+   # M plans/message_routing_via_delegation_plan.md
+   # M modules/ar_send_instruction_evaluator.zig
+   # M modules/ar_send_instruction_evaluator_tests.c
+   # M modules/ar_send_instruction_evaluator.md
+   # M CHANGELOG.md
+   # M TODO.md
+   ```
+
+   **Add all modified files and commit:**
+   ```bash
+   # Add ALL modified tracked files (simplest and safest in TDD workflow)
+   git add -A
+
+   # This includes:
+   # - Plan file (status markers updated)
+   # - Implementation files (.c, .zig, .h files modified during execution)
+   # - Test files (*_tests.c files with new test functions)
+   # - Documentation files (.md files updated during execution)
+   # - CHANGELOG.md (updated in Step 2)
+   # - TODO.md (updated in Step 3 if applicable)
 
    # Create commit with appropriate message
    git commit -m "$(cat <<'EOF'
@@ -1600,15 +1624,25 @@ git status --porcelain
    )"
    ```
 
+   **Why `git add -A`:**
+   - In TDD workflow, all changes are intentional and tested
+   - Ensures no files are accidentally skipped
+   - Simpler than parsing git status and adding files individually
+   - Safe because execute-plan runs in controlled environment (all changes verified)
+
 6. **Report commit result**:
    ```markdown
    ✅ Commit created successfully: <commit-hash>
 
    Files committed:
-   - <plan-file>
-   - <implementation-files>
-   - CHANGELOG.md (if modified)
-   - TODO.md (if modified)
+   - Plan file: <plan-file> (status markers updated)
+   - Implementation files: <list .c/.zig/.h files>
+   - Test files: <list *_tests.c files>
+   - Documentation files: <list .md files if any>
+   - CHANGELOG.md (updated with entry)
+   - TODO.md (updated if cycle complete)
+
+   Total files committed: X
 
    Run `git show` to review the commit.
    ```
