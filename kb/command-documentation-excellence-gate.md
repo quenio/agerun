@@ -33,7 +33,34 @@ run_job "check-commands" "make check-commands" "logs/check-commands.log"
 make check-commands  # Exits 1 if any command < 90%
 ```
 
+## Quality Enhancement Pattern
+
+Commands should extract complex embedded bash logic to helper scripts for better maintainability and testability:
+
+```markdown
+## Bad: Embedded 30-line verification logic
+\`\`\`bash
+for file in modules/*.c; do
+  # ... complex logic ...
+done
+\`\`\`
+
+## Good: Extract to helper script
+**Helper script available:**
+\`\`\`bash
+./scripts/verify-module-quality.sh [path]
+\`\`\`
+```
+
+This improves command documentation scores by:
+- Reducing command file size and complexity
+- Making verification logic testable
+- Enabling reuse across commands
+
+See [Command Helper Script Extraction Pattern](command-helper-script-extraction-pattern.md).
+
 ## Related Patterns
+- [Command Helper Script Extraction Pattern](command-helper-script-extraction-pattern.md) - Extract embedded bash to standalone scripts
 - [Build Verification Before Commit](build-verification-before-commit.md)
 - [Build System Exit Code Verification](build-system-exit-code-verification.md)
 - [CI Check-Logs Requirement](ci-check-logs-requirement.md)

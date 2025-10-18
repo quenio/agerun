@@ -68,9 +68,12 @@ echo "✓ READY TO COMMIT: Thorough integration completed"
 \`\`\`bash
 bash scripts/verify_thoroughness.sh
 \`\`\`
+
+**Note**: Extract verification scripts from commands to `scripts/` directory for testability and reuse. See [Command Helper Script Extraction Pattern](command-helper-script-extraction-pattern.md).
 ```
 
 ## Related Patterns
+- [Command Helper Script Extraction Pattern](command-helper-script-extraction-pattern.md) - Extract verification scripts for reusability
 - [Comprehensive Learning Extraction Pattern](comprehensive-learning-extraction-pattern.md)
 - [Multi-Step Checkpoint Tracking Pattern](multi-step-checkpoint-tracking-pattern.md)
 - [Gate Enforcement Exit Codes Pattern](gate-enforcement-exit-codes-pattern.md)

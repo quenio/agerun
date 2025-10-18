@@ -91,6 +91,7 @@ Each stage needs:
 When adding checkpoints to a command:
 - [ ] Count total sections/steps in command
 - [ ] Group into logical stages (3-6 steps each)
+- [ ] **Extract embedded bash logic** to helper scripts (see [Command Helper Script Extraction Pattern](command-helper-script-extraction-pattern.md))
 - [ ] Add initialization at command start
 - [ ] Add update calls after each step
 - [ ] Add gates between stages
@@ -108,7 +109,35 @@ Based on complexity:
 - **Complex commands** (13+ steps): Required, 3-4 gates
 - **Critical commands**: Always use gates regardless of size
 
+## Best Practice: Extract Complex Logic
+
+When implementing checkpoints, **extract multi-line embedded bash logic to helper scripts**:
+
+```markdown
+❌ **WRONG** - 30+ lines of embedded verification logic:
+\`\`\`bash
+for file in modules/*.c; do
+  # ... 30 lines of complex parsing ...
+done
+make checkpoint-update CMD=review-changes STEP=2
+\`\`\`
+
+✅ **CORRECT** - Extract to helper script:
+**Helper script available:**
+\`\`\`bash
+./scripts/detect-code-smells.sh [path]
+# Returns: Exit 1 if code smells found, 0 if clean
+\`\`\`
+
+\`\`\`bash
+make checkpoint-update CMD=review-changes STEP=2
+\`\`\`
+```
+
+See [Command Helper Script Extraction Pattern](command-helper-script-extraction-pattern.md) for complete guidelines.
+
 ## Related Patterns
+- [Command Helper Script Extraction Pattern](command-helper-script-extraction-pattern.md) - Extract embedded bash to standalone scripts
 - [Multi-Step Checkpoint Tracking Pattern](multi-step-checkpoint-tracking-pattern.md)
 - [Gate Enforcement Exit Codes Pattern](gate-enforcement-exit-codes-pattern.md)
 - [Command Output Documentation Pattern](command-output-documentation-pattern.md)

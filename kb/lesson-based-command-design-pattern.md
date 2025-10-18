@@ -158,6 +158,8 @@ Create validators that check the same lessons:
 # - Documentation Quality (Lessons 12-14)
 ```
 
+**Best Practice**: Extract complex verification logic to standalone helper scripts rather than embedding in commands. See [Command Helper Script Extraction Pattern](command-helper-script-extraction-pattern.md) for guidelines on creating testable, reusable verification scripts
+
 ## Real Example
 
 From this session's revisions:
@@ -286,3 +288,4 @@ Result: Consistent enforcement across pipeline
 - [Command Pipeline Methodology Enforcement](command-pipeline-methodology-enforcement.md) - How commands work together
 - [Command KB Consultation Enforcement](command-kb-consultation-enforcement.md) - How commands read KB articles
 - [KB Target Compliance Enforcement](kb-target-compliance-enforcement.md) - Quantitative targets for lesson verification
+- [Command Helper Script Extraction Pattern](command-helper-script-extraction-pattern.md) - Extract verification logic to scripts
