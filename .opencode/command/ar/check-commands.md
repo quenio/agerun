@@ -110,18 +110,7 @@ Assigns scores based on:
 #### Step 1: Scan Commands
 
 ```bash
-# Scan for all command files
-echo "Scanning for command files..."
-COMMAND_COUNT=$(find .opencode/command/ar -name "*.md" -type f | wc -l)
-echo "Found $COMMAND_COUNT command files"
-
-if [ $COMMAND_COUNT -eq 0 ]; then
-  echo "❌ No command files found!"
-  exit 1
-fi
-
-echo "✅ Successfully found $COMMAND_COUNT commands"
-./scripts/update-checkpoint.sh check-commands STEP=1
+./scripts/scan-commands.sh
 ```
 
 ### Stage 2: Validation (Steps 2-3)
@@ -133,45 +122,13 @@ echo "✅ Successfully found $COMMAND_COUNT commands"
 #### Step 2: Validate Structure
 
 ```bash
-# Run structure validation
-echo "Validating command structures..."
-
-if python3 scripts/check_commands.py --verbose 2>&1 | tee /tmp/check-commands-output.txt; then
-  echo "✅ Structure validation completed"
-else
-  echo "⚠️ Structure validation found issues"
-fi
-
-./scripts/update-checkpoint.sh check-commands STEP=2
+./scripts/validate-command-structure.sh
 ```
 
 #### Step 3: Calculate Scores
 
 ```bash
-# Extract and analyze scores
-echo "Calculating command quality scores..."
-
-# Extract average score from output
-AVG_SCORE=$(grep "Average Score:" /tmp/check-commands-output.txt | awk '{print $3}' | tr -d '%')
-
-if [ -z "$AVG_SCORE" ]; then
-  echo "❌ Could not calculate average score"
-  exit 1
-fi
-
-echo "Average Score: $AVG_SCORE%"
-
-# Check if meets excellence threshold using quality gate helper
-if ./scripts/enforce-quality-gate.sh "Commands Score" "$AVG_SCORE" "90" "ge" "Commands must meet quality threshold of 90%+"; then
-  STATUS="EXCELLENT"
-else
-  STATUS="NEEDS_WORK"
-fi
-
-echo "AVG_SCORE=$AVG_SCORE" > /tmp/check-commands-stats.txt
-echo "STATUS=$STATUS" >> /tmp/check-commands-stats.txt
-
-./scripts/update-checkpoint.sh check-commands STEP=3
+./scripts/calculate-command-scores.sh
 ```
 
 ### Stage 3: Analysis (Steps 4-5)
@@ -183,57 +140,13 @@ echo "STATUS=$STATUS" >> /tmp/check-commands-stats.txt
 #### Step 4: Identify Issues
 
 ```bash
-# Identify commands needing improvement
-source /tmp/check-commands-stats.txt
-
-echo "Identifying commands that need work..."
-
-# Count distribution
-EXCELLENT=$(grep "🌟 Excellent" /tmp/check-commands-output.txt | wc -l || echo "0")
-GOOD=$(grep "✅ Good" /tmp/check-commands-output.txt | wc -l || echo "0")
-NEEDS_WORK=$(grep "⚠️ Needs Work" /tmp/check-commands-output.txt | wc -l || echo "0")
-POOR=$(grep "❌ Poor" /tmp/check-commands-output.txt | wc -l || echo "0")
-
-echo "Distribution:"
-echo "  🌟 Excellent (90-100%): $EXCELLENT commands"
-echo "  ✅ Good (70-89%): $GOOD commands"
-echo "  ⚠️ Needs Work (50-69%): $NEEDS_WORK commands"
-echo "  ❌ Poor (0-49%): $POOR commands"
-
-if [ "$NEEDS_WORK" -gt 0 ] || [ "$POOR" -gt 0 ]; then
-  echo ""
-  echo "Commands needing improvement:"
-  grep -E "⚠️|❌" /tmp/check-commands-output.txt | head -10
-fi
-
-./scripts/update-checkpoint.sh check-commands STEP=4
+./scripts/identify-command-issues.sh
 ```
 
 #### Step 5: Generate Report
 
 ```bash
-# Generate final report
-source /tmp/check-commands-stats.txt
-
-echo ""
-echo "========================================="
-echo "   COMMAND QUALITY REPORT"
-echo "========================================="
-echo ""
-echo "Overall Score: $AVG_SCORE%"
-echo "Status: $STATUS"
-echo ""
-
-if [ "$STATUS" = "EXCELLENT" ]; then
-  echo "✅ All commands meet quality standards!"
-  echo "Documentation is comprehensive and well-structured."
-else
-  echo "⚠️ Some commands need improvement"
-  echo "Run with --fix flag to generate improvement suggestions:"
-  echo "  python3 scripts/check_commands.py --fix"
-fi
-
-./scripts/update-checkpoint.sh check-commands STEP=5
+./scripts/generate-command-report.sh
 ```
 
 #### [CHECKPOINT COMPLETE]

@@ -1,5 +1,38 @@
 # AgeRun CHANGELOG
 
+## 2025-10-18 (Session 2e)
+
+- **Extract check-commands Embedded Scripts into Reusable Modules**
+
+  Extracted all bash shell blocks from the check-commands.md command into separate, focused scripts in the scripts/ directory for better reusability and maintainability.
+
+  **Problem**: The check-commands workflow had 5 embedded shell scripts (each 300-900 lines of logic) directly in the markdown file. This made them:
+  - Difficult to maintain and update
+  - Impossible to reuse in other commands that might need similar validation logic
+  - Hard to test independently
+  - Cluttered the command documentation
+
+  **Solution**: Extracted each shell block into its own script file with a clear purpose:
+  1. **scan-commands.sh** - Scans for all command files in .opencode/command/ar
+  2. **validate-command-structure.sh** - Runs structure validation via check_commands.py
+  3. **calculate-command-scores.sh** - Extracts and analyzes quality scores
+  4. **identify-command-issues.sh** - Analyzes command distribution and identifies problems
+  5. **generate-command-report.sh** - Generates final quality report
+
+  **Changes**:
+  - Created 5 new scripts in scripts/ directory, each with a single responsibility
+  - Updated check-commands.md to call extracted scripts instead of embedding logic
+  - All scripts are executable and follow project conventions
+  - 5 files created, 1 file modified
+  - Reduced check-commands.md complexity while maintaining functionality
+
+  **Benefits**:
+  - **Reusability**: Scripts can be used by other commands that need similar validation
+  - **Maintainability**: Smaller, focused scripts are easier to update and debug
+  - **Clarity**: Command documentation is now cleaner and easier to read
+  - **Testability**: Scripts can be executed and tested independently
+  - **Naming Convention**: All scripts include "command" term in name for clarity
+
 ## 2025-10-18 (Session 2d)
 
 - **Complex Command Pattern Migration: next-priority and next-task**
