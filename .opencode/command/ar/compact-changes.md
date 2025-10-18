@@ -287,44 +287,7 @@ make checkpoint-update CMD=compact-changes STEP=3
 
 ```bash
 # Verify all critical information preserved
-echo "Verifying preservation..."
-source /tmp/compact-changes-stats.txt
-
-NEW_LINES=$(wc -l < CHANGELOG.md)
-NEW_BYTES=$(wc -c < CHANGELOG.md)
-NEW_METRICS=$(grep -oE "[0-9]+[%]|[0-9]+ (files|lines|occurrences|tests|modules|functions)" CHANGELOG.md | wc -l)
-
-echo "New: $NEW_LINES lines, $NEW_BYTES bytes"
-echo "Metrics found: $NEW_METRICS (expected: $METRICS_COUNT)"
-
-# Calculate reduction
-LINE_REDUCTION=$(( (ORIGINAL_LINES - NEW_LINES) * 100 / ORIGINAL_LINES ))
-SIZE_REDUCTION=$(( (ORIGINAL_BYTES - NEW_BYTES) * 100 / ORIGINAL_BYTES ))
-
-echo "Line reduction: $LINE_REDUCTION%"
-echo "File size reduction: $SIZE_REDUCTION%"
-
-# Save results
-echo "NEW_LINES=$NEW_LINES" >> /tmp/compact-changes-stats.txt
-echo "NEW_BYTES=$NEW_BYTES" >> /tmp/compact-changes-stats.txt
-echo "NEW_METRICS=$NEW_METRICS" >> /tmp/compact-changes-stats.txt
-echo "LINE_REDUCTION=$LINE_REDUCTION" >> /tmp/compact-changes-stats.txt
-echo "SIZE_REDUCTION=$SIZE_REDUCTION" >> /tmp/compact-changes-stats.txt
-
-# Verify metrics preserved
-if [ "$NEW_METRICS" -ge "$METRICS_COUNT" ]; then
-  echo "✅ All metrics preserved"
-  METRICS_OK="PASS"
-else
-  echo "⚠️ WARNING: Some metrics may be missing"
-  METRICS_OK="WARN"
-fi
-
-echo "METRICS_OK=$METRICS_OK" >> /tmp/compact-changes-stats.txt
-
-# Verify dates preserved
-DATE_CHECK=$(grep "^## 2025-" CHANGELOG.md | wc -l || echo "0")
-echo "Date sections remaining: $DATE_CHECK"
+./scripts/verify-changelog-preservation.sh /tmp/compact-changes-stats.txt
 
 make checkpoint-update CMD=compact-changes STEP=4
 ```

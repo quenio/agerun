@@ -219,47 +219,19 @@ make checkpoint-gate CMD=check-module-consistency GATE="Discovery" REQUIRED="3,4
 #### Step 3: Check Each Related Module
 
 **Module Tracking Function**:
+
+Use the helper script to check module consistency:
 ```bash
-# Function to check module consistency
-check_module_consistency() {
-  local MODULE=$1
-  local ISSUES=0
-  
-  echo "Checking: $MODULE"
-  
-  # Check error logging
-  if grep -q "ar_log_t" "$MODULE.c" && ! grep -q "ar_log__error" "$MODULE.c"; then
-    echo "  ⚠️ Has ar_log but not using for errors"
-    ISSUES=$((ISSUES + 1))
-  fi
-  
-  # Check global state
-  if grep -q "^static.*g_\|^[^/]*g_" "$MODULE.c" | grep -v "g_default_instance"; then
-    echo "  ⚠️ Contains global state"
-    ISSUES=$((ISSUES + 1))
-  fi
-  
-  # Check NULL validation
-  if ! grep -q "if.*!.*\|\|.*!)" "$MODULE.c"; then
-    echo "  ⚠️ May lack NULL parameter validation"
-    ISSUES=$((ISSUES + 1))
-  fi
-  
-  if [ $ISSUES -gt 0 ]; then
-    echo "  Result: Needs update ($ISSUES issues)"
-    return 1
-  else
-    echo "  ✓ Consistent"
-    return 0
-  fi
-}
+./scripts/check-module-consistency.sh <module-path>
+# Returns: 0 if consistent, 1 if issues found
+# Example: ./scripts/check-module-consistency.sh modules/ar_data
 ```
 
 #### Step 6: Check Module 1
 
 ```bash
 MODULE1="modules/ar_[module1]"
-if check_module_consistency "$MODULE1"; then
+if ./scripts/check-module-consistency.sh "$MODULE1"; then
   echo "Module 1: Consistent"
 else
   source /tmp/check-consistency-tracking.txt
