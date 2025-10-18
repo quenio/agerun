@@ -102,15 +102,56 @@ Each stage needs:
 - **Verification methods**: "Run make check-docs"
 - **Success indicators**: "READY TO COMMIT"
 
+## Using Wrapper Scripts for Simpler Integration
+
+The wrapper scripts (`scripts/init-checkpoint.sh`, `require-checkpoint.sh`, `gate-checkpoint.sh`, `complete-checkpoint.sh`) simplify checkpoint integration in commands by reducing boilerplate:
+
+```bash
+# Instead of 7-8 lines of initialization code:
+❌ if [ ! -f "/tmp/command_progress.txt" ]; then
+    make checkpoint-init CMD=command STEPS="..."
+else
+    echo "Checkpoint already initialized"
+fi
+
+# Use the wrapper script:
+✅ ./scripts/init-checkpoint.sh command '"Step 1" "Step 2"'
+
+# Instead of 5-line precondition check:
+❌ PROGRESS_FILE="/tmp/command_progress.txt"
+if [ ! -f "$PROGRESS_FILE" ]; then
+  echo "ERROR: Not initialized"
+  exit 1
+fi
+
+# Use the wrapper:
+✅ ./scripts/require-checkpoint.sh command || exit 1
+
+# Instead of 3-4 line gate verification:
+❌ if ! make checkpoint-gate CMD=command GATE="Name" REQUIRED="1,2,3"; then
+  echo "ERROR: Gate failed"
+  exit 1
+fi
+
+# Use the wrapper:
+✅ ./scripts/gate-checkpoint.sh command "Gate Name" "1,2,3" || exit 1
+
+# Instead of 4-5 line completion pattern:
+❌ make checkpoint-status CMD=command
+make checkpoint-cleanup CMD=command
+
+# Use the wrapper:
+✅ ./scripts/complete-checkpoint.sh command
+```
+
 ## Implementation Checklist
 
 When adding checkpoints to a command:
 - [ ] Count total sections/steps in command
 - [ ] Group into logical stages (3-6 steps each)
 - [ ] **Extract embedded bash logic** to helper scripts (see [Command Helper Script Extraction Pattern](command-helper-script-extraction-pattern.md))
-- [ ] Add initialization at command start
-- [ ] Add update calls after each step
-- [ ] Add gates between stages
+- [ ] Use wrapper scripts for initialization, gates, precondition checks, and cleanup
+- [ ] Add update calls after each step (these don't have wrappers, use directly)
 - [ ] Document expected outputs for all operations
 - [ ] Define minimum requirements per stage
 - [ ] Add troubleshooting section

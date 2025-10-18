@@ -66,13 +66,19 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - **/bin**: Generated binaries (ignored by git, NEVER read these files)
 - **/methods**: Method definitions (.method files with docs and tests)
 - **/scripts**: Build and utility scripts (run via make targets, not directly - includes slash commands)
-  - **Checkpoint scripts** (`checkpoint_*.sh`): Implement multi-step workflow tracking
+  - **Checkpoint core scripts** (`checkpoint_*.sh`): Implement multi-step workflow tracking via Makefile targets
     - `checkpoint_init.sh`: Initialize progress tracking file with all steps
     - `checkpoint_update.sh`: Mark steps complete and show progress (uses safe sed with `@` delimiter)
     - `checkpoint_status.sh`: Display current progress with progress bar
     - `checkpoint_gate.sh`: Enforce gates between workflow stages
     - `checkpoint_cleanup.sh`: Remove tracking file when done
     - All scripts use cross-platform patterns: `[[ == ]]` for OSTYPE detection, `set -e`, error handling ([details](kb/cross-platform-bash-script-patterns.md))
+  - **Checkpoint wrapper scripts** (`*-checkpoint.sh`): Simplify checkpoint integration in commands
+    - `init-checkpoint.sh`: Initialize checkpoint or show status if already initialized (replaces 7-8 line pattern)
+    - `require-checkpoint.sh`: Verify checkpoint is initialized before proceeding (replaces 5 line precondition pattern)
+    - `gate-checkpoint.sh`: Verify gate conditions with clear error feedback (replaces 3-4 line gate verification pattern)
+    - `complete-checkpoint.sh`: Show final status and cleanup (replaces 4-5 line completion pattern)
+    - **Why wrappers exist**: Reduce boilerplate across commands, provide consistent API, improve UX with clear error messages ([details](kb/checkpoint-based-workflow-pattern.md))
 - **/reports**: Analysis reports and technical comparisons (all .md analysis files go here)
 - **.opencode/command/ar**: Slash command definitions (must use make targets, not direct scripts) ([role clarity](kb/role-clarification-pattern.md))
   - Commands using checkpoints (e.g., `/ar:new-learnings`, `/ar:check-docs`, `/ar:commit`) initialize and update progress via Makefile checkpoint targets

@@ -74,7 +74,27 @@ ar_data__destroy(own_workflow);
    - Proper OSTYPE detection (`[[ == ]]` pattern matching) for macOS/Linux differences
    - Comprehensive error handling (`set -e`, `set -o pipefail`)
 
-5. **Progress Visualization**:
+5. **Wrapper Scripts** (simplify checkpoint integration in commands):
+   - `scripts/init-checkpoint.sh`: Initialize checkpoint or show current status
+     - Replaces 7-8 line if/then/else initialization pattern
+     - Usage: `./scripts/init-checkpoint.sh command '\"Step 1\" \"Step 2\"'`
+   - `scripts/require-checkpoint.sh`: Verify checkpoint is initialized before proceeding
+     - Replaces 5 line precondition check pattern
+     - Usage: `./scripts/require-checkpoint.sh command` (exits 1 if not initialized)
+   - `scripts/gate-checkpoint.sh`: Verify gate conditions and provide clear feedback
+     - Replaces 3-4 line gate verification pattern
+     - Usage: `./scripts/gate-checkpoint.sh command 'Gate Name' '1,2,3'` (exits 1 on failure)
+   - `scripts/complete-checkpoint.sh`: Show final status and cleanup
+     - Replaces 4-5 line completion pattern (status + cleanup)
+     - Usage: `./scripts/complete-checkpoint.sh command`
+
+   **Why These Wrappers Exist:**
+   - Reduce boilerplate: Commands had 7-8 line patterns repeated across multiple implementations
+   - Consistent API: Unified interface for all checkpoint operations across different commands
+   - Easier integration: Command authors simply call wrapper scripts instead of managing checkpoint details
+   - Better UX: Wrappers provide clear error messages and status output
+
+6. **Progress Visualization**:
    ```
    📈 commit: 5/9 steps (55%)
       [███████████░░░░░░░░░] 55%
@@ -82,8 +102,37 @@ ar_data__destroy(own_workflow);
    ```
 
 ## Implementation
+
+### Using Wrapper Scripts (Recommended)
 ```bash
-# Real AgeRun implementation example from /ar:commit command
+# Real AgeRun implementation example using wrapper scripts
+
+# 1. Initialize workflow (wrapper script checks if already initialized)
+./scripts/init-checkpoint.sh commit '"Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"'
+
+# 2. Execute steps with checkpoints
+make checkpoint-update CMD=commit STEP=1
+make test  # Run tests
+make checkpoint-update CMD=commit STEP=1  # Mark complete
+
+# 3. Verify precondition before stage 2
+./scripts/require-checkpoint.sh commit || exit 1
+
+# 4. Enforce gate after stage
+./scripts/gate-checkpoint.sh commit "Build Quality" "1,2" || exit 1
+# Exits 1 and shows error if steps 1-2 not complete
+
+# 5. Continue with remaining steps
+make checkpoint-update CMD=commit STEP=5
+make checkpoint-update CMD=commit STEP=5  # Mark complete
+
+# 6. Final status and cleanup
+./scripts/complete-checkpoint.sh commit
+```
+
+### Using Direct Makefile Targets
+```bash
+# Alternative: Direct Makefile target approach (more low-level)
 
 # 1. Initialize workflow
 make checkpoint-init CMD=commit STEPS='"Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"'
@@ -91,7 +140,6 @@ make checkpoint-init CMD=commit STEPS='"Run Tests" "Check Logs" "Update Docs" "U
 # 2. Execute steps with checkpoints
 make checkpoint-update CMD=commit STEP=1
 make test  # Run tests
-make checkpoint-update-verified CMD=commit STEP=1  # Auto-verifies tests passed
 
 # 3. Enforce gate after stage
 make checkpoint-gate CMD=commit GATE="Build Quality" REQUIRED="1,2"
@@ -99,8 +147,6 @@ make checkpoint-gate CMD=commit GATE="Build Quality" REQUIRED="1,2"
 
 # 4. Continue with remaining steps
 make checkpoint-update CMD=commit STEP=5
-# ... update CHANGELOG ...
-make checkpoint-update-verified CMD=commit STEP=5 SUMMARY="CHANGELOG updated"
 
 # 5. Check status anytime
 make checkpoint-status CMD=commit VERBOSE=--verbose
