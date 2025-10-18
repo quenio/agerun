@@ -135,6 +135,26 @@
 
   **Impact**: CHANGELOG entries are now significantly easier to scan and read, especially for complex multi-part changes. Applied to all 2025-10-18 entries (7 entries reformatted).
 
+- **Multi-Line CHANGELOG Format Standard**
+
+  Established comprehensive multi-line format standard for CHANGELOG.md and updated all compaction guidance to maintain readability.
+
+  **New KB Article** (kb/changelog-multi-line-format.md):
+  - Defines multi-line format standard with required elements
+  - Shows WRONG vs RIGHT examples (single-line vs multi-line)
+  - Documents format: title, overview, labeled sections, blank lines
+  - Provides compaction guidelines: reduce verbosity, not structure
+  - Target: 30-50% reduction by trimming words, not removing structure
+
+  **Updated Documentation**:
+  - kb/documentation-compacting-pattern.md: Added multi-line format examples, 7-step compaction guide
+  - compact-changes.md command: Added "CRITICAL" multi-line format section, updated all examples
+  - AGENTS.md: Pre-commit checklist now references multi-line format standard
+
+  **Deprecated Script**: scripts/compact_changelog.py marked as deprecated (creates unreadable single-line format), preserved for reference
+
+  **Impact**: Future CHANGELOG compaction will maintain readability while achieving 30-50% space savings through verbosity reduction, not structure removal. Single-line format tools deprecated.
+
 ## 2025-10-17
 - **Execute-Plan Command Quality Gates**: Added comprehensive quality gate system for TDD plan execution with 3-stage verification (Stage 1: Test verification after RED, Stage 2: Implementation verification after GREEN, Stage 3: Documentation verification after REFACTOR); **Gate Implementation**: Quality Gate 3 verifies ar_send_instruction_evaluator.md updated with error handling docs, gates enforce workflow discipline preventing progression without proper verification; **Checkpoint Tracking**: Added checkpoint tracking for all 12 intermediate steps within execute-plan workflow (Step 3 has 9 sub-steps for RED/GREEN/REFACTOR cycles), enabling resumable execution and progress tracking; **Step 3 Restructuring**: Restructured to prevent assumption-based errors with explicit iteration number verification, mandatory output reading before status updates, forced sequential execution; **Verification Enhancements**: Added git status verification to ensure clean working tree before commits, code verification requirement reading actual implementation before marking GREEN complete; **Impact**: Eliminates assumption-based errors, enforces proper TDD discipline, provides granular progress tracking
 - **RED Phase Dual Goals Pattern**: Implemented and documented RED Phase Dual Goals Pattern enforcing both Goal 1 (prove test validity via temporary corruption) and Goal 2 (identify implementation needs) for every RED phase; **Implementation**: Updated execute-plan command Step 3 with explicit dual-goal verification, added mandatory corruption application to prove assertions catch real bugs (Lesson 7 compliance); **KB Enhancement**: Added red-phase-dual-goals-pattern.md to KB index and AGENTS.md with comprehensive examples from TDD Cycle 7 Iteration 2; **Impact**: Ensures every RED phase proves test validity through temporary corruption while also identifying implementation requirements, preventing invalid tests from passing to GREEN phase
