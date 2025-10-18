@@ -189,7 +189,42 @@ verify_test
 cleanup_test
 ```
 
-### Real AgeRun Example: Shell Script Analysis
+### Real AgeRun Example 1: Checkpoint Script Debugging
+
+The checkpoint scripts use sed for step tracking. When debugging issues:
+
+```bash
+# Test checkpoint update in isolation
+COMMAND="test-cmd"
+STEP=1
+DESC="Step 1 Description"
+TRACKING_FILE="/tmp/${COMMAND}_progress.txt"
+
+# Create minimal tracking file
+cat > "$TRACKING_FILE" << 'EOF'
+STEP_1=pending    # Step 1 Description
+STEP_2=pending    # Step 2 Description
+EOF
+
+# Test the sed pattern used in checkpoint_update.sh
+echo "Testing checkpoint sed pattern..."
+sed "s@STEP_${STEP}=.*@STEP_${STEP}=complete    # ${DESC}@" "$TRACKING_FILE"
+# Output: STEP_1=complete    # Step 1 Description
+
+# Verify the pattern works with platform-specific sed
+if [[ "$OSTYPE" == darwin* ]]; then
+    echo "Running on macOS - test with sed -i ''"
+    sed -i '' "s@STEP_${STEP}=.*@STEP_${STEP}=complete    # ${DESC}@" "$TRACKING_FILE"
+else
+    echo "Running on Linux - test with sed -i"
+    sed -i "s@STEP_${STEP}=.*@STEP_${STEP}=complete    # ${DESC}@" "$TRACKING_FILE"
+fi
+
+cat "$TRACKING_FILE"
+rm "$TRACKING_FILE"
+```
+
+### Real AgeRun Example 2: Shell Script Analysis
 
 When we encountered the checkpoint sed error:
 

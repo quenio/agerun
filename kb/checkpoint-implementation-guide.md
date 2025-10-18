@@ -55,22 +55,38 @@ make checkpoint-gate CMD=review-changes GATE="Code Quality" REQUIRED="1,2,3,4,5,
 4. **Map to checkpoints**: Each section becomes a numbered step
 
 ### Step 2: Add Infrastructure
+
+**Checkpoint Script Architecture:**
+All checkpoint functionality is implemented through bash scripts that are wrapped by Makefile targets:
+
 ```bash
 # Initialize with all steps
+# Uses: scripts/checkpoint_init.sh (creates /tmp/COMMAND_progress.txt)
 make checkpoint-init CMD=command-name STEPS='"Step 1" "Step 2" ...'
 
 # Update after each step
+# Uses: scripts/checkpoint_update.sh (marks steps complete, shows progress)
 make checkpoint-update CMD=command-name STEP=N
 
 # Status display
+# Uses: scripts/checkpoint_status.sh (shows progress bar and next action)
 make checkpoint-status CMD=command-name
 
 # Gates between stages
+# Uses: scripts/checkpoint_gate.sh (verifies required steps before proceeding)
 make checkpoint-gate CMD=command-name GATE="Stage Name" REQUIRED="1,2,3"
 
 # Cleanup when done
+# Uses: scripts/checkpoint_cleanup.sh (removes tracking file)
 make checkpoint-cleanup CMD=command-name
 ```
+
+**Script Implementation Details:**
+- All scripts use cross-platform safe patterns for macOS/Linux compatibility
+- Safe sed delimiters (`@` instead of `/`) to avoid escaping issues
+- Proper OSTYPE detection with `[[ == ]]` pattern matching
+- Comprehensive error handling with `set -e` and `set -o pipefail`
+- (See [Cross-Platform Bash Script Patterns](../kb/cross-platform-bash-script-patterns.md) for details)
 
 ### Step 3: Document Expected Outputs
 For each checkpoint operation, show:

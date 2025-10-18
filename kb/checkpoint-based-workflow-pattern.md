@@ -55,20 +55,26 @@ ar_data__destroy(own_workflow);
    - Total step count
    - STEP_N=complete/pending for each step
 
-2. **Step Management**:
-   - `checkpoint-init`: Create tracking file with all steps
-   - `checkpoint-update`: Mark step complete, show progress bar
-   - `checkpoint-update-verified`: Mark complete with automated verification
-   - `checkpoint-status`: Show current progress (verbose mode available)
-   - `checkpoint-cleanup`: Remove tracking file when done
+2. **Step Management** (via Makefile targets → bash scripts):
+   - `checkpoint-init` → `scripts/checkpoint_init.sh`: Create tracking file with all steps
+   - `checkpoint-update` → `scripts/checkpoint_update.sh`: Mark step complete, show progress bar
+   - `checkpoint-update-verified` → `scripts/checkpoint_update_enhanced.sh`: Mark complete with automated verification
+   - `checkpoint-status` → `scripts/checkpoint_status.sh`: Show current progress (verbose mode available)
+   - `checkpoint-cleanup` → `scripts/checkpoint_cleanup.sh`: Remove tracking file when done
 
-3. **Gate Enforcement**:
-   - Block progress until required steps complete
+3. **Gate Enforcement** (via Makefile targets → bash scripts):
+   - `checkpoint-gate` → `scripts/checkpoint_gate.sh`: Block progress until required steps complete
    - Exit with error code if gate fails
    - Named gates (e.g., "Build Quality", "Integration")
    - `checkpoint-gate CMD=name GATE="Gate Name" REQUIRED="1,2,3"`
 
-4. **Progress Visualization**:
+4. **Script Architecture**:
+   - All checkpoint scripts use platform-safe patterns for cross-platform compatibility
+   - Scripts employ safe sed delimiters (`@` or `|` instead of `/`)
+   - Proper OSTYPE detection (`[[ == ]]` pattern matching) for macOS/Linux differences
+   - Comprehensive error handling (`set -e`, `set -o pipefail`)
+
+5. **Progress Visualization**:
    ```
    📈 commit: 5/9 steps (55%)
       [███████████░░░░░░░░░] 55%
@@ -140,3 +146,5 @@ Organize complex workflows into stages with gates:
 - [KB Target Compliance Enforcement](kb-target-compliance-enforcement.md)
 - [Context Preservation Across Sessions](context-preservation-across-sessions.md)
 - [Session Resumption Without Prompting](session-resumption-without-prompting.md)
+- [Cross-Platform Bash Script Patterns](cross-platform-bash-script-patterns.md) - Checkpoint scripts implement platform-safe patterns
+- [Script Debugging Through Isolation](script-debugging-through-isolation.md) - Debugging checkpoint script issues

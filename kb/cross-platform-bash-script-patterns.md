@@ -170,8 +170,9 @@ docker run ubuntu:latest bash script.sh  # Linux
 docker run -it --platform linux/amd64 ubuntu bash script.sh
 ```
 
-### Real AgeRun Example: Checkpoint Updates
+### Real AgeRun Examples
 
+**Example 1: Checkpoint Update Script** (`scripts/checkpoint_update.sh`)
 ```bash
 #!/bin/bash
 set -e
@@ -189,13 +190,44 @@ else
 fi
 
 # Extract step description
-STEP_DESC=$(grep "STEP_${STEP_NUMBER}=" "$TRACKING_FILE" | sed 's/.*# //')
+STEP_DESC=$(grep "STEP_${STEP_NUMBER}=" "$TRACKING_FILE" | sed 's@.*# @@')
 
-# Update step status with safe @ delimiter
+# Update step status with safe @ delimiter (cross-platform safe)
 sed $SED_OPTS "s@STEP_${STEP_NUMBER}=.*@STEP_${STEP_NUMBER}=${STATUS}    # ${STEP_DESC}@" "$TRACKING_FILE"
 
 echo "✅ Step $STEP_NUMBER marked as $STATUS"
 ```
+
+**Example 2: Checkpoint Status Display** (`scripts/checkpoint_status.sh`)
+```bash
+#!/bin/bash
+set -e
+set -o pipefail
+
+COMMAND_NAME="${1:-command}"
+TRACKING_FILE="/tmp/${COMMAND_NAME}_progress.txt"
+
+# Safe pattern matching for OSTYPE
+if [[ "$OSTYPE" == darwin* ]]; then
+    echo "Running on macOS"
+else
+    echo "Running on Linux"
+fi
+
+# Extract step information with safe delimiter
+STEP_NUM=$(grep "=pending" "$TRACKING_FILE" | head -1 | sed 's@STEP_\([0-9]*\).*@\1@')
+STEP_DESC=$(grep "STEP_${STEP_NUM}=" "$TRACKING_FILE" | sed 's@.*# @@')
+
+echo "Next: Step $STEP_NUM - $STEP_DESC"
+```
+
+**How Checkpoint Scripts Are Used in Commands**
+Commands like `/ar:check-docs`, `/ar:new-learnings`, and `/ar:commit` use these scripts through Makefile targets:
+1. Command initializes checkpoint with `make checkpoint-init CMD=command-name STEPS=...`
+2. After each step, runs `make checkpoint-update CMD=command-name STEP=N`
+3. Between stages, enforces gates with `make checkpoint-gate CMD=command-name GATE="Name" REQUIRED=...`
+4. Displays progress with `make checkpoint-status CMD=command-name`
+5. Cleans up on completion with `make checkpoint-cleanup CMD=command-name`
 
 ## Common Gotchas
 
