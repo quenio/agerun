@@ -12,8 +12,9 @@ Before validation:
    - validation-feedback-loop-effectiveness
    - command-output-documentation-pattern
 3. Apply command quality standards
-   - Scripts can be extracted for better reusability ([details](../../../kb/command-helper-script-extraction-pattern.md))
+   - Scripts should be extracted for reusability: one focused script per shell block ([details](../../../kb/command-helper-script-extraction-pattern.md))
    - Use domain-specific naming for extracted scripts ([details](../../../kb/script-domain-naming-convention.md))
+   - This command exemplifies the orchestrator pattern: command file shows all steps directly ([details](../../../kb/command-orchestrator-pattern.md))
 
 ## CHECKPOINT WORKFLOW ENFORCEMENT
 

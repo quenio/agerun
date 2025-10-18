@@ -168,7 +168,8 @@ scripts/scan-commands.sh                  # Noun form when enumeration
 
 ## Related Patterns
 
-- [Command Helper Script Extraction Pattern](command-helper-script-extraction-pattern.md) - When and how to extract scripts
+- [Command File as Orchestrator Pattern](command-orchestrator-pattern.md) - Why domain-specific naming enables discovery in orchestration
+- [Command Helper Script Extraction Pattern](command-helper-script-extraction-pattern.md) - When and how to extract scripts (one per block)
 - [Function Naming State Change Convention](function-naming-state-change-convention.md) - Naming conventions for functions
-- [Single Responsibility Principle](single-responsibility-principle.md) - Keeping scripts focused
+- [Single Responsibility Principle](single-responsibility-principle.md) - Keeping scripts focused and discoverable
 - [Separation of Concerns Principle](separation-of-concerns-principle.md) - Script organization

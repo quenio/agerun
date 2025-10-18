@@ -201,7 +201,8 @@ static void* _safe_malloc(size_t size);
 - **No Circular Dependencies**: Easier to achieve with clear responsibilities ([details](no-circular-dependencies-principle.md))
 - **Instruction Behavior Simplification**: Applying SRP to instruction design ([details](instruction-behavior-simplification.md))
 - **Persistence Simplification**: How instantiation can eliminate coordinator modules ([details](persistence-simplification-through-instantiation.md))
-- **Command Helper Script Extraction Pattern**: Applying SRP to shell scripts by extracting focused functionality ([details](command-helper-script-extraction-pattern.md))
+- **Command File as Orchestrator Pattern**: Command files orchestrate focused scripts, avoiding monolithic wrapper scripts ([details](command-orchestrator-pattern.md))
+- **Command Helper Script Extraction Pattern**: Applying SRP to shell scripts by extracting focused functionality (one script per responsibility) ([details](command-helper-script-extraction-pattern.md))
 - **Script Domain Naming Convention**: Clear naming supports SRP by making script responsibilities obvious ([details](script-domain-naming-convention.md))
 
 ## Examples

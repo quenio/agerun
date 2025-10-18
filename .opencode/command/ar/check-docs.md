@@ -1,4 +1,4 @@
-Run documentation validation and fix any errors found using an iterative approach, then commit and push the fixes. Documentation quality is enhanced through systematic script extraction and domain-specific naming patterns ([details](../../../kb/command-helper-script-extraction-pattern.md), [naming](../../../kb/script-domain-naming-convention.md)).
+Run documentation validation and fix any errors found using an iterative approach, then commit and push the fixes. This command demonstrates best practices for script extraction and orchestration: each step has its own focused script, the command file is the orchestrator showing all logic, and scripts use domain-specific naming ([extraction](../../../kb/command-helper-script-extraction-pattern.md), [orchestration](../../../kb/command-orchestrator-pattern.md), [naming](../../../kb/script-domain-naming-convention.md)).
 
 ## ⚠️ CRITICAL: Follow all steps sequentially
 

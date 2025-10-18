@@ -366,10 +366,11 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 **Script Extraction Pattern** ([details](kb/command-helper-script-extraction-pattern.md)):
 - Extract embedded bash logic (10+ lines) from commands into standalone scripts
+- **CRITICAL**: Each shell block = ONE focused script (never combine multiple blocks into monolithic wrapper)
 - Each extracted script should have ONE responsibility ([details](kb/single-responsibility-principle.md))
 - Use domain-specific naming to enable discoverability: `<action>-<domain>-<object>.sh`
 - Test extracted scripts independently before integration
-- Update command files to reference extracted scripts instead of embedding logic
+- Update command files to reference extracted scripts directly (command file is the orchestrator, not wrapper scripts) ([details](kb/command-orchestrator-pattern.md))
 
 ### 5.1 Python Script Naming & Development
 

@@ -273,6 +273,29 @@ From the AgeRun project, we extracted 23+ helper scripts:
 
 This extraction from check-commands.md reduced the command documentation by 92 lines while maintaining full functionality. Each script has a single responsibility following the [Script Domain Naming Convention](script-domain-naming-convention.md).
 
+### Check-Docs Command - Anti-Pattern Correction - Session 2025-10-18
+
+**Initial extraction (ANTI-PATTERN)**:
+- Created `run-check-docs.sh` as monolithic wrapper (180+ lines)
+- Combined all 5 steps into single script
+- check-docs.md just called run-check-docs.sh
+- Orchestration logic was hidden
+- Violated extraction discipline
+
+**Corrected extraction (CORRECT PATTERN)**:
+- Created 5 focused scripts:
+  - `validate-docs.sh` - Run validation only
+  - `preview-doc-fixes.sh` - Preview fixes only
+  - `apply-doc-fixes.sh` - Apply fixes only
+  - `verify-docs.sh` - Verify fixes only
+  - `commit-docs.sh` - Commit changes only
+- Deleted run-check-docs.sh entirely
+- check-docs.md shows all steps directly with orchestration logic
+- Each script does ONE thing
+- Command file is the orchestrator (not wrapper script) - see [Command File as Orchestrator Pattern](command-orchestrator-pattern.md)
+
+**Key lesson**: Never combine multiple shell blocks into one monolithic wrapper. Each block = one script. Command file = orchestrator.
+
 ### Review-Changes Command (6 scripts)
 - `detect-code-smells.sh` - Finds long methods, large modules, excessive params
 - `verify-memory-management.sh` - Checks ownership prefixes, heap tracking
@@ -423,6 +446,7 @@ make checkpoint-update CMD=review-changes STEP=1
 
 ## Related Patterns
 
+- [Command File as Orchestrator Pattern](command-orchestrator-pattern.md) - Why command files are orchestrators, not wrapper scripts
 - [Command Documentation Excellence Gate](command-documentation-excellence-gate.md) - Quality standards for commands
 - [Checkpoint Implementation Guide](checkpoint-implementation-guide.md) - Structuring commands with checkpoints
 - [Command Thoroughness Requirements Pattern](command-thoroughness-requirements-pattern.md) - Thoroughness standards

@@ -194,8 +194,9 @@ make checkpoint-update CMD=review-changes STEP=2
 See [Command Helper Script Extraction Pattern](command-helper-script-extraction-pattern.md) for complete guidelines.
 
 ## Related Patterns
+- [Command File as Orchestrator Pattern](command-orchestrator-pattern.md) - Show orchestration logic inline in command file, not wrapper scripts
 - [Checkpoint Step Consolidation Pattern](checkpoint-step-consolidation-pattern.md) - Consolidate per-item verification steps into interactive loops
-- [Command Helper Script Extraction Pattern](command-helper-script-extraction-pattern.md) - Extract embedded bash to standalone scripts
+- [Command Helper Script Extraction Pattern](command-helper-script-extraction-pattern.md) - Extract embedded bash to standalone scripts (one per block)
 - [Multi-Step Checkpoint Tracking Pattern](multi-step-checkpoint-tracking-pattern.md)
 - [Gate Enforcement Exit Codes Pattern](gate-enforcement-exit-codes-pattern.md)
 - [Command Output Documentation Pattern](command-output-documentation-pattern.md)

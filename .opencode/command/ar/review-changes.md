@@ -14,8 +14,9 @@ Before reviewing ([details](../../../kb/kb-consultation-before-planning-requirem
    - Helper script extraction ([details](../../../kb/command-helper-script-extraction-pattern.md))
    - Script naming conventions ([details](../../../kb/script-domain-naming-convention.md))
 3. Apply these standards during review
-   - When refactoring commands, consider extracting complex bash logic to scripts
-   - Use domain-specific naming for improved discoverability
+   - When refactoring commands, extract complex bash logic: one focused script per shell block ([details](../../../kb/command-helper-script-extraction-pattern.md))
+   - Use domain-specific naming (action-domain-object.sh) for discoverability ([details](../../../kb/script-domain-naming-convention.md))
+   - Command files should orchestrate scripts directly (show all logic inline, not wrap in run-*.sh) ([details](../../../kb/command-orchestrator-pattern.md))
 
 ## CHECKPOINT WORKFLOW ENFORCEMENT
 

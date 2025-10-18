@@ -72,7 +72,8 @@ Each learning file contains:
 
 #### 1.4 Knowledge Management
 - [Checkpoint Workflow Enforcement Pattern](checkpoint-workflow-enforcement-pattern.md) ⭐ NEW - Prevention vs. detection: 3-section enforcement for all 31 checkpoint commands
-- [Command Helper Script Extraction Pattern](command-helper-script-extraction-pattern.md) - Extract embedded bash logic to standalone scripts
+- [Command File as Orchestrator Pattern](command-orchestrator-pattern.md) ⭐ NEW - Command files are orchestrators, not wrapper scripts; show all steps inline
+- [Command Helper Script Extraction Pattern](command-helper-script-extraction-pattern.md) - Extract embedded bash logic to standalone scripts (one per block)
 - [Script Domain Naming Convention](script-domain-naming-convention.md) ⭐ NEW - Domain-specific naming for utility scripts improves discoverability
 - [Command KB Consultation Enforcement](command-kb-consultation-enforcement.md)
 - [Command Pipeline Methodology Enforcement](command-pipeline-methodology-enforcement.md) ⭐ NEW - Enforces 14 TDD lessons across create→review→execute pipeline
