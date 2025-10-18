@@ -801,10 +801,10 @@ make checkpoint-update CMD=create-plan STEP=6
 
 ```bash
 # Validate plan structure (checks all iterations have required sections)
-./scripts/validate_plan_structure.sh plans/[plan-file].md [expected-iteration-count]
+./scripts/validate-plan-structure.sh plans/[plan-file].md [expected-iteration-count]
 
 # Example:
-# ./scripts/validate_plan_structure.sh plans/file_delegate_plan.md 15
+# ./scripts/validate-plan-structure.sh plans/file_delegate_plan.md 15
 ```
 
 **Expected output:**
@@ -977,10 +977,10 @@ make checkpoint-status CMD=create-plan-red-phases
 # Should show: 🎆 All steps complete!
 
 # MANDATORY: Validate evidence file before proceeding
-./scripts/validate_red_corruptions.sh /tmp/red-corruptions-evidence.txt [expected-iteration-count]
+./scripts/validate-red-corruptions.sh /tmp/red-corruptions-evidence.txt [expected-iteration-count]
 
 # Example:
-# ./scripts/validate_red_corruptions.sh /tmp/red-corruptions-evidence.txt 15
+# ./scripts/validate-red-corruptions.sh /tmp/red-corruptions-evidence.txt 15
 ```
 
 **Expected validation output:**

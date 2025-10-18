@@ -66,12 +66,12 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - **/bin**: Generated binaries (ignored by git, NEVER read these files)
 - **/methods**: Method definitions (.method files with docs and tests)
 - **/scripts**: Build and utility scripts (run via make targets, not directly - includes slash commands)
-  - **Checkpoint core scripts** (`checkpoint_*.sh`): Implement multi-step workflow tracking via Makefile targets
-    - `checkpoint_init.sh`: Initialize progress tracking file with all steps
-    - `checkpoint_update.sh`: Mark steps complete and show progress (uses safe sed with `@` delimiter)
-    - `checkpoint_status.sh`: Display current progress with progress bar
-    - `checkpoint_gate.sh`: Enforce gates between workflow stages
-    - `checkpoint_cleanup.sh`: Remove tracking file when done
+  - **Checkpoint core scripts** (`checkpoint-*.sh`): Implement multi-step workflow tracking via Makefile targets
+    - `checkpoint-init.sh`: Initialize progress tracking file with all steps
+    - `checkpoint-update.sh`: Mark steps complete and show progress (uses safe sed with `@` delimiter)
+    - `checkpoint-status.sh`: Display current progress with progress bar
+    - `checkpoint-gate.sh`: Enforce gates between workflow stages
+    - `checkpoint-cleanup.sh`: Remove tracking file when done
     - All scripts use cross-platform patterns: `[[ == ]]` for OSTYPE detection, `set -e`, error handling ([details](kb/cross-platform-bash-script-patterns.md))
   - **Checkpoint wrapper scripts** (`*-checkpoint.sh`): Simplify checkpoint integration in commands
     - `init-checkpoint.sh`: Initialize checkpoint or show status if already initialized (replaces 7-8 line pattern)
