@@ -330,61 +330,47 @@ make checkpoint-update CMD=review-plan STEP=1
 #### Step 2: Read Plan and Extract PENDING REVIEW Iterations
 
 **Read the entire plan document and filter for PENDING REVIEW iterations:**
-```bash
-# Read the plan file
-# <use Read tool with plan file path>
 
-# Get iteration summary using helper script
+First, read the plan file completely using the Read tool to understand its structure.
+
+Then, extract and count iterations ready for review:
+
+```bash
+# Get total iteration count
 ./scripts/count-plan-iterations.sh <plan-file>
 
-# List all PENDING REVIEW iterations
-./scripts/list-pending-iterations.sh <plan-file>
+# Count how many PENDING REVIEW iterations need review
+PENDING_COUNT=$(./scripts/filter-plan-items.sh <plan-file> "PENDING REVIEW" count)
+echo "Iterations ready for review: $PENDING_COUNT"
 
-# Optional: View all iterations with status
+# List all PENDING REVIEW iterations
+./scripts/filter-plan-items.sh <plan-file> "PENDING REVIEW" list
+
+# Optional: View all iterations with all statuses
 ./scripts/list-iteration-status.sh <plan-file>
 
 make checkpoint-update CMD=review-plan STEP=2
 ```
 
-**Scanning for:**
+**This provides:**
 - Total iteration count (from count script)
-- Cycle structure
-- Review status markers (from list scripts)
-- Completion status (if present)
+- PENDING REVIEW count (using filter-plan-items.sh)
+- Complete list of iterations to review
+- View of all statuses across the plan
 
-**CRITICAL: Filter for PENDING REVIEW iterations:**
-
-Extract only iterations marked with "- PENDING REVIEW" status. Skip iterations already marked as:
+**Filtering logic:**
+The helper automatically filters for "- PENDING REVIEW" status and skips:
 - "- REVIEWED" (already accepted in previous review)
 - "- REVISED" (updated after review, ready for implementation)
 - "- ✅ COMPLETE" (implementation complete)
 
-**Example filtering:**
-```markdown
-# REVIEW THIS (has PENDING REVIEW):
-#### Iteration 0.1: send() returns true - PENDING REVIEW
-
-# SKIP THIS (already reviewed):
-#### Iteration 0.2: has_messages() returns false - REVIEWED
-
-# SKIP THIS (being revised):
-#### Iteration 0.3: message queue implementation - REVISED
-
-# SKIP THIS (completed):
-#### Iteration 0.4: error handling - ✅ COMPLETE
-```
-
 **Iteration filtering checklist:**
-- [ ] Identify all iterations with "- PENDING REVIEW" status
-- [ ] Create list of iterations to review (PENDING REVIEW only)
-- [ ] Note total iterations needing review vs. total iterations
-- [ ] Skip all non-PENDING iterations from review scope
-
-**Scanning for:**
-- Total iteration count (from count script)
-- Cycle structure
-- Review status markers (from list scripts)
-- Completion status (if present)
+- [ ] Read plan file completely
+- [ ] Identify total iteration count
+- [ ] Count PENDING REVIEW iterations awaiting review
+- [ ] View list of all PENDING REVIEW iterations
+- [ ] Verify cycle structure and document organization
+- [ ] Note REVIEWED and REVISED iterations already processed
 
 **Document structure verification:**
 - [ ] Has clear objective/overview
@@ -593,14 +579,24 @@ For EACH PENDING REVIEW iteration:
    - "fix it" or "revise it" → Fix the issue, re-present, get acceptance
    - Specific feedback → Make changes, re-present, wait for acceptance
 
-4. **Update Status Immediately:**
+4. **Update Status Immediately (after each user response):**
+
+   **Option A: Immediate Updates (Recommended for interactive workflow)**
    ```bash
-   # Use Edit tool to update plan file
+   # Use Edit tool to update plan file after each user response
    old_string: "#### Iteration X.Y: ... - PENDING REVIEW"
    new_string: "#### Iteration X.Y: ... - REVIEWED"
 
    # Update iteration checkpoint
    make checkpoint-update CMD=review-plan-iterations STEP=N
+   ```
+
+   **Option B: Batch Updates (if tracking changes separately)**
+
+   After reviewing all PENDING REVIEW iterations, batch update markers:
+   ```bash
+   # If user accepted all iterations as REVIEWED:
+   ./scripts/update-plan-markers.sh <plan-file> "PENDING REVIEW" "REVIEWED"
    ```
 
 5. **Repeat** until all PENDING REVIEW iterations processed
@@ -611,12 +607,14 @@ For EACH PENDING REVIEW iteration:
 - [ ] Present each PENDING REVIEW iteration to user (multi-line format)
 - [ ] Wait for user's acceptance response
 - [ ] Update plan file with new status marker (REVIEWED or REVISED)
+  - *Use Edit tool immediately per iteration (Option A - Recommended)*
+  - *OR accumulate changes and batch update with helper (Option B - Alternative)*
 - [ ] Update iteration checkpoint after each iteration
 - [ ] Track acceptance count for final report
 - [ ] Document any revision requests for Step 5 (Document Issues)
 - [ ] Continue until all PENDING REVIEW iterations processed
 
-**MANDATORY**: You MUST update the plan file with new status markers after each acceptance/revision decision. Do not batch updates—update immediately after each user response.
+**CRITICAL**: Plan file must reflect current status. Use immediate updates (Option A) for clearest tracking during interactive review. Use batch update (Option B) only if tracking separate from plan file.
 
 **CHECKPOINT: Complete Iteration Tracking**
 
