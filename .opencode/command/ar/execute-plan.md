@@ -1624,14 +1624,20 @@ make checkpoint-gate CMD=execute-plan GATE="Documentation" REQUIRED="11,12"
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-# Show final summary
-make checkpoint-status CMD=execute-plan
+./scripts/complete-checkpoint.sh execute-plan
 ```
 
 **Expected completion output:**
 ```
-🎆 All 11 steps complete!
-✓ Run: make checkpoint-cleanup CMD=execute-plan
+========================================
+   CHECKPOINT COMPLETION SUMMARY
+========================================
+
+📈 execute-plan: X/Y steps (Z%)
+   [████████████████████] 100%
+
+✅ Checkpoint workflow complete
+```
 ```
 
 ```bash

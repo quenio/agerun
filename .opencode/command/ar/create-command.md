@@ -451,14 +451,20 @@ make checkpoint-gate CMD=create-command GATE="Excellence" REQUIRED="6,7"
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-# Show final status
-make checkpoint-status CMD=create-command
+./scripts/complete-checkpoint.sh create-command
 ```
 
 **Expected completion output:**
 ```
-🎆 All 7 steps complete!
-✓ Run: make checkpoint-cleanup CMD=create-command
+========================================
+   CHECKPOINT COMPLETION SUMMARY
+========================================
+
+📈 create-command: X/Y steps (Z%)
+   [████████████████████] 100%
+
+✅ Checkpoint workflow complete
+```
 ```
 
 ```bash

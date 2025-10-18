@@ -178,33 +178,20 @@ make: *** [check-naming] Error 1
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-# Show final summary
-make checkpoint-status CMD=check_naming
+./scripts/complete-checkpoint.sh check-naming
 ```
 
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT STATUS: check_naming
+   CHECKPOINT COMPLETION SUMMARY
 ========================================
 
-Progress: 3/3 steps (100%)
+📈 check-naming: X/Y steps (Z%)
+   [████████████████████] 100%
 
-[████████████████████] 100%
-
-✅ ALL CHECKPOINTS COMPLETE!
-
-Summary:
-  Prepare: ✓ Complete
-  Execute: ✓ Complete  
-  Verify: ✓ Complete
-
-The check naming completed successfully!
+✅ Checkpoint workflow complete
 ```
-
-```bash
-# Clean up tracking
-make checkpoint-cleanup CMD=check_naming
 ```
 
 ## Key Points

@@ -246,33 +246,20 @@ make checkpoint-update CMD=check-commands STEP=5
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-# Show final summary
-make checkpoint-status CMD=check-commands
+./scripts/complete-checkpoint.sh check-commands
 ```
 
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT STATUS: check-commands
+   CHECKPOINT COMPLETION SUMMARY
 ========================================
 
-Progress: 5/5 steps (100%)
+📈 check-commands: X/Y steps (Z%)
+   [████████████████████] 100%
 
-[████████████████████████████████] 100%
-
-✅ ALL CHECKPOINTS COMPLETE!
-
-Final Status:
-  Commands scanned: 26
-  Average score: 94.6%
-  Quality: EXCELLENT
-
-All commands meet documentation standards!
+✅ Checkpoint workflow complete
 ```
-
-```bash
-# Clean up tracking
-make checkpoint-cleanup CMD=check-commands
 rm -f /tmp/check-commands-*.txt
 ```
 

@@ -378,36 +378,20 @@ make checkpoint-update CMD=migrate-module-to-zig-abi STEP=10
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-# Show final summary
-make checkpoint-status CMD=migrate-module-to-zig-abi
+./scripts/complete-checkpoint.sh migrate-module-to-zig-abi
 ```
 
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT STATUS: migrate-module-to-zig-abi
+   CHECKPOINT COMPLETION SUMMARY
 ========================================
 
-Progress: 10/10 steps (100%)
+📈 migrate-module-to-zig-abi: X/Y steps (Z%)
+   [████████████████████] 100%
 
-[████████████████████] 100%
-
-✅ ALL CHECKPOINTS COMPLETE!
-
-Migration Summary:
-  Module: {{1}}
-  Functions migrated: 20
-  Tests: All passing
-  Memory leaks: 0
-  Documentation: Valid
-  Build: Clean
-
-The {{1}} module has been successfully migrated to Zig!
+✅ Checkpoint workflow complete
 ```
-
-```bash
-# Clean up tracking
-make checkpoint-cleanup CMD=migrate-module-to-zig-abi
 rm -f /tmp/migration-stats.txt
 ```
 

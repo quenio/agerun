@@ -169,33 +169,20 @@ Shutdown complete
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-# Show final summary
-make checkpoint-status CMD=run_exec
+./scripts/complete-checkpoint.sh run-exec
 ```
 
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT STATUS: run_exec
+   CHECKPOINT COMPLETION SUMMARY
 ========================================
 
-Progress: 3/3 steps (100%)
+📈 run-exec: X/Y steps (Z%)
+   [████████████████████] 100%
 
-[████████████████████] 100%
-
-✅ ALL CHECKPOINTS COMPLETE!
-
-Summary:
-  Prepare: ✓ Complete
-  Execute: ✓ Complete  
-  Verify: ✓ Complete
-
-The run exec completed successfully!
+✅ Checkpoint workflow complete
 ```
-
-```bash
-# Clean up tracking
-make checkpoint-cleanup CMD=run_exec
 ```
 
 ## Key Points

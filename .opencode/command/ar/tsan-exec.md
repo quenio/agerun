@@ -182,33 +182,20 @@ SUMMARY: ThreadSanitizer: data race ar_system.c:345
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-# Show final summary
-make checkpoint-status CMD=tsan_exec
+./scripts/complete-checkpoint.sh tsan-exec
 ```
 
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT STATUS: tsan_exec
+   CHECKPOINT COMPLETION SUMMARY
 ========================================
 
-Progress: 3/3 steps (100%)
+📈 tsan-exec: X/Y steps (Z%)
+   [████████████████████] 100%
 
-[████████████████████] 100%
-
-✅ ALL CHECKPOINTS COMPLETE!
-
-Summary:
-  Prepare: ✓ Complete
-  Execute: ✓ Complete  
-  Verify: ✓ Complete
-
-The tsan exec completed successfully!
+✅ Checkpoint workflow complete
 ```
-
-```bash
-# Clean up tracking
-make checkpoint-cleanup CMD=tsan_exec
 ```
 
 ## Key Points

@@ -174,33 +174,20 @@ Found 1 code quality issue.
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-# Show final summary
-make checkpoint-status CMD=analyze_exec
+./scripts/complete-checkpoint.sh analyze-exec
 ```
 
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT STATUS: analyze_exec
+   CHECKPOINT COMPLETION SUMMARY
 ========================================
 
-Progress: 3/3 steps (100%)
+📈 analyze-exec: X/Y steps (Z%)
+   [████████████████████] 100%
 
-[████████████████████] 100%
-
-✅ ALL CHECKPOINTS COMPLETE!
-
-Summary:
-  Prepare: ✓ Complete
-  Execute: ✓ Complete  
-  Verify: ✓ Complete
-
-The analyze exec completed successfully!
+✅ Checkpoint workflow complete
 ```
-
-```bash
-# Clean up tracking
-make checkpoint-cleanup CMD=analyze_exec
 ```
 
 ## Key Points

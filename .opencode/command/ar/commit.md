@@ -308,14 +308,20 @@ make checkpoint-update-verified CMD=commit STEP=9 SUMMARY="Push completed succes
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-# Show final summary
-make checkpoint-status CMD=commit
+./scripts/complete-checkpoint.sh commit
 ```
 
 **Expected completion output:**
 ```
-🎆 All 9 steps complete!
-✓ Run: make checkpoint-cleanup CMD=commit
+========================================
+   CHECKPOINT COMPLETION SUMMARY
+========================================
+
+📈 commit: X/Y steps (Z%)
+   [████████████████████] 100%
+
+✅ Checkpoint workflow complete
+```
 ```
 
 ```bash

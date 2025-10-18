@@ -463,14 +463,20 @@ make checkpoint-gate CMD=review-changes GATE="Pre-Commit" REQUIRED="17,18,19,20,
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-# Show final status
-make checkpoint-status CMD=review-changes
+./scripts/complete-checkpoint.sh review-changes
 ```
 
 **Expected completion output:**
 ```
-🎆 All 22 steps complete!
-✓ Run: make checkpoint-cleanup CMD=review-changes
+========================================
+   CHECKPOINT COMPLETION SUMMARY
+========================================
+
+📈 review-changes: X/Y steps (Z%)
+   [████████████████████] 100%
+
+✅ Checkpoint workflow complete
+```
 ```
 
 ```bash

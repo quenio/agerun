@@ -17,21 +17,13 @@ make checkpoint-status CMD=sanitize_tests VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/sanitize_tests_progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=sanitize_tests STEPS='"Prepare" "Execute" "Verify"'
-else
-  make checkpoint-status CMD=sanitize_tests
-fi
+./scripts/init-checkpoint.sh sanitize-tests '"Prepare" "Execute" "Verify"'
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/sanitize_tests_progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  exit 1
-fi
+./scripts/require-checkpoint.sh sanitize-tests
 ```
 
 # Sanitize Tests

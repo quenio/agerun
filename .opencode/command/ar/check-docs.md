@@ -267,34 +267,20 @@ make checkpoint-update CMD=check-docs STEP=5
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-# Show final summary
-make checkpoint-status CMD=check-docs
+./scripts/complete-checkpoint.sh check-docs
 ```
 
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT STATUS: check-docs
+   CHECKPOINT COMPLETION SUMMARY
 ========================================
 
-Progress: 5/5 steps (100%)
+📈 check-docs: X/Y steps (Z%)
+   [████████████████████] 100%
 
-[████████████████████] 100%
-
-✅ ALL CHECKPOINTS COMPLETE!
-
-Final Status:
-  Errors found: 12
-  Errors fixed: 12
-  Validation: PASS
-  Changes pushed: Yes
-
-Documentation is now valid!
+✅ Checkpoint workflow complete
 ```
-
-```bash
-# Clean up tracking
-make checkpoint-cleanup CMD=check-docs
 rm -f /tmp/check-docs-*.txt /tmp/fix-preview.txt
 ```
 

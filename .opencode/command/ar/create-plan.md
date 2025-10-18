@@ -1364,14 +1364,20 @@ make checkpoint-update CMD=create-plan STEP=14
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-# Show final summary
-make checkpoint-status CMD=create-plan
+./scripts/complete-checkpoint.sh create-plan
 ```
 
 **Expected completion output:**
 ```
-🎆 All 14 steps complete!
-✓ Run: make checkpoint-cleanup CMD=create-plan
+========================================
+   CHECKPOINT COMPLETION SUMMARY
+========================================
+
+📈 create-plan: X/Y steps (Z%)
+   [████████████████████] 100%
+
+✅ Checkpoint workflow complete
+```
 ```
 
 ```bash

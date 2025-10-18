@@ -618,35 +618,20 @@ make checkpoint-update CMD=compact-guidelines STEP=15
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-# Show final summary
-make checkpoint-status CMD=compact-guidelines
+./scripts/complete-checkpoint.sh compact-guidelines
 ```
 
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT STATUS: compact-guidelines
+   CHECKPOINT COMPLETION SUMMARY
 ========================================
 
-Progress: 15/15 steps (100%)
+📈 compact-guidelines: X/Y steps (Z%)
+   [████████████████████] 100%
 
-[████████████████████] 100%
-
-✅ ALL CHECKPOINTS COMPLETE!
-
-Summary:
-- Line reduction: [N] lines ([%]%)
-- KB articles created: [N] (minimum: 2) ✓
-- Broken links: 0 ✓
-- Documentation: ✓ Valid
-- Commit: ✓ Created
-
-AGENTS.md successfully compacted!
+✅ Checkpoint workflow complete
 ```
-
-```bash
-# Clean up tracking
-make checkpoint-cleanup CMD=compact-guidelines
 rm -f /tmp/compact-guidelines-metrics.txt
 ```
 

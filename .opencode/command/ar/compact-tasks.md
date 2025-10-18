@@ -415,36 +415,20 @@ make checkpoint-update CMD=compact-tasks STEP=7
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-# Show final summary
-make checkpoint-status CMD=compact-tasks
+./scripts/complete-checkpoint.sh compact-tasks
 ```
 
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT STATUS: compact-tasks
+   CHECKPOINT COMPLETION SUMMARY
 ========================================
 
-Progress: 7/7 steps (100%)
+📈 compact-tasks: X/Y steps (Z%)
+   [████████████████████] 100%
 
-[████████████████████] 100%
-
-✅ ALL CHECKPOINTS COMPLETE!
-
-Compaction Results:
-  Original: 1324 lines (85,432 bytes)
-  Final: 1120 lines (72,548 bytes)
-  Line reduction: 15%
-  Completed tasks compacted: 150
-  Incomplete tasks preserved: 75
-  Changes committed: Yes
-
-TODO.md successfully compacted!
+✅ Checkpoint workflow complete
 ```
-
-```bash
-# Clean up tracking
-make checkpoint-cleanup CMD=compact-tasks
 rm -f /tmp/compact-tasks-stats.txt
 ```
 

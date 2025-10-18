@@ -428,35 +428,20 @@ make checkpoint-update CMD=fix-errors-whitelisted STEP=16
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-# Show final summary
-make checkpoint-status CMD=fix-errors-whitelisted
+./scripts/complete-checkpoint.sh fix-errors-whitelisted
 ```
 
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT STATUS: fix-errors-whitelisted
+   CHECKPOINT COMPLETION SUMMARY
 ========================================
 
-Progress: 16/16 steps (100%)
+📈 fix-errors-whitelisted: X/Y steps (Z%)
+   [████████████████████] 100%
 
-[████████████████████] 100%
-
-✅ ALL CHECKPOINTS COMPLETE!
-
-Summary:
-- Errors Fixed: [N] (minimum: 5) ✓
-- Whitelist: [before] → [after] entries
-- Build Status: ✓ Clean
-- Documentation: ✓ Updated
-- Commit: ✓ Created
-
-Great work reducing technical debt!
+✅ Checkpoint workflow complete
 ```
-
-```bash
-# Clean up tracking
-make checkpoint-cleanup CMD=fix-errors-whitelisted
 rm -f /tmp/fix-errors-whitelisted-counts.txt
 ```
 

@@ -431,40 +431,20 @@ make checkpoint-update CMD=check-module-consistency STEP=15
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-# Show final summary
-make checkpoint-status CMD=check-module-consistency
+./scripts/complete-checkpoint.sh check-module-consistency
 ```
 
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT STATUS: check-module-consistency
+   CHECKPOINT COMPLETION SUMMARY
 ========================================
 
-Progress: 15/15 steps (100%)
+📈 check-module-consistency: X/Y steps (Z%)
+   [████████████████████] 100%
 
-[████████████████████] 100%
-
-✅ ALL CHECKPOINTS COMPLETE!
-
-Consistency Check Summary:
-- Modules Analyzed: 5
-- Consistent: 2
-- Needing Update: 3
-
-Improvement Plan Created:
-- High Priority: ar_[module2] (3 cycles)
-- Medium Priority: ar_[module1] (2 cycles)
-- Low Priority: ar_[module3] (1 cycle)
-
-Total Estimated Effort: 6 TDD cycles
-
-Next: Apply improvements using TDD approach.
+✅ Checkpoint workflow complete
 ```
-
-```bash
-# Clean up tracking
-make checkpoint-cleanup CMD=check-module-consistency
 rm -f /tmp/check-consistency-tracking.txt
 ```
 

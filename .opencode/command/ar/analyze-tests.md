@@ -173,33 +173,20 @@ Found 1 potential leak in test code.
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-# Show final summary
-make checkpoint-status CMD=analyze_tests
+./scripts/complete-checkpoint.sh analyze-tests
 ```
 
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT STATUS: analyze_tests
+   CHECKPOINT COMPLETION SUMMARY
 ========================================
 
-Progress: 3/3 steps (100%)
+📈 analyze-tests: X/Y steps (Z%)
+   [████████████████████] 100%
 
-[████████████████████] 100%
-
-✅ ALL CHECKPOINTS COMPLETE!
-
-Summary:
-  Prepare: ✓ Complete
-  Execute: ✓ Complete  
-  Verify: ✓ Complete
-
-The analyze tests completed successfully!
+✅ Checkpoint workflow complete
 ```
-
-```bash
-# Clean up tracking
-make checkpoint-cleanup CMD=analyze_tests
 ```
 
 ## Key Points

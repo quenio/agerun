@@ -174,33 +174,20 @@ Estimated effort: 5-8 TDD cycles
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-# Show final summary
-make checkpoint-status CMD=next_priority
+./scripts/complete-checkpoint.sh next-priority
 ```
 
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT STATUS: next_priority
+   CHECKPOINT COMPLETION SUMMARY
 ========================================
 
-Progress: 3/3 steps (100%)
+📈 next-priority: X/Y steps (Z%)
+   [████████████████████] 100%
 
-[████████████████████] 100%
-
-✅ ALL CHECKPOINTS COMPLETE!
-
-Summary:
-  Prepare: ✓ Complete
-  Execute: ✓ Complete  
-  Verify: ✓ Complete
-
-The next priority completed successfully!
+✅ Checkpoint workflow complete
 ```
-
-```bash
-# Clean up tracking
-make checkpoint-cleanup CMD=next_priority
 ```
 
 

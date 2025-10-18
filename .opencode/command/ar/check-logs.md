@@ -319,34 +319,20 @@ make checkpoint-update CMD=check-logs STEP=8
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-# Show final summary
-make checkpoint-status CMD=check-logs
+./scripts/complete-checkpoint.sh check-logs
 ```
 
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT STATUS: check-logs
+   CHECKPOINT COMPLETION SUMMARY
 ========================================
 
-Progress: 8/8 steps (100%)
+📈 check-logs: X/Y steps (Z%)
+   [████████████████████] 100%
 
-[████████████████████████████████] 100%
-
-✅ ALL CHECKPOINTS COMPLETE!
-
-Final Status:
-  Build: Clean
-  Errors fixed: 3
-  Whitelist updated: 9 entries
-  CI Status: READY
-
-The build is ready for CI!
+✅ Checkpoint workflow complete
 ```
-
-```bash
-# Clean up tracking
-make checkpoint-cleanup CMD=check-logs
 rm -f /tmp/check-logs-*.txt /tmp/deep-analysis.txt
 ```
 

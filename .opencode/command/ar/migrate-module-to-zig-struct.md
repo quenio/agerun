@@ -352,38 +352,20 @@ make checkpoint-update CMD=migrate-module-to-zig-struct STEP=11
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-# Show final summary
-make checkpoint-status CMD=migrate-module-to-zig-struct
+./scripts/complete-checkpoint.sh migrate-module-to-zig-struct
 ```
 
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT STATUS: migrate-module-to-zig-struct
+   CHECKPOINT COMPLETION SUMMARY
 ========================================
 
-Progress: 11/11 steps (100%)
+📈 migrate-module-to-zig-struct: X/Y steps (Z%)
+   [████████████████████] 100%
 
-[████████████████████] 100%
-
-✅ ALL CHECKPOINTS COMPLETE!
-
-Migration Summary:
-Successfully migrated: ar_{{1}} → {{1|pascal}}.zig
-
-- Functions converted: 12
-- Dependencies updated: 5
-- Tests passed: 15/15
-- Memory leaks: 0
-- Files removed: 3
-- Documentation updated: ✓
-
-The module is now a pure Zig struct module!
+✅ Checkpoint workflow complete
 ```
-
-```bash
-# Clean up tracking
-make checkpoint-cleanup CMD=migrate-module-to-zig-struct
 rm -f /tmp/migration-tracking.txt
 rm -f test_output.log
 ```

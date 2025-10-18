@@ -863,14 +863,20 @@ make checkpoint-update CMD=review-plan STEP=6
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-# Show final summary
-make checkpoint-status CMD=review-plan
+./scripts/complete-checkpoint.sh review-plan
 ```
 
 **Expected completion output:**
 ```
-🎆 All 6 steps complete!
-✓ Run: make checkpoint-cleanup CMD=review-plan
+========================================
+   CHECKPOINT COMPLETION SUMMARY
+========================================
+
+📈 review-plan: X/Y steps (Z%)
+   [████████████████████] 100%
+
+✅ Checkpoint workflow complete
+```
 ```
 
 ```bash

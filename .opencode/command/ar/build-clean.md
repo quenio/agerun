@@ -152,33 +152,20 @@ make: *** [build] Error 1
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-# Show final summary
-make checkpoint-status CMD=build_clean
+./scripts/complete-checkpoint.sh build-clean
 ```
 
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT STATUS: build_clean
+   CHECKPOINT COMPLETION SUMMARY
 ========================================
 
-Progress: 3/3 steps (100%)
+📈 build-clean: X/Y steps (Z%)
+   [████████████████████] 100%
 
-[████████████████████] 100%
-
-✅ ALL CHECKPOINTS COMPLETE!
-
-Summary:
-  Prepare: ✓ Complete
-  Execute: ✓ Complete  
-  Verify: ✓ Complete
-
-The build clean completed successfully!
+✅ Checkpoint workflow complete
 ```
-
-```bash
-# Clean up tracking
-make checkpoint-cleanup CMD=build_clean
 ```
 
 ## Key Points

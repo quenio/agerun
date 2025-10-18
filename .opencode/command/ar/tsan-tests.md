@@ -17,21 +17,13 @@ make checkpoint-status CMD=tsan_tests VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/tsan_tests_progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=tsan_tests STEPS='"Prepare" "Execute" "Verify"'
-else
-  make checkpoint-status CMD=tsan_tests
-fi
+./scripts/init-checkpoint.sh tsan-tests '"Prepare" "Execute" "Verify"'
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/tsan_tests_progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  exit 1
-fi
+./scripts/require-checkpoint.sh tsan-tests
 ```
 
 # Thread Sanitizer Tests

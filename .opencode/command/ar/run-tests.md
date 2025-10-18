@@ -21,21 +21,13 @@ make checkpoint-status CMD=run_tests VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/run_tests_progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=run_tests STEPS='"Prepare" "Execute" "Verify"'
-else
-  make checkpoint-status CMD=run_tests
-fi
+./scripts/init-checkpoint.sh run-tests '"Prepare" "Execute" "Verify"'
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/run_tests_progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  exit 1
-fi
+./scripts/require-checkpoint.sh run-tests
 ```
 
 # Run Tests
@@ -156,33 +148,19 @@ make: *** [ar_data.o] Error 1
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-# Show final summary
-make checkpoint-status CMD=run_tests
+./scripts/complete-checkpoint.sh run-tests
 ```
 
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT STATUS: run_tests
+   CHECKPOINT COMPLETION SUMMARY
 ========================================
 
-Progress: 3/3 steps (100%)
+📈 run-tests: 3/3 steps (100%)
+   [████████████████████] 100%
 
-[████████████████████] 100%
-
-✅ ALL CHECKPOINTS COMPLETE!
-
-Summary:
-  Prepare: ✓ Complete
-  Execute: ✓ Complete  
-  Verify: ✓ Complete
-
-The run tests completed successfully!
-```
-
-```bash
-# Clean up tracking
-make checkpoint-cleanup CMD=run_tests
+✅ Checkpoint workflow complete
 ```
 
 ## Key Points

@@ -261,36 +261,20 @@ make checkpoint-update CMD=merge-settings STEP=5
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-# Show final summary
-make checkpoint-status CMD=merge-settings
+./scripts/complete-checkpoint.sh merge-settings
 ```
 
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT STATUS: merge-settings
+   CHECKPOINT COMPLETION SUMMARY
 ========================================
 
-Progress: 5/5 steps (100%)
+📈 merge-settings: X/Y steps (Z%)
+   [████████████████████] 100%
 
-[████████████████████] 100%
-
-✅ ALL CHECKPOINTS COMPLETE!
-
-Merge Summary:
-  Local file: Processed
-  Permissions merged: 8
-  Conflicts resolved: 0
-  JSON valid: Yes
-  Local file removed: Yes
-  Changes pushed: Yes
-
-Settings successfully merged!
+✅ Checkpoint workflow complete
 ```
-
-```bash
-# Clean up tracking
-make checkpoint-cleanup CMD=merge-settings
 rm -f /tmp/merge-settings-stats.txt
 ```
 

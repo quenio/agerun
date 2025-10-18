@@ -34,14 +34,7 @@ make checkpoint-init CMD=new-learnings STEPS='"Identify New Learnings" "Determin
 **MANDATORY**: Before executing ANY steps, you MUST initialize checkpoint tracking:
 
 ```bash
-# FIRST: Check if tracking file exists
-if [ ! -f /tmp/new-learnings_progress.txt ]; then
-  echo "⚠️  No tracking file found. Initializing checkpoint tracking..."
-  make checkpoint-init CMD=new-learnings STEPS='"Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"'
-else
-  echo "📍 Checkpoint tracking found. Checking progress..."
-  make checkpoint-status CMD=new-learnings
-fi
+./scripts/init-checkpoint.sh new-learnings '"Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"'
 ```
 
 **If this fails or tracking is not initialized, STOP and run the command above before proceeding.**
@@ -69,22 +62,18 @@ Before starting analysis:
 ### Initialize Progress Tracking (EXECUTE THIS FIRST)
 
 ```bash
-# Initialize tracking with all 12 steps (note: this is a single command line)
-make checkpoint-init CMD=new-learnings STEPS='"Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"'
+./scripts/init-checkpoint.sh new-learnings '"Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"'
 ```
 
 **Expected output:**
 ```
-📍 Starting: new-learnings (12 steps)
-📁 Tracking: /tmp/new-learnings_progress.txt
-→ Run: make checkpoint-update CMD=new-learnings STEP=1
+✅ Checkpoint tracking already initialized or newly created for new-learnings
 ```
 
 ### Check Progress at Any Time
 
 ```bash
-# Show current progress (with details)
-make checkpoint-status CMD=new-learnings VERBOSE=--verbose
+./scripts/checkpoint-status-quick.sh new-learnings verbose
 ```
 
 **Expected output:**

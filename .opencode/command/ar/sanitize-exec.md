@@ -180,33 +180,20 @@ SUMMARY: AddressSanitizer: double-free
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-# Show final summary
-make checkpoint-status CMD=sanitize_exec
+./scripts/complete-checkpoint.sh sanitize-exec
 ```
 
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT STATUS: sanitize_exec
+   CHECKPOINT COMPLETION SUMMARY
 ========================================
 
-Progress: 3/3 steps (100%)
+📈 sanitize-exec: X/Y steps (Z%)
+   [████████████████████] 100%
 
-[████████████████████] 100%
-
-✅ ALL CHECKPOINTS COMPLETE!
-
-Summary:
-  Prepare: ✓ Complete
-  Execute: ✓ Complete  
-  Verify: ✓ Complete
-
-The sanitize exec completed successfully!
+✅ Checkpoint workflow complete
 ```
-
-```bash
-# Clean up tracking
-make checkpoint-cleanup CMD=sanitize_exec
 ```
 
 ## Key Points

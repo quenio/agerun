@@ -19,21 +19,13 @@ make checkpoint-status CMD=build VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/build_progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=build STEPS='"Prepare" "Execute" "Verify"'
-else
-  make checkpoint-status CMD=build
-fi
+./scripts/init-checkpoint.sh build '"Prepare" "Execute" "Verify"'
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/build_progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  exit 1
-fi
+./scripts/require-checkpoint.sh build
 ```
 
 # Build
@@ -158,33 +150,19 @@ Fix these issues before pushing to CI.
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-# Show final summary
-make checkpoint-status CMD=build
+./scripts/complete-checkpoint.sh build
 ```
 
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT STATUS: build
+   CHECKPOINT COMPLETION SUMMARY
 ========================================
 
-Progress: 3/3 steps (100%)
+📈 build: 3/3 steps (100%)
+   [████████████████████] 100%
 
-[████████████████████] 100%
-
-✅ ALL CHECKPOINTS COMPLETE!
-
-Summary:
-  Prepare: ✓ Complete
-  Execute: ✓ Complete  
-  Verify: ✓ Complete
-
-The build completed successfully!
-```
-
-```bash
-# Clean up tracking
-make checkpoint-cleanup CMD=build
+✅ Checkpoint workflow complete
 ```
 
 ## Key Points
