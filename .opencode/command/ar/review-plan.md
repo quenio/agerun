@@ -337,13 +337,22 @@ make checkpoint-update CMD=review-plan STEP=1
 # Read the plan file
 # <use Read tool with plan file path>
 
+# Get iteration summary using helper script
+./scripts/count-plan-iterations.sh <plan-file>
+
+# List all PENDING REVIEW iterations
+./scripts/list-pending-iterations.sh <plan-file>
+
+# Optional: View all iterations with status
+./scripts/list-iteration-status.sh <plan-file>
+
 make checkpoint-update CMD=review-plan STEP=2
 ```
 
 **Scanning for:**
-- Total iteration count
+- Total iteration count (from count script)
 - Cycle structure
-- Review status markers
+- Review status markers (from list scripts)
 - Completion status (if present)
 
 **CRITICAL: Filter for PENDING REVIEW iterations:**
