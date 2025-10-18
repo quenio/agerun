@@ -253,7 +253,7 @@ fi
 # Check for expected results documentation
 expected=$(grep -E "Expected RED|Expected GREEN" "$PLAN_FILE" 2>/dev/null | wc -c)
 if [ -n "$expected" ] && [ "$expected" -gt 0 ]; then
-    expected_count=$(grep -E "Expected RED|Expected GREEN" "$PLAN_FILE" 2>/dev/null | wc -l | tr -d ' ')
+    expected_count=$({ grep -E "Expected RED|Expected GREEN" "$PLAN_FILE" 2>/dev/null || true; } | wc -l | tr -d ' ')
     pass_check "Expected outcomes documented ($expected_count found)"
 else
     check_issue "Expected RED/GREEN outcomes not documented" "WARNING"
@@ -262,7 +262,7 @@ fi
 # Check for run/verify commands
 run_commands=$(grep -E "make|Run:" "$PLAN_FILE" 2>/dev/null | wc -c)
 if [ -n "$run_commands" ] && [ "$run_commands" -gt 0 ]; then
-    run_count=$(grep -E "make|Run:" "$PLAN_FILE" 2>/dev/null | wc -l | tr -d ' ')
+    run_count=$({ grep -E "make|Run:" "$PLAN_FILE" 2>/dev/null || true; } | wc -l | tr -d ' ')
     pass_check "Verification commands included ($run_count found)"
 else
     check_issue "Verification/make commands missing" "WARNING"

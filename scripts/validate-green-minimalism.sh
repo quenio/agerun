@@ -31,7 +31,7 @@ echo "Expected entries: $EXPECTED_COUNT"
 echo ""
 
 # Count non-empty, non-comment lines
-ACTUAL_COUNT=$(grep -v "^#" "$EVIDENCE_FILE" | grep -v "^$" | wc -l | tr -d ' ')
+ACTUAL_COUNT=$({ grep -v "^#" "$EVIDENCE_FILE" || true; } | { grep -v "^$" || true; } | wc -l | tr -d ' ')
 
 echo "Found entries: $ACTUAL_COUNT"
 

@@ -19,13 +19,13 @@ echo ""
 
 # Step 1: Count KB articles modified
 echo "1. Checking KB article modifications..."
-KB_COUNT=$(git diff --name-only | grep "kb.*\.md" | wc -l | tr -d ' ')
+KB_COUNT=$({ git diff --name-only || true; } | { grep "kb.*\.md" || true; } | wc -l | tr -d ' ')
 echo "   KB articles modified: $KB_COUNT"
 echo ""
 
 # Step 2: Count commands modified
 echo "2. Checking command modifications..."
-CMD_COUNT=$(git diff --name-only | grep ".opencode/command" | wc -l | tr -d ' ')
+CMD_COUNT=$({ git diff --name-only || true; } | { grep ".opencode/command" || true; } | wc -l | tr -d ' ')
 echo "   Commands modified: $CMD_COUNT"
 echo ""
 

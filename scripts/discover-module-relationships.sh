@@ -68,7 +68,7 @@ echo "   Looking for modules with common patterns..."
 echo ""
 
 # Common patterns: logging, instance management, create/destroy
-SIMILAR_COUNT=$(grep -l "ar_log\|instance\|create\|destroy" modules/*.c 2>/dev/null | wc -l | tr -d ' ')
+SIMILAR_COUNT=$({ grep -l "ar_log\|instance\|create\|destroy" modules/*.c 2>/dev/null || true; } | wc -l | tr -d ' ')
 
 echo "   Modules with common patterns:"
 grep -l "ar_log\|instance\|create\|destroy" modules/*.c 2>/dev/null | head -10 | sed 's/^/     /' || echo "     (none found)"
@@ -82,7 +82,7 @@ if [ -n "$IMPROVED_MODULE" ]; then
     echo "   Looking for modules that depend on ar_${IMPROVED_MODULE}..."
     echo ""
 
-    SUBSYSTEM_COUNT=$(grep -l "#include.*ar_${IMPROVED_MODULE}.h" modules/*.c 2>/dev/null | wc -l | tr -d ' ')
+    SUBSYSTEM_COUNT=$({ grep -l "#include.*ar_${IMPROVED_MODULE}.h" modules/*.c 2>/dev/null || true; } | wc -l | tr -d ' ')
 
     if [ "$SUBSYSTEM_COUNT" -gt 0 ]; then
         echo "   Modules in same subsystem:"

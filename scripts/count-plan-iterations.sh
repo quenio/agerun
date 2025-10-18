@@ -28,7 +28,7 @@ IMPLEMENTED=$(grep -c "- IMPLEMENTED" "$PLAN_FILE" 2>/dev/null) || IMPLEMENTED=0
 COMMITTED=$(grep -c "✅ COMMITTED" "$PLAN_FILE" 2>/dev/null) || COMMITTED=0
 
 # Total iterations (any status marker after ###)
-TOTAL=$(grep -E "^###+ Iteration.*-" "$PLAN_FILE" 2>/dev/null | wc -l | tr -d ' ')
+TOTAL=$({ grep -E "^###+ Iteration.*-" "$PLAN_FILE" 2>/dev/null || true; } | wc -l | tr -d ' ')
 
 echo "Total Iterations: $TOTAL"
 echo ""

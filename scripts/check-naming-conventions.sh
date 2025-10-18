@@ -59,13 +59,13 @@ for file in $module_files; do
         # 2. Struct modules: TitleCase.zig (PascalCase)
         if ! echo "$basename" | grep -qE ^ar_  && [[ ! "$basename" =~ ^[A-Z][a-zA-Z0-9]*\.zig$ ]]; then
             print_error "Zig module '$file' doesn't follow ar_<module> or TitleCase naming convention"
-            ((bad_module_files++))
+            bad_module_files=$((bad_module_files + 1))
         fi
     else
         # C/H files should always start with ar_
         if ! echo "$basename" | grep -qE ^ar_ ; then
             print_error "Module file '$file' doesn't follow ar_<module> naming convention"
-            ((bad_module_files++))
+            bad_module_files=$((bad_module_files + 1))
         fi
     fi
 done
@@ -87,7 +87,7 @@ for file in $c_test_files; do
     # Test files should be <module>_tests.c
     if [[ ! "$basename" =~ ^[a-zA-Z0-9_]+_tests\.c$ ]]; then
         print_error "Test file '$file' doesn't follow <module>_tests.c convention"
-        ((bad_test_files++))
+        bad_test_files=$((bad_test_files + 1))
     fi
 done
 
@@ -97,7 +97,7 @@ for file in $zig_test_files; do
     # Zig test files should be <ModuleName>Tests.zig (TitleCase)
     if [[ ! "$basename" =~ ^[A-Z][a-zA-Z0-9]*Tests\.zig$ ]]; then
         print_error "Test file '$file' doesn't follow <ModuleName>Tests.zig convention"
-        ((bad_test_files++))
+        bad_test_files=$((bad_test_files + 1))
     fi
 done
 
@@ -134,7 +134,7 @@ while IFS= read -r line; do
         func_name=$(echo "$line" | sed -E 's/^export fn ([a-zA-Z0-9_]+).*/\1/')
         # Check if it follows convention
         if ! echo "$func_name" | grep -qE "^ar_[a-zA-Z0-9_]+__[a-zA-Z0-9_]+$"; then
-            ((bad_zig_funcs++))
+            bad_zig_funcs=$((bad_zig_funcs + 1))
         fi
     fi
 done <<< "$zig_exports"
@@ -278,7 +278,7 @@ for file in modules/*.h; do
                     # Check if value follows the pattern AR_<TYPE>__<VALUE>
                     if ! echo "$value" | grep -qE "^AR_${expected_prefix}__"; then
                         enum_value_issues="$enum_value_issues\n    $file: $value (in $enum_type, should start with AR_${expected_prefix}__)"
-                        ((bad_enum_values++))
+                        bad_enum_values=$((bad_enum_values + 1))
                     fi
                 fi
             done
@@ -315,7 +315,7 @@ for file in modules/*.zig; do
                         # Check if value follows the pattern AR_<TYPE>__<VALUE>
                         if ! echo "$value" | grep -qE "^AR_${expected_prefix}__"; then
                             enum_value_issues="${enum_value_issues}\n    $file: $value (in $enum_type, should start with AR_${expected_prefix}__)"
-                            ((bad_enum_values++))
+                            bad_enum_values=$((bad_enum_values + 1))
                         fi
                     fi
                 done
@@ -345,7 +345,7 @@ for file in modules/*.h; do
 
     if [ ! -z "$bad_types" ]; then
         typedef_issues="$typedef_issues\n$bad_types"
-        ((bad_typedefs++))
+        bad_typedefs=$((bad_typedefs + 1))
     fi
 done
 
@@ -370,7 +370,7 @@ for file in modules/*.h; do
 
     if [ ! -z "$bad_enum_types" ]; then
         enum_issues="$enum_issues\n$bad_enum_types"
-        ((bad_enums++))
+        bad_enums=$((bad_enums + 1))
     fi
 done
 
@@ -384,7 +384,7 @@ for file in modules/*.zig; do
 
         if [ ! -z "$bad_zig_enum_types" ]; then
             enum_issues="$enum_issues\n$bad_zig_enum_types"
-            ((bad_enums++))
+            bad_enums=$((bad_enums + 1))
         fi
     fi
 done
@@ -487,7 +487,7 @@ for file in modules/*.c modules/*.h; do
 
     if [ ! -z "$bad_struct_names" ]; then
         struct_issues="$struct_issues\n$bad_struct_names"
-        ((bad_structs++))
+        bad_structs=$((bad_structs + 1))
     fi
 done
 
@@ -530,7 +530,7 @@ for file in $c_abi_zig_files; do
 
     if [ ! -z "$bad_exports" ]; then
         c_abi_issues="$c_abi_issues\n$bad_exports"
-        ((bad_c_abi_issues++))
+        bad_c_abi_issues=$((bad_c_abi_issues + 1))
     fi
 
     # Check types follow ar_<type>_t convention
@@ -541,7 +541,7 @@ for file in $c_abi_zig_files; do
 
     if [ ! -z "$bad_types" ]; then
         c_abi_issues="$c_abi_issues\n$bad_types"
-        ((bad_c_abi_issues++))
+        bad_c_abi_issues=$((bad_c_abi_issues + 1))
     fi
 done
 
@@ -563,7 +563,7 @@ for file in $struct_module_zig_files; do
     # Check that main struct uses @This()
     if ! grep -q "pub const $basename = @This();" "$file" 2>/dev/null; then
         struct_module_issues="$struct_module_issues\n$file: Missing 'pub const $basename = @This();'"
-        ((bad_struct_module_issues++))
+        bad_struct_module_issues=$((bad_struct_module_issues + 1))
     fi
     
     # Check public functions use camelCase (not snake_case or PascalCase)
@@ -573,13 +573,13 @@ for file in $struct_module_zig_files; do
 
     if [ ! -z "$bad_funcs" ]; then
         struct_module_issues="$struct_module_issues\n$bad_funcs"
-        ((bad_struct_module_issues++))
+        bad_struct_module_issues=$((bad_struct_module_issues + 1))
     fi
     
     # Check that init/deinit are used instead of create/destroy
     if grep -qE "^pub fn (create|destroy)\(" "$file" 2>/dev/null; then
         struct_module_issues="$struct_module_issues\n$file: Use init/deinit instead of create/destroy"
-        ((bad_struct_module_issues++))
+        bad_struct_module_issues=$((bad_struct_module_issues + 1))
     fi
 done
 
@@ -605,7 +605,7 @@ for file in modules/*.zig; do
 
         if [ ! -z "$bad_globals" ]; then
             zig_global_issues="$zig_global_issues\n$bad_globals"
-            ((bad_zig_globals++))
+            bad_zig_globals=$((bad_zig_globals + 1))
         fi
     fi
 done
@@ -635,7 +635,7 @@ for file in $bash_script_files; do
         # This is a bash script with underscores - should use dashes
         dash_version=$(echo "$basename" | sed 's/_/-/g')
         bash_issues="$bash_issues\n    $basename (should be: $dash_version)"
-        ((bad_bash_scripts++))
+        bad_bash_scripts=$((bad_bash_scripts + 1))
     fi
 done
 
@@ -660,7 +660,7 @@ for file in $python_script_files; do
         # This is a Python script with dashes - should use underscores
         underscore_version=$(echo "$basename" | sed 's/-/_/g')
         python_issues="$python_issues\n    $basename (should be: $underscore_version)"
-        ((bad_python_scripts++))
+        bad_python_scripts=$((bad_python_scripts + 1))
     fi
 done
 

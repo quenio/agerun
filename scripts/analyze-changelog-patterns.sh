@@ -30,7 +30,7 @@ echo "1. Baseline Measurements"
 
 ORIGINAL_LINES=$(wc -l < "$CHANGELOG_FILE" | tr -d ' ')
 ORIGINAL_BYTES=$(wc -c < "$CHANGELOG_FILE" | tr -d ' ')
-METRICS_COUNT=$(grep -oE "[0-9]+[%]|[0-9]+ (files|lines|occurrences|tests|modules|functions)" "$CHANGELOG_FILE" 2>/dev/null | wc -l | tr -d ' ')
+METRICS_COUNT=$({ grep -oE "[0-9]+[%]|[0-9]+ (files|lines|occurrences|tests|modules|functions)" "$CHANGELOG_FILE" 2>/dev/null || true; } | wc -l | tr -d ' ')
 
 echo "   Lines: $ORIGINAL_LINES"
 echo "   Bytes: $ORIGINAL_BYTES"

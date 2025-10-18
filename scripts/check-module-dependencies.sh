@@ -45,7 +45,7 @@ echo "1. Checking C Module Dependencies"
 echo "   (C modules cannot import Zig struct modules)"
 echo ""
 
-C_DEPS=$(grep -l "ar_${MODULE}.h" modules/*.c 2>/dev/null | grep -v "_tests.c" | wc -l | tr -d ' ')
+C_DEPS=$({ grep -l "ar_${MODULE}.h" modules/*.c 2>/dev/null || true; } | { grep -v "_tests.c" || true; } | wc -l | tr -d ' ')
 
 if [ "$C_DEPS" -gt 0 ]; then
     echo "   ❌ MIGRATION BLOCKED: $C_DEPS C modules depend on ar_${MODULE}"
@@ -67,7 +67,7 @@ echo "2. Checking Zig Module Dependencies"
 echo "   (These modules will need updates after migration)"
 echo ""
 
-ZIG_DEPS_COUNT=$(grep -l "ar_${MODULE}__\|@cImport.*ar_${MODULE}.h" modules/*.zig 2>/dev/null | grep -v "ar_${MODULE}.zig" | wc -l | tr -d ' ')
+ZIG_DEPS_COUNT=$({ grep -l "ar_${MODULE}__\|@cImport.*ar_${MODULE}.h" modules/*.zig 2>/dev/null || true; } | { grep -v "ar_${MODULE}.zig" || true; } | wc -l | tr -d ' ')
 
 if [ "$ZIG_DEPS_COUNT" -gt 0 ]; then
     echo "   ⚠️  Found $ZIG_DEPS_COUNT Zig modules that depend on ar_${MODULE}"

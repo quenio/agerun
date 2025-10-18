@@ -23,7 +23,7 @@ echo "Expected iterations: $EXPECTED_COUNT"
 echo ""
 
 # Count iterations with PENDING REVIEW markers (only iteration headings, not status lines)
-ACTUAL_COUNT=$(grep "^#### Iteration.*- PENDING REVIEW$" "$PLAN_FILE" | wc -l | tr -d ' ')
+ACTUAL_COUNT=$({ grep "^#### Iteration.*- PENDING REVIEW$" "$PLAN_FILE" || true; } | wc -l | tr -d ' ')
 
 echo "Found iterations: $ACTUAL_COUNT"
 
