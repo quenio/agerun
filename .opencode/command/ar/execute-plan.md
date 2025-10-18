@@ -190,8 +190,9 @@ This command executes TDD plan documents following the RED-GREEN-REFACTOR cycle:
 #### 1. Plan Reading and Iteration Extraction
 - **Plan parsing**: Read plan document and extract all iterations
 - **Iteration identification**: Parse iteration numbers, names, and objectives
-- **Status verification**: Ensure iterations are marked REVIEWED
+- **Status verification**: Ensure iterations are marked REVIEWED or REVISED
 - **Test module identification**: Identify which test files to modify
+- **⚠️ Code verification**: If iterations marked IMPLEMENTED exist, verify actual code matches plan claims
 
 #### 2. RED-GREEN-REFACTOR Execution
 - **RED phase**: Write failing test following BDD structure ([details](../../../kb/bdd-test-structure.md))
@@ -428,6 +429,69 @@ Total iterations to implement: 10 (REVIEWED: 8, REVISED: 2)
 - [ ] Test file paths identified for each iteration
 - [ ] Test function names extracted for each iteration
 - [ ] Implementation functions identified for each iteration
+
+**⚠️ CRITICAL: Verify IMPLEMENTED Iterations (If Any Exist)**
+
+If the plan contains iterations marked "- IMPLEMENTED" (already implemented but not committed), you MUST verify the implementation claims by reading the actual code:
+
+```bash
+# Check if any IMPLEMENTED iterations exist
+grep -c "- IMPLEMENTED" <plan-file>
+# If count > 0, verification is MANDATORY
+```
+
+**For EACH IMPLEMENTED iteration, verify:**
+
+1. **Read the implementation files** mentioned in the plan:
+   - Test files (e.g., `modules/ar_delegate_tests.c`)
+   - Implementation files (e.g., `modules/ar_delegate.c`, `modules/ar_delegate.h`)
+   - Use Read tool to examine actual code
+
+2. **Verify test implementation matches plan**:
+   - [ ] Test function exists with exact name from plan
+   - [ ] Test follows BDD structure (Given/When/Then/Cleanup)
+   - [ ] Assertion tests what plan claims it tests
+   - [ ] Test uses AR_ASSERT with descriptive messages
+
+3. **Verify implementation matches plan**:
+   - [ ] Function/method exists as described in plan
+   - [ ] Implementation does what plan claims (not placeholder)
+   - [ ] Code structure aligns with plan's GREEN/REFACTOR phases
+
+4. **Cross-reference with test execution**:
+   - [ ] Run tests to verify they actually pass
+   - [ ] Verify test names in output match plan specifications
+   - [ ] Check memory reports show zero leaks
+
+**Example verification for Iteration 1.1:**
+
+```markdown
+Plan claims: "Iteration 1.1: send() returns true - IMPLEMENTED"
+
+Verification steps:
+1. Read modules/ar_delegate.c - Check ar_delegate__send() exists
+2. Read modules/ar_delegate_tests.c - Check test_delegate__send_returns_true exists
+3. Verify test actually calls ar_delegate__send() and asserts result == true
+4. Run: make ar_delegate_tests 2>&1 | grep "test_delegate__send_returns_true"
+5. Confirm: Test passes and is listed in output
+```
+
+**Verification checklist for IMPLEMENTED iterations:**
+- [ ] All IMPLEMENTED iterations identified
+- [ ] Test files read for each IMPLEMENTED iteration
+- [ ] Implementation files read for each IMPLEMENTED iteration
+- [ ] Test names match plan specifications
+- [ ] Implementation functions exist and work as described
+- [ ] No discrepancies found between plan and code
+
+**If discrepancies found:**
+- Document what the plan claims vs. what code actually does
+- Do NOT mark as ✅ COMMITTED until discrepancies resolved
+- May need to update plan or fix implementation
+
+**If verification passes:**
+- IMPLEMENTED iterations are ready for status update in Step 7
+- Proceed with confidence that code matches plan claims
 
 ```bash
 make checkpoint-update CMD=execute-plan STEP=3
