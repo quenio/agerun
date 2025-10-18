@@ -41,6 +41,38 @@ Keep bash inline when:
 3. **User prompts** (manual verification steps)
 4. **Context-specific** (uses command-specific variables/state)
 
+### Extraction Discipline: One Script Per Shell Block
+
+**CRITICAL**: Each embedded shell block should be extracted into its own focused script:
+
+- ❌ **WRONG**: Combining multiple embedded blocks into one script
+  ```bash
+  # scripts/command-processor.sh (BAD: mixing multiple responsibilities)
+  scan_files()   { ... }  # Scanning files
+  validate_structure() { ... }  # Validating structure
+  calculate_scores() { ... }  # Computing scores
+  ```
+
+- ✅ **CORRECT**: Extract each shell block to separate, focused scripts
+  ```bash
+  # scripts/scan-commands.sh       - Only scanning
+  # scripts/validate-command-structure.sh - Only validation
+  # scripts/calculate-command-scores.sh   - Only calculation
+  ```
+
+**Benefits of focused extraction:**
+1. Each script does ONE thing (Single Responsibility Principle)
+2. Scripts are independently testable
+3. Scripts can be reused in different contexts
+4. Updates to one function don't affect others
+5. Clear naming communicates exact purpose
+6. Easier to maintain and debug
+
+**Real example from check-commands refactoring**:
+- 5 embedded blocks → 5 separate scripts, each with one responsibility
+- Each script name describes exactly what it does
+- No monolithic script trying to do everything
+
 ### Helper Script Structure
 
 Every helper script should follow this pattern:
@@ -280,16 +312,17 @@ This provides:
 
 When extracting embedded logic:
 
-- [ ] Identify multi-line bash blocks (10+ lines)
+- [ ] Identify multi-line bash blocks (10+ lines) - **Each block gets its own script**
+- [ ] **DO NOT combine multiple blocks** into one script - each has one responsibility
 - [ ] Determine if logic is reusable/testable
-- [ ] Create script in `scripts/` with descriptive name
+- [ ] Create script in `scripts/` with descriptive domain-specific name
 - [ ] Add usage header with examples
 - [ ] Implement defensive programming (set -e, validation)
 - [ ] Provide clear output with emojis (✅, ❌, ⚠️)
 - [ ] Use exit 0 for success, exit 1 for failures
 - [ ] Make script executable (chmod +x)
 - [ ] Test script independently
-- [ ] Update command to reference script
+- [ ] Update command file to reference extracted script (replace only the shell block it came from)
 - [ ] Update related KB articles if needed
 
 ## Script Quality Standards
