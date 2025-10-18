@@ -53,11 +53,11 @@ for file in $module_files; do
     basename=$(basename "$file")
     
     # Check if this is a Zig file
-    if [ "$basename" = *.zig  ]; then
+    if [[ "$basename" == *.zig ]]; then
         # Zig files can follow either pattern:
         # 1. C-ABI modules: ar_<module>.zig
         # 2. Struct modules: TitleCase.zig (PascalCase)
-        if ! echo "$basename" | grep -qE ^ar_  && [ ! "$basename" =~ ^[A-Z][a-zA-Z0-9]*\.zig$ ]; then
+        if ! echo "$basename" | grep -qE ^ar_  && [[ ! "$basename" =~ ^[A-Z][a-zA-Z0-9]*\.zig$ ]]; then
             print_error "Zig module '$file' doesn't follow ar_<module> or TitleCase naming convention"
             ((bad_module_files++))
         fi
@@ -183,14 +183,14 @@ echo -n "  Static functions... "
 non_test_files=$(find modules -name "*.c" -o -name "*.zig" | grep -v "_tests")
 bad_static_funcs=0
 for file in $non_test_files; do
-    if [ "$file" = *.c  ]; then
+    if [[ "$file" == *.c ]]; then
         count=$(grep "^static.*(" "$file" 2>/dev/null | \
             grep -v "^static inline" | \
             grep -E "^static\s+[a-zA-Z_][a-zA-Z0-9_]*\s+[a-zA-Z_][a-zA-Z0-9_]*\s*\(" | \
             grep -v -E "^static\s+[a-zA-Z_][a-zA-Z0-9_]*\s+_[a-zA-Z0-9_]+\s*\(" | \
             wc -l)
         bad_static_funcs=$((bad_static_funcs + count))
-    elif [ "$file" = *.zig  ]; then
+    elif [[ "$file" == *.zig ]]; then
         # Zig uses fn for private functions, they should also use _
         count=$(grep "^fn [a-zA-Z]" "$file" 2>/dev/null | \
             grep -v "^fn _" | \
@@ -511,7 +511,7 @@ for file in modules/*.zig; do
         basename=$(basename "$file")
         if echo "$basename" | grep -qE ^ar_ ; then
             c_abi_zig_files="$c_abi_zig_files $file"
-        elif [ "$basename" =~ ^[A-Z][a-zA-Z0-9]*\.zig$ ] && [ ! "$basename" =~ Tests\.zig$ ]; then
+        elif [[ "$basename" =~ ^[A-Z][a-zA-Z0-9]*\.zig$ ]] && [[ ! "$basename" =~ Tests\.zig$ ]]; then
             struct_module_zig_files="$struct_module_zig_files $file"
         fi
     fi
