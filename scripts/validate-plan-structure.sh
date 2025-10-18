@@ -53,38 +53,38 @@ for iter in $ITERATIONS; do
         continue
     fi
 
-    if ! grep -A 50 "#### Iteration $iter:" "$PLAN_FILE" | grep -q "^\*\*Objective\*\*:"; then
+    if ! { grep -A 50 "#### Iteration $iter:" "$PLAN_FILE" || true; } | grep -q "^\*\*Objective\*\*:"; then
         echo "❌ Missing Objective"
         ERRORS=$((ERRORS + 1))
         continue
     fi
 
-    if ! grep -A 100 "#### Iteration $iter:" "$PLAN_FILE" | grep -q "^\*\*RED Phase:\*\*"; then
+    if ! { grep -A 100 "#### Iteration $iter:" "$PLAN_FILE" || true; } | grep -q "^\*\*RED Phase:\*\*"; then
         echo "❌ Missing RED Phase"
         ERRORS=$((ERRORS + 1))
         continue
     fi
 
-    if ! grep -A 150 "#### Iteration $iter:" "$PLAN_FILE" | grep -q "^\*\*GREEN Phase:\*\*"; then
+    if ! { grep -A 150 "#### Iteration $iter:" "$PLAN_FILE" || true; } | grep -q "^\*\*GREEN Phase:\*\*"; then
         echo "❌ Missing GREEN Phase"
         ERRORS=$((ERRORS + 1))
         continue
     fi
 
-    if ! grep -A 200 "#### Iteration $iter:" "$PLAN_FILE" | grep -q "^\*\*Verification:\*\*"; then
+    if ! { grep -A 200 "#### Iteration $iter:" "$PLAN_FILE" || true; } | grep -q "^\*\*Verification:\*\*"; then
         echo "❌ Missing Verification"
         ERRORS=$((ERRORS + 1))
         continue
     fi
 
     # Check for dual-goal pattern in RED phase
-    if ! grep -A 100 "#### Iteration $iter:" "$PLAN_FILE" | grep -q "GOAL 1:"; then
+    if ! { grep -A 100 "#### Iteration $iter:" "$PLAN_FILE" || true; } | grep -q "GOAL 1:"; then
         echo "❌ Missing GOAL 1 in RED phase"
         ERRORS=$((ERRORS + 1))
         continue
     fi
 
-    if ! grep -A 100 "#### Iteration $iter:" "$PLAN_FILE" | grep -q "GOAL 2:"; then
+    if ! { grep -A 100 "#### Iteration $iter:" "$PLAN_FILE" || true; } | grep -q "GOAL 2:"; then
         echo "❌ Missing GOAL 2 in RED phase"
         ERRORS=$((ERRORS + 1))
         continue

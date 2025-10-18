@@ -49,20 +49,20 @@ case "$FORMAT" in
   list)
     echo "Items with status: $STATUS"
     echo "=========================="
-    grep "#### Iteration.*- $STATUS" "$PLAN_FILE" | sed "s/#### Iteration \(.*\) - $STATUS/\1/" | nl
+    { grep "#### Iteration.*- $STATUS" "$PLAN_FILE" || true; } | sed "s/#### Iteration \(.*\) - $STATUS/\1/" | nl
     ;;
 
   table)
     echo "Iteration | Status"
     echo "----------|-------"
-    grep "#### Iteration.*- $STATUS" "$PLAN_FILE" | sed "s/#### Iteration \(.*\) - $STATUS/\1 | $STATUS/"
+    { grep "#### Iteration.*- $STATUS" "$PLAN_FILE" || true; } | sed "s/#### Iteration \(.*\) - $STATUS/\1 | $STATUS/"
     ;;
 
   markdown)
     echo ""
     echo "## Items with status: $STATUS"
     echo ""
-    grep "#### Iteration.*- $STATUS" "$PLAN_FILE"
+    grep "#### Iteration.*- $STATUS" "$PLAN_FILE" || true
     echo ""
     ;;
 

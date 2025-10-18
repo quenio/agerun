@@ -28,7 +28,7 @@ check_issue() {
     local severity="${2:-WARNING}"
     if [ "$severity" = "ERROR" ]; then
         echo "❌ ERROR: $issue"
-        ((ISSUES_FOUND++))
+        ((ISSUES_FOUND++)) || true
     else
         echo "⚠️  WARNING: $issue"
     fi
@@ -107,7 +107,7 @@ if [ "$red_sections" -gt 0 ]; then
     bad_reds=0
     total_reds=0
     while read -r line_num; do
-        ((total_reds++))
+        ((total_reds++)) || true
         if [ -z "$line_num" ]; then continue; fi
 
         # Check next 50 lines for RED section for mention of failure/corruption/expectation
@@ -115,7 +115,7 @@ if [ "$red_sections" -gt 0 ]; then
 
         # More flexible check: accepts "FAIL", "FAILS", "Expected RED", "Temporary", "corrupt"
         if ! echo "$red_section" | grep -q -i "FAIL\|temporary\|corrupt\|Expected RED"; then
-            ((bad_reds++))
+            ((bad_reds++)) || true
         fi
     done <<< "$red_line_nums"
 

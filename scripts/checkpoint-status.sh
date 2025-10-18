@@ -77,7 +77,7 @@ if [ "$MODE" = "--verbose" ] || [ "$PENDING" -gt 0 ]; then
         case "$line" in
             STEP_*)
                 STEP_NUM=$(echo "$line" | sed 's@STEP_\([0-9]*\).*@\1@')
-                STATUS=$(echo "$line" | sed 's@.*=\([^[:space:]]*\).*@\1@')
+                STATUS=$(echo "$line" | sed 's@.*=\([^[[:space:]]]*\).*@\1@')
                 DESC=$(echo "$line" | sed 's@.*# @@')
 
                 case $STATUS in
