@@ -4,33 +4,33 @@
 
 - **Refactor check-naming Command to Follow Command Orchestrator Pattern**
 
-  Refactored the check-naming.md command file to follow the command orchestrator pattern (similar to check-docs.md and check-commands.md), eliminating the wrapper script anti-pattern and making workflow orchestration visible in the command documentation.
+  Refactored the check-naming.md command file to follow the command orchestrator pattern per command-helper-script-extraction-pattern.md, extracting multi-line bash logic into focused helper scripts and making all workflow orchestration visible in the command documentation.
 
-  **Problem**: The check-naming command used a wrapper script pattern:
-  - All orchestration logic was hidden in run-check-naming.sh (106 lines)
-  - Command documentation just delegated to the wrapper script
-  - Impossible to see gates and conditional flow from the command documentation
-  - Manual intervention between steps was difficult without reading wrapper script code
-  - Violated the "command file as orchestrator" pattern established in other commands
+  **Problem**: The check-naming command had embedded multi-line bash blocks (10+ lines) directly in the command documentation:
+  - Run naming check logic was 10+ lines embedded in markdown
+  - Conditional flow logic was 10+ lines embedded in markdown
+  - Violated command-helper-script-extraction-pattern.md requirements for extracting complex logic
+  - Command file was not cleanly showing orchestration
 
-  **Solution**: Refactored to follow the command orchestrator pattern:
-  1. **Deleted run-check-naming.sh** - Removed wrapper script anti-pattern
-  2. **Refactored check-naming.md** - Command file now shows all orchestration logic directly
-  3. **Created analyze-naming-violations.sh** - Extracted violation analysis into focused helper script
-  4. **Implemented conditional flow gate** - Step 2 conditionally skips Step 3 if no violations found
+  **Solution**: Applied proper extraction discipline per command-helper-script-extraction-pattern.md:
+  1. **Created run-naming-check.sh** - Extracted check execution and violation capture (was embedded, 10 lines)
+  2. **Created check-naming-conditional-flow.sh** - Extracted conditional flow logic (was embedded, 10 lines)
+  3. **Refactored check-naming.md** - Command file now shows orchestration with calls to focused helper scripts
+  4. **Verified checkpoint workflow** - Tested end-to-end with conditional step skipping (no violations case)
 
   **Changes**:
-  - Deleted: scripts/run-check-naming.sh (wrapper script)
-  - Created: scripts/analyze-naming-violations.sh (focused helper script)
-  - Modified: .opencode/command/ar/check-naming.md (now shows all orchestration)
-  - All checkpoint markers and conditional logic now visible in command documentation
+  - Created: scripts/run-naming-check.sh (single responsibility: run check and capture violations)
+  - Created: scripts/check-naming-conditional-flow.sh (single responsibility: implement conditional flow)
+  - Modified: .opencode/command/ar/check-naming.md (simplified with script references)
+  - Removed: "Checkpoint Wrapper Scripts" section (command IS the orchestrator)
 
   **Benefits**:
-  - **Visibility**: All workflow logic visible in markdown (no hidden scripts to read)
-  - **Consistency**: Matches check-docs.md and check-commands.md orchestrator pattern
-  - **Clarity**: Gates and conditional steps documented directly in command
-  - **Maintainability**: Single focused helper script instead of complex wrapper
-  - **Documentation**: Better KB pattern alignment per command-orchestrator-pattern.md
+  - **Reusability**: Helper scripts can be reused in other commands or run independently
+  - **Testability**: Each script can be tested in isolation
+  - **Clarity**: Command documentation remains orchestrator showing all logic
+  - **Compliance**: Follows extraction discipline: one script per shell block (10+ lines)
+  - **Maintainability**: Simple focused scripts instead of embedded logic
+  - **Documentation**: Workflow logic visible in markdown (no hidden scripts to read)
 
 ## 2025-10-18 (Session 2e)
 
