@@ -66,11 +66,11 @@ COMPREHENSIVE_STRUCTURE = {
         ]
     },
     'bash_commands': {
-        'init': r'make checkpoint-init',
-        'update': r'make checkpoint-update',
-        'status': r'make checkpoint-status',
-        'gate': r'make checkpoint-gate',
-        'cleanup': r'make checkpoint-cleanup'
+        'init': r'(make checkpoint-init|\.\/scripts\/init-checkpoint\.sh)',
+        'update': r'(make checkpoint-update|\.\/scripts\/update-checkpoint\.sh)',
+        'status': r'(make checkpoint-status|\.\/scripts\/status-checkpoint\.sh)',
+        'gate': r'(make checkpoint-gate|\.\/scripts\/gate-checkpoint\.sh)',
+        'cleanup': r'(make checkpoint-cleanup|\.\/scripts\/cleanup-checkpoint\.sh)'
     },
     'quality_indicators': {
         'critical_prompts': r'CRITICAL:|MANDATORY:|IMPORTANT:',
@@ -87,7 +87,10 @@ def analyze_file(filepath):
     with open(filepath, 'r') as f:
         content = f.read()
         lines = content.split('\n')
-    
+
+    # Detect if this is a simple command using wrapper script pattern
+    uses_wrapper_script = bool(re.search(r'\.\/scripts\/run-.*\.sh', content))
+
     analysis = {
         'first_line': lines[0] if lines else '',
         'has_h1': bool(re.search(r'^# ', content, re.MULTILINE)),
@@ -95,16 +98,20 @@ def analyze_file(filepath):
         'sections_found': {},
         'bash_commands': {},
         'quality_scores': {},
-        'missing_elements': []
+        'missing_elements': [],
+        'uses_wrapper_script': uses_wrapper_script
     }
-    
+
     # Check checkpoint markers
     for marker_type, pattern in COMPREHENSIVE_STRUCTURE['checkpoint_markers'].items():
         count = len(re.findall(pattern, content))
         analysis['checkpoint_markers'][marker_type] = count
-        if count == 0:
+        # For wrapper script commands, only require START and END markers
+        if count == 0 and not uses_wrapper_script:
             analysis['missing_elements'].append(f"No {marker_type} markers")
-    
+        elif count == 0 and uses_wrapper_script and marker_type in ['start', 'end']:
+            analysis['missing_elements'].append(f"No {marker_type} markers")
+
     # Check required sections (flexible matching)
     for section_type, alternatives in COMPREHENSIVE_STRUCTURE['required_sections'].items():
         found = False
@@ -113,7 +120,8 @@ def analyze_file(filepath):
                 analysis['sections_found'][section_type] = alt
                 found = True
                 break
-        if not found:
+        # For wrapper script commands, don't require initialization section
+        if not found and not (uses_wrapper_script and section_type == 'initialization'):
             analysis['missing_elements'].append(f"Missing {section_type} section")
     
     # Check bash commands
@@ -135,34 +143,61 @@ def analyze_file(filepath):
 
 def calculate_structure_score(analysis):
     """Calculate a structure completeness score (0-100)."""
+    # For wrapper script commands, use simplified scoring
+    if analysis.get('uses_wrapper_script'):
+        score = 0
+        max_score = 0
+
+        # Checkpoint markers (40 points) - START and END are essential
+        max_score += 40
+        if analysis['checkpoint_markers'].get('start', 0) > 0:
+            score += 20
+        if analysis['checkpoint_markers'].get('end', 0) > 0:
+            score += 20
+
+        # Bash commands (30 points) - wrapper script reference is enough
+        max_score += 30
+        has_wrapper = any('scripts/run' in str(v) for v in analysis['bash_commands'].values())
+        if has_wrapper or analysis['bash_commands'].get('init', 0) > 0:
+            score += 30
+
+        # Quality indicators (30 points)
+        max_score += 30
+        quality_count = sum(1 for v in analysis['quality_scores'].values() if v > 0)
+        quality_expected = 3  # At least 3 quality indicators for wrapper scripts
+        score += min((quality_count / quality_expected) * 30, 30)
+
+        return int((score / max_score) * 100) if max_score > 0 else 0
+
+    # For complex commands, use comprehensive scoring
     score = 0
     max_score = 0
-    
+
     # Checkpoint markers (30 points)
     max_score += 30
     if analysis['checkpoint_markers']['start'] > 0:
         score += 15
     if analysis['checkpoint_markers']['end'] > 0:
         score += 15
-    
+
     # Required sections (30 points)
     max_score += 30
     sections_present = len(analysis['sections_found'])
     sections_expected = len(COMPREHENSIVE_STRUCTURE['required_sections'])
     score += (sections_present / sections_expected) * 30
-    
+
     # Bash commands (20 points)
     max_score += 20
     commands_present = sum(1 for v in analysis['bash_commands'].values() if v > 0)
     commands_expected = 3  # init, update, status are essential
     score += min((commands_present / commands_expected) * 20, 20)
-    
+
     # Quality indicators (20 points)
     max_score += 20
     quality_count = sum(1 for v in analysis['quality_scores'].values() if v > 0)
     quality_expected = 4  # At least 4 quality indicators
     score += min((quality_count / quality_expected) * 20, 20)
-    
+
     return int((score / max_score) * 100)
 
 def get_all_commands():

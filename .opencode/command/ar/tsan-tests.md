@@ -74,6 +74,8 @@ make checkpoint-update CMD=tsan-tests STEP=N
 ./scripts/complete-checkpoint.sh tsan-tests
 ```
 
+#### [CHECKPOINT END]
+
 ## Key Points
 
 - **ThreadSanitizer (TSAN)** detects data races and deadlocks
@@ -81,3 +83,4 @@ make checkpoint-update CMD=tsan-tests STEP=N
 - **dlsym tests excluded** automatically to prevent conflicts
 - **~10x slower** than normal tests but catches concurrency bugs
 - **Exit code 66** indicates thread safety issues detected
+#### [CHECKPOINT COMPLETE]

@@ -74,6 +74,8 @@ make checkpoint-update CMD=sanitize-tests STEP=N
 ./scripts/complete-checkpoint.sh sanitize-tests
 ```
 
+#### [CHECKPOINT END]
+
 ## Key Points
 
 - **AddressSanitizer (ASAN)** detects memory leaks, use-after-free, buffer overflows
@@ -88,3 +90,4 @@ make checkpoint-update CMD=sanitize-tests STEP=N
 **Mocking Guidelines**: When using dlsym for testing, mock at the appropriate level - function-level mocking is simpler and more maintainable than system call interception ([details](../../../kb/mock-at-right-level-pattern.md)). Complex test code with retry loops or state tracking indicates mocking at the wrong abstraction level ([details](../../../kb/test-complexity-as-code-smell.md)). Always check how other tests solve similar problems before creating new infrastructure ([details](../../../kb/check-existing-solutions-first.md)).
 
 **Diagnostic Troubleshooting**: When sanitizer tools report configuration issues despite working setups, apply systematic diagnostic troubleshooting ([details](../../../kb/shell-configuration-diagnostic-troubleshooting.md)). Shell loading order affects tool behavior ([details](../../../kb/shell-loading-order-tool-detection.md)).
+#### [CHECKPOINT COMPLETE]

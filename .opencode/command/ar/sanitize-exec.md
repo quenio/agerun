@@ -74,9 +74,13 @@ make checkpoint-update CMD=sanitize-exec STEP=N
 ./scripts/complete-checkpoint.sh sanitize-exec
 ```
 
+#### [CHECKPOINT END]
+
 ## Key Points
 
 - **Known issue**: Methodology leaks are expected (not yet fixed)
 - **Critical errors**: Use-after-free and double-free stop execution
 - **Always use `2>&1`** to capture sanitizer output
 - **Slower execution** but catches runtime memory errors
+
+#### [CHECKPOINT COMPLETE]

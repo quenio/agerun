@@ -74,6 +74,8 @@ make checkpoint-update CMD=tsan-exec STEP=N
 ./scripts/complete-checkpoint.sh tsan-exec
 ```
 
+#### [CHECKPOINT END]
+
 ## Key Points
 
 - **Currently single-threaded** so no races expected
@@ -81,3 +83,4 @@ make checkpoint-update CMD=tsan-exec STEP=N
 - **Uses clang compiler** for better TSAN support
 - **Exit code 66** indicates thread safety issues
 - **Always use `2>&1`** to capture sanitizer output
+#### [CHECKPOINT COMPLETE]
