@@ -617,7 +617,62 @@ else
     echo -e "    Issues:$zig_global_issues" | head -10
 fi
 
-# Step 9: Summary
+# Step 9: Check script file naming conventions
+echo
+echo "Checking script file naming conventions..."
+
+# Check Bash scripts - should use dashes (e.g., checkpoint-init.sh, not checkpoint_init.sh)
+echo -n "  Bash scripts (dashes)... "
+bash_script_files=$(find scripts -maxdepth 1 -name "*.sh" -type f | sort)
+bad_bash_scripts=0
+bash_issues=""
+
+for file in $bash_script_files; do
+    basename=$(basename "$file")
+    # Should use dashes, not underscores
+    # But allow specific cases like update_checkpoints_in_newlearnings.sh if they already exist (legacy)
+    if echo "$basename" | grep -qE "_[a-z]"; then
+        # This is a bash script with underscores - should use dashes
+        dash_version=$(echo "$basename" | sed 's/_/-/g')
+        bash_issues="$bash_issues\n    $basename (should be: $dash_version)"
+        ((bad_bash_scripts++))
+    fi
+done
+
+if [[ $bad_bash_scripts -eq 0 ]]; then
+    print_success "All bash scripts follow dash naming convention (e.g., checkpoint-init.sh)"
+else
+    print_error "Found $bad_bash_scripts bash scripts not following dash naming convention"
+    ((total_issues += bad_bash_scripts))
+    echo -e "$bash_issues"
+fi
+
+# Check Python scripts - should use underscores (e.g., check_commands.py, not check-commands.py)
+echo -n "  Python scripts (underscores)... "
+python_script_files=$(find scripts -maxdepth 1 -name "*.py" -type f | sort)
+bad_python_scripts=0
+python_issues=""
+
+for file in $python_script_files; do
+    basename=$(basename "$file")
+    # Should use underscores, not dashes
+    if echo "$basename" | grep -qE "-[a-z]"; then
+        # This is a Python script with dashes - should use underscores
+        underscore_version=$(echo "$basename" | sed 's/-/_/g')
+        python_issues="$python_issues\n    $basename (should be: $underscore_version)"
+        ((bad_python_scripts++))
+    fi
+done
+
+if [[ $bad_python_scripts -eq 0 ]]; then
+    print_success "All Python scripts follow underscore naming convention (e.g., check_commands.py)"
+else
+    print_error "Found $bad_python_scripts Python scripts not following underscore naming convention"
+    ((total_issues += bad_python_scripts))
+    echo -e "$python_issues"
+fi
+
+# Step 10: Summary
 echo
 echo "=== Naming Convention Check Summary ==="
 echo "Completed at $(date)"
@@ -640,6 +695,12 @@ else
     echo "    - Main struct: pub const ModuleName = @This();"
     echo "    - Public functions: camelCase (init/deinit not create/destroy)"
     echo "    - Types: TitleCase"
+    echo "  Script Files:"
+    echo "    - Bash scripts: <action>-<object>.sh (use dashes)"
+    echo "      Examples: checkpoint-init.sh, add-newline.sh, validate-plan-structure.sh"
+    echo "    - Python scripts: <verb>_<noun>.py (use underscores, PEP 8)"
+    echo "      Examples: check_commands.py, batch_fix_docs.py, rename_symbols.py"
+    echo "    - DO NOT MIX: Never use dashes in .py or underscores in .sh"
     echo "  Common to all:"
     echo "    - Test functions: test_<module>__<test_name>"
     echo "    - Enum values: AR_<ENUM_TYPE>__<VALUE>"
