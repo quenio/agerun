@@ -29,14 +29,14 @@ NC='\033[0m' # No Color
 # Helper function to print errors
 print_error() {
     echo -e "${RED}✗ $1${NC}"
-    ((total_issues++))
+    total_issues=$((total_issues + 1))
     overall_status=1
 }
 
 # Helper function to print warnings
 print_warning() {
     echo -e "${YELLOW}⚠ $1${NC}"
-    ((total_issues++))
+    total_issues=$((total_issues + 1))
 }
 
 # Helper function to print success
@@ -112,22 +112,22 @@ echo "Checking function naming conventions..."
 # Public module functions should be ar_<module>__<function>
 echo -n "  Public module functions... "
 # Check C files
-bad_c_funcs=$(grep -h "^[a-zA-Z_].*(" modules/*.c 2>/dev/null | \
-    grep -v "^static" | \
-    grep -v "^//" | \
-    grep -v "^\*" | \
-    grep -v "^int main" | \
-    grep -v "^void main" | \
-    grep -v "^[A-Z_]*(" | \
-    grep -E "^[a-zA-Z_][a-zA-Z0-9_]*\s*\(" | \
-    grep -v -E "^ar_[a-zA-Z0-9_]+__[a-zA-Z0-9_]+\s*\(" | \
-    grep -v -E "^_[a-zA-Z0-9_]+\s*\(" | \
+bad_c_funcs=$({ grep -h "^[a-zA-Z_].*(" modules/*.c 2>/dev/null || true; } | \
+    { grep -v "^static" || true; } | \
+    { grep -v "^//" || true; } | \
+    { grep -v "^\*" || true; } | \
+    { grep -v "^int main" || true; } | \
+    { grep -v "^void main" || true; } | \
+    { grep -v "^[A-Z_]*(" || true; } | \
+    { grep -E "^[a-zA-Z_][a-zA-Z0-9_]*\s*\(" || true; } | \
+    { grep -v -E "^ar_[a-zA-Z0-9_]+__[a-zA-Z0-9_]+\s*\(" || true; } | \
+    { grep -v -E "^_[a-zA-Z0-9_]+\s*\(" || true; } | \
     wc -l)
 
 # Check Zig files - export fn should follow same convention
 # Extract just the function name part before the parenthesis
 bad_zig_funcs=0
-zig_exports=$(grep -h "^export fn" modules/*.zig 2>/dev/null)
+zig_exports=$(grep -h "^export fn" modules/*.zig 2>/dev/null || true)
 while IFS= read -r line; do
     if [ ! -z "$line" ]; then
         # Extract function name
@@ -146,16 +146,16 @@ if [ $bad_public_funcs -gt 0 ]; then
     # Show first few examples
     echo "    Examples:"
     # Show C examples
-    c_examples=$(grep -h "^[a-zA-Z_].*(" modules/*.c 2>/dev/null | \
-        grep -v "^static" | \
-        grep -v "^//" | \
-        grep -v "^\*" | \
-        grep -v "^int main" | \
-        grep -v "^void main" | \
-        grep -v "^[A-Z_]*(" | \
-        grep -E "^[a-zA-Z_][a-zA-Z0-9_]*\s*\(" | \
-        grep -v -E "^ar_[a-zA-Z0-9_]+__[a-zA-Z0-9_]+\s*\(" | \
-        grep -v -E "^_[a-zA-Z0-9_]+\s*\(" | \
+    c_examples=$({ grep -h "^[a-zA-Z_].*(" modules/*.c 2>/dev/null || true; } | \
+        { grep -v "^static" || true; } | \
+        { grep -v "^//" || true; } | \
+        { grep -v "^\*" || true; } | \
+        { grep -v "^int main" || true; } | \
+        { grep -v "^void main" || true; } | \
+        { grep -v "^[A-Z_]*(" || true; } | \
+        { grep -E "^[a-zA-Z_][a-zA-Z0-9_]*\s*\(" || true; } | \
+        { grep -v -E "^ar_[a-zA-Z0-9_]+__[a-zA-Z0-9_]+\s*\(" || true; } | \
+        { grep -v -E "^_[a-zA-Z0-9_]+\s*\(" || true; } | \
         head -3 | sed 's/^/      /')
     if [ ! -z "$c_examples" ]; then
         echo "$c_examples"
@@ -184,16 +184,16 @@ non_test_files=$(find modules -name "*.c" -o -name "*.zig" | grep -v "_tests")
 bad_static_funcs=0
 for file in $non_test_files; do
     if [[ "$file" == *.c ]]; then
-        count=$(grep "^static.*(" "$file" 2>/dev/null | \
-            grep -v "^static inline" | \
-            grep -E "^static\s+[a-zA-Z_][a-zA-Z0-9_]*\s+[a-zA-Z_][a-zA-Z0-9_]*\s*\(" | \
-            grep -v -E "^static\s+[a-zA-Z_][a-zA-Z0-9_]*\s+_[a-zA-Z0-9_]+\s*\(" | \
+        count=$({ grep "^static.*(" "$file" 2>/dev/null || true; } | \
+            { grep -v "^static inline" || true; } | \
+            { grep -E "^static\s+[a-zA-Z_][a-zA-Z0-9_]*\s+[a-zA-Z_][a-zA-Z0-9_]*\s*\(" || true; } | \
+            { grep -v -E "^static\s+[a-zA-Z_][a-zA-Z0-9_]*\s+_[a-zA-Z0-9_]+\s*\(" || true; } | \
             wc -l)
         bad_static_funcs=$((bad_static_funcs + count))
     elif [[ "$file" == *.zig ]]; then
         # Zig uses fn for private functions, they should also use _
-        count=$(grep "^fn [a-zA-Z]" "$file" 2>/dev/null | \
-            grep -v "^fn _" | \
+        count=$({ grep "^fn [a-zA-Z]" "$file" 2>/dev/null || true; } | \
+            { grep -v "^fn _" || true; } | \
             wc -l)
         bad_static_funcs=$((bad_static_funcs + count))
     fi
@@ -222,8 +222,8 @@ fi
 
 # Test functions should be test_<module>__<test_name>
 echo -n "  Test functions... "
-bad_test_funcs=$(grep -h "^void test_" modules/*_tests.c methods/*_tests.c 2>/dev/null | \
-    grep -v -E "^void test_[a-zA-Z0-9]+__[a-zA-Z0-9_]+\s*\(" | \
+bad_test_funcs=$({ grep -h "^void test_" modules/*_tests.c methods/*_tests.c 2>/dev/null || true; } | \
+    { grep -v -E "^void test_[a-zA-Z0-9]+__[a-zA-Z0-9_]+\s*\(" || true; } | \
     wc -l)
 
 if [ $bad_test_funcs -gt 0 ]; then
@@ -252,7 +252,7 @@ for file in modules/*.h; do
     # Use a simpler approach with sed and grep
     
     # Extract enum type definitions
-    enum_types=$(grep -E "} ar_[a-zA-Z0-9_]+_t;" "$file" 2>/dev/null | sed -E 's/.*} (ar_[a-zA-Z0-9_]+_t);.*/\1/')
+    enum_types=$({ grep -E "} ar_[a-zA-Z0-9_]+_t;" "$file" 2>/dev/null || true; } | sed -E 's/.*} (ar_[a-zA-Z0-9_]+_t);.*/\1/')
     
     for enum_type in $enum_types; do
         if [ ! -z "$enum_type" ]; then
@@ -267,7 +267,7 @@ for file in modules/*.h; do
             # Extract enum values from the block
             # Look for enum values - they start with uppercase letters followed by comma or comment
             # Use awk to reliably extract just the enum name
-            enum_values=$(echo "$enum_block" | awk '/^[:space:]*[A-Z][A-Z0-9_]+[:space:]*(,|\/\*)/ { gsub(/^[:space:]*/, ""); gsub(/[:space:],].*/, ""); print }')
+            enum_values=$(echo "$enum_block" | awk '/^[[:space:]]*[A-Z][A-Z0-9_]+[[:space:]]*([,\/\*])/ { gsub(/^[[:space:]]*/, ""); gsub(/[[:space:],].*/, ""); print }')
             
             # Convert type name to expected prefix: ar_data_type_t -> AR_DATA_TYPE
             expected_prefix=$(echo "$enum_type" | sed -E 's/^ar_//; s/_t$//' | tr '[:lower:]' '[:upper:]')
@@ -290,7 +290,7 @@ done
 for file in modules/*.zig; do
     if [ -f "$file" ]; then
         # Extract Zig enum type definitions (pub const name = enum)
-        zig_enums=$(grep -E "pub const ar_[a-zA-Z0-9_]+_t = enum" "$file" 2>/dev/null | sed -E 's/pub const (ar_[a-zA-Z0-9_]+_t).*/\1/')
+        zig_enums=$({ grep -E "pub const ar_[a-zA-Z0-9_]+_t = enum" "$file" 2>/dev/null || true; } | sed -E 's/pub const (ar_[a-zA-Z0-9_]+_t).*/\1/')
         
         for enum_type in $zig_enums; do
             if [ ! -z "$enum_type" ]; then
@@ -304,7 +304,7 @@ for file in modules/*.zig; do
                 
                 # Extract enum values from the Zig enum block
                 # Zig format: VALUE_NAME = number,
-                enum_values=$(echo "$enum_block" | grep -E '^[:space:]*[A-Z][A-Z0-9_]+[:space:]*=' | sed -E 's/^[:space:]*([A-Z][A-Z0-9_]+)[:space:]*=.*/\1/')
+                enum_values=$(echo "$enum_block" | grep -E '^[[:space:]]*[A-Z][A-Z0-9_]+[[:space:]]*=' | sed -E 's/^[[:space:]]*([A-Z][A-Z0-9_]+)[[:space:]]*=.*/\1/')
                 
                 # Convert type name to expected prefix: ar_file_result_t -> AR_FILE_RESULT
                 expected_prefix=$(echo "$enum_type" | sed -E 's/^ar_//; s/_t$//' | tr '[:lower:]' '[:upper:]')
@@ -339,10 +339,10 @@ typedef_issues=""
 # Check for typedef struct patterns
 for file in modules/*.h; do
     # Look for typedef struct patterns that don't follow ar_*_t convention
-    bad_types=$(grep -E "typedef\s+struct\s+[a-zA-Z0-9_]+\s+[a-zA-Z0-9_]+;" "$file" 2>/dev/null | \
-        grep -v -E "typedef\s+struct\s+[a-zA-Z0-9_]+\s+ar_[a-zA-Z0-9_]+_t;" | \
+    bad_types=$({ grep -E "typedef\s+struct\s+[a-zA-Z0-9_]+\s+[a-zA-Z0-9_]+;" "$file" 2>/dev/null || true; } | \
+        { grep -v -E "typedef\s+struct\s+[a-zA-Z0-9_]+\s+ar_[a-zA-Z0-9_]+_t;" || true; } | \
         sed "s|^|$file: |")
-    
+
     if [ ! -z "$bad_types" ]; then
         typedef_issues="$typedef_issues\n$bad_types"
         ((bad_typedefs++))
@@ -363,11 +363,11 @@ enum_issues=""
 
 for file in modules/*.h; do
     # Look for enum definitions ending with } <type>;
-    bad_enum_types=$(grep -E "^\s*}\s*[a-zA-Z0-9_]+\s*;" "$file" 2>/dev/null | \
-        grep -v -E "^\s*}\s*ar_[a-zA-Z0-9_]+_t\s*;" | \
-        grep -v -E "^\s*}\s*[a-zA-Z0-9_]+_s\s*;" | \
+    bad_enum_types=$({ grep -E "^\s*}\s*[a-zA-Z0-9_]+\s*;" "$file" 2>/dev/null || true; } | \
+        { grep -v -E "^\s*}\s*ar_[a-zA-Z0-9_]+_t\s*;" || true; } | \
+        { grep -v -E "^\s*}\s*[a-zA-Z0-9_]+_s\s*;" || true; } | \
         sed "s|^|$file: |")
-    
+
     if [ ! -z "$bad_enum_types" ]; then
         enum_issues="$enum_issues\n$bad_enum_types"
         ((bad_enums++))
@@ -378,10 +378,10 @@ done
 for file in modules/*.zig; do
     if [ -f "$file" ]; then
         # Look for Zig enum definitions that don't follow ar_<type>_t pattern
-        bad_zig_enum_types=$(grep -E "pub const [a-zA-Z0-9_]+ = enum" "$file" 2>/dev/null | \
-            grep -v -E "pub const ar_[a-zA-Z0-9_]+_t = enum" | \
+        bad_zig_enum_types=$({ grep -E "pub const [a-zA-Z0-9_]+ = enum" "$file" 2>/dev/null || true; } | \
+            { grep -v -E "pub const ar_[a-zA-Z0-9_]+_t = enum" || true; } | \
             sed "s|^|$file: |")
-        
+
         if [ ! -z "$bad_zig_enum_types" ]; then
             enum_issues="$enum_issues\n$bad_zig_enum_types"
             ((bad_enums++))
@@ -402,8 +402,8 @@ echo "Checking macro naming conventions..."
 
 # Heap macros should be AR__HEAP__<OPERATION>
 echo -n "  Heap macros... "
-bad_heap_macros=$(grep -h "#define AR" modules/ar_heap.h 2>/dev/null | \
-    grep -v -E "#define AR__HEAP__[A-Z_]+" | \
+bad_heap_macros=$({ grep -h "#define AR" modules/ar_heap.h 2>/dev/null || true; } | \
+    { grep -v -E "#define AR__HEAP__[A-Z_]+" || true; } | \
     wc -l)
 
 if [ $bad_heap_macros -gt 0 ]; then
@@ -414,8 +414,8 @@ fi
 
 # Assert macros should be AR_ASSERT or AR_ASSERT_<TYPE>
 echo -n "  Assert macros... "
-bad_assert_macros=$(grep -h "#define AR_ASSERT" modules/ar_assert.h 2>/dev/null | \
-    grep -v -E "^#define AR_ASSERT(_[A-Z_]+)?\(" | \
+bad_assert_macros=$({ grep -h "#define AR_ASSERT" modules/ar_assert.h 2>/dev/null || true; } | \
+    { grep -v -E "^#define AR_ASSERT(_[A-Z_]+)?\(" || true; } | \
     wc -l)
 
 if [ $bad_assert_macros -gt 0 ]; then
@@ -430,24 +430,24 @@ echo "Checking for outdated naming patterns..."
 
 # Check for agerun_ prefix (should be ar_)
 echo -n "  Old agerun_ prefix... "
-old_agerun=$(grep -r "agerun_" modules/*.c modules/*.h methods/*.c 2>/dev/null | \
-    grep -v "agerun\.h" | \
-    grep -v "agerun\.c" | \
-    grep -v "memory_report_agerun" | \
-    grep -v "\"agerun\"" | \
-    grep -v "agerun\." | \
+old_agerun=$({ grep -r "agerun_" modules/*.c modules/*.h methods/*.c 2>/dev/null || true; } | \
+    { grep -v "agerun\.h" || true; } | \
+    { grep -v "agerun\.c" || true; } | \
+    { grep -v "memory_report_agerun" || true; } | \
+    { grep -v "\"agerun\"" || true; } | \
+    { grep -v "agerun\." || true; } | \
     wc -l)
 
 if [ $old_agerun -gt 0 ]; then
     print_warning "Found $old_agerun instances of old 'agerun_' prefix (should be 'ar_')"
     # Show first few examples
     echo "    Examples:"
-    grep -r "agerun_" modules/*.c modules/*.h methods/*.c 2>/dev/null | \
-        grep -v "agerun\.h" | \
-        grep -v "agerun\.c" | \
-        grep -v "memory_report_agerun" | \
-        grep -v "\"agerun\"" | \
-        grep -v "agerun\." | \
+    { grep -r "agerun_" modules/*.c modules/*.h methods/*.c 2>/dev/null || true; } | \
+        { grep -v "agerun\.h" || true; } | \
+        { grep -v "agerun\.c" || true; } | \
+        { grep -v "memory_report_agerun" || true; } | \
+        { grep -v "\"agerun\"" || true; } | \
+        { grep -v "agerun\." || true; } | \
         head -5 | sed 's/^/      /'
 else
     print_success "No outdated 'agerun_' prefixes found"
@@ -455,8 +455,8 @@ fi
 
 # Check for double underscore at start (ar__) which should be single (ar_)
 echo -n "  Double underscore prefix... "
-double_underscore=$(grep -r "ar__[a-z]" modules/*.c modules/*.h methods/*.c 2>/dev/null | \
-    grep -v "AR__HEAP__" | \
+double_underscore=$({ grep -r "ar__[a-z]" modules/*.c modules/*.h methods/*.c 2>/dev/null || true; } | \
+    { grep -v "AR__HEAP__" || true; } | \
     wc -l)
 
 if [ $double_underscore -gt 0 ]; then
@@ -481,10 +481,10 @@ struct_issues=""
 
 for file in modules/*.c modules/*.h; do
     # Look for struct definitions
-    bad_struct_names=$(grep -E "^struct\s+[a-zA-Z0-9_]+\s*{" "$file" 2>/dev/null | \
-        grep -v -E "^struct\s+ar_[a-zA-Z0-9_]+_s\s*{" | \
+    bad_struct_names=$({ grep -E "^struct\s+[a-zA-Z0-9_]+\s*{" "$file" 2>/dev/null || true; } | \
+        { grep -v -E "^struct\s+ar_[a-zA-Z0-9_]+_s\s*{" || true; } | \
         sed "s|^|$file: |")
-    
+
     if [ ! -z "$bad_struct_names" ]; then
         struct_issues="$struct_issues\n$bad_struct_names"
         ((bad_structs++))
@@ -524,21 +524,21 @@ c_abi_issues=""
 
 for file in $c_abi_zig_files; do
     # Check export functions follow ar_module__function pattern
-    bad_exports=$(grep -E "^export fn" "$file" 2>/dev/null | \
-        grep -v -E "^export fn ar_[a-zA-Z0-9_]+__[a-zA-Z0-9_]+" | \
+    bad_exports=$({ grep -E "^export fn" "$file" 2>/dev/null || true; } | \
+        { grep -v -E "^export fn ar_[a-zA-Z0-9_]+__[a-zA-Z0-9_]+" || true; } | \
         sed "s|^|$file: |")
-    
+
     if [ ! -z "$bad_exports" ]; then
         c_abi_issues="$c_abi_issues\n$bad_exports"
         ((bad_c_abi_issues++))
     fi
-    
+
     # Check types follow ar_<type>_t convention
     # Only check public types - private types can use any naming
-    bad_types=$(grep -E "^pub const [a-zA-Z][a-zA-Z0-9_]* = (struct|enum|union)" "$file" 2>/dev/null | \
-        grep -v -E "^pub const ar_[a-zA-Z0-9_]+_t = " | \
+    bad_types=$({ grep -E "^pub const [a-zA-Z][a-zA-Z0-9_]* = (struct|enum|union)" "$file" 2>/dev/null || true; } | \
+        { grep -v -E "^pub const ar_[a-zA-Z0-9_]+_t = " || true; } | \
         sed "s|^|$file: |")
-    
+
     if [ ! -z "$bad_types" ]; then
         c_abi_issues="$c_abi_issues\n$bad_types"
         ((bad_c_abi_issues++))
@@ -567,10 +567,10 @@ for file in $struct_module_zig_files; do
     fi
     
     # Check public functions use camelCase (not snake_case or PascalCase)
-    bad_funcs=$(grep -E "^pub fn" "$file" 2>/dev/null | \
-        grep -v -E "^pub fn [a-z][a-zA-Z0-9]*\(" | \
+    bad_funcs=$({ grep -E "^pub fn" "$file" 2>/dev/null || true; } | \
+        { grep -v -E "^pub fn [a-z][a-zA-Z0-9]*\(" || true; } | \
         sed "s|^|$file: |")
-    
+
     if [ ! -z "$bad_funcs" ]; then
         struct_module_issues="$struct_module_issues\n$bad_funcs"
         ((bad_struct_module_issues++))
@@ -599,10 +599,10 @@ for file in modules/*.zig; do
     if [ -f "$file" ]; then
         # Look for global variables (var declarations at module level)
         # They should use g_ prefix
-        bad_globals=$(grep -E "^(pub )?var [a-zA-Z]" "$file" 2>/dev/null | \
-            grep -v -E "^(pub )?var g_" | \
+        bad_globals=$({ grep -E "^(pub )?var [a-zA-Z]" "$file" 2>/dev/null || true; } | \
+            { grep -v -E "^(pub )?var g_" || true; } | \
             sed "s|^|$file: |")
-        
+
         if [ ! -z "$bad_globals" ]; then
             zig_global_issues="$zig_global_issues\n$bad_globals"
             ((bad_zig_globals++))
@@ -631,7 +631,7 @@ for file in $bash_script_files; do
     basename=$(basename "$file")
     # Should use dashes, not underscores
     # But allow specific cases like update_checkpoints_in_newlearnings.sh if they already exist (legacy)
-    if echo "$basename" | grep -qE "_[a-z]"; then
+    if echo "$basename" | grep -qE -- "_[a-z]"; then
         # This is a bash script with underscores - should use dashes
         dash_version=$(echo "$basename" | sed 's/_/-/g')
         bash_issues="$bash_issues\n    $basename (should be: $dash_version)"
@@ -656,7 +656,7 @@ python_issues=""
 for file in $python_script_files; do
     basename=$(basename "$file")
     # Should use underscores, not dashes
-    if echo "$basename" | grep -qE "-[a-z]"; then
+    if echo "$basename" | grep -qE -- "-[a-z]"; then
         # This is a Python script with dashes - should use underscores
         underscore_version=$(echo "$basename" | sed 's/-/_/g')
         python_issues="$python_issues\n    $basename (should be: $underscore_version)"
