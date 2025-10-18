@@ -1,5 +1,32 @@
 # AgeRun CHANGELOG
 
+## 2025-10-18 (Session 2c)
+
+- **Command Documentation Clarity Improvements**
+
+  Restructured all 14 simple checkpoint commands to prevent accidental manual checkpoint initialization, which was causing checkpoint state conflicts.
+
+  **Problem**: Command documentation showed both manual checkpoint initialization commands and the script entry point, creating ambiguity about the correct execution path. This led to mistakes where developers manually ran `make checkpoint-init` before running the script, causing checkpoint state conflicts.
+
+  **Solution**: Reorganized documentation structure in all 14 command files with:
+  1. **⚠️ CRITICAL Warning Section** - Explicit instruction: "DO NOT manually initialize checkpoints"
+  2. **Quick Start Section** - Single clear instruction: "Just run the script"
+  3. **Troubleshooting Section** - Manual commands moved here, clearly marked as emergency-only
+
+  **Commands Updated** (14 total):
+  - check-docs, check-naming, next-priority, next-task
+  - build, build-clean, run-exec, run-tests
+  - analyze-exec, analyze-tests, sanitize-exec, sanitize-tests
+  - tsan-exec, tsan-tests
+
+  **Changes**: 14 files updated with 238 insertions/deletions
+
+  **Benefits**:
+  - Clear intent: No ambiguity about which commands to run
+  - Error prevention: Warnings prevent the specific mistake pattern
+  - Better UX: Quick Start section makes correct path obvious
+  - Professional: Troubleshooting clearly separated from normal workflow
+
 ## 2025-10-18 (Session 2b)
 
 - **Complex Command Wrapper Script Integration**
