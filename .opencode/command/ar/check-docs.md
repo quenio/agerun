@@ -1,4 +1,4 @@
-Run documentation validation and fix any errors found using an iterative approach, then commit and push the fixes.
+Run documentation validation and fix any errors found using an iterative approach, then commit and push the fixes. Documentation quality is enhanced through systematic script extraction and domain-specific naming patterns ([details](../../../kb/command-helper-script-extraction-pattern.md), [naming](../../../kb/script-domain-naming-convention.md)).
 
 ## ⚠️ CRITICAL: Let the script manage checkpoints
 

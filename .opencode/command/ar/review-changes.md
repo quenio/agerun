@@ -5,13 +5,17 @@ Review uncommitted changes for code quality, architectural compliance, and docum
 ## KB Consultation Required
 
 Before reviewing ([details](../../../kb/kb-consultation-before-planning-requirement.md)):
-1. Search: `grep "parnas\|principle\|smell\|architecture" kb/README.md`
+1. Search: `grep "parnas\|principle\|smell\|architecture\|script\|extraction" kb/README.md`
 2. Review relevant principles:
    - Parnas design principles
    - Code smell patterns
    - Architecture patterns
    - Standards over expediency ([details](../../../kb/standards-over-expediency-principle.md))
+   - Helper script extraction ([details](../../../kb/command-helper-script-extraction-pattern.md))
+   - Script naming conventions ([details](../../../kb/script-domain-naming-convention.md))
 3. Apply these standards during review
+   - When refactoring commands, consider extracting complex bash logic to scripts
+   - Use domain-specific naming for improved discoverability
 
 ## CHECKPOINT WORKFLOW ENFORCEMENT
 

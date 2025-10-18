@@ -332,11 +332,18 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 ### 5. Bash Script Naming & Development
 
-**Naming Convention**: Use dash-based naming with pattern `<action>-<object>.sh`:
-- **Action verbs**: `add`, `check`, `validate`, `checkpoint`, `update`, etc.
-- **Object**: What the script operates on (e.g., `newline`, `naming`, `plan-structure`)
-- ✅ Correct: `checkpoint-init.sh`, `add-newline.sh`, `validate-plan-structure.sh`
-- ❌ Incorrect: `checkpoint_init.sh`, `add_newline.sh`, `validate_plan_structure.sh`
+**Naming Convention**: Use dash-based naming with pattern `<action>-<domain>-<object>.sh`:
+- **Action verbs**: `add`, `check`, `validate`, `scan`, `calculate`, `identify`, `generate`, etc.
+- **Domain**: Context/area the script operates in (e.g., `command`, `module`, `test`, `kb`) - improves discoverability
+- **Object**: What the script operates on (e.g., `structure`, `naming`, `scores`) - optional when domain makes purpose clear
+- ✅ Correct: `checkpoint-init.sh`, `add-newline.sh`, `validate-command-structure.sh`, `scan-commands.sh`, `calculate-command-scores.sh`
+- ❌ Incorrect: `checkpoint_init.sh`, `add_newline.sh`, `validate-structure.sh` (too generic without domain)
+
+**Domain-specific examples** ([details](kb/script-domain-naming-convention.md)):
+- Command utilities: `scan-commands.sh`, `validate-command-structure.sh`, `calculate-command-scores.sh`
+- Module utilities: `check-module-consistency.sh`, `detect-code-smells.sh`
+- Test utilities: `verify-test-coverage.sh`, `analyze-test-output.sh`
+- KB utilities: `validate-kb-links.sh`, `verify-kb-integration.sh`
 
 **Development Guidelines**:
 - `#!/bin/bash` shebang for bash-specific features like `[[ ]]`
@@ -356,6 +363,13 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - Use via Makefile targets, not direct invocation: `make checkpoint-init CMD=...` not `./scripts/checkpoint-init.sh`
 
 **Location**: All scripts in `scripts/` directory, called through Makefile targets
+
+**Script Extraction Pattern** ([details](kb/command-helper-script-extraction-pattern.md)):
+- Extract embedded bash logic (10+ lines) from commands into standalone scripts
+- Each extracted script should have ONE responsibility ([details](kb/single-responsibility-principle.md))
+- Use domain-specific naming to enable discoverability: `<action>-<domain>-<object>.sh`
+- Test extracted scripts independently before integration
+- Update command files to reference extracted scripts instead of embedding logic
 
 ### 5.1 Python Script Naming & Development
 

@@ -210,7 +210,16 @@ make checkpoint-update CMD=review-changes STEP=2
 
 ## Real-World Examples
 
-From the AgeRun project, we extracted 18 helper scripts:
+From the AgeRun project, we extracted 23+ helper scripts:
+
+### Check-Commands Command (5 scripts) - Session 2025-10-18
+- `scan-commands.sh` - Scans .opencode/command/ar directory for all command files
+- `validate-command-structure.sh` - Runs structure validation via check_commands.py
+- `calculate-command-scores.sh` - Extracts average scores and runs quality gates
+- `identify-command-issues.sh` - Analyzes command distribution by quality tier
+- `generate-command-report.sh` - Generates final quality report with status
+
+This extraction from check-commands.md reduced the command documentation by 92 lines while maintaining full functionality. Each script has a single responsibility following the [Script Domain Naming Convention](script-domain-naming-convention.md).
 
 ### Review-Changes Command (6 scripts)
 - `detect-code-smells.sh` - Finds long methods, large modules, excessive params
@@ -220,13 +229,13 @@ From the AgeRun project, we extracted 18 helper scripts:
 - `detect-circular-dependencies.sh` - Builds dependency graph, detects cycles
 - `check-file-hygiene.sh` - Finds backup, temp, debug files
 
-### Other Commands (12 scripts)
+### Other Commands (12+ scripts)
 - `categorize-log-errors.sh` - From check-logs.md
 - `verify-new-learnings-integration.sh` - From new-learnings.md
 - `validate-kb-links.sh` - From compact-guidelines.md
 - `analyze-whitelist.sh` - From fix-errors-whitelisted.md
 - `check-module-dependencies.sh` - From migrate-module-to-zig-struct.md
-- Plus 7 more...
+- Plus 7+ more...
 
 ### Command Updates
 
@@ -364,5 +373,7 @@ make checkpoint-update CMD=review-changes STEP=1
 - [Command Documentation Excellence Gate](command-documentation-excellence-gate.md) - Quality standards for commands
 - [Checkpoint Implementation Guide](checkpoint-implementation-guide.md) - Structuring commands with checkpoints
 - [Command Thoroughness Requirements Pattern](command-thoroughness-requirements-pattern.md) - Thoroughness standards
+- [Script Domain Naming Convention](script-domain-naming-convention.md) - Naming conventions for extracted scripts
+- [Single Responsibility Principle](single-responsibility-principle.md) - Keeping scripts focused
 - [Concise Script Output Principle](concise-script-output-principle.md) - Script output guidelines
 - [Build System Exit Code Verification](build-system-exit-code-verification.md) - Exit code patterns

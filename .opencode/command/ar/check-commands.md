@@ -8,9 +8,12 @@ Before validation:
 1. Search: `grep "command\|excellence\|validation" kb/README.md`
 2. Must read:
    - command-documentation-excellence-gate
+   - command-helper-script-extraction-pattern ([extraction pattern](../../../kb/command-helper-script-extraction-pattern.md))
    - validation-feedback-loop-effectiveness
    - command-output-documentation-pattern
 3. Apply command quality standards
+   - Scripts can be extracted for better reusability ([details](../../../kb/command-helper-script-extraction-pattern.md))
+   - Use domain-specific naming for extracted scripts ([details](../../../kb/script-domain-naming-convention.md))
 
 ## CHECKPOINT WORKFLOW ENFORCEMENT
 
