@@ -9,9 +9,9 @@ Run thread sanitizer on all tests for detecting data races.
 If a `/tsan-tests` workflow is already in progress:
 
 ```bash
-make checkpoint-status CMD=tsan_tests VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=tsan_tests STEP=N
-# Or reset: make checkpoint-cleanup CMD=tsan_tests && make checkpoint-init CMD=tsan_tests STEPS='"Prepare" "Execute" "Verify"'
+make checkpoint-status CMD=tsan-tests VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=tsan-tests STEP=N
+# Or reset: make checkpoint-cleanup CMD=tsan-tests && make checkpoint-init CMD=tsan-tests STEPS='"Prepare" "Execute" "Verify"'
 ```
 
 ### First-Time Initialization Check
@@ -34,19 +34,19 @@ This command uses checkpoint tracking to ensure systematic execution and verific
 ### Initialize Tracking
 ```bash
 # Start the tsan tests process
-make checkpoint-init CMD=tsan_tests STEPS='"Prepare" "Execute" "Verify"'
+make checkpoint-init CMD=tsan-tests STEPS='"Prepare" "Execute" "Verify"'
 ```
 
 **Expected output:**
 ```
 📍 Starting: tsan_tests (3 steps)
-📁 Tracking: /tmp/tsan_tests_progress.txt
-→ Run: make checkpoint-update CMD=tsan_tests STEP=1
+📁 Tracking: /tmp/tsan_tests-progress.txt
+→ Run: make checkpoint-update CMD=tsan-tests STEP=1
 ```
 
 ### Check Progress
 ```bash
-make checkpoint-status CMD=tsan_tests
+make checkpoint-status CMD=tsan-tests
 ```
 
 **Expected output (example at 33% completion):**
@@ -83,7 +83,7 @@ For example, concurrent agent tests will need careful synchronization.
 #### [EXECUTION GATE]
 ```bash
 # Verify ready to execute
-make checkpoint-gate CMD=tsan_tests GATE="Ready" REQUIRED="1"
+make checkpoint-gate CMD=tsan-tests GATE="Ready" REQUIRED="1"
 ```
 
 **Expected gate output:**
@@ -100,7 +100,7 @@ make checkpoint-gate CMD=tsan_tests GATE="Ready" REQUIRED="1"
 make tsan-tests 2>&1
 
 # Mark execution complete
-make checkpoint-update CMD=tsan_tests STEP=2
+make checkpoint-update CMD=tsan-tests STEP=2
 ```
 
 
@@ -171,7 +171,7 @@ SUMMARY: ThreadSanitizer: lock-order-inversion (potential deadlock)
 #### [CHECKPOINT COMPLETE]
 ```bash
 # Show final summary
-make checkpoint-status CMD=tsan_tests
+make checkpoint-status CMD=tsan-tests
 ```
 
 **Expected completion output:**
@@ -196,7 +196,7 @@ The tsan tests completed successfully!
 
 ```bash
 # Clean up tracking
-make checkpoint-cleanup CMD=tsan_tests
+make checkpoint-cleanup CMD=tsan-tests
 ```
 
 ## Key Points

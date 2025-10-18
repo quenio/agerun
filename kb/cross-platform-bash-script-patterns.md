@@ -207,7 +207,7 @@ set -e
 COMMAND_NAME="${1:-check-docs}"
 STEP_NUMBER="${2:-1}"
 STATUS="${3:-complete}"
-TRACKING_FILE="/tmp/${COMMAND_NAME}_progress.txt"
+TRACKING_FILE="/tmp/${COMMAND_NAME}-progress.txt"
 
 # Platform-specific sed options
 if [[ "$OSTYPE" == darwin* ]]; then
@@ -232,7 +232,7 @@ set -e
 set -o pipefail
 
 COMMAND_NAME="${1:-command}"
-TRACKING_FILE="/tmp/${COMMAND_NAME}_progress.txt"
+TRACKING_FILE="/tmp/${COMMAND_NAME}-progress.txt"
 
 # Safe pattern matching for OSTYPE
 if [[ "$OSTYPE" == darwin* ]]; then

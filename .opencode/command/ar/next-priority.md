@@ -23,26 +23,26 @@ Only after completing KB consultation should you proceed to analyze TODO.md.
 If a `/next-priority` workflow is already in progress:
 
 ```bash
-make checkpoint-status CMD=next_priority VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=next_priority STEP=N
-# Or reset: make checkpoint-cleanup CMD=next_priority && make checkpoint-init CMD=next_priority STEPS='"Prepare" "Execute" "Verify"'
+make checkpoint-status CMD=next-priority VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=next-priority STEP=N
+# Or reset: make checkpoint-cleanup CMD=next-priority && make checkpoint-init CMD=next-priority STEPS='"Prepare" "Execute" "Verify"'
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/next_priority_progress.txt ]; then
+if [ ! -f /tmp/next_priority-progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=next_priority STEPS='"Prepare" "Execute" "Verify"'
+  make checkpoint-init CMD=next-priority STEPS='"Prepare" "Execute" "Verify"'
 else
-  make checkpoint-status CMD=next_priority
+  make checkpoint-status CMD=next-priority
 fi
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/next_priority_progress.txt ]; then
+if [ ! -f /tmp/next_priority-progress.txt ]; then
   echo "❌ ERROR: Checkpoint tracking not initialized!"
   exit 1
 fi
@@ -56,19 +56,19 @@ This command uses checkpoint tracking to ensure systematic execution and verific
 ### Initialize Tracking
 ```bash
 # Start the next priority process
-make checkpoint-init CMD=next_priority STEPS='"Prepare" "Execute" "Verify"'
+make checkpoint-init CMD=next-priority STEPS='"Prepare" "Execute" "Verify"'
 ```
 
 **Expected output:**
 ```
 📍 Starting: next_priority (3 steps)
-📁 Tracking: /tmp/next_priority_progress.txt
-→ Run: make checkpoint-update CMD=next_priority STEP=1
+📁 Tracking: /tmp/next_priority-progress.txt
+→ Run: make checkpoint-update CMD=next-priority STEP=1
 ```
 
 ### Check Progress
 ```bash
-make checkpoint-status CMD=next_priority
+make checkpoint-status CMD=next-priority
 ```
 
 **Expected output (example at 33% completion):**

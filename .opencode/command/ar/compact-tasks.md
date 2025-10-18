@@ -17,7 +17,7 @@ make checkpoint-status CMD=compact-tasks VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/compact_tasks_progress.txt ]; then
+if [ ! -f /tmp/compact_tasks-progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
   make checkpoint-init CMD=compact-tasks STEPS='"Measure Baseline" "Categorize Tasks" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Commit Changes" "Final Verification"'
 else
@@ -28,7 +28,7 @@ fi
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/compact_tasks_progress.txt ]; then
+if [ ! -f /tmp/compact_tasks-progress.txt ]; then
   echo "❌ ERROR: Checkpoint tracking not initialized!"
   exit 1
 fi
@@ -101,7 +101,7 @@ make checkpoint-init CMD=compact-tasks STEPS='"Measure Baseline" "Categorize Tas
 **Expected output:**
 ```
 📍 Starting: compact-tasks (7 steps)
-📁 Tracking: /tmp/compact-tasks_progress.txt
+📁 Tracking: /tmp/compact-tasks-progress.txt
 → Run: make checkpoint-update CMD=compact-tasks STEP=1
 ```
 

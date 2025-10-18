@@ -102,7 +102,7 @@ make checkpoint-init CMD=compact-changes STEPS='"Measure Baseline" "Analyze Patt
 **Expected output:**
 ```
 📍 Starting: compact-changes (7 steps)
-📁 Tracking: /tmp/compact-changes_progress.txt
+📁 Tracking: /tmp/compact-changes-progress.txt
 → Run: make checkpoint-update CMD=compact-changes STEP=1
 ```
 

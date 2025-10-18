@@ -12,7 +12,7 @@ Command-specific scripts lead to proliferation of similar code with slight varia
 # BAD: Hardcoded script for specific command
 # new_learnings_checkpoint.sh
 echo "Checking new-learnings progress..."
-if grep -q "STEP_1=complete" /tmp/new_learnings_progress.txt; then
+if grep -q "STEP_1=complete" /tmp/new_learnings-progress.txt; then
     echo "Step 1 of new-learnings is complete"
 fi
 
@@ -21,7 +21,7 @@ fi
 # checkpoint-status.sh
 COMMAND_NAME=${1:-"command"}
 VERBOSE=${2:-""}
-TRACKING_FILE="/tmp/${COMMAND_NAME}_progress.txt"
+TRACKING_FILE="/tmp/${COMMAND_NAME}-progress.txt"
 
 if [ ! -f "$TRACKING_FILE" ]; then
     echo "Error: No tracking for command: $COMMAND_NAME"

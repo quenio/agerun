@@ -61,7 +61,7 @@ All checkpoint functionality is implemented through bash scripts that are wrappe
 
 ```bash
 # Initialize with all steps
-# Uses: scripts/checkpoint-init.sh (creates /tmp/COMMAND_progress.txt)
+# Uses: scripts/checkpoint-init.sh (creates /tmp/COMMAND-progress.txt)
 make checkpoint-init CMD=command-name STEPS='"Step 1" "Step 2" ...'
 
 # Update after each step
@@ -108,7 +108,7 @@ The wrapper scripts (`scripts/init-checkpoint.sh`, `require-checkpoint.sh`, `gat
 
 ```bash
 # Instead of 7-8 lines of initialization code:
-❌ if [ ! -f "/tmp/command_progress.txt" ]; then
+❌ if [ ! -f "/tmp/command-progress.txt" ]; then
     make checkpoint-init CMD=command STEPS="..."
 else
     echo "Checkpoint already initialized"
@@ -118,7 +118,7 @@ fi
 ✅ ./scripts/init-checkpoint.sh command '"Step 1" "Step 2"'
 
 # Instead of 5-line precondition check:
-❌ PROGRESS_FILE="/tmp/command_progress.txt"
+❌ PROGRESS_FILE="/tmp/command-progress.txt"
 if [ ! -f "$PROGRESS_FILE" ]; then
   echo "ERROR: Not initialized"
   exit 1

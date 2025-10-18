@@ -33,7 +33,7 @@ Isolation-based debugging leads to:
 cat > /tmp/test_checkpoint.sh << 'EOF'
 #!/bin/bash
 COMMAND_NAME="check-docs"
-TRACKING_FILE="/tmp/${COMMAND_NAME}_test_progress.txt"
+TRACKING_FILE="/tmp/${COMMAND_NAME}_test-progress.txt"
 STEP_NUMBER=1
 STATUS="complete"
 
@@ -198,7 +198,7 @@ The checkpoint scripts use sed for step tracking. When debugging issues:
 COMMAND="test-cmd"
 STEP=1
 DESC="Step 1 Description"
-TRACKING_FILE="/tmp/${COMMAND}_progress.txt"
+TRACKING_FILE="/tmp/${COMMAND}-progress.txt"
 
 # Create minimal tracking file
 cat > "$TRACKING_FILE" << 'EOF'

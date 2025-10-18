@@ -14,7 +14,7 @@ COMMAND_NAME=$1
 shift
 STEPS=("$@")
 
-TRACKING_FILE="/tmp/${COMMAND_NAME}_progress.txt"
+TRACKING_FILE="/tmp/${COMMAND_NAME}-progress.txt"
 
 # Create tracking file with all steps
 echo "# Progress tracking for: $COMMAND_NAME" > "$TRACKING_FILE"

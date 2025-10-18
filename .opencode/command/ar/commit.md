@@ -19,7 +19,7 @@ make checkpoint-status CMD=commit VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/commit_progress.txt ]; then
+if [ ! -f /tmp/commit-progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
   make checkpoint-init CMD=commit STEPS='"Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"'
 else
@@ -30,7 +30,7 @@ fi
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/commit_progress.txt ]; then
+if [ ! -f /tmp/commit-progress.txt ]; then
   echo "❌ ERROR: Checkpoint tracking not initialized!"
   exit 1
 fi
@@ -89,7 +89,7 @@ make checkpoint-init CMD=commit STEPS='"Run Tests" "Check Logs" "Update Docs" "U
 **Expected output:**
 ```
 📍 Starting: commit (9 steps)
-📁 Tracking: /tmp/commit_progress.txt
+📁 Tracking: /tmp/commit-progress.txt
 → Run: make checkpoint-update CMD=commit STEP=1
 ```
 

@@ -19,7 +19,7 @@ make checkpoint-status CMD=execute-plan VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/execute-plan_progress.txt ]; then
+if [ ! -f /tmp/execute-plan-progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
   make checkpoint-init CMD=execute-plan STEPS='"KB Consultation" "Read Plan" "Extract Iterations" "Execute Iterations" "Run Tests" "Verify Memory" "Update Plan Status" "Summary"'
 else
@@ -30,7 +30,7 @@ fi
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/execute-plan_progress.txt ]; then
+if [ ! -f /tmp/execute-plan-progress.txt ]; then
   echo "❌ ERROR: Checkpoint tracking not initialized!"
   exit 1
 fi
@@ -164,7 +164,7 @@ This command uses checkpoint tracking to ensure systematic plan execution. The e
 ========================================
 
 Command: execute-plan
-Tracking file: /tmp/execute-plan_progress.txt
+Tracking file: /tmp/execute-plan-progress.txt
 Total steps: 12
 
 Steps to complete:

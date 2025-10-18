@@ -9,26 +9,26 @@ Build and run the agerun executable.
 If a `/run-exec` workflow is already in progress:
 
 ```bash
-make checkpoint-status CMD=run_exec VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=run_exec STEP=N
-# Or reset: make checkpoint-cleanup CMD=run_exec && make checkpoint-init CMD=run_exec STEPS='"Prepare" "Execute" "Verify"'
+make checkpoint-status CMD=run-exec VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=run-exec STEP=N
+# Or reset: make checkpoint-cleanup CMD=run-exec && make checkpoint-init CMD=run-exec STEPS='"Prepare" "Execute" "Verify"'
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/run_exec_progress.txt ]; then
+if [ ! -f /tmp/run_exec-progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=run_exec STEPS='"Prepare" "Execute" "Verify"'
+  make checkpoint-init CMD=run-exec STEPS='"Prepare" "Execute" "Verify"'
 else
-  make checkpoint-status CMD=run_exec
+  make checkpoint-status CMD=run-exec
 fi
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/run_exec_progress.txt ]; then
+if [ ! -f /tmp/run_exec-progress.txt ]; then
   echo "❌ ERROR: Checkpoint tracking not initialized!"
   exit 1
 fi
@@ -42,19 +42,19 @@ This command uses checkpoint tracking to ensure systematic execution and verific
 ### Initialize Tracking
 ```bash
 # Start the run exec process
-make checkpoint-init CMD=run_exec STEPS='"Prepare" "Execute" "Verify"'
+make checkpoint-init CMD=run-exec STEPS='"Prepare" "Execute" "Verify"'
 ```
 
 **Expected output:**
 ```
 📍 Starting: run_exec (3 steps)
-📁 Tracking: /tmp/run_exec_progress.txt
-→ Run: make checkpoint-update CMD=run_exec STEP=1
+📁 Tracking: /tmp/run_exec-progress.txt
+→ Run: make checkpoint-update CMD=run-exec STEP=1
 ```
 
 ### Check Progress
 ```bash
-make checkpoint-status CMD=run_exec
+make checkpoint-status CMD=run-exec
 ```
 
 **Expected output (example at 33% completion):**
@@ -91,7 +91,7 @@ For example, if you see "X messages remaining" at shutdown, there's a message ro
 #### [EXECUTION GATE]
 ```bash
 # Verify ready to execute
-make checkpoint-gate CMD=run_exec GATE="Ready" REQUIRED="1"
+make checkpoint-gate CMD=run-exec GATE="Ready" REQUIRED="1"
 ```
 
 **Expected gate output:**
@@ -108,7 +108,7 @@ make checkpoint-gate CMD=run_exec GATE="Ready" REQUIRED="1"
 make run-exec 2>&1
 
 # Mark execution complete
-make checkpoint-update CMD=run_exec STEP=2
+make checkpoint-update CMD=run-exec STEP=2
 ```
 
 

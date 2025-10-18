@@ -9,26 +9,26 @@ Execute a clean build for comprehensive build verification with minimal output a
 If a `/build-clean` workflow is already in progress:
 
 ```bash
-make checkpoint-status CMD=build_clean VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=build_clean STEP=N
-# Or reset: make checkpoint-cleanup CMD=build_clean && make checkpoint-init CMD=build_clean STEPS='"Prepare" "Execute" "Verify"'
+make checkpoint-status CMD=build-clean VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=build-clean STEP=N
+# Or reset: make checkpoint-cleanup CMD=build-clean && make checkpoint-init CMD=build-clean STEPS='"Prepare" "Execute" "Verify"'
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/build_clean_progress.txt ]; then
+if [ ! -f /tmp/build_clean-progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=build_clean STEPS='"Prepare" "Execute" "Verify"'
+  make checkpoint-init CMD=build-clean STEPS='"Prepare" "Execute" "Verify"'
 else
-  make checkpoint-status CMD=build_clean
+  make checkpoint-status CMD=build-clean
 fi
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/build_clean_progress.txt ]; then
+if [ ! -f /tmp/build_clean-progress.txt ]; then
   echo "❌ ERROR: Checkpoint tracking not initialized!"
   exit 1
 fi
@@ -42,19 +42,19 @@ This command uses checkpoint tracking to ensure systematic execution and verific
 ### Initialize Tracking
 ```bash
 # Start the build clean process
-make checkpoint-init CMD=build_clean STEPS='"Prepare" "Execute" "Verify"'
+make checkpoint-init CMD=build-clean STEPS='"Prepare" "Execute" "Verify"'
 ```
 
 **Expected output:**
 ```
 📍 Starting: build_clean (3 steps)
-📁 Tracking: /tmp/build_clean_progress.txt
-→ Run: make checkpoint-update CMD=build_clean STEP=1
+📁 Tracking: /tmp/build_clean-progress.txt
+→ Run: make checkpoint-update CMD=build-clean STEP=1
 ```
 
 ### Check Progress
 ```bash
-make checkpoint-status CMD=build_clean
+make checkpoint-status CMD=build-clean
 ```
 
 **Expected output (example at 33% completion):**
@@ -92,7 +92,7 @@ For example, if you see "undefined reference" errors in incremental builds, a cl
 #### [EXECUTION GATE]
 ```bash
 # Verify ready to execute
-make checkpoint-gate CMD=build_clean GATE="Ready" REQUIRED="1"
+make checkpoint-gate CMD=build-clean GATE="Ready" REQUIRED="1"
 ```
 
 **Expected gate output:**
@@ -109,7 +109,7 @@ make checkpoint-gate CMD=build_clean GATE="Ready" REQUIRED="1"
 make clean build 2>&1 && make check-logs
 
 # Mark execution complete
-make checkpoint-update CMD=build_clean STEP=2
+make checkpoint-update CMD=build-clean STEP=2
 ```
 
 

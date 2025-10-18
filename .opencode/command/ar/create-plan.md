@@ -26,7 +26,7 @@ make checkpoint-init CMD=create-plan STEPS='"KB Consultation" "Read Requirements
 **MANDATORY**: Before executing ANY steps, verify checkpoint tracking is initialized:
 
 ```bash
-if [ ! -f /tmp/create-plan_progress.txt ]; then
+if [ ! -f /tmp/create-plan-progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
   make checkpoint-init CMD=create-plan STEPS='"KB Consultation" "Read Requirements" "Extract Iterations" "Structure Plan" "Validate Plan" "Summary"'
 else
@@ -39,7 +39,7 @@ fi
 **BEFORE PROCEEDING**: Verify checkpoint tracking initialization:
 
 ```bash
-if [ ! -f /tmp/create-plan_progress.txt ]; then
+if [ ! -f /tmp/create-plan-progress.txt ]; then
   echo "❌ ERROR: Checkpoint tracking not initialized!"
   echo "STOP: Initialize tracking with the command above before proceeding."
   exit 1
@@ -164,7 +164,7 @@ This command uses checkpoint tracking to ensure systematic plan creation. The cr
 ========================================
 
 Command: create-plan
-Tracking file: /tmp/create-plan_progress.txt
+Tracking file: /tmp/create-plan-progress.txt
 Total steps: 14
 
 Steps to complete:

@@ -10,18 +10,18 @@ COMMAND_NAME=${1:-""}
 
 if [ -z "$COMMAND_NAME" ]; then
     # Clean all tracking files and archive audit trails
-    for file in /tmp/*_progress.txt; do
+    for file in /tmp/*-progress.txt; do
         if [ -f "$file" ]; then
-            cmd=$(basename "$file" _progress.txt)
+            cmd=$(basename "$file" -progress.txt)
             archive_audit_trail "$cmd"
         fi
     done
-    rm -f /tmp/*_progress.txt
-    rm -f /tmp/*_audit.txt
+    rm -f /tmp/*-progress.txt
+    rm -f /tmp/*-audit.txt
     echo "✓ All tracking files removed"
 else
-    TRACKING_FILE="/tmp/${COMMAND_NAME}_progress.txt"
-    AUDIT_FILE="/tmp/${COMMAND_NAME}_audit.txt"
+    TRACKING_FILE="/tmp/${COMMAND_NAME}-progress.txt"
+    AUDIT_FILE="/tmp/${COMMAND_NAME}-audit.txt"
     ARCHIVE_DIR="logs/checkpoint_audit"
 
     if [ -f "$TRACKING_FILE" ]; then

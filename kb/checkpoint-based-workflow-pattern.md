@@ -11,7 +11,7 @@ Structured workflows prevent incomplete execution by making progress visible, en
 // Conceptual model of checkpoint workflow
 // Real implementation uses bash scripts and make targets
 
-// Step tracking structure (stored in /tmp/command_progress.txt)
+// Step tracking structure (stored in /tmp/command-progress.txt)
 typedef struct checkpoint_state_s {  // EXAMPLE: Conceptual model only
     char *command_name;
     int total_steps;
@@ -50,7 +50,7 @@ ar_data__destroy(own_workflow);
 ## Generalization
 **Checkpoint Workflow Components:**
 
-1. **Progress Tracking File**: `/tmp/command_progress.txt` stores state
+1. **Progress Tracking File**: `/tmp/command-progress.txt` stores state
    - Command name and start time
    - Total step count
    - STEP_N=complete/pending for each step

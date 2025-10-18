@@ -11,7 +11,7 @@ COMMAND_NAME=${1:-"command"}
 MODE=${2:-""}  # Can be --verbose or --compact
 
 # Tracking file
-TRACKING_FILE="/tmp/${COMMAND_NAME}_progress.txt"
+TRACKING_FILE="/tmp/${COMMAND_NAME}-progress.txt"
 
 # Check if tracking file exists
 if [ ! -f "$TRACKING_FILE" ]; then

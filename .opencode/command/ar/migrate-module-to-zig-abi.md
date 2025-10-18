@@ -27,7 +27,7 @@ make checkpoint-status CMD=migrate-module-to-zig-abi VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/migrate_module_to_zig_abi_progress.txt ]; then
+if [ ! -f /tmp/migrate_module_to_zig_abi-progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
   make checkpoint-init CMD=migrate-module-to-zig-abi STEPS='"Check Existing" "Analyze Dependencies" "Identify Challenges" "Review API" "Create Zig File" "Map Types" "Implement Functions" "Run Tests" "Verify Memory" "Cleanup and Document"'
 else
@@ -38,7 +38,7 @@ fi
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/migrate_module_to_zig_abi_progress.txt ]; then
+if [ ! -f /tmp/migrate_module_to_zig_abi-progress.txt ]; then
   echo "❌ ERROR: Checkpoint tracking not initialized!"
   exit 1
 fi
@@ -59,7 +59,7 @@ make checkpoint-init CMD=migrate-module-to-zig-abi STEPS='"Check Existing" "Anal
 **Expected output:**
 ```
 📍 Starting: migrate-module-to-zig-abi (10 steps)
-📁 Tracking: /tmp/migrate-module-to-zig-abi_progress.txt
+📁 Tracking: /tmp/migrate-module-to-zig-abi-progress.txt
 → Run: make checkpoint-update CMD=migrate-module-to-zig-abi STEP=1
 ```
 

@@ -14,7 +14,7 @@ Without enforcement gates, users can accidentally skip critical steps, leading t
 COMMAND_NAME=$1
 GATE_NAME=$2
 REQUIRED_STEPS=$3
-TRACKING_FILE="/tmp/${COMMAND_NAME}_progress.txt"
+TRACKING_FILE="/tmp/${COMMAND_NAME}-progress.txt"
 
 echo "========================================"
 echo "   GATE: $GATE_NAME"

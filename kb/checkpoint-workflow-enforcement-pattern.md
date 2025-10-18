@@ -48,7 +48,7 @@ Resume from the next pending step, or clean up and start fresh.
 **MANDATORY**: Before executing ANY steps, verify checkpoint tracking is initialized:
 
 \`\`\`bash
-if [ ! -f /tmp/[command_name]_progress.txt ]; then
+if [ ! -f /tmp/[command_name]-progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
   make checkpoint-init CMD=[command_name] STEPS='"[STEP 1]" "[STEP 2]"...'
 else
@@ -58,7 +58,7 @@ fi
 ```
 
 **What This Does**:
-- Checks for existing tracking file `/tmp/[command_name]_progress.txt`
+- Checks for existing tracking file `/tmp/[command_name]-progress.txt`
 - If file exists: shows current progress (allows resuming)
 - If missing: auto-initializes checkpoint tracking (forces setup)
 - Makes initialization explicit and unavoidable
@@ -71,7 +71,7 @@ fi
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 \`\`\`bash
-if [ ! -f /tmp/[command_name]_progress.txt ]; then
+if [ ! -f /tmp/[command_name]-progress.txt ]; then
   echo "❌ ERROR: Checkpoint tracking not initialized!"
   echo "STOP: Initialize tracking with the command above before proceeding."
   exit 1
@@ -135,7 +135,7 @@ Problem: User sees "CRITICAL" and "MANDATORY" but can ignore them and do manual 
 
 ### First-Time Initialization Check
 \`\`\`bash
-if [ ! -f /tmp/new-learnings_progress.txt ]; then
+if [ ! -f /tmp/new-learnings-progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
   make checkpoint-init CMD=new-learnings STEPS='...'
 fi
@@ -143,7 +143,7 @@ fi
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 \`\`\`bash
-if [ ! -f /tmp/new-learnings_progress.txt ]; then
+if [ ! -f /tmp/new-learnings-progress.txt ]; then
   echo "❌ ERROR: Checkpoint tracking not initialized!"
   exit 1
 fi
@@ -209,7 +209,7 @@ make checkpoint-gate CMD=new-learnings GATE="Final Commit Readiness" REQUIRED="1
 ...
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 \`\`\`bash
-if [ ! -f /tmp/[cmd]_progress.txt ]; then
+if [ ! -f /tmp/[cmd]-progress.txt ]; then
   echo "❌ ERROR: Cannot proceed without initialization"
   exit 1
 fi

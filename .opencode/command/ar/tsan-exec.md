@@ -9,26 +9,26 @@ Run thread sanitizer on the executable for detecting data races.
 If a `/tsan-exec` workflow is already in progress:
 
 ```bash
-make checkpoint-status CMD=tsan_exec VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=tsan_exec STEP=N
-# Or reset: make checkpoint-cleanup CMD=tsan_exec && make checkpoint-init CMD=tsan_exec STEPS='"Prepare" "Execute" "Verify"'
+make checkpoint-status CMD=tsan-exec VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=tsan-exec STEP=N
+# Or reset: make checkpoint-cleanup CMD=tsan-exec && make checkpoint-init CMD=tsan-exec STEPS='"Prepare" "Execute" "Verify"'
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/tsan_exec_progress.txt ]; then
+if [ ! -f /tmp/tsan_exec-progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=tsan_exec STEPS='"Prepare" "Execute" "Verify"'
+  make checkpoint-init CMD=tsan-exec STEPS='"Prepare" "Execute" "Verify"'
 else
-  make checkpoint-status CMD=tsan_exec
+  make checkpoint-status CMD=tsan-exec
 fi
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/tsan_exec_progress.txt ]; then
+if [ ! -f /tmp/tsan_exec-progress.txt ]; then
   echo "❌ ERROR: Checkpoint tracking not initialized!"
   exit 1
 fi
@@ -42,19 +42,19 @@ This command uses checkpoint tracking to ensure systematic execution and verific
 ### Initialize Tracking
 ```bash
 # Start the tsan exec process
-make checkpoint-init CMD=tsan_exec STEPS='"Prepare" "Execute" "Verify"'
+make checkpoint-init CMD=tsan-exec STEPS='"Prepare" "Execute" "Verify"'
 ```
 
 **Expected output:**
 ```
 📍 Starting: tsan_exec (3 steps)
-📁 Tracking: /tmp/tsan_exec_progress.txt
-→ Run: make checkpoint-update CMD=tsan_exec STEP=1
+📁 Tracking: /tmp/tsan_exec-progress.txt
+→ Run: make checkpoint-update CMD=tsan-exec STEP=1
 ```
 
 ### Check Progress
 ```bash
-make checkpoint-status CMD=tsan_exec
+make checkpoint-status CMD=tsan-exec
 ```
 
 **Expected output (example at 33% completion):**
@@ -91,7 +91,7 @@ For example, if agents share a message queue, it needs proper locking.
 #### [EXECUTION GATE]
 ```bash
 # Verify ready to execute
-make checkpoint-gate CMD=tsan_exec GATE="Ready" REQUIRED="1"
+make checkpoint-gate CMD=tsan-exec GATE="Ready" REQUIRED="1"
 ```
 
 **Expected gate output:**
@@ -108,7 +108,7 @@ make checkpoint-gate CMD=tsan_exec GATE="Ready" REQUIRED="1"
 make tsan-exec 2>&1
 
 # Mark execution complete
-make checkpoint-update CMD=tsan_exec STEP=2
+make checkpoint-update CMD=tsan-exec STEP=2
 ```
 
 

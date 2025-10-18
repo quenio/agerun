@@ -14,8 +14,8 @@ WORK_SUMMARY=${4:-""}
 STATUS="complete"
 
 # Tracking files
-TRACKING_FILE="/tmp/${COMMAND_NAME}_progress.txt"
-AUDIT_FILE="/tmp/${COMMAND_NAME}_audit.txt"
+TRACKING_FILE="/tmp/${COMMAND_NAME}-progress.txt"
+AUDIT_FILE="/tmp/${COMMAND_NAME}-audit.txt"
 
 # Check if tracking file exists
 if [ ! -f "$TRACKING_FILE" ]; then

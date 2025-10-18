@@ -22,7 +22,7 @@ make checkpoint-init CMD=my-command STEPS='"Step 1" "Step 2"'
 ========================================
 
 Command: my-command
-Tracking file: /tmp/my-command_progress.txt
+Tracking file: /tmp/my-command-progress.txt
 Total steps: 2
 
 Steps to complete:
@@ -32,7 +32,7 @@ Steps to complete:
 
 **Expected output when failing:**
 \`\`\`
-Error: Tracking file already exists: /tmp/my-command_progress.txt
+Error: Tracking file already exists: /tmp/my-command-progress.txt
 Run 'checkpoint-cleanup.sh my-command' to reset
 [Exit code: 1]
 \`\`\`

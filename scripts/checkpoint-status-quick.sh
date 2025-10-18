@@ -17,8 +17,8 @@ if [ -z "$COMMAND" ]; then
   exit 1
 fi
 
-# Convert command name to progress file format
-PROGRESS_FILE="/tmp/${COMMAND//-/_}_progress.txt"
+# Use command name directly in progress file format
+PROGRESS_FILE="/tmp/${COMMAND}-progress.txt"
 
 if [ ! -f "$PROGRESS_FILE" ]; then
   echo "⚠️ Checkpoint not initialized for '$COMMAND'"

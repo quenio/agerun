@@ -19,7 +19,7 @@ make checkpoint-status CMD=review-plan VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/review-plan_progress.txt ]; then
+if [ ! -f /tmp/review-plan-progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
   make checkpoint-init CMD=review-plan STEPS='"KB Consultation" "Read Plan and Extract PENDING" "Review Each Iteration" "Verify Cross-References" "Document Issues" "Generate Report"'
 else
@@ -30,7 +30,7 @@ fi
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/review-plan_progress.txt ]; then
+if [ ! -f /tmp/review-plan-progress.txt ]; then
   echo "❌ ERROR: Checkpoint tracking not initialized!"
   exit 1
 fi
@@ -175,7 +175,7 @@ This command uses checkpoint tracking to ensure thorough plan review across all 
 ========================================
 
 Command: review-plan
-Tracking file: /tmp/review-plan_progress.txt
+Tracking file: /tmp/review-plan-progress.txt
 Total steps: 6
 
 Steps to complete:
@@ -979,7 +979,7 @@ make checkpoint-init CMD=review-plan STEPS='...'
 ### If a gate is blocking incorrectly:
 ```bash
 # Manually check which steps are pending
-cat /tmp/review-plan_progress.txt
+cat /tmp/review-plan-progress.txt
 
 # Update a specific step if it was completed
 make checkpoint-update CMD=review-plan STEP=N

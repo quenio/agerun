@@ -9,10 +9,10 @@ set -e
 COMMAND_NAME=${1:-""}
 
 if [ -z "$COMMAND_NAME" ]; then
-    rm -f /tmp/*_progress.txt
+    rm -f /tmp/*-progress.txt
     echo "✓ All tracking files removed"
 else
-    TRACKING_FILE="/tmp/${COMMAND_NAME}_progress.txt"
+    TRACKING_FILE="/tmp/${COMMAND_NAME}-progress.txt"
     if [ -f "$TRACKING_FILE" ]; then
         rm -f "$TRACKING_FILE"
         echo "✓ Cleaned up: $COMMAND_NAME"

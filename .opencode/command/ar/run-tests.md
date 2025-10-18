@@ -13,9 +13,9 @@ Build and run all tests.
 If a `/run-tests` workflow is already in progress:
 
 ```bash
-make checkpoint-status CMD=run_tests VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=run_tests STEP=N
-# Or reset: make checkpoint-cleanup CMD=run_tests && make checkpoint-init CMD=run_tests STEPS='"Prepare" "Execute" "Verify"'
+make checkpoint-status CMD=run-tests VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=run-tests STEP=N
+# Or reset: make checkpoint-cleanup CMD=run-tests && make checkpoint-init CMD=run-tests STEPS='"Prepare" "Execute" "Verify"'
 ```
 
 ### First-Time Initialization Check
@@ -38,19 +38,19 @@ This command uses checkpoint tracking to ensure systematic execution and verific
 ### Initialize Tracking
 ```bash
 # Start the run tests process
-make checkpoint-init CMD=run_tests STEPS='"Prepare" "Execute" "Verify"'
+make checkpoint-init CMD=run-tests STEPS='"Prepare" "Execute" "Verify"'
 ```
 
 **Expected output:**
 ```
 📍 Starting: run_tests (3 steps)
-📁 Tracking: /tmp/run_tests_progress.txt
-→ Run: make checkpoint-update CMD=run_tests STEP=1
+📁 Tracking: /tmp/run_tests-progress.txt
+→ Run: make checkpoint-update CMD=run-tests STEP=1
 ```
 
 ### Check Progress
 ```bash
-make checkpoint-status CMD=run_tests
+make checkpoint-status CMD=run-tests
 ```
 
 **Expected output (example at 33% completion):**
@@ -72,7 +72,7 @@ make checkpoint-status CMD=run_tests
 #### [EXECUTION GATE]
 ```bash
 # Verify ready to execute
-make checkpoint-gate CMD=run_tests GATE="Ready" REQUIRED="1"
+make checkpoint-gate CMD=run-tests GATE="Ready" REQUIRED="1"
 ```
 
 **Expected gate output:**
@@ -89,7 +89,7 @@ make checkpoint-gate CMD=run_tests GATE="Ready" REQUIRED="1"
 make run-tests 2>&1
 
 # Mark execution complete
-make checkpoint-update CMD=run_tests STEP=2
+make checkpoint-update CMD=run-tests STEP=2
 ```
 
 

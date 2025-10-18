@@ -48,7 +48,7 @@ make checkpoint-status CMD=create-command VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/create_command_progress.txt ]; then
+if [ ! -f /tmp/create_command-progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
   make checkpoint-init CMD=create-command STEPS='"Validate Args" "KB Consultation" "Create Structure" "Add Checkpoints" "Add Quality Gates" "Add Documentation" "Verify Excellence"'
 else
@@ -59,7 +59,7 @@ fi
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/create_command_progress.txt ]; then
+if [ ! -f /tmp/create_command-progress.txt ]; then
   echo "❌ ERROR: Checkpoint tracking not initialized!"
   exit 1
 fi
@@ -80,7 +80,7 @@ make checkpoint-init CMD=create-command STEPS='"Validate Args" "KB Consultation"
 **Expected output:**
 ```
 📍 Starting: create-command (7 steps)
-📁 Tracking: /tmp/create-command_progress.txt
+📁 Tracking: /tmp/create-command-progress.txt
 → Run: make checkpoint-update CMD=create-command STEP=1
 ```
 
@@ -230,7 +230,7 @@ make checkpoint-status CMD=COMMAND_NAME VERBOSE=--verbose
 ### First-Time Initialization Check
 
 \`\`\`bash
-if [ ! -f /tmp/COMMAND_NAME_progress.txt ]; then
+if [ ! -f /tmp/COMMAND_NAME-progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
   make checkpoint-init CMD=COMMAND_NAME STEPS='"Step 1" "Step 2" "Step 3"'
 else
@@ -241,7 +241,7 @@ fi
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 \`\`\`bash
-if [ ! -f /tmp/COMMAND_NAME_progress.txt ]; then
+if [ ! -f /tmp/COMMAND_NAME-progress.txt ]; then
   echo "❌ ERROR: Checkpoint tracking not initialized!"
   exit 1
 fi
@@ -262,7 +262,7 @@ make checkpoint-init CMD=COMMAND_NAME STEPS='"Step 1" "Step 2" "Step 3"'
 **Expected output:**
 \`\`\`
 📍 Starting: COMMAND_NAME (3 steps)
-📁 Tracking: /tmp/COMMAND_NAME_progress.txt
+📁 Tracking: /tmp/COMMAND_NAME-progress.txt
 → Run: make checkpoint-update CMD=COMMAND_NAME STEP=1
 \`\`\`
 

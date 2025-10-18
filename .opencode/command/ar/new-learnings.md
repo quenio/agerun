@@ -154,7 +154,7 @@ This is enforced through:
 # Skipping the structured KB cross-reference updates in Steps 6-7
 
 # ❌ WRONG: Ignoring existing in-progress workflows
-# See /tmp/new-learnings_progress.txt has pending steps
+# See /tmp/new-learnings-progress.txt has pending steps
 # Decide "I'll just do it manually this time"
 # Result: Checkpoint system never reflects actual work done
 ```
@@ -176,7 +176,7 @@ make checkpoint-status CMD=new-learnings
 # Step 11 verifies "READY TO COMMIT" with counts of modified files
 
 # ✅ Always run the initialization check if unsure
-if [ ! -f /tmp/new-learnings_progress.txt ]; then
+if [ ! -f /tmp/new-learnings-progress.txt ]; then
   make checkpoint-init CMD=new-learnings STEPS='"Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"'
 fi
 ```
@@ -201,7 +201,7 @@ Verify that checkpoint tracking is initialized by running:
 
 ```bash
 # Check tracking file exists and shows pending steps
-if [ -f /tmp/new-learnings_progress.txt ]; then
+if [ -f /tmp/new-learnings-progress.txt ]; then
   make checkpoint-status CMD=new-learnings
   # Should show progress bar and pending steps
 else
@@ -840,7 +840,7 @@ Step Details:
 
 ✅ ALL STEPS COMPLETE!
 
-✓ Tracking file removed: /tmp/new-learnings_progress.txt
+✓ Tracking file removed: /tmp/new-learnings-progress.txt
 
 ✅ NEW LEARNINGS COMMAND FULLY COMPLETED!
 ```

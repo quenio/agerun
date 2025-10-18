@@ -17,7 +17,7 @@ if [ ${#STEPS[@]} -eq 0 ]; then
 fi
 
 # Create tracking file
-TRACKING_FILE="/tmp/${COMMAND_NAME}_progress.txt"
+TRACKING_FILE="/tmp/${COMMAND_NAME}-progress.txt"
 
 # Initialize tracking file with steps
 {

@@ -20,26 +20,26 @@ Before checking:
 If a `/check-naming` workflow is already in progress:
 
 ```bash
-make checkpoint-status CMD=check_naming VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=check_naming STEP=N
-# Or reset: make checkpoint-cleanup CMD=check_naming && make checkpoint-init CMD=check_naming STEPS='"Prepare" "Execute" "Verify"'
+make checkpoint-status CMD=check-naming VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=check-naming STEP=N
+# Or reset: make checkpoint-cleanup CMD=check-naming && make checkpoint-init CMD=check-naming STEPS='"Prepare" "Execute" "Verify"'
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/check_naming_progress.txt ]; then
+if [ ! -f /tmp/check-naming-progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=check_naming STEPS='"Prepare" "Execute" "Verify"'
+  make checkpoint-init CMD=check-naming STEPS='"Prepare" "Execute" "Verify"'
 else
-  make checkpoint-status CMD=check_naming
+  make checkpoint-status CMD=check-naming
 fi
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/check_naming_progress.txt ]; then
+if [ ! -f /tmp/check-naming-progress.txt ]; then
   echo "❌ ERROR: Checkpoint tracking not initialized!"
   exit 1
 fi
@@ -53,19 +53,19 @@ This command uses checkpoint tracking to ensure systematic execution and verific
 ### Initialize Tracking
 ```bash
 # Start the check naming process
-make checkpoint-init CMD=check_naming STEPS='"Prepare" "Execute" "Verify"'
+make checkpoint-init CMD=check-naming STEPS='"Prepare" "Execute" "Verify"'
 ```
 
 **Expected output:**
 ```
-📍 Starting: check_naming (3 steps)
-📁 Tracking: /tmp/check_naming_progress.txt
-→ Run: make checkpoint-update CMD=check_naming STEP=1
+📍 Starting: check-naming (3 steps)
+📁 Tracking: /tmp/check-naming-progress.txt
+→ Run: make checkpoint-update CMD=check-naming STEP=1
 ```
 
 ### Check Progress
 ```bash
-make checkpoint-status CMD=check_naming
+make checkpoint-status CMD=check-naming
 ```
 
 **Expected output (example at 33% completion):**
@@ -104,7 +104,7 @@ For example: `ar_data_create()` should be `ar_data__create_integer()`
 #### [EXECUTION GATE]
 ```bash
 # Verify ready to execute
-make checkpoint-gate CMD=check_naming GATE="Ready" REQUIRED="1"
+make checkpoint-gate CMD=check-naming GATE="Ready" REQUIRED="1"
 ```
 
 **Expected gate output:**
@@ -121,7 +121,7 @@ make checkpoint-gate CMD=check_naming GATE="Ready" REQUIRED="1"
 make check-naming
 
 # Mark execution complete
-make checkpoint-update CMD=check_naming STEP=2
+make checkpoint-update CMD=check-naming STEP=2
 ```
 
 

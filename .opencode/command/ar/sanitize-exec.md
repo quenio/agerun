@@ -9,26 +9,26 @@ Run address sanitizer on the executable for detecting memory issues.
 If a `/sanitize-exec` workflow is already in progress:
 
 ```bash
-make checkpoint-status CMD=sanitize_exec VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=sanitize_exec STEP=N
-# Or reset: make checkpoint-cleanup CMD=sanitize_exec && make checkpoint-init CMD=sanitize_exec STEPS='"Prepare" "Execute" "Verify"'
+make checkpoint-status CMD=sanitize-exec VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=sanitize-exec STEP=N
+# Or reset: make checkpoint-cleanup CMD=sanitize-exec && make checkpoint-init CMD=sanitize-exec STEPS='"Prepare" "Execute" "Verify"'
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/sanitize_exec_progress.txt ]; then
+if [ ! -f /tmp/sanitize_exec-progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=sanitize_exec STEPS='"Prepare" "Execute" "Verify"'
+  make checkpoint-init CMD=sanitize-exec STEPS='"Prepare" "Execute" "Verify"'
 else
-  make checkpoint-status CMD=sanitize_exec
+  make checkpoint-status CMD=sanitize-exec
 fi
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/sanitize_exec_progress.txt ]; then
+if [ ! -f /tmp/sanitize_exec-progress.txt ]; then
   echo "❌ ERROR: Checkpoint tracking not initialized!"
   exit 1
 fi
@@ -42,19 +42,19 @@ This command uses checkpoint tracking to ensure systematic execution and verific
 ### Initialize Tracking
 ```bash
 # Start the sanitize exec process
-make checkpoint-init CMD=sanitize_exec STEPS='"Prepare" "Execute" "Verify"'
+make checkpoint-init CMD=sanitize-exec STEPS='"Prepare" "Execute" "Verify"'
 ```
 
 **Expected output:**
 ```
 📍 Starting: sanitize_exec (3 steps)
-📁 Tracking: /tmp/sanitize_exec_progress.txt
-→ Run: make checkpoint-update CMD=sanitize_exec STEP=1
+📁 Tracking: /tmp/sanitize_exec-progress.txt
+→ Run: make checkpoint-update CMD=sanitize-exec STEP=1
 ```
 
 ### Check Progress
 ```bash
-make checkpoint-status CMD=sanitize_exec
+make checkpoint-status CMD=sanitize-exec
 ```
 
 **Expected output (example at 33% completion):**
@@ -92,7 +92,7 @@ For example: "heap-use-after-free" means you're accessing freed memory.
 #### [EXECUTION GATE]
 ```bash
 # Verify ready to execute
-make checkpoint-gate CMD=sanitize_exec GATE="Ready" REQUIRED="1"
+make checkpoint-gate CMD=sanitize-exec GATE="Ready" REQUIRED="1"
 ```
 
 **Expected gate output:**
@@ -109,7 +109,7 @@ make checkpoint-gate CMD=sanitize_exec GATE="Ready" REQUIRED="1"
 make sanitize-exec 2>&1
 
 # Mark execution complete
-make checkpoint-update CMD=sanitize_exec STEP=2
+make checkpoint-update CMD=sanitize-exec STEP=2
 ```
 
 

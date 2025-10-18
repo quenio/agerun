@@ -12,7 +12,7 @@ STEP_NUMBER=${2:-1}
 STATUS=${3:-"complete"}
 
 # Tracking file
-TRACKING_FILE="/tmp/${COMMAND_NAME}_progress.txt"
+TRACKING_FILE="/tmp/${COMMAND_NAME}-progress.txt"
 
 # Check if tracking file exists
 if [ ! -f "$TRACKING_FILE" ]; then

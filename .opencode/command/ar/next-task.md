@@ -17,26 +17,26 @@ Before starting task execution, search KB for relevant patterns ([details](../..
 If a `/next-task` workflow is already in progress:
 
 ```bash
-make checkpoint-status CMD=next_task VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=next_task STEP=N
-# Or reset: make checkpoint-cleanup CMD=next_task && make checkpoint-init CMD=next_task STEPS='"Prepare" "Execute" "Verify"'
+make checkpoint-status CMD=next-task VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=next-task STEP=N
+# Or reset: make checkpoint-cleanup CMD=next-task && make checkpoint-init CMD=next-task STEPS='"Prepare" "Execute" "Verify"'
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/next_task_progress.txt ]; then
+if [ ! -f /tmp/next_task-progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=next_task STEPS='"Prepare" "Execute" "Verify"'
+  make checkpoint-init CMD=next-task STEPS='"Prepare" "Execute" "Verify"'
 else
-  make checkpoint-status CMD=next_task
+  make checkpoint-status CMD=next-task
 fi
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/next_task_progress.txt ]; then
+if [ ! -f /tmp/next_task-progress.txt ]; then
   echo "❌ ERROR: Checkpoint tracking not initialized!"
   exit 1
 fi
@@ -50,19 +50,19 @@ This command uses checkpoint tracking to ensure systematic execution and verific
 ### Initialize Tracking
 ```bash
 # Start the next task process
-make checkpoint-init CMD=next_task STEPS='"Prepare" "Execute" "Verify"'
+make checkpoint-init CMD=next-task STEPS='"Prepare" "Execute" "Verify"'
 ```
 
 **Expected output:**
 ```
 📍 Starting: next_task (3 steps)
-📁 Tracking: /tmp/next_task_progress.txt
-→ Run: make checkpoint-update CMD=next_task STEP=1
+📁 Tracking: /tmp/next_task-progress.txt
+→ Run: make checkpoint-update CMD=next-task STEP=1
 ```
 
 ### Check Progress
 ```bash
-make checkpoint-status CMD=next_task
+make checkpoint-status CMD=next-task
 ```
 
 **Expected output (example at 33% completion):**

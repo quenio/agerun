@@ -27,7 +27,7 @@ make checkpoint-status CMD=fix-errors-whitelisted VERBOSE=--verbose
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/fix_errors_whitelisted_progress.txt ]; then
+if [ ! -f /tmp/fix_errors_whitelisted-progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
   make checkpoint-init CMD=fix-errors-whitelisted STEPS='"Count Errors" "Group by Test" "Find Patterns" "Select Target" "Analyze Root Cause" "Choose Strategy" "Plan Implementation" "Verify Current State" "Apply Fix" "Test Fix" "Remove Whitelist Entries" "Update Whitelist Total" "Update TODO.md" "Update CHANGELOG" "Final Verification" "Create Commit"'
 else
@@ -38,7 +38,7 @@ fi
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/fix_errors_whitelisted_progress.txt ]; then
+if [ ! -f /tmp/fix_errors_whitelisted-progress.txt ]; then
   echo "❌ ERROR: Checkpoint tracking not initialized!"
   exit 1
 fi
@@ -58,7 +58,7 @@ make checkpoint-init CMD=fix-errors-whitelisted STEPS='"Count Errors" "Group by 
 **Expected output:**
 ```
 📍 Starting: fix-errors-whitelisted (16 steps)
-📁 Tracking: /tmp/fix-errors-whitelisted_progress.txt
+📁 Tracking: /tmp/fix-errors-whitelisted-progress.txt
 → Run: make checkpoint-update CMD=fix-errors-whitelisted STEP=1
 ```
 

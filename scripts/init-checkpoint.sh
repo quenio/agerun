@@ -17,8 +17,8 @@ if [ -z "$COMMAND" ] || [ -z "$STEPS" ]; then
   exit 1
 fi
 
-# Convert command name to progress file format (hyphens to underscores, lowercase)
-PROGRESS_FILE="/tmp/${COMMAND//-/_}_progress.txt"
+# Use command name as-is (with dashes, following script naming convention)
+PROGRESS_FILE="/tmp/${COMMAND}-progress.txt"
 
 # Check if already initialized
 if [ -f "$PROGRESS_FILE" ]; then

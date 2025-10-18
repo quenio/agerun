@@ -9,9 +9,9 @@ Run address sanitizer on all tests for detecting memory issues.
 If a `/sanitize-tests` workflow is already in progress:
 
 ```bash
-make checkpoint-status CMD=sanitize_tests VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=sanitize_tests STEP=N
-# Or reset: make checkpoint-cleanup CMD=sanitize_tests && make checkpoint-init CMD=sanitize_tests STEPS='"Prepare" "Execute" "Verify"'
+make checkpoint-status CMD=sanitize-tests VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=sanitize-tests STEP=N
+# Or reset: make checkpoint-cleanup CMD=sanitize-tests && make checkpoint-init CMD=sanitize-tests STEPS='"Prepare" "Execute" "Verify"'
 ```
 
 ### First-Time Initialization Check
@@ -34,19 +34,19 @@ This command uses checkpoint tracking to ensure systematic execution and verific
 ### Initialize Tracking
 ```bash
 # Start the sanitize tests process
-make checkpoint-init CMD=sanitize_tests STEPS='"Prepare" "Execute" "Verify"'
+make checkpoint-init CMD=sanitize-tests STEPS='"Prepare" "Execute" "Verify"'
 ```
 
 **Expected output:**
 ```
 📍 Starting: sanitize_tests (3 steps)
-📁 Tracking: /tmp/sanitize_tests_progress.txt
-→ Run: make checkpoint-update CMD=sanitize_tests STEP=1
+📁 Tracking: /tmp/sanitize_tests-progress.txt
+→ Run: make checkpoint-update CMD=sanitize-tests STEP=1
 ```
 
 ### Check Progress
 ```bash
-make checkpoint-status CMD=sanitize_tests
+make checkpoint-status CMD=sanitize-tests
 ```
 
 **Expected output (example at 33% completion):**
@@ -68,7 +68,7 @@ make checkpoint-status CMD=sanitize_tests
 #### [EXECUTION GATE]
 ```bash
 # Verify ready to execute
-make checkpoint-gate CMD=sanitize_tests GATE="Ready" REQUIRED="1"
+make checkpoint-gate CMD=sanitize-tests GATE="Ready" REQUIRED="1"
 ```
 
 **Expected gate output:**
@@ -85,7 +85,7 @@ make checkpoint-gate CMD=sanitize_tests GATE="Ready" REQUIRED="1"
 make sanitize-tests 2>&1
 
 # Mark execution complete
-make checkpoint-update CMD=sanitize_tests STEP=2
+make checkpoint-update CMD=sanitize-tests STEP=2
 ```
 
 
@@ -155,7 +155,7 @@ SUMMARY: AddressSanitizer: heap-buffer-overflow
 #### [CHECKPOINT COMPLETE]
 ```bash
 # Show final summary
-make checkpoint-status CMD=sanitize_tests
+make checkpoint-status CMD=sanitize-tests
 ```
 
 **Expected completion output:**
@@ -180,7 +180,7 @@ The sanitize tests completed successfully!
 
 ```bash
 # Clean up tracking
-make checkpoint-cleanup CMD=sanitize_tests
+make checkpoint-cleanup CMD=sanitize-tests
 ```
 
 ## Key Points

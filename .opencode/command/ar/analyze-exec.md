@@ -9,26 +9,26 @@ Run static analysis on the executable code.
 If a `/analyze-exec` workflow is already in progress:
 
 ```bash
-make checkpoint-status CMD=analyze_exec VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=analyze_exec STEP=N
-# Or reset: make checkpoint-cleanup CMD=analyze_exec && make checkpoint-init CMD=analyze_exec STEPS='"Prepare" "Execute" "Verify"'
+make checkpoint-status CMD=analyze-exec VERBOSE=--verbose
+# Resume: make checkpoint-update CMD=analyze-exec STEP=N
+# Or reset: make checkpoint-cleanup CMD=analyze-exec && make checkpoint-init CMD=analyze-exec STEPS='"Prepare" "Execute" "Verify"'
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-if [ ! -f /tmp/analyze_exec_progress.txt ]; then
+if [ ! -f /tmp/analyze_exec-progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=analyze_exec STEPS='"Prepare" "Execute" "Verify"'
+  make checkpoint-init CMD=analyze-exec STEPS='"Prepare" "Execute" "Verify"'
 else
-  make checkpoint-status CMD=analyze_exec
+  make checkpoint-status CMD=analyze-exec
 fi
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-if [ ! -f /tmp/analyze_exec_progress.txt ]; then
+if [ ! -f /tmp/analyze_exec-progress.txt ]; then
   echo "❌ ERROR: Checkpoint tracking not initialized!"
   exit 1
 fi
@@ -42,19 +42,19 @@ This command uses checkpoint tracking to ensure systematic execution and verific
 ### Initialize Tracking
 ```bash
 # Start the analyze exec process
-make checkpoint-init CMD=analyze_exec STEPS='"Prepare" "Execute" "Verify"'
+make checkpoint-init CMD=analyze-exec STEPS='"Prepare" "Execute" "Verify"'
 ```
 
 **Expected output:**
 ```
 📍 Starting: analyze_exec (3 steps)
-📁 Tracking: /tmp/analyze_exec_progress.txt
-→ Run: make checkpoint-update CMD=analyze_exec STEP=1
+📁 Tracking: /tmp/analyze_exec-progress.txt
+→ Run: make checkpoint-update CMD=analyze-exec STEP=1
 ```
 
 ### Check Progress
 ```bash
-make checkpoint-status CMD=analyze_exec
+make checkpoint-status CMD=analyze-exec
 ```
 
 **Expected output (example at 33% completion):**
@@ -91,7 +91,7 @@ make checkpoint-status CMD=analyze_exec
 #### [EXECUTION GATE]
 ```bash
 # Verify ready to execute
-make checkpoint-gate CMD=analyze_exec GATE="Ready" REQUIRED="1"
+make checkpoint-gate CMD=analyze-exec GATE="Ready" REQUIRED="1"
 ```
 
 **Expected gate output:**
@@ -108,7 +108,7 @@ make checkpoint-gate CMD=analyze_exec GATE="Ready" REQUIRED="1"
 make analyze-exec 2>&1
 
 # Mark execution complete
-make checkpoint-update CMD=analyze_exec STEP=2
+make checkpoint-update CMD=analyze-exec STEP=2
 ```
 
 

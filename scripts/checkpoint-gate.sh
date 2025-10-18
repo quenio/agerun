@@ -11,7 +11,7 @@ GATE_NAME=${2:-"Gate"}
 REQUIRED_STEPS=${3:-"1"}
 
 # Tracking file
-TRACKING_FILE="/tmp/${COMMAND_NAME}_progress.txt"
+TRACKING_FILE="/tmp/${COMMAND_NAME}-progress.txt"
 
 # Check if tracking file exists
 if [ ! -f "$TRACKING_FILE" ]; then
