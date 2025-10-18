@@ -35,16 +35,35 @@ The `run-check-docs.sh` script uses the following standardized wrapper scripts:
 
 These wrappers provide centralized checkpoint management across all commands.
 
-## Workflow Execution
+## Initialization
 
-Initialize checkpoint tracking:
+**MANDATORY**: Before executing ANY steps, you MUST initialize checkpoint tracking:
 
 ```bash
 ./scripts/init-checkpoint.sh check-docs '"Validate Docs" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"'
 ./scripts/require-checkpoint.sh check-docs
 ```
 
+**Expected output:**
+```
+✅ Checkpoint tracking initialized for check-docs
+```
+
+## Progress Check
+
+Check current progress at any time:
+
+```bash
+./scripts/status-checkpoint.sh check-docs
+```
+
+## Workflow Execution
+
+#### [CHECKPOINT START - STAGE 1]
+
 #### Step 1: Validate Docs
+
+#### [CHECKPOINT START - STEP 1]
 
 ```bash
 ./scripts/validate-docs.sh
@@ -54,7 +73,16 @@ Runs `make check-docs` to identify all documentation errors and saves error coun
 
 **Expected output**: Shows validation results and saves ERROR_COUNT to stats file.
 
+#### [CHECKPOINT END - STEP 1]
+```bash
+./scripts/checkpoint-update.sh check-docs 1
+```
+
+#### [CHECKPOINT END - STAGE 1]
+
 #### Step 2: Conditional Flow (Error Gate)
+
+#### [CHECKPOINT START - STEP 2]
 
 If no errors found, skip to Step 5. If errors found, continue to Step 3.
 
@@ -62,15 +90,21 @@ If no errors found, skip to Step 5. If errors found, continue to Step 3.
 # Check error count to decide flow
 source /tmp/check-docs-stats.txt 2>/dev/null || ERROR_COUNT=0
 if [ $ERROR_COUNT -eq 0 ]; then
-  ./scripts/update-checkpoint.sh check-docs STEP=2
-  ./scripts/update-checkpoint.sh check-docs STEP=3
-  ./scripts/update-checkpoint.sh check-docs STEP=4
+  ./scripts/checkpoint-update.sh check-docs 2
+  ./scripts/checkpoint-update.sh check-docs 3
+  ./scripts/checkpoint-update.sh check-docs 4
 else
   ./scripts/gate-checkpoint.sh check-docs "Errors Found" "1"
 fi
 ```
 
+#### [CHECKPOINT END - STEP 2]
+
+#### [CHECKPOINT START - STAGE 2]
+
 #### Step 3: Preview Fixes
+
+#### [CHECKPOINT START - STEP 3]
 
 ```bash
 ./scripts/preview-doc-fixes.sh
@@ -80,7 +114,14 @@ Runs `python3 scripts/batch_fix_docs.py --dry-run` to preview changes before app
 
 **Expected output**: Shows preview of proposed fixes.
 
+#### [CHECKPOINT END - STEP 3]
+```bash
+./scripts/checkpoint-update.sh check-docs 3
+```
+
 #### Step 4: Apply Fixes
+
+#### [CHECKPOINT START - STEP 4]
 
 ```bash
 ./scripts/apply-doc-fixes.sh
@@ -90,7 +131,18 @@ Runs the batch fix script to fix all identified documentation errors (only if er
 
 **Expected output**: Shows count of fixed documentation files.
 
+#### [CHECKPOINT END - STEP 4]
+```bash
+./scripts/checkpoint-update.sh check-docs 4
+```
+
+#### [CHECKPOINT END - STAGE 2]
+
+#### [CHECKPOINT START - STAGE 3]
+
 #### Step 5: Verify Resolution
+
+#### [CHECKPOINT START - STEP 5]
 
 ```bash
 ./scripts/verify-docs.sh
@@ -100,13 +152,22 @@ Runs `make check-docs` again to verify all fixes were successful.
 
 **Expected output**: Shows final validation results (PASS or PARTIAL).
 
+#### [CHECKPOINT END - STEP 5]
+```bash
+./scripts/checkpoint-update.sh check-docs 5
+```
+
+#### [CHECKPOINT END - STAGE 3]
+
 #### [CHECKPOINT COMPLETE - Resolution Gate]
 
 ```bash
-./scripts/gate-checkpoint.sh check-docs "Resolution" "4"
+./scripts/gate-checkpoint.sh check-docs "Resolution" "5"
 ```
 
 #### Step 6: Commit and Push
+
+#### [CHECKPOINT START - STEP 6]
 
 ```bash
 ./scripts/commit-docs.sh
@@ -117,6 +178,11 @@ Stages, commits, and pushes all documentation fixes.
 **Expected output**:
 ```
 ✅ Documentation fixes committed and pushed
+```
+
+#### [CHECKPOINT END - STEP 6]
+```bash
+./scripts/checkpoint-update.sh check-docs 6
 ```
 
 #### [CHECKPOINT COMPLETE]
@@ -139,10 +205,10 @@ Only use these commands if the script fails and you need to manually intervene:
 
 ```bash
 # Check current progress (if workflow interrupted)
-make checkpoint-status CMD=check-docs VERBOSE=--verbose
+./scripts/status-checkpoint.sh check-docs VERBOSE=--verbose
 
 # Resume from a specific step (only if you know it's stuck)
-make checkpoint-update CMD=check-docs STEP=N
+./scripts/checkpoint-update.sh check-docs N
 
 # ONLY use this if you need to reset everything and start over
 rm -f /tmp/check-docs-progress.txt
