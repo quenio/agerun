@@ -23,32 +23,22 @@ Before checking:
 
 This command uses checkpoint tracking to ensure systematic execution of all naming convention validation steps.
 
-### Checkpoint Wrapper Scripts
-
-The command uses the following standardized wrapper scripts:
-
-- **`./scripts/init-checkpoint.sh`**: Initializes or resumes checkpoint tracking
-- **`./scripts/require-checkpoint.sh`**: Verifies checkpoint is ready before proceeding
-- **`./scripts/gate-checkpoint.sh`**: Validates gate conditions at workflow boundaries
-- **`./scripts/complete-checkpoint.sh`**: Shows completion summary and cleanup
-
-These wrappers provide centralized checkpoint management across all commands.
-
-## Initialize Progress Tracking
-
-**MANDATORY**: Before executing ANY steps, you MUST initialize checkpoint tracking:
+### Initialize Tracking
 
 ```bash
-./scripts/init-checkpoint.sh check-naming '"Check Naming" "Analyze Violations" "Document Findings"'
+# Start the naming check process with 3 steps
+./scripts/init-checkpoint.sh check-naming '"Check Naming" "Analyze Violations" "Complete"'
 ./scripts/require-checkpoint.sh check-naming
 ```
 
 **Expected output:**
 ```
 ✅ Checkpoint tracking initialized for check-naming
+📍 Starting: check-naming (3 steps)
+📁 Tracking: /tmp/check-naming-progress.txt
 ```
 
-## Check Progress
+### Check Progress
 
 Check current progress at any time:
 
@@ -72,19 +62,12 @@ Check current progress at any time:
 #### [CHECKPOINT START - STEP 1]
 
 ```bash
-if make check-naming 2>&1 | tee /tmp/check-naming-output.txt; then
-  echo "✅ All naming conventions are correct!"
-  echo "VIOLATION_COUNT=0" > /tmp/check-naming-stats.txt
-else
-  VIOLATION_COUNT=$(grep -E "ERROR|Invalid|violation" /tmp/check-naming-output.txt | wc -l || echo "0")
-  echo "⚠️ Found $VIOLATION_COUNT naming violations"
-  echo "VIOLATION_COUNT=$VIOLATION_COUNT" > /tmp/check-naming-stats.txt
-fi
+./scripts/run-naming-check.sh
 ```
 
-Runs `make check-naming` to validate all naming conventions and save violation count.
+Runs naming convention validation and captures violation count for conditional workflow logic.
 
-**Expected output**: Shows validation results and saves VIOLATION_COUNT to stats file.
+**Expected output**: Shows validation results and saves VIOLATION_COUNT to /tmp/check-naming-stats.txt
 
 #### [CHECKPOINT END - STEP 1]
 ```bash
@@ -100,13 +83,7 @@ Runs `make check-naming` to validate all naming conventions and save violation c
 If no violations found, skip Step 3. If violations found, continue to analysis.
 
 ```bash
-# Check violation count to decide flow
-source /tmp/check-naming-stats.txt 2>/dev/null || VIOLATION_COUNT=0
-if [ $VIOLATION_COUNT -eq 0 ]; then
-  ./scripts/checkpoint-update.sh check-naming 2
-else
-  ./scripts/gate-checkpoint.sh check-naming "Violations Found" "1"
-fi
+./scripts/check-naming-conditional-flow.sh
 ```
 
 #### [CHECKPOINT END - STEP 2]
