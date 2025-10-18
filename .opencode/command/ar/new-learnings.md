@@ -6,16 +6,19 @@ Analyze session for new learnings and create properly validated kb articles.
 
 ### In-Progress Workflow Detection
 
-If a `/new-learnings` workflow is already in progress, you have two options:
+Check if a `/new-learnings` workflow is already in progress:
+
+```bash
+./scripts/check-new-learnings-checkpoint.sh
+```
+
+If checkpoint exists, you have two options:
 
 **Option 1: Resume the workflow** (RECOMMENDED)
 ```bash
-# Check current progress
-./scripts/status-checkpoint.sh new-learnings VERBOSE=--verbose
-
 # Resume from the next pending step
-# Example: if Step 4 is pending, run:
-./scripts/update-checkpoint.sh new-learnings STEP=4
+./scripts/status-checkpoint.sh new-learnings VERBOSE=--verbose
+# Then run the appropriate step number shown in output
 ```
 
 **Option 2: Start fresh** (only if you want to discard previous progress)
@@ -24,7 +27,7 @@ If a `/new-learnings` workflow is already in progress, you have two options:
 ./scripts/cleanup-checkpoint.sh new-learnings
 
 # Then re-initialize for fresh start
-./scripts/init-checkpoint.sh new-learnings STEPS='"Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate Commands with check-commands" "Update CHANGELOG.md" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"'
+./scripts/init-checkpoint.sh new-learnings STEPS='"Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"'
 ```
 
 **CRITICAL**: If in-progress workflow exists with pending steps, **DO NOT PERFORM MANUAL KB UPDATES**. The checkpoint system will enforce all quality requirements and ensure no steps are skipped.
