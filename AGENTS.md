@@ -392,7 +392,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 ### 9. Bash Script Generation Guidelines
 
 **Exit Code Handling**:
-- **Use `set -o pipefail` for piped commands**: When capturing exit codes from commands that use pipes (e.g., `command | tee file`), add `set -o pipefail` at the start of the script. This ensures the exit code reflects the actual command failure, not the success of the piping utility ([details](kb/bash-exit-code-pipefail-pattern.md))
+- **Use `set -o pipefail` for piped commands**: When capturing exit codes from commands that use pipes (e.g., `command | tee file`), add `set -o pipefail` at the start of the script. This ensures the exit code reflects the actual command failure, not the success of the piping utility ([details](kb/bash-command-parsing-patterns.md))
 - **Capture exit codes immediately**: Store `$?` right after the target command completes. Don't run additional commands between the target command and the `$?` capture, as `$?` only reflects the last executed command's exit code
 - **Avoid piping for critical exit codes**: When accurate exit codes are required, run the command normally, capture the exit code, then handle logging separately. Only use pipes like `tee` when the exit code is not critical
 

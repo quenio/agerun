@@ -1464,11 +1464,11 @@ static void test_[function]__[behavior](void) {
 [... more iterations ...]
 
 ## Related Patterns
-- [TDD Iteration Planning Pattern](../../kb/tdd-iteration-planning-pattern.md)
-- [TDD GREEN Phase Minimalism](../../kb/tdd-green-phase-minimalism.md)
-- [Temporary Test Cleanup Pattern](../../kb/temporary-test-cleanup-pattern.md)
-- [BDD Test Structure](../../kb/bdd-test-structure.md)
-- [Ownership Naming Conventions](../../kb/ownership-naming-conventions.md)
+- [TDD Iteration Planning Pattern](../../../kb/tdd-iteration-planning-pattern.md)
+- [TDD GREEN Phase Minimalism](../../../kb/tdd-green-phase-minimalism.md)
+- [Temporary Test Cleanup Pattern](../../../kb/temporary-test-cleanup-pattern.md)
+- [BDD Test Structure](../../../kb/bdd-test-structure.md)
+- [Ownership Naming Conventions](../../../kb/ownership-naming-conventions.md)
 ```
 
 ## Quality Indicators (All 14 TDD Lessons)
