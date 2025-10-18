@@ -4,24 +4,11 @@ Read AGENTS.md in order to prepare yourself for this new session. Then, suggest 
 
 **CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
 
-### In-Progress Workflow Detection
+## Initialization
 
-If a `/next-priority` workflow is already in progress:
+This command requires checkpoint tracking to ensure systematic workflow execution.
 
-```bash
-# Check current progress
-./scripts/status-checkpoint.sh next-priority
-```
-
-Resume from the next pending step, or clean up and start fresh:
-```bash
-./scripts/cleanup-checkpoint.sh next-priority
-./scripts/init-checkpoint.sh next-priority '"Read Context" "Analyze Priorities" "Generate Recommendation"'
-```
-
-### First-Time Initialization Check
-
-**MANDATORY**: Before executing ANY steps, initialize checkpoint tracking:
+### Initialize Tracking
 
 ```bash
 ./scripts/init-checkpoint.sh next-priority '"Read Context" "Analyze Priorities" "Generate Recommendation"'
@@ -29,27 +16,33 @@ Resume from the next pending step, or clean up and start fresh:
 
 **Expected output:**
 ```
-========================================
-   CHECKPOINT TRACKING INITIALIZED
-========================================
-
-Command: next-priority
-Tracking file: /tmp/next-priority-progress.txt
-Total steps: 3
-
-Steps to complete:
-  1. Read Context
-  2. Analyze Priorities
-  3. Generate Recommendation
+📍 Starting: next-priority (3 steps)
+📁 Tracking: /tmp/next-priority-progress.txt
+→ Run: make checkpoint-update CMD=next-priority STEP=1
 ```
 
-## PRECONDITION: Checkpoint Tracking Must Be Initialized
-
-**BEFORE PROCEEDING**: Verify checkpoint tracking initialization:
+### Check Progress
 
 ```bash
-./scripts/require-checkpoint.sh next-priority
+make checkpoint-status CMD=next-priority
 ```
+
+**Expected output (example at 33% completion):**
+```
+📈 next-priority: 1/3 steps (33%)
+   [███░░░░░░░░░░░░░░░░░░] 33%
+→ Next: make checkpoint-update CMD=next-priority STEP=2
+```
+
+## Checkpoint Tracking
+
+This command uses checkpoint tracking with 3 sequential steps to ensure systematic priority analysis:
+
+1. **Read Context** - Understand project structure and review TODO.md
+2. **Analyze Priorities** - Apply systematic analysis protocols using quantitative metrics
+3. **Generate Recommendation** - Provide priority suggestion with justification
+
+Each step requires completion before moving to the next. Use `make checkpoint-status CMD=next-priority` to check progress at any time.
 
 ## MANDATORY FIRST STEP - KB Consultation
 
@@ -66,6 +59,8 @@ Before analyzing priorities, you MUST ([details](../../../kb/kb-consultation-bef
 Only after completing KB consultation should you proceed to analyze TODO.md.
 
 # Priority Analysis Workflow
+
+#### [CHECKPOINT START]
 
 ## Step 1: Read Context
 
@@ -231,9 +226,55 @@ If the user accepts your recommendation, prepare for implementation:
 
 #### [CHECKPOINT END]
 
-When all steps are complete, mark the workflow as done:
+#### [CHECKPOINT GATE]
+
+When all steps are complete, verify the workflow:
 
 ```bash
+./scripts/complete-checkpoint.sh next-priority
+```
+
+#### [CHECKPOINT COMPLETE]
+
+**Expected completion output:**
+```
+========================================
+   CHECKPOINT COMPLETION SUMMARY
+========================================
+
+📈 next-priority: 3/3 steps (100%)
+   [████████████████████] 100%
+
+✅ Checkpoint workflow complete
+```
+
+## Minimum Requirements
+
+**MANDATORY for successful priority analysis:**
+- [ ] KB consultation completed before analysis
+- [ ] AGENTS.md read to understand project context
+- [ ] TODO.md reviewed for incomplete tasks
+- [ ] Quantitative metrics gathered for each task
+- [ ] Priority recommendation provided with justification
+- [ ] Alternatives considered and documented
+- [ ] Effort estimation provided in TDD cycles
+- [ ] User verification obtained before proceeding
+
+### Progress Tracking
+
+Monitor your progress through the 3-step workflow:
+
+```bash
+# Initialize checkpoint tracking
+./scripts/init-checkpoint.sh next-priority '"Read Context" "Analyze Priorities" "Generate Recommendation"'
+
+# Check current checkpoint status
+make checkpoint-status CMD=next-priority VERBOSE=--verbose
+
+# Update to next step (after completing current step)
+make checkpoint-update CMD=next-priority STEP=N
+
+# Complete the workflow
 ./scripts/complete-checkpoint.sh next-priority
 ```
 

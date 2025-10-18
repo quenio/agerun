@@ -4,24 +4,11 @@ Read AGENTS.md in order to prepare yourself for this new session. Then check the
 
 **CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
 
-### In-Progress Workflow Detection
+## Initialization
 
-If a `/next-task` workflow is already in progress:
+This command requires checkpoint tracking to ensure systematic workflow execution.
 
-```bash
-# Check current progress
-./scripts/status-checkpoint.sh next-task
-```
-
-Resume from the next pending step, or clean up and start fresh:
-```bash
-./scripts/cleanup-checkpoint.sh next-task
-./scripts/init-checkpoint.sh next-task '"Read Context" "Check Task Sources" "Discover Next Task"'
-```
-
-### First-Time Initialization Check
-
-**MANDATORY**: Before executing ANY steps, initialize checkpoint tracking:
+### Initialize Tracking
 
 ```bash
 ./scripts/init-checkpoint.sh next-task '"Read Context" "Check Task Sources" "Discover Next Task"'
@@ -29,27 +16,33 @@ Resume from the next pending step, or clean up and start fresh:
 
 **Expected output:**
 ```
-========================================
-   CHECKPOINT TRACKING INITIALIZED
-========================================
-
-Command: next-task
-Tracking file: /tmp/next-task-progress.txt
-Total steps: 3
-
-Steps to complete:
-  1. Read Context
-  2. Check Task Sources
-  3. Discover Next Task
+📍 Starting: next-task (3 steps)
+📁 Tracking: /tmp/next-task-progress.txt
+→ Run: make checkpoint-update CMD=next-task STEP=1
 ```
 
-## PRECONDITION: Checkpoint Tracking Must Be Initialized
-
-**BEFORE PROCEEDING**: Verify checkpoint tracking initialization:
+### Check Progress
 
 ```bash
-./scripts/require-checkpoint.sh next-task
+make checkpoint-status CMD=next-task
 ```
+
+**Expected output (example at 33% completion):**
+```
+📈 next-task: 1/3 steps (33%)
+   [███░░░░░░░░░░░░░░░░░░] 33%
+→ Next: make checkpoint-update CMD=next-task STEP=2
+```
+
+## Checkpoint Tracking
+
+This command uses checkpoint tracking with 3 sequential steps to ensure systematic task discovery:
+
+1. **Read Context** - Understand project structure and session context
+2. **Check Task Sources** - Review session todo list and TODO.md
+3. **Discover Next Task** - Identify and present the next priority task
+
+Each step requires completion before moving to the next. Use `make checkpoint-status CMD=next-task` to check progress at any time.
 
 ## MANDATORY KB Consultation
 
@@ -60,6 +53,8 @@ Before starting task execution, search KB for relevant patterns ([details](../..
 4. Verify task is still needed ([details](../../../kb/task-verification-before-execution.md))
 
 # Task Discovery Workflow
+
+#### [CHECKPOINT START]
 
 ## Step 1: Read Context
 
@@ -198,9 +193,55 @@ Ask for user confirmation or feedback:
 
 #### [CHECKPOINT END]
 
-When task discovery is complete, mark the workflow as done:
+#### [CHECKPOINT GATE]
+
+When task discovery is complete, verify the workflow:
 
 ```bash
+./scripts/complete-checkpoint.sh next-task
+```
+
+#### [CHECKPOINT COMPLETE]
+
+**Expected completion output:**
+```
+========================================
+   CHECKPOINT COMPLETION SUMMARY
+========================================
+
+📈 next-task: 3/3 steps (100%)
+   [████████████████████] 100%
+
+✅ Checkpoint workflow complete
+```
+
+## Minimum Requirements
+
+**MANDATORY for successful task discovery:**
+- [ ] KB consultation completed before task execution
+- [ ] AGENTS.md read to understand project structure
+- [ ] Session todo list checked (if file exists)
+- [ ] TODO.md reviewed for incomplete tasks
+- [ ] Task sources identified and counted
+- [ ] Next task clearly identified and presented
+- [ ] User confirmation obtained before proceeding
+- [ ] Task verification completed for selected task
+
+### Progress Tracking
+
+Monitor your progress through the 3-step workflow:
+
+```bash
+# Initialize checkpoint tracking
+./scripts/init-checkpoint.sh next-task '"Read Context" "Check Task Sources" "Discover Next Task"'
+
+# Check current checkpoint status
+make checkpoint-status CMD=next-task VERBOSE=--verbose
+
+# Update to next step (after completing current step)
+make checkpoint-update CMD=next-task STEP=N
+
+# Complete the workflow
 ./scripts/complete-checkpoint.sh next-task
 ```
 
