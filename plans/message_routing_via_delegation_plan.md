@@ -72,7 +72,7 @@ Message Routing by ID Sign:
 
 ### Iteration 0.1: Fixture helper returns non-NULL evaluator (RED-GREEN-REFACTOR)
 
-**Review Status**: IMPLEMENTED
+**Review Status**: ✅ COMMITTED
 
 **Objective**: Create fixture helper that returns a valid send evaluator.
 
@@ -358,7 +358,7 @@ ar_frame_t* ar_send_evaluator_fixture__create_frame(
 
 ### Iteration 0.2: Fixture create_evaluator() returns non-NULL (RED-GREEN-REFACTOR)
 
-**Review Status**: IMPLEMENTED
+**Review Status**: ✅ COMMITTED
 
 **Objective**: Test that create_evaluator() returns a valid evaluator.
 
@@ -479,7 +479,7 @@ ar_send_instruction_evaluator_t* ar_send_evaluator_fixture__create_evaluator(
 
 ### Iteration 0.3: Fixture create_frame() returns non-NULL (RED-GREEN-REFACTOR)
 
-**Review Status**: IMPLEMENTED
+**Review Status**: ✅ COMMITTED
 
 **Objective**: Test that create_frame() returns a valid frame.
 
@@ -563,7 +563,7 @@ ar_frame_t* ar_send_evaluator_fixture__create_frame(
 
 ### Iteration 0.4: Fixture get_delegation() returns non-NULL (RED-GREEN-REFACTOR)
 
-**Review Status**: IMPLEMENTED
+**Review Status**: ✅ COMMITTED
 
 **Objective**: Test that get_delegation() returns a valid delegation instance.
 
@@ -650,7 +650,7 @@ ar_delegation_t* ar_send_evaluator_fixture__get_delegation(
 
 ### Iteration 0.5: Fixture get_agency() returns non-NULL (RED-GREEN-REFACTOR)
 
-**Review Status**: IMPLEMENTED
+**Review Status**: ✅ COMMITTED
 
 **Objective**: Test that get_agency() returns a valid agency instance.
 
@@ -740,7 +740,7 @@ ar_agency_t* ar_send_evaluator_fixture__get_agency(
 
 ### Iteration 0.6.1: Fixture create_and_register_delegate() returns non-NULL (RED-GREEN-REFACTOR)
 
-**Review Status**: IMPLEMENTED
+**Review Status**: ✅ COMMITTED
 
 **Objective**: Test that create_and_register_delegate() returns a non-NULL delegate instance.
 
@@ -845,7 +845,7 @@ ar_delegate_t* ar_send_evaluator_fixture__create_and_register_delegate(
 
 ### Iteration 0.6.2: Delegate is registered in delegation (RED-GREEN-REFACTOR)
 
-**Review Status**: IMPLEMENTED
+**Review Status**: ✅ COMMITTED
 
 **Objective**: Verify that the delegate returned by create_and_register_delegate() is actually registered in the delegation.
 
@@ -938,7 +938,7 @@ ar_delegate_t* ar_send_evaluator_fixture__create_and_register_delegate(
 
 ### Iteration 0.7.1: Fixture create_and_register_agent() returns non-NULL (RED-GREEN-REFACTOR)
 
-**Review Status**: IMPLEMENTED
+**Review Status**: ✅ COMMITTED
 
 **Objective**: Test that create_and_register_agent() returns a non-NULL agent instance.
 
@@ -1046,7 +1046,7 @@ ar_agent_t* ar_send_evaluator_fixture__create_and_register_agent(
 
 ### Iteration 0.7.2: Agent is registered in agency (RED-GREEN-REFACTOR)
 
-**Review Status**: IMPLEMENTED
+**Review Status**: ✅ COMMITTED
 
 **Objective**: Verify that the agent returned by create_and_register_agent() is actually registered in the agency.
 
@@ -1141,7 +1141,7 @@ ar_agent_t* ar_send_evaluator_fixture__create_and_register_agent(
 
 ### Iteration 0.8: Refactor existing tests to use fixture helper (REFACTOR only)
 
-**Review Status**: IMPLEMENTED
+**Review Status**: ✅ COMMITTED
 
 **Objective**: Update all 7 existing send evaluator tests to use the new fixture helper.
 
@@ -1219,7 +1219,7 @@ grep "Actual memory leaks:" bin/run-tests/memory_report_ar_send_instruction_eval
 
 ### Iteration 1.1: Send to delegate returns true (RED-GREEN-REFACTOR)
 
-**Review Status**: IMPLEMENTED
+**Review Status**: ✅ COMMITTED
 
 **Objective**: Test that `send(-1, message)` returns true (routing succeeds).
 
@@ -1345,7 +1345,7 @@ if (agent_id == 0) {
 
 ### Iteration 1.2: Delegate receives message (RED-GREEN-REFACTOR)
 
-**Review Status**: IMPLEMENTED
+**Review Status**: ✅ COMMITTED
 
 **Objective**: Verify that delegate actually receives and queues the message (forces real routing implementation).
 
@@ -1425,7 +1425,7 @@ if (agent_id == 0) {
 
 ### Iteration 1.3.1: Message is actually queued (not just accepted) (RED-GREEN-REFACTOR)
 
-**Review Status**: IMPLEMENTED
+**Review Status**: ✅ COMMITTED
 
 **Objective**: Verify that the message is actually stored in the delegate's queue (not just discarded). This iteration proves the assertion catches real failures by temporarily breaking the implementation.
 
@@ -1509,7 +1509,7 @@ Remove the temporary destruction and restore real delegation routing:
 
 ### Iteration 1.3.2: Message type is preserved through routing (RED-GREEN-REFACTOR)
 
-**Review Status**: IMPLEMENTED
+**Review Status**: ✅ COMMITTED
 
 **Objective**: Verify that the message type isn't lost or corrupted during the send/route process. This iteration proves the assertion catches type corruption bugs.
 
@@ -1592,7 +1592,7 @@ Remove the temporary type corruption from the implementation:
 
 ### Iteration 1.3.3: Message content is preserved through routing (RED-GREEN-REFACTOR)
 
-**Review Status**: IMPLEMENTED
+**Review Status**: ✅ COMMITTED
 
 **Objective**: Verify that the message content/value isn't lost or corrupted during send/route. This iteration proves the assertion catches content corruption bugs.
 
