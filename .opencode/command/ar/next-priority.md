@@ -1,16 +1,55 @@
 Read AGENTS.md in order to prepare yourself for this new session. Then, suggest the next priority based on the TODO.md file.
 
-## ⚠️ CRITICAL: Let the script manage checkpoints
+## CHECKPOINT WORKFLOW ENFORCEMENT
 
-**DO NOT manually initialize checkpoints before running this command.** The script handles all checkpoint initialization, execution, and cleanup automatically. Just run the script and let it complete.
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
 
-## Quick Start
+### In-Progress Workflow Detection
+
+If a `/next-priority` workflow is already in progress:
 
 ```bash
-./scripts/run-next-priority.sh
+# Check current progress
+./scripts/status-checkpoint.sh next-priority
 ```
 
-That's it! The script will handle everything automatically. Do not run any `make checkpoint-*` commands manually unless the script fails.
+Resume from the next pending step, or clean up and start fresh:
+```bash
+./scripts/cleanup-checkpoint.sh next-priority
+./scripts/init-checkpoint.sh next-priority '"Read Context" "Analyze Priorities" "Generate Recommendation"'
+```
+
+### First-Time Initialization Check
+
+**MANDATORY**: Before executing ANY steps, initialize checkpoint tracking:
+
+```bash
+./scripts/init-checkpoint.sh next-priority '"Read Context" "Analyze Priorities" "Generate Recommendation"'
+```
+
+**Expected output:**
+```
+========================================
+   CHECKPOINT TRACKING INITIALIZED
+========================================
+
+Command: next-priority
+Tracking file: /tmp/next-priority-progress.txt
+Total steps: 3
+
+Steps to complete:
+  1. Read Context
+  2. Analyze Priorities
+  3. Generate Recommendation
+```
+
+## PRECONDITION: Checkpoint Tracking Must Be Initialized
+
+**BEFORE PROCEEDING**: Verify checkpoint tracking initialization:
+
+```bash
+./scripts/require-checkpoint.sh next-priority
+```
 
 ## MANDATORY FIRST STEP - KB Consultation
 
@@ -26,78 +65,127 @@ Before analyzing priorities, you MUST ([details](../../../kb/kb-consultation-bef
 
 Only after completing KB consultation should you proceed to analyze TODO.md.
 
-## CHECKPOINT WORKFLOW ENFORCEMENT
+# Priority Analysis Workflow
 
-**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+## Step 1: Read Context
 
-## Checkpoint Tracking
+#### [CHECKPOINT STEP 1]
 
-This command uses checkpoint tracking via wrapper scripts to ensure systematic execution of priority analysis.
+**What this step does:**
+- Reads AGENTS.md to understand the project context
+- Checks TODO.md for incomplete tasks to analyze
+- Verifies necessary files exist
 
-### Checkpoint Wrapper Scripts
-
-The `run-next-priority.sh` script uses the following standardized wrapper scripts:
-
-- **`./scripts/init-checkpoint.sh`**: Initializes or resumes checkpoint tracking
-- **`./scripts/require-checkpoint.sh`**: Verifies checkpoint is ready before proceeding
-- **`./scripts/gate-checkpoint.sh`**: Validates gate conditions at workflow boundaries
-- **`./scripts/complete-checkpoint.sh`**: Shows completion summary and cleanup
-
-These wrappers provide centralized checkpoint management across all commands.
-
-## Workflow Execution
-
-Run the complete checkpoint-based workflow:
-
-#### [CHECKPOINT START]
-
+**What you should do:**
 ```bash
-./scripts/run-next-priority.sh
+# After initializing checkpoints, read the context from:
+# - AGENTS.md: Project structure, guidelines, agent responsibilities
+# - TODO.md: List of incomplete tasks marked with [ ]
+
+# Verify both files exist and contain the expected content
+ls -la AGENTS.md TODO.md
 ```
 
-This script handles all stages of the priority analysis process:
+**Expected files:**
+- `AGENTS.md`: Project documentation and guidelines
+- `TODO.md`: Task list with incomplete items marked `- [ ]`
 
-### What the Script Does
-
-1. **Read Context**: Reads AGENTS.md and TODO.md to understand current state
-2. **Analyze Priorities**: Applies systematic analysis protocols from KB articles
-3. **Generate Recommendation**: Provides quantitative justification for priority choice
-4. **Checkpoint Completion**: Marks the workflow as complete
-
-## Troubleshooting: Manual Checkpoint Control
-
-Only use these commands if the script fails and you need to manually intervene:
-
+**Next action:**
 ```bash
-# Check current progress (if workflow interrupted)
-make checkpoint-status CMD=next-priority VERBOSE=--verbose
-
-# Resume from a specific step (only if you know it's stuck)
-make checkpoint-update CMD=next-priority STEP=N
-
-# ONLY use this if you need to reset everything and start over
-rm -f /tmp/next-priority-progress.txt
-./scripts/run-next-priority.sh
+./scripts/update-checkpoint.sh next-priority 1
 ```
 
-## Minimum Requirements
+## Step 2: Analyze Priorities
 
-**MANDATORY for successful completion:**
-- [ ] Command executes without errors
-- [ ] Priority analysis completed
-- [ ] Quantitative justification provided
-- [ ] No unexpected warnings or issues
+#### [CHECKPOINT STEP 2]
 
-## Expected Behavior
+**What this step does:**
+- Applies systematic analysis protocols from KB articles
+- Evaluates tasks using quantitative metrics
+- Determines impact, effort, and risk for each task
 
-#### [CHECKPOINT END]
+**Analysis framework:**
+1. **Identify critical issues** - bugs, failures, performance problems
+2. **Quantify impact** - error rates, affected users/modules, time savings
+3. **Estimate effort** - TDD cycles required to complete
+4. **Consider dependencies** - prerequisites and blocking tasks
+5. **Evaluate risk** - complexity, testing difficulty, potential side effects
 
+**What you should do:**
 
-### Priority Analysis Output
+Apply the systematic analysis from KB articles:
+- Review each incomplete task in TODO.md
+- Gather quantitative metrics (if available in codebase)
+- Evaluate each task using the analysis framework
+- Rank tasks by impact/effort ratio
+
+**Example analysis:**
 ```
-Reading AGENTS.md...
-Analyzing TODO.md for priorities...
+Task: "Add error logging to parsers"
+- Impact: 97.6% of error conditions currently silent
+- Effort: 18-27 TDD cycles (9 parsers × 2-3 cycles)
+- Risk: Low (logging doesn't change behavior)
+- Dependencies: None
+- Rank: HIGH (high impact, low risk)
 
+Task: "Fix memory leaks"
+- Impact: Only 3 known leaks in non-critical paths
+- Effort: 8-12 TDD cycles
+- Risk: Medium (memory management changes)
+- Dependencies: Some depend on refactoring
+- Rank: MEDIUM (lower impact than logging)
+```
+
+**Next action:**
+```bash
+./scripts/update-checkpoint.sh next-priority 2
+```
+
+## Step 3: Generate Recommendation
+
+#### [CHECKPOINT STEP 3]
+
+**What this step does:**
+- Summarizes the analysis results
+- Provides quantitative justification for priority choice
+- Prepares recommendation for user feedback
+- Waits for user verification
+
+**What you should do:**
+
+Based on your analysis, provide a recommendation with:
+1. **Selected priority** - Which task should be done first
+2. **Quantitative justification** - Metrics supporting the choice
+3. **Alternatives considered** - Why other tasks ranked lower
+4. **Effort estimation** - TDD cycles needed for the selected task
+5. **Next steps** - What happens after user approves
+
+**Recommendation format:**
+```
+PRIORITY RECOMMENDATION: [Task Name]
+
+QUANTITATIVE JUSTIFICATION:
+• [Metric 1]: [value and context]
+• [Metric 2]: [value and context]
+• [Metric 3]: [value and context]
+
+WHY THIS PRIORITY:
+1. [Reason 1 with specific data]
+2. [Reason 2 with specific data]
+3. [Reason 3 with specific data]
+
+ALTERNATIVES CONSIDERED:
+- [Task A]: [Why it ranked lower]
+- [Task B]: [Why it ranked lower]
+
+Estimated effort: [X-Y] TDD cycles
+Timeline: [estimate]
+
+[Waits for user verification]
+```
+
+**Example output:**
+```
 PRIORITY RECOMMENDATION: Parser Error Logging Enhancement
 
 QUANTITATIVE JUSTIFICATION:
@@ -123,57 +211,31 @@ Timeline: 2-3 sessions
 [Waits for user verification]
 ```
 
-### After User Approval
-```
-Creating implementation plan...
+**After user approval:**
 
-TODO LIST:
-1. [pending] Add error logging to ar_build_parser
-   - NULL parameter checks (1 cycle)
-   - Parse failure logging (1 cycle)
-   - Documentation update (0.5 cycle)
-   
-2. [pending] Add error logging to ar_spawn_parser
-   - NULL parameter checks (1 cycle)
-   - Parse failure logging (1 cycle)
-   - Documentation update (0.5 cycle)
+If the user accepts your recommendation, prepare for implementation:
+```bash
+# Create implementation plan
+/ar:create-plan "Task Name" "Additional context if needed"
 
-... (7 more parsers)
-
-Total: 9 parsers × 2.5 cycles = 22.5 TDD cycles
-
-Ready to begin implementation?
-[Waits for plan approval]
+# Or move to next-task to discover other work items
+/ar:next-task
 ```
 
-### Low Priority Scenario
-```
-Reading AGENTS.md...
-Analyzing TODO.md for priorities...
-
-ANALYSIS COMPLETE:
-✅ Critical issues: None found
-✅ High-impact bugs: None pending
-✅ Performance issues: None identified
-
-SUGGESTED PRIORITY: Code Quality Improvements
-
-QUANTITATIVE METRICS:
-• Code duplication: 3 instances found
-• Test coverage: 92% (could reach 95%)
-• Documentation gaps: 5 modules need updates
-
-This is a LOW-URGENCY priority suitable for:
-- Learning the codebase
-- Gradual improvement
-- Between major features
-
-Estimated effort: 5-8 TDD cycles
-
-[Waits for user direction]
+**Next action:**
+```bash
+./scripts/update-checkpoint.sh next-priority 3
 ```
 
+## Complete the Workflow
 
+#### [CHECKPOINT END]
+
+When all steps are complete, mark the workflow as done:
+
+```bash
+./scripts/complete-checkpoint.sh next-priority
+```
 
 ## Key Points
 

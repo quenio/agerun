@@ -1,16 +1,55 @@
-Read AGENTS.md in order to prepare yourself for this new session ([details](../../../kb/context-preservation-across-sessions.md)). Then check the session's todo list using TodoRead. If no items are found in the session's todo list, check TODO.md for incomplete tasks (marked with `- [ ]`). If TODO.md has incomplete tasks, present them and ask which to work on. If both session todo list and TODO.md are empty, inform me that all tasks are complete. If session tasks exist, work on the next task found in the session's todo list.
+Read AGENTS.md in order to prepare yourself for this new session. Then check the session's todo list. If no items are found in the session's todo list, check TODO.md for incomplete tasks (marked with `- [ ]`). If TODO.md has incomplete tasks, present them and ask which to work on. If both session todo list and TODO.md are empty, inform the user that all tasks are complete. If session tasks exist, work on the next task found in the session's todo list.
 
-## ⚠️ CRITICAL: Let the script manage checkpoints
+## CHECKPOINT WORKFLOW ENFORCEMENT
 
-**DO NOT manually initialize checkpoints before running this command.** The script handles all checkpoint initialization, execution, and cleanup automatically. Just run the script and let it complete.
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
 
-## Quick Start
+### In-Progress Workflow Detection
+
+If a `/next-task` workflow is already in progress:
 
 ```bash
-./scripts/run-next-task.sh
+# Check current progress
+./scripts/status-checkpoint.sh next-task
 ```
 
-That's it! The script will handle everything automatically. Do not run any `make checkpoint-*` commands manually unless the script fails.
+Resume from the next pending step, or clean up and start fresh:
+```bash
+./scripts/cleanup-checkpoint.sh next-task
+./scripts/init-checkpoint.sh next-task '"Read Context" "Check Task Sources" "Discover Next Task"'
+```
+
+### First-Time Initialization Check
+
+**MANDATORY**: Before executing ANY steps, initialize checkpoint tracking:
+
+```bash
+./scripts/init-checkpoint.sh next-task '"Read Context" "Check Task Sources" "Discover Next Task"'
+```
+
+**Expected output:**
+```
+========================================
+   CHECKPOINT TRACKING INITIALIZED
+========================================
+
+Command: next-task
+Tracking file: /tmp/next-task-progress.txt
+Total steps: 3
+
+Steps to complete:
+  1. Read Context
+  2. Check Task Sources
+  3. Discover Next Task
+```
+
+## PRECONDITION: Checkpoint Tracking Must Be Initialized
+
+**BEFORE PROCEEDING**: Verify checkpoint tracking initialization:
+
+```bash
+./scripts/require-checkpoint.sh next-task
+```
 
 ## MANDATORY KB Consultation
 
@@ -20,172 +59,161 @@ Before starting task execution, search KB for relevant patterns ([details](../..
 3. Apply relevant protocols found (e.g., [red-green-refactor](../../../kb/red-green-refactor-cycle.md), [test-assertion-strength](../../../kb/test-assertion-strength-patterns.md))
 4. Verify task is still needed ([details](../../../kb/task-verification-before-execution.md))
 
-## CHECKPOINT WORKFLOW ENFORCEMENT
+# Task Discovery Workflow
 
-**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+## Step 1: Read Context
 
-## Checkpoint Tracking
+#### [CHECKPOINT STEP 1]
 
-This command uses checkpoint tracking via wrapper scripts to ensure systematic execution of task discovery.
+**What this step does:**
+- Reads AGENTS.md to understand the project and your role
+- Checks for session context from previous commands
+- Prepares to search for available tasks
 
-### Checkpoint Wrapper Scripts
-
-The `run-next-task.sh` script uses the following standardized wrapper scripts:
-
-- **`./scripts/init-checkpoint.sh`**: Initializes or resumes checkpoint tracking
-- **`./scripts/require-checkpoint.sh`**: Verifies checkpoint is ready before proceeding
-- **`./scripts/gate-checkpoint.sh`**: Validates gate conditions at workflow boundaries
-- **`./scripts/complete-checkpoint.sh`**: Shows completion summary and cleanup
-
-These wrappers provide centralized checkpoint management across all commands.
-
-## Workflow Execution
-
-Run the complete checkpoint-based workflow:
-
-#### [CHECKPOINT START]
-
+**What you should do:**
 ```bash
-./scripts/run-next-task.sh
+# Read and understand the current session context
+cat AGENTS.md
+
+# Check if there's a session todo file
+ls -la .session_todos.txt 2>/dev/null || echo "No session todo file found"
 ```
 
-This script handles all stages of the task discovery process:
+**Expected files:**
+- `AGENTS.md`: Project documentation and agent guidelines
+- `.session_todos.txt` (optional): Session-specific task list
 
-### What the Script Does
-
-1. **Read Context**: Reads AGENTS.md and session context
-2. **Check Task Sources**: Checks session todo list and TODO.md for tasks
-3. **Discover Next Task**: Identifies and presents the next task to work on
-4. **Checkpoint Completion**: Marks the workflow as complete
-
-## Troubleshooting: Manual Checkpoint Control
-
-Only use these commands if the script fails and you need to manually intervene:
-
+**Next action:**
 ```bash
-# Check current progress (if workflow interrupted)
-make checkpoint-status CMD=next-task VERBOSE=--verbose
-
-# Resume from a specific step (only if you know it's stuck)
-make checkpoint-update CMD=next-task STEP=N
-
-# ONLY use this if you need to reset everything and start over
-rm -f /tmp/next-task-progress.txt
-./scripts/run-next-task.sh
+./scripts/update-checkpoint.sh next-task 1
 ```
 
-## Minimum Requirements
+## Step 2: Check Task Sources
 
-**MANDATORY for successful completion:**
-- [ ] Command executes without errors
-- [ ] Task discovery completed
-- [ ] Next task identified and presented
-- [ ] No unexpected warnings or issues
+#### [CHECKPOINT STEP 2]
 
-## Expected Behavior
+**What this step does:**
+- Checks session todo list for pending tasks (highest priority)
+- Checks TODO.md for incomplete project tasks
+- Counts available tasks from each source
+
+**What you should do:**
+
+Check both potential task sources:
+
+```bash
+# Check session todo list (if it exists)
+if [ -f .session_todos.txt ]; then
+  echo "Session tasks:"
+  grep "^\- \[ \]" .session_todos.txt | wc -l
+fi
+
+# Check project TODO.md
+if [ -f TODO.md ]; then
+  echo "Project tasks in TODO.md:"
+  grep "^\- \[ \]" TODO.md | wc -l
+fi
+```
+
+**Priority order:**
+1. **Session todo list first** - Tasks from current session (highest priority)
+2. **TODO.md second** - Project-level incomplete tasks
+3. **Empty** - All tasks complete
+
+**Next action:**
+```bash
+./scripts/update-checkpoint.sh next-task 2
+```
+
+## Step 3: Discover Next Task
+
+#### [CHECKPOINT STEP 3]
+
+**What this step does:**
+- Identifies the next task to work on based on priority
+- Presents the task to the user
+- Prepares for user feedback and next steps
+
+**What you should do:**
+
+Based on your discovery of task sources, present the next task:
+
+**If session tasks exist (highest priority):**
+```
+✅ Session todo list found with N pending tasks
+
+NEXT TASK: [Task name from session]
+
+Instructions:
+- This is your current session's focused work
+- Complete this task following the session guidelines
+- Use /ar:execute-task to implement this task
+```
+
+**If NO session tasks but TODO.md has tasks:**
+```
+✅ Project TODO.md has N incomplete tasks
+
+Here are the top 3 candidates:
+1. [Task name] - [Brief description]
+2. [Task name] - [Brief description]
+3. [Task name] - [Brief description]
+
+Which task would you like to work on?
+- Type the number (1-3)
+- Or provide a different task description
+```
+
+**If TODO.md is also empty:**
+```
+✅ All tasks complete!
+
+Current status:
+- Session todo list: 0 pending tasks
+- Project TODO.md: 0 incomplete tasks
+
+Next steps:
+- Create new tasks in TODO.md for planned features
+- Use /ar:create-plan to plan new work
+- Use /ar:next-priority to analyze priorities for new features
+```
+
+**After discovering the task:**
+
+Ask for user confirmation or feedback:
+```bash
+# If task is clear, prepare to proceed:
+# Use /ar:create-plan to create an implementation plan
+
+# If unsure which task, ask user for clarification:
+# "Which of these tasks would you like to work on next?"
+```
+
+**Next action:**
+```bash
+./scripts/update-checkpoint.sh next-task 3
+```
+
+## Complete the Workflow
 
 #### [CHECKPOINT END]
 
+When task discovery is complete, mark the workflow as done:
 
-### When Session Tasks Exist
+```bash
+./scripts/complete-checkpoint.sh next-task
 ```
-Reading AGENTS.md...
-Checking session todo list... ([details](../../kb/task-verification-before-execution.md))
-
-Found 3 tasks in session:
-1. [in_progress] Implement error logging for ar_parser
-2. [pending] Add test coverage for edge cases
-3. [pending] Update documentation
-
-Currently working on: Implement error logging for ar_parser
-
-Plan:
-- RED: Write test expecting error logging (1 cycle)
-- GREEN: Implement logging in parser (1 cycle)
-- REFACTOR: Extract common logging patterns (1 cycle)
-
-Estimated effort: 3 TDD cycles
-
-[Proceeds with implementation]
-```
-
-### When No Session Tasks (with TODO.md tasks)
-```
-Reading AGENTS.md...
-Checking session todo list...
-No session tasks found.
-
-Checking TODO.md for incomplete tasks...
-
-Found 5 incomplete tasks in TODO.md:
-1. [ ] Implement error logging for all parsers
-2. [ ] Add test coverage for edge cases
-3. [ ] Update documentation for new features
-4. [ ] Refactor agent lifecycle management
-5. [ ] Optimize memory allocation patterns
-
-Which task would you like to work on?
-```
-
-### When No Session Tasks (TODO.md also empty)
-```
-Reading AGENTS.md...
-Checking session todo list...
-No session tasks found.
-
-Checking TODO.md for incomplete tasks...
-No incomplete tasks found in TODO.md.
-
-✅ All tasks are complete!
-
-Would you like to:
-1. Review recent changes
-2. Start a new feature
-```
-
-### When Task References Report
-```
-Reading AGENTS.md...
-Checking session todo list...
-
-Found task: Fix parser silent failures (references: parser-analysis-report.md)
-
-Reviewing report sections...
-Key findings from report:
-- 97.6% of parser errors are silent
-- 41 error conditions, only 1 logged
-- Impacts debugging time by 50-70%
-
-Plan based on report:
-- Add error logging to all 41 conditions
-- Estimated effort: 2-3 cycles per parser
-- Total: ~20 TDD cycles
-
-[Waits for user feedback before proceeding]
-```
-
-
 
 ## Key Points
 
-Task discovery workflow:
-1. Check session todo list first
-2. If session list is empty, automatically check TODO.md for incomplete tasks (marked with `- [ ]`)
-3. Present TODO.md tasks to user and ask which to work on
-4. Only report "all tasks complete" when both lists are empty
+The task discovery prioritizes:
+1. **Session context** - Work specifically assigned in this session
+2. **Project priorities** - Tasks from TODO.md ranked by impact
+3. **User direction** - Accept user guidance on which task matters most
 
-Before proceeding to execute a task:
-1. Review the task context from TODO.md or session notes
-2. If the task references a report, review the relevant sections ([details](../../../kb/report-driven-task-planning.md))
-3. Define a plan with effort estimated in TDD cycles ([details](../../../kb/tdd-cycle-effort-estimation.md))
-4. Explain your strategy and wait for user feedback ([details](../../../kb/user-feedback-as-architecture-gate.md))
-5. After completing TDD cycles, verify completion systematically ([details](../../../kb/tdd-cycle-completion-verification-pattern.md))
-6. Update plan documents with completion status ([details](../../../kb/plan-document-completion-status-pattern.md))
+Once a task is identified, you can:
+- Use `/ar:create-plan` to create a TDD implementation plan
+- Use `/ar:execute-task` to implement the task step-by-step
+- Ask the user for clarification if the task is unclear
 
-## End of Session
-
-When completing a task or ending a session:
-1. Ask "What improvements did this work reveal?" ([details](../../../kb/post-session-task-extraction-pattern.md))
-2. Capture discovered issues as prioritized TODO items with context
-3. Document why each improvement matters and what triggered the discovery
-4. Add success criteria for each task to make them actionable
+Always verify the task is still needed before spending effort on it ([details](../../../kb/task-verification-before-execution.md)).
