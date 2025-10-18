@@ -418,12 +418,15 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 3. `make check-commands` → ensure 90%+ excellence ([details](kb/command-documentation-excellence-gate.md))
 4. Update docs for API changes ([details](kb/documentation-language-migration-updates.md))
 5. Check outdated refs: `grep -l "old_name" modules/*.md`
-6. Update TODO.md & CHANGELOG.md in same commit ([details](kb/atomic-commit-documentation-pattern.md), [verify](kb/documentation-completion-verification.md))
-7. `git diff --stat` review full scope → verify message describes ALL changes ([details](kb/incomplete-commit-message-recovery-pattern.md))
-8. Include Claude Code attribution in commit message ([details](kb/claude-code-commit-attribution.md))
-9. Clean temp files → commit
+6. **CRITICAL - NEVER FORGET**: Update CHANGELOG.md with date, summary, impact for ALL commits ([details](kb/atomic-commit-documentation-pattern.md), [verify](kb/documentation-completion-verification.md))
+7. Update TODO.md if tasks completed or added
+8. `git diff --stat` review full scope → verify message describes ALL changes ([details](kb/incomplete-commit-message-recovery-pattern.md))
+9. Include Claude Code attribution in commit message ([details](kb/claude-code-commit-attribution.md))
+10. Clean temp files → commit
 
-**Remember**: Complete ALL TDD Cycles → Docs → TODO → CHANGELOG → Commit ([details](kb/tdd-feature-completion-before-commit.md))
+**Remember**: Complete ALL TDD Cycles → Docs → TODO → **CHANGELOG (NEVER SKIP)** → Commit ([details](kb/tdd-feature-completion-before-commit.md))
+
+**⚠️ CHANGELOG.md is MANDATORY**: Every commit that modifies code, adds features, fixes bugs, or updates documentation MUST have a corresponding CHANGELOG.md entry with the current date. Use `git log --oneline -5` to check recent commits and ensure they're all documented.
 
 **After Completing Major Tasks**:
 - Document completion date in TODO.md (e.g., "Completed 2025-06-11")
