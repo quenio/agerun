@@ -782,13 +782,14 @@ make checkpoint-cleanup CMD=<command>
 ### Overview
 Extract and consolidate reusable patterns from command files into standalone, parameterizable helper scripts to reduce duplication, improve maintainability, and simplify complex workflows.
 
-**Completed Phases (6 phases, 21 helpers created)**:
+**Completed Phases (7 phases, infrastructure consolidated)**:
 - [x] Phase 1 - Core Utility Helpers: 8 helpers created (validate-command-args, verify-command-quality, etc.) - 2025-10-18
 - [x] Phase 2 - Quality Gate Helpers: 4 helpers created (calculate-metrics-reduction, enforce-quality-gate, etc.) - 2025-10-18
 - [x] Phase 3 - Checkpoint Pattern Helpers: 5 helpers created (init-checkpoint, require-checkpoint, etc.) - 2025-10-18
 - [x] Phase 4a - Checkpoint Integration: Applied 5 checkpoint helpers to all 30 command files (309 lines consolidated) - 2025-10-18
 - [x] Phase 4b - Iteration Pattern Extraction: 4 helpers created (iterate-plan-items, filter-plan-items, update-plan-markers, extract-tdd-cycles) - 2025-10-18
 - [x] Phase 4c - Iteration Integration: Integrated helpers into execute-plan.md (52 lines consolidated) and review-plan.md (enhanced with batch options) - 2025-10-18
+- [x] Phase 5 - Checkpoint Infrastructure Refactoring: Consolidated wrapper scripts into implementations; removed Makefile targets; net 175 lines reduction - 2025-10-18
 
 ### Remaining Opportunities (Ready for Future Phases)
 

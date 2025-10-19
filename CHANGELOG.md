@@ -204,7 +204,7 @@
 
   **Changes**:
   - Rewrote next-priority.md and next-task.md with step-by-step instructions
-  - Updated to use checkpoint wrapper scripts (init-checkpoint, require-checkpoint, update-checkpoint, complete-checkpoint)
+  - Updated to use checkpoint tracking for multi-step execution
   - Removed run-next-priority.sh and run-next-task.sh scripts
   - 2 files changed, 305 insertions/deletions
 
@@ -243,40 +243,45 @@
 
 ## 2025-10-18 (Session 2b)
 
-- **Complex Command Wrapper Script Integration**
+- **Checkpoint Infrastructure Refactoring and Consolidation**
 
-  Updated all 17 complex commands (>15 steps with custom logic) to use standardized checkpoint wrapper scripts instead of direct make commands, maintaining their sophisticated documentation while centralizing checkpoint operations.
+  Consolidated checkpoint wrapper scripts into implementation scripts and removed Makefile targets, simplifying the checkpoint infrastructure.
 
-  **Problem**: Complex commands used direct `make checkpoint-*` commands scattered throughout documentation, making it harder to maintain and update checkpoint behavior across the command suite.
+  **Problems Addressed**:
+  1. Checkpoint initialization was passing arguments through Makefile, treating multiple steps as a single quoted string
+  2. Wrapper scripts (*-checkpoint.sh) added a layer of indirection between commands and implementations
+  3. Makefile checkpoint targets duplicated script functionality
+  4. Multiple places to maintain checkpoint calling patterns
 
-  **Solution**: Replaced all direct make commands with standardized wrapper scripts:
-  - `make checkpoint-status CMD=...` → `./scripts/checkpoint-status.sh ...`
-  - `make checkpoint-update CMD=...` → `./scripts/checkpoint-update.sh ...`
-  - `make checkpoint-gate CMD=...` → `./scripts/checkpoint-gate.sh ...`
-  - `make checkpoint-cleanup CMD=...` → `./scripts/checkpoint-cleanup.sh ...`
-  - `make checkpoint-init CMD=...` → `./scripts/checkpoint-init.sh ...`
+  **Solutions Implemented**:
+  1. **Fixed argument passing**: Updated init-checkpoint.sh to properly expand step arguments without Makefile indirection
+  2. **Consolidated wrapper scripts**: Merged logic from 7 wrapper scripts into checkpoint-*.sh implementations
+  3. **Removed Makefile targets**: Deleted 26 lines of checkpoint targets from Makefile
+  4. **Updated all references**: Changed 64 files to call checkpoint-*.sh directly
 
-  **New Wrapper Scripts Created**:
-  - `scripts/status-checkpoint.sh` - Check checkpoint progress status
-  - `scripts/update-checkpoint.sh` - Update checkpoint to specific step
-  - `scripts/cleanup-checkpoint.sh` - Clean up checkpoint tracking
-  - `scripts/init-checkpoint.sh` - Initialize checkpoint (already existed, now used consistently)
+  **Scripts Consolidated**:
+  - init-checkpoint.sh → checkpoint-init.sh (with idempotency check)
+  - require-checkpoint.sh → checkpoint-require.sh (new implementation)
+  - status-checkpoint.sh → checkpoint-status.sh (deleted wrapper)
+  - update-checkpoint.sh → checkpoint-update.sh (deleted wrapper)
+  - gate-checkpoint.sh → checkpoint-gate.sh (deleted wrapper)
+  - complete-checkpoint.sh → checkpoint-complete.sh (new implementation)
+  - cleanup-checkpoint.sh → checkpoint-cleanup.sh (deleted wrapper)
 
-  **Commands Updated** (17 total):
-  - create-plan, execute-plan, review-plan, new-learnings, create-command
-  - review-changes, fix-errors-whitelisted, merge-settings
-  - check-commands, check-logs, check-module-consistency
-  - commit, compact-changes, compact-guidelines, compact-tasks
-  - migrate-module-to-zig-abi, migrate-module-to-zig-struct
+  **Files Updated** (64 total):
+  - 31 command files in .claude/commands/ar/
+  - 18 helper and workflow scripts
+  - 10 documentation and KB files
+  - Makefile (removed checkpoint targets)
 
-  **Changes**: 17 files updated with 366 insertions/deletions, all maintaining command-specific logic while using consistent checkpoint interface
+  **Changes**: 3 commits with net 89 lines of code reduction, all checkpoint functionality preserved
 
   **Benefits**:
-  - Centralized checkpoint management: Update behavior in wrapper scripts, affects all commands
-  - Consistency: All 31 commands (12 simple + 19 complex) now use standardized checkpoint scripts
-  - Maintainability: Wrapper scripts are the single source of truth for checkpoint operations
-  - Clarity: Commands focus on their logic, not checkpoint implementation details
-  - Scalability: Easy to add checkpoint features to wrapper scripts, benefit all commands
+  - Simplified architecture: Direct calls instead of wrapper layer
+  - Reduced maintenance burden: 175 fewer lines of code
+  - Consistent naming: All checkpoint scripts follow checkpoint-*.sh pattern
+  - Direct script calls: No Makefile or wrapper indirection needed
+  - Maintained idempotency: Can safely call checkpoint-init.sh multiple times
 
 ## 2025-10-18 (Session 2)
 
@@ -288,14 +293,14 @@
 
   **Solution**: Applied unified checkpoint wrapper pattern to all simple commands:
   - Single entry point: `./scripts/run-<cmd>.sh` orchestrates all stages
-  - Standardized sections: "Checkpoint Wrapper Scripts" documents 4 core scripts
+  - Standardized sections: "Checkpoint Tracking" documents core scripts
   - Cleaner documentation: Removed redundant checkpoint initialization code
-  - Centralized management: All checkpoint logic in reusable wrappers
+  - Centralized management: All checkpoint logic in checkpoint-*.sh scripts
 
   **Changes**:
   - **13 command documentation files** updated: check-naming, next-priority, next-task, analyze-exec, analyze-tests, build, build-clean, run-exec, run-tests, sanitize-exec, sanitize-tests, tsan-exec, tsan-tests
   - **13 new wrapper scripts** created with standardized structure (3-stage execution)
-  - All wrappers use init-checkpoint.sh, require-checkpoint.sh, gate-checkpoint.sh, complete-checkpoint.sh
+  - All commands use checkpoint-init.sh, checkpoint-require.sh, checkpoint-gate.sh, checkpoint-complete.sh
 
   **Benefits**:
   - Consistency: All simple commands follow identical pattern
@@ -333,13 +338,13 @@
   - Clearer documentation: Commands more concise and easier to understand
   - Alignment with temp file naming standards (commits e264d77, 4dd5056)
 
-  **Impact**: All checkpoint operations now use standardized patterns defined in `/scripts/*-checkpoint.sh`, making it easier to maintain and update checkpoint behavior across the entire command suite.
+  **Impact**: All checkpoint operations now use standardized patterns defined in `/scripts/checkpoint-*.sh`, making it easier to maintain and update checkpoint behavior across the entire command suite.
 
 - **Checkpoint Command Name Validation**
 
   Added validation to all checkpoint scripts to detect and warn about underscore usage in command names, preventing tracking file naming inconsistencies.
 
-  **Problem**: Commands could be invoked with either dashes or underscores (e.g., `check-naming` vs `check_naming`), creating tracking files with inconsistent names (`/tmp/check-naming-progress.txt` vs `/tmp/check_naming-progress.txt`). This caused checkpoint-update and complete-checkpoint scripts to fail with "Tracking file not found" errors.
+  **Problem**: Commands could be invoked with either dashes or underscores (e.g., `check-naming` vs `check_naming`), creating tracking files with inconsistent names (`/tmp/check-naming-progress.txt` vs `/tmp/check_naming-progress.txt`). This caused checkpoint-update and checkpoint-complete scripts to fail with "Tracking file not found" errors.
 
   **Solution**: Added validation block to all 5 checkpoint scripts that warns when command names contain underscores, pointing users to the dash-based naming standard.
 
