@@ -63,11 +63,11 @@ Complete checkpoint system components:
 # 5. Cleanup: checkpoint-cleanup.sh (removes tracking)
 
 # Integration in commands:
-make checkpoint-init CMD=my-command STEPS='"Step 1" "Step 2" "Step 3"'
-make checkpoint-update CMD=my-command STEP=1
-make checkpoint-gate CMD=my-command GATE="Stage 1" REQUIRED="1,2"
-make checkpoint-status CMD=my-command
-make checkpoint-cleanup CMD=my-command
+./scripts/checkpoint-init.sh my-command ""Step 1" "Step 2" "Step 3""
+./scripts/checkpoint-update.sh my-command 1
+./scripts/checkpoint-gate.sh my-command "Stage 1" "1,2"
+./scripts/checkpoint-status.sh my-command
+./scripts/checkpoint-cleanup.sh my-command
 ```
 
 ## Validation Operation Benefits
@@ -100,14 +100,14 @@ ar_data__destroy(own_validation_state);
 ### Example Validation Workflow Integration
 ```bash
 # Documentation validation with checkpoint tracking
-make checkpoint-init CMD=check-docs STEPS='"Initial Check" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"'
+./scripts/checkpoint-init.sh check-docs ""Initial Check" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push""
 
 # Each step provides clear feedback
 make check-docs 2>&1 | tee /tmp/check-docs-output.txt
-make checkpoint-update CMD=check-docs STEP=1
+./scripts/checkpoint-update.sh check-docs 1
 
 # Gate enforcement prevents skipping critical verification
-make checkpoint-gate CMD=check-docs GATE="Resolution" REQUIRED="4"
+./scripts/checkpoint-gate.sh check-docs "Resolution" "4"
 ```
 
 ## Related Patterns

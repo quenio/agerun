@@ -12,7 +12,7 @@ Without expected output documentation, users cannot distinguish between correct 
 
 \`\`\`bash
 # Initialize tracking system
-make checkpoint-init CMD=my-command STEPS='"Step 1" "Step 2"'
+./scripts/checkpoint-init.sh my-command ""Step 1" "Step 2""
 \`\`\`
 
 **Expected output:**

@@ -19,9 +19,9 @@ Checkpoint workflows require strict sequential execution discipline: each step's
 
 # WRONG: Attempting to bulk-update checkpoints (all at once)
 echo "Attempting to mark steps 2-4 complete in bulk..."
-make checkpoint-update CMD=check-docs STEP=2 && \
-make checkpoint-update CMD=check-docs STEP=3 && \
-make checkpoint-update CMD=check-docs STEP=4
+./scripts/checkpoint-update.sh check-docs 2 && \
+./scripts/checkpoint-update.sh check-docs 3 && \
+./scripts/checkpoint-update.sh check-docs 4
 # Result: ❌ Parse error - violations of sequential contract
 # Error reveals: Cannot update steps without executing their logic first
 
@@ -31,7 +31,7 @@ make check-docs 2>&1 | tee /tmp/check-docs-output.txt
 # Output shows: 570 files checked, all references valid ✓
 
 echo "=== MARK STEP 1 COMPLETE ==="
-make checkpoint-update CMD=check-docs STEP=1
+./scripts/checkpoint-update.sh check-docs 1
 # Progress: 1/5 steps (20%)
 
 echo "=== STEP 2: Execute Preview logic (conditional) ==="
@@ -42,7 +42,7 @@ else
 fi
 
 echo "=== MARK STEP 2 COMPLETE ==="
-make checkpoint-update CMD=check-docs STEP=2
+./scripts/checkpoint-update.sh check-docs 2
 # Progress: 2/5 steps (40%)
 
 # ... continue through remaining steps ...
@@ -52,7 +52,7 @@ make check-docs  # Re-validate to confirm correctness
 # Shows: All documentation valid ✓
 
 echo "=== MARK STEP 4 COMPLETE ==="
-make checkpoint-update CMD=check-docs STEP=4
+./scripts/checkpoint-update.sh check-docs 4
 # Progress: 4/5 steps (80%)
 ```
 
@@ -162,7 +162,7 @@ When sequential discipline is violated, errors teach the pattern:
 **Example: Bulk checkpoint updates fail**
 ```bash
 # Attempt:
-make checkpoint-update CMD=check-docs STEP=2 && make checkpoint-update CMD=check-docs STEP=3
+./scripts/checkpoint-update.sh check-docs 2 && ./scripts/checkpoint-update.sh check-docs 3
 # Error: parse error near `&&`
 
 # Error teaches: Cannot parallelize sequential steps
@@ -200,10 +200,10 @@ else
 fi
 
 # Mark step complete AFTER verification
-make checkpoint-update CMD=your-command STEP=N
+./scripts/checkpoint-update.sh your-command N
 
 # Show progress for visibility
-make checkpoint-status CMD=your-command  # Shows new progress bar
+./scripts/checkpoint-status.sh your-command  # Shows new progress bar
 
 # Continue to next step
 ```
@@ -236,7 +236,7 @@ else
 fi
 
 # Mark complete AFTER verification proves both branches work correctly
-make checkpoint-update CMD=your-command STEP=X
+./scripts/checkpoint-update.sh your-command X
 ```
 
 ### Real Example: Check-Docs Workflow
@@ -246,7 +246,7 @@ The `/ar:check-docs` command demonstrates sequential discipline:
 ```bash
 # Phase 1: Initial Check
 make check-docs  # Actual work
-make checkpoint-update CMD=check-docs STEP=1  # Mark complete
+./scripts/checkpoint-update.sh check-docs 1  # Mark complete
 
 # Phase 2: Conditional Fix Attempt (if errors found)
 if [ $ERROR_COUNT -gt 0 ]; then
@@ -255,11 +255,11 @@ if [ $ERROR_COUNT -gt 0 ]; then
 else
   echo "No errors - skipping fixes"  # Still output something
 fi
-make checkpoint-update CMD=check-docs STEP=2
+./scripts/checkpoint-update.sh check-docs 2
 
 # Phase 3: Re-validation (idempotent)
 make check-docs  # Same check, proves it still works
-make checkpoint-update CMD=check-docs STEP=3
+./scripts/checkpoint-update.sh check-docs 3
 
 # Phase 4: Conditional Commit (if changes occurred)
 if [ $(git diff --name-only | wc -l) -gt 0 ]; then
@@ -268,7 +268,7 @@ if [ $(git diff --name-only | wc -l) -gt 0 ]; then
 else
   echo "No changes needed"
 fi
-make checkpoint-update CMD=check-docs STEP=4
+./scripts/checkpoint-update.sh check-docs 4
 ```
 
 ## Anti-Patterns
@@ -277,8 +277,8 @@ make checkpoint-update CMD=check-docs STEP=4
 
 ```bash
 # Do NOT do this
-make checkpoint-update CMD=new-learnings STEP=6  # Without creating KB articles
-make checkpoint-update CMD=new-learnings STEP=7  # Without updating commands
+./scripts/checkpoint-update.sh new-learnings 6  # Without creating KB articles
+./scripts/checkpoint-update.sh new-learnings 7  # Without updating commands
 # Result: False progress, actual work still not done
 ```
 
@@ -286,7 +286,7 @@ make checkpoint-update CMD=new-learnings STEP=7  # Without updating commands
 
 ```bash
 # Do NOT do this
-make checkpoint-update CMD=command STEP=2 & make checkpoint-update CMD=command STEP=3 &
+./scripts/checkpoint-update.sh command 2 & ./scripts/checkpoint-update.sh command 3 &
 # Result: Contract violation, checkpoint system corrupted
 ```
 
@@ -296,7 +296,7 @@ make checkpoint-update CMD=command STEP=2 & make checkpoint-update CMD=command S
 # Do NOT do this
 if [ $ERROR_COUNT -gt 0 ]; then
   # ... fix logic ...
-  make checkpoint-update CMD=check-docs STEP=2
+  ./scripts/checkpoint-update.sh check-docs 2
 fi
 # Missing: No output when ERROR_COUNT is 0 means branch wasn't verified
 ```
@@ -313,7 +313,7 @@ if [ $? -eq 0 ]; then
 fi
 
 # THEN mark complete
-make checkpoint-update CMD=check-docs STEP=1
+./scripts/checkpoint-update.sh check-docs 1
 
 # Continue with next step
 ```

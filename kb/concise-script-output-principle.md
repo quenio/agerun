@@ -20,7 +20,7 @@ echo "Tracking file: $TRACKING_FILE"
 # After: Concise output (3 lines)
 echo "📈 $COMMAND_NAME: $COMPLETED/$TOTAL steps (${PERCENT}%)"
 echo "   [$PROGRESS_BAR] ${PERCENT}%"
-echo "→ Next: make checkpoint-update CMD=$COMMAND_NAME STEP=$NEXT_STEP"
+echo "→ Next: ./scripts/checkpoint-update.sh $COMMAND_NAME $NEXT_STEP"
 ```
 
 ## Generalization

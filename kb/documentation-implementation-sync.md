@@ -41,7 +41,7 @@ def verify_sync():
     issues = []
     
     # Extract actual output from implementation
-    actual_output = run_command("make checkpoint-status --compact")
+    actual_output = run_command("./scripts/checkpoint-status.sh command-name --compact")
     
     # Check each documentation file
     for doc_file in Path(".opencode/command/ar").glob("*.md"):

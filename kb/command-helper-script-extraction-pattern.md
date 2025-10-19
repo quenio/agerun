@@ -218,7 +218,7 @@ done
 
 # ... more embedded checks ...
 
-make checkpoint-update CMD=review-changes STEP=2
+./scripts/checkpoint-update.sh review-changes 2
 ```
 ````
 
@@ -248,7 +248,7 @@ Scans for known issues and anti-patterns:
 ```
 
 ```bash
-make checkpoint-update CMD=review-changes STEP=2
+./scripts/checkpoint-update.sh review-changes 2
 ```
 \`\`\`
 
@@ -453,7 +453,7 @@ From real extraction work:
 ```bash
 # Don't extract this - it's simple workflow
 ./scripts/run-git-diff.sh  # Just calls "git diff"
-./scripts/checkpoint-update.sh  # Just calls "make checkpoint-update"
+./scripts/checkpoint-update.sh  # Directly updates checkpoint state
 ```
 
 ✅ **CORRECT** - Keep simple commands inline:
@@ -461,7 +461,7 @@ From real extraction work:
 ```markdown
 ```bash
 git diff
-make checkpoint-update CMD=review-changes STEP=1
+./scripts/checkpoint-update.sh review-changes 1
 ```
 \`\`\`
 ```

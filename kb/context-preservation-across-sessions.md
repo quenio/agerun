@@ -59,7 +59,7 @@ session_context_t* build_session_summary(ar_data_t *ref_session_data) {  // EXAM
 
     // Record current checkpoint
     own_context->current_work = "Checkpoint 5: Update CHANGELOG";
-    own_context->next_step = "make checkpoint-update-verified CMD=commit STEP=5";
+    own_context->next_step = "./scripts/checkpoint-update-enhanced.sh commit 5 <evidence> <summary>";
 
     return own_context;
 }
@@ -158,12 +158,12 @@ echo ""
 echo "## 8. Current Work"
 echo "Checkpoint 5 of commit workflow"
 echo "Had just finished updating CHANGELOG.md"
-echo "About to run: make checkpoint-update-verified CMD=commit STEP=5"
+echo "About to run: ./scripts/checkpoint-update-enhanced.sh commit 5 <evidence> <summary>"
 echo ""
 
 echo "## 9. Exact Next Step"
 echo "\`\`\`bash"
-echo "make checkpoint-update-verified CMD=commit STEP=5 SUMMARY=\"CHANGELOG updated\""
+echo "./scripts/checkpoint-update-enhanced.sh commit 5 \"\" \"CHANGELOG updated\""
 echo "\`\`\`"
 ```
 

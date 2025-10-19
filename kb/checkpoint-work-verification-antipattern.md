@@ -12,9 +12,9 @@ Using checkpoint systems to mark steps complete without actually performing the 
 ## Anti-Pattern Example
 ```bash
 # WRONG: Marking steps complete without doing the work
-make checkpoint-update CMD=new-learnings STEP=3  # No KB article created
-make checkpoint-update CMD=new-learnings STEP=6  # No cross-references added
-make checkpoint-update CMD=new-learnings STEP=7  # No commands updated
+./scripts/checkpoint-update.sh new-learnings 3  # No KB article created
+./scripts/checkpoint-update.sh new-learnings 6  # No cross-references added
+./scripts/checkpoint-update.sh new-learnings 7  # No commands updated
 
 # Result: False completion, no actual work done
 ```
@@ -24,11 +24,11 @@ make checkpoint-update CMD=new-learnings STEP=7  # No commands updated
 # RIGHT: Complete work first, then mark step
 echo "Creating KB article with real AgeRun examples..."
 # Actually create kb/new-pattern.md with ar_data_t* examples
-make checkpoint-update-verified CMD=new-learnings STEP=3 EVIDENCE="kb/new-pattern.md" SUMMARY="Created KB article with real AgeRun types"
+./scripts/checkpoint-update-enhanced.sh new-learnings 3 "kb/new-pattern.md" "Created KB article with real AgeRun types"
 
 echo "Adding cross-references to existing articles..."
 # Actually update 3-5 existing KB articles
-make checkpoint-update-verified CMD=new-learnings STEP=6 EVIDENCE="" SUMMARY="Updated 5 KB articles with bidirectional references"
+./scripts/checkpoint-update-enhanced.sh new-learnings 6 "" "Updated 5 KB articles with bidirectional references"
 ```
 
 ## Detection Patterns
@@ -55,7 +55,7 @@ make checkpoint-update-verified CMD=new-learnings STEP=6 EVIDENCE="" SUMMARY="Up
 ## Implementation
 ```bash
 # Enhanced checkpoint system prevents false completion
-make checkpoint-update-verified CMD=new-learnings STEP=3 EVIDENCE="kb/article.md" SUMMARY="Work description"
+./scripts/checkpoint-update-enhanced.sh new-learnings 3 "kb/article.md" "Work description"
 
 # System verifies:
 # - Evidence file exists and contains real AgeRun types
@@ -67,8 +67,8 @@ make checkpoint-update-verified CMD=new-learnings STEP=3 EVIDENCE="kb/article.md
 ## Recovery Process
 When this anti-pattern is detected:
 1. **Stop immediately**: Do not proceed with false completions
-2. **Reset tracking**: `make checkpoint-cleanup CMD=command-name`
-3. **Restart properly**: `make checkpoint-init` and complete work before marking steps
+2. **Reset tracking**: `./scripts/checkpoint-cleanup.sh command-name`
+3. **Restart properly**: Use `./scripts/checkpoint-init.sh` and complete work before marking steps
 4. **Document lesson**: Update process to prevent recurrence
 5. **Verify completion**: Use verification scripts to ensure work is actually done
 

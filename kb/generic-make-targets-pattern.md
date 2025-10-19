@@ -23,9 +23,9 @@ checkpoint-init:
 	@bash scripts/checkpoint-init.sh $(CMD) $(STEPS)
 
 # Usage examples in comments
-# make checkpoint-init CMD=new-learnings STEPS='"Step 1" "Step 2"'
-# make checkpoint-init CMD=commit STEPS='"Stage" "Review" "Push"'
-# make checkpoint-init CMD=build STEPS='"Clean" "Compile" "Link"'
+# ./scripts/checkpoint-init.sh new-learnings ""Step 1" "Step 2""
+# ./scripts/checkpoint-init.sh commit ""Stage" "Review" "Push""
+# ./scripts/checkpoint-init.sh build ""Clean" "Compile" "Link""
 ```
 
 ## Generalization

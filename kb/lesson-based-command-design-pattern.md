@@ -135,13 +135,13 @@ Each command should have quality gates that prevent progression until lessons ar
 
 ```bash
 # Quality Gate 1: Requirements Complete (covers Lessons 1, 2, 3, 4)
-make checkpoint-gate CMD=create-plan GATE="Requirements" REQUIRED="1,2,3,4,5"
+./scripts/checkpoint-gate.sh create-plan "Requirements" "1,2,3,4,5"
 
 # Quality Gate 2: Iterations Complete (covers Lessons 6, 7, 8, 11)
-make checkpoint-gate CMD=create-plan GATE="Iterations" REQUIRED="6,7,8"
+./scripts/checkpoint-gate.sh create-plan "Iterations" "6,7,8"
 
 # Quality Gate 3: Documentation Complete (covers Lessons 12, 13, 14)
-make checkpoint-gate CMD=create-plan GATE="Documentation" REQUIRED="9,10,11"
+./scripts/checkpoint-gate.sh create-plan "Documentation" "9,10,11"
 ```
 
 #### Step 5: Use Automated Validators

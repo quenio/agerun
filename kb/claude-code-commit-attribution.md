@@ -124,7 +124,7 @@ From AgeRun's `/ar:commit` command (Step 8: Create Commit):
 
 ```bash
 # Checkpoint 8: Create Commit
-make checkpoint-update CMD=commit STEP=8
+./scripts/checkpoint-update.sh commit 8
 
 # Create commit with proper attribution
 git commit -m "$(cat <<'EOF'

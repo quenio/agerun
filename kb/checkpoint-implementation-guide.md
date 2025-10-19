@@ -165,7 +165,7 @@ When implementing checkpoints, **extract multi-line embedded bash logic to helpe
 for file in modules/*.c; do
   # ... 30 lines of complex parsing ...
 done
-make checkpoint-update CMD=review-changes STEP=2
+./scripts/checkpoint-update.sh review-changes 2
 \`\`\`
 
 ✅ **CORRECT** - Extract to helper script:
@@ -176,7 +176,7 @@ make checkpoint-update CMD=review-changes STEP=2
 \`\`\`
 
 \`\`\`bash
-make checkpoint-update CMD=review-changes STEP=2
+./scripts/checkpoint-update.sh review-changes 2
 \`\`\`
 ```
 

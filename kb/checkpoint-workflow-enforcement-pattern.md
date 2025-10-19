@@ -180,7 +180,7 @@ The three-section enforcement prevents this by:
 ## FINAL GATE: COMMIT READINESS
 \`\`\`bash
 # After all work done, check if requirements met
-make checkpoint-gate CMD=new-learnings GATE="Final Commit Readiness" REQUIRED="1,2,3,4,5,6,7,8,9,10,11"
+./scripts/checkpoint-gate.sh new-learnings "Final Commit Readiness" "1,2,3,4,5,6,7,8,9,10,11"
 \`\`\`
 ```
 - Problem: Can't proceed AFTER work is done

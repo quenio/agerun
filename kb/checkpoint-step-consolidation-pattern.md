@@ -16,7 +16,7 @@ When checkpoint workflow steps represent different aspects of the same per-item 
 
 ```bash
 # BAD: Separate steps for different aspects of same per-item verification
-make checkpoint-init CMD=review-plan STEPS='
+./scripts/checkpoint-init.sh review-plan '
   "KB Consultation"
   "Read Plan"
   "Verify Completeness"
@@ -45,7 +45,7 @@ make checkpoint-init CMD=review-plan STEPS='
 
 ```bash
 # GOOD: Single step for comprehensive per-item review
-make checkpoint-init CMD=review-plan STEPS='
+./scripts/checkpoint-init.sh review-plan '
   "KB Consultation"
   "Read Plan and Extract PENDING"
   "Review Each Iteration"          # ← Consolidated: does ALL per-item checks
@@ -92,10 +92,10 @@ For EACH item:
 
 ```bash
 # Main checkpoint: High-level workflow stages
-make checkpoint-init CMD=review-plan STEPS='...'
+./scripts/checkpoint-init.sh review-plan "..."
 
 # Nested checkpoint: Track per-item progress within iterative step
-make checkpoint-init CMD=review-plan-iterations STEPS='
+./scripts/checkpoint-init.sh review-plan-iterations '
   "Iteration 1.1"
   "Iteration 1.2"
   ...
@@ -244,13 +244,13 @@ Review checkpoint structure and ask:
 
 ```bash
 # Initialize nested checkpoint for per-item tracking
-make checkpoint-init CMD=[command]-[items] STEPS='[list of items]'
+./scripts/checkpoint-init.sh [command]-[items] "[list of items]"
 
 # Update after each item
-make checkpoint-update CMD=[command]-[items] STEP=N
+./scripts/checkpoint-update.sh [command]-[items] N
 
 # Clean up when all items complete
-make checkpoint-cleanup CMD=[command]-[items]
+./scripts/checkpoint-cleanup.sh [command]-[items]
 ```
 
 ### 4. Enforce Interactive Acceptance

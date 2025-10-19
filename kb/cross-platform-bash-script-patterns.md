@@ -249,12 +249,12 @@ echo "Next: Step $STEP_NUM - $STEP_DESC"
 ```
 
 **How Checkpoint Scripts Are Used in Commands**
-Commands like `/ar:check-docs`, `/ar:new-learnings`, and `/ar:commit` use these scripts through Makefile targets:
-1. Command initializes checkpoint with `make checkpoint-init CMD=command-name STEPS=...`
-2. After each step, runs `make checkpoint-update CMD=command-name STEP=N`
-3. Between stages, enforces gates with `make checkpoint-gate CMD=command-name GATE="Name" REQUIRED=...`
-4. Displays progress with `make checkpoint-status CMD=command-name`
-5. Cleans up on completion with `make checkpoint-cleanup CMD=command-name`
+Commands like `/ar:check-docs`, `/ar:new-learnings`, and `/ar:commit` use these scripts directly:
+1. Command initializes checkpoint with `./scripts/checkpoint-init.sh command-name "..."`
+2. After each step, runs `./scripts/checkpoint-update.sh command-name N`
+3. Between stages, enforces gates with `./scripts/checkpoint-gate.sh command-name "Name" "..."`
+4. Displays progress with `./scripts/checkpoint-status.sh command-name`
+5. Cleans up on completion with `./scripts/checkpoint-cleanup.sh command-name`
 
 ## Common Gotchas
 

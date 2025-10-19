@@ -17,19 +17,19 @@ def check_checkpoint_consistency(filepath):
     
     # Extract checkpoint initialization
     init_match = re.search(
-        r'make checkpoint-init CMD=(\w+) STEPS="([^"]+)"',
+        r'\./scripts/checkpoint-init\.sh (\w+) "([^"]+)"',
         content
     )
     if not init_match:
         return None
-        
+
     cmd_name = init_match.group(1)
     steps = init_match.group(2).split('" "')
     num_steps = len(steps)
-    
+
     # Find all checkpoint-update calls
     updates = re.findall(
-        r'make checkpoint-update CMD=(\w+) STEP=(\d+)',
+        r'\./scripts/checkpoint-update\.sh (\w+) (\d+)',
         content
     )
     

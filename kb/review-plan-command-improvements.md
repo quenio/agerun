@@ -106,7 +106,7 @@ For EACH PENDING REVIEW iteration:
    new_string: "#### Iteration X.Y: ... - REVIEWED"
 
    # Update iteration checkpoint
-   make checkpoint-update CMD=review-plan-iterations STEP=N
+   ./scripts/checkpoint-update.sh review-plan-iterations N
    ```
 
 5. **Repeat** until all PENDING REVIEW iterations processed

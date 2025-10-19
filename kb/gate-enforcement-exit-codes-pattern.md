@@ -59,20 +59,20 @@ fi
 ## Implementation
 ```bash
 # Using gates in command flow
-make checkpoint-gate CMD=build GATE="Prerequisites" REQUIRED="1,2,3"
+./scripts/checkpoint-gate.sh build "Prerequisites" "1,2,3"
 if [ $? -eq 0 ]; then
     echo "Gate passed, continuing..."
-    make checkpoint-update CMD=build STEP=4
+    ./scripts/checkpoint-update.sh build 4
 else
     echo "Cannot continue until prerequisites are met"
     exit 1
 fi
 
 # Or use && for automatic flow control
-make checkpoint-gate CMD=build GATE="Phase1" REQUIRED="1,2" && \
-make checkpoint-update CMD=build STEP=3 && \
-make checkpoint-gate CMD=build GATE="Phase2" REQUIRED="3,4" && \
-make checkpoint-update CMD=build STEP=5
+./scripts/checkpoint-gate.sh build "Phase1" "1,2" && \
+./scripts/checkpoint-update.sh build 3 && \
+./scripts/checkpoint-gate.sh build "Phase2" "3,4" && \
+./scripts/checkpoint-update.sh build 5
 ```
 
 ## Related Patterns

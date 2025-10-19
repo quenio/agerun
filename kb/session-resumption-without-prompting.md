@@ -134,7 +134,7 @@ Assistant: I'll continue with the commit workflow from Checkpoint 7.
 [Executes: git diff --cached]
 [Executes: git log --oneline -10]
 [Executes: git add -A]
-[Executes: make checkpoint-update CMD=commit STEP=7]
+[Executes: ./scripts/checkpoint-update.sh commit 7]
 ```
 
 **Incorrect Resumption (what should NOT happen):**

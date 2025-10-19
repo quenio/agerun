@@ -23,15 +23,15 @@ Incorrect conditional flow can cause:
 if make check-docs 2>&1 | tee /tmp/check-docs-output.txt; then
   echo "✅ No documentation errors found!"
   # Skip to commit phase (WRONG - skips on EVERY run, not just resume)
-  make checkpoint-update CMD=check-docs STEP=1
-  make checkpoint-update CMD=check-docs STEP=2
-  make checkpoint-update CMD=check-docs STEP=3
-  make checkpoint-update CMD=check-docs STEP=4  # Steps 2-4 skipped!
+  ./scripts/checkpoint-update.sh check-docs 1
+  ./scripts/checkpoint-update.sh check-docs 2
+  ./scripts/checkpoint-update.sh check-docs 3
+  ./scripts/checkpoint-update.sh check-docs 4  # Steps 2-4 skipped!
 else
   ERROR_COUNT=$(grep -c "ERROR\|FAIL" /tmp/check-docs-output.txt || echo "0")
   echo "⚠️ Found $ERROR_COUNT documentation errors"
   echo "ERROR_COUNT=$ERROR_COUNT" > /tmp/check-docs-stats.txt
-  make checkpoint-update CMD=check-docs STEP=1
+  ./scripts/checkpoint-update.sh check-docs 1
 fi
 ```
 
@@ -63,7 +63,7 @@ else
 fi
 
 # Step 1 ALWAYS completes first
-make checkpoint-update CMD=check-docs STEP=1
+./scripts/checkpoint-update.sh check-docs 1
 
 # NOW apply conditional flow based on error state
 source /tmp/check-docs-stats.txt 2>/dev/null || ERROR_COUNT=0
@@ -71,12 +71,12 @@ source /tmp/check-docs-stats.txt 2>/dev/null || ERROR_COUNT=0
 if [ $ERROR_COUNT -eq 0 ]; then
   echo "✅ No errors to fix - skipping to commit phase"
   # Skip intermediate steps only AFTER determining there's nothing to do
-  make checkpoint-update CMD=check-docs STEP=2
-  make checkpoint-update CMD=check-docs STEP=3
-  make checkpoint-update CMD=check-docs STEP=4
+  ./scripts/checkpoint-update.sh check-docs 2
+  ./scripts/checkpoint-update.sh check-docs 3
+  ./scripts/checkpoint-update.sh check-docs 4
 else
   # Proceed through normal workflow when work is needed
-  make checkpoint-gate CMD=check-docs GATE="Errors Found" REQUIRED="1"
+  ./scripts/checkpoint-gate.sh check-docs "Errors Found" "1"
 fi
 ```
 
@@ -121,11 +121,11 @@ source /tmp/command-stats.txt 2>/dev/null || ERROR_COUNT=0
 
 if [ $ERROR_COUNT -eq 0 ]; then
   echo "✅ No errors to fix - skipping to commit phase"
-  make checkpoint-update CMD=command STEP=2
-  make checkpoint-update CMD=command STEP=3
-  make checkpoint-update CMD=command STEP=4
+  ./scripts/checkpoint-update.sh command 2
+  ./scripts/checkpoint-update.sh command 3
+  ./scripts/checkpoint-update.sh command 4
 else
-  make checkpoint-gate CMD=command GATE="Errors Found" REQUIRED="1"
+  ./scripts/checkpoint-gate.sh command "Errors Found" "1"
 fi
 ```
 ```
