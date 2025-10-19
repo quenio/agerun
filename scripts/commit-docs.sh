@@ -16,7 +16,7 @@ if [ $FILES_CHANGED -gt 0 ]; then
   echo "Committing documentation fixes..."
   git add -A
   git commit -m "docs: fix documentation validation errors"
-  git push
+  git push 2>&1
 
   # Verify push
   git status
@@ -24,5 +24,3 @@ if [ $FILES_CHANGED -gt 0 ]; then
 else
   echo "✅ No changes to commit"
 fi
-
-./scripts/update-checkpoint.sh check-docs STEP=5
