@@ -1,5 +1,40 @@
 # AgeRun CHANGELOG
 
+## 2025-10-18 (Session 2h - Pattern Documentation Refinement)
+
+- **Revise Generic Make Targets Pattern for Modern Approach**
+
+  Updated generic-make-targets-pattern.md KB article to reflect the project's evolution toward direct script calls instead of Makefile wrapper targets.
+
+  **Problem**: KB article contained checkpoint-specific examples using `$(STEPS)` variables and `make checkpoint-*` patterns that no longer match current project architecture.
+
+  **Solution**: Modernized documentation to reflect current best practices:
+  1. **Removed checkpoint examples** - Deleted outdated `$(STEPS)` variable patterns and `make checkpoint-init` examples
+  2. **Added "Modern Approach" section** - Explains shift toward direct script calls over Makefile wrappers
+  3. **Clarified when to use each pattern** - Makefile targets for core build operations, direct scripts for workflows/maintenance
+  4. **Added principle: "Limit wrapper bloat"** - Prevents Makefile target proliferation (anti-pattern addressed in recent refactoring)
+  5. **Updated examples** - Now shows general patterns from actual current Makefile (build, run-tests, process)
+
+  **Key Changes**:
+  - Added "Modern Approach: Direct Script Calls" section explaining decoupling benefits
+  - Added "When to Use Makefile Targets" vs "When to Use Direct Script Calls" decision matrix
+  - Added "Limit wrapper bloat" principle to anti-patterns
+  - Removed 8 checkpoint-specific lines, added 22 lines of clarifying guidance
+  - Updated implementation examples to use general patterns not checkpoint-specific code
+
+  **Alignment with Recent Commits**:
+  - Reflects checkpoint refactoring (commits f695975, bf98b7f, 3ccee70)
+  - Aligns with Makefile cleanup (2 scripts remove checkpoint Makefile targets)
+  - Validates KB article accuracy with recent code changes
+
+  **Files Modified**: kb/generic-make-targets-pattern.md
+  **Related Pattern**: See [command-orchestrator-pattern.md](kb/command-orchestrator-pattern.md) for orchestration guidance
+
+  **Quality Validation**:
+  - make check-docs: All 587 files validated, no errors
+  - Documentation validation: Passed conditional flow with no errors (skipped fix stages)
+  - Clean working tree after validation
+
 ## 2025-10-18 (Session 2g - Knowledge Base Integration)
 
 - **Establish Command Orchestrator Checkpoint Patterns in Knowledge Base**
