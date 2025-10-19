@@ -1,5 +1,31 @@
 # AgeRun CHANGELOG
 
+## 2025-10-18 (Session 2g)
+
+- **Decouple Documentation Validation Helper Scripts from Checkpoint Tracking**
+
+  Refactored check-docs command to follow command orchestrator pattern with proper separation of concerns between helper scripts and checkpoint management.
+
+  **Problem**: Helper scripts (validate-docs.sh, preview-doc-fixes.sh, apply-doc-fixes.sh) contained embedded checkpoint-update calls, coupling them to checkpoint tracking and preventing reuse in other workflows.
+
+  **Solution**: Applied proper orchestrator pattern discipline:
+  1. **Removed checkpoint coupling from scripts** - Helper scripts now focus on single responsibility, no checkpoint calls
+  2. **Updated command orchestrator** - check-docs.md now handles all checkpoint updates and tracking
+  3. **Aligned checkpoint markers** - Wrapped each of 5 checkpoint steps with proper [CHECKPOINT START/END] markers
+  4. **Documented orchestration clearly** - Command shows 15 operations grouped into 5 logical checkpoint steps with explicit boundaries
+
+  **Checkpoint Steps Defined**:
+  - Step 1: Validate Docs (validate-docs.sh + checkpoint-update 1)
+  - Step 2: Preview Fixes (conditional-flow + preview-doc-fixes.sh + checkpoint-update 2)
+  - Step 3: Apply Fixes (apply-doc-fixes.sh + checkpoint-update 3)
+  - Step 4: Verify Resolution (verify-docs.sh + checkpoint-update 4 + gate)
+  - Step 5: Commit and Push (commit-docs.sh + checkpoint-update 5)
+
+  **Changes**:
+  - Modified: 3 helper scripts (removed checkpoint calls)
+  - Modified: check-docs.md command (proper orchestration with markers)
+  - Commits: f8e4210, 88b08a8, 90c0ae7, c38b21a, f300816
+
 ## 2025-10-18 (Session 2f)
 
 - **Integrate Command Orchestrator Pattern Learnings into Knowledge Base**
