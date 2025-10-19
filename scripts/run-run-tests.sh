@@ -10,11 +10,11 @@ if make bin/ar_*_tests 2>&1 | tail -10; then
   BUILD_STATUS="PASS"
 else
   echo "❌ Test build failed"
-  make checkpoint-update CMD=run-tests STEP=1
+  ./scripts/checkpoint-update.sh run-tests 1
   ./scripts/checkpoint-complete.sh run-tests
   exit 1
 fi
-make checkpoint-update CMD=run-tests STEP=1
+./scripts/checkpoint-update.sh run-tests 1
 echo ""
 echo "========== STAGE 2: Run All Tests =========="
 echo ""
@@ -25,7 +25,7 @@ else
   echo "⚠️ Some tests failed"
   TEST_STATUS="FAIL"
 fi
-make checkpoint-update CMD=run-tests STEP=2
+./scripts/checkpoint-update.sh run-tests 2
 echo ""
 echo "========== STAGE 3: Verify Results =========="
 echo ""
@@ -34,7 +34,7 @@ if [ "$TEST_STATUS" = "PASS" ]; then
 else
   echo "⚠️ Review test output above"
 fi
-make checkpoint-update CMD=run-tests STEP=3
+./scripts/checkpoint-update.sh run-tests 3
 ./scripts/checkpoint-complete.sh run-tests
 echo ""
 echo "✅ Test run workflow complete!"

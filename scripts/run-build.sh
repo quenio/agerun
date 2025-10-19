@@ -20,13 +20,13 @@ else
   echo "❌ Compilation failed"
   COMPILE_STATUS="FAIL"
   echo "COMPILE_STATUS=$COMPILE_STATUS" > /tmp/build-stats.txt
-  make checkpoint-update CMD=build STEP=1
+  ./scripts/checkpoint-update.sh build 1
   ./scripts/checkpoint-complete.sh build
   exit 1
 fi
 
 echo "COMPILE_STATUS=$COMPILE_STATUS" > /tmp/build-stats.txt
-make checkpoint-update CMD=build STEP=1
+./scripts/checkpoint-update.sh build 1
 
 echo ""
 echo "========== STAGE 2: Run Checks =========="
@@ -49,7 +49,7 @@ else
   CHECKS_PASSED=false
 fi
 
-make checkpoint-update CMD=build STEP=2
+./scripts/checkpoint-update.sh build 2
 
 echo ""
 echo "========== STAGE 3: Verify Build =========="
@@ -64,7 +64,7 @@ else
 fi
 
 echo "BUILD_RESULT=$BUILD_RESULT" >> /tmp/build-stats.txt
-make checkpoint-update CMD=build STEP=3
+./scripts/checkpoint-update.sh build 3
 
 echo ""
 echo "========== CHECKPOINT COMPLETION =========="

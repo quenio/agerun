@@ -16,7 +16,7 @@ echo "Removing all build artifacts..."
 make clean 2>&1 | head -10
 echo "✅ Artifacts cleaned"
 
-make checkpoint-update CMD=build-clean STEP=1
+./scripts/checkpoint-update.sh build-clean 1
 
 echo ""
 echo "========== STAGE 2: Compile Code =========="
@@ -30,13 +30,13 @@ else
   echo "❌ Clean build failed"
   BUILD_STATUS="FAIL"
   echo "BUILD_STATUS=$BUILD_STATUS" > /tmp/build-clean-stats.txt
-  make checkpoint-update CMD=build-clean STEP=2
+  ./scripts/checkpoint-update.sh build-clean 2
   ./scripts/checkpoint-complete.sh build-clean
   exit 1
 fi
 
 echo "BUILD_STATUS=$BUILD_STATUS" > /tmp/build-clean-stats.txt
-make checkpoint-update CMD=build-clean STEP=2
+./scripts/checkpoint-update.sh build-clean 2
 
 echo ""
 echo "========== STAGE 3: Verify Build =========="
@@ -52,7 +52,7 @@ else
 fi
 
 echo "VERIFY_STATUS=$VERIFY_STATUS" >> /tmp/build-clean-stats.txt
-make checkpoint-update CMD=build-clean STEP=3
+./scripts/checkpoint-update.sh build-clean 3
 
 echo ""
 echo "========== CHECKPOINT COMPLETION =========="

@@ -23,9 +23,6 @@ if [ ! -f "$PROGRESS_FILE" ]; then
   echo ""
   echo "Initialize with:"
   echo "  ./scripts/checkpoint-init.sh $COMMAND '{STEPS}'"
-  echo ""
-  echo "Or manually with:"
-  echo "  make checkpoint-init CMD=$COMMAND STEPS='{STEPS}'"
   exit 1
 fi
 

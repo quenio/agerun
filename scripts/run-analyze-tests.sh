@@ -19,7 +19,7 @@ else
   echo "⚠️ Build had issues (continuing with analysis)"
 fi
 
-make checkpoint-update CMD=analyze-tests STEP=1
+./scripts/checkpoint-update.sh analyze-tests 1
 
 echo ""
 echo "========== STAGE 2: Run Static Analysis =========="
@@ -35,7 +35,7 @@ else
 fi
 
 echo "ANALYSIS_STATUS=$ANALYSIS_STATUS" > /tmp/analyze-tests-stats.txt
-make checkpoint-update CMD=analyze-tests STEP=2
+./scripts/checkpoint-update.sh analyze-tests 2
 
 echo ""
 echo "========== STAGE 3: Report Results =========="
@@ -49,7 +49,7 @@ else
   echo "⚠️ Analysis Results: Issues found - review above"
 fi
 
-make checkpoint-update CMD=analyze-tests STEP=3
+./scripts/checkpoint-update.sh analyze-tests 3
 
 echo ""
 echo "========== CHECKPOINT COMPLETION =========="

@@ -54,7 +54,7 @@ COMPLETED=$(grep -c "=complete" "$TRACKING_FILE" || true)
 # Check if all steps are complete
 if [ "$COMPLETED" -eq "$TOTAL_STEPS" ]; then
     echo "🎆 All $TOTAL_STEPS steps complete!"
-    echo "✓ Run: make checkpoint-cleanup CMD=$COMMAND_NAME"
+    echo "✓ Run: ./scripts/checkpoint-complete.sh $COMMAND_NAME"
 else
     # Just show the progress bar (3 lines from checkpoint_status)
     "$(dirname "$0")/checkpoint-status.sh" "$COMMAND_NAME" --compact || true

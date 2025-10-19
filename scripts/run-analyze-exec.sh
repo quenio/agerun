@@ -26,7 +26,7 @@ else
   echo "⚠️ Build had issues (continuing with analysis)"
 fi
 
-make checkpoint-update CMD=analyze-exec STEP=1
+./scripts/checkpoint-update.sh analyze-exec 1
 
 # ============================================================================
 # STAGE 2: Run Static Analysis (Step 2)
@@ -58,7 +58,7 @@ fi
 
 echo "ANALYSIS_STATUS=$ANALYSIS_STATUS" > /tmp/analyze-exec-stats.txt
 
-make checkpoint-update CMD=analyze-exec STEP=2
+./scripts/checkpoint-update.sh analyze-exec 2
 
 # ============================================================================
 # STAGE 3: Report Results (Step 3)
@@ -89,7 +89,7 @@ else
   echo "  - Unreachable code blocks"
 fi
 
-make checkpoint-update CMD=analyze-exec STEP=3
+./scripts/checkpoint-update.sh analyze-exec 3
 
 # ============================================================================
 # Checkpoint Completion

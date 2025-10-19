@@ -27,9 +27,9 @@ fi
 
 # Show status
 if [ "$VERBOSE" = "verbose" ] || [ "$VERBOSE" = "--verbose" ]; then
-  make checkpoint-status CMD="$COMMAND" VERBOSE=--verbose
+  ./scripts/checkpoint-status.sh "$COMMAND" --verbose
 else
-  make checkpoint-status CMD="$COMMAND"
+  ./scripts/checkpoint-status.sh "$COMMAND"
 fi
 
 exit 0

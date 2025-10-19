@@ -43,7 +43,7 @@ verify_work() {
     if [[ "$step_desc" = *"Knowledge Base Article Creation"*  ]]; then
         if [ -z "$evidence" ] || [ ! -f "$evidence" ]; then
             echo "❌ VERIFICATION FAILED: Knowledge Base Article Creation requires evidence file"
-            echo "   Usage: make checkpoint-update-verified CMD=$COMMAND_NAME STEP=$STEP_NUMBER EVIDENCE=kb/new-article.md SUMMARY='Created article with real AgeRun examples'"
+            echo "   Usage: ./scripts/checkpoint-update-enhanced.sh $COMMAND_NAME $STEP_NUMBER 'kb/new-article.md' 'Created article with real AgeRun examples'"
             return 1
         fi
         if ! grep -q "ar_data_t\|ar_agent_t\|ar_expression_\|ar_instruction_" "$evidence"; then
@@ -251,7 +251,7 @@ COMPLETED=$(grep -c "=complete" "$TRACKING_FILE" || true)
 
 if [ "$COMPLETED" -eq "$TOTAL_STEPS" ]; then
     echo "🎆 All $TOTAL_STEPS steps complete!"
-    echo "✓ Run: make checkpoint-cleanup CMD=$COMMAND_NAME"
+    echo "✓ Run: ./scripts/checkpoint-complete.sh $COMMAND_NAME"
 else
     "$(dirname "$0")/checkpoint-status.sh" "$COMMAND_NAME" --compact || true
 fi

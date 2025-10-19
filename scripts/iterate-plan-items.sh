@@ -72,7 +72,7 @@ while IFS= read -r line; do
 
       # Update checkpoint if provided
       if [ -n "$CHECKPOINT_CMD" ]; then
-        make checkpoint-update CMD="$CHECKPOINT_CMD" STEP="$CURRENT" 2>/dev/null || true
+        ./scripts/checkpoint-update.sh "$CHECKPOINT_CMD" "$CURRENT" 2>/dev/null || true
       fi
 
       echo "  ✓ Completed"

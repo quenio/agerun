@@ -57,7 +57,7 @@ if [ "$MODE" = "--compact" ]; then
     # Next action on one line
     if [ "$PENDING" -gt 0 ]; then
         NEXT_NUM=$(grep "=pending" "$TRACKING_FILE" | head -1 | sed 's@STEP_\([0-9]*\).*@\1@')
-        echo "→ Next: make checkpoint-update CMD=$COMMAND_NAME STEP=$NEXT_NUM"
+        echo "→ Next: ./scripts/checkpoint-update.sh $COMMAND_NAME $NEXT_NUM"
     fi
     exit 0
 fi

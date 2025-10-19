@@ -16,13 +16,13 @@ else
   echo "❌ Build failed"
   BUILD_STATUS="FAIL"
   echo "BUILD_STATUS=$BUILD_STATUS" > /tmp/run-exec-stats.txt
-  make checkpoint-update CMD=run-exec STEP=1
+  ./scripts/checkpoint-update.sh run-exec 1
   ./scripts/checkpoint-complete.sh run-exec
   exit 1
 fi
 
 echo "BUILD_STATUS=$BUILD_STATUS" > /tmp/run-exec-stats.txt
-make checkpoint-update CMD=run-exec STEP=1
+./scripts/checkpoint-update.sh run-exec 1
 
 echo ""
 echo "========== STAGE 2: Run Executable =========="
@@ -38,7 +38,7 @@ else
 fi
 
 echo "RUN_STATUS=$RUN_STATUS" > /tmp/run-exec-stats.txt
-make checkpoint-update CMD=run-exec STEP=2
+./scripts/checkpoint-update.sh run-exec 2
 
 echo ""
 echo "========== STAGE 3: Verify Execution =========="
@@ -52,7 +52,7 @@ else
   echo "⚠️ Review execution output above"
 fi
 
-make checkpoint-update CMD=run-exec STEP=3
+./scripts/checkpoint-update.sh run-exec 3
 
 echo ""
 ./scripts/checkpoint-complete.sh run-exec
