@@ -3,16 +3,18 @@
 # Usage: ./scripts/commit-settings.sh
 #
 # Purpose:
-# - Removes local settings file
 # - Stages merged settings.json
 # - Commits with appropriate message
 # - Pushes to remote
+# - Removes local settings file ONLY after successful commit and push
 # - Verifies git status
 #
+# Safety: Local settings file is preserved if commit or push fails, allowing recovery/retry
+#
 # Returns:
-# - Exit 0 if commit completed successfully
+# - Exit 0 if all operations completed successfully
 # - Exit 0 if no changes to commit (skips cleanly)
-# - Exit 1 if commit fails
+# - Exit 1 if commit or push fails (local file preserved)
 
 set -e
 
@@ -32,23 +34,14 @@ fi
 echo "Committing merged and refactored settings..."
 echo ""
 
-# Step 1: Remove local file
-if [ -f ./.claude/settings.local.json ]; then
-    rm ./.claude/settings.local.json
-    echo "✅ Local settings file removed"
-else
-    echo "ℹ️ Local settings file already removed"
-fi
-echo ""
-
-# Step 2: Stage changes
+# Step 1: Stage changes
 echo "Staging changes..."
 git add ./.claude/settings.json
 git rm ./.claude/settings.local.json 2>/dev/null || true
 echo "✅ Changes staged"
 echo ""
 
-# Step 3: Commit
+# Step 2: Commit
 echo "Committing changes..."
 if git commit -m "chore: merge and refactor local settings"; then
     echo "✅ Changes committed"
@@ -56,16 +49,32 @@ else
     # Check if there are actually changes staged
     if git diff --cached --quiet; then
         echo "ℹ️ No changes to commit"
+        exit 0
     else
-        echo "⚠️ Commit failed but changes exist - attempting to verify"
+        echo "❌ Commit failed - aborting to preserve local settings file"
+        exit 1
     fi
 fi
 echo ""
 
-# Step 4: Push
+# Step 3: Push
 echo "Pushing to remote..."
-git push
-echo "✅ Changes pushed"
+if git push; then
+    echo "✅ Changes pushed"
+else
+    echo "❌ Push failed - aborting to preserve local settings file"
+    exit 1
+fi
+echo ""
+
+# Step 4: Remove local file (ONLY after successful commit and push)
+echo "Removing local settings file..."
+if [ -f ./.claude/settings.local.json ]; then
+    rm ./.claude/settings.local.json
+    echo "✅ Local settings file removed"
+else
+    echo "ℹ️ Local settings file already removed"
+fi
 echo ""
 
 # Step 5: Verify
