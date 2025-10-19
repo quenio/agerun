@@ -217,3 +217,6 @@ Wrapper scripts are NOT appropriate for:
 - [Script Domain Naming Convention](script-domain-naming-convention.md) - Naming focused scripts for discoverability
 - [Single Responsibility Principle](single-responsibility-principle.md) - Each script does one thing
 - [Checkpoint Implementation Guide](checkpoint-implementation-guide.md) - Multi-step workflow patterns
+- [Command Orchestrator and Checkpoint Separation](command-orchestrator-checkpoint-separation.md) - Separation of checkpoint coordination from script responsibilities
+- [Checkpoint Operations and Steps Hierarchy](checkpoint-operations-and-steps-hierarchy.md) - Two-level hierarchy for checkpoint tracking
+- [Helper Script Reusability Pattern](helper-script-reusability-pattern.md) - Decoupling scripts from orchestration context

@@ -110,7 +110,7 @@ Runs `make check-docs` to identify all documentation errors and saves error coun
 
 **Expected output**: Shows validation results and saves ERROR_COUNT to stats file.
 
-#### Operation 4: Update Checkpoint
+#### Operation 4: Update Checkpoint After Validation
 
 ```bash
 ./scripts/checkpoint-update.sh check-docs 1

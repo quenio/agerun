@@ -1,6 +1,42 @@
 # AgeRun CHANGELOG
 
-## 2025-10-18 (Session 2g)
+## 2025-10-18 (Session 2g - Knowledge Base Integration)
+
+- **Establish Command Orchestrator Checkpoint Patterns in Knowledge Base**
+
+  Completed comprehensive 11-step new-learnings workflow integrating critical checkpoint and orchestrator patterns discovered during Session 2g refactoring work.
+
+  **Session 2g Learning Synthesis**:
+  1. Checkpoint updates belong in orchestrator, not scripts
+  2. Two-level hierarchy: checkpoint steps (tracked) vs operations (documented)
+  3. Helper scripts must be completely decoupled for reusability
+  4. Checkpoint markers must wrap complete logical units
+  5. Orchestrator clarity requires showing all operations inline
+
+  **KB Articles Created (3 new patterns)**:
+  - [Command Orchestrator and Checkpoint Separation](kb/command-orchestrator-checkpoint-separation.md) - Orchestrator handles checkpoints; scripts handle domain work
+  - [Checkpoint Operations and Steps Hierarchy](kb/checkpoint-operations-and-steps-hierarchy.md) - Two-level tracking hierarchy with clear boundaries
+  - [Helper Script Reusability Pattern](kb/helper-script-reusability-pattern.md) - Complete decoupling for cross-workflow reuse
+
+  **KB Articles Updated (4 existing cross-referenced)**:
+  - command-orchestrator-pattern.md - Added references to new checkpoint separation patterns
+  - checkpoint-sequential-execution-discipline.md - Linked to hierarchy and separation patterns
+  - command-helper-script-extraction-pattern.md - Connected to reusability pattern
+  - kb/README.md - Indexed all 3 new KB articles in Knowledge Management section
+
+  **Commands Enhanced (3 with new KB references)**:
+  - check-logs.md - Added command orchestrator pattern reference
+  - build.md - Added checkpoint separation pattern reference
+  - AGENTS.md - Updated checkpoint wrapper scripts section with hierarchy and separation details
+
+  **Quality Validation**:
+  - make check-docs: All documentation valid (587 files checked)
+  - make check-commands: All commands pass quality gates (average 99.4%)
+  - Cross-references: Bidirectional KB links established
+
+  **Impact**: Codifies checkpoint and orchestrator patterns for systematic integration across future commands and ensures proper helper script decoupling for maximum reusability.
+
+  **Commits**: 6 total (f8e4210 through 0451660) - Initial Session 2g refactoring plus new-learnings integration
 
 - **Decouple Documentation Validation Helper Scripts from Checkpoint Tracking**
 

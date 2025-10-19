@@ -79,6 +79,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
     - `gate-checkpoint.sh`: Verify gate conditions with clear error feedback (replaces 3-4 line gate verification pattern)
     - `complete-checkpoint.sh`: Show final status and cleanup (replaces 4-5 line completion pattern)
     - **Why wrappers exist**: Reduce boilerplate across commands, provide consistent API, improve UX with clear error messages ([details](kb/checkpoint-based-workflow-pattern.md))
+    - **Checkpoint structure**: Commands use two-level hierarchy (checkpoint steps + operations) with proper separation of concerns ([details](kb/checkpoint-operations-and-steps-hierarchy.md), [orchestrator](kb/command-orchestrator-checkpoint-separation.md))
 - **/reports**: Analysis reports and technical comparisons (all .md analysis files go here)
 - **.opencode/command/ar**: Slash command definitions (must use make targets, not direct scripts) ([role clarity](kb/role-clarification-pattern.md))
   - Commands using checkpoints (e.g., `/ar:new-learnings`, `/ar:check-docs`, `/ar:commit`) initialize and update progress via Makefile checkpoint targets

@@ -476,3 +476,5 @@ make checkpoint-update CMD=review-changes STEP=1
 - [Single Responsibility Principle](single-responsibility-principle.md) - Keeping scripts focused
 - [Concise Script Output Principle](concise-script-output-principle.md) - Script output guidelines
 - [Build System Exit Code Verification](build-system-exit-code-verification.md) - Exit code patterns
+- [Command Orchestrator and Checkpoint Separation](command-orchestrator-checkpoint-separation.md) - How to separate checkpoint concerns from scripts
+- [Helper Script Reusability Pattern](helper-script-reusability-pattern.md) - Decoupling scripts for cross-workflow use

@@ -326,3 +326,5 @@ make checkpoint-update CMD=check-docs STEP=1
 - [Gate Enforcement Exit Codes Pattern](gate-enforcement-exit-codes-pattern.md) - How gates prevent bad state progression
 - [Error Message Source Tracing](error-message-source-tracing.md) - Using errors to understand contract violations
 - [Multi-Step Checkpoint Tracking Pattern](multi-step-checkpoint-tracking-pattern.md) - Organizing complex workflows with discipline
+- [Command Orchestrator and Checkpoint Separation](command-orchestrator-checkpoint-separation.md) - How to properly structure checkpoints in orchestrators
+- [Checkpoint Operations and Steps Hierarchy](checkpoint-operations-and-steps-hierarchy.md) - Understanding the two-level checkpoint hierarchy
