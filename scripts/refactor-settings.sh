@@ -45,9 +45,9 @@ python3 ./scripts/refactor_permissions.py --dry-run "$SETTINGS_FILE" 2>/dev/null
 }
 echo ""
 
-# Step 2: Apply refactoring
+# Step 2: Apply refactoring with --apply flag
 echo "2. Applying generic patterns..."
-if python3 ./scripts/refactor_permissions.py "$SETTINGS_FILE" 2>/dev/null; then
+if python3 ./scripts/refactor_permissions.py --apply "$SETTINGS_FILE" 2>/dev/null; then
     echo "✅ Generic patterns applied"
 else
     echo "⚠️ Refactoring script completed"

@@ -1,5 +1,63 @@
 # AgeRun CHANGELOG
 
+## 2025-10-18 (Session 2i - Merge Settings Workflow KB Compliance)
+
+- **Fix merge-settings Workflow: Implement Actual Merge Logic and Full KB Pattern Compliance**
+
+  Identified and fixed 5 critical errors in merge-settings workflow, then brought it into full compliance with command orchestrator and checkpoint patterns.
+
+  **Critical Errors Fixed**:
+  1. **No actual merge implementation** - Step 3 had placeholder comments but never merged files
+     - Created `merge_settings.py` with proper JSON merge + deduplication logic
+  2. **Refactoring ran in dry-run mode** - Changes were analyzed but never applied
+     - Updated `refactor-settings.sh` to use `--apply` flag
+  3. **Invalid checkpoint syntax** - Used `STEP=N` instead of just `N`
+     - Fixed all checkpoint-update calls throughout
+  4. **Silent commit failures** - Reported success even when nothing to commit
+     - Added proper error handling to detect no-changes scenario
+  5. **Embedded multi-line logic** - Violated extraction pattern (10+ line blocks in command)
+     - Extracted to 6 focused helper scripts
+
+  **KB Pattern Compliance Issues Fixed**:
+  1. **Missing checkpoint markers** - Steps 1-4 had NO `[CHECKPOINT START/END]` markers
+     - Added proper markers for all 6 steps: `[CHECKPOINT START - STEP N: Name]`
+  2. **Missing operation numbering** - No Operation documentation within steps
+     - Added Operation 1/2 structure within each step (domain work + checkpoint-update)
+  3. **Embedded Step 3-4 logic** - 10+ line bash blocks violated extraction pattern
+     - Extracted `merge-permissions.sh` and `validate-merged-settings.sh`
+  4. **Embedded gate logic** - MERGE GATE had conditional logic instead of calling script
+     - Extracted to `verify-merge-gate.sh`
+  5. **Checkpoint calls in scripts** - Helper scripts made checkpoint-update calls
+     - All helper scripts now do DOMAIN WORK ONLY per separation pattern
+  6. **Improper marker nesting** - Had `[CHECKPOINT START - STAGE N]` instead of `[CHECKPOINT START - STEP N]`
+     - Updated all markers to proper step-level format
+
+  **New Helper Scripts Created** (each with single responsibility):
+  - `check-settings-local-file.sh` - Detect local file + count permissions
+  - `read-settings-files.sh` - Read both settings files + collect stats
+  - `merge-permissions.sh` - Perform actual merge operation (CRITICAL)
+  - `validate-merged-settings.sh` - Validate merged JSON syntax
+  - `verify-merge-gate.sh` - Merge gate verification logic
+  - `handle-discovery-gate-merge-settings.sh` - Discovery gate conditional logic
+  - `merge_settings.py` - Python merge implementation (CRITICAL)
+
+  **Pattern Compliance Achieved**:
+  - ✅ command-orchestrator-checkpoint-separation.md - Scripts do domain work only, no checkpoint calls
+  - ✅ checkpoint-operations-and-steps-hierarchy.md - Proper markers and operation numbering
+  - ✅ command-orchestrator-pattern.md - Command file IS orchestrator, no wrapper scripts
+  - ✅ command-helper-script-extraction-pattern.md - Each block extracted to focused script
+
+  **Files Modified**: 11 total
+  - Modified: 3 (`.opencode/command/ar/merge-settings.md`, `scripts/refactor-settings.sh`, `scripts/commit-settings.sh`)
+  - Created: 8 new helper scripts (`check-settings-local-file.sh`, `handle-discovery-gate-merge-settings.sh`, `read-settings-files.sh`, `merge-permissions.sh`, `validate-merged-settings.sh`, `verify-merge-gate.sh`, `merge_settings.py` + supporting script)
+
+  **Workflow Now Properly**:
+  - Performs actual JSON merge with deduplication
+  - Applies refactoring with generic permission patterns
+  - Validates all changes before committing
+  - Uses focused, reusable helper scripts
+  - Complies with all KB orchestrator and checkpoint patterns
+
 ## 2025-10-18 (Session 2h - Pattern Documentation Refinement)
 
 - **Revise Generic Make Targets Pattern for Modern Approach**

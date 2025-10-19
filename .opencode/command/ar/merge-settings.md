@@ -10,7 +10,7 @@ If a `/merge-settings` workflow is already in progress:
 
 ```bash
 ./scripts/checkpoint-status.sh merge-settings --verbose
-# Resume: ./scripts/checkpoint-update.sh merge-settings STEP=N
+# Resume: ./scripts/checkpoint-update.sh merge-settings N
 # Or reset: ./scripts/checkpoint-cleanup.sh merge-settings && ./scripts/checkpoint-init.sh merge-settings "Check Files" "Read Settings" "Merge Permissions" "Validate Result" "Refactor Permissions" "Commit and Cleanup"
 ```
 
@@ -41,7 +41,7 @@ This command uses checkpoint tracking to ensure safe merging of local settings i
 ```
 📍 Starting: merge-settings (6 steps)
 📁 Tracking: /tmp/merge-settings-progress.txt
-→ Run: ./scripts/checkpoint-update.sh merge-settings STEP=1
+→ Run: ./scripts/checkpoint-update.sh merge-settings 1
 ```
 
 ### Check Progress
@@ -51,9 +51,9 @@ This command uses checkpoint tracking to ensure safe merging of local settings i
 
 **Expected output (example at 60% completion):**
 ```
-📈 command: X/Y steps (Z%)
+📈 merge-settings: X/Y steps (Z%)
    [████░░░░░░░░░░░░░░░░] Z%
-→ Next: ./scripts/checkpoint-update.sh command STEP=N
+→ Next: ./scripts/checkpoint-update.sh merge-settings N
 ```
 
 ## Minimum Requirements
@@ -67,159 +67,87 @@ This command uses checkpoint tracking to ensure safe merging of local settings i
 - [ ] Changes committed and pushed
 ### Stage 1: Discovery (Step 1)
 
-#### [CHECKPOINT START - STAGE 1]
+#### [CHECKPOINT START - STEP 1: Check Files]
 
-Follow these steps:
-
-#### [CHECKPOINT END]
-
-#### Step 1: Check Files
+#### Operation 1: Check for Local Settings File
 
 ```bash
-# Check if local settings file exists
-echo "Checking for local settings file..."
-
-if [ -f ./.claude/settings.local.json ]; then
-  echo "✅ Local settings file found"
-  LOCAL_EXISTS="YES"
-  
-  # Count permissions in local file
-  LOCAL_PERMS=$(grep '"Bash(' ./.claude/settings.local.json | wc -l || echo "0")
-  echo "Local permissions to merge: $LOCAL_PERMS"
-else
-  echo "ℹ️ No local settings file - nothing to merge"
-  LOCAL_EXISTS="NO"
-  LOCAL_PERMS=0
-fi
-
-echo "LOCAL_EXISTS=$LOCAL_EXISTS" > /tmp/merge-settings-stats.txt
-echo "LOCAL_PERMS=$LOCAL_PERMS" >> /tmp/merge-settings-stats.txt
-
-./scripts/checkpoint-update.sh merge-settings STEP=1
+./scripts/check-settings-local-file.sh
 ```
 
-1. Check if ./.claude/settings.local.json exists
+#### Operation 2: Update Checkpoint
+
+```bash
+./scripts/checkpoint-update.sh merge-settings 1
+```
+
+#### [CHECKPOINT END - STEP 1]
 
 #### [DISCOVERY GATE]
 ```bash
-# If no local file, skip remaining steps
-source /tmp/merge-settings-stats.txt
-if [ "$LOCAL_EXISTS" = "NO" ]; then
-  echo "No merge needed - marking all steps complete"
-  for i in 2 3 4 5; do
-    ./scripts/checkpoint-update.sh merge-settings STEP=$i
-  done
-  exit 0
-fi
-./scripts/checkpoint-gate.sh merge-settings "Discovery" "1"
+./scripts/handle-discovery-gate-merge-settings.sh
 ```
 
 ### Stage 2: Merge (Steps 2-4)
 
-#### [CHECKPOINT START - STAGE 2]
+#### [CHECKPOINT START - STEP 2: Read Settings]
 
-#### [CHECKPOINT END]
-
-#### Step 2: Read Settings
+#### Operation 1: Read Both Settings Files
 
 ```bash
-# Read both settings files
-echo "Reading settings files..."
-source /tmp/merge-settings-stats.txt
-
-if [ "$LOCAL_EXISTS" = "YES" ]; then
-  # Check main settings file
-  if [ ! -f ./.claude/settings.json ]; then
-    echo "⚠️ Main settings file missing - will create"
-  fi
-  
-  # Count existing permissions in main
-  MAIN_PERMS=$(grep '"Bash(' ./.claude/settings.json 2>/dev/null | wc -l || echo "0")
-  echo "Main file permissions: $MAIN_PERMS"
-  echo "MAIN_PERMS=$MAIN_PERMS" >> /tmp/merge-settings-stats.txt
-  
-  echo "✅ Settings files read"
-fi
-
-./scripts/checkpoint-update.sh merge-settings STEP=2
+./scripts/read-settings-files.sh
 ```
 
-2. If it exists, read both settings files
-
-#### Step 3: Merge Permissions
+#### Operation 2: Update Checkpoint
 
 ```bash
-# Merge permissions
-echo "Merging permissions..."
-source /tmp/merge-settings-stats.txt
-
-if [ "$LOCAL_EXISTS" = "YES" ]; then
-  echo "Merging $LOCAL_PERMS permissions from local file"
-  
-  # Here you would perform the actual merge
-  # For tracking purposes, we record the action
-  echo "- Reading local permissions"
-  echo "- Checking for conflicts"
-  echo "- Adding unique permissions to main"
-  
-  TOTAL_PERMS=$((MAIN_PERMS + LOCAL_PERMS))
-  echo "Total permissions after merge: $TOTAL_PERMS"
-  echo "TOTAL_PERMS=$TOTAL_PERMS" >> /tmp/merge-settings-stats.txt
-  
-  echo "✅ Permissions merged"
-fi
-
-./scripts/checkpoint-update.sh merge-settings STEP=3
+./scripts/checkpoint-update.sh merge-settings 2
 ```
 
-3. Merge the permissions from local into main settings
+#### [CHECKPOINT END - STEP 2]
 
-#### Step 4: Validate Result
+#### [CHECKPOINT START - STEP 3: Merge Permissions]
+
+#### Operation 1: Merge Local Permissions into Main
 
 ```bash
-# Validate merged JSON
-echo "Validating merged settings..."
-source /tmp/merge-settings-stats.txt
-
-if [ "$LOCAL_EXISTS" = "YES" ]; then
-  # Validate JSON syntax
-  if python3 -m json.tool ./.claude/settings.json > /dev/null 2>&1; then
-    echo "✅ Merged settings are valid JSON"
-    VALID="YES"
-  else
-    echo "❌ Invalid JSON after merge!"
-    VALID="NO"
-    exit 1
-  fi
-  
-  echo "VALID=$VALID" >> /tmp/merge-settings-stats.txt
-fi
-
-./scripts/checkpoint-update.sh merge-settings STEP=4
+./scripts/merge-permissions.sh
 ```
 
-4. Write the merged settings back to ./.claude/settings.json
+#### Operation 2: Update Checkpoint
+
+```bash
+./scripts/checkpoint-update.sh merge-settings 3
+```
+
+#### [CHECKPOINT END - STEP 3]
+
+#### [CHECKPOINT START - STEP 4: Validate Result]
+
+#### Operation 1: Validate Merged Settings JSON
+
+```bash
+./scripts/validate-merged-settings.sh
+```
+
+#### Operation 2: Update Checkpoint
+
+```bash
+./scripts/checkpoint-update.sh merge-settings 4
+```
+
+#### [CHECKPOINT END - STEP 4]
 
 #### [MERGE GATE]
 ```bash
-# ⚠️ CRITICAL: Verify merge success
-source /tmp/merge-settings-stats.txt
-if [ "$VALID" != "YES" ] && [ "$LOCAL_EXISTS" = "YES" ]; then
-  echo "❌ CRITICAL: Merge validation failed!"
-  exit 1
-fi
-./scripts/checkpoint-gate.sh merge-settings "Merge Validation" "2,3,4"
+./scripts/verify-merge-gate.sh
 ```
 
 ### Stage 3: Optimization (Step 5)
 
-#### [CHECKPOINT START - STAGE 3]
-
-#### [CHECKPOINT END]
-
 #### [CHECKPOINT START - STEP 5: Refactor Permissions]
 
-#### Operation 1: Refactor Permissions
+#### Operation 1: Apply Generic Permission Patterns
 
 ```bash
 ./scripts/refactor-settings.sh
@@ -228,7 +156,7 @@ fi
 #### Operation 2: Update Checkpoint
 
 ```bash
-./scripts/checkpoint-update.sh merge-settings STEP=5
+./scripts/checkpoint-update.sh merge-settings 5
 ```
 
 #### [CHECKPOINT END - STEP 5]
@@ -239,10 +167,6 @@ fi
 ```
 
 ### Stage 4: Cleanup (Step 6)
-
-#### [CHECKPOINT START - STAGE 4]
-
-#### [CHECKPOINT END]
 
 #### [CHECKPOINT START - STEP 6: Commit and Cleanup]
 
@@ -255,7 +179,7 @@ fi
 #### Operation 2: Update Checkpoint
 
 ```bash
-./scripts/checkpoint-update.sh merge-settings STEP=6
+./scripts/checkpoint-update.sh merge-settings 6
 ```
 
 #### [CHECKPOINT END - STEP 6]
@@ -263,6 +187,7 @@ fi
 #### [CHECKPOINT COMPLETE]
 ```bash
 ./scripts/checkpoint-complete.sh merge-settings
+rm -f /tmp/merge-settings-stats.txt
 ```
 
 **Expected completion output:**

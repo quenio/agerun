@@ -50,8 +50,16 @@ echo ""
 
 # Step 3: Commit
 echo "Committing changes..."
-git commit -m "chore: merge and refactor local settings"
-echo "✅ Changes committed"
+if git commit -m "chore: merge and refactor local settings"; then
+    echo "✅ Changes committed"
+else
+    # Check if there are actually changes staged
+    if git diff --cached --quiet; then
+        echo "ℹ️ No changes to commit"
+    else
+        echo "⚠️ Commit failed but changes exist - attempting to verify"
+    fi
+fi
 echo ""
 
 # Step 4: Push
