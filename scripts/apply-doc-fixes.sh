@@ -26,5 +26,3 @@ if [ $ERROR_COUNT -gt 0 ]; then
 else
   echo "No fixes needed"
 fi
-
-./scripts/checkpoint-update.sh check-docs 3

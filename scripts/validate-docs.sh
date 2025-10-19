@@ -24,5 +24,3 @@ else
   echo "⚠️ Found $ERROR_COUNT documentation errors"
   echo "ERROR_COUNT=$ERROR_COUNT" > /tmp/check-docs-stats.txt
 fi
-
-./scripts/checkpoint-update.sh check-docs 1
