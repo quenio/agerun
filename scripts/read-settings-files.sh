@@ -24,7 +24,7 @@ if [ "$LOCAL_EXISTS" = "YES" ]; then
     # Count existing permissions in main
     MAIN_PERMS=$(grep '"Bash(' ./.claude/settings.json 2>/dev/null | wc -l || echo "0")
     echo "   Main file permissions: $MAIN_PERMS"
-    echo "MAIN_PERMS=$MAIN_PERMS" >> /tmp/merge-settings-stats.txt
+    ./scripts/update-merge-stats.sh MAIN_PERMS "$MAIN_PERMS"
 
     echo "✅ Settings files read"
 fi

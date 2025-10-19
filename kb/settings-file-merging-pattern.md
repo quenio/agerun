@@ -59,6 +59,13 @@ git commit -m "chore: merge local settings"
 git push
 ```
 
+## Checkpoint Workflow Pattern
+For safe multi-step merging with verification gates, use the checkpoint workflow pattern implemented in `/ar:merge-settings`. This handles:
+- Statistics file management with proper whitespace trimming via `update-merge-stats.sh`
+- Discovery, merge, validation, and optimization phases
+- Gate checks between phases
+- Safe sourcing of state files across multiple script invocations
+
 ## Related Patterns
 - [Git Push Verification](git-push-verification.md)
 - [Progressive Tool Enhancement](progressive-tool-enhancement.md)

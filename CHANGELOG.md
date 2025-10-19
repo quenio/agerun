@@ -1,5 +1,46 @@
 # AgeRun CHANGELOG
 
+## 2025-10-18 (Session 2j - Fix Merge Settings Stats File Errors)
+
+- **Fix merge-settings Stats File Whitespace Handling**
+
+  Identified and fixed critical errors in merge-settings workflow stats file management that caused "command not found" errors during execution.
+
+  **Root Cause Analysis**:
+  - `wc -l` returns numeric values with leading spaces (e.g., `      19`)
+  - Scripts used append-only `>>` pattern, creating unsourceable stats files
+  - When stats file sourced, shell tried to execute numeric values as commands
+
+  **Errors Eliminated**:
+  - `/tmp/merge-settings-stats.txt: line N: 19: command not found`
+  - `/tmp/merge-settings-stats.txt: line N: 135: command not found`
+  - All similar numeric "command not found" errors during workflow execution
+
+  **Solution Implemented**:
+  - Created `scripts/update-merge-stats.sh` - Centralized stats file manager
+    - Safely updates key-value pairs without duplicates
+    - **Trims whitespace from all values using `xargs`** (critical fix)
+    - Initializes file cleanly with `--init` flag
+    - Prevents file corruption from repeated sourcing
+
+  **Scripts Updated** (all now use safe stats update helper):
+  - `check-settings-local-file.sh` - Initialize + update stats safely
+  - `read-settings-files.sh` - Use helper instead of direct append
+  - `merge-permissions.sh` - Use helper instead of direct append
+  - `validate-merged-settings.sh` - Use helper instead of direct append
+
+  **Verification**:
+  - ✅ Stats file remains clean through all workflow phases
+  - ✅ File can be sourced multiple times without errors
+  - ✅ All numeric values properly trimmed
+  - ✅ No duplicate entries in stats file
+  - ✅ Full workflow executes without "command not found" errors
+
+  **Documentation Updated**:
+  - `kb/settings-file-merging-pattern.md` - Added checkpoint workflow pattern documentation
+
+  **Files Modified**: 6 total (1 new script, 4 fixed scripts, 1 doc update)
+
 ## 2025-10-18 (Session 2i - Merge Settings Workflow KB Compliance)
 
 - **Fix merge-settings Workflow: Implement Actual Merge Logic and Full KB Pattern Compliance**

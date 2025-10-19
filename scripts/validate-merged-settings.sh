@@ -23,11 +23,11 @@ if [ "$LOCAL_EXISTS" = "YES" ]; then
     else
         echo "❌ Invalid JSON after merge!"
         VALID="NO"
-        echo "VALID=$VALID" >> /tmp/merge-settings-stats.txt
+        ./scripts/update-merge-stats.sh VALID "$VALID"
         exit 1
     fi
 
-    echo "VALID=$VALID" >> /tmp/merge-settings-stats.txt
+    ./scripts/update-merge-stats.sh VALID "$VALID"
 fi
 
 exit 0

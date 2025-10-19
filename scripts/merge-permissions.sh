@@ -22,7 +22,7 @@ if [ "$LOCAL_EXISTS" = "YES" ]; then
     # Perform actual merge using Python script
     if python3 ./scripts/merge_settings.py; then
         MERGED_PERMS=$(grep '"Bash(' ./.claude/settings.json 2>/dev/null | wc -l || echo "0")
-        echo "TOTAL_PERMS=$MERGED_PERMS" >> /tmp/merge-settings-stats.txt
+        ./scripts/update-merge-stats.sh TOTAL_PERMS "$MERGED_PERMS"
         echo "✅ Permissions merged"
         exit 0
     else

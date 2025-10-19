@@ -13,6 +13,9 @@
 
 echo "Checking for local settings file..."
 
+# Initialize stats file
+./scripts/update-merge-stats.sh --init
+
 if [ -f ./.claude/settings.local.json ]; then
     echo "✅ Local settings file found"
     LOCAL_EXISTS="YES"
@@ -26,7 +29,7 @@ else
     LOCAL_PERMS=0
 fi
 
-echo "LOCAL_EXISTS=$LOCAL_EXISTS" > /tmp/merge-settings-stats.txt
-echo "LOCAL_PERMS=$LOCAL_PERMS" >> /tmp/merge-settings-stats.txt
+./scripts/update-merge-stats.sh LOCAL_EXISTS "$LOCAL_EXISTS"
+./scripts/update-merge-stats.sh LOCAL_PERMS "$LOCAL_PERMS"
 
 exit 0
