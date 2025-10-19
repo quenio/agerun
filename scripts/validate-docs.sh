@@ -13,11 +13,13 @@ echo ""
 echo "Running documentation validation..."
 ERROR_COUNT=0
 
-if make check-docs 2>&1 | tee /tmp/check-docs-output.txt
+if make check-docs > /tmp/check-docs-output.txt 2>&1
 then
+  cat /tmp/check-docs-output.txt
   echo "✅ No documentation errors found!"
   echo "ERROR_COUNT=0" > /tmp/check-docs-stats.txt
 else
+  cat /tmp/check-docs-output.txt
   ERROR_COUNT=$(grep -E "ERROR|FAIL" /tmp/check-docs-output.txt | wc -l || echo "0")
   echo "⚠️ Found $ERROR_COUNT documentation errors"
   echo "ERROR_COUNT=$ERROR_COUNT" > /tmp/check-docs-stats.txt
