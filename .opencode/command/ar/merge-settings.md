@@ -1,4 +1,18 @@
-Merge ./.claude/settings.local.json into ./.claude/settings.json and remove the local file.
+Safely merge local settings into main settings file with checkpoint tracking.
+
+**Note**: This workflow uses checkpoint tracking for safe multi-step integration with quality gates ([details](../../../kb/settings-file-merging-pattern.md)). The stats file management has been optimized with whitespace trimming ([details](../../../kb/multi-step-checkpoint-tracking-pattern.md)) to ensure reliable execution.
+
+## Quick Start
+
+```bash
+# Initialize the merge workflow
+./scripts/checkpoint-init.sh merge-settings "Check Files" "Read Settings" "Merge Permissions" "Validate Result" "Refactor Permissions" "Commit and Cleanup"
+
+# Follow checkpoint steps as indicated
+./scripts/checkpoint-status.sh merge-settings
+```
+
+# Merge Settings
 
 ## CHECKPOINT WORKFLOW ENFORCEMENT
 
@@ -26,10 +40,17 @@ If a `/merge-settings` workflow is already in progress:
 ./scripts/checkpoint-require.sh merge-settings
 ```
 
-# Merge Settings
-## Checkpoint Tracking
+## Overview
 
 This command uses checkpoint tracking to ensure safe merging of local settings into the main settings file. The process has 6 checkpoints across 4 phases with verification gates.
+
+The workflow:
+1. **Discovery Phase** - Detect local settings file and plan merge strategy
+2. **Merge Phase** - Read, merge, and validate settings with quality gates
+3. **Optimization Phase** - Refactor permissions to generic patterns
+4. **Cleanup Phase** - Commit and push all changes
+
+## Checkpoint Tracking
 
 ### Initialize Tracking
 ```bash
@@ -44,7 +65,8 @@ This command uses checkpoint tracking to ensure safe merging of local settings i
 → Run: ./scripts/checkpoint-update.sh merge-settings 1
 ```
 
-### Check Progress
+### Check Progress at Any Time
+
 ```bash
 ./scripts/checkpoint-status.sh merge-settings
 ```
@@ -54,6 +76,47 @@ This command uses checkpoint tracking to ensure safe merging of local settings i
 📈 merge-settings: X/Y steps (Z%)
    [████░░░░░░░░░░░░░░░░] Z%
 → Next: ./scripts/checkpoint-update.sh merge-settings N
+```
+
+### Expected Outputs
+
+**Step 1 - Check Files:**
+```
+✅ Local settings file found
+   Local permissions to merge:       19
+```
+
+**Step 2 - Read Settings:**
+```
+✅ Settings files read
+   Main file permissions:      135
+```
+
+**Step 3 - Merge Permissions:**
+```
+✅ Permissions merged
+Merge Statistics:
+  Main permissions:   140
+  Local permissions:  21
+  Merged permissions: 161
+  New permissions:    21
+```
+
+**Step 4 - Validate Result:**
+```
+✅ Merged settings are valid JSON
+```
+
+**Final Completion:**
+```
+========================================
+   CHECKPOINT COMPLETION SUMMARY
+========================================
+
+📈 merge-settings: 6/6 steps (100%)
+   [████████████████████] 100%
+
+✅ Checkpoint workflow complete
 ```
 
 ## Minimum Requirements
@@ -204,4 +267,103 @@ rm -f /tmp/merge-settings-stats.txt
 rm -f /tmp/merge-settings-stats.txt
 ```
 
-See [Settings File Merging Pattern](../../../kb/settings-file-merging-pattern.md) for details.
+## Troubleshooting
+
+### Workflow Issues
+
+**Problem: Checkpoint not found / tracking file missing**
+```bash
+# Solution: Initialize checkpoint tracking
+./scripts/checkpoint-init.sh merge-settings "Check Files" "Read Settings" "Merge Permissions" "Validate Result" "Refactor Permissions" "Commit and Cleanup"
+```
+
+**Problem: Resume existing workflow**
+```bash
+# Check status
+./scripts/checkpoint-status.sh merge-settings --verbose
+
+# Continue from next pending step
+./scripts/checkpoint-update.sh merge-settings N  # where N is the next step number
+```
+
+**Problem: Start fresh (discard previous progress)**
+```bash
+# Clean up old tracking
+./scripts/checkpoint-cleanup.sh merge-settings
+
+# Re-initialize
+./scripts/checkpoint-init.sh merge-settings "Check Files" "Read Settings" "Merge Permissions" "Validate Result" "Refactor Permissions" "Commit and Cleanup"
+```
+
+### Merge Issues
+
+**Problem: Local settings file not found**
+```bash
+# This is normal - the workflow handles both cases
+# With local file: performs merge
+# Without local file: workflow reports nothing to merge and completes
+```
+
+**Problem: Permission conflicts during merge**
+```bash
+# The merge operation uses deduplication logic
+# Examine the merge statistics output to see conflicts resolved
+# Check .claude/settings.json for merged permissions
+```
+
+**Problem: Invalid JSON after merge**
+```bash
+# Solution: The validation step catches this
+# Check the settings.json file for syntax errors:
+python3 -m json.tool .claude/settings.json
+
+# If validation fails, the workflow will stop at Step 4
+# Fix the JSON file and re-run the workflow
+```
+
+**Problem: Stats file whitespace errors (line N: XX: command not found)**
+```bash
+# Solution: This was fixed in recent versions
+# Update scripts if you see this error:
+git pull origin main
+
+# Clean and retry:
+./scripts/checkpoint-cleanup.sh merge-settings
+./scripts/checkpoint-init.sh merge-settings "Check Files" "Read Settings" "Merge Permissions" "Validate Result" "Refactor Permissions" "Commit and Cleanup"
+```
+
+### Common Solutions
+
+**View current workflow state:**
+```bash
+./scripts/checkpoint-status.sh merge-settings --verbose
+cat /tmp/merge-settings-progress.txt
+cat /tmp/merge-settings-stats.txt
+```
+
+**Debug script execution:**
+```bash
+# Run individual step manually to see errors
+./scripts/check-settings-local-file.sh
+./scripts/read-settings-files.sh
+./scripts/merge-permissions.sh
+./scripts/validate-merged-settings.sh
+```
+
+**Verify merged settings:**
+```bash
+# Check merged permissions count
+grep '"Bash(' ./.claude/settings.json | wc -l
+
+# Validate JSON syntax
+python3 -m json.tool ./.claude/settings.json > /dev/null && echo "✅ Valid JSON"
+
+# Check for local file removal
+[ -f ./.claude/settings.local.json ] && echo "❌ Local file still exists" || echo "✅ Local file removed"
+```
+
+## Related Documentation
+
+- [Settings File Merging Pattern](../../../kb/settings-file-merging-pattern.md) - Design patterns for settings merging
+- [Checkpoint Sequential Execution Discipline](../../../kb/checkpoint-sequential-execution-discipline.md) - Workflow execution guarantees
+- [Multi-Step Checkpoint Tracking Pattern](../../../kb/multi-step-checkpoint-tracking-pattern.md) - Checkpoint tracking design
