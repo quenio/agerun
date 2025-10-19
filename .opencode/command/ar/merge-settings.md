@@ -217,14 +217,21 @@ fi
 
 #### [CHECKPOINT END]
 
-#### Step 5: Refactor Permissions
+#### [CHECKPOINT START - STEP 5: Refactor Permissions]
+
+#### Operation 1: Refactor Permissions
 
 ```bash
 ./scripts/refactor-settings.sh
+```
+
+#### Operation 2: Update Checkpoint
+
+```bash
 ./scripts/checkpoint-update.sh merge-settings STEP=5
 ```
 
-5. Run refactor-settings.sh to consolidate permissions into generic patterns
+#### [CHECKPOINT END - STEP 5]
 
 #### [REFACTOR GATE]
 ```bash
@@ -237,40 +244,21 @@ fi
 
 #### [CHECKPOINT END]
 
-#### Step 6: Commit and Cleanup
+#### [CHECKPOINT START - STEP 6: Commit and Cleanup]
+
+#### Operation 1: Commit and Push Changes
 
 ```bash
-# Remove local file and commit
-echo "Cleaning up..."
-source /tmp/merge-settings-stats.txt
+./scripts/commit-settings.sh
+```
 
-if [ "$LOCAL_EXISTS" = "YES" ]; then
-  # Remove local file
-  rm ./.claude/settings.local.json
-  echo "✅ Local settings file removed"
-  
-  # Commit changes
-  git add .claude/settings.json
-  git rm .claude/settings.local.json 2>/dev/null || true
-  git commit -m "chore: merge and refactor local settings"
-  git push
-  
-  # Verify
-  git status
-  echo "✅ Changes committed and pushed"
-else
-  echo "ℹ️ No changes to commit"
-fi
+#### Operation 2: Update Checkpoint
 
+```bash
 ./scripts/checkpoint-update.sh merge-settings STEP=6
 ```
 
-6. Remove the local settings file
-7. Commit and push the updated settings.json:
-   - `git add .claude/settings.json`
-   - `git commit -m "chore: merge and refactor local settings"`
-   - `git push`
-8. If local file doesn't exist, inform that no merge is needed
+#### [CHECKPOINT END - STEP 6]
 
 #### [CHECKPOINT COMPLETE]
 ```bash
