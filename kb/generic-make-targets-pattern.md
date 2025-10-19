@@ -6,38 +6,66 @@ Make targets should be designed as generic, parameterized rules rather than crea
 ## Importance
 Creating specific targets for each variation leads to Makefile bloat, maintenance burden, and inconsistency. Generic targets with parameters reduce duplication, improve maintainability, and ensure consistent behavior across similar operations.
 
-## Example
+## Modern Approach: Direct Script Calls
+In modern projects, it's often more flexible to call scripts **directly** rather than through Makefile wrapper targets. This decouples build automation from script execution and simplifies documentation.
+
+## Example: Anti-Pattern vs. Better Approach
+
+**Anti-Pattern: Specific targets for each variation**
 ```makefile
-# BAD: Specific targets for each command
+# BAD: Creates bloat and maintenance burden
 new-learnings-init:
-	@bash scripts/checkpoint-init.sh new-learnings "Step 1" "Step 2"
+	@bash scripts/process.sh new-learnings step1 step2
 
 commit-init:
-	@bash scripts/checkpoint-init.sh commit "Stage" "Review" "Push"
+	@bash scripts/process.sh commit stage review push
 
 build-init:
-	@bash scripts/checkpoint-init.sh build "Clean" "Compile" "Link"
-
-# GOOD: Generic parameterized target
-checkpoint-init:
-	@bash scripts/checkpoint-init.sh $(CMD) $(STEPS)
-
-# Usage examples in comments
-# ./scripts/checkpoint-init.sh new-learnings ""Step 1" "Step 2""
-# ./scripts/checkpoint-init.sh commit ""Stage" "Review" "Push""
-# ./scripts/checkpoint-init.sh build ""Clean" "Compile" "Link""
+	@bash scripts/process.sh build clean compile link
 ```
 
-## Generalization
-1. **Use variables for customization**: `$(CMD)`, `$(OPTS)`, `$(ARGS)`
-2. **Document parameter usage**: Include usage examples in comments
-3. **Quote parameters properly**: Use `"$(VAR)"` for parameters with spaces
-4. **Provide sensible defaults**: `VAR ?= default_value` for optional parameters
-5. **Group related targets**: Keep generic utilities together in Makefile
-
-## Implementation
+**Better: Use Makefile for primary build tasks only**
 ```makefile
-# Generic target pattern with defaults and validation
+# Good for primary build commands in Makefile
+build: install-scan-build
+	@if [ -x ./scripts/build.sh ]; then \
+		./scripts/build.sh; \
+	else \
+		echo "ERROR: scripts/build.sh not found"; \
+		exit 1; \
+	fi
+
+run-tests: run_tests_lib
+	$(MAKE) $(TEST_BINARIES)
+	@cd bin/run-tests && ./run_all_tests.sh
+
+# Delegate secondary operations to direct script calls
+# Usage: ./scripts/process.sh new-learnings step1 step2
+# Usage: ./scripts/process.sh commit stage review push
+```
+
+## When to Use Makefile Targets
+- **Core build operations**: compilation, linking, testing
+- **Frequently used sequences**: build → test → analyze
+- **OS-specific logic**: compiler selection, platform detection
+- **Complex dependency chains**: object file management, parallel builds
+
+## When to Use Direct Script Calls
+- **Sequential multi-step workflows**: step tracking, conditional logic
+- **Maintenance-heavy operations**: tasks that change frequently
+- **Independent utilities**: operations that stand alone
+- **Documentation workflows**: checkpoint tracking, KB generation
+
+## Generalization Principles
+1. **Use variables for customization**: `$(CMD)`, `$(OPTS)`, `$(ARGS)`
+2. **Quote parameters properly**: Use `"$(VAR)"` for parameters with spaces
+3. **Provide sensible defaults**: `VAR ?= default_value` for optional parameters
+4. **Group related targets**: Keep similar operations together in Makefile
+5. **Limit wrapper bloat**: Avoid targets that simply pass through to scripts
+
+## Implementation Example: Generic Target with Validation
+```makefile
+# Generic operation target with parameter validation
 generic-operation:
 	@if [ -z "$(CMD)" ]; then \
 		echo "Error: CMD parameter required"; \
@@ -48,7 +76,7 @@ generic-operation:
 	@bash scripts/generic_script.sh $(CMD) $(OPTS)
 
 # Optional parameters with defaults
-VERBOSE ?= 
+VERBOSE ?=
 DEBUG ?= false
 
 status:
