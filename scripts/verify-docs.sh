@@ -11,16 +11,16 @@ echo "========== STAGE 3: Verify and Commit =========="
 echo ""
 
 echo ""
-echo "--- Step 4: Verify Resolution ---"
+echo "--- Step 5: Verify Resolution ---"
 echo ""
 
 echo "Verifying fixes..."
-if make check-docs 2>&1
+if make check-docs
 then
   echo "✅ All documentation errors resolved!"
   FINAL_STATUS="PASS"
 else
-  REMAINING=$(make check-docs 2>&1 | grep "ERROR" | wc -l || echo "0")
+  REMAINING=$(make check-docs 2>&1 | grep -c "ERROR" || echo "0")
   echo "⚠️ $REMAINING errors still remain"
   echo "May need manual intervention or script enhancement"
   FINAL_STATUS="PARTIAL"
@@ -38,5 +38,3 @@ if [ "$FINAL_STATUS" != "PASS" ]; then
   echo "⚠️ WARNING: Not all errors resolved"
   echo "Consider enhancing the batch fix script"
 fi
-
-./scripts/update-checkpoint.sh check-docs STEP=4
