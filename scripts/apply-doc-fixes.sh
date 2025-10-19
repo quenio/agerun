@@ -27,4 +27,4 @@ else
   echo "No fixes needed"
 fi
 
-./scripts/update-checkpoint.sh check-docs STEP=3
+./scripts/checkpoint-update.sh check-docs 3

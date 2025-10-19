@@ -25,4 +25,4 @@ else
   echo "ERROR_COUNT=$ERROR_COUNT" > /tmp/check-docs-stats.txt
 fi
 
-./scripts/update-checkpoint.sh check-docs STEP=1
+./scripts/checkpoint-update.sh check-docs 1

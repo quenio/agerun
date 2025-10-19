@@ -27,4 +27,4 @@ else
   echo "No errors to fix - skipping preview"
 fi
 
-./scripts/update-checkpoint.sh check-docs STEP=2
+./scripts/checkpoint-update.sh check-docs 2
