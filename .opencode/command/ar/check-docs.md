@@ -96,9 +96,9 @@ Verifies checkpoint is initialized and ready before proceeding.
 ✅ Checkpoint tracking verified
 ```
 
-### Checkpoint Step 1: Validate Docs
-
 #### [CHECKPOINT START - STEP 1: Validate Docs]
+
+### Checkpoint Step 1: Validate Docs
 
 #### Operation 3: Validate Documentation
 
@@ -110,8 +110,6 @@ Runs `make check-docs` to identify all documentation errors and saves error coun
 
 **Expected output**: Shows validation results and saves ERROR_COUNT to stats file.
 
-#### [CHECKPOINT END - STEP 1]
-
 #### Operation 4: Update Checkpoint
 
 ```bash
@@ -122,9 +120,11 @@ Records completion of "Validate Docs" step in checkpoint tracking.
 
 **Expected output**: Progress bar showing 1/5 steps complete.
 
-### Checkpoint Step 2: Conditional Flow (Error Gate)
+#### [CHECKPOINT END - STEP 1]
 
 #### [CHECKPOINT START - STEP 2: Preview Fixes]
+
+### Checkpoint Step 2: Preview Fixes
 
 #### Operation 5: Conditional Flow Check
 
@@ -148,8 +148,6 @@ Runs `python3 scripts/batch_fix_docs.py --dry-run` to preview changes before app
 
 **Expected output**: Shows preview of proposed fixes (or skipped message if no errors).
 
-#### [CHECKPOINT END - STEP 2]
-
 #### Operation 7: Update Checkpoint
 
 ```bash
@@ -158,9 +156,11 @@ Runs `python3 scripts/batch_fix_docs.py --dry-run` to preview changes before app
 
 Records completion of "Preview Fixes" step in checkpoint tracking.
 
-### Checkpoint Step 3: Apply Fixes
+#### [CHECKPOINT END - STEP 2]
 
 #### [CHECKPOINT START - STEP 3: Apply Fixes]
+
+### Checkpoint Step 3: Apply Fixes
 
 #### Operation 8: Apply Fixes (conditional on errors)
 
@@ -172,8 +172,6 @@ Runs the batch fix script to fix all identified documentation errors. Only execu
 
 **Expected output**: Shows count of fixed documentation files (or skipped message if no errors).
 
-#### [CHECKPOINT END - STEP 3]
-
 #### Operation 9: Update Checkpoint
 
 ```bash
@@ -182,9 +180,11 @@ Runs the batch fix script to fix all identified documentation errors. Only execu
 
 Records completion of "Apply Fixes" step in checkpoint tracking.
 
-### Checkpoint Step 4: Verify Resolution
+#### [CHECKPOINT END - STEP 3]
 
 #### [CHECKPOINT START - STEP 4: Verify Resolution]
+
+### Checkpoint Step 4: Verify Resolution
 
 #### Operation 10: Verify Documentation
 
@@ -195,8 +195,6 @@ Records completion of "Apply Fixes" step in checkpoint tracking.
 Runs `make check-docs` again to verify all fixes were successful.
 
 **Expected output**: Shows final validation results (PASS or PARTIAL).
-
-#### [CHECKPOINT END - STEP 4]
 
 #### Operation 11: Update Checkpoint
 
@@ -216,9 +214,11 @@ Validates that resolution gate passes before proceeding to commit.
 
 **Expected output**: Gate status indicating pass/fail.
 
-### Checkpoint Step 5: Commit and Push
+#### [CHECKPOINT END - STEP 4]
 
 #### [CHECKPOINT START - STEP 5: Commit and Push]
+
+### Checkpoint Step 5: Commit and Push
 
 #### Operation 13: Commit and Push
 
@@ -233,8 +233,6 @@ Stages, commits, and pushes all documentation fixes.
 ✅ Documentation fixes committed and pushed
 ```
 
-#### [CHECKPOINT END - STEP 5]
-
 #### Operation 14: Update Checkpoint
 
 ```bash
@@ -242,6 +240,8 @@ Stages, commits, and pushes all documentation fixes.
 ```
 
 Records completion of "Commit and Push" step in checkpoint tracking.
+
+#### [CHECKPOINT END - STEP 5]
 
 ### Workflow Completion
 
