@@ -98,22 +98,21 @@ ar_data__destroy(own_workflow);
    ```
    📈 commit: 5/9 steps (55%)
       [███████████░░░░░░░░░] 55%
-   → Next: make checkpoint-update CMD=commit STEP=6
+   → Next: ./scripts/checkpoint-update.sh commit 6
    ```
 
 ## Implementation
 
-### Using Wrapper Scripts (Recommended)
+### Recommended: Direct Script Calls
 ```bash
-# Real AgeRun implementation example using wrapper scripts
+# Real AgeRun implementation example using direct script calls
 
-# 1. Initialize workflow (wrapper script checks if already initialized)
-./scripts/checkpoint-init.sh commit '"Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"'
+# 1. Initialize workflow (idempotent - safe to call multiple times)
+./scripts/checkpoint-init.sh commit "Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"
 
 # 2. Execute steps with checkpoints
-make checkpoint-update CMD=commit STEP=1
+./scripts/checkpoint-update.sh commit 1
 make test  # Run tests
-make checkpoint-update CMD=commit STEP=1  # Mark complete
 
 # 3. Verify precondition before stage 2
 ./scripts/checkpoint-require.sh commit || exit 1
@@ -123,36 +122,13 @@ make checkpoint-update CMD=commit STEP=1  # Mark complete
 # Exits 1 and shows error if steps 1-2 not complete
 
 # 5. Continue with remaining steps
-make checkpoint-update CMD=commit STEP=5
-make checkpoint-update CMD=commit STEP=5  # Mark complete
+./scripts/checkpoint-update.sh commit 5
 
-# 6. Final status and cleanup
+# 6. Check status anytime
+./scripts/checkpoint-status.sh commit --verbose
+
+# 7. Cleanup when done
 ./scripts/checkpoint-complete.sh commit
-```
-
-### Using Direct Makefile Targets
-```bash
-# Alternative: Direct Makefile target approach (more low-level)
-
-# 1. Initialize workflow
-make checkpoint-init CMD=commit STEPS='"Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"'
-
-# 2. Execute steps with checkpoints
-make checkpoint-update CMD=commit STEP=1
-make test  # Run tests
-
-# 3. Enforce gate after stage
-make checkpoint-gate CMD=commit GATE="Build Quality" REQUIRED="1,2"
-# Blocks if steps 1-2 not complete
-
-# 4. Continue with remaining steps
-make checkpoint-update CMD=commit STEP=5
-
-# 5. Check status anytime
-make checkpoint-status CMD=commit VERBOSE=--verbose
-
-# 6. Cleanup when done
-make checkpoint-cleanup CMD=commit
 ```
 
 ## Workflow Structure Pattern

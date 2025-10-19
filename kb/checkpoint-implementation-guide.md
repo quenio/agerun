@@ -17,18 +17,18 @@ Converting monolithic commands to checkpoint-tracked processes ensures systemati
 1. **Diff Analysis**: Reviews git diff for all changes
    \`\`\`bash
    # After completing diff analysis
-   make checkpoint-update CMD=review-changes STEP=1
+   ./scripts/checkpoint-update.sh review-changes 1
    \`\`\`
 
 2. **Code Smells Detection**: Scans for issues
    \`\`\`bash
-   make checkpoint-update CMD=review-changes STEP=2
+   ./scripts/checkpoint-update.sh review-changes 2
    \`\`\`
 
 **[QUALITY GATE 1: Code Quality Complete]**
 \`\`\`bash
 # MANDATORY: Must pass before proceeding
-make checkpoint-gate CMD=review-changes GATE="Code Quality" REQUIRED="1,2,3,4,5,6"
+./scripts/checkpoint-gate.sh review-changes "Code Quality" "1,2,3,4,5,6"
 \`\`\`
 
 **Expected gate output:**
@@ -57,28 +57,26 @@ make checkpoint-gate CMD=review-changes GATE="Code Quality" REQUIRED="1,2,3,4,5,
 ### Step 2: Add Infrastructure
 
 **Checkpoint Script Architecture:**
-All checkpoint functionality is implemented through bash scripts that are wrapped by Makefile targets:
+All checkpoint functionality is implemented through standalone bash scripts that can be called directly:
 
 ```bash
-# Initialize with all steps
-# Uses: scripts/checkpoint-init.sh (creates /tmp/COMMAND-progress.txt)
-make checkpoint-init CMD=command-name STEPS='"Step 1" "Step 2" ...'
+# Initialize with all steps (creates /tmp/COMMAND-progress.txt)
+./scripts/checkpoint-init.sh command-name "Step 1" "Step 2" ...
 
-# Update after each step
-# Uses: scripts/checkpoint-update.sh (marks steps complete, shows progress)
-make checkpoint-update CMD=command-name STEP=N
+# Update after each step (marks steps complete, shows progress)
+./scripts/checkpoint-update.sh command-name N
 
-# Status display
-# Uses: scripts/checkpoint-status.sh (shows progress bar and next action)
-make checkpoint-status CMD=command-name
+# Status display (shows progress bar and next action)
+./scripts/checkpoint-status.sh command-name
 
-# Gates between stages
-# Uses: scripts/checkpoint-gate.sh (verifies required steps before proceeding)
-make checkpoint-gate CMD=command-name GATE="Stage Name" REQUIRED="1,2,3"
+# Precondition check (verifies checkpoint is initialized)
+./scripts/checkpoint-require.sh command-name
 
-# Cleanup when done
-# Uses: scripts/checkpoint-cleanup.sh (removes tracking file)
-make checkpoint-cleanup CMD=command-name
+# Gates between stages (verifies required steps before proceeding)
+./scripts/checkpoint-gate.sh command-name "Stage Name" "1,2,3"
+
+# Cleanup when done (removes tracking file)
+./scripts/checkpoint-cleanup.sh command-name
 ```
 
 **Script Implementation Details:**
@@ -102,47 +100,35 @@ Each stage needs:
 - **Verification methods**: "Run make check-docs"
 - **Success indicators**: "READY TO COMMIT"
 
-## Using Wrapper Scripts for Simpler Integration
+## Direct Script Usage for Simple Integration
 
-The wrapper scripts (`scripts/checkpoint-init.sh`, `checkpoint-require.sh`, `checkpoint-gate.sh`, `checkpoint-complete.sh`) simplify checkpoint integration in commands by reducing boilerplate:
+The checkpoint scripts are designed to be called directly from commands with minimal boilerplate:
 
 ```bash
-# Instead of 7-8 lines of initialization code:
-❌ if [ ! -f "/tmp/command-progress.txt" ]; then
-    make checkpoint-init CMD=command STEPS="..."
-else
-    echo "Checkpoint already initialized"
-fi
+# Initialize checkpoint with all steps (idempotent)
+./scripts/checkpoint-init.sh command-name "Step 1" "Step 2" "Step 3"
 
-# Use the wrapper script:
-✅ ./scripts/checkpoint-init.sh command '"Step 1" "Step 2"'
+# Verify checkpoint is initialized before proceeding
+./scripts/checkpoint-require.sh command-name || exit 1
 
-# Instead of 5-line precondition check:
-❌ PROGRESS_FILE="/tmp/command-progress.txt"
-if [ ! -f "$PROGRESS_FILE" ]; then
-  echo "ERROR: Not initialized"
-  exit 1
-fi
+# Update after completing each step
+./scripts/checkpoint-update.sh command-name 1
 
-# Use the wrapper:
-✅ ./scripts/checkpoint-require.sh command || exit 1
+# Display current progress status
+./scripts/checkpoint-status.sh command-name
 
-# Instead of 3-4 line gate verification:
-❌ if ! make checkpoint-gate CMD=command GATE="Name" REQUIRED="1,2,3"; then
-  echo "ERROR: Gate failed"
-  exit 1
-fi
+# Verify all required steps are complete before proceeding
+./scripts/checkpoint-gate.sh command-name "Gate Name" "1,2,3" || exit 1
 
-# Use the wrapper:
-✅ ./scripts/checkpoint-gate.sh command "Gate Name" "1,2,3" || exit 1
-
-# Instead of 4-5 line completion pattern:
-❌ make checkpoint-status CMD=command
-make checkpoint-cleanup CMD=command
-
-# Use the wrapper:
-✅ ./scripts/checkpoint-complete.sh command
+# Cleanup tracking when complete
+./scripts/checkpoint-complete.sh command-name
 ```
+
+**Key features**:
+- `checkpoint-init.sh` is idempotent - can be called multiple times safely
+- Direct script calls eliminate indirection through wrappers or Makefile targets
+- Each script handles its own error checking and user feedback
+- Consistent argument order across all scripts for predictable behavior
 
 ## Implementation Checklist
 
@@ -150,8 +136,11 @@ When adding checkpoints to a command:
 - [ ] Count total sections/steps in command
 - [ ] Group into logical stages (3-6 steps each)
 - [ ] **Extract embedded bash logic** to helper scripts (see [Command Helper Script Extraction Pattern](command-helper-script-extraction-pattern.md))
-- [ ] Use wrapper scripts for initialization, gates, precondition checks, and cleanup
-- [ ] Add update calls after each step (these don't have wrappers, use directly)
+- [ ] Call checkpoint-init.sh at the beginning to initialize tracking
+- [ ] Add checkpoint-update.sh calls after each step
+- [ ] Add checkpoint-gate.sh calls at stage boundaries
+- [ ] Add checkpoint-require.sh to verify initialization
+- [ ] Add checkpoint-complete.sh for cleanup
 - [ ] Document expected outputs for all operations
 - [ ] Define minimum requirements per stage
 - [ ] Add troubleshooting section

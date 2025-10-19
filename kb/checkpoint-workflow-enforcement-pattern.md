@@ -36,25 +36,22 @@ Every checkpoint-based command should include these three sections immediately a
 If a `/[command-name]` workflow is already in progress:
 
 \`\`\`bash
-make checkpoint-status CMD=[command_name] VERBOSE=--verbose
-# Resume: make checkpoint-update CMD=[command_name] STEP=N
-# Or reset: make checkpoint-cleanup CMD=[command_name] && make checkpoint-init CMD=[command_name] STEPS='"[STEP 1]" "[STEP 2]"...'
+./scripts/checkpoint-status.sh [command_name] --verbose
+# Resume: ./scripts/checkpoint-update.sh [command_name] N
+# Or reset: ./scripts/checkpoint-cleanup.sh [command_name] && ./scripts/checkpoint-init.sh [command_name] "[STEP 1]" "[STEP 2]"...
 \`\`\`
 
 Resume from the next pending step, or clean up and start fresh.
 
 ### First-Time Initialization Check
 
-**MANDATORY**: Before executing ANY steps, verify checkpoint tracking is initialized:
+**MANDATORY**: Before executing ANY steps, initialize checkpoint tracking:
 
 \`\`\`bash
-if [ ! -f /tmp/[command_name]-progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=[command_name] STEPS='"[STEP 1]" "[STEP 2]"...'
-else
-  make checkpoint-status CMD=[command_name]
-fi
+./scripts/checkpoint-init.sh [command_name] "[STEP 1]" "[STEP 2]"...
 \`\`\`
+
+Note: `checkpoint-init.sh` is idempotent—it will detect an existing checkpoint and show status instead of reinitializing.
 ```
 
 **What This Does**:
@@ -71,11 +68,7 @@ fi
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 \`\`\`bash
-if [ ! -f /tmp/[command_name]-progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  echo "STOP: Initialize tracking with the command above before proceeding."
-  exit 1
-fi
+./scripts/checkpoint-require.sh [command_name] || exit 1
 \`\`\`
 
 **MANDATORY**: This command MUST use checkpoint tracking.
@@ -116,7 +109,7 @@ The three sections work together:
 
 ### Initialize Progress Tracking (EXECUTE THIS FIRST)
 \`\`\`bash
-make checkpoint-init CMD=new-learnings STEPS='...'
+./scripts/checkpoint-init.sh new-learnings "Step 1" "Step 2" ... "Step 12"
 \`\`\`
 ```
 
@@ -130,23 +123,14 @@ Problem: User sees "CRITICAL" and "MANDATORY" but can ignore them and do manual 
 
 **CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
 
-### In-Progress Workflow Detection
-[Shows resume/reset options]
-
-### First-Time Initialization Check
+### Initialize Checkpoint Tracking
 \`\`\`bash
-if [ ! -f /tmp/new-learnings-progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  make checkpoint-init CMD=new-learnings STEPS='...'
-fi
+./scripts/checkpoint-init.sh new-learnings "Identify New Learnings" "Determine KB Strategy" ... "Automatic Commit and Push"
 \`\`\`
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 \`\`\`bash
-if [ ! -f /tmp/new-learnings-progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  exit 1
-fi
+./scripts/checkpoint-require.sh new-learnings || exit 1
 \`\`\`
 ```
 
@@ -230,7 +214,7 @@ fi
 [500 lines of instructions]
 ...
 ## FINAL GATE: COMMIT READINESS CHECK
-make checkpoint-gate CMD=new-learnings GATE="Final Commit Readiness"
+./scripts/checkpoint-gate.sh new-learnings "Final Commit Readiness" "1,2,3,4,5,6,7,8,9,10,11,12"
 ```
 
 Result: User can still bypass checkpoints by:
@@ -243,14 +227,17 @@ Result: User can still bypass checkpoints by:
 # New Learnings
 
 ## CHECKPOINT WORKFLOW ENFORCEMENT
-[Detects in-progress workflows, enforces initialization]
+./scripts/checkpoint-init.sh new-learnings ...
+[Initializes checkpoint tracking]
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
+./scripts/checkpoint-require.sh new-learnings || exit 1
 [Blocks execution without proper setup]
 
 [... rest of command ...]
 
 ## FINAL GATE: COMMIT READINESS CHECK
+./scripts/checkpoint-gate.sh new-learnings "Final Commit Readiness" "1,2,3,4,5,6,7,8,9,10,11,12"
 [Additional verification before commit]
 ```
 
