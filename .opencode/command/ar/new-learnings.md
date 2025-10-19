@@ -17,17 +17,17 @@ If checkpoint exists, you have two options:
 **Option 1: Resume the workflow** (RECOMMENDED)
 ```bash
 # Resume from the next pending step
-./scripts/status-checkpoint.sh new-learnings VERBOSE=--verbose
+./scripts/checkpoint-status.sh new-learnings VERBOSE=--verbose
 # Then run the appropriate step number shown in output
 ```
 
 **Option 2: Start fresh** (only if you want to discard previous progress)
 ```bash
 # Clean up old tracking
-./scripts/cleanup-checkpoint.sh new-learnings
+./scripts/checkpoint-cleanup.sh new-learnings
 
 # Then re-initialize for fresh start
-./scripts/init-checkpoint.sh new-learnings "Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"
+./scripts/checkpoint-init.sh new-learnings "Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"
 ```
 
 **CRITICAL**: If in-progress workflow exists with pending steps, **DO NOT PERFORM MANUAL KB UPDATES**. The checkpoint system will enforce all quality requirements and ensure no steps are skipped.
@@ -37,7 +37,7 @@ If checkpoint exists, you have two options:
 **MANDATORY**: Before executing ANY steps, you MUST initialize checkpoint tracking:
 
 ```bash
-./scripts/init-checkpoint.sh new-learnings "Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate Commands with check-commands" "Update CHANGELOG.md" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"
+./scripts/checkpoint-init.sh new-learnings "Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate Commands with check-commands" "Update CHANGELOG.md" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"
 ```
 
 **If this fails or tracking is not initialized, STOP and run the command above before proceeding.**
@@ -65,7 +65,7 @@ Before starting analysis:
 ### Initialize Progress Tracking (EXECUTE THIS FIRST)
 
 ```bash
-./scripts/init-checkpoint.sh new-learnings "Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate Commands with check-commands" "Update CHANGELOG.md" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"
+./scripts/checkpoint-init.sh new-learnings "Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate Commands with check-commands" "Update CHANGELOG.md" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"
 ```
 
 **Expected output:**
@@ -169,7 +169,7 @@ This is enforced through:
 
 ```bash
 # ✅ ALWAYS use checkpoint tracking for ALL work
-./scripts/status-checkpoint.sh new-learnings
+./scripts/checkpoint-status.sh new-learnings
 # Shows current progress and next required step
 
 # ✅ Follow the sequence strictly
@@ -182,7 +182,7 @@ This is enforced through:
 # Step 11 verifies "READY TO COMMIT" with counts of modified files
 
 # ✅ Always run the initialization check if unsure
-./scripts/init-checkpoint.sh new-learnings "Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"
+./scripts/checkpoint-init.sh new-learnings "Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"
 ```
 
 ## Minimum Requirements for Thorough Execution
@@ -204,7 +204,7 @@ This is enforced through:
 Verify that checkpoint tracking is initialized:
 
 ```bash
-./scripts/require-checkpoint.sh new-learnings
+./scripts/checkpoint-require.sh new-learnings
 ```
 
 **If this check passes, you may proceed to Step 1.**
@@ -257,7 +257,7 @@ For each learning, provide:
 #### [CHECKPOINT END - STEP 1]
 ```bash
 # Mark Step 1 complete
-./scripts/update-checkpoint.sh new-learnings STEP=1
+./scripts/checkpoint-update.sh new-learnings STEP=1
 ```
 
 **Expected output:**
@@ -302,7 +302,7 @@ Next pending: Determine KB Article Strategy
 #### [CHECKPOINT END - STEP 2]
 ```bash
 # Mark Step 2 complete
-./scripts/update-checkpoint.sh new-learnings STEP=2
+./scripts/checkpoint-update.sh new-learnings STEP=2
 ```
 
 ## Step 3: Knowledge Base Article Creation
@@ -445,7 +445,7 @@ make checkpoint-update-verified CMD=new-learnings STEP=4 SUMMARY="Documentation 
 
 ```bash
 # MANDATORY GATE - Cannot proceed without articles
-./scripts/gate-checkpoint.sh new-learnings "Article Creation" "1,2,3,4"
+./scripts/checkpoint-gate.sh new-learnings "Article Creation" "1,2,3,4"
 ```
 
 **Expected output when PASSING:**
@@ -503,7 +503,7 @@ The following steps must be completed first:
 #### [CHECKPOINT END - STEP 5]
 ```bash
 # Mark Step 5 complete
-./scripts/update-checkpoint.sh new-learnings STEP=5
+./scripts/checkpoint-update.sh new-learnings STEP=5
 ```
 
 ## Step 6: Update Existing KB Articles with Cross-References (THOROUGH EXECUTION REQUIRED)
@@ -624,7 +624,7 @@ Check AGENTS.md to see if these learnings should be referenced:
 #### [CHECKPOINT END - STEP 8]
 ```bash
 # Mark Step 8 complete
-./scripts/update-checkpoint.sh new-learnings STEP=8
+./scripts/checkpoint-update.sh new-learnings STEP=8
 ```
 
 ## Step 9: Update Guidelines
@@ -667,14 +667,14 @@ If updates are needed to AGENTS.md:
 #### [CHECKPOINT END - STEP 9]
 ```bash
 # Mark Step 9 complete
-./scripts/update-checkpoint.sh new-learnings STEP=9
+./scripts/checkpoint-update.sh new-learnings STEP=9
 ```
 
 ## GATE 2: INTEGRATION VERIFICATION
 
 ```bash
 # MANDATORY GATE - Check integration completeness
-./scripts/gate-checkpoint.sh new-learnings "Integration" "5,6,7,8,9"
+./scripts/checkpoint-gate.sh new-learnings "Integration" "5,6,7,8,9"
 ```
 
 ## Step 10: Validate Commands with check-commands
@@ -701,7 +701,7 @@ If updates are needed to AGENTS.md:
 #### [CHECKPOINT END - STEP 10]
 ```bash
 # Mark Step 10 complete - validation automated
-./scripts/update-checkpoint.sh new-learnings STEP=10
+./scripts/checkpoint-update.sh new-learnings STEP=10
 ```
 
 **AUTOMATIC VERIFICATION**: The system will automatically run `make check-commands` and block completion if validation fails.
@@ -751,14 +751,14 @@ If updates are needed to AGENTS.md:
 #### [CHECKPOINT END - STEP 11]
 ```bash
 # Mark Step 11 complete
-./scripts/update-checkpoint.sh new-learnings STEP=11
+./scripts/checkpoint-update.sh new-learnings STEP=11
 ```
 
 ## GATE 3: QUALITY GATES VERIFICATION
 
 ```bash
 # MANDATORY GATE - Verify both check-commands and CHANGELOG.md
-./scripts/gate-checkpoint.sh new-learnings "Quality Gates" "10,11"
+./scripts/checkpoint-gate.sh new-learnings "Quality Gates" "10,11"
 ```
 
 **Expected output when PASSING:**
@@ -796,7 +796,7 @@ You may proceed to the next section.
 #### [CHECKPOINT END - STEP 12]
 ```bash
 # Mark Step 12 complete
-./scripts/update-checkpoint.sh new-learnings STEP=12
+./scripts/checkpoint-update.sh new-learnings STEP=12
 ```
 
 ## Step 13: Pre-Commit Integration Verification (MANDATORY EXECUTION)
@@ -824,7 +824,7 @@ This script verifies:
 #### [CHECKPOINT END - STEP 13]
 ```bash
 # Mark Step 13 complete with integration verification
-./scripts/update-checkpoint.sh new-learnings STEP=13
+./scripts/checkpoint-update.sh new-learnings STEP=13
 ```
 
 **AUTOMATIC VERIFICATION**: The system will verify integration completeness automatically and only allow completion if status shows "READY TO COMMIT".
@@ -833,13 +833,13 @@ This script verifies:
 
 ```bash
 # FINAL MANDATORY GATE - All steps must be complete
-./scripts/gate-checkpoint.sh new-learnings "Final Commit Readiness" "1,2,3,4,5,6,7,8,9,10,11,12,13"
+./scripts/checkpoint-gate.sh new-learnings "Final Commit Readiness" "1,2,3,4,5,6,7,8,9,10,11,12,13"
 
 # If gate passes, show final status
 if [ $? -eq 0 ]; then
     echo ""
     echo "✅ ALL GATES PASSED: Ready for Step 14 (Commit and Push)"
-    ./scripts/status-checkpoint.sh new-learnings
+    ./scripts/checkpoint-status.sh new-learnings
 fi
 ```
 
@@ -896,17 +896,17 @@ fi
 #### [CHECKPOINT END - STEP 14]
 ```bash
 # Mark Step 14 complete
-./scripts/update-checkpoint.sh new-learnings STEP=14
+./scripts/checkpoint-update.sh new-learnings STEP=14
 ```
 
 ## COMMAND COMPLETION VERIFICATION
 
 ```bash
 # Show final completion report
-./scripts/status-checkpoint.sh new-learnings VERBOSE=--verbose
+./scripts/checkpoint-status.sh new-learnings VERBOSE=--verbose
 
 # Clean up tracking file
-./scripts/cleanup-checkpoint.sh new-learnings
+./scripts/checkpoint-cleanup.sh new-learnings
 echo ""
 echo "✅ NEW LEARNINGS COMMAND FULLY COMPLETED!"
 ```

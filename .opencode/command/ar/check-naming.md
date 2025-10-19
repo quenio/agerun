@@ -27,8 +27,8 @@ This command uses checkpoint tracking to ensure systematic execution of all nami
 
 ```bash
 # Start the naming check process with 3 steps
-./scripts/init-checkpoint.sh check-naming "Check Naming" "Analyze Violations" "Complete"
-./scripts/require-checkpoint.sh check-naming
+./scripts/checkpoint-init.sh check-naming "Check Naming" "Analyze Violations" "Complete"
+./scripts/checkpoint-require.sh check-naming
 ```
 
 **Expected output:**
@@ -43,7 +43,7 @@ This command uses checkpoint tracking to ensure systematic execution of all nami
 Check current progress at any time:
 
 ```bash
-./scripts/status-checkpoint.sh check-naming
+./scripts/checkpoint-status.sh check-naming
 ```
 
 **Expected output:**
@@ -112,7 +112,7 @@ Analyzes and categorizes any naming violations found. Only runs if violations ex
 #### [CHECKPOINT COMPLETE]
 
 ```bash
-./scripts/complete-checkpoint.sh check-naming
+./scripts/checkpoint-complete.sh check-naming
 rm -f /tmp/check-naming-*.txt
 ```
 
@@ -127,15 +127,15 @@ Only use these commands if the script fails and you need to manually intervene:
 
 ```bash
 # Check current progress (if workflow interrupted)
-./scripts/status-checkpoint.sh check-naming VERBOSE=--verbose
+./scripts/checkpoint-status.sh check-naming VERBOSE=--verbose
 
 # Resume from a specific step (only if you know it's stuck)
 ./scripts/checkpoint-update.sh check-naming N
 
 # ONLY use this if you need to reset everything and start over
 rm -f /tmp/check-naming-progress.txt
-./scripts/init-checkpoint.sh check-naming "Check Naming" "Analyze Violations" "Document Findings"
-./scripts/require-checkpoint.sh check-naming
+./scripts/checkpoint-init.sh check-naming "Check Naming" "Analyze Violations" "Document Findings"
+./scripts/checkpoint-require.sh check-naming
 ```
 
 ## Minimum Requirements

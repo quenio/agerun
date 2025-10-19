@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
-./scripts/init-checkpoint.sh run-tests '"Build Tests" "Run All Tests" "Verify Results"'
-./scripts/require-checkpoint.sh run-tests
+./scripts/checkpoint-init.sh run-tests '"Build Tests" "Run All Tests" "Verify Results"'
+./scripts/checkpoint-require.sh run-tests
 echo ""
 echo "========== STAGE 1: Build Tests =========="
 echo ""
@@ -11,7 +11,7 @@ if make bin/ar_*_tests 2>&1 | tail -10; then
 else
   echo "❌ Test build failed"
   make checkpoint-update CMD=run-tests STEP=1
-  ./scripts/complete-checkpoint.sh run-tests
+  ./scripts/checkpoint-complete.sh run-tests
   exit 1
 fi
 make checkpoint-update CMD=run-tests STEP=1
@@ -35,6 +35,6 @@ else
   echo "⚠️ Review test output above"
 fi
 make checkpoint-update CMD=run-tests STEP=3
-./scripts/complete-checkpoint.sh run-tests
+./scripts/checkpoint-complete.sh run-tests
 echo ""
 echo "✅ Test run workflow complete!"

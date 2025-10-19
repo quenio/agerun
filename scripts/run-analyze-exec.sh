@@ -6,10 +6,10 @@ set -e
 # This script runs the complete checkpoint-based static analysis workflow
 
 # Initialize checkpoint tracking or show status if already initialized
-./scripts/init-checkpoint.sh analyze-exec '"Build Executable" "Run Static Analysis" "Report Results"'
+./scripts/checkpoint-init.sh analyze-exec '"Build Executable" "Run Static Analysis" "Report Results"'
 
 # Verify checkpoint tracking is ready
-./scripts/require-checkpoint.sh analyze-exec
+./scripts/checkpoint-require.sh analyze-exec
 
 # ============================================================================
 # STAGE 1: Build Executable (Step 1)
@@ -99,7 +99,7 @@ echo ""
 echo "========== CHECKPOINT COMPLETION =========="
 echo ""
 
-./scripts/complete-checkpoint.sh analyze-exec
+./scripts/checkpoint-complete.sh analyze-exec
 
 # Cleanup temporary files
 rm -f /tmp/analyze-exec-stats.txt

@@ -28,10 +28,10 @@ This command uses checkpoint tracking via wrapper scripts to ensure systematic e
 
 The `run-check-docs.sh` script uses the following standardized wrapper scripts:
 
-- **`./scripts/init-checkpoint.sh`**: Initializes or resumes checkpoint tracking
-- **`./scripts/require-checkpoint.sh`**: Verifies checkpoint is ready before proceeding
-- **`./scripts/gate-checkpoint.sh`**: Validates gate conditions at workflow boundaries
-- **`./scripts/complete-checkpoint.sh`**: Shows completion summary and cleanup
+- **`./scripts/checkpoint-init.sh`**: Initializes or resumes checkpoint tracking
+- **`./scripts/checkpoint-require.sh`**: Verifies checkpoint is ready before proceeding
+- **`./scripts/checkpoint-gate.sh`**: Validates gate conditions at workflow boundaries
+- **`./scripts/checkpoint-complete.sh`**: Shows completion summary and cleanup
 
 These wrappers provide centralized checkpoint management across all commands.
 
@@ -40,8 +40,8 @@ These wrappers provide centralized checkpoint management across all commands.
 **MANDATORY**: Before executing ANY steps, you MUST initialize checkpoint tracking:
 
 ```bash
-./scripts/init-checkpoint.sh check-docs "Validate Docs" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"
-./scripts/require-checkpoint.sh check-docs
+./scripts/checkpoint-init.sh check-docs "Validate Docs" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"
+./scripts/checkpoint-require.sh check-docs
 ```
 
 **Expected output:**
@@ -54,7 +54,7 @@ These wrappers provide centralized checkpoint management across all commands.
 Check current progress at any time:
 
 ```bash
-./scripts/status-checkpoint.sh check-docs
+./scripts/checkpoint-status.sh check-docs
 ```
 
 **Expected output:**
@@ -73,7 +73,7 @@ The command orchestrator executes the following sequence of operations. Operatio
 #### Operation 1: Initialize Checkpoint Tracking
 
 ```bash
-./scripts/init-checkpoint.sh check-docs "Validate Docs" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"
+./scripts/checkpoint-init.sh check-docs "Validate Docs" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"
 ```
 
 Initializes checkpoint tracking with 5 logical workflow steps.
@@ -86,7 +86,7 @@ Initializes checkpoint tracking with 5 logical workflow steps.
 #### Operation 2: Verify Checkpoint Ready
 
 ```bash
-./scripts/require-checkpoint.sh check-docs
+./scripts/checkpoint-require.sh check-docs
 ```
 
 Verifies checkpoint is initialized and ready before proceeding.
@@ -207,7 +207,7 @@ Records completion of "Verify Resolution" step in checkpoint tracking.
 #### Operation 12: Validate Resolution Gate
 
 ```bash
-./scripts/gate-checkpoint.sh check-docs "Resolution" "4"
+./scripts/checkpoint-gate.sh check-docs "Resolution" "4"
 ```
 
 Validates that resolution gate passes before proceeding to commit.
@@ -248,7 +248,7 @@ Records completion of "Commit and Push" step in checkpoint tracking.
 #### Operation 15: Complete Workflow
 
 ```bash
-./scripts/complete-checkpoint.sh check-docs
+./scripts/checkpoint-complete.sh check-docs
 rm -f /tmp/check-docs-*.txt /tmp/fix-preview.txt
 ```
 
@@ -269,15 +269,15 @@ Only use these commands if the script fails and you need to manually intervene:
 
 ```bash
 # Check current progress (if workflow interrupted)
-./scripts/status-checkpoint.sh check-docs VERBOSE=--verbose
+./scripts/checkpoint-status.sh check-docs VERBOSE=--verbose
 
 # Resume from a specific step (only if you know it's stuck)
 ./scripts/checkpoint-update.sh check-docs N
 
 # ONLY use this if you need to reset everything and start over
 rm -f /tmp/check-docs-progress.txt
-./scripts/init-checkpoint.sh check-docs "Validate Docs" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"
-./scripts/require-checkpoint.sh check-docs
+./scripts/checkpoint-init.sh check-docs "Validate Docs" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"
+./scripts/checkpoint-require.sh check-docs
 ```
 
 #### [CHECKPOINT COMPLETE]

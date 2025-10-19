@@ -250,11 +250,11 @@
   **Problem**: Complex commands used direct `make checkpoint-*` commands scattered throughout documentation, making it harder to maintain and update checkpoint behavior across the command suite.
 
   **Solution**: Replaced all direct make commands with standardized wrapper scripts:
-  - `make checkpoint-status CMD=...` → `./scripts/status-checkpoint.sh ...`
-  - `make checkpoint-update CMD=...` → `./scripts/update-checkpoint.sh ...`
-  - `make checkpoint-gate CMD=...` → `./scripts/gate-checkpoint.sh ...`
-  - `make checkpoint-cleanup CMD=...` → `./scripts/cleanup-checkpoint.sh ...`
-  - `make checkpoint-init CMD=...` → `./scripts/init-checkpoint.sh ...`
+  - `make checkpoint-status CMD=...` → `./scripts/checkpoint-status.sh ...`
+  - `make checkpoint-update CMD=...` → `./scripts/checkpoint-update.sh ...`
+  - `make checkpoint-gate CMD=...` → `./scripts/checkpoint-gate.sh ...`
+  - `make checkpoint-cleanup CMD=...` → `./scripts/checkpoint-cleanup.sh ...`
+  - `make checkpoint-init CMD=...` → `./scripts/checkpoint-init.sh ...`
 
   **New Wrapper Scripts Created**:
   - `scripts/status-checkpoint.sh` - Check checkpoint progress status
@@ -315,10 +315,10 @@
   **Problem**: Commands used manual if/then/else patterns for checkpoint initialization (7-8 lines), precondition checks (5 lines), and direct make calls for gates. This created duplication, inconsistency, and maintenance overhead across 30+ command files.
 
   **Solution**: Replaced all manual patterns with wrapper script calls:
-  - Initialization: `./scripts/init-checkpoint.sh <cmd> '<steps>'` (replaces 7-8 line if/then/else)
-  - Preconditions: `./scripts/require-checkpoint.sh <cmd>` (replaces 5 line check)
-  - Gates: `./scripts/gate-checkpoint.sh <cmd> "<gate>" "<steps>"` (replaces make call)
-  - Completion: `./scripts/complete-checkpoint.sh <cmd>` (already standardized)
+  - Initialization: `./scripts/checkpoint-init.sh <cmd> '<steps>'` (replaces 7-8 line if/then/else)
+  - Preconditions: `./scripts/checkpoint-require.sh <cmd>` (replaces 5 line check)
+  - Gates: `./scripts/checkpoint-gate.sh <cmd> "<gate>" "<steps>"` (replaces make call)
+  - Completion: `./scripts/checkpoint-complete.sh <cmd>` (already standardized)
 
   **Changes**:
   - **60 gate commands** updated across 31 files (analyze-exec, analyze-tests, build, build-clean, check-commands, check-logs, check-module-consistency, check-naming, commit, compact-changes, compact-guidelines, compact-tasks, create-command, create-plan, execute-plan, fix-errors-whitelisted, merge-settings, migrate-module-to-zig-abi, migrate-module-to-zig-struct, new-learnings, next-priority, next-task, review-changes, review-plan, run-exec, run-tests, sanitize-exec, sanitize-tests, tsan-exec, tsan-tests, check-docs)

@@ -27,7 +27,7 @@ make check-docs > /tmp/check-docs-output.txt 2>&1
 ERROR_COUNT=$(grep -E "ERROR|FAIL" /tmp/check-docs-output.txt | wc -l)
 echo "ERROR_COUNT=$ERROR_COUNT" > /tmp/check-docs-stats.txt
 
-./scripts/update-checkpoint.sh check-docs STEP=1  # ← COUPLING!
+./scripts/checkpoint-update.sh check-docs STEP=1  # ← COUPLING!
 ```
 
 Problems:

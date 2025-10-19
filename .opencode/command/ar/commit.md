@@ -11,21 +11,21 @@ This section implements the [Checkpoint Workflow Enforcement Pattern](../../../k
 If a `/commit` workflow is already in progress:
 
 ```bash
-./scripts/status-checkpoint.sh commit VERBOSE=--verbose
-# Resume: ./scripts/update-checkpoint.sh commit STEP=N
-# Or reset: ./scripts/cleanup-checkpoint.sh commit && ./scripts/init-checkpoint.sh commit "Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"
+./scripts/checkpoint-status.sh commit VERBOSE=--verbose
+# Resume: ./scripts/checkpoint-update.sh commit STEP=N
+# Or reset: ./scripts/checkpoint-cleanup.sh commit && ./scripts/checkpoint-init.sh commit "Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-./scripts/init-checkpoint.sh commit "Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"
+./scripts/checkpoint-init.sh commit "Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-./scripts/require-checkpoint.sh commit
+./scripts/checkpoint-require.sh commit
 ```
 
 **Important**: The build must pass all checks including command excellence scores ([details](../../../kb/command-documentation-excellence-gate.md)). Always test with proper make targets ([details](../../../kb/make-target-testing-discipline.md)).
@@ -75,26 +75,26 @@ This command uses checkpoint tracking to ensure thorough pre-commit verification
 ### Initialize Tracking
 ```bash
 # Start the commit process
-./scripts/init-checkpoint.sh commit "Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"
+./scripts/checkpoint-init.sh commit "Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"
 ```
 
 **Expected output:**
 ```
 📍 Starting: commit (9 steps)
 📁 Tracking: /tmp/commit-progress.txt
-→ Run: ./scripts/update-checkpoint.sh commit STEP=1
+→ Run: ./scripts/checkpoint-update.sh commit STEP=1
 ```
 
 ### Check Progress
 ```bash
-./scripts/status-checkpoint.sh commit
+./scripts/checkpoint-status.sh commit
 ```
 
 **Expected output (example at 56% completion):**
 ```
 📈 commit: 5/9 steps (56%)
    [███████████░░░░░░░░░] 56%
-→ Next: ./scripts/update-checkpoint.sh commit STEP=6
+→ Next: ./scripts/checkpoint-update.sh commit STEP=6
 ```
 
 ## Minimum Requirements
@@ -142,7 +142,7 @@ make checkpoint-update-verified CMD=commit STEP=2 SUMMARY="Build logs verified c
 
 ```bash
 # Check if documentation needs updates (manual verification)
-./scripts/update-checkpoint.sh commit STEP=3
+./scripts/checkpoint-update.sh commit STEP=3
 ```
 
 **Documentation Notes**:
@@ -155,7 +155,7 @@ make checkpoint-update-verified CMD=commit STEP=2 SUMMARY="Build logs verified c
 
 ```bash
 # Verify TODO.md is updated (manual verification)
-./scripts/update-checkpoint.sh commit STEP=4
+./scripts/checkpoint-update.sh commit STEP=4
 ```
 
 **TODO Note**: Mark completed tasks and add any new tasks identified
@@ -173,7 +173,7 @@ make checkpoint-update-verified CMD=commit STEP=5 SUMMARY="CHANGELOG.md updated 
 #### [BUILD GATE]
 ```bash
 # Verify build and logs are clean before proceeding
-./scripts/gate-checkpoint.sh commit "Build Quality" "1,2"
+./scripts/checkpoint-gate.sh commit "Build Quality" "1,2"
 ```
 
 **Expected gate output:**
@@ -210,7 +210,7 @@ make checkpoint-update-verified CMD=commit STEP=6 SUMMARY="All changes reviewed 
 #### [DOCUMENTATION GATE]
 ```bash
 # ⚠️ CRITICAL: Verify documentation is complete
-./scripts/gate-checkpoint.sh commit "Documentation" "3,4,5"
+./scripts/checkpoint-gate.sh commit "Documentation" "3,4,5"
 ```
 
 **Expected gate output:**
@@ -243,7 +243,7 @@ echo "Staging files..."
 git add -A
 
 echo "✅ Files staged for commit"
-./scripts/update-checkpoint.sh commit STEP=7
+./scripts/checkpoint-update.sh commit STEP=7
 ```
 
 1. **First, run these commands to analyze the current state:**
@@ -300,7 +300,7 @@ make checkpoint-update-verified CMD=commit STEP=9 SUMMARY="Push completed succes
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-./scripts/complete-checkpoint.sh commit
+./scripts/checkpoint-complete.sh commit
 ```
 
 **Expected completion output:**
@@ -318,7 +318,7 @@ make checkpoint-update-verified CMD=commit STEP=9 SUMMARY="Push completed succes
 
 ```bash
 # Clean up tracking
-./scripts/cleanup-checkpoint.sh commit
+./scripts/checkpoint-cleanup.sh commit
 ```
 
 ## Related Documentation

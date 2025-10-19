@@ -41,8 +41,8 @@ Checkpoint System: 5 tracked steps
 
 Command Documentation: 14+ operations
 ├─ Initialization (pre-checkpoint)
-│  ├─ Operation 1: init-checkpoint.sh
-│  └─ Operation 2: require-checkpoint.sh
+│  ├─ Operation 1: checkpoint-init.sh
+│  └─ Operation 2: checkpoint-require.sh
 ├─ Checkpoint Step 1 Operations
 │  ├─ Operation 3: validate-docs.sh
 │  └─ Operation 4: checkpoint-update.sh 1
@@ -56,12 +56,12 @@ Command Documentation: 14+ operations
 ├─ Checkpoint Step 4 Operations
 │  ├─ Operation 10: verify-docs.sh
 │  ├─ Operation 11: checkpoint-update.sh 4
-│  └─ Operation 12: gate-checkpoint.sh
+│  └─ Operation 12: checkpoint-gate.sh
 ├─ Checkpoint Step 5 Operations
 │  ├─ Operation 13: commit-docs.sh
 │  └─ Operation 14: checkpoint-update.sh 5
 └─ Completion
-   └─ Operation 15: complete-checkpoint.sh
+   └─ Operation 15: checkpoint-complete.sh
 ```
 
 ## Documentation Structure
@@ -72,10 +72,10 @@ Command Documentation: 14+ operations
 ### Initialization (Pre-Checkpoint)
 
 #### Operation 1: Initialize Checkpoint Tracking
-./scripts/init-checkpoint.sh check-docs "..."
+./scripts/checkpoint-init.sh check-docs "..."
 
 #### Operation 2: Verify Checkpoint Ready
-./scripts/require-checkpoint.sh check-docs
+./scripts/checkpoint-require.sh check-docs
 
 #### [CHECKPOINT START - STEP 1: Validate Docs]
 
@@ -105,7 +105,7 @@ Command Documentation: 14+ operations
 
 1. **Checkpoint-update calls** must be inside [CHECKPOINT START/END] markers
 2. **Checkpoint-update number** must match checkpoint step number (1, 2, 3, etc.)
-3. **Step names** must match names given in init-checkpoint.sh
+3. **Step names** must match names given in checkpoint-init.sh
 4. **Operations** are documented but not individually tracked
 5. **Markers wrap complete logical units** including the checkpoint-update call
 

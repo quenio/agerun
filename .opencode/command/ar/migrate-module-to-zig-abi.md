@@ -19,21 +19,21 @@ Before starting migration:
 If a `/migrate-module-to-zig-abi` workflow is already in progress:
 
 ```bash
-./scripts/status-checkpoint.sh migrate-module-to-zig-abi VERBOSE=--verbose
-# Resume: ./scripts/update-checkpoint.sh migrate-module-to-zig-abi STEP=N
-# Or reset: ./scripts/cleanup-checkpoint.sh migrate-module-to-zig-abi && ./scripts/init-checkpoint.sh migrate-module-to-zig-abi "Check Existing" "Analyze Dependencies" "Identify Challenges" "Review API" "Create Zig File" "Map Types" "Implement Functions" "Run Tests" "Verify Memory" "Cleanup and Document"
+./scripts/checkpoint-status.sh migrate-module-to-zig-abi VERBOSE=--verbose
+# Resume: ./scripts/checkpoint-update.sh migrate-module-to-zig-abi STEP=N
+# Or reset: ./scripts/checkpoint-cleanup.sh migrate-module-to-zig-abi && ./scripts/checkpoint-init.sh migrate-module-to-zig-abi "Check Existing" "Analyze Dependencies" "Identify Challenges" "Review API" "Create Zig File" "Map Types" "Implement Functions" "Run Tests" "Verify Memory" "Cleanup and Document"
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-./scripts/init-checkpoint.sh migrate-module-to-zig-abi "Check Existing" "Analyze Dependencies" "Identify Challenges" "Review API" "Create Zig File" "Map Types" "Implement Functions" "Run Tests" "Verify Memory" "Cleanup and Document"
+./scripts/checkpoint-init.sh migrate-module-to-zig-abi "Check Existing" "Analyze Dependencies" "Identify Challenges" "Review API" "Create Zig File" "Map Types" "Implement Functions" "Run Tests" "Verify Memory" "Cleanup and Document"
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-./scripts/require-checkpoint.sh migrate-module-to-zig-abi
+./scripts/checkpoint-require.sh migrate-module-to-zig-abi
 ```
 
 # Migrate Module to Zig ABI
@@ -45,26 +45,26 @@ This command uses checkpoint tracking to ensure systematic C-to-Zig migration wh
 ```bash
 # Start the migration process (replace MODULE with actual module name)
 MODULE={{1}}  # Set the module name
-./scripts/init-checkpoint.sh migrate-module-to-zig-abi "Check Existing" "Analyze Dependencies" "Identify Challenges" "Review API" "Create Zig File" "Map Types" "Implement Functions" "Run Tests" "Verify Memory" "Cleanup and Document"
+./scripts/checkpoint-init.sh migrate-module-to-zig-abi "Check Existing" "Analyze Dependencies" "Identify Challenges" "Review API" "Create Zig File" "Map Types" "Implement Functions" "Run Tests" "Verify Memory" "Cleanup and Document"
 ```
 
 **Expected output:**
 ```
 📍 Starting: migrate-module-to-zig-abi (10 steps)
 📁 Tracking: /tmp/migrate-module-to-zig-abi-progress.txt
-→ Run: ./scripts/update-checkpoint.sh migrate-module-to-zig-abi STEP=1
+→ Run: ./scripts/checkpoint-update.sh migrate-module-to-zig-abi STEP=1
 ```
 
 ### Check Progress
 ```bash
-./scripts/status-checkpoint.sh migrate-module-to-zig-abi
+./scripts/checkpoint-status.sh migrate-module-to-zig-abi
 ```
 
 **Expected output (example at 50% completion):**
 ```
 📈 command: X/Y steps (Z%)
    [████░░░░░░░░░░░░░░░░] Z%
-→ Next: ./scripts/update-checkpoint.sh command STEP=N
+→ Next: ./scripts/checkpoint-update.sh command STEP=N
 ```
 
 ## Minimum Requirements
@@ -131,7 +131,7 @@ if [ ! -f "modules/{{1}}.c" ] || [ ! -f "modules/{{1}}.h" ]; then
   exit 1
 fi
 
-./scripts/update-checkpoint.sh migrate-module-to-zig-abi STEP=1
+./scripts/checkpoint-update.sh migrate-module-to-zig-abi STEP=1
 ```
 
 #### Step 2: Analyze Dependencies
@@ -146,7 +146,7 @@ DEP_COUNT=$(grep -o "#include.*ar_" modules/{{1}}.h modules/{{1}}.c | wc -l)
 echo "Total dependencies: $DEP_COUNT"
 echo "DEP_COUNT=$DEP_COUNT" > /tmp/migration-stats.txt
 
-./scripts/update-checkpoint.sh migrate-module-to-zig-abi STEP=2
+./scripts/checkpoint-update.sh migrate-module-to-zig-abi STEP=2
 ```
 
 #### Step 3: Identify Challenges
@@ -170,7 +170,7 @@ if grep -q "^#define.*\\\\$" modules/{{1}}.c; then
   echo "⚠️ Contains multi-line macros"
 fi
 
-./scripts/update-checkpoint.sh migrate-module-to-zig-abi STEP=3
+./scripts/checkpoint-update.sh migrate-module-to-zig-abi STEP=3
 ```
 
 #### Step 4: Review API
@@ -185,13 +185,13 @@ grep "^ar_{{1}}__" modules/{{1}}.h | head -10
 echo "\nOwnership patterns:"
 grep -c "own_\|mut_\|ref_" modules/{{1}}.c
 
-./scripts/update-checkpoint.sh migrate-module-to-zig-abi STEP=4
+./scripts/checkpoint-update.sh migrate-module-to-zig-abi STEP=4
 ```
 
 #### [ASSESSMENT GATE]
 ```bash
 # Verify assessment is complete
-./scripts/gate-checkpoint.sh migrate-module-to-zig-abi "Assessment" "1,2,3,4"
+./scripts/checkpoint-gate.sh migrate-module-to-zig-abi "Assessment" "1,2,3,4"
 ```
 
 **Expected gate output:**
@@ -226,7 +226,7 @@ echo "const ar_allocator = @import(\"ar_allocator.zig\");" >> modules/{{1}}.zig
 echo "" >> modules/{{1}}.zig
 echo "// Migrated from {{1}}.c - maintains C API compatibility" >> modules/{{1}}.zig
 
-./scripts/update-checkpoint.sh migrate-module-to-zig-abi STEP=5
+./scripts/checkpoint-update.sh migrate-module-to-zig-abi STEP=5
 ```
 
 #### Step 6: Map Types
@@ -245,7 +245,7 @@ FUNC_COUNT=$(grep -c "^ar_{{1}}__" modules/{{1}}.h)
 echo "Functions to migrate: $FUNC_COUNT"
 echo "FUNC_COUNT=$FUNC_COUNT" >> /tmp/migration-stats.txt
 
-./scripts/update-checkpoint.sh migrate-module-to-zig-abi STEP=6
+./scripts/checkpoint-update.sh migrate-module-to-zig-abi STEP=6
 ```
 
 #### Step 7: Implement Functions
@@ -259,13 +259,13 @@ echo "Implementing $FUNC_COUNT functions..."
 echo "✅ Implemented all $FUNC_COUNT functions"
 echo "Maintained C API compatibility with export fn"
 
-./scripts/update-checkpoint.sh migrate-module-to-zig-abi STEP=7
+./scripts/checkpoint-update.sh migrate-module-to-zig-abi STEP=7
 ```
 
 #### [IMPLEMENTATION GATE]
 ```bash
 # Verify implementation is complete
-./scripts/gate-checkpoint.sh migrate-module-to-zig-abi "Implementation" "5,6,7"
+./scripts/checkpoint-gate.sh migrate-module-to-zig-abi "Implementation" "5,6,7"
 ```
 
 **Expected gate output:**
@@ -298,7 +298,7 @@ if ! make {{1}}_tests 2>&1; then
 fi
 
 echo "✅ All tests passed!"
-./scripts/update-checkpoint.sh migrate-module-to-zig-abi STEP=8
+./scripts/checkpoint-update.sh migrate-module-to-zig-abi STEP=8
 ```
 
 #### Step 9: Verify Memory
@@ -316,13 +316,13 @@ if [ -f "$MEMORY_REPORT" ]; then
   fi
 fi
 
-./scripts/update-checkpoint.sh migrate-module-to-zig-abi STEP=9
+./scripts/checkpoint-update.sh migrate-module-to-zig-abi STEP=9
 ```
 
 #### [CRITICAL TESTING GATE]
 ```bash
 # ⚠️ CRITICAL: Verify all tests pass with no leaks
-./scripts/gate-checkpoint.sh migrate-module-to-zig-abi "Testing" "8,9"
+./scripts/checkpoint-gate.sh migrate-module-to-zig-abi "Testing" "8,9"
 ```
 
 **Expected gate output:**
@@ -365,12 +365,12 @@ if ! make clean build 2>&1; then
 fi
 
 echo "✅ Migration complete!"
-./scripts/update-checkpoint.sh migrate-module-to-zig-abi STEP=10
+./scripts/checkpoint-update.sh migrate-module-to-zig-abi STEP=10
 ```
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-./scripts/complete-checkpoint.sh migrate-module-to-zig-abi
+./scripts/checkpoint-complete.sh migrate-module-to-zig-abi
 ```
 
 **Expected completion output:**
@@ -459,7 +459,7 @@ mv modules/{{1}}.c.bak modules/{{1}}.c
 rm modules/{{1}}.zig
 
 # Reset checkpoint tracking
-./scripts/cleanup-checkpoint.sh migrate-module-to-zig-abi
+./scripts/checkpoint-cleanup.sh migrate-module-to-zig-abi
 ```
 
 ## Related Documentation

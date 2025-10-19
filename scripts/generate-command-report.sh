@@ -22,4 +22,4 @@ else
   echo "  python3 scripts/check_commands.py --fix"
 fi
 
-./scripts/update-checkpoint.sh check-commands STEP=5
+./scripts/checkpoint-update.sh check-commands STEP=5

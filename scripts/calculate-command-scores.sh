@@ -24,4 +24,4 @@ fi
 echo "AVG_SCORE=$AVG_SCORE" > /tmp/check-commands-stats.txt
 echo "STATUS=$STATUS" >> /tmp/check-commands-stats.txt
 
-./scripts/update-checkpoint.sh check-commands STEP=3
+./scripts/checkpoint-update.sh check-commands STEP=3

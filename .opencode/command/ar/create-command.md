@@ -40,21 +40,21 @@ Create a new Claude Code command following all quality standards and best practi
 If a `/create-command` workflow is already in progress:
 
 ```bash
-./scripts/status-checkpoint.sh create-command VERBOSE=--verbose
-# Resume: ./scripts/update-checkpoint.sh create-command STEP=N
-# Or reset: ./scripts/cleanup-checkpoint.sh create-command && ./scripts/init-checkpoint.sh create-command "Validate Args" "KB Consultation" "Create Structure" "Add Checkpoints" "Add Quality Gates" "Add Documentation" "Verify Excellence"
+./scripts/checkpoint-status.sh create-command VERBOSE=--verbose
+# Resume: ./scripts/checkpoint-update.sh create-command STEP=N
+# Or reset: ./scripts/checkpoint-cleanup.sh create-command && ./scripts/checkpoint-init.sh create-command "Validate Args" "KB Consultation" "Create Structure" "Add Checkpoints" "Add Quality Gates" "Add Documentation" "Verify Excellence"
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-./scripts/init-checkpoint.sh create-command "Validate Args" "KB Consultation" "Create Structure" "Add Checkpoints" "Add Quality Gates" "Add Documentation" "Verify Excellence"
+./scripts/checkpoint-init.sh create-command "Validate Args" "KB Consultation" "Create Structure" "Add Checkpoints" "Add Quality Gates" "Add Documentation" "Verify Excellence"
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-./scripts/require-checkpoint.sh create-command
+./scripts/checkpoint-require.sh create-command
 ```
 
 # Create Command
@@ -66,26 +66,26 @@ This command creates a new command file with proper structure, checkpoint tracki
 ### Initialize Tracking
 ```bash
 # Start the command creation process
-./scripts/init-checkpoint.sh create-command "Validate Args" "KB Consultation" "Create Structure" "Add Checkpoints" "Add Quality Gates" "Add Documentation" "Verify Excellence"
+./scripts/checkpoint-init.sh create-command "Validate Args" "KB Consultation" "Create Structure" "Add Checkpoints" "Add Quality Gates" "Add Documentation" "Verify Excellence"
 ```
 
 **Expected output:**
 ```
 📍 Starting: create-command (7 steps)
 📁 Tracking: /tmp/create-command-progress.txt
-→ Run: ./scripts/update-checkpoint.sh create-command STEP=1
+→ Run: ./scripts/checkpoint-update.sh create-command STEP=1
 ```
 
 ### Check Progress
 ```bash
-./scripts/status-checkpoint.sh create-command
+./scripts/checkpoint-status.sh create-command
 ```
 
 **Expected output (example at 43% completion):**
 ```
 📈 create-command: 3/7 steps (43%)
    [████████░░░░░░░░░░░░] 43%
-→ Next: ./scripts/update-checkpoint.sh create-command STEP=4
+→ Next: ./scripts/checkpoint-update.sh create-command STEP=4
 ```
 
 ## Minimum Requirements
@@ -125,7 +125,7 @@ COMMAND_FILE=".opencode/command/ar/${COMMAND_NAME}.md"
 echo "   Target file: $COMMAND_FILE"
 echo ""
 
-./scripts/update-checkpoint.sh create-command STEP=1
+./scripts/checkpoint-update.sh create-command STEP=1
 ```
 
 #### Step 2: KB Consultation
@@ -163,13 +163,13 @@ This is NOT optional - read these articles IN FULL:
 - Must achieve 90%+ score in `make check-commands`
 
 ```bash
-./scripts/update-checkpoint.sh create-command STEP=2
+./scripts/checkpoint-update.sh create-command STEP=2
 ```
 
 #### [QUALITY GATE 1: Preparation Complete]
 ```bash
 # MANDATORY: Must pass before proceeding
-./scripts/gate-checkpoint.sh create-command "Preparation" "1,2"
+./scripts/checkpoint-gate.sh create-command "Preparation" "1,2"
 ```
 
 **Expected gate output:**
@@ -214,9 +214,9 @@ Before executing:
 If a \`/COMMAND_NAME\` workflow is already in progress:
 
 \`\`\`bash
-./scripts/status-checkpoint.sh COMMAND_NAME VERBOSE=--verbose
-# Resume: ./scripts/update-checkpoint.sh COMMAND_NAME STEP=N
-# Or reset: ./scripts/cleanup-checkpoint.sh COMMAND_NAME && ./scripts/init-checkpoint.sh COMMAND_NAME "Step 1" "Step 2" "Step 3"
+./scripts/checkpoint-status.sh COMMAND_NAME VERBOSE=--verbose
+# Resume: ./scripts/checkpoint-update.sh COMMAND_NAME STEP=N
+# Or reset: ./scripts/checkpoint-cleanup.sh COMMAND_NAME && ./scripts/checkpoint-init.sh COMMAND_NAME "Step 1" "Step 2" "Step 3"
 \`\`\`
 
 ### First-Time Initialization Check
@@ -224,9 +224,9 @@ If a \`/COMMAND_NAME\` workflow is already in progress:
 \`\`\`bash
 if [ ! -f /tmp/COMMAND_NAME-progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
-  ./scripts/init-checkpoint.sh COMMAND_NAME "Step 1" "Step 2" "Step 3"
+  ./scripts/checkpoint-init.sh COMMAND_NAME "Step 1" "Step 2" "Step 3"
 else
-  ./scripts/status-checkpoint.sh COMMAND_NAME
+  ./scripts/checkpoint-status.sh COMMAND_NAME
 fi
 \`\`\`
 
@@ -248,26 +248,26 @@ This command [brief description of what it does].
 ### Initialize Tracking
 \`\`\`bash
 # Start the COMMAND_NAME process
-./scripts/init-checkpoint.sh COMMAND_NAME "Step 1" "Step 2" "Step 3"
+./scripts/checkpoint-init.sh COMMAND_NAME "Step 1" "Step 2" "Step 3"
 \`\`\`
 
 **Expected output:**
 \`\`\`
 📍 Starting: COMMAND_NAME (3 steps)
 📁 Tracking: /tmp/COMMAND_NAME-progress.txt
-→ Run: ./scripts/update-checkpoint.sh COMMAND_NAME STEP=1
+→ Run: ./scripts/checkpoint-update.sh COMMAND_NAME STEP=1
 \`\`\`
 
 ### Check Progress
 \`\`\`bash
-./scripts/status-checkpoint.sh COMMAND_NAME
+./scripts/checkpoint-status.sh COMMAND_NAME
 \`\`\`
 
 **Expected output (example at 33% completion):**
 \`\`\`
 📈 COMMAND_NAME: 1/3 steps (33%)
    [████████░░░░░░░░░░░░] 33%
-→ Next: ./scripts/update-checkpoint.sh COMMAND_NAME STEP=2
+→ Next: ./scripts/checkpoint-update.sh COMMAND_NAME STEP=2
 \`\`\`
 
 ## Minimum Requirements
@@ -289,7 +289,7 @@ This command [brief description of what it does].
 
 \`\`\`bash
 # Implement step logic here
-./scripts/update-checkpoint.sh COMMAND_NAME STEP=1
+./scripts/checkpoint-update.sh COMMAND_NAME STEP=1
 \`\`\`
 
 #### [CHECKPOINT END]
@@ -315,7 +315,7 @@ echo "✅ Created command file: $COMMAND_FILE"
 echo "   Structure: Basic template with checkpoint tracking"
 echo ""
 
-./scripts/update-checkpoint.sh create-command STEP=3
+./scripts/checkpoint-update.sh create-command STEP=3
 ```
 
 #### Step 4: Add Checkpoint Steps
@@ -339,7 +339,7 @@ echo "  2. Group into logical stages (3-6 steps per stage)"
 echo "  3. Add checkpoint-update calls after each step"
 echo ""
 
-./scripts/update-checkpoint.sh create-command STEP=4
+./scripts/checkpoint-update.sh create-command STEP=4
 ```
 
 #### Step 5: Add Quality Gates
@@ -356,19 +356,19 @@ echo "  • Enforce minimum requirements"
 echo ""
 echo "Template pattern:"
 echo '  ```bash'
-echo '  ./scripts/gate-checkpoint.sh COMMAND_NAME "Stage Name" "1,2,3"
+echo '  ./scripts/checkpoint-gate.sh COMMAND_NAME "Stage Name" "1,2,3"
 echo '  ```'
 echo ""
 echo "Add gates to $COMMAND_FILE between stages"
 echo ""
 
-./scripts/update-checkpoint.sh create-command STEP=5
+./scripts/checkpoint-update.sh create-command STEP=5
 ```
 
 #### [QUALITY GATE 2: Structure Complete]
 ```bash
 # MANDATORY: Must pass before proceeding
-./scripts/gate-checkpoint.sh create-command "Structure" "3,4,5"
+./scripts/checkpoint-gate.sh create-command "Structure" "3,4,5"
 ```
 
 **Expected gate output:**
@@ -407,7 +407,7 @@ echo ""
 echo "Edit $COMMAND_FILE to complete documentation"
 echo ""
 
-./scripts/update-checkpoint.sh create-command STEP=6
+./scripts/checkpoint-update.sh create-command STEP=6
 ```
 
 #### Step 7: Verify Excellence Standards
@@ -418,13 +418,13 @@ echo ""
 # Verify command quality using helper script
 ./scripts/verify-command-quality.sh "$COMMAND_NAME"
 
-./scripts/update-checkpoint.sh create-command STEP=7
+./scripts/checkpoint-update.sh create-command STEP=7
 ```
 
 #### [QUALITY GATE 3: Excellence Achieved]
 ```bash
 # MANDATORY: Must pass before completion
-./scripts/gate-checkpoint.sh create-command "Excellence" "6,7"
+./scripts/checkpoint-gate.sh create-command "Excellence" "6,7"
 ```
 
 **Expected gate output:**
@@ -443,7 +443,7 @@ echo ""
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-./scripts/complete-checkpoint.sh create-command
+./scripts/checkpoint-complete.sh create-command
 ```
 
 **Expected completion output:**
@@ -461,7 +461,7 @@ echo ""
 
 ```bash
 # Clean up tracking file
-./scripts/cleanup-checkpoint.sh create-command
+./scripts/checkpoint-cleanup.sh create-command
 ```
 
 ## Best Practice: Helper Scripts

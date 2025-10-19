@@ -9,21 +9,21 @@ Compact the TODO.md file by condensing completed tasks while keeping incomplete 
 If a `/compact-tasks` workflow is already in progress:
 
 ```bash
-./scripts/status-checkpoint.sh compact-tasks VERBOSE=--verbose
-# Resume: ./scripts/update-checkpoint.sh compact-tasks STEP=N
-# Or reset: ./scripts/cleanup-checkpoint.sh compact-tasks && ./scripts/init-checkpoint.sh compact-tasks "Measure Baseline" "Categorize Tasks" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Commit Changes" "Final Verification"
+./scripts/checkpoint-status.sh compact-tasks VERBOSE=--verbose
+# Resume: ./scripts/checkpoint-update.sh compact-tasks STEP=N
+# Or reset: ./scripts/checkpoint-cleanup.sh compact-tasks && ./scripts/checkpoint-init.sh compact-tasks "Measure Baseline" "Categorize Tasks" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Commit Changes" "Final Verification"
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-./scripts/init-checkpoint.sh compact-tasks "Measure Baseline" "Categorize Tasks" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Commit Changes" "Final Verification"
+./scripts/checkpoint-init.sh compact-tasks "Measure Baseline" "Categorize Tasks" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Commit Changes" "Final Verification"
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-./scripts/require-checkpoint.sh compact-tasks
+./scripts/checkpoint-require.sh compact-tasks
 ```
 
 ## CRITICAL: Mixed-State Document Strategy
@@ -88,26 +88,26 @@ This command uses checkpoint tracking to ensure safe and systematic TODO.md comp
 ### Initialize Tracking
 ```bash
 # Start the task compaction process
-./scripts/init-checkpoint.sh compact-tasks "Measure Baseline" "Categorize Tasks" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Commit Changes" "Final Verification"
+./scripts/checkpoint-init.sh compact-tasks "Measure Baseline" "Categorize Tasks" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Commit Changes" "Final Verification"
 ```
 
 **Expected output:**
 ```
 📍 Starting: compact-tasks (7 steps)
 📁 Tracking: /tmp/compact-tasks-progress.txt
-→ Run: ./scripts/update-checkpoint.sh compact-tasks STEP=1
+→ Run: ./scripts/checkpoint-update.sh compact-tasks STEP=1
 ```
 
 ### Check Progress
 ```bash
-./scripts/status-checkpoint.sh compact-tasks
+./scripts/checkpoint-status.sh compact-tasks
 ```
 
 **Expected output (example at 43% completion):**
 ```
 📈 compact-tasks: 3/7 steps (43%)
    [████████░░░░░░░░░░░░] 43%
-→ Next: ./scripts/update-checkpoint.sh compact-tasks STEP=4
+→ Next: ./scripts/checkpoint-update.sh compact-tasks STEP=4
 ```
 
 ## Minimum Requirements
@@ -143,7 +143,7 @@ echo "Original: $ORIGINAL_LINES lines, $ORIGINAL_BYTES bytes"
 echo "ORIGINAL_LINES=$ORIGINAL_LINES" > /tmp/compact-tasks-stats.txt
 echo "ORIGINAL_BYTES=$ORIGINAL_BYTES" >> /tmp/compact-tasks-stats.txt
 
-./scripts/update-checkpoint.sh compact-tasks STEP=1
+./scripts/checkpoint-update.sh compact-tasks STEP=1
 ```
 
 **Expected output:**
@@ -176,7 +176,7 @@ echo "2. Are there related completed tasks that can be combined?"
 echo "3. Do all completed tasks have completion dates?"
 echo "4. Which sections contain only completed tasks?"
 
-./scripts/update-checkpoint.sh compact-tasks STEP=2
+./scripts/checkpoint-update.sh compact-tasks STEP=2
 ```
 
 **Expected output:**
@@ -193,7 +193,7 @@ Analysis questions for completed tasks:
 #### [CATEGORIZATION GATE]
 ```bash
 # Verify categorization before proceeding to manual work
-./scripts/gate-checkpoint.sh compact-tasks "Categorization Complete" "1,2"
+./scripts/checkpoint-gate.sh compact-tasks "Categorization Complete" "1,2"
 ```
 
 **Expected gate output:**
@@ -259,7 +259,7 @@ Analysis questions for completed tasks:
 # After completing manual edits
 echo "✅ Manual semantic compaction of completed tasks complete"
 echo "Review changes with: git diff TODO.md"
-./scripts/update-checkpoint.sh compact-tasks STEP=3
+./scripts/checkpoint-update.sh compact-tasks STEP=3
 ```
 
 #### Step 4: Verify Preservation
@@ -270,7 +270,7 @@ echo "Review changes with: git diff TODO.md"
 
 # Only proceed if verification passes
 if [ $? -eq 0 ]; then
-  ./scripts/update-checkpoint.sh compact-tasks STEP=4
+  ./scripts/checkpoint-update.sh compact-tasks STEP=4
 else
   echo "❌ Verification failed - do not proceed"
   exit 1
@@ -312,7 +312,7 @@ if [ $LINE_REDUCTION -lt 10 ]; then
 fi
 
 echo "✅ Integrity verified and reduction target met"
-./scripts/gate-checkpoint.sh compact-tasks "Selective Compaction Quality" "3,4"
+./scripts/checkpoint-gate.sh compact-tasks "Selective Compaction Quality" "3,4"
 ```
 
 **Expected gate output:**
@@ -343,7 +343,7 @@ echo ""
 
 read -p "Press Enter after adding the entry..."
 
-./scripts/update-checkpoint.sh compact-tasks STEP=5
+./scripts/checkpoint-update.sh compact-tasks STEP=5
 ```
 
 #### Step 6: Commit Changes
@@ -368,7 +368,7 @@ git status
 echo ""
 echo "✅ Changes committed"
 
-./scripts/update-checkpoint.sh compact-tasks STEP=6
+./scripts/checkpoint-update.sh compact-tasks STEP=6
 ```
 
 **Expected output:**
@@ -403,12 +403,12 @@ echo "   Incomplete tasks: $FINAL_INCOMPLETE (unchanged)"
 echo "   Line reduction: ${LINE_REDUCTION}%"
 echo "   Commit status: Clean"
 
-./scripts/update-checkpoint.sh compact-tasks STEP=7
+./scripts/checkpoint-update.sh compact-tasks STEP=7
 ```
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-./scripts/complete-checkpoint.sh compact-tasks
+./scripts/checkpoint-complete.sh compact-tasks
 ```
 
 **Expected completion output:**

@@ -74,10 +74,10 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
     - `checkpoint-cleanup.sh`: Remove tracking file when done
     - All scripts use cross-platform patterns: `[[ == ]]` for OSTYPE detection, `set -e`, error handling ([details](kb/cross-platform-bash-script-patterns.md))
   - **Checkpoint wrapper scripts** (`*-checkpoint.sh`): Simplify checkpoint integration in commands
-    - `init-checkpoint.sh`: Initialize checkpoint or show status if already initialized (replaces 7-8 line pattern)
-    - `require-checkpoint.sh`: Verify checkpoint is initialized before proceeding (replaces 5 line precondition pattern)
-    - `gate-checkpoint.sh`: Verify gate conditions with clear error feedback (replaces 3-4 line gate verification pattern)
-    - `complete-checkpoint.sh`: Show final status and cleanup (replaces 4-5 line completion pattern)
+    - `checkpoint-init.sh`: Initialize checkpoint or show status if already initialized (replaces 7-8 line pattern)
+    - `checkpoint-require.sh`: Verify checkpoint is initialized before proceeding (replaces 5 line precondition pattern)
+    - `checkpoint-gate.sh`: Verify gate conditions with clear error feedback (replaces 3-4 line gate verification pattern)
+    - `checkpoint-complete.sh`: Show final status and cleanup (replaces 4-5 line completion pattern)
     - **Why wrappers exist**: Reduce boilerplate across commands, provide consistent API, improve UX with clear error messages ([details](kb/checkpoint-based-workflow-pattern.md))
     - **Checkpoint structure**: Commands use two-level hierarchy (checkpoint steps + operations) with proper separation of concerns ([details](kb/checkpoint-operations-and-steps-hierarchy.md), [orchestrator](kb/command-orchestrator-checkpoint-separation.md))
 - **/reports**: Analysis reports and technical comparisons (all .md analysis files go here)

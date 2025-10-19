@@ -9,21 +9,21 @@ Merge ./.claude/settings.local.json into ./.claude/settings.json and remove the 
 If a `/merge-settings` workflow is already in progress:
 
 ```bash
-./scripts/status-checkpoint.sh merge-settings VERBOSE=--verbose
-# Resume: ./scripts/update-checkpoint.sh merge-settings STEP=N
-# Or reset: ./scripts/cleanup-checkpoint.sh merge-settings && ./scripts/init-checkpoint.sh merge-settings "Check Files" "Read Settings" "Merge Permissions" "Validate Result" "Commit and Cleanup"
+./scripts/checkpoint-status.sh merge-settings VERBOSE=--verbose
+# Resume: ./scripts/checkpoint-update.sh merge-settings STEP=N
+# Or reset: ./scripts/checkpoint-cleanup.sh merge-settings && ./scripts/checkpoint-init.sh merge-settings "Check Files" "Read Settings" "Merge Permissions" "Validate Result" "Commit and Cleanup"
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-./scripts/init-checkpoint.sh merge-settings "Check Files" "Read Settings" "Merge Permissions" "Validate Result" "Commit and Cleanup"
+./scripts/checkpoint-init.sh merge-settings "Check Files" "Read Settings" "Merge Permissions" "Validate Result" "Commit and Cleanup"
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-./scripts/require-checkpoint.sh merge-settings
+./scripts/checkpoint-require.sh merge-settings
 ```
 
 # Merge Settings
@@ -34,26 +34,26 @@ This command uses checkpoint tracking to ensure safe merging of local settings i
 ### Initialize Tracking
 ```bash
 # Start the settings merge process
-./scripts/init-checkpoint.sh merge-settings "Check Files" "Read Settings" "Merge Permissions" "Validate Result" "Commit and Cleanup"
+./scripts/checkpoint-init.sh merge-settings "Check Files" "Read Settings" "Merge Permissions" "Validate Result" "Commit and Cleanup"
 ```
 
 **Expected output:**
 ```
 📍 Starting: merge-settings (5 steps)
 📁 Tracking: /tmp/merge-settings-progress.txt
-→ Run: ./scripts/update-checkpoint.sh merge-settings STEP=1
+→ Run: ./scripts/checkpoint-update.sh merge-settings STEP=1
 ```
 
 ### Check Progress
 ```bash
-./scripts/status-checkpoint.sh merge-settings
+./scripts/checkpoint-status.sh merge-settings
 ```
 
 **Expected output (example at 60% completion):**
 ```
 📈 command: X/Y steps (Z%)
    [████░░░░░░░░░░░░░░░░] Z%
-→ Next: ./scripts/update-checkpoint.sh command STEP=N
+→ Next: ./scripts/checkpoint-update.sh command STEP=N
 ```
 
 ## Minimum Requirements
@@ -94,7 +94,7 @@ fi
 echo "LOCAL_EXISTS=$LOCAL_EXISTS" > /tmp/merge-settings-stats.txt
 echo "LOCAL_PERMS=$LOCAL_PERMS" >> /tmp/merge-settings-stats.txt
 
-./scripts/update-checkpoint.sh merge-settings STEP=1
+./scripts/checkpoint-update.sh merge-settings STEP=1
 ```
 
 1. Check if ./.claude/settings.local.json exists
@@ -106,11 +106,11 @@ source /tmp/merge-settings-stats.txt
 if [ "$LOCAL_EXISTS" = "NO" ]; then
   echo "No merge needed - marking all steps complete"
   for i in 2 3 4 5; do
-    ./scripts/update-checkpoint.sh merge-settings STEP=$i
+    ./scripts/checkpoint-update.sh merge-settings STEP=$i
   done
   exit 0
 fi
-./scripts/gate-checkpoint.sh merge-settings "Discovery" "1"
+./scripts/checkpoint-gate.sh merge-settings "Discovery" "1"
 ```
 
 ### Stage 2: Merge (Steps 2-4)
@@ -140,7 +140,7 @@ if [ "$LOCAL_EXISTS" = "YES" ]; then
   echo "✅ Settings files read"
 fi
 
-./scripts/update-checkpoint.sh merge-settings STEP=2
+./scripts/checkpoint-update.sh merge-settings STEP=2
 ```
 
 2. If it exists, read both settings files
@@ -168,7 +168,7 @@ if [ "$LOCAL_EXISTS" = "YES" ]; then
   echo "✅ Permissions merged"
 fi
 
-./scripts/update-checkpoint.sh merge-settings STEP=3
+./scripts/checkpoint-update.sh merge-settings STEP=3
 ```
 
 3. Merge the permissions from local into main settings
@@ -194,7 +194,7 @@ if [ "$LOCAL_EXISTS" = "YES" ]; then
   echo "VALID=$VALID" >> /tmp/merge-settings-stats.txt
 fi
 
-./scripts/update-checkpoint.sh merge-settings STEP=4
+./scripts/checkpoint-update.sh merge-settings STEP=4
 ```
 
 4. Write the merged settings back to ./.claude/settings.json
@@ -207,7 +207,7 @@ if [ "$VALID" != "YES" ] && [ "$LOCAL_EXISTS" = "YES" ]; then
   echo "❌ CRITICAL: Merge validation failed!"
   exit 1
 fi
-./scripts/gate-checkpoint.sh merge-settings "Merge Validation" "2,3,4"
+./scripts/checkpoint-gate.sh merge-settings "Merge Validation" "2,3,4"
 ```
 
 ### Stage 3: Cleanup (Step 5)
@@ -241,7 +241,7 @@ else
   echo "ℹ️ No changes to commit"
 fi
 
-./scripts/update-checkpoint.sh merge-settings STEP=5
+./scripts/checkpoint-update.sh merge-settings STEP=5
 ```
 
 5. Remove the local settings file
@@ -253,7 +253,7 @@ fi
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-./scripts/complete-checkpoint.sh merge-settings
+./scripts/checkpoint-complete.sh merge-settings
 ```
 
 **Expected completion output:**

@@ -10,4 +10,4 @@ else
   echo "⚠️ Structure validation found issues"
 fi
 
-./scripts/update-checkpoint.sh check-commands STEP=2
+./scripts/checkpoint-update.sh check-commands STEP=2

@@ -2,8 +2,8 @@
 
 set -e
 
-./scripts/init-checkpoint.sh run-exec '"Build Executable" "Run Executable" "Verify Execution"'
-./scripts/require-checkpoint.sh run-exec
+./scripts/checkpoint-init.sh run-exec '"Build Executable" "Run Executable" "Verify Execution"'
+./scripts/checkpoint-require.sh run-exec
 
 echo ""
 echo "========== STAGE 1: Build Executable =========="
@@ -17,7 +17,7 @@ else
   BUILD_STATUS="FAIL"
   echo "BUILD_STATUS=$BUILD_STATUS" > /tmp/run-exec-stats.txt
   make checkpoint-update CMD=run-exec STEP=1
-  ./scripts/complete-checkpoint.sh run-exec
+  ./scripts/checkpoint-complete.sh run-exec
   exit 1
 fi
 
@@ -55,7 +55,7 @@ fi
 make checkpoint-update CMD=run-exec STEP=3
 
 echo ""
-./scripts/complete-checkpoint.sh run-exec
+./scripts/checkpoint-complete.sh run-exec
 rm -f /tmp/run-exec-stats.txt
 
 echo "✅ Executable run workflow complete!"

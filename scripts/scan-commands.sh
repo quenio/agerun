@@ -12,4 +12,4 @@ if [ $COMMAND_COUNT -eq 0 ]; then
 fi
 
 echo "✅ Successfully found $COMMAND_COUNT commands"
-./scripts/update-checkpoint.sh check-commands STEP=1
+./scripts/checkpoint-update.sh check-commands STEP=1

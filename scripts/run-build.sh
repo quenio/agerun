@@ -5,8 +5,8 @@ set -e
 # Build Workflow Script
 # This script runs the complete checkpoint-based build workflow
 
-./scripts/init-checkpoint.sh build '"Compile Code" "Run Checks" "Verify Build"'
-./scripts/require-checkpoint.sh build
+./scripts/checkpoint-init.sh build '"Compile Code" "Run Checks" "Verify Build"'
+./scripts/checkpoint-require.sh build
 
 echo ""
 echo "========== STAGE 1: Compile Code =========="
@@ -21,7 +21,7 @@ else
   COMPILE_STATUS="FAIL"
   echo "COMPILE_STATUS=$COMPILE_STATUS" > /tmp/build-stats.txt
   make checkpoint-update CMD=build STEP=1
-  ./scripts/complete-checkpoint.sh build
+  ./scripts/checkpoint-complete.sh build
   exit 1
 fi
 
@@ -70,7 +70,7 @@ echo ""
 echo "========== CHECKPOINT COMPLETION =========="
 echo ""
 
-./scripts/complete-checkpoint.sh build
+./scripts/checkpoint-complete.sh build
 rm -f /tmp/build-stats.txt
 
 echo ""

@@ -23,6 +23,6 @@ if [ $VIOLATION_COUNT -eq 0 ]; then
     exit 0
 else
     echo "⚠️ Found $VIOLATION_COUNT naming violations - running analysis"
-    ./scripts/gate-checkpoint.sh check-naming "Violations Found" "1"
+    ./scripts/checkpoint-gate.sh check-naming "Violations Found" "1"
     exit $?
 fi

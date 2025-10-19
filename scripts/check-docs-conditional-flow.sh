@@ -25,6 +25,6 @@ if [ $ERROR_COUNT -eq 0 ]; then
     exit 0
 else
     echo "⚠️ Found $ERROR_COUNT documentation error(s) - running fixes"
-    ./scripts/gate-checkpoint.sh check-docs "Errors Found" "1"
+    ./scripts/checkpoint-gate.sh check-docs "Errors Found" "1"
     exit $?
 fi

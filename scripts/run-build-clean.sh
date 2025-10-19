@@ -5,8 +5,8 @@ set -e
 # Clean Build Workflow Script
 # This script runs the complete checkpoint-based clean build workflow
 
-./scripts/init-checkpoint.sh build-clean '"Clean Artifacts" "Compile Code" "Verify Build"'
-./scripts/require-checkpoint.sh build-clean
+./scripts/checkpoint-init.sh build-clean '"Clean Artifacts" "Compile Code" "Verify Build"'
+./scripts/checkpoint-require.sh build-clean
 
 echo ""
 echo "========== STAGE 1: Clean Artifacts =========="
@@ -31,7 +31,7 @@ else
   BUILD_STATUS="FAIL"
   echo "BUILD_STATUS=$BUILD_STATUS" > /tmp/build-clean-stats.txt
   make checkpoint-update CMD=build-clean STEP=2
-  ./scripts/complete-checkpoint.sh build-clean
+  ./scripts/checkpoint-complete.sh build-clean
   exit 1
 fi
 
@@ -58,7 +58,7 @@ echo ""
 echo "========== CHECKPOINT COMPLETION =========="
 echo ""
 
-./scripts/complete-checkpoint.sh build-clean
+./scripts/checkpoint-complete.sh build-clean
 rm -f /tmp/build-clean-stats.txt
 
 echo ""

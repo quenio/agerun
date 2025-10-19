@@ -24,4 +24,4 @@ if [ "$NEEDS_WORK" -gt 0 ] || [ "$POOR" -gt 0 ]; then
   grep -E "⚠️|❌" /tmp/check-commands-output.txt | head -10
 fi
 
-./scripts/update-checkpoint.sh check-commands STEP=4
+./scripts/checkpoint-update.sh check-commands STEP=4

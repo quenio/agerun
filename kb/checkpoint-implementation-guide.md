@@ -104,7 +104,7 @@ Each stage needs:
 
 ## Using Wrapper Scripts for Simpler Integration
 
-The wrapper scripts (`scripts/init-checkpoint.sh`, `require-checkpoint.sh`, `gate-checkpoint.sh`, `complete-checkpoint.sh`) simplify checkpoint integration in commands by reducing boilerplate:
+The wrapper scripts (`scripts/checkpoint-init.sh`, `checkpoint-require.sh`, `checkpoint-gate.sh`, `checkpoint-complete.sh`) simplify checkpoint integration in commands by reducing boilerplate:
 
 ```bash
 # Instead of 7-8 lines of initialization code:
@@ -115,7 +115,7 @@ else
 fi
 
 # Use the wrapper script:
-✅ ./scripts/init-checkpoint.sh command '"Step 1" "Step 2"'
+✅ ./scripts/checkpoint-init.sh command '"Step 1" "Step 2"'
 
 # Instead of 5-line precondition check:
 ❌ PROGRESS_FILE="/tmp/command-progress.txt"
@@ -125,7 +125,7 @@ if [ ! -f "$PROGRESS_FILE" ]; then
 fi
 
 # Use the wrapper:
-✅ ./scripts/require-checkpoint.sh command || exit 1
+✅ ./scripts/checkpoint-require.sh command || exit 1
 
 # Instead of 3-4 line gate verification:
 ❌ if ! make checkpoint-gate CMD=command GATE="Name" REQUIRED="1,2,3"; then
@@ -134,14 +134,14 @@ fi
 fi
 
 # Use the wrapper:
-✅ ./scripts/gate-checkpoint.sh command "Gate Name" "1,2,3" || exit 1
+✅ ./scripts/checkpoint-gate.sh command "Gate Name" "1,2,3" || exit 1
 
 # Instead of 4-5 line completion pattern:
 ❌ make checkpoint-status CMD=command
 make checkpoint-cleanup CMD=command
 
 # Use the wrapper:
-✅ ./scripts/complete-checkpoint.sh command
+✅ ./scripts/checkpoint-complete.sh command
 ```
 
 ## Implementation Checklist

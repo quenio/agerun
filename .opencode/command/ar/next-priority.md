@@ -11,7 +11,7 @@ This command requires checkpoint tracking to ensure systematic workflow executio
 ### Initialize Tracking
 
 ```bash
-./scripts/init-checkpoint.sh next-priority "Read Context" "Analyze Priorities" "Generate Recommendation"
+./scripts/checkpoint-init.sh next-priority "Read Context" "Analyze Priorities" "Generate Recommendation"
 ```
 
 **Expected output:**
@@ -87,7 +87,7 @@ ls -la AGENTS.md TODO.md
 
 **Next action:**
 ```bash
-./scripts/update-checkpoint.sh next-priority 1
+./scripts/checkpoint-update.sh next-priority 1
 ```
 
 ## Step 2: Analyze Priorities
@@ -133,7 +133,7 @@ Task: "Fix memory leaks"
 
 **Next action:**
 ```bash
-./scripts/update-checkpoint.sh next-priority 2
+./scripts/checkpoint-update.sh next-priority 2
 ```
 
 ## Step 3: Generate Recommendation
@@ -219,7 +219,7 @@ If the user accepts your recommendation, prepare for implementation:
 
 **Next action:**
 ```bash
-./scripts/update-checkpoint.sh next-priority 3
+./scripts/checkpoint-update.sh next-priority 3
 ```
 
 ## Complete the Workflow
@@ -231,7 +231,7 @@ If the user accepts your recommendation, prepare for implementation:
 When all steps are complete, verify the workflow:
 
 ```bash
-./scripts/complete-checkpoint.sh next-priority
+./scripts/checkpoint-complete.sh next-priority
 ```
 
 #### [CHECKPOINT COMPLETE]
@@ -266,7 +266,7 @@ Monitor your progress through the 3-step workflow:
 
 ```bash
 # Initialize checkpoint tracking
-./scripts/init-checkpoint.sh next-priority "Read Context" "Analyze Priorities" "Generate Recommendation"
+./scripts/checkpoint-init.sh next-priority "Read Context" "Analyze Priorities" "Generate Recommendation"
 
 # Check current checkpoint status
 make checkpoint-status CMD=next-priority VERBOSE=--verbose
@@ -275,7 +275,7 @@ make checkpoint-status CMD=next-priority VERBOSE=--verbose
 make checkpoint-update CMD=next-priority STEP=N
 
 # Complete the workflow
-./scripts/complete-checkpoint.sh next-priority
+./scripts/checkpoint-complete.sh next-priority
 ```
 
 ## Key Points

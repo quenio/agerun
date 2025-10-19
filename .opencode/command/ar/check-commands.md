@@ -25,21 +25,21 @@ Before validation:
 If a `/check-commands` workflow is already in progress:
 
 ```bash
-./scripts/status-checkpoint.sh check-commands VERBOSE=--verbose
-# Resume: ./scripts/update-checkpoint.sh check-commands STEP=N
-# Or reset: ./scripts/cleanup-checkpoint.sh check-commands && ./scripts/init-checkpoint.sh check-commands "Scan Commands" "Validate Structure" "Calculate Scores" "Identify Issues" "Generate Report"
+./scripts/checkpoint-status.sh check-commands VERBOSE=--verbose
+# Resume: ./scripts/checkpoint-update.sh check-commands STEP=N
+# Or reset: ./scripts/checkpoint-cleanup.sh check-commands && ./scripts/checkpoint-init.sh check-commands "Scan Commands" "Validate Structure" "Calculate Scores" "Identify Issues" "Generate Report"
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-./scripts/init-checkpoint.sh check-commands "Scan Commands" "Validate Structure" "Calculate Scores" "Identify Issues" "Generate Report"
+./scripts/checkpoint-init.sh check-commands "Scan Commands" "Validate Structure" "Calculate Scores" "Identify Issues" "Generate Report"
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-./scripts/require-checkpoint.sh check-commands
+./scripts/checkpoint-require.sh check-commands
 ```
 
 # Check Commands
@@ -50,26 +50,26 @@ This command validates the structure and quality of all Claude Code commands. Th
 ### Initialize Tracking
 ```bash
 # Start the command validation process
-./scripts/init-checkpoint.sh check-commands "Scan Commands" "Validate Structure" "Calculate Scores" "Identify Issues" "Generate Report"
+./scripts/checkpoint-init.sh check-commands "Scan Commands" "Validate Structure" "Calculate Scores" "Identify Issues" "Generate Report"
 ```
 
 **Expected output:**
 ```
 📍 Starting: check-commands (5 steps)
 📁 Tracking: /tmp/check-commands-progress.txt
-→ Run: ./scripts/update-checkpoint.sh check-commands STEP=1
+→ Run: ./scripts/checkpoint-update.sh check-commands STEP=1
 ```
 
 ### Check Progress
 ```bash
-./scripts/status-checkpoint.sh check-commands
+./scripts/checkpoint-status.sh check-commands
 ```
 
 **Expected output (example at 40% completion):**
 ```
 📈 check-commands: 2/5 steps (40%)
    [████████░░░░░░░░░░░░] 40%
-→ Next: ./scripts/update-checkpoint.sh check-commands STEP=3
+→ Next: ./scripts/checkpoint-update.sh check-commands STEP=3
 ```
 
 ## Minimum Requirements
@@ -155,7 +155,7 @@ Assigns scores based on:
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-./scripts/complete-checkpoint.sh check-commands
+./scripts/checkpoint-complete.sh check-commands
 ```
 
 **Expected completion output:**
@@ -181,7 +181,7 @@ make check-commands
 **Or with checkpoint tracking:**
 ```bash
 # Initialize and run through checkpoints
-./scripts/init-checkpoint.sh check-commands '...'
+./scripts/checkpoint-init.sh check-commands '...'
 # Follow checkpoint steps above
 ```
 

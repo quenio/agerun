@@ -75,18 +75,18 @@ ar_data__destroy(own_workflow);
    - Comprehensive error handling (`set -e`, `set -o pipefail`)
 
 5. **Wrapper Scripts** (simplify checkpoint integration in commands):
-   - `scripts/init-checkpoint.sh`: Initialize checkpoint or show current status
+   - `scripts/checkpoint-init.sh`: Initialize checkpoint or show current status
      - Replaces 7-8 line if/then/else initialization pattern
-     - Usage: `./scripts/init-checkpoint.sh command '\"Step 1\" \"Step 2\"'`
-   - `scripts/require-checkpoint.sh`: Verify checkpoint is initialized before proceeding
+     - Usage: `./scripts/checkpoint-init.sh command '\"Step 1\" \"Step 2\"'`
+   - `scripts/checkpoint-require.sh`: Verify checkpoint is initialized before proceeding
      - Replaces 5 line precondition check pattern
-     - Usage: `./scripts/require-checkpoint.sh command` (exits 1 if not initialized)
-   - `scripts/gate-checkpoint.sh`: Verify gate conditions and provide clear feedback
+     - Usage: `./scripts/checkpoint-require.sh command` (exits 1 if not initialized)
+   - `scripts/checkpoint-gate.sh`: Verify gate conditions and provide clear feedback
      - Replaces 3-4 line gate verification pattern
-     - Usage: `./scripts/gate-checkpoint.sh command 'Gate Name' '1,2,3'` (exits 1 on failure)
-   - `scripts/complete-checkpoint.sh`: Show final status and cleanup
+     - Usage: `./scripts/checkpoint-gate.sh command 'Gate Name' '1,2,3'` (exits 1 on failure)
+   - `scripts/checkpoint-complete.sh`: Show final status and cleanup
      - Replaces 4-5 line completion pattern (status + cleanup)
-     - Usage: `./scripts/complete-checkpoint.sh command`
+     - Usage: `./scripts/checkpoint-complete.sh command`
 
    **Why These Wrappers Exist:**
    - Reduce boilerplate: Commands had 7-8 line patterns repeated across multiple implementations
@@ -108,7 +108,7 @@ ar_data__destroy(own_workflow);
 # Real AgeRun implementation example using wrapper scripts
 
 # 1. Initialize workflow (wrapper script checks if already initialized)
-./scripts/init-checkpoint.sh commit '"Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"'
+./scripts/checkpoint-init.sh commit '"Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"'
 
 # 2. Execute steps with checkpoints
 make checkpoint-update CMD=commit STEP=1
@@ -116,10 +116,10 @@ make test  # Run tests
 make checkpoint-update CMD=commit STEP=1  # Mark complete
 
 # 3. Verify precondition before stage 2
-./scripts/require-checkpoint.sh commit || exit 1
+./scripts/checkpoint-require.sh commit || exit 1
 
 # 4. Enforce gate after stage
-./scripts/gate-checkpoint.sh commit "Build Quality" "1,2" || exit 1
+./scripts/checkpoint-gate.sh commit "Build Quality" "1,2" || exit 1
 # Exits 1 and shows error if steps 1-2 not complete
 
 # 5. Continue with remaining steps
@@ -127,7 +127,7 @@ make checkpoint-update CMD=commit STEP=5
 make checkpoint-update CMD=commit STEP=5  # Mark complete
 
 # 6. Final status and cleanup
-./scripts/complete-checkpoint.sh commit
+./scripts/checkpoint-complete.sh commit
 ```
 
 ### Using Direct Makefile Targets

@@ -1,8 +1,7 @@
 #!/bin/bash
 # Verify checkpoint tracking is initialized before proceeding
-# Usage: require-checkpoint.sh <command>
+# Usage: checkpoint-require.sh <command>
 # Returns: 0 if checkpoint exists, 1 if missing (exits with error message)
-# Replaces 5 line precondition check pattern across all commands
 
 set -e
 set -o pipefail
@@ -23,7 +22,7 @@ if [ ! -f "$PROGRESS_FILE" ]; then
   echo "❌ ERROR: Checkpoint tracking not initialized for '$COMMAND'"
   echo ""
   echo "Initialize with:"
-  echo "  ./scripts/init-checkpoint.sh $COMMAND '{STEPS}'"
+  echo "  ./scripts/checkpoint-init.sh $COMMAND '{STEPS}'"
   echo ""
   echo "Or manually with:"
   echo "  make checkpoint-init CMD=$COMMAND STEPS='{STEPS}'"

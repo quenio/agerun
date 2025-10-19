@@ -9,21 +9,21 @@ Make AGENTS.md guidelines more concise by moving details to knowledge base.
 If a `/compact-guidelines` workflow is already in progress:
 
 ```bash
-./scripts/status-checkpoint.sh compact-guidelines VERBOSE=--verbose
-# Resume: ./scripts/update-checkpoint.sh compact-guidelines STEP=N
-# Or reset: ./scripts/cleanup-checkpoint.sh compact-guidelines && ./scripts/init-checkpoint.sh compact-guidelines "Analyze AGENTS.md" "Identify Verbose Sections" "List Extraction Targets" "Check Existing KB Articles" "Plan New Articles" "Create KB Article 1" "Create KB Article 2" "Create KB Article 3" "Update AGENTS.md References" "Add Cross-References" "Update kb/README.md" "Run Documentation Validation" "Verify Link Coverage" "Review Changes" "Create Commit"
+./scripts/checkpoint-status.sh compact-guidelines VERBOSE=--verbose
+# Resume: ./scripts/checkpoint-update.sh compact-guidelines STEP=N
+# Or reset: ./scripts/checkpoint-cleanup.sh compact-guidelines && ./scripts/checkpoint-init.sh compact-guidelines "Analyze AGENTS.md" "Identify Verbose Sections" "List Extraction Targets" "Check Existing KB Articles" "Plan New Articles" "Create KB Article 1" "Create KB Article 2" "Create KB Article 3" "Update AGENTS.md References" "Add Cross-References" "Update kb/README.md" "Run Documentation Validation" "Verify Link Coverage" "Review Changes" "Create Commit"
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-./scripts/init-checkpoint.sh compact-guidelines "Analyze AGENTS.md" "Identify Verbose Sections" "List Extraction Targets" "Check Existing KB Articles" "Plan New Articles" "Create KB Article 1" "Create KB Article 2" "Create KB Article 3" "Update AGENTS.md References" "Add Cross-References" "Update kb/README.md" "Run Documentation Validation" "Verify Link Coverage" "Review Changes" "Create Commit"
+./scripts/checkpoint-init.sh compact-guidelines "Analyze AGENTS.md" "Identify Verbose Sections" "List Extraction Targets" "Check Existing KB Articles" "Plan New Articles" "Create KB Article 1" "Create KB Article 2" "Create KB Article 3" "Update AGENTS.md References" "Add Cross-References" "Update kb/README.md" "Run Documentation Validation" "Verify Link Coverage" "Review Changes" "Create Commit"
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-./scripts/require-checkpoint.sh compact-guidelines
+./scripts/checkpoint-require.sh compact-guidelines
 ```
 
 ## MANDATORY KB Consultation
@@ -51,7 +51,7 @@ This command uses checkpoint tracking to ensure systematic documentation compact
 ### Initialize Tracking
 ```bash
 # Start the compacting process
-./scripts/init-checkpoint.sh compact-guidelines "Analyze AGENTS.md" "Identify Verbose Sections" "List Extraction Targets" "Check Existing KB Articles" "Plan New Articles" "Create KB Article 1" "Create KB Article 2" "Create KB Article 3" "Update AGENTS.md References" "Add Cross-References" "Update kb/README.md" "Run Documentation Validation" "Verify Link Coverage" "Review Changes" "Create Commit"
+./scripts/checkpoint-init.sh compact-guidelines "Analyze AGENTS.md" "Identify Verbose Sections" "List Extraction Targets" "Check Existing KB Articles" "Plan New Articles" "Create KB Article 1" "Create KB Article 2" "Create KB Article 3" "Update AGENTS.md References" "Add Cross-References" "Update kb/README.md" "Run Documentation Validation" "Verify Link Coverage" "Review Changes" "Create Commit"
 ```
 
 **Expected output:**
@@ -87,14 +87,14 @@ Minimum: Create 2+ KB articles
 
 ### Check Progress
 ```bash
-./scripts/status-checkpoint.sh compact-guidelines
+./scripts/checkpoint-status.sh compact-guidelines
 ```
 
 **Expected output (example at 53% completion):**
 ```
 📈 command: X/Y steps (Z%)
    [████░░░░░░░░░░░░░░░░] Z%
-→ Next: ./scripts/update-checkpoint.sh command STEP=N
+→ Next: ./scripts/checkpoint-update.sh command STEP=N
 ```
 
 ## Minimum Requirements
@@ -137,7 +137,7 @@ BEFORE_LINES=$(wc -l < AGENTS.md)
 echo "Current AGENTS.md size: $BEFORE_LINES lines"
 echo "BEFORE_LINES=$BEFORE_LINES" > /tmp/compact-guidelines-metrics.txt
 
-./scripts/update-checkpoint.sh compact-guidelines STEP=1
+./scripts/checkpoint-update.sh compact-guidelines STEP=1
 ```
 
 #### Step 2: Identify Verbose Sections
@@ -156,7 +156,7 @@ echo "1. [Section name] - [lines that can be reduced]"
 echo "2. [Section name] - [lines that can be reduced]"
 echo "3. [Section name] - [lines that can be reduced]"
 
-./scripts/update-checkpoint.sh compact-guidelines STEP=2
+./scripts/checkpoint-update.sh compact-guidelines STEP=2
 ```
 
 #### Step 3: List Extraction Targets
@@ -172,13 +172,13 @@ echo "- [Topic 3]: [estimated lines]"
 ESTIMATED_REDUCTION=[number]
 echo "Estimated reduction: $ESTIMATED_REDUCTION lines"
 
-./scripts/update-checkpoint.sh compact-guidelines STEP=3
+./scripts/checkpoint-update.sh compact-guidelines STEP=3
 ```
 
 #### [ANALYSIS GATE]
 ```bash
 # MANDATORY: Complete analysis before proceeding
-./scripts/gate-checkpoint.sh compact-guidelines "Analysis" "1,2,3"
+./scripts/checkpoint-gate.sh compact-guidelines "Analysis" "1,2,3"
 ```
 
 **Expected gate output:**
@@ -206,7 +206,7 @@ for topic in "topic1" "topic2" "topic3"; do
   fi
 done
 
-./scripts/update-checkpoint.sh compact-guidelines STEP=4
+./scripts/checkpoint-update.sh compact-guidelines STEP=4
 ```
 
 #### Step 5: Plan New Articles
@@ -221,13 +221,13 @@ echo "3. kb/[article3].md - [description]"
 NEW_ARTICLES_PLANNED=3
 echo "NEW_ARTICLES_PLANNED=$NEW_ARTICLES_PLANNED" >> /tmp/compact-guidelines-metrics.txt
 
-./scripts/update-checkpoint.sh compact-guidelines STEP=5
+./scripts/checkpoint-update.sh compact-guidelines STEP=5
 ```
 
 #### [PLANNING GATE]
 ```bash
 # MANDATORY: Ensure no duplicate articles
-./scripts/gate-checkpoint.sh compact-guidelines "Planning" "4,5"
+./scripts/checkpoint-gate.sh compact-guidelines "Planning" "4,5"
 ```
 
 **Expected gate output:**
@@ -302,7 +302,7 @@ For each section being compacted:
 # After creating first KB article
 if [ -f "kb/[article1].md" ]; then
   echo "✓ Created: kb/[article1].md"
-  ./scripts/update-checkpoint.sh compact-guidelines STEP=6
+  ./scripts/checkpoint-update.sh compact-guidelines STEP=6
 else
   echo "❌ Failed to create article 1"
   exit 1
@@ -315,7 +315,7 @@ fi
 # After creating second KB article
 if [ -f "kb/[article2].md" ]; then
   echo "✓ Created: kb/[article2].md"
-  ./scripts/update-checkpoint.sh compact-guidelines STEP=7
+  ./scripts/checkpoint-update.sh compact-guidelines STEP=7
 else
   echo "❌ Failed to create article 2"
   exit 1
@@ -331,13 +331,13 @@ if [ -f "kb/[article3].md" ]; then
 else
   echo "ℹ️ Third article not needed"
 fi
-./scripts/update-checkpoint.sh compact-guidelines STEP=8
+./scripts/checkpoint-update.sh compact-guidelines STEP=8
 ```
 
 #### [CRITICAL CREATION GATE]
 ```bash
 # ⚠️ CRITICAL: All KB articles must exist before updating references!
-./scripts/gate-checkpoint.sh compact-guidelines "Creation" "6,7,8"
+./scripts/checkpoint-gate.sh compact-guidelines "Creation" "6,7,8"
 ```
 
 **Expected gate output:**
@@ -362,7 +362,7 @@ echo "Updating AGENTS.md with KB references..."
 # Verify no broken links using helper script
 if ./scripts/validate-kb-links.sh AGENTS.md; then
   echo "✅ All KB links valid"
-  ./scripts/update-checkpoint.sh compact-guidelines STEP=9
+  ./scripts/checkpoint-update.sh compact-guidelines STEP=9
 else
   echo "❌ Fix broken links before proceeding"
   exit 1
@@ -378,7 +378,7 @@ echo "Updated articles:"
 echo "- kb/existing1.md: Added reference to new article"
 echo "- kb/existing2.md: Added reference to new article"
 
-./scripts/update-checkpoint.sh compact-guidelines STEP=10
+./scripts/checkpoint-update.sh compact-guidelines STEP=10
 ```
 
 #### Step 11: Update kb/README.md
@@ -388,13 +388,13 @@ echo "- kb/existing2.md: Added reference to new article"
 echo "Updating kb/README.md index..."
 # Add new articles to appropriate sections
 
-./scripts/update-checkpoint.sh compact-guidelines STEP=11
+./scripts/checkpoint-update.sh compact-guidelines STEP=11
 ```
 
 #### [INTEGRATION GATE]
 ```bash
 # MANDATORY: Ensure all references updated
-./scripts/gate-checkpoint.sh compact-guidelines "Integration" "9,10,11"
+./scripts/checkpoint-gate.sh compact-guidelines "Integration" "9,10,11"
 ```
 
 **Expected gate output:**
@@ -502,7 +502,7 @@ After compacting each section:
 # Run documentation validation
 if make check-docs; then
   echo "✅ Documentation validation passed"
-  ./scripts/update-checkpoint.sh compact-guidelines STEP=12
+  ./scripts/checkpoint-update.sh compact-guidelines STEP=12
 else
   echo "❌ Documentation validation failed - fix errors"
   exit 1
@@ -521,7 +521,7 @@ KB_LINKS=$(grep -c '\[details\](.*kb/.*\.md)' AGENTS.md)
 
 if [ $KB_LINKS -ge $COMPACTED_SECTIONS ]; then
   echo "✅ Link coverage adequate: $KB_LINKS links for $COMPACTED_SECTIONS compactions"
-  ./scripts/update-checkpoint.sh compact-guidelines STEP=13
+  ./scripts/checkpoint-update.sh compact-guidelines STEP=13
 else
   echo "⚠️ Insufficient links: $KB_LINKS links for $COMPACTED_SECTIONS compactions"
 fi
@@ -548,13 +548,13 @@ if [ $NEW_ARTICLES -lt 2 ]; then
   exit 1
 fi
 
-./scripts/update-checkpoint.sh compact-guidelines STEP=14
+./scripts/checkpoint-update.sh compact-guidelines STEP=14
 ```
 
 #### [VALIDATION GATE]
 ```bash
 # MANDATORY: Ensure no broken links before commit
-./scripts/gate-checkpoint.sh compact-guidelines "Validation" "12,13,14"
+./scripts/checkpoint-gate.sh compact-guidelines "Validation" "12,13,14"
 ```
 
 **Expected gate output:**
@@ -606,12 +606,12 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 ```bash
 # After creating commit
-./scripts/update-checkpoint.sh compact-guidelines STEP=15
+./scripts/checkpoint-update.sh compact-guidelines STEP=15
 ```
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-./scripts/complete-checkpoint.sh compact-guidelines
+./scripts/checkpoint-complete.sh compact-guidelines
 ```
 
 **Expected completion output:**
@@ -658,7 +658,7 @@ done
 ### To resume an interrupted session:
 ```bash
 # Check where you left off
-./scripts/status-checkpoint.sh compact-guidelines
+./scripts/checkpoint-status.sh compact-guidelines
 
 # Continue from the next pending step
 ```

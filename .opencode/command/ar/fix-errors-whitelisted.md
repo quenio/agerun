@@ -19,21 +19,21 @@ Before starting error analysis:
 If a `/fix-errors-whitelisted` workflow is already in progress:
 
 ```bash
-./scripts/status-checkpoint.sh fix-errors-whitelisted VERBOSE=--verbose
-# Resume: ./scripts/update-checkpoint.sh fix-errors-whitelisted STEP=N
-# Or reset: ./scripts/cleanup-checkpoint.sh fix-errors-whitelisted && ./scripts/init-checkpoint.sh fix-errors-whitelisted "Count Errors" "Group by Test" "Find Patterns" "Select Target" "Analyze Root Cause" "Choose Strategy" "Plan Implementation" "Verify Current State" "Apply Fix" "Test Fix" "Remove Whitelist Entries" "Update Whitelist Total" "Update TODO.md" "Update CHANGELOG" "Final Verification" "Create Commit"
+./scripts/checkpoint-status.sh fix-errors-whitelisted VERBOSE=--verbose
+# Resume: ./scripts/checkpoint-update.sh fix-errors-whitelisted STEP=N
+# Or reset: ./scripts/checkpoint-cleanup.sh fix-errors-whitelisted && ./scripts/checkpoint-init.sh fix-errors-whitelisted "Count Errors" "Group by Test" "Find Patterns" "Select Target" "Analyze Root Cause" "Choose Strategy" "Plan Implementation" "Verify Current State" "Apply Fix" "Test Fix" "Remove Whitelist Entries" "Update Whitelist Total" "Update TODO.md" "Update CHANGELOG" "Final Verification" "Create Commit"
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-./scripts/init-checkpoint.sh fix-errors-whitelisted "Count Errors" "Group by Test" "Find Patterns" "Select Target" "Analyze Root Cause" "Choose Strategy" "Plan Implementation" "Verify Current State" "Apply Fix" "Test Fix" "Remove Whitelist Entries" "Update Whitelist Total" "Update TODO.md" "Update CHANGELOG" "Final Verification" "Create Commit"
+./scripts/checkpoint-init.sh fix-errors-whitelisted "Count Errors" "Group by Test" "Find Patterns" "Select Target" "Analyze Root Cause" "Choose Strategy" "Plan Implementation" "Verify Current State" "Apply Fix" "Test Fix" "Remove Whitelist Entries" "Update Whitelist Total" "Update TODO.md" "Update CHANGELOG" "Final Verification" "Create Commit"
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-./scripts/require-checkpoint.sh fix-errors-whitelisted
+./scripts/checkpoint-require.sh fix-errors-whitelisted
 ```
 
 # Fix Whitelisted Errors
@@ -44,26 +44,26 @@ This command uses checkpoint tracking to ensure systematic error fixing with min
 ### Initialize Tracking
 ```bash
 # Start the error fixing process
-./scripts/init-checkpoint.sh fix-errors-whitelisted "Count Errors" "Group by Test" "Find Patterns" "Select Target" "Analyze Root Cause" "Choose Strategy" "Plan Implementation" "Verify Current State" "Apply Fix" "Test Fix" "Remove Whitelist Entries" "Update Whitelist Total" "Update TODO.md" "Update CHANGELOG" "Final Verification" "Create Commit"
+./scripts/checkpoint-init.sh fix-errors-whitelisted "Count Errors" "Group by Test" "Find Patterns" "Select Target" "Analyze Root Cause" "Choose Strategy" "Plan Implementation" "Verify Current State" "Apply Fix" "Test Fix" "Remove Whitelist Entries" "Update Whitelist Total" "Update TODO.md" "Update CHANGELOG" "Final Verification" "Create Commit"
 ```
 
 **Expected output:**
 ```
 📍 Starting: fix-errors-whitelisted (16 steps)
 📁 Tracking: /tmp/fix-errors-whitelisted-progress.txt
-→ Run: ./scripts/update-checkpoint.sh fix-errors-whitelisted STEP=1
+→ Run: ./scripts/checkpoint-update.sh fix-errors-whitelisted STEP=1
 ```
 
 ### Check Progress
 ```bash
-./scripts/status-checkpoint.sh fix-errors-whitelisted
+./scripts/checkpoint-status.sh fix-errors-whitelisted
 ```
 
 **Expected output (example at 50% completion):**
 ```
 📈 command: X/Y steps (Z%)
    [████░░░░░░░░░░░░░░░░] Z%
-→ Next: ./scripts/update-checkpoint.sh command STEP=N
+→ Next: ./scripts/checkpoint-update.sh command STEP=N
 ```
 
 ## Minimum Requirements
@@ -104,9 +104,9 @@ Run analysis using helper script:
 ./scripts/analyze-whitelist.sh log_whitelist.yaml | tee /tmp/fix-errors-whitelisted-counts.txt
 
 # Mark all analysis steps complete
-./scripts/update-checkpoint.sh fix-errors-whitelisted STEP=1
-./scripts/update-checkpoint.sh fix-errors-whitelisted STEP=2
-./scripts/update-checkpoint.sh fix-errors-whitelisted STEP=3
+./scripts/checkpoint-update.sh fix-errors-whitelisted STEP=1
+./scripts/checkpoint-update.sh fix-errors-whitelisted STEP=2
+./scripts/checkpoint-update.sh fix-errors-whitelisted STEP=3
 ```
 
 The script provides:
@@ -117,7 +117,7 @@ The script provides:
 #### [ANALYSIS GATE]
 ```bash
 # MANDATORY: Must complete analysis before proceeding
-./scripts/gate-checkpoint.sh fix-errors-whitelisted "Analysis" "1,2,3"
+./scripts/checkpoint-gate.sh fix-errors-whitelisted "Analysis" "1,2,3"
 ```
 
 **Expected gate output:**
@@ -153,7 +153,7 @@ grep -B1 -A1 "has no method" log_whitelist.yaml | grep -E "context:|message:"
 grep -B1 -A1 "Intentional.*error" log_whitelist.yaml | grep -E "context:|message:"
 
 # After selecting target pattern
-./scripts/update-checkpoint.sh fix-errors-whitelisted STEP=4
+./scripts/checkpoint-update.sh fix-errors-whitelisted STEP=4
 ```
 
 **IMPORTANT**: Select errors that affect at least 5 whitelist entries to meet minimum requirements.
@@ -167,7 +167,7 @@ echo "1. Why does this error occur?"
 echo "2. What is the underlying issue?"
 echo "3. How many entries are affected?"
 
-./scripts/update-checkpoint.sh fix-errors-whitelisted STEP=5
+./scripts/checkpoint-update.sh fix-errors-whitelisted STEP=5
 ```
 
 #### Step 3: Develop Fix Strategy
@@ -203,7 +203,7 @@ Based on the pattern identified, determine the fix approach:
 
 ```bash
 # Document chosen strategy
-./scripts/update-checkpoint.sh fix-errors-whitelisted STEP=6
+./scripts/checkpoint-update.sh fix-errors-whitelisted STEP=6
 ```
 
 #### Step 7: Plan Implementation
@@ -216,13 +216,13 @@ echo "2. Changes to make:"
 echo "3. Expected outcome:"
 echo "4. Entries to remove: [count]"
 
-./scripts/update-checkpoint.sh fix-errors-whitelisted STEP=7
+./scripts/checkpoint-update.sh fix-errors-whitelisted STEP=7
 ```
 
 #### [STRATEGY GATE]
 ```bash
 # MANDATORY: Must have clear strategy before implementation
-./scripts/gate-checkpoint.sh fix-errors-whitelisted "Strategy" "4,5,6,7"
+./scripts/checkpoint-gate.sh fix-errors-whitelisted "Strategy" "4,5,6,7"
 ```
 
 **Expected gate output:**
@@ -240,7 +240,7 @@ echo "4. Entries to remove: [count]"
 #### [CRITICAL IMPLEMENTATION GATE]
 ```bash
 # ⚠️ CRITICAL: Final check before modifying code
-./scripts/gate-checkpoint.sh fix-errors-whitelisted "Implementation Ready" "1,2,3,4,5,6,7"
+./scripts/checkpoint-gate.sh fix-errors-whitelisted "Implementation Ready" "1,2,3,4,5,6,7"
 ```
 
 **Expected gate output:**
@@ -260,7 +260,7 @@ For each identified issue:
 make clean build 2>&1
 make check-logs | grep -A5 "context_name"
 
-./scripts/update-checkpoint.sh fix-errors-whitelisted STEP=8
+./scripts/checkpoint-update.sh fix-errors-whitelisted STEP=8
 ```
 
 #### Step 9: Apply Fix
@@ -272,7 +272,7 @@ make check-logs | grep -A5 "context_name"
 echo "Files modified:"
 git diff --name-only
 
-./scripts/update-checkpoint.sh fix-errors-whitelisted STEP=9
+./scripts/checkpoint-update.sh fix-errors-whitelisted STEP=9
 ```
 
 #### Step 10: Test Fix
@@ -286,7 +286,7 @@ else
   echo "✅ Errors resolved!"
 fi
 
-./scripts/update-checkpoint.sh fix-errors-whitelisted STEP=10
+./scripts/checkpoint-update.sh fix-errors-whitelisted STEP=10
 ```
 
 #### Step 11: Remove Whitelist Entries
@@ -308,7 +308,7 @@ else
   echo "✅ Minimum requirement met: $REMOVED entries removed"
 fi
 
-./scripts/update-checkpoint.sh fix-errors-whitelisted STEP=11
+./scripts/checkpoint-update.sh fix-errors-whitelisted STEP=11
 ```
 
 ### Stage 4: Documentation & Commit (Steps 12-16)
@@ -332,7 +332,7 @@ After fixing errors:
    ACTUAL=$(grep "^  -" log_whitelist.yaml | wc -l)
    echo "Updated whitelist total to: $ACTUAL entries"
    
-   ./scripts/update-checkpoint.sh fix-errors-whitelisted STEP=12
+   ./scripts/checkpoint-update.sh fix-errors-whitelisted STEP=12
    ```
 
 #### Step 13: Update TODO.md
@@ -343,7 +343,7 @@ After fixing errors:
    - [x] Fixed [error type] in [component]; removed [N] whitelist entries ([new total] remaining)
    ```
    ```bash
-   ./scripts/update-checkpoint.sh fix-errors-whitelisted STEP=13
+   ./scripts/checkpoint-update.sh fix-errors-whitelisted STEP=13
    ```
 
 #### Step 14: Update CHANGELOG.md
@@ -360,13 +360,13 @@ After fixing errors:
      echo "ℹ️ CHANGELOG update optional - only $REMOVED entries removed"
    fi
    
-   ./scripts/update-checkpoint.sh fix-errors-whitelisted STEP=14
+   ./scripts/checkpoint-update.sh fix-errors-whitelisted STEP=14
    ```
 
 #### [DOCUMENTATION GATE]
 ```bash
 # MANDATORY: Ensure all documentation is updated
-./scripts/gate-checkpoint.sh fix-errors-whitelisted "Documentation" "12,13,14"
+./scripts/checkpoint-gate.sh fix-errors-whitelisted "Documentation" "12,13,14"
 ```
 
 **Expected gate output:**
@@ -388,7 +388,7 @@ if ! make check-logs; then
 fi
 
 echo "✅ Build verification passed"
-./scripts/update-checkpoint.sh fix-errors-whitelisted STEP=15
+./scripts/checkpoint-update.sh fix-errors-whitelisted STEP=15
 ```
 
 #### Step 16: Create Commit
@@ -415,12 +415,12 @@ git commit -m "fix: resolve [error type] in [component]
 Removed $REMOVED whitelist entries by [explanation of fix].
 Whitelist reduced from $BEFORE_COUNT to $AFTER_COUNT entries."
 
-./scripts/update-checkpoint.sh fix-errors-whitelisted STEP=16
+./scripts/checkpoint-update.sh fix-errors-whitelisted STEP=16
 ```
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-./scripts/complete-checkpoint.sh fix-errors-whitelisted
+./scripts/checkpoint-complete.sh fix-errors-whitelisted
 ```
 
 **Expected completion output:**
@@ -468,18 +468,18 @@ Keep track of your whitelist reduction:
 ### If checkpoint tracking gets stuck:
 ```bash
 # Check current status
-./scripts/status-checkpoint.sh fix-errors-whitelisted
+./scripts/checkpoint-status.sh fix-errors-whitelisted
 
 # Reset if needed
-./scripts/cleanup-checkpoint.sh fix-errors-whitelisted
+./scripts/checkpoint-cleanup.sh fix-errors-whitelisted
 ```
 
 ### If you've already done analysis:
 ```bash
 # Skip to implementation phase
-./scripts/init-checkpoint.sh fix-errors-whitelisted '...'
+./scripts/checkpoint-init.sh fix-errors-whitelisted '...'
 for i in {1..7}; do
-  ./scripts/update-checkpoint.sh fix-errors-whitelisted STEP=$i
+  ./scripts/checkpoint-update.sh fix-errors-whitelisted STEP=$i
 done
 ```
 

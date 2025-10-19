@@ -18,21 +18,21 @@ Before starting migration:
 If a `/migrate-module-to-zig-struct` workflow is already in progress:
 
 ```bash
-./scripts/status-checkpoint.sh migrate-module-to-zig-struct VERBOSE=--verbose
-# Resume: ./scripts/update-checkpoint.sh migrate-module-to-zig-struct STEP=N
-# Or reset: ./scripts/cleanup-checkpoint.sh migrate-module-to-zig-struct && ./scripts/init-checkpoint.sh migrate-module-to-zig-struct "Read KB Article" "Check Current Implementation" "Check C Dependencies" "Check Zig Dependencies" "Verify Safety" "Create Struct Module" "Convert Functions" "Update Dependencies" "Run Tests" "Remove Old Module" "Update Documentation"
+./scripts/checkpoint-status.sh migrate-module-to-zig-struct VERBOSE=--verbose
+# Resume: ./scripts/checkpoint-update.sh migrate-module-to-zig-struct STEP=N
+# Or reset: ./scripts/checkpoint-cleanup.sh migrate-module-to-zig-struct && ./scripts/checkpoint-init.sh migrate-module-to-zig-struct "Read KB Article" "Check Current Implementation" "Check C Dependencies" "Check Zig Dependencies" "Verify Safety" "Create Struct Module" "Convert Functions" "Update Dependencies" "Run Tests" "Remove Old Module" "Update Documentation"
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-./scripts/init-checkpoint.sh migrate-module-to-zig-struct "Read KB Article" "Check Current Implementation" "Check C Dependencies" "Check Zig Dependencies" "Verify Safety" "Create Struct Module" "Convert Functions" "Update Dependencies" "Run Tests" "Remove Old Module" "Update Documentation"
+./scripts/checkpoint-init.sh migrate-module-to-zig-struct "Read KB Article" "Check Current Implementation" "Check C Dependencies" "Check Zig Dependencies" "Verify Safety" "Create Struct Module" "Convert Functions" "Update Dependencies" "Run Tests" "Remove Old Module" "Update Documentation"
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ```bash
-./scripts/require-checkpoint.sh migrate-module-to-zig-struct
+./scripts/checkpoint-require.sh migrate-module-to-zig-struct
 ```
 
 # Migrate Module to Zig Struct
@@ -44,26 +44,26 @@ This command uses checkpoint tracking to ensure safe and systematic module migra
 ```bash
 # Start the migration process (replace MODULE with actual module name)
 MODULE={{1}}  # Set the module name
-./scripts/init-checkpoint.sh migrate-module-to-zig-struct "Read KB Article" "Check Current Implementation" "Check C Dependencies" "Check Zig Dependencies" "Verify Safety" "Create Struct Module" "Convert Functions" "Update Dependencies" "Run Tests" "Remove Old Module" "Update Documentation"
+./scripts/checkpoint-init.sh migrate-module-to-zig-struct "Read KB Article" "Check Current Implementation" "Check C Dependencies" "Check Zig Dependencies" "Verify Safety" "Create Struct Module" "Convert Functions" "Update Dependencies" "Run Tests" "Remove Old Module" "Update Documentation"
 ```
 
 **Expected output:**
 ```
 📍 Starting: migrate-module-to-zig-struct (11 steps)
 📁 Tracking: /tmp/migrate-module-to-zig-struct-progress.txt
-→ Run: ./scripts/update-checkpoint.sh migrate-module-to-zig-struct STEP=1
+→ Run: ./scripts/checkpoint-update.sh migrate-module-to-zig-struct STEP=1
 ```
 
 ### Check Progress
 ```bash
-./scripts/status-checkpoint.sh migrate-module-to-zig-struct
+./scripts/checkpoint-status.sh migrate-module-to-zig-struct
 ```
 
 **Expected output (example at 64% completion):**
 ```
 📈 command: X/Y steps (Z%)
    [████░░░░░░░░░░░░░░░░] Z%
-→ Next: ./scripts/update-checkpoint.sh command STEP=N
+→ Next: ./scripts/checkpoint-update.sh command STEP=N
 ```
 
 ## Minimum Requirements
@@ -103,13 +103,13 @@ echo "DELETED_FILES=0" >> /tmp/migration-tracking.txt
 echo "UPDATED_DEPS=0" >> /tmp/migration-tracking.txt
 echo "FUNCTIONS_CONVERTED=0" >> /tmp/migration-tracking.txt
 
-./scripts/update-checkpoint.sh migrate-module-to-zig-struct STEP=1
+./scripts/checkpoint-update.sh migrate-module-to-zig-struct STEP=1
 ```
 
 #### [KNOWLEDGE GATE]
 ```bash
 # Confirm KB article was read and understood
-./scripts/gate-checkpoint.sh migrate-module-to-zig-struct "Knowledge" "1"
+./scripts/checkpoint-gate.sh migrate-module-to-zig-struct "Knowledge" "1"
 ```
 
 **Expected gate output:**
@@ -130,7 +130,7 @@ First, I need to verify that ar_{{1}} is safe to migrate by checking:
 # Check if source module exists and is in Zig
 if [ -f "modules/ar_${MODULE}.zig" ]; then
   echo "✅ Module ar_${MODULE}.zig exists"
-  ./scripts/update-checkpoint.sh migrate-module-to-zig-struct STEP=2
+  ./scripts/checkpoint-update.sh migrate-module-to-zig-struct STEP=2
 else
   echo "❌ Module ar_${MODULE}.zig not found"
   echo "Migration requires existing Zig ABI module"
@@ -148,9 +148,9 @@ Run dependency analysis using helper script:
 
 # If script exits 0, migration is safe - mark steps complete
 if [ $? -eq 0 ]; then
-  ./scripts/update-checkpoint.sh migrate-module-to-zig-struct STEP=3
-  ./scripts/update-checkpoint.sh migrate-module-to-zig-struct STEP=4
-  ./scripts/update-checkpoint.sh migrate-module-to-zig-struct STEP=5
+  ./scripts/checkpoint-update.sh migrate-module-to-zig-struct STEP=3
+  ./scripts/checkpoint-update.sh migrate-module-to-zig-struct STEP=4
+  ./scripts/checkpoint-update.sh migrate-module-to-zig-struct STEP=5
 else
   echo "❌ Migration blocked - see errors above"
   exit 1
@@ -165,7 +165,7 @@ The script checks:
 #### [CRITICAL SAFETY GATE]
 ```bash
 # ⚠️ CRITICAL: Verify migration is safe
-./scripts/gate-checkpoint.sh migrate-module-to-zig-struct "Safety" "2,3,4,5"
+./scripts/checkpoint-gate.sh migrate-module-to-zig-struct "Safety" "2,3,4,5"
 ```
 
 **Expected gate output:**
@@ -202,7 +202,7 @@ source /tmp/migration-tracking.txt
 CREATED_FILES=$((CREATED_FILES + 1))
 echo "CREATED_FILES=$CREATED_FILES" >> /tmp/migration-tracking.txt
 
-./scripts/update-checkpoint.sh migrate-module-to-zig-struct STEP=6
+./scripts/checkpoint-update.sh migrate-module-to-zig-struct STEP=6
 ```
 
 #### Step 7: Convert Functions
@@ -225,13 +225,13 @@ FUNCTIONS_CONVERTED=$TOTAL_FUNCTIONS
 echo "FUNCTIONS_CONVERTED=$FUNCTIONS_CONVERTED" >> /tmp/migration-tracking.txt
 echo "✅ Converted $FUNCTIONS_CONVERTED functions"
 
-./scripts/update-checkpoint.sh migrate-module-to-zig-struct STEP=7
+./scripts/checkpoint-update.sh migrate-module-to-zig-struct STEP=7
 ```
 
 #### [IMPLEMENTATION GATE]
 ```bash
 # Verify implementation is complete
-./scripts/gate-checkpoint.sh migrate-module-to-zig-struct "Implementation" "6,7"
+./scripts/checkpoint-gate.sh migrate-module-to-zig-struct "Implementation" "6,7"
 ```
 
 **Expected gate output:**
@@ -262,7 +262,7 @@ echo "Updating $UPDATED_DEPS dependent Zig modules..."
 # After updating dependencies
 echo "✅ Updated $UPDATED_DEPS modules to use {{1|pascal}}.zig"
 
-./scripts/update-checkpoint.sh migrate-module-to-zig-struct STEP=8
+./scripts/checkpoint-update.sh migrate-module-to-zig-struct STEP=8
 ```
 
 #### Step 9: Run Tests
@@ -278,14 +278,14 @@ if grep -q "memory leaks detected" test-output.log; then
   exit 1
 else
   echo "✅ No memory leaks - all tests passed"
-  ./scripts/update-checkpoint.sh migrate-module-to-zig-struct STEP=9
+  ./scripts/checkpoint-update.sh migrate-module-to-zig-struct STEP=9
 fi
 ```
 
 #### [CRITICAL TESTING GATE]
 ```bash
 # ⚠️ CRITICAL: Verify all tests pass with no leaks
-./scripts/gate-checkpoint.sh migrate-module-to-zig-struct "Testing" "8,9"
+./scripts/checkpoint-gate.sh migrate-module-to-zig-struct "Testing" "8,9"
 ```
 
 **Expected gate output:**
@@ -322,7 +322,7 @@ DELETED_FILES=3
 echo "DELETED_FILES=$DELETED_FILES" >> /tmp/migration-tracking.txt
 echo "✅ Removed $DELETED_FILES old files"
 
-./scripts/update-checkpoint.sh migrate-module-to-zig-struct STEP=10
+./scripts/checkpoint-update.sh migrate-module-to-zig-struct STEP=10
 ```
 
 #### Step 11: Update Documentation
@@ -339,12 +339,12 @@ echo "- Updated modules/{{1|pascal}}.md with new API"
 echo "- Added to Zig Struct Modules section in README.md"
 echo "- Added KB article references"
 
-./scripts/update-checkpoint.sh migrate-module-to-zig-struct STEP=11
+./scripts/checkpoint-update.sh migrate-module-to-zig-struct STEP=11
 ```
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-./scripts/complete-checkpoint.sh migrate-module-to-zig-struct
+./scripts/checkpoint-complete.sh migrate-module-to-zig-struct
 ```
 
 **Expected completion output:**

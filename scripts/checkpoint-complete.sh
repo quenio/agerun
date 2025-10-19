@@ -1,8 +1,7 @@
 #!/bin/bash
 # Complete checkpoint workflow: show status and cleanup
-# Usage: complete-checkpoint.sh <command_name>
+# Usage: checkpoint-complete.sh <command_name>
 # Returns: 0 on success, 1 on error
-# Replaces 4-5 line completion pattern (status + cleanup) across all commands
 
 set -o pipefail
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
-./scripts/init-checkpoint.sh tsan-exec '"Build Executable" "Run TSAN" "Report Results"'
-./scripts/require-checkpoint.sh tsan-exec
+./scripts/checkpoint-init.sh tsan-exec '"Build Executable" "Run TSAN" "Report Results"'
+./scripts/checkpoint-require.sh tsan-exec
 echo ""
 echo "========== STAGE 1: Build Executable =========="
 echo ""
@@ -10,7 +10,7 @@ if make bin/ar_executable 2>&1 | tail -10; then
 else
   echo "❌ Build failed"
   make checkpoint-update CMD=tsan-exec STEP=1
-  ./scripts/complete-checkpoint.sh tsan-exec
+  ./scripts/checkpoint-complete.sh tsan-exec
   exit 1
 fi
 make checkpoint-update CMD=tsan-exec STEP=1
@@ -28,5 +28,5 @@ echo "========== STAGE 3: Report Results =========="
 echo ""
 echo "✅ TSAN analysis complete - review output above"
 make checkpoint-update CMD=tsan-exec STEP=3
-./scripts/complete-checkpoint.sh tsan-exec
+./scripts/checkpoint-complete.sh tsan-exec
 echo "✅ Executable TSAN workflow complete!"

@@ -51,7 +51,7 @@ fi
 
 #### [CHECKPOINT COMPLETE]
 ```bash
-./scripts/complete-checkpoint.sh command-name
+./scripts/checkpoint-complete.sh command-name
 ```
 ```
 
@@ -88,7 +88,7 @@ Just run this script:
 ```bash
 #!/bin/bash
 # Initialize checkpoint
-./scripts/init-checkpoint.sh check-docs ...
+./scripts/checkpoint-init.sh check-docs ...
 
 # Step 1
 ./scripts/validate-docs.sh
@@ -118,8 +118,8 @@ fi
 ```markdown
 #### Initialize Checkpoint
 ```bash
-./scripts/init-checkpoint.sh check-docs [steps]
-./scripts/require-checkpoint.sh check-docs
+./scripts/checkpoint-init.sh check-docs [steps]
+./scripts/checkpoint-require.sh check-docs
 ```
 
 #### Step 1: Validate Docs
@@ -132,11 +132,11 @@ If no errors found, skip to Step 5:
 ```bash
 source /tmp/check-docs-stats.txt
 if [ $ERROR_COUNT -eq 0 ]; then
-  ./scripts/update-checkpoint.sh check-docs STEP=2
-  ./scripts/update-checkpoint.sh check-docs STEP=3
-  ./scripts/update-checkpoint.sh check-docs STEP=4
+  ./scripts/checkpoint-update.sh check-docs STEP=2
+  ./scripts/checkpoint-update.sh check-docs STEP=3
+  ./scripts/checkpoint-update.sh check-docs STEP=4
 else
-  ./scripts/gate-checkpoint.sh check-docs "Errors Found" "1"
+  ./scripts/checkpoint-gate.sh check-docs "Errors Found" "1"
 fi
 ```
 

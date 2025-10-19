@@ -11,7 +11,7 @@ This command requires checkpoint tracking to ensure systematic workflow executio
 ### Initialize Tracking
 
 ```bash
-./scripts/init-checkpoint.sh next-task "Read Context" "Check Task Sources" "Discover Next Task"
+./scripts/checkpoint-init.sh next-task "Read Context" "Check Task Sources" "Discover Next Task"
 ```
 
 **Expected output:**
@@ -80,7 +80,7 @@ ls -la .session_todos.txt 2>/dev/null || echo "No session todo file found"
 
 **Next action:**
 ```bash
-./scripts/update-checkpoint.sh next-task 1
+./scripts/checkpoint-update.sh next-task 1
 ```
 
 ## Step 2: Check Task Sources
@@ -117,7 +117,7 @@ fi
 
 **Next action:**
 ```bash
-./scripts/update-checkpoint.sh next-task 2
+./scripts/checkpoint-update.sh next-task 2
 ```
 
 ## Step 3: Discover Next Task
@@ -186,7 +186,7 @@ Ask for user confirmation or feedback:
 
 **Next action:**
 ```bash
-./scripts/update-checkpoint.sh next-task 3
+./scripts/checkpoint-update.sh next-task 3
 ```
 
 ## Complete the Workflow
@@ -198,7 +198,7 @@ Ask for user confirmation or feedback:
 When task discovery is complete, verify the workflow:
 
 ```bash
-./scripts/complete-checkpoint.sh next-task
+./scripts/checkpoint-complete.sh next-task
 ```
 
 #### [CHECKPOINT COMPLETE]
@@ -233,7 +233,7 @@ Monitor your progress through the 3-step workflow:
 
 ```bash
 # Initialize checkpoint tracking
-./scripts/init-checkpoint.sh next-task "Read Context" "Check Task Sources" "Discover Next Task"
+./scripts/checkpoint-init.sh next-task "Read Context" "Check Task Sources" "Discover Next Task"
 
 # Check current checkpoint status
 make checkpoint-status CMD=next-task VERBOSE=--verbose
@@ -242,7 +242,7 @@ make checkpoint-status CMD=next-task VERBOSE=--verbose
 make checkpoint-update CMD=next-task STEP=N
 
 # Complete the workflow
-./scripts/complete-checkpoint.sh next-task
+./scripts/checkpoint-complete.sh next-task
 ```
 
 ## Key Points

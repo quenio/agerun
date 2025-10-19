@@ -26,10 +26,10 @@ This command uses checkpoint tracking via wrapper scripts to ensure systematic e
 
 The `run-build.sh` script uses the following standardized wrapper scripts:
 
-- **`./scripts/init-checkpoint.sh`**: Initializes or resumes checkpoint tracking
-- **`./scripts/require-checkpoint.sh`**: Verifies checkpoint is ready before proceeding
-- **`./scripts/gate-checkpoint.sh`**: Validates gate conditions at workflow boundaries
-- **`./scripts/complete-checkpoint.sh`**: Shows completion summary and cleanup
+- **`./scripts/checkpoint-init.sh`**: Initializes or resumes checkpoint tracking
+- **`./scripts/checkpoint-require.sh`**: Verifies checkpoint is ready before proceeding
+- **`./scripts/checkpoint-gate.sh`**: Validates gate conditions at workflow boundaries
+- **`./scripts/checkpoint-complete.sh`**: Shows completion summary and cleanup
 
 These wrappers provide centralized checkpoint management across all commands.
 
@@ -80,7 +80,7 @@ rm -f /tmp/build-progress.txt
 #### [EXECUTION GATE]
 ```bash
 # Verify ready to execute
-./scripts/gate-checkpoint.sh build "Ready" "1"
+./scripts/checkpoint-gate.sh build "Ready" "1"
 ```
 
 **Expected gate output:**

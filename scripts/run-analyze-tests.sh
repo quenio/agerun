@@ -5,8 +5,8 @@ set -e
 # Test Static Analysis Workflow Script
 # This script runs the complete checkpoint-based static analysis workflow
 
-./scripts/init-checkpoint.sh analyze-tests '"Build Tests" "Run Static Analysis" "Report Results"'
-./scripts/require-checkpoint.sh analyze-tests
+./scripts/checkpoint-init.sh analyze-tests '"Build Tests" "Run Static Analysis" "Report Results"'
+./scripts/checkpoint-require.sh analyze-tests
 
 echo ""
 echo "========== STAGE 1: Build Tests =========="
@@ -55,7 +55,7 @@ echo ""
 echo "========== CHECKPOINT COMPLETION =========="
 echo ""
 
-./scripts/complete-checkpoint.sh analyze-tests
+./scripts/checkpoint-complete.sh analyze-tests
 rm -f /tmp/analyze-tests-stats.txt
 
 echo ""
