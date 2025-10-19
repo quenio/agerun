@@ -94,15 +94,7 @@ Runs `make check-docs` to identify all documentation errors and saves error coun
 If no errors found, skip to Step 5. If errors found, continue to Step 3.
 
 ```bash
-# Check error count to decide flow
-source /tmp/check-docs-stats.txt 2>/dev/null || ERROR_COUNT=0
-if [ $ERROR_COUNT -eq 0 ]; then
-  ./scripts/checkpoint-update.sh check-docs 2
-  ./scripts/checkpoint-update.sh check-docs 3
-  ./scripts/checkpoint-update.sh check-docs 4
-else
-  ./scripts/gate-checkpoint.sh check-docs "Errors Found" "1"
-fi
+./scripts/check-docs-conditional-flow.sh
 ```
 
 #### [CHECKPOINT END - STEP 2]
