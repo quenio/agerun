@@ -220,44 +220,14 @@ fi
 #### Step 5: Refactor Permissions
 
 ```bash
-# Refactor permissions to use generic patterns
-echo "Refactoring permissions to generic patterns..."
-source /tmp/merge-settings-stats.txt
-
-if [ "$LOCAL_EXISTS" = "YES" ] && [ "$VALID" = "YES" ]; then
-  # Run refactor_permissions.py in dry-run mode first
-  echo "Analyzing permissions for refactoring..."
-  python3 ./scripts/refactor_permissions.py --dry-run ./.claude/settings.json
-
-  # Apply refactoring
-  echo "Applying generic patterns..."
-  python3 ./scripts/refactor_permissions.py ./.claude/settings.json
-
-  # Verify result
-  if python3 -m json.tool ./.claude/settings.json > /dev/null 2>&1; then
-    echo "✅ Permissions refactored successfully"
-    REFACTORED="YES"
-  else
-    echo "⚠️ Warning: Refactoring resulted in invalid JSON, reverting to previous version"
-    git checkout ./.claude/settings.json
-    REFACTORED="NO"
-  fi
-
-  echo "REFACTORED=$REFACTORED" >> /tmp/merge-settings-stats.txt
-fi
-
+./scripts/refactor-settings.sh
 ./scripts/checkpoint-update.sh merge-settings STEP=5
 ```
 
-5. Run refactor_permissions.py to consolidate permissions into generic patterns
+5. Run refactor-settings.sh to consolidate permissions into generic patterns
 
 #### [REFACTOR GATE]
 ```bash
-# Verify refactoring completed
-source /tmp/merge-settings-stats.txt
-if [ "$LOCAL_EXISTS" = "YES" ] && [ "$REFACTORED" != "YES" ]; then
-  echo "⚠️ Refactoring did not complete successfully"
-fi
 ./scripts/checkpoint-gate.sh merge-settings "Permissions Refactored" "5"
 ```
 
