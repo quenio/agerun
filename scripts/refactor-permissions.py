@@ -55,10 +55,10 @@ def suggest_generic_permissions(bash_commands, read_commands, webfetch_commands,
     """Suggest generic permission patterns."""
     generic = []
 
-    # Commands that should NOT be wildcarded (they're shell keywords or control flow)
+    # Commands that should NOT be wildcarded (they're shell keywords, control flow, or dangerous)
     skip_wildcards = {
         'do', 'done', 'if', 'then', 'else', 'fi', 'for', 'while',
-        'bash', 'source'
+        'bash', 'source', 'rm', 'rmdir'  # rm and rmdir are too dangerous to wildcard
     }
 
     # Commands that are safe to use wildcards
