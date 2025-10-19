@@ -66,28 +66,24 @@ Check current progress at any time:
 
 ## Workflow Execution
 
-The command orchestrator must execute all steps sequentially. Each step below is a separate, atomic operation that must complete before proceeding to the next.
+The command orchestrator executes the following sequence of operations. Operations are grouped into logical checkpoint steps. The checkpoint tracks 5 main steps: "Validate Docs", "Preview Fixes", "Apply Fixes", "Verify Resolution", "Commit and Push".
 
-#### Step 1: Initialize Checkpoint Tracking
+### Initialization (Pre-Checkpoint)
 
-#### [CHECKPOINT START - STEP 1]
+#### Operation 1: Initialize Checkpoint Tracking
 
 ```bash
 ./scripts/init-checkpoint.sh check-docs "Validate Docs" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"
 ```
 
-Initializes checkpoint tracking with all workflow steps defined.
+Initializes checkpoint tracking with 5 logical workflow steps.
 
 **Expected output:**
 ```
 ✅ Checkpoint tracking initialized for check-docs
 ```
 
-#### [CHECKPOINT END - STEP 1]
-
-#### Step 2: Verify Checkpoint Ready
-
-#### [CHECKPOINT START - STEP 2]
+#### Operation 2: Verify Checkpoint Ready
 
 ```bash
 ./scripts/require-checkpoint.sh check-docs
@@ -100,11 +96,11 @@ Verifies checkpoint is initialized and ready before proceeding.
 ✅ Checkpoint tracking verified
 ```
 
-#### [CHECKPOINT END - STEP 2]
+### Checkpoint Step 1: Validate Docs
 
-#### Step 3: Validate Documentation
+#### [CHECKPOINT START - STEP 1: Validate Docs]
 
-#### [CHECKPOINT START - STEP 3]
+#### Operation 3: Validate Documentation
 
 ```bash
 ./scripts/validate-docs.sh
@@ -114,105 +110,83 @@ Runs `make check-docs` to identify all documentation errors and saves error coun
 
 **Expected output**: Shows validation results and saves ERROR_COUNT to stats file.
 
-#### [CHECKPOINT END - STEP 3]
+#### [CHECKPOINT END - STEP 1]
 
-#### Step 4: Update Checkpoint After Validation
-
-#### [CHECKPOINT START - STEP 4]
+#### Operation 4: Update Checkpoint
 
 ```bash
 ./scripts/checkpoint-update.sh check-docs 1
 ```
 
-Records completion of validation step in checkpoint tracking.
+Records completion of "Validate Docs" step in checkpoint tracking.
 
 **Expected output**: Progress bar showing 1/5 steps complete.
 
-#### [CHECKPOINT END - STEP 4]
+### Checkpoint Step 2: Conditional Flow (Error Gate)
 
-#### Step 5: Conditional Flow (Error Gate)
+#### [CHECKPOINT START - STEP 2: Preview Fixes]
 
-#### [CHECKPOINT START - STEP 5]
+#### Operation 5: Conditional Flow Check
 
 ```bash
 ./scripts/check-docs-conditional-flow.sh
 ```
 
-Evaluates error state from Step 3. Based on result:
-- **No errors**: Skip to Step 10 (Verify Resolution)
-- **Errors found**: Continue to Step 6 (Preview Fixes)
+Evaluates error state from Operation 3. Based on result:
+- **No errors**: Skip to Checkpoint Step 4 (Verify Resolution)
+- **Errors found**: Continue to Operation 6 (Preview Fixes)
 
 **Expected output**: Either "No errors found" or "Errors found, proceeding with fixes"
 
-#### [CHECKPOINT END - STEP 5]
-
-#### Step 6: Update Checkpoint After Conditional Check
-
-#### [CHECKPOINT START - STEP 6]
-
-```bash
-./scripts/checkpoint-update.sh check-docs 2
-```
-
-Records completion of conditional flow check in checkpoint tracking.
-
-#### [CHECKPOINT END - STEP 6]
-
-#### Step 7: Preview Fixes (conditional on errors)
-
-#### [CHECKPOINT START - STEP 7]
+#### Operation 6: Preview Fixes (conditional on errors)
 
 ```bash
 ./scripts/preview-doc-fixes.sh
 ```
 
-Runs `python3 scripts/batch_fix_docs.py --dry-run` to preview changes before applying them. Only executes if errors were found in Step 3.
+Runs `python3 scripts/batch_fix_docs.py --dry-run` to preview changes before applying them. Only executes if errors were found.
 
 **Expected output**: Shows preview of proposed fixes (or skipped message if no errors).
 
-#### [CHECKPOINT END - STEP 7]
+#### [CHECKPOINT END - STEP 2]
 
-#### Step 8: Update Checkpoint After Preview
-
-#### [CHECKPOINT START - STEP 8]
+#### Operation 7: Update Checkpoint
 
 ```bash
-./scripts/checkpoint-update.sh check-docs 3
+./scripts/checkpoint-update.sh check-docs 2
 ```
 
-Records completion of preview step in checkpoint tracking.
+Records completion of "Preview Fixes" step in checkpoint tracking.
 
-#### [CHECKPOINT END - STEP 8]
+### Checkpoint Step 3: Apply Fixes
 
-#### Step 9: Apply Fixes (conditional on errors)
+#### [CHECKPOINT START - STEP 3: Apply Fixes]
 
-#### [CHECKPOINT START - STEP 9]
+#### Operation 8: Apply Fixes (conditional on errors)
 
 ```bash
 ./scripts/apply-doc-fixes.sh
 ```
 
-Runs the batch fix script to fix all identified documentation errors. Only executes if errors were found in Step 3.
+Runs the batch fix script to fix all identified documentation errors. Only executes if errors were found.
 
 **Expected output**: Shows count of fixed documentation files (or skipped message if no errors).
 
-#### [CHECKPOINT END - STEP 9]
+#### [CHECKPOINT END - STEP 3]
 
-#### Step 10: Update Checkpoint After Applying Fixes
-
-#### [CHECKPOINT START - STEP 10]
+#### Operation 9: Update Checkpoint
 
 ```bash
-./scripts/checkpoint-update.sh check-docs 4
+./scripts/checkpoint-update.sh check-docs 3
 ```
 
-Records completion of apply-fixes step in checkpoint tracking.
+Records completion of "Apply Fixes" step in checkpoint tracking.
 
-#### [CHECKPOINT END - STEP 10]
+### Checkpoint Step 4: Verify Resolution
 
-#### Step 11: Verify Resolution
+#### [CHECKPOINT START - STEP 4: Verify Resolution]
 
-#### [CHECKPOINT START - STEP 11]
+#### Operation 10: Verify Documentation
 
 ```bash
 ./scripts/verify-docs.sh
@@ -222,37 +196,31 @@ Runs `make check-docs` again to verify all fixes were successful.
 
 **Expected output**: Shows final validation results (PASS or PARTIAL).
 
-#### [CHECKPOINT END - STEP 11]
+#### [CHECKPOINT END - STEP 4]
 
-#### Step 12: Update Checkpoint After Verification
-
-#### [CHECKPOINT START - STEP 12]
+#### Operation 11: Update Checkpoint
 
 ```bash
-./scripts/checkpoint-update.sh check-docs 5
+./scripts/checkpoint-update.sh check-docs 4
 ```
 
-Records completion of verification step in checkpoint tracking.
+Records completion of "Verify Resolution" step in checkpoint tracking.
 
-#### [CHECKPOINT END - STEP 12]
-
-#### Step 13: Validate Resolution Gate
-
-#### [CHECKPOINT START - STEP 13]
+#### Operation 12: Validate Resolution Gate
 
 ```bash
-./scripts/gate-checkpoint.sh check-docs "Resolution" "5"
+./scripts/gate-checkpoint.sh check-docs "Resolution" "4"
 ```
 
 Validates that resolution gate passes before proceeding to commit.
 
 **Expected output**: Gate status indicating pass/fail.
 
-#### [CHECKPOINT END - STEP 13]
+### Checkpoint Step 5: Commit and Push
 
-#### Step 14: Commit and Push
+#### [CHECKPOINT START - STEP 5: Commit and Push]
 
-#### [CHECKPOINT START - STEP 14]
+#### Operation 13: Commit and Push
 
 ```bash
 ./scripts/commit-docs.sh
@@ -265,23 +233,19 @@ Stages, commits, and pushes all documentation fixes.
 ✅ Documentation fixes committed and pushed
 ```
 
-#### [CHECKPOINT END - STEP 14]
+#### [CHECKPOINT END - STEP 5]
 
-#### Step 15: Update Checkpoint After Commit
-
-#### [CHECKPOINT START - STEP 15]
+#### Operation 14: Update Checkpoint
 
 ```bash
-./scripts/checkpoint-update.sh check-docs 6
+./scripts/checkpoint-update.sh check-docs 5
 ```
 
-Records completion of commit step in checkpoint tracking.
+Records completion of "Commit and Push" step in checkpoint tracking.
 
-#### [CHECKPOINT END - STEP 15]
+### Workflow Completion
 
-#### Step 16: Complete Workflow
-
-#### [CHECKPOINT START - STEP 16]
+#### Operation 15: Complete Workflow
 
 ```bash
 ./scripts/complete-checkpoint.sh check-docs
@@ -294,8 +258,6 @@ Completes checkpoint workflow and cleans up temporary files.
 ```
 ✅ Documentation check workflow complete!
 ```
-
-#### [CHECKPOINT END - STEP 16]
 
 #### [CHECKPOINT COMPLETE]
 
