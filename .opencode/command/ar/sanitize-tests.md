@@ -56,10 +56,10 @@ Only use these commands if the script fails and you need to manually intervene:
 
 ```bash
 # Check current progress (if workflow interrupted)
-make checkpoint-status CMD=sanitize-tests VERBOSE=--verbose
+./scripts/checkpoint-status.sh sanitize-tests --verbose
 
 # Resume from a specific step (only if you know it's stuck)
-make checkpoint-update CMD=sanitize-tests STEP=N
+./scripts/checkpoint-update.sh sanitize-tests N
 
 # ONLY use this if you need to reset everything and start over
 rm -f /tmp/sanitize-tests-progress.txt

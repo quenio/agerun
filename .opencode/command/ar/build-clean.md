@@ -56,10 +56,10 @@ Only use these commands if the script fails and you need to manually intervene:
 
 ```bash
 # Check current progress (if workflow interrupted)
-make checkpoint-status CMD=build-clean VERBOSE=--verbose
+./scripts/checkpoint-status.sh build-clean --verbose
 
 # Resume from a specific step (only if you know it's stuck)
-make checkpoint-update CMD=build-clean STEP=N
+./scripts/checkpoint-update.sh build-clean N
 
 # ONLY use this if you need to reset everything and start over
 rm -f /tmp/build-clean-progress.txt
@@ -111,7 +111,7 @@ For example, if you see "undefined reference" errors in incremental builds, a cl
 make clean build 2>&1 && make check-logs
 
 # Mark execution complete
-make checkpoint-update CMD=build-clean STEP=2
+./scripts/checkpoint-update.sh build-clean 2
 ```
 
 

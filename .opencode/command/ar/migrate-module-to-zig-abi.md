@@ -19,7 +19,7 @@ Before starting migration:
 If a `/migrate-module-to-zig-abi` workflow is already in progress:
 
 ```bash
-./scripts/checkpoint-status.sh migrate-module-to-zig-abi VERBOSE=--verbose
+./scripts/checkpoint-status.sh migrate-module-to-zig-abi --verbose
 # Resume: ./scripts/checkpoint-update.sh migrate-module-to-zig-abi STEP=N
 # Or reset: ./scripts/checkpoint-cleanup.sh migrate-module-to-zig-abi && ./scripts/checkpoint-init.sh migrate-module-to-zig-abi "Check Existing" "Analyze Dependencies" "Identify Challenges" "Review API" "Create Zig File" "Map Types" "Implement Functions" "Run Tests" "Verify Memory" "Cleanup and Document"
 ```

@@ -9,7 +9,7 @@ Compact the CHANGELOG.md file by condensing completed milestones while preservin
 If a `/compact-changes` workflow is already in progress:
 
 ```bash
-./scripts/checkpoint-status.sh compact-changes VERBOSE=--verbose
+./scripts/checkpoint-status.sh compact-changes --verbose
 # Resume: ./scripts/checkpoint-update.sh compact-changes STEP=N
 # Or reset: ./scripts/checkpoint-cleanup.sh compact-changes && ./scripts/checkpoint-init.sh compact-changes "Measure Baseline" "Analyze Patterns" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Update TODO" "Commit Changes"
 ```

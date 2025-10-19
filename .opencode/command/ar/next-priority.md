@@ -18,20 +18,20 @@ This command requires checkpoint tracking to ensure systematic workflow executio
 ```
 📍 Starting: next-priority (3 steps)
 📁 Tracking: /tmp/next-priority-progress.txt
-→ Run: make checkpoint-update CMD=next-priority STEP=1
+→ Run: ./scripts/checkpoint-update.sh next-priority 1
 ```
 
 ### Check Progress
 
 ```bash
-make checkpoint-status CMD=next-priority
+./scripts/checkpoint-status.sh next-priority
 ```
 
 **Expected output (example at 33% completion):**
 ```
 📈 next-priority: 1/3 steps (33%)
    [███░░░░░░░░░░░░░░░░░░] 33%
-→ Next: make checkpoint-update CMD=next-priority STEP=2
+→ Next: ./scripts/checkpoint-update.sh next-priority 2
 ```
 
 ## Checkpoint Tracking
@@ -42,7 +42,7 @@ This command uses checkpoint tracking with 3 sequential steps to ensure systemat
 2. **Analyze Priorities** - Apply systematic analysis protocols using quantitative metrics
 3. **Generate Recommendation** - Provide priority suggestion with justification
 
-Each step requires completion before moving to the next. Use `make checkpoint-status CMD=next-priority` to check progress at any time.
+Each step requires completion before moving to the next. Use `./scripts/checkpoint-status.sh next-priority` to check progress at any time.
 
 ## MANDATORY FIRST STEP - KB Consultation
 
@@ -269,10 +269,10 @@ Monitor your progress through the 3-step workflow:
 ./scripts/checkpoint-init.sh next-priority "Read Context" "Analyze Priorities" "Generate Recommendation"
 
 # Check current checkpoint status
-make checkpoint-status CMD=next-priority VERBOSE=--verbose
+./scripts/checkpoint-status.sh next-priority --verbose
 
 # Update to next step (after completing current step)
-make checkpoint-update CMD=next-priority STEP=N
+./scripts/checkpoint-update.sh next-priority N
 
 # Complete the workflow
 ./scripts/checkpoint-complete.sh next-priority

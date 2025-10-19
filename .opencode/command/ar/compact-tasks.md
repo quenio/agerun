@@ -9,7 +9,7 @@ Compact the TODO.md file by condensing completed tasks while keeping incomplete 
 If a `/compact-tasks` workflow is already in progress:
 
 ```bash
-./scripts/checkpoint-status.sh compact-tasks VERBOSE=--verbose
+./scripts/checkpoint-status.sh compact-tasks --verbose
 # Resume: ./scripts/checkpoint-update.sh compact-tasks STEP=N
 # Or reset: ./scripts/checkpoint-cleanup.sh compact-tasks && ./scripts/checkpoint-init.sh compact-tasks "Measure Baseline" "Categorize Tasks" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Commit Changes" "Final Verification"
 ```

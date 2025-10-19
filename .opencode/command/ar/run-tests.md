@@ -60,10 +60,10 @@ Only use these commands if the script fails and you need to manually intervene:
 
 ```bash
 # Check current progress (if workflow interrupted)
-make checkpoint-status CMD=run-tests VERBOSE=--verbose
+./scripts/checkpoint-status.sh run-tests --verbose
 
 # Resume from a specific step (only if you know it's stuck)
-make checkpoint-update CMD=run-tests STEP=N
+./scripts/checkpoint-update.sh run-tests N
 
 # ONLY use this if you need to reset everything and start over
 rm -f /tmp/run-tests-progress.txt
@@ -72,14 +72,14 @@ rm -f /tmp/run-tests-progress.txt
 
 ### Check Progress
 ```bash
-make checkpoint-status CMD=run-tests
+./scripts/checkpoint-status.sh run-tests
 ```
 
 **Expected output (example at 33% completion):**
 ```
 📈 command: X/Y steps (Z%)
    [████░░░░░░░░░░░░░░░░] Z%
-→ Next: make checkpoint-update CMD=command STEP=N
+→ Next: ./scripts/checkpoint-update.sh command N
 ```
 
 ## Minimum Requirements
@@ -111,7 +111,7 @@ make checkpoint-status CMD=run-tests
 make run-tests 2>&1
 
 # Mark execution complete
-make checkpoint-update CMD=run-tests STEP=2
+./scripts/checkpoint-update.sh run-tests 2
 ```
 
 

@@ -11,7 +11,7 @@ Check build logs for hidden issues that might not be caught by the build summary
 If a `/check-logs` workflow is already in progress:
 
 ```bash
-./scripts/checkpoint-status.sh check-logs VERBOSE=--verbose
+./scripts/checkpoint-status.sh check-logs --verbose
 # Resume: ./scripts/checkpoint-update.sh check-logs STEP=N
 # Or reset: ./scripts/checkpoint-cleanup.sh check-logs && ./scripts/checkpoint-init.sh check-logs "Run Build" "Standard Checks" "Deep Analysis" "Categorize Errors" "Fix Issues" "Update Whitelist" "Re-check Logs" "Final Validation"
 ```

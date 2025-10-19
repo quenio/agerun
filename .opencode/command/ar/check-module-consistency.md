@@ -18,7 +18,7 @@ Before checking consistency:
 If a `/check-module-consistency` workflow is already in progress:
 
 ```bash
-./scripts/checkpoint-status.sh check-module-consistency VERBOSE=--verbose
+./scripts/checkpoint-status.sh check-module-consistency --verbose
 # Resume: ./scripts/checkpoint-update.sh check-module-consistency STEP=N
 # Or reset: ./scripts/checkpoint-cleanup.sh check-module-consistency && ./scripts/checkpoint-init.sh check-module-consistency "Describe Improvement" "Identify Pattern" "Find Sister Modules" "Find Similar Purpose" "Find Same Subsystem" "Check Module 1" "Check Module 2" "Check Module 3" "Check Module 4" "Check Module 5" "Analyze Findings" "List Modules Needing Update" "Estimate Effort" "Create Priority Order" "Document Plan"
 ```

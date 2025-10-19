@@ -269,7 +269,7 @@ Only use these commands if the script fails and you need to manually intervene:
 
 ```bash
 # Check current progress (if workflow interrupted)
-./scripts/checkpoint-status.sh check-docs VERBOSE=--verbose
+./scripts/checkpoint-status.sh check-docs --verbose
 
 # Resume from a specific step (only if you know it's stuck)
 ./scripts/checkpoint-update.sh check-docs N

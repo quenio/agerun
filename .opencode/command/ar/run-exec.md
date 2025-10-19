@@ -56,10 +56,10 @@ Only use these commands if the script fails and you need to manually intervene:
 
 ```bash
 # Check current progress (if workflow interrupted)
-make checkpoint-status CMD=run-exec VERBOSE=--verbose
+./scripts/checkpoint-status.sh run-exec --verbose
 
 # Resume from a specific step (only if you know it's stuck)
-make checkpoint-update CMD=run-exec STEP=N
+./scripts/checkpoint-update.sh run-exec N
 
 # ONLY use this if you need to reset everything and start over
 rm -f /tmp/run-exec-progress.txt
@@ -110,7 +110,7 @@ For example, if you see "X messages remaining" at shutdown, there's a message ro
 make run-exec 2>&1
 
 # Mark execution complete
-make checkpoint-update CMD=run-exec STEP=2
+./scripts/checkpoint-update.sh run-exec 2
 ```
 
 

@@ -18,7 +18,7 @@ Before starting migration:
 If a `/migrate-module-to-zig-struct` workflow is already in progress:
 
 ```bash
-./scripts/checkpoint-status.sh migrate-module-to-zig-struct VERBOSE=--verbose
+./scripts/checkpoint-status.sh migrate-module-to-zig-struct --verbose
 # Resume: ./scripts/checkpoint-update.sh migrate-module-to-zig-struct STEP=N
 # Or reset: ./scripts/checkpoint-cleanup.sh migrate-module-to-zig-struct && ./scripts/checkpoint-init.sh migrate-module-to-zig-struct "Read KB Article" "Check Current Implementation" "Check C Dependencies" "Check Zig Dependencies" "Verify Safety" "Create Struct Module" "Convert Functions" "Update Dependencies" "Run Tests" "Remove Old Module" "Update Documentation"
 ```

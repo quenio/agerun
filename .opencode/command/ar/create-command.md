@@ -40,7 +40,7 @@ Create a new Claude Code command following all quality standards and best practi
 If a `/create-command` workflow is already in progress:
 
 ```bash
-./scripts/checkpoint-status.sh create-command VERBOSE=--verbose
+./scripts/checkpoint-status.sh create-command --verbose
 # Resume: ./scripts/checkpoint-update.sh create-command STEP=N
 # Or reset: ./scripts/checkpoint-cleanup.sh create-command && ./scripts/checkpoint-init.sh create-command "Validate Args" "KB Consultation" "Create Structure" "Add Checkpoints" "Add Quality Gates" "Add Documentation" "Verify Excellence"
 ```
@@ -214,7 +214,7 @@ Before executing:
 If a \`/COMMAND_NAME\` workflow is already in progress:
 
 \`\`\`bash
-./scripts/checkpoint-status.sh COMMAND_NAME VERBOSE=--verbose
+./scripts/checkpoint-status.sh COMMAND_NAME --verbose
 # Resume: ./scripts/checkpoint-update.sh COMMAND_NAME STEP=N
 # Or reset: ./scripts/checkpoint-cleanup.sh COMMAND_NAME && ./scripts/checkpoint-init.sh COMMAND_NAME "Step 1" "Step 2" "Step 3"
 \`\`\`

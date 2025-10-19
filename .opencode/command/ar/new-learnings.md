@@ -17,7 +17,7 @@ If checkpoint exists, you have two options:
 **Option 1: Resume the workflow** (RECOMMENDED)
 ```bash
 # Resume from the next pending step
-./scripts/checkpoint-status.sh new-learnings VERBOSE=--verbose
+./scripts/checkpoint-status.sh new-learnings --verbose
 # Then run the appropriate step number shown in output
 ```
 
@@ -405,7 +405,7 @@ If you're tempted to use hypothetical types, replace with real ones:
 #### [CHECKPOINT END - STEP 3]
 ```bash
 # Mark Step 3 complete with evidence verification
-make checkpoint-update-verified CMD=new-learnings STEP=3 EVIDENCE="kb/new-article-filename.md" SUMMARY="Created KB article with real AgeRun types and comprehensive examples"
+./scripts/checkpoint-update.sh new-learnings 3 --evidence "kb/new-article-filename.md" --summary "Created KB article with real AgeRun types and comprehensive examples"
 ```
 
 **CRITICAL**: Replace `new-article-filename.md` with the actual filename of the KB article you created. The system will verify:
@@ -436,7 +436,7 @@ make checkpoint-update-verified CMD=new-learnings STEP=3 EVIDENCE="kb/new-articl
 #### [CHECKPOINT END - STEP 4]
 ```bash
 # Mark Step 4 complete - verification automated
-make checkpoint-update-verified CMD=new-learnings STEP=4 SUMMARY="Documentation validation passed with make check-docs"
+./scripts/checkpoint-update.sh new-learnings 4 --summary "Documentation validation passed with make check-docs"
 ```
 
 **AUTOMATIC VERIFICATION**: The system will automatically run `make check-docs` and block completion if validation fails.
@@ -548,7 +548,7 @@ The following steps must be completed first:
 #### [CHECKPOINT END - STEP 6]
 ```bash
 # Mark Step 6 complete with cross-reference verification
-make checkpoint-update-verified CMD=new-learnings STEP=6 SUMMARY="Updated X KB articles with bidirectional cross-references"
+./scripts/checkpoint-update.sh new-learnings 6 --summary "Updated X KB articles with bidirectional cross-references"
 ```
 
 **AUTOMATIC VERIFICATION**: The system will verify at least 3 KB articles were modified and block completion if insufficient cross-references were added.
@@ -607,7 +607,7 @@ make checkpoint-update-verified CMD=new-learnings STEP=6 SUMMARY="Updated X KB a
 #### [CHECKPOINT END - STEP 7]
 ```bash
 # Mark Step 7 complete with command update verification
-make checkpoint-update-verified CMD=new-learnings STEP=7 SUMMARY="Updated X commands with new KB references and enhanced guidance"
+./scripts/checkpoint-update.sh new-learnings 7 --summary "Updated X commands with new KB references and enhanced guidance"
 ```
 
 **AUTOMATIC VERIFICATION**: The system will verify at least 3 command files were modified and block completion if insufficient updates were made.
@@ -903,7 +903,7 @@ fi
 
 ```bash
 # Show final completion report
-./scripts/checkpoint-status.sh new-learnings VERBOSE=--verbose
+./scripts/checkpoint-status.sh new-learnings --verbose
 
 # Clean up tracking file
 ./scripts/checkpoint-cleanup.sh new-learnings

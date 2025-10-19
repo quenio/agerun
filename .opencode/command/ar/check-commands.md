@@ -25,7 +25,7 @@ Before validation:
 If a `/check-commands` workflow is already in progress:
 
 ```bash
-./scripts/checkpoint-status.sh check-commands VERBOSE=--verbose
+./scripts/checkpoint-status.sh check-commands --verbose
 # Resume: ./scripts/checkpoint-update.sh check-commands STEP=N
 # Or reset: ./scripts/checkpoint-cleanup.sh check-commands && ./scripts/checkpoint-init.sh check-commands "Scan Commands" "Validate Structure" "Calculate Scores" "Identify Issues" "Generate Report"
 ```

@@ -11,7 +11,7 @@ This section implements the [Checkpoint Workflow Enforcement Pattern](../../../k
 If a `/commit` workflow is already in progress:
 
 ```bash
-./scripts/checkpoint-status.sh commit VERBOSE=--verbose
+./scripts/checkpoint-status.sh commit --verbose
 # Resume: ./scripts/checkpoint-update.sh commit STEP=N
 # Or reset: ./scripts/checkpoint-cleanup.sh commit && ./scripts/checkpoint-init.sh commit "Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"
 ```
@@ -122,7 +122,7 @@ Before starting the commit process, ensure you have completed ALL of these steps
 ```bash
 # Run comprehensive build verification
 make clean build 2>&1
-make checkpoint-update-verified CMD=commit STEP=1 SUMMARY="Clean build completed with all checks passed"
+./scripts/checkpoint-update.sh commit 1 --summary "Clean build completed with all checks passed"
 ```
 
 #### Step 2: Check Logs
@@ -130,7 +130,7 @@ make checkpoint-update-verified CMD=commit STEP=1 SUMMARY="Clean build completed
 ```bash
 # Verify no hidden issues in logs
 make check-logs
-make checkpoint-update-verified CMD=commit STEP=2 SUMMARY="Build logs verified clean - no hidden issues"
+./scripts/checkpoint-update.sh commit 2 --summary "Build logs verified clean - no hidden issues"
 ```
 
 **Additional Notes**:
@@ -164,7 +164,7 @@ make checkpoint-update-verified CMD=commit STEP=2 SUMMARY="Build logs verified c
 
 ```bash
 # Verify CHANGELOG.md is updated
-make checkpoint-update-verified CMD=commit STEP=5 SUMMARY="CHANGELOG.md updated with completed milestones"
+./scripts/checkpoint-update.sh commit 5 --summary "CHANGELOG.md updated with completed milestones"
 ```
 
 **CHANGELOG Note**: Document completed milestones and achievements (NON-NEGOTIABLE)
@@ -193,7 +193,7 @@ make checkpoint-update-verified CMD=commit STEP=5 SUMMARY="CHANGELOG.md updated 
 ```bash
 # Review all changes
 git diff
-make checkpoint-update-verified CMD=commit STEP=6 SUMMARY="All changes reviewed and no backup files present"
+./scripts/checkpoint-update.sh commit 6 --summary "All changes reviewed and no backup files present"
 ```
 
 **Review Notes**:
@@ -271,7 +271,7 @@ git commit -m "$(cat <<'EOF'
 
 Co-Authored-By: Claude <noreply@anthropic.com>
 EOF
-)" && make checkpoint-update-verified CMD=commit STEP=8 SUMMARY="Commit created successfully"
+)" && ./scripts/checkpoint-update.sh commit 8 --summary "Commit created successfully"
 ```
 
 3. **Execute the commit:**
@@ -288,7 +288,7 @@ EOF
 # Push to remote and verify
 git push
 git status
-make checkpoint-update-verified CMD=commit STEP=9 SUMMARY="Push completed successfully and working tree clean"
+./scripts/checkpoint-update.sh commit 9 --summary "Push completed successfully and working tree clean"
 ```
 
 5. **Push and verify:**

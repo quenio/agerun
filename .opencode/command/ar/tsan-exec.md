@@ -56,10 +56,10 @@ Only use these commands if the script fails and you need to manually intervene:
 
 ```bash
 # Check current progress (if workflow interrupted)
-make checkpoint-status CMD=tsan-exec VERBOSE=--verbose
+./scripts/checkpoint-status.sh tsan-exec --verbose
 
 # Resume from a specific step (only if you know it's stuck)
-make checkpoint-update CMD=tsan-exec STEP=N
+./scripts/checkpoint-update.sh tsan-exec N
 
 # ONLY use this if you need to reset everything and start over
 rm -f /tmp/tsan-exec-progress.txt

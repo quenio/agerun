@@ -58,10 +58,10 @@ Only use these commands if the script fails and you need to manually intervene:
 
 ```bash
 # Check current progress (if workflow interrupted)
-make checkpoint-status CMD=build VERBOSE=--verbose
+./scripts/checkpoint-status.sh build --verbose
 
 # Resume from a specific step (only if you know it's stuck)
-make checkpoint-update CMD=build STEP=N
+./scripts/checkpoint-update.sh build N
 
 # ONLY use this if you need to reset everything and start over
 rm -f /tmp/build-progress.txt
@@ -97,7 +97,7 @@ rm -f /tmp/build-progress.txt
 make build 2>&1 && make check-logs
 
 # Mark execution complete
-make checkpoint-update CMD=build STEP=2
+./scripts/checkpoint-update.sh build 2
 ```
 
 **Note**: If build fails due to CI network timeouts, see ([details](../../../kb/ci-network-timeout-diagnosis.md))

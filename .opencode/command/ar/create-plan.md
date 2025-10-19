@@ -12,7 +12,7 @@ If a `/create-plan` workflow is already in progress:
 
 ```bash
 # Check current progress
-./scripts/checkpoint-status.sh create-plan VERBOSE=--verbose
+./scripts/checkpoint-status.sh create-plan --verbose
 ```
 
 Resume from the next pending step, or clean up and start fresh:

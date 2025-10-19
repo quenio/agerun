@@ -11,7 +11,7 @@ This section implements the [Checkpoint Workflow Enforcement Pattern](../../../k
 If a `/review-plan` workflow is already in progress, resume or reset:
 
 ```bash
-./scripts/checkpoint-status.sh review-plan VERBOSE=--verbose
+./scripts/checkpoint-status.sh review-plan --verbose
 # Resume: ./scripts/checkpoint-update.sh review-plan STEP=N (where N is next pending step)
 # Or reset: ./scripts/checkpoint-cleanup.sh review-plan && ./scripts/checkpoint-init.sh review-plan "KB Consultation" "Read Plan and Extract PENDING" "Review Each Iteration" "Verify Cross-References" "Document Issues" "Generate Report"
 ```

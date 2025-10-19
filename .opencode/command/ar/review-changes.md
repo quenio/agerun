@@ -27,7 +27,7 @@ Before reviewing ([details](../../../kb/kb-consultation-before-planning-requirem
 If a `/review-changes` workflow is already in progress:
 
 ```bash
-./scripts/checkpoint-status.sh review-changes VERBOSE=--verbose
+./scripts/checkpoint-status.sh review-changes --verbose
 # Resume: ./scripts/checkpoint-update.sh review-changes STEP=N
 # Or reset: ./scripts/checkpoint-cleanup.sh review-changes && ./scripts/checkpoint-init.sh review-changes "Diff Analysis" "Code Smells" "Memory Management" "Naming Conventions" "Error Handling" "Test Coverage" "Parnas Principles" "Module Hierarchy" "Interface Design" "Dependency Check" "Design Patterns" "Real Code Check" "Doc Validation" "Cross-References" "Completeness" "Link Validation" "Build Status" "Hidden Issues" "Test Results" "File Hygiene" "Doc Sync" "Final Report"
 ```

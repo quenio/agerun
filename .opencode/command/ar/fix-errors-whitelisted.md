@@ -19,7 +19,7 @@ Before starting error analysis:
 If a `/fix-errors-whitelisted` workflow is already in progress:
 
 ```bash
-./scripts/checkpoint-status.sh fix-errors-whitelisted VERBOSE=--verbose
+./scripts/checkpoint-status.sh fix-errors-whitelisted --verbose
 # Resume: ./scripts/checkpoint-update.sh fix-errors-whitelisted STEP=N
 # Or reset: ./scripts/checkpoint-cleanup.sh fix-errors-whitelisted && ./scripts/checkpoint-init.sh fix-errors-whitelisted "Count Errors" "Group by Test" "Find Patterns" "Select Target" "Analyze Root Cause" "Choose Strategy" "Plan Implementation" "Verify Current State" "Apply Fix" "Test Fix" "Remove Whitelist Entries" "Update Whitelist Total" "Update TODO.md" "Update CHANGELOG" "Final Verification" "Create Commit"
 ```

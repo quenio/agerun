@@ -18,20 +18,20 @@ This command requires checkpoint tracking to ensure systematic workflow executio
 ```
 📍 Starting: next-task (3 steps)
 📁 Tracking: /tmp/next-task-progress.txt
-→ Run: make checkpoint-update CMD=next-task STEP=1
+→ Run: ./scripts/checkpoint-update.sh next-task 1
 ```
 
 ### Check Progress
 
 ```bash
-make checkpoint-status CMD=next-task
+./scripts/checkpoint-status.sh next-task
 ```
 
 **Expected output (example at 33% completion):**
 ```
 📈 next-task: 1/3 steps (33%)
    [███░░░░░░░░░░░░░░░░░░] 33%
-→ Next: make checkpoint-update CMD=next-task STEP=2
+→ Next: ./scripts/checkpoint-update.sh next-task 2
 ```
 
 ## Checkpoint Tracking
@@ -42,7 +42,7 @@ This command uses checkpoint tracking with 3 sequential steps to ensure systemat
 2. **Check Task Sources** - Review session todo list and TODO.md
 3. **Discover Next Task** - Identify and present the next priority task
 
-Each step requires completion before moving to the next. Use `make checkpoint-status CMD=next-task` to check progress at any time.
+Each step requires completion before moving to the next. Use `./scripts/checkpoint-status.sh next-task` to check progress at any time.
 
 ## MANDATORY KB Consultation
 
@@ -236,10 +236,10 @@ Monitor your progress through the 3-step workflow:
 ./scripts/checkpoint-init.sh next-task "Read Context" "Check Task Sources" "Discover Next Task"
 
 # Check current checkpoint status
-make checkpoint-status CMD=next-task VERBOSE=--verbose
+./scripts/checkpoint-status.sh next-task --verbose
 
 # Update to next step (after completing current step)
-make checkpoint-update CMD=next-task STEP=N
+./scripts/checkpoint-update.sh next-task N
 
 # Complete the workflow
 ./scripts/checkpoint-complete.sh next-task

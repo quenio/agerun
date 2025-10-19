@@ -11,7 +11,7 @@ This section implements the [Checkpoint Workflow Enforcement Pattern](../../../k
 If an `/execute-plan` workflow is already in progress:
 
 ```bash
-./scripts/checkpoint-status.sh execute-plan VERBOSE=--verbose
+./scripts/checkpoint-status.sh execute-plan --verbose
 # Resume: ./scripts/checkpoint-update.sh execute-plan STEP=N
 # Or reset: ./scripts/checkpoint-cleanup.sh execute-plan && ./scripts/checkpoint-init.sh execute-plan "KB Consultation" "Read Plan" "Extract Iterations" "Execute Iterations" "Run Tests" "Verify Memory" "Update Plan Status" "Summary"
 ```

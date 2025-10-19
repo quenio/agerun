@@ -9,7 +9,7 @@ Merge ./.claude/settings.local.json into ./.claude/settings.json and remove the 
 If a `/merge-settings` workflow is already in progress:
 
 ```bash
-./scripts/checkpoint-status.sh merge-settings VERBOSE=--verbose
+./scripts/checkpoint-status.sh merge-settings --verbose
 # Resume: ./scripts/checkpoint-update.sh merge-settings STEP=N
 # Or reset: ./scripts/checkpoint-cleanup.sh merge-settings && ./scripts/checkpoint-init.sh merge-settings "Check Files" "Read Settings" "Merge Permissions" "Validate Result" "Commit and Cleanup"
 ```

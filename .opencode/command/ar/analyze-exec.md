@@ -56,10 +56,10 @@ Only use these commands if the script fails and you need to manually intervene:
 
 ```bash
 # Check current progress (if workflow interrupted)
-make checkpoint-status CMD=analyze-exec VERBOSE=--verbose
+./scripts/checkpoint-status.sh analyze-exec --verbose
 
 # Resume from a specific step (only if you know it's stuck)
-make checkpoint-update CMD=analyze-exec STEP=N
+./scripts/checkpoint-update.sh analyze-exec N
 
 # ONLY use this if you need to reset everything and start over
 rm -f /tmp/analyze-exec-progress.txt
@@ -110,7 +110,7 @@ rm -f /tmp/analyze-exec-progress.txt
 make analyze-exec 2>&1
 
 # Mark execution complete
-make checkpoint-update CMD=analyze-exec STEP=2
+./scripts/checkpoint-update.sh analyze-exec 2
 ```
 
 
