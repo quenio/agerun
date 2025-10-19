@@ -95,12 +95,15 @@ The workflow:
 **Step 3 - Merge Permissions:**
 ```
 ✅ Permissions merged
+
 Merge Statistics:
   Main permissions:   140
   Local permissions:  21
   Merged permissions: 161
   New permissions:    21
 ```
+
+**Note**: If all local permissions already exist in main (0 new permissions), this is also successful - the merge detected no new changes needed.
 
 **Step 4 - Validate Result:**
 ```
@@ -296,6 +299,30 @@ rm -f /tmp/merge-settings-stats.txt
 ```
 
 ### Merge Issues
+
+**Problem: Local settings file still exists after workflow completes**
+```bash
+# This indicates the merge and commit succeeded but the local file wasn't removed
+# or the workflow didn't actually commit changes
+#
+# Check what happened:
+./scripts/checkpoint-status.sh merge-settings --verbose
+git log --oneline -5
+
+# If the workflow shows complete but local file exists:
+# 1. Verify the main settings file has all merged permissions
+grep '"Bash(' ./.claude/settings.json | wc -l
+
+# 2. If numbers didn't increase, the merge didn't work - reset and retry
+./scripts/checkpoint-cleanup.sh merge-settings
+./scripts/checkpoint-init.sh merge-settings "Check Files" "Read Settings" "Merge Permissions" "Validate Result" "Refactor Permissions" "Commit and Cleanup"
+
+# 3. If the merge worked but file wasn't removed, manually clean up
+rm ./.claude/settings.local.json
+git add ./.claude/settings.json
+git commit -m "chore: remove local settings file after successful merge"
+git push
+```
 
 **Problem: Local settings file not found**
 ```bash

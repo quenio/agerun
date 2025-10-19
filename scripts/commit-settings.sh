@@ -3,10 +3,10 @@
 # Usage: ./scripts/commit-settings.sh
 #
 # Purpose:
-# - Stages merged settings.json
+# - Stages merged settings.json and removes local settings file
 # - Commits with appropriate message
 # - Pushes to remote
-# - Removes local settings file ONLY after successful commit and push
+# - ONLY removes local settings file AFTER successful commit and push
 # - Verifies git status
 #
 # Safety: Local settings file is preserved if commit or push fails, allowing recovery/retry
@@ -16,8 +16,6 @@
 # - Exit 0 if no changes to commit (skips cleanly)
 # - Exit 1 if commit or push fails (local file preserved)
 
-set -e
-
 # Source stats from merge workflow
 if [ ! -f /tmp/merge-settings-stats.txt ]; then
     echo "❌ Stats file not found - cannot determine merge status"
@@ -26,55 +24,57 @@ fi
 
 source /tmp/merge-settings-stats.txt
 
-if [ "$LOCAL_EXISTS" != "YES" ]; then
-    echo "ℹ️ No changes to commit - no local merge was performed"
-    exit 0
-fi
-
 echo "Committing merged and refactored settings..."
 echo ""
 
+# Check if there are any changes to commit
+echo "Checking for changes..."
+if ! git diff --quiet ./.claude/settings.json && [ "$LOCAL_EXISTS" = "YES" ]; then
+    HAS_CHANGES="YES"
+    echo "✅ Changes detected in settings.json"
+elif [ -f ./.claude/settings.local.json ]; then
+    HAS_CHANGES="YES"
+    echo "✅ Local settings file exists to be removed"
+else
+    echo "ℹ️ No changes to commit - workflow complete"
+    exit 0
+fi
+
 # Step 1: Stage changes
+echo ""
 echo "Staging changes..."
-git add ./.claude/settings.json
-git rm ./.claude/settings.local.json 2>/dev/null || true
+git add ./.claude/settings.json 2>/dev/null || true
+
+# Remove local file from git tracking
+if [ -f ./.claude/settings.local.json ]; then
+    git rm ./.claude/settings.local.json 2>/dev/null || rm ./.claude/settings.local.json
+fi
+
 echo "✅ Changes staged"
 echo ""
 
-# Step 2: Commit
-echo "Committing changes..."
-if git commit -m "chore: merge and refactor local settings"; then
-    echo "✅ Changes committed"
-else
-    # Check if there are actually changes staged
-    if git diff --cached --quiet; then
-        echo "ℹ️ No changes to commit"
-        exit 0
-    else
-        echo "❌ Commit failed - aborting to preserve local settings file"
-        exit 1
-    fi
+# Step 2: Verify we have staged changes before committing
+if git diff --cached --quiet; then
+    echo "ℹ️ No staged changes to commit"
+    exit 0
 fi
-echo ""
 
-# Step 3: Push
-echo "Pushing to remote..."
-if git push; then
-    echo "✅ Changes pushed"
-else
-    echo "❌ Push failed - aborting to preserve local settings file"
+# Step 3: Commit
+echo "Committing changes..."
+if ! git commit -m "chore: merge and refactor local settings"; then
+    echo "❌ Commit failed"
     exit 1
 fi
+echo "✅ Changes committed"
 echo ""
 
-# Step 4: Remove local file (ONLY after successful commit and push)
-echo "Removing local settings file..."
-if [ -f ./.claude/settings.local.json ]; then
-    rm ./.claude/settings.local.json
-    echo "✅ Local settings file removed"
-else
-    echo "ℹ️ Local settings file already removed"
+# Step 4: Push
+echo "Pushing to remote..."
+if ! git push; then
+    echo "❌ Push failed"
+    exit 1
 fi
+echo "✅ Changes pushed"
 echo ""
 
 # Step 5: Verify
