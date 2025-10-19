@@ -11,13 +11,13 @@ If a `/compact-tasks` workflow is already in progress:
 ```bash
 ./scripts/status-checkpoint.sh compact-tasks VERBOSE=--verbose
 # Resume: ./scripts/update-checkpoint.sh compact-tasks STEP=N
-# Or reset: ./scripts/cleanup-checkpoint.sh compact-tasks && ./scripts/init-checkpoint.sh compact-tasks STEPS='"Measure Baseline" "Categorize Tasks" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Commit Changes" "Final Verification"'
+# Or reset: ./scripts/cleanup-checkpoint.sh compact-tasks && ./scripts/init-checkpoint.sh compact-tasks "Measure Baseline" "Categorize Tasks" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Commit Changes" "Final Verification"
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-./scripts/init-checkpoint.sh compact-tasks '"Measure Baseline" "Categorize Tasks" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Commit Changes" "Final Verification"'
+./scripts/init-checkpoint.sh compact-tasks "Measure Baseline" "Categorize Tasks" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Commit Changes" "Final Verification"
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
@@ -88,7 +88,7 @@ This command uses checkpoint tracking to ensure safe and systematic TODO.md comp
 ### Initialize Tracking
 ```bash
 # Start the task compaction process
-./scripts/init-checkpoint.sh compact-tasks STEPS='"Measure Baseline" "Categorize Tasks" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Commit Changes" "Final Verification"'
+./scripts/init-checkpoint.sh compact-tasks "Measure Baseline" "Categorize Tasks" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Commit Changes" "Final Verification"
 ```
 
 **Expected output:**

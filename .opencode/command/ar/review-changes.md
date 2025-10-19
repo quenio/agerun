@@ -29,13 +29,13 @@ If a `/review-changes` workflow is already in progress:
 ```bash
 ./scripts/status-checkpoint.sh review-changes VERBOSE=--verbose
 # Resume: ./scripts/update-checkpoint.sh review-changes STEP=N
-# Or reset: ./scripts/cleanup-checkpoint.sh review-changes && ./scripts/init-checkpoint.sh review-changes STEPS='"Diff Analysis" "Code Smells" "Memory Management" "Naming Conventions" "Error Handling" "Test Coverage" "Parnas Principles" "Module Hierarchy" "Interface Design" "Dependency Check" "Design Patterns" "Real Code Check" "Doc Validation" "Cross-References" "Completeness" "Link Validation" "Build Status" "Hidden Issues" "Test Results" "File Hygiene" "Doc Sync" "Final Report"'
+# Or reset: ./scripts/cleanup-checkpoint.sh review-changes && ./scripts/init-checkpoint.sh review-changes "Diff Analysis" "Code Smells" "Memory Management" "Naming Conventions" "Error Handling" "Test Coverage" "Parnas Principles" "Module Hierarchy" "Interface Design" "Dependency Check" "Design Patterns" "Real Code Check" "Doc Validation" "Cross-References" "Completeness" "Link Validation" "Build Status" "Hidden Issues" "Test Results" "File Hygiene" "Doc Sync" "Final Report"
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-./scripts/init-checkpoint.sh review-changes '"Diff Analysis" "Code Smells" "Memory Management" "Naming Conventions" "Error Handling" "Test Coverage" "Parnas Principles" "Module Hierarchy" "Interface Design" "Dependency Check" "Design Patterns" "Real Code Check" "Doc Validation" "Cross-References" "Completeness" "Link Validation" "Build Status" "Hidden Issues" "Test Results" "File Hygiene" "Doc Sync" "Final Report"'
+./scripts/init-checkpoint.sh review-changes "Diff Analysis" "Code Smells" "Memory Management" "Naming Conventions" "Error Handling" "Test Coverage" "Parnas Principles" "Module Hierarchy" "Interface Design" "Dependency Check" "Design Patterns" "Real Code Check" "Doc Validation" "Cross-References" "Completeness" "Link Validation" "Build Status" "Hidden Issues" "Test Results" "File Hygiene" "Doc Sync" "Final Report"
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
@@ -52,7 +52,7 @@ If a `/review-changes` workflow is already in progress:
 
 ```bash
 # MANDATORY: Initialize checkpoint tracking (22 steps)
-./scripts/init-checkpoint.sh review-changes STEPS='"Diff Analysis" "Code Smells" "Memory Management" "Naming Conventions" "Error Handling" "Test Coverage" "Parnas Principles" "Module Hierarchy" "Interface Design" "Dependency Check" "Design Patterns" "Real Code Check" "Doc Validation" "Cross-References" "Completeness" "Link Validation" "Build Status" "Hidden Issues" "Test Results" "File Hygiene" "Doc Sync" "Final Report"'
+./scripts/init-checkpoint.sh review-changes "Diff Analysis" "Code Smells" "Memory Management" "Naming Conventions" "Error Handling" "Test Coverage" "Parnas Principles" "Module Hierarchy" "Interface Design" "Dependency Check" "Design Patterns" "Real Code Check" "Doc Validation" "Cross-References" "Completeness" "Link Validation" "Build Status" "Hidden Issues" "Test Results" "File Hygiene" "Doc Sync" "Final Report"
 ```
 
 This command uses checkpoint tracking to ensure thorough review across all quality dimensions. The review process is divided into 4 major phases with 22 checkpoints total.
@@ -562,7 +562,7 @@ Run this command before `/commit` to ensure:
 
 # If needed, reset and start over
 ./scripts/cleanup-checkpoint.sh review-changes
-./scripts/init-checkpoint.sh review-changes STEPS='...'
+./scripts/init-checkpoint.sh review-changes '...'
 ```
 
 ### If a gate is blocking incorrectly:

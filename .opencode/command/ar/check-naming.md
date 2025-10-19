@@ -27,7 +27,7 @@ This command uses checkpoint tracking to ensure systematic execution of all nami
 
 ```bash
 # Start the naming check process with 3 steps
-./scripts/init-checkpoint.sh check-naming '"Check Naming" "Analyze Violations" "Complete"'
+./scripts/init-checkpoint.sh check-naming "Check Naming" "Analyze Violations" "Complete"
 ./scripts/require-checkpoint.sh check-naming
 ```
 
@@ -134,7 +134,7 @@ Only use these commands if the script fails and you need to manually intervene:
 
 # ONLY use this if you need to reset everything and start over
 rm -f /tmp/check-naming-progress.txt
-./scripts/init-checkpoint.sh check-naming '"Check Naming" "Analyze Violations" "Document Findings"'
+./scripts/init-checkpoint.sh check-naming "Check Naming" "Analyze Violations" "Document Findings"
 ./scripts/require-checkpoint.sh check-naming
 ```
 

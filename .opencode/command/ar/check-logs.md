@@ -13,13 +13,13 @@ If a `/check-logs` workflow is already in progress:
 ```bash
 ./scripts/status-checkpoint.sh check-logs VERBOSE=--verbose
 # Resume: ./scripts/update-checkpoint.sh check-logs STEP=N
-# Or reset: ./scripts/cleanup-checkpoint.sh check-logs && ./scripts/init-checkpoint.sh check-logs STEPS='"Run Build" "Standard Checks" "Deep Analysis" "Categorize Errors" "Fix Issues" "Update Whitelist" "Re-check Logs" "Final Validation"'
+# Or reset: ./scripts/cleanup-checkpoint.sh check-logs && ./scripts/init-checkpoint.sh check-logs "Run Build" "Standard Checks" "Deep Analysis" "Categorize Errors" "Fix Issues" "Update Whitelist" "Re-check Logs" "Final Validation"
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-./scripts/init-checkpoint.sh check-logs '"Run Build" "Standard Checks" "Deep Analysis" "Categorize Errors" "Fix Issues" "Update Whitelist" "Re-check Logs" "Final Validation"'
+./scripts/init-checkpoint.sh check-logs "Run Build" "Standard Checks" "Deep Analysis" "Categorize Errors" "Fix Issues" "Update Whitelist" "Re-check Logs" "Final Validation"
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
@@ -46,7 +46,7 @@ This command uses checkpoint tracking to ensure systematic log verification and 
 ### Initialize Tracking
 ```bash
 # Start the log checking process
-./scripts/init-checkpoint.sh check-logs STEPS='"Run Build" "Standard Checks" "Deep Analysis" "Categorize Errors" "Fix Issues" "Update Whitelist" "Re-check Logs" "Final Validation"'
+./scripts/init-checkpoint.sh check-logs "Run Build" "Standard Checks" "Deep Analysis" "Categorize Errors" "Fix Issues" "Update Whitelist" "Re-check Logs" "Final Validation"
 ```
 
 **Expected output:**
@@ -337,7 +337,7 @@ make check-logs
 **Or with checkpoint tracking:**
 ```bash
 # Initialize and run through checkpoints
-./scripts/init-checkpoint.sh check-logs STEPS='...'
+./scripts/init-checkpoint.sh check-logs '...'
 # Follow checkpoint steps above
 ```
 

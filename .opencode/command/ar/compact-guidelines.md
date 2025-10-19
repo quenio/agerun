@@ -11,13 +11,13 @@ If a `/compact-guidelines` workflow is already in progress:
 ```bash
 ./scripts/status-checkpoint.sh compact-guidelines VERBOSE=--verbose
 # Resume: ./scripts/update-checkpoint.sh compact-guidelines STEP=N
-# Or reset: ./scripts/cleanup-checkpoint.sh compact-guidelines && ./scripts/init-checkpoint.sh compact-guidelines STEPS='"Analyze AGENTS.md" "Identify Verbose Sections" "List Extraction Targets" "Check Existing KB Articles" "Plan New Articles" "Create KB Article 1" "Create KB Article 2" "Create KB Article 3" "Update AGENTS.md References" "Add Cross-References" "Update kb/README.md" "Run Documentation Validation" "Verify Link Coverage" "Review Changes" "Create Commit"'
+# Or reset: ./scripts/cleanup-checkpoint.sh compact-guidelines && ./scripts/init-checkpoint.sh compact-guidelines "Analyze AGENTS.md" "Identify Verbose Sections" "List Extraction Targets" "Check Existing KB Articles" "Plan New Articles" "Create KB Article 1" "Create KB Article 2" "Create KB Article 3" "Update AGENTS.md References" "Add Cross-References" "Update kb/README.md" "Run Documentation Validation" "Verify Link Coverage" "Review Changes" "Create Commit"
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-./scripts/init-checkpoint.sh compact-guidelines '"Analyze AGENTS.md" "Identify Verbose Sections" "List Extraction Targets" "Check Existing KB Articles" "Plan New Articles" "Create KB Article 1" "Create KB Article 2" "Create KB Article 3" "Update AGENTS.md References" "Add Cross-References" "Update kb/README.md" "Run Documentation Validation" "Verify Link Coverage" "Review Changes" "Create Commit"'
+./scripts/init-checkpoint.sh compact-guidelines "Analyze AGENTS.md" "Identify Verbose Sections" "List Extraction Targets" "Check Existing KB Articles" "Plan New Articles" "Create KB Article 1" "Create KB Article 2" "Create KB Article 3" "Update AGENTS.md References" "Add Cross-References" "Update kb/README.md" "Run Documentation Validation" "Verify Link Coverage" "Review Changes" "Create Commit"
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
@@ -51,7 +51,7 @@ This command uses checkpoint tracking to ensure systematic documentation compact
 ### Initialize Tracking
 ```bash
 # Start the compacting process
-./scripts/init-checkpoint.sh compact-guidelines STEPS='"Analyze AGENTS.md" "Identify Verbose Sections" "List Extraction Targets" "Check Existing KB Articles" "Plan New Articles" "Create KB Article 1" "Create KB Article 2" "Create KB Article 3" "Update AGENTS.md References" "Add Cross-References" "Update kb/README.md" "Run Documentation Validation" "Verify Link Coverage" "Review Changes" "Create Commit"'
+./scripts/init-checkpoint.sh compact-guidelines "Analyze AGENTS.md" "Identify Verbose Sections" "List Extraction Targets" "Check Existing KB Articles" "Plan New Articles" "Create KB Article 1" "Create KB Article 2" "Create KB Article 3" "Update AGENTS.md References" "Add Cross-References" "Update kb/README.md" "Run Documentation Validation" "Verify Link Coverage" "Review Changes" "Create Commit"
 ```
 
 **Expected output:**

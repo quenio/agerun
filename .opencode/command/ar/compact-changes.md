@@ -11,13 +11,13 @@ If a `/compact-changes` workflow is already in progress:
 ```bash
 ./scripts/status-checkpoint.sh compact-changes VERBOSE=--verbose
 # Resume: ./scripts/update-checkpoint.sh compact-changes STEP=N
-# Or reset: ./scripts/cleanup-checkpoint.sh compact-changes && ./scripts/init-checkpoint.sh compact-changes STEPS='"Measure Baseline" "Analyze Patterns" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Update TODO" "Commit Changes"'
+# Or reset: ./scripts/cleanup-checkpoint.sh compact-changes && ./scripts/init-checkpoint.sh compact-changes "Measure Baseline" "Analyze Patterns" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Update TODO" "Commit Changes"
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-./scripts/init-checkpoint.sh compact-changes '"Measure Baseline" "Analyze Patterns" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Update TODO" "Commit Changes"'
+./scripts/init-checkpoint.sh compact-changes "Measure Baseline" "Analyze Patterns" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Update TODO" "Commit Changes"
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
@@ -97,7 +97,7 @@ This command uses checkpoint tracking to ensure systematic CHANGELOG.md compacti
 ### Initialize Tracking
 ```bash
 # Start the changelog compaction process
-./scripts/init-checkpoint.sh compact-changes STEPS='"Measure Baseline" "Analyze Patterns" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Update TODO" "Commit Changes"'
+./scripts/init-checkpoint.sh compact-changes "Measure Baseline" "Analyze Patterns" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Update TODO" "Commit Changes"
 ```
 
 **Expected output:**

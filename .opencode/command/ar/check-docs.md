@@ -40,7 +40,7 @@ These wrappers provide centralized checkpoint management across all commands.
 **MANDATORY**: Before executing ANY steps, you MUST initialize checkpoint tracking:
 
 ```bash
-./scripts/init-checkpoint.sh check-docs '"Validate Docs" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"'
+./scripts/init-checkpoint.sh check-docs "Validate Docs" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"
 ./scripts/require-checkpoint.sh check-docs
 ```
 
@@ -276,7 +276,7 @@ Only use these commands if the script fails and you need to manually intervene:
 
 # ONLY use this if you need to reset everything and start over
 rm -f /tmp/check-docs-progress.txt
-./scripts/init-checkpoint.sh check-docs '"Validate Docs" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"'
+./scripts/init-checkpoint.sh check-docs "Validate Docs" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"
 ./scripts/require-checkpoint.sh check-docs
 ```
 

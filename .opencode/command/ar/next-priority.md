@@ -11,7 +11,7 @@ This command requires checkpoint tracking to ensure systematic workflow executio
 ### Initialize Tracking
 
 ```bash
-./scripts/init-checkpoint.sh next-priority '"Read Context" "Analyze Priorities" "Generate Recommendation"'
+./scripts/init-checkpoint.sh next-priority "Read Context" "Analyze Priorities" "Generate Recommendation"
 ```
 
 **Expected output:**
@@ -266,7 +266,7 @@ Monitor your progress through the 3-step workflow:
 
 ```bash
 # Initialize checkpoint tracking
-./scripts/init-checkpoint.sh next-priority '"Read Context" "Analyze Priorities" "Generate Recommendation"'
+./scripts/init-checkpoint.sh next-priority "Read Context" "Analyze Priorities" "Generate Recommendation"
 
 # Check current checkpoint status
 make checkpoint-status CMD=next-priority VERBOSE=--verbose

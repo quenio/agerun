@@ -21,13 +21,13 @@ If a `/fix-errors-whitelisted` workflow is already in progress:
 ```bash
 ./scripts/status-checkpoint.sh fix-errors-whitelisted VERBOSE=--verbose
 # Resume: ./scripts/update-checkpoint.sh fix-errors-whitelisted STEP=N
-# Or reset: ./scripts/cleanup-checkpoint.sh fix-errors-whitelisted && ./scripts/init-checkpoint.sh fix-errors-whitelisted STEPS='"Count Errors" "Group by Test" "Find Patterns" "Select Target" "Analyze Root Cause" "Choose Strategy" "Plan Implementation" "Verify Current State" "Apply Fix" "Test Fix" "Remove Whitelist Entries" "Update Whitelist Total" "Update TODO.md" "Update CHANGELOG" "Final Verification" "Create Commit"'
+# Or reset: ./scripts/cleanup-checkpoint.sh fix-errors-whitelisted && ./scripts/init-checkpoint.sh fix-errors-whitelisted "Count Errors" "Group by Test" "Find Patterns" "Select Target" "Analyze Root Cause" "Choose Strategy" "Plan Implementation" "Verify Current State" "Apply Fix" "Test Fix" "Remove Whitelist Entries" "Update Whitelist Total" "Update TODO.md" "Update CHANGELOG" "Final Verification" "Create Commit"
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-./scripts/init-checkpoint.sh fix-errors-whitelisted '"Count Errors" "Group by Test" "Find Patterns" "Select Target" "Analyze Root Cause" "Choose Strategy" "Plan Implementation" "Verify Current State" "Apply Fix" "Test Fix" "Remove Whitelist Entries" "Update Whitelist Total" "Update TODO.md" "Update CHANGELOG" "Final Verification" "Create Commit"'
+./scripts/init-checkpoint.sh fix-errors-whitelisted "Count Errors" "Group by Test" "Find Patterns" "Select Target" "Analyze Root Cause" "Choose Strategy" "Plan Implementation" "Verify Current State" "Apply Fix" "Test Fix" "Remove Whitelist Entries" "Update Whitelist Total" "Update TODO.md" "Update CHANGELOG" "Final Verification" "Create Commit"
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
@@ -44,7 +44,7 @@ This command uses checkpoint tracking to ensure systematic error fixing with min
 ### Initialize Tracking
 ```bash
 # Start the error fixing process
-./scripts/init-checkpoint.sh fix-errors-whitelisted STEPS='"Count Errors" "Group by Test" "Find Patterns" "Select Target" "Analyze Root Cause" "Choose Strategy" "Plan Implementation" "Verify Current State" "Apply Fix" "Test Fix" "Remove Whitelist Entries" "Update Whitelist Total" "Update TODO.md" "Update CHANGELOG" "Final Verification" "Create Commit"'
+./scripts/init-checkpoint.sh fix-errors-whitelisted "Count Errors" "Group by Test" "Find Patterns" "Select Target" "Analyze Root Cause" "Choose Strategy" "Plan Implementation" "Verify Current State" "Apply Fix" "Test Fix" "Remove Whitelist Entries" "Update Whitelist Total" "Update TODO.md" "Update CHANGELOG" "Final Verification" "Create Commit"
 ```
 
 **Expected output:**
@@ -477,7 +477,7 @@ Keep track of your whitelist reduction:
 ### If you've already done analysis:
 ```bash
 # Skip to implementation phase
-./scripts/init-checkpoint.sh fix-errors-whitelisted STEPS='...'
+./scripts/init-checkpoint.sh fix-errors-whitelisted '...'
 for i in {1..7}; do
   ./scripts/update-checkpoint.sh fix-errors-whitelisted STEP=$i
 done

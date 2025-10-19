@@ -13,13 +13,13 @@ If a `/commit` workflow is already in progress:
 ```bash
 ./scripts/status-checkpoint.sh commit VERBOSE=--verbose
 # Resume: ./scripts/update-checkpoint.sh commit STEP=N
-# Or reset: ./scripts/cleanup-checkpoint.sh commit && ./scripts/init-checkpoint.sh commit STEPS='"Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"'
+# Or reset: ./scripts/cleanup-checkpoint.sh commit && ./scripts/init-checkpoint.sh commit "Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-./scripts/init-checkpoint.sh commit '"Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"'
+./scripts/init-checkpoint.sh commit "Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
@@ -75,7 +75,7 @@ This command uses checkpoint tracking to ensure thorough pre-commit verification
 ### Initialize Tracking
 ```bash
 # Start the commit process
-./scripts/init-checkpoint.sh commit STEPS='"Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"'
+./scripts/init-checkpoint.sh commit "Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"
 ```
 
 **Expected output:**

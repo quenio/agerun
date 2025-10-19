@@ -1,6 +1,6 @@
 #!/bin/bash
 # Complete checkpoint workflow: show status and cleanup
-# Usage: complete-checkpoint.sh <command>
+# Usage: complete-checkpoint.sh <command_name>
 # Returns: 0 on success, 1 on error
 # Replaces 4-5 line completion pattern (status + cleanup) across all commands
 
@@ -10,8 +10,8 @@ COMMAND="${1:-}"
 
 if [ -z "$COMMAND" ]; then
   echo "❌ ERROR: Command name required"
-  echo "Usage: $0 <command>"
-  echo "Example: $0 compact-changes"
+  echo "Usage: $0 <command_name>"
+  echo "Example: $0 check-docs"
   exit 1
 fi
 
@@ -42,13 +42,13 @@ if [ "$PENDING" -gt 0 ]; then
 fi
 
 # Show final status (this should now succeed with all steps complete or skipped)
-make checkpoint-status CMD="$COMMAND" || true
+bash scripts/checkpoint-status.sh "$COMMAND" || true
 
 echo ""
 echo "Cleaning up checkpoint tracking..."
 
 # Clean up tracking
-make checkpoint-cleanup CMD="$COMMAND"
+bash scripts/checkpoint-cleanup.sh "$COMMAND"
 
 echo "✅ Checkpoint workflow complete"
 exit 0

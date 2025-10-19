@@ -21,13 +21,13 @@ If a `/migrate-module-to-zig-abi` workflow is already in progress:
 ```bash
 ./scripts/status-checkpoint.sh migrate-module-to-zig-abi VERBOSE=--verbose
 # Resume: ./scripts/update-checkpoint.sh migrate-module-to-zig-abi STEP=N
-# Or reset: ./scripts/cleanup-checkpoint.sh migrate-module-to-zig-abi && ./scripts/init-checkpoint.sh migrate-module-to-zig-abi STEPS='"Check Existing" "Analyze Dependencies" "Identify Challenges" "Review API" "Create Zig File" "Map Types" "Implement Functions" "Run Tests" "Verify Memory" "Cleanup and Document"'
+# Or reset: ./scripts/cleanup-checkpoint.sh migrate-module-to-zig-abi && ./scripts/init-checkpoint.sh migrate-module-to-zig-abi "Check Existing" "Analyze Dependencies" "Identify Challenges" "Review API" "Create Zig File" "Map Types" "Implement Functions" "Run Tests" "Verify Memory" "Cleanup and Document"
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-./scripts/init-checkpoint.sh migrate-module-to-zig-abi '"Check Existing" "Analyze Dependencies" "Identify Challenges" "Review API" "Create Zig File" "Map Types" "Implement Functions" "Run Tests" "Verify Memory" "Cleanup and Document"'
+./scripts/init-checkpoint.sh migrate-module-to-zig-abi "Check Existing" "Analyze Dependencies" "Identify Challenges" "Review API" "Create Zig File" "Map Types" "Implement Functions" "Run Tests" "Verify Memory" "Cleanup and Document"
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
@@ -45,7 +45,7 @@ This command uses checkpoint tracking to ensure systematic C-to-Zig migration wh
 ```bash
 # Start the migration process (replace MODULE with actual module name)
 MODULE={{1}}  # Set the module name
-./scripts/init-checkpoint.sh migrate-module-to-zig-abi STEPS='"Check Existing" "Analyze Dependencies" "Identify Challenges" "Review API" "Create Zig File" "Map Types" "Implement Functions" "Run Tests" "Verify Memory" "Cleanup and Document"'
+./scripts/init-checkpoint.sh migrate-module-to-zig-abi "Check Existing" "Analyze Dependencies" "Identify Challenges" "Review API" "Create Zig File" "Map Types" "Implement Functions" "Run Tests" "Verify Memory" "Cleanup and Document"
 ```
 
 **Expected output:**

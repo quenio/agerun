@@ -11,13 +11,13 @@ If a `/merge-settings` workflow is already in progress:
 ```bash
 ./scripts/status-checkpoint.sh merge-settings VERBOSE=--verbose
 # Resume: ./scripts/update-checkpoint.sh merge-settings STEP=N
-# Or reset: ./scripts/cleanup-checkpoint.sh merge-settings && ./scripts/init-checkpoint.sh merge-settings STEPS='"Check Files" "Read Settings" "Merge Permissions" "Validate Result" "Commit and Cleanup"'
+# Or reset: ./scripts/cleanup-checkpoint.sh merge-settings && ./scripts/init-checkpoint.sh merge-settings "Check Files" "Read Settings" "Merge Permissions" "Validate Result" "Commit and Cleanup"
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-./scripts/init-checkpoint.sh merge-settings '"Check Files" "Read Settings" "Merge Permissions" "Validate Result" "Commit and Cleanup"'
+./scripts/init-checkpoint.sh merge-settings "Check Files" "Read Settings" "Merge Permissions" "Validate Result" "Commit and Cleanup"
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
@@ -34,7 +34,7 @@ This command uses checkpoint tracking to ensure safe merging of local settings i
 ### Initialize Tracking
 ```bash
 # Start the settings merge process
-./scripts/init-checkpoint.sh merge-settings STEPS='"Check Files" "Read Settings" "Merge Permissions" "Validate Result" "Commit and Cleanup"'
+./scripts/init-checkpoint.sh merge-settings "Check Files" "Read Settings" "Merge Permissions" "Validate Result" "Commit and Cleanup"
 ```
 
 **Expected output:**

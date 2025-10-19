@@ -20,13 +20,13 @@ If a `/check-module-consistency` workflow is already in progress:
 ```bash
 ./scripts/status-checkpoint.sh check-module-consistency VERBOSE=--verbose
 # Resume: ./scripts/update-checkpoint.sh check-module-consistency STEP=N
-# Or reset: ./scripts/cleanup-checkpoint.sh check-module-consistency && ./scripts/init-checkpoint.sh check-module-consistency STEPS='"Describe Improvement" "Identify Pattern" "Find Sister Modules" "Find Similar Purpose" "Find Same Subsystem" "Check Module 1" "Check Module 2" "Check Module 3" "Check Module 4" "Check Module 5" "Analyze Findings" "List Modules Needing Update" "Estimate Effort" "Create Priority Order" "Document Plan"'
+# Or reset: ./scripts/cleanup-checkpoint.sh check-module-consistency && ./scripts/init-checkpoint.sh check-module-consistency "Describe Improvement" "Identify Pattern" "Find Sister Modules" "Find Similar Purpose" "Find Same Subsystem" "Check Module 1" "Check Module 2" "Check Module 3" "Check Module 4" "Check Module 5" "Analyze Findings" "List Modules Needing Update" "Estimate Effort" "Create Priority Order" "Document Plan"
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-./scripts/init-checkpoint.sh check-module-consistency '"Describe Improvement" "Identify Pattern" "Find Sister Modules" "Find Similar Purpose" "Find Same Subsystem" "Check Module 1" "Check Module 2" "Check Module 3" "Check Module 4" "Check Module 5" "Analyze Findings" "List Modules Needing Update" "Estimate Effort" "Create Priority Order" "Document Plan"'
+./scripts/init-checkpoint.sh check-module-consistency "Describe Improvement" "Identify Pattern" "Find Sister Modules" "Find Similar Purpose" "Find Same Subsystem" "Check Module 1" "Check Module 2" "Check Module 3" "Check Module 4" "Check Module 5" "Analyze Findings" "List Modules Needing Update" "Estimate Effort" "Create Priority Order" "Document Plan"
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
@@ -43,7 +43,7 @@ This command uses checkpoint tracking to ensure systematic consistency checking 
 ### Initialize Tracking
 ```bash
 # Start the consistency checking process
-./scripts/init-checkpoint.sh check-module-consistency STEPS='"Describe Improvement" "Identify Pattern" "Find Sister Modules" "Find Similar Purpose" "Find Same Subsystem" "Check Module 1" "Check Module 2" "Check Module 3" "Check Module 4" "Check Module 5" "Analyze Findings" "List Modules Needing Update" "Estimate Effort" "Create Priority Order" "Document Plan"'
+./scripts/init-checkpoint.sh check-module-consistency "Describe Improvement" "Identify Pattern" "Find Sister Modules" "Find Similar Purpose" "Find Same Subsystem" "Check Module 1" "Check Module 2" "Check Module 3" "Check Module 4" "Check Module 5" "Analyze Findings" "List Modules Needing Update" "Estimate Effort" "Create Priority Order" "Document Plan"
 ```
 
 **Expected output:**

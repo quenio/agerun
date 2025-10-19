@@ -13,13 +13,13 @@ If an `/execute-plan` workflow is already in progress:
 ```bash
 ./scripts/status-checkpoint.sh execute-plan VERBOSE=--verbose
 # Resume: ./scripts/update-checkpoint.sh execute-plan STEP=N
-# Or reset: ./scripts/cleanup-checkpoint.sh execute-plan && ./scripts/init-checkpoint.sh execute-plan STEPS='"KB Consultation" "Read Plan" "Extract Iterations" "Execute Iterations" "Run Tests" "Verify Memory" "Update Plan Status" "Summary"'
+# Or reset: ./scripts/cleanup-checkpoint.sh execute-plan && ./scripts/init-checkpoint.sh execute-plan "KB Consultation" "Read Plan" "Extract Iterations" "Execute Iterations" "Run Tests" "Verify Memory" "Update Plan Status" "Summary"
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-./scripts/init-checkpoint.sh execute-plan '"KB Consultation" "Read Plan" "Extract Iterations" "Execute Iterations" "Run Tests" "Verify Memory" "Update Plan Status" "Summary"'
+./scripts/init-checkpoint.sh execute-plan "KB Consultation" "Read Plan" "Extract Iterations" "Execute Iterations" "Run Tests" "Verify Memory" "Update Plan Status" "Summary"
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
@@ -137,7 +137,7 @@ grep -l "REVIEWED" plans/*_plan.md | xargs ls -t | head -1
 
 ```bash
 # MANDATORY: Initialize checkpoint tracking (12 steps)
-./scripts/init-checkpoint.sh execute-plan STEPS='"KB Consultation" "Read Plan" "Validate Plan" "Check IMPLEMENTED" "Verify IMPLEMENTED" "Verify COMMITTED" "Extract REVIEWED/REVISED" "Execute Iterations" "Run Tests" "Verify Memory" "Update Plan Status" "Summary"'
+./scripts/init-checkpoint.sh execute-plan "KB Consultation" "Read Plan" "Validate Plan" "Check IMPLEMENTED" "Verify IMPLEMENTED" "Verify COMMITTED" "Extract REVIEWED/REVISED" "Execute Iterations" "Run Tests" "Verify Memory" "Update Plan Status" "Summary"
 ```
 
 This command uses checkpoint tracking to ensure systematic plan execution. The execution process is divided into 3 major stages with 12 checkpoints total.
@@ -904,13 +904,13 @@ Before executing iterations, initialize nested checkpoint for iteration-level tr
 # Initialize nested checkpoint for iteration execution tracking
 # After extracting REVIEWED or REVISED iterations from Checkpoint 3
 # Use iteration descriptions from the plan file
-./scripts/init-checkpoint.sh execute-plan-iterations STEPS='"Iteration 0.1" "Iteration 0.2" "Iteration 0.3" "Iteration 1.1" "Iteration 1.2" ... [all REVIEWED or REVISED iteration descriptions]'
+./scripts/init-checkpoint.sh execute-plan-iterations "Iteration 0.1" "Iteration 0.2" "Iteration 0.3" "Iteration 1.1" "Iteration 1.2" ... [all REVIEWED or REVISED iteration descriptions]'
 ```
 
 **Example initialization:**
 ```bash
 # If plan has 10 iterations to execute (8 REVIEWED + 2 REVISED):
-./scripts/init-checkpoint.sh execute-plan-iterations STEPS='"Iteration 0.1: send() returns true" "Iteration 0.2: has_messages() initially false" "Iteration 0.3: has_messages() after send" "Iteration 1.1: receive() returns message" "Iteration 1.2: queue empty after receive" "Iteration 2.1: error handling NULL delegate" "Iteration 2.2: error handling invalid message" "Iteration 3.1: cleanup destroys queue" "Iteration 3.2: cleanup removes messages" "Iteration 4.1: refactoring extraction"'
+./scripts/init-checkpoint.sh execute-plan-iterations "Iteration 0.1: send() returns true" "Iteration 0.2: has_messages() initially false" "Iteration 0.3: has_messages() after send" "Iteration 1.1: receive() returns message" "Iteration 1.2: queue empty after receive" "Iteration 2.1: error handling NULL delegate" "Iteration 2.2: error handling invalid message" "Iteration 3.1: cleanup destroys queue" "Iteration 3.2: cleanup removes messages" "Iteration 4.1: refactoring extraction"
 ```
 
 **Check iteration execution progress anytime:**
@@ -2134,7 +2134,7 @@ bool ar_delegate__send(...) {
 
 # If needed, reset and start over
 ./scripts/cleanup-checkpoint.sh execute-plan
-./scripts/init-checkpoint.sh execute-plan STEPS='...'
+./scripts/init-checkpoint.sh execute-plan '...'
 ```
 
 ### If a test fails unexpectedly:

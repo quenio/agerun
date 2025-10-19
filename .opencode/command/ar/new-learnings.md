@@ -27,7 +27,7 @@ If checkpoint exists, you have two options:
 ./scripts/cleanup-checkpoint.sh new-learnings
 
 # Then re-initialize for fresh start
-./scripts/init-checkpoint.sh new-learnings STEPS='"Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"'
+./scripts/init-checkpoint.sh new-learnings "Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"
 ```
 
 **CRITICAL**: If in-progress workflow exists with pending steps, **DO NOT PERFORM MANUAL KB UPDATES**. The checkpoint system will enforce all quality requirements and ensure no steps are skipped.
@@ -37,7 +37,7 @@ If checkpoint exists, you have two options:
 **MANDATORY**: Before executing ANY steps, you MUST initialize checkpoint tracking:
 
 ```bash
-./scripts/init-checkpoint.sh new-learnings '"Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate Commands with check-commands" "Update CHANGELOG.md" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"'
+./scripts/init-checkpoint.sh new-learnings "Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate Commands with check-commands" "Update CHANGELOG.md" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"
 ```
 
 **If this fails or tracking is not initialized, STOP and run the command above before proceeding.**
@@ -65,7 +65,7 @@ Before starting analysis:
 ### Initialize Progress Tracking (EXECUTE THIS FIRST)
 
 ```bash
-./scripts/init-checkpoint.sh new-learnings '"Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate Commands with check-commands" "Update CHANGELOG.md" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"'
+./scripts/init-checkpoint.sh new-learnings "Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate Commands with check-commands" "Update CHANGELOG.md" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"
 ```
 
 **Expected output:**
@@ -182,7 +182,7 @@ This is enforced through:
 # Step 11 verifies "READY TO COMMIT" with counts of modified files
 
 # ✅ Always run the initialization check if unsure
-./scripts/init-checkpoint.sh new-learnings '"Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"'
+./scripts/init-checkpoint.sh new-learnings "Identify New Learnings" "Determine KB Article Strategy" "Knowledge Base Article Creation" "Validation Before Saving" "Update Knowledge Base Index" "Update Existing KB Articles (3-5 minimum)" "Review and Update Commands (3-4 minimum)" "Review Existing Guidelines" "Update Guidelines" "Validate No Broken Links" "Pre-Commit Integration Verification" "Automatic Commit and Push"
 ```
 
 ## Minimum Requirements for Thorough Execution

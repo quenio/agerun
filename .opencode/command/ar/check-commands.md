@@ -27,13 +27,13 @@ If a `/check-commands` workflow is already in progress:
 ```bash
 ./scripts/status-checkpoint.sh check-commands VERBOSE=--verbose
 # Resume: ./scripts/update-checkpoint.sh check-commands STEP=N
-# Or reset: ./scripts/cleanup-checkpoint.sh check-commands && ./scripts/init-checkpoint.sh check-commands STEPS='"Scan Commands" "Validate Structure" "Calculate Scores" "Identify Issues" "Generate Report"'
+# Or reset: ./scripts/cleanup-checkpoint.sh check-commands && ./scripts/init-checkpoint.sh check-commands "Scan Commands" "Validate Structure" "Calculate Scores" "Identify Issues" "Generate Report"
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-./scripts/init-checkpoint.sh check-commands '"Scan Commands" "Validate Structure" "Calculate Scores" "Identify Issues" "Generate Report"'
+./scripts/init-checkpoint.sh check-commands "Scan Commands" "Validate Structure" "Calculate Scores" "Identify Issues" "Generate Report"
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
@@ -50,7 +50,7 @@ This command validates the structure and quality of all Claude Code commands. Th
 ### Initialize Tracking
 ```bash
 # Start the command validation process
-./scripts/init-checkpoint.sh check-commands STEPS='"Scan Commands" "Validate Structure" "Calculate Scores" "Identify Issues" "Generate Report"'
+./scripts/init-checkpoint.sh check-commands "Scan Commands" "Validate Structure" "Calculate Scores" "Identify Issues" "Generate Report"
 ```
 
 **Expected output:**
@@ -181,7 +181,7 @@ make check-commands
 **Or with checkpoint tracking:**
 ```bash
 # Initialize and run through checkpoints
-./scripts/init-checkpoint.sh check-commands STEPS='...'
+./scripts/init-checkpoint.sh check-commands '...'
 # Follow checkpoint steps above
 ```
 

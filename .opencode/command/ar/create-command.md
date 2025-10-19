@@ -42,13 +42,13 @@ If a `/create-command` workflow is already in progress:
 ```bash
 ./scripts/status-checkpoint.sh create-command VERBOSE=--verbose
 # Resume: ./scripts/update-checkpoint.sh create-command STEP=N
-# Or reset: ./scripts/cleanup-checkpoint.sh create-command && ./scripts/init-checkpoint.sh create-command STEPS='"Validate Args" "KB Consultation" "Create Structure" "Add Checkpoints" "Add Quality Gates" "Add Documentation" "Verify Excellence"'
+# Or reset: ./scripts/cleanup-checkpoint.sh create-command && ./scripts/init-checkpoint.sh create-command "Validate Args" "KB Consultation" "Create Structure" "Add Checkpoints" "Add Quality Gates" "Add Documentation" "Verify Excellence"
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-./scripts/init-checkpoint.sh create-command '"Validate Args" "KB Consultation" "Create Structure" "Add Checkpoints" "Add Quality Gates" "Add Documentation" "Verify Excellence"'
+./scripts/init-checkpoint.sh create-command "Validate Args" "KB Consultation" "Create Structure" "Add Checkpoints" "Add Quality Gates" "Add Documentation" "Verify Excellence"
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
@@ -66,7 +66,7 @@ This command creates a new command file with proper structure, checkpoint tracki
 ### Initialize Tracking
 ```bash
 # Start the command creation process
-./scripts/init-checkpoint.sh create-command STEPS='"Validate Args" "KB Consultation" "Create Structure" "Add Checkpoints" "Add Quality Gates" "Add Documentation" "Verify Excellence"'
+./scripts/init-checkpoint.sh create-command "Validate Args" "KB Consultation" "Create Structure" "Add Checkpoints" "Add Quality Gates" "Add Documentation" "Verify Excellence"
 ```
 
 **Expected output:**
@@ -216,7 +216,7 @@ If a \`/COMMAND_NAME\` workflow is already in progress:
 \`\`\`bash
 ./scripts/status-checkpoint.sh COMMAND_NAME VERBOSE=--verbose
 # Resume: ./scripts/update-checkpoint.sh COMMAND_NAME STEP=N
-# Or reset: ./scripts/cleanup-checkpoint.sh COMMAND_NAME && ./scripts/init-checkpoint.sh COMMAND_NAME STEPS='"Step 1" "Step 2" "Step 3"'
+# Or reset: ./scripts/cleanup-checkpoint.sh COMMAND_NAME && ./scripts/init-checkpoint.sh COMMAND_NAME "Step 1" "Step 2" "Step 3"
 \`\`\`
 
 ### First-Time Initialization Check
@@ -224,7 +224,7 @@ If a \`/COMMAND_NAME\` workflow is already in progress:
 \`\`\`bash
 if [ ! -f /tmp/COMMAND_NAME-progress.txt ]; then
   echo "⚠️  Initializing checkpoint tracking..."
-  ./scripts/init-checkpoint.sh COMMAND_NAME STEPS='"Step 1" "Step 2" "Step 3"'
+  ./scripts/init-checkpoint.sh COMMAND_NAME "Step 1" "Step 2" "Step 3"
 else
   ./scripts/status-checkpoint.sh COMMAND_NAME
 fi
@@ -248,7 +248,7 @@ This command [brief description of what it does].
 ### Initialize Tracking
 \`\`\`bash
 # Start the COMMAND_NAME process
-./scripts/init-checkpoint.sh COMMAND_NAME STEPS='"Step 1" "Step 2" "Step 3"'
+./scripts/init-checkpoint.sh COMMAND_NAME "Step 1" "Step 2" "Step 3"
 \`\`\`
 
 **Expected output:**
@@ -356,7 +356,7 @@ echo "  • Enforce minimum requirements"
 echo ""
 echo "Template pattern:"
 echo '  ```bash'
-echo '  ./scripts/gate-checkpoint.sh COMMAND_NAME "Stage Name" "1,2,3"'
+echo '  ./scripts/gate-checkpoint.sh COMMAND_NAME "Stage Name" "1,2,3"
 echo '  ```'
 echo ""
 echo "Add gates to $COMMAND_FILE between stages"

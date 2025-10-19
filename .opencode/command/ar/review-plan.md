@@ -13,13 +13,13 @@ If a `/review-plan` workflow is already in progress, resume or reset:
 ```bash
 ./scripts/status-checkpoint.sh review-plan VERBOSE=--verbose
 # Resume: ./scripts/update-checkpoint.sh review-plan STEP=N (where N is next pending step)
-# Or reset: ./scripts/cleanup-checkpoint.sh review-plan && ./scripts/init-checkpoint.sh review-plan STEPS='"KB Consultation" "Read Plan and Extract PENDING" "Review Each Iteration" "Verify Cross-References" "Document Issues" "Generate Report"'
+# Or reset: ./scripts/cleanup-checkpoint.sh review-plan && ./scripts/init-checkpoint.sh review-plan "KB Consultation" "Read Plan and Extract PENDING" "Review Each Iteration" "Verify Cross-References" "Document Issues" "Generate Report"
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-./scripts/init-checkpoint.sh review-plan '"KB Consultation" "Read Plan and Extract PENDING" "Review Each Iteration" "Verify Cross-References" "Document Issues" "Generate Report"'
+./scripts/init-checkpoint.sh review-plan "KB Consultation" "Read Plan and Extract PENDING" "Review Each Iteration" "Verify Cross-References" "Document Issues" "Generate Report"
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
@@ -153,7 +153,7 @@ ls -t plans/*_plan.md | head -1
 
 ```bash
 # MANDATORY: Initialize checkpoint tracking (6 steps - streamlined for session 2025-10-18)
-./scripts/init-checkpoint.sh review-plan STEPS='"KB Consultation" "Read Plan and Extract PENDING" "Review Each Iteration" "Verify Cross-References" "Document Issues" "Generate Report"'
+./scripts/init-checkpoint.sh review-plan "KB Consultation" "Read Plan and Extract PENDING" "Review Each Iteration" "Verify Cross-References" "Document Issues" "Generate Report"
 ```
 
 This command uses checkpoint tracking to ensure thorough plan review across all methodology dimensions. The review process is divided into 3 major stages with 6 checkpoints total (improved from 11 to prevent step-skipping).
@@ -533,13 +533,13 @@ Before reviewing iterations, initialize nested checkpoint for iteration-level tr
 # Initialize nested checkpoint for iteration review tracking
 # After extracting PENDING REVIEW iterations from Step 2
 # Use iteration descriptions from the plan file
-./scripts/init-checkpoint.sh review-plan-iterations STEPS='"Iteration 0.1" "Iteration 0.2" "Iteration 0.3" "Iteration 1.1" "Iteration 1.2" ... [all PENDING REVIEW iteration descriptions]'
+./scripts/init-checkpoint.sh review-plan-iterations "Iteration 0.1" "Iteration 0.2" "Iteration 0.3" "Iteration 1.1" "Iteration 1.2" ... [all PENDING REVIEW iteration descriptions]'
 ```
 
 **Example initialization:**
 ```bash
 # If plan has 8 PENDING REVIEW iterations:
-./scripts/init-checkpoint.sh review-plan-iterations STEPS='"Iteration 0.1: send() returns true" "Iteration 0.2: has_messages() initially false" "Iteration 0.3: has_messages() after send" "Iteration 1.1: receive() returns message" "Iteration 1.2: queue empty after receive" "Iteration 2.1: error handling NULL delegate" "Iteration 2.2: error handling invalid message" "Iteration 3.1: cleanup destroys queue"'
+./scripts/init-checkpoint.sh review-plan-iterations "Iteration 0.1: send() returns true" "Iteration 0.2: has_messages() initially false" "Iteration 0.3: has_messages() after send" "Iteration 1.1: receive() returns message" "Iteration 1.2: queue empty after receive" "Iteration 2.1: error handling NULL delegate" "Iteration 2.2: error handling invalid message" "Iteration 3.1: cleanup destroys queue"
 ```
 
 **Check iteration review progress anytime:**
@@ -965,7 +965,7 @@ The review provides:
 
 # If needed, reset and start over
 ./scripts/cleanup-checkpoint.sh review-plan
-./scripts/init-checkpoint.sh review-plan STEPS='...'
+./scripts/init-checkpoint.sh review-plan '...'
 ```
 
 ### If a gate is blocking incorrectly:

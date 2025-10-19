@@ -18,7 +18,7 @@ If a `/create-plan` workflow is already in progress:
 Resume from the next pending step, or clean up and start fresh:
 ```bash
 ./scripts/cleanup-checkpoint.sh create-plan
-./scripts/init-checkpoint.sh create-plan '"KB Consultation" "Read Requirements" "Extract Iterations" "Structure Plan" "Validate Plan" "Summary"'
+./scripts/init-checkpoint.sh create-plan "KB Consultation" "Read Requirements" "Extract Iterations" "Structure Plan" "Validate Plan" "Summary"
 ```
 
 ### First-Time Initialization Check
@@ -26,7 +26,7 @@ Resume from the next pending step, or clean up and start fresh:
 **MANDATORY**: Before executing ANY steps, verify checkpoint tracking is initialized:
 
 ```bash
-./scripts/init-checkpoint.sh create-plan '"KB Consultation" "Read Requirements" "Extract Iterations" "Structure Plan" "Validate Plan" "Summary"'
+./scripts/init-checkpoint.sh create-plan "KB Consultation" "Read Requirements" "Extract Iterations" "Structure Plan" "Validate Plan" "Summary"
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
@@ -143,7 +143,7 @@ Before creating the plan, identify which task to plan:
 
 ```bash
 # MANDATORY: Initialize checkpoint tracking (14 steps)
-./scripts/init-checkpoint.sh create-plan STEPS='"KB Consultation" "Gather Requirements" "Identify Behaviors" "Count Assertions" "Define Cycles" "Plan Iterations" "Structure RED Phases" "Structure GREEN Phases" "Add Cleanup" "Add Status Markers" "Add Cross-References" "Validate Plan" "Save Plan" "Summary"'
+./scripts/init-checkpoint.sh create-plan "KB Consultation" "Gather Requirements" "Identify Behaviors" "Count Assertions" "Define Cycles" "Plan Iterations" "Structure RED Phases" "Structure GREEN Phases" "Add Cleanup" "Add Status Markers" "Add Cross-References" "Validate Plan" "Save Plan" "Summary"
 ```
 
 This command uses checkpoint tracking to ensure systematic plan creation. The creation process is divided into 4 major stages with 14 checkpoints total.
@@ -611,7 +611,7 @@ This checkpoint involves creating multiple iterations. To ensure the command doe
 ```bash
 # Initialize nested checkpoint for iteration tracking
 # After determining iteration count from Checkpoint 4
-./scripts/init-checkpoint.sh create-plan-iterations STEPS='"Iteration 0.1" "Iteration 0.2" "Iteration 0.3" "Iteration 1.1" "Iteration 1.2" ... [all iteration names]'
+./scripts/init-checkpoint.sh create-plan-iterations "Iteration 0.1" "Iteration 0.2" "Iteration 0.3" "Iteration 1.1" "Iteration 1.2" ... [all iteration names]'
 
 # Check iteration tracking status anytime
 ./scripts/status-checkpoint.sh create-plan-iterations
@@ -838,7 +838,7 @@ This step ensures generated plans follow the most critical lesson: Every RED pha
 ```bash
 # Initialize nested checkpoint for RED phase verification
 # Use same iteration list as Checkpoint 6
-./scripts/init-checkpoint.sh create-plan-red-phases STEPS='"Iteration 0.1" "Iteration 0.2" "Iteration 0.3" ... [all iteration names]'
+./scripts/init-checkpoint.sh create-plan-red-phases "Iteration 0.1" "Iteration 0.2" "Iteration 0.3" ... [all iteration names]'
 ```
 
 **Verify all RED phases have:**
@@ -1016,7 +1016,7 @@ Checking corruption entries...
 **Initialize GREEN Phase Verification Tracking:**
 ```bash
 # Initialize nested checkpoint for GREEN phase verification
-./scripts/init-checkpoint.sh create-plan-green-phases STEPS='"Iteration 0.1" "Iteration 0.2" "Iteration 0.3" ... [all iteration names]'
+./scripts/init-checkpoint.sh create-plan-green-phases "Iteration 0.1" "Iteration 0.2" "Iteration 0.3" ... [all iteration names]'
 ```
 
 **Verify all GREEN phases follow minimalism:**
@@ -1651,7 +1651,7 @@ ar_agent_t *agent = ar_agent__create("echo", "1.0");
 
 # If needed, reset and start over
 ./scripts/cleanup-checkpoint.sh create-plan
-./scripts/init-checkpoint.sh create-plan STEPS='...'
+./scripts/init-checkpoint.sh create-plan '...'
 ```
 
 ### If unsure about iteration splitting:

@@ -20,13 +20,13 @@ If a `/migrate-module-to-zig-struct` workflow is already in progress:
 ```bash
 ./scripts/status-checkpoint.sh migrate-module-to-zig-struct VERBOSE=--verbose
 # Resume: ./scripts/update-checkpoint.sh migrate-module-to-zig-struct STEP=N
-# Or reset: ./scripts/cleanup-checkpoint.sh migrate-module-to-zig-struct && ./scripts/init-checkpoint.sh migrate-module-to-zig-struct STEPS='"Read KB Article" "Check Current Implementation" "Check C Dependencies" "Check Zig Dependencies" "Verify Safety" "Create Struct Module" "Convert Functions" "Update Dependencies" "Run Tests" "Remove Old Module" "Update Documentation"'
+# Or reset: ./scripts/cleanup-checkpoint.sh migrate-module-to-zig-struct && ./scripts/init-checkpoint.sh migrate-module-to-zig-struct "Read KB Article" "Check Current Implementation" "Check C Dependencies" "Check Zig Dependencies" "Verify Safety" "Create Struct Module" "Convert Functions" "Update Dependencies" "Run Tests" "Remove Old Module" "Update Documentation"
 ```
 
 ### First-Time Initialization Check
 
 ```bash
-./scripts/init-checkpoint.sh migrate-module-to-zig-struct '"Read KB Article" "Check Current Implementation" "Check C Dependencies" "Check Zig Dependencies" "Verify Safety" "Create Struct Module" "Convert Functions" "Update Dependencies" "Run Tests" "Remove Old Module" "Update Documentation"'
+./scripts/init-checkpoint.sh migrate-module-to-zig-struct "Read KB Article" "Check Current Implementation" "Check C Dependencies" "Check Zig Dependencies" "Verify Safety" "Create Struct Module" "Convert Functions" "Update Dependencies" "Run Tests" "Remove Old Module" "Update Documentation"
 ```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
@@ -44,7 +44,7 @@ This command uses checkpoint tracking to ensure safe and systematic module migra
 ```bash
 # Start the migration process (replace MODULE with actual module name)
 MODULE={{1}}  # Set the module name
-./scripts/init-checkpoint.sh migrate-module-to-zig-struct STEPS='"Read KB Article" "Check Current Implementation" "Check C Dependencies" "Check Zig Dependencies" "Verify Safety" "Create Struct Module" "Convert Functions" "Update Dependencies" "Run Tests" "Remove Old Module" "Update Documentation"'
+./scripts/init-checkpoint.sh migrate-module-to-zig-struct "Read KB Article" "Check Current Implementation" "Check C Dependencies" "Check Zig Dependencies" "Verify Safety" "Create Struct Module" "Convert Functions" "Update Dependencies" "Run Tests" "Remove Old Module" "Update Documentation"
 ```
 
 **Expected output:**
