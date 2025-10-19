@@ -66,11 +66,11 @@ COMPREHENSIVE_STRUCTURE = {
         ]
     },
     'bash_commands': {
-        'init': r'(make checkpoint-init|\.\/scripts\/init-checkpoint\.sh)',
-        'update': r'(make checkpoint-update|\.\/scripts\/update-checkpoint\.sh)',
-        'status': r'(make checkpoint-status|\.\/scripts\/status-checkpoint\.sh)',
-        'gate': r'(make checkpoint-gate|\.\/scripts\/gate-checkpoint\.sh)',
-        'cleanup': r'(make checkpoint-cleanup|\.\/scripts\/cleanup-checkpoint\.sh)'
+        'init': r'\.\/scripts\/checkpoint-init\.sh',
+        'update': r'\.\/scripts\/checkpoint-update\.sh',
+        'status': r'\.\/scripts\/checkpoint-status\.sh',
+        'gate': r'\.\/scripts\/checkpoint-gate\.sh',
+        'cleanup': r'\.\/scripts\/checkpoint-complete\.sh'
     },
     'quality_indicators': {
         'critical_prompts': r'CRITICAL:|MANDATORY:|IMPORTANT:',
@@ -465,13 +465,13 @@ def validate_wrapper_script_usage():
         with open(cmd_file, 'r') as f:
             content = f.read()
 
-        # Check if command uses checkpoint features
+        # Check if command uses checkpoint features (new direct script pattern)
         uses_checkpoint = any(pattern in content for pattern in [
-            'make checkpoint-init',
-            'make checkpoint-update',
-            'make checkpoint-gate',
-            'make checkpoint-status',
-            'make checkpoint-cleanup'
+            './scripts/checkpoint-init.sh',
+            './scripts/checkpoint-update.sh',
+            './scripts/checkpoint-gate.sh',
+            './scripts/checkpoint-status.sh',
+            './scripts/checkpoint-complete.sh'
         ])
 
         if not uses_checkpoint:
@@ -480,35 +480,36 @@ def validate_wrapper_script_usage():
         cmd_name = os.path.basename(cmd_file)
         commands_with_checkpoints.append(cmd_name)
 
-        # Check for recommended wrapper script usage
-        uses_init_wrapper = './scripts/init-checkpoint.sh' in content
-        uses_require_wrapper = './scripts/require-checkpoint.sh' in content
-        uses_gate_wrapper = './scripts/gate-checkpoint.sh' in content
-        uses_complete_wrapper = './scripts/complete-checkpoint.sh' in content
+        # Check for direct checkpoint script usage (recommended pattern)
+        uses_init = './scripts/checkpoint-init.sh' in content
+        uses_require = './scripts/checkpoint-require.sh' in content
+        uses_gate = './scripts/checkpoint-gate.sh' in content
+        uses_complete = './scripts/checkpoint-complete.sh' in content
 
-        # Check for anti-patterns (direct Makefile targets that should use wrappers)
-        direct_init = 'make checkpoint-init' in content and not uses_init_wrapper
-        direct_gate = re.search(r'if\s+.*make checkpoint-gate', content) and not uses_gate_wrapper
-        direct_cleanup_status = ('make checkpoint-status' in content and
-                                'make checkpoint-cleanup' in content and
-                                not uses_complete_wrapper)
+        # Check for anti-patterns (deprecated Makefile or wrapper script calls)
+        uses_make_checkpoint = any(pattern in content for pattern in [
+            'make checkpoint-init',
+            'make checkpoint-update',
+            'make checkpoint-gate',
+            'make checkpoint-status',
+            'make checkpoint-cleanup'
+        ])
+        uses_old_wrappers = any(pattern in content for pattern in [
+            './scripts/init-checkpoint.sh',
+            './scripts/require-checkpoint.sh',
+            './scripts/status-checkpoint.sh',
+            './scripts/update-checkpoint.sh',
+            './scripts/gate-checkpoint.sh',
+            './scripts/complete-checkpoint.sh',
+            './scripts/cleanup-checkpoint.sh'
+        ])
 
-        # Also check for inline precondition checks that should use require-checkpoint.sh
-        inline_precondition = (
-            ('if [ ! -f' in content and 'progress' in content and not uses_require_wrapper) or
-            ('if [ -z "$PROGRESS_FILE' in content and not uses_require_wrapper)
-        )
-
-        # Collect issues (not using wrappers when recommended)
+        # Collect issues (using deprecated patterns)
         issues = []
-        if direct_init:
-            issues.append("Uses 'make checkpoint-init' instead of './scripts/init-checkpoint.sh'")
-        if direct_gate:
-            issues.append("Uses 'if make checkpoint-gate' instead of './scripts/gate-checkpoint.sh'")
-        if direct_cleanup_status:
-            issues.append("Uses separate checkpoint-status + checkpoint-cleanup instead of './scripts/complete-checkpoint.sh'")
-        if inline_precondition:
-            issues.append("Has inline precondition check instead of './scripts/require-checkpoint.sh'")
+        if uses_make_checkpoint:
+            issues.append("Uses deprecated 'make checkpoint-*' targets instead of './scripts/checkpoint-*.sh'")
+        if uses_old_wrappers:
+            issues.append("Uses deprecated wrapper scripts instead of direct './scripts/checkpoint-*.sh' calls")
 
         if issues:
             wrapper_issues.append((cmd_name, issues))
@@ -517,14 +518,14 @@ def validate_wrapper_script_usage():
 
 commands_with_checkpoints, wrapper_issues = validate_wrapper_script_usage()
 
-print(f"\n📊 WRAPPER SCRIPT USAGE ANALYSIS")
+print(f"\n📊 CHECKPOINT SCRIPT USAGE ANALYSIS")
 print(f"-" * 80)
 print(f"Commands using checkpoint features: {len(commands_with_checkpoints)}")
-print(f"Commands following wrapper script recommendations: {len(commands_with_checkpoints) - len(wrapper_issues)}")
-print(f"Commands using anti-patterns (direct targets): {len(wrapper_issues)}")
+print(f"Commands using direct checkpoint-*.sh scripts: {len(commands_with_checkpoints) - len(wrapper_issues)}")
+print(f"Commands using deprecated patterns: {len(wrapper_issues)}")
 
 if wrapper_issues:
-    print(f"\n⚠️  {len(wrapper_issues)} commands not using recommended wrapper scripts:")
+    print(f"\n⚠️  {len(wrapper_issues)} commands using deprecated checkpoint patterns:")
     print("-" * 80)
 
     for cmd_name, issues in sorted(wrapper_issues)[:10]:  # Show first 10
@@ -535,11 +536,11 @@ if wrapper_issues:
     if len(wrapper_issues) > 10:
         print(f"\n... and {len(wrapper_issues) - 10} more commands")
 
-    print(f"\n💡 Recommendation: Use wrapper scripts for cleaner, more maintainable checkpoint integration")
+    print(f"\n💡 Recommendation: Use direct ./scripts/checkpoint-*.sh calls for checkpoint integration")
     print(f"   See kb/checkpoint-based-workflow-pattern.md for details")
 
     if verbose:
-        print(f"\nAll commands needing wrapper script updates:")
+        print(f"\nAll commands using deprecated checkpoint patterns:")
         for cmd_name, _ in sorted(wrapper_issues):
             print(f"  - {cmd_name}")
 else:
