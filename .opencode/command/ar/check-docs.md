@@ -66,6 +66,17 @@ Check current progress at any time:
 
 ## Workflow Execution
 
+The command orchestrator must execute all steps sequentially with checkpoint tracking at each boundary. Helper scripts remain decoupled and reusable.
+
+#### [CHECKPOINT START - INITIALIZATION]
+
+```bash
+./scripts/init-checkpoint.sh check-docs "Validate Docs" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"
+./scripts/require-checkpoint.sh check-docs
+```
+
+#### [CHECKPOINT END - INITIALIZATION]
+
 #### [CHECKPOINT START - STAGE 1]
 
 #### Step 1: Validate Docs
@@ -81,27 +92,36 @@ Runs `make check-docs` to identify all documentation errors and saves error coun
 **Expected output**: Shows validation results and saves ERROR_COUNT to stats file.
 
 #### [CHECKPOINT END - STEP 1]
+
+**Orchestrator updates checkpoint:**
 ```bash
 ./scripts/checkpoint-update.sh check-docs 1
 ```
 
 #### [CHECKPOINT END - STAGE 1]
 
+#### [CHECKPOINT START - STAGE 2]
+
 #### Step 2: Conditional Flow (Error Gate)
 
 #### [CHECKPOINT START - STEP 2]
-
-If no errors found, skip to Step 5. If errors found, continue to Step 3.
 
 ```bash
 ./scripts/check-docs-conditional-flow.sh
 ```
 
+Based on error state from Step 1, either:
+- **No errors**: Skip to Step 5 (Verify Resolution)
+- **Errors found**: Continue to Step 3 (Fix Errors)
+
 #### [CHECKPOINT END - STEP 2]
 
-#### [CHECKPOINT START - STAGE 2]
+**Orchestrator updates checkpoint:**
+```bash
+./scripts/checkpoint-update.sh check-docs 2
+```
 
-#### Step 3: Preview Fixes
+#### Step 3: Preview Fixes (conditional on errors)
 
 #### [CHECKPOINT START - STEP 3]
 
@@ -114,11 +134,13 @@ Runs `python3 scripts/batch_fix_docs.py --dry-run` to preview changes before app
 **Expected output**: Shows preview of proposed fixes.
 
 #### [CHECKPOINT END - STEP 3]
+
+**Orchestrator updates checkpoint:**
 ```bash
 ./scripts/checkpoint-update.sh check-docs 3
 ```
 
-#### Step 4: Apply Fixes
+#### Step 4: Apply Fixes (conditional on errors)
 
 #### [CHECKPOINT START - STEP 4]
 
@@ -131,6 +153,8 @@ Runs the batch fix script to fix all identified documentation errors (only if er
 **Expected output**: Shows count of fixed documentation files.
 
 #### [CHECKPOINT END - STEP 4]
+
+**Orchestrator updates checkpoint:**
 ```bash
 ./scripts/checkpoint-update.sh check-docs 4
 ```
@@ -152,17 +176,16 @@ Runs `make check-docs` again to verify all fixes were successful.
 **Expected output**: Shows final validation results (PASS or PARTIAL).
 
 #### [CHECKPOINT END - STEP 5]
+
+**Orchestrator updates checkpoint and validates gate:**
 ```bash
 ./scripts/checkpoint-update.sh check-docs 5
+./scripts/gate-checkpoint.sh check-docs "Resolution" "5"
 ```
 
 #### [CHECKPOINT END - STAGE 3]
 
-#### [CHECKPOINT COMPLETE - Resolution Gate]
-
-```bash
-./scripts/gate-checkpoint.sh check-docs "Resolution" "5"
-```
+#### [CHECKPOINT START - STAGE 4]
 
 #### Step 6: Commit and Push
 
@@ -180,16 +203,17 @@ Stages, commits, and pushes all documentation fixes.
 ```
 
 #### [CHECKPOINT END - STEP 6]
+
+**Orchestrator updates checkpoint and completes workflow:**
 ```bash
 ./scripts/checkpoint-update.sh check-docs 6
-```
-
-#### [CHECKPOINT COMPLETE]
-
-```bash
 ./scripts/complete-checkpoint.sh check-docs
 rm -f /tmp/check-docs-*.txt /tmp/fix-preview.txt
 ```
+
+#### [CHECKPOINT END - STAGE 4]
+
+#### [CHECKPOINT COMPLETE]
 
 **Expected output:**
 ```
