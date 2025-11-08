@@ -2,7 +2,7 @@ Read AGENTS.md in order to prepare yourself for this new session. Then check the
 
 ## CHECKPOINT WORKFLOW ENFORCEMENT
 
-**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+**CRITICAL**: This command MUST use checkpoint tracking for progress tracking ONLY. All verification is done via step-verifier sub-agent, NOT via checkpoint scripts.
 
 ## STEP VERIFICATION ENFORCEMENT
 
@@ -30,7 +30,7 @@ After completing each step (before calling `checkpoint-update.sh`), you MUST:
    
    **If verification PASSES** (report shows "✅ STEP VERIFIED" or "All requirements met"):
      - Proceed to next step
-     - Mark checkpoint step as complete
+     - Mark checkpoint step as complete (for progress tracking only - verification already done by step-verifier)
    
    **If verification FAILS** (missing elements or incomplete work):
      - STOP execution immediately
@@ -46,9 +46,11 @@ After completing each step (before calling `checkpoint-update.sh`), you MUST:
      - Document manual verification in checkpoint notes
 
 3. **Verification Requirements**
-   - Each step MUST be verified before marking complete
+   - Each step MUST be verified via step-verifier sub-agent before marking complete
+   - Checkpoint scripts are used ONLY for progress tracking, NOT for verification
    - No step can be skipped or bypassed
    - All verification failures MUST be resolved before proceeding
+   - Step-verifier sub-agent verification COMPLETELY REPLACES checkpoint script verification
 
 ### Step Verifier Invocation
 
@@ -81,7 +83,7 @@ Provide verification report with evidence."
 
 ## Initialization
 
-This command requires checkpoint tracking to ensure systematic workflow execution.
+This command uses checkpoint tracking for progress tracking only. All verification is performed by the step-verifier sub-agent, not by checkpoint scripts.
 
 ### Initialize Tracking
 
@@ -155,7 +157,7 @@ ls -la .session_todos.txt 2>/dev/null || echo "No session todo file found"
 
 **⚠️ MANDATORY STEP VERIFICATION**
 
-Before proceeding to Step 2, you MUST verify Step 1 completion:
+Before proceeding to Step 2, you MUST verify Step 1 completion via step-verifier sub-agent:
 
 1. **Invoke step-verifier sub-agent** to verify:
    - AGENTS.md was read and understood
@@ -166,7 +168,7 @@ Before proceeding to Step 2, you MUST verify Step 1 completion:
 
 3. **If sub-agent unavailable**: Stop and request user manual verification
 
-**Only after verification passes:**
+**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
 ```bash
 ./scripts/checkpoint-update.sh next-task 1
 ```
@@ -205,7 +207,7 @@ fi
 
 **⚠️ MANDATORY STEP VERIFICATION**
 
-Before proceeding to Step 3, you MUST verify Step 2 completion:
+Before proceeding to Step 3, you MUST verify Step 2 completion via step-verifier sub-agent:
 
 1. **Invoke step-verifier sub-agent** to verify:
    - Session todo list was checked (if exists)
@@ -217,7 +219,7 @@ Before proceeding to Step 3, you MUST verify Step 2 completion:
 
 3. **If sub-agent unavailable**: Stop and request user manual verification
 
-**Only after verification passes:**
+**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
 ```bash
 ./scripts/checkpoint-update.sh next-task 2
 ```
@@ -288,7 +290,7 @@ Ask for user confirmation or feedback:
 
 **⚠️ MANDATORY STEP VERIFICATION**
 
-Before completing the workflow, you MUST verify Step 3 completion:
+Before completing the workflow, you MUST verify Step 3 completion via step-verifier sub-agent:
 
 1. **Invoke step-verifier sub-agent** to verify:
    - Next task was identified based on priority
@@ -300,7 +302,7 @@ Before completing the workflow, you MUST verify Step 3 completion:
 
 3. **If sub-agent unavailable**: Stop and request user manual verification
 
-**Only after verification passes:**
+**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
 ```bash
 ./scripts/checkpoint-update.sh next-task 3
 ```
@@ -309,27 +311,27 @@ Before completing the workflow, you MUST verify Step 3 completion:
 
 #### [CHECKPOINT END]
 
-#### [CHECKPOINT GATE]
+**⚠️ MANDATORY FINAL VERIFICATION**
 
-When task discovery is complete, verify the workflow:
+Before completing the workflow, you MUST verify ALL steps were completed correctly:
 
+1. **Invoke step-verifier sub-agent** to verify complete workflow:
+   - Verify Step 1: Read Context was completed correctly
+   - Verify Step 2: Check Task Sources was completed correctly
+   - Verify Step 3: Discover Next Task was completed correctly
+   - Verify all step objectives were met
+   - Verify next task was identified and presented
+
+2. **If verification fails**: Fix issues and re-verify before completing
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after ALL steps verified:**
 ```bash
 ./scripts/checkpoint-complete.sh next-task
 ```
 
-#### [CHECKPOINT COMPLETE]
-
-**Expected completion output:**
-```
-========================================
-   CHECKPOINT COMPLETION SUMMARY
-========================================
-
-📈 next-task: 3/3 steps (100%)
-   [████████████████████] 100%
-
-✅ Checkpoint workflow complete
-```
+**Note**: `checkpoint-complete.sh` is used ONLY for progress tracking cleanup. All verification is done via step-verifier sub-agent, NOT via checkpoint scripts.
 
 ## Minimum Requirements
 
