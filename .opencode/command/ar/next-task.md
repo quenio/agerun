@@ -4,6 +4,81 @@ Read AGENTS.md in order to prepare yourself for this new session. Then check the
 
 **CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
 
+## STEP VERIFICATION ENFORCEMENT
+
+**MANDATORY**: After completing each step, you MUST verify step completion using the step-verifier sub-agent before proceeding to the next step.
+
+### Step Verification Process
+
+After completing each step (before calling `checkpoint-update.sh`), you MUST:
+
+1. **Invoke Step Verifier Sub-Agent**
+   - Use MCP to invoke the step-verifier sub-agent with:
+     - Todo Item Description: Description of what the step accomplished
+     - Command File Path: `.opencode/command/ar/next-task.md`
+     - Step Number and Title: The step that was just completed (e.g., "Step 1: Read Context")
+   
+2. **Handle Verification Results**
+   
+   **Check verification report for STOP instructions:**
+   - If report contains "⚠️ STOP EXECUTION" or "STOP:" instruction:
+     - **STOP execution immediately**
+     - Do NOT proceed to next step
+     - Fix all reported issues from the verification report
+     - Re-invoke step-verifier with updated evidence after fixes
+     - Only proceed after verification report shows "✅ STEP VERIFIED" or "All requirements met"
+   
+   **If verification PASSES** (report shows "✅ STEP VERIFIED" or "All requirements met"):
+     - Proceed to next step
+     - Mark checkpoint step as complete
+   
+   **If verification FAILS** (missing elements or incomplete work):
+     - STOP execution immediately
+     - Fix all reported issues from verification report
+     - Re-invoke step-verifier to confirm fixes
+     - Only proceed after verification passes
+   
+   **If sub-agent CANNOT be executed** (MCP unavailable or tool error):
+     - STOP execution immediately
+     - Inform user: "⚠️ Step verification sub-agent unavailable. Please manually verify Step N completion before proceeding."
+     - Provide step description and expected outcomes
+     - Wait for explicit user confirmation before continuing
+     - Document manual verification in checkpoint notes
+
+3. **Verification Requirements**
+   - Each step MUST be verified before marking complete
+   - No step can be skipped or bypassed
+   - All verification failures MUST be resolved before proceeding
+
+### Step Verifier Invocation
+
+**Preferred method** (via MCP sub-agent):
+Use the `mcp_sub-agents_run_agent` tool to invoke the step-verifier:
+
+```
+Agent: "step-verifier"
+Prompt: "Verify Step N: [Step Title] completion for next-task command.
+
+Todo Item: [Description of what the step accomplished]
+Command File: .opencode/command/ar/next-task.md
+Step: Step N: [Step Title]
+
+Please verify that:
+- [Step-specific verification points]
+- All step objectives were met
+- Required outputs were produced
+
+Provide verification report with evidence."
+```
+
+**Fallback** (if MCP unavailable):
+1. **STOP execution immediately**
+2. Inform user: "⚠️ Step verification sub-agent unavailable (MCP not accessible)."
+3. Read `.claude/step-verifier.md` for verification criteria
+4. Request user to manually verify step completion
+5. Wait for explicit user confirmation before proceeding
+6. Document manual verification in checkpoint notes
+
 ## Initialization
 
 This command requires checkpoint tracking to ensure systematic workflow execution.
@@ -78,7 +153,20 @@ ls -la .session_todos.txt 2>/dev/null || echo "No session todo file found"
 - `AGENTS.md`: Project documentation and agent guidelines
 - `.session_todos.txt` (optional): Session-specific task list
 
-**Next action:**
+**⚠️ MANDATORY STEP VERIFICATION**
+
+Before proceeding to Step 2, you MUST verify Step 1 completion:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - AGENTS.md was read and understood
+   - Session context was checked
+   - Step objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after verification passes:**
 ```bash
 ./scripts/checkpoint-update.sh next-task 1
 ```
@@ -115,7 +203,21 @@ fi
 2. **TODO.md second** - Project-level incomplete tasks
 3. **Empty** - All tasks complete
 
-**Next action:**
+**⚠️ MANDATORY STEP VERIFICATION**
+
+Before proceeding to Step 3, you MUST verify Step 2 completion:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - Session todo list was checked (if exists)
+   - TODO.md was reviewed for incomplete tasks
+   - Task counts were identified
+   - Step objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after verification passes:**
 ```bash
 ./scripts/checkpoint-update.sh next-task 2
 ```
@@ -184,7 +286,21 @@ Ask for user confirmation or feedback:
 # "Which of these tasks would you like to work on next?"
 ```
 
-**Next action:**
+**⚠️ MANDATORY STEP VERIFICATION**
+
+Before completing the workflow, you MUST verify Step 3 completion:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - Next task was identified based on priority
+   - Task was clearly presented to user
+   - User confirmation was obtained (if required)
+   - Step objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after verification passes:**
 ```bash
 ./scripts/checkpoint-update.sh next-task 3
 ```
@@ -226,6 +342,10 @@ When task discovery is complete, verify the workflow:
 - [ ] Next task clearly identified and presented
 - [ ] User confirmation obtained before proceeding
 - [ ] Task verification completed for selected task
+- [ ] **Step 1 verified by step-verifier sub-agent before proceeding**
+- [ ] **Step 2 verified by step-verifier sub-agent before proceeding**
+- [ ] **Step 3 verified by step-verifier sub-agent before proceeding**
+- [ ] **All verification failures resolved before workflow completion**
 
 ### Progress Tracking
 

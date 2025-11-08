@@ -64,6 +64,27 @@
   - Configures sub-agents-mcp server via npx
   - Enables sub-agent functionality for step verification and other specialized agents
 
+- **Enforce Step Verification in next-task Command**
+
+  Updated next-task command to mandate step verification after each step completion using the step-verifier sub-agent.
+
+  **Enforcement**:
+  - Added STEP VERIFICATION ENFORCEMENT section with mandatory verification process
+  - Each step must be verified before proceeding to next step
+  - Step verifier invoked via MCP sub-agent after each checkpoint step
+  - Automatic stop on verification failures with fix-and-reverify workflow
+  - Fallback to manual verification if MCP unavailable (requires user confirmation)
+  - Added verification checkpoints after Steps 1, 2, and 3
+
+  **Verification Process**:
+  - Invokes step-verifier sub-agent with step description, command path, and step number
+  - Checks verification report for STOP instructions
+  - Stops execution on failures, fixes issues, and re-verifies before proceeding
+  - Only proceeds after verification passes or user manually confirms
+
+  **Files Modified**:
+  - `.opencode/command/ar/next-task.md` - Added step verification enforcement throughout workflow
+
 ## 2025-10-18 (Session 2k - Command Documentation Excellence Gate Achievement)
 
 - **Fix merge-settings Documentation to Meet Excellence Gate Standard**
