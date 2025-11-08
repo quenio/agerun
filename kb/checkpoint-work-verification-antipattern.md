@@ -74,6 +74,8 @@ When this anti-pattern is detected:
 
 ## Related Patterns
 - [Checkpoint Sequential Execution Discipline](checkpoint-sequential-execution-discipline.md) - Error-driven correction and sequential workflow enforcement
+- [Checkpoint Tracking Verification Separation](checkpoint-tracking-verification-separation.md) - Separating checkpoint tracking from verification
+- [Sub-Agent Verification Pattern](sub-agent-verification-pattern.md) - Using sub-agents for sophisticated verification
 - [Multi-Step Checkpoint Tracking Pattern](multi-step-checkpoint-tracking-pattern.md)
 - [Gate Enforcement Exit Codes Pattern](gate-enforcement-exit-codes-pattern.md)
 - [User Feedback as QA](user-feedback-as-qa.md)

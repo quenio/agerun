@@ -66,7 +66,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - **/bin**: Generated binaries (ignored by git, NEVER read these files)
 - **/methods**: Method definitions (.method files with docs and tests)
 - **/scripts**: Build and utility scripts (run via make targets, not directly - includes slash commands)
-  - **Checkpoint core scripts** (`checkpoint-*.sh`): Implement multi-step workflow tracking via Makefile targets
+  - **Checkpoint core scripts** (`checkpoint-*.sh`): Implement multi-step workflow tracking via Makefile targets ([details](kb/checkpoint-tracking-verification-separation.md) - tracking only, NOT verification)
     - `checkpoint-init.sh`: Initialize progress tracking file with all steps
     - `checkpoint-update.sh`: Mark steps complete and show progress (uses safe sed with `@` delimiter)
     - `checkpoint-status.sh`: Display current progress with progress bar
@@ -80,6 +80,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
     - `checkpoint-complete.sh`: Show final status and cleanup (replaces 4-5 line completion pattern)
     - **Why wrappers exist**: Reduce boilerplate across commands, provide consistent API, improve UX with clear error messages ([details](kb/checkpoint-based-workflow-pattern.md))
     - **Checkpoint structure**: Commands use two-level hierarchy (checkpoint steps + operations) with proper separation of concerns ([details](kb/checkpoint-operations-and-steps-hierarchy.md), [orchestrator](kb/command-orchestrator-checkpoint-separation.md))
+    - **Verification separation**: Checkpoint scripts are for progress tracking only; verification done via sub-agents or specialized tools ([details](kb/checkpoint-tracking-verification-separation.md), [sub-agent verification](kb/sub-agent-verification-pattern.md))
 - **/reports**: Analysis reports and technical comparisons (all .md analysis files go here)
 - **.opencode/command/ar**: Slash command definitions (must use make targets, not direct scripts) ([role clarity](kb/role-clarification-pattern.md))
   - Commands using checkpoints (e.g., `/ar:new-learnings`, `/ar:check-docs`, `/ar:commit`) initialize and update progress via Makefile checkpoint targets
@@ -568,6 +569,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 **Task Management**:
 - **Session todos (TodoWrite/TodoRead)**: Current TDD cycles, implementations, bug fixes
 - **TODO.md file**: Long-term architecture, future features (check [ ] vs [x] for completion)
+- **Session todo tracking**: Commands with multiple steps should add each step to session todo list for tracking across session boundaries ([details](kb/session-todo-list-tracking-pattern.md))
 - **Task authorization**: Wait for explicit instruction before starting tasks ([details](kb/task-authorization-pattern.md))
 - **User feedback**: May reveal design issues, not just implementation bugs. Listen for concerns about output/behavior/consistency. Verify assumptions before acting. ([details](kb/user-feedback-as-qa.md), [architecture gate](kb/user-feedback-as-architecture-gate.md), [assumptions](kb/assumption-verification-before-action.md))
 - **Architectural insights**: User feedback often reveals bigger transformations ([details](kb/architectural-review-in-feedback.md))
@@ -577,6 +579,9 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 **Checkpoint Process Discipline** (MANDATORY - STRICTLY ENFORCED):
 - **Sequential execution required**: Work → Verify → Mark complete (never parallelize) ([details](kb/checkpoint-sequential-execution-discipline.md))
 - **⚠️ CRITICAL**: NEVER mark steps complete without actual work - this is the #1 quality enforcement rule ([details](kb/checkpoint-work-verification-antipattern.md))
+- **Tracking vs verification separation**: Checkpoint scripts are for progress tracking only; verification done via sub-agents or specialized tools ([details](kb/checkpoint-tracking-verification-separation.md))
+- **Sub-agent verification**: Use MCP sub-agents for sophisticated step verification with evidence-based reporting ([details](kb/sub-agent-verification-pattern.md), [integration](kb/mcp-sub-agent-integration-pattern.md))
+- **Session todo tracking**: Add command steps to session todo list to prevent loss of tracking across session boundaries ([details](kb/session-todo-list-tracking-pattern.md))
 - **Evidence-based completion**: Critical steps require evidence files and work summaries
 - **No shortcut marking**: `make checkpoint-update` ONLY after completing required work - read step instructions carefully
 - **Step instruction reading**: ALWAYS understand what each step requires BEFORE executing - skipping this causes missed work

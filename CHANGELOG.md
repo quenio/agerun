@@ -1,5 +1,52 @@
 # AgeRun CHANGELOG
 
+## 2025-11-08 (Session - Sub-Agent Verification & Checkpoint Separation Patterns)
+
+- **Sub-Agent Verification and Checkpoint Separation Patterns**
+
+  Established patterns for separating checkpoint tracking from verification, integrating MCP sub-agents for sophisticated step verification, and tracking command steps in session todo lists.
+
+  **Problem**: Checkpoint scripts were being used for both progress tracking and verification, causing confusion about responsibilities. Commands lacked sophisticated verification capabilities and session step tracking.
+
+  **Solution**: Separated checkpoint tracking from verification, integrated MCP sub-agents for step verification, and added session todo list tracking for command steps.
+
+  **KB Articles Created**:
+  - `kb/sub-agent-verification-pattern.md` - Using MCP sub-agents for step verification with evidence-based reporting
+  - `kb/checkpoint-tracking-verification-separation.md` - Separating checkpoint tracking from verification responsibilities
+  - `kb/session-todo-list-tracking-pattern.md` - Adding steps to session todo list for tracking across session boundaries
+  - `kb/mcp-sub-agent-integration-pattern.md` - Integrating MCP sub-agents into command workflows with fallback handling
+
+  **KB Articles Updated** (5 articles with cross-references):
+  - `kb/checkpoint-based-workflow-pattern.md` - Added references to separation and sub-agent verification patterns
+  - `kb/checkpoint-work-verification-antipattern.md` - Added references to sub-agent verification and separation patterns
+  - `kb/checkpoint-sequential-execution-discipline.md` - Added references to separation and sub-agent verification patterns
+  - `kb/context-preservation-across-sessions.md` - Added reference to session todo list tracking pattern
+  - `kb/session-resumption-without-prompting.md` - Added reference to session todo list tracking pattern
+
+  **Commands Updated** (4 commands with KB references):
+  - `.opencode/command/ar/next-task.md` - Added step-verifier sub-agent enforcement, session todo tracking, checkpoint separation clarification
+  - `.opencode/command/ar/execute-plan.md` - Added checkpoint separation clarification
+  - `.opencode/command/ar/commit.md` - Added checkpoint separation clarification
+  - `.opencode/command/ar/create-plan.md` - Added checkpoint separation clarification
+
+  **AGENTS.md Updates**:
+  - Added checkpoint tracking vs verification separation guidance
+  - Added sub-agent verification pattern references
+  - Added session todo list tracking pattern reference
+  - Updated Checkpoint Process Discipline section with new patterns
+
+  **Impact**:
+  - Clear separation of concerns: checkpoint scripts for tracking, sub-agents for verification
+  - Sophisticated verification capabilities via MCP sub-agents with evidence-based reporting
+  - Session step tracking prevents loss of workflow state across session boundaries
+  - Consistent patterns across commands for verification and tracking
+
+  **Related Patterns**:
+  - Sub-Agent Verification Pattern
+  - Checkpoint Tracking Verification Separation
+  - Session Todo List Tracking Pattern
+  - MCP Sub-Agent Integration Pattern
+
 ## 2025-11-08 (TDD Cycle 8 - FileDelegate Basic Structure)
 
 - **Complete FileDelegate Module Basic Structure (TDD Cycle 8)**

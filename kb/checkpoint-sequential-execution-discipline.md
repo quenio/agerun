@@ -323,6 +323,8 @@ fi
 - [Checkpoint-Based Workflow Pattern](checkpoint-based-workflow-pattern.md) - General checkpoint pattern that this enforces
 - [Checkpoint Workflow Enforcement Pattern](checkpoint-workflow-enforcement-pattern.md) - Startup enforcement complementary to execution discipline
 - [Checkpoint Work Verification Anti-Pattern](checkpoint-work-verification-antipattern.md) - What happens when discipline is ignored
+- [Checkpoint Tracking Verification Separation](checkpoint-tracking-verification-separation.md) - Separating checkpoint tracking from verification
+- [Sub-Agent Verification Pattern](sub-agent-verification-pattern.md) - Using sub-agents for verification
 - [Gate Enforcement Exit Codes Pattern](gate-enforcement-exit-codes-pattern.md) - How gates prevent bad state progression
 - [Error Message Source Tracing](error-message-source-tracing.md) - Using errors to understand contract violations
 - [Multi-Step Checkpoint Tracking Pattern](multi-step-checkpoint-tracking-pattern.md) - Organizing complex workflows with discipline

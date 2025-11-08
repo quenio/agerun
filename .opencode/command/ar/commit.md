@@ -2,7 +2,7 @@ Create a git commit following the exact workflow specified in AGENTS.md.
 
 ## CHECKPOINT WORKFLOW ENFORCEMENT
 
-**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+**CRITICAL**: This command MUST use checkpoint tracking for progress tracking ONLY. All verification is done via specialized tools (make check-docs, make check-logs, etc.), NOT via checkpoint scripts ([details](../../../kb/checkpoint-tracking-verification-separation.md)).
 
 This section implements the [Checkpoint Workflow Enforcement Pattern](../../../kb/checkpoint-workflow-enforcement-pattern.md) - preventing workflow bypasses through initialization and precondition enforcement.
 

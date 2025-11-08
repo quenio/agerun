@@ -178,6 +178,7 @@ Signs of good session preservation:
 
 ## Related Patterns
 - [Checkpoint-Based Workflow Pattern](checkpoint-based-workflow-pattern.md) - Resumable workflows
+- [Session Todo List Tracking Pattern](session-todo-list-tracking-pattern.md) - Tracking steps in session todo list
 - [Comprehensive Learning Extraction Pattern](comprehensive-learning-extraction-pattern.md) - Extracting knowledge
 - [Systematic Task Analysis Protocol](systematic-task-analysis-protocol.md) - Understanding requirements
 - [Command Thoroughness Requirements Pattern](command-thoroughness-requirements-pattern.md) - Complete execution

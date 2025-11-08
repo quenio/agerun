@@ -2,11 +2,11 @@ Read AGENTS.md in order to prepare yourself for this new session. Then check the
 
 ## CHECKPOINT WORKFLOW ENFORCEMENT
 
-**CRITICAL**: This command MUST use checkpoint tracking for progress tracking ONLY. All verification is done via step-verifier sub-agent, NOT via checkpoint scripts.
+**CRITICAL**: This command MUST use checkpoint tracking for progress tracking ONLY. All verification is done via step-verifier sub-agent, NOT via checkpoint scripts ([details](../../../kb/checkpoint-tracking-verification-separation.md)).
 
 ## STEP VERIFICATION ENFORCEMENT
 
-**MANDATORY**: After completing each step, you MUST verify step completion using the step-verifier sub-agent before proceeding to the next step.
+**MANDATORY**: After completing each step, you MUST verify step completion using the step-verifier sub-agent before proceeding to the next step ([details](../../../kb/sub-agent-verification-pattern.md)).
 
 ### Step Verification Process
 
@@ -87,7 +87,7 @@ This command uses checkpoint tracking for progress tracking only. All verificati
 
 **MANDATORY: Session Todo List Tracking**
 
-Each step MUST be added to the session todo list before execution begins:
+Each step MUST be added to the session todo list before execution begins ([details](../../../kb/session-todo-list-tracking-pattern.md)):
 - Use `todo_write` to add each step as a todo item with status `in_progress` before starting the step
 - Use `todo_write` to mark each step as `completed` after step-verifier verification passes
 - This ensures the session maintains track of all steps to be executed

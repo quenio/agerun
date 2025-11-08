@@ -27,11 +27,14 @@ Each learning file contains:
 - [Assumption Verification Before Action](assumption-verification-before-action.md)
 - [Checkpoint Conditional Flow Pattern](checkpoint-conditional-flow-pattern.md) ⭐ NEW - Two-phase pattern for conditional step execution
 - [Checkpoint Step Consolidation Pattern](checkpoint-step-consolidation-pattern.md) ⭐ NEW - Consolidate per-item verification into interactive loops (session 2025-10-18)
+- [Checkpoint Tracking Verification Separation](checkpoint-tracking-verification-separation.md) ⭐ NEW - Separate checkpoint tracking from verification (session 2025-11-08)
 - [Check Existing Solutions First](check-existing-solutions-first.md)
 - [Checkpoint Implementation Guide](checkpoint-implementation-guide.md)
 - [Checkpoint Work Verification Anti-Pattern](checkpoint-work-verification-antipattern.md)
 - [Checkpoint-Based Workflow Pattern](checkpoint-based-workflow-pattern.md)
 - [Checkpoint Sequential Execution Discipline](checkpoint-sequential-execution-discipline.md)
+- [MCP Sub-Agent Integration Pattern](mcp-sub-agent-integration-pattern.md) ⭐ NEW - Integrating MCP sub-agents into command workflows (session 2025-11-08)
+- [Sub-Agent Verification Pattern](sub-agent-verification-pattern.md) ⭐ NEW - Using MCP sub-agents for step verification (session 2025-11-08)
 - [Command Thoroughness Requirements Pattern](command-thoroughness-requirements-pattern.md)
 - [Development Practice Groups](development-practice-groups.md)
 - [Gate Enforcement Exit Codes Pattern](gate-enforcement-exit-codes-pattern.md)
@@ -58,6 +61,7 @@ Each learning file contains:
 - [Context Preservation Across Sessions](context-preservation-across-sessions.md)
 - [Post-Session Task Extraction Pattern](post-session-task-extraction-pattern.md)
 - [Session Resumption Without Prompting](session-resumption-without-prompting.md)
+- [Session Todo List Tracking Pattern](session-todo-list-tracking-pattern.md) ⭐ NEW - Adding steps to session todo list for tracking (session 2025-11-08)
 - [Session-Start Priming Pattern](session-start-priming-pattern.md)
 
 #### 1.3 Version Control & Commits

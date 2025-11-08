@@ -162,6 +162,7 @@ Organize complex workflows into stages with gates:
 ## Related Patterns
 - [Checkpoint Workflow Enforcement Pattern](checkpoint-workflow-enforcement-pattern.md) - Prevention mechanism for bypasses (initialization & precondition enforcement)
 - [Checkpoint Sequential Execution Discipline](checkpoint-sequential-execution-discipline.md) - Execution discipline and sequential ordering requirements
+- [Checkpoint Tracking Verification Separation](checkpoint-tracking-verification-separation.md) - Separating checkpoint tracking from verification
 - [Gate Enforcement Exit Codes Pattern](gate-enforcement-exit-codes-pattern.md)
 - [Command Thoroughness Requirements Pattern](command-thoroughness-requirements-pattern.md)
 - [Systematic Task Analysis Protocol](systematic-task-analysis-protocol.md)
@@ -170,3 +171,4 @@ Organize complex workflows into stages with gates:
 - [Session Resumption Without Prompting](session-resumption-without-prompting.md)
 - [Cross-Platform Bash Script Patterns](cross-platform-bash-script-patterns.md) - Checkpoint scripts implement platform-safe patterns
 - [Script Debugging Through Isolation](script-debugging-through-isolation.md) - Debugging checkpoint script issues
+- [Sub-Agent Verification Pattern](sub-agent-verification-pattern.md) - Using sub-agents for verification instead of checkpoint scripts

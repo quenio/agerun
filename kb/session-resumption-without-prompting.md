@@ -158,6 +158,7 @@ This instruction should be taken literally when:
 
 ## Related Patterns
 - [Context Preservation Across Sessions](context-preservation-across-sessions.md)
+- [Session Todo List Tracking Pattern](session-todo-list-tracking-pattern.md) - Tracking steps in session todo list
 - [Checkpoint-Based Workflow Pattern](checkpoint-based-workflow-pattern.md)
 - [Systematic Task Analysis Protocol](systematic-task-analysis-protocol.md)
 - [Command Thoroughness Requirements Pattern](command-thoroughness-requirements-pattern.md)
