@@ -38,6 +38,23 @@
   - Ownership Naming Conventions
   - Memory Management Model (MMM.md)
 
+- **Add Step Verifier Sub-Agent Documentation**
+
+  Created comprehensive documentation for the step verification sub-agent system that validates command step completion and ensures quality gates are met before proceeding to subsequent steps.
+
+  **Documentation**:
+  - Created `.claude/step-verifier.md` with complete sub-agent specification
+  - Defines read-only verification agent responsibilities and limitations
+  - Documents verification patterns for common step types (file creation, code implementation, test execution, documentation updates, KB articles, plan files, builds)
+  - Includes failure severity guidelines and STOP execution instructions
+  - Provides integration guidance with related skills (code-quality-and-design, testing-best-practices, knowledge-capture-discipline)
+
+  **Purpose**:
+  - Ensures steps are completed correctly before proceeding
+  - Validates required outputs are produced
+  - Prevents incomplete work from progressing through workflows
+  - Provides structured verification reports with evidence
+
 ## 2025-10-18 (Session 2k - Command Documentation Excellence Gate Achievement)
 
 - **Fix merge-settings Documentation to Meet Excellence Gate Standard**
