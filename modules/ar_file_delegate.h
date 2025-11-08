@@ -1,0 +1,30 @@
+#ifndef AGERUN_FILE_DELEGATE_H
+#define AGERUN_FILE_DELEGATE_H
+
+#include "ar_log.h"
+
+/**
+ * Opaque type for a file delegate instance
+ */
+typedef struct ar_file_delegate_s ar_file_delegate_t;
+
+/**
+ * Creates a new file delegate instance
+ * @param ref_log The log instance for error reporting (borrowed reference)
+ * @param ref_allowed_path The allowed directory path for file operations (borrowed string)
+ * @return A new file delegate instance, or NULL on failure
+ * @note Ownership: Returns an owned value that caller must destroy.
+ *       The delegate borrows the log reference - caller must ensure log outlives delegate.
+ *       The delegate borrows the allowed_path string - caller must ensure string outlives delegate.
+ */
+ar_file_delegate_t* ar_file_delegate__create(ar_log_t *ref_log, const char *ref_allowed_path);
+
+/**
+ * Destroys a file delegate instance
+ * @param own_delegate The file delegate to destroy
+ * @note Ownership: Takes ownership and destroys the delegate.
+ */
+void ar_file_delegate__destroy(ar_file_delegate_t *own_delegate);
+
+#endif /* AGERUN_FILE_DELEGATE_H */
+
