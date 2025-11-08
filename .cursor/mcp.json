@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "sub-agents": {
+      "command": "npx",
+      "args": ["-y", "sub-agents-mcp"],
+      "env": {
+        "AGENTS_DIR": "/Users/quenio/Repos/nalan/all-legal/.claude/agents",
+        "AGENT_TYPE": "cursor"
+      }
+    }
+  }
+}

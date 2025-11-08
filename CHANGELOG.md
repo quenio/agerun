@@ -55,6 +55,15 @@
   - Prevents incomplete work from progressing through workflows
   - Provides structured verification reports with evidence
 
+- **Add MCP Configuration for Sub-Agents**
+
+  Added Model Context Protocol (MCP) server configuration for sub-agents integration in Cursor IDE.
+
+  **Configuration**:
+  - Created `.cursor/mcp.json` with sub-agents MCP server setup
+  - Configures sub-agents-mcp server via npx
+  - Enables sub-agent functionality for step verification and other specialized agents
+
 ## 2025-10-18 (Session 2k - Command Documentation Excellence Gate Achievement)
 
 - **Fix merge-settings Documentation to Meet Excellence Gate Standard**
