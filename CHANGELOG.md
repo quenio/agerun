@@ -89,8 +89,15 @@
   - checkpoint-complete.sh used ONLY for progress tracking cleanup
   - All verification logic moved to step-verifier sub-agent
 
+  **Session Todo List Tracking**:
+  - Each step MUST be added to session todo list before execution begins
+  - Use `todo_write` to add steps with status `in_progress` before starting
+  - Use `todo_write` to mark steps as `completed` after step-verifier verification passes
+  - Ensures session maintains track of all steps to be executed
+  - Prevents loss of step tracking across session boundaries
+
   **Files Modified**:
-  - `.opencode/command/ar/next-task.md` - Replaced checkpoint verification with step-verifier sub-agent verification
+  - `.opencode/command/ar/next-task.md` - Replaced checkpoint verification with step-verifier sub-agent verification, added session todo list tracking
 
 ## 2025-10-18 (Session 2k - Command Documentation Excellence Gate Achievement)
 

@@ -85,6 +85,13 @@ Provide verification report with evidence."
 
 This command uses checkpoint tracking for progress tracking only. All verification is performed by the step-verifier sub-agent, not by checkpoint scripts.
 
+**MANDATORY: Session Todo List Tracking**
+
+Each step MUST be added to the session todo list before execution begins:
+- Use `todo_write` to add each step as a todo item with status `in_progress` before starting the step
+- Use `todo_write` to mark each step as `completed` after step-verifier verification passes
+- This ensures the session maintains track of all steps to be executed
+
 ### Initialize Tracking
 
 ```bash
@@ -137,6 +144,15 @@ Before starting task execution, search KB for relevant patterns ([details](../..
 
 #### [CHECKPOINT STEP 1]
 
+**MANDATORY: Add step to session todo list**
+
+Before starting this step, add it to the session todo list using `todo_write`:
+
+```
+- Add todo item: "Step 1: Read Context - Read AGENTS.md and check session context"
+- Status: in_progress
+```
+
 **What this step does:**
 - Reads AGENTS.md to understand the project and your role
 - Checks for session context from previous commands
@@ -169,6 +185,14 @@ Before proceeding to Step 2, you MUST verify Step 1 completion via step-verifier
 3. **If sub-agent unavailable**: Stop and request user manual verification
 
 **Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+
+1. **Mark step complete in session todo list** using `todo_write`:
+   ```
+   - Update todo item: "Step 1: Read Context - Read AGENTS.md and check session context"
+   - Status: completed
+   ```
+
+2. **Update checkpoint** (for progress tracking only):
 ```bash
 ./scripts/checkpoint-update.sh next-task 1
 ```
@@ -176,6 +200,15 @@ Before proceeding to Step 2, you MUST verify Step 1 completion via step-verifier
 ## Step 2: Check Task Sources
 
 #### [CHECKPOINT STEP 2]
+
+**MANDATORY: Add step to session todo list**
+
+Before starting this step, add it to the session todo list using `todo_write`:
+
+```
+- Add todo item: "Step 2: Check Task Sources - Review session todo list and TODO.md"
+- Status: in_progress
+```
 
 **What this step does:**
 - Checks session todo list for pending tasks (highest priority)
@@ -220,6 +253,14 @@ Before proceeding to Step 3, you MUST verify Step 2 completion via step-verifier
 3. **If sub-agent unavailable**: Stop and request user manual verification
 
 **Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+
+1. **Mark step complete in session todo list** using `todo_write`:
+   ```
+   - Update todo item: "Step 2: Check Task Sources - Review session todo list and TODO.md"
+   - Status: completed
+   ```
+
+2. **Update checkpoint** (for progress tracking only):
 ```bash
 ./scripts/checkpoint-update.sh next-task 2
 ```
@@ -227,6 +268,15 @@ Before proceeding to Step 3, you MUST verify Step 2 completion via step-verifier
 ## Step 3: Discover Next Task
 
 #### [CHECKPOINT STEP 3]
+
+**MANDATORY: Add step to session todo list**
+
+Before starting this step, add it to the session todo list using `todo_write`:
+
+```
+- Add todo item: "Step 3: Discover Next Task - Identify and present next priority task"
+- Status: in_progress
+```
 
 **What this step does:**
 - Identifies the next task to work on based on priority
@@ -303,6 +353,14 @@ Before completing the workflow, you MUST verify Step 3 completion via step-verif
 3. **If sub-agent unavailable**: Stop and request user manual verification
 
 **Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+
+1. **Mark step complete in session todo list** using `todo_write`:
+   ```
+   - Update todo item: "Step 3: Discover Next Task - Identify and present next priority task"
+   - Status: completed
+   ```
+
+2. **Update checkpoint** (for progress tracking only):
 ```bash
 ./scripts/checkpoint-update.sh next-task 3
 ```
@@ -338,6 +396,9 @@ Before completing the workflow, you MUST verify ALL steps were completed correct
 **MANDATORY for successful task discovery:**
 - [ ] KB consultation completed before task execution
 - [ ] AGENTS.md read to understand project structure
+- [ ] **Step 1 added to session todo list before execution**
+- [ ] **Step 2 added to session todo list before execution**
+- [ ] **Step 3 added to session todo list before execution**
 - [ ] Session todo list checked (if file exists)
 - [ ] TODO.md reviewed for incomplete tasks
 - [ ] Task sources identified and counted
@@ -345,8 +406,11 @@ Before completing the workflow, you MUST verify ALL steps were completed correct
 - [ ] User confirmation obtained before proceeding
 - [ ] Task verification completed for selected task
 - [ ] **Step 1 verified by step-verifier sub-agent before proceeding**
+- [ ] **Step 1 marked complete in session todo list after verification**
 - [ ] **Step 2 verified by step-verifier sub-agent before proceeding**
+- [ ] **Step 2 marked complete in session todo list after verification**
 - [ ] **Step 3 verified by step-verifier sub-agent before proceeding**
+- [ ] **Step 3 marked complete in session todo list after verification**
 - [ ] **All verification failures resolved before workflow completion**
 
 ### Progress Tracking
