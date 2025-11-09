@@ -26,5 +26,13 @@ ar_file_delegate_t* ar_file_delegate__create(ar_log_t *ref_log, const char *ref_
  */
 void ar_file_delegate__destroy(ar_file_delegate_t *own_delegate);
 
+/**
+ * Gets the type identifier for a file delegate
+ * @param ref_delegate The file delegate instance (borrowed reference)
+ * @return The type string "file"
+ * @note Ownership: Returns a borrowed string reference.
+ */
+const char* ar_file_delegate__get_type(const ar_file_delegate_t *ref_delegate);
+
 #endif /* AGERUN_FILE_DELEGATE_H */
 

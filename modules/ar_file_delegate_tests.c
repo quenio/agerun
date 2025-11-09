@@ -8,6 +8,7 @@
 
 // Test function declarations
 static void test_file_delegate__create_and_destroy(void);
+static void test_file_delegate__get_type(void);
 
 int main(void) {
     // Directory check
@@ -25,6 +26,7 @@ int main(void) {
 
     // Run tests
     test_file_delegate__create_and_destroy();
+    test_file_delegate__get_type();
 
     printf("All file_delegate tests passed!\n");
     return 0;
@@ -46,6 +48,26 @@ static void test_file_delegate__create_and_destroy(void) {
     // Cleanup
     ar_file_delegate__destroy(own_delegate);
     ar_log__destroy(own_log);
+
+    printf("    PASS\n");
+}
+
+static void test_file_delegate__get_type(void) {
+    printf("  test_file_delegate__get_type...\n");
+
+    // Given a FileDelegate instance
+    ar_log_t *ref_log = ar_log__create();
+    ar_file_delegate_t *own_delegate = ar_file_delegate__create(ref_log, "/tmp/allowed");
+
+    // When getting the delegate type
+    const char *ref_type = ar_file_delegate__get_type(own_delegate);
+
+    // Then it should return "file"
+    AR_ASSERT(strcmp(ref_type, "file") == 0, "Type should be 'file'");  // ← FAILS (stub returns NULL)
+
+    // Cleanup
+    ar_file_delegate__destroy(own_delegate);
+    ar_log__destroy(ref_log);
 
     printf("    PASS\n");
 }

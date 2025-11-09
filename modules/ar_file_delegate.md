@@ -81,6 +81,23 @@ Destroys a file delegate instance.
 - Frees the owned allowed_path string copy
 - Does not destroy the borrowed log reference
 
+#### ar_file_delegate__get_type
+
+```c
+const char* ar_file_delegate__get_type(const ar_file_delegate_t *ref_delegate);
+```
+
+Gets the type identifier for a file delegate.
+
+**Parameters:**
+- `ref_delegate`: The file delegate instance (borrowed reference)
+
+**Returns:**
+- The type string "file"
+
+**Ownership:**
+- Returns a borrowed string reference (string literal, caller must not free)
+
 ## Implementation Status
 
 **Current Status**: TDD Cycle 8 Complete (2025-11-08)
@@ -90,6 +107,7 @@ Destroys a file delegate instance.
 - ✅ NULL parameter validation
 - ✅ Memory allocation with error handling
 - ✅ Base delegate wrapper integration
+- ✅ Type identifier function (get_type)
 - ✅ Zero memory leaks verified
 
 **Planned Features** (Future Cycles):

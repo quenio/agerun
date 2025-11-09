@@ -673,7 +673,7 @@ void ar_file_delegate__destroy(ar_file_delegate_t *own_delegate) {
 
 ---
 
-#### Iteration 8.3: ar_file_delegate__get_type() returns correct type - REVIEWED
+#### Iteration 8.3: ar_file_delegate__get_type() returns correct type - IMPLEMENTED
 
 **Objective**: Verify FileDelegate has a type identifier
 

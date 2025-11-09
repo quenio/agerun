@@ -56,3 +56,8 @@ void ar_file_delegate__destroy(ar_file_delegate_t *own_file_delegate) {
     AR__HEAP__FREE(own_file_delegate);
 }
 
+const char* ar_file_delegate__get_type(const ar_file_delegate_t *ref_delegate) {
+    (void)ref_delegate;  // Unused in minimal implementation
+    return "file";  // Hardcoded - minimal implementation
+}
+
