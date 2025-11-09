@@ -162,6 +162,8 @@ Each step MUST be added to the session todo list before execution begins:
 - [Checkpoint-Based Workflow Pattern](checkpoint-based-workflow-pattern.md) - Progress tracking with checkpoint scripts
 - [Checkpoint Work Verification Anti-Pattern](checkpoint-work-verification-antipattern.md) - Why verification is critical
 - [Session Todo List Tracking Pattern](session-todo-list-tracking-pattern.md) - Tracking steps in session todo list
+- [Interleaved Todo Item Pattern](interleaved-todo-item-pattern.md) - Initializing step and verification todos together at workflow start
+- [KB Link Fix Pattern](kb-link-fix-pattern.md) - Fix broken KB links by searching README.md for correct article names
 
 ## Verification Questions
 

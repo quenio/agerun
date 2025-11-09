@@ -15,14 +15,27 @@ Adding command steps to the session todo list prevents loss of step tracking acr
 **Command step tracking pattern:**
 
 ```markdown
+## MANDATORY: Initialize All Todo Items
+
+**CRITICAL**: Before executing ANY steps, add ALL step and verification todo items to the session todo list using `todo_write`:
+
+**Step and Verification Todo Items:**
+- Add todo item: "Step 1: Execute Work" - Status: pending
+- Add todo item: "Verify Step 1: Execute Work" - Status: pending
+- Add todo item: "Step 2: Next Step" - Status: pending
+- Add todo item: "Verify Step 2: Next Step" - Status: pending
+- Add todo item: "Verify Complete Workflow: command-name" - Status: pending
+
+**Important**: All todo items are initialized as `pending` and will be updated to `in_progress` when their respective step/verification begins, then to `completed` after verification passes.
+
 ## Step 1: Execute Work
 
-**MANDATORY: Add step to session todo list**
+**MANDATORY: Update step todo item status**
 
-Before starting this step, add it to the session todo list using `todo_write`:
+Before starting this step, update the step todo item status to `in_progress`:
 
 ```
-- Add todo item: "Step 1: Execute Work - Description of what step does"
+- Update todo item: "Step 1: Execute Work"
 - Status: in_progress
 ```
 
@@ -38,11 +51,17 @@ Before proceeding to Step 2, verify Step 1 completion via step-verifier sub-agen
 
 1. **Mark step complete in session todo list** using `todo_write`:
    ```
-   - Update todo item: "Step 1: Execute Work - Description of what step does"
+   - Update todo item: "Step 1: Execute Work"
    - Status: completed
    ```
 
-2. **Update checkpoint** (for progress tracking only):
+2. **Mark verification complete**:
+   ```
+   - Update todo item: "Verify Step 1: Execute Work"
+   - Status: completed
+   ```
+
+3. **Update checkpoint** (for progress tracking only):
 ```bash
 ./scripts/checkpoint-update.sh command-name 1
 ```
@@ -165,6 +184,7 @@ Step Execution Flow:
 - [Checkpoint Tracking Verification Separation](checkpoint-tracking-verification-separation.md) - Checkpoint scripts for tracking
 - [Context Preservation Across Sessions](context-preservation-across-sessions.md) - Preserving context across boundaries
 - [Session Resumption Without Prompting](session-resumption-without-prompting.md) - Resuming workflows
+- [Interleaved Todo Item Pattern](interleaved-todo-item-pattern.md) - Initializing step and verification todos together at workflow start
 
 ## Verification Questions
 

@@ -166,6 +166,34 @@ scripts/identify-command-issues.sh        # Action + domain
 scripts/scan-commands.sh                  # Noun form when enumeration
 ```
 
+## Python Script Naming Enforcement
+
+**CRITICAL**: Python scripts MUST use underscores per PEP 8, while bash scripts use dashes. This is enforced by `make check-naming`.
+
+**Naming conventions:**
+- **Bash scripts**: Use dashes (POSIX convention) - `checkpoint-init.sh`, `add-newline.sh`
+- **Python scripts**: Use underscores (PEP 8 convention) - `check_commands.py`, `batch_fix_docs.py`
+- **DO NOT MIX**: Never use dashes in Python files or underscores in bash files
+
+**Enforcement:**
+```bash
+# check-naming validates script naming
+make check-naming
+
+# Fails if Python scripts use dashes:
+# ✗ Found 4 Python scripts not following underscore naming convention
+#     add-step-verification-sections.py (should be: add_step_verification_sections.py)
+```
+
+**Example from session:**
+```bash
+# Fixed 4 Python scripts renamed to use underscores:
+# add-step-verification-sections.py → add_step_verification_sections.py
+# fix-duplicate-verification.py → fix_duplicate_verification.py
+# remove-duplicate-step8-verification.py → remove_duplicate_step8_verification.py
+# update-execute-plan-verification.py → update_execute_plan_verification.py
+```
+
 ## Related Patterns
 
 - [Command File as Orchestrator Pattern](command-orchestrator-pattern.md) - Why domain-specific naming enables discovery in orchestration

@@ -93,7 +93,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **Make KB searches VISIBLE**: Run grep, show results, quote guidance, apply patterns ([details](kb/kb-search-patterns.md), [priming](kb/session-start-priming-pattern.md))
 **Systematic analysis required**: Apply [systematic task analysis protocol](kb/systematic-task-analysis-protocol.md) for priority decisions
 **Trigger words**: "Why are you"/"Actually"/"You should" → Search NOW
-**Markdown links**: Use relative paths only, resolve from file location ([details](kb/markdown-link-resolution-patterns.md))
+**Markdown links**: Use relative paths only, resolve from file location ([details](kb/markdown-link-resolution-patterns.md)); fix broken KB links by searching README.md ([details](kb/kb-link-fix-pattern.md))
 **Complete searches**: Never limit results without checking totals ([details](kb/search-result-completeness-verification.md))
 
 ### Systematic Task Analysis (MANDATORY - PREVENT INCOMPLETE ANALYSIS)
@@ -569,7 +569,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 **Task Management**:
 - **Session todos (TodoWrite/TodoRead)**: Current TDD cycles, implementations, bug fixes
 - **TODO.md file**: Long-term architecture, future features (check [ ] vs [x] for completion)
-- **Session todo tracking**: Commands with multiple steps should add each step to session todo list for tracking across session boundaries ([details](kb/session-todo-list-tracking-pattern.md))
+- **Session todo tracking**: Commands with multiple steps should add each step to session todo list for tracking across session boundaries ([details](kb/session-todo-list-tracking-pattern.md)); initialize step and verification todos together with interleaved ordering ([details](kb/interleaved-todo-item-pattern.md))
 - **Task authorization**: Wait for explicit instruction before starting tasks ([details](kb/task-authorization-pattern.md))
 - **User feedback**: May reveal design issues, not just implementation bugs. Listen for concerns about output/behavior/consistency. Verify assumptions before acting. ([details](kb/user-feedback-as-qa.md), [architecture gate](kb/user-feedback-as-architecture-gate.md), [assumptions](kb/assumption-verification-before-action.md))
 - **Architectural insights**: User feedback often reveals bigger transformations ([details](kb/architectural-review-in-feedback.md))
@@ -581,7 +581,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 - **⚠️ CRITICAL**: NEVER mark steps complete without actual work - this is the #1 quality enforcement rule ([details](kb/checkpoint-work-verification-antipattern.md))
 - **Tracking vs verification separation**: Checkpoint scripts are for progress tracking only; verification done via sub-agents or specialized tools ([details](kb/checkpoint-tracking-verification-separation.md))
 - **Sub-agent verification**: Use MCP sub-agents for sophisticated step verification with evidence-based reporting ([details](kb/sub-agent-verification-pattern.md), [integration](kb/mcp-sub-agent-integration-pattern.md))
-- **Session todo tracking**: Add command steps to session todo list to prevent loss of tracking across session boundaries ([details](kb/session-todo-list-tracking-pattern.md))
+- **Session todo tracking**: Add command steps to session todo list to prevent loss of tracking across session boundaries ([details](kb/session-todo-list-tracking-pattern.md)); initialize all step and verification todos together at workflow start ([details](kb/interleaved-todo-item-pattern.md))
 - **Evidence-based completion**: Critical steps require evidence files and work summaries
 - **No shortcut marking**: `make checkpoint-update` ONLY after completing required work - read step instructions carefully
 - **Step instruction reading**: ALWAYS understand what each step requires BEFORE executing - skipping this causes missed work

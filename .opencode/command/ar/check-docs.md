@@ -13,8 +13,10 @@ Before validation:
    - validated-documentation-examples
    - yaml-implicit-contract-validation-pattern
    - validation-feedback-loop-effectiveness
+   - kb-link-fix-pattern ([details](../../../kb/kb-link-fix-pattern.md)) - Fix broken KB links by searching README.md
 3. Apply iterative validation approach
 4. For YAML files: Ensure reader/writer contracts are explicit ([details](../../../kb/yaml-implicit-contract-validation-pattern.md))
+5. For broken KB links: Search `kb/README.md` using grep to find correct article names ([details](../../../kb/kb-link-fix-pattern.md))
 
 ## CHECKPOINT WORKFLOW ENFORCEMENT
 

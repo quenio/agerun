@@ -49,13 +49,17 @@ Todo Item: [Description of what the step accomplished]
 Command File: .opencode/command/ar/command-name.md
 Step: Step N: [Step Title]
 
-Please verify that:
-- [Step-specific verification points]
-- All step objectives were met
-- Required outputs were produced
-
-Provide verification report with evidence."
+Accomplishment Report:
+[Report what was accomplished with evidence: files created/modified, commands executed, outputs produced, etc. The step-verifier will independently verify these claims by reading files, checking git status, etc.]"
 ```
+
+**CRITICAL: Evidence-Based Reporting**
+
+The top-level agent must report accomplishments with evidence, NOT instructions:
+- ✅ **GOOD**: "Fixed broken link in `.claude/step-verifier.md` line 41, changed from non-existent article to `mcp-sub-agent-integration-pattern.md`"
+- ❌ **BAD**: "Please verify that the KB link is fixed"
+
+The step-verifier independently verifies claims by reading files, checking git status/diff, and analyzing outputs. Report what was done, not what should be verified.
 
 **Verification report interpretation:**
 
@@ -178,6 +182,8 @@ The top-level agent must fix these issues before continuing.
 - [Checkpoint-Based Workflow Pattern](checkpoint-based-workflow-pattern.md) - Progress tracking with checkpoint scripts
 - [Checkpoint Work Verification Anti-Pattern](checkpoint-work-verification-antipattern.md) - Why verification is critical
 - [MCP Sub-Agent Integration Pattern](mcp-sub-agent-integration-pattern.md) - How to integrate sub-agents
+- [Interleaved Todo Item Pattern](interleaved-todo-item-pattern.md) - Initializing step and verification todos together
+- [Session Todo List Tracking Pattern](session-todo-list-tracking-pattern.md) - Tracking steps in session todo list
 
 ## Verification Questions
 

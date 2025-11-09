@@ -203,6 +203,7 @@ Provide verification report with evidence."
 - [Sub-Agent Verification Pattern](sub-agent-verification-pattern.md) - Using sub-agents for verification
 - [Checkpoint Tracking Verification Separation](checkpoint-tracking-verification-separation.md) - Separating tracking from verification
 - [Session Todo List Tracking Pattern](session-todo-list-tracking-pattern.md) - Tracking steps in session todo list
+- [Interleaved Todo Item Pattern](interleaved-todo-item-pattern.md) - Initializing step and verification todos together at workflow start
 
 ## Verification Questions
 

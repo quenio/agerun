@@ -111,9 +111,10 @@ Accomplishment Report:
 
 **MANDATORY: Session Todo List Tracking**
 
-Each step MUST be added to the session todo list before execution begins ([details](../../../kb/session-todo-list-tracking-pattern.md)):
+Each step MUST be added to the session todo list before execution begins ([details](../../../kb/session-todo-list-tracking-pattern.md), [interleaved pattern](../../../kb/interleaved-todo-item-pattern.md)):
 - Use `todo_write` to add each step as a todo item with status `in_progress` before starting the step
 - Use `todo_write` to mark each step as `completed` after step-verifier verification passes
+- Initialize all step and verification todo items together at workflow start with interleaved ordering ([details](../../../kb/interleaved-todo-item-pattern.md))
 - This ensures the session maintains track of all steps to be executed
 
 ## KB Consultation Required

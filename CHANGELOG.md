@@ -1,5 +1,45 @@
 # AgeRun CHANGELOG
 
+## 2025-11-09 (Session - KB Link Fix & Interleaved Todo Item Patterns)
+
+- **KB Link Fix and Interleaved Todo Item Patterns**
+
+  Documented patterns for fixing broken KB links and initializing step/verification todo items together at workflow start.
+
+  **Problem**: Broken KB links were being fixed by guessing article names, leading to incorrect references. Step and verification todo items were initialized separately, causing missed verifications.
+
+  **Solution**: Established patterns for searching `kb/README.md` to find correct article names and initializing step/verification todos together with interleaved ordering.
+
+  **KB Articles Created**:
+  - `kb/kb-link-fix-pattern.md` - Fix broken KB links by searching README.md for correct article names
+  - `kb/interleaved-todo-item-pattern.md` - Initialize step and verification todos together at workflow start
+
+  **KB Articles Updated** (7 articles with cross-references):
+  - `kb/sub-agent-verification-pattern.md` - Added evidence-based reporting section and interleaved todo reference
+  - `kb/session-todo-list-tracking-pattern.md` - Added interleaved todo initialization pattern and updated example
+  - `kb/script-domain-naming-convention.md` - Added Python naming enforcement section with examples
+  - `kb/checkpoint-tracking-verification-separation.md` - Added references to interleaved todo and KB link fix patterns
+  - `kb/mcp-sub-agent-integration-pattern.md` - Added reference to interleaved todo pattern
+  - `kb/checkpoint-workflow-enforcement-pattern.md` - Added reference to interleaved todo pattern
+  - `kb/checkpoint-based-workflow-pattern.md` - Added reference to interleaved todo pattern
+
+  **Commands Updated** (4 commands):
+  - `.opencode/command/ar/next-task.md` - Added interleaved-todo-item-pattern.md reference
+  - `.opencode/command/ar/create-plan.md` - Added interleaved-todo-item-pattern.md reference
+  - `.opencode/command/ar/execute-plan.md` - Added interleaved-todo-item-pattern.md reference
+  - `.opencode/command/ar/check-docs.md` - Added kb-link-fix-pattern.md reference
+
+  **AGENTS.md Updates**:
+  - Added `kb-link-fix-pattern.md` reference in "Markdown links" section
+  - Added `interleaved-todo-item-pattern.md` references in "Session todo tracking" sections (2 locations)
+
+  **Impact**:
+  - Prevents broken KB links by providing systematic search pattern
+  - Ensures verification todos are never forgotten through interleaved initialization
+  - Improves workflow integrity by maintaining step-verification relationships
+  - All documentation validated (`make check-docs` passed, 597 files checked)
+  - All commands validated (`make check-commands` passed, 98.9% average score)
+
 ## 2025-11-09 (Step Verification Enforcement - Command Workflow Standardization)
 
 - **Step Verification Enforcement**: Standardized step verification across all 31 commands using step-verifier sub-agent pattern; **Implementation**: Added STEP VERIFICATION ENFORCEMENT sections to all commands with detailed sub-agent documentation, added MANDATORY: Initialize All Todo Items sections with interleaved step/verification todo items initialized at workflow start, updated CHECKPOINT WORKFLOW ENFORCEMENT to clarify verification separation (checkpoint scripts for progress tracking only, step-verifier for verification); **Files Modified**: 31 command files (.opencode/command/ar/*.md), .claude/step-verifier.md (fixed broken KB link), 4 Python scripts renamed to use underscores per PEP 8; **Quality Metrics**: Clean build (2m 20s), all checks pass (check-docs, check-naming, check-logs), zero memory leaks, all tests passing; **Key Achievement**: All commands now follow consistent step-verifier pattern with independent verification, evidence-based reporting, and session todo list tracking

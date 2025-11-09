@@ -59,6 +59,7 @@ Each learning file contains:
 
 #### 1.2 Session & Context Management
 - [Context Preservation Across Sessions](context-preservation-across-sessions.md)
+- [Interleaved Todo Item Pattern](interleaved-todo-item-pattern.md) ⭐ NEW - Initialize step and verification todos together at workflow start (session 2025-11-09)
 - [Post-Session Task Extraction Pattern](post-session-task-extraction-pattern.md)
 - [Session Resumption Without Prompting](session-resumption-without-prompting.md)
 - [Session Todo List Tracking Pattern](session-todo-list-tracking-pattern.md) ⭐ NEW - Adding steps to session todo list for tracking (session 2025-11-08)
@@ -91,6 +92,7 @@ Each learning file contains:
 - [Iterative Plan Refinement Pattern](iterative-plan-refinement-pattern.md)
 - [Just-In-Time KB Reading](just-in-time-kb-reading.md)
 - [KB Consultation Before Planning Requirement](kb-consultation-before-planning-requirement.md)
+- [KB Link Fix Pattern](kb-link-fix-pattern.md) ⭐ NEW - Fix broken KB links by searching README.md for correct article names (session 2025-11-09)
 - [KB Target Compliance Enforcement](kb-target-compliance-enforcement.md)
 - [Lesson-Based Command Design Pattern](lesson-based-command-design-pattern.md) ⭐ NEW - Unified 14-lesson verification across all commands
 - [Knowledge Base Consultation Protocol](knowledge-base-consultation-protocol.md)

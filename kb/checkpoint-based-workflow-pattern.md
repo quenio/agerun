@@ -165,6 +165,7 @@ Organize complex workflows into stages with gates:
 - [Checkpoint Tracking Verification Separation](checkpoint-tracking-verification-separation.md) - Separating checkpoint tracking from verification
 - [Gate Enforcement Exit Codes Pattern](gate-enforcement-exit-codes-pattern.md)
 - [Command Thoroughness Requirements Pattern](command-thoroughness-requirements-pattern.md)
+- [Interleaved Todo Item Pattern](interleaved-todo-item-pattern.md) - Initializing step and verification todos together at workflow start
 - [Systematic Task Analysis Protocol](systematic-task-analysis-protocol.md)
 - [KB Target Compliance Enforcement](kb-target-compliance-enforcement.md)
 - [Context Preservation Across Sessions](context-preservation-across-sessions.md)

@@ -273,6 +273,7 @@ Commands attempting only gates leave security gaps.
 - [Command KB Consultation Enforcement](command-kb-consultation-enforcement.md) - Complementary enforcement for KB reading
 - [Gate Enforcement Exit Codes Pattern](gate-enforcement-exit-codes-pattern.md) - How gates provide show-stopper enforcement
 - [Multi-Step Checkpoint Tracking Pattern](multi-step-checkpoint-tracking-pattern.md) - How checkpoints organize multi-step workflows
+- [Interleaved Todo Item Pattern](interleaved-todo-item-pattern.md) - Initializing step and verification todos together at workflow start
 - [Checkpoint-Based Workflow Pattern](checkpoint-based-workflow-pattern.md) - General checkpoint pattern this enforces
 - [Checkpoint Sequential Execution Discipline](checkpoint-sequential-execution-discipline.md) - Sequential execution requirements that enforcement enables
 - [Unmissable Documentation Pattern](unmissable-documentation-pattern.md) - Related documentation requirement
