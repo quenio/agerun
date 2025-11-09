@@ -154,11 +154,9 @@ Before starting task execution, search KB for relevant patterns ([details](../..
 
 # Task Discovery Workflow
 
-#### [CHECKPOINT START]
 
 ## Step 1: Read Context
 
-#### [CHECKPOINT STEP 1]
 
 **MANDATORY: Update step todo item status**
 
@@ -232,7 +230,6 @@ Before proceeding to Step 2, you MUST verify Step 1 completion via **step-verifi
 
 ## Step 2: Check Task Sources
 
-#### [CHECKPOINT STEP 2]
 
 **MANDATORY: Update step todo item status**
 
@@ -310,7 +307,6 @@ Before proceeding to Step 3, you MUST verify Step 2 completion via step-verifier
 
 ## Step 3: Discover Next Task
 
-#### [CHECKPOINT STEP 3]
 
 **MANDATORY: Update step todo item status**
 
@@ -420,7 +416,6 @@ Before completing the workflow, you MUST verify Step 3 completion via step-verif
 
 ## Complete the Workflow
 
-#### [CHECKPOINT END]
 
 **⚠️ MANDATORY FINAL VERIFICATION**
 

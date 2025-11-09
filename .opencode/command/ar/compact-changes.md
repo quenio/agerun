@@ -229,7 +229,6 @@ This command uses checkpoint tracking to ensure systematic CHANGELOG.md compacti
 
 ### Stage 1: Analysis (Steps 1-2)
 
-#### [CHECKPOINT START - STAGE 1]
 
 #### Steps 1-2: Analyze CHANGELOG
 
@@ -276,11 +275,9 @@ Analysis questions to consider:
    Verified: Steps 1,2
 ```
 
-#### [CHECKPOINT END]
 
 ### Stage 2: Manual Compaction (Steps 3-5)
 
-#### [CHECKPOINT START - STAGE 2]
 
 #### Step 3: Manual Semantic Compaction
 
@@ -440,11 +437,9 @@ fi
    Verified: Steps 3,4,5
 ```
 
-#### [CHECKPOINT END]
 
 ### Stage 3: Documentation and Commit (Steps 6-7)
 
-#### [CHECKPOINT START - STAGE 3]
 
 #### Step 6: Update TODO
 
@@ -501,7 +496,6 @@ Your branch is ahead of 'origin/main' by 1 commit.
 ✓ Updated checkpoint 7/7 for compact-changes
 ```
 
-#### [CHECKPOINT COMPLETE]
 ```bash
 ./scripts/checkpoint-complete.sh compact-changes
 rm -f /tmp/compact-changes-stats.txt
@@ -519,7 +513,6 @@ rm -f /tmp/compact-changes-stats.txt
 ✅ Checkpoint workflow complete
 ```
 
-#### [CHECKPOINT END]
 
 ## Why Manual Compaction?
 

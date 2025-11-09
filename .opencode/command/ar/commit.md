@@ -213,9 +213,7 @@ This command uses checkpoint tracking to ensure thorough pre-commit verification
 - [ ] Git push verified
 ### Stage 1: Pre-Commit Verification (Steps 1-5)
 
-#### [CHECKPOINT START - STAGE 1]
 
-#### [CHECKPOINT END]
 
 ### Pre-Commit Checklist (MANDATORY - ALWAYS CHECK THIS)
 
@@ -472,9 +470,7 @@ Before proceeding to Step 6, you MUST verify Step 5 completion via step-verifier
 
 ### Stage 2: Review and Stage (Steps 6-7)
 
-#### [CHECKPOINT START - STAGE 2]
 
-#### [CHECKPOINT END]
 
 #### Step 6: Review Changes
 
@@ -549,9 +545,7 @@ Before proceeding to Step 7, you MUST verify Step 6 completion via step-verifier
 
 ### Stage 3: Commit and Push (Steps 8-9)
 
-#### [CHECKPOINT START - STAGE 3]
 
-#### [CHECKPOINT END]
 
 ### Commit Workflow
 
@@ -770,7 +764,6 @@ Before completing the workflow, you MUST verify ALL steps were completed correct
 ./scripts/checkpoint-update.sh commit 9 --summary "Push completed successfully and working tree clean"
 ```
 
-#### [CHECKPOINT COMPLETE]
 ```bash
 ./scripts/checkpoint-complete.sh commit
 ```

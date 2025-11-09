@@ -199,7 +199,6 @@ This command creates a new command file with proper structure, checkpoint tracki
 
 ### Stage 1: Validation and Consultation (Steps 1-2)
 
-#### [CHECKPOINT START - STAGE 1]
 
 #### Step 1: Validate Arguments
 
@@ -276,11 +275,9 @@ This is NOT optional - read these articles IN FULL:
 - [ ] All KB articles read and understood
 - [ ] Ready to create command structure
 
-#### [CHECKPOINT END]
 
 ### Stage 2: Command Structure Creation (Steps 3-5)
 
-#### [CHECKPOINT START - STAGE 2]
 
 #### Step 3: Create Command File Structure
 
@@ -374,7 +371,6 @@ This command [brief description of what it does].
 
 ### Stage 1: [Stage Name] (Steps 1-N)
 
-#### [CHECKPOINT START - STAGE 1]
 
 #### Step 1: [First Step Name]
 
@@ -385,7 +381,6 @@ This command [brief description of what it does].
 ./scripts/checkpoint-update.sh COMMAND_NAME STEP=1
 \`\`\`
 
-#### [CHECKPOINT END]
 
 ## Related Commands
 
@@ -475,11 +470,9 @@ echo ""
 - [ ] Checkpoint tracking infrastructure added
 - [ ] Quality gates planned
 
-#### [CHECKPOINT END]
 
 ### Stage 3: Documentation and Verification (Steps 6-7)
 
-#### [CHECKPOINT START - STAGE 3]
 
 #### Step 6: Add Documentation Sections
 
@@ -532,9 +525,7 @@ echo ""
 - [ ] Troubleshooting section added
 - [ ] Command achieves 90%+ validation score
 
-#### [CHECKPOINT END]
 
-#### [CHECKPOINT COMPLETE]
 ```bash
 ./scripts/checkpoint-complete.sh create-command
 ```

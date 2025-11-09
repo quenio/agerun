@@ -122,7 +122,6 @@ These wrappers provide centralized checkpoint management across all commands.
 
 Run the complete checkpoint-based workflow:
 
-#### [CHECKPOINT START]
 
 ```bash
 ./scripts/run-sanitize-exec.sh
@@ -137,23 +136,14 @@ This script handles all stages of address sanitizer execution:
 3. **Report Results**: Summarizes findings and memory issues
 4. **Checkpoint Completion**: Marks the workflow as complete
 
-## Troubleshooting: Manual Checkpoint Control
+## Troubleshooting
 
-Only use these commands if the script fails and you need to manually intervene:
+If the script fails, simply rerun it:
 
 ```bash
-# Check current progress (if workflow interrupted)
-./scripts/checkpoint-status.sh sanitize-exec --verbose
-
-# Resume from a specific step (only if you know it's stuck)
-./scripts/checkpoint-update.sh sanitize-exec N
-
-# ONLY use this if you need to reset everything and start over
-rm -f /tmp/sanitize-exec-progress.txt
 ./scripts/run-sanitize-exec.sh
 ```
 
-#### [CHECKPOINT END]
 
 ## Key Points
 
@@ -162,4 +152,3 @@ rm -f /tmp/sanitize-exec-progress.txt
 - **Always use `2>&1`** to capture sanitizer output
 - **Slower execution** but catches runtime memory errors
 
-#### [CHECKPOINT COMPLETE]

@@ -7,12 +7,11 @@ Expected structure for ALL commands:
 1. First-line description
 2. Single h1 title
 3. Checkpoint/step tracking system
-4. Clear checkpoint markers ([CHECKPOINT START], [CHECKPOINT END])
-5. Bash commands to mark progress
-6. Critical thinking prompts and deep questions
-7. Expected outputs
-8. Minimum requirements section
-9. Troubleshooting section
+4. Bash commands to mark progress
+5. Critical thinking prompts and deep questions
+6. Expected outputs
+7. Minimum requirements section
+8. Troubleshooting section
 
 Usage:
     python3 scripts/validate_comprehensive_structure.py [--verbose] [--fix]
@@ -31,12 +30,6 @@ fix_mode = '--fix' in sys.argv
 
 # The ideal structure based on new-learnings.md
 COMPREHENSIVE_STRUCTURE = {
-    'checkpoint_markers': {
-        'start': r'\[CHECKPOINT START',
-        'end': r'\[CHECKPOINT END',
-        'gate': r'\[.*GATE\]',
-        'complete': r'\[CHECKPOINT COMPLETE\]'
-    },
     'required_sections': {
         'tracking_system': [
             'Checkpoint Tracking',
@@ -94,23 +87,12 @@ def analyze_file(filepath):
     analysis = {
         'first_line': lines[0] if lines else '',
         'has_h1': bool(re.search(r'^# ', content, re.MULTILINE)),
-        'checkpoint_markers': {},
         'sections_found': {},
         'bash_commands': {},
         'quality_scores': {},
         'missing_elements': [],
         'uses_wrapper_script': uses_wrapper_script
     }
-
-    # Check checkpoint markers
-    for marker_type, pattern in COMPREHENSIVE_STRUCTURE['checkpoint_markers'].items():
-        count = len(re.findall(pattern, content))
-        analysis['checkpoint_markers'][marker_type] = count
-        # For wrapper script commands, only require START and END markers
-        if count == 0 and not uses_wrapper_script:
-            analysis['missing_elements'].append(f"No {marker_type} markers")
-        elif count == 0 and uses_wrapper_script and marker_type in ['start', 'end']:
-            analysis['missing_elements'].append(f"No {marker_type} markers")
 
     # Check required sections (flexible matching)
     for section_type, alternatives in COMPREHENSIVE_STRUCTURE['required_sections'].items():
@@ -148,14 +130,7 @@ def calculate_structure_score(analysis):
         score = 0
         max_score = 0
 
-        # Checkpoint markers (40 points) - START and END are essential
-        max_score += 40
-        if analysis['checkpoint_markers'].get('start', 0) > 0:
-            score += 20
-        if analysis['checkpoint_markers'].get('end', 0) > 0:
-            score += 20
-
-        # Bash commands (30 points) - wrapper script reference is enough
+        # Bash commands (40 points) - wrapper script reference is enough
         max_score += 30
         has_wrapper = any('scripts/run' in str(v) for v in analysis['bash_commands'].values())
         if has_wrapper or analysis['bash_commands'].get('init', 0) > 0:
@@ -173,18 +148,11 @@ def calculate_structure_score(analysis):
     score = 0
     max_score = 0
 
-    # Checkpoint markers (30 points)
-    max_score += 30
-    if analysis['checkpoint_markers']['start'] > 0:
-        score += 15
-    if analysis['checkpoint_markers']['end'] > 0:
-        score += 15
-
-    # Required sections (30 points)
-    max_score += 30
+    # Required sections (40 points)
+    max_score += 40
     sections_present = len(analysis['sections_found'])
     sections_expected = len(COMPREHENSIVE_STRUCTURE['required_sections'])
-    score += (sections_present / sections_expected) * 30
+    score += (sections_present / sections_expected) * 40
 
     # Bash commands (20 points)
     max_score += 20

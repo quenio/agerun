@@ -318,7 +318,6 @@ Verify that checkpoint tracking is initialized:
 
 ## Step 1: Identify New Learnings
 
-#### [CHECKPOINT START - STEP 1]
 
 **PRECONDITION VERIFIED**: Checkpoint tracking is initialized and ready.
 
@@ -361,7 +360,6 @@ For each learning, provide:
 - Specific examples from this session (if applicable)
 - How it can be generalized for future use
 
-#### [CHECKPOINT END - STEP 1]
 ```bash
 # Mark Step 1 complete
 ./scripts/checkpoint-update.sh new-learnings STEP=1
@@ -377,7 +375,6 @@ Next pending: Determine KB Article Strategy
 
 ## Step 2: Determine KB Article Strategy
 
-#### [CHECKPOINT START - STEP 2]
 
 ### First Decision: New Articles vs Update Existing
 
@@ -406,7 +403,6 @@ Next pending: Determine KB Article Strategy
 - Create a bidirectional web of knowledge
 - Expect multiple refinement iterations to get methodology right
 
-#### [CHECKPOINT END - STEP 2]
 ```bash
 # Mark Step 2 complete
 ./scripts/checkpoint-update.sh new-learnings STEP=2
@@ -414,7 +410,6 @@ Next pending: Determine KB Article Strategy
 
 ## Step 3: Knowledge Base Article Creation
 
-#### [CHECKPOINT START - STEP 3]
 
 **CRITICAL: All code examples MUST use real AgeRun types and functions** ([details](../../../kb/validated-documentation-examples.md))
 
@@ -509,7 +504,6 @@ If you're tempted to use hypothetical types, replace with real ones:
 - `processor_t` → `ar_expression_evaluator_t*` or `ar_instruction_evaluator_t*`  // EXAMPLE: Hypothetical type mapping
 - `context_t` → `ar_data_t*`  // EXAMPLE: Hypothetical type mapping
 
-#### [CHECKPOINT END - STEP 3]
 ```bash
 # Mark Step 3 complete with evidence verification
 ./scripts/checkpoint-update.sh new-learnings 3 --evidence "kb/new-article-filename.md" --summary "Created KB article with real AgeRun types and comprehensive examples"
@@ -522,7 +516,6 @@ If you're tempted to use hypothetical types, replace with real ones:
 
 ## Step 4: Validation Before Saving
 
-#### [CHECKPOINT START - STEP 4]
 
 **MANDATORY: Test articles before committing**
 
@@ -540,7 +533,6 @@ If you're tempted to use hypothetical types, replace with real ones:
 - Use `ar_data_t*` as the universal fallback type
 - Reference actual functions from `modules/*.h` files
 
-#### [CHECKPOINT END - STEP 4]
 ```bash
 # Mark Step 4 complete - verification automated
 ./scripts/checkpoint-update.sh new-learnings 4 --summary "Documentation validation passed with make check-docs"
@@ -590,7 +582,6 @@ The following steps must be completed first:
 
 ## Step 5: Update Knowledge Base Index
 
-#### [CHECKPOINT START - STEP 5]
 
 **MANDATORY: Add new articles to kb/README.md**
 
@@ -607,7 +598,6 @@ The following steps must be completed first:
    - [Article Title](article-filename.md)
    ```
 
-#### [CHECKPOINT END - STEP 5]
 ```bash
 # Mark Step 5 complete
 ./scripts/checkpoint-update.sh new-learnings STEP=5
@@ -615,7 +605,6 @@ The following steps must be completed first:
 
 ## Step 6: Update Existing KB Articles with Cross-References (THOROUGH EXECUTION REQUIRED)
 
-#### [CHECKPOINT START - STEP 6]
 
 **CRITICAL - OFTEN MISSED**: Add cross-references to create a web of knowledge ([details](../../../kb/new-learnings-complete-integration-pattern.md)):
 
@@ -652,7 +641,6 @@ The following steps must be completed first:
    git diff --name-only | grep "kb.*\.md" | wc -l  # Should be > new articles
    ```
 
-#### [CHECKPOINT END - STEP 6]
 ```bash
 # Mark Step 6 complete with cross-reference verification
 ./scripts/checkpoint-update.sh new-learnings 6 --summary "Updated X KB articles with bidirectional cross-references"
@@ -662,7 +650,6 @@ The following steps must be completed first:
 
 ## Step 7: Review and Update Existing Commands (THOROUGH EXECUTION REQUIRED)
 
-#### [CHECKPOINT START - STEP 7]
 
 **CRITICAL - OFTEN MISSED**: Check if any Claude commands should be updated based on learnings ([details](../../../kb/new-learnings-complete-integration-pattern.md)):
 
@@ -711,7 +698,6 @@ The following steps must be completed first:
    git diff --name-only | grep ".opencode/command" | wc -l  # Should be >= 3
    ```
 
-#### [CHECKPOINT END - STEP 7]
 ```bash
 # Mark Step 7 complete with command update verification
 ./scripts/checkpoint-update.sh new-learnings 7 --summary "Updated X commands with new KB references and enhanced guidance"
@@ -721,14 +707,12 @@ The following steps must be completed first:
 
 ## Step 8: Review Existing Guidelines
 
-#### [CHECKPOINT START - STEP 8]
 
 Check AGENTS.md to see if these learnings should be referenced:
 - Determine if existing documentation needs links to new kb articles
 - Identify appropriate sections where kb articles should be referenced
 - Note any gaps that need new content with kb links
 
-#### [CHECKPOINT END - STEP 8]
 ```bash
 # Mark Step 8 complete
 ./scripts/checkpoint-update.sh new-learnings STEP=8
@@ -736,7 +720,6 @@ Check AGENTS.md to see if these learnings should be referenced:
 
 ## Step 9: Update Guidelines
 
-#### [CHECKPOINT START - STEP 9]
 
 **CRITICAL**: AGENTS.md updates are MANDATORY for new KB articles ([details](../../../kb/claude-md-reference-requirement.md))
 
@@ -771,7 +754,6 @@ If updates are needed to AGENTS.md:
    - Include new kb articles in relevant sections (e.g., Script Development, Documentation Protocol)
    - Maintain two-tier system: brief guidelines with links to comprehensive details
 
-#### [CHECKPOINT END - STEP 9]
 ```bash
 # Mark Step 9 complete
 ./scripts/checkpoint-update.sh new-learnings STEP=9
@@ -786,7 +768,6 @@ If updates are needed to AGENTS.md:
 
 ## Step 10: Validate Commands with check-commands
 
-#### [CHECKPOINT START - STEP 10]
 
 **CRITICAL**: After updating commands in Step 7, validate them with the check-commands quality gate (just like Step 4 validates docs with check-docs):
 
@@ -805,7 +786,6 @@ If updates are needed to AGENTS.md:
    - All commands have comprehensive documentation
    - Checkpoint tracking sections are properly structured
 
-#### [CHECKPOINT END - STEP 10]
 ```bash
 # Mark Step 10 complete - validation automated
 ./scripts/checkpoint-update.sh new-learnings STEP=10
@@ -815,7 +795,6 @@ If updates are needed to AGENTS.md:
 
 ## Step 11: Update CHANGELOG.md
 
-#### [CHECKPOINT START - STEP 11]
 
 **CRITICAL**: Record all session learnings and changes in CHANGELOG.md BEFORE committing.
 
@@ -855,7 +834,6 @@ If updates are needed to AGENTS.md:
    - Document any important patterns discovered
    - Note any quality gates enforced or process improvements
 
-#### [CHECKPOINT END - STEP 11]
 ```bash
 # Mark Step 11 complete
 ./scripts/checkpoint-update.sh new-learnings STEP=11
@@ -885,7 +863,6 @@ You may proceed to the next section.
 
 ## Step 12: Validate No Broken Links
 
-#### [CHECKPOINT START - STEP 12]
 
 **CRITICAL**: Before committing, verify all links work:
 
@@ -900,7 +877,6 @@ You may proceed to the next section.
 
 2. **Never reference non-existent articles in Related Patterns sections**
 
-#### [CHECKPOINT END - STEP 12]
 ```bash
 # Mark Step 12 complete
 ./scripts/checkpoint-update.sh new-learnings STEP=12
@@ -928,7 +904,6 @@ This script verifies:
 
 **DO NOT PROCEED TO STEP 14 UNLESS THIS SCRIPT SHOWS "READY TO COMMIT"**
 
-#### [CHECKPOINT END - STEP 13]
 ```bash
 # Mark Step 13 complete with integration verification
 ./scripts/checkpoint-update.sh new-learnings STEP=13
@@ -952,7 +927,6 @@ fi
 
 ## Step 14: Automatic Commit and Push
 
-#### [CHECKPOINT START - STEP 14]
 
 **CRITICAL**: Only execute if FINAL GATE shows "ALL GATES PASSED"
 
@@ -1000,7 +974,6 @@ fi
    git status
    ```
 
-#### [CHECKPOINT END - STEP 14]
 ```bash
 # Mark Step 14 complete
 ./scripts/checkpoint-update.sh new-learnings STEP=14

@@ -1,5 +1,19 @@
 # AgeRun CHANGELOG
 
+## 2025-11-09 (Command Documentation Cleanup - Checkpoint Marker Removal)
+
+- **Command Documentation Cleanup - Checkpoint Marker Removal**
+
+  Removed checkpoint markers and simplified troubleshooting sections across all command files.
+
+  **Implementation**: Removed all `[CHECKPOINT START]`, `[CHECKPOINT END]`, and `[EXECUTION GATE]` markers from 30 command files, simplified troubleshooting sections to remove checkpoint script references (12 commands), updated `scripts/check_commands.py` to remove checkpoint marker validation entirely.
+
+  **Files Modified**: 30 command files (.opencode/command/ar/*.md), scripts/check_commands.py
+
+  **Quality Metrics**: Clean build (2m 19s), all checks pass (check-commands 98.3% average score, 31/31 excellent), zero memory leaks, all tests passing
+
+  **Key Achievement**: Commands now have cleaner structure without visual checkpoint markers while maintaining checkpoint tracking functionality through scripts
+
 ## 2025-11-09 (Session - KB Link Fix & Interleaved Todo Item Patterns)
 
 - **KB Link Fix and Interleaved Todo Item Patterns**

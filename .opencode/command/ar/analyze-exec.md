@@ -122,7 +122,6 @@ These wrappers provide centralized checkpoint management across all commands.
 
 Run the complete checkpoint-based workflow:
 
-#### [CHECKPOINT START]
 
 ```bash
 ./scripts/run-analyze-exec.sh
@@ -137,19 +136,11 @@ This script handles all stages of the executable static analysis process:
 3. **Report Results**: Presents analysis findings and code quality metrics
 4. **Checkpoint Completion**: Marks the workflow as complete
 
-## Troubleshooting: Manual Checkpoint Control
+## Troubleshooting
 
-Only use these commands if the script fails and you need to manually intervene:
+If the script fails, simply rerun it:
 
 ```bash
-# Check current progress (if workflow interrupted)
-./scripts/checkpoint-status.sh analyze-exec --verbose
-
-# Resume from a specific step (only if you know it's stuck)
-./scripts/checkpoint-update.sh analyze-exec N
-
-# ONLY use this if you need to reset everything and start over
-rm -f /tmp/analyze-exec-progress.txt
 ./scripts/run-analyze-exec.sh
 ```
 
@@ -177,7 +168,6 @@ rm -f /tmp/analyze-exec-progress.txt
 - Do all malloc calls have corresponding frees?
 - Are there any unreachable code blocks?
 
-#### [EXECUTION GATE]
 ```bash
 # Verify ready to execute
 ./scripts/checkpoint-gate.sh analyze-exec "Ready" "1"
@@ -191,7 +181,6 @@ rm -f /tmp/analyze-exec-progress.txt
 
 ## Command
 
-#### [CHECKPOINT START - EXECUTION]
 
 ```bash
 make analyze-exec 2>&1
@@ -201,7 +190,6 @@ make analyze-exec 2>&1
 ```
 
 
-#### [CHECKPOINT END - EXECUTION]
 ## Expected Output
 
 ### Success State

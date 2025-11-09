@@ -122,7 +122,6 @@ These wrappers provide centralized checkpoint management across all commands.
 
 Run the complete checkpoint-based workflow:
 
-#### [CHECKPOINT START]
 
 ```bash
 ./scripts/run-sanitize-tests.sh
@@ -137,23 +136,14 @@ This script handles all stages of sanitizer execution:
 3. **Report Results**: Summarizes findings
 4. **Checkpoint Completion**: Marks the workflow as complete
 
-## Troubleshooting: Manual Checkpoint Control
+## Troubleshooting
 
-Only use these commands if the script fails and you need to manually intervene:
+If the script fails, simply rerun it:
 
 ```bash
-# Check current progress (if workflow interrupted)
-./scripts/checkpoint-status.sh sanitize-tests --verbose
-
-# Resume from a specific step (only if you know it's stuck)
-./scripts/checkpoint-update.sh sanitize-tests N
-
-# ONLY use this if you need to reset everything and start over
-rm -f /tmp/sanitize-tests-progress.txt
 ./scripts/run-sanitize-tests.sh
 ```
 
-#### [CHECKPOINT END]
 
 ## Key Points
 
@@ -169,4 +159,3 @@ rm -f /tmp/sanitize-tests-progress.txt
 **Mocking Guidelines**: When using dlsym for testing, mock at the appropriate level - function-level mocking is simpler and more maintainable than system call interception ([details](../../../kb/mock-at-right-level-pattern.md)). Complex test code with retry loops or state tracking indicates mocking at the wrong abstraction level ([details](../../../kb/test-complexity-as-code-smell.md)). Always check how other tests solve similar problems before creating new infrastructure ([details](../../../kb/check-existing-solutions-first.md)).
 
 **Diagnostic Troubleshooting**: When sanitizer tools report configuration issues despite working setups, apply systematic diagnostic troubleshooting ([details](../../../kb/shell-configuration-diagnostic-troubleshooting.md)). Shell loading order affects tool behavior ([details](../../../kb/shell-loading-order-tool-detection.md)).
-#### [CHECKPOINT COMPLETE]

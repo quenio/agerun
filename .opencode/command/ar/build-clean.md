@@ -122,7 +122,6 @@ These wrappers provide centralized checkpoint management across all commands.
 
 Run the complete checkpoint-based workflow:
 
-#### [CHECKPOINT START]
 
 ```bash
 ./scripts/run-build-clean.sh
@@ -137,19 +136,11 @@ This script handles all stages of the clean build process:
 3. **Verify Build**: Confirms all artifacts were rebuilt correctly
 4. **Checkpoint Completion**: Marks the workflow as complete
 
-## Troubleshooting: Manual Checkpoint Control
+## Troubleshooting
 
-Only use these commands if the script fails and you need to manually intervene:
+If the script fails, simply rerun it:
 
 ```bash
-# Check current progress (if workflow interrupted)
-./scripts/checkpoint-status.sh build-clean --verbose
-
-# Resume from a specific step (only if you know it's stuck)
-./scripts/checkpoint-update.sh build-clean N
-
-# ONLY use this if you need to reset everything and start over
-rm -f /tmp/build-clean-progress.txt
 ./scripts/run-build-clean.sh
 ```
 
@@ -178,7 +169,6 @@ rm -f /tmp/build-clean-progress.txt
 
 For example, if you see "undefined reference" errors in incremental builds, a clean build often resolves them.
 
-#### [EXECUTION GATE]
 ```bash
 # Verify ready to execute
 ./scripts/checkpoint-gate.sh build-clean "Ready" "1"
@@ -192,7 +182,6 @@ For example, if you see "undefined reference" errors in incremental builds, a cl
 
 ## Command
 
-#### [CHECKPOINT START - EXECUTION]
 
 ```bash
 make clean build 2>&1 && make check-logs
@@ -202,7 +191,6 @@ make clean build 2>&1 && make check-logs
 ```
 
 
-#### [CHECKPOINT END]
 ## Expected Output
 
 ### Success State

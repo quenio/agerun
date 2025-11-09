@@ -224,7 +224,6 @@ Merge Statistics:
 - [ ] Changes committed and pushed
 ### Stage 1: Discovery (Step 1)
 
-#### [CHECKPOINT START - STEP 1: Check Files]
 
 #### Operation 1: Check for Local Settings File
 
@@ -238,7 +237,6 @@ Merge Statistics:
 ./scripts/checkpoint-update.sh merge-settings 1
 ```
 
-#### [CHECKPOINT END - STEP 1]
 
 #### [DISCOVERY GATE]
 ```bash
@@ -247,7 +245,6 @@ Merge Statistics:
 
 ### Stage 2: Merge (Steps 2-4)
 
-#### [CHECKPOINT START - STEP 2: Read Settings]
 
 #### Operation 1: Read Both Settings Files
 
@@ -261,9 +258,7 @@ Merge Statistics:
 ./scripts/checkpoint-update.sh merge-settings 2
 ```
 
-#### [CHECKPOINT END - STEP 2]
 
-#### [CHECKPOINT START - STEP 3: Merge Permissions]
 
 #### Operation 1: Merge Local Permissions into Main
 
@@ -277,9 +272,7 @@ Merge Statistics:
 ./scripts/checkpoint-update.sh merge-settings 3
 ```
 
-#### [CHECKPOINT END - STEP 3]
 
-#### [CHECKPOINT START - STEP 4: Validate Result]
 
 #### Operation 1: Validate Merged Settings JSON
 
@@ -293,7 +286,6 @@ Merge Statistics:
 ./scripts/checkpoint-update.sh merge-settings 4
 ```
 
-#### [CHECKPOINT END - STEP 4]
 
 #### [MERGE GATE]
 ```bash
@@ -302,7 +294,6 @@ Merge Statistics:
 
 ### Stage 3: Optimization (Step 5)
 
-#### [CHECKPOINT START - STEP 5: Refactor Permissions]
 
 #### Operation 1: Apply Generic Permission Patterns
 
@@ -316,7 +307,6 @@ Merge Statistics:
 ./scripts/checkpoint-update.sh merge-settings 5
 ```
 
-#### [CHECKPOINT END - STEP 5]
 
 #### [REFACTOR GATE]
 ```bash
@@ -325,7 +315,6 @@ Merge Statistics:
 
 ### Stage 4: Cleanup (Step 6)
 
-#### [CHECKPOINT START - STEP 6: Commit and Cleanup]
 
 #### Operation 1: Commit and Push Changes
 
@@ -339,9 +328,7 @@ Merge Statistics:
 ./scripts/checkpoint-update.sh merge-settings 6
 ```
 
-#### [CHECKPOINT END - STEP 6]
 
-#### [CHECKPOINT COMPLETE]
 ```bash
 ./scripts/checkpoint-complete.sh merge-settings
 rm -f /tmp/merge-settings-stats.txt

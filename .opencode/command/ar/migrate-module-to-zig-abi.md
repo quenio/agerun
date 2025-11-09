@@ -202,9 +202,7 @@ Which module would you like to migrate to Zig?
 
 ### Stage 1: Assessment (Steps 1-4)
 
-#### [CHECKPOINT START - STAGE 1]
 
-#### [CHECKPOINT END]
 
 #### Pre-Migration Checklist
 
@@ -308,9 +306,7 @@ If `modules/{{1}}.zig` already exists:
 
 ### Stage 2: Implementation (Steps 5-7)
 
-#### [CHECKPOINT START - STAGE 2]
 
-#### [CHECKPOINT END]
 
 ### Implementation Strategy
 
@@ -377,9 +373,7 @@ echo "Maintained C API compatibility with export fn"
 
 ### Stage 3: Testing (Steps 8-9)
 
-#### [CHECKPOINT START - STAGE 3]
 
-#### [CHECKPOINT END]
 
 ### Testing Approach
 
@@ -434,9 +428,7 @@ fi
 
 ### Stage 4: Cleanup (Step 10)
 
-#### [CHECKPOINT START - STAGE 4]
 
-#### [CHECKPOINT END]
 
 ### Cleanup Plan
 
@@ -469,7 +461,6 @@ echo "✅ Migration complete!"
 ./scripts/checkpoint-update.sh migrate-module-to-zig-abi STEP=10
 ```
 
-#### [CHECKPOINT COMPLETE]
 ```bash
 ./scripts/checkpoint-complete.sh migrate-module-to-zig-abi
 ```

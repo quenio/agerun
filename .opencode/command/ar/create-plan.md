@@ -378,7 +378,6 @@ This command creates plans with iterations marked `PENDING REVIEW`. These marker
 
 ### Stage 1: Requirements and Analysis (Steps 1-5)
 
-#### [CHECKPOINT START - STAGE 1]
 
 #### Step 1: KB Consultation & 14 Lesson Verification
 
@@ -892,7 +891,6 @@ Before proceeding to Step 6, you MUST verify Step 5 completion via step-verifier
 ./scripts/checkpoint-update.sh create-plan STEP=5
 ```
 
-#### [CHECKPOINT END]
 
 **[QUALITY GATE 1: Requirements Complete]**
 ```bash
@@ -915,7 +913,6 @@ Before proceeding to Step 6, you MUST verify Step 5 completion via step-verifier
 
 ### Stage 2: Iteration Planning (Steps 6-8)
 
-#### [CHECKPOINT START - STAGE 2]
 
 #### Step 6: Plan Iterations
 
@@ -1515,7 +1512,6 @@ Before proceeding to Step 9, you MUST verify Step 8 completion via step-verifier
 ./scripts/checkpoint-update.sh create-plan STEP=8
 ```
 
-#### [CHECKPOINT END]
 
 **[QUALITY GATE 2: Iterations Complete]**
 ```bash
@@ -1537,7 +1533,6 @@ Before proceeding to Step 9, you MUST verify Step 8 completion via step-verifier
 
 ### Stage 3: Cleanup and Documentation (Steps 9-11)
 
-#### [CHECKPOINT START - STAGE 3]
 
 #### Step 9: Add Cleanup
 
@@ -1749,7 +1744,6 @@ Before proceeding to Step 12, you MUST verify Step 11 completion via step-verifi
 ./scripts/checkpoint-update.sh create-plan STEP=11
 ```
 
-#### [CHECKPOINT END]
 
 **[QUALITY GATE 3: Documentation Complete]**
 ```bash
@@ -1771,7 +1765,6 @@ Before proceeding to Step 12, you MUST verify Step 11 completion via step-verifi
 
 ### Stage 4: Validation and Saving (Steps 12-14)
 
-#### [CHECKPOINT START - STAGE 4]
 
 #### Step 12: Validate Plan
 
@@ -2042,9 +2035,7 @@ Before completing the workflow, you MUST verify ALL steps were completed correct
 ./scripts/checkpoint-update.sh create-plan STEP=14
 ```
 
-#### [CHECKPOINT END]
 
-#### [CHECKPOINT COMPLETE]
 ```bash
 ./scripts/checkpoint-complete.sh create-plan
 ```

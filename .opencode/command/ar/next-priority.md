@@ -145,11 +145,9 @@ Only after completing KB consultation should you proceed to analyze TODO.md.
 
 # Priority Analysis Workflow
 
-#### [CHECKPOINT START]
 
 ## Step 1: Read Context
 
-#### [CHECKPOINT STEP 1]
 
 **What this step does:**
 - Reads AGENTS.md to understand the project context
@@ -177,7 +175,6 @@ ls -la AGENTS.md TODO.md
 
 ## Step 2: Analyze Priorities
 
-#### [CHECKPOINT STEP 2]
 
 **What this step does:**
 - Applies systematic analysis protocols from KB articles
@@ -223,7 +220,6 @@ Task: "Fix memory leaks"
 
 ## Step 3: Generate Recommendation
 
-#### [CHECKPOINT STEP 3]
 
 **What this step does:**
 - Summarizes the analysis results
@@ -309,9 +305,7 @@ If the user accepts your recommendation, prepare for implementation:
 
 ## Complete the Workflow
 
-#### [CHECKPOINT END]
 
-#### [CHECKPOINT GATE]
 
 When all steps are complete, verify the workflow:
 
@@ -319,7 +313,6 @@ When all steps are complete, verify the workflow:
 ./scripts/checkpoint-complete.sh next-priority
 ```
 
-#### [CHECKPOINT COMPLETE]
 
 **Expected completion output:**
 ```

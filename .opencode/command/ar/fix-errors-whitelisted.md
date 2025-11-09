@@ -200,9 +200,7 @@ The whitelist contains both intentional test errors AND success messages that ch
 
 ### Stage 1: Analysis (Steps 1-3)
 
-#### [CHECKPOINT START - STAGE 1]
 
-#### [CHECKPOINT END]
 
 #### Step 1: Analyze Current Whitelist
 
@@ -239,9 +237,7 @@ The script provides:
 
 ### Stage 2: Strategy Development (Steps 4-7)
 
-#### [CHECKPOINT START - STAGE 2]
 
-#### [CHECKPOINT END]
 
 #### Step 2: Identify Target Pattern
 
@@ -344,9 +340,7 @@ echo "4. Entries to remove: [count]"
 
 ### Stage 3: Implementation (Steps 8-11)
 
-#### [CHECKPOINT START - STAGE 3]
 
-#### [CHECKPOINT END]
 
 #### [CRITICAL IMPLEMENTATION GATE]
 ```bash
@@ -424,9 +418,7 @@ fi
 
 ### Stage 4: Documentation & Commit (Steps 12-16)
 
-#### [CHECKPOINT START - STAGE 4]
 
-#### [CHECKPOINT END]
 
 #### Step 5: Update Documentation
 
@@ -529,7 +521,6 @@ Whitelist reduced from $BEFORE_COUNT to $AFTER_COUNT entries."
 ./scripts/checkpoint-update.sh fix-errors-whitelisted STEP=16
 ```
 
-#### [CHECKPOINT COMPLETE]
 ```bash
 ./scripts/checkpoint-complete.sh fix-errors-whitelisted
 ```

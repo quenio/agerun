@@ -126,8 +126,6 @@ These wrappers provide centralized checkpoint management across all commands.
 
 Run the complete checkpoint-based workflow:
 
-#### [CHECKPOINT START]
-
 ```bash
 ./scripts/run-run-tests.sh
 ```
@@ -141,19 +139,11 @@ This script handles all stages of test execution:
 3. **Verify Results**: Confirms all tests passed
 4. **Checkpoint Completion**: Marks the workflow as complete
 
-## Troubleshooting: Manual Checkpoint Control
+## Troubleshooting
 
-Only use these commands if the script fails and you need to manually intervene:
+If the script fails, simply rerun it:
 
 ```bash
-# Check current progress (if workflow interrupted)
-./scripts/checkpoint-status.sh run-tests --verbose
-
-# Resume from a specific step (only if you know it's stuck)
-./scripts/checkpoint-update.sh run-tests N
-
-# ONLY use this if you need to reset everything and start over
-rm -f /tmp/run-tests-progress.txt
 ./scripts/run-run-tests.sh
 ```
 
@@ -178,7 +168,6 @@ rm -f /tmp/run-tests-progress.txt
 
 
 
-#### [EXECUTION GATE]
 ```bash
 # Verify ready to execute
 ./scripts/checkpoint-gate.sh run-tests "Ready" "1"
@@ -192,7 +181,6 @@ rm -f /tmp/run-tests-progress.txt
 
 ## Command
 
-#### [CHECKPOINT START - EXECUTION]
 
 ```bash
 make run-tests 2>&1
@@ -202,7 +190,6 @@ make run-tests 2>&1
 ```
 
 
-#### [CHECKPOINT END - EXECUTION]
 ## Expected Output
 
 ### Success State
@@ -255,7 +242,6 @@ make: *** [ar_data.o] Error 1
 ```
 
 
-#### [CHECKPOINT COMPLETE]
 ```bash
 ./scripts/checkpoint-complete.sh run-tests
 ```

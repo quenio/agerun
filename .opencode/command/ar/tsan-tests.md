@@ -122,7 +122,6 @@ These wrappers provide centralized checkpoint management across all commands.
 
 Run the complete checkpoint-based workflow:
 
-#### [CHECKPOINT START]
 
 ```bash
 ./scripts/run-tsan-tests.sh
@@ -137,23 +136,14 @@ This script handles all stages of sanitizer execution:
 3. **Report Results**: Summarizes findings
 4. **Checkpoint Completion**: Marks the workflow as complete
 
-## Troubleshooting: Manual Checkpoint Control
+## Troubleshooting
 
-Only use these commands if the script fails and you need to manually intervene:
+If the script fails, simply rerun it:
 
 ```bash
-# Check current progress (if workflow interrupted)
-./scripts/checkpoint-status.sh tsan-tests --verbose
-
-# Resume from a specific step (only if you know it's stuck)
-./scripts/checkpoint-update.sh tsan-tests N
-
-# ONLY use this if you need to reset everything and start over
-rm -f /tmp/tsan-tests-progress.txt
 ./scripts/run-tsan-tests.sh
 ```
 
-#### [CHECKPOINT END]
 
 ## Key Points
 
@@ -162,4 +152,3 @@ rm -f /tmp/tsan-tests-progress.txt
 - **dlsym tests excluded** automatically to prevent conflicts
 - **~10x slower** than normal tests but catches concurrency bugs
 - **Exit code 66** indicates thread safety issues detected
-#### [CHECKPOINT COMPLETE]

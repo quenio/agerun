@@ -391,7 +391,6 @@ This command updates the plan file in TWO distinct phases:
 
 ### Stage 1: Plan Reading and Setup (Steps 1-7)
 
-#### [CHECKPOINT START - STAGE 1]
 
 #### Step 1: KB Consultation & 14 Lesson Verification
 
@@ -1245,7 +1244,6 @@ Before proceeding to Step 8, you MUST verify Step 7 completion via step-verifier
 
 
 
-#### [CHECKPOINT END - STAGE 1]
 
 **[QUALITY GATE 1: Setup Complete]**
 ```bash
@@ -1277,7 +1275,6 @@ Before proceeding to Step 8, you MUST verify Step 7 completion via step-verifier
 
 ### Stage 2: Iteration Execution (Steps 8-10)
 
-#### [CHECKPOINT START - STAGE 2]
 
 #### Step 8: Execute Iterations
 
@@ -1854,7 +1851,6 @@ Before proceeding to Step 11, you MUST verify Step 10 completion via step-verifi
 
 
 
-#### [CHECKPOINT END - STAGE 2]
 
 **[QUALITY GATE 2: Implementation Complete]**
 ```bash
@@ -1875,7 +1871,6 @@ Before proceeding to Step 11, you MUST verify Step 10 completion via step-verifi
 
 ### Stage 3: Completion and Documentation (Steps 11-12)
 
-#### [CHECKPOINT START - STAGE 3]
 
 #### Step 11: Update Plan Status
 
@@ -2170,7 +2165,6 @@ Before proceeding to Step completion, you MUST verify Step 12 completion via ste
 
 
 
-#### [CHECKPOINT END - STAGE 3]
 
 **[QUALITY GATE 3: Documentation Complete]**
 ```bash
@@ -2189,7 +2183,6 @@ Before proceeding to Step completion, you MUST verify Step 12 completion via ste
 - [ ] Completion status header added (if all iterations complete)
 - [ ] Execution summary generated with all metrics
 
-#### [CHECKPOINT COMPLETE]
 ```bash
 ./scripts/checkpoint-complete.sh execute-plan
 ```

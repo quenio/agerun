@@ -122,7 +122,6 @@ These wrappers provide centralized checkpoint management across all commands.
 
 Run the complete checkpoint-based workflow:
 
-#### [CHECKPOINT START]
 
 ```bash
 ./scripts/run-run-exec.sh
@@ -137,19 +136,11 @@ This script handles all stages of executable execution:
 3. **Verify Execution**: Confirms successful execution with exit code
 4. **Checkpoint Completion**: Marks the workflow as complete
 
-## Troubleshooting: Manual Checkpoint Control
+## Troubleshooting
 
-Only use these commands if the script fails and you need to manually intervene:
+If the script fails, simply rerun it:
 
 ```bash
-# Check current progress (if workflow interrupted)
-./scripts/checkpoint-status.sh run-exec --verbose
-
-# Resume from a specific step (only if you know it's stuck)
-./scripts/checkpoint-update.sh run-exec N
-
-# ONLY use this if you need to reset everything and start over
-rm -f /tmp/run-exec-progress.txt
 ./scripts/run-run-exec.sh
 ```
 
@@ -177,7 +168,6 @@ rm -f /tmp/run-exec-progress.txt
 
 For example, if you see "X messages remaining" at shutdown, there's a message routing issue.
 
-#### [EXECUTION GATE]
 ```bash
 # Verify ready to execute
 ./scripts/checkpoint-gate.sh run-exec "Ready" "1"
@@ -191,7 +181,6 @@ For example, if you see "X messages remaining" at shutdown, there's a message ro
 
 ## Command
 
-#### [CHECKPOINT START - EXECUTION]
 
 ```bash
 make run-exec 2>&1
@@ -201,7 +190,6 @@ make run-exec 2>&1
 ```
 
 
-#### [CHECKPOINT END]
 ## Expected Output
 
 ### Success State

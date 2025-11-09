@@ -184,9 +184,7 @@ Migrate the **ar_{{1}}** module from a C-ABI compatible Zig module to a pure Zig
 
 ### Stage 1: Assessment (Steps 1-5)
 
-#### [CHECKPOINT START - STAGE 1]
 
-#### [CHECKPOINT END]
 
 #### Read KB Article First
 
@@ -283,9 +281,7 @@ The script checks:
 
 ### Stage 2: Implementation (Steps 6-7)
 
-#### [CHECKPOINT START - STAGE 2]
 
-#### [CHECKPOINT END]
 
 #### Migration Plan
 
@@ -345,9 +341,7 @@ echo "✅ Converted $FUNCTIONS_CONVERTED functions"
 
 ### Stage 3: Testing (Steps 8-9)
 
-#### [CHECKPOINT START - STAGE 3]
 
-#### [CHECKPOINT END]
 
 #### Step 8: Update Dependencies
 
@@ -399,9 +393,7 @@ fi
 
 ### Stage 4: Cleanup (Steps 10-11)
 
-#### [CHECKPOINT START - STAGE 4]
 
-#### [CHECKPOINT END]
 
 #### Step 10: Remove Old Module
 
@@ -445,7 +437,6 @@ echo "- Added KB article references"
 ./scripts/checkpoint-update.sh migrate-module-to-zig-struct STEP=11
 ```
 
-#### [CHECKPOINT COMPLETE]
 ```bash
 ./scripts/checkpoint-complete.sh migrate-module-to-zig-struct
 ```

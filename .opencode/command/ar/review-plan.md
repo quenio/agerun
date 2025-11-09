@@ -343,7 +343,6 @@ This command reviews plans and updates iteration status markers. These markers t
 
 ### Stage 1: KB Consultation and Plan Reading (Steps 1-2)
 
-#### [CHECKPOINT START - STAGE 1]
 
 #### Step 1: KB Consultation & Lesson Verification
 
@@ -461,7 +460,6 @@ The helper automatically filters for "- PENDING REVIEW" status and skips:
 - [ ] Each iteration numbered (N.M format)
 - [ ] Has Related Patterns section (if applicable)
 
-#### [CHECKPOINT END]
 
 **[QUALITY GATE 1: Plan Basics Complete]**
 ```bash
@@ -483,7 +481,6 @@ The helper automatically filters for "- PENDING REVIEW" status and skips:
 
 ### Stage 2: Interactive Iteration Review (Step 3)
 
-#### [CHECKPOINT START - STAGE 2]
 
 #### Step 3: Review Each Iteration (INTERACTIVE LOOP - CANNOT BATCH)
 
@@ -722,7 +719,6 @@ After all PENDING REVIEW iterations have been reviewed:
 ./scripts/checkpoint-update.sh review-plan STEP=3
 ```
 
-#### [CHECKPOINT END]
 
 **[QUALITY GATE 2: All Iterations Reviewed]**
 ```bash
@@ -748,7 +744,6 @@ After all PENDING REVIEW iterations have been reviewed:
 
 ### Stage 3: Final Verification and Reporting (Steps 4-6)
 
-#### [CHECKPOINT START - STAGE 3]
 
 #### Step 4: Verify Cross-References (Lesson 13 - Forward Dependencies)
 
@@ -940,9 +935,7 @@ Create section mapping issues by lesson:
 ./scripts/checkpoint-update.sh review-plan STEP=6
 ```
 
-#### [CHECKPOINT END]
 
-#### [CHECKPOINT COMPLETE]
 ```bash
 ./scripts/checkpoint-complete.sh review-plan
 ```

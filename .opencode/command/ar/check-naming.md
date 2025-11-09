@@ -140,11 +140,9 @@ Check current progress at any time:
 
 ## Workflow Execution
 
-#### [CHECKPOINT START - STAGE 1]
 
 #### Step 1: Check Naming Conventions
 
-#### [CHECKPOINT START - STEP 1]
 
 ```bash
 ./scripts/run-naming-check.sh
@@ -154,16 +152,13 @@ Runs naming convention validation and captures violation count for conditional w
 
 **Expected output**: Shows validation results and saves VIOLATION_COUNT to /tmp/check-naming-stats.txt
 
-#### [CHECKPOINT END - STEP 1]
 ```bash
 ./scripts/checkpoint-update.sh check-naming 1
 ```
 
-#### [CHECKPOINT END - STAGE 1]
 
 #### Step 2: Conditional Flow (Violation Gate)
 
-#### [CHECKPOINT START - STEP 2]
 
 If no violations found, skip Step 3. If violations found, continue to analysis.
 
@@ -171,13 +166,10 @@ If no violations found, skip Step 3. If violations found, continue to analysis.
 ./scripts/check-naming-conditional-flow.sh
 ```
 
-#### [CHECKPOINT END - STEP 2]
 
-#### [CHECKPOINT START - STAGE 2]
 
 #### Step 3: Analyze Violations
 
-#### [CHECKPOINT START - STEP 3]
 
 ```bash
 ./scripts/analyze-naming-violations.sh
@@ -187,14 +179,11 @@ Analyzes and categorizes any naming violations found. Only runs if violations ex
 
 **Expected output**: Shows detailed analysis of violations by category and next steps.
 
-#### [CHECKPOINT END - STEP 3]
 ```bash
 ./scripts/checkpoint-update.sh check-naming 3
 ```
 
-#### [CHECKPOINT END - STAGE 2]
 
-#### [CHECKPOINT COMPLETE]
 
 ```bash
 ./scripts/checkpoint-complete.sh check-naming
@@ -206,22 +195,9 @@ rm -f /tmp/check-naming-*.txt
 ✅ Naming convention check workflow complete!
 ```
 
-## Troubleshooting: Manual Checkpoint Control
+## Troubleshooting
 
-Only use these commands if the script fails and you need to manually intervene:
-
-```bash
-# Check current progress (if workflow interrupted)
-./scripts/checkpoint-status.sh check-naming --verbose
-
-# Resume from a specific step (only if you know it's stuck)
-./scripts/checkpoint-update.sh check-naming N
-
-# ONLY use this if you need to reset everything and start over
-rm -f /tmp/check-naming-progress.txt
-./scripts/checkpoint-init.sh check-naming "Check Naming" "Analyze Violations" "Document Findings"
-./scripts/checkpoint-require.sh check-naming
-```
+If the command fails, simply rerun it from the beginning.
 
 ## Minimum Requirements
 

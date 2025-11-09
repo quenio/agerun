@@ -234,9 +234,7 @@ When you see KB article links (formatted with parentheses and "details" text poi
 
 ### Stage 1: Analysis (Steps 1-3)
 
-#### [CHECKPOINT START - STAGE 1]
 
-#### [CHECKPOINT END]
 
 #### Step 1: Identify Verbose Sections
 
@@ -300,9 +298,7 @@ echo "Estimated reduction: $ESTIMATED_REDUCTION lines"
 
 ### Stage 2: Planning (Steps 4-5)
 
-#### [CHECKPOINT START - STAGE 2]
 
-#### [CHECKPOINT END]
 
 #### Step 4: Check Existing KB Articles
 
@@ -366,9 +362,7 @@ echo "NEW_ARTICLES_PLANNED=$NEW_ARTICLES_PLANNED" >> /tmp/compact-guidelines-met
 
 ### Stage 3: Creation (Steps 6-8)
 
-#### [CHECKPOINT START - STAGE 3]
 
-#### [CHECKPOINT END]
 
 #### 4. Knowledge Base Article Creation ([details](../../../kb/validated-documentation-examples.md))
 
@@ -459,9 +453,7 @@ fi
 
 ### Stage 4: Integration (Steps 9-11)
 
-#### [CHECKPOINT START - STAGE 4]
 
-#### [CHECKPOINT END]
 
 #### Step 9: Update AGENTS.md References
 
@@ -603,9 +595,7 @@ After compacting each section:
 
 ### Stage 5: Validation (Steps 12-14)
 
-#### [CHECKPOINT START - STAGE 5]
 
-#### [CHECKPOINT END]
 
 #### Step 12: Run Documentation Validation
 
@@ -676,9 +666,7 @@ fi
 
 ### Stage 6: Commit (Step 15)
 
-#### [CHECKPOINT START - STAGE 6]
 
-#### [CHECKPOINT END]
 
 #### 10. Commit Strategy
 
@@ -720,7 +708,6 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 ./scripts/checkpoint-update.sh compact-guidelines STEP=15
 ```
 
-#### [CHECKPOINT COMPLETE]
 ```bash
 ./scripts/checkpoint-complete.sh compact-guidelines
 ```

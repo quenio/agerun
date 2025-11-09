@@ -196,9 +196,7 @@ Assigns scores based on:
 
 ### Stage 1: Scanning (Step 1)
 
-#### [CHECKPOINT START - STAGE 1]
 
-#### [CHECKPOINT END]
 
 #### Step 1: Scan Commands
 
@@ -208,9 +206,7 @@ Assigns scores based on:
 
 ### Stage 2: Validation (Steps 2-3)
 
-#### [CHECKPOINT START - STAGE 2]
 
-#### [CHECKPOINT END]
 
 #### Step 2: Validate Structure
 
@@ -226,9 +222,7 @@ Assigns scores based on:
 
 ### Stage 3: Analysis (Steps 4-5)
 
-#### [CHECKPOINT START - STAGE 3]
 
-#### [CHECKPOINT END]
 
 #### Step 4: Identify Issues
 
@@ -242,7 +236,6 @@ Assigns scores based on:
 ./scripts/generate-command-report.sh
 ```
 
-#### [CHECKPOINT COMPLETE]
 ```bash
 ./scripts/checkpoint-complete.sh check-commands
 ```

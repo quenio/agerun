@@ -187,7 +187,6 @@ Verifies checkpoint is initialized and ready before proceeding.
 ✅ Checkpoint tracking verified
 ```
 
-#### [CHECKPOINT START - STEP 1: Validate Docs]
 
 ### Checkpoint Step 1: Validate Docs
 
@@ -210,10 +209,6 @@ Runs `make check-docs` to identify all documentation errors and saves error coun
 Records completion of "Validate Docs" step in checkpoint tracking.
 
 **Expected output**: Progress bar showing 1/5 steps complete.
-
-#### [CHECKPOINT END - STEP 1]
-
-#### [CHECKPOINT START - STEP 2: Preview Fixes]
 
 ### Checkpoint Step 2: Preview Fixes
 
@@ -247,9 +242,7 @@ Runs `python3 scripts/batch_fix_docs.py --dry-run` to preview changes before app
 
 Records completion of "Preview Fixes" step in checkpoint tracking.
 
-#### [CHECKPOINT END - STEP 2]
 
-#### [CHECKPOINT START - STEP 3: Apply Fixes]
 
 ### Checkpoint Step 3: Apply Fixes
 
@@ -271,9 +264,7 @@ Runs the batch fix script to fix all identified documentation errors. Only execu
 
 Records completion of "Apply Fixes" step in checkpoint tracking.
 
-#### [CHECKPOINT END - STEP 3]
 
-#### [CHECKPOINT START - STEP 4: Verify Resolution]
 
 ### Checkpoint Step 4: Verify Resolution
 
@@ -305,9 +296,7 @@ Validates that resolution gate passes before proceeding to commit.
 
 **Expected output**: Gate status indicating pass/fail.
 
-#### [CHECKPOINT END - STEP 4]
 
-#### [CHECKPOINT START - STEP 5: Commit and Push]
 
 ### Checkpoint Step 5: Commit and Push
 
@@ -332,7 +321,6 @@ Stages, commits, and pushes all documentation fixes.
 
 Records completion of "Commit and Push" step in checkpoint tracking.
 
-#### [CHECKPOINT END - STEP 5]
 
 ### Workflow Completion
 
@@ -350,28 +338,10 @@ Completes checkpoint workflow and cleans up temporary files.
 ✅ Documentation check workflow complete!
 ```
 
-#### [CHECKPOINT COMPLETE]
 
-## Troubleshooting: Manual Checkpoint Control
+## Troubleshooting
 
-#### [CHECKPOINT GATE]
-
-Only use these commands if the script fails and you need to manually intervene:
-
-```bash
-# Check current progress (if workflow interrupted)
-./scripts/checkpoint-status.sh check-docs --verbose
-
-# Resume from a specific step (only if you know it's stuck)
-./scripts/checkpoint-update.sh check-docs N
-
-# ONLY use this if you need to reset everything and start over
-rm -f /tmp/check-docs-progress.txt
-./scripts/checkpoint-init.sh check-docs "Validate Docs" "Preview Fixes" "Apply Fixes" "Verify Resolution" "Commit and Push"
-./scripts/checkpoint-require.sh check-docs
-```
-
-#### [CHECKPOINT COMPLETE]
+If the command fails, simply rerun it from the beginning.
 
 ## Minimum Requirements
 

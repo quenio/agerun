@@ -219,7 +219,6 @@ This uses selective compaction for mixed-state documents ([details](../../../kb/
 
 ### Stage 1: Analysis (Steps 1-2)
 
-#### [CHECKPOINT START - STAGE 1]
 
 #### Step 1: Measure Baseline
 
@@ -295,11 +294,9 @@ Analysis questions for completed tasks:
    Verified: Steps 1,2
 ```
 
-#### [CHECKPOINT END]
 
 ### Stage 2: Manual Selective Compaction (Steps 3-4)
 
-#### [CHECKPOINT START - STAGE 2]
 
 #### Step 3: Manual Semantic Compaction
 
@@ -415,11 +412,9 @@ echo "✅ Integrity verified and reduction target met"
    Verified: Steps 3,4
 ```
 
-#### [CHECKPOINT END]
 
 ### Stage 3: Documentation and Commit (Steps 5-7)
 
-#### [CHECKPOINT START - STAGE 3]
 
 #### Step 5: Add Self-Entry
 
@@ -499,7 +494,6 @@ echo "   Commit status: Clean"
 ./scripts/checkpoint-update.sh compact-tasks STEP=7
 ```
 
-#### [CHECKPOINT COMPLETE]
 ```bash
 ./scripts/checkpoint-complete.sh compact-tasks
 ```
@@ -518,7 +512,6 @@ echo "   Commit status: Clean"
 rm -f /tmp/compact-tasks-stats.txt
 ```
 
-#### [CHECKPOINT END]
 
 ## Key Compaction Techniques for Mixed-State Documents
 

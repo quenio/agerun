@@ -215,9 +215,7 @@ After making improvements to one module, use this command to systematically chec
 
 ### Stage 1: Understanding (Steps 1-2)
 
-#### [CHECKPOINT START - STAGE 1]
 
-#### [CHECKPOINT END]
 
 #### Step 1: Identify the Improvement Made
 
@@ -268,9 +266,7 @@ echo "- Expected behavior: [description]"
 
 ### Stage 2: Discovery (Steps 3-5)
 
-#### [CHECKPOINT START - STAGE 2]
 
-#### [CHECKPOINT END]
 
 #### Step 2: Find Related Modules
 
@@ -315,9 +311,7 @@ The script discovers:
 
 ### Stage 3: Analysis (Steps 6-10)
 
-#### [CHECKPOINT START - STAGE 3]
 
-#### [CHECKPOINT END]
 
 #### Step 3: Check Each Related Module
 
@@ -417,9 +411,7 @@ grep -A 5 "if.*!.*\|\|.*!.*)" modules/MODULE.c
 
 ### Stage 4: Planning (Steps 11-14)
 
-#### [CHECKPOINT START - STAGE 4]
 
-#### [CHECKPOINT END]
 
 #### Step 4: Create Improvement Plan
 
@@ -494,9 +486,7 @@ For modules that need the same improvement:
 
 ### Stage 5: Documentation (Step 15)
 
-#### [CHECKPOINT START - STAGE 5]
 
-#### [CHECKPOINT END]
 
 #### Step 15: Document Plan
 
@@ -532,7 +522,6 @@ echo "✓ Improvement plan documented"
 ./scripts/checkpoint-update.sh check-module-consistency STEP=15
 ```
 
-#### [CHECKPOINT COMPLETE]
 ```bash
 ./scripts/checkpoint-complete.sh check-module-consistency
 ```

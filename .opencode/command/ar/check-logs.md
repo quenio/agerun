@@ -201,9 +201,7 @@ Performs additional thorough analysis to catch edge cases:
 
 ### Stage 1: Initial Check (Steps 1-2)
 
-#### [CHECKPOINT START - STAGE 1]
 
-#### [CHECKPOINT END]
 
 #### Step 1: Run Build
 
@@ -251,9 +249,7 @@ echo "ERROR_COUNT=$ERROR_COUNT" > /tmp/check-logs-stats.txt
 
 ### Stage 2: Analysis (Steps 3-4)
 
-#### [CHECKPOINT START - STAGE 2]
 
-#### [CHECKPOINT END]
 
 #### Step 3: Deep Analysis
 
@@ -320,9 +316,7 @@ Proceed to resolution phase.
 
 ### Stage 3: Resolution (Steps 5-6)
 
-#### [CHECKPOINT START - STAGE 3]
 
-#### [CHECKPOINT END]
 
 #### Step 5: Fix Issues
 
@@ -364,9 +358,7 @@ fi
 
 ### Stage 4: Verification (Steps 7-8)
 
-#### [CHECKPOINT START - STAGE 4]
 
-#### [CHECKPOINT END]
 
 #### Step 7: Re-check Logs
 
@@ -404,7 +396,6 @@ fi
 ./scripts/checkpoint-update.sh check-logs STEP=8
 ```
 
-#### [CHECKPOINT COMPLETE]
 ```bash
 ./scripts/checkpoint-complete.sh check-logs
 ```
