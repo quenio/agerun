@@ -39,6 +39,83 @@ Resume from the next pending step, or clean up and start fresh:
 
 **MANDATORY**: This command MUST use checkpoint tracking. Start by running the checkpoint initialization below. ([details](../../../kb/unmissable-documentation-pattern.md))
 
+## STEP VERIFICATION ENFORCEMENT
+
+**MANDATORY**: After completing each step, you MUST verify step completion using the **step-verifier sub-agent** before proceeding to the next step ([details](../../../kb/sub-agent-verification-pattern.md)).
+
+### About the step-verifier Sub-Agent
+
+The **step-verifier** is a specialized sub-agent that independently verifies step completion:
+
+- **Reads command files** to understand step requirements
+- **Checks files, git status/diff, test results, build outputs** to verify accomplishments
+- **Compares accomplishments against requirements** systematically
+- **Reports verification results with evidence** (what was verified, what's missing)
+- **Provides STOP instructions** when failures are detected (blocks execution until fixed)
+- **Read-only agent**: Never modifies files, commits changes, or makes autonomous decisions
+
+**CRITICAL**: The step-verifier independently verifies your claims. You report accomplishments with evidence; the step-verifier verifies by reading files and checking outputs.
+
+### Step Verification Process
+
+After completing each step (before calling `checkpoint-update.sh`), you MUST:
+
+1. **Report accomplishments with evidence**
+   - Describe what was accomplished (files created/modified, commands executed, outputs produced)
+   - Provide evidence (file paths, command outputs, git status/diff)
+   - **DO NOT** tell step-verifier what to verify - report what was done
+
+2. **Invoke step-verifier sub-agent**
+   - Use `mcp_sub-agents_run_agent` tool with:
+     - Agent: `"step-verifier"`
+     - Prompt: See format below
+     - The step-verifier will independently verify your claims
+
+3. **Handle Verification Results**
+  
+   **If verification PASSES** (report shows "✅ STEP VERIFIED" or "All requirements met"):
+     - Proceed to next step
+     - Mark checkpoint step as complete (for progress tracking only - verification already done by step-verifier)
+  
+   **If verification FAILS** (report shows "⚠️ STOP EXECUTION" or missing elements):
+     - **STOP execution immediately** - do not proceed to next step
+     - Fix all reported issues from verification report
+     - Re-invoke step-verifier with updated evidence after fixes
+     - Only proceed after verification report shows "✅ STEP VERIFIED"
+  
+   **If sub-agent CANNOT be executed** (MCP unavailable or tool error):
+     - STOP execution immediately
+     - Inform user: "⚠️ Step verification sub-agent unavailable. Please manually verify Step N completion before proceeding."
+     - Wait for explicit user confirmation before proceeding
+
+### How to Invoke step-verifier
+
+Use the `mcp_sub-agents_run_agent` tool:
+
+```
+Agent: "step-verifier"
+Prompt: "Verify Step N: [Step Title] completion for create-plan command.
+
+Todo Item: [Description of what the step accomplished]
+Command File: .opencode/command/ar/create-plan.md
+Step: Step N: [Step Title]
+
+Accomplishment Report:
+[Report what was accomplished with evidence: files created/modified, commands executed, outputs produced, etc. The step-verifier will independently verify these claims by reading files, checking git status, etc.]"
+```
+
+**CRITICAL**: 
+- Report accomplishments with evidence, NOT instructions
+- The step-verifier independently verifies by reading command files, checking files, git status/diff, etc.
+- If step-verifier reports "⚠️ STOP EXECUTION", you MUST fix issues before proceeding
+
+**MANDATORY: Session Todo List Tracking**
+
+Each step MUST be added to the session todo list before execution begins ([details](../../../kb/session-todo-list-tracking-pattern.md)):
+- Use `todo_write` to add each step as a todo item with status `in_progress` before starting the step
+- Use `todo_write` to mark each step as `completed` after step-verifier verification passes
+- This ensures the session maintains track of all steps to be executed
+
 ## KB Consultation Required
 
 Before creating any plan ([details](../../../kb/kb-consultation-before-planning-requirement.md)):
@@ -236,10 +313,15 @@ This command creates plans with iterations marked `PENDING REVIEW`. These marker
 ### Execution Order (MANDATORY)
 
 1. **FIRST**: Run the checkpoint initialization command above
-2. **SECOND**: Follow the creation process below, updating checkpoints after each step
+2. **SECOND**: Follow the creation process below:
+   - Add each step to session todo list before starting
+   - Complete the step work
+   - **VERIFY step completion via step-verifier sub-agent** (MANDATORY)
+   - Mark step complete in session todo list after verification passes
+   - Update checkpoint (for progress tracking only)
 3. **THIRD**: Check progress with `./scripts/checkpoint-status.sh create-plan`
-4. **FOURTH**: Complete all 14 steps before saving plan
-5. **LAST**: Clean up with `./scripts/checkpoint-cleanup.sh create-plan`
+4. **FOURTH**: Complete all 14 steps before saving plan (each verified via step-verifier)
+5. **LAST**: Verify complete workflow via step-verifier, then clean up with `./scripts/checkpoint-cleanup.sh create-plan`
 
 ### Usage
 
@@ -253,6 +335,43 @@ This command creates plans with iterations marked `PENDING REVIEW`. These marker
 ```
 
 **IMPORTANT**: Running `/create-plan` alone is NOT sufficient. You MUST initialize checkpoints first as shown above.
+
+## MANDATORY: Initialize All Todo Items
+
+**CRITICAL**: Before executing ANY steps, add ALL step and verification todo items to the session todo list using `todo_write`:
+
+**Step and Verification Todo Items:**
+- Add todo item: "Step 1: KB Consultation & 14 Lesson Verification" - Status: pending
+- Add todo item: "Verify Step 1: KB Consultation & 14 Lesson Verification" - Status: pending
+- Add todo item: "Step 2: Gather Requirements" - Status: pending
+- Add todo item: "Verify Step 2: Gather Requirements" - Status: pending
+- Add todo item: "Step 3: Identify Behaviors" - Status: pending
+- Add todo item: "Verify Step 3: Identify Behaviors" - Status: pending
+- Add todo item: "Step 4: Count Assertions" - Status: pending
+- Add todo item: "Verify Step 4: Count Assertions" - Status: pending
+- Add todo item: "Step 5: Define Cycles" - Status: pending
+- Add todo item: "Verify Step 5: Define Cycles" - Status: pending
+- Add todo item: "Step 6: Plan Iterations" - Status: pending
+- Add todo item: "Verify Step 6: Plan Iterations" - Status: pending
+- Add todo item: "Step 7: Structure RED Phases" - Status: pending
+- Add todo item: "Verify Step 7: Structure RED Phases" - Status: pending
+- Add todo item: "Step 8: Structure GREEN Phases" - Status: pending
+- Add todo item: "Verify Step 8: Structure GREEN Phases" - Status: pending
+- Add todo item: "Step 9: Add Cleanup" - Status: pending
+- Add todo item: "Verify Step 9: Add Cleanup" - Status: pending
+- Add todo item: "Step 10: Add Status Markers" - Status: pending
+- Add todo item: "Verify Step 10: Add Status Markers" - Status: pending
+- Add todo item: "Step 11: Add Cross-References" - Status: pending
+- Add todo item: "Verify Step 11: Add Cross-References" - Status: pending
+- Add todo item: "Step 12: Validate Plan" - Status: pending
+- Add todo item: "Verify Step 12: Validate Plan" - Status: pending
+- Add todo item: "Step 13: Save Plan" - Status: pending
+- Add todo item: "Verify Step 13: Save Plan" - Status: pending
+- Add todo item: "Step 14: Summary" - Status: pending
+- Add todo item: "Verify Step 14: Summary" - Status: pending
+- Add todo item: "Verify Complete Workflow: create-plan" - Status: pending
+
+**Important**: All todo items are initialized as `pending` and will be updated to `in_progress` when their respective step/verification begins, then to `completed` after verification passes.
 
 ## Plan Creation Process
 
@@ -289,8 +408,51 @@ Before proceeding, confirm understanding of these 14 critical lessons from kb/td
 
 **Lesson 7 is MOST CRITICAL**: Every RED phase in the plan MUST include documentation of how the test will fail before GREEN code is written. This proves assertions actually catch bugs.
 
+**MANDATORY: Update step todo item status**
+
+Before starting this step, update the step todo item status to `in_progress`:
+- Update todo item: "Step 1: KB Consultation & 14 Lesson Verification"
+- Status: in_progress
+
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before proceeding to Step 2, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Step 1: KB Consultation & 14 Lesson Verification"
+- Status: in_progress
+
+Before proceeding to Step 2, you MUST verify Step 1 completion via **step-verifier sub-agent**:
+
+1. **Report accomplishments with evidence**:
+   - All 11 KB articles were read (list file paths)
+   - All 7 specific items were quoted (provide quotes)
+   - All 14 TDD lessons were verified (describe verification)
+   - KB consultation was completed before proceeding (describe completion)
+   - Step objectives were met (describe what was accomplished)
+
+2. **Invoke step-verifier sub-agent** using `mcp_sub-agents_run_agent`:
+   - Agent: `"step-verifier"`
+   - Prompt: "Verify Step 1: KB Consultation & 14 Lesson Verification completion for create-plan command. Todo Item: [what was accomplished]. Command File: .opencode/command/ar/create-plan.md. Step: Step 1: KB Consultation & 14 Lesson Verification. Accomplishment Report: [evidence of what was accomplished]"
+   - The step-verifier will independently verify by reading KB articles, checking quotes, verifying TDD lessons, etc.
+
+3. **Handle verification results**:
+   - **If "✅ STEP VERIFIED"**: Proceed to Step 2
+   - **If "⚠️ STOP EXECUTION"**: Fix reported issues, re-invoke step-verifier, only proceed after verification passes
+   - **If sub-agent unavailable**: STOP and request user manual verification
+
+**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Step 1: KB Consultation & 14 Lesson Verification"
+   - Status: completed
+
+2. **Mark step complete in session todo list** using `todo_write`:
+   - Update todo item: "Step 1: KB Consultation & 14 Lesson Verification"
+   - Status: completed
+
+3. **Update checkpoint** (for progress tracking only):
 ```bash
-# After completing KB consultation and verifying all 14 lessons
 ./scripts/checkpoint-update.sh create-plan STEP=1
 ```
 
@@ -322,6 +484,46 @@ Before proceeding, confirm understanding of these 14 critical lessons from kb/td
 - All tests pass
 ```
 
+**MANDATORY: Update step todo item status**
+
+Before starting this step, update the step todo item status to `in_progress`:
+- Update todo item: "Step 2: Gather Requirements"
+- Status: in_progress
+
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before proceeding to Step 3, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Step 2: Gather Requirements"
+- Status: in_progress
+
+Before proceeding to Step 3, you MUST verify Step 2 completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - Feature name was identified
+   - Main objective was documented
+   - Existing modules/types were listed
+   - New modules/types were identified
+   - Patterns were identified (similar implementations)
+   - Requirements document was created
+   - Step objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Step 2: Gather Requirements"
+   - Status: completed
+
+2. **Mark step complete in session todo list** using `todo_write`:
+   - Update todo item: "Step 2: Gather Requirements"
+   - Status: completed
+
+3. **Update checkpoint** (for progress tracking only):
 ```bash
 ./scripts/checkpoint-update.sh create-plan STEP=2
 ```
@@ -507,6 +709,44 @@ ar_foo_t* ar_foo__create(ar_log_t *ref_log, const char *ref_path) {  // EXAMPLE:
 
 **MANDATORY**: Before proceeding to Step 4, verify ALL functions have complete NULL parameter coverage.
 
+**MANDATORY: Update step todo item status**
+
+Before starting this step, update the step todo item status to `in_progress`:
+- Update todo item: "Step 3: Identify Behaviors"
+- Status: in_progress
+
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before proceeding to Step 4, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Step 3: Identify Behaviors"
+- Status: in_progress
+
+Before proceeding to Step 4, you MUST verify Step 3 completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - All expected behaviors were listed for each function
+   - NULL parameter coverage was verified for ALL functions
+   - Allocation failure iterations were added where needed
+   - Each behavior maps to one iteration
+   - Step objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Step 3: Identify Behaviors"
+   - Status: completed
+
+2. **Mark step complete in session todo list** using `todo_write`:
+   - Update todo item: "Step 3: Identify Behaviors"
+   - Status: completed
+
+3. **Update checkpoint** (for progress tracking only):
 ```bash
 ./scripts/checkpoint-update.sh create-plan STEP=3
 ```
@@ -537,6 +777,44 @@ Total iterations: 12
 - ❌ WRONG: Test both creation AND registration in one iteration
 - ✅ CORRECT: Split into .1 (creation) and .2 (registration)
 
+**MANDATORY: Update step todo item status**
+
+Before starting this step, update the step todo item status to `in_progress`:
+- Update todo item: "Step 4: Count Assertions"
+- Status: in_progress
+
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before proceeding to Step 5, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Step 4: Count Assertions"
+- Status: in_progress
+
+Before proceeding to Step 5, you MUST verify Step 4 completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - Each behavior was converted to an exact assertion
+   - Total iteration count was determined
+   - Multi-assertion violations were identified and split
+   - One assertion per iteration principle was followed
+   - Step objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Step 4: Count Assertions"
+   - Status: completed
+
+2. **Mark step complete in session todo list** using `todo_write`:
+   - Update todo item: "Step 4: Count Assertions"
+   - Status: completed
+
+3. **Update checkpoint** (for progress tracking only):
 ```bash
 ./scripts/checkpoint-update.sh create-plan STEP=4
 ```
@@ -572,6 +850,43 @@ Total iterations: 12
 - ✅ Optimal: 3-5 iterations (focused review)
 - ⚠️ Too large: 8+ iterations (reviewer fatigue)
 
+**MANDATORY: Update step todo item status**
+
+Before starting this step, update the step todo item status to `in_progress`:
+- Update todo item: "Step 5: Define Cycles"
+- Status: in_progress
+
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before proceeding to Step 6, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Step 5: Define Cycles"
+- Status: in_progress
+
+Before proceeding to Step 6, you MUST verify Step 5 completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - Iterations were grouped into logical cycles
+   - Each cycle contains 3-5 iterations (optimal size)
+   - Cycle organization makes sense for review
+   - Step objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Step 5: Define Cycles"
+   - Status: completed
+
+2. **Mark step complete in session todo list** using `todo_write`:
+   - Update todo item: "Step 5: Define Cycles"
+   - Status: completed
+
+3. **Update checkpoint** (for progress tracking only):
 ```bash
 ./scripts/checkpoint-update.sh create-plan STEP=5
 ```
@@ -782,7 +1097,47 @@ For each iteration created:
 # Clean up iteration tracking
 ./scripts/checkpoint-cleanup.sh create-plan-iterations
 
-# Mark main Checkpoint 6 as complete
+**MANDATORY: Update step todo item status**
+
+Before starting this step, update the step todo item status to `in_progress`:
+- Update todo item: "Step 6: Plan Iterations"
+- Status: in_progress
+
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before proceeding to Step 7, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Step 6: Plan Iterations"
+- Status: in_progress
+
+Before proceeding to Step 7, you MUST verify Step 6 completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - All iterations were written with complete structure
+   - Each iteration has RED phase, GREEN phase, and verification sections
+   - BDD structure (Given/When/Then/Cleanup) is present
+   - Real AgeRun types are used (not placeholders)
+   - Proper ownership prefixes are used
+   - One assertion per iteration
+   - Step objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Step 6: Plan Iterations"
+   - Status: completed
+
+2. **Mark step complete in session todo list** using `todo_write`:
+   - Update todo item: "Step 6: Plan Iterations"
+   - Status: completed
+
+3. **Update checkpoint** (for progress tracking only):
+```bash
 ./scripts/checkpoint-update.sh create-plan STEP=6
 ```
 
@@ -1001,6 +1356,47 @@ Checking corruption entries...
 - Add missing or fix invalid corruption entries
 - Re-run validation until it passes
 
+**MANDATORY: Update step todo item status**
+
+Before starting this step, update the step todo item status to `in_progress`:
+- Update todo item: "Step 7: Structure RED Phases"
+- Status: in_progress
+
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before proceeding to Step 8, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Step 7: Structure RED Phases"
+- Status: in_progress
+
+Before proceeding to Step 8, you MUST verify Step 7 completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - All RED phases have BDD structure (Given/When/Then/Cleanup)
+   - All RED phases have explicit failure indicators (// ← FAILS comments)
+   - **CRITICAL**: All RED phases document temporary corruption/code-break (Lesson 7)
+   - Real AgeRun types are used (not placeholders)
+   - Proper ownership prefixes are present
+   - Exactly ONE assertion per iteration
+   - RED corruption evidence file was created and validated
+   - Step objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Step 7: Structure RED Phases"
+   - Status: completed
+
+2. **Mark step complete in session todo list** using `todo_write`:
+   - Update todo item: "Step 7: Structure RED Phases"
+   - Status: completed
+
+3. **Update checkpoint** (for progress tracking only):
 ```bash
 # Clean up RED phase tracking
 ./scripts/checkpoint-cleanup.sh create-plan-red-phases
@@ -1072,7 +1468,48 @@ Iteration N.3: Actual logic (forced by test)
 
 # Clean up GREEN phase tracking
 ./scripts/checkpoint-cleanup.sh create-plan-green-phases
+```
 
+**MANDATORY: Update step todo item status**
+
+Before starting this step, update the step todo item status to `in_progress`:
+- Update todo item: "Step 8: Structure GREEN Phases"
+- Status: in_progress
+
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before proceeding to Step 9, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Step 8: Structure GREEN Phases"
+- Status: in_progress
+
+Before proceeding to Step 9, you MUST verify Step 8 completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - All GREEN phases follow minimalism (hardcoded returns when valid)
+   - No over-implementation or untested features
+   - No error handling before tests demand it
+   - Proper ownership transfer is documented
+   - Progression pattern is correct (stub → hardcoded → real logic)
+   - Step objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Step 8: Structure GREEN Phases"
+   - Status: completed
+
+2. **Mark step complete in session todo list** using `todo_write`:
+   - Update todo item: "Step 8: Structure GREEN Phases"
+   - Status: completed
+
+3. **Update checkpoint** (for progress tracking only):
+```bash
 # Mark main Checkpoint 8 as complete
 ./scripts/checkpoint-update.sh create-plan STEP=8
 ```
@@ -1133,6 +1570,46 @@ ar_log__destroy(ref_log);
 - [ ] Borrowed objects NOT destroyed (ref_ prefix)
 - [ ] Destruction order is reverse of creation
 
+**MANDATORY: Update step todo item status**
+
+Before starting this step, update the step todo item status to `in_progress`:
+- Update todo item: "Step 9: Add Cleanup"
+- Status: in_progress
+
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before proceeding to Step 10, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Step 9: Add Cleanup"
+- Status: in_progress
+
+Before proceeding to Step 10, you MUST verify Step 9 completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - Every test has Cleanup section
+   - .1 iterations have "temporary:" comment with MANDATORY format
+   - .2 iterations have "removed manual..." comment
+   - All owned objects are destroyed (own_ prefix)
+   - Borrowed objects are NOT destroyed (ref_ prefix)
+   - Destruction order is reverse of creation
+   - Step objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Step 9: Add Cleanup"
+   - Status: completed
+
+2. **Mark step complete in session todo list** using `todo_write`:
+   - Update todo item: "Step 9: Add Cleanup"
+   - Status: completed
+
+3. **Update checkpoint** (for progress tracking only):
 ```bash
 ./scripts/checkpoint-update.sh create-plan STEP=9
 ```
@@ -1168,6 +1645,43 @@ ar_log__destroy(ref_log);
 
 **CRITICAL**: Every iteration created must have "- PENDING REVIEW" suffix in the heading. This is MANDATORY and must not be omitted.
 
+**MANDATORY: Update step todo item status**
+
+Before starting this step, update the step todo item status to `in_progress`:
+- Update todo item: "Step 10: Add Status Markers"
+- Status: in_progress
+
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before proceeding to Step 11, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Step 10: Add Status Markers"
+- Status: in_progress
+
+Before proceeding to Step 11, you MUST verify Step 10 completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - All iterations have "- PENDING REVIEW" suffix in heading
+   - Status markers appear ONLY on iteration headings (not cycle headings)
+   - No iterations are missing status markers
+   - Step objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Step 10: Add Status Markers"
+   - Status: completed
+
+2. **Mark step complete in session todo list** using `todo_write`:
+   - Update todo item: "Step 10: Add Status Markers"
+   - Status: completed
+
+3. **Update checkpoint** (for progress tracking only):
 ```bash
 ./scripts/checkpoint-update.sh create-plan STEP=10
 ```
@@ -1193,6 +1707,43 @@ ar_log__destroy(ref_log);
 See ar_agent.c and ar_agency.c for reference implementations.
 ```
 
+**MANDATORY: Update step todo item status**
+
+Before starting this step, update the step todo item status to `in_progress`:
+- Update todo item: "Step 11: Add Cross-References"
+- Status: in_progress
+
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before proceeding to Step 12, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Step 11: Add Cross-References"
+- Status: in_progress
+
+Before proceeding to Step 12, you MUST verify Step 11 completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - Related Patterns section was added with relevant KB article links
+   - Pattern notes were added where relevant
+   - Cross-references use correct relative paths
+   - Step objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Step 11: Add Cross-References"
+   - Status: completed
+
+2. **Mark step complete in session todo list** using `todo_write`:
+   - Update todo item: "Step 11: Add Cross-References"
+   - Status: completed
+
+3. **Update checkpoint** (for progress tracking only):
 ```bash
 ./scripts/checkpoint-update.sh create-plan STEP=11
 ```
@@ -1253,6 +1804,44 @@ See ar_agent.c and ar_agency.c for reference implementations.
 - [ ] Iteration numbering sequential, no gaps - **Lesson 1, 13**
 - [ ] No forward references to unreviewed iterations - **Lesson 13**
 
+**MANDATORY: Update step todo item status**
+
+Before starting this step, update the step todo item status to `in_progress`:
+- Update todo item: "Step 12: Validate Plan"
+- Status: in_progress
+
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before proceeding to Step 13, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Step 12: Validate Plan"
+- Status: in_progress
+
+Before proceeding to Step 13, you MUST verify Step 12 completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - Plan validation scripts were executed
+   - All 14 TDD lessons were verified
+   - Automated validator passed
+   - Pre-review validation checklist was completed
+   - Step objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Step 12: Validate Plan"
+   - Status: completed
+
+2. **Mark step complete in session todo list** using `todo_write`:
+   - Update todo item: "Step 12: Validate Plan"
+   - Status: completed
+
+3. **Update checkpoint** (for progress tracking only):
 ```bash
 ./scripts/checkpoint-update.sh create-plan STEP=12
 ```
@@ -1287,6 +1876,44 @@ See ar_agent.c and ar_agency.c for reference implementations.
 - Use descriptive task-based name (e.g., agent_store_fixture_plan.md, message_queue_plan.md)
 - Follow naming convention
 
+**MANDATORY: Update step todo item status**
+
+Before starting this step, update the step todo item status to `in_progress`:
+- Update todo item: "Step 13: Save Plan"
+- Status: in_progress
+
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before proceeding to Step 14, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Step 13: Save Plan"
+- Status: in_progress
+
+Before proceeding to Step 14, you MUST verify Step 13 completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - Plan was written to file
+   - File location follows naming convention
+   - Plan includes all required sections (Overview, Objective, Context, Success Criteria, Plan Status, iterations, Related Patterns)
+   - File was saved successfully
+   - Step objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Step 13: Save Plan"
+   - Status: completed
+
+2. **Mark step complete in session todo list** using `todo_write`:
+   - Update todo item: "Step 13: Save Plan"
+   - Status: completed
+
+3. **Update checkpoint** (for progress tracking only):
 ```bash
 # Save the plan
 # <use Write tool with plan content>
@@ -1347,6 +1974,69 @@ See ar_agent.c and ar_agency.c for reference implementations.
 - ✅ Ready for /review-plan
 ```
 
+**MANDATORY: Update step todo item status**
+
+Before starting this step, update the step todo item status to `in_progress`:
+- Update todo item: "Step 14: Summary"
+- Status: in_progress
+
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before completing the workflow, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Step 14: Summary"
+- Status: in_progress
+
+Before completing the workflow, you MUST verify Step 14 completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - Creation summary was generated
+   - Statistics were included (total iterations, cycles, splits, temporary cleanup locations)
+   - All 14 TDD lessons compliance was documented
+   - Validation results were included
+   - Next steps were documented
+   - Step objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**⚠️ MANDATORY FINAL VERIFICATION**
+
+**MANDATORY: Update final verification todo item status**
+
+Before completing the workflow, update the final verification todo item status to `in_progress`:
+- Update todo item: "Verify Complete Workflow: create-plan"
+- Status: in_progress
+
+Before completing the workflow, you MUST verify ALL steps were completed correctly:
+
+1. **Invoke step-verifier sub-agent** to verify complete workflow:
+   - Verify all 14 steps were completed correctly
+   - Verify all step objectives were met
+   - Verify plan was created successfully
+   - Verify plan is ready for review
+
+2. **If verification fails**: Fix issues and re-verify before completing
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after ALL steps verified:**
+
+1. **Mark final verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Complete Workflow: create-plan"
+   - Status: completed
+
+2. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Step 14: Summary"
+   - Status: completed
+
+3. **Mark step complete in session todo list** using `todo_write`:
+   - Update todo item: "Step 14: Summary"
+   - Status: completed
+
+4. **Update checkpoint** (for progress tracking only):
 ```bash
 ./scripts/checkpoint-update.sh create-plan STEP=14
 ```
@@ -1357,6 +2047,8 @@ See ar_agent.c and ar_agency.c for reference implementations.
 ```bash
 ./scripts/checkpoint-complete.sh create-plan
 ```
+
+**Note**: `checkpoint-complete.sh` is used ONLY for progress tracking cleanup. All verification is done via step-verifier sub-agent, NOT via checkpoint scripts.
 
 **Expected completion output:**
 ```

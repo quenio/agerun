@@ -2,9 +2,86 @@ Create a git commit following the exact workflow specified in AGENTS.md.
 
 ## CHECKPOINT WORKFLOW ENFORCEMENT
 
-**CRITICAL**: This command MUST use checkpoint tracking for progress tracking ONLY. All verification is done via specialized tools (make check-docs, make check-logs, etc.), NOT via checkpoint scripts ([details](../../../kb/checkpoint-tracking-verification-separation.md)).
+**CRITICAL**: This command MUST use checkpoint tracking for progress tracking ONLY. All verification is done via step-verifier sub-agent, NOT via checkpoint scripts ([details](../../../kb/checkpoint-tracking-verification-separation.md)).
 
 This section implements the [Checkpoint Workflow Enforcement Pattern](../../../kb/checkpoint-workflow-enforcement-pattern.md) - preventing workflow bypasses through initialization and precondition enforcement.
+
+## STEP VERIFICATION ENFORCEMENT
+
+**MANDATORY**: After completing each step, you MUST verify step completion using the **step-verifier sub-agent** before proceeding to the next step ([details](../../../kb/sub-agent-verification-pattern.md)).
+
+### About the step-verifier Sub-Agent
+
+The **step-verifier** is a specialized sub-agent that independently verifies step completion:
+
+- **Reads command files** to understand step requirements
+- **Checks files, git status/diff, test results, build outputs** to verify accomplishments
+- **Compares accomplishments against requirements** systematically
+- **Reports verification results with evidence** (what was verified, what's missing)
+- **Provides STOP instructions** when failures are detected (blocks execution until fixed)
+- **Read-only agent**: Never modifies files, commits changes, or makes autonomous decisions
+
+**CRITICAL**: The step-verifier independently verifies your claims. You report accomplishments with evidence; the step-verifier verifies by reading files and checking outputs.
+
+### Step Verification Process
+
+After completing each step (before calling `checkpoint-update.sh`), you MUST:
+
+1. **Report accomplishments with evidence**
+   - Describe what was accomplished (files created/modified, commands executed, outputs produced)
+   - Provide evidence (file paths, command outputs, git status/diff)
+   - **DO NOT** tell step-verifier what to verify - report what was done
+
+2. **Invoke step-verifier sub-agent**
+   - Use `mcp_sub-agents_run_agent` tool with:
+     - Agent: `"step-verifier"`
+     - Prompt: See format below
+     - The step-verifier will independently verify your claims
+
+3. **Handle Verification Results**
+  
+   **If verification PASSES** (report shows "✅ STEP VERIFIED" or "All requirements met"):
+     - Proceed to next step
+     - Mark checkpoint step as complete (for progress tracking only - verification already done by step-verifier)
+  
+   **If verification FAILS** (report shows "⚠️ STOP EXECUTION" or missing elements):
+     - **STOP execution immediately** - do not proceed to next step
+     - Fix all reported issues from verification report
+     - Re-invoke step-verifier with updated evidence after fixes
+     - Only proceed after verification report shows "✅ STEP VERIFIED"
+  
+   **If sub-agent CANNOT be executed** (MCP unavailable or tool error):
+     - STOP execution immediately
+     - Inform user: "⚠️ Step verification sub-agent unavailable. Please manually verify Step N completion before proceeding."
+     - Wait for explicit user confirmation before proceeding
+
+### How to Invoke step-verifier
+
+Use the `mcp_sub-agents_run_agent` tool:
+
+```
+Agent: "step-verifier"
+Prompt: "Verify Step N: [Step Title] completion for commit command.
+
+Todo Item: [Description of what the step accomplished]
+Command File: .opencode/command/ar/commit.md
+Step: Step N: [Step Title]
+
+Accomplishment Report:
+[Report what was accomplished with evidence: files created/modified, commands executed, outputs produced, etc. The step-verifier will independently verify these claims by reading files, checking git status, etc.]"
+```
+
+**CRITICAL**: 
+- Report accomplishments with evidence, NOT instructions
+- The step-verifier independently verifies by reading command files, checking files, git status/diff, etc.
+- If step-verifier reports "⚠️ STOP EXECUTION", you MUST fix issues before proceeding
+
+**MANDATORY: Session Todo List Tracking**
+
+Each step MUST be added to the session todo list before execution begins ([details](../../../kb/session-todo-list-tracking-pattern.md)):
+- Use `todo_write` to add each step as a todo item with status `in_progress` before starting the step
+- Use `todo_write` to mark each step as `completed` after step-verifier verification passes
+- This ensures the session maintains track of all steps to be executed
 
 ### In-Progress Workflow Detection
 
@@ -97,6 +174,33 @@ This command uses checkpoint tracking to ensure thorough pre-commit verification
 → Next: ./scripts/checkpoint-update.sh commit STEP=6
 ```
 
+## MANDATORY: Initialize All Todo Items
+
+**CRITICAL**: Before executing ANY steps, add ALL step and verification todo items to the session todo list using `todo_write`:
+
+**Step and Verification Todo Items:**
+- Add todo item: "Step 1: Run Tests" - Status: pending
+- Add todo item: "Verify Step 1: Run Tests" - Status: pending
+- Add todo item: "Step 2: Check Logs" - Status: pending
+- Add todo item: "Verify Step 2: Check Logs" - Status: pending
+- Add todo item: "Step 3: Update Docs" - Status: pending
+- Add todo item: "Verify Step 3: Update Docs" - Status: pending
+- Add todo item: "Step 4: Update TODO" - Status: pending
+- Add todo item: "Verify Step 4: Update TODO" - Status: pending
+- Add todo item: "Step 5: Update CHANGELOG" - Status: pending
+- Add todo item: "Verify Step 5: Update CHANGELOG" - Status: pending
+- Add todo item: "Step 6: Review Changes" - Status: pending
+- Add todo item: "Verify Step 6: Review Changes" - Status: pending
+- Add todo item: "Step 7: Stage Files" - Status: pending
+- Add todo item: "Verify Step 7: Stage Files" - Status: pending
+- Add todo item: "Step 8: Create Commit" - Status: pending
+- Add todo item: "Verify Step 8: Create Commit" - Status: pending
+- Add todo item: "Step 9: Push and Verify" - Status: pending
+- Add todo item: "Verify Step 9: Push and Verify" - Status: pending
+- Add todo item: "Verify Complete Workflow: commit" - Status: pending
+
+**Important**: All todo items are initialized as `pending` and will be updated to `in_progress` when their respective step/verification begins, then to `completed` after verification passes.
+
 ## Minimum Requirements
 
 **MANDATORY for successful commit:**
@@ -119,17 +223,96 @@ Before starting the commit process, ensure you have completed ALL of these steps
 
 #### Step 1: Run Tests
 
+**MANDATORY: Update step todo item status**
+
+Before starting this step, update the step todo item status to `in_progress`:
+- Update todo item: "Step 1: Run Tests"
+- Status: in_progress
+
 ```bash
 # Run comprehensive build verification
 make clean build 2>&1
+```
+
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before proceeding to Step 2, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Step 1: Run Tests"
+- Status: in_progress
+
+Before proceeding to Step 2, you MUST verify Step 1 completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - Clean build completed successfully
+   - All tests passed
+   - No compilation errors
+   - Step objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Step 1: Run Tests"
+   - Status: completed
+
+2. **Mark step complete in session todo list** using `todo_write`:
+   - Update todo item: "Step 1: Run Tests"
+   - Status: completed
+
+3. **Update checkpoint** (for progress tracking only):
+```bash
 ./scripts/checkpoint-update.sh commit 1 --summary "Clean build completed with all checks passed"
 ```
 
 #### Step 2: Check Logs
 
+**MANDATORY: Update step todo item status**
+
+Before starting this step, update the step todo item status to `in_progress`:
+- Update todo item: "Step 2: Check Logs"
+- Status: in_progress
+
 ```bash
 # Verify no hidden issues in logs
 make check-logs
+```
+
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before proceeding to Step 3, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Step 2: Check Logs"
+- Status: in_progress
+
+Before proceeding to Step 3, you MUST verify Step 2 completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - Build logs verified clean
+   - No hidden issues found
+   - Step objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Step 2: Check Logs"
+   - Status: completed
+
+2. **Mark step complete in session todo list** using `todo_write`:
+   - Update todo item: "Step 2: Check Logs"
+   - Status: completed
+
+3. **Update checkpoint** (for progress tracking only):
+```bash
 ./scripts/checkpoint-update.sh commit 2 --summary "Build logs verified clean - no hidden issues"
 ```
 
@@ -140,10 +323,11 @@ make check-logs
 
 #### Step 3: Update Docs
 
-```bash
-# Check if documentation needs updates (manual verification)
-./scripts/checkpoint-update.sh commit STEP=3
-```
+**MANDATORY: Update step todo item status**
+
+Before starting this step, update the step todo item status to `in_progress`:
+- Update todo item: "Step 3: Update Docs"
+- Status: in_progress
 
 **Documentation Notes**:
 - If you changed a module's interface, update its .md file
@@ -151,24 +335,128 @@ make check-logs
 - When removing global APIs, use systematic scripts ([details](../../../kb/global-function-removal-script-pattern.md))
 - Let compiler errors guide refactoring completion ([details](../../../kb/compilation-driven-refactoring-pattern.md))
 
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before proceeding to Step 4, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Step 3: Update Docs"
+- Status: in_progress
+
+Before proceeding to Step 4, you MUST verify Step 3 completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - Documentation was updated if module interfaces changed
+   - All relevant .md files were checked
+   - Step objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Step 3: Update Docs"
+   - Status: completed
+
+2. **Mark step complete in session todo list** using `todo_write`:
+   - Update todo item: "Step 3: Update Docs"
+   - Status: completed
+
+3. **Update checkpoint** (for progress tracking only):
+```bash
+./scripts/checkpoint-update.sh commit STEP=3
+```
+
 #### Step 4: Update TODO
 
-```bash
-# Verify TODO.md is updated (manual verification)
-./scripts/checkpoint-update.sh commit STEP=4
-```
+**MANDATORY: Update step todo item status**
+
+Before starting this step, update the step todo item status to `in_progress`:
+- Update todo item: "Step 4: Update TODO"
+- Status: in_progress
 
 **TODO Note**: Mark completed tasks and add any new tasks identified
 
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before proceeding to Step 5, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Step 4: Update TODO"
+- Status: in_progress
+
+Before proceeding to Step 5, you MUST verify Step 4 completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - TODO.md was updated with completed tasks
+   - New tasks were added if identified
+   - Step objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Step 4: Update TODO"
+   - Status: completed
+
+2. **Mark step complete in session todo list** using `todo_write`:
+   - Update todo item: "Step 4: Update TODO"
+   - Status: completed
+
+3. **Update checkpoint** (for progress tracking only):
+```bash
+./scripts/checkpoint-update.sh commit STEP=4
+```
+
 #### Step 5: Update CHANGELOG
 
-```bash
-# Verify CHANGELOG.md is updated
-./scripts/checkpoint-update.sh commit 5 --summary "CHANGELOG.md updated with completed milestones"
-```
+**MANDATORY: Update step todo item status**
+
+Before starting this step, update the step todo item status to `in_progress`:
+- Update todo item: "Step 5: Update CHANGELOG"
+- Status: in_progress
 
 **CHANGELOG Note**: Document completed milestones and achievements (NON-NEGOTIABLE)
 - Include all documentation updates in the same commit as implementation ([details](../../../kb/atomic-commit-documentation-pattern.md))
+
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before proceeding to Step 6, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Step 5: Update CHANGELOG"
+- Status: in_progress
+
+Before proceeding to Step 6, you MUST verify Step 5 completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - CHANGELOG.md was updated with completed milestones
+   - All achievements were documented
+   - Step objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Step 5: Update CHANGELOG"
+   - Status: completed
+
+2. **Mark step complete in session todo list** using `todo_write`:
+   - Update todo item: "Step 5: Update CHANGELOG"
+   - Status: completed
+
+3. **Update checkpoint** (for progress tracking only):
+```bash
+./scripts/checkpoint-update.sh commit 5 --summary "CHANGELOG.md updated with completed milestones"
+```
 
 #### [BUILD GATE]
 ```bash
@@ -190,10 +478,15 @@ make check-logs
 
 #### Step 6: Review Changes
 
+**MANDATORY: Update step todo item status**
+
+Before starting this step, update the step todo item status to `in_progress`:
+- Update todo item: "Step 6: Review Changes"
+- Status: in_progress
+
 ```bash
 # Review all changes
 git diff
-./scripts/checkpoint-update.sh commit 6 --summary "All changes reviewed and no backup files present"
 ```
 
 **Review Notes**:
@@ -206,6 +499,41 @@ git diff
 - CHANGELOG update is MANDATORY for every commit that completes tasks
 - Report build time from output (e.g., "took 1m 3s") ([details](../../../kb/build-time-reporting.md))
 - Ensure documentation stays in sync with implementation ([details](../../../kb/documentation-implementation-sync.md))
+
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before proceeding to Step 7, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Step 6: Review Changes"
+- Status: in_progress
+
+Before proceeding to Step 7, you MUST verify Step 6 completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - All changes were reviewed
+   - No backup files present
+   - All changes are intentional
+   - Step objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Step 6: Review Changes"
+   - Status: completed
+
+2. **Mark step complete in session todo list** using `todo_write`:
+   - Update todo item: "Step 6: Review Changes"
+   - Status: completed
+
+3. **Update checkpoint** (for progress tracking only):
+```bash
+./scripts/checkpoint-update.sh commit 6 --summary "All changes reviewed and no backup files present"
+```
 
 #### [DOCUMENTATION GATE]
 ```bash
@@ -231,6 +559,12 @@ After completing the checklist above, follow these steps precisely:
 
 #### Step 7: Stage Files
 
+**MANDATORY: Update step todo item status**
+
+Before starting this step, update the step todo item status to `in_progress`:
+- Update todo item: "Step 7: Stage Files"
+- Status: in_progress
+
 ```bash
 # Analyze and stage changes
 echo "Analyzing current state..."
@@ -243,7 +577,6 @@ echo "Staging files..."
 git add -A
 
 echo "✅ Files staged for commit"
-./scripts/checkpoint-update.sh commit STEP=7
 ```
 
 1. **First, run these commands to analyze the current state:**
@@ -260,7 +593,48 @@ echo "✅ Files staged for commit"
    - Ensure the message accurately reflects ALL changes
    - Verify full scope of architectural changes ([details](../../../kb/commit-scope-verification.md))
 
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before proceeding to Step 8, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Step 7: Stage Files"
+- Status: in_progress
+
+Before proceeding to Step 8, you MUST verify Step 7 completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - Files were staged successfully
+   - All relevant files were included
+   - Commit message was drafted
+   - Step objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Step 7: Stage Files"
+   - Status: completed
+
+2. **Mark step complete in session todo list** using `todo_write`:
+   - Update todo item: "Step 7: Stage Files"
+   - Status: completed
+
+3. **Update checkpoint** (for progress tracking only):
+```bash
+./scripts/checkpoint-update.sh commit STEP=7
+```
+
 #### Step 8: Create Commit
+
+**MANDATORY: Update step todo item status**
+
+Before starting this step, update the step todo item status to `in_progress`:
+- Update todo item: "Step 8: Create Commit"
+- Status: in_progress
 
 ```bash
 # Create the commit
@@ -271,7 +645,7 @@ git commit -m "$(cat <<'EOF'
 
 Co-Authored-By: Claude <noreply@anthropic.com>
 EOF
-)" && ./scripts/checkpoint-update.sh commit 8 --summary "Commit created successfully"
+)"
 ```
 
 3. **Execute the commit:**
@@ -282,13 +656,53 @@ EOF
      - Working tree is clean after commit
      - Branch is ahead of remote (or warn if not)
 
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before proceeding to Step 9, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Step 8: Create Commit"
+- Status: in_progress
+
+Before proceeding to Step 9, you MUST verify Step 8 completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - Commit was created successfully
+   - Working tree is clean after commit
+   - Commit message includes Claude Code attribution
+   - Step objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Step 8: Create Commit"
+   - Status: completed
+
+2. **Mark step complete in session todo list** using `todo_write`:
+   - Update todo item: "Step 8: Create Commit"
+   - Status: completed
+
+3. **Update checkpoint** (for progress tracking only):
+```bash
+./scripts/checkpoint-update.sh commit 8 --summary "Commit created successfully"
+```
+
 #### Step 9: Push and Verify
+
+**MANDATORY: Update step todo item status**
+
+Before starting this step, update the step todo item status to `in_progress`:
+- Update todo item: "Step 9: Push and Verify"
+- Status: in_progress
 
 ```bash
 # Push to remote and verify
 git push
 git status
-./scripts/checkpoint-update.sh commit 9 --summary "Push completed successfully and working tree clean"
 ```
 
 5. **Push and verify:**
@@ -298,10 +712,70 @@ git status
 
 **Important:** Never skip the final `git status` verification - this is a critical step per AGENTS.md.
 
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before completing the workflow, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Step 9: Push and Verify"
+- Status: in_progress
+
+Before completing the workflow, you MUST verify Step 9 completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - Push completed successfully
+   - Working tree is clean after push
+   - Branch is up to date with remote
+   - Step objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**⚠️ MANDATORY FINAL VERIFICATION**
+
+**MANDATORY: Update final verification todo item status**
+
+Before completing the workflow, update the final verification todo item status to `in_progress`:
+- Update todo item: "Verify Complete Workflow: commit"
+- Status: in_progress
+
+Before completing the workflow, you MUST verify ALL steps were completed correctly:
+
+1. **Invoke step-verifier sub-agent** to verify complete workflow:
+   - Verify all 9 steps were completed correctly
+   - Verify all step objectives were met
+   - Verify commit was created and pushed successfully
+
+2. **If verification fails**: Fix issues and re-verify before completing
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after ALL steps verified:**
+
+1. **Mark final verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Complete Workflow: commit"
+   - Status: completed
+
+2. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Step 9: Push and Verify"
+   - Status: completed
+
+3. **Mark step complete in session todo list** using `todo_write`:
+   - Update todo item: "Step 9: Push and Verify"
+   - Status: completed
+
+4. **Update checkpoint** (for progress tracking only):
+```bash
+./scripts/checkpoint-update.sh commit 9 --summary "Push completed successfully and working tree clean"
+```
+
 #### [CHECKPOINT COMPLETE]
 ```bash
 ./scripts/checkpoint-complete.sh commit
 ```
+
+**Note**: `checkpoint-complete.sh` is used ONLY for progress tracking cleanup. All verification is done via step-verifier sub-agent, NOT via checkpoint scripts.
 
 **Expected completion output:**
 ```

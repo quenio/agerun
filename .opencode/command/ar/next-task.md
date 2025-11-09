@@ -128,6 +128,21 @@ This command uses checkpoint tracking with 3 sequential steps to ensure systemat
 
 Each step requires completion before moving to the next. Use `./scripts/checkpoint-status.sh next-task` to check progress at any time.
 
+## MANDATORY: Initialize All Todo Items
+
+**CRITICAL**: Before executing ANY steps, add ALL step and verification todo items to the session todo list using `todo_write`:
+
+**Step and Verification Todo Items:**
+- Add todo item: "Step 1: Read Context - Read AGENTS.md and check session context" - Status: pending
+- Add todo item: "Verify Step 1: Read Context" - Status: pending
+- Add todo item: "Step 2: Check Task Sources - Review session todo list and TODO.md" - Status: pending
+- Add todo item: "Verify Step 2: Check Task Sources" - Status: pending
+- Add todo item: "Step 3: Discover Next Task - Identify and present next priority task" - Status: pending
+- Add todo item: "Verify Step 3: Discover Next Task" - Status: pending
+- Add todo item: "Verify Complete Workflow: next-task" - Status: pending
+
+**Important**: All todo items are initialized as `pending` and will be updated to `in_progress` when their respective step/verification begins, then to `completed` after verification passes.
+
 ## MANDATORY KB Consultation
 
 Before starting task execution, search KB for relevant patterns ([details](../../../kb/kb-consultation-before-planning-requirement.md)):
@@ -144,12 +159,12 @@ Before starting task execution, search KB for relevant patterns ([details](../..
 
 #### [CHECKPOINT STEP 1]
 
-**MANDATORY: Add step to session todo list**
+**MANDATORY: Update step todo item status**
 
-Before starting this step, add it to the session todo list using `todo_write`:
+Before starting this step, update the step todo item status to `in_progress`:
 
 ```
-- Add todo item: "Step 1: Read Context - Read AGENTS.md and check session context"
+- Update todo item: "Step 1: Read Context - Read AGENTS.md and check session context"
 - Status: in_progress
 ```
 
@@ -173,26 +188,43 @@ ls -la .session_todos.txt 2>/dev/null || echo "No session todo file found"
 
 **⚠️ MANDATORY STEP VERIFICATION**
 
-Before proceeding to Step 2, you MUST verify Step 1 completion via step-verifier sub-agent:
+**MANDATORY: Update verification todo item status**
 
-1. **Invoke step-verifier sub-agent** to verify:
-   - AGENTS.md was read and understood
-   - Session context was checked
-   - Step objectives were met
+Before proceeding to Step 2, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Step 1: Read Context"
+- Status: in_progress
 
-2. **If verification fails**: Fix issues and re-verify before proceeding
+Before proceeding to Step 2, you MUST verify Step 1 completion via **step-verifier sub-agent**:
 
-3. **If sub-agent unavailable**: Stop and request user manual verification
+1. **Report accomplishments with evidence**:
+   - AGENTS.md was read (provide file path and relevant sections)
+   - Session context was checked (describe what was checked)
+   - Step objectives were met (describe what was accomplished)
+
+2. **Invoke step-verifier sub-agent** using `mcp_sub-agents_run_agent`:
+   - Agent: `"step-verifier"`
+   - Prompt: "Verify Step 1: Read Context completion for next-task command. Todo Item: [what was accomplished]. Command File: .opencode/command/ar/next-task.md. Step: Step 1: Read Context. Accomplishment Report: [evidence of what was accomplished]"
+   - The step-verifier will independently verify by reading AGENTS.md, checking session context, etc.
+
+3. **Handle verification results**:
+   - **If "✅ STEP VERIFIED"**: Proceed to Step 2
+   - **If "⚠️ STOP EXECUTION"**: Fix reported issues, re-invoke step-verifier, only proceed after verification passes
+   - **If sub-agent unavailable**: STOP and request user manual verification
 
 **Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
 
-1. **Mark step complete in session todo list** using `todo_write`:
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Step 1: Read Context"
+   - Status: completed
+
+2. **Mark step complete in session todo list** using `todo_write`:
+
    ```
    - Update todo item: "Step 1: Read Context - Read AGENTS.md and check session context"
    - Status: completed
    ```
 
-2. **Update checkpoint** (for progress tracking only):
+3. **Update checkpoint** (for progress tracking only):
 ```bash
 ./scripts/checkpoint-update.sh next-task 1
 ```
@@ -201,12 +233,12 @@ Before proceeding to Step 2, you MUST verify Step 1 completion via step-verifier
 
 #### [CHECKPOINT STEP 2]
 
-**MANDATORY: Add step to session todo list**
+**MANDATORY: Update step todo item status**
 
-Before starting this step, add it to the session todo list using `todo_write`:
+Before starting this step, update the step todo item status to `in_progress`:
 
 ```
-- Add todo item: "Step 2: Check Task Sources - Review session todo list and TODO.md"
+- Update todo item: "Step 2: Check Task Sources - Review session todo list and TODO.md"
 - Status: in_progress
 ```
 
@@ -240,6 +272,12 @@ fi
 
 **⚠️ MANDATORY STEP VERIFICATION**
 
+**MANDATORY: Update verification todo item status**
+
+Before proceeding to Step 3, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Step 2: Check Task Sources"
+- Status: in_progress
+
 Before proceeding to Step 3, you MUST verify Step 2 completion via step-verifier sub-agent:
 
 1. **Invoke step-verifier sub-agent** to verify:
@@ -254,13 +292,17 @@ Before proceeding to Step 3, you MUST verify Step 2 completion via step-verifier
 
 **Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
 
-1. **Mark step complete in session todo list** using `todo_write`:
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Step 2: Check Task Sources"
+   - Status: completed
+
+2. **Mark step complete in session todo list** using `todo_write`:
    ```
    - Update todo item: "Step 2: Check Task Sources - Review session todo list and TODO.md"
    - Status: completed
    ```
 
-2. **Update checkpoint** (for progress tracking only):
+3. **Update checkpoint** (for progress tracking only):
 ```bash
 ./scripts/checkpoint-update.sh next-task 2
 ```
@@ -269,12 +311,12 @@ Before proceeding to Step 3, you MUST verify Step 2 completion via step-verifier
 
 #### [CHECKPOINT STEP 3]
 
-**MANDATORY: Add step to session todo list**
+**MANDATORY: Update step todo item status**
 
-Before starting this step, add it to the session todo list using `todo_write`:
+Before starting this step, update the step todo item status to `in_progress`:
 
 ```
-- Add todo item: "Step 3: Discover Next Task - Identify and present next priority task"
+- Update todo item: "Step 3: Discover Next Task - Identify and present next priority task"
 - Status: in_progress
 ```
 
@@ -340,6 +382,12 @@ Ask for user confirmation or feedback:
 
 **⚠️ MANDATORY STEP VERIFICATION**
 
+**MANDATORY: Update verification todo item status**
+
+Before completing the workflow, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Step 3: Discover Next Task"
+- Status: in_progress
+
 Before completing the workflow, you MUST verify Step 3 completion via step-verifier sub-agent:
 
 1. **Invoke step-verifier sub-agent** to verify:
@@ -354,13 +402,17 @@ Before completing the workflow, you MUST verify Step 3 completion via step-verif
 
 **Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
 
-1. **Mark step complete in session todo list** using `todo_write`:
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Step 3: Discover Next Task"
+   - Status: completed
+
+2. **Mark step complete in session todo list** using `todo_write`:
    ```
    - Update todo item: "Step 3: Discover Next Task - Identify and present next priority task"
    - Status: completed
    ```
 
-2. **Update checkpoint** (for progress tracking only):
+3. **Update checkpoint** (for progress tracking only):
 ```bash
 ./scripts/checkpoint-update.sh next-task 3
 ```
@@ -370,6 +422,12 @@ Before completing the workflow, you MUST verify Step 3 completion via step-verif
 #### [CHECKPOINT END]
 
 **⚠️ MANDATORY FINAL VERIFICATION**
+
+**MANDATORY: Update final verification todo item status**
+
+Before completing the workflow, update the final verification todo item status to `in_progress`:
+- Update todo item: "Verify Complete Workflow: next-task"
+- Status: in_progress
 
 Before completing the workflow, you MUST verify ALL steps were completed correctly:
 
@@ -385,6 +443,12 @@ Before completing the workflow, you MUST verify ALL steps were completed correct
 3. **If sub-agent unavailable**: Stop and request user manual verification
 
 **Only after ALL steps verified:**
+
+1. **Mark final verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Complete Workflow: next-task"
+   - Status: completed
+
+2. **Complete workflow:**
 ```bash
 ./scripts/checkpoint-complete.sh next-task
 ```

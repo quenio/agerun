@@ -20,7 +20,132 @@ Before reviewing ([details](../../../kb/kb-consultation-before-planning-requirem
 
 ## CHECKPOINT WORKFLOW ENFORCEMENT
 
-**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
+**CRITICAL**: This command MUST use checkpoint tracking for ALL execution. All verification is done via step-verifier sub-agent, NOT via checkpoint scripts ([details](../../../kb/checkpoint-tracking-verification-separation.md)).
+
+## STEP VERIFICATION ENFORCEMENT
+
+**MANDATORY**: After completing each step, you MUST verify step completion using the **step-verifier sub-agent** before proceeding to the next step ([details](../../../kb/sub-agent-verification-pattern.md)).
+
+### About the step-verifier Sub-Agent
+
+The **step-verifier** is a specialized sub-agent that independently verifies step completion:
+
+- **Reads command files** to understand step requirements
+- **Checks files, git status/diff, test results, build outputs** to verify accomplishments
+- **Compares accomplishments against requirements** systematically
+- **Reports verification results with evidence** (what was verified, what's missing)
+- **Provides STOP instructions** when failures are detected (blocks execution until fixed)
+- **Read-only agent**: Never modifies files, commits changes, or makes autonomous decisions
+
+**CRITICAL**: The step-verifier independently verifies your claims. You report accomplishments with evidence; the step-verifier verifies by reading files and checking outputs.
+
+### Step Verification Process
+
+After completing each step (before calling `checkpoint-update.sh`), you MUST:
+
+1. **Report accomplishments with evidence**
+   - Describe what was accomplished (files created/modified, commands executed, outputs produced)
+   - Provide evidence (file paths, command outputs, git status/diff)
+   - **DO NOT** tell step-verifier what to verify - report what was done
+
+2. **Invoke step-verifier sub-agent**
+   - Use `mcp_sub-agents_run_agent` tool with:
+     - Agent: `"step-verifier"`
+     - Prompt: See format below
+     - The step-verifier will independently verify your claims
+
+3. **Handle Verification Results**
+  
+   **If verification PASSES** (report shows "✅ STEP VERIFIED" or "All requirements met"):
+     - Proceed to next step
+     - Mark checkpoint step as complete (for progress tracking only - verification already done by step-verifier)
+  
+   **If verification FAILS** (report shows "⚠️ STOP EXECUTION" or missing elements):
+     - **STOP execution immediately** - do not proceed to next step
+     - Fix all reported issues from verification report
+     - Re-invoke step-verifier with updated evidence after fixes
+     - Only proceed after verification report shows "✅ STEP VERIFIED"
+  
+   **If sub-agent CANNOT be executed** (MCP unavailable or tool error):
+     - STOP execution immediately
+     - Inform user: "⚠️ Step verification sub-agent unavailable. Please manually verify Step N completion before proceeding."
+     - Wait for explicit user confirmation before proceeding
+
+### How to Invoke step-verifier
+
+Use the `mcp_sub-agents_run_agent` tool:
+
+```
+Agent: "step-verifier"
+Prompt: "Verify Step N: [Step Title] completion for review-changes command.
+
+Todo Item: [Description of what the step accomplished]
+Command File: .opencode/command/ar/review-changes.md
+Step: Step N: [Step Title]
+
+Accomplishment Report:
+[Report what was accomplished with evidence: files created/modified, commands executed, outputs produced, etc. The step-verifier will independently verify these claims by reading files, checking git status, etc.]"
+```
+
+**CRITICAL**: 
+- Report accomplishments with evidence, NOT instructions
+- The step-verifier independently verifies by reading command files, checking files, git status/diff, etc.
+- If step-verifier reports "⚠️ STOP EXECUTION", you MUST fix issues before proceeding
+
+
+## MANDATORY: Initialize All Todo Items
+
+**CRITICAL**: Before executing ANY steps, add ALL step and verification todo items to the session todo list using `todo_write`:
+
+**Step and Verification Todo Items:**
+- Add todo item: "Step 1: Diff Analysis" - Status: pending
+- Add todo item: "Verify Step 1: Diff Analysis" - Status: pending
+- Add todo item: "Step 2: Code Smells" - Status: pending
+- Add todo item: "Verify Step 2: Code Smells" - Status: pending
+- Add todo item: "Step 3: Memory Management" - Status: pending
+- Add todo item: "Verify Step 3: Memory Management" - Status: pending
+- Add todo item: "Step 4: Naming Conventions" - Status: pending
+- Add todo item: "Verify Step 4: Naming Conventions" - Status: pending
+- Add todo item: "Step 5: Error Handling" - Status: pending
+- Add todo item: "Verify Step 5: Error Handling" - Status: pending
+- Add todo item: "Step 6: Test Coverage" - Status: pending
+- Add todo item: "Verify Step 6: Test Coverage" - Status: pending
+- Add todo item: "Step 7: Parnas Principles" - Status: pending
+- Add todo item: "Verify Step 7: Parnas Principles" - Status: pending
+- Add todo item: "Step 8: Module Hierarchy" - Status: pending
+- Add todo item: "Verify Step 8: Module Hierarchy" - Status: pending
+- Add todo item: "Step 9: Interface Design" - Status: pending
+- Add todo item: "Verify Step 9: Interface Design" - Status: pending
+- Add todo item: "Step 10: Dependency Check" - Status: pending
+- Add todo item: "Verify Step 10: Dependency Check" - Status: pending
+- Add todo item: "Step 11: Design Patterns" - Status: pending
+- Add todo item: "Verify Step 11: Design Patterns" - Status: pending
+- Add todo item: "Step 12: Real Code Check" - Status: pending
+- Add todo item: "Verify Step 12: Real Code Check" - Status: pending
+- Add todo item: "Step 13: Doc Validation" - Status: pending
+- Add todo item: "Verify Step 13: Doc Validation" - Status: pending
+- Add todo item: "Step 14: Cross-References" - Status: pending
+- Add todo item: "Verify Step 14: Cross-References" - Status: pending
+- Add todo item: "Step 15: Completeness" - Status: pending
+- Add todo item: "Verify Step 15: Completeness" - Status: pending
+- Add todo item: "Step 16: Link Validation" - Status: pending
+- Add todo item: "Verify Step 16: Link Validation" - Status: pending
+- Add todo item: "Step 17: Build Status" - Status: pending
+- Add todo item: "Verify Step 17: Build Status" - Status: pending
+- Add todo item: "Step 18: Hidden Issues" - Status: pending
+- Add todo item: "Verify Step 18: Hidden Issues" - Status: pending
+- Add todo item: "Step 19: Test Results" - Status: pending
+- Add todo item: "Verify Step 19: Test Results" - Status: pending
+- Add todo item: "Step 20: File Hygiene" - Status: pending
+- Add todo item: "Verify Step 20: File Hygiene" - Status: pending
+- Add todo item: "Step 21: Doc Sync" - Status: pending
+- Add todo item: "Verify Step 21: Doc Sync" - Status: pending
+- Add todo item: "Step 22: Final Report" - Status: pending
+- Add todo item: "Verify Step 22: Final Report" - Status: pending
+- Add todo item: "Verify Complete Workflow: review-changes" - Status: pending
+
+**Important**: All todo items are initialized as `pending` and will be updated to `in_progress` when their respective step/verification begins, then to `completed` after verification passes.
+
 
 ### In-Progress Workflow Detection
 
