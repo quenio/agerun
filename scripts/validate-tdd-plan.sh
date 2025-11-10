@@ -45,12 +45,12 @@ echo ""
 echo "📋 SECTION 1: Cycle Organization"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-# Check for clear "Iteration X.Y:" format
-iteration_count=$(grep -c "^### Iteration" "$PLAN_FILE" || true)
+# Check for clear "Iteration X.Y:" format (supports both ### and #### markdown levels)
+iteration_count=$(grep -cE "^#### Iteration|^### Iteration" "$PLAN_FILE" || true)
 if [ "$iteration_count" -gt 0 ]; then
     pass_check "Found $iteration_count iterations"
 else
-    check_issue "No iterations found (should have '### Iteration X.Y:' headers)" "ERROR"
+    check_issue "No iterations found (should have '#### Iteration X.Y:' or '### Iteration X.Y:' headers)" "ERROR"
 fi
 
 # Check for Cycle structure
@@ -62,8 +62,8 @@ else
 fi
 
 # Check for numbering consistency - should not have gaps like 1.1, 1.4, 1.7
-# Extract all iteration numbers
-iterations=$(grep "^### Iteration" "$PLAN_FILE" | sed 's/.*Iteration \([0-9.]*\).*/\1/' | sort -V)
+# Extract all iteration numbers (supports both ### and #### markdown levels)
+iterations=$(grep -E "^#### Iteration|^### Iteration" "$PLAN_FILE" | sed 's/.*Iteration \([0-9.]*\).*/\1/' | sort -V)
 
 last_major=""
 last_minor=""
@@ -97,12 +97,13 @@ echo "⭐ SECTION 2: Assertion Validity (CRITICAL)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 # Most critical check: Do RED phases document temporary corruption?
-red_sections=$(grep -c "^#### RED Phase" "$PLAN_FILE" || true)
+# Support both header format (^#### RED Phase) and bold format (^\*\*RED Phase:)
+red_sections=$(grep -cE "^#### RED Phase|^\*\*RED Phase:" "$PLAN_FILE" || true)
 
 if [ "$red_sections" -gt 0 ]; then
     # For each RED phase, check if it mentions how assertion will fail
-    # Get all RED phase line numbers
-    red_line_nums=$(grep -n "^#### RED Phase" "$PLAN_FILE" | cut -d: -f1)
+    # Get all RED phase line numbers (both formats)
+    red_line_nums=$(grep -nE "^#### RED Phase|^\*\*RED Phase:" "$PLAN_FILE" | cut -d: -f1)
 
     bad_reds=0
     total_reds=0
@@ -151,8 +152,8 @@ echo ""
 echo "📝 SECTION 3: Minimalism & Implementation"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
-# Check for GREEN phases
-green_sections=$(grep -c "^#### GREEN Phase" "$PLAN_FILE" || true)
+# Check for GREEN phases (support both header and bold formats)
+green_sections=$(grep -cE "^#### GREEN Phase|^\*\*GREEN Phase:" "$PLAN_FILE" || true)
 if [ "$green_sections" -gt 0 ]; then
     pass_check "Found $green_sections GREEN phases"
 else

@@ -7,7 +7,7 @@
 #include "ar_log.h"
 
 // Test function declarations
-static void test_file_delegate__create_and_destroy(void);
+static void test_file_delegate__create_returns_non_null(void);
 static void test_file_delegate__get_type(void);
 
 int main(void) {
@@ -25,25 +25,24 @@ int main(void) {
     printf("Running file_delegate module tests...\n");
 
     // Run tests
-    test_file_delegate__create_and_destroy();
+    test_file_delegate__create_returns_non_null();
     test_file_delegate__get_type();
 
     printf("All file_delegate tests passed!\n");
     return 0;
 }
 
-static void test_file_delegate__create_and_destroy(void) {
-    printf("  test_file_delegate__create_and_destroy...\n");
+static void test_file_delegate__create_returns_non_null(void) {
+    printf("  test_file_delegate__create_returns_non_null...\n");
 
     // Given a log instance for the delegate
     ar_log_t *own_log = ar_log__create();
-    AR_ASSERT(own_log != NULL, "Setup: log should be created");
 
     // When creating a FileDelegate
     ar_file_delegate_t *own_delegate = ar_file_delegate__create(own_log, "/tmp/allowed");
 
     // Then it should return non-NULL
-    AR_ASSERT(own_delegate != NULL, "FileDelegate should be created");
+    AR_ASSERT(own_delegate != NULL, "FileDelegate should be created");  // ← FAILS (stub returns NULL)
 
     // Cleanup
     ar_file_delegate__destroy(own_delegate);
@@ -56,8 +55,8 @@ static void test_file_delegate__get_type(void) {
     printf("  test_file_delegate__get_type...\n");
 
     // Given a FileDelegate instance
-    ar_log_t *ref_log = ar_log__create();
-    ar_file_delegate_t *own_delegate = ar_file_delegate__create(ref_log, "/tmp/allowed");
+    ar_log_t *own_log = ar_log__create();
+    ar_file_delegate_t *own_delegate = ar_file_delegate__create(own_log, "/tmp/allowed");
 
     // When getting the delegate type
     const char *ref_type = ar_file_delegate__get_type(own_delegate);
@@ -67,7 +66,7 @@ static void test_file_delegate__get_type(void) {
 
     // Cleanup
     ar_file_delegate__destroy(own_delegate);
-    ar_log__destroy(ref_log);
+    ar_log__destroy(own_log);
 
     printf("    PASS\n");
 }

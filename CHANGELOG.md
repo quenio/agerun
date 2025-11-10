@@ -1,5 +1,35 @@
 # AgeRun CHANGELOG
 
+## 2025-11-10 (FileDelegate Iteration 8.1 Implementation and TDD Plan Validator Enhancement)
+
+- **FileDelegate Iteration 8.1 Implementation**
+
+  Completed Iteration 8.1: ar_file_delegate__create() returns non-NULL with full RED-GREEN-REFACTOR cycle verification.
+
+  **Test Improvements**:
+  - Renamed test function from `test_file_delegate__create_and_destroy()` to `test_file_delegate__create_returns_non_null()` to match plan specification
+  - Fixed ownership naming: Changed `ref_log` to `own_log` in test (log is owned by test, not borrowed)
+  - Verified assertion failure: Confirmed test fails correctly when function returns NULL (RED phase)
+  - Verified test passes: Confirmed test passes with correct implementation (GREEN phase)
+
+  **Plan Updates**:
+  - Updated `plans/file_delegate_plan.md`: Iteration 8.1 status changed from REVIEWED → IMPLEMENTED
+  - Updated `plans/file_delegate_plan.md`: Iteration 8.3 status changed from IMPLEMENTED → ✅ COMMITTED (stale marker fix)
+
+  **Impact**: Iteration 8.1 fully implemented and verified. Test naming and ownership conventions corrected. Plan status accurately reflects implementation state.
+
+- **TDD Plan Validator Enhancement**
+
+  Enhanced `scripts/validate-tdd-plan.sh` to support both `###` and `####` markdown header levels for iteration and phase headers.
+
+  **Changes**:
+  - Updated iteration counting to support both `^#### Iteration` and `^### Iteration` patterns
+  - Updated RED phase detection to support both `^#### RED Phase` and `^\*\*RED Phase:` formats
+  - Updated GREEN phase detection to support both `^#### GREEN Phase` and `^\*\*GREEN Phase:` formats
+  - Updated error messages to reflect both supported formats
+
+  **Impact**: Validator now works with plans using either markdown header level, improving compatibility with existing plan files.
+
 ## 2025-11-10 (New Learnings: Evidence Validation and Documentation Consistency Patterns)
 
 - **New Learnings: Evidence Validation and Documentation Consistency Patterns**

@@ -35,7 +35,7 @@ Create a delegate type for file operations with path validation, size limits, an
 
 ### TDD Cycle 8: Basic Structure
 
-#### Iteration 8.1: ar_file_delegate__create() returns non-NULL - REVIEWED
+#### Iteration 8.1: ar_file_delegate__create() returns non-NULL - IMPLEMENTED
 
 **Objective**: Verify FileDelegate creation returns a valid instance
 
@@ -673,7 +673,7 @@ void ar_file_delegate__destroy(ar_file_delegate_t *own_delegate) {
 
 ---
 
-#### Iteration 8.3: ar_file_delegate__get_type() returns correct type - IMPLEMENTED
+#### Iteration 8.3: ar_file_delegate__get_type() returns correct type - ✅ COMMITTED
 
 **Objective**: Verify FileDelegate has a type identifier
 
