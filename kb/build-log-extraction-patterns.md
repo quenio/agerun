@@ -18,14 +18,9 @@ excellent_count=$(grep "🌟 Excellent (90-100%):" "$log" | awk '{print $4}')
 
 # Real example from build.sh:
 case "$name" in
-    "check-commands")
-        # Extract average score and excellent count
-        avg_score=$(grep "Average Score:" "$log" 2>/dev/null | awk '{print $3}')
-        excellent_count=$(grep "🌟 Excellent (90-100%):" "$log" 2>/dev/null | awk '{print $4}')
-        total_commands=$(grep "Total Commands:" "$log" 2>/dev/null | awk '{print $3}')
-        if [ -n "$avg_score" ]; then
-            echo "  Average score: $avg_score"
-            echo "  Excellent commands: ${excellent_count:-0}/${total_commands:-26}"
+    "check-docs")
+        if grep -q "All documentation checks passed" "$log" 2>/dev/null; then
+            echo "  All checks passed"
         fi
         ;;
 esac

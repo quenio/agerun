@@ -1,5 +1,47 @@
 # AgeRun CHANGELOG
 
+## 2025-11-09 (Removal of check-commands Validation System)
+
+- **Removal of check-commands Validation System**
+
+  Removed the check-commands validation system as commands no longer use checkpoint scripts, making the validation obsolete.
+
+  **Implementation**: 
+  - Deleted `scripts/check_commands.py` (main validation script)
+  - Deleted `.opencode/command/ar/check-commands.md` (command file)
+  - Deleted 5 helper scripts: `scan-commands.sh`, `validate-command-structure.sh`, `calculate-command-scores.sh`, `identify-command-issues.sh`, `generate-command-report.sh`
+  - Deleted `scripts/verify-command-quality.sh` (no longer serves a purpose)
+  - Removed `check-commands` make target from Makefile
+  - Removed check-commands job and case statements from `scripts/build.sh`
+  - Updated 30 command files to remove checkpoint script references
+  - Updated 9 KB articles to remove check-commands examples and references
+  - Updated `.opencode/command/ar/new-learnings.md` to remove Step 10 (check-commands validation) and renumbered subsequent steps
+  - Updated `.opencode/command/ar/create-command.md` to remove check-commands validation requirement
+  - Fixed broken links in `compact-guidelines.md` (replaced example links with real KB article links)
+
+  **Files Modified**: 
+  - Makefile (removed check-commands target)
+  - scripts/build.sh (removed check-commands job and case statements)
+  - 30 command files (.opencode/command/ar/*.md)
+  - 9 KB articles (kb/*.md)
+  - TODO.md (noted verify-command-quality.sh removal)
+  - compact-guidelines.md (fixed broken example links)
+
+  **Files Deleted**: 
+  - scripts/check_commands.py
+  - .opencode/command/ar/check-commands.md
+  - scripts/scan-commands.sh
+  - scripts/validate-command-structure.sh
+  - scripts/calculate-command-scores.sh
+  - scripts/identify-command-issues.sh
+  - scripts/generate-command-report.sh
+  - scripts/verify-command-quality.sh
+
+  **Impact**: 
+  - Commands are now validated through documentation checks (`make check-docs`), manual review, and KB article cross-references
+  - Simplified command structure without checkpoint script validation requirements
+  - Reduced codebase complexity by removing obsolete validation infrastructure
+
 ## 2025-11-09 (Command Documentation Cleanup - Checkpoint Marker Removal)
 
 - **Command Documentation Cleanup - Checkpoint Marker Removal**

@@ -28,7 +28,6 @@ run_job() {
 # Launch all jobs in parallel
 run_job "check-naming" "make check-naming" "logs/check-naming.log"
 run_job "check-docs" "make check-docs" "logs/check-docs.log"
-run_job "check-commands" "make check-commands" "logs/check-commands.log"
 run_job "analyze-exec" "make analyze-exec" "logs/analyze-exec.log"
 # ... more parallel jobs
 

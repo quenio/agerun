@@ -68,8 +68,8 @@ Keep bash inline when:
 5. Clear naming communicates exact purpose
 6. Easier to maintain and debug
 
-**Real example from check-commands refactoring**:
-- 5 embedded blocks → 5 separate scripts, each with one responsibility
+**Real example from command refactoring**:
+- Multiple embedded blocks → separate scripts, each with one responsibility
 - Each script name describes exactly what it does
 - No monolithic script trying to do everything
 
@@ -171,7 +171,7 @@ Use descriptive verb-domain patterns to improve discoverability and reusability:
 **Domain inclusion** ([details](script-domain-naming-convention.md)):
 - Always include domain for discoverability: `validate-command-structure.sh` ✅ not `validate-structure.sh` ❌
 - Domain enables grep-based script discovery: `grep command scripts/*.sh` finds all command-related scripts
-- Real example from check-commands refactoring:
+- Real example from command refactoring:
   - ❌ WRONG: `step-1-scan.sh`, `step-2-validate.sh` (ordinal prefix, no domain)
   - ✅ CORRECT: `scan-commands.sh`, `validate-command-structure.sh` (domain, no ordinal prefix)
 
@@ -264,14 +264,8 @@ Scans for known issues and anti-patterns:
 
 From the AgeRun project, we extracted 23+ helper scripts:
 
-### Check-Commands Command (5 scripts) - Session 2025-10-18
-- `scan-commands.sh` - Scans .opencode/command/ar directory for all command files
-- `validate-command-structure.sh` - Runs structure validation via check_commands.py
-- `calculate-command-scores.sh` - Extracts average scores and runs quality gates
-- `identify-command-issues.sh` - Analyzes command distribution by quality tier
-- `generate-command-report.sh` - Generates final quality report with status
-
-This extraction from check-commands.md reduced the command documentation by 92 lines while maintaining full functionality. Each script has a single responsibility following the [Script Domain Naming Convention](script-domain-naming-convention.md).
+### Check-Commands Command (removed) - Session 2025-10-18
+The check-commands command and its helper scripts have been removed as command structure validation is no longer needed. Commands are now validated through documentation checks (`check-docs`), manual review, and KB article cross-references.
 
 ### Check-Docs Command - Anti-Pattern Correction - Session 2025-10-18
 

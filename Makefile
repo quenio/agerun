@@ -685,10 +685,6 @@ install-scan-build:
 	fi; \
 fi
 
-# Check command documentation structure
-# Usage: make check-commands [VERBOSE=1] [FIX=1]
-check-commands:
-	@python3 scripts/check_commands.py $(if $(VERBOSE),--verbose) $(if $(FIX),--fix)
 
 # Fix command documentation structure to match comprehensive standards
 # Usage: make fix-commands

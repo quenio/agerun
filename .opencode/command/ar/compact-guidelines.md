@@ -1,9 +1,5 @@
 Make AGENTS.md guidelines more concise by moving details to knowledge base.
 
-## CHECKPOINT WORKFLOW ENFORCEMENT
-
-**CRITICAL**: This command MUST use checkpoint tracking for ALL execution. All verification is done via step-verifier sub-agent, NOT via checkpoint scripts ([details](../../../kb/checkpoint-tracking-verification-separation.md)).
-
 ## STEP VERIFICATION ENFORCEMENT
 
 **MANDATORY**: After completing each step, you MUST verify step completion using the **step-verifier sub-agent** before proceeding to the next step ([details](../../../kb/sub-agent-verification-pattern.md)).
@@ -23,7 +19,7 @@ The **step-verifier** is a specialized sub-agent that independently verifies ste
 
 ### Step Verification Process
 
-After completing each step (before calling `checkpoint-update.sh`), you MUST:
+After completing each step, you MUST:
 
 1. **Report accomplishments with evidence**
    - Describe what was accomplished (files created/modified, commands executed, outputs produced)
@@ -40,8 +36,7 @@ After completing each step (before calling `checkpoint-update.sh`), you MUST:
   
    **If verification PASSES** (report shows "✅ STEP VERIFIED" or "All requirements met"):
      - Proceed to next step
-     - Mark checkpoint step as complete (for progress tracking only - verification already done by step-verifier)
-  
+     -   
    **If verification FAILS** (report shows "⚠️ STOP EXECUTION" or missing elements):
      - **STOP execution immediately** - do not proceed to next step
      - Fix all reported issues from verification report
@@ -73,7 +68,6 @@ Accomplishment Report:
 - Report accomplishments with evidence, NOT instructions
 - The step-verifier independently verifies by reading command files, checking files, git status/diff, etc.
 - If step-verifier reports "⚠️ STOP EXECUTION", you MUST fix issues before proceeding
-
 
 ## MANDATORY: Initialize All Todo Items
 
@@ -114,28 +108,13 @@ Accomplishment Report:
 
 **Important**: All todo items are initialized as `pending` and will be updated to `in_progress` when their respective step/verification begins, then to `completed` after verification passes.
 
-
 ### In-Progress Workflow Detection
 
 If a `/compact-guidelines` workflow is already in progress:
 
-```bash
-./scripts/checkpoint-status.sh compact-guidelines --verbose
-# Resume: ./scripts/checkpoint-update.sh compact-guidelines STEP=N
-# Or reset: ./scripts/checkpoint-cleanup.sh compact-guidelines && ./scripts/checkpoint-init.sh compact-guidelines "Analyze AGENTS.md" "Identify Verbose Sections" "List Extraction Targets" "Check Existing KB Articles" "Plan New Articles" "Create KB Article 1" "Create KB Article 2" "Create KB Article 3" "Update AGENTS.md References" "Add Cross-References" "Update kb/README.md" "Run Documentation Validation" "Verify Link Coverage" "Review Changes" "Create Commit"
-```
-
 ### First-Time Initialization Check
 
-```bash
-./scripts/checkpoint-init.sh compact-guidelines "Analyze AGENTS.md" "Identify Verbose Sections" "List Extraction Targets" "Check Existing KB Articles" "Plan New Articles" "Create KB Article 1" "Create KB Article 2" "Create KB Article 3" "Update AGENTS.md References" "Add Cross-References" "Update kb/README.md" "Run Documentation Validation" "Verify Link Coverage" "Review Changes" "Create Commit"
-```
-
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
-
-```bash
-./scripts/checkpoint-require.sh compact-guidelines
-```
 
 ## MANDATORY KB Consultation
 
@@ -157,12 +136,11 @@ Before compacting:
 # Compact Guidelines
 ## Checkpoint Tracking
 
-This command uses checkpoint tracking to ensure systematic documentation compacting with link verification. The process has 15 checkpoints across 6 phases.
+This command uses progress tracking to ensure systematic documentation compacting with link verification. The process has 15 checkpoints across 6 phases.
 
 ### Initialize Tracking
 ```bash
 # Start the compacting process
-./scripts/checkpoint-init.sh compact-guidelines "Analyze AGENTS.md" "Identify Verbose Sections" "List Extraction Targets" "Check Existing KB Articles" "Plan New Articles" "Create KB Article 1" "Create KB Article 2" "Create KB Article 3" "Update AGENTS.md References" "Add Cross-References" "Update kb/README.md" "Run Documentation Validation" "Verify Link Coverage" "Review Changes" "Create Commit"
 ```
 
 **Expected output:**
@@ -197,16 +175,11 @@ Minimum: Create 2+ KB articles
 ```
 
 ### Check Progress
-```bash
-./scripts/checkpoint-status.sh compact-guidelines
-```
-
 **Expected output (example at 53% completion):**
 ```
 📈 command: X/Y steps (Z%)
    [████░░░░░░░░░░░░░░░░] Z%
-→ Next: ./scripts/checkpoint-update.sh command STEP=N
-```
+→ Next: ```
 
 ## Minimum Requirements
 
@@ -234,8 +207,6 @@ When you see KB article links (formatted with parentheses and "details" text poi
 
 ### Stage 1: Analysis (Steps 1-3)
 
-
-
 #### Step 1: Identify Verbose Sections
 
 #### Step 1: Analyze AGENTS.md
@@ -246,7 +217,6 @@ BEFORE_LINES=$(wc -l < AGENTS.md)
 echo "Current AGENTS.md size: $BEFORE_LINES lines"
 echo "BEFORE_LINES=$BEFORE_LINES" > /tmp/compact-guidelines-metrics.txt
 
-./scripts/checkpoint-update.sh compact-guidelines STEP=1
 ```
 
 #### Step 2: Identify Verbose Sections
@@ -265,7 +235,6 @@ echo "1. [Section name] - [lines that can be reduced]"
 echo "2. [Section name] - [lines that can be reduced]"
 echo "3. [Section name] - [lines that can be reduced]"
 
-./scripts/checkpoint-update.sh compact-guidelines STEP=2
 ```
 
 #### Step 3: List Extraction Targets
@@ -281,13 +250,11 @@ echo "- [Topic 3]: [estimated lines]"
 ESTIMATED_REDUCTION=[number]
 echo "Estimated reduction: $ESTIMATED_REDUCTION lines"
 
-./scripts/checkpoint-update.sh compact-guidelines STEP=3
 ```
 
 #### [ANALYSIS GATE]
 ```bash
 # MANDATORY: Complete analysis before proceeding
-./scripts/checkpoint-gate.sh compact-guidelines "Analysis" "1,2,3"
 ```
 
 **Expected gate output:**
@@ -297,8 +264,6 @@ echo "Estimated reduction: $ESTIMATED_REDUCTION lines"
 ```
 
 ### Stage 2: Planning (Steps 4-5)
-
-
 
 #### Step 4: Check Existing KB Articles
 
@@ -313,7 +278,6 @@ for topic in "topic1" "topic2" "topic3"; do
   fi
 done
 
-./scripts/checkpoint-update.sh compact-guidelines STEP=4
 ```
 
 #### Step 5: Plan New Articles
@@ -328,13 +292,11 @@ echo "3. kb/[article3].md - [description]"
 NEW_ARTICLES_PLANNED=3
 echo "NEW_ARTICLES_PLANNED=$NEW_ARTICLES_PLANNED" >> /tmp/compact-guidelines-metrics.txt
 
-./scripts/checkpoint-update.sh compact-guidelines STEP=5
 ```
 
 #### [PLANNING GATE]
 ```bash
 # MANDATORY: Ensure no duplicate articles
-./scripts/checkpoint-gate.sh compact-guidelines "Planning" "4,5"
 ```
 
 **Expected gate output:**
@@ -361,8 +323,6 @@ echo "NEW_ARTICLES_PLANNED=$NEW_ARTICLES_PLANNED" >> /tmp/compact-guidelines-met
 - Only add new KB links when creating new articles
 
 ### Stage 3: Creation (Steps 6-8)
-
-
 
 #### 4. Knowledge Base Article Creation ([details](../../../kb/validated-documentation-examples.md))
 
@@ -407,8 +367,7 @@ For each section being compacted:
 # After creating first KB article
 if [ -f "kb/[article1].md" ]; then
   echo "✓ Created: kb/[article1].md"
-  ./scripts/checkpoint-update.sh compact-guidelines STEP=6
-else
+  else
   echo "❌ Failed to create article 1"
   exit 1
 fi
@@ -420,8 +379,7 @@ fi
 # After creating second KB article
 if [ -f "kb/[article2].md" ]; then
   echo "✓ Created: kb/[article2].md"
-  ./scripts/checkpoint-update.sh compact-guidelines STEP=7
-else
+  else
   echo "❌ Failed to create article 2"
   exit 1
 fi
@@ -436,13 +394,11 @@ if [ -f "kb/[article3].md" ]; then
 else
   echo "ℹ️ Third article not needed"
 fi
-./scripts/checkpoint-update.sh compact-guidelines STEP=8
 ```
 
 #### [CRITICAL CREATION GATE]
 ```bash
 # ⚠️ CRITICAL: All KB articles must exist before updating references!
-./scripts/checkpoint-gate.sh compact-guidelines "Creation" "6,7,8"
 ```
 
 **Expected gate output:**
@@ -452,8 +408,6 @@ fi
 ```
 
 ### Stage 4: Integration (Steps 9-11)
-
-
 
 #### Step 9: Update AGENTS.md References
 
@@ -465,8 +419,7 @@ echo "Updating AGENTS.md with KB references..."
 # Verify no broken links using helper script
 if ./scripts/validate-kb-links.sh AGENTS.md; then
   echo "✅ All KB links valid"
-  ./scripts/checkpoint-update.sh compact-guidelines STEP=9
-else
+  else
   echo "❌ Fix broken links before proceeding"
   exit 1
 fi
@@ -481,7 +434,6 @@ echo "Updated articles:"
 echo "- kb/existing1.md: Added reference to new article"
 echo "- kb/existing2.md: Added reference to new article"
 
-./scripts/checkpoint-update.sh compact-guidelines STEP=10
 ```
 
 #### Step 11: Update kb/README.md
@@ -491,13 +443,11 @@ echo "- kb/existing2.md: Added reference to new article"
 echo "Updating kb/README.md index..."
 # Add new articles to appropriate sections
 
-./scripts/checkpoint-update.sh compact-guidelines STEP=11
 ```
 
 #### [INTEGRATION GATE]
 ```bash
 # MANDATORY: Ensure all references updated
-./scripts/checkpoint-gate.sh compact-guidelines "Integration" "9,10,11"
 ```
 
 **Expected gate output:**
@@ -529,9 +479,9 @@ echo "Updating kb/README.md index..."
 
 **Link placement patterns:**
 ```markdown
-- Guideline summary ([details](kb/article.md))
-- **Pattern name**: Brief description ([details](kb/article.md))
-- Rule with link at end ([see kb/article.md for examples])
+- Guideline summary ([details](../../../kb/command-helper-script-extraction-pattern.md))
+- **Pattern name**: Brief description ([details](../../../kb/script-domain-naming-convention.md))
+- Rule with link at end ([see ../../../kb/documentation-compacting-pattern.md for examples])
 ```
 
 **When to link (ALWAYS when details are moved):**
@@ -595,16 +545,13 @@ After compacting each section:
 
 ### Stage 5: Validation (Steps 12-14)
 
-
-
 #### Step 12: Run Documentation Validation
 
 ```bash
 # Run documentation validation
 if make check-docs; then
   echo "✅ Documentation validation passed"
-  ./scripts/checkpoint-update.sh compact-guidelines STEP=12
-else
+  else
   echo "❌ Documentation validation failed - fix errors"
   exit 1
 fi
@@ -618,12 +565,11 @@ echo "Verifying link coverage..."
 
 # Check that every major compaction has a corresponding link
 COMPACTED_SECTIONS=3  # Number of sections you compacted
-KB_LINKS=$(grep -c '\[details\](.*kb/.*\.md)' AGENTS.md)
+KB_LINKS=$(grep -cE '\[details\]\(.*kb/.*\.md\)' AGENTS.md 2>/dev/null || echo "0")
 
 if [ $KB_LINKS -ge $COMPACTED_SECTIONS ]; then
   echo "✅ Link coverage adequate: $KB_LINKS links for $COMPACTED_SECTIONS compactions"
-  ./scripts/checkpoint-update.sh compact-guidelines STEP=13
-else
+  else
   echo "⚠️ Insufficient links: $KB_LINKS links for $COMPACTED_SECTIONS compactions"
 fi
 ```
@@ -649,13 +595,11 @@ if [ $NEW_ARTICLES -lt 2 ]; then
   exit 1
 fi
 
-./scripts/checkpoint-update.sh compact-guidelines STEP=14
 ```
 
 #### [VALIDATION GATE]
 ```bash
 # MANDATORY: Ensure no broken links before commit
-./scripts/checkpoint-gate.sh compact-guidelines "Validation" "12,13,14"
 ```
 
 **Expected gate output:**
@@ -665,8 +609,6 @@ fi
 ```
 
 ### Stage 6: Commit (Step 15)
-
-
 
 #### 10. Commit Strategy
 
@@ -705,11 +647,6 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 
 ```bash
 # After creating commit
-./scripts/checkpoint-update.sh compact-guidelines STEP=15
-```
-
-```bash
-./scripts/checkpoint-complete.sh compact-guidelines
 ```
 
 **Expected completion output:**
@@ -721,7 +658,6 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 📈 compact-guidelines: X/Y steps (Z%)
    [████████████████████] 100%
 
-✅ Checkpoint workflow complete
 ```
 rm -f /tmp/compact-guidelines-metrics.txt
 ```
@@ -756,7 +692,6 @@ done
 ### To resume an interrupted session:
 ```bash
 # Check where you left off
-./scripts/checkpoint-status.sh compact-guidelines
 
 # Continue from the next pending step
 ```

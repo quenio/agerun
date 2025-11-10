@@ -9,10 +9,6 @@ Before starting migration:
    - zig-integration-comprehensive
 3. Apply struct module conventions
 
-## CHECKPOINT WORKFLOW ENFORCEMENT
-
-**CRITICAL**: This command MUST use checkpoint tracking for ALL execution. All verification is done via step-verifier sub-agent, NOT via checkpoint scripts ([details](../../../kb/checkpoint-tracking-verification-separation.md)).
-
 ## STEP VERIFICATION ENFORCEMENT
 
 **MANDATORY**: After completing each step, you MUST verify step completion using the **step-verifier sub-agent** before proceeding to the next step ([details](../../../kb/sub-agent-verification-pattern.md)).
@@ -32,7 +28,7 @@ The **step-verifier** is a specialized sub-agent that independently verifies ste
 
 ### Step Verification Process
 
-After completing each step (before calling `checkpoint-update.sh`), you MUST:
+After completing each step, you MUST:
 
 1. **Report accomplishments with evidence**
    - Describe what was accomplished (files created/modified, commands executed, outputs produced)
@@ -49,8 +45,7 @@ After completing each step (before calling `checkpoint-update.sh`), you MUST:
   
    **If verification PASSES** (report shows "✅ STEP VERIFIED" or "All requirements met"):
      - Proceed to next step
-     - Mark checkpoint step as complete (for progress tracking only - verification already done by step-verifier)
-  
+     -   
    **If verification FAILS** (report shows "⚠️ STOP EXECUTION" or missing elements):
      - **STOP execution immediately** - do not proceed to next step
      - Fix all reported issues from verification report
@@ -83,7 +78,6 @@ Accomplishment Report:
 - The step-verifier independently verifies by reading command files, checking files, git status/diff, etc.
 - If step-verifier reports "⚠️ STOP EXECUTION", you MUST fix issues before proceeding
 
-
 ## MANDATORY: Initialize All Todo Items
 
 **CRITICAL**: Before executing ANY steps, add ALL step and verification todo items to the session todo list using `todo_write`:
@@ -115,59 +109,37 @@ Accomplishment Report:
 
 **Important**: All todo items are initialized as `pending` and will be updated to `in_progress` when their respective step/verification begins, then to `completed` after verification passes.
 
-
 ### In-Progress Workflow Detection
 
 If a `/migrate-module-to-zig-struct` workflow is already in progress:
 
-```bash
-./scripts/checkpoint-status.sh migrate-module-to-zig-struct --verbose
-# Resume: ./scripts/checkpoint-update.sh migrate-module-to-zig-struct STEP=N
-# Or reset: ./scripts/checkpoint-cleanup.sh migrate-module-to-zig-struct && ./scripts/checkpoint-init.sh migrate-module-to-zig-struct "Read KB Article" "Check Current Implementation" "Check C Dependencies" "Check Zig Dependencies" "Verify Safety" "Create Struct Module" "Convert Functions" "Update Dependencies" "Run Tests" "Remove Old Module" "Update Documentation"
-```
-
 ### First-Time Initialization Check
 
-```bash
-./scripts/checkpoint-init.sh migrate-module-to-zig-struct "Read KB Article" "Check Current Implementation" "Check C Dependencies" "Check Zig Dependencies" "Verify Safety" "Create Struct Module" "Convert Functions" "Update Dependencies" "Run Tests" "Remove Old Module" "Update Documentation"
-```
-
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
-
-```bash
-./scripts/checkpoint-require.sh migrate-module-to-zig-struct
-```
 
 # Migrate Module to Zig Struct
 ## Checkpoint Tracking
 
-This command uses checkpoint tracking to ensure safe and systematic module migration. The process has 11 checkpoints across 4 phases with critical safety gates.
+This command uses progress tracking to ensure safe and systematic module migration. The process has 11 checkpoints across 4 phases with critical safety gates.
 
 ### Initialize Tracking
 ```bash
 # Start the migration process (replace MODULE with actual module name)
 MODULE={{1}}  # Set the module name
-./scripts/checkpoint-init.sh migrate-module-to-zig-struct "Read KB Article" "Check Current Implementation" "Check C Dependencies" "Check Zig Dependencies" "Verify Safety" "Create Struct Module" "Convert Functions" "Update Dependencies" "Run Tests" "Remove Old Module" "Update Documentation"
 ```
 
 **Expected output:**
 ```
 📍 Starting: migrate-module-to-zig-struct (11 steps)
 📁 Tracking: /tmp/migrate-module-to-zig-struct-progress.txt
-→ Run: ./scripts/checkpoint-update.sh migrate-module-to-zig-struct STEP=1
-```
+→ Run: ```
 
 ### Check Progress
-```bash
-./scripts/checkpoint-status.sh migrate-module-to-zig-struct
-```
-
 **Expected output (example at 64% completion):**
 ```
 📈 command: X/Y steps (Z%)
    [████░░░░░░░░░░░░░░░░] Z%
-→ Next: ./scripts/checkpoint-update.sh command STEP=N
-```
+→ Next: ```
 
 ## Minimum Requirements
 
@@ -183,8 +155,6 @@ MODULE={{1}}  # Set the module name
 Migrate the **ar_{{1}}** module from a C-ABI compatible Zig module to a pure Zig struct module following the pattern documented in kb/zig-struct-modules-pattern.md.
 
 ### Stage 1: Assessment (Steps 1-5)
-
-
 
 #### Read KB Article First
 
@@ -204,13 +174,11 @@ echo "DELETED_FILES=0" >> /tmp/migration-tracking.txt
 echo "UPDATED_DEPS=0" >> /tmp/migration-tracking.txt
 echo "FUNCTIONS_CONVERTED=0" >> /tmp/migration-tracking.txt
 
-./scripts/checkpoint-update.sh migrate-module-to-zig-struct STEP=1
 ```
 
 #### [KNOWLEDGE GATE]
 ```bash
 # Confirm KB article was read and understood
-./scripts/checkpoint-gate.sh migrate-module-to-zig-struct "Knowledge" "1"
 ```
 
 **Expected gate output:**
@@ -231,8 +199,7 @@ First, I need to verify that ar_{{1}} is safe to migrate by checking:
 # Check if source module exists and is in Zig
 if [ -f "modules/ar_${MODULE}.zig" ]; then
   echo "✅ Module ar_${MODULE}.zig exists"
-  ./scripts/checkpoint-update.sh migrate-module-to-zig-struct STEP=2
-else
+  else
   echo "❌ Module ar_${MODULE}.zig not found"
   echo "Migration requires existing Zig ABI module"
   exit 1
@@ -249,10 +216,7 @@ Run dependency analysis using helper script:
 
 # If script exits 0, migration is safe - mark steps complete
 if [ $? -eq 0 ]; then
-  ./scripts/checkpoint-update.sh migrate-module-to-zig-struct STEP=3
-  ./scripts/checkpoint-update.sh migrate-module-to-zig-struct STEP=4
-  ./scripts/checkpoint-update.sh migrate-module-to-zig-struct STEP=5
-else
+      else
   echo "❌ Migration blocked - see errors above"
   exit 1
 fi
@@ -266,7 +230,6 @@ The script checks:
 #### [CRITICAL SAFETY GATE]
 ```bash
 # ⚠️ CRITICAL: Verify migration is safe
-./scripts/checkpoint-gate.sh migrate-module-to-zig-struct "Safety" "2,3,4,5"
 ```
 
 **Expected gate output:**
@@ -280,8 +243,6 @@ The script checks:
 - If ar_{{1}} itself uses `@cImport` to depend on C-ABI modules, migration cannot proceed due to type incompatibility issues between different `@cImport` namespaces
 
 ### Stage 2: Implementation (Steps 6-7)
-
-
 
 #### Migration Plan
 
@@ -301,7 +262,6 @@ source /tmp/migration-tracking.txt
 CREATED_FILES=$((CREATED_FILES + 1))
 echo "CREATED_FILES=$CREATED_FILES" >> /tmp/migration-tracking.txt
 
-./scripts/checkpoint-update.sh migrate-module-to-zig-struct STEP=6
 ```
 
 #### Step 7: Convert Functions
@@ -324,13 +284,11 @@ FUNCTIONS_CONVERTED=$TOTAL_FUNCTIONS
 echo "FUNCTIONS_CONVERTED=$FUNCTIONS_CONVERTED" >> /tmp/migration-tracking.txt
 echo "✅ Converted $FUNCTIONS_CONVERTED functions"
 
-./scripts/checkpoint-update.sh migrate-module-to-zig-struct STEP=7
 ```
 
 #### [IMPLEMENTATION GATE]
 ```bash
 # Verify implementation is complete
-./scripts/checkpoint-gate.sh migrate-module-to-zig-struct "Implementation" "6,7"
 ```
 
 **Expected gate output:**
@@ -340,8 +298,6 @@ echo "✅ Converted $FUNCTIONS_CONVERTED functions"
 ```
 
 ### Stage 3: Testing (Steps 8-9)
-
-
 
 #### Step 8: Update Dependencies
 
@@ -359,7 +315,6 @@ echo "Updating $UPDATED_DEPS dependent Zig modules..."
 # After updating dependencies
 echo "✅ Updated $UPDATED_DEPS modules to use {{1|pascal}}.zig"
 
-./scripts/checkpoint-update.sh migrate-module-to-zig-struct STEP=8
 ```
 
 #### Step 9: Run Tests
@@ -375,14 +330,12 @@ if grep -q "memory leaks detected" test-output.log; then
   exit 1
 else
   echo "✅ No memory leaks - all tests passed"
-  ./scripts/checkpoint-update.sh migrate-module-to-zig-struct STEP=9
-fi
+  fi
 ```
 
 #### [CRITICAL TESTING GATE]
 ```bash
 # ⚠️ CRITICAL: Verify all tests pass with no leaks
-./scripts/checkpoint-gate.sh migrate-module-to-zig-struct "Testing" "8,9"
 ```
 
 **Expected gate output:**
@@ -392,8 +345,6 @@ fi
 ```
 
 ### Stage 4: Cleanup (Steps 10-11)
-
-
 
 #### Step 10: Remove Old Module
 
@@ -417,7 +368,6 @@ DELETED_FILES=3
 echo "DELETED_FILES=$DELETED_FILES" >> /tmp/migration-tracking.txt
 echo "✅ Removed $DELETED_FILES old files"
 
-./scripts/checkpoint-update.sh migrate-module-to-zig-struct STEP=10
 ```
 
 #### Step 11: Update Documentation
@@ -434,11 +384,6 @@ echo "- Updated modules/{{1|pascal}}.md with new API"
 echo "- Added to Zig Struct Modules section in README.md"
 echo "- Added KB article references"
 
-./scripts/checkpoint-update.sh migrate-module-to-zig-struct STEP=11
-```
-
-```bash
-./scripts/checkpoint-complete.sh migrate-module-to-zig-struct
 ```
 
 **Expected completion output:**
@@ -450,7 +395,6 @@ echo "- Added KB article references"
 📈 migrate-module-to-zig-struct: X/Y steps (Z%)
    [████████████████████] 100%
 
-✅ Checkpoint workflow complete
 ```
 rm -f /tmp/migration-tracking.txt
 rm -f test-output.log

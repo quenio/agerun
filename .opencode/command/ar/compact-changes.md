@@ -1,9 +1,5 @@
 Compact the CHANGELOG.md file by condensing completed milestones while preserving key information.
 
-## CHECKPOINT WORKFLOW ENFORCEMENT
-
-**CRITICAL**: This command MUST use checkpoint tracking for ALL execution. All verification is done via step-verifier sub-agent, NOT via checkpoint scripts ([details](../../../kb/checkpoint-tracking-verification-separation.md)).
-
 ## STEP VERIFICATION ENFORCEMENT
 
 **MANDATORY**: After completing each step, you MUST verify step completion using the **step-verifier sub-agent** before proceeding to the next step ([details](../../../kb/sub-agent-verification-pattern.md)).
@@ -23,7 +19,7 @@ The **step-verifier** is a specialized sub-agent that independently verifies ste
 
 ### Step Verification Process
 
-After completing each step (before calling `checkpoint-update.sh`), you MUST:
+After completing each step, you MUST:
 
 1. **Report accomplishments with evidence**
    - Describe what was accomplished (files created/modified, commands executed, outputs produced)
@@ -40,8 +36,7 @@ After completing each step (before calling `checkpoint-update.sh`), you MUST:
   
    **If verification PASSES** (report shows "✅ STEP VERIFIED" or "All requirements met"):
      - Proceed to next step
-     - Mark checkpoint step as complete (for progress tracking only - verification already done by step-verifier)
-  
+     -   
    **If verification FAILS** (report shows "⚠️ STOP EXECUTION" or missing elements):
      - **STOP execution immediately** - do not proceed to next step
      - Fix all reported issues from verification report
@@ -74,7 +69,6 @@ Accomplishment Report:
 - The step-verifier independently verifies by reading command files, checking files, git status/diff, etc.
 - If step-verifier reports "⚠️ STOP EXECUTION", you MUST fix issues before proceeding
 
-
 ## MANDATORY: Initialize All Todo Items
 
 **CRITICAL**: Before executing ANY steps, add ALL step and verification todo items to the session todo list using `todo_write`:
@@ -98,28 +92,13 @@ Accomplishment Report:
 
 **Important**: All todo items are initialized as `pending` and will be updated to `in_progress` when their respective step/verification begins, then to `completed` after verification passes.
 
-
 ### In-Progress Workflow Detection
 
 If a `/compact-changes` workflow is already in progress:
 
-```bash
-./scripts/checkpoint-status.sh compact-changes --verbose
-# Resume: ./scripts/checkpoint-update.sh compact-changes STEP=N
-# Or reset: ./scripts/checkpoint-cleanup.sh compact-changes && ./scripts/checkpoint-init.sh compact-changes "Measure Baseline" "Analyze Patterns" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Update TODO" "Commit Changes"
-```
-
 ### First-Time Initialization Check
 
-```bash
-./scripts/checkpoint-init.sh compact-changes "Measure Baseline" "Analyze Patterns" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Update TODO" "Commit Changes"
-```
-
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
-
-```bash
-./scripts/checkpoint-require.sh compact-changes
-```
 
 ## CRITICAL: Manual Compaction Strategy
 
@@ -187,86 +166,16 @@ Automated scripts cannot perform this semantic grouping and rewriting.
 
 ## Checkpoint Tracking
 
-This command uses checkpoint tracking to ensure systematic CHANGELOG.md compaction through manual semantic analysis. The process has 7 checkpoints across 3 phases with verification gates.
+This command uses progress tracking to ensure systematic CHANGELOG.md compaction through manual semantic analysis. The process has 7 checkpoints across 3 phases with verification gates.
 
 ### Initialize Tracking
 ```bash
 # Start the changelog compaction process
-./scripts/checkpoint-init.sh compact-changes "Measure Baseline" "Analyze Patterns" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Update TODO" "Commit Changes"
-```
-
-**Expected output:**
-```
-📍 Starting: compact-changes (7 steps)
-📁 Tracking: /tmp/compact-changes-progress.txt
-→ Run: ./scripts/checkpoint-update.sh compact-changes STEP=1
-```
-
-### Check Progress
-```bash
-./scripts/checkpoint-status.sh compact-changes
-```
-
-**Expected output (example at 43% completion):**
-```
-📈 compact-changes: 3/7 steps (43%)
-   [████████░░░░░░░░░░░░] 43%
-→ Next: ./scripts/checkpoint-update.sh compact-changes STEP=4
-```
-
-## Minimum Requirements
-
-**MANDATORY for successful compaction (per KB documentation-compacting-pattern):**
-- [ ] **40-50%+ file size reduction achieved** (requires manual semantic analysis)
-- [ ] All 157+ metrics and numbers preserved (verify with grep)
-- [ ] All dates maintained
-- [ ] Chronological order preserved
-- [ ] Self-documenting entry added
-- [ ] TODO.md updated with completion metrics
-- [ ] Changes committed
-
-**CRITICAL**: Achieving 40-50% reduction requires manual semantic analysis to identify and combine related entries across different dates. Automated scripts cannot perform this level of semantic understanding.
-
-### Stage 1: Analysis (Steps 1-2)
-
-
-#### Steps 1-2: Analyze CHANGELOG
-
-Run pattern analysis using helper script:
-
-```bash
-# Analyze CHANGELOG and save stats (Steps 1-2 combined)
-./scripts/analyze-changelog-patterns.sh CHANGELOG.md | tee /tmp/compact-changes-stats.txt
-
-# Mark both analysis steps complete
-./scripts/checkpoint-update.sh compact-changes STEP=1
-./scripts/checkpoint-update.sh compact-changes STEP=2
-```
-
-The script provides:
-1. **Baseline Measurements** - Lines, bytes, metrics count
-2. **Structural Analysis** - Date sections count
-3. **Repetitive Pattern Detection** - Common topics appearing frequently
-4. **Compaction Opportunities** - Analysis questions and recommendations
-
-**Expected output:**
-```
-Analyzing CHANGELOG for patterns...
-Date sections: 45
-Repetitive patterns found:
-- System Module: 28 occurrences
-- Parser: 15 occurrences
-- Global API: 12 occurrences
-
-Analysis questions to consider:
-[...]
-✓ Updated checkpoint 2/7 for compact-changes
 ```
 
 #### [ANALYSIS GATE]
 ```bash
 # Verify analysis before proceeding to manual work
-./scripts/checkpoint-gate.sh compact-changes "Analysis Complete" "1,2"
 ```
 
 **Expected gate output:**
@@ -275,9 +184,7 @@ Analysis questions to consider:
    Verified: Steps 1,2
 ```
 
-
 ### Stage 2: Manual Compaction (Steps 3-5)
-
 
 #### Step 3: Manual Semantic Compaction
 
@@ -365,7 +272,6 @@ Analysis questions to consider:
 # After completing manual edits
 echo "✅ Manual semantic compaction complete"
 echo "Review changes with: git diff CHANGELOG.md"
-./scripts/checkpoint-update.sh compact-changes STEP=3
 ```
 
 #### Step 4: Verify Preservation
@@ -374,19 +280,6 @@ echo "Review changes with: git diff CHANGELOG.md"
 # Verify all critical information preserved
 ./scripts/verify-changelog-preservation.sh /tmp/compact-changes-stats.txt
 
-./scripts/checkpoint-update.sh compact-changes STEP=4
-```
-
-**Expected output:**
-```
-Verifying preservation...
-New: 129 lines, 17131 bytes
-Metrics found: 157 (expected: 157)
-Line reduction: 75%
-File size reduction: 86%
-✅ All metrics preserved
-Date sections remaining: 16
-✓ Updated checkpoint 4/7 for compact-changes
 ```
 
 #### Step 5: Add Self-Entry
@@ -408,7 +301,6 @@ echo ""
 
 read -p "Press Enter after adding the entry..."
 
-./scripts/checkpoint-update.sh compact-changes STEP=5
 ```
 
 #### [COMPACTION QUALITY GATE]
@@ -427,7 +319,6 @@ if [ "$METRICS_OK" != "PASS" ]; then
   echo "Review: grep -oE '[0-9]+[%]|[0-9]+ (files|lines)' CHANGELOG.md"
 fi
 
-./scripts/checkpoint-gate.sh compact-changes "Compaction Quality" "3,4,5"
 ```
 
 **Expected gate output:**
@@ -437,9 +328,7 @@ fi
    Verified: Steps 3,4,5
 ```
 
-
 ### Stage 3: Documentation and Commit (Steps 6-7)
-
 
 #### Step 6: Update TODO
 
@@ -459,7 +348,6 @@ echo ""
 
 read -p "Press Enter after updating TODO.md..."
 
-./scripts/checkpoint-update.sh compact-changes STEP=6
 ```
 
 #### Step 7: Commit Changes
@@ -482,23 +370,6 @@ git status
 echo ""
 echo "✅ Changes committed"
 
-./scripts/checkpoint-update.sh compact-changes STEP=7
-```
-
-**Expected output:**
-```
-[main abc1234] Document CHANGELOG.md Session 3 manual compaction completion
- 2 files changed, 90 insertions(+), 492 deletions(-)
-On branch main
-Your branch is ahead of 'origin/main' by 1 commit.
-[...]
-✅ Changes committed
-✓ Updated checkpoint 7/7 for compact-changes
-```
-
-```bash
-./scripts/checkpoint-complete.sh compact-changes
-rm -f /tmp/compact-changes-stats.txt
 ```
 
 **Expected completion output:**
@@ -510,9 +381,7 @@ rm -f /tmp/compact-changes-stats.txt
 📈 compact-changes: 7/7 steps (100%)
    [████████████████████] 100%
 
-✅ Checkpoint workflow complete
 ```
-
 
 ## Why Manual Compaction?
 

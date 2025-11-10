@@ -9,10 +9,6 @@ Before checking consistency:
    - systematic-consistency-verification
 3. Apply systematic verification approach
 
-## CHECKPOINT WORKFLOW ENFORCEMENT
-
-**CRITICAL**: This command MUST use checkpoint tracking for ALL execution. All verification is done via step-verifier sub-agent, NOT via checkpoint scripts ([details](../../../kb/checkpoint-tracking-verification-separation.md)).
-
 ## STEP VERIFICATION ENFORCEMENT
 
 **MANDATORY**: After completing each step, you MUST verify step completion using the **step-verifier sub-agent** before proceeding to the next step ([details](../../../kb/sub-agent-verification-pattern.md)).
@@ -32,7 +28,7 @@ The **step-verifier** is a specialized sub-agent that independently verifies ste
 
 ### Step Verification Process
 
-After completing each step (before calling `checkpoint-update.sh`), you MUST:
+After completing each step, you MUST:
 
 1. **Report accomplishments with evidence**
    - Describe what was accomplished (files created/modified, commands executed, outputs produced)
@@ -49,8 +45,7 @@ After completing each step (before calling `checkpoint-update.sh`), you MUST:
   
    **If verification PASSES** (report shows "✅ STEP VERIFIED" or "All requirements met"):
      - Proceed to next step
-     - Mark checkpoint step as complete (for progress tracking only - verification already done by step-verifier)
-  
+     -   
    **If verification FAILS** (report shows "⚠️ STOP EXECUTION" or missing elements):
      - **STOP execution immediately** - do not proceed to next step
      - Fix all reported issues from verification report
@@ -82,7 +77,6 @@ Accomplishment Report:
 - Report accomplishments with evidence, NOT instructions
 - The step-verifier independently verifies by reading command files, checking files, git status/diff, etc.
 - If step-verifier reports "⚠️ STOP EXECUTION", you MUST fix issues before proceeding
-
 
 ## MANDATORY: Initialize All Todo Items
 
@@ -123,38 +117,22 @@ Accomplishment Report:
 
 **Important**: All todo items are initialized as `pending` and will be updated to `in_progress` when their respective step/verification begins, then to `completed` after verification passes.
 
-
 ### In-Progress Workflow Detection
 
 If a `/check-module-consistency` workflow is already in progress:
 
-```bash
-./scripts/checkpoint-status.sh check-module-consistency --verbose
-# Resume: ./scripts/checkpoint-update.sh check-module-consistency STEP=N
-# Or reset: ./scripts/checkpoint-cleanup.sh check-module-consistency && ./scripts/checkpoint-init.sh check-module-consistency "Describe Improvement" "Identify Pattern" "Find Sister Modules" "Find Similar Purpose" "Find Same Subsystem" "Check Module 1" "Check Module 2" "Check Module 3" "Check Module 4" "Check Module 5" "Analyze Findings" "List Modules Needing Update" "Estimate Effort" "Create Priority Order" "Document Plan"
-```
-
 ### First-Time Initialization Check
 
-```bash
-./scripts/checkpoint-init.sh check-module-consistency "Describe Improvement" "Identify Pattern" "Find Sister Modules" "Find Similar Purpose" "Find Same Subsystem" "Check Module 1" "Check Module 2" "Check Module 3" "Check Module 4" "Check Module 5" "Analyze Findings" "List Modules Needing Update" "Estimate Effort" "Create Priority Order" "Document Plan"
-```
-
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
-
-```bash
-./scripts/checkpoint-require.sh check-module-consistency
-```
 
 # Check Module Consistency
 ## Checkpoint Tracking
 
-This command uses checkpoint tracking to ensure systematic consistency checking across related modules. The process has 15 checkpoints across 5 phases.
+This command uses progress tracking to ensure systematic consistency checking across related modules. The process has 15 checkpoints across 5 phases.
 
 ### Initialize Tracking
 ```bash
 # Start the consistency checking process
-./scripts/checkpoint-init.sh check-module-consistency "Describe Improvement" "Identify Pattern" "Find Sister Modules" "Find Similar Purpose" "Find Same Subsystem" "Check Module 1" "Check Module 2" "Check Module 3" "Check Module 4" "Check Module 5" "Analyze Findings" "List Modules Needing Update" "Estimate Effort" "Create Priority Order" "Document Plan"
 ```
 
 **Expected output:**
@@ -189,16 +167,11 @@ Minimum: Check 3+ modules for same patterns
 ```
 
 ### Check Progress
-```bash
-./scripts/checkpoint-status.sh check-module-consistency
-```
-
 **Expected output (example at 53% completion):**
 ```
 📈 command: X/Y steps (Z%)
    [████░░░░░░░░░░░░░░░░] Z%
-→ Next: ./scripts/checkpoint-update.sh command STEP=N
-```
+→ Next: ```
 
 ## Minimum Requirements
 
@@ -214,8 +187,6 @@ Minimum: Check 3+ modules for same patterns
 After making improvements to one module, use this command to systematically check if related or sister modules need the same improvements. This prevents technical debt from accumulating and maintains architectural coherence. ([details](../../../kb/module-consistency-verification.md))
 
 ### Stage 1: Understanding (Steps 1-2)
-
-
 
 #### Step 1: Identify the Improvement Made
 
@@ -237,7 +208,6 @@ echo "MODULES_FOUND=0" > /tmp/check-consistency-tracking.txt
 echo "MODULES_CHECKED=0" >> /tmp/check-consistency-tracking.txt
 echo "MODULES_NEEDING_UPDATE=0" >> /tmp/check-consistency-tracking.txt
 
-./scripts/checkpoint-update.sh check-module-consistency STEP=1
 ```
 
 #### Step 2: Identify Pattern
@@ -249,13 +219,11 @@ echo "- Check type: [error logging/API/state/docs]"
 echo "- Specific requirement: [description]"
 echo "- Expected behavior: [description]"
 
-./scripts/checkpoint-update.sh check-module-consistency STEP=2
 ```
 
 #### [UNDERSTANDING GATE]
 ```bash
 # MANDATORY: Clear understanding before searching
-./scripts/checkpoint-gate.sh check-module-consistency "Understanding" "1,2"
 ```
 
 **Expected gate output:**
@@ -265,8 +233,6 @@ echo "- Expected behavior: [description]"
 ```
 
 ### Stage 2: Discovery (Steps 3-5)
-
-
 
 #### Step 2: Find Related Modules
 
@@ -283,10 +249,7 @@ Run relationship discovery using helper script:
 
 # If script exits 0, sufficient modules found - mark steps complete
 if [ $? -eq 0 ]; then
-  ./scripts/checkpoint-update.sh check-module-consistency STEP=3
-  ./scripts/checkpoint-update.sh check-module-consistency STEP=4
-  ./scripts/checkpoint-update.sh check-module-consistency STEP=5
-else
+      else
   echo "❌ Insufficient modules found for consistency check"
   exit 1
 fi
@@ -300,7 +263,6 @@ The script discovers:
 #### [DISCOVERY GATE]
 ```bash
 # MANDATORY: Ensure enough modules found
-./scripts/checkpoint-gate.sh check-module-consistency "Discovery" "3,4,5"
 ```
 
 **Expected gate output:**
@@ -310,8 +272,6 @@ The script discovers:
 ```
 
 ### Stage 3: Analysis (Steps 6-10)
-
-
 
 #### Step 3: Check Each Related Module
 
@@ -339,7 +299,6 @@ fi
 MODULES_CHECKED=1
 echo "MODULES_CHECKED=$MODULES_CHECKED" >> /tmp/check-consistency-tracking.txt
 
-./scripts/checkpoint-update.sh check-module-consistency STEP=6
 ```
 
 **Checkpoint 7-10: Check Modules 2-5**
@@ -347,10 +306,6 @@ echo "MODULES_CHECKED=$MODULES_CHECKED" >> /tmp/check-consistency-tracking.txt
 ```bash
 # Repeat for modules 2-5
 # After each check:
-./scripts/checkpoint-update.sh check-module-consistency STEP=7  # Module 2
-./scripts/checkpoint-update.sh check-module-consistency STEP=8  # Module 3
-./scripts/checkpoint-update.sh check-module-consistency STEP=9  # Module 4
-./scripts/checkpoint-update.sh check-module-consistency STEP=10 # Module 5
 ```
 
 **Module Analysis Summary**:
@@ -372,7 +327,6 @@ if [ $MODULES_CHECKED -lt 3 ]; then
   exit 1
 fi
 
-./scripts/checkpoint-gate.sh check-module-consistency "Analysis" "6,7,8,9,10"
 ```
 
 **Expected gate output:**
@@ -411,8 +365,6 @@ grep -A 5 "if.*!.*\|\|.*!.*)" modules/MODULE.c
 
 ### Stage 4: Planning (Steps 11-14)
 
-
-
 #### Step 4: Create Improvement Plan
 
 #### Step 11: Analyze Findings
@@ -426,7 +378,6 @@ echo "- Total modules checked: $MODULES_CHECKED"
 echo "- Modules needing update: $MODULES_NEEDING_UPDATE"
 echo "- Consistency rate: $((100 * (MODULES_CHECKED - MODULES_NEEDING_UPDATE) / MODULES_CHECKED))%"
 
-./scripts/checkpoint-update.sh check-module-consistency STEP=11
 ```
 
 #### Step 12: List Modules Needing Update
@@ -440,8 +391,7 @@ For modules that need the same improvement:
    echo "2. ar_[module2] - Has global state"
    echo "3. ar_[module3] - Lacks NULL validation"
    
-   ./scripts/checkpoint-update.sh check-module-consistency STEP=12
-   ```
+      ```
 
 #### Step 13: Estimate Effort
 
@@ -453,8 +403,7 @@ For modules that need the same improvement:
    echo "- ar_[module3]: 1 cycle (add validation)"
    echo "Total estimated effort: 6 TDD cycles"
    
-   ./scripts/checkpoint-update.sh check-module-consistency STEP=13
-   ```
+      ```
 
 #### Step 14: Create Priority Order
 
@@ -469,13 +418,11 @@ For modules that need the same improvement:
    echo "2. MEDIUM: ar_[module1] - Important for debugging"
    echo "3. LOW: ar_[module3] - Internal module"
    
-   ./scripts/checkpoint-update.sh check-module-consistency STEP=14
-   ```
+      ```
 
 #### [PLANNING GATE]
 ```bash
 # MANDATORY: Ensure comprehensive plan
-./scripts/checkpoint-gate.sh check-module-consistency "Planning" "11,12,13,14"
 ```
 
 **Expected gate output:**
@@ -485,8 +432,6 @@ For modules that need the same improvement:
 ```
 
 ### Stage 5: Documentation (Step 15)
-
-
 
 #### Step 15: Document Plan
 
@@ -519,11 +464,6 @@ EOF
 
 echo "✓ Improvement plan documented"
 
-./scripts/checkpoint-update.sh check-module-consistency STEP=15
-```
-
-```bash
-./scripts/checkpoint-complete.sh check-module-consistency
 ```
 
 **Expected completion output:**
@@ -535,7 +475,6 @@ echo "✓ Improvement plan documented"
 📈 check-module-consistency: X/Y steps (Z%)
    [████████████████████] 100%
 
-✅ Checkpoint workflow complete
 ```
 rm -f /tmp/check-consistency-tracking.txt
 ```
@@ -614,7 +553,6 @@ grep "if.*!" module.c          # Check validation
 ### To resume an interrupted session:
 ```bash
 # Check progress
-./scripts/checkpoint-status.sh check-module-consistency
 
 # Load tracking data
 source /tmp/check-consistency-tracking.txt

@@ -1,11 +1,5 @@
 Create a git commit following the exact workflow specified in AGENTS.md.
 
-## CHECKPOINT WORKFLOW ENFORCEMENT
-
-**CRITICAL**: This command MUST use checkpoint tracking for progress tracking ONLY. All verification is done via step-verifier sub-agent, NOT via checkpoint scripts ([details](../../../kb/checkpoint-tracking-verification-separation.md)).
-
-This section implements the [Checkpoint Workflow Enforcement Pattern](../../../kb/checkpoint-workflow-enforcement-pattern.md) - preventing workflow bypasses through initialization and precondition enforcement.
-
 ## STEP VERIFICATION ENFORCEMENT
 
 **MANDATORY**: After completing each step, you MUST verify step completion using the **step-verifier sub-agent** before proceeding to the next step ([details](../../../kb/sub-agent-verification-pattern.md)).
@@ -25,7 +19,7 @@ The **step-verifier** is a specialized sub-agent that independently verifies ste
 
 ### Step Verification Process
 
-After completing each step (before calling `checkpoint-update.sh`), you MUST:
+After completing each step, you MUST:
 
 1. **Report accomplishments with evidence**
    - Describe what was accomplished (files created/modified, commands executed, outputs produced)
@@ -42,7 +36,6 @@ After completing each step (before calling `checkpoint-update.sh`), you MUST:
   
    **If verification PASSES** (report shows "✅ STEP VERIFIED" or "All requirements met"):
      - Proceed to next step
-     - Mark checkpoint step as complete (for progress tracking only - verification already done by step-verifier)
   
    **If verification FAILS** (report shows "⚠️ STOP EXECUTION" or missing elements):
      - **STOP execution immediately** - do not proceed to next step
@@ -83,28 +76,6 @@ Each step MUST be added to the session todo list before execution begins ([detai
 - Use `todo_write` to mark each step as `completed` after step-verifier verification passes
 - This ensures the session maintains track of all steps to be executed
 
-### In-Progress Workflow Detection
-
-If a `/commit` workflow is already in progress:
-
-```bash
-./scripts/checkpoint-status.sh commit --verbose
-# Resume: ./scripts/checkpoint-update.sh commit STEP=N
-# Or reset: ./scripts/checkpoint-cleanup.sh commit && ./scripts/checkpoint-init.sh commit "Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"
-```
-
-### First-Time Initialization Check
-
-```bash
-./scripts/checkpoint-init.sh commit "Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"
-```
-
-## PRECONDITION: Checkpoint Tracking Must Be Initialized
-
-```bash
-./scripts/checkpoint-require.sh commit
-```
-
 **Important**: The build must pass all checks including command excellence scores ([details](../../../kb/command-documentation-excellence-gate.md)). Always test with proper make targets ([details](../../../kb/make-target-testing-discipline.md)).
 
 ## MANDATORY KB Consultation
@@ -112,7 +83,6 @@ If a `/commit` workflow is already in progress:
 Before committing, you MUST:
 1. Search: `grep "commit\|pre-commit\|checklist" kb/README.md`
 2. Read these KB articles IN FULL using the Read tool:
-   - `kb/checkpoint-sequential-execution-discipline.md` - Sequential execution discipline for checkpoint workflows
    - `kb/pre-commit-checklist-detailed.md`
    - `kb/atomic-commit-documentation-pattern.md`
    - `kb/incomplete-commit-message-recovery-pattern.md`
@@ -145,34 +115,6 @@ After module integration, modules/README.md must be updated per documentation-in
 **CRITICAL**: If you skip reading these KB articles, you risk incomplete commits that may fail CI or violate project standards.
 
 # Commit
-## Checkpoint Tracking
-
-This command uses checkpoint tracking to ensure thorough pre-commit verification and proper git workflow. The process has 9 checkpoints across 3 phases with critical quality gates ([details](../../../kb/checkpoint-based-workflow-pattern.md)).
-
-### Initialize Tracking
-```bash
-# Start the commit process
-./scripts/checkpoint-init.sh commit "Run Tests" "Check Logs" "Update Docs" "Update TODO" "Update CHANGELOG" "Review Changes" "Stage Files" "Create Commit" "Push and Verify"
-```
-
-**Expected output:**
-```
-📍 Starting: commit (9 steps)
-📁 Tracking: /tmp/commit-progress.txt
-→ Run: ./scripts/checkpoint-update.sh commit STEP=1
-```
-
-### Check Progress
-```bash
-./scripts/checkpoint-status.sh commit
-```
-
-**Expected output (example at 56% completion):**
-```
-📈 commit: 5/9 steps (56%)
-   [███████████░░░░░░░░░] 56%
-→ Next: ./scripts/checkpoint-update.sh commit STEP=6
-```
 
 ## MANDATORY: Initialize All Todo Items
 
@@ -252,7 +194,7 @@ Before proceeding to Step 2, you MUST verify Step 1 completion via step-verifier
 
 3. **If sub-agent unavailable**: Stop and request user manual verification
 
-**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+**Only after step-verifier verification passes**:
 
 1. **Mark verification complete in session todo list** using `todo_write`:
    - Update todo item: "Verify Step 1: Run Tests"
@@ -261,11 +203,6 @@ Before proceeding to Step 2, you MUST verify Step 1 completion via step-verifier
 2. **Mark step complete in session todo list** using `todo_write`:
    - Update todo item: "Step 1: Run Tests"
    - Status: completed
-
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh commit 1 --summary "Clean build completed with all checks passed"
-```
 
 #### Step 2: Check Logs
 
@@ -299,7 +236,7 @@ Before proceeding to Step 3, you MUST verify Step 2 completion via step-verifier
 
 3. **If sub-agent unavailable**: Stop and request user manual verification
 
-**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+**Only after step-verifier verification passes**:
 
 1. **Mark verification complete in session todo list** using `todo_write`:
    - Update todo item: "Verify Step 2: Check Logs"
@@ -308,11 +245,6 @@ Before proceeding to Step 3, you MUST verify Step 2 completion via step-verifier
 2. **Mark step complete in session todo list** using `todo_write`:
    - Update todo item: "Step 2: Check Logs"
    - Status: completed
-
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh commit 2 --summary "Build logs verified clean - no hidden issues"
-```
 
 **Additional Notes**:
 - Check-logs only works after full build, NOT after individual test runs ([details](../../../kb/build-logs-relationship-principle.md))
@@ -352,7 +284,7 @@ Before proceeding to Step 4, you MUST verify Step 3 completion via step-verifier
 
 3. **If sub-agent unavailable**: Stop and request user manual verification
 
-**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+**Only after step-verifier verification passes**:
 
 1. **Mark verification complete in session todo list** using `todo_write`:
    - Update todo item: "Verify Step 3: Update Docs"
@@ -361,11 +293,6 @@ Before proceeding to Step 4, you MUST verify Step 3 completion via step-verifier
 2. **Mark step complete in session todo list** using `todo_write`:
    - Update todo item: "Step 3: Update Docs"
    - Status: completed
-
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh commit STEP=3
-```
 
 #### Step 4: Update TODO
 
@@ -396,7 +323,7 @@ Before proceeding to Step 5, you MUST verify Step 4 completion via step-verifier
 
 3. **If sub-agent unavailable**: Stop and request user manual verification
 
-**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+**Only after step-verifier verification passes**:
 
 1. **Mark verification complete in session todo list** using `todo_write`:
    - Update todo item: "Verify Step 4: Update TODO"
@@ -405,11 +332,6 @@ Before proceeding to Step 5, you MUST verify Step 4 completion via step-verifier
 2. **Mark step complete in session todo list** using `todo_write`:
    - Update todo item: "Step 4: Update TODO"
    - Status: completed
-
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh commit STEP=4
-```
 
 #### Step 5: Update CHANGELOG
 
@@ -441,7 +363,7 @@ Before proceeding to Step 6, you MUST verify Step 5 completion via step-verifier
 
 3. **If sub-agent unavailable**: Stop and request user manual verification
 
-**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+**Only after step-verifier verification passes**:
 
 1. **Mark verification complete in session todo list** using `todo_write`:
    - Update todo item: "Verify Step 5: Update CHANGELOG"
@@ -451,20 +373,13 @@ Before proceeding to Step 6, you MUST verify Step 5 completion via step-verifier
    - Update todo item: "Step 5: Update CHANGELOG"
    - Status: completed
 
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh commit 5 --summary "CHANGELOG.md updated with completed milestones"
-```
-
 #### [BUILD GATE]
-```bash
-# Verify build and logs are clean before proceeding
-./scripts/checkpoint-gate.sh commit "Build Quality" "1,2"
-```
+
+**Verify build and logs are clean before proceeding**
 
 **Expected gate output:**
 ```
-✅ GATE 'Build Quality' - PASSED
+✅ BUILD GATE - PASSED
    Verified: Steps 1,2
 ```
 
@@ -516,7 +431,7 @@ Before proceeding to Step 7, you MUST verify Step 6 completion via step-verifier
 
 3. **If sub-agent unavailable**: Stop and request user manual verification
 
-**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+**Only after step-verifier verification passes**:
 
 1. **Mark verification complete in session todo list** using `todo_write`:
    - Update todo item: "Verify Step 6: Review Changes"
@@ -526,20 +441,13 @@ Before proceeding to Step 7, you MUST verify Step 6 completion via step-verifier
    - Update todo item: "Step 6: Review Changes"
    - Status: completed
 
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh commit 6 --summary "All changes reviewed and no backup files present"
-```
-
 #### [DOCUMENTATION GATE]
-```bash
-# ⚠️ CRITICAL: Verify documentation is complete
-./scripts/checkpoint-gate.sh commit "Documentation" "3,4,5"
-```
+
+**⚠️ CRITICAL: Verify documentation is complete**
 
 **Expected gate output:**
 ```
-✅ GATE 'Documentation' - PASSED
+✅ DOCUMENTATION GATE - PASSED
    Verified: Steps 3,4,5
 ```
 
@@ -607,7 +515,7 @@ Before proceeding to Step 8, you MUST verify Step 7 completion via step-verifier
 
 3. **If sub-agent unavailable**: Stop and request user manual verification
 
-**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+**Only after step-verifier verification passes**:
 
 1. **Mark verification complete in session todo list** using `todo_write`:
    - Update todo item: "Verify Step 7: Stage Files"
@@ -616,11 +524,6 @@ Before proceeding to Step 8, you MUST verify Step 7 completion via step-verifier
 2. **Mark step complete in session todo list** using `todo_write`:
    - Update todo item: "Step 7: Stage Files"
    - Status: completed
-
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh commit STEP=7
-```
 
 #### Step 8: Create Commit
 
@@ -643,12 +546,8 @@ EOF
 ```
 
 3. **Execute the commit:**
-   - Create the commit using HEREDOC format with checkpoint verification
+   - Create the commit using HEREDOC format
    - Include Claude Code attribution footer ([details](../../../kb/claude-code-commit-attribution.md))
-   - The `checkpoint-update-verified` will automatically verify:
-     - Commit was created successfully
-     - Working tree is clean after commit
-     - Branch is ahead of remote (or warn if not)
 
 **⚠️ MANDATORY STEP VERIFICATION**
 
@@ -670,7 +569,7 @@ Before proceeding to Step 9, you MUST verify Step 8 completion via step-verifier
 
 3. **If sub-agent unavailable**: Stop and request user manual verification
 
-**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+**Only after step-verifier verification passes**:
 
 1. **Mark verification complete in session todo list** using `todo_write`:
    - Update todo item: "Verify Step 8: Create Commit"
@@ -679,11 +578,6 @@ Before proceeding to Step 9, you MUST verify Step 8 completion via step-verifier
 2. **Mark step complete in session todo list** using `todo_write`:
    - Update todo item: "Step 8: Create Commit"
    - Status: completed
-
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh commit 8 --summary "Commit created successfully"
-```
 
 #### Step 9: Push and Verify
 
@@ -759,35 +653,6 @@ Before completing the workflow, you MUST verify ALL steps were completed correct
    - Update todo item: "Step 9: Push and Verify"
    - Status: completed
 
-4. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh commit 9 --summary "Push completed successfully and working tree clean"
-```
-
-```bash
-./scripts/checkpoint-complete.sh commit
-```
-
-**Note**: `checkpoint-complete.sh` is used ONLY for progress tracking cleanup. All verification is done via step-verifier sub-agent, NOT via checkpoint scripts.
-
-**Expected completion output:**
-```
-========================================
-   CHECKPOINT COMPLETION SUMMARY
-========================================
-
-📈 commit: X/Y steps (Z%)
-   [████████████████████] 100%
-
-✅ Checkpoint workflow complete
-```
-```
-
-```bash
-# Clean up tracking
-./scripts/checkpoint-cleanup.sh commit
-```
-
 ## Related Documentation
 
 ### CI and Build Patterns
@@ -812,7 +677,6 @@ Before completing the workflow, you MUST verify ALL steps were completed correct
 - [Compilation-Driven Refactoring Pattern](../../../kb/compilation-driven-refactoring-pattern.md)
 
 ### Workflow and Session Patterns
-- [Checkpoint-Based Workflow Pattern](../../../kb/checkpoint-based-workflow-pattern.md)
 - [Context Preservation Across Sessions](../../../kb/context-preservation-across-sessions.md)
 - [Session Resumption Without Prompting](../../../kb/session-resumption-without-prompting.md)
 - [Claude Code Commit Attribution](../../../kb/claude-code-commit-attribution.md)

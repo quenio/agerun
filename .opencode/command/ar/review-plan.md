@@ -1,9 +1,5 @@
 Review a TDD plan document for methodology compliance, iteration structure, and completeness.
 
-## CHECKPOINT WORKFLOW ENFORCEMENT
-
-**CRITICAL**: This command MUST use checkpoint tracking for progress tracking ONLY. All verification is done via step-verifier sub-agent, NOT via checkpoint scripts ([details](../../../kb/checkpoint-tracking-verification-separation.md)).
-
 ## STEP VERIFICATION ENFORCEMENT
 
 **MANDATORY**: After completing each step, you MUST verify step completion using the **step-verifier sub-agent** before proceeding to the next step ([details](../../../kb/sub-agent-verification-pattern.md)).
@@ -23,7 +19,7 @@ The **step-verifier** is a specialized sub-agent that independently verifies ste
 
 ### Step Verification Process
 
-After completing each step (before calling `checkpoint-update.sh`), you MUST:
+After completing each step, you MUST:
 
 1. **Report accomplishments with evidence**
    - Describe what was accomplished (files created/modified, commands executed, outputs produced)
@@ -40,8 +36,7 @@ After completing each step (before calling `checkpoint-update.sh`), you MUST:
   
    **If verification PASSES** (report shows "✅ STEP VERIFIED" or "All requirements met"):
      - Proceed to next step
-     - Mark checkpoint step as complete (for progress tracking only - verification already done by step-verifier)
-  
+     -   
    **If verification FAILS** (report shows "⚠️ STOP EXECUTION" or missing elements):
      - **STOP execution immediately** - do not proceed to next step
      - Fix all reported issues from verification report
@@ -80,25 +75,11 @@ This section implements the [Checkpoint Workflow Enforcement Pattern](../../../k
 
 If a `/review-plan` workflow is already in progress, resume or reset:
 
-```bash
-./scripts/checkpoint-status.sh review-plan --verbose
-# Resume: ./scripts/checkpoint-update.sh review-plan STEP=N (where N is next pending step)
-# Or reset: ./scripts/checkpoint-cleanup.sh review-plan && ./scripts/checkpoint-init.sh review-plan "KB Consultation" "Read Plan and Extract PENDING" "Review Each Iteration" "Verify Cross-References" "Document Issues" "Generate Report"
-```
-
 ### First-Time Initialization Check
-
-```bash
-./scripts/checkpoint-init.sh review-plan "KB Consultation" "Read Plan and Extract PENDING" "Review Each Iteration" "Verify Cross-References" "Document Issues" "Generate Report"
-```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
-```bash
-./scripts/checkpoint-require.sh review-plan
-```
-
-**MANDATORY**: This command MUST use checkpoint tracking. Start by running the checkpoint initialization below. ([details](../../../kb/unmissable-documentation-pattern.md))
+**MANDATORY**: This command MUST use progress tracking. Start by running the checkpoint initialization below. ([details](../../../kb/unmissable-documentation-pattern.md))
 
 ## MANDATORY: Initialize All Todo Items
 
@@ -243,106 +224,18 @@ ls -t plans/*_plan.md | head -1
 **DO NOT PROCEED WITHOUT RUNNING THIS COMMAND:**
 
 ```bash
-# MANDATORY: Initialize checkpoint tracking (6 steps - streamlined for session 2025-10-18)
-./scripts/checkpoint-init.sh review-plan "KB Consultation" "Read Plan and Extract PENDING" "Review Each Iteration" "Verify Cross-References" "Document Issues" "Generate Report"
+# MANDATORY: Initialize progress tracking (6 steps - streamlined for session 2025-10-18)
 ```
 
-This command uses checkpoint tracking to ensure thorough plan review across all methodology dimensions. The review process is divided into 3 major stages with 6 checkpoints total (improved from 11 to prevent step-skipping).
+This command uses progress tracking to ensure thorough plan review across all methodology dimensions. The review process is divided into 3 major stages with 6 checkpoints total (improved from 11 to prevent step-skipping).
 
 **Key Change (2025-10-18):** Step 3 "Review Each Iteration" is an **INTERACTIVE LOOP** that cannot be batched. Each iteration requires user acceptance before proceeding.
-
-**Expected output:**
-```
-========================================
-   CHECKPOINT TRACKING INITIALIZED
-========================================
-
-Command: review-plan
-Tracking file: /tmp/review-plan-progress.txt
-Total steps: 6
-
-Steps to complete:
-  1. KB Consultation
-  2. Read Plan and Extract PENDING
-  3. Review Each Iteration (INTERACTIVE LOOP)
-  4. Verify Cross-References
-  5. Document Issues
-  6. Generate Report
-```
-
-### Check Progress
-```bash
-./scripts/checkpoint-status.sh review-plan
-```
-
-**Expected output (example at 50% completion):**
-```
-📈 review-plan: 3/6 steps (50%)
-   [██████████░░░░░░░░░░] 50%
-→ Next: ./scripts/checkpoint-update.sh review-plan STEP=4
-```
-
-### What it does
-
-This command performs a comprehensive review of TDD plan documents to ensure:
-
-#### 1. Methodology Compliance
-- **One assertion per iteration**: Each iteration tests exactly one behavior ([details](../../../kb/tdd-iteration-planning-pattern.md))
-- **GREEN minimalism**: Implementations are minimal (hardcoded returns valid) ([details](../../../kb/tdd-green-phase-minimalism.md))
-- **Iteration splitting**: Multi-assertion iterations split into .1/.2 sub-iterations ([details](../../../kb/tdd-plan-iteration-split-pattern.md))
-- **Temporary cleanup**: .1 iterations have manual cleanup with proper comments ([details](../../../kb/temporary-test-cleanup-pattern.md))
-
-#### 2. Structure and Organization
-- **BDD test structure**: All tests follow Given/When/Then/Cleanup ([details](../../../kb/bdd-test-structure.md))
-- **Cycle organization**: Iterations grouped into logical cycles
-- **Review status markers**: REVIEWED/PENDING/REVISED markers present ([details](../../../kb/plan-review-status-tracking.md))
-- **Cycle sizing**: Cycles contain 3-5 iterations for optimal review ([details](../../../kb/iterative-plan-review-protocol.md))
-
-#### 3. Completeness and Quality
-- **RED phase assertions**: Every iteration has explicit failure comment (// ← FAILS)
-- **Real AgeRun types**: All examples use actual types (ar_*_t) not placeholders
-- **Ownership semantics**: Proper own_, ref_, mut_ prefixes
-- **Memory management**: Zero leak policy maintained throughout
-
-### Status Marker Lifecycle
-
-This command reviews plans and updates iteration status markers. These markers track progress through the complete TDD workflow:
-
-| Status | Used By | Meaning | Next Step |
-|--------|---------|---------|-----------|
-| `PENDING REVIEW` | create-plan | Newly created iteration awaiting review | Review with ar:review-plan |
-| `REVIEWED` | review-plan | Iteration approved, ready for implementation | Execute with ar:execute-plan |
-| `REVISED` | review-plan | Iteration updated after review, ready for implementation | Execute with ar:execute-plan |
-| `IMPLEMENTED` | execute-plan | RED-GREEN-REFACTOR complete, awaiting commit | Commit preparation |
-| `✅ COMMITTED` | execute-plan | Iteration committed to git | Done (or continue with next iteration) |
-| `✅ COMPLETE` | execute-plan | Full plan complete (plan-level marker) | Documentation only |
-
-**Important Notes:**
-- **Iterations only**: Status markers appear ONLY on iteration headings (not phase/section headings)
-- **REVISED meaning**: Changes applied and ready for implementation (ar:execute-plan processes REVISED same as REVIEWED)
-- **Two-phase updates**: During execution, iterations update REVIEWED/REVISED → IMPLEMENTED immediately; before commit, all IMPLEMENTED → ✅ COMMITTED in batch
-- **Complete vs Committed**: ✅ COMPLETE is optional plan-level header; ✅ COMMITTED marks individual iterations in git
-
-### Execution Order (MANDATORY)
-
-1. **FIRST**: Run the checkpoint initialization command above
-2. **SECOND**: Follow the review process below, updating checkpoints after each step
-3. **THIRD**: Check progress with `./scripts/checkpoint-status.sh review-plan`
-4. **FOURTH**: Complete all 6 steps before generating final report
-5. **LAST**: Clean up with `./scripts/checkpoint-cleanup.sh review-plan`
-
-### Usage
-
-```bash
-/review-plan <path-to-plan-file>
-```
 
 **IMPORTANT**: Running `/review-plan` alone is NOT sufficient. You MUST initialize checkpoints first as shown above.
 
 ## Review Process
 
 ### Stage 1: KB Consultation and Plan Reading (Steps 1-2)
-
 
 #### Step 1: KB Consultation & Lesson Verification
 
@@ -406,7 +299,6 @@ Use this checklist to verify each lesson from the session learnings (kb/tdd-plan
 
 ```bash
 # After verifying all 14 lessons
-./scripts/checkpoint-update.sh review-plan STEP=1
 ```
 
 #### Step 2: Read Plan and Extract PENDING REVIEW Iterations
@@ -431,7 +323,6 @@ echo "Iterations ready for review: $PENDING_COUNT"
 # Optional: View all iterations with all statuses
 ./scripts/list-iteration-status.sh <plan-file>
 
-./scripts/checkpoint-update.sh review-plan STEP=2
 ```
 
 **This provides:**
@@ -460,11 +351,9 @@ The helper automatically filters for "- PENDING REVIEW" status and skips:
 - [ ] Each iteration numbered (N.M format)
 - [ ] Has Related Patterns section (if applicable)
 
-
 **[QUALITY GATE 1: Plan Basics Complete]**
 ```bash
 # MANDATORY: Must pass before proceeding to iteration review
-./scripts/checkpoint-gate.sh review-plan "Plan Basics" "1,2"
 ```
 
 **Expected gate output:**
@@ -480,7 +369,6 @@ The helper automatically filters for "- PENDING REVIEW" status and skips:
 - [ ] Document structure verified
 
 ### Stage 2: Interactive Iteration Review (Step 3)
-
 
 #### Step 3: Review Each Iteration (INTERACTIVE LOOP - CANNOT BATCH)
 
@@ -621,26 +509,19 @@ Before reviewing iterations, initialize nested checkpoint for iteration-level tr
 # Initialize nested checkpoint for iteration review tracking
 # After extracting PENDING REVIEW iterations from Step 2
 # Use iteration descriptions from the plan file
-./scripts/checkpoint-init.sh review-plan-iterations "Iteration 0.1" "Iteration 0.2" "Iteration 0.3" "Iteration 1.1" "Iteration 1.2" ... [all PENDING REVIEW iteration descriptions]'
 ```
 
 **Example initialization:**
 ```bash
 # If plan has 8 PENDING REVIEW iterations:
-./scripts/checkpoint-init.sh review-plan-iterations "Iteration 0.1: send() returns true" "Iteration 0.2: has_messages() initially false" "Iteration 0.3: has_messages() after send" "Iteration 1.1: receive() returns message" "Iteration 1.2: queue empty after receive" "Iteration 2.1: error handling NULL delegate" "Iteration 2.2: error handling invalid message" "Iteration 3.1: cleanup destroys queue"
 ```
 
 **Check iteration review progress anytime:**
-```bash
-./scripts/checkpoint-status.sh review-plan-iterations
-```
-
 **Expected output example (after 3/8 iterations reviewed):**
 ```
 📈 review-plan-iterations: 3/8 steps (38%)
    [████████░░░░░░░░░░░░] 38%
-→ Next: ./scripts/checkpoint-update.sh review-plan-iterations STEP=4
-```
+→ Next: ```
 
 **ITERATION REVIEW LOOP (MANDATORY - Cannot Skip or Batch):**
 
@@ -668,8 +549,7 @@ For EACH PENDING REVIEW iteration:
    new_string: "#### Iteration X.Y: ... - REVIEWED"
 
    # Update iteration checkpoint
-   ./scripts/checkpoint-update.sh review-plan-iterations STEP=N
-   ```
+      ```
 
    **Option B: Batch Updates (if tracking changes separately)**
 
@@ -702,28 +582,22 @@ After all PENDING REVIEW iterations have been reviewed:
 
 ```bash
 # Check final iteration review status
-./scripts/checkpoint-status.sh review-plan-iterations
 ```
 
 **Expected output when all iterations reviewed:**
 ```
 🎆 All 8 steps complete!
-✓ Run: ./scripts/checkpoint-cleanup.sh review-plan-iterations
-```
+✓ Run: ```
 
 ```bash
 # Clean up iteration tracking
-./scripts/checkpoint-cleanup.sh review-plan-iterations
 
 # Then mark main Step 3 as complete
-./scripts/checkpoint-update.sh review-plan STEP=3
 ```
-
 
 **[QUALITY GATE 2: All Iterations Reviewed]**
 ```bash
 # MANDATORY: Must pass before proceeding to cross-reference verification
-./scripts/checkpoint-gate.sh review-plan "All Iterations Reviewed" "3"
 ```
 
 **Expected gate output:**
@@ -743,7 +617,6 @@ After all PENDING REVIEW iterations have been reviewed:
 - [ ] NULL parameter coverage validated
 
 ### Stage 3: Final Verification and Reporting (Steps 4-6)
-
 
 #### Step 4: Verify Cross-References (Lesson 13 - Forward Dependencies)
 
@@ -772,10 +645,6 @@ After all PENDING REVIEW iterations have been reviewed:
 - Try reading plan start-to-finish linearly
 - If you get confused by forward references → VIOLATION
 - Plan should be understandable without jumping around
-
-```bash
-./scripts/checkpoint-update.sh review-plan STEP=4
-```
 
 #### Step 5: Document Issues (Map Issues to Lessons Violated)
 
@@ -836,10 +705,6 @@ Create section mapping issues by lesson:
 **Lesson 12 (Commits)**: Previous commits (if applicable)
 **Lesson 13 (Forward Deps)**: Line 156 references unreviewed iteration
 **Lesson 14 (Ownership)**: Iteration 1.1 (missing mut_ prefix)
-```
-
-```bash
-./scripts/checkpoint-update.sh review-plan STEP=5
 ```
 
 #### Step 6: Generate Report
@@ -931,15 +796,6 @@ Create section mapping issues by lesson:
 - [ ] Include all critical issues, warnings, and suggestions
 - [ ] Specify next steps based on status (approved vs. needs revision)
 
-```bash
-./scripts/checkpoint-update.sh review-plan STEP=6
-```
-
-
-```bash
-./scripts/checkpoint-complete.sh review-plan
-```
-
 **Expected completion output:**
 ```
 ========================================
@@ -949,13 +805,11 @@ Create section mapping issues by lesson:
 📈 review-plan: X/Y steps (Z%)
    [████████████████████] 100%
 
-✅ Checkpoint workflow complete
 ```
 ```
 
 ```bash
 # Clean up tracking
-./scripts/checkpoint-cleanup.sh review-plan
 ```
 
 ## Review Metrics and Quality Tracking
@@ -1042,14 +896,11 @@ The review provides:
 
 ## Troubleshooting
 
-### If checkpoint tracking gets stuck:
+### If progress tracking gets stuck:
 ```bash
 # Check current status
-./scripts/checkpoint-status.sh review-plan
 
 # If needed, reset and start over
-./scripts/checkpoint-cleanup.sh review-plan
-./scripts/checkpoint-init.sh review-plan '...'
 ```
 
 ### If a gate is blocking incorrectly:
@@ -1058,7 +909,6 @@ The review provides:
 cat /tmp/review-plan-progress.txt
 
 # Update a specific step if it was completed
-./scripts/checkpoint-update.sh review-plan STEP=N
 ```
 
 ### If review seems incomplete:

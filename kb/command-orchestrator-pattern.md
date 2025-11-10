@@ -191,10 +191,10 @@ Session 2f (2025-10-18) applied this pattern to check-naming:
 
 **Key lesson**: Each 10+ line shell block gets its own focused script - never combine multiple blocks into one wrapper. Command file remains the orchestrator.
 
-## Comparison with Check-Commands
+## Comparison with Complex Commands
 
-The check-commands command exemplifies the correct pattern:
-- Command file shows all 5 steps
+Complex commands exemplify the correct pattern:
+- Command file shows all steps directly
 - Each step calls its focused script
 - No wrapper script between command and focused scripts
 - Orchestration logic visible in markdown

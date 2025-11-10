@@ -8,33 +8,32 @@ Feature names are referenced in many places throughout a codebase. Missing even 
 
 ## Example
 ```bash
-# Example: Renaming check-command-structure to check-commands
+# Example: Renaming a command or script
 
 # 1. Find all occurrences first
-grep -r "check-command-structure" . --exclude-dir=.git
+grep -r "old-name" . --exclude-dir=.git
 
 # 2. Update Makefile targets
 # Old:
-check-command-structure:
-	@python3 scripts/check_command_structure.py
+old-target:
+	@python3 scripts/old_script.py
 
 # New:
-check-commands:
-	@python3 scripts/check_commands.py
+new-target:
+	@python3 scripts/new_script.py
 
 # 3. Rename script files
-mv scripts/check_command_structure.py scripts/check_commands.py
-mv scripts/fix_command_structure.py scripts/fix_commands.py
+mv scripts/old_script.py scripts/new_script.py
 
 # 4. Update build.sh references
 # Old:
-run_job "check-command-structure" "make check-command-structure" "logs/check-command-structure.log"
+run_job "old-name" "make old-target" "logs/old-name.log"
 
 # New:
-run_job "check-commands" "make check-commands" "logs/check-commands.log"
+run_job "new-name" "make new-target" "logs/new-name.log"
 
-# 5. Update all string references in build.sh
-sed -i 's/check-command-structure/check-commands/g' scripts/build.sh
+# 5. Update all string references
+sed -i 's/old-name/new-name/g' scripts/build.sh
 ```
 
 ## Generalization

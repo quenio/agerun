@@ -1,9 +1,5 @@
 Read AGENTS.md in order to prepare yourself for this new session. Then, suggest the next priority based on the TODO.md file.
 
-## CHECKPOINT WORKFLOW ENFORCEMENT
-
-**CRITICAL**: This command MUST use checkpoint tracking for progress tracking ONLY. All verification is done via step-verifier sub-agent, NOT via checkpoint scripts ([details](../../../kb/checkpoint-tracking-verification-separation.md)).
-
 ## STEP VERIFICATION ENFORCEMENT
 
 **MANDATORY**: After completing each step, you MUST verify step completion using the **step-verifier sub-agent** before proceeding to the next step ([details](../../../kb/sub-agent-verification-pattern.md)).
@@ -23,7 +19,7 @@ The **step-verifier** is a specialized sub-agent that independently verifies ste
 
 ### Step Verification Process
 
-After completing each step (before calling `checkpoint-update.sh`), you MUST:
+After completing each step, you MUST:
 
 1. **Report accomplishments with evidence**
    - Describe what was accomplished (files created/modified, commands executed, outputs produced)
@@ -40,8 +36,7 @@ After completing each step (before calling `checkpoint-update.sh`), you MUST:
   
    **If verification PASSES** (report shows "✅ STEP VERIFIED" or "All requirements met"):
      - Proceed to next step
-     - Mark checkpoint step as complete (for progress tracking only - verification already done by step-verifier)
-  
+     -   
    **If verification FAILS** (report shows "⚠️ STOP EXECUTION" or missing elements):
      - **STOP execution immediately** - do not proceed to next step
      - Fix all reported issues from verification report
@@ -76,105 +71,16 @@ Accomplishment Report:
 
 ## Initialization
 
-This command requires checkpoint tracking to ensure systematic workflow execution.
+This command requires progress tracking to ensure systematic workflow execution.
 
 ### Initialize Tracking
-
-```bash
-./scripts/checkpoint-init.sh next-priority "Read Context" "Analyze Priorities" "Generate Recommendation"
-```
-
-**Expected output:**
-```
-📍 Starting: next-priority (3 steps)
-📁 Tracking: /tmp/next-priority-progress.txt
-→ Run: ./scripts/checkpoint-update.sh next-priority 1
-```
-
-### Check Progress
-
-```bash
-./scripts/checkpoint-status.sh next-priority
-```
-
-**Expected output (example at 33% completion):**
-```
-📈 next-priority: 1/3 steps (33%)
-   [███░░░░░░░░░░░░░░░░░░] 33%
-→ Next: ./scripts/checkpoint-update.sh next-priority 2
-```
-
-## Checkpoint Tracking
-
-This command uses checkpoint tracking with 3 sequential steps to ensure systematic priority analysis:
-
-1. **Read Context** - Understand project structure and review TODO.md
-2. **Analyze Priorities** - Apply systematic analysis protocols using quantitative metrics
-3. **Generate Recommendation** - Provide priority suggestion with justification
-
-Each step requires completion before moving to the next. Use `./scripts/checkpoint-status.sh next-priority` to check progress at any time.
-
-## MANDATORY: Initialize All Todo Items
-
-**CRITICAL**: Before executing ANY steps, add ALL step and verification todo items to the session todo list using `todo_write`:
-
-**Step and Verification Todo Items:**
-- Add todo item: "Step 1: Read Context" - Status: pending
-- Add todo item: "Verify Step 1: Read Context" - Status: pending
-- Add todo item: "Step 2: Analyze Priorities" - Status: pending
-- Add todo item: "Verify Step 2: Analyze Priorities" - Status: pending
-- Add todo item: "Step 3: Generate Recommendation" - Status: pending
-- Add todo item: "Verify Step 3: Generate Recommendation" - Status: pending
-- Add todo item: "Verify Complete Workflow: next-priority" - Status: pending
-
-**Important**: All todo items are initialized as `pending` and will be updated to `in_progress` when their respective step/verification begins, then to `completed` after verification passes.
-
-## MANDATORY FIRST STEP - KB Consultation
-
-Before analyzing priorities, you MUST ([details](../../../kb/kb-consultation-before-planning-requirement.md)):
-1. Search the KB index: `grep "priority\|task\|analysis\|systematic" kb/README.md`
-2. Read relevant articles, especially:
-   - systematic-task-analysis-protocol ([details](../../../kb/systematic-task-analysis-protocol.md))
-   - quantitative-priority-setting ([details](../../../kb/quantitative-priority-setting.md))
-   - task-verification-before-execution ([details](../../../kb/task-verification-before-execution.md))
-   - report-driven-task-planning ([details](../../../kb/report-driven-task-planning.md))
-3. Show your KB searches and findings in the conversation
-4. Apply the protocols from these articles
-
-Only after completing KB consultation should you proceed to analyze TODO.md.
-
-# Priority Analysis Workflow
-
-
-## Step 1: Read Context
-
-
-**What this step does:**
-- Reads AGENTS.md to understand the project context
-- Checks TODO.md for incomplete tasks to analyze
-- Verifies necessary files exist
-
-**What you should do:**
-```bash
-# After initializing checkpoints, read the context from:
-# - AGENTS.md: Project structure, guidelines, agent responsibilities
-# - TODO.md: List of incomplete tasks marked with [ ]
-
-# Verify both files exist and contain the expected content
-ls -la AGENTS.md TODO.md
-```
 
 **Expected files:**
 - `AGENTS.md`: Project documentation and guidelines
 - `TODO.md`: Task list with incomplete items marked `- [ ]`
 
 **Next action:**
-```bash
-./scripts/checkpoint-update.sh next-priority 1
-```
-
 ## Step 2: Analyze Priorities
-
 
 **What this step does:**
 - Applies systematic analysis protocols from KB articles
@@ -214,12 +120,7 @@ Task: "Fix memory leaks"
 ```
 
 **Next action:**
-```bash
-./scripts/checkpoint-update.sh next-priority 2
-```
-
 ## Step 3: Generate Recommendation
-
 
 **What this step does:**
 - Summarizes the analysis results
@@ -299,20 +200,9 @@ If the user accepts your recommendation, prepare for implementation:
 ```
 
 **Next action:**
-```bash
-./scripts/checkpoint-update.sh next-priority 3
-```
-
 ## Complete the Workflow
 
-
-
 When all steps are complete, verify the workflow:
-
-```bash
-./scripts/checkpoint-complete.sh next-priority
-```
-
 
 **Expected completion output:**
 ```
@@ -323,7 +213,6 @@ When all steps are complete, verify the workflow:
 📈 next-priority: 3/3 steps (100%)
    [████████████████████] 100%
 
-✅ Checkpoint workflow complete
 ```
 
 ## Minimum Requirements
@@ -343,17 +232,13 @@ When all steps are complete, verify the workflow:
 Monitor your progress through the 3-step workflow:
 
 ```bash
-# Initialize checkpoint tracking
-./scripts/checkpoint-init.sh next-priority "Read Context" "Analyze Priorities" "Generate Recommendation"
+# Initialize progress tracking
 
 # Check current checkpoint status
-./scripts/checkpoint-status.sh next-priority --verbose
 
 # Update to next step (after completing current step)
-./scripts/checkpoint-update.sh next-priority N
 
 # Complete the workflow
-./scripts/checkpoint-complete.sh next-priority
 ```
 
 ## Key Points

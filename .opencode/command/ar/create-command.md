@@ -24,16 +24,12 @@ Create a new Claude Code command following all quality standards and best practi
 2. **Command Quality Requirements**:
    - [Command Thoroughness Requirements Pattern](../../../kb/command-thoroughness-requirements-pattern.md) - Minimum requirements
    - [Command Output Documentation Pattern](../../../kb/command-output-documentation-pattern.md) - Document expected outputs
-   - [Unmissable Documentation Pattern](../../../kb/unmissable-documentation-pattern.md) - Mandatory checkpoint tracking
+   - [Unmissable Documentation Pattern](../../../kb/unmissable-documentation-pattern.md) - Mandatory progress tracking
 
 3. **Supporting Patterns**:
    - [Lesson-Based Command Design Pattern](../../../kb/lesson-based-command-design-pattern.md) - Unified verification approach
    - [Multi-Step Checkpoint Tracking Pattern](../../../kb/multi-step-checkpoint-tracking-pattern.md) - Checkpoint mechanics
    - [Gate Enforcement Exit Codes Pattern](../../../kb/gate-enforcement-exit-codes-pattern.md) - Quality gates
-
-## CHECKPOINT WORKFLOW ENFORCEMENT
-
-**CRITICAL**: This command MUST use checkpoint tracking for progress tracking ONLY. All verification is done via step-verifier sub-agent, NOT via checkpoint scripts ([details](../../../kb/checkpoint-tracking-verification-separation.md)).
 
 ## STEP VERIFICATION ENFORCEMENT
 
@@ -54,7 +50,7 @@ The **step-verifier** is a specialized sub-agent that independently verifies ste
 
 ### Step Verification Process
 
-After completing each step (before calling `checkpoint-update.sh`), you MUST:
+After completing each step, you MUST:
 
 1. **Report accomplishments with evidence**
    - Describe what was accomplished (files created/modified, commands executed, outputs produced)
@@ -71,8 +67,7 @@ After completing each step (before calling `checkpoint-update.sh`), you MUST:
   
    **If verification PASSES** (report shows "✅ STEP VERIFIED" or "All requirements met"):
      - Proceed to next step
-     - Mark checkpoint step as complete (for progress tracking only - verification already done by step-verifier)
-  
+     -   
    **If verification FAILS** (report shows "⚠️ STOP EXECUTION" or missing elements):
      - **STOP execution immediately** - do not proceed to next step
      - Fix all reported issues from verification report
@@ -109,23 +104,9 @@ Accomplishment Report:
 
 If a `/create-command` workflow is already in progress:
 
-```bash
-./scripts/checkpoint-status.sh create-command --verbose
-# Resume: ./scripts/checkpoint-update.sh create-command STEP=N
-# Or reset: ./scripts/checkpoint-cleanup.sh create-command && ./scripts/checkpoint-init.sh create-command "Validate Args" "KB Consultation" "Create Structure" "Add Checkpoints" "Add Quality Gates" "Add Documentation" "Verify Excellence"
-```
-
 ### First-Time Initialization Check
 
-```bash
-./scripts/checkpoint-init.sh create-command "Validate Args" "KB Consultation" "Create Structure" "Add Checkpoints" "Add Quality Gates" "Add Documentation" "Verify Excellence"
-```
-
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
-
-```bash
-./scripts/checkpoint-require.sh create-command
-```
 
 ## MANDATORY: Initialize All Todo Items
 
@@ -154,84 +135,12 @@ If a `/create-command` workflow is already in progress:
 
 ## Checkpoint Tracking
 
-This command creates a new command file with proper structure, checkpoint tracking, quality gates, and documentation following all excellence standards.
+This command creates a new command file with proper structure, progress tracking, quality gates, and documentation following all excellence standards.
 
 ### Initialize Tracking
 ```bash
 # Start the command creation process
-./scripts/checkpoint-init.sh create-command "Validate Args" "KB Consultation" "Create Structure" "Add Checkpoints" "Add Quality Gates" "Add Documentation" "Verify Excellence"
 ```
-
-**Expected output:**
-```
-📍 Starting: create-command (7 steps)
-📁 Tracking: /tmp/create-command-progress.txt
-→ Run: ./scripts/checkpoint-update.sh create-command STEP=1
-```
-
-### Check Progress
-```bash
-./scripts/checkpoint-status.sh create-command
-```
-
-**Expected output (example at 43% completion):**
-```
-📈 create-command: 3/7 steps (43%)
-   [████████░░░░░░░░░░░░] 43%
-→ Next: ./scripts/checkpoint-update.sh create-command STEP=4
-```
-
-## Minimum Requirements
-
-**MANDATORY for successful completion:**
-- [ ] Command name provided and valid
-- [ ] Purpose description provided
-- [ ] All relevant KB articles consulted
-- [ ] Command file created with proper structure
-- [ ] Checkpoint tracking implemented (minimum 3 steps)
-- [ ] Quality gates added between stages
-- [ ] Expected outputs documented
-- [ ] Minimum requirements section included
-- [ ] Troubleshooting section added
-- [ ] Command passes `make check-commands` validation (90%+ score)
-
-## Execution Workflow
-
-### Stage 1: Validation and Consultation (Steps 1-2)
-
-
-#### Step 1: Validate Arguments
-
-**⚠️ MANDATORY: Both arguments required**
-
-```bash
-# Parse arguments from $ARGUMENTS
-COMMAND_NAME=$(echo "$ARGUMENTS" | awk '{print $1}')
-COMMAND_PURPOSE=$(echo "$ARGUMENTS" | sed 's/^[^ ]* //')
-
-# Validate using helper script
-./scripts/validate-command-args.sh "$COMMAND_NAME" "$COMMAND_PURPOSE"
-
-# Set COMMAND_FILE for subsequent steps
-COMMAND_FILE=".opencode/command/ar/${COMMAND_NAME}.md"
-echo "   Target file: $COMMAND_FILE"
-echo ""
-
-./scripts/checkpoint-update.sh create-command STEP=1
-```
-
-#### Step 2: KB Consultation
-
-**⚠️ MANDATORY: Read all command design articles before proceeding**
-
-This is NOT optional - read these articles IN FULL:
-
-1. **Read command structure patterns**:
-   ```bash
-   cat kb/command-helper-script-extraction-pattern.md
-   cat kb/checkpoint-implementation-guide.md
-   cat kb/command-documentation-excellence-gate.md
-   ```
 
 2. **Read quality requirements**:
    ```bash
@@ -252,16 +161,11 @@ This is NOT optional - read these articles IN FULL:
 - Add quality gates between stages
 - Document expected outputs for all operations
 - Define minimum requirements per stage
-- Must achieve 90%+ score in `make check-commands`
-
-```bash
-./scripts/checkpoint-update.sh create-command STEP=2
-```
+- Must follow command structure best practices
 
 #### [QUALITY GATE 1: Preparation Complete]
 ```bash
 # MANDATORY: Must pass before proceeding
-./scripts/checkpoint-gate.sh create-command "Preparation" "1,2"
 ```
 
 **Expected gate output:**
@@ -275,9 +179,7 @@ This is NOT optional - read these articles IN FULL:
 - [ ] All KB articles read and understood
 - [ ] Ready to create command structure
 
-
 ### Stage 2: Command Structure Creation (Steps 3-5)
-
 
 #### Step 3: Create Command File Structure
 
@@ -295,29 +197,20 @@ Before executing:
 2. Read articles that apply to this command's domain
 3. Apply patterns and best practices
 
-## CHECKPOINT WORKFLOW ENFORCEMENT
-
-**CRITICAL**: This command MUST use checkpoint tracking for ALL execution.
-
 ### In-Progress Workflow Detection
 
 If a \`/COMMAND_NAME\` workflow is already in progress:
 
 \`\`\`bash
-./scripts/checkpoint-status.sh COMMAND_NAME --verbose
-# Resume: ./scripts/checkpoint-update.sh COMMAND_NAME STEP=N
-# Or reset: ./scripts/checkpoint-cleanup.sh COMMAND_NAME && ./scripts/checkpoint-init.sh COMMAND_NAME "Step 1" "Step 2" "Step 3"
-\`\`\`
+# Resume: # Or reset: \`\`\`
 
 ### First-Time Initialization Check
 
 \`\`\`bash
 if [ ! -f /tmp/COMMAND_NAME-progress.txt ]; then
-  echo "⚠️  Initializing checkpoint tracking..."
-  ./scripts/checkpoint-init.sh COMMAND_NAME "Step 1" "Step 2" "Step 3"
-else
-  ./scripts/checkpoint-status.sh COMMAND_NAME
-fi
+  echo "⚠️  Initializing progress tracking..."
+  else
+  fi
 \`\`\`
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
@@ -338,27 +231,23 @@ This command [brief description of what it does].
 ### Initialize Tracking
 \`\`\`bash
 # Start the COMMAND_NAME process
-./scripts/checkpoint-init.sh COMMAND_NAME "Step 1" "Step 2" "Step 3"
 \`\`\`
 
 **Expected output:**
 \`\`\`
 📍 Starting: COMMAND_NAME (3 steps)
 📁 Tracking: /tmp/COMMAND_NAME-progress.txt
-→ Run: ./scripts/checkpoint-update.sh COMMAND_NAME STEP=1
-\`\`\`
+→ Run: \`\`\`
 
 ### Check Progress
 \`\`\`bash
-./scripts/checkpoint-status.sh COMMAND_NAME
 \`\`\`
 
 **Expected output (example at 33% completion):**
 \`\`\`
 📈 COMMAND_NAME: 1/3 steps (33%)
    [████████░░░░░░░░░░░░] 33%
-→ Next: ./scripts/checkpoint-update.sh COMMAND_NAME STEP=2
-\`\`\`
+→ Next: \`\`\`
 
 ## Minimum Requirements
 
@@ -371,16 +260,13 @@ This command [brief description of what it does].
 
 ### Stage 1: [Stage Name] (Steps 1-N)
 
-
 #### Step 1: [First Step Name]
 
 [Description of what this step does]
 
 \`\`\`bash
 # Implement step logic here
-./scripts/checkpoint-update.sh COMMAND_NAME STEP=1
 \`\`\`
-
 
 ## Related Commands
 
@@ -400,10 +286,9 @@ sed -i '' "s/COMMAND_NAME/${COMMAND_NAME}/g" "$COMMAND_FILE"
 sed -i '' "s/\$COMMAND_PURPOSE/${COMMAND_PURPOSE}/" "$COMMAND_FILE"
 
 echo "✅ Created command file: $COMMAND_FILE"
-echo "   Structure: Basic template with checkpoint tracking"
+echo "   Structure: Basic template with progress tracking"
 echo ""
 
-./scripts/checkpoint-update.sh create-command STEP=3
 ```
 
 #### Step 4: Add Checkpoint Steps
@@ -427,7 +312,6 @@ echo "  2. Group into logical stages (3-6 steps per stage)"
 echo "  3. Add checkpoint-update calls after each step"
 echo ""
 
-./scripts/checkpoint-update.sh create-command STEP=4
 ```
 
 #### Step 5: Add Quality Gates
@@ -444,19 +328,16 @@ echo "  • Enforce minimum requirements"
 echo ""
 echo "Template pattern:"
 echo '  ```bash'
-echo '  ./scripts/checkpoint-gate.sh COMMAND_NAME "Stage Name" "1,2,3"
-echo '  ```'
+echo '  echo '  ```'
 echo ""
 echo "Add gates to $COMMAND_FILE between stages"
 echo ""
 
-./scripts/checkpoint-update.sh create-command STEP=5
 ```
 
 #### [QUALITY GATE 2: Structure Complete]
 ```bash
 # MANDATORY: Must pass before proceeding
-./scripts/checkpoint-gate.sh create-command "Structure" "3,4,5"
 ```
 
 **Expected gate output:**
@@ -470,9 +351,7 @@ echo ""
 - [ ] Checkpoint tracking infrastructure added
 - [ ] Quality gates planned
 
-
 ### Stage 3: Documentation and Verification (Steps 6-7)
-
 
 #### Step 6: Add Documentation Sections
 
@@ -493,24 +372,23 @@ echo ""
 echo "Edit $COMMAND_FILE to complete documentation"
 echo ""
 
-./scripts/checkpoint-update.sh create-command STEP=6
 ```
 
 #### Step 7: Verify Excellence Standards
 
-**⚠️ CRITICAL: Must achieve 90%+ score**
+**⚠️ CRITICAL: Manual review required**
 
 ```bash
-# Verify command quality using helper script
-./scripts/verify-command-quality.sh "$COMMAND_NAME"
-
-./scripts/checkpoint-update.sh create-command STEP=7
+# Review command structure manually
+# Commands are validated through:
+#   • Documentation checks (make check-docs)
+#   • Manual review
+#   • KB article cross-references
 ```
 
 #### [QUALITY GATE 3: Excellence Achieved]
 ```bash
 # MANDATORY: Must pass before completion
-./scripts/checkpoint-gate.sh create-command "Excellence" "6,7"
 ```
 
 **Expected gate output:**
@@ -525,11 +403,6 @@ echo ""
 - [ ] Troubleshooting section added
 - [ ] Command achieves 90%+ validation score
 
-
-```bash
-./scripts/checkpoint-complete.sh create-command
-```
-
 **Expected completion output:**
 ```
 ========================================
@@ -539,13 +412,11 @@ echo ""
 📈 create-command: X/Y steps (Z%)
    [████████████████████] 100%
 
-✅ Checkpoint workflow complete
 ```
 ```
 
 ```bash
 # Clean up tracking file
-./scripts/checkpoint-cleanup.sh create-command
 ```
 
 ## Best Practice: Helper Scripts
@@ -573,7 +444,7 @@ echo ""
 After creating the command:
 
 - [ ] Command file exists: `.opencode/command/ar/$COMMAND_NAME.md`
-- [ ] Run validation: `make check-commands`
+- [ ] Review command structure manually
 - [ ] Verify 90%+ score achieved
 - [ ] Test command: `/ar:$COMMAND_NAME`
 - [ ] Extract any complex bash to `scripts/`
@@ -605,7 +476,7 @@ After creating the command:
 - Expected output examples for all operations
 - Troubleshooting section with common issues
 - Minimum requirements with checkboxes
-- Complete checkpoint tracking with gates
+- Complete progress tracking with gates
 
 ## Output Format
 
@@ -620,7 +491,6 @@ The command creates a structured file with:
 
 ## Related Commands
 
-- `/check-commands` - Validate command structure and quality
 - `/new-learnings` - Extract patterns to create new KB articles
 
 ## Related KB Articles

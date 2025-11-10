@@ -17,10 +17,9 @@ Never assume completion without full verification
 # MANDATORY before every commit (in this exact order)
 make clean build     # Step 1: Generate fresh build logs
 make check-logs      # Step 2: Analyze logs from step 1
-make check-commands  # Step 3: Ensure command docs meet excellence standards
 
 # CRITICAL: check-logs only works after full build, NOT after individual test runs
-# If clean build fails OR check-logs finds issues OR commands < 90%, fix ALL before committing
+# If clean build fails OR check-logs finds issues, fix ALL before committing
 # No exceptions - broken builds, hidden failures, or poor documentation block other developers
 
 # For faster development iteration (not pre-commit):

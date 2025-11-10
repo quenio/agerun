@@ -153,7 +153,7 @@ This pattern is applied to all 31 checkpoint-based commands in the system:
 
 **Tier 3 - Checking (8 commands):**
 - check-logs, check-docs, check-naming, check-module-consistency
-- build, build-clean, check-commands, review-changes
+- build, build-clean, review-changes
 
 **Tier 4 - Remaining (8 commands):**
 - new-learnings, next-priority, next-task, fix-errors-whitelisted

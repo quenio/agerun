@@ -1,9 +1,5 @@
 Compact the TODO.md file by condensing completed tasks while keeping incomplete tasks untouched.
 
-## CHECKPOINT WORKFLOW ENFORCEMENT
-
-**CRITICAL**: This command MUST use checkpoint tracking for progress tracking ONLY. All verification is done via step-verifier sub-agent, NOT via checkpoint scripts ([details](../../../kb/checkpoint-tracking-verification-separation.md)).
-
 ## STEP VERIFICATION ENFORCEMENT
 
 **MANDATORY**: After completing each step, you MUST verify step completion using the **step-verifier sub-agent** before proceeding to the next step ([details](../../../kb/sub-agent-verification-pattern.md)).
@@ -23,7 +19,7 @@ The **step-verifier** is a specialized sub-agent that independently verifies ste
 
 ### Step Verification Process
 
-After completing each step (before calling `checkpoint-update.sh`), you MUST:
+After completing each step, you MUST:
 
 1. **Report accomplishments with evidence**
    - Describe what was accomplished (files created/modified, commands executed, outputs produced)
@@ -40,8 +36,7 @@ After completing each step (before calling `checkpoint-update.sh`), you MUST:
   
    **If verification PASSES** (report shows "✅ STEP VERIFIED" or "All requirements met"):
      - Proceed to next step
-     - Mark checkpoint step as complete (for progress tracking only - verification already done by step-verifier)
-  
+     -   
    **If verification FAILS** (report shows "⚠️ STOP EXECUTION" or missing elements):
      - **STOP execution immediately** - do not proceed to next step
      - Fix all reported issues from verification report
@@ -78,23 +73,9 @@ Accomplishment Report:
 
 If a `/compact-tasks` workflow is already in progress:
 
-```bash
-./scripts/checkpoint-status.sh compact-tasks --verbose
-# Resume: ./scripts/checkpoint-update.sh compact-tasks STEP=N
-# Or reset: ./scripts/checkpoint-cleanup.sh compact-tasks && ./scripts/checkpoint-init.sh compact-tasks "Measure Baseline" "Categorize Tasks" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Commit Changes" "Final Verification"
-```
-
 ### First-Time Initialization Check
 
-```bash
-./scripts/checkpoint-init.sh compact-tasks "Measure Baseline" "Categorize Tasks" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Commit Changes" "Final Verification"
-```
-
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
-
-```bash
-./scripts/checkpoint-require.sh compact-tasks
-```
 
 ## MANDATORY: Initialize All Todo Items
 
@@ -176,73 +157,11 @@ This achieves 10-20% reduction while preserving all active work.
 
 ## Checkpoint Tracking
 
-This command uses checkpoint tracking to ensure safe and systematic TODO.md compaction through selective compaction + manual semantic analysis. The process has 7 checkpoints across 3 phases with verification gates.
+This command uses progress tracking to ensure safe and systematic TODO.md compaction through selective compaction + manual semantic analysis. The process has 7 checkpoints across 3 phases with verification gates.
 
 ### Initialize Tracking
 ```bash
 # Start the task compaction process
-./scripts/checkpoint-init.sh compact-tasks "Measure Baseline" "Categorize Tasks" "Manual Compaction" "Verify Preservation" "Add Self-Entry" "Commit Changes" "Final Verification"
-```
-
-**Expected output:**
-```
-📍 Starting: compact-tasks (7 steps)
-📁 Tracking: /tmp/compact-tasks-progress.txt
-→ Run: ./scripts/checkpoint-update.sh compact-tasks STEP=1
-```
-
-### Check Progress
-```bash
-./scripts/checkpoint-status.sh compact-tasks
-```
-
-**Expected output (example at 43% completion):**
-```
-📈 compact-tasks: 3/7 steps (43%)
-   [████████░░░░░░░░░░░░] 43%
-→ Next: ./scripts/checkpoint-update.sh compact-tasks STEP=4
-```
-
-## Minimum Requirements
-
-**MANDATORY for successful compaction (per KB documentation-compacting-pattern):**
-- [ ] **10-20% line reduction achieved** (TODO.md is a mixed-state document)
-- [ ] All [x] tasks compacted using manual semantic analysis
-- [ ] All [ ] tasks remain **completely untouched** - not even whitespace changes
-- [ ] Incomplete task count verified unchanged
-- [ ] Document structure preserved
-- [ ] Changes committed
-
-**CRITICAL per KB selective-compaction-pattern**: "Never modify preserved content - not even whitespace". Incomplete tasks ([ ]) must remain EXACTLY as they are. Only apply manual semantic analysis to completed tasks.
-
-This uses selective compaction for mixed-state documents ([details](../../../kb/selective-compaction-pattern.md)) combined with manual semantic analysis ([details](../../../kb/documentation-compacting-pattern.md)).
-
-### Stage 1: Analysis (Steps 1-2)
-
-
-#### Step 1: Measure Baseline
-
-```bash
-# Measure initial state
-echo "Measuring TODO.md baseline..."
-
-ORIGINAL_LINES=$(wc -l < TODO.md)
-ORIGINAL_BYTES=$(wc -c < TODO.md)
-
-echo "Original: $ORIGINAL_LINES lines, $ORIGINAL_BYTES bytes"
-
-# Save for later verification
-echo "ORIGINAL_LINES=$ORIGINAL_LINES" > /tmp/compact-tasks-stats.txt
-echo "ORIGINAL_BYTES=$ORIGINAL_BYTES" >> /tmp/compact-tasks-stats.txt
-
-./scripts/checkpoint-update.sh compact-tasks STEP=1
-```
-
-**Expected output:**
-```
-Measuring TODO.md baseline...
-Original: 1324 lines, 85432 bytes
-✓ Updated checkpoint 1/7 for compact-tasks
 ```
 
 #### Step 2: Categorize Tasks
@@ -268,24 +187,11 @@ echo "2. Are there related completed tasks that can be combined?"
 echo "3. Do all completed tasks have completion dates?"
 echo "4. Which sections contain only completed tasks?"
 
-./scripts/checkpoint-update.sh compact-tasks STEP=2
-```
-
-**Expected output:**
-```
-Categorizing tasks...
-Completed tasks: 150 (can be compacted)
-Incomplete tasks: 75 (MUST remain untouched)
-
-Analysis questions for completed tasks:
-[...]
-✓ Updated checkpoint 2/7 for compact-tasks
 ```
 
 #### [CATEGORIZATION GATE]
 ```bash
 # Verify categorization before proceeding to manual work
-./scripts/checkpoint-gate.sh compact-tasks "Categorization Complete" "1,2"
 ```
 
 **Expected gate output:**
@@ -294,9 +200,7 @@ Analysis questions for completed tasks:
    Verified: Steps 1,2
 ```
 
-
 ### Stage 2: Manual Selective Compaction (Steps 3-4)
-
 
 #### Step 3: Manual Semantic Compaction
 
@@ -349,7 +253,6 @@ Analysis questions for completed tasks:
 # After completing manual edits
 echo "✅ Manual semantic compaction of completed tasks complete"
 echo "Review changes with: git diff TODO.md"
-./scripts/checkpoint-update.sh compact-tasks STEP=3
 ```
 
 #### Step 4: Verify Preservation
@@ -360,8 +263,7 @@ echo "Review changes with: git diff TODO.md"
 
 # Only proceed if verification passes
 if [ $? -eq 0 ]; then
-  ./scripts/checkpoint-update.sh compact-tasks STEP=4
-else
+  else
   echo "❌ Verification failed - do not proceed"
   exit 1
 fi
@@ -371,18 +273,6 @@ The script verifies:
 1. **Size Comparison** - Original vs new lines/bytes
 2. **Reduction Achieved** - Percentage reductions calculated
 3. **Task Preservation** - All incomplete tasks preserved (CRITICAL)
-
-**Expected output:**
-```
-Verifying preservation...
-New: 1120 lines, 72548 bytes
-Incomplete tasks: 75 (expected: 75)
-Completed tasks: 95 (some may have been merged)
-Line reduction: 15%
-File size reduction: 15%
-✅ All 75 incomplete tasks preserved
-✓ Updated checkpoint 4/7 for compact-tasks
-```
 
 #### [INTEGRITY GATE]
 ```bash
@@ -402,7 +292,6 @@ if [ $LINE_REDUCTION -lt 10 ]; then
 fi
 
 echo "✅ Integrity verified and reduction target met"
-./scripts/checkpoint-gate.sh compact-tasks "Selective Compaction Quality" "3,4"
 ```
 
 **Expected gate output:**
@@ -412,9 +301,7 @@ echo "✅ Integrity verified and reduction target met"
    Verified: Steps 3,4
 ```
 
-
 ### Stage 3: Documentation and Commit (Steps 5-7)
-
 
 #### Step 5: Add Self-Entry
 
@@ -431,7 +318,6 @@ echo ""
 
 read -p "Press Enter after adding the entry..."
 
-./scripts/checkpoint-update.sh compact-tasks STEP=5
 ```
 
 #### Step 6: Commit Changes
@@ -456,18 +342,6 @@ git status
 echo ""
 echo "✅ Changes committed"
 
-./scripts/checkpoint-update.sh compact-tasks STEP=6
-```
-
-**Expected output:**
-```
-[main abc1234] Compact completed tasks in TODO.md using selective compaction
- 1 file changed, 95 insertions(+), 204 deletions(-)
-On branch main
-Your branch is ahead of 'origin/main' by 1 commit.
-[...]
-✅ Changes committed
-✓ Updated checkpoint 6/7 for compact-tasks
 ```
 
 #### Step 7: Final Verification
@@ -491,11 +365,6 @@ echo "   Incomplete tasks: $FINAL_INCOMPLETE (unchanged)"
 echo "   Line reduction: ${LINE_REDUCTION}%"
 echo "   Commit status: Clean"
 
-./scripts/checkpoint-update.sh compact-tasks STEP=7
-```
-
-```bash
-./scripts/checkpoint-complete.sh compact-tasks
 ```
 
 **Expected completion output:**
@@ -507,11 +376,9 @@ echo "   Commit status: Clean"
 📈 compact-tasks: X/Y steps (Z%)
    [████████████████████] 100%
 
-✅ Checkpoint workflow complete
 ```
 rm -f /tmp/compact-tasks-stats.txt
 ```
-
 
 ## Key Compaction Techniques for Mixed-State Documents
 

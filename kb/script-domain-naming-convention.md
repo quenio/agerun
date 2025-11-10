@@ -60,7 +60,7 @@ Common domains in AgeRun:
 
 ## Example: Check-Commands Refactoring
 
-This learning emerged from extracting shell scripts from `check-commands.md`:
+This learning emerged from extracting shell scripts from command files:
 
 ### Before (Generic Names)
 ```
@@ -94,7 +94,7 @@ From the refactoring:
 When extracting scripts from commands:
 
 1. **Identify the domain** from the command name
-   - `check-commands` → domain is "commands"
+   - `check-naming` → domain is "naming"
    - `analyze-changes` → domain is "changes"
    - `review-logs` → domain is "logs"
 

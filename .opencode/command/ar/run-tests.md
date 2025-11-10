@@ -4,9 +4,6 @@ Build and run all tests.
 
 **Test Isolation**: If tests fail inconsistently or depend on execution order, check for shared directory issues ([details](../../../kb/test-isolation-shared-directory-pattern.md)).
 
-## ⚠️ CRITICAL: Let the script manage checkpoints
-
-**DO NOT manually initialize checkpoints before running this command.** The script handles all checkpoint initialization, execution, and cleanup automatically. Just run the script and let it complete.
 
 ## Quick Start
 
@@ -14,11 +11,7 @@ Build and run all tests.
 ./scripts/run-run-tests.sh
 ```
 
-That's it! The script will handle everything automatically. Do not run any `make checkpoint-*` commands manually unless the script fails.
-
-## CHECKPOINT WORKFLOW ENFORCEMENT
-
-**CRITICAL**: This command MUST use checkpoint tracking for ALL execution. All verification is done via step-verifier sub-agent, NOT via checkpoint scripts ([details](../../../kb/checkpoint-tracking-verification-separation.md)).
+That's it! The script will handle everything automatically.
 
 ## STEP VERIFICATION ENFORCEMENT
 
@@ -39,7 +32,7 @@ The **step-verifier** is a specialized sub-agent that independently verifies ste
 
 ### Step Verification Process
 
-After completing each step (before calling `checkpoint-update.sh`), you MUST:
+After completing each step, you MUST:
 
 1. **Report accomplishments with evidence**
    - Describe what was accomplished (files created/modified, commands executed, outputs produced)
@@ -56,8 +49,7 @@ After completing each step (before calling `checkpoint-update.sh`), you MUST:
   
    **If verification PASSES** (report shows "✅ STEP VERIFIED" or "All requirements met"):
      - Proceed to next step
-     - Mark checkpoint step as complete (for progress tracking only - verification already done by step-verifier)
-  
+     -   
    **If verification FAILS** (report shows "⚠️ STOP EXECUTION" or missing elements):
      - **STOP execution immediately** - do not proceed to next step
      - Fix all reported issues from verification report
@@ -90,7 +82,6 @@ Accomplishment Report:
 - The step-verifier independently verifies by reading command files, checking files, git status/diff, etc.
 - If step-verifier reports "⚠️ STOP EXECUTION", you MUST fix issues before proceeding
 
-
 ## MANDATORY: Initialize All Todo Items
 
 **CRITICAL**: Before executing ANY steps, add ALL step and verification todo items to the session todo list using `todo_write`:
@@ -106,25 +97,9 @@ Accomplishment Report:
 
 **Important**: All todo items are initialized as `pending` and will be updated to `in_progress` when their respective step/verification begins, then to `completed` after verification passes.
 
-
-## Checkpoint Tracking
-
-This command uses checkpoint tracking via wrapper scripts to ensure systematic execution of tests.
-
-### Checkpoint Wrapper Scripts
-
-The `run-run-tests.sh` script uses the following standardized wrapper scripts:
-
-- **`./scripts/checkpoint-init.sh`**: Initializes or resumes checkpoint tracking
-- **`./scripts/checkpoint-require.sh`**: Verifies checkpoint is ready before proceeding
-- **`./scripts/checkpoint-gate.sh`**: Validates gate conditions at workflow boundaries
-- **`./scripts/checkpoint-complete.sh`**: Shows completion summary and cleanup
-
-These wrappers provide centralized checkpoint management across all commands.
-
 ## Workflow Execution
 
-Run the complete checkpoint-based workflow:
+Run the complete workflow:
 
 ```bash
 ./scripts/run-run-tests.sh
@@ -137,7 +112,7 @@ This script handles all stages of test execution:
 1. **Build Tests**: Compiles all test binaries
 2. **Run All Tests**: Executes all tests with parallel job control
 3. **Verify Results**: Confirms all tests passed
-4. **Checkpoint Completion**: Marks the workflow as complete
+4. **Completion**: Marks the workflow as complete
 
 ## Troubleshooting
 
@@ -148,16 +123,11 @@ If the script fails, simply rerun it:
 ```
 
 ### Check Progress
-```bash
-./scripts/checkpoint-status.sh run-tests
-```
-
 **Expected output (example at 33% completion):**
 ```
 📈 command: X/Y steps (Z%)
    [████░░░░░░░░░░░░░░░░] Z%
-→ Next: ./scripts/checkpoint-update.sh command N
-```
+→ Next: ```
 
 ## Minimum Requirements
 
@@ -166,11 +136,8 @@ If the script fails, simply rerun it:
 - [ ] Expected output is produced
 - [ ] No unexpected warnings or issues
 
-
-
 ```bash
 # Verify ready to execute
-./scripts/checkpoint-gate.sh run-tests "Ready" "1"
 ```
 
 **Expected gate output:**
@@ -181,14 +148,11 @@ If the script fails, simply rerun it:
 
 ## Command
 
-
 ```bash
 make run-tests 2>&1
 
 # Mark execution complete
-./scripts/checkpoint-update.sh run-tests 2
 ```
-
 
 ## Expected Output
 
@@ -241,11 +205,6 @@ modules/ar_data.c:123: error: expected ';' before '}' token
 make: *** [ar_data.o] Error 1
 ```
 
-
-```bash
-./scripts/checkpoint-complete.sh run-tests
-```
-
 **Expected completion output:**
 ```
 ========================================
@@ -255,7 +214,6 @@ make: *** [ar_data.o] Error 1
 📈 run-tests: 3/3 steps (100%)
    [████████████████████] 100%
 
-✅ Checkpoint workflow complete
 ```
 
 ## Key Points

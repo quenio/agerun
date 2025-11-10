@@ -2,7 +2,7 @@ Validate that all naming conventions follow the strict AgeRun patterns: typedefs
 
 ## ⚠️ CRITICAL: Follow all steps sequentially
 
-**DO NOT skip steps or manually initialize checkpoints.** Execute each step in order. The checkpoint system enforces sequential execution and prevents jumping ahead.
+**DO NOT skip steps or manually initialize.** Execute each step in order. The system enforces sequential execution and prevents jumping ahead.
 
 ## MANDATORY KB Consultation
 
@@ -14,10 +14,6 @@ Before checking:
    - Function naming standards
    - Type naming rules
 4. Apply all naming standards
-
-## CHECKPOINT WORKFLOW ENFORCEMENT
-
-**CRITICAL**: This command MUST use checkpoint tracking for progress tracking ONLY. All verification is done via step-verifier sub-agent, NOT via checkpoint scripts ([details](../../../kb/checkpoint-tracking-verification-separation.md)). This command demonstrates the [Checkpoint Conditional Flow Pattern](../../../kb/checkpoint-conditional-flow-pattern.md) where naming violations trigger analysis workflows. See [Checkpoint Sequential Execution Discipline](../../../kb/checkpoint-sequential-execution-discipline.md) for important requirements about sequential ordering and work verification.
 
 ## STEP VERIFICATION ENFORCEMENT
 
@@ -38,7 +34,7 @@ The **step-verifier** is a specialized sub-agent that independently verifies ste
 
 ### Step Verification Process
 
-After completing each step (before calling `checkpoint-update.sh`), you MUST:
+After completing each step, you MUST:
 
 1. **Report accomplishments with evidence**
    - Describe what was accomplished (files created/modified, commands executed, outputs produced)
@@ -55,8 +51,7 @@ After completing each step (before calling `checkpoint-update.sh`), you MUST:
   
    **If verification PASSES** (report shows "✅ STEP VERIFIED" or "All requirements met"):
      - Proceed to next step
-     - Mark checkpoint step as complete (for progress tracking only - verification already done by step-verifier)
-  
+     -   
    **If verification FAILS** (report shows "⚠️ STOP EXECUTION" or missing elements):
      - **STOP execution immediately** - do not proceed to next step
      - Fix all reported issues from verification report
@@ -91,14 +86,12 @@ Accomplishment Report:
 
 ## Checkpoint Tracking
 
-This command uses checkpoint tracking to ensure systematic execution of all naming convention validation steps.
+This command uses progress tracking to ensure systematic execution of all naming convention validation steps.
 
 ### Initialize Tracking
 
 ```bash
 # Start the naming check process with 3 steps
-./scripts/checkpoint-init.sh check-naming "Check Naming" "Analyze Violations" "Complete"
-./scripts/checkpoint-require.sh check-naming
 ```
 
 **Expected output:**
@@ -127,22 +120,15 @@ This command uses checkpoint tracking to ensure systematic execution of all nami
 
 Check current progress at any time:
 
-```bash
-./scripts/checkpoint-status.sh check-naming
-```
-
 **Expected output:**
 ```
 📈 check-naming: 2/3 steps (67%)
    [██████████░░░░░░░░░] 67%
-→ Next: ./scripts/checkpoint-update.sh check-naming 3
-```
+→ Next: ```
 
 ## Workflow Execution
 
-
 #### Step 1: Check Naming Conventions
-
 
 ```bash
 ./scripts/run-naming-check.sh
@@ -152,13 +138,7 @@ Runs naming convention validation and captures violation count for conditional w
 
 **Expected output**: Shows validation results and saves VIOLATION_COUNT to /tmp/check-naming-stats.txt
 
-```bash
-./scripts/checkpoint-update.sh check-naming 1
-```
-
-
 #### Step 2: Conditional Flow (Violation Gate)
-
 
 If no violations found, skip Step 3. If violations found, continue to analysis.
 
@@ -166,10 +146,7 @@ If no violations found, skip Step 3. If violations found, continue to analysis.
 ./scripts/check-naming-conditional-flow.sh
 ```
 
-
-
 #### Step 3: Analyze Violations
-
 
 ```bash
 ./scripts/analyze-naming-violations.sh
@@ -178,17 +155,6 @@ If no violations found, skip Step 3. If violations found, continue to analysis.
 Analyzes and categorizes any naming violations found. Only runs if violations exist.
 
 **Expected output**: Shows detailed analysis of violations by category and next steps.
-
-```bash
-./scripts/checkpoint-update.sh check-naming 3
-```
-
-
-
-```bash
-./scripts/checkpoint-complete.sh check-naming
-rm -f /tmp/check-naming-*.txt
-```
 
 **Expected output:**
 ```

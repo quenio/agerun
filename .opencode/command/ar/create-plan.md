@@ -1,9 +1,5 @@
 Create a TDD plan document following strict methodology patterns and best practices.
 
-## CHECKPOINT WORKFLOW ENFORCEMENT
-
-**CRITICAL**: This command MUST use checkpoint tracking for progress tracking ONLY. All verification is done via specialized tools, NOT via checkpoint scripts ([details](../../../kb/checkpoint-tracking-verification-separation.md)).
-
 This section implements the [Checkpoint Workflow Enforcement Pattern](../../../kb/checkpoint-workflow-enforcement-pattern.md) - preventing workflow bypasses through initialization and precondition enforcement.
 
 ### In-Progress Workflow Detection
@@ -12,32 +8,18 @@ If a `/create-plan` workflow is already in progress:
 
 ```bash
 # Check current progress
-./scripts/checkpoint-status.sh create-plan --verbose
 ```
 
 Resume from the next pending step, or clean up and start fresh:
-```bash
-./scripts/checkpoint-cleanup.sh create-plan
-./scripts/checkpoint-init.sh create-plan "KB Consultation" "Read Requirements" "Extract Iterations" "Structure Plan" "Validate Plan" "Summary"
-```
-
 ### First-Time Initialization Check
 
-**MANDATORY**: Before executing ANY steps, verify checkpoint tracking is initialized:
-
-```bash
-./scripts/checkpoint-init.sh create-plan "KB Consultation" "Read Requirements" "Extract Iterations" "Structure Plan" "Validate Plan" "Summary"
-```
+**MANDATORY**: Before executing ANY steps, verify progress tracking is initialized:
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
-**BEFORE PROCEEDING**: Verify checkpoint tracking initialization:
+**BEFORE PROCEEDING**: Verify progress tracking initialization:
 
-```bash
-./scripts/checkpoint-require.sh create-plan
-```
-
-**MANDATORY**: This command MUST use checkpoint tracking. Start by running the checkpoint initialization below. ([details](../../../kb/unmissable-documentation-pattern.md))
+**MANDATORY**: This command MUST use progress tracking. Start by running the checkpoint initialization below. ([details](../../../kb/unmissable-documentation-pattern.md))
 
 ## STEP VERIFICATION ENFORCEMENT
 
@@ -58,7 +40,7 @@ The **step-verifier** is a specialized sub-agent that independently verifies ste
 
 ### Step Verification Process
 
-After completing each step (before calling `checkpoint-update.sh`), you MUST:
+After completing each step, you MUST:
 
 1. **Report accomplishments with evidence**
    - Describe what was accomplished (files created/modified, commands executed, outputs produced)
@@ -75,8 +57,7 @@ After completing each step (before calling `checkpoint-update.sh`), you MUST:
   
    **If verification PASSES** (report shows "✅ STEP VERIFIED" or "All requirements met"):
      - Proceed to next step
-     - Mark checkpoint step as complete (for progress tracking only - verification already done by step-verifier)
-  
+     -   
    **If verification FAILS** (report shows "⚠️ STOP EXECUTION" or missing elements):
      - **STOP execution immediately** - do not proceed to next step
      - Fix all reported issues from verification report
@@ -220,115 +201,10 @@ Before creating the plan, identify which task to plan:
 **DO NOT PROCEED WITHOUT RUNNING THIS COMMAND:**
 
 ```bash
-# MANDATORY: Initialize checkpoint tracking (14 steps)
-./scripts/checkpoint-init.sh create-plan "KB Consultation" "Gather Requirements" "Identify Behaviors" "Count Assertions" "Define Cycles" "Plan Iterations" "Structure RED Phases" "Structure GREEN Phases" "Add Cleanup" "Add Status Markers" "Add Cross-References" "Validate Plan" "Save Plan" "Summary"
+# MANDATORY: Initialize progress tracking (14 steps)
 ```
 
-This command uses checkpoint tracking to ensure systematic plan creation. The creation process is divided into 4 major stages with 14 checkpoints total.
-
-**Expected output:**
-```
-========================================
-   CHECKPOINT TRACKING INITIALIZED
-========================================
-
-Command: create-plan
-Tracking file: /tmp/create-plan-progress.txt
-Total steps: 14
-
-Steps to complete:
-  1. KB Consultation
-  2. Gather Requirements
-  3. Identify Behaviors
-  4. Count Assertions
-  5. Define Cycles
-  6. Plan Iterations
-  7. Structure RED Phases
-  8. Structure GREEN Phases
-  9. Add Cleanup
-  10. Add Status Markers
-  11. Add Cross-References
-  12. Validate Plan
-  13. Save Plan
-  14. Summary
-```
-
-### Check Progress
-```bash
-./scripts/checkpoint-status.sh create-plan
-```
-
-**Expected output (example at 50% completion):**
-```
-📈 create-plan: 7/14 steps (50%)
-   [██████████░░░░░░░░░░] 50%
-→ Next: ./scripts/checkpoint-update.sh create-plan STEP=8
-```
-
-### What it does
-
-This command creates TDD plan documents following strict methodology:
-
-#### 1. Requirements Analysis
-- **Behavior identification**: List all expected behaviors
-- **Assertion counting**: One assertion per iteration
-- **Cycle organization**: Group related behaviors (3-5 iterations per cycle)
-- **API design**: Ensure return types enable verification
-
-#### 2. Iteration Structure
-- **One assertion per iteration**: Never bundle multiple behaviors ([details](../../../kb/tdd-iteration-planning-pattern.md))
-- **Decimal numbering**: Use N.1, N.2 for splits, not renumbering ([details](../../../kb/tdd-plan-iteration-split-pattern.md))
-- **RED phase clarity**: Every iteration shows explicit failure (// ← FAILS)
-- **GREEN minimalism**: Hardcoded returns valid ([details](../../../kb/tdd-green-phase-minimalism.md))
-
-#### 3. Memory Management
-- **Temporary cleanup**: .1 iterations need manual cleanup ([details](../../../kb/temporary-test-cleanup-pattern.md))
-- **Zero leak policy**: Every iteration verified for leaks
-- **Ownership semantics**: Proper own_, ref_, mut_ prefixes ([details](../../../kb/ownership-naming-conventions.md))
-
-#### 4. Documentation and Tracking
-- **Status markers**: PENDING REVIEW for all iterations initially ([details](../../../kb/plan-review-status-tracking.md))
-- **BDD structure**: Given/When/Then/Cleanup throughout ([details](../../../kb/bdd-test-structure.md))
-- **Real types**: Use actual AgeRun types (ar_*_t) not placeholders
-- **Cross-references**: Link to relevant KB articles
-
-### Status Marker Lifecycle
-
-This command creates plans with iterations marked `PENDING REVIEW`. These markers track progress through the complete TDD workflow:
-
-| Status | Used By | Meaning | Next Step |
-|--------|---------|---------|-----------|
-| `PENDING REVIEW` | create-plan | Newly created iteration awaiting review | Review with ar:review-plan |
-| `REVIEWED` | review-plan | Iteration approved, ready for implementation | Execute with ar:execute-plan |
-| `REVISED` | review-plan | Iteration updated after review, ready for implementation | Execute with ar:execute-plan |
-| `IMPLEMENTED` | execute-plan | RED-GREEN-REFACTOR complete, awaiting commit | Commit preparation |
-| `✅ COMMITTED` | execute-plan | Iteration committed to git | Done (or continue with next iteration) |
-| `✅ COMPLETE` | execute-plan | Full plan complete (plan-level marker) | Documentation only |
-
-**Important Notes:**
-- **Iterations only**: Status markers appear ONLY on iteration headings (not phase/cycle headings)
-- **REVISED meaning**: Changes applied and ready for implementation (ar:execute-plan processes REVISED same as REVIEWED)
-- **Two-phase updates**: During execution, iterations update REVIEWED/REVISED → IMPLEMENTED immediately; before commit, all IMPLEMENTED → ✅ COMMITTED in batch
-- **Complete vs Committed**: ✅ COMPLETE is optional plan-level header; ✅ COMMITTED marks individual iterations in git
-
-### Execution Order (MANDATORY)
-
-1. **FIRST**: Run the checkpoint initialization command above
-2. **SECOND**: Follow the creation process below:
-   - Add each step to session todo list before starting
-   - Complete the step work
-   - **VERIFY step completion via step-verifier sub-agent** (MANDATORY)
-   - Mark step complete in session todo list after verification passes
-   - Update checkpoint (for progress tracking only)
-3. **THIRD**: Check progress with `./scripts/checkpoint-status.sh create-plan`
-4. **FOURTH**: Complete all 14 steps before saving plan (each verified via step-verifier)
-5. **LAST**: Verify complete workflow via step-verifier, then clean up with `./scripts/checkpoint-cleanup.sh create-plan`
-
-### Usage
-
-```bash
-/create-plan <feature-name> <output-file>
-```
+This command uses progress tracking to ensure systematic plan creation. The creation process is divided into 4 major stages with 14 checkpoints total.
 
 **Example:**
 ```bash
@@ -377,7 +253,6 @@ This command creates plans with iterations marked `PENDING REVIEW`. These marker
 ## Plan Creation Process
 
 ### Stage 1: Requirements and Analysis (Steps 1-5)
-
 
 #### Step 1: KB Consultation & 14 Lesson Verification
 
@@ -451,11 +326,6 @@ Before proceeding to Step 2, you MUST verify Step 1 completion via **step-verifi
    - Update todo item: "Step 1: KB Consultation & 14 Lesson Verification"
    - Status: completed
 
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh create-plan STEP=1
-```
-
 #### Step 2: Gather Requirements
 
 **Collect feature requirements:**
@@ -522,11 +392,6 @@ Before proceeding to Step 3, you MUST verify Step 2 completion via step-verifier
 2. **Mark step complete in session todo list** using `todo_write`:
    - Update todo item: "Step 2: Gather Requirements"
    - Status: completed
-
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh create-plan STEP=2
-```
 
 #### Step 3: Identify Behaviors
 
@@ -746,11 +611,6 @@ Before proceeding to Step 4, you MUST verify Step 3 completion via step-verifier
    - Update todo item: "Step 3: Identify Behaviors"
    - Status: completed
 
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh create-plan STEP=3
-```
-
 #### Step 4: Count Assertions
 
 **Convert behaviors to assertions:**
@@ -813,11 +673,6 @@ Before proceeding to Step 5, you MUST verify Step 4 completion via step-verifier
 2. **Mark step complete in session todo list** using `todo_write`:
    - Update todo item: "Step 4: Count Assertions"
    - Status: completed
-
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh create-plan STEP=4
-```
 
 #### Step 5: Define Cycles
 
@@ -886,16 +741,9 @@ Before proceeding to Step 6, you MUST verify Step 5 completion via step-verifier
    - Update todo item: "Step 5: Define Cycles"
    - Status: completed
 
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh create-plan STEP=5
-```
-
-
 **[QUALITY GATE 1: Requirements Complete]**
 ```bash
 # MANDATORY: Must pass before proceeding to iteration planning
-./scripts/checkpoint-gate.sh create-plan "Requirements" "1,2,3,4,5"
 ```
 
 **Expected gate output:**
@@ -913,7 +761,6 @@ Before proceeding to Step 6, you MUST verify Step 5 completion via step-verifier
 
 ### Stage 2: Iteration Planning (Steps 6-8)
 
-
 #### Step 6: Plan Iterations
 
 **CRITICAL: Per-Iteration Progress Tracking**
@@ -924,10 +771,8 @@ This checkpoint involves creating multiple iterations. To ensure the command doe
 ```bash
 # Initialize nested checkpoint for iteration tracking
 # After determining iteration count from Checkpoint 4
-./scripts/checkpoint-init.sh create-plan-iterations "Iteration 0.1" "Iteration 0.2" "Iteration 0.3" "Iteration 1.1" "Iteration 1.2" ... [all iteration names]'
 
 # Check iteration tracking status anytime
-./scripts/checkpoint-status.sh create-plan-iterations
 ```
 
 **Write complete iteration structure:**
@@ -1050,9 +895,6 @@ int64_t ar_agent_store_fixture__create_agent(...) {
 
 ```bash
 # Mark iteration as complete immediately after creation
-./scripts/checkpoint-update.sh create-plan-iterations STEP=1  # After Iteration 1.1
-./scripts/checkpoint-update.sh create-plan-iterations STEP=2  # After Iteration 1.2
-./scripts/checkpoint-update.sh create-plan-iterations STEP=3  # After Iteration 1.3
 # ... continue for each iteration
 ```
 
@@ -1060,40 +902,34 @@ int64_t ar_agent_store_fixture__create_agent(...) {
 
 For each iteration created:
 1. **Create the iteration** (RED phase, GREEN phase, verification)
-2. **Immediately update checkpoint** using `./scripts/checkpoint-update.sh create-plan-iterations STEP=N`
-3. **Continue to next iteration**
+2. **Immediately update checkpoint** using `3. **Continue to next iteration**
 4. **DO NOT batch updates** - update after each iteration
 
 **Check Progress Anytime:**
 ```bash
 # See current iteration progress
-./scripts/checkpoint-status.sh create-plan-iterations
 
 # Example output:
 # 📈 create-plan-iterations: 5/12 steps (42%)
 #    [████████░░░░░░░░░░░░] 42%
-# → Next: ./scripts/checkpoint-update.sh create-plan-iterations STEP=6
-```
+# → Next: ```
 
 **Resuming After Interruption:**
 ```bash
 # Check which iterations are complete
-./scripts/checkpoint-status.sh create-plan-iterations
 
 # The status will show which step to continue from
 # Resume creating iterations starting from the indicated step
 ```
 
-**CRITICAL**: This iteration tracking uses a nested checkpoint instance (`create-plan-iterations`) independent of the main checkpoint tracking (`create-plan`). This allows resuming within Checkpoint 6 if interrupted mid-iteration creation.
+**CRITICAL**: This iteration tracking uses a nested checkpoint instance (`create-plan-iterations`) independent of the main progress tracking (`create-plan`). This allows resuming within Checkpoint 6 if interrupted mid-iteration creation.
 
 **After ALL iterations created:**
 ```bash
 # The nested checkpoint system will show 100% when all iterations are done
-./scripts/checkpoint-status.sh create-plan-iterations
 # Should show: 🎆 All 12 steps complete!
 
 # Clean up iteration tracking
-./scripts/checkpoint-cleanup.sh create-plan-iterations
 
 **MANDATORY: Update step todo item status**
 
@@ -1134,11 +970,6 @@ Before proceeding to Step 7, you MUST verify Step 6 completion via step-verifier
    - Update todo item: "Step 6: Plan Iterations"
    - Status: completed
 
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh create-plan STEP=6
-```
-
 **[QUALITY GATE 2: Plan Structure Validation]**
 
 **MANDATORY VALIDATION**: Before proceeding to Step 7, run structural validation:
@@ -1149,49 +980,6 @@ Before proceeding to Step 7, you MUST verify Step 6 completion via step-verifier
 
 # Example:
 # ./scripts/validate-plan-structure.sh plans/file_delegate_plan.md 15
-```
-
-**Expected output:**
-```
-🔍 Validating plan structure: plans/file_delegate_plan.md
-Expected iterations: 15
-Found iterations: 15
-✅ Iteration count matches
-
-Checking iteration structure...
-  Iteration 8.1: ✅
-  Iteration 8.2: ✅
-  ...
-  Iteration 12.3: ✅
-
-✅ All iterations have required structure
-✅ PLAN STRUCTURE VALIDATION PASSED
-```
-
-**What this validates:**
-- Correct number of iterations exist in the file
-- Each iteration has Objective, RED Phase, GREEN Phase, Verification sections
-- Each iteration has GOAL 1 and GOAL 2 markers in RED phase
-- Each iteration has PENDING REVIEW status marker
-
-**If validation fails:**
-- DO NOT proceed to Step 7
-- Review and fix structural issues in the plan
-- Re-run validation until it passes
-
-This gate prevents proceeding with incomplete or structurally invalid plans.
-
-#### Step 7: Structure RED Phases
-
-**⭐ CRITICAL: Lesson 7 - Assertion Validity Verification Via Temporary Corruption**
-
-This step ensures generated plans follow the most critical lesson: Every RED phase MUST document temporary code/corruption that makes the assertion fail, proving the assertion actually catches bugs.
-
-**Initialize RED Phase Verification Tracking:**
-```bash
-# Initialize nested checkpoint for RED phase verification
-# Use same iteration list as Checkpoint 6
-./scripts/checkpoint-init.sh create-plan-red-phases "Iteration 0.1" "Iteration 0.2" "Iteration 0.3" ... [all iteration names]'
 ```
 
 **Verify all RED phases have:**
@@ -1307,8 +1095,6 @@ echo "8.3: Return 'network' instead of 'file' to prove type check" >> /tmp/red-c
 ```bash
 # 1. Document corruption in evidence file (see above)
 # 2. Mark RED phase verification complete
-./scripts/checkpoint-update.sh create-plan-red-phases STEP=1  # After verifying Iteration 1.1
-./scripts/checkpoint-update.sh create-plan-red-phases STEP=2  # After verifying Iteration 1.2
 # ... continue for each iteration
 ```
 
@@ -1317,7 +1103,6 @@ echo "8.3: Return 'network' instead of 'file' to prove type check" >> /tmp/red-c
 **After ALL RED phases verified:**
 ```bash
 # Verify all complete
-./scripts/checkpoint-status.sh create-plan-red-phases
 # Should show: 🎆 All steps complete!
 
 # MANDATORY: Validate evidence file before proceeding
@@ -1394,13 +1179,10 @@ Before proceeding to Step 8, you MUST verify Step 7 completion via step-verifier
    - Update todo item: "Step 7: Structure RED Phases"
    - Status: completed
 
-3. **Update checkpoint** (for progress tracking only):
 ```bash
 # Clean up RED phase tracking
-./scripts/checkpoint-cleanup.sh create-plan-red-phases
 
 # Mark main Checkpoint 7 as complete
-./scripts/checkpoint-update.sh create-plan STEP=7
 ```
 
 #### Step 8: Structure GREEN Phases
@@ -1410,7 +1192,6 @@ Before proceeding to Step 8, you MUST verify Step 7 completion via step-verifier
 **Initialize GREEN Phase Verification Tracking:**
 ```bash
 # Initialize nested checkpoint for GREEN phase verification
-./scripts/checkpoint-init.sh create-plan-green-phases "Iteration 0.1" "Iteration 0.2" "Iteration 0.3" ... [all iteration names]'
 ```
 
 **Verify all GREEN phases follow minimalism:**
@@ -1451,8 +1232,6 @@ Iteration N.3: Actual logic (forced by test)
 **MANDATORY: After verifying EACH iteration's GREEN phase:**
 ```bash
 # Mark GREEN phase verification complete
-./scripts/checkpoint-update.sh create-plan-green-phases STEP=1  # After verifying Iteration 1.1
-./scripts/checkpoint-update.sh create-plan-green-phases STEP=2  # After verifying Iteration 1.2
 # ... continue for each iteration
 ```
 
@@ -1461,11 +1240,9 @@ Iteration N.3: Actual logic (forced by test)
 **After ALL GREEN phases verified:**
 ```bash
 # Verify all complete
-./scripts/checkpoint-status.sh create-plan-green-phases
 # Should show: 🎆 All steps complete!
 
 # Clean up GREEN phase tracking
-./scripts/checkpoint-cleanup.sh create-plan-green-phases
 ```
 
 **MANDATORY: Update step todo item status**
@@ -1506,17 +1283,13 @@ Before proceeding to Step 9, you MUST verify Step 8 completion via step-verifier
    - Update todo item: "Step 8: Structure GREEN Phases"
    - Status: completed
 
-3. **Update checkpoint** (for progress tracking only):
 ```bash
 # Mark main Checkpoint 8 as complete
-./scripts/checkpoint-update.sh create-plan STEP=8
 ```
-
 
 **[QUALITY GATE 2: Iterations Complete]**
 ```bash
 # MANDATORY: Must pass before proceeding to cleanup/markers
-./scripts/checkpoint-gate.sh create-plan "Iterations" "6,7,8"
 ```
 
 **Expected gate output:**
@@ -1532,7 +1305,6 @@ Before proceeding to Step 9, you MUST verify Step 8 completion via step-verifier
 - [ ] Decimal numbering used for splits (N.1, N.2)
 
 ### Stage 3: Cleanup and Documentation (Steps 9-11)
-
 
 #### Step 9: Add Cleanup
 
@@ -1605,11 +1377,6 @@ Before proceeding to Step 10, you MUST verify Step 9 completion via step-verifie
    - Update todo item: "Step 9: Add Cleanup"
    - Status: completed
 
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh create-plan STEP=9
-```
-
 #### Step 10: Add Status Markers
 
 **MANDATORY: Add PENDING REVIEW markers to all iterations:**
@@ -1677,11 +1444,6 @@ Before proceeding to Step 11, you MUST verify Step 10 completion via step-verifi
    - Update todo item: "Step 10: Add Status Markers"
    - Status: completed
 
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh create-plan STEP=10
-```
-
 #### Step 11: Add Cross-References
 
 **Add Related Patterns section:**
@@ -1739,16 +1501,9 @@ Before proceeding to Step 12, you MUST verify Step 11 completion via step-verifi
    - Update todo item: "Step 11: Add Cross-References"
    - Status: completed
 
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh create-plan STEP=11
-```
-
-
 **[QUALITY GATE 3: Documentation Complete]**
 ```bash
 # MANDATORY: Must pass before validation
-./scripts/checkpoint-gate.sh create-plan "Documentation" "9,10,11"
 ```
 
 **Expected gate output:**
@@ -1764,7 +1519,6 @@ Before proceeding to Step 12, you MUST verify Step 11 completion via step-verifi
 - [ ] Related Patterns section added
 
 ### Stage 4: Validation and Saving (Steps 12-14)
-
 
 #### Step 12: Validate Plan
 
@@ -1835,11 +1589,6 @@ Before proceeding to Step 13, you MUST verify Step 12 completion via step-verifi
    - Update todo item: "Step 12: Validate Plan"
    - Status: completed
 
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh create-plan STEP=12
-```
-
 #### Step 13: Save Plan
 
 **Write plan to file:**
@@ -1907,12 +1656,10 @@ Before proceeding to Step 14, you MUST verify Step 13 completion via step-verifi
    - Update todo item: "Step 13: Save Plan"
    - Status: completed
 
-3. **Update checkpoint** (for progress tracking only):
 ```bash
 # Save the plan
 # <use Write tool with plan content>
 
-./scripts/checkpoint-update.sh create-plan STEP=13
 ```
 
 #### Step 14: Summary
@@ -2030,34 +1777,8 @@ Before completing the workflow, you MUST verify ALL steps were completed correct
    - Update todo item: "Step 14: Summary"
    - Status: completed
 
-4. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh create-plan STEP=14
-```
-
-
-```bash
-./scripts/checkpoint-complete.sh create-plan
-```
-
-**Note**: `checkpoint-complete.sh` is used ONLY for progress tracking cleanup. All verification is done via step-verifier sub-agent, NOT via checkpoint scripts.
-
-**Expected completion output:**
-```
-========================================
-   CHECKPOINT COMPLETION SUMMARY
-========================================
-
-📈 create-plan: X/Y steps (Z%)
-   [████████████████████] 100%
-
-✅ Checkpoint workflow complete
-```
-```
-
 ```bash
 # Clean up tracking
-./scripts/checkpoint-cleanup.sh create-plan
 ```
 
 ## Plan Template Structure
@@ -2328,14 +2049,11 @@ ar_agent_t *agent = ar_agent__create("echo", "1.0");
 
 ## Troubleshooting
 
-### If checkpoint tracking gets stuck:
+### If progress tracking gets stuck:
 ```bash
 # Check current status
-./scripts/checkpoint-status.sh create-plan
 
 # If needed, reset and start over
-./scripts/checkpoint-cleanup.sh create-plan
-./scripts/checkpoint-init.sh create-plan '...'
 ```
 
 ### If unsure about iteration splitting:

@@ -1,6 +1,6 @@
 Review uncommitted changes for code quality, architectural compliance, and documentation accuracy.
 
-**MANDATORY**: This command MUST use checkpoint tracking. Start by running the checkpoint initialization below. ([details](../../../kb/unmissable-documentation-pattern.md))
+**MANDATORY**: This command MUST use progress tracking. Start by running the checkpoint initialization below. ([details](../../../kb/unmissable-documentation-pattern.md))
 
 ## KB Consultation Required
 
@@ -17,10 +17,6 @@ Before reviewing ([details](../../../kb/kb-consultation-before-planning-requirem
    - When refactoring commands, extract complex bash logic: one focused script per shell block ([details](../../../kb/command-helper-script-extraction-pattern.md))
    - Use domain-specific naming (action-domain-object.sh) for discoverability ([details](../../../kb/script-domain-naming-convention.md))
    - Command files should orchestrate scripts directly (show all logic inline, not wrap in run-*.sh) ([details](../../../kb/command-orchestrator-pattern.md))
-
-## CHECKPOINT WORKFLOW ENFORCEMENT
-
-**CRITICAL**: This command MUST use checkpoint tracking for ALL execution. All verification is done via step-verifier sub-agent, NOT via checkpoint scripts ([details](../../../kb/checkpoint-tracking-verification-separation.md)).
 
 ## STEP VERIFICATION ENFORCEMENT
 
@@ -41,7 +37,7 @@ The **step-verifier** is a specialized sub-agent that independently verifies ste
 
 ### Step Verification Process
 
-After completing each step (before calling `checkpoint-update.sh`), you MUST:
+After completing each step, you MUST:
 
 1. **Report accomplishments with evidence**
    - Describe what was accomplished (files created/modified, commands executed, outputs produced)
@@ -58,8 +54,7 @@ After completing each step (before calling `checkpoint-update.sh`), you MUST:
   
    **If verification PASSES** (report shows "✅ STEP VERIFIED" or "All requirements met"):
      - Proceed to next step
-     - Mark checkpoint step as complete (for progress tracking only - verification already done by step-verifier)
-  
+     -   
    **If verification FAILS** (report shows "⚠️ STOP EXECUTION" or missing elements):
      - **STOP execution immediately** - do not proceed to next step
      - Fix all reported issues from verification report
@@ -91,7 +86,6 @@ Accomplishment Report:
 - Report accomplishments with evidence, NOT instructions
 - The step-verifier independently verifies by reading command files, checking files, git status/diff, etc.
 - If step-verifier reports "⚠️ STOP EXECUTION", you MUST fix issues before proceeding
-
 
 ## MANDATORY: Initialize All Todo Items
 
@@ -146,28 +140,13 @@ Accomplishment Report:
 
 **Important**: All todo items are initialized as `pending` and will be updated to `in_progress` when their respective step/verification begins, then to `completed` after verification passes.
 
-
 ### In-Progress Workflow Detection
 
 If a `/review-changes` workflow is already in progress:
 
-```bash
-./scripts/checkpoint-status.sh review-changes --verbose
-# Resume: ./scripts/checkpoint-update.sh review-changes STEP=N
-# Or reset: ./scripts/checkpoint-cleanup.sh review-changes && ./scripts/checkpoint-init.sh review-changes "Diff Analysis" "Code Smells" "Memory Management" "Naming Conventions" "Error Handling" "Test Coverage" "Parnas Principles" "Module Hierarchy" "Interface Design" "Dependency Check" "Design Patterns" "Real Code Check" "Doc Validation" "Cross-References" "Completeness" "Link Validation" "Build Status" "Hidden Issues" "Test Results" "File Hygiene" "Doc Sync" "Final Report"
-```
-
 ### First-Time Initialization Check
 
-```bash
-./scripts/checkpoint-init.sh review-changes "Diff Analysis" "Code Smells" "Memory Management" "Naming Conventions" "Error Handling" "Test Coverage" "Parnas Principles" "Module Hierarchy" "Interface Design" "Dependency Check" "Design Patterns" "Real Code Check" "Doc Validation" "Cross-References" "Completeness" "Link Validation" "Build Status" "Hidden Issues" "Test Results" "File Hygiene" "Doc Sync" "Final Report"
-```
-
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
-
-```bash
-./scripts/checkpoint-require.sh review-changes
-```
 
 # Review Changes
 
@@ -176,106 +155,10 @@ If a `/review-changes` workflow is already in progress:
 **DO NOT PROCEED WITHOUT RUNNING THIS COMMAND:**
 
 ```bash
-# MANDATORY: Initialize checkpoint tracking (22 steps)
-./scripts/checkpoint-init.sh review-changes "Diff Analysis" "Code Smells" "Memory Management" "Naming Conventions" "Error Handling" "Test Coverage" "Parnas Principles" "Module Hierarchy" "Interface Design" "Dependency Check" "Design Patterns" "Real Code Check" "Doc Validation" "Cross-References" "Completeness" "Link Validation" "Build Status" "Hidden Issues" "Test Results" "File Hygiene" "Doc Sync" "Final Report"
+# MANDATORY: Initialize progress tracking (22 steps)
 ```
 
-This command uses checkpoint tracking to ensure thorough review across all quality dimensions. The review process is divided into 4 major phases with 22 checkpoints total.
-
-**Expected output:**
-```
-========================================
-   CHECKPOINT TRACKING INITIALIZED
-========================================
-
-Command: review-changes
-Tracking file: /tmp/review-changes-progress.txt
-Total steps: 22
-
-Steps to complete:
-  1. Diff Analysis
-  2. Code Smells
-  3. Memory Management
-  4. Naming Conventions
-  5. Error Handling
-  6. Test Coverage
-  7. Parnas Principles
-  8. Module Hierarchy
-  9. Interface Design
-  10. Dependency Check
-  11. Design Patterns
-  12. Real Code Check
-  13. Doc Validation
-  14. Cross-References
-  15. Completeness
-  16. Link Validation
-  17. Build Status
-  18. Hidden Issues
-  19. Test Results
-  20. File Hygiene
-  21. Doc Sync
-  22. Final Report
-```
-
-### Check Progress
-```bash
-./scripts/checkpoint-status.sh review-changes
-```
-
-**Expected output (example at 27% completion):**
-```
-📈 review-changes: 6/22 steps (27%)
-   [█████░░░░░░░░░░░░░░░] 27%
-→ Next: ./scripts/checkpoint-update.sh review-changes STEP=7
-```
-
-### What it does
-
-This command performs a comprehensive review of all uncommitted changes across multiple quality dimensions:
-
-#### 1. Code Quality Review
-- **Code Smells Detection**: Long methods (>50 lines), large modules (>850 lines), excessive parameters (>5), duplication
-- **Memory Management**: Ownership prefixes (own_, mut_, ref_), heap tracking macros, NULL after transfer
-- **Naming Conventions**: ar_module__function pattern, proper prefixes, consistent style, take_ vs get_ distinction ([details](../../../kb/function-naming-state-change-convention.md))
-- **Error Handling**: Proper propagation, single print location, graceful degradation
-- **Test Coverage**: BDD structure, memory leak verification, one test per behavior
-- **Feature Value**: Validate features provide functional value, not just decoration ([details](../../../kb/functional-value-validation-pattern.md))
-
-#### 2. Architectural Compliance
-- **Parnas Principles**: Information hiding, single responsibility, no circular dependencies
-- **Module Hierarchy**: Foundation → Data → Core → System layer ordering
-- **Interface Design**: Minimal interfaces, opaque types where needed, const-correctness
-- **Dependency Management**: No upward dependencies, proper abstraction levels
-- **Design Patterns**: Registry for ownership, facade for coordination only
-
-#### 3. Documentation Review
-- **Real Code Only**: All examples use actual AgeRun types/functions
-- **Validation**: Runs make check-docs to verify documentation
-- **Cross-References**: Checks for related KB articles and links
-- **Completeness**: TODO.md and CHANGELOG.md updates for changes
-- **Relative Links**: Ensures markdown links use relative paths
-
-#### 4. Pre-Commit Verification
-- **Build Status**: Verifies clean build with make clean build
-- **Hidden Issues**: Runs make check-logs for concealed problems
-- **Test Results**: Checks for memory leaks and test failures
-- **File Hygiene**: Identifies backup/temporary files that shouldn't be committed
-- **Documentation Sync**: Ensures docs match code changes
-- **Task Planning**: For large changes, checks for analysis report ([details](../../../kb/report-driven-task-planning.md))
-
-### Execution Order (MANDATORY)
-
-1. **FIRST**: Run the checkpoint initialization command above
-2. **SECOND**: Follow the review process below, updating checkpoints after each step
-3. **THIRD**: Check progress with `./scripts/checkpoint-status.sh review-changes`
-4. **FOURTH**: Complete all 22 steps before generating final report
-5. **LAST**: Clean up with `./scripts/checkpoint-cleanup.sh review-changes`
-
-### Usage
-
-```bash
-/review-changes
-```
+This command uses progress tracking to ensure thorough review across all quality dimensions. The review process is divided into 4 major phases with 22 checkpoints total.
 
 **IMPORTANT**: Running `/review-changes` alone is NOT sufficient. You MUST initialize checkpoints first as shown above.
 
@@ -283,12 +166,10 @@ This command performs a comprehensive review of all uncommitted changes across m
 
 ### Stage 1: Code Quality Review (Steps 1-6)
 
-
 1. **Diff Analysis**: Reviews git diff for all changes
    ```bash
    # After completing diff analysis
-   ./scripts/checkpoint-update.sh review-changes STEP=1
-   ```
+      ```
 2. **Code Smells Detection**: Scans for known issues and anti-patterns
    - Long methods (>50 lines)
    - Large modules (>850 lines)
@@ -302,8 +183,7 @@ This command performs a comprehensive review of all uncommitted changes across m
    ```
 
    ```bash
-   ./scripts/checkpoint-update.sh review-changes STEP=2
-   ```
+      ```
 3. **Memory Management Check**: Verifies ownership and heap tracking
    - Ownership prefixes (own_, mut_, ref_)
    - Heap tracking macros
@@ -318,8 +198,7 @@ This command performs a comprehensive review of all uncommitted changes across m
    ```
 
    ```bash
-   ./scripts/checkpoint-update.sh review-changes STEP=3
-   ```
+      ```
 
 4. **Naming Conventions Check**: Validates consistent naming
    - ar_module__function pattern
@@ -334,16 +213,14 @@ This command performs a comprehensive review of all uncommitted changes across m
    ```
 
    ```bash
-   ./scripts/checkpoint-update.sh review-changes STEP=4
-   ```
+      ```
 
 5. **Error Handling Check**: Reviews error propagation
    - Proper propagation pattern
    - Single print location
    - Graceful degradation
    ```bash
-   ./scripts/checkpoint-update.sh review-changes STEP=5
-   ```
+      ```
 
 6. **Test Coverage Check**: Validates test quality
    - BDD structure
@@ -358,13 +235,11 @@ This command performs a comprehensive review of all uncommitted changes across m
    ```
 
    ```bash
-   ./scripts/checkpoint-update.sh review-changes STEP=6
-   ```
+      ```
 
 **[QUALITY GATE 1: Code Quality Complete]**
 ```bash
 # MANDATORY: Must pass before proceeding to architecture review
-./scripts/checkpoint-gate.sh review-changes "Code Quality" "1,2,3,4,5,6"
 ```
 
 **Expected gate output:**
@@ -380,32 +255,27 @@ This command performs a comprehensive review of all uncommitted changes across m
 - [ ] Identify any naming violations
 - [ ] Document all issues found with file:line references
 
-
 ### Stage 2: Architectural Compliance (Steps 7-11)
-
 
 7. **Parnas Principles Check**: Verifies design principles
    - Information hiding
    - Single responsibility
    - No circular dependencies
    ```bash
-   ./scripts/checkpoint-update.sh review-changes STEP=7
-   ```
+      ```
 
 8. **Module Hierarchy Check**: Validates layer ordering
    - Foundation → Data → Core → System
    - No upward dependencies
    ```bash
-   ./scripts/checkpoint-update.sh review-changes STEP=8
-   ```
+      ```
 
 9. **Interface Design Check**: Reviews API minimality
    - Minimal interfaces
    - Opaque types where needed
    - Const-correctness
    ```bash
-   ./scripts/checkpoint-update.sh review-changes STEP=9
-   ```
+      ```
 
 10. **Dependency Management Check**: Analyzes module dependencies
     - No circular dependencies (except heap ↔ io)
@@ -419,21 +289,18 @@ This command performs a comprehensive review of all uncommitted changes across m
     ```
 
     ```bash
-    ./scripts/checkpoint-update.sh review-changes STEP=10
-    ```
+        ```
 
 11. **Design Patterns Check**: Reviews pattern usage
     - Registry for ownership
     - Facade for coordination only
     - Parser/executor separation
     ```bash
-    ./scripts/checkpoint-update.sh review-changes STEP=11
-    ```
+        ```
 
 **[QUALITY GATE 2: Architecture Complete]**
 ```bash
 # MANDATORY: Must pass before proceeding to documentation review
-./scripts/checkpoint-gate.sh review-changes "Architecture" "7,8,9,10,11"
 ```
 
 **Expected gate output:**
@@ -448,48 +315,40 @@ This command performs a comprehensive review of all uncommitted changes across m
 - [ ] Validate interface minimality
 - [ ] Document any architectural violations
 
-
 ### Stage 3: Documentation Review (Steps 12-16)
-
 
 12. **Real Code Check**: Validates documentation examples
     - All examples use actual AgeRun types/functions
     - No placeholder code
     ```bash
-    ./scripts/checkpoint-update.sh review-changes STEP=12
-    ```
+        ```
 
 13. **Documentation Validation**: Runs validation checks
     ```bash
     make check-docs
-    ./scripts/checkpoint-update.sh review-changes STEP=13
-    ```
+        ```
 
 14. **Cross-References Check**: Verifies KB article links
     - Related articles linked
     - Bidirectional references
     ```bash
-    ./scripts/checkpoint-update.sh review-changes STEP=14
-    ```
+        ```
 
 15. **Completeness Check**: Ensures required docs updated
     - TODO.md updates for changes
     - CHANGELOG.md entries
     ```bash
-    ./scripts/checkpoint-update.sh review-changes STEP=15
-    ```
+        ```
 
 16. **Link Validation Check**: Verifies markdown links
     - Relative paths only
     - No broken links
     ```bash
-    ./scripts/checkpoint-update.sh review-changes STEP=16
-    ```
+        ```
 
 **[QUALITY GATE 3: Documentation Complete]**
 ```bash
 # MANDATORY: Must pass before final verification
-./scripts/checkpoint-gate.sh review-changes "Documentation" "12,13,14,15,16"
 ```
 
 **Expected gate output:**
@@ -504,29 +363,24 @@ This command performs a comprehensive review of all uncommitted changes across m
 - [ ] Check for broken links
 - [ ] Ensure all examples use real code
 
-
 ### Stage 4: Pre-Commit Verification (Steps 17-22)
-
 
 17. **Build Status Check**: Verifies clean build
     ```bash
     make clean build 2>&1
-    ./scripts/checkpoint-update.sh review-changes STEP=17
-    ```
+        ```
 
 18. **Hidden Issues Check**: Runs log analysis
     ```bash
     make check-logs
-    ./scripts/checkpoint-update.sh review-changes STEP=18
-    ```
+        ```
 
 19. **Test Results Check**: Reviews test outcomes
     - All tests passing
     - No memory leaks in reports
     - Test effectiveness verified
     ```bash
-    ./scripts/checkpoint-update.sh review-changes STEP=19
-    ```
+        ```
 
 20. **File Hygiene Check**: Identifies unwanted files
     - No backup files (.bak)
@@ -541,20 +395,17 @@ This command performs a comprehensive review of all uncommitted changes across m
     ```
 
     ```bash
-    ./scripts/checkpoint-update.sh review-changes STEP=20
-    ```
+        ```
 
 21. **Documentation Sync Check**: Final doc verification
     - Docs match code changes
     - All updates synchronized
     ```bash
-    ./scripts/checkpoint-update.sh review-changes STEP=21
-    ```
+        ```
 
 **[QUALITY GATE 4: Pre-Commit Complete]**
 ```bash
 # MANDATORY: Must pass before generating final report
-./scripts/checkpoint-gate.sh review-changes "Pre-Commit" "17,18,19,20,21"
 ```
 
 **Expected gate output:**
@@ -571,13 +422,7 @@ This command performs a comprehensive review of all uncommitted changes across m
 
 22. **Final Report Generation**: Compile review results
     ```bash
-    ./scripts/checkpoint-update.sh review-changes STEP=22
-    ```
-
-
-```bash
-./scripts/checkpoint-complete.sh review-changes
-```
+        ```
 
 **Expected completion output:**
 ```
@@ -588,13 +433,11 @@ This command performs a comprehensive review of all uncommitted changes across m
 📈 review-changes: X/Y steps (Z%)
    [████████████████████] 100%
 
-✅ Checkpoint workflow complete
 ```
 ```
 
 ```bash
 # Clean up tracking file
-./scripts/checkpoint-cleanup.sh review-changes
 ```
 
 ## Review Metrics and Quality Tracking
@@ -671,14 +514,11 @@ Run this command before `/commit` to ensure:
 
 ## Troubleshooting
 
-### If checkpoint tracking gets stuck:
+### If progress tracking gets stuck:
 ```bash
 # Check current status
-./scripts/checkpoint-status.sh review-changes
 
 # If needed, reset and start over
-./scripts/checkpoint-cleanup.sh review-changes
-./scripts/checkpoint-init.sh review-changes '...'
 ```
 
 ### If a gate is blocking incorrectly:
@@ -687,10 +527,9 @@ Run this command before `/commit` to ensure:
 cat /tmp/review-changes-progress.txt
 
 # Update a specific step if it was completed
-./scripts/checkpoint-update.sh review-changes STEP=N
 ```
 
-### To skip checkpoint tracking (emergency only):
+### To skip progress tracking (emergency only):
 The original review process still works without checkpoints, but you lose progress tracking and quality gates. This should only be used in emergencies.
 
 ## Related Commands:

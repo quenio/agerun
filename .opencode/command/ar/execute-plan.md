@@ -1,9 +1,5 @@
 Execute a TDD plan document by implementing each iteration following the RED-GREEN-REFACTOR cycle.
 
-## CHECKPOINT WORKFLOW ENFORCEMENT
-
-**CRITICAL**: This command MUST use checkpoint tracking for progress tracking ONLY. All verification is done via step-verifier sub-agent, NOT via checkpoint scripts ([details](../../../kb/checkpoint-tracking-verification-separation.md)).
-
 This section implements the [Checkpoint Workflow Enforcement Pattern](../../../kb/checkpoint-workflow-enforcement-pattern.md) - preventing workflow bypasses through initialization and precondition enforcement. For complex conditional flows during execution, see [Checkpoint Conditional Flow Pattern](../../../kb/checkpoint-conditional-flow-pattern.md).
 
 ## STEP VERIFICATION ENFORCEMENT
@@ -25,7 +21,7 @@ The **step-verifier** is a specialized sub-agent that independently verifies ste
 
 ### Step Verification Process
 
-After completing each step (before calling `checkpoint-update.sh`), you MUST:
+After completing each step, you MUST:
 
 1. **Report accomplishments with evidence**
    - Describe what was accomplished (files created/modified, commands executed, outputs produced)
@@ -42,8 +38,7 @@ After completing each step (before calling `checkpoint-update.sh`), you MUST:
   
    **If verification PASSES** (report shows "✅ STEP VERIFIED" or "All requirements met"):
      - Proceed to next step
-     - Mark checkpoint step as complete (for progress tracking only - verification already done by step-verifier)
-  
+     -   
    **If verification FAILS** (report shows "⚠️ STOP EXECUTION" or missing elements):
      - **STOP execution immediately** - do not proceed to next step
      - Fix all reported issues from verification report
@@ -88,25 +83,11 @@ Each step MUST be added to the session todo list before execution begins ([detai
 
 If an `/execute-plan` workflow is already in progress:
 
-```bash
-./scripts/checkpoint-status.sh execute-plan --verbose
-# Resume: ./scripts/checkpoint-update.sh execute-plan STEP=N
-# Or reset: ./scripts/checkpoint-cleanup.sh execute-plan && ./scripts/checkpoint-init.sh execute-plan "KB Consultation" "Read Plan" "Extract Iterations" "Execute Iterations" "Run Tests" "Verify Memory" "Update Plan Status" "Summary"
-```
-
 ### First-Time Initialization Check
-
-```bash
-./scripts/checkpoint-init.sh execute-plan "KB Consultation" "Read Plan" "Extract Iterations" "Execute Iterations" "Run Tests" "Verify Memory" "Update Plan Status" "Summary"
-```
 
 ## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
-```bash
-./scripts/checkpoint-require.sh execute-plan
-```
-
-**MANDATORY**: This command MUST use checkpoint tracking. Start by running the checkpoint initialization below. ([details](../../../kb/unmissable-documentation-pattern.md))
+**MANDATORY**: This command MUST use progress tracking. Start by running the checkpoint initialization below. ([details](../../../kb/unmissable-documentation-pattern.md))
 
 ## KB Consultation Required
 
@@ -214,11 +195,10 @@ grep -l "REVIEWED" plans/*_plan.md | xargs ls -t | head -1
 **DO NOT PROCEED WITHOUT RUNNING THIS COMMAND:**
 
 ```bash
-# MANDATORY: Initialize checkpoint tracking (12 steps)
-./scripts/checkpoint-init.sh execute-plan "KB Consultation" "Read Plan" "Validate Plan" "Check IMPLEMENTED" "Verify IMPLEMENTED" "Verify COMMITTED" "Extract REVIEWED/REVISED" "Execute Iterations" "Run Tests" "Verify Memory" "Update Plan Status" "Summary"
+# MANDATORY: Initialize progress tracking (12 steps)
 ```
 
-This command uses checkpoint tracking to ensure systematic plan execution. The execution process is divided into 3 major stages with 12 checkpoints total.
+This command uses progress tracking to ensure systematic plan execution. The execution process is divided into 3 major stages with 12 checkpoints total.
 
 ## MANDATORY: Initialize All Todo Items
 
@@ -260,126 +240,6 @@ This command uses checkpoint tracking to ensure systematic plan execution. The e
 
 **Quality Gates**: Each stage ends with a mandatory gate that verifies all steps in that stage completed before proceeding.
 
-**Expected output:**
-```
-========================================
-   CHECKPOINT TRACKING INITIALIZED
-========================================
-
-Command: execute-plan
-Tracking file: /tmp/execute-plan-progress.txt
-Total steps: 12
-
-Steps to complete:
-  1. KB Consultation
-  2. Read Plan
-  3. Validate Plan
-  4. Check IMPLEMENTED
-  5. Verify IMPLEMENTED
-  6. Verify COMMITTED
-  7. Extract REVIEWED/REVISED
-  8. Execute Iterations
-  9. Run Tests
-  10. Verify Memory
-  11. Update Plan Status
-  12. Summary
-```
-
-### Check Progress
-```bash
-./scripts/checkpoint-status.sh execute-plan
-```
-
-**Expected output (example at 58% completion):**
-```
-📈 execute-plan: 7/12 steps (58%)
-   [████████████░░░░░░░░] 58%
-→ Next: ./scripts/checkpoint-update.sh execute-plan STEP=8
-```
-
-### What it does
-
-This command executes TDD plan documents following the RED-GREEN-REFACTOR cycle:
-
-#### 1. Plan Reading and Iteration Extraction
-- **Plan parsing**: Read plan document and extract all iterations
-- **⚠️ IMPLEMENTED verification (CRITICAL - DO FIRST)**: Check for IMPLEMENTED iterations before extracting REVIEWED/REVISED
-  - Verify code actually exists and matches plan claims
-  - Check git status: uncommitted work vs stale markers
-  - Classify and decide action (execute, update markers, or exit)
-- **Iteration identification**: Parse iteration numbers, names, and objectives
-- **Status verification**: Extract iterations marked REVIEWED or REVISED for implementation
-- **Test module identification**: Identify which test files to modify
-
-#### 2. RED-GREEN-REFACTOR Execution
-- **RED phase**: Write failing test following BDD structure ([details](../../../kb/bdd-test-structure.md))
-- **GREEN phase**: Implement minimal code to pass test ([details](../../../kb/tdd-green-phase-minimalism.md))
-- **REFACTOR phase**: Improve code while keeping tests green (MANDATORY)
-- **Memory verification**: Check for zero leaks after each iteration ([details](../../../kb/memory-leak-detection-workflow.md))
-
-#### 3. Iteration-by-Iteration Tracking
-- **Progress tracking**: Mark each iteration as complete after REFACTOR phase
-- **Test execution**: Run test suite after each GREEN phase
-- **Leak detection**: Verify zero leaks before proceeding to next iteration
-- **Plan updates**: Update plan document with completion status
-
-#### 4. Completion Verification
-- **Test count verification**: Confirm all planned tests exist
-- **Memory safety**: Verify zero leaks across all tests
-- **Documentation**: Update plan with completion status header
-- **Build verification**: Ensure full build passes
-
-### Status Marker Lifecycle
-
-This command executes plan iterations and updates status markers through implementation to commit. These markers track progress through the complete TDD workflow:
-
-| Status | Used By | Meaning | Next Step |
-|--------|---------|---------|-----------|
-| `PENDING REVIEW` | create-plan | Newly created iteration awaiting review | Review with ar:review-plan |
-| `REVIEWED` | review-plan | Iteration approved, ready for implementation | Execute with ar:execute-plan |
-| `REVISED` | review-plan | Iteration updated after review, ready for implementation | Execute with ar:execute-plan |
-| `IMPLEMENTED` | execute-plan | RED-GREEN-REFACTOR complete, awaiting commit | Commit preparation |
-| `✅ COMMITTED` | execute-plan | Iteration committed to git | Done (or continue with next iteration) |
-| `✅ COMPLETE` | execute-plan | Full plan complete (plan-level marker) | Documentation only |
-
-**Important Notes:**
-- **Iterations only**: Status markers appear ONLY on iteration headings (not phase/section headings)
-- **REVISED meaning**: Changes applied and ready for implementation (ar:execute-plan processes REVISED same as REVIEWED)
-- **Two-phase updates**: During execution, iterations update REVIEWED/REVISED → IMPLEMENTED immediately; before commit, all IMPLEMENTED → ✅ COMMITTED in batch
-- **Complete vs Committed**: ✅ COMPLETE is optional plan-level header; ✅ COMMITTED marks individual iterations in git
-
-**Two-Phase Plan Update Strategy:**
-
-This command updates the plan file in TWO distinct phases:
-
-1. **During Iteration Execution (Incremental Updates)**:
-   - After each iteration's RED-GREEN-REFACTOR cycle completes
-   - Immediately update: REVIEWED/REVISED → IMPLEMENTED
-   - Purpose: Track which iterations have been implemented in this session
-   - Timing: Right after REFACTOR phase, before moving to next iteration
-
-2. **Before Git Commit (Batch Update)**:
-   - After all iterations executed, just before creating git commit
-   - Batch update all: IMPLEMENTED → ✅ COMMITTED
-   - Purpose: Mark which iterations are included in this specific commit
-   - Timing: Checkpoint 7A (before git commit)
-
-**Both phases are MANDATORY** but serve different purposes: incremental for execution tracking, batch for commit tracking.
-
-### Execution Order (MANDATORY)
-
-1. **FIRST**: Run the checkpoint initialization command above (12 steps)
-2. **SECOND**: Follow the execution process below, updating checkpoints after each step
-3. **THIRD**: Check progress with `./scripts/checkpoint-status.sh execute-plan`
-4. **FOURTH**: Complete all 12 steps before marking cycle complete
-5. **LAST**: Clean up with `./scripts/checkpoint-cleanup.sh execute-plan`
-
-### Usage
-
-```bash
-/execute-plan <path-to-plan-file>
-```
-
 **Example:**
 ```bash
 /execute-plan plans/message_queue_plan.md
@@ -390,7 +250,6 @@ This command updates the plan file in TWO distinct phases:
 ## Plan Execution Process
 
 ### Stage 1: Plan Reading and Setup (Steps 1-7)
-
 
 #### Step 1: KB Consultation & 14 Lesson Verification
 
@@ -464,11 +323,6 @@ Before proceeding to Step 2, you MUST verify Step 1 completion via step-verifier
    - Update todo item: "Step 1: KB Consultation & 14 Lesson Verification"
    - Status: completed
 
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh execute-plan STEP=1
-```
-
 #### Step 2: Read Plan
 
 **MANDATORY: Update step todo item status**
@@ -521,11 +375,6 @@ Before proceeding to Step 3, you MUST verify Step 2 completion via step-verifier
 2. **Mark step complete in session todo list** using `todo_write`:
    - Update todo item: "Step 2: Read Plan"
    - Status: completed
-
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh execute-plan STEP=2
-```
 
 #### Step 3: Validate Plan Compliance
 
@@ -625,11 +474,6 @@ Before proceeding to Step 4, you MUST verify Step 3 completion via step-verifier
    - Update todo item: "Step 3: Validate Plan Compliance"
    - Status: completed
 
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh execute-plan STEP=3
-```
-
 ---
 
 #### Step 4: Check for IMPLEMENTED Iterations
@@ -658,13 +502,6 @@ Proceed to Step 5 below to verify the IMPLEMENTED iterations.
 
 Mark Step 4 complete and skip to Step 6 (no verification needed):
 
-```bash
-./scripts/checkpoint-update.sh execute-plan STEP=4
-# Step 5 skipped (no IMPLEMENTED iterations)
-./scripts/checkpoint-update.sh execute-plan STEP=5
-./scripts/checkpoint-update.sh execute-plan STEP=6
-```
-
 Then proceed to Step 7 (Extract REVIEWED/REVISED iterations).
 
 **If IMPLEMENTED iterations found:**
@@ -673,7 +510,6 @@ Then proceed to Step 7 (Extract REVIEWED/REVISED iterations).
 # Show which IMPLEMENTED iterations exist
 ./scripts/filter-plan-items.sh <plan-file> "IMPLEMENTED" list
 
-./scripts/checkpoint-update.sh execute-plan STEP=4
 ```
 
 ---
@@ -707,11 +543,6 @@ Before proceeding to Step 5, you MUST verify Step 4 completion via step-verifier
 2. **Mark step complete in session todo list** using `todo_write`:
    - Update todo item: "Step 4: Check for IMPLEMENTED Iterations"
    - Status: completed
-
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh execute-plan STEP=4
-```
 
 #### Step 5: Verify IMPLEMENTED Iterations
 
@@ -891,8 +722,7 @@ For each IMPLEMENTED iteration found:
 **CASE 3: No REVIEWED/REVISED iterations AND no uncommitted IMPLEMENTED iterations**
 - ⚠️ **Classification**: Nothing to execute
 - ⚠️ **Action**: Report to user and clean up
-- ⚠️ **Command**: `./scripts/checkpoint-cleanup.sh execute-plan`
-
+- ⚠️ **Command**: `
 **After classification:**
 
 **⚠️ MANDATORY STEP VERIFICATION**
@@ -926,13 +756,6 @@ Before proceeding to Step 6, you MUST verify Step 5 completion via step-verifier
    - Update todo item: "Step 5: Verify IMPLEMENTED Iterations"
    - Status: completed
 
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh execute-plan STEP=5
-```
-
-
-
 ---
 
 #### Step 6: Verify COMMITTED Iterations
@@ -963,11 +786,6 @@ grep -c "✅ COMMITTED" <plan-file>
 **If NO COMMITTED iterations (count = 0):**
 
 Skip verification and proceed to Step 7:
-
-```bash
-./scripts/checkpoint-update.sh execute-plan STEP=6
-# No COMMITTED iterations to verify
-```
 
 **If COMMITTED iterations exist (count > 0):**
 
@@ -1145,13 +963,6 @@ Before proceeding to Step 7, you MUST verify Step 6 completion via step-verifier
    - Update todo item: "Step 6: Verify COMMITTED Iterations"
    - Status: completed
 
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh execute-plan STEP=6
-```
-
-
-
 ---
 
 #### Step 7: Extract REVIEWED or REVISED iterations
@@ -1175,81 +986,6 @@ This will show:
 - Iteration number and description
 - Current status (REVIEWED or REVISED)
 - Total count of iterations ready to execute
-
-**Expected output:**
-```
-TDD Cycles Ready for Execution
-==============================
-
-1. Iteration 0.1
-   Description: send() returns true
-   Status: REVIEWED
-
-2. Iteration 0.2
-   Description: has_messages() returns false initially
-   Status: REVISED
-
-==============================
-Total TDD cycles: 2
-
-Ready for TDD execution:
-  - RED phase: Write failing test
-  - GREEN phase: Implement minimal code to pass
-  - REFACTOR phase: Improve code quality
-```
-
-**Extraction checklist:**
-- [ ] Ran extract-tdd-cycles.sh to list REVIEWED/REVISED iterations
-- [ ] Verified total iterations to implement
-- [ ] Noted count of REVIEWED vs REVISED iterations
-- [ ] All non-executable iterations properly skipped (PENDING REVIEW, IMPLEMENTED, COMMITTED, COMPLETE)
-- [ ] ✅ **IMPLEMENTED iterations verified** (completed in Step 5)
-- [ ] Git commit status checked and classified (completed in Step 5)
-
-**⚠️ MANDATORY STEP VERIFICATION**
-
-**MANDATORY: Update verification todo item status**
-
-Before proceeding to Step 8, update the verification todo item status to `in_progress`:
-- Update todo item: "Verify Step 7: Extract REVIEWED or REVISED iterations"
-- Status: in_progress
-
-Before proceeding to Step 8, you MUST verify Step 7 completion via step-verifier sub-agent:
-
-1. **Invoke step-verifier sub-agent** to verify:
-   - extract-tdd-cycles.sh was executed
-   - REVIEWED/REVISED iterations extracted and listed
-   - Total count of iterations to implement determined
-   - Extraction checklist completed
-   - Step objectives were met
-
-2. **If verification fails**: Fix issues and re-verify before proceeding
-
-3. **If sub-agent unavailable**: Stop and request user manual verification
-
-**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
-
-1. **Mark verification complete in session todo list** using `todo_write`:
-   - Update todo item: "Verify Step 7: Extract REVIEWED or REVISED iterations"
-   - Status: completed
-
-2. **Mark step complete in session todo list** using `todo_write`:
-   - Update todo item: "Step 7: Extract REVIEWED or REVISED iterations"
-   - Status: completed
-
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh execute-plan STEP=7
-```
-
-
-
-
-**[QUALITY GATE 1: Setup Complete]**
-```bash
-# MANDATORY: Must pass before proceeding to execution
-./scripts/checkpoint-gate.sh execute-plan "Setup" "1,2,3,4,5,6,7"
-```
 
 **Expected gate output:**
 ```
@@ -1275,7 +1011,6 @@ Before proceeding to Step 8, you MUST verify Step 7 completion via step-verifier
 
 ### Stage 2: Iteration Execution (Steps 8-10)
 
-
 #### Step 8: Execute Iterations
 
 **MANDATORY: Update step todo item status**
@@ -1292,26 +1027,19 @@ Before executing iterations, initialize nested checkpoint for iteration-level tr
 # Initialize nested checkpoint for iteration execution tracking
 # After extracting REVIEWED or REVISED iterations from Checkpoint 3
 # Use iteration descriptions from the plan file
-./scripts/checkpoint-init.sh execute-plan-iterations "Iteration 0.1" "Iteration 0.2" "Iteration 0.3" "Iteration 1.1" "Iteration 1.2" ... [all REVIEWED or REVISED iteration descriptions]'
 ```
 
 **Example initialization:**
 ```bash
 # If plan has 10 iterations to execute (8 REVIEWED + 2 REVISED):
-./scripts/checkpoint-init.sh execute-plan-iterations "Iteration 0.1: send() returns true" "Iteration 0.2: has_messages() initially false" "Iteration 0.3: has_messages() after send" "Iteration 1.1: receive() returns message" "Iteration 1.2: queue empty after receive" "Iteration 2.1: error handling NULL delegate" "Iteration 2.2: error handling invalid message" "Iteration 3.1: cleanup destroys queue" "Iteration 3.2: cleanup removes messages" "Iteration 4.1: refactoring extraction"
 ```
 
 **Check iteration execution progress anytime:**
-```bash
-./scripts/checkpoint-status.sh execute-plan-iterations
-```
-
 **Expected output example (after 4/10 iterations executed):**
 ```
 📈 execute-plan-iterations: 4/10 steps (40%)
    [████████░░░░░░░░░░░░] 40%
-→ Next: ./scripts/checkpoint-update.sh execute-plan-iterations STEP=5
-```
+→ Next: ```
 
 **For EACH iteration, execute RED-GREEN-REFACTOR cycle:**
 
@@ -1605,8 +1333,7 @@ new_string: "#### Iteration 0.2: has_messages() returns false - IMPLEMENTED"
 - [ ] Complete RED-GREEN-REFACTOR cycle for iteration
 - [ ] Update plan file immediately after iteration completes
 - [ ] Change status from REVIEWED or REVISED to IMPLEMENTED
-- [ ] **Update iteration checkpoint**: `./scripts/checkpoint-update.sh execute-plan-iterations STEP=N` (where N is the iteration number in the execution list)
-- [ ] Track implemented iteration for final report
+- [ ] **Update iteration checkpoint**: `- [ ] Track implemented iteration for final report
 - [ ] Continue to next iteration
 
 **MANDATORY**: You MUST update the plan file with IMPLEMENTED status after each iteration completes. Do not batch updates—update immediately after each iteration's REFACTOR phase.
@@ -1614,7 +1341,6 @@ new_string: "#### Iteration 0.2: has_messages() returns false - IMPLEMENTED"
 **After marking iteration as IMPLEMENTED, update iteration checkpoint:**
 ```bash
 # Update iteration checkpoint after marking iteration as IMPLEMENTED
-./scripts/checkpoint-update.sh execute-plan-iterations STEP=N  # N is the iteration number (1, 2, 3, ...)
 ```
 
 **Iteration execution loop:**
@@ -1639,8 +1365,7 @@ for iteration in $(seq 1 12); do
     # <use Edit tool to change REVIEWED/REVISED → IMPLEMENTED>
 
     # UPDATE CHECKPOINT: Mark iteration complete
-    # ./scripts/checkpoint-update.sh execute-plan-iterations STEP=$iteration
-
+    # 
     # Verify memory (next checkpoint)
 done
 ```
@@ -1651,18 +1376,15 @@ After all iterations have been executed and marked IMPLEMENTED:
 
 ```bash
 # Check final iteration execution status
-./scripts/checkpoint-status.sh execute-plan-iterations
 ```
 
 **Expected output when all iterations executed:**
 ```
 🎆 All 10 steps complete!
-✓ Run: ./scripts/checkpoint-cleanup.sh execute-plan-iterations
-```
+✓ Run: ```
 
 ```bash
 # Clean up iteration tracking
-./scripts/checkpoint-cleanup.sh execute-plan-iterations
 ```
 
 **Then mark main Checkpoint 8 as complete:**
@@ -1680,7 +1402,7 @@ Before proceeding to Step 9, you MUST verify Step 8 completion via step-verifier
    - All REVIEWED/REVISED iterations executed with RED-GREEN-REFACTOR cycles
    - All iterations marked as IMPLEMENTED in plan file
    - All tests passing after each iteration
-   - Iteration checkpoint tracking completed
+   - Iteration progress tracking completed
    - Step objectives were met
 
 2. **If verification fails**: Fix issues and re-verify before proceeding
@@ -1696,13 +1418,6 @@ Before proceeding to Step 9, you MUST verify Step 8 completion via step-verifier
 2. **Mark step complete in session todo list** using `todo_write`:
    - Update todo item: "Step 8: Execute Iterations"
    - Status: completed
-
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh execute-plan STEP=8
-```
-
-
 
 #### Step 9: Run Tests
 
@@ -1773,11 +1488,6 @@ Before proceeding to Step 10, you MUST verify Step 9 completion via step-verifie
    - Update todo item: "Step 9: Run Tests"
    - Status: completed
 
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh execute-plan STEP=9
-```
-
 #### Step 10: Verify Memory
 
 **MANDATORY: Update step todo item status**
@@ -1844,18 +1554,9 @@ Before proceeding to Step 11, you MUST verify Step 10 completion via step-verifi
    - Update todo item: "Step 10: Verify Memory"
    - Status: completed
 
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh execute-plan STEP=10
-```
-
-
-
-
 **[QUALITY GATE 2: Implementation Complete]**
 ```bash
 # MANDATORY: Must pass before proceeding to plan update
-./scripts/checkpoint-gate.sh execute-plan "Implementation" "8,9,10"
 ```
 
 **Expected gate output:**
@@ -1870,7 +1571,6 @@ Before proceeding to Step 11, you MUST verify Step 10 completion via step-verifi
 - [ ] Zero memory leaks across all tests
 
 ### Stage 3: Completion and Documentation (Steps 11-12)
-
 
 #### Step 11: Update Plan Status
 
@@ -1973,7 +1673,6 @@ grep "Actual memory leaks:" bin/run-tests/memory_report_ar_delegate_tests.log
 # <use Edit tool to update IMPLEMENTED → ✅ COMMITTED>
 # <if all complete, add completion status header>
 
-./scripts/checkpoint-update.sh execute-plan STEP=11
 ```
 
 **⚠️ MANDATORY STEP VERIFICATION**
@@ -2006,11 +1705,6 @@ Before proceeding to Step 12, you MUST verify Step 11 completion via step-verifi
 2. **Mark step complete in session todo list** using `todo_write`:
    - Update todo item: "Step 11: Update Plan Status"
    - Status: completed
-
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh execute-plan STEP=11
-```
 
 #### Step 12: Summary
 
@@ -2158,18 +1852,9 @@ Before proceeding to Step completion, you MUST verify Step 12 completion via ste
    - Update todo item: "Step 12: Summary"
    - Status: completed
 
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh execute-plan STEP=12
-```
-
-
-
-
 **[QUALITY GATE 3: Documentation Complete]**
 ```bash
 # MANDATORY: Must pass before declaring workflow complete
-./scripts/checkpoint-gate.sh execute-plan "Documentation" "11,12"
 ```
 
 **Expected gate output:**
@@ -2183,10 +1868,6 @@ Before proceeding to Step completion, you MUST verify Step 12 completion via ste
 - [ ] Completion status header added (if all iterations complete)
 - [ ] Execution summary generated with all metrics
 
-```bash
-./scripts/checkpoint-complete.sh execute-plan
-```
-
 **Expected completion output:**
 ```
 ========================================
@@ -2196,13 +1877,11 @@ Before proceeding to Step completion, you MUST verify Step 12 completion via ste
 📈 execute-plan: X/Y steps (Z%)
    [████████████████████] 100%
 
-✅ Checkpoint workflow complete
 ```
 ```
 
 ```bash
 # Clean up tracking
-./scripts/checkpoint-cleanup.sh execute-plan
 ```
 
 ### Automatic Commit (If Files Changed)
@@ -2711,14 +2390,11 @@ bool ar_delegate__send(...) {
 
 ## Troubleshooting
 
-### If checkpoint tracking gets stuck:
+### If progress tracking gets stuck:
 ```bash
 # Check current status
-./scripts/checkpoint-status.sh execute-plan
 
 # If needed, reset and start over
-./scripts/checkpoint-cleanup.sh execute-plan
-./scripts/checkpoint-init.sh execute-plan '...'
 ```
 
 ### If a test fails unexpectedly:
