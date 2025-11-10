@@ -2353,11 +2353,12 @@ bool ar_delegate__send(...) {
 
 ## Troubleshooting
 
-### If progress tracking gets stuck:
+### If step tracking gets stuck:
 ```bash
-# Check current status
+# Check session todo list status
+# Review which steps are pending/in_progress/completed
 
-# If needed, reset and start over
+# If needed, reset by updating todo items to correct status
 ```
 
 ### If a test fails unexpectedly:

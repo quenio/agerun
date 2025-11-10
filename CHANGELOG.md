@@ -1,5 +1,17 @@
 # AgeRun CHANGELOG
 
+## 2025-11-10 (Remove Remaining Checkpoint Script References)
+
+- **Remove Remaining Checkpoint Script References from Commands**
+
+  Removed remaining checkpoint script references from execute-plan.md and AGENTS.md to complete the migration to session todo list tracking + step-verifier verification.
+
+  **Implementation**:
+  - Updated `.opencode/command/ar/execute-plan.md` - Removed checkpoint script references from troubleshooting section
+  - Updated `AGENTS.md` - Clarified that commands use session todo tracking (not checkpoint scripts); updated checkpoint scripts section to note they're for internal workflows only; renamed "Checkpoint Process Discipline" to "Command Step Execution Discipline" with updated guidance
+
+  **Impact**: All command documentation now consistently reflects that commands use session todo list tracking + step-verifier verification, not checkpoint scripts. Checkpoint scripts remain available for internal workflows but are not used by commands.
+
 ## 2025-11-09 (Remove Claude Code Attribution Footers)
 
 - **Remove Claude Code Attribution from Commit Messages**
