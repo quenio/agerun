@@ -105,7 +105,6 @@ This commit adds proper documentation of all changes."
 ```
 
 ## Related Patterns
-- [Claude Code Commit Attribution](claude-code-commit-attribution.md) - Standard commit footer format
 - [Incomplete Commit Message Recovery Pattern](incomplete-commit-message-recovery-pattern.md)
 - [Commit Scope Verification](commit-scope-verification.md)
 - [Pre-Commit Checklist Detailed](pre-commit-checklist-detailed.md)

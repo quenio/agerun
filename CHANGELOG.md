@@ -1,5 +1,21 @@
 # AgeRun CHANGELOG
 
+## 2025-11-09 (Remove Claude Code Attribution Footers)
+
+- **Remove Claude Code Attribution from Commit Messages**
+
+  Removed requirement for Claude Code attribution footers (`🤖 Generated with [Claude Code](https://claude.ai/code)` and `Co-Authored-By: Claude <noreply@anthropic.com>`) from all future commit messages.
+
+  **Implementation**:
+  - Updated `.opencode/command/ar/commit.md` - Removed attribution footer from commit template
+  - Updated `.opencode/command/ar/execute-plan.md` - Removed attribution from commit message examples
+  - Updated `AGENTS.md` - Removed checklist item #9 requiring attribution
+  - Updated `kb/claude-code-commit-attribution.md` - Marked pattern as deprecated with clear "DO NOT" instructions
+  - Updated `kb/commit-scope-verification.md` - Removed attribution from example commit message
+  - Updated `kb/atomic-commit-documentation-pattern.md` - Removed reference to attribution pattern
+
+  **Impact**: Commit messages will no longer include attribution footers. The KB article is retained for historical reference only.
+
 ## 2025-11-09 (Session - Architectural Change Verification Pattern)
 
 - **Architectural Change Verification Pattern**

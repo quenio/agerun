@@ -537,17 +537,12 @@ Before starting this step, update the step todo item status to `in_progress`:
 # Create the commit
 git commit -m "$(cat <<'EOF'
 [Your commit message here]
-
-🤖 Generated with [Claude Code](https://claude.ai/code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
 EOF
 )"
 ```
 
 3. **Execute the commit:**
-   - Create the commit using HEREDOC format
-   - Include Claude Code attribution footer ([details](../../../kb/claude-code-commit-attribution.md))
+   - Create the commit using HEREDOC format for proper multi-line message formatting
 
 **⚠️ MANDATORY STEP VERIFICATION**
 
@@ -562,7 +557,6 @@ Before proceeding to Step 9, you MUST verify Step 8 completion via step-verifier
 1. **Invoke step-verifier sub-agent** to verify:
    - Commit was created successfully
    - Working tree is clean after commit
-   - Commit message includes Claude Code attribution
    - Step objectives were met
 
 2. **If verification fails**: Fix issues and re-verify before proceeding

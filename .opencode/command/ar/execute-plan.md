@@ -1965,11 +1965,7 @@ git status --porcelain
    - Iteration X: IMPLEMENTED → ✅ COMMITTED
    - Iteration Y: IMPLEMENTED → ✅ COMMITTED
 
-   All iterations verified as already committed in git history.
-
-   🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-   Co-Authored-By: Claude <noreply@anthropic.com>"
+   All iterations verified as already committed in git history."
    ```
 
    **For CASE 2 (implementation changes)**:
@@ -1981,11 +1977,7 @@ git status --porcelain
    - Iteration Y: <description>
    - Iteration Z: <description>
 
-   All tests passing with zero memory leaks.
-
-   🤖 Generated with [Claude Code](https://claude.com/claude-code)
-
-   Co-Authored-By: Claude <noreply@anthropic.com>"
+   All tests passing with zero memory leaks."
    ```
 
 5. **Execute automatic commit**:

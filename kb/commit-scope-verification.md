@@ -71,10 +71,6 @@ Major architectural transformation eliminating global state dependencies:
 - Fixed all memory leaks across all test files (0 leaks remaining)
 - Removed obsolete ar_instruction module (~6,730 lines)
 - Created 7 migration scripts for systematic updates
-
-🤖 Generated with [Claude Code](https://claude.ai/code)
-
-Co-Authored-By: Claude <noreply@anthropic.com>
 EOF
 )"
 ```

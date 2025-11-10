@@ -601,8 +601,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 6. **CRITICAL - NEVER FORGET**: Update CHANGELOG.md with date, summary, impact for ALL commits using multi-line format ([multi-line format](kb/changelog-multi-line-format.md), [atomic commits](kb/atomic-commit-documentation-pattern.md), [verify](kb/documentation-completion-verification.md))
 7. Update TODO.md if tasks completed or added
 8. `git diff --stat` review full scope → verify message describes ALL changes ([details](kb/incomplete-commit-message-recovery-pattern.md))
-9. Include Claude Code attribution in commit message ([details](kb/claude-code-commit-attribution.md))
-10. Clean temp files → commit
+9. Clean temp files → commit
 
 **Remember**: Complete ALL TDD Cycles → Docs → TODO → **CHANGELOG (NEVER SKIP)** → Commit ([details](kb/tdd-feature-completion-before-commit.md))
 
