@@ -123,12 +123,10 @@ If a `/check-module-consistency` workflow is already in progress:
 
 ### First-Time Initialization Check
 
-## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 # Check Module Consistency
-## Checkpoint Tracking
 
-This command uses progress tracking to ensure systematic consistency checking across related modules. The process has 15 checkpoints across 5 phases.
+This command uses session todo tracking to ensure systematic consistency checking across related modules. The process has 15 steps across 5 phases.
 
 ### Initialize Tracking
 ```bash
@@ -138,7 +136,7 @@ This command uses progress tracking to ensure systematic consistency checking ac
 **Expected output:**
 ```
 ========================================
-   CHECKPOINT TRACKING INITIALIZED
+   SESSION TODO TRACKING INITIALIZED
 ========================================
 
 Command: check-module-consistency
@@ -301,7 +299,7 @@ echo "MODULES_CHECKED=$MODULES_CHECKED" >> /tmp/check-consistency-tracking.txt
 
 ```
 
-**Checkpoint 7-10: Check Modules 2-5**
+**Steps 7-10: Check Modules 2-5**
 
 ```bash
 # Repeat for modules 2-5
@@ -469,7 +467,7 @@ echo "✓ Improvement plan documented"
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT COMPLETION SUMMARY
+   WORKFLOW COMPLETION SUMMARY
 ========================================
 
 📈 check-module-consistency: X/Y steps (Z%)
@@ -569,8 +567,8 @@ echo "Modules checked so far: $MODULES_CHECKED"
 
 ## Related Documentation
 
-### Checkpoint Patterns
-- [Multi-Step Checkpoint Tracking Pattern](../../../kb/multi-step-checkpoint-tracking-pattern.md)
+### Tracking Patterns
+- [Session Todo List Tracking Pattern](../../../kb/session-todo-list-tracking-pattern.md)
 - [Gate Enforcement Exit Codes Pattern](../../../kb/gate-enforcement-exit-codes-pattern.md)
 - [Command Thoroughness Requirements Pattern](../../../kb/command-thoroughness-requirements-pattern.md)
 

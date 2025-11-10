@@ -1,5 +1,34 @@
 # AgeRun CHANGELOG
 
+## 2025-11-09 (Checkpoint Tracking Removal from Commands)
+
+- **Checkpoint Tracking Removal from Commands**
+
+  Removed checkpoint/gate tracking from all commands and replaced with session todo list tracking + step-verifier verification. This simplifies the command workflow pattern and clarifies responsibilities.
+
+  **Implementation**:
+  - Removed all checkpoint script references (`checkpoint-init.sh`, `checkpoint-update.sh`, `checkpoint-status.sh`, `checkpoint-gate.sh`, `checkpoint-complete.sh`) from 30+ command files
+  - Updated all commands to use session todo list tracking for progress across sessions
+  - Updated all commands to use step-verifier sub-agent for step verification
+  - Updated KB articles to reflect new agreement:
+    - `kb/checkpoint-tracking-verification-separation.md` - Updated to state checkpoint tracking no longer used in commands
+    - `kb/session-todo-list-tracking-pattern.md` - Removed checkpoint references, simplified to session todo tracking only
+    - `kb/sub-agent-verification-pattern.md` - Updated to integrate directly with session todo list completion
+  - Removed PRECONDITION sections requiring checkpoint initialization
+  - Updated completion summaries from "CHECKPOINT COMPLETION SUMMARY" to "WORKFLOW COMPLETION SUMMARY"
+  - Updated script-managed commands to reference "tracking" instead of "checkpoints"
+
+  **Files Modified**:
+  - 30 command files (.opencode/command/ar/*.md)
+  - 3 KB articles (kb/checkpoint-tracking-verification-separation.md, kb/session-todo-list-tracking-pattern.md, kb/sub-agent-verification-pattern.md)
+  - TODO.md (added completion entry)
+
+  **Impact**:
+  - Simplified command workflow: Commands now use session todo tracking + step-verifier verification only
+  - Clearer responsibilities: Session todo list tracks steps, step-verifier verifies quality
+  - Reduced complexity: Fewer moving parts in command execution
+  - Better focus: Commands concentrate on work execution and quality assurance
+
 ## 2025-11-09 (Removal of check-commands Validation System)
 
 - **Removal of check-commands Validation System**

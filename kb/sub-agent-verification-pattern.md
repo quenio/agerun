@@ -21,7 +21,7 @@ Using MCP sub-agents for step verification provides sophisticated verification c
 
 ### Step Verification Process
 
-After completing each step (before calling checkpoint-update.sh):
+After completing each step:
 
 1. **Invoke Step Verifier Sub-Agent**
    - Use MCP to invoke the step-verifier sub-agent with:
@@ -31,11 +31,11 @@ After completing each step (before calling checkpoint-update.sh):
 
 2. **Handle Verification Results**
    - If report contains "⚠️ STOP EXECUTION": STOP immediately, fix issues, re-verify
-   - If verification PASSES: Proceed to next step
+   - If verification PASSES: Mark step complete in session todo list, proceed to next step
    - If verification FAILS: Fix issues and re-verify before proceeding
    - If sub-agent unavailable: Stop and request user manual verification
 
-3. **Only after verification passes**: Mark checkpoint step as complete
+3. **Only after verification passes**: Mark step complete in session todo list
 ```
 
 **Sub-agent invocation:**
@@ -146,11 +146,17 @@ The top-level agent must fix these issues before continuing.
    4. Only proceed after verification passes
    ```
 
-3. **Update checkpoint call** to happen AFTER verification:
-   ```bash
-   # Verification happens first
-   # Then checkpoint-update (for tracking only)
-   ./scripts/checkpoint-update.sh command-name N
+3. **Update session todo list** AFTER verification:
+   ```markdown
+   **Only after step-verifier verification passes**:
+   
+   1. **Mark step complete in session todo list**:
+      - Update todo item: "Step N: [Title]"
+      - Status: completed
+   
+   2. **Mark verification complete**:
+      - Update todo item: "Verify Step N: [Title]"
+      - Status: completed
    ```
 
 **Sub-agent configuration:**

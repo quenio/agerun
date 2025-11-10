@@ -75,9 +75,6 @@ Accomplishment Report:
 
 If a `/check-logs` workflow is already in progress:
 
-### First-Time Initialization Check
-
-## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ## MANDATORY: Initialize All Todo Items
 
@@ -115,9 +112,8 @@ Before analysis:
 3. Apply deep analysis patterns
 
 # Check Logs
-## Checkpoint Tracking
 
-This command uses progress tracking to ensure systematic log verification and issue resolution. The process has 8 checkpoints across 4 phases with critical error handling gates.
+This command uses session todo tracking to ensure systematic log verification and issue resolution. The process has 8 steps across 4 phases with critical error handling gates.
 
 ### Initialize Tracking
 ```bash
@@ -186,8 +182,8 @@ make check-logs
 
 ## Related Documentation
 
-### Checkpoint Patterns
-- [Multi-Step Checkpoint Tracking Pattern](../../../kb/multi-step-checkpoint-tracking-pattern.md)
+### Tracking Patterns
+- [Session Todo List Tracking Pattern](../../../kb/session-todo-list-tracking-pattern.md)
 - [Gate Enforcement Exit Codes Pattern](../../../kb/gate-enforcement-exit-codes-pattern.md)
 - [Command Thoroughness Requirements Pattern](../../../kb/command-thoroughness-requirements-pattern.md)
 

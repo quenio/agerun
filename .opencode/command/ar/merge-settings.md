@@ -1,13 +1,13 @@
 Safely merge local settings into main settings file with progress tracking.
 
-**Note**: This workflow uses progress tracking for safe multi-step integration with quality gates ([details](../../../kb/settings-file-merging-pattern.md)). The stats file management has been optimized with whitespace trimming ([details](../../../kb/multi-step-checkpoint-tracking-pattern.md)) to ensure reliable execution.
+**Note**: This workflow uses session todo tracking for safe multi-step integration with quality gates ([details](../../../kb/settings-file-merging-pattern.md)). The stats file management has been optimized with whitespace trimming to ensure reliable execution.
 
 ## Quick Start
 
 ```bash
 # Initialize the merge workflow
 
-# Follow checkpoint steps as indicated
+# Follow workflow steps as indicated
 ```
 
 # Merge Settings
@@ -81,13 +81,6 @@ Accomplishment Report:
 - The step-verifier independently verifies by reading command files, checking files, git status/diff, etc.
 - If step-verifier reports "⚠️ STOP EXECUTION", you MUST fix issues before proceeding
 
-### In-Progress Workflow Detection
-
-If a `/merge-settings` workflow is already in progress:
-
-### First-Time Initialization Check
-
-## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ## MANDATORY: Initialize All Todo Items
 
@@ -112,7 +105,7 @@ If a `/merge-settings` workflow is already in progress:
 
 ## Overview
 
-This command uses progress tracking to ensure safe merging of local settings into the main settings file. The process has 6 checkpoints across 4 phases with verification gates.
+This command uses session todo tracking to ensure safe merging of local settings into the main settings file. The process has 6 steps across 4 phases with verification gates.
 
 The workflow:
 1. **Discovery Phase** - Detect local settings file and plan merge strategy
@@ -120,12 +113,9 @@ The workflow:
 3. **Optimization Phase** - Refactor permissions to generic patterns
 4. **Cleanup Phase** - Commit and push all changes
 
-## Checkpoint Tracking
+## Session Todo Tracking
 
-### Initialize Tracking
-```bash
-# Start the settings merge process
-```
+Track progress using the session todo list initialized above.
 
 **Problem: Resume existing workflow**
 ```bash
@@ -224,5 +214,5 @@ python3 -m json.tool ./.claude/settings.json > /dev/null && echo "✅ Valid JSON
 ## Related Documentation
 
 - [Settings File Merging Pattern](../../../kb/settings-file-merging-pattern.md) - Design patterns for settings merging
-- [Checkpoint Sequential Execution Discipline](../../../kb/checkpoint-sequential-execution-discipline.md) - Workflow execution guarantees
-- [Multi-Step Checkpoint Tracking Pattern](../../../kb/multi-step-checkpoint-tracking-pattern.md) - Checkpoint tracking design
+- [Session Todo List Tracking Pattern](../../../kb/session-todo-list-tracking-pattern.md) - Workflow execution guarantees
+- [Sub-Agent Verification Pattern](../../../kb/sub-agent-verification-pattern.md) - Step verification via sub-agents

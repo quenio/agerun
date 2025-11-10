@@ -71,41 +71,16 @@ Accomplishment Report:
 
 ### In-Progress Workflow Detection
 
-Check if a `/new-learnings` workflow is already in progress:
+Check if a `/new-learnings` workflow is already in progress by reviewing the session todo list. If steps are marked `in_progress` or `pending`, resume from the next incomplete step.
 
-```bash
-./scripts/check-new-learnings-checkpoint.sh
-```
-
-If checkpoint exists, you have two options:
-
-**Option 1: Resume the workflow** (RECOMMENDED)
-```bash
-# Resume from the next pending step
-# Then run the appropriate step number shown in output
-```
-
-**Option 2: Start fresh** (only if you want to discard previous progress)
-```bash
-# Clean up old tracking
-
-# Then re-initialize for fresh start
-```
-
-**CRITICAL**: If in-progress workflow exists with pending steps, **DO NOT PERFORM MANUAL KB UPDATES**. The checkpoint system will enforce all quality requirements and ensure no steps are skipped.
-
-### First-Time Initialization Check
-
-**MANDATORY**: Before executing ANY steps, you MUST initialize progress tracking:
-
-**If this fails or tracking is not initialized, STOP and run the command above before proceeding.**
+**CRITICAL**: If in-progress workflow exists with pending steps, **DO NOT PERFORM MANUAL KB UPDATES**. The session todo tracking system will enforce all quality requirements and ensure no steps are skipped.
 
 ## MANDATORY KB Consultation FIRST
 
 Before starting analysis:
 1. Search: `grep "learning\|knowledge\|cross-reference\|search.*result\|target.*compliance" kb/README.md`
 2. Must read these articles:
-   - checkpoint-sequential-execution-discipline - Sequential execution discipline for checkpoint workflows ([critical](../../../kb/checkpoint-sequential-execution-discipline.md))
+   - session-todo-list-tracking-pattern - Sequential execution discipline for multi-step workflows ([critical](../../../kb/session-todo-list-tracking-pattern.md))
    - new-learnings-cross-reference-requirement - bidirectional linking requirements
    - new-learnings-complete-integration-pattern - complete integration checklist
    - comprehensive-learning-extraction-pattern - multi-pass extraction strategy
@@ -160,12 +135,12 @@ This is enforced through:
 
 3. **Manual enforcement**:
    - Cannot run Step N until Step N-1 is marked complete
-   - Checkpoint system tracks progress and prevents jumping ahead
+   - Session todo list tracks progress and prevents jumping ahead
    - Attempting to skip steps will result in gate failures
 
 **Remember**: The gates exist because skipping steps leads to incomplete integrations. Every step has a purpose for ensuring KB articles are properly integrated throughout the system.
 
-## ANTI-PATTERN: Manual KB Work Outside Checkpoint System
+## ANTI-PATTERN: Manual KB Work Outside Session Todo Tracking
 
 ❌ **DO NOT DO THIS** (What causes missed steps):
 
@@ -181,20 +156,20 @@ This is enforced through:
 # Commit without "READY TO COMMIT" verification in Step 12
 
 # ❌ WRONG: Partial execution
-# Do steps 1-5 through checkpoint system, then manually update commands
+# Do steps 1-5 through session todo tracking, then manually update commands
 # Skipping the structured KB cross-reference updates in Steps 6-7
 
 # ❌ WRONG: Ignoring existing in-progress workflows
-# See /tmp/new-learnings-progress.txt has pending steps
+# See session todo list has pending steps
 # Decide "I'll just do it manually this time"
-# Result: Checkpoint system never reflects actual work done
+# Result: Session todo tracking never reflects actual work done
 ```
 
 ✅ **CORRECT APPROACH**:
 
 ```bash
-# ✅ ALWAYS use progress tracking for ALL work
-# Shows current progress and next required step
+# ✅ ALWAYS use session todo tracking for ALL work
+# Check session todo list to see current progress and next required step
 
 # ✅ Follow the sequence strictly
 # Complete steps 1,2,3,4 → GATE 1 passes → Continue to 5,6,7,8,9 → GATE 2 passes
@@ -205,7 +180,7 @@ This is enforced through:
 # ✅ Verify integration before commit
 # Step 12 verifies "READY TO COMMIT" with counts of modified files
 
-# ✅ Always run the initialization check if unsure
+# ✅ Always check session todo list if unsure
 ```
 
 ## Minimum Requirements for Thorough Execution
@@ -220,13 +195,6 @@ This is enforced through:
 - Multiple commands updated (shows good integration)
 - Verification script passes all checks before commit
 
-## PRECONDITION: Checkpoint Tracking Must Be Initialized
-
-**BEFORE PROCEEDING TO STEP 1:**
-
-Verify that progress tracking is initialized:
-
-**If this check passes, you may proceed to Step 1.**
 
 ## MANDATORY: Initialize All Todo Items
 
@@ -265,7 +233,6 @@ Verify that progress tracking is initialized:
 
 ## Step 1: Identify New Learnings
 
-**PRECONDITION VERIFIED**: Checkpoint tracking is initialized and ready.
 
 **CRITICAL: Think deeply and thoroughly about what was learned in this session.**
 

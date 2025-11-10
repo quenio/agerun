@@ -1,8 +1,8 @@
 Execute a clean build for comprehensive build verification with minimal output and check for hidden issues.
 
-## ⚠️ CRITICAL: Let the script manage checkpoints
+## ⚠️ CRITICAL: Let the script manage tracking
 
-**DO NOT manually initialize before running this command.** The script handles all checkpoint initialization, execution, and cleanup automatically. Just run the script and let it complete.
+**DO NOT manually initialize before running this command.** The script handles all tracking initialization, execution, and cleanup automatically. Just run the script and let it complete.
 
 ## Quick Start
 
@@ -10,7 +10,7 @@ Execute a clean build for comprehensive build verification with minimal output a
 ./scripts/run-build-clean.sh
 ```
 
-That's it! The script will handle everything automatically. Do not run any `make checkpoint-*` commands manually unless the script fails.
+That's it! The script will handle everything automatically.
 
 ## STEP VERIFICATION ENFORCEMENT
 

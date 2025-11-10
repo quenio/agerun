@@ -15,10 +15,10 @@ Create a new Claude Code command following all quality standards and best practi
 1. **Command Structure & Standards** (READ THESE FIRST):
    ```bash
    # Core command design patterns
-   grep "command-helper-script-extraction-pattern\|checkpoint-implementation-guide\|command-documentation-excellence-gate" kb/README.md
+   grep "command-helper-script-extraction-pattern\|session-todo-list-tracking-pattern\|command-documentation-excellence-gate" kb/README.md
    ```
    - [Command Helper Script Extraction Pattern](../../../kb/command-helper-script-extraction-pattern.md) ⭐ **CRITICAL** - Extract embedded bash to scripts
-   - [Checkpoint Implementation Guide](../../../kb/checkpoint-implementation-guide.md) - How to structure with checkpoints
+   - [Session Todo List Tracking Pattern](../../../kb/session-todo-list-tracking-pattern.md) - How to track steps across sessions
    - [Command Documentation Excellence Gate](../../../kb/command-documentation-excellence-gate.md) - Must achieve 90%+ score
 
 2. **Command Quality Requirements**:
@@ -28,7 +28,7 @@ Create a new Claude Code command following all quality standards and best practi
 
 3. **Supporting Patterns**:
    - [Lesson-Based Command Design Pattern](../../../kb/lesson-based-command-design-pattern.md) - Unified verification approach
-   - [Multi-Step Checkpoint Tracking Pattern](../../../kb/multi-step-checkpoint-tracking-pattern.md) - Checkpoint mechanics
+   - [Sub-Agent Verification Pattern](../../../kb/sub-agent-verification-pattern.md) - Step verification via sub-agents
    - [Gate Enforcement Exit Codes Pattern](../../../kb/gate-enforcement-exit-codes-pattern.md) - Quality gates
 
 ## STEP VERIFICATION ENFORCEMENT
@@ -100,13 +100,6 @@ Accomplishment Report:
 - The step-verifier independently verifies by reading command files, checking files, git status/diff, etc.
 - If step-verifier reports "⚠️ STOP EXECUTION", you MUST fix issues before proceeding
 
-### In-Progress Workflow Detection
-
-If a `/create-command` workflow is already in progress:
-
-### First-Time Initialization Check
-
-## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ## MANDATORY: Initialize All Todo Items
 
@@ -119,8 +112,8 @@ If a `/create-command` workflow is already in progress:
 - Add todo item: "Verify Step 2: KB Consultation" - Status: pending
 - Add todo item: "Step 3: Create Structure" - Status: pending
 - Add todo item: "Verify Step 3: Create Structure" - Status: pending
-- Add todo item: "Step 4: Add Checkpoints" - Status: pending
-- Add todo item: "Verify Step 4: Add Checkpoints" - Status: pending
+- Add todo item: "Step 4: Add Session Todo Tracking" - Status: pending
+- Add todo item: "Verify Step 4: Add Session Todo Tracking" - Status: pending
 - Add todo item: "Step 5: Add Quality Gates" - Status: pending
 - Add todo item: "Verify Step 5: Add Quality Gates" - Status: pending
 - Add todo item: "Step 6: Add Documentation" - Status: pending
@@ -133,25 +126,18 @@ If a `/create-command` workflow is already in progress:
 
 # Create Command
 
-## Checkpoint Tracking
+This command creates a new command file with proper structure, session todo tracking, step-verifier verification, quality gates, and documentation following all excellence standards.
 
-This command creates a new command file with proper structure, progress tracking, quality gates, and documentation following all excellence standards.
-
-### Initialize Tracking
-```bash
-# Start the command creation process
-```
-
-2. **Read quality requirements**:
+1. **Read quality requirements**:
    ```bash
    cat kb/command-thoroughness-requirements-pattern.md
    cat kb/command-output-documentation-pattern.md
-   cat kb/unmissable-documentation-pattern.md
+   cat kb/session-todo-list-tracking-pattern.md
    ```
 
-3. **Read supporting patterns**:
+2. **Read supporting patterns**:
    ```bash
-   cat kb/multi-step-checkpoint-tracking-pattern.md
+   cat kb/sub-agent-verification-pattern.md
    cat kb/gate-enforcement-exit-codes-pattern.md
    ```
 
@@ -197,57 +183,31 @@ Before executing:
 2. Read articles that apply to this command's domain
 3. Apply patterns and best practices
 
-### In-Progress Workflow Detection
-
-If a \`/COMMAND_NAME\` workflow is already in progress:
-
-\`\`\`bash
-# Resume: # Or reset: \`\`\`
-
-### First-Time Initialization Check
-
-\`\`\`bash
-if [ ! -f /tmp/COMMAND_NAME-progress.txt ]; then
-  echo "⚠️  Initializing progress tracking..."
-  else
-  fi
-\`\`\`
-
-## PRECONDITION: Checkpoint Tracking Must Be Initialized
-
-\`\`\`bash
-if [ ! -f /tmp/COMMAND_NAME-progress.txt ]; then
-  echo "❌ ERROR: Checkpoint tracking not initialized!"
-  exit 1
-fi
-\`\`\`
-
 # COMMAND_NAME
 
-## Checkpoint Tracking
+## MANDATORY: Session Todo List Tracking
 
-This command [brief description of what it does].
+Each step MUST be added to the session todo list before execution begins:
+- Use \`todo_write\` to add each step as a todo item with status \`pending\` initially
+- Update to \`in_progress\` when step starts
+- Update to \`completed\` after step-verifier verification passes
 
-### Initialize Tracking
-\`\`\`bash
-# Start the COMMAND_NAME process
-\`\`\`
+## MANDATORY: Step Verification
 
-**Expected output:**
-\`\`\`
-📍 Starting: COMMAND_NAME (3 steps)
-📁 Tracking: /tmp/COMMAND_NAME-progress.txt
-→ Run: \`\`\`
+All verification is performed by the step-verifier sub-agent.
 
-### Check Progress
-\`\`\`bash
-\`\`\`
+### Initialize All Todo Items
 
-**Expected output (example at 33% completion):**
-\`\`\`
-📈 COMMAND_NAME: 1/3 steps (33%)
-   [████████░░░░░░░░░░░░] 33%
-→ Next: \`\`\`
+**CRITICAL**: Before executing ANY steps, add ALL step and verification todo items to the session todo list using \`todo_write\`:
+
+**Step and Verification Todo Items:**
+- Add todo item: "Step 1: [Title]" - Status: pending
+- Add todo item: "Verify Step 1: [Title]" - Status: pending
+- Add todo item: "Step 2: [Title]" - Status: pending
+- Add todo item: "Verify Step 2: [Title]" - Status: pending
+- etc.
+
+**Important**: All todo items are initialized as \`pending\` and will be updated to \`in_progress\` when their respective step/verification begins, then to \`completed\` after verification passes.
 
 ## Minimum Requirements
 
@@ -291,7 +251,7 @@ echo ""
 
 ```
 
-#### Step 4: Add Checkpoint Steps
+#### Step 4: Add Session Todo Tracking
 
 **⚠️ IMPORTANT: Define logical workflow steps**
 
@@ -309,7 +269,8 @@ echo "Current template has 3 placeholder steps."
 echo "Edit $COMMAND_FILE to:"
 echo "  1. Define actual workflow steps"
 echo "  2. Group into logical stages (3-6 steps per stage)"
-echo "  3. Add checkpoint-update calls after each step"
+echo "  3. Add session todo tracking initialization"
+echo "  4. Add step-verifier verification after each step"
 echo ""
 
 ```
@@ -348,7 +309,8 @@ echo ""
 
 **Minimum Requirements for Stage 2:**
 - [ ] Command file created with proper structure
-- [ ] Checkpoint tracking infrastructure added
+- [ ] Session todo tracking infrastructure added
+- [ ] Step-verifier verification added
 - [ ] Quality gates planned
 
 ### Stage 3: Documentation and Verification (Steps 6-7)
@@ -362,7 +324,8 @@ echo "📝 Add documentation to: $COMMAND_NAME"
 echo ""
 echo "Required sections:"
 echo "  ✓ KB Consultation (already added)"
-echo "  ✓ Checkpoint Tracking (already added)"
+echo "  ✓ Session Todo Tracking (already added)"
+echo "  ✓ Step Verification (already added)"
 echo "  ✓ Minimum Requirements (already added)"
 echo "  □ Expected outputs for all operations"
 echo "  □ Troubleshooting section"
@@ -406,7 +369,7 @@ echo ""
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT COMPLETION SUMMARY
+   WORKFLOW COMPLETION SUMMARY
 ========================================
 
 📈 create-command: X/Y steps (Z%)
@@ -483,7 +446,8 @@ After creating the command:
 The command creates a structured file with:
 - **Header**: Purpose and usage
 - **KB Consultation**: Required reading
-- **Checkpoint Infrastructure**: Initialization, status, cleanup
+- **Session Todo Tracking**: Initialize todos, track progress
+- **Step Verification**: Step-verifier sub-agent verification
 - **Minimum Requirements**: Quality criteria
 - **Execution Workflow**: Staged steps with gates
 - **Documentation**: Related commands and KB articles
@@ -497,16 +461,15 @@ The command creates a structured file with:
 
 ### Command Creation
 - [Command Helper Script Extraction Pattern](../../../kb/command-helper-script-extraction-pattern.md) ⭐ Extract embedded bash to scripts
-- [Checkpoint Implementation Guide](../../../kb/checkpoint-implementation-guide.md) - Structuring with checkpoints
+- [Session Todo List Tracking Pattern](../../../kb/session-todo-list-tracking-pattern.md) - Track steps across sessions
 - [Command Documentation Excellence Gate](../../../kb/command-documentation-excellence-gate.md) - 90%+ requirement
 
 ### Quality Standards
 - [Command Thoroughness Requirements Pattern](../../../kb/command-thoroughness-requirements-pattern.md) - Minimum requirements
 - [Command Output Documentation Pattern](../../../kb/command-output-documentation-pattern.md) - Expected outputs
-- [Unmissable Documentation Pattern](../../../kb/unmissable-documentation-pattern.md) - Checkpoint tracking
+- [Sub-Agent Verification Pattern](../../../kb/sub-agent-verification-pattern.md) - Step verification via sub-agents
 
 ### Supporting Patterns
-- [Multi-Step Checkpoint Tracking Pattern](../../../kb/multi-step-checkpoint-tracking-pattern.md) - Checkpoint mechanics
 - [Gate Enforcement Exit Codes Pattern](../../../kb/gate-enforcement-exit-codes-pattern.md) - Quality gates
 - [Lesson-Based Command Design Pattern](../../../kb/lesson-based-command-design-pattern.md) - Unified verification
 

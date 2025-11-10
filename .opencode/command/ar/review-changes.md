@@ -1,6 +1,5 @@
 Review uncommitted changes for code quality, architectural compliance, and documentation accuracy.
 
-**MANDATORY**: This command MUST use progress tracking. Start by running the checkpoint initialization below. ([details](../../../kb/unmissable-documentation-pattern.md))
 
 ## KB Consultation Required
 
@@ -144,23 +143,9 @@ Accomplishment Report:
 
 If a `/review-changes` workflow is already in progress:
 
-### First-Time Initialization Check
-
-## PRECONDITION: Checkpoint Tracking Must Be Initialized
-
 # Review Changes
 
-## ⚠️ REQUIRED: Initialize Checkpoint Tracking First
-
-**DO NOT PROCEED WITHOUT RUNNING THIS COMMAND:**
-
-```bash
-# MANDATORY: Initialize progress tracking (22 steps)
-```
-
-This command uses progress tracking to ensure thorough review across all quality dimensions. The review process is divided into 4 major phases with 22 checkpoints total.
-
-**IMPORTANT**: Running `/review-changes` alone is NOT sufficient. You MUST initialize checkpoints first as shown above.
+This command uses session todo tracking to ensure thorough review across all quality dimensions. The review process is divided into 4 major phases with 22 steps total.
 
 ### Review Process
 
@@ -427,7 +412,7 @@ This command uses progress tracking to ensure thorough review across all quality
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT COMPLETION SUMMARY
+   WORKFLOW COMPLETION SUMMARY
 ========================================
 
 📈 review-changes: X/Y steps (Z%)
@@ -530,7 +515,7 @@ cat /tmp/review-changes-progress.txt
 ```
 
 ### To skip progress tracking (emergency only):
-The original review process still works without checkpoints, but you lose progress tracking and quality gates. This should only be used in emergencies.
+The original review process still works without session todo tracking, but you lose progress tracking and quality gates. This should only be used in emergencies.
 
 ## Related Commands:
 - `/check-logs` - Detailed build log analysis
@@ -541,8 +526,8 @@ The original review process still works without checkpoints, but you lose progre
 
 ## Related KB Articles:
 
-### Checkpoint and Progress Patterns
-- [Multi-Step Checkpoint Tracking Pattern](../../../kb/multi-step-checkpoint-tracking-pattern.md)
+### Tracking Patterns
+- [Session Todo List Tracking Pattern](../../../kb/session-todo-list-tracking-pattern.md)
 - [Gate Enforcement Exit Codes Pattern](../../../kb/gate-enforcement-exit-codes-pattern.md)
 - [Progress Visualization ASCII Pattern](../../../kb/progress-visualization-ascii-pattern.md)
 - [Command Thoroughness Requirements Pattern](../../../kb/command-thoroughness-requirements-pattern.md)

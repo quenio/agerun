@@ -114,7 +114,6 @@ If a `/compact-guidelines` workflow is already in progress:
 
 ### First-Time Initialization Check
 
-## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ## MANDATORY KB Consultation
 
@@ -134,9 +133,7 @@ Before compacting:
 7. **Command structure**: This command demonstrates the orchestrator pattern where documentation shows all steps directly ([details](../../../kb/command-orchestrator-pattern.md))
 
 # Compact Guidelines
-## Checkpoint Tracking
-
-This command uses progress tracking to ensure systematic documentation compacting with link verification. The process has 15 checkpoints across 6 phases.
+This command uses session todo tracking to ensure systematic documentation compacting with link verification. The process has 15 steps across 6 phases.
 
 ### Initialize Tracking
 ```bash
@@ -146,7 +143,7 @@ This command uses progress tracking to ensure systematic documentation compactin
 **Expected output:**
 ```
 ========================================
-   CHECKPOINT TRACKING INITIALIZED
+   SESSION TODO TRACKING INITIALIZED
 ========================================
 
 Command: compact-guidelines
@@ -652,7 +649,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT COMPLETION SUMMARY
+   WORKFLOW COMPLETION SUMMARY
 ========================================
 
 📈 compact-guidelines: X/Y steps (Z%)
@@ -718,8 +715,8 @@ Before finalizing:
 
 ## Related Documentation
 
-### Checkpoint Patterns
-- [Multi-Step Checkpoint Tracking Pattern](../../../kb/multi-step-checkpoint-tracking-pattern.md)
+### Tracking Patterns
+- [Session Todo List Tracking Pattern](../../../kb/session-todo-list-tracking-pattern.md)
 - [Gate Enforcement Exit Codes Pattern](../../../kb/gate-enforcement-exit-codes-pattern.md)
 - [Command Thoroughness Requirements Pattern](../../../kb/command-thoroughness-requirements-pattern.md)
 

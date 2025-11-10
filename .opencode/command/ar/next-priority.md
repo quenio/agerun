@@ -207,12 +207,10 @@ When all steps are complete, verify the workflow:
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT COMPLETION SUMMARY
+   WORKFLOW COMPLETION SUMMARY
 ========================================
 
-📈 next-priority: 3/3 steps (100%)
-   [████████████████████] 100%
-
+✅ All steps completed successfully
 ```
 
 ## Minimum Requirements
@@ -229,17 +227,9 @@ When all steps are complete, verify the workflow:
 
 ### Progress Tracking
 
-Monitor your progress through the 3-step workflow:
-
-```bash
-# Initialize progress tracking
-
-# Check current checkpoint status
-
-# Update to next step (after completing current step)
-
-# Complete the workflow
-```
+Monitor your progress through the 3-step workflow using the session todo list:
+- Check todo list status to see which steps are pending, in_progress, or completed
+- Each step is tracked individually with its verification step
 
 ## Key Points
 

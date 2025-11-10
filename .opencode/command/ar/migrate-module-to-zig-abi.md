@@ -114,12 +114,10 @@ If a `/migrate-module-to-zig-abi` workflow is already in progress:
 
 ### First-Time Initialization Check
 
-## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 # Migrate Module to Zig ABI
-## Checkpoint Tracking
 
-This command uses progress tracking to ensure systematic C-to-Zig migration while maintaining C API compatibility. The process has 10 checkpoints across 4 phases with critical verification gates.
+This command uses session todo tracking to ensure systematic C-to-Zig migration while maintaining C API compatibility. The process has 10 steps across 4 phases with critical verification gates.
 
 ### Initialize Tracking
 ```bash
@@ -129,8 +127,8 @@ MODULE={{1}}  # Set the module name
 
 ## Related Documentation
 
-### Checkpoint Patterns
-- [Multi-Step Checkpoint Tracking Pattern](../../../kb/multi-step-checkpoint-tracking-pattern.md)
+### Tracking Patterns
+- [Session Todo List Tracking Pattern](../../../kb/session-todo-list-tracking-pattern.md)
 - [Gate Enforcement Exit Codes Pattern](../../../kb/gate-enforcement-exit-codes-pattern.md)
 - [Command Thoroughness Requirements Pattern](../../../kb/command-thoroughness-requirements-pattern.md)
 

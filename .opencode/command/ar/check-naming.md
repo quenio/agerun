@@ -84,22 +84,7 @@ Accomplishment Report:
 - The step-verifier independently verifies by reading command files, checking files, git status/diff, etc.
 - If step-verifier reports "⚠️ STOP EXECUTION", you MUST fix issues before proceeding
 
-## Checkpoint Tracking
-
-This command uses progress tracking to ensure systematic execution of all naming convention validation steps.
-
-### Initialize Tracking
-
-```bash
-# Start the naming check process with 3 steps
-```
-
-**Expected output:**
-```
-✅ Checkpoint tracking initialized for check-naming
-📍 Starting: check-naming (3 steps)
-📁 Tracking: /tmp/check-naming-progress.txt
-```
+This command uses session todo tracking to ensure systematic execution of all naming convention validation steps.
 
 ## MANDATORY: Initialize All Todo Items
 

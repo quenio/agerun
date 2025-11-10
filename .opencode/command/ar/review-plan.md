@@ -69,17 +69,11 @@ Accomplishment Report:
 - The step-verifier independently verifies by reading command files, checking files, git status/diff, etc.
 - If step-verifier reports "⚠️ STOP EXECUTION", you MUST fix issues before proceeding
 
-This section implements the [Checkpoint Workflow Enforcement Pattern](../../../kb/checkpoint-workflow-enforcement-pattern.md) - preventing workflow bypasses through initialization and precondition enforcement.
 
 ### In-Progress Workflow Detection
 
 If a `/review-plan` workflow is already in progress, resume or reset:
 
-### First-Time Initialization Check
-
-## PRECONDITION: Checkpoint Tracking Must Be Initialized
-
-**MANDATORY**: This command MUST use progress tracking. Start by running the checkpoint initialization below. ([details](../../../kb/unmissable-documentation-pattern.md))
 
 ## MANDATORY: Initialize All Todo Items
 
@@ -219,19 +213,9 @@ ls -t plans/*_plan.md | head -1
 
 # Review Plan
 
-## ⚠️ REQUIRED: Initialize Checkpoint Tracking First
-
-**DO NOT PROCEED WITHOUT RUNNING THIS COMMAND:**
-
-```bash
-# MANDATORY: Initialize progress tracking (6 steps - streamlined for session 2025-10-18)
-```
-
-This command uses progress tracking to ensure thorough plan review across all methodology dimensions. The review process is divided into 3 major stages with 6 checkpoints total (improved from 11 to prevent step-skipping).
+This command uses session todo tracking to ensure thorough plan review across all methodology dimensions. The review process is divided into 3 major stages with 6 steps total.
 
 **Key Change (2025-10-18):** Step 3 "Review Each Iteration" is an **INTERACTIVE LOOP** that cannot be batched. Each iteration requires user acceptance before proceeding.
-
-**IMPORTANT**: Running `/review-plan` alone is NOT sufficient. You MUST initialize checkpoints first as shown above.
 
 ## Review Process
 
@@ -501,15 +485,9 @@ When presenting iteration findings to the user, use this multi-line format for r
 **Issues Found:** [list specific issues or "None"]
 ```
 
-**CHECKPOINT: Initialize Iteration Tracking**
+**Iteration Tracking**
 
-Before reviewing iterations, initialize nested checkpoint for iteration-level tracking:
-
-```bash
-# Initialize nested checkpoint for iteration review tracking
-# After extracting PENDING REVIEW iterations from Step 2
-# Use iteration descriptions from the plan file
-```
+Before reviewing iterations, track progress using the session todo list.
 
 **Example initialization:**
 ```bash
@@ -536,7 +514,7 @@ For EACH PENDING REVIEW iteration:
 2. **Wait for User Response** - Do not proceed to next iteration until user responds
 
 3. **Handle Response:**
-   - "accepted" → Mark REVIEWED, update checkpoint, continue to next iteration
+   - "accepted" → Mark REVIEWED, track progress in session todo list, continue to next iteration
    - "fix it" or "revise it" → Fix the issue, re-present, get acceptance
    - Specific feedback → Make changes, re-present, wait for acceptance
 
@@ -548,7 +526,7 @@ For EACH PENDING REVIEW iteration:
    old_string: "#### Iteration X.Y: ... - PENDING REVIEW"
    new_string: "#### Iteration X.Y: ... - REVIEWED"
 
-   # Update iteration checkpoint
+   # Track iteration progress in session todo list
       ```
 
    **Option B: Batch Updates (if tracking changes separately)**
@@ -569,14 +547,14 @@ For EACH PENDING REVIEW iteration:
 - [ ] Update plan file with new status marker (REVIEWED or REVISED)
   - *Use Edit tool immediately per iteration (Option A - Recommended)*
   - *OR accumulate changes and batch update with helper (Option B - Alternative)*
-- [ ] Update iteration checkpoint after each iteration
+- [ ] Track iteration progress in session todo list after each iteration
 - [ ] Track acceptance count for final report
 - [ ] Document any revision requests for Step 5 (Document Issues)
 - [ ] Continue until all PENDING REVIEW iterations processed
 
 **CRITICAL**: Plan file must reflect current status. Use immediate updates (Option A) for clearest tracking during interactive review. Use batch update (Option B) only if tracking separate from plan file.
 
-**CHECKPOINT: Complete Iteration Tracking**
+**Complete Iteration Tracking**
 
 After all PENDING REVIEW iterations have been reviewed:
 
@@ -799,7 +777,7 @@ Create section mapping issues by lesson:
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT COMPLETION SUMMARY
+   WORKFLOW COMPLETION SUMMARY
 ========================================
 
 📈 review-plan: X/Y steps (Z%)
@@ -981,12 +959,10 @@ Validates plans against the review checklist automatically. Catches common issue
 
 ### Command Patterns
 - [Review-Plan Command Improvements](../../../kb/review-plan-command-improvements.md) ⭐ Session 2025-10-18 learnings and design rationale
-- [Checkpoint Step Consolidation Pattern](../../../kb/checkpoint-step-consolidation-pattern.md) ⭐ Why steps were consolidated from 11 to 6
-- [Checkpoint Implementation Guide](../../../kb/checkpoint-implementation-guide.md)
 - [Command KB Consultation Enforcement](../../../kb/command-kb-consultation-enforcement.md)
 - [Command Output Documentation Pattern](../../../kb/command-output-documentation-pattern.md)
 - [Command Thoroughness Requirements Pattern](../../../kb/command-thoroughness-requirements-pattern.md)
-- [Multi-Step Checkpoint Tracking Pattern](../../../kb/multi-step-checkpoint-tracking-pattern.md)
+- [Session Todo List Tracking Pattern](../../../kb/session-todo-list-tracking-pattern.md)
 
 ---
 

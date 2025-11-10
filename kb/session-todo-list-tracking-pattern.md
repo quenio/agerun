@@ -60,11 +60,6 @@ Before proceeding to Step 2, verify Step 1 completion via step-verifier sub-agen
    - Update todo item: "Verify Step 1: Execute Work"
    - Status: completed
    ```
-
-3. **Update checkpoint** (for progress tracking only):
-```bash
-./scripts/checkpoint-update.sh command-name 1
-```
 ```
 
 **Initialization section:**
@@ -101,14 +96,14 @@ Each step MUST be added to the session todo list before execution begins:
 
 **Todo list tracking lifecycle:**
 
-1. **Before step execution**: Add step to todo list with `in_progress` status
-2. **During step execution**: Step remains `in_progress` in todo list
-3. **After verification passes**: Mark step as `completed` in todo list
-4. **After checkpoint update**: Step tracking complete (checkpoint for progress, todo for session tracking)
+1. **Before step execution**: Add step to todo list with `pending` status
+2. **When step starts**: Update step to `in_progress` status
+3. **During step execution**: Step remains `in_progress` in todo list
+4. **After verification passes**: Mark step as `completed` in todo list
+5. **After verification complete**: Mark verification todo as `completed`
 
-**Integration with other tracking systems:**
+**Integration with verification:**
 
-- **Checkpoint scripts**: Track progress through workflow (progress bars, completion percentages)
 - **Session todo list**: Track steps across session boundaries (prevents loss of context)
 - **Step verification**: Verify step completion quality (sub-agent verification)
 
@@ -116,11 +111,12 @@ Each step MUST be added to the session todo list before execution begins:
 
 ```
 Step Execution Flow:
-1. Add to todo list (status: in_progress)
-2. Execute step work
-3. Verify step completion (sub-agent)
-4. Mark todo complete (status: completed)
-5. Update checkpoint (for progress tracking)
+1. Add to todo list (status: pending)
+2. Update to in_progress when step starts
+3. Execute step work
+4. Verify step completion (sub-agent)
+5. Mark step todo complete (status: completed)
+6. Mark verification todo complete (status: completed)
 ```
 
 **Benefits:**
@@ -164,7 +160,11 @@ Step Execution Flow:
       - Status: completed
       ```
    
-   2. **Update checkpoint** (for progress tracking only):
+   2. **Mark verification complete**:
+      ```
+      - Update todo item: "Verify Step N: [Step Title] - [Description]"
+      - Status: completed
+      ```
    ```
 
 4. **Update minimum requirements**:

@@ -115,12 +115,10 @@ If a `/migrate-module-to-zig-struct` workflow is already in progress:
 
 ### First-Time Initialization Check
 
-## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 # Migrate Module to Zig Struct
-## Checkpoint Tracking
 
-This command uses progress tracking to ensure safe and systematic module migration. The process has 11 checkpoints across 4 phases with critical safety gates.
+This command uses session todo tracking to ensure safe and systematic module migration. The process has 11 steps across 4 phases with critical safety gates.
 
 ### Initialize Tracking
 ```bash
@@ -389,7 +387,7 @@ echo "- Added KB article references"
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT COMPLETION SUMMARY
+   WORKFLOW COMPLETION SUMMARY
 ========================================
 
 📈 migrate-module-to-zig-struct: X/Y steps (Z%)
@@ -461,8 +459,8 @@ grep "@cImport" modules/ar_${MODULE}.zig  # Check for C imports
 
 ## Related Documentation
 
-### Checkpoint Patterns
-- [Multi-Step Checkpoint Tracking Pattern](../../../kb/multi-step-checkpoint-tracking-pattern.md)
+### Tracking Patterns
+- [Session Todo List Tracking Pattern](../../../kb/session-todo-list-tracking-pattern.md)
 - [Gate Enforcement Exit Codes Pattern](../../../kb/gate-enforcement-exit-codes-pattern.md)
 - [Command Thoroughness Requirements Pattern](../../../kb/command-thoroughness-requirements-pattern.md)
 

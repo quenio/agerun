@@ -98,7 +98,6 @@ If a `/compact-changes` workflow is already in progress:
 
 ### First-Time Initialization Check
 
-## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ## CRITICAL: Manual Compaction Strategy
 
@@ -164,9 +163,7 @@ Automated scripts cannot perform this semantic grouping and rewriting.
 
 # Compact Changelog - Manual Semantic Analysis
 
-## Checkpoint Tracking
-
-This command uses progress tracking to ensure systematic CHANGELOG.md compaction through manual semantic analysis. The process has 7 checkpoints across 3 phases with verification gates.
+This command uses session todo tracking to ensure systematic CHANGELOG.md compaction through manual semantic analysis. The process has 7 steps across 3 phases with verification gates.
 
 ### Initialize Tracking
 ```bash
@@ -375,7 +372,7 @@ echo "✅ Changes committed"
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT COMPLETION SUMMARY
+   WORKFLOW COMPLETION SUMMARY
 ========================================
 
 📈 compact-changes: 7/7 steps (100%)

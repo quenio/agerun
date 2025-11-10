@@ -38,14 +38,13 @@ After completing each step, you MUST:
      - Inform user: "⚠️ Step verification sub-agent unavailable. Please manually verify Step N completion before proceeding."
      - Provide step description and expected outcomes
      - Wait for explicit user confirmation before continuing
-     - Document manual verification in checkpoint notes
+     - Document manual verification in session notes
 
 3. **Verification Requirements**
    - Each step MUST be verified via step-verifier sub-agent before marking complete
-   - Checkpoint scripts are used ONLY for progress tracking, NOT for verification
    - No step can be skipped or bypassed
    - All verification failures MUST be resolved before proceeding
-   - Step-verifier sub-agent verification COMPLETELY REPLACES checkpoint script verification
+   - Session todo list tracks step progress, step-verifier verifies quality
 
 ### Step Verifier Invocation
 
@@ -74,25 +73,37 @@ Provide verification report with evidence."
 3. Read `.claude/step-verifier.md` for verification criteria
 4. Request user to manually verify step completion
 5. Wait for explicit user confirmation before proceeding
-6. Document manual verification in checkpoint notes
+6. Document manual verification in session notes
 
 ## Initialization
-
-This command uses progress tracking for progress tracking only. All verification is performed by the step-verifier sub-agent, not by checkpoint scripts.
 
 **MANDATORY: Session Todo List Tracking**
 
 Each step MUST be added to the session todo list before execution begins ([details](../../../kb/session-todo-list-tracking-pattern.md), [interleaved pattern](../../../kb/interleaved-todo-item-pattern.md)):
-- Use `todo_write` to add each step as a todo item with status `in_progress` before starting the step
-- Use `todo_write` to mark each step as `completed` after step-verifier verification passes
+- Use `todo_write` to add each step as a todo item with status `pending` initially
+- Update to `in_progress` when step starts
+- Update to `completed` after step-verifier verification passes
 - Initialize all step and verification todo items together at workflow start with interleaved ordering ([details](../../../kb/interleaved-todo-item-pattern.md))
 - This ensures the session maintains track of all steps to be executed
 
-### Initialize Tracking
+**MANDATORY: Step Verification**
 
-- Update todo item: "Step 1: Read Context - Read AGENTS.md and check session context"
-- Status: in_progress
-```
+All verification is performed by the step-verifier sub-agent.
+
+### Initialize All Todo Items
+
+**CRITICAL**: Before executing ANY steps, add ALL step and verification todo items to the session todo list using `todo_write`:
+
+**Step and Verification Todo Items:**
+- Add todo item: "Step 1: Read Context - Read AGENTS.md and check session context" - Status: pending
+- Add todo item: "Verify Step 1: Read Context" - Status: pending
+- Add todo item: "Step 2: Check Task Sources - Review session todo list and TODO.md" - Status: pending
+- Add todo item: "Verify Step 2: Check Task Sources" - Status: pending
+- Add todo item: "Step 3: Discover Next Task - Identify and present next priority task" - Status: pending
+- Add todo item: "Verify Step 3: Discover Next Task" - Status: pending
+- Add todo item: "Verify Complete Workflow: next-task" - Status: pending
+
+**Important**: All todo items are initialized as `pending` and will be updated to `in_progress` when their respective step/verification begins, then to `completed` after verification passes.
 
 **What this step does:**
 - Reads AGENTS.md to understand the project and your role
@@ -137,18 +148,15 @@ Before proceeding to Step 2, you MUST verify Step 1 completion via **step-verifi
    - **If "⚠️ STOP EXECUTION"**: Fix reported issues, re-invoke step-verifier, only proceed after verification passes
    - **If sub-agent unavailable**: STOP and request user manual verification
 
-**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+**Only after step-verifier verification passes**:
 
 1. **Mark verification complete in session todo list** using `todo_write`:
    - Update todo item: "Verify Step 1: Read Context"
    - Status: completed
 
 2. **Mark step complete in session todo list** using `todo_write`:
-
-   ```
    - Update todo item: "Step 1: Read Context - Read AGENTS.md and check session context"
    - Status: completed
-   ```
 
 ## Step 2: Check Task Sources
 
@@ -209,17 +217,15 @@ Before proceeding to Step 3, you MUST verify Step 2 completion via step-verifier
 
 3. **If sub-agent unavailable**: Stop and request user manual verification
 
-**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+**Only after step-verifier verification passes**:
 
 1. **Mark verification complete in session todo list** using `todo_write`:
    - Update todo item: "Verify Step 2: Check Task Sources"
    - Status: completed
 
 2. **Mark step complete in session todo list** using `todo_write`:
-   ```
    - Update todo item: "Step 2: Check Task Sources - Review session todo list and TODO.md"
    - Status: completed
-   ```
 
 ## Step 3: Discover Next Task
 
@@ -312,17 +318,15 @@ Before completing the workflow, you MUST verify Step 3 completion via step-verif
 
 3. **If sub-agent unavailable**: Stop and request user manual verification
 
-**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+**Only after step-verifier verification passes**:
 
 1. **Mark verification complete in session todo list** using `todo_write`:
    - Update todo item: "Verify Step 3: Discover Next Task"
    - Status: completed
 
 2. **Mark step complete in session todo list** using `todo_write`:
-   ```
    - Update todo item: "Step 3: Discover Next Task - Identify and present next priority task"
    - Status: completed
-   ```
 
 ## Complete the Workflow
 
@@ -353,8 +357,6 @@ Before completing the workflow, you MUST verify ALL steps were completed correct
    - Update todo item: "Verify Complete Workflow: next-task"
    - Status: completed
 
-2. **Complete workflow:**
-
 ## Minimum Requirements
 
 **MANDATORY for successful task discovery:**
@@ -379,17 +381,9 @@ Before completing the workflow, you MUST verify ALL steps were completed correct
 
 ### Progress Tracking
 
-Monitor your progress through the 3-step workflow:
-
-```bash
-# Initialize progress tracking
-
-# Check current checkpoint status
-
-# Update to next step (after completing current step)
-
-# Complete the workflow
-```
+Monitor your progress through the 3-step workflow using the session todo list:
+- Check todo list status to see which steps are pending, in_progress, or completed
+- Each step is tracked individually with its verification step
 
 ## Key Points
 

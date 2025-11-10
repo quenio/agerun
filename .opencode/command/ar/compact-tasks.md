@@ -75,7 +75,6 @@ If a `/compact-tasks` workflow is already in progress:
 
 ### First-Time Initialization Check
 
-## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ## MANDATORY: Initialize All Todo Items
 
@@ -155,9 +154,7 @@ This achieves 10-20% reduction while preserving all active work.
 
 # Compact Tasks - Selective Compaction with Manual Semantic Analysis
 
-## Checkpoint Tracking
-
-This command uses progress tracking to ensure safe and systematic TODO.md compaction through selective compaction + manual semantic analysis. The process has 7 checkpoints across 3 phases with verification gates.
+This command uses session todo tracking to ensure safe and systematic TODO.md compaction through selective compaction + manual semantic analysis. The process has 7 steps across 3 phases with verification gates.
 
 ### Initialize Tracking
 ```bash
@@ -370,7 +367,7 @@ echo "   Commit status: Clean"
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT COMPLETION SUMMARY
+   WORKFLOW COMPLETION SUMMARY
 ========================================
 
 📈 compact-tasks: X/Y steps (Z%)

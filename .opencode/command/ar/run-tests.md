@@ -208,7 +208,7 @@ make: *** [ar_data.o] Error 1
 **Expected completion output:**
 ```
 ========================================
-   CHECKPOINT COMPLETION SUMMARY
+   WORKFLOW COMPLETION SUMMARY
 ========================================
 
 📈 run-tests: 3/3 steps (100%)

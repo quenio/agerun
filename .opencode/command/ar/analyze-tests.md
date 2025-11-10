@@ -1,8 +1,8 @@
 Run static analysis on the test code.
 
-## ⚠️ CRITICAL: Let the script manage checkpoints
+## ⚠️ CRITICAL: Let the script manage tracking
 
-**DO NOT manually initialize before running this command.** The script handles all checkpoint initialization, execution, and cleanup automatically. Just run the script and let it complete.
+**DO NOT manually initialize before running this command.** The script handles all tracking initialization, execution, and cleanup automatically. Just run the script and let it complete.
 
 ## Quick Start
 
@@ -10,7 +10,7 @@ Run static analysis on the test code.
 ./scripts/run-analyze-tests.sh
 ```
 
-That's it! The script will handle everything automatically. Do not run any `make checkpoint-*` commands manually unless the script fails.
+That's it! The script will handle everything automatically.
 
 ## STEP VERIFICATION ENFORCEMENT
 

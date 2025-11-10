@@ -3,11 +3,11 @@ Systematically analyze and fix errors in the whitelist file to reduce technical 
 ## MANDATORY KB Consultation
 
 Before starting error analysis:
-1. Search: `grep "whitelist\|error\|systematic\|checkpoint" kb/README.md`
+1. Search: `grep "whitelist\|error\|systematic" kb/README.md`
 2. Must read these specific articles:
    - systematic-whitelist-error-resolution
    - systematic-error-whitelist-reduction
-   - checkpoint-conditional-flow-pattern - Understanding conditional skipping in checkpoint workflows
+   - session-todo-list-tracking-pattern - Understanding conditional skipping in multi-step workflows
 3. Apply the systematic approach from these articles
 
 ## STEP VERIFICATION ENFORCEMENT
@@ -85,7 +85,6 @@ If a `/fix-errors-whitelisted` workflow is already in progress:
 
 ### First-Time Initialization Check
 
-## PRECONDITION: Checkpoint Tracking Must Be Initialized
 
 ## MANDATORY: Initialize All Todo Items
 
@@ -129,9 +128,8 @@ If a `/fix-errors-whitelisted` workflow is already in progress:
 **Important**: All todo items are initialized as `pending` and will be updated to `in_progress` when their respective step/verification begins, then to `completed` after verification passes.
 
 # Fix Whitelisted Errors
-## Checkpoint Tracking
 
-This command uses progress tracking to ensure systematic error fixing with minimum requirements. The process has 16 checkpoints across 4 phases.
+This command uses session todo tracking to ensure systematic error fixing with minimum requirements. The process has 16 steps across 4 phases.
 
 ### Initialize Tracking
 ```bash
@@ -159,8 +157,8 @@ Continue fixing more errors of the same type or select an additional pattern tha
 
 ## Related Documentation
 
-### Checkpoint Patterns
-- [Multi-Step Checkpoint Tracking Pattern](../../../kb/multi-step-checkpoint-tracking-pattern.md)
+### Tracking Patterns
+- [Session Todo List Tracking Pattern](../../../kb/session-todo-list-tracking-pattern.md)
 - [Gate Enforcement Exit Codes Pattern](../../../kb/gate-enforcement-exit-codes-pattern.md)
 - [Command Thoroughness Requirements Pattern](../../../kb/command-thoroughness-requirements-pattern.md)
 

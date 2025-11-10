@@ -1,26 +1,5 @@
 Create a TDD plan document following strict methodology patterns and best practices.
 
-This section implements the [Checkpoint Workflow Enforcement Pattern](../../../kb/checkpoint-workflow-enforcement-pattern.md) - preventing workflow bypasses through initialization and precondition enforcement.
-
-### In-Progress Workflow Detection
-
-If a `/create-plan` workflow is already in progress:
-
-```bash
-# Check current progress
-```
-
-Resume from the next pending step, or clean up and start fresh:
-### First-Time Initialization Check
-
-**MANDATORY**: Before executing ANY steps, verify progress tracking is initialized:
-
-## PRECONDITION: Checkpoint Tracking Must Be Initialized
-
-**BEFORE PROCEEDING**: Verify progress tracking initialization:
-
-**MANDATORY**: This command MUST use progress tracking. Start by running the checkpoint initialization below. ([details](../../../kb/unmissable-documentation-pattern.md))
-
 ## STEP VERIFICATION ENFORCEMENT
 
 **MANDATORY**: After completing each step, you MUST verify step completion using the **step-verifier sub-agent** before proceeding to the next step ([details](../../../kb/sub-agent-verification-pattern.md)).
@@ -196,23 +175,6 @@ Before creating the plan, identify which task to plan:
 
 # Create Plan
 
-## ⚠️ REQUIRED: Initialize Checkpoint Tracking First
-
-**DO NOT PROCEED WITHOUT RUNNING THIS COMMAND:**
-
-```bash
-# MANDATORY: Initialize progress tracking (14 steps)
-```
-
-This command uses progress tracking to ensure systematic plan creation. The creation process is divided into 4 major stages with 14 checkpoints total.
-
-**Example:**
-```bash
-/create-plan "message queue infrastructure" plans/tdd_cycle_7_plan.md
-```
-
-**IMPORTANT**: Running `/create-plan` alone is NOT sufficient. You MUST initialize checkpoints first as shown above.
-
 ## MANDATORY: Initialize All Todo Items
 
 **CRITICAL**: Before executing ANY steps, add ALL step and verification todo items to the session todo list using `todo_write`:
@@ -316,7 +278,7 @@ Before proceeding to Step 2, you MUST verify Step 1 completion via **step-verifi
    - **If "⚠️ STOP EXECUTION"**: Fix reported issues, re-invoke step-verifier, only proceed after verification passes
    - **If sub-agent unavailable**: STOP and request user manual verification
 
-**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+**Only after step-verifier verification passes**:
 
 1. **Mark verification complete in session todo list** using `todo_write`:
    - Update todo item: "Verify Step 1: KB Consultation & 14 Lesson Verification"
@@ -383,7 +345,7 @@ Before proceeding to Step 3, you MUST verify Step 2 completion via step-verifier
 
 3. **If sub-agent unavailable**: Stop and request user manual verification
 
-**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+**Only after step-verifier verification passes**:
 
 1. **Mark verification complete in session todo list** using `todo_write`:
    - Update todo item: "Verify Step 2: Gather Requirements"
@@ -601,7 +563,7 @@ Before proceeding to Step 4, you MUST verify Step 3 completion via step-verifier
 
 3. **If sub-agent unavailable**: Stop and request user manual verification
 
-**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+**Only after step-verifier verification passes**:
 
 1. **Mark verification complete in session todo list** using `todo_write`:
    - Update todo item: "Verify Step 3: Identify Behaviors"
@@ -664,7 +626,7 @@ Before proceeding to Step 5, you MUST verify Step 4 completion via step-verifier
 
 3. **If sub-agent unavailable**: Stop and request user manual verification
 
-**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+**Only after step-verifier verification passes**:
 
 1. **Mark verification complete in session todo list** using `todo_write`:
    - Update todo item: "Verify Step 4: Count Assertions"
@@ -731,7 +693,7 @@ Before proceeding to Step 6, you MUST verify Step 5 completion via step-verifier
 
 3. **If sub-agent unavailable**: Stop and request user manual verification
 
-**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+**Only after step-verifier verification passes**:
 
 1. **Mark verification complete in session todo list** using `todo_write`:
    - Update todo item: "Verify Step 5: Define Cycles"
@@ -765,15 +727,7 @@ Before proceeding to Step 6, you MUST verify Step 5 completion via step-verifier
 
 **CRITICAL: Per-Iteration Progress Tracking**
 
-This checkpoint involves creating multiple iterations. To ensure the command doesn't lose track of progress, initialize a separate nested checkpoint instance for iteration tracking.
-
-**Initialize Iteration Tracking:**
-```bash
-# Initialize nested checkpoint for iteration tracking
-# After determining iteration count from Checkpoint 4
-
-# Check iteration tracking status anytime
-```
+This step involves creating multiple iterations. Track progress using the session todo list.
 
 **Write complete iteration structure:**
 
@@ -902,34 +856,16 @@ int64_t ar_agent_store_fixture__create_agent(...) {
 
 For each iteration created:
 1. **Create the iteration** (RED phase, GREEN phase, verification)
-2. **Immediately update checkpoint** using `3. **Continue to next iteration**
-4. **DO NOT batch updates** - update after each iteration
+2. **Continue to next iteration**
+3. Track progress using session todo list
 
 **Check Progress Anytime:**
-```bash
-# See current iteration progress
-
-# Example output:
-# 📈 create-plan-iterations: 5/12 steps (42%)
-#    [████████░░░░░░░░░░░░] 42%
-# → Next: ```
+- Review session todo list to see which iterations are complete
+- Each iteration can be tracked individually if needed
 
 **Resuming After Interruption:**
-```bash
-# Check which iterations are complete
-
-# The status will show which step to continue from
-# Resume creating iterations starting from the indicated step
-```
-
-**CRITICAL**: This iteration tracking uses a nested checkpoint instance (`create-plan-iterations`) independent of the main progress tracking (`create-plan`). This allows resuming within Checkpoint 6 if interrupted mid-iteration creation.
-
-**After ALL iterations created:**
-```bash
-# The nested checkpoint system will show 100% when all iterations are done
-# Should show: 🎆 All 12 steps complete!
-
-# Clean up iteration tracking
+- Check session todo list to see which iterations are complete
+- Resume creating iterations starting from the next incomplete one
 
 **MANDATORY: Update step todo item status**
 
@@ -960,7 +896,7 @@ Before proceeding to Step 7, you MUST verify Step 6 completion via step-verifier
 
 3. **If sub-agent unavailable**: Stop and request user manual verification
 
-**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+**Only after step-verifier verification passes**:
 
 1. **Mark verification complete in session todo list** using `todo_write`:
    - Update todo item: "Verify Step 6: Plan Iterations"
@@ -1098,7 +1034,7 @@ echo "8.3: Return 'network' instead of 'file' to prove type check" >> /tmp/red-c
 # ... continue for each iteration
 ```
 
-**CRITICAL**: Update checkpoint immediately after verifying each iteration's RED phase. DO NOT batch updates.
+**CRITICAL**: Track progress using session todo list after verifying each iteration's RED phase.
 
 **After ALL RED phases verified:**
 ```bash
@@ -1169,7 +1105,7 @@ Before proceeding to Step 8, you MUST verify Step 7 completion via step-verifier
 
 3. **If sub-agent unavailable**: Stop and request user manual verification
 
-**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+**Only after step-verifier verification passes**:
 
 1. **Mark verification complete in session todo list** using `todo_write`:
    - Update todo item: "Verify Step 7: Structure RED Phases"
@@ -1180,19 +1116,14 @@ Before proceeding to Step 8, you MUST verify Step 7 completion via step-verifier
    - Status: completed
 
 ```bash
-# Clean up RED phase tracking
-
-# Mark main Checkpoint 7 as complete
+# RED phase tracking complete
 ```
 
 #### Step 8: Structure GREEN Phases
 
 **CRITICAL: Per-Iteration Verification Tracking**
 
-**Initialize GREEN Phase Verification Tracking:**
-```bash
-# Initialize nested checkpoint for GREEN phase verification
-```
+Track GREEN phase verification using the session todo list.
 
 **Verify all GREEN phases follow minimalism:**
 
@@ -1235,7 +1166,7 @@ Iteration N.3: Actual logic (forced by test)
 # ... continue for each iteration
 ```
 
-**CRITICAL**: Update checkpoint immediately after verifying each iteration's GREEN phase. DO NOT batch updates.
+**CRITICAL**: Track progress using session todo list after verifying each iteration's GREEN phase.
 
 **After ALL GREEN phases verified:**
 ```bash
@@ -1273,7 +1204,7 @@ Before proceeding to Step 9, you MUST verify Step 8 completion via step-verifier
 
 3. **If sub-agent unavailable**: Stop and request user manual verification
 
-**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+**Only after step-verifier verification passes**:
 
 1. **Mark verification complete in session todo list** using `todo_write`:
    - Update todo item: "Verify Step 8: Structure GREEN Phases"
@@ -1284,7 +1215,7 @@ Before proceeding to Step 9, you MUST verify Step 8 completion via step-verifier
    - Status: completed
 
 ```bash
-# Mark main Checkpoint 8 as complete
+# GREEN phase tracking complete
 ```
 
 **[QUALITY GATE 2: Iterations Complete]**
@@ -1367,7 +1298,7 @@ Before proceeding to Step 10, you MUST verify Step 9 completion via step-verifie
 
 3. **If sub-agent unavailable**: Stop and request user manual verification
 
-**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+**Only after step-verifier verification passes**:
 
 1. **Mark verification complete in session todo list** using `todo_write`:
    - Update todo item: "Verify Step 9: Add Cleanup"
@@ -1434,7 +1365,7 @@ Before proceeding to Step 11, you MUST verify Step 10 completion via step-verifi
 
 3. **If sub-agent unavailable**: Stop and request user manual verification
 
-**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+**Only after step-verifier verification passes**:
 
 1. **Mark verification complete in session todo list** using `todo_write`:
    - Update todo item: "Verify Step 10: Add Status Markers"
@@ -1491,7 +1422,7 @@ Before proceeding to Step 12, you MUST verify Step 11 completion via step-verifi
 
 3. **If sub-agent unavailable**: Stop and request user manual verification
 
-**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+**Only after step-verifier verification passes**:
 
 1. **Mark verification complete in session todo list** using `todo_write`:
    - Update todo item: "Verify Step 11: Add Cross-References"
@@ -1579,7 +1510,7 @@ Before proceeding to Step 13, you MUST verify Step 12 completion via step-verifi
 
 3. **If sub-agent unavailable**: Stop and request user manual verification
 
-**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+**Only after step-verifier verification passes**:
 
 1. **Mark verification complete in session todo list** using `todo_write`:
    - Update todo item: "Verify Step 12: Validate Plan"
@@ -1646,7 +1577,7 @@ Before proceeding to Step 14, you MUST verify Step 13 completion via step-verifi
 
 3. **If sub-agent unavailable**: Stop and request user manual verification
 
-**Only after step-verifier verification passes** (checkpoint-update is for progress tracking only, NOT verification):
+**Only after step-verifier verification passes**:
 
 1. **Mark verification complete in session todo list** using `todo_write`:
    - Update todo item: "Verify Step 13: Save Plan"
@@ -2096,12 +2027,9 @@ Use the simplest possible implementation:
 - [Plan Document Completion Status Pattern](../../../kb/plan-document-completion-status-pattern.md)
 
 ### Command Implementation Patterns
-- [Checkpoint Step Consolidation Pattern](../../../kb/checkpoint-step-consolidation-pattern.md) ⭐ Pattern for consolidating per-item verification steps
-- [Checkpoint Implementation Guide](../../../kb/checkpoint-implementation-guide.md)
 - [Command KB Consultation Enforcement](../../../kb/command-kb-consultation-enforcement.md)
 - [Command Output Documentation Pattern](../../../kb/command-output-documentation-pattern.md)
 - [Command Thoroughness Requirements Pattern](../../../kb/command-thoroughness-requirements-pattern.md)
-- [Multi-Step Checkpoint Tracking Pattern](../../../kb/multi-step-checkpoint-tracking-pattern.md)
 
 ---
 
