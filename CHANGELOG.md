@@ -1,5 +1,37 @@
 # AgeRun CHANGELOG
 
+## 2025-11-09 (Session - Architectural Change Verification Pattern)
+
+- **Architectural Change Verification Pattern**
+
+  Documented systematic verification pattern for architectural changes to ensure all affected files reflect changes consistently.
+
+  **Problem**: When making architectural changes (e.g., removing checkpoint tracking from commands), some files may retain outdated patterns if verification isn't systematic, causing confusion in future sessions.
+
+  **Solution**: Established systematic verification workflow that includes KB article cross-reference verification, command file verification, and CHANGELOG documentation.
+
+  **KB Articles Created**:
+  - `kb/architectural-change-verification-pattern.md` - Systematic verification for architectural changes
+
+  **KB Articles Updated**:
+  - `kb/new-learnings-complete-integration-pattern.md` - Added verification section to integration checklist
+  - `kb/interleaved-todo-item-pattern.md` - Added pattern discovery section
+  - `kb/systematic-consistency-verification.md` - Added cross-reference to architectural change verification
+  - `kb/command-continuous-improvement-pattern.md` - Added cross-reference for command file verification
+  - `kb/new-learnings-cross-reference-requirement.md` - Added cross-reference for cross-reference verification
+
+  **Commands Updated**:
+  - `create-command.md` - Added reference in KB Consultation section
+  - `commit.md` - Added reference in architectural changes verification section
+  - `check-module-consistency.md` - Added reference in KB Consultation section
+  - `new-learnings.md` - Added reference in Step 6 verification note
+
+  **AGENTS.md Updates**:
+  - Added "Architectural changes" guideline in Documentation Protocol section
+  - Added cross-reference in Consistency section for module development
+
+  **Impact**: Ensures architectural changes are verified systematically, preventing inconsistent files and reducing technical debt from incomplete migrations.
+
 ## 2025-11-09 (Checkpoint Tracking Removal from Commands)
 
 - **Checkpoint Tracking Removal from Commands**

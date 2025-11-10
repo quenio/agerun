@@ -27,6 +27,7 @@ Create a new Claude Code command following all quality standards and best practi
    - [Unmissable Documentation Pattern](../../../kb/unmissable-documentation-pattern.md) - Mandatory progress tracking
 
 3. **Supporting Patterns**:
+   - [Architectural Change Verification Pattern](../../../kb/architectural-change-verification-pattern.md) - Verify command files reflect architectural changes
    - [Lesson-Based Command Design Pattern](../../../kb/lesson-based-command-design-pattern.md) - Unified verification approach
    - [Sub-Agent Verification Pattern](../../../kb/sub-agent-verification-pattern.md) - Step verification via sub-agents
    - [Gate Enforcement Exit Codes Pattern](../../../kb/gate-enforcement-exit-codes-pattern.md) - Quality gates

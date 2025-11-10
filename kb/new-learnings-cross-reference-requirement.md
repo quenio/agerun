@@ -80,6 +80,7 @@ Common cross-reference patterns:
 - Specific implementations link to general patterns
 
 ## Related Patterns
+- [Architectural Change Verification Pattern](architectural-change-verification-pattern.md) - Verify cross-references are updated after architectural changes
 - [Post-Session Task Extraction Pattern](post-session-task-extraction-pattern.md)
 - [Comprehensive Learning Extraction Pattern](comprehensive-learning-extraction-pattern.md)
 - [Cross-Referencing Knowledge Base](cross-referencing-knowledge-base.md)

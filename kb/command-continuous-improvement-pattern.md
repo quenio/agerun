@@ -48,6 +48,7 @@ grep -l "zig\|migrate\|error" .opencode/command/ar/*.md
 ```
 
 ## Related Patterns
+- [Architectural Change Verification Pattern](architectural-change-verification-pattern.md) - Verify command files reflect architectural changes
 - [Systematic Guideline Enhancement](systematic-guideline-enhancement.md)
 - [Cross-Referencing Knowledge Base](cross-referencing-knowledge-base.md)
 - [Progressive Tool Enhancement](progressive-tool-enhancement.md)

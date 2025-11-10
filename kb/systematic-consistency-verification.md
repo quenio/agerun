@@ -76,6 +76,7 @@ fi
 ```
 
 ## Related Patterns
+- [Architectural Change Verification Pattern](architectural-change-verification-pattern.md) - Systematic verification for architectural changes
 - [Module Consistency Verification](module-consistency-verification.md)
 - [Comprehensive Impact Analysis](comprehensive-impact-analysis.md)
 - [Cross File Pattern Propagation](cross-file-pattern-propagation.md)

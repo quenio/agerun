@@ -176,6 +176,17 @@ todo_write(merge=True, todos=[
 ])
 ```
 
+## Pattern Discovery
+
+This pattern was discovered during execution of the `/ar/new-learnings` command when initializing 28 todo items (14 steps + 14 verifications). The discovery process revealed:
+
+1. **Initialization requirement**: The command file specified "MANDATORY: Initialize All Todo Items" with explicit interleaved ordering
+2. **Pattern recognition**: Using `todo_write` with `merge=false` to initialize all items together revealed the interleaved structure
+3. **Verification necessity**: The pattern ensures verification items exist before steps execute, preventing missed verifications
+4. **Session continuity**: Initializing all items upfront enables accurate workflow resumption across sessions
+
+**Discovery insight**: The pattern emerged from following command requirements systematically, demonstrating that structured workflows reveal patterns that might otherwise be missed.
+
 ## Related Patterns
 
 - [Session Todo List Tracking Pattern](session-todo-list-tracking-pattern.md) - Adding steps to session todo list for tracking

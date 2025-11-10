@@ -493,7 +493,7 @@ echo "✅ Files staged for commit"
    - Keep it concise (1-2 sentences)
    - Check for any sensitive information that shouldn't be committed
    - Ensure the message accurately reflects ALL changes
-   - Verify full scope of architectural changes ([details](../../../kb/commit-scope-verification.md))
+   - Verify full scope of architectural changes ([details](../../../kb/commit-scope-verification.md), [verification pattern](../../../kb/architectural-change-verification-pattern.md))
 
 **⚠️ MANDATORY STEP VERIFICATION**
 

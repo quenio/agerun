@@ -23,6 +23,7 @@ Each learning file contains:
 
 #### 1.1 Workflow & Planning
 - [Absolute Path Navigation](absolute-path-navigation.md)
+- [Architectural Change Verification Pattern](architectural-change-verification-pattern.md) ⭐ NEW - Systematic verification for architectural changes (session 2025-11-09)
 - [Architectural Review in Feedback](architectural-review-in-feedback.md)
 - [Assumption Verification Before Action](assumption-verification-before-action.md)
 - [Checkpoint Conditional Flow Pattern](checkpoint-conditional-flow-pattern.md) ⭐ NEW - Two-phase pattern for conditional step execution

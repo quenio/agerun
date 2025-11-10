@@ -3,10 +3,11 @@ Check for consistency improvements needed across related modules.
 ## MANDATORY KB Consultation
 
 Before checking consistency:
-1. Search: `grep "consistency\|module\|systematic" kb/README.md`
+1. Search: `grep "consistency\|module\|systematic\|architectural.*change" kb/README.md`
 2. Must read:
-   - module-consistency-verification
-   - systematic-consistency-verification
+   - [Module Consistency Verification](../../../kb/module-consistency-verification.md)
+   - [Systematic Consistency Verification](../../../kb/systematic-consistency-verification.md)
+   - [Architectural Change Verification Pattern](../../../kb/architectural-change-verification-pattern.md) - Systematic verification for architectural changes
 3. Apply systematic verification approach
 
 ## STEP VERIFICATION ENFORCEMENT

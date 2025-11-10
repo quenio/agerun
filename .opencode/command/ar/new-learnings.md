@@ -542,6 +542,8 @@ The following steps must be completed first:
    ```bash
    git diff --name-only | grep "kb.*\.md" | wc -l  # Should be > new articles
    ```
+   
+   **Note**: After architectural changes, verify cross-references are updated ([details](../../../kb/architectural-change-verification-pattern.md))
 
 ```bash
 # Mark Step 6 complete with cross-reference verification

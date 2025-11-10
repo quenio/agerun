@@ -52,7 +52,13 @@ Missing: Command updates ✗
 - [ ] Update TODO.md if relevant
 - [ ] Update CHANGELOG.md
 
-### 5. Validation
+### 5. Verification (CRITICAL - OFTEN MISSED)
+- [ ] Verify KB article cross-references: `grep -i "pattern_keyword" kb/*.md` to find outdated references
+- [ ] Verify command files reflect changes: `grep -i "old_pattern" .opencode/command/ar/*.md` should return 0 matches
+- [ ] Update cross-references found in verification step
+- [ ] Document verification process in CHANGELOG ([details](../kb/architectural-change-verification-pattern.md))
+
+### 6. Validation
 - [ ] Run `make check-docs`
 - [ ] Verify all links work
 - [ ] Check cross-reference completeness
@@ -111,5 +117,6 @@ Signs of complete integration:
 ## Related Patterns
 - [Comprehensive Learning Extraction Pattern](comprehensive-learning-extraction-pattern.md)
 - [New Learnings Cross-Reference Requirement](new-learnings-cross-reference-requirement.md)
+- [Architectural Change Verification Pattern](architectural-change-verification-pattern.md) - Systematic verification for architectural changes
 - [Implementation Plan Line References](implementation-plan-line-references.md)
 - [Claude MD Reference Requirement](claude-md-reference-requirement.md)
