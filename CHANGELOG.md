@@ -1,5 +1,20 @@
 # AgeRun CHANGELOG
 
+## 2025-11-10 (Enforce Concrete Evidence Requirements in Accomplishment Reports)
+
+- **Enforce Concrete Evidence Requirements in Accomplishment Reports**
+
+  Updated all documentation and commands to require concrete evidence in accomplishment reports for step-verifier verification. Added explicit evidence validation requirements to step-verifier sub-agent specification.
+
+  **Implementation**:
+  - Updated `.claude/step-verifier.md` - Added mandatory evidence validation section (Step 4) requiring verification of file existence, path correctness, line number accuracy, git diff matching, command output validation, and test result validation; added evidence validation checklist; updated workflow to emphasize evidence validation
+  - Updated `kb/sub-agent-verification-pattern.md` - Expanded "CRITICAL: Evidence-Based Reporting" section with 6 evidence requirement categories (File Changes, Command Execution, Test Results, Documentation Updates, Git Status, Grep/Verification Output); added detailed examples (GOOD vs BAD); added "Evidence Validation by Step-Verifier" section explaining validation requirements; fixed broken link example to use real KB article link
+  - Updated all 30 command files in `.opencode/command/ar/` - Added mandatory evidence requirements to accomplishment report sections; updated "Report accomplishments" sections with concrete evidence guidance; updated CRITICAL sections to emphasize concrete evidence requirement; added references to kb/sub-agent-verification-pattern.md
+  - Updated `AGENTS.md` - Added note in "Command Step Tracking" section referencing concrete evidence requirements; updated "Evidence-based completion" to specify concrete evidence requirements
+  - Created `scripts/update_accomplishment_reports.py` - Python script to batch update all command files with evidence requirements
+
+  **Impact**: All accomplishment reports must now include concrete evidence (file paths with line numbers, full command outputs, git diff, test results). Step-verifier sub-agent validates all evidence existence and validity, stopping execution if evidence validation fails. This ensures verification quality and prevents vague or fabricated claims.
+
 ## 2025-11-10 (Remove Remaining Checkpoint Script References)
 
 - **Remove Remaining Checkpoint Script References from Commands**

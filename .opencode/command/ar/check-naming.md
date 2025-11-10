@@ -36,10 +36,11 @@ The **step-verifier** is a specialized sub-agent that independently verifies ste
 
 After completing each step, you MUST:
 
-1. **Report accomplishments with evidence**
+1. **Report accomplishments with concrete evidence**
    - Describe what was accomplished (files created/modified, commands executed, outputs produced)
-   - Provide evidence (file paths, command outputs, git status/diff)
-   - **DO NOT** tell step-verifier what to verify - report what was done
+   - Provide **concrete evidence**: actual file paths with line numbers, full command outputs, git diff output, test results with specific test names, grep/search output proving claims
+   - **DO NOT** tell step-verifier what to verify - report what was done with evidence
+   - **DO NOT** use vague summaries - provide specific details (see [kb/sub-agent-verification-pattern.md](../../../kb/sub-agent-verification-pattern.md) for examples)
 
 2. **Invoke step-verifier sub-agent**
    - Use `mcp_sub-agents_run_agent` tool with:
@@ -76,13 +77,28 @@ Command File: .opencode/command/ar/check-naming.md
 Step: Step N: [Step Title]
 
 Accomplishment Report:
-[Report what was accomplished with evidence: files created/modified, commands executed, outputs produced, etc. The step-verifier will independently verify these claims by reading files, checking git status, etc.]"
+[Report what was accomplished with CONCRETE EVIDENCE. The step-verifier will independently verify these claims by reading files, checking git status, etc.
+
+**MANDATORY Evidence Requirements:**
+- **File Changes**: Include actual file paths, line numbers, and git diff output showing exact changes
+- **Command Execution**: Include full command output, exit codes, test results with specific test names
+- **Documentation Updates**: Include file paths, section names, actual content snippets, git diff output
+- **Git Status**: Include actual `git status` and `git diff` output showing what changed
+- **Verification Output**: Include actual grep/search command output proving claims
+- **Build/Test Results**: Include full output showing compilation, test execution, memory leak reports
+
+**Examples:**
+✅ GOOD: "Updated `.opencode/command/ar/execute-plan.md` line 2356: `git diff` shows lines changed from `### If progress tracking` to `### If step tracking`. Verification: `grep -i 'checkpoint' file.md` returned no matches (exit code 1)"
+❌ BAD: "Updated execute-plan.md to remove checkpoint references"
+
+See [kb/sub-agent-verification-pattern.md](../../../kb/sub-agent-verification-pattern.md) for complete evidence requirements and examples.]"
 ```
 
 **CRITICAL**: 
-- Report accomplishments with evidence, NOT instructions
+- Report accomplishments with **concrete evidence** (file paths, line numbers, command outputs, git diff, test results), NOT instructions or vague summaries
 - The step-verifier independently verifies by reading command files, checking files, git status/diff, etc.
 - If step-verifier reports "⚠️ STOP EXECUTION", you MUST fix issues before proceeding
+- If accomplishment report lacks concrete evidence, step-verifier will STOP execution and require evidence "⚠️ STOP EXECUTION", you MUST fix issues before proceeding
 
 This command uses session todo tracking to ensure systematic execution of all naming convention validation steps.
 

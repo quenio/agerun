@@ -6,7 +6,8 @@ Using MCP sub-agents for step verification provides sophisticated verification c
 ## Importance
 - **Sophisticated verification**: Sub-agents can perform complex analysis that simple checkpoint scripts cannot
 - **Evidence-based reporting**: Verification reports include specific evidence (file paths, line numbers, test results)
-- **Automatic failure detection**: Sub-agents can detect missing elements and issue STOP instructions
+- **Evidence validation**: Sub-agents validate that all evidence actually exists and is valid (files exist, paths correct, git diff matches, outputs are real)
+- **Automatic failure detection**: Sub-agents can detect missing elements, invalid evidence, and issue STOP instructions
 - **Structured remediation**: Provides step-by-step recommendations for fixing issues
 - **Separation of concerns**: Keeps verification logic separate from progress tracking
 
@@ -55,11 +56,84 @@ Accomplishment Report:
 
 **CRITICAL: Evidence-Based Reporting**
 
-The top-level agent must report accomplishments with evidence, NOT instructions:
-- ✅ **GOOD**: "Fixed broken link in `.claude/step-verifier.md` line 41, changed from non-existent article to `mcp-sub-agent-integration-pattern.md`"
-- ❌ **BAD**: "Please verify that the KB link is fixed"
+The top-level agent must report accomplishments with **concrete evidence**, NOT instructions or summaries. The step-verifier independently verifies claims by reading files, checking git status/diff, analyzing outputs, **AND VALIDATING THAT ALL EVIDENCE ACTUALLY EXISTS AND IS VALID** (files exist, paths correct, line numbers accurate, git diff matches, outputs are real). Report what was done with specific evidence, not what should be verified.
 
-The step-verifier independently verifies claims by reading files, checking git status/diff, and analyzing outputs. Report what was done, not what should be verified.
+**Evidence Requirements:**
+
+1. **File Changes**: Include actual file paths, line numbers, and content snippets
+   - ✅ **GOOD**: "Fixed broken link in `.claude/step-verifier.md` line 41, changed from incorrect path to `mcp-sub-agent-integration-pattern.md`. Evidence: `git diff` shows line 41 changed from `[checkpoint-based-workflow-pattern.md](../kb/checkpoint-based-workflow-pattern.md)` to `[mcp-sub-agent-integration-pattern.md](../kb/mcp-sub-agent-integration-pattern.md)`"
+   - ❌ **BAD**: "Fixed broken link in step-verifier.md"
+
+2. **Command Execution**: Include full command output, not just success/failure
+   - ✅ **GOOD**: "Ran `make clean build 2>&1`. Output: `[full build output showing compilation, linking, test execution]`. Exit code: 0. All tests passed: 47/47. Memory leaks: 0"
+   - ❌ **BAD**: "Build completed successfully"
+
+3. **Test Results**: Include test names, pass/fail status, and execution details
+   - ✅ **GOOD**: "Executed `make ar_string_tests 2>&1`. Test output: `test_string__trim ... OK`, `test_string__split ... OK`. All 12 tests passed. Memory report: `bin/run-tests/memory_report_ar_string_tests.log` shows 0 leaks"
+   - ❌ **BAD**: "Tests passed"
+
+4. **Documentation Updates**: Include file paths, section names, and actual content
+   - ✅ **GOOD**: "Updated `CHANGELOG.md` with new entry dated 2025-11-10. Entry added at line 3 under '## 2025-11-10' section. Content: `- **Remove Remaining Checkpoint Script References from Commands**` followed by implementation details. Evidence: `git diff CHANGELOG.md` shows 12 lines added"
+   - ❌ **BAD**: "Updated CHANGELOG.md"
+
+5. **Git Status**: Include actual git status/diff output when relevant
+   - ✅ **GOOD**: "Staged files: `git status` shows `modified: AGENTS.md`, `modified: .opencode/command/ar/execute-plan.md`, `modified: CHANGELOG.md`. `git diff --cached` shows [actual diff output]"
+   - ❌ **BAD**: "Files staged for commit"
+
+6. **Grep/Verification Output**: Include actual command output proving claims
+   - ✅ **GOOD**: "Verified no checkpoint references remain: `grep -i 'checkpoint' .opencode/command/ar/execute-plan.md .opencode/command/ar/commit.md` returned no matches (exit code 1)"
+   - ❌ **BAD**: "Verified checkpoint references removed"
+
+**Examples:**
+
+✅ **GOOD Accomplishment Report:**
+```
+Accomplishment Report:
+Updated `.opencode/command/ar/execute-plan.md` troubleshooting section to remove checkpoint script references.
+
+Evidence:
+- File modified: `.opencode/command/ar/execute-plan.md`
+- Line changes: `git diff` shows lines 2356-2360 changed from:
+  ```
+  ### If progress tracking gets stuck:
+  # Check current status
+  ```
+  to:
+  ```
+  ### If step tracking gets stuck:
+  # Check session todo list status
+  ```
+- Verification: `grep -i 'checkpoint.*script' .opencode/command/ar/execute-plan.md` returns no matches
+- Git status: File appears as modified in `git status`
+```
+
+❌ **BAD Accomplishment Report:**
+```
+Accomplishment Report:
+Updated execute-plan.md to remove checkpoint references. Please verify the changes are correct.
+```
+
+**Key Principles:**
+- Include **actual command outputs**, not summaries
+- Include **file paths with line numbers** for code references
+- Include **git diff output** showing exact changes
+- Include **grep/search output** proving verification claims
+- Include **test results** with specific test names and outcomes
+- Include **build outputs** showing compilation and execution details
+- **DO NOT** tell step-verifier what to verify - report what was done with evidence
+- **DO NOT** use vague descriptions - provide specific details
+- **CRITICAL**: All evidence will be validated by step-verifier - files must exist, paths must be correct, line numbers must be accurate, git diff must match actual changes, outputs must be real
+
+**Evidence Validation by Step-Verifier:**
+
+The step-verifier sub-agent validates ALL evidence provided in accomplishment reports:
+- **File existence**: Verifies all mentioned files actually exist at the specified paths
+- **Path correctness**: Validates file paths are accurate and accessible
+- **Line number accuracy**: Checks that mentioned line numbers contain the claimed content
+- **Git diff validation**: Executes `git diff` and `git status` to verify claims match actual changes
+- **Command output validation**: Verifies command outputs are plausible and match actual execution
+- **Test result validation**: Confirms test results match actual test files and execution
+- **STOP on validation failure**: If evidence validation fails, step-verifier will STOP execution and require accurate evidence
 
 **Verification report interpretation:**
 

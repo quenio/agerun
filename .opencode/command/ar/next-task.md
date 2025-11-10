@@ -133,14 +133,17 @@ Before proceeding to Step 2, update the verification todo item status to `in_pro
 
 Before proceeding to Step 2, you MUST verify Step 1 completion via **step-verifier sub-agent**:
 
-1. **Report accomplishments with evidence**:
+1. **Report accomplishments with concrete evidence**:
+   - Describe what was accomplished (files read, context gathered, etc.)
+   - Provide **concrete evidence**: actual file paths, command outputs, git status/diff, specific content snippets
+   - **DO NOT** use vague summaries - provide specific details (see [kb/sub-agent-verification-pattern.md](../../../kb/sub-agent-verification-pattern.md) for examples)
    - AGENTS.md was read (provide file path and relevant sections)
    - Session context was checked (describe what was checked)
    - Step objectives were met (describe what was accomplished)
 
 2. **Invoke step-verifier sub-agent** using `mcp_sub-agents_run_agent`:
    - Agent: `"step-verifier"`
-   - Prompt: "Verify Step 1: Read Context completion for next-task command. Todo Item: [what was accomplished]. Command File: .opencode/command/ar/next-task.md. Step: Step 1: Read Context. Accomplishment Report: [evidence of what was accomplished]"
+   - Prompt: "Verify Step 1: Read Context completion for next-task command. Todo Item: [what was accomplished]. Command File: .opencode/command/ar/next-task.md. Step: Step 1: Read Context. Accomplishment Report: [CONCRETE EVIDENCE: file paths read, command outputs, git status, specific content snippets - see kb/sub-agent-verification-pattern.md for requirements]"
    - The step-verifier will independently verify by reading AGENTS.md, checking session context, etc.
 
 3. **Handle verification results**:
