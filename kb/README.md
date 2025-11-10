@@ -36,6 +36,7 @@ Each learning file contains:
 - [Checkpoint Sequential Execution Discipline](checkpoint-sequential-execution-discipline.md)
 - [MCP Sub-Agent Integration Pattern](mcp-sub-agent-integration-pattern.md) ⭐ NEW - Integrating MCP sub-agents into command workflows (session 2025-11-08)
 - [Sub-Agent Verification Pattern](sub-agent-verification-pattern.md) ⭐ NEW - Using MCP sub-agents for step verification (session 2025-11-08)
+- [Evidence Validation Requirements Pattern](evidence-validation-requirements-pattern.md) ⭐ NEW - Verification systems must validate evidence existence and validity (session 2025-11-10)
 - [Command Thoroughness Requirements Pattern](command-thoroughness-requirements-pattern.md)
 - [Development Practice Groups](development-practice-groups.md)
 - [Gate Enforcement Exit Codes Pattern](gate-enforcement-exit-codes-pattern.md)
@@ -351,6 +352,7 @@ Each learning file contains:
 - [Documentation Index Consistency Pattern](documentation-index-consistency-pattern.md)
 - [Documentation Placeholder Validation Pattern](documentation-placeholder-validation-pattern.md)
 - [Documentation Update Cascade Pattern](documentation-update-cascade-pattern.md)
+- [Architectural Documentation Consistency Pattern](architectural-documentation-consistency-pattern.md) ⭐ NEW - Systematic updates across all documentation layers for architectural changes (session 2025-11-10)
 - [Documentation Validation Enhancement Patterns](documentation-validation-enhancement-patterns.md)
 - [Documentation Validation Error Patterns](documentation-validation-error-patterns.md)
 - [Documentation-Only Change Pattern](documentation-only-change-pattern.md)
@@ -396,7 +398,7 @@ Each learning file contains:
 #### 6.2 Automation & Scripts
 - [Automated Batch Documentation Fixes](automated-batch-documentation-fixes.md)
 - [Batch Documentation Fix Enhancement](batch-documentation-fix-enhancement.md)
-- [Batch Update Script Pattern](batch-update-script-pattern.md)
+- [Batch Update Script Pattern](batch-update-script-pattern.md) ⭐ UPDATED - Added command-file-specific batch update example (session 2025-11-10)
 - [Command Continuous Improvement Pattern](command-continuous-improvement-pattern.md)
 - [Concise Script Output Principle](concise-script-output-principle.md)
 - [Cross-Platform Bash Script Patterns](cross-platform-bash-script-patterns.md) ⭐ NEW - macOS vs Linux compatibility patterns for sed, pattern matching, and platform detection

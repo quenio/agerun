@@ -261,6 +261,7 @@ The top-level agent must fix these issues before continuing.
 - [Checkpoint Tracking Verification Separation](checkpoint-tracking-verification-separation.md) - Separating tracking from verification
 - [Checkpoint-Based Workflow Pattern](checkpoint-based-workflow-pattern.md) - Progress tracking with checkpoint scripts
 - [Checkpoint Work Verification Anti-Pattern](checkpoint-work-verification-antipattern.md) - Why verification is critical
+- [Evidence Validation Requirements Pattern](evidence-validation-requirements-pattern.md) - Validating evidence existence and validity in verification systems
 - [MCP Sub-Agent Integration Pattern](mcp-sub-agent-integration-pattern.md) - How to integrate sub-agents
 - [Interleaved Todo Item Pattern](interleaved-todo-item-pattern.md) - Initializing step and verification todos together
 - [Session Todo List Tracking Pattern](session-todo-list-tracking-pattern.md) - Tracking steps in session todo list

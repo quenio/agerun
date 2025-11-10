@@ -25,7 +25,7 @@ After completing each step, you MUST:
    - Describe what was accomplished (files created/modified, commands executed, outputs produced)
    - Provide **concrete evidence**: actual file paths with line numbers, full command outputs, git diff output, test results with specific test names, grep/search output proving claims
    - **DO NOT** tell step-verifier what to verify - report what was done with evidence
-   - **DO NOT** use vague summaries - provide specific details (see [kb/sub-agent-verification-pattern.md](../../../kb/sub-agent-verification-pattern.md) for examples)
+   - **DO NOT** use vague summaries - provide specific details (see [kb/sub-agent-verification-pattern.md](../../../kb/sub-agent-verification-pattern.md) and [kb/evidence-validation-requirements-pattern.md](../../../kb/evidence-validation-requirements-pattern.md) for examples)
 
 2. **Invoke step-verifier sub-agent**
    - Use `mcp_sub-agents_run_agent` tool with:
@@ -559,7 +559,7 @@ The following steps must be completed first:
    git diff --name-only | grep "kb.*\.md" | wc -l  # Should be > new articles
    ```
    
-   **Note**: After architectural changes, verify cross-references are updated ([details](../../../kb/architectural-change-verification-pattern.md))
+   **Note**: After architectural changes, verify cross-references are updated ([details](../../../kb/architectural-change-verification-pattern.md)). For systematic updates across all documentation layers, see [kb/architectural-documentation-consistency-pattern.md](../../../kb/architectural-documentation-consistency-pattern.md).
 
 ```bash
 # Mark Step 6 complete with cross-reference verification

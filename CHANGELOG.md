@@ -1,5 +1,36 @@
 # AgeRun CHANGELOG
 
+## 2025-11-10 (New Learnings: Evidence Validation and Documentation Consistency Patterns)
+
+- **New Learnings: Evidence Validation and Documentation Consistency Patterns**
+
+  Extracted learnings from session about evidence validation requirements and architectural documentation consistency. Created comprehensive KB articles documenting these patterns and updated related documentation.
+
+  **KB Articles Created**:
+  - `kb/evidence-validation-requirements-pattern.md` - Documents requirement that verification systems must validate evidence existence and validity, not just accept claims; includes 8-point validation checklist and STOP instructions
+  - `kb/architectural-documentation-consistency-pattern.md` - Documents systematic updates across all documentation layers (agent specs, KB articles, commands, main guides) for architectural changes; includes cross-reference maintenance patterns
+
+  **KB Articles Updated**:
+  - `kb/batch-update-script-pattern.md` - Added command-file-specific batch update example with Python script pattern
+  - `kb/sub-agent-verification-pattern.md` - Added cross-reference to evidence-validation-requirements-pattern.md
+  - `kb/documentation-update-cascade-pattern.md` - Added cross-reference to architectural-documentation-consistency-pattern.md
+  - `kb/mcp-sub-agent-integration-pattern.md` - Added cross-reference to evidence-validation-requirements-pattern.md
+  - `kb/architectural-change-verification-pattern.md` - Added cross-reference to architectural-documentation-consistency-pattern.md
+  - `kb/README.md` - Added 2 new articles and marked 1 updated article in index
+
+  **Commands Updated**:
+  - `.opencode/command/ar/new-learnings.md` - Added references to evidence-validation-requirements-pattern.md and architectural-documentation-consistency-pattern.md
+  - `.opencode/command/ar/execute-plan.md` - Added reference to evidence-validation-requirements-pattern.md
+  - `.opencode/command/ar/commit.md` - Added reference to evidence-validation-requirements-pattern.md
+
+  **AGENTS.md Updates**:
+  - Added reference to evidence-validation-requirements-pattern.md in "Command Step Tracking" section (line 438)
+  - Added reference to evidence-validation-requirements-pattern.md in "Evidence-based completion" section (line 579)
+  - Added reference to architectural-documentation-consistency-pattern.md in "Architectural changes" section (line 109)
+  - Added reference to architectural-documentation-consistency-pattern.md in "Doc updates" section (line 137)
+
+  **Impact**: New patterns documented for evidence validation requirements and architectural documentation consistency. All related documentation updated with cross-references, creating a web of knowledge. Commands and main guide reference new patterns for future use.
+
 ## 2025-11-10 (Enforce Concrete Evidence Requirements in Accomplishment Reports)
 
 - **Enforce Concrete Evidence Requirements in Accomplishment Reports**

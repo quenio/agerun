@@ -99,6 +99,7 @@ memory.result := 0  // Simplified, no wake check
 ```
 
 ## Related Patterns
+- [Architectural Documentation Consistency Pattern](architectural-documentation-consistency-pattern.md) - Systematic updates across all documentation layers for architectural changes
 - [Documentation Language Migration Updates](documentation-language-migration-updates.md)
 - [Specification Consistency Maintenance](specification-consistency-maintenance.md)
 - [Documentation Compacting Pattern](documentation-compacting-pattern.md)

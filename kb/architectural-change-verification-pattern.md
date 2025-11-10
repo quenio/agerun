@@ -166,6 +166,7 @@ Signs of complete architectural change:
 - No confusion in future sessions about which pattern to use
 
 ## Related Patterns
+- [Architectural Documentation Consistency Pattern](architectural-documentation-consistency-pattern.md) - Systematic updates across all documentation layers for architectural changes
 - [New Learnings Complete Integration Pattern](new-learnings-complete-integration-pattern.md) - Integration checklist including verification
 - [Systematic Consistency Verification](systematic-consistency-verification.md) - Automated verification scripts
 - [New Learnings Cross-Reference Requirement](new-learnings-cross-reference-requirement.md) - Cross-reference requirements

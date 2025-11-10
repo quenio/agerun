@@ -106,7 +106,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 **KB articles need AGENTS.md references** to be accessible in future sessions ([details](kb/claude-md-reference-requirement.md))
 **Cross-reference new KB articles**: MANDATORY bidirectional linking when creating KB articles ([details](kb/new-learnings-cross-reference-requirement.md))
 **Complete integration**: Cross-refs + command updates often missed ([details](kb/new-learnings-complete-integration-pattern.md))
-**Architectural changes**: Verify all files reflect changes systematically ([details](kb/architectural-change-verification-pattern.md))
+**Architectural changes**: Verify all files reflect changes systematically ([details](kb/architectural-change-verification-pattern.md), [consistency](kb/architectural-documentation-consistency-pattern.md))
 **Evidence-based debugging**: Always verify with concrete evidence, not assumptions ([details](kb/evidence-based-debugging.md))
 **Bug-to-architecture**: Bugs can reveal architectural improvements ([details](kb/bug-to-architecture-pattern.md))
 **Build output review**: Review complete command output, not just final status ([details](kb/comprehensive-output-review.md))
@@ -134,7 +134,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 - **Preferred types**: `ar_data_t*`, `ar_agent_t*`, `ar_expression_ast_t*`, `ar_instruction_ast_t*`
 - **Helper reference**: `python3 scripts/get_real_types.py --guide` for available APIs
 - **Feature removal**: Question if "core" features are truly essential ([details](kb/architectural-simplification-through-feature-removal.md))
-**Doc updates**: Follow cascade order: methods→modules→project ([details](kb/documentation-update-cascade-pattern.md))
+**Doc updates**: Follow cascade order: methods→modules→project ([details](kb/documentation-update-cascade-pattern.md)); for architectural changes, update all layers systematically ([details](kb/architectural-documentation-consistency-pattern.md))
 
 ### 1. Memory Management (ZERO TOLERANCE FOR LEAKS)
 
@@ -435,7 +435,7 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 **Navigation & Files**: Absolute paths, git not .bak, ar_io backups ([details](kb/absolute-path-navigation.md), [backups](kb/file-io-backup-mechanism.md))
 **Build & Debug**: `make sanitize-tests 2>&1`, make targets only, parallel jobs ([details](kb/development-debug-tools.md), [make](kb/make-target-testing-discipline.md), [compile](kb/compilation-driven-refactoring-pattern.md), [shell diagnostics](kb/shell-configuration-diagnostic-troubleshooting.md))
-**Command Step Tracking**: Commands use session todo list tracking + step-verifier verification (NOT checkpoint scripts). Use `todo_write` to track steps and `mcp_sub-agents_run_agent` with `step-verifier` for verification ([details](kb/checkpoint-tracking-verification-separation.md), [session todo tracking](kb/session-todo-list-tracking-pattern.md), [step-verifier](kb/sub-agent-verification-pattern.md)). **CRITICAL**: Accomplishment reports MUST include concrete evidence (file paths with line numbers, full command outputs, git diff, test results) - see [kb/sub-agent-verification-pattern.md](kb/sub-agent-verification-pattern.md) for requirements. Checkpoint scripts may still be used for internal workflows (not commands).
+**Command Step Tracking**: Commands use session todo list tracking + step-verifier verification (NOT checkpoint scripts). Use `todo_write` to track steps and `mcp_sub-agents_run_agent` with `step-verifier` for verification ([details](kb/checkpoint-tracking-verification-separation.md), [session todo tracking](kb/session-todo-list-tracking-pattern.md), [step-verifier](kb/sub-agent-verification-pattern.md)). **CRITICAL**: Accomplishment reports MUST include concrete evidence (file paths with line numbers, full command outputs, git diff, test results) - see [kb/sub-agent-verification-pattern.md](kb/sub-agent-verification-pattern.md) and [kb/evidence-validation-requirements-pattern.md](kb/evidence-validation-requirements-pattern.md) for requirements. Checkpoint scripts may still be used for internal workflows (not commands).
 **YAML & Persistence**: 2-space indent, escape multiline, direct I/O, validate contracts ([details](kb/yaml-serialization-direct-io-pattern.md), [multiline](kb/multi-line-data-persistence-format.md), [contracts](kb/yaml-implicit-contract-validation-pattern.md))
 **Error & Logs**: Context filtering, precise grep, fix root causes ([details](kb/systematic-whitelist-error-resolution.md), [logs](kb/build-log-extraction-patterns.md), [grep](kb/grep-or-syntax-differences.md), [config migration](kb/configuration-migration-troubleshooting-strategy.md))
 **CI/CD**: gh CLI debugging, version verification ([details](kb/github-actions-debugging-workflow.md), [versions](kb/tool-version-selection-due-diligence.md))
@@ -576,7 +576,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 - **Session todo tracking**: Commands use session todo list tracking (via `todo_write`) to track steps across session boundaries ([details](kb/session-todo-list-tracking-pattern.md)); initialize all step and verification todos together at workflow start ([details](kb/interleaved-todo-item-pattern.md))
 - **Step-verifier verification**: All verification done via step-verifier sub-agent (NOT checkpoint scripts) ([details](kb/checkpoint-tracking-verification-separation.md), [step-verifier](kb/sub-agent-verification-pattern.md))
 - **Sub-agent verification**: Use MCP sub-agents for sophisticated step verification with evidence-based reporting ([details](kb/sub-agent-verification-pattern.md), [integration](kb/mcp-sub-agent-integration-pattern.md))
-- **Evidence-based completion**: Critical steps require **concrete evidence** in accomplishment reports (file paths with line numbers, full command outputs, git diff, test results) - see [kb/sub-agent-verification-pattern.md](kb/sub-agent-verification-pattern.md) for requirements
+- **Evidence-based completion**: Critical steps require **concrete evidence** in accomplishment reports (file paths with line numbers, full command outputs, git diff, test results) - see [kb/sub-agent-verification-pattern.md](kb/sub-agent-verification-pattern.md) and [kb/evidence-validation-requirements-pattern.md](kb/evidence-validation-requirements-pattern.md) for requirements
 - **No shortcut marking**: Mark steps complete in session todo list ONLY after step-verifier verification passes - read step instructions carefully
 - **Step instruction reading**: ALWAYS understand what each step requires BEFORE executing - skipping this causes missed work
 - **All steps must execute**: No skipping, no batching - complete each step sequentially with actual output
