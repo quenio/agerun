@@ -1031,10 +1031,33 @@ Track iteration execution progress using the session todo list.
 
 **For EACH iteration, execute RED-GREEN-REFACTOR cycle:**
 
+**MANDATORY: Initialize Todo Items for Each Iteration**
+
+Before starting each iteration, initialize todo items for all phases and verifications:
+
+```bash
+# For Iteration N.M, create these todo items:
+- "Iteration N.M RED Phase" - Status: pending
+- "Verify Iteration N.M RED Phase" - Status: pending
+- "Iteration N.M GREEN Phase" - Status: pending
+- "Verify Iteration N.M GREEN Phase" - Status: pending
+- "Iteration N.M REFACTOR Phase" - Status: pending
+- "Verify Iteration N.M REFACTOR Phase" - Status: pending
+- "Iteration N.M: Update Plan Status" - Status: pending
+```
+
+**Important**: All todo items are initialized as `pending` and will be updated to `in_progress` when their respective phase/verification begins, then to `completed` after verification passes.
+
 ```markdown
 === ITERATION N.M: [Behavior] ===
 
 **RED Phase:**
+
+**MANDATORY: Update todo item status**
+Before starting RED phase, update the todo item status to `in_progress`:
+- Update todo item: "Iteration N.M RED Phase"
+- Status: in_progress
+
 1. **⭐ LESSON 7 CHECK**: Verify plan's RED phase documents temporary corruption
    - Read plan's RED phase for this iteration
    - Confirm temporary code/break is documented
@@ -1055,7 +1078,42 @@ make ar_delegate_tests 2>&1
 # Expected: true, Got: false (or similar)
 ```
 
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before proceeding to GREEN phase, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Iteration N.M RED Phase"
+- Status: in_progress
+
+Before proceeding to GREEN phase, you MUST verify RED phase completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - Test written and added to test file
+   - Test fails for the correct reason (matches plan's documented corruption)
+   - RED phase objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after step-verifier verification passes**:
+
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Iteration N.M RED Phase"
+   - Status: completed
+
+2. **Mark phase complete in session todo list** using `todo_write`:
+   - Update todo item: "Iteration N.M RED Phase"
+   - Status: completed
+
 **GREEN Phase:**
+
+**MANDATORY: Update todo item status**
+Before starting GREEN phase, update the todo item status to `in_progress`:
+- Update todo item: "Iteration N.M GREEN Phase"
+- Status: in_progress
+
 1. Implement minimal code to pass test
 2. Follow minimalism principle (hardcoded returns valid)
 3. NO future-proofing or untested features
@@ -1070,7 +1128,42 @@ make ar_delegate_tests 2>&1
 # All tests passing
 ```
 
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before proceeding to REFACTOR phase, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Iteration N.M GREEN Phase"
+- Status: in_progress
+
+Before proceeding to REFACTOR phase, you MUST verify GREEN phase completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - Implementation added to code
+   - Test now passes
+   - GREEN phase objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after step-verifier verification passes**:
+
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Iteration N.M GREEN Phase"
+   - Status: completed
+
+2. **Mark phase complete in session todo list** using `todo_write`:
+   - Update todo item: "Iteration N.M GREEN Phase"
+   - Status: completed
+
 **REFACTOR Phase (MANDATORY):**
+
+**MANDATORY: Update todo item status**
+Before starting REFACTOR phase, update the todo item status to `in_progress`:
+- Update todo item: "Iteration N.M REFACTOR Phase"
+- Status: in_progress
+
 1. Look for improvements (extract helpers, improve naming)
 2. If improvements found, apply them
 3. If NO improvements needed, state "No refactoring needed for this iteration"
@@ -1083,6 +1176,35 @@ make ar_delegate_tests 2>&1
 # Should show:
 # All tests still passing after refactoring
 ```
+
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before updating plan status, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Iteration N.M REFACTOR Phase"
+- Status: in_progress
+
+Before updating plan status, you MUST verify REFACTOR phase completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - REFACTOR phase completed (improvements applied or documented as not needed)
+   - Tests still passing after refactoring
+   - REFACTOR phase objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after step-verifier verification passes**:
+
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Iteration N.M REFACTOR Phase"
+   - Status: completed
+
+2. **Mark phase complete in session todo list** using `todo_write`:
+   - Update todo item: "Iteration N.M REFACTOR Phase"
+   - Status: completed
 
 **After completing iteration:**
 - [ ] **⭐ LESSON 7 VERIFIED**: Plan's RED phase had temporary corruption documented
@@ -1282,6 +1404,11 @@ SANITIZER_TEST_SRC = $(filter-out %_dlsym_tests.c,$(TEST_SRC))
 
 **After completing each iteration's RED-GREEN-REFACTOR cycle, update the plan file:**
 
+**MANDATORY: Update todo item status**
+Before updating plan status, update the todo item status to `in_progress`:
+- Update todo item: "Iteration N.M: Update Plan Status"
+- Status: in_progress
+
 **For EACH iteration implemented:**
 
 1. **Verify Iteration Complete**:
@@ -1296,6 +1423,10 @@ SANITIZER_TEST_SRC = $(filter-out %_dlsym_tests.c,$(TEST_SRC))
    - To:     "#### Iteration X.Y: description - IMPLEMENTED"
    - OR Change: "#### Iteration X.Y: description - REVISED"
    - To:     "#### Iteration X.Y: description - IMPLEMENTED"
+
+3. **Mark plan status update complete**:
+   - Update todo item: "Iteration N.M: Update Plan Status"
+   - Status: completed
 
 **Status Update Example:**
 ```bash

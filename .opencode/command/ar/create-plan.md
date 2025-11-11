@@ -965,8 +965,38 @@ For EACH iteration:
 
 Every plan iteration MUST use this template structure:
 
+**⚠️ MANDATORY: Todo Item Tracking and Step-Verifier Verification**
+
+When executing iterations generated from this template, follow these steps:
+
+1. **Initialize todo items** before starting each iteration:
+   - "Iteration N.M RED Phase" - Status: pending
+   - "Verify Iteration N.M RED Phase" - Status: pending
+   - "Iteration N.M GREEN Phase" - Status: pending
+   - "Verify Iteration N.M GREEN Phase" - Status: pending
+   - "Iteration N.M REFACTOR Phase" - Status: pending
+   - "Verify Iteration N.M REFACTOR Phase" - Status: pending
+   - "Iteration N.M: Update Plan Status" - Status: pending
+
+2. **For each phase (RED, GREEN, REFACTOR)**:
+   - Mark phase todo item as `in_progress` before starting
+   - Complete the phase work
+   - Invoke step-verifier sub-agent to verify phase completion
+   - Mark verification todo item as `completed` after verification passes
+   - Mark phase todo item as `completed` after verification passes
+   - Only then proceed to next phase
+
+3. **After all phases complete**:
+   - Update plan status from PENDING REVIEW/REVIEWED/REVISED to IMPLEMENTED
+   - Mark plan status update todo item as `completed`
+
 ```markdown
 #### RED Phase
+
+**MANDATORY: Update todo item status**
+Before starting RED phase, update the todo item status to `in_progress`:
+- Update todo item: "Iteration N.M RED Phase"
+- Status: in_progress
 
 **RED Phase has TWO independent goals (both must be completed):**
 
@@ -1002,9 +1032,43 @@ Verify: `make test` → assertion fails with [expected message]
 
 **Evidence of Goal 1 completion**: Test output showing FAILURE
 
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before proceeding to GREEN phase, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Iteration N.M RED Phase"
+- Status: in_progress
+
+Before proceeding to GREEN phase, you MUST verify RED phase completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - Test written and added to test file
+   - Test fails for the correct reason (matches plan's documented corruption)
+   - RED phase objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after step-verifier verification passes**:
+
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Iteration N.M RED Phase"
+   - Status: completed
+
+2. **Mark phase complete in session todo list** using `todo_write`:
+   - Update todo item: "Iteration N.M RED Phase"
+   - Status: completed
+
 ---
 
 #### GREEN Phase
+
+**MANDATORY: Update todo item status**
+Before starting GREEN phase, update the todo item status to `in_progress`:
+- Update todo item: "Iteration N.M GREEN Phase"
+- Status: in_progress
 
 **GREEN Phase Goal: Make Test Pass**
 
@@ -1023,6 +1087,75 @@ For **VERIFICATION iterations**:
 [Implementation or corruption removal code]
 Expected GREEN: "Test PASSES because [reason]"
 Verify: `make test` → assertion passes
+
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before proceeding to REFACTOR phase, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Iteration N.M GREEN Phase"
+- Status: in_progress
+
+Before proceeding to REFACTOR phase, you MUST verify GREEN phase completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - Implementation added to code
+   - Test now passes
+   - GREEN phase objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after step-verifier verification passes**:
+
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Iteration N.M GREEN Phase"
+   - Status: completed
+
+2. **Mark phase complete in session todo list** using `todo_write`:
+   - Update todo item: "Iteration N.M GREEN Phase"
+   - Status: completed
+
+---
+
+#### REFACTOR Phase (MANDATORY)
+
+**MANDATORY: Update todo item status**
+Before starting REFACTOR phase, update the todo item status to `in_progress`:
+- Update todo item: "Iteration N.M REFACTOR Phase"
+- Status: in_progress
+
+[Apply improvements if any, or state "No refactoring needed for this iteration"]
+
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before updating plan status, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Iteration N.M REFACTOR Phase"
+- Status: in_progress
+
+Before updating plan status, you MUST verify REFACTOR phase completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - REFACTOR phase completed (improvements applied or documented as not needed)
+   - Tests still passing after refactoring
+   - REFACTOR phase objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after step-verifier verification passes**:
+
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Iteration N.M REFACTOR Phase"
+   - Status: completed
+
+2. **Mark phase complete in session todo list** using `todo_write`:
+   - Update todo item: "Iteration N.M REFACTOR Phase"
+   - Status: completed
 ```
 
 **MANDATORY EVIDENCE REQUIREMENT**: As you verify each RED phase, document the corruption in an evidence file:
@@ -1768,7 +1901,38 @@ Before completing the workflow, you MUST verify ALL steps were completed correct
 
 **Objective**: [What this iteration tests]
 
+**⚠️ MANDATORY: Todo Item Tracking and Step-Verifier Verification**
+
+When executing this iteration, follow these steps:
+
+1. **Initialize todo items** before starting:
+   - "Iteration 1.1 RED Phase" - Status: pending
+   - "Verify Iteration 1.1 RED Phase" - Status: pending
+   - "Iteration 1.1 GREEN Phase" - Status: pending
+   - "Verify Iteration 1.1 GREEN Phase" - Status: pending
+   - "Iteration 1.1 REFACTOR Phase" - Status: pending
+   - "Verify Iteration 1.1 REFACTOR Phase" - Status: pending
+   - "Iteration 1.1: Update Plan Status" - Status: pending
+
+2. **For each phase (RED, GREEN, REFACTOR)**:
+   - Mark phase todo item as `in_progress` before starting
+   - Complete the phase work
+   - Invoke step-verifier sub-agent to verify phase completion
+   - Mark verification todo item as `completed` after verification passes
+   - Mark phase todo item as `completed` after verification passes
+   - Only then proceed to next phase
+
+3. **After all phases complete**:
+   - Update plan status from PENDING REVIEW/REVIEWED/REVISED to IMPLEMENTED
+   - Mark plan status update todo item as `completed`
+
 **RED Phase:**
+
+**MANDATORY: Update todo item status**
+Before starting RED phase, update the todo item status to `in_progress`:
+- Update todo item: "Iteration 1.1 RED Phase"
+- Status: in_progress
+
 ⭐ **LESSON 7 CRITICAL**: Document temporary corruption that makes assertion fail
 ```c
 static void test_[function]__[behavior](void) {
@@ -1791,7 +1955,42 @@ static void test_[function]__[behavior](void) {
 }
 ```
 
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before proceeding to GREEN phase, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Iteration 1.1 RED Phase"
+- Status: in_progress
+
+Before proceeding to GREEN phase, you MUST verify RED phase completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - Test written and added to test file
+   - Test fails for the correct reason (matches plan's documented corruption)
+   - RED phase objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after step-verifier verification passes**:
+
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Iteration 1.1 RED Phase"
+   - Status: completed
+
+2. **Mark phase complete in session todo list** using `todo_write`:
+   - Update todo item: "Iteration 1.1 RED Phase"
+   - Status: completed
+
 **GREEN Phase:**
+
+**MANDATORY: Update todo item status**
+Before starting GREEN phase, update the todo item status to `in_progress`:
+- Update todo item: "Iteration 1.1 GREEN Phase"
+- Status: in_progress
+
 ```c
 [return_type] ar_[function]__[operation]([params]) {
     // Minimal implementation
@@ -1799,6 +1998,73 @@ static void test_[function]__[behavior](void) {
     // Remove temporary corruption from RED phase
 }
 ```
+
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before proceeding to REFACTOR phase, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Iteration 1.1 GREEN Phase"
+- Status: in_progress
+
+Before proceeding to REFACTOR phase, you MUST verify GREEN phase completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - Implementation added to code
+   - Test now passes
+   - GREEN phase objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after step-verifier verification passes**:
+
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Iteration 1.1 GREEN Phase"
+   - Status: completed
+
+2. **Mark phase complete in session todo list** using `todo_write`:
+   - Update todo item: "Iteration 1.1 GREEN Phase"
+   - Status: completed
+
+**REFACTOR Phase (MANDATORY):**
+
+**MANDATORY: Update todo item status**
+Before starting REFACTOR phase, update the todo item status to `in_progress`:
+- Update todo item: "Iteration 1.1 REFACTOR Phase"
+- Status: in_progress
+
+[Apply improvements if any, or state "No refactoring needed for this iteration"]
+
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before updating plan status, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Iteration 1.1 REFACTOR Phase"
+- Status: in_progress
+
+Before updating plan status, you MUST verify REFACTOR phase completion via step-verifier sub-agent:
+
+1. **Invoke step-verifier sub-agent** to verify:
+   - REFACTOR phase completed (improvements applied or documented as not needed)
+   - Tests still passing after refactoring
+   - REFACTOR phase objectives were met
+
+2. **If verification fails**: Fix issues and re-verify before proceeding
+
+3. **If sub-agent unavailable**: Stop and request user manual verification
+
+**Only after step-verifier verification passes**:
+
+1. **Mark verification complete in session todo list** using `todo_write`:
+   - Update todo item: "Verify Iteration 1.1 REFACTOR Phase"
+   - Status: completed
+
+2. **Mark phase complete in session todo list** using `todo_write`:
+   - Update todo item: "Iteration 1.1 REFACTOR Phase"
+   - Status: completed
 
 **Verification:**
 - Test passes

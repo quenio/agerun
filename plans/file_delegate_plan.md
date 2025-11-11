@@ -209,7 +209,7 @@ ar_file_delegate_t* ar_file_delegate__create(ar_log_t *ref_log, const char *ref_
 
 ---
 
-#### Iteration 8.1.2: ar_file_delegate__create() handles NULL path parameter - REVIEWED
+#### Iteration 8.1.2: ar_file_delegate__create() handles NULL path parameter - IMPLEMENTED
 
 **Objective**: Verify create() returns NULL when path parameter is NULL
 

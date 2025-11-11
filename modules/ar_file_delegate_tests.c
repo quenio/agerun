@@ -9,6 +9,7 @@
 // Test function declarations
 static void test_file_delegate__create_returns_non_null(void);
 static void test_file_delegate__create_handles_null_log(void);
+static void test_file_delegate__create_handles_null_path(void);
 static void test_file_delegate__get_type(void);
 
 int main(void) {
@@ -28,6 +29,7 @@ int main(void) {
     // Run tests
     test_file_delegate__create_returns_non_null();
     test_file_delegate__create_handles_null_log();
+    test_file_delegate__create_handles_null_path();
     test_file_delegate__get_type();
 
     printf("All file_delegate tests passed!\n");
@@ -67,6 +69,24 @@ static void test_file_delegate__create_handles_null_log(void) {
 
     // Cleanup
     ar_file_delegate__destroy(own_delegate);
+
+    printf("    PASS\n");
+}
+
+static void test_file_delegate__create_handles_null_path(void) {
+    printf("  test_file_delegate__create_handles_null_path...\n");
+
+    // Given a log instance and a NULL path parameter
+    ar_log_t *own_log = ar_log__create();
+
+    // When creating a FileDelegate with NULL path
+    ar_file_delegate_t *own_delegate = ar_file_delegate__create(own_log, NULL);
+
+    // Then it should return NULL
+    AR_ASSERT(own_delegate == NULL, "Should reject NULL path");  // ← FAILS (no NULL check)
+
+    // Cleanup
+    ar_log__destroy(own_log);
 
     printf("    PASS\n");
 }
