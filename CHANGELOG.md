@@ -1,5 +1,23 @@
 # AgeRun CHANGELOG
 
+## 2025-11-11 (FileDelegate Plan Template Update)
+
+- **FileDelegate Plan Template Update**
+
+  Updated `plans/file_delegate_plan.md` to follow the latest `create-plan.md` template structure with phase-level todo tracking and step-verifier verification.
+
+  **Plan Updates**:
+  - Updated all 33 iterations to include todo item tracking and step-verifier verification sections
+  - Added mandatory todo item initialization instructions (7 items per iteration)
+  - Added step-verifier verification requirements after each TDD phase (RED, GREEN, REFACTOR)
+  - Each iteration now includes complete workflow instructions matching latest template
+
+  **Script Addition**:
+  - Created `scripts/update_plan_iterations.py` to systematically update plan iterations with new template structure
+  - Script adds todo tracking sections and verification requirements to all iterations
+
+  **Impact**: FileDelegate plan now matches the enhanced TDD workflow with systematic phase-level verification. All 33 iterations follow consistent template structure ensuring quality gates at each phase boundary.
+
 ## 2025-11-10 (TDD Command Enhancement: Phase-Level Todo Tracking and Verification)
 
 - **TDD Command Enhancement: Phase-Level Todo Tracking and Verification**
