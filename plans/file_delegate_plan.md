@@ -127,9 +127,9 @@ ar_file_delegate_t* ar_file_delegate__create(ar_log_t *ref_log, const char *ref_
 
 ---
 
-#### Iteration 8.1.1: ar_file_delegate__create() handles NULL log parameter - REVIEWED
+#### Iteration 8.1.1: ar_file_delegate__create() handles NULL log parameter - IMPLEMENTED
 
-**Objective**: Verify create() returns NULL when log parameter is NULL
+**Objective**: Verify create() accepts NULL log parameter (log module handles NULL gracefully)
 
 **RED Phase:**
 
@@ -151,16 +151,17 @@ ar_file_delegate_t* ar_file_delegate__create(ar_log_t *ref_log, const char *ref_
 
 ```c
 static void test_file_delegate__create_handles_null_log(void) {
-    // Given a NULL log parameter
+    // Given a NULL log parameter (log module can handle NULL)
     ar_log_t *ref_log = NULL;
 
     // When creating a FileDelegate with NULL log
-    ar_file_delegate_t *own_delegate = ar_file_delegate__create(ref_log, "/tmp");
+    ar_file_delegate_t *own_delegate = ar_file_delegate__create(ref_log, "/tmp/allowed");
 
-    // Then it should return NULL
-    AR_ASSERT(own_delegate == NULL, "Should reject NULL log");  // ← FAILS (no NULL check)
+    // Then it should succeed (log module handles NULL gracefully)
+    AR_ASSERT(own_delegate != NULL, "Should accept NULL log");  // ← FAILS (NULL check rejects it)
 
-    // Cleanup (none needed - delegate should be NULL)
+    // Cleanup
+    ar_file_delegate__destroy(own_delegate);
 }
 ```
 
@@ -168,17 +169,17 @@ static void test_file_delegate__create_handles_null_log(void) {
 
 **Step 2: Prove Test Validity (GOAL 1 - MANDATORY)**
 
-**Temporary corruption**: Use implementation from 8.1 which lacks NULL check
+**Temporary corruption**: Temporarily reject NULL log to prove test catches this behavior
 ```c
 ar_file_delegate_t* ar_file_delegate__create(ar_log_t *ref_log, const char *ref_allowed_path) {
-    // TEMPORARY: No NULL check - this proves the test catches missing validation
-    ar_file_delegate_t *own_delegate = AR__HEAP__MALLOC(sizeof(ar_file_delegate_t));
-    own_delegate->ref_log = ref_log;
-    own_delegate->own_allowed_path = AR__HEAP__STRDUP(ref_allowed_path);
-    return own_delegate;  // Returns non-NULL even when log is NULL
+    // TEMPORARY: Reject NULL log to prove test catches this behavior
+    if (!ref_log) {
+        return NULL;  // TEMPORARY: This proves test catches rejection
+    }
+    // ... rest of implementation
 }
 ```
-Expected RED: "Test FAILS at AR_ASSERT with 'Should reject NULL log'"
+Expected RED: "Test FAILS at AR_ASSERT with 'Should accept NULL log'"
 Verify: `make ar_file_delegate_tests` → assertion fails
 
 **Evidence of Goal 1 completion**: Test output showing FAILURE
@@ -187,15 +188,16 @@ Verify: `make ar_file_delegate_tests` → assertion fails
 
 **GREEN Phase:**
 
-**This iteration**: NEW - Add NULL log validation
+**This iteration**: VERIFICATION - Confirm NULL log is accepted (no validation needed)
 
 ```c
 ar_file_delegate_t* ar_file_delegate__create(ar_log_t *ref_log, const char *ref_allowed_path) {
-    if (!ref_log) return NULL;  // Add NULL check for log
+    // Note: NULL log is acceptable - log module handles NULL gracefully
+    // No NULL check needed for log parameter
 
     // Rest of implementation from 8.1
     ar_file_delegate_t *own_delegate = AR__HEAP__MALLOC(sizeof(ar_file_delegate_t));
-    own_delegate->ref_log = ref_log;
+    own_delegate->ref_log = ref_log;  // Can be NULL - log module handles it
     own_delegate->own_allowed_path = AR__HEAP__STRDUP(ref_allowed_path);
     return own_delegate;
 }

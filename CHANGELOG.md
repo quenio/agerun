@@ -1,5 +1,30 @@
 # AgeRun CHANGELOG
 
+## 2025-11-10 (FileDelegate NULL Log Parameter Correction)
+
+- **FileDelegate NULL Log Parameter Correction**
+
+  Corrected Iteration 8.1.1 to accept NULL log parameter instead of rejecting it, aligning with log module's graceful NULL handling.
+
+  **Implementation Changes**:
+  - Removed NULL check for `ref_log` parameter in `ar_file_delegate__create()` (modules/ar_file_delegate.c line 13)
+  - Updated test `test_file_delegate__create_handles_null_log()` to verify NULL log is accepted (modules/ar_file_delegate_tests.c line 56-72)
+  - Verified RED phase: Test fails when NULL log is rejected (temporary corruption applied)
+  - Verified GREEN phase: Test passes when NULL log is accepted (correct implementation)
+
+  **Documentation Updates**:
+  - Updated `modules/ar_file_delegate.h`: Added "(may be NULL)" to `ref_log` parameter documentation (line 13)
+  - Added note: "NULL log is acceptable - the log module handles NULL gracefully" (line 18)
+  - Updated `modules/ar_file_delegate.md`: Added "(may be NULL)" to parameter documentation (line 44)
+  - Added explanation: "NULL log is acceptable - the log module handles NULL gracefully. When NULL is provided, logging operations will silently succeed without writing to a log file." (line 47)
+
+  **Plan Updates**:
+  - Updated `plans/file_delegate_plan.md`: Changed Iteration 8.1.1 objective from "returns NULL when log parameter is NULL" to "accepts NULL log parameter (log module handles NULL gracefully)"
+  - Updated test expectations and RED/GREEN phase descriptions to reflect NULL acceptance behavior
+  - Status: IMPLEMENTED
+
+  **Impact**: FileDelegate now correctly accepts NULL log parameters, matching the log module's graceful NULL handling. Documentation accurately reflects this behavior. All tests pass with zero memory leaks.
+
 ## 2025-11-10 (FileDelegate Iteration 8.1 Implementation and TDD Plan Validator Enhancement)
 
 - **FileDelegate Iteration 8.1 Implementation**

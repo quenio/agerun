@@ -10,9 +10,7 @@ struct ar_file_delegate_s {
 };
 
 ar_file_delegate_t* ar_file_delegate__create(ar_log_t *ref_log, const char *ref_allowed_path) {
-    if (!ref_log) {
-        return NULL;
-    }
+    // Note: NULL log is acceptable - log module handles NULL gracefully
     if (!ref_allowed_path) {
         return NULL;
     }

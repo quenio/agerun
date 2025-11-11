@@ -41,8 +41,10 @@ ar_file_delegate_t* ar_file_delegate__create(ar_log_t *ref_log, const char *ref_
 Creates a new file delegate instance.
 
 **Parameters:**
-- `ref_log`: The log instance for error reporting (borrowed reference)
+- `ref_log`: The log instance for error reporting (borrowed reference, may be NULL)
 - `ref_allowed_path`: The allowed directory path for file operations (borrowed string)
+
+**Note:** NULL log is acceptable - the log module handles NULL gracefully. When NULL is provided, logging operations will silently succeed without writing to a log file.
 
 **Returns:**
 - A new file delegate instance, or NULL on failure
