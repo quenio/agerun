@@ -16,6 +16,7 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
 ### Prerequisites
 
 - C compiler (gcc-13)
+- Zig (0.14.1)
 - Make
 
 ### Build Steps
