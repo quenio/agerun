@@ -912,6 +912,40 @@ This will show:
 - Current status (REVIEWED or REVISED)
 - Total count of iterations ready to execute
 
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before proceeding to Step 8, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Step 7: Extract REVIEWED or REVISED iterations"
+- Status: in_progress
+
+**Inline Verification for Step 7:**
+
+1. **Verify REVIEWED/REVISED extraction was performed**
+   - Command: `./scripts/extract-tdd-cycles.sh <plan-file> 'REVIEWED|REVISED'`
+   - Expected output: List of iterations with REVIEWED or REVISED status
+   - Verify: Output shows at least one iteration ready for implementation
+
+2. **Verify count of iterations ready for execution**
+   - Command: `./scripts/extract-tdd-cycles.sh <plan-file> 'REVIEWED|REVISED' | grep -c "Iteration"`
+   - Expected output: A count greater than 0
+   - Verify: Ready-to-execute iteration count documented
+
+3. **Report Evidence**:
+   ```
+   ✅ Step 7 Verification Complete
+
+   - REVIEWED/REVISED iterations extracted: [count]
+   - Examples extracted:
+     * [list first 3-5 iterations]
+   - Confirmation: Ready for Stage 2 execution
+   ```
+
+4. **Mark complete**:
+   - Update todo item: "Verify Step 7: Extract REVIEWED or REVISED iterations" → Status: completed
+   - Update todo item: "Step 7: Extract REVIEWED or REVISED iterations" → Status: completed
+
 **Expected gate output:**
 ```
 ✅ GATE 'Setup' - PASSED
