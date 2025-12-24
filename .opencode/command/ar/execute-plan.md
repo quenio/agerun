@@ -2,88 +2,33 @@ Execute a TDD plan document by implementing each iteration following the RED-GRE
 
 ## STEP VERIFICATION ENFORCEMENT
 
-**MANDATORY**: After completing each step, you MUST verify step completion using the **step-verifier sub-agent** before proceeding to the next step ([details](../../../kb/sub-agent-verification-pattern.md)).
+**MANDATORY**: After completing each step, you MUST verify step completion using inline verification checks before proceeding to the next step.
 
-### About the step-verifier Sub-Agent
+### Inline Verification Pattern
 
-The **step-verifier** is a specialized sub-agent that independently verifies step completion:
+Instead of calling a sub-agent, verify completion by checking concrete evidence directly:
 
-- **Reads command files** to understand step requirements
-- **Checks files, git status/diff, test results, build outputs** to verify accomplishments
-- **Compares accomplishments against requirements** systematically
-- **Reports verification results with evidence** (what was verified, what's missing)
-- **Provides STOP instructions** when failures are detected (blocks execution until fixed)
-- **Read-only agent**: Never modifies files, commits changes, or makes autonomous decisions
+1. **After completing work**, gather evidence showing what was accomplished:
+   - Files modified (with git diff or line numbers)
+   - Commands executed (with full output)
+   - Tests results (with specific test names and pass/fail status)
+   - Build/compilation output
 
-**CRITICAL**: The step-verifier independently verifies your claims. You report accomplishments with evidence; the step-verifier verifies by reading files and checking outputs.
+2. **Report accomplishments with concrete evidence**
+   - Include actual file paths, line numbers, command outputs
+   - Show git diff or grep output proving claims
+   - Document test results and memory leak status
+   - Examples:
+     - ✅ "Modified `modules/ar_foo.c` lines 45-52: Added NULL check. Test `test_foo__handles_null` now passes."
+     - ✅ "Build output: `PASSED: test_delegate_tests`. Memory report shows 0 leaks."
+     - ❌ "Updated some files" (too vague)
 
-### Step Verification Process
-
-After completing each step, you MUST:
-
-1. **Report accomplishments with concrete evidence**
-   - Describe what was accomplished (files created/modified, commands executed, outputs produced)
-   - Provide **concrete evidence**: actual file paths with line numbers, full command outputs, git diff output, test results with specific test names, grep/search output proving claims
-   - **DO NOT** tell step-verifier what to verify - report what was done with evidence
-   - **DO NOT** use vague summaries - provide specific details (see [kb/sub-agent-verification-pattern.md](../../../kb/sub-agent-verification-pattern.md) and [kb/evidence-validation-requirements-pattern.md](../../../kb/evidence-validation-requirements-pattern.md) for examples)
-
-2. **Invoke step-verifier sub-agent**
-   - Use `mcp_sub-agents_run_agent` tool with:
-     - Agent: `"step-verifier"`
-     - Prompt: See format below
-     - The step-verifier will independently verify your claims
-
-3. **Handle Verification Results**
-  
-   **If verification PASSES** (report shows "✅ STEP VERIFIED" or "All requirements met"):
-     - Proceed to next step
-     -   
-   **If verification FAILS** (report shows "⚠️ STOP EXECUTION" or missing elements):
-     - **STOP execution immediately** - do not proceed to next step
-     - Fix all reported issues from verification report
-     - Re-invoke step-verifier with updated evidence after fixes
-     - Only proceed after verification report shows "✅ STEP VERIFIED"
-  
-   **If sub-agent CANNOT be executed** (MCP unavailable or tool error):
-     - STOP execution immediately
-     - Inform user: "⚠️ Step verification sub-agent unavailable. Please manually verify Step N completion before proceeding."
-     - Wait for explicit user confirmation before proceeding
-
-### How to Invoke step-verifier
-
-Use the `mcp_sub-agents_run_agent` tool:
-
-```
-Agent: "step-verifier"
-Prompt: "Verify Step N: [Step Title] completion for execute-plan command.
-
-Todo Item: [Description of what the step accomplished]
-Command File: .opencode/command/ar/execute-plan.md
-Step: Step N: [Step Title]
-
-Accomplishment Report:
-[Report what was accomplished with CONCRETE EVIDENCE. The step-verifier will independently verify these claims by reading files, checking git status, etc.
-
-**MANDATORY Evidence Requirements:**
-- **File Changes**: Include actual file paths, line numbers, and git diff output showing exact changes
-- **Command Execution**: Include full command output, exit codes, test results with specific test names
-- **Documentation Updates**: Include file paths, section names, actual content snippets, git diff output
-- **Git Status**: Include actual `git status` and `git diff` output showing what changed
-- **Verification Output**: Include actual grep/search command output proving claims
-- **Build/Test Results**: Include full output showing compilation, test execution, memory leak reports
-
-**Examples:**
-✅ GOOD: "Updated `.opencode/command/ar/execute-plan.md` line 2356: `git diff` shows lines changed from `### If progress tracking` to `### If step tracking`. Verification: `grep -i 'checkpoint' file.md` returned no matches (exit code 1)"
-❌ BAD: "Updated execute-plan.md to remove checkpoint references"
-
-See [kb/sub-agent-verification-pattern.md](../../../kb/sub-agent-verification-pattern.md) for complete evidence requirements and examples.]"
-```
-
-**CRITICAL**: 
-- Report accomplishments with **concrete evidence** (file paths, line numbers, command outputs, git diff, test results), NOT instructions or vague summaries
-- The step-verifier independently verifies by reading command files, checking files, git status/diff, etc.
-- If step-verifier reports "⚠️ STOP EXECUTION", you MUST fix issues before proceeding
-- If accomplishment report lacks concrete evidence, step-verifier will STOP execution and require evidence
+3. **Verification Checklist**
+   - [ ] Required files exist and have been modified
+   - [ ] Commands executed successfully (check exit codes)
+   - [ ] Test output shows expected pass/fail status
+   - [ ] No memory leaks reported in build output
+   - [ ] Git diff shows expected changes
 
 **MANDATORY: Session Todo List Tracking**
 
@@ -294,28 +239,30 @@ Before proceeding to Step 2, update the verification todo item status to `in_pro
 - Update todo item: "Verify Step 1: KB Consultation & 14 Lesson Verification"
 - Status: in_progress
 
-Before proceeding to Step 2, you MUST verify Step 1 completion via step-verifier sub-agent:
+**Inline Verification for Step 1:**
 
-1. **Invoke step-verifier sub-agent** to verify:
-   - All 9 KB articles were read
-   - All 6 specific items were quoted
-   - All 14 TDD lessons were verified
-   - KB consultation was completed before proceeding
-   - Step objectives were met
+Use these checks to verify KB consultation was completed:
 
-2. **If verification fails**: Fix issues and re-verify before proceeding
+1. **Verify all critical KB articles were read**
+   - Check: `grep -l "tdd-plan-review-checklist\|red-phase-dual-goals\|tdd-cycle-detailed" ~/.bash_history`
+   - Or: Confirm you read the 4 critical articles (tdd-plan-review-checklist.md, red-phase-dual-goals-pattern.md, etc.)
 
-3. **If sub-agent unavailable**: Stop and request user manual verification
+2. **Verify 14 TDD lessons were identified**
+   - Evidence: 14 lessons from tdd-plan-review-checklist.md documented in your response
+   - Example: "1. Iteration numbering clarity, 2. One assertion per iteration, ..."
 
-**Only after step-verifier verification passes**:
+3. **Verify mandatory phases were understood**
+   - Evidence: Can state the 3 phases (RED with 2 goals, GREEN, REFACTOR) and requirements
+   - Example: "RED phase: Prove test validity (always), Identify what to implement (conditional)"
 
-1. **Mark verification complete in session todo list** using `todo_write`:
-   - Update todo item: "Verify Step 1: KB Consultation & 14 Lesson Verification"
-   - Status: completed
+4. **Report Evidence** and then mark complete:
+   - "Read 4 critical KB articles: tdd-plan-review-checklist.md, red-phase-dual-goals-pattern.md, tdd-cycle-detailed-explanation.md, pre-execution-plan-validation-requirement.md"
+   - "Verified 14 TDD lessons: [list them]"
+   - "Understood mandatory phases and requirements"
 
-2. **Mark step complete in session todo list** using `todo_write`:
-   - Update todo item: "Step 1: KB Consultation & 14 Lesson Verification"
-   - Status: completed
+5. **Mark complete**:
+   - Update todo item: "Verify Step 1: KB Consultation & 14 Lesson Verification" → Status: completed
+   - Update todo item: "Step 1: KB Consultation & 14 Lesson Verification" → Status: completed
 
 #### Step 2: Read Plan
 
@@ -348,27 +295,25 @@ Before proceeding to Step 3, update the verification todo item status to `in_pro
 - Update todo item: "Verify Step 2: Read Plan"
 - Status: in_progress
 
-Before proceeding to Step 3, you MUST verify Step 2 completion via step-verifier sub-agent:
+**Inline Verification for Step 2:**
 
-1. **Invoke step-verifier sub-agent** to verify:
-   - Plan document was read completely
-   - Key information extracted (iteration count, cycle structure, module names)
-   - Test and implementation function names identified
-   - Step objectives were met
+1. **Verify plan was read**
+   - Check: Plan file exists at specified path
+   - Confirm: Can describe plan title, overview, and purpose
 
-2. **If verification fails**: Fix issues and re-verify before proceeding
+2. **Verify key information was extracted**
+   - Total iteration count documented
+   - Cycle structure identified
+   - Test module names noted
+   - Implementation module names noted
 
-3. **If sub-agent unavailable**: Stop and request user manual verification
+3. **Report Evidence**:
+   - "Read plan: [plan file path]. Overview: [brief summary]"
+   - "Key info: 33 iterations, 5 cycles (TDD 8-12), modules ar_file_delegate.c/h"
 
-**Only after step-verifier verification passes**:
-
-1. **Mark verification complete in session todo list** using `todo_write`:
-   - Update todo item: "Verify Step 2: Read Plan"
-   - Status: completed
-
-2. **Mark step complete in session todo list** using `todo_write`:
-   - Update todo item: "Step 2: Read Plan"
-   - Status: completed
+4. **Mark complete**:
+   - Update todo item: "Verify Step 2: Read Plan" → Status: completed
+   - Update todo item: "Step 2: Read Plan" → Status: completed
 
 #### Step 3: Validate Plan Compliance
 
@@ -446,27 +391,24 @@ Before proceeding to Step 4, update the verification todo item status to `in_pro
 - Update todo item: "Verify Step 3: Validate Plan Compliance"
 - Status: in_progress
 
-Before proceeding to Step 4, you MUST verify Step 3 completion via step-verifier sub-agent:
+**Inline Verification for Step 3:**
 
-1. **Invoke step-verifier sub-agent** to verify:
-   - Plan validator was executed
-   - Plan validation passed (all 14 lessons verified)
-   - Validator output shows ✅ Plan validation PASSED
-   - Step objectives were met
+1. **Verify plan validator was executed**
+   - Command run: `./scripts/validate-tdd-plan.sh <plan-file>`
+   - Check: Script exists and is executable
 
-2. **If verification fails**: Fix issues and re-verify before proceeding
+2. **Verify validation output**
+   - Expected output includes: "✅ Plan validation PASSED - Ready for review"
+   - Lessons verified: All 14 lessons covered (1-14)
 
-3. **If sub-agent unavailable**: Stop and request user manual verification
+3. **Report Evidence**:
+   - "Ran validator: `./scripts/validate-tdd-plan.sh plans/file_delegate_plan.md`"
+   - "Output: ✅ Plan validation PASSED"
+   - "All 14 TDD lessons verified in output"
 
-**Only after step-verifier verification passes**:
-
-1. **Mark verification complete in session todo list** using `todo_write`:
-   - Update todo item: "Verify Step 3: Validate Plan Compliance"
-   - Status: completed
-
-2. **Mark step complete in session todo list** using `todo_write`:
-   - Update todo item: "Step 3: Validate Plan Compliance"
-   - Status: completed
+4. **Mark complete**:
+   - Update todo item: "Verify Step 3: Validate Plan Compliance" → Status: completed
+   - Update todo item: "Step 3: Validate Plan Compliance" → Status: completed
 
 ---
 
@@ -516,27 +458,24 @@ Before proceeding to Step 5, update the verification todo item status to `in_pro
 - Update todo item: "Verify Step 4: Check for IMPLEMENTED Iterations"
 - Status: in_progress
 
-Before proceeding to Step 5, you MUST verify Step 4 completion via step-verifier sub-agent:
+**Inline Verification for Step 4:**
 
-1. **Invoke step-verifier sub-agent** to verify:
-   - IMPLEMENTED iteration check was executed
-   - Count of IMPLEMENTED iterations determined
-   - List of IMPLEMENTED iterations extracted (if any found)
-   - Step objectives were met
+1. **Verify IMPLEMENTED check was performed**
+   - Command: `grep -c "IMPLEMENTED" <plan-file>`
+   - Result: Count of IMPLEMENTED iterations documented
 
-2. **If verification fails**: Fix issues and re-verify before proceeding
+2. **Verify list of IMPLEMENTED iterations extracted**
+   - Command: `grep "^#### Iteration.*IMPLEMENTED$" <plan-file>`
+   - Result: List of specific iterations shown with full headers
 
-3. **If sub-agent unavailable**: Stop and request user manual verification
+3. **Report Evidence**:
+   - "Checked for IMPLEMENTED iterations in plan"
+   - "Found X IMPLEMENTED iterations (list them)"
+   - "Example: Iteration 8.1, 8.1.1, 8.1.2"
 
-**Only after step-verifier verification passes**:
-
-1. **Mark verification complete in session todo list** using `todo_write`:
-   - Update todo item: "Verify Step 4: Check for IMPLEMENTED Iterations"
-   - Status: completed
-
-2. **Mark step complete in session todo list** using `todo_write`:
-   - Update todo item: "Step 4: Check for IMPLEMENTED Iterations"
-   - Status: completed
+4. **Mark complete**:
+   - Update todo item: "Verify Step 4: Check for IMPLEMENTED Iterations" → Status: completed
+   - Update todo item: "Step 4: Check for IMPLEMENTED Iterations" → Status: completed
 
 #### Step 5: Verify IMPLEMENTED Iterations
 
@@ -727,28 +666,24 @@ Before proceeding to Step 6, update the verification todo item status to `in_pro
 - Update todo item: "Verify Step 5: Verify IMPLEMENTED Iterations"
 - Status: in_progress
 
-Before proceeding to Step 6, you MUST verify Step 5 completion via step-verifier sub-agent:
+**Inline Verification for Step 5:**
 
-1. **Invoke step-verifier sub-agent** to verify:
-   - Code existence verified for all IMPLEMENTED iterations
-   - Test and implementation files read and verified
-   - Git status checked and classification completed (CASE 1, 2, or 3)
-   - Classification decision documented
-   - Step objectives were met
+1. **Verify code exists for IMPLEMENTED iterations**
+   - For each IMPLEMENTED iteration: Check test and implementation files exist
+   - Command: `ls modules/ar_[module]_tests.c modules/ar_[module].c`
 
-2. **If verification fails**: Fix issues and re-verify before proceeding
+2. **Verify git status classification**
+   - Command: `git status --porcelain`
+   - Result: Determine if uncommitted (CASE 2) or already committed (CASE 1)
 
-3. **If sub-agent unavailable**: Stop and request user manual verification
+3. **Report Evidence**:
+   - "Verified IMPLEMENTED iterations: [list them]"
+   - "Code status: Uncommitted work (CASE 2) OR Already committed (CASE 1)"
+   - "Files: [list modified/committed files]"
 
-**Only after step-verifier verification passes**:
-
-1. **Mark verification complete in session todo list** using `todo_write`:
-   - Update todo item: "Verify Step 5: Verify IMPLEMENTED Iterations"
-   - Status: completed
-
-2. **Mark step complete in session todo list** using `todo_write`:
-   - Update todo item: "Step 5: Verify IMPLEMENTED Iterations"
-   - Status: completed
+4. **Mark complete**:
+   - Update todo item: "Verify Step 5: Verify IMPLEMENTED Iterations" → Status: completed
+   - Update todo item: "Step 5: Verify IMPLEMENTED Iterations" → Status: completed
 
 ---
 
@@ -935,27 +870,23 @@ Before proceeding to Step 7, update the verification todo item status to `in_pro
 - Update todo item: "Verify Step 6: Verify COMMITTED Iterations"
 - Status: in_progress
 
-Before proceeding to Step 7, you MUST verify Step 6 completion via step-verifier sub-agent:
+**Inline Verification for Step 6:**
 
-1. **Invoke step-verifier sub-agent** to verify:
-   - COMMITTED iteration check was executed
-   - All COMMITTED iterations verified (code exists, tests pass, in git history)
-   - Verification results documented (PASSED or FAILED with details)
-   - Step objectives were met
+1. **Verify COMMITTED iteration check**
+   - Command: `grep -c "✅ COMMITTED" <plan-file>`
+   - Result: Count of COMMITTED iterations documented
 
-2. **If verification fails**: Fix issues and re-verify before proceeding
+2. **Verify each COMMITTED iteration code exists**
+   - Check: Test function exists and implementation function exists
+   - Command: `grep "test_[name]\|[function_name]" modules/ar_*`
 
-3. **If sub-agent unavailable**: Stop and request user manual verification
+3. **Report Evidence**:
+   - "Checked COMMITTED iterations: Found X total"
+   - "Verified status: All code exists and tests pass OR Listed discrepancies"
 
-**Only after step-verifier verification passes**:
-
-1. **Mark verification complete in session todo list** using `todo_write`:
-   - Update todo item: "Verify Step 6: Verify COMMITTED Iterations"
-   - Status: completed
-
-2. **Mark step complete in session todo list** using `todo_write`:
-   - Update todo item: "Step 6: Verify COMMITTED Iterations"
-   - Status: completed
+4. **Mark complete**:
+   - Update todo item: "Verify Step 6: Verify COMMITTED Iterations" → Status: completed
+   - Update todo item: "Step 6: Verify COMMITTED Iterations" → Status: completed
 
 ---
 
@@ -980,6 +911,40 @@ This will show:
 - Iteration number and description
 - Current status (REVIEWED or REVISED)
 - Total count of iterations ready to execute
+
+**⚠️ MANDATORY STEP VERIFICATION**
+
+**MANDATORY: Update verification todo item status**
+
+Before proceeding to Step 8, update the verification todo item status to `in_progress`:
+- Update todo item: "Verify Step 7: Extract REVIEWED or REVISED iterations"
+- Status: in_progress
+
+**Inline Verification for Step 7:**
+
+1. **Verify REVIEWED/REVISED extraction was performed**
+   - Command: `./scripts/extract-tdd-cycles.sh <plan-file> 'REVIEWED|REVISED'`
+   - Expected output: List of iterations with REVIEWED or REVISED status
+   - Verify: Output shows at least one iteration ready for implementation
+
+2. **Verify count of iterations ready for execution**
+   - Command: `./scripts/extract-tdd-cycles.sh <plan-file> 'REVIEWED|REVISED' | grep -c "Iteration"`
+   - Expected output: A count greater than 0
+   - Verify: Ready-to-execute iteration count documented
+
+3. **Report Evidence**:
+   ```
+   ✅ Step 7 Verification Complete
+
+   - REVIEWED/REVISED iterations extracted: [count]
+   - Examples extracted:
+     * [list first 3-5 iterations]
+   - Confirmation: Ready for Stage 2 execution
+   ```
+
+4. **Mark complete**:
+   - Update todo item: "Verify Step 7: Extract REVIEWED or REVISED iterations" → Status: completed
+   - Update todo item: "Step 7: Extract REVIEWED or REVISED iterations" → Status: completed
 
 **Expected gate output:**
 ```
@@ -1078,34 +1043,27 @@ make ar_delegate_tests 2>&1
 # Expected: true, Got: false (or similar)
 ```
 
-**⚠️ MANDATORY STEP VERIFICATION**
+**⚠️ INLINE VERIFICATION FOR RED PHASE**
 
-**MANDATORY: Update verification todo item status**
+**RED Phase Verification Checklist:**
 
-Before proceeding to GREEN phase, update the verification todo item status to `in_progress`:
-- Update todo item: "Verify Iteration N.M RED Phase"
-- Status: in_progress
+1. **Verify test was written and added to file**
+   - Check that test function exists in test file
+   - Use: `grep -n "test_[function_name]" modules/ar_*_tests.c`
 
-Before proceeding to GREEN phase, you MUST verify RED phase completion via step-verifier sub-agent:
+2. **Verify test fails for the correct reason**
+   - Run: `make ar_[module]_tests 2>&1`
+   - Check output shows test FAILURE (not compilation error)
+   - Verify failure message matches plan's documented temporary corruption
 
-1. **Invoke step-verifier sub-agent** to verify:
-   - Test written and added to test file
-   - Test fails for the correct reason (matches plan's documented corruption)
-   - RED phase objectives were met
+3. **Report Evidence**
+   - Include test function name and line number
+   - Show test output proving it fails for documented reason
+   - Example: "Test `test_delegate__send_returns_true` at line 45 fails with 'Expected: true, Got: false' (matching planned stub)"
 
-2. **If verification fails**: Fix issues and re-verify before proceeding
-
-3. **If sub-agent unavailable**: Stop and request user manual verification
-
-**Only after step-verifier verification passes**:
-
-1. **Mark verification complete in session todo list** using `todo_write`:
-   - Update todo item: "Verify Iteration N.M RED Phase"
-   - Status: completed
-
-2. **Mark phase complete in session todo list** using `todo_write`:
-   - Update todo item: "Iteration N.M RED Phase"
-   - Status: completed
+4. **After verification passes**:
+   - Update todo item: "Verify Iteration N.M RED Phase" → Status: completed
+   - Update todo item: "Iteration N.M RED Phase" → Status: completed
 
 **GREEN Phase:**
 
@@ -1128,34 +1086,27 @@ make ar_delegate_tests 2>&1
 # All tests passing
 ```
 
-**⚠️ MANDATORY STEP VERIFICATION**
+**⚠️ INLINE VERIFICATION FOR GREEN PHASE**
 
-**MANDATORY: Update verification todo item status**
+**GREEN Phase Verification Checklist:**
 
-Before proceeding to REFACTOR phase, update the verification todo item status to `in_progress`:
-- Update todo item: "Verify Iteration N.M GREEN Phase"
-- Status: in_progress
+1. **Verify implementation was added**
+   - Check that implementation function exists in module file
+   - Use: `grep -n "ar_[module]__[function]" modules/ar_*.c`
 
-Before proceeding to REFACTOR phase, you MUST verify GREEN phase completion via step-verifier sub-agent:
+2. **Verify test now passes**
+   - Run: `make ar_[module]_tests 2>&1`
+   - Check output shows test PASSED (not FAILED)
+   - Verify ALL tests in module still pass
 
-1. **Invoke step-verifier sub-agent** to verify:
-   - Implementation added to code
-   - Test now passes
-   - GREEN phase objectives were met
+3. **Report Evidence**
+   - Include implementation function name and file
+   - Show test output proving it passes
+   - Example: "Test `test_delegate__send_returns_true` now PASSED. Added implementation at `modules/ar_delegate.c:45`"
 
-2. **If verification fails**: Fix issues and re-verify before proceeding
-
-3. **If sub-agent unavailable**: Stop and request user manual verification
-
-**Only after step-verifier verification passes**:
-
-1. **Mark verification complete in session todo list** using `todo_write`:
-   - Update todo item: "Verify Iteration N.M GREEN Phase"
-   - Status: completed
-
-2. **Mark phase complete in session todo list** using `todo_write`:
-   - Update todo item: "Iteration N.M GREEN Phase"
-   - Status: completed
+4. **After verification passes**:
+   - Update todo item: "Verify Iteration N.M GREEN Phase" → Status: completed
+   - Update todo item: "Iteration N.M GREEN Phase" → Status: completed
 
 **REFACTOR Phase (MANDATORY):**
 
@@ -1177,34 +1128,28 @@ make ar_delegate_tests 2>&1
 # All tests still passing after refactoring
 ```
 
-**⚠️ MANDATORY STEP VERIFICATION**
+**⚠️ INLINE VERIFICATION FOR REFACTOR PHASE**
 
-**MANDATORY: Update verification todo item status**
+**REFACTOR Phase Verification Checklist:**
 
-Before updating plan status, update the verification todo item status to `in_progress`:
-- Update todo item: "Verify Iteration N.M REFACTOR Phase"
-- Status: in_progress
+1. **Verify refactoring was performed or documented**
+   - Check code for improvements (extraction, naming, etc.)
+   - If no improvements: Document "No refactoring needed for this iteration"
+   - Check git diff to see what changed during refactor phase
 
-Before updating plan status, you MUST verify REFACTOR phase completion via step-verifier sub-agent:
+2. **Verify tests still pass after refactoring**
+   - Run: `make ar_[module]_tests 2>&1`
+   - Check output shows ALL tests PASSED
+   - Verify no regression from refactoring
 
-1. **Invoke step-verifier sub-agent** to verify:
-   - REFACTOR phase completed (improvements applied or documented as not needed)
-   - Tests still passing after refactoring
-   - REFACTOR phase objectives were met
+3. **Report Evidence**
+   - Show what was refactored or document "No refactoring needed"
+   - Show test output proving all tests still pass
+   - Example: "No refactoring needed - implementation is already minimal. All tests PASSED."
 
-2. **If verification fails**: Fix issues and re-verify before proceeding
-
-3. **If sub-agent unavailable**: Stop and request user manual verification
-
-**Only after step-verifier verification passes**:
-
-1. **Mark verification complete in session todo list** using `todo_write`:
-   - Update todo item: "Verify Iteration N.M REFACTOR Phase"
-   - Status: completed
-
-2. **Mark phase complete in session todo list** using `todo_write`:
-   - Update todo item: "Iteration N.M REFACTOR Phase"
-   - Status: completed
+4. **After verification passes**:
+   - Update todo item: "Verify Iteration N.M REFACTOR Phase" → Status: completed
+   - Update todo item: "Iteration N.M REFACTOR Phase" → Status: completed
 
 **After completing iteration:**
 - [ ] **⭐ LESSON 7 VERIFIED**: Plan's RED phase had temporary corruption documented
@@ -1514,28 +1459,24 @@ Before proceeding to Step 9, update the verification todo item status to `in_pro
 - Update todo item: "Verify Step 8: Execute Iterations"
 - Status: in_progress
 
-Before proceeding to Step 9, you MUST verify Step 8 completion via step-verifier sub-agent:
+**Inline Verification for Step 8:**
 
-1. **Invoke step-verifier sub-agent** to verify:
-   - All REVIEWED/REVISED iterations executed with RED-GREEN-REFACTOR cycles
-   - All iterations marked as IMPLEMENTED in plan file
-   - All tests passing after each iteration
-   - Iteration progress tracking completed
-   - Step objectives were met
+1. **Verify iterations were executed**
+   - Check: Plan file shows iterations marked as IMPLEMENTED
+   - Command: `grep -c "IMPLEMENTED" <plan-file>`
 
-2. **If verification fails**: Fix issues and re-verify before proceeding
+2. **Verify RED-GREEN-REFACTOR cycle completed for each**
+   - All tests written, passed, and refactored
+   - All changes present in implementation files
 
-3. **If sub-agent unavailable**: Stop and request user manual verification
+3. **Report Evidence**:
+   - "Executed X iterations with full RED-GREEN-REFACTOR cycles"
+   - "All tests passing after each iteration"
+   - "Plan file updated with IMPLEMENTED markers"
 
-**Only after step-verifier verification passes**:
-
-1. **Mark verification complete in session todo list** using `todo_write`:
-   - Update todo item: "Verify Step 8: Execute Iterations"
-   - Status: completed
-
-2. **Mark step complete in session todo list** using `todo_write`:
-   - Update todo item: "Step 8: Execute Iterations"
-   - Status: completed
+4. **Mark complete**:
+   - Update todo item: "Verify Step 8: Execute Iterations" → Status: completed
+   - Update todo item: "Step 8: Execute Iterations" → Status: completed
 
 #### Step 9: Run Tests
 
@@ -1582,29 +1523,24 @@ Before proceeding to Step 10, update the verification todo item status to `in_pr
 - Update todo item: "Verify Step 9: Run Tests"
 - Status: in_progress
 
-Before proceeding to Step 10, you MUST verify Step 9 completion via step-verifier sub-agent:
+**Inline Verification for Step 9:**
 
-1. **Invoke step-verifier sub-agent** to verify:
-   - Complete test suite was executed
-   - All tests passing (0 failures)
-   - No compilation errors
-   - No runtime errors
-   - Test count matches plan iteration count
-   - Step objectives were met
+1. **Verify test suite execution**
+   - Check: All test modules compiled and ran
+   - Command: `make ar_[module]_tests 2>&1 | grep -i "PASSED\|FAILED"`
 
-2. **If verification fails**: Fix issues and re-verify before proceeding
+2. **Verify all tests passing**
+   - Expected output: 0 failures, all tests passing
+   - No compilation or runtime errors
 
-3. **If sub-agent unavailable**: Stop and request user manual verification
+3. **Report Evidence**:
+   - "Ran complete test suite: `make ar_file_delegate_tests`"
+   - "All tests PASSED"
+   - "No compilation or runtime errors"
 
-**Only after step-verifier verification passes**:
-
-1. **Mark verification complete in session todo list** using `todo_write`:
-   - Update todo item: "Verify Step 9: Run Tests"
-   - Status: completed
-
-2. **Mark step complete in session todo list** using `todo_write`:
-   - Update todo item: "Step 9: Run Tests"
-   - Status: completed
+4. **Mark complete**:
+   - Update todo item: "Verify Step 9: Run Tests" → Status: completed
+   - Update todo item: "Step 9: Run Tests" → Status: completed
 
 #### Step 10: Verify Memory
 
@@ -1649,28 +1585,24 @@ Before proceeding to Step 11, update the verification todo item status to `in_pr
 - Update todo item: "Verify Step 10: Verify Memory"
 - Status: in_progress
 
-Before proceeding to Step 11, you MUST verify Step 10 completion via step-verifier sub-agent:
+**Inline Verification for Step 10:**
 
-1. **Invoke step-verifier sub-agent** to verify:
-   - Memory reports checked for all test modules
-   - All reports show: "Actual memory leaks: 0 (0 bytes)"
-   - No leaks detected in any iteration
-   - Memory verification checklist completed
-   - Step objectives were met
+1. **Verify memory reports**
+   - Command: `grep "Actual memory leaks:" bin/run-tests/memory_report_*.log`
+   - Expected: "Actual memory leaks: 0 (0 bytes)" for all modules
 
-2. **If verification fails**: Fix issues and re-verify before proceeding
+2. **Check for any leaks**
+   - Command: `grep "Actual memory leaks:" bin/run-tests/memory_report_*.log | grep -v "0 (0 bytes)"`
+   - Expected: No output (all should be zero)
 
-3. **If sub-agent unavailable**: Stop and request user manual verification
+3. **Report Evidence**:
+   - "Checked memory reports for all test modules"
+   - "All reports show: 0 memory leaks"
+   - "Example: `memory_report_ar_file_delegate_tests.log`: 0 leaks"
 
-**Only after step-verifier verification passes**:
-
-1. **Mark verification complete in session todo list** using `todo_write`:
-   - Update todo item: "Verify Step 10: Verify Memory"
-   - Status: completed
-
-2. **Mark step complete in session todo list** using `todo_write`:
-   - Update todo item: "Step 10: Verify Memory"
-   - Status: completed
+4. **Mark complete**:
+   - Update todo item: "Verify Step 10: Verify Memory" → Status: completed
+   - Update todo item: "Step 10: Verify Memory" → Status: completed
 
 **[QUALITY GATE 2: Implementation Complete]**
 ```bash
@@ -1801,28 +1733,24 @@ Before proceeding to Step 12, update the verification todo item status to `in_pr
 - Update todo item: "Verify Step 11: Update Plan Status"
 - Status: in_progress
 
-Before proceeding to Step 12, you MUST verify Step 11 completion via step-verifier sub-agent:
+**Inline Verification for Step 11:**
 
-1. **Invoke step-verifier sub-agent** to verify:
-   - All IMPLEMENTED iterations updated to ✅ COMMITTED (Step 11A)
-   - Plan file updated with status markers
-   - Completion status header added if applicable (Step 11B)
-   - Plan status update checklist completed
-   - Step objectives were met
+1. **Verify plan file updates**
+   - Check: Plan file contains status changes from IMPLEMENTED to ✅ COMMITTED
+   - Command: `grep "✅ COMMITTED" <plan-file> | wc -l`
 
-2. **If verification fails**: Fix issues and re-verify before proceeding
+2. **Verify completion status header**
+   - Check: If all iterations done, completion status header added
+   - Command: `grep -i "COMPLETE\|ALL CYCLES" <plan-file>`
 
-3. **If sub-agent unavailable**: Stop and request user manual verification
+3. **Report Evidence**:
+   - "Updated plan file with status markers"
+   - "Changed X iterations: IMPLEMENTED → ✅ COMMITTED"
+   - "Added completion status header (if all done)"
 
-**Only after step-verifier verification passes**:
-
-1. **Mark verification complete in session todo list** using `todo_write`:
-   - Update todo item: "Verify Step 11: Update Plan Status"
-   - Status: completed
-
-2. **Mark step complete in session todo list** using `todo_write`:
-   - Update todo item: "Step 11: Update Plan Status"
-   - Status: completed
+4. **Mark complete**:
+   - Update todo item: "Verify Step 11: Update Plan Status" → Status: completed
+   - Update todo item: "Step 11: Update Plan Status" → Status: completed
 
 #### Step 12: Summary
 
@@ -1942,33 +1870,28 @@ Before proceeding to Step completion, update the verification todo item status t
 - Update todo item: "Verify Step 12: Summary"
 - Status: in_progress
 
-Before proceeding to Step completion, you MUST verify Step 12 completion via step-verifier sub-agent:
+**Inline Verification for Step 12:**
 
-1. **Invoke step-verifier sub-agent** to verify:
-   - Execution summary generated with all required sections
-   - Status updates documented
-   - Execution metrics included
-   - TDD methodology compliance verified (all 14 lessons)
-   - Test execution results documented
-   - Build verification documented
-   - Plan file updates documented
+1. **Verify execution summary generated**
+   - Check: Summary includes all required sections
+   - Sections: Status updates, metrics, iterations, test results, build status
+
+2. **Verify all documentation present**
+   - Execution summary exists and is complete
+   - TDD methodology compliance verified
+   - Test results documented
+   - Memory leak status documented
    - Files modified listed
-   - Completion checklist completed
-   - Step objectives were met
 
-2. **If verification fails**: Fix issues and re-verify before proceeding
+3. **Report Evidence**:
+   - "Generated execution summary with all required sections"
+   - "Documented: X iterations executed, Y committed, test results passing, 0 memory leaks"
+   - "Files modified: [list files]"
 
-3. **If sub-agent unavailable**: Stop and request user manual verification
-
-**Only after step-verifier verification passes**:
-
-1. **Mark verification complete in session todo list** using `todo_write`:
-   - Update todo item: "Verify Step 12: Summary"
-   - Status: completed
-
-2. **Mark step complete in session todo list** using `todo_write`:
-   - Update todo item: "Step 12: Summary"
-   - Status: completed
+4. **Mark complete**:
+   - Update todo item: "Verify Step 12: Summary" → Status: completed
+   - Update todo item: "Step 12: Summary" → Status: completed
+   - Update todo item: "Verify Complete Workflow: execute-plan" → Status: completed
 
 **[QUALITY GATE 3: Documentation Complete]**
 ```bash
