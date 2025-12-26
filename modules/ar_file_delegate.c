@@ -17,14 +17,14 @@ ar_file_delegate_t* ar_file_delegate__create(ar_log_t *ref_log, const char *ref_
 
     ar_file_delegate_t *own_file_delegate = AR__HEAP__MALLOC(sizeof(ar_file_delegate_t), "file_delegate");
     if (!own_file_delegate) {
-        return NULL;
+        return NULL;  // Handle malloc failure
     }
 
     own_file_delegate->ref_log = ref_log;
     own_file_delegate->own_allowed_path = AR__HEAP__STRDUP(ref_allowed_path, "file delegate allowed path");
     if (!own_file_delegate->own_allowed_path) {
         AR__HEAP__FREE(own_file_delegate);
-        return NULL;
+        return NULL;  // Handle strdup failure and clean up delegate
     }
 
     // Create the base delegate wrapper
@@ -40,7 +40,7 @@ ar_file_delegate_t* ar_file_delegate__create(ar_log_t *ref_log, const char *ref_
 
 void ar_file_delegate__destroy(ar_file_delegate_t *own_file_delegate) {
     if (!own_file_delegate) {
-        return;
+        return;  // Safe NULL handling
     }
 
     if (own_file_delegate->own_delegate) {

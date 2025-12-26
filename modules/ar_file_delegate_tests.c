@@ -11,6 +11,8 @@ static void test_file_delegate__create_returns_non_null(void);
 static void test_file_delegate__create_handles_null_log(void);
 static void test_file_delegate__create_handles_null_path(void);
 static void test_file_delegate__get_type(void);
+static void test_file_delegate__destroy_cleans_up(void);
+static void test_file_delegate__destroy_handles_null(void);
 
 int main(void) {
     // Directory check
@@ -31,6 +33,8 @@ int main(void) {
     test_file_delegate__create_handles_null_log();
     test_file_delegate__create_handles_null_path();
     test_file_delegate__get_type();
+    test_file_delegate__destroy_cleans_up();
+    test_file_delegate__destroy_handles_null();
 
     printf("All file_delegate tests passed!\n");
     return 0;
@@ -107,6 +111,41 @@ static void test_file_delegate__get_type(void) {
     // Cleanup
     ar_file_delegate__destroy(own_delegate);
     ar_log__destroy(own_log);
+
+    printf("    PASS\n");
+}
+
+static void test_file_delegate__destroy_cleans_up(void) {
+    printf("  test_file_delegate__destroy_cleans_up...\n");
+
+    // Given a FileDelegate instance
+    ar_log_t *own_log = ar_log__create();
+    ar_file_delegate_t *own_delegate = ar_file_delegate__create(own_log, "/tmp/allowed");
+    AR_ASSERT(own_delegate != NULL, "Setup: delegate created");
+
+    // When destroying the delegate
+    ar_file_delegate__destroy(own_delegate);
+
+    // Then no memory should leak (verified by memory report)
+    // No explicit assertion needed - memory leak check validates this
+
+    // Cleanup
+    ar_log__destroy(own_log);
+
+    printf("    PASS\n");
+}
+
+static void test_file_delegate__destroy_handles_null(void) {
+    printf("  test_file_delegate__destroy_handles_null...\n");
+
+    // Given a NULL delegate
+    ar_file_delegate_t *own_delegate = NULL;
+
+    // When destroying NULL delegate
+    ar_file_delegate__destroy(own_delegate);
+
+    // Then it should not crash (no assertion needed - just shouldn't crash)
+    // Success = no segfault
 
     printf("    PASS\n");
 }
