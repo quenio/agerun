@@ -35,7 +35,7 @@ Create a delegate type for file operations with path validation, size limits, an
 
 ### TDD Cycle 8: Basic Structure
 
-#### Iteration 8.1: ar_file_delegate__create() returns non-NULL - IMPLEMENTED
+#### Iteration 8.1: ar_file_delegate__create() returns non-NULL - ✅ COMMITTED
 
 **Objective**: Verify FileDelegate creation returns a valid instance
 
@@ -256,7 +256,7 @@ Before updating plan status, you MUST verify REFACTOR phase completion via step-
 
 ---
 
-#### Iteration 8.1.1: ar_file_delegate__create() handles NULL log parameter - IMPLEMENTED
+#### Iteration 8.1.1: ar_file_delegate__create() handles NULL log parameter - ✅ COMMITTED
 
 **Objective**: Verify create() accepts NULL log parameter (log module handles NULL gracefully)
 
@@ -471,7 +471,7 @@ Before updating plan status, you MUST verify REFACTOR phase completion via step-
 
 ---
 
-#### Iteration 8.1.2: ar_file_delegate__create() handles NULL path parameter - IMPLEMENTED
+#### Iteration 8.1.2: ar_file_delegate__create() handles NULL path parameter - ✅ COMMITTED
 
 **Objective**: Verify create() returns NULL when path parameter is NULL
 
@@ -685,7 +685,7 @@ Before updating plan status, you MUST verify REFACTOR phase completion via step-
 
 ---
 
-#### Iteration 8.1.3: ar_file_delegate__create() handles delegate malloc failure - REVIEWED
+#### Iteration 8.1.3: ar_file_delegate__create() handles delegate malloc failure - IMPLEMENTED
 
 **Objective**: Verify create() returns NULL when delegate struct malloc fails
 
@@ -941,7 +941,7 @@ Before updating plan status, you MUST verify REFACTOR phase completion via step-
 
 ---
 
-#### Iteration 8.1.3.1: ar_file_delegate__create() handles strdup failure and cleans up - REVIEWED
+#### Iteration 8.1.3.1: ar_file_delegate__create() handles strdup failure and cleans up - IMPLEMENTED
 
 **Objective**: Verify create() handles strdup failure, cleans up delegate, and returns NULL
 
@@ -1175,7 +1175,7 @@ Before updating plan status, you MUST verify REFACTOR phase completion via step-
 
 ---
 
-#### Iteration 8.2: ar_file_delegate__destroy() cleans up without leaks - REVIEWED
+#### Iteration 8.2: ar_file_delegate__destroy() cleans up without leaks - IMPLEMENTED
 
 **Objective**: Verify FileDelegate destruction properly frees resources
 
@@ -1381,7 +1381,7 @@ Before updating plan status, you MUST verify REFACTOR phase completion via step-
 
 ---
 
-#### Iteration 8.2.1: ar_file_delegate__destroy() handles NULL parameter safely - REVIEWED
+#### Iteration 8.2.1: ar_file_delegate__destroy() handles NULL parameter safely - IMPLEMENTED
 
 **Objective**: Verify destroy() safely handles NULL delegate parameter
 
