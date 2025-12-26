@@ -1829,6 +1829,7 @@ Once all modules are migrated to Zig with C-ABI compatibility, identify internal
   - **Additional iterations completed**: Error handling (malloc/strdup failures), cleanup verification, NULL parameter safety
   - **GREEN**: Implement create/destroy with ar_delegate_t* wrapper
   - **REFACTOR**: Verify zero leaks
+  - **Follow-up**: Fixed dlsym tests for malloc failure injection (2025-12-25) - Updated malloc interception to handle ar_heap__malloc retry logic by failing consecutive mallocs
 
 - [ ] **TDD Cycle 9**: Implement file read operation
   - **RED**: Write test `test_file_delegate__handle_read_message()` → FAIL

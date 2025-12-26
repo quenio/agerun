@@ -1,6 +1,6 @@
 # AgeRun CHANGELOG
 
-## 2025-12-25 (FileDelegate Cycle 8: Error Handling and Cleanup Verification)
+## 2025-12-25 (FileDelegate Cycle 8: Error Handling and Cleanup Verification + DLSym Test Fix)
 
 - **FileDelegate Cycle 8: Error Handling and Cleanup Verification**
 
@@ -13,27 +13,35 @@
   - **8.2.1**: ar_file_delegate__destroy() handles NULL parameter safely - Added NULL parameter test, verified safe NULL handling
 
   **Test Additions**:
-  - Created `modules/ar_file_delegate_dlsym_tests.c` for malloc failure testing (temporarily disabled pending malloc interception debugging)
+  - Created `modules/ar_file_delegate_dlsym_tests.c` for malloc failure testing
   - Added `test_file_delegate__destroy_cleans_up()` to verify resource cleanup
   - Added `test_file_delegate__destroy_handles_null()` to verify NULL parameter safety
+
+  **DLSym Test Fix**:
+  - Fixed malloc interception to handle `ar_heap__malloc` retry logic by failing consecutive mallocs
+  - Updated malloc wrapper to support failing multiple consecutive mallocs (fail_count parameter)
+  - Identified correct malloc numbers: delegate struct (#5/#6), strdup (#8/#9)
+  - Both dlsym tests now passing: `test_file_delegate__create_handles_malloc_failure_delegate()` and `test_file_delegate__create_handles_malloc_failure_strdup()`
+  - Added whitelist entries for intentional error messages from dlsym tests in `log_whitelist.yaml`
+  - Zero memory leaks in dlsym tests (0 bytes)
 
   **Implementation Verification**:
   - All error handling paths verified (malloc failures, strdup failures)
   - Cleanup verified (zero memory leaks: 0 bytes)
   - NULL parameter handling verified (safe, no crashes)
-  - All 6 regular tests passing
+  - All 6 regular tests passing + 2 dlsym tests passing
 
   **Plan Status Updates**:
   - Updated `plans/file_delegate_plan.md`: Marked 4 iterations as IMPLEMENTED (8.1.3, 8.1.3.1, 8.2, 8.2.1)
-  - Updated `TODO.md`: Added note about additional Cycle 8 iterations completed
+  - Updated `TODO.md`: Added note about dlsym test fix completion
 
   **Build Results**:
-  - Clean build: 2m 48s
+  - Clean build: 3m 42s
   - All sanitizer tests passing (77 tests run)
   - Zero memory leaks detected
-  - check-logs: Clean
+  - check-logs: Clean (all dlsym test error messages properly whitelisted)
 
-  **Impact**: FileDelegate Cycle 8 is now fully complete with comprehensive error handling and cleanup verification. All basic structure operations are tested and verified for memory safety.
+  **Impact**: FileDelegate Cycle 8 is now fully complete with comprehensive error handling and cleanup verification. All basic structure operations are tested and verified for memory safety, including malloc failure scenarios via dlsym interception.
 
 ## 2025-11-11 (FileDelegate Plan Template Update)
 

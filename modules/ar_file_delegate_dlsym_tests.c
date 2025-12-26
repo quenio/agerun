@@ -26,7 +26,9 @@
 
 // Control variables for malloc failure injection
 static int fail_at_malloc = -1;
+static int fail_count = 1;  // Number of consecutive mallocs to fail
 static int current_malloc = 0;
+static int consecutive_failures = 0;
 
 // dlsym malloc wrapper
 void* malloc(size_t size) {
@@ -40,8 +42,13 @@ void* malloc(size_t size) {
     }
 
     current_malloc++;
-    if (current_malloc == fail_at_malloc) {
-        printf("  Mock: Failing malloc #%d\n", current_malloc);
+    printf("  Mock: malloc #%d called (size=%zu)\n", current_malloc, size);
+    
+    // Check if we should fail this malloc
+    if (fail_at_malloc > 0 && current_malloc >= fail_at_malloc && consecutive_failures < fail_count) {
+        printf("  Mock: Failing malloc #%d (consecutive failure %d/%d)\n", 
+               current_malloc, consecutive_failures + 1, fail_count);
+        consecutive_failures++;
         return NULL;  // Simulate malloc failure
     }
 
@@ -51,7 +58,9 @@ void* malloc(size_t size) {
 // Reset counters before each test
 static void reset_counters(void) {
     fail_at_malloc = -1;
+    fail_count = 1;
     current_malloc = 0;
+    consecutive_failures = 0;
 }
 
 // Test function declarations
@@ -77,10 +86,8 @@ int main(void) {
     printf("================================================\n");
 
     // Run tests
-    // TODO: Fix malloc interception - need to debug correct malloc number
-    // test_file_delegate__create_handles_malloc_failure_delegate();
-    // test_file_delegate__create_handles_malloc_failure_strdup();
-    printf("  Note: dlsym tests temporarily disabled - malloc interception needs debugging\n");
+    test_file_delegate__create_handles_malloc_failure_delegate();
+    test_file_delegate__create_handles_malloc_failure_strdup();
 
     printf("\n================================================\n");
     printf("All file_delegate dlsym tests passed!\n");
@@ -88,24 +95,26 @@ int main(void) {
     return 0;
 }
 
-// TODO: Fix malloc interception - need to debug correct malloc number
-// Test malloc failure at first allocation (delegate struct)
-static void test_file_delegate__create_handles_malloc_failure_delegate(void) __attribute__((unused));
+// Test malloc failure at delegate struct allocation
 static void test_file_delegate__create_handles_malloc_failure_delegate(void) {
     printf("  test_file_delegate__create_handles_malloc_failure_delegate...\n");
 
-    // Given malloc will fail on delegate struct allocation
-    // Malloc sequence: #1=log (16 bytes), #2=delegate struct tracking (24 bytes), #3=delegate struct (24 bytes)
+    // ar_heap__malloc retries on failure, so we need to fail both the initial malloc
+    // and the retry. The delegate struct is 24 bytes.
+    // From debugging: malloc #5 is 24 bytes and happens after #3/#4 failures
+    // We need to fail both #5 and #6 (the retry) to truly fail the delegate struct allocation
+    
     reset_counters();
-    fail_at_malloc = 3;  // Fail third malloc (delegate struct: #1=log, #2=tracking, #3=delegate struct)
+    fail_at_malloc = 5;  // Start failing at malloc #5 (delegate struct)
+    fail_count = 2;      // Fail 2 consecutive mallocs (#5 and #6) to defeat retry logic
 
     ar_log_t *ref_log = ar_log__create();
 
-    // When creating a FileDelegate (which calls malloc)
+    // When creating a FileDelegate (malloc #3 and #4 will fail)
     ar_file_delegate_t *own_delegate = ar_file_delegate__create(ref_log, "/tmp");
 
     // Then should return NULL and not crash
-    AR_ASSERT(own_delegate == NULL, "Should handle delegate malloc failure");  // ← FAILS (no NULL check)
+    AR_ASSERT(own_delegate == NULL, "Should handle delegate malloc failure");
 
     // Cleanup
     ar_log__destroy(ref_log);
@@ -113,24 +122,26 @@ static void test_file_delegate__create_handles_malloc_failure_delegate(void) {
     printf("    PASS\n");
 }
 
-// TODO: Fix malloc interception - need to debug correct malloc number
 // Test malloc failure at strdup allocation (path string)
-static void test_file_delegate__create_handles_malloc_failure_strdup(void) __attribute__((unused));
 static void test_file_delegate__create_handles_malloc_failure_strdup(void) {
     printf("  test_file_delegate__create_handles_malloc_failure_strdup...\n");
 
-    // Given malloc will fail on strdup allocation (path string)
-    // Need to find the right malloc number - strdup happens after delegate struct
+    // ar_heap__strdup also retries on failure, so we need to fail both the initial malloc
+    // and the retry. strdup happens after delegate struct allocation.
+    // From debugging: delegate struct is #5/#6, then ar_delegate__create does allocations,
+    // then strdup happens around #8/#9. We need to fail both to defeat retry logic.
+    
     reset_counters();
-    fail_at_malloc = 4;  // Fail fourth malloc (strdup: #1=log, #2=tracking, #3=delegate struct, #4=strdup)
+    fail_at_malloc = 8;  // Start failing at malloc #8 (strdup for "/tmp" path)
+    fail_count = 2;      // Fail 2 consecutive mallocs (#8 and #9) to defeat retry logic
 
     ar_log_t *ref_log = ar_log__create();
 
-    // When creating a FileDelegate (strdup will fail)
+    // When creating a FileDelegate (strdup malloc will fail)
     ar_file_delegate_t *own_delegate = ar_file_delegate__create(ref_log, "/tmp");
 
     // Then should return NULL and clean up delegate (no memory leak)
-    AR_ASSERT(own_delegate == NULL, "Should handle strdup failure");  // ← FAILS (no cleanup)
+    AR_ASSERT(own_delegate == NULL, "Should handle strdup failure and clean up");
 
     // Cleanup
     ar_log__destroy(ref_log);
