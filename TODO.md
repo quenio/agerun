@@ -1831,27 +1831,27 @@ Once all modules are migrated to Zig with C-ABI compatibility, identify internal
   - **REFACTOR**: Verify zero leaks
   - **Follow-up**: Fixed dlsym tests for malloc failure injection (2025-12-25) - Updated malloc interception to handle ar_heap__malloc retry logic by failing consecutive mallocs
 
-- [ ] **TDD Cycle 9**: Implement file read operation
+- [x] **TDD Cycle 9**: Implement file read operation (Completed 2026-01-30)
   - **RED**: Write test `test_file_delegate__handle_read_message()` → FAIL
   - **GREEN**: Parse MAP message with `{"action": "read", "path": "test.txt"}`
   - **GREEN**: Use ar_io__open_file() to read file contents
   - **GREEN**: Return MAP response `{"status": "success", "content": "..."}`
   - **REFACTOR**: Handle errors gracefully, return error status if file not found
 
-- [ ] **TDD Cycle 10**: Add path validation for file operations
+- [x] **TDD Cycle 10**: Add path validation for file operations (Completed 2026-01-30)
   - **RED**: Write test `test_file_delegate__rejects_directory_traversal()` → FAIL
   - **GREEN**: Validate path doesn't contain ".." or absolute paths
   - **GREEN**: Return `{"status": "error", "message": "Invalid path"}` for bad paths
   - **REFACTOR**: Extract path validation to helper function
 
-- [ ] **TDD Cycle 11**: Implement file write operation
+- [x] **TDD Cycle 11**: Implement file write operation (Completed 2026-01-30)
   - **RED**: Write test `test_file_delegate__handle_write_message()` → FAIL
   - **GREEN**: Parse MAP message with `{"action": "write", "path": "test.txt", "content": "data"}`
   - **GREEN**: Use ar_io__open_file() to write file contents
   - **GREEN**: Return MAP response `{"status": "success"}`
   - **REFACTOR**: Apply same path validation, verify ar_io creates backups
 
-- [ ] **TDD Cycle 12**: Add file size limits
+- [x] **TDD Cycle 12**: Add file size limits (Completed 2026-01-30)
   - **RED**: Write test `test_file_delegate__rejects_large_files()` → FAIL
   - **GREEN**: Add MAX_FILE_SIZE constant (e.g., 10MB)
   - **GREEN**: Check file size before reading, return error if too large
@@ -1863,31 +1863,31 @@ Once all modules are migrated to Zig with C-ABI compatibility, identify internal
 
 **IMPORTANT**: Actual HTTP implementation deferred pending HTTP library selection (libcurl, custom, etc.). This phase focuses on validation, security patterns, and message protocol.
 
-- [ ] **TDD Cycle 13**: Create NetworkDelegate module with basic structure
+- [x] **TDD Cycle 13**: Create NetworkDelegate module with basic structure (Completed 2026-01-30)
   - **RED**: Write test `test_network_delegate__create_and_destroy()` → FAIL
   - **GREEN**: Create ar_network_delegate.h with opaque type
   - **GREEN**: Implement create/destroy with ar_delegate_t* wrapper
   - **REFACTOR**: Verify zero leaks
 
-- [ ] **TDD Cycle 14**: Implement HTTP GET operation (stubbed response)
+- [x] **TDD Cycle 14**: Implement HTTP GET operation (stubbed response) (Completed 2026-01-30)
   - **RED**: Write test `test_network_delegate__handle_get_message()` → FAIL
   - **GREEN**: Parse MAP message with `{"action": "GET", "url": "http://..."}`
   - **GREEN**: Return stub response `{"status": "success", "content": "stub", "stubbed": true}`
   - **REFACTOR**: Document that actual HTTP requires separate library integration session
 
-- [ ] **TDD Cycle 15**: Add URL whitelisting
+- [x] **TDD Cycle 15**: Add URL whitelisting (Completed 2026-01-30)
   - **RED**: Write test `test_network_delegate__rejects_non_whitelisted_url()` → FAIL
   - **GREEN**: Add whitelist of allowed URL patterns/domains to delegate
   - **GREEN**: Return `{"status": "error", "message": "URL not whitelisted"}` for invalid URLs
   - **REFACTOR**: Extract URL validation to helper function
 
-- [ ] **TDD Cycle 16**: Add request timeouts and size limits
+- [x] **TDD Cycle 16**: Add request timeouts and size limits (Completed 2026-01-30)
   - **RED**: Write test `test_network_delegate__respects_size_limit()` → FAIL
   - **GREEN**: Add MAX_RESPONSE_SIZE constant (e.g., 1MB)
   - **GREEN**: Add timeout configuration (e.g., 30 seconds)
   - **REFACTOR**: Document limits in ar_network_delegate.md
 
-- [ ] **TDD Cycle 17**: Implement HTTP POST operation (stub)
+- [x] **TDD Cycle 17**: Implement HTTP POST operation (stub) (Completed 2026-01-30)
   - **RED**: Write test `test_network_delegate__handle_post_message()` → FAIL
   - **GREEN**: Parse MAP message with `{"action": "POST", "url": "...", "body": "..."}`
   - **GREEN**: Return stub response (actual HTTP later)
@@ -1899,20 +1899,20 @@ Once all modules are migrated to Zig with C-ABI compatibility, identify internal
 
 **Design**: LogDelegate wraps existing ar_log infrastructure to provide agents with structured logging via messages.
 
-- [ ] **TDD Cycle 18**: Create LogDelegate module with basic structure
+- [x] **TDD Cycle 18**: Create LogDelegate module with basic structure (Completed 2026-01-30)
   - **RED**: Write test `test_log_delegate__create_and_destroy()` → FAIL
   - **GREEN**: Create ar_log_delegate.h with opaque type
   - **GREEN**: Implement create/destroy with ar_delegate_t* wrapper + ar_log_t* field
   - **REFACTOR**: Verify zero leaks
 
-- [ ] **TDD Cycle 19**: Implement structured logging via ar_log
+- [x] **TDD Cycle 19**: Implement structured logging via ar_log (Completed 2026-01-30)
   - **RED**: Write test `test_log_delegate__handle_log_message()` → FAIL
   - **GREEN**: Parse MAP message with `{"level": "info", "message": "text", "agent_id": 123}`
   - **GREEN**: Format log entry with timestamp, level, agent context
   - **GREEN**: Route to ar_log__info(), ar_log__warning(), or ar_log__error() based on level
   - **REFACTOR**: Support levels: info, warning, error
 
-- [ ] **TDD Cycle 20**: Add level filtering
+- [x] **TDD Cycle 20**: Add level filtering (Completed 2026-01-30)
   - **RED**: Write test `test_log_delegate__filters_by_level()` → FAIL
   - **GREEN**: Add minimum log level to log_delegate__create() (default: info)
   - **GREEN**: Reject messages below minimum level

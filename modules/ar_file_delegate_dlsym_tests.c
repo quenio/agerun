@@ -25,42 +25,57 @@
 #include "ar_log.h"
 
 // Control variables for malloc failure injection
-static int fail_at_malloc = -1;
-static int fail_count = 1;  // Number of consecutive mallocs to fail
-static int current_malloc = 0;
-static int consecutive_failures = 0;
+static int mut_fail_at_malloc = -1;
+static int mut_fail_count = 1;  // Number of consecutive mallocs to fail
+static int mut_current_malloc = 0;
+static int mut_consecutive_failures = 0;
+static int mut_resolving_malloc = 0;
+static size_t mut_fail_size = 0;
+static int mut_fail_size_remaining = 0;
 
 // dlsym malloc wrapper
 void* malloc(size_t size) {
     typedef void* (*malloc_fn)(size_t);
-    static malloc_fn real_malloc = NULL;
+    static malloc_fn ref_real_malloc = NULL;
 
-    if (!real_malloc) {
+    if (!ref_real_malloc) {
+        if (mut_resolving_malloc) {
+            return NULL;
+        }
+        mut_resolving_malloc = 1;
         union { void* obj; malloc_fn func; } converter;
         converter.obj = dlsym(RTLD_NEXT, "malloc");
-        real_malloc = converter.func;
+        ref_real_malloc = converter.func;
+        mut_resolving_malloc = 0;
     }
 
-    current_malloc++;
-    printf("  Mock: malloc #%d called (size=%zu)\n", current_malloc, size);
+    mut_current_malloc++;
     
-    // Check if we should fail this malloc
-    if (fail_at_malloc > 0 && current_malloc >= fail_at_malloc && consecutive_failures < fail_count) {
-        printf("  Mock: Failing malloc #%d (consecutive failure %d/%d)\n", 
-               current_malloc, consecutive_failures + 1, fail_count);
-        consecutive_failures++;
+    if (mut_fail_size > 0 && size == mut_fail_size && mut_fail_size_remaining > 0) {
+        mut_fail_size_remaining--;
+        return NULL;
+    }
+
+    // Check if we should fail this malloc by count
+    if (mut_fail_at_malloc > 0
+        && mut_current_malloc >= mut_fail_at_malloc
+        && mut_consecutive_failures < mut_fail_count) {
+        mut_consecutive_failures++;
         return NULL;  // Simulate malloc failure
     }
 
-    return real_malloc(size);
+    return ref_real_malloc(size);
 }
 
 // Reset counters before each test
 static void reset_counters(void) {
-    fail_at_malloc = -1;
-    fail_count = 1;
-    current_malloc = 0;
-    consecutive_failures = 0;
+    mut_fail_at_malloc = -1;
+    mut_fail_count = 1;
+    mut_current_malloc = 0;
+    mut_consecutive_failures = 0;
+    mut_resolving_malloc = 0;
+    mut_fail_size = 0;
+    mut_fail_size_remaining = 0;
 }
 
 // Test function declarations
@@ -69,11 +84,11 @@ static void test_file_delegate__create_handles_malloc_failure_strdup(void);
 
 int main(void) {
     // Directory check
-    char cwd[1024];
-    if (getcwd(cwd, sizeof(cwd)) != NULL) {
-        if (!strstr(cwd, "/bin/") && !strstr(cwd, "/bin")) {
+    char mut_cwd[1024];
+    if (getcwd(mut_cwd, sizeof(mut_cwd)) != NULL) {
+        if (!strstr(mut_cwd, "/bin/") && !strstr(mut_cwd, "/bin")) {
             fprintf(stderr, "ERROR: Tests must be run from the bin directory!\n");
-            fprintf(stderr, "Current directory: %s\n", cwd);
+            fprintf(stderr, "Current directory: %s\n", mut_cwd);
             fprintf(stderr, "Please run: cd /Users/quenio/Repos/agerun/bin && ./ar_file_delegate_dlsym_tests\n");
             return 1;
         }
@@ -105,20 +120,18 @@ static void test_file_delegate__create_handles_malloc_failure_delegate(void) {
     // We need to fail both #5 and #6 (the retry) to truly fail the delegate struct allocation
     
     reset_counters();
-    fail_at_malloc = 5;  // Start failing at malloc #5 (delegate struct)
-    fail_count = 2;      // Fail 2 consecutive mallocs (#5 and #6) to defeat retry logic
+    mut_fail_at_malloc = 1;  // Fail the first malloc in ar_heap__malloc for the delegate struct
+    mut_fail_count = 2;      // Fail 2 consecutive mallocs (#5 and #6) to defeat retry logic
 
-    ar_log_t *ref_log = ar_log__create();
+    ar_log_t *ref_log = NULL;
 
-    // When creating a FileDelegate (malloc #3 and #4 will fail)
-    ar_file_delegate_t *own_delegate = ar_file_delegate__create(ref_log, "/tmp");
+    // When creating a FileDelegate (delegate struct allocation will fail)
+    ar_file_delegate_t *own_delegate = ar_file_delegate__create(ref_log, "/tmp", 0);
 
     // Then should return NULL and not crash
     AR_ASSERT(own_delegate == NULL, "Should handle delegate malloc failure");
 
     // Cleanup
-    ar_log__destroy(ref_log);
-
     printf("    PASS\n");
 }
 
@@ -132,20 +145,17 @@ static void test_file_delegate__create_handles_malloc_failure_strdup(void) {
     // then strdup happens around #8/#9. We need to fail both to defeat retry logic.
     
     reset_counters();
-    fail_at_malloc = 8;  // Start failing at malloc #8 (strdup for "/tmp" path)
-    fail_count = 2;      // Fail 2 consecutive mallocs (#8 and #9) to defeat retry logic
+    mut_fail_size = strlen("/tmp") + 1;
+    mut_fail_size_remaining = 2;  // Fail both strdup attempts for the allowed path
 
-    ar_log_t *ref_log = ar_log__create();
+    ar_log_t *ref_log = NULL;
 
     // When creating a FileDelegate (strdup malloc will fail)
-    ar_file_delegate_t *own_delegate = ar_file_delegate__create(ref_log, "/tmp");
+    ar_file_delegate_t *own_delegate = ar_file_delegate__create(ref_log, "/tmp", 0);
 
     // Then should return NULL and clean up delegate (no memory leak)
     AR_ASSERT(own_delegate == NULL, "Should handle strdup failure and clean up");
 
     // Cleanup
-    ar_log__destroy(ref_log);
-
     printf("    PASS\n");
 }
-
