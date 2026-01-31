@@ -8,6 +8,7 @@
 
 // Test function declarations
 static void test_network_delegate__create_and_destroy(void);
+static void test_network_delegate__rejects_null_whitelist_with_count(void);
 static void test_network_delegate__handle_get_message(void);
 static void test_network_delegate__rejects_non_whitelisted_url(void);
 static void test_network_delegate__respects_size_limit(void);
@@ -46,6 +47,7 @@ int main(void) {
     printf("Running network_delegate module tests...\n");
 
     test_network_delegate__create_and_destroy();
+    test_network_delegate__rejects_null_whitelist_with_count();
     test_network_delegate__handle_get_message();
     test_network_delegate__rejects_non_whitelisted_url();
     test_network_delegate__respects_size_limit();
@@ -71,6 +73,25 @@ static void test_network_delegate__create_and_destroy(void) {
     AR_ASSERT(own_delegate != NULL, "Delegate should be created");
 
     ar_network_delegate__destroy(own_delegate);
+    ar_log__destroy(own_log);
+
+    printf("    PASS\n");
+}
+
+static void test_network_delegate__rejects_null_whitelist_with_count(void) {
+    printf("  test_network_delegate__rejects_null_whitelist_with_count...\n");
+
+    ar_log_t *own_log = ar_log__create();
+
+    ar_network_delegate_t *own_delegate = ar_network_delegate__create(
+        own_log,
+        NULL,
+        1,
+        0,
+        0);
+
+    AR_ASSERT(own_delegate == NULL, "Delegate creation should fail with NULL whitelist");
+
     ar_log__destroy(own_log);
 
     printf("    PASS\n");

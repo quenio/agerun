@@ -120,6 +120,11 @@ ar_network_delegate_t* ar_network_delegate__create(
         ? ref_timeout_seconds
         : AR_NETWORK_DELEGATE__DEFAULT_TIMEOUT_SECONDS;
 
+    if (ref_whitelist_count > 0 && !ref_whitelist) {
+        AR__HEAP__FREE(own_delegate);
+        return NULL;
+    }
+
     if (ref_whitelist_count > 0) {
         own_delegate->own_whitelist = AR__HEAP__MALLOC(sizeof(char*) * ref_whitelist_count,
                                                        "network delegate whitelist");

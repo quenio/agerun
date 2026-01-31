@@ -1,5 +1,13 @@
 # AgeRun CHANGELOG
 
+## 2026-01-31 (NetworkDelegate Whitelist Validation Fix)
+
+- **NetworkDelegate Input Validation**
+
+  Guarded `ar_network_delegate__create` against NULL whitelist pointers when a non-zero whitelist
+  count is provided, added coverage to ensure invalid inputs fail safely, and clarified API
+  documentation requirements.
+
 ## 2026-01-30 (Delegate System Phase 2 Completion: File/Network/Log Delegates)
 
 - **FileDelegate Phase 2 Completion**

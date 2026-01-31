@@ -42,7 +42,8 @@ Creates a new network delegate instance.
 
 **Parameters:**
 - `ref_log`: The log instance for error reporting (borrowed reference, may be NULL)
-- `ref_whitelist`: Array of URL prefix strings allowed for requests (borrowed strings)
+- `ref_whitelist`: Array of URL prefix strings allowed for requests (borrowed strings, must be
+  non-NULL when `whitelist_count > 0`)
 - `whitelist_count`: Number of entries in the whitelist
 - `max_response_size`: Maximum response size for stubbed requests (0 uses default limit)
 - `timeout_seconds`: Timeout for stubbed requests (0 uses default timeout)

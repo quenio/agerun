@@ -14,7 +14,8 @@ typedef struct ar_network_delegate_s ar_network_delegate_t;
 /**
  * Creates a new network delegate instance
  * @param ref_log The log instance for error reporting (borrowed reference, may be NULL)
- * @param ref_whitelist Array of allowed URL prefixes (borrowed strings)
+ * @param ref_whitelist Array of allowed URL prefixes (borrowed strings, must be non-NULL when
+ *        ref_whitelist_count > 0)
  * @param whitelist_count Number of entries in the whitelist
  * @param max_response_size Maximum response size for stubbed requests (0 uses default limit)
  * @param timeout_seconds Timeout for stubbed requests (0 uses default timeout)
