@@ -185,8 +185,6 @@ ar_data_t* ar_log_delegate__handle_message(
     ar_log_delegate_t *mut_delegate,
     ar_data_t *ref_message,
     int64_t sender_id) {
-    (void)sender_id;
-
     if (!mut_delegate || !ref_message) {
         return _create_error_response(NULL, "Invalid message");
     }
@@ -197,8 +195,6 @@ ar_data_t* ar_log_delegate__handle_message(
 
     const char *ref_level = ar_data__get_map_string(ref_message, "level");
     const char *ref_text = ar_data__get_map_string(ref_message, "message");
-    int64_t ref_agent_id = ar_data__get_map_integer(ref_message, "agent_id");
-
     if (!ref_level || !ref_text) {
         return _create_error_response(mut_delegate->ref_log, "Invalid message");
     }
@@ -213,7 +209,7 @@ ar_data_t* ar_log_delegate__handle_message(
     }
 
     const char *ref_level_string = _level_to_string(mut_parsed_level);
-    char *own_log_message = _format_log_message(ref_level_string, ref_text, ref_agent_id);
+    char *own_log_message = _format_log_message(ref_level_string, ref_text, sender_id);
     if (!own_log_message) {
         return _create_error_response(mut_delegate->ref_log, "Failed to format log message");
     }
