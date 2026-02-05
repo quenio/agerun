@@ -81,6 +81,9 @@ static bool _is_url_whitelisted(const ar_network_delegate_t *ref_delegate, const
         }
 
         size_t ref_prefix_len = strlen(ref_prefix);
+        if (ref_prefix_len == 0) {
+            continue;
+        }
         if (strncmp(ref_url, ref_prefix, ref_prefix_len) == 0) {
             return true;
         }
@@ -137,6 +140,9 @@ ar_network_delegate_t* ar_network_delegate__create(
             const char *ref_entry = ref_whitelist[mut_index];
             own_delegate->own_whitelist[mut_index] = NULL;
             if (!ref_entry) {
+                continue;
+            }
+            if (ref_entry[0] == '\0') {
                 continue;
             }
 

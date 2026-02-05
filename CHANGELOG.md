@@ -1,5 +1,12 @@
 # AgeRun CHANGELOG
 
+## 2026-02-01 (NetworkDelegate Empty Whitelist Guard)
+
+- **NetworkDelegate Whitelist Safety**
+
+  Skipped empty URL whitelist entries during creation and matching to prevent empty-prefix matches
+  from bypassing URL filtering in production.
+
 ## 2026-01-31 (NetworkDelegate Whitelist Validation Fix)
 
 - **NetworkDelegate Input Validation**
