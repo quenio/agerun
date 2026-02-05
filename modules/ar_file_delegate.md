@@ -10,7 +10,7 @@ FileDelegate serves as a controlled gateway for agents to interact with the file
 - **Secure file operations**: Reading and writing files with path validation
 - **Directory restrictions**: Operations limited to an allowed directory path
 - **Security controls**: Prevents directory traversal attacks (`../` patterns)
-- **Resource limits**: Configurable file size limits (to be implemented in Cycle 12)
+- **Resource limits**: Configurable file size limits for read operations
 - **Error reporting**: Uses `ar_log_t` for comprehensive error logging
 
 ## Architecture
@@ -35,7 +35,10 @@ Opaque type representing a file delegate instance.
 #### ar_file_delegate__create
 
 ```c
-ar_file_delegate_t* ar_file_delegate__create(ar_log_t *ref_log, const char *ref_allowed_path);
+ar_file_delegate_t* ar_file_delegate__create(
+    ar_log_t *ref_log,
+    const char *ref_allowed_path,
+    size_t max_file_size);
 ```
 
 Creates a new file delegate instance.
@@ -43,6 +46,7 @@ Creates a new file delegate instance.
 **Parameters:**
 - `ref_log`: The log instance for error reporting (borrowed reference, may be NULL)
 - `ref_allowed_path`: The allowed directory path for file operations (borrowed string)
+- `max_file_size`: Maximum file size for read operations (0 uses default limit)
 
 **Note:** NULL log is acceptable - the log module handles NULL gracefully. When NULL is provided, logging operations will silently succeed without writing to a log file.
 
@@ -52,13 +56,12 @@ Creates a new file delegate instance.
 **Ownership:**
 - Returns an owned value that caller must destroy
 - The delegate borrows the log reference - caller must ensure log outlives delegate
-- The delegate borrows the allowed_path string - caller must ensure string outlives delegate
-- The delegate owns a copy of the allowed_path string internally
+- The delegate copies the allowed_path string internally
 
 **Example:**
 ```c
 ar_log_t *own_log = ar_log__create();
-ar_file_delegate_t *own_file_delegate = ar_file_delegate__create(own_log, "/tmp/allowed");
+ar_file_delegate_t *own_file_delegate = ar_file_delegate__create(own_log, "/tmp/allowed", 0);
 
 // Use delegate...
 
@@ -100,6 +103,28 @@ Gets the type identifier for a file delegate.
 **Ownership:**
 - Returns a borrowed string reference (string literal, caller must not free)
 
+#### ar_file_delegate__handle_message
+
+```c
+ar_data_t* ar_file_delegate__handle_message(
+    ar_file_delegate_t *mut_delegate,
+    ar_data_t *ref_message,
+    int64_t sender_id);
+```
+
+Handles a file delegate message and returns a response map.
+
+**Message format:**
+- `{"action": "read", "path": "relative/path.txt"}`
+- `{"action": "write", "path": "relative/path.txt", "content": "..."}`
+
+**Response format:**
+- Success: `{"status": "success", "content": "..."}`
+- Error: `{"status": "error", "message": "..."}`  
+
+**Ownership:**
+- Returns an owned response map that the caller must destroy.
+
 ## Implementation Status
 
 **Current Status**: TDD Cycle 8 Complete (2025-11-08)
@@ -113,10 +138,7 @@ Gets the type identifier for a file delegate.
 - ✅ Zero memory leaks verified
 
 **Planned Features** (Future Cycles):
-- File read operation (Cycle 9)
-- Path validation and security (Cycle 10)
-- File write operation (Cycle 11)
-- File size limits (Cycle 12)
+- Additional policy enforcement hooks in the delegate policy module
 
 ## Related Modules
 
@@ -128,4 +150,3 @@ Gets the type identifier for a file delegate.
 ## Test File
 
 Test file: `modules/ar_file_delegate_tests.c`
-

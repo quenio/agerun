@@ -913,11 +913,92 @@ ignored_errors:
 
   # ar_expression_parser test status messages
   - context: "ar_expression_parser_tests"
-# Total entries: 243
-# Test entries: 238
+
+  # ar_file_delegate_tests
+  - context: "ar_file_delegate_tests"
+    message: "ERROR: Invalid path"
+    comment: "Expected invalid path error in file delegate tests"
+  - context: "ar_file_delegate_tests"
+    message: "ERROR: File too large"
+    comment: "Expected size limit error in file delegate tests"
+  - context: "ar_file_delegate_tests with Address + Undefined Behavior Sanitizers"
+    message: "ERROR: Invalid path"
+    comment: "Expected invalid path error in file delegate sanitize tests"
+  - context: "ar_file_delegate_tests with Address + Undefined Behavior Sanitizers"
+    message: "ERROR: File too large"
+    comment: "Expected size limit error in file delegate sanitize tests"
+  - context: "ar_file_delegate_tests with Thread Sanitizer"
+    message: "ERROR: Invalid path"
+    comment: "Expected invalid path error in file delegate thread sanitizer tests"
+  - context: "ar_file_delegate_tests with Thread Sanitizer"
+    message: "ERROR: File too large"
+    comment: "Expected size limit error in file delegate thread sanitizer tests"
+
+  # ar_log_delegate_tests
+  - context: "ar_log_delegate_tests"
+    message: "ERROR: Log level below minimum"
+    comment: "Expected minimum level filtering error in log delegate tests"
+  - context: "ar_log_delegate_tests with Address + Undefined Behavior Sanitizers"
+    message: "ERROR: Log level below minimum"
+    comment: "Expected minimum level filtering error in log delegate sanitize tests"
+  - context: "ar_log_delegate_tests with Thread Sanitizer"
+    message: "ERROR: Log level below minimum"
+    comment: "Expected minimum level filtering error in log delegate thread sanitizer tests"
+
+  # ar_network_delegate_tests
+  - context: "ar_network_delegate_tests"
+    message: "ERROR: URL not whitelisted"
+    comment: "Expected whitelist rejection error in network delegate tests"
+  - context: "ar_network_delegate_tests"
+    message: "ERROR: Response too large"
+    comment: "Expected response size error in network delegate tests"
+  - context: "ar_network_delegate_tests with Address + Undefined Behavior Sanitizers"
+    message: "ERROR: URL not whitelisted"
+    comment: "Expected whitelist rejection error in network delegate sanitize tests"
+  - context: "ar_network_delegate_tests with Address + Undefined Behavior Sanitizers"
+    message: "ERROR: Response too large"
+    comment: "Expected response size error in network delegate sanitize tests"
+  - context: "ar_network_delegate_tests with Thread Sanitizer"
+    message: "ERROR: URL not whitelisted"
+    comment: "Expected whitelist rejection error in network delegate thread sanitizer tests"
+  - context: "ar_network_delegate_tests with Thread Sanitizer"
+    message: "ERROR: Response too large"
+    comment: "Expected response size error in network delegate thread sanitizer tests"
+
+  # ar_file_delegate_dlsym_tests
+  - context: "ar_file_delegate_dlsym_tests"
+    message: "Error: Memory allocation failed at modules/ar_file_delegate.c:244 - Failed to allocate 32 bytes for file_delegate in ar_heap__malloc"
+    comment: "DLSym test simulating file delegate allocation failure"
+  - context: "ar_file_delegate_dlsym_tests"
+    message: "Error: Allocation details: Size requested: 32 bytes"
+    comment: "DLSym test allocation detail output"
+  - context: "ar_file_delegate_dlsym_tests"
+    message: "Error: Purpose: file_delegate"
+    comment: "DLSym test allocation purpose output"
+  - context: "ar_file_delegate_dlsym_tests"
+    message: "Error: Context: ar_heap__malloc"
+    comment: "DLSym test allocation context output"
+  - context: "ar_file_delegate_dlsym_tests"
+    message: "Error: Memory allocation failed permanently for file_delegate (32 bytes) at modules/ar_file_delegate.c:244"
+    comment: "DLSym test permanent allocation failure output"
+  - context: "ar_file_delegate_dlsym_tests"
+    message: "Error: Memory allocation failed at modules/ar_file_delegate.c:253 - Failed to allocate 5 bytes for file delegate allowed path in ar_heap__strdup"
+    comment: "DLSym test simulating allowed path strdup failure"
+  - context: "ar_file_delegate_dlsym_tests"
+    message: "Error: Allocation details: Size requested: 5 bytes"
+    comment: "DLSym test allowed path allocation detail output"
+  - context: "ar_file_delegate_dlsym_tests"
+    message: "Error: Purpose: file delegate allowed path"
+    comment: "DLSym test allowed path allocation purpose output"
+  - context: "ar_file_delegate_dlsym_tests"
+    message: "Error: Context: ar_heap__strdup"
+    comment: "DLSym test allowed path allocation context output"
+  - context: "ar_file_delegate_dlsym_tests"
+    message: "Error: String duplication failed permanently for file delegate allowed path (5 bytes) at modules/ar_file_delegate.c:253"
+    comment: "DLSym test permanent strdup failure output"
+# Total entries: 293
+# Test entries: 286
 # Executable entries: 7
 # Context-free entries: 0
-
-
 
 
