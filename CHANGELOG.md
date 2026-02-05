@@ -1,5 +1,12 @@
 # AgeRun CHANGELOG
 
+## 2026-02-01 (Log Delegate Sender Attribution)
+
+- **Log Delegate Sender Attribution**
+
+  Always uses sender_id for log attribution (ignoring any provided agent_id), adds coverage for
+  missing and mismatched agent IDs, and updates documentation and log whitelists accordingly.
+
 ## 2026-01-31 (NetworkDelegate Whitelist Validation Fix)
 
 - **NetworkDelegate Input Validation**

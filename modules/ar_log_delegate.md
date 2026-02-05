@@ -73,7 +73,10 @@ ar_data_t* ar_log_delegate__handle_message(
 Handles a log delegate message and returns a response map.
 
 **Message format:**
-- `{"level": "info", "message": "text", "agent_id": 123}`
+- `{"level": "info", "message": "text", "agent_id": 123}` (`agent_id` optional)
+
+**Sender attribution:**
+- Uses `sender_id` for log attribution, ignoring any provided `agent_id`
 
 **Response format:**
 - Success: `{"status": "success"}`
