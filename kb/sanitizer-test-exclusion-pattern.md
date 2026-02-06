@@ -62,6 +62,7 @@ grep "dlsym_tests" logs/sanitize-tests.log  # Should find nothing
 ```
 
 ## Related Patterns
+- [DLSym Malloc Retry Logic Pattern](dlsym-malloc-retry-logic-pattern.md) - Handling retry logic when testing malloc failures with dlsym
 - [Makefile Pattern Rule Management](makefile-pattern-rule-management.md)
 - [Memory Debugging Comprehensive Guide](memory-debugging-comprehensive-guide.md)
 - [DLSym Test Interception Technique](dlsym-test-interception-technique.md)

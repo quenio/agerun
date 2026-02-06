@@ -138,6 +138,7 @@ Each learning file contains:
 #### 2.2 Test Implementation
 - [AR_ASSERT for Descriptive Failures](ar-assert-descriptive-failures.md)
 - [DLSym Test Interception Technique](dlsym-test-interception-technique.md)
+- [DLSym Malloc Retry Logic Pattern](dlsym-malloc-retry-logic-pattern.md) ⭐ NEW - Handling ar_heap__malloc retry logic when testing malloc failures with dlsym
 - [Dynamic Test Resource Allocation](dynamic-test-resource-allocation.md)
 - [Fixture Dependency Mapping](fixture-dependency-mapping.md)
 - [Integration Test Binary Execution](integration-test-binary-execution.md)

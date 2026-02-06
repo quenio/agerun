@@ -60,6 +60,7 @@ For every new test, especially those testing error conditions:
 When tests become overly complex (retry loops, state tracking, conditional logic), it often indicates mocking at the wrong level. Check existing solutions first rather than creating complex mocks. See [Test Complexity as Code Smell](test-complexity-as-code-smell.md) and [Mock at Right Level Pattern](mock-at-right-level-pattern.md).
 
 ## Related Patterns
+- [DLSym Malloc Retry Logic Pattern](dlsym-malloc-retry-logic-pattern.md) - Verifying dlsym tests actually catch failures by defeating retry logic
 - [Test Assertion Strength Patterns](test-assertion-strength-patterns.md)
 - [DLSym Test Interception Technique](dlsym-test-interception-technique.md)
 - [Test Expectation Reality Alignment](test-expectation-reality-alignment.md)

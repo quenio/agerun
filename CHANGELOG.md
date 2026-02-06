@@ -33,6 +33,37 @@
   Updated delegate module documentation for File/Network/Log delegates, and marked Delegate System
   Phase 2 cycles (9-20) complete in TODO.md. Added log whitelist entries for expected delegate
   test errors in standard, sanitizer, and dlsym runs.
+## 2025-12-25 (Session Learnings: DLSym Malloc Retry Logic and Test Function Name Whitelisting)
+
+- **Session Learnings: DLSym Malloc Retry Logic and Test Function Name Whitelisting**
+
+  Documented critical patterns discovered while fixing dlsym tests for FileDelegate malloc failure injection.
+
+  **Problem**: DLSym tests for malloc failures were passing incorrectly because `ar_heap__malloc` implements retry logic. Failing a single malloc wasn't sufficient - the retry succeeded, making tests report false confidence in error handling.
+
+  **Solution**: Created comprehensive KB article documenting how to handle retry logic in dlsym tests by failing consecutive mallocs. Also documented whitelist patterns for test function names that trigger suspicious pattern detection.
+
+  **KB Articles Created**:
+  - `kb/dlsym-malloc-retry-logic-pattern.md` - Pattern for handling `ar_heap__malloc` retry logic when testing malloc failures with dlsym
+
+  **KB Articles Updated** (6 articles with cross-references):
+  - `kb/dlsym-test-interception-technique.md` - Added reference to retry logic pattern
+  - `kb/whitelist-success-message-management.md` - Added section on test function name patterns
+  - `kb/check-logs-deep-analysis-pattern.md` - Added reference to test function name whitelisting
+  - `kb/sanitizer-test-exclusion-pattern.md` - Added reference to retry logic pattern
+  - `kb/test-effectiveness-verification.md` - Added reference to retry logic pattern for verifying tests catch failures
+  - `kb/intentional-test-errors-filtering.md` - Added references to whitelist success message management and retry logic pattern
+
+  **Commands Updated** (3 commands):
+  - `.opencode/command/ar/sanitize-tests.md` - Added reference to retry logic pattern in mocking guidelines
+  - `.opencode/command/ar/fix-errors-whitelisted.md` - Added reference to whitelist success message management
+  - `.opencode/command/ar/check-logs.md` - Added references to test function name whitelisting patterns
+
+  **AGENTS.md Updates**:
+  - Updated DLSym interception guideline to reference retry logic handling
+  - Updated whitelist specificity guideline to reference test function name whitelisting
+
+  **Impact**: Future dlsym tests for malloc failures will correctly handle retry logic, ensuring error handling paths are actually tested. Test function names containing error keywords are now properly documented for whitelisting, preventing false positives in check-logs.
 
 ## 2025-12-25 (FileDelegate Cycle 8: Error Handling and Cleanup Verification + DLSym Test Fix)
 

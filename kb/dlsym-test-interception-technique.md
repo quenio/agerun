@@ -127,6 +127,7 @@ Cleanup tracking:
 ```
 
 ## Related Patterns
+- [DLSym Malloc Retry Logic Pattern](dlsym-malloc-retry-logic-pattern.md) - Handling retry logic in ar_heap__malloc when testing malloc failures
 - [Sanitizer Test Exclusion Pattern](sanitizer-test-exclusion-pattern.md)
 - [Test Effectiveness Verification](test-effectiveness-verification.md)
 - [Memory Debugging Comprehensive Guide](memory-debugging-comprehensive-guide.md)

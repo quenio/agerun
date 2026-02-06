@@ -229,6 +229,9 @@ ignored_errors:
     message: "Warning: Could not load methods from file"
     comment: "Expected warning in executable tests"
   - context: "ar_executable_tests"
+    message: "Warning: Failed to save methodology to agerun.methodology"
+    comment: "Intentional save failure in executable tests"
+  - context: "ar_executable_tests"
     message: "Make output: gcc-13"
     comment: "Expected verbose compilation output from isolated test builds"
   - context: "ar_executable_tests"
@@ -497,6 +500,10 @@ ignored_errors:
     message: "Error: Invalid parameters for safe_write_file"
     comment: "Testing invalid parameters for write"
   - context: "ar_io_tests"
+  # ar_log_delegate_tests
+  - context: "ar_log_delegate_tests"
+    message: "ERROR: agent_id does not match sender_id"
+    comment: "Intentional spoofing test validates sender/agent mismatch rejection"
   # ar_log_tests
   - context: "ar_log_tests"
     message: "ERROR: Error at position (at position 42)"
@@ -996,9 +1003,7 @@ ignored_errors:
   - context: "ar_file_delegate_dlsym_tests"
     message: "Error: String duplication failed permanently for file delegate allowed path (5 bytes) at modules/ar_file_delegate.c:253"
     comment: "DLSym test permanent strdup failure output"
-# Total entries: 293
-# Test entries: 286
+# Total entries: 295
+# Test entries: 288
 # Executable entries: 7
 # Context-free entries: 0
-
-

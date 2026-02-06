@@ -44,6 +44,20 @@ Without proper whitelist management:
   comment: "dlsym test diagnostic showing controlled failure"
 ```
 
+### 5. Test Function Names with Error Keywords
+```yaml
+# Test function names containing "failure", "error", "fail" trigger suspicious pattern detection
+# but are diagnostic output, not actual errors
+- context: "ar_file_delegate_dlsym_tests"
+  message: "test_file_delegate__create_handles_malloc_failure_delegate"
+  comment: "Test function name diagnostic output - contains 'failure' but is not an error"
+- context: "ar_file_delegate_dlsym_tests"
+  message: "test_file_delegate__create_handles_malloc_failure_strdup"
+  comment: "Test function name diagnostic output - contains 'failure' but is not an error"
+```
+
+**Why this matters**: The check-logs deep analysis phase searches for lines containing both error keywords (`FAILED|failed|FAIL|fail|ERROR|error`) and test keywords (`test_|_test|Test`). Test function names like `test_file_delegate__create_handles_malloc_failure_delegate` match this pattern but are legitimate diagnostic output, not errors.
+
 ## Whitelist Organization Strategy
 
 ### Group by Test Module
@@ -172,6 +186,8 @@ done
 4. Add entries for new test output
 
 ## Related Patterns
+- [DLSym Malloc Retry Logic Pattern](dlsym-malloc-retry-logic-pattern.md) - DLSym tests that trigger intentional errors require comprehensive whitelisting
+- [Check-Logs Deep Analysis Pattern](check-logs-deep-analysis-pattern.md) - Understanding how suspicious pattern detection works for test function names
 - [Whitelist Specificity Pattern](whitelist-specificity-pattern.md)
 - [Intentional Test Errors Filtering](intentional-test-errors-filtering.md)
 - [CI Check-Logs Requirement](ci-check-logs-requirement.md)

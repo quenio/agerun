@@ -63,6 +63,8 @@ else:
 ```
 
 ## Related Patterns
+- [Whitelist Success Message Management](whitelist-success-message-management.md) - Whitelisting test function names that trigger suspicious pattern detection
+- [DLSym Malloc Retry Logic Pattern](dlsym-malloc-retry-logic-pattern.md) - DLSym tests generate intentional errors that need whitelisting
 - [CI Check-Logs Requirement](ci-check-logs-requirement.md)
 - [Whitelist vs Pattern Filtering](whitelist-vs-pattern-filtering.md)
 - [Intentional Test Errors Filtering](intentional-test-errors-filtering.md)

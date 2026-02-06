@@ -185,5 +185,6 @@ Continue fixing more errors of the same type or select an additional pattern tha
 - [Systematic Error Whitelist Reduction](../../../kb/systematic-error-whitelist-reduction.md)
 - [Check-Logs Deep Analysis Pattern](../../../kb/check-logs-deep-analysis-pattern.md)
 - [Whitelist vs Pattern Filtering](../../../kb/whitelist-vs-pattern-filtering.md)
+- [Whitelist Success Message Management](../../../kb/whitelist-success-message-management.md) - Whitelisting test function names that trigger suspicious pattern detection
 
 Remember: Every fixed error improves code quality and reduces technical debt!

@@ -211,7 +211,8 @@ make check-logs
 - [Whitelist Simplification Pattern](../../../kb/whitelist-simplification-pattern.md)
 - [Systematic Error Whitelist Reduction](../../../kb/systematic-error-whitelist-reduction.md)
 - [Uniform Filtering Application](../../../kb/uniform-filtering-application.md)
-- [Check-Logs Deep Analysis Pattern](../../../kb/check-logs-deep-analysis-pattern.md)
+- [Check-Logs Deep Analysis Pattern](../../../kb/check-logs-deep-analysis-pattern.md) - Understanding suspicious pattern detection for test function names
+- [Whitelist Success Message Management](../../../kb/whitelist-success-message-management.md) - Whitelisting test function names containing error keywords
 - [Whitelist vs Pattern Filtering](../../../kb/whitelist-vs-pattern-filtering.md)
 
 ### Diagnostic Troubleshooting
