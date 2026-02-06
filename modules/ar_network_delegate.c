@@ -140,6 +140,17 @@ ar_network_delegate_t* ar_network_delegate__create(
                 continue;
             }
 
+            if (strlen(ref_entry) == 0) {
+                for (size_t mut_cleanup = 0; mut_cleanup < mut_index; ++mut_cleanup) {
+                    if (own_delegate->own_whitelist[mut_cleanup]) {
+                        AR__HEAP__FREE(own_delegate->own_whitelist[mut_cleanup]);
+                    }
+                }
+                AR__HEAP__FREE(own_delegate->own_whitelist);
+                AR__HEAP__FREE(own_delegate);
+                return NULL;
+            }
+
             own_delegate->own_whitelist[mut_index] = AR__HEAP__STRDUP(ref_entry,
                                                                      "network delegate whitelist entry");
             if (!own_delegate->own_whitelist[mut_index]) {

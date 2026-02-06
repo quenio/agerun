@@ -30,8 +30,9 @@ static int mut_fail_count = 1;  // Number of consecutive mallocs to fail
 static int mut_current_malloc = 0;
 static int mut_consecutive_failures = 0;
 static int mut_resolving_malloc = 0;
-static size_t mut_fail_size = 0;
-static int mut_fail_size_remaining = 0;
+static int mut_resolving_strdup = 0;
+static const char *ref_fail_strdup_target = NULL;
+static int mut_fail_strdup_remaining = 0;
 
 // dlsym malloc wrapper
 void* malloc(size_t size) {
@@ -51,11 +52,6 @@ void* malloc(size_t size) {
 
     mut_current_malloc++;
     
-    if (mut_fail_size > 0 && size == mut_fail_size && mut_fail_size_remaining > 0) {
-        mut_fail_size_remaining--;
-        return NULL;
-    }
-
     // Check if we should fail this malloc by count
     if (mut_fail_at_malloc > 0
         && mut_current_malloc >= mut_fail_at_malloc
@@ -67,6 +63,33 @@ void* malloc(size_t size) {
     return ref_real_malloc(size);
 }
 
+// dlsym strdup wrapper
+char* strdup(const char *ref_str) {
+    typedef char* (*strdup_fn)(const char*);
+    static strdup_fn ref_real_strdup = NULL;
+
+    if (!ref_real_strdup) {
+        if (mut_resolving_strdup) {
+            return NULL;
+        }
+        mut_resolving_strdup = 1;
+        union { void* obj; strdup_fn func; } converter;
+        converter.obj = dlsym(RTLD_NEXT, "strdup");
+        ref_real_strdup = converter.func;
+        mut_resolving_strdup = 0;
+    }
+
+    if (ref_fail_strdup_target
+        && ref_str
+        && strcmp(ref_str, ref_fail_strdup_target) == 0
+        && mut_fail_strdup_remaining > 0) {
+        mut_fail_strdup_remaining--;
+        return NULL;
+    }
+
+    return ref_real_strdup(ref_str);
+}
+
 // Reset counters before each test
 static void reset_counters(void) {
     mut_fail_at_malloc = -1;
@@ -74,8 +97,9 @@ static void reset_counters(void) {
     mut_current_malloc = 0;
     mut_consecutive_failures = 0;
     mut_resolving_malloc = 0;
-    mut_fail_size = 0;
-    mut_fail_size_remaining = 0;
+    mut_resolving_strdup = 0;
+    ref_fail_strdup_target = NULL;
+    mut_fail_strdup_remaining = 0;
 }
 
 // Test function declarations
@@ -139,14 +163,11 @@ static void test_file_delegate__create_handles_malloc_failure_delegate(void) {
 static void test_file_delegate__create_handles_malloc_failure_strdup(void) {
     printf("  test_file_delegate__create_handles_malloc_failure_strdup...\n");
 
-    // ar_heap__strdup also retries on failure, so we need to fail both the initial malloc
-    // and the retry. strdup happens after delegate struct allocation.
-    // From debugging: delegate struct is #5/#6, then ar_delegate__create does allocations,
-    // then strdup happens around #8/#9. We need to fail both to defeat retry logic.
+    // ar_heap__strdup retries on failure, so fail both strdup attempts for "/tmp".
     
     reset_counters();
-    mut_fail_size = strlen("/tmp") + 1;
-    mut_fail_size_remaining = 2;  // Fail both strdup attempts for the allowed path
+    ref_fail_strdup_target = "/tmp";
+    mut_fail_strdup_remaining = 2;
 
     ar_log_t *ref_log = NULL;
 

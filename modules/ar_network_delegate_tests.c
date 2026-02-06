@@ -9,6 +9,7 @@
 // Test function declarations
 static void test_network_delegate__create_and_destroy(void);
 static void test_network_delegate__rejects_null_whitelist_with_count(void);
+static void test_network_delegate__rejects_empty_whitelist_entry(void);
 static void test_network_delegate__handle_get_message(void);
 static void test_network_delegate__rejects_non_whitelisted_url(void);
 static void test_network_delegate__respects_size_limit(void);
@@ -48,6 +49,7 @@ int main(void) {
 
     test_network_delegate__create_and_destroy();
     test_network_delegate__rejects_null_whitelist_with_count();
+    test_network_delegate__rejects_empty_whitelist_entry();
     test_network_delegate__handle_get_message();
     test_network_delegate__rejects_non_whitelisted_url();
     test_network_delegate__respects_size_limit();
@@ -91,6 +93,25 @@ static void test_network_delegate__rejects_null_whitelist_with_count(void) {
         0);
 
     AR_ASSERT(own_delegate == NULL, "Delegate creation should fail with NULL whitelist");
+
+    ar_log__destroy(own_log);
+
+    printf("    PASS\n");
+}
+
+static void test_network_delegate__rejects_empty_whitelist_entry(void) {
+    printf("  test_network_delegate__rejects_empty_whitelist_entry...\n");
+
+    const char *ref_whitelist[] = {""};
+    ar_log_t *own_log = ar_log__create();
+
+    ar_network_delegate_t *own_delegate = ar_network_delegate__create(
+        own_log,
+        ref_whitelist,
+        1,
+        16,
+        5);
+    AR_ASSERT(own_delegate == NULL, "Delegate creation should fail with empty whitelist entry");
 
     ar_log__destroy(own_log);
 
