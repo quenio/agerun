@@ -185,8 +185,6 @@ ar_data_t* ar_log_delegate__handle_message(
     ar_log_delegate_t *mut_delegate,
     ar_data_t *ref_message,
     int64_t sender_id) {
-    (void)sender_id;
-
     if (!mut_delegate || !ref_message) {
         return _create_error_response(NULL, "Invalid message");
     }
@@ -197,10 +195,23 @@ ar_data_t* ar_log_delegate__handle_message(
 
     const char *ref_level = ar_data__get_map_string(ref_message, "level");
     const char *ref_text = ar_data__get_map_string(ref_message, "message");
-    int64_t ref_agent_id = ar_data__get_map_integer(ref_message, "agent_id");
+    ar_data_t *ref_agent_id_data = ar_data__get_map_data(ref_message, "agent_id");
 
     if (!ref_level || !ref_text) {
         return _create_error_response(mut_delegate->ref_log, "Invalid message");
+    }
+
+    if (ref_agent_id_data && ar_data__get_type(ref_agent_id_data) != AR_DATA_TYPE__INTEGER) {
+        return _create_error_response(mut_delegate->ref_log, "Invalid agent_id");
+    }
+
+    if (ref_agent_id_data) {
+        int64_t ref_message_agent_id = ar_data__get_integer(ref_agent_id_data);
+        if (ref_message_agent_id != sender_id) {
+            return _create_error_response(
+                mut_delegate->ref_log,
+                "agent_id does not match sender_id");
+        }
     }
 
     ar_log_delegate_level_t mut_parsed_level = AR_LOG_DELEGATE__DEFAULT_MIN_LEVEL;
@@ -213,7 +224,7 @@ ar_data_t* ar_log_delegate__handle_message(
     }
 
     const char *ref_level_string = _level_to_string(mut_parsed_level);
-    char *own_log_message = _format_log_message(ref_level_string, ref_text, ref_agent_id);
+    char *own_log_message = _format_log_message(ref_level_string, ref_text, sender_id);
     if (!own_log_message) {
         return _create_error_response(mut_delegate->ref_log, "Failed to format log message");
     }
