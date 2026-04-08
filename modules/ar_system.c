@@ -218,12 +218,20 @@ bool ar_system__process_next_message(ar_system_t *mut_system) {
         return false;
     }
 
-    mut_system->next_agent_hint = agent_id;
-
     // Take ownership of the message for the system
     ar_data__take_ownership(own_message, mut_system);
 
     ar_interpreter__execute_method(mut_system->own_interpreter, agent_id, own_message);
+
+    if (ar_agency__agent_has_messages(mut_system->own_agency, agent_id)) {
+        mut_system->next_agent_hint = agent_id;
+    } else {
+        int64_t next_agent_id = ar_agency__get_next_agent(mut_system->own_agency, agent_id);
+        if (next_agent_id == 0) {
+            next_agent_id = first_agent_id;
+        }
+        mut_system->next_agent_hint = next_agent_id;
+    }
 
     // Free the message as it's now been processed
     ar_data__destroy_if_owned(own_message, mut_system);
