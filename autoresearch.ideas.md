@@ -1,0 +1,1 @@
+- Replace the fixed-size `ar_map` array with a dynamically resized hash table/open-addressed map so large agent registries are supported without increasing every map scan cost.

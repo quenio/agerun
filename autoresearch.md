@@ -10,7 +10,7 @@ Optimize the end-to-end performance of the AgeRun agent system under a high-stre
   - `msg_per_sec` (msg/s) — Number of messages processed per second.
 
 ## How to Run
-`./autoresearch.sh` — Compiles and runs `modules/ar_integration_performance_tests.c` and outputs `METRIC total_µs=...`.
+`make ar_integration_performance_tests` — Builds and runs `modules/ar_integration_performance_tests.c` only, and outputs `METRIC total_µs=...` for faster turnaround.
 
 ## Files in Scope
 - `modules/ar_system.c/h` - Core system loop and message processing.
