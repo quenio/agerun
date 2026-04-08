@@ -1,5 +1,14 @@
 # AgeRun CHANGELOG
 
+## 2026-04-08 (Zig test linking on macOS and TSan zig test Darwin)
+
+- **Makefile / Zig tests**
+
+  `zig test` requires an explicit `-target $(ZIG_TARGET) -lc` so tests link libc on macOS under Zig
+  0.14+. On Darwin, `-fsanitize-thread` for `zig test` is omitted because Homebrew Zig’s bundled
+  libtsan does not build against the macOS SDK; C tests under `tsan-tests` remain TSan-instrumented.
+  Restored `LDFLAGS` to `-lm -lc -pthread` for normal linking.
+
 ## 2026-01-31 (NetworkDelegate Whitelist Validation Fix)
 
 - **NetworkDelegate Input Validation**

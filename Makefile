@@ -101,7 +101,16 @@ else
 SANITIZER_EXTRA_FLAGS =
 endif
 
-LDFLAGS = -lm
+# zig test must link libc with an explicit target on macOS (Zig 0.14+). ThreadSanitizer via
+# zig test is not supported for Homebrew Zig on Darwin (bundled libtsan fails to compile against the SDK).
+ZIG_TEST_LINK_FLAGS = -target $(ZIG_TARGET) -lc
+ifeq ($(UNAME_S),Darwin)
+ZIG_TEST_TSAN_FLAGS =
+else
+ZIG_TEST_TSAN_FLAGS = -fsanitize-thread
+endif
+
+LDFLAGS = -lm -lc -pthread
 
 # Debug build flags
 DEBUG_CFLAGS = -g -O0 -DDEBUG
@@ -403,18 +412,18 @@ $(TSAN_TESTS_DIR)/%_tests: $(TSAN_TESTS_DIR)/obj/%_tests.o tsan_tests_lib
 # Build and run individual Zig test with bin/ prefix
 bin/%Tests: modules/%Tests.zig
 	@echo "Building and running Zig test: $*Tests"
-	@cd $(RUN_TESTS_DIR) && $(ZIG) test ../../modules/$*Tests.zig -femit-bin=$*Tests
+	@cd $(RUN_TESTS_DIR) && $(ZIG) test ../../modules/$*Tests.zig -femit-bin=$*Tests $(ZIG_TEST_LINK_FLAGS)
 	@cd $(RUN_TESTS_DIR) && ./$*Tests
 
 # Directory-specific Zig test binaries
 $(RUN_TESTS_DIR)/%Tests: modules/%Tests.zig | $(RUN_TESTS_DIR)
-	$(ZIG) test $< -femit-bin=$@
+	$(ZIG) test $< -femit-bin=$@ $(ZIG_TEST_LINK_FLAGS)
 
 $(SANITIZE_TESTS_DIR)/%Tests: modules/%Tests.zig | $(SANITIZE_TESTS_DIR)
-	$(ZIG) test $< -femit-bin=$@ -fsanitize-c
+	$(ZIG) test $< -femit-bin=$@ -fsanitize-c $(ZIG_TEST_LINK_FLAGS)
 
 $(TSAN_TESTS_DIR)/%Tests: modules/%Tests.zig | $(TSAN_TESTS_DIR)
-	$(ZIG) test $< -femit-bin=$@ -fsanitize-thread
+	$(ZIG) test $< -femit-bin=$@ $(ZIG_TEST_TSAN_FLAGS) $(ZIG_TEST_LINK_FLAGS)
 
 # Note: Individual test builds use bin/run-tests/ directory via the bin/%_tests target above
 # No generic bin/ compilation rules needed for tests
