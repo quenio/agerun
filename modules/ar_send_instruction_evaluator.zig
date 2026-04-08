@@ -81,12 +81,8 @@ pub export fn ar_send_instruction_evaluator__evaluate(
         return false;
     }
     
-    // Get the argument ASTs array
-    const items = c.ar_list__items(ref_arg_asts) orelse return false;
-    defer ar_allocator.free(items);
-    
-    const ref_agent_id_ast: ?*const c.ar_expression_ast_t = @ptrCast(items[0]);
-    const ref_message_ast: ?*const c.ar_expression_ast_t = @ptrCast(items[1]);
+    const ref_agent_id_ast: ?*const c.ar_expression_ast_t = @ptrCast(c.ar_list__first(ref_arg_asts));
+    const ref_message_ast: ?*const c.ar_expression_ast_t = @ptrCast(c.ar_list__last(ref_arg_asts));
     
     if (ref_agent_id_ast == null or ref_message_ast == null) {
         return false;
