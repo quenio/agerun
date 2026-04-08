@@ -35,6 +35,22 @@ ar_frame_t* ar_frame__create(
 );
 
 /**
+ * Rebinds an existing frame to a new execution context.
+ *
+ * @param mut_frame The frame to update (mutable reference)
+ * @param mut_memory The memory map containing variables (mutable reference)
+ * @param ref_context The context map with additional data (const reference)
+ * @param ref_message The message being processed (const reference)
+ * @return true if successful, false if any parameter is NULL
+ */
+bool ar_frame__reset(
+    ar_frame_t *mut_frame,
+    ar_data_t *mut_memory,
+    const ar_data_t *ref_context,
+    const ar_data_t *ref_message
+);
+
+/**
  * Destroys a frame and frees its resources
  * @param own_frame The frame to destroy
  * @note Ownership: Takes ownership and destroys the frame.

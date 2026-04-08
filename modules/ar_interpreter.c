@@ -14,6 +14,7 @@
  */
 struct ar_interpreter_s {
     ar_method_evaluator_t *own_evaluator; // owned method evaluator
+    ar_frame_t *own_frame; // reusable execution frame
     ar_log_t *ref_log; // borrowed reference to log instance
     ar_agency_t *ref_agency; // borrowed reference to agency instance
 };
@@ -34,6 +35,7 @@ ar_interpreter_t* ar_interpreter__create(ar_log_t *ref_log, ar_agency_t *ref_age
 
     own_interpreter->ref_log = ref_log;
     own_interpreter->ref_agency = ref_agency;
+    own_interpreter->own_frame = NULL;
 
     // Use the agency and delegation from parameters
     ar_agency_t *agency_to_use = ref_agency;
@@ -66,6 +68,10 @@ void ar_interpreter__destroy(ar_interpreter_t *own_interpreter) {
     
     if (own_interpreter->own_evaluator) {
         ar_method_evaluator__destroy(own_interpreter->own_evaluator);
+    }
+
+    if (own_interpreter->own_frame) {
+        ar_frame__destroy(own_interpreter->own_frame);
     }
     
     AR__HEAP__FREE(own_interpreter);
@@ -135,22 +141,23 @@ bool ar_interpreter__execute_method(ar_interpreter_t *mut_interpreter,
         return false;
     }
     
-    // Create a frame for execution
-    ar_frame_t *own_frame = ar_frame__create(mut_memory, ref_context, ref_message);
-    if (!own_frame) {
-        ar_log__error(mut_interpreter->ref_log, "Failed to create execution frame");
+    if (!mut_interpreter->own_frame) {
+        mut_interpreter->own_frame = ar_frame__create(mut_memory, ref_context, ref_message);
+        if (!mut_interpreter->own_frame) {
+            ar_log__error(mut_interpreter->ref_log, "Failed to create execution frame");
+            return false;
+        }
+    } else if (!ar_frame__reset(mut_interpreter->own_frame, mut_memory, ref_context, ref_message)) {
+        ar_log__error(mut_interpreter->ref_log, "Failed to reset execution frame");
         return false;
     }
     
     // Delegate to method evaluator (facade pattern)
-    bool success = ar_method_evaluator__evaluate(mut_interpreter->own_evaluator, own_frame, ref_ast);
+    bool success = ar_method_evaluator__evaluate(mut_interpreter->own_evaluator, mut_interpreter->own_frame, ref_ast);
     
     if (!success) {
         ar_log__error(mut_interpreter->ref_log, "Method evaluation failed");
     }
-    
-    // Clean up frame
-    ar_frame__destroy(own_frame);
     
     return success;
 }

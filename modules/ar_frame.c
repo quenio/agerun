@@ -23,24 +23,40 @@ ar_frame_t* ar_frame__create(
     const ar_data_t *ref_context,
     const ar_data_t *ref_message
 ) {
-    // Validate parameters - all fields are required
+    ar_frame_t *own_frame;
+
     if (!mut_memory || !ref_context || !ref_message) {
         return NULL;
     }
     
-    // Allocate frame structure
-    ar_frame_t *own_frame = AR__HEAP__MALLOC(sizeof(ar_frame_t), "frame");
+    own_frame = AR__HEAP__MALLOC(sizeof(ar_frame_t), "frame");
     if (!own_frame) {
         return NULL;
     }
-    
-    // Store references
-    own_frame->mut_memory = mut_memory;
-    own_frame->ref_context = ref_context;
-    own_frame->ref_message = ref_message;
+
+    if (!ar_frame__reset(own_frame, mut_memory, ref_context, ref_message)) {
+        AR__HEAP__FREE(own_frame);
+        return NULL;
+    }
     
     return own_frame;
     // Ownership transferred to caller
+}
+
+bool ar_frame__reset(
+    ar_frame_t *mut_frame,
+    ar_data_t *mut_memory,
+    const ar_data_t *ref_context,
+    const ar_data_t *ref_message
+) {
+    if (!mut_frame || !mut_memory || !ref_context || !ref_message) {
+        return false;
+    }
+
+    mut_frame->mut_memory = mut_memory;
+    mut_frame->ref_context = ref_context;
+    mut_frame->ref_message = ref_message;
+    return true;
 }
 
 void ar_frame__destroy(ar_frame_t *own_frame) {
