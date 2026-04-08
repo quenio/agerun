@@ -1,6 +1,7 @@
 #include "ar_interpreter.h"
 #include "ar_heap.h"
 #include "ar_agency.h"
+#include "ar_agent.h"
 #include "ar_data.h"
 #include "ar_method_evaluator.h"
 #include "ar_frame.h"
@@ -81,23 +82,37 @@ bool ar_interpreter__execute_method(ar_interpreter_t *mut_interpreter,
         return false;
     }
     
-    // Get agent method - use instance agency if available
+    // Get agent data with a single registry lookup
     const ar_method_t *ref_method = NULL;
     ar_data_t *mut_memory = NULL;
     const ar_data_t *ref_context = NULL;
-    
-    if (mut_interpreter->ref_agency) {
-        // Use instance-based agency functions
-        ref_method = ar_agency__get_agent_method(mut_interpreter->ref_agency, agent_id);
-        mut_memory = ar_agency__get_agent_mutable_memory(mut_interpreter->ref_agency, agent_id);
-        ref_context = ar_agency__get_agent_context(mut_interpreter->ref_agency, agent_id);
-    } else {
-        // Agency is required - cannot proceed without it
+    ar_agent_registry_t *ref_registry = NULL;
+    ar_agent_t *ref_agent = NULL;
+
+    if (!mut_interpreter->ref_agency) {
         char error_msg[256];
         snprintf(error_msg, sizeof(error_msg), "No agency instance available for agent %" PRId64, agent_id);
         ar_log__error(mut_interpreter->ref_log, error_msg);
         return false;
     }
+
+    ref_registry = ar_agency__get_registry(mut_interpreter->ref_agency);
+    if (!ref_registry) {
+        ar_log__error(mut_interpreter->ref_log, "No agent registry available");
+        return false;
+    }
+
+    ref_agent = (ar_agent_t*)ar_agent_registry__find_agent(ref_registry, agent_id);
+    if (!ref_agent) {
+        char error_msg[256];
+        snprintf(error_msg, sizeof(error_msg), "Agent %" PRId64 " not found", agent_id);
+        ar_log__error(mut_interpreter->ref_log, error_msg);
+        return false;
+    }
+
+    ref_method = ar_agent__get_method(ref_agent);
+    mut_memory = ar_agent__get_mutable_memory(ref_agent);
+    ref_context = ar_agent__get_context(ref_agent);
     
     if (!ref_method) {
         char error_msg[256];
