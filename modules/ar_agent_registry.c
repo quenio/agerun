@@ -362,37 +362,31 @@ bool ar_agent_registry__track_agent(ar_agent_registry_t *mut_registry, int64_t a
 
 /* Untrack an agent object from the registry */
 void* ar_agent_registry__untrack_agent(ar_agent_registry_t *mut_registry, int64_t agent_id) {
+    char key[32];
+    void *agent;
+
     if (!mut_registry || !mut_registry->own_agent_map) {
         return NULL;
     }
-    
-    // Get the string key from the registered list
-    const char *ref_key = _get_agent_key_from_list(mut_registry, agent_id);
-    if (!ref_key) {
-        return NULL;
-    }
-    
-    // Get the agent pointer before removing
-    void *agent = ar_map__get(mut_registry->own_agent_map, ref_key);
+
+    snprintf(key, sizeof(key), "%" PRId64, agent_id);
+
+    agent = ar_map__get(mut_registry->own_agent_map, key);
     if (agent) {
-        // Remove by setting to NULL
-        ar_map__set(mut_registry->own_agent_map, ref_key, NULL);
+        ar_map__set(mut_registry->own_agent_map, key, NULL);
     }
-    
+
     return agent;
 }
 
 /* Find a tracked agent by ID */
 void* ar_agent_registry__find_agent(const ar_agent_registry_t *ref_registry, int64_t agent_id) {
+    char key[32];
+
     if (!ref_registry || !ref_registry->own_agent_map) {
         return NULL;
     }
-    
-    // Get the string key from the registered list
-    const char *ref_key = _get_agent_key_from_list(ref_registry, agent_id);
-    if (!ref_key) {
-        return NULL;
-    }
-    
-    return ar_map__get(ref_registry->own_agent_map, ref_key);
+
+    snprintf(key, sizeof(key), "%" PRId64, agent_id);
+    return ar_map__get(ref_registry->own_agent_map, key);
 }
