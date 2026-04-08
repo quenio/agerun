@@ -463,7 +463,10 @@ ignored_errors:
   # ar_interpreter_tests
   - context: "ar_interpreter_tests"
     message: "ERROR: Agent 999999 has no method"
-    comment: "Testing agent with no method error"
+    comment: "Historical interpreter error path when a found agent lacked a method"
+  - context: "ar_interpreter_tests"
+    message: "ERROR: Agent 999999 not found"
+    comment: "Testing interpreter error handling for a non-existent agent"
   - context: "ar_interpreter_tests"
     message: "Error: Method dynamic version 2.0.0 already exists"
     comment: "Testing duplicate method version error"

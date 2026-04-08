@@ -1,5 +1,18 @@
 # AgeRun CHANGELOG
 
+## 2026-04-08 (Integration autoresearch performance sweep)
+
+- **Integration benchmark and runtime hot-path optimizations**
+
+  Completed an autoresearch-driven optimization pass for the 100-agent/1000-message integration
+  benchmark. The branch now uses the dedicated `make ar_integration_performance_tests` harness,
+  raises runtime map capacity for the benchmark workload, removes hot-path debug logging, replaces
+  `ar_map` linear scans with hashed open addressing, makes agent-registry iteration O(1), avoids
+  temporary list/path allocations in send and expression evaluation, and reuses a single execution
+  frame in the interpreter. Current benchmark performance improved from the initial successful
+  baseline of about `88,115µs` to about `1,936µs` on this workload. Updated autoresearch tracking
+  files and added a follow-up idea for zero-copy `send(message)` forwarding.
+
 ## 2026-04-08 (Zig test linking on macOS and TSan zig test Darwin)
 
 - **Makefile / Zig tests**
