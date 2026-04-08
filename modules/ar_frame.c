@@ -28,13 +28,6 @@ ar_frame_t* ar_frame__create(
         return NULL;
     }
     
-    // DEBUG: Log frame creation with message type
-    fprintf(stderr, "DEBUG [FRAME_CREATE]: Creating frame with message type=%d", ar_data__get_type(ref_message));
-    if (ar_data__get_type(ref_message) == AR_DATA_TYPE__INTEGER) {
-        fprintf(stderr, ", value=%lld", (long long)ar_data__get_integer(ref_message));
-    }
-    fprintf(stderr, "\n");
-    
     // Allocate frame structure
     ar_frame_t *own_frame = AR__HEAP__MALLOC(sizeof(ar_frame_t), "frame");
     if (!own_frame) {

@@ -138,15 +138,6 @@ fn _evaluate_memory_access(
         map = @constCast(c.ar_frame__get_context(ref_frame));
     } else if (c.strcmp(base, "message") == 0) {
         map = @constCast(c.ar_frame__get_message(ref_frame));
-        // DEBUG: Log message access
-        if (map != null) {
-            std.debug.print("DEBUG [MEMORY_ACCESS]: Accessing 'message', type={}, ", .{c.ar_data__get_type(map)});
-            if (c.ar_data__get_type(map) == c.AR_DATA_TYPE__INTEGER) {
-                std.debug.print("value={}\n", .{c.ar_data__get_integer(map)});
-            } else {
-                std.debug.print("\n", .{});
-            }
-        }
     } else {
         var error_msg: [256]u8 = undefined;
         _ = c.snprintf(&error_msg, error_msg.len, "evaluate_memory_access: Invalid base accessor '%s'", base);
