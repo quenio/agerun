@@ -103,29 +103,6 @@ bool ar_agent__send(ar_agent_t *mut_agent, ar_data_t *own_message) {
         return false;
     }
     
-    // DEBUG: Log direct agent sends (internal)
-    fprintf(stderr, "DEBUG [AGENT_SEND]: Direct send to agent id=%lld, ", (long long)mut_agent->id);
-    switch (ar_data__get_type(own_message)) {
-        case AR_DATA_TYPE__INTEGER:
-            fprintf(stderr, "type=INTEGER, value=%lld\n", (long long)ar_data__get_integer(own_message));
-            break;
-        case AR_DATA_TYPE__STRING:
-            fprintf(stderr, "type=STRING, value=\"%s\"\n", ar_data__get_string(own_message));
-            break;
-        case AR_DATA_TYPE__MAP:
-            fprintf(stderr, "type=MAP\n");
-            break;
-        case AR_DATA_TYPE__LIST:
-            fprintf(stderr, "type=LIST\n");
-            break;
-        case AR_DATA_TYPE__DOUBLE:
-            fprintf(stderr, "type=DOUBLE, value=%f\n", ar_data__get_double(own_message));
-            break;
-        default:
-            fprintf(stderr, "type=UNKNOWN\n");
-            break;
-    }
-    
     if (!mut_agent->own_message_queue) {
         // If agent has no message queue, destroy the message
         // Transfer ownership back from agent before destroying
