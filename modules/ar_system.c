@@ -41,6 +41,7 @@ struct ar_system_s {
     ar_interpreter_t *own_interpreter; // Always owned by the system
     ar_log_t *own_log;                // Always owned by the system
     ar_data_t *own_context;           // Shared context for all agents
+    int64_t next_agent_hint;          // Search hint for faster message queue scanning
 };
 
 /* Implementation */
@@ -55,6 +56,7 @@ ar_system_t* ar_system__create(void) {
     
     // Initialize fields
     own_system->is_initialized = false;
+    own_system->next_agent_hint = 0;
     
     // Create shared context for all agents
     own_system->own_context = ar_data__create_map();
@@ -173,42 +175,60 @@ void ar_system__shutdown(ar_system_t *mut_system) {
     ar_agency__reset(mut_system->own_agency);
     
     mut_system->is_initialized = false;
+    mut_system->next_agent_hint = 0;
 }
 
 bool ar_system__process_next_message(ar_system_t *mut_system) {
+    int64_t first_agent_id;
+    int64_t start_agent_id;
+    int64_t agent_id;
+    ar_data_t *own_message = NULL;
+
     if (!mut_system || !mut_system->is_initialized) {
         return false;
     }
-    
-    // Find an agent with a non-empty message queue
-    int64_t agent_id;
-    ar_data_t *own_message = NULL;
-    
-    // Use instance-based agency
-    agent_id = ar_agency__get_first_agent(mut_system->own_agency);
-    while (agent_id != 0) {
+
+    first_agent_id = ar_agency__get_first_agent(mut_system->own_agency);
+    if (first_agent_id == 0) {
+        mut_system->next_agent_hint = 0;
+        return false;
+    }
+
+    start_agent_id = mut_system->next_agent_hint;
+    if (start_agent_id == 0 || !ar_agency__agent_exists(mut_system->own_agency, start_agent_id)) {
+        start_agent_id = first_agent_id;
+    }
+
+    agent_id = start_agent_id;
+    do {
         if (ar_agency__agent_has_messages(mut_system->own_agency, agent_id)) {
             own_message = ar_agency__get_agent_message(mut_system->own_agency, agent_id);
-            if (own_message) {
+            if (own_message != NULL) {
                 break;
             }
         }
+
         agent_id = ar_agency__get_next_agent(mut_system->own_agency, agent_id);
+        if (agent_id == 0) {
+            agent_id = first_agent_id;
+        }
+    } while (agent_id != start_agent_id);
+
+    if (own_message == NULL) {
+        return false;
     }
-    
-    if (own_message) {
-        // Take ownership of the message for the system
-        ar_data__take_ownership(own_message, mut_system);
-        
-        ar_interpreter__execute_method(mut_system->own_interpreter, agent_id, own_message);
-        
-        // Free the message as it's now been processed
-        ar_data__destroy_if_owned(own_message, mut_system);
-        own_message = NULL; // Mark as freed
-        return true;
-    }
-    
-    return false; // No messages to process
+
+    mut_system->next_agent_hint = agent_id;
+
+    // Take ownership of the message for the system
+    ar_data__take_ownership(own_message, mut_system);
+
+    ar_interpreter__execute_method(mut_system->own_interpreter, agent_id, own_message);
+
+    // Free the message as it's now been processed
+    ar_data__destroy_if_owned(own_message, mut_system);
+    own_message = NULL; // Mark as freed
+    return true;
 }
 
 int ar_system__process_all_messages(ar_system_t *mut_system) {
