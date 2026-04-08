@@ -125,10 +125,7 @@ fn _evaluate_memory_access(
         return null;
     }
     
-    // Get the path components
-    var path_count: usize = 0;
-    const path = c.ar_expression_ast__get_memory_path(ref_node, &path_count);
-    defer if (path != null) ar_allocator.free(path);
+    const path_count = c.ar_expression_ast__get_memory_path_count(ref_node);
     
     // Determine which map to use based on the base
     var map: ?*c.ar_data_t = null;
@@ -170,7 +167,8 @@ fn _evaluate_memory_access(
         };
         
         // Get the first path component for the error message
-        const first_field = if (path != null and path_count > 0) path.?[0] else @as([*c]u8, @constCast("unknown"));
+        const first_field = c.ar_expression_ast__get_memory_path_component(ref_node, 0) orelse
+            @as([*c]u8, @constCast("unknown"));
         
         // Format detailed error message
         if (base_type == c.AR_DATA_TYPE__STRING) {
@@ -190,6 +188,19 @@ fn _evaluate_memory_access(
         return null;
     }
     
+    if (path_count == 1) {
+        const ref_component = c.ar_expression_ast__get_memory_path_component(ref_node, 0) orelse return null;
+        return c.ar_data__get_map_data(map, ref_component);
+    }
+
+    // Get the path components only for multi-segment accesses
+    var owned_path_count: usize = 0;
+    const path = c.ar_expression_ast__get_memory_path(ref_node, &owned_path_count);
+    defer if (path != null) ar_allocator.free(path);
+    if (path == null or owned_path_count != path_count) {
+        return null;
+    }
+
     // Calculate total length needed for the path
     var total_len: usize = 0;
     for (0..path_count) |i| {

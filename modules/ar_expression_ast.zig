@@ -324,6 +324,54 @@ export fn ar_expression_ast__get_memory_path(
     return @ptrCast(c.ar_list__items(ref_path_list));
 }
 
+export fn ar_expression_ast__get_memory_path_count(ref_node: ?*const c.ar_expression_ast_t) usize {
+    if (ref_node == null) {
+        return 0;
+    }
+    const ref_ast_node: *const ar_expression_ast_t = @ptrCast(@alignCast(ref_node));
+    if (ref_ast_node.node_type != c.AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS or
+        ref_ast_node.data.memory_access.own_path == null) {
+        return 0;
+    }
+
+    return c.ar_list__count(ref_ast_node.data.memory_access.own_path);
+}
+
+export fn ar_expression_ast__get_memory_path_component(
+    ref_node: ?*const c.ar_expression_ast_t,
+    index: usize,
+) ?[*:0]const u8 {
+    if (ref_node == null) {
+        return null;
+    }
+    const ref_ast_node: *const ar_expression_ast_t = @ptrCast(@alignCast(ref_node));
+    if (ref_ast_node.node_type != c.AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS) {
+        return null;
+    }
+
+    const ref_path_list = ref_ast_node.data.memory_access.own_path;
+    if (ref_path_list == null) {
+        return null;
+    }
+
+    const count = c.ar_list__count(ref_path_list);
+    if (index >= count) {
+        return null;
+    }
+
+    if (index == 0) {
+        return @ptrCast(c.ar_list__first(ref_path_list));
+    }
+
+    if (index == count - 1) {
+        return @ptrCast(c.ar_list__last(ref_path_list));
+    }
+
+    const own_items = c.ar_list__items(ref_path_list) orelse return null;
+    defer ar_allocator.free(own_items);
+    return @ptrCast(own_items[index]);
+}
+
 export fn ar_expression_ast__get_operator(ref_node: ?*const c.ar_expression_ast_t) c.ar_binary_operator_t {
     if (ref_node == null) {
         return c.AR_BINARY_OPERATOR__ADD; // Default value

@@ -169,6 +169,27 @@ char** ar_expression_ast__get_memory_path(
 );
 
 /**
+ * Get the number of path components from a memory access node.
+ *
+ * @param ref_node The AST node (borrowed reference)
+ * @return Number of path components, or 0 if not a memory access
+ */
+size_t ar_expression_ast__get_memory_path_count(const ar_expression_ast_t *ref_node);
+
+/**
+ * Get one path component from a memory access node.
+ *
+ * @param ref_node The AST node (borrowed reference)
+ * @param index Zero-based path component index
+ * @return The path component (borrowed reference), or NULL if unavailable
+ * @note Ownership: Returns a borrowed reference. Do not free.
+ */
+const char* ar_expression_ast__get_memory_path_component(
+    const ar_expression_ast_t *ref_node,
+    size_t index
+);
+
+/**
  * Get operator from a binary operation node.
  * 
  * @param ref_node The AST node (borrowed reference)
