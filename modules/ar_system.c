@@ -197,19 +197,6 @@ bool ar_system__process_next_message(ar_system_t *mut_system) {
     }
     
     if (own_message) {
-        // Print message based on its type
-        printf("Agent %" PRId64 " received message: ", agent_id);
-        ar_data_type_t msg_type = ar_data__get_type(own_message);
-        if (msg_type == AR_DATA_TYPE__STRING) {
-            printf("%s\n", ar_data__get_string(own_message));
-        } else if (msg_type == AR_DATA_TYPE__INTEGER) {
-            printf("%d\n", ar_data__get_integer(own_message));
-        } else if (msg_type == AR_DATA_TYPE__DOUBLE) {
-            printf("%f\n", ar_data__get_double(own_message));
-        } else if (msg_type == AR_DATA_TYPE__LIST || msg_type == AR_DATA_TYPE__MAP) {
-            printf("[complex data]\n");
-        }
-        
         // Take ownership of the message for the system
         ar_data__take_ownership(own_message, mut_system);
         
