@@ -1,11 +1,12 @@
 #include "ar_map.h"
 #include "ar_heap.h"
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
-/* Constants */
-#define MAP_SIZE 128
+#define AR_MAP__INITIAL_CAPACITY 16U
+#define AR_MAP__MAX_LOAD_PERCENT 70U
 
 typedef enum {
     ENTRY_STATE_EMPTY = 0,
@@ -13,21 +14,17 @@ typedef enum {
     ENTRY_STATE_TOMBSTONE
 } entry_state_t;
 
-/**
- * Map Entry for storing key-value pairs
- */
 typedef struct entry_s {
     const char *ref_key;
     void *ref_value;
     entry_state_t state;
 } entry_t;
 
-/**
- * Map implementation structure
- */
 struct ar_map_s {
-    entry_t entries[MAP_SIZE];
-    int count;
+    entry_t *own_entries;
+    size_t capacity;
+    size_t count;
+    size_t tombstone_count;
 };
 
 static uint32_t _hash_key(const char *ref_key) {
@@ -43,138 +40,214 @@ static uint32_t _hash_key(const char *ref_key) {
     return hash;
 }
 
-static int _find_entry_index(const ar_map_t *ref_map, const char *ref_key) {
-    uint32_t start_index;
+static entry_t *_allocate_entries(size_t capacity) {
+    entry_t *own_entries;
 
-    if (!ref_map || !ref_key) {
-        return -1;
+    if (capacity == 0U) {
+        return NULL;
     }
 
-    start_index = _hash_key(ref_key) % MAP_SIZE;
-    for (int probe = 0; probe < MAP_SIZE; probe++) {
-        int index = (int)((start_index + (uint32_t)probe) % MAP_SIZE);
-        const entry_t *ref_entry = &ref_map->entries[index];
-
-        if (ref_entry->state == ENTRY_STATE_EMPTY) {
-            return -1;
-        }
-
-        if (ref_entry->state == ENTRY_STATE_OCCUPIED && ref_entry->ref_key != NULL &&
-            strcmp(ref_entry->ref_key, ref_key) == 0) {
-            return index;
-        }
+    own_entries = (entry_t *)AR__HEAP__MALLOC(capacity * sizeof(entry_t), "Map entries");
+    if (!own_entries) {
+        return NULL;
     }
 
-    return -1;
+    for (size_t i = 0; i < capacity; i++) {
+        own_entries[i].ref_key = NULL;
+        own_entries[i].ref_value = NULL;
+        own_entries[i].state = ENTRY_STATE_EMPTY;
+    }
+
+    return own_entries; // Ownership transferred to caller
 }
 
-static int _find_insert_index(const ar_map_t *ref_map, const char *ref_key) {
+static bool _find_slot(
+    const entry_t *ref_entries,
+    size_t capacity,
+    const char *ref_key,
+    size_t *out_index,
+    bool *out_exists
+) {
     uint32_t start_index;
-    int first_tombstone = -1;
+    size_t first_tombstone;
+    bool has_tombstone;
 
-    if (!ref_map || !ref_key) {
-        return -1;
+    if (!ref_entries || capacity == 0U || !ref_key || !out_index || !out_exists) {
+        return false;
     }
 
-    start_index = _hash_key(ref_key) % MAP_SIZE;
-    for (int probe = 0; probe < MAP_SIZE; probe++) {
-        int index = (int)((start_index + (uint32_t)probe) % MAP_SIZE);
-        const entry_t *ref_entry = &ref_map->entries[index];
+    start_index = _hash_key(ref_key) % (uint32_t)capacity;
+    first_tombstone = 0U;
+    has_tombstone = false;
+
+    for (size_t probe = 0; probe < capacity; probe++) {
+        size_t index = (size_t)((start_index + (uint32_t)probe) % (uint32_t)capacity);
+        const entry_t *ref_entry = &ref_entries[index];
 
         if (ref_entry->state == ENTRY_STATE_OCCUPIED && ref_entry->ref_key != NULL &&
             strcmp(ref_entry->ref_key, ref_key) == 0) {
-            return index;
+            *out_index = index;
+            *out_exists = true;
+            return true;
         }
 
-        if (ref_entry->state == ENTRY_STATE_TOMBSTONE && first_tombstone == -1) {
+        if (ref_entry->state == ENTRY_STATE_TOMBSTONE && !has_tombstone) {
             first_tombstone = index;
+            has_tombstone = true;
+            continue;
         }
 
         if (ref_entry->state == ENTRY_STATE_EMPTY) {
-            if (first_tombstone != -1) {
-                return first_tombstone;
-            }
-            return index;
+            *out_index = has_tombstone ? first_tombstone : index;
+            *out_exists = false;
+            return true;
         }
     }
 
-    return first_tombstone;
+    if (has_tombstone) {
+        *out_index = first_tombstone;
+        *out_exists = false;
+        return true;
+    }
+
+    return false;
 }
 
-/**
- * Create a new heap-allocated empty map
- * @return Pointer to the new map, or NULL on failure
- * @note Ownership: Returns an owned value that caller must destroy.
- */
-ar_map_t* ar_map__create(void) {
-    ar_map_t *own_map = (ar_map_t *)AR__HEAP__MALLOC(sizeof(ar_map_t), "Map structure");
+static bool _insert_entry_into_table(
+    entry_t *mut_entries,
+    size_t capacity,
+    const char *ref_key,
+    void *ref_value
+) {
+    size_t entry_index;
+    bool entry_exists;
+
+    if (!mut_entries || capacity == 0U || !ref_key || !ref_value) {
+        return false;
+    }
+
+    if (!_find_slot(mut_entries, capacity, ref_key, &entry_index, &entry_exists)) {
+        return false;
+    }
+
+    mut_entries[entry_index].ref_key = ref_key;
+    mut_entries[entry_index].ref_value = ref_value;
+    mut_entries[entry_index].state = ENTRY_STATE_OCCUPIED;
+    return true;
+}
+
+static bool _resize_map(ar_map_t *mut_map, size_t new_capacity) {
+    entry_t *own_new_entries;
+
+    if (!mut_map || new_capacity == 0U || new_capacity < mut_map->count) {
+        return false;
+    }
+
+    own_new_entries = _allocate_entries(new_capacity);
+    if (!own_new_entries) {
+        return false;
+    }
+
+    for (size_t i = 0; i < mut_map->capacity; i++) {
+        const entry_t *ref_entry = &mut_map->own_entries[i];
+
+        if (ref_entry->state != ENTRY_STATE_OCCUPIED || ref_entry->ref_key == NULL) {
+            continue;
+        }
+
+        if (!_insert_entry_into_table(
+                own_new_entries,
+                new_capacity,
+                ref_entry->ref_key,
+                ref_entry->ref_value
+            )) {
+            AR__HEAP__FREE(own_new_entries);
+            return false;
+        }
+    }
+
+    AR__HEAP__FREE(mut_map->own_entries);
+    mut_map->own_entries = own_new_entries;
+    mut_map->capacity = new_capacity;
+    mut_map->tombstone_count = 0U;
+    return true;
+}
+
+static bool _ensure_capacity_for_insert(ar_map_t *mut_map) {
+    size_t used_slots;
+    size_t required_slots;
+
+    if (!mut_map || mut_map->capacity == 0U) {
+        return false;
+    }
+
+    used_slots = mut_map->count + mut_map->tombstone_count;
+    required_slots = used_slots + 1U;
+
+    if (required_slots * 100U < mut_map->capacity * AR_MAP__MAX_LOAD_PERCENT) {
+        return true;
+    }
+
+    return _resize_map(mut_map, mut_map->capacity * 2U);
+}
+
+ar_map_t *ar_map__create(void) {
+    ar_map_t *own_map;
+
+    own_map = (ar_map_t *)AR__HEAP__MALLOC(sizeof(ar_map_t), "Map structure");
     if (!own_map) {
         return NULL;
     }
 
-    for (int i = 0; i < MAP_SIZE; i++) {
-        own_map->entries[i].state = ENTRY_STATE_EMPTY;
-        own_map->entries[i].ref_key = NULL;
-        own_map->entries[i].ref_value = NULL;
+    own_map->own_entries = _allocate_entries(AR_MAP__INITIAL_CAPACITY);
+    if (!own_map->own_entries) {
+        AR__HEAP__FREE(own_map);
+        return NULL;
     }
 
-    own_map->count = 0;
+    own_map->capacity = AR_MAP__INITIAL_CAPACITY;
+    own_map->count = 0U;
+    own_map->tombstone_count = 0U;
     return own_map; // Ownership transferred to caller
 }
 
-/**
- * Get a reference from map by key
- * @param ref_map The map to look up in (borrowed reference)
- * @param ref_key The key to lookup (borrowed reference)
- * @return Pointer to the referenced value, or NULL if not found
- * @note Ownership: Returns a borrowed reference. Caller does not own the returned value.
- */
-void* ar_map__get(const ar_map_t *ref_map, const char *ref_key) {
-    int entry_index;
+void *ar_map__get(const ar_map_t *ref_map, const char *ref_key) {
+    size_t entry_index;
+    bool entry_exists;
 
-    if (!ref_map || !ref_key) {
+    if (!ref_map || !ref_map->own_entries || ref_map->capacity == 0U || !ref_key) {
         return NULL;
     }
 
-    entry_index = _find_entry_index(ref_map, ref_key);
-    if (entry_index < 0) {
+    if (!_find_slot(ref_map->own_entries, ref_map->capacity, ref_key, &entry_index, &entry_exists) ||
+        !entry_exists) {
         return NULL;
     }
 
-    return ref_map->entries[entry_index].ref_value;
+    return ref_map->own_entries[entry_index].ref_value;
 }
 
-/**
- * Set a reference in map
- * @param mut_map The map to modify (mutable reference)
- * @param ref_key The key to set (borrowed reference, not copied)
- * @param ref_value The pointer to reference (borrowed reference)
- * @return true if successful, false otherwise
- * @note Ownership: The map does NOT take ownership of the key or value.
- *       The caller remains responsible for allocating and freeing the key string.
- *       The key string must remain valid for the lifetime of the map entry.
- */
 bool ar_map__set(ar_map_t *mut_map, const char *ref_key, void *ref_value) {
-    int entry_index;
+    size_t entry_index;
+    bool entry_exists;
     entry_t *mut_entry;
 
-    if (!mut_map || !ref_key) {
+    if (!mut_map || !mut_map->own_entries || mut_map->capacity == 0U || !ref_key) {
         return false;
     }
 
-    entry_index = _find_insert_index(mut_map, ref_key);
-    if (entry_index < 0) {
-        return ref_value == NULL;
+    if (!_find_slot(mut_map->own_entries, mut_map->capacity, ref_key, &entry_index, &entry_exists)) {
+        return false;
     }
 
-    mut_entry = &mut_map->entries[entry_index];
-    if (mut_entry->state == ENTRY_STATE_OCCUPIED && mut_entry->ref_key != NULL &&
-        strcmp(mut_entry->ref_key, ref_key) == 0) {
+    mut_entry = &mut_map->own_entries[entry_index];
+    if (entry_exists) {
         if (ref_value == NULL) {
-            mut_entry->state = ENTRY_STATE_TOMBSTONE;
             mut_entry->ref_key = NULL;
             mut_entry->ref_value = NULL;
+            mut_entry->state = ENTRY_STATE_TOMBSTONE;
             mut_map->count--;
+            mut_map->tombstone_count++;
         } else {
             mut_entry->ref_value = ref_value;
         }
@@ -185,69 +258,67 @@ bool ar_map__set(ar_map_t *mut_map, const char *ref_key, void *ref_value) {
         return true;
     }
 
-    mut_entry->state = ENTRY_STATE_OCCUPIED;
+    if (!_ensure_capacity_for_insert(mut_map)) {
+        return false;
+    }
+
+    if (!_find_slot(mut_map->own_entries, mut_map->capacity, ref_key, &entry_index, &entry_exists) ||
+        entry_exists) {
+        return false;
+    }
+
+    mut_entry = &mut_map->own_entries[entry_index];
+    if (mut_entry->state == ENTRY_STATE_TOMBSTONE) {
+        mut_map->tombstone_count--;
+    }
+
     mut_entry->ref_key = ref_key;
     mut_entry->ref_value = ref_value;
+    mut_entry->state = ENTRY_STATE_OCCUPIED;
     mut_map->count++;
     return true;
 }
 
-/**
- * Get the number of used entries in the map
- * @param ref_map The map to count (borrowed reference)
- * @return The number of used entries
- */
 size_t ar_map__count(const ar_map_t *ref_map) {
     if (!ref_map) {
-        return 0;
+        return 0U;
     }
 
-    return (size_t)ref_map->count;
+    return ref_map->count;
 }
 
-/**
- * Get an array of all refs in the map
- * @param ref_map The map to get refs from (borrowed reference)
- * @return Array of pointers to refs, or NULL on failure
- * @note Ownership: Returns an owned array that caller must free.
- *       The caller is responsible for freeing the returned array using AR__HEAP__FREE().
- *       The refs themselves are borrowed references and remain owned by their original owners.
- *       The caller can use ar_map_count() to determine the size of the array.
- */
-void** ar_map__refs(const ar_map_t *ref_map) {
-    if (!ref_map) {
+void **ar_map__refs(const ar_map_t *ref_map) {
+    void **own_refs;
+    size_t ref_index;
+
+    if (!ref_map || !ref_map->own_entries || ref_map->count == 0U) {
         return NULL;
     }
 
-    if (ref_map->count == 0) {
-        return NULL;
-    }
-
-    void **own_refs = (void**)AR__HEAP__MALLOC((size_t)ref_map->count * sizeof(void*), "Map references array");
+    own_refs = (void **)AR__HEAP__MALLOC(ref_map->count * sizeof(void *), "Map references array");
     if (!own_refs) {
         return NULL;
     }
 
-    size_t index = 0;
-    for (int i = 0; i < MAP_SIZE && index < (size_t)ref_map->count; i++) {
-        if (ref_map->entries[i].state == ENTRY_STATE_OCCUPIED && ref_map->entries[i].ref_key != NULL) {
-            own_refs[index++] = ref_map->entries[i].ref_value;
+    ref_index = 0U;
+    for (size_t i = 0; i < ref_map->capacity && ref_index < ref_map->count; i++) {
+        if (ref_map->own_entries[i].state == ENTRY_STATE_OCCUPIED &&
+            ref_map->own_entries[i].ref_key != NULL) {
+            own_refs[ref_index++] = ref_map->own_entries[i].ref_value;
         }
     }
 
     return own_refs; // Ownership of the array transferred to caller
 }
 
-/**
- * Free all resources in a map
- * @param own_map Map to free (owned value)
- * @note Ownership: Destroys the map structure itself.
- *       It does not free memory for keys or referenced values.
- *       The caller remains responsible for freeing all keys and values that were added to the map.
- */
 void ar_map__destroy(ar_map_t *own_map) {
     if (!own_map) {
         return;
+    }
+
+    if (own_map->own_entries) {
+        AR__HEAP__FREE(own_map->own_entries);
+        own_map->own_entries = NULL;
     }
 
     AR__HEAP__FREE(own_map);

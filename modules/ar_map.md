@@ -6,7 +6,8 @@ The map module (`ar_map`) provides a fundamental key-value storage implementatio
 
 ## Key Features
 
-- **Key-Value Storage**: Stores string keys mapped to generic pointers (void*) to values
+- **Key-Value Storage**: Stores string keys mapped to generic pointers (`void *`) to values
+- **Dynamic Hashing**: Uses open addressing with automatic resize/rehash as the table grows
 - **Reference-Based**: The map stores references to keys and values rather than duplicating them
 - **No Memory Management of Contents**: Does not manage memory for either keys or values
 - **MMM-Compliant**: Uses the AgeRun Memory Management Model ownership semantics
@@ -14,7 +15,7 @@ The map module (`ar_map`) provides a fundamental key-value storage implementatio
 - **Direct Access**: Provides functions to get the count and an array of all refs
 - **No Dependencies**: This is a foundational module with no dependencies on other modules
 - **Opaque Type**: The map structure is opaque, encapsulating implementation details from clients
-- **Simplified API**: Maps are heap-allocated and fully initialized through ar_map__create()
+- **Simplified API**: Maps are heap-allocated and fully initialized through `ar_map__create()`
 
 ## Ownership Semantics
 
@@ -88,7 +89,7 @@ size_t ar_map__count(const ar_map_t *ref_map);
  * @param ref_map The map to get refs from (borrowed reference)
  * @return Array of pointers to refs, or NULL on failure
  * @note Ownership: Returns an owned array that caller must free.
- *       The caller is responsible for freeing the returned array using free().
+ *       The caller is responsible for freeing the returned array using AR__HEAP__FREE().
  *       The refs themselves are borrowed references and remain owned by their original owners.
  *       The caller can use ar_map__count() to determine the size of the array.
  */
@@ -121,7 +122,7 @@ ar_map_t *own_map = ar_map__create();
 const char *ref_key = "answer";  // Using string literal that has static lifetime
 
 // Store a value (integer, owned by caller)
-int *own_value = malloc(sizeof(int));
+int *own_value = AR__HEAP__MALLOC(sizeof(int), "Map example integer");
 *own_value = 42;
 ar_map__set(own_map, ref_key, own_value);
 
@@ -133,7 +134,7 @@ printf("The answer is: %d\n", *ref_retrieved);
 // 1. Free the container first
 ar_map__destroy(own_map);
 // 2. Then free the contents
-free(own_value);
+AR__HEAP__FREE(own_value);
 // No need to free ref_key as it's a string literal
 ```
 
@@ -151,7 +152,7 @@ size_t count = ar_map__count(own_map);
 printf("Map contains %zu entries\n", count);
 
 // Get all refs (returned array is owned by caller)
-void* **own_refs = ar_map__refs(own_map);
+void **own_refs = ar_map__refs(own_map);
 
 if (own_refs) {
     for (size_t i = 0; i < count; i++) {
@@ -159,7 +160,7 @@ if (own_refs) {
     }
     
     // Free the owned array when done
-    free(own_refs);
+    AR__HEAP__FREE(own_refs);
 }
 
 // Clean up map (but not the values, which must be freed separately)
@@ -171,16 +172,16 @@ ar_map__destroy(own_map);
 ```c
 // Create and populate a map with heap-allocated keys and values
 ar_map_t *own_map = ar_map__create();
-char* own_key1 = strdup("key1");
-char* own_key2 = strdup("key2");
-int *own_value1 = malloc(sizeof(int));
-int *own_value2 = malloc(sizeof(int));
+char *own_key1 = AR__HEAP__STRDUP("key1", "Map example key1");
+char *own_key2 = AR__HEAP__STRDUP("key2", "Map example key2");
+int *own_value1 = AR__HEAP__MALLOC(sizeof(int), "Map example value1");
+int *own_value2 = AR__HEAP__MALLOC(sizeof(int), "Map example value2");
 
 ar_map__set(own_map, own_key1, own_value1);
 ar_map__set(own_map, own_key2, own_value2);
 
 // Get all refs to free them
-void* **own_refs = ar_map__refs(own_map);
+void **own_refs = ar_map__refs(own_map);
 size_t count = ar_map__count(own_map);
 
 // We need to manually track which refs correspond to which keys
@@ -191,21 +192,21 @@ bool freed_value2 = false;
 if (own_refs) {
     for (size_t i = 0; i < count; i++) {
         if (own_refs[i] == own_value1) {
-            free(own_value1);
+            AR__HEAP__FREE(own_value1);
             freed_value1 = true;
         } else if (own_refs[i] == own_value2) {
-            free(own_value2);
+            AR__HEAP__FREE(own_value2);
             freed_value2 = true;
         }
     }
     
     // Free the owned refs array
-    free(own_refs);
+    AR__HEAP__FREE(own_refs);
 }
 
 // Free keys
-free(own_key1);
-free(own_key2);
+AR__HEAP__FREE(own_key1);
+AR__HEAP__FREE(own_key2);
 
 // Make sure all values were freed
 assert(freed_value1 && freed_value2);
@@ -232,7 +233,7 @@ const char *ref_inner_key = "count";
 ar_map__set(own_outer_map, ref_outer_key, own_inner_map);
 
 // Store a value in inner map (value remains owned by this code)
-int *own_value = malloc(sizeof(int));
+int *own_value = AR__HEAP__MALLOC(sizeof(int), "Nested map example value");
 *own_value = 100;
 ar_map__set(own_inner_map, ref_inner_key, own_value);
 
@@ -247,26 +248,28 @@ ar_map__destroy(own_outer_map);
 // 2. Then free inner containers
 ar_map__destroy(own_inner_map);
 // 3. Finally free the leaf value
-free(own_value);
+AR__HEAP__FREE(own_value);
 ```
 
 ## Implementation Notes
 
-- The map uses a fixed-size array (MAP_SIZE) for entries
-- Keys are stored as direct `const char*` pointers without copying
-- Values are stored as opaque `void*` pointers with no type information
+- The map uses a dynamically allocated hash table with open addressing
+- Entries are automatically rehashed into a larger table as load increases
+- Deletions leave tombstones so probe chains remain valid until a later resize/rehash
+- Keys are stored as direct `const char *` pointers without copying
+- Values are stored as opaque `void *` pointers with no type information
 - Type safety is enhanced by using `const` qualifiers on keys
 - The map never frees the referenced keys or values
 - The client code is responsible for managing both key and value memory
 - Key pointers must remain valid for the lifetime of the map entry
 - String literals can be used directly as keys for convenience
-- The direct access functions allow traversal of all map entries without exposing internal details
+- The direct access functions allow traversal of all occupied entries without exposing internal details
 - Proper memory management for nested maps must be handled by client code (typically by the data module)
-- No reference counting is implemented - memory management responsibility lies with the caller
+- No reference counting is implemented; memory management responsibility lies with the caller
 - The map implementation is opaque, hiding its internal structure from clients
 - Clients should use the public API functions rather than accessing the map structure directly
-- Maps are always heap-allocated and fully initialized through ar_map__create()
-- All maps should be freed with ar_map__destroy() when no longer needed
+- Maps are always heap-allocated and fully initialized through `ar_map__create()`
+- All maps should be freed with `ar_map__destroy()` when no longer needed
 - MMM ownership prefixes (`own_`, `mut_`, `ref_`) are used consistently throughout the implementation
 
 ### Struct Field Ownership
@@ -276,19 +279,21 @@ The map module's internal structures follow the AgeRun Memory Management Model (
 ```c
 // Example internal structure (not part of public API)
 typedef struct entry_s {
-    const char *ref_key;    // Borrowed reference to the key
-    void *ref_value;        // Borrowed reference to the value
-    bool is_used;           // No prefix for primitive types
+    const char *ref_key;      // Borrowed reference to the key
+    void *ref_value;          // Borrowed reference to the value
+    int state;                // EXAMPLE: Primitive state flag for empty/occupied/tombstone
 } entry_t;  // EXAMPLE: Internal implementation detail - not exposed in public API
 
 struct ar_map_s {
-    entry_t entries[MAP_SIZE];  // EXAMPLE: Uses internal type - Fixed-size array, no prefix needed
-    int count;                  // No prefix for primitive types
+    entry_t *own_entries;     // EXAMPLE: Owned hash-table storage
+    size_t capacity;          // EXAMPLE: Current allocated slot count
+    size_t count;             // EXAMPLE: Occupied entry count
+    size_t tombstone_count;   // EXAMPLE: Deleted-slot count awaiting rehash
 };
 ```
 
 - All pointer fields use appropriate ownership prefixes:
   - Borrowed references use `ref_` prefix (ref_key, ref_value)
   - The map does not own its entries' keys or values, so they're marked as borrowed references
-- Fixed-size arrays and primitive types don't require ownership prefixes
+- Primitive types don't require ownership prefixes
 - This naming convention makes the ownership relationships clear at the struct definition level

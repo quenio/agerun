@@ -51,9 +51,9 @@ size_t ar_map__count(const ar_map_t *ref_map);
  * @param ref_map The map to get refs from (borrowed reference)
  * @return Array of pointers to refs, or NULL on failure
  * @note Ownership: Returns an owned array that caller must free.
- *       The caller is responsible for freeing the returned array using free().
+ *       The caller is responsible for freeing the returned array using AR__HEAP__FREE().
  *       The refs themselves are borrowed references and remain owned by their original owners.
- *       The caller can use ar_map_count() to determine the size of the array.
+ *       The caller can use ar_map__count() to determine the size of the array.
  */
 void** ar_map__refs(const ar_map_t *ref_map);
 

@@ -1,5 +1,25 @@
 # AgeRun CHANGELOG
 
+## 2026-04-09 (Dynamic ar_map growth)
+
+- **Dynamic hash table for `ar_map`**
+
+  Replaced `ar_map`'s fixed 128-slot storage with dynamically allocated open-addressed hashing so
+  maps can grow past the previous hard capacity while preserving the existing public API and delete
+  semantics.
+
+  **Implementation**: Added heap-allocated entry storage, automatic resize/rehash, tombstone-aware
+  probing, and growth-focused regression coverage including reinsertion after deletions.
+
+  **Documentation**: Updated `modules/ar_map.md` and `modules/ar_map.h` to describe the dynamic
+  hashing design and correct `AR__HEAP__FREE()` cleanup requirements for `ar_map__refs()`.
+
+  **Quality**: `make clean build`, `make check-logs`, `make ar_map_tests 2>&1`, and
+  `make sanitize-tests 2>&1` passed.
+
+  **Impact**: Removes the map capacity ceiling that could block larger registries and other dynamic
+  workloads while keeping existing callers compatible.
+
 ## 2026-04-08 (Integration autoresearch performance sweep)
 
 - **Integration benchmark and runtime hot-path optimizations**

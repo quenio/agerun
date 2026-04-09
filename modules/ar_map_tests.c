@@ -11,6 +11,8 @@ static void test_map_create(void);
 static void test_map_set_get_simple(void);
 static void test_map_count(void);
 static void test_map_refs(void);
+static void test_map_grows_beyond_fixed_capacity(void);
+static void test_map_delete_and_reuse_after_growth(void);
 
 static void test_map_create(void) {
     printf("Testing ar_map__create()...\n");
@@ -166,6 +168,89 @@ static void test_map_refs(void) {
     printf("ar_map__refs() tests passed!\n");
 }
 
+static void test_map_grows_beyond_fixed_capacity(void) {
+    printf("Testing ar_map growth beyond 128 entries...\n");
+
+    ar_map_t *own_map = ar_map__create();
+    assert(own_map != NULL);
+
+    enum { TEST_ENTRY_COUNT = 200 };
+    char own_keys[TEST_ENTRY_COUNT][32];
+    int own_values[TEST_ENTRY_COUNT];
+
+    for (int i = 0; i < TEST_ENTRY_COUNT; i++) {
+        snprintf(own_keys[i], sizeof(own_keys[i]), "dynamic-key-%d", i);
+        own_values[i] = i * 3;
+        assert(ar_map__set(own_map, own_keys[i], &own_values[i]));
+    }
+
+    assert(ar_map__count(own_map) == TEST_ENTRY_COUNT);
+
+    for (int i = 0; i < TEST_ENTRY_COUNT; i++) {
+        const int *ref_retrieved = (const int *)ar_map__get(own_map, own_keys[i]);
+        assert(ref_retrieved != NULL);
+        assert(*ref_retrieved == own_values[i]);
+    }
+
+    ar_map__destroy(own_map);
+
+    printf("ar_map growth test passed!\n");
+}
+
+static void test_map_delete_and_reuse_after_growth(void) {
+    printf("Testing ar_map delete/reuse after growth...\n");
+
+    ar_map_t *own_map = ar_map__create();
+    assert(own_map != NULL);
+
+    enum {
+        INITIAL_ENTRY_COUNT = 180,
+        REMOVAL_COUNT = 60,
+        REINSERT_COUNT = 60
+    };
+    char own_initial_keys[INITIAL_ENTRY_COUNT][32];
+    char own_reinsert_keys[REINSERT_COUNT][32];
+    int own_initial_values[INITIAL_ENTRY_COUNT];
+    int own_reinsert_values[REINSERT_COUNT];
+
+    for (int i = 0; i < INITIAL_ENTRY_COUNT; i++) {
+        snprintf(own_initial_keys[i], sizeof(own_initial_keys[i]), "base-key-%d", i);
+        own_initial_values[i] = 1000 + i;
+        assert(ar_map__set(own_map, own_initial_keys[i], &own_initial_values[i]));
+    }
+
+    for (int i = 0; i < REMOVAL_COUNT; i++) {
+        assert(ar_map__set(own_map, own_initial_keys[i], NULL));
+        assert(ar_map__get(own_map, own_initial_keys[i]) == NULL);
+    }
+
+    assert(ar_map__count(own_map) == (size_t)(INITIAL_ENTRY_COUNT - REMOVAL_COUNT));
+
+    for (int i = 0; i < REINSERT_COUNT; i++) {
+        snprintf(own_reinsert_keys[i], sizeof(own_reinsert_keys[i]), "replacement-key-%d", i);
+        own_reinsert_values[i] = 2000 + i;
+        assert(ar_map__set(own_map, own_reinsert_keys[i], &own_reinsert_values[i]));
+    }
+
+    assert(ar_map__count(own_map) == (size_t)(INITIAL_ENTRY_COUNT - REMOVAL_COUNT + REINSERT_COUNT));
+
+    for (int i = REMOVAL_COUNT; i < INITIAL_ENTRY_COUNT; i++) {
+        const int *ref_retrieved = (const int *)ar_map__get(own_map, own_initial_keys[i]);
+        assert(ref_retrieved != NULL);
+        assert(*ref_retrieved == own_initial_values[i]);
+    }
+
+    for (int i = 0; i < REINSERT_COUNT; i++) {
+        const int *ref_retrieved = (const int *)ar_map__get(own_map, own_reinsert_keys[i]);
+        assert(ref_retrieved != NULL);
+        assert(*ref_retrieved == own_reinsert_values[i]);
+    }
+
+    ar_map__destroy(own_map);
+
+    printf("ar_map delete/reuse test passed!\n");
+}
+
 int main(void) {
     printf("Starting Map Module Tests...\n");
     
@@ -181,7 +266,13 @@ int main(void) {
     
     printf("Running test_map_refs()...\n");
     test_map_refs();
+
+    printf("Running test_map_grows_beyond_fixed_capacity()...\n");
+    test_map_grows_beyond_fixed_capacity();
+
+    printf("Running test_map_delete_and_reuse_after_growth()...\n");
+    test_map_delete_and_reuse_after_growth();
     
-    printf("All 8 tests passed!\n");
+    printf("All 10 tests passed!\n");
     return 0;
 }
