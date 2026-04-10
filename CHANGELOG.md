@@ -1,5 +1,23 @@
 # AgeRun CHANGELOG
 
+## 2026-04-10 (Chat-session missing-sender log fallback)
+
+- **Route senderless `chat-session` responses through the log delegate**
+
+  Updated the `chat-session` method so responses are no longer silently lost when an incoming
+  message omits `sender`. Instead, the method now falls back to the built-in log delegate and the
+  runtime processes that delegate queue into `agerun.log`.
+
+  **Implementation**: Updated `methods/chat-session-1.0.0.method` to choose between an agent reply
+  and a structured log payload, taught `modules/ar_system.c` to register/process the built-in log
+  delegate at `-102`, and narrowed `modules/ar_expression_evaluator.zig` so missing `message.*`
+  fields resolve to `0` without changing missing `memory.*` behavior.
+
+  **Verification**: `make clean build 2>&1` and `make check-logs 2>&1` passed.
+
+  **Impact**: Methods can safely use `message.sender` as an optional caller channel and still emit
+  observable output when no caller agent is present.
+
 ## 2026-04-10 (Log delegate documentation walkthrough)
 
 - **Expanded `ar_log_delegate` reference documentation**

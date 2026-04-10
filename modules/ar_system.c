@@ -10,6 +10,7 @@
 #include "ar_interpreter.h"
 #include "ar_log.h"
 #include "ar_delegation.h"
+#include "ar_delegate.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -46,6 +47,76 @@ struct ar_system_s {
 
 /* Implementation */
 
+#define AR_SYSTEM__LOG_DELEGATE_ID (-102)
+
+static bool _process_log_delegate_message(ar_system_t *mut_system, ar_data_t *own_message) {
+    const char *ref_level;
+    const char *ref_text;
+    int64_t agent_id;
+    const char *ref_level_string;
+    size_t text_len;
+    size_t buffer_len;
+    char *own_log_message;
+    int written;
+
+    if (!mut_system || !own_message) {
+        return false;
+    }
+
+    if (ar_data__get_type(own_message) != AR_DATA_TYPE__MAP) {
+        ar_log__error(mut_system->own_log, "Invalid log delegate message");
+        ar_data__destroy_if_owned(own_message, mut_system);
+        return true;
+    }
+
+    ref_level = ar_data__get_map_string(own_message, "level");
+    ref_text = ar_data__get_map_string(own_message, "message");
+    agent_id = ar_data__get_map_integer(own_message, "agent_id");
+
+    if (!ref_level || !ref_text) {
+        ar_log__error(mut_system->own_log, "Invalid log delegate message");
+        ar_data__destroy_if_owned(own_message, mut_system);
+        return true;
+    }
+
+    ref_level_string = ref_level;
+    text_len = strlen(ref_text);
+    buffer_len = strlen(ref_level_string) + text_len + 64;
+    own_log_message = AR__HEAP__MALLOC(buffer_len, "system log delegate message");
+    if (!own_log_message) {
+        ar_log__error(mut_system->own_log, "Failed to allocate log delegate message");
+        ar_data__destroy_if_owned(own_message, mut_system);
+        return true;
+    }
+
+    written = snprintf(
+        own_log_message,
+        buffer_len,
+        "level=%s agent=%" PRId64 " message=%s",
+        ref_level_string,
+        agent_id,
+        ref_text
+    );
+    if (written < 0) {
+        AR__HEAP__FREE(own_log_message);
+        ar_log__error(mut_system->own_log, "Failed to format log delegate message");
+        ar_data__destroy_if_owned(own_message, mut_system);
+        return true;
+    }
+
+    if (strcmp(ref_level_string, "error") == 0) {
+        ar_log__error(mut_system->own_log, own_log_message);
+    } else if (strcmp(ref_level_string, "warning") == 0) {
+        ar_log__warning(mut_system->own_log, own_log_message);
+    } else {
+        ar_log__info(mut_system->own_log, own_log_message);
+    }
+
+    AR__HEAP__FREE(own_log_message);
+    ar_data__destroy_if_owned(own_message, mut_system);
+    return true;
+}
+
 /* Instance-based API implementation */
 ar_system_t* ar_system__create(void) {
     
@@ -76,6 +147,20 @@ ar_system_t* ar_system__create(void) {
     // Create delegation
     own_system->own_delegation = ar_delegation__create(own_system->own_log);
     if (!own_system->own_delegation) {
+        ar_log__destroy(own_system->own_log);
+        ar_data__destroy(own_system->own_context);
+        AR__HEAP__FREE(own_system);
+        return NULL;
+    }
+
+    // Register built-in log delegate for fallback logging from methods
+    ar_delegate_t *own_log_delegate = ar_delegate__create(own_system->own_log, "log");
+    if (!own_log_delegate ||
+        !ar_delegation__register_delegate(own_system->own_delegation, AR_SYSTEM__LOG_DELEGATE_ID, own_log_delegate)) {
+        if (own_log_delegate) {
+            ar_delegate__destroy(own_log_delegate);
+        }
+        ar_delegation__destroy(own_system->own_delegation);
         ar_log__destroy(own_system->own_log);
         ar_data__destroy(own_system->own_context);
         AR__HEAP__FREE(own_system);
@@ -213,7 +298,16 @@ bool ar_system__process_next_message(ar_system_t *mut_system) {
     } while (agent_id != start_agent_id);
 
     if (own_message == NULL) {
-        return false;
+        ar_data_t *own_delegate_message = ar_delegation__take_delegate_message(
+            mut_system->own_delegation,
+            AR_SYSTEM__LOG_DELEGATE_ID
+        );
+        if (own_delegate_message == NULL) {
+            return false;
+        }
+
+        ar_data__take_ownership(own_delegate_message, mut_system);
+        return _process_log_delegate_message(mut_system, own_delegate_message);
     }
 
     // Take ownership of the message for the system

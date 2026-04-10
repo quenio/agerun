@@ -142,8 +142,11 @@ fn _evaluate_memory_access(
         return null;
     }
     
-    // If context was requested but is NULL, return NULL
+    // Missing message fields are treated as integer 0 so methods can use absent sender IDs
     if (map == null) {
+        if (c.strcmp(base, "message") == 0) {
+            return c.ar_data__create_integer(0);
+        }
         return null;
     }
     
@@ -155,6 +158,9 @@ fn _evaluate_memory_access(
     
     // Check if the base value is actually a map
     const base_type = c.ar_data__get_type(map);
+    if (c.strcmp(base, "message") == 0 and base_type == c.AR_DATA_TYPE__INTEGER and c.ar_data__get_integer(map) == 0) {
+        return c.ar_data__create_integer(0);
+    }
     if (base_type != c.AR_DATA_TYPE__MAP) {
         // Build error message showing the type mismatch
         var error_msg: [512]u8 = undefined;
@@ -190,7 +196,14 @@ fn _evaluate_memory_access(
     
     if (path_count == 1) {
         const ref_component = c.ar_expression_ast__get_memory_path_component(ref_node, 0) orelse return null;
-        return c.ar_data__get_map_data(map, ref_component);
+        const result = c.ar_data__get_map_data(map, ref_component);
+        if (result != null) {
+            return result;
+        }
+        if (c.strcmp(base, "message") == 0) {
+            return c.ar_data__create_integer(0);
+        }
+        return null;
     }
 
     // Get the path components only for multi-segment accesses
@@ -234,8 +247,14 @@ fn _evaluate_memory_access(
     // Use ar_data__get_map_data with the full path
     const result = c.ar_data__get_map_data(map, @ptrCast(full_path));
     
-    // Return the found value (it's a reference, not owned)
-    return result;
+    // Return the found value (it's a reference, not owned). Missing message paths read as integer 0.
+    if (result != null) {
+        return result;
+    }
+    if (c.strcmp(base, "message") == 0) {
+        return c.ar_data__create_integer(0);
+    }
+    return null;
 }
 
 

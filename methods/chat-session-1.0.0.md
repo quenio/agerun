@@ -20,7 +20,7 @@ The method expects MAP messages with these common fields:
 - `channel`: Channel name such as `"web"` or `"sms"`
 - `content`: User message content for `"message"` actions
 - `intent`: High-level intent for `"message"` actions
-- `sender`: Agent ID that should receive the response
+- `sender`: Agent ID that should receive the response; when omitted, the method logs the response through the built-in log delegate
 
 ## Behavior
 
@@ -54,6 +54,11 @@ session={session_id} user={user_id} channel={channel} state={state} turns={turn_
 Closes the session explicitly:
 - Sets `memory.state = "closed"`
 - Stores `memory.last_reply = "session_closed"`
+
+### Response delivery
+- When `sender > 0`, the method sends the response back to that agent ID
+- When `sender` is omitted (or resolves to `0`), the method sends a structured INFO log message to delegate `-102`
+- The fallback log payload contains the response text in a form suitable for `agerun.log`
 
 ## Example Usage
 
@@ -150,7 +155,11 @@ memory.last_reply := if(memory.is_close = 1, "session_closed", memory.last_reply
 
 memory.summary := build("session={session_id} user={user_id} channel={channel} state={state} turns={turn_count} escalation={escalation_requested}", memory)
 memory.response := if(memory.is_summary = 1, memory.summary, memory.last_reply)
-send(message.sender, memory.response)
+memory.response_target := if(message.sender > 0, message.sender, -102)
+memory.log_input := build("level=info agent_id=0 message={response}", memory)
+memory.log_message := parse("level={level} agent_id={agent_id} message={message}", memory.log_input)
+memory.response_payload := if(memory.response_target > 0, memory.response, memory.log_message)
+send(memory.response_target, memory.response_payload)
 ```
 
 ## Notes
@@ -161,6 +170,7 @@ This method demonstrates a practical AgeRun pattern:
 - asynchronous message-driven updates
 - explicit escalation and closure states
 - generated summaries for polling clients, dashboards, or audit trails
+- fallback response logging through the built-in log delegate when no sender is supplied
 
 ## Walkthrough Reference
 
@@ -312,14 +322,15 @@ This is the direct administrative close path, separate from `"message"` with `in
 
 At the end, the method decides what to send back:
 
-- for most actions, it sends `memory.last_reply`
-- for `"summary"`, it sends `memory.summary`
+- for most actions, it uses `memory.last_reply`
+- for `"summary"`, it uses `memory.summary`
 
-Then it does:
+Then it chooses where to send that response:
 
-- `send(message.sender, memory.response)`
+- if `sender > 0`, it sends the plain response back to that agent
+- if `sender` is omitted or resolves to `0`, it builds a structured INFO log payload and sends it to delegate `-102`
 
-In the tests, `sender` is usually `0`, so the response is effectively consumed by the system/test harness.
+So the fallback path writes the response to `agerun.log` through the built-in log delegate instead of discarding it.
 
 ---
 
@@ -348,8 +359,7 @@ Input:
   "user_id": "user-42",
   "channel": "web",
   "content": "",
-  "intent": "",
-  "sender": 0
+  "intent": ""
 }
 ```
 
@@ -357,6 +367,7 @@ Memory after:
 - `state = "active"`
 - `turn_count = 0`
 - `last_reply = "session_started"`
+- fallback response is logged to `agerun.log`
 
 ## User message
 Input:
@@ -368,7 +379,7 @@ Input:
   "channel": "web",
   "content": "I need help with my order",
   "intent": "general",
-  "sender": 0
+  "sender": 100
 }
 ```
 
@@ -389,7 +400,7 @@ Input:
   "channel": "web",
   "content": "I want a human",
   "intent": "human",
-  "sender": 0
+  "sender": 100
 }
 ```
 
@@ -408,7 +419,7 @@ Input:
   "channel": "web",
   "content": "",
   "intent": "",
-  "sender": 0
+  "sender": 100
 }
 ```
 
@@ -461,6 +472,8 @@ The updated `bootstrap` method demonstrates it automatically by:
 2. sending `start`
 3. sending one `message`
 4. sending `summary`
+
+Because those demo messages omit a caller sender, their responses are routed to the built-in log delegate and written to `agerun.log`.
 
 So the repo now includes both:
 - the reusable session method

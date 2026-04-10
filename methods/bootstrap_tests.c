@@ -114,6 +114,12 @@ static void test_bootstrap_runs_chat_session_demo_on_boot(void) {
               "Chat-session: summary should describe the demo conversation");
     
     processed = ar_method_fixture__process_next_message(own_fixture);
+    AR_ASSERT(processed, "Log delegate should process start response");
+    processed = ar_method_fixture__process_next_message(own_fixture);
+    AR_ASSERT(processed, "Log delegate should process message response");
+    processed = ar_method_fixture__process_next_message(own_fixture);
+    AR_ASSERT(processed, "Log delegate should process summary response");
+    processed = ar_method_fixture__process_next_message(own_fixture);
     AR_ASSERT(!processed, "No extra messages should remain after demo");
     
     // Cleanup

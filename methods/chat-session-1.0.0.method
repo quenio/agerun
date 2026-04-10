@@ -35,6 +35,10 @@ memory.last_reply := if(memory.is_close = 1, "session_closed", memory.last_reply
 # Keep a current summary for dashboards or polling clients
 memory.summary := build("session={session_id} user={user_id} channel={channel} state={state} turns={turn_count} escalation={escalation_requested}", memory)
 
-# Emit the latest response for asynchronous callers
+# Emit the latest response for asynchronous callers or log it when no sender is provided
 memory.response := if(memory.is_summary = 1, memory.summary, memory.last_reply)
-send(message.sender, memory.response)
+memory.response_target := if(message.sender > 0, message.sender, -102)
+memory.log_input := build("level=info agent_id=0 message={response}", memory)
+memory.log_message := parse("level={level} agent_id={agent_id} message={message}", memory.log_input)
+memory.response_payload := if(memory.response_target > 0, memory.response, memory.log_message)
+send(memory.response_target, memory.response_payload)

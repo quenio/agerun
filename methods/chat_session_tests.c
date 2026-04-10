@@ -5,6 +5,7 @@
 #include "ar_agency.h"
 #include "ar_data.h"
 #include "ar_assert.h"
+#include "ar_io.h"
 
 static ar_data_t *create_chat_session_context(void) {
     ar_data_t *own_context = ar_data__create_map();
@@ -24,6 +25,37 @@ static ar_data_t *create_start_message(void) {
     ar_data__set_map_string(own_message, "intent", "");
     ar_data__set_map_integer(own_message, "sender", 0);
     return own_message;
+}
+
+static ar_data_t *create_start_message_without_sender(void) {
+    ar_data_t *own_message = ar_data__create_map();
+    AR_ASSERT(own_message != NULL, "Start message should be created");
+    ar_data__set_map_string(own_message, "action", "start");
+    ar_data__set_map_string(own_message, "session_id", "sess-1001");
+    ar_data__set_map_string(own_message, "user_id", "user-42");
+    ar_data__set_map_string(own_message, "channel", "web");
+    ar_data__set_map_string(own_message, "content", "");
+    ar_data__set_map_string(own_message, "intent", "");
+    return own_message;
+}
+
+static bool log_file_contains(const char *ref_expected_text) {
+    FILE *fp = NULL;
+    char line[512];
+
+    if (ar_io__open_file("agerun.log", "r", &fp) != AR_FILE_RESULT__SUCCESS) {
+        return false;
+    }
+
+    while (fgets(line, sizeof(line), fp) != NULL) {
+        if (strstr(line, ref_expected_text) != NULL) {
+            ar_io__close_file(fp, "agerun.log");
+            return true;
+        }
+    }
+
+    ar_io__close_file(fp, "agerun.log");
+    return false;
 }
 
 static ar_data_t *create_message_event(const char *ref_content, const char *ref_intent) {
@@ -173,6 +205,49 @@ static void test_chat_session__message_updates_turns_and_last_message(void) {
     ar_data__destroy(own_context);
 }
 
+static void test_chat_session__logs_response_via_log_delegate_when_sender_missing(void) {
+    printf("Testing chat-session logs response via log delegate when sender is missing...\n");
+
+    remove("agerun.log");
+
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("chat_session_log_delegate");
+    AR_ASSERT(ar_method_fixture__initialize(own_fixture), "Fixture should initialize");
+    AR_ASSERT(ar_method_fixture__verify_directory(own_fixture), "Fixture directory should verify");
+    AR_ASSERT(ar_method_fixture__load_method(
+        own_fixture,
+        "chat-session",
+        "../../methods/chat-session-1.0.0.method",
+        "1.0.0"
+    ), "chat-session method should load");
+
+    ar_agency_t *mut_agency = ar_method_fixture__get_agency(own_fixture);
+    AR_ASSERT(mut_agency != NULL, "Fixture should provide agency");
+
+    ar_data_t *own_context = create_chat_session_context();
+    int64_t session_agent_id = ar_agency__create_agent(mut_agency, "chat-session", "1.0.0", own_context);
+    AR_ASSERT(session_agent_id > 0, "Chat session agent should be created");
+
+    ar_data_t *own_message = create_start_message_without_sender();
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, session_agent_id, own_message),
+              "Start message without sender should be queued");
+    own_message = NULL;
+
+    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture),
+              "Chat-session should process the start message");
+    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture),
+              "Built-in log delegate should process the fallback response");
+
+    ar_agency__destroy_agent(mut_agency, session_agent_id);
+    while (ar_method_fixture__process_next_message(own_fixture)) {
+    }
+    AR_ASSERT(ar_method_fixture__check_memory(own_fixture), "Fixture should report no leaks");
+    ar_method_fixture__destroy(own_fixture);
+    AR_ASSERT(log_file_contains("message=session_started"),
+              "agerun.log should contain the session_started fallback response");
+    ar_data__destroy(own_context);
+    remove("agerun.log");
+}
+
 static void test_chat_session__human_handoff_and_summary(void) {
     printf("Testing chat-session handoff and summary generation...\n");
 
@@ -249,6 +324,7 @@ int main(void) {
 
     test_chat_session__start_initializes_session_state();
     test_chat_session__message_updates_turns_and_last_message();
+    test_chat_session__logs_response_via_log_delegate_when_sender_missing();
     test_chat_session__human_handoff_and_summary();
 
     printf("\nAll chat-session tests passed!\n");
