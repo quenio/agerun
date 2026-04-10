@@ -30,4 +30,8 @@ Optimize the end-to-end performance of the AgeRun agent system under a high-stre
 - Must maintain ABI compatibility for C/Zig modules.
 
 ## What's Been Tried
-- (To be updated as experiments progress)
+- Replaced the old fixed-size `ar_map` storage with dynamically resized open-addressed hashing.
+- Added a zero-copy whole-message forwarding path for exact `send(..., message)` by transferring
+  ownership directly from the currently processed system-owned message into the destination queue.
+  Benchmark result after this change: `total_µs=1526` on the standard 100-agent/1000-message
+  workload.

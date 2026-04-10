@@ -152,7 +152,7 @@ static void test_interpreter_error_logging(void) {
     assert(own_interpreter != NULL);
     
     // When we try to execute a method for a non-existent agent
-    bool result = ar_interpreter__execute_method(own_interpreter, 999999, NULL);
+    bool result = ar_interpreter__execute_method(own_interpreter, 999999, NULL, NULL);
     
     // Then execution should fail
     assert(result == false);

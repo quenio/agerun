@@ -273,6 +273,23 @@ bool ar_data__drop_ownership(ar_data_t *mut_data, const void *owner) {
     return false;
 }
 
+bool ar_data__transfer_ownership(
+    ar_data_t *mut_data,
+    const void *ref_from_owner,
+    const void *ref_to_owner
+) {
+    if (!mut_data || !ref_from_owner || !ref_to_owner) {
+        return false;
+    }
+
+    if (mut_data->owner != ref_from_owner) {
+        return false;
+    }
+
+    mut_data->owner = ref_to_owner;
+    return true;
+}
+
 /* Helper function to shallow copy a map with only primitive values */
 static ar_data_t* _shallow_copy_map(const ar_data_t *ref_map) {
     // Check if map contains only primitives

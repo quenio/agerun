@@ -379,7 +379,8 @@ int64_t ar_interpreter_fixture__execute_with_message(
     bool result = ar_interpreter__execute_method(
         mut_fixture->own_interpreter, 
         temp_agent_id, 
-        message_to_use
+        message_to_use,
+        NULL
     );
     fprintf(stderr, "DEBUG: Instruction result: %s\n", result ? "true" : "false");
     

@@ -47,6 +47,21 @@ void ar_agent__destroy(ar_agent_t *own_agent);
 bool ar_agent__send(ar_agent_t *mut_agent, ar_data_t *own_message);
 
 /**
+ * Send a message to an agent by transferring ownership from a current owner
+ * @param mut_agent Agent to send to (mutable reference)
+ * @param mut_message Message data to queue (mutable reference)
+ * @param ref_from_owner Current owner token that must own the message
+ * @return true if successful, false otherwise
+ * @note Ownership: On success, ownership transfers from ref_from_owner to mut_agent.
+ *       On failure, ownership remains with the original owner whenever possible.
+ */
+bool ar_agent__send_from_owner(
+    ar_agent_t *mut_agent,
+    ar_data_t *mut_message,
+    const void *ref_from_owner
+);
+
+/**
  * Get the ID of an agent
  * @param ref_agent Agent to query (borrowed reference)
  * @return Agent's ID, or 0 if agent is NULL

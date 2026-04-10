@@ -84,6 +84,26 @@ bool ar_delegation__send_to_delegate(ar_delegation_t *mut_delegation,
     return ar_delegate__send(mut_delegate, own_message);
 }
 
+bool ar_delegation__send_to_delegate_from_owner(
+    ar_delegation_t *mut_delegation,
+    int64_t delegate_id,
+    ar_data_t *mut_message,
+    const void *ref_from_owner
+) {
+    ar_delegate_t *mut_delegate;
+
+    if (!mut_delegation || !mut_delegation->own_registry) {
+        return false;
+    }
+
+    mut_delegate = ar_delegate_registry__find(mut_delegation->own_registry, delegate_id);
+    if (!mut_delegate) {
+        return false;
+    }
+
+    return ar_delegate__send_from_owner(mut_delegate, mut_message, ref_from_owner);
+}
+
 bool ar_delegation__delegate_has_messages(ar_delegation_t *ref_delegation,
                                            int64_t delegate_id) {
     if (!ref_delegation || !ref_delegation->own_registry) {

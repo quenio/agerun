@@ -24,6 +24,8 @@ static void test_method_creation(ar_system_t *mut_system);
 static void test_agent_creation(ar_system_t *mut_system);
 static void test_message_passing(ar_system_t *mut_system);
 static void test_system__has_delegation(void);
+static void test_message_forwarding__whole_message_reuses_pointer(void);
+static void test_message_forwarding__message_field_still_copies(void);
 
 static void test_no_auto_loading_on_init(void) {
     printf("Testing that system does NOT auto-load files on init...\n");
@@ -353,6 +355,182 @@ static void test_system__has_delegation(void) {
     printf("Delegation test passed.\n");
 }
 
+static void test_message_forwarding__whole_message_reuses_pointer(void) {
+    ar_system_t *own_system;
+    ar_agency_t *mut_agency;
+    ar_methodology_t *mut_methodology;
+    ar_data_t *own_shared_context;
+    ar_data_t *own_initial_message;
+    ar_data_t *own_forwarded_message;
+    ar_data_t *ref_payload;
+    ar_data_t *ref_forwarded_payload;
+    ar_data_t *mut_sender_memory;
+    int64_t sender_id;
+    int64_t receiver_id;
+
+    printf("Testing zero-copy forwarding for send(..., message)...\n");
+
+    own_system = ar_system__create();
+    AR_ASSERT(own_system != NULL, "System creation should succeed");
+    AR_ASSERT(ar_system__init(own_system, NULL, NULL) == 0, "System init without initial agent should succeed");
+
+    mut_agency = ar_system__get_agency(own_system);
+    AR_ASSERT(mut_agency != NULL, "System should provide an agency");
+
+    mut_methodology = ar_agency__get_methodology(mut_agency);
+    AR_ASSERT(mut_methodology != NULL, "Agency should provide a methodology");
+
+    own_shared_context = ar_data__create_map();
+    AR_ASSERT(own_shared_context != NULL, "Shared context should be created");
+
+    AR_ASSERT(
+        ar_methodology__create_method(mut_methodology, "forward-whole", "send(memory.next_id, message)", "1.0.0"),
+        "Forward-whole method should be created"
+    );
+    AR_ASSERT(
+        ar_methodology__create_method(mut_methodology, "receiver-idle", "send(0, \"idle\")", "1.0.0"),
+        "Receiver method should be created"
+    );
+
+    sender_id = ar_agency__create_agent(mut_agency, "forward-whole", "1.0.0", own_shared_context);
+    receiver_id = ar_agency__create_agent(mut_agency, "receiver-idle", "1.0.0", own_shared_context);
+    AR_ASSERT(sender_id > 0, "Sender agent should be created");
+    AR_ASSERT(receiver_id > 0, "Receiver agent should be created");
+
+    mut_sender_memory = ar_agency__get_agent_mutable_memory(mut_agency, sender_id);
+    AR_ASSERT(mut_sender_memory != NULL, "Sender memory should be available");
+    AR_ASSERT(
+        ar_data__set_map_integer(mut_sender_memory, "next_id", (int)receiver_id),
+        "Sender next_id should be set"
+    );
+
+    own_initial_message = ar_data__create_map();
+    AR_ASSERT(own_initial_message != NULL, "Initial message should be created");
+    AR_ASSERT(
+        ar_data__set_map_string(own_initial_message, "kind", "forward-whole"),
+        "Initial message field should be set"
+    );
+    ref_payload = ar_data__get_map_data(own_initial_message, "kind");
+    AR_ASSERT(ref_payload != NULL, "Initial message payload should exist");
+
+    AR_ASSERT(
+        ar_agency__send_to_agent(mut_agency, sender_id, own_initial_message),
+        "Initial message send should succeed"
+    );
+
+    AR_ASSERT(ar_system__process_next_message(own_system), "Processing sender message should succeed");
+
+    own_forwarded_message = ar_agency__get_agent_message(mut_agency, receiver_id);
+    AR_ASSERT(own_forwarded_message != NULL, "Receiver should have forwarded message queued");
+    AR_ASSERT(
+        own_forwarded_message == own_initial_message,
+        "Whole-message forwarding should reuse the original message pointer"
+    );
+
+    ref_forwarded_payload = ar_data__get_map_data(own_forwarded_message, "kind");
+    AR_ASSERT(ref_forwarded_payload != NULL, "Forwarded message payload should exist");
+    AR_ASSERT(
+        strcmp(ar_data__get_string(ref_forwarded_payload), "forward-whole") == 0,
+        "Forwarded payload content should be preserved"
+    );
+
+    ar_data__destroy(own_forwarded_message);
+    ar_system__shutdown(own_system);
+    ar_system__destroy(own_system);
+    ar_data__destroy(own_shared_context);
+
+    printf("Whole-message forwarding pointer reuse test passed.\n");
+}
+
+static void test_message_forwarding__message_field_still_copies(void) {
+    ar_system_t *own_system;
+    ar_agency_t *mut_agency;
+    ar_methodology_t *mut_methodology;
+    ar_data_t *own_shared_context;
+    ar_data_t *own_initial_message;
+    ar_data_t *own_forwarded_message;
+    ar_data_t *ref_original_payload;
+    ar_data_t *mut_sender_memory;
+    int64_t sender_id;
+    int64_t receiver_id;
+
+    printf("Testing that send(..., message.field) still copies...\n");
+
+    own_system = ar_system__create();
+    AR_ASSERT(own_system != NULL, "System creation should succeed");
+    AR_ASSERT(ar_system__init(own_system, NULL, NULL) == 0, "System init without initial agent should succeed");
+
+    mut_agency = ar_system__get_agency(own_system);
+    AR_ASSERT(mut_agency != NULL, "System should provide an agency");
+
+    mut_methodology = ar_agency__get_methodology(mut_agency);
+    AR_ASSERT(mut_methodology != NULL, "Agency should provide a methodology");
+
+    own_shared_context = ar_data__create_map();
+    AR_ASSERT(own_shared_context != NULL, "Shared context should be created");
+
+    AR_ASSERT(
+        ar_methodology__create_method(
+            mut_methodology,
+            "forward-field",
+            "send(memory.next_id, message.payload)",
+            "1.0.0"
+        ),
+        "Forward-field method should be created"
+    );
+    AR_ASSERT(
+        ar_methodology__create_method(mut_methodology, "receiver-idle-field", "send(0, \"idle\")", "1.0.0"),
+        "Receiver method should be created"
+    );
+
+    sender_id = ar_agency__create_agent(mut_agency, "forward-field", "1.0.0", own_shared_context);
+    receiver_id = ar_agency__create_agent(mut_agency, "receiver-idle-field", "1.0.0", own_shared_context);
+    AR_ASSERT(sender_id > 0, "Sender agent should be created");
+    AR_ASSERT(receiver_id > 0, "Receiver agent should be created");
+
+    mut_sender_memory = ar_agency__get_agent_mutable_memory(mut_agency, sender_id);
+    AR_ASSERT(mut_sender_memory != NULL, "Sender memory should be available");
+    AR_ASSERT(
+        ar_data__set_map_integer(mut_sender_memory, "next_id", (int)receiver_id),
+        "Sender next_id should be set"
+    );
+
+    own_initial_message = ar_data__create_map();
+    AR_ASSERT(own_initial_message != NULL, "Initial message should be created");
+    AR_ASSERT(
+        ar_data__set_map_string(own_initial_message, "payload", "field-copy"),
+        "Initial message payload should be set"
+    );
+    ref_original_payload = ar_data__get_map_data(own_initial_message, "payload");
+    AR_ASSERT(ref_original_payload != NULL, "Original payload reference should exist");
+
+    AR_ASSERT(
+        ar_agency__send_to_agent(mut_agency, sender_id, own_initial_message),
+        "Initial message send should succeed"
+    );
+
+    AR_ASSERT(ar_system__process_next_message(own_system), "Processing sender message should succeed");
+
+    own_forwarded_message = ar_agency__get_agent_message(mut_agency, receiver_id);
+    AR_ASSERT(own_forwarded_message != NULL, "Receiver should have forwarded payload queued");
+    AR_ASSERT(
+        own_forwarded_message != ref_original_payload,
+        "message.field forwarding should still use copy semantics"
+    );
+    AR_ASSERT(ar_data__get_type(own_forwarded_message) == AR_DATA_TYPE__STRING, "Forwarded payload should be a string");
+    AR_ASSERT(
+        strcmp(ar_data__get_string(own_forwarded_message), "field-copy") == 0,
+        "Forwarded payload content should be preserved"
+    );
+
+    ar_data__destroy(own_forwarded_message);
+    ar_system__shutdown(own_system);
+    ar_system__destroy(own_system);
+    ar_data__destroy(own_shared_context);
+
+    printf("Message field copy behavior test passed.\n");
+}
+
 int main(void) {
     printf("Starting Agerun tests...\n");
 
@@ -366,6 +544,8 @@ int main(void) {
     test_system__has_delegate_registry();
     test_system__register_proxy();
     test_system__has_delegation();
+    test_message_forwarding__whole_message_reuses_pointer();
+    test_message_forwarding__message_field_still_copies();
 
     // Create system instance
     ar_system_t *mut_system = ar_system__create();

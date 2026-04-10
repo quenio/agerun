@@ -276,6 +276,26 @@ bool ar_agency__send_to_agent(ar_agency_t *mut_agency,
     return ar_agent__send(mut_agent, own_message);
 }
 
+bool ar_agency__send_to_agent_from_owner(
+    ar_agency_t *mut_agency,
+    int64_t agent_id,
+    ar_data_t *mut_message,
+    const void *ref_from_owner
+) {
+    ar_agent_t *mut_agent;
+
+    if (!mut_agency || !mut_agency->is_initialized || !mut_agency->own_registry) {
+        return false;
+    }
+
+    mut_agent = (ar_agent_t*)ar_agent_registry__find_agent(mut_agency->own_registry, agent_id);
+    if (!mut_agent) {
+        return false;
+    }
+
+    return ar_agent__send_from_owner(mut_agent, mut_message, ref_from_owner);
+}
+
 const ar_data_t* ar_agency__get_agent_memory(ar_agency_t *ref_agency, 
                                                             int64_t agent_id) {
     if (!ref_agency || !ref_agency->is_initialized || !ref_agency->own_registry) {

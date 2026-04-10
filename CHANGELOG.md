@@ -1,5 +1,28 @@
 # AgeRun CHANGELOG
 
+## 2026-04-10 (Zero-copy whole-message forwarding)
+
+- **Zero-copy `send(..., message)` forwarding**
+
+  Implemented a whole-message fast path so the currently processed message can be forwarded directly
+  into the target agent/delegate queue without going through `ar_data__claim_or_copy()`.
+
+  **Implementation**: Added `ar_data__transfer_ownership()`, threaded the active message owner
+  through `ar_frame`/`ar_interpreter`, introduced explicit transfer-aware queue APIs for
+  agents/delegates and agency/delegation wrappers, and special-cased exact `send(..., message)` in
+  `modules/ar_send_instruction_evaluator.zig` while preserving copy-based fallback behavior for
+  `message.field` and other expressions.
+
+  **Verification**: `make ar_system_tests 2>&1`, `make ar_send_instruction_evaluator_tests 2>&1`,
+  and `make ar_interpreter_tests 2>&1` passed, including new end-to-end pointer-reuse and
+  copy-control tests in `modules/ar_system_tests.c`.
+
+  **Performance**: `bash autoresearch.sh` improved the integration benchmark from the prior
+  ~`1,936µs` result to `1,526µs` for the 100-agent/1000-message workload.
+
+  **Impact**: Removes a per-hop shallow-copy cost from the benchmark's hot path while keeping
+  existing send semantics intact for non-whole-message payloads.
+
 ## 2026-04-09 (Dynamic ar_map growth)
 
 - **Dynamic hash table for `ar_map`**

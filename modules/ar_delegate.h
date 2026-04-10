@@ -76,6 +76,19 @@ bool ar_delegate__handle_message(ar_delegate_t *ref_delegate, ar_data_t *ref_mes
 bool ar_delegate__send(ar_delegate_t *mut_delegate, ar_data_t *own_message);
 
 /**
+ * Sends a message to this delegate's queue by transferring ownership from a current owner
+ * @param mut_delegate The delegate instance to receive the message
+ * @param mut_message The message to send (mutable reference)
+ * @param ref_from_owner Current owner token that must own the message
+ * @return true if message was queued successfully, false otherwise
+ */
+bool ar_delegate__send_from_owner(
+    ar_delegate_t *mut_delegate,
+    ar_data_t *mut_message,
+    const void *ref_from_owner
+);
+
+/**
  * Checks if this delegate has any queued messages
  * @param ref_delegate The delegate instance to check
  * @return true if delegate has queued messages, false otherwise

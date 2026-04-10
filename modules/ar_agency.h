@@ -100,6 +100,21 @@ bool ar_agency__send_to_agent(ar_agency_t *mut_agency,
                                              ar_data_t *own_message);
 
 /**
+ * Send a message to an agent by transferring ownership from a current owner
+ * @param mut_agency The agency instance (mutable reference)
+ * @param agent_id ID of the agent to send to
+ * @param mut_message Message data to queue (mutable reference)
+ * @param ref_from_owner Current owner token that must own the message
+ * @return true if successful, false otherwise
+ */
+bool ar_agency__send_to_agent_from_owner(
+    ar_agency_t *mut_agency,
+    int64_t agent_id,
+    ar_data_t *mut_message,
+    const void *ref_from_owner
+);
+
+/**
  * Get agent memory by ID (instance version)
  * @param ref_agency The agency instance (borrowed reference)
  * @param agent_id ID of the agent

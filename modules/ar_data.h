@@ -85,6 +85,19 @@ bool ar_data__take_ownership(ar_data_t *mut_data, const void *owner);
 bool ar_data__drop_ownership(ar_data_t *mut_data, const void *owner);
 
 /**
+ * Transfer ownership of data directly from one owner to another
+ * @param mut_data The data whose ownership will be transferred (mutable reference)
+ * @param ref_from_owner The current owner that must match the data's owner
+ * @param ref_to_owner The new owner to assign
+ * @return true if ownership was transferred, false otherwise
+ */
+bool ar_data__transfer_ownership(
+    ar_data_t *mut_data,
+    const void *ref_from_owner,
+    const void *ref_to_owner
+);
+
+/**
  * Create a shallow copy of data values
  * @param ref_value The data value to copy
  * @return New data instance for primitives and flat containers, NULL for nested containers

@@ -11,6 +11,7 @@ const c = @cImport({
     @cInclude("ar_log.h");
     @cInclude("ar_frame.h");
     @cInclude("ar_data.h");
+    @cInclude("string.h");
 });
 
 /// Internal structure for send instruction evaluator
@@ -53,6 +54,17 @@ pub export fn ar_send_instruction_evaluator__destroy(
     
     // Note: We don't destroy the dependencies as they are borrowed references
     ar_allocator.free(own_evaluator);
+}
+
+fn _is_exact_message_forward(ref_message_ast: ?*const c.ar_expression_ast_t) bool {
+    const ref_base = c.ar_expression_ast__get_memory_base(ref_message_ast) orelse return false;
+
+    if (c.ar_expression_ast__get_type(ref_message_ast) != c.AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS) {
+        return false;
+    }
+
+    return c.strcmp(ref_base, "message") == 0 and
+        c.ar_expression_ast__get_memory_path_count(ref_message_ast) == 0;
 }
 
 /// Evaluates a send instruction AST node using frame-based execution
@@ -104,32 +116,85 @@ pub export fn ar_send_instruction_evaluator__evaluate(
     // Check if we can destroy it (unowned) or if it's a reference
     c.ar_data__destroy_if_owned(agent_id_result, ref_evaluator);
     
-    // Evaluate message expression
-    const message_result = c.ar_expression_evaluator__evaluate(ref_evaluator.?.ref_expr_evaluator, ref_frame, ref_message_ast);
-    if (message_result == null) {
-        return false;
-    }
-    
-    // Get ownership of message for sending
-    const own_message = c.ar_data__claim_or_copy(message_result, ref_evaluator) orelse {
-        c.ar_log__error(ref_evaluator.?.ref_log, "Cannot send message with nested containers (no deep copy support)");
-        return false;
-    };
-    
     // Send the message based on ID sign
     var send_result: bool = undefined;
     if (agent_id == 0) {
-        // Special case: agent_id 0 is a no-op that always returns true
-        // We need to destroy the message since it won't be sent
-        std.debug.print("DEBUG [SEND_EVAL]: Sending to agent 0 - destroying message type={}\n", .{c.ar_data__get_type(own_message)});
-        c.ar_data__destroy_if_owned(own_message, ref_evaluator);
-        send_result = true;
-    } else if (agent_id > 0) {
-        // Positive IDs route to agency (agents) - CORRECT routing restored
-        send_result = c.ar_agency__send_to_agent(ref_evaluator.?.ref_agency, agent_id, own_message);
+        if (_is_exact_message_forward(ref_message_ast)) {
+            send_result = true;
+        } else {
+            // Evaluate message expression
+            const message_result = c.ar_expression_evaluator__evaluate(ref_evaluator.?.ref_expr_evaluator, ref_frame, ref_message_ast);
+            if (message_result == null) {
+                return false;
+            }
+
+            // Get ownership of message for sending
+            const own_message = c.ar_data__claim_or_copy(message_result, ref_evaluator) orelse {
+                c.ar_log__error(ref_evaluator.?.ref_log, "Cannot send message with nested containers (no deep copy support)");
+                return false;
+            };
+
+            // Special case: agent_id 0 is a no-op that always returns true
+            // We need to destroy the message since it won't be sent
+            std.debug.print("DEBUG [SEND_EVAL]: Sending to agent 0 - destroying message type={}\n", .{c.ar_data__get_type(own_message)});
+            c.ar_data__destroy_if_owned(own_message, ref_evaluator);
+            send_result = true;
+        }
+    } else if (_is_exact_message_forward(ref_message_ast)) {
+        const ref_current_message = c.ar_frame__get_message(ref_frame);
+        const ref_message_owner = c.ar_frame__get_message_owner(ref_frame);
+
+        send_result = false;
+        if (ref_current_message != null and ref_message_owner != null) {
+            if (agent_id > 0) {
+                send_result = c.ar_agency__send_to_agent_from_owner(
+                    ref_evaluator.?.ref_agency,
+                    agent_id,
+                    @constCast(ref_current_message),
+                    ref_message_owner
+                );
+            } else {
+                send_result = c.ar_delegation__send_to_delegate_from_owner(
+                    ref_evaluator.?.ref_delegation,
+                    agent_id,
+                    @constCast(ref_current_message),
+                    ref_message_owner
+                );
+            }
+        }
+
+        if (!send_result) {
+            const own_message = c.ar_data__claim_or_copy(@constCast(ref_current_message), ref_evaluator) orelse {
+                c.ar_log__error(ref_evaluator.?.ref_log, "Cannot send message with nested containers (no deep copy support)");
+                return false;
+            };
+
+            if (agent_id > 0) {
+                send_result = c.ar_agency__send_to_agent(ref_evaluator.?.ref_agency, agent_id, own_message);
+            } else {
+                send_result = c.ar_delegation__send_to_delegate(ref_evaluator.?.ref_delegation, agent_id, own_message);
+            }
+        }
     } else {
-        // Negative IDs route to delegation (delegates)
-        send_result = c.ar_delegation__send_to_delegate(ref_evaluator.?.ref_delegation, agent_id, own_message);
+        // Evaluate message expression
+        const message_result = c.ar_expression_evaluator__evaluate(ref_evaluator.?.ref_expr_evaluator, ref_frame, ref_message_ast);
+        if (message_result == null) {
+            return false;
+        }
+
+        // Get ownership of message for sending
+        const own_message = c.ar_data__claim_or_copy(message_result, ref_evaluator) orelse {
+            c.ar_log__error(ref_evaluator.?.ref_log, "Cannot send message with nested containers (no deep copy support)");
+            return false;
+        };
+
+        if (agent_id > 0) {
+            // Positive IDs route to agency (agents) - CORRECT routing restored
+            send_result = c.ar_agency__send_to_agent(ref_evaluator.?.ref_agency, agent_id, own_message);
+        } else {
+            // Negative IDs route to delegation (delegates)
+            send_result = c.ar_delegation__send_to_delegate(ref_evaluator.?.ref_delegation, agent_id, own_message);
+        }
     }
     
     // Handle result assignment if present

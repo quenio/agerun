@@ -1,2 +1,4 @@
-- Replace the fixed-size `ar_map` array with a dynamically resized hash table/open-addressed map so large agent registries are supported without increasing every map scan cost.
-- Add a zero-copy ownership-transfer path for `send(message)` so the currently processed message can be forwarded directly from the system/interpreter to the target queue without a per-message shallow copy.
+- No pending autoresearch ideas right now.
+- Completed recently:
+  - Dynamic/open-addressed `ar_map` growth.
+  - Zero-copy whole-message forwarding for `send(..., message)`.

@@ -126,6 +126,27 @@ bool ar_agent__send(ar_agent_t *mut_agent, ar_data_t *own_message) {
     return result;
 }
 
+bool ar_agent__send_from_owner(
+    ar_agent_t *mut_agent,
+    ar_data_t *mut_message,
+    const void *ref_from_owner
+) {
+    if (!mut_agent || !mut_message || !ref_from_owner || !mut_agent->own_message_queue) {
+        return false;
+    }
+
+    if (!ar_data__transfer_ownership(mut_message, ref_from_owner, mut_agent)) {
+        return false;
+    }
+
+    if (!ar_list__add_last(mut_agent->own_message_queue, mut_message)) {
+        ar_data__transfer_ownership(mut_message, mut_agent, ref_from_owner);
+        return false;
+    }
+
+    return true;
+}
+
 /* Accessor functions for opaque type */
 
 int64_t ar_agent__get_id(const ar_agent_t *ref_agent) {

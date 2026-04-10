@@ -81,9 +81,12 @@ void ar_interpreter__destroy(ar_interpreter_t *own_interpreter) {
 /**
  * Executes a method in the context of an agent
  */
-bool ar_interpreter__execute_method(ar_interpreter_t *mut_interpreter,
-                                    int64_t agent_id, 
-                                    const ar_data_t *ref_message) {
+bool ar_interpreter__execute_method(
+    ar_interpreter_t *mut_interpreter,
+    int64_t agent_id,
+    const ar_data_t *ref_message,
+    const void *ref_message_owner
+) {
     if (!mut_interpreter) {
         return false;
     }
@@ -151,6 +154,8 @@ bool ar_interpreter__execute_method(ar_interpreter_t *mut_interpreter,
         ar_log__error(mut_interpreter->ref_log, "Failed to reset execution frame");
         return false;
     }
+
+    ar_frame__set_message_owner(mut_interpreter->own_frame, ref_message_owner);
     
     // Delegate to method evaluator (facade pattern)
     bool success = ar_method_evaluator__evaluate(mut_interpreter->own_evaluator, mut_interpreter->own_frame, ref_ast);

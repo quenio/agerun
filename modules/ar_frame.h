@@ -51,6 +51,13 @@ bool ar_frame__reset(
 );
 
 /**
+ * Set the current owner token for the frame message
+ * @param mut_frame The frame to update
+ * @param ref_message_owner The current owner token for the message (borrowed reference)
+ */
+void ar_frame__set_message_owner(ar_frame_t *mut_frame, const void *ref_message_owner);
+
+/**
  * Destroys a frame and frees its resources
  * @param own_frame The frame to destroy
  * @note Ownership: Takes ownership and destroys the frame.
@@ -81,5 +88,12 @@ const ar_data_t* ar_frame__get_context(const ar_frame_t *ref_frame);
  * @note Ownership: Returns a borrowed reference. Do not destroy.
  */
 const ar_data_t* ar_frame__get_message(const ar_frame_t *ref_frame);
+
+/**
+ * Gets the current owner token for the frame message
+ * @param ref_frame The frame to query
+ * @return The current message owner token, or NULL if none is set
+ */
+const void* ar_frame__get_message_owner(const ar_frame_t *ref_frame);
 
 #endif /* AGERUN_FRAME_H */

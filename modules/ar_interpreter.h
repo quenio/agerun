@@ -44,8 +44,11 @@ void ar_interpreter__destroy(ar_interpreter_t *own_interpreter);
  *       This function retrieves the agent's method, creates an instruction context,
  *       executes the method's instructions line by line, and cleans up the context.
  */
-bool ar_interpreter__execute_method(ar_interpreter_t *mut_interpreter,
-                                    int64_t agent_id, 
-                                    const ar_data_t *ref_message);
+bool ar_interpreter__execute_method(
+    ar_interpreter_t *mut_interpreter,
+    int64_t agent_id,
+    const ar_data_t *ref_message,
+    const void *ref_message_owner
+);
 
 #endif /* AGERUN_INTERPRETER_H */

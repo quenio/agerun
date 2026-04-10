@@ -88,6 +88,27 @@ bool ar_delegate__send(ar_delegate_t *mut_delegate, ar_data_t *own_message) {
     return result;
 }
 
+bool ar_delegate__send_from_owner(
+    ar_delegate_t *mut_delegate,
+    ar_data_t *mut_message,
+    const void *ref_from_owner
+) {
+    if (!mut_delegate || !mut_message || !ref_from_owner || !mut_delegate->own_message_queue) {
+        return false;
+    }
+
+    if (!ar_data__transfer_ownership(mut_message, ref_from_owner, mut_delegate)) {
+        return false;
+    }
+
+    if (!ar_list__add_last(mut_delegate->own_message_queue, mut_message)) {
+        ar_data__transfer_ownership(mut_message, mut_delegate, ref_from_owner);
+        return false;
+    }
+
+    return true;
+}
+
 bool ar_delegate__has_messages(const ar_delegate_t *ref_delegate) {
     if (!ref_delegate || !ref_delegate->own_message_queue) {
         return false;
