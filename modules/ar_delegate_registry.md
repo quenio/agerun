@@ -44,6 +44,9 @@ ar_delegate_t* ar_delegate_registry__find(const ar_delegate_registry_t *ref_regi
 bool ar_delegate_registry__is_registered(const ar_delegate_registry_t *ref_registry,
                                        int64_t delegate_id);
 int ar_delegate_registry__count(const ar_delegate_registry_t *ref_registry);
+int64_t ar_delegate_registry__get_first_id(const ar_delegate_registry_t *ref_registry);
+int64_t ar_delegate_registry__get_next_id(const ar_delegate_registry_t *ref_registry,
+                                        int64_t delegate_id);
 ```
 
 ## Usage Examples
@@ -71,35 +74,22 @@ ar_delegate_registry__destroy(own_registry);
 
 ### System Integration Pattern
 ```c
-// System creates registry at startup
-struct ar_system_s {
-    ar_delegate_registry_t *own_delegate_registry;
-    // ... other fields
-};
+// Register built-in delegates
+ar_delegate_t *own_log_delegate = ar_log_delegate__create_delegate(ref_log, "info");
+ar_delegate_registry__register(own_registry, -102, own_log_delegate);
 
-// In ar_system__create():
-own_system->own_delegate_registry = ar_delegate_registry__create();
-
-// Register built-in proxies
-ar_delegate_t *own_file_delegate = /* create file delegate */;
-ar_delegate_registry__register(own_system->own_delegate_registry, -100, own_file_delegate);
-
-ar_delegate_t *own_network_delegate = /* create network delegate */;
-ar_delegate_registry__register(own_system->own_delegate_registry, -101, own_network_delegate);
-
-ar_delegate_t *own_log_delegate = /* create log delegate */;
-ar_delegate_registry__register(own_system->own_delegate_registry, -102, own_log_delegate);
-
-// Message routing checks for negative IDs
-if (agent_id < 0) {
-    ar_delegate_t *ref_delegate = ar_delegate_registry__find(system->own_delegate_registry, agent_id);
-    if (ref_delegate) {
-        ar_delegate__handle_message(ref_delegate, message, sender_id);
+// Scan registered delegate IDs when processing queued delegate work
+for (int64_t delegate_id = ar_delegate_registry__get_first_id(own_registry);
+     delegate_id != 0;
+     delegate_id = ar_delegate_registry__get_next_id(own_registry, delegate_id)) {
+    ar_delegate_t *ref_delegate = ar_delegate_registry__find(own_registry, delegate_id);
+    if (ref_delegate && ar_delegate__has_messages(ref_delegate)) {
+        ar_data_t *own_message = ar_delegate__take_message(ref_delegate);
+        ar_delegate__handle_message(ref_delegate, own_message, 0);
+        ar_data__destroy(own_message);
+        break;
     }
 }
-
-// In ar_system__destroy():
-ar_delegate_registry__destroy(own_system->own_delegate_registry);
 ```
 
 ### Duplicate Registration Protection

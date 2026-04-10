@@ -98,6 +98,84 @@ int ar_delegate_registry__count(const ar_delegate_registry_t *ref_registry) {
     return (int)ar_list__count(ref_registry->own_registered_ids);
 }
 
+static int64_t _get_delegate_id_at_index(const ar_delegate_registry_t *ref_registry, size_t index) {
+    void **items;
+    size_t count;
+    ar_data_t *ref_data;
+    const char *ref_id_str;
+
+    if (!ref_registry || !ref_registry->own_registered_ids) {
+        return 0;
+    }
+
+    count = ar_list__count(ref_registry->own_registered_ids);
+    if (index >= count) {
+        return 0;
+    }
+
+    items = ar_list__items(ref_registry->own_registered_ids);
+    if (!items) {
+        return 0;
+    }
+
+    ref_data = (ar_data_t*)items[index];
+    AR__HEAP__FREE(items);
+    if (!ref_data) {
+        return 0;
+    }
+
+    ref_id_str = ar_data__get_string(ref_data);
+    if (!ref_id_str) {
+        return 0;
+    }
+
+    return strtoll(ref_id_str, NULL, 10);
+}
+
+int64_t ar_delegate_registry__get_first_id(const ar_delegate_registry_t *ref_registry) {
+    return _get_delegate_id_at_index(ref_registry, 0);
+}
+
+int64_t ar_delegate_registry__get_next_id(const ar_delegate_registry_t *ref_registry, int64_t delegate_id) {
+    void **items;
+    size_t count;
+    int64_t next_id = 0;
+
+    if (!ref_registry || !ref_registry->own_registered_ids) {
+        return 0;
+    }
+
+    items = ar_list__items(ref_registry->own_registered_ids);
+    if (!items) {
+        return 0;
+    }
+
+    count = ar_list__count(ref_registry->own_registered_ids);
+    for (size_t i = 0; i < count; i++) {
+        ar_data_t *ref_data = (ar_data_t*)items[i];
+        const char *ref_id_str;
+
+        if (!ref_data) {
+            continue;
+        }
+
+        ref_id_str = ar_data__get_string(ref_data);
+        if (!ref_id_str) {
+            continue;
+        }
+
+        if (strtoll(ref_id_str, NULL, 10) == delegate_id) {
+            if (i + 1 < count) {
+                next_id = _get_delegate_id_at_index(ref_registry, i + 1);
+            }
+            break;
+        }
+    }
+
+    AR__HEAP__FREE(items);
+    return next_id;
+}
+
 /* Helper function to get string key for delegate_id from the registered list */
 static const char* _get_delegate_key_from_list(const ar_delegate_registry_t *ref_registry, int64_t delegate_id) {
     if (!ref_registry || !ref_registry->own_registered_ids) {

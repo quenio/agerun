@@ -4,6 +4,7 @@
 #include "ar_data.h"
 #include "ar_heap.h"
 #include <stdbool.h>
+#include <inttypes.h>
 
 /* Delegation structure */
 struct ar_delegation_s {
@@ -126,4 +127,48 @@ ar_data_t* ar_delegation__take_delegate_message(ar_delegation_t *mut_delegation,
         return NULL;
     }
     return ar_delegate__take_message(mut_delegate);
+}
+
+bool ar_delegation__process_next_message(ar_delegation_t *mut_delegation,
+                                         int64_t sender_id) {
+    int64_t first_delegate_id;
+    int64_t delegate_id;
+    ar_delegate_t *mut_delegate;
+    ar_data_t *own_message;
+    bool handled;
+
+    if (!mut_delegation || !mut_delegation->own_registry) {
+        return false;
+    }
+
+    first_delegate_id = ar_delegate_registry__get_first_id(mut_delegation->own_registry);
+    if (first_delegate_id == 0) {
+        return false;
+    }
+
+    delegate_id = first_delegate_id;
+    do {
+        if (ar_delegation__delegate_has_messages(mut_delegation, delegate_id)) {
+            mut_delegate = ar_delegate_registry__find(mut_delegation->own_registry, delegate_id);
+            own_message = ar_delegation__take_delegate_message(mut_delegation, delegate_id);
+            if (!mut_delegate || !own_message) {
+                return false;
+            }
+
+            handled = ar_delegate__handle_message(mut_delegate, own_message, sender_id);
+            if (!handled && mut_delegation->ref_log) {
+                ar_log__warning(mut_delegation->ref_log,
+                                "Delegation: delegate message was not handled");
+            }
+            ar_data__destroy(own_message);
+            return true;
+        }
+
+        delegate_id = ar_delegate_registry__get_next_id(mut_delegation->own_registry, delegate_id);
+        if (delegate_id == 0) {
+            delegate_id = first_delegate_id;
+        }
+    } while (delegate_id != first_delegate_id);
+
+    return false;
 }

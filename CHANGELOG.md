@@ -1,5 +1,26 @@
 # AgeRun CHANGELOG
 
+## 2026-04-10 (Delegate dispatch integrated into system)
+
+- **Route queued delegate messages through delegate handlers instead of `ar_system` special-casing**
+
+  Completed the delegate/system integration so the runtime no longer implements log-delegate behavior in
+  `ar_system.c`. The system now asks `ar_delegation` to dispatch queued delegate messages, and the
+  built-in log delegate is registered as a real handler-backed delegate.
+
+  **Implementation**: Added handler-backed delegate creation in `modules/ar_delegate.c`, iteration
+  support in `modules/ar_delegate_registry.c`, generic queued delegate dispatch in
+  `modules/ar_delegation.c`, and `ar_log_delegate__create_delegate()` in `modules/ar_log_delegate.c`.
+  Updated `modules/ar_system.c` to register the built-in log delegate through that path and removed
+  the old in-system log message processor.
+
+  **Verification**: `make ar_delegate_tests 2>&1`, `make ar_delegate_registry_tests 2>&1`,
+  `make ar_delegation_tests 2>&1`, `make ar_log_delegate_tests 2>&1`, `make ar_system_tests 2>&1`,
+  `make chat_session_tests 2>&1`, and `make bootstrap_tests 2>&1` passed.
+
+  **Impact**: Delegate behavior is now owned by delegate modules again, and the system facade only
+  coordinates agency/delegation message flow.
+
 ## 2026-04-10 (Expression evaluator comment cleanup)
 
 - **Clarified the `message` fallback comment in the expression evaluator**

@@ -17,7 +17,8 @@ Proxies serve as controlled gateways for agents to interact with external resour
 Each delegate instance is identified by:
 - **Type**: A string identifier (e.g., "file", "network", "log")
 - **Log**: A reference to an `ar_log_t` instance for error reporting
-- **Handler**: A message handler function (to be implemented in TDD Cycle 3)
+- **Handler**: An optional message handler callback used when the system dispatches queued delegate messages
+- **Handler context**: Optional delegate-owned state associated with that callback
 
 ## Interface
 
@@ -61,6 +62,33 @@ ar_delegate_t *own_file_delegate = ar_delegate__create(own_log, "file");
 ar_delegate__destroy(own_file_delegate);
 ar_log__destroy(own_log);
 ```
+
+#### ar_delegate__create_with_handler
+
+```c
+ar_delegate_t* ar_delegate__create_with_handler(
+    ar_log_t *ref_log,
+    const char *type,
+    ar_delegate_message_handler_fn ref_handler,
+    void *own_handler_context,
+    ar_delegate_context_destroy_fn ref_destroy_context);
+```
+
+Creates a delegate instance with a configured message handler.
+
+**Parameters:**
+- `ref_log`: The log instance for error reporting (borrowed reference)
+- `type`: The delegate type identifier (borrowed string)
+- `ref_handler`: Optional message handler callback
+- `own_handler_context`: Optional delegate-owned context passed to the handler
+- `ref_destroy_context`: Optional destructor for `own_handler_context`
+
+**Returns:**
+- A new delegate instance, or NULL on failure
+
+**Ownership:**
+- Returns an owned value that caller must destroy
+- The delegate takes ownership of `own_handler_context` on success
 
 #### ar_delegate__destroy
 
@@ -110,6 +138,24 @@ Gets the type identifier from a delegate.
 
 **Ownership:**
 - Returns a borrowed reference. Do not destroy.
+
+#### ar_delegate__handle_message
+
+```c
+bool ar_delegate__handle_message(ar_delegate_t *ref_delegate, ar_data_t *ref_message, int64_t sender_id);
+```
+
+Dispatches a message to the delegate's configured handler.
+
+**Parameters:**
+- `ref_delegate`: The delegate instance
+- `ref_message`: The message to handle (borrowed reference)
+- `sender_id`: The sender ID passed through by the caller
+
+**Returns:**
+- `true` if a configured handler accepted the message, `false` otherwise
+
+A delegate created with `ar_delegate__create()` has no handler and therefore behaves as a queue-only delegate.
 
 #### ar_delegate__send
 

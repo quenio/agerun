@@ -92,4 +92,13 @@ bool ar_delegation__delegate_has_messages(ar_delegation_t *ref_delegation,
 ar_data_t* ar_delegation__take_delegate_message(ar_delegation_t *mut_delegation,
                                                  int64_t delegate_id);
 
+/**
+ * Process the next queued delegate message across all registered delegates
+ * @param mut_delegation The delegation instance (mutable reference)
+ * @param sender_id Sender ID to pass to the delegate handler
+ * @return true if a queued delegate message was processed, false if none were available
+ */
+bool ar_delegation__process_next_message(ar_delegation_t *mut_delegation,
+                                         int64_t sender_id);
+
 #endif /* AGERUN_DELEGATION_H */

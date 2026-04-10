@@ -45,6 +45,17 @@ Creates a new log delegate instance.
 - Returns an owned value that caller must destroy
 - The delegate borrows the log reference - caller must ensure log outlives delegate
 
+#### ar_log_delegate__create_delegate
+
+```c
+ar_delegate_t* ar_log_delegate__create_delegate(ar_log_t *ref_log, const char *ref_min_level);
+```
+
+Creates a base `ar_delegate_t` already wired to the log delegate handler.
+
+This is the integration entry point used by `ar_system` and `ar_delegation` when they need a
+registered delegate instance that can consume queued messages.
+
 #### ar_log_delegate__destroy
 
 ```c
@@ -88,7 +99,7 @@ Handles a log delegate message and returns a response map.
 
 ## Related Modules
 
-- `ar_delegate`: Base delegate infrastructure for message queuing
+- `ar_delegate`: Base delegate infrastructure for message queuing and handler dispatch
 - `ar_delegation`: Delegation subsystem managing delegate instances
 - `ar_log`: Error reporting and logging infrastructure
 
@@ -185,16 +196,19 @@ Logging is treated like any other external capability.
 
 ## Creation API
 
-Documented constructor:
+Documented constructors:
 
 ```c
 ar_log_delegate_t* ar_log_delegate__create(ar_log_t *ref_log, const char *ref_min_level);
+ar_delegate_t* ar_log_delegate__create_delegate(ar_log_t *ref_log, const char *ref_min_level);
 ```
 
 Meaning:
 - `ref_log`: existing log instance to write through
 - `ref_min_level`: minimum allowed severity
 
+Use `ar_log_delegate__create()` when interacting with the log delegate module directly.
+Use `ar_log_delegate__create_delegate()` when registering the log delegate in delegation/system.
 If `ref_min_level` is `NULL`, docs say it defaults to `"info"`.
 
 ## Type string

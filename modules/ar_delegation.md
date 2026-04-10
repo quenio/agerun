@@ -22,7 +22,8 @@ ar_system
 
 1. **Creation**: `ar_delegation__create(ref_log)` creates delegation and owned registry
 2. **Registration**: `ar_delegation__register_delegate()` adds delegates to registry
-3. **Destruction**: `ar_delegation__destroy()` destroys registry and all delegates
+3. **Dispatch**: `ar_delegation__process_next_message()` drains one queued delegate message and routes it to the registered delegate handler
+4. **Destruction**: `ar_delegation__destroy()` destroys registry and all delegates
 
 ## API
 
@@ -141,9 +142,26 @@ Takes the next message from a delegate's queue.
 
 **Ownership**: **Caller MUST destroy returned message**. Delegates to `ar_delegate__take_message()`.
 
+### ar_delegation__process_next_message
+
+```c
+bool ar_delegation__process_next_message(ar_delegation_t *mut_delegation,
+                                         int64_t sender_id);
+```
+
+Processes one queued delegate message across all registered delegates.
+
+**Parameters**:
+- `mut_delegation`: Delegation instance (mutable reference)
+- `sender_id`: Sender ID forwarded to the delegate handler
+
+**Returns**: `true` if a queued delegate message was consumed, `false` if none were available
+
+This is the API the system uses to integrate delegate queues into the main processing loop.
+
 ## Message Queue Pattern
 
-The delegation layer provides routing to delegate message queues:
+The delegation layer provides routing to delegate message queues and can also dispatch them:
 
 ```c
 // Send message to delegate
@@ -159,6 +177,9 @@ if (ar_delegation__delegate_has_messages(delegation, -100)) {
     // MUST destroy (caller owns it)
     ar_data__destroy(own_msg);
 }
+
+// Or let delegation dispatch one queued delegate message directly
+ar_delegation__process_next_message(delegation, 0);
 ```
 
 See `ar_delegate.md` for detailed message queue ownership semantics.

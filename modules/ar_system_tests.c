@@ -7,6 +7,7 @@
 #include "ar_delegate_registry.h"
 #include "ar_delegation.h"
 #include "ar_assert.h"
+#include "ar_heap.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -18,12 +19,36 @@
 /* Message strings */
 static const char *g_test_message = "test_message";
 
+typedef struct test_system_delegate_state_s {
+    bool was_called;
+    int64_t sender_id;
+    char message[32];
+} test_system_delegate_state_t;
+
+static bool _test_system_delegate_handler(void *mut_context, ar_data_t *ref_message, int64_t sender_id) {
+    test_system_delegate_state_t *mut_state = mut_context;
+
+    if (!mut_state || !ref_message || ar_data__get_type(ref_message) != AR_DATA_TYPE__STRING) {
+        return false;
+    }
+
+    mut_state->was_called = true;
+    mut_state->sender_id = sender_id;
+    snprintf(mut_state->message, sizeof(mut_state->message), "%s", ar_data__get_string(ref_message));
+    return true;
+}
+
+static void _destroy_test_system_delegate_state(void *own_context) {
+    AR__HEAP__FREE(own_context);
+}
+
 /* Test function prototypes */
 static void test_no_auto_loading_on_init(void);
 static void test_method_creation(ar_system_t *mut_system);
 static void test_agent_creation(ar_system_t *mut_system);
 static void test_message_passing(ar_system_t *mut_system);
 static void test_system__has_delegation(void);
+static void test_system__processes_delegate_messages(void);
 static void test_message_forwarding__whole_message_reuses_pointer(void);
 static void test_message_forwarding__message_field_still_copies(void);
 
@@ -355,6 +380,55 @@ static void test_system__has_delegation(void) {
     printf("Delegation test passed.\n");
 }
 
+static void test_system__processes_delegate_messages(void) {
+    ar_system_t *own_system;
+    ar_log_t *ref_log;
+    ar_delegation_t *mut_delegation;
+    test_system_delegate_state_t *own_state;
+    ar_delegate_t *own_delegate;
+
+    printf("Testing that system processes registered delegate messages...\n");
+
+    own_system = ar_system__create();
+    AR_ASSERT(own_system != NULL, "System creation should succeed");
+    AR_ASSERT(ar_system__init(own_system, NULL, NULL) == 0, "System init should succeed");
+
+    ref_log = ar_system__get_log(own_system);
+    AR_ASSERT(ref_log != NULL, "System should provide a log");
+
+    mut_delegation = ar_system__get_delegation(own_system);
+    AR_ASSERT(mut_delegation != NULL, "System should provide a delegation");
+
+    own_state = AR__HEAP__MALLOC(sizeof(test_system_delegate_state_t), "test system delegate state");
+    AR_ASSERT(own_state != NULL, "Delegate state allocation should succeed");
+    memset(own_state, 0, sizeof(test_system_delegate_state_t));
+
+    own_delegate = ar_delegate__create_with_handler(
+        ref_log,
+        "test",
+        _test_system_delegate_handler,
+        own_state,
+        _destroy_test_system_delegate_state
+    );
+    AR_ASSERT(own_delegate != NULL, "Delegate creation with handler should succeed");
+    AR_ASSERT(ar_system__register_delegate(own_system, -120, own_delegate),
+              "Delegate registration should succeed");
+    AR_ASSERT(ar_delegation__send_to_delegate(mut_delegation, -120, ar_data__create_string("system delegate")),
+              "Delegate message send should succeed");
+
+    AR_ASSERT(ar_system__process_next_message(own_system),
+              "System should process delegate messages when no agent messages are queued");
+    AR_ASSERT(own_state->was_called == true, "Delegate handler should be called by system processing");
+    AR_ASSERT(own_state->sender_id == 0, "System delegate processing currently supplies sender ID 0");
+    AR_ASSERT(strcmp(own_state->message, "system delegate") == 0,
+              "Delegate handler should receive queued message contents");
+
+    ar_system__shutdown(own_system);
+    ar_system__destroy(own_system);
+
+    printf("Delegate processing test passed.\n");
+}
+
 static void test_message_forwarding__whole_message_reuses_pointer(void) {
     ar_system_t *own_system;
     ar_agency_t *mut_agency;
@@ -544,6 +618,7 @@ int main(void) {
     test_system__has_delegate_registry();
     test_system__register_proxy();
     test_system__has_delegation();
+    test_system__processes_delegate_messages();
     test_message_forwarding__whole_message_reuses_pointer();
     test_message_forwarding__message_field_still_copies();
 

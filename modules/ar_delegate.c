@@ -9,9 +9,18 @@ struct ar_delegate_s {
     ar_log_t *ref_log;
     const char *type;
     ar_list_t *own_message_queue;
+    ar_delegate_message_handler_fn ref_handler;
+    void *own_handler_context;
+    ar_delegate_context_destroy_fn ref_destroy_context;
 };
 
-ar_delegate_t* ar_delegate__create(ar_log_t *ref_log, const char *type) {
+ar_delegate_t* ar_delegate__create_with_handler(
+    ar_log_t *ref_log,
+    const char *type,
+    ar_delegate_message_handler_fn ref_handler,
+    void *own_handler_context,
+    ar_delegate_context_destroy_fn ref_destroy_context
+) {
     ar_delegate_t *own_delegate = AR__HEAP__MALLOC(sizeof(ar_delegate_t), "delegate");
     if (!own_delegate) {
         return NULL;
@@ -19,9 +28,20 @@ ar_delegate_t* ar_delegate__create(ar_log_t *ref_log, const char *type) {
 
     own_delegate->ref_log = ref_log;
     own_delegate->type = type;
+    own_delegate->ref_handler = ref_handler;
+    own_delegate->own_handler_context = own_handler_context;
+    own_delegate->ref_destroy_context = ref_destroy_context;
     own_delegate->own_message_queue = ar_list__create();
+    if (!own_delegate->own_message_queue) {
+        AR__HEAP__FREE(own_delegate);
+        return NULL;
+    }
 
     return own_delegate;
+}
+
+ar_delegate_t* ar_delegate__create(ar_log_t *ref_log, const char *type) {
+    return ar_delegate__create_with_handler(ref_log, type, NULL, NULL, NULL);
 }
 
 void ar_delegate__destroy(ar_delegate_t *own_delegate) {
@@ -35,6 +55,10 @@ void ar_delegate__destroy(ar_delegate_t *own_delegate) {
             ar_data__destroy_if_owned(own_msg, own_delegate);
         }
         ar_list__destroy(own_delegate->own_message_queue);
+    }
+
+    if (own_delegate->ref_destroy_context && own_delegate->own_handler_context) {
+        own_delegate->ref_destroy_context(own_delegate->own_handler_context);
     }
 
     AR__HEAP__FREE(own_delegate);
@@ -57,15 +81,11 @@ const char* ar_delegate__get_type(const ar_delegate_t *ref_delegate) {
 }
 
 bool ar_delegate__handle_message(ar_delegate_t *ref_delegate, ar_data_t *ref_message, int64_t sender_id) {
-    (void)ref_message;
-    (void)sender_id;
-
-    if (!ref_delegate) {
+    if (!ref_delegate || !ref_delegate->ref_handler) {
         return false;
     }
 
-    // No handler configured yet, return false
-    return false;
+    return ref_delegate->ref_handler(ref_delegate->own_handler_context, ref_message, sender_id);
 }
 
 bool ar_delegate__send(ar_delegate_t *mut_delegate, ar_data_t *own_message) {

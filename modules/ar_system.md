@@ -164,10 +164,11 @@ The system follows a symmetric peer pattern:
 
 ### Message Processing Loop
 
-The system coordinates message processing through the agency:
+The system coordinates message processing through both peers:
 - Finds agents with pending messages via agency functions
 - Retrieves messages from agent queues
 - Executes the recipient agent's method with the message
+- If no agent message is ready, asks delegation to dispatch one queued delegate message
 - Handles any errors gracefully
 
 ### Interpreter Integration
@@ -286,14 +287,14 @@ ar_system_t *own_system = ar_system__create();
 // Get the log for delegate creation
 ar_log_t *ref_log = ar_system__get_log(own_system);
 
-// Create a file delegate
-ar_delegate_t *own_file_delegate = ar_delegate__create(ref_log, "file");
+// Create a log delegate already wired for queued delegate dispatch
+ar_delegate_t *own_log_delegate = ar_log_delegate__create_delegate(ref_log, "info");
 
 // Register the delegate using convenience wrapper
-bool success = ar_system__register_delegate(own_system, -100, own_file_delegate);
+bool success = ar_system__register_delegate(own_system, -102, own_log_delegate);
 if (success) {
     // Delegate is now owned by the delegation subsystem
-    // Messages to agent ID -100 will be routed to the file delegate
+    // Messages to agent ID -102 will be routed to the log delegate
 }
 
 // Access delegate registry using convenience wrapper

@@ -21,6 +21,24 @@
 typedef struct ar_delegate_s ar_delegate_t;
 
 /**
+ * Callback type for delegate message handlers
+ * @param mut_context Handler-specific context owned by the delegate
+ * @param ref_message The message to handle (borrowed reference)
+ * @param sender_id The ID of the agent sending the message
+ * @return true if the message was handled successfully, false otherwise
+ */
+typedef bool (*ar_delegate_message_handler_fn)(
+    void *mut_context,
+    ar_data_t *ref_message,
+    int64_t sender_id);
+
+/**
+ * Callback type for destroying delegate handler context
+ * @param own_context Handler-specific context owned by the delegate
+ */
+typedef void (*ar_delegate_context_destroy_fn)(void *own_context);
+
+/**
  * Creates a new delegate instance
  * @param ref_log The log instance for error reporting (borrowed reference)
  * @param type The delegate type identifier (borrowed string, e.g., "file", "network", "log")
@@ -30,6 +48,25 @@ typedef struct ar_delegate_s ar_delegate_t;
  *       The delegate borrows the type string - caller must ensure string outlives delegate.
  */
 ar_delegate_t* ar_delegate__create(ar_log_t *ref_log, const char *type);
+
+/**
+ * Creates a new delegate instance with a configured message handler
+ * @param ref_log The log instance for error reporting (borrowed reference)
+ * @param type The delegate type identifier (borrowed string, e.g., "file", "network", "log")
+ * @param ref_handler The delegate message handler, or NULL for queue-only delegates
+ * @param own_handler_context Handler-specific context owned by the delegate on success
+ * @param ref_destroy_context Optional callback used to destroy own_handler_context
+ * @return A new delegate instance, or NULL on failure
+ * @note Ownership: Returns an owned value that caller must destroy.
+ *       The delegate borrows the log reference and type string.
+ *       The delegate takes ownership of own_handler_context only on success.
+ */
+ar_delegate_t* ar_delegate__create_with_handler(
+    ar_log_t *ref_log,
+    const char *type,
+    ar_delegate_message_handler_fn ref_handler,
+    void *own_handler_context,
+    ar_delegate_context_destroy_fn ref_destroy_context);
 
 /**
  * Destroys a delegate instance

@@ -11,6 +11,7 @@ static void test_delegate_registry__register_and_find(void);
 static void test_delegate_registry__unregister(void);
 static void test_delegate_registry__count(void);
 static void test_delegate_registry__duplicate_registration(void);
+static void test_delegate_registry__iteration_ids(void);
 static void test_delegate_registry__clear(void);
 
 static void test_delegate_registry__create_and_destroy(void) {
@@ -177,6 +178,38 @@ static void test_delegate_registry__duplicate_registration(void) {
     printf("    PASS\n");
 }
 
+static void test_delegate_registry__iteration_ids(void) {
+    printf("  test_delegate_registry__iteration_ids...\n");
+
+    ar_delegate_registry_t *own_registry = ar_delegate_registry__create();
+    AR_ASSERT(own_registry != NULL, "Delegate registry creation should succeed");
+
+    ar_log_t *own_log = ar_log__create();
+    AR_ASSERT(own_log != NULL, "Log creation should succeed");
+
+    AR_ASSERT(ar_delegate_registry__get_first_id(own_registry) == 0,
+              "Empty registry should report no first ID");
+
+    ar_delegate_t *own_delegate1 = ar_delegate__create(own_log, "test1");
+    ar_delegate_t *own_delegate2 = ar_delegate__create(own_log, "test2");
+    AR_ASSERT(ar_delegate_registry__register(own_registry, -100, own_delegate1),
+              "First delegate registration should succeed");
+    AR_ASSERT(ar_delegate_registry__register(own_registry, -101, own_delegate2),
+              "Second delegate registration should succeed");
+
+    AR_ASSERT(ar_delegate_registry__get_first_id(own_registry) == -100,
+              "First registered ID should be returned first");
+    AR_ASSERT(ar_delegate_registry__get_next_id(own_registry, -100) == -101,
+              "Second registered ID should be returned as next");
+    AR_ASSERT(ar_delegate_registry__get_next_id(own_registry, -101) == 0,
+              "Last registered ID should have no next value");
+
+    ar_delegate_registry__destroy(own_registry);
+    ar_log__destroy(own_log);
+
+    printf("    PASS\n");
+}
+
 static void test_delegate_registry__clear(void) {
     printf("  test_delegate_registry__clear...\n");
 
@@ -225,6 +258,7 @@ int main(void) {
     test_delegate_registry__unregister();
     test_delegate_registry__count();
     test_delegate_registry__duplicate_registration();
+    test_delegate_registry__iteration_ids();
     test_delegate_registry__clear();
 
     printf("All ar_delegate_registry tests passed!\n");

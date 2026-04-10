@@ -16,7 +16,6 @@ typedef enum ar_log_delegate_level_e {
 } ar_log_delegate_level_t;
 
 struct ar_log_delegate_s {
-    ar_delegate_t *own_delegate;
     ar_log_t *ref_log;
     ar_log_delegate_level_t min_level;
 };
@@ -139,6 +138,28 @@ static char* _format_log_message(const char *ref_level,
     return own_formatted;  // Ownership transferred to caller
 }
 
+static bool _handle_log_delegate_message(void *mut_context,
+                                         ar_data_t *ref_message,
+                                         int64_t sender_id) {
+    ar_log_delegate_t *mut_delegate = mut_context;
+    ar_data_t *own_response = ar_log_delegate__handle_message(mut_delegate, ref_message, sender_id);
+    const char *ref_status;
+    bool result = false;
+
+    if (!own_response) {
+        return false;
+    }
+
+    ref_status = ar_data__get_map_string(own_response, "status");
+    result = (ref_status != NULL && strcmp(ref_status, "success") == 0);
+    ar_data__destroy(own_response);
+    return result;
+}
+
+static void _destroy_log_delegate_context(void *own_context) {
+    ar_log_delegate__destroy(own_context);
+}
+
 ar_log_delegate_t* ar_log_delegate__create(ar_log_t *ref_log, const char *ref_min_level) {
     ar_log_delegate_t *own_delegate = AR__HEAP__MALLOC(sizeof(ar_log_delegate_t), "log delegate");
     if (!own_delegate) {
@@ -155,9 +176,24 @@ ar_log_delegate_t* ar_log_delegate__create(ar_log_t *ref_log, const char *ref_mi
         }
     }
 
-    own_delegate->own_delegate = ar_delegate__create(ref_log, "log");
-    if (!own_delegate->own_delegate) {
-        AR__HEAP__FREE(own_delegate);
+    return own_delegate;
+}
+
+ar_delegate_t* ar_log_delegate__create_delegate(ar_log_t *ref_log, const char *ref_min_level) {
+    ar_log_delegate_t *own_log_delegate = ar_log_delegate__create(ref_log, ref_min_level);
+    if (!own_log_delegate) {
+        return NULL;
+    }
+
+    ar_delegate_t *own_delegate = ar_delegate__create_with_handler(
+        ref_log,
+        "log",
+        _handle_log_delegate_message,
+        own_log_delegate,
+        _destroy_log_delegate_context
+    );
+    if (!own_delegate) {
+        ar_log_delegate__destroy(own_log_delegate);
         return NULL;
     }
 
@@ -167,10 +203,6 @@ ar_log_delegate_t* ar_log_delegate__create(ar_log_t *ref_log, const char *ref_mi
 void ar_log_delegate__destroy(ar_log_delegate_t *own_delegate) {
     if (!own_delegate) {
         return;
-    }
-
-    if (own_delegate->own_delegate) {
-        ar_delegate__destroy(own_delegate->own_delegate);
     }
 
     AR__HEAP__FREE(own_delegate);

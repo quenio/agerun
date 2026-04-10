@@ -39,6 +39,21 @@ void ar_delegate_registry__destroy(ar_delegate_registry_t *own_registry);
 int ar_delegate_registry__count(const ar_delegate_registry_t *ref_registry);
 
 /**
+ * Get the first registered delegate ID
+ * @param ref_registry The registry to query (borrowed reference)
+ * @return The first registered delegate ID, or 0 if the registry is empty
+ */
+int64_t ar_delegate_registry__get_first_id(const ar_delegate_registry_t *ref_registry);
+
+/**
+ * Get the next registered delegate ID after a given ID
+ * @param ref_registry The registry to query (borrowed reference)
+ * @param delegate_id The current delegate ID
+ * @return The next registered delegate ID, or 0 if there is no next ID
+ */
+int64_t ar_delegate_registry__get_next_id(const ar_delegate_registry_t *ref_registry, int64_t delegate_id);
+
+/**
  * Register a delegate with a given ID
  * @param mut_registry The registry to modify (mutable reference)
  * @param proxy_id The delegate ID (negative integer by convention)

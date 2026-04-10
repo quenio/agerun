@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include "ar_log.h"
 #include "ar_data.h"
+#include "ar_delegate.h"
 
 /**
  * Opaque type for a log delegate instance
@@ -19,6 +20,15 @@ typedef struct ar_log_delegate_s ar_log_delegate_t;
  *       The delegate borrows the log reference - caller must ensure log outlives delegate.
  */
 ar_log_delegate_t* ar_log_delegate__create(ar_log_t *ref_log, const char *ref_min_level);
+
+/**
+ * Creates a base delegate instance backed by a log delegate handler
+ * @param ref_log The log instance for error reporting (borrowed reference, may be NULL)
+ * @param ref_min_level Minimum log level to accept ("info", "warning", "error"); NULL uses "info"
+ * @return A new base delegate configured to handle log messages, or NULL on failure
+ * @note Ownership: Returns an owned delegate instance that caller must destroy.
+ */
+ar_delegate_t* ar_log_delegate__create_delegate(ar_log_t *ref_log, const char *ref_min_level);
 
 /**
  * Destroys a log delegate instance

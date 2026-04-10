@@ -11,12 +11,36 @@
 static void test_delegate__create_and_destroy(void);
 static void test_delegate__stores_log_and_type(void);
 static void test_delegate__handle_message_returns_false(void);
+static void test_delegate__handle_message_dispatches_to_handler(void);
 static void test_delegate__send_returns_true(void);
 static void test_delegate__has_no_messages_initially(void);
 static void test_delegate__has_messages_after_send(void);
 static void test_delegate__take_message_returns_null_when_empty(void);
 static void test_delegate__take_message_returns_sent_message(void);
 static void test_delegate__take_message_removes_from_queue(void);
+
+typedef struct test_delegate_handler_state_s {
+    bool was_called;
+    int64_t sender_id;
+    char message[32];
+} test_delegate_handler_state_t;
+
+static bool _test_delegate_handler(void *mut_context, ar_data_t *ref_message, int64_t sender_id) {
+    test_delegate_handler_state_t *mut_state = mut_context;
+
+    if (!mut_state || !ref_message || ar_data__get_type(ref_message) != AR_DATA_TYPE__STRING) {
+        return false;
+    }
+
+    mut_state->was_called = true;
+    mut_state->sender_id = sender_id;
+    snprintf(mut_state->message, sizeof(mut_state->message), "%s", ar_data__get_string(ref_message));
+    return true;
+}
+
+static void _destroy_test_delegate_handler_state(void *own_context) {
+    AR__HEAP__FREE(own_context);
+}
 
 int main(void) {
     // Directory check
@@ -36,6 +60,7 @@ int main(void) {
     test_delegate__create_and_destroy();
     test_delegate__stores_log_and_type();
     test_delegate__handle_message_returns_false();
+    test_delegate__handle_message_dispatches_to_handler();
     test_delegate__send_returns_true();
     test_delegate__has_no_messages_initially();
     test_delegate__has_messages_after_send();
@@ -111,6 +136,40 @@ static void test_delegate__handle_message_returns_false(void) {
     AR_ASSERT(result == false, "handle_message should return false when no handler is set");
 
     // Clean up
+    ar_data__destroy(own_message);
+    ar_delegate__destroy(own_delegate);
+
+    printf("    PASS\n");
+}
+
+static void test_delegate__handle_message_dispatches_to_handler(void) {
+    printf("  test_delegate__handle_message_dispatches_to_handler...\n");
+
+    test_delegate_handler_state_t *own_state = AR__HEAP__MALLOC(sizeof(test_delegate_handler_state_t),
+                                                                "test delegate handler state");
+    AR_ASSERT(own_state != NULL, "Handler state allocation should succeed");
+    memset(own_state, 0, sizeof(test_delegate_handler_state_t));
+
+    ar_delegate_t *own_delegate = ar_delegate__create_with_handler(
+        NULL,
+        "test",
+        _test_delegate_handler,
+        own_state,
+        _destroy_test_delegate_handler_state
+    );
+    AR_ASSERT(own_delegate != NULL, "Delegate creation with handler should succeed");
+
+    ar_data_t *own_message = ar_data__create_string("handled message");
+    AR_ASSERT(own_message != NULL, "Message creation should succeed");
+
+    bool result = ar_delegate__handle_message(own_delegate, own_message, 456);
+
+    AR_ASSERT(result == true, "handle_message should dispatch to configured handler");
+    AR_ASSERT(own_state->was_called == true, "Handler should be called");
+    AR_ASSERT(own_state->sender_id == 456, "Handler should receive sender ID");
+    AR_ASSERT(strcmp(own_state->message, "handled message") == 0,
+              "Handler should receive message contents");
+
     ar_data__destroy(own_message);
     ar_delegate__destroy(own_delegate);
 

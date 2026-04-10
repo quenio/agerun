@@ -3,7 +3,9 @@
 #include "ar_data.h"
 #include "ar_log.h"
 #include "ar_assert.h"
+#include "ar_heap.h"
 #include <stdio.h>
+#include <string.h>
 
 static void test_delegation__create_and_destroy(void) {
     // Given a log instance
@@ -193,6 +195,63 @@ static void test_delegation__send_to_nonexistent_returns_false(void) {
     ar_log__destroy(ref_log);
 }
 
+typedef struct test_delegation_handler_state_s {
+    bool was_called;
+    int64_t sender_id;
+    char message[32];
+} test_delegation_handler_state_t;
+
+static bool _test_delegation_handler(void *mut_context, ar_data_t *ref_message, int64_t sender_id) {
+    test_delegation_handler_state_t *mut_state = mut_context;
+
+    if (!mut_state || !ref_message || ar_data__get_type(ref_message) != AR_DATA_TYPE__STRING) {
+        return false;
+    }
+
+    mut_state->was_called = true;
+    mut_state->sender_id = sender_id;
+    snprintf(mut_state->message, sizeof(mut_state->message), "%s", ar_data__get_string(ref_message));
+    return true;
+}
+
+static void _destroy_test_delegation_handler_state(void *own_context) {
+    AR__HEAP__FREE(own_context);
+}
+
+static void test_delegation__process_next_message_dispatches_handler(void) {
+    ar_log_t *ref_log = ar_log__create();
+    ar_delegation_t *own_delegation = ar_delegation__create(ref_log);
+    test_delegation_handler_state_t *own_state = AR__HEAP__MALLOC(sizeof(test_delegation_handler_state_t),
+                                                                  "test delegation handler state");
+    AR_ASSERT(own_state != NULL, "Handler state allocation should succeed");
+    memset(own_state, 0, sizeof(test_delegation_handler_state_t));
+
+    ar_delegate_t *own_delegate = ar_delegate__create_with_handler(
+        ref_log,
+        "test",
+        _test_delegation_handler,
+        own_state,
+        _destroy_test_delegation_handler_state
+    );
+    AR_ASSERT(own_delegate != NULL, "Delegate creation with handler should succeed");
+    AR_ASSERT(ar_delegation__register_delegate(own_delegation, -100, own_delegate),
+              "Delegate registration should succeed");
+    AR_ASSERT(ar_delegation__send_to_delegate(own_delegation, -100, ar_data__create_string("hello")),
+              "Message send should succeed");
+
+    AR_ASSERT(ar_delegation__process_next_message(own_delegation, 321),
+              "Queued delegate message should be processed");
+    AR_ASSERT(own_state->was_called == true, "Delegate handler should be called");
+    AR_ASSERT(own_state->sender_id == 321, "Delegate handler should receive sender ID");
+    AR_ASSERT(strcmp(own_state->message, "hello") == 0,
+              "Delegate handler should receive message contents");
+    AR_ASSERT(!ar_delegation__delegate_has_messages(own_delegation, -100),
+              "Delegate queue should be empty after processing");
+
+    ar_delegation__destroy(own_delegation);
+    ar_log__destroy(ref_log);
+}
+
 static void test_delegation__destroy_with_queued_messages(void) {
     // Given a delegation with a delegate that has queued messages
     ar_log_t *ref_log = ar_log__create();
@@ -222,6 +281,7 @@ int main(void) {
     test_delegation__take_delegate_message_null_when_empty();
     test_delegation__take_delegate_message_returns_message();
     test_delegation__send_to_nonexistent_returns_false();
+    test_delegation__process_next_message_dispatches_handler();
     test_delegation__destroy_with_queued_messages();
 
     printf("All ar_delegation tests passed!\n");
