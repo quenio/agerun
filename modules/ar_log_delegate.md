@@ -95,3 +95,148 @@ Handles a log delegate message and returns a response map.
 ## Test File
 
 Test file: `modules/ar_log_delegate_tests.c`
+
+## Additional Walkthrough
+
+The **LogDelegate** lets agents send **structured log messages** through AgeRun’s normal logging system.
+
+## In plain terms
+
+Instead of an agent writing to stdout or touching files directly, it can send a message to the log delegate, and the delegate:
+
+- validates the message
+- filters by severity
+- formats it
+- writes it via `ar_log`
+
+So it is the agent-safe logging gateway.
+
+## What it accepts
+
+Its documented input format is a MAP like:
+
+```json
+{
+  "level": "info",
+  "message": "text",
+  "agent_id": 123
+}
+```
+
+Fields:
+- `level`: log severity like `info`, `warning`, or `error`
+- `message`: the actual log text
+- `agent_id`: context about which agent emitted it
+
+## What it returns
+
+It returns a response map:
+
+### success
+```json
+{ "status": "success" }
+```
+
+### error
+```json
+{ "status": "error", "message": "..." }
+```
+
+## Main behavior
+
+From `modules/ar_log_delegate.md`, it does four important things:
+
+### 1. Accepts structured log messages
+Agents don’t send raw strings blindly; they send a message with fields.
+
+### 2. Formats output
+It adds:
+- timestamp
+- severity level
+- agent context
+
+So logs become more useful for debugging and tracing.
+
+### 3. Filters by minimum log level
+When the delegate is created, it gets a minimum severity, for example:
+- `"info"`
+- `"warning"`
+- `"error"`
+
+If an incoming message is below that threshold, it gets rejected/ignored according to the delegate’s logic.
+
+Example:
+- delegate min level = `"warning"`
+- incoming `"info"` log → filtered out
+- incoming `"error"` log → accepted
+
+### 4. Uses existing `ar_log`
+It doesn’t invent a separate logging backend; it routes everything through the project’s existing `ar_log` infrastructure.
+
+## Why it exists
+
+It preserves the AgeRun model:
+
+- agents communicate by messages
+- external side effects go through delegates
+- the system can control and audit outside interactions
+
+Logging is treated like any other external capability.
+
+## Creation API
+
+Documented constructor:
+
+```c
+ar_log_delegate_t* ar_log_delegate__create(ar_log_t *ref_log, const char *ref_min_level);
+```
+
+Meaning:
+- `ref_log`: existing log instance to write through
+- `ref_min_level`: minimum allowed severity
+
+If `ref_min_level` is `NULL`, docs say it defaults to `"info"`.
+
+## Type string
+
+It identifies itself as:
+
+```c
+"log"
+```
+
+via `ar_log_delegate__get_type()`.
+
+## Current implementation status
+
+Per the docs:
+- **Phase 2 complete**
+- structured logging works
+- minimum-level filtering works
+
+Test file:
+- `modules/ar_log_delegate_tests.c`
+
+## Practical example
+
+An agent could conceptually send something like:
+
+```json
+{
+  "level": "warning",
+  "message": "Session escalated to human",
+  "agent_id": 42
+}
+```
+
+to the log delegate, and the delegate would turn that into a normal AgeRun log entry with formatting and severity enforcement.
+
+## Best use cases
+
+The log delegate is useful for:
+
+- audit trails
+- agent diagnostics
+- workflow tracing
+- escalation reporting
+- structured operational logs

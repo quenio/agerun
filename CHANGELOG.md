@@ -1,5 +1,21 @@
 # AgeRun CHANGELOG
 
+## 2026-04-10 (Log delegate documentation walkthrough)
+
+- **Expanded `ar_log_delegate` reference documentation**
+
+  Appended a practical walkthrough to `modules/ar_log_delegate.md` explaining what the log delegate
+  does, what message shape it accepts, how severity filtering works, why it exists in the delegate
+  model, and which real-world use cases it serves.
+
+  **Implementation**: Added a new “Additional Walkthrough” section to the module documentation using
+  the existing documented API and behavior.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: Makes the log delegate easier to understand for future readers without needing the
+  original chat context.
+
 ## 2026-04-10 (Chat session walkthrough wording cleanup)
 
 - **Documentation wording cleanup for `chat-session`**
