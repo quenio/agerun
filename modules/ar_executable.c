@@ -224,6 +224,9 @@ int ar_executable__main(void) {
 
     // Only create bootstrap if no agents were loaded
     if (ar_agency__count_agents(mut_agency) == 0) {
+        ar_data_t *own_boot_message;
+        bool boot_queued;
+
         printf("Creating bootstrap agent...\n");
         int64_t initial_agent = ar_system__init(mut_system, BOOTSTRAP_METHOD_NAME, BOOTSTRAP_METHOD_VERSION);
         if (initial_agent <= 0) {
@@ -233,6 +236,23 @@ int ar_executable__main(void) {
             return 1;
         }
         printf("Bootstrap agent created with ID: %" PRId64 "\n", initial_agent);
+
+        own_boot_message = ar_data__create_string("__boot__");
+        if (!own_boot_message) {
+            printf("Error: Failed to create bootstrap boot message\n");
+            ar_system__shutdown(mut_system);
+            ar_system__destroy(mut_system);
+            return 1;
+        }
+
+        boot_queued = ar_agency__send_to_agent(mut_agency, initial_agent, own_boot_message);
+        if (!boot_queued) {
+            ar_data__destroy(own_boot_message);
+            printf("Error: Failed to queue bootstrap boot message\n");
+            ar_system__shutdown(mut_system);
+            ar_system__destroy(mut_system);
+            return 1;
+        }
     } else {
         printf("Agents loaded from disk, skipping bootstrap creation\n");
     }

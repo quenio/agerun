@@ -46,6 +46,10 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
    make              # Show all available targets
    ```
 
+   On a fresh executable run, AgeRun creates the `bootstrap` agent, queues its `"__boot__"`
+   message automatically, and processes the demo flow. Log output is written to
+   `bin/run-exec/agerun.log` because the executable runs from that directory.
+
 ### Memory Safety Testing
 
 AgeRun includes built-in support for comprehensive memory error detection:

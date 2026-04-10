@@ -1,5 +1,24 @@
 # AgeRun CHANGELOG
 
+## 2026-04-10 (CLI boot message for bootstrap demo)
+
+- **Queue `"__boot__"` automatically when the executable creates the bootstrap agent**
+
+  Updated the CLI executable so a fresh `make run-exec` session now runs the bootstrap demo instead of
+  stopping after creating the bootstrap agent. This lets the bundled `chat-session` flow execute and
+  emit its responses into `agerun.log` through the log delegate.
+
+  **Implementation**: Changed `modules/ar_executable.c` to enqueue the bootstrap agent's
+  `"__boot__"` message immediately after creation, extended executable fixture cleanup to remove
+  stale log files, added executable tests for demo message processing and log output, and updated
+  `README.md` to explain where the CLI log file appears.
+
+  **Verification**: `make ar_executable_tests 2>&1`, `make run-exec 2>&1`, `make check-docs 2>&1`,
+  `make clean build 2>&1`, and `make check-logs 2>&1` passed.
+
+  **Impact**: A fresh CLI run now behaves the way the bootstrap design implies: it boots, runs the
+  demo conversation, and writes the chat-session responses to `bin/run-exec/agerun.log`.
+
 ## 2026-04-10 (Delegate dispatch integrated into system)
 
 - **Route queued delegate messages through delegate handlers instead of `ar_system` special-casing**

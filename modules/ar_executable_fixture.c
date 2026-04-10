@@ -178,4 +178,9 @@ void ar_executable_fixture__clean_persisted_files(const ar_executable_fixture_t 
     char agency_path[512];
     snprintf(agency_path, sizeof(agency_path), "%s/agerun.agency", ref_fixture->temp_build_dir);
     remove(agency_path);
+
+    // Remove log file
+    char log_path[512];
+    snprintf(log_path, sizeof(log_path), "%s/agerun.log", ref_fixture->temp_build_dir);
+    remove(log_path);
 }

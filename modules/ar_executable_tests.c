@@ -25,12 +25,52 @@ static void test_bootstrap_agent_creation(ar_executable_fixture_t *mut_fixture);
 static void test_bootstrap_agent_creation_failure(ar_executable_fixture_t *mut_fixture);
 static void test_bootstrap_spawns_chat_session(ar_executable_fixture_t *mut_fixture);
 static void test_message_processing_loop(ar_executable_fixture_t *mut_fixture);
+static void test_executable__writes_chat_session_logs(ar_executable_fixture_t *mut_fixture);
 static void test_executable__saves_methodology_file(ar_executable_fixture_t *mut_fixture);
 static void test_executable__continues_on_save_failure(ar_executable_fixture_t *mut_fixture);
 static void test_executable__loads_agents_on_startup(ar_executable_fixture_t *mut_fixture);
 static void test_executable__skips_bootstrap_when_agents_loaded(ar_executable_fixture_t *mut_fixture);
 static void test_executable__saves_agents_on_shutdown(ar_executable_fixture_t *mut_fixture);
 
+
+static bool _file_contains_text(const char *ref_path, const char *ref_text) {
+    FILE *ref_file;
+    long file_size;
+    char *own_content;
+    size_t read_size;
+    bool found;
+
+    if (!ref_path || !ref_text) {
+        return false;
+    }
+
+    ref_file = fopen(ref_path, "r");
+    if (!ref_file) {
+        return false;
+    }
+
+    fseek(ref_file, 0, SEEK_END);
+    file_size = ftell(ref_file);
+    fseek(ref_file, 0, SEEK_SET);
+    if (file_size < 0) {
+        fclose(ref_file);
+        return false;
+    }
+
+    own_content = AR__HEAP__MALLOC((size_t)file_size + 1, "executable log file content");
+    if (!own_content) {
+        fclose(ref_file);
+        return false;
+    }
+
+    read_size = fread(own_content, 1, (size_t)file_size, ref_file);
+    own_content[read_size] = '\0';
+    fclose(ref_file);
+
+    found = strstr(own_content, ref_text) != NULL;
+    AR__HEAP__FREE(own_content);
+    return found;
+}
 
 // Stub function to avoid linking with the actual executable
 int ar_executable__main(void) {
@@ -356,6 +396,7 @@ static void test_bootstrap_spawns_chat_session(ar_executable_fixture_t *mut_fixt
     char line[256];
     bool found_bootstrap_created = false;
     bool found_chat_session_created = false;
+    bool found_chat_session_activity = false;
 
     while (fgets(line, sizeof(line), pipe) != NULL) {
 
@@ -369,6 +410,12 @@ static void test_bootstrap_spawns_chat_session(ar_executable_fixture_t *mut_fixt
             strstr(line, "Loaded 9 methods from directory")) {
             found_chat_session_created = true;
         }
+
+        if (strstr(line, "session_started") ||
+            strstr(line, "message_received") ||
+            strstr(line, "session=demo-session")) {
+            found_chat_session_activity = true;
+        }
     }
 
     int status = pclose(pipe);
@@ -379,9 +426,10 @@ static void test_bootstrap_spawns_chat_session(ar_executable_fixture_t *mut_fixt
         AR_ASSERT(exit_code == 0, "Executable should exit normally");
     }
 
-    // Verify bootstrap was created
+    // Verify bootstrap was created and the demo actually ran
     AR_ASSERT(found_bootstrap_created, "Should see bootstrap agent created");
     AR_ASSERT(found_chat_session_created, "Should load chat-session for bootstrap demo");
+    AR_ASSERT(found_chat_session_activity, "Should run the chat-session demo after boot");
 
     printf("Bootstrap spawn chat-session test passed!\n");
 
@@ -391,6 +439,9 @@ static void test_bootstrap_spawns_chat_session(ar_executable_fixture_t *mut_fixt
 // Test that the executable processes all messages until none remain
 static void test_message_processing_loop(ar_executable_fixture_t *mut_fixture) {
     printf("Testing message processing loop...\n");
+
+    // Remove any existing persisted files to ensure bootstrap demo runs from a clean state
+    ar_executable_fixture__clean_persisted_files(mut_fixture);
 
     // When we build and run the executable using make
     printf("Building and running executable to test message processing...\n");
@@ -445,13 +496,47 @@ static void test_message_processing_loop(ar_executable_fixture_t *mut_fixture) {
 
     // Verify message processing occurred
     AR_ASSERT(found_processing_messages, "Should see 'Processing messages' indicating loop started");
-    // Note: "Bootstrap initialized" won't appear because send(0, ...) is a no-op per CLAUDE.md
-    // So the message processing loop completes with 0 messages
     AR_ASSERT(found_messages_processed_count, "Should see count of messages processed");
-    // We expect 0 messages (messages processed internally)
-    AR_ASSERT(messages_processed == 0, "Should process 0 messages");
+    AR_ASSERT(messages_processed == 7,
+              "Should process bootstrap, chat-session, and log delegate messages for the demo");
 
     printf("Message processing loop test passed! Processed %d messages\n", messages_processed);
+
+    ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
+}
+
+static void test_executable__writes_chat_session_logs(ar_executable_fixture_t *mut_fixture) {
+    char log_path[512];
+
+    printf("Testing executable writes chat-session demo output to agerun.log...\n");
+
+    ar_executable_fixture__clean_persisted_files(mut_fixture);
+
+    char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
+    FILE *pipe = ar_executable_fixture__build_and_run(mut_fixture, own_methods_dir);
+    AR_ASSERT(pipe != NULL, "Should be able to run executable");
+
+    char line[256];
+    while (fgets(line, sizeof(line), pipe) != NULL) {
+        printf("Make output: %s", line);
+    }
+
+    int status = pclose(pipe);
+    if (WIFEXITED(status)) {
+        AR_ASSERT(WEXITSTATUS(status) == 0, "Executable should exit normally");
+    } else {
+        AR_ASSERT(false, "Executable should terminate normally");
+    }
+
+    snprintf(log_path, sizeof(log_path), "%s/agerun.log", ar_executable_fixture__get_build_dir(mut_fixture));
+    AR_ASSERT(_file_contains_text(log_path, "session_started"),
+              "agerun.log should contain the start response");
+    AR_ASSERT(_file_contains_text(log_path, "message_received"),
+              "agerun.log should contain the message response");
+    AR_ASSERT(_file_contains_text(log_path, "session=demo-session"),
+              "agerun.log should contain the summary response");
+
+    printf("Executable log output test passed!\n");
 
     ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
 }
@@ -917,6 +1002,9 @@ int main(void) {
     // Test that executable processes all messages
     test_message_processing_loop(own_fixture);
 
+    // Test that executable writes demo log output
+    test_executable__writes_chat_session_logs(own_fixture);
+
     // Test that executable saves methodology to file
     test_executable__saves_methodology_file(own_fixture);
 
@@ -974,7 +1062,7 @@ int main(void) {
     ar_executable_fixture__destroy(own_fixture);
 
     // And report success
-    printf("All 12 tests passed!\n");
+    printf("All 13 tests passed!\n");
     return 0;
 }
 
