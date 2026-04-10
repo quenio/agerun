@@ -1,5 +1,25 @@
 # AgeRun CHANGELOG
 
+## 2026-04-10 (Chat session method and bootstrap demo)
+
+- **Chat/session backend example and bootstrap startup demo**
+
+  Added a new `chat-session-1.0.0.method` as a concrete real-world AgeRun example that models one
+  agent per conversation, persists session state in agent memory, tracks turns and escalation, and
+  generates compact summaries for polling clients or dashboards.
+
+  **Implementation**: Added the method, documentation, and dedicated method tests; updated
+  `bootstrap-1.0.0.method` to spawn a `chat-session` agent on `"__boot__"` and drive a demo
+  `start` → `message` → `summary` flow; updated bootstrap and executable tests to expect the new
+  method inventory and demo behavior.
+
+  **Verification**: `make clean build 2>&1`, `make check-logs 2>&1`, `make bootstrap_tests 2>&1`,
+  `make chat_session_tests 2>&1`, and `make ar_executable_tests 2>&1` passed. `make check-commands`
+  is referenced by AGENTS.md but no corresponding Makefile target exists in this repository.
+
+  **Impact**: AgeRun now includes a practical session-backend example and a bootstrap-driven startup
+  demo that shows how a real conversation workflow can be modeled with message-driven agents.
+
 ## 2026-04-10 (Zero-copy whole-message forwarding)
 
 - **Zero-copy `send(..., message)` forwarding**

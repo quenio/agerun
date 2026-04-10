@@ -1,0 +1,40 @@
+# Identify session actions
+memory.is_start := if(message.action = "start", 1, 0)
+memory.is_message := if(message.action = "message", 1, 0)
+memory.is_summary := if(message.action = "summary", 1, 0)
+memory.is_close := if(message.action = "close", 1, 0)
+
+# Initialize or refresh core session fields on start
+memory.session_id := if(memory.is_start = 1, message.session_id, memory.session_id)
+memory.user_id := if(memory.is_start = 1, message.user_id, memory.user_id)
+memory.channel := if(memory.is_start = 1, message.channel, memory.channel)
+memory.state := if(memory.is_start = 1, "active", memory.state)
+memory.turn_count := if(memory.is_start = 1, 0, memory.turn_count)
+memory.escalation_requested := if(memory.is_start = 1, 0, memory.escalation_requested)
+memory.last_user_message := if(memory.is_start = 1, "", memory.last_user_message)
+memory.last_intent := if(memory.is_start = 1, "", memory.last_intent)
+memory.last_reply := if(memory.is_start = 1, "session_started", memory.last_reply)
+
+# Capture inbound chat messages
+memory.last_user_message := if(memory.is_message = 1, message.content, memory.last_user_message)
+memory.last_intent := if(memory.is_message = 1, message.intent, memory.last_intent)
+memory.turn_count := if(memory.is_message = 1, memory.turn_count + 1, memory.turn_count)
+memory.needs_human := if(message.intent = "human", 1, 0)
+memory.close_requested := if(message.intent = "close", 1, 0)
+memory.escalation_requested := if(memory.needs_human = 1, 1, memory.escalation_requested)
+memory.state := if(memory.needs_human = 1, "waiting_for_human", memory.state)
+memory.state := if(memory.close_requested = 1, "closed", memory.state)
+memory.last_reply := if(memory.is_message = 1, "message_received", memory.last_reply)
+memory.last_reply := if(memory.needs_human = 1, "handoff_requested", memory.last_reply)
+memory.last_reply := if(memory.close_requested = 1, "session_closed", memory.last_reply)
+
+# Explicit close command
+memory.state := if(memory.is_close = 1, "closed", memory.state)
+memory.last_reply := if(memory.is_close = 1, "session_closed", memory.last_reply)
+
+# Keep a current summary for dashboards or polling clients
+memory.summary := build("session={session_id} user={user_id} channel={channel} state={state} turns={turn_count} escalation={escalation_requested}", memory)
+
+# Emit the latest response for asynchronous callers
+memory.response := if(memory.is_summary = 1, memory.summary, memory.last_reply)
+send(message.sender, memory.response)
