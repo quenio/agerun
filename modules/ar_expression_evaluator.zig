@@ -156,11 +156,14 @@ fn _evaluate_memory_access(
         return map;
     }
     
-    // Check if the base value is actually a map
     const base_type = c.ar_data__get_type(map);
+
+    // Treat a missing message base as integer 0 for optional fields like message.sender.
     if (c.strcmp(base, "message") == 0 and base_type == c.AR_DATA_TYPE__INTEGER and c.ar_data__get_integer(map) == 0) {
         return c.ar_data__create_integer(0);
     }
+
+    // All other field accesses require the base value to be a map.
     if (base_type != c.AR_DATA_TYPE__MAP) {
         // Build error message showing the type mismatch
         var error_msg: [512]u8 = undefined;

@@ -1,5 +1,19 @@
 # AgeRun CHANGELOG
 
+## 2026-04-10 (Expression evaluator comment cleanup)
+
+- **Clarified the `message` fallback comment in the expression evaluator**
+
+  Cleaned up an out-of-place comment in `modules/ar_expression_evaluator.zig` so it now matches the
+  current control flow around the special `message == 0` fallback path.
+
+  **Implementation**: Reworded the nearby comments to distinguish the special missing-message case
+  from the normal requirement that field access bases must be maps.
+
+  **Verification**: `make clean build 2>&1` and `make check-logs 2>&1` passed.
+
+  **Impact**: Keeps the evaluator source easier to read and reduces confusion during future edits.
+
 ## 2026-04-10 (Chat-session missing-sender log fallback)
 
 - **Route senderless `chat-session` responses through the log delegate**
