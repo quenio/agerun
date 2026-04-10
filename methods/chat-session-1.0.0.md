@@ -161,3 +161,309 @@ This method demonstrates a practical AgeRun pattern:
 - asynchronous message-driven updates
 - explicit escalation and closure states
 - generated summaries for polling clients, dashboards, or audit trails
+
+## Walkthrough Reference
+
+The `chat-session` method is a **single-agent conversation state machine**.
+
+Think of it as:
+
+- **one agent = one chat session**
+- each incoming message is an event
+- the agent stores session state in `memory.*`
+
+## What it tracks
+
+The method keeps these main fields in agent memory:
+
+- `session_id`
+- `user_id`
+- `channel`
+- `state`
+- `turn_count`
+- `last_user_message`
+- `last_intent`
+- `last_reply`
+- `escalation_requested`
+- `summary`
+
+## What messages it understands
+
+It expects MAP messages with fields like:
+
+- `action`
+- `session_id`
+- `user_id`
+- `channel`
+- `content`
+- `intent`
+- `sender`
+
+The important `action` values are:
+
+- `"start"`
+- `"message"`
+- `"summary"`
+- `"close"`
+
+---
+
+# Behavior by action
+
+## 1. `action = "start"`
+
+This initializes the session.
+
+It does things like:
+
+- store the session identity:
+  - `memory.session_id := message.session_id`
+  - `memory.user_id := message.user_id`
+  - `memory.channel := message.channel`
+- mark the session active:
+  - `memory.state := "active"`
+- reset counters and flags:
+  - `memory.turn_count := 0`
+  - `memory.escalation_requested := 0`
+- clear prior conversational fields:
+  - `memory.last_user_message := ""`
+  - `memory.last_intent := ""`
+- set:
+  - `memory.last_reply := "session_started"`
+
+### Result
+After `start`, the agent has a clean, initialized session record.
+
+---
+
+## 2. `action = "message"`
+
+This processes a normal inbound user turn.
+
+It:
+
+- stores the latest user text:
+  - `memory.last_user_message := message.content`
+- stores the interpreted intent:
+  - `memory.last_intent := message.intent`
+- increments the turn counter:
+  - `memory.turn_count := memory.turn_count + 1`
+
+Then it checks for special intents.
+
+### Normal message
+If `intent` is something ordinary like `"general"`:
+
+- `state` stays `"active"`
+- `last_reply` becomes `"message_received"`
+
+### Human handoff
+If `intent = "human"`:
+
+- `memory.escalation_requested := 1`
+- `memory.state := "waiting_for_human"`
+- `memory.last_reply := "handoff_requested"`
+
+### Close request
+If `intent = "close"`:
+
+- `memory.state := "closed"`
+- `memory.last_reply := "session_closed"`
+
+So a single `"message"` event can either:
+- just update the session normally,
+- escalate it,
+- or close it.
+
+---
+
+## 3. `action = "summary"`
+
+This doesn’t change the conversation much; it builds a compact report string.
+
+It creates:
+
+```text
+session={session_id} user={user_id} channel={channel} state={state} turns={turn_count} escalation={escalation_requested}
+```
+
+using `build(...)`, and stores it in:
+
+- `memory.summary`
+
+Then for summary requests, the response sent back is the summary text instead of the usual status token.
+
+---
+
+## 4. `action = "close"`
+
+This explicitly closes the session.
+
+It sets:
+
+- `memory.state := "closed"`
+- `memory.last_reply := "session_closed"`
+
+This is the direct administrative close path, separate from `"message"` with `intent = "close"`.
+
+---
+
+# How responses work
+
+At the end, the method decides what to send back:
+
+- for most actions, it sends `memory.last_reply`
+- for `"summary"`, it sends `memory.summary`
+
+Then it does:
+
+- `send(message.sender, memory.response)`
+
+In the tests, `sender` is usually `0`, so the response is effectively consumed by the system/test harness.
+
+---
+
+# The logic shape
+
+The method is written in a very AgeRun way:
+
+- compute booleans as integers:
+  - `memory.is_start := if(message.action = "start", 1, 0)`
+- then use those flags to conditionally update memory
+- then build a summary
+- then send a response
+
+Because AgeRun methods are simple and message-driven, it uses **many sequential conditional assignments** instead of deeply nested logic.
+
+---
+
+# Example flow
+
+## Start
+Input:
+```json
+{
+  "action": "start",
+  "session_id": "sess-1001",
+  "user_id": "user-42",
+  "channel": "web",
+  "content": "",
+  "intent": "",
+  "sender": 0
+}
+```
+
+Memory after:
+- `state = "active"`
+- `turn_count = 0`
+- `last_reply = "session_started"`
+
+## User message
+Input:
+```json
+{
+  "action": "message",
+  "session_id": "sess-1001",
+  "user_id": "user-42",
+  "channel": "web",
+  "content": "I need help with my order",
+  "intent": "general",
+  "sender": 0
+}
+```
+
+Memory after:
+- `last_user_message = "I need help with my order"`
+- `last_intent = "general"`
+- `turn_count = 1`
+- `state = "active"`
+- `last_reply = "message_received"`
+
+## Human escalation
+Input:
+```json
+{
+  "action": "message",
+  "session_id": "sess-1001",
+  "user_id": "user-42",
+  "channel": "web",
+  "content": "I want a human",
+  "intent": "human",
+  "sender": 0
+}
+```
+
+Memory after:
+- `state = "waiting_for_human"`
+- `escalation_requested = 1`
+- `last_reply = "handoff_requested"`
+
+## Summary
+Input:
+```json
+{
+  "action": "summary",
+  "session_id": "sess-1001",
+  "user_id": "user-42",
+  "channel": "web",
+  "content": "",
+  "intent": "",
+  "sender": 0
+}
+```
+
+Memory gets:
+```text
+session=sess-1001 user=user-42 channel=web state=waiting_for_human turns=1 escalation=1
+```
+
+---
+
+# Why this is a good AgeRun example
+
+It shows the core AgeRun pattern well:
+
+- **long-lived stateful entity**
+- **event-driven updates**
+- **memory as durable session state**
+- **simple workflow transitions**
+- **message-based interface**
+
+That maps well to:
+- support chat
+- onboarding flows
+- ticket conversations
+- conversational assistants
+- human handoff pipelines
+
+---
+
+# What it does not do yet
+
+The current method is intentionally small. It does **not** yet:
+
+- keep full transcript history
+- classify intents itself
+- send to a real human queue agent
+- manage timeouts/SLA timers
+- persist only selected fields separately
+- support multiple channels with different policies
+
+It’s a compact MVP example.
+
+---
+
+# How bootstrap uses it
+
+The updated `bootstrap` method demonstrates it automatically by:
+
+1. spawning a `chat-session` agent
+2. sending `start`
+3. sending one `message`
+4. sending `summary`
+
+So the repo now includes both:
+- the reusable session method
+- and a runnable startup demo that exercises it
+
+If you want, I can next walk through the **actual `.method` line by line**.

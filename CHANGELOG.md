@@ -1,5 +1,20 @@
 # AgeRun CHANGELOG
 
+## 2026-04-10 (Chat session walkthrough wording cleanup)
+
+- **Documentation wording cleanup for `chat-session`**
+
+  Refined the appended walkthrough in `methods/chat-session-1.0.0.md` to remove a chat-specific
+  lead-in sentence that felt out of place in standalone project documentation.
+
+  **Implementation**: Replaced the conversational opening `"Sure."` phrasing with direct
+  reference documentation wording while keeping the rest of the walkthrough intact.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: Keeps the method documentation suitable for future reference outside the original
+  chat context.
+
 ## 2026-04-10 (Chat session method and bootstrap demo)
 
 - **Chat/session backend example and bootstrap startup demo**
