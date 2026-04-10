@@ -1,5 +1,26 @@
 # AgeRun CHANGELOG
 
+## 2026-04-10 (Native /spec constitution for AgeRun)
+
+- **Ratified AgeRun-specific governance for the native pi `/spec` workflow**
+
+  Added the first concrete constitution in `.specify/memory/constitution.md` and aligned the
+  native spec workflow with AgeRun's established practices for knowledge-base consultation,
+  mandatory TDD, naming and ownership conventions, specification consistency, and evidence-based
+  validation.
+
+  **Implementation**: Replaced the placeholder constitution with AgeRun Constitution v1.0.0,
+  updated `.specify/templates/plan-template.md`, `.specify/templates/spec-template.md`,
+  `.specify/templates/tasks-template.md`, and `.specify/templates/checklist-template.md`,
+  refreshed `.specify/memory/pi-agent.md`, and updated `.specify/templates/commands/*.md` to use
+  native `/spec` wording and direct pi-agent context maintenance.
+
+  **Verification**: `make check-docs 2>&1` passed. `make check-commands` is referenced by
+  `AGENTS.md` but no corresponding Makefile target exists in this repository.
+
+  **Impact**: Future `/spec` runs now inherit AgeRun-specific governance and repository-aware
+  templates instead of generic scaffold placeholders.
+
 ## 2026-04-10 (CLI boot message for bootstrap demo)
 
 - **Queue `"__boot__"` automatically when the executable creates the bootstrap agent**
