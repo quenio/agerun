@@ -1,5 +1,23 @@
 # AgeRun CHANGELOG
 
+## 2026-04-11 (Command-line shell method ownership and `arsh` naming)
+
+- **Clarified that shell behavior is implemented by the built-in shell method and named the command `arsh`**
+
+  Refined the shell specification again so User Story 2, scope text, and the core functional
+  requirements now make it explicit that launch, send, and assignment capabilities are implemented
+  by the built-in shell method executed by the session's receiving agent. Also added the user-facing
+  command-name requirement that the shell starts through `arsh` (AgeRun SHell).
+
+  **Implementation**: Updated `specs/001-command-line-shell/spec.md` to align stories and scope with
+  FR-008/FR-009/FR-010/FR-010a, add a `Built-in Shell Method` entity, record the `arsh` command
+  name in clarifications and runtime contracts, and add requirement `FR-001a`.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The shell specification now names the public command and attributes shell semantics to
+  the built-in shell method consistently across requirements, stories, and scope.
+
 ## 2026-04-11 (Command-line shell syntax narrowed to core instructions)
 
 - **Restricted the shell’s interpreted one-line syntax to `spawn`, `send`, and assignment forms**
