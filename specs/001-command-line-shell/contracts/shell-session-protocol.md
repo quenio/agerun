@@ -3,7 +3,8 @@
 ## Purpose
 
 Define the runtime message contract between the session-specific shell delegate, the built-in
-`shell` method, and the shell session owned by the non-instantiable `ar_shell` module.
+`shell` method, the instantiable `ar_shell_session` module, and the shell session owned by the
+non-instantiable `ar_shell` module.
 
 ## 1. Delegate -> Receiving Agent
 
@@ -38,9 +39,9 @@ The built-in `shell` method:
 - interprets one shell input line at a time
 - supports the restricted instruction subset documented in [arsh-cli.md](./arsh-cli.md)
 - launches agents and sends runtime messages when requested
-- exchanges shell-session state with the shell session owned by `ar_shell` only through messages
+- exchanges shell-session state with `ar_shell_session` only through messages
 
-## 4. Built-in `shell` Method <-> Shell Session
+## 4. Built-in `shell` Method <-> `ar_shell_session`
 
 The exact implementation may evolve, but the protocol must support these logical operations:
 
@@ -76,13 +77,19 @@ request_id = <correlation value>
 reason = <string>
 ```
 
-## 5. Shell-mode assignment redirection
+## 5. `ar_shell_session` -> Shell Session owned by `ar_shell`
+
+- `ar_shell_session` mediates runtime access to shell session state held by `ar_shell`
+- `ar_shell_session` does not directly own or directly handle the shell session memory map
+- the shell session memory map remains owned by the shell session held by `ar_shell`
+
+## 6. Shell-mode assignment redirection
 
 In shell mode, `memory... := ...` syntax is preserved for the user, but the assigned value is stored
 in the shell session memory map owned by `ar_shell` rather than in the receiving agent's memory
-map.
+map, with `ar_shell_session` mediating the runtime-facing access path.
 
-## 6. Acknowledgement Stages
+## 7. Acknowledgement Stages
 
 ### Normal mode
 
@@ -95,13 +102,14 @@ Optional additional stages:
 - receiving agent accepted shell input for processing
 - runtime action succeeded or failed
 
-## 7. Shell session ownership
+## 8. Shell session ownership
 
 - the `arsh` entrypoint calls the non-instantiable `ar_shell` module
 - `ar_shell` creates and holds the shell session instance
+- `ar_shell_session` is instantiated for that shell session
 - the session-specific shell delegate is bound to that shell session instance
 
-## 8. Replies to the delegate
+## 9. Replies to the delegate
 
 Runtime replies sent back to the shell delegate must:
 - remain attributable to the correct sender

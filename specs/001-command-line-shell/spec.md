@@ -30,7 +30,10 @@
 
 - Q: Do we need a generic stdio delegate for this feature? → A: no; we need a session-specific shell delegate that owns one shell session's envelope wrapping/unwrapping responsibilities
 - Q: Which method should the shell session's receiving agent run? → A: the dedicated built-in `shell` method, not an `arsh` method
+- Q: Does the non-instantiable shell module replace the shell session module? → A: no; both are required
 - Q: Where should shell session creation and ownership live? → A: in a dedicated non-instantiable shell module used by the `arsh` entrypoint; that module creates and holds the shell session instance and keeps the entrypoint thin and unit-testable
+- Q: What remains the role of the shell session module? → A: it remains an instantiable runtime module that mediates shell-session interactions, but it does not replace the shell module
+- Q: Who should directly handle the session map? → A: the session map is owned by the shell session held by the shell module, not directly by the shell session module
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -89,8 +92,8 @@ a session value, and confirm the runtime accepts the requested operation.
 3. **Given** a shell session is connected to a receiving agent running the built-in shell method,
    **When** the user enters one line using `memory... := ...` assignment syntax, **Then** the shell
    method interprets that assignment as targeting the shell session memory map owned by the shell
-   module and the assigned value remains available for later shell-driven interactions through
-   message-based exchange.
+   module, accessed through the shell session module, and the assigned value remains available for
+   later shell-driven interactions through message-based exchange.
 
 ---
 
@@ -138,8 +141,8 @@ attribution.
   receiving agent
 - Supporting the built-in shell method interpreting one line at a time using a restricted subset of
   AgeRun instruction syntax for launching methods, sending runtime messages, and requesting storage
-  of session values in a shell session owned by a dedicated non-instantiable shell module with its
-  own memory map
+  of session values in a shell session owned by a dedicated non-instantiable shell module, with the
+  shell session module mediating runtime access to that session memory map
 - Displaying asynchronously returned messages sent back to the shell delegate
 - Clear error reporting, help, and clean shell exit behavior
 - Automatic cleanup of the session-specific receiving agent when the shell exits
@@ -193,13 +196,17 @@ attribution.
   store and later reuse session values.
 - **FR-010aa**: In shell mode, `memory... := ...` assignment lines MUST target the shell session
   memory map owned by the shell module rather than the receiving agent's memory map.
-- **FR-010b**: Assignment lines MUST store session values in a shell session owned by a dedicated
-  shell module, separate from the receiving agent and separate from the receiving agent's memory
-  map.
+- **FR-010b**: Assignment lines MUST store session values in shell session state owned by a
+  dedicated shell module, separate from the receiving agent and separate from the receiving agent's
+  memory map.
 - **FR-010c**: The system MUST provide a dedicated non-instantiable shell module that creates,
   holds, and cleans up shell session instances and their memory maps for shell session values.
-- **FR-010d**: Access between the shell module's held shell session and the built-in shell method
-  MUST occur via messages rather than shared internal state.
+- **FR-010ca**: The system MUST also provide an instantiable shell session module that mediates
+  runtime shell-session access for the built-in shell method.
+- **FR-010cb**: The shell session module MUST NOT directly own or directly handle the shell session
+  memory map; it MUST mediate access to shell session state held by the shell module.
+- **FR-010d**: Access between the shell session module and the built-in shell method MUST occur via
+  messages rather than shared internal state.
 - **FR-011**: In normal mode, the shell session MUST acknowledge whether a wrapped input interaction
   was successfully forwarded from the shell delegate to the receiving agent before any later reply
   arrives.
@@ -222,8 +229,8 @@ attribution.
 ### Key Entities *(include if feature involves data)*
 
 - **Shell Session**: The user’s interactive AgeRun terminal workspace, including the session-
-  specific shell delegate, its receiving agent connection, the shell module that owns it, displayed
-  replies, and shutdown lifecycle.
+  specific shell delegate, its receiving agent connection, the shell module that owns it, the shell
+  session module that mediates access to it, displayed replies, and shutdown lifecycle.
 - **Shell Input Envelope**: The structured map created by the shell delegate for each accepted line
   of terminal input. Initially it contains exactly one entry: `text`.
 - **Shell Session Delegate**: The session-specific delegate bound to one shell session. It wraps
@@ -236,12 +243,15 @@ attribution.
   that implements the shell's interpreted `spawn(...)`, `send(...)`, and assignment capabilities.
 - **Shell Module**: A dedicated non-instantiable `ar_shell` module that creates, holds, and cleans
   up shell session instances. It owns the shell session memory map used for shell assignment values
-  and exchanges information with the built-in shell method through messages.
+  and coordinates shell lifecycle outside the thin `arsh` entrypoint.
+- **Shell Session Module**: An instantiable runtime module for one shell session that mediates
+  shell-session operations for the built-in shell method through messages. It does not directly own
+  the shell session memory map.
 - **Minimal Shell Syntax**: A restricted subset of AgeRun instruction syntax interpreted one line
   at a time by the receiving agent. Allowed forms are limited to `spawn(...)`, `send(...)`,
   `memory... := spawn(...)`, `memory... := send(...)`, and assignment forms. In shell mode,
   assignment forms keep the existing `memory... := ...` syntax and target the shell session memory
-  map owned by the shell module.
+  map owned by the shell module through the shell session module.
 - **Runtime Reply**: A message explicitly sent back to the shell delegate session by a runtime
   component after an earlier shell-driven interaction.
 - **Shell Acknowledgement**: The shell-visible status reported for a wrapped input interaction.
@@ -269,8 +279,10 @@ attribution.
     by a separate shell module.
   - The shell module is non-instantiable at the runtime contract level and owns the shell session
     lifecycle plus its memory map.
-  - The shell module and the built-in shell method exchange shell state through messages rather
-    than shared internal state.
+  - The shell session module remains instantiable and mediates runtime access to the shell session
+    without directly handling the session map.
+  - The shell session module and the built-in shell method exchange shell state through messages
+    rather than shared internal state.
   - Replies intended for the shell session are delivered as messages to the shell delegate rather
     than being inferred from logs or agent memory.
   - The shell exposes at least one normal acknowledgement state for delegate-to-receiving-agent
@@ -291,8 +303,9 @@ attribution.
 - **Affected Runtime Contracts**: CLI behavior, the `arsh` command name, session-specific shell
   delegate messaging, shell input/output envelope handling, restricted one-line receiving-agent
   shell syntax, the built-in `shell` method contract, shell-mode `memory... := ...` redirection to
-  the shell session owned by the shell module, shell module behavior, receiving-agent
-  expectations, and reply display behavior for shell-directed interactions
+  shell session state owned by the shell module and mediated by the shell session module, shell
+  module behavior, shell session module behavior, receiving-agent expectations, and reply display
+  behavior for shell-directed interactions
 - **Compatibility Notes**: This feature is intended as an additive capability; existing non-shell
   runtime entry points should remain available unless explicitly replaced in a later specification
 

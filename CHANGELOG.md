@@ -1,5 +1,25 @@
 # AgeRun CHANGELOG
 
+## 2026-04-11 (Command-line shell dual-module replanning)
+
+- **Replanned the shell to keep both `ar_shell` and `ar_shell_session`**
+
+  Refined the native `/spec plan` artifacts again after clarifying that the non-instantiable shell
+  module does not replace the instantiable shell session module. The updated design now keeps both
+  modules: `ar_shell` owns shell session instances and memory maps, while `ar_shell_session`
+  mediates runtime access without directly handling the session map.
+
+  **Implementation**: Updated `specs/001-command-line-shell/spec.md`, `plan.md`, `research.md`,
+  `data-model.md`, `quickstart.md`, `contracts/README.md`, `contracts/arsh-cli.md`, and
+  `contracts/shell-session-protocol.md`, plus `.specify/memory/pi-agent.md`, to restore
+  `ar_shell_session` alongside `ar_shell` and document the final ownership split with
+  `ar_shell_delegate` and the built-in `shell` method.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The plan now reflects the intended dual-module architecture, but
+  `specs/001-command-line-shell/tasks.md` still needs regeneration before implementation.
+
 ## 2026-04-11 (Command-line shell module replanning)
 
 - **Replanned the shell around a non-instantiable `ar_shell` module**

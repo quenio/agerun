@@ -29,38 +29,51 @@
   - Hard-code shell commands in C only: rejected because it would bypass the method-level behavior
     contract required by the spec.
 
-## Decision 3: Add a non-instantiable `ar_shell` module that owns shell sessions
+## Decision 3: Add a non-instantiable `ar_shell` module that owns shell sessions without replacing `ar_shell_session`
 
 - **Decision**: Add a dedicated `ar_shell` module as a non-instantiable C module that creates,
   holds, and destroys shell session instances plus their memory maps. The `arsh` entrypoint calls
   into this module so the entrypoint stays thin and the actual shell lifecycle/orchestration logic
   can be unit tested directly.
-- **Rationale**: The user clarified that the feature needs not only the `shell` method but also a
-  testable shell module. Putting shell-session ownership in `ar_shell` isolates the design decision
-  most likely to change — shell startup/session orchestration — from both the CLI entrypoint and
-  the delegate transport layer.
+- **Rationale**: The feature needs an actual shell module in addition to the built-in `shell`
+  method and the instantiable `ar_shell_session` runtime module. Putting shell-session ownership in
+  `ar_shell` isolates shell startup/session orchestration from both the CLI entrypoint and the
+  delegate transport layer.
 - **Alternatives considered**:
-  - Keep an instantiable `ar_shell_session` module in the runtime plan: rejected because it makes
-    the `arsh` entrypoint responsible for more orchestration than necessary and hides testable shell
-    logic behind a less direct abstraction.
-  - Keep shell state in delegate-owned ad hoc structs: rejected because it blurs transport and
+  - Let `ar_shell_session` replace `ar_shell`: rejected because the feature still needs a thin
+    entrypoint and a directly unit-testable shell orchestration module.
+  - Keep shell state only in delegate-owned ad hoc structs: rejected because it blurs transport and
     shell-session lifecycle/state responsibilities.
 
-## Decision 4: Keep input/output envelope handling in the session delegate
+## Decision 4: Retain `ar_shell_session` as an instantiable runtime module, but do not let it directly handle the session map
+
+- **Decision**: Keep `ar_shell_session` as an instantiable runtime-facing module that mediates
+  shell-session operations for the built-in `shell` method through messages, while the actual shell
+  session memory map remains owned by the shell session held by `ar_shell`.
+- **Rationale**: This preserves the original requirement that a shell session module exists within
+  the runtime, while also honoring the clarified ownership boundary that the session map should not
+  be directly handled by the session module itself.
+- **Alternatives considered**:
+  - Remove `ar_shell_session`: rejected because the architecture still requires an instantiable
+    runtime shell-session boundary.
+  - Move the session map directly into `ar_shell_session`: rejected because the user explicitly
+    ruled out direct session-map handling in the session module.
+
+## Decision 5: Keep input/output envelope handling in the session delegate
 
 - **Decision**: The session-specific shell delegate wraps terminal input strings into input
   envelopes before forwarding them to the receiving agent and unwraps output envelopes received back
   from the runtime into displayed terminal strings with sender attribution.
 - **Rationale**: This preserves the transport-only boundary: the delegate manages shell I/O
-  packaging, while the receiving agent and shell method manage shell semantics. It also gives one
-  focused place to change display formatting or reply-envelope shape later.
+  packaging, while the receiving agent, shell method, and shell/session modules manage shell
+  semantics and state routing.
 - **Alternatives considered**:
   - Let the receiving agent print/read directly: rejected because it conflicts with delegate-
     mediated I/O and system-managed message flow.
-  - Have `ar_shell` perform terminal I/O directly without a delegate boundary: rejected because it
-    would mix shell-session lifecycle ownership with transport responsibilities.
+  - Have `ar_shell` or `ar_shell_session` perform terminal I/O directly: rejected because it would
+    mix shell-session lifecycle/state ownership with transport responsibilities.
 
-## Decision 5: Restrict shell input to a canonical one-line AgeRun subset
+## Decision 6: Restrict shell input to a canonical one-line AgeRun subset
 
 - **Decision**: Support a bounded one-line syntax subset: `spawn(...)`, `send(...)`,
   `memory... := ...`, `memory... := spawn(...)`, and `memory... := send(...)`.
@@ -73,32 +86,33 @@
   - Support the full AgeRun instruction grammar immediately: rejected as too broad for a first
     shell release and harder to validate.
 
-## Decision 6: Redirect shell-mode `memory... := ...` to shell session state, not agent memory
+## Decision 7: Redirect shell-mode `memory... := ...` to shell session state owned by `ar_shell`, mediated by `ar_shell_session`
 
 - **Decision**: In shell mode, `memory... := ...` writes to the shell session memory map owned by
-  `ar_shell` rather than the receiving agent's memory map.
-- **Rationale**: This preserves syntax consistency with method definitions while honoring the
-  encapsulation requirement. It also keeps shell session variables stable across multiple shell
-  interactions without overloading the receiving agent's own runtime memory.
+  `ar_shell` rather than the receiving agent's memory map, while `ar_shell_session` mediates the
+  runtime-facing access path.
+- **Rationale**: This preserves syntax consistency with method definitions while honoring both the
+  encapsulation requirement and the clarified boundary that the session module does not directly
+  handle the map itself.
 - **Alternatives considered**:
   - Add a new root like `session... := ...`: rejected because the spec deliberately reuses existing
     `memory... := ...` syntax.
-  - Delay assignment support: rejected because the shell would be too limited to use.
+  - Let `ar_shell_session` own the map directly: rejected by the clarified requirement.
 
-## Decision 7: Keep shell/session coordination message-based via a shell session protocol
+## Decision 8: Keep shell/session coordination message-based via a shell session protocol
 
-- **Decision**: Define a message protocol between the `shell` method, the shell session owned by
-  `ar_shell`, and the session-specific delegate for value lookup, assignment, acknowledgement, and
-  reply-envelope flow. Capture that contract in
+- **Decision**: Define a message protocol between the `shell` method, `ar_shell_session`, the shell
+  session owned by `ar_shell`, and the session-specific delegate for value lookup, assignment,
+  acknowledgement, and reply-envelope flow. Capture that contract in
   [`contracts/shell-session-protocol.md`](./contracts/shell-session-protocol.md).
-- **Rationale**: The spec requires the shell-side state and built-in shell method to exchange
+- **Rationale**: The spec requires shell-side state and the built-in shell method to exchange
   information via messages rather than hidden shared state. A documented protocol keeps the
   boundary explicit and testable and makes the delegate's wrap/unwrap role clear.
 - **Alternatives considered**:
-  - Share direct pointers or mutable references between the method runtime, shell module, and
-    delegate: rejected because it violates the clarified encapsulation boundary.
+  - Share direct pointers or mutable references between the method runtime, shell module, session
+    module, and delegate: rejected because it violates the clarified encapsulation boundary.
 
-## Decision 8: Add `arsh` without removing the existing executable behavior
+## Decision 9: Add `arsh` without removing the existing executable behavior
 
 - **Decision**: Extend the executable/build path so `arsh` becomes the user-facing shell command
   while keeping the current demo-oriented executable flow available.
