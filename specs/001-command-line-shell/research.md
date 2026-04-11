@@ -1,88 +1,105 @@
 # Research: Command-Line Shell
 
-## Decision 1: Use a dedicated stdio delegate module for terminal transport
+## Decision 1: Use a session-specific shell delegate, not a generic stdio delegate
 
-- **Decision**: Add a new `ar_stdio_delegate` module that owns stdin/stdout interaction and wraps
-  each accepted input line into the required envelope map (`text = input string`).
-- **Rationale**: This follows separation of concerns and keeps terminal transport independent from
-  shell semantics. It also fits AgeRun's delegate architecture, where external I/O is mediated
-  through delegates instead of direct agent console access.
+- **Decision**: Add a new `ar_shell_delegate` module that is created per shell session, owns that
+  session's stdin/stdout transport, wraps each accepted input string into the required envelope map
+  (`text = input string`), unwraps returned output envelopes back into terminal strings, and holds
+  the receiving-agent target for the session.
+- **Rationale**: This follows separation of concerns without introducing a reusable generic stdio
+  abstraction the feature does not need. The design decision most likely to change here is the
+  shell-session transport contract, not generic terminal I/O across the whole system.
 - **Alternatives considered**:
-  - Put stdin/stdout logic directly into `ar_executable.c` only: simpler initially, but mixes CLI
-    transport with shell workflow logic.
-  - Let the receiving agent print/read directly: conflicts with delegate-mediated I/O.
+  - Add a generic `ar_stdio_delegate` module: rejected because the user clarified the feature needs
+    shell-session-specific behavior, not a broad stdio abstraction.
+  - Put stdin/stdout logic directly into `ar_executable.c`: rejected because it would mix transport,
+    shell-session lifecycle, and startup orchestration.
 
-## Decision 2: Model shell session state as its own instantiable module
+## Decision 2: Keep shell behavior in a built-in `shell` method executed by a receiving agent
 
-- **Decision**: Add a new `ar_shell_session` module with an opaque instance and its own memory map.
-  It is session-scoped, separate from the receiving agent's memory, and exchanges data with the
-  shell method only through messages.
-- **Rationale**: The specification now requires shell-session values to live outside the receiving
-  agent for encapsulation. A dedicated module localizes shell state, keeps the receiving agent's
-  memory free of shell-session storage, and supports future changes to session persistence or state
-  inspection without changing delegate transport.
+- **Decision**: Create a new built-in method file `methods/shell-1.0.0.method` and a dedicated
+  receiving agent that starts from it automatically when `arsh` starts.
+- **Rationale**: The specification attributes launch, send, and assignment capabilities to the
+  built-in shell method. Keeping behavior in a real method preserves AgeRun's message-driven model,
+  avoids delegate-side shell semantics, and makes the shell behavior testable and documentable like
+  other methods.
+- **Alternatives considered**:
+  - Create a built-in `arsh` method: rejected because `arsh` is the executable command name, while
+    the user clarified that the receiving agent should run the `shell` method.
+  - Hard-code shell commands in C only: rejected because it would bypass the method-level behavior
+    contract required by the spec.
+
+## Decision 3: Model shell session state as an instantiable shell module that creates and holds the session instance
+
+- **Decision**: Keep a dedicated `ar_shell_session` module with an opaque instance and its own
+  memory map, and have the `arsh` startup path instantiate it so the module creates and holds the
+  shell session instance.
+- **Rationale**: The user clarified that the shell session should be created and owned by a shell
+  instantiable module rather than by an ad hoc delegate structure. This localizes shell-session
+  lifecycle and state decisions in one place while keeping the receiving agent's memory separate.
 - **Alternatives considered**:
   - Store shell variables in the receiving agent's memory: rejected by the spec and user feedback.
   - Keep shell state in delegate-owned ad hoc structs: rejected because it blurs transport and
-    session-state responsibilities.
+    shell-session lifecycle/state responsibilities.
 
-## Decision 3: Implement shell behavior in a built-in `arsh` method executed by a receiving agent
+## Decision 4: Keep input/output envelope handling in the session delegate
 
-- **Decision**: Create a new built-in method file `methods/arsh-1.0.0.method` and a dedicated
-  receiving agent that starts from it automatically when `arsh` starts.
-- **Rationale**: The spec explicitly attributes launch/send/assignment capabilities to the built-in
-  shell method. Keeping behavior in a method preserves AgeRun's message-driven model and provides a
-  real method contract that can be tested and documented like other runtime methods.
+- **Decision**: The session-specific shell delegate wraps terminal input strings into input
+  envelopes before forwarding them to the receiving agent and unwraps output envelopes received back
+  from the runtime into displayed terminal strings with sender attribution.
+- **Rationale**: This preserves the transport-only boundary: the delegate manages shell I/O
+  packaging, while the receiving agent and shell method manage shell semantics. It also gives one
+  focused place to change display formatting or reply-envelope shape later.
 - **Alternatives considered**:
-  - Hard-code shell commands in C only: rejected because it would bypass the method-level behavior
-    contract now required by the spec.
-  - Reuse `bootstrap` or `chat-session`: rejected because shell behavior is a distinct concern.
+  - Let the receiving agent print/read directly: rejected because it conflicts with delegate-
+    mediated I/O and system-managed message flow.
+  - Have the shell session module perform terminal I/O directly: rejected because it would mix
+    lifecycle/state ownership with transport responsibilities.
 
-## Decision 4: Restrict shell input to a canonical one-line AgeRun subset
+## Decision 5: Restrict shell input to a canonical one-line AgeRun subset
 
 - **Decision**: Support a bounded one-line syntax subset: `spawn(...)`, `send(...)`,
   `memory... := ...`, `memory... := spawn(...)`, and `memory... := send(...)`.
-- **Rationale**: This satisfies the spec while staying implementable within AgeRun's existing method
-  language constraints. The subset is intentionally narrow and avoids inventing a broader shell
-  language. Because function calls cannot be nested and map literals are not supported, the shell
-  method and session module will need multi-step internal message exchanges for some cases, but the
-  user-facing syntax remains small and stable.
+- **Rationale**: This satisfies the spec while staying implementable within AgeRun's existing
+  method-language constraints. The subset is intentionally narrow and avoids inventing a broader
+  shell language.
 - **Alternatives considered**:
-  - Invent a separate shell-only command language: rejected because the clarified spec now prefers
+  - Invent a separate shell-only command language: rejected because the clarified spec prefers
     existing AgeRun instruction syntax.
   - Support the full AgeRun instruction grammar immediately: rejected as too broad for a first
     shell release and harder to validate.
 
-## Decision 5: Redirect shell-mode `memory... := ...` to shell session state, not agent memory
+## Decision 6: Redirect shell-mode `memory... := ...` to shell session state, not agent memory
 
 - **Decision**: In shell mode, `memory... := ...` writes to the `ar_shell_session` memory map rather
   than the receiving agent's memory map.
-- **Rationale**: This preserves syntax consistency with method definitions while still honoring the
+- **Rationale**: This preserves syntax consistency with method definitions while honoring the
   encapsulation requirement. It also keeps shell session variables stable across multiple shell
-  interactions without exposing or overloading the receiving agent's own runtime memory.
+  interactions without overloading the receiving agent's own runtime memory.
 - **Alternatives considered**:
-  - Add a new root like `session... := ...`: rejected because the current spec deliberately reuses
-    existing `memory... := ...` syntax.
+  - Add a new root like `session... := ...`: rejected because the spec deliberately reuses existing
+    `memory... := ...` syntax.
   - Delay assignment support: rejected because the shell would be too limited to use.
 
-## Decision 6: Keep shell/session coordination message-based via a shell session protocol
+## Decision 7: Keep shell/session coordination message-based via a shell session protocol
 
-- **Decision**: Define a message protocol between the shell method and `ar_shell_session` for value
-  lookup, assignment, acknowledgement, and reply routing. Capture this in
-  [`contracts/shell-session-protocol.md`](./contracts/shell-session-protocol.md).
+- **Decision**: Define a message protocol between the `shell` method, `ar_shell_session`, and the
+  session-specific delegate for value lookup, assignment, acknowledgement, and reply-envelope flow.
+  Capture the shell/session contract in [`contracts/shell-session-protocol.md`](./contracts/shell-session-protocol.md).
 - **Rationale**: The spec requires the shell session module and built-in shell method to exchange
-  information only via messages. A documented protocol keeps that boundary explicit and testable.
+  information only via messages. A documented protocol keeps the boundary explicit and testable and
+  makes the delegate's wrap/unwrap role clear.
 - **Alternatives considered**:
-  - Share direct pointers or mutable references between the method runtime and session module:
-    rejected because it violates the clarified encapsulation boundary.
+  - Share direct pointers or mutable references between the method runtime, session module, and
+    delegate: rejected because it violates the clarified encapsulation boundary.
 
-## Decision 7: Add `arsh` without removing the existing executable behavior
+## Decision 8: Add `arsh` without removing the existing executable behavior
 
 - **Decision**: Extend the executable/build path so `arsh` becomes the user-facing shell command
   while keeping the current demo-oriented executable flow available.
-- **Rationale**: The spec now fixes the public command name to `arsh`, but the repository already
-  has useful demo behavior in `ar_executable`. Preserving that path reduces regression risk and
-  keeps shell work additive.
+- **Rationale**: The spec fixes the public command name to `arsh`, but the repository already has
+  useful demo behavior in `ar_executable`. Preserving that path reduces regression risk and keeps
+  shell work additive.
 - **Alternatives considered**:
   - Replace the existing executable entirely with shell behavior: rejected because the spec only
     requires an additive command.

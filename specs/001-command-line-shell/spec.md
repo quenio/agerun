@@ -9,21 +9,28 @@
 
 ### Session 2026-04-10
 
-- Q: How should replies be routed back to the shell? → A: stdio shell delegate
+- Q: How should replies be routed back to the shell? → A: a session-specific shell delegate over stdio
 - Q: Should shell transport and shell interpretation be coupled? → A: no; the delegate transports input/output and the receiving agent interprets messages
 - Q: How should the shell handle replies that do not arrive immediately? → A: report delivery first and display replies asynchronously
 - Q: Should the shell delegate enforce a special input syntax? → A: no; input is just text and interpretation belongs to the receiving agent
 - Q: How should the shell delegate package stdin input? → A: always wrap it in a structured envelope map that initially contains exactly one key-value pair: `text = input string`
+- Q: How should shell output be surfaced? → A: the session-specific shell delegate unwraps returned envelope maps into terminal output strings and sender attribution
 - Q: How is the receiving agent established for a shell session? → A: the shell session automatically creates a dedicated receiving agent at startup
-- Q: What should the automatically created receiving agent start from? → A: one dedicated built-in shell method
+- Q: What should the automatically created receiving agent start from? → A: one dedicated built-in `shell` method
 - Q: What should delivery acknowledgement mean in the shell? → A: in normal mode it means delegate-to-receiving-agent handoff succeeded; in verbose mode the shell may also surface receiving-agent acceptance and requested runtime action outcome
 - Q: What should happen to the dedicated receiving agent when the shell exits? → A: destroy it automatically when the shell session ends
 - Q: Does the shell need a minimal interpreted syntax? → A: yes; the receiving agent must interpret exactly one input line at a time as a restricted subset of AgeRun instruction syntax: `spawn(...)`, `send(...)`, or assignment
-- Q: Where are launch, send, and assignment capabilities implemented? → A: in the built-in shell method executed by the session's receiving agent
+- Q: Where are launch, send, and assignment capabilities implemented? → A: in the built-in `shell` method executed by the session's receiving agent
 - Q: What is the user-facing shell command name? → A: `arsh` (AgeRun SHell)
 - Q: Where should assignment lines store shell session values? → A: in a shell session module that is instantiable within the system, contains its own memory map, and exchanges information with the shell method only via messages
 - Q: How should assignment syntax refer to the shell session module's memory map? → A: keep existing `memory... := ...` syntax; in shell mode it targets the shell session module's memory map
 - Q: Should assigned function-call forms be allowed in shell mode? → A: yes; forms such as `memory.x := spawn(...)` and `memory.ok := send(...)` are necessary and allowed
+
+### Session 2026-04-11
+
+- Q: Do we need a generic stdio delegate for this feature? → A: no; we need a session-specific shell delegate that owns one shell session's envelope wrapping/unwrapping responsibilities
+- Q: Which method should the shell session's receiving agent run? → A: the dedicated built-in `shell` method, not an `arsh` method
+- Q: Where should shell session creation and ownership live? → A: in an instantiable shell module created by the `arsh` executable path; that module creates and holds the shell session instance
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -122,7 +129,7 @@ attribution.
 
 ### In Scope
 
-- An interactive AgeRun stdio shell delegate mode exposed through the `arsh` command
+- An interactive AgeRun shell mode exposed through the `arsh` command, using a session-specific shell delegate over stdio
 - Wrapping each line of terminal input into a structured message envelope
 - Automatically creating a dedicated receiving agent for each shell session from one built-in shell
   method
@@ -150,8 +157,8 @@ attribution.
 
 ### Functional Requirements
 
-- **FR-001**: The system MUST provide an interactive AgeRun stdio shell delegate mode that stays
-  open for repeated input until the user explicitly exits.
+- **FR-001**: The system MUST provide an interactive AgeRun shell mode using a session-specific
+  shell delegate over stdio that stays open for repeated input until the user explicitly exits.
 - **FR-001a**: The user-facing command that starts this shell mode MUST be named `arsh`.
 - **FR-002**: For each accepted line of terminal input, the shell delegate MUST create a structured
   envelope map before forwarding the input into the runtime.
@@ -162,9 +169,9 @@ attribution.
 - **FR-005**: When a shell session starts, the runtime MUST automatically create a dedicated
   receiving agent for that session.
 - **FR-005a**: The automatically created receiving agent MUST start from one dedicated built-in
-  shell method.
-- **FR-006**: The shell delegate MUST forward each wrapped input envelope to that session's
-  receiving agent in the runtime.
+  `shell` method.
+- **FR-006**: The session-specific shell delegate MUST hold that session's receiving-agent target
+  and MUST forward each wrapped input envelope to it in the runtime.
 - **FR-007**: The shell workflow MUST interpret exactly one input line at a time using a
   restricted subset of existing AgeRun instruction syntax.
 - **FR-007a**: The allowed interpreted line forms MUST be limited to `spawn(...)`, `send(...)`,
@@ -199,6 +206,8 @@ attribution.
   succeeded or failed.
 - **FR-012**: The shell MUST display messages explicitly returned to the shell delegate session and
   identify the sending runtime component for each displayed reply.
+- **FR-012a**: The session-specific shell delegate MUST unwrap returned output envelope maps into
+  terminal output strings while preserving sender attribution for display.
 - **FR-013**: The shell MUST display returned replies asynchronously if they arrive after later user
   input has already been accepted.
 - **FR-014**: The shell MUST keep the session alive after forwarding failures, interpretation
@@ -210,16 +219,19 @@ attribution.
 
 ### Key Entities *(include if feature involves data)*
 
-- **Shell Session**: The user’s interactive AgeRun terminal workspace, including the stdio shell
-  delegate, its receiving agent connection, its shell session module, displayed replies, and
-  shutdown lifecycle.
+- **Shell Session**: The user’s interactive AgeRun terminal workspace, including the session-
+  specific shell delegate, its receiving agent connection, its shell session module, displayed
+  replies, and shutdown lifecycle.
 - **Shell Input Envelope**: The structured map created by the shell delegate for each accepted line
   of terminal input. Initially it contains exactly one entry: `text`.
-- **Receiving Agent**: The dedicated runtime agent created automatically from the built-in shell
+- **Shell Session Delegate**: The session-specific delegate bound to one shell session. It wraps
+  terminal input strings into envelope maps, unwraps returned output envelopes back into terminal
+  strings, and holds the configured receiving-agent target for that session.
+- **Receiving Agent**: The dedicated runtime agent created automatically from the built-in `shell`
   method for one shell session that receives shell input envelopes and executes the shell method's
   interpretation behavior.
-- **Built-in Shell Method**: The method executed by the session's receiving agent that implements
-  the shell's interpreted `spawn(...)`, `send(...)`, and assignment capabilities.
+- **Built-in Shell Method**: The built-in `shell` method executed by the session's receiving agent
+  that implements the shell's interpreted `spawn(...)`, `send(...)`, and assignment capabilities.
 - **Shell Session Module**: An instantiable system module for one shell session that contains its
   own memory map for shell assignment values and exchanges information with the built-in shell
   method through messages.
@@ -237,9 +249,9 @@ attribution.
 ## Assumptions & Dependencies *(mandatory)*
 
 - **Assumptions**:
-  - The shell delegate is responsible for stdio transport and envelope construction, not shell
-    semantics.
-  - The receiving agent executes the built-in shell method, which decides what a wrapped shell
+  - The session-specific shell delegate is responsible for stdio transport plus envelope
+    wrap/unwrap, not shell semantics.
+  - The receiving agent executes the built-in `shell` method, which decides what a wrapped shell
     input message means.
   - The shell remains unusable without a minimal receiving-agent syntax for launch, send, and value
     storage.
@@ -273,11 +285,11 @@ attribution.
 
 - **Affected Documentation**: README.md, SPEC.md, executable/runtime documentation, `arsh` usage
   walkthroughs, and any shell guidance added for AgeRun users
-- **Affected Runtime Contracts**: CLI behavior, the `arsh` command name, stdio shell delegate
-  messaging, shell input envelope shape, restricted one-line receiving-agent shell syntax,
-  shell-mode `memory... := ...` redirection to the shell session module, shell session module
-  behavior, receiving-agent expectations, and reply display behavior for shell-directed
-  interactions
+- **Affected Runtime Contracts**: CLI behavior, the `arsh` command name, session-specific shell
+  delegate messaging, shell input/output envelope handling, restricted one-line receiving-agent
+  shell syntax, the built-in `shell` method contract, shell-mode `memory... := ...` redirection to
+  the shell session module, shell session module behavior, receiving-agent expectations, and reply
+  display behavior for shell-directed interactions
 - **Compatibility Notes**: This feature is intended as an additive capability; existing non-shell
   runtime entry points should remain available unless explicitly replaced in a later specification
 

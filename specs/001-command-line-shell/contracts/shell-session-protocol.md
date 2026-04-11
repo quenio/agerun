@@ -2,8 +2,8 @@
 
 ## Purpose
 
-Define the runtime message contract between the stdio shell delegate, the built-in shell method,
-and the shell session module.
+Define the runtime message contract between the session-specific shell delegate, the built-in
+`shell` method, and the shell session module.
 
 ## 1. Delegate -> Receiving Agent
 
@@ -15,17 +15,32 @@ For each accepted line of stdin input, the delegate forwards a map with exactly 
 text = <input string>
 ```
 
-The delegate does not interpret the shell syntax beyond creating this envelope.
+The delegate does not interpret the shell syntax beyond creating this envelope and targeting the
+configured receiving agent for the session.
 
-## 2. Built-in Shell Method Responsibilities
+## 2. Receiving Agent / Runtime -> Delegate
 
-The built-in shell method:
+### Output envelope
+
+Replies intended for shell display are returned toward the delegate as an envelope map carrying at
+least these logical fields:
+
+```text
+text = <display string>
+sender_id = <runtime sender identifier>
+```
+
+The delegate unwraps this envelope into terminal output and sender attribution.
+
+## 3. Built-in `shell` Method Responsibilities
+
+The built-in `shell` method:
 - interprets one shell input line at a time
 - supports the restricted instruction subset documented in [arsh-cli.md](./arsh-cli.md)
 - launches agents and sends runtime messages when requested
 - exchanges shell-session state with the shell session module only through messages
 
-## 3. Built-in Shell Method <-> Shell Session Module
+## 4. Built-in `shell` Method <-> Shell Session Module
 
 The exact implementation may evolve, but the protocol must support these logical operations:
 
@@ -61,12 +76,12 @@ request_id = <correlation value>
 reason = <string>
 ```
 
-## 4. Shell-mode assignment redirection
+## 5. Shell-mode assignment redirection
 
 In shell mode, `memory... := ...` syntax is preserved for the user, but the assigned value is stored
 in the shell session module's memory map rather than in the receiving agent's memory map.
 
-## 5. Acknowledgement Stages
+## 6. Acknowledgement Stages
 
 ### Normal mode
 
@@ -79,9 +94,15 @@ Optional additional stages:
 - receiving agent accepted shell input for processing
 - runtime action succeeded or failed
 
-## 6. Replies to the delegate
+## 7. Shell session ownership
+
+- the `arsh` startup path instantiates the shell session module
+- the shell session module creates and holds the shell session instance
+- the session-specific shell delegate is bound to that shell session instance
+
+## 8. Replies to the delegate
 
 Runtime replies sent back to the shell delegate must:
 - remain attributable to the correct sender
-- be displayable asynchronously
+- be displayable asynchronously after delegate unwrapping
 - not corrupt the active shell session when delayed

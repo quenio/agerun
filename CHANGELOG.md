@@ -1,5 +1,25 @@
 # AgeRun CHANGELOG
 
+## 2026-04-11 (Command-line shell plan refinement)
+
+- **Replanned the shell around a session-specific delegate and built-in `shell` method**
+
+  Refined the native `/spec plan` artifacts after clarifying that this feature does not need a
+  generic stdio delegate. The updated design now uses a session-specific shell delegate, a built-in
+  `shell` method for the receiving agent, and a shell session module instantiated by the `arsh`
+  startup path.
+
+  **Implementation**: Updated `specs/001-command-line-shell/spec.md`, `plan.md`, `research.md`,
+  `data-model.md`, `quickstart.md`, `contracts/arsh-cli.md`, and
+  `contracts/shell-session-protocol.md`, plus `.specify/memory/pi-agent.md`, to replace
+  `ar_stdio_delegate`/`arsh-1.0.0.method` planning with `ar_shell_delegate`/`shell-1.0.0.method`
+  planning and explicit input/output envelope wrap/unwrap responsibilities.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The plan now matches the clarified architecture, but `specs/001-command-line-shell/tasks.md`
+  should be regenerated before implementation so it aligns with the revised plan.
+
 ## 2026-04-11 (Command-line shell task breakdown)
 
 - **Generated the native `/spec tasks` plan for `001-command-line-shell`**
