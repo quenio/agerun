@@ -1,5 +1,23 @@
 # AgeRun CHANGELOG
 
+## 2026-04-11 (Command-line shell task breakdown)
+
+- **Generated the native `/spec tasks` plan for `001-command-line-shell`**
+
+  Created a dependency-ordered `tasks.md` for the command-line shell feature so implementation can
+  proceed story by story with explicit RED-phase validation, file targets, and final repository
+  quality gates.
+
+  **Implementation**: Added `specs/001-command-line-shell/tasks.md` with Setup, Foundational,
+  User Story 1-3, and Polish phases covering `arsh` startup, stdio delegate transport, shell
+  session storage, built-in shell method behavior, asynchronous replies, documentation sync, and
+  validation commands.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: The feature now has an executable native `/spec implement` task list organized by
+  independently testable user stories.
+
 ## 2026-04-11 (Command-line shell implementation planning artifacts)
 
 - **Planned the `arsh` shell architecture and created Phase 0/1 feature design artifacts**
