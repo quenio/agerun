@@ -1,5 +1,25 @@
 # AgeRun CHANGELOG
 
+## 2026-04-11 (Command-line shell session module and assigned call clarifications)
+
+- **Clarified shell-session storage ownership and allowed assigned `spawn`/`send` forms**
+
+  Refined the shell specification so assignment values now belong to an instantiable shell session
+  module with its own memory map rather than the receiving agent's memory, while preserving
+  message-based exchange between the shell session module and the built-in shell method. Also
+  clarified that shell mode keeps `memory... := ...` syntax and explicitly allows assigned
+  function-call forms such as `memory.x := spawn(...)` and `memory.ok := send(...)`.
+
+  **Implementation**: Updated `specs/001-command-line-shell/spec.md` to add shell session module
+  requirements and entities, redirect shell-mode `memory... := ...` to the session module's memory
+  map, and expand the restricted one-line syntax to include assigned `spawn(...)` and `send(...)`
+  forms.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The shell specification now has a clearer state-ownership model and a more usable yet
+  still bounded interactive instruction surface.
+
 ## 2026-04-11 (Command-line shell method ownership and `arsh` naming)
 
 - **Clarified that shell behavior is implemented by the built-in shell method and named the command `arsh`**
