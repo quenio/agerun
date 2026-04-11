@@ -18,6 +18,7 @@
 - Q: What should the automatically created receiving agent start from? → A: one dedicated built-in shell method
 - Q: What should delivery acknowledgement mean in the shell? → A: in normal mode it means delegate-to-receiving-agent handoff succeeded; in verbose mode the shell may also surface receiving-agent acceptance and requested runtime action outcome
 - Q: What should happen to the dedicated receiving agent when the shell exits? → A: destroy it automatically when the shell session ends
+- Q: Does the shell need a minimal interpreted syntax? → A: yes; the receiving agent must interpret exactly one input line at a time as a restricted subset of AgeRun instruction syntax: `spawn(...)`, `send(...)`, or assignment
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -49,26 +50,30 @@ the session open.
 
 ### User Story 2 - Use a Receiving Agent to Launch and Message Agents (Priority: P2)
 
-A user uses the shell together with a receiving agent that interprets shell-delivered messages so
-methods can be launched, runtime agents can be messaged, and AgeRun behavior can be explored
+A user uses the shell together with a receiving agent that interprets shell-delivered messages one
+line at a time through a restricted subset of AgeRun instruction syntax so methods can be launched,
+runtime agents can be messaged, session values can be stored, and AgeRun behavior can be explored
 interactively.
 
 **Why this priority**: The feature is valuable because users want to launch methods and send
 messages through an interactive terminal workflow.
 
-**Independent Test**: Start the shell with a receiving agent that understands shell-delivered input,
-enter text that causes that agent to launch a runtime agent or send a message, and confirm the
-runtime accepts the requested operation.
+**Independent Test**: Start the shell with a receiving agent that understands the restricted shell
+instruction subset, enter one line that causes that agent to launch a runtime agent, send a
+message, or store a session value, and confirm the runtime accepts the requested operation.
 
 **Acceptance Scenarios**:
 
-1. **Given** a shell session is connected to a receiving agent that can launch methods, **When**
-   the user enters text that the receiving agent interprets as a launch request, **Then** the
+1. **Given** a shell session is connected to a receiving agent that supports the restricted shell
+   instruction subset, **When** the user enters one line interpreted as `spawn(...)`, **Then** the
    runtime launches the requested agent and the shell session remains usable.
-2. **Given** a shell session is connected to a receiving agent that can send runtime messages,
-   **When** the user enters text that the receiving agent interprets as a message request, **Then**
-   the runtime accepts or rejects that requested delivery and the result is surfaced back to the
-   shell session, with additional status detail available in verbose mode.
+2. **Given** a shell session is connected to a receiving agent that supports the restricted shell
+   instruction subset, **When** the user enters one line interpreted as `send(...)`, **Then** the
+   runtime accepts or rejects that requested delivery and the result is surfaced back to the shell
+   session, with additional status detail available in verbose mode.
+3. **Given** a shell session is connected to a receiving agent that supports the restricted shell
+   instruction subset, **When** the user enters one line interpreted as an assignment, **Then** the
+   assigned session value remains available for later shell-driven interactions.
 
 ---
 
@@ -113,14 +118,16 @@ attribution.
   method
 - Forwarding that envelope to that receiving agent inside the AgeRun runtime
 - Leaving interpretation of the wrapped input to the receiving agent
-- Supporting receiving agents that can launch methods and send runtime messages
+- Supporting receiving agents that interpret one line at a time using a restricted subset of
+  AgeRun instruction syntax for launching methods, sending runtime messages, and storing session
+  values
 - Displaying asynchronously returned messages sent back to the shell delegate
 - Clear error reporting, help, and clean shell exit behavior
 - Automatic cleanup of the session-specific receiving agent when the shell exits
 
 ### Out of Scope
 
-- A shell-only command language enforced by the delegate
+- A rich or arbitrary shell language enforced by the delegate
 - Delegate-side parsing of shell semantics beyond envelope construction
 - Mutating a shell agent method definition as the core shell behavior
 - Remote multi-user shell access over the network
@@ -146,14 +153,20 @@ attribution.
   shell method.
 - **FR-006**: The shell delegate MUST forward each wrapped input envelope to that session's
   receiving agent in the runtime.
-- **FR-007**: The shell delegate MUST NOT require or enforce a shell-specific command syntax beyond
-  accepting text input and wrapping it in the required envelope.
+- **FR-007**: The shell workflow MUST interpret exactly one input line at a time using a
+  restricted subset of existing AgeRun instruction syntax.
+- **FR-007a**: The allowed interpreted line forms MUST be limited to `spawn(...)`, `send(...)`, and
+  assignment forms.
+- **FR-007b**: The shell delegate MUST NOT interpret that restricted syntax beyond transporting text
+  and wrapping it in the required envelope.
 - **FR-008**: Interpretation of shell-delivered input MUST be the responsibility of the receiving
   agent, not the shell delegate.
 - **FR-009**: The shell workflow MUST support receiving agents that can launch runtime agents from
   available methods.
 - **FR-010**: The shell workflow MUST support receiving agents that can cause messages to be sent to
   runtime agents.
+- **FR-010a**: The shell workflow MUST support receiving agents that can store and later reuse
+  session values created through that minimal syntax.
 - **FR-011**: In normal mode, the shell session MUST acknowledge whether a wrapped input interaction
   was successfully forwarded from the shell delegate to the receiving agent before any later reply
   arrives.
@@ -180,6 +193,9 @@ attribution.
 - **Receiving Agent**: The dedicated runtime agent created automatically from the built-in shell
   method for one shell session that receives shell input envelopes and decides how to interpret
   them.
+- **Minimal Shell Syntax**: A restricted subset of AgeRun instruction syntax interpreted one line
+  at a time by the receiving agent. Allowed forms are limited to `spawn(...)`, `send(...)`, and
+  assignment forms.
 - **Runtime Reply**: A message explicitly sent back to the shell delegate session by a runtime
   component after an earlier shell-driven interaction.
 - **Shell Acknowledgement**: The shell-visible status reported for a wrapped input interaction.
@@ -192,8 +208,12 @@ attribution.
   - The shell delegate is responsible for stdio transport and envelope construction, not shell
     semantics.
   - The receiving agent is responsible for deciding what a wrapped shell input message means.
-  - Launching methods and sending runtime messages happen because of receiving-agent behavior, not
-    because the delegate understands launch or send syntax directly.
+  - The shell remains unusable without a minimal receiving-agent syntax for launch, send, and value
+    storage.
+  - The receiving agent interprets exactly one input line at a time using only the restricted shell
+    instruction subset.
+  - Launching methods, sending runtime messages, and storing session values happen because of
+    receiving-agent behavior, not because the delegate understands that syntax directly.
   - Replies intended for the shell session are delivered as messages to the shell delegate rather
     than being inferred from logs or agent memory.
   - The shell exposes at least one normal acknowledgement state for delegate-to-receiving-agent
@@ -212,7 +232,8 @@ attribution.
 - **Affected Documentation**: README.md, SPEC.md, executable/runtime documentation, and any shell
   usage walkthroughs added for AgeRun users
 - **Affected Runtime Contracts**: CLI behavior, stdio shell delegate messaging, shell input envelope
-  shape, receiving-agent expectations, and reply display behavior for shell-directed interactions
+  shape, restricted one-line receiving-agent shell syntax, receiving-agent expectations, and reply
+  display behavior for shell-directed interactions
 - **Compatibility Notes**: This feature is intended as an additive capability; existing non-shell
   runtime entry points should remain available unless explicitly replaced in a later specification
 

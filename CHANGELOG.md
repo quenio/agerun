@@ -1,5 +1,22 @@
 # AgeRun CHANGELOG
 
+## 2026-04-11 (Command-line shell syntax narrowed to core instructions)
+
+- **Restricted the shell’s interpreted one-line syntax to `spawn`, `send`, and assignment forms**
+
+  Refined the shell specification so the receiving agent no longer owns a vague "minimal syntax".
+  The spec now states that one entered line is interpreted at a time as a restricted subset of the
+  existing AgeRun instruction syntax, limited to `spawn(...)`, `send(...)`, and assignment forms.
+
+  **Implementation**: Updated `specs/001-command-line-shell/spec.md` to tighten FR-007 and related
+  sections, clarify that the delegate remains transport-only, and define the shell’s interpreted
+  syntax as a one-line restricted subset of existing AgeRun instructions.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The shell spec is now more precise, more consistent with `SPEC.md`, and easier to
+  implement and test without inventing a broader command language.
+
 ## 2026-04-11 (Command-line shell specification refinement)
 
 - **Specified the native shell as a stdio delegate plus dedicated receiving-agent workflow**
