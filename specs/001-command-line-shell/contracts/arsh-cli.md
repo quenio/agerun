@@ -11,8 +11,9 @@ Define the user-facing command contract for the AgeRun shell.
 ## Startup Contract
 
 Invoking `arsh`:
+- calls into the non-instantiable `ar_shell` module
+- creates a shell session owned by `ar_shell`
 - starts a session-specific shell delegate over stdio
-- instantiates a shell session module that creates and holds the shell session instance
 - creates a dedicated receiving agent from the built-in `shell` method
 - enters an interactive session that remains open until the user exits
 
@@ -63,6 +64,6 @@ The shell may additionally report:
 When the user exits:
 - the shell session begins shutdown
 - the dedicated receiving agent is destroyed
-- the shell session module is cleaned up
+- the shell session owned by `ar_shell` is cleaned up
 - the shell delegate is shut down
 - the command exits cleanly

@@ -3,7 +3,7 @@
 ## Purpose
 
 Define the runtime message contract between the session-specific shell delegate, the built-in
-`shell` method, and the shell session module.
+`shell` method, and the shell session owned by the non-instantiable `ar_shell` module.
 
 ## 1. Delegate -> Receiving Agent
 
@@ -38,9 +38,9 @@ The built-in `shell` method:
 - interprets one shell input line at a time
 - supports the restricted instruction subset documented in [arsh-cli.md](./arsh-cli.md)
 - launches agents and sends runtime messages when requested
-- exchanges shell-session state with the shell session module only through messages
+- exchanges shell-session state with the shell session owned by `ar_shell` only through messages
 
-## 4. Built-in `shell` Method <-> Shell Session Module
+## 4. Built-in `shell` Method <-> Shell Session
 
 The exact implementation may evolve, but the protocol must support these logical operations:
 
@@ -79,7 +79,8 @@ reason = <string>
 ## 5. Shell-mode assignment redirection
 
 In shell mode, `memory... := ...` syntax is preserved for the user, but the assigned value is stored
-in the shell session module's memory map rather than in the receiving agent's memory map.
+in the shell session memory map owned by `ar_shell` rather than in the receiving agent's memory
+map.
 
 ## 6. Acknowledgement Stages
 
@@ -96,8 +97,8 @@ Optional additional stages:
 
 ## 7. Shell session ownership
 
-- the `arsh` startup path instantiates the shell session module
-- the shell session module creates and holds the shell session instance
+- the `arsh` entrypoint calls the non-instantiable `ar_shell` module
+- `ar_shell` creates and holds the shell session instance
 - the session-specific shell delegate is bound to that shell session instance
 
 ## 8. Replies to the delegate

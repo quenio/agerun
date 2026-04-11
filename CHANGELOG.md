@@ -1,5 +1,25 @@
 # AgeRun CHANGELOG
 
+## 2026-04-11 (Command-line shell module replanning)
+
+- **Replanned the shell around a non-instantiable `ar_shell` module**
+
+  Refined the native `/spec plan` artifacts again after clarifying that the feature needs an actual
+  shell module in addition to the built-in `shell` method. The updated design now keeps the `arsh`
+  entrypoint thin and moves shell session ownership into a unit-testable non-instantiable
+  `ar_shell` module.
+
+  **Implementation**: Updated `specs/001-command-line-shell/spec.md`, `plan.md`, `research.md`,
+  `data-model.md`, `quickstart.md`, `contracts/README.md`, `contracts/arsh-cli.md`, and
+  `contracts/shell-session-protocol.md`, plus `.specify/memory/pi-agent.md`, to replace the
+  instantiable shell-session-module plan with a non-instantiable `ar_shell` module that owns shell
+  sessions while retaining the session-specific `ar_shell_delegate` and built-in `shell` method.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The plan now matches the intended thin-entrypoint architecture, but
+  `specs/001-command-line-shell/tasks.md` still needs regeneration before implementation.
+
 ## 2026-04-11 (Command-line shell plan refinement)
 
 - **Replanned the shell around a session-specific delegate and built-in `shell` method**

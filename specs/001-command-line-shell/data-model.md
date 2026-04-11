@@ -1,33 +1,50 @@
 # Data Model: Command-Line Shell
 
-## 1. Shell Session
+## 1. Shell Module
 
 ### Description
-A shell session is the top-level runtime interaction created by invoking `arsh`. It coordinates the
-session-specific shell delegate, the receiving agent, the shell session module, acknowledgement
-behavior, and final shutdown.
+A dedicated non-instantiable `ar_shell` module that creates, holds, and destroys shell session
+instances for the `arsh` workflow. It keeps the executable entrypoint thin and exposes the actual
+shell lifecycle/orchestration logic to unit tests.
+
+### Key Attributes
+- `active_session_count`: number of shell sessions currently owned
+- `default_mode`: normal or verbose acknowledgement mode, if configured
+- `runtime_binding`: access path used to create receiving agents and process shell traffic
+
+### Validation Rules
+- The shell module is non-instantiable as a runtime shell contract component
+- The shell module owns shell session lifecycle outside the receiving agent's memory
+- The shell module remains directly unit testable without routing every behavior through `main()`
+
+## 2. Shell Session
+
+### Description
+A shell session is the top-level runtime interaction created by invoking `arsh`. It is owned by the
+`ar_shell` module and coordinates the session-specific shell delegate, the receiving agent,
+acknowledgement behavior, and final shutdown.
 
 ### Key Attributes
 - `command_name`: fixed user-facing name `arsh`
 - `mode`: normal or verbose acknowledgement mode
 - `lifecycle_state`: `created`, `active`, `closing`, `closed`
 - `receiving_agent_id`: the dedicated agent created for the session
-- `session_module_id`: identifier/handle for the shell session module instance
+- `memory_map`: shell session values used by shell-mode assignments
 - `shell_delegate_id`: identifier/handle for the session-specific shell delegate instance
 
 ### Validation Rules
 - Exactly one dedicated receiving agent is created per shell session
 - The receiving agent starts from the built-in `shell` method
-- Exactly one shell session module exists per shell session
 - Exactly one shell delegate exists per shell session
+- The session memory map is separate from the receiving agent's memory map
 - The session remains active after recoverable input and routing errors
 
 ### State Transitions
-- `created -> active`: shell startup completes and receiving agent/session module/delegate are available
+- `created -> active`: shell startup completes and receiving agent/delegate are available
 - `active -> closing`: user exits shell
-- `closing -> closed`: receiving agent/session module/delegate cleanup completes
+- `closing -> closed`: receiving agent/delegate cleanup completes and the shell module releases the session
 
-## 2. Shell Session Delegate
+## 3. Shell Session Delegate
 
 ### Description
 The session-specific delegate bound to one shell session. It owns terminal I/O for that session,
@@ -46,7 +63,7 @@ holds the configured receiving-agent target.
 - The delegate wraps accepted input before forwarding it
 - The delegate unwraps returned output envelopes before display
 
-## 3. Shell Input Envelope
+## 4. Shell Input Envelope
 
 ### Description
 The structured map created by the shell delegate for each accepted line of terminal input before it
@@ -60,7 +77,7 @@ is forwarded into the runtime.
 - The `text` field preserves the original input string verbatim
 - One envelope is produced for each accepted input line
 
-## 4. Shell Output Envelope
+## 5. Shell Output Envelope
 
 ### Description
 The structured map returned toward the shell delegate so it can display shell-visible output.
@@ -74,7 +91,7 @@ The structured map returned toward the shell delegate so it can display shell-vi
 - Delayed output envelopes remain attributable to the correct sender
 - Output envelope handling does not terminate or corrupt the active shell session
 
-## 5. Receiving Agent
+## 6. Receiving Agent
 
 ### Description
 The session-scoped runtime agent that executes the built-in `shell` method and interprets shell
@@ -91,7 +108,7 @@ input.
 - The receiving agent is destroyed automatically when the shell session exits
 - The receiving agent does not own shell assignment state directly
 
-## 6. Built-in Shell Method
+## 7. Built-in Shell Method
 
 ### Description
 The built-in `shell` method executed by the receiving agent. It owns shell semantics for the
@@ -107,31 +124,7 @@ restricted instruction subset.
 ### Validation Rules
 - Exactly one input line is interpreted at a time
 - The built-in shell method does not rely on nested function calls
-- Session value assignment is redirected to the shell session module's memory map
-
-## 7. Shell Session Module
-
-### Description
-An instantiable system module for one shell session. It is created by the `arsh` startup path and
-creates/holds the shell session instance plus session-scoped values separately from the receiving
-agent.
-
-### Key Attributes
-- `memory_map`: stores shell assignment values
-- `lifecycle_state`: `created`, `active`, `destroyed`
-- `pending_request_state`: tracks message-based set/get/ack operations, if needed
-
-### Validation Rules
-- The shell session module is separate from the receiving agent and its memory map
-- The shell session module exchanges state with the built-in `shell` method only through messages
-- `memory... := ...` in shell mode targets this module's memory map
-- The shell session module owns creation/holding of the shell session instance
-
-### Likely Protocol Operations
-- `set`: persist a session value
-- `get`: resolve a previously stored session value
-- `ack`: confirm state operation outcome
-- `error`: report invalid or unresolved session-state request
+- Session value assignment is redirected to the shell session memory map owned by `ar_shell`
 
 ## 8. Shell Acknowledgement
 
@@ -164,12 +157,11 @@ A message explicitly returned toward the shell delegate after a shell-driven int
 
 ## Relationships
 
+- One **Shell Module** creates and holds many **Shell Sessions** over time
 - One **Shell Session** owns one **Shell Session Delegate**
 - One **Shell Session** owns one **Receiving Agent**
-- One **Shell Session** owns one **Shell Session Module**
 - One **Shell Session** receives many **Shell Input Envelopes**
 - One **Shell Session Delegate** targets one **Receiving Agent**
 - One **Shell Session Delegate** displays many **Shell Acknowledgements** and **Runtime Replies**
 - One **Receiving Agent** executes one **Built-in Shell Method**
-- One **Built-in Shell Method** exchanges state messages with one **Shell Session Module**
-- One **Shell Session Module** creates and holds one **Shell Session** instance
+- One **Built-in Shell Method** exchanges state messages with one **Shell Session** owned by the **Shell Module**
