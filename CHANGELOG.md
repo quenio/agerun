@@ -1,5 +1,24 @@
 # AgeRun CHANGELOG
 
+## 2026-04-11 (Command-line shell task regeneration)
+
+- **Regenerated `/spec tasks` for the current `arsh` executable architecture**
+
+  Rebuilt `specs/001-command-line-shell/tasks.md` so it matches the latest plan instead of the
+  obsolete `ar_executable` / `ar_stdio_delegate` / `arsh-1.0.0.method` design. The new task list is
+  organized around the current `ar_shell`, `ar_shell_session`, `ar_shell_delegate`, and
+  `shell-1.0.0.method` architecture.
+
+  **Implementation**: Replaced `specs/001-command-line-shell/tasks.md` with a dependency-ordered
+  task list covering shell executable startup in `modules/ar_shell.*`, shell-session mediation in
+  `modules/ar_shell_session.*`, transport in `modules/ar_shell_delegate.*`, built-in shell method
+  work in `methods/shell-1.0.0.*`, and repo-wide validation/documentation sync.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The feature now has an implementation task list aligned with the current plan and is
+  ready for `/spec implement`.
+
 ## 2026-04-11 (Command-line shell executable-module replanning)
 
 - **Replanned `arsh` as its own executable implemented by `ar_shell`**
