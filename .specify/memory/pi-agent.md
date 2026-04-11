@@ -1,6 +1,6 @@
 # AgeRun Development Guidelines
 
-Auto-generated from the project constitution and repository context. Last updated: 2026-04-10
+Auto-generated from the project constitution and repository context. Last updated: 2026-04-11
 
 ## Active Technologies
 
@@ -48,6 +48,7 @@ specs/
 - Established the native pi `/spec constitution` for AgeRun as version 1.0.0
 - Aligned spec templates with KB consultation, TDD, conventions, and evidence gates
 - Standardized native `/spec` wording across the `.specify` workflow templates
+- Planned `001-command-line-shell` around a transport-only stdio delegate, a separate shell session module, and a built-in `arsh` shell method
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->

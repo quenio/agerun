@@ -1,5 +1,25 @@
 # AgeRun CHANGELOG
 
+## 2026-04-11 (Command-line shell implementation planning artifacts)
+
+- **Planned the `arsh` shell architecture and created Phase 0/1 feature design artifacts**
+
+  Executed the native `/spec plan` workflow for `001-command-line-shell` and turned the clarified
+  shell requirements into concrete implementation guidance. The new planning set defines the
+  transport-only stdio delegate, the separate shell session module and memory map, the built-in
+  `arsh` method executed by the session receiving agent, the shell/session message protocol, and
+  the initial `arsh` CLI contract.
+
+  **Implementation**: Filled `specs/001-command-line-shell/plan.md`, added
+  `specs/001-command-line-shell/research.md`, `data-model.md`, `quickstart.md`, and
+  `contracts/{README.md,arsh-cli.md,shell-session-protocol.md}`, and updated
+  `.specify/memory/pi-agent.md` with the current planning context.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The feature is now ready for `/spec tasks` with a concrete repository-aware
+  architecture, documented runtime boundaries, and implementation/test/documentation targets.
+
 ## 2026-04-11 (Command-line shell session module and assigned call clarifications)
 
 - **Clarified shell-session storage ownership and allowed assigned `spawn`/`send` forms**
