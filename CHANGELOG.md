@@ -1,5 +1,24 @@
 # AgeRun CHANGELOG
 
+## 2026-04-11 (Command-line shell specification refinement)
+
+- **Specified the native shell as a stdio delegate plus dedicated receiving-agent workflow**
+
+  Added the initial feature specification under `specs/001-command-line-shell/` and then refined it
+  through native `/spec clarify` decisions so the shell is now defined as a stdio delegate that
+  wraps each input line into a structured envelope map with `text = input string`, auto-creates a
+  dedicated receiving agent from one built-in shell method, supports normal and verbose
+  acknowledgement modes, and destroys the session-specific receiver on shell exit.
+
+  **Implementation**: Created `specs/001-command-line-shell/spec.md` and
+  `specs/001-command-line-shell/checklists/requirements.md`, replacing the earlier coupled
+  shell-as-live-method model with a cleaner transport-versus-interpretation split.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The shell feature now has a reviewable, architecture-aligned specification ready for
+  `/spec plan` and GitHub review.
+
 ## 2026-04-10 (Native /spec constitution for AgeRun)
 
 - **Ratified AgeRun-specific governance for the native pi `/spec` workflow**
