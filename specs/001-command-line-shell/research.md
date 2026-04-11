@@ -12,8 +12,8 @@
 - **Alternatives considered**:
   - Add a generic `ar_stdio_delegate` module: rejected because the feature needs shell-session-
     specific behavior, not a broad stdio abstraction.
-  - Put stdin/stdout logic directly into `ar_executable.c`: rejected because it would mix transport,
-    shell-session lifecycle, and startup orchestration.
+  - Put stdin/stdout logic into `ar_executable.c`: rejected because `arsh` is not implemented in
+    `ar_executable` and shell transport belongs with the shell executable architecture.
 
 ## Decision 2: Keep shell behavior in a built-in `shell` method executed by a receiving agent
 
@@ -29,37 +29,44 @@
   - Hard-code shell commands in C only: rejected because it would bypass the method-level behavior
     contract required by the spec.
 
-## Decision 3: Add a non-instantiable `ar_shell` module that owns shell sessions without replacing `ar_shell_session`
+## Decision 3: Implement `arsh` as a dedicated executable backed by `ar_shell`
 
-- **Decision**: Add a dedicated `ar_shell` module as a non-instantiable C module that creates,
-  holds, and destroys shell session instances plus their memory maps. The `arsh` entrypoint calls
-  into this module so the entrypoint stays thin and the actual shell lifecycle/orchestration logic
-  can be unit tested directly.
-- **Rationale**: The feature needs an actual shell module in addition to the built-in `shell`
-  method and the instantiable `ar_shell_session` runtime module. Putting shell-session ownership in
-  `ar_shell` isolates shell startup/session orchestration from both the CLI entrypoint and the
-  delegate transport layer.
+- **Decision**: Implement the `arsh` executable in the `ar_shell` module instead of routing shell
+  startup through `ar_executable`.
+- **Rationale**: The shell is now a distinct executable kind with its own module. Keeping `arsh`
+  in `ar_shell` isolates shell-specific executable concerns from the existing demo executable and
+  makes shell startup/orchestration directly testable in the same module that owns shell sessions.
 - **Alternatives considered**:
-  - Let `ar_shell_session` replace `ar_shell`: rejected because the feature still needs a thin
-    entrypoint and a directly unit-testable shell orchestration module.
-  - Keep shell state only in delegate-owned ad hoc structs: rejected because it blurs transport and
-    shell-session lifecycle/state responsibilities.
+  - Implement `arsh` in `ar_executable`: rejected by clarified user requirements.
+  - Keep a thin generic entrypoint delegating to `ar_shell`: rejected because the executable module
+    itself should be `ar_shell`.
 
-## Decision 4: Retain `ar_shell_session` as an instantiable runtime module, but do not let it directly handle the session map
+## Decision 4: Make `ar_shell` an instantiable module that owns shell sessions without replacing `ar_shell_session`
+
+- **Decision**: Keep `ar_shell` instantiable and let it create, hold, and destroy shell session
+  instances plus their memory maps.
+- **Rationale**: Making `ar_shell` instantiable keeps shell orchestration easy to test while
+  aligning the executable module and lifecycle-owning module around the same shell concern.
+- **Alternatives considered**:
+  - Keep `ar_shell` non-instantiable: rejected because easier testing is desired.
+  - Let `ar_shell_session` replace `ar_shell`: rejected because the architecture still benefits
+    from separating shell executable/session ownership from the runtime message boundary.
+
+## Decision 5: Retain `ar_shell_session` as an instantiable runtime module, but do not let it directly handle the session map
 
 - **Decision**: Keep `ar_shell_session` as an instantiable runtime-facing module that mediates
   shell-session operations for the built-in `shell` method through messages, while the actual shell
   session memory map remains owned by the shell session held by `ar_shell`.
-- **Rationale**: This preserves the original requirement that a shell session module exists within
-  the runtime, while also honoring the clarified ownership boundary that the session map should not
-  be directly handled by the session module itself.
+- **Rationale**: This preserves the requirement that a shell session module exists within the
+  runtime, while also honoring the ownership boundary that the session map should not be directly
+  handled by the session module itself.
 - **Alternatives considered**:
   - Remove `ar_shell_session`: rejected because the architecture still requires an instantiable
     runtime shell-session boundary.
-  - Move the session map directly into `ar_shell_session`: rejected because the user explicitly
-    ruled out direct session-map handling in the session module.
+  - Move the session map directly into `ar_shell_session`: rejected because the session module must
+    mediate access, not directly own the map.
 
-## Decision 5: Keep input/output envelope handling in the session delegate
+## Decision 6: Keep input/output envelope handling in the session delegate
 
 - **Decision**: The session-specific shell delegate wraps terminal input strings into input
   envelopes before forwarding them to the receiving agent and unwraps output envelopes received back
@@ -73,7 +80,7 @@
   - Have `ar_shell` or `ar_shell_session` perform terminal I/O directly: rejected because it would
     mix shell-session lifecycle/state ownership with transport responsibilities.
 
-## Decision 6: Restrict shell input to a canonical one-line AgeRun subset
+## Decision 7: Restrict shell input to a canonical one-line AgeRun subset
 
 - **Decision**: Support a bounded one-line syntax subset: `spawn(...)`, `send(...)`,
   `memory... := ...`, `memory... := spawn(...)`, and `memory... := send(...)`.
@@ -86,20 +93,20 @@
   - Support the full AgeRun instruction grammar immediately: rejected as too broad for a first
     shell release and harder to validate.
 
-## Decision 7: Redirect shell-mode `memory... := ...` to shell session state owned by `ar_shell`, mediated by `ar_shell_session`
+## Decision 8: Redirect shell-mode `memory... := ...` to shell session state owned by `ar_shell`, mediated by `ar_shell_session`
 
 - **Decision**: In shell mode, `memory... := ...` writes to the shell session memory map owned by
   `ar_shell` rather than the receiving agent's memory map, while `ar_shell_session` mediates the
   runtime-facing access path.
 - **Rationale**: This preserves syntax consistency with method definitions while honoring both the
-  encapsulation requirement and the clarified boundary that the session module does not directly
-  handle the map itself.
+  encapsulation requirement and the boundary that the session module does not directly handle the
+  map itself.
 - **Alternatives considered**:
   - Add a new root like `session... := ...`: rejected because the spec deliberately reuses existing
     `memory... := ...` syntax.
   - Let `ar_shell_session` own the map directly: rejected by the clarified requirement.
 
-## Decision 8: Keep shell/session coordination message-based via a shell session protocol
+## Decision 9: Keep shell/session coordination message-based via a shell session protocol
 
 - **Decision**: Define a message protocol between the `shell` method, `ar_shell_session`, the shell
   session owned by `ar_shell`, and the session-specific delegate for value lookup, assignment,
@@ -112,15 +119,11 @@
   - Share direct pointers or mutable references between the method runtime, shell module, session
     module, and delegate: rejected because it violates the clarified encapsulation boundary.
 
-## Decision 9: Add `arsh` without removing the existing executable behavior
+## Decision 10: Keep the existing demo executable separate from the shell executable
 
-- **Decision**: Extend the executable/build path so `arsh` becomes the user-facing shell command
-  while keeping the current demo-oriented executable flow available.
-- **Rationale**: The spec fixes the public command name to `arsh`, but the repository already has
-  useful demo behavior in `ar_executable`. Preserving that path reduces regression risk and keeps
-  shell work additive.
+- **Decision**: Leave `ar_executable` as its own existing executable concern and implement the shell
+  executable separately in `ar_shell`.
+- **Rationale**: This preserves separation of concerns and avoids mixing demo executable behavior
+  with shell-specific executable behavior.
 - **Alternatives considered**:
-  - Replace the existing executable entirely with shell behavior: rejected because the spec only
-    requires an additive command.
-  - Build a totally separate entry module with duplicated startup logic: rejected as unnecessary
-    duplication until shared startup logic proves insufficient.
+  - Merge the shell executable path into `ar_executable`: rejected by clarified user requirements.

@@ -4,7 +4,7 @@
 
 Define the runtime message contract between the session-specific shell delegate, the built-in
 `shell` method, the instantiable `ar_shell_session` module, and the shell session owned by the
-non-instantiable `ar_shell` module.
+instantiated `ar_shell` module that backs the `arsh` executable.
 
 ## 1. Delegate -> Receiving Agent
 
@@ -104,7 +104,8 @@ Optional additional stages:
 
 ## 8. Shell session ownership
 
-- the `arsh` entrypoint calls the non-instantiable `ar_shell` module
+- the `arsh` executable is implemented by `ar_shell`
+- `ar_shell` is instantiated for the shell process
 - `ar_shell` creates and holds the shell session instance
 - `ar_shell_session` is instantiated for that shell session
 - the session-specific shell delegate is bound to that shell session instance

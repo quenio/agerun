@@ -3,26 +3,29 @@
 ## 1. Shell Module
 
 ### Description
-A dedicated non-instantiable `ar_shell` module that creates, holds, and destroys shell session
-instances for the `arsh` workflow. It keeps the executable entrypoint thin and exposes the actual
-shell lifecycle/orchestration logic to unit tests.
+An instantiable `ar_shell` module that implements the `arsh` executable, creates, holds, and
+destroys shell session instances for the shell workflow. It exposes the actual shell
+lifecycle/orchestration logic to unit tests through a normal module API.
 
 ### Key Attributes
 - `active_session_count`: number of shell sessions currently owned
 - `default_mode`: normal or verbose acknowledgement mode, if configured
 - `runtime_binding`: access path used to create receiving agents and process shell traffic
+- `executable_name`: fixed executable name `arsh`
 
 ### Validation Rules
-- The shell module is non-instantiable as a runtime shell contract component
+- The shell module is instantiable within the runtime architecture
+- The shell module implements the `arsh` executable behavior
 - The shell module owns shell session lifecycle outside the receiving agent's memory
-- The shell module remains directly unit testable without routing every behavior through `main()`
+- The shell module remains directly unit testable without routing every behavior through unrelated executables
 
 ## 2. Shell Session
 
 ### Description
 A shell session is the top-level runtime interaction created by invoking `arsh`. It is owned by the
-`ar_shell` module and coordinates the session-specific shell delegate, the receiving agent, the
-instantiable `ar_shell_session` runtime module, acknowledgement behavior, and final shutdown.
+instantiated `ar_shell` module and coordinates the session-specific shell delegate, the receiving
+agent, the instantiable `ar_shell_session` runtime module, acknowledgement behavior, and final
+shutdown.
 
 ### Key Attributes
 - `command_name`: fixed user-facing name `arsh`

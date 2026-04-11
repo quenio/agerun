@@ -48,7 +48,7 @@ specs/
 - Established the native pi `/spec constitution` for AgeRun as version 1.0.0
 - Aligned spec templates with KB consultation, TDD, conventions, and evidence gates
 - Standardized native `/spec` wording across the `.specify` workflow templates
-- Re-planned `001-command-line-shell` around both a non-instantiable `ar_shell` module that owns shell session instances and an instantiable `ar_shell_session` runtime module that mediates access to those sessions, plus a session-specific `ar_shell_delegate` and a built-in `shell` method started by the thin `arsh` executable path
+- Re-planned `001-command-line-shell` so `arsh` is its own executable implemented by the instantiable `ar_shell` module, with `ar_shell` owning shell session instances, `ar_shell_session` mediating runtime access, a session-specific `ar_shell_delegate`, and a built-in `shell` method
 
 <!-- MANUAL ADDITIONS START -->
 <!-- MANUAL ADDITIONS END -->

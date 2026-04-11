@@ -1,5 +1,25 @@
 # AgeRun CHANGELOG
 
+## 2026-04-11 (Command-line shell executable-module replanning)
+
+- **Replanned `arsh` as its own executable implemented by `ar_shell`**
+
+  Refined the native `/spec plan` artifacts again after clarifying that the shell must not be
+  implemented through `ar_executable`. The updated design now treats `arsh` as its own executable,
+  with `ar_shell` as the executable-owning module and `ar_shell_session` retained as the runtime
+  mediator for shell session access.
+
+  **Implementation**: Updated `specs/001-command-line-shell/spec.md`, `plan.md`, `research.md`,
+  `data-model.md`, `quickstart.md`, `contracts/README.md`, `contracts/arsh-cli.md`, and
+  `contracts/shell-session-protocol.md`, plus `.specify/memory/pi-agent.md`, to remove
+  `ar_executable` from the shell implementation path and document `ar_shell` as the `arsh`
+  executable module.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The plan now reflects a dedicated shell executable architecture, but
+  `specs/001-command-line-shell/tasks.md` still needs regeneration before implementation.
+
 ## 2026-04-11 (Command-line shell dual-module replanning)
 
 - **Replanned the shell to keep both `ar_shell` and `ar_shell_session`**

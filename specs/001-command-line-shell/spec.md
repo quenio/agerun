@@ -22,7 +22,7 @@
 - Q: Does the shell need a minimal interpreted syntax? → A: yes; the receiving agent must interpret exactly one input line at a time as a restricted subset of AgeRun instruction syntax: `spawn(...)`, `send(...)`, or assignment
 - Q: Where are launch, send, and assignment capabilities implemented? → A: in the built-in `shell` method executed by the session's receiving agent
 - Q: What is the user-facing shell command name? → A: `arsh` (AgeRun SHell)
-- Q: Where should assignment lines store shell session values? → A: in a shell session owned by a dedicated non-instantiable shell module, with its own memory map and message-based exchange with the shell method
+- Q: Where should assignment lines store shell session values? → A: in a shell session owned by a dedicated instantiable shell module, with its own memory map and message-based exchange with the shell method
 - Q: How should assignment syntax refer to the shell session memory map? → A: keep existing `memory... := ...` syntax; in shell mode it targets the shell session memory map owned by the shell module
 - Q: Should assigned function-call forms be allowed in shell mode? → A: yes; forms such as `memory.x := spawn(...)` and `memory.ok := send(...)` are necessary and allowed
 
@@ -30,10 +30,11 @@
 
 - Q: Do we need a generic stdio delegate for this feature? → A: no; we need a session-specific shell delegate that owns one shell session's envelope wrapping/unwrapping responsibilities
 - Q: Which method should the shell session's receiving agent run? → A: the dedicated built-in `shell` method, not an `arsh` method
-- Q: Does the non-instantiable shell module replace the shell session module? → A: no; both are required
-- Q: Where should shell session creation and ownership live? → A: in a dedicated non-instantiable shell module used by the `arsh` entrypoint; that module creates and holds the shell session instance and keeps the entrypoint thin and unit-testable
+- Q: Does the shell module replace the shell session module? → A: no; both are required
+- Q: Where should shell session creation and ownership live? → A: in a dedicated instantiable shell module used by the `arsh` executable; that module creates and holds the shell session instance and remains unit-testable
 - Q: What remains the role of the shell session module? → A: it remains an instantiable runtime module that mediates shell-session interactions, but it does not replace the shell module
 - Q: Who should directly handle the session map? → A: the session map is owned by the shell session held by the shell module, not directly by the shell session module
+- Q: Should `arsh` be implemented inside `ar_executable`? → A: no; `arsh` is a separate executable whose module is `ar_shell`
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -141,7 +142,7 @@ attribution.
   receiving agent
 - Supporting the built-in shell method interpreting one line at a time using a restricted subset of
   AgeRun instruction syntax for launching methods, sending runtime messages, and requesting storage
-  of session values in a shell session owned by a dedicated non-instantiable shell module, with the
+  of session values in a shell session owned by a dedicated instantiable shell module, with the
   shell session module mediating runtime access to that session memory map
 - Displaying asynchronously returned messages sent back to the shell delegate
 - Clear error reporting, help, and clean shell exit behavior
@@ -164,6 +165,8 @@ attribution.
 - **FR-001**: The system MUST provide an interactive AgeRun shell mode using a session-specific
   shell delegate over stdio that stays open for repeated input until the user explicitly exits.
 - **FR-001a**: The user-facing command that starts this shell mode MUST be named `arsh`.
+- **FR-001b**: The `arsh` executable MUST be implemented by the `ar_shell` module rather than by
+  `ar_executable`.
 - **FR-002**: For each accepted line of terminal input, the shell delegate MUST create a structured
   envelope map before forwarding the input into the runtime.
 - **FR-003**: Initially, the shell delegate input envelope MUST contain exactly one key-value pair:
@@ -199,7 +202,7 @@ attribution.
 - **FR-010b**: Assignment lines MUST store session values in shell session state owned by a
   dedicated shell module, separate from the receiving agent and separate from the receiving agent's
   memory map.
-- **FR-010c**: The system MUST provide a dedicated non-instantiable shell module that creates,
+- **FR-010c**: The system MUST provide a dedicated instantiable shell module that creates,
   holds, and cleans up shell session instances and their memory maps for shell session values.
 - **FR-010ca**: The system MUST also provide an instantiable shell session module that mediates
   runtime shell-session access for the built-in shell method.
@@ -241,9 +244,10 @@ attribution.
   interpretation behavior.
 - **Built-in Shell Method**: The built-in `shell` method executed by the session's receiving agent
   that implements the shell's interpreted `spawn(...)`, `send(...)`, and assignment capabilities.
-- **Shell Module**: A dedicated non-instantiable `ar_shell` module that creates, holds, and cleans
-  up shell session instances. It owns the shell session memory map used for shell assignment values
-  and coordinates shell lifecycle outside the thin `arsh` entrypoint.
+- **Shell Module**: A dedicated instantiable `ar_shell` module that implements the `arsh`
+  executable, creates and holds shell session instances, and cleans them up. It owns the shell
+  session memory map used for shell assignment values and coordinates shell lifecycle for the shell
+  executable.
 - **Shell Session Module**: An instantiable runtime module for one shell session that mediates
   shell-session operations for the built-in shell method through messages. It does not directly own
   the shell session memory map.
@@ -277,7 +281,7 @@ attribution.
     because the delegate understands that syntax directly.
   - Assignment values are stored outside the receiving agent's memory map in a shell session owned
     by a separate shell module.
-  - The shell module is non-instantiable at the runtime contract level and owns the shell session
+  - The shell module is instantiable at the runtime contract level and owns the shell session
     lifecycle plus its memory map.
   - The shell session module remains instantiable and mediates runtime access to the shell session
     without directly handling the session map.
@@ -300,12 +304,13 @@ attribution.
 
 - **Affected Documentation**: README.md, SPEC.md, executable/runtime documentation, `arsh` usage
   walkthroughs, and any shell guidance added for AgeRun users
-- **Affected Runtime Contracts**: CLI behavior, the `arsh` command name, session-specific shell
-  delegate messaging, shell input/output envelope handling, restricted one-line receiving-agent
-  shell syntax, the built-in `shell` method contract, shell-mode `memory... := ...` redirection to
-  shell session state owned by the shell module and mediated by the shell session module, shell
-  module behavior, shell session module behavior, receiving-agent expectations, and reply display
-  behavior for shell-directed interactions
+- **Affected Runtime Contracts**: CLI behavior, the `arsh` command name, the dedicated `arsh`
+  executable implemented by `ar_shell`, session-specific shell delegate messaging, shell
+  input/output envelope handling, restricted one-line receiving-agent shell syntax, the built-in
+  `shell` method contract, shell-mode `memory... := ...` redirection to shell session state owned
+  by the shell module and mediated by the shell session module, shell module behavior, shell
+  session module behavior, receiving-agent expectations, and reply display behavior for shell-
+  directed interactions
 - **Compatibility Notes**: This feature is intended as an additive capability; existing non-shell
   runtime entry points should remain available unless explicitly replaced in a later specification
 

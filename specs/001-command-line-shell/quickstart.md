@@ -16,7 +16,8 @@ arsh
 
 ### Expected startup behavior
 
-- The `arsh` entrypoint calls into the non-instantiable `ar_shell` module
+- The `arsh` executable is implemented by the `ar_shell` module
+- `ar_shell` is instantiated for the shell process
 - The `ar_shell` module creates and holds the shell session instance
 - The runtime instantiates an `ar_shell_session` module for that shell session
 - A session-specific shell delegate starts reading from stdin and writing to stdout
@@ -95,14 +96,14 @@ When the user exits:
 - the shell session begins shutdown
 - the dedicated receiving agent is destroyed
 - the `ar_shell_session` module is cleaned up
-- the shell module releases the shell session
+- the `ar_shell` module releases the shell session
 - the shell delegate shuts down
 - the shell process exits cleanly
 
 ## Notes for the first implementation
 
+- The shell executable is implemented by `ar_shell`, not by `ar_executable`
 - The shell delegate is session-specific and only transports input/output plus envelope wrap/unwrap
 - Shell semantics live in the built-in `shell` method
 - Session values live in the shell session owned by `ar_shell`, not in the receiving agent's memory map
 - The `ar_shell_session` module mediates access to shell session state without directly handling the session map
-- The `arsh` entrypoint stays thin by delegating shell lifecycle to `ar_shell`

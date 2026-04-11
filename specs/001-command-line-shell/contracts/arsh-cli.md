@@ -8,10 +8,15 @@ Define the user-facing command contract for the AgeRun shell.
 
 - The shell command name is `arsh`
 
+## Implementation Contract
+
+- the `arsh` executable is implemented by the `ar_shell` module
+- `arsh` is not implemented in `ar_executable`
+
 ## Startup Contract
 
 Invoking `arsh`:
-- calls into the non-instantiable `ar_shell` module
+- instantiates an `ar_shell` module
 - creates a shell session owned by `ar_shell`
 - instantiates an `ar_shell_session` module for that shell session
 - starts a session-specific shell delegate over stdio
