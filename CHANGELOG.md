@@ -1,5 +1,22 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell protocol operation formatting)
+
+- **Reformatted planned protocol operations to use backticked names followed by colons**
+
+  Adjusted the shell data-model operation lists from dash-separated labels to the preferred
+  `` `name`: description `` style.
+
+  **Implementation**: Updated `specs/001-command-line-shell/data-model.md` so planned protocol
+  operations use backticked repo-style names followed by colons. Added `// EXAMPLE:` markers so the
+  documentation checker treats them as planned operation labels rather than already-implemented
+  functions.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The shell data-model protocol operations now follow the preferred presentation style
+  without breaking documentation validation.
+
 ## 2026-04-12 (Command-line shell protocol naming convention alignment)
 
 - **Aligned shell protocol operation names with the repo's `ar_<module>__<function>` convention**

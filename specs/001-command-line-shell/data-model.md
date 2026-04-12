@@ -27,10 +27,10 @@ normal module API.
 - The shell remains directly unit testable without routing every behavior through unrelated executables
 
 ### Protocol Operations
-- ar_shell__create_session — create a new shell session together with its delegate and receiving agent
-- ar_shell__register_session — insert a newly created session into `own_sessions`
-- ar_shell__process_system_turn — process one unit of AgeRun system work for active shell traffic
-- ar_shell__release_session — remove a closed session from `own_sessions` and release its remaining resources
+- `ar_shell__create_session`: create a new shell session together with its delegate and receiving agent // EXAMPLE: planned protocol operation label
+- `ar_shell__register_session`: insert a newly created session into `own_sessions` // EXAMPLE: planned protocol operation label
+- `ar_shell__process_system_turn`: process one unit of AgeRun system work for active shell traffic // EXAMPLE: planned protocol operation label
+- `ar_shell__release_session`: remove a closed session from `own_sessions` and release its remaining resources // EXAMPLE: planned protocol operation label
 
 ## 2. Shell Session
 
@@ -65,14 +65,14 @@ in `shell` method through messages.
 - `closing -> closed`: agent/delegate cleanup completes and `ar_shell` releases the session
 
 ### Protocol Operations
-- ar_shell_session__bind_delegate — associate the created delegate with this shell session
-- ar_shell_session__bind_agent — associate the created receiving agent with this shell session
-- ar_shell_session__store_value — persist a shell value into `own_memory` for a requested path
-- ar_shell_session__load_value — resolve a shell value from `own_memory` for a requested path
-- ar_shell_session__return_loaded_value — return a successfully resolved shell value to the requester
-- ar_shell_session__report_operation_failure — return a failed shell-session operation with a reason
-- ar_shell_session__begin_shutdown — transition the shell session from `active` to `closing`
-- ar_shell_session__finish_shutdown — complete cleanup and transition the shell session to `closed`
+- `ar_shell_session__bind_delegate`: associate the created delegate with this shell session // EXAMPLE: planned protocol operation label
+- `ar_shell_session__bind_agent`: associate the created receiving agent with this shell session // EXAMPLE: planned protocol operation label
+- `ar_shell_session__store_value`: persist a shell value into `own_memory` for a requested path // EXAMPLE: planned protocol operation label
+- `ar_shell_session__load_value`: resolve a shell value from `own_memory` for a requested path // EXAMPLE: planned protocol operation label
+- `ar_shell_session__return_loaded_value`: return a successfully resolved shell value to the requester // EXAMPLE: planned protocol operation label
+- `ar_shell_session__report_operation_failure`: return a failed shell-session operation with a reason // EXAMPLE: planned protocol operation label
+- `ar_shell_session__begin_shutdown`: transition the shell session from `active` to `closing` // EXAMPLE: planned protocol operation label
+- `ar_shell_session__finish_shutdown`: complete cleanup and transition the shell session to `closed` // EXAMPLE: planned protocol operation label
 
 ## 3. Shell Delegate
 
@@ -94,11 +94,11 @@ holds the configured receiving-agent target.
 - The delegate unwraps returned output envelopes before display
 
 ### Protocol Operations
-- ar_shell_delegate__read_line — read one line of terminal input from `own_input_transport`
-- ar_shell_delegate__wrap_input — create a shell input envelope from the accepted terminal line
-- ar_shell_delegate__send_input — forward the created input envelope to `agent_id`
-- ar_shell_delegate__render_output — unwrap a shell output envelope and write it to `own_output_transport`
-- ar_shell_delegate__close — close delegate transports during shell session shutdown
+- `ar_shell_delegate__read_line`: read one line of terminal input from `own_input_transport` // EXAMPLE: planned protocol operation label
+- `ar_shell_delegate__wrap_input`: create a shell input envelope from the accepted terminal line // EXAMPLE: planned protocol operation label
+- `ar_shell_delegate__send_input`: forward the created input envelope to `agent_id` // EXAMPLE: planned protocol operation label
+- `ar_shell_delegate__render_output`: unwrap a shell output envelope and write it to `own_output_transport` // EXAMPLE: planned protocol operation label
+- `ar_shell_delegate__close`: close delegate transports during shell session shutdown // EXAMPLE: planned protocol operation label
 
 ## 4. Shell Input Envelope
 
@@ -115,8 +115,8 @@ is forwarded into the runtime.
 - One envelope is produced for each accepted input line
 
 ### Protocol Operations
-- ar_shell_input__create — construct an input envelope that stores the accepted terminal line in `own_text`
-- ar_shell_input__read_text — expose `own_text` to the receiving agent for shell-method interpretation
+- `ar_shell_input__create`: construct an input envelope that stores the accepted terminal line in `own_text` // EXAMPLE: planned protocol operation label
+- `ar_shell_input__read_text`: expose `own_text` to the receiving agent for shell-method interpretation // EXAMPLE: planned protocol operation label
 
 ## 5. Shell Output Envelope
 
@@ -133,9 +133,9 @@ The structured map returned toward the shell delegate so it can display shell-vi
 - Output envelope handling does not terminate or corrupt the active shell session
 
 ### Protocol Operations
-- ar_shell_output__create — construct an output envelope from display text and sender attribution
-- ar_shell_output__read_text — expose `own_text` for terminal rendering
-- ar_shell_output__read_sender — expose `sender_id` for sender attribution during rendering
+- `ar_shell_output__create`: construct an output envelope from display text and sender attribution // EXAMPLE: planned protocol operation label
+- `ar_shell_output__read_text`: expose `own_text` for terminal rendering // EXAMPLE: planned protocol operation label
+- `ar_shell_output__read_sender`: expose `sender_id` for sender attribution during rendering // EXAMPLE: planned protocol operation label
 
 ## 6. Receiving Agent
 
@@ -155,10 +155,10 @@ input.
 - The receiving agent does not own shell assignment state directly
 
 ### Protocol Operations
-- ar_shell_agent__receive_input — accept one shell input envelope from the delegate
-- ar_shell_agent__execute_method — invoke the built-in `shell` method for the received input
-- ar_shell_agent__send_output — return shell-visible output toward the delegate
-- ar_shell_agent__destroy — terminate the session-scoped receiving agent during shell shutdown
+- `ar_shell_agent__receive_input`: accept one shell input envelope from the delegate // EXAMPLE: planned protocol operation label
+- `ar_shell_agent__execute_method`: invoke the built-in `shell` method for the received input // EXAMPLE: planned protocol operation label
+- `ar_shell_agent__send_output`: return shell-visible output toward the delegate // EXAMPLE: planned protocol operation label
+- `ar_shell_agent__destroy`: terminate the session-scoped receiving agent during shell shutdown // EXAMPLE: planned protocol operation label
 
 ## 7. Built-in Shell Method
 
@@ -180,11 +180,11 @@ restricted instruction subset.
   and kept separate from the receiving agent's memory map
 
 ### Protocol Operations
-- ar_shell_method__interpret_line — parse and execute one shell input line from the received envelope
-- ar_shell_method__spawn_agent — execute a supported `spawn(...)` form and return its result
-- ar_shell_method__send_message — execute a supported `send(...)` form and return its result
-- ar_shell_method__store_session_value — execute a supported `memory... := ...` assignment into `own_memory`
-- ar_shell_method__load_session_value — resolve `memory...` references from the active shell session
+- `ar_shell_method__interpret_line`: parse and execute one shell input line from the received envelope // EXAMPLE: planned protocol operation label
+- `ar_shell_method__spawn_agent`: execute a supported `spawn(...)` form and return its result // EXAMPLE: planned protocol operation label
+- `ar_shell_method__send_message`: execute a supported `send(...)` form and return its result // EXAMPLE: planned protocol operation label
+- `ar_shell_method__store_session_value`: execute a supported `memory... := ...` assignment into `own_memory` // EXAMPLE: planned protocol operation label
+- `ar_shell_method__load_session_value`: resolve `memory...` references from the active shell session // EXAMPLE: planned protocol operation label
 
 ## 8. Shell Acknowledgement
 
@@ -202,9 +202,9 @@ The shell-visible status reported to the terminal after an input line is handled
 - Verbose mode may additionally report receiving-agent acceptance and final action outcome
 
 ### Protocol Operations
-- ar_shell_ack__report_handoff — report whether the delegate handed the input envelope to the receiving agent
-- ar_shell_ack__report_acceptance — report whether the receiving agent accepted the shell input for processing
-- ar_shell_ack__report_action_outcome — report the final runtime action result when verbose mode requests it
+- `ar_shell_ack__report_handoff`: report whether the delegate handed the input envelope to the receiving agent // EXAMPLE: planned protocol operation label
+- `ar_shell_ack__report_acceptance`: report whether the receiving agent accepted the shell input for processing // EXAMPLE: planned protocol operation label
+- `ar_shell_ack__report_action_outcome`: report the final runtime action result when verbose mode requests it // EXAMPLE: planned protocol operation label
 
 ## 9. Runtime Reply
 
@@ -221,9 +221,9 @@ A message explicitly returned toward the shell delegate after a shell-driven int
 - Delayed replies do not terminate or corrupt the active shell session
 
 ### Protocol Operations
-- ar_shell_reply__create — construct a shell-visible reply payload from a runtime result
-- ar_shell_reply__attach_sender — attach sender attribution to the reply payload
-- ar_shell_reply__route_to_delegate — deliver the reply payload to the active shell delegate
+- `ar_shell_reply__create`: construct a shell-visible reply payload from a runtime result // EXAMPLE: planned protocol operation label
+- `ar_shell_reply__attach_sender`: attach sender attribution to the reply payload // EXAMPLE: planned protocol operation label
+- `ar_shell_reply__route_to_delegate`: deliver the reply payload to the active shell delegate // EXAMPLE: planned protocol operation label
 
 ## Relationships
 
