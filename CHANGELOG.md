@@ -2,20 +2,20 @@
 
 ## 2026-04-12 (Command-line shell session data-model separation)
 
-- **Separated the conceptual shell session from the `ar_shell_session` module in the data model**
+- **Replaced the conceptual shell session item with a concrete shell session entry model**
 
-  Removed the overlap between data-model item 2 and item 3 by making item 2 describe the logical
-  user-facing shell session, while item 3 describes the concrete `ar_shell_session` runtime module
-  that owns per-session state.
+  Corrected the data model so item 2 is no longer a logical/user-facing concept. It now describes
+  a concrete shell session entry tracked by `ar_shell`, while item 3 remains the concrete
+  `ar_shell_session` runtime module that owns per-session state.
 
-  **Implementation**: Updated `specs/001-command-line-shell/data-model.md` so the shell session no
-  longer duplicates the session module's `memory` ownership details and instead focuses on the
-  composed session workspace and cleanup semantics.
+  **Implementation**: Updated `specs/001-command-line-shell/data-model.md` so item 2 models the
+  shell manager's session-tracking record and item 3 models the runtime session module rather than
+  duplicating the same concept at two levels.
 
   **Verification**: `make check-docs 2>&1` passed.
 
-  **Impact**: The shell data model now distinguishes the user-facing session concept from the
-  runtime session module more clearly.
+  **Impact**: The shell data model now stays focused on concrete runtime entities and separates the
+  shell manager's tracking record from the session module that owns state.
 
 ## 2026-04-12 (Command-line shell session attribute simplification)
 

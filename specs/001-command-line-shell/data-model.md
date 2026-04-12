@@ -19,34 +19,33 @@ while exposing shell orchestration logic to unit tests through a normal module A
 - The shell module manages shell session instances without owning each session's internal state directly
 - The shell module remains directly unit testable without routing every behavior through unrelated executables
 
-## 2. Shell Session
+## 2. Shell Session Entry
 
 ### Description
-A shell session is the top-level interactive workspace created by invoking `arsh`. It is the
-logical user-facing session managed by `ar_shell` and composed of one `ar_shell_session` runtime
-module, one session-specific shell delegate, one dedicated receiving agent, acknowledgement
-behavior, and final shutdown behavior.
+A concrete session-tracking record held by `ar_shell` for one active or recently closing shell
+session. It links the shell manager to the corresponding `ar_shell_session` instance, delegate,
+and receiving agent for that session.
 
 ### Key Attributes
 - `command_name`: fixed user-facing name `arsh`
 - `mode`: normal or verbose acknowledgement mode
 - `status`: `created`, `active`, `closing`, `closed`
-- `agent_id`: the dedicated agent created for the session
+- `agent_id`: identifier of the dedicated receiving agent for this entry
 - `delegate_id`: identifier/handle for the session-specific shell delegate instance
 - `session_id`: identifier/handle for the instantiable shell session module instance
 
 ### Validation Rules
-- Exactly one dedicated receiving agent is created per shell session
-- The receiving agent starts from the built-in `shell` method
-- Exactly one shell delegate exists per shell session
-- Exactly one shell session module instance exists per shell session
-- The session remains active after recoverable input and routing errors
-- Session cleanup is complete only after the agent, delegate, and session module are all cleaned up
+- Exactly one dedicated receiving agent is linked to each shell session entry
+- The linked receiving agent starts from the built-in `shell` method
+- Exactly one shell delegate is linked to each shell session entry
+- Exactly one shell session module instance is linked to each shell session entry
+- The entry remains active after recoverable input and routing errors
+- Entry cleanup is complete only after the agent, delegate, and session module are all cleaned up
 
 ### State Transitions
-- `created -> active`: shell startup completes and receiving agent/delegate/session-module are available
+- `created -> active`: shell startup completes and agent/delegate/session-module links are available
 - `active -> closing`: user exits shell
-- `closing -> closed`: receiving agent/delegate/session-module cleanup completes and the shell module releases the session
+- `closing -> closed`: agent/delegate/session-module cleanup completes and `ar_shell` releases the entry
 
 ## 3. Shell Session Module
 
@@ -77,9 +76,9 @@ for the built-in `shell` method through messages.
 ## 4. Shell Session Delegate
 
 ### Description
-The session-specific delegate bound to one shell session. It owns terminal I/O for that session,
-wraps input strings into input envelopes, unwraps output envelopes back into display strings, and
-holds the configured receiving-agent target.
+The session-specific delegate bound to one shell session entry. It owns terminal I/O for that
+session, wraps input strings into input envelopes, unwraps output envelopes back into display
+strings, and holds the configured receiving-agent target.
 
 ### Key Attributes
 - `agent_id`: agent targeted for wrapped shell input
@@ -188,13 +187,13 @@ A message explicitly returned toward the shell delegate after a shell-driven int
 
 ## Relationships
 
-- One **Shell Module** creates, tracks, and destroys many **Shell Sessions** over time
-- One **Shell Session** is represented by one **Shell Session Module**
-- One **Shell Session** owns one **Shell Session Delegate**
-- One **Shell Session** owns one **Receiving Agent**
-- One **Shell Session** receives many **Shell Input Envelopes**
+- One **Shell Module** creates, tracks, and destroys many **Shell Session Entries** over time
+- One **Shell Session Entry** links to one **Shell Session Module**
+- One **Shell Session Entry** links to one **Shell Session Delegate**
+- One **Shell Session Entry** links to one **Receiving Agent**
+- One **Shell Session Entry** receives many **Shell Input Envelopes**
 - One **Shell Session Delegate** targets one **Receiving Agent**
 - One **Shell Session Delegate** displays many **Shell Acknowledgements** and **Runtime Replies**
 - One **Receiving Agent** executes one **Built-in Shell Method**
 - One **Built-in Shell Method** exchanges state messages with one **Shell Session Module**
-- One **Shell Session Module** owns the state and lifecycle of one **Shell Session** while being managed by the **Shell Module**
+- One **Shell Session Module** owns the state and lifecycle linked from one **Shell Session Entry**
