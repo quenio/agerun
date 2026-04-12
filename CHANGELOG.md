@@ -1,5 +1,20 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell session count removal)
+
+- **Removed the redundant `active_session_count` from the `Shell` entity**
+
+  Simplified the shell data model now that `Shell` explicitly exposes a `sessions` collection.
+  The session count can be derived from that collection instead of being modeled as a separate
+  attribute.
+
+  **Implementation**: Updated `specs/001-command-line-shell/data-model.md` to remove
+  `active_session_count` and its related validation rule from the `Shell` entity.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The shell manager data model is simpler and avoids a redundant derived field.
+
 ## 2026-04-12 (Command-line shell session collection modeling)
 
 - **Added an explicit managed-session collection to the `Shell` entity**
