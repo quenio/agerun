@@ -26,6 +26,12 @@ normal module API.
 - The shell manages shell sessions without owning each session's internal state directly
 - The shell remains directly unit testable without routing every behavior through unrelated executables
 
+### Protocol Operations
+- `shell_create_session`: create a new shell session together with its delegate and receiving agent
+- `shell_register_session`: insert a newly created session into `own_sessions`
+- `shell_process_system_turn`: process one unit of AgeRun system work for active shell traffic
+- `shell_release_session`: remove a closed session from `own_sessions` and release its remaining resources
+
 ## 2. Shell Session
 
 ### Description
@@ -58,12 +64,15 @@ in `shell` method through messages.
 - `active -> closing`: user exits shell
 - `closing -> closed`: agent/delegate cleanup completes and `ar_shell` releases the session
 
-### Likely Protocol Operations
-- `set`: request persistence of a session value
-- `get`: request resolution of a previously stored session value
-- `resolved`: return a resolved session value
-- `ack`: confirm a state operation outcome
-- `error`: report invalid or unresolved session-state request
+### Protocol Operations
+- `shell_session_bind_delegate`: associate the created delegate with this shell session
+- `shell_session_bind_agent`: associate the created receiving agent with this shell session
+- `shell_session_store_value`: persist a shell value into `own_memory` for a requested path
+- `shell_session_load_value`: resolve a shell value from `own_memory` for a requested path
+- `shell_session_value_loaded`: return a successfully resolved shell value to the requester
+- `shell_session_operation_failed`: return a failed shell-session operation with a reason
+- `shell_session_begin_shutdown`: transition the shell session from `active` to `closing`
+- `shell_session_finish_shutdown`: complete cleanup and transition the shell session to `closed`
 
 ## 3. Shell Delegate
 
@@ -84,6 +93,13 @@ holds the configured receiving-agent target.
 - The delegate wraps accepted input before forwarding it
 - The delegate unwraps returned output envelopes before display
 
+### Protocol Operations
+- `shell_delegate_read_line`: read one line of terminal input from `own_input_transport`
+- `shell_delegate_wrap_input`: create a shell input envelope from the accepted terminal line
+- `shell_delegate_send_input`: forward the created input envelope to `agent_id`
+- `shell_delegate_render_output`: unwrap a shell output envelope and write it to `own_output_transport`
+- `shell_delegate_close`: close delegate transports during shell session shutdown
+
 ## 4. Shell Input Envelope
 
 ### Description
@@ -98,6 +114,10 @@ is forwarded into the runtime.
 - The `text` field preserves the original input string verbatim
 - One envelope is produced for each accepted input line
 
+### Protocol Operations
+- `shell_input_create`: construct an input envelope that stores the accepted terminal line in `own_text`
+- `shell_input_read_text`: expose `own_text` to the receiving agent for shell-method interpretation
+
 ## 5. Shell Output Envelope
 
 ### Description
@@ -111,6 +131,11 @@ The structured map returned toward the shell delegate so it can display shell-vi
 - The delegate can unwrap the envelope into a displayed string plus sender attribution
 - Delayed output envelopes remain attributable to the correct sender
 - Output envelope handling does not terminate or corrupt the active shell session
+
+### Protocol Operations
+- `shell_output_create`: construct an output envelope from display text and sender attribution
+- `shell_output_read_text`: expose `own_text` for terminal rendering
+- `shell_output_read_sender`: expose `sender_id` for sender attribution during rendering
 
 ## 6. Receiving Agent
 
@@ -128,6 +153,12 @@ input.
 - The receiving agent is created automatically when `arsh` starts
 - The receiving agent is destroyed automatically when the shell session exits
 - The receiving agent does not own shell assignment state directly
+
+### Protocol Operations
+- `shell_agent_receive_input`: accept one shell input envelope from the delegate
+- `shell_agent_execute_shell_method`: invoke the built-in `shell` method for the received input
+- `shell_agent_send_output`: return shell-visible output toward the delegate
+- `shell_agent_destroy`: terminate the session-scoped receiving agent during shell shutdown
 
 ## 7. Built-in Shell Method
 
@@ -148,13 +179,20 @@ restricted instruction subset.
 - Session value assignment is redirected to the shell session `own_memory` owned by `ar_shell_session`
   and kept separate from the receiving agent's memory map
 
+### Protocol Operations
+- `shell_method_interpret_line`: parse and execute one shell input line from the received envelope
+- `shell_method_spawn_requested_agent`: execute a supported `spawn(...)` form and return its result
+- `shell_method_send_requested_message`: execute a supported `send(...)` form and return its result
+- `shell_method_store_session_value`: execute a supported `memory... := ...` assignment into `own_memory`
+- `shell_method_load_session_value`: resolve `memory...` references from the active shell session
+
 ## 8. Shell Acknowledgement
 
 ### Description
 The shell-visible status reported to the terminal after an input line is handled.
 
 ### Key Attributes
-- `mode`: normal or verbose
+- `mode`: enum value `normal` or `verbose`
 - `handoff_status`: whether the delegate successfully forwarded the envelope to the receiving agent
 - `acceptance_status`: optional verbose-only receiving-agent acceptance state
 - `action_status`: optional verbose-only runtime action outcome
@@ -162,6 +200,11 @@ The shell-visible status reported to the terminal after an input line is handled
 ### Validation Rules
 - Normal mode always reports delegate-to-receiving-agent handoff status
 - Verbose mode may additionally report receiving-agent acceptance and final action outcome
+
+### Protocol Operations
+- `shell_ack_report_handoff`: report whether the delegate handed the input envelope to the receiving agent
+- `shell_ack_report_acceptance`: report whether the receiving agent accepted the shell input for processing
+- `shell_ack_report_action_outcome`: report the final runtime action result when verbose mode requests it
 
 ## 9. Runtime Reply
 
@@ -176,6 +219,11 @@ A message explicitly returned toward the shell delegate after a shell-driven int
 ### Validation Rules
 - Replies remain attributable to the correct sender even when delayed
 - Delayed replies do not terminate or corrupt the active shell session
+
+### Protocol Operations
+- `shell_reply_create`: construct a shell-visible reply payload from a runtime result
+- `shell_reply_attach_sender`: attach sender attribution to the reply payload
+- `shell_reply_route_to_delegate`: deliver the reply payload to the active shell delegate
 
 ## Relationships
 

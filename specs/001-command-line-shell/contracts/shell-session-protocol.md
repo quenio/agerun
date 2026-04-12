@@ -46,34 +46,34 @@ The built-in `shell` method:
 
 The exact implementation may evolve, but the protocol must support these logical operations:
 
-### Set a shell-session value
+### Store a shell-session value
 
 ```text
-action = set
+action = shell_session_store_value
 path = <session path>
 value = <data>
 ```
 
-### Get a shell-session value
+### Load a shell-session value
 
 ```text
-action = get
+action = shell_session_load_value
 path = <session path>
 request_id = <correlation value>
 ```
 
-### Return a resolved shell-session value
+### Return a loaded shell-session value
 
 ```text
-action = resolved
+action = shell_session_value_loaded
 request_id = <correlation value>
 value = <data>
 ```
 
-### Report a state-operation failure
+### Report a failed shell-session operation
 
 ```text
-action = error
+action = shell_session_operation_failed
 request_id = <correlation value>
 reason = <string>
 ```

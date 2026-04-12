@@ -1,5 +1,26 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell protocol operation definition)
+
+- **Defined concrete protocol operations for all shell data-model entities**
+
+  Reworked the shell data model so every entity now has an explicit `Protocol Operations` section
+  with concrete operation names instead of leaving most entities without operations and using
+  generic names like `set`, `get`, or `error`.
+
+  **Implementation**: Updated `specs/001-command-line-shell/data-model.md` to add defined protocol
+  operations for `Shell`, `Shell Session`, `Shell Delegate`, `Shell Input Envelope`, `Shell Output
+  Envelope`, `Receiving Agent`, `Built-in Shell Method`, `Shell Acknowledgement`, and `Runtime
+  Reply`. Updated `specs/001-command-line-shell/contracts/shell-session-protocol.md` and
+  `specs/001-command-line-shell/tasks.md` to use concrete shell-session operation names such as
+  `shell_session_store_value`, `shell_session_load_value`, `shell_session_value_loaded`, and
+  `shell_session_operation_failed`.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The shell feature docs now define concrete protocol operations consistently across the
+  data model, session protocol contract, and implementation task list.
+
 ## 2026-04-12 (Command-line shell pending-state removal)
 
 - **Removed the vague `own_pending_request_state` attribute from `Shell Session`**
