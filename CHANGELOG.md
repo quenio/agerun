@@ -1,5 +1,24 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell entity consolidation)
+
+- **Merged the shell session entry and shell session module into one `Shell Session` entity**
+
+  Simplified the shell design by modeling a single concrete `Shell Session` entity instead of
+  separate session-entry and session-module entities. Also removed unnecessary `Module` prefixes
+  from entity names in the spec and data model where the labels describe modeled entities rather
+  than implementation file names.
+
+  **Implementation**: Updated `specs/001-command-line-shell/data-model.md` to use `Shell`,
+  `Shell Session`, and `Shell Delegate` as entity names, merged session tracking and session-state
+  ownership into one `Shell Session` entity backed by `ar_shell_session`, and updated
+  `specs/001-command-line-shell/spec.md` key-entity wording to match.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The shell feature docs now describe one concrete session entity and use simpler,
+  implementation-agnostic entity names.
+
 ## 2026-04-12 (Command-line shell session data-model separation)
 
 - **Replaced the conceptual shell session item with a concrete shell session entry model**

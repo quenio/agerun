@@ -232,31 +232,27 @@ attribution.
 
 ### Key Entities *(include if feature involves data)*
 
-- **Shell Session**: The user’s interactive AgeRun terminal workspace, including the session-
-  specific shell delegate, its receiving agent connection, the shell module that manages it, the
-  shell session module that owns its state and lifecycle, displayed replies, and shutdown
-  lifecycle.
+- **Shell Session**: An instantiable runtime session for one `arsh` interaction. It owns per-
+  session state and lifecycle, including shell memory, links its delegate and receiving agent, and
+  mediates shell-session operations for the built-in `shell` method.
 - **Shell Input Envelope**: The structured map created by the shell delegate for each accepted line
   of terminal input. Initially it contains exactly one entry: `text`.
-- **Shell Session Delegate**: The session-specific delegate bound to one shell session. It wraps
-  terminal input strings into envelope maps, unwraps returned output envelopes back into terminal
-  strings, and holds the configured receiving-agent target for that session.
+- **Shell Delegate**: The session-specific delegate bound to one shell session. It wraps terminal
+  input strings into envelope maps, unwraps returned output envelopes back into terminal strings,
+  and holds the configured receiving-agent target for that session.
 - **Receiving Agent**: The dedicated runtime agent created automatically from the built-in `shell`
   method for one shell session that receives shell input envelopes and executes the shell method's
   interpretation behavior.
 - **Built-in Shell Method**: The built-in `shell` method executed by the session's receiving agent
   that implements the shell's interpreted `spawn(...)`, `send(...)`, and assignment capabilities.
-- **Shell Module**: A dedicated instantiable `ar_shell` module that implements the `arsh`
-  executable, creates and manages shell session instances, and cleans them up. It coordinates shell
-  lifecycle at the session-manager level for the shell executable.
-- **Shell Session Module**: An instantiable runtime module for one shell session that owns per-
-  session state and lifecycle, including the shell session memory map, and mediates shell-session
-  operations for the built-in shell method through messages.
+- **Shell**: A dedicated instantiable `ar_shell` module that implements the `arsh` executable,
+  creates and manages shell sessions, and cleans them up. It coordinates shell lifecycle at the
+  session-manager level for the shell executable.
 - **Minimal Shell Syntax**: A restricted subset of AgeRun instruction syntax interpreted one line
   at a time by the receiving agent. Allowed forms are limited to `spawn(...)`, `send(...)`,
   `memory... := spawn(...)`, `memory... := send(...)`, and assignment forms. In shell mode,
   assignment forms keep the existing `memory... := ...` syntax and target the shell session memory
-  map owned by the shell session module.
+  owned by the shell session.
 - **Runtime Reply**: A message explicitly sent back to the shell delegate session by a runtime
   component after an earlier shell-driven interaction.
 - **Shell Acknowledgement**: The shell-visible status reported for a wrapped input interaction.
