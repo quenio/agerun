@@ -1,5 +1,20 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell session memory attribute rename)
+
+- **Renamed the shell-session data-model attribute from `memory_map` to `memory`**
+
+  Simplified the shell session terminology so the per-session state attribute is named `memory`,
+  matching the user-facing shell semantics more directly.
+
+  **Implementation**: Updated `specs/001-command-line-shell/data-model.md` so both the shell
+  session and `ar_shell_session` key-attribute lists use `memory` instead of `memory_map`.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The shell session design now uses a simpler, more consistent attribute name for
+  per-session shell values.
+
 ## 2026-04-12 (Command-line shell session ownership correction)
 
 - **Moved per-session shell state and lifecycle into `ar_shell_session`**

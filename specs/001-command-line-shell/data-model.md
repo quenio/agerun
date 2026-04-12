@@ -32,7 +32,7 @@ delegate, the receiving agent, acknowledgement behavior, and final shutdown.
 - `mode`: normal or verbose acknowledgement mode
 - `lifecycle_state`: `created`, `active`, `closing`, `closed`
 - `receiving_agent_id`: the dedicated agent created for the session
-- `memory_map`: shell session values used by shell-mode assignments
+- `memory`: shell session values used by shell-mode assignments
 - `shell_delegate_id`: identifier/handle for the session-specific shell delegate instance
 - `shell_session_module_id`: identifier/handle for the instantiable shell session module instance
 
@@ -59,7 +59,7 @@ for the built-in `shell` method through messages.
 ### Key Attributes
 - `session_binding`: reference or identifier used by `ar_shell` to manage this shell session
 - `lifecycle_state`: `created`, `active`, `closing`, `destroyed`
-- `memory_map`: shell session values used by shell-mode assignments
+- `memory`: shell session values used by shell-mode assignments
 - `pending_request_state`: tracks message-based set/get/ack operations, if needed
 
 ### Validation Rules
