@@ -1,5 +1,21 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell delegate attribute pruning)
+
+- **Reduced `Shell Delegate` to a single `agent_id` attribute**
+
+  Simplified the delegate data model by removing redundant lifecycle state and implementation-level
+  transport details.
+
+  **Implementation**: Updated `specs/001-command-line-shell/data-model.md` so `Shell Delegate`
+  no longer models `status`, `own_input_transport`, or `own_output_transport`; it now keeps only
+  `agent_id`.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The shell delegate data model now focuses only on the routing state that matters at
+  the entity level.
+
 ## 2026-04-12 (Command-line shell session operation pruning)
 
 - **Removed internal shell-session operations from the data model**

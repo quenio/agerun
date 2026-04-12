@@ -75,9 +75,6 @@ holds the configured receiving-agent target.
 
 ### Key Attributes
 - `agent_id`: agent targeted for wrapped shell input
-- `own_input_transport`: owned stdin line reader
-- `own_output_transport`: owned stdout writer
-- `status`: `created`, `active`, `closing`, `closed`
 
 ### Validation Rules
 - The delegate is session-specific, not generic across unrelated runtime features
