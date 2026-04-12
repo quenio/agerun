@@ -15,7 +15,7 @@ normal module API.
 
 ### Key Attributes
 - `own_sessions`: collection of managed shell sessions keyed or indexed by `session_id`
-- `default_mode`: normal or verbose acknowledgement mode, if configured
+- `default_mode`: enum value `normal` or `verbose` for the default acknowledgement mode, if configured
 - `own_system`: owned AgeRun system instance used to create receiving agents and process shell traffic
 - `ref_executable_name`: borrowed executable name `arsh`
 
@@ -37,7 +37,7 @@ in `shell` method through messages.
 ### Key Attributes
 - `session_id`: identifier/handle for this shell session
 - `ref_command_name`: borrowed user-facing name `arsh`
-- `mode`: normal or verbose acknowledgement mode
+- `mode`: enum value `normal` or `verbose` for the session acknowledgement mode
 - `status`: `created`, `active`, `closing`, `closed`
 - `agent_id`: identifier of the dedicated receiving agent for this session
 - `delegate_id`: identifier/handle for the session-specific shell delegate instance

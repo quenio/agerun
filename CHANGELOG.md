@@ -1,5 +1,19 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell mode enum clarification)
+
+- **Made shell mode attributes explicitly enum-valued in the data model**
+
+  Clarified that the shell's `default_mode` and each shell session's `mode` are enum values rather
+  than vague descriptive fields.
+
+  **Implementation**: Updated `specs/001-command-line-shell/data-model.md` so `default_mode` and
+  `mode` are described as enum values with the allowed variants `normal` and `verbose`.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The shell data model now states the valid mode values explicitly.
+
 ## 2026-04-12 (Command-line shell ownership-prefix clarification)
 
 - **Added ownership/mutability prefixes to reference-like shell data-model attributes**
