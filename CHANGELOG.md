@@ -8,7 +8,7 @@
   conventions instead of leaving reference semantics implicit.
 
   **Implementation**: Updated `specs/001-command-line-shell/data-model.md` to add an ownership-
-  prefix note and rename reference-like attributes to forms such as `own_sessions`, `mut_system`,
+  prefix note and rename reference-like attributes to forms such as `own_sessions`, `own_system`,
   `ref_executable_name`, `own_memory`, `own_input_transport`, `own_output_transport`, `own_text`,
   `ref_method_name`, `ref_method_version`, and `own_payload`.
 

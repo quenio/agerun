@@ -8,19 +8,21 @@ status fields, and mode fields remain unprefixed.
 ## 1. Shell
 
 ### Description
-An instantiable `ar_shell` module that implements the `arsh` executable and manages shell sessions
-for the shell workflow. It creates, tracks, and destroys `ar_shell_session` instances while
-exposing shell orchestration logic to unit tests through a normal module API.
+An instantiable `ar_shell` module that implements the `arsh` executable, wraps the AgeRun system,
+and manages shell sessions for the shell workflow. It creates, tracks, and destroys
+`ar_shell_session` instances while exposing shell orchestration logic to unit tests through a
+normal module API.
 
 ### Key Attributes
 - `own_sessions`: collection of managed shell sessions keyed or indexed by `session_id`
 - `default_mode`: normal or verbose acknowledgement mode, if configured
-- `mut_system`: mutable reference to the AgeRun system instance used to create receiving agents and process shell traffic
+- `own_system`: owned AgeRun system instance used to create receiving agents and process shell traffic
 - `ref_executable_name`: borrowed executable name `arsh`
 
 ### Validation Rules
 - The shell is instantiable within the runtime architecture
 - The shell implements the `arsh` executable behavior
+- The shell owns the wrapped AgeRun system lifecycle through `own_system`
 - The shell manages shell sessions without owning each session's internal state directly
 - The shell remains directly unit testable without routing every behavior through unrelated executables
 
