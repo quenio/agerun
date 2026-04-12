@@ -1,20 +1,19 @@
 # AgeRun CHANGELOG
 
-## 2026-04-12 (Command-line shell delegate wrap-input removal)
+## 2026-04-12 (Command-line shell delegate input-operation consolidation)
 
-- **Merged `wrap_input` into `read_line` for `Shell Delegate`**
+- **Collapsed delegate input flow into a single `read_input` operation**
 
-  Simplified the delegate operation list by treating input-envelope wrapping as internal behavior of
-  reading a line, rather than as a separate externally visible operation.
+  Simplified the delegate operation list by treating line reading, envelope creation, and delivery
+  to the target agent as one externally visible delegate operation.
 
   **Implementation**: Updated `specs/001-command-line-shell/data-model.md` so `Shell Delegate`
-  now exposes only `read_line` and `send_input` for input flow, with `read_line` defined as reading
-  one line and creating the corresponding shell input envelope.
+  now exposes `read_input` instead of separate `read_line` and `send_input` operations.
 
   **Verification**: `make check-docs 2>&1` passed.
 
-  **Impact**: The delegate data model now avoids exposing an unnecessary internal step as a public
-  operation.
+  **Impact**: The delegate data model now shows only the single input operation actually driven by
+  the shell session.
 
 ## 2026-04-12 (Command-line shell delegate attribute pruning)
 

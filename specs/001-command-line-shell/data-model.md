@@ -83,10 +83,9 @@ holds the configured receiving-agent target.
 - The delegate unwraps returned output envelopes before display
 
 ### Protocol Operations
-- `read_line`: read one line of terminal input and create the corresponding shell input envelope
-- `send_input`: forward the created input envelope to `agent_id`
-- `render_output`: unwrap a shell output envelope and write it to `own_output_transport`
-- `close`: close delegate transports during shell session shutdown
+- `read_input`: read one line of terminal input, create the corresponding shell input envelope, and deliver it to `agent_id`
+- `render_output`: unwrap a shell output envelope and write shell-visible output
+- `close`: finish delegate participation in shell session shutdown
 
 ## 4. Shell Input Envelope
 
