@@ -10,7 +10,7 @@ exposing shell orchestration logic to unit tests through a normal module API.
 ### Key Attributes
 - `sessions`: collection of managed shell sessions keyed or indexed by `session_id`
 - `default_mode`: normal or verbose acknowledgement mode, if configured
-- `runtime_binding`: access path used to create receiving agents and process shell traffic
+- `system_binding`: reference to the AgeRun system instance used to create receiving agents and process shell traffic
 - `executable_name`: fixed executable name `arsh`
 
 ### Validation Rules
