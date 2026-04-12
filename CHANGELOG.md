@@ -1,5 +1,21 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell delegate session reference)
+
+- **Added a borrowed shell-session reference to `Shell Delegate`**
+
+  Corrected the delegate data model after clarifying that the delegate needs to call back into the
+  session to trigger `render_output` when agent output arrives.
+
+  **Implementation**: Updated `specs/001-command-line-shell/data-model.md` so `Shell Delegate`
+  now includes `ref_session` and explicitly documents that the delegate uses it for callback-based
+  output rendering.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The delegate data model now reflects how output rendering is routed back through the
+  shell session.
+
 ## 2026-04-12 (Command-line shell session delegate-id removal)
 
 - **Removed `delegate_id` from `Shell Session` attributes**

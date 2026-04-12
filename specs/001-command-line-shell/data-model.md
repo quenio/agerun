@@ -75,12 +75,13 @@ holds the configured receiving-agent target.
 
 ### Key Attributes
 - `agent_id`: agent targeted for wrapped shell input
+- `ref_session`: borrowed reference to the shell session used for callback-based output rendering
 
 ### Validation Rules
 - The delegate is session-specific, not generic across unrelated runtime features
 - The delegate holds exactly one receiving-agent target for its session
 - The delegate wraps accepted input before forwarding it
-- The delegate calls back into its shell session when agent output is received
+- The delegate holds `ref_session` so it can call back into its shell session when agent output is received
 
 ### Protocol Operations
 - `read_input`: read one line of terminal input, create the corresponding shell input envelope, and deliver it to `agent_id`
