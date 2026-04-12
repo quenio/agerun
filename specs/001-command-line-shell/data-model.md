@@ -85,7 +85,6 @@ holds the configured receiving-agent target.
 ### Protocol Operations
 - `read_input`: read one line of terminal input, create the corresponding shell input envelope, and deliver it to `agent_id`
 - `render_output`: unwrap a shell output envelope and write shell-visible output
-- `close`: finish delegate participation in shell session shutdown
 
 ## 4. Shell Input Envelope
 

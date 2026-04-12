@@ -1,5 +1,19 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell delegate close removal)
+
+- **Removed `close` from `Shell Delegate` operations**
+
+  Simplified the delegate data model again after clarifying that the delegate has no independent
+  lifecycle state and no separate close operation at the entity level.
+
+  **Implementation**: Updated `specs/001-command-line-shell/data-model.md` so `Shell Delegate`
+  now exposes only `read_input` and `render_output`.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The delegate data model now avoids a redundant shutdown operation.
+
 ## 2026-04-12 (Command-line shell delegate input-operation consolidation)
 
 - **Collapsed delegate input flow into a single `read_input` operation**
