@@ -18,8 +18,8 @@ arsh
 
 - The `arsh` executable is implemented by the `ar_shell` module
 - `ar_shell` is instantiated for the shell process
-- The `ar_shell` module creates and holds the shell session instance
-- The runtime instantiates an `ar_shell_session` module for that shell session
+- The `ar_shell` module creates and manages the shell session instance
+- The runtime instantiates an `ar_shell_session` module that owns that session's state and lifecycle
 - A session-specific shell delegate starts reading from stdin and writing to stdout
 - The runtime creates a dedicated receiving agent from the built-in `shell` method
 - The shell reports readiness and remains open for repeated input
@@ -38,8 +38,8 @@ Expected outcome:
 - The shell delegate wraps the entered string as `{ text = <exact input> }`
 - The built-in `shell` method interprets the line
 - A runtime agent is spawned
-- The resulting agent ID is stored in the shell session memory map owned by `ar_shell` under `echo_id`
-- The `ar_shell_session` module mediates the runtime-facing access path for that shell state
+- The resulting agent ID is stored in the shell session memory map owned by `ar_shell_session` under `echo_id`
+- The `ar_shell` module continues managing the overall shell session while `ar_shell_session` exposes that state to the shell method
 - The shell reports handoff acknowledgement in normal mode
 
 ### Send a message to a runtime agent and capture the result
@@ -50,7 +50,7 @@ memory.send_ok := send(memory.echo_id, "Hello")
 
 Expected outcome:
 - The shell method resolves `memory.echo_id` through the `ar_shell_session` module
-- The `ar_shell_session` module mediates access to the shell session owned by `ar_shell`
+- The `ar_shell_session` module owns that shell session state while remaining under `ar_shell` management
 - The runtime queues the message to the target agent
 - The shell reports handoff acknowledgement
 - In verbose mode, the shell may also report acceptance and action outcome details
@@ -64,9 +64,9 @@ memory.prompt := "Ready"
 
 Expected outcome:
 - The built-in `shell` method interprets the assignment
-- The shell session owned by `ar_shell` stores `prompt = "Ready"` in its own memory map
-- The `ar_shell_session` module mediates access to that state without directly handling the map
+- The `ar_shell_session` module stores `prompt = "Ready"` in its own memory map
 - The value is available to later shell-driven interactions
+- The `ar_shell` module continues managing the session as a whole
 
 ### Send using a stored session value
 
@@ -76,7 +76,7 @@ send(memory.echo_id, memory.prompt)
 
 Expected outcome:
 - The shell method resolves both `memory.echo_id` and `memory.prompt` through `ar_shell_session`
-- The shell session values ultimately come from the shell session owned by `ar_shell`
+- The shell session values ultimately come from the session state owned by `ar_shell_session`
 - The target agent receives the resolved message
 - Any reply appears asynchronously in the shell session after delegate unwrapping
 
@@ -96,7 +96,7 @@ When the user exits:
 - the shell session begins shutdown
 - the dedicated receiving agent is destroyed
 - the `ar_shell_session` module is cleaned up
-- the `ar_shell` module releases the shell session
+- the `ar_shell` module unregisters and releases the shell session
 - the shell delegate shuts down
 - the shell process exits cleanly
 
@@ -105,5 +105,5 @@ When the user exits:
 - The shell executable is implemented by `ar_shell`, not by `ar_executable`
 - The shell delegate is session-specific and only transports input/output plus envelope wrap/unwrap
 - Shell semantics live in the built-in `shell` method
-- Session values live in the shell session owned by `ar_shell`, not in the receiving agent's memory map
-- The `ar_shell_session` module mediates access to shell session state without directly handling the session map
+- Session values live in `ar_shell_session`, not in the receiving agent's memory map
+- The `ar_shell` module manages shell sessions, while `ar_shell_session` owns per-session state and lifecycle

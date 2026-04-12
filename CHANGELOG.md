@@ -1,5 +1,25 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell session ownership correction)
+
+- **Moved per-session shell state and lifecycle into `ar_shell_session`**
+
+  Corrected the `001-command-line-shell` design after clarifying that the shell session module
+  should hold the state and lifecycle of one shell session, while `ar_shell` should manage shell
+  session instances rather than owning each session's internal memory map.
+
+  **Implementation**: Updated `specs/001-command-line-shell/spec.md`, `plan.md`, `research.md`,
+  `data-model.md`, `quickstart.md`, `contracts/README.md`, `contracts/arsh-cli.md`,
+  `contracts/shell-session-protocol.md`, `tasks.md`, and `.specify/memory/pi-agent.md` to make
+  `ar_shell` the shell-session manager and `ar_shell_session` the per-session state/lifecycle owner.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The shell design now matches the intended responsibility split before
+  `/spec implement`: `ar_shell` manages sessions, `ar_shell_session` owns per-session state and
+  lifecycle, `ar_shell_delegate` handles transport, and the built-in `shell` method owns shell
+  semantics.
+
 ## 2026-04-11 (Command-line shell task regeneration)
 
 - **Regenerated `/spec tasks` for the current `arsh` executable architecture**

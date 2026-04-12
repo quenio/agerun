@@ -41,30 +41,30 @@
   - Keep a thin generic entrypoint delegating to `ar_shell`: rejected because the executable module
     itself should be `ar_shell`.
 
-## Decision 4: Make `ar_shell` an instantiable module that owns shell sessions without replacing `ar_shell_session`
+## Decision 4: Make `ar_shell` an instantiable module that manages shell sessions without replacing `ar_shell_session`
 
-- **Decision**: Keep `ar_shell` instantiable and let it create, hold, and destroy shell session
-  instances plus their memory maps.
+- **Decision**: Keep `ar_shell` instantiable and let it create, track, and destroy shell session
+  instances without making it the direct owner of each session's internal state.
 - **Rationale**: Making `ar_shell` instantiable keeps shell orchestration easy to test while
-  aligning the executable module and lifecycle-owning module around the same shell concern.
+  letting the shell module focus on session management and executable behavior rather than per-
+  session state ownership.
 - **Alternatives considered**:
   - Keep `ar_shell` non-instantiable: rejected because easier testing is desired.
   - Let `ar_shell_session` replace `ar_shell`: rejected because the architecture still benefits
-    from separating shell executable/session ownership from the runtime message boundary.
+    from separating shell executable/session management from the runtime message boundary.
 
-## Decision 5: Retain `ar_shell_session` as an instantiable runtime module, but do not let it directly handle the session map
+## Decision 5: Retain `ar_shell_session` as the instantiable runtime module that owns per-session state and lifecycle
 
-- **Decision**: Keep `ar_shell_session` as an instantiable runtime-facing module that mediates
-  shell-session operations for the built-in `shell` method through messages, while the actual shell
-  session memory map remains owned by the shell session held by `ar_shell`.
-- **Rationale**: This preserves the requirement that a shell session module exists within the
-  runtime, while also honoring the ownership boundary that the session map should not be directly
-  handled by the session module itself.
+- **Decision**: Keep `ar_shell_session` as an instantiable runtime-facing module that owns shell-
+  session state and lifecycle for one session, including the session memory map, while mediating
+  shell-session operations for the built-in `shell` method through messages.
+- **Rationale**: This matches the purpose of a shell session module: it should be the place where
+  one session's state actually lives, while `ar_shell` remains the manager of session instances.
 - **Alternatives considered**:
   - Remove `ar_shell_session`: rejected because the architecture still requires an instantiable
     runtime shell-session boundary.
-  - Move the session map directly into `ar_shell_session`: rejected because the session module must
-    mediate access, not directly own the map.
+  - Keep the session map in `ar_shell`: rejected because it makes the shell manager own per-session
+    state that belongs in the session object itself.
 
 ## Decision 6: Keep input/output envelope handling in the session delegate
 
@@ -93,24 +93,24 @@
   - Support the full AgeRun instruction grammar immediately: rejected as too broad for a first
     shell release and harder to validate.
 
-## Decision 8: Redirect shell-mode `memory... := ...` to shell session state owned by `ar_shell`, mediated by `ar_shell_session`
+## Decision 8: Redirect shell-mode `memory... := ...` to shell session state owned by `ar_shell_session`
 
 - **Decision**: In shell mode, `memory... := ...` writes to the shell session memory map owned by
-  `ar_shell` rather than the receiving agent's memory map, while `ar_shell_session` mediates the
-  runtime-facing access path.
-- **Rationale**: This preserves syntax consistency with method definitions while honoring both the
-  encapsulation requirement and the boundary that the session module does not directly handle the
-  map itself.
+  `ar_shell_session` rather than the receiving agent's memory map, while `ar_shell` manages the
+  session instance that contains that state.
+- **Rationale**: This preserves syntax consistency with method definitions while placing per-
+  session state where it belongs: inside the session module rather than the session manager.
 - **Alternatives considered**:
   - Add a new root like `session... := ...`: rejected because the spec deliberately reuses existing
     `memory... := ...` syntax.
-  - Let `ar_shell_session` own the map directly: rejected by the clarified requirement.
+  - Keep the map in `ar_shell`: rejected because the shell manager should manage sessions, not own
+    each session's internal state.
 
 ## Decision 9: Keep shell/session coordination message-based via a shell session protocol
 
-- **Decision**: Define a message protocol between the `shell` method, `ar_shell_session`, the shell
-  session owned by `ar_shell`, and the session-specific delegate for value lookup, assignment,
-  acknowledgement, and reply-envelope flow. Capture that contract in
+- **Decision**: Define a message protocol between the `shell` method, `ar_shell_session`,
+  `ar_shell` as the session manager, and the session-specific delegate for value lookup,
+  assignment, acknowledgement, and reply-envelope flow. Capture that contract in
   [`contracts/shell-session-protocol.md`](./contracts/shell-session-protocol.md).
 - **Rationale**: The spec requires shell-side state and the built-in shell method to exchange
   information via messages rather than hidden shared state. A documented protocol keeps the

@@ -8,26 +8,26 @@
 ## Summary
 
 Add a new user-facing `arsh` executable implemented by the `ar_shell` module. The instantiable
-`ar_shell` module owns shell session instances and their session memory maps, while an instantiable
-`ar_shell_session` module remains the runtime-facing message boundary used by the built-in `shell`
-method. The session-specific `ar_shell_delegate` wraps each entered input string into an input
-envelope map, unwraps returned output envelopes back into terminal strings, and forwards traffic to
-one session-scoped receiving agent started from the built-in `shell` method. The `shell` method
-interprets the restricted one-line instruction subset (`spawn(...)`, `send(...)`, assignment, and
-assigned `spawn`/`send` forms), while shell session state remains outside the receiving agent and
-is owned by `ar_shell` rather than being directly handled by `ar_shell_session`.
+`ar_shell` module manages shell session instances, while an instantiable `ar_shell_session` module
+owns the per-session state and lifecycle used by the built-in `shell` method. The session-specific
+`ar_shell_delegate` wraps each entered input string into an input envelope map, unwraps returned
+output envelopes back into terminal strings, and forwards traffic to one session-scoped receiving
+agent started from the built-in `shell` method. The `shell` method interprets the restricted one-
+line instruction subset (`spawn(...)`, `send(...)`, assignment, and assigned `spawn`/`send` forms),
+while shell session state remains outside the receiving agent and is owned by `ar_shell_session`
+under `ar_shell` management.
 
 ## Technical Context
 
 **Language/Version**: C17 modules, Zig 0.14.1 support modules, and AgeRun method language
 **Primary Dependencies**: `ar_shell`, `ar_shell_session`, `ar_shell_delegate`, `ar_system`, `ar_agency`, `ar_delegation`, `ar_delegate`, `ar_methodology`, Make, gcc-13/clang, Zig 0.14.1
-**Storage**: In-memory system state, shell session instances and memory maps owned by instantiable `ar_shell`, runtime mediation through `ar_shell_session`, existing persisted methods/agents where already supported by the runtime
+**Storage**: In-memory system state, shell session instances managed by instantiable `ar_shell`, per-session memory maps and lifecycle owned by `ar_shell_session`, existing persisted methods/agents where already supported by the runtime
 **Testing**: `make ar_shell_tests 2>&1`, `make ar_shell_session_tests 2>&1`, `make ar_shell_delegate_tests 2>&1`, `make shell_tests 2>&1`, `make ar_system_tests 2>&1`, `make sanitize-tests 2>&1`, `make check-docs`, `make clean build 2>&1`, `make check-logs`
 **Target Platform**: macOS and Linux terminal CLI
 **Project Type**: Message-driven runtime feature spanning a dedicated shell executable module, an instantiable shell module, an instantiable shell session module, a session-specific shell delegate, a built-in shell method, and documentation
 **Performance Goals**: Human-interactive shell startup and per-line handoff consistent with [spec.md](./spec.md) SC-001 and SC-002; no bulk throughput target for the first release
-**Constraints**: No generic stdio delegate; do not implement `arsh` in `ar_executable`; implement the `arsh` executable in `ar_shell`; provide a unit-testable instantiable `ar_shell` module that owns shell session lifecycle and memory; retain an instantiable `ar_shell_session` runtime module as the shell method's message boundary; the session map must not be directly handled by `ar_shell_session`; one session-specific shell delegate per shell session owns envelope wrap/unwrap and receiving-agent targeting; built-in `shell` method owns `spawn`/`send`/assignment semantics; one-line restricted syntax only; no map literals; no nested function calls; shell session state separate from receiving agent memory; shell/session exchange only via messages; user-facing command name `arsh`; zero memory leaks; Make-target-only validation
-**Scale/Scope**: Initial implementation supports one local shell session per process, one `ar_shell` instance backing the `arsh` executable and managing one active shell session, one `ar_shell_session` instance mediating runtime access to that session, one session-specific shell delegate, one dedicated receiving agent running `shell-1.0.0`, and multiple spawned runtime agents reachable from that session
+**Constraints**: No generic stdio delegate; do not implement `arsh` in `ar_executable`; implement the `arsh` executable in `ar_shell`; provide a unit-testable instantiable `ar_shell` module that manages shell sessions; retain an instantiable `ar_shell_session` runtime module as the shell method's message boundary and per-session state/lifecycle owner; one session-specific shell delegate per shell session owns envelope wrap/unwrap and receiving-agent targeting; built-in `shell` method owns `spawn`/`send`/assignment semantics; one-line restricted syntax only; no map literals; no nested function calls; shell session state separate from receiving agent memory; shell/session exchange only via messages; user-facing command name `arsh`; zero memory leaks; Make-target-only validation
+**Scale/Scope**: Initial implementation supports one local shell session per process, one `ar_shell` instance backing the `arsh` executable and managing one active shell session, one `ar_shell_session` instance owning that session's state and lifecycle, one session-specific shell delegate, one dedicated receiving agent running `shell-1.0.0`, and multiple spawned runtime agents reachable from that session
 
 ## Constitution Check
 
@@ -85,8 +85,8 @@ Makefile                          # update for the `arsh` executable target
 
 **Structure Decision**: Implement the dedicated `arsh` executable in `ar_shell` instead of
 routing shell behavior through `ar_executable`. Keep `ar_shell` as the executable-owning module for
-shell session lifecycle/state, keep `ar_shell_session` as the instantiable runtime module that
-mediates access to shell sessions without directly handling the session map, and keep
+shell session management, keep `ar_shell_session` as the instantiable runtime module that owns
+per-session state and lifecycle while mediating shell access through messages, and keep
 `ar_shell_delegate` as the session-specific transport layer. User-facing shell semantics remain in
 the built-in method `methods/shell-1.0.0.method` executed by an auto-created receiving agent.
 

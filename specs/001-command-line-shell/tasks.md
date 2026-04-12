@@ -65,7 +65,7 @@
 
 ## Phase 4: User Story 2 - Use the Built-in Shell Method to Launch and Message Agents (Priority: P2)
 
-**Goal**: Let the built-in `shell` method interpret the restricted one-line syntax subset for `spawn(...)`, `send(...)`, `memory... := ...`, `memory... := spawn(...)`, and `memory... := send(...)`, while `ar_shell` owns shell session state and `ar_shell_session` mediates runtime access without directly handling the session map.
+**Goal**: Let the built-in `shell` method interpret the restricted one-line syntax subset for `spawn(...)`, `send(...)`, `memory... := ...`, `memory... := spawn(...)`, and `memory... := send(...)`, while `ar_shell` manages shell sessions and `ar_shell_session` owns per-session state and lifecycle.
 
 **Independent Test**: Start `arsh`, use the built-in shell method to run one valid spawn, one valid send, and one `memory... := ...` assignment, and verify the requested runtime action or session-state change succeeds without breaking the session.
 
@@ -75,14 +75,14 @@
 
 ### Implementation for User Story 2
 
-- [ ] T017 [P] [US2] Define the shell session mediation API, lifecycle rules, and ownership documentation in new `modules/ar_shell_session.h` and new `modules/ar_shell_session.md`
-- [ ] T018 [US2] Implement `ar_shell_session` message-based `set`/`get`/`resolved`/`error` mediation in new `modules/ar_shell_session.c` and new `modules/ar_shell_session_tests.c`
-- [ ] T019 [US2] Implement shell-session ownership and mediation wiring between `ar_shell`, `ar_shell_session`, and the runtime in `modules/ar_shell.c`, `modules/ar_shell_session.c`, `modules/ar_system.c`, `modules/ar_system.h`, and `modules/ar_system_tests.c`
+- [ ] T017 [P] [US2] Define the shell session state/lifecycle API, message protocol, and ownership documentation in new `modules/ar_shell_session.h` and new `modules/ar_shell_session.md`
+- [ ] T018 [US2] Implement `ar_shell_session` state ownership plus message-based `set`/`get`/`resolved`/`error` mediation in new `modules/ar_shell_session.c` and new `modules/ar_shell_session_tests.c`
+- [ ] T019 [US2] Implement shell-session management wiring between `ar_shell`, `ar_shell_session`, and the runtime in `modules/ar_shell.c`, `modules/ar_shell_session.c`, `modules/ar_system.c`, `modules/ar_system.h`, and `modules/ar_system_tests.c`
 - [ ] T020 [US2] Implement the restricted shell syntax, assignment redirection, and assigned `spawn`/`send` forms in new `methods/shell-1.0.0.method`, new `methods/shell-1.0.0.md`, and new `methods/shell_tests.c`
 - [ ] T021 [US2] Re-run validation for `modules/ar_shell_session_tests.c`, `methods/shell_tests.c`, `modules/ar_shell_tests.c`, and `modules/ar_system_tests.c` with `make ar_shell_session_tests 2>&1`, `make shell_tests 2>&1`, `make ar_shell_tests 2>&1`, and `make ar_system_tests 2>&1` until User Story 2 passes
 - [ ] T022 [US2] Refactor shell/session message helpers in `modules/ar_shell.c`, `modules/ar_shell_session.c`, `modules/ar_system.c`, and `methods/shell-1.0.0.method` while preserving green User Story 2 tests
 
-**Checkpoint**: The shell method can spawn agents, send messages, and store/reuse shell session values through `ar_shell` ownership plus `ar_shell_session` mediation.
+**Checkpoint**: The shell method can spawn agents, send messages, and store/reuse shell session values with `ar_shell` managing sessions and `ar_shell_session` owning per-session state.
 
 ---
 
@@ -176,6 +176,6 @@
 ## Notes
 
 - Keep every RED phase at assertion level; use scaffolding tasks only to avoid compilation failures
-- Preserve the separation of concerns from `research.md`: executable/session ownership in `ar_shell`, runtime mediation in `ar_shell_session`, transport in `ar_shell_delegate`, and shell semantics in `methods/shell-1.0.0.method`
+- Preserve the separation of concerns from `research.md`: session management in `ar_shell`, per-session state/lifecycle and runtime mediation in `ar_shell_session`, transport in `ar_shell_delegate`, and shell semantics in `methods/shell-1.0.0.method`
 - Use ownership-prefixed names and heap-tracking macros in every new C implementation file
 - Do not mark any task complete until the corresponding `make` output, file diff, or documentation update exists

@@ -3,12 +3,12 @@
 ## 1. Shell Module
 
 ### Description
-An instantiable `ar_shell` module that implements the `arsh` executable, creates, holds, and
-destroys shell session instances for the shell workflow. It exposes the actual shell
-lifecycle/orchestration logic to unit tests through a normal module API.
+An instantiable `ar_shell` module that implements the `arsh` executable and manages shell session
+instances for the shell workflow. It creates, tracks, and destroys `ar_shell_session` instances,
+while exposing shell orchestration logic to unit tests through a normal module API.
 
 ### Key Attributes
-- `active_session_count`: number of shell sessions currently owned
+- `active_session_count`: number of shell sessions currently managed
 - `default_mode`: normal or verbose acknowledgement mode, if configured
 - `runtime_binding`: access path used to create receiving agents and process shell traffic
 - `executable_name`: fixed executable name `arsh`
@@ -16,16 +16,16 @@ lifecycle/orchestration logic to unit tests through a normal module API.
 ### Validation Rules
 - The shell module is instantiable within the runtime architecture
 - The shell module implements the `arsh` executable behavior
-- The shell module owns shell session lifecycle outside the receiving agent's memory
+- The shell module manages shell session instances without owning each session's internal state directly
 - The shell module remains directly unit testable without routing every behavior through unrelated executables
 
 ## 2. Shell Session
 
 ### Description
-A shell session is the top-level runtime interaction created by invoking `arsh`. It is owned by the
-instantiated `ar_shell` module and coordinates the session-specific shell delegate, the receiving
-agent, the instantiable `ar_shell_session` runtime module, acknowledgement behavior, and final
-shutdown.
+A shell session is the top-level runtime interaction created by invoking `arsh`. It is managed by
+the instantiated `ar_shell` module and represented by one instantiable `ar_shell_session` runtime
+module that owns the session's state and lifecycle while coordinating the session-specific shell
+delegate, the receiving agent, acknowledgement behavior, and final shutdown.
 
 ### Key Attributes
 - `command_name`: fixed user-facing name `arsh`
@@ -52,20 +52,21 @@ shutdown.
 ## 3. Shell Session Module
 
 ### Description
-An instantiable `ar_shell_session` runtime module bound to one shell session. It mediates
-shell-session operations for the built-in `shell` method through messages, but it does not directly
-own or directly handle the shell session memory map.
+An instantiable `ar_shell_session` runtime module bound to one shell session. It owns the session's
+state and lifecycle, including the shell session memory map, and mediates shell-session operations
+for the built-in `shell` method through messages.
 
 ### Key Attributes
-- `session_binding`: reference or identifier for the shell session owned by `ar_shell`
-- `lifecycle_state`: `created`, `active`, `destroyed`
+- `session_binding`: reference or identifier used by `ar_shell` to manage this shell session
+- `lifecycle_state`: `created`, `active`, `closing`, `destroyed`
+- `memory_map`: shell session values used by shell-mode assignments
 - `pending_request_state`: tracks message-based set/get/ack operations, if needed
 
 ### Validation Rules
 - The shell session module is instantiable within the runtime
 - The shell session module exchanges state with the built-in `shell` method only through messages
-- The shell session module does not directly own or directly handle the session memory map
-- The shell session module mediates access to shell session state held by `ar_shell`
+- The shell session module owns and directly handles the session memory map for its shell session
+- The shell session module owns the lifecycle state for its shell session while remaining managed by `ar_shell`
 
 ### Likely Protocol Operations
 - `set`: request persistence of a session value
@@ -154,8 +155,8 @@ restricted instruction subset.
 ### Validation Rules
 - Exactly one input line is interpreted at a time
 - The built-in shell method does not rely on nested function calls
-- Session value assignment is redirected to the shell session memory map owned by `ar_shell` and
-  mediated by `ar_shell_session`
+- Session value assignment is redirected to the shell session memory map owned by `ar_shell_session`
+  and kept separate from the receiving agent's memory map
 
 ## 9. Shell Acknowledgement
 
@@ -188,8 +189,8 @@ A message explicitly returned toward the shell delegate after a shell-driven int
 
 ## Relationships
 
-- One **Shell Module** creates and holds many **Shell Sessions** over time
-- One **Shell Session** owns one **Shell Session Module**
+- One **Shell Module** creates, tracks, and destroys many **Shell Sessions** over time
+- One **Shell Session** is represented by one **Shell Session Module**
 - One **Shell Session** owns one **Shell Session Delegate**
 - One **Shell Session** owns one **Receiving Agent**
 - One **Shell Session** receives many **Shell Input Envelopes**
@@ -197,4 +198,4 @@ A message explicitly returned toward the shell delegate after a shell-driven int
 - One **Shell Session Delegate** displays many **Shell Acknowledgements** and **Runtime Replies**
 - One **Receiving Agent** executes one **Built-in Shell Method**
 - One **Built-in Shell Method** exchanges state messages with one **Shell Session Module**
-- One **Shell Session Module** mediates access to one **Shell Session** owned by the **Shell Module**
+- One **Shell Session Module** owns the state and lifecycle of one **Shell Session** while being managed by the **Shell Module**

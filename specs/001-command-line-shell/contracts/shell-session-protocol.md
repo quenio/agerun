@@ -3,8 +3,9 @@
 ## Purpose
 
 Define the runtime message contract between the session-specific shell delegate, the built-in
-`shell` method, the instantiable `ar_shell_session` module, and the shell session owned by the
-instantiated `ar_shell` module that backs the `arsh` executable.
+`shell` method, the instantiable `ar_shell_session` module that owns one session's state and
+lifecycle, and the instantiated `ar_shell` module that manages shell sessions for the `arsh`
+executable.
 
 ## 1. Delegate -> Receiving Agent
 
@@ -77,17 +78,17 @@ request_id = <correlation value>
 reason = <string>
 ```
 
-## 5. `ar_shell_session` -> Shell Session owned by `ar_shell`
+## 5. `ar_shell` <-> `ar_shell_session`
 
-- `ar_shell_session` mediates runtime access to shell session state held by `ar_shell`
-- `ar_shell_session` does not directly own or directly handle the shell session memory map
-- the shell session memory map remains owned by the shell session held by `ar_shell`
+- `ar_shell` creates, tracks, and destroys `ar_shell_session` instances
+- `ar_shell_session` owns the shell session memory map and lifecycle for one shell session
+- `ar_shell_session` exposes that shell session state to the built-in `shell` method through messages
 
 ## 6. Shell-mode assignment redirection
 
 In shell mode, `memory... := ...` syntax is preserved for the user, but the assigned value is stored
-in the shell session memory map owned by `ar_shell` rather than in the receiving agent's memory
-map, with `ar_shell_session` mediating the runtime-facing access path.
+in the shell session memory map owned by `ar_shell_session` rather than in the receiving agent's
+memory map.
 
 ## 7. Acknowledgement Stages
 
@@ -106,8 +107,8 @@ Optional additional stages:
 
 - the `arsh` executable is implemented by `ar_shell`
 - `ar_shell` is instantiated for the shell process
-- `ar_shell` creates and holds the shell session instance
-- `ar_shell_session` is instantiated for that shell session
+- `ar_shell` creates and manages the shell session instance
+- `ar_shell_session` is instantiated for that shell session and owns its state and lifecycle
 - the session-specific shell delegate is bound to that shell session instance
 
 ## 9. Replies to the delegate
