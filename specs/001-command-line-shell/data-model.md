@@ -8,6 +8,7 @@ for the shell workflow. It creates, tracks, and destroys `ar_shell_session` inst
 exposing shell orchestration logic to unit tests through a normal module API.
 
 ### Key Attributes
+- `sessions`: collection of managed shell sessions keyed or indexed by `session_id`
 - `active_session_count`: number of shell sessions currently managed
 - `default_mode`: normal or verbose acknowledgement mode, if configured
 - `runtime_binding`: access path used to create receiving agents and process shell traffic
@@ -17,6 +18,7 @@ exposing shell orchestration logic to unit tests through a normal module API.
 - The shell is instantiable within the runtime architecture
 - The shell implements the `arsh` executable behavior
 - The shell manages shell sessions without owning each session's internal state directly
+- `active_session_count` matches the number of entries in `sessions`
 - The shell remains directly unit testable without routing every behavior through unrelated executables
 
 ## 2. Shell Session

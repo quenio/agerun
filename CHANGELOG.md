@@ -1,5 +1,20 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell session collection modeling)
+
+- **Added an explicit managed-session collection to the `Shell` entity**
+
+  Completed the `Shell` data model by adding a concrete `sessions` attribute instead of tracking
+  only `active_session_count`.
+
+  **Implementation**: Updated `specs/001-command-line-shell/data-model.md` so `Shell` now exposes a
+  `sessions` collection keyed or indexed by `session_id`, plus a validation rule that
+  `active_session_count` matches the number of entries in that collection.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The shell manager entity now explicitly models the session collection it manages.
+
 ## 2026-04-12 (Command-line shell entity consolidation)
 
 - **Merged the shell session entry and shell session module into one `Shell Session` entity**
