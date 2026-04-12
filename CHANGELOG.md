@@ -2,13 +2,13 @@
 
 ## 2026-04-12 (Command-line shell system binding clarification)
 
-- **Replaced the vague `runtime_binding` attribute with `system_binding`**
+- **Replaced the vague `runtime_binding` attribute with `system`**
 
   Clarified the `Shell` data model so it refers to a concrete AgeRun system reference instead of an
   ambiguous "access path".
 
   **Implementation**: Updated `specs/001-command-line-shell/data-model.md` to rename
-  `runtime_binding` to `system_binding` and describe it as the reference used to create receiving
+  `runtime_binding` to `system` and describe it as the reference used to create receiving
   agents and process shell traffic.
 
   **Verification**: `make check-docs 2>&1` passed.
