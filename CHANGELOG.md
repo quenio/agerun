@@ -1,5 +1,22 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell session operation pruning)
+
+- **Removed internal shell-session operations from the data model**
+
+  Simplified the `Shell Session` data model so it only lists the high-level operations driven by the
+  shell loop, instead of internal session-state mediation details.
+
+  **Implementation**: Updated `specs/001-command-line-shell/data-model.md` so `Shell Session`
+  now exposes only `activate`, `advance`, and `close`. Internal operations such as `store_value`,
+  `load_value`, `return_loaded_value`, and `report_operation_failure` remain documented in the
+  protocol contract rather than the data model.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The shell data model now stays focused on entity-level control flow instead of
+  internal session message handling.
+
 ## 2026-04-12 (Command-line shell protocol label simplification)
 
 - **Removed implementation-style prefixes from data-model operation labels**

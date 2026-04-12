@@ -63,11 +63,7 @@ in `shell` method through messages.
 
 ### Protocol Operations
 - `activate`: complete startup by linking the delegate and receiving agent, then transition the session to `active`
-- `advance`: process one shell-session turn while active, including input/output handling and session message mediation
-- `store_value`: persist a shell value into `own_memory` for a requested path
-- `load_value`: resolve a shell value from `own_memory` for a requested path
-- `return_loaded_value`: return a successfully resolved shell value to the requester
-- `report_operation_failure`: return a failed shell-session operation with a reason
+- `advance`: process one shell-session turn while active
 - `close`: complete shutdown, clean up session-linked resources, and transition the session to `closed`
 
 ## 3. Shell Delegate
