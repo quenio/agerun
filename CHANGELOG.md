@@ -2,17 +2,19 @@
 
 ## 2026-04-12 (Command-line shell delegate close removal)
 
-- **Removed `close` from `Shell Delegate` operations**
+- **Removed `close` from `Shell Delegate` operations and moved output rendering to `Shell Session`**
 
   Simplified the delegate data model again after clarifying that the delegate has no independent
-  lifecycle state and no separate close operation at the entity level.
+  lifecycle state and that output rendering is a session-level operation triggered by a delegate
+  callback when agent output arrives.
 
   **Implementation**: Updated `specs/001-command-line-shell/data-model.md` so `Shell Delegate`
-  now exposes only `read_input` and `render_output`.
+  now exposes only `read_input`, while `Shell Session` now exposes `render_output`.
 
   **Verification**: `make check-docs 2>&1` passed.
 
-  **Impact**: The delegate data model now avoids a redundant shutdown operation.
+  **Impact**: The delegate data model now avoids a redundant shutdown operation and the output
+  rendering responsibility is modeled at the session level.
 
 ## 2026-04-12 (Command-line shell delegate input-operation consolidation)
 

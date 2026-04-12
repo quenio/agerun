@@ -64,6 +64,7 @@ in `shell` method through messages.
 ### Protocol Operations
 - `activate`: complete startup by linking the delegate and receiving agent, then transition the session to `active`
 - `advance`: process one shell-session turn while active
+- `render_output`: render shell-visible output when the delegate calls back with a message received from the agent
 - `close`: complete shutdown, clean up session-linked resources, and transition the session to `closed`
 
 ## 3. Shell Delegate
@@ -80,11 +81,10 @@ holds the configured receiving-agent target.
 - The delegate is session-specific, not generic across unrelated runtime features
 - The delegate holds exactly one receiving-agent target for its session
 - The delegate wraps accepted input before forwarding it
-- The delegate unwraps returned output envelopes before display
+- The delegate calls back into its shell session when agent output is received
 
 ### Protocol Operations
 - `read_input`: read one line of terminal input, create the corresponding shell input envelope, and deliver it to `agent_id`
-- `render_output`: unwrap a shell output envelope and write shell-visible output
 
 ## 4. Shell Input Envelope
 
