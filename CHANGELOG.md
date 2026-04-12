@@ -1,5 +1,22 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell session data-model separation)
+
+- **Separated the conceptual shell session from the `ar_shell_session` module in the data model**
+
+  Removed the overlap between data-model item 2 and item 3 by making item 2 describe the logical
+  user-facing shell session, while item 3 describes the concrete `ar_shell_session` runtime module
+  that owns per-session state.
+
+  **Implementation**: Updated `specs/001-command-line-shell/data-model.md` so the shell session no
+  longer duplicates the session module's `memory` ownership details and instead focuses on the
+  composed session workspace and cleanup semantics.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The shell data model now distinguishes the user-facing session concept from the
+  runtime session module more clearly.
+
 ## 2026-04-12 (Command-line shell session attribute simplification)
 
 - **Simplified shell-session attribute names in the data model**

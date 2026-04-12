@@ -22,17 +22,16 @@ while exposing shell orchestration logic to unit tests through a normal module A
 ## 2. Shell Session
 
 ### Description
-A shell session is the top-level runtime interaction created by invoking `arsh`. It is managed by
-the instantiated `ar_shell` module and represented by one instantiable `ar_shell_session` runtime
-module that owns the session's state and lifecycle while coordinating the session-specific shell
-delegate, the receiving agent, acknowledgement behavior, and final shutdown.
+A shell session is the top-level interactive workspace created by invoking `arsh`. It is the
+logical user-facing session managed by `ar_shell` and composed of one `ar_shell_session` runtime
+module, one session-specific shell delegate, one dedicated receiving agent, acknowledgement
+behavior, and final shutdown behavior.
 
 ### Key Attributes
 - `command_name`: fixed user-facing name `arsh`
 - `mode`: normal or verbose acknowledgement mode
 - `status`: `created`, `active`, `closing`, `closed`
 - `agent_id`: the dedicated agent created for the session
-- `memory`: shell session values used by shell-mode assignments
 - `delegate_id`: identifier/handle for the session-specific shell delegate instance
 - `session_id`: identifier/handle for the instantiable shell session module instance
 
@@ -41,8 +40,8 @@ delegate, the receiving agent, acknowledgement behavior, and final shutdown.
 - The receiving agent starts from the built-in `shell` method
 - Exactly one shell delegate exists per shell session
 - Exactly one shell session module instance exists per shell session
-- The session memory map is separate from the receiving agent's memory map
 - The session remains active after recoverable input and routing errors
+- Session cleanup is complete only after the agent, delegate, and session module are all cleaned up
 
 ### State Transitions
 - `created -> active`: shell startup completes and receiving agent/delegate/session-module are available
