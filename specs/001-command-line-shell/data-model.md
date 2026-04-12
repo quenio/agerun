@@ -62,14 +62,13 @@ in `shell` method through messages.
 - `closing -> closed`: agent/delegate cleanup completes and `ar_shell` releases the session
 
 ### Protocol Operations
-- `ar_shell_session__bind_delegate`: associate the created delegate with this shell session // EXAMPLE: planned protocol operation label
-- `ar_shell_session__bind_agent`: associate the created receiving agent with this shell session // EXAMPLE: planned protocol operation label
+- `ar_shell_session__activate`: complete startup by linking the delegate and receiving agent, then transition the session to `active` // EXAMPLE: planned protocol operation label
+- `ar_shell_session__advance`: process one shell-session turn while active, including input/output handling and session message mediation // EXAMPLE: planned protocol operation label
 - `ar_shell_session__store_value`: persist a shell value into `own_memory` for a requested path // EXAMPLE: planned protocol operation label
 - `ar_shell_session__load_value`: resolve a shell value from `own_memory` for a requested path // EXAMPLE: planned protocol operation label
 - `ar_shell_session__return_loaded_value`: return a successfully resolved shell value to the requester // EXAMPLE: planned protocol operation label
 - `ar_shell_session__report_operation_failure`: return a failed shell-session operation with a reason // EXAMPLE: planned protocol operation label
-- `ar_shell_session__begin_shutdown`: transition the shell session from `active` to `closing` // EXAMPLE: planned protocol operation label
-- `ar_shell_session__finish_shutdown`: complete cleanup and transition the shell session to `closed` // EXAMPLE: planned protocol operation label
+- `ar_shell_session__close`: complete shutdown, clean up session-linked resources, and transition the session to `closed` // EXAMPLE: planned protocol operation label
 
 ## 3. Shell Delegate
 

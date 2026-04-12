@@ -1,5 +1,22 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell session loop alignment)
+
+- **Revised `Shell Session` operations to match what `Shell.loop` drives**
+
+  Simplified the session-level operation list so it reflects the high-level control flow implied by
+  the shell's single `loop` operation.
+
+  **Implementation**: Updated `specs/001-command-line-shell/data-model.md` so `Shell Session` now
+  exposes `ar_shell_session__activate`, `ar_shell_session__advance`, and
+  `ar_shell_session__close` as its lifecycle-driving operations, while retaining explicit
+  store/load/failure mediation operations for shell-session state.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The shell session data model now presents operations at the right level for the shell
+  loop to drive.
+
 ## 2026-04-12 (Command-line shell loop-only operation)
 
 - **Reduced the `Shell` entity to a single `loop` protocol operation**
