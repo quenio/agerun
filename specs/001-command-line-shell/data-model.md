@@ -27,10 +27,7 @@ normal module API.
 - The shell remains directly unit testable without routing every behavior through unrelated executables
 
 ### Protocol Operations
-- `ar_shell__create_session`: create a new shell session together with its delegate and receiving agent // EXAMPLE: planned protocol operation label
-- `ar_shell__register_session`: insert a newly created session into `own_sessions` // EXAMPLE: planned protocol operation label
-- `ar_shell__process_system_turn`: process one unit of AgeRun system work for active shell traffic // EXAMPLE: planned protocol operation label
-- `ar_shell__release_session`: remove a closed session from `own_sessions` and release its remaining resources // EXAMPLE: planned protocol operation label
+- `loop`: drive the shell runtime by creating, advancing, and releasing shell sessions while processing system work // EXAMPLE: planned protocol operation label
 
 ## 2. Shell Session
 

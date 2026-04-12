@@ -1,5 +1,20 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell loop-only operation)
+
+- **Reduced the `Shell` entity to a single `loop` protocol operation**
+
+  Simplified the `Shell` data model so its behavior is expressed through one top-level `loop`
+  operation instead of multiple lower-level session-management operations.
+
+  **Implementation**: Updated `specs/001-command-line-shell/data-model.md` so the `Shell` entity's
+  `Protocol Operations` section now contains only `` `loop`: ... ``.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The shell manager entity now presents a single high-level control operation in the
+  data model.
+
 ## 2026-04-12 (Command-line shell protocol operation formatting)
 
 - **Reformatted planned protocol operations to use backticked names followed by colons**
