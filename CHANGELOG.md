@@ -1,5 +1,20 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell session attribute simplification)
+
+- **Simplified shell-session attribute names in the data model**
+
+  Renamed the shell session data-model attributes to shorter names that better match AgeRun style:
+  `shell_session_module_id` → `session_id`, `shell_delegate_id` → `delegate_id`,
+  `receiving_agent_id` → `agent_id`, and `lifecycle_state` → `status`.
+
+  **Implementation**: Updated `specs/001-command-line-shell/data-model.md` across the shell
+  session, shell session module, shell delegate, and receiving agent key-attribute lists.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The shell-session design now uses shorter, more consistent attribute names.
+
 ## 2026-04-12 (Command-line shell session memory attribute rename)
 
 - **Renamed the shell-session data-model attribute from `memory_map` to `memory`**

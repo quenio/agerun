@@ -30,11 +30,11 @@ delegate, the receiving agent, acknowledgement behavior, and final shutdown.
 ### Key Attributes
 - `command_name`: fixed user-facing name `arsh`
 - `mode`: normal or verbose acknowledgement mode
-- `lifecycle_state`: `created`, `active`, `closing`, `closed`
-- `receiving_agent_id`: the dedicated agent created for the session
+- `status`: `created`, `active`, `closing`, `closed`
+- `agent_id`: the dedicated agent created for the session
 - `memory`: shell session values used by shell-mode assignments
-- `shell_delegate_id`: identifier/handle for the session-specific shell delegate instance
-- `shell_session_module_id`: identifier/handle for the instantiable shell session module instance
+- `delegate_id`: identifier/handle for the session-specific shell delegate instance
+- `session_id`: identifier/handle for the instantiable shell session module instance
 
 ### Validation Rules
 - Exactly one dedicated receiving agent is created per shell session
@@ -58,7 +58,7 @@ for the built-in `shell` method through messages.
 
 ### Key Attributes
 - `session_binding`: reference or identifier used by `ar_shell` to manage this shell session
-- `lifecycle_state`: `created`, `active`, `closing`, `destroyed`
+- `status`: `created`, `active`, `closing`, `destroyed`
 - `memory`: shell session values used by shell-mode assignments
 - `pending_request_state`: tracks message-based set/get/ack operations, if needed
 
@@ -83,10 +83,10 @@ wraps input strings into input envelopes, unwraps output envelopes back into dis
 holds the configured receiving-agent target.
 
 ### Key Attributes
-- `receiving_agent_id`: agent targeted for wrapped shell input
+- `agent_id`: agent targeted for wrapped shell input
 - `input_transport`: stdin line reader
 - `output_transport`: stdout writer
-- `lifecycle_state`: `created`, `active`, `closing`, `closed`
+- `status`: `created`, `active`, `closing`, `closed`
 
 ### Validation Rules
 - The delegate is session-specific, not generic across unrelated runtime features
@@ -132,7 +132,7 @@ input.
 - `agent_id`: positive runtime agent identifier
 - `method_name`: `shell`
 - `method_version`: `1.0.0` for the first release
-- `lifecycle_state`: `created`, `active`, `destroyed`
+- `status`: `created`, `active`, `destroyed`
 
 ### Validation Rules
 - The receiving agent is created automatically when `arsh` starts
