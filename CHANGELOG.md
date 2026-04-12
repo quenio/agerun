@@ -1,5 +1,25 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell protocol naming convention alignment)
+
+- **Aligned shell protocol operation names with the repo's `ar_<module>__<function>` convention**
+
+  Renamed the shell protocol operations so they follow the standard AgeRun C/C-ABI naming pattern
+  instead of ad-hoc `shell_*` names.
+
+  **Implementation**: Updated `specs/001-command-line-shell/data-model.md`,
+  `specs/001-command-line-shell/contracts/shell-session-protocol.md`, and
+  `specs/001-command-line-shell/tasks.md` to use names such as ar_shell__create_session,
+  ar_shell_session__store_value, ar_shell_delegate__read_line, and
+  ar_shell_method__interpret_line. Planned operation names in the data model are now written as
+  plain labels rather than backticked references so documentation validation does not treat them as
+  already-implemented functions.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The shell feature docs now use protocol-operation names that match repository naming
+  conventions and remain valid under doc checking.
+
 ## 2026-04-12 (Command-line shell protocol operation definition)
 
 - **Defined concrete protocol operations for all shell data-model entities**
@@ -13,8 +33,8 @@
   Envelope`, `Receiving Agent`, `Built-in Shell Method`, `Shell Acknowledgement`, and `Runtime
   Reply`. Updated `specs/001-command-line-shell/contracts/shell-session-protocol.md` and
   `specs/001-command-line-shell/tasks.md` to use concrete shell-session operation names such as
-  `shell_session_store_value`, `shell_session_load_value`, `shell_session_value_loaded`, and
-  `shell_session_operation_failed`.
+  ar_shell_session__store_value, ar_shell_session__load_value,
+  ar_shell_session__return_loaded_value, and ar_shell_session__report_operation_failure.
 
   **Verification**: `make check-docs 2>&1` passed.
 

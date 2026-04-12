@@ -49,7 +49,7 @@ The exact implementation may evolve, but the protocol must support these logical
 ### Store a shell-session value
 
 ```text
-action = shell_session_store_value
+action = ar_shell_session__store_value
 path = <session path>
 value = <data>
 ```
@@ -57,7 +57,7 @@ value = <data>
 ### Load a shell-session value
 
 ```text
-action = shell_session_load_value
+action = ar_shell_session__load_value
 path = <session path>
 request_id = <correlation value>
 ```
@@ -65,7 +65,7 @@ request_id = <correlation value>
 ### Return a loaded shell-session value
 
 ```text
-action = shell_session_value_loaded
+action = ar_shell_session__return_loaded_value
 request_id = <correlation value>
 value = <data>
 ```
@@ -73,7 +73,7 @@ value = <data>
 ### Report a failed shell-session operation
 
 ```text
-action = shell_session_operation_failed
+action = ar_shell_session__report_operation_failure
 request_id = <correlation value>
 reason = <string>
 ```

@@ -76,7 +76,7 @@
 ### Implementation for User Story 2
 
 - [ ] T017 [P] [US2] Define the shell session state/lifecycle API, message protocol, and ownership documentation in new `modules/ar_shell_session.h` and new `modules/ar_shell_session.md`
-- [ ] T018 [US2] Implement `ar_shell_session` state ownership plus message-based `shell_session_store_value` / `shell_session_load_value` / `shell_session_value_loaded` / `shell_session_operation_failed` mediation in new `modules/ar_shell_session.c` and new `modules/ar_shell_session_tests.c`
+- [ ] T018 [US2] Implement `ar_shell_session` state ownership plus message-based ar_shell_session__store_value / ar_shell_session__load_value / ar_shell_session__return_loaded_value / ar_shell_session__report_operation_failure mediation in new `modules/ar_shell_session.c` and new `modules/ar_shell_session_tests.c`
 - [ ] T019 [US2] Implement shell-session management wiring between `ar_shell`, `ar_shell_session`, and the runtime in `modules/ar_shell.c`, `modules/ar_shell_session.c`, `modules/ar_system.c`, `modules/ar_system.h`, and `modules/ar_system_tests.c`
 - [ ] T020 [US2] Implement the restricted shell syntax, assignment redirection, and assigned `spawn`/`send` forms in new `methods/shell-1.0.0.method`, new `methods/shell-1.0.0.md`, and new `methods/shell_tests.c`
 - [ ] T021 [US2] Re-run validation for `modules/ar_shell_session_tests.c`, `methods/shell_tests.c`, `modules/ar_shell_tests.c`, and `modules/ar_system_tests.c` with `make ar_shell_session_tests 2>&1`, `make shell_tests 2>&1`, `make ar_shell_tests 2>&1`, and `make ar_system_tests 2>&1` until User Story 2 passes
