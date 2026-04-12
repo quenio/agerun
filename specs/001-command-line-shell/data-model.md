@@ -1,5 +1,10 @@
 # Data Model: Command-Line Shell
 
+**Ownership Prefix Note**: Reference-like attributes follow the repository ownership conventions from
+`kb/ownership-naming-conventions.md`: `own_` = owned by this entity, `mut_` = mutable borrowed
+reference, `ref_` = read-only borrowed reference. Plain value attributes such as IDs, enum-like
+status fields, and mode fields remain unprefixed.
+
 ## 1. Shell
 
 ### Description
@@ -8,10 +13,10 @@ for the shell workflow. It creates, tracks, and destroys `ar_shell_session` inst
 exposing shell orchestration logic to unit tests through a normal module API.
 
 ### Key Attributes
-- `sessions`: collection of managed shell sessions keyed or indexed by `session_id`
+- `own_sessions`: collection of managed shell sessions keyed or indexed by `session_id`
 - `default_mode`: normal or verbose acknowledgement mode, if configured
-- `system`: reference to the AgeRun system instance used to create receiving agents and process shell traffic
-- `executable_name`: fixed executable name `arsh`
+- `mut_system`: mutable reference to the AgeRun system instance used to create receiving agents and process shell traffic
+- `ref_executable_name`: borrowed executable name `arsh`
 
 ### Validation Rules
 - The shell is instantiable within the runtime architecture
@@ -29,13 +34,13 @@ in `shell` method through messages.
 
 ### Key Attributes
 - `session_id`: identifier/handle for this shell session
-- `command_name`: fixed user-facing name `arsh`
+- `ref_command_name`: borrowed user-facing name `arsh`
 - `mode`: normal or verbose acknowledgement mode
 - `status`: `created`, `active`, `closing`, `closed`
 - `agent_id`: identifier of the dedicated receiving agent for this session
 - `delegate_id`: identifier/handle for the session-specific shell delegate instance
-- `memory`: shell session values used by shell-mode assignments
-- `pending_request_state`: tracks message-based set/get/ack operations, if needed
+- `own_memory`: shell session values used by shell-mode assignments
+- `own_pending_request_state`: owned state used to track message-based set/get/ack operations, if needed
 
 ### Validation Rules
 - The shell session is instantiable within the runtime
@@ -43,7 +48,7 @@ in `shell` method through messages.
 - The linked receiving agent starts from the built-in `shell` method
 - Exactly one shell delegate is linked to each shell session
 - The shell session exchanges state with the built-in `shell` method only through messages
-- The shell session owns and directly handles its session memory
+- The shell session owns and directly handles `own_memory`
 - The shell session remains active after recoverable input and routing errors
 - Session cleanup is complete only after the agent and delegate are cleaned up and `ar_shell` releases the session
 
@@ -68,8 +73,8 @@ holds the configured receiving-agent target.
 
 ### Key Attributes
 - `agent_id`: agent targeted for wrapped shell input
-- `input_transport`: stdin line reader
-- `output_transport`: stdout writer
+- `own_input_transport`: owned stdin line reader
+- `own_output_transport`: owned stdout writer
 - `status`: `created`, `active`, `closing`, `closed`
 
 ### Validation Rules
@@ -85,7 +90,7 @@ The structured map created by the shell delegate for each accepted line of termi
 is forwarded into the runtime.
 
 ### Key Attributes
-- `text`: exact terminal input string entered by the user
+- `own_text`: exact terminal input string entered by the user
 
 ### Validation Rules
 - The initial envelope contains exactly one key-value pair
@@ -98,7 +103,7 @@ is forwarded into the runtime.
 The structured map returned toward the shell delegate so it can display shell-visible output.
 
 ### Key Attributes
-- `text`: string to display in the terminal session
+- `own_text`: string to display in the terminal session
 - `sender_id`: runtime component identifier to attribute the reply
 
 ### Validation Rules
@@ -114,8 +119,8 @@ input.
 
 ### Key Attributes
 - `agent_id`: positive runtime agent identifier
-- `method_name`: `shell`
-- `method_version`: `1.0.0` for the first release
+- `ref_method_name`: borrowed method name `shell`
+- `ref_method_version`: borrowed method version `1.0.0`
 - `status`: `created`, `active`, `destroyed`
 
 ### Validation Rules
@@ -139,7 +144,7 @@ restricted instruction subset.
 ### Validation Rules
 - Exactly one input line is interpreted at a time
 - The built-in shell method does not rely on nested function calls
-- Session value assignment is redirected to the shell session memory owned by `ar_shell_session`
+- Session value assignment is redirected to the shell session `own_memory` owned by `ar_shell_session`
   and kept separate from the receiving agent's memory map
 
 ## 8. Shell Acknowledgement
@@ -164,7 +169,7 @@ A message explicitly returned toward the shell delegate after a shell-driven int
 
 ### Key Attributes
 - `sender_id`: runtime component that sent the reply
-- `payload`: returned AgeRun data value before delegate unwrapping, if still structured
+- `own_payload`: returned AgeRun data value before delegate unwrapping, if still structured
 - `arrival_timing`: immediate or delayed relative to newer shell input
 
 ### Validation Rules
@@ -180,4 +185,4 @@ A message explicitly returned toward the shell delegate after a shell-driven int
 - One **Shell Delegate** targets one **Receiving Agent**
 - One **Shell Delegate** displays many **Shell Acknowledgements** and **Runtime Replies**
 - One **Receiving Agent** executes one **Built-in Shell Method**
-- One **Built-in Shell Method** exchanges state messages with one **Shell Session**
+- One **Built-in Shell Method** exchanges state messages with one **Shell Session** through its `own_memory`

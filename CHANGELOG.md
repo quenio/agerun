@@ -1,5 +1,22 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell ownership-prefix clarification)
+
+- **Added ownership/mutability prefixes to reference-like shell data-model attributes**
+
+  Clarified the shell data model so entity attributes explicitly follow the repository ownership
+  conventions instead of leaving reference semantics implicit.
+
+  **Implementation**: Updated `specs/001-command-line-shell/data-model.md` to add an ownership-
+  prefix note and rename reference-like attributes to forms such as `own_sessions`, `mut_system`,
+  `ref_executable_name`, `own_memory`, `own_input_transport`, `own_output_transport`, `own_text`,
+  `ref_method_name`, `ref_method_version`, and `own_payload`.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The shell data model now makes ownership, mutability, and borrowing explicit for
+  reference-like attributes.
+
 ## 2026-04-12 (Command-line shell system binding clarification)
 
 - **Replaced the vague `runtime_binding` attribute with `system`**
