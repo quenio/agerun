@@ -1,5 +1,20 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell session delegate-id removal)
+
+- **Removed `delegate_id` from `Shell Session` attributes**
+
+  Simplified the shell session data model after clarifying that the session does not address the
+  delegate as a routed target and therefore does not need to store a delegate identifier.
+
+  **Implementation**: Updated `specs/001-command-line-shell/data-model.md` to remove
+  `delegate_id` from the `Shell Session` key attributes while keeping the session/delegate
+  relationship modeled structurally.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The shell session data model now avoids a redundant delegate identifier.
+
 ## 2026-04-12 (Command-line shell delegate close removal)
 
 - **Removed `close` from `Shell Delegate` operations and moved output rendering to `Shell Session`**

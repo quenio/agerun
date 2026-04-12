@@ -43,7 +43,6 @@ in `shell` method through messages.
 - `mode`: enum value `normal` or `verbose` for the session acknowledgement mode
 - `status`: `created`, `active`, `closing`, `closed`
 - `agent_id`: identifier of the dedicated receiving agent for this session
-- `delegate_id`: identifier/handle for the session-specific shell delegate instance
 - `own_memory`: shell session values used by shell-mode assignments
 
 ### Validation Rules
