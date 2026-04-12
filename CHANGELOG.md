@@ -1,5 +1,21 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell protocol label simplification)
+
+- **Removed implementation-style prefixes from data-model operation labels**
+
+  Simplified the operation labels in the shell data model by dropping `ar_<module>__` prefixes and
+  treating them as protocol/data-model operation names rather than function-like symbols.
+
+  **Implementation**: Updated `specs/001-command-line-shell/data-model.md` so entity operations now
+  use plain labels such as `loop`, `activate`, `advance`, `store_value`, `read_line`,
+  `interpret_line`, `report_handoff`, and `route_to_delegate`.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The shell data model now presents protocol operations as conceptual labels instead of
+  implementation-shaped names.
+
 ## 2026-04-12 (Command-line shell session loop alignment)
 
 - **Revised `Shell Session` operations to match what `Shell.loop` drives**
