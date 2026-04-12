@@ -42,7 +42,6 @@ in `shell` method through messages.
 - `agent_id`: identifier of the dedicated receiving agent for this session
 - `delegate_id`: identifier/handle for the session-specific shell delegate instance
 - `own_memory`: shell session values used by shell-mode assignments
-- `own_pending_request_state`: owned state used to track message-based set/get/ack operations, if needed
 
 ### Validation Rules
 - The shell session is instantiable within the runtime

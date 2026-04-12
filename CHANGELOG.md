@@ -1,5 +1,21 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell pending-state removal)
+
+- **Removed the vague `own_pending_request_state` attribute from `Shell Session`**
+
+  Simplified the shell data model by removing an implementation-specific placeholder that did not
+  represent a clearly defined domain entity.
+
+  **Implementation**: Updated `specs/001-command-line-shell/data-model.md` to remove
+  `own_pending_request_state` from the `Shell Session` key attributes while keeping the logical
+  protocol operations (`set`, `get`, `resolved`, `ack`, `error`) documented.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The shell session data model now avoids a vague protocol-tracking field and stays
+  focused on clearer state.
+
 ## 2026-04-12 (Command-line shell mode enum clarification)
 
 - **Made shell mode attributes explicitly enum-valued in the data model**
