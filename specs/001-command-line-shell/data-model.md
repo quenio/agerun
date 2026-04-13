@@ -39,7 +39,6 @@ in `shell` method through messages.
 
 ### Key Attributes
 - `session_id`: identifier/handle for this shell session
-- `ref_command_name`: borrowed user-facing name `arsh`
 - `mode`: enum value `normal` or `verbose` for the session acknowledgement mode
 - `status`: `created`, `active`, `closing`, `closed`
 - `agent_id`: identifier of the dedicated receiving agent for this session

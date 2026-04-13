@@ -1,5 +1,18 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell session command-name removal)
+
+- **Removed `ref_command_name` from `Shell Session`**
+
+  Simplified the shell session data model by removing a redundant command-name attribute.
+
+  **Implementation**: Updated `specs/001-command-line-shell/data-model.md` so `Shell Session`
+  no longer models `ref_command_name`.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The shell session data model now avoids a redundant command-name field.
+
 ## 2026-04-12 (Command-line shell delegate session reference)
 
 - **Added a borrowed shell-session reference to `Shell Delegate`**
