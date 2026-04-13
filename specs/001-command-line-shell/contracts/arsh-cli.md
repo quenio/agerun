@@ -17,11 +17,13 @@ Define the user-facing command contract for the AgeRun shell.
 
 Invoking `arsh`:
 - instantiates an `ar_shell` module
+- selects the shell session acknowledgement mode via a CLI startup flag before the shell loop begins
 - creates and registers a shell session managed by `ar_shell`
 - instantiates an `ar_shell_session` module that owns that session's state and lifecycle
+- stores the selected acknowledgement mode on that shell session
 - starts a session-specific shell delegate over stdio
 - creates a dedicated receiving agent from the built-in `shell` method
-- enters an interactive session that remains open until the user exits
+- enters an interactive session that remains open until EOF / Ctrl-D is received
 
 ## Input Contract
 
@@ -60,15 +62,16 @@ The shell may additionally report:
 
 ### Replies
 
-- replies are returned toward the shell delegate as output envelopes
-- the delegate unwraps them onto stdout
-- each displayed reply identifies the sending runtime component
-- the first implementation expects output envelopes to carry display text plus sender identity
+- replies returned by the session agent are delivered to the session-specific shell delegate callback path
+- the delegate forwards each returned-message event back into the owning shell session
+- the shell session renders shell-visible output to stdout
+- each displayed reply is attributed using only the runtime sender ID
 
 ## Shutdown Contract
 
-When the user exits:
-- the shell session begins shutdown
+When EOF / Ctrl-D is received:
+- the shell session begins shutdown immediately
+- later returned messages are discarded instead of being rendered
 - the dedicated receiving agent is destroyed
 - the `ar_shell_session` module is cleaned up
 - the shell session is unregistered from `ar_shell`

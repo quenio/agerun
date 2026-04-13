@@ -41,9 +41,9 @@
 
 ## Phase 3: User Story 1 - Send Terminal Input Into AgeRun (Priority: P1) 🎯 MVP
 
-**Goal**: Deliver the dedicated `arsh` executable implemented by `ar_shell` so it starts the shell, creates the dedicated receiving agent from the built-in `shell` method, wraps each input line as `{text = input}`, forwards it into the runtime, and stays open for repeated input.
+**Goal**: Deliver the dedicated `arsh` executable implemented by `ar_shell` so it starts the shell, selects the shell acknowledgement mode via a CLI startup flag, creates the dedicated receiving agent from the built-in `shell` method, wraps each input line as `{text = input}`, forwards it into the runtime, and stays open for repeated input.
 
-**Independent Test**: Start `arsh`, confirm startup creates the dedicated receiving agent, enter one or more text lines, and verify the session-specific shell delegate forwards `{text = <exact input>}` envelopes while the session remains open.
+**Independent Test**: Start `arsh`, confirm startup creates the dedicated receiving agent, verify the requested startup mode becomes the active shell-session acknowledgement mode, enter one or more text lines, and verify the session-specific shell delegate forwards `{text = <exact input>}` envelopes while the session remains open.
 
 ### Validation for User Story 1
 
@@ -53,9 +53,9 @@
 
 - [ ] T009 [P] [US1] Define the shell executable module API and ownership documentation in new `modules/ar_shell.h` and new `modules/ar_shell.md`
 - [ ] T010 [P] [US1] Define the session-specific shell delegate API and ownership documentation in new `modules/ar_shell_delegate.h` and new `modules/ar_shell_delegate.md`
-- [ ] T011 [US1] Implement the `arsh` executable startup path, shell-session creation, and dedicated receiving-agent creation in new `modules/ar_shell.c`, new `modules/ar_shell_tests.c`, and Makefile
+- [ ] T011 [US1] Implement the `arsh` executable startup path, startup acknowledgement-mode flag parsing and propagation into `ar_shell_session`, shell-session creation, and dedicated receiving-agent creation in new `modules/ar_shell.c`, new `modules/ar_shell_tests.c`, and Makefile
 - [ ] T012 [US1] Register the built-in shell method asset for startup in new `methods/shell-1.0.0.method`, `modules/ar_methodology.c`, `modules/ar_methodology.h`, and `modules/ar_methodology_tests.c`
-- [ ] T013 [US1] Implement envelope construction, repeated stdin handling, and handoff acknowledgement in new `modules/ar_shell_delegate.c` and new `modules/ar_shell_delegate_tests.c`
+- [ ] T013 [US1] Implement envelope construction, repeated stdin handling, and normal/verbose handoff acknowledgement behavior in new `modules/ar_shell_delegate.c` and new `modules/ar_shell_delegate_tests.c`
 - [ ] T014 [US1] Re-run validation for `modules/ar_shell_tests.c`, `modules/ar_shell_delegate_tests.c`, and `modules/ar_methodology_tests.c` with `make ar_shell_tests 2>&1`, `make ar_shell_delegate_tests 2>&1`, and `make ar_methodology_tests 2>&1` until User Story 1 passes
 - [ ] T015 [US1] Refactor shared shell startup helpers in `modules/ar_shell.c` and `modules/ar_shell_delegate.c` while preserving green User Story 1 tests
 
@@ -67,18 +67,18 @@
 
 **Goal**: Let the built-in `shell` method interpret the restricted one-line syntax subset for `spawn(...)`, `send(...)`, `memory... := ...`, `memory... := spawn(...)`, and `memory... := send(...)`, while `ar_shell` manages shell sessions and `ar_shell_session` owns per-session state and lifecycle.
 
-**Independent Test**: Start `arsh`, use the built-in shell method to run one valid spawn, one valid send, and one `memory... := ...` assignment, and verify the requested runtime action or session-state change succeeds without breaking the session.
+**Independent Test**: Start `arsh`, use the built-in shell method to run one valid spawn, one valid send, and one `memory... := ...` assignment, then enter one invalid shell-syntax line and verify the requested runtime action or session-state change succeeds while the invalid line reports an error without breaking the session.
 
 ### Validation for User Story 2
 
-- [ ] T016 [P] [US2] Run the targeted failing shell method, shell-session mediation, and system wiring tests in `methods/shell_tests.c`, `modules/ar_shell_session_tests.c`, `modules/ar_shell_tests.c`, and `modules/ar_system_tests.c`
+- [ ] T016 [P] [US2] Run the targeted failing shell method, shell-session mediation, invalid-shell-syntax recovery, and system wiring tests in `methods/shell_tests.c`, `modules/ar_shell_session_tests.c`, `modules/ar_shell_tests.c`, and `modules/ar_system_tests.c`
 
 ### Implementation for User Story 2
 
 - [ ] T017 [P] [US2] Define the shell session state/lifecycle API, message protocol, and ownership documentation in new `modules/ar_shell_session.h` and new `modules/ar_shell_session.md`
 - [ ] T018 [US2] Implement `ar_shell_session` state ownership plus message-based ar_shell_session__store_value / ar_shell_session__load_value / ar_shell_session__return_loaded_value / ar_shell_session__report_operation_failure mediation in new `modules/ar_shell_session.c` and new `modules/ar_shell_session_tests.c`
 - [ ] T019 [US2] Implement shell-session management wiring between `ar_shell`, `ar_shell_session`, and the runtime in `modules/ar_shell.c`, `modules/ar_shell_session.c`, `modules/ar_system.c`, `modules/ar_system.h`, and `modules/ar_system_tests.c`
-- [ ] T020 [US2] Implement the restricted shell syntax, assignment redirection, and assigned `spawn`/`send` forms in new `methods/shell-1.0.0.method`, new `methods/shell-1.0.0.md`, and new `methods/shell_tests.c`
+- [ ] T020 [US2] Implement the restricted shell syntax, recoverable invalid-shell-syntax reporting, assignment redirection, and assigned `spawn`/`send` forms in new `methods/shell-1.0.0.method`, new `methods/shell-1.0.0.md`, and new `methods/shell_tests.c`
 - [ ] T021 [US2] Re-run validation for `modules/ar_shell_session_tests.c`, `methods/shell_tests.c`, `modules/ar_shell_tests.c`, and `modules/ar_system_tests.c` with `make ar_shell_session_tests 2>&1`, `make shell_tests 2>&1`, `make ar_shell_tests 2>&1`, and `make ar_system_tests 2>&1` until User Story 2 passes
 - [ ] T022 [US2] Refactor shell/session message helpers in `modules/ar_shell.c`, `modules/ar_shell_session.c`, `modules/ar_system.c`, and `methods/shell-1.0.0.method` while preserving green User Story 2 tests
 
@@ -88,24 +88,24 @@
 
 ## Phase 5: User Story 3 - Observe Replies in the Terminal Session (Priority: P3)
 
-**Goal**: Display runtime replies asynchronously in the active terminal session, keep sender attribution intact, and cleanly destroy the receiving agent when the shell exits.
+**Goal**: Display runtime replies asynchronously in the active terminal session, attribute them using only the runtime sender ID, discard delayed replies after EOF / Ctrl-D closes the session, and cleanly destroy the receiving agent when the shell exits.
 
-**Independent Test**: Trigger a reply from a shell-driven interaction, continue entering input, and verify the later reply appears in the same terminal session with sender attribution and without breaking continuity.
+**Independent Test**: Trigger a reply from a shell-driven interaction, continue entering input, and verify the later reply appears in the same terminal session with runtime-sender-ID-only attribution and without breaking continuity while the session remains open, then verify EOF / Ctrl-D closes immediately and suppresses later returned replies.
 
 ### Validation for User Story 3
 
-- [ ] T023 [P] [US3] Run the targeted failing reply-display and shutdown tests in `modules/ar_shell_delegate_tests.c`, `modules/ar_shell_tests.c`, and `modules/ar_system_tests.c`
+- [ ] T023 [P] [US3] Run the targeted failing reply-display, runtime-sender-ID-only attribution, EOF / Ctrl-D shutdown, late-reply discard, and receiving-agent cleanup tests in `modules/ar_shell_delegate_tests.c`, `modules/ar_shell_tests.c`, and `modules/ar_system_tests.c`
 
 ### Implementation for User Story 3
 
-- [ ] T024 [P] [US3] Define reply-display and sender-attribution behavior in `modules/ar_shell_delegate.md`, `specs/001-command-line-shell/contracts/arsh-cli.md`, and `specs/001-command-line-shell/contracts/shell-session-protocol.md`
-- [ ] T025 [US3] Implement asynchronous returned-message callback routing from `ar_shell_delegate` into `ar_shell_session__render_output`, with sender attribution, in `modules/ar_shell_delegate.c`, `modules/ar_shell_session.c`, and `modules/ar_shell_delegate_tests.c`
+- [ ] T024 [P] [US3] Define reply-display and sender-attribution behavior using only the runtime sender ID, plus EOF / Ctrl-D discard semantics, in `modules/ar_shell_delegate.md`, `specs/001-command-line-shell/contracts/arsh-cli.md`, and `specs/001-command-line-shell/contracts/shell-session-protocol.md`
+- [ ] T025 [US3] Implement asynchronous returned-message callback routing from `ar_shell_delegate` into `ar_shell_session__render_output`, with display attribution limited to the runtime sender ID, in `modules/ar_shell_delegate.c`, `modules/ar_shell_session.c`, and `modules/ar_shell_delegate_tests.c`
 - [ ] T026 [US3] Wire runtime replies back into the active shell executable flow in `modules/ar_shell.c`, `modules/ar_shell_session.c`, `modules/ar_system.c`, and `modules/ar_shell_tests.c`
-- [ ] T027 [US3] Implement clean shell shutdown and receiving-agent cleanup handling in `modules/ar_shell.c`, `modules/ar_shell_tests.c`, `modules/ar_system.c`, and `modules/ar_system_tests.c`
+- [ ] T027 [US3] Implement EOF / Ctrl-D-only shell shutdown, immediate session close, late-returned-message discard, and receiving-agent cleanup handling in `modules/ar_shell.c`, `modules/ar_shell_tests.c`, `modules/ar_system.c`, and `modules/ar_system_tests.c`
 - [ ] T028 [US3] Re-run validation for `modules/ar_shell_delegate_tests.c`, `modules/ar_shell_tests.c`, and `modules/ar_system_tests.c` with `make ar_shell_delegate_tests 2>&1`, `make ar_shell_tests 2>&1`, and `make ar_system_tests 2>&1` until User Story 3 passes
 - [ ] T029 [US3] Refactor returned-message callback routing and shutdown helpers in `modules/ar_shell.c`, `modules/ar_shell_delegate.c`, `modules/ar_shell_session.c`, and `modules/ar_system.c` while preserving green User Story 3 tests
 
-**Checkpoint**: The shell shows attributed asynchronous replies and exits with session-scoped cleanup.
+**Checkpoint**: The shell shows runtime-sender-ID-attributed asynchronous replies while open and exits immediately on EOF / Ctrl-D with session-scoped cleanup and late-reply discard.
 
 ---
 

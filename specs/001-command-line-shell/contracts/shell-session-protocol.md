@@ -22,17 +22,19 @@ configured receiving agent for the session.
 
 ## 2. Receiving Agent / Runtime -> Delegate
 
-### Output envelope
+### Returned-message callback payload
 
-Replies intended for shell display are returned toward the delegate as an envelope map carrying at
-least these logical fields:
+Replies intended for shell display are returned toward the delegate callback path carrying at least
+these logical fields:
 
 ```text
 text = <display string>
 sender_id = <runtime sender identifier>
 ```
 
-The delegate unwraps this envelope into terminal output and sender attribution.
+When a message is returned by the session agent, the session-specific delegate receives the
+callback event, notifies the owning shell session, and the shell session renders terminal output.
+Returned replies displayed in the terminal are attributed using only the runtime sender ID.
 
 ## 3. Built-in `shell` Method Responsibilities
 
@@ -92,6 +94,8 @@ memory map.
 
 ## 7. Acknowledgement Stages
 
+The acknowledgement mode is selected when `arsh` starts and is stored on the active shell session.
+
 ### Normal mode
 
 Minimum required stage:
@@ -114,6 +118,7 @@ Optional additional stages:
 ## 9. Replies to the delegate
 
 Runtime replies sent back to the shell delegate must:
-- remain attributable to the correct sender
-- be displayable asynchronously after delegate unwrapping
+- remain attributable using only the runtime sender ID
+- be displayable asynchronously through the delegate callback path and shell-session rendering while the session remains open
+- be discarded if they arrive after EOF / Ctrl-D has already closed the shell session
 - not corrupt the active shell session when delayed

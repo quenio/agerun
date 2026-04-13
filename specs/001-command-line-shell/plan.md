@@ -13,22 +13,24 @@ instantiable `ar_shell_session` module owns the per-session state and lifecycle 
 built-in `shell` method. The session-specific `ar_shell_delegate` reads terminal input into the
 required input map instances, routes them to one session-scoped agent running the built-in `shell`
 method, and calls back into `ar_shell_session` when a message is returned by that agent so the
-session can render shell-visible output. The `shell` method interprets the restricted one-line
-instruction subset (`spawn(...)`, `send(...)`, assignment, and assigned `spawn`/`send` forms),
-while shell session state remains outside the running agent and is owned by `ar_shell_session`
-under `ar_shell` management.
+session can render shell-visible output using only the runtime sender ID. The `shell` method
+interprets the restricted one-line instruction subset (`spawn(...)`, `send(...)`, assignment, and
+assigned `spawn`/`send` forms), reports invalid shell syntax as a recoverable session-local error,
+and leaves the session active. Shell acknowledgement mode is selected when `arsh` starts via a CLI
+startup flag, and the shell exits only on EOF / Ctrl-D, closing immediately and discarding later
+returned messages.
 
 ## Technical Context
 
 **Language/Version**: C17 modules, Zig 0.14.1 support modules, and AgeRun method language
 **Primary Dependencies**: `ar_shell`, `ar_shell_session`, `ar_shell_delegate`, `ar_system`, `ar_agency`, `ar_delegation`, `ar_delegate`, `ar_methodology`, Make, gcc-13/clang, Zig 0.14.1
 **Storage**: In-memory system state, shell session instances managed by instantiable `ar_shell`, per-session memory maps and lifecycle owned by `ar_shell_session`, existing persisted methods/agents where already supported by the runtime
-**Testing**: `make ar_shell_tests 2>&1`, `make ar_shell_session_tests 2>&1`, `make ar_shell_delegate_tests 2>&1`, `make shell_tests 2>&1`, `make ar_system_tests 2>&1`, `make sanitize-tests 2>&1`, `make check-docs`, `make clean build 2>&1`, `make check-logs`
+**Testing**: `make ar_shell_tests 2>&1`, `make ar_shell_session_tests 2>&1`, `make ar_shell_delegate_tests 2>&1`, `make shell_tests 2>&1`, `make ar_system_tests 2>&1`, `make sanitize-tests 2>&1`, `make check-docs`, `make clean build 2>&1`, `make check-logs`; targeted tests must explicitly cover startup acknowledgement mode selection, invalid-shell-syntax recovery, runtime-sender-ID-only reply rendering, and late-message discard after EOF / Ctrl-D
 **Target Platform**: macOS and Linux terminal CLI
 **Project Type**: Message-driven runtime feature spanning a dedicated shell executable module, an instantiable shell module, an instantiable shell session module, a session-specific shell delegate, a built-in shell method, and documentation
 **Performance Goals**: Human-interactive shell startup and per-line handoff consistent with [spec.md](./spec.md) SC-001 and SC-002; no bulk throughput target for the first release
-**Constraints**: No generic stdio delegate; do not implement `arsh` in `ar_executable`; implement the `arsh` executable in `ar_shell`; provide a unit-testable instantiable `ar_shell` module that manages shell sessions and owns the wrapped system; retain an instantiable `ar_shell_session` runtime module as the shell method's message boundary and per-session state/lifecycle owner; one session-specific shell delegate per shell session reads input into the required map shape, targets the shell agent, and calls back into the session when messages return; built-in `shell` method owns `spawn`/`send`/assignment semantics; one-line restricted syntax only; no map literals; no nested function calls; shell session state separate from agent memory; shell/session exchange only via messages; user-facing command name `arsh`; zero memory leaks; Make-target-only validation
-**Scale/Scope**: Initial implementation supports one local shell session per process, one `ar_shell` instance backing the `arsh` executable and managing one active shell session, one `ar_shell_session` instance owning that session's state and lifecycle, one session-specific shell delegate, one dedicated agent instance running `shell-1.0.0`, and multiple spawned runtime agents reachable from that session
+**Constraints**: No generic stdio delegate; do not implement `arsh` in `ar_executable`; implement the `arsh` executable in `ar_shell`; provide a unit-testable instantiable `ar_shell` module that manages shell sessions and owns the wrapped system; retain an instantiable `ar_shell_session` runtime module as the shell method's message boundary and per-session state/lifecycle owner; one session-specific shell delegate per shell session reads input into the required map shape, targets the shell agent, and calls back into the session when messages return; built-in `shell` method owns `spawn`/`send`/assignment semantics; shell acknowledgement mode is selected at `arsh` startup via a CLI flag and stored on the shell session; one-line restricted syntax only; no map literals; no nested function calls; invalid shell syntax is a recoverable session-local error that leaves the shell usable; shell session state separate from agent memory; shell/session exchange only via messages; reply rendering uses only the runtime sender ID; the first release exits only on EOF / Ctrl-D; once EOF / Ctrl-D is received, the shell closes immediately and ignores later returned messages; user-facing command name `arsh`; zero memory leaks; Make-target-only validation
+**Scale/Scope**: Initial implementation supports one local shell session per process, one `ar_shell` instance backing the `arsh` executable and managing one active shell session, one `ar_shell_session` instance owning that session's state and lifecycle, one session-specific shell delegate, one dedicated agent instance running `shell-1.0.0`, and multiple spawned runtime agents reachable from that session; the active session chooses normal or verbose acknowledgement mode when `arsh` starts and remains interactive until EOF / Ctrl-D closes it
 
 ## Constitution Check
 
@@ -90,7 +92,8 @@ shell session management, keep `ar_shell_session` as the instantiable runtime mo
 per-session state and lifecycle while mediating shell access through messages, and keep
 `ar_shell_delegate` as the session-specific input transport plus callback bridge back into the
 session. User-facing shell semantics remain in the built-in method `methods/shell-1.0.0.method`
-executed by an auto-created agent instance.
+executed by an auto-created agent instance, while the shell session renders returned output with
+runtime-sender-ID-only attribution and ignores delayed replies after session closure.
 
 ## Complexity Tracking
 

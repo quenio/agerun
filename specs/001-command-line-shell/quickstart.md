@@ -18,12 +18,14 @@ arsh
 
 - The `arsh` executable is implemented by the `ar_shell` module
 - `ar_shell` is instantiated for the shell process
+- The shell acknowledgement mode is selected by a CLI startup flag before the shell loop begins
 - The `ar_shell` module creates and manages the shell session instance
 - The runtime instantiates an `ar_shell_session` module that owns that session's state and lifecycle
+- The selected acknowledgement mode is stored on that shell session for the full session lifetime
 - A session-specific shell delegate starts reading from stdin for that shell session
 - The runtime creates a dedicated agent from the built-in `shell` method
 - The shell session is ready to report acknowledgements and render messages returned by that agent
-- The shell reports readiness and remains open for repeated input
+- The shell reports readiness and remains open for repeated input until EOF / Ctrl-D is received
 
 ## 2. Enter one-line shell instructions
 
@@ -54,7 +56,7 @@ Expected outcome:
 - The `ar_shell_session` module owns that shell session state while remaining under `ar_shell` management
 - The runtime queues the message to the target agent
 - The shell reports handoff acknowledgement
-- In verbose mode, the shell may also report acceptance and action outcome details
+- If the shell was started in verbose mode, it may also report acceptance and action outcome details
 - Any later message returned by the target agent is routed back through the delegate callback path and rendered by the shell session to standard output
 
 ### Store a plain session value
@@ -88,14 +90,17 @@ Returned messages are displayed in the same terminal session.
 Expected behavior:
 - The session-specific shell delegate calls back into the shell session when a message is returned by the agent
 - The shell session renders shell-visible output to standard output
-- Sender identity is shown for each displayed message
+- The displayed reply shows only the runtime sender ID
 - Returned messages may arrive after later input has already been entered
-- Delayed returned messages do not terminate the shell session
+- Delayed returned messages do not terminate the shell session while it remains open
 
 ## 4. Exit the shell
 
-When the user exits:
-- the shell session begins shutdown
+The first implementation exits only when EOF / Ctrl-D is received.
+
+When EOF / Ctrl-D is received:
+- the shell session begins shutdown immediately
+- later returned messages are discarded instead of being rendered
 - the dedicated receiving agent is destroyed
 - the `ar_shell_session` module is cleaned up
 - the `ar_shell` module unregisters and releases the shell session
@@ -105,6 +110,7 @@ When the user exits:
 ## Notes for the first implementation
 
 - The shell executable is implemented by `ar_shell`, not by `ar_executable`
+- Invalid shell syntax is reported as an error and leaves the session active
 - The shell delegate is session-specific and only handles input capture plus callback routing back into the shell session
 - Shell semantics live in the built-in `shell` method
 - Session values live in `ar_shell_session`, not in the running agent's memory map

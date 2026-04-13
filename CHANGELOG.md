@@ -1,5 +1,23 @@
 # AgeRun CHANGELOG
 
+## 2026-04-11 (Command-line shell analyze follow-up sync)
+
+- **Synchronized shell plan, tasks, contracts, and quickstart with clarified shell behavior**
+
+  Applied the approved `/spec analyze` follow-up edits for `001-command-line-shell` so the
+  implementation plan, task coverage, and shell contracts all match the clarified specification.
+
+  **Implementation**: Updated `specs/001-command-line-shell/plan.md`, `tasks.md`,
+  `contracts/arsh-cli.md`, `contracts/shell-session-protocol.md`, and `quickstart.md` to carry
+  through startup acknowledgement-mode selection, invalid-shell-syntax recovery, runtime-sender-ID-
+  only reply attribution, EOF / Ctrl-D-only exit, and discard of later returned messages after
+  shutdown.
+
+  **Verification**: `make check-docs 2>&1`, `make clean build 2>&1`, and `make check-logs`.
+
+  **Impact**: The shell feature artifacts now describe the same startup, reply-rendering, and
+  shutdown rules before implementation begins.
+
 ## 2026-04-12 (Command-line shell clarification updates)
 
 - **Recorded five high-impact shell clarifications in the feature spec**
