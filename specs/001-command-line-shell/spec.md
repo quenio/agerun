@@ -36,6 +36,14 @@
 - Q: Who should directly handle the session map? → A: the session map is owned and directly handled by `ar_shell_session`, while `ar_shell` manages shell sessions themselves
 - Q: Should `arsh` be implemented inside `ar_executable`? → A: no; `arsh` is a separate executable whose module is `ar_shell`
 
+### Session 2026-04-12
+
+- Q: How is the shell session acknowledgement mode selected? → A: by a CLI startup flag when launching `arsh`
+- Q: How does the user end the shell session? → A: by EOF / Ctrl-D only
+- Q: What sender attribution should be displayed for returned messages? → A: only the runtime sender ID
+- Q: What happens when the user enters invalid shell syntax? → A: report an error and keep the session active
+- Q: What happens if EOF / Ctrl-D is received while a previous interaction is still awaiting a later returned message? → A: close immediately and discard later returned messages
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Send Terminal Input Into AgeRun (Priority: P1)
@@ -114,7 +122,7 @@ attribution.
 
 1. **Given** the shell session has already forwarded input into the runtime, **When** a runtime
    agent later sends a reply back to the shell delegate, **Then** the shell displays that reply
-   asynchronously and identifies the sender.
+   asynchronously and identifies the sender using only the runtime sender ID.
 2. **Given** the shell is still running after later input has already been entered, **When** a late
    reply arrives, **Then** the shell still displays it without losing session continuity.
 
@@ -127,6 +135,7 @@ attribution.
 - What happens when a requested message targets an agent that does not exist or has already exited?
 - What happens when a reply arrives after newer user input has already been entered?
 - What happens when input is accepted for delivery but no reply ever arrives?
+- What happens if EOF / Ctrl-D is received while a previous interaction is still awaiting a later returned message? The shell closes immediately and later returned messages are discarded.
 - What happens if receiving-agent cleanup fails during shell shutdown?
 
 ## Scope Boundaries *(mandatory)*
@@ -167,6 +176,8 @@ attribution.
 - **FR-001a**: The user-facing command that starts this shell mode MUST be named `arsh`.
 - **FR-001b**: The `arsh` executable MUST be implemented by the `ar_shell` module rather than by
   `ar_executable`.
+- **FR-001c**: The shell session acknowledgement mode MUST be selected when starting `arsh` via a
+  CLI startup flag.
 - **FR-002**: For each accepted line of terminal input, the shell delegate MUST create a structured
   envelope map before forwarding the input into the runtime.
 - **FR-003**: Initially, the shell delegate input envelope MUST contain exactly one key-value pair:
@@ -218,16 +229,17 @@ attribution.
   accepted the interaction for its own processing and whether the requested runtime action later
   succeeded or failed.
 - **FR-012**: The shell MUST display messages explicitly returned to the shell delegate session and
-  identify the sending runtime component for each displayed reply.
+  identify the sending runtime component for each displayed reply using only the runtime sender ID.
 - **FR-012a**: When a message is returned by the session's agent, the session-specific shell
   delegate MUST call back into the shell session, and the shell session MUST render shell-visible
   output while preserving sender attribution for display.
 - **FR-013**: The shell MUST display returned replies asynchronously if they arrive after later user
   input has already been accepted.
 - **FR-014**: The shell MUST keep the session alive after forwarding failures, interpretation
-  failures, unavailable methods, invalid runtime targets, and malformed user input, while providing
-  actionable feedback.
-- **FR-015**: The shell MUST let the user end the shell session cleanly.
+  failures, unavailable methods, invalid runtime targets, malformed user input, and invalid shell
+  syntax, while providing actionable feedback.
+- **FR-015**: The shell MUST let the user end the shell session cleanly via EOF / Ctrl-D.
+- **FR-015a**: Once EOF / Ctrl-D is received, the shell session MUST close immediately and MUST discard any later returned messages.
 - **FR-016**: When the shell session ends, the runtime MUST automatically destroy the dedicated
   receiving agent created for that session.
 
@@ -237,8 +249,9 @@ attribution.
   wraps the AgeRun system, creates and manages shell sessions, and cleans them up.
 - **Shell Session**: An instantiable runtime session for one `arsh` interaction. It owns per-
   session state and lifecycle, including shell memory, links its delegate and the agent instance
-  running the built-in `shell` method, mediates shell-session operations through messages, reports
-  acknowledgement state, and renders returned messages.
+  running the built-in `shell` method, mediates shell-session operations through messages, stores a
+  startup-selected acknowledgement mode, reports acknowledgement state, and renders returned
+  messages.
 - **Shell Delegate**: The session-specific delegate bound to one shell session. It reads terminal
   input into the required map shape, routes that map to the session's agent, and calls back into
   the shell session when messages are returned by the agent.
@@ -278,8 +291,14 @@ attribution.
     rather than being inferred from logs or agent memory.
   - The shell exposes at least one normal acknowledgement state for delegate-to-receiving-agent
     handoff and may expose deeper staged acknowledgement details in verbose mode.
+  - The acknowledgement mode is chosen when `arsh` starts rather than changed interactively during
+    the shell session.
   - The dedicated receiving agent is session-scoped and is destroyed automatically when the shell
     session exits.
+  - The shell session ends only when EOF / Ctrl-D is received; no separate interactive exit command
+    is required in the first release.
+  - Once EOF / Ctrl-D is received, the shell closes immediately rather than waiting for later
+    returned messages.
 - **External Dependencies**:
   - A local terminal environment capable of running the AgeRun executable
   - The AgeRun runtime with the ability to create a dedicated receiving agent from the built-in
@@ -313,10 +332,10 @@ attribution.
 - **SC-002a**: In verbose-mode validation scenarios, layered acknowledgement states are presented
   consistently for transport, receiving-agent acceptance, and requested runtime action outcome in
   100% of reviewed cases where those stages occur.
-- **SC-003**: In transcript checks involving delayed replies, returned messages remain attributable
-  to the correct runtime sender in 100% of reviewed scenarios.
+- **SC-003**: In transcript checks involving delayed replies, returned messages display the correct
+  runtime sender ID in 100% of reviewed scenarios.
 - **SC-004**: Forwarding failures, interpretation failures, unavailable methods, invalid runtime
-  targets, and malformed input all leave the shell session usable and provide corrective guidance in
-  100% of validation scenarios.
+  targets, malformed input, and invalid shell syntax all leave the shell session usable and provide
+  corrective guidance in 100% of validation scenarios.
 - **SC-005**: In shell shutdown validation scenarios, the session-specific receiving agent is
   cleaned up automatically in 100% of reviewed normal exits.

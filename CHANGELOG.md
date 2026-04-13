@@ -1,5 +1,23 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell clarification updates)
+
+- **Recorded five high-impact shell clarifications in the feature spec**
+
+  Completed a native `/spec clarify` pass for `001-command-line-shell` and encoded the accepted
+  answers directly into the feature specification.
+
+  **Implementation**: Updated `specs/001-command-line-shell/spec.md` to clarify that session mode is
+  selected by an `arsh` startup flag, shell exit happens via EOF / Ctrl-D only, displayed sender
+  attribution uses only the runtime sender ID, invalid shell syntax reports an error while keeping
+  the session active, and EOF / Ctrl-D closes the session immediately while discarding later
+  returned messages.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The shell spec now has clearer, testable rules for mode selection, shutdown,
+  attribution, syntax-error handling, and delayed-message behavior.
+
 ## 2026-04-12 (Command-line shell document sync to data model)
 
 - **Revised spec, plan, quickstart, research, and tasks using `data-model.md` as the source of truth**
