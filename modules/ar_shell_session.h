@@ -136,4 +136,11 @@ bool ar_shell_session__is_active(const ar_shell_session_t *ref_session);
  */
 ar_data_t* ar_shell_session__get_memory(const ar_shell_session_t *ref_session);
 
+/**
+ * Get the owned shell-session context map used for runtime execution.
+ * @param ref_session Borrowed shell session
+ * @return Borrowed context map reference, or NULL if unavailable
+ */
+ar_data_t* ar_shell_session__get_context(const ar_shell_session_t *ref_session);
+
 #endif /* AGERUN_SHELL_SESSION_H */

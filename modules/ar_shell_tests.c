@@ -4,6 +4,7 @@
 #include "ar_delegation.h"
 #include "ar_delegate_registry.h"
 #include "ar_methodology.h"
+#include "ar_shell_delegate.h"
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -12,6 +13,7 @@ static void test_shell__create_stores_default_mode_and_system(void);
 static void test_shell__start_session_creates_receiving_agent(void);
 static void test_shell__start_session_registers_runtime_delegate_and_stores_delegate_id(void);
 static void test_shell__runtime_delegate_routes_store_and_load_requests(void);
+static void test_shell__receiving_agent_executes_shell_method_after_input_delivery(void);
 
 int main(void) {
     char cwd[1024];
@@ -28,6 +30,7 @@ int main(void) {
     test_shell__start_session_creates_receiving_agent();
     test_shell__start_session_registers_runtime_delegate_and_stores_delegate_id();
     test_shell__runtime_delegate_routes_store_and_load_requests();
+    test_shell__receiving_agent_executes_shell_method_after_input_delivery();
     printf("All shell module tests passed!\n");
     return 0;
 }
@@ -216,6 +219,49 @@ static void test_shell__runtime_delegate_routes_store_and_load_requests(void) {
               "Load replies should preserve the stored shell-session value");
 
     ar_data__destroy(own_reply_message);
+    ar_shell__destroy(own_shell);
+    printf("    PASS\n");
+}
+
+static void test_shell__receiving_agent_executes_shell_method_after_input_delivery(void) {
+    ar_shell_t *own_shell;
+    ar_shell_session_t *ref_session;
+    ar_system_t *mut_system;
+    ar_agency_t *mut_agency;
+    ar_data_t *own_input_envelope;
+    ar_data_t *mut_agent_memory;
+    int64_t agent_id;
+
+    printf("  test_shell__receiving_agent_executes_shell_method_after_input_delivery...\n");
+
+    own_shell = ar_shell__create(AR_SHELL_MODE__NORMAL);
+    AR_ASSERT(own_shell != NULL, "Shell creation should succeed");
+
+    ref_session = ar_shell__start_session(own_shell, AR_SHELL_MODE__NORMAL);
+    AR_ASSERT(ref_session != NULL, "Shell should create a session");
+
+    mut_system = ar_shell__get_system(own_shell);
+    AR_ASSERT(mut_system != NULL, "Shell should expose its wrapped system");
+    mut_agency = ar_system__get_agency(mut_system);
+    AR_ASSERT(mut_agency != NULL, "Shell should expose its wrapped agency");
+
+    agent_id = ar_shell_session__get_agent_id(ref_session);
+    AR_ASSERT(agent_id > 0, "Shell session should expose its receiving agent ID");
+
+    own_input_envelope = ar_shell_delegate__create_input_envelope("memory.prompt := \"Ready\"");
+    AR_ASSERT(own_input_envelope != NULL, "Shell input envelope creation should succeed");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, agent_id, own_input_envelope),
+              "Shell input envelope should queue to the receiving agent");
+    AR_ASSERT(ar_system__process_next_message(mut_system),
+              "System should process the queued shell input message");
+
+    mut_agent_memory = ar_agency__get_agent_mutable_memory(mut_agency, agent_id);
+    AR_ASSERT(mut_agent_memory != NULL, "Receiving agent should expose mutable memory");
+    AR_ASSERT(ar_data__get_map_string(mut_agent_memory, "last_input") != NULL,
+              "Receiving agent should execute the shell method and record the delivered input text");
+    AR_ASSERT(strcmp(ar_data__get_map_string(mut_agent_memory, "last_input"), "memory.prompt := \"Ready\"") == 0,
+              "Receiving agent should preserve the delivered input text exactly");
+
     ar_shell__destroy(own_shell);
     printf("    PASS\n");
 }

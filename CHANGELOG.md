@@ -1,5 +1,26 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell receiving-agent execution context)
+
+- **Made shell receiving agents executable with session-owned runtime context**
+
+  Continued the shell implementation by giving each shell session its own runtime context map and
+  passing that context into the receiving agent, which unblocks actual shell-method execution after
+  terminal input is delivered.
+
+  **Implementation**: Extended `modules/ar_shell_session.{h,c,md}` with an owned per-session
+  context map plus `ar_shell_session__get_context()`, updated `modules/ar_shell.c` to create the
+  receiving agent with that session-owned context, expanded `modules/ar_shell_tests.c` with a
+  regression test that verifies delivered input is actually executed by the shell method, and synced
+  `modules/ar_shell.md`.
+
+  **Verification**: `make ar_shell_tests 2>&1`, `make ar_shell_session_tests 2>&1`, and
+  `make check-docs 2>&1`.
+
+  **Impact**: The shell runtime is now capable of executing the built-in shell method on delivered
+  input instead of only queueing messages, which is a prerequisite for the upcoming restricted
+  shell-syntax semantics work.
+
 ## 2026-04-12 (Command-line shell runtime delegate wiring)
 
 - **Wired shell sessions into the runtime through session-scoped delegates**

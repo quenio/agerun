@@ -31,6 +31,7 @@ struct ar_shell_session_s {
     int64_t agent_id;
     bool is_active;
     ar_data_t *own_memory;
+    ar_data_t *own_context;
 };
 
 static const char* _memory_relative_path(const char *ref_path) {
@@ -60,7 +61,14 @@ ar_shell_session_t* ar_shell_session__create(int64_t session_id, ar_shell_mode_t
     own_session->agent_id = 0;
     own_session->is_active = false;
     own_session->own_memory = ar_data__create_map();
-    if (!own_session->own_memory) {
+    own_session->own_context = ar_data__create_map();
+    if (!own_session->own_memory || !own_session->own_context) {
+        if (own_session->own_memory) {
+            ar_data__destroy(own_session->own_memory);
+        }
+        if (own_session->own_context) {
+            ar_data__destroy(own_session->own_context);
+        }
         AR__HEAP__FREE(own_session);
         return NULL;
     }
@@ -75,6 +83,9 @@ void ar_shell_session__destroy(ar_shell_session_t *own_session) {
 
     if (own_session->own_memory) {
         ar_data__destroy(own_session->own_memory);
+    }
+    if (own_session->own_context) {
+        ar_data__destroy(own_session->own_context);
     }
 
     AR__HEAP__FREE(own_session);
@@ -344,4 +355,12 @@ ar_data_t* ar_shell_session__get_memory(const ar_shell_session_t *ref_session) {
     }
 
     return ref_session->own_memory;
+}
+
+ar_data_t* ar_shell_session__get_context(const ar_shell_session_t *ref_session) {
+    if (!ref_session) {
+        return NULL;
+    }
+
+    return ref_session->own_context;
 }

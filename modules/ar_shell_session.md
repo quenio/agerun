@@ -3,7 +3,8 @@
 ## Purpose
 
 `ar_shell_session` owns the state for one shell interaction. It stores the session identifier,
-acknowledgement mode, receiving-agent ID, and the owned shell-session memory map.
+acknowledgement mode, receiving-agent ID, the owned shell-session memory map, and the owned
+per-session runtime context used when the receiving agent executes.
 
 ## Public API
 
@@ -23,6 +24,8 @@ acknowledgement mode, receiving-agent ID, and the owned shell-session memory map
 - `ar_shell_session__report_operation_failure()` builds the failure reply payload.
 - `ar_shell_session__is_active()` reports whether the session is active.
 - `ar_shell_session__get_memory()` returns the owned session memory map as a borrowed reference.
+- `ar_shell_session__get_context()` returns the owned per-session runtime context as a borrowed
+  reference.
 
 ## Ownership Notes
 
@@ -31,6 +34,7 @@ acknowledgement mode, receiving-agent ID, and the owned shell-session memory map
 - `ar_shell_session__load_value()`, `ar_shell_session__return_loaded_value()`, and
   `ar_shell_session__report_operation_failure()` each return owned reply maps.
 - `ar_shell_session__get_memory()` returns a borrowed `ar_data_t*` reference owned by the session.
+- `ar_shell_session__get_context()` returns a borrowed `ar_data_t*` reference owned by the session.
 
 ## Current Scope
 

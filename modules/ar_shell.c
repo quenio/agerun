@@ -119,7 +119,11 @@ ar_shell_session_t* ar_shell__start_session(ar_shell_t *mut_shell, ar_shell_mode
         return NULL;
     }
 
-    own_agent_id = ar_agency__create_agent(mut_agency, AR_SHELL_METHOD_NAME, AR_SHELL_METHOD_VERSION, NULL);
+    own_agent_id = ar_agency__create_agent(
+        mut_agency,
+        AR_SHELL_METHOD_NAME,
+        AR_SHELL_METHOD_VERSION,
+        ar_shell_session__get_context(own_session));
     if (own_agent_id <= 0 || !ar_shell_session__activate(own_session, own_agent_id)) {
         if (own_agent_id > 0) {
             ar_agency__destroy_agent(mut_agency, own_agent_id);
