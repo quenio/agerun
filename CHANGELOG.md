@@ -1,5 +1,22 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell envelope-entity removal)
+
+- **Removed shell input/output envelopes as standalone data-model entities**
+
+  Simplified the shell data model by treating shell input and output envelopes as ordinary map
+  instances instead of separate modeled entities.
+
+  **Implementation**: Updated `specs/001-command-line-shell/data-model.md` to remove the `Shell
+  Input Envelope` and `Shell Output Envelope` sections, renumber the remaining entities, and revise
+  the `Shell Delegate`, `Receiving Agent`, `Built-in Shell Method`, `Runtime Reply`, and
+  relationship descriptions to refer to input/output map instances directly.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The shell data model now focuses on persistent runtime entities rather than temporary
+  map instances.
+
 ## 2026-04-12 (Command-line shell session command-name removal)
 
 - **Removed `ref_command_name` from `Shell Session`**

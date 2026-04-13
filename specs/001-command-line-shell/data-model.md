@@ -68,9 +68,9 @@ in `shell` method through messages.
 ## 3. Shell Delegate
 
 ### Description
-The session-specific delegate bound to one shell session. It owns terminal I/O for that session,
-wraps input strings into input envelopes, unwraps output envelopes back into display strings, and
-holds the configured receiving-agent target.
+The session-specific delegate bound to one shell session. It reads terminal input, wraps each line
+into the required input map instance, routes that map to the receiving agent, and calls back into
+the session when agent output arrives.
 
 ### Key Attributes
 - `agent_id`: agent targeted for wrapped shell input
@@ -79,50 +79,13 @@ holds the configured receiving-agent target.
 ### Validation Rules
 - The delegate is session-specific, not generic across unrelated runtime features
 - The delegate holds exactly one receiving-agent target for its session
-- The delegate wraps accepted input before forwarding it
+- The delegate wraps accepted input into the required input map instance before forwarding it
 - The delegate holds `ref_session` so it can call back into its shell session when agent output is received
 
 ### Protocol Operations
-- `read_input`: read one line of terminal input, create the corresponding shell input envelope, and deliver it to `agent_id`
+- `read_input`: read one line of terminal input, create the corresponding input map instance, and deliver it to `agent_id`
 
-## 4. Shell Input Envelope
-
-### Description
-The structured map created by the shell delegate for each accepted line of terminal input before it
-is forwarded into the runtime.
-
-### Key Attributes
-- `own_text`: exact terminal input string entered by the user
-
-### Validation Rules
-- The initial envelope contains exactly one key-value pair
-- The `text` field preserves the original input string verbatim
-- One envelope is produced for each accepted input line
-
-### Protocol Operations
-- `create`: construct an input envelope that stores the accepted terminal line in `own_text`
-- `read_text`: expose `own_text` to the receiving agent for shell-method interpretation
-
-## 5. Shell Output Envelope
-
-### Description
-The structured map returned toward the shell delegate so it can display shell-visible output.
-
-### Key Attributes
-- `own_text`: string to display in the terminal session
-- `sender_id`: runtime component identifier to attribute the reply
-
-### Validation Rules
-- The delegate can unwrap the envelope into a displayed string plus sender attribution
-- Delayed output envelopes remain attributable to the correct sender
-- Output envelope handling does not terminate or corrupt the active shell session
-
-### Protocol Operations
-- `create`: construct an output envelope from display text and sender attribution
-- `read_text`: expose `own_text` for terminal rendering
-- `read_sender`: expose `sender_id` for sender attribution during rendering
-
-## 6. Receiving Agent
+## 4. Receiving Agent
 
 ### Description
 The session-scoped runtime agent that executes the built-in `shell` method and interprets shell
@@ -140,12 +103,12 @@ input.
 - The receiving agent does not own shell assignment state directly
 
 ### Protocol Operations
-- `receive_input`: accept one shell input envelope from the delegate
+- `receive_input`: accept one shell input map instance from the delegate
 - `execute_method`: invoke the built-in `shell` method for the received input
-- `send_output`: return shell-visible output toward the delegate
+- `send_output`: return shell-visible output map data toward the delegate callback path
 - `destroy`: terminate the session-scoped receiving agent during shell shutdown
 
-## 7. Built-in Shell Method
+## 5. Built-in Shell Method
 
 ### Description
 The built-in `shell` method executed by the receiving agent. It owns shell semantics for the
@@ -165,13 +128,13 @@ restricted instruction subset.
   and kept separate from the receiving agent's memory map
 
 ### Protocol Operations
-- `interpret_line`: parse and execute one shell input line from the received envelope
+- `interpret_line`: parse and execute one shell input line from the received input map instance
 - `spawn_agent`: execute a supported `spawn(...)` form and return its result
 - `send_message`: execute a supported `send(...)` form and return its result
 - `store_session_value`: execute a supported `memory... := ...` assignment into `own_memory`
 - `load_session_value`: resolve `memory...` references from the active shell session
 
-## 8. Shell Acknowledgement
+## 6. Shell Acknowledgement
 
 ### Description
 The shell-visible status reported to the terminal after an input line is handled.
@@ -191,10 +154,11 @@ The shell-visible status reported to the terminal after an input line is handled
 - `report_acceptance`: report whether the receiving agent accepted the shell input for processing
 - `report_action_outcome`: report the final runtime action result when verbose mode requests it
 
-## 9. Runtime Reply
+## 7. Runtime Reply
 
 ### Description
-A message explicitly returned toward the shell delegate after a shell-driven interaction.
+A message explicitly returned toward the shell delegate after a shell-driven interaction. Its
+payload may still be a structured map instance before the session renders it.
 
 ### Key Attributes
 - `sender_id`: runtime component that sent the reply
@@ -215,8 +179,8 @@ A message explicitly returned toward the shell delegate after a shell-driven int
 - One **Shell** creates, tracks, and destroys many **Shell Sessions** over time
 - One **Shell Session** links to one **Shell Delegate**
 - One **Shell Session** links to one **Receiving Agent**
-- One **Shell Session** receives many **Shell Input Envelopes**
+- One **Shell Session** receives many shell input map instances over time
 - One **Shell Delegate** targets one **Receiving Agent**
-- One **Shell Delegate** displays many **Shell Acknowledgements** and **Runtime Replies**
+- One **Shell Session** renders many **Shell Acknowledgements** and **Runtime Replies** via delegate callbacks
 - One **Receiving Agent** executes one **Built-in Shell Method**
 - One **Built-in Shell Method** exchanges state messages with one **Shell Session** through its `own_memory`
