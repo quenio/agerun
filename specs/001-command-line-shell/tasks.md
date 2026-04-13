@@ -55,8 +55,8 @@
 - [x] T010 [P] [US1] Define the session-specific shell delegate API and ownership documentation in new `modules/ar_shell_delegate.h` and new `modules/ar_shell_delegate.md`
 - [x] T011 [US1] Implement the `arsh` executable startup path, startup acknowledgement-mode flag parsing and propagation into `ar_shell_session`, shell-session creation, and dedicated receiving-agent creation in new `modules/ar_shell.c`, new `modules/ar_shell_tests.c`, and Makefile
 - [x] T012 [US1] Register the built-in shell method asset for startup in new `methods/shell-1.0.0.method`, `modules/ar_methodology.c`, `modules/ar_methodology.h`, and `modules/ar_methodology_tests.c`
-- [ ] T013 [US1] Implement envelope construction, repeated stdin handling, and normal/verbose handoff acknowledgement behavior in new `modules/ar_shell_delegate.c` and new `modules/ar_shell_delegate_tests.c`
-- [ ] T014 [US1] Re-run validation for `modules/ar_shell_tests.c`, `modules/ar_shell_delegate_tests.c`, and `modules/ar_methodology_tests.c` with `make ar_shell_tests 2>&1`, `make ar_shell_delegate_tests 2>&1`, and `make ar_methodology_tests 2>&1` until User Story 1 passes
+- [x] T013 [US1] Implement envelope construction, repeated stdin handling, and normal/verbose handoff acknowledgement behavior in new `modules/ar_shell_delegate.c` and new `modules/ar_shell_delegate_tests.c`
+- [x] T014 [US1] Re-run validation for `modules/ar_shell_tests.c`, `modules/ar_shell_delegate_tests.c`, and `modules/ar_methodology_tests.c` with `make ar_shell_tests 2>&1`, `make ar_shell_delegate_tests 2>&1`, and `make ar_methodology_tests 2>&1` until User Story 1 passes
 - [ ] T015 [US1] Refactor shared shell startup helpers in `modules/ar_shell.c` and `modules/ar_shell_delegate.c` while preserving green User Story 1 tests
 
 **Checkpoint**: `arsh` can start, create its receiving agent, forward wrapped input, and remain usable for repeated input.

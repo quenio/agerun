@@ -1,6 +1,14 @@
 #include "ar_shell_delegate.h"
 #include "ar_agency.h"
 #include "ar_heap.h"
+#include <inttypes.h>
+#include <string.h>
+
+static void _trim_line_endings(char *mut_text);
+static bool _report_handoff_acknowledgement(
+    const ar_shell_delegate_t *ref_delegate,
+    FILE *mut_output,
+    bool did_handoff_succeed);
 
 struct ar_shell_delegate_s {
     ar_log_t *ref_log;
@@ -59,6 +67,48 @@ ar_data_t* ar_shell_delegate__create_input_envelope(const char *ref_text) {
     return own_envelope;  // Ownership transferred to caller
 }
 
+static void _trim_line_endings(char *mut_text) {
+    size_t ref_length;
+
+    if (!mut_text) {
+        return;
+    }
+
+    ref_length = strlen(mut_text);
+    while (ref_length > 0 &&
+           (mut_text[ref_length - 1] == '\n' || mut_text[ref_length - 1] == '\r')) {
+        mut_text[ref_length - 1] = '\0';
+        ref_length--;
+    }
+}
+
+static bool _report_handoff_acknowledgement(
+    const ar_shell_delegate_t *ref_delegate,
+    FILE *mut_output,
+    bool did_handoff_succeed) {
+    int ref_result;
+
+    if (!ref_delegate || !mut_output || !ref_delegate->ref_session) {
+        return false;
+    }
+
+    if (ar_shell_session__get_mode(ref_delegate->ref_session) == AR_SHELL_MODE__VERBOSE) {
+        ref_result = fprintf(
+            mut_output,
+            did_handoff_succeed ? "handoff ok agent_id=%" PRId64 "\n"
+                                : "handoff failed agent_id=%" PRId64 "\n",
+            ref_delegate->agent_id);
+    } else {
+        ref_result = fprintf(mut_output, did_handoff_succeed ? "handoff ok\n" : "handoff failed\n");
+    }
+
+    if (ref_result < 0) {
+        return false;
+    }
+
+    return fflush(mut_output) == 0;
+}
+
 bool ar_shell_delegate__forward_input(
     ar_shell_delegate_t *mut_delegate,
     ar_system_t *mut_system,
@@ -81,4 +131,27 @@ bool ar_shell_delegate__forward_input(
     }
 
     return ar_agency__send_to_agent(mut_agency, mut_delegate->agent_id, own_envelope);
+}
+
+size_t ar_shell_delegate__process_input_stream(
+    ar_shell_delegate_t *mut_delegate,
+    ar_system_t *mut_system,
+    FILE *mut_input,
+    FILE *mut_output) {
+    char mut_line_buffer[4096];
+    size_t ref_processed_count = 0;
+    bool did_handoff_succeed;
+
+    if (!mut_delegate || !mut_system || !mut_input || !mut_output) {
+        return 0;
+    }
+
+    while (fgets(mut_line_buffer, sizeof(mut_line_buffer), mut_input) != NULL) {
+        _trim_line_endings(mut_line_buffer);
+        did_handoff_succeed = ar_shell_delegate__forward_input(mut_delegate, mut_system, mut_line_buffer);
+        _report_handoff_acknowledgement(mut_delegate, mut_output, did_handoff_succeed);
+        ref_processed_count++;
+    }
+
+    return ref_processed_count;
 }

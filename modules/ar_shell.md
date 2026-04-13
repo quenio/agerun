@@ -28,5 +28,6 @@ built-in `shell` method.
 ## Current Scope
 
 The current implementation covers shell creation, session tracking, built-in shell-method
-registration, receiving-agent startup, and startup-mode propagation. Interactive looping,
-acknowledgement rendering, and asynchronous reply handling remain future work.
+registration, receiving-agent startup, startup-mode propagation, and repeated stdin handoff through
+`ar_shell_delegate__process_input_stream()`. Asynchronous reply handling and shutdown-time reply
+discard remain future work.

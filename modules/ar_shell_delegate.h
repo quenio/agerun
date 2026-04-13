@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include "ar_data.h"
 #include "ar_log.h"
 #include "ar_shell_session.h"
@@ -56,5 +57,19 @@ bool ar_shell_delegate__forward_input(
     ar_shell_delegate_t *mut_delegate,
     ar_system_t *mut_system,
     const char *ref_text);
+
+/**
+ * Read accepted input lines until EOF, forward them, and report handoff acknowledgement.
+ * @param mut_delegate Mutable shell delegate
+ * @param mut_system Mutable system instance
+ * @param mut_input Input stream to read
+ * @param mut_output Output stream for acknowledgement rendering
+ * @return Number of accepted lines read from mut_input
+ */
+size_t ar_shell_delegate__process_input_stream(
+    ar_shell_delegate_t *mut_delegate,
+    ar_system_t *mut_system,
+    FILE *mut_input,
+    FILE *mut_output);
 
 #endif /* AGERUN_SHELL_DELEGATE_H */

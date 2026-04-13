@@ -1,5 +1,27 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell repeated input and handoff acknowledgement slice)
+
+- **Completed repeated shell input handoff for the `arsh` transport path**
+
+  Finished the remaining User Story 1 transport work for `001-command-line-shell` by teaching the
+  session-specific shell delegate to keep reading stdin until EOF, trim trailing line endings,
+  forward each wrapped `{text = ...}` envelope, and render normal/verbose handoff acknowledgement.
+
+  **Implementation**: Extended `modules/ar_shell_delegate.h` and `modules/ar_shell_delegate.c` with
+  `ar_shell_delegate__process_input_stream()`, newline trimming, and mode-sensitive acknowledgement
+  output; expanded `modules/ar_shell_delegate_tests.c` with repeated-input and verbose-mode checks;
+  updated `modules/ar_shell.c` so `arsh` now drives the delegate input loop; synced
+  `modules/ar_shell.md`, `modules/ar_shell_delegate.md`, and
+  `specs/001-command-line-shell/tasks.md`.
+
+  **Verification**: `make ar_shell_delegate_tests 2>&1`, `make ar_shell_tests 2>&1`,
+  `make ar_methodology_tests 2>&1`, and `printf 'memory.prompt := "Ready"\nspawn("echo", "1.0.0", context)\n' | make run-shell 2>&1`.
+
+  **Impact**: The shell transport path now remains open for repeated input, acknowledges each
+  delegate-to-agent handoff, and better matches the current `arsh` CLI contract before shell-method
+  semantics and reply routing are implemented.
+
 ## 2026-04-12 (Command-line shell foundational scaffold and startup slice)
 
 - **Implemented the shell module scaffold, built-in shell-method registration, and initial startup path**

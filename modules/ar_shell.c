@@ -3,7 +3,9 @@
 #include "ar_heap.h"
 #include "ar_list.h"
 #include "ar_methodology.h"
+#include "ar_shell_delegate.h"
 
+#include <stdio.h>
 #include <string.h>
 
 struct ar_shell_s {
@@ -125,6 +127,7 @@ int ar_shell__main(int argc, char **argv) {
     ar_shell_mode_t default_mode = AR_SHELL_MODE__NORMAL;
     ar_shell_t *own_shell;
     ar_shell_session_t *ref_session;
+    ar_shell_delegate_t *own_delegate;
 
     if (argc > 1 && argv && argv[1] && strcmp(argv[1], "--verbose") == 0) {
         default_mode = AR_SHELL_MODE__VERBOSE;
@@ -141,6 +144,18 @@ int ar_shell__main(int argc, char **argv) {
         return 1;
     }
 
+    own_delegate = ar_shell_delegate__create(
+        ar_system__get_log(own_shell->own_system),
+        ref_session,
+        ar_shell_session__get_agent_id(ref_session));
+    if (!own_delegate) {
+        ar_shell__destroy(own_shell);
+        return 1;
+    }
+
+    (void) ar_shell_delegate__process_input_stream(own_delegate, own_shell->own_system, stdin, stdout);
+
+    ar_shell_delegate__destroy(own_delegate);
     ar_shell__destroy(own_shell);
     return 0;
 }
