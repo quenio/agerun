@@ -1,5 +1,21 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell acknowledgement entity removal)
+
+- **Removed `Shell Acknowledgement` as a standalone data-model entity**
+
+  Simplified the shell data model by treating acknowledgement as a shell-session action rather than
+  as a separately modeled entity.
+
+  **Implementation**: Updated `specs/001-command-line-shell/data-model.md` to remove the `Shell
+  Acknowledgement` section, add `report_acknowledgement` to `Shell Session` operations, and revise
+  the relationships section so acknowledgements are described as shell-visible session behavior.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The shell data model now keeps acknowledgement reporting at the session level instead
+  of modeling it as a persistent entity.
+
 ## 2026-04-12 (Command-line shell agent/method entity removal)
 
 - **Removed `Receiving Agent` and `Built-in Shell Method` as standalone data-model entities**

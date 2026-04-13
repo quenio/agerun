@@ -34,8 +34,8 @@ normal module API.
 ### Description
 An instantiable `ar_shell_session` runtime entity bound to one shell invocation and managed by
 `ar_shell`. It owns per-session state and lifecycle, including shell session memory, links the
-receiving agent and delegate for that session, and mediates shell-session operations for the built-
-in `shell` method through messages.
+receiving agent and delegate for that session, mediates shell-session operations for the built-in
+`shell` method through messages, and reports shell-visible acknowledgement state.
 
 ### Key Attributes
 - `session_id`: identifier/handle for this shell session
@@ -62,6 +62,7 @@ in `shell` method through messages.
 ### Protocol Operations
 - `activate`: complete startup by linking the delegate and the agent running the `shell` method, then transition the session to `active`
 - `advance`: process one shell-session turn while active, including message exchange with the running `shell` method
+- `report_acknowledgement`: report shell-visible acknowledgement state for the current input interaction
 - `render_output`: render shell-visible output when the delegate calls back with a message received from the agent
 - `close`: complete shutdown, clean up session-linked resources, and transition the session to `closed`
 
@@ -85,27 +86,7 @@ the session when agent output arrives.
 ### Protocol Operations
 - `read_input`: read one line of terminal input, create the corresponding input map instance, and deliver it to `agent_id`
 
-## 4. Shell Acknowledgement
-
-### Description
-The shell-visible status reported to the terminal after an input line is handled.
-
-### Key Attributes
-- `mode`: enum value `normal` or `verbose`
-- `handoff_status`: whether the delegate successfully forwarded the envelope to the receiving agent
-- `acceptance_status`: optional verbose-only receiving-agent acceptance state
-- `action_status`: optional verbose-only runtime action outcome
-
-### Validation Rules
-- Normal mode always reports delegate-to-receiving-agent handoff status
-- Verbose mode may additionally report receiving-agent acceptance and final action outcome
-
-### Protocol Operations
-- `report_handoff`: report whether the delegate handed the input envelope to the receiving agent
-- `report_acceptance`: report whether the receiving agent accepted the shell input for processing
-- `report_action_outcome`: report the final runtime action result when verbose mode requests it
-
-## 5. Runtime Reply
+## 4. Runtime Reply
 
 ### Description
 A message explicitly returned toward the shell delegate after a shell-driven interaction. Its
@@ -132,5 +113,5 @@ payload may still be a structured map instance before the session renders it.
 - One **Shell Session** links to one agent instance running the `shell` method
 - One **Shell Session** receives many shell input map instances over time
 - One **Shell Delegate** targets one agent instance running the `shell` method
-- One **Shell Session** renders many **Shell Acknowledgements** and **Runtime Replies** via delegate callbacks
+- One **Shell Session** reports many shell-visible acknowledgements and renders many **Runtime Replies** via delegate callbacks
 - One running `shell` method exchanges state messages with one **Shell Session** through its `own_memory`
