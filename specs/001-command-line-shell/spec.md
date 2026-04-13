@@ -14,7 +14,7 @@
 - Q: How should the shell handle replies that do not arrive immediately? → A: report delivery first and display replies asynchronously
 - Q: Should the shell delegate enforce a special input syntax? → A: no; input is just text and interpretation belongs to the receiving agent
 - Q: How should the shell delegate package stdin input? → A: always wrap it in a structured envelope map that initially contains exactly one key-value pair: `text = input string`
-- Q: How should shell output be surfaced? → A: the session-specific shell delegate unwraps returned envelope maps into terminal output strings and sender attribution
+- Q: How should shell output be surfaced? → A: when a message is returned by the session agent, the session-specific shell delegate calls back into the shell session, which renders shell-visible output to stdout with sender attribution
 - Q: How is the receiving agent established for a shell session? → A: the shell session automatically creates a dedicated receiving agent at startup
 - Q: What should the automatically created receiving agent start from? → A: one dedicated built-in `shell` method
 - Q: What should delivery acknowledgement mean in the shell? → A: in normal mode it means delegate-to-receiving-agent handoff succeeded; in verbose mode the shell may also surface receiving-agent acceptance and requested runtime action outcome
@@ -28,7 +28,7 @@
 
 ### Session 2026-04-11
 
-- Q: Do we need a generic stdio delegate for this feature? → A: no; we need a session-specific shell delegate that owns one shell session's envelope wrapping/unwrapping responsibilities
+- Q: Do we need a generic stdio delegate for this feature? → A: no; we need a session-specific shell delegate that reads input into the required map shape and calls back into the shell session when messages are returned by the agent
 - Q: Which method should the shell session's receiving agent run? → A: the dedicated built-in `shell` method, not an `arsh` method
 - Q: Does the shell module replace the shell session module? → A: no; both are required
 - Q: Where should shell session creation and management live? → A: in a dedicated instantiable shell module used by the `arsh` executable; that module creates, tracks, and destroys shell session instances and remains unit-testable
@@ -100,8 +100,8 @@ a session value, and confirm the runtime accepts the requested operation.
 
 ### User Story 3 - Observe Replies in the Terminal Session (Priority: P3)
 
-A user sees messages returned to the shell delegate asynchronously, with enough context to tell what
-runtime component sent each reply.
+A user sees messages returned by the shell session's agent asynchronously, with enough context to
+tell what runtime component sent each reply.
 
 **Why this priority**: A command-line shell is only useful if users can observe what comes back from
 runtime interactions.
@@ -144,7 +144,7 @@ attribution.
   AgeRun instruction syntax for launching methods, sending runtime messages, and requesting storage
   of session values in a shell session managed by a dedicated instantiable shell module and owned by
   a dedicated instantiable shell session module
-- Displaying asynchronously returned messages sent back to the shell delegate
+- Displaying asynchronously returned messages through the delegate callback path and shell-session rendering
 - Clear error reporting, help, and clean shell exit behavior
 - Automatic cleanup of the session-specific receiving agent when the shell exits
 
@@ -219,8 +219,9 @@ attribution.
   succeeded or failed.
 - **FR-012**: The shell MUST display messages explicitly returned to the shell delegate session and
   identify the sending runtime component for each displayed reply.
-- **FR-012a**: The session-specific shell delegate MUST unwrap returned output envelope maps into
-  terminal output strings while preserving sender attribution for display.
+- **FR-012a**: When a message is returned by the session's agent, the session-specific shell
+  delegate MUST call back into the shell session, and the shell session MUST render shell-visible
+  output while preserving sender attribution for display.
 - **FR-013**: The shell MUST display returned replies asynchronously if they arrive after later user
   input has already been accepted.
 - **FR-014**: The shell MUST keep the session alive after forwarding failures, interpretation
@@ -232,38 +233,26 @@ attribution.
 
 ### Key Entities *(include if feature involves data)*
 
-- **Shell Session**: An instantiable runtime session for one `arsh` interaction. It owns per-
-  session state and lifecycle, including shell memory, links its delegate and receiving agent, and
-  mediates shell-session operations for the built-in `shell` method.
-- **Shell Input Envelope**: The structured map created by the shell delegate for each accepted line
-  of terminal input. Initially it contains exactly one entry: `text`.
-- **Shell Delegate**: The session-specific delegate bound to one shell session. It wraps terminal
-  input strings into envelope maps, unwraps returned output envelopes back into terminal strings,
-  and holds the configured receiving-agent target for that session.
-- **Receiving Agent**: The dedicated runtime agent created automatically from the built-in `shell`
-  method for one shell session that receives shell input envelopes and executes the shell method's
-  interpretation behavior.
-- **Built-in Shell Method**: The built-in `shell` method executed by the session's receiving agent
-  that implements the shell's interpreted `spawn(...)`, `send(...)`, and assignment capabilities.
 - **Shell**: A dedicated instantiable `ar_shell` module that implements the `arsh` executable,
-  creates and manages shell sessions, and cleans them up. It coordinates shell lifecycle at the
-  session-manager level for the shell executable.
+  wraps the AgeRun system, creates and manages shell sessions, and cleans them up.
+- **Shell Session**: An instantiable runtime session for one `arsh` interaction. It owns per-
+  session state and lifecycle, including shell memory, links its delegate and the agent instance
+  running the built-in `shell` method, mediates shell-session operations through messages, reports
+  acknowledgement state, and renders returned messages.
+- **Shell Delegate**: The session-specific delegate bound to one shell session. It reads terminal
+  input into the required map shape, routes that map to the session's agent, and calls back into
+  the shell session when messages are returned by the agent.
 - **Minimal Shell Syntax**: A restricted subset of AgeRun instruction syntax interpreted one line
-  at a time by the receiving agent. Allowed forms are limited to `spawn(...)`, `send(...)`,
-  `memory... := spawn(...)`, `memory... := send(...)`, and assignment forms. In shell mode,
-  assignment forms keep the existing `memory... := ...` syntax and target the shell session memory
-  owned by the shell session.
-- **Runtime Reply**: A message explicitly sent back to the shell delegate session by a runtime
-  component after an earlier shell-driven interaction.
-- **Shell Acknowledgement**: The shell-visible status reported for a wrapped input interaction.
-  In normal mode it confirms delegate-to-receiving-agent handoff; in verbose mode it may also show
-  receiving-agent acceptance and requested runtime action outcome.
+  at a time by the agent instance running the built-in `shell` method. Allowed forms are limited to
+  `spawn(...)`, `send(...)`, `memory... := spawn(...)`, `memory... := send(...)`, and assignment
+  forms. In shell mode, assignment forms keep the existing `memory... := ...` syntax and target the
+  shell session memory owned by the shell session.
 
 ## Assumptions & Dependencies *(mandatory)*
 
 - **Assumptions**:
-  - The session-specific shell delegate is responsible for stdio transport plus envelope
-    wrap/unwrap, not shell semantics.
+  - The session-specific shell delegate is responsible for input capture plus callback routing back
+    into the shell session, not shell semantics.
   - The receiving agent executes the built-in `shell` method, which decides what a wrapped shell
     input message means.
   - The shell remains unusable without a minimal receiving-agent syntax for launch, send, and value
@@ -285,8 +274,8 @@ attribution.
     mediates runtime access to the shell session.
   - The shell session module and the built-in shell method exchange shell state through messages
     rather than shared internal state.
-  - Replies intended for the shell session are delivered as messages to the shell delegate rather
-    than being inferred from logs or agent memory.
+  - Messages returned by the session agent are delivered through the shell delegate callback path
+    rather than being inferred from logs or agent memory.
   - The shell exposes at least one normal acknowledgement state for delegate-to-receiving-agent
     handoff and may expose deeper staged acknowledgement details in verbose mode.
   - The dedicated receiving agent is session-scoped and is destroyed automatically when the shell
@@ -304,7 +293,7 @@ attribution.
   walkthroughs, and any shell guidance added for AgeRun users
 - **Affected Runtime Contracts**: CLI behavior, the `arsh` command name, the dedicated `arsh`
   executable implemented by `ar_shell`, session-specific shell delegate messaging, shell
-  input/output envelope handling, restricted one-line receiving-agent shell syntax, the built-in
+  input-map creation and callback-based output rendering, restricted one-line receiving-agent shell syntax, the built-in
   `shell` method contract, shell-mode `memory... := ...` redirection to shell session state owned
   by the shell session module under shell-module management, shell module behavior, shell session
   module behavior, receiving-agent expectations, and reply display behavior for shell-directed

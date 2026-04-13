@@ -2,10 +2,10 @@
 
 ## Decision 1: Use a session-specific shell delegate, not a generic stdio delegate
 
-- **Decision**: Add a new `ar_shell_delegate` module that is created per shell session, owns that
-  session's stdin/stdout transport, wraps each accepted input string into the required envelope map
-  (`text = input string`), unwraps returned output envelopes back into terminal strings, and holds
-  the receiving-agent target for the session.
+- **Decision**: Add a new `ar_shell_delegate` module that is created per shell session, reads each
+  accepted input string into the required input map instance (`text = input string`), routes that
+  map to the agent running the `shell` method, and calls back into the shell session when a message
+  is returned by that agent.
 - **Rationale**: This follows separation of concerns without introducing a reusable generic stdio
   abstraction the feature does not need. The design decision most likely to change here is the
   shell-session transport contract, not generic terminal I/O across the whole system.
@@ -68,12 +68,12 @@
 
 ## Decision 6: Keep input/output envelope handling in the session delegate
 
-- **Decision**: The session-specific shell delegate wraps terminal input strings into input
-  envelopes before forwarding them to the receiving agent and unwraps output envelopes received back
-  from the runtime into displayed terminal strings with sender attribution.
-- **Rationale**: This preserves the transport-only boundary: the delegate manages shell I/O
-  packaging, while the receiving agent, shell method, and shell/session modules manage shell
-  semantics and state routing.
+- **Decision**: The session-specific shell delegate reads terminal input into input map instances
+  before forwarding them to the agent running the `shell` method and calls back into the shell
+  session when a message is returned so the session can render shell-visible output.
+- **Rationale**: This preserves the transport-only boundary: the delegate manages input capture and
+  callback routing, while the shell session and shell method manage shell-visible behavior and state
+  routing.
 - **Alternatives considered**:
   - Let the receiving agent print/read directly: rejected because it conflicts with delegate-
     mediated I/O and system-managed message flow.
@@ -110,7 +110,7 @@
 
 - **Decision**: Define a message protocol between the `shell` method, `ar_shell_session`,
   `ar_shell` as the session manager, and the session-specific delegate for value lookup,
-  assignment, acknowledgement, and reply-envelope flow. Capture that contract in
+  assignment, acknowledgement, and callback-based returned-message flow. Capture that contract in
   [`contracts/shell-session-protocol.md`](./contracts/shell-session-protocol.md).
 - **Rationale**: The spec requires shell-side state and the built-in shell method to exchange
   information via messages rather than hidden shared state. A documented protocol keeps the

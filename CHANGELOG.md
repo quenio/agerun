@@ -1,5 +1,25 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell document sync to data model)
+
+- **Revised spec, plan, quickstart, research, and tasks using `data-model.md` as the source of truth**
+
+  Synchronized the remaining shell feature documents to the simplified data model after the entity
+  cleanup work. This removes stale references to standalone acknowledgement/reply/envelope-style
+  entities and aligns the docs around `Shell`, `Shell Session`, and `Shell Delegate` plus the
+  callback-based output-rendering flow.
+
+  **Implementation**: Updated `specs/001-command-line-shell/spec.md`, `plan.md`, `research.md`,
+  `quickstart.md`, and `tasks.md` to match `specs/001-command-line-shell/data-model.md`. The
+  revisions clarify that the delegate reads input into map instances, the shell session renders
+  output when the delegate calls back with messages returned by the agent, and the simplified data
+  model drives the documentation wording.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The core feature documents now describe the same shell architecture instead of mixing
+  older envelope/reply entity language with the current data model.
+
 ## 2026-04-12 (Command-line shell runtime-reply entity removal)
 
 - **Removed `Runtime Reply` as a standalone data-model entity**

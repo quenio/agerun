@@ -99,11 +99,11 @@
 ### Implementation for User Story 3
 
 - [ ] T024 [P] [US3] Define reply-display and sender-attribution behavior in `modules/ar_shell_delegate.md`, `specs/001-command-line-shell/contracts/arsh-cli.md`, and `specs/001-command-line-shell/contracts/shell-session-protocol.md`
-- [ ] T025 [US3] Implement asynchronous reply polling, output-envelope unwrapping, and sender attribution in `modules/ar_shell_delegate.c` and `modules/ar_shell_delegate_tests.c`
+- [ ] T025 [US3] Implement asynchronous returned-message callback routing from `ar_shell_delegate` into `ar_shell_session__render_output`, with sender attribution, in `modules/ar_shell_delegate.c`, `modules/ar_shell_session.c`, and `modules/ar_shell_delegate_tests.c`
 - [ ] T026 [US3] Wire runtime replies back into the active shell executable flow in `modules/ar_shell.c`, `modules/ar_shell_session.c`, `modules/ar_system.c`, and `modules/ar_shell_tests.c`
 - [ ] T027 [US3] Implement clean shell shutdown and receiving-agent cleanup handling in `modules/ar_shell.c`, `modules/ar_shell_tests.c`, `modules/ar_system.c`, and `modules/ar_system_tests.c`
 - [ ] T028 [US3] Re-run validation for `modules/ar_shell_delegate_tests.c`, `modules/ar_shell_tests.c`, and `modules/ar_system_tests.c` with `make ar_shell_delegate_tests 2>&1`, `make ar_shell_tests 2>&1`, and `make ar_system_tests 2>&1` until User Story 3 passes
-- [ ] T029 [US3] Refactor reply-routing and shutdown helpers in `modules/ar_shell.c`, `modules/ar_shell_delegate.c`, `modules/ar_shell_session.c`, and `modules/ar_system.c` while preserving green User Story 3 tests
+- [ ] T029 [US3] Refactor returned-message callback routing and shutdown helpers in `modules/ar_shell.c`, `modules/ar_shell_delegate.c`, `modules/ar_shell_session.c`, and `modules/ar_system.c` while preserving green User Story 3 tests
 
 **Checkpoint**: The shell shows attributed asynchronous replies and exits with session-scoped cleanup.
 
