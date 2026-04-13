@@ -1,5 +1,23 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell agent/method entity removal)
+
+- **Removed `Receiving Agent` and `Built-in Shell Method` as standalone data-model entities**
+
+  Simplified the shell data model by treating the receiving agent as an ordinary agent instance
+  running the `shell` method and by treating the built-in shell method as a method definition
+  specified elsewhere rather than a separate modeled runtime entity.
+
+  **Implementation**: Updated `specs/001-command-line-shell/data-model.md` to remove the
+  `Receiving Agent` and `Built-in Shell Method` sections, renumber the remaining entities, and fold
+  their essential semantics into `Shell Session`, `Shell Delegate`, acknowledgements, and the
+  relationships section.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The shell data model now focuses on persistent runtime entities instead of separately
+  modeling a regular agent instance and an external method definition.
+
 ## 2026-04-12 (Command-line shell envelope-entity removal)
 
 - **Removed shell input/output envelopes as standalone data-model entities**

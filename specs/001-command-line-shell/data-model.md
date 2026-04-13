@@ -46,10 +46,10 @@ in `shell` method through messages.
 
 ### Validation Rules
 - The shell session is instantiable within the runtime
-- Exactly one dedicated receiving agent is linked to each shell session
-- The linked receiving agent starts from the built-in `shell` method
+- Exactly one dedicated agent is linked to each shell session
+- The linked agent starts from the built-in `shell` method definition
 - Exactly one shell delegate is linked to each shell session
-- The shell session exchanges state with the built-in `shell` method only through messages
+- The shell session exchanges state with the running `shell` method only through messages
 - The shell session owns and directly handles `own_memory`
 - The shell session remains active after recoverable input and routing errors
 - Session cleanup is complete only after the agent and delegate are cleaned up and `ar_shell` releases the session
@@ -60,8 +60,8 @@ in `shell` method through messages.
 - `closing -> closed`: agent/delegate cleanup completes and `ar_shell` releases the session
 
 ### Protocol Operations
-- `activate`: complete startup by linking the delegate and receiving agent, then transition the session to `active`
-- `advance`: process one shell-session turn while active
+- `activate`: complete startup by linking the delegate and the agent running the `shell` method, then transition the session to `active`
+- `advance`: process one shell-session turn while active, including message exchange with the running `shell` method
 - `render_output`: render shell-visible output when the delegate calls back with a message received from the agent
 - `close`: complete shutdown, clean up session-linked resources, and transition the session to `closed`
 
@@ -73,7 +73,7 @@ into the required input map instance, routes that map to the receiving agent, an
 the session when agent output arrives.
 
 ### Key Attributes
-- `agent_id`: agent targeted for wrapped shell input
+- `agent_id`: agent targeted for wrapped shell input and running the `shell` method
 - `ref_session`: borrowed reference to the shell session used for callback-based output rendering
 
 ### Validation Rules
@@ -85,56 +85,7 @@ the session when agent output arrives.
 ### Protocol Operations
 - `read_input`: read one line of terminal input, create the corresponding input map instance, and deliver it to `agent_id`
 
-## 4. Receiving Agent
-
-### Description
-The session-scoped runtime agent that executes the built-in `shell` method and interprets shell
-input.
-
-### Key Attributes
-- `agent_id`: positive runtime agent identifier
-- `ref_method_name`: borrowed method name `shell`
-- `ref_method_version`: borrowed method version `1.0.0`
-- `status`: `created`, `active`, `destroyed`
-
-### Validation Rules
-- The receiving agent is created automatically when `arsh` starts
-- The receiving agent is destroyed automatically when the shell session exits
-- The receiving agent does not own shell assignment state directly
-
-### Protocol Operations
-- `receive_input`: accept one shell input map instance from the delegate
-- `execute_method`: invoke the built-in `shell` method for the received input
-- `send_output`: return shell-visible output map data toward the delegate callback path
-- `destroy`: terminate the session-scoped receiving agent during shell shutdown
-
-## 5. Built-in Shell Method
-
-### Description
-The built-in `shell` method executed by the receiving agent. It owns shell semantics for the
-restricted instruction subset.
-
-### Supported User-Facing Forms
-- `spawn(...)`
-- `send(...)`
-- `memory... := ...`
-- `memory... := spawn(...)`
-- `memory... := send(...)`
-
-### Validation Rules
-- Exactly one input line is interpreted at a time
-- The built-in shell method does not rely on nested function calls
-- Session value assignment is redirected to the shell session `own_memory` owned by `ar_shell_session`
-  and kept separate from the receiving agent's memory map
-
-### Protocol Operations
-- `interpret_line`: parse and execute one shell input line from the received input map instance
-- `spawn_agent`: execute a supported `spawn(...)` form and return its result
-- `send_message`: execute a supported `send(...)` form and return its result
-- `store_session_value`: execute a supported `memory... := ...` assignment into `own_memory`
-- `load_session_value`: resolve `memory...` references from the active shell session
-
-## 6. Shell Acknowledgement
+## 4. Shell Acknowledgement
 
 ### Description
 The shell-visible status reported to the terminal after an input line is handled.
@@ -154,7 +105,7 @@ The shell-visible status reported to the terminal after an input line is handled
 - `report_acceptance`: report whether the receiving agent accepted the shell input for processing
 - `report_action_outcome`: report the final runtime action result when verbose mode requests it
 
-## 7. Runtime Reply
+## 5. Runtime Reply
 
 ### Description
 A message explicitly returned toward the shell delegate after a shell-driven interaction. Its
@@ -178,9 +129,8 @@ payload may still be a structured map instance before the session renders it.
 
 - One **Shell** creates, tracks, and destroys many **Shell Sessions** over time
 - One **Shell Session** links to one **Shell Delegate**
-- One **Shell Session** links to one **Receiving Agent**
+- One **Shell Session** links to one agent instance running the `shell` method
 - One **Shell Session** receives many shell input map instances over time
-- One **Shell Delegate** targets one **Receiving Agent**
+- One **Shell Delegate** targets one agent instance running the `shell` method
 - One **Shell Session** renders many **Shell Acknowledgements** and **Runtime Replies** via delegate callbacks
-- One **Receiving Agent** executes one **Built-in Shell Method**
-- One **Built-in Shell Method** exchanges state messages with one **Shell Session** through its `own_memory`
+- One running `shell` method exchanges state messages with one **Shell Session** through its `own_memory`
