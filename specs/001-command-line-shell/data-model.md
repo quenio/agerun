@@ -63,7 +63,7 @@ receiving agent and delegate for that session, mediates shell-session operations
 - `activate`: complete startup by linking the delegate and the agent running the `shell` method, then transition the session to `active`
 - `advance`: process one shell-session turn while active, including message exchange with the running `shell` method
 - `report_acknowledgement`: report shell-visible acknowledgement state for the current input interaction
-- `render_output`: render shell-visible output when the delegate calls back with a message received from the agent
+- `render_output`: render shell-visible output to standard output when the delegate calls back with a message returned by the agent
 - `close`: complete shutdown, clean up session-linked resources, and transition the session to `closed`
 
 ## 3. Shell Delegate
@@ -71,7 +71,7 @@ receiving agent and delegate for that session, mediates shell-session operations
 ### Description
 The session-specific delegate bound to one shell session. It reads terminal input, wraps each line
 into the required input map instance, routes that map to the receiving agent, and calls back into
-the session when agent output arrives.
+the session when a message is returned by the agent.
 
 ### Key Attributes
 - `agent_id`: agent targeted for wrapped shell input and running the `shell` method
@@ -81,30 +81,10 @@ the session when agent output arrives.
 - The delegate is session-specific, not generic across unrelated runtime features
 - The delegate holds exactly one receiving-agent target for its session
 - The delegate wraps accepted input into the required input map instance before forwarding it
-- The delegate holds `ref_session` so it can call back into its shell session when agent output is received
+- The delegate holds `ref_session` so it can call back into its shell session when a message is returned by the agent
 
 ### Protocol Operations
 - `read_input`: read one line of terminal input, create the corresponding input map instance, and deliver it to `agent_id`
-
-## 4. Runtime Reply
-
-### Description
-A message explicitly returned toward the shell delegate after a shell-driven interaction. Its
-payload may still be a structured map instance before the session renders it.
-
-### Key Attributes
-- `sender_id`: runtime component that sent the reply
-- `own_payload`: returned AgeRun data value before delegate unwrapping, if still structured
-- `arrival_timing`: immediate or delayed relative to newer shell input
-
-### Validation Rules
-- Replies remain attributable to the correct sender even when delayed
-- Delayed replies do not terminate or corrupt the active shell session
-
-### Protocol Operations
-- `create`: construct a shell-visible reply payload from a runtime result
-- `attach_sender`: attach sender attribution to the reply payload
-- `route_to_delegate`: deliver the reply payload to the active shell delegate
 
 ## Relationships
 
@@ -113,5 +93,5 @@ payload may still be a structured map instance before the session renders it.
 - One **Shell Session** links to one agent instance running the `shell` method
 - One **Shell Session** receives many shell input map instances over time
 - One **Shell Delegate** targets one agent instance running the `shell` method
-- One **Shell Session** reports many shell-visible acknowledgements and renders many **Runtime Replies** via delegate callbacks
+- One **Shell Session** reports many shell-visible acknowledgements and renders many messages returned by the agent via delegate callbacks
 - One running `shell` method exchanges state messages with one **Shell Session** through its `own_memory`

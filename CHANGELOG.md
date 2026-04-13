@@ -1,5 +1,22 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell runtime-reply entity removal)
+
+- **Removed `Runtime Reply` as a standalone data-model entity**
+
+  Simplified the shell data model by treating runtime replies as ordinary messages returned by the
+  agent to the delegate, which are then rendered by the shell session to standard output.
+
+  **Implementation**: Updated `specs/001-command-line-shell/data-model.md` to remove the `Runtime
+  Reply` section and revise `Shell Session`, `Shell Delegate`, and the relationships section so
+  returned agent messages are described as session/delegate behavior rather than a persistent
+  entity.
+
+  **Verification**: `make check-docs 2>&1` passed.
+
+  **Impact**: The shell data model now avoids modeling transient returned messages as standalone
+  entities.
+
 ## 2026-04-12 (Command-line shell acknowledgement entity removal)
 
 - **Removed `Shell Acknowledgement` as a standalone data-model entity**
