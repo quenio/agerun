@@ -6,6 +6,7 @@
 #include "ar_frame.h"
 #include "ar_heap.h"
 #include "ar_data.h"
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -17,6 +18,7 @@ struct ar_frame_s {
     const ar_data_t *ref_context;  // Const reference to context
     const ar_data_t *ref_message;  // Const reference to message
     const void *ref_message_owner; // Borrowed owner token for current message
+    int64_t current_agent_id;      // Current executing agent ID
 };
 
 ar_frame_t* ar_frame__create(
@@ -58,6 +60,7 @@ bool ar_frame__reset(
     mut_frame->ref_context = ref_context;
     mut_frame->ref_message = ref_message;
     mut_frame->ref_message_owner = NULL;
+    mut_frame->current_agent_id = 0;
     return true;
 }
 
@@ -67,6 +70,14 @@ void ar_frame__set_message_owner(ar_frame_t *mut_frame, const void *ref_message_
     }
 
     mut_frame->ref_message_owner = ref_message_owner;
+}
+
+void ar_frame__set_current_agent_id(ar_frame_t *mut_frame, int64_t agent_id) {
+    if (!mut_frame) {
+        return;
+    }
+
+    mut_frame->current_agent_id = agent_id;
 }
 
 void ar_frame__destroy(ar_frame_t *own_frame) {
@@ -104,4 +115,12 @@ const void* ar_frame__get_message_owner(const ar_frame_t *ref_frame) {
         return NULL;
     }
     return ref_frame->ref_message_owner;
+}
+
+int64_t ar_frame__get_current_agent_id(const ar_frame_t *ref_frame) {
+    if (!ref_frame) {
+        return 0;
+    }
+
+    return ref_frame->current_agent_id;
 }

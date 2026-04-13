@@ -58,6 +58,13 @@ bool ar_frame__reset(
 void ar_frame__set_message_owner(ar_frame_t *mut_frame, const void *ref_message_owner);
 
 /**
+ * Set the current executing agent ID for the frame.
+ * @param mut_frame The frame to update
+ * @param agent_id The currently executing agent ID
+ */
+void ar_frame__set_current_agent_id(ar_frame_t *mut_frame, int64_t agent_id);
+
+/**
  * Destroys a frame and frees its resources
  * @param own_frame The frame to destroy
  * @note Ownership: Takes ownership and destroys the frame.
@@ -95,5 +102,12 @@ const ar_data_t* ar_frame__get_message(const ar_frame_t *ref_frame);
  * @return The current message owner token, or NULL if none is set
  */
 const void* ar_frame__get_message_owner(const ar_frame_t *ref_frame);
+
+/**
+ * Gets the current executing agent ID for the frame.
+ * @param ref_frame The frame to query
+ * @return The current agent ID, or 0 if unavailable
+ */
+int64_t ar_frame__get_current_agent_id(const ar_frame_t *ref_frame);
 
 #endif /* AGERUN_FRAME_H */

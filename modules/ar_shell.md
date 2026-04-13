@@ -14,7 +14,8 @@ built-in `shell` method.
 - `ar_shell__get_system()` exposes the wrapped `ar_system_t` as a borrowed reference.
 - `ar_shell__get_session_count()` reports how many sessions are currently managed.
 - `ar_shell__start_session()` creates one `ar_shell_session_t`, registers the built-in shell
-  method through `ar_methodology__register_shell_method()`, and creates the receiving agent.
+  method through `ar_methodology__register_shell_method()`, registers the shell-session runtime
+  delegate, stores that delegate ID on the receiving agent, and creates the receiving agent.
 - `ar_shell__main()` provides the scaffold executable entry point used by the Makefile `run-shell`
   target.
 
@@ -28,6 +29,6 @@ built-in `shell` method.
 ## Current Scope
 
 The current implementation covers shell creation, session tracking, built-in shell-method
-registration, receiving-agent startup, startup-mode propagation, and repeated stdin handoff through
-`ar_shell_delegate__process_input_stream()`. Asynchronous reply handling and shutdown-time reply
-discard remain future work.
+registration, receiving-agent startup, startup-mode propagation, runtime delegate registration for
+shell-session mediation, and repeated stdin handoff through `ar_shell_delegate__process_input_stream()`.
+Asynchronous reply handling and shutdown-time reply discard remain future work.

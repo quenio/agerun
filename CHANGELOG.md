@@ -1,5 +1,33 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell runtime delegate wiring)
+
+- **Wired shell sessions into the runtime through session-scoped delegates**
+
+  Continued the User Story 2 shell implementation for `001-command-line-shell` by preserving
+  originating agent IDs on delegate-bound messages, registering a session-specific runtime delegate
+  when `arsh` starts a shell session, and routing shell-session store/load protocol messages through
+  that delegate.
+
+  **Implementation**: Extended `modules/ar_frame.{h,c}` and `modules/ar_interpreter.c` to track the
+  current executing agent ID, added explicit-sender delegate/delegation queue support in
+  `modules/ar_delegate.{h,c}` and `modules/ar_delegation.{h,c}`, updated
+  `modules/ar_send_instruction_evaluator.zig` to preserve sender IDs for negative-ID sends,
+  expanded `modules/ar_system_tests.c` with sender-preservation coverage, extended
+  `modules/ar_shell_session.{h,c}` with runtime-delegate creation/handling, updated
+  `modules/ar_shell.c` to register the shell-session delegate and store its ID on the receiving
+  agent, expanded `modules/ar_shell_tests.c` with runtime-delegate routing coverage, and synced
+  `modules/ar_shell.md`, `modules/ar_shell_session.md`, and
+  `specs/001-command-line-shell/tasks.md`.
+
+  **Verification**: `make ar_delegate_tests 2>&1`, `make ar_delegation_tests 2>&1`,
+  `make ar_send_instruction_evaluator_tests 2>&1`, `make ar_shell_tests 2>&1`,
+  `make ar_shell_session_tests 2>&1`, `make ar_system_tests 2>&1`, and `make check-docs 2>&1`.
+
+  **Impact**: Shell-session protocol messages can now cross the runtime boundary cleanly, and the
+  system preserves the requesting agent ID so future shell-method semantics can load/store session
+  values through real message mediation instead of direct shared-state shortcuts.
+
 ## 2026-04-12 (Command-line shell session mediation helpers)
 
 - **Added shell-session store/load/failure protocol helpers**

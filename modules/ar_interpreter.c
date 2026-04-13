@@ -156,6 +156,7 @@ bool ar_interpreter__execute_method(
     }
 
     ar_frame__set_message_owner(mut_interpreter->own_frame, ref_message_owner);
+    ar_frame__set_current_agent_id(mut_interpreter->own_frame, agent_id);
     
     // Delegate to method evaluator (facade pattern)
     bool success = ar_method_evaluator__evaluate(mut_interpreter->own_evaluator, mut_interpreter->own_frame, ref_ast);

@@ -82,8 +82,11 @@ ar_shell_session_t* ar_shell__start_session(ar_shell_t *mut_shell, ar_shell_mode
     ar_agency_t *mut_agency;
     ar_methodology_t *mut_methodology;
     ar_shell_session_t *own_session;
+    ar_delegate_t *own_runtime_delegate;
+    ar_data_t *mut_agent_memory;
     int64_t own_agent_id;
     int64_t own_session_id;
+    int64_t own_delegate_id;
 
     if (!mut_shell || !mut_shell->own_system || !mut_shell->own_sessions) {
         return NULL;
@@ -105,11 +108,30 @@ ar_shell_session_t* ar_shell__start_session(ar_shell_t *mut_shell, ar_shell_mode
         return NULL;
     }
 
+    own_runtime_delegate = ar_shell_session__create_runtime_delegate(own_session, mut_shell->own_system);
+    own_delegate_id = ar_shell_session__get_runtime_delegate_id(own_session);
+    if (!own_runtime_delegate || own_delegate_id >= 0 ||
+        !ar_system__register_delegate(mut_shell->own_system, own_delegate_id, own_runtime_delegate)) {
+        if (own_runtime_delegate) {
+            ar_delegate__destroy(own_runtime_delegate);
+        }
+        ar_shell_session__destroy(own_session);
+        return NULL;
+    }
+
     own_agent_id = ar_agency__create_agent(mut_agency, AR_SHELL_METHOD_NAME, AR_SHELL_METHOD_VERSION, NULL);
     if (own_agent_id <= 0 || !ar_shell_session__activate(own_session, own_agent_id)) {
         if (own_agent_id > 0) {
             ar_agency__destroy_agent(mut_agency, own_agent_id);
         }
+        ar_shell_session__destroy(own_session);
+        return NULL;
+    }
+
+    mut_agent_memory = ar_agency__get_agent_mutable_memory(mut_agency, own_agent_id);
+    if (!mut_agent_memory ||
+        !ar_data__set_map_integer(mut_agent_memory, "shell_session_delegate_id", (int)own_delegate_id)) {
+        ar_agency__destroy_agent(mut_agency, own_agent_id);
         ar_shell_session__destroy(own_session);
         return NULL;
     }

@@ -13,6 +13,10 @@ acknowledgement mode, receiving-agent ID, and the owned shell-session memory map
 - `ar_shell_session__get_mode()` returns the session acknowledgement mode.
 - `ar_shell_session__get_agent_id()` returns the receiving-agent ID.
 - `ar_shell_session__activate()` marks the session active and records the receiving-agent ID.
+- `ar_shell_session__get_runtime_delegate_id()` derives the negative runtime delegate ID used for
+  shell-session mediation.
+- `ar_shell_session__create_runtime_delegate()` builds the delegate handler that routes protocol
+  messages into the shell session.
 - `ar_shell_session__store_value()` stores one value addressed through the `memory...` root.
 - `ar_shell_session__load_value()` loads one stored value and returns a protocol-shaped reply map.
 - `ar_shell_session__return_loaded_value()` builds the loaded-value reply payload.
@@ -31,5 +35,6 @@ acknowledgement mode, receiving-agent ID, and the owned shell-session memory map
 ## Current Scope
 
 The current implementation provides startup state ownership plus message-shaped store/load/failure
-mediation for the shell session memory map. Runtime wiring, acknowledgement reporting, output
-rendering, and shutdown-state transitions remain future work.
+mediation for the shell session memory map and a runtime delegate that processes store/load
+protocol messages on behalf of the shell session. Acknowledgement reporting, output rendering, and
+shutdown-state transitions remain future work.

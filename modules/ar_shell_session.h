@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "ar_data.h"
+#include "ar_delegate.h"
+#include "ar_system.h"
 
 /**
  * Shell acknowledgement mode.
@@ -60,6 +62,23 @@ int64_t ar_shell_session__get_agent_id(const ar_shell_session_t *ref_session);
  * @return true on success, false otherwise
  */
 bool ar_shell_session__activate(ar_shell_session_t *mut_session, int64_t agent_id);
+
+/**
+ * Get the runtime delegate ID used for shell-session mediation.
+ * @param ref_session Borrowed shell session
+ * @return Negative delegate ID, or 0 if unavailable
+ */
+int64_t ar_shell_session__get_runtime_delegate_id(const ar_shell_session_t *ref_session);
+
+/**
+ * Create the runtime delegate that mediates shell-session protocol messages.
+ * @param ref_session Borrowed shell session
+ * @param ref_system Borrowed system reference
+ * @return Owned delegate, or NULL on failure
+ */
+ar_delegate_t* ar_shell_session__create_runtime_delegate(
+    ar_shell_session_t *mut_session,
+    ar_system_t *mut_system);
 
 /**
  * Store one value into the shell-session memory map.

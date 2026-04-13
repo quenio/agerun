@@ -113,6 +113,18 @@ bool ar_delegate__handle_message(ar_delegate_t *ref_delegate, ar_data_t *ref_mes
 bool ar_delegate__send(ar_delegate_t *mut_delegate, ar_data_t *own_message);
 
 /**
+ * Sends a message to this delegate's queue with an explicit sender ID.
+ * @param mut_delegate The delegate instance to receive the message
+ * @param own_message The message to send (takes ownership)
+ * @param sender_id The explicit sender ID associated with the queued message
+ * @return true if message was queued successfully, false otherwise
+ */
+bool ar_delegate__send_with_sender(
+    ar_delegate_t *mut_delegate,
+    ar_data_t *own_message,
+    int64_t sender_id);
+
+/**
  * Sends a message to this delegate's queue by transferring ownership from a current owner
  * @param mut_delegate The delegate instance to receive the message
  * @param mut_message The message to send (mutable reference)
@@ -123,6 +135,21 @@ bool ar_delegate__send_from_owner(
     ar_delegate_t *mut_delegate,
     ar_data_t *mut_message,
     const void *ref_from_owner
+);
+
+/**
+ * Sends a message to this delegate's queue by transferring ownership with an explicit sender ID.
+ * @param mut_delegate The delegate instance to receive the message
+ * @param mut_message The message to send (mutable reference)
+ * @param ref_from_owner Current owner token that must own the message
+ * @param sender_id The explicit sender ID associated with the queued message
+ * @return true if message was queued successfully, false otherwise
+ */
+bool ar_delegate__send_from_owner_with_sender(
+    ar_delegate_t *mut_delegate,
+    ar_data_t *mut_message,
+    const void *ref_from_owner,
+    int64_t sender_id
 );
 
 /**
@@ -140,5 +167,17 @@ bool ar_delegate__has_messages(const ar_delegate_t *ref_delegate);
  *       Delegate drops ownership when returning the message.
  */
 ar_data_t* ar_delegate__take_message(ar_delegate_t *mut_delegate);
+
+/**
+ * Takes the next message and its sender metadata from this delegate's queue.
+ * @param mut_delegate The delegate instance
+ * @param mut_sender_id Output sender ID (may be NULL)
+ * @param mut_has_explicit_sender Output explicit-sender flag (may be NULL)
+ * @return The next queued message, or NULL if queue is empty
+ */
+ar_data_t* ar_delegate__take_message_with_sender(
+    ar_delegate_t *mut_delegate,
+    int64_t *mut_sender_id,
+    bool *mut_has_explicit_sender);
 
 #endif /* AGERUN_DELEGATE_H */

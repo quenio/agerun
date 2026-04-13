@@ -49,6 +49,7 @@ static void test_agent_creation(ar_system_t *mut_system);
 static void test_message_passing(ar_system_t *mut_system);
 static void test_system__has_delegation(void);
 static void test_system__processes_delegate_messages(void);
+static void test_system__processes_delegate_messages_with_agent_sender_id(void);
 static void test_message_forwarding__whole_message_reuses_pointer(void);
 static void test_message_forwarding__message_field_still_copies(void);
 static void test_system__init_can_create_shell_agent_after_registration(void);
@@ -453,6 +454,88 @@ static void test_system__processes_delegate_messages(void) {
     printf("Delegate processing test passed.\n");
 }
 
+static void test_system__processes_delegate_messages_with_agent_sender_id(void) {
+    ar_system_t *own_system;
+    ar_log_t *ref_log;
+    ar_delegation_t *mut_delegation;
+    ar_agency_t *mut_agency;
+    ar_methodology_t *mut_methodology;
+    test_system_delegate_state_t *own_state;
+    ar_delegate_t *own_delegate;
+    ar_data_t *own_context;
+    ar_data_t *own_trigger_message;
+    ar_data_t *mut_agent_memory;
+    int64_t agent_id;
+
+    printf("Testing that delegate processing preserves the originating agent ID...\n");
+
+    own_system = ar_system__create();
+    AR_ASSERT(own_system != NULL, "System creation should succeed");
+    AR_ASSERT(ar_system__init(own_system, NULL, NULL) == 0,
+              "System init without initial agent should succeed");
+
+    ref_log = ar_system__get_log(own_system);
+    AR_ASSERT(ref_log != NULL, "System should provide a log");
+
+    mut_delegation = ar_system__get_delegation(own_system);
+    AR_ASSERT(mut_delegation != NULL, "System should provide a delegation");
+
+    mut_agency = ar_system__get_agency(own_system);
+    AR_ASSERT(mut_agency != NULL, "System should provide an agency");
+
+    mut_methodology = ar_agency__get_methodology(mut_agency);
+    AR_ASSERT(mut_methodology != NULL, "Agency should provide a methodology");
+    AR_ASSERT(ar_methodology__create_method(mut_methodology, "send-to-delegate", "send(memory.target_id, \"from agent\")", "1.0.0"),
+              "Delegate-sender test method should register successfully");
+
+    own_state = AR__HEAP__MALLOC(sizeof(test_system_delegate_state_t), "test system delegate state");
+    AR_ASSERT(own_state != NULL, "Delegate state allocation should succeed");
+    memset(own_state, 0, sizeof(test_system_delegate_state_t));
+
+    own_delegate = ar_delegate__create_with_handler(
+        ref_log,
+        "test",
+        _test_system_delegate_handler,
+        own_state,
+        _destroy_test_system_delegate_state
+    );
+    AR_ASSERT(own_delegate != NULL, "Delegate creation with handler should succeed");
+    AR_ASSERT(ar_system__register_delegate(own_system, -121, own_delegate),
+              "Delegate registration should succeed");
+
+    own_context = ar_data__create_map();
+    AR_ASSERT(own_context != NULL, "Delegate-sender context should be created");
+
+    agent_id = ar_agency__create_agent(mut_agency, "send-to-delegate", "1.0.0", own_context);
+    AR_ASSERT(agent_id > 0, "Delegate-sender agent should be created");
+
+    mut_agent_memory = ar_agency__get_agent_mutable_memory(mut_agency, agent_id);
+    AR_ASSERT(mut_agent_memory != NULL, "Delegate-sender agent should expose mutable memory");
+    AR_ASSERT(ar_data__set_map_integer(mut_agent_memory, "target_id", -121),
+              "Delegate-sender agent should store the delegate target ID");
+
+    own_trigger_message = ar_data__create_string("go");
+    AR_ASSERT(own_trigger_message != NULL, "Trigger message creation should succeed");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, agent_id, own_trigger_message),
+              "Trigger message send should succeed");
+
+    AR_ASSERT(ar_system__process_next_message(own_system),
+              "System should process the agent message that sends to the delegate");
+    AR_ASSERT(ar_system__process_next_message(own_system),
+              "System should process the queued delegate message");
+    AR_ASSERT(own_state->was_called == true, "Delegate handler should be called by system processing");
+    AR_ASSERT(own_state->sender_id == agent_id,
+              "Delegate handler should receive the originating agent ID");
+    AR_ASSERT(strcmp(own_state->message, "from agent") == 0,
+              "Delegate handler should receive the delegated message contents");
+
+    ar_data__destroy(own_context);
+    ar_system__shutdown(own_system);
+    ar_system__destroy(own_system);
+
+    printf("Delegate sender-ID preservation test passed.\n");
+}
+
 static void test_message_forwarding__whole_message_reuses_pointer(void) {
     ar_system_t *own_system;
     ar_agency_t *mut_agency;
@@ -643,6 +726,7 @@ int main(void) {
     test_system__register_proxy();
     test_system__has_delegation();
     test_system__processes_delegate_messages();
+    test_system__processes_delegate_messages_with_agent_sender_id();
     test_message_forwarding__whole_message_reuses_pointer();
     test_message_forwarding__message_field_still_copies();
     test_system__init_can_create_shell_agent_after_registration();

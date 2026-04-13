@@ -69,6 +69,15 @@ bool ar_delegation__register_delegate(ar_delegation_t *mut_delegation,
 bool ar_delegation__send_to_delegate(ar_delegation_t *mut_delegation,
                                       int64_t delegate_id,
                                       ar_data_t *own_message) {
+    return ar_delegation__send_to_delegate_with_sender(mut_delegation, delegate_id, own_message, 0);
+}
+
+bool ar_delegation__send_to_delegate_with_sender(
+    ar_delegation_t *mut_delegation,
+    int64_t delegate_id,
+    ar_data_t *own_message,
+    int64_t sender_id
+) {
     if (!mut_delegation || !mut_delegation->own_registry) {
         if (own_message) {
             ar_data__destroy(own_message);
@@ -82,7 +91,12 @@ bool ar_delegation__send_to_delegate(ar_delegation_t *mut_delegation,
         }
         return false;  // Correct error handling restored
     }
-    return ar_delegate__send(mut_delegate, own_message);
+
+    if (sender_id == 0) {
+        return ar_delegate__send(mut_delegate, own_message);
+    }
+
+    return ar_delegate__send_with_sender(mut_delegate, own_message, sender_id);
 }
 
 bool ar_delegation__send_to_delegate_from_owner(
@@ -90,6 +104,21 @@ bool ar_delegation__send_to_delegate_from_owner(
     int64_t delegate_id,
     ar_data_t *mut_message,
     const void *ref_from_owner
+) {
+    return ar_delegation__send_to_delegate_from_owner_with_sender(
+        mut_delegation,
+        delegate_id,
+        mut_message,
+        ref_from_owner,
+        0);
+}
+
+bool ar_delegation__send_to_delegate_from_owner_with_sender(
+    ar_delegation_t *mut_delegation,
+    int64_t delegate_id,
+    ar_data_t *mut_message,
+    const void *ref_from_owner,
+    int64_t sender_id
 ) {
     ar_delegate_t *mut_delegate;
 
@@ -102,7 +131,11 @@ bool ar_delegation__send_to_delegate_from_owner(
         return false;
     }
 
-    return ar_delegate__send_from_owner(mut_delegate, mut_message, ref_from_owner);
+    if (sender_id == 0) {
+        return ar_delegate__send_from_owner(mut_delegate, mut_message, ref_from_owner);
+    }
+
+    return ar_delegate__send_from_owner_with_sender(mut_delegate, mut_message, ref_from_owner, sender_id);
 }
 
 bool ar_delegation__delegate_has_messages(ar_delegation_t *ref_delegation,
@@ -135,6 +168,8 @@ bool ar_delegation__process_next_message(ar_delegation_t *mut_delegation,
     int64_t delegate_id;
     ar_delegate_t *mut_delegate;
     ar_data_t *own_message;
+    int64_t explicit_sender_id;
+    bool has_explicit_sender;
     bool handled;
 
     if (!mut_delegation || !mut_delegation->own_registry) {
@@ -150,12 +185,20 @@ bool ar_delegation__process_next_message(ar_delegation_t *mut_delegation,
     do {
         if (ar_delegation__delegate_has_messages(mut_delegation, delegate_id)) {
             mut_delegate = ar_delegate_registry__find(mut_delegation->own_registry, delegate_id);
-            own_message = ar_delegation__take_delegate_message(mut_delegation, delegate_id);
+            explicit_sender_id = 0;
+            has_explicit_sender = false;
+            own_message = ar_delegate__take_message_with_sender(
+                mut_delegate,
+                &explicit_sender_id,
+                &has_explicit_sender);
             if (!mut_delegate || !own_message) {
                 return false;
             }
 
-            handled = ar_delegate__handle_message(mut_delegate, own_message, sender_id);
+            handled = ar_delegate__handle_message(
+                mut_delegate,
+                own_message,
+                has_explicit_sender ? explicit_sender_id : sender_id);
             if (!handled && mut_delegation->ref_log) {
                 ar_log__warning(mut_delegation->ref_log,
                                 "Delegation: delegate message was not handled");

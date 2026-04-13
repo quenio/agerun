@@ -117,6 +117,7 @@ pub export fn ar_send_instruction_evaluator__evaluate(
     c.ar_data__destroy_if_owned(agent_id_result, ref_evaluator);
     
     // Send the message based on ID sign
+    const current_agent_id = c.ar_frame__get_current_agent_id(ref_frame);
     var send_result: bool = undefined;
     if (agent_id == 0) {
         if (_is_exact_message_forward(ref_message_ast)) {
@@ -153,6 +154,14 @@ pub export fn ar_send_instruction_evaluator__evaluate(
                     @constCast(ref_current_message),
                     ref_message_owner
                 );
+            } else if (current_agent_id > 0) {
+                send_result = c.ar_delegation__send_to_delegate_from_owner_with_sender(
+                    ref_evaluator.?.ref_delegation,
+                    agent_id,
+                    @constCast(ref_current_message),
+                    ref_message_owner,
+                    current_agent_id
+                );
             } else {
                 send_result = c.ar_delegation__send_to_delegate_from_owner(
                     ref_evaluator.?.ref_delegation,
@@ -171,6 +180,13 @@ pub export fn ar_send_instruction_evaluator__evaluate(
 
             if (agent_id > 0) {
                 send_result = c.ar_agency__send_to_agent(ref_evaluator.?.ref_agency, agent_id, own_message);
+            } else if (current_agent_id > 0) {
+                send_result = c.ar_delegation__send_to_delegate_with_sender(
+                    ref_evaluator.?.ref_delegation,
+                    agent_id,
+                    own_message,
+                    current_agent_id
+                );
             } else {
                 send_result = c.ar_delegation__send_to_delegate(ref_evaluator.?.ref_delegation, agent_id, own_message);
             }
@@ -191,6 +207,14 @@ pub export fn ar_send_instruction_evaluator__evaluate(
         if (agent_id > 0) {
             // Positive IDs route to agency (agents) - CORRECT routing restored
             send_result = c.ar_agency__send_to_agent(ref_evaluator.?.ref_agency, agent_id, own_message);
+        } else if (current_agent_id > 0) {
+            // Negative IDs route to delegation (delegates) with explicit sender tracking
+            send_result = c.ar_delegation__send_to_delegate_with_sender(
+                ref_evaluator.?.ref_delegation,
+                agent_id,
+                own_message,
+                current_agent_id
+            );
         } else {
             // Negative IDs route to delegation (delegates)
             send_result = c.ar_delegation__send_to_delegate(ref_evaluator.?.ref_delegation, agent_id, own_message);
