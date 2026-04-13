@@ -18,9 +18,9 @@
 
 **Purpose**: Establish baseline evidence and confirm the exact files/contracts this feature must keep in sync.
 
-- [ ] T001 Run baseline validation for `modules/ar_system_tests.c`, `modules/ar_methodology_tests.c`, `modules/ar_delegate_tests.c`, and `methods/chat_session_tests.c` with `make ar_system_tests 2>&1`, `make ar_methodology_tests 2>&1`, `make ar_delegate_tests 2>&1`, and `make chat_session_tests 2>&1`
-- [ ] T002 [P] Reconcile feature scope across `specs/001-command-line-shell/spec.md`, `specs/001-command-line-shell/plan.md`, `specs/001-command-line-shell/research.md`, `specs/001-command-line-shell/data-model.md`, `specs/001-command-line-shell/contracts/arsh-cli.md`, and `specs/001-command-line-shell/contracts/shell-session-protocol.md`
-- [ ] T003 [P] Confirm documentation sync targets in `README.md`, `SPEC.md`, `modules/ar_shell.md`, `modules/ar_shell_session.md`, `modules/ar_shell_delegate.md`, `.specify/memory/pi-agent.md`, and `specs/001-command-line-shell/quickstart.md`
+- [x] T001 Run baseline validation for `modules/ar_system_tests.c`, `modules/ar_methodology_tests.c`, `modules/ar_delegate_tests.c`, and `methods/chat_session_tests.c` with `make ar_system_tests 2>&1`, `make ar_methodology_tests 2>&1`, `make ar_delegate_tests 2>&1`, and `make chat_session_tests 2>&1`
+- [x] T002 [P] Reconcile feature scope across `specs/001-command-line-shell/spec.md`, `specs/001-command-line-shell/plan.md`, `specs/001-command-line-shell/research.md`, `specs/001-command-line-shell/data-model.md`, `specs/001-command-line-shell/contracts/arsh-cli.md`, and `specs/001-command-line-shell/contracts/shell-session-protocol.md`
+- [x] T003 [P] Confirm documentation sync targets in `README.md`, `SPEC.md`, `modules/ar_shell.md`, `modules/ar_shell_session.md`, `modules/ar_shell_delegate.md`, `.specify/memory/pi-agent.md`, and `specs/001-command-line-shell/quickstart.md`
 
 ---
 
@@ -30,10 +30,10 @@
 
 **⚠️ CRITICAL**: No user story implementation starts before this phase is complete.
 
-- [ ] T004 Add failing shell executable and transport tests in new `modules/ar_shell_tests.c`, new `modules/ar_shell_delegate_tests.c`, and `modules/ar_methodology_tests.c`
-- [ ] T005 [P] Add failing shell session mediation and shell method tests in new `modules/ar_shell_session_tests.c`, new `methods/shell_tests.c`, and `modules/ar_system_tests.c`
-- [ ] T006 [P] Create compile-only shell scaffolding in new `modules/ar_shell.h`, new `modules/ar_shell_delegate.h`, new `modules/ar_shell_session.h`, new `methods/shell-1.0.0.method`, and Makefile so the RED phase fails on assertions instead of compilation
-- [ ] T007 Confirm the RED phase for `modules/ar_shell_tests.c`, `modules/ar_shell_delegate_tests.c`, `modules/ar_shell_session_tests.c`, and `methods/shell_tests.c` with `make ar_shell_tests 2>&1`, `make ar_shell_delegate_tests 2>&1`, `make ar_shell_session_tests 2>&1`, and `make shell_tests 2>&1`
+- [x] T004 Add failing shell executable and transport tests in new `modules/ar_shell_tests.c`, new `modules/ar_shell_delegate_tests.c`, and `modules/ar_methodology_tests.c`
+- [x] T005 [P] Add failing shell session mediation and shell method tests in new `modules/ar_shell_session_tests.c`, new `methods/shell_tests.c`, and `modules/ar_system_tests.c`
+- [x] T006 [P] Create compile-only shell scaffolding in new `modules/ar_shell.h`, new `modules/ar_shell_delegate.h`, new `modules/ar_shell_session.h`, new `methods/shell-1.0.0.method`, and Makefile so the RED phase fails on assertions instead of compilation
+- [x] T007 Confirm the RED phase for `modules/ar_shell_tests.c`, `modules/ar_shell_delegate_tests.c`, `modules/ar_shell_session_tests.c`, and `methods/shell_tests.c` with `make ar_shell_tests 2>&1`, `make ar_shell_delegate_tests 2>&1`, `make ar_shell_session_tests 2>&1`, and `make shell_tests 2>&1`
 
 **Checkpoint**: Failing validation exists for shell executable startup, shell-session mediation, and built-in shell method behavior.
 
@@ -47,14 +47,14 @@
 
 ### Validation for User Story 1
 
-- [ ] T008 [P] [US1] Run the targeted failing shell executable and transport tests in `modules/ar_shell_tests.c`, `modules/ar_shell_delegate_tests.c`, and `modules/ar_methodology_tests.c`
+- [x] T008 [P] [US1] Run the targeted failing shell executable and transport tests in `modules/ar_shell_tests.c`, `modules/ar_shell_delegate_tests.c`, and `modules/ar_methodology_tests.c`
 
 ### Implementation for User Story 1
 
-- [ ] T009 [P] [US1] Define the shell executable module API and ownership documentation in new `modules/ar_shell.h` and new `modules/ar_shell.md`
-- [ ] T010 [P] [US1] Define the session-specific shell delegate API and ownership documentation in new `modules/ar_shell_delegate.h` and new `modules/ar_shell_delegate.md`
-- [ ] T011 [US1] Implement the `arsh` executable startup path, startup acknowledgement-mode flag parsing and propagation into `ar_shell_session`, shell-session creation, and dedicated receiving-agent creation in new `modules/ar_shell.c`, new `modules/ar_shell_tests.c`, and Makefile
-- [ ] T012 [US1] Register the built-in shell method asset for startup in new `methods/shell-1.0.0.method`, `modules/ar_methodology.c`, `modules/ar_methodology.h`, and `modules/ar_methodology_tests.c`
+- [x] T009 [P] [US1] Define the shell executable module API and ownership documentation in new `modules/ar_shell.h` and new `modules/ar_shell.md`
+- [x] T010 [P] [US1] Define the session-specific shell delegate API and ownership documentation in new `modules/ar_shell_delegate.h` and new `modules/ar_shell_delegate.md`
+- [x] T011 [US1] Implement the `arsh` executable startup path, startup acknowledgement-mode flag parsing and propagation into `ar_shell_session`, shell-session creation, and dedicated receiving-agent creation in new `modules/ar_shell.c`, new `modules/ar_shell_tests.c`, and Makefile
+- [x] T012 [US1] Register the built-in shell method asset for startup in new `methods/shell-1.0.0.method`, `modules/ar_methodology.c`, `modules/ar_methodology.h`, and `modules/ar_methodology_tests.c`
 - [ ] T013 [US1] Implement envelope construction, repeated stdin handling, and normal/verbose handoff acknowledgement behavior in new `modules/ar_shell_delegate.c` and new `modules/ar_shell_delegate_tests.c`
 - [ ] T014 [US1] Re-run validation for `modules/ar_shell_tests.c`, `modules/ar_shell_delegate_tests.c`, and `modules/ar_methodology_tests.c` with `make ar_shell_tests 2>&1`, `make ar_shell_delegate_tests 2>&1`, and `make ar_methodology_tests 2>&1` until User Story 1 passes
 - [ ] T015 [US1] Refactor shared shell startup helpers in `modules/ar_shell.c` and `modules/ar_shell_delegate.c` while preserving green User Story 1 tests
@@ -75,7 +75,7 @@
 
 ### Implementation for User Story 2
 
-- [ ] T017 [P] [US2] Define the shell session state/lifecycle API, message protocol, and ownership documentation in new `modules/ar_shell_session.h` and new `modules/ar_shell_session.md`
+- [x] T017 [P] [US2] Define the shell session state/lifecycle API, message protocol, and ownership documentation in new `modules/ar_shell_session.h` and new `modules/ar_shell_session.md`
 - [ ] T018 [US2] Implement `ar_shell_session` state ownership plus message-based ar_shell_session__store_value / ar_shell_session__load_value / ar_shell_session__return_loaded_value / ar_shell_session__report_operation_failure mediation in new `modules/ar_shell_session.c` and new `modules/ar_shell_session_tests.c`
 - [ ] T019 [US2] Implement shell-session management wiring between `ar_shell`, `ar_shell_session`, and the runtime in `modules/ar_shell.c`, `modules/ar_shell_session.c`, `modules/ar_system.c`, `modules/ar_system.h`, and `modules/ar_system_tests.c`
 - [ ] T020 [US2] Implement the restricted shell syntax, recoverable invalid-shell-syntax reporting, assignment redirection, and assigned `spawn`/`send` forms in new `methods/shell-1.0.0.method`, new `methods/shell-1.0.0.md`, and new `methods/shell_tests.c`

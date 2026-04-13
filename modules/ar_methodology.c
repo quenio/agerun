@@ -286,6 +286,24 @@ bool ar_methodology__unregister_method(ar_methodology_t *mut_methodology,
  * @note This should be called before destroying the methodology instance
  * @note Ownership: This cleans up all methods owned by the instance
  */
+bool ar_methodology__register_shell_method(ar_methodology_t *mut_methodology) {
+    static const char *ref_shell_instructions = "memory.last_input := message.text";
+
+    if (!mut_methodology) {
+        return false;
+    }
+
+    if (ar_methodology__get_method(mut_methodology, AR_SHELL_METHOD_NAME, AR_SHELL_METHOD_VERSION)) {
+        return true;
+    }
+
+    return ar_methodology__create_method(
+        mut_methodology,
+        AR_SHELL_METHOD_NAME,
+        ref_shell_instructions,
+        AR_SHELL_METHOD_VERSION);
+}
+
 void ar_methodology__cleanup(ar_methodology_t *mut_methodology) {
     if (!mut_methodology) {
         return;

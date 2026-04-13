@@ -7,6 +7,8 @@
 
 /* Constants */
 #define METHODOLOGY_FILE_NAME "agerun.methodology"
+#define AR_SHELL_METHOD_NAME "shell"
+#define AR_SHELL_METHOD_VERSION "1.0.0"
 
 /* Opaque type for methodology instance */
 typedef struct ar_methodology_s ar_methodology_t;
@@ -117,5 +119,12 @@ bool ar_methodology__unregister_method(ar_methodology_t *mut_methodology,
  * @note Ownership: This cleans up all methods owned by the instance
  */
 void ar_methodology__cleanup(ar_methodology_t *mut_methodology);
+
+/**
+ * Register the built-in shell method on a methodology instance.
+ * @param mut_methodology Mutable methodology instance
+ * @return true if the shell method is registered or already available, false otherwise
+ */
+bool ar_methodology__register_shell_method(ar_methodology_t *mut_methodology);
 
 #endif /* AGERUN_METHODOLOGY_H */

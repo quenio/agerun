@@ -51,6 +51,7 @@ static void test_system__has_delegation(void);
 static void test_system__processes_delegate_messages(void);
 static void test_message_forwarding__whole_message_reuses_pointer(void);
 static void test_message_forwarding__message_field_still_copies(void);
+static void test_system__init_can_create_shell_agent_after_registration(void);
 
 static void test_no_auto_loading_on_init(void) {
     printf("Testing that system does NOT auto-load files on init...\n");
@@ -212,6 +213,29 @@ static void test_agent_creation(ar_system_t *mut_system) {
     assert(!ar_agent_registry__is_registered(ref_registry, agent_id));
     
     printf("Agent creation test passed.\n");
+}
+
+static void test_system__init_can_create_shell_agent_after_registration(void) {
+    printf("Testing system init can create shell agent after built-in registration...\n");
+
+    ar_system_t *own_system = ar_system__create();
+    assert(own_system != NULL);
+
+    ar_agency_t *mut_agency = ar_system__get_agency(own_system);
+    assert(mut_agency != NULL);
+
+    ar_methodology_t *mut_methodology = ar_agency__get_methodology(mut_agency);
+    assert(mut_methodology != NULL);
+    assert(ar_methodology__register_shell_method(mut_methodology));
+
+    int64_t shell_agent_id = ar_system__init(own_system, AR_SHELL_METHOD_NAME, AR_SHELL_METHOD_VERSION);
+    assert(shell_agent_id > 0);
+    assert(ar_agency__agent_exists(mut_agency, shell_agent_id));
+
+    ar_system__shutdown(own_system);
+    ar_system__destroy(own_system);
+
+    printf("System shell-agent init test passed.\n");
 }
 
 static void test_message_passing(ar_system_t *mut_system) {
@@ -621,6 +645,7 @@ int main(void) {
     test_system__processes_delegate_messages();
     test_message_forwarding__whole_message_reuses_pointer();
     test_message_forwarding__message_field_still_copies();
+    test_system__init_can_create_shell_agent_after_registration();
 
     // Create system instance
     ar_system_t *mut_system = ar_system__create();

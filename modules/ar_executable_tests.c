@@ -156,6 +156,7 @@ static void test_loading_methods_from_directory(ar_executable_fixture_t *mut_fix
     bool found_grade_evaluator = false;
     bool found_message_router = false;
     bool found_method_creator = false;
+    bool found_shell = false;
     bool found_string_builder = false;
     bool found_loading_message = false;
     int method_count = 0;
@@ -186,6 +187,9 @@ static void test_loading_methods_from_directory(ar_executable_fixture_t *mut_fix
         }
         if (strstr(line, "Loaded method 'method-creator'")) {
             found_method_creator = true;
+        }
+        if (strstr(line, "Loaded method 'shell'")) {
+            found_shell = true;
         }
         if (strstr(line, "Loaded method 'string-builder'")) {
             found_string_builder = true;
@@ -224,8 +228,8 @@ static void test_loading_methods_from_directory(ar_executable_fixture_t *mut_fix
     // Verify that we saw the loading message
     AR_ASSERT(found_loading_message, "Should see message about loading from directory");
 
-    // Verify that we loaded exactly 9 methods
-    AR_ASSERT(method_count == 9, "Should load exactly 9 methods from directory");
+    // Verify that we loaded exactly 10 methods
+    AR_ASSERT(method_count == 10, "Should load exactly 10 methods from directory");
 
     // Verify that all individual methods were loaded
     AR_ASSERT(found_agent_manager, "Should load agent-manager method");
@@ -236,6 +240,7 @@ static void test_loading_methods_from_directory(ar_executable_fixture_t *mut_fix
     AR_ASSERT(found_grade_evaluator, "Should load grade-evaluator method");
     AR_ASSERT(found_message_router, "Should load message-router method");
     AR_ASSERT(found_method_creator, "Should load method-creator method");
+    AR_ASSERT(found_shell, "Should load shell method");
     AR_ASSERT(found_string_builder, "Should load string-builder method");
 
     printf("Methods from directory loading test passed!\n");
@@ -407,7 +412,7 @@ static void test_bootstrap_spawns_chat_session(ar_executable_fixture_t *mut_fixt
 
         // Look for chat-session method availability during startup
         if (strstr(line, "Loaded method 'chat-session'") ||
-            strstr(line, "Loaded 9 methods from directory")) {
+            strstr(line, "Loaded 10 methods from directory")) {
             found_chat_session_created = true;
         }
 
@@ -592,7 +597,7 @@ static void test_executable__saves_methodology_file(ar_executable_fixture_t *mut
     file_content[read_size] = '\0';
     fclose(methodology_file);
 
-    // Check for all 9 methods
+    // Check for all 10 methods
     AR_ASSERT(strstr(file_content, "agent-manager") != NULL, "Should contain agent-manager method");
     AR_ASSERT(strstr(file_content, "bootstrap") != NULL, "Should contain bootstrap method");
     AR_ASSERT(strstr(file_content, "calculator") != NULL, "Should contain calculator method");
@@ -601,11 +606,12 @@ static void test_executable__saves_methodology_file(ar_executable_fixture_t *mut
     AR_ASSERT(strstr(file_content, "grade-evaluator") != NULL, "Should contain grade-evaluator method");
     AR_ASSERT(strstr(file_content, "message-router") != NULL, "Should contain message-router method");
     AR_ASSERT(strstr(file_content, "method-creator") != NULL, "Should contain method-creator method");
+    AR_ASSERT(strstr(file_content, "shell") != NULL, "Should contain shell method");
     AR_ASSERT(strstr(file_content, "string-builder") != NULL, "Should contain string-builder method");
 
     AR__HEAP__FREE(file_content);
 
-    printf("✓ All 9 methods found in agerun.methodology file\n");
+    printf("✓ All 10 methods found in agerun.methodology file\n");
 }
 
 static void test_executable__loads_persisted_methodology(ar_executable_fixture_t *mut_fixture) {

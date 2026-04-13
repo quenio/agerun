@@ -24,6 +24,7 @@ static void test_methodology__ar_log_propagation(void);
 static void test_methodology__ar_log_propagation_on_load(void);
 static void test_methodology__ar_log_propagation_on_load_with_instance(void);
 static void test_methodology__partial_version_resolution(void);
+static void test_methodology__register_shell_method(void);
 
 static void test_methodology__create_destroy(void) {
     printf("Testing ar_methodology__create() and ar_methodology__destroy()...\n");
@@ -580,6 +581,30 @@ static void test_methodology__ar_log_propagation_on_load_with_instance(void) {
     printf("test_methodology__ar_log_propagation_on_load_with_instance passed\n");
 }
 
+static void test_methodology__register_shell_method(void) {
+    printf("Testing shell built-in method registration...\n");
+
+    ar_methodology_t *own_methodology = ar_methodology__create(NULL);
+    assert(own_methodology != NULL);
+
+    bool registered = ar_methodology__register_shell_method(own_methodology);
+    assert(registered == true);
+
+    ar_method_t *ref_method = ar_methodology__get_method(
+        own_methodology,
+        AR_SHELL_METHOD_NAME,
+        AR_SHELL_METHOD_VERSION
+    );
+    assert(ref_method != NULL);
+    assert(strcmp(ar_method__get_name(ref_method), AR_SHELL_METHOD_NAME) == 0);
+    assert(strcmp(ar_method__get_version(ref_method), AR_SHELL_METHOD_VERSION) == 0);
+    assert(ar_method__get_ast(ref_method) != NULL);
+
+    ar_methodology__destroy(own_methodology);
+
+    printf("test_methodology__register_shell_method passed\n");
+}
+
 static void test_methodology__partial_version_resolution(void) {
     printf("Testing partial version resolution in methodology...\n");
     
@@ -714,9 +739,10 @@ int main(void) {
     test_methodology__ar_log_propagation_on_load();
     test_methodology__ar_log_propagation_on_load_with_instance();
     test_methodology__partial_version_resolution();
+    test_methodology__register_shell_method();
     
     // And report success
-    printf("All 18 tests passed!\n");
+    printf("All 19 tests passed!\n");
     // Clean up system instance
     ar_system__shutdown(mut_system);
     ar_system__destroy(mut_system);

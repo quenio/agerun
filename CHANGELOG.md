@@ -1,5 +1,30 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell foundational scaffold and startup slice)
+
+- **Implemented the shell module scaffold, built-in shell-method registration, and initial startup path**
+
+  Completed the first executable shell implementation slice for `001-command-line-shell` by adding
+  the new shell modules, RED-phase shell tests, the built-in shell method asset, and a minimal
+  `arsh` startup scaffold that creates a session-scoped receiving agent.
+
+  **Implementation**: Added `modules/ar_shell.{h,c,md}`, `ar_shell_session.{h,c,md}`,
+  `ar_shell_delegate.{h,c,md}`, `modules/ar_shell_tests.c`, `ar_shell_session_tests.c`,
+  `ar_shell_delegate_tests.c`, `methods/shell-1.0.0.method`, `methods/shell-1.0.0.md`, and
+  `methods/shell_tests.c`; extended `modules/ar_methodology.{h,c}` with shell-method registration,
+  updated `ar_methodology_tests.c` and `ar_system_tests.c` for the new startup path, added a
+  `run-shell` Makefile scaffold target, updated `specs/001-command-line-shell/tasks.md`, and synced
+  the module/method indexes in `modules/README.md` and `methods/README.md`.
+
+  **Verification**: `make ar_shell_tests 2>&1`, `make ar_shell_delegate_tests 2>&1`,
+  `make ar_shell_session_tests 2>&1`, `make shell_tests 2>&1`, `make ar_methodology_tests 2>&1`,
+  `make ar_system_tests 2>&1`, `make run-shell 2>&1`, `make check-docs 2>&1`,
+  `make clean build 2>&1`, and `make check-logs`.
+
+  **Impact**: The repository now has a test-backed shell scaffold with session ownership, input
+  envelope creation, built-in shell-method registration, and a minimal `arsh` startup path ready
+  for the next shell-interpretation and reply-routing iterations.
+
 ## 2026-04-11 (Command-line shell analyze follow-up sync)
 
 - **Synchronized shell plan, tasks, contracts, and quickstart with clarified shell behavior**
