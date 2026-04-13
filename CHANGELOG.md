@@ -1,5 +1,25 @@
 # AgeRun CHANGELOG
 
+## 2026-04-12 (Command-line shell session mediation helpers)
+
+- **Added shell-session store/load/failure protocol helpers**
+
+  Started the User Story 2 session-mediation work for `001-command-line-shell` by extending the
+  instantiable `ar_shell_session` module with helper APIs that store shell values in session-owned
+  memory and return protocol-shaped reply maps for successful loads and failed operations.
+
+  **Implementation**: Extended `modules/ar_shell_session.h` and `modules/ar_shell_session.c` with
+  `ar_shell_session__store_value()`, `ar_shell_session__load_value()`,
+  `ar_shell_session__return_loaded_value()`, and
+  `ar_shell_session__report_operation_failure()`; expanded
+  `modules/ar_shell_session_tests.c` with store/load/missing-path coverage; synced
+  `modules/ar_shell_session.md` and `specs/001-command-line-shell/tasks.md`.
+
+  **Verification**: `make ar_shell_session_tests 2>&1` and `make check-docs 2>&1`.
+
+  **Impact**: Shell session state is now no longer just passive memory ownership; it has a tested
+  mediation API ready for the next runtime wiring and shell-method interpretation slices.
+
 ## 2026-04-12 (Command-line shell repeated input and handoff acknowledgement slice)
 
 - **Completed repeated shell input handoff for the `arsh` transport path**
