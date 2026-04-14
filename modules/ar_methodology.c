@@ -287,7 +287,13 @@ bool ar_methodology__unregister_method(ar_methodology_t *mut_methodology,
  * @note Ownership: This cleans up all methods owned by the instance
  */
 bool ar_methodology__register_shell_method(ar_methodology_t *mut_methodology) {
-    static const char *ref_shell_instructions = "memory.last_input := message.text";
+    static const char *ref_shell_instructions =
+        "memory.last_input := message.text\n"
+        "memory.assignment := parse(\"memory.prompt := {value}\", message.text)\n"
+        "memory.store_request_input := build(\"action=ar_shell_session__store_value path=memory.prompt value={value}\", memory.assignment)\n"
+        "memory.store_request := parse(\"action={action} path={path} value={value}\", memory.store_request_input)\n"
+        "send(memory.shell_session_delegate_id, memory.store_request)\n"
+        "memory.last_error := \"Invalid shell syntax\"";
 
     if (!mut_methodology) {
         return false;

@@ -1,1 +1,6 @@
 memory.last_input := message.text
+memory.assignment := parse("memory.prompt := {value}", message.text)
+memory.store_request_input := build("action=ar_shell_session__store_value path=memory.prompt value={value}", memory.assignment)
+memory.store_request := parse("action={action} path={path} value={value}", memory.store_request_input)
+send(memory.shell_session_delegate_id, memory.store_request)
+memory.last_error := "Invalid shell syntax"

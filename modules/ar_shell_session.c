@@ -18,6 +18,7 @@ typedef struct ar_shell_session_delegate_context_s {
 } ar_shell_session_delegate_context_t;
 
 static const char* _memory_relative_path(const char *ref_path);
+static ar_data_t* _normalize_stored_value(ar_data_t *own_value);
 static bool _send_protocol_reply(
     const ar_shell_session_delegate_context_t *ref_context,
     int64_t sender_id,
@@ -48,6 +49,48 @@ static const char* _memory_relative_path(const char *ref_path) {
     }
 
     return ref_path + strlen("memory.");
+}
+
+static ar_data_t* _normalize_stored_value(ar_data_t *own_value) {
+    const char *ref_string_value;
+    size_t ref_length;
+    char *own_unquoted_string;
+    ar_data_t *own_normalized_value;
+
+    if (!own_value) {
+        return NULL;
+    }
+
+    if (ar_data__get_type(own_value) != AR_DATA_TYPE__STRING) {
+        return own_value;
+    }
+
+    ref_string_value = ar_data__get_string(own_value);
+    if (!ref_string_value) {
+        return own_value;
+    }
+
+    ref_length = strlen(ref_string_value);
+    if (ref_length < 2 || ref_string_value[0] != '"' || ref_string_value[ref_length - 1] != '"') {
+        return own_value;
+    }
+
+    own_unquoted_string = AR__HEAP__MALLOC(ref_length - 1, "shell session unquoted string");
+    if (!own_unquoted_string) {
+        return own_value;
+    }
+
+    memcpy(own_unquoted_string, ref_string_value + 1, ref_length - 2);
+    own_unquoted_string[ref_length - 2] = '\0';
+
+    own_normalized_value = ar_data__create_string(own_unquoted_string);
+    AR__HEAP__FREE(own_unquoted_string);
+    if (!own_normalized_value) {
+        return own_value;
+    }
+
+    ar_data__destroy(own_value);
+    return own_normalized_value;
 }
 
 ar_shell_session_t* ar_shell_session__create(int64_t session_id, ar_shell_mode_t mode) {
@@ -241,11 +284,18 @@ bool ar_shell_session__store_value(
     ar_shell_session_t *mut_session,
     const char *ref_path,
     ar_data_t *own_value) {
+    ar_data_t *own_normalized_value;
+
     if (!mut_session || !mut_session->own_memory || !ref_path || !own_value) {
         return false;
     }
 
-    return ar_data__set_map_data_if_root_matched(mut_session->own_memory, "memory", ref_path, own_value);
+    own_normalized_value = _normalize_stored_value(own_value);
+    if (!own_normalized_value) {
+        return false;
+    }
+
+    return ar_data__set_map_data_if_root_matched(mut_session->own_memory, "memory", ref_path, own_normalized_value);
 }
 
 ar_data_t* ar_shell_session__return_loaded_value(int request_id, ar_data_t *own_value) {

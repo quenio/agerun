@@ -9,6 +9,15 @@ static bool _report_handoff_acknowledgement(
     const ar_shell_delegate_t *ref_delegate,
     FILE *mut_output,
     bool did_handoff_succeed);
+static bool _queue_input_envelope(
+    ar_agency_t *mut_agency,
+    int64_t agent_id,
+    const char *ref_text);
+static bool _forward_trimmed_line(
+    ar_shell_delegate_t *mut_delegate,
+    ar_system_t *mut_system,
+    FILE *mut_output,
+    const char *ref_text);
 
 struct ar_shell_delegate_s {
     ar_log_t *ref_log;
@@ -109,12 +118,29 @@ static bool _report_handoff_acknowledgement(
     return fflush(mut_output) == 0;
 }
 
+static bool _queue_input_envelope(
+    ar_agency_t *mut_agency,
+    int64_t agent_id,
+    const char *ref_text) {
+    ar_data_t *own_envelope;
+
+    if (!mut_agency || agent_id <= 0 || !ref_text) {
+        return false;
+    }
+
+    own_envelope = ar_shell_delegate__create_input_envelope(ref_text);
+    if (!own_envelope) {
+        return false;
+    }
+
+    return ar_agency__send_to_agent(mut_agency, agent_id, own_envelope);
+}
+
 bool ar_shell_delegate__forward_input(
     ar_shell_delegate_t *mut_delegate,
     ar_system_t *mut_system,
     const char *ref_text) {
     ar_agency_t *mut_agency;
-    ar_data_t *own_envelope;
 
     if (!mut_delegate || !mut_system || !ref_text) {
         return false;
@@ -125,12 +151,23 @@ bool ar_shell_delegate__forward_input(
         return false;
     }
 
-    own_envelope = ar_shell_delegate__create_input_envelope(ref_text);
-    if (!own_envelope) {
+    return _queue_input_envelope(mut_agency, mut_delegate->agent_id, ref_text);
+}
+
+static bool _forward_trimmed_line(
+    ar_shell_delegate_t *mut_delegate,
+    ar_system_t *mut_system,
+    FILE *mut_output,
+    const char *ref_text) {
+    bool did_handoff_succeed;
+
+    if (!mut_delegate || !mut_system || !mut_output || !ref_text) {
         return false;
     }
 
-    return ar_agency__send_to_agent(mut_agency, mut_delegate->agent_id, own_envelope);
+    did_handoff_succeed = ar_shell_delegate__forward_input(mut_delegate, mut_system, ref_text);
+    _report_handoff_acknowledgement(mut_delegate, mut_output, did_handoff_succeed);
+    return true;
 }
 
 size_t ar_shell_delegate__process_input_stream(
@@ -140,7 +177,6 @@ size_t ar_shell_delegate__process_input_stream(
     FILE *mut_output) {
     char mut_line_buffer[4096];
     size_t ref_processed_count = 0;
-    bool did_handoff_succeed;
 
     if (!mut_delegate || !mut_system || !mut_input || !mut_output) {
         return 0;
@@ -148,9 +184,9 @@ size_t ar_shell_delegate__process_input_stream(
 
     while (fgets(mut_line_buffer, sizeof(mut_line_buffer), mut_input) != NULL) {
         _trim_line_endings(mut_line_buffer);
-        did_handoff_succeed = ar_shell_delegate__forward_input(mut_delegate, mut_system, mut_line_buffer);
-        _report_handoff_acknowledgement(mut_delegate, mut_output, did_handoff_succeed);
-        ref_processed_count++;
+        if (_forward_trimmed_line(mut_delegate, mut_system, mut_output, mut_line_buffer)) {
+            ref_processed_count++;
+        }
     }
 
     return ref_processed_count;

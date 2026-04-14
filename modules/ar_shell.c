@@ -14,6 +14,94 @@ struct ar_shell_s {
     ar_list_t *own_sessions;
 };
 
+static ar_shell_mode_t _parse_startup_mode(int argc, char **argv);
+static bool _register_shell_session_delegate(
+    ar_shell_t *mut_shell,
+    ar_shell_session_t *mut_session);
+static int64_t _create_shell_receiving_agent(
+    ar_shell_t *mut_shell,
+    ar_shell_session_t *ref_session);
+static bool _store_runtime_delegate_id_on_agent(
+    ar_system_t *ref_system,
+    int64_t agent_id,
+    int64_t delegate_id);
+
+static ar_shell_mode_t _parse_startup_mode(int argc, char **argv) {
+    if (argc > 1 && argv && argv[1] && strcmp(argv[1], "--verbose") == 0) {
+        return AR_SHELL_MODE__VERBOSE;
+    }
+
+    return AR_SHELL_MODE__NORMAL;
+}
+
+static bool _register_shell_session_delegate(
+    ar_shell_t *mut_shell,
+    ar_shell_session_t *mut_session) {
+    ar_delegate_t *own_runtime_delegate;
+    int64_t ref_delegate_id;
+
+    if (!mut_shell || !mut_shell->own_system || !mut_session) {
+        return false;
+    }
+
+    own_runtime_delegate = ar_shell_session__create_runtime_delegate(mut_session, mut_shell->own_system);
+    ref_delegate_id = ar_shell_session__get_runtime_delegate_id(mut_session);
+    if (!own_runtime_delegate || ref_delegate_id >= 0 ||
+        !ar_system__register_delegate(mut_shell->own_system, ref_delegate_id, own_runtime_delegate)) {
+        if (own_runtime_delegate) {
+            ar_delegate__destroy(own_runtime_delegate);
+        }
+        return false;
+    }
+
+    return true;
+}
+
+static int64_t _create_shell_receiving_agent(
+    ar_shell_t *mut_shell,
+    ar_shell_session_t *ref_session) {
+    ar_agency_t *mut_agency;
+
+    if (!mut_shell || !mut_shell->own_system || !ref_session) {
+        return 0;
+    }
+
+    mut_agency = ar_system__get_agency(mut_shell->own_system);
+    if (!mut_agency) {
+        return 0;
+    }
+
+    return ar_agency__create_agent(
+        mut_agency,
+        AR_SHELL_METHOD_NAME,
+        AR_SHELL_METHOD_VERSION,
+        ar_shell_session__get_context(ref_session));
+}
+
+static bool _store_runtime_delegate_id_on_agent(
+    ar_system_t *ref_system,
+    int64_t agent_id,
+    int64_t delegate_id) {
+    ar_agency_t *mut_agency;
+    ar_data_t *mut_agent_memory;
+
+    if (!ref_system || agent_id <= 0) {
+        return false;
+    }
+
+    mut_agency = ar_system__get_agency(ref_system);
+    if (!mut_agency) {
+        return false;
+    }
+
+    mut_agent_memory = ar_agency__get_agent_mutable_memory(mut_agency, agent_id);
+    if (!mut_agent_memory) {
+        return false;
+    }
+
+    return ar_data__set_map_integer(mut_agent_memory, "shell_session_delegate_id", (int)delegate_id);
+}
+
 ar_shell_t* ar_shell__create(ar_shell_mode_t default_mode) {
     ar_shell_t *own_shell = AR__HEAP__MALLOC(sizeof(ar_shell_t), "shell");
     if (!own_shell) {
@@ -82,11 +170,9 @@ ar_shell_session_t* ar_shell__start_session(ar_shell_t *mut_shell, ar_shell_mode
     ar_agency_t *mut_agency;
     ar_methodology_t *mut_methodology;
     ar_shell_session_t *own_session;
-    ar_delegate_t *own_runtime_delegate;
-    ar_data_t *mut_agent_memory;
     int64_t own_agent_id;
     int64_t own_session_id;
-    int64_t own_delegate_id;
+    int64_t ref_delegate_id;
 
     if (!mut_shell || !mut_shell->own_system || !mut_shell->own_sessions) {
         return NULL;
@@ -108,22 +194,12 @@ ar_shell_session_t* ar_shell__start_session(ar_shell_t *mut_shell, ar_shell_mode
         return NULL;
     }
 
-    own_runtime_delegate = ar_shell_session__create_runtime_delegate(own_session, mut_shell->own_system);
-    own_delegate_id = ar_shell_session__get_runtime_delegate_id(own_session);
-    if (!own_runtime_delegate || own_delegate_id >= 0 ||
-        !ar_system__register_delegate(mut_shell->own_system, own_delegate_id, own_runtime_delegate)) {
-        if (own_runtime_delegate) {
-            ar_delegate__destroy(own_runtime_delegate);
-        }
+    if (!_register_shell_session_delegate(mut_shell, own_session)) {
         ar_shell_session__destroy(own_session);
         return NULL;
     }
 
-    own_agent_id = ar_agency__create_agent(
-        mut_agency,
-        AR_SHELL_METHOD_NAME,
-        AR_SHELL_METHOD_VERSION,
-        ar_shell_session__get_context(own_session));
+    own_agent_id = _create_shell_receiving_agent(mut_shell, own_session);
     if (own_agent_id <= 0 || !ar_shell_session__activate(own_session, own_agent_id)) {
         if (own_agent_id > 0) {
             ar_agency__destroy_agent(mut_agency, own_agent_id);
@@ -132,9 +208,8 @@ ar_shell_session_t* ar_shell__start_session(ar_shell_t *mut_shell, ar_shell_mode
         return NULL;
     }
 
-    mut_agent_memory = ar_agency__get_agent_mutable_memory(mut_agency, own_agent_id);
-    if (!mut_agent_memory ||
-        !ar_data__set_map_integer(mut_agent_memory, "shell_session_delegate_id", (int)own_delegate_id)) {
+    ref_delegate_id = ar_shell_session__get_runtime_delegate_id(own_session);
+    if (!_store_runtime_delegate_id_on_agent(mut_shell->own_system, own_agent_id, ref_delegate_id)) {
         ar_agency__destroy_agent(mut_agency, own_agent_id);
         ar_shell_session__destroy(own_session);
         return NULL;
@@ -150,14 +225,12 @@ ar_shell_session_t* ar_shell__start_session(ar_shell_t *mut_shell, ar_shell_mode
 }
 
 int ar_shell__main(int argc, char **argv) {
-    ar_shell_mode_t default_mode = AR_SHELL_MODE__NORMAL;
+    ar_shell_mode_t default_mode;
     ar_shell_t *own_shell;
     ar_shell_session_t *ref_session;
     ar_shell_delegate_t *own_delegate;
 
-    if (argc > 1 && argv && argv[1] && strcmp(argv[1], "--verbose") == 0) {
-        default_mode = AR_SHELL_MODE__VERBOSE;
-    }
+    default_mode = _parse_startup_mode(argc, argv);
 
     own_shell = ar_shell__create(default_mode);
     if (!own_shell) {

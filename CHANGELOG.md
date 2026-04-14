@@ -1,5 +1,41 @@
 # AgeRun CHANGELOG
 
+## 2026-04-13 (Command-line shell prompt assignment slice)
+
+- **Implemented the first built-in shell-method behavior slice**
+
+  Continued User Story 2 by teaching the built-in `shell` method to recognize the tested
+  `memory.prompt := ...` input form, forward the resulting store request through the shell-session
+  runtime delegate, normalize quoted string values before persistence, and keep invalid syntax
+  recoverable.
+
+  **Implementation**: Updated `methods/shell-1.0.0.method`, `methods/shell-1.0.0.md`,
+  `methods/shell_tests.c`, `modules/ar_methodology.c`, and `modules/ar_shell_session.c`.
+
+  **Verification**: `make shell_tests 2>&1`, `make ar_shell_tests 2>&1`,
+  `make ar_shell_session_tests 2>&1`, and `make ar_methodology_tests 2>&1`.
+
+  **Impact**: The shell now has a real end-to-end interpreted behavior path instead of only a
+  transport scaffold, while still leaving broader `spawn(...)` / `send(...)` support for follow-up
+  TDD slices.
+
+## 2026-04-13 (Command-line shell startup helper refactor)
+
+- **Refactored shell startup helpers without changing US1 behavior**
+
+  Completed the remaining User Story 1 refactor task by extracting focused helpers for startup mode
+  parsing, runtime delegate registration, receiving-agent creation, delegate-ID storage, and trimmed
+  input forwarding.
+
+  **Implementation**: Updated `modules/ar_shell.c` to separate session startup steps into private
+  helpers and updated `modules/ar_shell_delegate.c` to isolate envelope queueing and per-line
+  forwarding work.
+
+  **Verification**: `make ar_shell_tests 2>&1` and `make ar_shell_delegate_tests 2>&1`.
+
+  **Impact**: The shell startup path is easier to extend for the remaining session-processing and
+  shell-method behaviors while preserving the existing US1 contract.
+
 ## 2026-04-12 (Command-line shell receiving-agent execution context)
 
 - **Made shell receiving agents executable with session-owned runtime context**
