@@ -287,36 +287,60 @@ bool ar_methodology__unregister_method(ar_methodology_t *mut_methodology,
  * @note Ownership: This cleans up all methods owned by the instance
  */
 bool ar_methodology__register_shell_method(ar_methodology_t *mut_methodology) {
-    static const char *ref_shell_instructions =
+    static const char *ref_shell_instructions_part_one =
         "memory.last_input := message.text\n"
-        "memory.assignment := parse(\"memory.prompt := {value}\", message.text)\n"
-        "memory.store_request_input := build(\"action=ar_shell_session__store_value path=memory.prompt value={value}\", memory.assignment)\n"
-        "memory.store_request := parse(\"action={action} path={path} value={value}\", memory.store_request_input)\n"
-        "send(memory.shell_session_delegate_id, memory.store_request)\n"
-        "memory.spawn_assignment := parse(\"memory.echo_id := spawn({method}, {version}, context)\", message.text)\n"
-        "memory.spawn_rebuilt := build(\"memory.echo_id := spawn({method}, {version}, context)\", memory.spawn_assignment)\n"
-        "memory.is_echo_spawn := if(memory.spawn_rebuilt = message.text, 1, 0)\n"
-        "memory.spawn_method := if(memory.is_echo_spawn = 1, \"echo\", \"\")\n"
-        "memory.spawn_version := if(memory.is_echo_spawn = 1, \"1.0.0\", \"\")\n"
-        "memory.spawned_agent_id := spawn(memory.spawn_method, memory.spawn_version, context)\n"
-        "memory.spawn_assignment.value := memory.spawned_agent_id\n"
-        "memory.spawn_store_delegate_id := if(memory.spawned_agent_id, memory.shell_session_delegate_id, 0)\n"
-        "memory.spawn_store_request_input := build(\"action=ar_shell_session__store_value path=memory.echo_id value={value}\", memory.spawn_assignment)\n"
-        "memory.spawn_store_request := parse(\"action={action} path={path} value={value}\", memory.spawn_store_request_input)\n"
-        "send(memory.spawn_store_delegate_id, memory.spawn_store_request)\n"
-        "memory.send_assignment := parse(\"memory.send_ok := send(memory.echo_id, {value})\", message.text)\n"
-        "memory.send_rebuilt := build(\"memory.send_ok := send(memory.echo_id, {value})\", memory.send_assignment)\n"
-        "memory.is_echo_send := if(memory.send_rebuilt = message.text, 1, 0)\n"
-        "memory.send_target := if(memory.is_echo_send = 1, memory.echo_id, 0)\n"
-        "memory.send_payload_input := build(\"sender=0 content={value}\", memory.send_assignment)\n"
-        "memory.send_payload := parse(\"sender={sender} content={content}\", memory.send_payload_input)\n"
-        "memory.send_result := send(memory.send_target, memory.send_payload)\n"
-        "memory.send_assignment.value := memory.send_result\n"
-        "memory.send_store_delegate_id := if(memory.is_echo_send = 1, memory.shell_session_delegate_id, 0)\n"
-        "memory.send_store_request_input := build(\"action=ar_shell_session__store_value path=memory.send_ok value={value}\", memory.send_assignment)\n"
-        "memory.send_store_request := parse(\"action={action} path={path} value={value}\", memory.send_store_request_input)\n"
-        "send(memory.send_store_delegate_id, memory.send_store_request)\n"
-        "memory.last_error := \"Invalid shell syntax\"";
+        "memory.assigned_spawn := parse(\"memory.{path} := spawn({method}, {version}, context)\", message.text)\n"
+        "memory.assigned_spawn_rebuilt := build(\"memory.{path} := spawn({method}, {version}, context)\", memory.assigned_spawn)\n"
+        "memory.is_assigned_spawn := if(memory.assigned_spawn_rebuilt = message.text, 1, 0)\n"
+        "memory.assigned_spawn_method := if(memory.is_assigned_spawn = 1, memory.assigned_spawn.method, 0)\n"
+        "memory.assigned_spawn_version := if(memory.is_assigned_spawn = 1, memory.assigned_spawn.version, \"1.0.0\")\n"
+        "memory.assigned_spawn_result := spawn(memory.assigned_spawn_method, memory.assigned_spawn_version, context)\n"
+        "memory.assigned_spawn.value := memory.assigned_spawn_result\n"
+        "memory.assigned_spawn_store_delegate_id := if(memory.is_assigned_spawn = 1, memory.shell_session_delegate_id, 0)\n"
+        "memory.assigned_spawn_store_request_input := build(\"action=ar_shell_session__store_value path=memory.{path} value={value}\", memory.assigned_spawn)\n"
+        "memory.assigned_spawn_store_request := parse(\"action={action} path={path} value={value}\", memory.assigned_spawn_store_request_input)\n"
+        "send(memory.assigned_spawn_store_delegate_id, memory.assigned_spawn_store_request)\n"
+        "memory.assigned_send := parse(\"memory.{path} := send(memory.echo_id, {value})\", message.text)\n"
+        "memory.assigned_send_rebuilt := build(\"memory.{path} := send(memory.echo_id, {value})\", memory.assigned_send)\n"
+        "memory.is_assigned_send := if(memory.assigned_send_rebuilt = message.text, 1, 0)\n"
+        "memory.assigned_send_target := if(memory.is_assigned_send = 1, memory.echo_id, 0)\n"
+        "memory.assigned_send_payload_input := build(\"sender=0 content={value}\", memory.assigned_send)\n"
+        "memory.assigned_send_payload := parse(\"sender={sender} content={content}\", memory.assigned_send_payload_input)\n"
+        "memory.assigned_send_result := send(memory.assigned_send_target, memory.assigned_send_payload)\n"
+        "memory.assigned_send.value := memory.assigned_send_result\n"
+        "memory.assigned_send_store_delegate_id := if(memory.is_assigned_send = 1, memory.shell_session_delegate_id, 0)\n"
+        "memory.assigned_send_store_request_input := build(\"action=ar_shell_session__store_value path=memory.{path} value={value}\", memory.assigned_send)\n"
+        "memory.assigned_send_store_request := parse(\"action={action} path={path} value={value}\", memory.assigned_send_store_request_input)\n";
+    static const char *ref_shell_instructions_part_two =
+        "send(memory.assigned_send_store_delegate_id, memory.assigned_send_store_request)\n"
+        "memory.plain_spawn := parse(\"spawn({method}, {version}, context)\", message.text)\n"
+        "memory.plain_spawn_rebuilt := build(\"spawn({method}, {version}, context)\", memory.plain_spawn)\n"
+        "memory.is_plain_spawn := if(memory.plain_spawn_rebuilt = message.text, 1, 0)\n"
+        "memory.plain_spawn_method := if(memory.is_plain_spawn = 1, memory.plain_spawn.method, 0)\n"
+        "memory.plain_spawn_version := if(memory.is_plain_spawn = 1, memory.plain_spawn.version, \"1.0.0\")\n"
+        "memory.plain_spawn_result := spawn(memory.plain_spawn_method, memory.plain_spawn_version, context)\n"
+        "memory.plain_send_prompt := parse(\"send(memory.echo_id, memory.prompt)\", message.text)\n"
+        "memory.plain_send_prompt_rebuilt := build(\"send(memory.echo_id, memory.prompt)\", memory.plain_send_prompt)\n"
+        "memory.is_plain_send_prompt := if(memory.plain_send_prompt_rebuilt = message.text, 1, 0)\n"
+        "memory.plain_send_target := if(memory.is_plain_send_prompt = 1, memory.echo_id, 0)\n"
+        "memory.sender := 0\n"
+        "memory.content := if(memory.is_plain_send_prompt = 1, memory.prompt, \"\")\n"
+        "memory.plain_send_payload_input := build(\"sender={sender} content={content}\", memory)\n"
+        "memory.plain_send_payload := parse(\"sender={sender} content={content}\", memory.plain_send_payload_input)\n"
+        "memory.plain_send_result := send(memory.plain_send_target, memory.plain_send_payload)\n"
+        "memory.assignment := parse(\"memory.{path} := {value}\", message.text)\n"
+        "memory.assignment_rebuilt := build(\"memory.{path} := {value}\", memory.assignment)\n"
+        "memory.is_assignment_candidate := if(memory.assignment_rebuilt = message.text, 1, 0)\n"
+        "memory.is_assignment := memory.is_assignment_candidate - memory.is_assigned_spawn - memory.is_assigned_send\n"
+        "memory.assignment_store_delegate_id := if(memory.is_assignment = 1, memory.shell_session_delegate_id, 0)\n"
+        "memory.assignment_store_request_input := build(\"action=ar_shell_session__store_value path=memory.{path} value={value}\", memory.assignment)\n"
+        "memory.assignment_store_request := parse(\"action={action} path={path} value={value}\", memory.assignment_store_request_input)\n"
+        "send(memory.assignment_store_delegate_id, memory.assignment_store_request)\n"
+        "memory.matched_forms := memory.is_assigned_spawn + memory.is_assigned_send + memory.is_plain_spawn + memory.is_plain_send_prompt + memory.is_assignment\n"
+        "memory.last_error := if(memory.matched_forms, \"\", \"Invalid shell syntax\")";
+    size_t ref_total_length;
+    char *own_shell_instructions;
+    bool did_create_method;
 
     if (!mut_methodology) {
         return false;
@@ -326,11 +350,27 @@ bool ar_methodology__register_shell_method(ar_methodology_t *mut_methodology) {
         return true;
     }
 
-    return ar_methodology__create_method(
+    ref_total_length = strlen(ref_shell_instructions_part_one) + strlen(ref_shell_instructions_part_two) + 1;
+    own_shell_instructions = AR__HEAP__MALLOC(ref_total_length, "shell built-in instructions");
+    if (!own_shell_instructions) {
+        return false;
+    }
+
+    snprintf(
+        own_shell_instructions,
+        ref_total_length,
+        "%s%s",
+        ref_shell_instructions_part_one,
+        ref_shell_instructions_part_two);
+
+    did_create_method = ar_methodology__create_method(
         mut_methodology,
         AR_SHELL_METHOD_NAME,
-        ref_shell_instructions,
+        own_shell_instructions,
         AR_SHELL_METHOD_VERSION);
+
+    AR__HEAP__FREE(own_shell_instructions);
+    return did_create_method;
 }
 
 void ar_methodology__cleanup(ar_methodology_t *mut_methodology) {

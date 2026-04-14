@@ -1,5 +1,24 @@
 # AgeRun CHANGELOG
 
+## 2026-04-13 (Command-line shell plain spawn/send slice)
+
+- **Completed the remaining User Story 2 shell forms used by the current plan**
+
+  Extended the built-in shell method and its tests to cover plain `spawn(...)`, plain
+  `send(memory.echo_id, memory.prompt)`, broader top-level `memory.{path} := ...` assignment
+  redirection, and dynamic top-level assigned-spawn / assigned-send storage paths while keeping
+  invalid shell syntax recoverable.
+
+  **Implementation**: Updated `methods/shell-1.0.0.method`, `methods/shell-1.0.0.md`,
+  `methods/shell_tests.c`, `modules/ar_methodology.c`, and
+  `specs/001-command-line-shell/tasks.md`.
+
+  **Verification**: `make ar_shell_session_tests 2>&1`, `make shell_tests 2>&1`,
+  `make ar_shell_tests 2>&1`, and `make ar_system_tests 2>&1`.
+
+  **Impact**: User Story 2 now supports the current restricted shell interaction set end-to-end,
+  including stored-value reuse for plain send and plain spawn without assignment.
+
 ## 2026-04-13 (Command-line shell assigned send slice)
 
 - **Added the first assigned `send(...)` shell-method path**

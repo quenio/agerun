@@ -12,6 +12,8 @@ static void test_shell__method_asset_loads_and_can_create_agent(void);
 static void test_shell__method_redirects_string_assignment_to_shell_session(void);
 static void test_shell__method_redirects_assigned_spawn_result_to_shell_session(void);
 static void test_shell__method_redirects_assigned_send_result_to_shell_session(void);
+static void test_shell__method_executes_plain_spawn_without_assignment(void);
+static void test_shell__method_executes_plain_send_with_stored_session_value(void);
 static void test_shell__method_reports_invalid_syntax_without_closing_session(void);
 
 int main(void) {
@@ -22,6 +24,8 @@ int main(void) {
     test_shell__method_redirects_string_assignment_to_shell_session();
     test_shell__method_redirects_assigned_spawn_result_to_shell_session();
     test_shell__method_redirects_assigned_send_result_to_shell_session();
+    test_shell__method_executes_plain_spawn_without_assignment();
+    test_shell__method_executes_plain_send_with_stored_session_value();
     test_shell__method_reports_invalid_syntax_without_closing_session();
 
     printf("All shell method tests passed!\n");
@@ -199,6 +203,113 @@ static void test_shell__method_redirects_assigned_send_result_to_shell_session(v
               "Assigned send lines should store the send result in shell-session memory");
     AR_ASSERT(ar_data__get_map_integer(ar_shell_session__get_memory(ref_session), "send_ok") == 1,
               "Assigned send lines should store a successful send result in shell-session memory");
+
+    ar_shell__destroy(own_shell);
+}
+
+static void test_shell__method_executes_plain_spawn_without_assignment(void) {
+    ar_shell_t *own_shell;
+    ar_shell_session_t *ref_session;
+    ar_system_t *mut_system;
+    ar_agency_t *mut_agency;
+    ar_data_t *own_input_envelope;
+    int64_t agent_id;
+    int initial_agent_count;
+
+    printf("Testing shell method executes plain spawn without assignment...\n");
+
+    own_shell = ar_shell__create(AR_SHELL_MODE__NORMAL);
+    AR_ASSERT(own_shell != NULL, "Shell creation should succeed");
+
+    ref_session = ar_shell__start_session(own_shell, AR_SHELL_MODE__NORMAL);
+    AR_ASSERT(ref_session != NULL, "Shell should create a session");
+
+    mut_system = ar_shell__get_system(own_shell);
+    AR_ASSERT(mut_system != NULL, "Shell should expose its wrapped system");
+    mut_agency = ar_system__get_agency(mut_system);
+    AR_ASSERT(mut_agency != NULL, "Shell should expose its wrapped agency");
+
+    agent_id = ar_shell_session__get_agent_id(ref_session);
+    AR_ASSERT(agent_id > 0, "Shell session should expose the receiving agent ID");
+
+    initial_agent_count = ar_agency__count_agents(mut_agency);
+
+    own_input_envelope = ar_shell_delegate__create_input_envelope("spawn(\"echo\", \"1.0.0\", context)");
+    AR_ASSERT(own_input_envelope != NULL, "Plain spawn input envelope creation should succeed");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, agent_id, own_input_envelope),
+              "Plain spawn input should queue to the receiving agent");
+    AR_ASSERT(ar_system__process_all_messages(mut_system) >= 1,
+              "System should process the queued plain-spawn interaction");
+
+    AR_ASSERT(ar_agency__count_agents(mut_agency) == initial_agent_count + 1,
+              "Plain spawn lines should create one additional runtime agent without storing it");
+
+    ar_shell__destroy(own_shell);
+}
+
+static void test_shell__method_executes_plain_send_with_stored_session_value(void) {
+    ar_shell_t *own_shell;
+    ar_shell_session_t *ref_session;
+    ar_system_t *mut_system;
+    ar_agency_t *mut_agency;
+    ar_data_t *own_prompt_input_envelope;
+    ar_data_t *own_spawn_input_envelope;
+    ar_data_t *own_send_input_envelope;
+    ar_data_t *own_echo_message;
+    const ar_data_t *ref_echo_payload;
+    int64_t shell_agent_id;
+    int64_t echo_agent_id;
+
+    printf("Testing shell method executes plain send with stored session value...\n");
+
+    own_shell = ar_shell__create(AR_SHELL_MODE__NORMAL);
+    AR_ASSERT(own_shell != NULL, "Shell creation should succeed");
+
+    ref_session = ar_shell__start_session(own_shell, AR_SHELL_MODE__NORMAL);
+    AR_ASSERT(ref_session != NULL, "Shell should create a session");
+
+    mut_system = ar_shell__get_system(own_shell);
+    AR_ASSERT(mut_system != NULL, "Shell should expose its wrapped system");
+    mut_agency = ar_system__get_agency(mut_system);
+    AR_ASSERT(mut_agency != NULL, "Shell should expose its wrapped agency");
+
+    shell_agent_id = ar_shell_session__get_agent_id(ref_session);
+    AR_ASSERT(shell_agent_id > 0, "Shell session should expose the receiving agent ID");
+
+    own_prompt_input_envelope = ar_shell_delegate__create_input_envelope("memory.prompt := \"Ready\"");
+    AR_ASSERT(own_prompt_input_envelope != NULL, "Prompt assignment input envelope creation should succeed");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, shell_agent_id, own_prompt_input_envelope),
+              "Prompt assignment input should queue to the receiving agent");
+    AR_ASSERT(ar_system__process_all_messages(mut_system) >= 1,
+              "System should process the queued prompt-assignment interaction");
+
+    own_spawn_input_envelope = ar_shell_delegate__create_input_envelope(
+        "memory.echo_id := spawn(\"echo\", \"1.0.0\", context)");
+    AR_ASSERT(own_spawn_input_envelope != NULL, "Assigned spawn input envelope creation should succeed");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, shell_agent_id, own_spawn_input_envelope),
+              "Assigned spawn input should queue to the receiving agent");
+    AR_ASSERT(ar_system__process_all_messages(mut_system) >= 1,
+              "System should process the queued assigned-spawn interaction");
+
+    echo_agent_id = ar_data__get_map_integer(ar_shell_session__get_memory(ref_session), "echo_id");
+    AR_ASSERT(echo_agent_id > 0, "Assigned spawn should leave echo_id available before plain send");
+
+    own_send_input_envelope = ar_shell_delegate__create_input_envelope("send(memory.echo_id, memory.prompt)");
+    AR_ASSERT(own_send_input_envelope != NULL, "Plain send input envelope creation should succeed");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, shell_agent_id, own_send_input_envelope),
+              "Plain send input should queue to the receiving agent");
+    AR_ASSERT(ar_system__process_next_message(mut_system),
+              "System should process the queued plain-send shell input message");
+
+    AR_ASSERT(ar_agency__agent_has_messages(mut_agency, echo_agent_id),
+              "Plain send lines should queue a runtime message to the resolved target agent");
+    own_echo_message = ar_agency__get_agent_message(mut_agency, echo_agent_id);
+    AR_ASSERT(own_echo_message != NULL, "Resolved target agent should receive the queued plain-send payload");
+    ref_echo_payload = ar_data__get_map_data(own_echo_message, "content");
+    AR_ASSERT(ref_echo_payload != NULL, "Plain send payload should include content for the target agent");
+    AR_ASSERT(strcmp(ar_data__get_string(ref_echo_payload), "Ready") == 0,
+              "Plain send lines should resolve stored shell-session values before queuing the runtime payload");
+    ar_data__destroy(own_echo_message);
 
     ar_shell__destroy(own_shell);
 }
