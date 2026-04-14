@@ -40,6 +40,7 @@ Finish the remaining shell feature plan end-to-end.
   - `make check-logs` ✅
 - Commits pushed:
   - `01530bc` — `feat: complete shell method user story two`
+  - `9863cf5` — `feat: finalize command-line shell plan`
 
 ## Notes
 - Started from commit 77c0d4c with assigned send handling green.
