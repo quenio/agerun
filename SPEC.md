@@ -6,8 +6,10 @@ This specification defines a lightweight, message-driven agent system where each
 
 The current runtime also includes a dedicated interactive shell executable, `arsh`, implemented by
 `ar_shell`. The shell wraps each input line into a `{text = ...}` envelope, uses the built-in
-`shell-1.0.0.method` to interpret the restricted shell subset, stores shell-session state in
-`ar_shell_session`, renders replies using only the runtime sender ID, and exits on EOF / Ctrl-D.
+`shell-1.0.0.method` to interpret the restricted shell subset, supports built-in `agents` / `list agents`
+inspection commands for enumerating active agents with method name/version, stores shell-session
+state in `ar_shell_session`, renders replies using only the runtime sender ID, and exits on EOF /
+Ctrl-D.
 
 ## Agent Definition
 

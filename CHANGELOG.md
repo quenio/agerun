@@ -1,5 +1,24 @@
 # AgeRun CHANGELOG
 
+## 2026-04-14 (Command-line shell active-agent listing)
+
+- **Added built-in shell commands for listing active agents and their method versions**
+
+  Extended the interactive shell transport so `agents` and `list agents` are handled as built-in
+  inspection commands that render the currently active agent IDs together with each agent's method
+  name and version. Added shell-module regression coverage for the rendered listing output and
+  synchronized the shell-facing documentation/spec text with the new behavior.
+
+  **Implementation**: Updated `modules/ar_shell_delegate.c`, `modules/ar_shell_tests.c`,
+  `modules/ar_shell_delegate.md`, `modules/ar_shell.md`, `README.md`, and `SPEC.md`.
+
+  **Verification**: `make ar_shell_tests 2>&1`, `make ar_shell_delegate_tests 2>&1`,
+  `make shell_tests 2>&1`, `make check-docs 2>&1`, `make clean build 2>&1`, and
+  `make check-logs 2>&1`.
+
+  **Impact**: `arsh` can now inspect live runtime state directly from the shell, making it easier
+  to discover active agents and confirm which method/version each agent is currently running.
+
 ## 2026-04-14 (Command-line shell final validation gates)
 
 - **Closed the remaining shell feature validation blockers and finished the plan**

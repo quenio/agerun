@@ -140,7 +140,8 @@ printf 'memory.prompt := "Ready"\nmemory.echo_id := spawn("echo", "1.0.0", conte
 ```
 
 Shell behavior highlights:
-- each entered line is wrapped as `{text = ...}` and delivered to the built-in `shell` method
+- each entered line is wrapped as `{text = ...}` and delivered to the built-in `shell` method unless it is a built-in shell inspection command
+- `agents` and `list agents` render the currently active agent IDs together with each agent's method name/version
 - shell-session values live in `ar_shell_session` and can be reused by later lines
 - replies are rendered as `reply sender_id=<runtime-id> text=<reply>`
 - EOF / Ctrl-D closes the session immediately and discards later replies

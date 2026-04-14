@@ -1,6 +1,7 @@
 #include "ar_shell_delegate.h"
 #include "ar_agency.h"
 #include "ar_heap.h"
+#include "ar_method.h"
 #include <inttypes.h>
 #include <string.h>
 
@@ -13,6 +14,8 @@ static bool _queue_input_envelope(
     ar_agency_t *mut_agency,
     int64_t agent_id,
     const char *ref_text);
+static bool _is_list_agents_command(const char *ref_text);
+static bool _render_active_agents_listing(FILE *mut_output, ar_system_t *mut_system);
 static bool _has_runtime_delegate_binding(ar_shell_delegate_t *mut_delegate, ar_system_t *mut_system);
 static void _process_runtime_interaction(ar_shell_delegate_t *mut_delegate, ar_system_t *mut_system);
 static void _close_session_after_eof(ar_shell_delegate_t *mut_delegate, ar_system_t *mut_system);
@@ -157,6 +160,62 @@ bool ar_shell_delegate__forward_input(
     return _queue_input_envelope(mut_agency, mut_delegate->agent_id, ref_text);
 }
 
+static bool _is_list_agents_command(const char *ref_text) {
+    if (!ref_text) {
+        return false;
+    }
+
+    return strcmp(ref_text, "agents") == 0 || strcmp(ref_text, "list agents") == 0;
+}
+
+static bool _render_active_agents_listing(FILE *mut_output, ar_system_t *mut_system) {
+    ar_agency_t *mut_agency;
+    int64_t agent_id;
+    bool has_rendered_any;
+
+    if (!mut_output || !mut_system) {
+        return false;
+    }
+
+    mut_agency = ar_system__get_agency(mut_system);
+    if (!mut_agency) {
+        return false;
+    }
+
+    has_rendered_any = false;
+    agent_id = ar_agency__get_first_agent(mut_agency);
+    while (agent_id != 0) {
+        const ar_method_t *ref_method;
+        const char *ref_method_name;
+        const char *ref_method_version;
+        int64_t next_agent_id;
+
+        next_agent_id = ar_agency__get_next_agent(mut_agency, agent_id);
+        ref_method = ar_agency__get_agent_method(mut_agency, agent_id);
+        ref_method_name = ref_method ? ar_method__get_name(ref_method) : NULL;
+        ref_method_version = ref_method ? ar_method__get_version(ref_method) : NULL;
+
+        if (fprintf(mut_output,
+                    "agent id=%" PRId64 " method=%s version=%s\n",
+                    agent_id,
+                    ref_method_name ? ref_method_name : "<unknown>",
+                    ref_method_version ? ref_method_version : "<unknown>") < 0) {
+            return false;
+        }
+
+        has_rendered_any = true;
+        agent_id = next_agent_id;
+    }
+
+    if (!has_rendered_any) {
+        if (fprintf(mut_output, "agent list empty\n") < 0) {
+            return false;
+        }
+    }
+
+    return fflush(mut_output) == 0;
+}
+
 static bool _has_runtime_delegate_binding(ar_shell_delegate_t *mut_delegate, ar_system_t *mut_system) {
     ar_agency_t *mut_agency;
     const ar_data_t *ref_agent_memory;
@@ -215,6 +274,14 @@ static bool _forward_trimmed_line(
 
     if (!mut_delegate || !mut_system || !mut_output || !ref_text) {
         return false;
+    }
+
+    if (_is_list_agents_command(ref_text)) {
+        did_handoff_succeed = true;
+        if (!_report_handoff_acknowledgement(mut_delegate, mut_output, did_handoff_succeed)) {
+            return false;
+        }
+        return _render_active_agents_listing(mut_output, mut_system);
     }
 
     did_handoff_succeed = ar_shell_delegate__forward_input(mut_delegate, mut_system, ref_text);
