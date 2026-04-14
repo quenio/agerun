@@ -1,5 +1,24 @@
 # AgeRun CHANGELOG
 
+## 2026-04-13 (Command-line shell assigned send slice)
+
+- **Added the first assigned `send(...)` shell-method path**
+
+  Continued User Story 2 by teaching the built-in shell method to recognize the tested
+  `memory.send_ok := send(memory.echo_id, "Hello")` input, reuse the previously stored
+  `memory.echo_id` value, queue a compatible payload to the spawned `echo` agent, and store the
+  resulting send status back into shell-session memory.
+
+  **Implementation**: Updated `methods/shell-1.0.0.method`, `methods/shell-1.0.0.md`,
+  `methods/shell_tests.c`, `modules/ar_methodology.c`, and `modules/ar_shell_session.c`.
+
+  **Verification**: `make shell_tests 2>&1`, `make ar_shell_tests 2>&1`,
+  `make ar_shell_session_tests 2>&1`, and `make ar_methodology_tests 2>&1`.
+
+  **Impact**: The shell now supports one real assigned-send interaction end-to-end, and session
+  values written through `ar_shell_session` can be reused by later shell lines via the current
+  mirrored receiving-agent-memory path.
+
 ## 2026-04-13 (Command-line shell assigned spawn slice)
 
 - **Added the first assigned `spawn(...)` shell-method path**

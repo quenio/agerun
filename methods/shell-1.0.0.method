@@ -14,4 +14,16 @@ memory.spawn_store_delegate_id := if(memory.spawned_agent_id, memory.shell_sessi
 memory.spawn_store_request_input := build("action=ar_shell_session__store_value path=memory.echo_id value={value}", memory.spawn_assignment)
 memory.spawn_store_request := parse("action={action} path={path} value={value}", memory.spawn_store_request_input)
 send(memory.spawn_store_delegate_id, memory.spawn_store_request)
+memory.send_assignment := parse("memory.send_ok := send(memory.echo_id, {value})", message.text)
+memory.send_rebuilt := build("memory.send_ok := send(memory.echo_id, {value})", memory.send_assignment)
+memory.is_echo_send := if(memory.send_rebuilt = message.text, 1, 0)
+memory.send_target := if(memory.is_echo_send = 1, memory.echo_id, 0)
+memory.send_payload_input := build("sender=0 content={value}", memory.send_assignment)
+memory.send_payload := parse("sender={sender} content={content}", memory.send_payload_input)
+memory.send_result := send(memory.send_target, memory.send_payload)
+memory.send_assignment.value := memory.send_result
+memory.send_store_delegate_id := if(memory.is_echo_send = 1, memory.shell_session_delegate_id, 0)
+memory.send_store_request_input := build("action=ar_shell_session__store_value path=memory.send_ok value={value}", memory.send_assignment)
+memory.send_store_request := parse("action={action} path={path} value={value}", memory.send_store_request_input)
+send(memory.send_store_delegate_id, memory.send_store_request)
 memory.last_error := "Invalid shell syntax"

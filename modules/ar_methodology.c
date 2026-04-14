@@ -304,6 +304,18 @@ bool ar_methodology__register_shell_method(ar_methodology_t *mut_methodology) {
         "memory.spawn_store_request_input := build(\"action=ar_shell_session__store_value path=memory.echo_id value={value}\", memory.spawn_assignment)\n"
         "memory.spawn_store_request := parse(\"action={action} path={path} value={value}\", memory.spawn_store_request_input)\n"
         "send(memory.spawn_store_delegate_id, memory.spawn_store_request)\n"
+        "memory.send_assignment := parse(\"memory.send_ok := send(memory.echo_id, {value})\", message.text)\n"
+        "memory.send_rebuilt := build(\"memory.send_ok := send(memory.echo_id, {value})\", memory.send_assignment)\n"
+        "memory.is_echo_send := if(memory.send_rebuilt = message.text, 1, 0)\n"
+        "memory.send_target := if(memory.is_echo_send = 1, memory.echo_id, 0)\n"
+        "memory.send_payload_input := build(\"sender=0 content={value}\", memory.send_assignment)\n"
+        "memory.send_payload := parse(\"sender={sender} content={content}\", memory.send_payload_input)\n"
+        "memory.send_result := send(memory.send_target, memory.send_payload)\n"
+        "memory.send_assignment.value := memory.send_result\n"
+        "memory.send_store_delegate_id := if(memory.is_echo_send = 1, memory.shell_session_delegate_id, 0)\n"
+        "memory.send_store_request_input := build(\"action=ar_shell_session__store_value path=memory.send_ok value={value}\", memory.send_assignment)\n"
+        "memory.send_store_request := parse(\"action={action} path={path} value={value}\", memory.send_store_request_input)\n"
+        "send(memory.send_store_delegate_id, memory.send_store_request)\n"
         "memory.last_error := \"Invalid shell syntax\"";
 
     if (!mut_methodology) {

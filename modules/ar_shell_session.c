@@ -19,6 +19,9 @@ typedef struct ar_shell_session_delegate_context_s {
 
 static const char* _memory_relative_path(const char *ref_path);
 static ar_data_t* _normalize_stored_value(ar_data_t *own_value);
+static bool _mirror_stored_value_to_agent_memory(
+    const ar_shell_session_delegate_context_t *ref_context,
+    const char *ref_path);
 static bool _send_protocol_reply(
     const ar_shell_session_delegate_context_t *ref_context,
     int64_t sender_id,
@@ -91,6 +94,55 @@ static ar_data_t* _normalize_stored_value(ar_data_t *own_value) {
 
     ar_data__destroy(own_value);
     return own_normalized_value;
+}
+
+static bool _mirror_stored_value_to_agent_memory(
+    const ar_shell_session_delegate_context_t *ref_context,
+    const char *ref_path) {
+    ar_agency_t *mut_agency;
+    ar_data_t *mut_agent_memory;
+    const char *ref_relative_path;
+    ar_data_t *ref_stored_value;
+    ar_data_t *own_value_copy;
+
+    if (!ref_context || !ref_context->mut_session || !ref_context->mut_system ||
+        ref_context->mut_session->agent_id <= 0 || !ref_path) {
+        return false;
+    }
+
+    ref_relative_path = _memory_relative_path(ref_path);
+    if (!ref_relative_path || ref_relative_path[0] == '\0') {
+        return false;
+    }
+
+    ref_stored_value = ar_data__get_map_data(ref_context->mut_session->own_memory, ref_relative_path);
+    if (!ref_stored_value) {
+        return false;
+    }
+
+    own_value_copy = ar_data__shallow_copy(ref_stored_value);
+    if (!own_value_copy) {
+        return false;
+    }
+
+    mut_agency = ar_system__get_agency(ref_context->mut_system);
+    if (!mut_agency) {
+        ar_data__destroy(own_value_copy);
+        return false;
+    }
+
+    mut_agent_memory = ar_agency__get_agent_mutable_memory(mut_agency, ref_context->mut_session->agent_id);
+    if (!mut_agent_memory) {
+        ar_data__destroy(own_value_copy);
+        return false;
+    }
+
+    if (!ar_data__set_map_data_if_root_matched(mut_agent_memory, "memory", ref_path, own_value_copy)) {
+        ar_data__destroy(own_value_copy);
+        return false;
+    }
+
+    return true;
 }
 
 ar_shell_session_t* ar_shell_session__create(int64_t session_id, ar_shell_mode_t mode) {
@@ -237,6 +289,7 @@ static bool _handle_runtime_delegate_message(void *mut_context, ar_data_t *ref_m
             own_reply = ar_shell_session__report_operation_failure(0, "Shell session store failed");
             return _send_protocol_reply(mut_context_data, sender_id, own_reply);
         }
+        (void) _mirror_stored_value_to_agent_memory(mut_context_data, ref_path);
         return true;
     }
 

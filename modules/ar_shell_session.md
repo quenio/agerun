@@ -19,6 +19,8 @@ per-session runtime context used when the receiving agent executes.
 - `ar_shell_session__create_runtime_delegate()` builds the delegate handler that routes protocol
   messages into the shell session.
 - `ar_shell_session__store_value()` stores one value addressed through the `memory...` root.
+  The current runtime-delegate path also mirrors stored values back into the receiving-agent memory
+  map so later shell lines can reuse session values like `memory.echo_id`.
 - `ar_shell_session__load_value()` loads one stored value and returns a protocol-shaped reply map.
 - `ar_shell_session__return_loaded_value()` builds the loaded-value reply payload.
 - `ar_shell_session__report_operation_failure()` builds the failure reply payload.
@@ -40,5 +42,7 @@ per-session runtime context used when the receiving agent executes.
 
 The current implementation provides startup state ownership plus message-shaped store/load/failure
 mediation for the shell session memory map and a runtime delegate that processes store/load
-protocol messages on behalf of the shell session. Acknowledgement reporting, output rendering, and
-shutdown-state transitions remain future work.
+protocol messages on behalf of the shell session. Stored values are also mirrored into the
+receiving-agent memory map to support the current shell-method reuse path for later lines such as
+assigned send after assigned spawn. Acknowledgement reporting, output rendering, and shutdown-state
+transitions remain future work.

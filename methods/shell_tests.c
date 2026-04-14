@@ -11,6 +11,7 @@
 static void test_shell__method_asset_loads_and_can_create_agent(void);
 static void test_shell__method_redirects_string_assignment_to_shell_session(void);
 static void test_shell__method_redirects_assigned_spawn_result_to_shell_session(void);
+static void test_shell__method_redirects_assigned_send_result_to_shell_session(void);
 static void test_shell__method_reports_invalid_syntax_without_closing_session(void);
 
 int main(void) {
@@ -20,6 +21,7 @@ int main(void) {
     test_shell__method_asset_loads_and_can_create_agent();
     test_shell__method_redirects_string_assignment_to_shell_session();
     test_shell__method_redirects_assigned_spawn_result_to_shell_session();
+    test_shell__method_redirects_assigned_send_result_to_shell_session();
     test_shell__method_reports_invalid_syntax_without_closing_session();
 
     printf("All shell method tests passed!\n");
@@ -146,6 +148,57 @@ static void test_shell__method_redirects_assigned_spawn_result_to_shell_session(
               "Assigned spawn lines should store a positive spawned agent ID in shell-session memory");
     AR_ASSERT(ar_agency__agent_exists(mut_agency, spawned_agent_id),
               "Assigned spawn lines should create the requested runtime agent");
+
+    ar_shell__destroy(own_shell);
+}
+
+static void test_shell__method_redirects_assigned_send_result_to_shell_session(void) {
+    ar_shell_t *own_shell;
+    ar_shell_session_t *ref_session;
+    ar_system_t *mut_system;
+    ar_agency_t *mut_agency;
+    ar_data_t *own_spawn_input_envelope;
+    ar_data_t *own_send_input_envelope;
+    int64_t agent_id;
+
+    printf("Testing shell method redirects assigned send result to shell session...\n");
+
+    own_shell = ar_shell__create(AR_SHELL_MODE__NORMAL);
+    AR_ASSERT(own_shell != NULL, "Shell creation should succeed");
+
+    ref_session = ar_shell__start_session(own_shell, AR_SHELL_MODE__NORMAL);
+    AR_ASSERT(ref_session != NULL, "Shell should create a session");
+
+    mut_system = ar_shell__get_system(own_shell);
+    AR_ASSERT(mut_system != NULL, "Shell should expose its wrapped system");
+    mut_agency = ar_system__get_agency(mut_system);
+    AR_ASSERT(mut_agency != NULL, "Shell should expose its wrapped agency");
+
+    agent_id = ar_shell_session__get_agent_id(ref_session);
+    AR_ASSERT(agent_id > 0, "Shell session should expose the receiving agent ID");
+
+    own_spawn_input_envelope = ar_shell_delegate__create_input_envelope(
+        "memory.echo_id := spawn(\"echo\", \"1.0.0\", context)");
+    AR_ASSERT(own_spawn_input_envelope != NULL, "Assigned spawn input envelope creation should succeed");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, agent_id, own_spawn_input_envelope),
+              "Assigned spawn input should queue to the receiving agent");
+    AR_ASSERT(ar_system__process_all_messages(mut_system) >= 1,
+              "System should process the queued assigned-spawn interaction");
+    AR_ASSERT(ar_data__get_map_integer(ar_shell_session__get_memory(ref_session), "echo_id") > 0,
+              "Assigned spawn should leave echo_id available in shell-session memory before assigned send");
+
+    own_send_input_envelope = ar_shell_delegate__create_input_envelope(
+        "memory.send_ok := send(memory.echo_id, \"Hello\")");
+    AR_ASSERT(own_send_input_envelope != NULL, "Assigned send input envelope creation should succeed");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, agent_id, own_send_input_envelope),
+              "Assigned send input should queue to the receiving agent");
+    AR_ASSERT(ar_system__process_all_messages(mut_system) >= 1,
+              "System should process the queued assigned-send interaction");
+
+    AR_ASSERT(ar_data__get_map_data(ar_shell_session__get_memory(ref_session), "send_ok") != NULL,
+              "Assigned send lines should store the send result in shell-session memory");
+    AR_ASSERT(ar_data__get_map_integer(ar_shell_session__get_memory(ref_session), "send_ok") == 1,
+              "Assigned send lines should store a successful send result in shell-session memory");
 
     ar_shell__destroy(own_shell);
 }
