@@ -13,6 +13,9 @@ static bool _queue_input_envelope(
     ar_agency_t *mut_agency,
     int64_t agent_id,
     const char *ref_text);
+static bool _has_runtime_delegate_binding(ar_shell_delegate_t *mut_delegate, ar_system_t *mut_system);
+static void _process_runtime_interaction(ar_shell_delegate_t *mut_delegate, ar_system_t *mut_system);
+static void _close_session_after_eof(ar_shell_delegate_t *mut_delegate, ar_system_t *mut_system);
 static bool _forward_trimmed_line(
     ar_shell_delegate_t *mut_delegate,
     ar_system_t *mut_system,
@@ -154,6 +157,55 @@ bool ar_shell_delegate__forward_input(
     return _queue_input_envelope(mut_agency, mut_delegate->agent_id, ref_text);
 }
 
+static bool _has_runtime_delegate_binding(ar_shell_delegate_t *mut_delegate, ar_system_t *mut_system) {
+    ar_agency_t *mut_agency;
+    const ar_data_t *ref_agent_memory;
+
+    if (!mut_delegate || !mut_system || mut_delegate->agent_id <= 0) {
+        return false;
+    }
+
+    mut_agency = ar_system__get_agency(mut_system);
+    if (!mut_agency) {
+        return false;
+    }
+
+    ref_agent_memory = ar_agency__get_agent_memory(mut_agency, mut_delegate->agent_id);
+    if (!ref_agent_memory) {
+        return false;
+    }
+
+    return ar_data__get_map_integer(ref_agent_memory, "shell_session_delegate_id") < 0;
+}
+
+static void _process_runtime_interaction(ar_shell_delegate_t *mut_delegate, ar_system_t *mut_system) {
+    if (!mut_delegate || !mut_system || !_has_runtime_delegate_binding(mut_delegate, mut_system)) {
+        return;
+    }
+
+    (void) ar_system__process_all_messages(mut_system);
+}
+
+static void _close_session_after_eof(ar_shell_delegate_t *mut_delegate, ar_system_t *mut_system) {
+    ar_agency_t *mut_agency;
+
+    if (!mut_delegate || !mut_delegate->ref_session || !mut_system ||
+        !_has_runtime_delegate_binding(mut_delegate, mut_system)) {
+        return;
+    }
+
+    ar_shell_session__close(mut_delegate->ref_session);
+
+    mut_agency = ar_system__get_agency(mut_system);
+    if (!mut_agency || mut_delegate->agent_id <= 0) {
+        return;
+    }
+
+    if (ar_agency__agent_exists(mut_agency, mut_delegate->agent_id)) {
+        (void) ar_agency__destroy_agent(mut_agency, mut_delegate->agent_id);
+    }
+}
+
 static bool _forward_trimmed_line(
     ar_shell_delegate_t *mut_delegate,
     ar_system_t *mut_system,
@@ -167,6 +219,9 @@ static bool _forward_trimmed_line(
 
     did_handoff_succeed = ar_shell_delegate__forward_input(mut_delegate, mut_system, ref_text);
     _report_handoff_acknowledgement(mut_delegate, mut_output, did_handoff_succeed);
+    if (did_handoff_succeed) {
+        _process_runtime_interaction(mut_delegate, mut_system);
+    }
     return true;
 }
 
@@ -182,6 +237,8 @@ size_t ar_shell_delegate__process_input_stream(
         return 0;
     }
 
+    ar_shell_session__bind_output(mut_delegate->ref_session, mut_output);
+
     while (fgets(mut_line_buffer, sizeof(mut_line_buffer), mut_input) != NULL) {
         _trim_line_endings(mut_line_buffer);
         if (_forward_trimmed_line(mut_delegate, mut_system, mut_output, mut_line_buffer)) {
@@ -189,5 +246,6 @@ size_t ar_shell_delegate__process_input_stream(
         }
     }
 
+    _close_session_after_eof(mut_delegate, mut_system);
     return ref_processed_count;
 }

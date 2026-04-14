@@ -51,4 +51,5 @@ specs/
 - Re-planned `001-command-line-shell` so `arsh` is its own executable implemented by the instantiable `ar_shell` module, with `ar_shell` managing shell sessions, `ar_shell_session` owning per-session state and lifecycle, a session-specific `ar_shell_delegate`, and a built-in `shell` method
 
 <!-- MANUAL ADDITIONS START -->
+- `001-command-line-shell` implementation now has US1, US2, and US3 behavior slices in place: `arsh` uses `ar_shell`, shell-session state lives in `ar_shell_session`, replies render as `reply sender_id=<runtime-id> text=<reply>`, and EOF / Ctrl-D closes immediately while discarding later replies.
 <!-- MANUAL ADDITIONS END -->

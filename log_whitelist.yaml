@@ -563,6 +563,9 @@ ignored_errors:
     message: "ERROR: Last error"
     comment: "Testing last error message"
   - context: "ar_log_tests"
+    message: "ERROR: Only error"
+    comment: "Testing single-error retrieval behavior"
+  - context: "ar_log_tests"
     message: "ERROR: Parse error at position (at position 42)"
     comment: "Testing parse error logging"
   - context: "ar_log_tests"
@@ -612,6 +615,13 @@ ignored_errors:
   - context: "ar_method_evaluator_tests"
     message: "ERROR: Method evaluation failed at line 2"
     comment: "Testing invalid assignment target error handling"
+  - context: "ar_method_evaluator_tests"
+
+  # ar_shell_session_tests
+  - context: "ar_shell_session_tests"
+    message: "test_shell_session__load_value_reports_missing_path_failure..."
+    comment: "Test name intentionally contains the word failure while reporting a passing missing-path case"
+
   - context: "ar_method_evaluator_tests"
   # ar_method_fixture_tests
   - context: "ar_method_fixture_tests"

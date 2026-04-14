@@ -9,6 +9,7 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
 - **Versioning System**: Method definitions are versioned with backward compatibility.
 - **Persistence**: Methodology (method definitions) and agency (agents with their state) can be persisted and restored.
 - **Dynamic Agent Creation**: Agents can create other agents at runtime.
+- **Interactive Shell**: `arsh` provides a terminal shell for spawning agents, storing shell-session values, sending messages, observing replies, and exiting cleanly on EOF / Ctrl-D.
 - **Minimal Memory Footprint**: Designed to be lightweight and efficient.
 
 ## Building from Source
@@ -131,6 +132,18 @@ int main(void) {
     return 0;
 }
 ```
+
+### Interactive Shell (`arsh`)
+
+```bash
+printf 'memory.prompt := "Ready"\nmemory.echo_id := spawn("echo", "1.0.0", context)\nsend(memory.echo_id, memory.prompt)\n' | make run-shell 2>&1
+```
+
+Shell behavior highlights:
+- each entered line is wrapped as `{text = ...}` and delivered to the built-in `shell` method
+- shell-session values live in `ar_shell_session` and can be reused by later lines
+- replies are rendered as `reply sender_id=<runtime-id> text=<reply>`
+- EOF / Ctrl-D closes the session immediately and discards later replies
 
 ### Creating Agents
 

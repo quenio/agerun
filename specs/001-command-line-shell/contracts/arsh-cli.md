@@ -62,17 +62,18 @@ The shell may additionally report:
 
 ### Replies
 
-- replies returned by the session agent are delivered to the session-specific shell delegate callback path
-- the delegate forwards each returned-message event back into the owning shell session
-- the shell session renders shell-visible output to stdout
+- replies returned by runtime interactions are delivered to the session-scoped delegate callback path
+- the delegate binds the shell session's stdout stream and the shell session renders each reply
+- rendered string replies use the current shell-visible form `reply sender_id=<runtime-id> text=<reply>`
 - each displayed reply is attributed using only the runtime sender ID
+- replies arriving after the session closes are discarded instead of being rendered
 
 ## Shutdown Contract
 
 When EOF / Ctrl-D is received:
 - the shell session begins shutdown immediately
 - later returned messages are discarded instead of being rendered
-- the dedicated receiving agent is destroyed
+- the dedicated receiving agent is destroyed before shell teardown completes
 - the `ar_shell_session` module is cleaned up
 - the shell session is unregistered from `ar_shell`
 - the shell delegate is shut down

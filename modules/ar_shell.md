@@ -33,4 +33,6 @@ The current implementation covers shell creation, repository method loading into
 system, session tracking, built-in shell-method registration, receiving-agent startup with
 per-session execution context, startup-mode propagation, runtime delegate registration for
 shell-session mediation, and repeated stdin handoff through `ar_shell_delegate__process_input_stream()`.
-Asynchronous reply handling and shutdown-time reply discard remain future work.
+For real shell sessions started by `ar_shell`, that loop now also processes runtime work,
+renders returned replies using only the runtime sender ID, closes the session on EOF / Ctrl-D,
+and destroys the dedicated receiving agent before shell teardown.

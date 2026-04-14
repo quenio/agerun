@@ -4,6 +4,11 @@
 
 This specification defines a lightweight, message-driven agent system where each agent is characterized by a single method responsible for handling all incoming messages. Agents operate within a persistent runtime environment, allowing dynamic creation, pausing, resumption, and destruction.
 
+The current runtime also includes a dedicated interactive shell executable, `arsh`, implemented by
+`ar_shell`. The shell wraps each input line into a `{text = ...}` envelope, uses the built-in
+`shell-1.0.0.method` to interpret the restricted shell subset, stores shell-session state in
+`ar_shell_session`, renders replies using only the runtime sender ID, and exits on EOF / Ctrl-D.
+
 ## Agent Definition
 
 - **Method**: Each agent is defined by a single method that processes all messages.

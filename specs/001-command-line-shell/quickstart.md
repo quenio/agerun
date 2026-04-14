@@ -88,8 +88,9 @@ Expected outcome:
 Returned messages are displayed in the same terminal session.
 
 Expected behavior:
-- The session-specific shell delegate calls back into the shell session when a message is returned by the agent
+- The session-scoped delegate callback routes returned runtime messages into the shell session
 - The shell session renders shell-visible output to standard output
+- The current rendered reply form for string payloads is `reply sender_id=<runtime-id> text=<reply>`
 - The displayed reply shows only the runtime sender ID
 - Returned messages may arrive after later input has already been entered
 - Delayed returned messages do not terminate the shell session while it remains open

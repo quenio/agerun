@@ -1521,8 +1521,8 @@ For detailed API documentation, see [ar_interpreter.md](ar_interpreter.md).
 The shell scaffold adds three modules for the command-line shell feature:
 
 - [ar_shell.md](ar_shell.md) wraps an `ar_system_t`, tracks shell sessions, and starts the built-in shell receiving agent.
-- [ar_shell_session.md](ar_shell_session.md) owns per-session mode, receiving-agent ID, and shell-session memory.
-- [ar_shell_delegate.md](ar_shell_delegate.md) wraps terminal input into `{text = ...}` envelopes and forwards them to the receiving agent.
+- [ar_shell_session.md](ar_shell_session.md) owns per-session mode, receiving-agent ID, shell-session memory, reply rendering, and closed-session discard behavior.
+- [ar_shell_delegate.md](ar_shell_delegate.md) wraps terminal input into `{text = ...}` envelopes, forwards them to the receiving agent, and drives EOF / Ctrl-D shutdown semantics for active shell sessions.
 
 ### Executable Module (`ar_executable`)
 

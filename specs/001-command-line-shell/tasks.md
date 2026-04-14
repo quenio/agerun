@@ -80,7 +80,7 @@
 - [x] T019 [US2] Implement shell-session management wiring between `ar_shell`, `ar_shell_session`, and the runtime in `modules/ar_shell.c`, `modules/ar_shell_session.c`, `modules/ar_system.c`, `modules/ar_system.h`, and `modules/ar_system_tests.c`
 - [x] T020 [US2] Implement the restricted shell syntax, recoverable invalid-shell-syntax reporting, assignment redirection, and assigned `spawn`/`send` forms in new `methods/shell-1.0.0.method`, new `methods/shell-1.0.0.md`, and new `methods/shell_tests.c`
 - [x] T021 [US2] Re-run validation for `modules/ar_shell_session_tests.c`, `methods/shell_tests.c`, `modules/ar_shell_tests.c`, and `modules/ar_system_tests.c` with `make ar_shell_session_tests 2>&1`, `make shell_tests 2>&1`, `make ar_shell_tests 2>&1`, and `make ar_system_tests 2>&1` until User Story 2 passes
-- [ ] T022 [US2] Refactor shell/session message helpers in `modules/ar_shell.c`, `modules/ar_shell_session.c`, `modules/ar_system.c`, and `methods/shell-1.0.0.method` while preserving green User Story 2 tests
+- [x] T022 [US2] Refactor shell/session message helpers in `modules/ar_shell.c`, `modules/ar_shell_session.c`, `modules/ar_system.c`, and `methods/shell-1.0.0.method` while preserving green User Story 2 tests
 
 **Checkpoint**: The shell method can spawn agents, send messages, and store/reuse shell session values with `ar_shell` managing sessions and `ar_shell_session` owning per-session state.
 
@@ -94,16 +94,16 @@
 
 ### Validation for User Story 3
 
-- [ ] T023 [P] [US3] Run the targeted failing reply-display, runtime-sender-ID-only attribution, EOF / Ctrl-D shutdown, late-reply discard, and receiving-agent cleanup tests in `modules/ar_shell_delegate_tests.c`, `modules/ar_shell_tests.c`, and `modules/ar_system_tests.c`
+- [x] T023 [P] [US3] Run the targeted failing reply-display, runtime-sender-ID-only attribution, EOF / Ctrl-D shutdown, late-reply discard, and receiving-agent cleanup tests in `modules/ar_shell_delegate_tests.c`, `modules/ar_shell_tests.c`, and `modules/ar_system_tests.c`
 
 ### Implementation for User Story 3
 
-- [ ] T024 [P] [US3] Define reply-display and sender-attribution behavior using only the runtime sender ID, plus EOF / Ctrl-D discard semantics, in `modules/ar_shell_delegate.md`, `specs/001-command-line-shell/contracts/arsh-cli.md`, and `specs/001-command-line-shell/contracts/shell-session-protocol.md`
-- [ ] T025 [US3] Implement asynchronous returned-message callback routing from `ar_shell_delegate` into `ar_shell_session__render_output`, with display attribution limited to the runtime sender ID, in `modules/ar_shell_delegate.c`, `modules/ar_shell_session.c`, and `modules/ar_shell_delegate_tests.c`
-- [ ] T026 [US3] Wire runtime replies back into the active shell executable flow in `modules/ar_shell.c`, `modules/ar_shell_session.c`, `modules/ar_system.c`, and `modules/ar_shell_tests.c`
-- [ ] T027 [US3] Implement EOF / Ctrl-D-only shell shutdown, immediate session close, late-returned-message discard, and receiving-agent cleanup handling in `modules/ar_shell.c`, `modules/ar_shell_tests.c`, `modules/ar_system.c`, and `modules/ar_system_tests.c`
-- [ ] T028 [US3] Re-run validation for `modules/ar_shell_delegate_tests.c`, `modules/ar_shell_tests.c`, and `modules/ar_system_tests.c` with `make ar_shell_delegate_tests 2>&1`, `make ar_shell_tests 2>&1`, and `make ar_system_tests 2>&1` until User Story 3 passes
-- [ ] T029 [US3] Refactor returned-message callback routing and shutdown helpers in `modules/ar_shell.c`, `modules/ar_shell_delegate.c`, `modules/ar_shell_session.c`, and `modules/ar_system.c` while preserving green User Story 3 tests
+- [x] T024 [P] [US3] Define reply-display and sender-attribution behavior using only the runtime sender ID, plus EOF / Ctrl-D discard semantics, in `modules/ar_shell_delegate.md`, `specs/001-command-line-shell/contracts/arsh-cli.md`, and `specs/001-command-line-shell/contracts/shell-session-protocol.md`
+- [x] T025 [US3] Implement asynchronous returned-message callback routing from `ar_shell_delegate` into `ar_shell_session__render_output`, with display attribution limited to the runtime sender ID, in `modules/ar_shell_delegate.c`, `modules/ar_shell_session.c`, and `modules/ar_shell_delegate_tests.c`
+- [x] T026 [US3] Wire runtime replies back into the active shell executable flow in `modules/ar_shell.c`, `modules/ar_shell_session.c`, `modules/ar_system.c`, and `modules/ar_shell_tests.c`
+- [x] T027 [US3] Implement EOF / Ctrl-D-only shell shutdown, immediate session close, late-returned-message discard, and receiving-agent cleanup handling in `modules/ar_shell.c`, `modules/ar_shell_tests.c`, `modules/ar_system.c`, and `modules/ar_system_tests.c`
+- [x] T028 [US3] Re-run validation for `modules/ar_shell_delegate_tests.c`, `modules/ar_shell_tests.c`, and `modules/ar_system_tests.c` with `make ar_shell_delegate_tests 2>&1`, `make ar_shell_tests 2>&1`, and `make ar_system_tests 2>&1` until User Story 3 passes
+- [x] T029 [US3] Refactor returned-message callback routing and shutdown helpers in `modules/ar_shell.c`, `modules/ar_shell_delegate.c`, `modules/ar_shell_session.c`, and `modules/ar_system.c` while preserving green User Story 3 tests
 
 **Checkpoint**: The shell shows runtime-sender-ID-attributed asynchronous replies while open and exits immediately on EOF / Ctrl-D with session-scoped cleanup and late-reply discard.
 
@@ -113,13 +113,13 @@
 
 **Purpose**: Finish documentation synchronization and repo-wide validation.
 
-- [ ] T030 [P] Update user-facing shell guidance in `README.md`, `SPEC.md`, and `specs/001-command-line-shell/quickstart.md`
-- [ ] T031 [P] Update technical module and method documentation in `modules/ar_shell.md`, `modules/ar_shell_session.md`, `modules/ar_shell_delegate.md`, and `methods/shell-1.0.0.md`
-- [ ] T032 [P] Sync shell contracts and workflow context in `specs/001-command-line-shell/contracts/README.md`, `specs/001-command-line-shell/contracts/arsh-cli.md`, `specs/001-command-line-shell/contracts/shell-session-protocol.md`, and `.specify/memory/pi-agent.md` if the active shell workflow context changed
-- [ ] T033 Run full targeted regression for `modules/ar_shell_tests.c`, `modules/ar_shell_session_tests.c`, `modules/ar_shell_delegate_tests.c`, `methods/shell_tests.c`, `modules/ar_system_tests.c`, and `modules/ar_methodology_tests.c` with `make ar_shell_tests 2>&1`, `make ar_shell_session_tests 2>&1`, `make ar_shell_delegate_tests 2>&1`, `make shell_tests 2>&1`, `make ar_system_tests 2>&1`, and `make ar_methodology_tests 2>&1`
-- [ ] T034 Run documentation validation for `README.md`, `SPEC.md`, `modules/ar_shell.md`, `modules/ar_shell_session.md`, `modules/ar_shell_delegate.md`, `methods/shell-1.0.0.md`, and `specs/001-command-line-shell/quickstart.md` with `make check-docs`
-- [ ] T035 Run sanitizer coverage for `modules/ar_shell.c`, `modules/ar_shell_session.c`, `modules/ar_shell_delegate.c`, `modules/ar_system.c`, and `methods/shell_tests.c` with `make sanitize-tests 2>&1`
-- [ ] T036 Run final repo gates for Makefile, `modules/ar_shell.c`, `modules/ar_shell_session.c`, `modules/ar_shell_delegate.c`, and `methods/shell-1.0.0.method` with `make clean build 2>&1` and then `make check-logs`
+- [x] T030 [P] Update user-facing shell guidance in `README.md`, `SPEC.md`, and `specs/001-command-line-shell/quickstart.md`
+- [x] T031 [P] Update technical module and method documentation in `modules/ar_shell.md`, `modules/ar_shell_session.md`, `modules/ar_shell_delegate.md`, and `methods/shell-1.0.0.md`
+- [x] T032 [P] Sync shell contracts and workflow context in `specs/001-command-line-shell/contracts/README.md`, `specs/001-command-line-shell/contracts/arsh-cli.md`, `specs/001-command-line-shell/contracts/shell-session-protocol.md`, and `.specify/memory/pi-agent.md` if the active shell workflow context changed
+- [x] T033 Run full targeted regression for `modules/ar_shell_tests.c`, `modules/ar_shell_session_tests.c`, `modules/ar_shell_delegate_tests.c`, `methods/shell_tests.c`, `modules/ar_system_tests.c`, and `modules/ar_methodology_tests.c` with `make ar_shell_tests 2>&1`, `make ar_shell_session_tests 2>&1`, `make ar_shell_delegate_tests 2>&1`, `make shell_tests 2>&1`, `make ar_system_tests 2>&1`, and `make ar_methodology_tests 2>&1`
+- [x] T034 Run documentation validation for `README.md`, `SPEC.md`, `modules/ar_shell.md`, `modules/ar_shell_session.md`, `modules/ar_shell_delegate.md`, `methods/shell-1.0.0.md`, and `specs/001-command-line-shell/quickstart.md` with `make check-docs`
+- [x] T035 Run sanitizer coverage for `modules/ar_shell.c`, `modules/ar_shell_session.c`, `modules/ar_shell_delegate.c`, `modules/ar_system.c`, and `methods/shell_tests.c` with `make sanitize-tests 2>&1`
+- [x] T036 Run final repo gates for Makefile, `modules/ar_shell.c`, `modules/ar_shell_session.c`, `modules/ar_shell_delegate.c`, and `methods/shell-1.0.0.method` with `make clean build 2>&1` and then `make check-logs`
 
 ---
 

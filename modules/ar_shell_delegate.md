@@ -4,8 +4,8 @@
 
 `ar_shell_delegate` is the session-specific transport helper for the shell feature. It wraps each
 accepted terminal input line into the required `{text = ...}` envelope, forwards that envelope to
-the receiving agent for the active shell session, and reports handoff acknowledgement to the shell
-output stream.
+the receiving agent for the active shell session, binds the session output stream used for reply
+rendering, and reports handoff acknowledgement to the shell output stream.
 
 ## Public API
 
@@ -17,8 +17,9 @@ output stream.
 - `ar_shell_delegate__forward_input()` sends the wrapped input envelope into the wrapped
   `ar_system_t` agency.
 - `ar_shell_delegate__process_input_stream()` reads accepted input lines until EOF, trims trailing
-  line endings, forwards each wrapped envelope, and renders handoff acknowledgement in normal or
-  verbose mode.
+  line endings, forwards each wrapped envelope, renders handoff acknowledgement in normal or
+  verbose mode, processes runtime work immediately for real shell sessions, and closes the active
+  shell session on EOF / Ctrl-D.
 
 ## Ownership Notes
 
@@ -30,6 +31,8 @@ output stream.
 
 ## Current Scope
 
-The current implementation covers envelope creation, repeated stdin reading until EOF, and
-mode-sensitive handoff acknowledgement rendering. Session callback routing for returned messages and
-asynchronous reply output rendering remain future work.
+The current implementation covers envelope creation, repeated stdin reading until EOF,
+mode-sensitive handoff acknowledgement rendering, output-stream binding for the owning shell
+session, immediate runtime processing for active shell sessions created by `ar_shell`, and EOF /
+Ctrl-D shutdown that closes the session and destroys the receiving agent. Returned runtime replies
+are rendered by `ar_shell_session` through the bound output stream using only the runtime sender ID.

@@ -9,7 +9,7 @@ This directory contains AgeRun method definitions. Each file represents a single
 | echo | 1.0.0 | Simple echo agent that returns messages to sender | [echo-1.0.0.md](echo-1.0.0.md) |
 | calculator | 1.0.0 | Basic arithmetic calculator supporting add, subtract, multiply, divide | [calculator-1.0.0.md](calculator-1.0.0.md) |
 | chat-session | 1.0.0 | Stateful chat/session backend that tracks conversation state and escalation | [chat-session-1.0.0.md](chat-session-1.0.0.md) |
-| shell | 1.0.0 | Built-in shell scaffold method used by the command-line shell startup path | [shell-1.0.0.md](shell-1.0.0.md) |
+| shell | 1.0.0 | Built-in shell method used by `arsh` for restricted shell parsing, session storage, and runtime interaction | [shell-1.0.0.md](shell-1.0.0.md) |
 | bootstrap | 1.0.0 | Startup demo that spawns a chat-session agent and drives a sample conversation | [bootstrap.md](bootstrap.md) |
 
 ## File Naming Convention

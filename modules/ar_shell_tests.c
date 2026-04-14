@@ -1,10 +1,12 @@
 #include "ar_shell.h"
 #include "ar_agency.h"
 #include "ar_assert.h"
+#include "ar_data.h"
 #include "ar_delegation.h"
 #include "ar_delegate_registry.h"
 #include "ar_methodology.h"
 #include "ar_shell_delegate.h"
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -14,6 +16,8 @@ static void test_shell__start_session_creates_receiving_agent(void);
 static void test_shell__start_session_registers_runtime_delegate_and_stores_delegate_id(void);
 static void test_shell__runtime_delegate_routes_store_and_load_requests(void);
 static void test_shell__receiving_agent_executes_shell_method_after_input_delivery(void);
+static void test_shell__process_input_stream_renders_reply_with_runtime_sender_id(void);
+static void test_shell__eof_closes_session_discards_late_reply_and_destroys_agent(void);
 
 int main(void) {
     char cwd[1024];
@@ -31,6 +35,8 @@ int main(void) {
     test_shell__start_session_registers_runtime_delegate_and_stores_delegate_id();
     test_shell__runtime_delegate_routes_store_and_load_requests();
     test_shell__receiving_agent_executes_shell_method_after_input_delivery();
+    test_shell__process_input_stream_renders_reply_with_runtime_sender_id();
+    test_shell__eof_closes_session_discards_late_reply_and_destroys_agent();
     printf("All shell module tests passed!\n");
     return 0;
 }
@@ -219,6 +225,196 @@ static void test_shell__runtime_delegate_routes_store_and_load_requests(void) {
               "Load replies should preserve the stored shell-session value");
 
     ar_data__destroy(own_reply_message);
+    ar_shell__destroy(own_shell);
+    printf("    PASS\n");
+}
+
+static void test_shell__process_input_stream_renders_reply_with_runtime_sender_id(void) {
+    ar_shell_t *own_shell;
+    ar_shell_session_t *ref_session;
+    ar_shell_delegate_t *own_delegate;
+    ar_system_t *mut_system;
+    ar_agency_t *mut_agency;
+    FILE *own_input_stream;
+    FILE *own_output_stream;
+    char ref_output[1024];
+    char ref_expected_reply[128];
+    int input_stream_errno;
+    int output_stream_errno;
+    int output_read_errno;
+    int64_t shell_agent_id;
+    int64_t echo_agent_id;
+    int prior_errno;
+    size_t output_bytes_read;
+    size_t processed_count;
+
+    printf("  test_shell__process_input_stream_renders_reply_with_runtime_sender_id...\n");
+
+    own_shell = ar_shell__create(AR_SHELL_MODE__NORMAL);
+    AR_ASSERT(own_shell != NULL, "Shell creation should succeed");
+
+    ref_session = ar_shell__start_session(own_shell, AR_SHELL_MODE__NORMAL);
+    AR_ASSERT(ref_session != NULL, "Shell should create a session");
+
+    mut_system = ar_shell__get_system(own_shell);
+    AR_ASSERT(mut_system != NULL, "Shell should expose its wrapped system");
+    mut_agency = ar_system__get_agency(mut_system);
+    AR_ASSERT(mut_agency != NULL, "Shell should expose its wrapped agency");
+
+    shell_agent_id = ar_shell_session__get_agent_id(ref_session);
+    AR_ASSERT(shell_agent_id > 0, "Shell session should expose the receiving agent ID");
+
+    own_delegate = ar_shell_delegate__create(ar_system__get_log(mut_system), ref_session, shell_agent_id);
+    AR_ASSERT(own_delegate != NULL, "Shell delegate creation should succeed");
+
+    prior_errno = errno;
+    if (prior_errno != 0) {
+        errno = 0;
+    }
+    own_input_stream = tmpfile();
+    input_stream_errno = errno;
+    AR_ASSERT(own_input_stream != NULL, "Input stream creation should succeed");
+    AR_ASSERT(input_stream_errno == 0, "Input stream creation should not leave errno set on success");
+    prior_errno = errno;
+    if (prior_errno != 0) {
+        errno = 0;
+    }
+    own_output_stream = tmpfile();
+    output_stream_errno = errno;
+    AR_ASSERT(own_output_stream != NULL, "Output stream creation should succeed");
+    AR_ASSERT(output_stream_errno == 0, "Output stream creation should not leave errno set on success");
+    AR_ASSERT(fputs("memory.prompt := \"Ready\"\nmemory.echo_id := spawn(\"echo\", \"1.0.0\", context)\nsend(memory.echo_id, memory.prompt)\n", own_input_stream) != EOF,
+              "Input stream should accept shell lines");
+    rewind(own_input_stream);
+
+    processed_count = ar_shell_delegate__process_input_stream(
+        own_delegate,
+        mut_system,
+        own_input_stream,
+        own_output_stream);
+    AR_ASSERT(processed_count == 3,
+              "Shell delegate should process all three shell lines before EOF");
+
+    echo_agent_id = ar_data__get_map_integer(ar_shell_session__get_memory(ref_session), "echo_id");
+    AR_ASSERT(echo_agent_id > 0, "Assigned spawn should store echo_id for reply rendering");
+
+    rewind(own_output_stream);
+    ref_output[0] = '\0';
+    prior_errno = errno;
+    if (prior_errno != 0) {
+        errno = 0;
+    }
+    output_bytes_read = fread(ref_output, 1, sizeof(ref_output) - 1, own_output_stream);
+    output_read_errno = errno;
+    AR_ASSERT(output_bytes_read > 0,
+              "Shell output should contain handoff acknowledgements and rendered reply output");
+    AR_ASSERT(output_read_errno == 0, "Shell output read should not leave errno set on success");
+    ref_output[output_bytes_read] = '\0';
+    snprintf(ref_expected_reply, sizeof(ref_expected_reply), "reply sender_id=%lld text=Ready\n", (long long)echo_agent_id);
+    AR_ASSERT(strstr(ref_output, ref_expected_reply) != NULL,
+              "Rendered reply output should attribute the message using only the runtime sender ID");
+
+    fclose(own_input_stream);
+    fclose(own_output_stream);
+    ar_shell_delegate__destroy(own_delegate);
+    ar_shell__destroy(own_shell);
+    printf("    PASS\n");
+}
+
+static void test_shell__eof_closes_session_discards_late_reply_and_destroys_agent(void) {
+    ar_shell_t *own_shell;
+    ar_shell_session_t *ref_session;
+    ar_shell_delegate_t *own_delegate;
+    ar_system_t *mut_system;
+    ar_agency_t *mut_agency;
+    ar_delegation_t *mut_delegation;
+    FILE *own_input_stream;
+    FILE *own_output_stream;
+    char ref_output[512];
+    int input_stream_errno;
+    int output_stream_errno;
+    int output_read_errno;
+    int64_t shell_agent_id;
+    int64_t delegate_id;
+    int prior_errno;
+    ar_data_t *own_late_reply;
+    size_t output_bytes_read;
+
+    printf("  test_shell__eof_closes_session_discards_late_reply_and_destroys_agent...\n");
+
+    own_shell = ar_shell__create(AR_SHELL_MODE__NORMAL);
+    AR_ASSERT(own_shell != NULL, "Shell creation should succeed");
+
+    ref_session = ar_shell__start_session(own_shell, AR_SHELL_MODE__NORMAL);
+    AR_ASSERT(ref_session != NULL, "Shell should create a session");
+
+    mut_system = ar_shell__get_system(own_shell);
+    AR_ASSERT(mut_system != NULL, "Shell should expose its wrapped system");
+    mut_agency = ar_system__get_agency(mut_system);
+    AR_ASSERT(mut_agency != NULL, "Shell should expose its wrapped agency");
+    mut_delegation = ar_system__get_delegation(mut_system);
+    AR_ASSERT(mut_delegation != NULL, "Shell should expose its wrapped delegation");
+
+    shell_agent_id = ar_shell_session__get_agent_id(ref_session);
+    AR_ASSERT(shell_agent_id > 0, "Shell session should expose the receiving agent ID");
+
+    own_delegate = ar_shell_delegate__create(ar_system__get_log(mut_system), ref_session, shell_agent_id);
+    AR_ASSERT(own_delegate != NULL, "Shell delegate creation should succeed");
+
+    prior_errno = errno;
+    if (prior_errno != 0) {
+        errno = 0;
+    }
+    own_input_stream = tmpfile();
+    input_stream_errno = errno;
+    AR_ASSERT(own_input_stream != NULL, "Input stream creation should succeed");
+    AR_ASSERT(input_stream_errno == 0, "Input stream creation should not leave errno set on success");
+    prior_errno = errno;
+    if (prior_errno != 0) {
+        errno = 0;
+    }
+    own_output_stream = tmpfile();
+    output_stream_errno = errno;
+    AR_ASSERT(own_output_stream != NULL, "Output stream creation should succeed");
+    AR_ASSERT(output_stream_errno == 0, "Output stream creation should not leave errno set on success");
+    rewind(own_input_stream);
+
+    AR_ASSERT(ar_shell_delegate__process_input_stream(
+        own_delegate,
+        mut_system,
+        own_input_stream,
+        own_output_stream) == 0,
+        "EOF without accepted lines should still close the shell session immediately");
+
+    AR_ASSERT(!ar_shell_session__is_active(ref_session),
+              "EOF should close the shell session immediately");
+    AR_ASSERT(!ar_agency__agent_exists(mut_agency, shell_agent_id),
+              "EOF should destroy the dedicated receiving agent");
+
+    delegate_id = ar_shell_session__get_runtime_delegate_id(ref_session);
+    own_late_reply = ar_data__create_string("Late");
+    AR_ASSERT(own_late_reply != NULL, "Late reply creation should succeed");
+    AR_ASSERT(ar_delegation__send_to_delegate_with_sender(mut_delegation, delegate_id, own_late_reply, 999),
+              "A late reply should still be queueable to the shell-session runtime delegate");
+    AR_ASSERT(ar_system__process_next_message(mut_system),
+              "System should process the queued late reply delegate message");
+
+    rewind(own_output_stream);
+    ref_output[0] = '\0';
+    prior_errno = errno;
+    if (prior_errno != 0) {
+        errno = 0;
+    }
+    output_bytes_read = fread(ref_output, 1, sizeof(ref_output) - 1, own_output_stream);
+    output_read_errno = errno;
+    AR_ASSERT(output_read_errno == 0, "Late-reply output read should not leave errno set on success");
+    ref_output[output_bytes_read] = '\0';
+    AR_ASSERT(strstr(ref_output, "Late") == NULL,
+              "Replies arriving after EOF should be discarded instead of being rendered");
+
+    fclose(own_input_stream);
+    fclose(own_output_stream);
+    ar_shell_delegate__destroy(own_delegate);
     ar_shell__destroy(own_shell);
     printf("    PASS\n");
 }

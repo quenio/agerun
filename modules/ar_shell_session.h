@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 #include "ar_data.h"
 #include "ar_delegate.h"
 #include "ar_system.h"
@@ -142,5 +143,30 @@ ar_data_t* ar_shell_session__get_memory(const ar_shell_session_t *ref_session);
  * @return Borrowed context map reference, or NULL if unavailable
  */
 ar_data_t* ar_shell_session__get_context(const ar_shell_session_t *ref_session);
+
+/**
+ * Bind an output stream used for shell-visible reply rendering.
+ * @param mut_session Mutable shell session
+ * @param mut_output Borrowed output stream, or NULL to clear it
+ */
+void ar_shell_session__bind_output(ar_shell_session_t *mut_session, FILE *mut_output);
+
+/**
+ * Render one returned runtime reply for the active shell session.
+ * @param mut_session Mutable shell session
+ * @param ref_message Borrowed returned message
+ * @param sender_id Runtime sender identifier used for display attribution
+ * @return true if the reply was rendered or intentionally discarded, false on I/O failure
+ */
+bool ar_shell_session__render_output(
+    ar_shell_session_t *mut_session,
+    const ar_data_t *ref_message,
+    int64_t sender_id);
+
+/**
+ * Close the shell session so later replies are discarded.
+ * @param mut_session Mutable shell session
+ */
+void ar_shell_session__close(ar_shell_session_t *mut_session);
 
 #endif /* AGERUN_SHELL_SESSION_H */

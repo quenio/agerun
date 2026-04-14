@@ -15,7 +15,7 @@
 #include <string.h>
 
 /* Constants */
-#define MAX_INSTRUCTION_LENGTH 4096
+#define MAX_INSTRUCTION_LENGTH 16384
 #define MAX_VERSION_LENGTH 256
 #define MAX_METHOD_NAME_LENGTH 256
 

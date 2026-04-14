@@ -1,6 +1,7 @@
 #include "ar_shell_session.h"
 #include "ar_agency.h"
 #include "ar_heap.h"
+#include <inttypes.h>
 #include <string.h>
 
 static const char *AR_SHELL_SESSION__ACTION__STORE_VALUE =
@@ -36,6 +37,7 @@ struct ar_shell_session_s {
     bool is_active;
     ar_data_t *own_memory;
     ar_data_t *own_context;
+    FILE *mut_output;
 };
 
 static const char* _memory_relative_path(const char *ref_path) {
@@ -157,6 +159,7 @@ ar_shell_session_t* ar_shell_session__create(int64_t session_id, ar_shell_mode_t
     own_session->is_active = false;
     own_session->own_memory = ar_data__create_map();
     own_session->own_context = ar_data__create_map();
+    own_session->mut_output = NULL;
     if (!own_session->own_memory || !own_session->own_context) {
         if (own_session->own_memory) {
             ar_data__destroy(own_session->own_memory);
@@ -267,14 +270,17 @@ static bool _handle_runtime_delegate_message(void *mut_context, ar_data_t *ref_m
     int request_id;
 
     mut_context_data = mut_context;
-    if (!mut_context_data || !mut_context_data->mut_session || !ref_message ||
-        ar_data__get_type(ref_message) != AR_DATA_TYPE__MAP) {
+    if (!mut_context_data || !mut_context_data->mut_session || !ref_message) {
         return false;
+    }
+
+    if (ar_data__get_type(ref_message) != AR_DATA_TYPE__MAP) {
+        return ar_shell_session__render_output(mut_context_data->mut_session, ref_message, sender_id);
     }
 
     ref_action = ar_data__get_map_string(ref_message, "action");
     if (!ref_action) {
-        return false;
+        return ar_shell_session__render_output(mut_context_data->mut_session, ref_message, sender_id);
     }
 
     if (strcmp(ref_action, AR_SHELL_SESSION__ACTION__STORE_VALUE) == 0) {
@@ -466,4 +472,52 @@ ar_data_t* ar_shell_session__get_context(const ar_shell_session_t *ref_session) 
     }
 
     return ref_session->own_context;
+}
+
+void ar_shell_session__bind_output(ar_shell_session_t *mut_session, FILE *mut_output) {
+    if (!mut_session) {
+        return;
+    }
+
+    mut_session->mut_output = mut_output;
+}
+
+bool ar_shell_session__render_output(
+    ar_shell_session_t *mut_session,
+    const ar_data_t *ref_message,
+    int64_t sender_id) {
+    const char *ref_text;
+
+    if (!mut_session) {
+        return false;
+    }
+
+    if (!mut_session->is_active || !mut_session->mut_output) {
+        return true;
+    }
+
+    ref_text = NULL;
+    if (ar_data__get_type(ref_message) == AR_DATA_TYPE__STRING) {
+        ref_text = ar_data__get_string(ref_message);
+    } else if (ar_data__get_type(ref_message) == AR_DATA_TYPE__MAP) {
+        ref_text = ar_data__get_map_string(ref_message, "text");
+    }
+
+    if (!ref_text) {
+        ref_text = "<non-string reply>";
+    }
+
+    if (fprintf(mut_session->mut_output, "reply sender_id=%" PRId64 " text=%s\n", sender_id, ref_text) < 0) {
+        return false;
+    }
+
+    return fflush(mut_session->mut_output) == 0;
+}
+
+void ar_shell_session__close(ar_shell_session_t *mut_session) {
+    if (!mut_session) {
+        return;
+    }
+
+    mut_session->is_active = false;
 }

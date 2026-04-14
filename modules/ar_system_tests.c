@@ -6,6 +6,8 @@
 #include "ar_delegate.h"
 #include "ar_delegate_registry.h"
 #include "ar_delegation.h"
+#include "ar_shell.h"
+#include "ar_shell_delegate.h"
 #include "ar_assert.h"
 #include "ar_heap.h"
 #include <stdio.h>
@@ -50,6 +52,7 @@ static void test_message_passing(ar_system_t *mut_system);
 static void test_system__has_delegation(void);
 static void test_system__processes_delegate_messages(void);
 static void test_system__processes_delegate_messages_with_agent_sender_id(void);
+static void test_system__closed_shell_session_delegate_discards_late_reply(void);
 static void test_message_forwarding__whole_message_reuses_pointer(void);
 static void test_message_forwarding__message_field_still_copies(void);
 static void test_system__init_can_create_shell_agent_after_registration(void);
@@ -237,6 +240,39 @@ static void test_system__init_can_create_shell_agent_after_registration(void) {
     ar_system__destroy(own_system);
 
     printf("System shell-agent init test passed.\n");
+}
+
+static void test_system__closed_shell_session_delegate_discards_late_reply(void) {
+    printf("Testing closed shell-session delegate discards late replies...\n");
+
+    ar_shell_t *own_shell = ar_shell__create(AR_SHELL_MODE__NORMAL);
+    assert(own_shell != NULL);
+
+    ar_shell_session_t *ref_session = ar_shell__start_session(own_shell, AR_SHELL_MODE__NORMAL);
+    assert(ref_session != NULL);
+
+    ar_system_t *mut_system = ar_shell__get_system(own_shell);
+    assert(mut_system != NULL);
+
+    ar_delegation_t *mut_delegation = ar_system__get_delegation(mut_system);
+    assert(mut_delegation != NULL);
+
+    ar_shell_session__close(ref_session);
+    assert(!ar_shell_session__is_active(ref_session));
+
+    ar_data_t *own_late_reply = ar_data__create_string("late");
+    assert(own_late_reply != NULL);
+    assert(ar_delegation__send_to_delegate_with_sender(
+        mut_delegation,
+        ar_shell_session__get_runtime_delegate_id(ref_session),
+        own_late_reply,
+        4242));
+
+    assert(ar_system__process_next_message(mut_system));
+    assert(!ar_shell_session__is_active(ref_session));
+
+    ar_shell__destroy(own_shell);
+    printf("Closed shell-session delegate discard test passed.\n");
 }
 
 static void test_message_passing(ar_system_t *mut_system) {
@@ -730,6 +766,7 @@ int main(void) {
     test_message_forwarding__whole_message_reuses_pointer();
     test_message_forwarding__message_field_still_copies();
     test_system__init_can_create_shell_agent_after_registration();
+    test_system__closed_shell_session_delegate_discards_late_reply();
 
     // Create system instance
     ar_system_t *mut_system = ar_system__create();

@@ -24,16 +24,17 @@ configured receiving agent for the session.
 
 ### Returned-message callback payload
 
-Replies intended for shell display are returned toward the delegate callback path carrying at least
-these logical fields:
+Replies intended for shell display are returned toward the delegate callback path as ordinary
+runtime messages together with delegate sender metadata.
+
+When a message is returned by the session agent, the session-scoped delegate callback receives the
+raw reply message plus the runtime sender ID, notifies the owning shell session, and the shell
+session renders terminal output. The current rendering form for string replies is:
 
 ```text
-text = <display string>
-sender_id = <runtime sender identifier>
+reply sender_id=<runtime sender identifier> text=<display string>
 ```
 
-When a message is returned by the session agent, the session-specific delegate receives the
-callback event, notifies the owning shell session, and the shell session renders terminal output.
 Returned replies displayed in the terminal are attributed using only the runtime sender ID.
 
 ## 3. Built-in `shell` Method Responsibilities
@@ -121,4 +122,4 @@ Runtime replies sent back to the shell delegate must:
 - remain attributable using only the runtime sender ID
 - be displayable asynchronously through the delegate callback path and shell-session rendering while the session remains open
 - be discarded if they arrive after EOF / Ctrl-D has already closed the shell session
-- not corrupt the active shell session when delayed
+- not reopen or corrupt the shell session when delayed

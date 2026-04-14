@@ -1,5 +1,51 @@
 # AgeRun CHANGELOG
 
+## 2026-04-14 (Command-line shell final validation gates)
+
+- **Closed the remaining shell feature validation blockers and finished the plan**
+
+  Cleared the static-analysis warnings in `modules/ar_shell_delegate_tests.c` and
+  `modules/ar_shell_tests.c` by making the temporary-stream and output-read assertions consume
+  `errno` explicitly, then completed the remaining final-phase regressions, sanitizer coverage,
+  full build, and log validation. Also extended `log_whitelist.yaml` for expected `ar_log_tests`
+  single-error output and the passing shell-session missing-path test name so deep log analysis
+  matches the intended test behavior.
+
+  **Implementation**: Updated `modules/ar_shell_delegate_tests.c`, `modules/ar_shell_tests.c`,
+  `log_whitelist.yaml`, and `specs/001-command-line-shell/tasks.md`.
+
+  **Verification**: `make ar_shell_delegate_tests 2>&1`, `make ar_shell_tests 2>&1`,
+  `make analyze-tests 2>&1`, `make ar_shell_session_tests 2>&1`,
+  `make ar_shell_delegate_tests 2>&1`, `make shell_tests 2>&1`, `make ar_system_tests 2>&1`,
+  `make ar_methodology_tests 2>&1`, `make check-docs 2>&1`, `make sanitize-tests 2>&1`,
+  `make clean build 2>&1`, and `make check-logs`.
+
+  **Impact**: The `001-command-line-shell` feature plan now clears its remaining validation gates,
+  including deep log analysis, and is ready for final review.
+
+## 2026-04-13 (Command-line shell reply rendering and EOF shutdown slice)
+
+- **Completed User Story 3 reply rendering and shutdown behavior**
+
+  Added session-scoped runtime reply rendering with runtime-sender-ID-only attribution, wired the
+  shell delegate input loop to bind terminal output and process runtime work for real shell
+  sessions, and implemented EOF / Ctrl-D shutdown that closes the session, destroys the receiving
+  agent, and discards later replies.
+
+  **Implementation**: Updated `modules/ar_shell_delegate.c`, `modules/ar_shell_delegate.md`,
+  `modules/ar_shell_delegate_tests.c`, `modules/ar_shell_session.c`,
+  `modules/ar_shell_session.h`, `modules/ar_shell_session.md`, `modules/ar_shell_tests.c`,
+  `modules/ar_system_tests.c`, `methods/shell-1.0.0.method`, `modules/ar_methodology.c`,
+  `specs/001-command-line-shell/contracts/arsh-cli.md`,
+  `specs/001-command-line-shell/contracts/shell-session-protocol.md`,
+  `specs/001-command-line-shell/quickstart.md`, and `specs/001-command-line-shell/tasks.md`.
+
+  **Verification**: `make ar_shell_delegate_tests 2>&1`, `make ar_shell_tests 2>&1`,
+  `make ar_system_tests 2>&1`, and `make check-docs 2>&1`.
+
+  **Impact**: `arsh` can now render runtime replies while the session is active and cleanly close
+  on EOF / Ctrl-D without showing late replies.
+
 ## 2026-04-13 (Command-line shell plain spawn/send slice)
 
 - **Completed the remaining User Story 2 shell forms used by the current plan**
