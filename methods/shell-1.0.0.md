@@ -8,7 +8,7 @@ shell-syntax slice needed for interactive shell-session behavior.
 
 ## Current Behavior
 
-The current implementation supports a first restricted shell-syntax slice:
+The current implementation supports the first two restricted shell-syntax slices:
 
 ```text
 memory.last_input := message.text
@@ -16,6 +16,17 @@ memory.assignment := parse("memory.prompt := {value}", message.text)
 memory.store_request_input := build("action=ar_shell_session__store_value path=memory.prompt value={value}", memory.assignment)
 memory.store_request := parse("action={action} path={path} value={value}", memory.store_request_input)
 send(memory.shell_session_delegate_id, memory.store_request)
+memory.spawn_assignment := parse("memory.echo_id := spawn({method}, {version}, context)", message.text)
+memory.spawn_rebuilt := build("memory.echo_id := spawn({method}, {version}, context)", memory.spawn_assignment)
+memory.is_echo_spawn := if(memory.spawn_rebuilt = message.text, 1, 0)
+memory.spawn_method := if(memory.is_echo_spawn = 1, "echo", "")
+memory.spawn_version := if(memory.is_echo_spawn = 1, "1.0.0", "")
+memory.spawned_agent_id := spawn(memory.spawn_method, memory.spawn_version, context)
+memory.spawn_assignment.value := memory.spawned_agent_id
+memory.spawn_store_delegate_id := if(memory.spawned_agent_id, memory.shell_session_delegate_id, 0)
+memory.spawn_store_request_input := build("action=ar_shell_session__store_value path=memory.echo_id value={value}", memory.spawn_assignment)
+memory.spawn_store_request := parse("action={action} path={path} value={value}", memory.spawn_store_request_input)
+send(memory.spawn_store_delegate_id, memory.spawn_store_request)
 memory.last_error := "Invalid shell syntax"
 ```
 
@@ -23,13 +34,16 @@ Current behavior details:
 - keeps tracking the last received shell input line in agent memory
 - recognizes the `memory.prompt := ...` shell assignment form used by the new tests
 - forwards that assignment to `ar_shell_session` through the session runtime delegate
+- recognizes the exact tested `memory.echo_id := spawn("echo", "1.0.0", context)` shell form
+- spawns the requested `echo` agent once the shell runtime has loaded the repository methods into the wrapped system methodology
+- stores the resulting spawned agent ID back into shell-session memory through the same runtime delegate path
 - relies on `ar_shell_session` to normalize quoted string values before storing them in shell-session memory
 - records a recoverable `memory.last_error` marker so invalid syntax handling can evolve without closing the session
 
 The full shell behavior described in `specs/001-command-line-shell/spec.md` still requires broader
-restricted-syntax support for additional assignment paths plus `spawn(...)`, `send(...)`, and the
-assigned `spawn` / `send` forms.
+restricted-syntax support for additional assignment paths plus generic `spawn(...)`, `send(...)`,
+and the assigned `send(...)` forms.
 
 ## Validation
 
-`methods/shell_tests.c` verifies that the method asset loads through `ar_method_fixture__load_method()`, parses to an AST, supports receiving-agent creation, redirects the tested prompt assignment into shell-session memory, and keeps invalid syntax recoverable.
+`methods/shell_tests.c` verifies that the method asset loads through `ar_method_fixture__load_method()`, parses to an AST, supports receiving-agent creation, redirects the tested prompt assignment into shell-session memory, redirects the tested assigned-spawn result into shell-session memory, and keeps invalid syntax recoverable.

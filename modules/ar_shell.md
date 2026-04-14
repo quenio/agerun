@@ -8,7 +8,8 @@ built-in `shell` method.
 
 ## Public API
 
-- `ar_shell__create()` creates an instantiable shell wrapper.
+- `ar_shell__create()` creates an instantiable shell wrapper and eagerly loads repository method
+  assets into the wrapped system methodology when available.
 - `ar_shell__destroy()` destroys the shell, its sessions, and the wrapped `ar_system_t`.
 - `ar_shell__get_default_mode()` reports the shell default acknowledgement mode.
 - `ar_shell__get_system()` exposes the wrapped `ar_system_t` as a borrowed reference.
@@ -28,8 +29,8 @@ built-in `shell` method.
 
 ## Current Scope
 
-The current implementation covers shell creation, session tracking, built-in shell-method
-registration, receiving-agent startup with per-session execution context, startup-mode propagation,
-runtime delegate registration for shell-session mediation, and repeated stdin handoff through
-`ar_shell_delegate__process_input_stream()`. Asynchronous reply handling and shutdown-time reply
-discard remain future work.
+The current implementation covers shell creation, repository method loading into the wrapped
+system, session tracking, built-in shell-method registration, receiving-agent startup with
+per-session execution context, startup-mode propagation, runtime delegate registration for
+shell-session mediation, and repeated stdin handoff through `ar_shell_delegate__process_input_stream()`.
+Asynchronous reply handling and shutdown-time reply discard remain future work.

@@ -4,9 +4,12 @@
 #include "ar_list.h"
 #include "ar_methodology.h"
 #include "ar_shell_delegate.h"
+#include "ar_io.h"
 
 #include <stdio.h>
 #include <string.h>
+#include <dirent.h>
+#include <stdlib.h>
 
 struct ar_shell_s {
     ar_shell_mode_t default_mode;
@@ -15,6 +18,7 @@ struct ar_shell_s {
 };
 
 static ar_shell_mode_t _parse_startup_mode(int argc, char **argv);
+static int _load_methods_from_directory(ar_methodology_t *mut_methodology);
 static bool _register_shell_session_delegate(
     ar_shell_t *mut_shell,
     ar_shell_session_t *mut_session);
@@ -32,6 +36,92 @@ static ar_shell_mode_t _parse_startup_mode(int argc, char **argv) {
     }
 
     return AR_SHELL_MODE__NORMAL;
+}
+
+static int _load_methods_from_directory(ar_methodology_t *mut_methodology) {
+    const char *ref_methods_dir;
+    DIR *own_directory;
+    struct dirent *ref_entry;
+    int ref_loaded_count = 0;
+
+    if (!mut_methodology) {
+        return 0;
+    }
+
+    ref_methods_dir = getenv("AGERUN_METHODS_DIR");
+    if (!ref_methods_dir) {
+        ref_methods_dir = "../../methods";
+    }
+
+    own_directory = opendir(ref_methods_dir);
+    if (!own_directory) {
+        return 0;
+    }
+
+    while ((ref_entry = readdir(own_directory)) != NULL) {
+        const char *ref_extension;
+        char mut_method_name[256];
+        char mut_version[32];
+        char mut_filepath[2048];
+        char *mut_last_hyphen;
+        FILE *mut_file;
+        ar_file_result_t ref_file_result;
+        long ref_file_size;
+        char *own_content;
+        size_t ref_bytes_read;
+        size_t ref_name_length;
+
+        ref_extension = strrchr(ref_entry->d_name, '.');
+        if (!ref_extension || strcmp(ref_extension, ".method") != 0) {
+            continue;
+        }
+
+        ref_name_length = (size_t)(ref_extension - ref_entry->d_name);
+        if (ref_name_length >= sizeof(mut_method_name)) {
+            continue;
+        }
+
+        strncpy(mut_method_name, ref_entry->d_name, ref_name_length);
+        mut_method_name[ref_name_length] = '\0';
+        mut_last_hyphen = strrchr(mut_method_name, '-');
+        if (!mut_last_hyphen) {
+            continue;
+        }
+
+        *mut_last_hyphen = '\0';
+        strncpy(mut_version, mut_last_hyphen + 1, sizeof(mut_version) - 1);
+        mut_version[sizeof(mut_version) - 1] = '\0';
+        snprintf(mut_filepath, sizeof(mut_filepath), "%s/%s", ref_methods_dir, ref_entry->d_name);
+
+        mut_file = NULL;
+        ref_file_result = ar_io__open_file(mut_filepath, "r", &mut_file);
+        if (ref_file_result != AR_FILE_RESULT__SUCCESS) {
+            continue;
+        }
+
+        fseek(mut_file, 0, SEEK_END);
+        ref_file_size = ftell(mut_file);
+        fseek(mut_file, 0, SEEK_SET);
+
+        own_content = AR__HEAP__MALLOC((size_t)(ref_file_size + 1), "shell method file content");
+        if (!own_content) {
+            ar_io__close_file(mut_file, mut_filepath);
+            continue;
+        }
+
+        ref_bytes_read = fread(own_content, 1, (size_t)ref_file_size, mut_file);
+        own_content[ref_bytes_read] = '\0';
+        ar_io__close_file(mut_file, mut_filepath);
+
+        if (ar_methodology__create_method(mut_methodology, mut_method_name, own_content, mut_version)) {
+            ref_loaded_count++;
+        }
+
+        AR__HEAP__FREE(own_content);
+    }
+
+    closedir(own_directory);
+    return ref_loaded_count;
 }
 
 static bool _register_shell_session_delegate(
@@ -117,6 +207,7 @@ ar_shell_t* ar_shell__create(ar_shell_mode_t default_mode) {
     }
 
     ar_system__init(own_shell->own_system, NULL, NULL);
+    (void) _load_methods_from_directory(ar_agency__get_methodology(ar_system__get_agency(own_shell->own_system)));
     return own_shell;
 }
 

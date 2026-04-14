@@ -1,5 +1,24 @@
 # AgeRun CHANGELOG
 
+## 2026-04-13 (Command-line shell assigned spawn slice)
+
+- **Added the first assigned `spawn(...)` shell-method path**
+
+  Continued User Story 2 by teaching the built-in shell method to recognize the tested
+  `memory.echo_id := spawn("echo", "1.0.0", context)` input, create the requested runtime agent,
+  and store the resulting agent ID back into shell-session memory.
+
+  **Implementation**: Updated `methods/shell-1.0.0.method`, `methods/shell-1.0.0.md`,
+  `methods/shell_tests.c`, `modules/ar_shell.c`, `modules/ar_shell.md`, `modules/ar_methodology.c`,
+  and `modules/ar_spawn_instruction_evaluator.zig`.
+
+  **Verification**: `make shell_tests 2>&1`, `make ar_shell_tests 2>&1`,
+  `make ar_spawn_instruction_evaluator_tests 2>&1`, and `make ar_methodology_tests 2>&1`.
+
+  **Impact**: The shell can now execute one real assigned-spawn interaction end-to-end, and the
+  shell wrapper loads repository methods into its wrapped runtime so shell-driven spawns can resolve
+  normal method assets like `echo-1.0.0.method`.
+
 ## 2026-04-13 (Command-line shell prompt assignment slice)
 
 - **Implemented the first built-in shell-method behavior slice**

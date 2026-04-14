@@ -137,7 +137,6 @@ pub export fn ar_send_instruction_evaluator__evaluate(
 
             // Special case: agent_id 0 is a no-op that always returns true
             // We need to destroy the message since it won't be sent
-            std.debug.print("DEBUG [SEND_EVAL]: Sending to agent 0 - destroying message type={}\n", .{c.ar_data__get_type(own_message)});
             c.ar_data__destroy_if_owned(own_message, ref_evaluator);
             send_result = true;
         }

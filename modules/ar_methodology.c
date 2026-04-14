@@ -293,6 +293,17 @@ bool ar_methodology__register_shell_method(ar_methodology_t *mut_methodology) {
         "memory.store_request_input := build(\"action=ar_shell_session__store_value path=memory.prompt value={value}\", memory.assignment)\n"
         "memory.store_request := parse(\"action={action} path={path} value={value}\", memory.store_request_input)\n"
         "send(memory.shell_session_delegate_id, memory.store_request)\n"
+        "memory.spawn_assignment := parse(\"memory.echo_id := spawn({method}, {version}, context)\", message.text)\n"
+        "memory.spawn_rebuilt := build(\"memory.echo_id := spawn({method}, {version}, context)\", memory.spawn_assignment)\n"
+        "memory.is_echo_spawn := if(memory.spawn_rebuilt = message.text, 1, 0)\n"
+        "memory.spawn_method := if(memory.is_echo_spawn = 1, \"echo\", \"\")\n"
+        "memory.spawn_version := if(memory.is_echo_spawn = 1, \"1.0.0\", \"\")\n"
+        "memory.spawned_agent_id := spawn(memory.spawn_method, memory.spawn_version, context)\n"
+        "memory.spawn_assignment.value := memory.spawned_agent_id\n"
+        "memory.spawn_store_delegate_id := if(memory.spawned_agent_id, memory.shell_session_delegate_id, 0)\n"
+        "memory.spawn_store_request_input := build(\"action=ar_shell_session__store_value path=memory.echo_id value={value}\", memory.spawn_assignment)\n"
+        "memory.spawn_store_request := parse(\"action={action} path={path} value={value}\", memory.spawn_store_request_input)\n"
+        "send(memory.spawn_store_delegate_id, memory.spawn_store_request)\n"
         "memory.last_error := \"Invalid shell syntax\"";
 
     if (!mut_methodology) {
