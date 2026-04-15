@@ -6,6 +6,8 @@
 #include <string.h>
 
 static void _trim_line_endings(char *mut_text);
+static bool _write_output_prefix(const ar_shell_delegate_t *ref_delegate, FILE *mut_output);
+static bool _render_input_prompt(const ar_shell_delegate_t *ref_delegate, FILE *mut_output);
 static bool _report_handoff_acknowledgement(
     const ar_shell_delegate_t *ref_delegate,
     FILE *mut_output,
@@ -15,7 +17,10 @@ static bool _queue_input_envelope(
     int64_t agent_id,
     const char *ref_text);
 static bool _is_list_agents_command(const char *ref_text);
-static bool _render_active_agents_listing(FILE *mut_output, ar_system_t *mut_system);
+static bool _render_active_agents_listing(
+    const ar_shell_delegate_t *ref_delegate,
+    FILE *mut_output,
+    ar_system_t *mut_system);
 static bool _has_runtime_delegate_binding(ar_shell_delegate_t *mut_delegate, ar_system_t *mut_system);
 static void _process_runtime_interaction(ar_shell_delegate_t *mut_delegate, ar_system_t *mut_system);
 static void _close_session_after_eof(ar_shell_delegate_t *mut_delegate, ar_system_t *mut_system);
@@ -97,6 +102,34 @@ static void _trim_line_endings(char *mut_text) {
     }
 }
 
+static bool _write_output_prefix(const ar_shell_delegate_t *ref_delegate, FILE *mut_output) {
+    if (!ref_delegate || !mut_output || !ref_delegate->ref_session) {
+        return false;
+    }
+
+    if (!ar_shell_session__get_transcript_labels_enabled(ref_delegate->ref_session)) {
+        return true;
+    }
+
+    return fprintf(mut_output, "OUT: ") >= 0;
+}
+
+static bool _render_input_prompt(const ar_shell_delegate_t *ref_delegate, FILE *mut_output) {
+    if (!ref_delegate || !mut_output || !ref_delegate->ref_session) {
+        return false;
+    }
+
+    if (!ar_shell_session__get_transcript_labels_enabled(ref_delegate->ref_session)) {
+        return true;
+    }
+
+    if (fprintf(mut_output, "IN: ") < 0) {
+        return false;
+    }
+
+    return fflush(mut_output) == 0;
+}
+
 static bool _report_handoff_acknowledgement(
     const ar_shell_delegate_t *ref_delegate,
     FILE *mut_output,
@@ -104,6 +137,10 @@ static bool _report_handoff_acknowledgement(
     int ref_result;
 
     if (!ref_delegate || !mut_output || !ref_delegate->ref_session) {
+        return false;
+    }
+
+    if (!_write_output_prefix(ref_delegate, mut_output)) {
         return false;
     }
 
@@ -168,12 +205,15 @@ static bool _is_list_agents_command(const char *ref_text) {
     return strcmp(ref_text, "agents") == 0 || strcmp(ref_text, "list agents") == 0;
 }
 
-static bool _render_active_agents_listing(FILE *mut_output, ar_system_t *mut_system) {
+static bool _render_active_agents_listing(
+    const ar_shell_delegate_t *ref_delegate,
+    FILE *mut_output,
+    ar_system_t *mut_system) {
     ar_agency_t *mut_agency;
     int64_t agent_id;
     bool has_rendered_any;
 
-    if (!mut_output || !mut_system) {
+    if (!ref_delegate || !mut_output || !mut_system) {
         return false;
     }
 
@@ -195,6 +235,10 @@ static bool _render_active_agents_listing(FILE *mut_output, ar_system_t *mut_sys
         ref_method_name = ref_method ? ar_method__get_name(ref_method) : NULL;
         ref_method_version = ref_method ? ar_method__get_version(ref_method) : NULL;
 
+        if (!_write_output_prefix(ref_delegate, mut_output)) {
+            return false;
+        }
+
         if (fprintf(mut_output,
                     "agent id=%" PRId64 " method=%s version=%s\n",
                     agent_id,
@@ -208,6 +252,10 @@ static bool _render_active_agents_listing(FILE *mut_output, ar_system_t *mut_sys
     }
 
     if (!has_rendered_any) {
+        if (!_write_output_prefix(ref_delegate, mut_output)) {
+            return false;
+        }
+
         if (fprintf(mut_output, "agent list empty\n") < 0) {
             return false;
         }
@@ -281,7 +329,7 @@ static bool _forward_trimmed_line(
         if (!_report_handoff_acknowledgement(mut_delegate, mut_output, did_handoff_succeed)) {
             return false;
         }
-        return _render_active_agents_listing(mut_output, mut_system);
+        return _render_active_agents_listing(mut_delegate, mut_output, mut_system);
     }
 
     did_handoff_succeed = ar_shell_delegate__forward_input(mut_delegate, mut_system, ref_text);
@@ -306,7 +354,15 @@ size_t ar_shell_delegate__process_input_stream(
 
     ar_shell_session__bind_output(mut_delegate->ref_session, mut_output);
 
-    while (fgets(mut_line_buffer, sizeof(mut_line_buffer), mut_input) != NULL) {
+    while (true) {
+        if (!_render_input_prompt(mut_delegate, mut_output)) {
+            break;
+        }
+
+        if (fgets(mut_line_buffer, sizeof(mut_line_buffer), mut_input) == NULL) {
+            break;
+        }
+
         _trim_line_endings(mut_line_buffer);
         if (_forward_trimmed_line(mut_delegate, mut_system, mut_output, mut_line_buffer)) {
             ref_processed_count++;

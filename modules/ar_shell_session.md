@@ -29,8 +29,12 @@ per-session runtime context used when the receiving agent executes.
 - `ar_shell_session__get_context()` returns the owned per-session runtime context as a borrowed
   reference.
 - `ar_shell_session__bind_output()` stores the borrowed output stream used for reply rendering.
+- `ar_shell_session__set_transcript_labels_enabled()` toggles `IN:` / `OUT:` transcript labels for
+  interactive shell presentation.
+- `ar_shell_session__get_transcript_labels_enabled()` reports whether transcript labels are enabled.
 - `ar_shell_session__render_output()` renders one returned runtime reply using only the runtime
-  sender ID for attribution, or discards it if the session has already closed.
+  sender ID for attribution, prefixes it with `OUT:` when transcript labels are enabled, or
+  discards it if the session has already closed.
 - `ar_shell_session__close()` closes the session so later replies are discarded.
 
 ## Ownership Notes
@@ -50,5 +54,6 @@ mediation for the shell session memory map and a runtime delegate that processes
 protocol messages and returned runtime replies on behalf of the shell session. Stored values are
 also mirrored into the receiving-agent memory map to support the current shell-method reuse path
 for later lines such as plain send after assignment or assigned send after assigned spawn. The
-session can bind a terminal output stream, render replies as `reply sender_id=<id> text=<text>`,
-and discard later replies once EOF / Ctrl-D has closed the session.
+session can bind a terminal output stream, optionally enable `IN:` / `OUT:` transcript labels for
+interactive sessions, render replies as `reply sender_id=<id> text=<text>` (or `OUT: reply ...`
+when labeling is enabled), and discard later replies once EOF / Ctrl-D has closed the session.

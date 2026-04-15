@@ -251,7 +251,7 @@ attribution.
   session state and lifecycle, including shell memory, links its delegate and the agent instance
   running the built-in `shell` method, mediates shell-session operations through messages, stores a
   startup-selected acknowledgement mode, reports acknowledgement state, and renders returned
-  messages.
+  messages, including `IN:` / `OUT:` transcript labels for interactive terminal sessions.
 - **Shell Delegate**: The session-specific delegate bound to one shell session. It reads terminal
   input into the required map shape, routes that map to the session's agent, and calls back into
   the shell session when messages are returned by the agent.

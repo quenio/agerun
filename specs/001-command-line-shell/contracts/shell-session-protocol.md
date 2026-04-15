@@ -35,7 +35,9 @@ session renders terminal output. The current rendering form for string replies i
 reply sender_id=<runtime sender identifier> text=<display string>
 ```
 
-Returned replies displayed in the terminal are attributed using only the runtime sender ID.
+Interactive terminal sessions prefix that rendered line as `OUT: reply ...`, and the delegate also
+prints `IN: ` prompts before each attempted read. Returned replies displayed in the terminal are
+attributed using only the runtime sender ID.
 
 ## 3. Built-in `shell` Method Responsibilities
 

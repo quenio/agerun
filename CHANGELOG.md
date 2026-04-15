@@ -1,5 +1,33 @@
 # AgeRun CHANGELOG
 
+## 2026-04-14 (Command-line shell transcript labels)
+
+- **Added `IN:` / `OUT:` transcript labels to interactive `arsh` sessions**
+
+  Updated the shell runtime so interactive terminal sessions now render an `IN: ` prompt before
+  each read and prefix shell-emitted output lines with `OUT: ` while preserving existing
+  acknowledgements such as `handoff ok`. Added regression coverage for labeled prompt,
+  acknowledgement, and reply rendering, and synchronized the shell-facing documentation and
+  command-line shell contracts with the new transcript format.
+
+  **Implementation**: Updated `modules/ar_shell.c`, `modules/ar_shell_delegate.c`,
+  `modules/ar_shell_delegate.h`, `modules/ar_shell_delegate.md`,
+  `modules/ar_shell_delegate_tests.c`, `modules/ar_shell_session.c`,
+  `modules/ar_shell_session.h`, `modules/ar_shell_session.md`,
+  `modules/ar_shell_session_tests.c`, `modules/ar_shell.md`, `README.md`,
+  `specs/001-command-line-shell/contracts/arsh-cli.md`,
+  `specs/001-command-line-shell/contracts/shell-session-protocol.md`,
+  `specs/001-command-line-shell/quickstart.md`, and
+  `specs/001-command-line-shell/spec.md`.
+
+  **Verification**: `make ar_shell_session_tests 2>&1`, `make ar_shell_delegate_tests 2>&1`,
+  `make ar_shell_tests 2>&1`, `make check-docs 2>&1`, `make clean build 2>&1`,
+  `make check-logs 2>&1`, and `make sanitize-tests 2>&1`.
+
+  **Impact**: Interactive shell transcripts are easier to visually parse because typed input and
+  shell-generated output are now clearly distinguished without hiding low-level acknowledgement
+  lines.
+
 ## 2026-04-14 (Command-line shell active-agent listing)
 
 - **Added built-in shell commands for listing active agents and their method versions**

@@ -60,6 +60,8 @@ bool ar_shell_delegate__forward_input(
 
 /**
  * Read accepted input lines until EOF, forward them, and report handoff acknowledgement.
+ * When transcript labels are enabled on the bound shell session, this also prints `IN:` prompts
+ * and prefixes shell-emitted output lines with `OUT:`.
  * @param mut_delegate Mutable shell delegate
  * @param mut_system Mutable system instance
  * @param mut_input Input stream to read

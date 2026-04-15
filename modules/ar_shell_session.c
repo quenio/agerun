@@ -35,6 +35,7 @@ struct ar_shell_session_s {
     ar_shell_mode_t mode;
     int64_t agent_id;
     bool is_active;
+    bool are_transcript_labels_enabled;
     ar_data_t *own_memory;
     ar_data_t *own_context;
     FILE *mut_output;
@@ -157,6 +158,7 @@ ar_shell_session_t* ar_shell_session__create(int64_t session_id, ar_shell_mode_t
     own_session->mode = mode;
     own_session->agent_id = 0;
     own_session->is_active = false;
+    own_session->are_transcript_labels_enabled = false;
     own_session->own_memory = ar_data__create_map();
     own_session->own_context = ar_data__create_map();
     own_session->mut_output = NULL;
@@ -482,6 +484,24 @@ void ar_shell_session__bind_output(ar_shell_session_t *mut_session, FILE *mut_ou
     mut_session->mut_output = mut_output;
 }
 
+void ar_shell_session__set_transcript_labels_enabled(
+    ar_shell_session_t *mut_session,
+    bool are_labels_enabled) {
+    if (!mut_session) {
+        return;
+    }
+
+    mut_session->are_transcript_labels_enabled = are_labels_enabled;
+}
+
+bool ar_shell_session__get_transcript_labels_enabled(const ar_shell_session_t *ref_session) {
+    if (!ref_session) {
+        return false;
+    }
+
+    return ref_session->are_transcript_labels_enabled;
+}
+
 bool ar_shell_session__render_output(
     ar_shell_session_t *mut_session,
     const ar_data_t *ref_message,
@@ -507,7 +527,12 @@ bool ar_shell_session__render_output(
         ref_text = "<non-string reply>";
     }
 
-    if (fprintf(mut_session->mut_output, "reply sender_id=%" PRId64 " text=%s\n", sender_id, ref_text) < 0) {
+    if (fprintf(
+            mut_session->mut_output,
+            mut_session->are_transcript_labels_enabled ? "OUT: reply sender_id=%" PRId64 " text=%s\n"
+                                                       : "reply sender_id=%" PRId64 " text=%s\n",
+            sender_id,
+            ref_text) < 0) {
         return false;
     }
 

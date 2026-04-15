@@ -152,7 +152,24 @@ ar_data_t* ar_shell_session__get_context(const ar_shell_session_t *ref_session);
 void ar_shell_session__bind_output(ar_shell_session_t *mut_session, FILE *mut_output);
 
 /**
+ * Enable or disable `IN:` / `OUT:` transcript labels for interactive shell presentation.
+ * @param mut_session Mutable shell session
+ * @param are_labels_enabled True to enable transcript labels, false otherwise
+ */
+void ar_shell_session__set_transcript_labels_enabled(
+    ar_shell_session_t *mut_session,
+    bool are_labels_enabled);
+
+/**
+ * Check whether `IN:` / `OUT:` transcript labels are enabled.
+ * @param ref_session Borrowed shell session
+ * @return true when transcript labels are enabled, false otherwise
+ */
+bool ar_shell_session__get_transcript_labels_enabled(const ar_shell_session_t *ref_session);
+
+/**
  * Render one returned runtime reply for the active shell session.
+ * The rendered line is prefixed with `OUT:` when transcript labels are enabled.
  * @param mut_session Mutable shell session
  * @param ref_message Borrowed returned message
  * @param sender_id Runtime sender identifier used for display attribution

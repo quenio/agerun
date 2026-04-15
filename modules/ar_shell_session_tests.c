@@ -1,14 +1,16 @@
 #include "ar_shell_session.h"
 #include "ar_assert.h"
+#include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
-static void test_shell_session__create_initializes_memory_and_mode(void);
+static void test_shell_session__create_initializes_memory_mode_and_transcript_labels(void);
 static void test_shell_session__activate_records_agent_id(void);
 static void test_shell_session__store_value_updates_owned_memory(void);
 static void test_shell_session__load_value_returns_loaded_value_message(void);
 static void test_shell_session__load_value_reports_missing_path_failure(void);
+static void test_shell_session__render_output_prefixes_labeled_transcript_lines(void);
 
 int main(void) {
     char cwd[1024];
@@ -21,19 +23,20 @@ int main(void) {
     }
 
     printf("Running shell session tests...\n");
-    test_shell_session__create_initializes_memory_and_mode();
+    test_shell_session__create_initializes_memory_mode_and_transcript_labels();
     test_shell_session__activate_records_agent_id();
     test_shell_session__store_value_updates_owned_memory();
     test_shell_session__load_value_returns_loaded_value_message();
     test_shell_session__load_value_reports_missing_path_failure();
+    test_shell_session__render_output_prefixes_labeled_transcript_lines();
     printf("All shell session tests passed!\n");
     return 0;
 }
 
-static void test_shell_session__create_initializes_memory_and_mode(void) {
+static void test_shell_session__create_initializes_memory_mode_and_transcript_labels(void) {
     ar_shell_session_t *own_session;
 
-    printf("  test_shell_session__create_initializes_memory_and_mode...\n");
+    printf("  test_shell_session__create_initializes_memory_mode_and_transcript_labels...\n");
 
     own_session = ar_shell_session__create(7, AR_SHELL_MODE__VERBOSE);
     AR_ASSERT(own_session != NULL, "Shell session creation should succeed");
@@ -45,6 +48,8 @@ static void test_shell_session__create_initializes_memory_and_mode(void) {
               "Shell session should create an owned session memory map");
     AR_ASSERT(!ar_shell_session__is_active(own_session),
               "Fresh shell session should not be active before activation");
+    AR_ASSERT(!ar_shell_session__get_transcript_labels_enabled(own_session),
+              "Fresh shell sessions should start with transcript labels disabled");
 
     ar_shell_session__destroy(own_session);
     printf("    PASS\n");
@@ -143,6 +148,53 @@ static void test_shell_session__load_value_reports_missing_path_failure(void) {
               "Failure replies should include a reason string");
 
     ar_data__destroy(own_response);
+    ar_shell_session__destroy(own_session);
+    printf("    PASS\n");
+}
+
+static void test_shell_session__render_output_prefixes_labeled_transcript_lines(void) {
+    ar_shell_session_t *own_session;
+    ar_data_t *own_reply;
+    FILE *own_output_stream;
+    char ref_output[128];
+    size_t output_bytes_read;
+
+    printf("  test_shell_session__render_output_prefixes_labeled_transcript_lines...\n");
+
+    own_session = ar_shell_session__create(12, AR_SHELL_MODE__NORMAL);
+    AR_ASSERT(own_session != NULL, "Shell session creation should succeed");
+    AR_ASSERT(ar_shell_session__activate(own_session, 33),
+              "Shell session activation should succeed before reply rendering");
+    ar_shell_session__set_transcript_labels_enabled(own_session, true);
+    AR_ASSERT(ar_shell_session__get_transcript_labels_enabled(own_session),
+              "Transcript label enabling should persist on the shell session");
+
+    if (errno != 0) {
+        errno = 0;
+    }
+    own_output_stream = tmpfile();
+    AR_ASSERT(own_output_stream != NULL, "Output stream creation should succeed");
+    AR_ASSERT(errno == 0, "Output stream creation should not leave errno set on success");
+    ar_shell_session__bind_output(own_session, own_output_stream);
+
+    own_reply = ar_data__create_string("Ready");
+    AR_ASSERT(own_reply != NULL, "Reply creation should succeed");
+    AR_ASSERT(ar_shell_session__render_output(own_session, own_reply, 5),
+              "Shell session should render labeled reply output successfully");
+
+    rewind(own_output_stream);
+    if (errno != 0) {
+        errno = 0;
+    }
+    output_bytes_read = fread(ref_output, 1, sizeof(ref_output) - 1, own_output_stream);
+    AR_ASSERT(errno == 0, "Rendered labeled reply read should not leave errno set on success");
+    AR_ASSERT(output_bytes_read > 0, "Rendered labeled reply output should be readable");
+    ref_output[output_bytes_read] = '\0';
+    AR_ASSERT(strcmp(ref_output, "OUT: reply sender_id=5 text=Ready\n") == 0,
+              "Labeled shell-session replies should use the OUT prefix");
+
+    ar_data__destroy(own_reply);
+    fclose(own_output_stream);
     ar_shell_session__destroy(own_session);
     printf("    PASS\n");
 }

@@ -52,7 +52,8 @@ syntax:
 ### Normal mode
 
 The shell reports whether the delegate successfully handed the input envelope to the receiving
-agent.
+agent. In interactive terminal sessions, the current transcript shape uses `IN: ` prompts and
+prefixes shell-emitted output lines with `OUT: `.
 
 ### Verbose mode
 
@@ -65,6 +66,7 @@ The shell may additionally report:
 - replies returned by runtime interactions are delivered to the session-scoped delegate callback path
 - the delegate binds the shell session's stdout stream and the shell session renders each reply
 - rendered string replies use the current shell-visible form `reply sender_id=<runtime-id> text=<reply>`
+  and are shown as `OUT: reply ...` in interactive terminal sessions
 - each displayed reply is attributed using only the runtime sender ID
 - replies arriving after the session closes are discarded instead of being rendered
 

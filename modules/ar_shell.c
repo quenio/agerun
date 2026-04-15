@@ -10,6 +10,7 @@
 #include <string.h>
 #include <dirent.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 struct ar_shell_s {
     ar_shell_mode_t default_mode;
@@ -342,6 +343,10 @@ int ar_shell__main(int argc, char **argv) {
         ar_shell__destroy(own_shell);
         return 1;
     }
+
+    ar_shell_session__set_transcript_labels_enabled(
+        ref_session,
+        isatty(fileno(stdin)) != 0 && isatty(fileno(stdout)) != 0);
 
     (void) ar_shell_delegate__process_input_stream(own_delegate, own_shell->own_system, stdin, stdout);
 

@@ -33,7 +33,8 @@ The current implementation covers shell creation, repository method loading into
 system, session tracking, built-in shell-method registration, receiving-agent startup with
 per-session execution context, startup-mode propagation, runtime delegate registration for
 shell-session mediation, and repeated stdin handoff through `ar_shell_delegate__process_input_stream()`.
-For real shell sessions started by `ar_shell`, that loop now also processes runtime work,
-renders returned replies using only the runtime sender ID, supports the built-in `agents` / `list agents`
-inspection command for enumerating active agents with method name/version, closes the session on EOF /
-Ctrl-D, and destroys the dedicated receiving agent before shell teardown.
+For real shell sessions started by `ar_shell`, that loop now also auto-enables `IN:` / `OUT:`
+transcript labels when both stdin and stdout are terminals, processes runtime work, renders
+returned replies using only the runtime sender ID, supports the built-in `agents` / `list agents`
+inspection command for enumerating active agents with method name/version, closes the session on
+EOF / Ctrl-D, and destroys the dedicated receiving agent before shell teardown.
