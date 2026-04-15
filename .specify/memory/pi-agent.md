@@ -52,4 +52,5 @@ specs/
 
 <!-- MANUAL ADDITIONS START -->
 - `001-command-line-shell` implementation now has US1, US2, and US3 behavior slices in place: `arsh` uses `ar_shell`, shell-session state lives in `ar_shell_session`, replies render as `reply sender_id=<runtime-id> text=<reply>`, and EOF / Ctrl-D closes immediately while discarding later replies.
+- `002-let-build-workflow-coordinator` is planned as a methods-only boot demo: `bootstrap` launches workflow methods on fresh executable runs, workflow definitions live in YAML files read through the file delegate rather than in new C feature modules, and alternate YAML definitions are expected in tests.
 <!-- MANUAL ADDITIONS END -->

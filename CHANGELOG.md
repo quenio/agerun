@@ -1,5 +1,26 @@
 # AgeRun CHANGELOG
 
+## 2026-04-15 (Workflow coordinator specification package)
+
+- **Planned the boot-launched workflow coordinator as a methods-only feature with YAML workflow definitions**
+
+  Added the full native `/spec` artifact set for `002-let-build-workflow-coordinator` and aligned
+  the feature around the clarified architecture: `bootstrap` launches the demo on fresh executable
+  runs, workflow behavior lives in AgeRun methods, and the workflow definition itself lives in YAML
+  files read through the file delegate instead of in `.method` assets.
+
+  **Implementation**: Added `specs/002-let-build-workflow-coordinator/spec.md`, `plan.md`,
+  `research.md`, `data-model.md`, `quickstart.md`, `tasks.md`, and the workflow contracts under
+  `specs/002-let-build-workflow-coordinator/contracts/`; updated
+  `.specify/memory/pi-agent.md` with the durable planning context for the feature branch.
+
+  **Verification**: `make check-docs 2>&1`, `make clean build 2>&1`, and `make check-logs 2>&1`
+  passed. `make check-commands 2>&1` is referenced by AGENTS.md but no corresponding Makefile
+  target exists in this repository.
+
+  **Impact**: The repository now has a reviewable, implementation-ready specification package for a
+  reusable boot-driven workflow coordinator before code changes begin.
+
 ## 2026-04-14 (Command-line shell transcript labels)
 
 - **Added `IN:` / `OUT:` transcript labels to interactive `arsh` sessions**
