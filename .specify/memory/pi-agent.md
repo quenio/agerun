@@ -1,6 +1,6 @@
 # AgeRun Development Guidelines
 
-Auto-generated from the project constitution and repository context. Last updated: 2026-04-11
+Auto-generated from the project constitution and repository context. Last updated: 2026-04-16
 
 ## Active Technologies
 
@@ -52,4 +52,5 @@ specs/
 
 <!-- MANUAL ADDITIONS START -->
 - `001-command-line-shell` implementation now has US1, US2, and US3 behavior slices in place: `arsh` uses `ar_shell`, shell-session state lives in `ar_shell_session`, replies render as `reply sender_id=<runtime-id> text=<reply>`, and EOF / Ctrl-D closes immediately while discarding later replies.
+- `003-new-instruction-complete` now uses Zig C-ABI modules for parsing/evaluation (`ar_complete_instruction_parser.zig`, `ar_complete_instruction_evaluator.zig`) plus a user-approved C runtime adapter for direct llama.cpp interop (`ar_local_completion.c`) behind the stable `ar_local_completion.h` header. Existing facades only wire dispatch. `complete(...)` writes string values atomically into `memory...` targets, returns boolean status, rejects empty generated values, and uses separate warm-run (15s) and cold-start (30s) targets for short templates on both macOS and Linux.
 <!-- MANUAL ADDITIONS END -->

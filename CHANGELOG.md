@@ -1,5 +1,15 @@
 # AgeRun CHANGELOG
 
+## 2026-04-17 (Embedded complete() runtime groundwork)
+
+- **Completion instruction groundwork**: Added `complete(...)` AST, parser, evaluator, and local runtime modules with direct embedded `libllama` integration and vendored CPU-only `llama.cpp` infrastructure
+
+  Implemented the first end-to-end `complete(...)` path, including parser/evaluator facade wiring, direct embedded local completion through vendored `libllama`, project-managed Phi-3 model/runtime provisioning, and a real in-process success validation using `phi-3-mini-q4.gguf`. Added task/spec/contract artifacts for feature `003-new-instruction-complete`, synchronized module documentation, and updated build/test infrastructure so complete-runtime assets are prepared once before parallel builds while the common in-process success path is validated in `ar_local_completion_tests`.
+
+  **Implementation**: Added `modules/ar_complete_instruction_parser.h`, `modules/ar_complete_instruction_parser.zig`, `modules/ar_complete_instruction_parser.md`, `modules/ar_complete_instruction_parser_tests.c`, `modules/ar_complete_instruction_evaluator.h`, `modules/ar_complete_instruction_evaluator.zig`, `modules/ar_complete_instruction_evaluator.md`, `modules/ar_complete_instruction_evaluator_tests.c`, `modules/ar_local_completion.c`, `modules/ar_local_completion.h`, `modules/ar_local_completion.md`, `modules/ar_local_completion_tests.c`, `llama-cpp/`, `models/`, and `specs/003-new-instruction-complete/`; updated `Makefile`, `scripts/build.sh`, `scripts/check_docs.py`, `scripts/check_logs.py`, `.gitignore`, `.specify/memory/pi-agent.md`, `modules/ar_instruction_ast.h`, `modules/ar_instruction_ast_tests.c`, `modules/ar_instruction_parser.c`, `modules/ar_instruction_parser_tests.c`, `modules/ar_instruction_evaluator.zig`, `modules/ar_instruction_evaluator.md`, `modules/ar_instruction_evaluator_tests.c`, and the feature contracts/quickstart docs.
+
+  **Impact**: Establishes the embedded local-completion foundation for `complete(...)`, verifies the real success path against the vendored runtime/model, and keeps build infrastructure stable by treating complete-runtime assets as shared repository infrastructure.
+
 ## 2026-04-14 (Command-line shell transcript labels)
 
 - **Added `IN:` / `OUT:` transcript labels to interactive `arsh` sessions**

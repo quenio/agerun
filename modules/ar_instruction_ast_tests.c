@@ -281,6 +281,23 @@ static void test_create_build_function(void) {
     ar_instruction_ast__destroy(own_node);
 }
 
+static void test_create_complete_function(void) {
+    printf("Testing complete function creation...\n");
+
+    const char *function_name = "complete";
+    const char *args[] = {"\"The capital is {city}.\"", "memory.location"};
+    ar_instruction_ast_t *own_node = ar_instruction_ast__create_function_call(
+        AR_INSTRUCTION_AST_TYPE__COMPLETE, function_name, args, 2, "memory.ok"
+    );
+
+    assert(own_node != NULL);
+    assert(ar_instruction_ast__get_type(own_node) == AR_INSTRUCTION_AST_TYPE__COMPLETE);
+    assert(strcmp(ar_instruction_ast__get_function_name(own_node), "complete") == 0);
+    assert(strcmp(ar_instruction_ast__get_function_result_path(own_node), "memory.ok") == 0);
+
+    ar_instruction_ast__destroy(own_node);
+}
+
 static void test_null_handling(void) {
     printf("Testing NULL handling...\n");
     
@@ -509,6 +526,7 @@ int main(void) {
     test_create_destroy_method_function();
     test_create_parse_function();
     test_create_build_function();
+    test_create_complete_function();
     
     // Edge case tests
     test_null_handling();

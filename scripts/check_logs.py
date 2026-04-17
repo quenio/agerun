@@ -109,8 +109,16 @@ def is_whitelisted_error(log_file, line_num, error_line, whitelist):
                 if not is_executable:
                     continue
             else:
-                # Regular test name matching
-                if current_test != context_pattern:
+                # Regular test name matching, allowing a single whitelist entry to
+                # match the base test name across sanitizer variants.
+                normalized_test = current_test
+                if normalized_test is not None:
+                    normalized_test = re.sub(
+                        r' with (Address \+ Undefined Behavior Sanitizers|Thread Sanitizer)$',
+                        '',
+                        normalized_test,
+                    )
+                if current_test != context_pattern and normalized_test != context_pattern:
                     continue
         
         # Check if message matches (in cleaned text) - support both 'message' and 'error' for backward compatibility
@@ -391,14 +399,15 @@ def check_compilation_warnings():
     return check_logs_for_pattern(
         r'\.(c|h|zig):[0-9]+:[0-9]+: (warning|error):|^(warning|error):',
         'Checking for compilation warnings/errors',
-        exclude_pattern=r'logs/analyze-'
+        exclude_pattern=r'logs/(analyze-|complete-runtime-ready\.log)'
     )
 
 def check_linker_warnings():
     """Check for linker warnings/errors."""
     return check_logs_for_pattern(
         r'(ld: warning:|ld: error:|undefined reference|undefined symbol|duplicate symbol|was built for newer.*version.*than being linked|relocation|cannot find -l)',
-        'Checking for linker warnings/errors'
+        'Checking for linker warnings/errors',
+        exclude_pattern=r'logs/complete-runtime-ready\.log'
     )
 
 def check_static_analysis_issues():
@@ -449,6 +458,8 @@ def check_deep_analysis_errors(whitelist):
     ]
     
     for log_file in glob.glob('logs/*.log'):
+        if log_file == 'logs/complete-runtime-ready.log':
+            continue
         try:
             with open(log_file, 'r') as f:
                 lines = f.readlines()
@@ -494,7 +505,7 @@ def check_deep_analysis_errors(whitelist):
     ]
     
     for log_file in glob.glob('logs/*.log'):
-        if 'analyze-' in log_file:
+        if 'analyze-' in log_file or log_file == 'logs/complete-runtime-ready.log':
             continue
         try:
             with open(log_file, 'r') as f:
@@ -572,7 +583,7 @@ def check_deep_analysis_errors(whitelist):
                         if ('test.*failed.*passed' not in line and 
                             'expected.*fail' not in line and
                             'ERROR: Test error message' not in line and
-                            '_failure passed' not in line and  # Skip test names with "_failure" that passed
+                            not ('_failure' in line and 'passed' in line) and  # Skip passing tests whose names include failure
                             not compiler_pattern.match(line.strip())):  # Skip compiler command lines
                             # Check if this is whitelisted
                             if not is_whitelisted_error(log_file, i + 1, line, whitelist):
@@ -607,6 +618,8 @@ def check_deep_analysis_errors(whitelist):
     pattern = re.compile(r'(Could not|Cannot|Unable to|Failed to)')
     
     for log_file in glob.glob('logs/*.log'):
+        if log_file == 'logs/complete-runtime-ready.log':
+            continue
         try:
             with open(log_file, 'r') as f:
                 lines = f.readlines()

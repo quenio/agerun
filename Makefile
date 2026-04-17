@@ -34,6 +34,12 @@ help:
 	@echo "Utility targets:"
 	@echo "  make check-logs   - Check build logs for hidden issues"
 	@echo "  make add-newline FILE=<file> - Add newline to end of file if missing"
+	@echo "  make vendor-llama-cpu - Build/install vendored CPU-only llama.cpp into .deps"
+	@echo "  make clean-llama-cpp - Remove vendored llama.cpp build/install artifacts from .deps"
+	@echo "  make complete-runtime-ready - Build vendored libllama and download phi-3-mini-q4.gguf if missing"
+	@echo "  make download-complete-model - Download phi-3-mini-q4.gguf into models/ if missing"
+	@echo "  make complete-model-smoke - Ensure complete() runtime assets are ready and run the embedded libllama smoke with a cold-start timeout"
+	@echo "  make print-llama-config - Show vendored llama.cpp source/install paths"
 
 # Output directories for parallel builds
 ANALYZE_EXEC_DIR = bin/analyze-exec
@@ -49,11 +55,43 @@ TSAN_EXEC_DIR = bin/tsan-exec
 # Detect OS for sanitizer compiler selection
 UNAME_S := $(shell uname -s)
 
+# Vendored llama.cpp CPU-only dependency paths
+LLAMA_SOURCE_DIR ?= llama-cpp
+LLAMA_BUILD_DIR ?= .deps/llama.cpp-build
+LLAMA_INSTALL_DIR ?= .deps/llama.cpp-install
+LLAMA_LICENSE = $(LLAMA_SOURCE_DIR)/LICENSE
+COMPLETE_MODEL_DIR ?= models
+COMPLETE_MODEL_FILE ?= $(COMPLETE_MODEL_DIR)/phi-3-mini-q4.gguf
+COMPLETE_MODEL_LICENSE ?= $(COMPLETE_MODEL_DIR)/phi-3-mini-q4.LICENSE
+COMPLETE_MODEL_CARD ?= $(COMPLETE_MODEL_DIR)/phi-3-mini-q4.README.md
+COMPLETE_MODEL_URL ?= https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/resolve/main/Phi-3-mini-4k-instruct-q4.gguf?download=true
+COMPLETE_MODEL_LICENSE_URL ?= https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/raw/main/LICENSE
+COMPLETE_MODEL_CARD_URL ?= https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/raw/main/README.md
+COMPLETE_MODEL_SMOKE_TIMEOUT_SECONDS ?= 35
+ifeq ($(UNAME_S),Darwin)
+LLAMA_SHARED_EXT = dylib
+LLAMA_CPU_CMAKE_FLAGS = -DGGML_METAL=OFF
+else
+LLAMA_SHARED_EXT = so
+LLAMA_CPU_CMAKE_FLAGS =
+endif
+LLAMA_SOURCE_HEADER = $(LLAMA_SOURCE_DIR)/include/llama.h
+LLAMA_HEADER = $(LLAMA_INSTALL_DIR)/include/llama.h
+LLAMA_LIB = $(LLAMA_INSTALL_DIR)/lib/libllama.$(LLAMA_SHARED_EXT)
+LLAMA_AVAILABLE = $(and $(wildcard $(LLAMA_HEADER)),$(wildcard $(LLAMA_LIB)))
+LLAMA_CFLAGS =
+LLAMA_ZIG_INCLUDE_FLAGS =
+ifneq ($(wildcard $(LLAMA_SOURCE_HEADER)),)
+LLAMA_CFLAGS += -I$(LLAMA_SOURCE_DIR)/include -I$(LLAMA_SOURCE_DIR)/ggml/include
+LLAMA_ZIG_INCLUDE_FLAGS += -I$(LLAMA_SOURCE_DIR)/include -I$(LLAMA_SOURCE_DIR)/ggml/include
+endif
+
 # Default compiler
 CC = gcc-13
 
-# Zig compiler
+# Toolchain commands
 ZIG = zig
+CMAKE ?= cmake
 
 # Sanitizer compiler selection based on OS
 ifeq ($(UNAME_S),Darwin)
@@ -112,6 +150,7 @@ ZIG_TEST_TSAN_FLAGS = -fsanitize-thread
 endif
 
 LDFLAGS = -lm -lc -pthread
+CFLAGS += $(LLAMA_CFLAGS)
 
 # Debug build flags
 DEBUG_CFLAGS = -g -O0 -DDEBUG
@@ -175,7 +214,7 @@ TEST_BIN = $(patsubst modules/%_tests.c,bin/%_tests,$(TEST_SRC))
 
 # Directory-specific test paths
 RUN_TESTS_TEST_OBJ = $(patsubst modules/%.c,$(RUN_TESTS_DIR)/obj/%.o,$(TEST_SRC))
-RUN_TESTS_TEST_BIN = $(patsubst modules/%_tests.c,$(RUN_TESTS_DIR)/%_tests,$(TEST_SRC))
+RUN_TESTS_TEST_BIN = $(patsubst modules/%_tests.c,$(RUN_TESTS_DIR)/%_tests,$(RUN_TEST_TEST_SRC))
 
 SANITIZE_TESTS_TEST_OBJ = $(patsubst modules/%.c,$(SANITIZE_TESTS_DIR)/obj/%.o,$(SANITIZER_TEST_SRC))
 SANITIZE_TESTS_TEST_BIN = $(patsubst modules/%_tests.c,$(SANITIZE_TESTS_DIR)/%_tests,$(SANITIZER_TEST_SRC))
@@ -284,10 +323,13 @@ tsan-exec: tsan_exec_lib
 	cd $(TSAN_EXEC_DIR) && AGERUN_MEMORY_REPORT="memory_report_agerun.log" ./agerun
 
 # Define test executables without bin/ prefix for use in the bin directory
-TEST_BIN_NAMES = $(notdir $(TEST_BIN))
+# DLSym interception tests remain individually runnable but are excluded from aggregate
+# run-tests because they provide their own symbol definitions that conflict with the full library.
+RUN_TEST_TEST_SRC = $(filter-out %_dlsym_tests.c,$(TEST_SRC))
+RUN_TEST_TEST_BIN_NAMES = $(patsubst modules/%_tests.c,%_tests,$(RUN_TEST_TEST_SRC))
 METHOD_TEST_BIN_NAMES = $(notdir $(METHOD_TEST_BIN))
 ZIG_TEST_BIN_NAMES = $(notdir $(ZIG_TEST_BIN))
-ALL_TEST_BIN_NAMES = $(TEST_BIN_NAMES) $(METHOD_TEST_BIN_NAMES) $(ZIG_TEST_BIN_NAMES)
+ALL_TEST_BIN_NAMES = $(RUN_TEST_TEST_BIN_NAMES) $(METHOD_TEST_BIN_NAMES) $(ZIG_TEST_BIN_NAMES)
 
 # Filtered test sources for sanitizers (exclude *_dlsym_tests.c)
 SANITIZER_TEST_SRC = $(filter-out %_dlsym_tests.c,$(TEST_SRC))
@@ -439,7 +481,7 @@ $(RUN_TESTS_DIR)/obj/%.o: modules/%.c | $(RUN_TESTS_DIR)
 	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) -c $< -o $@
 
 $(RUN_TESTS_DIR)/obj/%.o: modules/%.zig | $(RUN_TESTS_DIR)
-	$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target $(ZIG_TARGET) -mcpu=native -fno-stack-check -lc -I./modules $< -femit-bin=$@
+	$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target $(ZIG_TARGET) -mcpu=native -fno-stack-check -lc -I./modules $(LLAMA_ZIG_INCLUDE_FLAGS) $< -femit-bin=$@
 
 $(RUN_TESTS_DIR)/obj/%_tests.o: modules/%_tests.c | $(RUN_TESTS_DIR)
 	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) -c $< -o $@
@@ -452,14 +494,14 @@ $(RUN_EXEC_DIR)/obj/%.o: modules/%.c | $(RUN_EXEC_DIR)
 	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) -c $< -o $@
 
 $(RUN_EXEC_DIR)/obj/%.o: modules/%.zig | $(RUN_EXEC_DIR)
-	$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target $(ZIG_TARGET) -mcpu=native -fno-stack-check -lc -I./modules $< -femit-bin=$@
+	$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target $(ZIG_TARGET) -mcpu=native -fno-stack-check -lc -I./modules $(LLAMA_ZIG_INCLUDE_FLAGS) $< -femit-bin=$@
 
 # Sanitize tests directory
 $(SANITIZE_TESTS_DIR)/obj/%.o: modules/%.c | $(SANITIZE_TESTS_DIR)
 	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(SANITIZER_FLAGS) $(SANITIZER_EXTRA_FLAGS) -c $< -o $@
 
 $(SANITIZE_TESTS_DIR)/obj/%.o: modules/%.zig | $(SANITIZE_TESTS_DIR)
-	$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target $(ZIG_TARGET) -mcpu=native -fno-stack-check -lc -I./modules $< -femit-bin=$@
+	$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target $(ZIG_TARGET) -mcpu=native -fno-stack-check -lc -I./modules $(LLAMA_ZIG_INCLUDE_FLAGS) $< -femit-bin=$@
 
 $(SANITIZE_TESTS_DIR)/obj/%_tests.o: modules/%_tests.c | $(SANITIZE_TESTS_DIR)
 	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(SANITIZER_FLAGS) $(SANITIZER_EXTRA_FLAGS) -c $< -o $@
@@ -472,14 +514,14 @@ $(SANITIZE_EXEC_DIR)/obj/%.o: modules/%.c | $(SANITIZE_EXEC_DIR)
 	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(SANITIZER_FLAGS) $(SANITIZER_EXTRA_FLAGS) -c $< -o $@
 
 $(SANITIZE_EXEC_DIR)/obj/%.o: modules/%.zig | $(SANITIZE_EXEC_DIR)
-	$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target $(ZIG_TARGET) -mcpu=native -fno-stack-check -lc -I./modules $< -femit-bin=$@
+	$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target $(ZIG_TARGET) -mcpu=native -fno-stack-check -lc -I./modules $(LLAMA_ZIG_INCLUDE_FLAGS) $< -femit-bin=$@
 
 # TSan tests directory
 $(TSAN_TESTS_DIR)/obj/%.o: modules/%.c | $(TSAN_TESTS_DIR)
 	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS) $(SANITIZER_EXTRA_FLAGS) -c $< -o $@
 
 $(TSAN_TESTS_DIR)/obj/%.o: modules/%.zig | $(TSAN_TESTS_DIR)
-	$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target $(ZIG_TARGET) -mcpu=native -fno-stack-check -lc -I./modules $< -femit-bin=$@
+	$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target $(ZIG_TARGET) -mcpu=native -fno-stack-check -lc -I./modules $(LLAMA_ZIG_INCLUDE_FLAGS) $< -femit-bin=$@
 
 $(TSAN_TESTS_DIR)/obj/%_tests.o: modules/%_tests.c | $(TSAN_TESTS_DIR)
 	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS) $(SANITIZER_EXTRA_FLAGS) -c $< -o $@
@@ -492,7 +534,11 @@ $(TSAN_EXEC_DIR)/obj/%.o: modules/%.c | $(TSAN_EXEC_DIR)
 	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS) $(SANITIZER_EXTRA_FLAGS) -c $< -o $@
 
 $(TSAN_EXEC_DIR)/obj/%.o: modules/%.zig | $(TSAN_EXEC_DIR)
-	$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target $(ZIG_TARGET) -mcpu=native -fno-stack-check -lc -I./modules $< -femit-bin=$@
+	$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target $(ZIG_TARGET) -mcpu=native -fno-stack-check -lc -I./modules $(LLAMA_ZIG_INCLUDE_FLAGS) $< -femit-bin=$@
+
+# Clean vendored llama.cpp build/install artifacts
+clean-llama-cpp:
+	rm -rf "$(LLAMA_BUILD_DIR)" "$(LLAMA_INSTALL_DIR)"
 
 # Clean target
 clean:
@@ -645,7 +691,7 @@ add-newline:
 		exit 1; \
 	fi
 
-.PHONY: help clean build add-newline check-naming check-docs check-all analyze-exec analyze-tests run-exec run-tests sanitize-exec sanitize-tests tsan-exec tsan-tests install-scan-build print-src print-obj
+.PHONY: help clean clean-llama-cpp build add-newline check-naming check-docs check-all analyze-exec analyze-tests run-exec run-tests sanitize-exec sanitize-tests tsan-exec tsan-tests install-scan-build print-src print-obj print-llama-config vendor-llama-cpu complete-runtime-ready download-complete-model complete-model-smoke
 
 # Debug targets
 print-src:
@@ -699,6 +745,84 @@ install-scan-build:
 	fi; \
 fi
 
+
+$(COMPLETE_MODEL_FILE):
+	@mkdir -p "$(COMPLETE_MODEL_DIR)"
+	curl -L --fail --continue-at - --output "$@" "$(COMPLETE_MODEL_URL)"
+
+$(COMPLETE_MODEL_LICENSE):
+	@mkdir -p "$(COMPLETE_MODEL_DIR)"
+	curl -L --fail --output "$@" "$(COMPLETE_MODEL_LICENSE_URL)"
+
+$(COMPLETE_MODEL_CARD):
+	@mkdir -p "$(COMPLETE_MODEL_DIR)"
+	curl -L --fail --output "$@" "$(COMPLETE_MODEL_CARD_URL)"
+
+# Download the real phi-3 completion model and its accompanying license/card files
+# Usage: make download-complete-model
+download-complete-model: $(COMPLETE_MODEL_FILE) $(COMPLETE_MODEL_LICENSE) $(COMPLETE_MODEL_CARD)
+
+# Ensure complete() runtime assets are ready for embedded local completion tests
+# Usage: make complete-runtime-ready
+complete-runtime-ready: vendor-llama-cpu download-complete-model
+	@# Target completed by dependency
+
+# Download/build complete() runtime assets if needed and run the embedded libllama smoke test
+# Usage: make complete-model-smoke
+complete-model-smoke: complete-runtime-ready
+	$(MAKE) $(RUN_TESTS_DIR)/ar_local_completion_tests 2>&1
+	@cd $(RUN_TESTS_DIR) && \
+	AGERUN_MEMORY_REPORT="memory_report_ar_local_completion_tests.log" \
+	AGERUN_LOCAL_COMPLETION_SUBTEST=real_phi3_model_smoke \
+	python3 -c 'code = """import os, signal, subprocess, sys\ntimeout = int(sys.argv[1])\nenv = dict(os.environ)\nproc = subprocess.Popen([\"./ar_local_completion_tests\"], start_new_session=True, env=env)\ntry:\n    sys.exit(proc.wait(timeout=timeout))\nexcept subprocess.TimeoutExpired:\n    os.killpg(proc.pid, signal.SIGKILL)\n    print(f\"ERROR: complete-model-smoke exceeded {timeout}s cold-start budget\", file=sys.stderr)\n    sys.exit(124)\n"""; exec(code)' "$(COMPLETE_MODEL_SMOKE_TIMEOUT_SECONDS)"
+
+# Show vendored llama.cpp configuration
+print-llama-config:
+	@echo "CMAKE=$(CMAKE)"
+	@echo "LLAMA_SOURCE_DIR=$(LLAMA_SOURCE_DIR)"
+	@echo "LLAMA_BUILD_DIR=$(LLAMA_BUILD_DIR)"
+	@echo "LLAMA_INSTALL_DIR=$(LLAMA_INSTALL_DIR)"
+	@echo "LLAMA_SOURCE_HEADER=$(LLAMA_SOURCE_HEADER)"
+	@echo "LLAMA_HEADER=$(LLAMA_HEADER)"
+	@echo "LLAMA_LIB=$(LLAMA_LIB)"
+	@echo "LLAMA_LICENSE=$(LLAMA_LICENSE)"
+	@if [ -n "$(LLAMA_AVAILABLE)" ]; then \
+		echo "LLAMA_AVAILABLE=yes"; \
+	else \
+		echo "LLAMA_AVAILABLE=no"; \
+	fi
+
+# Build/install vendored CPU-only llama.cpp
+vendor-llama-cpu:
+	@if [ ! -f "$(LLAMA_SOURCE_DIR)/CMakeLists.txt" ]; then \
+		echo "ERROR: vendored llama.cpp source not found at $(LLAMA_SOURCE_DIR)"; \
+		echo "Add the pinned upstream source tree under $(LLAMA_SOURCE_DIR) before running this target"; \
+		exit 1; \
+	fi
+	@if [ ! -f "$(LLAMA_LICENSE)" ]; then \
+		echo "ERROR: upstream llama.cpp license file missing at $(LLAMA_LICENSE)"; \
+		echo "Keep the upstream MIT license text in the vendored source tree to preserve redistribution compliance"; \
+		exit 1; \
+	fi
+	@if ! command -v "$(CMAKE)" >/dev/null 2>&1; then \
+		echo "ERROR: cmake is required for make vendor-llama-cpu"; \
+		echo "Set CMAKE=/absolute/path/to/cmake or install cmake before building the vendored dependency"; \
+		exit 1; \
+	fi
+	$(CMAKE) -S "$(LLAMA_SOURCE_DIR)" -B "$(LLAMA_BUILD_DIR)" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$(abspath $(LLAMA_INSTALL_DIR))" -DBUILD_SHARED_LIBS=ON $(LLAMA_CPU_CMAKE_FLAGS)
+	$(CMAKE) --build "$(LLAMA_BUILD_DIR)" --config Release
+	$(CMAKE) --install "$(LLAMA_BUILD_DIR)" --config Release
+	@if [ "$(UNAME_S)" = "Darwin" ]; then \
+		for dylib in "$(LLAMA_INSTALL_DIR)"/lib/*.dylib; do \
+			install_name_tool -add_rpath @loader_path "$$dylib" 2>/dev/null || true; \
+			install_name_tool -add_rpath @loader_path/../lib "$$dylib" 2>/dev/null || true; \
+		done; \
+		for exe in "$(LLAMA_INSTALL_DIR)"/bin/*; do \
+			if [ -f "$$exe" ]; then \
+				install_name_tool -add_rpath @loader_path/../lib "$$exe" 2>/dev/null || true; \
+			fi; \
+		done; \
+	fi
 
 # Fix command documentation structure to match comprehensive standards
 # Usage: make fix-commands

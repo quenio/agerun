@@ -64,9 +64,13 @@ dkms.conf
 # Build directories
 build/
 bin/
+.deps/
 
 # Log files
 *.log
 logs/
+
+# Local model artifacts
+*.gguf
 **/.claude/settings.local.json
 .DS_Store

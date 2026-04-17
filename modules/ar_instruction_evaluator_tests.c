@@ -4,6 +4,7 @@
 #include <string.h>
 #include <inttypes.h>
 #include <unistd.h>
+#include <sys/stat.h>
 #include "ar_instruction_evaluator.h"
 #include "ar_instruction_ast.h"
 #include "ar_expression_ast.h"
@@ -14,6 +15,41 @@
 #include "ar_log.h"
 #include "ar_event.h"
 #include "ar_frame.h"
+#include "ar_list.h"
+
+static char g_complete_runner_path[128] = {0};
+static char g_complete_model_path[128] = {0};
+
+static void setup_fake_complete_runner(void) {
+    snprintf(g_complete_runner_path, sizeof(g_complete_runner_path), "./fake-llama-cli-instruction-%ld.sh", (long)getpid());
+    snprintf(g_complete_model_path, sizeof(g_complete_model_path), "./fake-model-instruction-%ld.gguf", (long)getpid());
+
+    FILE *own_model = fopen(g_complete_model_path, "w");
+    assert(own_model != NULL);
+    fputs("fake-model", own_model);
+    fclose(own_model);
+
+    FILE *own_runner = fopen(g_complete_runner_path, "w");
+    assert(own_runner != NULL);
+    fputs("#!/bin/sh\n", own_runner);
+    fputs("printf 'country=Brazil\\ncity=Brasilia\\ncontinent=South America\\nbracey={invalid}\\nspacey= value \\nempty=\\n'\n", own_runner);
+    fclose(own_runner);
+    assert(chmod(g_complete_runner_path, 0700) == 0);
+
+    assert(setenv("AGERUN_COMPLETE_RUNNER", g_complete_runner_path, 1) == 0);
+    assert(setenv("AGERUN_COMPLETE_MODEL", g_complete_model_path, 1) == 0);
+}
+
+static void cleanup_fake_complete_runner(void) {
+    unsetenv("AGERUN_COMPLETE_RUNNER");
+    unsetenv("AGERUN_COMPLETE_MODEL");
+    if (g_complete_runner_path[0] != '\0') {
+        remove(g_complete_runner_path);
+    }
+    if (g_complete_model_path[0] != '\0') {
+        remove(g_complete_model_path);
+    }
+}
 
 static void test_instruction_evaluator__create_destroy(void) {
     // Given a log and system for agency
@@ -329,8 +365,38 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         
         ar_instruction_ast__destroy(ast);
     }
+
+    // Test 5: Complete instruction
+    {
+        const char *args[] = {"\"The largest country in South America is {country}.\""};
+        ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
+            AR_INSTRUCTION_AST_TYPE__COMPLETE, "complete", args, 1, "memory.ok"
+        );
+        assert(ast != NULL);
+
+        ar_list_t *arg_asts = ar_list__create();
+        ar_expression_ast_t *template_ast = ar_expression_ast__create_literal_string(
+            "The largest country in South America is {country}."
+        );
+        ar_list__add_last(arg_asts, template_ast);
+        ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
+
+        ar_data_t *ctx = ar_data__create_map();
+        ar_data_t *msg = ar_data__create_string("");
+        ar_frame_t *fr = ar_frame__create(memory, ctx, msg);
+
+        bool result = ar_instruction_evaluator__evaluate(evaluator, fr, ast);
+
+        ar_frame__destroy(fr);
+        ar_data__destroy(ctx);
+        ar_data__destroy(msg);
+        assert(result == true);
+        assert(ar_data__get_map_data(memory, "ok") != NULL);
+
+        ar_instruction_ast__destroy(ast);
+    }
     
-    // Test 5: Method instruction
+    // Test 6: Method instruction
     {
         
         // Given a compile instruction AST with three string arguments and result assignment
@@ -492,6 +558,52 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
     ar_log__destroy(log);
 }
 
+static void test_instruction_evaluator__complete_failure_returns_boolean_status(void) {
+    ar_data_t *memory = ar_data__create_map();
+    assert(memory != NULL);
+
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+
+    ar_system_t *sys = ar_system__create();
+    assert(sys != NULL);
+    ar_agency_t *agency = ar_system__get_agency(sys);
+    ar_delegation_t *delegation = ar_system__get_delegation(sys);
+
+    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log, agency, delegation);
+    assert(evaluator != NULL);
+
+    const char *args[] = {"\"Broken value is {bracey}.\""};
+    ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
+        AR_INSTRUCTION_AST_TYPE__COMPLETE, "complete", args, 1, "memory.ok"
+    );
+    assert(ast != NULL);
+
+    ar_list_t *arg_asts = ar_list__create();
+    assert(arg_asts != NULL);
+    assert(ar_list__add_last(arg_asts, ar_expression_ast__create_literal_string("Broken value is {bracey}.")) == true);
+    assert(ar_instruction_ast__set_function_arg_asts(ast, arg_asts) == true);
+
+    ar_data_t *ctx = ar_data__create_map();
+    ar_data_t *msg = ar_data__create_string("");
+    ar_frame_t *fr = ar_frame__create(memory, ctx, msg);
+    assert(fr != NULL);
+
+    bool result = ar_instruction_evaluator__evaluate(evaluator, fr, ast);
+    assert(result == true);
+    assert(ar_data__get_map_integer(memory, "ok") == 0);
+    assert(ar_log__get_last_error_message(log) != NULL);
+
+    ar_frame__destroy(fr);
+    ar_data__destroy(ctx);
+    ar_data__destroy(msg);
+    ar_instruction_ast__destroy(ast);
+    ar_instruction_evaluator__destroy(evaluator);
+    ar_system__destroy(sys);
+    ar_data__destroy(memory);
+    ar_log__destroy(log);
+}
+
 static void test_instruction_evaluator__only_unified_interface_exposed(void) {
     // This test verifies that only the unified evaluate method is exposed
     // and that individual evaluate functions are not accessible
@@ -630,6 +742,7 @@ static void test_instruction_evaluator__unified_evaluate_assignment(void) {
 }
 
 int main(void) {
+    setup_fake_complete_runner();
     printf("Starting instruction_evaluator create/destroy tests...\n");
     
     test_instruction_evaluator__create_destroy();
@@ -652,11 +765,15 @@ int main(void) {
     
     test_instruction_evaluator__unified_evaluate_all_types();
     printf("test_instruction_evaluator__unified_evaluate_all_types passed!\n");
+
+    test_instruction_evaluator__complete_failure_returns_boolean_status();
+    printf("test_instruction_evaluator__complete_failure_returns_boolean_status passed!\n");
     
     test_instruction_evaluator__only_unified_interface_exposed();
     printf("test_instruction_evaluator__only_unified_interface_exposed passed!\n");
     
     printf("All instruction_evaluator create/destroy tests passed!\n");
     
+    cleanup_fake_complete_runner();
     return 0;
 }

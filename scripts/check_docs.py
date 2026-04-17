@@ -51,8 +51,15 @@ def find_documentation_files():
     """Find all documentation files: markdown files, Zig source files, and test files (for comment validation)"""
     doc_files = []
     for root, dirs, files in os.walk("."):
-        # Skip bin and plans directories
-        if "/bin/" in root or root.endswith("/bin") or "/plans/" in root or root.endswith("/plans"):
+        # Skip generated, vendored, and third-party asset directories that are outside
+        # AgeRun's documentation contract.
+        if (
+            "/bin/" in root or root.endswith("/bin") or
+            "/plans/" in root or root.endswith("/plans") or
+            "/llama-cpp/" in root or root.endswith("/llama-cpp") or
+            "/models/" in root or root.endswith("/models") or
+            "/.deps/" in root or root.endswith("/.deps")
+        ):
             continue
         for file in files:
             # Include markdown files (except TODO.md and CHANGELOG.md)

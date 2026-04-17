@@ -1,0 +1,397 @@
+const std = @import("std");
+const ar_allocator = @import("ar_allocator.zig");
+const c = @cImport({
+    @cInclude("ar_complete_instruction_evaluator.h");
+    @cInclude("ar_local_completion.h");
+    @cInclude("ar_expression_ast.h");
+    @cInclude("ar_expression_evaluator.h");
+    @cInclude("ar_instruction_ast.h");
+    @cInclude("ar_data.h");
+    @cInclude("ar_list.h");
+    @cInclude("ar_log.h");
+});
+
+const ar_complete_instruction_evaluator_t = struct {
+    ref_log: ?*c.ar_log_t,
+    ref_expr_evaluator: ?*c.ar_expression_evaluator_t,
+    ref_local_completion: ?*c.ar_local_completion_t,
+};
+
+fn _logError(ref_evaluator: *const ar_complete_instruction_evaluator_t, ref_message: [*:0]const u8) void {
+    if (ref_evaluator.ref_log != null) {
+        c.ar_log__error(ref_evaluator.ref_log, ref_message);
+    }
+}
+
+fn _writeStatus(mut_memory: ?*c.ar_data_t, ref_ast: ?*const c.ar_instruction_ast_t, status: bool) bool {
+    if (mut_memory == null or ref_ast == null) return false;
+    if (!c.ar_instruction_ast__has_result_assignment(ref_ast)) return true;
+
+    const ref_result_path = c.ar_instruction_ast__get_function_result_path(ref_ast);
+    const own_result = c.ar_data__create_integer(if (status) 1 else 0) orelse return false;
+    if (!c.ar_data__set_map_data_if_root_matched(mut_memory, "memory", ref_result_path, own_result)) {
+        c.ar_data__destroy(own_result);
+        return false;
+    }
+    return true;
+}
+
+fn _handledFailure(
+    ref_evaluator: *const ar_complete_instruction_evaluator_t,
+    mut_memory: ?*c.ar_data_t,
+    ref_ast: ?*const c.ar_instruction_ast_t,
+    ref_message: [*:0]const u8,
+) bool {
+    _logError(ref_evaluator, ref_message);
+    return _writeStatus(mut_memory, ref_ast, false);
+}
+
+fn _handledFailureFromExistingOrFallbackLog(
+    ref_evaluator: *const ar_complete_instruction_evaluator_t,
+    mut_memory: ?*c.ar_data_t,
+    ref_ast: ?*const c.ar_instruction_ast_t,
+    ref_fallback_message: [*:0]const u8,
+) bool {
+    const ref_existing_error = if (ref_evaluator.ref_log != null)
+        c.ar_log__get_last_error_message(ref_evaluator.ref_log)
+    else
+        null;
+
+    if (ref_existing_error == null or std.mem.len(ref_existing_error.?) == 0) {
+        _logError(ref_evaluator, ref_fallback_message);
+    }
+    return _writeStatus(mut_memory, ref_ast, false);
+}
+
+fn _makeCString(ref_text: []const u8, ref_desc: [*:0]const u8) ?[*:0]u8 {
+    const own_text = ar_allocator.alloc(u8, ref_text.len + 1, ref_desc) orelse return null;
+    @memcpy(own_text[0..ref_text.len], ref_text);
+    own_text[ref_text.len] = 0;
+    return @ptrCast(own_text);
+}
+
+fn _extractPlaceholders(ref_template: []const u8, own_names: *std.ArrayList([*:0]u8)) bool {
+    var pos: usize = 0;
+    while (pos < ref_template.len) : (pos += 1) {
+        if (ref_template[pos] == '{') {
+            const start = pos + 1;
+            const end = std.mem.indexOfScalarPos(u8, ref_template, start, '}') orelse return false;
+            const ref_name = ref_template[start..end];
+            var exists = false;
+            for (own_names.items) |ref_existing| {
+                if (std.mem.eql(u8, std.mem.span(ref_existing), ref_name)) {
+                    exists = true;
+                    break;
+                }
+            }
+            if (!exists) {
+                const own_name = _makeCString(ref_name, "complete_placeholder_name") orelse return false;
+                own_names.append(own_name) catch {
+                    ar_allocator.free(own_name);
+                    return false;
+                };
+            }
+            pos = end;
+        }
+    }
+    return own_names.items.len > 0;
+}
+
+fn _hasInvalidGeneratedCharacters(ref_text: []const u8) bool {
+    if (ref_text.len == 0) return true;
+    if (std.ascii.isWhitespace(ref_text[0]) or std.ascii.isWhitespace(ref_text[ref_text.len - 1])) return true;
+    return std.mem.indexOfScalar(u8, ref_text, '{') != null or std.mem.indexOfScalar(u8, ref_text, '}') != null;
+}
+
+fn _getGeneratedValueSlice(ref_values: ?*const c.ar_data_t, ref_name: [*:0]const u8) ?[]const u8 {
+    const ref_value = c.ar_data__get_map_data(ref_values, ref_name) orelse return null;
+    if (c.ar_data__get_type(ref_value) != c.AR_DATA_TYPE__STRING) return null;
+    const ref_text = c.ar_data__get_string(ref_value) orelse return null;
+    const ref_slice = std.mem.span(ref_text);
+    if (_hasInvalidGeneratedCharacters(ref_slice)) return null;
+    return ref_slice;
+}
+
+fn _buildCompletedText(ref_template: []const u8, ref_values: ?*const c.ar_data_t) ?[*:0]u8 {
+    var total_len: usize = 0;
+    var pos: usize = 0;
+    while (pos < ref_template.len) {
+        if (ref_template[pos] == '{') {
+            const start = pos + 1;
+            const end = std.mem.indexOfScalarPos(u8, ref_template, start, '}') orelse return null;
+            const own_name = _makeCString(ref_template[start..end], "complete_placeholder_lookup") orelse return null;
+            defer ar_allocator.free(own_name);
+            const ref_value_slice = _getGeneratedValueSlice(ref_values, own_name) orelse return null;
+            total_len += ref_value_slice.len;
+            pos = end + 1;
+        } else {
+            total_len += 1;
+            pos += 1;
+        }
+    }
+
+    const own_buffer = ar_allocator.alloc(u8, total_len + 1, "complete_completed_text") orelse return null;
+    var used: usize = 0;
+    pos = 0;
+    while (pos < ref_template.len) {
+        if (ref_template[pos] == '{') {
+            const start = pos + 1;
+            const end = std.mem.indexOfScalarPos(u8, ref_template, start, '}') orelse {
+                ar_allocator.free(own_buffer);
+                return null;
+            };
+            const own_name = _makeCString(ref_template[start..end], "complete_placeholder_copy") orelse {
+                ar_allocator.free(own_buffer);
+                return null;
+            };
+            defer ar_allocator.free(own_name);
+            const ref_value_slice = _getGeneratedValueSlice(ref_values, own_name) orelse {
+                ar_allocator.free(own_buffer);
+                return null;
+            };
+            @memcpy(own_buffer[used .. used + ref_value_slice.len], ref_value_slice);
+            used += ref_value_slice.len;
+            pos = end + 1;
+        } else {
+            own_buffer[used] = ref_template[pos];
+            used += 1;
+            pos += 1;
+        }
+    }
+    own_buffer[used] = 0;
+    return @ptrCast(own_buffer);
+}
+
+fn _ensureBasePathMaps(mut_memory: ?*c.ar_data_t, ref_base_ast: ?*const c.ar_expression_ast_t) bool {
+    if (mut_memory == null or ref_base_ast == null) return true;
+    const count = c.ar_expression_ast__get_memory_path_count(ref_base_ast);
+    if (count == 0) return true;
+
+    var total_prefix_len: usize = 0;
+    var index: usize = 0;
+    while (index < count) : (index += 1) {
+        const ref_part = c.ar_expression_ast__get_memory_path_component(ref_base_ast, index) orelse return false;
+        total_prefix_len += std.mem.len(ref_part);
+        if (index > 0) {
+            total_prefix_len += 1;
+        }
+
+        const own_buffer = ar_allocator.alloc(u8, total_prefix_len + 1, "complete_base_path") orelse return false;
+        defer ar_allocator.free(own_buffer);
+
+        var used: usize = 0;
+        var build_index: usize = 0;
+        while (build_index <= index) : (build_index += 1) {
+            const ref_build_part = c.ar_expression_ast__get_memory_path_component(ref_base_ast, build_index) orelse return false;
+            const ref_build_slice = std.mem.span(ref_build_part);
+            if (build_index > 0) {
+                own_buffer[used] = '.';
+                used += 1;
+            }
+            @memcpy(own_buffer[used .. used + ref_build_slice.len], ref_build_slice);
+            used += ref_build_slice.len;
+        }
+        own_buffer[used] = 0;
+
+        const ref_existing = c.ar_data__get_map_data(mut_memory, @ptrCast(own_buffer));
+        if (ref_existing == null) {
+            const own_map = c.ar_data__create_map() orelse return false;
+            if (!c.ar_data__set_map_data(mut_memory, @ptrCast(own_buffer), own_map)) {
+                c.ar_data__destroy(own_map);
+                return false;
+            }
+        } else if (c.ar_data__get_type(ref_existing) != c.AR_DATA_TYPE__MAP) {
+            return false;
+        }
+    }
+    return true;
+}
+
+fn _buildTargetPath(ref_base_ast: ?*const c.ar_expression_ast_t, ref_name: [*:0]const u8) ?[*:0]u8 {
+    if (ref_base_ast == null) return ar_allocator.dupe(ref_name, "complete_target_path");
+
+    const count = c.ar_expression_ast__get_memory_path_count(ref_base_ast);
+    var total_len: usize = std.mem.len(ref_name);
+    var index: usize = 0;
+    while (index < count) : (index += 1) {
+        const ref_part = c.ar_expression_ast__get_memory_path_component(ref_base_ast, index) orelse return null;
+        total_len += std.mem.len(ref_part) + 1;
+    }
+
+    const own_buffer = ar_allocator.alloc(u8, total_len + 1, "complete_target_path_buffer") orelse return null;
+    var used: usize = 0;
+    index = 0;
+    while (index < count) : (index += 1) {
+        const ref_part = c.ar_expression_ast__get_memory_path_component(ref_base_ast, index) orelse {
+            ar_allocator.free(own_buffer);
+            return null;
+        };
+        const ref_part_slice = std.mem.span(ref_part);
+        @memcpy(own_buffer[used .. used + ref_part_slice.len], ref_part_slice);
+        used += ref_part_slice.len;
+        own_buffer[used] = '.';
+        used += 1;
+    }
+    const ref_name_slice = std.mem.span(ref_name);
+    @memcpy(own_buffer[used .. used + ref_name_slice.len], ref_name_slice);
+    used += ref_name_slice.len;
+    own_buffer[used] = 0;
+    return @ptrCast(own_buffer);
+}
+
+export fn ar_complete_instruction_evaluator__create(
+    ref_log: ?*c.ar_log_t,
+    ref_expr_evaluator: ?*c.ar_expression_evaluator_t,
+    ref_local_completion: ?*c.ar_local_completion_t,
+) ?*ar_complete_instruction_evaluator_t {
+    if (ref_expr_evaluator == null or ref_local_completion == null) return null;
+    const own_evaluator = ar_allocator.create(ar_complete_instruction_evaluator_t, "complete_instruction_evaluator") orelse return null;
+    own_evaluator.ref_log = ref_log;
+    own_evaluator.ref_expr_evaluator = ref_expr_evaluator;
+    own_evaluator.ref_local_completion = ref_local_completion;
+    return own_evaluator;
+}
+
+export fn ar_complete_instruction_evaluator__destroy(own_evaluator: ?*ar_complete_instruction_evaluator_t) void {
+    if (own_evaluator == null) return;
+    ar_allocator.free(own_evaluator);
+}
+
+export fn ar_complete_instruction_evaluator__evaluate(
+    ref_evaluator: ?*const ar_complete_instruction_evaluator_t,
+    ref_frame: ?*const c.ar_frame_t,
+    ref_ast: ?*const c.ar_instruction_ast_t,
+) bool {
+    if (ref_evaluator == null or ref_frame == null or ref_ast == null) return false;
+    if (c.ar_instruction_ast__get_type(ref_ast) != c.AR_INSTRUCTION_AST_TYPE__COMPLETE) return false;
+
+    const mut_memory = c.ar_frame__get_memory(ref_frame) orelse return false;
+    if (ref_evaluator.?.ref_log != null) {
+        c.ar_log__error(ref_evaluator.?.ref_log, null);
+    }
+
+    const ref_arg_asts = c.ar_instruction_ast__get_function_arg_asts(ref_ast) orelse
+        return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() requires parsed argument ASTs");
+    const arg_count = c.ar_list__count(ref_arg_asts);
+    if (arg_count < 1 or arg_count > 2) {
+        return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() expects one or two arguments");
+    }
+    const own_items = c.ar_list__items(ref_arg_asts) orelse
+        return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() could not enumerate argument ASTs");
+    defer ar_allocator.free(own_items);
+
+    const ref_template_ast: ?*const c.ar_expression_ast_t = @ptrCast(own_items[0]);
+    const ref_base_ast: ?*const c.ar_expression_ast_t = if (arg_count == 2) @ptrCast(own_items[1]) else null;
+
+    const template_result = c.ar_expression_evaluator__evaluate(ref_evaluator.?.ref_expr_evaluator, ref_frame, ref_template_ast);
+    const own_template_data = c.ar_data__claim_or_copy(template_result, ref_evaluator) orelse
+        return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() template must evaluate to a string value");
+    defer c.ar_data__destroy(own_template_data);
+    if (c.ar_data__get_type(own_template_data) != c.AR_DATA_TYPE__STRING) {
+        return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() template must evaluate to a string value");
+    }
+    const ref_template = c.ar_data__get_string(own_template_data) orelse
+        return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() template string could not be read");
+
+    var own_placeholders = std.ArrayList([*:0]u8).init(std.heap.c_allocator);
+    defer {
+        for (own_placeholders.items) |own_name| ar_allocator.free(own_name);
+        own_placeholders.deinit();
+    }
+    if (!_extractPlaceholders(std.mem.span(ref_template), &own_placeholders)) {
+        return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() template must contain one or more placeholders");
+    }
+
+    const own_placeholder_list = c.ar_list__create() orelse
+        return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() could not stage placeholder names");
+    defer c.ar_list__destroy(own_placeholder_list);
+    for (own_placeholders.items) |own_name| {
+        if (!c.ar_list__add_last(own_placeholder_list, own_name)) {
+            return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() could not stage placeholder names");
+        }
+    }
+
+    const own_generated_values = c.ar_local_completion__complete(
+        ref_evaluator.?.ref_local_completion,
+        ref_template,
+        own_placeholder_list,
+        15000,
+    ) orelse return _handledFailureFromExistingOrFallbackLog(
+        ref_evaluator.?,
+        mut_memory,
+        ref_ast,
+        "complete() local completion failed",
+    );
+    defer c.ar_data__destroy(own_generated_values);
+
+    var target_paths = std.ArrayList([*:0]u8).init(std.heap.c_allocator);
+    defer {
+        for (target_paths.items) |own_path| ar_allocator.free(own_path);
+        target_paths.deinit();
+    }
+    var staged_values = std.ArrayList([*:0]u8).init(std.heap.c_allocator);
+    defer {
+        for (staged_values.items) |own_value| ar_allocator.free(own_value);
+        staged_values.deinit();
+    }
+
+    for (own_placeholders.items) |ref_name| {
+        const ref_value_slice = _getGeneratedValueSlice(own_generated_values, ref_name) orelse
+            return _handledFailure(
+                ref_evaluator.?,
+                mut_memory,
+                ref_ast,
+                "complete() generated values must be non-empty strings with no leading/trailing whitespace or braces",
+            );
+        const own_copy = _makeCString(ref_value_slice, "complete_staged_value") orelse
+            return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() could not stage generated values");
+        const own_path = _buildTargetPath(ref_base_ast, ref_name) orelse {
+            ar_allocator.free(own_copy);
+            return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() could not resolve generated target paths");
+        };
+        staged_values.append(own_copy) catch {
+            ar_allocator.free(own_copy);
+            ar_allocator.free(own_path);
+            return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() could not stage generated values");
+        };
+        target_paths.append(own_path) catch {
+            _ = staged_values.pop();
+            ar_allocator.free(own_copy);
+            ar_allocator.free(own_path);
+            return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() could not stage generated values");
+        };
+    }
+
+    const own_completed_text = _buildCompletedText(std.mem.span(ref_template), own_generated_values) orelse
+        return _handledFailure(
+            ref_evaluator.?,
+            mut_memory,
+            ref_ast,
+            "complete() generated values do not fit the requested template",
+        );
+    defer ar_allocator.free(own_completed_text);
+
+    if (!_ensureBasePathMaps(mut_memory, ref_base_ast)) {
+        return _handledFailure(
+            ref_evaluator.?,
+            mut_memory,
+            ref_ast,
+            "complete() base path must resolve to maps before writing generated values",
+        );
+    }
+
+    var index: usize = 0;
+    while (index < target_paths.items.len) : (index += 1) {
+        const own_value = c.ar_data__create_string(staged_values.items[index]) orelse return false;
+        if (!c.ar_data__set_map_data(mut_memory, target_paths.items[index], own_value)) {
+            c.ar_data__destroy(own_value);
+            return false;
+        }
+    }
+
+    if (!_writeStatus(mut_memory, ref_ast, true)) {
+        return false;
+    }
+
+    return true;
+}
