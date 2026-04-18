@@ -84,6 +84,99 @@ Failure requirements:
 - configuration and runtime-discovery errors are surfaced as actionable runtime failures
 - if `AGERUN_COMPLETE_RUNNER` is set, runner spawn/read/exit failures are normalized into the same actionable failure-shape used by the direct backend
 
+## Performance Validation Fixture Set
+
+The first-release short-template validation fixture set contains exactly these 20 templates:
+
+1. `The largest country in South America is {country}.`
+2. `The capital of Brazil is {city}.`
+3. `The capital of Argentina is {city}.`
+4. `The capital of Chile is {city}.`
+5. `The capital of Peru is {city}.`
+6. `The capital of Colombia is {city}.`
+7. `The capital of Uruguay is {city}.`
+8. `The capital of Paraguay is {city}.`
+9. `The capital of Japan is {city}.`
+10. `The capital of Canada is {city}.`
+11. `The capital of Australia is {city}.`
+12. `The official language of Brazil is {language}.`
+13. `The official language of Argentina is {language}.`
+14. `The Amazon rainforest is in {continent}.`
+15. `The Nile river is in {continent}.`
+16. `France is in {continent}.`
+17. `Egypt is in {continent}.`
+18. `Brasilia is the capital of {country}.`
+19. `Brasilia is the capital of {country} in {continent}.`
+20. `The capital of Brazil is {city}. {city} remains the capital.`
+
+Fixture rules:
+- every template is at most 120 characters
+- every template uses at most 2 placeholder occurrences
+- odd/even execution alternates one-argument and two-argument evaluator forms so top-level and nested writes both remain in scope
+- fixture 20 is the repeated-placeholder latency case for SC-002f
+
+## Validation Procedure
+
+Use `make complete-performance-validation 2>&1` on a supported environment with no other active
+`complete(...)` evaluation.
+
+The documented procedure is:
+- **Runtime warm support check**: run `ar_local_completion_tests` with
+  `AGERUN_LOCAL_COMPLETION_SUBTEST=real_phi3_fixture_set_warm_run_support` to confirm the 20
+  templates all receive structured placeholder values from an already initialized runtime
+- **Evaluator cold-start check**: run `ar_complete_instruction_evaluator_tests` in 20 separate
+  cold-start subprocesses using `AGERUN_COMPLETE_EVALUATOR_SUBTEST=performance_cold_fixture` plus
+  `AGERUN_COMPLETE_EVALUATOR_FIXTURE_INDEX=<0..19>` so each measured call includes a fresh
+  evaluator/runtime instance and the first model load for that instance
+- **Evaluator warm-run check**: run `ar_complete_instruction_evaluator_tests` with
+  `AGERUN_COMPLETE_EVALUATOR_SUBTEST=performance_warm_fixture_set` so the runtime is warmed once
+  and then the same evaluator executes the full 20-template fixture set across the complete
+  instruction path (generation, validation, error reporting, and atomic writes)
+- **Invalid-before-generation fast-fail**: verify separately with
+  `test_complete_instruction_evaluator__invalid_template_fast_failure_does_not_initialize_runtime`
+  and `test_local_completion__invalid_before_generation_rejects_without_runtime_initialization`
+- **Partial-generation waiting-limit treatment**: verify separately with
+  `test_local_completion__partial_generation_missing_placeholder_failure_is_actionable` and
+  `test_complete_instruction_evaluator__missing_placeholder_response_keeps_memory_clean`
+- **Immediate post-failure scheduling readiness**: verify separately with
+  `test_instruction_evaluator__normal_work_continues_after_complete_failure`
+
+Interpretation rules:
+- evaluator timings are the authoritative SC-002 / SC-002a measurements because they cover the full
+  instruction path and stop before the runtime begins the next queued message
+- runtime-only timings are diagnostic support for backend behavior, not the final acceptance metric
+- the validation assumes at most one active `complete(...)` evaluation at a time
+- environments below the documented minimum baseline, or heavier local-runtime conditions than this
+  procedure, retain failure-safety guarantees but do not retain SC-002 / SC-002a timing guarantees
+
+## Minimum Validation Baseline
+
+The documented first-release validation baseline is:
+- **macOS**: Apple silicon, 14 logical CPU cores, 36 GiB RAM, local SSD-backed model/runtime files
+- **Linux**: CPU-only host meeting or exceeding 14 logical CPU cores, 36 GiB RAM, and local
+  SSD-backed model/runtime files, using the same vendored `libllama` build shape and model asset
+
+## Recorded Results
+
+### macOS validation (executed 2026-04-17)
+
+Environment:
+- macOS 26.4.1 (`arm64`)
+- Apple M3 Max
+- 14 logical CPU cores
+- 36 GiB RAM
+- vendored CPU-only `libllama`
+- local `models/phi-3-mini-q4.gguf`
+
+Observed results from `make complete-performance-validation 2>&1`:
+- runtime warm support summary: `fixtures=20 success=20 under_15000ms=20 avg=2682 ms max=10061 ms`
+- evaluator cold-start summary: `fixtures=20 success=20 under_30000ms=20 avg=3573 ms max=10969 ms`
+- evaluator warm-run summary: `fixtures=20 success=20 under_15000ms=20 avg=2760 ms max=10421 ms`
+
+### Linux validation
+
+- Pending T040 execution in a Linux environment that meets the documented baseline above.
+
 ## Non-Goals
 
 - no remote inference service contract

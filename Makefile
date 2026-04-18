@@ -39,6 +39,7 @@ help:
 	@echo "  make complete-runtime-ready - Build vendored libllama and download phi-3-mini-q4.gguf if missing"
 	@echo "  make download-complete-model - Download phi-3-mini-q4.gguf into models/ if missing"
 	@echo "  make complete-model-smoke - Ensure complete() runtime assets are ready and run the embedded libllama smoke with a cold-start timeout"
+	@echo "  make complete-performance-validation - Run the documented complete() performance validation subtests"
 	@echo "  make print-llama-config - Show vendored llama.cpp source/install paths"
 
 # Output directories for parallel builds
@@ -691,7 +692,7 @@ add-newline:
 		exit 1; \
 	fi
 
-.PHONY: help clean clean-llama-cpp build add-newline check-naming check-docs check-all analyze-exec analyze-tests run-exec run-tests sanitize-exec sanitize-tests tsan-exec tsan-tests install-scan-build print-src print-obj print-llama-config vendor-llama-cpu complete-runtime-ready download-complete-model complete-model-smoke
+.PHONY: help clean clean-llama-cpp build add-newline check-naming check-docs check-all analyze-exec analyze-tests run-exec run-tests sanitize-exec sanitize-tests tsan-exec tsan-tests install-scan-build print-src print-obj print-llama-config vendor-llama-cpu complete-runtime-ready download-complete-model complete-model-smoke complete-performance-validation
 
 # Debug targets
 print-src:
@@ -775,6 +776,22 @@ complete-model-smoke: complete-runtime-ready
 	AGERUN_MEMORY_REPORT="memory_report_ar_local_completion_tests.log" \
 	AGERUN_LOCAL_COMPLETION_SUBTEST=real_phi3_model_smoke \
 	python3 -c 'code = """import os, signal, subprocess, sys\ntimeout = int(sys.argv[1])\nenv = dict(os.environ)\nproc = subprocess.Popen([\"./ar_local_completion_tests\"], start_new_session=True, env=env)\ntry:\n    sys.exit(proc.wait(timeout=timeout))\nexcept subprocess.TimeoutExpired:\n    os.killpg(proc.pid, signal.SIGKILL)\n    print(f\"ERROR: complete-model-smoke exceeded {timeout}s cold-start budget\", file=sys.stderr)\n    sys.exit(124)\n"""; exec(code)' "$(COMPLETE_MODEL_SMOKE_TIMEOUT_SECONDS)"
+
+# Run the documented complete() performance validation subtests
+# Usage: make complete-performance-validation
+complete-performance-validation: complete-runtime-ready
+	$(MAKE) $(RUN_TESTS_DIR)/ar_local_completion_tests 2>&1
+	$(MAKE) $(RUN_TESTS_DIR)/ar_complete_instruction_evaluator_tests 2>&1
+	@cd $(RUN_TESTS_DIR) && \
+	AGERUN_MEMORY_REPORT="memory_report_ar_local_completion_tests.log" \
+	AGERUN_LOCAL_COMPLETION_SUBTEST=real_phi3_fixture_set_warm_run_support \
+	./ar_local_completion_tests
+	@cd $(RUN_TESTS_DIR) && \
+	python3 -c 'code = """import os, re, subprocess, sys\nn = 20\nsuccess = 0\nunder = 0\nelapsed_values = []\nfor index in range(n):\n    env = dict(os.environ)\n    env["AGERUN_MEMORY_REPORT"] = "memory_report_ar_complete_instruction_evaluator_tests.log"\n    env["AGERUN_COMPLETE_EVALUATOR_SUBTEST"] = "performance_cold_fixture"\n    env["AGERUN_COMPLETE_EVALUATOR_FIXTURE_INDEX"] = str(index)\n    proc = subprocess.run(["./ar_complete_instruction_evaluator_tests"], capture_output=True, text=True, env=env)\n    sys.stdout.write(proc.stdout)\n    sys.stderr.write(proc.stderr)\n    if proc.returncode != 0:\n        sys.exit(proc.returncode)\n    match = re.search(r"Cold evaluator fixture (\\d+) elapsed=(\\d+) ms success=(yes|no) under_limit=(yes|no)", proc.stdout)\n    if not match:\n        print(f"ERROR: could not parse cold evaluator output for fixture {index+1}", file=sys.stderr)\n        sys.exit(1)\n    elapsed = int(match.group(2))\n    elapsed_values.append(elapsed)\n    if match.group(3) == "yes":\n        success += 1\n    if match.group(4) == "yes":\n        under += 1\navg = sum(elapsed_values) // len(elapsed_values)\nprint(f"Cold evaluator summary: fixtures={n} success={success} under_30000ms={under} avg={avg} ms max={max(elapsed_values)} ms")\nif success < 18 or under < 18:\n    sys.exit(1)\n"""; exec(code)'
+	@cd $(RUN_TESTS_DIR) && \
+	AGERUN_MEMORY_REPORT="memory_report_ar_complete_instruction_evaluator_tests.log" \
+	AGERUN_COMPLETE_EVALUATOR_SUBTEST=performance_warm_fixture_set \
+	./ar_complete_instruction_evaluator_tests
 
 # Show vendored llama.cpp configuration
 print-llama-config:

@@ -1,5 +1,34 @@
 # AgeRun CHANGELOG
 
+## 2026-04-17 (Complete() macOS performance validation and final gates)
+
+- **Added performance fixture validation for `complete(...)` and recorded macOS evidence**
+
+  Added a documented 20-template short-template fixture set for `complete(...)`, introduced
+  dedicated performance-validation subtests and a `make complete-performance-validation` target,
+  executed the full macOS validation procedure, and recorded the resulting warm-run / cold-start
+  timing evidence in the feature contract and quickstart. Also finished the remaining repo-side
+  polish gates by re-running the targeted regression set, documentation validation, sanitizer
+  coverage, and final build/log verification. Linux performance evidence remains pending as the only
+  unfinished final-phase task.
+
+  **Implementation**: Updated `Makefile`, `modules/ar_local_completion_tests.c`,
+  `modules/ar_complete_instruction_evaluator_tests.c`,
+  `specs/003-new-instruction-complete/contracts/local-completion-runtime.md`,
+  `specs/003-new-instruction-complete/quickstart.md`, and
+  `specs/003-new-instruction-complete/tasks.md`.
+
+  **Verification**: `make complete-performance-validation 2>&1`,
+  `make ar_instruction_ast_tests 2>&1`, `make ar_instruction_parser_tests 2>&1`,
+  `make ar_instruction_evaluator_tests 2>&1`, `make ar_complete_instruction_parser_tests 2>&1`,
+  `make ar_complete_instruction_evaluator_tests 2>&1`, `make ar_local_completion_tests 2>&1`,
+  `make check-docs 2>&1`, `make sanitize-tests 2>&1`, `make clean build 2>&1`, and
+  `make check-logs 2>&1`.
+
+  **Impact**: The feature now has executable macOS performance evidence, a repeatable validation
+  target for future Linux execution, and all remaining repository quality gates green except for the
+  still-pending Linux timing evidence task.
+
 ## 2026-04-17 (Complete() failure handling and documentation sync)
 
 - **Completed `complete(...)` User Story 3 and synchronized public/module docs**

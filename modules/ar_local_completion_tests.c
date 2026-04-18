@@ -107,6 +107,60 @@ static void _destroy_placeholder_list(ar_list_t *own_placeholders) {
     ar_list__destroy(own_placeholders);
 }
 
+typedef struct ar_complete_perf_fixture_s {
+    const char *ref_template;
+    const char *ref_first_placeholder;
+    const char *ref_second_placeholder;
+} ar_complete_perf_fixture_t;
+
+static const ar_complete_perf_fixture_t g_complete_perf_fixtures[] = {
+    {"The largest country in South America is {country}.", "country", NULL},
+    {"The capital of Brazil is {city}.", "city", NULL},
+    {"The capital of Argentina is {city}.", "city", NULL},
+    {"The capital of Chile is {city}.", "city", NULL},
+    {"The capital of Peru is {city}.", "city", NULL},
+    {"The capital of Colombia is {city}.", "city", NULL},
+    {"The capital of Uruguay is {city}.", "city", NULL},
+    {"The capital of Paraguay is {city}.", "city", NULL},
+    {"The capital of Japan is {city}.", "city", NULL},
+    {"The capital of Canada is {city}.", "city", NULL},
+    {"The capital of Australia is {city}.", "city", NULL},
+    {"The official language of Brazil is {language}.", "language", NULL},
+    {"The official language of Argentina is {language}.", "language", NULL},
+    {"The Amazon rainforest is in {continent}.", "continent", NULL},
+    {"The Nile river is in {continent}.", "continent", NULL},
+    {"France is in {continent}.", "continent", NULL},
+    {"Egypt is in {continent}.", "continent", NULL},
+    {"Brasilia is the capital of {country}.", "country", NULL},
+    {"Brasilia is the capital of {country} in {continent}.", "country", "continent"},
+    {"The capital of Brazil is {city}. {city} remains the capital.", "city", NULL},
+};
+
+static size_t _count_placeholder_markers(const char *ref_template) {
+    size_t count = 0U;
+    const char *ref_cursor = ref_template;
+    while ((ref_cursor = strchr(ref_cursor, '{')) != NULL) {
+        count += 1U;
+        ref_cursor += 1;
+    }
+    return count;
+}
+
+static void _assert_short_template_fixture(const ar_complete_perf_fixture_t *ref_fixture) {
+    assert(ref_fixture != NULL);
+    assert(ref_fixture->ref_template != NULL);
+    assert(strlen(ref_fixture->ref_template) <= 120U);
+    assert(_count_placeholder_markers(ref_fixture->ref_template) <= 2U);
+}
+
+static void _assert_generated_value_is_clean(const char *ref_text) {
+    assert(ref_text != NULL);
+    assert(strlen(ref_text) > 0U);
+    assert(_string_has_no_outer_whitespace(ref_text) == true);
+    assert(strchr(ref_text, '{') == NULL);
+    assert(strchr(ref_text, '}') == NULL);
+}
+
 static void test_local_completion__create_destroy(void) {
     ar_log_t *own_log = ar_log__create();
     assert(own_log != NULL);
@@ -292,10 +346,7 @@ static void test_local_completion__real_phi3_model_smoke(void) {
     assert(ar_local_completion__is_ready(own_runtime) == true);
     assert(ar_data__get_map_data(own_values, "country") != NULL);
     assert(ar_data__get_map_string(own_values, "country") != NULL);
-    assert(strlen(ar_data__get_map_string(own_values, "country")) > 0U);
-    assert(_string_has_no_outer_whitespace(ar_data__get_map_string(own_values, "country")) == true);
-    assert(strchr(ar_data__get_map_string(own_values, "country"), '{') == NULL);
-    assert(strchr(ar_data__get_map_string(own_values, "country"), '}') == NULL);
+    _assert_generated_value_is_clean(ar_data__get_map_string(own_values, "country"));
 
     printf("Real phi-3 smoke value: country=%s (elapsed=%" PRId64 " ms)\n",
            ar_data__get_map_string(own_values, "country"),
@@ -303,6 +354,104 @@ static void test_local_completion__real_phi3_model_smoke(void) {
 
     ar_data__destroy(own_values);
     _destroy_placeholder_list(own_placeholders);
+    ar_local_completion__destroy(own_runtime);
+    ar_log__destroy(own_log);
+    unsetenv("AGERUN_COMPLETE_MODEL");
+    unsetenv("AGERUN_COMPLETE_RUNNER");
+}
+
+static void test_local_completion__real_phi3_fixture_set_warm_run_support(void) {
+    const char *ref_model_path = "../../models/phi-3-mini-q4.gguf";
+    const int64_t warm_run_limit_ms = 15000;
+    size_t success_count = 0U;
+    size_t under_limit_count = 0U;
+    int64_t max_elapsed_ms = 0;
+    int64_t total_elapsed_ms = 0;
+
+    assert(access(ref_model_path, F_OK) == 0);
+    unsetenv("AGERUN_COMPLETE_RUNNER");
+    assert(setenv("AGERUN_COMPLETE_MODEL", ref_model_path, 1) == 0);
+
+    ar_log_t *own_log = ar_log__create();
+    assert(own_log != NULL);
+    ar_local_completion_t *own_runtime = ar_local_completion__create(own_log);
+    assert(own_runtime != NULL);
+
+    {
+        ar_list_t *own_warmup_placeholders = _create_placeholder_list(
+            g_complete_perf_fixtures[0].ref_first_placeholder,
+            g_complete_perf_fixtures[0].ref_second_placeholder
+        );
+        ar_data_t *own_warmup_values = ar_local_completion__complete(
+            own_runtime,
+            g_complete_perf_fixtures[0].ref_template,
+            own_warmup_placeholders,
+            30000
+        );
+        assert(own_warmup_values != NULL);
+        ar_data__destroy(own_warmup_values);
+        _destroy_placeholder_list(own_warmup_placeholders);
+    }
+
+    for (size_t index = 0U; index < sizeof(g_complete_perf_fixtures) / sizeof(g_complete_perf_fixtures[0]); index += 1U) {
+        const ar_complete_perf_fixture_t *ref_fixture = &g_complete_perf_fixtures[index];
+        _assert_short_template_fixture(ref_fixture);
+
+        ar_list_t *own_placeholders = _create_placeholder_list(
+            ref_fixture->ref_first_placeholder,
+            ref_fixture->ref_second_placeholder
+        );
+        struct timespec own_start = {0};
+        assert(clock_gettime(CLOCK_MONOTONIC, &own_start) == 0);
+        ar_data_t *own_values = ar_local_completion__complete(
+            own_runtime,
+            ref_fixture->ref_template,
+            own_placeholders,
+            warm_run_limit_ms
+        );
+        int64_t elapsed_ms = _elapsed_ms_since(&own_start);
+
+        if (elapsed_ms > max_elapsed_ms) {
+            max_elapsed_ms = elapsed_ms;
+        }
+        total_elapsed_ms += elapsed_ms;
+
+        if (own_values != NULL) {
+            _assert_generated_value_is_clean(
+                ar_data__get_map_string(own_values, ref_fixture->ref_first_placeholder)
+            );
+            if (ref_fixture->ref_second_placeholder != NULL) {
+                _assert_generated_value_is_clean(
+                    ar_data__get_map_string(own_values, ref_fixture->ref_second_placeholder)
+                );
+            }
+            success_count += 1U;
+            ar_data__destroy(own_values);
+        }
+        if (elapsed_ms <= warm_run_limit_ms) {
+            under_limit_count += 1U;
+        }
+
+        printf("Warm runtime fixture %zu elapsed=%" PRId64 " ms success=%s template=%s\n",
+               index + 1U,
+               elapsed_ms,
+               own_values != NULL ? "yes" : "no",
+               ref_fixture->ref_template);
+
+        _destroy_placeholder_list(own_placeholders);
+    }
+
+    printf("Warm runtime summary: fixtures=%zu success=%zu under_%" PRId64 "ms=%zu avg=%" PRId64 " ms max=%" PRId64 " ms\n",
+           sizeof(g_complete_perf_fixtures) / sizeof(g_complete_perf_fixtures[0]),
+           success_count,
+           warm_run_limit_ms,
+           under_limit_count,
+           total_elapsed_ms / (int64_t)(sizeof(g_complete_perf_fixtures) / sizeof(g_complete_perf_fixtures[0])),
+           max_elapsed_ms);
+
+    assert(success_count >= 18U);
+    assert(under_limit_count >= 18U);
+
     ar_local_completion__destroy(own_runtime);
     ar_log__destroy(own_log);
     unsetenv("AGERUN_COMPLETE_MODEL");
@@ -447,6 +596,8 @@ int main(void) {
     if (ref_subtest_name != NULL) {
         if (strcmp(ref_subtest_name, "real_phi3_model_smoke") == 0) {
             test_local_completion__real_phi3_model_smoke();
+        } else if (strcmp(ref_subtest_name, "real_phi3_fixture_set_warm_run_support") == 0) {
+            test_local_completion__real_phi3_fixture_set_warm_run_support();
         } else if (strcmp(ref_subtest_name, "direct_backend_missing_model_file_failure") == 0) {
             test_local_completion__direct_backend_missing_model_file_failure();
         } else if (strcmp(ref_subtest_name, "direct_backend_vocab_only_model_failure") == 0) {

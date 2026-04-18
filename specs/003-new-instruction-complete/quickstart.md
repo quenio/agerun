@@ -153,6 +153,65 @@ make clean build 2>&1
 make check-logs
 ```
 
+## 7. Run the documented short-template performance validation
+
+```bash
+make complete-performance-validation 2>&1
+```
+
+The documented 20-template fixture set is:
+1. `The largest country in South America is {country}.`
+2. `The capital of Brazil is {city}.`
+3. `The capital of Argentina is {city}.`
+4. `The capital of Chile is {city}.`
+5. `The capital of Peru is {city}.`
+6. `The capital of Colombia is {city}.`
+7. `The capital of Uruguay is {city}.`
+8. `The capital of Paraguay is {city}.`
+9. `The capital of Japan is {city}.`
+10. `The capital of Canada is {city}.`
+11. `The capital of Australia is {city}.`
+12. `The official language of Brazil is {language}.`
+13. `The official language of Argentina is {language}.`
+14. `The Amazon rainforest is in {continent}.`
+15. `The Nile river is in {continent}.`
+16. `France is in {continent}.`
+17. `Egypt is in {continent}.`
+18. `Brasilia is the capital of {country}.`
+19. `Brasilia is the capital of {country} in {continent}.`
+20. `The capital of Brazil is {city}. {city} remains the capital.`
+
+Execution notes:
+- every template stays within the short-template class (≤120 characters and ≤2 placeholder occurrences)
+- odd/even evaluator executions alternate one-argument and two-argument forms so top-level and nested writes are both measured
+- fixture 20 is the repeated-placeholder latency case
+- invalid-before-generation fast-failure, partial-generation waiting-limit behavior, and immediate
+  post-failure readiness are verified by the dedicated failure-path tests rather than by the timed
+  fixture loop
+- the timing boundary ends when the `complete(...)` instruction returns, before any next queued
+  message begins processing
+- the first-release timing procedure assumes only one active `complete(...)` evaluation at a time
+- below-baseline or heavier-than-documented runtime conditions retain failure-safety guarantees but
+  do not retain the documented timing guarantees
+
+### macOS results recorded on 2026-04-17
+
+Validation baseline used:
+- macOS 26.4.1 (`arm64`)
+- Apple M3 Max
+- 14 logical CPU cores
+- 36 GiB RAM
+- local SSD-backed vendored runtime/model files
+
+Observed results:
+- runtime warm support: `20/20` success, `20/20` under `15000 ms`, `avg=2682 ms`, `max=10061 ms`
+- evaluator cold-start: `20/20` success, `20/20` under `30000 ms`, `avg=3573 ms`, `max=10969 ms`
+- evaluator warm-run: `20/20` success, `20/20` under `15000 ms`, `avg=2760 ms`, `max=10421 ms`
+
+### Linux results
+
+- Pending T040 execution on a Linux host that meets or exceeds the documented CPU-only baseline.
+
 ## Notes for the first implementation
 
 - `complete(...)` writes generated values into `memory...` targets; it does not return a completed sentence

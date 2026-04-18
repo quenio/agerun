@@ -1,8 +1,10 @@
 #include <assert.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <time.h>
 #include <unistd.h>
 #include "ar_complete_instruction_evaluator.h"
 #include "ar_local_completion.h"
@@ -46,6 +48,59 @@ static void _cleanup_fake_runner(void) {
     if (g_model_path[0] != '\0') {
         remove(g_model_path);
     }
+}
+
+typedef struct ar_complete_perf_fixture_s {
+    const char *ref_template;
+    const char *ref_first_placeholder;
+    const char *ref_second_placeholder;
+} ar_complete_perf_fixture_t;
+
+static const ar_complete_perf_fixture_t g_complete_perf_fixtures[] = {
+    {"The largest country in South America is {country}.", "country", NULL},
+    {"The capital of Brazil is {city}.", "city", NULL},
+    {"The capital of Argentina is {city}.", "city", NULL},
+    {"The capital of Chile is {city}.", "city", NULL},
+    {"The capital of Peru is {city}.", "city", NULL},
+    {"The capital of Colombia is {city}.", "city", NULL},
+    {"The capital of Uruguay is {city}.", "city", NULL},
+    {"The capital of Paraguay is {city}.", "city", NULL},
+    {"The capital of Japan is {city}.", "city", NULL},
+    {"The capital of Canada is {city}.", "city", NULL},
+    {"The capital of Australia is {city}.", "city", NULL},
+    {"The official language of Brazil is {language}.", "language", NULL},
+    {"The official language of Argentina is {language}.", "language", NULL},
+    {"The Amazon rainforest is in {continent}.", "continent", NULL},
+    {"The Nile river is in {continent}.", "continent", NULL},
+    {"France is in {continent}.", "continent", NULL},
+    {"Egypt is in {continent}.", "continent", NULL},
+    {"Brasilia is the capital of {country}.", "country", NULL},
+    {"Brasilia is the capital of {country} in {continent}.", "country", "continent"},
+    {"The capital of Brazil is {city}. {city} remains the capital.", "city", NULL},
+};
+
+static int64_t _elapsed_ms_since(const struct timespec *ref_start) {
+    struct timespec own_now = {0};
+    assert(clock_gettime(CLOCK_MONOTONIC, &own_now) == 0);
+    return (int64_t)(own_now.tv_sec - ref_start->tv_sec) * 1000 +
+           (int64_t)(own_now.tv_nsec - ref_start->tv_nsec) / 1000000;
+}
+
+static size_t _count_placeholder_markers(const char *ref_template) {
+    size_t count = 0U;
+    const char *ref_cursor = ref_template;
+    while ((ref_cursor = strchr(ref_cursor, '{')) != NULL) {
+        count += 1U;
+        ref_cursor += 1;
+    }
+    return count;
+}
+
+static void _assert_short_template_fixture(const ar_complete_perf_fixture_t *ref_fixture) {
+    assert(ref_fixture != NULL);
+    assert(ref_fixture->ref_template != NULL);
+    assert(strlen(ref_fixture->ref_template) <= 120U);
+    assert(_count_placeholder_markers(ref_fixture->ref_template) <= 2U);
 }
 
 static ar_instruction_ast_t* _create_complete_ast(
@@ -365,6 +420,143 @@ static void test_complete_instruction_evaluator__missing_placeholder_response_ke
     ar_evaluator_fixture__destroy(own_fixture);
 }
 
+static void test_complete_instruction_evaluator__performance_cold_fixture(void) {
+    const char *ref_model_path = "../../models/phi-3-mini-q4.gguf";
+    const int64_t cold_start_limit_ms = 30000;
+    const char *ref_index_text = getenv("AGERUN_COMPLETE_EVALUATOR_FIXTURE_INDEX");
+    assert(ref_index_text != NULL);
+    long own_index = strtol(ref_index_text, NULL, 10);
+    assert(own_index >= 0L);
+    assert((size_t)own_index < sizeof(g_complete_perf_fixtures) / sizeof(g_complete_perf_fixtures[0]));
+
+    const ar_complete_perf_fixture_t *ref_fixture = &g_complete_perf_fixtures[(size_t)own_index];
+    _assert_short_template_fixture(ref_fixture);
+
+    assert(access(ref_model_path, F_OK) == 0);
+    unsetenv("AGERUN_COMPLETE_RUNNER");
+    assert(setenv("AGERUN_COMPLETE_MODEL", ref_model_path, 1) == 0);
+
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_complete_instruction_evaluator__performance_cold_fixture");
+    assert(own_fixture != NULL);
+    ar_local_completion_t *own_runtime = ar_local_completion__create(ar_evaluator_fixture__get_log(own_fixture));
+    assert(own_runtime != NULL);
+    ar_complete_instruction_evaluator_t *own_evaluator = ar_complete_instruction_evaluator__create(
+        ar_evaluator_fixture__get_log(own_fixture),
+        ar_evaluator_fixture__get_expression_evaluator(own_fixture),
+        own_runtime
+    );
+    assert(own_evaluator != NULL);
+
+    const char *ref_base_path = (((size_t)own_index) % 2U) == 0U ? NULL : "memory.location";
+    ar_instruction_ast_t *own_ast = _create_complete_ast(ref_fixture->ref_template, ref_base_path, "memory.ok");
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+    struct timespec own_start = {0};
+    assert(clock_gettime(CLOCK_MONOTONIC, &own_start) == 0);
+    bool result = ar_complete_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
+    int64_t elapsed_ms = _elapsed_ms_since(&own_start);
+    bool success = result == true && ar_data__get_map_integer(ar_evaluator_fixture__get_memory(own_fixture), "ok") == 1;
+
+    printf("Cold evaluator fixture %ld elapsed=%" PRId64 " ms success=%s under_limit=%s template=%s\n",
+           own_index + 1L,
+           elapsed_ms,
+           success ? "yes" : "no",
+           elapsed_ms <= cold_start_limit_ms ? "yes" : "no",
+           ref_fixture->ref_template);
+
+    assert(success == true);
+    assert(elapsed_ms <= cold_start_limit_ms);
+
+    ar_instruction_ast__destroy(own_ast);
+    ar_complete_instruction_evaluator__destroy(own_evaluator);
+    ar_local_completion__destroy(own_runtime);
+    ar_evaluator_fixture__destroy(own_fixture);
+    unsetenv("AGERUN_COMPLETE_MODEL");
+}
+
+static void test_complete_instruction_evaluator__performance_warm_fixture_set(void) {
+    const char *ref_model_path = "../../models/phi-3-mini-q4.gguf";
+    const int64_t warm_run_limit_ms = 15000;
+    size_t warm_success_count = 0U;
+    size_t warm_under_limit_count = 0U;
+    int64_t warm_max_ms = 0;
+    int64_t warm_total_ms = 0;
+
+    assert(access(ref_model_path, F_OK) == 0);
+    unsetenv("AGERUN_COMPLETE_RUNNER");
+    assert(setenv("AGERUN_COMPLETE_MODEL", ref_model_path, 1) == 0);
+
+    ar_evaluator_fixture_t *own_warm_fixture = ar_evaluator_fixture__create("test_complete_instruction_evaluator__performance_warm_fixture_set");
+    assert(own_warm_fixture != NULL);
+    ar_local_completion_t *own_warm_runtime = ar_local_completion__create(ar_evaluator_fixture__get_log(own_warm_fixture));
+    assert(own_warm_runtime != NULL);
+    ar_complete_instruction_evaluator_t *own_warm_evaluator = ar_complete_instruction_evaluator__create(
+        ar_evaluator_fixture__get_log(own_warm_fixture),
+        ar_evaluator_fixture__get_expression_evaluator(own_warm_fixture),
+        own_warm_runtime
+    );
+    assert(own_warm_evaluator != NULL);
+
+    {
+        ar_instruction_ast_t *own_warmup_ast = _create_complete_ast(
+            g_complete_perf_fixtures[0].ref_template,
+            NULL,
+            "memory.ok"
+        );
+        ar_frame_t *ref_warmup_frame = ar_evaluator_fixture__create_frame(own_warm_fixture);
+        bool warmup_result = ar_complete_instruction_evaluator__evaluate(own_warm_evaluator, ref_warmup_frame, own_warmup_ast);
+        assert(warmup_result == true);
+        assert(ar_data__get_map_integer(ar_evaluator_fixture__get_memory(own_warm_fixture), "ok") == 1);
+        ar_instruction_ast__destroy(own_warmup_ast);
+    }
+
+    for (size_t index = 0U; index < sizeof(g_complete_perf_fixtures) / sizeof(g_complete_perf_fixtures[0]); index += 1U) {
+        const ar_complete_perf_fixture_t *ref_fixture = &g_complete_perf_fixtures[index];
+        const char *ref_base_path = (index % 2U) == 0U ? NULL : "memory.location";
+        ar_instruction_ast_t *own_ast = _create_complete_ast(ref_fixture->ref_template, ref_base_path, "memory.ok");
+        ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_warm_fixture);
+        struct timespec own_start = {0};
+        assert(clock_gettime(CLOCK_MONOTONIC, &own_start) == 0);
+        bool result = ar_complete_instruction_evaluator__evaluate(own_warm_evaluator, ref_frame, own_ast);
+        int64_t elapsed_ms = _elapsed_ms_since(&own_start);
+        bool success = result == true && ar_data__get_map_integer(ar_evaluator_fixture__get_memory(own_warm_fixture), "ok") == 1;
+
+        warm_total_ms += elapsed_ms;
+        if (elapsed_ms > warm_max_ms) {
+            warm_max_ms = elapsed_ms;
+        }
+        if (success) {
+            warm_success_count += 1U;
+        }
+        if (elapsed_ms <= warm_run_limit_ms) {
+            warm_under_limit_count += 1U;
+        }
+
+        printf("Warm evaluator fixture %zu elapsed=%" PRId64 " ms success=%s template=%s\n",
+               index + 1U,
+               elapsed_ms,
+               success ? "yes" : "no",
+               ref_fixture->ref_template);
+
+        ar_instruction_ast__destroy(own_ast);
+    }
+
+    printf("Warm evaluator summary: fixtures=%zu success=%zu under_%" PRId64 "ms=%zu avg=%" PRId64 " ms max=%" PRId64 " ms\n",
+           sizeof(g_complete_perf_fixtures) / sizeof(g_complete_perf_fixtures[0]),
+           warm_success_count,
+           warm_run_limit_ms,
+           warm_under_limit_count,
+           warm_total_ms / (int64_t)(sizeof(g_complete_perf_fixtures) / sizeof(g_complete_perf_fixtures[0])),
+           warm_max_ms);
+
+    assert(warm_success_count >= 18U);
+    assert(warm_under_limit_count >= 18U);
+
+    ar_complete_instruction_evaluator__destroy(own_warm_evaluator);
+    ar_local_completion__destroy(own_warm_runtime);
+    ar_evaluator_fixture__destroy(own_warm_fixture);
+    unsetenv("AGERUN_COMPLETE_MODEL");
+}
+
 static void test_complete_instruction_evaluator__repeated_placeholders_use_one_consistent_value(void) {
     ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_complete_instruction_evaluator__repeated_placeholders_use_one_consistent_value");
     assert(own_fixture != NULL);
@@ -409,8 +601,22 @@ static void test_complete_instruction_evaluator__repeated_placeholders_use_one_c
 }
 
 int main(void) {
-    _setup_fake_runner();
+    const char *ref_subtest_name = getenv("AGERUN_COMPLETE_EVALUATOR_SUBTEST");
+
     printf("Running complete instruction evaluator tests...\n");
+    if (ref_subtest_name != NULL) {
+        if (strcmp(ref_subtest_name, "performance_cold_fixture") == 0) {
+            test_complete_instruction_evaluator__performance_cold_fixture();
+        } else if (strcmp(ref_subtest_name, "performance_warm_fixture_set") == 0) {
+            test_complete_instruction_evaluator__performance_warm_fixture_set();
+        } else {
+            assert(false && "Unknown AGERUN_COMPLETE_EVALUATOR_SUBTEST value");
+        }
+        printf("Complete instruction evaluator subtest passed: %s\n", ref_subtest_name);
+        return 0;
+    }
+
+    _setup_fake_runner();
     test_complete_instruction_evaluator__create_destroy();
     test_complete_instruction_evaluator__evaluate_top_level_success();
     test_complete_instruction_evaluator__evaluate_nested_success_overwrites_existing_values();
