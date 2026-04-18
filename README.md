@@ -9,6 +9,7 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
 - **Versioning System**: Method definitions are versioned with backward compatibility.
 - **Persistence**: Methodology (method definitions) and agency (agents with their state) can be persisted and restored.
 - **Dynamic Agent Creation**: Agents can create other agents at runtime.
+- **Local Completion Instruction**: `complete(...)` can populate `memory...` variables from a local CPU-only language model with atomic success/failure semantics.
 - **Interactive Shell**: `arsh` provides a terminal shell for spawning agents, storing shell-session values, sending messages, observing replies, and exiting cleanly on EOF / Ctrl-D.
 - **Minimal Memory Footprint**: Designed to be lightweight and efficient.
 
@@ -139,6 +140,20 @@ int main(void) {
 printf 'memory.prompt := "Ready"\nmemory.echo_id := spawn("echo", "1.0.0", context)\nsend(memory.echo_id, memory.prompt)\n' | make run-shell 2>&1
 ```
 
+### Local Completion (`complete(...)`)
+
+```text
+memory.ok := complete("The capital of Brazil is {city}.", memory.location)
+memory.reply := build("ok={ok} city={city}", memory.location)
+send(message.sender, memory.reply)
+```
+
+Completion behavior highlights:
+- one-argument calls write `{name}` to `memory.name`
+- two-argument calls write under the supplied direct `memory...` base path
+- successful calls write all generated string values atomically
+- failed calls return `false`, record actionable diagnostics, and preserve prior memory values
+
 Shell behavior highlights:
 - each entered line is wrapped as `{text = ...}` and delivered to the built-in `shell` method unless it is a built-in shell inspection command
 - interactive terminal sessions label transcripts with `IN: ` prompts and `OUT: ` output prefixes
@@ -205,6 +220,7 @@ Agents use a simple expression and instruction language for their methods:
 
 - `parse(template, input)`: Extract values from input based on template placeholders
 - `build(template, values)`: Build a string by inserting values into template placeholders
+- `complete(template[, memory.path])`: Populate placeholder values directly into `memory...` targets and return boolean success/failure
 
 ### Messaging
 
@@ -227,8 +243,9 @@ Agents use a simple expression and instruction language for their methods:
 ### Agent Management
 
 - `compile(method_name, instructions, version)`: Define a new method with semantic versioning
-- `create(method_name, version, context)`: Create a new agent using a method with specific version
-- `destroy(agent_id)`: Destroy an agent
+- `spawn(method_name, version, context)`: Create a new agent using a method with specific version
+- `exit(agent_id)`: Destroy an agent
+- `deprecate(method_name, version)`: Remove an existing method version from the methodology
 
 ## Documentation
 

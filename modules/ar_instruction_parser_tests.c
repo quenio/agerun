@@ -186,6 +186,22 @@ static void test_instruction_parser__parse_build(void) {
     ar_instruction_parser__destroy(own_parser);
 }
 
+static void test_instruction_parser__parse_complete(void) {
+    printf("Testing unified parse method for complete instruction...\n");
+
+    const char *instruction = "complete(\"The largest country in South America is {country}.\")";
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    assert(own_parser != NULL);
+
+    ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
+
+    assert(own_ast != NULL);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__COMPLETE);
+
+    ar_instruction_ast__destroy(own_ast);
+    ar_instruction_parser__destroy(own_parser);
+}
+
 static void test_instruction_parser__parse_method(void) {
     printf("Testing unified parse method for compile instruction...\n");
     
@@ -852,6 +868,7 @@ int main(void) {
     test_instruction_parser__parse_if();
     test_instruction_parser__parse_parse();
     test_instruction_parser__parse_build();
+    test_instruction_parser__parse_complete();
     test_instruction_parser__parse_method();
     test_instruction_parser__parse_spawn();
     test_instruction_parser__parse_exit_agent();

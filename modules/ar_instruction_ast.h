@@ -19,7 +19,8 @@ typedef enum {
     AR_INSTRUCTION_AST_TYPE__EXIT,           /* exit(agent_id) - specialized parser */
     AR_INSTRUCTION_AST_TYPE__DEPRECATE,     /* deprecate(method, version) - specialized parser */
     AR_INSTRUCTION_AST_TYPE__PARSE,          /* parse(template, input) */
-    AR_INSTRUCTION_AST_TYPE__BUILD           /* build(template, values) */
+    AR_INSTRUCTION_AST_TYPE__BUILD,          /* build(template, values) */
+    AR_INSTRUCTION_AST_TYPE__COMPLETE        /* complete(template[, memory.path]) */
 } ar_instruction_ast_type_t;
 
 /**

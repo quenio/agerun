@@ -1,5 +1,102 @@
 # AgeRun CHANGELOG
 
+## 2026-04-17 (Complete() Linux containerized performance validation)
+
+- **Recorded Linux containerized timing evidence for `complete(...)` and closed T040**
+
+  Added a repeatable `make complete-performance-validation-linux-container` target backed by a
+  project-controlled Docker image, isolated Linux-specific vendored `libllama` build directories,
+  isolated Linux test output directories, and the required Linux `LD_LIBRARY_PATH` wiring for the
+  embedded runtime. Executed the full 20-template warm-run and cold-start validation procedure in a
+  `linux/arm64` container, recorded the container baseline and timing results in the feature
+  contract and quickstart, and updated the feature task list so T040 is now complete under the
+  approved containerized Linux interpretation.
+
+  **Implementation**: Updated `Makefile`, added
+  `docker/complete-performance-validation/Dockerfile`, and updated
+  `specs/003-new-instruction-complete/contracts/local-completion-runtime.md`,
+  `specs/003-new-instruction-complete/quickstart.md`, and
+  `specs/003-new-instruction-complete/tasks.md`.
+
+  **Verification**: `make complete-performance-validation-linux-container 2>&1`.
+
+  **Impact**: The feature now has both macOS and Linux-containerized performance evidence with a
+  repeatable in-repo validation path for future reruns.
+
+## 2026-04-17 (Complete() macOS performance validation and final gates)
+
+- **Added performance fixture validation for `complete(...)` and recorded macOS evidence**
+
+  Added a documented 20-template short-template fixture set for `complete(...)`, introduced
+  dedicated performance-validation subtests and a `make complete-performance-validation` target,
+  executed the full macOS validation procedure, and recorded the resulting warm-run / cold-start
+  timing evidence in the feature contract and quickstart. Also finished the remaining repo-side
+  polish gates by re-running the targeted regression set, documentation validation, sanitizer
+  coverage, and final build/log verification. Linux performance evidence remains pending as the only
+  unfinished final-phase task.
+
+  **Implementation**: Updated `Makefile`, `modules/ar_local_completion_tests.c`,
+  `modules/ar_complete_instruction_evaluator_tests.c`,
+  `specs/003-new-instruction-complete/contracts/local-completion-runtime.md`,
+  `specs/003-new-instruction-complete/quickstart.md`, and
+  `specs/003-new-instruction-complete/tasks.md`.
+
+  **Verification**: `make complete-performance-validation 2>&1`,
+  `make ar_instruction_ast_tests 2>&1`, `make ar_instruction_parser_tests 2>&1`,
+  `make ar_instruction_evaluator_tests 2>&1`, `make ar_complete_instruction_parser_tests 2>&1`,
+  `make ar_complete_instruction_evaluator_tests 2>&1`, `make ar_local_completion_tests 2>&1`,
+  `make check-docs 2>&1`, `make sanitize-tests 2>&1`, `make clean build 2>&1`, and
+  `make check-logs 2>&1`.
+
+  **Impact**: The feature now has executable macOS performance evidence, a repeatable validation
+  target for future Linux execution, and all remaining repository quality gates green except for the
+  still-pending Linux timing evidence task.
+
+## 2026-04-17 (Complete() failure handling and documentation sync)
+
+- **Completed `complete(...)` User Story 3 and synchronized public/module docs**
+
+  Finished the handled-failure slice for `complete(...)` by adding actionable runtime/evaluator
+  diagnostics with `failure_category`, `cause`, and `recovery_hint`, fast-failing invalid templates
+  and invalid base paths before backend initialization, preserving prior memory on failure, and
+  verifying that later non-`complete(...)` work still succeeds after a handled failure. Also
+  synchronized the public language docs, module docs, research/data-model artifacts, and feature
+  contracts/tasks so the implemented parser/evaluator/runtime behavior matches the documented
+  feature contract.
+
+  **Implementation**: Updated `modules/ar_local_completion.c`,
+  `modules/ar_local_completion_tests.c`, `modules/ar_complete_instruction_evaluator.zig`,
+  `modules/ar_complete_instruction_evaluator_tests.c`, `modules/ar_instruction_evaluator_tests.c`,
+  `modules/ar_complete_instruction_parser.md`, `modules/ar_complete_instruction_evaluator.md`,
+  `modules/ar_local_completion.md`, `modules/ar_instruction_ast.md`,
+  `modules/ar_instruction_parser.md`, `modules/ar_instruction_evaluator.md`, `modules/README.md`,
+  `SPEC.md`, `README.md`, `.specify/memory/pi-agent.md`,
+  `specs/003-new-instruction-complete/contracts/README.md`,
+  `specs/003-new-instruction-complete/contracts/complete-instruction.md`,
+  `specs/003-new-instruction-complete/contracts/local-completion-runtime.md`,
+  `specs/003-new-instruction-complete/data-model.md`,
+  `specs/003-new-instruction-complete/quickstart.md`,
+  `specs/003-new-instruction-complete/research.md`, and
+  `specs/003-new-instruction-complete/tasks.md`.
+
+  **Verification**: `make ar_local_completion_tests 2>&1`,
+  `make ar_complete_instruction_evaluator_tests 2>&1`, `make ar_instruction_evaluator_tests 2>&1`,
+  and `make check-docs 2>&1`.
+
+  **Impact**: `complete(...)` now has documented and tested failure-safety semantics with
+  actionable diagnostics, and the feature artifacts are aligned through the final documentation
+  synchronization steps completed so far.
+
+## 2026-04-17 (Embedded complete() runtime groundwork)
+
+- **Completion instruction groundwork**: Added `complete(...)` AST, parser, evaluator, and local runtime modules with direct embedded `libllama` integration and vendored CPU-only `llama.cpp` infrastructure
+
+  Implemented the first end-to-end `complete(...)` path, including parser/evaluator facade wiring, direct embedded local completion through vendored `libllama`, project-managed Phi-3 model/runtime provisioning, and a real in-process success validation using `phi-3-mini-q4.gguf`. Added task/spec/contract artifacts for feature `003-new-instruction-complete`, synchronized module documentation, and updated build/test infrastructure so complete-runtime assets are prepared once before parallel builds while the common in-process success path is validated in `ar_local_completion_tests`.
+
+  **Implementation**: Added `modules/ar_complete_instruction_parser.h`, `modules/ar_complete_instruction_parser.zig`, `modules/ar_complete_instruction_parser.md`, `modules/ar_complete_instruction_parser_tests.c`, `modules/ar_complete_instruction_evaluator.h`, `modules/ar_complete_instruction_evaluator.zig`, `modules/ar_complete_instruction_evaluator.md`, `modules/ar_complete_instruction_evaluator_tests.c`, `modules/ar_local_completion.c`, `modules/ar_local_completion.h`, `modules/ar_local_completion.md`, `modules/ar_local_completion_tests.c`, `llama-cpp/`, `models/`, and `specs/003-new-instruction-complete/`; updated `Makefile`, `scripts/build.sh`, `scripts/check_docs.py`, `scripts/check_logs.py`, `.gitignore`, `.specify/memory/pi-agent.md`, `modules/ar_instruction_ast.h`, `modules/ar_instruction_ast_tests.c`, `modules/ar_instruction_parser.c`, `modules/ar_instruction_parser_tests.c`, `modules/ar_instruction_evaluator.zig`, `modules/ar_instruction_evaluator.md`, `modules/ar_instruction_evaluator_tests.c`, and the feature contracts/quickstart docs.
+
+  **Impact**: Establishes the embedded local-completion foundation for `complete(...)`, verifies the real success path against the vendored runtime/model, and keeps build infrastructure stable by treating complete-runtime assets as shared repository infrastructure.
+
 ## 2026-04-15 (Workflow coordinator specification package)
 
 - **Planned the boot-launched workflow coordinator as a methods-only feature with YAML workflow definitions**

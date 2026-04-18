@@ -49,6 +49,45 @@ run_job() {
 # Create output directory for logs only
 mkdir -p logs
 
+# Ensure shared complete() runtime assets exist before parallel fan-out
+# This avoids multiple parallel make processes racing on vendored llama.cpp/model setup.
+echo "Preparing complete() runtime assets..."
+if make complete-runtime-ready > "logs/complete-runtime-ready.log" 2>&1; then
+    echo 0 > "logs/complete-runtime-ready.log.exitcode"
+    echo "✓ complete-runtime-ready completed successfully"
+else
+    exitcode=$?
+    echo "$exitcode" > "logs/complete-runtime-ready.log.exitcode"
+    echo "✗ complete-runtime-ready FAILED (exit code: $exitcode)"
+    echo
+    echo "=== Build Results Summary ==="
+    show_results() {
+        local category="$1"
+        shift
+        local logs=("$@")
+
+        echo
+        echo "--- $category ---"
+        for log in "${logs[@]}"; do
+            if [ -f "$log" ]; then
+                name=$(basename "$log" .log)
+                exitcode=$(cat "${log}.exitcode" 2>/dev/null || echo "999")
+                if [ "$exitcode" = "0" ]; then
+                    echo "✓ $name: PASSED"
+                else
+                    echo "✗ $name: FAILED"
+                    echo "  Error details:"
+                    grep -E "(ERROR:|FAILED:|error:|failed)" "$log" 2>/dev/null | head -5 | sed 's/^/    /'
+                fi
+            fi
+        done
+    }
+    show_results "Runtime Preparation" "logs/complete-runtime-ready.log"
+    exit "$exitcode"
+fi
+
+echo
+
 # Launch all jobs in parallel
 echo "Launching parallel builds..."
 run_job "check-naming" "make check-naming" "logs/check-naming.log"
