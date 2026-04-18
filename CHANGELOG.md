@@ -1,5 +1,24 @@
 # AgeRun CHANGELOG
 
+## 2026-04-18 (Workflow method documentation completion)
+
+- **Replaced placeholder workflow method docs with real implementation documentation**
+
+  Completed the missing method documentation for the workflow bootstrap demo by replacing the
+  placeholder markdown files for `workflow-coordinator`, `workflow-definition`, `workflow-item`, and
+  `workflow-reporter` with actual descriptions of inputs, runtime behavior, real method code, and
+  test coverage.
+
+  **Implementation**: Updated `methods/workflow-coordinator-1.0.0.md`,
+  `methods/workflow-definition-1.0.0.md`, `methods/workflow-item-1.0.0.md`, and
+  `methods/workflow-reporter-1.0.0.md`.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: The workflow method set now has complete repository-facing documentation instead of
+  placeholder files, so the shipped workflow demo is documented consistently with the actual
+  implementation.
+
 ## 2026-04-18 (Workflow coordinator boot demo implementation)
 
 - **Implemented the workflow coordinator boot demo and aligned tests/docs with the workflow path**
