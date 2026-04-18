@@ -207,6 +207,8 @@ static void test_workflow_coordinator__waits_for_definition_ready_before_spawnin
     ar_method_fixture__destroy(own_fixture);
     AR_ASSERT(log_file_contains("terminal=completed reason=approved"),
               "Successful run should produce terminal summary");
+    AR_ASSERT(log_file_contains("COMPLETE_TRACE[phase=startup|outcome=advance|reason=approved]"),
+              "Successful run should include highlighted startup complete() trace markers");
     cleanup_fake_runner();
     ar_data__destroy(own_context);
     remove("agerun.log");

@@ -1,5 +1,27 @@
 # AgeRun CHANGELOG
 
+## 2026-04-18 (Workflow logs highlight complete() outcome and reason traces)
+
+- **Added searchable `COMPLETE_TRACE[...]` markers to workflow logs**
+
+  Updated the workflow methods so startup and transition `complete(...)` results can be found
+  directly in visible log lines. The workflow now carries a `complete_trace` field through
+  definition, coordinator, item, and reporter messages, and the reporter appends highlighted
+  `COMPLETE_TRACE[...]` fragments to emitted progress, summary, and startup-failure logs.
+
+  **Implementation**: Updated `methods/workflow-definition-1.0.0.method`,
+  `methods/workflow-coordinator-1.0.0.method`, `methods/workflow-item-1.0.0.method`, and
+  `methods/workflow-reporter-1.0.0.method`; refreshed the corresponding method docs; added and
+  updated workflow method tests to verify the new trace markers.
+
+  **Verification**: `make workflow_definition_tests 2>&1`; `make workflow_reporter_tests 2>&1`;
+  `make workflow_item_tests 2>&1`; `make workflow_coordinator_tests 2>&1`;
+  `make bootstrap_tests 2>&1`.
+
+  **Impact**: Executable and test-run workflow logs now include easily searchable completion traces
+  such as `COMPLETE_TRACE[phase=startup|outcome=advance|reason=approved]` and
+  `COMPLETE_TRACE[phase=transition|outcome=reject|reason=policy_rejected]`.
+
 ## 2026-04-18 (Workflow complete() placeholder usage documentation)
 
 - **Documented how workflow methods use `complete(...)` `outcome` and `reason` values**

@@ -32,6 +32,7 @@ static ar_data_t *create_startup_failure_message(void) {
     ar_data__set_map_string(own_message, "action", "startup_failure");
     ar_data__set_map_string(own_message, "reason", "startup_dependency_unavailable");
     ar_data__set_map_string(own_message, "failure_category", "runtime_unavailable");
+    ar_data__set_map_string(own_message, "complete_trace", "COMPLETE_TRACE[phase=startup|status=failure]");
     return own_message;
 }
 
@@ -48,6 +49,8 @@ static ar_data_t *create_empty_summary_message(void) {
     ar_data__set_map_string(own_message, "terminal_outcome", "rejected");
     ar_data__set_map_string(own_message, "reason", "policy_rejected");
     ar_data__set_map_string(own_message, "text", "");
+    ar_data__set_map_string(own_message, "complete_trace",
+                            "COMPLETE_TRACE[phase=transition|outcome=reject|reason=policy_rejected]");
     return own_message;
 }
 
@@ -129,6 +132,8 @@ static void test_workflow_reporter__builds_fallback_summary_when_text_missing(vo
     ar_method_fixture__destroy(own_fixture);
     AR_ASSERT(log_file_contains("workflow=default_workflow item=demo-item-1 stage=review terminal=rejected"),
               "Reporter should emit fallback summary details");
+    AR_ASSERT(log_file_contains("COMPLETE_TRACE[phase=transition|outcome=reject|reason=policy_rejected]"),
+              "Reporter should highlight complete() trace markers");
     ar_data__destroy(own_context);
     remove("agerun.log");
 }

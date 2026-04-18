@@ -177,6 +177,9 @@ static void test_workflow_definition__prepare_definition_reads_known_file_and_qu
               "Reply should be definition_ready");
     AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "initial_stage"), "intake") == 0,
               "Reply should include initial stage");
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "complete_trace"),
+                     "COMPLETE_TRACE[phase=startup|outcome=advance|reason=probe_ok]") == 0,
+              "Definition ready should carry highlighted startup complete() trace markers");
     ar_data__destroy(own_reply);
 
     ar_method_fixture__destroy(own_fixture);
@@ -303,6 +306,9 @@ static void test_workflow_definition__complete_success_uses_outcome_and_reason(v
               "Fake runner reason should be preserved");
     AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "terminal_outcome"), "rejected") == 0,
               "Reject should produce terminal rejected outcome");
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "complete_trace"),
+                     "COMPLETE_TRACE[phase=transition|outcome=reject|reason=policy_rejected]") == 0,
+              "Transition decision should carry highlighted complete() trace markers");
     ar_data__destroy(own_reply);
 
     ar_method_fixture__destroy(own_fixture);

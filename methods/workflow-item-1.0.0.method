@@ -16,6 +16,7 @@ memory.outcome_is_stay := 0
 memory.apply_advance := 0
 memory.apply_reject := 0
 memory.apply_stay := 0
+memory.complete_trace := "none"
 memory.self_agent_id := if(memory.is_initialize = 1, message.sender, memory.self_agent_id)
 memory.workflow_name := if(memory.is_initialize = 1, message.workflow_name, memory.workflow_name)
 memory.item_id := if(memory.is_initialize = 1, message.item_id, memory.item_id)
@@ -30,9 +31,10 @@ memory.current_status := if(memory.is_initialize = 1, "created", memory.current_
 memory.transition_count := if(memory.is_initialize = 1, 0, memory.transition_count)
 memory.terminal_outcome := if(memory.is_initialize = 1, "", memory.terminal_outcome)
 memory.last_reason := if(memory.is_initialize = 1, "initialized", memory.last_reason)
+memory.complete_trace := if(memory.is_initialize = 1, "none", memory.complete_trace)
 memory.progress_text := build("workflow={workflow_name} item={item_id} stage={current_stage} status={current_status} reason={last_reason}", memory)
-memory.progress_input := build("action=progress workflow_name={workflow_name} item_id={item_id} stage={current_stage} status={current_status} owner={owner} transition_count={transition_count} terminal_outcome={terminal_outcome} reason={last_reason} text={progress_text}", memory)
-memory.progress_payload := parse("action={action} workflow_name={workflow_name} item_id={item_id} stage={stage} status={status} owner={owner} transition_count={transition_count} terminal_outcome={terminal_outcome} reason={reason} text={text}", memory.progress_input)
+memory.progress_input := build("action=progress workflow_name={workflow_name} item_id={item_id} stage={current_stage} status={current_status} owner={owner} transition_count={transition_count} terminal_outcome={terminal_outcome} reason={last_reason} text={progress_text} complete_trace={complete_trace}", memory)
+memory.progress_payload := parse("action={action} workflow_name={workflow_name} item_id={item_id} stage={stage} status={status} owner={owner} transition_count={transition_count} terminal_outcome={terminal_outcome} reason={reason} text={text} complete_trace={complete_trace}", memory.progress_input)
 memory.progress_sent := send(memory.reporter_agent_id * memory.is_initialize, memory.progress_payload)
 memory.auto_input := build("action=auto_progress", memory)
 memory.auto_payload := parse("action={action}", memory.auto_input)
@@ -60,8 +62,8 @@ memory.transition_count := if(memory.advance_active = 1, memory.transition_count
 memory.should_emit_progress := memory.advance_intake + memory.advance_triage
 memory.should_emit_progress := memory.should_emit_progress + memory.advance_active
 memory.progress_text := build("workflow={workflow_name} item={item_id} stage={current_stage} status={current_status} reason={last_reason}", memory)
-memory.progress_input := build("action=progress workflow_name={workflow_name} item_id={item_id} stage={current_stage} status={current_status} owner={owner} transition_count={transition_count} terminal_outcome={terminal_outcome} reason={last_reason} text={progress_text}", memory)
-memory.progress_payload := parse("action={action} workflow_name={workflow_name} item_id={item_id} stage={stage} status={status} owner={owner} transition_count={transition_count} terminal_outcome={terminal_outcome} reason={reason} text={text}", memory.progress_input)
+memory.progress_input := build("action=progress workflow_name={workflow_name} item_id={item_id} stage={current_stage} status={current_status} owner={owner} transition_count={transition_count} terminal_outcome={terminal_outcome} reason={last_reason} text={progress_text} complete_trace={complete_trace}", memory)
+memory.progress_payload := parse("action={action} workflow_name={workflow_name} item_id={item_id} stage={stage} status={status} owner={owner} transition_count={transition_count} terminal_outcome={terminal_outcome} reason={reason} text={text} complete_trace={complete_trace}", memory.progress_input)
 memory.progress_sent := send(memory.reporter_agent_id * memory.should_emit_progress, memory.progress_payload)
 memory.auto_sent := send(memory.self_agent_id * memory.should_emit_progress, memory.auto_payload)
 memory.evaluate_input := build("action=evaluate_transition sender={self_agent_id} workflow_name={workflow_name} stage={current_stage} item_id={item_id} title={title} priority={priority} owner={owner} review_status={review_status} transition_count={transition_count}", memory)
@@ -76,15 +78,16 @@ memory.apply_stay := memory.is_transition_decision * memory.outcome_is_stay
 memory.current_stage := if(memory.apply_advance = 1, message.next_stage, memory.current_stage)
 memory.current_status := if(memory.is_transition_decision = 1, message.status, memory.current_status)
 memory.last_reason := if(memory.is_transition_decision = 1, message.reason, memory.last_reason)
+memory.complete_trace := if(memory.is_transition_decision = 1, message.complete_trace, memory.complete_trace)
 memory.terminal_outcome := if(memory.apply_advance = 1, message.terminal_outcome, memory.terminal_outcome)
 memory.terminal_outcome := if(memory.apply_reject = 1, message.terminal_outcome, memory.terminal_outcome)
 memory.transition_count := if(memory.apply_advance = 1, memory.transition_count + 1, memory.transition_count)
 memory.summary := build("workflow={workflow_name} item={item_id} stage={current_stage} terminal={terminal_outcome} reason={last_reason}", memory)
-memory.summary_input := build("action=summary workflow_name={workflow_name} item_id={item_id} stage={current_stage} status={current_status} owner={owner} transition_count={transition_count} terminal_outcome={terminal_outcome} reason={last_reason} text={summary}", memory)
-memory.summary_payload := parse("action={action} workflow_name={workflow_name} item_id={item_id} stage={stage} status={status} owner={owner} transition_count={transition_count} terminal_outcome={terminal_outcome} reason={reason} text={text}", memory.summary_input)
+memory.summary_input := build("action=summary workflow_name={workflow_name} item_id={item_id} stage={current_stage} status={current_status} owner={owner} transition_count={transition_count} terminal_outcome={terminal_outcome} reason={last_reason} text={summary} complete_trace={complete_trace}", memory)
+memory.summary_payload := parse("action={action} workflow_name={workflow_name} item_id={item_id} stage={stage} status={status} owner={owner} transition_count={transition_count} terminal_outcome={terminal_outcome} reason={reason} text={text} complete_trace={complete_trace}", memory.summary_input)
 memory.summary_sent := send(memory.reporter_agent_id * memory.apply_advance, memory.summary_payload)
 memory.summary_sent := send(memory.reporter_agent_id * memory.apply_reject, memory.summary_payload)
 memory.progress_text := build("workflow={workflow_name} item={item_id} stage={current_stage} status={current_status} reason={last_reason}", memory)
-memory.progress_input := build("action=progress workflow_name={workflow_name} item_id={item_id} stage={current_stage} status={current_status} owner={owner} transition_count={transition_count} terminal_outcome={terminal_outcome} reason={last_reason} text={progress_text}", memory)
-memory.progress_payload := parse("action={action} workflow_name={workflow_name} item_id={item_id} stage={stage} status={status} owner={owner} transition_count={transition_count} terminal_outcome={terminal_outcome} reason={reason} text={text}", memory.progress_input)
+memory.progress_input := build("action=progress workflow_name={workflow_name} item_id={item_id} stage={current_stage} status={current_status} owner={owner} transition_count={transition_count} terminal_outcome={terminal_outcome} reason={last_reason} text={progress_text} complete_trace={complete_trace}", memory)
+memory.progress_payload := parse("action={action} workflow_name={workflow_name} item_id={item_id} stage={stage} status={status} owner={owner} transition_count={transition_count} terminal_outcome={terminal_outcome} reason={reason} text={text} complete_trace={complete_trace}", memory.progress_input)
 memory.progress_sent := send(memory.reporter_agent_id * memory.apply_stay, memory.progress_payload)

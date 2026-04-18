@@ -48,8 +48,13 @@ static ar_data_t *create_initialize_message(int64_t sender, int64_t reporter_age
 static ar_data_t *create_transition_decision(const char *ref_outcome, const char *ref_next_stage,
                                              const char *ref_status, const char *ref_terminal_outcome,
                                              const char *ref_reason, int64_t retryable) {
+    char complete_trace[256];
     ar_data_t *own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Transition decision should be created");
+    AR_ASSERT(snprintf(complete_trace, sizeof(complete_trace),
+                       "COMPLETE_TRACE[phase=transition|outcome=%s|reason=%s]",
+                       ref_outcome, ref_reason) > 0,
+              "Transition complete trace should format");
     ar_data__set_map_string(own_message, "action", "transition_decision");
     ar_data__set_map_string(own_message, "workflow_name", "default_workflow");
     ar_data__set_map_string(own_message, "from_stage", "review");
@@ -61,6 +66,7 @@ static ar_data_t *create_transition_decision(const char *ref_outcome, const char
     ar_data__set_map_integer(own_message, "retryable", (int)retryable);
     ar_data__set_map_string(own_message, "terminal_outcome", ref_terminal_outcome);
     ar_data__set_map_string(own_message, "note", ref_reason);
+    ar_data__set_map_string(own_message, "complete_trace", complete_trace);
     return own_message;
 }
 
@@ -115,6 +121,8 @@ static void test_workflow_item__advance_decision_produces_terminal_summary(void)
     ar_method_fixture__destroy(own_fixture);
     AR_ASSERT(log_file_contains("terminal=completed reason=approved"),
               "Reporter should log terminal summary");
+    AR_ASSERT(log_file_contains("COMPLETE_TRACE[phase=transition|outcome=advance|reason=approved]"),
+              "Reporter should highlight transition complete() trace markers");
     ar_data__destroy(own_context);
     remove("agerun.log");
 }

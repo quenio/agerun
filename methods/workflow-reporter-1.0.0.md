@@ -89,7 +89,8 @@ Expected fields:
 
 Behavior:
 - stores the last progress event metadata
-- forwards `message.text` to the log delegate
+- appends `message.complete_trace` when present and not `none`
+- forwards the resulting visible message to the log delegate
 
 ### `action=summary`
 
@@ -107,6 +108,7 @@ Expected fields:
 Behavior:
 - stores the last summary metadata
 - if `text` is empty, builds a fallback summary string
+- appends `message.complete_trace` when present and not `none`
 - forwards the visible summary text to the log delegate
 
 ### `action=startup_failure`
@@ -117,6 +119,7 @@ Expected fields:
 
 Behavior:
 - builds `workflow_startup_failure reason={reason} failure_category={failure_category}`
+- appends `message.complete_trace` when present and not `none`
 - logs it at `error` level
 - does not invent work-item summary fields
 
@@ -127,6 +130,7 @@ The reporter keeps these values in memory for validation and diagnostics:
 - `last_item_id`
 - `last_reason`
 - `last_message`
+- `complete_trace`
 - `delivery_status`
 
 ## Method Code
@@ -140,7 +144,9 @@ memory.last_item_id := ""
 memory.last_reason := ""
 memory.progress_text := ""
 memory.summary_text := ""
+memory.complete_trace := "none"
 memory.visible_message := ""
+memory.visible_with_trace := ""
 memory.last_message := ""
 memory.log_level := "info"
 memory.delivery_status := ""
@@ -152,6 +158,9 @@ memory.last_item_id := if(memory.is_summary = 1, message.item_id, memory.last_it
 memory.last_reason := if(memory.is_progress = 1, message.reason, memory.last_reason)
 memory.last_reason := if(memory.is_summary = 1, message.reason, memory.last_reason)
 memory.last_reason := if(memory.is_startup_failure = 1, message.reason, memory.last_reason)
+memory.complete_trace := if(memory.is_progress = 1, message.complete_trace, memory.complete_trace)
+memory.complete_trace := if(memory.is_summary = 1, message.complete_trace, memory.complete_trace)
+memory.complete_trace := if(memory.is_startup_failure = 1, message.complete_trace, memory.complete_trace)
 memory.progress_text := if(memory.is_progress = 1, message.text, memory.progress_text)
 memory.fallback_summary_text := build("workflow={workflow_name} item={item_id} stage={stage} terminal={terminal_outcome} reason={reason}", message)
 memory.summary_text := if(memory.is_summary = 1, message.text, memory.summary_text)
@@ -161,6 +170,8 @@ memory.startup_text := build("workflow_startup_failure reason={reason} failure_c
 memory.visible_message := if(memory.is_progress = 1, memory.progress_text, memory.visible_message)
 memory.visible_message := if(memory.is_summary = 1, memory.summary_text, memory.visible_message)
 memory.visible_message := if(memory.is_startup_failure = 1, memory.startup_text, memory.visible_message)
+memory.visible_with_trace := build("{visible_message} {complete_trace}", memory)
+memory.visible_message := if(memory.complete_trace = "none", memory.visible_message, memory.visible_with_trace)
 memory.last_message := memory.visible_message
 memory.log_level := if(memory.is_startup_failure = 1, "error", "info")
 memory.log_input := build("level={log_level} agent_id=0 message={visible_message}", memory)

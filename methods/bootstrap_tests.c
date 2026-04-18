@@ -121,6 +121,8 @@ static void test_bootstrap_runs_workflow_demo_on_boot(void) {
     AR_ASSERT(log_file_contains("stage=intake"), "Workflow demo should log intake progress");
     AR_ASSERT(log_file_contains("terminal=completed reason=approved"),
               "Workflow demo should log terminal summary");
+    AR_ASSERT(log_file_contains("COMPLETE_TRACE[phase=startup|outcome=advance|reason=approved]"),
+              "Workflow demo should log highlighted startup complete() trace markers");
     cleanup_fake_runner();
     ar_data__destroy(own_context);
     remove("agerun.log");

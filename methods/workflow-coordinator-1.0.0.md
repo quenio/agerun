@@ -102,9 +102,11 @@ On `start`, the coordinator:
 Expected fields:
 - `workflow_name`
 - `initial_stage`
+- optional `complete_trace`
 
 On `definition_ready`, the coordinator:
 - records the active workflow metadata
+- preserves the startup `complete_trace` marker from `workflow-definition`
 - marks the run `active`
 - records a non-zero `item_agent_id`
 - sends a `summary` message to `workflow-reporter`
@@ -114,10 +116,12 @@ On `definition_ready`, the coordinator:
 Expected fields:
 - `reason`
 - optional `failure_category`
+- optional `complete_trace`
 
 On `definition_error`, the coordinator:
 - marks the run `startup_failed`
 - preserves the startup failure reason/category
+- preserves any startup `complete_trace` marker from `workflow-definition`
 - sends a `startup_failure` message to `workflow-reporter`
 - leaves `item_agent_id = 0`
 
@@ -134,6 +138,8 @@ The current implementation is intentionally narrow and optimized for the bundled
 - because of that, the bundled executable success log is currently not driven by the
   `workflow-definition` transition `complete(...)` placeholders; those placeholders matter in the
   `evaluate_transition` / `workflow-item` path instead
+- the coordinator now forwards startup `complete(...)` traces into reporter messages, so bundled
+  executable logs include searchable `COMPLETE_TRACE[...]` fragments even on the direct summary path
 - executable behavior is validated through visible log output rather than by inspecting internal
   scheduler details
 
@@ -151,6 +157,7 @@ memory.initialize_workflow_name := ""
 memory.initialize_initial_stage := ""
 memory.startup_failure_reason := ""
 memory.failure_category := ""
+memory.complete_trace := "none"
 memory.item_agent_id := 0
 memory.should_launch := memory.is_start
 memory.self_agent_id := if(memory.should_launch = 1, message.sender, memory.self_agent_id)
@@ -180,6 +187,7 @@ memory.prepare_sent := send(memory.prepare_target, memory.prepare_payload)
 memory.demo_status := if(memory.should_launch = 1, "definition_preparation_started", memory.demo_status)
 memory.initialize_workflow_name := if(memory.is_definition_ready = 1, message.workflow_name, memory.initialize_workflow_name)
 memory.initialize_initial_stage := if(memory.is_definition_ready = 1, message.initial_stage, memory.initialize_initial_stage)
+memory.complete_trace := if(memory.is_definition_ready = 1, message.complete_trace, memory.complete_trace)
 memory.item_agent_id := if(memory.is_definition_ready = 1, memory.reporter_agent_id + 1, memory.item_agent_id)
 memory.run_status := if(memory.is_definition_ready = 1, "active", memory.run_status)
 memory.summary_stage := if(memory.review_status = "approved", "completion", "review")
@@ -187,16 +195,17 @@ memory.summary_terminal := if(memory.review_status = "approved", "completed", "r
 memory.summary_reason := if(memory.review_status = "approved", "approved", "policy_rejected")
 memory.summary_status := if(memory.review_status = "approved", "completed", "rejected")
 memory.summary_text := build("workflow={initialize_workflow_name} item={item_id} stage={summary_stage} terminal={summary_terminal} reason={summary_reason}", memory)
-memory.summary_input := build("action=summary workflow_name={initialize_workflow_name} item_id={item_id} stage={summary_stage} status={summary_status} owner={owner} transition_count=4 terminal_outcome={summary_terminal} reason={summary_reason} text={summary_text}", memory)
-memory.summary_payload := parse("action={action} workflow_name={workflow_name} item_id={item_id} stage={stage} status={status} owner={owner} transition_count={transition_count} terminal_outcome={terminal_outcome} reason={reason} text={text}", memory.summary_input)
+memory.summary_input := build("action=summary workflow_name={initialize_workflow_name} item_id={item_id} stage={summary_stage} status={summary_status} owner={owner} transition_count=4 terminal_outcome={summary_terminal} reason={summary_reason} text={summary_text} complete_trace={complete_trace}", memory)
+memory.summary_payload := parse("action={action} workflow_name={workflow_name} item_id={item_id} stage={stage} status={status} owner={owner} transition_count={transition_count} terminal_outcome={terminal_outcome} reason={reason} text={text} complete_trace={complete_trace}", memory.summary_input)
 memory.summary_target := memory.reporter_agent_id * memory.is_definition_ready
 memory.summary_sent := send(memory.summary_target, memory.summary_payload)
 memory.demo_status := if(memory.is_definition_ready = 1, "workflow_item_initialized", memory.demo_status)
 memory.run_status := if(memory.is_definition_error = 1, "startup_failed", memory.run_status)
 memory.startup_failure_reason := if(memory.is_definition_error = 1, message.reason, memory.startup_failure_reason)
 memory.failure_category := if(memory.is_definition_error = 1, message.failure_category, memory.failure_category)
-memory.startup_input := build("action={startup_action} reason={startup_failure_reason} failure_category={failure_category}", memory)
-memory.startup_payload := parse("action={action} reason={reason} failure_category={failure_category}", memory.startup_input)
+memory.complete_trace := if(memory.is_definition_error = 1, message.complete_trace, memory.complete_trace)
+memory.startup_input := build("action={startup_action} reason={startup_failure_reason} failure_category={failure_category} complete_trace={complete_trace}", memory)
+memory.startup_payload := parse("action={action} reason={reason} failure_category={failure_category} complete_trace={complete_trace}", memory.startup_input)
 memory.startup_target := memory.reporter_agent_id * memory.is_definition_error
 memory.startup_sent := send(memory.startup_target, memory.startup_payload)
 memory.demo_status := if(memory.is_definition_error = 1, message.reason, memory.demo_status)

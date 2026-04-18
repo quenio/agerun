@@ -117,6 +117,8 @@ Behavior:
 - uses the boolean return value as the startup gate: success allows `definition_ready`, failure produces `definition_error`
 - treats generated `reason` as diagnostic context (`last_reason` on success, `startup_dependency_unavailable` on failure)
 - does not currently use generated `outcome` to change startup behavior
+- emits a highlighted `complete_trace` marker in startup replies so downstream workflow logs can
+  surface searchable `COMPLETE_TRACE[...]` fragments
 
 ### `action=evaluate_transition`
 
@@ -138,6 +140,8 @@ Behavior:
   `next_stage`, `status`, and `terminal_outcome`
 - uses `transition_reason` as the explanation propagated in the outgoing `transition_decision`
   message
+- emits a highlighted `complete_trace` marker in the outgoing decision so downstream workflow logs
+  can surface searchable `COMPLETE_TRACE[...]` fragments
 - converts completion/runtime failure into retryable `stay`
 - returns a `transition_decision` message with `next_stage`, `status`, `reason`, `retryable`, and
   `terminal_outcome`
@@ -188,8 +192,11 @@ The method currently uses the generated placeholders differently in its two `com
 - `probe_ok` is the real control signal.
 - Generated `reason` is kept only as diagnostic context via `last_reason` when the probe succeeds.
 - Generated `outcome` is not currently used to affect startup behavior.
+- Successful startup replies now also carry
+  `COMPLETE_TRACE[phase=startup|outcome=...|reason=...]` for searchable log output.
 - Probe failure is surfaced externally as `definition_error` with
-  `reason = startup_dependency_unavailable`.
+  `reason = startup_dependency_unavailable` and a failure marker
+  `COMPLETE_TRACE[phase=startup|status=failure]`.
 
 ### Transition decision evaluation
 - Generated `outcome` becomes `transition_outcome` and drives the workflow branch:
@@ -199,6 +206,9 @@ The method currently uses the generated placeholders differently in its two `com
 - Generated `reason` becomes `transition_reason` and is forwarded in the
   `transition_decision` message so downstream methods can explain the decision in progress/summary
   logs.
+- Outgoing decisions now also carry
+  `COMPLETE_TRACE[phase=transition|outcome=...|reason=...]` so reporter output can be searched for
+  the exact completion-derived values.
 - If `complete(...)` fails, the method preserves workflow continuity by emitting a retryable
   `stay` decision with `reason = complete_transition_failed`.
 
@@ -225,6 +235,8 @@ memory.error_reason := ""
 memory.last_reason := ""
 memory.last_reply_action := ""
 memory.error_category := ""
+memory.startup_complete_trace := "none"
+memory.transition_complete_trace := "none"
 memory.transition_outcome := ""
 memory.transition_reason := ""
 memory.next_stage := ""
@@ -262,14 +274,17 @@ memory.error_flag := if(memory.is_prepare = 0, 0, memory.error_flag)
 memory.error_reason := if(memory.is_invalid_definition = 1, "invalid_definition_schema", memory.error_reason)
 memory.error_reason := if(memory.unknown_definition_flag = 1, "invalid_definition_schema", memory.error_reason)
 memory.error_reason := if(memory.probe_failed_flag = 1, "startup_dependency_unavailable", memory.error_reason)
+memory.startup_complete_trace_input := build("COMPLETE_TRACE[phase=startup|outcome={outcome}|reason={reason}]", memory)
+memory.startup_complete_trace := if(memory.probe_ok = 1, memory.startup_complete_trace_input, memory.startup_complete_trace)
+memory.startup_complete_trace := if(memory.probe_failed_flag = 1, "COMPLETE_TRACE[phase=startup|status=failure]", memory.startup_complete_trace)
 memory.last_reason := if(memory.ready_flag = 1, memory.reason, memory.last_reason)
 memory.last_reason := if(memory.error_flag = 1, memory.error_reason, memory.last_reason)
-memory.ready_input := build("action=definition_ready workflow_name={workflow_name} workflow_version={workflow_version} initial_stage={initial_stage} requires_local_completion={requires_local_completion}", memory)
-memory.ready_payload := parse("action={action} workflow_name={workflow_name} workflow_version={workflow_version} initial_stage={initial_stage} requires_local_completion={requires_local_completion}", memory.ready_input)
+memory.ready_input := build("action=definition_ready workflow_name={workflow_name} workflow_version={workflow_version} initial_stage={initial_stage} requires_local_completion={requires_local_completion} complete_trace={startup_complete_trace}", memory)
+memory.ready_payload := parse("action={action} workflow_name={workflow_name} workflow_version={workflow_version} initial_stage={initial_stage} requires_local_completion={requires_local_completion} complete_trace={complete_trace}", memory.ready_input)
 memory.ready_sent := send(memory.sender_id * memory.ready_flag, memory.ready_payload)
 memory.last_reply_action := if(memory.ready_flag = 1, "definition_ready", memory.last_reply_action)
-memory.error_input := build("action=definition_error reason={error_reason}", memory)
-memory.error_payload := parse("action={action} reason={reason}", memory.error_input)
+memory.error_input := build("action=definition_error reason={error_reason} complete_trace={startup_complete_trace}", memory)
+memory.error_payload := parse("action={action} reason={reason} complete_trace={complete_trace}", memory.error_input)
 memory.error_sent := send(memory.sender_id * memory.error_flag, memory.error_payload)
 memory.last_reply_action := if(memory.error_flag = 1, "definition_error", memory.last_reply_action)
 memory.transition_ok := complete("Workflow transition decision outcome={outcome} reason={reason}.")
@@ -292,8 +307,10 @@ memory.review_terminal := if(message.stage = "review", "completed", "")
 memory.terminal_outcome := if(memory.transition_outcome = "advance", memory.review_terminal, memory.terminal_outcome)
 memory.terminal_outcome := if(memory.transition_outcome = "reject", "rejected", memory.terminal_outcome)
 memory.terminal_outcome := if(memory.transition_outcome = "stay", "", memory.terminal_outcome)
-memory.transition_input := build("action=transition_decision workflow_name={workflow_name} from_stage={from_stage} outcome={transition_outcome} next_stage={next_stage} status={transition_status} validation_clause={validation_clause} reason={transition_reason} retryable={retryable} terminal_outcome={terminal_outcome} note={transition_reason}", memory)
-memory.transition_payload := parse("action={action} workflow_name={workflow_name} from_stage={from_stage} outcome={outcome} next_stage={next_stage} status={status} validation_clause={validation_clause} reason={reason} retryable={retryable} terminal_outcome={terminal_outcome} note={note}", memory.transition_input)
+memory.transition_complete_trace_input := build("COMPLETE_TRACE[phase=transition|outcome={transition_outcome}|reason={transition_reason}]", memory)
+memory.transition_complete_trace := if(memory.is_evaluate = 1, memory.transition_complete_trace_input, memory.transition_complete_trace)
+memory.transition_input := build("action=transition_decision workflow_name={workflow_name} from_stage={from_stage} outcome={transition_outcome} next_stage={next_stage} status={transition_status} validation_clause={validation_clause} reason={transition_reason} retryable={retryable} terminal_outcome={terminal_outcome} note={transition_reason} complete_trace={transition_complete_trace}", memory)
+memory.transition_payload := parse("action={action} workflow_name={workflow_name} from_stage={from_stage} outcome={outcome} next_stage={next_stage} status={status} validation_clause={validation_clause} reason={reason} retryable={retryable} terminal_outcome={terminal_outcome} note={note} complete_trace={complete_trace}", memory.transition_input)
 memory.transition_sent := send(memory.sender_id * memory.is_evaluate, memory.transition_payload)
 memory.describe_input := build("action=describe_result workflow_name={workflow_name} workflow_version={workflow_version} initial_stage={initial_stage} terminal_completed={terminal_completed} terminal_rejected={terminal_rejected} requires_local_completion={requires_local_completion} item_fields={item_fields} stages={stages} transitions={validation_clause} validation_clauses={validation_clause}", memory)
 memory.describe_payload := parse("action={action} workflow_name={workflow_name} workflow_version={workflow_version} initial_stage={initial_stage} terminal_completed={terminal_completed} terminal_rejected={terminal_rejected} requires_local_completion={requires_local_completion} item_fields={item_fields} stages={stages} transitions={transitions} validation_clauses={validation_clauses}", memory.describe_input)
