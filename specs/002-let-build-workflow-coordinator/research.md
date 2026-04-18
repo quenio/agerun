@@ -1,113 +1,71 @@
 # Research: Workflow Coordinator
 
-## Decision 1: Keep the feature logic entirely in AgeRun methods and launch it from `bootstrap`
+## Decision 1: Keep the feature logic in AgeRun methods launched from `bootstrap`
 
-- **Decision**: Implement the workflow coordinator as new AgeRun method assets launched by the
-  existing executable boot flow. Do not add new C feature modules for coordinator, item,
-  definition, or reporter behavior.
-- **Rationale**: The user explicitly constrained this feature to run from the executable's boot
-  method and to be implemented as AgeRun methods rather than as shell-driven or C-driven logic.
-  The runtime already loads `.method` assets and queues the `"__boot__"` message automatically, so
-  the feature can reuse that startup path without new executable behavior.
-- **Alternatives considered**:
-  - Add new C modules for workflow orchestration: rejected because it violates the methods-only
-    requirement.
-  - Drive the feature through `arsh`: rejected because the user explicitly wants boot-driven
-    executable startup, not shell usage.
+- **Decision**: Keep the workflow startup flow in AgeRun methods and launch it from
+  `bootstrap-1.0.0.method`.
+- **Status in implementation**: implemented.
 
-## Decision 2: Represent the workflow definition as a YAML file read through the file delegate
+## Decision 2: Use path-recognized definition assets for the current implementation
 
-- **Decision**: Store the workflow definition in a YAML file and have the workflow methods read that
-  file through the existing file delegate instead of treating the definition as a `.method` asset.
-  Use one bundled default YAML file for the executable demo and at least one alternate YAML file for
-  validation tests.
-- **Rationale**: The user explicitly corrected the earlier assumption and stated that agents can read
-  files through the file delegate. Using YAML keeps the definition separate from the reusable method
-  logic while still honoring the methods-only requirement for the coordinator behavior itself.
-- **Alternatives considered**:
-  - Represent the definition as a `.method` asset: rejected by user feedback.
-  - Parse YAML in new C feature code: rejected because the feature logic must remain in AgeRun
-    methods.
-  - Hard-code the workflow directly into `bootstrap-1.0.0.method`: rejected because the spec and
-    user feedback require a reusable definition artifact that tests can swap out.
+- **Decision**: The original plan targeted YAML read through the file delegate, but the current
+  implementation resolves supported definitions by `definition_path` inside the
+  `workflow-definition` method.
+- **Rationale**: This kept the method implementation small enough to get the feature slices green.
+- **Status in implementation**: implemented as a simplified path-based definition contract.
 
-## Decision 3: Use a four-method runtime pattern: coordinator, item, definition reader/evaluator, and reporter
+## Decision 3: Keep dedicated workflow methods
 
-- **Decision**: Introduce these method roles:
-  - `workflow-coordinator`: boot-time orchestrator that spawns the other workflow agents and seeds
-    one demo work item
-  - `workflow-item`: stateful per-item agent that owns item memory and requests transition decisions
-  - `workflow-definition`: generic definition agent that reads YAML through the file delegate and
-    describes/evaluates the active workflow
-  - `workflow-reporter`: logging/reporting agent that emits progress and final summaries through the
-    existing runtime log delegate
-- **Rationale**: This keeps the reusable workflow state (`workflow-item`) separate from the
-  reusable YAML-backed definition logic (`workflow-definition`) and isolates user-visible output in a
-  dedicated reporter. The resulting pattern is generic enough for future workflow YAML files while
-  still being small enough for a bundled demo.
-- **Alternatives considered**:
-  - Put all behavior into one method: rejected because it couples reusable state handling, YAML
-    definition loading, workflow rules, and reporting into one opaque method.
-  - Keep a coordinator plus definition only: rejected because one reusable work item per agent is a
-    clearer AgeRun pattern and aligns better with future extension.
+- **Decision**: Preserve separate methods for:
+  - `workflow-coordinator`
+  - `workflow-definition`
+  - `workflow-item`
+  - `workflow-reporter`
+- **Status in implementation**: implemented.
 
-## Decision 4: Let the workflow definition method evaluate transitions and return `advance` / `stay` / `reject`
+## Decision 4: Use `complete(...)` for startup probe and transition normalization
 
-- **Decision**: The workflow item will send a transition-evaluation request to the workflow
-  definition agent for its current stage and current item fields. The definition agent will return a
-  single decision describing the validation outcome, next stage (if any), terminal outcome (if any),
-  and progress text.
-- **Rationale**: The clarified spec requires declarative stages, transitions, validation clauses,
-  transition-attached rules, and outcomes limited to `advance`, `stay`, or `reject`. Returning one
-  explicit decision per transition lets the reusable item method stay generic while the definition
-  method owns workflow-specific validation.
-- **Alternatives considered**:
-  - Make the item method interpret arbitrary declarative clauses itself: rejected because the method
-    language has no generic iteration or dynamic field-resolution features suitable for a robust
-    clause interpreter.
-  - Allow custom outcome names: rejected because the clarified spec restricts outcomes to the fixed
-    set `advance`, `stay`, and `reject`.
+- **Decision**: The definition method uses `complete(...)` for:
+  - startup dependency probe
+  - transition decision generation
+- **Rationale**: This preserves the core clarified requirement that `complete(...)` participates in
+  workflow decisions.
+- **Status in implementation**: implemented.
 
-## Decision 5: Model the workflow definition schema as YAML plus a documented runtime message protocol
+## Decision 5: Map in-flight `complete(...)` failures to retryable `stay`
 
-- **Decision**: Document both:
-  - the YAML schema contract that names the required logical elements (metadata, item field schema,
-    stages, transitions, validation clauses, terminal outcomes)
-  - the runtime message contract describing file-read requests plus `describe` and
-    `evaluate_transition` exchanges between the workflow item/coordinator and the generic
-    workflow-definition method
-- **Rationale**: The definition now lives in YAML, but the feature still needs a precise runtime
-  contract describing how methods obtain and use that YAML content through the file delegate.
-- **Alternatives considered**:
-  - Document only the default YAML file shape: rejected because tests must be able to substitute a
-    different workflow definition and still satisfy the same runtime contract.
-  - Document only a human-readable narrative: rejected because planning and testing need precise,
-    parseable message expectations.
+- **Decision**: When transition evaluation fails, normalize the result to:
+  - `outcome = stay`
+  - `retryable = 1`
+  - `reason = complete_transition_failed`
+- **Status in implementation**: implemented.
 
-## Decision 6: Keep the default boot demo short and deterministic while reserving `stay` for tests
+## Decision 6: Use deterministic fake-runner overrides in tests
 
-- **Decision**: The default workflow definition will use a monotonic path that reaches a terminal
-  outcome in one startup run, while alternate test workflow definitions will explicitly exercise the
-  `stay` and `reject` outcomes.
-- **Rationale**: The spec requires a clean boot demo with at least four visible lifecycle
-  checkpoints, but it also requires test coverage for the supported validation outcomes. Keeping the
-  bundled demo deterministic preserves a strong first-run experience without sacrificing validation
-  coverage.
-- **Alternatives considered**:
-  - Make the default demo randomly complete or reject: rejected because it would make executable
-    tests and user expectations unstable.
-  - Force the default demo to exercise every possible outcome: rejected because it would complicate
-    the boot demo and obscure the reusable pattern.
+- **Decision**: Use `AGERUN_COMPLETE_RUNNER` in workflow tests so outcome and reason values stay
+  deterministic.
+- **Status in implementation**: implemented.
 
-## Decision 7: Validation will focus on method tests first, then executable integration tests
+## Decision 7: Favor bounded test scheduling over unbounded queue drains
 
-- **Decision**: Add method-level tests for `bootstrap`, `workflow-coordinator`, `workflow-item`,
-  `workflow-definition`, and `workflow-reporter`, then update executable tests to assert the new
-  boot-time demo output, YAML definition-file reads, and persistence behavior.
-- **Rationale**: This follows the repository's TDD expectations and keeps behavior changes anchored
-  in method fixtures before touching end-to-end executable assertions.
-- **Alternatives considered**:
-  - Test only through `make run-exec`: rejected because it would hide method-level failures and
-    make debugging much slower.
-  - Skip executable coverage because feature logic is in methods: rejected because the user-facing
-    requirement is specifically about the boot-driven executable experience.
+- **Decision**: Replace open-ended `while (process_next_message)` coordinator drains with bounded
+  step-by-step processing in tests.
+- **Rationale**: This exposed real scheduling mistakes instead of hiding them inside apparent
+  hangs.
+- **Status in implementation**: implemented.
+
+## Decision 8: Emit visible startup/intake output directly in simplified executable paths
+
+- **Decision**: For the current implementation, bootstrap emits the intake log line directly and the
+  coordinator success/failure paths hand off visible summary/startup-failure messages directly to
+  the reporter.
+- **Rationale**: This keeps the executable demo behavior visible and testable even while the full
+  workflow-item orchestration is still simpler than the original broader design.
+- **Status in implementation**: implemented.
+
+## Notes
+
+This document now reflects the current implementation choices rather than the broader original plan.
+The method-level slices are green, the executable tests are aligned with the workflow demo, and the
+remaining work is repository-wide validation and any later refinement of the broader orchestration
+model.

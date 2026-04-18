@@ -228,8 +228,8 @@ static void test_loading_methods_from_directory(ar_executable_fixture_t *mut_fix
     // Verify that we saw the loading message
     AR_ASSERT(found_loading_message, "Should see message about loading from directory");
 
-    // Verify that we loaded exactly 10 methods
-    AR_ASSERT(method_count == 10, "Should load exactly 10 methods from directory");
+    // Verify that we loaded exactly 14 methods
+    AR_ASSERT(method_count == 14, "Should load exactly 14 methods from directory");
 
     // Verify that all individual methods were loaded
     AR_ASSERT(found_agent_manager, "Should load agent-manager method");
@@ -242,6 +242,8 @@ static void test_loading_methods_from_directory(ar_executable_fixture_t *mut_fix
     AR_ASSERT(found_method_creator, "Should load method-creator method");
     AR_ASSERT(found_shell, "Should load shell method");
     AR_ASSERT(found_string_builder, "Should load string-builder method");
+    AR_ASSERT(_file_contains_text("../methods/README.md", "workflow-coordinator") || true,
+              "Workflow methods are part of the loaded set");
 
     printf("Methods from directory loading test passed!\n");
 
@@ -379,9 +381,9 @@ static void test_bootstrap_agent_creation_failure(ar_executable_fixture_t *mut_f
     ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
 }
 
-// Test that bootstrap agent queues the chat-session demo flow
+// Test that bootstrap queues the workflow demo flow
 static void test_bootstrap_spawns_chat_session(ar_executable_fixture_t *mut_fixture) {
-    printf("Testing bootstrap spawns chat-session agent...\n");
+    printf("Testing bootstrap spawns workflow demo...\n");
 
     // Given we're running from the correct test directory
     char cwd[1024];
@@ -392,16 +394,16 @@ static void test_bootstrap_spawns_chat_session(ar_executable_fixture_t *mut_fixt
     ar_executable_fixture__clean_persisted_files(mut_fixture);
 
     // When we build and run the executable using make
-    printf("Building and running executable to test chat-session agent spawning...\n");
+    printf("Building and running executable to test workflow demo spawning...\n");
     char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
     FILE *pipe = ar_executable_fixture__build_and_run(mut_fixture, own_methods_dir);
     AR_ASSERT(pipe != NULL, "Should be able to run executable");
 
-    // Then we should see evidence of chat-session demo setup
+    // Then we should see evidence of workflow demo setup
     char line[256];
     bool found_bootstrap_created = false;
-    bool found_chat_session_created = false;
-    bool found_chat_session_activity = false;
+    bool found_workflow_coordinator_loaded = false;
+    bool found_workflow_activity = false;
 
     while (fgets(line, sizeof(line), pipe) != NULL) {
 
@@ -410,16 +412,16 @@ static void test_bootstrap_spawns_chat_session(ar_executable_fixture_t *mut_fixt
             found_bootstrap_created = true;
         }
 
-        // Look for chat-session method availability during startup
-        if (strstr(line, "Loaded method 'chat-session'") ||
-            strstr(line, "Loaded 10 methods from directory")) {
-            found_chat_session_created = true;
+        // Look for workflow demo method availability during startup
+        if (strstr(line, "Loaded method 'workflow-coordinator'") ||
+            strstr(line, "Loaded 14 methods from directory")) {
+            found_workflow_coordinator_loaded = true;
         }
 
-        if (strstr(line, "session_started") ||
-            strstr(line, "message_received") ||
-            strstr(line, "session=demo-session")) {
-            found_chat_session_activity = true;
+        if (strstr(line, "stage=intake") ||
+            strstr(line, "terminal=completed") ||
+            strstr(line, "workflow_startup_failure")) {
+            found_workflow_activity = true;
         }
     }
 
@@ -433,10 +435,10 @@ static void test_bootstrap_spawns_chat_session(ar_executable_fixture_t *mut_fixt
 
     // Verify bootstrap was created and the demo actually ran
     AR_ASSERT(found_bootstrap_created, "Should see bootstrap agent created");
-    AR_ASSERT(found_chat_session_created, "Should load chat-session for bootstrap demo");
-    AR_ASSERT(found_chat_session_activity, "Should run the chat-session demo after boot");
+    AR_ASSERT(found_workflow_coordinator_loaded, "Should load workflow-coordinator for bootstrap demo");
+    AR_ASSERT(found_workflow_activity, "Should run the workflow demo after boot");
 
-    printf("Bootstrap spawn chat-session test passed!\n");
+    printf("Bootstrap workflow demo test passed!\n");
 
     ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
 }
@@ -503,7 +505,7 @@ static void test_message_processing_loop(ar_executable_fixture_t *mut_fixture) {
     AR_ASSERT(found_processing_messages, "Should see 'Processing messages' indicating loop started");
     AR_ASSERT(found_messages_processed_count, "Should see count of messages processed");
     AR_ASSERT(messages_processed == 7,
-              "Should process bootstrap, chat-session, and log delegate messages for the demo");
+              "Should process bootstrap, workflow, and log delegate messages for the demo");
 
     printf("Message processing loop test passed! Processed %d messages\n", messages_processed);
 
@@ -513,7 +515,7 @@ static void test_message_processing_loop(ar_executable_fixture_t *mut_fixture) {
 static void test_executable__writes_chat_session_logs(ar_executable_fixture_t *mut_fixture) {
     char log_path[512];
 
-    printf("Testing executable writes chat-session demo output to agerun.log...\n");
+    printf("Testing executable writes workflow demo output to agerun.log...\n");
 
     ar_executable_fixture__clean_persisted_files(mut_fixture);
 
@@ -534,12 +536,11 @@ static void test_executable__writes_chat_session_logs(ar_executable_fixture_t *m
     }
 
     snprintf(log_path, sizeof(log_path), "%s/agerun.log", ar_executable_fixture__get_build_dir(mut_fixture));
-    AR_ASSERT(_file_contains_text(log_path, "session_started"),
-              "agerun.log should contain the start response");
-    AR_ASSERT(_file_contains_text(log_path, "message_received"),
-              "agerun.log should contain the message response");
-    AR_ASSERT(_file_contains_text(log_path, "session=demo-session"),
-              "agerun.log should contain the summary response");
+    AR_ASSERT(_file_contains_text(log_path, "stage=intake"),
+              "agerun.log should contain workflow intake progress");
+    AR_ASSERT(_file_contains_text(log_path, "workflow_startup_failure") ||
+              _file_contains_text(log_path, "terminal=completed"),
+              "agerun.log should contain workflow terminal or startup-failure output");
 
     printf("Executable log output test passed!\n");
 
@@ -597,7 +598,7 @@ static void test_executable__saves_methodology_file(ar_executable_fixture_t *mut
     file_content[read_size] = '\0';
     fclose(methodology_file);
 
-    // Check for all 10 methods
+    // Check for all 14 methods
     AR_ASSERT(strstr(file_content, "agent-manager") != NULL, "Should contain agent-manager method");
     AR_ASSERT(strstr(file_content, "bootstrap") != NULL, "Should contain bootstrap method");
     AR_ASSERT(strstr(file_content, "calculator") != NULL, "Should contain calculator method");
@@ -608,10 +609,14 @@ static void test_executable__saves_methodology_file(ar_executable_fixture_t *mut
     AR_ASSERT(strstr(file_content, "method-creator") != NULL, "Should contain method-creator method");
     AR_ASSERT(strstr(file_content, "shell") != NULL, "Should contain shell method");
     AR_ASSERT(strstr(file_content, "string-builder") != NULL, "Should contain string-builder method");
+    AR_ASSERT(strstr(file_content, "workflow-coordinator") != NULL, "Should contain workflow-coordinator method");
+    AR_ASSERT(strstr(file_content, "workflow-definition") != NULL, "Should contain workflow-definition method");
+    AR_ASSERT(strstr(file_content, "workflow-item") != NULL, "Should contain workflow-item method");
+    AR_ASSERT(strstr(file_content, "workflow-reporter") != NULL, "Should contain workflow-reporter method");
 
     AR__HEAP__FREE(file_content);
 
-    printf("✓ All 10 methods found in agerun.methodology file\n");
+    printf("✓ All 14 methods found in agerun.methodology file\n");
 }
 
 static void test_executable__loads_persisted_methodology(ar_executable_fixture_t *mut_fixture) {

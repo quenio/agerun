@@ -1,24 +1,26 @@
 # Workflow Coordinator Contracts
 
-This directory documents the external, user-relevant contracts for the methods-only workflow
-coordinator feature.
+This directory documents the externally testable contracts of the currently implemented
+workflow-coordinator feature.
 
 ## Files
 
 - [workflow-definition-schema.md](./workflow-definition-schema.md)
-  - Logical schema required of YAML workflow definition files read through the file delegate
+  - definition-file contract currently recognized by `workflow-definition`
 - [workflow-runtime-messages.md](./workflow-runtime-messages.md)
-  - Message contracts exchanged among bootstrap, coordinator, item, definition, and reporter agents
+  - runtime message contracts among `bootstrap`, `workflow-coordinator`, `workflow-definition`,
+    and `workflow-reporter`
 
 ## Contract Scope
 
-These contracts intentionally describe:
-- what a YAML workflow definition must expose
-- how workflow agents talk to one another
-- what tests may substitute with alternate YAML definition files
+These contracts currently describe:
+- how bundled workflow definitions are identified at runtime
+- how startup readiness and transition decisions are normalized
+- how the workflow bootstrap methods exchange messages
+- what visible runtime output is expected through the log delegate
 
 They intentionally do **not** describe:
+- hypothetical future YAML/file-delegate parsing beyond the current implementation
 - new C APIs or modules for workflow execution
-- method-file replacements for the YAML workflow definition
 - shell-driven operation
 - graphical or network interfaces

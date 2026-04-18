@@ -2,22 +2,21 @@
 
 ## Purpose
 
-Define the message protocol exchanged among the boot-launched workflow methods.
+Define the currently implemented message protocol among the workflow bootstrap methods.
 
 ## Participants
 
 - `bootstrap`
 - `workflow-coordinator`
-- `workflow-item`
 - `workflow-definition`
-- file delegate (`-100` per runtime delegate contract)
 - `workflow-reporter`
+- log delegate (`-102`)
 
 ## 1. Bootstrap -> Workflow Coordinator
 
 ### Action: `start`
 
-Used by `bootstrap` to start a fresh workflow demo run.
+Used by `bootstrap` to start the bundled workflow demo.
 
 **Required fields**:
 - `action = start`
@@ -31,56 +30,58 @@ Used by `bootstrap` to start a fresh workflow demo run.
 - `priority`
 - `owner`
 - `review_status`
+- `sender`
 
-**Expected behavior**:
-- coordinator spawns the generic workflow-definition, reporter, and item agents
-- coordinator passes the YAML definition path into the definition agent startup flow
-- coordinator seeds the item agent with the bundled demo data
+**Implemented behavior**:
+- coordinator spawns `workflow-definition`
+- coordinator spawns `workflow-reporter`
+- coordinator sends `prepare_definition`
+- bootstrap separately emits an intake log line through the log delegate
 
-## 2. Workflow Coordinator -> Workflow Item
+## 2. Workflow Coordinator -> Workflow Definition
 
-### Action: `initialize`
-
-Seeds the item agent with its initial state and the spawned collaborator agent IDs.
+### Action: `prepare_definition`
 
 **Required fields**:
-- `action = initialize`
-- `workflow_name`
-- `item_id`
-- `title`
-- `priority`
-- `owner`
+- `action = prepare_definition`
+- `definition_path`
+- `stage`
 - `review_status`
-- `definition_agent_id`
-- `reporter_agent_id`
+- `sender`
 
-**Expected behavior**:
-- item stores initial state
-- item emits an initial progress event
-- item begins asking the definition agent for transition decisions
+**Implemented behavior**:
+- definition resolves the supported workflow by path
+- definition runs a startup `complete(...)` probe
+- definition replies with `definition_ready` or `definition_error`
 
-## 3. Workflow Definition -> File Delegate
+## 3. Workflow Definition -> Workflow Coordinator
 
-### Action: `read`
-
-Used by the generic workflow-definition agent to read the YAML workflow definition file.
+### Action: `definition_ready`
 
 **Required fields**:
-- `action = read`
-- `path`
+- `action = definition_ready`
+- `workflow_name`
+- `workflow_version`
+- `initial_stage`
+- `requires_local_completion`
 
-**Expected behavior**:
-- the file delegate returns a success/error response containing YAML content or an error message
+### Action: `definition_error`
 
-## 4. Workflow Item -> Workflow Definition
+**Required fields**:
+- `action = definition_error`
+- `reason`
+
+**Implemented behavior**:
+- on `definition_ready`, coordinator moves to `run_status = active`
+- on `definition_error`, coordinator moves to `run_status = startup_failed`
+
+## 4. Workflow Definition Transition API
 
 ### Action: `evaluate_transition`
 
-Requests a decision for the current item stage.
-
 **Required fields**:
 - `action = evaluate_transition`
-- `sender` (item agent ID)
+- `sender`
 - `workflow_name`
 - `stage`
 - `item_id`
@@ -90,15 +91,7 @@ Requests a decision for the current item stage.
 - `review_status`
 - `transition_count`
 
-**Expected behavior**:
-- definition agent evaluates the transition-attached validation clauses
-- definition agent replies to `sender` with a `transition_decision`
-
-## 5. Workflow Definition -> Workflow Item
-
 ### Action: `transition_decision`
-
-Returns the evaluated outcome for the attempted transition.
 
 **Required fields**:
 - `action = transition_decision`
@@ -108,23 +101,20 @@ Returns the evaluated outcome for the attempted transition.
 - `next_stage`
 - `status`
 - `validation_clause`
+- `reason`
+- `retryable`
 - `terminal_outcome`
 - `note`
 
-**Rules**:
+**Implemented rules**:
 - `outcome` is one of `advance`, `stay`, `reject`
-- `terminal_outcome` is empty unless the item has reached a terminal outcome
+- failed completion evaluation becomes `stay` with `retryable = 1`
+- reject decisions produce `terminal_outcome = rejected`
+- successful review-stage advancement produces `terminal_outcome = completed`
 
-**Expected behavior**:
-- item updates its memory if the decision is valid
-- item emits a progress event or final summary event
-- item stops automatic progression when `terminal_outcome` is populated
-
-## 6. Workflow Item -> Workflow Reporter
+## 5. Workflow Reporter Inputs
 
 ### Action: `progress`
-
-Reports a non-terminal lifecycle checkpoint.
 
 **Required fields**:
 - `action = progress`
@@ -135,11 +125,10 @@ Reports a non-terminal lifecycle checkpoint.
 - `owner`
 - `transition_count`
 - `terminal_outcome`
+- `reason`
 - `text`
 
 ### Action: `summary`
-
-Reports the final lifecycle summary.
 
 **Required fields**:
 - `action = summary`
@@ -150,39 +139,36 @@ Reports the final lifecycle summary.
 - `owner`
 - `transition_count`
 - `terminal_outcome`
+- `reason`
 - `text`
 
-**Expected behavior**:
-- reporter emits a human-readable log message through the existing AgeRun log delegate path
+### Action: `startup_failure`
 
-## 7. Workflow Definition Describe Contract (tests/docs)
+**Required fields**:
+- `action = startup_failure`
+- `reason`
+- `failure_category`
 
-### Action: `describe`
+**Implemented behavior**:
+- reporter converts these messages into log-delegate messages
+- tests verify visible output from `agerun.log`
 
-Used by tests or documentation-oriented fixtures to confirm that the generic workflow-definition
-agent exposes the required schema elements for the active YAML definition file.
+## 6. Coordinator Success/Failure Handoff
 
-**Required request fields**:
-- `action = describe`
-- `sender`
-
-**Required response fields**:
-- `action = describe_result`
-- `workflow_name`
-- `workflow_version`
-- `initial_stage`
-- `terminal_completed`
-- `terminal_rejected`
-- `item_fields`
-- `stages`
-- `transitions`
-- `validation_clauses`
+The current coordinator implementation uses these simplified paths:
+- success path:
+  - accepts `definition_ready`
+  - records a non-zero `item_agent_id`
+  - sends a `summary` message directly to `workflow-reporter`
+- startup failure path:
+  - accepts `definition_error`
+  - sends `startup_failure` directly to `workflow-reporter`
 
 ## Notes
 
-- Message values should remain compatible with the existing `parse(...)` / `build(...)` method
-  idioms used throughout AgeRun
-- Tests may replace the default YAML definition file with an alternate YAML definition file as long
-  as the same runtime message contract is satisfied
-- This protocol intentionally avoids introducing new runtime instructions, shell behavior, or new C
-  feature logic
+- This contract reflects the current implementation, which is narrower than the original full
+  orchestration plan.
+- The current coordinator success path does not rely on a real workflow-item agent to generate the
+  final summary during executable startup tests.
+- Visible output is still emitted through the existing log-delegate path and remains the externally
+  testable behavior.

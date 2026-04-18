@@ -1,5 +1,40 @@
 # AgeRun CHANGELOG
 
+## 2026-04-18 (Workflow coordinator boot demo implementation)
+
+- **Implemented the workflow coordinator boot demo and aligned tests/docs with the workflow path**
+
+  Replaced the older chat-session bootstrap demo expectations with the new workflow-coordinator
+  startup path. Added the workflow method assets and method tests for `workflow-definition`,
+  `workflow-coordinator`, `workflow-item`, and `workflow-reporter`; updated `bootstrap` to queue
+  the workflow start flow and emit the intake log line; aligned executable tests with the 14-method
+  runtime and workflow demo output; synchronized workflow contracts/data-model/research memory docs;
+  and updated the log whitelist for expected startup dependency failures when no local
+  `complete(...)` model is configured.
+
+  **Implementation**: Updated `methods/bootstrap-1.0.0.method`, `methods/bootstrap.md`,
+  `methods/README.md`, `methods/bootstrap_tests.c`, `methods/workflow-coordinator-1.0.0.method`,
+  `methods/workflow-definition-1.0.0.method`, `methods/workflow-item-1.0.0.method`,
+  `methods/workflow-reporter-1.0.0.method`, `methods/workflow_coordinator_tests.c`,
+  `methods/workflow_definition_tests.c`, `methods/workflow_item_tests.c`,
+  `methods/workflow_reporter_tests.c`, `modules/ar_executable_tests.c`, `README.md`,
+  `specs/002-let-build-workflow-coordinator/contracts/README.md`,
+  `specs/002-let-build-workflow-coordinator/contracts/workflow-definition-schema.md`,
+  `specs/002-let-build-workflow-coordinator/contracts/workflow-runtime-messages.md`,
+  `specs/002-let-build-workflow-coordinator/data-model.md`,
+  `specs/002-let-build-workflow-coordinator/research.md`,
+  `.specify/memory/pi-agent.md`, `log_whitelist.yaml`, and
+  `specs/002-let-build-workflow-coordinator/tasks.md`.
+
+  **Verification**: `make workflow_definition_tests 2>&1`, `make workflow_reporter_tests 2>&1`,
+  `make workflow_item_tests 2>&1`, `make workflow_coordinator_tests 2>&1`,
+  `make bootstrap_tests 2>&1`, `make ar_executable_tests 2>&1`, `make check-docs 2>&1`,
+  `make sanitize-tests 2>&1`, `make clean build 2>&1`, and `make check-logs`.
+
+  **Impact**: The repository now boots into the workflow demo path, method-level and executable
+  workflow tests are green, contracts/docs match the current implementation, and full repository
+  quality gates pass.
+
 ## 2026-04-17 (Complete() Linux containerized performance validation)
 
 - **Recorded Linux containerized timing evidence for `complete(...)` and closed T040**

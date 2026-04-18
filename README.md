@@ -49,8 +49,10 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
    ```
 
    On a fresh executable run, AgeRun creates the `bootstrap` agent, queues its `"__boot__"`
-   message automatically, and processes the demo flow. Log output is written to
-   `bin/run-exec/agerun.log` because the executable runs from that directory.
+   message automatically, and processes the bundled workflow demo flow. The current bundled demo
+   launches `workflow-coordinator`, stages workflow-definition readiness, and then emits visible
+   intake/summary or startup-failure logs. Log output is written to `bin/run-exec/agerun.log`
+   because the executable runs from that directory.
 
 ### Memory Safety Testing
 

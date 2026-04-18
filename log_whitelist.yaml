@@ -1057,7 +1057,31 @@ ignored_errors:
   - context: "ar_local_completion_tests"
     message: "ERROR: complete() local runner failed: cause=spawn; recovery_hint=install llama.cpp llama-cli or set AGERUN_COMPLETE_RUNNER"
     comment: "Expected local completion runner failure when using a missing runner override"
-# Total entries: 303
-# Test entries: 296
-# Executable entries: 7
+  - context: "ar_executable_tests"
+    message: "ERROR: complete() local model file was not found; set AGERUN_COMPLETE_MODEL or provide models/phi-3-mini-q4.gguf"
+    comment: "Expected startup dependency probe failure in executable workflow demo tests when no local model is configured"
+  - context: "workflow_coordinator_tests"
+    message: "ERROR: complete() local model file was not found; set AGERUN_COMPLETE_MODEL or provide models/phi-3-mini-q4.gguf"
+    comment: "Expected startup dependency probe failure in coordinator tests without fake runner"
+  - context: "workflow_definition_tests"
+    message: "ERROR: complete() local model file was not found; set AGERUN_COMPLETE_MODEL or provide models/phi-3-mini-q4.gguf"
+    comment: "Expected definition probe/transition failure coverage without fake runner"
+  - context: "workflow_reporter_tests"
+    message: "workflow_startup_failure reason=startup_dependency_unavailable"
+    comment: "Expected reporter output for startup dependency failure"
+  - context: "ar_executable_tests"
+    message: "workflow_startup_failure reason=startup_dependency_unavailable"
+    comment: "Expected executable workflow demo startup failure output when local completion is unavailable"
+  - context: "workflow_coordinator_tests"
+    message: "workflow_startup_failure reason=startup_dependency_unavailable"
+    comment: "Expected coordinator startup failure output when readiness probe fails"
+  - context: "executable"
+    message: "ERROR: complete() local model file was not found; set AGERUN_COMPLETE_MODEL or provide models/phi-3-mini-q4.gguf"
+    comment: "Expected bundled executable startup probe failure when no local completion model is configured"
+  - context: "executable"
+    message: "workflow_startup_failure reason=startup_dependency_unavailable"
+    comment: "Expected bundled executable startup failure log output"
+# Total entries: 312
+# Test entries: 303
+# Executable entries: 9
 # Context-free entries: 0

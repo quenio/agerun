@@ -1,0 +1,1 @@
+workflow_name=default_workflow workflow_version=1.0.0 initial_stage=intake terminal_completed=completed terminal_rejected=rejected requires_local_completion=1 item_fields=item_id|title|priority|owner|review_status stages=intake|triage|active|review|completion validation_clause=review_gate decision_template=workflow_review_{outcome}_{reason}

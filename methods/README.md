@@ -10,7 +10,11 @@ This directory contains AgeRun method definitions. Each file represents a single
 | calculator | 1.0.0 | Basic arithmetic calculator supporting add, subtract, multiply, divide | [calculator-1.0.0.md](calculator-1.0.0.md) |
 | chat-session | 1.0.0 | Stateful chat/session backend that tracks conversation state and escalation | [chat-session-1.0.0.md](chat-session-1.0.0.md) |
 | shell | 1.0.0 | Built-in shell method used by `arsh` for restricted shell parsing, session storage, and runtime interaction | [shell-1.0.0.md](shell-1.0.0.md) |
-| bootstrap | 1.0.0 | Startup demo that spawns a chat-session agent and drives a sample conversation | [bootstrap.md](bootstrap.md) |
+| bootstrap | 1.0.0 | Startup demo that spawns the workflow coordinator and queues the bundled workflow run | [bootstrap.md](bootstrap.md) |
+| workflow-coordinator | 1.0.0 | Boot-time orchestrator that stages workflow definition readiness and startup failure handling | [workflow-coordinator-1.0.0.md](workflow-coordinator-1.0.0.md) |
+| workflow-definition | 1.0.0 | Workflow definition loader/evaluator that normalizes `complete(...)` decisions | [workflow-definition-1.0.0.md](workflow-definition-1.0.0.md) |
+| workflow-item | 1.0.0 | Stateful workflow item method that tracks lifecycle progress and summaries | [workflow-item-1.0.0.md](workflow-item-1.0.0.md) |
+| workflow-reporter | 1.0.0 | Reporter method that emits user-visible progress, startup failure, and summary logs | [workflow-reporter-1.0.0.md](workflow-reporter-1.0.0.md) |
 
 ## File Naming Convention
 
@@ -75,12 +79,13 @@ memory.result := if(message.operation = "divide", message.a / message.b, memory.
 send(message.sender, memory.result)
 ```
 
-**Agent Spawner Method** (`spawner-1.0.0.method`):
+**Workflow Bootstrap Method** (`bootstrap-1.0.0.method`):
 ```
-memory.child_id := agent(message.method_name, message.version, message.context)
-send(memory.child_id, "__wake__")
-memory.success := if(memory.child_id > 0, true, false)
-send(message.sender, memory.success)
+memory.is_boot := if(message = "__boot__", 1, 0)
+memory.coordinator_id := if(memory.is_boot = 1, spawn("workflow-coordinator", "1.0.0", context), memory.coordinator_id)
+memory.start_input := build("action=start sender={sender} definition_method_name=workflow-definition definition_method_version=1.0.0 definition_path=workflows/default-workflow.yaml reporter_method_name=workflow-reporter reporter_method_version=1.0.0 item_id=demo-item-1 title=demo_work_item priority=high owner=workflow_owner review_status=approved", memory)
+memory.start_message := parse("action={action} sender={sender} definition_method_name={definition_method_name} definition_method_version={definition_method_version} definition_path={definition_path} reporter_method_name={reporter_method_name} reporter_method_version={reporter_method_version} item_id={item_id} title={title} priority={priority} owner={owner} review_status={review_status}", memory.start_input)
+send(memory.coordinator_id, memory.start_message)
 ```
 
 ### Available Instructions

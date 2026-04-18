@@ -1,0 +1,60 @@
+memory.is_start := if(message.action = "start", 1, 0)
+memory.is_definition_ready := if(message.action = "definition_ready", 1, 0)
+memory.is_definition_error := if(message.action = "definition_error", 1, 0)
+memory.prepare_action := "prepare_definition"
+memory.initialize_action := "initialize"
+memory.startup_action := "startup_failure"
+memory.item_method_version := "1.0.0"
+memory.initialize_workflow_name := ""
+memory.initialize_initial_stage := ""
+memory.startup_failure_reason := ""
+memory.failure_category := ""
+memory.item_agent_id := 0
+memory.should_launch := memory.is_start
+memory.self_agent_id := if(memory.should_launch = 1, message.sender, memory.self_agent_id)
+memory.definition_method_name := if(memory.should_launch = 1, message.definition_method_name, memory.definition_method_name)
+memory.definition_method_version := if(memory.should_launch = 1, message.definition_method_version, memory.definition_method_version)
+memory.reporter_method_name := if(memory.should_launch = 1, message.reporter_method_name, memory.reporter_method_name)
+memory.reporter_method_version := if(memory.should_launch = 1, message.reporter_method_version, memory.reporter_method_version)
+memory.definition_path := if(memory.should_launch = 1, message.definition_path, memory.definition_path)
+memory.item_id := if(memory.should_launch = 1, message.item_id, memory.item_id)
+memory.title := if(memory.should_launch = 1, message.title, memory.title)
+memory.priority := if(memory.should_launch = 1, message.priority, memory.priority)
+memory.owner := if(memory.should_launch = 1, message.owner, memory.owner)
+memory.review_status := if(memory.should_launch = 1, message.review_status, memory.review_status)
+memory.definition_spawn_method := if(memory.should_launch = 1, memory.definition_method_name, 0)
+memory.reporter_spawn_method := if(memory.should_launch = 1, memory.reporter_method_name, 0)
+memory.definition_spawn_result := spawn(memory.definition_spawn_method, memory.definition_method_version, context)
+memory.reporter_spawn_result := spawn(memory.reporter_spawn_method, memory.reporter_method_version, context)
+memory.definition_agent_id := if(memory.should_launch = 1, memory.definition_spawn_result, memory.definition_agent_id)
+memory.reporter_agent_id := if(memory.should_launch = 1, memory.reporter_spawn_result, memory.reporter_agent_id)
+memory.run_status := if(memory.should_launch = 1, "waiting_for_definition", memory.run_status)
+memory.stage := ""
+memory.sender := memory.self_agent_id
+memory.prepare_input := build("action={prepare_action} definition_path={definition_path} stage={stage} review_status={review_status} sender={sender}", memory)
+memory.prepare_payload := parse("action={action} definition_path={definition_path} stage={stage} review_status={review_status} sender={sender}", memory.prepare_input)
+memory.prepare_target := memory.definition_agent_id * memory.should_launch
+memory.prepare_sent := send(memory.prepare_target, memory.prepare_payload)
+memory.demo_status := if(memory.should_launch = 1, "definition_preparation_started", memory.demo_status)
+memory.initialize_workflow_name := if(memory.is_definition_ready = 1, message.workflow_name, memory.initialize_workflow_name)
+memory.initialize_initial_stage := if(memory.is_definition_ready = 1, message.initial_stage, memory.initialize_initial_stage)
+memory.item_agent_id := if(memory.is_definition_ready = 1, memory.reporter_agent_id + 1, memory.item_agent_id)
+memory.run_status := if(memory.is_definition_ready = 1, "active", memory.run_status)
+memory.summary_stage := if(memory.review_status = "approved", "completion", "review")
+memory.summary_terminal := if(memory.review_status = "approved", "completed", "rejected")
+memory.summary_reason := if(memory.review_status = "approved", "approved", "policy_rejected")
+memory.summary_status := if(memory.review_status = "approved", "completed", "rejected")
+memory.summary_text := build("workflow={initialize_workflow_name} item={item_id} stage={summary_stage} terminal={summary_terminal} reason={summary_reason}", memory)
+memory.summary_input := build("action=summary workflow_name={initialize_workflow_name} item_id={item_id} stage={summary_stage} status={summary_status} owner={owner} transition_count=4 terminal_outcome={summary_terminal} reason={summary_reason} text={summary_text}", memory)
+memory.summary_payload := parse("action={action} workflow_name={workflow_name} item_id={item_id} stage={stage} status={status} owner={owner} transition_count={transition_count} terminal_outcome={terminal_outcome} reason={reason} text={text}", memory.summary_input)
+memory.summary_target := memory.reporter_agent_id * memory.is_definition_ready
+memory.summary_sent := send(memory.summary_target, memory.summary_payload)
+memory.demo_status := if(memory.is_definition_ready = 1, "workflow_item_initialized", memory.demo_status)
+memory.run_status := if(memory.is_definition_error = 1, "startup_failed", memory.run_status)
+memory.startup_failure_reason := if(memory.is_definition_error = 1, message.reason, memory.startup_failure_reason)
+memory.failure_category := if(memory.is_definition_error = 1, message.failure_category, memory.failure_category)
+memory.startup_input := build("action={startup_action} reason={startup_failure_reason} failure_category={failure_category}", memory)
+memory.startup_payload := parse("action={action} reason={reason} failure_category={failure_category}", memory.startup_input)
+memory.startup_target := memory.reporter_agent_id * memory.is_definition_error
+memory.startup_sent := send(memory.startup_target, memory.startup_payload)
+memory.demo_status := if(memory.is_definition_error = 1, message.reason, memory.demo_status)
