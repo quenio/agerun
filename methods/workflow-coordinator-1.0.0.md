@@ -11,75 +11,68 @@ startup `start` message from `bootstrap`, spawns the supporting `workflow-defini
 
 ## ATN Specification
 
-The following ATN specification describes the method contract as **preconditions** that must hold
-before an agent runs this method for a given message, and **postconditions** that must hold after
-that run completes.
+This ATN specification uses only the probeable agent-state constants requested by the workflow
+contract: `initial_memory`, `final_memory`, `message`, and `context`.
 
 ```haskell
-start_received: Boolean
-ready_received: Boolean
-error_received: Boolean
+Memory
+Message
+Context
 
-sender_present: Boolean
-definition_method_present: Boolean
-definition_version_present: Boolean
-definition_path_present: Boolean
-reporter_method_present: Boolean
-reporter_version_present: Boolean
-item_id_present: Boolean
-title_present: Boolean
-priority_present: Boolean
-owner_present: Boolean
-review_status_present: Boolean
-workflow_name_present: Boolean
-initial_stage_present: Boolean
-error_reason_present: Boolean
+initial_memory: Memory
+final_memory: Memory
+message: Message
+context: Context
 
-exactly_one_supported_action: Boolean
-
-definition_agent_spawned: Boolean
-reporter_agent_spawned: Boolean
-item_agent_created: Boolean
-prepare_definition_sent: Boolean
-summary_sent: Boolean
-startup_failure_sent: Boolean
-
-run_status: String
-
-PRECONDITION_SUPPORTED_ACTION:
-  exactly_one_supported_action
+PRECONDITION_SUPPORTED_MESSAGE_ACTION:
+  message.action = "start" or
+  message.action = "definition_ready" or
+  message.action = "definition_error"
 
 PRECONDITION_START_MESSAGE_IS_COMPLETE:
-  start_received =>
-    sender_present and
-    definition_method_present and
-    definition_version_present and
-    definition_path_present and
-    reporter_method_present and
-    reporter_version_present and
-    item_id_present and
-    title_present and
-    priority_present and
-    owner_present and
-    review_status_present
+  message.action = "start" =>
+    message.sender > 0 and
+    not (message.definition_method_name = "") and
+    not (message.definition_method_version = "") and
+    not (message.definition_path = "") and
+    not (message.reporter_method_name = "") and
+    not (message.reporter_method_version = "") and
+    not (message.item_id = "") and
+    not (message.title = "") and
+    not (message.priority = "") and
+    not (message.owner = "") and
+    not (message.review_status = "")
 
 PRECONDITION_READY_MESSAGE_IS_COMPLETE:
-  ready_received => workflow_name_present and initial_stage_present
+  message.action = "definition_ready" =>
+    not (message.workflow_name = "") and
+    not (message.initial_stage = "")
 
 PRECONDITION_ERROR_MESSAGE_IS_COMPLETE:
-  error_received => error_reason_present
+  message.action = "definition_error" =>
+    not (message.reason = "")
 
 POSTCONDITION_START_SPAWNS_SUPPORT_AGENTS:
-  start_received => definition_agent_spawned and reporter_agent_spawned
+  message.action = "start" =>
+    final_memory.definition_agent_id > 0 and
+    final_memory.reporter_agent_id > 0
 
 POSTCONDITION_START_PREPARES_THE_DEFINITION:
-  start_received => prepare_definition_sent and run_status = "waiting_for_definition"
+  message.action = "start" =>
+    final_memory.prepare_sent = 1 and
+    final_memory.run_status = "waiting_for_definition"
 
 POSTCONDITION_READY_ACTIVATES_THE_RUN:
-  ready_received => run_status = "active" and item_agent_created and summary_sent
+  message.action = "definition_ready" =>
+    final_memory.run_status = "active" and
+    final_memory.item_agent_id > 0 and
+    final_memory.summary_sent = 1
 
 POSTCONDITION_ERROR_FAILS_WITHOUT_ITEM_CREATION:
-  error_received => run_status = "startup_failed" and not item_agent_created and startup_failure_sent
+  message.action = "definition_error" =>
+    final_memory.run_status = "startup_failed" and
+    final_memory.item_agent_id = 0 and
+    final_memory.startup_sent = 1
 ```
 
 ## Inputs

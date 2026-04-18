@@ -1,5 +1,25 @@
 # AgeRun CHANGELOG
 
+## 2026-04-18 (ATN workflow specs restricted to probeable agent state)
+
+- **Reworked workflow method ATN specs to use only initial_memory, final_memory, message, and context**
+
+  Refined the workflow method documentation again so the ATN contracts now use only the probeable
+  agent-state constants `initial_memory`, `final_memory`, `message`, and `context`. Removed the
+  earlier expansion into many derived constants, and updated the assertions so preconditions and
+  postconditions are written directly in terms of the probeable state. Also removed the temporary
+  assumption that `context` availability itself must be asserted, since `message` and `context` are
+  assumed to always exist and may simply be empty.
+
+  **Implementation**: Updated `methods/workflow-coordinator-1.0.0.md`,
+  `methods/workflow-definition-1.0.0.md`, `methods/workflow-item-1.0.0.md`, and
+  `methods/workflow-reporter-1.0.0.md`.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: The workflow method ATN sections now match the actual probe model of an AgeRun agent
+  more closely and express contracts only in terms of the directly inspectable runtime state.
+
 ## 2026-04-18 (ATN workflow method preconditions and postconditions)
 
 - **Refined the workflow method ATN docs to specify preconditions and postconditions explicitly**

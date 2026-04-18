@@ -8,77 +8,69 @@ memory so tests can assert the externally visible behavior.
 
 ## ATN Specification
 
-The ATN below states the reporting contract as **preconditions** before the method runs and
-**postconditions** after the message has been processed.
+This ATN specification uses only the probeable agent-state constants requested by the workflow
+contract: `initial_memory`, `final_memory`, `message`, and `context`.
 
 ```haskell
-progress_received: Boolean
-summary_received: Boolean
-startup_failure_received: Boolean
+Memory
+Message
+Context
 
-workflow_name_present: Boolean
-item_id_present: Boolean
-stage_present: Boolean
-status_present: Boolean
-owner_present: Boolean
-transition_count_present: Boolean
-terminal_outcome_present: Boolean
-reason_present: Boolean
-text_present: Boolean
-failure_category_present: Boolean
+initial_memory: Memory
+final_memory: Memory
+message: Message
+context: Context
 
-summary_text_empty: Boolean
-fallback_summary_used: Boolean
-log_message_sent: Boolean
-
-last_event_type: String
-visible_message: String
-log_level: String
-delivery_status: String
+PRECONDITION_SUPPORTED_MESSAGE_ACTION:
+  message.action = "progress" or
+  message.action = "summary" or
+  message.action = "startup_failure"
 
 PRECONDITION_PROGRESS_MESSAGE_IS_COMPLETE:
-  progress_received =>
-    workflow_name_present and
-    item_id_present and
-    stage_present and
-    status_present and
-    owner_present and
-    transition_count_present and
-    terminal_outcome_present and
-    reason_present and
-    text_present
+  message.action = "progress" =>
+    not (message.workflow_name = "") and
+    not (message.item_id = "") and
+    not (message.stage = "") and
+    not (message.status = "") and
+    not (message.owner = "") and
+    not (message.reason = "") and
+    not (message.text = "")
 
 PRECONDITION_SUMMARY_MESSAGE_IS_COMPLETE:
-  summary_received =>
-    workflow_name_present and
-    item_id_present and
-    stage_present and
-    status_present and
-    owner_present and
-    transition_count_present and
-    terminal_outcome_present and
-    reason_present
+  message.action = "summary" =>
+    not (message.workflow_name = "") and
+    not (message.item_id = "") and
+    not (message.stage = "") and
+    not (message.status = "") and
+    not (message.owner = "") and
+    not (message.reason = "")
 
 PRECONDITION_STARTUP_FAILURE_MESSAGE_IS_COMPLETE:
-  startup_failure_received => reason_present and failure_category_present
+  message.action = "startup_failure" =>
+    not (message.reason = "") and
+    not (message.failure_category = "")
 
 POSTCONDITION_PROGRESS_EVENTS_ARE_CLASSIFIED_AS_PROGRESS:
-  progress_received => last_event_type = "progress" and log_level = "info"
+  message.action = "progress" =>
+    final_memory.last_event_type = "progress" and
+    final_memory.log_level = "info"
 
 POSTCONDITION_SUMMARY_EVENTS_ARE_CLASSIFIED_AS_SUMMARY:
-  summary_received => last_event_type = "summary"
+  message.action = "summary" =>
+    final_memory.last_event_type = "summary"
 
 POSTCONDITION_EMPTY_SUMMARY_TEXT_USES_A_FALLBACK:
-  summary_received and summary_text_empty => fallback_summary_used
+  message.action = "summary" and message.text = "" =>
+    not (final_memory.last_message = "")
 
 POSTCONDITION_STARTUP_FAILURES_ARE_CLASSIFIED_AS_FAILURES:
-  startup_failure_received => last_event_type = "startup_failure" and log_level = "error"
+  message.action = "startup_failure" =>
+    final_memory.last_event_type = "startup_failure" and
+    final_memory.log_level = "error"
 
 POSTCONDITION_ALL_EVENTS_ARE_FORWARDED_TO_THE_LOG_DELEGATE:
-  progress_received or summary_received or startup_failure_received => log_message_sent
-
-POSTCONDITION_DELIVERY_STATUS_IS_RECORDED:
-  log_message_sent => delivery_status = "success" or delivery_status = "error"
+  message.action = "progress" or message.action = "summary" or message.action = "startup_failure" =>
+    final_memory.delivery_status = "success" or final_memory.delivery_status = "error"
 ```
 
 ## Inputs

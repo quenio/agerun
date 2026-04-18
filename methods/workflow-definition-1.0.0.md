@@ -13,89 +13,92 @@ path used by tests.
 
 ## ATN Specification
 
-The ATN below specifies **preconditions** that must hold before an agent runs this method and the
-**postconditions** that must hold once the run has completed.
+This ATN specification uses only the probeable agent-state constants requested by the workflow
+contract: `initial_memory`, `final_memory`, `message`, and `context`.
 
 ```haskell
-prepare_requested: Boolean
-evaluate_requested: Boolean
-describe_requested: Boolean
+Memory
+Message
+Context
 
-sender_present: Boolean
-definition_path_present: Boolean
-workflow_name_present: Boolean
-stage_present: Boolean
-item_id_present: Boolean
-title_present: Boolean
-priority_present: Boolean
-owner_present: Boolean
-review_status_present: Boolean
-transition_count_present: Boolean
+initial_memory: Memory
+final_memory: Memory
+message: Message
+context: Context
 
-known_definition_path: Boolean
-invalid_definition_path: Boolean
-startup_probe_succeeded: Boolean
-transition_probe_succeeded: Boolean
-
-definition_ready_sent: Boolean
-definition_error_sent: Boolean
-transition_decision_sent: Boolean
-describe_result_sent: Boolean
-
-error_reason: String
-outcome: String
-next_stage: String
-terminal_outcome: String
-retryable: Boolean
+PRECONDITION_SUPPORTED_MESSAGE_ACTION:
+  message.action = "prepare_definition" or
+  message.action = "evaluate_transition" or
+  message.action = "describe"
 
 PRECONDITION_PREPARE_MESSAGE_IS_COMPLETE:
-  prepare_requested => sender_present and definition_path_present and stage_present and review_status_present
+  message.action = "prepare_definition" =>
+    message.sender > 0 and
+    not (message.definition_path = "") and
+    not (message.stage = "") and
+    not (message.review_status = "")
 
 PRECONDITION_EVALUATE_MESSAGE_IS_COMPLETE:
-  evaluate_requested =>
-    sender_present and
-    workflow_name_present and
-    stage_present and
-    item_id_present and
-    title_present and
-    priority_present and
-    owner_present and
-    review_status_present and
-    transition_count_present
+  message.action = "evaluate_transition" =>
+    message.sender > 0 and
+    not (message.workflow_name = "") and
+    not (message.stage = "") and
+    not (message.item_id = "") and
+    not (message.title = "") and
+    not (message.priority = "") and
+    not (message.owner = "") and
+    not (message.review_status = "")
 
 PRECONDITION_DESCRIBE_HAS_A_REPLY_TARGET:
-  describe_requested => sender_present
-
-POSTCONDITION_READY_AND_ERROR_ARE_MUTUALLY_EXCLUSIVE:
-  prepare_requested => not (definition_ready_sent and definition_error_sent)
+  message.action = "describe" => message.sender > 0
 
 POSTCONDITION_KNOWN_READY_DEFINITION_BECOMES_READY:
-  prepare_requested and known_definition_path and startup_probe_succeeded => definition_ready_sent
+  message.action = "prepare_definition" and
+  (message.definition_path = "workflows/default-workflow.yaml" or
+   message.definition_path = "workflows/test-workflow.yaml") and
+  final_memory.probe_ok = 1 =>
+    final_memory.ready_sent = 1 and
+    final_memory.last_reply_action = "definition_ready"
 
 POSTCONDITION_INVALID_OR_UNKNOWN_DEFINITION_IS_REJECTED:
-  prepare_requested and (invalid_definition_path or not known_definition_path) =>
-    definition_error_sent and error_reason = "invalid_definition_schema"
+  message.action = "prepare_definition" and
+  not (message.definition_path = "workflows/default-workflow.yaml") and
+  not (message.definition_path = "workflows/test-workflow.yaml") =>
+    final_memory.error_sent = 1 and
+    final_memory.error_reason = "invalid_definition_schema" and
+    final_memory.last_reply_action = "definition_error"
 
 POSTCONDITION_STARTUP_PROBE_FAILURE_IS_REPORTED:
-  prepare_requested and known_definition_path and not startup_probe_succeeded =>
-    definition_error_sent and error_reason = "startup_dependency_unavailable"
+  message.action = "prepare_definition" and
+  (message.definition_path = "workflows/default-workflow.yaml" or
+   message.definition_path = "workflows/test-workflow.yaml") and
+  final_memory.probe_ok = 0 =>
+    final_memory.error_sent = 1 and
+    final_memory.error_reason = "startup_dependency_unavailable" and
+    final_memory.last_reply_action = "definition_error"
 
 POSTCONDITION_EVALUATION_PRODUCES_A_DECISION:
-  evaluate_requested => transition_decision_sent
+  message.action = "evaluate_transition" => final_memory.transition_sent = 1
 
 POSTCONDITION_TRANSITION_FAILURE_BECOMES_RETRYABLE_STAY:
-  evaluate_requested and not transition_probe_succeeded =>
-    outcome = "stay" and retryable and terminal_outcome = ""
+  message.action = "evaluate_transition" and final_memory.probe_ok = 0 =>
+    final_memory.transition_outcome = "stay" and
+    final_memory.transition_reason = "complete_transition_failed" and
+    final_memory.retryable = 1 and
+    final_memory.terminal_outcome = ""
 
 POSTCONDITION_REJECT_DECISION_REJECTS_THE_ITEM:
-  evaluate_requested and outcome = "reject" => terminal_outcome = "rejected"
+  message.action = "evaluate_transition" and final_memory.transition_outcome = "reject" =>
+    final_memory.terminal_outcome = "rejected"
 
 POSTCONDITION_REVIEW_ADVANCE_COMPLETES_THE_ITEM:
-  evaluate_requested and outcome = "advance" and next_stage = "completion" =>
-    terminal_outcome = "completed"
+  message.action = "evaluate_transition" and
+  final_memory.transition_outcome = "advance" and
+  final_memory.next_stage = "completion" =>
+    final_memory.terminal_outcome = "completed"
 
 POSTCONDITION_DESCRIBE_RETURNS_A_DESCRIPTION:
-  describe_requested => describe_result_sent
+  message.action = "describe" => final_memory.describe_sent = 1
 ```
 
 ## Inputs

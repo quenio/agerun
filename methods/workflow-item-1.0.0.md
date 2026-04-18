@@ -9,92 +9,103 @@ summary or a retryable progress update.
 
 ## ATN Specification
 
-This ATN specification captures the workflow-item contract as **preconditions** before a run and
-**postconditions** after the run.
+This ATN specification uses only the probeable agent-state constants requested by the workflow
+contract: `initial_memory`, `final_memory`, `message`, and `context`.
 
 ```haskell
-initialize_received: Boolean
-auto_progress_received: Boolean
-transition_decision_received: Boolean
+Memory
+Message
+Context
 
-sender_present: Boolean
-workflow_name_present: Boolean
-item_id_present: Boolean
-title_present: Boolean
-priority_present: Boolean
-owner_present: Boolean
-review_status_present: Boolean
-definition_agent_present: Boolean
-reporter_agent_present: Boolean
-initial_stage_present: Boolean
-current_stage_is_known: Boolean
-outcome_is_valid: Boolean
-reason_present: Boolean
+initial_memory: Memory
+final_memory: Memory
+message: Message
+context: Context
 
-identity_recorded: Boolean
-progress_sent: Boolean
-summary_sent: Boolean
-evaluate_transition_sent: Boolean
-
-stage_before: String
-stage_after: String
-status_after: String
-outcome: String
-terminal_outcome: String
-last_reason: String
-transition_count_increased: Boolean
+PRECONDITION_SUPPORTED_MESSAGE_ACTION:
+  message.action = "initialize" or
+  message.action = "auto_progress" or
+  message.action = "transition_decision"
 
 PRECONDITION_INITIALIZE_MESSAGE_IS_COMPLETE:
-  initialize_received =>
-    sender_present and
-    workflow_name_present and
-    item_id_present and
-    title_present and
-    priority_present and
-    owner_present and
-    review_status_present and
-    definition_agent_present and
-    reporter_agent_present and
-    initial_stage_present
+  message.action = "initialize" =>
+    message.sender > 0 and
+    not (message.workflow_name = "") and
+    not (message.item_id = "") and
+    not (message.title = "") and
+    not (message.priority = "") and
+    not (message.owner = "") and
+    not (message.review_status = "") and
+    message.definition_agent_id > 0 and
+    message.reporter_agent_id > 0 and
+    not (message.initial_stage = "")
 
 PRECONDITION_AUTO_PROGRESS_HAS_A_KNOWN_STAGE:
-  auto_progress_received => current_stage_is_known
+  message.action = "auto_progress" =>
+    initial_memory.current_stage = "intake" or
+    initial_memory.current_stage = "triage" or
+    initial_memory.current_stage = "active" or
+    initial_memory.current_stage = "review"
 
 PRECONDITION_TRANSITION_DECISION_IS_COMPLETE:
-  transition_decision_received => outcome_is_valid and reason_present
+  message.action = "transition_decision" =>
+    (message.outcome = "advance" or
+     message.outcome = "reject" or
+     message.outcome = "stay") and
+    not (message.reason = "")
 
 POSTCONDITION_INITIALIZATION_RECORDS_THE_ITEM_IDENTITY:
-  initialize_received => identity_recorded
+  message.action = "initialize" =>
+    final_memory.workflow_name = message.workflow_name and
+    final_memory.item_id = message.item_id
 
 POSTCONDITION_INITIALIZATION_EMITS_PROGRESS:
-  initialize_received => progress_sent and stage_after = "intake" and status_after = "created"
-
-POSTCONDITION_INITIALIZATION_REASON_IS_VISIBLE:
-  initialize_received => last_reason = "initialized"
+  message.action = "initialize" =>
+    final_memory.current_stage = message.initial_stage and
+    final_memory.current_status = "created" and
+    final_memory.last_reason = "initialized" and
+    final_memory.progress_sent = 1
 
 POSTCONDITION_INTAKE_AUTO_PROGRESS_ADVANCES_TO_TRIAGE:
-  auto_progress_received and stage_before = "intake" =>
-    progress_sent and stage_after = "triage" and transition_count_increased
+  message.action = "auto_progress" and initial_memory.current_stage = "intake" =>
+    final_memory.current_stage = "triage" and
+    final_memory.transition_count = initial_memory.transition_count + 1 and
+    final_memory.progress_sent = 1
 
 POSTCONDITION_TRIAGE_AUTO_PROGRESS_ADVANCES_TO_ACTIVE:
-  auto_progress_received and stage_before = "triage" =>
-    progress_sent and stage_after = "active" and transition_count_increased
+  message.action = "auto_progress" and initial_memory.current_stage = "triage" =>
+    final_memory.current_stage = "active" and
+    final_memory.transition_count = initial_memory.transition_count + 1 and
+    final_memory.progress_sent = 1
 
 POSTCONDITION_ACTIVE_AUTO_PROGRESS_ADVANCES_TO_REVIEW:
-  auto_progress_received and stage_before = "active" =>
-    progress_sent and stage_after = "review" and transition_count_increased
+  message.action = "auto_progress" and initial_memory.current_stage = "active" =>
+    final_memory.current_stage = "review" and
+    final_memory.transition_count = initial_memory.transition_count + 1 and
+    final_memory.progress_sent = 1
 
 POSTCONDITION_REVIEW_REQUESTS_A_TRANSITION_DECISION:
-  auto_progress_received and stage_before = "review" => evaluate_transition_sent
+  message.action = "auto_progress" and initial_memory.current_stage = "review" =>
+    final_memory.evaluate_sent = 1
 
 POSTCONDITION_ADVANCE_DECISION_EMITS_A_SUMMARY:
-  transition_decision_received and outcome = "advance" => summary_sent
+  message.action = "transition_decision" and message.outcome = "advance" =>
+    final_memory.current_stage = message.next_stage and
+    final_memory.current_status = message.status and
+    final_memory.last_reason = message.reason and
+    final_memory.summary_sent = 1
 
 POSTCONDITION_REJECT_DECISION_EMITS_A_SUMMARY:
-  transition_decision_received and outcome = "reject" => summary_sent and terminal_outcome = "rejected"
+  message.action = "transition_decision" and message.outcome = "reject" =>
+    final_memory.terminal_outcome = message.terminal_outcome and
+    final_memory.last_reason = message.reason and
+    final_memory.summary_sent = 1
 
 POSTCONDITION_STAY_DECISION_EMITS_PROGRESS_INSTEAD_OF_SUMMARY:
-  transition_decision_received and outcome = "stay" => progress_sent and not summary_sent
+  message.action = "transition_decision" and message.outcome = "stay" =>
+    final_memory.current_stage = initial_memory.current_stage and
+    final_memory.last_reason = message.reason and
+    final_memory.progress_sent = 1
 ```
 
 ## Inputs
