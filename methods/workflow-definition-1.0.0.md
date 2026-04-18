@@ -114,7 +114,9 @@ Behavior:
 - resolves known workflow definitions by path
 - sets workflow metadata such as `workflow_name`, `initial_stage`, and terminal outcomes
 - runs `complete("Workflow dependency probe outcome={outcome} reason={reason}.")`
-- replies with `definition_ready` or `definition_error`
+- uses the boolean return value as the startup gate: success allows `definition_ready`, failure produces `definition_error`
+- treats generated `reason` as diagnostic context (`last_reason` on success, `startup_dependency_unavailable` on failure)
+- does not currently use generated `outcome` to change startup behavior
 
 ### `action=evaluate_transition`
 
@@ -131,7 +133,11 @@ Expected fields:
 
 Behavior:
 - runs `complete("Workflow transition decision outcome={outcome} reason={reason}.")`
-- normalizes the result into `advance`, `stay`, or `reject`
+- copies generated `outcome` into `transition_outcome` and generated `reason` into `transition_reason`
+- uses `transition_outcome` to choose `advance`, `stay`, or `reject`, which then determines
+  `next_stage`, `status`, and `terminal_outcome`
+- uses `transition_reason` as the explanation propagated in the outgoing `transition_decision`
+  message
 - converts completion/runtime failure into retryable `stay`
 - returns a `transition_decision` message with `next_stage`, `status`, `reason`, `retryable`, and
   `terminal_outcome`
@@ -173,6 +179,28 @@ Transition evaluation failures are normalized to:
 - `outcome = stay`
 - `reason = complete_transition_failed`
 - `retryable = 1`
+
+## `complete(...)` Placeholder Usage Summary
+
+The method currently uses the generated placeholders differently in its two `complete(...)` calls:
+
+### Startup dependency probe
+- `probe_ok` is the real control signal.
+- Generated `reason` is kept only as diagnostic context via `last_reason` when the probe succeeds.
+- Generated `outcome` is not currently used to affect startup behavior.
+- Probe failure is surfaced externally as `definition_error` with
+  `reason = startup_dependency_unavailable`.
+
+### Transition decision evaluation
+- Generated `outcome` becomes `transition_outcome` and drives the workflow branch:
+  - `advance` moves to the next stage
+  - `reject` produces `terminal_outcome = rejected`
+  - `stay` keeps the current stage
+- Generated `reason` becomes `transition_reason` and is forwarded in the
+  `transition_decision` message so downstream methods can explain the decision in progress/summary
+  logs.
+- If `complete(...)` fails, the method preserves workflow continuity by emitting a retryable
+  `stay` decision with `reason = complete_transition_failed`.
 
 ## Method Code
 

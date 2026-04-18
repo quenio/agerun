@@ -128,6 +128,12 @@ The current implementation is intentionally narrow and optimized for the bundled
 - it stages definition readiness before item creation
 - it suppresses item creation on startup failure
 - its success path currently sends a summary directly to `workflow-reporter`
+- that direct summary path derives the final visible `stage`, `terminal`, and `reason` from
+  `review_status` (`approved` -> `completion/completed/approved`, otherwise
+  `review/rejected/policy_rejected`)
+- because of that, the bundled executable success log is currently not driven by the
+  `workflow-definition` transition `complete(...)` placeholders; those placeholders matter in the
+  `evaluate_transition` / `workflow-item` path instead
 - executable behavior is validated through visible log output rather than by inspecting internal
   scheduler details
 

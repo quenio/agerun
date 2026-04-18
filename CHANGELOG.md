@@ -1,5 +1,24 @@
 # AgeRun CHANGELOG
 
+## 2026-04-18 (Workflow complete() placeholder usage documentation)
+
+- **Documented how workflow methods use `complete(...)` `outcome` and `reason` values**
+
+  Clarified the workflow method documentation so readers can distinguish between the startup
+  dependency probe path and the transition-decision path. The docs now explain that startup uses
+  the boolean `complete(...)` result as the real gate, while transition evaluation uses generated
+  `outcome` and `reason` to drive downstream workflow decisions.
+
+  **Implementation**: Updated `methods/workflow-definition-1.0.0.md` to describe how startup and
+  transition `complete(...)` calls consume placeholder values, and updated
+  `methods/workflow-coordinator-1.0.0.md` to explain that the bundled executable success summary is
+  currently derived directly from `review_status` rather than from transition-decision placeholders.
+
+  **Verification**: `make check-docs 2>&1`; `make clean build 2>&1`; `make check-logs 2>&1`.
+
+  **Impact**: The workflow docs now make it explicit which `complete(...)` outputs are actually used
+  for control flow versus diagnostics, reducing confusion when interpreting executable demo runs.
+
 ## 2026-04-18 (Executable complete() default model path fallback)
 
 - **Fixed `make run-exec` so bundled `complete(...)` startup can find the default model from `bin/run-exec`**
