@@ -20,12 +20,12 @@ final_memory: ProbeMap
 message: ProbeMap
 context: ProbeMap
 
-PRECONDITION_SUPPORTED_MESSAGE_ACTION:
+REQUIRES_SUPPORTED_MESSAGE_ACTION:
   message("action") = "progress" or
   message("action") = "summary" or
   message("action") = "startup_failure"
 
-PRECONDITION_PROGRESS_MESSAGE_IS_COMPLETE:
+REQUIRES_PROGRESS_MESSAGE_IS_COMPLETE:
   message("action") = "progress" =>
     not (message("workflow_name") = "") and
     not (message("item_id") = "") and
@@ -35,7 +35,7 @@ PRECONDITION_PROGRESS_MESSAGE_IS_COMPLETE:
     not (message("reason") = "") and
     not (message("text") = "")
 
-PRECONDITION_SUMMARY_MESSAGE_IS_COMPLETE:
+REQUIRES_SUMMARY_MESSAGE_IS_COMPLETE:
   message("action") = "summary" =>
     not (message("workflow_name") = "") and
     not (message("item_id") = "") and
@@ -44,30 +44,30 @@ PRECONDITION_SUMMARY_MESSAGE_IS_COMPLETE:
     not (message("owner") = "") and
     not (message("reason") = "")
 
-PRECONDITION_STARTUP_FAILURE_MESSAGE_IS_COMPLETE:
+REQUIRES_STARTUP_FAILURE_MESSAGE_IS_COMPLETE:
   message("action") = "startup_failure" =>
     not (message("reason") = "") and
     not (message("failure_category") = "")
 
-POSTCONDITION_PROGRESS_EVENTS_ARE_CLASSIFIED_AS_PROGRESS:
+ENSURES_PROGRESS_EVENTS_ARE_CLASSIFIED_AS_PROGRESS:
   message("action") = "progress" =>
     final_memory("last_event_type") = "progress" and
     final_memory("log_level") = "info"
 
-POSTCONDITION_SUMMARY_EVENTS_ARE_CLASSIFIED_AS_SUMMARY:
+ENSURES_SUMMARY_EVENTS_ARE_CLASSIFIED_AS_SUMMARY:
   message("action") = "summary" =>
     final_memory("last_event_type") = "summary"
 
-POSTCONDITION_EMPTY_SUMMARY_TEXT_USES_A_FALLBACK:
+ENSURES_EMPTY_SUMMARY_TEXT_USES_A_FALLBACK:
   message("action") = "summary" and message("text") = "" =>
     not (final_memory("last_message") = "")
 
-POSTCONDITION_STARTUP_FAILURES_ARE_CLASSIFIED_AS_FAILURES:
+ENSURES_STARTUP_FAILURES_ARE_CLASSIFIED_AS_FAILURES:
   message("action") = "startup_failure" =>
     final_memory("last_event_type") = "startup_failure" and
     final_memory("log_level") = "error"
 
-POSTCONDITION_ALL_EVENTS_ARE_FORWARDED_TO_THE_LOG_DELEGATE:
+ENSURES_ALL_EVENTS_ARE_FORWARDED_TO_THE_LOG_DELEGATE:
   message("action") = "progress" or message("action") = "summary" or message("action") = "startup_failure" =>
     final_memory("delivery_status") = "success" or final_memory("delivery_status") = "error"
 ```

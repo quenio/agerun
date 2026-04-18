@@ -25,19 +25,19 @@ final_memory: ProbeMap
 message: ProbeMap
 context: ProbeMap
 
-PRECONDITION_SUPPORTED_MESSAGE_ACTION:
+REQUIRES_SUPPORTED_MESSAGE_ACTION:
   message("action") = "prepare_definition" or
   message("action") = "evaluate_transition" or
   message("action") = "describe"
 
-PRECONDITION_PREPARE_MESSAGE_IS_COMPLETE:
+REQUIRES_PREPARE_MESSAGE_IS_COMPLETE:
   message("action") = "prepare_definition" =>
     message("sender") > 0 and
     not (message("definition_path") = "") and
     not (message("stage") = "") and
     not (message("review_status") = "")
 
-PRECONDITION_EVALUATE_MESSAGE_IS_COMPLETE:
+REQUIRES_EVALUATE_MESSAGE_IS_COMPLETE:
   message("action") = "evaluate_transition" =>
     message("sender") > 0 and
     not (message("workflow_name") = "") and
@@ -48,10 +48,10 @@ PRECONDITION_EVALUATE_MESSAGE_IS_COMPLETE:
     not (message("owner") = "") and
     not (message("review_status") = "")
 
-PRECONDITION_DESCRIBE_HAS_A_REPLY_TARGET:
+REQUIRES_DESCRIBE_HAS_A_REPLY_TARGET:
   message("action") = "describe" => message("sender") > 0
 
-POSTCONDITION_KNOWN_READY_DEFINITION_BECOMES_READY:
+ENSURES_KNOWN_READY_DEFINITION_BECOMES_READY:
   message("action") = "prepare_definition" and
   (message("definition_path") = "workflows/default-workflow.yaml" or
    message("definition_path") = "workflows/test-workflow.yaml") and
@@ -59,7 +59,7 @@ POSTCONDITION_KNOWN_READY_DEFINITION_BECOMES_READY:
     final_memory("ready_sent") = 1 and
     final_memory("last_reply_action") = "definition_ready"
 
-POSTCONDITION_INVALID_OR_UNKNOWN_DEFINITION_IS_REJECTED:
+ENSURES_INVALID_OR_UNKNOWN_DEFINITION_IS_REJECTED:
   message("action") = "prepare_definition" and
   not (message("definition_path") = "workflows/default-workflow.yaml") and
   not (message("definition_path") = "workflows/test-workflow.yaml") =>
@@ -67,7 +67,7 @@ POSTCONDITION_INVALID_OR_UNKNOWN_DEFINITION_IS_REJECTED:
     final_memory("error_reason") = "invalid_definition_schema" and
     final_memory("last_reply_action") = "definition_error"
 
-POSTCONDITION_STARTUP_PROBE_FAILURE_IS_REPORTED:
+ENSURES_STARTUP_PROBE_FAILURE_IS_REPORTED:
   message("action") = "prepare_definition" and
   (message("definition_path") = "workflows/default-workflow.yaml" or
    message("definition_path") = "workflows/test-workflow.yaml") and
@@ -76,27 +76,27 @@ POSTCONDITION_STARTUP_PROBE_FAILURE_IS_REPORTED:
     final_memory("error_reason") = "startup_dependency_unavailable" and
     final_memory("last_reply_action") = "definition_error"
 
-POSTCONDITION_EVALUATION_PRODUCES_A_DECISION:
+ENSURES_EVALUATION_PRODUCES_A_DECISION:
   message("action") = "evaluate_transition" => final_memory("transition_sent") = 1
 
-POSTCONDITION_TRANSITION_FAILURE_BECOMES_RETRYABLE_STAY:
+ENSURES_TRANSITION_FAILURE_BECOMES_RETRYABLE_STAY:
   message("action") = "evaluate_transition" and final_memory("probe_ok") = 0 =>
     final_memory("transition_outcome") = "stay" and
     final_memory("transition_reason") = "complete_transition_failed" and
     final_memory("retryable") = 1 and
     final_memory("terminal_outcome") = ""
 
-POSTCONDITION_REJECT_DECISION_REJECTS_THE_ITEM:
+ENSURES_REJECT_DECISION_REJECTS_THE_ITEM:
   message("action") = "evaluate_transition" and final_memory("transition_outcome") = "reject" =>
     final_memory("terminal_outcome") = "rejected"
 
-POSTCONDITION_REVIEW_ADVANCE_COMPLETES_THE_ITEM:
+ENSURES_REVIEW_ADVANCE_COMPLETES_THE_ITEM:
   message("action") = "evaluate_transition" and
   final_memory("transition_outcome") = "advance" and
   final_memory("next_stage") = "completion" =>
     final_memory("terminal_outcome") = "completed"
 
-POSTCONDITION_DESCRIBE_RETURNS_A_DESCRIPTION:
+ENSURES_DESCRIBE_RETURNS_A_DESCRIPTION:
   message("action") = "describe" => final_memory("describe_sent") = 1
 ```
 

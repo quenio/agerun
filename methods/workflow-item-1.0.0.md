@@ -21,12 +21,12 @@ final_memory: ProbeMap
 message: ProbeMap
 context: ProbeMap
 
-PRECONDITION_SUPPORTED_MESSAGE_ACTION:
+REQUIRES_SUPPORTED_MESSAGE_ACTION:
   message("action") = "initialize" or
   message("action") = "auto_progress" or
   message("action") = "transition_decision"
 
-PRECONDITION_INITIALIZE_MESSAGE_IS_COMPLETE:
+REQUIRES_INITIALIZE_MESSAGE_IS_COMPLETE:
   message("action") = "initialize" =>
     message("sender") > 0 and
     not (message("workflow_name") = "") and
@@ -39,68 +39,68 @@ PRECONDITION_INITIALIZE_MESSAGE_IS_COMPLETE:
     message("reporter_agent_id") > 0 and
     not (message("initial_stage") = "")
 
-PRECONDITION_AUTO_PROGRESS_HAS_A_KNOWN_STAGE:
+REQUIRES_AUTO_PROGRESS_HAS_A_KNOWN_STAGE:
   message("action") = "auto_progress" =>
     initial_memory("current_stage") = "intake" or
     initial_memory("current_stage") = "triage" or
     initial_memory("current_stage") = "active" or
     initial_memory("current_stage") = "review"
 
-PRECONDITION_TRANSITION_DECISION_IS_COMPLETE:
+REQUIRES_TRANSITION_DECISION_IS_COMPLETE:
   message("action") = "transition_decision" =>
     (message("outcome") = "advance" or
      message("outcome") = "reject" or
      message("outcome") = "stay") and
     not (message("reason") = "")
 
-POSTCONDITION_INITIALIZATION_RECORDS_THE_ITEM_IDENTITY:
+ENSURES_INITIALIZATION_RECORDS_THE_ITEM_IDENTITY:
   message("action") = "initialize" =>
     final_memory("workflow_name") = message("workflow_name") and
     final_memory("item_id") = message("item_id")
 
-POSTCONDITION_INITIALIZATION_EMITS_PROGRESS:
+ENSURES_INITIALIZATION_EMITS_PROGRESS:
   message("action") = "initialize" =>
     final_memory("current_stage") = message("initial_stage") and
     final_memory("current_status") = "created" and
     final_memory("last_reason") = "initialized" and
     final_memory("progress_sent") = 1
 
-POSTCONDITION_INTAKE_AUTO_PROGRESS_ADVANCES_TO_TRIAGE:
+ENSURES_INTAKE_AUTO_PROGRESS_ADVANCES_TO_TRIAGE:
   message("action") = "auto_progress" and initial_memory("current_stage") = "intake" =>
     final_memory("current_stage") = "triage" and
     final_memory("transition_count") = initial_memory("transition_count") + 1 and
     final_memory("progress_sent") = 1
 
-POSTCONDITION_TRIAGE_AUTO_PROGRESS_ADVANCES_TO_ACTIVE:
+ENSURES_TRIAGE_AUTO_PROGRESS_ADVANCES_TO_ACTIVE:
   message("action") = "auto_progress" and initial_memory("current_stage") = "triage" =>
     final_memory("current_stage") = "active" and
     final_memory("transition_count") = initial_memory("transition_count") + 1 and
     final_memory("progress_sent") = 1
 
-POSTCONDITION_ACTIVE_AUTO_PROGRESS_ADVANCES_TO_REVIEW:
+ENSURES_ACTIVE_AUTO_PROGRESS_ADVANCES_TO_REVIEW:
   message("action") = "auto_progress" and initial_memory("current_stage") = "active" =>
     final_memory("current_stage") = "review" and
     final_memory("transition_count") = initial_memory("transition_count") + 1 and
     final_memory("progress_sent") = 1
 
-POSTCONDITION_REVIEW_REQUESTS_A_TRANSITION_DECISION:
+ENSURES_REVIEW_REQUESTS_A_TRANSITION_DECISION:
   message("action") = "auto_progress" and initial_memory("current_stage") = "review" =>
     final_memory("evaluate_sent") = 1
 
-POSTCONDITION_ADVANCE_DECISION_EMITS_A_SUMMARY:
+ENSURES_ADVANCE_DECISION_EMITS_A_SUMMARY:
   message("action") = "transition_decision" and message("outcome") = "advance" =>
     final_memory("current_stage") = message("next_stage") and
     final_memory("current_status") = message("status") and
     final_memory("last_reason") = message("reason") and
     final_memory("summary_sent") = 1
 
-POSTCONDITION_REJECT_DECISION_EMITS_A_SUMMARY:
+ENSURES_REJECT_DECISION_EMITS_A_SUMMARY:
   message("action") = "transition_decision" and message("outcome") = "reject" =>
     final_memory("terminal_outcome") = message("terminal_outcome") and
     final_memory("last_reason") = message("reason") and
     final_memory("summary_sent") = 1
 
-POSTCONDITION_STAY_DECISION_EMITS_PROGRESS_INSTEAD_OF_SUMMARY:
+ENSURES_STAY_DECISION_EMITS_PROGRESS_INSTEAD_OF_SUMMARY:
   message("action") = "transition_decision" and message("outcome") = "stay" =>
     final_memory("current_stage") = initial_memory("current_stage") and
     final_memory("last_reason") = message("reason") and

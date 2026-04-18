@@ -1,5 +1,23 @@
 # AgeRun CHANGELOG
 
+## 2026-04-18 (Eiffel-style ATN contract naming for workflow methods)
+
+- **Renamed workflow ATN contract assertions to `REQUIRES_` and `ENSURES_`**
+
+  Updated the workflow method ATN specifications to use Eiffel-style contract naming, with
+  precondition assertions prefixed by `REQUIRES_` and postcondition assertions prefixed by
+  `ENSURES_`. This keeps the ATN sections aligned with the requested Design by Contract style while
+  preserving the existing map-based probe model.
+
+  **Implementation**: Updated `methods/workflow-coordinator-1.0.0.md`,
+  `methods/workflow-definition-1.0.0.md`, `methods/workflow-item-1.0.0.md`, and
+  `methods/workflow-reporter-1.0.0.md`.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: The workflow method ATN sections now use a clearer and more conventional contract
+  naming scheme for readers familiar with Eiffel-style preconditions and postconditions.
+
 ## 2026-04-18 (ATN workflow specs use uniform map-function constants)
 
 - **Normalized workflow method ATN constants to a single probe-map type**
