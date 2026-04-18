@@ -75,6 +75,29 @@ static ar_instruction_ast_t* _create_complete_ast(
     return own_ast;
 }
 
+static ar_instruction_ast_t* _create_complete_ast_with_base_ast(
+    const char *ref_template,
+    ar_expression_ast_t *own_base_ast,
+    const char *ref_result_path
+) {
+    const char *args[2] = {ref_template, "<custom-base>"};
+    ar_instruction_ast_t *own_ast = ar_instruction_ast__create_function_call(
+        AR_INSTRUCTION_AST_TYPE__COMPLETE,
+        "complete",
+        args,
+        2U,
+        ref_result_path
+    );
+    assert(own_ast != NULL);
+
+    ar_list_t *own_arg_asts = ar_list__create();
+    assert(own_arg_asts != NULL);
+    assert(ar_list__add_last(own_arg_asts, ar_expression_ast__create_literal_string(ref_template)) == true);
+    assert(ar_list__add_last(own_arg_asts, own_base_ast) == true);
+    assert(ar_instruction_ast__set_function_arg_asts(own_ast, own_arg_asts) == true);
+    return own_ast;
+}
+
 static void test_complete_instruction_evaluator__create_destroy(void) {
     ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_complete_instruction_evaluator__create_destroy");
     assert(own_fixture != NULL);
@@ -237,6 +260,154 @@ static void test_complete_instruction_evaluator__whitespace_rejection_keeps_memo
     ar_evaluator_fixture__destroy(own_fixture);
 }
 
+static void test_complete_instruction_evaluator__invalid_template_fast_failure_does_not_initialize_runtime(void) {
+    unsetenv("AGERUN_COMPLETE_RUNNER");
+    assert(setenv("AGERUN_COMPLETE_RUNNER", "./definitely-missing-llama-cli", 1) == 0);
+
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_complete_instruction_evaluator__invalid_template_fast_failure_does_not_initialize_runtime");
+    assert(own_fixture != NULL);
+    ar_local_completion_t *own_runtime = ar_local_completion__create(ar_evaluator_fixture__get_log(own_fixture));
+    assert(own_runtime != NULL);
+    ar_complete_instruction_evaluator_t *own_evaluator = ar_complete_instruction_evaluator__create(
+        ar_evaluator_fixture__get_log(own_fixture),
+        ar_evaluator_fixture__get_expression_evaluator(own_fixture),
+        own_runtime
+    );
+    assert(own_evaluator != NULL);
+
+    ar_instruction_ast_t *own_ast = _create_complete_ast("No placeholders here.", NULL, "memory.ok");
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+
+    bool result = ar_complete_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
+    assert(result == true);
+    assert(ar_data__get_map_integer(ar_evaluator_fixture__get_memory(own_fixture), "ok") == 0);
+    assert(ar_data__get_map_data(ar_evaluator_fixture__get_memory(own_fixture), "country") == NULL);
+    assert(ar_local_completion__is_ready(own_runtime) == false);
+    assert(ar_log__get_last_error_message(ar_evaluator_fixture__get_log(own_fixture)) != NULL);
+    assert(strstr(ar_log__get_last_error_message(ar_evaluator_fixture__get_log(own_fixture)), "failure_category=invalid_template") != NULL);
+
+    ar_instruction_ast__destroy(own_ast);
+    ar_complete_instruction_evaluator__destroy(own_evaluator);
+    ar_local_completion__destroy(own_runtime);
+    ar_evaluator_fixture__destroy(own_fixture);
+    assert(setenv("AGERUN_COMPLETE_RUNNER", g_runner_path, 1) == 0);
+    assert(setenv("AGERUN_COMPLETE_MODEL", g_model_path, 1) == 0);
+}
+
+static void test_complete_instruction_evaluator__invalid_base_path_fast_failure_preserves_memory(void) {
+    unsetenv("AGERUN_COMPLETE_RUNNER");
+    assert(setenv("AGERUN_COMPLETE_RUNNER", "./definitely-missing-llama-cli", 1) == 0);
+
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_complete_instruction_evaluator__invalid_base_path_fast_failure_preserves_memory");
+    assert(own_fixture != NULL);
+    ar_local_completion_t *own_runtime = ar_local_completion__create(ar_evaluator_fixture__get_log(own_fixture));
+    assert(own_runtime != NULL);
+    ar_complete_instruction_evaluator_t *own_evaluator = ar_complete_instruction_evaluator__create(
+        ar_evaluator_fixture__get_log(own_fixture),
+        ar_evaluator_fixture__get_expression_evaluator(own_fixture),
+        own_runtime
+    );
+    assert(own_evaluator != NULL);
+
+    assert(ar_data__set_map_string(ar_evaluator_fixture__get_memory(own_fixture), "city", "Old City") == true);
+    ar_instruction_ast_t *own_ast = _create_complete_ast_with_base_ast(
+        "The capital is {city}.",
+        ar_expression_ast__create_literal_string("not-a-memory-path"),
+        "memory.ok"
+    );
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+
+    bool result = ar_complete_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
+    assert(result == true);
+    assert(ar_data__get_map_integer(ar_evaluator_fixture__get_memory(own_fixture), "ok") == 0);
+    assert(strcmp(ar_data__get_map_string(ar_evaluator_fixture__get_memory(own_fixture), "city"), "Old City") == 0);
+    assert(ar_local_completion__is_ready(own_runtime) == false);
+    assert(strstr(ar_log__get_last_error_message(ar_evaluator_fixture__get_log(own_fixture)), "failure_category=invalid_base_path") != NULL);
+
+    ar_instruction_ast__destroy(own_ast);
+    ar_complete_instruction_evaluator__destroy(own_evaluator);
+    ar_local_completion__destroy(own_runtime);
+    ar_evaluator_fixture__destroy(own_fixture);
+    assert(setenv("AGERUN_COMPLETE_RUNNER", g_runner_path, 1) == 0);
+    assert(setenv("AGERUN_COMPLETE_MODEL", g_model_path, 1) == 0);
+}
+
+static void test_complete_instruction_evaluator__missing_placeholder_response_keeps_memory_clean(void) {
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_complete_instruction_evaluator__missing_placeholder_response_keeps_memory_clean");
+    assert(own_fixture != NULL);
+    ar_local_completion_t *own_runtime = ar_local_completion__create(ar_evaluator_fixture__get_log(own_fixture));
+    assert(own_runtime != NULL);
+    ar_complete_instruction_evaluator_t *own_evaluator = ar_complete_instruction_evaluator__create(
+        ar_evaluator_fixture__get_log(own_fixture),
+        ar_evaluator_fixture__get_expression_evaluator(own_fixture),
+        own_runtime
+    );
+    assert(own_evaluator != NULL);
+
+    assert(ar_data__set_map_string(ar_evaluator_fixture__get_memory(own_fixture), "country", "Peru") == true);
+    ar_instruction_ast_t *own_ast = _create_complete_ast(
+        "The largest country in South America is {country}. The capital is {language}.",
+        NULL,
+        "memory.ok"
+    );
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+
+    bool result = ar_complete_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
+    assert(result == true);
+    assert(ar_data__get_map_integer(ar_evaluator_fixture__get_memory(own_fixture), "ok") == 0);
+    assert(strcmp(ar_data__get_map_string(ar_evaluator_fixture__get_memory(own_fixture), "country"), "Peru") == 0);
+    assert(ar_data__get_map_data(ar_evaluator_fixture__get_memory(own_fixture), "language") == NULL);
+    assert(strstr(ar_log__get_last_error_message(ar_evaluator_fixture__get_log(own_fixture)), "recovery_hint=") != NULL);
+
+    ar_instruction_ast__destroy(own_ast);
+    ar_complete_instruction_evaluator__destroy(own_evaluator);
+    ar_local_completion__destroy(own_runtime);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_complete_instruction_evaluator__repeated_placeholders_use_one_consistent_value(void) {
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_complete_instruction_evaluator__repeated_placeholders_use_one_consistent_value");
+    assert(own_fixture != NULL);
+    ar_local_completion_t *own_runtime = ar_local_completion__create(ar_evaluator_fixture__get_log(own_fixture));
+    assert(own_runtime != NULL);
+    ar_complete_instruction_evaluator_t *own_evaluator = ar_complete_instruction_evaluator__create(
+        ar_evaluator_fixture__get_log(own_fixture),
+        ar_evaluator_fixture__get_expression_evaluator(own_fixture),
+        own_runtime
+    );
+    assert(own_evaluator != NULL);
+
+    ar_instruction_ast_t *own_ast = _create_complete_ast(
+        "Repeat {country} and then {country} again.",
+        NULL,
+        "memory.ok"
+    );
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+
+    bool result = ar_complete_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
+    assert(result == true);
+    assert(ar_data__get_map_integer(ar_evaluator_fixture__get_memory(own_fixture), "ok") == 1);
+
+    const char *ref_country = ar_data__get_map_string(ar_evaluator_fixture__get_memory(own_fixture), "country");
+    assert(ref_country != NULL);
+    assert(strcmp(ref_country, "Brazil") == 0);
+
+    char own_completed_text[160];
+    snprintf(
+        own_completed_text,
+        sizeof(own_completed_text),
+        "Repeat %s and then %s again.",
+        ref_country,
+        ref_country
+    );
+    assert(strcmp(own_completed_text, "Repeat Brazil and then Brazil again.") == 0);
+
+    ar_instruction_ast__destroy(own_ast);
+    ar_complete_instruction_evaluator__destroy(own_evaluator);
+    ar_local_completion__destroy(own_runtime);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
 int main(void) {
     _setup_fake_runner();
     printf("Running complete instruction evaluator tests...\n");
@@ -245,6 +416,10 @@ int main(void) {
     test_complete_instruction_evaluator__evaluate_nested_success_overwrites_existing_values();
     test_complete_instruction_evaluator__failure_stores_false_and_preserves_existing_values();
     test_complete_instruction_evaluator__whitespace_rejection_keeps_memory_clean();
+    test_complete_instruction_evaluator__invalid_template_fast_failure_does_not_initialize_runtime();
+    test_complete_instruction_evaluator__invalid_base_path_fast_failure_preserves_memory();
+    test_complete_instruction_evaluator__missing_placeholder_response_keeps_memory_clean();
+    test_complete_instruction_evaluator__repeated_placeholders_use_one_consistent_value();
     printf("All complete instruction evaluator tests passed!\n");
     _cleanup_fake_runner();
     return 0;

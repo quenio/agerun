@@ -22,4 +22,7 @@ The `ar_local_completion` module is the local runtime adapter used by `complete(
 - when `AGERUN_COMPLETE_RUNNER` is set, the adapter runs that explicit executable instead of the direct `libllama` path; this keeps deterministic fake-runner tests possible while the direct path is brought up
 - successful responses return one string value per requested placeholder key
 - both the direct prompt and the runner override request exact `name=value` lines and the adapter ignores unrelated output lines
-- invalid requests such as missing template text, missing placeholders, non-positive `timeout_ms`, missing vendored runtime artifacts, or unavailable runner overrides fail with a logged runtime error and a `NULL` response
+- invalid requests such as missing template text, missing placeholders, or non-positive `timeout_ms` fail before backend initialization and leave the runtime uninitialized
+- runtime failures log actionable fields in the error text: `failure_category=...`, `cause=...`, and `recovery_hint=...`
+- supported-environment resource problems such as missing vendored runtime artifacts, unusable GGUF files, incomplete placeholder coverage, timeout, or unavailable runner overrides fail as normal instruction/runtime failures rather than unsupported-platform cases
+- partial generation failures return `NULL` without mutating AgeRun memory directly; the evaluator turns them into handled `complete(...)` failures with preserved prior memory values

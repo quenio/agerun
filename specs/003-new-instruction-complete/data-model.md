@@ -55,7 +55,9 @@ context, generated string values, validation status, and final boolean instructi
 - `own_generated_values`: temporary map from placeholder name to generated string value
 - `result`: boolean instruction result returned to AgeRun method execution
 - `timeout_ms`: configured maximum wait time for the local completion attempt
-- `own_error_reason`: optional failure reason for logging/diagnostics
+- `failure_category`: optional machine-readable failure class for handled failures
+- `own_failure_cause`: optional immediate-cause diagnostic string
+- `own_recovery_hint`: optional recovery-hint diagnostic string
 
 ### Validation Rules
 - `own_generated_values` contains every required placeholder before success is allowed
@@ -89,6 +91,7 @@ execution, and structured placeholder-value generation behind a stable AgeRun-fa
 - The runtime loads one configured GGUF model asset for the process
 - The runtime accepts placeholder-oriented requests and returns structured string values
 - The runtime may remain shared across multiple instruction evaluations in one process
+- Invalid requests such as missing template text, empty placeholder sets, or non-positive timeout values fail before backend initialization begins
 - A failed runtime initialization must surface actionable error information without corrupting agent memory
 
 ## Relationships

@@ -13,9 +13,16 @@
 #include "ar_data.h"
 #include "ar_heap.h"
 
-static void _setup_fake_runner(char *mut_runner_path, size_t runner_size, char *mut_model_path, size_t model_size) {
+static void _setup_fake_runner_with_output(
+    char *mut_runner_path,
+    size_t runner_size,
+    char *mut_model_path,
+    size_t model_size,
+    const char *ref_output_script
+) {
     assert(mut_runner_path != NULL);
     assert(mut_model_path != NULL);
+    assert(ref_output_script != NULL);
     snprintf(mut_runner_path, runner_size, "./fake-llama-cli-%ld.sh", (long)getpid());
     snprintf(mut_model_path, model_size, "./fake-model-%ld.gguf", (long)getpid());
 
@@ -27,12 +34,22 @@ static void _setup_fake_runner(char *mut_runner_path, size_t runner_size, char *
     FILE *own_runner = fopen(mut_runner_path, "w");
     assert(own_runner != NULL);
     fputs("#!/bin/sh\n", own_runner);
-    fputs("printf 'country=Brazil\\ncity=Brasilia\\ncontinent=South America\\nbracey={invalid}\\nspacey= value \\nempty=\\n'\n", own_runner);
+    fputs(ref_output_script, own_runner);
     fclose(own_runner);
     assert(chmod(mut_runner_path, 0700) == 0);
 
     assert(setenv("AGERUN_COMPLETE_RUNNER", mut_runner_path, 1) == 0);
     assert(setenv("AGERUN_COMPLETE_MODEL", mut_model_path, 1) == 0);
+}
+
+static void _setup_fake_runner(char *mut_runner_path, size_t runner_size, char *mut_model_path, size_t model_size) {
+    _setup_fake_runner_with_output(
+        mut_runner_path,
+        runner_size,
+        mut_model_path,
+        model_size,
+        "printf 'country=Brazil\\ncity=Brasilia\\ncontinent=South America\\nbracey={invalid}\\nspacey= value \\nempty=\\n'\n"
+    );
 }
 
 static void _cleanup_fake_runner(const char *ref_runner_path, const char *ref_model_path) {
@@ -308,6 +325,73 @@ static void _run_subtest_subprocess(const char *ref_subtest_name) {
     assert(WEXITSTATUS(own_status) == 0);
 }
 
+static void test_local_completion__invalid_before_generation_rejects_without_runtime_initialization(void) {
+    char own_runner_path[128] = {0};
+    char own_model_path[128] = {0};
+    _setup_fake_runner(own_runner_path, sizeof(own_runner_path), own_model_path, sizeof(own_model_path));
+
+    ar_log_t *own_log = ar_log__create();
+    assert(own_log != NULL);
+    ar_local_completion_t *own_runtime = ar_local_completion__create(own_log);
+    assert(own_runtime != NULL);
+
+    ar_list_t *own_placeholders = _create_placeholder_list("country", NULL);
+    ar_data_t *own_values = ar_local_completion__complete(
+        own_runtime,
+        "",
+        own_placeholders,
+        15000
+    );
+
+    assert(own_values == NULL);
+    assert(ar_local_completion__is_ready(own_runtime) == false);
+    assert(ar_log__get_last_error_message(own_log) != NULL);
+    assert(strstr(ar_log__get_last_error_message(own_log), "failure_category=invalid_request") != NULL);
+    assert(strstr(ar_log__get_last_error_message(own_log), "recovery_hint=") != NULL);
+
+    _destroy_placeholder_list(own_placeholders);
+    ar_local_completion__destroy(own_runtime);
+    ar_log__destroy(own_log);
+    _cleanup_fake_runner(own_runner_path, own_model_path);
+}
+
+static void test_local_completion__partial_generation_missing_placeholder_failure_is_actionable(void) {
+    char own_runner_path[128] = {0};
+    char own_model_path[128] = {0};
+    _setup_fake_runner_with_output(
+        own_runner_path,
+        sizeof(own_runner_path),
+        own_model_path,
+        sizeof(own_model_path),
+        "printf 'country=Brazil\\n'\n"
+    );
+
+    ar_log_t *own_log = ar_log__create();
+    assert(own_log != NULL);
+    ar_local_completion_t *own_runtime = ar_local_completion__create(own_log);
+    assert(own_runtime != NULL);
+
+    ar_list_t *own_placeholders = _create_placeholder_list("country", "city");
+    ar_data_t *own_values = ar_local_completion__complete(
+        own_runtime,
+        "The largest country in South America is {country}. The capital is {city}.",
+        own_placeholders,
+        15000
+    );
+
+    assert(own_values == NULL);
+    assert(ar_local_completion__is_ready(own_runtime) == true);
+    assert(ar_log__get_last_error_message(own_log) != NULL);
+    assert(strstr(ar_log__get_last_error_message(own_log), "failure_category=incomplete_placeholder") != NULL);
+    assert(strstr(ar_log__get_last_error_message(own_log), "city") != NULL);
+    assert(strstr(ar_log__get_last_error_message(own_log), "recovery_hint=") != NULL);
+
+    _destroy_placeholder_list(own_placeholders);
+    ar_local_completion__destroy(own_runtime);
+    ar_log__destroy(own_log);
+    _cleanup_fake_runner(own_runner_path, own_model_path);
+}
+
 static void test_local_completion__timeout_and_unavailable_runtime_failures(void) {
     char own_runner_path[128] = {0};
     char own_model_path[128] = {0};
@@ -330,6 +414,8 @@ static void test_local_completion__timeout_and_unavailable_runtime_failures(void
     assert(ar_local_completion__is_ready(own_runtime) == false);
     assert(ar_log__get_last_error_message(own_log) != NULL);
     assert(strstr(ar_log__get_last_error_message(own_log), "timeout") != NULL);
+    assert(strstr(ar_log__get_last_error_message(own_log), "failure_category=invalid_request") != NULL);
+    assert(strstr(ar_log__get_last_error_message(own_log), "recovery_hint=") != NULL);
 
     ar_local_completion__destroy(own_runtime);
     assert(setenv("AGERUN_COMPLETE_RUNNER", "./definitely-missing-llama-cli", 1) == 0);
@@ -345,6 +431,8 @@ static void test_local_completion__timeout_and_unavailable_runtime_failures(void
     assert(own_values == NULL);
     assert(ar_log__get_last_error_message(own_log) != NULL);
     assert(strstr(ar_log__get_last_error_message(own_log), "AGERUN_COMPLETE_RUNNER") != NULL);
+    assert(strstr(ar_log__get_last_error_message(own_log), "failure_category=runtime_unavailable") != NULL);
+    assert(strstr(ar_log__get_last_error_message(own_log), "recovery_hint=") != NULL);
 
     _destroy_placeholder_list(own_placeholders);
     ar_local_completion__destroy(own_runtime);
@@ -363,6 +451,10 @@ int main(void) {
             test_local_completion__direct_backend_missing_model_file_failure();
         } else if (strcmp(ref_subtest_name, "direct_backend_vocab_only_model_failure") == 0) {
             test_local_completion__direct_backend_vocab_only_model_failure();
+        } else if (strcmp(ref_subtest_name, "invalid_before_generation_rejects_without_runtime_initialization") == 0) {
+            test_local_completion__invalid_before_generation_rejects_without_runtime_initialization();
+        } else if (strcmp(ref_subtest_name, "partial_generation_missing_placeholder_failure_is_actionable") == 0) {
+            test_local_completion__partial_generation_missing_placeholder_failure_is_actionable();
         } else if (strcmp(ref_subtest_name, "timeout_and_unavailable_runtime_failures") == 0) {
             test_local_completion__timeout_and_unavailable_runtime_failures();
         } else {
@@ -379,6 +471,8 @@ int main(void) {
     test_local_completion__real_phi3_model_smoke();
     _run_subtest_subprocess("direct_backend_missing_model_file_failure");
     _run_subtest_subprocess("direct_backend_vocab_only_model_failure");
+    _run_subtest_subprocess("invalid_before_generation_rejects_without_runtime_initialization");
+    _run_subtest_subprocess("partial_generation_missing_placeholder_failure_is_actionable");
     _run_subtest_subprocess("timeout_and_unavailable_runtime_failures");
     printf("All local completion tests passed!\n");
     return 0;

@@ -46,6 +46,21 @@ Expected outcome:
 - the instruction returns boolean status in `memory.ok`
 - `memory.reply` can reuse both values without extra conversion
 
+## 2a. Reuse one stored value across repeated placeholders
+
+Example method instructions:
+
+```text
+memory.ok := complete("{country} is in {continent}. {country} remains consistent.")
+memory.reply := build("reply={country}|{continent}", memory)
+send(message.sender, memory.reply)
+```
+
+Expected outcome:
+- repeated `{country}` references resolve to the same stored string value
+- later `build(...)` reads `memory.country` and `memory.continent` directly
+- later `send(...)` can forward the built reply without extra conversion
+
 ## 3. Use `complete(...)` with a nested base memory path
 
 Example method instructions:
@@ -75,7 +90,10 @@ send(message.sender, memory.reply)
 Expected outcome:
 - the instruction returns `false`
 - an actionable error is recorded through the runtime logging path
+- the logged error text includes `failure_category=...`, `cause=...`, and `recovery_hint=...`
+- invalid templates and invalid base paths fail before local completion initialization begins
 - previously stored target values remain unchanged because the failed call performs no partial write
+- later non-`complete(...)` work can continue normally after the failed call
 
 ## 5. Success-path acceptance fixture set
 
@@ -91,6 +109,35 @@ Expected validation evidence:
 - reconstructing the sentence from the stored values preserves the literal text exactly
 - nested writes update the requested `memory...` base path
 - pre-existing values are replaced only on successful completion
+
+## 5a. Reuse-path acceptance fixture set for SC-004
+
+Use the following documented fixture set when validating direct reuse after a successful completion call:
+- repeated-placeholder consistency: `complete("{country} is in {continent}. {country} remains consistent.")`
+- downstream build reuse: `memory.reply := build("reply={country}|{continent}", memory)`
+- downstream send reuse: `send(message.sender, memory.reply)` or an equivalent delegate/agent send using the built reply
+
+Expected validation evidence:
+- repeated placeholders resolve to one stored string value per placeholder name
+- later `build(...)` reads the populated completion outputs as normal string memory
+- later `send(...)` can forward the reused string value without additional conversion or translation
+
+## 5b. Failure-path acceptance fixture set
+
+Use the following documented fixture set when validating User Story 3 failure handling:
+- invalid template fast-failure: `complete("No placeholders here.")`
+- invalid base-path fast-failure at the evaluator layer: `complete("The capital is {city}.", <non-memory AST>)`
+- incomplete placeholder coverage: request `{country}` and `{language}` when the backend only returns `country`
+- generated-value rejection: empty placeholder values, leading/trailing whitespace, or returned `{` / `}` characters
+- timeout/unavailable runtime: non-positive timeout, missing runner override, missing model file, or unusable GGUF model
+- post-failure continuation: execute a later assignment/build/send after a failed `complete(...)` call and verify it still succeeds
+
+Expected validation evidence:
+- invalid-before-generation cases leave `ar_local_completion` uninitialized
+- actionable errors include `failure_category`, `cause`, and `recovery_hint`
+- prior memory values survive every failure case unchanged
+- no partial generated values are written when placeholder coverage is incomplete
+- later non-completion instructions still succeed after a handled failure
 
 ## 6. Run targeted validation during implementation
 
@@ -117,3 +164,4 @@ make check-logs
 - the primary backend path is direct vendored `libllama`; `AGERUN_COMPLETE_RUNNER` is an explicit override for controlled fallback/testing scenarios
 - first-release performance guarantees apply only to short templates with up to 2 placeholders and 120 total characters
 - warm-run and cold-start timing are validated separately in the implementation plan
+- public language documentation for the instruction is synchronized across `SPEC.md`, `README.md`, and this quickstart so user-facing semantics match the implemented parser/evaluator behavior

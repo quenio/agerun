@@ -1,5 +1,40 @@
 # AgeRun CHANGELOG
 
+## 2026-04-17 (Complete() failure handling and documentation sync)
+
+- **Completed `complete(...)` User Story 3 and synchronized public/module docs**
+
+  Finished the handled-failure slice for `complete(...)` by adding actionable runtime/evaluator
+  diagnostics with `failure_category`, `cause`, and `recovery_hint`, fast-failing invalid templates
+  and invalid base paths before backend initialization, preserving prior memory on failure, and
+  verifying that later non-`complete(...)` work still succeeds after a handled failure. Also
+  synchronized the public language docs, module docs, research/data-model artifacts, and feature
+  contracts/tasks so the implemented parser/evaluator/runtime behavior matches the documented
+  feature contract.
+
+  **Implementation**: Updated `modules/ar_local_completion.c`,
+  `modules/ar_local_completion_tests.c`, `modules/ar_complete_instruction_evaluator.zig`,
+  `modules/ar_complete_instruction_evaluator_tests.c`, `modules/ar_instruction_evaluator_tests.c`,
+  `modules/ar_complete_instruction_parser.md`, `modules/ar_complete_instruction_evaluator.md`,
+  `modules/ar_local_completion.md`, `modules/ar_instruction_ast.md`,
+  `modules/ar_instruction_parser.md`, `modules/ar_instruction_evaluator.md`, `modules/README.md`,
+  `SPEC.md`, `README.md`, `.specify/memory/pi-agent.md`,
+  `specs/003-new-instruction-complete/contracts/README.md`,
+  `specs/003-new-instruction-complete/contracts/complete-instruction.md`,
+  `specs/003-new-instruction-complete/contracts/local-completion-runtime.md`,
+  `specs/003-new-instruction-complete/data-model.md`,
+  `specs/003-new-instruction-complete/quickstart.md`,
+  `specs/003-new-instruction-complete/research.md`, and
+  `specs/003-new-instruction-complete/tasks.md`.
+
+  **Verification**: `make ar_local_completion_tests 2>&1`,
+  `make ar_complete_instruction_evaluator_tests 2>&1`, `make ar_instruction_evaluator_tests 2>&1`,
+  and `make check-docs 2>&1`.
+
+  **Impact**: `complete(...)` now has documented and tested failure-safety semantics with
+  actionable diagnostics, and the feature artifacts are aligned through the final documentation
+  synchronization steps completed so far.
+
 ## 2026-04-17 (Embedded complete() runtime groundwork)
 
 - **Completion instruction groundwork**: Added `complete(...)` AST, parser, evaluator, and local runtime modules with direct embedded `libllama` integration and vendored CPU-only `llama.cpp` infrastructure

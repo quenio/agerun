@@ -173,3 +173,18 @@
     by the concrete build workflow.
   - Keep the external `llama-cli` runner boundary as the long-term integration shape: rejected by
     the explicit architecture decision to move toward direct in-process `libllama` integration.
+
+## Decision 12: Record actionable failure diagnostics at both backend and evaluator boundaries
+
+- **Decision**: Normalize `complete(...)` failures so the recorded error text includes
+  `failure_category`, `cause`, and `recovery_hint`, while invalid templates and invalid base paths
+  fail before local runtime initialization begins.
+- **Rationale**: User Story 3 requires distinguishable, actionable failures without partial memory
+  mutation. Recording the same diagnostic shape across runtime and evaluator layers makes failures
+  testable, preserves the supported-environment/runtime-failure distinction, and keeps later method
+  work runnable after a handled failure.
+- **Alternatives considered**:
+  - Log free-form failure strings only: rejected because they are harder to validate and compare
+    across failure scenarios.
+  - Initialize the backend before validating obvious request errors: rejected because the spec now
+    requires invalid-before-generation fast failure.

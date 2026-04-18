@@ -24,6 +24,11 @@ typedef struct ar_local_completion_buffer_s {
     size_t capacity;
 } ar_local_completion_buffer_t;
 
+typedef struct ar_local_completion_placeholder_items_s {
+    size_t count;
+    void **own_items;
+} ar_local_completion_placeholder_items_t;
+
 typedef struct ar_local_completion_llama_api_s {
     void (*ref_llama_backend_init)(void);
     void (*ref_llama_backend_free)(void);
@@ -82,11 +87,38 @@ struct ar_local_completion_s {
 
 static bool _build_direct_response_grammar(const ar_list_t *ref_placeholders,
                                            ar_local_completion_buffer_t *mut_grammar);
+static bool _buffer_append(ar_local_completion_buffer_t *mut_buffer, const char *ref_text);
+static void _buffer_destroy(ar_local_completion_buffer_t *mut_buffer);
 
 static void _log_error(const ar_local_completion_t *ref_runtime, const char *ref_message) {
     if (ref_runtime != NULL && ref_runtime->ref_log != NULL && ref_message != NULL) {
         ar_log__error(ref_runtime->ref_log, ref_message);
     }
+}
+
+static void _log_failure(const ar_local_completion_t *ref_runtime,
+                         const char *ref_base_message,
+                         const char *ref_failure_category,
+                         const char *ref_cause,
+                         const char *ref_recovery_hint) {
+    ar_local_completion_buffer_t own_message = {0};
+    bool built_message = ref_base_message != NULL &&
+                         ref_failure_category != NULL &&
+                         ref_cause != NULL &&
+                         ref_recovery_hint != NULL &&
+                         _buffer_append(&own_message, ref_base_message) &&
+                         _buffer_append(&own_message, "; failure_category=") &&
+                         _buffer_append(&own_message, ref_failure_category) &&
+                         _buffer_append(&own_message, "; cause=") &&
+                         _buffer_append(&own_message, ref_cause) &&
+                         _buffer_append(&own_message, "; recovery_hint=") &&
+                         _buffer_append(&own_message, ref_recovery_hint);
+    if (built_message) {
+        _log_error(ref_runtime, own_message.own_text);
+    } else {
+        _log_error(ref_runtime, ref_base_message);
+    }
+    _buffer_destroy(&own_message);
 }
 
 static bool _buffer_reserve(ar_local_completion_buffer_t *mut_buffer, size_t minimum_capacity) {
@@ -237,6 +269,38 @@ static bool _file_exists(const char *ref_path) {
     return ref_path != NULL && access(ref_path, F_OK) == 0;
 }
 
+static bool _placeholder_items_init(const ar_list_t *ref_placeholders,
+                                    ar_local_completion_placeholder_items_t *mut_view) {
+    if (mut_view == NULL) {
+        return false;
+    }
+
+    mut_view->count = 0U;
+    mut_view->own_items = NULL;
+    if (ref_placeholders == NULL) {
+        return false;
+    }
+
+    mut_view->count = ar_list__count(ref_placeholders);
+    mut_view->own_items = ar_list__items(ref_placeholders);
+    if (mut_view->count > 0U && mut_view->own_items == NULL) {
+        return false;
+    }
+
+    return true;
+}
+
+static void _placeholder_items_destroy(ar_local_completion_placeholder_items_t *mut_view) {
+    if (mut_view == NULL) {
+        return;
+    }
+    if (mut_view->own_items != NULL) {
+        AR__HEAP__FREE(mut_view->own_items);
+        mut_view->own_items = NULL;
+    }
+    mut_view->count = 0U;
+}
+
 static bool _build_prompt(const char *ref_template,
                           const ar_list_t *ref_placeholders,
                           ar_local_completion_buffer_t *mut_prompt) {
@@ -256,34 +320,32 @@ static bool _build_prompt(const char *ref_template,
         return false;
     }
 
-    size_t placeholder_count = ar_list__count(ref_placeholders);
-    void **own_items = ar_list__items(ref_placeholders);
-    if (placeholder_count > 0U && own_items == NULL) {
+    ar_local_completion_placeholder_items_t own_placeholder_view = {0};
+    if (!_placeholder_items_init(ref_placeholders, &own_placeholder_view)) {
         return false;
     }
 
-    for (size_t index = 0U; index < placeholder_count; index++) {
-        const char *ref_name = own_items[index];
-        if (ref_name == NULL) {
-            AR__HEAP__FREE(own_items);
-            return false;
-        }
-        if (!_buffer_append(mut_prompt, "- ") ||
+    bool success = true;
+    for (size_t index = 0U; index < own_placeholder_view.count; index++) {
+        const char *ref_name = own_placeholder_view.own_items[index];
+        if (ref_name == NULL ||
+            !_buffer_append(mut_prompt, "- ") ||
             !_buffer_append(mut_prompt, ref_name) ||
             !_buffer_append(mut_prompt, "\n")) {
-            AR__HEAP__FREE(own_items);
-            return false;
+            success = false;
+            break;
         }
     }
 
-    if (own_items != NULL) {
-        AR__HEAP__FREE(own_items);
+    if (success) {
+        success = _buffer_append(mut_prompt,
+                                 "Output only the requested placeholder assignments.\n"
+                                 "<|end|>\n"
+                                 "<|assistant|>\n");
     }
 
-    return _buffer_append(mut_prompt,
-                          "Output only the requested placeholder assignments.\n"
-                          "<|end|>\n"
-                          "<|assistant|>\n");
+    _placeholder_items_destroy(&own_placeholder_view);
+    return success;
 }
 
 static void _copy_symbol(void *mut_target, void *ref_symbol) {
@@ -340,13 +402,19 @@ static bool _ensure_llama_backend_initialized(ar_local_completion_t *mut_runtime
         return false;
     }
     if (mut_runtime->own_model_path == NULL || mut_runtime->own_model_path[0] == '\0') {
-        _log_error(mut_runtime,
-                   "complete() local model path is not configured; set AGERUN_COMPLETE_MODEL or provide models/phi-3-mini-q4.gguf");
+        _log_failure(mut_runtime,
+                     "complete() local model path is not configured; set AGERUN_COMPLETE_MODEL or provide models/phi-3-mini-q4.gguf",
+                     "runtime_unavailable",
+                     "local model path is not configured",
+                     "set AGERUN_COMPLETE_MODEL or provide models/phi-3-mini-q4.gguf");
         return false;
     }
     if (!_file_exists(mut_runtime->own_model_path)) {
-        _log_error(mut_runtime,
-                   "complete() local model file was not found; set AGERUN_COMPLETE_MODEL or provide models/phi-3-mini-q4.gguf");
+        _log_failure(mut_runtime,
+                     "complete() local model file was not found; set AGERUN_COMPLETE_MODEL or provide models/phi-3-mini-q4.gguf",
+                     "runtime_unavailable",
+                     "local model file was not found",
+                     "set AGERUN_COMPLETE_MODEL or provide models/phi-3-mini-q4.gguf");
         return false;
     }
 
@@ -358,22 +426,31 @@ static bool _ensure_llama_backend_initialized(ar_local_completion_t *mut_runtime
         ref_library_path = _alternate_llama_library_path();
     }
     if (!_file_exists(ref_library_path)) {
-        _log_error(mut_runtime,
-                   "complete() direct libllama runtime is unavailable; run make vendor-llama-cpu to build .deps/llama.cpp-install/lib/libllama");
+        _log_failure(mut_runtime,
+                     "complete() direct libllama runtime is unavailable; run make vendor-llama-cpu to build .deps/llama.cpp-install/lib/libllama",
+                     "runtime_unavailable",
+                     "vendored libllama runtime is unavailable",
+                     "run make vendor-llama-cpu to build .deps/llama.cpp-install/lib/libllama");
         return false;
     }
 
     void *own_library = dlopen(ref_library_path, RTLD_NOW | RTLD_LOCAL);
     if (own_library == NULL) {
-        _log_error(mut_runtime,
-                   "complete() could not load the vendored libllama runtime; run make vendor-llama-cpu and verify the installed library dependencies");
+        _log_failure(mut_runtime,
+                     "complete() could not load the vendored libllama runtime; run make vendor-llama-cpu and verify the installed library dependencies",
+                     "runtime_unavailable",
+                     "vendored libllama runtime could not be loaded",
+                     "run make vendor-llama-cpu and verify the installed library dependencies");
         return false;
     }
 
     if (!_load_llama_api(own_library, &mut_runtime->llama_api)) {
         dlclose(own_library);
-        _log_error(mut_runtime,
-                   "complete() vendored libllama is missing required symbols; rebuild the pinned vendored llama.cpp dependency");
+        _log_failure(mut_runtime,
+                     "complete() vendored libllama is missing required symbols; rebuild the pinned vendored llama.cpp dependency",
+                     "runtime_unavailable",
+                     "vendored libllama is missing required symbols",
+                     "rebuild the pinned vendored llama.cpp dependency");
         return false;
     }
 
@@ -389,8 +466,11 @@ static bool _ensure_llama_backend_initialized(ar_local_completion_t *mut_runtime
     if (own_model == NULL) {
         mut_runtime->llama_api.ref_llama_backend_free();
         dlclose(own_library);
-        _log_error(mut_runtime,
-                   "complete() could not load the configured GGUF model with direct libllama; verify the vendored CPU-only build and the configured model path");
+        _log_failure(mut_runtime,
+                     "complete() could not load the configured GGUF model with direct libllama; verify the vendored CPU-only build and the configured model path",
+                     "runtime_unavailable",
+                     "configured GGUF model could not be loaded with direct libllama",
+                     "verify the vendored CPU-only build and the configured model path");
         return false;
     }
 
@@ -517,8 +597,11 @@ static bool _run_runner_completion(const ar_local_completion_t *ref_runtime,
         own_pipe_fds[0] = -1;
         AR__HEAP__FREE(own_prompt_arg);
         _buffer_destroy(&own_grammar);
-        _log_error(ref_runtime,
-                   "complete() local runner failed: cause=spawn; recovery_hint=install llama.cpp llama-cli or set AGERUN_COMPLETE_RUNNER");
+        _log_failure(ref_runtime,
+                     "complete() local runner failed: cause=spawn; recovery_hint=install llama.cpp llama-cli or set AGERUN_COMPLETE_RUNNER",
+                     "runtime_unavailable",
+                     "local runner spawn failed",
+                     "install llama.cpp llama-cli or set AGERUN_COMPLETE_RUNNER");
         return false;
     }
 
@@ -530,13 +613,19 @@ static bool _run_runner_completion(const ar_local_completion_t *ref_runtime,
 
     int own_status = 0;
     if (waitpid(own_pid, &own_status, 0) < 0) {
-        _log_error(ref_runtime,
-                   "complete() local runner did not exit normally; recovery_hint=verify the explicit AGERUN_COMPLETE_RUNNER override is stable on this platform");
+        _log_failure(ref_runtime,
+                     "complete() local runner did not exit normally; recovery_hint=verify the explicit AGERUN_COMPLETE_RUNNER override is stable on this platform",
+                     "runtime_failure",
+                     "local runner did not exit normally",
+                     "verify the explicit AGERUN_COMPLETE_RUNNER override is stable on this platform");
         return false;
     }
     if (!read_ok) {
-        _log_error(ref_runtime,
-                   "complete() local runner output could not be read; recovery_hint=verify the explicit AGERUN_COMPLETE_RUNNER override is stable on this platform");
+        _log_failure(ref_runtime,
+                     "complete() local runner output could not be read; recovery_hint=verify the explicit AGERUN_COMPLETE_RUNNER override is stable on this platform",
+                     "runtime_failure",
+                     "local runner output could not be read",
+                     "verify the explicit AGERUN_COMPLETE_RUNNER override is stable on this platform");
         return false;
     }
     if (!WIFEXITED(own_status) || WEXITSTATUS(own_status) != 0) {
@@ -549,7 +638,11 @@ static bool _run_runner_completion(const ar_local_completion_t *ref_runtime,
         if (built_message) {
             _log_error(ref_runtime, own_message.own_text);
         } else {
-            _log_error(ref_runtime, "complete() local runner exited with an error");
+            _log_failure(ref_runtime,
+                         "complete() local runner exited with an error",
+                         "runtime_failure",
+                         "local runner exited with an error",
+                         "verify the explicit AGERUN_COMPLETE_RUNNER override, model path, and prompt format");
         }
         _buffer_destroy(&own_message);
         return false;
@@ -560,95 +653,65 @@ static bool _run_runner_completion(const ar_local_completion_t *ref_runtime,
 
 static bool _build_direct_response_grammar(const ar_list_t *ref_placeholders,
                                            ar_local_completion_buffer_t *mut_grammar) {
-    size_t placeholder_count = ar_list__count(ref_placeholders);
-    void **own_items = ar_list__items(ref_placeholders);
-    if (placeholder_count > 0U && own_items == NULL) {
+    ar_local_completion_placeholder_items_t own_placeholder_view = {0};
+    if (!_placeholder_items_init(ref_placeholders, &own_placeholder_view)) {
         return false;
     }
 
-    if (!_buffer_append(mut_grammar, "root ::= ")) {
-        if (own_items != NULL) {
-            AR__HEAP__FREE(own_items);
-        }
-        return false;
+    bool success = _buffer_append(mut_grammar, "root ::= ");
+
+    for (size_t index = 0U; success && index < own_placeholder_view.count; index++) {
+        success = _buffer_append_format(mut_grammar, "line%zu", index) &&
+                  (index + 1U >= own_placeholder_view.count || _buffer_append(mut_grammar, " "));
+    }
+    if (success) {
+        success = _buffer_append(mut_grammar, "\n");
     }
 
-    for (size_t index = 0U; index < placeholder_count; index++) {
-        if (!_buffer_append_format(mut_grammar, "line%zu", index) ||
-            (index + 1U < placeholder_count && !_buffer_append(mut_grammar, " "))) {
-            if (own_items != NULL) {
-                AR__HEAP__FREE(own_items);
-            }
-            return false;
-        }
-    }
-    if (!_buffer_append(mut_grammar, "\n")) {
-        if (own_items != NULL) {
-            AR__HEAP__FREE(own_items);
-        }
-        return false;
+    for (size_t index = 0U; success && index < own_placeholder_view.count; index++) {
+        const char *ref_name = own_placeholder_view.own_items[index];
+        success = ref_name != NULL &&
+                  _buffer_append_format(mut_grammar,
+                                        "line%zu ::= \"%s=\" value \"\\n\"\n",
+                                        index,
+                                        ref_name);
     }
 
-    for (size_t index = 0U; index < placeholder_count; index++) {
-        const char *ref_name = own_items[index];
-        if (ref_name == NULL ||
-            !_buffer_append_format(mut_grammar,
-                                   "line%zu ::= \"%s=\" value \"\\n\"\n",
-                                   index,
-                                   ref_name)) {
-            if (own_items != NULL) {
-                AR__HEAP__FREE(own_items);
-            }
-            return false;
-        }
+    if (success) {
+        success = _buffer_append(mut_grammar,
+                                 "value ::= valuechar valuetail\n"
+                                 "valuetail ::= valuechar valuetail | \"\"\n"
+                                 "valuechar ::= [A-Za-z0-9_] | \" \" | \",\" | \".\" | \"-\" | \"'\" | \"/\" | \":\" | \"(\" | \")\" | \"&\"\n");
     }
 
-    if (!_buffer_append(mut_grammar,
-                        "value ::= valuechar valuetail\n"
-                        "valuetail ::= valuechar valuetail | \"\"\n"
-                        "valuechar ::= [A-Za-z0-9_] | \" \" | \",\" | \".\" | \"-\" | \"'\" | \"/\" | \":\" | \"(\" | \")\" | \"&\"\n")) {
-        if (own_items != NULL) {
-            AR__HEAP__FREE(own_items);
-        }
-        return false;
-    }
-
-    if (own_items != NULL) {
-        AR__HEAP__FREE(own_items);
-    }
-    return true;
+    _placeholder_items_destroy(&own_placeholder_view);
+    return success;
 }
 
 static bool _response_has_all_requested_placeholders(const ar_list_t *ref_placeholders,
                                                      const char *ref_output) {
-    size_t placeholder_count = ar_list__count(ref_placeholders);
-    void **own_items = ar_list__items(ref_placeholders);
-    if (placeholder_count > 0U && own_items == NULL) {
+    ar_local_completion_placeholder_items_t own_placeholder_view = {0};
+    if (!_placeholder_items_init(ref_placeholders, &own_placeholder_view)) {
         return false;
     }
 
-    for (size_t index = 0U; index < placeholder_count; index++) {
-        const char *ref_name = own_items[index];
+    bool found_all = true;
+    for (size_t index = 0U; found_all && index < own_placeholder_view.count; index++) {
+        const char *ref_name = own_placeholder_view.own_items[index];
         if (ref_name == NULL) {
-            AR__HEAP__FREE(own_items);
-            return false;
+            found_all = false;
+            break;
         }
 
         ar_local_completion_buffer_t own_marker = {0};
         bool marker_ok = _buffer_append(&own_marker, ref_name) &&
                          _buffer_append(&own_marker, "=");
-        bool found_marker = marker_ok && strstr(ref_output, own_marker.own_text) != NULL;
+        found_all = marker_ok && strstr(ref_output, own_marker.own_text) != NULL;
         _buffer_destroy(&own_marker);
-        if (!found_marker) {
-            AR__HEAP__FREE(own_items);
-            return false;
-        }
     }
 
-    if (own_items != NULL) {
-        AR__HEAP__FREE(own_items);
-    }
-    return true;
+    _placeholder_items_destroy(&own_placeholder_view);
+    return found_all;
 }
 
 static bool _append_generated_piece(const ar_local_completion_t *ref_runtime,
@@ -826,8 +889,11 @@ static bool _run_direct_completion(const ar_local_completion_t *ref_runtime,
     while (own_position + own_batch.n_tokens < actual_token_count + max_predict) {
         int64_t elapsed_ms = (ref_api->ref_llama_time_us() - start_time_us) / 1000;
         if (elapsed_ms > timeout_ms) {
-            _log_error(ref_runtime,
-                       "complete() direct libllama generation exceeded timeout_ms before producing a complete response");
+            _log_failure(ref_runtime,
+                         "complete() direct libllama generation exceeded timeout_ms before producing a complete response",
+                         "timeout",
+                         "direct libllama generation exceeded timeout_ms before a complete response was produced",
+                         "increase the timeout, simplify the template, or verify the local model/runtime configuration");
             success = false;
             break;
         }
@@ -901,9 +967,8 @@ static ar_data_t *_parse_response(const ar_local_completion_t *ref_runtime,
         return NULL;
     }
 
-    size_t placeholder_count = ar_list__count(ref_placeholders);
-    void **own_items = ar_list__items(ref_placeholders);
-    if (placeholder_count > 0U && own_items == NULL) {
+    ar_local_completion_placeholder_items_t own_placeholder_view = {0};
+    if (!_placeholder_items_init(ref_placeholders, &own_placeholder_view)) {
         AR__HEAP__FREE(own_stdout_copy);
         ar_data__destroy(own_values);
         return NULL;
@@ -926,13 +991,11 @@ static ar_data_t *_parse_response(const ar_local_completion_t *ref_runtime,
             continue;
         }
 
-        for (size_t index = 0U; index < placeholder_count; index++) {
-            const char *ref_requested = own_items[index];
+        for (size_t index = 0U; index < own_placeholder_view.count; index++) {
+            const char *ref_requested = own_placeholder_view.own_items[index];
             if (ref_requested != NULL && strcmp(ref_name, ref_requested) == 0) {
                 if (!ar_data__set_map_string(own_values, ref_requested, ref_value)) {
-                    if (own_items != NULL) {
-                        AR__HEAP__FREE(own_items);
-                    }
+                    _placeholder_items_destroy(&own_placeholder_view);
                     AR__HEAP__FREE(own_stdout_copy);
                     ar_data__destroy(own_values);
                     return NULL;
@@ -942,8 +1005,8 @@ static ar_data_t *_parse_response(const ar_local_completion_t *ref_runtime,
         }
     }
 
-    for (size_t index = 0U; index < placeholder_count; index++) {
-        const char *ref_requested = own_items[index];
+    for (size_t index = 0U; index < own_placeholder_view.count; index++) {
+        const char *ref_requested = own_placeholder_view.own_items[index];
         if (ref_requested == NULL || ar_data__get_map_data(own_values, ref_requested) == NULL) {
             ar_local_completion_buffer_t own_message = {0};
             bool built_message =
@@ -952,23 +1015,27 @@ static ar_data_t *_parse_response(const ar_local_completion_t *ref_runtime,
                                       "complete() local backend did not return placeholder '%s'; recovery_hint=adjust the prompt, model, or direct libllama configuration",
                                       ref_requested);
             if (built_message) {
-                _log_error(ref_runtime, own_message.own_text);
+                _log_failure(ref_runtime,
+                             own_message.own_text,
+                             "incomplete_placeholder",
+                             "local backend did not return every requested placeholder",
+                             "adjust the prompt, model, or direct libllama configuration");
             } else {
-                _log_error(ref_runtime, "complete() local backend omitted a requested placeholder");
+                _log_failure(ref_runtime,
+                             "complete() local backend omitted a requested placeholder",
+                             "incomplete_placeholder",
+                             "local backend did not return every requested placeholder",
+                             "adjust the prompt, model, or direct libllama configuration");
             }
             _buffer_destroy(&own_message);
-            if (own_items != NULL) {
-                AR__HEAP__FREE(own_items);
-            }
+            _placeholder_items_destroy(&own_placeholder_view);
             AR__HEAP__FREE(own_stdout_copy);
             ar_data__destroy(own_values);
             return NULL;
         }
     }
 
-    if (own_items != NULL) {
-        AR__HEAP__FREE(own_items);
-    }
+    _placeholder_items_destroy(&own_placeholder_view);
     AR__HEAP__FREE(own_stdout_copy);
     return own_values;
 }
@@ -1034,19 +1101,35 @@ ar_data_t *ar_local_completion__complete(ar_local_completion_t *mut_runtime,
         return NULL;
     }
     if (ref_template == NULL || ref_template[0] == '\0') {
-        _log_error(mut_runtime, "complete() template is required for local completion");
+        _log_failure(mut_runtime,
+                     "complete() template is required for local completion",
+                     "invalid_request",
+                     "template is missing or empty",
+                     "provide a non-empty template string with one or more placeholders");
         return NULL;
     }
     if (ref_placeholders == NULL) {
-        _log_error(mut_runtime, "complete() placeholder list is required for local completion");
+        _log_failure(mut_runtime,
+                     "complete() placeholder list is required for local completion",
+                     "invalid_request",
+                     "placeholder list is missing",
+                     "provide every required placeholder name before invoking local completion");
         return NULL;
     }
     if (timeout_ms <= 0) {
-        _log_error(mut_runtime, "complete() timeout_ms must be positive for local completion");
+        _log_failure(mut_runtime,
+                     "complete() timeout_ms must be positive for local completion",
+                     "invalid_request",
+                     "timeout_ms must be positive",
+                     "pass a positive timeout before invoking local completion");
         return NULL;
     }
     if (ar_list__count(ref_placeholders) == 0U) {
-        _log_error(mut_runtime, "complete() requires at least one placeholder");
+        _log_failure(mut_runtime,
+                     "complete() requires at least one placeholder",
+                     "invalid_request",
+                     "placeholder list is empty",
+                     "provide one or more placeholder names before invoking local completion");
         return NULL;
     }
     if (!_ensure_backend_initialized(mut_runtime)) {
@@ -1056,7 +1139,11 @@ ar_data_t *ar_local_completion__complete(ar_local_completion_t *mut_runtime,
     ar_local_completion_buffer_t own_prompt = {0};
     if (!_build_prompt(ref_template, ref_placeholders, &own_prompt)) {
         _buffer_destroy(&own_prompt);
-        _log_error(mut_runtime, "complete() could not build a local completion prompt");
+        _log_failure(mut_runtime,
+                     "complete() could not build a local completion prompt",
+                     "runtime_failure",
+                     "local completion prompt could not be built",
+                     "verify the template text, placeholder names, and available memory for prompt construction");
         return NULL;
     }
 

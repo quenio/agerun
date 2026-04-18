@@ -7,14 +7,14 @@ In the AgeRun system, a module is a self-contained unit of functionality that pr
 **Module Types**:
 
 1. **C Modules**: Traditional modules with an implementation file (`.c`) and header file (`.h`)
-2. **C-ABI Compatible Zig Modules**: Zig implementations (`.zig`) that maintain full C API compatibility with matching header files (`.h`). Currently implemented in Zig: `ar_assert`, `ar_expression_ast`, `ar_heap`, `ar_instruction_ast`, `ar_method_ast`, `ar_method_evaluator`, `ar_semver`, and `ar_string`. The `ar_io` module uses a hybrid approach with most functions in Zig (`ar_io.zig`) and variadic functions in C (`ar_io_variadic.c`) due to platform-specific requirements.
+2. **C-ABI Compatible Zig Modules**: Zig implementations (`.zig`) that maintain full C API compatibility with matching header files (`.h`). Currently implemented in Zig: `ar_assert`, `ar_complete_instruction_evaluator`, `ar_complete_instruction_parser`, `ar_expression_ast`, `ar_heap`, `ar_instruction_ast`, `ar_method_ast`, `ar_method_evaluator`, `ar_semver`, and `ar_string`. The `ar_io` module uses a hybrid approach with most functions in Zig (`ar_io.zig`) and variadic functions in C (`ar_io_variadic.c`) due to platform-specific requirements. `ar_local_completion` is a user-approved C exception for direct `llama.cpp` / `libllama` interop behind a stable AgeRun header.
 3. **Zig Struct Modules**: Pure Zig modules using TitleCase naming (e.g., `DataStore.zig`) for internal components that don't require C interop. These modules use Zig's idiomatic patterns while maintaining AgeRun's ownership conventions.
 
 Each module typically follows a consistent naming convention with an `ar_` prefix (e.g., `ar_data`, `ar_string`), and has its own test file (`ar_*_tests.c`) that verifies its functionality. Note: File names are being transitioned from `ar_` to `ar_` prefix gradually as files are modified for other reasons.
 
 **Recent Architectural Achievements:**
 - **Zero Memory Leaks**: All 45 tests pass with zero memory leaks across the entire system
-- **Modular Instruction Evaluation**: Successfully refactored instruction evaluation into 9 specialized evaluator modules
+- **Modular Instruction Evaluation**: Successfully refactored instruction evaluation into specialized evaluator modules, now including `complete(...)` support through `ar_complete_instruction_evaluator`
 - **Legacy Function Elimination**: Completed removal of all legacy wrapper functions from specialized evaluators
 - **Facade Pattern Implementation**: Instruction evaluator now serves as a clean facade coordinating specialized evaluators
 
@@ -1172,7 +1172,7 @@ The expression evaluator module provides evaluation of expression ASTs against m
 
 ### Instruction Evaluator Module (`ar_instruction_evaluator`)
 
-The [instruction evaluator module](ar_instruction_evaluator.md) serves as a facade that coordinates 9 specialized instruction evaluator modules:
+The [instruction evaluator module](ar_instruction_evaluator.md) serves as a facade that coordinates specialized instruction evaluators, including `complete(...)` support:
 
 - **Facade Pattern**: Creates and manages instances of all specialized evaluators
 - **Unified Interface**: Provides single entry point for all instruction evaluation
@@ -1219,6 +1219,13 @@ The [build instruction evaluator module](ar_build_instruction_evaluator.md) hand
 - **Value Substitution**: Replaces `{key}` with values from provided map
 - **Type Conversion**: Converts all value types to strings
 
+#### Complete Instruction Evaluator Module (`ar_complete_instruction_evaluator`)
+
+The [complete instruction evaluator module](ar_complete_instruction_evaluator.md) handles `complete(...)` execution:
+- **Atomic Memory Population**: Writes generated placeholder strings into `memory...` targets only after full validation succeeds
+- **Handled Failure Semantics**: Records actionable errors, preserves prior memory, and writes boolean status results
+- **Backend Separation**: Delegates model/runtime lifecycle and placeholder generation to `ar_local_completion`
+
 #### Compile Instruction Evaluator Module (`ar_compile_instruction_evaluator`)
 
 The [compile instruction evaluator module](ar_compile_instruction_evaluator.md) handles method creation:
@@ -1255,7 +1262,7 @@ The [deprecate instruction evaluator module](ar_deprecate_instruction_evaluator.
 
 The [instruction AST module](ar_instruction_ast.md) provides Abstract Syntax Tree representations for AgeRun instructions:
 
-- **AST Node Types**: Defines node types for all instruction types (assignment, send, if, method, agent, destroy, parse, build)
+- **AST Node Types**: Defines node types for all instruction types (assignment, send, if, compile, spawn, exit, deprecate, parse, build, complete)
 - **Type-Safe Creation**: Provides functions to create nodes with proper type safety and memory management
 - **Accessor Functions**: Offers accessor functions with clear ownership semantics
 - **Function Arguments**: Returns lists for function arguments with ownership transferred to caller
@@ -1281,7 +1288,7 @@ The [method AST module](ar_method_ast.md) provides Abstract Syntax Tree structur
 
 ### Instruction Parser Module (`ar_instruction_parser`)
 
-The [instruction parser module](ar_instruction_parser.md) serves as a facade that coordinates 9 specialized instruction parser modules:
+The [instruction parser module](ar_instruction_parser.md) serves as a facade that coordinates specialized instruction parsers, including `complete(...)` parsing:
 
 - **Facade Pattern**: Creates and manages instances of all specialized parsers
 - **Unified Interface**: Provides `ar_instruction_parser__parse()` that automatically detects instruction type
@@ -1328,6 +1335,14 @@ The [build instruction parser module](ar_build_instruction_parser.md) handles pa
 - **Optional Assignment**: Supports `memory.result := build(...)` syntax
 - **String Handling**: Manages quoted templates with escape sequences
 - **Instantiable Parser**: Follows create/destroy lifecycle pattern
+
+#### Complete Instruction Parser Module (`ar_complete_instruction_parser`)
+
+The [complete instruction parser module](ar_complete_instruction_parser.md) handles parsing of `complete(...)` calls:
+- **One- and Two-Argument Forms**: Parses both `complete(template)` and `complete(template, memory.path)`
+- **Placeholder Validation**: Accepts supported `{name}` placeholder syntax only
+- **Base-Path Validation**: Requires the optional second argument to be a direct `memory...` access path
+- **AST Wiring**: Produces `AR_INSTRUCTION_AST_TYPE__COMPLETE` nodes with parsed argument ASTs
 
 #### Compile Instruction Parser Module (`ar_compile_instruction_parser`)
 

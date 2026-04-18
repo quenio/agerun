@@ -50,12 +50,18 @@ Success requirements:
 ```text
 status = failure
 reason = <diagnostic string>
+failure_category = <machine-readable failure class>
+cause = <immediate cause>
+recovery_hint = <next operator/developer action>
 ```
 
 Failure requirements:
 - the reason is specific enough for actionable logging
+- the logged failure text includes `failure_category=...`, `cause=...`, and `recovery_hint=...`
+- invalid requests such as missing template text, missing placeholder lists, empty placeholder lists, or non-positive `timeout_ms` fail before backend initialization begins
 - failure does not mutate AgeRun memory directly
-- timeout and model-unavailability cases are distinguishable at the diagnostic level
+- timeout, incomplete-placeholder coverage, invalid request, runtime-unavailable, and other runtime-failure cases are distinguishable at the diagnostic level
+- supported-environment resource problems remain runtime failures, not unsupported-platform cases
 
 ## Lifecycle Contract
 
@@ -65,6 +71,7 @@ Failure requirements:
 - the runtime initializes lazily on the first completion request that needs local execution
 - the runtime loads the GGUF model with CPU-only settings and reuses that loaded model for the runtime instance
 - runtime initialization failure is reported as a normal instruction failure path, not a process crash
+- partial-generation failures, including missing placeholder coverage after some values were produced, are normalized into the same handled failure contract and do not leak partial values into AgeRun memory
 
 ## Configuration Contract
 
@@ -75,6 +82,7 @@ Failure requirements:
 - when no runner override is supplied, the runtime uses the vendored direct `libllama` path instead of shelling out to `llama-cli`
 - the runner override exists for controlled fallback/testing scenarios and does not change the primary first-release architecture decision
 - configuration and runtime-discovery errors are surfaced as actionable runtime failures
+- if `AGERUN_COMPLETE_RUNNER` is set, runner spawn/read/exit failures are normalized into the same actionable failure-shape used by the direct backend
 
 ## Non-Goals
 

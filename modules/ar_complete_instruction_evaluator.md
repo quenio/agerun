@@ -15,5 +15,8 @@ The `ar_complete_instruction_evaluator` module evaluates `complete(...)` instruc
 ## Current implementation notes
 
 - placeholder names are extracted once per template and staged before completion is requested
+- templates with no supported `{name}` placeholders fail fast with `failure_category=invalid_template` before local completion is invoked
+- invalid second arguments fail fast with `failure_category=invalid_base_path` unless they are direct `memory...` access paths
 - nested base maps are created only after validation succeeds so semantic failures do not partially mutate memory
+- runtime and semantic failure logs preserve actionable fields such as `failure_category`, `cause`, and `recovery_hint`
 - successful writes store only strings in AgeRun memory for the first release

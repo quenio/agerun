@@ -1,81 +1,43 @@
-# AgeRun Instruction AST Module
+# ar_instruction_ast
 
-## Overview
+The `ar_instruction_ast` module defines the parsed instruction nodes used throughout the AgeRun
+parser and evaluator pipeline.
 
-The Instruction AST module provides Abstract Syntax Tree (AST) representations for AgeRun instructions. It defines node types for all instruction types in the language and provides functions to create, access, and destroy these nodes. This module is designed to work with the instruction parser to create a clean separation between parsing and execution phases.
+## Responsibility
 
-**Implementation Note**: This module is implemented in Zig for improved memory safety and performance while maintaining full C compatibility.
+- represent every supported instruction as an opaque AST node
+- store either assignment data or function-call data
+- preserve both original string arguments and parsed expression/instruction metadata
+- provide ownership-safe creation, accessor, and destruction helpers
 
-## Key Features
+## Supported instruction types
 
-- AST node types for all AgeRun instruction types
-- Type-safe node creation with proper memory management
-- Accessor functions with clear ownership semantics
-- Support for both assignment and function call instructions
-- Returns lists for function arguments (ownership transferred to caller)
-- Comprehensive null safety and edge case handling
+The public enum `ar_instruction_ast_type_t` covers:
 
-## Instruction Types
+- `AR_INSTRUCTION_AST_TYPE__ASSIGNMENT`
+- `AR_INSTRUCTION_AST_TYPE__SEND`
+- `AR_INSTRUCTION_AST_TYPE__IF`
+- `AR_INSTRUCTION_AST_TYPE__COMPILE`
+- `AR_INSTRUCTION_AST_TYPE__SPAWN`
+- `AR_INSTRUCTION_AST_TYPE__EXIT`
+- `AR_INSTRUCTION_AST_TYPE__DEPRECATE`
+- `AR_INSTRUCTION_AST_TYPE__PARSE`
+- `AR_INSTRUCTION_AST_TYPE__BUILD`
+- `AR_INSTRUCTION_AST_TYPE__COMPLETE`
 
-The module supports the following instruction types:
+`AR_INSTRUCTION_AST_TYPE__COMPLETE` represents `complete(template[, memory.path])` and is used by
+both the specialized complete parser and the instruction-evaluator facade.
 
-- **AR_INSTRUCTION_AST_TYPE__ASSIGNMENT**: Assignment instructions (e.g., `memory.x := 42`)
-- **AR_INSTRUCTION_AST_TYPE__SEND**: Send function calls (e.g., `send(0, "Hello")`)
-- **AR_INSTRUCTION_AST_TYPE__IF**: Conditional function calls (e.g., `if(x > 5, "High", "Low")`)
-- **AR_INSTRUCTION_AST_TYPE__COMPILE**: Method creation calls (e.g., `compile("greet", "...", "1.0.0")`)
-- **AR_INSTRUCTION_AST_TYPE__CREATE**: Agent creation calls (e.g., `create("echo", "1.0.0", context)`)
-- **AR_INSTRUCTION_AST_TYPE__DESTROY**: Destroy agent calls (e.g., `destroy(agent_id)`)
-- **AR_INSTRUCTION_AST_TYPE__DEPRECATE**: Deprecate method calls (e.g., `deprecate("method_name", "1.0.0")`)
-- **AR_INSTRUCTION_AST_TYPE__PARSE**: Parse function calls (e.g., `parse("{name}", "name=John")`)
-- **AR_INSTRUCTION_AST_TYPE__BUILD**: Build function calls (e.g., `build("Hello {name}", map)`)
+## Public API highlights
 
-## API Reference
-
-### Type Definitions
-
-```c
-typedef enum {
-    AR_INSTRUCTION_AST_TYPE__ASSIGNMENT,
-    AR_INSTRUCTION_AST_TYPE__SEND,
-    AR_INSTRUCTION_AST_TYPE__IF,
-    AR_INSTRUCTION_AST_TYPE__COMPILE,
-    AR_INSTRUCTION_AST_TYPE__CREATE,
-    AR_INSTRUCTION_AST_TYPE__DESTROY,
-    AR_INSTRUCTION_AST_TYPE__DEPRECATE,
-    AR_INSTRUCTION_AST_TYPE__PARSE,
-    AR_INSTRUCTION_AST_TYPE__BUILD
-} ar_instruction_ast_type_t;
-
-typedef struct ar_instruction_ast_s ar_instruction_ast_t;
-```
-
-### Node Creation
-
-#### Assignment Instructions
+### Node creation
 
 ```c
 ar_instruction_ast_t* ar_instruction_ast__create_assignment(
     const char *ref_memory_path,
     const char *ref_expression
 );
-```
 
-Creates an AST node for an assignment instruction.
-
-**Parameters:**
-- `ref_memory_path`: The memory path (e.g., "memory.x.y") (borrowed reference)
-- `ref_expression`: The expression to assign (borrowed reference)
-
-**Returns:**
-- Newly created AST node (owned by caller), or NULL on failure
-
-**Ownership:**
-- Returns an owned value that caller must destroy
-- Makes copies of all string parameters
-
-#### Function Call Instructions
-
-```c
 ar_instruction_ast_t* ar_instruction_ast__create_function_call(
     ar_instruction_ast_type_t type,
     const char *ref_function_name,
@@ -85,160 +47,48 @@ ar_instruction_ast_t* ar_instruction_ast__create_function_call(
 );
 ```
 
-Creates an AST node for a function call instruction.
-
-**Parameters:**
-- `type`: The function type (must be one of the function instruction types)
-- `ref_function_name`: The function name (borrowed reference)
-- `ref_args`: Array of argument expressions (borrowed references, can be NULL)
-- `arg_count`: Number of arguments
-- `ref_result_path`: Optional result assignment path (borrowed reference, can be NULL)
-
-**Returns:**
-- Newly created AST node (owned by caller), or NULL on failure
-
-**Ownership:**
-- Returns an owned value that caller must destroy
-- Makes copies of all string parameters
-
-### Node Destruction
-
-```c
-void ar_instruction_ast__destroy(ar_instruction_ast_t *own_node);
-```
-
-Destroys an AST node and all its components.
-
-**Parameters:**
-- `own_node`: The AST node to destroy (ownership transferred to function)
-
-**Ownership:**
-- Takes ownership of the node and destroys it
-- Safe to call with NULL
-
-### Accessor Functions
-
-#### General Node Information
-
-```c
-ar_instruction_ast_type_t ar_instruction_ast__get_type(const ar_instruction_ast_t *ref_node);
-```
-
-Gets the type of an AST node.
-
-**Returns:**
-- The type of the node, or AR_INSTRUCTION_AST_TYPE__ASSIGNMENT if node is NULL
-
-#### Assignment Node Accessors
+### Assignment accessors
 
 ```c
 const char* ar_instruction_ast__get_assignment_path(const ar_instruction_ast_t *ref_node);
 const char* ar_instruction_ast__get_assignment_expression(const ar_instruction_ast_t *ref_node);
+const ar_expression_ast_t* ar_instruction_ast__get_assignment_expression_ast(
+    const ar_instruction_ast_t *ref_node
+);
+bool ar_instruction_ast__set_assignment_expression_ast(
+    ar_instruction_ast_t *mut_node,
+    ar_expression_ast_t *own_expression_ast
+);
 ```
 
-Get information from assignment nodes.
-
-**Returns:**
-- Borrowed references to the stored strings, or NULL if not an assignment node
-
-#### Function Call Node Accessors
+### Function-call accessors
 
 ```c
 const char* ar_instruction_ast__get_function_name(const ar_instruction_ast_t *ref_node);
 ar_list_t* ar_instruction_ast__get_function_args(const ar_instruction_ast_t *ref_node);
+const ar_list_t* ar_instruction_ast__get_function_arg_asts(const ar_instruction_ast_t *ref_node);
+bool ar_instruction_ast__set_function_arg_asts(
+    ar_instruction_ast_t *mut_node,
+    ar_list_t *own_arg_asts
+);
 const char* ar_instruction_ast__get_function_result_path(const ar_instruction_ast_t *ref_node);
 bool ar_instruction_ast__has_result_assignment(const ar_instruction_ast_t *ref_node);
 ```
 
-Get information from function call nodes.
+## Ownership notes
 
-**Ownership:**
-- `ar_instruction_ast__get_function_args` returns an owned list that caller must destroy
-- The strings in the returned list are borrowed references and should not be freed
-- Other functions return borrowed references
+- all creation helpers return owned AST nodes
+- `ar_instruction_ast__destroy()` takes ownership of the node and recursively frees its contents
+- `ar_instruction_ast__get_function_args()` allocates and returns a new list; the caller must
+  destroy that list with `ar_list__destroy()`
+- `ar_instruction_ast__get_function_arg_asts()` returns a borrowed list reference
+- setter helpers such as `ar_instruction_ast__set_assignment_expression_ast()` and
+  `ar_instruction_ast__set_function_arg_asts()` take ownership of the supplied AST objects/lists
 
-## Usage Examples
+## Current implementation notes
 
-### Creating an Assignment Node
-
-```c
-// Create an assignment: memory.count := 42
-ar_instruction_ast_t *own_node = ar_instruction_ast__create_assignment("memory.count", "42");
-if (own_node) {
-    // Use the node...
-    assert(ar_instruction_ast__get_type(own_node) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT);
-    assert(strcmp(ar_instruction_ast__get_assignment_path(own_node), "memory.count") == 0);
-    
-    // Clean up
-    ar_instruction_ast__destroy(own_node);
-}
-```
-
-### Creating a Function Call Node
-
-```c
-// Create a send call: send(0, "Hello")
-const char *args[] = {"0", "\"Hello\""};
-ar_instruction_ast_t *own_node = ar_instruction_ast__create_function_call(
-    AR_INSTRUCTION_AST_TYPE__SEND, "send", args, 2, NULL
-);
-
-if (own_node) {
-    // Access function arguments
-    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_node);
-    if (own_args) {
-        void **own_items = ar_list__items(own_args);
-        // Use the arguments...
-        AR__HEAP__FREE(own_items);
-        ar_list__destroy(own_args);
-    }
-    
-    // Clean up
-    ar_instruction_ast__destroy(own_node);
-}
-```
-
-### Creating a Function Call with Result Assignment
-
-```c
-// Create: memory.result := if(x > 5, "High", "Low")
-const char *args[] = {"x > 5", "\"High\"", "\"Low\""};
-ar_instruction_ast_t *own_node = ar_instruction_ast__create_function_call(
-    AR_INSTRUCTION_AST_TYPE__IF, "if", args, 3, "memory.result"
-);
-
-if (own_node) {
-    assert(ar_instruction_ast__has_result_assignment(own_node) == true);
-    assert(strcmp(ar_instruction_ast__get_function_result_path(own_node), "memory.result") == 0);
-    
-    ar_instruction_ast__destroy(own_node);
-}
-```
-
-## Memory Management
-
-The module follows the AgeRun Memory Management Model (MMM):
-
-1. **Node Creation**: All creation functions return owned nodes that the caller must destroy
-2. **String Copying**: All string parameters are copied during node creation
-3. **Argument Lists**: The `get_function_args` function returns an owned list
-4. **Borrowed References**: All other accessor functions return borrowed references
-5. **Safe Destruction**: The destroy function handles NULL nodes safely
-6. **Initialization**: All fields are properly initialized to prevent uninitialized access
-
-## Error Handling
-
-- Creation functions return NULL on allocation failure
-- Accessor functions return appropriate defaults for NULL nodes
-- Type checking ensures accessors return NULL for wrong node types
-- All allocation failures are handled gracefully with proper cleanup
-
-## Testing
-
-The module includes comprehensive tests covering:
-- All instruction types
-- Assignment and function call variations
-- Function calls with and without result assignment
-- NULL handling and edge cases
-- Memory leak verification
-- Argument list ownership semantics
+- the module is implemented in Zig behind the stable `ar_instruction_ast.h` header
+- instruction facades use `ar_instruction_ast__get_type()` for dispatch
+- `complete(...)` support is represented with a normal function-call node carrying parsed argument
+  ASTs for the template string and optional base path
+- callers should treat the node as opaque and rely only on the documented accessor helpers
