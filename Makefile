@@ -40,6 +40,7 @@ help:
 	@echo "  make download-complete-model - Download phi-3-mini-q4.gguf into models/ if missing"
 	@echo "  make complete-model-smoke - Ensure complete() runtime assets are ready and run the embedded libllama smoke with a cold-start timeout"
 	@echo "  make complete-performance-validation - Run the documented complete() performance validation subtests"
+	@echo "  make complete-performance-validation-linux-container - Run the documented Linux containerized complete() performance validation"
 	@echo "  make print-llama-config - Show vendored llama.cpp source/install paths"
 
 # Output directories for parallel builds
@@ -69,6 +70,12 @@ COMPLETE_MODEL_URL ?= https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gg
 COMPLETE_MODEL_LICENSE_URL ?= https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/raw/main/LICENSE
 COMPLETE_MODEL_CARD_URL ?= https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/raw/main/README.md
 COMPLETE_MODEL_SMOKE_TIMEOUT_SECONDS ?= 35
+COMPLETE_LINUX_CONTAINER_IMAGE ?= agerun-complete-performance-validation
+COMPLETE_LINUX_CONTAINER_PLATFORM ?= linux/arm64
+COMPLETE_LINUX_CONTAINER_CONTEXT ?= docker/complete-performance-validation
+COMPLETE_LINUX_CONTAINER_LLAMA_BUILD_DIR ?= .deps/linux-container-llama.cpp-build
+COMPLETE_LINUX_CONTAINER_LLAMA_INSTALL_DIR ?= .deps/linux-container-llama.cpp-install
+COMPLETE_LINUX_CONTAINER_RUN_TESTS_DIR ?= bin/run-tests-linux-container
 ifeq ($(UNAME_S),Darwin)
 LLAMA_SHARED_EXT = dylib
 LLAMA_CPU_CMAKE_FLAGS = -DGGML_METAL=OFF
@@ -105,6 +112,7 @@ CFLAGS = -Wall -Wextra -Werror -Wpedantic -Wconversion -Wshadow -Wcast-qual \
          -Wcast-align -Wstrict-prototypes -Wmissing-prototypes -Wstrict-aliasing=2 \
          -Wnull-dereference -Wformat=2 -Wuninitialized -Wpointer-arith \
          -Wunused -Wunused-parameter -Wwrite-strings -std=c11 -I./modules -D_GNU_SOURCE
+EXTRA_CFLAGS ?=
 
 # On Ubuntu, gcc-13 might need explicit include paths
 ifeq ($(shell test -d /usr/include/x86_64-linux-gnu && echo yes),yes)
@@ -479,16 +487,16 @@ $(TSAN_TESTS_DIR)/%Tests: modules/%Tests.zig | $(TSAN_TESTS_DIR)
 # Directory-specific compilation rules
 # Run tests directory
 $(RUN_TESTS_DIR)/obj/%.o: modules/%.c | $(RUN_TESTS_DIR)
-	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(DEBUG_CFLAGS) -c $< -o $@
 
 $(RUN_TESTS_DIR)/obj/%.o: modules/%.zig | $(RUN_TESTS_DIR)
 	$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target $(ZIG_TARGET) -mcpu=native -fno-stack-check -lc -I./modules $(LLAMA_ZIG_INCLUDE_FLAGS) $< -femit-bin=$@
 
 $(RUN_TESTS_DIR)/obj/%_tests.o: modules/%_tests.c | $(RUN_TESTS_DIR)
-	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(DEBUG_CFLAGS) -c $< -o $@
 
 $(RUN_TESTS_DIR)/obj/%_tests.o: methods/%_tests.c | $(RUN_TESTS_DIR)
-	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(DEBUG_CFLAGS) -c $< -o $@
 
 # Run exec directory
 $(RUN_EXEC_DIR)/obj/%.o: modules/%.c | $(RUN_EXEC_DIR)
@@ -692,7 +700,7 @@ add-newline:
 		exit 1; \
 	fi
 
-.PHONY: help clean clean-llama-cpp build add-newline check-naming check-docs check-all analyze-exec analyze-tests run-exec run-tests sanitize-exec sanitize-tests tsan-exec tsan-tests install-scan-build print-src print-obj print-llama-config vendor-llama-cpu complete-runtime-ready download-complete-model complete-model-smoke complete-performance-validation
+.PHONY: help clean clean-llama-cpp build add-newline check-naming check-docs check-all analyze-exec analyze-tests run-exec run-tests sanitize-exec sanitize-tests tsan-exec tsan-tests install-scan-build print-src print-obj print-llama-config vendor-llama-cpu complete-runtime-ready download-complete-model complete-model-smoke complete-performance-validation complete-performance-validation-linux-container
 
 # Debug targets
 print-src:
@@ -792,6 +800,18 @@ complete-performance-validation: complete-runtime-ready
 	AGERUN_MEMORY_REPORT="memory_report_ar_complete_instruction_evaluator_tests.log" \
 	AGERUN_COMPLETE_EVALUATOR_SUBTEST=performance_warm_fixture_set \
 	./ar_complete_instruction_evaluator_tests
+
+# Run the documented Linux containerized complete() performance validation
+# Usage: make complete-performance-validation-linux-container
+complete-performance-validation-linux-container:
+	docker build --platform "$(COMPLETE_LINUX_CONTAINER_PLATFORM)" -t "$(COMPLETE_LINUX_CONTAINER_IMAGE)" "$(COMPLETE_LINUX_CONTAINER_CONTEXT)"
+	docker run --rm \
+		--platform "$(COMPLETE_LINUX_CONTAINER_PLATFORM)" \
+		-u "$(shell id -u):$(shell id -g)" \
+		-v "$(CURDIR)":/workspace \
+		-w /workspace \
+		"$(COMPLETE_LINUX_CONTAINER_IMAGE)" \
+		bash -lc 'set -e; export HOME=/tmp/agerun-docker-home; mkdir -p "$$HOME"; export AGERUN_COMPLETE_MODEL=/workspace/$(COMPLETE_MODEL_FILE); export AGERUN_COMPLETE_LIBLLAMA=/workspace/$(COMPLETE_LINUX_CONTAINER_LLAMA_INSTALL_DIR)/lib/libllama.so; export LD_LIBRARY_PATH=/workspace/$(COMPLETE_LINUX_CONTAINER_LLAMA_INSTALL_DIR)/lib; echo "Linux container validation baseline:"; echo "platform=$(COMPLETE_LINUX_CONTAINER_PLATFORM)"; uname -a; echo "logical_cpus=$$(nproc)"; python3 -c "from pathlib import Path; meminfo = Path(\"/proc/meminfo\").read_text(encoding=\"utf-8\").splitlines(); total = next(line for line in meminfo if line.startswith(\"MemTotal:\")); print(total)"; make EXTRA_CFLAGS=-Wno-error=nonnull-compare RUN_TESTS_DIR=$(COMPLETE_LINUX_CONTAINER_RUN_TESTS_DIR) LLAMA_BUILD_DIR=$(COMPLETE_LINUX_CONTAINER_LLAMA_BUILD_DIR) LLAMA_INSTALL_DIR=$(COMPLETE_LINUX_CONTAINER_LLAMA_INSTALL_DIR) complete-performance-validation 2>&1'
 
 # Show vendored llama.cpp configuration
 print-llama-config:

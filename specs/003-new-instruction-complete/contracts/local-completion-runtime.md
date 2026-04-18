@@ -117,8 +117,9 @@ Fixture rules:
 
 ## Validation Procedure
 
-Use `make complete-performance-validation 2>&1` on a supported environment with no other active
-`complete(...)` evaluation.
+Use `make complete-performance-validation 2>&1` on the local host, or
+`make complete-performance-validation-linux-container 2>&1` for the documented Linux containerized
+validation path, with no other active `complete(...)` evaluation.
 
 The documented procedure is:
 - **Runtime warm support check**: run `ar_local_completion_tests` with
@@ -132,6 +133,12 @@ The documented procedure is:
   `AGERUN_COMPLETE_EVALUATOR_SUBTEST=performance_warm_fixture_set` so the runtime is warmed once
   and then the same evaluator executes the full 20-template fixture set across the complete
   instruction path (generation, validation, error reporting, and atomic writes)
+- **Linux containerized execution path**: when using
+  `make complete-performance-validation-linux-container 2>&1`, execute the same runtime warm,
+  evaluator cold-start, and evaluator warm-run procedure inside the project-controlled Docker image,
+  using isolated Linux-specific build directories (`.deps/linux-container-llama.cpp-*` and
+  `bin/run-tests-linux-container`) plus `LD_LIBRARY_PATH` pointed at the Linux vendored
+  `libllama.so`
 - **Invalid-before-generation fast-fail**: verify separately with
   `test_complete_instruction_evaluator__invalid_template_fast_failure_does_not_initialize_runtime`
   and `test_local_completion__invalid_before_generation_rejects_without_runtime_initialization`
@@ -153,8 +160,10 @@ Interpretation rules:
 
 The documented first-release validation baseline is:
 - **macOS**: Apple silicon, 14 logical CPU cores, 36 GiB RAM, local SSD-backed model/runtime files
-- **Linux**: CPU-only host meeting or exceeding 14 logical CPU cores, 36 GiB RAM, and local
-  SSD-backed model/runtime files, using the same vendored `libllama` build shape and model asset
+- **Linux containerized**: CPU-only `linux/arm64` Docker execution using the project-controlled
+  validation image, Linux-specific vendored `libllama` build directories, bind-mounted local model
+  and runtime files, and a container allocation of 14 logical CPU cores with approximately 8 GiB
+  visible RAM
 
 ## Recorded Results
 
@@ -173,9 +182,21 @@ Observed results from `make complete-performance-validation 2>&1`:
 - evaluator cold-start summary: `fixtures=20 success=20 under_30000ms=20 avg=3573 ms max=10969 ms`
 - evaluator warm-run summary: `fixtures=20 success=20 under_15000ms=20 avg=2760 ms max=10421 ms`
 
-### Linux validation
+### Linux containerized validation (executed 2026-04-17)
 
-- Pending T040 execution in a Linux environment that meets the documented baseline above.
+Environment:
+- Docker Desktop Linux container on macOS host
+- `linux/arm64`
+- kernel `6.12.54-linuxkit`
+- 14 logical CPU cores visible in container
+- `MemTotal: 8024304 kB` visible in container
+- bind-mounted vendored CPU-only `libllama` from `.deps/linux-container-llama.cpp-install/`
+- bind-mounted local `models/phi-3-mini-q4.gguf`
+
+Observed results from `make complete-performance-validation-linux-container 2>&1`:
+- runtime warm support summary: `fixtures=20 success=20 under_15000ms=20 avg=2109 ms max=10899 ms`
+- evaluator cold-start summary: `fixtures=20 success=20 under_30000ms=20 avg=3611 ms max=12394 ms`
+- evaluator warm-run summary: `fixtures=20 success=20 under_15000ms=20 avg=2118 ms max=10776 ms`
 
 ## Non-Goals
 

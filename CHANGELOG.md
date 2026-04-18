@@ -1,5 +1,28 @@
 # AgeRun CHANGELOG
 
+## 2026-04-17 (Complete() Linux containerized performance validation)
+
+- **Recorded Linux containerized timing evidence for `complete(...)` and closed T040**
+
+  Added a repeatable `make complete-performance-validation-linux-container` target backed by a
+  project-controlled Docker image, isolated Linux-specific vendored `libllama` build directories,
+  isolated Linux test output directories, and the required Linux `LD_LIBRARY_PATH` wiring for the
+  embedded runtime. Executed the full 20-template warm-run and cold-start validation procedure in a
+  `linux/arm64` container, recorded the container baseline and timing results in the feature
+  contract and quickstart, and updated the feature task list so T040 is now complete under the
+  approved containerized Linux interpretation.
+
+  **Implementation**: Updated `Makefile`, added
+  `docker/complete-performance-validation/Dockerfile`, and updated
+  `specs/003-new-instruction-complete/contracts/local-completion-runtime.md`,
+  `specs/003-new-instruction-complete/quickstart.md`, and
+  `specs/003-new-instruction-complete/tasks.md`.
+
+  **Verification**: `make complete-performance-validation-linux-container 2>&1`.
+
+  **Impact**: The feature now has both macOS and Linux-containerized performance evidence with a
+  repeatable in-repo validation path for future reruns.
+
 ## 2026-04-17 (Complete() macOS performance validation and final gates)
 
 - **Added performance fixture validation for `complete(...)` and recorded macOS evidence**

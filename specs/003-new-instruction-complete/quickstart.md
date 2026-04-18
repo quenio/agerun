@@ -159,6 +159,12 @@ make check-logs
 make complete-performance-validation 2>&1
 ```
 
+For the documented Linux containerized validation path:
+
+```bash
+make complete-performance-validation-linux-container 2>&1
+```
+
 The documented 20-template fixture set is:
 1. `The largest country in South America is {country}.`
 2. `The capital of Brazil is {city}.`
@@ -208,9 +214,21 @@ Observed results:
 - evaluator cold-start: `20/20` success, `20/20` under `30000 ms`, `avg=3573 ms`, `max=10969 ms`
 - evaluator warm-run: `20/20` success, `20/20` under `15000 ms`, `avg=2760 ms`, `max=10421 ms`
 
-### Linux results
+### Linux containerized results recorded on 2026-04-17
 
-- Pending T040 execution on a Linux host that meets or exceeds the documented CPU-only baseline.
+Validation baseline used:
+- Docker Desktop Linux container on macOS host
+- `linux/arm64`
+- kernel `6.12.54-linuxkit`
+- 14 logical CPU cores visible in container
+- `MemTotal: 8024304 kB` visible in container
+- bind-mounted `.deps/linux-container-llama.cpp-install/lib/libllama.so`
+- bind-mounted `models/phi-3-mini-q4.gguf`
+
+Observed results:
+- runtime warm support: `20/20` success, `20/20` under `15000 ms`, `avg=2109 ms`, `max=10899 ms`
+- evaluator cold-start: `20/20` success, `20/20` under `30000 ms`, `avg=3611 ms`, `max=12394 ms`
+- evaluator warm-run: `20/20` success, `20/20` under `15000 ms`, `avg=2118 ms`, `max=10776 ms`
 
 ## Notes for the first implementation
 
