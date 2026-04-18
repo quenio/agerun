@@ -15,64 +15,63 @@ This ATN specification uses only the probeable agent-state constants requested b
 contract: `initial_memory`, `final_memory`, `message`, and `context`.
 
 ```haskell
-Memory
-Message
-Context
+ProbeValue :: String | Natural
+ProbeMap :: String -> ProbeValue
 
-initial_memory: Memory
-final_memory: Memory
-message: Message
-context: Context
+initial_memory: ProbeMap
+final_memory: ProbeMap
+message: ProbeMap
+context: ProbeMap
 
 PRECONDITION_SUPPORTED_MESSAGE_ACTION:
-  message.action = "start" or
-  message.action = "definition_ready" or
-  message.action = "definition_error"
+  message("action") = "start" or
+  message("action") = "definition_ready" or
+  message("action") = "definition_error"
 
 PRECONDITION_START_MESSAGE_IS_COMPLETE:
-  message.action = "start" =>
-    message.sender > 0 and
-    not (message.definition_method_name = "") and
-    not (message.definition_method_version = "") and
-    not (message.definition_path = "") and
-    not (message.reporter_method_name = "") and
-    not (message.reporter_method_version = "") and
-    not (message.item_id = "") and
-    not (message.title = "") and
-    not (message.priority = "") and
-    not (message.owner = "") and
-    not (message.review_status = "")
+  message("action") = "start" =>
+    message("sender") > 0 and
+    not (message("definition_method_name") = "") and
+    not (message("definition_method_version") = "") and
+    not (message("definition_path") = "") and
+    not (message("reporter_method_name") = "") and
+    not (message("reporter_method_version") = "") and
+    not (message("item_id") = "") and
+    not (message("title") = "") and
+    not (message("priority") = "") and
+    not (message("owner") = "") and
+    not (message("review_status") = "")
 
 PRECONDITION_READY_MESSAGE_IS_COMPLETE:
-  message.action = "definition_ready" =>
-    not (message.workflow_name = "") and
-    not (message.initial_stage = "")
+  message("action") = "definition_ready" =>
+    not (message("workflow_name") = "") and
+    not (message("initial_stage") = "")
 
 PRECONDITION_ERROR_MESSAGE_IS_COMPLETE:
-  message.action = "definition_error" =>
-    not (message.reason = "")
+  message("action") = "definition_error" =>
+    not (message("reason") = "")
 
 POSTCONDITION_START_SPAWNS_SUPPORT_AGENTS:
-  message.action = "start" =>
-    final_memory.definition_agent_id > 0 and
-    final_memory.reporter_agent_id > 0
+  message("action") = "start" =>
+    final_memory("definition_agent_id") > 0 and
+    final_memory("reporter_agent_id") > 0
 
 POSTCONDITION_START_PREPARES_THE_DEFINITION:
-  message.action = "start" =>
-    final_memory.prepare_sent = 1 and
-    final_memory.run_status = "waiting_for_definition"
+  message("action") = "start" =>
+    final_memory("prepare_sent") = 1 and
+    final_memory("run_status") = "waiting_for_definition"
 
 POSTCONDITION_READY_ACTIVATES_THE_RUN:
-  message.action = "definition_ready" =>
-    final_memory.run_status = "active" and
-    final_memory.item_agent_id > 0 and
-    final_memory.summary_sent = 1
+  message("action") = "definition_ready" =>
+    final_memory("run_status") = "active" and
+    final_memory("item_agent_id") > 0 and
+    final_memory("summary_sent") = 1
 
 POSTCONDITION_ERROR_FAILS_WITHOUT_ITEM_CREATION:
-  message.action = "definition_error" =>
-    final_memory.run_status = "startup_failed" and
-    final_memory.item_agent_id = 0 and
-    final_memory.startup_sent = 1
+  message("action") = "definition_error" =>
+    final_memory("run_status") = "startup_failed" and
+    final_memory("item_agent_id") = 0 and
+    final_memory("startup_sent") = 1
 ```
 
 ## Inputs

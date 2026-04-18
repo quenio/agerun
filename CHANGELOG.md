@@ -1,5 +1,25 @@
 # AgeRun CHANGELOG
 
+## 2026-04-18 (ATN workflow specs use uniform map-function constants)
+
+- **Normalized workflow method ATN constants to a single probe-map type**
+
+  Updated the workflow method ATN specifications so `initial_memory`, `final_memory`, `message`,
+  and `context` all share the same function-based map type, matching the fact that these probeable
+  agent-state values are all maps in AgeRun. Rewrote the assertions to use ATN function
+  application syntax such as `message("action")` and `final_memory("run_status")`, and removed the
+  temporary availability assumptions for `context` and `message` so both are treated as always
+  present but potentially empty.
+
+  **Implementation**: Updated `methods/workflow-coordinator-1.0.0.md`,
+  `methods/workflow-definition-1.0.0.md`, `methods/workflow-item-1.0.0.md`, and
+  `methods/workflow-reporter-1.0.0.md`.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: The ATN sections now model AgeRun probe state more faithfully by treating all four
+  probe constants as the same map/function type instead of as separate abstract record-like types.
+
 ## 2026-04-18 (ATN workflow specs restricted to probeable agent state)
 
 - **Reworked workflow method ATN specs to use only initial_memory, final_memory, message, and context**

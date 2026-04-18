@@ -12,65 +12,64 @@ This ATN specification uses only the probeable agent-state constants requested b
 contract: `initial_memory`, `final_memory`, `message`, and `context`.
 
 ```haskell
-Memory
-Message
-Context
+ProbeValue :: String | Natural
+ProbeMap :: String -> ProbeValue
 
-initial_memory: Memory
-final_memory: Memory
-message: Message
-context: Context
+initial_memory: ProbeMap
+final_memory: ProbeMap
+message: ProbeMap
+context: ProbeMap
 
 PRECONDITION_SUPPORTED_MESSAGE_ACTION:
-  message.action = "progress" or
-  message.action = "summary" or
-  message.action = "startup_failure"
+  message("action") = "progress" or
+  message("action") = "summary" or
+  message("action") = "startup_failure"
 
 PRECONDITION_PROGRESS_MESSAGE_IS_COMPLETE:
-  message.action = "progress" =>
-    not (message.workflow_name = "") and
-    not (message.item_id = "") and
-    not (message.stage = "") and
-    not (message.status = "") and
-    not (message.owner = "") and
-    not (message.reason = "") and
-    not (message.text = "")
+  message("action") = "progress" =>
+    not (message("workflow_name") = "") and
+    not (message("item_id") = "") and
+    not (message("stage") = "") and
+    not (message("status") = "") and
+    not (message("owner") = "") and
+    not (message("reason") = "") and
+    not (message("text") = "")
 
 PRECONDITION_SUMMARY_MESSAGE_IS_COMPLETE:
-  message.action = "summary" =>
-    not (message.workflow_name = "") and
-    not (message.item_id = "") and
-    not (message.stage = "") and
-    not (message.status = "") and
-    not (message.owner = "") and
-    not (message.reason = "")
+  message("action") = "summary" =>
+    not (message("workflow_name") = "") and
+    not (message("item_id") = "") and
+    not (message("stage") = "") and
+    not (message("status") = "") and
+    not (message("owner") = "") and
+    not (message("reason") = "")
 
 PRECONDITION_STARTUP_FAILURE_MESSAGE_IS_COMPLETE:
-  message.action = "startup_failure" =>
-    not (message.reason = "") and
-    not (message.failure_category = "")
+  message("action") = "startup_failure" =>
+    not (message("reason") = "") and
+    not (message("failure_category") = "")
 
 POSTCONDITION_PROGRESS_EVENTS_ARE_CLASSIFIED_AS_PROGRESS:
-  message.action = "progress" =>
-    final_memory.last_event_type = "progress" and
-    final_memory.log_level = "info"
+  message("action") = "progress" =>
+    final_memory("last_event_type") = "progress" and
+    final_memory("log_level") = "info"
 
 POSTCONDITION_SUMMARY_EVENTS_ARE_CLASSIFIED_AS_SUMMARY:
-  message.action = "summary" =>
-    final_memory.last_event_type = "summary"
+  message("action") = "summary" =>
+    final_memory("last_event_type") = "summary"
 
 POSTCONDITION_EMPTY_SUMMARY_TEXT_USES_A_FALLBACK:
-  message.action = "summary" and message.text = "" =>
-    not (final_memory.last_message = "")
+  message("action") = "summary" and message("text") = "" =>
+    not (final_memory("last_message") = "")
 
 POSTCONDITION_STARTUP_FAILURES_ARE_CLASSIFIED_AS_FAILURES:
-  message.action = "startup_failure" =>
-    final_memory.last_event_type = "startup_failure" and
-    final_memory.log_level = "error"
+  message("action") = "startup_failure" =>
+    final_memory("last_event_type") = "startup_failure" and
+    final_memory("log_level") = "error"
 
 POSTCONDITION_ALL_EVENTS_ARE_FORWARDED_TO_THE_LOG_DELEGATE:
-  message.action = "progress" or message.action = "summary" or message.action = "startup_failure" =>
-    final_memory.delivery_status = "success" or final_memory.delivery_status = "error"
+  message("action") = "progress" or message("action") = "summary" or message("action") = "startup_failure" =>
+    final_memory("delivery_status") = "success" or final_memory("delivery_status") = "error"
 ```
 
 ## Inputs

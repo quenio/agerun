@@ -17,88 +17,87 @@ This ATN specification uses only the probeable agent-state constants requested b
 contract: `initial_memory`, `final_memory`, `message`, and `context`.
 
 ```haskell
-Memory
-Message
-Context
+ProbeValue :: String | Natural
+ProbeMap :: String -> ProbeValue
 
-initial_memory: Memory
-final_memory: Memory
-message: Message
-context: Context
+initial_memory: ProbeMap
+final_memory: ProbeMap
+message: ProbeMap
+context: ProbeMap
 
 PRECONDITION_SUPPORTED_MESSAGE_ACTION:
-  message.action = "prepare_definition" or
-  message.action = "evaluate_transition" or
-  message.action = "describe"
+  message("action") = "prepare_definition" or
+  message("action") = "evaluate_transition" or
+  message("action") = "describe"
 
 PRECONDITION_PREPARE_MESSAGE_IS_COMPLETE:
-  message.action = "prepare_definition" =>
-    message.sender > 0 and
-    not (message.definition_path = "") and
-    not (message.stage = "") and
-    not (message.review_status = "")
+  message("action") = "prepare_definition" =>
+    message("sender") > 0 and
+    not (message("definition_path") = "") and
+    not (message("stage") = "") and
+    not (message("review_status") = "")
 
 PRECONDITION_EVALUATE_MESSAGE_IS_COMPLETE:
-  message.action = "evaluate_transition" =>
-    message.sender > 0 and
-    not (message.workflow_name = "") and
-    not (message.stage = "") and
-    not (message.item_id = "") and
-    not (message.title = "") and
-    not (message.priority = "") and
-    not (message.owner = "") and
-    not (message.review_status = "")
+  message("action") = "evaluate_transition" =>
+    message("sender") > 0 and
+    not (message("workflow_name") = "") and
+    not (message("stage") = "") and
+    not (message("item_id") = "") and
+    not (message("title") = "") and
+    not (message("priority") = "") and
+    not (message("owner") = "") and
+    not (message("review_status") = "")
 
 PRECONDITION_DESCRIBE_HAS_A_REPLY_TARGET:
-  message.action = "describe" => message.sender > 0
+  message("action") = "describe" => message("sender") > 0
 
 POSTCONDITION_KNOWN_READY_DEFINITION_BECOMES_READY:
-  message.action = "prepare_definition" and
-  (message.definition_path = "workflows/default-workflow.yaml" or
-   message.definition_path = "workflows/test-workflow.yaml") and
-  final_memory.probe_ok = 1 =>
-    final_memory.ready_sent = 1 and
-    final_memory.last_reply_action = "definition_ready"
+  message("action") = "prepare_definition" and
+  (message("definition_path") = "workflows/default-workflow.yaml" or
+   message("definition_path") = "workflows/test-workflow.yaml") and
+  final_memory("probe_ok") = 1 =>
+    final_memory("ready_sent") = 1 and
+    final_memory("last_reply_action") = "definition_ready"
 
 POSTCONDITION_INVALID_OR_UNKNOWN_DEFINITION_IS_REJECTED:
-  message.action = "prepare_definition" and
-  not (message.definition_path = "workflows/default-workflow.yaml") and
-  not (message.definition_path = "workflows/test-workflow.yaml") =>
-    final_memory.error_sent = 1 and
-    final_memory.error_reason = "invalid_definition_schema" and
-    final_memory.last_reply_action = "definition_error"
+  message("action") = "prepare_definition" and
+  not (message("definition_path") = "workflows/default-workflow.yaml") and
+  not (message("definition_path") = "workflows/test-workflow.yaml") =>
+    final_memory("error_sent") = 1 and
+    final_memory("error_reason") = "invalid_definition_schema" and
+    final_memory("last_reply_action") = "definition_error"
 
 POSTCONDITION_STARTUP_PROBE_FAILURE_IS_REPORTED:
-  message.action = "prepare_definition" and
-  (message.definition_path = "workflows/default-workflow.yaml" or
-   message.definition_path = "workflows/test-workflow.yaml") and
-  final_memory.probe_ok = 0 =>
-    final_memory.error_sent = 1 and
-    final_memory.error_reason = "startup_dependency_unavailable" and
-    final_memory.last_reply_action = "definition_error"
+  message("action") = "prepare_definition" and
+  (message("definition_path") = "workflows/default-workflow.yaml" or
+   message("definition_path") = "workflows/test-workflow.yaml") and
+  final_memory("probe_ok") = 0 =>
+    final_memory("error_sent") = 1 and
+    final_memory("error_reason") = "startup_dependency_unavailable" and
+    final_memory("last_reply_action") = "definition_error"
 
 POSTCONDITION_EVALUATION_PRODUCES_A_DECISION:
-  message.action = "evaluate_transition" => final_memory.transition_sent = 1
+  message("action") = "evaluate_transition" => final_memory("transition_sent") = 1
 
 POSTCONDITION_TRANSITION_FAILURE_BECOMES_RETRYABLE_STAY:
-  message.action = "evaluate_transition" and final_memory.probe_ok = 0 =>
-    final_memory.transition_outcome = "stay" and
-    final_memory.transition_reason = "complete_transition_failed" and
-    final_memory.retryable = 1 and
-    final_memory.terminal_outcome = ""
+  message("action") = "evaluate_transition" and final_memory("probe_ok") = 0 =>
+    final_memory("transition_outcome") = "stay" and
+    final_memory("transition_reason") = "complete_transition_failed" and
+    final_memory("retryable") = 1 and
+    final_memory("terminal_outcome") = ""
 
 POSTCONDITION_REJECT_DECISION_REJECTS_THE_ITEM:
-  message.action = "evaluate_transition" and final_memory.transition_outcome = "reject" =>
-    final_memory.terminal_outcome = "rejected"
+  message("action") = "evaluate_transition" and final_memory("transition_outcome") = "reject" =>
+    final_memory("terminal_outcome") = "rejected"
 
 POSTCONDITION_REVIEW_ADVANCE_COMPLETES_THE_ITEM:
-  message.action = "evaluate_transition" and
-  final_memory.transition_outcome = "advance" and
-  final_memory.next_stage = "completion" =>
-    final_memory.terminal_outcome = "completed"
+  message("action") = "evaluate_transition" and
+  final_memory("transition_outcome") = "advance" and
+  final_memory("next_stage") = "completion" =>
+    final_memory("terminal_outcome") = "completed"
 
 POSTCONDITION_DESCRIBE_RETURNS_A_DESCRIPTION:
-  message.action = "describe" => final_memory.describe_sent = 1
+  message("action") = "describe" => final_memory("describe_sent") = 1
 ```
 
 ## Inputs
