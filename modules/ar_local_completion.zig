@@ -52,8 +52,23 @@ fn _defaultModelPath() ?[*:0]u8 {
     return ar_allocator.dupe("models/phi-3-mini-q4.gguf", "local_completion_default_model_path");
 }
 
+fn _alternateModelPath() ?[*:0]u8 {
+    return ar_allocator.dupe("../../models/phi-3-mini-q4.gguf", "local_completion_alternate_model_path");
+}
+
 fn _resolveModelPath() ?[*:0]u8 {
-    return _dupOptional(std.posix.getenvZ("AGERUN_COMPLETE_MODEL"), "local_completion_model_path") orelse _defaultModelPath();
+    const own_override = _dupOptional(std.posix.getenvZ("AGERUN_COMPLETE_MODEL"), "local_completion_model_path");
+    if (own_override != null) return own_override;
+
+    const own_default = _defaultModelPath() orelse return null;
+    if (_fileExists(own_default)) return own_default;
+    ar_allocator.free(own_default);
+
+    const own_alternate = _alternateModelPath() orelse return null;
+    if (_fileExists(own_alternate)) return own_alternate;
+    ar_allocator.free(own_alternate);
+
+    return _defaultModelPath();
 }
 
 fn _resolveRunnerPath() ?[*:0]u8 {

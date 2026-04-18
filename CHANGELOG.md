@@ -1,5 +1,25 @@
 # AgeRun CHANGELOG
 
+## 2026-04-18 (Executable complete() default model path fallback)
+
+- **Fixed `make run-exec` so bundled `complete(...)` startup can find the default model from `bin/run-exec`**
+
+  Updated the local completion runtime to keep honoring `AGERUN_COMPLETE_MODEL` first, then try the
+  repo-root model path fallback needed when the executable runs from `bin/run-exec`. Added a
+  regression test that switches into `bin/run-exec` and verifies the resolved default model path is
+  `../../models/phi-3-mini-q4.gguf`, matching the repository layout used by `make run-exec`.
+
+  **Implementation**: Updated `modules/ar_local_completion.c` and
+  `modules/ar_local_completion.zig`; added `modules/ar_local_completion_path_tests.c`.
+
+  **Verification**: `make ar_local_completion_path_tests 2>&1`; `make ar_local_completion_tests 2>&1`;
+  `make ar_executable_tests 2>&1`; `rm -f bin/run-exec/agerun.methodology bin/run-exec/agerun.agency
+  bin/run-exec/agerun.log && make run-exec 2>&1`.
+
+  **Impact**: Fresh executable runs now reach the workflow demo completion path by default instead
+  of failing startup with `complete() local model file was not found` when launched from the
+  build output directory.
+
 ## 2026-04-18 (Eiffel-style ATN contract naming for workflow methods)
 
 - **Renamed workflow ATN contract assertions to `REQUIRES_` and `ENSURES_`**

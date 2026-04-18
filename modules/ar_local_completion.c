@@ -236,12 +236,30 @@ static char *_default_model_path(void) {
     return AR__HEAP__STRDUP("models/phi-3-mini-q4.gguf", "local_completion_default_model_path");
 }
 
+static char *_alternate_model_path(void) {
+    return AR__HEAP__STRDUP("../../models/phi-3-mini-q4.gguf",
+                            "local_completion_alternate_model_path");
+}
+
 static char *_resolve_model_path(void) {
     const char *ref_override = getenv("AGERUN_COMPLETE_MODEL");
     char *own_path = _dup_optional(ref_override, "local_completion_model_path");
     if (own_path != NULL) {
         return own_path;
     }
+
+    own_path = _default_model_path();
+    if (own_path != NULL && access(own_path, F_OK) == 0) {
+        return own_path;
+    }
+    AR__HEAP__FREE(own_path);
+
+    own_path = _alternate_model_path();
+    if (own_path != NULL && access(own_path, F_OK) == 0) {
+        return own_path;
+    }
+    AR__HEAP__FREE(own_path);
+
     return _default_model_path();
 }
 

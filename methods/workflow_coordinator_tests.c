@@ -49,6 +49,15 @@ static void cleanup_fake_runner(void) {
     }
 }
 
+static void setup_missing_model(void) {
+    cleanup_fake_runner();
+    snprintf(g_model_path, sizeof(g_model_path),
+             "./missing-workflow-coordinator-model-%ld.gguf", (long)getpid());
+    AR_ASSERT(setenv("AGERUN_COMPLETE_MODEL", g_model_path, 1) == 0,
+              "Missing model env should be set");
+    unsetenv("AGERUN_COMPLETE_RUNNER");
+}
+
 static bool log_file_contains(const char *ref_expected_text) {
     FILE *fp = NULL;
     char line[512];
@@ -207,7 +216,7 @@ static void test_workflow_coordinator__startup_failure_skips_item_creation(void)
     printf("Testing workflow-coordinator reports startup failure and skips item creation...\n");
 
     remove("agerun.log");
-    cleanup_fake_runner();
+    setup_missing_model();
 
     ar_method_fixture_t *own_fixture = ar_method_fixture__create("workflow_coordinator_startup_failure");
     AR_ASSERT(ar_method_fixture__initialize(own_fixture), "Fixture should initialize");

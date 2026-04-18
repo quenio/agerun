@@ -48,6 +48,15 @@ static void cleanup_fake_runner(void) {
     }
 }
 
+static void setup_missing_model(void) {
+    cleanup_fake_runner();
+    snprintf(g_model_path, sizeof(g_model_path),
+             "./missing-workflow-definition-model-%ld.gguf", (long)getpid());
+    AR_ASSERT(setenv("AGERUN_COMPLETE_MODEL", g_model_path, 1) == 0,
+              "Missing model env should be set");
+    unsetenv("AGERUN_COMPLETE_RUNNER");
+}
+
 static ar_data_t *create_prepare_definition_message(const char *ref_path, int64_t sender) {
     ar_data_t *own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Prepare message should be created");
@@ -221,7 +230,7 @@ static void test_workflow_definition__invalid_schema_returns_definition_error(vo
 static void test_workflow_definition__complete_failure_maps_to_retryable_stay(void) {
     printf("Testing workflow-definition maps completion failure to retryable stay...\n");
 
-    cleanup_fake_runner();
+    setup_missing_model();
 
     ar_method_fixture_t *own_fixture = create_fixture();
     ar_agency_t *mut_agency = ar_method_fixture__get_agency(own_fixture);
