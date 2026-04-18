@@ -8,13 +8,24 @@ memory so tests can assert the externally visible behavior.
 
 ## ATN Specification
 
-The ATN below specifies the observable reporting rules for progress, summary, and startup failure
-messages.
+The ATN below states the reporting contract as **preconditions** before the method runs and
+**postconditions** after the message has been processed.
 
 ```haskell
 progress_received: Boolean
 summary_received: Boolean
 startup_failure_received: Boolean
+
+workflow_name_present: Boolean
+item_id_present: Boolean
+stage_present: Boolean
+status_present: Boolean
+owner_present: Boolean
+transition_count_present: Boolean
+terminal_outcome_present: Boolean
+reason_present: Boolean
+text_present: Boolean
+failure_category_present: Boolean
 
 summary_text_empty: Boolean
 fallback_summary_used: Boolean
@@ -25,28 +36,48 @@ visible_message: String
 log_level: String
 delivery_status: String
 
-PROGRESS_EVENTS_ARE_CLASSIFIED_AS_PROGRESS:
-  progress_received => last_event_type = "progress"
+PRECONDITION_PROGRESS_MESSAGE_IS_COMPLETE:
+  progress_received =>
+    workflow_name_present and
+    item_id_present and
+    stage_present and
+    status_present and
+    owner_present and
+    transition_count_present and
+    terminal_outcome_present and
+    reason_present and
+    text_present
 
-PROGRESS_EVENTS_USE_INFO_LEVEL:
-  progress_received => log_level = "info"
+PRECONDITION_SUMMARY_MESSAGE_IS_COMPLETE:
+  summary_received =>
+    workflow_name_present and
+    item_id_present and
+    stage_present and
+    status_present and
+    owner_present and
+    transition_count_present and
+    terminal_outcome_present and
+    reason_present
 
-SUMMARY_EVENTS_ARE_CLASSIFIED_AS_SUMMARY:
+PRECONDITION_STARTUP_FAILURE_MESSAGE_IS_COMPLETE:
+  startup_failure_received => reason_present and failure_category_present
+
+POSTCONDITION_PROGRESS_EVENTS_ARE_CLASSIFIED_AS_PROGRESS:
+  progress_received => last_event_type = "progress" and log_level = "info"
+
+POSTCONDITION_SUMMARY_EVENTS_ARE_CLASSIFIED_AS_SUMMARY:
   summary_received => last_event_type = "summary"
 
-EMPTY_SUMMARY_TEXT_USES_A_FALLBACK:
+POSTCONDITION_EMPTY_SUMMARY_TEXT_USES_A_FALLBACK:
   summary_received and summary_text_empty => fallback_summary_used
 
-STARTUP_FAILURE_EVENTS_ARE_CLASSIFIED_AS_FAILURES:
-  startup_failure_received => last_event_type = "startup_failure"
+POSTCONDITION_STARTUP_FAILURES_ARE_CLASSIFIED_AS_FAILURES:
+  startup_failure_received => last_event_type = "startup_failure" and log_level = "error"
 
-STARTUP_FAILURES_USE_ERROR_LEVEL:
-  startup_failure_received => log_level = "error"
-
-ALL_EVENTS_ARE_FORWARDED_TO_THE_LOG_DELEGATE:
+POSTCONDITION_ALL_EVENTS_ARE_FORWARDED_TO_THE_LOG_DELEGATE:
   progress_received or summary_received or startup_failure_received => log_message_sent
 
-SUCCESSFUL_FORWARDING_UPDATES_DELIVERY_STATUS:
+POSTCONDITION_DELIVERY_STATUS_IS_RECORDED:
   log_message_sent => delivery_status = "success" or delivery_status = "error"
 ```
 

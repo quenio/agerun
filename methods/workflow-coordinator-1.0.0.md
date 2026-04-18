@@ -11,14 +11,31 @@ startup `start` message from `bootstrap`, spawns the supporting `workflow-defini
 
 ## ATN Specification
 
-The following ATN specification describes the observable contract of this method in terms of
-accepted inputs and required coordinator state relationships. It is intentionally declarative: it
-states what must be true of a valid coordinator state, not how the method computes that state.
+The following ATN specification describes the method contract as **preconditions** that must hold
+before an agent runs this method for a given message, and **postconditions** that must hold after
+that run completes.
 
 ```haskell
 start_received: Boolean
 ready_received: Boolean
 error_received: Boolean
+
+sender_present: Boolean
+definition_method_present: Boolean
+definition_version_present: Boolean
+definition_path_present: Boolean
+reporter_method_present: Boolean
+reporter_version_present: Boolean
+item_id_present: Boolean
+title_present: Boolean
+priority_present: Boolean
+owner_present: Boolean
+review_status_present: Boolean
+workflow_name_present: Boolean
+initial_stage_present: Boolean
+error_reason_present: Boolean
+
+exactly_one_supported_action: Boolean
 
 definition_agent_spawned: Boolean
 reporter_agent_spawned: Boolean
@@ -28,34 +45,41 @@ summary_sent: Boolean
 startup_failure_sent: Boolean
 
 run_status: String
-startup_failure_reason: String
 
-START_REQUIRES_SUPPORT_AGENTS:
+PRECONDITION_SUPPORTED_ACTION:
+  exactly_one_supported_action
+
+PRECONDITION_START_MESSAGE_IS_COMPLETE:
+  start_received =>
+    sender_present and
+    definition_method_present and
+    definition_version_present and
+    definition_path_present and
+    reporter_method_present and
+    reporter_version_present and
+    item_id_present and
+    title_present and
+    priority_present and
+    owner_present and
+    review_status_present
+
+PRECONDITION_READY_MESSAGE_IS_COMPLETE:
+  ready_received => workflow_name_present and initial_stage_present
+
+PRECONDITION_ERROR_MESSAGE_IS_COMPLETE:
+  error_received => error_reason_present
+
+POSTCONDITION_START_SPAWNS_SUPPORT_AGENTS:
   start_received => definition_agent_spawned and reporter_agent_spawned
 
-START_QUEUES_DEFINITION_PREPARATION:
-  start_received => prepare_definition_sent
+POSTCONDITION_START_PREPARES_THE_DEFINITION:
+  start_received => prepare_definition_sent and run_status = "waiting_for_definition"
 
-START_ENTERS_WAITING_STATE:
-  start_received => run_status = "waiting_for_definition"
-
-READY_AND_ERROR_ARE_MUTUALLY_EXCLUSIVE:
-  not (ready_received and error_received)
-
-READINESS_REQUIRES_A_STARTED_RUN:
-  ready_received => start_received
-
-READINESS_ACTIVATES_THE_RUN:
+POSTCONDITION_READY_ACTIVATES_THE_RUN:
   ready_received => run_status = "active" and item_agent_created and summary_sent
 
-STARTUP_FAILURE_REQUIRES_A_STARTED_RUN:
-  error_received => start_received
-
-STARTUP_FAILURE_SUPPRESSES_ITEM_CREATION:
-  error_received => run_status = "startup_failed" and not item_agent_created
-
-STARTUP_FAILURE_IS_REPORTED:
-  error_received => startup_failure_sent
+POSTCONDITION_ERROR_FAILS_WITHOUT_ITEM_CREATION:
+  error_received => run_status = "startup_failed" and not item_agent_created and startup_failure_sent
 ```
 
 ## Inputs

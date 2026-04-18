@@ -13,13 +13,24 @@ path used by tests.
 
 ## ATN Specification
 
-The ATN below specifies the observable contract of the definition method: accepted requests,
-recognized definition categories, and the required normalization of startup and transition results.
+The ATN below specifies **preconditions** that must hold before an agent runs this method and the
+**postconditions** that must hold once the run has completed.
 
 ```haskell
 prepare_requested: Boolean
 evaluate_requested: Boolean
 describe_requested: Boolean
+
+sender_present: Boolean
+definition_path_present: Boolean
+workflow_name_present: Boolean
+stage_present: Boolean
+item_id_present: Boolean
+title_present: Boolean
+priority_present: Boolean
+owner_present: Boolean
+review_status_present: Boolean
+transition_count_present: Boolean
 
 known_definition_path: Boolean
 invalid_definition_path: Boolean
@@ -37,39 +48,53 @@ next_stage: String
 terminal_outcome: String
 retryable: Boolean
 
-READY_AND_ERROR_ARE_MUTUALLY_EXCLUSIVE:
-  not (definition_ready_sent and definition_error_sent)
+PRECONDITION_PREPARE_MESSAGE_IS_COMPLETE:
+  prepare_requested => sender_present and definition_path_present and stage_present and review_status_present
 
-KNOWN_DEFINITION_WITH_READY_DEPENDENCIES_BECOMES_READY:
+PRECONDITION_EVALUATE_MESSAGE_IS_COMPLETE:
+  evaluate_requested =>
+    sender_present and
+    workflow_name_present and
+    stage_present and
+    item_id_present and
+    title_present and
+    priority_present and
+    owner_present and
+    review_status_present and
+    transition_count_present
+
+PRECONDITION_DESCRIBE_HAS_A_REPLY_TARGET:
+  describe_requested => sender_present
+
+POSTCONDITION_READY_AND_ERROR_ARE_MUTUALLY_EXCLUSIVE:
+  prepare_requested => not (definition_ready_sent and definition_error_sent)
+
+POSTCONDITION_KNOWN_READY_DEFINITION_BECOMES_READY:
   prepare_requested and known_definition_path and startup_probe_succeeded => definition_ready_sent
 
-INVALID_DEFINITION_IS_REJECTED:
-  prepare_requested and invalid_definition_path =>
+POSTCONDITION_INVALID_OR_UNKNOWN_DEFINITION_IS_REJECTED:
+  prepare_requested and (invalid_definition_path or not known_definition_path) =>
     definition_error_sent and error_reason = "invalid_definition_schema"
 
-UNKNOWN_DEFINITION_IS_REJECTED:
-  prepare_requested and not known_definition_path and not invalid_definition_path =>
-    definition_error_sent and error_reason = "invalid_definition_schema"
-
-STARTUP_PROBE_FAILURE_IS_REPORTED:
+POSTCONDITION_STARTUP_PROBE_FAILURE_IS_REPORTED:
   prepare_requested and known_definition_path and not startup_probe_succeeded =>
     definition_error_sent and error_reason = "startup_dependency_unavailable"
 
-EVALUATION_PRODUCES_A_DECISION:
+POSTCONDITION_EVALUATION_PRODUCES_A_DECISION:
   evaluate_requested => transition_decision_sent
 
-TRANSITION_FAILURE_BECOMES_RETRYABLE_STAY:
+POSTCONDITION_TRANSITION_FAILURE_BECOMES_RETRYABLE_STAY:
   evaluate_requested and not transition_probe_succeeded =>
     outcome = "stay" and retryable and terminal_outcome = ""
 
-REJECT_DECISION_REJECTS_THE_ITEM:
+POSTCONDITION_REJECT_DECISION_REJECTS_THE_ITEM:
   evaluate_requested and outcome = "reject" => terminal_outcome = "rejected"
 
-REVIEW_ADVANCE_COMPLETES_THE_ITEM:
+POSTCONDITION_REVIEW_ADVANCE_COMPLETES_THE_ITEM:
   evaluate_requested and outcome = "advance" and next_stage = "completion" =>
     terminal_outcome = "completed"
 
-DESCRIBE_REQUEST_RETURNS_A_DESCRIPTION:
+POSTCONDITION_DESCRIBE_RETURNS_A_DESCRIPTION:
   describe_requested => describe_result_sent
 ```
 

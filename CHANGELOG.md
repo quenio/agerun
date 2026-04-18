@@ -1,5 +1,23 @@
 # AgeRun CHANGELOG
 
+## 2026-04-18 (ATN workflow method preconditions and postconditions)
+
+- **Refined the workflow method ATN docs to specify preconditions and postconditions explicitly**
+
+  Updated the ATN sections of the workflow method documentation so each method now defines the
+  required preconditions before an agent run and the required postconditions after the run. This
+  makes the documentation align with the intended contract style for ATN specifications instead of
+  only stating general invariants.
+
+  **Implementation**: Updated `methods/workflow-coordinator-1.0.0.md`,
+  `methods/workflow-definition-1.0.0.md`, `methods/workflow-item-1.0.0.md`, and
+  `methods/workflow-reporter-1.0.0.md`.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: The workflow method docs now express agent-run contracts in the clearer
+  precondition/postcondition form requested for ATN-based specifications.
+
 ## 2026-04-18 (ATN workflow method specifications)
 
 - **Added ATN specifications to the workflow method documentation**
