@@ -11,6 +11,68 @@ The current implementation is intentionally parse-friendly and path-based: it re
 `workflows/default-workflow.yaml`, `workflows/test-workflow.yaml`, and an invalid-schema fixture
 path used by tests.
 
+## ATN Specification
+
+The ATN below specifies the observable contract of the definition method: accepted requests,
+recognized definition categories, and the required normalization of startup and transition results.
+
+```haskell
+prepare_requested: Boolean
+evaluate_requested: Boolean
+describe_requested: Boolean
+
+known_definition_path: Boolean
+invalid_definition_path: Boolean
+startup_probe_succeeded: Boolean
+transition_probe_succeeded: Boolean
+
+definition_ready_sent: Boolean
+definition_error_sent: Boolean
+transition_decision_sent: Boolean
+describe_result_sent: Boolean
+
+error_reason: String
+outcome: String
+next_stage: String
+terminal_outcome: String
+retryable: Boolean
+
+READY_AND_ERROR_ARE_MUTUALLY_EXCLUSIVE:
+  not (definition_ready_sent and definition_error_sent)
+
+KNOWN_DEFINITION_WITH_READY_DEPENDENCIES_BECOMES_READY:
+  prepare_requested and known_definition_path and startup_probe_succeeded => definition_ready_sent
+
+INVALID_DEFINITION_IS_REJECTED:
+  prepare_requested and invalid_definition_path =>
+    definition_error_sent and error_reason = "invalid_definition_schema"
+
+UNKNOWN_DEFINITION_IS_REJECTED:
+  prepare_requested and not known_definition_path and not invalid_definition_path =>
+    definition_error_sent and error_reason = "invalid_definition_schema"
+
+STARTUP_PROBE_FAILURE_IS_REPORTED:
+  prepare_requested and known_definition_path and not startup_probe_succeeded =>
+    definition_error_sent and error_reason = "startup_dependency_unavailable"
+
+EVALUATION_PRODUCES_A_DECISION:
+  evaluate_requested => transition_decision_sent
+
+TRANSITION_FAILURE_BECOMES_RETRYABLE_STAY:
+  evaluate_requested and not transition_probe_succeeded =>
+    outcome = "stay" and retryable and terminal_outcome = ""
+
+REJECT_DECISION_REJECTS_THE_ITEM:
+  evaluate_requested and outcome = "reject" => terminal_outcome = "rejected"
+
+REVIEW_ADVANCE_COMPLETES_THE_ITEM:
+  evaluate_requested and outcome = "advance" and next_stage = "completion" =>
+    terminal_outcome = "completed"
+
+DESCRIBE_REQUEST_RETURNS_A_DESCRIPTION:
+  describe_requested => describe_result_sent
+```
+
 ## Inputs
 
 ### `action=prepare_definition`

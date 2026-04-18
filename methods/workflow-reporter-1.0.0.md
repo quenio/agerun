@@ -6,6 +6,50 @@
 messages sent through the log delegate (`-102`). It also records the last delivered event details in
 memory so tests can assert the externally visible behavior.
 
+## ATN Specification
+
+The ATN below specifies the observable reporting rules for progress, summary, and startup failure
+messages.
+
+```haskell
+progress_received: Boolean
+summary_received: Boolean
+startup_failure_received: Boolean
+
+summary_text_empty: Boolean
+fallback_summary_used: Boolean
+log_message_sent: Boolean
+
+last_event_type: String
+visible_message: String
+log_level: String
+delivery_status: String
+
+PROGRESS_EVENTS_ARE_CLASSIFIED_AS_PROGRESS:
+  progress_received => last_event_type = "progress"
+
+PROGRESS_EVENTS_USE_INFO_LEVEL:
+  progress_received => log_level = "info"
+
+SUMMARY_EVENTS_ARE_CLASSIFIED_AS_SUMMARY:
+  summary_received => last_event_type = "summary"
+
+EMPTY_SUMMARY_TEXT_USES_A_FALLBACK:
+  summary_received and summary_text_empty => fallback_summary_used
+
+STARTUP_FAILURE_EVENTS_ARE_CLASSIFIED_AS_FAILURES:
+  startup_failure_received => last_event_type = "startup_failure"
+
+STARTUP_FAILURES_USE_ERROR_LEVEL:
+  startup_failure_received => log_level = "error"
+
+ALL_EVENTS_ARE_FORWARDED_TO_THE_LOG_DELEGATE:
+  progress_received or summary_received or startup_failure_received => log_message_sent
+
+SUCCESSFUL_FORWARDING_UPDATES_DELIVERY_STATUS:
+  log_message_sent => delivery_status = "success" or delivery_status = "error"
+```
+
 ## Inputs
 
 ### `action=progress`

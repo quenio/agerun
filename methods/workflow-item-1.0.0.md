@@ -7,6 +7,63 @@ emits progress checkpoints through `workflow-reporter`, auto-advances through th
 stages, asks `workflow-definition` for the review-stage decision, and then emits either a final
 summary or a retryable progress update.
 
+## ATN Specification
+
+This ATN specification captures the observable item-state rules enforced by the bundled workflow
+item method.
+
+```haskell
+initialize_received: Boolean
+auto_progress_received: Boolean
+transition_decision_received: Boolean
+
+identity_recorded: Boolean
+progress_sent: Boolean
+summary_sent: Boolean
+evaluate_transition_sent: Boolean
+
+stage_before: String
+stage_after: String
+status_after: String
+outcome: String
+terminal_outcome: String
+last_reason: String
+transition_count_increased: Boolean
+
+INITIALIZATION_RECORDS_THE_ITEM_IDENTITY:
+  initialize_received => identity_recorded
+
+INITIALIZATION_EMITS_PROGRESS:
+  initialize_received => progress_sent and stage_after = "intake" and status_after = "created"
+
+INITIALIZATION_REASON_IS_VISIBLE:
+  initialize_received => last_reason = "initialized"
+
+INTAKE_AUTO_PROGRESS_ADVANCES_TO_TRIAGE:
+  auto_progress_received and stage_before = "intake" =>
+    progress_sent and stage_after = "triage" and transition_count_increased
+
+TRIAGE_AUTO_PROGRESS_ADVANCES_TO_ACTIVE:
+  auto_progress_received and stage_before = "triage" =>
+    progress_sent and stage_after = "active" and transition_count_increased
+
+ACTIVE_AUTO_PROGRESS_ADVANCES_TO_REVIEW:
+  auto_progress_received and stage_before = "active" =>
+    progress_sent and stage_after = "review" and transition_count_increased
+
+REVIEW_REQUESTS_A_TRANSITION_DECISION:
+  auto_progress_received and stage_before = "review" => evaluate_transition_sent
+
+ADVANCE_DECISION_EMITS_A_SUMMARY:
+  transition_decision_received and outcome = "advance" => summary_sent
+
+REJECT_DECISION_EMITS_A_SUMMARY:
+  transition_decision_received and outcome = "reject" => summary_sent and terminal_outcome = "rejected"
+
+STAY_DECISION_EMITS_PROGRESS_INSTEAD_OF_SUMMARY:
+  transition_decision_received and outcome = "stay" => progress_sent and not summary_sent
+```
+
 ## Inputs
 
 ### `action=initialize`

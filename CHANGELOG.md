@@ -1,5 +1,23 @@
 # AgeRun CHANGELOG
 
+## 2026-04-18 (ATN workflow method specifications)
+
+- **Added ATN specifications to the workflow method documentation**
+
+  Extended the workflow method documentation with ATN-based declarative specifications describing
+  the observable contracts of `workflow-coordinator`, `workflow-definition`, `workflow-item`, and
+  `workflow-reporter`. The new sections express each method's accepted state relationships,
+  transition guarantees, and reporting constraints in ATN rather than only prose.
+
+  **Implementation**: Updated `methods/workflow-coordinator-1.0.0.md`,
+  `methods/workflow-definition-1.0.0.md`, `methods/workflow-item-1.0.0.md`, and
+  `methods/workflow-reporter-1.0.0.md`.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: The workflow method docs now include precise declarative specifications aligned with
+  ATN, making the behavior contracts easier to review independently of the AgeRun implementation.
+
 ## 2026-04-18 (Workflow method documentation completion)
 
 - **Replaced placeholder workflow method docs with real implementation documentation**

@@ -9,6 +9,55 @@ startup `start` message from `bootstrap`, spawns the supporting `workflow-defini
 - records a successful handoff and emits a final summary through `workflow-reporter`, or
 - reports a startup dependency/definition failure without creating a fake work item.
 
+## ATN Specification
+
+The following ATN specification describes the observable contract of this method in terms of
+accepted inputs and required coordinator state relationships. It is intentionally declarative: it
+states what must be true of a valid coordinator state, not how the method computes that state.
+
+```haskell
+start_received: Boolean
+ready_received: Boolean
+error_received: Boolean
+
+definition_agent_spawned: Boolean
+reporter_agent_spawned: Boolean
+item_agent_created: Boolean
+prepare_definition_sent: Boolean
+summary_sent: Boolean
+startup_failure_sent: Boolean
+
+run_status: String
+startup_failure_reason: String
+
+START_REQUIRES_SUPPORT_AGENTS:
+  start_received => definition_agent_spawned and reporter_agent_spawned
+
+START_QUEUES_DEFINITION_PREPARATION:
+  start_received => prepare_definition_sent
+
+START_ENTERS_WAITING_STATE:
+  start_received => run_status = "waiting_for_definition"
+
+READY_AND_ERROR_ARE_MUTUALLY_EXCLUSIVE:
+  not (ready_received and error_received)
+
+READINESS_REQUIRES_A_STARTED_RUN:
+  ready_received => start_received
+
+READINESS_ACTIVATES_THE_RUN:
+  ready_received => run_status = "active" and item_agent_created and summary_sent
+
+STARTUP_FAILURE_REQUIRES_A_STARTED_RUN:
+  error_received => start_received
+
+STARTUP_FAILURE_SUPPRESSES_ITEM_CREATION:
+  error_received => run_status = "startup_failed" and not item_agent_created
+
+STARTUP_FAILURE_IS_REPORTED:
+  error_received => startup_failure_sent
+```
+
 ## Inputs
 
 ### `action=start`
