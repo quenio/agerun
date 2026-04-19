@@ -1,5 +1,22 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Walkthrough decks aligned with shared shell classes)
+
+- **Updated the walkthrough decks to reuse the shared `docs/site.css` shell vocabulary**
+
+  Added the shared viewport and panel helper classes from `docs/site.css` to the three walkthrough deck
+  entry pages so the deck shell now uses the same class names and layout vocabulary as the root docs
+  landing pages.
+
+  **Implementation**: Updated `docs/walkthroughs/agent-lifecycle/index.html`,
+  `docs/walkthroughs/message-processing/index.html`, and `docs/walkthroughs/delegation/index.html` to
+  load `../../site.css` and apply the shared viewport, panel, and page-shell helper classes.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: The walkthrough decks and the root docs index pages now share a tighter, more consistent
+  shell structure instead of using parallel naming for the same layout roles.
+
 ## 2026-04-19 (Root docs pages converted to the app-shell standard)
 
 - **Reworked `docs/index.html` and `docs/walkthroughs/index.html` to follow the shared full-viewport page shell**

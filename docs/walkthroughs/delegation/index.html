@@ -4,11 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AgeRun Walkthrough: Delegation</title>
+    <link rel="stylesheet" href="../../site.css">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div class="app">
-        <header class="topbar">
+    <div class="app viewport-shell">
+        <header class="topbar panel viewport-bar page-topbar">
             <div>
                 <div class="eyebrow">AgeRun Walkthrough</div>
                 <h1 id="deck-title">Delegation</h1>
@@ -21,8 +22,8 @@
             </div>
         </header>
 
-        <main class="slide-shell">
-            <aside id="slide-nav" class="sidebar" aria-label="Slide navigation">
+        <main class="slide-shell viewport-main viewport-two-pane">
+            <aside id="slide-nav" class="sidebar panel viewport-sidebar page-sidebar" aria-label="Slide navigation">
                 <div class="sidebar-header">
                     <h2 class="sidebar-title">Slides</h2>
                     <button id="sidebar-close" class="sidebar-close" type="button" aria-label="Close slide navigation">×</button>
@@ -30,12 +31,12 @@
                 <nav id="slide-nav-list" class="sidebar-list" aria-label="Slides"></nav>
             </aside>
             <div id="sidebar-backdrop" class="sidebar-backdrop" hidden></div>
-            <article class="slide-card">
+            <article class="slide-card panel viewport-content">
                 <section id="slide"></section>
             </article>
         </main>
 
-        <footer class="controls">
+        <footer class="controls panel viewport-bar page-footer">
             <button id="prev-button" type="button">← Previous</button>
             <div class="hint">Use ← → or J/K to navigate</div>
             <button id="next-button" type="button">Next →</button>
