@@ -1,5 +1,21 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Walkthrough reader-writer document split)
+
+- **Separated reader-facing walkthrough docs from writer-facing walkthrough rules**
+
+  Cleaned up `docs/walkthroughs/README.md` so it now speaks to readers browsing the walkthroughs,
+  while moving contributor and agent guidance into `docs/walkthroughs/AGENTS.md`. Preserved the
+  important operational rules by relocating publishing conventions, asset/path expectations, and the
+  visual teaching rubric into the writer-facing file instead of leaving them in the public README.
+
+  **Implementation**: Updated `docs/walkthroughs/README.md` and `docs/walkthroughs/AGENTS.md`.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: Walkthrough readers now see a cleaner directory guide, while agents and contributors
+  retain the full rubric needed to create and maintain walkthrough content safely.
+
 ## 2026-04-19 (Docs folder as GitHub Pages root)
 
 - **Moved the static walkthrough site from `pages/` to `docs/` to match GitHub Pages branch-folder publishing**

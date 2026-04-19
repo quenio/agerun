@@ -45,12 +45,14 @@ Use consistent meanings across slides:
 - same icon meanings
 - same arrow semantics
 
-If `System`, `Agency`, `Agent`, and `Method` appear, keep them visually stable.
+If the walkthrough shows the system, agency, agent, and method concepts, keep them visually stable.
 
 ### 6. Ground slides in repository structure
 - Reference concrete files.
 - Prefer explicit file paths over vague phrases like “the runtime code”.
 - Public source references should link to GitHub when possible.
+- Keep assets local to the walkthrough directory and use relative paths inside the deck.
+- Do not depend on generated files in `bin/`.
 
 ### 7. Treat navigation as part of the walkthrough
 - For multi-slide walkthroughs, provide a clear slide index.
@@ -91,6 +93,45 @@ Avoid:
 - decorative visuals with no teaching value
 - inconsistent terminology
 
+## Visual Teaching Rubric
+
+### 1. Anchor the deck early
+- Start with one canonical visual within the first one or two slides.
+- That anchor should show the runtime parts the rest of the deck will keep referring to.
+- For AgeRun, the default anchor is usually the system, the agency, an agent, a method, and a message queue or message flow.
+
+### 2. Keep one visual question per slide
+- Each slide should answer one question clearly.
+- If a slide needs multiple unrelated visuals, split the slide.
+
+### 3. Mix three view types
+A strong technical walkthrough usually contains all three when relevant:
+- structure view — who the parts are
+- dynamic view — what happens over time
+- comparison view — what differs between two states or modes
+
+### 4. Visually connect prose to code
+When a slide names concrete source files, keep the code references near the diagram they explain.
+
+Good patterns:
+- linked source file lists beside the visual
+- compact callouts that map a concept to a file
+- “read next” blocks that follow the current diagram
+
+### 5. Prefer progressive disclosure over overloaded diagrams
+- Do not try to explain the whole runtime in one overloaded picture.
+- Start with a simple anchor.
+- Add one layer of detail at a time.
+- Keep later diagrams visually compatible with the anchor.
+
+### 6. End with action
+The last slide should convert understanding into next steps.
+
+Use:
+- a recommended reading order
+- linked source files
+- obvious follow-up walkthrough topics
+
 ## Recommended Slide Pattern
 
 When applicable, follow this order:
@@ -117,6 +158,12 @@ Before claiming a walkthrough update is complete, verify:
 - source links work
 - claims match the current repository state
 - slides still make sense in sequence, not only individually
+
+## Publishing Conventions
+
+- Walkthrough index entries should use absolute GitHub Pages URLs.
+- For this repository, published walkthrough URLs are rooted at `https://quenio.github.io/agerun/`.
+- Use the walkthrough's human-readable title as the index link caption, not a raw file path.
 
 ## Change Discipline
 
