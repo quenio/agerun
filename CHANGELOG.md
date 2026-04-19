@@ -1,5 +1,21 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Docs guidance broadened beyond static wording)
+
+- **Removed static-only wording from the shared docs guidance and root landing page copy**
+
+  Updated the `docs/` guidance and root page copy so the published site is described as browser-based
+  AgeRun content rather than implying the audience should think of it as static-only documentation.
+
+  **Implementation**: Updated `docs/AGENTS.md`, `docs/README.md`, and `docs/index.html` to remove
+  unnecessary static-only wording and to clarify that implementation details should only surface when
+  they help the audience.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: The docs-site guidance now leaves room for richer JS-driven pages and keeps the audience
+  focus on useful content rather than internal implementation detail.
+
 ## 2026-04-19 (Root docs page renamed for broader site scope)
 
 - **Changed the `docs/index.html` top bar title from walkthrough-specific wording to `AgeRun Pages`**

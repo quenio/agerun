@@ -1,10 +1,10 @@
 # AgeRun Docs Site
 
-This directory is the GitHub Pages site root for repository-hosted static content.
+This directory is the GitHub Pages site root for repository-hosted published content.
 
 ## Purpose
 
-Files under `docs/` are intended to be published as static site assets, not as generated build output.
+Files under `docs/` are intended to be published site assets, not generated build output.
 
 Current primary use:
 
@@ -43,7 +43,7 @@ https://quenio.github.io/agerun/walkthroughs/agent-lifecycle/index.html
 
 ## Notes
 
-- Keep assets self-contained and static.
+- Keep assets self-contained and GitHub Pages friendly.
 - Use relative paths between HTML, JS, CSS, and local assets inside `docs/`.
 - Do not place generated build artifacts here.
 - `.nojekyll` is included so GitHub Pages serves the files directly without Jekyll processing.

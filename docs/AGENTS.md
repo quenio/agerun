@@ -8,7 +8,7 @@ Follow the repository-root `AGENTS.md` by default, except for the docs-only veri
 
 ## Docs-Only Verification Override
 
-When **all modified tracked files are under `docs/`**, treat the change as a static documentation/site update.
+When **all modified tracked files are under `docs/`**, treat the change as a docs-site update.
 
 In that case:
 
@@ -22,16 +22,16 @@ If **any** modified tracked file is outside `docs/`, fall back to the full repos
 ## Site Rules
 
 - `docs/` is the GitHub Pages publishing root for the repository.
-- Keep assets static and self-contained.
+- Keep assets self-contained and GitHub Pages friendly.
 - Use relative paths between files inside `docs/`.
 - Do not place generated build artifacts in `docs/`.
-- Keep page code inspectable and static-host friendly.
+- Keep page code inspectable and easy to maintain.
 - Prefer reusable helpers over page-specific hacks.
 - Do not require a build step unless explicitly approved.
 
 ## Web Page Authoring Rules
 
-These rules apply to any human-facing web page under `docs/`, including landing pages, walkthroughs, and future static reference pages.
+These rules apply to any human-facing web page under `docs/`, including landing pages, walkthroughs, and future published reference pages.
 
 ### 1. Start from code, not imagination
 - Read the referenced source files before editing technical content.
@@ -43,10 +43,11 @@ These rules apply to any human-facing web page under `docs/`, including landing 
 - Avoid adding runtime dependencies by default.
 - Do not introduce extra renderers or frameworks unless explicitly justified.
 
-### 3. Ground pages in repository structure
-- Reference concrete files.
-- Prefer explicit file paths over vague phrases like “the runtime code”.
-- Public source references should link to GitHub when possible.
+### 3. Ground pages in repository truth
+- Base technical claims on the real codebase and current repository state.
+- Reference concrete files when that helps the reader verify or understand the page.
+- Do not force implementation details or file paths into audience-facing prose when they do not help.
+- Public source references should link to GitHub when they add value.
 - Keep assets local to the relevant `docs/` subtree and use relative paths inside the page.
 - Do not depend on generated files in `bin/`.
 
