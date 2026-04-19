@@ -17,7 +17,7 @@ const slides = [
                     </ul>
                 </section>
                 <section class="panel">
-                    <h3>Primary source files</h3>
+                    <h3>Primary Source Files</h3>
                     <div class="path-list">modules/ar_agent.h
 modules/ar_agent.c
 modules/ar_agency.h
@@ -71,7 +71,7 @@ modules/ar_method.c</div>
         body: `
             <div class="columns">
                 <section class="panel">
-                    <h3>Core roles</h3>
+                    <h3>Core Roles</h3>
                     <ul>
                         <li><strong>Method</strong>: versioned executable definition</li>
                         <li><strong>Agent</strong>: stateful runtime instance using one method</li>
