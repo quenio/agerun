@@ -92,7 +92,7 @@ Each step MUST be added to the session todo list before execution begins ([detai
 - Use `todo_write` to mark each step as `completed` after step-verifier verification passes
 - This ensures the session maintains track of all steps to be executed
 
-**Important**: The build must pass all checks including command excellence scores ([details](../../../kb/command-documentation-excellence-gate.md)). Always test with proper make targets ([details](../../../kb/make-target-testing-discipline.md)).
+**Important**: The build must pass the repository's real documented checks, and workflow docs must only reference real make targets. Always test with proper make targets ([details](../../../kb/make-target-testing-discipline.md)).
 
 ## MANDATORY KB Consultation
 

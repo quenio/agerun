@@ -1,5 +1,26 @@
 # AgeRun CHANGELOG
 
+## 2026-04-18 (Draft specs for method-language parsing enhancements and checklist reality sync)
+
+- **Added five draft feature specs for method-language parsing capabilities and corrected the pre-commit checklist to use real repo targets**
+
+  Added new draft specifications covering five additive AgeRun language/runtime enhancements:
+  `parse(...)` remainder capture, `parse(...)` capture modifiers, computed path indexing,
+  assignment list append syntax, and runtime-provided `context.self_id`. Also updated the
+  repository's pre-commit checklist documentation to remove the stale `make check-commands` step
+  and replace it with the real `make check-naming` target, plus refreshed the commit workflow text
+  to stop referring to removed command-excellence checks.
+
+  **Implementation**: Added `specs/004-parse-remainder-capture/spec.md`,
+  `specs/005-parse-capture-modifiers/spec.md`, `specs/006-computed-path-indexing/spec.md`,
+  `specs/007-assignment-list-append/spec.md`, and `specs/008-context-self-id/spec.md`; updated
+  `AGENTS.md`, `kb/pre-commit-checklist-detailed.md`, and `.opencode/command/ar/commit.md`.
+
+  **Verification**: `make check-docs 2>&1`; `make check-naming 2>&1`.
+
+  **Impact**: The proposed language/runtime enhancements now have concrete, reviewable draft specs,
+  and the documented pre-commit workflow now matches the repository's actual make targets.
+
 ## 2026-04-18 (Workflow logs highlight complete() outcome and reason traces)
 
 - **Added searchable `COMPLETE_TRACE[...]` markers to workflow logs**

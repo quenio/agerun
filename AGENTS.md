@@ -586,7 +586,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 **Pre-Commit Checklist** (MANDATORY): ([details](kb/pre-commit-checklist-detailed.md))
 1. `make clean build 2>&1` → verify exit 0 → `make check-logs` ([details](kb/build-verification-before-commit.md))
 2. `make check-docs` → validate all documentation ([details](kb/documentation-validation-enhancement-patterns.md))
-3. `make check-commands` → ensure 90%+ excellence ([details](kb/command-documentation-excellence-gate.md))
+3. `make check-naming` → ensure naming conventions still pass ([details](kb/make-target-testing-discipline.md))
 4. Update docs for API changes ([details](kb/documentation-language-migration-updates.md))
 5. Check outdated refs: `grep -l "old_name" modules/*.md`
 6. **CRITICAL - NEVER FORGET**: Update CHANGELOG.md with date, summary, impact for ALL commits using multi-line format ([multi-line format](kb/changelog-multi-line-format.md), [atomic commits](kb/atomic-commit-documentation-pattern.md), [verify](kb/documentation-completion-verification.md))

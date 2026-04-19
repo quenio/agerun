@@ -20,22 +20,25 @@ make check-logs  # Catches hidden issues
 make check-docs  # Validates all code examples use real functions
 # Fix any errors before proceeding
 
-# 3. Documentation updates for API changes
+# 3. Naming validation (MANDATORY)
+make check-naming  # Uses a real repository target; check-commands no longer exists
+
+# 4. Documentation updates for API changes
 grep -l "old_function_name" modules/*.md  # Find docs to update
 # Update all references before commit
 
-# 4. Check for outdated references after refactoring
+# 5. Check for outdated references after refactoring
 grep -r "OldTypeName" modules/ methods/ docs/
 
-# 5. Update tracking files
+# 6. Update tracking files
 # TODO.md: Mark items [x] with completion date
 # CHANGELOG.md: Add entry for changes
 
-# 6. Verify changes
+# 7. Verify changes
 git diff  # Review ENTIRE diff, not just recent changes
 git diff --cached  # Check staged changes
 
-# 7. Clean up temporary files
+# 8. Clean up temporary files
 find . -name "*.log" -type f | grep -v bin/ | xargs rm -f
 find . -name "*.bak" -o -name "*.backup" | xargs rm -f
 ```
@@ -51,6 +54,7 @@ The checklist has exceptions for specific scenarios:
 Critical rules:
 - Interface changes MUST include docs in same commit
 - CHANGELOG.md updates are NON-NEGOTIABLE
+- Use only real repository make targets in the checklist; remove stale targets when workflow docs drift
 - Build time reporting helps track performance
 
 ## Implementation
@@ -72,13 +76,19 @@ if ! make check-logs; then
     exit 1
 fi
 
-# 3. Verify no API changes left undocumented
+# 3. Naming verification
+if ! make check-naming; then
+    echo "Naming validation failed - fix issues before commit"
+    exit 1
+fi
+
+# 4. Verify no API changes left undocumented
 CHANGED_HEADERS=$(git diff --cached --name-only | grep "\.h$")
 if [ -n "$CHANGED_HEADERS" ]; then
     echo "Header changes detected - ensure docs are updated"
 fi
 
-# 4. Final verification
+# 5. Final verification
 git status  # Should show clean tree with staged changes
 ```
 
