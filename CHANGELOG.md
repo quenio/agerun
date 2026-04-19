@@ -1,5 +1,22 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (GitHub links fixed on published docs index pages)
+
+- **Replaced broken repository-relative documentation links with real GitHub URLs**
+
+  The published docs pages were still linking to repository files through paths like `../README.md`,
+  which do not exist under the GitHub Pages site root. Those links now point to the corresponding files
+  on GitHub instead.
+
+  **Implementation**: Updated repository documentation links in `docs/index.html` and
+  `docs/walkthroughs/index.html` to use `https://github.com/quenio/agerun/blob/main/...` URLs with
+  external-link attributes.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: Buttons and reference links to the project README, module index, method index, spec, and
+  walkthrough README now work correctly from the published site.
+
 ## 2026-04-19 (Simplified section headings on the root docs page)
 
 - **Removed the extra section titles from the main `docs/index.html` content areas**
