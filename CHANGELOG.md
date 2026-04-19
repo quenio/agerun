@@ -1,5 +1,20 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Index-page main panel inset switched from padding to margin)
+
+- **Changed the docs index-page main panel alignment to use outer margin instead of oversized inner padding**
+
+  The previous adjustment pushed the main content inward by inflating the panel padding. The index-page
+  main panel now uses a real top-left outer inset while keeping its internal padding normal.
+
+  **Implementation**: Updated `docs/site.css` so `page-content` uses `margin: 18px 0 0 18px` with
+  `padding: 18px`.
+
+  **Verification**: `make check-docs 2>&1` and a local browser screenshot review.
+
+  **Impact**: The main panel alignment is now controlled by its actual position in the layout instead of
+  by artificially enlarging the content padding.
+
 ## 2026-04-19 (Index-page content inset adjusted to match the marked sidebar reference)
 
 - **Changed the main content inset on the docs index pages based on the red-marked alignment feedback**

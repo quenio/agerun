@@ -143,7 +143,8 @@ main {
 }
 
 .page-content {
-    padding: 52px 32px 18px 32px;
+    margin: 18px 0 0 18px;
+    padding: 18px;
 }
 
 .page-section + .page-section {
