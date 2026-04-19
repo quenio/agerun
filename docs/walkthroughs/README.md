@@ -172,7 +172,19 @@ That means:
 - slide titles in navigation should be meaningful enough to scan on their own
 - readers should be able to move between slides without relying on hover or hidden gestures
 
-### 9. End with action
+### 9. Use consistent title forms
+
+Slide titles and section titles should follow a stable editorial standard.
+
+That means:
+
+- use capitalized noun phrases
+- rewrite verb-phrase titles into noun phrases when possible
+- keep pronouns and conjunctions lowercase
+- keep articles uppercase
+- if a title includes a literal file name or path, preserve its exact spelling
+
+### 10. End with action
 
 The last slide should convert understanding into next steps.
 

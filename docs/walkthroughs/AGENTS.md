@@ -65,7 +65,14 @@ If `System`, `Agency`, `Agent`, and `Method` appear, keep them visually stable.
 - Content must remain readable without horizontal scrolling.
 - Large diagrams should stack, simplify, or scroll intentionally.
 
-### 9. Prefer strong structure over ornament
+### 9. Use consistent title forms
+- Use capitalized noun phrases for slide titles and section titles.
+- Rewrite verb-phrase titles into noun phrases when possible.
+- Keep pronouns and conjunctions lowercase.
+- Keep articles uppercase.
+- Preserve literal file names and paths exactly when they appear in titles.
+
+### 10. Prefer strong structure over ornament
 Use:
 - clear headings
 - short labels
@@ -98,6 +105,7 @@ Before claiming a walkthrough update is complete, verify:
 - desktop navigation remains visible and usable
 - mobile navigation works
 - navigation reflects the slide structure and current position clearly
+- slide titles and section titles follow the title standard consistently
 - visuals remain readable on small screens
 - source links work
 - claims match the current repository state
