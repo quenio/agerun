@@ -125,13 +125,13 @@ main {
 .page-nav-link strong,
 .page-menu-list a {
     color: var(--accent);
-    font-size: 0.98rem;
+    font-size: 1em;
     font-weight: 600;
 }
 
 .page-nav-link span {
     color: var(--muted);
-    font-size: 0.88rem;
+    font-size: 1em;
     line-height: 1.35;
 }
 

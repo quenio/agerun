@@ -1,5 +1,20 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Navigation text size aligned with normal body text)
+
+- **Raised the docs index-page navigation text to match the regular reading text size**
+
+  The sidebar navigation was still rendering smaller than the shared body text, so the navigation link
+  titles and supporting text now use the same base text size as the rest of the page.
+
+  **Implementation**: Updated `docs/site.css` so `page-nav-link` text and the mobile menu section links
+  use `1em` sizing instead of smaller explicit rem values.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: The navigation sidebar now reads at the same regular text size as the main content,
+  improving consistency and legibility.
+
 ## 2026-04-19 (Shared docs-site body text increased again)
 
 - **Raised the regular reading text size one more step across the shared docs-site shell**
