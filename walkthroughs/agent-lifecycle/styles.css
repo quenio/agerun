@@ -1,0 +1,181 @@
+:root {
+    color-scheme: dark;
+    --bg: #0b1020;
+    --panel: #121933;
+    --panel-2: #1a2345;
+    --text: #eef2ff;
+    --muted: #a7b0d6;
+    --accent: #7dd3fc;
+    --accent-2: #a78bfa;
+    --border: rgba(255, 255, 255, 0.12);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: radial-gradient(circle at top, #18244b 0%, var(--bg) 55%);
+    color: var(--text);
+}
+
+.app {
+    width: min(1100px, calc(100vw - 32px));
+    margin: 0 auto;
+    padding: 24px 0 32px;
+}
+
+.topbar,
+.controls,
+.slide-card {
+    background: rgba(18, 25, 51, 0.88);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+}
+
+.topbar,
+.controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+}
+
+.eyebrow {
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 0.8rem;
+    color: var(--accent);
+    margin-bottom: 4px;
+}
+
+#deck-title {
+    margin: 0;
+    font-size: clamp(1.6rem, 2vw, 2.4rem);
+}
+
+.status,
+.hint,
+.meta,
+.path-list,
+.note {
+    color: var(--muted);
+}
+
+.slide-shell {
+    margin: 18px 0;
+}
+
+.slide-card {
+    min-height: 68vh;
+    padding: 32px;
+}
+
+.slide-title {
+    margin: 0 0 12px;
+    font-size: clamp(2rem, 3vw, 3.2rem);
+}
+
+.slide-subtitle {
+    margin: 0 0 24px;
+    font-size: 1.1rem;
+    color: var(--muted);
+    max-width: 70ch;
+}
+
+.columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 18px;
+}
+
+.panel {
+    background: linear-gradient(180deg, rgba(125, 211, 252, 0.08), rgba(167, 139, 250, 0.04));
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px;
+}
+
+.panel h3,
+.panel h4 {
+    margin-top: 0;
+}
+
+ul,
+ol {
+    padding-left: 22px;
+}
+
+li {
+    margin: 0 0 10px;
+}
+
+.timeline {
+    display: grid;
+    gap: 12px;
+}
+
+.timeline-step {
+    padding: 14px 16px;
+    border-left: 4px solid var(--accent-2);
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 12px;
+}
+
+.code,
+.path-list {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.path-list {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    white-space: pre-wrap;
+}
+
+.controls button {
+    appearance: none;
+    border: 1px solid var(--border);
+    background: var(--panel-2);
+    color: var(--text);
+    padding: 10px 16px;
+    border-radius: 12px;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+.controls button:hover {
+    border-color: var(--accent);
+}
+
+.controls button:disabled {
+    opacity: 0.45;
+    cursor: default;
+}
+
+@media (max-width: 720px) {
+    .app {
+        width: min(100vw - 20px, 1100px);
+        padding-top: 14px;
+    }
+
+    .topbar,
+    .controls,
+    .slide-card {
+        padding: 16px;
+    }
+
+    .controls {
+        gap: 12px;
+    }
+
+    .hint {
+        display: none;
+    }
+}

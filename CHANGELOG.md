@@ -1,5 +1,22 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Walkthrough deck scaffolding)
+
+- **Added the new `walkthroughs/` documentation area and scaffolded the first HTML/JS slide deck**
+
+  Created a dedicated `walkthroughs/` directory for browser-based deep-dive decks, added a
+  directory README describing structure and authoring expectations, and scaffolded the first
+  `agent-lifecycle` walkthrough with a simple HTML/CSS/JS slide viewer and starter content tied to
+  real AgeRun runtime files.
+
+  **Implementation**: Added `walkthroughs/README.md`, `walkthroughs/agent-lifecycle/index.html`,
+  `walkthroughs/agent-lifecycle/slides.js`, and `walkthroughs/agent-lifecycle/styles.css`.
+
+  **Verification**: `make check-docs 2>&1`; `make check-naming 2>&1`.
+
+  **Impact**: AgeRun now has a dedicated place to build interactive architecture walkthroughs, with
+  the first agent lifecycle deck ready for expansion.
+
 ## 2026-04-19 (Executable boot override spec artifact finalization)
 
 - **Finalized the `/spec` artifacts and native pi context for the executable boot override feature**
