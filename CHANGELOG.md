@@ -1,5 +1,21 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Published walkthrough index page)
+
+- **Added a dedicated `docs/walkthroughs/index.html` landing page for the walkthrough collection**
+
+  Added a browser-rendered walkthrough index page at `/walkthroughs/` so the published site has a
+  proper landing page inside the walkthrough subtree instead of relying only on `README.md`.
+
+  **Implementation**: Added `docs/walkthroughs/index.html`, extracted shared static-page styles into
+  `docs/site.css`, updated `docs/index.html` to use the shared stylesheet, and documented the new
+  page in `docs/README.md` and `docs/walkthroughs/README.md`.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: Readers can now open `https://quenio.github.io/agerun/walkthroughs/` as a proper site
+  entrypoint and browse the walkthrough deck collection from a dedicated HTML landing page.
+
 ## 2026-04-19 (Walkthrough cards on docs landing page)
 
 - **Replaced the docs landing page walkthrough bullet list with responsive cards**

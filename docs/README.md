@@ -16,8 +16,10 @@ Current primary use:
 docs/
 ├── README.md
 ├── index.html
+├── site.css
 ├── .nojekyll
 └── walkthroughs/
+    ├── index.html
     ├── README.md
     └── <topic-name>/
 ```
@@ -32,9 +34,10 @@ For this repository, published URLs are expected to be rooted at:
 https://quenio.github.io/agerun/
 ```
 
-That means, for example, the agent lifecycle walkthrough should be reachable at:
+That means, for example, the walkthrough index and the agent lifecycle walkthrough should be reachable at:
 
 ```text
+https://quenio.github.io/agerun/walkthroughs/index.html
 https://quenio.github.io/agerun/walkthroughs/agent-lifecycle/index.html
 ```
 

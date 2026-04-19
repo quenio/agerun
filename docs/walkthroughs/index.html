@@ -3,17 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgeRun Pages</title>
-    <link rel="stylesheet" href="site.css">
+    <title>AgeRun Walkthroughs</title>
+    <link rel="stylesheet" href="../site.css">
 </head>
 <body>
     <main>
         <section class="panel">
-            <div class="eyebrow">AgeRun GitHub Pages</div>
+            <a class="site-back-link" href="../index.html">← Back to AgeRun Pages</a>
+            <div class="eyebrow">AgeRun Walkthrough Index</div>
             <h1>Walkthroughs</h1>
-            <p>This site hosts static HTML/JS walkthrough decks for exploring AgeRun architecture and runtime behavior.</p>
+            <p>Browse the published walkthrough decks for the AgeRun runtime. Each deck is a browser-rendered companion to the repository documentation and focuses on one subsystem or runtime flow.</p>
             <div class="walkthrough-grid">
-                <a class="walkthrough-card" href="walkthroughs/agent-lifecycle/index.html">
+                <a class="walkthrough-card" href="agent-lifecycle/index.html">
                     <div class="walkthrough-meta">
                         <span>Walkthrough</span>
                         <span>Scaffolded</span>
@@ -22,7 +23,7 @@
                     <p>How an agent is created, receives messages, executes work, and persists in the runtime.</p>
                     <span class="walkthrough-cta">Open walkthrough →</span>
                 </a>
-                <a class="walkthrough-card" href="walkthroughs/message-processing/index.html">
+                <a class="walkthrough-card" href="message-processing/index.html">
                     <div class="walkthrough-meta">
                         <span>Walkthrough</span>
                         <span>Scaffolded</span>
@@ -31,7 +32,7 @@
                     <p>How the runtime finds one queued message, executes it, updates scheduling state, and falls back to delegation.</p>
                     <span class="walkthrough-cta">Open walkthrough →</span>
                 </a>
-                <a class="walkthrough-card" href="walkthroughs/delegation/index.html">
+                <a class="walkthrough-card" href="delegation/index.html">
                     <div class="walkthrough-meta">
                         <span>Walkthrough</span>
                         <span>Scaffolded</span>
@@ -41,7 +42,18 @@
                     <span class="walkthrough-cta">Open walkthrough →</span>
                 </a>
             </div>
-            <p>Repository documentation lives in the main project tree; the walkthrough content published here is the browser-rendered companion.</p>
+        </section>
+        <section class="panel">
+            <div class="eyebrow">Reading Path</div>
+            <h2>Suggested Next Reading</h2>
+            <p>Start with the walkthrough that matches your question, then use the repository documentation to go deeper into the underlying modules, methods, and language rules.</p>
+            <ul class="link-list">
+                <li><a href="README.md">Walkthrough directory README</a></li>
+                <li><a href="../../README.md">Top-level project README</a></li>
+                <li><a href="../../modules/README.md">Module index</a></li>
+                <li><a href="../../methods/README.md">Method index</a></li>
+                <li><a href="../../SPEC.md">Language and system specification</a></li>
+            </ul>
         </section>
     </main>
 </body>

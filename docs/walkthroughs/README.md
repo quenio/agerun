@@ -26,6 +26,7 @@ Each walkthrough should live in its own subdirectory:
 docs/
 ├── index.html
 └── walkthroughs/
+    ├── index.html
     ├── README.md
     └── <topic-name>/
         ├── index.html
@@ -36,7 +37,9 @@ docs/
 
 ## Walkthrough Index
 
-These links open the published walkthrough decks on GitHub Pages.
+These links open the published walkthrough pages on GitHub Pages.
+
+- Walkthrough landing page: [Walkthroughs](https://quenio.github.io/agerun/walkthroughs/index.html)
 
 | Walkthrough | Topic | Status | Entry Point |
 |-------------|-------|--------|-------------|
