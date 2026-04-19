@@ -138,13 +138,21 @@ FILE* ar_executable_fixture__build_and_run_with_boot_method(
         return NULL;
     }
 
-    (void) ref_boot_method;
-
     char build_cmd[1024];
-    snprintf(build_cmd, sizeof(build_cmd),
-        "cd ../.. && "
-        "AGERUN_METHODS_DIR=%s RUN_EXEC_DIR=%s make run-exec 2>&1",
-        ref_methods_dir, ref_fixture->temp_build_dir);
+    if (ref_boot_method && ref_boot_method[0] != '\0') {
+        snprintf(build_cmd, sizeof(build_cmd),
+            "cd ../.. && "
+            "AGERUN_METHODS_DIR=%s RUN_EXEC_DIR=%s make run-exec BOOT_METHOD=%s 2>&1",
+            ref_methods_dir,
+            ref_fixture->temp_build_dir,
+            ref_boot_method);
+    } else {
+        snprintf(build_cmd, sizeof(build_cmd),
+            "cd ../.. && "
+            "AGERUN_METHODS_DIR=%s RUN_EXEC_DIR=%s make run-exec 2>&1",
+            ref_methods_dir,
+            ref_fixture->temp_build_dir);
+    }
 
     return popen(build_cmd, "r");
 }

@@ -1,5 +1,24 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Executable boot override MVP)
+
+- **Implemented fresh-start boot-method override for `agerun` and `make run-exec`**
+
+  Added the User Story 1 MVP for executable boot override so fresh AgeRun runs can start from a
+  requested method identifier such as `echo-1.0.0` instead of the default `bootstrap` method. The
+  executable now accepts `--boot-method <name-version>`, the `run-exec` target forwards
+  `BOOT_METHOD=<name-version>` into that CLI flag, and the executable fixture/tests can exercise the
+  override path directly.
+
+  **Implementation**: Updated `Makefile`, `modules/ar_executable.c`, `modules/ar_executable.h`,
+  `modules/ar_executable_fixture.c`, `modules/ar_executable_fixture.h`,
+  `modules/ar_executable_tests.c`, and `specs/009-parameter-passed-executable/tasks.md`.
+
+  **Verification**: `make ar_executable_tests 2>&1`.
+
+  **Impact**: Fresh executable runs can now select an alternate boot method using the same
+  `<method-name>-<version>` convention used in the `methods/` directory.
+
 ## 2026-04-19 (Executable boot override RED-phase scaffolding and failing tests)
 
 - **Added compile-safe scaffolding and RED-phase executable tests for boot-method override**

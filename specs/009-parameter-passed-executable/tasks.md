@@ -56,15 +56,15 @@ method and still receives the normal `"__boot__"` startup message.
 
 ### Validation for User Story 1
 
-- [ ] T009 [P] [US1] Run the targeted failing fresh-start override tests in `modules/ar_executable_tests.c` for `BOOT_METHOD=echo-1.0.0` selection and `"__boot__"` queueing
+- [x] T009 [P] [US1] Run the targeted failing fresh-start override tests in `modules/ar_executable_tests.c` for `BOOT_METHOD=echo-1.0.0` selection and `"__boot__"` queueing
 
 ### Implementation for User Story 1
 
-- [ ] T010 [P] [US1] Implement override-aware launch helpers in `modules/ar_executable_fixture.h` and `modules/ar_executable_fixture.c` so tests can request `BOOT_METHOD=<name-version>` through `make run-exec`
-- [ ] T011 [P] [US1] Update `run-exec` argument forwarding in the top-level build file so `BOOT_METHOD=<name-version>` expands to `./agerun --boot-method <name-version>`
-- [ ] T012 [US1] Implement `--boot-method <name-version>` parsing, final-hyphen splitting, and fresh-start boot selection in `modules/ar_executable.c` and `modules/ar_executable.h`
-- [ ] T013 [US1] Re-run `make ar_executable_tests 2>&1` until the valid-override assertions in `modules/ar_executable_tests.c` pass
-- [ ] T014 [US1] Refactor shared boot-selection helpers in `modules/ar_executable.c` and `modules/ar_executable_fixture.c` while preserving green User Story 1 tests
+- [x] T010 [P] [US1] Implement override-aware launch helpers in `modules/ar_executable_fixture.h` and `modules/ar_executable_fixture.c` so tests can request `BOOT_METHOD=<name-version>` through `make run-exec`
+- [x] T011 [P] [US1] Update `run-exec` argument forwarding in the top-level build file so `BOOT_METHOD=<name-version>` expands to `./agerun --boot-method <name-version>`
+- [x] T012 [US1] Implement `--boot-method <name-version>` parsing, final-hyphen splitting, and fresh-start boot selection in `modules/ar_executable.c` and `modules/ar_executable.h`
+- [x] T013 [US1] Re-run `make ar_executable_tests 2>&1` until the valid-override assertions in `modules/ar_executable_tests.c` pass
+- [x] T014 [US1] Refactor shared boot-selection helpers in `modules/ar_executable.c` and `modules/ar_executable_fixture.c` while preserving green User Story 1 tests
 
 **Checkpoint**: A fresh runtime can start from an alternate boot method identified with the `methods/` naming convention.
 
