@@ -1,5 +1,23 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Shared docs web-page rules)
+
+- **Moved shared static-page guidance from `docs/walkthroughs/AGENTS.md` into `docs/AGENTS.md`**
+
+  Promoted the walkthrough rules that also apply to any static page under `docs/` into the subtree-wide
+  `docs/AGENTS.md`, including code-grounded content, lightweight implementation, repository-structure
+  references, shared visual vocabulary, responsive design, readable code-reference prose, title
+  consistency, and generic page verification checks. Reduced `docs/walkthroughs/AGENTS.md` so it now
+  points at the shared page rules and keeps only walkthrough-specific slide, navigation, and teaching
+  guidance.
+
+  **Implementation**: Updated `docs/AGENTS.md` and `docs/walkthroughs/AGENTS.md`.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: All `docs/` web pages now share one consistent rule set, while walkthroughs retain only
+  their slide-specific requirements.
+
 ## 2026-04-19 (Docs-only verification override for GitHub Pages files)
 
 - **Added a `docs/AGENTS.md` override so docs-only site changes do not require a full clean build**
