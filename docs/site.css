@@ -164,6 +164,7 @@ main {
 }
 
 .page-footer-links {
+    margin-left: auto;
     justify-content: flex-end;
 }
 

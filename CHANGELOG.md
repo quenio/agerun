@@ -1,5 +1,20 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Home-page footer text removed)
+
+- **Removed the explanatory sentence from the `docs/index.html` bottom bar**
+
+  The root page footer no longer repeats layout explanation text and now keeps only the useful action
+  links.
+
+  **Implementation**: Removed the footer copy from `docs/index.html` and adjusted `docs/site.css` so a
+  links-only footer still aligns cleanly to the right.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: The home-page bottom bar is quieter and keeps attention on the relevant navigation
+  actions instead of decorative explanation text.
+
 ## 2026-04-19 (Walkthrough cards simplified on the docs index pages)
 
 - **Removed the repeated walkthrough-status header strip from each walkthrough card**
