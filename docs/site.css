@@ -321,17 +321,6 @@ a:hover {
     outline-offset: 3px;
 }
 
-.walkthrough-meta {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    align-items: center;
-    color: var(--muted);
-    font-size: 0.82rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-}
-
 .walkthrough-card h2 {
     margin: 0;
     font-size: 1.35rem;

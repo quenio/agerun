@@ -1,5 +1,21 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Walkthrough cards simplified on the docs index pages)
+
+- **Removed the repeated walkthrough-status header strip from each walkthrough card**
+
+  The cards no longer show the extra `Walkthrough / Scaffolded` header row, which was adding noise
+  without helping readers choose a deck.
+
+  **Implementation**: Removed the repeated card header block from `docs/index.html` and
+  `docs/walkthroughs/index.html`, and deleted the now-unused `walkthrough-meta` styling from
+  `docs/site.css`.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: The walkthrough cards are cleaner and put more visual emphasis on the title,
+  description, and action.
+
 ## 2026-04-19 (Navigation section titles color aligned with content labels)
 
 - **Matched the docs index-page navigation section-title color to the content section-title color**
