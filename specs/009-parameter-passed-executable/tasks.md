@@ -80,14 +80,14 @@ and runs the current startup flow.
 
 ### Validation for User Story 2
 
-- [ ] T015 [P] [US2] Run the targeted failing no-override regression tests in `modules/ar_executable_tests.c` for default `bootstrap` startup and unchanged `make run-exec` behavior
+- [x] T015 [P] [US2] Run the targeted failing no-override regression tests in `modules/ar_executable_tests.c` for default `bootstrap` startup and unchanged `make run-exec` behavior
 
 ### Implementation for User Story 2
 
-- [ ] T016 [US2] Preserve the no-override default branch and unchanged bootstrap selection/output in `modules/ar_executable.c`
-- [ ] T017 [P] [US2] Update optional-override usage/help text in the top-level build file, `README.md`, and `modules/ar_executable.md` so the default path remains explicit and additive
-- [ ] T018 [US2] Re-run `make ar_executable_tests 2>&1` until the no-override default-start assertions in `modules/ar_executable_tests.c` pass
-- [ ] T019 [US2] Refactor default-branch selection/output handling in `modules/ar_executable.c` while preserving green User Story 2 tests
+- [x] T016 [US2] Preserve the no-override default branch and unchanged bootstrap selection/output in `modules/ar_executable.c`
+- [x] T017 [P] [US2] Update optional-override usage/help text in the top-level build file, `README.md`, and `modules/ar_executable.md` so the default path remains explicit and additive
+- [x] T018 [US2] Re-run `make ar_executable_tests 2>&1` until the no-override default-start assertions in `modules/ar_executable_tests.c` pass
+- [x] T019 [US2] Refactor default-branch selection/output handling in `modules/ar_executable.c` while preserving green User Story 2 tests
 
 **Checkpoint**: Existing users who do not supply an override still get the current bootstrap startup behavior.
 

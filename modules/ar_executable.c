@@ -26,6 +26,7 @@ static bool _split_method_identifier(const char *ref_method_identifier,
                                      size_t method_name_size,
                                      char *mut_method_version,
                                      size_t method_version_size);
+static void _report_boot_method_selection(const char *ref_boot_method_identifier);
 
 /**
  * Load all method files from the methods directory
@@ -94,6 +95,15 @@ static bool _split_method_identifier(const char *ref_method_identifier,
     strncpy(mut_method_version, ref_last_hyphen + 1, method_version_size - 1);
     mut_method_version[method_version_size - 1] = '\0';
     return true;
+}
+
+static void _report_boot_method_selection(const char *ref_boot_method_identifier) {
+    if (ref_boot_method_identifier) {
+        printf("Boot method override requested: '%s'\n", ref_boot_method_identifier);
+    } else {
+        printf("No boot override requested; using default boot method '%s'\n",
+               BOOTSTRAP_METHOD_IDENTIFIER);
+    }
 }
 
 static int _load_methods_from_directory(ar_methodology_t *mut_methodology) {
@@ -207,8 +217,8 @@ int ar_executable__main_with_args(int argc, char **argv) {
         return 1;
     }
 
+    _report_boot_method_selection(ref_boot_method_identifier);
     if (ref_boot_method_identifier) {
-        printf("Boot method override requested: '%s'\n", ref_boot_method_identifier);
         if (!_split_method_identifier(ref_boot_method_identifier,
                                       mut_override_method_name,
                                       sizeof(mut_override_method_name),
@@ -220,9 +230,6 @@ int ar_executable__main_with_args(int argc, char **argv) {
 
         ref_selected_method_name = mut_override_method_name;
         ref_selected_method_version = mut_override_method_version;
-    } else {
-        printf("No boot override requested; using default boot method '%s'\n",
-               BOOTSTRAP_METHOD_IDENTIFIER);
     }
     
     // Create the system instance

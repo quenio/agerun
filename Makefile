@@ -26,7 +26,7 @@ help:
 	@echo "  make build        - Run complete build with all checks and tests"
 	@echo ""
 	@echo "Run targets:"
-	@echo "  make run-exec     - Build and run the executable"
+	@echo "  make run-exec     - Build and run the executable (optional: BOOT_METHOD=name-version)"
 	@echo "  make run-shell    - Build and run the shell scaffold executable"
 	@echo "  make sanitize-exec - Build and run executable with sanitizers"
 	@echo "  make tsan-exec    - Build and run executable with ThreadSanitizer"

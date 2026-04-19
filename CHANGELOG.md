@@ -1,5 +1,23 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Executable boot override default-path preservation)
+
+- **Preserved the default bootstrap startup path while documenting the new override as optional**
+
+  Completed the User Story 2 follow-up for executable boot override so existing `make run-exec`
+  and `agerun` usage remain explicitly default-first when no `BOOT_METHOD` / `--boot-method`
+  value is supplied. The executable now reports boot-method selection through a shared helper, the
+  top-level help text and README describe the override as additive, and the executable module docs
+  now explain fresh-start default selection versus override behavior more clearly.
+
+  **Implementation**: Updated `Makefile`, `README.md`, `modules/ar_executable.c`,
+  `modules/ar_executable.md`, and `specs/009-parameter-passed-executable/tasks.md`.
+
+  **Verification**: `make ar_executable_tests 2>&1`; `make clean build 2>&1`; `make check-logs`.
+
+  **Impact**: Users who do not supply a boot override keep the existing `bootstrap-1.0.0` startup
+  behavior, while the optional override path is now clearer in code and documentation.
+
 ## 2026-04-19 (Executable boot override MVP)
 
 - **Implemented fresh-start boot-method override for `agerun` and `make run-exec`**
