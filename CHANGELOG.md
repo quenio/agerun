@@ -1,5 +1,19 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Sidebar `Sections` title restored on index pages)
+
+- **Restored the sidebar `Sections` heading on the docs index pages after removing it by mistake**
+
+  The earlier change removed the sidebar title while addressing a different layout concern. The heading
+  now appears again on both index pages.
+
+  **Implementation**: Restored the `Sections` heading in `docs/index.html` and
+  `docs/walkthroughs/index.html`.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: The sidebar keeps its intended label while other layout refinements remain in place.
+
 ## 2026-04-19 (Index-page sidebar title removed and walkthrough title simplified)
 
 - **Removed the redundant sidebar `Sections` heading from the docs index pages and shortened the walkthrough index page title**
