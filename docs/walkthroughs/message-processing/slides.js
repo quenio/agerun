@@ -4,7 +4,7 @@ const repositoryPathPattern = /\b(?:README\.md|SPEC\.md|CHANGELOG\.md|TODO\.md|C
 const slides = [
     {
         title: "Message Processing",
-        subtitle: "How ar_system__process_next_message finds one pending unit of work, executes it, and decides what happens next.",
+        subtitle: "How the next-message operation of the system module finds one pending unit of work, executes it, and decides what happens next.",
         body: `
             <div class="columns">
                 <section class="panel">
@@ -79,8 +79,8 @@ README.md</div>
                 <section class="panel">
                     <h3>Public API Surface</h3>
                     <ul>
-                        <li><span class="code">ar_system__process_next_message(mut_system)</span> processes at most one pending unit of work.</li>
-                        <li><span class="code">ar_system__process_all_messages(mut_system)</span> loops until the one-step call returns false.</li>
+                        <li>The system module's next-message operation processes at most one pending unit of work.</li>
+                        <li>The system module's drain operation keeps looping until the runtime reports that no work remains.</li>
                         <li>Both APIs return immediately when the system is uninitialized or there is no work.</li>
                     </ul>
                 </section>
@@ -98,13 +98,13 @@ README.md</div>
                 <div class="state-compare">
                     <div class="state-card">
                         <strong>One-Step Mode</strong>
-                        <span>Use <span class="code">ar_system__process_next_message(...)</span></span>
+                        <span>Use the system module's next-message operation.</span>
                         <span>Good for tests, tracing, and exact scheduling inspection</span>
                     </div>
                     <div class="state-transition">loop boundary</div>
                     <div class="state-card">
                         <strong>Drain Mode</strong>
-                        <span>Use <span class="code">ar_system__process_all_messages(...)</span></span>
+                        <span>Use the system module's drain operation.</span>
                         <span>Good when you want the runtime to keep consuming work until idle</span>
                     </div>
                 </div>
@@ -119,17 +119,17 @@ README.md</div>
                 <section class="panel">
                     <h3>Enqueue Path</h3>
                     <ul>
-                        <li><span class="code">ar_agency__send_to_agent(...)</span> finds the target agent in the registry.</li>
-                        <li><span class="code">ar_agent__send(...)</span> takes ownership of the message for the agent.</li>
-                        <li>The message is appended with <span class="code">ar_list__add_last(...)</span>, so the queue stays FIFO.</li>
+                        <li>The send-to-agent path of the agency module finds the target agent in the registry.</li>
+                        <li>The send path of the agent module takes ownership of the message for that agent.</li>
+                        <li>The list module appends the message at the tail, so the queue stays FIFO.</li>
                     </ul>
                 </section>
                 <section class="panel">
                     <h3>Dequeue Path</h3>
                     <ul>
-                        <li><span class="code">ar_agency__get_agent_message(...)</span> delegates to <span class="code">ar_agent__get_message(...)</span>.</li>
-                        <li>The queue removes the first element with <span class="code">ar_list__remove_first(...)</span>.</li>
-                        <li><span class="code">ar_agent__get_message(...)</span> drops agent ownership so the system can own and destroy the processed message.</li>
+                        <li>The agency module's message-pop path delegates to the agent module's queue-pop path.</li>
+                        <li>The queue removes the first element through the list module's head-removal path.</li>
+                        <li>The queue-pop path drops agent ownership so the system can own and destroy the processed message.</li>
                     </ul>
                 </section>
             </div>
@@ -160,8 +160,8 @@ README.md</div>
                 <section class="panel">
                     <h3>Queue Scan</h3>
                     <ul>
-                        <li>The system tries <span class="code">ar_agency__get_agent_message(...)</span> on the current agent.</li>
-                        <li>If no message is found, it advances with <span class="code">ar_agency__get_next_agent(...)</span>.</li>
+                        <li>The system asks the agency module for one queued message from the current agent.</li>
+                        <li>If no message is found, it advances through the agency's next-agent iterator.</li>
                         <li>When the registry iterator returns zero, the scan wraps back to the first agent.</li>
                     </ul>
                 </section>
@@ -187,7 +187,7 @@ README.md</div>
                     <h3>System Responsibilities</h3>
                     <ul>
                         <li>Take ownership of the popped message.</li>
-                        <li>Call <span class="code">ar_interpreter__execute_method(...)</span> with the target agent ID.</li>
+                        <li>Call the interpreter module's method-execution path with the target agent ID.</li>
                         <li>Destroy the processed message after execution finishes.</li>
                     </ul>
                 </section>
@@ -236,7 +236,7 @@ README.md</div>
                 <section class="panel">
                     <h3>Same-Agent Continuation</h3>
                     <ul>
-                        <li>If <span class="code">ar_agency__agent_has_messages(...)</span> is still true, <span class="code">next_agent_hint</span> remains on that agent ID.</li>
+                        <li>If the agency still reports queued work for that agent, <span class="code">next_agent_hint</span> remains on that agent ID.</li>
                         <li>The next call will begin scanning from the same agent instead of searching from the top again.</li>
                     </ul>
                 </section>
@@ -283,7 +283,7 @@ README.md</div>
                 <section class="panel">
                     <h3>Delegate Path</h3>
                     <ul>
-                        <li>If no agent message is available, <span class="code">ar_system__process_next_message(...)</span> returns the result of <span class="code">ar_delegation__process_next_message(...)</span>.</li>
+                        <li>If no agent message is available, the system module's next-message operation returns whatever result comes back from the delegation module's own next-message path.</li>
                         <li>This keeps delegate work under the same system-level processing surface.</li>
                         <li>The system facade therefore coordinates both peers: agency and delegation.</li>
                     </ul>

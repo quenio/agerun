@@ -173,7 +173,18 @@ That means:
 - slide titles in navigation should be meaningful enough to scan on their own
 - readers should be able to move between slides without relying on hover or hidden gestures
 
-### 9. Use consistent title forms
+### 9. Prefer readable code references in prose
+
+Walkthrough prose should teach concepts first, not make readers decode long symbol names mid-sentence.
+
+That means:
+
+- in narrative sentences, prefer module-and-action phrasing over raw long function names
+- for example, prefer “the next-message operation of the system module” over a raw symbol like `ar_system__process_next_message(...)`
+- keep exact function names for code snippets, source-file references, or compact callouts where the raw symbol is the point
+- if a raw symbol is necessary, keep it visually separate from the main sentence so the prose still reads cleanly
+
+### 10. Use consistent title forms
 
 Slide titles and section titles should follow a stable editorial standard.
 
@@ -185,7 +196,7 @@ That means:
 - keep articles uppercase
 - if a title includes a literal file name or path, preserve its exact spelling
 
-### 10. End with action
+### 11. End with action
 
 The last slide should convert understanding into next steps.
 

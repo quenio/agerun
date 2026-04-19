@@ -65,14 +65,20 @@ If `System`, `Agency`, `Agent`, and `Method` appear, keep them visually stable.
 - Content must remain readable without horizontal scrolling.
 - Large diagrams should stack, simplify, or scroll intentionally.
 
-### 9. Use consistent title forms
+### 9. Prefer readable code references in prose
+- In tutorial sentences, prefer module-and-action phrasing over raw long function names.
+- Prefer wording like “the next-message operation of the system module” over raw symbols like `ar_system__process_next_message(...)`.
+- Reserve exact function names for code snippets, source-file references, or compact callouts where the raw symbol matters.
+- If a raw symbol is necessary, keep it visually separate from the main sentence so the prose remains easy to scan.
+
+### 10. Use consistent title forms
 - Use capitalized noun phrases for slide titles and section titles.
 - Rewrite verb-phrase titles into noun phrases when possible.
 - Keep pronouns and conjunctions lowercase.
 - Keep articles uppercase.
 - Preserve literal file names and paths exactly when they appear in titles.
 
-### 10. Prefer strong structure over ornament
+### 11. Prefer strong structure over ornament
 Use:
 - clear headings
 - short labels
@@ -106,6 +112,7 @@ Before claiming a walkthrough update is complete, verify:
 - mobile navigation works
 - navigation reflects the slide structure and current position clearly
 - slide titles and section titles follow the title standard consistently
+- tutorial prose avoids raw long function names where a module/action phrase is clearer
 - visuals remain readable on small screens
 - source links work
 - claims match the current repository state
