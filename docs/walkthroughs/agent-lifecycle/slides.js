@@ -8,7 +8,7 @@ const slides = [
         body: `
             <div class="columns">
                 <section class="panel">
-                    <h3>What this walkthrough explains</h3>
+                    <h3>Walkthrough Scope</h3>
                     <ul>
                         <li>What an agent is in AgeRun</li>
                         <li>How methods, agency, and system fit together</li>
@@ -29,7 +29,7 @@ modules/ar_method.c</div>
                 </section>
             </div>
             <section class="diagram-panel">
-                <h3>Reference architecture anchor</h3>
+                <h3>Reference Architecture Anchor</h3>
                 <div class="reference-architecture">
                     <div class="legend-row">
                         <span class="legend-chip legend-system">System</span>
@@ -66,7 +66,7 @@ modules/ar_method.c</div>
         `
     },
     {
-        title: "Mental model",
+        title: "Mental Model",
         subtitle: "An agent is a runtime entity. A method is the versioned behavior it executes. The system and agency coordinate delivery and execution.",
         body: `
             <div class="columns">
@@ -80,13 +80,13 @@ modules/ar_method.c</div>
                     </ul>
                 </section>
                 <section class="panel">
-                    <h3>Useful simplification</h3>
+                    <h3>Working Model</h3>
                     <p>Think of an agent as: <span class="code">method + memory + queued messages + identity</span>.</p>
                     <p class="note">That is not the literal struct definition; it is the right conceptual model for reading the runtime.</p>
                 </section>
             </div>
             <section class="diagram-panel">
-                <h3>Runtime relationship map</h3>
+                <h3>Runtime Relationship Map</h3>
                 <p class="diagram-caption">This reuses the same visual vocabulary from the anchor slide so later diagrams stay easy to parse.</p>
                 <div class="system-map">
                     <div class="map-node map-node-system">
@@ -117,7 +117,7 @@ modules/ar_method.c</div>
         `
     },
     {
-        title: "Lifecycle at a glance",
+        title: "Lifecycle Overview",
         subtitle: "Most agent behavior can be understood as a repeating loop around message delivery and processing.",
         body: `
             <div class="lifecycle-flow" aria-label="Agent lifecycle flow">
@@ -155,12 +155,12 @@ modules/ar_method.c</div>
         `
     },
     {
-        title: "Creation path",
+        title: "Creation Path",
         subtitle: "Creation is where a method definition becomes a live runtime participant.",
         body: `
             <div class="columns">
                 <section class="panel">
-                    <h3>What must already be true</h3>
+                    <h3>Creation Preconditions</h3>
                     <ul>
                         <li>The method name is known</li>
                         <li>The requested version resolves successfully</li>
@@ -168,7 +168,7 @@ modules/ar_method.c</div>
                     </ul>
                 </section>
                 <section class="panel">
-                    <h3>What creation gives you</h3>
+                    <h3>Creation Outcomes</h3>
                     <ul>
                         <li>a runtime agent ID</li>
                         <li>agent-owned state/memory</li>
@@ -181,19 +181,19 @@ modules/ar_method.c</div>
         `
     },
     {
-        title: "Message delivery",
+        title: "Message Delivery",
         subtitle: "AgeRun is message-driven. Sending work and running work are separate steps.",
         body: `
             <div class="columns">
                 <section class="panel">
-                    <h3>Important separation</h3>
+                    <h3>Delivery-Execution Separation</h3>
                     <ul>
                         <li><strong>Send</strong> queues a message for an agent</li>
                         <li><strong>Process</strong> makes the system actually execute the next queued message</li>
                     </ul>
                 </section>
                 <section class="panel">
-                    <h3>Why this matters</h3>
+                    <h3>Operational Implications</h3>
                     <ul>
                         <li>You can inspect flow as discrete runtime steps</li>
                         <li>Multiple sends may accumulate before processing</li>
@@ -202,7 +202,7 @@ modules/ar_method.c</div>
                 </section>
             </div>
             <section class="diagram-panel">
-                <h3>One-message sequence</h3>
+                <h3>One-Message Sequence</h3>
                 <div class="sequence-diagram">
                     <div class="sequence-lane">
                         <strong>Sender</strong>
@@ -234,12 +234,12 @@ README.md (message-driven architecture and usage examples)</div>
         `
     },
     {
-        title: "Execution step",
+        title: "Execution Step",
         subtitle: "When the system processes the next message, it hands that message to the receiving agent's method logic.",
         body: `
             <div class="columns">
                 <section class="panel">
-                    <h3>Inputs to a method run</h3>
+                    <h3>Method Run Inputs</h3>
                     <ul>
                         <li>the receiving agent</li>
                         <li>the queued message</li>
@@ -248,7 +248,7 @@ README.md (message-driven architecture and usage examples)</div>
                     </ul>
                 </section>
                 <section class="panel">
-                    <h3>Possible outcomes</h3>
+                    <h3>Execution Outcomes</h3>
                     <ul>
                         <li>memory variables updated</li>
                         <li>outbound messages sent</li>
@@ -260,12 +260,12 @@ README.md (message-driven architecture and usage examples)</div>
         `
     },
     {
-        title: "Persistence and longer-lived agents",
+        title: "Persistence and Long-Lived Agents",
         subtitle: "Agents are not just transient callbacks; they can outlive one message and participate in a persistent runtime.",
         body: `
             <div class="columns">
                 <section class="panel">
-                    <h3>Why persistence matters</h3>
+                    <h3>Persistence Value</h3>
                     <ul>
                         <li>agent memory carries forward across messages</li>
                         <li>runtime state can be saved and restored</li>
@@ -273,7 +273,7 @@ README.md (message-driven architecture and usage examples)</div>
                     </ul>
                 </section>
                 <section class="panel">
-                    <h3>Where to read more</h3>
+                    <h3>Further Reading</h3>
                     <div class="path-list">README.md
 modules/ar_agency.md
 modules/ar_system.md
@@ -281,7 +281,7 @@ methods/bootstrap-1.0.0.method</div>
                 </section>
             </div>
             <section class="diagram-panel">
-                <h3>Persistence view</h3>
+                <h3>Persistence Comparison</h3>
                 <div class="state-compare">
                     <div class="state-card">
                         <strong>Fresh boot</strong>
@@ -299,7 +299,7 @@ methods/bootstrap-1.0.0.method</div>
         `
     },
     {
-        title: "Suggested next reading order",
+        title: "Suggested Reading Order",
         subtitle: "If you want to understand agent lifecycle deeply, follow the runtime path in this order.",
         body: `
             <ol>
