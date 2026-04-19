@@ -67,7 +67,7 @@ If `System`, `Agency`, `Agent`, and `Method` appear, keep them visually stable.
 
 ### 9. Prefer readable code references in prose
 - In tutorial sentences, prefer module-and-action phrasing over raw long function names.
-- Prefer wording like “the next-message operation of the system module” over raw symbols like `ar_system__process_next_message(...)`.
+- Use italic human-readable operation names, for example “the *process next message* operation of the system module” instead of raw symbols like `ar_system__process_next_message(...)`.
 - Reserve exact function names for code snippets, source-file references, or compact callouts where the raw symbol matters.
 - If a raw symbol is necessary, keep it visually separate from the main sentence so the prose remains easy to scan.
 

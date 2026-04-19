@@ -4,7 +4,7 @@ const repositoryPathPattern = /\b(?:README\.md|SPEC\.md|CHANGELOG\.md|TODO\.md|C
 const slides = [
     {
         title: "Message Processing",
-        subtitle: "How the next-message operation of the system module finds one pending unit of work, executes it, and decides what happens next.",
+        subtitle: "How the <em>process next message</em> operation of the system module finds one pending unit of work, executes it, and decides what happens next.",
         body: `
             <div class="columns">
                 <section class="panel">
@@ -73,14 +73,14 @@ README.md</div>
     },
     {
         title: "Processing Contract",
-        subtitle: "The system API exposes one-step processing and drain-loop processing as separate operations.",
+        subtitle: "The system API exposes <em>process next message</em> and <em>process all messages</em> as separate operations.",
         body: `
             <div class="columns">
                 <section class="panel">
                     <h3>Public API Surface</h3>
                     <ul>
-                        <li>The system module's next-message operation processes at most one pending unit of work.</li>
-                        <li>The system module's drain operation keeps looping until the runtime reports that no work remains.</li>
+                        <li>The system module's <em>process next message</em> operation processes at most one pending unit of work.</li>
+                        <li>The system module's <em>process all messages</em> operation keeps looping until the runtime reports that no work remains.</li>
                         <li>Both APIs return immediately when the system is uninitialized or there is no work.</li>
                     </ul>
                 </section>
@@ -98,13 +98,13 @@ README.md</div>
                 <div class="state-compare">
                     <div class="state-card">
                         <strong>One-Step Mode</strong>
-                        <span>Use the system module's next-message operation.</span>
+                        <span>Use the system module's <em>process next message</em> operation.</span>
                         <span>Good for tests, tracing, and exact scheduling inspection</span>
                     </div>
                     <div class="state-transition">loop boundary</div>
                     <div class="state-card">
                         <strong>Drain Mode</strong>
-                        <span>Use the system module's drain operation.</span>
+                        <span>Use the system module's <em>process all messages</em> operation.</span>
                         <span>Good when you want the runtime to keep consuming work until idle</span>
                     </div>
                 </div>
@@ -283,7 +283,7 @@ README.md</div>
                 <section class="panel">
                     <h3>Delegate Path</h3>
                     <ul>
-                        <li>If no agent message is available, the system module's next-message operation returns whatever result comes back from the delegation module's own next-message path.</li>
+                        <li>If no agent message is available, the system module's <em>process next message</em> operation returns whatever result comes back from the delegation module's own <em>process next message</em> path.</li>
                         <li>This keeps delegate work under the same system-level processing surface.</li>
                         <li>The system facade therefore coordinates both peers: agency and delegation.</li>
                     </ul>
