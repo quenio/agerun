@@ -30,6 +30,10 @@ static void test_executable__saves_methodology_file(ar_executable_fixture_t *mut
 static void test_executable__continues_on_save_failure(ar_executable_fixture_t *mut_fixture);
 static void test_executable__loads_agents_on_startup(ar_executable_fixture_t *mut_fixture);
 static void test_executable__skips_bootstrap_when_agents_loaded(ar_executable_fixture_t *mut_fixture);
+static void test_executable__supports_boot_method_override(ar_executable_fixture_t *mut_fixture);
+static void test_executable__reports_default_boot_selection(ar_executable_fixture_t *mut_fixture);
+static void test_executable__rejects_invalid_boot_override(ar_executable_fixture_t *mut_fixture);
+static void test_executable__reports_skipped_override_when_agents_loaded(ar_executable_fixture_t *mut_fixture);
 static void test_executable__saves_agents_on_shutdown(ar_executable_fixture_t *mut_fixture);
 
 
@@ -847,6 +851,176 @@ static void test_executable__skips_bootstrap_when_agents_loaded(ar_executable_fi
     printf("✓ Skip bootstrap test passed\n");
 }
 
+static void test_executable__supports_boot_method_override(ar_executable_fixture_t *mut_fixture) {
+    printf("\n=== Testing executable supports boot method override ===\n");
+
+    ar_executable_fixture__clean_persisted_files(mut_fixture);
+
+    char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
+    FILE *pipe = ar_executable_fixture__build_and_run_with_boot_method(
+        mut_fixture,
+        own_methods_dir,
+        "echo-1.0.0");
+    AR_ASSERT(pipe != NULL, "Should be able to run executable with boot override");
+
+    char line[512];
+    bool found_override_requested = false;
+    bool found_override_creation = false;
+    bool found_bootstrap_creation = false;
+
+    while (fgets(line, sizeof(line), pipe) != NULL) {
+        if (strstr(line, "Boot method override requested: 'echo-1.0.0'")) {
+            found_override_requested = true;
+        }
+        if (strstr(line, "Creating boot agent from method 'echo' version '1.0.0'")) {
+            found_override_creation = true;
+        }
+        if (strstr(line, "Creating bootstrap agent")) {
+            found_bootstrap_creation = true;
+        }
+    }
+
+    int status = pclose(pipe);
+    if (WIFEXITED(status)) {
+        int exit_code = WEXITSTATUS(status);
+        AR_ASSERT(exit_code == 0, "Executable should exit normally when override is valid");
+    } else {
+        AR_ASSERT(false, "Executable should exit normally with boot override");
+    }
+
+    AR_ASSERT(found_override_requested, "Should report the requested boot method override");
+    AR_ASSERT(found_override_creation, "Should create the requested override boot agent");
+    AR_ASSERT(!found_bootstrap_creation, "Should not create bootstrap when override is requested");
+
+    ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
+    printf("✓ Boot method override test passed\n");
+}
+
+static void test_executable__reports_default_boot_selection(ar_executable_fixture_t *mut_fixture) {
+    printf("\n=== Testing executable reports default boot selection ===\n");
+
+    ar_executable_fixture__clean_persisted_files(mut_fixture);
+
+    char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
+    FILE *pipe = ar_executable_fixture__build_and_run(mut_fixture, own_methods_dir);
+    AR_ASSERT(pipe != NULL, "Should be able to run executable without boot override");
+
+    char line[512];
+    bool found_default_selection = false;
+    bool found_bootstrap_creation = false;
+
+    while (fgets(line, sizeof(line), pipe) != NULL) {
+        if (strstr(line, "No boot override requested; using default boot method 'bootstrap-1.0.0'")) {
+            found_default_selection = true;
+        }
+        if (strstr(line, "Creating bootstrap agent")) {
+            found_bootstrap_creation = true;
+        }
+    }
+
+    int status = pclose(pipe);
+    if (WIFEXITED(status)) {
+        int exit_code = WEXITSTATUS(status);
+        AR_ASSERT(exit_code == 0, "Executable should exit normally without override");
+    } else {
+        AR_ASSERT(false, "Executable should exit normally without override");
+    }
+
+    AR_ASSERT(found_default_selection, "Should report default boot selection when no override is provided");
+    AR_ASSERT(found_bootstrap_creation, "Should still create bootstrap without override");
+
+    ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
+    printf("✓ Default boot selection test passed\n");
+}
+
+static void test_executable__rejects_invalid_boot_override(ar_executable_fixture_t *mut_fixture) {
+    printf("\n=== Testing executable rejects invalid boot overrides ===\n");
+
+    ar_executable_fixture__clean_persisted_files(mut_fixture);
+
+    char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
+    FILE *pipe = ar_executable_fixture__build_and_run_with_boot_method(
+        mut_fixture,
+        own_methods_dir,
+        "invalid");
+    AR_ASSERT(pipe != NULL, "Should be able to run executable with invalid boot override");
+
+    char line[512];
+    bool found_invalid_override_error = false;
+    int exit_code = -1;
+
+    while (fgets(line, sizeof(line), pipe) != NULL) {
+        if (strstr(line, "Error: Invalid boot method override 'invalid'")) {
+            found_invalid_override_error = true;
+        }
+    }
+
+    int status = pclose(pipe);
+    if (WIFEXITED(status)) {
+        exit_code = WEXITSTATUS(status);
+    }
+
+    AR_ASSERT(found_invalid_override_error, "Should report malformed boot method override errors");
+    AR_ASSERT(exit_code == 2, "Should exit with make failure status when override is invalid");
+
+    ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
+    printf("✓ Invalid boot override test passed\n");
+}
+
+static void test_executable__reports_skipped_override_when_agents_loaded(ar_executable_fixture_t *mut_fixture) {
+    printf("\n=== Testing executable reports skipped override when agents are restored ===\n");
+
+    const char *build_dir = ar_executable_fixture__get_build_dir(mut_fixture);
+    AR_ASSERT(build_dir != NULL, "Should have build directory");
+
+    char agency_path[512];
+    snprintf(agency_path, sizeof(agency_path), "%s/agerun.agency", build_dir);
+
+    FILE *agency_file = fopen(agency_path, "w");
+    AR_ASSERT(agency_file != NULL, "Should be able to create agency file");
+    fprintf(agency_file, "# AgeRun YAML File\n");
+    fprintf(agency_file, "agents:\n");
+    fprintf(agency_file, "  - id: 1\n");
+    fprintf(agency_file, "    method_name: bootstrap\n");
+    fprintf(agency_file, "    method_version: \"1.0.0\"\n");
+    fprintf(agency_file, "    memory: {}\n");
+    fclose(agency_file);
+
+    char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
+    FILE *pipe = ar_executable_fixture__build_and_run_with_boot_method(
+        mut_fixture,
+        own_methods_dir,
+        "echo-1.0.0");
+    AR_ASSERT(pipe != NULL, "Should be able to run executable with restored agents and override");
+
+    char line[512];
+    bool found_override_skipped = false;
+    bool found_override_creation = false;
+
+    while (fgets(line, sizeof(line), pipe) != NULL) {
+        if (strstr(line, "Boot method override 'echo-1.0.0' skipped because agents were restored from disk")) {
+            found_override_skipped = true;
+        }
+        if (strstr(line, "Creating boot agent from method 'echo' version '1.0.0'")) {
+            found_override_creation = true;
+        }
+    }
+
+    int status = pclose(pipe);
+    if (WIFEXITED(status)) {
+        int exit_code = WEXITSTATUS(status);
+        AR_ASSERT(exit_code == 0, "Executable should exit normally when override is skipped");
+    } else {
+        AR_ASSERT(false, "Executable should exit normally when override is skipped");
+    }
+
+    AR_ASSERT(found_override_skipped, "Should report skipped override when persisted agents are restored");
+    AR_ASSERT(!found_override_creation, "Should not create override boot agent when agents are restored");
+
+    ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
+    printf("✓ Skipped override test passed\n");
+}
+
 static void test_executable__saves_agents_on_shutdown(ar_executable_fixture_t *mut_fixture) {
     printf("\n=== Testing executable saves agents on shutdown ===\n");
 
@@ -1031,6 +1205,18 @@ int main(void) {
     // Test that executable skips bootstrap when agents loaded
     test_executable__skips_bootstrap_when_agents_loaded(own_fixture);
 
+    // Test that executable supports boot method override
+    test_executable__supports_boot_method_override(own_fixture);
+
+    // Test that executable reports default boot selection without override
+    test_executable__reports_default_boot_selection(own_fixture);
+
+    // Test that executable rejects invalid boot overrides
+    test_executable__rejects_invalid_boot_override(own_fixture);
+
+    // Test that executable reports skipped override when agents are restored
+    test_executable__reports_skipped_override_when_agents_loaded(own_fixture);
+
     // Test that executable saves agents on shutdown
     test_executable__saves_agents_on_shutdown(own_fixture);
 
@@ -1073,7 +1259,7 @@ int main(void) {
     ar_executable_fixture__destroy(own_fixture);
 
     // And report success
-    printf("All 13 tests passed!\n");
+    printf("All 17 tests passed!\n");
     return 0;
 }
 

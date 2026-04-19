@@ -122,18 +122,30 @@ char* ar_executable_fixture__create_methods_dir(ar_executable_fixture_t *mut_fix
     return own_methods_dir; // Ownership transferred to caller
 }
 
-FILE* ar_executable_fixture__build_and_run(const ar_executable_fixture_t *ref_fixture, 
+FILE* ar_executable_fixture__build_and_run(const ar_executable_fixture_t *ref_fixture,
                                            const char *ref_methods_dir) {
+    return ar_executable_fixture__build_and_run_with_boot_method(
+        ref_fixture,
+        ref_methods_dir,
+        NULL);
+}
+
+FILE* ar_executable_fixture__build_and_run_with_boot_method(
+    const ar_executable_fixture_t *ref_fixture,
+    const char *ref_methods_dir,
+    const char *ref_boot_method) {
     if (!ref_fixture || !ref_methods_dir) {
         return NULL;
     }
-    
+
+    (void) ref_boot_method;
+
     char build_cmd[1024];
-    snprintf(build_cmd, sizeof(build_cmd), 
+    snprintf(build_cmd, sizeof(build_cmd),
         "cd ../.. && "
-        "AGERUN_METHODS_DIR=%s RUN_EXEC_DIR=%s make run-exec 2>&1", 
+        "AGERUN_METHODS_DIR=%s RUN_EXEC_DIR=%s make run-exec 2>&1",
         ref_methods_dir, ref_fixture->temp_build_dir);
-    
+
     return popen(build_cmd, "r");
 }
 

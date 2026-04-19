@@ -35,11 +35,11 @@ stories.
 
 **⚠️ CRITICAL**: No user story implementation starts before this phase is complete.
 
-- [ ] T004 Add failing fresh-start override coverage in `modules/ar_executable_tests.c` for valid `--boot-method <name-version>` selection and standard `"__boot__"` queueing
-- [ ] T005 [P] Add failing no-override regression coverage in `modules/ar_executable_tests.c` for default `bootstrap` startup and unchanged `make run-exec` behavior
-- [ ] T006 [P] Add failing invalid-override and restored-startup skip coverage in `modules/ar_executable_tests.c` for malformed identifiers, unavailable methods, and observable override skipping
-- [ ] T007 [P] Add compile-safe override helper scaffolding in `modules/ar_executable.h`, `modules/ar_executable.c`, `modules/ar_executable_fixture.h`, and `modules/ar_executable_fixture.c` so RED fails on assertions instead of compilation
-- [ ] T008 Confirm the RED phase for `modules/ar_executable_tests.c`, `modules/ar_executable.c`, and `modules/ar_executable_fixture.c` with `make ar_executable_tests 2>&1`
+- [x] T004 Add failing fresh-start override coverage in `modules/ar_executable_tests.c` for valid `--boot-method <name-version>` selection and standard `"__boot__"` queueing
+- [x] T005 [P] Add failing no-override regression coverage in `modules/ar_executable_tests.c` for default `bootstrap` startup and unchanged `make run-exec` behavior
+- [x] T006 [P] Add failing invalid-override and restored-startup skip coverage in `modules/ar_executable_tests.c` for malformed identifiers, unavailable methods, and observable override skipping
+- [x] T007 [P] Add compile-safe override helper scaffolding in `modules/ar_executable.h`, `modules/ar_executable.c`, `modules/ar_executable_fixture.h`, and `modules/ar_executable_fixture.c` so RED fails on assertions instead of compilation
+- [x] T008 Confirm the RED phase for `modules/ar_executable_tests.c`, `modules/ar_executable.c`, and `modules/ar_executable_fixture.c` with `make ar_executable_tests 2>&1`
 
 **Checkpoint**: Failing validation exists for valid override selection, default-path preservation, and invalid/skip behavior.
 

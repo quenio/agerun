@@ -1,5 +1,26 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Executable boot override RED-phase scaffolding and failing tests)
+
+- **Added compile-safe scaffolding and RED-phase executable tests for boot-method override**
+
+  Prepared the executable boot-method override implementation by adding argument-aware executable
+  entry-point scaffolding, override-aware executable fixture scaffolding, and new failing
+  executable integration tests for valid override selection, explicit default boot selection,
+  invalid override rejection, and restored-agent override skipping. The new foundational tests now
+  compile successfully and fail on assertions rather than compilation errors.
+
+  **Implementation**: Updated `modules/ar_executable.c`, `modules/ar_executable.h`,
+  `modules/ar_executable_fixture.c`, `modules/ar_executable_fixture.h`,
+  `modules/ar_executable_tests.c`, and
+  `specs/009-parameter-passed-executable/tasks.md`.
+
+  **Verification**: `make ar_executable_tests 2>&1` (expected RED-phase assertion failure in
+  `test_executable__supports_boot_method_override`); `make check-docs`.
+
+  **Impact**: The boot-method override feature now has a concrete RED-phase test harness and
+  compile-safe scaffolding for the upcoming implementation work.
+
 ## 2026-04-18 (Planned executable boot-method override workflow artifacts)
 
 - **Added the full native `/spec` artifact set for executable boot-method override planning**

@@ -121,7 +121,10 @@ static int _load_methods_from_directory(ar_methodology_t *mut_methodology) {
     return loaded_count;
 }
 
-int ar_executable__main(void) {
+int ar_executable__main_with_args(int argc, char **argv) {
+    (void) argc;
+    (void) argv;
+
     printf("Agerun Example Application\n");
     printf("==========================\n\n");
     
@@ -292,6 +295,12 @@ int ar_executable__main(void) {
     return 0;
 }
 
-int main(void) {
-    return ar_executable__main();
+int ar_executable__main(void) {
+    char mut_default_program_name[] = "agerun";
+    char *mut_default_argv[] = { mut_default_program_name, NULL };
+    return ar_executable__main_with_args(1, mut_default_argv);
+}
+
+int main(int argc, char **argv) {
+    return ar_executable__main_with_args(argc, argv);
 }
