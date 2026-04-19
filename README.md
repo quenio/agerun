@@ -63,6 +63,12 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
    When `BOOT_METHOD` is omitted, the executable keeps using the default `bootstrap-1.0.0` startup
    path.
 
+   If persisted agents are restored from `agerun.agency`, the executable reports that any requested
+   boot override was skipped and does not create a second fresh boot agent.
+
+   If `BOOT_METHOD` is malformed or names a method that cannot be created at startup, the
+   executable exits with a clear error instead of silently falling back to `bootstrap`.
+
 ### Memory Safety Testing
 
 AgeRun includes built-in support for comprehensive memory error detection:

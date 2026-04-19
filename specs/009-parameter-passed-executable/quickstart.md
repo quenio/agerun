@@ -55,8 +55,8 @@ make run-exec BOOT_METHOD=does-not-exist 2>&1
 ```
 
 Expected result on a fresh startup:
-- the executable reports that the requested boot method identifier is invalid or could not be
-  created
+- the executable reports that the requested boot method identifier is malformed or that the
+  selected method could not be created
 - the process exits with failure
 - the executable does not silently fall back to `bootstrap`
 

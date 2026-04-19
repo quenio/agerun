@@ -43,7 +43,8 @@ Startup output must make these outcomes distinguishable to the operator:
 - default boot method selected
 - override boot method selected
 - override skipped because persisted agents were restored
-- override rejected because the requested method identifier was invalid or could not be created
+- override rejected because the requested method identifier was malformed or the selected method
+  could not be created
 - usage error due to malformed CLI input
 
 ## Non-Goals

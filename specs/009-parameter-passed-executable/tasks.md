@@ -104,16 +104,16 @@ skipped instead of creating a second fresh boot agent.
 
 ### Validation for User Story 3
 
-- [ ] T020 [P] [US3] Run the targeted failing invalid-override and restored-startup tests in `modules/ar_executable_tests.c` for malformed identifiers, unavailable methods, and skip observability
+- [x] T020 [P] [US3] Run the targeted failing invalid-override and restored-startup tests in `modules/ar_executable_tests.c` for malformed identifiers, unavailable methods, and skip observability
 
 ### Implementation for User Story 3
 
-- [ ] T021 [P] [US3] Implement invalid-identifier rejection and no-fallback startup failure reporting in `modules/ar_executable.c` and `modules/ar_executable.h`
-- [ ] T022 [P] [US3] Implement restored-startup override passthrough helpers in `modules/ar_executable_fixture.h` and `modules/ar_executable_fixture.c`
-- [ ] T023 [US3] Implement restored-agent override-skip messaging and failure-path outcome reporting in `modules/ar_executable.c`
-- [ ] T024 [P] [US3] Update failure and restored-state documentation in `README.md`, `SPEC.md`, `modules/ar_executable.md`, `specs/009-parameter-passed-executable/quickstart.md`, `specs/009-parameter-passed-executable/contracts/executable-startup-cli.md`, and `specs/009-parameter-passed-executable/contracts/run-exec-target.md`
-- [ ] T025 [US3] Re-run `make ar_executable_tests 2>&1` until malformed-override, unavailable-method, and restored-state assertions in `modules/ar_executable_tests.c` pass
-- [ ] T026 [US3] Refactor override-validation and startup-reporting helpers in `modules/ar_executable.c` and `modules/ar_executable_fixture.c` while preserving green User Story 3 tests
+- [x] T021 [P] [US3] Implement invalid-identifier rejection and no-fallback startup failure reporting in `modules/ar_executable.c` and `modules/ar_executable.h`
+- [x] T022 [P] [US3] Implement restored-startup override passthrough helpers in `modules/ar_executable_fixture.h` and `modules/ar_executable_fixture.c`
+- [x] T023 [US3] Implement restored-agent override-skip messaging and failure-path outcome reporting in `modules/ar_executable.c`
+- [x] T024 [P] [US3] Update failure and restored-state documentation in `README.md`, `SPEC.md`, `modules/ar_executable.md`, `specs/009-parameter-passed-executable/quickstart.md`, `specs/009-parameter-passed-executable/contracts/executable-startup-cli.md`, and `specs/009-parameter-passed-executable/contracts/run-exec-target.md`
+- [x] T025 [US3] Re-run `make ar_executable_tests 2>&1` until malformed-override, unavailable-method, and restored-state assertions in `modules/ar_executable_tests.c` pass
+- [x] T026 [US3] Refactor override-validation and startup-reporting helpers in `modules/ar_executable.c` and `modules/ar_executable_fixture.c` while preserving green User Story 3 tests
 
 **Checkpoint**: Invalid overrides fail clearly, and restored persisted agents take precedence with explicit operator-visible messaging.
 
@@ -125,11 +125,11 @@ skipped instead of creating a second fresh boot agent.
 
 - [ ] T027 [P] Sync final planning artifacts in `specs/009-parameter-passed-executable/plan.md`, `specs/009-parameter-passed-executable/research.md`, `specs/009-parameter-passed-executable/data-model.md`, and `specs/009-parameter-passed-executable/contracts/README.md` if implementation details move from the planned contract
 - [ ] T028 [P] Update durable workflow context in `.specify/memory/pi-agent.md` if the final executable/Make contract differs from the current planned note
-- [ ] T029 [P] Run documentation validation for `README.md`, `SPEC.md`, `modules/ar_executable.md`, `specs/009-parameter-passed-executable/quickstart.md`, `specs/009-parameter-passed-executable/contracts/executable-startup-cli.md`, and `specs/009-parameter-passed-executable/contracts/run-exec-target.md` with `make check-docs`
-- [ ] T030 [P] Run sanitizer coverage for `modules/ar_executable.c`, `modules/ar_executable_fixture.c`, and `modules/ar_executable_tests.c` with `make sanitize-tests 2>&1`
-- [ ] T031 Run final targeted regression for `modules/ar_executable_tests.c` with `make ar_executable_tests 2>&1`
-- [ ] T032 Run repo gates for the top-level build file, `modules/ar_executable.c`, `modules/ar_executable_fixture.c`, `README.md`, and `SPEC.md` with `make clean build 2>&1` and then `make check-logs`
-- [ ] T033 Update `CHANGELOG.md` with the executable boot-method override and `make run-exec` passthrough once implementation is ready for commit
+- [x] T029 [P] Run documentation validation for `README.md`, `SPEC.md`, `modules/ar_executable.md`, `specs/009-parameter-passed-executable/quickstart.md`, `specs/009-parameter-passed-executable/contracts/executable-startup-cli.md`, and `specs/009-parameter-passed-executable/contracts/run-exec-target.md` with `make check-docs`
+- [x] T030 [P] Run sanitizer coverage for `modules/ar_executable.c`, `modules/ar_executable_fixture.c`, and `modules/ar_executable_tests.c` with `make sanitize-tests 2>&1`
+- [x] T031 Run final targeted regression for `modules/ar_executable_tests.c` with `make ar_executable_tests 2>&1`
+- [x] T032 Run repo gates for the top-level build file, `modules/ar_executable.c`, `modules/ar_executable_fixture.c`, `README.md`, and `SPEC.md` with `make clean build 2>&1` and then `make check-logs`
+- [x] T033 Update `CHANGELOG.md` with the executable boot-method override and `make run-exec` passthrough once implementation is ready for commit
 
 ---
 

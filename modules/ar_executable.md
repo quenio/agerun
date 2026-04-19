@@ -52,6 +52,8 @@ The main function that:
 4. **Persistence-Aware Behavior**
    - If agents were restored, skips fresh boot-agent creation
    - If an override was requested while agents were restored, reports that the override was skipped
+   - If an override is malformed or the selected method cannot be created, startup fails clearly
+     without falling back to the default boot method
 
 5. **Cleanup and Persistence**
    - Processes remaining messages
@@ -101,6 +103,10 @@ ar_data__destroy(mgmt_msg);
 
 # Repository wrapper for the same behavior
 make run-exec BOOT_METHOD=echo-1.0.0
+
+# Malformed or unavailable overrides fail instead of falling back
+./bin/agerun --boot-method invalid
+./bin/agerun --boot-method does-not-exist-1.0.0
 ```
 
 ## Memory Management
@@ -153,6 +159,9 @@ The executable supports two execution modes:
 
 If a boot override is requested during a restored run, the executable reports that the override was
 skipped because persisted agents took precedence.
+
+If a requested override is malformed or its method/version cannot be instantiated, the executable
+stops startup with an explicit error and does not fall back to `bootstrap-1.0.0`.
 
 ### Message Processing
 

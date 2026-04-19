@@ -27,6 +27,11 @@ static bool _split_method_identifier(const char *ref_method_identifier,
                                      char *mut_method_version,
                                      size_t method_version_size);
 static void _report_boot_method_selection(const char *ref_boot_method_identifier);
+static int _report_invalid_boot_method_override(const char *ref_boot_method_identifier);
+static int _report_boot_agent_creation_failure(const char *ref_boot_method_identifier,
+                                               const char *ref_selected_method_name,
+                                               const char *ref_selected_method_version);
+static void _report_restored_startup_outcome(const char *ref_boot_method_identifier);
 
 /**
  * Load all method files from the methods directory
@@ -104,6 +109,34 @@ static void _report_boot_method_selection(const char *ref_boot_method_identifier
         printf("No boot override requested; using default boot method '%s'\n",
                BOOTSTRAP_METHOD_IDENTIFIER);
     }
+}
+
+static int _report_invalid_boot_method_override(const char *ref_boot_method_identifier) {
+    printf("Error: Invalid boot method override '%s'\n", ref_boot_method_identifier);
+    return 1;
+}
+
+static int _report_boot_agent_creation_failure(const char *ref_boot_method_identifier,
+                                               const char *ref_selected_method_name,
+                                               const char *ref_selected_method_version) {
+    if (ref_boot_method_identifier) {
+        printf("Error: Failed to create boot agent from method '%s' version '%s'\n",
+               ref_selected_method_name,
+               ref_selected_method_version);
+    } else {
+        printf("Error: Failed to create bootstrap agent\n");
+    }
+
+    return 1;
+}
+
+static void _report_restored_startup_outcome(const char *ref_boot_method_identifier) {
+    if (ref_boot_method_identifier) {
+        printf("Boot method override '%s' skipped because agents were restored from disk\n",
+               ref_boot_method_identifier);
+    }
+
+    printf("Agents loaded from disk, skipping bootstrap creation\n");
 }
 
 static int _load_methods_from_directory(ar_methodology_t *mut_methodology) {
@@ -224,8 +257,7 @@ int ar_executable__main_with_args(int argc, char **argv) {
                                       sizeof(mut_override_method_name),
                                       mut_override_method_version,
                                       sizeof(mut_override_method_version))) {
-            printf("Error: Invalid boot method override '%s'\n", ref_boot_method_identifier);
-            return 1;
+            return _report_invalid_boot_method_override(ref_boot_method_identifier);
         }
 
         ref_selected_method_name = mut_override_method_name;
@@ -344,16 +376,12 @@ int ar_executable__main_with_args(int argc, char **argv) {
         }
         initial_agent = ar_system__init(mut_system, ref_selected_method_name, ref_selected_method_version);
         if (initial_agent <= 0) {
-            if (ref_boot_method_identifier) {
-                printf("Error: Failed to create boot agent from method '%s' version '%s'\n",
-                       ref_selected_method_name,
-                       ref_selected_method_version);
-            } else {
-                printf("Error: Failed to create bootstrap agent\n");
-            }
+            int exit_code = _report_boot_agent_creation_failure(ref_boot_method_identifier,
+                                                                ref_selected_method_name,
+                                                                ref_selected_method_version);
             ar_system__shutdown(mut_system);
             ar_system__destroy(mut_system);
-            return 1;
+            return exit_code;
         }
         if (ref_boot_method_identifier) {
             printf("Boot agent created with ID: %" PRId64 "\n", initial_agent);
@@ -378,11 +406,7 @@ int ar_executable__main_with_args(int argc, char **argv) {
             return 1;
         }
     } else {
-        if (ref_boot_method_identifier) {
-            printf("Boot method override '%s' skipped because agents were restored from disk\n",
-                   ref_boot_method_identifier);
-        }
-        printf("Agents loaded from disk, skipping bootstrap creation\n");
+        _report_restored_startup_outcome(ref_boot_method_identifier);
     }
     
     // Process all messages until none remain

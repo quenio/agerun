@@ -35,8 +35,9 @@ make run-exec [BOOT_METHOD=<method-name-version>] [RUN_EXEC_DIR=<dir>] [AGERUN_M
 2. With `BOOT_METHOD`, `make run-exec` builds the executable and launches it with the matching
    `--boot-method` CLI argument.
 3. `run-exec` does not create a second execution path or alternate target for the override case.
-4. Invalid `BOOT_METHOD` values are surfaced through the executable's normal startup failure path;
-   the Make target does not silently replace them with the default boot method.
+4. Malformed or unavailable `BOOT_METHOD` values are surfaced through the executable's normal
+   startup failure path; the Make target does not silently replace them with the default boot
+   method.
 
 ## Observability Contract
 

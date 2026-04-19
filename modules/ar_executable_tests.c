@@ -33,6 +33,7 @@ static void test_executable__skips_bootstrap_when_agents_loaded(ar_executable_fi
 static void test_executable__supports_boot_method_override(ar_executable_fixture_t *mut_fixture);
 static void test_executable__reports_default_boot_selection(ar_executable_fixture_t *mut_fixture);
 static void test_executable__rejects_invalid_boot_override(ar_executable_fixture_t *mut_fixture);
+static void test_executable__rejects_unavailable_boot_override(ar_executable_fixture_t *mut_fixture);
 static void test_executable__reports_skipped_override_when_agents_loaded(ar_executable_fixture_t *mut_fixture);
 static void test_executable__saves_agents_on_shutdown(ar_executable_fixture_t *mut_fixture);
 
@@ -967,6 +968,43 @@ static void test_executable__rejects_invalid_boot_override(ar_executable_fixture
     printf("✓ Invalid boot override test passed\n");
 }
 
+static void test_executable__rejects_unavailable_boot_override(ar_executable_fixture_t *mut_fixture) {
+    printf("\n=== Testing executable rejects unavailable boot overrides ===\n");
+
+    ar_executable_fixture__clean_persisted_files(mut_fixture);
+
+    char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
+    FILE *pipe = ar_executable_fixture__build_and_run_with_boot_method(
+        mut_fixture,
+        own_methods_dir,
+        "does-not-exist-1.0.0");
+    AR_ASSERT(pipe != NULL, "Should be able to run executable with unavailable boot override");
+
+    char line[512];
+    bool found_creation_failure = false;
+    int exit_code = -1;
+
+    while (fgets(line, sizeof(line), pipe) != NULL) {
+        if (strstr(line,
+                   "Error: Failed to create boot agent from method 'does-not-exist' version '1.0.0'")) {
+            found_creation_failure = true;
+        }
+    }
+
+    int status = pclose(pipe);
+    if (WIFEXITED(status)) {
+        exit_code = WEXITSTATUS(status);
+    }
+
+    AR_ASSERT(found_creation_failure,
+              "Should report unavailable boot methods without falling back to bootstrap");
+    AR_ASSERT(exit_code == 2,
+              "Should exit with make failure status when override method is unavailable");
+
+    ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
+    printf("✓ Unavailable boot override test passed\n");
+}
+
 static void test_executable__reports_skipped_override_when_agents_loaded(ar_executable_fixture_t *mut_fixture) {
     printf("\n=== Testing executable reports skipped override when agents are restored ===\n");
 
@@ -1213,6 +1251,9 @@ int main(void) {
 
     // Test that executable rejects invalid boot overrides
     test_executable__rejects_invalid_boot_override(own_fixture);
+
+    // Test that executable rejects unavailable boot overrides
+    test_executable__rejects_unavailable_boot_override(own_fixture);
 
     // Test that executable reports skipped override when agents are restored
     test_executable__reports_skipped_override_when_agents_loaded(own_fixture);

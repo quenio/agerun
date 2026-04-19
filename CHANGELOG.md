@@ -1,5 +1,29 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Executable boot override failure and restored-state behavior)
+
+- **Made invalid/unavailable boot overrides fail clearly and restored-agent startup report skipped overrides**
+
+  Completed the User Story 3 follow-up for executable boot override so malformed identifiers,
+  unavailable boot methods, and restored persisted-agent startups now produce explicit,
+  operator-visible outcomes. The executable now uses shared reporting helpers for invalid override
+  rejection, unavailable-method boot creation failure, and restored-state override skipping; the
+  executable tests now cover unavailable methods explicitly; and the README, SPEC, module docs, and
+  spec contracts now describe restored-agent precedence and no-fallback failure behavior.
+
+  **Implementation**: Updated `README.md`, `SPEC.md`, `modules/ar_executable.c`,
+  `modules/ar_executable.md`, `modules/ar_executable_tests.c`,
+  `specs/009-parameter-passed-executable/contracts/executable-startup-cli.md`,
+  `specs/009-parameter-passed-executable/contracts/run-exec-target.md`,
+  `specs/009-parameter-passed-executable/quickstart.md`, and
+  `specs/009-parameter-passed-executable/tasks.md`.
+
+  **Verification**: `make ar_executable_tests 2>&1`; `make check-docs 2>&1`;
+  `make sanitize-tests 2>&1`; `make clean build 2>&1`; `make check-logs`.
+
+  **Impact**: Fresh startup overrides no longer silently degrade when malformed or unavailable, and
+  restored persisted agents explicitly take precedence over override requests.
+
 ## 2026-04-19 (Executable boot override default-path preservation)
 
 - **Preserved the default bootstrap startup path while documenting the new override as optional**
