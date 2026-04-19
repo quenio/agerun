@@ -66,6 +66,14 @@ a:hover {
     text-decoration: underline;
 }
 
+.section-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    font-weight: 700;
+}
+
 .site-back-link {
     display: inline-flex;
     align-items: center;

@@ -1,5 +1,20 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Docs landing page link to walkthrough index)
+
+- **Added a direct link from `docs/index.html` to the walkthrough collection landing page**
+
+  Updated the top-level docs landing page so it now explicitly links to
+  `docs/walkthroughs/index.html` in addition to the individual walkthrough cards.
+
+  **Implementation**: Added a reusable section-link style in `docs/site.css` and placed a
+  “Browse the walkthrough index” link near the walkthrough intro in `docs/index.html`.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: Readers arriving at the site root can now jump directly to the dedicated walkthrough
+  collection page before choosing a specific deck.
+
 ## 2026-04-19 (Published walkthrough index page)
 
 - **Added a dedicated `docs/walkthroughs/index.html` landing page for the walkthrough collection**
