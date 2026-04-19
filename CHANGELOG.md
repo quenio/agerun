@@ -1,5 +1,22 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Full-viewport walkthrough deck shell)
+
+- **Changed the walkthrough deck layout to use the full viewport with persistent top and bottom bars**
+
+  Updated the shared walkthrough page shell so the outer layout now uses the available browser width and
+  height with minimal outer padding, while keeping the header and footer controls visible.
+
+  **Implementation**: Reworked the shared walkthrough CSS in
+  `docs/walkthroughs/agent-lifecycle/styles.css`, `docs/walkthroughs/message-processing/styles.css`,
+  and `docs/walkthroughs/delegation/styles.css` so the app fills the viewport, the main shell uses a
+  fixed-height grid, and the sidebar and slide content areas scroll independently.
+
+  **Verification**: Verified the updated CSS structure directly and ran `make check-docs 2>&1`.
+
+  **Impact**: Walkthrough decks now feel more app-like on desktop, preserve constant access to slide
+  navigation and next/previous controls, and waste less space around the outer frame.
+
 ## 2026-04-19 (Docs landing page link to walkthrough index)
 
 - **Added a direct link from `docs/index.html` to the walkthrough collection landing page**

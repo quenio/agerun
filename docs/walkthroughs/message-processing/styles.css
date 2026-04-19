@@ -18,9 +18,11 @@
 body {
     margin: 0;
     min-height: 100vh;
+    min-height: 100dvh;
     font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     background: radial-gradient(circle at top, #18244b 0%, var(--bg) 55%);
     color: var(--text);
+    overflow: hidden;
 }
 
 body.sidebar-open {
@@ -28,9 +30,13 @@ body.sidebar-open {
 }
 
 .app {
-    width: min(1280px, calc(100vw - 32px));
-    margin: 0 auto;
-    padding: 24px 0 32px;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    padding: 8px;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 10px;
 }
 
 .topbar,
@@ -83,15 +89,15 @@ body.sidebar-open {
     position: relative;
     display: grid;
     grid-template-columns: minmax(220px, var(--sidebar-width)) minmax(0, 1fr);
-    gap: 18px;
-    align-items: start;
-    margin: 18px 0;
+    gap: 10px;
+    align-items: stretch;
+    min-height: 0;
 }
 
 .sidebar {
-    position: sticky;
-    top: 18px;
-    max-height: calc(100vh - 42px);
+    position: relative;
+    height: 100%;
+    min-height: 0;
     padding: 18px;
     overflow: auto;
 }
@@ -192,8 +198,10 @@ body.sidebar-open {
 }
 
 .slide-card {
-    min-height: 68vh;
+    height: 100%;
+    min-height: 0;
     padding: 32px;
+    overflow: auto;
 }
 
 .slide-title {
@@ -558,8 +566,8 @@ li {
 
 @media (max-width: 900px) {
     .app {
-        width: min(100vw - 20px, 1280px);
-        padding-top: 14px;
+        padding: 6px;
+        gap: 8px;
     }
 
     .slide-shell {
@@ -578,6 +586,7 @@ li {
         z-index: 30;
         width: min(86vw, 340px);
         height: 100vh;
+        height: 100dvh;
         max-height: none;
         border-radius: 0 18px 18px 0;
         transform: translateX(calc(-100% - 12px));
@@ -600,9 +609,6 @@ li {
         display: block;
     }
 
-    .slide-card {
-        min-height: 62vh;
-    }
 }
 
 @media (max-width: 720px) {
