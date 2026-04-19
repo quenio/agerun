@@ -1,5 +1,20 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Simplified section headings on the root docs page)
+
+- **Removed the extra section titles from the main `docs/index.html` content areas**
+
+  Dropped the large in-section headings so the root page now relies on the eyebrow labels and section
+  content instead of repeating another title block inside each section.
+
+  **Implementation**: Removed the `Site Overview`, `Published Walkthrough Collection`, and `Read Next in
+  the Project Tree` headings from `docs/index.html`.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: The root docs page reads more cleanly and avoids redundant heading layers in the main
+  content area.
+
 ## 2026-04-19 (Audience-facing overview copy on the root docs page)
 
 - **Removed site-implementation framing from the `docs/index.html` overview section**
