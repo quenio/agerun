@@ -1,5 +1,21 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Index-page sidebar title removed and walkthrough title simplified)
+
+- **Removed the redundant sidebar `Sections` heading from the docs index pages and shortened the walkthrough index page title**
+
+  The index-page sidebars now rely on the navigation items themselves without an extra `Sections` title,
+  and the walkthrough index top-bar title now uses the simpler `Walkthroughs` wording.
+
+  **Implementation**: Removed the sidebar heading from `docs/index.html` and
+  `docs/walkthroughs/index.html`, and changed the top-bar title in `docs/walkthroughs/index.html` from
+  `Walkthrough Collection` to `Walkthroughs`.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: The index pages are slightly cleaner, and the walkthrough landing page uses a shorter,
+  less redundant title.
+
 ## 2026-04-19 (Navigation text size aligned with normal body text)
 
 - **Raised the docs index-page navigation text to match the regular reading text size**
