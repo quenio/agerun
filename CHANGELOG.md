@@ -1,5 +1,21 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Shared panel-following margin removed from docs shell)
+
+- **Removed the generic `panel + panel` top margin that was misaligning the two-column index pages**
+
+  The repeated main-panel offset on both docs index pages was caused by a generic CSS rule that added a
+  top margin to any panel immediately following another panel. In the two-column layout, that rule was
+  pushing the main content panel downward relative to the sidebar.
+
+  **Implementation**: Removed the `.panel + .panel` rule from `docs/site.css`.
+
+  **Verification**: `make check-docs 2>&1` and fresh local Playwright screenshots of both
+  `docs/index.html` and `docs/walkthroughs/index.html`.
+
+  **Impact**: The main content panels on both docs index pages now align with the sidebar panel instead
+  of inheriting an unintended extra top offset.
+
 ## 2026-04-19 (Index-page main panel outer margins aligned with the sidebar)
 
 - **Removed the extra custom outer inset from the docs index-page main panel**

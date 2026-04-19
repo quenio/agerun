@@ -230,10 +230,6 @@ main {
     padding: 28px;
 }
 
-.panel + .panel {
-    margin-top: 20px;
-}
-
 .eyebrow {
     text-transform: uppercase;
     letter-spacing: 0.08em;
