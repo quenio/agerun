@@ -1,5 +1,19 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Audience-facing overview copy on the root docs page)
+
+- **Removed site-implementation framing from the `docs/index.html` overview section**
+
+  Rewrote the root page overview so it introduces the site in audience-facing terms instead of
+  describing the publishing mechanism or browser-rendering model.
+
+  **Implementation**: Updated the overview heading and body copy in `docs/index.html`.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: The root docs page now starts with clearer product-facing language and avoids
+  unnecessary web-site implementation detail in the overview.
+
 ## 2026-04-19 (Docs guidance broadened beyond static wording)
 
 - **Removed static-only wording from the shared docs guidance and root landing page copy**
