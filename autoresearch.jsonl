@@ -1,2 +1,0 @@
-{"type":"config","name":"System-Wide Integration Testing & Performance","metricName":"total_µs","metricUnit":"µs","bestDirection":"lower"}
-{"run":1,"commit":"3f6d5c8","metric":1526,"metrics":{},"status":"keep","description":"Implemented zero-copy whole-message forwarding for exact send(..., message); added ownership-transfer plumbing, end-to-end pointer-reuse tests, and improved integration benchmark to 1526µs from prior ~1936µs.","timestamp":1775783642252,"segment":0,"confidence":null,"iterationTokens":485}

@@ -1,5 +1,18 @@
 # AgeRun CHANGELOG
 
+## 2026-04-18 (Remove checked-in autoresearch session log)
+
+- **Removed the transient `autoresearch.jsonl` experiment log from the repository**
+
+  Deleted the checked-in autoresearch session log so the main branch no longer carries a local
+  experiment artifact unrelated to source, tests, or documentation.
+
+  **Implementation**: Removed `autoresearch.jsonl`.
+
+  **Verification**: `make clean build 2>&1`; `make check-logs`; `make check-docs 2>&1`.
+
+  **Impact**: The repository stays cleaner and avoids tracking transient autoresearch state.
+
 ## 2026-04-18 (Draft specs for method-language parsing enhancements and checklist reality sync)
 
 - **Added five draft feature specs for method-language parsing capabilities and corrected the pre-commit checklist to use real repo targets**
