@@ -1,5 +1,21 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Docs-wide full-viewport shell rubric)
+
+- **Promoted the full-viewport shell pattern into the shared `docs/` page rules**
+
+  Updated the shared docs authoring guidance so app-like pages under `docs/` now explicitly prefer
+  full-viewport shells with minimal outer padding, always-visible persistent bars, and independent
+  scrolling for navigation and content regions.
+
+  **Implementation**: Extended `docs/AGENTS.md` with the shared shell rubric and added reusable
+  viewport-shell helper classes to `docs/site.css`.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: Future `docs/` pages now have a clear, reusable layout standard for dashboard-like and
+  walkthrough-like interfaces instead of treating the full-viewport shell as a walkthrough-only choice.
+
 ## 2026-04-19 (Full-viewport walkthrough deck shell)
 
 - **Changed the walkthrough deck layout to use the full viewport with persistent top and bottom bars**

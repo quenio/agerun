@@ -71,20 +71,30 @@ If a page shows AgeRun concepts such as the system, agency, agent, method, or me
 - Avoid accidental horizontal scrolling.
 - Large diagrams should stack, simplify, or scroll intentionally.
 
-### 7. Prefer readable code references in prose
+### 7. Prefer full-viewport shells for app-like pages
+When a page has persistent navigation, persistent controls, or a multi-pane workspace, treat it like an app shell rather than a centered document card.
+
+- Use the available viewport width and height.
+- Keep outer padding minimal.
+- Keep persistent top and bottom bars visible.
+- Make navigation and primary content areas independently scrollable when both can grow.
+- Avoid layouts where the entire page scroll hides the main controls.
+- On narrow screens, preserve the same structure with an accessible overlay or stacked equivalent.
+
+### 8. Prefer readable code references in prose
 - In tutorial or explanatory sentences, prefer module-and-action phrasing over raw long function names.
 - Use italic human-readable operation names when that keeps prose easier to scan.
 - Reserve exact function names for code snippets, source-file references, or compact callouts where the raw symbol matters.
 - If a raw symbol is necessary, keep it visually separate from the main sentence so the prose remains readable.
 
-### 8. Use consistent title forms
+### 9. Use consistent title forms
 - Use capitalized noun phrases for page titles, section titles, and navigation labels when possible.
 - Rewrite verb-phrase titles into noun phrases when possible.
 - Keep pronouns and conjunctions lowercase.
 - Keep articles uppercase.
 - Preserve literal file names and paths exactly when they appear in titles.
 
-### 9. Prefer strong structure over ornament
+### 10. Prefer strong structure over ornament
 Use:
 - clear headings
 - short labels
@@ -104,6 +114,8 @@ Before claiming a `docs/` page update is complete, verify:
 - desktop rendering works
 - narrow-screen rendering works
 - navigation remains usable where the page has navigation
+- persistent bars remain visible where the page uses an app-like shell
+- multi-pane shells use independent scrolling where appropriate
 - links work
 - claims match the current repository state
 - technical prose stays readable and does not overuse raw long symbols

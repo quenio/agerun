@@ -24,6 +24,42 @@ main {
     padding: 48px 0;
 }
 
+.viewport-shell {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    padding: 8px;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 10px;
+    overflow: hidden;
+}
+
+.viewport-main {
+    min-height: 0;
+}
+
+.viewport-two-pane {
+    display: grid;
+    grid-template-columns: minmax(220px, 320px) minmax(0, 1fr);
+    gap: 10px;
+    min-height: 0;
+    align-items: stretch;
+}
+
+.viewport-sidebar,
+.viewport-content {
+    min-height: 0;
+    overflow: auto;
+}
+
+.viewport-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
 .panel {
     background: rgba(18, 25, 51, 0.9);
     border: 1px solid var(--border);
@@ -167,5 +203,19 @@ a:hover {
 
     .walkthrough-grid {
         margin: 22px 0;
+    }
+
+    .viewport-shell {
+        padding: 6px;
+        gap: 8px;
+    }
+
+    .viewport-two-pane {
+        grid-template-columns: 1fr;
+    }
+
+    .viewport-bar {
+        align-items: flex-start;
+        flex-direction: column;
     }
 }
