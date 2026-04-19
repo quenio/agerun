@@ -1,5 +1,20 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Index-page content inset adjusted to match the marked sidebar reference)
+
+- **Changed the main content inset on the docs index pages based on the red-marked alignment feedback**
+
+  Adjusted the top and left inset of the shared index-page content pane so the main content starts from
+  the intended visual reference relative to the sidebar.
+
+  **Implementation**: Updated `docs/site.css` so `page-content` uses a larger top and left inset on
+  desktop while keeping the tighter mobile spacing.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: The docs index-page main content now starts from a top-left position that better matches
+  the sidebar reference called out in the screenshot.
+
 ## 2026-04-19 (Sidebar `Sections` title restored on index pages)
 
 - **Restored the sidebar `Sections` heading on the docs index pages after removing it by mistake**
