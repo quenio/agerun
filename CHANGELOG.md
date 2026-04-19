@@ -1,5 +1,21 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Index-page main panel outer margins aligned with the sidebar)
+
+- **Removed the extra custom outer inset from the docs index-page main panel**
+
+  After checking fresh rendered screenshots, the added top-left main-panel margin was still creating the
+  wrong outer gap. The main panel now uses the same outer alignment as the sidebar panel.
+
+  **Implementation**: Updated `docs/site.css` so `page-content` no longer adds a custom outer margin and
+  keeps only the normal inner padding.
+
+  **Verification**: `make check-docs 2>&1` and fresh local Playwright screenshots of
+  `docs/index.html`.
+
+  **Impact**: The main content panel now starts from the same outer top-left position as the sidebar
+  panel instead of appearing additionally inset.
+
 ## 2026-04-19 (Index-page main panel inset switched from padding to margin)
 
 - **Changed the docs index-page main panel alignment to use outer margin instead of oversized inner padding**
