@@ -1,5 +1,21 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Content pane spacing aligned with sidebar spacing)
+
+- **Matched the docs index-page content-pane spacing to the sidebar spacing**
+
+  The main content area was using noticeably larger inner spacing than the navigation sidebar. The
+  content pane now uses the same spacing scale in both width and height so the two columns feel more
+  balanced.
+
+  **Implementation**: Updated `docs/site.css` so `page-content` uses 18px padding and the section
+  separator spacing also uses the same tighter value.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: The index-page main content area now aligns visually with the sidebar instead of feeling
+  more inset and vertically looser than the navigation column.
+
 ## 2026-04-19 (Shared docs-site body text increased slightly)
 
 - **Raised the regular reading text size across the shared docs-site shell**

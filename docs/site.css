@@ -143,12 +143,12 @@ main {
 }
 
 .page-content {
-    padding: 28px;
+    padding: 18px;
 }
 
 .page-section + .page-section {
-    margin-top: 28px;
-    padding-top: 28px;
+    margin-top: 18px;
+    padding-top: 18px;
     border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
@@ -387,7 +387,7 @@ a:hover {
     }
 
     .page-content {
-        padding: 22px;
+        padding: 18px;
     }
 
     .page-footer-links {
