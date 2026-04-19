@@ -50,20 +50,72 @@ modules/ar_method.c</div>
                     <p class="note">That is not the literal struct definition; it is the right conceptual model for reading the runtime.</p>
                 </section>
             </div>
+            <section class="diagram-panel">
+                <h3>Runtime relationship map</h3>
+                <div class="system-map">
+                    <div class="map-node map-node-system">
+                        <strong>System</strong>
+                        <span>drives processing</span>
+                    </div>
+                    <div class="map-arrow map-arrow-down">invokes</div>
+                    <div class="system-map-row">
+                        <div class="map-node map-node-agency">
+                            <strong>Agency</strong>
+                            <span>tracks active agents</span>
+                        </div>
+                        <div class="map-node map-node-agent">
+                            <strong>Agent</strong>
+                            <span>identity + memory + queue</span>
+                        </div>
+                        <div class="map-node map-node-method">
+                            <strong>Method</strong>
+                            <span>versioned behavior</span>
+                        </div>
+                    </div>
+                    <div class="system-map-footer">
+                        <span class="map-pill">messages flow into the agent queue</span>
+                        <span class="map-pill">the agent runs its bound method</span>
+                    </div>
+                </div>
+            </section>
         `
     },
     {
         title: "Lifecycle at a glance",
         subtitle: "Most agent behavior can be understood as a repeating loop around message delivery and processing.",
         body: `
-            <div class="timeline">
-                <div class="timeline-step"><strong>1. Method exists</strong><br>AgeRun needs a method definition and version before an agent can be created from it.</div>
-                <div class="timeline-step"><strong>2. Agent is created</strong><br>The runtime creates an agent instance, gives it an ID, and associates it with a method.</div>
-                <div class="timeline-step"><strong>3. Messages are queued</strong><br>Other agents or the runtime send data to that agent asynchronously.</div>
-                <div class="timeline-step"><strong>4. System processes next message</strong><br>The system dequeues work and invokes the method logic for the receiving agent.</div>
-                <div class="timeline-step"><strong>5. Memory and outputs change</strong><br>The method updates agent memory, may send messages, and may trigger further runtime work.</div>
-                <div class="timeline-step"><strong>6. Agent persists or exits</strong><br>The agent remains available for future messages unless explicitly destroyed or removed by lifecycle operations.</div>
+            <div class="lifecycle-flow" aria-label="Agent lifecycle flow">
+                <div class="flow-step">
+                    <strong>1. Method exists</strong>
+                    <span>definition + version are available</span>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <strong>2. Agent created</strong>
+                    <span>identity, memory, queue, method binding</span>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <strong>3. Message queued</strong>
+                    <span>work arrives asynchronously</span>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <strong>4. System processes</strong>
+                    <span>runtime picks the next message</span>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <strong>5. Method runs</strong>
+                    <span>state changes, messages may be sent</span>
+                </div>
+                <div class="flow-arrow">→</div>
+                <div class="flow-step">
+                    <strong>6. Agent persists or exits</strong>
+                    <span>ready for more work or lifecycle removal</span>
+                </div>
             </div>
+            <div class="loop-note">Most agents repeat steps 3 through 5 many times before they ever leave the runtime.</div>
         `
     },
     {
@@ -113,6 +165,32 @@ modules/ar_method.c</div>
                     </ul>
                 </section>
             </div>
+            <section class="diagram-panel">
+                <h3>One-message sequence</h3>
+                <div class="sequence-diagram">
+                    <div class="sequence-lane">
+                        <strong>Sender</strong>
+                        <span>origin agent or runtime</span>
+                    </div>
+                    <div class="sequence-lane">
+                        <strong>Agency / System</strong>
+                        <span>routes and later processes</span>
+                    </div>
+                    <div class="sequence-lane">
+                        <strong>Target Agent</strong>
+                        <span>owns queue + memory</span>
+                    </div>
+                    <div class="sequence-lane">
+                        <strong>Method</strong>
+                        <span>handles the message</span>
+                    </div>
+                    <div class="sequence-arrow-row">
+                        <span class="sequence-arrow">send → queued</span>
+                        <span class="sequence-arrow">next message selected →</span>
+                        <span class="sequence-arrow">invoke bound method →</span>
+                    </div>
+                </div>
+            </section>
             <div class="path-list">See also:
 modules/ar_system.c
 modules/ar_agency.c
@@ -166,6 +244,22 @@ modules/ar_system.md
 methods/bootstrap-1.0.0.method</div>
                 </section>
             </div>
+            <section class="diagram-panel">
+                <h3>Persistence view</h3>
+                <div class="state-compare">
+                    <div class="state-card">
+                        <strong>Fresh boot</strong>
+                        <span>bootstrap agent is created</span>
+                        <span>startup message is queued and processed</span>
+                    </div>
+                    <div class="state-transition">save / restore</div>
+                    <div class="state-card">
+                        <strong>Restored runtime</strong>
+                        <span>agents come back with prior memory</span>
+                        <span>the runtime continues instead of starting from zero</span>
+                    </div>
+                </div>
+            </section>
         `
     },
     {

@@ -247,6 +247,195 @@ li {
     border-radius: 12px;
 }
 
+.diagram-panel {
+    margin-top: 22px;
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: linear-gradient(180deg, rgba(125, 211, 252, 0.07), rgba(167, 139, 250, 0.03));
+}
+
+.diagram-panel h3 {
+    margin-top: 0;
+}
+
+.system-map {
+    display: grid;
+    gap: 14px;
+}
+
+.system-map-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.map-node {
+    display: grid;
+    gap: 4px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.05);
+    text-align: center;
+}
+
+.map-node span {
+    color: var(--muted);
+    font-size: 0.92rem;
+}
+
+.map-node-system {
+    justify-self: center;
+    min-width: min(320px, 100%);
+    background: rgba(125, 211, 252, 0.12);
+}
+
+.map-node-agency {
+    background: rgba(167, 139, 250, 0.12);
+}
+
+.map-node-agent {
+    background: rgba(125, 211, 252, 0.12);
+}
+
+.map-node-method {
+    background: rgba(74, 222, 128, 0.1);
+}
+
+.map-arrow,
+.map-pill,
+.loop-note,
+.state-transition,
+.sequence-arrow {
+    color: var(--muted);
+}
+
+.map-arrow-down {
+    justify-self: center;
+    font-size: 0.95rem;
+}
+
+.system-map-footer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.map-pill {
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.04);
+    font-size: 0.9rem;
+}
+
+.lifecycle-flow {
+    display: grid;
+    grid-template-columns: repeat(11, minmax(0, 1fr));
+    gap: 10px;
+    align-items: stretch;
+}
+
+.flow-step {
+    grid-column: span 1;
+    display: grid;
+    gap: 6px;
+    min-height: 116px;
+    padding: 14px 12px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.flow-step strong {
+    font-size: 0.98rem;
+}
+
+.flow-step span {
+    color: var(--muted);
+    font-size: 0.88rem;
+    line-height: 1.35;
+}
+
+.flow-arrow {
+    display: grid;
+    place-items: center;
+    font-size: 1.4rem;
+    color: var(--accent);
+}
+
+.loop-note {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-left: 4px solid var(--accent);
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: 12px;
+}
+
+.sequence-diagram {
+    display: grid;
+    gap: 14px;
+}
+
+.sequence-lane {
+    display: grid;
+    gap: 4px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.sequence-lane span {
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.sequence-arrow-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.sequence-arrow {
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.04);
+    font-size: 0.9rem;
+}
+
+.state-compare {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 14px;
+    align-items: center;
+}
+
+.state-card {
+    display: grid;
+    gap: 8px;
+    padding: 16px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.state-card span {
+    color: var(--muted);
+    font-size: 0.92rem;
+}
+
+.state-transition {
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.04);
+    text-align: center;
+    white-space: nowrap;
+}
+
 .code,
 .path-list {
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -280,6 +469,16 @@ li {
 .controls button:disabled {
     opacity: 0.45;
     cursor: default;
+}
+
+@media (max-width: 1100px) {
+    .lifecycle-flow {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .flow-arrow {
+        display: none;
+    }
 }
 
 @media (max-width: 900px) {
@@ -332,6 +531,25 @@ li {
 }
 
 @media (max-width: 720px) {
+    .system-map-row,
+    .state-compare,
+    .lifecycle-flow {
+        grid-template-columns: 1fr;
+    }
+
+    .sequence-arrow-row,
+    .system-map-footer {
+        flex-direction: column;
+    }
+
+    .state-transition {
+        justify-self: stretch;
+    }
+
+    .map-node-system {
+        min-width: 0;
+    }
+
     .topbar,
     .controls,
     .slide-card {
