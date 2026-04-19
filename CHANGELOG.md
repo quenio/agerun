@@ -1,5 +1,19 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Root docs page renamed for broader site scope)
+
+- **Changed the `docs/index.html` top bar title from walkthrough-specific wording to `AgeRun Pages`**
+
+  Renamed the root docs landing page header so it reflects the broader GitHub Pages site instead of
+  implying the page is only about walkthroughs.
+
+  **Implementation**: Updated the root page heading and supporting metadata text in `docs/index.html`.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: The published root page now leaves room for future non-walkthrough content under
+  `docs/` without mislabeling the site entrypoint.
+
 ## 2026-04-19 (Walkthrough decks aligned with shared shell classes)
 
 - **Updated the walkthrough decks to reuse the shared `docs/site.css` shell vocabulary**
