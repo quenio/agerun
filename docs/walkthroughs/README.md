@@ -72,6 +72,103 @@ When creating a walkthrough:
 9. Do not depend on generated files in `bin/`.
 10. When referencing code, point readers toward the relevant files in `modules/`, `methods/`, `specs/`, or root documentation.
 
+## Visual Design Rubric
+
+Use this rubric for every AgeRun walkthrough so the visuals behave like architecture teaching material instead of ornamental UI.
+
+### 1. Anchor the deck early
+
+Start with one canonical visual within the first one or two slides. That anchor should show the runtime parts the rest of the deck will keep referring to.
+
+For AgeRun, the default anchor is usually:
+
+- System
+- Agency
+- Agent
+- Method
+- Message queue or message flow
+
+### 2. Keep one visual question per slide
+
+Each slide should answer one question clearly, such as:
+
+- What are the main runtime parts?
+- In what order does one message move?
+- What changes during creation?
+- What persists across restores?
+
+If a slide needs multiple unrelated visuals, split the slide.
+
+### 3. Reuse the same visual vocabulary
+
+Keep colors, labels, and shapes stable across the whole walkthrough.
+
+Recommended AgeRun defaults:
+
+- `System` → control/runtime color
+- `Agency` → coordination color
+- `Agent` → stateful entity color
+- `Method` → behavior/execution color
+- arrows → causality or transition
+- pills or callouts → invariants / takeaways
+
+If the same concept changes color or shape between slides, the reader has to relearn the deck.
+
+### 4. Mix three view types
+
+A strong technical walkthrough usually contains all three:
+
+1. **Structure view** — who the parts are
+2. **Dynamic view** — what happens over time
+3. **Comparison view** — what differs between two states or modes
+
+For AgeRun, that usually means:
+
+- structure: runtime relationship map
+- dynamic: one-message sequence or lifecycle flow
+- comparison: fresh boot vs restored runtime, queued vs processing, method vs agent
+
+### 5. Visually connect prose to code
+
+When a slide names concrete source files, keep the code references near the diagram they explain.
+
+Good patterns:
+
+- linked source file lists beside the visual
+- compact callouts that map a concept to a file
+- “read next” blocks that follow the current diagram
+
+### 6. Prefer progressive disclosure over all-in-one diagrams
+
+Do not try to explain the whole runtime in one overloaded picture.
+
+Instead:
+
+- start with a simple anchor
+- add one layer of detail at a time
+- keep later diagrams visually compatible with the anchor
+
+### 7. Design for desktop and mobile together
+
+All essential visuals must remain understandable on a phone.
+
+That means:
+
+- stacked layouts at narrow widths
+- short labels
+- no reliance on hover-only interactions
+- diagrams that degrade into vertical flows cleanly
+
+### 8. End with action
+
+The last slide should convert understanding into next steps.
+
+Use:
+
+- a recommended reading order
+- linked source files
+- obvious follow-up walkthrough topics
+
 ## Intended Usage
 
 These walkthroughs are for deep understanding, onboarding, architecture study, and design review. They are not meant to replace the reference documentation in:

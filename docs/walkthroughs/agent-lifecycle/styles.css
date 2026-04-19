@@ -259,6 +259,77 @@ li {
     margin-top: 0;
 }
 
+.diagram-caption {
+    margin: -6px 0 16px;
+    color: var(--muted);
+}
+
+.reference-architecture {
+    display: grid;
+    gap: 18px;
+}
+
+.legend-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.legend-chip {
+    padding: 8px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    font-size: 0.9rem;
+}
+
+.legend-system {
+    background: rgba(125, 211, 252, 0.12);
+}
+
+.legend-agency {
+    background: rgba(167, 139, 250, 0.12);
+}
+
+.legend-agent {
+    background: rgba(125, 211, 252, 0.12);
+}
+
+.legend-method {
+    background: rgba(74, 222, 128, 0.1);
+}
+
+.legend-flow {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--muted);
+}
+
+.anchor-stack {
+    display: grid;
+    gap: 14px;
+}
+
+.anchor-top {
+    display: flex;
+    justify-content: center;
+}
+
+.anchor-middle {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+}
+
+.anchor-flow {
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px dashed rgba(125, 211, 252, 0.35);
+    color: var(--muted);
+    text-align: center;
+    font-size: 0.92rem;
+    background: rgba(255, 255, 255, 0.03);
+}
+
 .system-map {
     display: grid;
     gap: 14px;
@@ -478,6 +549,10 @@ li {
 
     .flow-arrow {
         display: none;
+    }
+
+    .anchor-middle {
+        grid-template-columns: 1fr;
     }
 }
 

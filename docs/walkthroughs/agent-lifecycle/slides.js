@@ -28,6 +28,41 @@ modules/ar_method.h
 modules/ar_method.c</div>
                 </section>
             </div>
+            <section class="diagram-panel">
+                <h3>Reference architecture anchor</h3>
+                <div class="reference-architecture">
+                    <div class="legend-row">
+                        <span class="legend-chip legend-system">System</span>
+                        <span class="legend-chip legend-agency">Agency</span>
+                        <span class="legend-chip legend-agent">Agent</span>
+                        <span class="legend-chip legend-method">Method</span>
+                        <span class="legend-chip legend-flow">Message flow</span>
+                    </div>
+                    <div class="anchor-stack">
+                        <div class="anchor-top">
+                            <div class="map-node map-node-system">
+                                <strong>System</strong>
+                                <span>selects and processes work</span>
+                            </div>
+                        </div>
+                        <div class="anchor-middle">
+                            <div class="map-node map-node-agency">
+                                <strong>Agency</strong>
+                                <span>tracks active agents</span>
+                            </div>
+                            <div class="anchor-flow">message delivery → processing → follow-on work</div>
+                            <div class="map-node map-node-agent">
+                                <strong>Agent</strong>
+                                <span>identity + memory + queue</span>
+                            </div>
+                            <div class="map-node map-node-method">
+                                <strong>Method</strong>
+                                <span>bound behavior version</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
         `
     },
     {
@@ -52,6 +87,7 @@ modules/ar_method.c</div>
             </div>
             <section class="diagram-panel">
                 <h3>Runtime relationship map</h3>
+                <p class="diagram-caption">This reuses the same visual vocabulary from the anchor slide so later diagrams stay easy to parse.</p>
                 <div class="system-map">
                     <div class="map-node map-node-system">
                         <strong>System</strong>
