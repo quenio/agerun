@@ -1,5 +1,31 @@
 # AgeRun CHANGELOG
 
+## 2026-04-18 (Planned executable boot-method override workflow artifacts)
+
+- **Added the full native `/spec` artifact set for executable boot-method override planning**
+
+  Captured the specification, planning decisions, contracts, task breakdown, and pi workflow
+  context for the executable boot-method override feature on branch
+  `009-parameter-passed-executable`. The planned contract now uses a single combined boot method
+  identifier such as `echo-1.0.0`, passed through `--boot-method` and exposed from
+  `make run-exec BOOT_METHOD=<name-version>`.
+
+  **Implementation**: Added `specs/009-parameter-passed-executable/spec.md`,
+  `specs/009-parameter-passed-executable/plan.md`,
+  `specs/009-parameter-passed-executable/research.md`,
+  `specs/009-parameter-passed-executable/data-model.md`,
+  `specs/009-parameter-passed-executable/quickstart.md`,
+  `specs/009-parameter-passed-executable/tasks.md`,
+  `specs/009-parameter-passed-executable/checklists/requirements.md`, and
+  `specs/009-parameter-passed-executable/contracts/*`; updated `.specify/memory/pi-agent.md`.
+
+  **Verification**: `make ar_executable_tests 2>&1`; checklist review for
+  `specs/009-parameter-passed-executable/checklists/requirements.md` (16/16 complete).
+
+  **Impact**: The boot-method override feature now has complete, reviewable native `/spec`
+  artifacts and an implementation-ready task plan aligned with the repository's current method
+  naming convention.
+
 ## 2026-04-18 (Remove checked-in autoresearch session log)
 
 - **Removed the transient `autoresearch.jsonl` experiment log from the repository**

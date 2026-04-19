@@ -1,6 +1,6 @@
 # AgeRun Development Guidelines
 
-Auto-generated from the project constitution and repository context. Last updated: 2026-04-16
+Auto-generated from the project constitution and repository context. Last updated: 2026-04-18
 
 ## Active Technologies
 
@@ -55,3 +55,11 @@ specs/
 - `002-let-build-workflow-coordinator` is now implemented as a methods-only boot demo. `bootstrap` launches `workflow-coordinator` on fresh executable runs, builds a bundled `start` message, and emits an intake log line directly. The current `workflow-definition` implementation resolves supported workflow definitions by `definition_path` (`workflows/default-workflow.yaml`, `workflows/test-workflow.yaml`, and an invalid-schema fixture path) instead of parsing general YAML through the file delegate. It still uses `complete(...)` as the startup probe and transition-decision mechanism, requires `{outcome}` and `{reason}` placeholders, maps in-flight completion failures to retryable `stay`, and relies on deterministic `AGERUN_COMPLETE_RUNNER` overrides in tests. `workflow-reporter` emits visible summary/startup-failure output through the existing log delegate, coordinator tests use bounded step-by-step message processing instead of unbounded queue drains, and executable tests are now aligned with the 14-method workflow-demo runtime rather than the older 10-method chat-session bootstrap demo.
 - `003-new-instruction-complete` now uses Zig C-ABI modules for parsing/evaluation (`ar_complete_instruction_parser.zig`, `ar_complete_instruction_evaluator.zig`) plus a user-approved C runtime adapter for direct llama.cpp interop (`ar_local_completion.c`) behind the stable `ar_local_completion.h` header. Existing facades only wire dispatch. `complete(...)` writes string values atomically into `memory...` targets, returns boolean status, rejects empty/generated-invalid values, fast-fails invalid templates and invalid base paths before backend initialization, records actionable failure fields (`failure_category`, `cause`, `recovery_hint`), preserves prior memory on failure, and uses separate warm-run (15s) and cold-start (30s) targets for short templates on both macOS and Linux.
 <!-- MANUAL ADDITIONS END -->
+
+## Planned Feature Context
+
+- `009-parameter-passed-executable` is planned as a startup-selection change in the main `agerun`
+  executable only: operators will pass one combined boot identifier such as `echo-1.0.0` via
+  `--boot-method`, and `make run-exec` should expose the same override through a single
+  `BOOT_METHOD=<name-version>` variable. Persisted-agent restoration still takes precedence over any
+  override request.
