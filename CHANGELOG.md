@@ -1,5 +1,21 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Top-level README walkthrough site links)
+
+- **Added GitHub Pages walkthrough links to the top-level README**
+
+  Updated the main project `README.md` to point readers at the published GitHub Pages walkthrough
+  site, the walkthrough index under `pages/walkthroughs/README.md`, and the first hosted
+  `Agent Lifecycle` deck. This makes the new walkthrough site discoverable from the primary project
+  entrypoint instead of requiring readers to know the `pages/` layout.
+
+  **Implementation**: Updated `README.md`.
+
+  **Verification**: `make check-docs 2>&1`; `make check-naming 2>&1`.
+
+  **Impact**: Users landing on the repository README can now navigate directly to the published
+  walkthrough site and first deck.
+
 ## 2026-04-19 (Pages site root for walkthrough decks)
 
 - **Moved the walkthrough site into `pages/` so GitHub Pages can publish a dedicated static root**

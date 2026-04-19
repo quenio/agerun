@@ -13,6 +13,17 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
 - **Interactive Shell**: `arsh` provides a terminal shell for spawning agents, storing shell-session values, sending messages, observing replies, and exiting cleanly on EOF / Ctrl-D.
 - **Minimal Memory Footprint**: Designed to be lightweight and efficient.
 
+## Walkthroughs
+
+AgeRun also publishes browser-rendered architecture walkthroughs through GitHub Pages.
+
+- **Walkthrough site**: https://quenio.github.io/agerun/
+- **Walkthrough index**: [pages/walkthroughs/README.md](pages/walkthroughs/README.md)
+- **First deck**: [Agent Lifecycle](https://quenio.github.io/agerun/walkthroughs/agent-lifecycle/index.html)
+
+These walkthroughs complement the reference documentation by guiding you through one subsystem or
+runtime flow at a time.
+
 ## Building from Source
 
 ### Prerequisites
