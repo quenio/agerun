@@ -1,5 +1,20 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Shared docs-site body text increased again)
+
+- **Raised the regular reading text size one more step across the shared docs-site shell**
+
+  The normal reading text on the published docs index pages still felt a bit small, so the shared base
+  body text size was increased again.
+
+  **Implementation**: Updated the base `body` font size in `docs/site.css` from `1.0625rem` to
+  `1.125rem`.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: Regular text on the published docs-site pages now reads more comfortably without changing
+  the overall structure or hierarchy.
+
 ## 2026-04-19 (Content pane spacing aligned with sidebar spacing)
 
 - **Matched the docs index-page content-pane spacing to the sidebar spacing**
