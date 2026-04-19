@@ -56,6 +56,7 @@ Use absolute GitHub Pages URLs for walkthrough entry points so browsers can rend
 | Walkthrough | Topic | Status | Entry Point |
 |-------------|-------|--------|-------------|
 | agent-lifecycle | How an agent is created, receives messages, executes work, and persists in the runtime | scaffolded | [Agent Lifecycle](https://quenio.github.io/agerun/walkthroughs/agent-lifecycle/index.html) |
+| message-processing | How the runtime finds one queued message, executes it, updates scheduling state, and falls back to delegation | scaffolded | [Message Processing](https://quenio.github.io/agerun/walkthroughs/message-processing/index.html) |
 
 ## Authoring Guidelines
 
