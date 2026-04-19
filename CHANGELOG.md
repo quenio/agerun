@@ -1,5 +1,20 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Navigation section titles color aligned with content labels)
+
+- **Matched the docs index-page navigation section-title color to the content section-title color**
+
+  The sidebar and mobile menu section titles were still using the default text color, so they now use
+  the same accent color as the section labels shown in the main content area.
+
+  **Implementation**: Updated `docs/site.css` so `page-nav-link` titles and mobile menu section links
+  use the shared accent color.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: Navigation labels now match the content section labels more closely and the index pages
+  read as one more consistent visual system.
+
 ## 2026-04-19 (Larger section labels on docs index pages)
 
 - **Increased the visual weight of the section labels on the published docs index pages**

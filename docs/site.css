@@ -123,6 +123,7 @@ main {
 
 .page-nav-link strong,
 .page-menu-list a {
+    color: var(--accent);
     font-size: 0.98rem;
     font-weight: 600;
 }
