@@ -49,11 +49,11 @@ The first walkthrough scaffold has been added below.
 
 Add new entries here as decks are created.
 
-Use absolute GitHub raw URLs for walkthrough entry points so browsers can load the HTML/JS deck directly.
+Use absolute GitHub Pages URLs for walkthrough entry points so browsers can render the HTML/JS deck directly.
 
 | Walkthrough | Topic | Status | Entry Point |
 |-------------|-------|--------|-------------|
-| agent-lifecycle | How an agent is created, receives messages, executes work, and persists in the runtime | scaffolded | [agent-lifecycle/index.html](https://raw.githubusercontent.com/quenio/agerun/main/walkthroughs/agent-lifecycle/index.html) |
+| agent-lifecycle | How an agent is created, receives messages, executes work, and persists in the runtime | scaffolded | [Agent Lifecycle](https://quenio.github.io/agerun/walkthroughs/agent-lifecycle/index.html) |
 
 ## Authoring Guidelines
 
@@ -64,9 +64,11 @@ When creating a walkthrough:
 3. Show sequence and causality clearly: what starts first, what happens next, what state changes, and what outputs are produced.
 4. Use diagrams, timelines, and message-flow views when they make the system easier to understand.
 5. Keep assets local to the walkthrough directory and use relative paths.
-6. Use an absolute `raw.githubusercontent.com` URL for each walkthrough index entry so the deck can be opened directly in a browser from the repository README.
-7. Do not depend on generated files in `bin/`.
-8. When referencing code, point readers toward the relevant files in `modules/`, `methods/`, `specs/`, or root documentation.
+6. Use an absolute GitHub Pages URL for each walkthrough index entry so the deck can be opened directly in a browser from the repository README.
+7. For this repository, walkthrough deck URLs should be rooted at `https://quenio.github.io/agerun/`.
+8. Use the walkthrough's human-readable title as the link caption, not the raw file path.
+9. Do not depend on generated files in `bin/`.
+10. When referencing code, point readers toward the relevant files in `modules/`, `methods/`, `specs/`, or root documentation.
 
 ## Intended Usage
 

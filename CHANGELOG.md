@@ -1,5 +1,21 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Walkthrough GitHub Pages entrypoints)
+
+- **Switched walkthrough entrypoint links from raw GitHub URLs to GitHub Pages URLs**
+
+  Updated `walkthroughs/README.md` so walkthrough entrypoints now use the repository's GitHub Pages
+  base URL, and clarified the authoring guidance to require Pages-based deck links with
+  human-readable captions. This allows the walkthrough HTML/JS decks to render in the browser
+  instead of downloading or showing raw source.
+
+  **Implementation**: Updated `walkthroughs/README.md`.
+
+  **Verification**: `make check-docs 2>&1`; `make check-naming 2>&1`.
+
+  **Impact**: Walkthrough README links now open the hosted deck pages at
+  `https://quenio.github.io/agerun/...`, making them directly testable in a browser.
+
 ## 2026-04-19 (Walkthrough raw entrypoint links)
 
 - **Changed walkthrough index links to absolute GitHub raw URLs for direct browser loading**
