@@ -159,7 +159,20 @@ That means:
 - no reliance on hover-only interactions
 - diagrams that degrade into vertical flows cleanly
 
-### 8. End with action
+### 8. Treat navigation as part of the teaching surface
+
+A walkthrough's navigation is not just chrome. It helps the reader understand scope, sequence, and current position in the story.
+
+That means:
+
+- multi-slide walkthroughs should expose a clear slide index
+- desktop should show a visible sidebar or equivalent persistent navigation
+- mobile should expose the same structure through an accessible menu
+- navigation should show the current slide clearly
+- slide titles in navigation should be meaningful enough to scan on their own
+- readers should be able to move between slides without relying on hover or hidden gestures
+
+### 9. End with action
 
 The last slide should convert understanding into next steps.
 

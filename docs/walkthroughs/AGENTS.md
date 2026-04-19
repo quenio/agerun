@@ -52,12 +52,20 @@ If `System`, `Agency`, `Agent`, and `Method` appear, keep them visually stable.
 - Prefer explicit file paths over vague phrases like “the runtime code”.
 - Public source references should link to GitHub when possible.
 
-### 7. Design for mobile
+### 7. Treat navigation as part of the walkthrough
+- For multi-slide walkthroughs, provide a clear slide index.
+- Desktop should expose a visible sidebar or equivalent persistent navigation.
+- Mobile should expose the same slide structure through an accessible menu.
+- Navigation should clearly indicate the current slide.
+- Slide titles should be meaningful enough to scan from the navigation alone.
+- Navigation must not rely on hover-only interaction or hidden gestures.
+
+### 8. Design for mobile
 - Navigation must work on narrow screens.
 - Content must remain readable without horizontal scrolling.
 - Large diagrams should stack, simplify, or scroll intentionally.
 
-### 8. Prefer strong structure over ornament
+### 9. Prefer strong structure over ornament
 Use:
 - clear headings
 - short labels
@@ -87,7 +95,9 @@ When applicable, follow this order:
 Before claiming a walkthrough update is complete, verify:
 
 - desktop rendering works
+- desktop navigation remains visible and usable
 - mobile navigation works
+- navigation reflects the slide structure and current position clearly
 - visuals remain readable on small screens
 - source links work
 - claims match the current repository state
