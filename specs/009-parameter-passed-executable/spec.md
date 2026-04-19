@@ -2,7 +2,7 @@
 
 **Feature Branch**: `009-parameter-passed-executable`
 **Created**: 2026-04-18
-**Status**: Draft
+**Status**: Implemented
 **Input**: User description: "A parameter MAY be passed to the executable in order to override the boot method."
 
 ## User Scenarios & Testing *(mandatory)*
@@ -73,8 +73,10 @@ run with an override, confirming that each case reports the correct outcome.
 
 ## Edge Cases *(mandatory)*
 
-- What happens when the override names a method that exists but is not boot-capable and cannot
-  handle the standard startup boot message?
+- If the override names a method that exists but is not semantically suitable as a boot method, the
+  executable does not perform extra semantic screening beyond normal startup mechanics. For this
+  feature, a method is considered boot-capable if it resolves successfully, the boot agent can be
+  created, and the standard `"__boot__"` message can be queued.
 - What happens when the override refers to a method identifier that is malformed, empty, or uses a
   version that does not resolve at startup?
 - What happens when persisted agents are loaded successfully and an override is also supplied—how
@@ -173,7 +175,8 @@ run with an override, confirming that each case reports the correct outcome.
   with the requested boot method instead of the default boot method.
 - **SC-002**: In the default-start executable test set, `100%` of launches without an override
   preserve the current bootstrap startup behavior.
-- **SC-003**: In the invalid-override test set, `100%` of launches with an unavailable override
-  produce an explicit startup failure rather than silently falling back to the default boot method.
+- **SC-003**: In the invalid-override test set, `100%` of launches with a malformed or unavailable
+  override produce an explicit startup failure rather than silently falling back to the default boot
+  method.
 - **SC-004**: In the restored-state test set, `100%` of launches that restore persisted agents avoid
   creating a second fresh boot agent even when an override parameter is supplied.

@@ -56,10 +56,11 @@ specs/
 - `003-new-instruction-complete` now uses Zig C-ABI modules for parsing/evaluation (`ar_complete_instruction_parser.zig`, `ar_complete_instruction_evaluator.zig`) plus a user-approved C runtime adapter for direct llama.cpp interop (`ar_local_completion.c`) behind the stable `ar_local_completion.h` header. Existing facades only wire dispatch. `complete(...)` writes string values atomically into `memory...` targets, returns boolean status, rejects empty/generated-invalid values, fast-fails invalid templates and invalid base paths before backend initialization, records actionable failure fields (`failure_category`, `cause`, `recovery_hint`), preserves prior memory on failure, and uses separate warm-run (15s) and cold-start (30s) targets for short templates on both macOS and Linux.
 <!-- MANUAL ADDITIONS END -->
 
-## Planned Feature Context
+## Feature Context
 
-- `009-parameter-passed-executable` is planned as a startup-selection change in the main `agerun`
-  executable only: operators will pass one combined boot identifier such as `echo-1.0.0` via
-  `--boot-method`, and `make run-exec` should expose the same override through a single
-  `BOOT_METHOD=<name-version>` variable. Persisted-agent restoration still takes precedence over any
-  override request.
+- `009-parameter-passed-executable` is now implemented as a startup-selection change in the main
+  `agerun` executable only: operators can pass one combined boot identifier such as `echo-1.0.0`
+  via `--boot-method`, and `make run-exec` exposes the same override through a single
+  `BOOT_METHOD=<name-version>` variable. Persisted-agent restoration takes precedence over any
+  override request, malformed identifiers fail clearly, and unavailable methods do not silently
+  fall back to `bootstrap-1.0.0`.

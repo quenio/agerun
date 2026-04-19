@@ -1,5 +1,28 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Executable boot override spec artifact finalization)
+
+- **Finalized the `/spec` artifacts and native pi context for the executable boot override feature**
+
+  Completed the post-implementation cleanup for feature `009-parameter-passed-executable` by
+  syncing the final plan/research/data-model/contracts artifacts with the implemented behavior,
+  updating `.specify/memory/pi-agent.md` from planned to implemented context, marking the last
+  final-phase tasks complete, and tightening the feature spec so it now reflects implemented status,
+  resolved boot-capability semantics, and malformed-or-unavailable override success criteria.
+
+  **Implementation**: Updated `.specify/memory/pi-agent.md`,
+  `specs/009-parameter-passed-executable/contracts/README.md`,
+  `specs/009-parameter-passed-executable/data-model.md`,
+  `specs/009-parameter-passed-executable/plan.md`,
+  `specs/009-parameter-passed-executable/research.md`,
+  `specs/009-parameter-passed-executable/spec.md`, and
+  `specs/009-parameter-passed-executable/tasks.md`.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: The executable boot override feature now has fully synchronized `/spec` artifacts and
+  native pi context that match the implemented runtime and documentation contract.
+
 ## 2026-04-19 (Executable boot override failure and restored-state behavior)
 
 - **Made invalid/unavailable boot overrides fail clearly and restored-agent startup report skipped overrides**

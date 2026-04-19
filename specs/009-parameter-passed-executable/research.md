@@ -109,3 +109,7 @@
 
 The design is intentionally small in scope: one executable CLI contract, one Makefile passthrough,
 no method-language changes, and targeted executable/documentation updates.
+
+Final implementation stayed within this scope: the repository now exposes the combined boot-method
+identifier through both `agerun --boot-method ...` and `make run-exec BOOT_METHOD=...`, while
+keeping restored-agent precedence and explicit no-fallback failure reporting.

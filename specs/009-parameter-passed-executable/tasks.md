@@ -123,8 +123,8 @@ skipped instead of creating a second fresh boot agent.
 
 **Purpose**: Finish plan-artifact synchronization and run repo-wide quality gates.
 
-- [ ] T027 [P] Sync final planning artifacts in `specs/009-parameter-passed-executable/plan.md`, `specs/009-parameter-passed-executable/research.md`, `specs/009-parameter-passed-executable/data-model.md`, and `specs/009-parameter-passed-executable/contracts/README.md` if implementation details move from the planned contract
-- [ ] T028 [P] Update durable workflow context in `.specify/memory/pi-agent.md` if the final executable/Make contract differs from the current planned note
+- [x] T027 [P] Sync final planning artifacts in `specs/009-parameter-passed-executable/plan.md`, `specs/009-parameter-passed-executable/research.md`, `specs/009-parameter-passed-executable/data-model.md`, and `specs/009-parameter-passed-executable/contracts/README.md` if implementation details move from the planned contract
+- [x] T028 [P] Update durable workflow context in `.specify/memory/pi-agent.md` if the final executable/Make contract differs from the current planned note
 - [x] T029 [P] Run documentation validation for `README.md`, `SPEC.md`, `modules/ar_executable.md`, `specs/009-parameter-passed-executable/quickstart.md`, `specs/009-parameter-passed-executable/contracts/executable-startup-cli.md`, and `specs/009-parameter-passed-executable/contracts/run-exec-target.md` with `make check-docs`
 - [x] T030 [P] Run sanitizer coverage for `modules/ar_executable.c`, `modules/ar_executable_fixture.c`, and `modules/ar_executable_tests.c` with `make sanitize-tests 2>&1`
 - [x] T031 Run final targeted regression for `modules/ar_executable_tests.c` with `make ar_executable_tests 2>&1`

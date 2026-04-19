@@ -15,6 +15,11 @@ contract, treat restored agents as higher priority than any fresh-start override
 same override through the existing `make run-exec` target so repository workflows can request
 alternate boot methods without running the binary manually.
 
+**Implementation Sync Note**: Final implementation matched the planned contract. `agerun` now
+accepts `--boot-method <name-version>`, `make run-exec` forwards `BOOT_METHOD=<name-version>`,
+malformed or unavailable overrides fail clearly without fallback, and restored persisted agents
+explicitly take precedence over override requests.
+
 ## Technical Context
 
 **Language/Version**: C11 runtime code in `modules/ar_executable.c` and related fixture/tests,

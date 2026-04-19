@@ -106,3 +106,6 @@ The user-facing Make contract that forwards override intent to the executable.
 - This feature does not alter agent memory, method persistence, or method-language data structures.
 - The override feature changes startup selection only; once the boot agent is created, the existing
   message-processing and persistence flow continues unchanged.
+- Final implementation confirmed the modeled outcomes: malformed identifiers transition to
+  `rejected`, unavailable boot methods transition to `rejected` without fallback, and restored-agent
+  startup transitions to `skipped` with an explicit operator-visible message.
