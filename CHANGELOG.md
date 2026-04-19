@@ -1,5 +1,21 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Walkthrough cards on docs landing page)
+
+- **Replaced the docs landing page walkthrough bullet list with responsive cards**
+
+  Updated `docs/index.html` so each walkthrough now appears as a full clickable card with a title,
+  short description, status label, and clear call to action instead of a plain text link list.
+
+  **Implementation**: Added a reusable walkthrough card grid, hover/focus states, and narrow-screen
+  spacing adjustments in `docs/index.html`.
+
+  **Verification**: Verified the local `docs/index.html` output directly and confirmed all three
+  walkthrough entrypoint links still resolve under `docs/walkthroughs/`.
+
+  **Impact**: The GitHub Pages landing page gives each walkthrough stronger visual weight and makes
+  the index easier to scan and use.
+
 ## 2026-04-19 (Shared docs web-page rules)
 
 - **Moved shared static-page guidance from `docs/walkthroughs/AGENTS.md` into `docs/AGENTS.md`**
