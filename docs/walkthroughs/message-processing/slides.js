@@ -1,5 +1,6 @@
 const repositoryBaseUrl = "https://github.com/quenio/agerun/blob/main/";
 const repositoryPathPattern = /\b(?:README\.md|SPEC\.md|CHANGELOG\.md|TODO\.md|CONCEPTS\.md|MMM\.md|CLAUDE\.md|AGENTS\.md|(?:modules|methods|specs|workflows|scripts|docs|kb|models|reports|plans|docker|llama-cpp)\/[A-Za-z0-9._/-]+\.[A-Za-z0-9._-]+)\b/g;
+const delegationWalkthroughUrl = "https://quenio.github.io/agerun/walkthroughs/delegation/index.html";
 
 const slides = [
     {
@@ -286,6 +287,7 @@ README.md</div>
                         <li>If no agent message is available, the system module's <em>process next message</em> operation returns whatever result comes back from the delegation module's own <em>process next message</em> path.</li>
                         <li>This keeps delegate work under the same system-level processing surface.</li>
                         <li>The system facade therefore coordinates both peers: agency and delegation.</li>
+                        <li><a href="${delegationWalkthroughUrl}" target="_blank" rel="noopener noreferrer">See the Delegation walkthrough</a> for the registry, queue, and handler side of this fallback path.</li>
                     </ul>
                 </section>
             </div>
@@ -319,7 +321,7 @@ README.md</div>
                 <li><span class="code">modules/ar_interpreter.h</span> and <span class="code">modules/ar_interpreter.c</span> for execution handoff</li>
                 <li><span class="code">modules/ar_delegation.h</span> and <span class="code">modules/ar_delegation.c</span> for the fallback path</li>
             </ol>
-            <p class="note">Natural follow-up walkthroughs from here would be <span class="code">delegate-routing</span> or <span class="code">shell-runtime-flow</span>.</p>
+            <p class="note">Natural follow-up walkthroughs from here would be <a href="${delegationWalkthroughUrl}" target="_blank" rel="noopener noreferrer">Delegation</a> or <span class="code">shell-runtime-flow</span>.</p>
         `
     }
 ];
