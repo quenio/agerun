@@ -23,7 +23,7 @@ Walkthroughs in this directory should:
 Each walkthrough should live in its own subdirectory:
 
 ```text
-pages/
+docs/
 ├── index.html
 └── walkthroughs/
     ├── README.md

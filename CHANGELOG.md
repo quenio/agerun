@@ -1,5 +1,24 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Docs folder as GitHub Pages root)
+
+- **Moved the static walkthrough site from `pages/` to `docs/` to match GitHub Pages branch-folder publishing**
+
+  Renamed the static site root from `pages/` to `docs/` after verifying that branch-based GitHub
+  Pages configuration only offers `/(root)` and `/docs` as publishing folders. Updated the main
+  README and the static-site READMEs to point at `docs/` as the repository location while keeping
+  the published walkthrough URLs unchanged under `https://quenio.github.io/agerun/`.
+
+  **Implementation**: Added `docs/.nojekyll`, `docs/README.md`, `docs/index.html`,
+  `docs/walkthroughs/README.md`, `docs/walkthroughs/agent-lifecycle/index.html`,
+  `docs/walkthroughs/agent-lifecycle/slides.js`, and
+  `docs/walkthroughs/agent-lifecycle/styles.css`; removed the `pages/` copies; updated `README.md`.
+
+  **Verification**: `make check-docs 2>&1`; `make check-naming 2>&1`.
+
+  **Impact**: The walkthrough site now lives in a folder that can be selected directly in GitHub
+  Pages settings on the `main` branch.
+
 ## 2026-04-19 (Top-level README walkthrough site links)
 
 - **Added GitHub Pages walkthrough links to the top-level README**
