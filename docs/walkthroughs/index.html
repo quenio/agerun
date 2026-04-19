@@ -7,54 +7,111 @@
     <link rel="stylesheet" href="../site.css">
 </head>
 <body>
-    <main>
-        <section class="panel">
-            <a class="site-back-link" href="../index.html">← Back to AgeRun Pages</a>
-            <div class="eyebrow">AgeRun Walkthrough Index</div>
-            <h1>Walkthroughs</h1>
-            <p>Browse the published walkthrough decks for the AgeRun runtime. Each deck is a browser-rendered companion to the repository documentation and focuses on one subsystem or runtime flow.</p>
-            <div class="walkthrough-grid">
-                <a class="walkthrough-card" href="agent-lifecycle/index.html">
-                    <div class="walkthrough-meta">
-                        <span>Walkthrough</span>
-                        <span>Scaffolded</span>
-                    </div>
-                    <h2>Agent Lifecycle</h2>
-                    <p>How an agent is created, receives messages, executes work, and persists in the runtime.</p>
-                    <span class="walkthrough-cta">Open walkthrough →</span>
-                </a>
-                <a class="walkthrough-card" href="message-processing/index.html">
-                    <div class="walkthrough-meta">
-                        <span>Walkthrough</span>
-                        <span>Scaffolded</span>
-                    </div>
-                    <h2>Message Processing</h2>
-                    <p>How the runtime finds one queued message, executes it, updates scheduling state, and falls back to delegation.</p>
-                    <span class="walkthrough-cta">Open walkthrough →</span>
-                </a>
-                <a class="walkthrough-card" href="delegation/index.html">
-                    <div class="walkthrough-meta">
-                        <span>Walkthrough</span>
-                        <span>Scaffolded</span>
-                    </div>
-                    <h2>Delegation</h2>
-                    <p>How the delegation subsystem registers delegates, queues external work, preserves sender metadata, and dispatches one delegate message.</p>
-                    <span class="walkthrough-cta">Open walkthrough →</span>
-                </a>
+    <div class="viewport-shell">
+        <header class="panel viewport-bar page-topbar">
+            <div class="page-title-group">
+                <div class="eyebrow">AgeRun Walkthrough Index</div>
+                <h1 class="page-topbar-title">Walkthrough Collection</h1>
+                <div class="page-meta">Published browser-rendered walkthrough decks for AgeRun architecture and runtime flows.</div>
             </div>
-        </section>
-        <section class="panel">
-            <div class="eyebrow">Reading Path</div>
-            <h2>Suggested Next Reading</h2>
-            <p>Start with the walkthrough that matches your question, then use the repository documentation to go deeper into the underlying modules, methods, and language rules.</p>
-            <ul class="link-list">
-                <li><a href="README.md">Walkthrough directory README</a></li>
-                <li><a href="../../README.md">Top-level project README</a></li>
-                <li><a href="../../modules/README.md">Module index</a></li>
-                <li><a href="../../methods/README.md">Method index</a></li>
-                <li><a href="../../SPEC.md">Language and system specification</a></li>
-            </ul>
-        </section>
-    </main>
+            <details class="page-menu">
+                <summary>Sections</summary>
+                <nav class="page-menu-list" aria-label="Page sections">
+                    <a href="#overview">Overview</a>
+                    <a href="#decks">Walkthrough Decks</a>
+                    <a href="#reading-path">Reading Path</a>
+                </nav>
+            </details>
+        </header>
+
+        <div class="viewport-main viewport-two-pane">
+            <aside class="panel viewport-sidebar page-sidebar" aria-label="Page navigation">
+                <h2 class="page-nav-title">Sections</h2>
+                <nav class="page-nav-list">
+                    <a class="page-nav-link" href="#overview">
+                        <strong>Overview</strong>
+                        <span>What the walkthrough collection is for and how to use it.</span>
+                    </a>
+                    <a class="page-nav-link" href="#decks">
+                        <strong>Walkthrough Decks</strong>
+                        <span>Open the published decks for agent lifecycle, message processing, and delegation.</span>
+                    </a>
+                    <a class="page-nav-link" href="#reading-path">
+                        <strong>Reading Path</strong>
+                        <span>Continue into repository documentation after the browser walkthroughs.</span>
+                    </a>
+                </nav>
+            </aside>
+
+            <main class="panel viewport-content page-content">
+                <section id="overview" class="page-section">
+                    <div class="eyebrow">Overview</div>
+                    <a class="site-back-link" href="../index.html">← Back to AgeRun Pages</a>
+                    <h2 class="page-section-title">Walkthrough Landing Page</h2>
+                    <p>Browse the published walkthrough decks for the AgeRun runtime. Each deck is a browser-rendered companion to the repository documentation and focuses on one subsystem or runtime flow.</p>
+                    <div class="page-actions">
+                        <a class="page-chip-link" href="README.md">Walkthrough README</a>
+                        <a class="page-chip-link" href="../../README.md">Project README</a>
+                    </div>
+                </section>
+
+                <section id="decks" class="page-section">
+                    <div class="eyebrow">Walkthrough Decks</div>
+                    <h2 class="page-section-title">Published Decks</h2>
+                    <p>Start with the walkthrough that matches your question, then use the source documentation to verify and deepen your understanding.</p>
+                    <div class="walkthrough-grid">
+                        <a class="walkthrough-card" href="agent-lifecycle/index.html">
+                            <div class="walkthrough-meta">
+                                <span>Walkthrough</span>
+                                <span>Scaffolded</span>
+                            </div>
+                            <h2>Agent Lifecycle</h2>
+                            <p>How an agent is created, receives messages, executes work, and persists in the runtime.</p>
+                            <span class="walkthrough-cta">Open walkthrough →</span>
+                        </a>
+                        <a class="walkthrough-card" href="message-processing/index.html">
+                            <div class="walkthrough-meta">
+                                <span>Walkthrough</span>
+                                <span>Scaffolded</span>
+                            </div>
+                            <h2>Message Processing</h2>
+                            <p>How the runtime finds one queued message, executes it, updates scheduling state, and falls back to delegation.</p>
+                            <span class="walkthrough-cta">Open walkthrough →</span>
+                        </a>
+                        <a class="walkthrough-card" href="delegation/index.html">
+                            <div class="walkthrough-meta">
+                                <span>Walkthrough</span>
+                                <span>Scaffolded</span>
+                            </div>
+                            <h2>Delegation</h2>
+                            <p>How the delegation subsystem registers delegates, queues external work, preserves sender metadata, and dispatches one delegate message.</p>
+                            <span class="walkthrough-cta">Open walkthrough →</span>
+                        </a>
+                    </div>
+                </section>
+
+                <section id="reading-path" class="page-section">
+                    <div class="eyebrow">Reading Path</div>
+                    <h2 class="page-section-title">Suggested Next Reading</h2>
+                    <p>After the decks, go back to the repository tree for module-level, method-level, and language-level detail.</p>
+                    <ul class="link-list">
+                        <li><a href="README.md">Walkthrough directory README</a></li>
+                        <li><a href="../../README.md">Top-level project README</a></li>
+                        <li><a href="../../modules/README.md">Module index</a></li>
+                        <li><a href="../../methods/README.md">Method index</a></li>
+                        <li><a href="../../SPEC.md">Language and system specification</a></li>
+                    </ul>
+                </section>
+            </main>
+        </div>
+
+        <footer class="panel viewport-bar page-footer">
+            <div class="page-meta">Walkthrough collection root with persistent bars, section navigation, and independently scrollable navigation and content regions.</div>
+            <div class="page-footer-links">
+                <a class="page-chip-link" href="../index.html">AgeRun Pages</a>
+                <a class="page-chip-link" href="../../README.md">Project README</a>
+            </div>
+        </footer>
+    </div>
 </body>
 </html>

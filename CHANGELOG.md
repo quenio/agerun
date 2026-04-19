@@ -1,5 +1,21 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Root docs pages converted to the app-shell standard)
+
+- **Reworked `docs/index.html` and `docs/walkthroughs/index.html` to follow the shared full-viewport page shell**
+
+  Converted both root docs landing pages from centered document cards into full-viewport app-style layouts
+  with a persistent top bar, a persistent bottom bar, and a section navigation sidebar on desktop with a
+  menu-based equivalent on narrow screens.
+
+  **Implementation**: Updated `docs/index.html`, `docs/walkthroughs/index.html`, and `docs/site.css`
+  with shared page-shell navigation, section layouts, footer actions, and mobile menu styling.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: The main published docs pages now follow the same layout rubric as the walkthrough shell
+  standard instead of mixing centered document cards with app-like pages.
+
 ## 2026-04-19 (Docs-wide full-viewport shell rubric)
 
 - **Promoted the full-viewport shell pattern into the shared `docs/` page rules**
