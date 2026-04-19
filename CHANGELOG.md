@@ -11,7 +11,7 @@
 
   **Verification**: `make check-docs 2>&1`.
 
-  **Impact**: The root docs page now starts with clearer product-facing language and avoids
+  **Impact**: The root docs page now starts with clearer educational language and avoids
   unnecessary web-site implementation detail in the overview.
 
 ## 2026-04-19 (Docs guidance broadened beyond static wording)
