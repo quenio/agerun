@@ -1,5 +1,20 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Larger section labels on docs index pages)
+
+- **Increased the visual weight of the section labels on the published docs index pages**
+
+  The main section labels were too close to body-text size, so they now use a larger section-specific
+  eyebrow style that reads more clearly as a title.
+
+  **Implementation**: Added a reusable `page-section-eyebrow` style in `docs/site.css` and applied it
+  to the section labels in `docs/index.html` and `docs/walkthroughs/index.html`.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: Section titles now stand out from normal paragraph text without reintroducing the larger
+  in-section heading blocks that were intentionally removed from the root page.
+
 ## 2026-04-19 (GitHub links fixed on published docs index pages)
 
 - **Replaced broken repository-relative documentation links with real GitHub URLs**

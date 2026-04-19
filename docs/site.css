@@ -238,6 +238,13 @@ main {
     margin-bottom: 8px;
 }
 
+.page-section-eyebrow {
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    margin-bottom: 12px;
+}
+
 h1,
 h2,
 h3 {
