@@ -1,5 +1,35 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Docs-only verification override for GitHub Pages files)
+
+- **Added a `docs/AGENTS.md` override so docs-only site changes do not require a full clean build**
+
+  Added path-specific agent instructions for the GitHub Pages subtree. When all modified tracked files are
+  under `docs/`, contributors should skip `make clean build 2>&1` and `make check-logs`, while still
+  running `make check-docs 2>&1` for Markdown changes and verifying static HTML/CSS/JS updates directly.
+
+  **Implementation**: Added `docs/AGENTS.md`.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: Small GitHub Pages and documentation-site updates can now use a lighter, subtree-specific
+  verification path without conflicting with the repository-wide default checklist.
+
+## 2026-04-19 (GitHub Pages landing page width)
+
+- **Expanded the docs landing page container so the published home page uses the available browser width better**
+
+  Increased the top-level `docs/index.html` layout width from a narrow 900px cap to a wider 1280px
+  cap with slightly larger viewport gutters. This keeps the page centered while avoiding the overly
+  constrained look visible on large desktop screens.
+
+  **Implementation**: Updated `docs/index.html`.
+
+  **Verification**: `make clean build 2>&1`; `make check-logs`; `make check-docs 2>&1`; `make check-naming 2>&1`.
+
+  **Impact**: The published GitHub Pages landing page now makes better use of horizontal space on
+  desktop displays.
+
 ## 2026-04-19 (Walkthrough reader-writer document split)
 
 - **Separated reader-facing walkthrough docs from writer-facing walkthrough rules**
