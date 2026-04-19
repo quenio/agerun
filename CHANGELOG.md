@@ -1,5 +1,20 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Walkthrough raw entrypoint links)
+
+- **Changed walkthrough index links to absolute GitHub raw URLs for direct browser loading**
+
+  Updated the `walkthroughs/README.md` index and authoring guidance so walkthrough entry points use
+  absolute `raw.githubusercontent.com` URLs rather than repository-relative links. This makes the
+  intended deck entrypoint explicit and browser-friendly when opening the walkthrough from GitHub.
+
+  **Implementation**: Updated `walkthroughs/README.md`.
+
+  **Verification**: `make check-docs 2>&1`; `make check-naming 2>&1`.
+
+  **Impact**: Walkthrough README entries now point directly to renderable HTML deck files instead of
+  repository-relative paths.
+
 ## 2026-04-19 (Walkthrough deck scaffolding)
 
 - **Added the new `walkthroughs/` documentation area and scaffolded the first HTML/JS slide deck**
