@@ -1,3 +1,6 @@
+const repositoryBaseUrl = "https://github.com/quenio/agerun/blob/main/";
+const repositoryPathPattern = /\b(?:README\.md|SPEC\.md|CHANGELOG\.md|TODO\.md|CONCEPTS\.md|MMM\.md|CLAUDE\.md|AGENTS\.md|(?:modules|methods|specs|workflows|scripts|docs|kb|models|reports|plans|docker|llama-cpp)\/[A-Za-z0-9._/-]+\.[A-Za-z0-9._-]+)\b/g;
+
 const slides = [
     {
         title: "Agent Lifecycle",
@@ -183,6 +186,52 @@ methods/bootstrap-1.0.0.method</div>
 
 let currentSlideIndex = 0;
 
+function createRepositoryLink(path) {
+    const link = document.createElement("a");
+    link.className = "source-link";
+    link.href = `${repositoryBaseUrl}${path}`;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = path;
+    return link;
+}
+
+function linkifyRepositoryPaths(root) {
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    const textNodes = [];
+
+    while (walker.nextNode()) {
+        const textNode = walker.currentNode;
+        if (textNode.parentElement?.closest("a")) {
+            continue;
+        }
+        textNodes.push(textNode);
+    }
+
+    textNodes.forEach((textNode) => {
+        const pattern = new RegExp(repositoryPathPattern.source, "g");
+        const text = textNode.textContent;
+        let lastIndex = 0;
+        let match;
+        let changed = false;
+        const fragment = document.createDocumentFragment();
+
+        while ((match = pattern.exec(text)) !== null) {
+            changed = true;
+            fragment.append(text.slice(lastIndex, match.index));
+            fragment.append(createRepositoryLink(match[0]));
+            lastIndex = match.index + match[0].length;
+        }
+
+        if (!changed) {
+            return;
+        }
+
+        fragment.append(text.slice(lastIndex));
+        textNode.parentNode.replaceChild(fragment, textNode);
+    });
+}
+
 function renderSlide() {
     const slide = slides[currentSlideIndex];
     const slideElement = document.getElementById("slide");
@@ -195,6 +244,7 @@ function renderSlide() {
         <p class="slide-subtitle">${slide.subtitle}</p>
         ${slide.body}
     `;
+    linkifyRepositoryPaths(slideElement);
 
     counterElement.textContent = `${currentSlideIndex + 1} / ${slides.length}`;
     prevButton.disabled = currentSlideIndex === 0;

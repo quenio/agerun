@@ -131,6 +131,18 @@ li {
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
+.source-link {
+    color: var(--accent);
+    text-decoration: underline;
+    text-decoration-color: rgba(125, 211, 252, 0.55);
+    text-underline-offset: 0.16em;
+}
+
+.source-link:hover {
+    color: #bae6fd;
+    text-decoration-color: currentColor;
+}
+
 .path-list {
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--border);
