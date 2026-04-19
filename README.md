@@ -54,6 +54,21 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
    intake/summary or startup-failure logs. Log output is written to `bin/run-exec/agerun.log`
    because the executable runs from that directory.
 
+   If you need a different fresh-start boot method, pass the combined method identifier used in the
+   `methods/` directory:
+   ```
+   make run-exec BOOT_METHOD=echo-1.0.0
+   ```
+
+   When `BOOT_METHOD` is omitted, the executable keeps using the default `bootstrap-1.0.0` startup
+   path.
+
+   If persisted agents are restored from `agerun.agency`, the executable reports that any requested
+   boot override was skipped and does not create a second fresh boot agent.
+
+   If `BOOT_METHOD` is malformed or names a method that cannot be created at startup, the
+   executable exits with a clear error instead of silently falling back to `bootstrap`.
+
 ### Memory Safety Testing
 
 AgeRun includes built-in support for comprehensive memory error detection:

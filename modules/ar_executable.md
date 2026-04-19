@@ -2,7 +2,10 @@
 
 ## Overview
 
-The executable module serves as the main entry point for the AgeRun runtime system. It provides a demonstration application that showcases the complete functionality of the AgeRun agent system, including agent creation, message passing, method execution, and persistence.
+The executable module serves as the main entry point for the AgeRun runtime system. It provides the
+`agerun` executable, which loads methods, restores persisted state when present, and on fresh runs
+creates the boot agent that starts the bundled workflow demo. The executable now also accepts an
+optional `--boot-method <name-version>` override for fresh startup selection.
 
 ## Purpose
 
@@ -22,41 +25,40 @@ int main(int argc, char *argv[]);
 ```
 
 The main function that:
-- Initializes the AgeRun system with an optional initial agent
-- Creates demonstration agents if persistence files don't exist
-- Processes messages between agents
-- Saves system state before shutdown
+- Parses optional process arguments such as `--boot-method <name-version>`
+- Initializes the AgeRun system and loads methods from persisted storage or the methods directory
+- Creates the default `bootstrap` boot agent on fresh startup unless a valid boot override was supplied
+- Processes queued messages and saves runtime state before shutdown
 - Demonstrates proper cleanup and memory management
 
 ## Implementation Details
 
 ### Program Flow
 
-1. **System Initialization**
-   - Initializes the system with optional initial agent (ID 1, echo-1.0.0 method)
-   - The initial agent is created only if agency persistence doesn't exist
-   - Loads persisted agents and methods from files if they exist
+1. **Argument Parsing**
+   - Accepts optional `--boot-method <name-version>` for fresh startup override
+   - Uses the default `bootstrap-1.0.0` startup path when no override is supplied
 
-2. **Agent Creation** (if no persistence)
-   - Creates agent ID 2 using string-builder-1.0.0 method
-   - Creates agent ID 3 using message-router-1.0.0 method
-   - Creates agent ID 4 using agent-manager-1.0.0 method
+2. **Method and State Loading**
+   - Loads persisted methods when available, otherwise loads `.method` files from the methods directory
+   - Loads persisted agents from `agerun.agency` when available
 
-3. **Message Demonstration**
-   - Sends various messages to test agent functionality
-   - Shows string concatenation (string-builder)
-   - Demonstrates message routing based on content
-   - Tests agent lifecycle management
+3. **Fresh-Start Boot Selection**
+   - If no agents were restored, creates a boot agent from either:
+     - the default `bootstrap-1.0.0` method, or
+     - the requested override method identifier
+   - Queues the standard `"__boot__"` message for the selected boot agent
 
-4. **Persistence**
-   - Saves all agents to agerun.agency
-   - Saves all methods to methodology.agerun
-   - On subsequent runs, loads saved state instead of creating new agents
+4. **Persistence-Aware Behavior**
+   - If agents were restored, skips fresh boot-agent creation
+   - If an override was requested while agents were restored, reports that the override was skipped
+   - If an override is malformed or the selected method cannot be created, startup fails clearly
+     without falling back to the default boot method
 
-5. **Cleanup**
+5. **Cleanup and Persistence**
    - Processes remaining messages
-   - Performs orderly shutdown
-   - Ensures zero memory leaks
+   - Saves methods and agents before shutdown
+   - Ensures orderly cleanup with zero-leak expectations
 
 ### Message Examples
 
@@ -93,13 +95,18 @@ ar_data__destroy(mgmt_msg);
 ## Usage Example
 
 ```bash
-# First run - creates agents and saves state
+# First run - creates the default bootstrap agent and saves state
 ./bin/agerun
-# Output shows agent creation and message processing
 
-# Second run - loads saved state
-./bin/agerun  
-# Output shows loaded agents continue processing
+# Fresh run with an alternate boot method
+./bin/agerun --boot-method echo-1.0.0
+
+# Repository wrapper for the same behavior
+make run-exec BOOT_METHOD=echo-1.0.0
+
+# Malformed or unavailable overrides fail instead of falling back
+./bin/agerun --boot-method invalid
+./bin/agerun --boot-method does-not-exist-1.0.0
 ```
 
 ## Memory Management
@@ -139,18 +146,22 @@ While the executable itself is not unit tested (being a main entry point), it se
 
 ### Initial Agent
 
-The system can be initialized with an optional initial agent. The executable demonstrates this by creating agent ID 1 with the echo method if no persistence exists. This agent:
-- Receives system messages
-- Can be used for system monitoring
-- Demonstrates the wake/sleep lifecycle
+On a fresh run, the executable creates exactly one boot agent. By default this is the
+`bootstrap-1.0.0` method. If `--boot-method <name-version>` is supplied and no persisted agents are
+restored, the executable creates the requested boot agent instead and still queues the standard
+`"__boot__"` startup message.
 
 ### Persistence Behavior
 
-The executable demonstrates two execution modes:
-1. **First Run**: Creates new agents and methods, then saves state
-2. **Subsequent Runs**: Loads saved state and continues operation
+The executable supports two execution modes:
+1. **Fresh Run**: Loads methods, creates a boot agent, queues `"__boot__"`, and saves state
+2. **Restored Run**: Loads saved state and skips fresh boot-agent creation
 
-This shows how AgeRun supports long-running, persistent agent systems.
+If a boot override is requested during a restored run, the executable reports that the override was
+skipped because persisted agents took precedence.
+
+If a requested override is malformed or its method/version cannot be instantiated, the executable
+stops startup with an explicit error and does not fall back to `bootstrap-1.0.0`.
 
 ### Message Processing
 

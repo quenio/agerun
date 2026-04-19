@@ -344,4 +344,16 @@ bool ar_delegate__handle_message(ar_delegate_t* ref_delegate,
 
 ## System Startup
 
-The system is started by providing a method name and version string, which is used to spawn the first agent—similar to the `spawn` instruction.
+The runtime startup contract has two layers:
+
+- **Embedded/runtime API**: The system can be started by providing a method name and version
+  string, which is used to spawn the first agent—similar to the `spawn` instruction.
+- **`agerun` executable default path**: On a fresh executable run without overrides, `agerun`
+  starts with `bootstrap-1.0.0` and queues the standard `"__boot__"` startup message.
+- **`agerun` executable override path**: On a fresh executable run, operators may pass
+  `--boot-method <method-name-version>` to request a different boot method such as
+  `echo-1.0.0`.
+- **Persisted-agent precedence**: If persisted agents are restored from `agerun.agency`, the
+  executable skips fresh boot-agent creation and reports any requested boot override as skipped.
+- **Invalid override behavior**: Malformed or unavailable boot overrides fail clearly and do not
+  silently fall back to `bootstrap-1.0.0`.

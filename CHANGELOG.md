@@ -1,5 +1,136 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Executable boot override spec artifact finalization)
+
+- **Finalized the `/spec` artifacts and native pi context for the executable boot override feature**
+
+  Completed the post-implementation cleanup for feature `009-parameter-passed-executable` by
+  syncing the final plan/research/data-model/contracts artifacts with the implemented behavior,
+  updating `.specify/memory/pi-agent.md` from planned to implemented context, marking the last
+  final-phase tasks complete, and tightening the feature spec so it now reflects implemented status,
+  resolved boot-capability semantics, and malformed-or-unavailable override success criteria.
+
+  **Implementation**: Updated `.specify/memory/pi-agent.md`,
+  `specs/009-parameter-passed-executable/contracts/README.md`,
+  `specs/009-parameter-passed-executable/data-model.md`,
+  `specs/009-parameter-passed-executable/plan.md`,
+  `specs/009-parameter-passed-executable/research.md`,
+  `specs/009-parameter-passed-executable/spec.md`, and
+  `specs/009-parameter-passed-executable/tasks.md`.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: The executable boot override feature now has fully synchronized `/spec` artifacts and
+  native pi context that match the implemented runtime and documentation contract.
+
+## 2026-04-19 (Executable boot override failure and restored-state behavior)
+
+- **Made invalid/unavailable boot overrides fail clearly and restored-agent startup report skipped overrides**
+
+  Completed the User Story 3 follow-up for executable boot override so malformed identifiers,
+  unavailable boot methods, and restored persisted-agent startups now produce explicit,
+  operator-visible outcomes. The executable now uses shared reporting helpers for invalid override
+  rejection, unavailable-method boot creation failure, and restored-state override skipping; the
+  executable tests now cover unavailable methods explicitly; and the README, SPEC, module docs, and
+  spec contracts now describe restored-agent precedence and no-fallback failure behavior.
+
+  **Implementation**: Updated `README.md`, `SPEC.md`, `modules/ar_executable.c`,
+  `modules/ar_executable.md`, `modules/ar_executable_tests.c`,
+  `specs/009-parameter-passed-executable/contracts/executable-startup-cli.md`,
+  `specs/009-parameter-passed-executable/contracts/run-exec-target.md`,
+  `specs/009-parameter-passed-executable/quickstart.md`, and
+  `specs/009-parameter-passed-executable/tasks.md`.
+
+  **Verification**: `make ar_executable_tests 2>&1`; `make check-docs 2>&1`;
+  `make sanitize-tests 2>&1`; `make clean build 2>&1`; `make check-logs`.
+
+  **Impact**: Fresh startup overrides no longer silently degrade when malformed or unavailable, and
+  restored persisted agents explicitly take precedence over override requests.
+
+## 2026-04-19 (Executable boot override default-path preservation)
+
+- **Preserved the default bootstrap startup path while documenting the new override as optional**
+
+  Completed the User Story 2 follow-up for executable boot override so existing `make run-exec`
+  and `agerun` usage remain explicitly default-first when no `BOOT_METHOD` / `--boot-method`
+  value is supplied. The executable now reports boot-method selection through a shared helper, the
+  top-level help text and README describe the override as additive, and the executable module docs
+  now explain fresh-start default selection versus override behavior more clearly.
+
+  **Implementation**: Updated `Makefile`, `README.md`, `modules/ar_executable.c`,
+  `modules/ar_executable.md`, and `specs/009-parameter-passed-executable/tasks.md`.
+
+  **Verification**: `make ar_executable_tests 2>&1`; `make clean build 2>&1`; `make check-logs`.
+
+  **Impact**: Users who do not supply a boot override keep the existing `bootstrap-1.0.0` startup
+  behavior, while the optional override path is now clearer in code and documentation.
+
+## 2026-04-19 (Executable boot override MVP)
+
+- **Implemented fresh-start boot-method override for `agerun` and `make run-exec`**
+
+  Added the User Story 1 MVP for executable boot override so fresh AgeRun runs can start from a
+  requested method identifier such as `echo-1.0.0` instead of the default `bootstrap` method. The
+  executable now accepts `--boot-method <name-version>`, the `run-exec` target forwards
+  `BOOT_METHOD=<name-version>` into that CLI flag, and the executable fixture/tests can exercise the
+  override path directly.
+
+  **Implementation**: Updated `Makefile`, `modules/ar_executable.c`, `modules/ar_executable.h`,
+  `modules/ar_executable_fixture.c`, `modules/ar_executable_fixture.h`,
+  `modules/ar_executable_tests.c`, and `specs/009-parameter-passed-executable/tasks.md`.
+
+  **Verification**: `make ar_executable_tests 2>&1`.
+
+  **Impact**: Fresh executable runs can now select an alternate boot method using the same
+  `<method-name>-<version>` convention used in the `methods/` directory.
+
+## 2026-04-19 (Executable boot override RED-phase scaffolding and failing tests)
+
+- **Added compile-safe scaffolding and RED-phase executable tests for boot-method override**
+
+  Prepared the executable boot-method override implementation by adding argument-aware executable
+  entry-point scaffolding, override-aware executable fixture scaffolding, and new failing
+  executable integration tests for valid override selection, explicit default boot selection,
+  invalid override rejection, and restored-agent override skipping. The new foundational tests now
+  compile successfully and fail on assertions rather than compilation errors.
+
+  **Implementation**: Updated `modules/ar_executable.c`, `modules/ar_executable.h`,
+  `modules/ar_executable_fixture.c`, `modules/ar_executable_fixture.h`,
+  `modules/ar_executable_tests.c`, and
+  `specs/009-parameter-passed-executable/tasks.md`.
+
+  **Verification**: `make ar_executable_tests 2>&1` (expected RED-phase assertion failure in
+  `test_executable__supports_boot_method_override`); `make check-docs`.
+
+  **Impact**: The boot-method override feature now has a concrete RED-phase test harness and
+  compile-safe scaffolding for the upcoming implementation work.
+
+## 2026-04-18 (Planned executable boot-method override workflow artifacts)
+
+- **Added the full native `/spec` artifact set for executable boot-method override planning**
+
+  Captured the specification, planning decisions, contracts, task breakdown, and pi workflow
+  context for the executable boot-method override feature on branch
+  `009-parameter-passed-executable`. The planned contract now uses a single combined boot method
+  identifier such as `echo-1.0.0`, passed through `--boot-method` and exposed from
+  `make run-exec BOOT_METHOD=<name-version>`.
+
+  **Implementation**: Added `specs/009-parameter-passed-executable/spec.md`,
+  `specs/009-parameter-passed-executable/plan.md`,
+  `specs/009-parameter-passed-executable/research.md`,
+  `specs/009-parameter-passed-executable/data-model.md`,
+  `specs/009-parameter-passed-executable/quickstart.md`,
+  `specs/009-parameter-passed-executable/tasks.md`,
+  `specs/009-parameter-passed-executable/checklists/requirements.md`, and
+  `specs/009-parameter-passed-executable/contracts/*`; updated `.specify/memory/pi-agent.md`.
+
+  **Verification**: `make ar_executable_tests 2>&1`; checklist review for
+  `specs/009-parameter-passed-executable/checklists/requirements.md` (16/16 complete).
+
+  **Impact**: The boot-method override feature now has complete, reviewable native `/spec`
+  artifacts and an implementation-ready task plan aligned with the repository's current method
+  naming convention.
+
 ## 2026-04-18 (Remove checked-in autoresearch session log)
 
 - **Removed the transient `autoresearch.jsonl` experiment log from the repository**

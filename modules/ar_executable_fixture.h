@@ -47,8 +47,21 @@ char* ar_executable_fixture__create_methods_dir(ar_executable_fixture_t *mut_fix
  * @return FILE pointer from popen() for reading output, or NULL on failure
  * @note Caller must close the FILE* with pclose() when done
  */
-FILE* ar_executable_fixture__build_and_run(const ar_executable_fixture_t *ref_fixture, 
+FILE* ar_executable_fixture__build_and_run(const ar_executable_fixture_t *ref_fixture,
                                            const char *ref_methods_dir);
+
+/**
+ * Builds and runs the executable with an optional boot-method override
+ * @param ref_fixture The fixture managing the test
+ * @param ref_methods_dir Path to the methods directory to use
+ * @param ref_boot_method Optional combined boot method identifier (e.g. echo-1.0.0)
+ * @return FILE pointer from popen() for reading output, or NULL on failure
+ * @note Caller must close the FILE* with pclose() when done
+ */
+FILE* ar_executable_fixture__build_and_run_with_boot_method(
+    const ar_executable_fixture_t *ref_fixture,
+    const char *ref_methods_dir,
+    const char *ref_boot_method);
 
 /**
  * Destroys a temporary methods directory and frees the path string
