@@ -1,5 +1,19 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Shared docs-site body text increased slightly)
+
+- **Raised the regular reading text size across the shared docs-site shell**
+
+  Increased the shared base body text size so the normal reading text on the docs index pages is a bit
+  larger and easier to scan.
+
+  **Implementation**: Updated the base `body` font size in `docs/site.css`.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: Regular text on the published docs-site pages now reads slightly larger without changing
+  the overall page structure.
+
 ## 2026-04-19 (Home-page footer text removed)
 
 - **Removed the explanatory sentence from the `docs/index.html` bottom bar**
