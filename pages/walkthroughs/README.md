@@ -23,13 +23,15 @@ Walkthroughs in this directory should:
 Each walkthrough should live in its own subdirectory:
 
 ```text
-walkthroughs/
-├── README.md
-└── <topic-name>/
-    ├── index.html
-    ├── slides.js
-    ├── styles.css        # optional
-    └── assets/           # optional
+pages/
+├── index.html
+└── walkthroughs/
+    ├── README.md
+    └── <topic-name>/
+        ├── index.html
+        ├── slides.js
+        ├── styles.css        # optional
+        └── assets/           # optional
 ```
 
 ### Naming
@@ -74,9 +76,9 @@ When creating a walkthrough:
 
 These walkthroughs are for deep understanding, onboarding, architecture study, and design review. They are not meant to replace the reference documentation in:
 
-- [`README.md`](../README.md)
-- [`modules/README.md`](../modules/README.md)
-- [`methods/README.md`](../methods/README.md)
-- [`SPEC.md`](../SPEC.md)
+- [`README.md`](../../README.md)
+- [`modules/README.md`](../../modules/README.md)
+- [`methods/README.md`](../../methods/README.md)
+- [`SPEC.md`](../../SPEC.md)
 
 Instead, each walkthrough should act as a guided tour through one part of the system and link back to the source documentation where appropriate.

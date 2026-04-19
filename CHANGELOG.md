@@ -1,5 +1,24 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Pages site root for walkthrough decks)
+
+- **Moved the walkthrough site into `pages/` so GitHub Pages can publish a dedicated static root**
+
+  Relocated the walkthrough deck files from the repository-level `walkthroughs/` directory into
+  `pages/walkthroughs/`, added a `pages/README.md` describing the publishing model, created a
+  `pages/index.html` landing page, and added `pages/.nojekyll` so the static HTML/JS walkthrough
+  assets can be served directly from a Pages site rooted at `/pages`.
+
+  **Implementation**: Added `pages/.nojekyll`, `pages/README.md`, `pages/index.html`,
+  `pages/walkthroughs/README.md`, `pages/walkthroughs/agent-lifecycle/index.html`,
+  `pages/walkthroughs/agent-lifecycle/slides.js`, and
+  `pages/walkthroughs/agent-lifecycle/styles.css`; removed the original `walkthroughs/` copies.
+
+  **Verification**: `make check-docs 2>&1`; `make check-naming 2>&1`.
+
+  **Impact**: The repository now has a clean static site root ready for GitHub Pages publishing,
+  with walkthrough decks hosted under `/walkthroughs/` on the published site.
+
 ## 2026-04-19 (Walkthrough GitHub Pages entrypoints)
 
 - **Switched walkthrough entrypoint links from raw GitHub URLs to GitHub Pages URLs**
