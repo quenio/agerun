@@ -1,5 +1,19 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Top-bar eyebrow labels removed from the docs index pages)
+
+- **Removed the extra small heading above the main title in the two docs index-page top bars**
+
+  The root docs page and walkthrough index page no longer show an extra eyebrow label above the main
+  title in the top bar.
+
+  **Implementation**: Removed the top-bar eyebrow label from `docs/index.html` and
+  `docs/walkthroughs/index.html`.
+
+  **Verification**: Fresh local Playwright screenshots of both index pages.
+
+  **Impact**: The top bars are cleaner and the main page titles carry the header on their own.
+
 ## 2026-04-19 (Scroll cues added to docs-site navigation and content panes)
 
 - **Added top and bottom scroll cues for the shared docs-site panes when more content is available**
