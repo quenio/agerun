@@ -93,13 +93,26 @@ When a page has persistent navigation, persistent controls, or a multi-pane work
 - When panes scroll independently, provide a visible cue that more content exists above or below, and
   keep that cue pinned to the pane edge rather than letting it move with the scrolled content.
 
-### 8. Prefer readable code references in prose
+### 8. Keep docs index pages consistent across subfolders
+- Treat every `index.html` page under `docs/` and its subfolders as part of one family.
+- Subfolder index pages should follow the same shell vocabulary and visual rhythm as `docs/index.html`
+  unless a clear user-approved reason requires a different pattern.
+- Reuse the shared top bar, sidebar, content pane, footer bar, cards, and chip-link styles from
+  `docs/site.css` instead of inventing one-off index layouts.
+- Keep the same hierarchy expectations on index pages: concise eyebrow if used, one clear page title,
+  short supporting copy, visible section navigation, and a quiet footer with only useful links.
+- If one docs index page gets a navigation, spacing, footer, copy, or card-treatment improvement that
+  should generalize, apply or document the same guidance for other subfolder index pages too.
+
+### 9. Prefer readable code references in prose
+
+### 9. Prefer readable code references in prose
 - In tutorial or explanatory sentences, prefer module-and-action phrasing over raw long function names.
 - Use italic human-readable operation names when that keeps prose easier to scan.
 - Reserve exact function names for code snippets, source-file references, or compact callouts where the raw symbol matters.
 - If a raw symbol is necessary, keep it visually separate from the main sentence so the prose remains readable.
 
-### 9. Use consistent title forms
+### 10. Use consistent title forms
 - Use capitalized noun phrases for page titles, section titles, and navigation labels when possible.
 - Rewrite verb-phrase titles into noun phrases when possible.
 - Keep pronouns and conjunctions lowercase.
@@ -108,7 +121,7 @@ When a page has persistent navigation, persistent controls, or a multi-pane work
 - In top bars and section bodies, keep only one necessary visible title layer. Remove redundant eyebrow
   labels or repeated in-section headings when the page already establishes the same title clearly.
 
-### 10. Prefer strong structure over ornament
+### 11. Prefer strong structure over ornament
 Use:
 - clear headings
 - short labels
@@ -122,7 +135,7 @@ Avoid:
 - inconsistent terminology
 - repeated status strips or explanatory chrome text that does not help the reader act
 
-### 11. Keep published-page copy audience-first
+### 12. Keep published-page copy audience-first
 - Prefer educational, product-facing language over implementation or publishing-mechanism wording.
 - Do not explain that a page is "static", "browser-rendered", or otherwise implementation-shaped unless
   that fact helps the reader.
@@ -144,6 +157,7 @@ Before claiming a `docs/` page update is complete, verify:
 - links work
 - claims match the current repository state
 - technical prose stays readable and does not overuse raw long symbols
+- subfolder index pages under `docs/` follow the shared index-page shell and style guidance when touched
 - visual fixes are confirmed with a fresh rendered screenshot when the change is layout-sensitive
 
 ## Walkthrough Subtree

@@ -1,5 +1,20 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Docs guide now requires shared styling for subfolder index pages)
+
+- **Added explicit guidance that all `docs/` subfolder index pages must follow the shared index-page style**
+
+  The shared docs agent guide now states that `index.html` pages under `docs/` and its subfolders belong
+  to one visual family and should reuse the shared shell vocabulary, navigation treatment, spacing, and
+  footer style unless a user-approved exception exists.
+
+  **Implementation**: Updated `docs/AGENTS.md`.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: Future docs landing pages and subfolder index pages now have an explicit consistency rule
+  instead of relying on implied style inheritance.
+
 ## 2026-04-19 (Walkthrough index top-bar refined)
 
 - **Restored the walkthrough index top-bar eyebrow and reduced the title size slightly**
