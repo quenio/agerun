@@ -237,7 +237,7 @@ body.sidebar-open {
 
 .slide-title {
     margin: 0 0 12px;
-    font-size: clamp(1.75rem, 2.7vw, 2.95rem);
+    font-size: clamp(1.625rem, 2.55vw, 2.825rem);
 }
 
 .slide-subtitle {

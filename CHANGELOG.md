@@ -1,5 +1,21 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Walkthrough slide titles reduced one more step)
+
+- **Reduced the main slide-title size one more step across the walkthrough decks**
+
+  After the previous adjustment, the in-slide heading was reduced again so it sits more comfortably
+  within the slide pane and gives the supporting content a bit more room.
+
+  **Implementation**: Updated the shared walkthrough deck CSS in
+  `docs/walkthroughs/agent-lifecycle/styles.css`, `docs/walkthroughs/message-processing/styles.css`,
+  and `docs/walkthroughs/delegation/styles.css` by further reducing the `.slide-title` font-size clamp.
+
+  **Verification**: Fresh local Playwright screenshot of `docs/walkthroughs/delegation/index.html`.
+
+  **Impact**: Slide titles remain clear and prominent while feeling better balanced against the slide
+  body content.
+
 ## 2026-04-19 (Walkthrough slide titles reduced again)
 
 - **Reduced the main slide-title size one more step across the walkthrough decks**
