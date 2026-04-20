@@ -36,6 +36,19 @@ Include, when relevant:
 - Mobile should expose the same slide structure through an accessible menu.
 - Navigation should clearly indicate the current slide.
 - Slide titles should be meaningful enough to scan from the navigation alone.
+- For deck shells, the navigation sidebar should extend to the bottom of the main shell rather than
+  stopping above the footer controls.
+
+### 4. Walkthrough deck shell controls should read as one system
+- Previous/next controls belong under the slide pane, not under the navigation sidebar.
+- On desktop, keep the previous button on the left, the keyboard hint centered, and the next button on
+  the right.
+- Right-align the next-button label so the forward action reads naturally at the far edge.
+- On narrow screens, it is acceptable to fall back to the stacked mobile control layout.
+
+## Visual Teaching Rubric
+
+### 1. Anchor the deck early
 
 ## Visual Teaching Rubric
 
@@ -76,6 +89,13 @@ Use:
 - linked source files
 - obvious follow-up walkthrough topics
 
+### 7. Keep walkthrough index pages quiet
+For `docs/walkthroughs/index.html` and similar landing pages:
+- use the main title without an extra eyebrow label in the top bar
+- avoid repeating large in-section titles when the section label already does the job
+- remove explanatory footer text when the bottom-bar links are enough
+- keep overview copy educational instead of explaining the publishing mechanism
+
 ## Recommended Slide Pattern
 
 When applicable, follow this order:
@@ -97,6 +117,9 @@ Before claiming a walkthrough update is complete, verify:
 - mobile navigation works
 - navigation reflects the slide structure and current position clearly
 - slide titles are meaningful when scanned from the navigation alone
+- the sidebar reaches the bottom of the shell where the deck uses the desktop two-pane layout
+- the footer controls align only with the slide pane where the deck uses desktop previous/next controls
+- pane scroll cues stay pinned to the pane edge rather than moving with scrolled content
 - slides still make sense in sequence, not only individually
 
 ## Publishing Conventions

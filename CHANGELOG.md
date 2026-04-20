@@ -1,5 +1,20 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Docs guidance expanded with session learnings from the docs shell work)
+
+- **Captured the docs-shell and walkthrough-shell learnings from this session in the docs agent guides**
+
+  Updated the shared docs guidance and the walkthrough-specific guidance to record the concrete layout,
+  copy, linking, scroll-cue, CSS-scoping, and verification lessons established while refining the docs
+  index pages and walkthrough deck shells.
+
+  **Implementation**: Updated `docs/AGENTS.md` and `docs/walkthroughs/AGENTS.md`.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: Future docs and walkthrough page work now has the session’s learned rules available in the
+  local guides instead of relying on chat history or implicit memory.
+
 ## 2026-04-19 (Walkthrough sidebar and footer shell realigned)
 
 - **Aligned the walkthrough deck footer with the slide pane and extended the sidebar to the bottom**

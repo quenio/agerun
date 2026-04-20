@@ -28,6 +28,9 @@ If **any** modified tracked file is outside `docs/`, fall back to the full repos
 - Keep page code inspectable and easy to maintain.
 - Prefer reusable helpers over page-specific hacks.
 - Do not require a build step unless explicitly approved.
+- In shared docs CSS, avoid broad element selectors or generic adjacency rules that can accidentally hit
+  app-shell pages. In particular, avoid global layout rules like `main { ... }` and generic sibling
+  spacing like `.panel + .panel { ... }` unless they are tightly scoped.
 
 ## Web Page Authoring Rules
 
@@ -66,6 +69,8 @@ If a page shows AgeRun concepts such as the system, agency, agent, method, or me
 - Narrow-screen navigation should stay accessible.
 - Navigation should clearly indicate the current section when applicable.
 - Navigation must not rely on hover-only interaction or hidden gestures.
+- If navigation labels and content labels describe the same sections, keep their typography and color
+  relationships visually aligned.
 
 ### 6. Design for mobile
 - Content must remain readable on narrow screens.
@@ -81,6 +86,12 @@ When a page has persistent navigation, persistent controls, or a multi-pane work
 - Make navigation and primary content areas independently scrollable when both can grow.
 - Avoid layouts where the entire page scroll hides the main controls.
 - On narrow screens, preserve the same structure with an accessible overlay or stacked equivalent.
+- Align pane edges through the shell layout first. Do not fake panel alignment by inflating inner
+  padding when the real issue is panel placement.
+- If a pane should visibly reach the layout edge, ensure the grid item can actually shrink inside the
+  shell (`min-width: 0` where needed) and does not inherit document-style width rules.
+- When panes scroll independently, provide a visible cue that more content exists above or below, and
+  keep that cue pinned to the pane edge rather than letting it move with the scrolled content.
 
 ### 8. Prefer readable code references in prose
 - In tutorial or explanatory sentences, prefer module-and-action phrasing over raw long function names.
@@ -94,6 +105,8 @@ When a page has persistent navigation, persistent controls, or a multi-pane work
 - Keep pronouns and conjunctions lowercase.
 - Keep articles uppercase.
 - Preserve literal file names and paths exactly when they appear in titles.
+- In top bars and section bodies, keep only one necessary visible title layer. Remove redundant eyebrow
+  labels or repeated in-section headings when the page already establishes the same title clearly.
 
 ### 10. Prefer strong structure over ornament
 Use:
@@ -107,6 +120,15 @@ Avoid:
 - large paragraphs
 - decorative visuals with no teaching value
 - inconsistent terminology
+- repeated status strips or explanatory chrome text that does not help the reader act
+
+### 11. Keep published-page copy audience-first
+- Prefer educational, product-facing language over implementation or publishing-mechanism wording.
+- Do not explain that a page is "static", "browser-rendered", or otherwise implementation-shaped unless
+  that fact helps the reader.
+- Do not expose repository structure details in overview copy when they do not help the audience.
+- For published pages that link back into the repository, use real GitHub URLs when the target file is
+  outside the published `docs/` site root.
 
 ## Verification Before Completion
 
@@ -117,9 +139,12 @@ Before claiming a `docs/` page update is complete, verify:
 - navigation remains usable where the page has navigation
 - persistent bars remain visible where the page uses an app-like shell
 - multi-pane shells use independent scrolling where appropriate
+- pane edges align as intended in app-shell pages
+- scroll cues appear only when more content exists above or below and stay pinned to pane edges
 - links work
 - claims match the current repository state
 - technical prose stays readable and does not overuse raw long symbols
+- visual fixes are confirmed with a fresh rendered screenshot when the change is layout-sensitive
 
 ## Walkthrough Subtree
 
