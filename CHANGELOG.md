@@ -1,5 +1,19 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Walkthrough index footer text removed)
+
+- **Removed the explanatory sentence from the walkthrough index bottom bar**
+
+  The walkthrough index footer now matches the quieter home-page footer pattern by keeping only the
+  useful action links.
+
+  **Implementation**: Removed the footer explanation text from `docs/walkthroughs/index.html`.
+
+  **Verification**: Fresh local Playwright screenshot of `docs/walkthroughs/index.html`.
+
+  **Impact**: The walkthrough index bottom bar is cleaner and keeps attention on navigation actions
+  instead of explanatory layout text.
+
 ## 2026-04-19 (Extra in-section titles removed from the walkthrough index page)
 
 - **Removed the redundant large section titles from `docs/walkthroughs/index.html`**
