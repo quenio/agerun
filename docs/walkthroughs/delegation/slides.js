@@ -34,13 +34,6 @@ modules/ar_log_delegate.c</div>
             <section class="diagram-panel">
                 <h3>Delegation Surface</h3>
                 <div class="reference-architecture">
-                    <div class="legend-row">
-                        <span class="legend-chip legend-system">System</span>
-                        <span class="legend-chip legend-agency">Delegation</span>
-                        <span class="legend-chip legend-agent">Delegate Registry</span>
-                        <span class="legend-chip legend-method">Delegate Handler</span>
-                        <span class="legend-chip legend-flow">Message Flow</span>
-                    </div>
                     <div class="anchor-stack">
                         <div class="anchor-top">
                             <div class="map-node map-node-system">

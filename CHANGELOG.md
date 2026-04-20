@@ -1,5 +1,24 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Walkthrough diagram sections no longer repeat chip legends below their headings)
+
+- **Removed the extra legend-chip rows under walkthrough diagram-section titles**
+
+  The first-slide architecture sections were rendering an extra row of colored legend chips directly under
+  the section heading, which added noise without helping the reader.
+
+  **Implementation**: Updated `docs/walkthroughs/agent-lifecycle/slides.js`,
+  `docs/walkthroughs/message-processing/slides.js`, and `docs/walkthroughs/delegation/slides.js` to
+  remove the repeated `legend-row` blocks from the shared reference-architecture sections.
+
+  **Verification**: `node -c docs/walkthroughs/agent-lifecycle/slides.js`,
+  `node -c docs/walkthroughs/message-processing/slides.js`,
+  `node -c docs/walkthroughs/delegation/slides.js`, and a fresh local Playwright screenshot of
+  `docs/walkthroughs/delegation/index.html`.
+
+  **Impact**: Walkthrough diagram sections now get to the actual diagram content faster and read more
+  cleanly.
+
 ## 2026-04-19 (Walkthrough deck boundary buttons now show a visible disabled state)
 
 - **Made the walkthrough previous/next buttons visibly disabled at deck boundaries**

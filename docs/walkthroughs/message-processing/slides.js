@@ -35,13 +35,6 @@ README.md</div>
             <section class="diagram-panel">
                 <h3>Processing Surface</h3>
                 <div class="reference-architecture">
-                    <div class="legend-row">
-                        <span class="legend-chip legend-system">System</span>
-                        <span class="legend-chip legend-agency">Agency</span>
-                        <span class="legend-chip legend-agent">Agent</span>
-                        <span class="legend-chip legend-method">Method</span>
-                        <span class="legend-chip legend-flow">Message Flow</span>
-                    </div>
                     <div class="anchor-stack">
                         <div class="anchor-top">
                             <div class="map-node map-node-system">
