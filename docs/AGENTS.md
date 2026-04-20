@@ -8,7 +8,8 @@ Follow the repository-root `AGENTS.md` by default, except for the docs-only veri
 
 ## Docs-Only Verification Override
 
-When **all modified tracked files are under `docs/`**, treat the change as a docs-site update.
+When **all modified tracked files are under `docs/`**, or the only modified tracked file outside `docs/`
+is `CHANGELOG.md`, treat the change as a docs-site update.
 
 In that case:
 
@@ -17,7 +18,8 @@ In that case:
 - If any changed file under `docs/` is a Markdown file, run `make check-docs 2>&1` before committing.
 - For HTML/CSS/JS-only changes under `docs/`, verify the edited files directly and review the rendered result when practical.
 
-If **any** modified tracked file is outside `docs/`, fall back to the full repository-root pre-commit checklist.
+If any modified tracked file outside `docs/` is something other than `CHANGELOG.md`, fall back to the
+full repository-root pre-commit checklist.
 
 ## Site Rules
 
@@ -105,8 +107,6 @@ When a page has persistent navigation, persistent controls, or a multi-pane work
   should generalize, apply or document the same guidance for other subfolder index pages too.
 
 ### 9. Prefer readable code references in prose
-
-### 9. Prefer readable code references in prose
 - In tutorial or explanatory sentences, prefer module-and-action phrasing over raw long function names.
 - Use italic human-readable operation names when that keeps prose easier to scan.
 - Reserve exact function names for code snippets, source-file references, or compact callouts where the raw symbol matters.
@@ -143,10 +143,42 @@ Avoid:
 - For published pages that link back into the repository, use real GitHub URLs when the target file is
   outside the published `docs/` site root.
 
-## Verification Before Completion
+## How to Test and Verify Pages Under `docs/`
 
-Before claiming a `docs/` page update is complete, verify:
+Use a concrete verification pass for every HTML/CSS/JS page change under `docs/`. Do not rely on static
+inspection alone for layout or interaction changes.
 
+### 1. Validate the edited assets first
+- If any edited file under `docs/` is Markdown, run `make check-docs 2>&1`.
+- Do not escalate docs-page verification to `make clean build 2>&1` or `make check-logs` just because
+  the commit also updates `CHANGELOG.md`.
+- If you edited JavaScript, run `node -c <path-to-file.js>` on each changed JS file before claiming the
+  page works.
+- If you changed shared assets such as `docs/site.css`, `docs/site.js`, `docs/walkthroughs/deck.css`, or
+  `docs/walkthroughs/deck.js`, verify at least one representative page for every page family affected.
+
+### 2. Render the real page locally
+Use the real page file with a `file://` URL and capture a fresh screenshot instead of reasoning from the
+source alone.
+
+Desktop example:
+```bash
+npx --yes playwright screenshot --device="Desktop Chrome" --wait-for-timeout=300 \
+  file:///ABSOLUTE/PATH/TO/docs/index.html /tmp/docs-index-check.png
+```
+
+Narrow-screen example:
+```bash
+npx --yes playwright screenshot --device="iPhone 13" --wait-for-timeout=300 \
+  file:///ABSOLUTE/PATH/TO/docs/walkthroughs/index.html /tmp/docs-walkthroughs-mobile-check.png
+```
+
+Use absolute file URLs that point at the actual page being edited.
+
+### 3. Verify the rendered result, not just command success
+Review the fresh screenshot and confirm the specific change is visible.
+
+At minimum, check:
 - desktop rendering works
 - narrow-screen rendering works
 - navigation remains usable where the page has navigation
@@ -158,6 +190,28 @@ Before claiming a `docs/` page update is complete, verify:
 - claims match the current repository state
 - technical prose stays readable and does not overuse raw long symbols
 - subfolder index pages under `docs/` follow the shared index-page shell and style guidance when touched
+
+### 4. Test interactions when the page has them
+If the page has interactive behavior, verify the interaction itself, not just the first paint.
+
+Examples:
+- walkthrough decks: previous/next controls, keyboard navigation, sidebar open/close, back links
+- app-shell pages: sidebar navigation, independently scrollable panes, top/bottom bars staying visible
+- shared JS changes: verify multiple pages that consume the shared script
+
+Capture fresh screenshots after the interaction when the bug or change is interaction-sensitive.
+
+### 5. Re-check links from the published-page perspective
+- Relative links are correct only for files that are actually published under `docs/`.
+- For repository files outside the published site root, use GitHub URLs instead of broken relative links
+  like `../README.md` from published pages.
+- When link targets change, run `make check-docs 2>&1` even for docs-site work that is otherwise HTML/CSS/JS.
+
+## Verification Before Completion
+
+Before claiming a `docs/` page update is complete, verify:
+
+- the concrete page-verification workflow above was followed
 - visual fixes are confirmed with a fresh rendered screenshot when the change is layout-sensitive
 
 ## Walkthrough Subtree

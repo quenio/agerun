@@ -1,5 +1,22 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Docs guide now includes a concrete page-verification workflow)
+
+- **Added explicit instructions for testing and verifying pages under `docs/`**
+
+  The shared docs agent guide now explains how to verify docs pages with concrete commands instead of
+  relying only on a short end-state checklist.
+
+  **Implementation**: Updated `docs/AGENTS.md` with a real verification workflow covering
+  `make check-docs 2>&1`, `node -c` for edited JS files, fresh Playwright screenshots for desktop and
+  narrow-screen rendering, interaction checks for app-shell and walkthrough pages, and published-link
+  verification guidance. Also cleaned up a duplicated section heading while updating the guide.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: Future `docs/` page work now has an explicit repeatable verification process recorded in
+  the local docs guide.
+
 ## 2026-04-19 (Walkthrough decks now share one common runtime script and restored shared component styling)
 
 - **Extracted the duplicated walkthrough deck runtime into one shared script and restored missing shared slide-component styles**
