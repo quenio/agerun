@@ -1,5 +1,21 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Walkthrough index top-bar refined)
+
+- **Restored the walkthrough index top-bar eyebrow and reduced the title size slightly**
+
+  The walkthrough landing page top bar now includes the `AgeRun Pages` eyebrow again, and the
+  `Walkthroughs` title has been reduced slightly so the title stack feels better balanced.
+
+  **Implementation**: Updated `docs/walkthroughs/index.html` to restore the eyebrow text `AgeRun Pages`
+  and apply a compact title modifier, and added the matching `page-topbar-title--compact` rule in
+  `docs/site.css`.
+
+  **Verification**: Fresh local Playwright screenshot of `docs/walkthroughs/index.html`.
+
+  **Impact**: The walkthrough landing page top bar now has a clearer visual hierarchy while preserving
+  the preferred `AgeRun Pages` label.
+
 ## 2026-04-19 (Walkthrough slide titles reduced one more step)
 
 - **Reduced the main slide-title size one more step across the walkthrough decks**
