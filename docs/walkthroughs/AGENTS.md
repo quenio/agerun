@@ -46,6 +46,13 @@ Include, when relevant:
 - Right-align the next-button label so the forward action reads naturally at the far edge.
 - On narrow screens, it is acceptable to fall back to the stacked mobile control layout.
 
+### 5. Shared deck shell styles belong in one common stylesheet
+- Reuse one shared walkthrough deck stylesheet for the common slide-shell layout, navigation, controls,
+  and teaching-component styling.
+- Do not copy the same deck CSS into each walkthrough subfolder.
+- Keep per-deck CSS files only when a walkthrough needs real deck-specific overrides.
+- If multiple walkthrough decks need the same style change, make it once in the shared stylesheet.
+
 ## Visual Teaching Rubric
 
 ### 1. Anchor the deck early
@@ -131,3 +138,5 @@ Before claiming a walkthrough update is complete, verify:
 ## Change Discipline
 
 - When adding a new visual pattern, make it reusable for future walkthroughs.
+- Prefer shared walkthrough assets over duplicated per-deck assets whenever the behavior and appearance
+  are the same.

@@ -1,5 +1,23 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Walkthrough decks now share one common stylesheet)
+
+- **Extracted the duplicated walkthrough deck CSS into one shared stylesheet**
+
+  The three walkthrough slide decks were all carrying identical `styles.css` files. Their common deck
+  shell, navigation, controls, and slide component styling now live in one shared stylesheet instead of
+  being copied into each subfolder.
+
+  **Implementation**: Added `docs/walkthroughs/deck.css`, updated the three walkthrough deck entry pages
+  to link to it directly, removed the duplicated per-deck `styles.css` files, and updated
+  `docs/walkthroughs/AGENTS.md` to require shared deck styles for common behavior.
+
+  **Verification**: Fresh local Playwright screenshot of
+  `docs/walkthroughs/agent-lifecycle/index.html`.
+
+  **Impact**: Future deck-shell style changes now need to be made once instead of copied across three
+  walkthrough folders.
+
 ## 2026-04-19 (Walkthrough slide pages now link back to the walkthrough index)
 
 - **Added a visible return link from each walkthrough deck back to the walkthrough index**
