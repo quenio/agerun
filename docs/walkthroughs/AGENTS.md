@@ -46,12 +46,14 @@ Include, when relevant:
 - Right-align the next-button label so the forward action reads naturally at the far edge.
 - On narrow screens, it is acceptable to fall back to the stacked mobile control layout.
 
-### 5. Shared deck shell styles belong in one common stylesheet
+### 5. Shared deck shell assets belong in common files
 - Reuse one shared walkthrough deck stylesheet for the common slide-shell layout, navigation, controls,
   and teaching-component styling.
-- Do not copy the same deck CSS into each walkthrough subfolder.
-- Keep per-deck CSS files only when a walkthrough needs real deck-specific overrides.
-- If multiple walkthrough decks need the same style change, make it once in the shared stylesheet.
+- Reuse one shared walkthrough deck script for the common deck runtime behavior, navigation logic,
+  sidebar behavior, keyboard controls, and repository-link expansion.
+- Do not copy the same deck CSS or deck runtime JS into each walkthrough subfolder.
+- Keep per-deck CSS or JS files only when a walkthrough needs real deck-specific overrides or slide data.
+- If multiple walkthrough decks need the same style or runtime change, make it once in the shared asset.
 
 ## Visual Teaching Rubric
 
@@ -98,7 +100,7 @@ Use:
 
 ### 7. Keep walkthrough index pages quiet
 For `docs/walkthroughs/index.html` and similar landing pages:
-- use the main title without an extra eyebrow label in the top bar
+- if an eyebrow is used in the top bar, keep it brief and aligned with the shared docs index style
 - avoid repeating large in-section titles when the section label already does the job
 - remove explanatory footer text when the bottom-bar links are enough
 - keep overview copy educational instead of explaining the publishing mechanism

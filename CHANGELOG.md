@@ -1,5 +1,28 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Walkthrough decks now share one common runtime script and restored shared component styling)
+
+- **Extracted the duplicated walkthrough deck runtime into one shared script and restored missing shared slide-component styles**
+
+  The three walkthrough decks were each carrying copied navigation/runtime logic in their `slides.js`
+  files. They now share one common deck runtime script, while each deck keeps only its slide data and
+  deck-specific link constants. During that refactor, the missing shared slide-component selectors were
+  also restored in the common deck stylesheet so the walkthrough sections render as designed again.
+
+  **Implementation**: Added `docs/walkthroughs/deck.js`, updated the three walkthrough deck entry pages
+  to load it before their per-deck `slides.js` data files, reduced each `slides.js` file to its slide
+  definitions plus a shared-runtime init call, restored the missing shared component selectors in
+  `docs/walkthroughs/deck.css`, and updated `docs/walkthroughs/AGENTS.md` to require shared deck JS for
+  common behavior.
+
+  **Verification**: `node -c docs/walkthroughs/deck.js`, `node -c docs/walkthroughs/agent-lifecycle/slides.js`,
+  `node -c docs/walkthroughs/message-processing/slides.js`, `node -c docs/walkthroughs/delegation/slides.js`,
+  fresh local Playwright screenshots of `docs/walkthroughs/delegation/index.html` and
+  `docs/walkthroughs/message-processing/index.html`, and `make check-docs 2>&1`.
+
+  **Impact**: Walkthrough deck behavior now changes in one place instead of three, and the shared-deck
+  refactor no longer leaves unstyled walkthrough sections.
+
 ## 2026-04-19 (Walkthrough decks now share one common stylesheet)
 
 - **Extracted the duplicated walkthrough deck CSS into one shared stylesheet**
