@@ -58,6 +58,12 @@ body.sidebar-open {
     padding: 16px 20px;
 }
 
+.controls {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) auto minmax(220px, 1fr);
+    align-items: center;
+}
+
 .eyebrow {
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -83,6 +89,11 @@ body.sidebar-open {
 .path-list,
 .note {
     color: var(--muted);
+}
+
+.hint {
+    text-align: center;
+    white-space: nowrap;
 }
 
 .slide-shell {
@@ -139,6 +150,18 @@ body.sidebar-open {
     font-size: 0.98rem;
     cursor: pointer;
     text-align: left;
+}
+
+.controls button {
+    min-width: 0;
+}
+
+#prev-button {
+    grid-column: 1;
+}
+
+#next-button {
+    grid-column: 3;
 }
 
 .nav-link-title {
@@ -547,6 +570,11 @@ li {
     font-size: 1rem;
 }
 
+#prev-button,
+#next-button {
+    width: 100%;
+}
+
 .controls button:disabled {
     opacity: 0.45;
     cursor: default;
@@ -651,6 +679,7 @@ li {
     }
 
     .controls {
+        display: flex;
         gap: 12px;
     }
 

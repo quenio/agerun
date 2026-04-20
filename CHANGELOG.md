@@ -1,5 +1,23 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Walkthrough slide footer controls rebalanced)
+
+- **Reworked the walkthrough deck bottom-bar control layout for previous, hint, and next**
+
+  The slide footer now uses a balanced three-part layout so the previous button, keyboard hint, and
+  next button read as one coherent control strip instead of an awkward flex layout.
+
+  **Implementation**: Updated the shared walkthrough deck CSS in
+  `docs/walkthroughs/agent-lifecycle/styles.css`, `docs/walkthroughs/message-processing/styles.css`,
+  and `docs/walkthroughs/delegation/styles.css` so the footer controls use a desktop grid layout with a
+  centered one-line hint and fall back to the existing stacked mobile behavior.
+
+  **Verification**: Fresh local Playwright screenshot of
+  `docs/walkthroughs/agent-lifecycle/index.html`.
+
+  **Impact**: The slide footer controls now look cleaner and more intentional on desktop while
+  preserving the existing mobile layout.
+
 ## 2026-04-19 (Docs index-page top-bar titles reduced slightly)
 
 - **Reduced the top-bar title size on the docs index pages by a small final step**
