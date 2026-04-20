@@ -1,5 +1,23 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Scroll cues added to docs-site navigation and content panes)
+
+- **Added top and bottom scroll cues for the shared docs-site panes when more content is available**
+
+  The independently scrollable navigation and content panes now show a visual cue at the bottom when
+  more content is available below, and at the top once the user has scrolled down and there is content
+  above.
+
+  **Implementation**: Added `docs/site.js` to track pane scroll state, updated `docs/site.css` with
+  shared top/bottom inset shadow cues, and loaded the shared script on the docs index pages and the
+  walkthrough deck pages.
+
+  **Verification**: `make check-docs 2>&1` and fresh local screenshots of the docs pages at the top and
+  after pane scrolling.
+
+  **Impact**: Users now get a clearer visual hint that the navigation pane and content pane can be
+  scrolled independently to reveal more content.
+
 ## 2026-04-19 (Global `main` document rule removed from the shared docs shell)
 
 - **Removed the global `main` width rule that was shrinking the app-shell content panes**

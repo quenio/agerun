@@ -95,6 +95,7 @@ body.sidebar-open {
 }
 
 .sidebar {
+    --scroll-cue-bleed: 18px;
     position: relative;
     height: 100%;
     min-height: 0;
@@ -198,6 +199,7 @@ body.sidebar-open {
 }
 
 .slide-card {
+    --scroll-cue-bleed: 32px;
     height: 100%;
     min-height: 0;
     padding: 32px;
