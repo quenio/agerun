@@ -204,6 +204,18 @@ body.sidebar-open {
     border-color: var(--accent);
 }
 
+.controls button:disabled {
+    cursor: not-allowed;
+    color: var(--muted);
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.08);
+    opacity: 0.58;
+}
+
+.controls button:disabled:hover {
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
 .nav-link.active {
     border-color: rgba(125, 211, 252, 0.65);
     background: linear-gradient(180deg, rgba(125, 211, 252, 0.14), rgba(167, 139, 250, 0.08));

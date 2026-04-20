@@ -1,5 +1,20 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Walkthrough deck boundary buttons now show a visible disabled state)
+
+- **Made the walkthrough previous/next buttons visibly disabled at deck boundaries**
+
+  The deck runtime was already setting the `disabled` state at the first and last slide, but the shared
+  walkthrough deck styling did not make that state visually obvious.
+
+  **Implementation**: Updated `docs/walkthroughs/deck.css` so disabled footer controls use muted text,
+  reduced contrast, and a non-interactive cursor instead of looking like active buttons.
+
+  **Verification**: Fresh local Playwright screenshot of `docs/walkthroughs/agent-lifecycle/index.html`.
+
+  **Impact**: Walkthrough deck controls now clearly signal when the reader is already at the first or
+  last slide.
+
 ## 2026-04-19 (Docs pages now declare an explicit favicon)
 
 - **Added an explicit favicon for the published docs pages**
