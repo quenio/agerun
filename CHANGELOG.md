@@ -1,5 +1,22 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Walkthrough sidebar and footer shell realigned)
+
+- **Aligned the walkthrough deck footer with the slide pane and extended the sidebar to the bottom**
+
+  The walkthrough deck bottom control bar now sits only under the slide/content pane, while the slide
+  navigation sidebar extends all the way to the bottom of the main shell.
+
+  **Implementation**: Updated the three walkthrough deck entry pages so the footer lives inside the
+  two-column shell, and updated the shared walkthrough deck CSS so the shell uses a two-row grid with
+  the sidebar spanning both rows.
+
+  **Verification**: Fresh local Playwright screenshot of
+  `docs/walkthroughs/agent-lifecycle/index.html`.
+
+  **Impact**: The walkthrough deck shell now has a cleaner, more intentional split between navigation
+  and slide controls.
+
 ## 2026-04-19 (Walkthrough next-button label right-aligned)
 
 - **Right-aligned the `Next` label in the walkthrough slide footer controls**

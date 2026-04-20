@@ -35,7 +35,7 @@ body.sidebar-open {
     height: 100dvh;
     padding: 8px;
     display: grid;
-    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr);
     gap: 10px;
 }
 
@@ -100,6 +100,7 @@ body.sidebar-open {
     position: relative;
     display: grid;
     grid-template-columns: minmax(220px, var(--sidebar-width)) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
     gap: 10px;
     align-items: stretch;
     min-height: 0;
@@ -108,6 +109,8 @@ body.sidebar-open {
 .sidebar {
     --scroll-cue-bleed: 18px;
     position: relative;
+    grid-column: 1;
+    grid-row: 1 / span 2;
     height: 100%;
     min-height: 0;
     padding: 18px;
@@ -224,6 +227,8 @@ body.sidebar-open {
 
 .slide-card {
     --scroll-cue-bleed: 32px;
+    grid-column: 2;
+    grid-row: 1;
     height: 100%;
     min-height: 0;
     padding: 32px;
@@ -576,6 +581,11 @@ li {
     width: 100%;
 }
 
+.controls {
+    grid-column: 2;
+    grid-row: 2;
+}
+
 .controls button:disabled {
     opacity: 0.45;
     cursor: default;
@@ -603,6 +613,7 @@ li {
 
     .slide-shell {
         grid-template-columns: 1fr;
+        grid-template-rows: minmax(0, 1fr) auto;
     }
 
     .menu-button,
@@ -623,6 +634,11 @@ li {
         transform: translateX(calc(-100% - 12px));
         transition: transform 0.22s ease;
         padding-top: 22px;
+    }
+
+    .slide-card,
+    .controls {
+        grid-column: 1;
     }
 
     body.sidebar-open .sidebar {
