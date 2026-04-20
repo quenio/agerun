@@ -1,5 +1,21 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Walkthrough next-button label right-aligned)
+
+- **Right-aligned the `Next` label in the walkthrough slide footer controls**
+
+  After rebalancing the slide footer layout, the `Next` button text now aligns to the right edge of its
+  button to better mirror the previous/next control strip.
+
+  **Implementation**: Updated the shared walkthrough deck CSS in
+  `docs/walkthroughs/agent-lifecycle/styles.css`, `docs/walkthroughs/message-processing/styles.css`,
+  and `docs/walkthroughs/delegation/styles.css` so `#next-button` uses right-aligned text.
+
+  **Verification**: Fresh local Playwright screenshot of
+  `docs/walkthroughs/agent-lifecycle/index.html`.
+
+  **Impact**: The slide footer controls now read more naturally as a left/back and right/forward pair.
+
 ## 2026-04-19 (Walkthrough slide footer controls rebalanced)
 
 - **Reworked the walkthrough deck bottom-bar control layout for previous, hint, and next**

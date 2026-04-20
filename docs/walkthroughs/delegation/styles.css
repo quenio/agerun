@@ -162,6 +162,7 @@ body.sidebar-open {
 
 #next-button {
     grid-column: 3;
+    text-align: right;
 }
 
 .nav-link-title {
