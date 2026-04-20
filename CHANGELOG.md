@@ -1,5 +1,21 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Docs index-page top-bar titles reduced slightly)
+
+- **Reduced the top-bar title size on the docs index pages by a small final step**
+
+  The main titles in the home page and walkthrough index top bars now render slightly smaller while
+  keeping the same overall hierarchy.
+
+  **Implementation**: Updated the shared `page-topbar-title` font size in `docs/site.css` from
+  `clamp(1.8rem, 2.4vw, 2.6rem)` to `clamp(1.675rem, 2.3vw, 2.475rem)`.
+
+  **Verification**: Fresh local Playwright screenshots of `docs/index.html` and
+  `docs/walkthroughs/index.html`.
+
+  **Impact**: The top-bar titles now sit more comfortably in the header without overpowering the rest
+  of the page.
+
 ## 2026-04-19 (Walkthrough index footer text removed)
 
 - **Removed the explanatory sentence from the walkthrough index bottom bar**
