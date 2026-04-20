@@ -1,5 +1,19 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Extra in-section titles removed from the walkthrough index page)
+
+- **Removed the redundant large section titles from `docs/walkthroughs/index.html`**
+
+  The walkthrough index page now matches the home page by relying on the section labels instead of
+  repeating larger in-section titles.
+
+  **Implementation**: Removed `Walkthrough Landing Page`, `Published Decks`, and
+  `Suggested Next Reading` from `docs/walkthroughs/index.html`.
+
+  **Verification**: Fresh local Playwright screenshot of `docs/walkthroughs/index.html`.
+
+  **Impact**: The walkthrough index page now has the same cleaner section structure as the home page.
+
 ## 2026-04-19 (Top-bar eyebrow labels removed from the docs index pages)
 
 - **Removed the extra small heading above the main title in the two docs index-page top bars**
