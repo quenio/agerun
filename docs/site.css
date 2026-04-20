@@ -20,12 +20,6 @@ body {
     color: var(--text);
 }
 
-main {
-    width: min(1280px, calc(100vw - 48px));
-    margin: 0 auto;
-    padding: 48px 0;
-}
-
 .page-topbar,
 .page-footer,
 .page-sidebar,
@@ -212,6 +206,7 @@ main {
 
 .viewport-sidebar,
 .viewport-content {
+    min-width: 0;
     min-height: 0;
     overflow: auto;
 }
@@ -287,7 +282,7 @@ a:hover {
 
 .walkthrough-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr));
     gap: 18px;
     margin: 28px 0;
 }
@@ -296,6 +291,7 @@ a:hover {
     display: flex;
     flex-direction: column;
     gap: 16px;
+    min-width: 0;
     min-height: 220px;
     padding: 22px;
     border-radius: 16px;

@@ -1,5 +1,21 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Global `main` document rule removed from the shared docs shell)
+
+- **Removed the global `main` width rule that was shrinking the app-shell content panes**
+
+  The remaining right-edge misalignment on both docs index pages was caused by a global `main` rule in
+  `docs/site.css`. Because the app-shell content panes also use `<main>`, they were still being treated
+  like centered document pages instead of full grid items.
+
+  **Implementation**: Removed the global `main` width/margin/padding rule from `docs/site.css`.
+
+  **Verification**: `make check-docs 2>&1` and fresh local Playwright screenshots of
+  `docs/index.html` and `docs/walkthroughs/index.html`.
+
+  **Impact**: The content panes on both docs index pages now extend to the intended right edge of the
+  layout instead of inheriting a narrower centered-document width.
+
 ## 2026-04-19 (Shared panel-following margin removed from docs shell)
 
 - **Removed the generic `panel + panel` top margin that was misaligning the two-column index pages**
