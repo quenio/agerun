@@ -9,39 +9,8 @@
         ref_element.classList.toggle("can-scroll-down", hasOverflow && canScrollDown);
     }
 
-    function ensureCueStructure(ref_element) {
-        let contentElement = ref_element.querySelector(":scope > .scroll-cue-content");
-
-        if (!contentElement) {
-            contentElement = document.createElement("div");
-            contentElement.className = "scroll-cue-content";
-
-            Array.from(ref_element.childNodes).forEach(function (childNode) {
-                contentElement.appendChild(childNode);
-            });
-
-            ref_element.appendChild(contentElement);
-        }
-
-        if (!ref_element.querySelector(":scope > .scroll-cue-overlay-top")) {
-            const topOverlay = document.createElement("div");
-            topOverlay.className = "scroll-cue-overlay scroll-cue-overlay-top";
-            topOverlay.setAttribute("aria-hidden", "true");
-            ref_element.appendChild(topOverlay);
-        }
-
-        if (!ref_element.querySelector(":scope > .scroll-cue-overlay-bottom")) {
-            const bottomOverlay = document.createElement("div");
-            bottomOverlay.className = "scroll-cue-overlay scroll-cue-overlay-bottom";
-            bottomOverlay.setAttribute("aria-hidden", "true");
-            ref_element.appendChild(bottomOverlay);
-        }
-    }
-
     function attachScrollCue(ref_element) {
         let animationFrame = 0;
-
-        ensureCueStructure(ref_element);
 
         function scheduleUpdate() {
             if (animationFrame) {

@@ -210,46 +210,26 @@ body {
 
 .viewport-sidebar,
 .viewport-content {
+    --scroll-cue-top: transparent;
+    --scroll-cue-bottom: transparent;
     min-width: 0;
     min-height: 0;
     overflow: auto;
     position: relative;
+    box-shadow:
+        inset 0 28px 26px -24px var(--scroll-cue-top),
+        inset 0 -28px 26px -24px var(--scroll-cue-bottom);
+    transition: box-shadow 160ms ease;
 }
 
-.scroll-cue-content {
-    position: relative;
-    z-index: 1;
+.viewport-sidebar.can-scroll-up,
+.viewport-content.can-scroll-up {
+    --scroll-cue-top: rgba(5, 8, 18, 0.9);
 }
 
-.scroll-cue-overlay {
-    position: absolute;
-    left: 0;
-    right: 0;
-    z-index: 4;
-    height: 40px;
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 160ms ease;
-}
-
-.scroll-cue-overlay-top {
-    top: 0;
-    background: linear-gradient(to bottom, rgba(5, 8, 18, 0.88), rgba(5, 8, 18, 0));
-}
-
-.scroll-cue-overlay-bottom {
-    bottom: 0;
-    background: linear-gradient(to top, rgba(5, 8, 18, 0.88), rgba(5, 8, 18, 0));
-}
-
-.viewport-sidebar.can-scroll-up > .scroll-cue-overlay-top,
-.viewport-content.can-scroll-up > .scroll-cue-overlay-top {
-    opacity: 1;
-}
-
-.viewport-sidebar.can-scroll-down > .scroll-cue-overlay-bottom,
-.viewport-content.can-scroll-down > .scroll-cue-overlay-bottom {
-    opacity: 1;
+.viewport-sidebar.can-scroll-down,
+.viewport-content.can-scroll-down {
+    --scroll-cue-bottom: rgba(5, 8, 18, 0.9);
 }
 
 .viewport-bar {
