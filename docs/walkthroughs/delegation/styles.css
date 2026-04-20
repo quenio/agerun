@@ -77,6 +77,22 @@ body.sidebar-open {
     font-size: clamp(1.6rem, 2vw, 2.4rem);
 }
 
+.topbar-copy {
+    display: grid;
+    gap: 4px;
+}
+
+.deck-back-link {
+    color: var(--muted);
+    font-size: 0.95rem;
+    text-decoration: none;
+}
+
+.deck-back-link:hover {
+    color: var(--accent);
+    text-decoration: none;
+}
+
 .status-group {
     display: flex;
     align-items: center;

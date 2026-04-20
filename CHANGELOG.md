@@ -1,5 +1,21 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Walkthrough slide pages now link back to the walkthrough index)
+
+- **Added a visible return link from each walkthrough deck back to the walkthrough index**
+
+  The slide pages now expose an obvious `Back to Walkthroughs` link in the top bar so readers can return
+  to `docs/walkthroughs/index.html` without relying on browser navigation.
+
+  **Implementation**: Updated `docs/walkthroughs/agent-lifecycle/index.html`,
+  `docs/walkthroughs/message-processing/index.html`, and `docs/walkthroughs/delegation/index.html`, plus
+  the shared walkthrough deck styling in their `styles.css` files.
+
+  **Verification**: Fresh local Playwright screenshot of
+  `docs/walkthroughs/agent-lifecycle/index.html`.
+
+  **Impact**: Walkthrough decks now have a clear escape path back to the walkthrough collection.
+
 ## 2026-04-19 (Docs guide now requires shared styling for subfolder index pages)
 
 - **Added explicit guidance that all `docs/` subfolder index pages must follow the shared index-page style**
