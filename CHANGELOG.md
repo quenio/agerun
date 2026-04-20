@@ -1,5 +1,19 @@
 # AgeRun CHANGELOG
 
+## 2026-04-19 (Docs pages now declare an explicit favicon)
+
+- **Added an explicit favicon for the published docs pages**
+
+  The docs pages were not declaring a favicon, so browsers fell back to requesting the missing site-root
+  `/favicon.ico`. The published docs entry points now point at a real favicon asset under `docs/`.
+
+  **Implementation**: Added `docs/favicon.svg` and linked it from `docs/index.html`,
+  `docs/walkthroughs/index.html`, and the three walkthrough deck entry pages.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: Published docs pages no longer rely on the missing default favicon path.
+
 ## 2026-04-19 (Docs guide now includes a concrete page-verification workflow)
 
 - **Added explicit instructions for testing and verifying pages under `docs/`**

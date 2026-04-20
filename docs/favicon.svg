@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="AgeRun favicon">
+  <defs>
+    <linearGradient id="agerun-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#18244b"/>
+      <stop offset="100%" stop-color="#0b1020"/>
+    </linearGradient>
+    <linearGradient id="agerun-accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7dd3fc"/>
+      <stop offset="100%" stop-color="#a78bfa"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="14" fill="url(#agerun-bg)"/>
+  <path d="M18 46L28.5 18h7L46 46h-7.5l-2-6h-9l-2 6H18zm11.7-12h4.7L32 26.8 29.7 34z" fill="url(#agerun-accent)"/>
+</svg>
