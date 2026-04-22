@@ -54,7 +54,7 @@ FILE* ar_executable_fixture__build_and_run(const ar_executable_fixture_t *ref_fi
  * Builds and runs the executable with an optional boot-method override
  * @param ref_fixture The fixture managing the test
  * @param ref_methods_dir Path to the methods directory to use
- * @param ref_boot_method Optional combined boot method identifier (e.g. echo-1.0.0)
+ * @param ref_boot_method Optional combined boot method identifier (e.g. boot-echo-1.0.0)
  * @return FILE pointer from popen() for reading output, or NULL on failure
  * @note Caller must close the FILE* with pclose() when done
  */

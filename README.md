@@ -70,8 +70,12 @@ runtime flow at a time.
    If you need a different fresh-start boot method, pass the combined method identifier used in the
    `methods/` directory:
    ```
-   make run-exec BOOT_METHOD=echo-1.0.0
+   make run-exec BOOT_METHOD=boot-echo-1.0.0
    ```
+
+   Boot overrides must be methods that handle the raw `"__boot__"` startup string. For example,
+   `echo-1.0.0` is **not** boot-safe by itself because it expects a map with `sender` and `content`
+   fields, while `boot-echo-1.0.0` wraps `echo` for executable startup.
 
    When `BOOT_METHOD` is omitted, the executable keeps using the default `bootstrap-1.0.0` startup
    path.

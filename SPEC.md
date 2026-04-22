@@ -352,7 +352,10 @@ The runtime startup contract has two layers:
   starts with `bootstrap-1.0.0` and queues the standard `"__boot__"` startup message.
 - **`agerun` executable override path**: On a fresh executable run, operators may pass
   `--boot-method <method-name-version>` to request a different boot method such as
-  `echo-1.0.0`.
+  `boot-echo-1.0.0`.
+- **Boot override contract**: Fresh-start boot overrides must handle the raw `"__boot__"` startup
+  string sent by the executable; ordinary message handlers like `echo-1.0.0` are not valid boot
+  methods unless wrapped by a boot-safe method.
 - **Persisted-agent precedence**: If persisted agents are restored from `agerun.agency`, the
   executable skips fresh boot-agent creation and reports any requested boot override as skipped.
 - **Invalid override behavior**: Malformed or unavailable boot overrides fail clearly and do not

@@ -1,5 +1,27 @@
 # AgeRun CHANGELOG
 
+## 2026-04-20 (Executable boot override now supports a boot-safe echo wrapper)
+
+- **Added a boot-safe `boot-echo-1.0.0` executable startup method and updated boot override docs/tests**
+
+  Fresh executable startup always sends the selected boot agent the raw `"__boot__"` string, which
+  made `echo-1.0.0` an invalid `BOOT_METHOD` example because it expects a message map with `sender`
+  and `content` fields. The runtime docs and tests now use a dedicated boot-safe wrapper instead.
+
+  **Implementation**: Added `methods/boot-echo-1.0.0.method`,
+  `methods/boot-echo-1.0.0.md`, and `methods/boot_echo_tests.c`; updated `README.md`, `SPEC.md`,
+  `methods/README.md`, `modules/ar_executable.md`, `modules/ar_executable_fixture.h`, and
+  `modules/ar_executable_tests.c` to document the boot override contract, use
+  `boot-echo-1.0.0` in executable examples, and expand the executable runtime inventory checks from
+  14 to 15 methods.
+
+  **Verification**: `make boot_echo_tests 2>&1`, `make ar_executable_tests 2>&1`,
+  `make clean build 2>&1`, `make check-logs`, `make check-docs 2>&1`, and
+  `make check-naming 2>&1`.
+
+  **Impact**: Operators can now run `make run-exec BOOT_METHOD=boot-echo-1.0.0` as a valid fresh
+  boot override without triggering a field-access error on the startup string.
+
 ## 2026-04-19 (Walkthrough diagram sections no longer repeat chip legends below their headings)
 
 - **Removed the extra legend-chip rows under walkthrough diagram-section titles**

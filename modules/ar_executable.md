@@ -48,6 +48,8 @@ The main function that:
      - the default `bootstrap-1.0.0` method, or
      - the requested override method identifier
    - Queues the standard `"__boot__"` message for the selected boot agent
+   - Requires any override method to handle the raw startup string safely (for example,
+     `boot-echo-1.0.0` is valid, while `echo-1.0.0` by itself is not)
 
 4. **Persistence-Aware Behavior**
    - If agents were restored, skips fresh boot-agent creation
@@ -98,11 +100,11 @@ ar_data__destroy(mgmt_msg);
 # First run - creates the default bootstrap agent and saves state
 ./bin/agerun
 
-# Fresh run with an alternate boot method
-./bin/agerun --boot-method echo-1.0.0
+# Fresh run with an alternate boot-safe method
+./bin/agerun --boot-method boot-echo-1.0.0
 
 # Repository wrapper for the same behavior
-make run-exec BOOT_METHOD=echo-1.0.0
+make run-exec BOOT_METHOD=boot-echo-1.0.0
 
 # Malformed or unavailable overrides fail instead of falling back
 ./bin/agerun --boot-method invalid
@@ -149,7 +151,8 @@ While the executable itself is not unit tested (being a main entry point), it se
 On a fresh run, the executable creates exactly one boot agent. By default this is the
 `bootstrap-1.0.0` method. If `--boot-method <name-version>` is supplied and no persisted agents are
 restored, the executable creates the requested boot agent instead and still queues the standard
-`"__boot__"` startup message.
+`"__boot__"` startup message. Override methods therefore must be boot-capable handlers for the raw
+startup string, such as `boot-echo-1.0.0`.
 
 ### Persistence Behavior
 

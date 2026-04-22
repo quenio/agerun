@@ -7,6 +7,7 @@ This directory contains AgeRun method definitions. Each file represents a single
 | Method | Version | Description | Documentation |
 |--------|---------|-------------|---------------|
 | echo | 1.0.0 | Simple echo agent that returns messages to sender | [echo-1.0.0.md](echo-1.0.0.md) |
+| boot-echo | 1.0.0 | Boot-safe wrapper that handles `"__boot__"`, spawns `echo`, and queues a demo payload | [boot-echo-1.0.0.md](boot-echo-1.0.0.md) |
 | calculator | 1.0.0 | Basic arithmetic calculator supporting add, subtract, multiply, divide | [calculator-1.0.0.md](calculator-1.0.0.md) |
 | chat-session | 1.0.0 | Stateful chat/session backend that tracks conversation state and escalation | [chat-session-1.0.0.md](chat-session-1.0.0.md) |
 | shell | 1.0.0 | Built-in shell method used by `arsh` for restricted shell parsing, session storage, and runtime interaction | [shell-1.0.0.md](shell-1.0.0.md) |
@@ -32,6 +33,7 @@ Where:
 ### Examples
 
 - `echo-1.0.0.method` - Echo method version 1.0.0
+- `boot-echo-1.0.0.method` - Boot-safe echo wrapper method version 1.0.0
 - `calculator-2.1.3.method` - Calculator method version 2.1.3
 - `data_processor-0.5.0.method` - Data processor method version 0.5.0
 
@@ -66,7 +68,22 @@ Instructions can be one of two types:
 
 **Simple Echo Method** (`echo-1.0.0.method`):
 ```
-send(sender, message)
+send(message.sender, message.content)
+```
+
+**Boot Echo Method** (`boot-echo-1.0.0.method`):
+```
+memory.is_boot := if(message = "__boot__", 1, 0)
+memory.method_name := if(memory.is_boot = 1, "echo", "")
+memory.method_version := "1.0.0"
+memory.sender := 0
+memory.content := "boot_echo_ready"
+memory.echo_spawn_result := spawn(memory.method_name, memory.method_version, context)
+memory.echo_id := if(memory.is_boot = 1, memory.echo_spawn_result, memory.echo_id)
+memory.echo_input := build("sender={sender} content={content}", memory)
+memory.echo_payload := parse("sender={sender} content={content}", memory.echo_input)
+memory.echo_sent := send(memory.echo_id * memory.is_boot, memory.echo_payload)
+memory.demo_status := if(memory.is_boot = 1, "Boot echo queued", "Boot echo skipped")
 ```
 
 **Calculator Method** (`calculator-1.0.0.method`):
@@ -116,6 +133,7 @@ Expressions can include:
 Methods should handle these lifecycle messages:
 - `__wake__`: Sent when an agent is created or resumed
 - `__sleep__`: Sent before an agent is paused or destroyed
+- `__boot__`: Sent by the executable to the selected fresh-start boot method; only boot-capable methods such as `bootstrap-1.0.0` or `boot-echo-1.0.0` should be used with executable boot overrides
 
 ## Version Management
 

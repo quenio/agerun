@@ -154,6 +154,7 @@ static void test_loading_methods_from_directory(ar_executable_fixture_t *mut_fix
     // Then we should see evidence that methods were loaded
     char line[256];
     bool found_agent_manager = false;
+    bool found_boot_echo = false;
     bool found_bootstrap = false;
     bool found_calculator = false;
     bool found_chat_session = false;
@@ -171,6 +172,9 @@ static void test_loading_methods_from_directory(ar_executable_fixture_t *mut_fix
         // Look for evidence of each loaded method
         if (strstr(line, "Loaded method 'agent-manager'")) {
             found_agent_manager = true;
+        }
+        if (strstr(line, "Loaded method 'boot-echo'")) {
+            found_boot_echo = true;
         }
         if (strstr(line, "Loaded method 'bootstrap'")) {
             found_bootstrap = true;
@@ -233,11 +237,12 @@ static void test_loading_methods_from_directory(ar_executable_fixture_t *mut_fix
     // Verify that we saw the loading message
     AR_ASSERT(found_loading_message, "Should see message about loading from directory");
 
-    // Verify that we loaded exactly 14 methods
-    AR_ASSERT(method_count == 14, "Should load exactly 14 methods from directory");
+    // Verify that we loaded exactly 15 methods
+    AR_ASSERT(method_count == 15, "Should load exactly 15 methods from directory");
 
     // Verify that all individual methods were loaded
     AR_ASSERT(found_agent_manager, "Should load agent-manager method");
+    AR_ASSERT(found_boot_echo, "Should load boot-echo method");
     AR_ASSERT(found_bootstrap, "Should load bootstrap method");
     AR_ASSERT(found_calculator, "Should load calculator method");
     AR_ASSERT(found_chat_session, "Should load chat-session method");
@@ -419,7 +424,7 @@ static void test_bootstrap_spawns_chat_session(ar_executable_fixture_t *mut_fixt
 
         // Look for workflow demo method availability during startup
         if (strstr(line, "Loaded method 'workflow-coordinator'") ||
-            strstr(line, "Loaded 14 methods from directory")) {
+            strstr(line, "Loaded 15 methods from directory")) {
             found_workflow_coordinator_loaded = true;
         }
 
@@ -603,8 +608,9 @@ static void test_executable__saves_methodology_file(ar_executable_fixture_t *mut
     file_content[read_size] = '\0';
     fclose(methodology_file);
 
-    // Check for all 14 methods
+    // Check for all 15 methods
     AR_ASSERT(strstr(file_content, "agent-manager") != NULL, "Should contain agent-manager method");
+    AR_ASSERT(strstr(file_content, "boot-echo") != NULL, "Should contain boot-echo method");
     AR_ASSERT(strstr(file_content, "bootstrap") != NULL, "Should contain bootstrap method");
     AR_ASSERT(strstr(file_content, "calculator") != NULL, "Should contain calculator method");
     AR_ASSERT(strstr(file_content, "chat-session") != NULL, "Should contain chat-session method");
@@ -621,7 +627,7 @@ static void test_executable__saves_methodology_file(ar_executable_fixture_t *mut
 
     AR__HEAP__FREE(file_content);
 
-    printf("✓ All 14 methods found in agerun.methodology file\n");
+    printf("✓ All 15 methods found in agerun.methodology file\n");
 }
 
 static void test_executable__loads_persisted_methodology(ar_executable_fixture_t *mut_fixture) {
@@ -861,23 +867,31 @@ static void test_executable__supports_boot_method_override(ar_executable_fixture
     FILE *pipe = ar_executable_fixture__build_and_run_with_boot_method(
         mut_fixture,
         own_methods_dir,
-        "echo-1.0.0");
+        "boot-echo-1.0.0");
     AR_ASSERT(pipe != NULL, "Should be able to run executable with boot override");
 
     char line[512];
     bool found_override_requested = false;
     bool found_override_creation = false;
     bool found_bootstrap_creation = false;
+    bool found_boot_field_error = false;
+    int messages_processed = 0;
 
     while (fgets(line, sizeof(line), pipe) != NULL) {
-        if (strstr(line, "Boot method override requested: 'echo-1.0.0'")) {
+        if (strstr(line, "Boot method override requested: 'boot-echo-1.0.0'")) {
             found_override_requested = true;
         }
-        if (strstr(line, "Creating boot agent from method 'echo' version '1.0.0'")) {
+        if (strstr(line, "Creating boot agent from method 'boot-echo' version '1.0.0'")) {
             found_override_creation = true;
         }
         if (strstr(line, "Creating bootstrap agent")) {
             found_bootstrap_creation = true;
+        }
+        if (strstr(line, "Cannot access field 'sender' on STRING value \"__boot__\"")) {
+            found_boot_field_error = true;
+        }
+        if (strstr(line, "Processed ")) {
+            sscanf(line, "Processed %d message", &messages_processed);
         }
     }
 
@@ -892,6 +906,10 @@ static void test_executable__supports_boot_method_override(ar_executable_fixture
     AR_ASSERT(found_override_requested, "Should report the requested boot method override");
     AR_ASSERT(found_override_creation, "Should create the requested override boot agent");
     AR_ASSERT(!found_bootstrap_creation, "Should not create bootstrap when override is requested");
+    AR_ASSERT(!found_boot_field_error,
+              "Boot override wrapper should avoid field access errors on the __boot__ string payload");
+    AR_ASSERT(messages_processed == 2,
+              "boot-echo override should process the wrapper boot and queued echo message");
 
     ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
     printf("✓ Boot method override test passed\n");
@@ -1028,7 +1046,7 @@ static void test_executable__reports_skipped_override_when_agents_loaded(ar_exec
     FILE *pipe = ar_executable_fixture__build_and_run_with_boot_method(
         mut_fixture,
         own_methods_dir,
-        "echo-1.0.0");
+        "boot-echo-1.0.0");
     AR_ASSERT(pipe != NULL, "Should be able to run executable with restored agents and override");
 
     char line[512];
@@ -1036,10 +1054,10 @@ static void test_executable__reports_skipped_override_when_agents_loaded(ar_exec
     bool found_override_creation = false;
 
     while (fgets(line, sizeof(line), pipe) != NULL) {
-        if (strstr(line, "Boot method override 'echo-1.0.0' skipped because agents were restored from disk")) {
+        if (strstr(line, "Boot method override 'boot-echo-1.0.0' skipped because agents were restored from disk")) {
             found_override_skipped = true;
         }
-        if (strstr(line, "Creating boot agent from method 'echo' version '1.0.0'")) {
+        if (strstr(line, "Creating boot agent from method 'boot-echo' version '1.0.0'")) {
             found_override_creation = true;
         }
     }

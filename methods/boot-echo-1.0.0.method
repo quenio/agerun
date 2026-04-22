@@ -1,0 +1,11 @@
+memory.is_boot := if(message = "__boot__", 1, 0)
+memory.method_name := if(memory.is_boot = 1, "echo", "")
+memory.method_version := "1.0.0"
+memory.sender := 0
+memory.content := "boot_echo_ready"
+memory.echo_spawn_result := spawn(memory.method_name, memory.method_version, context)
+memory.echo_id := if(memory.is_boot = 1, memory.echo_spawn_result, memory.echo_id)
+memory.echo_input := build("sender={sender} content={content}", memory)
+memory.echo_payload := parse("sender={sender} content={content}", memory.echo_input)
+memory.echo_sent := send(memory.echo_id * memory.is_boot, memory.echo_payload)
+memory.demo_status := if(memory.is_boot = 1, "Boot echo queued", "Boot echo skipped")
