@@ -26,7 +26,7 @@ help:
 	@echo "  make build        - Run complete build with all checks and tests"
 	@echo ""
 	@echo "Run targets:"
-	@echo "  make run-exec     - Build and run the executable (optional: BOOT_METHOD=name-version)"
+	@echo "  make run-exec     - Build and run the executable (optional: BOOT_METHOD=name-version NO_PERSISTENCE=1)"
 	@echo "  make run-shell    - Build and run the shell scaffold executable"
 	@echo "  make sanitize-exec - Build and run executable with sanitizers"
 	@echo "  make tsan-exec    - Build and run executable with ThreadSanitizer"
@@ -316,10 +316,15 @@ tsan_exec_lib: $(TSAN_EXEC_DIR) $(TSAN_EXEC_OBJ)
 run-exec: run_exec_lib
 	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) -o $(RUN_EXEC_DIR)/agerun modules/ar_executable.c $(RUN_EXEC_DIR)/libagerun.a $(LDFLAGS)
 	@boot_args=""; \
+	extra_args="$(AGERUN_ARGS)"; \
+	persistence_args=""; \
 	if [ -n "$(BOOT_METHOD)" ]; then \
 		boot_args="--boot-method $(BOOT_METHOD)"; \
 	fi; \
-	cd $(RUN_EXEC_DIR) && AGERUN_MEMORY_REPORT="memory_report_agerun.log" ./agerun $$boot_args
+	if [ -n "$(NO_PERSISTENCE)" ]; then \
+		persistence_args="--no-persistence"; \
+	fi; \
+	cd $(RUN_EXEC_DIR) && AGERUN_MEMORY_REPORT="memory_report_agerun.log" ./agerun $$boot_args $$persistence_args $$extra_args
 
 run-shell: run_exec_lib
 	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) -DAR_SHELL__BUILD_MAIN -o $(RUN_EXEC_DIR)/arsh modules/ar_shell.c $(RUN_EXEC_DIR)/libagerun.a $(LDFLAGS)

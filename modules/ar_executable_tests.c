@@ -31,7 +31,11 @@ static void test_executable__continues_on_save_failure(ar_executable_fixture_t *
 static void test_executable__loads_agents_on_startup(ar_executable_fixture_t *mut_fixture);
 static void test_executable__skips_bootstrap_when_agents_loaded(ar_executable_fixture_t *mut_fixture);
 static void test_executable__supports_boot_method_override(ar_executable_fixture_t *mut_fixture);
+static void test_executable__skips_loading_persisted_state_when_no_persistence(ar_executable_fixture_t *mut_fixture);
+static void test_executable__skips_saving_persisted_state_when_no_persistence(ar_executable_fixture_t *mut_fixture);
+static void test_executable__reports_no_persistence_mode_and_supports_boot_override(ar_executable_fixture_t *mut_fixture);
 static void test_executable__reports_default_boot_selection(ar_executable_fixture_t *mut_fixture);
+static void test_executable__rejects_unknown_cli_argument(ar_executable_fixture_t *mut_fixture);
 static void test_executable__rejects_invalid_boot_override(ar_executable_fixture_t *mut_fixture);
 static void test_executable__rejects_unavailable_boot_override(ar_executable_fixture_t *mut_fixture);
 static void test_executable__reports_skipped_override_when_agents_loaded(ar_executable_fixture_t *mut_fixture);
@@ -76,6 +80,19 @@ static bool _file_contains_text(const char *ref_path, const char *ref_text) {
     AR__HEAP__FREE(own_content);
     return found;
 }
+
+static void _write_text_file(const char *ref_path, const char *ref_content) {
+    FILE *own_file;
+
+    AR_ASSERT(ref_path != NULL, "File path should be provided");
+    AR_ASSERT(ref_content != NULL, "File content should be provided");
+
+    own_file = fopen(ref_path, "w");
+    AR_ASSERT(own_file != NULL, "Should be able to create text file");
+    fputs(ref_content, own_file);
+    fclose(own_file);
+}
+
 
 // Stub function to avoid linking with the actual executable
 int ar_executable__main(void) {
@@ -858,6 +875,224 @@ static void test_executable__skips_bootstrap_when_agents_loaded(ar_executable_fi
     printf("✓ Skip bootstrap test passed\n");
 }
 
+static void test_executable__skips_loading_persisted_state_when_no_persistence(ar_executable_fixture_t *mut_fixture) {
+    printf("\n=== Testing executable skips persisted loading when no-persistence is enabled ===\n");
+
+    // Given persisted methodology and agency files already exist in the build directory
+    const char *ref_build_dir = ar_executable_fixture__get_build_dir(mut_fixture);
+    AR_ASSERT(ref_build_dir != NULL, "Should have build directory");
+
+    char mut_methodology_path[512];
+    char mut_agency_path[512];
+    snprintf(mut_methodology_path, sizeof(mut_methodology_path), "%s/agerun.methodology", ref_build_dir);
+    snprintf(mut_agency_path, sizeof(mut_agency_path), "%s/agerun.agency", ref_build_dir);
+
+    _write_text_file(mut_methodology_path, "dummy-methodology-content\n");
+    _write_text_file(mut_agency_path,
+                     "# AgeRun YAML File\n"
+                     "agents:\n"
+                     "  - id: 1\n"
+                     "    method_name: bootstrap\n"
+                     "    method_version: \"1.0.0\"\n"
+                     "    memory: {}\n");
+
+    // When the executable runs with no-persistence enabled
+    char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
+    FILE *ref_pipe = ar_executable_fixture__build_and_run_with_options(
+        mut_fixture,
+        own_methods_dir,
+        NULL,
+        true);
+    AR_ASSERT(ref_pipe != NULL, "Should be able to run executable with no-persistence enabled");
+
+    char mut_line[512];
+    bool found_no_persistence = false;
+    bool found_loading_persisted_methodology = false;
+    bool found_loading_persisted_agency = false;
+    bool found_loading_methods_from_directory = false;
+    bool found_creating_bootstrap = false;
+
+    while (fgets(mut_line, sizeof(mut_line), ref_pipe) != NULL) {
+        if (strstr(mut_line, "Persistence disabled for this run: skipping persisted methodology and agency load/save")) {
+            found_no_persistence = true;
+        }
+        if (strstr(mut_line, "Loading methods from persisted methodology")) {
+            found_loading_persisted_methodology = true;
+        }
+        if (strstr(mut_line, "Loading agents from persisted agency")) {
+            found_loading_persisted_agency = true;
+        }
+        if (strstr(mut_line, "Loading methods from directory")) {
+            found_loading_methods_from_directory = true;
+        }
+        if (strstr(mut_line, "Creating bootstrap agent")) {
+            found_creating_bootstrap = true;
+        }
+    }
+
+    // Then it should skip persisted loading and follow the fresh-start path
+    int ref_status = pclose(ref_pipe);
+    if (WIFEXITED(ref_status)) {
+        AR_ASSERT(WEXITSTATUS(ref_status) == 0,
+                  "Executable should exit successfully when no-persistence is enabled");
+    } else {
+        AR_ASSERT(false, "Executable should exit normally when no-persistence is enabled");
+    }
+
+    AR_ASSERT(found_no_persistence, "Should report no-persistence mode");
+    AR_ASSERT(!found_loading_persisted_methodology,
+              "Should not load persisted methodology when no-persistence is enabled");
+    AR_ASSERT(!found_loading_persisted_agency,
+              "Should not load persisted agency when no-persistence is enabled");
+    AR_ASSERT(found_loading_methods_from_directory,
+              "Should load methods from directory when persisted methodology is skipped");
+    AR_ASSERT(found_creating_bootstrap,
+              "Should follow the fresh-start bootstrap path when persisted agents are skipped");
+
+    ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
+    printf("✓ No-persistence loading skip test passed\n");
+}
+
+static void test_executable__skips_saving_persisted_state_when_no_persistence(ar_executable_fixture_t *mut_fixture) {
+    printf("\n=== Testing executable skips persisted saving when no-persistence is enabled ===\n");
+
+    // Given sentinel persistence files already exist in the build directory
+    const char *ref_build_dir = ar_executable_fixture__get_build_dir(mut_fixture);
+    AR_ASSERT(ref_build_dir != NULL, "Should have build directory");
+
+    char mut_methodology_path[512];
+    char mut_agency_path[512];
+    snprintf(mut_methodology_path, sizeof(mut_methodology_path), "%s/agerun.methodology", ref_build_dir);
+    snprintf(mut_agency_path, sizeof(mut_agency_path), "%s/agerun.agency", ref_build_dir);
+
+    _write_text_file(mut_methodology_path, "methodology-sentinel\n");
+    _write_text_file(mut_agency_path, "agency-sentinel\n");
+
+    // When the executable runs with no-persistence enabled
+    char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
+    FILE *ref_pipe = ar_executable_fixture__build_and_run_with_options(
+        mut_fixture,
+        own_methods_dir,
+        NULL,
+        true);
+    AR_ASSERT(ref_pipe != NULL, "Should be able to run executable with no-persistence enabled");
+
+    char mut_line[512];
+    bool found_skip_methodology_save = false;
+    bool found_skip_agency_save = false;
+
+    while (fgets(mut_line, sizeof(mut_line), ref_pipe) != NULL) {
+        if (strstr(mut_line, "Skipping methodology save because persistence is disabled")) {
+            found_skip_methodology_save = true;
+        }
+        if (strstr(mut_line, "Skipping agents save because persistence is disabled")) {
+            found_skip_agency_save = true;
+        }
+    }
+
+    // Then it should skip persistence writes and leave the sentinel files untouched
+    int ref_status = pclose(ref_pipe);
+    if (WIFEXITED(ref_status)) {
+        AR_ASSERT(WEXITSTATUS(ref_status) == 0,
+                  "Executable should exit successfully when no-persistence is enabled");
+    } else {
+        AR_ASSERT(false, "Executable should exit normally when no-persistence is enabled");
+    }
+
+    AR_ASSERT(found_skip_methodology_save,
+              "Should report that methodology saving was skipped when no-persistence is enabled");
+    AR_ASSERT(found_skip_agency_save,
+              "Should report that agency saving was skipped when no-persistence is enabled");
+    AR_ASSERT(_file_contains_text(mut_methodology_path, "methodology-sentinel"),
+              "Should leave the existing methodology file untouched when no-persistence is enabled");
+    AR_ASSERT(_file_contains_text(mut_agency_path, "agency-sentinel"),
+              "Should leave the existing agency file untouched when no-persistence is enabled");
+
+    ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
+    printf("✓ No-persistence save skip test passed\n");
+}
+
+static void test_executable__reports_no_persistence_mode_and_supports_boot_override(
+    ar_executable_fixture_t *mut_fixture) {
+    printf("\n=== Testing executable reports no-persistence mode and supports boot override ===\n");
+
+    // Given a persisted agency file exists before a no-persistence run with a boot override
+    const char *ref_build_dir = ar_executable_fixture__get_build_dir(mut_fixture);
+    AR_ASSERT(ref_build_dir != NULL, "Should have build directory");
+
+    char mut_agency_path[512];
+    snprintf(mut_agency_path, sizeof(mut_agency_path), "%s/agerun.agency", ref_build_dir);
+    _write_text_file(mut_agency_path,
+                     "# AgeRun YAML File\n"
+                     "agents:\n"
+                     "  - id: 1\n"
+                     "    method_name: bootstrap\n"
+                     "    method_version: \"1.0.0\"\n"
+                     "    memory: {}\n");
+
+    // When the executable runs with both no-persistence and a boot override
+    char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
+    FILE *ref_pipe = ar_executable_fixture__build_and_run_with_options(
+        mut_fixture,
+        own_methods_dir,
+        "boot-echo-1.0.0",
+        true);
+    AR_ASSERT(ref_pipe != NULL,
+              "Should be able to run executable with no-persistence and boot override");
+
+    char mut_line[512];
+    bool found_no_persistence = false;
+    bool found_loading_persisted_agency = false;
+    bool found_override_requested = false;
+    bool found_override_creation = false;
+    bool found_override_skipped = false;
+    int messages_processed = 0;
+
+    while (fgets(mut_line, sizeof(mut_line), ref_pipe) != NULL) {
+        if (strstr(mut_line, "Persistence disabled for this run: skipping persisted methodology and agency load/save")) {
+            found_no_persistence = true;
+        }
+        if (strstr(mut_line, "Loading agents from persisted agency")) {
+            found_loading_persisted_agency = true;
+        }
+        if (strstr(mut_line, "Boot method override requested: 'boot-echo-1.0.0'")) {
+            found_override_requested = true;
+        }
+        if (strstr(mut_line, "Creating boot agent from method 'boot-echo' version '1.0.0'")) {
+            found_override_creation = true;
+        }
+        if (strstr(mut_line, "skipped because agents were restored from disk")) {
+            found_override_skipped = true;
+        }
+        if (strstr(mut_line, "Processed ")) {
+            sscanf(mut_line, "Processed %d message", &messages_processed);
+        }
+    }
+
+    // Then the run should stay fresh and still honor the boot override
+    int ref_status = pclose(ref_pipe);
+    if (WIFEXITED(ref_status)) {
+        AR_ASSERT(WEXITSTATUS(ref_status) == 0,
+                  "Executable should exit successfully when no-persistence and boot override are combined");
+    } else {
+        AR_ASSERT(false, "Executable should exit normally when no-persistence and boot override are combined");
+    }
+
+    AR_ASSERT(found_no_persistence, "Should report no-persistence mode");
+    AR_ASSERT(!found_loading_persisted_agency,
+              "Should not load persisted agents when no-persistence is enabled");
+    AR_ASSERT(found_override_requested, "Should still report the requested boot override");
+    AR_ASSERT(found_override_creation,
+              "Should still create the requested boot agent on the fresh-start path");
+    AR_ASSERT(!found_override_skipped,
+              "Should not report the override as skipped when persistence is disabled");
+    AR_ASSERT(messages_processed == 2,
+              "No-persistence boot override should still process the boot-echo startup flow");
+
+    ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
+    printf("✓ No-persistence boot override test passed\n");
+}
+
 static void test_executable__supports_boot_method_override(ar_executable_fixture_t *mut_fixture) {
     printf("\n=== Testing executable supports boot method override ===\n");
 
@@ -927,6 +1162,7 @@ static void test_executable__reports_default_boot_selection(ar_executable_fixtur
     char line[512];
     bool found_default_selection = false;
     bool found_bootstrap_creation = false;
+    bool found_no_persistence_message = false;
 
     while (fgets(line, sizeof(line), pipe) != NULL) {
         if (strstr(line, "No boot override requested; using default boot method 'bootstrap-1.0.0'")) {
@@ -934,6 +1170,9 @@ static void test_executable__reports_default_boot_selection(ar_executable_fixtur
         }
         if (strstr(line, "Creating bootstrap agent")) {
             found_bootstrap_creation = true;
+        }
+        if (strstr(line, "Persistence disabled for this run")) {
+            found_no_persistence_message = true;
         }
     }
 
@@ -947,9 +1186,54 @@ static void test_executable__reports_default_boot_selection(ar_executable_fixtur
 
     AR_ASSERT(found_default_selection, "Should report default boot selection when no override is provided");
     AR_ASSERT(found_bootstrap_creation, "Should still create bootstrap without override");
+    AR_ASSERT(!found_no_persistence_message,
+              "Default runs should not report no-persistence mode when the option is omitted");
 
     ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
     printf("✓ Default boot selection test passed\n");
+}
+
+static void test_executable__rejects_unknown_cli_argument(ar_executable_fixture_t *mut_fixture) {
+    printf("\n=== Testing executable rejects unknown CLI arguments ===\n");
+
+    // Given an executable launch with an unexpected CLI argument
+    char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
+    FILE *ref_pipe = ar_executable_fixture__build_and_run_with_extra_args(
+        mut_fixture,
+        own_methods_dir,
+        "--unexpected-option");
+    AR_ASSERT(ref_pipe != NULL, "Should be able to run executable with an unexpected CLI argument");
+
+    // When the executable output is collected
+    char mut_line[512];
+    bool found_unknown_argument_error = false;
+    bool found_runtime_initialization = false;
+    int ref_status = -1;
+
+    while (fgets(mut_line, sizeof(mut_line), ref_pipe) != NULL) {
+        if (strstr(mut_line, "Error: Unknown argument '--unexpected-option'")) {
+            found_unknown_argument_error = true;
+        }
+        if (strstr(mut_line, "Creating system instance")) {
+            found_runtime_initialization = true;
+        }
+    }
+
+    ref_status = pclose(ref_pipe);
+
+    // Then it should fail fast before runtime initialization
+    AR_ASSERT(found_unknown_argument_error,
+              "Should report the unexpected CLI argument as an error");
+    AR_ASSERT(!found_runtime_initialization,
+              "Should stop before runtime initialization for unknown CLI arguments");
+    AR_ASSERT(WIFEXITED(ref_status),
+              "Should terminate normally when make reports an unknown CLI argument failure");
+    AR_ASSERT(WEXITSTATUS(ref_status) == 2,
+              "Should exit with make failure status when the executable rejects an unknown argument");
+
+    // Cleanup
+    ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
+    printf("✓ Unknown CLI argument rejection test passed\n");
 }
 
 static void test_executable__rejects_invalid_boot_override(ar_executable_fixture_t *mut_fixture) {
@@ -1252,6 +1536,12 @@ int main(void) {
     // Test that executable continues on save failure
     test_executable__continues_on_save_failure(own_fixture);
 
+    // Test that executable skips persisted loading when no-persistence is enabled
+    test_executable__skips_loading_persisted_state_when_no_persistence(own_fixture);
+
+    // Test that executable skips persisted saving when no-persistence is enabled
+    test_executable__skips_saving_persisted_state_when_no_persistence(own_fixture);
+
     // Test that executable loads from persisted methodology
     test_executable__loads_persisted_methodology(own_fixture);
 
@@ -1264,8 +1554,14 @@ int main(void) {
     // Test that executable supports boot method override
     test_executable__supports_boot_method_override(own_fixture);
 
+    // Test that executable reports no-persistence mode and still supports boot overrides
+    test_executable__reports_no_persistence_mode_and_supports_boot_override(own_fixture);
+
     // Test that executable reports default boot selection without override
     test_executable__reports_default_boot_selection(own_fixture);
+
+    // Test that executable rejects unknown CLI arguments
+    test_executable__rejects_unknown_cli_argument(own_fixture);
 
     // Test that executable rejects invalid boot overrides
     test_executable__rejects_invalid_boot_override(own_fixture);
@@ -1318,7 +1614,7 @@ int main(void) {
     ar_executable_fixture__destroy(own_fixture);
 
     // And report success
-    printf("All 17 tests passed!\n");
+    printf("All 21 tests passed!\n");
     return 0;
 }
 

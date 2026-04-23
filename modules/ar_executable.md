@@ -4,8 +4,9 @@
 
 The executable module serves as the main entry point for the AgeRun runtime system. It provides the
 `agerun` executable, which loads methods, restores persisted state when present, and on fresh runs
-creates the boot agent that starts the bundled workflow demo. The executable now also accepts an
-optional `--boot-method <name-version>` override for fresh startup selection.
+creates the boot agent that starts the bundled workflow demo. The executable also accepts an
+optional `--boot-method <name-version>` override for fresh startup selection and an optional
+`--no-persistence` flag for clean non-persistent runs.
 
 ## Purpose
 
@@ -25,10 +26,10 @@ int main(int argc, char *argv[]);
 ```
 
 The main function that:
-- Parses optional process arguments such as `--boot-method <name-version>`
+- Parses optional process arguments such as `--boot-method <name-version>` and `--no-persistence`
 - Initializes the AgeRun system and loads methods from persisted storage or the methods directory
 - Creates the default `bootstrap` boot agent on fresh startup unless a valid boot override was supplied
-- Processes queued messages and saves runtime state before shutdown
+- Processes queued messages and saves runtime state before shutdown unless persistence was disabled
 - Demonstrates proper cleanup and memory management
 
 ## Implementation Details
@@ -37,11 +38,12 @@ The main function that:
 
 1. **Argument Parsing**
    - Accepts optional `--boot-method <name-version>` for fresh startup override
+   - Accepts optional `--no-persistence` to suppress persisted methodology/agency load and save
    - Uses the default `bootstrap-1.0.0` startup path when no override is supplied
 
 2. **Method and State Loading**
-   - Loads persisted methods when available, otherwise loads `.method` files from the methods directory
-   - Loads persisted agents from `agerun.agency` when available
+   - Loads persisted methods when available unless `--no-persistence` is active, otherwise loads `.method` files from the methods directory
+   - Loads persisted agents from `agerun.agency` when available unless `--no-persistence` is active
 
 3. **Fresh-Start Boot Selection**
    - If no agents were restored, creates a boot agent from either:
@@ -59,7 +61,8 @@ The main function that:
 
 5. **Cleanup and Persistence**
    - Processes remaining messages
-   - Saves methods and agents before shutdown
+   - Saves methods and agents before shutdown unless `--no-persistence` is active
+   - Leaves existing persisted files untouched when persistence is disabled
    - Ensures orderly cleanup with zero-leak expectations
 
 ### Message Examples
@@ -103,8 +106,13 @@ ar_data__destroy(mgmt_msg);
 # Fresh run with an alternate boot-safe method
 ./bin/agerun --boot-method boot-echo-1.0.0
 
-# Repository wrapper for the same behavior
+# Clean one-off run that ignores persisted state and does not save it back
+./bin/agerun --no-persistence
+
+# Repository wrappers for the same behavior
 make run-exec BOOT_METHOD=boot-echo-1.0.0
+make run-exec NO_PERSISTENCE=1
+make run-exec NO_PERSISTENCE=1 BOOT_METHOD=boot-echo-1.0.0
 
 # Malformed or unavailable overrides fail instead of falling back
 ./bin/agerun --boot-method invalid
@@ -156,12 +164,16 @@ startup string, such as `boot-echo-1.0.0`.
 
 ### Persistence Behavior
 
-The executable supports two execution modes:
+The executable supports three execution modes:
 1. **Fresh Run**: Loads methods, creates a boot agent, queues `"__boot__"`, and saves state
 2. **Restored Run**: Loads saved state and skips fresh boot-agent creation
+3. **No-Persistence Run**: Skips persisted methodology and agency load/save, follows the fresh-start path, and leaves any existing persisted files untouched
 
 If a boot override is requested during a restored run, the executable reports that the override was
 skipped because persisted agents took precedence.
+
+If `--no-persistence` is combined with `--boot-method <name-version>`, the executable still uses the
+requested boot method because the run stays on the fresh-start path.
 
 If a requested override is malformed or its method/version cannot be instantiated, the executable
 stops startup with an explicit error and does not fall back to `bootstrap-1.0.0`.

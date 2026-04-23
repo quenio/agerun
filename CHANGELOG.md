@@ -1,5 +1,27 @@
 # AgeRun CHANGELOG
 
+## 2026-04-22 (Executable now supports non-persistent one-off runs)
+
+- **Added `--no-persistence` for `agerun` and `NO_PERSISTENCE=1` for `make run-exec`**
+
+  Operators can now launch a clean one-off executable run without manually deleting
+  `agerun.methodology` or `agerun.agency`. In this mode, the executable skips loading persisted
+  methodology and agents, skips saving both files on shutdown, leaves any existing persisted files
+  untouched, and still follows the fresh-start boot path.
+
+  **Implementation**: Updated `modules/ar_executable.c`, `modules/ar_executable_fixture.c`,
+  `modules/ar_executable_fixture.h`, `modules/ar_executable_tests.c`, and `Makefile` to add the
+  new CLI/build-file contract and executable fixture support. Updated `README.md`, `SPEC.md`,
+  `modules/ar_executable.md`, `.specify/memory/pi-agent.md`, and the `specs/010-command-line-option/`
+  planning artifacts to reflect the final operator-facing behavior.
+
+  **Verification**: `make ar_executable_tests 2>&1`, `make check-docs 2>&1`,
+  `make check-naming 2>&1`, `make sanitize-tests 2>&1`, `make clean build 2>&1`, and
+  `make check-logs`.
+
+  **Impact**: AgeRun users can now force a fresh non-persistent executable session on demand, and
+  that mode remains compatible with fresh-start boot overrides such as `--boot-method`.
+
 ## 2026-04-20 (Executable boot override now supports a boot-safe echo wrapper)
 
 - **Added a boot-safe `boot-echo-1.0.0` executable startup method and updated boot override docs/tests**

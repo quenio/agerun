@@ -2,6 +2,7 @@
 #define AGERUN_EXECUTABLE_FIXTURE_H
 
 #include <stdio.h>
+#include <stdbool.h>
 
 /**
  * @file ar_executable_fixture.h
@@ -62,6 +63,34 @@ FILE* ar_executable_fixture__build_and_run_with_boot_method(
     const ar_executable_fixture_t *ref_fixture,
     const char *ref_methods_dir,
     const char *ref_boot_method);
+
+/**
+ * Builds and runs the executable with optional boot-method and no-persistence settings
+ * @param ref_fixture The fixture managing the test
+ * @param ref_methods_dir Path to the methods directory to use
+ * @param ref_boot_method Optional combined boot method identifier
+ * @param no_persistence True to request a no-persistence run
+ * @return FILE pointer from popen() for reading output, or NULL on failure
+ * @note Caller must close the FILE* with pclose() when done
+ */
+FILE* ar_executable_fixture__build_and_run_with_options(
+    const ar_executable_fixture_t *ref_fixture,
+    const char *ref_methods_dir,
+    const char *ref_boot_method,
+    bool no_persistence);
+
+/**
+ * Builds and runs the executable with raw additional CLI arguments
+ * @param ref_fixture The fixture managing the test
+ * @param ref_methods_dir Path to the methods directory to use
+ * @param ref_extra_args Additional raw CLI arguments appended to `make run-exec`
+ * @return FILE pointer from popen() for reading output, or NULL on failure
+ * @note Caller must close the FILE* with pclose() when done
+ */
+FILE* ar_executable_fixture__build_and_run_with_extra_args(
+    const ar_executable_fixture_t *ref_fixture,
+    const char *ref_methods_dir,
+    const char *ref_extra_args);
 
 /**
  * Destroys a temporary methods directory and frees the path string

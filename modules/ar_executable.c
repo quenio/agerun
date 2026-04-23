@@ -20,12 +20,16 @@ static const char *BOOTSTRAP_METHOD_NAME = "bootstrap";
 static const char *BOOTSTRAP_METHOD_VERSION = "1.0.0";
 static const char *BOOTSTRAP_METHOD_IDENTIFIER = "bootstrap-1.0.0";
 
-static bool _parse_boot_method_override(int argc, char **argv, const char **ref_boot_method_identifier);
+static bool _parse_runtime_options(int argc,
+                                   char **argv,
+                                   const char **ref_boot_method_identifier,
+                                   bool *ref_persistence_disabled);
 static bool _split_method_identifier(const char *ref_method_identifier,
                                      char *mut_method_name,
                                      size_t method_name_size,
                                      char *mut_method_version,
                                      size_t method_version_size);
+static void _report_persistence_mode(bool ref_persistence_disabled);
 static void _report_boot_method_selection(const char *ref_boot_method_identifier);
 static int _report_invalid_boot_method_override(const char *ref_boot_method_identifier);
 static int _report_boot_agent_creation_failure(const char *ref_boot_method_identifier,
@@ -38,14 +42,18 @@ static void _report_restored_startup_outcome(const char *ref_boot_method_identif
  * @param mut_methodology The methodology instance to load methods into
  * @return Number of methods loaded successfully
  */
-static bool _parse_boot_method_override(int argc, char **argv, const char **ref_boot_method_identifier) {
+static bool _parse_runtime_options(int argc,
+                                   char **argv,
+                                   const char **ref_boot_method_identifier,
+                                   bool *ref_persistence_disabled) {
     int ref_index;
 
-    if (!ref_boot_method_identifier) {
+    if (!ref_boot_method_identifier || !ref_persistence_disabled) {
         return false;
     }
 
     *ref_boot_method_identifier = NULL;
+    *ref_persistence_disabled = false;
 
     for (ref_index = 1; ref_index < argc; ref_index++) {
         const char *ref_argument = argv[ref_index];
@@ -61,6 +69,11 @@ static bool _parse_boot_method_override(int argc, char **argv, const char **ref_
 
             *ref_boot_method_identifier = argv[ref_index + 1];
             ref_index++;
+            continue;
+        }
+
+        if (strcmp(ref_argument, "--no-persistence") == 0) {
+            *ref_persistence_disabled = true;
             continue;
         }
 
@@ -100,6 +113,12 @@ static bool _split_method_identifier(const char *ref_method_identifier,
     strncpy(mut_method_version, ref_last_hyphen + 1, method_version_size - 1);
     mut_method_version[method_version_size - 1] = '\0';
     return true;
+}
+
+static void _report_persistence_mode(bool ref_persistence_disabled) {
+    if (ref_persistence_disabled) {
+        printf("Persistence disabled for this run: skipping persisted methodology and agency load/save\n");
+    }
 }
 
 static void _report_boot_method_selection(const char *ref_boot_method_identifier) {
@@ -240,16 +259,21 @@ int ar_executable__main_with_args(int argc, char **argv) {
     const char *ref_boot_method_identifier = NULL;
     const char *ref_selected_method_name = BOOTSTRAP_METHOD_NAME;
     const char *ref_selected_method_version = BOOTSTRAP_METHOD_VERSION;
+    bool ref_persistence_disabled = false;
     char mut_override_method_name[256];
     char mut_override_method_version[32];
 
     printf("Agerun Example Application\n");
     printf("==========================\n\n");
 
-    if (!_parse_boot_method_override(argc, argv, &ref_boot_method_identifier)) {
+    if (!_parse_runtime_options(argc,
+                                argv,
+                                &ref_boot_method_identifier,
+                                &ref_persistence_disabled)) {
         return 1;
     }
 
+    _report_persistence_mode(ref_persistence_disabled);
     _report_boot_method_selection(ref_boot_method_identifier);
     if (ref_boot_method_identifier) {
         if (!_split_method_identifier(ref_boot_method_identifier,
@@ -296,7 +320,7 @@ int ar_executable__main_with_args(int argc, char **argv) {
     int methods_loaded = 0;
     bool loaded_from_file = false;
     struct stat st;
-    if (stat(METHODOLOGY_FILE_NAME, &st) == 0) {
+    if (!ref_persistence_disabled && stat(METHODOLOGY_FILE_NAME, &st) == 0) {
         // Load from persisted file
         printf("Loading methods from persisted methodology...\n");
         if (ar_methodology__load_methods(mut_methodology, METHODOLOGY_FILE_NAME)) {
@@ -352,7 +376,7 @@ int ar_executable__main_with_args(int argc, char **argv) {
 
     // Check if persisted agency file exists and load agents
     struct stat agency_stat;
-    if (stat(AGENT_STORE_FILE_NAME, &agency_stat) == 0) {
+    if (!ref_persistence_disabled && stat(AGENT_STORE_FILE_NAME, &agency_stat) == 0) {
         printf("Loading agents from persisted agency...\n");
         if (ar_agency__load_agents(mut_agency, AGENT_STORE_FILE_NAME)) {
             printf("Successfully loaded agents from %s\n", AGENT_STORE_FILE_NAME);
@@ -420,19 +444,27 @@ int ar_executable__main_with_args(int argc, char **argv) {
     }
     
     // Save methodology to file after processing
-    printf("Saving methodology to file...\n");
-    if (ar_methodology__save_methods(mut_methodology, METHODOLOGY_FILE_NAME)) {
-        printf("Methodology saved to %s\n", METHODOLOGY_FILE_NAME);
+    if (ref_persistence_disabled) {
+        printf("Skipping methodology save because persistence is disabled\n");
     } else {
-        printf("Warning: Failed to save methodology to %s\n", METHODOLOGY_FILE_NAME);
+        printf("Saving methodology to file...\n");
+        if (ar_methodology__save_methods(mut_methodology, METHODOLOGY_FILE_NAME)) {
+            printf("Methodology saved to %s\n", METHODOLOGY_FILE_NAME);
+        } else {
+            printf("Warning: Failed to save methodology to %s\n", METHODOLOGY_FILE_NAME);
+        }
     }
 
     // Save agents to file before shutdown
-    printf("Saving agents to file...\n");
-    if (ar_agency__save_agents(mut_agency, AGENT_STORE_FILE_NAME)) {
-        printf("Agents saved to %s\n", AGENT_STORE_FILE_NAME);
+    if (ref_persistence_disabled) {
+        printf("Skipping agents save because persistence is disabled\n");
     } else {
-        printf("Warning: Failed to save agents to %s\n", AGENT_STORE_FILE_NAME);
+        printf("Saving agents to file...\n");
+        if (ar_agency__save_agents(mut_agency, AGENT_STORE_FILE_NAME)) {
+            printf("Agents saved to %s\n", AGENT_STORE_FILE_NAME);
+        } else {
+            printf("Warning: Failed to save agents to %s\n", AGENT_STORE_FILE_NAME);
+        }
     }
 
     // Shutdown the runtime

@@ -1,6 +1,6 @@
 # AgeRun Development Guidelines
 
-Auto-generated from the project constitution and repository context. Last updated: 2026-04-18
+Auto-generated from the project constitution and repository context. Last updated: 2026-04-22
 
 ## Active Technologies
 
@@ -64,3 +64,9 @@ specs/
   `BOOT_METHOD=<name-version>` variable. Persisted-agent restoration takes precedence over any
   override request, malformed identifiers fail clearly, and unavailable methods do not silently
   fall back to `bootstrap-1.0.0`.
+- `010-command-line-option` is now implemented as a non-persistent executable run mode for the main
+  `agerun` binary only: `agerun --no-persistence` and `make run-exec NO_PERSISTENCE=1` (the
+  documented example; any non-empty `NO_PERSISTENCE` value triggers the same passthrough) skip
+  both methodology and agency load/save behavior for a single run, preserve existing persisted
+  files untouched, emit explicit no-persistence status output, and keep fresh-start boot behavior
+  (including `--boot-method`) active when persistence is disabled.

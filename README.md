@@ -80,6 +80,19 @@ runtime flow at a time.
    When `BOOT_METHOD` is omitted, the executable keeps using the default `bootstrap-1.0.0` startup
    path.
 
+   If you need a clean one-off session that ignores persisted runtime state and does not write new
+   persistence on shutdown, run:
+   ```
+   make run-exec NO_PERSISTENCE=1
+   ```
+
+   In no-persistence mode, `agerun` skips loading `agerun.methodology` and `agerun.agency`, skips
+   saving both files on shutdown, and leaves any existing persisted files untouched. The same mode
+   can be combined with a fresh-start boot override:
+   ```
+   make run-exec NO_PERSISTENCE=1 BOOT_METHOD=boot-echo-1.0.0
+   ```
+
    If persisted agents are restored from `agerun.agency`, the executable reports that any requested
    boot override was skipped and does not create a second fresh boot agent.
 

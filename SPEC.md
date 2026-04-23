@@ -356,6 +356,12 @@ The runtime startup contract has two layers:
 - **Boot override contract**: Fresh-start boot overrides must handle the raw `"__boot__"` startup
   string sent by the executable; ordinary message handlers like `echo-1.0.0` are not valid boot
   methods unless wrapped by a boot-safe method.
+- **Executable no-persistence mode**: Operators may pass `--no-persistence` to run `agerun`
+  without loading persisted methodology or persisted agents and without saving either file on
+  shutdown.
+- **No-persistence semantics**: When `--no-persistence` is enabled, `agerun` follows the fresh-run
+  startup path, leaves existing persisted files untouched, and still allows fresh-start boot
+  overrides such as `--boot-method boot-echo-1.0.0`.
 - **Persisted-agent precedence**: If persisted agents are restored from `agerun.agency`, the
   executable skips fresh boot-agent creation and reports any requested boot override as skipped.
 - **Invalid override behavior**: Malformed or unavailable boot overrides fail clearly and do not

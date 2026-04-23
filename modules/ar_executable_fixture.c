@@ -124,37 +124,83 @@ char* ar_executable_fixture__create_methods_dir(ar_executable_fixture_t *mut_fix
 
 FILE* ar_executable_fixture__build_and_run(const ar_executable_fixture_t *ref_fixture,
                                            const char *ref_methods_dir) {
-    return ar_executable_fixture__build_and_run_with_boot_method(
+    return ar_executable_fixture__build_and_run_with_options(
         ref_fixture,
         ref_methods_dir,
-        NULL);
+        NULL,
+        false);
 }
 
 FILE* ar_executable_fixture__build_and_run_with_boot_method(
     const ar_executable_fixture_t *ref_fixture,
     const char *ref_methods_dir,
     const char *ref_boot_method) {
+    return ar_executable_fixture__build_and_run_with_options(
+        ref_fixture,
+        ref_methods_dir,
+        ref_boot_method,
+        false);
+}
+
+FILE* ar_executable_fixture__build_and_run_with_options(
+    const ar_executable_fixture_t *ref_fixture,
+    const char *ref_methods_dir,
+    const char *ref_boot_method,
+    bool no_persistence) {
     if (!ref_fixture || !ref_methods_dir) {
         return NULL;
     }
 
-    char build_cmd[1024];
-    if (ref_boot_method && ref_boot_method[0] != '\0') {
-        snprintf(build_cmd, sizeof(build_cmd),
+    char mut_build_cmd[1024];
+    if (ref_boot_method && ref_boot_method[0] != '\0' && no_persistence) {
+        snprintf(mut_build_cmd, sizeof(mut_build_cmd),
+            "cd ../.. && "
+            "AGERUN_METHODS_DIR=%s RUN_EXEC_DIR=%s make run-exec BOOT_METHOD=%s NO_PERSISTENCE=1 2>&1",
+            ref_methods_dir,
+            ref_fixture->temp_build_dir,
+            ref_boot_method);
+    } else if (ref_boot_method && ref_boot_method[0] != '\0') {
+        snprintf(mut_build_cmd, sizeof(mut_build_cmd),
             "cd ../.. && "
             "AGERUN_METHODS_DIR=%s RUN_EXEC_DIR=%s make run-exec BOOT_METHOD=%s 2>&1",
             ref_methods_dir,
             ref_fixture->temp_build_dir,
             ref_boot_method);
+    } else if (no_persistence) {
+        snprintf(mut_build_cmd, sizeof(mut_build_cmd),
+            "cd ../.. && "
+            "AGERUN_METHODS_DIR=%s RUN_EXEC_DIR=%s make run-exec NO_PERSISTENCE=1 2>&1",
+            ref_methods_dir,
+            ref_fixture->temp_build_dir);
     } else {
-        snprintf(build_cmd, sizeof(build_cmd),
+        snprintf(mut_build_cmd, sizeof(mut_build_cmd),
             "cd ../.. && "
             "AGERUN_METHODS_DIR=%s RUN_EXEC_DIR=%s make run-exec 2>&1",
             ref_methods_dir,
             ref_fixture->temp_build_dir);
     }
 
-    return popen(build_cmd, "r");
+    return popen(mut_build_cmd, "r");
+}
+
+FILE* ar_executable_fixture__build_and_run_with_extra_args(
+    const ar_executable_fixture_t *ref_fixture,
+    const char *ref_methods_dir,
+    const char *ref_extra_args) {
+    char mut_build_cmd[1024];
+
+    if (!ref_fixture || !ref_methods_dir || !ref_extra_args || ref_extra_args[0] == '\0') {
+        return NULL;
+    }
+
+    snprintf(mut_build_cmd, sizeof(mut_build_cmd),
+        "cd ../.. && "
+        "AGERUN_METHODS_DIR=%s RUN_EXEC_DIR=%s make run-exec AGERUN_ARGS='%s' 2>&1",
+        ref_methods_dir,
+        ref_fixture->temp_build_dir,
+        ref_extra_args);
+
+    return popen(mut_build_cmd, "r");
 }
 
 void ar_executable_fixture__destroy_methods_dir(ar_executable_fixture_t *mut_fixture,
