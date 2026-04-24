@@ -1,5 +1,23 @@
 # AgeRun CHANGELOG
 
+## 2026-04-23 (Workflow walkthrough definition gate now explains the schema)
+
+- **Expanded the workflow walkthrough's definition gate slide with schema vocabulary**
+
+  The definition gate slide now introduces the workflow definition fields before the deck compares the
+  default and test definitions.
+
+  **Implementation**: Updated `docs/walkthroughs/workflow-method/slides.js` to explain the schema
+  fields, known-path gate checks, startup probe, and schema-to-reply flow on the definition gate
+  slide.
+
+  **Verification**: `node -c docs/walkthroughs/workflow-method/slides.js`,
+  `make check-docs 2>&1`, `git diff --check`, and a fresh local Playwright iPhone 13/WebKit
+  screenshot of the workflow deck.
+
+  **Impact**: The default and test definition slides now have clearer setup and can focus on the
+  concrete differences between the two workflow records.
+
 ## 2026-04-23 (Workflow walkthrough now explains both bundled definitions)
 
 - **Added default and test workflow definition slides to the workflow walkthrough**

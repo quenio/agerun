@@ -125,43 +125,45 @@ methods/workflow-reporter-1.0.0.md</div>
         `
     },
     {
-        title: "Definition Gate",
-        subtitle: "workflow-definition is both the startup gate and the review-decision engine. It keeps supported definitions intentionally narrow and path based.",
+        title: "Definition Schema and Gate",
+        subtitle: "Before the next slides compare concrete definitions, read each workflow file as one compact schema record plus a startup readiness gate.",
         body: `
             <div class="columns">
                 <section class="panel">
-                    <h3>Known Definitions</h3>
+                    <h3>Schema Fields</h3>
                     <ul>
-                        <li><span class="code">workflows/default-workflow.yaml</span> maps to <span class="code">default_workflow</span> and <span class="code">review_gate</span>.</li>
-                        <li><span class="code">workflows/test-workflow.yaml</span> maps to <span class="code">test_workflow</span> and <span class="code">test_gate</span>.</li>
-                        <li>Unknown paths and <span class="code">invalid-workflow.yaml</span> become <span class="code">invalid_definition_schema</span>.</li>
+                        <li><span class="code">workflow_name</span> and <span class="code">workflow_version</span> identify the definition.</li>
+                        <li><span class="code">initial_stage</span>, <span class="code">stages</span>, <span class="code">terminal_completed</span>, and <span class="code">terminal_rejected</span> describe the lifecycle.</li>
+                        <li><span class="code">item_fields</span> lists the item data required by the workflow methods.</li>
+                        <li><span class="code">validation_clause</span> and <span class="code">decision_template</span> name the review-decision rule shape.</li>
                     </ul>
                 </section>
                 <section class="panel">
-                    <h3>Startup Probe</h3>
+                    <h3>Gate Checks</h3>
                     <ul>
-                        <li><span class="code">complete("Workflow dependency probe ...")</span> supplies the readiness signal.</li>
-                        <li>Success produces <span class="code">definition_ready</span>.</li>
-                        <li>Failure produces <span class="code">startup_dependency_unavailable</span>.</li>
+                        <li>Only known paths are accepted: <span class="code">workflows/default-workflow.yaml</span> and <span class="code">workflows/test-workflow.yaml</span>.</li>
+                        <li>Unknown paths and <span class="code">invalid-workflow.yaml</span> become <span class="code">invalid_definition_schema</span>.</li>
+                        <li><span class="code">complete("Workflow dependency probe ...")</span> supplies the startup readiness signal.</li>
                     </ul>
                 </section>
             </div>
             <section class="diagram-panel">
-                <h3>Definition Decision Split</h3>
+                <h3>Schema-to-Reply Flow</h3>
                 <div class="state-compare">
                     <div class="state-card">
-                        <strong>Known path + probe success</strong>
-                        <span>metadata is populated</span>
-                        <span>reply action is <span class="code">definition_ready</span></span>
+                        <strong>Known schema + probe success</strong>
+                        <span>definition metadata is populated from the recognized path.</span>
+                        <span>reply action is <span class="code">definition_ready</span>.</span>
                     </div>
                     <div class="state-transition">prepare_definition</div>
                     <div class="state-card">
-                        <strong>Unknown path or probe failure</strong>
-                        <span>failure reason is normalized</span>
-                        <span>reply action is <span class="code">definition_error</span></span>
+                        <strong>Unknown schema or probe failure</strong>
+                        <span>failure reason is normalized.</span>
+                        <span>reply action is <span class="code">definition_error</span>.</span>
                     </div>
                 </div>
             </section>
+            <p class="note">The next two slides reuse this schema vocabulary: most fields stay the same, while the workflow name, validation clause, and decision template distinguish the default and test definitions.</p>
         `
     },
     {
