@@ -5,8 +5,8 @@ const messageProcessingWalkthroughUrl = "https://quenio.github.io/agerun/walkthr
 
 const slides = [
     {
-        title: "Workflow Method",
-        subtitle: "How the bundled workflow method family boots, validates a definition, makes review decisions, and emits visible progress logs.",
+        title: "Workflow Methodology",
+        subtitle: "How the bundled workflow methodology boots, validates a definition, makes review decisions, and emits visible progress logs.",
         body: `
             <div class="columns">
                 <section class="panel">
@@ -381,7 +381,7 @@ methods/workflow-reporter-1.0.0.md</div>
     },
     {
         title: "Success, Failure, and Retry",
-        subtitle: "The workflow method family favors explicit normalized states over silent fallthroughs or fake success records.",
+        subtitle: "The workflow methodology favors explicit normalized states over silent fallthroughs or fake success records.",
         body: `
             <section class="diagram-panel">
                 <h3>Outcome Comparison</h3>

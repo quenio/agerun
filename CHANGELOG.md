@@ -1,5 +1,25 @@
 # AgeRun CHANGELOG
 
+## 2026-04-23 (Workflow walkthrough renamed to Workflow Methodology)
+
+- **Renamed the workflow walkthrough's visible title to Workflow Methodology**
+
+  The walkthrough covers a coordinated set of workflow methods rather than one method, so the
+  published title, index card, and repository links now use the more accurate "Workflow
+  Methodology" name.
+
+  **Implementation**: Updated `docs/walkthroughs/workflow-method/index.html`,
+  `docs/walkthroughs/workflow-method/slides.js`, `docs/walkthroughs/index.html`,
+  `docs/walkthroughs/README.md`, and `README.md` to use the Workflow Methodology title while
+  preserving the existing published URL.
+
+  **Verification**: `node -c docs/walkthroughs/workflow-method/slides.js`,
+  `make check-docs 2>&1`, `git diff --check`, and fresh local Playwright WebKit screenshots of the
+  renamed deck on desktop and iPhone 13.
+
+  **Impact**: Readers now see a title that matches the walkthrough's scope as a set of cooperating
+  workflow methods.
+
 ## 2026-04-23 (Workflow walkthrough now explains item field values)
 
 - **Added item field value flow to the workflow walkthrough**
