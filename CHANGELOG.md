@@ -1,5 +1,24 @@
 # AgeRun CHANGELOG
 
+## 2026-04-23 (Workflow walkthrough now explains item field values)
+
+- **Added item field value flow to the workflow walkthrough**
+
+  The workflow method deck now explains where the schema-listed item fields come from and how those
+  values are used by the coordinator shortcut, item lifecycle path, transition evaluation, and
+  reporter output.
+
+  **Implementation**: Updated `docs/walkthroughs/workflow-method/slides.js` with a new Item Field
+  Values slide covering the bundled demo values from `bootstrap`, their message flow, and their uses
+  in summary/progress reporting.
+
+  **Verification**: `node -c docs/walkthroughs/workflow-method/slides.js`,
+  `make check-docs 2>&1`, `git diff --check`, and fresh local Playwright WebKit screenshots of the
+  new slide on desktop and iPhone 13.
+
+  **Impact**: Readers can now connect the workflow definition schema's `item_fields` list to real
+  startup data and downstream workflow behavior.
+
 ## 2026-04-23 (Workflow walkthrough definition gate now explains the schema)
 
 - **Expanded the workflow walkthrough's definition gate slide with schema vocabulary**

@@ -258,6 +258,51 @@ methods/workflow_definition_tests.c</div>
         `
     },
     {
+        title: "Item Field Values",
+        subtitle: "The schema names required item fields; the bundled demo values come from bootstrap and are carried through coordinator, item, definition, and reporter messages.",
+        body: `
+            <div class="columns">
+                <section class="panel">
+                    <h3>Bundled Demo Values</h3>
+                    <ul>
+                        <li><span class="code">item_id=demo-item-1</span></li>
+                        <li><span class="code">title=demo_work_item</span></li>
+                        <li><span class="code">priority=high</span></li>
+                        <li><span class="code">owner=workflow_owner</span></li>
+                        <li><span class="code">review_status=approved</span></li>
+                    </ul>
+                </section>
+                <section class="panel">
+                    <h3>How They Are Used</h3>
+                    <ul>
+                        <li><span class="code">item_id</span> identifies progress and summary log messages.</li>
+                        <li><span class="code">title</span>, <span class="code">priority</span>, <span class="code">owner</span>, and <span class="code">review_status</span> are stored by the item method and forwarded for transition evaluation.</li>
+                        <li>In the current executable shortcut, <span class="code">review_status=approved</span> makes the coordinator emit a completed summary; any other value emits a rejected summary.</li>
+                    </ul>
+                </section>
+            </div>
+            <section class="diagram-panel">
+                <h3>Item Field Flow</h3>
+                <div class="sequence-diagram">
+                    <div class="sequence-lane"><strong>bootstrap</strong><span>seeds the demo item values in memory and builds the start message</span></div>
+                    <div class="sequence-lane"><strong>coordinator</strong><span>stores the fields and uses review_status for the direct summary path</span></div>
+                    <div class="sequence-lane"><strong>workflow-item</strong><span>stores the fields, emits progress, and forwards them to transition evaluation</span></div>
+                    <div class="sequence-lane"><strong>definition / reporter</strong><span>definition receives all five fields; reporter logs item_id, owner, stage, status, terminal outcome, and reason</span></div>
+                    <div class="sequence-arrow-row">
+                        <span class="sequence-arrow">start message →</span>
+                        <span class="sequence-arrow">initialize / evaluate_transition →</span>
+                        <span class="sequence-arrow">progress or summary →</span>
+                    </div>
+                </div>
+            </section>
+            <div class="path-list">methods/bootstrap.md
+methods/workflow-coordinator-1.0.0.md
+methods/workflow-item-1.0.0.md
+methods/workflow-definition-1.0.0.md
+methods/workflow-reporter-1.0.0.md</div>
+        `
+    },
+    {
         title: "Review Decision Flow",
         subtitle: "The full per-item path advances automatically to review, then asks workflow-definition to normalize a generated transition decision.",
         body: `
