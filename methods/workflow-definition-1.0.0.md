@@ -3,12 +3,12 @@
 ## Overview
 
 `workflow-definition` is the workflow metadata and decision method for the bundled workflow demo.
-It recognizes the supported YAML definition paths, performs the startup `complete(...)` dependency
+It recognizes the supported workflow definition paths, performs the startup `complete(...)` dependency
 probe, and evaluates review-stage transition decisions by normalizing generated `outcome` and
 `reason` values.
 
 The current implementation is intentionally parse-friendly and path-based: it recognizes
-`workflows/default-workflow.yaml`, `workflows/test-workflow.yaml`, and an invalid-schema fixture
+`workflows/default.workflow`, `workflows/test.workflow`, and an invalid-schema fixture
 path used by tests.
 
 ## ATN Specification
@@ -53,24 +53,24 @@ REQUIRES_DESCRIBE_HAS_A_REPLY_TARGET:
 
 ENSURES_KNOWN_READY_DEFINITION_BECOMES_READY:
   message("action") = "prepare_definition" and
-  (message("definition_path") = "workflows/default-workflow.yaml" or
-   message("definition_path") = "workflows/test-workflow.yaml") and
+  (message("definition_path") = "workflows/default.workflow" or
+   message("definition_path") = "workflows/test.workflow") and
   final_memory("probe_ok") = 1 =>
     final_memory("ready_sent") = 1 and
     final_memory("last_reply_action") = "definition_ready"
 
 ENSURES_INVALID_OR_UNKNOWN_DEFINITION_IS_REJECTED:
   message("action") = "prepare_definition" and
-  not (message("definition_path") = "workflows/default-workflow.yaml") and
-  not (message("definition_path") = "workflows/test-workflow.yaml") =>
+  not (message("definition_path") = "workflows/default.workflow") and
+  not (message("definition_path") = "workflows/test.workflow") =>
     final_memory("error_sent") = 1 and
     final_memory("error_reason") = "invalid_definition_schema" and
     final_memory("last_reply_action") = "definition_error"
 
 ENSURES_STARTUP_PROBE_FAILURE_IS_REPORTED:
   message("action") = "prepare_definition" and
-  (message("definition_path") = "workflows/default-workflow.yaml" or
-   message("definition_path") = "workflows/test-workflow.yaml") and
+  (message("definition_path") = "workflows/default.workflow" or
+   message("definition_path") = "workflows/test.workflow") and
   final_memory("probe_ok") = 0 =>
     final_memory("error_sent") = 1 and
     final_memory("error_reason") = "startup_dependency_unavailable" and
@@ -162,18 +162,18 @@ Returns a description payload containing:
 
 ## Current Supported Definitions
 
-### `workflows/default-workflow.yaml`
+### `workflows/default.workflow`
 - `workflow_name = default_workflow`
 - `validation_clause = review_gate`
 - normal bundled executable demo path
 
-### `workflows/test-workflow.yaml`
+### `workflows/test.workflow`
 - `workflow_name = test_workflow`
 - `validation_clause = test_gate`
 - deterministic alternate-definition test path
 
 ### Invalid path handling
-Unknown definitions and `invalid-workflow.yaml` are rejected with:
+Unknown definitions and `invalid.workflow` are rejected with:
 - `reason = invalid_definition_schema`
 
 Startup dependency probe failures are reported with:
@@ -243,10 +243,10 @@ memory.next_stage := ""
 memory.transition_status := ""
 memory.terminal_outcome := ""
 memory.definition_path := if(memory.is_prepare = 1, message.definition_path, memory.definition_path)
-memory.is_default_definition := if(memory.definition_path = "workflows/default-workflow.yaml", 1, 0)
-memory.is_test_definition := if(memory.definition_path = "workflows/test-workflow.yaml", 1, 0)
+memory.is_default_definition := if(memory.definition_path = "workflows/default.workflow", 1, 0)
+memory.is_test_definition := if(memory.definition_path = "workflows/test.workflow", 1, 0)
 memory.is_known_definition := memory.is_default_definition + memory.is_test_definition
-memory.is_invalid_definition := if(memory.definition_path = "invalid-workflow.yaml", 1, 0)
+memory.is_invalid_definition := if(memory.definition_path = "invalid.workflow", 1, 0)
 memory.workflow_name := if(memory.is_default_definition = 1, "default_workflow", memory.workflow_name)
 memory.workflow_name := if(memory.is_test_definition = 1, "test_workflow", memory.workflow_name)
 memory.workflow_version := if(memory.is_known_definition > 0, "1.0.0", memory.workflow_version)

@@ -135,7 +135,7 @@ static void test_workflow_definition__prepare_definition_reads_known_file_and_qu
     int64_t definition_agent_id = ar_agency__create_agent(mut_agency, "workflow-definition", "1.0.0", own_context);
     AR_ASSERT(definition_agent_id == 1, "Definition agent should be created");
 
-    ar_data_t *own_message = create_prepare_definition_message("workflows/default-workflow.yaml", definition_agent_id);
+    ar_data_t *own_message = create_prepare_definition_message("workflows/default.workflow", definition_agent_id);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, definition_agent_id, own_message),
               "Prepare definition should queue");
 
@@ -197,7 +197,7 @@ static void test_workflow_definition__invalid_schema_returns_definition_error(vo
     int64_t definition_agent_id = ar_agency__create_agent(mut_agency, "workflow-definition", "1.0.0", own_context);
     AR_ASSERT(definition_agent_id == 1, "Definition agent should be created");
 
-    ar_data_t *own_message = create_prepare_definition_message("invalid-workflow.yaml", definition_agent_id);
+    ar_data_t *own_message = create_prepare_definition_message("invalid.workflow", definition_agent_id);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, definition_agent_id, own_message),
               "Prepare definition should queue");
 
@@ -242,7 +242,7 @@ static void test_workflow_definition__complete_failure_maps_to_retryable_stay(vo
     int64_t definition_agent_id = ar_agency__create_agent(mut_agency, "workflow-definition", "1.0.0", own_context);
     AR_ASSERT(definition_agent_id == 1, "Definition agent should be created");
 
-    ar_data_t *own_prepare = create_prepare_definition_message("workflows/default-workflow.yaml", definition_agent_id);
+    ar_data_t *own_prepare = create_prepare_definition_message("workflows/default.workflow", definition_agent_id);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, definition_agent_id, own_prepare),
               "Prepare definition should queue");
     AR_ASSERT(ar_method_fixture__process_next_message(own_fixture), "Prepare should process");
@@ -284,7 +284,7 @@ static void test_workflow_definition__complete_success_uses_outcome_and_reason(v
     int64_t definition_agent_id = ar_agency__create_agent(mut_agency, "workflow-definition", "1.0.0", own_context);
     AR_ASSERT(definition_agent_id == 1, "Definition agent should be created");
 
-    ar_data_t *own_prepare = create_prepare_definition_message("workflows/default-workflow.yaml", definition_agent_id);
+    ar_data_t *own_prepare = create_prepare_definition_message("workflows/default.workflow", definition_agent_id);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, definition_agent_id, own_prepare),
               "Prepare definition should queue");
     AR_ASSERT(ar_method_fixture__process_next_message(own_fixture), "Prepare should process");

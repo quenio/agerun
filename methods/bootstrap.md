@@ -14,7 +14,7 @@ On `"__boot__"`, the bootstrap agent:
 - sends a `start` message that references:
   - `workflow-definition` `1.0.0`
   - `workflow-reporter` `1.0.0`
-  - `workflows/default-workflow.yaml`
+  - `workflows/default.workflow`
 - seeds the bundled demo item metadata (`demo-item-1`, owner, priority, review status)
 - emits a visible intake progress log line through the log delegate
 - records whether the workflow demo was queued successfully
@@ -28,7 +28,7 @@ memory.method_version := "1.0.0"
 memory.start_action := "start"
 memory.definition_method_name := "workflow-definition"
 memory.definition_method_version := "1.0.0"
-memory.definition_path := "workflows/default-workflow.yaml"
+memory.definition_path := "workflows/default.workflow"
 memory.reporter_method_name := "workflow-reporter"
 memory.reporter_method_version := "1.0.0"
 memory.item_id := "demo-item-1"
@@ -56,7 +56,7 @@ The method is tested in `methods/bootstrap_tests.c`.
 The test verifies that bootstrap:
 - spawns `workflow-coordinator`
 - stores the bundled workflow start message in memory
-- passes `workflows/default-workflow.yaml` into the startup flow
+- passes `workflows/default.workflow` into the startup flow
 - produces an intake log line
 - allows the coordinator/reporter path to emit either startup failure or terminal summary output
 

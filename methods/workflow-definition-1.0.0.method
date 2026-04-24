@@ -26,10 +26,10 @@ memory.next_stage := ""
 memory.transition_status := ""
 memory.terminal_outcome := ""
 memory.definition_path := if(memory.is_prepare = 1, message.definition_path, memory.definition_path)
-memory.is_default_definition := if(memory.definition_path = "workflows/default-workflow.yaml", 1, 0)
-memory.is_test_definition := if(memory.definition_path = "workflows/test-workflow.yaml", 1, 0)
+memory.is_default_definition := if(memory.definition_path = "workflows/default.workflow", 1, 0)
+memory.is_test_definition := if(memory.definition_path = "workflows/test.workflow", 1, 0)
 memory.is_known_definition := memory.is_default_definition + memory.is_test_definition
-memory.is_invalid_definition := if(memory.definition_path = "invalid-workflow.yaml", 1, 0)
+memory.is_invalid_definition := if(memory.definition_path = "invalid.workflow", 1, 0)
 memory.workflow_name := if(memory.is_default_definition = 1, "default_workflow", memory.workflow_name)
 memory.workflow_name := if(memory.is_test_definition = 1, "test_workflow", memory.workflow_name)
 memory.workflow_version := if(memory.is_known_definition > 0, "1.0.0", memory.workflow_version)

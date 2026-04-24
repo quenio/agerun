@@ -84,7 +84,7 @@ static ar_data_t *create_start_message(int64_t sender) {
     ar_data__set_map_integer(own_message, "sender", (int)sender);
     ar_data__set_map_string(own_message, "definition_method_name", "workflow-definition");
     ar_data__set_map_string(own_message, "definition_method_version", "1.0.0");
-    ar_data__set_map_string(own_message, "definition_path", "workflows/default-workflow.yaml");
+    ar_data__set_map_string(own_message, "definition_path", "workflows/default.workflow");
     ar_data__set_map_string(own_message, "reporter_method_name", "workflow-reporter");
     ar_data__set_map_string(own_message, "reporter_method_version", "1.0.0");
     ar_data__set_map_string(own_message, "item_id", "demo-item-1");

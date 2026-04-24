@@ -109,7 +109,7 @@ static void test_bootstrap_runs_workflow_demo_on_boot(void) {
     AR_ASSERT(start_message != NULL, "Start message should be stored");
     AR_ASSERT(strcmp(ar_data__get_map_string(start_message, "action"), "start") == 0,
               "Bootstrap should queue workflow start action");
-    AR_ASSERT(strcmp(ar_data__get_map_string(start_message, "definition_path"), "workflows/default-workflow.yaml") == 0,
+    AR_ASSERT(strcmp(ar_data__get_map_string(start_message, "definition_path"), "workflows/default.workflow") == 0,
               "Bootstrap should pass bundled workflow path");
     AR_ASSERT(strcmp(ar_data__get_map_string(bootstrap_memory, "demo_status"), "Workflow demo queued") == 0,
               "Bootstrap should record queued workflow demo");

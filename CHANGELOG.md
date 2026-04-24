@@ -1,5 +1,26 @@
 # AgeRun CHANGELOG
 
+## 2026-04-24 (Workflow definitions now use .workflow filenames)
+
+- **Renamed bundled workflow definition files away from the misleading `.yaml` extension**
+
+  The bundled workflow definition assets are parse-friendly single-line workflow records, not YAML
+  files, so their filenames now use the domain-specific `.workflow` extension.
+
+  **Implementation**: Renamed the former default/test workflow definition files to
+  `workflows/default.workflow` and `workflows/test.workflow`; updated `bootstrap`,
+  `workflow-definition`, method tests, specs, walkthrough content, and documentation references to
+  use the new definition paths. The invalid-schema fixture identifier now uses `invalid.workflow`.
+  The Workflow Methodology definition slides now wrap their definition/test links in the shared
+  Source Files panel treatment.
+
+  **Verification**: Pre-change `make workflow_definition_tests 2>&1`, `make bootstrap_tests 2>&1`,
+  and `make workflow_coordinator_tests 2>&1` passed; post-change `make clean build 2>&1` and
+  `make check-logs` passed with no warnings, errors, sanitizer issues, or memory leaks.
+
+  **Impact**: Runtime messages, tests, docs, and walkthroughs now describe workflow definition files
+  with an extension that matches their actual format.
+
 ## 2026-04-24 (Workflow method source links now use compact panels)
 
 - **Moved per-method source links into labeled source panels**
@@ -157,7 +178,7 @@
   and decision templates.
 
   **Implementation**: Updated `docs/walkthroughs/workflow-methodology/slides.js` to add two focused
-  definition slides and include `workflows/test-workflow.yaml` in the primary source list.
+  definition slides and include `workflows/test.workflow` in the primary source list.
 
   **Verification**: `node -c docs/walkthroughs/workflow-methodology/slides.js`,
   `make check-docs 2>&1`, `git diff --check`, and fresh local Playwright screenshots of the
@@ -4347,7 +4368,7 @@
 - **YAML Helper Functions**: Added `ar_agent_store_fixture__create_yaml_file_single()` for single-agent YAML generation, eliminating 20+ lines of duplicated fprintf() calls; **Test Refactoring**: Updated 5 tests in ar_agent_store_tests.c to use fixture helpers, reducing code duplication by ~90 lines; **Fixture Integration**: Completed integration across all applicable tests with proper ownership transfer and centralized cleanup; **Result**: All 13 agent store tests + 11 fixture tests passing with zero memory leaks and full sanitizer compliance
 
 ## 2025-10-02
-- **Agent Store Fixture Module**: Created comprehensive test fixture module with methodology creation, YAML file generation, agent verification, and batch cleanup helpers; **Parser Bug Fix**: Resolved critical YAML parsing issue preventing multiple agent loading by fixing stack management in ar_yaml_reader.c; **Load Functionality**: Completed Iteration 9.1 with verified single/multi-agent loading, proper method registration, and YAML structure validation; **Result**: All 13 agent store tests passing with zero memory leaks, enabling agent persistence from YAML files
+- **Agent Store Fixture Module**: Created comprehensive test fixture module with methodology creation, YAML file generation, agent verification, and batch cleanup helpers; **Parser Bug Fix**: Resolved critical YAML parsing issue preventing multiple agent loading by fixing stack management in ar_yaml_reader.c; **Load Functionality**: Completed Iteration 9.1 with verified single/multi-agent loading, proper method registration, and YAML structure validation; **Result**: All 13 agent store tests passing with zero memory leaks, enabling agent persistence from workflow files
 
 ## 2025-09-29
 - **Memory Leak Resolution**: Fixed 90 memory leaks in save-focused tests by removing unnecessary load() calls and implementing proper YAML validation; **YAML Structure Creation**: Built comprehensive agent persistence with root maps, agent data conversion, and memory copying for complex data structures; **Code Quality Improvements**: Refactored monolithic functions, simplified test functions, updated documentation, and resolved all critical code review issues; **Result**: All 74 tests passing with zero memory leaks, clean builds, and enhanced maintainability

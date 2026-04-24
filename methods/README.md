@@ -100,7 +100,7 @@ send(message.sender, memory.result)
 ```
 memory.is_boot := if(message = "__boot__", 1, 0)
 memory.coordinator_id := if(memory.is_boot = 1, spawn("workflow-coordinator", "1.0.0", context), memory.coordinator_id)
-memory.start_input := build("action=start sender={sender} definition_method_name=workflow-definition definition_method_version=1.0.0 definition_path=workflows/default-workflow.yaml reporter_method_name=workflow-reporter reporter_method_version=1.0.0 item_id=demo-item-1 title=demo_work_item priority=high owner=workflow_owner review_status=approved", memory)
+memory.start_input := build("action=start sender={sender} definition_method_name=workflow-definition definition_method_version=1.0.0 definition_path=workflows/default.workflow reporter_method_name=workflow-reporter reporter_method_version=1.0.0 item_id=demo-item-1 title=demo_work_item priority=high owner=workflow_owner review_status=approved", memory)
 memory.start_message := parse("action={action} sender={sender} definition_method_name={definition_method_name} definition_method_version={definition_method_version} definition_path={definition_path} reporter_method_name={reporter_method_name} reporter_method_version={reporter_method_version} item_id={item_id} title={title} priority={priority} owner={owner} review_status={review_status}", memory.start_input)
 send(memory.coordinator_id, memory.start_message)
 ```

@@ -19,7 +19,7 @@
 - Q: Where should validation clauses attach in the workflow definition? → A: Attach validations to transitions only.
 - Q: What outcomes should a transition-level validation be allowed to produce? → A: advance, stay, or reject.
 - Q: Where should the feature logic live? → A: Implement the coordinator entirely as AgeRun methods launched by the executable's boot method, not as new C feature logic.
-- Q: What kind of workflow definition file should be used? → A: A YAML file read by agents via the file delegate, not a method file.
+- Q: What kind of workflow definition file should be used? → A: A workflow definition file read by agents via the file delegate, not a method file.
 
 ### Session 2026-04-18
 
@@ -150,7 +150,7 @@ the final summary alone is sufficient to identify the item's terminal state.
 - A bundled, boot-launched workflow coordinator example that runs from the main executable's boot
   method rather than from the interactive shell
 - Implementing the coordinator behavior as AgeRun methods rather than as new C feature logic
-- Reading a YAML workflow definition file via the file delegate, with the file declaring metadata, item field schema, stages, explicit transitions, validation clauses, terminal outcomes, and any prompt/template data needed for `complete(...)`-driven transition evaluation
+- Reading a workflow definition file via the file delegate, with the file declaring metadata, item field schema, stages, explicit transitions, validation clauses, terminal outcomes, and any prompt/template data needed for `complete(...)`-driven transition evaluation
 - A generic staged-workflow example centered on one reusable work-item lifecycle
 - Automatic creation, routing, progression, and terminal resolution of a demo work item during a
   fresh run when startup dependency probing succeeds
@@ -177,7 +177,7 @@ the final summary alone is sufficient to identify the item's terminal state.
   generic staged workflow useful to AgeRun users beyond one specific business domain.
 - **FR-0010**: The workflow coordinator feature logic MUST be implemented as AgeRun methods launched
   by the executable's boot method rather than as new C feature logic.
-- **FR-001a**: The workflow coordinator MUST read its workflow definition from a YAML workflow
+- **FR-001a**: The workflow coordinator MUST read its workflow definition from a workflow
   definition file via the file delegate.
 - **FR-001aa**: The workflow definition schema MUST be declarative and MUST describe stages,
   explicit transitions, validation rules for workflow progression, and any `complete(...)` prompt
@@ -185,17 +185,17 @@ the final summary alone is sufficient to identify the item's terminal state.
 - **FR-001aab**: Any workflow validation that uses `complete(...)` MUST define an input template
   containing variables named `outcome` and `reason` so the completion step is invoked through a
   consistent decision-shaped prompt.
-- **FR-001ab**: Every YAML workflow definition file MUST include metadata, an item field schema,
+- **FR-001ab**: Every workflow definition file MUST include metadata, an item field schema,
   stages, transitions, validation clauses, and terminal outcomes.
 - **FR-001ac**: Validation clauses in the workflow definition MUST attach to transitions rather than
   existing only as stage-level or global rules.
-- **FR-001ad**: If a YAML workflow definition file is missing any required top-level element, the
+- **FR-001ad**: If a workflow definition file is missing any required top-level element, the
   system MUST reject that definition, MUST NOT start the demo item from it, and MUST emit a clear
   definition-load error.
-- **FR-001ae**: If a YAML workflow definition places validation clauses anywhere other than a
+- **FR-001ae**: If a workflow definition places validation clauses anywhere other than a
   transition, the system MUST reject that definition as invalid schema and MUST leave existing
   workflow state unchanged.
-- **FR-001b**: The bundled example MUST include one default YAML workflow definition file used for
+- **FR-001b**: The bundled example MUST include one default workflow definition file used for
   fresh executable demo runs.
 - **FR-002**: On a fresh executable run, the system MUST launch the workflow coordinator through the
   normal boot flow without requiring shell interaction.
@@ -257,19 +257,19 @@ the final summary alone is sufficient to identify the item's terminal state.
   pattern to many domains.
 - **FR-012**: The feature MUST include documentation that explains the workflow lifecycle, expected
   observable output, and how the example serves as a reusable AgeRun pattern.
-- **FR-012a**: Validation and acceptance testing MUST be able to supply alternate YAML test
+- **FR-012a**: Validation and acceptance testing MUST be able to supply alternate test
   workflow definition files so workflow-specific step validation and rejection behavior can be
   verified.
 
 ### Key Entities *(include if feature involves data)*
 
-- **Workflow Definition File**: A YAML file containing the declarative metadata, item field
+- **Workflow Definition File**: A workflow definition file containing the declarative metadata, item field
   schema, stages, explicit transitions, validation clauses, and terminal outcomes that the workflow
   coordinator uses to process work items.
 - **Workflow Metadata**: High-level identifying information about the workflow definition that lets
   users and tests distinguish one workflow from another.
 - **File Delegate Request**: A message sent by a workflow agent to the file delegate so the agent
-  can read the YAML workflow definition file content.
+  can read the workflow definition file content.
 - **Item Field Schema**: The declared set of workflow-item fields and required attributes that a
   work item must satisfy as it moves through the workflow.
 - **Validation Clause**: A declarative rule attached to a transition in the workflow definition
@@ -302,11 +302,11 @@ the final summary alone is sufficient to identify the item's terminal state.
 - **Assumptions**:
   - The bundled example will demonstrate one primary work item on a fresh run so the output remains
     concise and easy to follow.
-  - The default fresh-run demo uses a bundled YAML workflow definition file, while validation may
-    use a separate YAML test workflow definition file.
+  - The default fresh-run demo uses a bundled workflow definition file, while validation may
+    use a separate test workflow definition file.
   - The bundled default workflow uses the local `complete(...)` runtime and model as part of its
     normal transition validation path and therefore depends on that capability being available.
-  - Workflow definition files are declarative YAML rather than imperative code and provide explicit
+  - Workflow definition files are declarative workflow definition rather than imperative code and provide explicit
     metadata, field schema, transition, transition-level validation, terminal-outcome data, and any
     prompt/template inputs required for `complete(...)`-driven decisions, including variables named
     `outcome` and `reason`.
@@ -322,7 +322,7 @@ the final summary alone is sufficient to identify the item's terminal state.
   - Restored workflow agents continue from persisted state instead of being replaced by a fresh demo.
 - **External Dependencies**: No new external services are required; the feature depends on existing
   AgeRun executable startup, logging, persistence, method-loading behavior, the existing file
-  delegate path for file reads, availability of the selected YAML workflow definition file, and the
+  delegate path for file reads, availability of the selected workflow definition file, and the
   local `complete(...)` runtime/model whenever the active workflow validation uses `complete(...)`.
 - **Open Questions**: None.
 
@@ -331,8 +331,7 @@ the final summary alone is sufficient to identify the item's terminal state.
 - **Affected Documentation**: README.md, methods/README.md, workflow coordinator method
   documentation, bootstrap/startup demo documentation, CHANGELOG.md, and any relevant KB articles
   if new reusable patterns are discovered.
-- **Affected Runtime Contracts**: Boot-driven executable startup behavior, YAML
-  workflow-definition-file reads through the file delegate, bundled method inventory, restored
+- **Affected Runtime Contracts**: Boot-driven executable startup behavior, workflow definition file reads through the file delegate, bundled method inventory, restored
   workflow-agent startup/resume behavior, and observable runtime log output for the demo.
 - **Compatibility Notes**: Intended to be backward-compatible with existing startup and persistence
   behavior; the new example replaces the current bundled demo scenario but should not require shell

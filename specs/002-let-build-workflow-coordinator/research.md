@@ -8,7 +8,7 @@
 
 ## Decision 2: Use path-recognized definition assets for the current implementation
 
-- **Decision**: The original plan targeted YAML read through the file delegate, but the current
+- **Decision**: The original plan targeted workflow definition read through the file delegate, but the current
   implementation resolves supported definitions by `definition_path` inside the
   `workflow-definition` method.
 - **Rationale**: This kept the method implementation small enough to get the feature slices green.

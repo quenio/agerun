@@ -30,8 +30,8 @@ methods/workflow-item-1.0.0.md
 methods/workflow-item-1.0.0.method
 methods/workflow-reporter-1.0.0.md
 methods/workflow-reporter-1.0.0.method
-workflows/default-workflow.yaml
-workflows/test-workflow.yaml</div>
+workflows/default.workflow
+workflows/test.workflow</div>
                 </section>
             </div>
             <section class="diagram-panel">
@@ -108,7 +108,7 @@ methods/workflow-reporter-1.0.0.md</div>
                     <ul>
                         <li>Handles the raw <span class="code">__boot__</span> startup string.</li>
                         <li>Spawns <span class="code">workflow-coordinator</span> version <span class="code">1.0.0</span>.</li>
-                        <li>Seeds <span class="code">definition_path=workflows/default-workflow.yaml</span>.</li>
+                        <li>Seeds <span class="code">definition_path=workflows/default.workflow</span>.</li>
                         <li>Seeds the bundled item values: <span class="code">demo-item-1</span>, <span class="code">demo_work_item</span>, <span class="code">high</span>, <span class="code">workflow_owner</span>, <span class="code">approved</span>.</li>
                     </ul>
                 </section>
@@ -323,7 +323,7 @@ methods/workflow_reporter_tests.c</div>
                 <div class="timeline">
                     <div class="timeline-step"><strong>1. Bootstrap handles startup</strong><br>The executable creates the bootstrap agent and sends the raw <span class="code">__boot__</span> message.</div>
                     <div class="timeline-step"><strong>2. Coordinator receives start</strong><br>Bootstrap sends <span class="code">action=start</span> with definition, reporter, item, owner, priority, and review metadata.</div>
-                    <div class="timeline-step"><strong>3. Definition is prepared</strong><br>The coordinator spawns <span class="code">workflow-definition</span> and sends <span class="code">prepare_definition</span> with <span class="code">workflows/default-workflow.yaml</span>.</div>
+                    <div class="timeline-step"><strong>3. Definition is prepared</strong><br>The coordinator spawns <span class="code">workflow-definition</span> and sends <span class="code">prepare_definition</span> with <span class="code">workflows/default.workflow</span>.</div>
                     <div class="timeline-step"><strong>4. Ready or error returns</strong><br>The definition method replies with <span class="code">definition_ready</span> for known definitions and successful probes, or <span class="code">definition_error</span> on schema/probe failure.</div>
                     <div class="timeline-step"><strong>5. Reporter logs the visible result</strong><br>The coordinator sends either a <span class="code">summary</span> or <span class="code">startup_failure</span> event to the reporter.</div>
                 </div>
@@ -357,8 +357,8 @@ methods/workflow_reporter_tests.c</div>
                 <section class="panel">
                     <h3>Gate Checks</h3>
                     <ul>
-                        <li>Only known paths are accepted: <span class="code">workflows/default-workflow.yaml</span> and <span class="code">workflows/test-workflow.yaml</span>.</li>
-                        <li>Unknown paths and <span class="code">invalid-workflow.yaml</span> become <span class="code">invalid_definition_schema</span>.</li>
+                        <li>Only known paths are accepted: <span class="code">workflows/default.workflow</span> and <span class="code">workflows/test.workflow</span>.</li>
+                        <li>Unknown paths and <span class="code">invalid.workflow</span> become <span class="code">invalid_definition_schema</span>.</li>
                         <li><span class="code">complete("Workflow dependency probe ...")</span> supplies the startup readiness signal.</li>
                     </ul>
                 </section>
@@ -410,7 +410,7 @@ methods/workflow_reporter_tests.c</div>
                 <div class="state-compare">
                     <div class="state-card">
                         <strong>Bundled Demo Path</strong>
-                        <span><span class="code">bootstrap</span> sends <span class="code">workflows/default-workflow.yaml</span>.</span>
+                        <span><span class="code">bootstrap</span> sends <span class="code">workflows/default.workflow</span>.</span>
                         <span><span class="code">workflow-definition</span> maps it to <span class="code">default_workflow</span>.</span>
                     </div>
                     <div class="state-transition">review gate</div>
@@ -422,8 +422,11 @@ methods/workflow_reporter_tests.c</div>
                 </div>
             </section>
             <p class="note">In the current fresh executable path, the coordinator uses this default definition to stage readiness before emitting the direct approved/rejected summary.</p>
-            <div class="path-list">workflows/default-workflow.yaml
+            <section class="card source-panel">
+                <h3>Source Files</h3>
+                <div class="path-list">workflows/default.workflow
 methods/workflow-definition-1.0.0.md</div>
+            </section>
         `
     },
     {
@@ -469,8 +472,11 @@ methods/workflow-definition-1.0.0.md</div>
                 </div>
             </section>
             <p class="note">This keeps test coverage focused: tests can prove alternate definition loading without changing lifecycle stages or required item fields.</p>
-            <div class="path-list">workflows/test-workflow.yaml
+            <section class="card source-panel">
+                <h3>Source Files</h3>
+                <div class="path-list">workflows/test.workflow
 methods/workflow_definition_tests.c</div>
+            </section>
         `
     },
     {
@@ -653,8 +659,8 @@ methods/workflow_coordinator_tests.c
 methods/workflow_definition_tests.c
 methods/workflow_item_tests.c
 methods/workflow_reporter_tests.c
-workflows/default-workflow.yaml
-workflows/test-workflow.yaml</div>
+workflows/default.workflow
+workflows/test.workflow</div>
                 </section>
             </div>
             <section class="read-next">

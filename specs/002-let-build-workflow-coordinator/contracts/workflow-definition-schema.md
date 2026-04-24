@@ -7,14 +7,14 @@ Describe the currently implemented definition-file contract used by the workflow
 ## Representation Rule
 
 The current implementation uses parse-friendly, flat definition files under `workflows/`.
-Although the original design targeted YAML read through the file delegate, the implemented method
+Although the original design targeted workflow definition read through the file delegate, the implemented method
 logic currently identifies supported definitions by `definition_path` and stores a small fixed set
 of workflow metadata in method memory.
 
 In practice, the implemented workflow-definition method recognizes these paths:
-- `workflows/default-workflow.yaml`
-- `workflows/test-workflow.yaml`
-- `invalid-workflow.yaml` (treated as invalid schema fixture)
+- `workflows/default.workflow`
+- `workflows/test.workflow`
+- `invalid.workflow` (treated as invalid schema fixture)
 
 ## Implemented Logical Elements
 
@@ -101,8 +101,8 @@ Returns the stored workflow metadata for tests and documentation.
 
 ## Notes
 
-- This document reflects the current implementation rather than the earlier YAML/file-delegate plan.
-- The `workflows/*.yaml` files remain the external definition identifiers used by tests and runtime
+- This document reflects the current implementation rather than the earlier workflow-definition/file-delegate plan.
+- The `workflows/*.workflow` files remain the external definition identifiers used by tests and runtime
   startup, even though the current method implementation resolves them by path instead of parsing
-  general YAML content.
+  general workflow definition content.
 - Deterministic tests use `AGERUN_COMPLETE_RUNNER` to control `outcome` / `reason` values.

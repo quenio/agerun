@@ -20,7 +20,7 @@ These contracts currently describe:
 - what visible runtime output is expected through the log delegate
 
 They intentionally do **not** describe:
-- hypothetical future YAML/file-delegate parsing beyond the current implementation
+- hypothetical future workflow-definition/file-delegate parsing beyond the current implementation
 - new C APIs or modules for workflow execution
 - shell-driven operation
 - graphical or network interfaces

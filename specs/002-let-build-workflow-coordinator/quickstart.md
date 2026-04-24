@@ -7,7 +7,7 @@ coordinator example.
 
 - The runtime loads the bundled workflow method assets from `methods/`
 - `bootstrap-1.0.0.method` remains the executable's startup entry point on fresh runs
-- The default YAML workflow definition file is available under the top-level `workflows/` directory
+- The default workflow definition file is available under the top-level `workflows/` directory
   and within the allowed file-delegate path
 - The bundled default workflow's `complete(...)` dependency is available locally. For a normal demo
   run, prepare the local runtime/model with `make complete-runtime-ready 2>&1` or an equivalent
@@ -33,8 +33,8 @@ On a fresh run with no restored workflow agents:
 - `workflow-coordinator` spawns:
   - the generic workflow-definition agent
   - the workflow reporter agent
-- the workflow-definition agent reads `workflows/default-workflow.yaml` through the file delegate
-- the workflow-definition agent validates the YAML shape and, when the bundled workflow requires
+- the workflow-definition agent reads `workflows/default.workflow` through the file delegate
+- the workflow-definition agent validates the workflow definition shape and, when the bundled workflow requires
   local completion, probes `complete(...)` readiness before item creation
 - only after the definition/dependency probe succeeds does `workflow-coordinator` spawn one
   workflow item agent for the bundled demo item
@@ -67,7 +67,7 @@ A successful bundled default workflow demonstrates at least these visible lifecy
 5. item reached a validation-driven terminal outcome (`completed` or `rejected`)
 6. final summary emitted
 
-The exact terminal outcome depends on the YAML workflow definition's transition validation, not on
+The exact terminal outcome depends on the workflow definition's transition validation, not on
 hard-coded boot script logic. The visible messages should surface the relevant decision reason when
 one is available.
 
@@ -103,8 +103,8 @@ failure reason.
 
 Method-level validation should use `ar_method_fixture` and load:
 
-- `workflows/default-workflow.yaml` for bundled behavior checks
-- `workflows/test-workflow.yaml` when a test must force `advance`, `stay`, `reject`, or startup
+- `workflows/default.workflow` for bundled behavior checks
+- `workflows/test.workflow` when a test must force `advance`, `stay`, `reject`, or startup
   dependency failure paths deterministically
 - `AGERUN_COMPLETE_RUNNER=<fake-runner>` when tests need exact `outcome=` / `reason=` lines without
   the real local model/runtime
@@ -128,7 +128,7 @@ When the feature lands, repository-facing documentation should make clear that:
 
 - the workflow coordinator is launched by the executable boot method, not by `arsh`
 - the workflow behavior lives in AgeRun methods, not in new C feature modules
-- the workflow definition is swappable through YAML files read by the file delegate and validated
+- the workflow definition is swappable through workflow files read by the file delegate and validated
   against the documented definition/schema contracts
 - the bundled default workflow uses `complete(...)` as part of core transition validation
 - bundled startup fails clearly if the required local completion dependency is unavailable

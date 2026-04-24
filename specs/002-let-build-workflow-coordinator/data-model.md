@@ -14,7 +14,7 @@ start message.
 - `method_version = 1.0.0`
 - `definition_method_name = workflow-definition`
 - `definition_method_version = 1.0.0`
-- `definition_path = workflows/default-workflow.yaml`
+- `definition_path = workflows/default.workflow`
 - `reporter_method_name = workflow-reporter`
 - `reporter_method_version = 1.0.0`
 - `item_id = demo-item-1`
@@ -106,9 +106,9 @@ The reporter tracks the last emitted visible event.
 The current implementation treats the files under `workflows/` as path-selected definition assets.
 
 ### Supported Paths
-- `workflows/default-workflow.yaml`
-- `workflows/test-workflow.yaml`
-- `invalid-workflow.yaml` (invalid-schema fixture)
+- `workflows/default.workflow`
+- `workflows/test.workflow`
+- `invalid.workflow` (invalid-schema fixture)
 
 ### Implemented Attributes Exposed by the Definition Agent
 - `workflow_name`
