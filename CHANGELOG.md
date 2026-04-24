@@ -1,5 +1,25 @@
 # AgeRun CHANGELOG
 
+## 2026-04-23 (Workflow method walkthrough added)
+
+- **Added a browser walkthrough for the bundled workflow method family**
+
+  The published walkthrough collection now includes a guided tour of how the workflow demo boots,
+  prepares a definition, handles startup success/failure, models the fuller per-item lifecycle, and
+  emits visible reporter/log delegate output.
+
+  **Implementation**: Added `docs/walkthroughs/workflow-method/index.html` and
+  `docs/walkthroughs/workflow-method/slides.js`; updated `docs/walkthroughs/index.html`,
+  `docs/walkthroughs/README.md`, and `README.md` so the new deck is discoverable from the
+  walkthrough landing page and repository overview.
+
+  **Verification**: `node -c docs/walkthroughs/workflow-method/slides.js`,
+  `make check-docs 2>&1`, and fresh local Playwright screenshots of the workflow deck on desktop
+  and a 390px-wide narrow viewport.
+
+  **Impact**: Readers can now learn the workflow method family from a visual, message-ordered deck
+  before drilling into the individual method documents and tests.
+
 ## 2026-04-22 (Executable now supports non-persistent one-off runs)
 
 - **Added `--no-persistence` for `agerun` and `NO_PERSISTENCE=1` for `make run-exec`**

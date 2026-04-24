@@ -22,6 +22,8 @@ AgeRun also publishes browser-rendered architecture walkthroughs through GitHub 
 - **Published decks**:
   - [Agent Lifecycle](https://quenio.github.io/agerun/walkthroughs/agent-lifecycle/index.html)
   - [Message Processing](https://quenio.github.io/agerun/walkthroughs/message-processing/index.html)
+  - [Delegation](https://quenio.github.io/agerun/walkthroughs/delegation/index.html)
+  - [Workflow Method](https://quenio.github.io/agerun/walkthroughs/workflow-method/index.html)
 
 These walkthroughs complement the reference documentation by guiding you through one subsystem or
 runtime flow at a time.

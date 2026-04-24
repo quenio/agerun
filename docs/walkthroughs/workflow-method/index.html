@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgeRun Walkthrough: Workflow Method</title>
+    <link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="../../site.css">
+    <link rel="stylesheet" href="../deck.css">
+    <script src="../../site.js" defer></script>
+    <script src="../deck.js" defer></script>
+</head>
+<body>
+    <div class="app viewport-shell">
+        <header class="topbar panel viewport-bar page-topbar">
+            <div class="topbar-copy">
+                <div class="eyebrow">AgeRun Walkthrough</div>
+                <h1 id="deck-title">Workflow Method</h1>
+                <a class="deck-back-link" href="../index.html">← Back to Walkthroughs</a>
+            </div>
+            <div class="status-group">
+                <button id="menu-button" class="menu-button" type="button" aria-controls="slide-nav" aria-expanded="false">☰ Slides</button>
+                <div class="status">
+                    <span id="slide-counter">1 / 1</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="slide-shell viewport-main viewport-two-pane">
+            <aside id="slide-nav" class="sidebar panel viewport-sidebar page-sidebar" aria-label="Slide navigation">
+                <div class="sidebar-header">
+                    <h2 class="sidebar-title">Slides</h2>
+                    <button id="sidebar-close" class="sidebar-close" type="button" aria-label="Close slide navigation">×</button>
+                </div>
+                <nav id="slide-nav-list" class="sidebar-list" aria-label="Slides"></nav>
+            </aside>
+            <div id="sidebar-backdrop" class="sidebar-backdrop" hidden></div>
+            <article class="slide-card panel viewport-content">
+                <section id="slide"></section>
+            </article>
+            <footer class="controls panel viewport-bar page-footer">
+                <button id="prev-button" type="button">← Previous</button>
+                <div class="hint">Use ← → or J/K to navigate</div>
+                <button id="next-button" type="button">Next →</button>
+            </footer>
+        </main>
+    </div>
+
+    <script src="slides.js" defer></script>
+</body>
+</html>
