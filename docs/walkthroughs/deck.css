@@ -272,7 +272,6 @@ body.sidebar-open {
     margin: 0 0 24px;
     font-size: 1.1rem;
     color: var(--muted);
-    max-width: 70ch;
 }
 
 .columns {

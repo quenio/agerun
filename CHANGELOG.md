@@ -1,5 +1,24 @@
 # AgeRun CHANGELOG
 
+## 2026-04-24 (Workflow Methods slide subtitle improved)
+
+- **Expanded the Workflow Methods slide subtitle and let deck subtitles use the available width**
+
+  The Workflow Methods slide now explains how the participating methods form a message-driven
+  methodology, and walkthrough deck subtitles no longer wrap early at an artificial 70-character
+  width on desktop.
+
+  **Implementation**: Updated `docs/walkthroughs/workflow-methodology/slides.js` with a more
+  informative subtitle and adjusted `docs/walkthroughs/deck.css` so slide subtitles can extend to the
+  available slide pane width.
+
+  **Verification**: `node -c docs/walkthroughs/workflow-methodology/slides.js`,
+  `make check-docs 2>&1`, `git diff --check`, and fresh local Playwright WebKit screenshots of the
+  Workflow Methods slide and a representative existing walkthrough deck.
+
+  **Impact**: The slide title area now carries more useful context without wrapping prematurely on
+  wider screens.
+
 ## 2026-04-24 (Workflow Methodology methods slide clarified)
 
 - **Renamed and reworded the workflow methodology methods slide**

@@ -70,7 +70,7 @@ workflows/test-workflow.yaml</div>
     },
     {
         title: "Workflow Methods",
-        subtitle: "The workflow methodology is a small method family. Each method has one message-facing responsibility and keeps its state in agent memory.",
+        subtitle: "These methods form a message-driven methodology: bootstrap seeds the run, the coordinator prepares dependencies, the definition method validates schema and decisions, the item method carries state, and the reporter publishes visible outcomes.",
         body: `
             <div class="grid two">
                 <section class="card">
