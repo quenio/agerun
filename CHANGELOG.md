@@ -1,5 +1,21 @@
 # AgeRun CHANGELOG
 
+## 2026-04-24 (Workflow Methodology methods slide clarified)
+
+- **Renamed and reworded the workflow methodology methods slide**
+
+  The second walkthrough slide now uses the simpler "Workflow Methods" title and describes the
+  subject as the workflow methodology rather than a generic feature while still explaining each
+  participating method's responsibility.
+
+  **Implementation**: Updated `docs/walkthroughs/workflow-methodology/slides.js`.
+
+  **Verification**: `node -c docs/walkthroughs/workflow-methodology/slides.js`,
+  `make check-docs 2>&1`, `git diff --check`, and a fresh local Playwright WebKit screenshot of the
+  retitled slide.
+
+  **Impact**: The slide navigation and slide heading now describe the content more directly.
+
 ## 2026-04-24 (Workflow Methodology walkthrough folder renamed)
 
 - **Renamed the workflow walkthrough directory to match its title**

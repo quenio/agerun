@@ -69,8 +69,8 @@ workflows/test-workflow.yaml</div>
         `
     },
     {
-        title: "Method Family Roles",
-        subtitle: "The workflow feature is a small method family. Each method has one message-facing responsibility and keeps its state in agent memory.",
+        title: "Workflow Methods",
+        subtitle: "The workflow methodology is a small method family. Each method has one message-facing responsibility and keeps its state in agent memory.",
         body: `
             <div class="grid two">
                 <section class="card">
