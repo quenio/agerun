@@ -1,5 +1,23 @@
 # AgeRun CHANGELOG
 
+## 2026-04-24 (Workflow method source links now use compact panels)
+
+- **Moved per-method source links into labeled source panels**
+
+  The per-method Workflow Methodology slides now present their method/test links inside a compact
+  "Source Files" panel instead of leaving loose links at the bottom of the slide.
+
+  **Implementation**: Updated `docs/walkthroughs/workflow-methodology/slides.js` to wrap the
+  per-method source lists in reusable source panels and updated `docs/walkthroughs/deck.css` with the
+  shared source-panel spacing.
+
+  **Verification**: `node -c docs/walkthroughs/workflow-methodology/slides.js`,
+  `make check-docs 2>&1`, `git diff --check`, and a fresh local Playwright WebKit screenshot of the
+  affected coordinator slide.
+
+  **Impact**: Method-specific source references now read as intentional supporting material rather
+  than visually detached links.
+
 ## 2026-04-24 (Workflow Methodology walkthrough now has per-method slides)
 
 - **Added a specific slide for each workflow method after the Workflow Methods overview**

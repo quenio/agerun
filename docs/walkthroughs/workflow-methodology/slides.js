@@ -135,8 +135,11 @@ methods/workflow-reporter-1.0.0.md</div>
                     </div>
                 </div>
             </section>
-            <div class="path-list">methods/bootstrap.md
+            <section class="card source-panel">
+                <h3>Source Files</h3>
+                <div class="path-list">methods/bootstrap.md
 methods/bootstrap-1.0.0.method</div>
+            </section>
         `
     },
     {
@@ -178,9 +181,12 @@ methods/bootstrap-1.0.0.method</div>
                     </div>
                 </div>
             </section>
-            <div class="path-list">methods/workflow-coordinator-1.0.0.md
+            <section class="card source-panel">
+                <h3>Source Files</h3>
+                <div class="path-list">methods/workflow-coordinator-1.0.0.md
 methods/workflow-coordinator-1.0.0.method
 methods/workflow_coordinator_tests.c</div>
+            </section>
         `
     },
     {
@@ -213,9 +219,12 @@ methods/workflow_coordinator_tests.c</div>
                     <div class="timeline-step"><strong>describe</strong><br>Reply with definition metadata for inspection and tests.</div>
                 </div>
             </section>
-            <div class="path-list">methods/workflow-definition-1.0.0.md
+            <section class="card source-panel">
+                <h3>Source Files</h3>
+                <div class="path-list">methods/workflow-definition-1.0.0.md
 methods/workflow-definition-1.0.0.method
 methods/workflow_definition_tests.c</div>
+            </section>
         `
     },
     {
@@ -254,9 +263,12 @@ methods/workflow_definition_tests.c</div>
                     <div class="flow-step"><strong>completion / rejected / stay</strong><span>apply decision</span></div>
                 </div>
             </section>
-            <div class="path-list">methods/workflow-item-1.0.0.md
+            <section class="card source-panel">
+                <h3>Source Files</h3>
+                <div class="path-list">methods/workflow-item-1.0.0.md
 methods/workflow-item-1.0.0.method
 methods/workflow_item_tests.c</div>
+            </section>
         `
     },
     {
@@ -294,9 +306,12 @@ methods/workflow_item_tests.c</div>
                     </div>
                 </div>
             </section>
-            <div class="path-list">methods/workflow-reporter-1.0.0.md
+            <section class="card source-panel">
+                <h3>Source Files</h3>
+                <div class="path-list">methods/workflow-reporter-1.0.0.md
 methods/workflow-reporter-1.0.0.method
 methods/workflow_reporter_tests.c</div>
+            </section>
         `
     },
     {
