@@ -1,5 +1,21 @@
 # AgeRun CHANGELOG
 
+## 2026-04-23 (Docs walkthrough verification guidance promoted)
+
+- **Promoted the docs-site walkthrough verification override into the root agent guide**
+
+  Future sessions now see the walkthrough/docs-site exception before applying the generic clean-build
+  pre-commit checklist.
+
+  **Implementation**: Updated `AGENTS.md` Quick Start and Pre-Commit Checklist sections to direct
+  docs-site/walkthrough-only changes to `docs/AGENTS.md` verification and explicitly skip
+  `make clean build` / `make check-logs` for that class of change.
+
+  **Verification**: `make check-docs 2>&1` and `git diff --check`.
+
+  **Impact**: Future documentation-site walkthrough updates should avoid unnecessary clean builds
+  while still preserving the appropriate documentation verification path.
+
 ## 2026-04-23 (Workflow method walkthrough added)
 
 - **Added a browser walkthrough for the bundled workflow method family**

@@ -38,6 +38,7 @@ See [CONCEPTS.md - Module Organization Terms](CONCEPTS.md#module-organization-te
 
 **Primary**: `make build 2>&1` → `make check-logs` (MANDATORY sequence) ([details](kb/quick-start-commands.md), [relationship](kb/build-logs-relationship-principle.md))
 **Clean build**: `make clean build 2>&1` → `make check-logs`  
+**Docs/walkthrough exception**: For docs-site/walkthrough-only changes, follow `docs/AGENTS.md`; do **not** run `make clean build` or `make check-logs` ([docs-only override](docs/AGENTS.md#docs-only-verification-override))
 **CI requirement**: `check-logs` must pass or CI will fail ([details](kb/ci-check-logs-requirement.md), [deep analysis](kb/check-logs-deep-analysis-pattern.md), [network timeouts](kb/ci-network-timeout-diagnosis.md))
 **Help**: `make` shows all targets
 **Scripts**: Use make targets, not direct execution; dry-run mode essential ([details](kb/dry-run-mode-requirement.md))
@@ -584,6 +585,7 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 - **Conditional flow pattern**: When workflow logic requires conditional step execution, follow two-phase validation→decision pattern ([details](kb/checkpoint-conditional-flow-pattern.md))
 
 **Pre-Commit Checklist** (MANDATORY): ([details](kb/pre-commit-checklist-detailed.md))
+0. **Docs-site/walkthrough-only override**: If all modified tracked files are under `docs/`, or the only modified tracked file outside `docs/` is `CHANGELOG.md`, follow `docs/AGENTS.md` verification and skip `make clean build` / `make check-logs`.
 1. `make clean build 2>&1` → verify exit 0 → `make check-logs` ([details](kb/build-verification-before-commit.md))
 2. `make check-docs` → validate all documentation ([details](kb/documentation-validation-enhancement-patterns.md))
 3. `make check-naming` → ensure naming conventions still pass ([details](kb/make-target-testing-discipline.md))
