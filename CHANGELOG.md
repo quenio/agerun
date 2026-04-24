@@ -1,5 +1,25 @@
 # AgeRun CHANGELOG
 
+## 2026-04-24 (Workflow Methodology walkthrough now has per-method slides)
+
+- **Added a specific slide for each workflow method after the Workflow Methods overview**
+
+  The Workflow Methodology deck now follows the overview with focused slides for `bootstrap`,
+  `workflow-coordinator`, `workflow-definition`, `workflow-item`, and `workflow-reporter` before
+  continuing into the startup sequence and definition details.
+
+  **Implementation**: Updated `docs/walkthroughs/workflow-methodology/slides.js` with five new
+  method-specific slides covering each method's inputs, state responsibilities, outbound messages,
+  and test/source references. Updated `docs/walkthroughs/deck.css` so inline code fragments can wrap
+  on narrow screens.
+
+  **Verification**: `node -c docs/walkthroughs/workflow-methodology/slides.js`,
+  `make check-docs 2>&1`, `git diff --check`, and fresh local Playwright WebKit screenshots of the
+  inserted method-specific slide sequence on desktop and iPhone 13.
+
+  **Impact**: Readers can now learn each workflow method's concrete role before reading the
+  end-to-end startup and lifecycle flows.
+
 ## 2026-04-24 (Workflow Methods slide subtitle improved)
 
 - **Expanded the Workflow Methods slide subtitle and let deck subtitles use the available width**

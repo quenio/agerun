@@ -99,6 +99,207 @@ methods/workflow-reporter-1.0.0.md</div>
         `
     },
     {
+        title: "Bootstrap Method",
+        subtitle: "bootstrap is the executable entry method: it handles the raw startup message, seeds the demo item fields, and queues the coordinator start message.",
+        body: `
+            <div class="columns">
+                <section class="panel">
+                    <h3>Input and Setup</h3>
+                    <ul>
+                        <li>Handles the raw <span class="code">__boot__</span> startup string.</li>
+                        <li>Spawns <span class="code">workflow-coordinator</span> version <span class="code">1.0.0</span>.</li>
+                        <li>Seeds <span class="code">definition_path=workflows/default-workflow.yaml</span>.</li>
+                        <li>Seeds the bundled item values: <span class="code">demo-item-1</span>, <span class="code">demo_work_item</span>, <span class="code">high</span>, <span class="code">workflow_owner</span>, <span class="code">approved</span>.</li>
+                    </ul>
+                </section>
+                <section class="panel">
+                    <h3>Messages It Sends</h3>
+                    <ul>
+                        <li><span class="code">action=start</span> to the coordinator with definition, reporter, and item metadata.</li>
+                        <li>An intake progress log message to delegate <span class="code">-102</span> so fresh boot has visible output.</li>
+                        <li>Records <span class="code">demo_status</span> as either queued or failed.</li>
+                    </ul>
+                </section>
+            </div>
+            <section class="diagram-panel">
+                <h3>Bootstrap Handoff</h3>
+                <div class="sequence-diagram">
+                    <div class="sequence-lane"><strong>Executable</strong><span>creates bootstrap and sends __boot__</span></div>
+                    <div class="sequence-lane"><strong>bootstrap</strong><span>spawns coordinator and builds start payload</span></div>
+                    <div class="sequence-lane"><strong>workflow-coordinator</strong><span>receives startup metadata</span></div>
+                    <div class="sequence-lane"><strong>Log Delegate</strong><span>receives the initial intake line</span></div>
+                    <div class="sequence-arrow-row">
+                        <span class="sequence-arrow">__boot__ →</span>
+                        <span class="sequence-arrow">action=start →</span>
+                        <span class="sequence-arrow">intake log →</span>
+                    </div>
+                </div>
+            </section>
+            <div class="path-list">methods/bootstrap.md
+methods/bootstrap-1.0.0.method</div>
+        `
+    },
+    {
+        title: "Workflow Coordinator Method",
+        subtitle: "workflow-coordinator owns the run-level handoff: it prepares the definition, waits for ready/error, and turns startup state into reporter events.",
+        body: `
+            <div class="columns">
+                <section class="panel">
+                    <h3>On action=start</h3>
+                    <ul>
+                        <li>Stores definition, reporter, and item metadata in memory.</li>
+                        <li>Spawns <span class="code">workflow-definition</span> and <span class="code">workflow-reporter</span>.</li>
+                        <li>Sends <span class="code">prepare_definition</span> to the definition agent.</li>
+                        <li>Sets <span class="code">run_status=waiting_for_definition</span>.</li>
+                    </ul>
+                </section>
+                <section class="panel">
+                    <h3>On Definition Reply</h3>
+                    <ul>
+                        <li><span class="code">definition_ready</span> records workflow metadata, marks the run active, and sends a summary to the reporter.</li>
+                        <li><span class="code">definition_error</span> marks <span class="code">startup_failed</span> and sends a startup failure event.</li>
+                        <li>The current executable path uses <span class="code">review_status</span> directly to choose completed vs rejected summary output.</li>
+                    </ul>
+                </section>
+            </div>
+            <section class="diagram-panel">
+                <h3>Coordinator State Split</h3>
+                <div class="state-compare">
+                    <div class="state-card">
+                        <strong>Ready Path</strong>
+                        <span><span class="code">run_status=active</span></span>
+                        <span><span class="code">summary_sent=1</span></span>
+                    </div>
+                    <div class="state-transition">definition reply</div>
+                    <div class="state-card">
+                        <strong>Error Path</strong>
+                        <span><span class="code">run_status=startup_failed</span></span>
+                        <span><span class="code">startup_sent=1</span></span>
+                    </div>
+                </div>
+            </section>
+            <div class="path-list">methods/workflow-coordinator-1.0.0.md
+methods/workflow-coordinator-1.0.0.method
+methods/workflow_coordinator_tests.c</div>
+        `
+    },
+    {
+        title: "Workflow Definition Method",
+        subtitle: "workflow-definition is the schema gate and transition-decision method: it recognizes supported definitions and normalizes complete(...) results.",
+        body: `
+            <div class="columns">
+                <section class="panel">
+                    <h3>Definition Operations</h3>
+                    <ul>
+                        <li><span class="code">prepare_definition</span> maps known paths to workflow metadata and runs the startup dependency probe.</li>
+                        <li><span class="code">describe</span> returns the workflow metadata, item field list, stages, and validation clauses.</li>
+                        <li>Unknown paths are normalized to <span class="code">invalid_definition_schema</span>.</li>
+                    </ul>
+                </section>
+                <section class="panel">
+                    <h3>Decision Operations</h3>
+                    <ul>
+                        <li><span class="code">evaluate_transition</span> calls <span class="code">complete("Workflow transition decision ...")</span>.</li>
+                        <li>Generated <span class="code">outcome</span> becomes <span class="code">advance</span>, <span class="code">reject</span>, or <span class="code">stay</span>.</li>
+                        <li>Completion failure becomes retryable <span class="code">stay</span> with <span class="code">complete_transition_failed</span>.</li>
+                    </ul>
+                </section>
+            </div>
+            <section class="diagram-panel">
+                <h3>Definition Method Replies</h3>
+                <div class="timeline">
+                    <div class="timeline-step"><strong>prepare_definition</strong><br>Reply with <span class="code">definition_ready</span> or <span class="code">definition_error</span>.</div>
+                    <div class="timeline-step"><strong>evaluate_transition</strong><br>Reply with <span class="code">transition_decision</span> carrying next stage, status, reason, retryability, and terminal outcome.</div>
+                    <div class="timeline-step"><strong>describe</strong><br>Reply with definition metadata for inspection and tests.</div>
+                </div>
+            </section>
+            <div class="path-list">methods/workflow-definition-1.0.0.md
+methods/workflow-definition-1.0.0.method
+methods/workflow_definition_tests.c</div>
+        `
+    },
+    {
+        title: "Workflow Item Method",
+        subtitle: "workflow-item is the stateful per-item method: it records item metadata, advances lifecycle stages, and applies definition decisions.",
+        body: `
+            <div class="columns">
+                <section class="panel">
+                    <h3>Persistent Item State</h3>
+                    <ul>
+                        <li>Stores workflow identity, item fields, current stage, current status, transition count, terminal outcome, and last reason.</li>
+                        <li>Emits progress when initialized and after automatic stage changes.</li>
+                        <li>Queues its own <span class="code">auto_progress</span> messages to continue the demo lifecycle.</li>
+                    </ul>
+                </section>
+                <section class="panel">
+                    <h3>Decision Application</h3>
+                    <ul>
+                        <li>At <span class="code">review</span>, sends <span class="code">evaluate_transition</span> to <span class="code">workflow-definition</span>.</li>
+                        <li><span class="code">advance</span> and <span class="code">reject</span> produce final summary events.</li>
+                        <li><span class="code">stay</span> keeps the item in review and emits progress instead of a summary.</li>
+                    </ul>
+                </section>
+            </div>
+            <section class="diagram-panel">
+                <h3>Item State Machine</h3>
+                <div class="lifecycle-flow" aria-label="Workflow item stages">
+                    <div class="flow-step"><strong>intake</strong><span>created</span></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step"><strong>triage</strong><span>entered_triage</span></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step"><strong>active</strong><span>entered_active</span></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step"><strong>review</strong><span>ask definition</span></div>
+                    <div class="flow-arrow">→</div>
+                    <div class="flow-step"><strong>completion / rejected / stay</strong><span>apply decision</span></div>
+                </div>
+            </section>
+            <div class="path-list">methods/workflow-item-1.0.0.md
+methods/workflow-item-1.0.0.method
+methods/workflow_item_tests.c</div>
+        `
+    },
+    {
+        title: "Workflow Reporter Method",
+        subtitle: "workflow-reporter is the visibility boundary: it converts workflow progress, summary, and startup failure events into log delegate messages.",
+        body: `
+            <div class="columns">
+                <section class="panel">
+                    <h3>Accepted Events</h3>
+                    <ul>
+                        <li><span class="code">progress</span> records and logs in-flight item state.</li>
+                        <li><span class="code">summary</span> records and logs terminal item state, using fallback summary text if needed.</li>
+                        <li><span class="code">startup_failure</span> records and logs dependency/schema failures without fake item fields.</li>
+                    </ul>
+                </section>
+                <section class="panel">
+                    <h3>What Tests Can Inspect</h3>
+                    <ul>
+                        <li><span class="code">last_event_type</span>, <span class="code">last_item_id</span>, and <span class="code">last_reason</span>.</li>
+                        <li><span class="code">last_message</span>, including any propagated <span class="code">COMPLETE_TRACE[...]</span>.</li>
+                        <li><span class="code">delivery_status</span> after sending to the log delegate.</li>
+                    </ul>
+                </section>
+            </div>
+            <section class="diagram-panel">
+                <h3>Reporter Boundary</h3>
+                <div class="sequence-diagram">
+                    <div class="sequence-lane"><strong>Coordinator / Item</strong><span>sends workflow event</span></div>
+                    <div class="sequence-lane"><strong>Reporter</strong><span>formats visible text and records last event</span></div>
+                    <div class="sequence-lane"><strong>Delegate -102</strong><span>receives log level, agent id, and message</span></div>
+                    <div class="sequence-lane"><strong>Log Output</strong><span>shows progress, summary, or startup failure</span></div>
+                    <div class="sequence-arrow-row">
+                        <span class="sequence-arrow">progress / summary / failure →</span>
+                        <span class="sequence-arrow">send(-102, log_message) →</span>
+                    </div>
+                </div>
+            </section>
+            <div class="path-list">methods/workflow-reporter-1.0.0.md
+methods/workflow-reporter-1.0.0.method
+methods/workflow_reporter_tests.c</div>
+        `
+    },
+    {
         title: "Startup Sequence",
         subtitle: "Fresh executable startup is a bounded message chain: bootstrap queues the coordinator, the coordinator prepares the definition, and the reporter emits the result.",
         body: `
