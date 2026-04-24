@@ -1,5 +1,23 @@
 # AgeRun CHANGELOG
 
+## 2026-04-24 (Workflow Methodology walkthrough folder renamed)
+
+- **Renamed the workflow walkthrough directory to match its title**
+
+  The published walkthrough path now uses `workflow-methodology` so the folder name, URL, and
+  reader-facing title all describe the walkthrough as a methodology made of cooperating methods.
+
+  **Implementation**: Renamed `docs/walkthroughs/workflow-method/` to
+  `docs/walkthroughs/workflow-methodology/` and updated the walkthrough index, walkthrough README,
+  project README, and changelog path/URL references.
+
+  **Verification**: `node -c docs/walkthroughs/workflow-methodology/slides.js`,
+  `make check-docs 2>&1`, `git diff --check`, and fresh local Playwright WebKit screenshots of the
+  renamed path on desktop and iPhone 13.
+
+  **Impact**: Published navigation now points at the title-matching
+  `/walkthroughs/workflow-methodology/index.html` URL.
+
 ## 2026-04-23 (Workflow walkthrough renamed to Workflow Methodology)
 
 - **Renamed the workflow walkthrough's visible title to Workflow Methodology**
@@ -8,12 +26,12 @@
   published title, index card, and repository links now use the more accurate "Workflow
   Methodology" name.
 
-  **Implementation**: Updated `docs/walkthroughs/workflow-method/index.html`,
-  `docs/walkthroughs/workflow-method/slides.js`, `docs/walkthroughs/index.html`,
+  **Implementation**: Updated `docs/walkthroughs/workflow-methodology/index.html`,
+  `docs/walkthroughs/workflow-methodology/slides.js`, `docs/walkthroughs/index.html`,
   `docs/walkthroughs/README.md`, and `README.md` to use the Workflow Methodology title while
   preserving the existing published URL.
 
-  **Verification**: `node -c docs/walkthroughs/workflow-method/slides.js`,
+  **Verification**: `node -c docs/walkthroughs/workflow-methodology/slides.js`,
   `make check-docs 2>&1`, `git diff --check`, and fresh local Playwright WebKit screenshots of the
   renamed deck on desktop and iPhone 13.
 
@@ -28,11 +46,11 @@
   values are used by the coordinator shortcut, item lifecycle path, transition evaluation, and
   reporter output.
 
-  **Implementation**: Updated `docs/walkthroughs/workflow-method/slides.js` with a new Item Field
+  **Implementation**: Updated `docs/walkthroughs/workflow-methodology/slides.js` with a new Item Field
   Values slide covering the bundled demo values from `bootstrap`, their message flow, and their uses
   in summary/progress reporting.
 
-  **Verification**: `node -c docs/walkthroughs/workflow-method/slides.js`,
+  **Verification**: `node -c docs/walkthroughs/workflow-methodology/slides.js`,
   `make check-docs 2>&1`, `git diff --check`, and fresh local Playwright WebKit screenshots of the
   new slide on desktop and iPhone 13.
 
@@ -46,11 +64,11 @@
   The definition gate slide now introduces the workflow definition fields before the deck compares the
   default and test definitions.
 
-  **Implementation**: Updated `docs/walkthroughs/workflow-method/slides.js` to explain the schema
+  **Implementation**: Updated `docs/walkthroughs/workflow-methodology/slides.js` to explain the schema
   fields, known-path gate checks, startup probe, and schema-to-reply flow on the definition gate
   slide.
 
-  **Verification**: `node -c docs/walkthroughs/workflow-method/slides.js`,
+  **Verification**: `node -c docs/walkthroughs/workflow-methodology/slides.js`,
   `make check-docs 2>&1`, `git diff --check`, and a fresh local Playwright iPhone 13/WebKit
   screenshot of the workflow deck.
 
@@ -65,10 +83,10 @@
   definition separately, including their workflow names, shared lifecycle fields, validation clauses,
   and decision templates.
 
-  **Implementation**: Updated `docs/walkthroughs/workflow-method/slides.js` to add two focused
+  **Implementation**: Updated `docs/walkthroughs/workflow-methodology/slides.js` to add two focused
   definition slides and include `workflows/test-workflow.yaml` in the primary source list.
 
-  **Verification**: `node -c docs/walkthroughs/workflow-method/slides.js`,
+  **Verification**: `node -c docs/walkthroughs/workflow-methodology/slides.js`,
   `make check-docs 2>&1`, `git diff --check`, and fresh local Playwright screenshots of the
   workflow deck on desktop and a 390px-wide narrow viewport.
 
@@ -99,12 +117,12 @@
   prepares a definition, handles startup success/failure, models the fuller per-item lifecycle, and
   emits visible reporter/log delegate output.
 
-  **Implementation**: Added `docs/walkthroughs/workflow-method/index.html` and
-  `docs/walkthroughs/workflow-method/slides.js`; updated `docs/walkthroughs/index.html`,
+  **Implementation**: Added `docs/walkthroughs/workflow-methodology/index.html` and
+  `docs/walkthroughs/workflow-methodology/slides.js`; updated `docs/walkthroughs/index.html`,
   `docs/walkthroughs/README.md`, and `README.md` so the new deck is discoverable from the
   walkthrough landing page and repository overview.
 
-  **Verification**: `node -c docs/walkthroughs/workflow-method/slides.js`,
+  **Verification**: `node -c docs/walkthroughs/workflow-methodology/slides.js`,
   `make check-docs 2>&1`, and fresh local Playwright screenshots of the workflow deck on desktop
   and a 390px-wide narrow viewport.
 
