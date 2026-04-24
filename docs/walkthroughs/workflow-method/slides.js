@@ -30,7 +30,8 @@ methods/workflow-item-1.0.0.md
 methods/workflow-item-1.0.0.method
 methods/workflow-reporter-1.0.0.md
 methods/workflow-reporter-1.0.0.method
-workflows/default-workflow.yaml</div>
+workflows/default-workflow.yaml
+workflows/test-workflow.yaml</div>
                 </section>
             </div>
             <section class="diagram-panel">
@@ -161,6 +162,97 @@ methods/workflow-reporter-1.0.0.md</div>
                     </div>
                 </div>
             </section>
+        `
+    },
+    {
+        title: "Default Workflow Definition",
+        subtitle: "The default definition is the bundled executable demo path: default_workflow, intake-first staging, review_gate validation, and workflow_review decision text.",
+        body: `
+            <div class="columns">
+                <section class="panel">
+                    <h3>Definition Identity</h3>
+                    <ul>
+                        <li><span class="code">workflow_name=default_workflow</span></li>
+                        <li><span class="code">workflow_version=1.0.0</span></li>
+                        <li><span class="code">initial_stage=intake</span></li>
+                        <li><span class="code">requires_local_completion=1</span></li>
+                    </ul>
+                </section>
+                <section class="panel">
+                    <h3>Item Contract</h3>
+                    <ul>
+                        <li>Required item fields are <span class="code">item_id</span>, <span class="code">title</span>, <span class="code">priority</span>, <span class="code">owner</span>, and <span class="code">review_status</span>.</li>
+                        <li>The stage list is <span class="code">intake|triage|active|review|completion</span>.</li>
+                        <li>Terminal names are <span class="code">completed</span> and <span class="code">rejected</span>.</li>
+                    </ul>
+                </section>
+            </div>
+            <section class="diagram-panel">
+                <h3>Default Definition Shape</h3>
+                <div class="state-compare">
+                    <div class="state-card">
+                        <strong>Bundled Demo Path</strong>
+                        <span><span class="code">bootstrap</span> sends <span class="code">workflows/default-workflow.yaml</span>.</span>
+                        <span><span class="code">workflow-definition</span> maps it to <span class="code">default_workflow</span>.</span>
+                    </div>
+                    <div class="state-transition">review gate</div>
+                    <div class="state-card">
+                        <strong>Decision Template</strong>
+                        <span><span class="code">validation_clause=review_gate</span></span>
+                        <span><span class="code">decision_template=workflow_review_{outcome}_{reason}</span></span>
+                    </div>
+                </div>
+            </section>
+            <p class="note">In the current fresh executable path, the coordinator uses this default definition to stage readiness before emitting the direct approved/rejected summary.</p>
+            <div class="path-list">workflows/default-workflow.yaml
+methods/workflow-definition-1.0.0.md</div>
+        `
+    },
+    {
+        title: "Test Workflow Definition",
+        subtitle: "The test definition mirrors the default lifecycle but changes the workflow identity, validation clause, and decision template for deterministic alternate-definition coverage.",
+        body: `
+            <div class="columns">
+                <section class="panel">
+                    <h3>What Stays the Same</h3>
+                    <ul>
+                        <li><span class="code">workflow_version=1.0.0</span></li>
+                        <li><span class="code">initial_stage=intake</span></li>
+                        <li><span class="code">requires_local_completion=1</span></li>
+                        <li><span class="code">stages=intake|triage|active|review|completion</span></li>
+                        <li><span class="code">terminal_completed=completed</span> and <span class="code">terminal_rejected=rejected</span></li>
+                    </ul>
+                </section>
+                <section class="panel">
+                    <h3>What Changes</h3>
+                    <ul>
+                        <li><span class="code">workflow_name=test_workflow</span></li>
+                        <li><span class="code">validation_clause=test_gate</span></li>
+                        <li><span class="code">decision_template=test_review_{outcome}_{reason}</span></li>
+                    </ul>
+                </section>
+            </div>
+            <section class="diagram-panel">
+                <h3>Definition Comparison</h3>
+                <div class="state-compare">
+                    <div class="state-card">
+                        <strong>Default Definition</strong>
+                        <span><span class="code">default_workflow</span></span>
+                        <span><span class="code">review_gate</span></span>
+                        <span><span class="code">workflow_review_{outcome}_{reason}</span></span>
+                    </div>
+                    <div class="state-transition">alternate fixture</div>
+                    <div class="state-card">
+                        <strong>Test Definition</strong>
+                        <span><span class="code">test_workflow</span></span>
+                        <span><span class="code">test_gate</span></span>
+                        <span><span class="code">test_review_{outcome}_{reason}</span></span>
+                    </div>
+                </div>
+            </section>
+            <p class="note">This keeps test coverage focused: tests can prove alternate definition loading without changing lifecycle stages or required item fields.</p>
+            <div class="path-list">workflows/test-workflow.yaml
+methods/workflow_definition_tests.c</div>
         `
     },
     {

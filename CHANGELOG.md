@@ -1,5 +1,23 @@
 # AgeRun CHANGELOG
 
+## 2026-04-23 (Workflow walkthrough now explains both bundled definitions)
+
+- **Added default and test workflow definition slides to the workflow walkthrough**
+
+  The workflow method deck now explains the bundled executable definition and the alternate test
+  definition separately, including their workflow names, shared lifecycle fields, validation clauses,
+  and decision templates.
+
+  **Implementation**: Updated `docs/walkthroughs/workflow-method/slides.js` to add two focused
+  definition slides and include `workflows/test-workflow.yaml` in the primary source list.
+
+  **Verification**: `node -c docs/walkthroughs/workflow-method/slides.js`,
+  `make check-docs 2>&1`, `git diff --check`, and fresh local Playwright screenshots of the
+  workflow deck on desktop and a 390px-wide narrow viewport.
+
+  **Impact**: Readers can now distinguish the production demo definition from the deterministic test
+  fixture before reading the workflow definition method and tests.
+
 ## 2026-04-23 (Docs walkthrough verification guidance promoted)
 
 - **Promoted the docs-site walkthrough verification override into the root agent guide**
