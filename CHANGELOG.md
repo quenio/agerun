@@ -14,8 +14,9 @@
   workflow-definition test coverage through a deterministic completion runner because the external
   libllama runtime is not TSan-clean on Linux;
   aligned labeled shell output reads with the existing errno-capture pattern used by other shell tests;
-  skipped only the expensive real Phi-3 smoke
-  subtest during aggregate runs while keeping it available through `make complete-model-smoke`,
+  kept workflow-definition invalid-schema coverage on the deterministic fake runner instead of the
+  direct backend; skipped only the expensive real Phi-3 smoke subtest during aggregate runs while
+  keeping it available through `make complete-model-smoke`,
   skipped the vocab-only direct-backend failure subtest in aggregate runs unless explicitly requested,
   because CI's libllama/fixture combination reports a different failure before model-load validation,
   while keeping fake-runner and failure-path coverage active; and revised

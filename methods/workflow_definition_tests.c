@@ -190,6 +190,8 @@ static void test_workflow_definition__prepare_definition_reads_known_file_and_qu
 static void test_workflow_definition__invalid_schema_returns_definition_error(void) {
     printf("Testing workflow-definition rejects invalid schema...\n");
 
+    setup_fake_runner("outcome=ready\nreason=ok\n");
+
     ar_method_fixture_t *own_fixture = create_fixture();
     ar_agency_t *mut_agency = ar_method_fixture__get_agency(own_fixture);
     ar_data_t *own_context = ar_data__create_map();
@@ -228,6 +230,7 @@ static void test_workflow_definition__invalid_schema_returns_definition_error(vo
 
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_context);
+    cleanup_fake_runner();
 }
 
 static void test_workflow_definition__complete_failure_maps_to_retryable_stay(void) {
