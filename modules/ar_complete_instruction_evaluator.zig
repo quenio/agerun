@@ -30,6 +30,8 @@ const extract_placeholders_result_t = enum {
     out_of_memory,
 };
 
+const PROVIDED_VALUE_PROMPT_MARKER = "[provided]";
+
 fn _logError(ref_evaluator: *const ar_complete_instruction_evaluator_t, ref_message: [*:0]const u8) void {
     if (ref_evaluator.ref_log != null) {
         c.ar_log__error(ref_evaluator.ref_log, ref_message);
@@ -266,7 +268,12 @@ fn _buildPrefilledText(ref_template: []const u8, ref_values: ?*const c.ar_data_t
             defer ar_allocator.free(own_name);
             var value_buffer: [256]u8 = undefined;
             const ref_value_slice = _getExistingValueSlice(ref_values, own_name, &value_buffer);
-            total_len += if (ref_value_slice) |slice| slice.len else original_len;
+            total_len += if (ref_value_slice) |slice|
+                slice.len
+            else if (_hasExistingValue(ref_values, own_name))
+                PROVIDED_VALUE_PROMPT_MARKER.len
+            else
+                original_len;
             pos = range.next_pos;
         } else {
             total_len += ref_template.len - pos;
@@ -292,6 +299,9 @@ fn _buildPrefilledText(ref_template: []const u8, ref_values: ?*const c.ar_data_t
             if (_getExistingValueSlice(ref_values, own_name, &value_buffer)) |ref_value_slice| {
                 _copyPromptValue(own_buffer[used .. used + ref_value_slice.len], ref_value_slice);
                 used += ref_value_slice.len;
+            } else if (_hasExistingValue(ref_values, own_name)) {
+                @memcpy(own_buffer[used .. used + PROVIDED_VALUE_PROMPT_MARKER.len], PROVIDED_VALUE_PROMPT_MARKER);
+                used += PROVIDED_VALUE_PROMPT_MARKER.len;
             } else {
                 const placeholder_len = range.next_pos - range.open_pos;
                 @memcpy(own_buffer[used .. used + placeholder_len], ref_template[range.open_pos..range.next_pos]);
