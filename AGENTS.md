@@ -61,6 +61,13 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 **Preserving Changes**: Always create patches BEFORE reverting files ([details](kb/git-patch-preservation-workflow.md))
 
+**Pull Request Review Workflow**: When resolving PR review comments, fetch all review threads and
+comments (including resolved threads), address actionable reviewer replies with exactly one logical
+fix per commit when requested, commit before replying, reply directly to the review comment tagging
+the reviewer with the fix commit and explanation, ask them to review, push, verify with `git status`,
+and **never mark review threads resolved yourself**—leave resolution to Cursor/Codex/reviewer
+([details](kb/pull-request-review-workflow.md)).
+
 ## Project Structure
 
 - **/modules**: Core implementation (.c/.h files and tests)

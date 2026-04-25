@@ -1,5 +1,22 @@
 # AgeRun CHANGELOG
 
+## 2026-04-25 (Document PR review workflow)
+
+- **Added pull request review response guidance**
+
+  Documented the project workflow for resolving automated PR review comments: inspect all review
+  threads and follow-up replies, make one logical fix per commit when requested, reply directly to
+  reviewers after committing with the fix hash and explanation, and leave thread resolution to the
+  reviewer/bot.
+
+  **Implementation**: Added `kb/pull-request-review-workflow.md`, indexed it from `kb/README.md`,
+  and referenced it from `AGENTS.md` under Git workflow.
+
+  **Verification**: `make check-docs 2>&1`.
+
+  **Impact**: Future PR review sessions preserve reviewer ownership of thread resolution and avoid
+  missing actionable comments in already-resolved threads.
+
 ## 2026-04-25 (Complete instruction returns maps with provided values)
 
 - **Revised `complete(...)` to mirror build-style values input**

@@ -76,6 +76,7 @@ Each learning file contains:
 - [Git Push Verification](git-push-verification.md)
 - [Incomplete Commit Message Recovery Pattern](incomplete-commit-message-recovery-pattern.md)
 - [Pre-Commit Checklist Detailed](pre-commit-checklist-detailed.md)
+- [Pull Request Review Workflow](pull-request-review-workflow.md) ⭐ NEW - Review comments require one fix per commit, direct replies after commits, and reviewer-owned resolution
 
 #### 1.4 Knowledge Management
 - [Checkpoint Workflow Enforcement Pattern](checkpoint-workflow-enforcement-pattern.md) ⭐ NEW - Prevention vs. detection: 3-section enforcement for all 31 checkpoint commands
