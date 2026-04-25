@@ -123,9 +123,16 @@ static ar_expression_ast_t* _create_memory_access_ast(const char *ref_memory_pat
     assert(ref_memory_path != NULL);
     assert(strncmp(ref_memory_path, "memory.", 7) == 0);
 
+    const char *ref_suffix = ref_memory_path + 7;
+    size_t suffix_length = strlen(ref_suffix);
+    assert(suffix_length > 0U);
+    assert(suffix_length < sizeof((char[128]){0}));
+    assert(ref_suffix[0] != '.');
+    assert(ref_suffix[suffix_length - 1U] != '.');
+    assert(strstr(ref_suffix, "..") == NULL);
+
     char mut_path_buffer[128];
-    assert(strlen(ref_memory_path + 7) < sizeof(mut_path_buffer));
-    strcpy(mut_path_buffer, ref_memory_path + 7);
+    strcpy(mut_path_buffer, ref_suffix);
 
     const char *ref_path_parts[16];
     size_t path_count = 0;
