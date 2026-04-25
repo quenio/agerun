@@ -224,6 +224,8 @@ static void test_shell_delegate__process_input_stream_renders_labeled_transcript
     int64_t agent_id;
     size_t processed_count;
     size_t output_bytes_read;
+    int prior_errno;
+    int output_read_errno;
 
     printf("  test_shell_delegate__process_input_stream_renders_labeled_transcript_output...\n");
 
@@ -268,12 +270,17 @@ static void test_shell_delegate__process_input_stream_renders_labeled_transcript
               "Labeled transcript mode should still process the accepted input line");
 
     rewind(own_output_stream);
-    if (errno != 0) {
+    prior_errno = errno;
+    if (prior_errno != 0) {
         errno = 0;
     }
     output_bytes_read = fread(ref_output, 1, sizeof(ref_output) - 1, own_output_stream);
-    AR_ASSERT(errno == 0, "Labeled transcript output read should not leave errno set on success");
+    output_read_errno = errno;
     AR_ASSERT(output_bytes_read > 0, "Labeled transcript output should be readable");
+    AR_ASSERT(ferror(own_output_stream) == 0,
+              "Labeled transcript output read should not set the stream error indicator");
+    AR_ASSERT(output_read_errno == 0,
+              "Labeled transcript output read should not leave errno set on success");
     ref_output[output_bytes_read] = '\0';
     AR_ASSERT(strstr(ref_output, "IN: ") != NULL,
               "Labeled transcript mode should render the IN prompt prefix");

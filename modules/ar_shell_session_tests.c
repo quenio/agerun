@@ -158,6 +158,8 @@ static void test_shell_session__render_output_prefixes_labeled_transcript_lines(
     FILE *own_output_stream;
     char ref_output[128];
     size_t output_bytes_read;
+    int prior_errno;
+    int output_read_errno;
 
     printf("  test_shell_session__render_output_prefixes_labeled_transcript_lines...\n");
 
@@ -183,12 +185,17 @@ static void test_shell_session__render_output_prefixes_labeled_transcript_lines(
               "Shell session should render labeled reply output successfully");
 
     rewind(own_output_stream);
-    if (errno != 0) {
+    prior_errno = errno;
+    if (prior_errno != 0) {
         errno = 0;
     }
     output_bytes_read = fread(ref_output, 1, sizeof(ref_output) - 1, own_output_stream);
-    AR_ASSERT(errno == 0, "Rendered labeled reply read should not leave errno set on success");
+    output_read_errno = errno;
     AR_ASSERT(output_bytes_read > 0, "Rendered labeled reply output should be readable");
+    AR_ASSERT(ferror(own_output_stream) == 0,
+              "Rendered labeled reply read should not set the stream error indicator");
+    AR_ASSERT(output_read_errno == 0,
+              "Rendered labeled reply read should not leave errno set on success");
     ref_output[output_bytes_read] = '\0';
     AR_ASSERT(strcmp(ref_output, "OUT: reply sender_id=5 text=Ready\n") == 0,
               "Labeled shell-session replies should use the OUT prefix");

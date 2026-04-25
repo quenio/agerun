@@ -1,5 +1,34 @@
 # AgeRun CHANGELOG
 
+## 2026-04-25 (CI Linux test suite handles GCC and sanitizer differences)
+
+- **Fixed Linux-only CI failures exposed after complete-runtime-ready succeeded**
+
+  Linux CI now builds and runs the post-runtime test stages without the GCC 13 nonnull warning, the
+  scan-build errno warnings, the sanitizer/TSan real-model smoke failure, or executable-log timeout
+  errors from stale workflow `complete(...)` prompts.
+
+  **Implementation**: Removed the redundant NULL check from the dlsym `strdup` interceptor because
+  glibc declares `strdup`'s argument nonnull; aligned labeled shell output reads with the existing
+  errno-capture pattern used by other shell tests; skipped only the expensive real Phi-3 smoke
+  subtest during sanitizer aggregate runs while keeping fake-runner and failure-path coverage active;
+  and revised `workflow-definition` complete instructions to use explicit prompts with isolated
+  second-argument memory targets for startup and transition generated values.
+
+  **Verification**: `gh run view 24922732835 --log-failed` and downloaded build logs identified the
+  GCC `-Wnonnull-compare` failure in `modules/ar_file_delegate_dlsym_tests.c`, scan-build errno
+  warnings in `modules/ar_shell_delegate_tests.c` and `modules/ar_shell_session_tests.c`, and
+  sanitizer/TSan aborts in `modules/ar_local_completion_tests.c`. Verified locally with
+  `make ar_shell_delegate_tests ar_shell_session_tests ar_local_completion_tests 2>&1`,
+  `make bin/sanitize-tests/ar_local_completion_tests 2>&1` plus the sanitizer binary,
+  `make bin/tsan-tests/ar_local_completion_tests 2>&1` plus the TSan binary,
+  `make analyze-tests 2>&1`, `make workflow_definition_tests 2>&1`, an Ubuntu 24.04 Docker GCC 13
+  compile of `modules/ar_file_delegate_dlsym_tests.c` with CI warning flags,
+  `make clean build 2>&1`, and `make check-logs`.
+
+  **Impact**: The CI build can advance beyond the vendored runtime preparation and complete the Linux
+  compile, static-analysis, sanitizer, and TSan test stages.
+
 ## 2026-04-25 (CI build keeps GCC include search order intact)
 
 - **Removed explicit system include-path overrides from the GitHub Actions build**

@@ -80,7 +80,6 @@ char* strdup(const char *ref_str) {
     }
 
     if (ref_fail_strdup_target
-        && ref_str
         && strcmp(ref_str, ref_fail_strdup_target) == 0
         && mut_fail_strdup_remaining > 0) {
         mut_fail_strdup_remaining--;

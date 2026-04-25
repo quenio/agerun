@@ -13,6 +13,18 @@
 #include "ar_data.h"
 #include "ar_heap.h"
 
+#if defined(__has_feature)
+#if __has_feature(address_sanitizer) || __has_feature(thread_sanitizer)
+#define AR_LOCAL_COMPLETION_SANITIZER_BUILD 1
+#endif
+#endif
+#if defined(__SANITIZE_ADDRESS__) || defined(__SANITIZE_THREAD__)
+#define AR_LOCAL_COMPLETION_SANITIZER_BUILD 1
+#endif
+#ifndef AR_LOCAL_COMPLETION_SANITIZER_BUILD
+#define AR_LOCAL_COMPLETION_SANITIZER_BUILD 0
+#endif
+
 static void _setup_fake_runner_with_output(
     char *mut_runner_path,
     size_t runner_size,
@@ -619,7 +631,12 @@ int main(void) {
     test_local_completion__environment_override_and_lazy_initialization();
     test_local_completion__default_path_handling();
     test_local_completion__success_payload_normalization_and_reuse();
-    test_local_completion__real_phi3_model_smoke();
+    if (AR_LOCAL_COMPLETION_SANITIZER_BUILD) {
+        printf("Skipping real phi-3 smoke test in sanitizer aggregate run; "
+               "non-sanitized run-tests covers the real backend.\n");
+    } else {
+        test_local_completion__real_phi3_model_smoke();
+    }
     _run_subtest_subprocess("direct_backend_missing_model_file_failure");
     _run_subtest_subprocess("direct_backend_vocab_only_model_failure");
     _run_subtest_subprocess("invalid_before_generation_rejects_without_runtime_initialization");
