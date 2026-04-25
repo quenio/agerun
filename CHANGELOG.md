@@ -12,9 +12,9 @@
   glibc declares `strdup`'s argument nonnull; aligned labeled shell output reads with the existing
   errno-capture pattern used by other shell tests; skipped only the expensive real Phi-3 smoke
   subtest during aggregate runs while keeping it available through `make complete-model-smoke`,
-  skipped the vocab-only direct-backend failure subtest only during sanitizer aggregate runs while
-  keeping fake-runner and failure-path coverage active; and revised `workflow-definition` complete
-  instructions to use explicit prompts with isolated
+  skipped the vocab-only direct-backend failure subtest when sanitizer builds or missing CI fixtures
+  make it inapplicable while keeping fake-runner and failure-path coverage active; and revised
+  `workflow-definition` complete instructions to use explicit prompts with isolated
   second-argument memory targets for startup and transition generated values.
 
   **Verification**: `gh run view 24922732835 --log-failed` and downloaded build logs identified the
@@ -26,7 +26,8 @@
   `make bin/tsan-tests/ar_local_completion_tests 2>&1` plus the TSan binary,
   `make analyze-tests 2>&1`, `make workflow_definition_tests 2>&1`, `make complete-model-smoke 2>&1`,
   an Ubuntu 24.04 Docker GCC 13 compile of `modules/ar_file_delegate_dlsym_tests.c` with CI warning
-  flags, `make clean build 2>&1`, and `make check-logs`.
+  flags, `gh run view 24923836209 --log-failed` plus downloaded build logs for the missing vocab-only
+  fixture, `make clean build 2>&1`, and `make check-logs`.
 
   **Impact**: The CI build can advance beyond the vendored runtime preparation and complete the Linux
   compile, static-analysis, sanitizer, and TSan test stages.

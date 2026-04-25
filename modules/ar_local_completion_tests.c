@@ -125,6 +125,8 @@ typedef struct ar_complete_perf_fixture_s {
     const char *ref_second_placeholder;
 } ar_complete_perf_fixture_t;
 
+static const char *g_vocab_only_model_path = "../../llama-cpp/models/ggml-vocab-phi-3.gguf";
+
 static const ar_complete_perf_fixture_t g_complete_perf_fixtures[] = {
     {"The largest country in South America is {country}.", "country", NULL},
     {"The capital of Brazil is {city}.", "city", NULL},
@@ -259,7 +261,7 @@ static void test_local_completion__direct_backend_missing_model_file_failure(voi
 
 static void test_local_completion__direct_backend_vocab_only_model_failure(void) {
     unsetenv("AGERUN_COMPLETE_RUNNER");
-    assert(setenv("AGERUN_COMPLETE_MODEL", "../../llama-cpp/models/ggml-vocab-phi-3.gguf", 1) == 0);
+    assert(setenv("AGERUN_COMPLETE_MODEL", g_vocab_only_model_path, 1) == 0);
 
     ar_log_t *own_log = ar_log__create();
     assert(own_log != NULL);
@@ -640,6 +642,8 @@ int main(void) {
     _run_subtest_subprocess("direct_backend_missing_model_file_failure");
     if (AR_LOCAL_COMPLETION_SANITIZER_BUILD) {
         printf("Skipping vocab-only direct-backend failure subtest in sanitizer aggregate run.\n");
+    } else if (access(g_vocab_only_model_path, F_OK) != 0) {
+        printf("Skipping vocab-only direct-backend failure subtest; vocab fixture is unavailable.\n");
     } else {
         _run_subtest_subprocess("direct_backend_vocab_only_model_failure");
     }
