@@ -50,7 +50,7 @@ complete("The capital is {city}.", memory.location)
 On success:
 - every required placeholder has one generated string value
 - every generated value is stored as a string suitable for direct AgeRun memory reuse
-- substituting the stored values back into the original template preserves every literal segment exactly
+- generated values are validated directly before being stored in the result map
 - all target writes are applied atomically
 - existing target values are overwritten together
 - later AgeRun instructions can reuse the populated strings directly
@@ -85,7 +85,7 @@ Failure cases include:
 - local completion runtime unavailable on an otherwise supported environment (`failure_category=runtime_unavailable`)
 - timeout before a valid full result is ready (`failure_category=timeout`)
 - incomplete placeholder coverage or other partial-generation failures (`failure_category=incomplete_placeholder` or another actionable runtime class)
-- generated values that are empty, outer-whitespace-padded, brace-containing, or otherwise fail template reconstruction
+- generated values that are empty, outer-whitespace-padded, or brace-containing
 
 Failure-path diagnostics must include:
 - `failure_category=...`

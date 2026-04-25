@@ -105,10 +105,10 @@ Use the following documented fixture set when validating the first implementatio
 
 Expected validation evidence:
 - `memory.ok` stores boolean status only
-- successful calls store generated values as strings
-- reconstructing the sentence from the stored values preserves the literal text exactly
-- nested writes update the requested `memory...` base path
-- pre-existing values are replaced only on successful completion
+- successful calls return generated values as strings in a result map
+- generated values are non-empty and contain no leading/trailing whitespace or braces
+- values-map inputs seed known placeholders without mutating the provided map
+- pre-existing values supplied in the values map are preserved rather than overwritten
 
 ## 5a. Reuse-path acceptance fixture set for SC-004
 
