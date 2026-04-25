@@ -40,7 +40,8 @@
   removed dead completed-text reconstruction, and made recursive-copy helper allocation failures
   fail instead of returning truncated lists or maps. Follow-up spec-layer documentation was updated
   to remove stale completed-text reconstruction validation requirements and remaining boolean/base-path
-  wording from the original `complete(...)` design. The log whitelist metadata
+  wording from the original `complete(...)` design. Existing non-primitive values whose keys match
+  placeholders are now preserved instead of being treated as missing generated values. The log whitelist metadata
   was also refreshed after validating the timeout entry under the executable context.
 
   **Verification**: `make ar_complete_instruction_parser_tests ar_complete_instruction_evaluator_tests 2>&1`,

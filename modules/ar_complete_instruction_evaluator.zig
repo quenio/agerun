@@ -177,6 +177,10 @@ fn _dataToStringSlice(ref_data: ?*const c.ar_data_t, mut_buffer: []u8) ?[]const 
     }
 }
 
+fn _hasExistingValue(ref_values: ?*const c.ar_data_t, ref_name: [*:0]const u8) bool {
+    return c.ar_data__get_map_data(ref_values, ref_name) != null;
+}
+
 fn _getExistingValueSlice(ref_values: ?*const c.ar_data_t, ref_name: [*:0]const u8, mut_buffer: []u8) ?[]const u8 {
     const ref_value = c.ar_data__get_map_data(ref_values, ref_name) orelse return null;
     return _dataToStringSlice(ref_value, mut_buffer);
@@ -419,8 +423,7 @@ export fn ar_complete_instruction_evaluator__evaluate(
         return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() could not stage placeholder names");
     defer c.ar_list__destroy(own_placeholder_list);
     for (own_placeholders.items) |own_name| {
-        var value_buffer: [256]u8 = undefined;
-        if (_getExistingValueSlice(ref_values_data, own_name, &value_buffer) == null) {
+        if (!_hasExistingValue(ref_values_data, own_name)) {
             if (!c.ar_list__add_last(own_placeholder_list, own_name)) {
                 return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() could not stage placeholder names");
             }
@@ -442,8 +445,7 @@ export fn ar_complete_instruction_evaluator__evaluate(
         defer c.ar_data__destroy(own_generated_values);
 
         for (own_placeholders.items) |ref_name| {
-            var value_buffer: [256]u8 = undefined;
-            if (_getExistingValueSlice(ref_values_data, ref_name, &value_buffer) != null) {
+            if (_hasExistingValue(ref_values_data, ref_name)) {
                 continue;
             }
             const ref_value_slice = _getGeneratedValueSlice(own_generated_values, ref_name) orelse

@@ -261,7 +261,7 @@ static void test_complete_instruction_evaluator__evaluate_returns_new_map_with_e
 
     const char *path[] = {"input"};
     ar_instruction_ast_t *own_ast = _create_complete_ast_with_base_ast(
-        "The {description} capital of {country} is {city}.",
+        "The {description} capital of {country} is {city} with {nested} metadata.",
         ar_expression_ast__create_memory_access("memory", path, 1),
         "memory.result"
     );
