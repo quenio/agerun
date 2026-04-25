@@ -49,7 +49,11 @@ memory.complete_presence := parse("complete_present={complete_present}", memory.
 memory.startup_result := complete("Answer with outcome ready and reason ok. The dependency probe result is {outcome}. The short reason is {reason}.", memory.complete_presence)
 memory.probe_check_input := build("complete_present={complete_present} outcome={outcome} reason={reason}", memory.startup_result)
 memory.probe_check := parse("complete_present={complete_present} outcome={outcome} reason={reason}", memory.probe_check_input)
-memory.probe_ok := if(memory.probe_check.complete_present = 1, 1, 0)
+memory.probe_has_marker := if(memory.probe_check.complete_present = 1, 1, 0)
+memory.probe_has_outcome := if(memory.probe_check.outcome = "{outcome}", 0, 1)
+memory.probe_has_reason := if(memory.probe_check.reason = "{reason}", 0, 1)
+memory.probe_ok := memory.probe_has_marker * memory.probe_has_outcome
+memory.probe_ok := memory.probe_ok * memory.probe_has_reason
 memory.startup_complete_outcome := if(memory.probe_ok = 1, memory.probe_check.outcome, memory.startup_complete_outcome)
 memory.startup_complete_reason := if(memory.probe_ok = 1, memory.probe_check.reason, memory.startup_complete_reason)
 memory.dependency_status := if(memory.probe_ok = 1, "ready", memory.dependency_status)
@@ -82,7 +86,11 @@ memory.last_reply_action := if(memory.error_flag = 1, "definition_error", memory
 memory.transition_result := complete("Answer with outcome advance and reason approved. The workflow transition decision is {outcome}. The short reason is {reason}.", memory.complete_presence)
 memory.transition_check_input := build("complete_present={complete_present} outcome={outcome} reason={reason}", memory.transition_result)
 memory.transition_check := parse("complete_present={complete_present} outcome={outcome} reason={reason}", memory.transition_check_input)
-memory.transition_ok := if(memory.transition_check.complete_present = 1, 1, 0)
+memory.transition_has_marker := if(memory.transition_check.complete_present = 1, 1, 0)
+memory.transition_has_outcome := if(memory.transition_check.outcome = "{outcome}", 0, 1)
+memory.transition_has_reason := if(memory.transition_check.reason = "{reason}", 0, 1)
+memory.transition_ok := memory.transition_has_marker * memory.transition_has_outcome
+memory.transition_ok := memory.transition_ok * memory.transition_has_reason
 memory.transition_outcome := if(memory.transition_ok = 1, memory.transition_check.outcome, memory.transition_outcome)
 memory.transition_outcome := if(memory.transition_ok = 0, "stay", memory.transition_outcome)
 memory.transition_reason := if(memory.transition_ok = 1, memory.transition_check.reason, memory.transition_reason)

@@ -20,4 +20,5 @@ The `ar_complete_instruction_evaluator` module evaluates `complete(...)` instruc
 - invalid second arguments fail unless they evaluate to map values
 - the input values map is recursively copied before generated values are added, so the original map is not mutated
 - runtime and semantic failure logs preserve actionable fields such as `failure_category`, `cause`, and `recovery_hint`
+- generated-value validation failures return the copied input values map while omitting invalid generated values
 - completed values are stored as strings in the returned map for the first release

@@ -36,17 +36,28 @@ fn _logError(ref_evaluator: *const ar_complete_instruction_evaluator_t, ref_mess
     }
 }
 
-fn _writeEmptyResultMap(mut_memory: ?*c.ar_data_t, ref_ast: ?*const c.ar_instruction_ast_t) bool {
-    if (mut_memory == null or ref_ast == null) return false;
-    if (!c.ar_instruction_ast__has_result_assignment(ref_ast)) return true;
+fn _writeResultMap(
+    mut_memory: ?*c.ar_data_t,
+    ref_ast: ?*const c.ar_instruction_ast_t,
+    own_result: ?*c.ar_data_t,
+) bool {
+    if (mut_memory == null or ref_ast == null or own_result == null) return false;
+    if (!c.ar_instruction_ast__has_result_assignment(ref_ast)) {
+        c.ar_data__destroy(own_result);
+        return true;
+    }
 
     const ref_result_path = c.ar_instruction_ast__get_function_result_path(ref_ast);
-    const own_result = c.ar_data__create_map() orelse return false;
     if (!c.ar_data__set_map_data_if_root_matched(mut_memory, "memory", ref_result_path, own_result)) {
         c.ar_data__destroy(own_result);
         return false;
     }
     return true;
+}
+
+fn _writeEmptyResultMap(mut_memory: ?*c.ar_data_t, ref_ast: ?*const c.ar_instruction_ast_t) bool {
+    const own_result = c.ar_data__create_map() orelse return false;
+    return _writeResultMap(mut_memory, ref_ast, own_result);
 }
 
 fn _handledFailure(
@@ -59,6 +70,20 @@ fn _handledFailure(
     return _writeEmptyResultMap(mut_memory, ref_ast);
 }
 
+fn _formatDetailedFailureMessage(
+    ref_base_message: []const u8,
+    ref_failure_category: []const u8,
+    ref_cause: []const u8,
+    ref_recovery_hint: []const u8,
+    mut_buffer: []u8,
+) ?[:0]u8 {
+    return std.fmt.bufPrintZ(
+        mut_buffer,
+        "{s}; failure_category={s}; cause={s}; recovery_hint={s}",
+        .{ ref_base_message, ref_failure_category, ref_cause, ref_recovery_hint },
+    ) catch null;
+}
+
 fn _handledFailureDetailed(
     ref_evaluator: *const ar_complete_instruction_evaluator_t,
     mut_memory: ?*c.ar_data_t,
@@ -69,13 +94,47 @@ fn _handledFailureDetailed(
     ref_recovery_hint: []const u8,
 ) bool {
     var own_buffer: [1024]u8 = undefined;
-    const ref_message = std.fmt.bufPrintZ(
+    const ref_message = _formatDetailedFailureMessage(
+        ref_base_message,
+        ref_failure_category,
+        ref_cause,
+        ref_recovery_hint,
         &own_buffer,
-        "{s}; failure_category={s}; cause={s}; recovery_hint={s}",
-        .{ ref_base_message, ref_failure_category, ref_cause, ref_recovery_hint },
-    ) catch return _handledFailure(ref_evaluator, mut_memory, ref_ast, "complete() failed");
+    ) orelse return _handledFailure(ref_evaluator, mut_memory, ref_ast, "complete() failed");
     _logError(ref_evaluator, ref_message);
     return _writeEmptyResultMap(mut_memory, ref_ast);
+}
+
+fn _handledFailureDetailedWithResultMap(
+    ref_evaluator: *const ar_complete_instruction_evaluator_t,
+    mut_memory: ?*c.ar_data_t,
+    ref_ast: ?*const c.ar_instruction_ast_t,
+    own_result: ?*c.ar_data_t,
+    ref_base_message: []const u8,
+    ref_failure_category: []const u8,
+    ref_cause: []const u8,
+    ref_recovery_hint: []const u8,
+) bool {
+    var own_buffer: [1024]u8 = undefined;
+    const ref_message = _formatDetailedFailureMessage(
+        ref_base_message,
+        ref_failure_category,
+        ref_cause,
+        ref_recovery_hint,
+        &own_buffer,
+    ) orelse {
+        _logError(ref_evaluator, "complete() failed");
+        return _writeResultMap(mut_memory, ref_ast, own_result);
+    };
+    _logError(ref_evaluator, ref_message);
+    return _writeResultMap(mut_memory, ref_ast, own_result);
+}
+
+fn _copyProvidedValuesOrEmpty(ref_values_data: ?*const c.ar_data_t) ?*c.ar_data_t {
+    if (ref_values_data) |ref_values| {
+        return _deepCopyData(ref_values);
+    }
+    return c.ar_data__create_map();
 }
 
 fn _handledFailureFromExistingOrFallbackLog(
@@ -449,40 +508,59 @@ export fn ar_complete_instruction_evaluator__evaluate(
             if (_hasExistingValue(ref_values_data, ref_name)) {
                 continue;
             }
-            const ref_value_slice = _getGeneratedValueSlice(own_generated_values, ref_name) orelse
-                return _handledFailureDetailed(
+            const ref_value_slice = _getGeneratedValueSlice(own_generated_values, ref_name) orelse {
+                const own_failure_result = _copyProvidedValuesOrEmpty(ref_values_data);
+                return _handledFailureDetailedWithResultMap(
                     ref_evaluator.?,
                     mut_memory,
                     ref_ast,
+                    own_failure_result,
                     "complete() generated values must be non-empty strings with no leading/trailing whitespace or braces",
                     "invalid_generated_value",
                     "generated placeholder value was empty, had outer whitespace, or contained braces",
                     "adjust the template or local model configuration so each placeholder resolves to a clean string value",
                 );
-            const own_value_text = _makeCString(ref_value_slice, "complete_generated_value") orelse
-                return _handledFailureDetailed(
+            };
+            const own_value_text = _makeCString(ref_value_slice, "complete_generated_value") orelse {
+                const own_failure_result = _copyProvidedValuesOrEmpty(ref_values_data);
+                return _handledFailureDetailedWithResultMap(
                     ref_evaluator.?,
                     mut_memory,
                     ref_ast,
+                    own_failure_result,
                     "complete() could not stage generated values",
                     "runtime_failure",
                     "generated value staging allocation failed",
                     "retry with a smaller template or investigate allocator failures",
                 );
+            };
             defer ar_allocator.free(own_value_text);
-            const own_value = c.ar_data__create_string(own_value_text) orelse
-                return _handledFailureDetailed(
+            const own_value = c.ar_data__create_string(own_value_text) orelse {
+                const own_failure_result = _copyProvidedValuesOrEmpty(ref_values_data);
+                return _handledFailureDetailedWithResultMap(
                     ref_evaluator.?,
                     mut_memory,
                     ref_ast,
+                    own_failure_result,
                     "complete() could not stage generated values",
                     "runtime_failure",
                     "generated value staging allocation failed",
                     "retry with a smaller template or investigate allocator failures",
                 );
+            };
             if (!c.ar_data__set_map_data(own_result_map, ref_name, own_value)) {
                 c.ar_data__destroy(own_value);
-                return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() could not store generated values in result map");
+                const own_failure_result = _copyProvidedValuesOrEmpty(ref_values_data);
+                return _handledFailureDetailedWithResultMap(
+                    ref_evaluator.?,
+                    mut_memory,
+                    ref_ast,
+                    own_failure_result,
+                    "complete() could not store generated values in result map",
+                    "runtime_failure",
+                    "generated value storage failed",
+                    "retry with a smaller template or investigate map storage failures",
+                );
             }
         }
     }

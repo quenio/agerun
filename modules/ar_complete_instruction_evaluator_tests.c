@@ -333,6 +333,59 @@ static void test_complete_instruction_evaluator__evaluate_returns_new_map_with_e
     ar_evaluator_fixture__destroy(own_fixture);
 }
 
+static void test_complete_instruction_evaluator__validation_failure_preserves_provided_values(void) {
+    // Given a complete evaluator and an input values map with caller-provided values
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_complete_instruction_evaluator__validation_failure_preserves_provided_values");
+    assert(own_fixture != NULL);
+    ar_local_completion_t *own_runtime = ar_local_completion__create(ar_evaluator_fixture__get_log(own_fixture));
+    assert(own_runtime != NULL);
+    ar_complete_instruction_evaluator_t *own_evaluator = ar_complete_instruction_evaluator__create(
+        ar_evaluator_fixture__get_log(own_fixture),
+        ar_evaluator_fixture__get_expression_evaluator(own_fixture),
+        own_runtime
+    );
+    assert(own_evaluator != NULL);
+
+    ar_data_t *own_input = ar_data__create_map();
+    assert(own_input != NULL);
+    assert(ar_data__set_map_string(own_input, "country", "Peru") == true);
+    assert(ar_data__set_map_string(own_input, "complete_present", "1") == true);
+    assert(ar_data__set_map_data(ar_evaluator_fixture__get_memory(own_fixture), "input", own_input) == true);
+
+    const char *path[] = {"input"};
+    ar_instruction_ast_t *own_ast = _create_complete_ast_with_base_ast(
+        "The country is {country} and the broken value is {bracey}.",
+        ar_expression_ast__create_memory_access("memory", path, 1),
+        "memory.result"
+    );
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+
+    // When evaluating complete() and generated value validation fails
+    bool result = ar_complete_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
+
+    // Then the returned result map should preserve provided values without mutating the input map
+    assert(result == true);
+    ar_data_t *ref_input = ar_data__get_map_data(ar_evaluator_fixture__get_memory(own_fixture), "input");
+    assert(ref_input != NULL);
+    assert(strcmp(ar_data__get_map_string(ref_input, "country"), "Peru") == 0);
+    assert(ar_data__get_map_data(ref_input, "bracey") == NULL);
+
+    ar_data_t *ref_result = ar_data__get_map_data(ar_evaluator_fixture__get_memory(own_fixture), "result");
+    assert(ref_result != NULL);
+    assert(ar_data__get_type(ref_result) == AR_DATA_TYPE__MAP);
+    assert(ref_result != ref_input);
+    assert(strcmp(ar_data__get_map_string(ref_result, "country"), "Peru") == 0);
+    assert(strcmp(ar_data__get_map_string(ref_result, "complete_present"), "1") == 0);
+    assert(ar_data__get_map_data(ref_result, "bracey") == NULL);
+    assert(ar_log__get_last_error_message(ar_evaluator_fixture__get_log(own_fixture)) != NULL);
+
+    // Cleanup
+    ar_instruction_ast__destroy(own_ast);
+    ar_complete_instruction_evaluator__destroy(own_evaluator);
+    ar_local_completion__destroy(own_runtime);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
 static void test_complete_instruction_evaluator__evaluate_values_map_preserves_existing_values(void) {
     ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_complete_instruction_evaluator__evaluate_values_map_preserves_existing_values");
     assert(own_fixture != NULL);
@@ -772,6 +825,7 @@ int main(void) {
     test_complete_instruction_evaluator__evaluate_top_level_success();
     test_complete_instruction_evaluator__evaluate_returns_new_map_with_existing_and_completed_values();
     test_complete_instruction_evaluator__evaluate_values_map_preserves_existing_values();
+    test_complete_instruction_evaluator__validation_failure_preserves_provided_values();
     test_complete_instruction_evaluator__failure_returns_empty_map_and_preserves_existing_values();
     test_complete_instruction_evaluator__whitespace_rejection_keeps_memory_clean();
     test_complete_instruction_evaluator__template_without_placeholders_returns_empty_map();

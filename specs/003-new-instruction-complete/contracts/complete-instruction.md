@@ -43,7 +43,7 @@ memory.result := complete("The capital of {country} is {city}.", memory.values)
 ### Instruction result
 
 - the instruction returns a completion result map when assigned
-- handled failures assign an empty map when a result path is present
+- handled failures assign an empty map when a result path is present, except generated-value validation failures preserve copied provided values while omitting invalid generated values
 
 ## Success Contract
 
@@ -72,7 +72,7 @@ The first implementation validates reuse with this documented fixture set:
 ## Failure Contract
 
 On failure:
-- the instruction returns an empty map when assigned
+- the instruction returns an empty map when assigned, except generated-value validation failures preserve copied provided values while omitting invalid generated values
 - an actionable runtime error is recorded
 - no partial generated values are exposed
 - the provided input map remains unchanged

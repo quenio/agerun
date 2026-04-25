@@ -50,8 +50,10 @@
   evaluator test was renamed to describe empty-map semantics, the performance result helper now accepts
   the result key instead of hardcoding `memory.ok`, and the workflow method now detects completion success
   with a copied presence marker instead of model-controllable placeholder text, and generated complete()
-  strings are copied through explicit null-terminated buffers before storage, and dead placeholder-count
-  bookkeeping was removed from the complete() parser. The log whitelist metadata
+  strings are copied through explicit null-terminated buffers before storage, dead placeholder-count
+  bookkeeping was removed from the complete() parser, and generated-value validation failures now return
+  copied provided values without exposing invalid generated values. The workflow success check now requires
+  both the copied marker and generated outcome/reason fields. The log whitelist metadata
   was also refreshed after validating the timeout entry under the executable context.
 
   **Verification**: `make ar_complete_instruction_parser_tests ar_complete_instruction_evaluator_tests 2>&1`,
