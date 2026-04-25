@@ -685,6 +685,14 @@ ignored_errors:
     message: "Warning: Could not load methods from file"
     comment: "Expected warning in methodology tests"
 
+  # ar_parse_instruction_evaluator_tests
+  - context: "ar_parse_instruction_evaluator_tests"
+    message: "ERROR: memory.self is agency-managed and cannot be assigned"
+    comment: "Testing protected agency-managed memory.self parse result rejection"
+  - context: "ar_parse_instruction_evaluator_tests"
+    message: "ERROR: memory.self is agency-managed and cannot be parsed"
+    comment: "Testing protected agency-managed memory.self parse input rejection"
+
   # ar_parse_instruction_parser_tests
   - context: "ar_parse_instruction_parser_tests"
     message: "ERROR: Expected '(' after 'parse' (at position 6)"

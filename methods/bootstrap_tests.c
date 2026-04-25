@@ -110,7 +110,7 @@ static void test_bootstrap_runs_workflow_demo_on_boot(void) {
     AR_ASSERT(strcmp(ar_data__get_map_string(start_message, "action"), "start") == 0,
               "Bootstrap should queue workflow start action");
     AR_ASSERT(ar_data__get_map_data(start_message, "self") == NULL,
-              "Bootstrap start message should rely on system-injected self");
+              "Bootstrap start message should rely on agency-managed memory.self");
     AR_ASSERT(ar_data__get_map_data(start_message, "sender") == NULL,
               "Bootstrap start message should not use sender");
     AR_ASSERT(strcmp(ar_data__get_map_string(start_message, "definition_path"), "workflows/default.workflow") == 0,

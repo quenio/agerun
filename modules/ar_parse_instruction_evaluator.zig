@@ -54,6 +54,60 @@ fn _report_nested_container_error(
     }
 }
 
+/// Helper function to check whether a path targets agency-managed self identity
+fn _is_self_path(path: []const u8) bool {
+    return std.mem.eql(u8, path, "self") or std.mem.startsWith(u8, path, "self.");
+}
+
+/// Helper function to check whether a template contains protected self placeholders
+fn _template_contains_self_placeholder(template_str: [*:0]const u8) bool {
+    var template_ptr = template_str;
+
+    while (template_ptr[0] != 0) {
+        const var_start = c.strchr(template_ptr, '{') orelse return false;
+        const var_end = c.strchr(var_start + 1, '}') orelse return false;
+
+        const var_len = @intFromPtr(var_end) - @intFromPtr(var_start) - 1;
+        const var_name = @as([*]const u8, @ptrCast(var_start + 1))[0..var_len];
+        if (_is_self_path(var_name)) {
+            return true;
+        }
+
+        template_ptr = var_end + 1;
+    }
+
+    return false;
+}
+
+/// Helper function to check whether an expression references agency-managed memory.self
+fn _expression_references_memory_self(ref_ast: ?*const c.ar_expression_ast_t) bool {
+    if (ref_ast == null) {
+        return false;
+    }
+
+    const ast_type = c.ar_expression_ast__get_type(ref_ast);
+    if (ast_type == c.AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS) {
+        const base = c.ar_expression_ast__get_memory_base(ref_ast) orelse return false;
+        if (!std.mem.eql(u8, std.mem.span(base), "memory")) {
+            return false;
+        }
+
+        if (c.ar_expression_ast__get_memory_path_count(ref_ast) == 0) {
+            return false;
+        }
+
+        const first_component = c.ar_expression_ast__get_memory_path_component(ref_ast, 0) orelse return false;
+        return std.mem.eql(u8, std.mem.span(first_component), "self");
+    }
+
+    if (ast_type == c.AR_EXPRESSION_AST_TYPE__BINARY_OP) {
+        return _expression_references_memory_self(c.ar_expression_ast__get_left(ref_ast)) or
+            _expression_references_memory_self(c.ar_expression_ast__get_right(ref_ast));
+    }
+
+    return false;
+}
+
 /// Helper function to parse a value string and determine its type
 fn _parse_value_string(value_str: ?[*:0]const u8) ?*c.ar_data_t {
     if (value_str == null or value_str.?[0] == 0) {
@@ -145,6 +199,20 @@ export fn ar_parse_instruction_evaluator__evaluate(
     if (ref_template_ast == null or ref_input_ast == null) {
         return false;
     }
+
+    const ref_result_path = c.ar_instruction_ast__get_function_result_path(ref_ast);
+    if (ref_result_path != null) {
+        const result_path = std.mem.span(ref_result_path);
+        if (std.mem.eql(u8, result_path, "memory.self") or std.mem.startsWith(u8, result_path, "memory.self.")) {
+            c.ar_log__error(ref_evaluator.?.ref_log, "memory.self is agency-managed and cannot be assigned");
+            return false;
+        }
+    }
+
+    if (_expression_references_memory_self(ref_input_ast)) {
+        c.ar_log__error(ref_evaluator.?.ref_log, "memory.self is agency-managed and cannot be parsed");
+        return false;
+    }
     
     // Evaluate template expression AST
     const template_result = c.ar_expression_evaluator__evaluate(ref_evaluator.?.ref_expr_evaluator, ref_frame, ref_template_ast);
@@ -155,6 +223,12 @@ export fn ar_parse_instruction_evaluator__evaluate(
     defer c.ar_data__destroy(own_template_data);
     
     if (c.ar_data__get_type(own_template_data) != c.AR_DATA_TYPE__STRING) {
+        return false;
+    }
+
+    const template_str = c.ar_data__get_string(own_template_data) orelse return false;
+    if (_template_contains_self_placeholder(template_str)) {
+        c.ar_log__error(ref_evaluator.?.ref_log, "memory.self is agency-managed and cannot be assigned");
         return false;
     }
     
@@ -170,7 +244,6 @@ export fn ar_parse_instruction_evaluator__evaluate(
         return false;
     }
     
-    const template_str = c.ar_data__get_string(own_template_data) orelse return false;
     const input_str = c.ar_data__get_string(own_input_data) orelse return false;
     
     // Create result map
@@ -209,6 +282,12 @@ export fn ar_parse_instruction_evaluator__evaluate(
         
         @memcpy(own_var_name[0..var_len], @as([*]const u8, @ptrCast(var_start + 1))[0..var_len]);
         own_var_name[var_len] = 0;
+
+        if (_is_self_path(own_var_name[0..var_len])) {
+            c.ar_log__error(ref_evaluator.?.ref_log, "memory.self is agency-managed and cannot be assigned");
+            c.ar_data__destroy(own_result);
+            return false;
+        }
         
         // Get the literal text between current position and {
         const literal_len = @intFromPtr(var_start) - @intFromPtr(template_ptr);
@@ -297,7 +376,6 @@ export fn ar_parse_instruction_evaluator__evaluate(
     }
     
     // Store result if assigned, otherwise just destroy it
-    const ref_result_path = c.ar_instruction_ast__get_function_result_path(ref_ast);
     if (!c.ar_data__set_map_data_if_root_matched(mut_memory, "memory", ref_result_path, own_result)) {
         c.ar_data__destroy(own_result);
     }

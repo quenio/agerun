@@ -59,6 +59,7 @@ Key features:
 2. **Value Extraction**: Extracts substrings matching placeholder positions
 3. **Multiple Placeholders**: Can extract multiple values from one string
 4. **Result Storage**: Stores extracted values as a map in memory
+5. **Protected Identity**: Rejects result paths at agency-managed `memory.self`, rejects `{self}` and `{self.*}` placeholders, and rejects `memory.self` as parse input
 
 ### Template Syntax
 
@@ -98,8 +99,11 @@ The module:
 2. Validates both are strings
 3. Performs pattern matching to extract values based on {variable} placeholders
 4. Automatically detects types (integer, double, string) for extracted values
-5. Stores resulting map in memory at specified path
-6. Handles all error cases with proper cleanup using Zig's defer
+5. Rejects result paths that would overwrite agency-managed `memory.self`
+6. Rejects templates that would construct `self` or nested `self.*` result fields
+7. Rejects `memory.self` as parse input
+8. Stores resulting map in memory at specified path
+9. Handles all error cases with proper cleanup using Zig's defer
 
 ## Usage Example
 

@@ -39,6 +39,32 @@ static void test_parse_instruction_evaluator__create_destroy(void) {
     ar_evaluator_fixture__destroy(own_fixture);
 }
 
+static ar_instruction_ast_t *_create_parse_ast_with_input_ast(
+    const char *ref_result_path,
+    const char *ref_template,
+    ar_expression_ast_t *own_input_ast
+) {
+    const char *args[] = {ref_template, "input"};
+    ar_instruction_ast_t *own_ast = ar_instruction_ast__create_function_call(
+        AR_INSTRUCTION_AST_TYPE__PARSE, "parse", args, 2, ref_result_path
+    );
+    assert(own_ast != NULL);
+
+    ar_list_t *own_arg_asts = ar_list__create();
+    assert(own_arg_asts != NULL);
+
+    ar_expression_ast_t *own_template_ast = ar_expression_ast__create_literal_string(ref_template);
+    assert(own_template_ast != NULL);
+    ar_list__add_last(own_arg_asts, own_template_ast);
+    ar_list__add_last(own_arg_asts, own_input_ast);
+
+    bool ast_set = ar_instruction_ast__set_function_arg_asts(own_ast, own_arg_asts);
+    assert(ast_set == true);
+
+    // Ownership transferred to caller
+    return own_ast;
+}
+
 static void test_parse_instruction_evaluator__evaluate_with_instance(void) {
     // Given a test fixture
     ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create(
@@ -423,6 +449,210 @@ static void test_instruction_evaluator__evaluate_parse_no_match(void) {
     ar_evaluator_fixture__destroy(own_fixture);
 }
 
+static void test_parse_instruction_evaluator__rejects_nested_result_path_memory_self(void) {
+    // Given a test fixture with agency-managed memory.self
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create(
+        "test_parse_instruction_evaluator__rejects_nested_result_path_memory_self"
+    );
+    assert(own_fixture != NULL);
+
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+    ar_data__set_map_integer(mut_memory, "self", 7);
+
+    ar_parse_instruction_evaluator_t *own_evaluator = ar_parse_instruction_evaluator__create(
+        ref_log, ref_expr_eval
+    );
+    assert(own_evaluator != NULL);
+
+    ar_expression_ast_t *own_input_ast = ar_expression_ast__create_literal_string("value=99");
+    assert(own_input_ast != NULL);
+    ar_instruction_ast_t *own_ast = _create_parse_ast_with_input_ast(
+        "memory.self.anything", "value={value}", own_input_ast
+    );
+
+    bool result = ar_parse_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
+
+    // Then the parse result should be rejected and the existing self ID preserved
+    assert(result == false);
+    assert(ar_data__get_map_integer(mut_memory, "self") == 7);
+
+    ar_event_t *ref_error_event = ar_log__get_last_error(ref_log);
+    assert(ref_error_event != NULL);
+    const char *ref_error_msg = ar_event__get_message(ref_error_event);
+    assert(ref_error_msg != NULL);
+    assert(strstr(ref_error_msg, "memory.self is agency-managed") != NULL);
+
+    ar_instruction_ast__destroy(own_ast);
+    ar_parse_instruction_evaluator__destroy(own_evaluator);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_parse_instruction_evaluator__rejects_result_path_memory_self(void) {
+    // Given a test fixture with agency-managed memory.self
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create(
+        "test_parse_instruction_evaluator__rejects_result_path_memory_self"
+    );
+    assert(own_fixture != NULL);
+
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+    ar_data__set_map_integer(mut_memory, "self", 7);
+
+    ar_parse_instruction_evaluator_t *own_evaluator = ar_parse_instruction_evaluator__create(
+        ref_log, ref_expr_eval
+    );
+    assert(own_evaluator != NULL);
+
+    // When evaluating a parse instruction assigned to memory.self
+    const char *args[] = {"\"value={value}\"", "\"value=99\""};
+    ar_instruction_ast_t *own_ast = ar_instruction_ast__create_function_call(
+        AR_INSTRUCTION_AST_TYPE__PARSE, "parse", args, 2, "memory.self"
+    );
+    assert(own_ast != NULL);
+
+    ar_list_t *own_arg_asts = ar_list__create();
+    assert(own_arg_asts != NULL);
+
+    ar_expression_ast_t *own_template_ast = ar_expression_ast__create_literal_string("value={value}");
+    ar_list__add_last(own_arg_asts, own_template_ast);
+
+    ar_expression_ast_t *own_input_ast = ar_expression_ast__create_literal_string("value=99");
+    ar_list__add_last(own_arg_asts, own_input_ast);
+
+    bool ast_set = ar_instruction_ast__set_function_arg_asts(own_ast, own_arg_asts);
+    assert(ast_set == true);
+
+    bool result = ar_parse_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
+
+    // Then the parse result should be rejected and the existing self ID preserved
+    assert(result == false);
+    assert(ar_data__get_map_integer(mut_memory, "self") == 7);
+
+    ar_event_t *ref_error_event = ar_log__get_last_error(ref_log);
+    assert(ref_error_event != NULL);
+    const char *ref_error_msg = ar_event__get_message(ref_error_event);
+    assert(ref_error_msg != NULL);
+    assert(strstr(ref_error_msg, "memory.self is agency-managed") != NULL);
+
+    ar_instruction_ast__destroy(own_ast);
+    ar_parse_instruction_evaluator__destroy(own_evaluator);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_parse_instruction_evaluator__rejects_self_placeholder(void) {
+    // Given a test fixture with agency-managed memory.self
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create(
+        "test_parse_instruction_evaluator__rejects_self_placeholder"
+    );
+    assert(own_fixture != NULL);
+
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+    ar_data__set_map_integer(mut_memory, "self", 7);
+
+    ar_parse_instruction_evaluator_t *own_evaluator = ar_parse_instruction_evaluator__create(
+        ref_log, ref_expr_eval
+    );
+    assert(own_evaluator != NULL);
+
+    ar_expression_ast_t *own_input_ast = ar_expression_ast__create_literal_string("99");
+    assert(own_input_ast != NULL);
+    ar_instruction_ast_t *own_ast = _create_parse_ast_with_input_ast(
+        "memory.result", "{self}", own_input_ast
+    );
+
+    bool result = ar_parse_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
+
+    // Then parse should reject a result field that would construct self data
+    assert(result == false);
+    assert(ar_data__get_map_data(mut_memory, "result") == NULL);
+    assert(ar_data__get_map_integer(mut_memory, "self") == 7);
+
+    ar_instruction_ast__destroy(own_ast);
+    ar_parse_instruction_evaluator__destroy(own_evaluator);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_parse_instruction_evaluator__rejects_nested_self_placeholder(void) {
+    // Given a test fixture with agency-managed memory.self
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create(
+        "test_parse_instruction_evaluator__rejects_nested_self_placeholder"
+    );
+    assert(own_fixture != NULL);
+
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+    ar_data__set_map_integer(mut_memory, "self", 7);
+
+    ar_parse_instruction_evaluator_t *own_evaluator = ar_parse_instruction_evaluator__create(
+        ref_log, ref_expr_eval
+    );
+    assert(own_evaluator != NULL);
+
+    ar_expression_ast_t *own_input_ast = ar_expression_ast__create_memory_access("memory", NULL, 0);
+    assert(own_input_ast != NULL);
+    ar_instruction_ast_t *own_ast = _create_parse_ast_with_input_ast(
+        "memory.result", "{self.anything}", own_input_ast
+    );
+
+    bool result = ar_parse_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
+
+    // Then parse should reject a nested result field that would construct self data
+    assert(result == false);
+    assert(ar_data__get_map_data(mut_memory, "result") == NULL);
+    assert(ar_data__get_map_integer(mut_memory, "self") == 7);
+
+    ar_instruction_ast__destroy(own_ast);
+    ar_parse_instruction_evaluator__destroy(own_evaluator);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_parse_instruction_evaluator__rejects_memory_self_input(void) {
+    // Given a test fixture with agency-managed memory.self
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create(
+        "test_parse_instruction_evaluator__rejects_memory_self_input"
+    );
+    assert(own_fixture != NULL);
+
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+    ar_data__set_map_integer(mut_memory, "self", 7);
+
+    ar_parse_instruction_evaluator_t *own_evaluator = ar_parse_instruction_evaluator__create(
+        ref_log, ref_expr_eval
+    );
+    assert(own_evaluator != NULL);
+
+    const char *self_path[] = {"self"};
+    ar_expression_ast_t *own_input_ast = ar_expression_ast__create_memory_access("memory", self_path, 1);
+    assert(own_input_ast != NULL);
+    ar_instruction_ast_t *own_ast = _create_parse_ast_with_input_ast(
+        "memory.result", "{anything}", own_input_ast
+    );
+
+    bool result = ar_parse_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
+
+    // Then parse should reject memory.self as input
+    assert(result == false);
+    assert(ar_data__get_map_data(mut_memory, "result") == NULL);
+    assert(ar_data__get_map_integer(mut_memory, "self") == 7);
+
+    ar_instruction_ast__destroy(own_ast);
+    ar_parse_instruction_evaluator__destroy(own_evaluator);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
 static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
     // Given a test fixture
     ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create(
@@ -540,6 +770,21 @@ int main(void) {
     
     test_instruction_evaluator__evaluate_parse_no_match();
     printf("test_instruction_evaluator__evaluate_parse_no_match passed!\n");
+
+    test_parse_instruction_evaluator__rejects_result_path_memory_self();
+    printf("test_parse_instruction_evaluator__rejects_result_path_memory_self passed!\n");
+
+    test_parse_instruction_evaluator__rejects_nested_result_path_memory_self();
+    printf("test_parse_instruction_evaluator__rejects_nested_result_path_memory_self passed!\n");
+
+    test_parse_instruction_evaluator__rejects_self_placeholder();
+    printf("test_parse_instruction_evaluator__rejects_self_placeholder passed!\n");
+
+    test_parse_instruction_evaluator__rejects_nested_self_placeholder();
+    printf("test_parse_instruction_evaluator__rejects_nested_self_placeholder passed!\n");
+
+    test_parse_instruction_evaluator__rejects_memory_self_input();
+    printf("test_parse_instruction_evaluator__rejects_memory_self_input passed!\n");
     
     test_instruction_evaluator__evaluate_parse_invalid_args();
     printf("test_instruction_evaluator__evaluate_parse_invalid_args passed!\n");
