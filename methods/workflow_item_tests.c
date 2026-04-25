@@ -28,11 +28,10 @@ static bool log_file_contains(const char *ref_expected_text) {
     return false;
 }
 
-static ar_data_t *create_initialize_message(int64_t sender, int64_t reporter_agent_id) {
+static ar_data_t *create_initialize_message(int64_t reporter_agent_id) {
     ar_data_t *own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Initialize message should be created");
     ar_data__set_map_string(own_message, "action", "initialize");
-    ar_data__set_map_integer(own_message, "sender", (int)sender);
     ar_data__set_map_string(own_message, "workflow_name", "default_workflow");
     ar_data__set_map_string(own_message, "item_id", "demo-item-1");
     ar_data__set_map_string(own_message, "title", "demo_work_item");
@@ -92,7 +91,7 @@ static void test_workflow_item__advance_decision_produces_terminal_summary(void)
     int64_t item_agent_id = ar_agency__create_agent(mut_agency, "workflow-item", "1.0.0", own_context);
     AR_ASSERT(reporter_agent_id > 0 && item_agent_id > 0, "Reporter and item agents should be created");
 
-    ar_data_t *own_initialize = create_initialize_message(item_agent_id, reporter_agent_id);
+    ar_data_t *own_initialize = create_initialize_message(reporter_agent_id);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, item_agent_id, own_initialize),
               "Initialize should queue");
     own_initialize = NULL;
@@ -149,7 +148,7 @@ static void test_workflow_item__retryable_stay_preserves_review_stage(void) {
     int64_t item_agent_id = ar_agency__create_agent(mut_agency, "workflow-item", "1.0.0", own_context);
     AR_ASSERT(reporter_agent_id > 0 && item_agent_id > 0, "Reporter and item agents should be created");
 
-    ar_data_t *own_initialize = create_initialize_message(item_agent_id, reporter_agent_id);
+    ar_data_t *own_initialize = create_initialize_message(reporter_agent_id);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, item_agent_id, own_initialize),
               "Initialize should queue");
     own_initialize = NULL;

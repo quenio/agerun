@@ -83,6 +83,12 @@ pub export fn ar_assignment_instruction_evaluator__evaluate(
         c.ar_log__error(ref_evaluator.?.ref_log, "Assignment target must start with 'memory.'");
         return false;
     }
+
+    const path = std.mem.span(ref_path);
+    if (std.mem.eql(u8, path, "memory.self") or std.mem.startsWith(u8, path, "memory.self.")) {
+        c.ar_log__error(ref_evaluator.?.ref_log, "memory.self is agency-managed and cannot be assigned");
+        return false;
+    }
     
     // Get the pre-parsed expression AST
     const ref_expr_ast = c.ar_instruction_ast__get_assignment_expression_ast(ref_ast);

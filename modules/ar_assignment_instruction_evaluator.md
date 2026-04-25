@@ -72,9 +72,10 @@ The module evaluates assignment instructions of the form:
 
 Key features:
 1. **Path Validation**: Ensures assignment paths start with "memory."
-2. **Expression Evaluation**: Evaluates the right-hand side expression
-3. **Nested Path Support**: Creates intermediate maps as needed for nested paths
-4. **Ownership Transfer**: Properly transfers ownership of evaluated values to memory
+2. **Protected Identity**: Rejects assignments to agency-managed `memory.self`
+3. **Expression Evaluation**: Evaluates the right-hand side expression
+4. **Nested Path Support**: Creates intermediate maps as needed for nested paths
+5. **Ownership Transfer**: Properly transfers ownership of evaluated values to memory
 
 ### Memory Management
 

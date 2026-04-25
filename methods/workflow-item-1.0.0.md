@@ -28,7 +28,7 @@ REQUIRES_SUPPORTED_MESSAGE_ACTION:
 
 REQUIRES_INITIALIZE_MESSAGE_IS_COMPLETE:
   message("action") = "initialize" =>
-    message("sender") > 0 and
+    final_memory("self") > 0 and
     not (message("workflow_name") = "") and
     not (message("item_id") = "") and
     not (message("title") = "") and
@@ -109,10 +109,11 @@ ENSURES_STAY_DECISION_EMITS_PROGRESS_INSTEAD_OF_SUMMARY:
 
 ## Inputs
 
+When the item agent is created, the agency sets `memory.self` to the item agent ID.
+
 ### `action=initialize`
 
 Expected fields:
-- `sender`
 - `workflow_name`
 - `item_id`
 - `title`
@@ -124,7 +125,7 @@ Expected fields:
 - `initial_stage`
 
 Behavior:
-- initializes the item memory
+- initializes the item memory and stores the agency-managed `memory.self` value as `memory.self_agent_id`
 - emits the first `progress` event with `reason=initialized`
 - queues `auto_progress` to continue the demo flow
 
@@ -133,7 +134,7 @@ Behavior:
 Behavior:
 - advances automatically through `intake -> triage -> active -> review`
 - emits a `progress` message on each stage change
-- when the item reaches `review`, sends `evaluate_transition` to `workflow-definition`
+- when the item reaches `review`, sends `evaluate_transition` to `workflow-definition` with `reply_to` set to the item ID
 
 ### `action=transition_decision`
 
@@ -199,7 +200,7 @@ memory.apply_advance := 0
 memory.apply_reject := 0
 memory.apply_stay := 0
 memory.complete_trace := "none"
-memory.self_agent_id := if(memory.is_initialize = 1, message.sender, memory.self_agent_id)
+memory.self_agent_id := if(memory.is_initialize = 1, memory.self, memory.self_agent_id)
 memory.workflow_name := if(memory.is_initialize = 1, message.workflow_name, memory.workflow_name)
 memory.item_id := if(memory.is_initialize = 1, message.item_id, memory.item_id)
 memory.title := if(memory.is_initialize = 1, message.title, memory.title)
@@ -248,8 +249,8 @@ memory.progress_input := build("action=progress workflow_name={workflow_name} it
 memory.progress_payload := parse("action={action} workflow_name={workflow_name} item_id={item_id} stage={stage} status={status} owner={owner} transition_count={transition_count} terminal_outcome={terminal_outcome} reason={reason} text={text} complete_trace={complete_trace}", memory.progress_input)
 memory.progress_sent := send(memory.reporter_agent_id * memory.should_emit_progress, memory.progress_payload)
 memory.auto_sent := send(memory.self_agent_id * memory.should_emit_progress, memory.auto_payload)
-memory.evaluate_input := build("action=evaluate_transition sender={self_agent_id} workflow_name={workflow_name} stage={current_stage} item_id={item_id} title={title} priority={priority} owner={owner} review_status={review_status} transition_count={transition_count}", memory)
-memory.evaluate_payload := parse("action={action} sender={sender} workflow_name={workflow_name} stage={stage} item_id={item_id} title={title} priority={priority} owner={owner} review_status={review_status} transition_count={transition_count}", memory.evaluate_input)
+memory.evaluate_input := build("action=evaluate_transition reply_to={self_agent_id} workflow_name={workflow_name} stage={current_stage} item_id={item_id} title={title} priority={priority} owner={owner} review_status={review_status} transition_count={transition_count}", memory)
+memory.evaluate_payload := parse("action={action} reply_to={reply_to} workflow_name={workflow_name} stage={stage} item_id={item_id} title={title} priority={priority} owner={owner} review_status={review_status} transition_count={transition_count}", memory.evaluate_input)
 memory.evaluate_sent := send(memory.definition_agent_id * memory.request_review, memory.evaluate_payload)
 memory.outcome_is_advance := if(message.outcome = "advance", 1, 0)
 memory.outcome_is_reject := if(message.outcome = "reject", 1, 0)

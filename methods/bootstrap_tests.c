@@ -109,6 +109,10 @@ static void test_bootstrap_runs_workflow_demo_on_boot(void) {
     AR_ASSERT(start_message != NULL, "Start message should be stored");
     AR_ASSERT(strcmp(ar_data__get_map_string(start_message, "action"), "start") == 0,
               "Bootstrap should queue workflow start action");
+    AR_ASSERT(ar_data__get_map_data(start_message, "self") == NULL,
+              "Bootstrap start message should rely on system-injected self");
+    AR_ASSERT(ar_data__get_map_data(start_message, "sender") == NULL,
+              "Bootstrap start message should not use sender");
     AR_ASSERT(strcmp(ar_data__get_map_string(start_message, "definition_path"), "workflows/default.workflow") == 0,
               "Bootstrap should pass bundled workflow path");
     AR_ASSERT(strcmp(ar_data__get_map_string(bootstrap_memory, "demo_status"), "Workflow demo queued") == 0,
@@ -121,8 +125,8 @@ static void test_bootstrap_runs_workflow_demo_on_boot(void) {
     AR_ASSERT(log_file_contains("stage=intake"), "Workflow demo should log intake progress");
     AR_ASSERT(log_file_contains("terminal=completed reason=approved"),
               "Workflow demo should log terminal summary");
-    AR_ASSERT(log_file_contains("COMPLETE_TRACE[phase=startup|outcome=advance|reason=approved]"),
-              "Workflow demo should log highlighted startup complete() trace markers");
+    AR_ASSERT(log_file_contains("COMPLETE_TRACE[phase=transition|outcome=advance|reason=approved]"),
+              "Workflow demo should log highlighted transition complete() trace markers");
     cleanup_fake_runner();
     ar_data__destroy(own_context);
     remove("agerun.log");

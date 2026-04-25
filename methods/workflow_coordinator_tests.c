@@ -77,11 +77,10 @@ static bool log_file_contains(const char *ref_expected_text) {
     return false;
 }
 
-static ar_data_t *create_start_message(int64_t sender) {
+static ar_data_t *create_start_message(void) {
     ar_data_t *own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Start message should be created");
     ar_data__set_map_string(own_message, "action", "start");
-    ar_data__set_map_integer(own_message, "sender", (int)sender);
     ar_data__set_map_string(own_message, "definition_method_name", "workflow-definition");
     ar_data__set_map_string(own_message, "definition_method_version", "1.0.0");
     ar_data__set_map_string(own_message, "definition_path", "workflows/default.workflow");
@@ -153,7 +152,7 @@ static void test_workflow_coordinator__waits_for_definition_ready_before_spawnin
     int64_t coordinator_agent_id = ar_agency__create_agent(mut_agency, "workflow-coordinator", "1.0.0", own_context);
     AR_ASSERT(coordinator_agent_id == 1, "Coordinator should be created first");
 
-    ar_data_t *own_start = create_start_message(coordinator_agent_id);
+    ar_data_t *own_start = create_start_message();
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, coordinator_agent_id, own_start),
               "Start message should queue");
     own_start = NULL;
@@ -177,22 +176,29 @@ static void test_workflow_coordinator__waits_for_definition_ready_before_spawnin
               "Definition should process prepare_definition");
     AR_ASSERT(ar_method_fixture__process_next_message(own_fixture),
               "Coordinator should process definition_ready");
-    printf("queued after coordinator ready: c=%d d=%d r=%d i=%d\n",
+
+    ref_memory = ar_agency__get_agent_memory(mut_agency, coordinator_agent_id);
+    int64_t item_agent_id = ar_data__get_map_integer(ref_memory, "item_agent_id");
+    printf("queued after coordinator ready: c=%d d=%d r=%d i=%d item_agent_id=%d\n",
            ar_agency__agent_has_messages(mut_agency, 1),
            ar_agency__agent_has_messages(mut_agency, 2),
            ar_agency__agent_has_messages(mut_agency, 3),
-           ar_agency__agent_has_messages(mut_agency, 4));
+           ar_agency__agent_has_messages(mut_agency, item_agent_id),
+           (int)item_agent_id);
     fflush(stdout);
-    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture),
-              "Reporter should process summary");
+    AR_ASSERT(item_agent_id > 0, "Coordinator should spawn workflow-item after readiness");
+    AR_ASSERT(ar_agency__agent_has_messages(mut_agency, item_agent_id),
+              "Coordinator should queue initialize message to workflow-item");
+
+    while (ar_method_fixture__process_next_message(own_fixture)) {
+    }
+
     const ar_data_t *ref_reporter_memory = ar_agency__get_agent_memory(mut_agency, 3);
     printf("reporter last_event_type=%s last_message=%s delivery_status=%s\n",
            ar_data__get_map_string(ref_reporter_memory, "last_event_type") ? ar_data__get_map_string(ref_reporter_memory, "last_event_type") : "(null)",
            ar_data__get_map_string(ref_reporter_memory, "last_message") ? ar_data__get_map_string(ref_reporter_memory, "last_message") : "(null)",
            ar_data__get_map_string(ref_reporter_memory, "delivery_status") ? ar_data__get_map_string(ref_reporter_memory, "delivery_status") : "(null)");
     fflush(stdout);
-    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture),
-              "Log delegate should process summary");
 
     ref_memory = ar_agency__get_agent_memory(mut_agency, coordinator_agent_id);
     AR_ASSERT(ar_data__get_map_integer(ref_memory, "definition_agent_id") > 0,
@@ -207,8 +213,8 @@ static void test_workflow_coordinator__waits_for_definition_ready_before_spawnin
     ar_method_fixture__destroy(own_fixture);
     AR_ASSERT(log_file_contains("terminal=completed reason=approved"),
               "Successful run should produce terminal summary");
-    AR_ASSERT(log_file_contains("COMPLETE_TRACE[phase=startup|outcome=advance|reason=approved]"),
-              "Successful run should include highlighted startup complete() trace markers");
+    AR_ASSERT(log_file_contains("COMPLETE_TRACE[phase=transition|outcome=advance|reason=approved]"),
+              "Successful run should include highlighted transition complete() trace markers");
     cleanup_fake_runner();
     ar_data__destroy(own_context);
     remove("agerun.log");
@@ -231,7 +237,7 @@ static void test_workflow_coordinator__startup_failure_skips_item_creation(void)
     int64_t coordinator_agent_id = ar_agency__create_agent(mut_agency, "workflow-coordinator", "1.0.0", own_context);
     AR_ASSERT(coordinator_agent_id == 1, "Coordinator should be created first");
 
-    ar_data_t *own_start = create_start_message(coordinator_agent_id);
+    ar_data_t *own_start = create_start_message();
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, coordinator_agent_id, own_start),
               "Start message should queue");
     own_start = NULL;

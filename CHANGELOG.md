@@ -1,5 +1,26 @@
 # AgeRun CHANGELOG
 
+## 2026-04-25 (Workflow routing uses reply_to and agency-managed self identity)
+
+- **Moved workflow identity routing away from message-supplied sender/self fields**
+
+  Workflow methods now use `reply_to` only for response routing and use agency-managed
+  `memory.self` for each agent's own identity. Method code can no longer assign to
+  `memory.self`, and agent persistence reinitializes that field from the loaded agent ID.
+
+  **Implementation**: Updated agency creation and agent-store loading to initialize
+  `memory.self`; removed system message-processing mutation of `memory.self`; rejected
+  assignment targets at `memory.self` and nested paths below it; updated bootstrap,
+  coordinator, definition, and item workflow methods/tests/docs to remove `sender` and
+  message-supplied `self`; refreshed the Workflow Methodology walkthrough to show the
+  `reply_to` route and item lifecycle path.
+
+  **Verification**: `make ar_agency_tests ar_agent_store_tests ar_assignment_instruction_evaluator_tests ar_system_tests bootstrap_tests workflow_coordinator_tests workflow_definition_tests workflow_item_tests 2>&1`, `make check-docs 2>&1`, `make check-naming 2>&1`, `make build 2>&1`, and `make check-logs` passed. Walkthrough updates were verified with `node -c docs/walkthroughs/workflow-methodology/slides.js`, fresh Playwright desktop/mobile screenshots, and a Playwright interaction check for deck navigation and the mobile menu.
+
+  **Impact**: Workflow reply routing no longer depends on overloaded `sender` data, agent
+  identity cannot be spoofed through messages or method assignments, and walkthroughs now
+  match the runtime architecture.
+
 ## 2026-04-24 (Workflow definitions now use .workflow filenames)
 
 - **Renamed bundled workflow definition files away from the misleading `.yaml` extension**

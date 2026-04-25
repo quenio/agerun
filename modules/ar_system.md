@@ -168,6 +168,7 @@ The system coordinates message processing through both peers:
 - Finds agents with pending messages via agency functions
 - Retrieves messages from agent queues
 - Executes the recipient agent's method with the message
+- Relies on `ar_agency` to initialize each agent's `memory.self` at creation time
 - If no agent message is ready, asks delegation to dispatch one queued delegate message
 - Handles any errors gracefully
 

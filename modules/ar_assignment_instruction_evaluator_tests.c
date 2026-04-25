@@ -341,6 +341,44 @@ static void test_assignment_instruction_evaluator__evaluate_message_expression(v
     ar_evaluator_fixture__destroy(fixture);
 }
 
+static void test_assignment_instruction_evaluator__rejects_assignment_to_memory_self(void) {
+    // Given a test fixture with agency-managed memory.self
+    ar_evaluator_fixture_t *fixture =
+        ar_evaluator_fixture__create("test_reject_memory_self_assignment");
+    assert(fixture != NULL);
+
+    ar_data_t *memory = ar_evaluator_fixture__get_memory(fixture);
+    ar_data__set_map_integer(memory, "self", 7);
+
+    // When evaluating an assignment instruction: memory.self := 99
+    ar_instruction_ast_t *ast = ar_evaluator_fixture__create_assignment_int(
+        fixture, "memory.self", 99
+    );
+    assert(ast != NULL);
+
+    ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
+    assert(frame != NULL);
+
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_assignment_instruction_evaluator_t *evaluator = ar_assignment_instruction_evaluator__create(log, expr_eval);
+
+    bool result = ar_assignment_instruction_evaluator__evaluate(evaluator, frame, ast);
+
+    // Then the assignment should be rejected and the existing self ID preserved
+    assert(result == false);
+    assert(ar_data__get_map_integer(memory, "self") == 7);
+
+    ar_event_t *error_event = ar_log__get_last_error(log);
+    assert(error_event != NULL);
+    const char *error_msg = ar_event__get_message(error_event);
+    assert(error_msg != NULL);
+    assert(strstr(error_msg, "memory.self is agency-managed") != NULL);
+
+    ar_assignment_instruction_evaluator__destroy(evaluator);
+    ar_evaluator_fixture__destroy(fixture);
+}
+
 static void test_assignment_instruction_evaluator__evaluate_invalid_path(void) {
     // Given a test fixture
     ar_evaluator_fixture_t *fixture = 
@@ -410,6 +448,9 @@ int main(void) {
     test_assignment_instruction_evaluator__evaluate_message_expression();
     printf("test_assignment_instruction_evaluator__evaluate_message_expression passed!\n");
     
+    test_assignment_instruction_evaluator__rejects_assignment_to_memory_self();
+    printf("test_assignment_instruction_evaluator__rejects_assignment_to_memory_self passed!\n");
+
     test_assignment_instruction_evaluator__evaluate_invalid_path();
     printf("test_assignment_instruction_evaluator__evaluate_invalid_path passed!\n");
     

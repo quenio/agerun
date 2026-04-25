@@ -13,6 +13,7 @@
 static void test_agency_count_agents(ar_system_fixture_t *own_fixture);
 // static void test_agency_persistence(ar_system_fixture_t *own_fixture);
 static void test_agency_reset(ar_system_fixture_t *own_fixture);
+static void test_agency_create_agent_sets_memory_self(ar_system_fixture_t *own_fixture);
 static void test_agency_instance_api(ar_system_fixture_t *own_fixture);
 
 
@@ -136,6 +137,31 @@ static void test_agency_persistence(ar_system_fixture_t *own_fixture) {
 }
 */
 
+static void test_agency_create_agent_sets_memory_self(ar_system_fixture_t *own_fixture) {
+    printf("Testing ar_agency__create_agent() sets memory.self...\n");
+
+    ar_agency_t *mut_agency = ar_system_fixture__get_agency(own_fixture);
+    assert(mut_agency != NULL);
+
+    const char *method_name = "self_test_method";
+    const char *instructions = "memory.observed_self := memory.self";
+    const char *version = "1.0.0";
+
+    ar_method_t *ref_method = ar_system_fixture__register_method(own_fixture, method_name, instructions, version);
+    assert(ref_method != NULL);
+
+    int64_t agent_id = ar_agency__create_agent(mut_agency, method_name, version, NULL);
+    assert(agent_id > 0);
+
+    const ar_data_t *ref_memory = ar_agency__get_agent_memory(mut_agency, agent_id);
+    assert(ref_memory != NULL);
+    assert(ar_data__get_map_integer(ref_memory, "self") == (int)agent_id);
+
+    ar_agency__destroy_agent(mut_agency, agent_id);
+
+    printf("ar_agency__create_agent() memory.self test passed!\n");
+}
+
 static void test_agency_reset(ar_system_fixture_t *own_fixture) {
     printf("Testing ar_agency__reset()...\n");
     
@@ -205,6 +231,7 @@ int main(void) {
     
     // When we run all agency tests
     test_agency_count_agents(own_fixture);
+    test_agency_create_agent_sets_memory_self(own_fixture);
     // TODO: Fix persistence test - needs proper instance-based save/load
     // test_agency_persistence(own_fixture);
     test_agency_reset(own_fixture);

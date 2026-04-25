@@ -12,11 +12,11 @@ memory.title := "demo_work_item"
 memory.priority := "high"
 memory.owner := "workflow_owner"
 memory.review_status := "approved"
-memory.coordinator_spawn_result := spawn(memory.method_name, memory.method_version, context)
+memory.coordinator_spawn_method := if(memory.is_boot = 1, memory.method_name, 0)
+memory.coordinator_spawn_result := spawn(memory.coordinator_spawn_method, memory.method_version, context)
 memory.coordinator_id := if(memory.is_boot = 1, memory.coordinator_spawn_result, memory.coordinator_id)
-memory.sender := memory.coordinator_id
-memory.start_input := build("action={start_action} sender={sender} definition_method_name={definition_method_name} definition_method_version={definition_method_version} definition_path={definition_path} reporter_method_name={reporter_method_name} reporter_method_version={reporter_method_version} item_id={item_id} title={title} priority={priority} owner={owner} review_status={review_status}", memory)
-memory.start_message := parse("action={action} sender={sender} definition_method_name={definition_method_name} definition_method_version={definition_method_version} definition_path={definition_path} reporter_method_name={reporter_method_name} reporter_method_version={reporter_method_version} item_id={item_id} title={title} priority={priority} owner={owner} review_status={review_status}", memory.start_input)
+memory.start_input := build("action={start_action} definition_method_name={definition_method_name} definition_method_version={definition_method_version} definition_path={definition_path} reporter_method_name={reporter_method_name} reporter_method_version={reporter_method_version} item_id={item_id} title={title} priority={priority} owner={owner} review_status={review_status}", memory)
+memory.start_message := parse("action={action} definition_method_name={definition_method_name} definition_method_version={definition_method_version} definition_path={definition_path} reporter_method_name={reporter_method_name} reporter_method_version={reporter_method_version} item_id={item_id} title={title} priority={priority} owner={owner} review_status={review_status}", memory.start_input)
 memory.start_sent := send(memory.coordinator_id * memory.is_boot, memory.start_message)
 memory.intake_text := "workflow=default_workflow item=demo-item-1 stage=intake status=created reason=initialized"
 memory.log_input := build("level=info agent_id=0 message={intake_text}", memory)

@@ -12,9 +12,9 @@ const slides = [
                 <section class="panel">
                     <h3>Walkthrough Scope</h3>
                     <ul>
-                        <li>The startup path from <span class="code">bootstrap</span> to <span class="code">workflow-coordinator</span></li>
+                        <li>The startup path from <span class="code">bootstrap</span> to <span class="code">workflow-coordinator</span> and <span class="code">workflow-item</span></li>
                         <li>How <span class="code">workflow-definition</span> gates startup and normalizes transition decisions</li>
-                        <li>How <span class="code">workflow-item</span> models a per-item lifecycle in tests and direct method use</li>
+                        <li>How <span class="code">memory.self</span> identifies agents while <span class="code">reply_to</span> routes definition replies</li>
                         <li>How <span class="code">workflow-reporter</span> turns workflow events into log delegate messages</li>
                     </ul>
                 </section>
@@ -53,11 +53,15 @@ workflows/test.workflow</div>
                                 <strong>Definition</strong>
                                 <span>loads known definitions and decides review outcomes</span>
                             </div>
+                            <div class="map-node map-node-agent">
+                                <strong>Item</strong>
+                                <span>stores item state and asks for transition decisions</span>
+                            </div>
                             <div class="map-node map-node-agency">
                                 <strong>Reporter</strong>
                                 <span>publishes progress, summaries, and failures</span>
                             </div>
-                            <div class="anchor-flow">start → prepare definition → ready/error → visible log</div>
+                            <div class="anchor-flow">start → prepare definition → initialize item → transition decision → visible log</div>
                         </div>
                         <div class="system-map-footer">
                             <span class="map-pill">Workflow methods are ordinary AgeRun methods wired together by messages.</span>
@@ -80,7 +84,7 @@ workflows/test.workflow</div>
                 </section>
                 <section class="card">
                     <h3>workflow-coordinator</h3>
-                    <p>Stores startup metadata, spawns the definition and reporter agents, sends <span class="code">prepare_definition</span>, and records whether the run becomes active or fails at startup.</p>
+                    <p>Stores startup metadata, spawns the definition and reporter agents, sends <span class="code">prepare_definition</span>, then spawns and initializes <span class="code">workflow-item</span> when the definition is ready.</p>
                     <div class="path-list">methods/workflow-coordinator-1.0.0.md</div>
                 </section>
                 <section class="card">
@@ -95,7 +99,7 @@ workflows/test.workflow</div>
 methods/workflow-reporter-1.0.0.md</div>
                 </section>
             </div>
-            <p class="note">The current fresh executable demo uses the coordinator direct-summary path after definition readiness. The separate <span class="code">workflow-item</span> method still documents and tests the fuller item lifecycle path.</p>
+            <p class="note">Agents do not learn their identity from messages. The agency initializes <span class="code">memory.self</span> when each agent is created, and workflow methods use <span class="code">reply_to</span> fields only for response routing.</p>
         `
     },
     {
@@ -144,7 +148,7 @@ methods/bootstrap-1.0.0.method</div>
     },
     {
         title: "Workflow Coordinator Method",
-        subtitle: "workflow-coordinator owns the run-level handoff: it prepares the definition, waits for ready/error, and turns startup state into reporter events.",
+        subtitle: "workflow-coordinator owns the run-level handoff: it prepares the definition, waits for ready/error, then launches the item lifecycle or reports startup failure.",
         body: `
             <div class="columns">
                 <section class="panel">
@@ -152,16 +156,16 @@ methods/bootstrap-1.0.0.method</div>
                     <ul>
                         <li>Stores definition, reporter, and item metadata in memory.</li>
                         <li>Spawns <span class="code">workflow-definition</span> and <span class="code">workflow-reporter</span>.</li>
-                        <li>Sends <span class="code">prepare_definition</span> to the definition agent.</li>
+                        <li>Sends <span class="code">prepare_definition</span> to the definition agent with <span class="code">reply_to=memory.self</span>.</li>
                         <li>Sets <span class="code">run_status=waiting_for_definition</span>.</li>
                     </ul>
                 </section>
                 <section class="panel">
                     <h3>On Definition Reply</h3>
                     <ul>
-                        <li><span class="code">definition_ready</span> records workflow metadata, marks the run active, and sends a summary to the reporter.</li>
+                        <li><span class="code">definition_ready</span> records workflow metadata, marks the run active, spawns <span class="code">workflow-item</span>, and sends <span class="code">initialize</span>.</li>
                         <li><span class="code">definition_error</span> marks <span class="code">startup_failed</span> and sends a startup failure event.</li>
-                        <li>The current executable path uses <span class="code">review_status</span> directly to choose completed vs rejected summary output.</li>
+                        <li>The coordinator never sends <span class="code">self</span> in messages; the item reads its own ID from agency-managed <span class="code">memory.self</span>.</li>
                     </ul>
                 </section>
             </div>
@@ -171,7 +175,8 @@ methods/bootstrap-1.0.0.method</div>
                     <div class="state-card">
                         <strong>Ready Path</strong>
                         <span><span class="code">run_status=active</span></span>
-                        <span><span class="code">summary_sent=1</span></span>
+                        <span><span class="code">item_agent_id&gt;0</span></span>
+                        <span><span class="code">initialize_sent=1</span></span>
                     </div>
                     <div class="state-transition">definition reply</div>
                     <div class="state-card">
@@ -191,7 +196,7 @@ methods/workflow_coordinator_tests.c</div>
     },
     {
         title: "Workflow Definition Method",
-        subtitle: "workflow-definition is the schema gate and transition-decision method: it recognizes supported definitions and normalizes complete(...) results.",
+        subtitle: "workflow-definition is the schema gate and transition-decision method: it recognizes supported definitions, normalizes complete(...) results, and replies to message.reply_to.",
         body: `
             <div class="columns">
                 <section class="panel">
@@ -214,9 +219,9 @@ methods/workflow_coordinator_tests.c</div>
             <section class="diagram-panel">
                 <h3>Definition Method Replies</h3>
                 <div class="timeline">
-                    <div class="timeline-step"><strong>prepare_definition</strong><br>Reply with <span class="code">definition_ready</span> or <span class="code">definition_error</span>.</div>
-                    <div class="timeline-step"><strong>evaluate_transition</strong><br>Reply with <span class="code">transition_decision</span> carrying next stage, status, reason, retryability, and terminal outcome.</div>
-                    <div class="timeline-step"><strong>describe</strong><br>Reply with definition metadata for inspection and tests.</div>
+                    <div class="timeline-step"><strong>prepare_definition</strong><br>Reply to <span class="code">message.reply_to</span> with <span class="code">definition_ready</span> or <span class="code">definition_error</span>.</div>
+                    <div class="timeline-step"><strong>evaluate_transition</strong><br>Reply to <span class="code">message.reply_to</span> with <span class="code">transition_decision</span> carrying next stage, status, reason, retryability, and terminal outcome.</div>
+                    <div class="timeline-step"><strong>describe</strong><br>Reply to <span class="code">message.reply_to</span> with definition metadata for inspection and tests.</div>
                 </div>
             </section>
             <section class="card source-panel">
@@ -236,14 +241,14 @@ methods/workflow_definition_tests.c</div>
                     <h3>Persistent Item State</h3>
                     <ul>
                         <li>Stores workflow identity, item fields, current stage, current status, transition count, terminal outcome, and last reason.</li>
-                        <li>Emits progress when initialized and after automatic stage changes.</li>
+                        <li>Copies agency-managed <span class="code">memory.self</span> into <span class="code">self_agent_id</span> during initialization.</li>
                         <li>Queues its own <span class="code">auto_progress</span> messages to continue the demo lifecycle.</li>
                     </ul>
                 </section>
                 <section class="panel">
                     <h3>Decision Application</h3>
                     <ul>
-                        <li>At <span class="code">review</span>, sends <span class="code">evaluate_transition</span> to <span class="code">workflow-definition</span>.</li>
+                        <li>At <span class="code">review</span>, sends <span class="code">evaluate_transition</span> to <span class="code">workflow-definition</span> with <span class="code">reply_to=self_agent_id</span>.</li>
                         <li><span class="code">advance</span> and <span class="code">reject</span> produce final summary events.</li>
                         <li><span class="code">stay</span> keeps the item in review and emits progress instead of a summary.</li>
                     </ul>
@@ -316,7 +321,7 @@ methods/workflow_reporter_tests.c</div>
     },
     {
         title: "Startup Sequence",
-        subtitle: "Fresh executable startup is a bounded message chain: bootstrap queues the coordinator, the coordinator prepares the definition, and the reporter emits the result.",
+        subtitle: "Fresh executable startup is a bounded message chain: bootstrap queues the coordinator, the coordinator prepares the definition, the item runs the lifecycle, and the reporter emits the result.",
         body: `
             <section class="diagram-panel">
                 <h3>Boot-to-Log Timeline</h3>
@@ -324,8 +329,9 @@ methods/workflow_reporter_tests.c</div>
                     <div class="timeline-step"><strong>1. Bootstrap handles startup</strong><br>The executable creates the bootstrap agent and sends the raw <span class="code">__boot__</span> message.</div>
                     <div class="timeline-step"><strong>2. Coordinator receives start</strong><br>Bootstrap sends <span class="code">action=start</span> with definition, reporter, item, owner, priority, and review metadata.</div>
                     <div class="timeline-step"><strong>3. Definition is prepared</strong><br>The coordinator spawns <span class="code">workflow-definition</span> and sends <span class="code">prepare_definition</span> with <span class="code">workflows/default.workflow</span>.</div>
-                    <div class="timeline-step"><strong>4. Ready or error returns</strong><br>The definition method replies with <span class="code">definition_ready</span> for known definitions and successful probes, or <span class="code">definition_error</span> on schema/probe failure.</div>
-                    <div class="timeline-step"><strong>5. Reporter logs the visible result</strong><br>The coordinator sends either a <span class="code">summary</span> or <span class="code">startup_failure</span> event to the reporter.</div>
+                    <div class="timeline-step"><strong>4. Ready or error returns</strong><br>The definition method replies to <span class="code">reply_to</span> with <span class="code">definition_ready</span> for known definitions and successful probes, or <span class="code">definition_error</span> on schema/probe failure.</div>
+                    <div class="timeline-step"><strong>5. Item lifecycle runs</strong><br>On readiness, the coordinator spawns <span class="code">workflow-item</span> and initializes it without putting <span class="code">self</span> on the message.</div>
+                    <div class="timeline-step"><strong>6. Reporter logs the visible result</strong><br>The item sends progress and summary events to the reporter; startup errors still route from the coordinator to the reporter.</div>
                 </div>
             </section>
             <div class="columns">
@@ -421,7 +427,7 @@ methods/workflow_reporter_tests.c</div>
                     </div>
                 </div>
             </section>
-            <p class="note">In the current fresh executable path, the coordinator uses this default definition to stage readiness before emitting the direct approved/rejected summary.</p>
+            <p class="note">In the fresh executable path, the coordinator uses this default definition to stage readiness before spawning and initializing the workflow item.</p>
             <section class="card source-panel">
                 <h3>Source Files</h3>
                 <div class="path-list">workflows/default.workflow
@@ -499,7 +505,7 @@ methods/workflow_definition_tests.c</div>
                     <ul>
                         <li><span class="code">item_id</span> identifies progress and summary log messages.</li>
                         <li><span class="code">title</span>, <span class="code">priority</span>, <span class="code">owner</span>, and <span class="code">review_status</span> are stored by the item method and forwarded for transition evaluation.</li>
-                        <li>In the current executable shortcut, <span class="code">review_status=approved</span> makes the coordinator emit a completed summary; any other value emits a rejected summary.</li>
+                        <li><span class="code">review_status=approved</span> feeds the transition decision prompt and produces the completed summary through the item-and-definition path.</li>
                     </ul>
                 </section>
             </div>
@@ -507,7 +513,7 @@ methods/workflow_definition_tests.c</div>
                 <h3>Item Field Flow</h3>
                 <div class="sequence-diagram">
                     <div class="sequence-lane"><strong>bootstrap</strong><span>seeds the demo item values in memory and builds the start message</span></div>
-                    <div class="sequence-lane"><strong>coordinator</strong><span>stores the fields and uses review_status for the direct summary path</span></div>
+                    <div class="sequence-lane"><strong>coordinator</strong><span>stores the fields and passes them in the item initialize message</span></div>
                     <div class="sequence-lane"><strong>workflow-item</strong><span>stores the fields, emits progress, and forwards them to transition evaluation</span></div>
                     <div class="sequence-lane"><strong>definition / reporter</strong><span>definition receives all five fields; reporter logs item_id, owner, stage, status, terminal outcome, and reason</span></div>
                     <div class="sequence-arrow-row">
@@ -539,7 +545,7 @@ methods/workflow-reporter-1.0.0.md</div>
                     <div class="flow-arrow">→</div>
                     <div class="flow-step"><strong>Active</strong><span>auto-progress to review</span></div>
                     <div class="flow-arrow">→</div>
-                    <div class="flow-step"><strong>Review</strong><span>send evaluate_transition to definition</span></div>
+                    <div class="flow-step"><strong>Review</strong><span>send evaluate_transition with reply_to=self_agent_id</span></div>
                     <div class="flow-arrow">→</div>
                     <div class="flow-step"><strong>Decision</strong><span>summary on advance/reject, progress on stay</span></div>
                 </div>
@@ -611,13 +617,13 @@ methods/workflow-reporter-1.0.0.md</div>
                     <div class="state-card">
                         <strong>Startup success</strong>
                         <span><span class="code">definition_ready</span> activates the run.</span>
-                        <span>The coordinator emits a final summary in the current bundled executable path.</span>
+                        <span>The coordinator initializes an item, and the item emits the final summary after the transition decision.</span>
                     </div>
                     <div class="state-transition">versus</div>
                     <div class="state-card">
                         <strong>Startup failure</strong>
                         <span><span class="code">definition_error</span> marks <span class="code">startup_failed</span>.</span>
-                        <span>No fake item is created; the reporter logs a startup failure.</span>
+                        <span>No item is created; the reporter logs a startup failure.</span>
                     </div>
                 </div>
             </section>

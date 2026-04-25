@@ -453,7 +453,7 @@ bool ar_agent_store__load(ar_agent_store_t *mut_store) {
                 
                 for (size_t j = 0; j < key_count; j++) {
                     const char *ref_key = ar_data__get_string(key_items[j]);
-                    if (!ref_key) continue;
+                    if (!ref_key || strcmp(ref_key, "self") == 0) continue;
                     
                     ar_data_t *ref_value = ar_data__get_map_data(ref_memory_data, ref_key);
                     if (ref_value) {
@@ -469,6 +469,17 @@ bool ar_agent_store__load(ar_agent_store_t *mut_store) {
                 }
                 ar_data__destroy(own_keys);
             }
+        }
+
+        ar_data_t *mut_agent_memory = ar_agent__get_mutable_memory(own_agent);
+        if (!mut_agent_memory || !ar_data__set_map_integer(mut_agent_memory, "self", (int)agent_id)) {
+            char warning_msg[ERROR_MSG_BUFFER_SIZE];
+            snprintf(warning_msg, sizeof(warning_msg),
+                    "Failed to initialize self for agent %lld, skipping",
+                    (long long)agent_id);
+            _log_warning(mut_store->ref_log, warning_msg);
+            ar_agent__destroy(own_agent);
+            continue;
         }
 
         /* Register the ID and track the agent */

@@ -16,6 +16,7 @@ This clean architecture reduced the module from 850+ lines to just 81 lines whil
 
 The agency module provides:
 - Centralized agent lifecycle management
+- Agent identity initialization via agency-managed `memory.self`
 - Agent persistence coordination
 - Method version update management
 - Agent registry ownership and initialization
@@ -72,7 +73,7 @@ All global API functions delegate to their instance-based counterparts using an 
 
 ### Agent Creation and Destruction
 
-- `ar_agency__create_agent()` - Create a new agent with automatic ID allocation
+- `ar_agency__create_agent()` - Create a new agent with automatic ID allocation and agency-managed `memory.self` initialization
 - `ar_agency__destroy_agent()` - Destroy an agent by ID
 
 ### Agent Communication
@@ -123,6 +124,7 @@ if (agent_id == 0) {
     printf("Failed to create agent\n");
     return;
 }
+// The agency initializes the agent memory with memory.self = agent_id.
 
 // Create an agent with specific version and context
 ar_data_t *own_context = ar_data__create_map();

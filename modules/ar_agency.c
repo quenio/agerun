@@ -218,6 +218,12 @@ int64_t ar_agency__create_agent(ar_agency_t *mut_agency,
     
     // Set the agent's ID
     ar_agent__set_id(own_agent, agent_id);
+
+    ar_data_t *mut_memory = ar_agent__get_mutable_memory(own_agent);
+    if (!mut_memory || !ar_data__set_map_integer(mut_memory, "self", (int)agent_id)) {
+        ar_agent__destroy(own_agent);
+        return 0;
+    }
     
     // Register the ID in the registry
     if (!ar_agent_registry__register_id(mut_agency->own_registry, agent_id)) {

@@ -57,18 +57,18 @@ static void setup_missing_model(void) {
     unsetenv("AGERUN_COMPLETE_RUNNER");
 }
 
-static ar_data_t *create_prepare_definition_message(const char *ref_path, int64_t sender) {
+static ar_data_t *create_prepare_definition_message(const char *ref_path, int64_t reply_to) {
     ar_data_t *own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Prepare message should be created");
     ar_data__set_map_string(own_message, "action", "prepare_definition");
     ar_data__set_map_string(own_message, "definition_path", ref_path);
     ar_data__set_map_string(own_message, "stage", "");
     ar_data__set_map_string(own_message, "review_status", "approved");
-    ar_data__set_map_integer(own_message, "sender", (int)sender);
+    ar_data__set_map_integer(own_message, "reply_to", (int)reply_to);
     return own_message;
 }
 
-static ar_data_t *create_evaluate_transition_message(const char *ref_stage, int64_t sender) {
+static ar_data_t *create_evaluate_transition_message(const char *ref_stage, int64_t reply_to) {
     ar_data_t *own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Evaluate message should be created");
     ar_data__set_map_string(own_message, "action", "evaluate_transition");
@@ -80,7 +80,7 @@ static ar_data_t *create_evaluate_transition_message(const char *ref_stage, int6
     ar_data__set_map_string(own_message, "owner", "workflow_owner");
     ar_data__set_map_string(own_message, "review_status", "approved");
     ar_data__set_map_integer(own_message, "transition_count", 3);
-    ar_data__set_map_integer(own_message, "sender", (int)sender);
+    ar_data__set_map_integer(own_message, "reply_to", (int)reply_to);
     return own_message;
 }
 
@@ -148,7 +148,7 @@ static void test_workflow_definition__prepare_definition_reads_known_file_and_qu
     const char *ref_dependency_status = ar_data__get_map_string(ref_memory, "dependency_status");
     const ar_data_t *ref_ready_payload = ar_data__get_map_data(ref_memory, "ready_payload");
     const char *ref_ready_action = ref_ready_payload ? ar_data__get_map_string(ref_ready_payload, "action") : NULL;
-    printf("workflow_name=%s file_status=%s dependency_status=%s probe_ok=%d transition_ok=%d ready_flag=%d error_flag=%d ready_sent=%d sender_id=%d ready_action=%s\n",
+    printf("workflow_name=%s file_status=%s dependency_status=%s probe_ok=%d transition_ok=%d ready_flag=%d error_flag=%d ready_sent=%d reply_to_id=%d ready_action=%s\n",
            ref_workflow_name ? ref_workflow_name : "(null)",
            ref_file_status ? ref_file_status : "(null)",
            ref_dependency_status ? ref_dependency_status : "(null)",
@@ -157,7 +157,7 @@ static void test_workflow_definition__prepare_definition_reads_known_file_and_qu
            ar_data__get_map_integer(ref_memory, "ready_flag"),
            ar_data__get_map_integer(ref_memory, "error_flag"),
            ar_data__get_map_integer(ref_memory, "ready_sent"),
-           ar_data__get_map_integer(ref_memory, "sender_id"),
+           ar_data__get_map_integer(ref_memory, "reply_to_id"),
            ref_ready_action ? ref_ready_action : "(null)");
     fflush(stdout);
     AR_ASSERT(ref_workflow_name != NULL, "Workflow name should be stored");
@@ -170,7 +170,7 @@ static void test_workflow_definition__prepare_definition_reads_known_file_and_qu
     AR_ASSERT(strcmp(ref_dependency_status, "ready") == 0,
               "Dependency status should be ready");
     AR_ASSERT(ar_agency__agent_has_messages(mut_agency, definition_agent_id),
-              "Definition should queue reply to sender");
+              "Definition should queue reply to reply_to");
     ar_data_t *own_reply = ar_agency__get_agent_message(mut_agency, definition_agent_id);
     AR_ASSERT(own_reply != NULL, "Definition reply should be retrievable");
     AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "action"), "definition_ready") == 0,
@@ -206,11 +206,11 @@ static void test_workflow_definition__invalid_schema_returns_definition_error(vo
     const ar_data_t *ref_memory = ar_agency__get_agent_memory(mut_agency, definition_agent_id);
     const ar_data_t *ref_error_payload = ar_data__get_map_data(ref_memory, "error_payload");
     const char *ref_error_action = ref_error_payload ? ar_data__get_map_string(ref_error_payload, "action") : NULL;
-    printf("invalid last_reason=%s error_flag=%d error_sent=%d sender_id=%d error_action=%s category=%s\n",
+    printf("invalid last_reason=%s error_flag=%d error_sent=%d reply_to_id=%d error_action=%s category=%s\n",
            ar_data__get_map_string(ref_memory, "last_reason") ? ar_data__get_map_string(ref_memory, "last_reason") : "(null)",
            ar_data__get_map_integer(ref_memory, "error_flag"),
            ar_data__get_map_integer(ref_memory, "error_sent"),
-           ar_data__get_map_integer(ref_memory, "sender_id"),
+           ar_data__get_map_integer(ref_memory, "reply_to_id"),
            ref_error_action ? ref_error_action : "(null)",
            ar_data__get_map_string(ref_memory, "error_category") ? ar_data__get_map_string(ref_memory, "error_category") : "(null)" );
     fflush(stdout);
@@ -218,7 +218,7 @@ static void test_workflow_definition__invalid_schema_returns_definition_error(vo
               "Invalid schema should record schema reason");
 
     AR_ASSERT(ar_agency__agent_has_messages(mut_agency, definition_agent_id),
-              "Definition should queue definition_error to sender");
+              "Definition should queue definition_error to reply_to");
     ar_data_t *own_reply = ar_agency__get_agent_message(mut_agency, definition_agent_id);
     AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "action"), "definition_error") == 0,
               "Reply should be definition_error");

@@ -52,6 +52,7 @@ static void test_message_passing(ar_system_t *mut_system);
 static void test_system__has_delegation(void);
 static void test_system__processes_delegate_messages(void);
 static void test_system__processes_delegate_messages_with_agent_sender_id(void);
+static void test_system__preserves_agency_assigned_memory_self(void);
 static void test_system__closed_shell_session_delegate_discards_late_reply(void);
 static void test_message_forwarding__whole_message_reuses_pointer(void);
 static void test_message_forwarding__message_field_still_copies(void);
@@ -572,6 +573,61 @@ static void test_system__processes_delegate_messages_with_agent_sender_id(void) 
     printf("Delegate sender-ID preservation test passed.\n");
 }
 
+static void test_system__preserves_agency_assigned_memory_self(void) {
+    ar_system_t *own_system;
+    ar_agency_t *mut_agency;
+    ar_methodology_t *mut_methodology;
+    ar_data_t *own_context;
+    ar_data_t *own_message;
+    ar_data_t *mut_agent_memory;
+    int64_t agent_id;
+
+    printf("Testing system processing preserves agency-assigned memory.self...\n");
+
+    own_system = ar_system__create();
+    AR_ASSERT(own_system != NULL, "System creation should succeed");
+    AR_ASSERT(ar_system__init(own_system, NULL, NULL) == 0, "System init without initial agent should succeed");
+
+    mut_agency = ar_system__get_agency(own_system);
+    AR_ASSERT(mut_agency != NULL, "System should provide an agency");
+
+    mut_methodology = ar_agency__get_methodology(mut_agency);
+    AR_ASSERT(mut_methodology != NULL, "Agency should provide a methodology");
+    AR_ASSERT(
+        ar_methodology__create_method(mut_methodology, "record-self", "memory.observed_self := memory.self", "1.0.0"),
+        "Record-self method should be created"
+    );
+
+    own_context = ar_data__create_map();
+    AR_ASSERT(own_context != NULL, "Record-self context should be created");
+    agent_id = ar_agency__create_agent(mut_agency, "record-self", "1.0.0", own_context);
+    AR_ASSERT(agent_id > 0, "Record-self agent should be created");
+
+    own_message = ar_data__create_map();
+    AR_ASSERT(own_message != NULL, "Trigger message should be created");
+    AR_ASSERT(ar_data__set_map_string(own_message, "kind", "no-self-provided"),
+              "Trigger message kind should be set");
+    AR_ASSERT(ar_data__get_map_data(own_message, "self") == NULL,
+              "Test message should not provide self explicitly");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, agent_id, own_message),
+              "Trigger message send should succeed");
+
+    AR_ASSERT(ar_system__process_next_message(own_system), "System should process record-self message");
+
+    mut_agent_memory = ar_agency__get_agent_mutable_memory(mut_agency, agent_id);
+    AR_ASSERT(mut_agent_memory != NULL, "Record-self memory should be available");
+    AR_ASSERT(ar_data__get_map_integer(mut_agent_memory, "self") == (int)agent_id,
+              "Agency-assigned memory.self should remain the agent ID");
+    AR_ASSERT(ar_data__get_map_integer(mut_agent_memory, "observed_self") == (int)agent_id,
+              "Methods should read self from memory.self");
+
+    ar_data__destroy(own_context);
+    ar_system__shutdown(own_system);
+    ar_system__destroy(own_system);
+
+    printf("Memory self preservation test passed.\n");
+}
+
 static void test_message_forwarding__whole_message_reuses_pointer(void) {
     ar_system_t *own_system;
     ar_agency_t *mut_agency;
@@ -763,6 +819,7 @@ int main(void) {
     test_system__has_delegation();
     test_system__processes_delegate_messages();
     test_system__processes_delegate_messages_with_agent_sender_id();
+    test_system__preserves_agency_assigned_memory_self();
     test_message_forwarding__whole_message_reuses_pointer();
     test_message_forwarding__message_field_still_copies();
     test_system__init_can_create_shell_agent_after_registration();
