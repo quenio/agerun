@@ -35,6 +35,54 @@ static void setup_fake_runner(const char *ref_output) {
               "Fake model env should be set");
 }
 
+static void setup_prompt_sensitive_runner(void) {
+    snprintf(
+        g_runner_path,
+        sizeof(g_runner_path),
+        "./fake-workflow-definition-runner-%ld.sh",
+        (long)getpid()
+    );
+    snprintf(
+        g_model_path,
+        sizeof(g_model_path),
+        "./fake-workflow-definition-model-%ld.gguf",
+        (long)getpid()
+    );
+
+    FILE *own_model = fopen(g_model_path, "w");
+    AR_ASSERT(own_model != NULL, "Fake model should be created");
+    fputs("fake-model", own_model);
+    fclose(own_model);
+
+    FILE *own_runner = fopen(g_runner_path, "w");
+    AR_ASSERT(own_runner != NULL, "Prompt-sensitive fake runner should be created");
+    fputs("#!/bin/sh\n", own_runner);
+    fputs("prompt=\"$*\"\n", own_runner);
+    fputs("case \"$prompt\" in\n", own_runner);
+    fputs(
+        "  *\"review_status=pending\"*) "
+        "printf 'outcome=stay\\nreason=review_not_approved\\n' ;;\n",
+        own_runner
+    );
+    fputs(
+        "  *\"review_status=approved\"*) "
+        "printf 'outcome=advance\\nreason=approved_by_review\\n' ;;\n",
+        own_runner
+    );
+    fputs(
+        "  *) printf 'outcome=reject\\nreason=missing_workflow_item_context\\n' ;;\n",
+        own_runner
+    );
+    fputs("esac\n", own_runner);
+    fclose(own_runner);
+    AR_ASSERT(chmod(g_runner_path, 0700) == 0, "Prompt-sensitive runner should be executable");
+
+    AR_ASSERT(setenv("AGERUN_COMPLETE_RUNNER", g_runner_path, 1) == 0,
+              "Fake runner env should be set");
+    AR_ASSERT(setenv("AGERUN_COMPLETE_MODEL", g_model_path, 1) == 0,
+              "Fake model env should be set");
+}
+
 static void cleanup_fake_runner(void) {
     unsetenv("AGERUN_COMPLETE_RUNNER");
     unsetenv("AGERUN_COMPLETE_MODEL");
@@ -68,20 +116,38 @@ static ar_data_t *create_prepare_definition_message(const char *ref_path, int64_
     return own_message;
 }
 
-static ar_data_t *create_evaluate_transition_message(const char *ref_stage, int64_t reply_to) {
+static ar_data_t *create_evaluate_transition_message_with_review(
+    const char *ref_stage,
+    const char *ref_review_status,
+    int64_t reply_to
+) {
     ar_data_t *own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Evaluate message should be created");
-    ar_data__set_map_string(own_message, "action", "evaluate_transition");
-    ar_data__set_map_string(own_message, "workflow_name", "default_workflow");
-    ar_data__set_map_string(own_message, "stage", ref_stage);
-    ar_data__set_map_string(own_message, "item_id", "demo-item-1");
-    ar_data__set_map_string(own_message, "title", "demo_work_item");
-    ar_data__set_map_string(own_message, "priority", "high");
-    ar_data__set_map_string(own_message, "owner", "workflow_owner");
-    ar_data__set_map_string(own_message, "review_status", "approved");
-    ar_data__set_map_integer(own_message, "transition_count", 3);
-    ar_data__set_map_integer(own_message, "reply_to", (int)reply_to);
+    AR_ASSERT(ar_data__set_map_string(own_message, "action", "evaluate_transition"),
+              "Evaluate message should include action");
+    AR_ASSERT(ar_data__set_map_string(own_message, "workflow_name", "default_workflow"),
+              "Evaluate message should include workflow name");
+    AR_ASSERT(ar_data__set_map_string(own_message, "stage", ref_stage),
+              "Evaluate message should include stage");
+    AR_ASSERT(ar_data__set_map_string(own_message, "item_id", "demo-item-1"),
+              "Evaluate message should include item id");
+    AR_ASSERT(ar_data__set_map_string(own_message, "title", "demo_work_item"),
+              "Evaluate message should include title");
+    AR_ASSERT(ar_data__set_map_string(own_message, "priority", "high"),
+              "Evaluate message should include priority");
+    AR_ASSERT(ar_data__set_map_string(own_message, "owner", "workflow_owner"),
+              "Evaluate message should include owner");
+    AR_ASSERT(ar_data__set_map_string(own_message, "review_status", ref_review_status),
+              "Evaluate message should include review status");
+    AR_ASSERT(ar_data__set_map_integer(own_message, "transition_count", 3),
+              "Evaluate message should include transition count");
+    AR_ASSERT(ar_data__set_map_integer(own_message, "reply_to", (int)reply_to),
+              "Evaluate message should include reply target");
     return own_message;
+}
+
+static ar_data_t *create_evaluate_transition_message(const char *ref_stage, int64_t reply_to) {
+    return create_evaluate_transition_message_with_review(ref_stage, "approved", reply_to);
 }
 
 static void debug_parse(void) {
@@ -319,6 +385,68 @@ static void test_workflow_definition__complete_success_uses_outcome_and_reason(v
     cleanup_fake_runner();
 }
 
+static void test_workflow_definition__complete_prompt_uses_workflow_item_context(void) {
+    printf("Testing workflow-definition complete prompt uses workflow item context...\n");
+
+    // Given a runner that branches on the complete() prompt
+    setup_prompt_sensitive_runner();
+
+    // Given a workflow-definition agent
+    ar_method_fixture_t *own_fixture = create_fixture();
+    ar_agency_t *mut_agency = ar_method_fixture__get_agency(own_fixture);
+    ar_data_t *own_context = ar_data__create_map();
+    AR_ASSERT(own_context != NULL, "Definition context should be created");
+    int64_t definition_agent_id = ar_agency__create_agent(
+        mut_agency,
+        "workflow-definition",
+        "1.0.0",
+        own_context
+    );
+    AR_ASSERT(definition_agent_id == 1, "Definition agent should be created");
+
+    // Given a prepared known workflow definition
+    ar_data_t *own_prepare = create_prepare_definition_message(
+        "workflows/default.workflow",
+        definition_agent_id
+    );
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, definition_agent_id, own_prepare),
+              "Prepare definition should queue");
+    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture), "Prepare should process");
+    ar_data_t *own_prepare_reply = ar_agency__get_agent_message(mut_agency, definition_agent_id);
+    ar_data__destroy(own_prepare_reply);
+
+    // When evaluating a review transition whose item review is still pending
+    ar_data_t *own_message = create_evaluate_transition_message_with_review(
+        "review",
+        "pending",
+        definition_agent_id
+    );
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, definition_agent_id, own_message),
+              "Evaluate transition should queue");
+    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture), "Transition should process");
+
+    // Then complete() should see the workflow item context and request a stay decision
+    AR_ASSERT(ar_agency__agent_has_messages(mut_agency, definition_agent_id),
+              "Transition decision should be queued");
+    ar_data_t *own_reply = ar_agency__get_agent_message(mut_agency, definition_agent_id);
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "outcome"), "stay") == 0,
+              "Pending review should stay when complete() sees workflow item context");
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "reason"), "review_not_approved") == 0,
+              "Pending review should preserve context-sensitive complete() reason");
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "next_stage"), "review") == 0,
+              "Stay decision should keep the current stage");
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "complete_trace"),
+                     "COMPLETE_TRACE[phase=transition|outcome=stay|"
+                     "reason=review_not_approved]") == 0,
+              "Context-sensitive decision should be reflected in complete trace");
+    ar_data__destroy(own_reply);
+
+    // Cleanup
+    ar_method_fixture__destroy(own_fixture);
+    ar_data__destroy(own_context);
+    cleanup_fake_runner();
+}
+
 int main(void) {
     printf("Workflow Definition Method Tests\n");
     printf("===============================\n\n");
@@ -328,6 +456,7 @@ int main(void) {
     test_workflow_definition__invalid_schema_returns_definition_error();
     test_workflow_definition__complete_failure_maps_to_retryable_stay();
     test_workflow_definition__complete_success_uses_outcome_and_reason();
+    test_workflow_definition__complete_prompt_uses_workflow_item_context();
 
     printf("\nAll workflow-definition tests passed!\n");
     return 0;

@@ -1,5 +1,27 @@
 # AgeRun CHANGELOG
 
+## 2026-04-25 (Workflow transition completion evaluates item context)
+
+- **Changed workflow transition prompts from canned decisions to item-context evaluation**
+
+  The `workflow-definition` method now builds a transition context map from workflow item fields and
+  passes that map into `complete(...)`. Transition completion receives the current stage, item id,
+  title, priority, owner, review status, and transition count before generating `outcome` and
+  `reason`, so the method can stay in review when the item context is not ready to advance.
+
+  **Implementation**: Updated `methods/workflow-definition-1.0.0.method`, synchronized
+  `methods/workflow-definition-1.0.0.md` and `methods/README.md`, added a regression test in
+  `methods/workflow_definition_tests.c`, and refreshed the workflow methodology walkthrough copy in
+  `docs/walkthroughs/workflow-methodology/slides.js`, `docs/walkthroughs/index.html`, and
+  `docs/walkthroughs/README.md`.
+
+  **Verification**: `make workflow_definition_tests 2>&1`, `node -c
+  docs/walkthroughs/workflow-methodology/slides.js`, `make clean build 2>&1`, `make check-logs
+  2>&1`, `make check-docs 2>&1`, `make check-naming 2>&1`, and `make sanitize-tests 2>&1`.
+
+  **Impact**: Workflow transition decisions now reflect the current workflow item instead of relying
+  on a prompt that preselected `advance` and `approved` as canned completion values.
+
 ## 2026-04-25 (Fix workflow walkthrough architecture card overlap)
 
 - **Fixed the workflow methodology anchor diagram layout**

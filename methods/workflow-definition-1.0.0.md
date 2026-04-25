@@ -134,10 +134,13 @@ Expected fields:
 - `transition_count`
 
 Behavior:
-- runs `complete("Workflow transition decision outcome={outcome} reason={reason}.")`
+- builds a transition context map from the current workflow item fields and passes it to `complete(...)`
+- asks `complete(...)` to evaluate the current item and generate `outcome`/`reason` from that context
 - copies returned `outcome` into `transition_outcome` and returned `reason` into `transition_reason`
 - uses `transition_outcome` to choose `advance`, `stay`, or `reject`, which then determines
   `next_stage`, `status`, and `terminal_outcome`
+- keeps review-stage items in `stay` when the completion decision reports that context such as
+  `review_status` still requires more work
 - uses `transition_reason` as the explanation propagated in the outgoing `transition_decision`
   message
 - emits a highlighted `complete_trace` marker in the outgoing decision so downstream workflow logs
@@ -186,9 +189,9 @@ Transition evaluation failures are normalized to:
 
 ## `complete(...)` Placeholder Usage Summary
 
-The method passes a small presence-marker values map to its two `complete(...)` calls so generated
-fields are returned in isolated result maps and completion success is detected without relying on
-model-controllable placeholder text:
+The method passes explicit values maps to its `complete(...)` calls so generated fields are returned
+in isolated result maps and completion success is detected without relying on model-controllable
+placeholder text:
 
 ### Startup dependency probe
 - `probe_ok` is derived from the copied `complete_present` marker plus generated `outcome`/`reason`
@@ -204,10 +207,14 @@ model-controllable placeholder text:
   `COMPLETE_TRACE[phase=startup|status=failure]`.
 
 ### Transition decision evaluation
+- The transition prompt includes the current workflow item context (`workflow_name`, `stage`,
+  `item_id`, `title`, `priority`, `owner`, `review_status`, and `transition_count`) as provided
+  values so `complete(...)` evaluates the item instead of returning a canned decision.
 - Returned `transition_complete.outcome` becomes `transition_outcome` and drives the workflow branch:
   - `advance` moves to the next stage
   - `reject` produces `terminal_outcome = rejected`
-  - `stay` keeps the current stage
+  - `stay` keeps the current stage, including pending-review cases where the item context is not
+    ready to advance
 - Returned `transition_complete.reason` becomes `transition_reason` and is forwarded in the
   `transition_decision` message so downstream methods can explain the decision in progress/summary
   logs.
@@ -258,6 +265,13 @@ memory.is_known_definition := memory.is_default_definition + memory.is_test_defi
 memory.is_invalid_definition := if(memory.definition_path = "invalid.workflow", 1, 0)
 memory.workflow_name := if(memory.is_default_definition = 1, "default_workflow", memory.workflow_name)
 memory.workflow_name := if(memory.is_test_definition = 1, "test_workflow", memory.workflow_name)
+memory.workflow_name := if(memory.is_evaluate = 1, message.workflow_name, memory.workflow_name)
+memory.item_id := if(memory.is_evaluate = 1, message.item_id, "")
+memory.title := if(memory.is_evaluate = 1, message.title, "")
+memory.priority := if(memory.is_evaluate = 1, message.priority, "")
+memory.owner := if(memory.is_evaluate = 1, message.owner, "")
+memory.review_status := if(memory.is_evaluate = 1, message.review_status, "")
+memory.transition_count := if(memory.is_evaluate = 1, message.transition_count, 0)
 memory.workflow_version := if(memory.is_known_definition > 0, "1.0.0", memory.workflow_version)
 memory.initial_stage := if(memory.is_known_definition > 0, "intake", memory.initial_stage)
 memory.terminal_completed := if(memory.is_known_definition > 0, "completed", memory.terminal_completed)
@@ -307,7 +321,9 @@ memory.error_input := build("action=definition_error reason={error_reason} compl
 memory.error_payload := parse("action={action} reason={reason} complete_trace={complete_trace}", memory.error_input)
 memory.error_sent := send(memory.reply_to_id * memory.error_flag, memory.error_payload)
 memory.last_reply_action := if(memory.error_flag = 1, "definition_error", memory.last_reply_action)
-memory.transition_result := complete("Answer with outcome advance and reason approved. The workflow transition decision is {outcome}. The short reason is {reason}.", memory.complete_presence)
+memory.transition_context_input := build("complete_present=1 workflow_name={workflow_name} stage={from_stage} item_id={item_id} title={title} priority={priority} owner={owner} review_status={review_status} transition_count={transition_count}", memory)
+memory.transition_context := parse("complete_present={complete_present} workflow_name={workflow_name} stage={stage} item_id={item_id} title={title} priority={priority} owner={owner} review_status={review_status} transition_count={transition_count}", memory.transition_context_input)
+memory.transition_result := complete("Evaluate this workflow item and decide the transition. Use the provided workflow context exactly: workflow_name={workflow_name}; stage={stage}; item_id={item_id}; title={title}; priority={priority}; owner={owner}; review_status={review_status}; transition_count={transition_count}. Return outcome={outcome} where outcome is advance, stay, or reject. Advance only when the current item is ready for the next stage; in review, advance only when review_status=approved. Stay when more work or review is needed. Reject only when the item should terminate as rejected. Return reason={reason} as a short snake_case explanation.", memory.transition_context)
 memory.transition_check_input := build("complete_present={complete_present} outcome={outcome} reason={reason}", memory.transition_result)
 memory.transition_check := parse("complete_present={complete_present} outcome={outcome} reason={reason}", memory.transition_check_input)
 memory.transition_has_marker := if(memory.transition_check.complete_present = 1, 1, 0)
