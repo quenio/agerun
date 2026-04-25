@@ -30,81 +30,82 @@ Expected behavior:
 - the runtime does not require a network service
 - the first `complete(...)` call can lazily initialize the local model runtime for the process
 
-## 2. Use `complete(...)` with top-level memory targets
+## 2. Use `complete(...)` without provided values
 
 Example method instructions:
 
 ```text
-memory.ok := complete("The largest country in South America is {country}.")
-memory.reply := build("ok={ok} country={country}", memory)
+memory.result := complete("The largest country in South America is {country}.")
+memory.reply := build("country={country}", memory.result)
 send(message.sender, memory.reply)
 ```
 
 Expected outcome:
 - `complete(...)` derives the placeholder `country`
-- the instruction populates `memory.country` with a non-empty string
-- the instruction returns boolean status in `memory.ok`
-- `memory.reply` can reuse both values without extra conversion
+- the instruction returns a new map in `memory.result`
+- `memory.result.country` contains a non-empty generated string
+- `memory.reply` can reuse the returned map without extra conversion
 
-## 2a. Reuse one stored value across repeated placeholders
+## 2a. Reuse one returned value across repeated placeholders
 
 Example method instructions:
 
 ```text
-memory.ok := complete("{country} is in {continent}. {country} remains consistent.")
-memory.reply := build("reply={country}|{continent}", memory)
+memory.result := complete("{country} is in {continent}. {country} remains consistent.")
+memory.reply := build("reply={country}|{continent}", memory.result)
 send(message.sender, memory.reply)
 ```
 
 Expected outcome:
-- repeated `{country}` references resolve to the same stored string value
-- later `build(...)` reads `memory.country` and `memory.continent` directly
+- repeated `{country}` references resolve to the same returned string value
+- later `build(...)` reads `memory.result.country` and `memory.result.continent` directly
 - later `send(...)` can forward the built reply without extra conversion
 
-## 3. Use `complete(...)` with a nested base memory path
+## 3. Use `complete(...)` with provided values
 
 Example method instructions:
 
 ```text
-memory.ok := complete("The capital is {city}.", memory.location)
-memory.reply := build("ok={ok} city={city}", memory.location)
+memory.values.country := "Brazil"
+memory.result := complete("The capital of {country} is {city}.", memory.values)
+memory.reply := build("country={country} city={city}", memory.result)
 send(message.sender, memory.reply)
 ```
 
 Expected outcome:
-- the second argument redirects writes under `memory.location`
-- the instruction populates `memory.location.city`
-- the instruction returns boolean status in `memory.ok`
-- later instructions can read the populated string directly from `memory.location.city`
+- the second argument supplies a values map
+- `memory.values.country` is substituted into the prompt and copied into `memory.result.country`
+- only the missing `city` placeholder is sent to local completion
+- the input `memory.values` map is not mutated
 
 ## 4. Observe failure behavior
 
 Example method instructions:
 
 ```text
-memory.ok := complete("No placeholders here.")
-memory.reply := build("ok={ok}", memory)
+memory.result := complete("The capital is {city}.", "not-a-map")
+memory.reply := build("result_count={count}", memory)
 send(message.sender, memory.reply)
 ```
 
 Expected outcome:
-- the instruction returns `false`
+- the assigned instruction result is an empty map
 - an actionable error is recorded through the runtime logging path
 - the logged error text includes `failure_category=...`, `cause=...`, and `recovery_hint=...`
-- invalid templates and invalid base paths fail before local completion initialization begins
-- previously stored target values remain unchanged because the failed call performs no partial write
+- invalid values-map arguments fail before local completion initialization begins
+- any provided input map remains unchanged because the failed call performs no partial mutation
 - later non-`complete(...)` work can continue normally after the failed call
 
 ## 5. Success-path acceptance fixture set
 
 Use the following documented fixture set when validating the first implementation success path:
-- top-level target write: `complete("The largest country in South America is {country}.")`
-- quoted-literal preservation: `complete("The \"largest\" country in South America is {country}.")`
-- nested target write: `complete("The capital is {city}.", memory.location)`
-- overwrite behavior: start with a pre-populated `memory.location.city`, then verify that only a successful `complete(...)` call replaces it
+- generated result map: `memory.result := complete("The largest country in South America is {country}.")`
+- quoted-literal prompt variant: `memory.result := complete("The \"largest\" country in South America is {country}.")`
+- provided values map: `memory.result := complete("The capital of {country} is {city}.", memory.values)`
+- input preservation: start with a pre-populated `memory.values.city`, then verify the returned map copies it and `memory.values` remains unchanged
 
 Expected validation evidence:
-- `memory.ok` stores boolean status only
+- `memory.result` stores a returned map
 - successful calls return generated values as strings in a result map
 - generated values are non-empty and contain no leading/trailing whitespace or braces
 - values-map inputs seed known placeholders without mutating the provided map
@@ -114,19 +115,19 @@ Expected validation evidence:
 
 Use the following documented fixture set when validating direct reuse after a successful completion call:
 - repeated-placeholder consistency: `complete("{country} is in {continent}. {country} remains consistent.")`
-- downstream build reuse: `memory.reply := build("reply={country}|{continent}", memory)`
+- downstream build reuse: `memory.reply := build("reply={country}|{continent}", memory.result)`
 - downstream send reuse: `send(message.sender, memory.reply)` or an equivalent delegate/agent send using the built reply
 
 Expected validation evidence:
 - repeated placeholders resolve to one stored string value per placeholder name
-- later `build(...)` reads the populated completion outputs as normal string memory
+- later `build(...)` reads the returned completion outputs as normal string data
 - later `send(...)` can forward the reused string value without additional conversion or translation
 
 ## 5b. Failure-path acceptance fixture set
 
 Use the following documented fixture set when validating User Story 3 failure handling:
-- invalid template fast-failure: `complete("No placeholders here.")`
-- invalid base-path fast-failure at the evaluator layer: `complete("The capital is {city}.", <non-memory AST>)`
+- non-map second-argument fast-failure at the evaluator layer: `complete("The capital is {city}.", "not-a-map")`
+- no-placeholder template returns a copied values map or empty map without local completion
 - incomplete placeholder coverage: request `{country}` and `{language}` when the backend only returns `country`
 - generated-value rejection: empty placeholder values, leading/trailing whitespace, or returned `{` / `}` characters
 - timeout/unavailable runtime: non-positive timeout, missing runner override, missing model file, or unusable GGUF model
@@ -135,8 +136,8 @@ Use the following documented fixture set when validating User Story 3 failure ha
 Expected validation evidence:
 - invalid-before-generation cases leave `ar_local_completion` uninitialized
 - actionable errors include `failure_category`, `cause`, and `recovery_hint`
-- prior memory values survive every failure case unchanged
-- no partial generated values are written when placeholder coverage is incomplete
+- provided input maps survive every failure case unchanged
+- no partial generated values are exposed when placeholder coverage is incomplete
 - later non-completion instructions still succeed after a handled failure
 
 ## 6. Run targeted validation during implementation
@@ -189,7 +190,7 @@ The documented 20-template fixture set is:
 
 Execution notes:
 - every template stays within the short-template class (≤120 characters and ≤2 placeholder occurrences)
-- odd/even evaluator executions alternate one-argument and two-argument forms so top-level and nested writes are both measured
+- odd/even evaluator executions alternate one-argument and two-argument forms so no-values and provided-values calls are both measured
 - fixture 20 is the repeated-placeholder latency case
 - invalid-before-generation fast-failure, partial-generation waiting-limit behavior, and immediate
   post-failure readiness are verified by the dedicated failure-path tests rather than by the timed
@@ -232,11 +233,11 @@ Observed results:
 
 ## Notes for the first implementation
 
-- `complete(...)` writes generated values into `memory...` targets; it does not return a completed sentence
-- if the instruction result is assigned, it is a boolean success/failure value
+- `complete(...)` returns a map of copied provided values plus generated values; it does not return a completed sentence
+- if the instruction result is assigned, it receives the completion result map
 - all successful generated values are stored as strings in the first release
-- repeated placeholders resolve to one consistent stored value
-- all writes from one successful call are applied atomically
+- repeated placeholders resolve to one consistent returned value
+- provided input maps are never mutated
 - the first release is local-only, CPU-only, and intended for short factual or structured template completion
 - the primary backend path is direct vendored `libllama`; `AGERUN_COMPLETE_RUNNER` is an explicit override for controlled fallback/testing scenarios
 - first-release performance guarantees apply only to short templates with up to 2 placeholders and 120 total characters

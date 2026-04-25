@@ -12,7 +12,7 @@
 - [x] CHK002 Does the spec define whether portability requirements apply equally to one-argument and two-argument forms of `complete(...)`? [Completeness, Spec §FR-002; FR-002a]
 - [x] CHK003 Are portability requirements defined for both normal success paths and failure paths caused by unavailable local resources? [Completeness, Spec §FR-011; FR-013; SC-003]
 - [x] CHK004 Does the spec define whether portability includes only runtime behavior or also setup/distribution expectations for local completion resources? [Gap, Spec §FR-009; Assumptions & Dependencies]
-- [x] CHK005 Are portability expectations defined for both top-level and nested memory-target writes, or is that distinction intentionally irrelevant? [Coverage, Spec §FR-004a; FR-004b]
+- [x] CHK005 Are portability expectations defined for both one-argument and values-map calls, or is that distinction intentionally irrelevant? [Coverage, Spec §FR-004a; FR-004b]
 
 ## Requirement Clarity
 

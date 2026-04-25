@@ -7,8 +7,8 @@ local completion adapter module used for `complete(...)`.
 
 ## Role Boundary
 
-- `ar_complete_instruction_evaluator` owns AgeRun instruction semantics, target-path resolution,
-  validation, and atomic memory writes
+- `ar_complete_instruction_evaluator` owns AgeRun instruction semantics, values-map handling,
+  validation, and result-map creation
 - the local completion runtime owns model-path resolution, local backend lifecycle, CPU-only model
   execution, timeout enforcement support, and normalization of backend output into placeholder
   values
@@ -112,7 +112,7 @@ The first-release short-template validation fixture set contains exactly these 2
 Fixture rules:
 - every template is at most 120 characters
 - every template uses at most 2 placeholder occurrences
-- odd/even execution alternates one-argument and two-argument evaluator forms so top-level and nested writes both remain in scope
+- odd/even execution alternates one-argument and two-argument evaluator forms so no-values and provided-values calls both remain in scope
 - fixture 20 is the repeated-placeholder latency case for SC-002f
 
 ## Validation Procedure
@@ -132,7 +132,7 @@ The documented procedure is:
 - **Evaluator warm-run check**: run `ar_complete_instruction_evaluator_tests` with
   `AGERUN_COMPLETE_EVALUATOR_SUBTEST=performance_warm_fixture_set` so the runtime is warmed once
   and then the same evaluator executes the full 20-template fixture set across the complete
-  instruction path (generation, validation, error reporting, and atomic writes)
+  instruction path (generation, validation, error reporting, and result-map creation)
 - **Linux containerized execution path**: when using
   `make complete-performance-validation-linux-container 2>&1`, execute the same runtime warm,
   evaluator cold-start, and evaluator warm-run procedure inside the project-controlled Docker image,

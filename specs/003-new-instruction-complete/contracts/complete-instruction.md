@@ -9,79 +9,77 @@ Define the user-facing AgeRun language contract for the `complete(...)` instruct
 ### One-argument form
 
 ```text
-complete("The largest country in South America is {country}.")
+memory.result := complete("The largest country in South America is {country}.")
 ```
 
 - accepts one required template string
-- derives placeholder targets from `{name}` markers
-- writes generated values to top-level `memory.<name>` targets
+- derives result-map keys from `{name}` markers
+- returns generated values in a new map, e.g. `memory.result.country` after assignment
 
 ### Two-argument form
 
 ```text
-complete("The capital is {city}.", memory.location)
+memory.result := complete("The capital of {country} is {city}.", memory.values)
 ```
 
-- accepts the same required template string plus one optional base path
-- the optional second argument must be a `memory...` path
-- writes generated values under the supplied base path, so `{city}` targets `memory.location.city`
+- accepts the same required template string plus one optional values map expression
+- the optional second argument must evaluate to a map
+- copies provided values into a new result map, uses them for build-style substitution, and generates only missing placeholder keys
 
 ## Template Contract
 
 - the template contains one or more `{placeholder}` markers
 - repeated placeholder names are allowed
 - repeated placeholder names resolve to one consistent stored string value
-- templates with no placeholders are invalid
+- templates with no placeholders return a copied provided values map, or an empty map if no values map is provided, without invoking local completion
 
 ## Output Contract
 
 ### Primary output
 
-- the instruction writes generated string values into interpolated `memory...` targets
+- the instruction returns a new map containing generated string values for missing placeholders and copied provided values
 - the completed sentence itself is not the primary output of the instruction
 
 ### Instruction result
 
-- the instruction returns boolean success/failure status
-- if the result is assigned, the receiving variable stores that boolean status only
+- the instruction returns a completion result map when assigned
+- handled failures assign an empty map when a result path is present
 
 ## Success Contract
 
 On success:
-- every required placeholder has one generated string value
+- every required placeholder has a value in the returned map
 - every generated value is stored as a string suitable for direct AgeRun memory reuse
+- provided values are copied into the returned map without mutating the input map
 - generated values are validated directly before being stored in the result map
-- all target writes are applied atomically
-- existing target values are overwritten together
-- later AgeRun instructions can reuse the populated strings directly
+- later AgeRun instructions can reuse the returned values directly
 
 ### Success-path acceptance fixture set
 
 The first implementation validates the success path with this documented fixture set:
-- top-level write: `complete("The largest country in South America is {country}.")`
-- literal-preservation variant with quoted literals: `complete("The \"largest\" country in South America is {country}.")`
-- nested base-path write: `complete("The capital is {city}.", memory.location)`
-- overwrite behavior: pre-populated `memory.location.city` is replaced only by a successful `complete(...)` call
+- generated value: `memory.result := complete("The largest country in South America is {country}.")`
+- quoted-literal prompt variant: `memory.result := complete("The \"largest\" country in South America is {country}.")`
+- provided value map: `memory.result := complete("The capital of {country} is {city}.", memory.values)` where `memory.values.country` is preserved
+- input preservation: pre-populated `memory.values.city` is copied to `memory.result.city` and remains unchanged in `memory.values`
 
 ### Reuse-path acceptance fixture set for SC-004
 
 The first implementation validates reuse with this documented fixture set:
 - repeated-placeholder consistency: `complete("{country} is in {continent}. {country} remains consistent.")`
-- downstream build reuse: `memory.reply := build("reply={country}|{continent}", memory)`
+- downstream build reuse: `memory.reply := build("reply={country}|{continent}", memory.result)`
 - downstream send reuse: `send(message.sender, memory.reply)` or an equivalent delegate/agent send using the built reply
 
 ## Failure Contract
 
 On failure:
-- the instruction returns `false`
+- the instruction returns an empty map when assigned
 - an actionable runtime error is recorded
-- no partial target writes occur
-- previously stored target values remain unchanged
+- no partial generated values are exposed
+- the provided input map remains unchanged
 
 Failure cases include:
-- missing placeholder markers in the template (`failure_category=invalid_template`)
-- invalid second-argument path (`failure_category=invalid_base_path`)
-- invalid-before-generation request errors such as missing template content or empty placeholder sets
+- non-map second argument (`failure_category=invalid_values_map` or equivalent actionable error)
+- invalid-before-generation request errors such as missing template content or invalid placeholder syntax
 - local completion runtime unavailable on an otherwise supported environment (`failure_category=runtime_unavailable`)
 - timeout before a valid full result is ready (`failure_category=timeout`)
 - incomplete placeholder coverage or other partial-generation failures (`failure_category=incomplete_placeholder` or another actionable runtime class)
@@ -93,12 +91,12 @@ Failure-path diagnostics must include:
 - `recovery_hint=...`
 
 Failure-path acceptance fixture set:
-- invalid template fast-failure: `complete("No placeholders here.")`
-- invalid base-path fast-failure: `complete("The capital is {city}.", "not-a-memory-path")` at the AST/evaluator layer
+- no-placeholder template: `complete("No placeholders here.")` returns an empty map or copied values map without local completion
+- non-map second-argument fast-failure: `complete("The capital is {city}.", "not-a-map")` at the evaluator layer
 - incomplete placeholder coverage: request `{country}` and `{language}` when the backend only returns `country`
 - generated-value rejection: empty values, leading/trailing whitespace, or `{` / `}` in a returned placeholder value
 - timeout/unavailable runtime: non-positive timeout or missing runner/runtime/model configuration
-- post-failure continuation: a later non-`complete(...)` instruction still succeeds after a failed `complete(...)` call
+- post-failure continuation: a later non-`complete(...)` instruction still succeeds after a failed `complete(...)` call and the input map remains unchanged
 
 ## Non-Functional Contract
 

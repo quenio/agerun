@@ -9,8 +9,8 @@ fields, booleans, counts, and timeout values remain unprefixed.
 
 ### Description
 A `complete(...)` input string that combines literal text with one or more `{placeholder}` markers.
-It is the source from which the instruction derives placeholder names, literal context, and target
-memory writes.
+It is the source from which the instruction derives placeholder names, literal context, and
+result-map keys.
 
 ### Key Attributes
 - `own_source_text`: full template string supplied to `complete(...)`
@@ -19,55 +19,55 @@ memory writes.
 - `placeholder_count`: number of placeholders found in the template
 
 ### Validation Rules
-- The template contains at least one placeholder
+- Templates with placeholders derive result-map keys; templates without placeholders are allowed and require no local completion
 - Placeholder names use the `{name}` syntax defined by the spec
-- Repeated placeholder names are permitted, but all references resolve to one stored value
+- Repeated placeholder names are permitted, but all references resolve to one result-map value
 - The template string remains unchanged while derived placeholder metadata is computed
 
-## 2. Completion Target Context
+## 2. Completion Values Context
 
 ### Description
-The resolved memory-write context for one `complete(...)` evaluation. It maps placeholder names to
-actual `memory...` destinations using either the default top-level mapping or the optional base
-memory path argument.
+The optional values-map context for one `complete(...)` evaluation. It maps placeholder names to
+existing values that are copied into the result map and substituted into the template before missing
+placeholder values are generated.
 
 ### Key Attributes
-- `ref_base_memory_path`: optional `memory...` path provided as the second instruction argument
-- `own_target_paths`: mapping from placeholder name to final memory destination path
-- `write_mode`: fixed value `atomic_overwrite`
-- `uses_default_root`: boolean indicating whether targets resolve under top-level `memory`
+- `ref_values_map`: optional map value produced by the second instruction argument
+- `own_result_keys`: mapping from placeholder name to result-map key
+- `copy_mode`: fixed value `recursive_copy` for provided values
+- `generation_mode`: generate only placeholder keys missing from the provided values map
 
 ### Validation Rules
-- If `ref_base_memory_path` is present, it begins with `memory`
-- If no base path is present, `{country}` resolves to `memory.country`
-- If a base path is present, `{country}` resolves to `<base path>.country`
-- All target paths are unique after placeholder de-duplication
-- The context defines write targets only; it does not own generated values
+- If the optional second argument is present, it evaluates to a map
+- If no values map is present, `{country}` resolves to the `country` key in a new result map
+- If a values map is present and contains `country`, that value is copied to the `country` result key
+- Result keys are unique after placeholder de-duplication
+- The context defines copied and missing values; it never mutates the provided map
 
 ## 3. Completion Operation
 
 ### Description
-One execution of the `complete(...)` instruction. It combines the template, resolved target
-context, generated string values, validation status, and final boolean instruction result.
+One execution of the `complete(...)` instruction. It combines the template, optional values-map
+context, generated string values, validation status, and returned result map.
 
 ### Key Attributes
 - `status`: `pending`, `succeeded`, `failed`, or `timed_out`
 - `own_generated_values`: temporary map from placeholder name to generated string value
-- `result`: boolean instruction result returned to AgeRun method execution
+- `own_result_map`: map returned to AgeRun method execution
 - `timeout_ms`: configured maximum wait time for the local completion attempt
 - `failure_category`: optional machine-readable failure class for handled failures
 - `own_failure_cause`: optional immediate-cause diagnostic string
 - `own_recovery_hint`: optional recovery-hint diagnostic string
 
 ### Validation Rules
-- `own_generated_values` contains every required placeholder before success is allowed
+- `own_result_map` contains every required placeholder before success is allowed
 - All generated values are stored as strings in the first release
-- Successful completion writes all target values atomically
-- Failed or timed-out completion writes no target values
-- Successful values must not contain unresolved placeholder markers from the submitted template
+- Provided values are recursively copied into the result map without mutating the input map
+- Failed or timed-out completion exposes no partial generated values
+- Successful generated values must not contain `{` or `}` characters
 
 ### State Transitions
-- `pending -> succeeded`: all required placeholder values are available, validated, and written atomically
+- `pending -> succeeded`: all required placeholder values are available, validated, and present in the returned map
 - `pending -> failed`: validation, backend, or configuration error prevents full completion
 - `pending -> timed_out`: timeout threshold is exceeded before a valid full result is ready
 
@@ -91,13 +91,13 @@ execution, and structured placeholder-value generation behind a stable AgeRun-fa
 - The runtime loads one configured GGUF model asset for the process
 - The runtime accepts placeholder-oriented requests and returns structured string values
 - The runtime may remain shared across multiple instruction evaluations in one process
-- Invalid requests such as missing template text, empty placeholder sets, or non-positive timeout values fail before backend initialization begins
-- A failed runtime initialization must surface actionable error information without corrupting agent memory
+- Invalid requests such as missing template text or non-positive timeout values fail before backend initialization begins; empty placeholder sets return copied/empty maps without backend initialization
+- A failed runtime initialization must surface actionable error information without corrupting agent memory or mutating provided values maps
 
 ## Relationships
 
-- One **Completion Template** produces one **Completion Target Context** per instruction call
+- One **Completion Template** produces one **Completion Values Context** per instruction call
 - One **Completion Template** drives one **Completion Operation**
-- One **Completion Target Context** is consumed by one **Completion Operation**
+- One **Completion Values Context** is consumed by one **Completion Operation**
 - One **Completion Operation** requests generated values from one **Local Completion Runtime**
 - One **Local Completion Runtime** may serve many **Completion Operations** over the lifetime of one process

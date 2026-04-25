@@ -22,7 +22,8 @@
   `complete(...)` fail, preserved brace-delimited provided values during generated-value validation,
   removed dead completed-text reconstruction, and made recursive-copy helper allocation failures
   fail instead of returning truncated lists or maps. Follow-up spec-layer documentation was updated
-  to remove stale completed-text reconstruction validation requirements. The log whitelist metadata
+  to remove stale completed-text reconstruction validation requirements and remaining boolean/base-path
+  wording from the original `complete(...)` design. The log whitelist metadata
   was also refreshed after validating the timeout entry under the executable context.
 
   **Verification**: `make ar_complete_instruction_parser_tests ar_complete_instruction_evaluator_tests 2>&1`,

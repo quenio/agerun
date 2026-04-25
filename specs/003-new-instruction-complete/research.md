@@ -36,19 +36,19 @@
 ## Decision 3: Resolve placeholders through a structured placeholder-value response, not a completed sentence result
 
 - **Decision**: Derive the placeholder list from the template, ask the local completion backend for
-  a structured placeholder-to-string response, and apply those strings to AgeRun memory targets;
-  do not treat a completed sentence as the primary instruction output.
-- **Rationale**: The clarified spec says the interpolated memory variables are the primary output
-  and the instruction result is boolean status only. Requesting structured values from the backend
-  avoids brittle reparsing of a generated sentence, aligns directly with the memory-write contract,
-  and makes atomic validation easier.
+  a structured placeholder-to-string response for missing keys, and return a new AgeRun map that
+  combines copied provided values with generated strings; do not treat a completed sentence as the
+  primary instruction output.
+- **Rationale**: The clarified spec says the returned map is the primary output. Requesting
+  structured values from the backend avoids brittle reparsing of a generated sentence, aligns
+  directly with build-style values-map substitution, and avoids mutating caller-provided maps.
 - **Alternatives considered**:
   - Generate a completed sentence and parse it back into variables: rejected because it is brittle,
     harder to validate, and conflicts with the clarified primary-output contract.
-  - Return a map value from `complete(...)`: rejected because the spec requires boolean status plus
-    direct writes into `memory...` targets.
-  - Populate values incrementally as the model generates them: rejected because the spec requires
-    atomic writes and no partial failure state.
+  - Return boolean status plus direct writes into `memory...` targets: rejected because the revised
+    language contract uses a returned map and must not mutate provided input maps.
+  - Populate values incrementally as the model generates them: rejected because callers must not
+    observe partial generated output.
 
 ## Decision 4: Load one local model runtime lazily per process and reuse it across `complete(...)` calls
 
@@ -81,30 +81,30 @@
   - Auto-discover arbitrary model files by scanning the filesystem: rejected because it increases
     ambiguity and reduces deterministic behavior.
 
-## Decision 6: Stage and validate all generated strings before any memory mutation
+## Decision 6: Stage and validate all generated strings before exposing the result map
 
 - **Decision**: `ar_complete_instruction_evaluator` will buffer all generated placeholder strings in
-  a temporary map, verify that every required placeholder is present, non-empty, and free of
-  unresolved placeholder markers, then atomically write all target variables and return `true`.
-  Any backend, validation, or timeout failure returns `false`, logs an actionable error, and leaves
-  prior memory unchanged.
-- **Rationale**: This directly matches the spec's overwrite-on-success, no-partial-write-on-failure,
-  string-only output, and empty-string rejection requirements. It also preserves AgeRun's
+  a temporary map, verify that every required placeholder is present, non-empty, and free of brace
+  markers, then return a new result map containing copied provided values plus generated values.
+  Any backend, validation, or timeout failure logs an actionable error and leaves provided maps
+  unchanged.
+- **Rationale**: This directly matches the spec's returned-map, no-provided-map-mutation,
+  string-only generated output, and empty-string rejection requirements. It also preserves AgeRun's
   message-processing stability by making failure handling explicit and bounded.
 - **Alternatives considered**:
-  - Write values one by one as they become available: rejected because it violates atomicity and
-    risks partial updates.
-  - Permit partially complete writes with warnings: rejected because the spec requires full
+  - Write values one by one as they become available: rejected because callers could observe partial
+    generated output.
+  - Permit partially complete result maps with warnings: rejected because the spec requires full
     placeholder coverage or failure.
   - Infer numeric or structured types from generated strings: rejected because the clarified spec
-    requires string-only storage in the first release.
+    requires string-only generated values in the first release.
 
 ## Decision 7: Measure warm-run and cold-start performance separately using the clarified short-template workload
 
 - **Decision**: Validate performance with the spec-defined workload of 20 short completion
   templates, where each template has up to 2 placeholders and up to 120 total characters. Measure
   warm-run latency after runtime initialization and cold-start latency including the first model
-  load, with end-to-end timing covering evaluator execution, validation, and atomic memory writes.
+  load, with end-to-end timing covering evaluator execution, validation, and result-map creation.
 - **Rationale**: The clarified spec now distinguishes warm and cold timing and constrains the
   workload size. Capturing those boundaries in planning prevents benchmark drift and gives `/spec
   tasks` a concrete basis for validation work.
@@ -112,7 +112,7 @@
   - Use one mixed latency target for both cold and warm runs: rejected because model-load cost would
     blur steady-state behavior.
   - Measure only generation time: rejected because the user-facing instruction includes validation,
-    logging, and atomic writes.
+    logging, and result-map creation.
   - Leave workload size informal: rejected because the clarified spec makes it measurable.
 
 ## Decision 8: Require first-release validation evidence on both macOS and Linux
@@ -177,7 +177,7 @@
 ## Decision 12: Record actionable failure diagnostics at both backend and evaluator boundaries
 
 - **Decision**: Normalize `complete(...)` failures so the recorded error text includes
-  `failure_category`, `cause`, and `recovery_hint`, while invalid templates and invalid base paths
+  `failure_category`, `cause`, and `recovery_hint`, while non-map values-map arguments and invalid placeholder syntax
   fail before local runtime initialization begins.
 - **Rationale**: User Story 3 requires distinguishable, actionable failures without partial memory
   mutation. Recording the same diagnostic shape across runtime and evaluator layers makes failures

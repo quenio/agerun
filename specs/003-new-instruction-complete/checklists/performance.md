@@ -12,7 +12,7 @@
 - [x] CHK002 Are performance requirements defined for both one-argument and two-argument `complete(...)` calls, or is that distinction intentionally excluded? [Coverage, Gap, Spec §FR-002; FR-002a; SC-002]
 - [x] CHK003 Does the spec define whether the 15-second expectation applies per instruction call, per message, or per overall agent interaction? [Completeness, Ambiguity, Spec §FR-018; SC-002]
 - [x] CHK004 Are performance requirements defined for templates with multiple interpolations, not just single-placeholder examples? [Completeness, Spec §User Story 1; FR-015; SC-002]
-- [x] CHK005 Does the spec define whether performance expectations differ for top-level vs nested target writes? [Gap, Spec §FR-004a; FR-004b; SC-002]
+- [x] CHK005 Does the spec define whether performance expectations differ for one-argument vs two-argument values-map calls? [Gap, Spec §FR-004a; FR-004b; SC-002]
 
 ## Requirement Clarity
 
@@ -60,12 +60,12 @@
 
 ## Ambiguities & Conflicts
 
-- [x] CHK029 Is it unambiguous whether the timeout rule applies equally to success-value generation and atomic memory-write completion? [Ambiguity, Spec §FR-015b; FR-018]
+- [x] CHK029 Is it unambiguous whether the timeout rule applies equally to success-value generation and result-map completion? [Ambiguity, Spec §FR-015b; FR-018]
 - [x] CHK030 Is it unambiguous whether the performance target includes only generation time or also validation, error reporting, and memory update overhead? [Ambiguity, Spec §FR-012; FR-015b; SC-002]
 - [x] CHK031 Are terms such as “supported local runtime profile,” “short completion templates,” and “block message handling” sufficiently defined to avoid conflicting interpretations? [Ambiguity, Spec §FR-010; FR-018; SC-002]
 
 ## Notes
 
-- Re-reviewed after later `/spec clarify` updates that defined the supported local runtime profile, clarified that performance timing covers the full instruction path, defined the next-queued-message blocking boundary, made the single-active-`complete(...)` assumption explicit, equalized guarantees across invocation/target forms, explicitly excluded throughput/concurrent-performance guarantees, and specified invalid-before-generation, partial-generation, repeated-placeholder, recovery, and below-baseline degraded-condition behavior.
+- Re-reviewed after later `/spec clarify` updates that defined the supported local runtime profile, clarified that performance timing covers the full instruction path, defined the next-queued-message blocking boundary, made the single-active-`complete(...)` assumption explicit, equalized guarantees across one-argument and values-map invocation forms, explicitly excluded throughput/concurrent-performance guarantees, and specified invalid-before-generation, partial-generation, repeated-placeholder, recovery, and below-baseline degraded-condition behavior.
 - This checklist is intended for reviewer/PR use before `/spec plan`.
 - It focuses on requirement quality for performance only; implementation benchmarking strategy belongs in `/spec plan`.

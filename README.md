@@ -9,7 +9,7 @@ AgeRun is a lightweight, message-driven agent system where each agent is defined
 - **Versioning System**: Method definitions are versioned with backward compatibility.
 - **Persistence**: Methodology (method definitions) and agency (agents with their state) can be persisted and restored.
 - **Dynamic Agent Creation**: Agents can create other agents at runtime.
-- **Local Completion Instruction**: `complete(...)` can populate `memory...` variables from a local CPU-only language model with atomic success/failure semantics.
+- **Local Completion Instruction**: `complete(...)` returns a new map with local CPU-only language-model values for missing placeholders while preserving provided values.
 - **Interactive Shell**: `arsh` provides a terminal shell for spawning agents, storing shell-session values, sending messages, observing replies, and exiting cleanly on EOF / Ctrl-D.
 - **Minimal Memory Footprint**: Designed to be lightweight and efficient.
 

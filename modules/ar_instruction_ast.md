@@ -95,5 +95,5 @@ bool ar_instruction_ast__has_protected_memory_self_assignment(
 - evaluators use `ar_instruction_ast__has_protected_memory_self_assignment()` to reject writes to
   agency-managed `memory.self` and `memory.self.*` result paths
 - `complete(...)` support is represented with a normal function-call node carrying parsed argument
-  ASTs for the template string and optional base path
+  ASTs for the template string and optional values-map expression
 - callers should treat the node as opaque and rely only on the documented accessor helpers

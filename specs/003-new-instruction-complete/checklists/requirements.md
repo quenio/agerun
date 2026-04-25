@@ -31,5 +31,5 @@
 
 ## Notes
 
-- Validated after incorporating user correction that `complete(...)` populates interpolated memory variables and does not return the completed sentence as the instruction result.
+- Validated after incorporating user correction that `complete(...)` returns a completion map and does not return the completed sentence as the instruction result.
 - Implementation-specific runtime choices from the original request should be captured during `/spec plan`, not in the feature requirements.
