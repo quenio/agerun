@@ -407,6 +407,15 @@ body.sidebar-open {
     letter-spacing: 0.01em;
 }
 
+.anchor-middle-workflow .map-node-workflow-item {
+    grid-column: 2;
+    grid-row: 2;
+}
+
+.anchor-middle-workflow .anchor-flow {
+    grid-row: 3;
+}
+
 .map-node {
     display: grid;
     gap: 8px;

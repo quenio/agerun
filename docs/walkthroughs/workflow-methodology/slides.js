@@ -44,7 +44,7 @@ workflows/test.workflow</div>
                                 <span>creates bootstrap and queues the raw startup message</span>
                             </div>
                         </div>
-                        <div class="anchor-middle">
+                        <div class="anchor-middle anchor-middle-workflow">
                             <div class="map-node map-node-agent">
                                 <strong>Coordinator</strong>
                                 <span>owns the run status and startup handoff</span>
@@ -53,7 +53,7 @@ workflows/test.workflow</div>
                                 <strong>Definition</strong>
                                 <span>loads known definitions and decides review outcomes</span>
                             </div>
-                            <div class="map-node map-node-agent">
+                            <div class="map-node map-node-agent map-node-workflow-item">
                                 <strong>Item</strong>
                                 <span>stores item state and asks for transition decisions</span>
                             </div>

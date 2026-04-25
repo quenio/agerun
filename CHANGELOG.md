@@ -1,5 +1,23 @@
 # AgeRun CHANGELOG
 
+## 2026-04-25 (Fix workflow walkthrough architecture card overlap)
+
+- **Fixed the workflow methodology anchor diagram layout**
+
+  The workflow walkthrough's reference architecture card no longer overlays the Item text inside the
+  Coordinator card. The workflow-specific anchor layout now gives the Item node its own grid row and
+  moves the flow caption below the complete method map.
+
+  **Implementation**: Added workflow-specific anchor classes in
+  `docs/walkthroughs/workflow-methodology/slides.js` and corresponding grid placement rules in
+  `docs/walkthroughs/deck.css`.
+
+  **Verification**: `node -c docs/walkthroughs/workflow-methodology/slides.js` and Playwright
+  screenshots for desktop and mobile workflow walkthrough rendering.
+
+  **Impact**: The first workflow methodology slide renders the central architecture box without
+  overlapping labels or misaligned text.
+
 ## 2026-04-25 (Document PR review workflow)
 
 - **Added pull request review response guidance**
