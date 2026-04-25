@@ -146,20 +146,6 @@ fn _parseExpressionAst(ref_parser: ?*ar_complete_instruction_parser_t, ref_text:
     return c.ar_expression_parser__parse_expression(own_expr_parser);
 }
 
-fn _validateBasePath(ref_parser: ?*ar_complete_instruction_parser_t, ref_ast: ?*const c.ar_expression_ast_t) bool {
-    if (ref_ast == null) return false;
-    if (c.ar_expression_ast__get_type(ref_ast) != c.AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS) {
-        _logError(ref_parser, "complete() base path must be a direct memory access path", 0);
-        return false;
-    }
-    const ref_base = c.ar_expression_ast__get_memory_base(ref_ast) orelse return false;
-    if (std.mem.orderZ(u8, ref_base, "memory") != .eq) {
-        _logError(ref_parser, "complete() base path must start with memory", 0);
-        return false;
-    }
-    return true;
-}
-
 export fn ar_complete_instruction_parser__create(ref_log: ?*c.ar_log_t) ?*ar_complete_instruction_parser_t {
     const own_parser = ar_allocator.create(ar_complete_instruction_parser_t, "complete_instruction_parser") orelse return null;
     own_parser.ref_log = ref_log;
