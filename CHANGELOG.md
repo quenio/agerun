@@ -9,8 +9,9 @@
   errors from stale workflow `complete(...)` prompts.
 
   **Implementation**: Removed the redundant NULL check from the dlsym `strdup` interceptor because
-  glibc declares `strdup`'s argument nonnull; aligned labeled shell output reads with the existing
-  errno-capture pattern used by other shell tests; skipped only the expensive real Phi-3 smoke
+  glibc declares `strdup`'s argument nonnull; exported the vendored llama.cpp library directory in
+  CI so Linux `dlopen()` can resolve libllama's dependent shared objects; aligned labeled shell output
+  reads with the existing errno-capture pattern used by other shell tests; skipped only the expensive real Phi-3 smoke
   subtest during aggregate runs while keeping it available through `make complete-model-smoke`,
   skipped the vocab-only direct-backend failure subtest in aggregate runs unless explicitly requested,
   because CI's libllama/fixture combination reports a different failure before model-load validation,
@@ -27,9 +28,10 @@
   `make bin/tsan-tests/ar_local_completion_tests 2>&1` plus the TSan binary,
   `make analyze-tests 2>&1`, `make workflow_definition_tests 2>&1`, `make complete-model-smoke 2>&1`,
   an Ubuntu 24.04 Docker GCC 13 compile of `modules/ar_file_delegate_dlsym_tests.c` with CI warning
-  flags, `gh run view 24923836209 --log-failed` and `gh run view 24924276494 --log-failed` plus
-  downloaded build logs for aggregate-only local completion fixture failures, `make clean build 2>&1`,
-  and `make check-logs`.
+  flags, `gh run view 24923836209 --log-failed`, `gh run view 24924276494 --log-failed`, and
+  `gh run view 24924678826 --log-failed` plus downloaded build logs for aggregate-only local completion
+  fixture and Linux `dlopen()` dependency-resolution failures, `make clean build 2>&1`, and
+  `make check-logs`.
 
   **Impact**: The CI build can advance beyond the vendored runtime preparation and complete the Linux
   compile, static-analysis, sanitizer, and TSan test stages.
