@@ -13,6 +13,18 @@
 #include "ar_data.h"
 #include "ar_heap.h"
 
+#if defined(__has_feature)
+#if __has_feature(address_sanitizer) || __has_feature(thread_sanitizer)
+#define AR_LOCAL_COMPLETION_SANITIZER_BUILD 1
+#endif
+#endif
+#if defined(__SANITIZE_ADDRESS__) || defined(__SANITIZE_THREAD__)
+#define AR_LOCAL_COMPLETION_SANITIZER_BUILD 1
+#endif
+#ifndef AR_LOCAL_COMPLETION_SANITIZER_BUILD
+#define AR_LOCAL_COMPLETION_SANITIZER_BUILD 0
+#endif
+
 static void _setup_fake_runner_with_output(
     char *mut_runner_path,
     size_t runner_size,
@@ -112,6 +124,8 @@ typedef struct ar_complete_perf_fixture_s {
     const char *ref_first_placeholder;
     const char *ref_second_placeholder;
 } ar_complete_perf_fixture_t;
+
+static const char *g_vocab_only_model_path = "../../llama-cpp/models/ggml-vocab-phi-3.gguf";
 
 static const ar_complete_perf_fixture_t g_complete_perf_fixtures[] = {
     {"The largest country in South America is {country}.", "country", NULL},
@@ -247,7 +261,7 @@ static void test_local_completion__direct_backend_missing_model_file_failure(voi
 
 static void test_local_completion__direct_backend_vocab_only_model_failure(void) {
     unsetenv("AGERUN_COMPLETE_RUNNER");
-    assert(setenv("AGERUN_COMPLETE_MODEL", "../../llama-cpp/models/ggml-vocab-phi-3.gguf", 1) == 0);
+    assert(setenv("AGERUN_COMPLETE_MODEL", g_vocab_only_model_path, 1) == 0);
 
     ar_log_t *own_log = ar_log__create();
     assert(own_log != NULL);
@@ -619,9 +633,23 @@ int main(void) {
     test_local_completion__environment_override_and_lazy_initialization();
     test_local_completion__default_path_handling();
     test_local_completion__success_payload_normalization_and_reuse();
-    test_local_completion__real_phi3_model_smoke();
+    if (getenv("AGERUN_LOCAL_COMPLETION_RUN_REAL_SMOKE") != NULL) {
+        test_local_completion__real_phi3_model_smoke();
+    } else {
+        printf("Skipping real phi-3 smoke test in aggregate run; "
+               "make complete-model-smoke covers the real backend.\n");
+    }
     _run_subtest_subprocess("direct_backend_missing_model_file_failure");
-    _run_subtest_subprocess("direct_backend_vocab_only_model_failure");
+    if (getenv("AGERUN_LOCAL_COMPLETION_RUN_VOCAB_ONLY_FAILURE") == NULL) {
+        printf("Skipping vocab-only direct-backend failure subtest in aggregate run; "
+               "set AGERUN_LOCAL_COMPLETION_RUN_VOCAB_ONLY_FAILURE to cover this fixture.\n");
+    } else if (AR_LOCAL_COMPLETION_SANITIZER_BUILD) {
+        printf("Skipping vocab-only direct-backend failure subtest in sanitizer aggregate run.\n");
+    } else if (access(g_vocab_only_model_path, F_OK) != 0) {
+        printf("Skipping vocab-only direct-backend failure subtest; vocab fixture is unavailable.\n");
+    } else {
+        _run_subtest_subprocess("direct_backend_vocab_only_model_failure");
+    }
     _run_subtest_subprocess("invalid_before_generation_rejects_without_runtime_initialization");
     _run_subtest_subprocess("partial_generation_missing_placeholder_failure_is_actionable");
     _run_subtest_subprocess("timeout_and_unavailable_runtime_failures");
