@@ -16,8 +16,8 @@
   documentation for the new map-returning semantics. Follow-up cleanup standardized the newly added
   parser/evaluator tests with Given/When/Then/Cleanup structure comments, removed the obsolete
   complete-parser base-path validation helper, renamed stale evaluator tests to match the new
-  preservation and non-map argument semantics, and initialized performance-fixture values maps when
-  the optional argument is used.
+  preservation and non-map argument semantics, initialized performance-fixture values maps when
+  the optional argument is used, and updated performance success checks to validate returned maps.
 
   **Verification**: `make ar_complete_instruction_parser_tests ar_complete_instruction_evaluator_tests 2>&1`,
   `make ar_instruction_parser_tests 2>&1`, `make ar_instruction_evaluator_tests 2>&1`,
