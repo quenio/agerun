@@ -245,6 +245,16 @@ fn _getExistingValueSlice(ref_values: ?*const c.ar_data_t, ref_name: [*:0]const 
     return _dataToStringSlice(ref_value, mut_buffer);
 }
 
+fn _copyPromptValue(mut_dest: []u8, ref_value: []const u8) void {
+    for (ref_value, 0..) |char, index| {
+        mut_dest[index] = switch (char) {
+            '{' => '[',
+            '}' => ']',
+            else => char,
+        };
+    }
+}
+
 fn _buildPrefilledText(ref_template: []const u8, ref_values: ?*const c.ar_data_t) ?[*:0]u8 {
     var total_len: usize = 0;
     var pos: usize = 0;
@@ -280,7 +290,7 @@ fn _buildPrefilledText(ref_template: []const u8, ref_values: ?*const c.ar_data_t
             defer ar_allocator.free(own_name);
             var value_buffer: [256]u8 = undefined;
             if (_getExistingValueSlice(ref_values, own_name, &value_buffer)) |ref_value_slice| {
-                @memcpy(own_buffer[used .. used + ref_value_slice.len], ref_value_slice);
+                _copyPromptValue(own_buffer[used .. used + ref_value_slice.len], ref_value_slice);
                 used += ref_value_slice.len;
             } else {
                 const placeholder_len = range.next_pos - range.open_pos;

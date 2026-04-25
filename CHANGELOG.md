@@ -53,7 +53,8 @@
   strings are copied through explicit null-terminated buffers before storage, dead placeholder-count
   bookkeeping was removed from the complete() parser, and generated-value validation failures now return
   copied provided values without exposing invalid generated values. The workflow success check now requires
-  both the copied marker and generated outcome/reason fields. The log whitelist metadata
+  both the copied marker and generated outcome/reason fields, and prompt prefill sanitizes braces in
+  provided values so they are not sent as placeholder-like markers. The log whitelist metadata
   was also refreshed after validating the timeout entry under the executable context.
 
   **Verification**: `make ar_complete_instruction_parser_tests ar_complete_instruction_evaluator_tests 2>&1`,
