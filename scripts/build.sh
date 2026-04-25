@@ -49,11 +49,11 @@ run_job() {
 # Create output directory for logs only
 mkdir -p logs
 
-# Use a deterministic runner for ThreadSanitizer jobs. The vendored libllama stack creates
-# external runtime threads that are not TSan-clean on Linux, so TSan validates AgeRun logic
-# without exercising the direct backend.
-tsan_complete_runner="$PWD/logs/tsan-complete-runner.sh"
-cat > "$tsan_complete_runner" <<'EOF'
+# Use a deterministic runner for executable workflow jobs. CI validates complete()
+# integration through targeted tests while avoiding slow direct-backend generation in
+# executable smoke tests and external libllama TSan noise on Linux.
+deterministic_complete_runner="$PWD/logs/deterministic-complete-runner.sh"
+cat > "$deterministic_complete_runner" <<'EOF'
 #!/bin/sh
 prompt=""
 while [ "$#" -gt 0 ]; do
@@ -75,7 +75,7 @@ case "$prompt" in
 esac
 printf 'country=Brazil\ncity=Brasilia\ncontinent=South America\n'
 EOF
-chmod 700 "$tsan_complete_runner"
+chmod 700 "$deterministic_complete_runner"
 
 # Ensure shared complete() runtime assets exist before parallel fan-out
 # This avoids multiple parallel make processes racing on vendored llama.cpp/model setup.
@@ -123,11 +123,11 @@ run_job "check-docs" "make check-docs" "logs/check-docs.log"
 run_job "analyze-exec" "make analyze-exec" "logs/analyze-exec.log"
 run_job "analyze-tests" "make analyze-tests" "logs/analyze-tests.log"
 run_job "run-tests" "make run-tests" "logs/run-tests.log"
-run_job "run-exec" "make run-exec" "logs/run-exec.log"
+run_job "run-exec" "env AGERUN_COMPLETE_RUNNER=$deterministic_complete_runner make run-exec" "logs/run-exec.log"
 run_job "sanitize-tests" "make sanitize-tests" "logs/sanitize-tests.log"
-run_job "sanitize-exec" "make sanitize-exec" "logs/sanitize-exec.log"
-run_job "tsan-tests" "env AGERUN_TSAN_COMPLETE_RUNNER=$tsan_complete_runner make tsan-tests" "logs/tsan-tests.log"
-run_job "tsan-exec" "env AGERUN_COMPLETE_RUNNER=$tsan_complete_runner make tsan-exec" "logs/tsan-exec.log"
+run_job "sanitize-exec" "env AGERUN_COMPLETE_RUNNER=$deterministic_complete_runner make sanitize-exec" "logs/sanitize-exec.log"
+run_job "tsan-tests" "env AGERUN_TSAN_COMPLETE_RUNNER=$deterministic_complete_runner make tsan-tests" "logs/tsan-tests.log"
+run_job "tsan-exec" "env AGERUN_COMPLETE_RUNNER=$deterministic_complete_runner make tsan-exec" "logs/tsan-exec.log"
 
 # Wait for all jobs to complete
 wait

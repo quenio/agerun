@@ -10,9 +10,9 @@
 
   **Implementation**: Removed the redundant NULL check from the dlsym `strdup` interceptor because
   glibc declares `strdup`'s argument nonnull; exported the vendored llama.cpp library directory in
-  CI so Linux `dlopen()` can resolve libllama's dependent shared objects; routes TSan executable and
-  workflow-definition test coverage through a deterministic completion runner because the external
-  libllama runtime is not TSan-clean on Linux;
+  CI so Linux `dlopen()` can resolve libllama's dependent shared objects; routes executable smoke jobs
+  and workflow-definition TSan coverage through a deterministic completion runner because direct
+  libllama generation is slow and the external runtime is not TSan-clean on Linux;
   aligned labeled shell output reads with the existing errno-capture pattern used by other shell tests;
   kept workflow-definition invalid-schema coverage on the deterministic fake runner instead of the
   direct backend; skipped only the expensive real Phi-3 smoke subtest during aggregate runs while
@@ -33,9 +33,10 @@
   `make analyze-tests 2>&1`, `make workflow_definition_tests 2>&1`, `make complete-model-smoke 2>&1`,
   an Ubuntu 24.04 Docker GCC 13 compile of `modules/ar_file_delegate_dlsym_tests.c` with CI warning
   flags, `gh run view 24923836209 --log-failed`, `gh run view 24924276494 --log-failed`, and
-  `gh run view 24924678826 --log-failed` and `gh run view 24925083721 --log-failed` plus downloaded
-  build logs for aggregate-only local completion fixture, Linux `dlopen()` dependency-resolution, and
-  libllama TSan runtime failures, `make clean build 2>&1`, and `make check-logs`.
+  `gh run view 24924678826 --log-failed`, `gh run view 24925083721 --log-failed`, and
+  `gh run view 24926113461 --log-failed` plus downloaded build logs for aggregate-only local completion
+  fixture, Linux `dlopen()` dependency-resolution, libllama TSan runtime, and executable timeout
+  failures, `make clean build 2>&1`, and `make check-logs`.
 
   **Impact**: The CI build can advance beyond the vendored runtime preparation and complete the Linux
   compile, static-analysis, sanitizer, and TSan test stages.
