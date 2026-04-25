@@ -370,13 +370,14 @@ export fn ar_complete_instruction_evaluator__evaluate(
         return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() template string could not be read");
 
     var ref_values_data: ?*const c.ar_data_t = null;
+    var mut_values_result: ?*c.ar_data_t = null;
+    defer if (mut_values_result != null) c.ar_data__destroy_if_owned(mut_values_result, ref_evaluator);
     if (ref_values_ast != null) {
-        const values_result = c.ar_expression_evaluator__evaluate(ref_evaluator.?.ref_expr_evaluator, ref_frame, ref_values_ast);
-        if (values_result == null or c.ar_data__get_type(values_result) != c.AR_DATA_TYPE__MAP) {
-            if (values_result != null) c.ar_data__destroy_if_owned(values_result, ref_evaluator);
+        mut_values_result = c.ar_expression_evaluator__evaluate(ref_evaluator.?.ref_expr_evaluator, ref_frame, ref_values_ast);
+        if (mut_values_result == null or c.ar_data__get_type(mut_values_result) != c.AR_DATA_TYPE__MAP) {
             return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() second argument must evaluate to a map value");
         }
-        ref_values_data = values_result;
+        ref_values_data = mut_values_result;
     }
 
     var own_result_map: ?*c.ar_data_t = if (ref_values_data != null)
