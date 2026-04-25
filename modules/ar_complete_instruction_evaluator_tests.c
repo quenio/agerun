@@ -252,6 +252,10 @@ static void test_complete_instruction_evaluator__evaluate_returns_new_map_with_e
     assert(own_input != NULL);
     assert(ar_data__set_map_string(own_input, "country", "Brazil") == true);
     assert(ar_data__set_map_string(own_input, "extra", "kept") == true);
+    ar_data_t *own_nested = ar_data__create_map();
+    assert(own_nested != NULL);
+    assert(ar_data__set_map_string(own_nested, "note", "nested kept") == true);
+    assert(ar_data__set_map_data(own_input, "nested", own_nested) == true);
     assert(ar_data__set_map_data(ar_evaluator_fixture__get_memory(own_fixture), "input", own_input) == true);
 
     const char *path[] = {"input"};
@@ -273,6 +277,9 @@ static void test_complete_instruction_evaluator__evaluate_returns_new_map_with_e
     assert(ar_data__get_map_data(ref_input, "city") == NULL);
     assert(strcmp(ar_data__get_map_string(ref_input, "country"), "Brazil") == 0);
     assert(strcmp(ar_data__get_map_string(ref_input, "extra"), "kept") == 0);
+    ar_data_t *ref_input_nested = ar_data__get_map_data(ref_input, "nested");
+    assert(ref_input_nested != NULL);
+    assert(strcmp(ar_data__get_map_string(ref_input_nested, "note"), "nested kept") == 0);
 
     ar_data_t *ref_result = ar_data__get_map_data(ar_evaluator_fixture__get_memory(own_fixture), "result");
     assert(ref_result != NULL);
@@ -280,6 +287,10 @@ static void test_complete_instruction_evaluator__evaluate_returns_new_map_with_e
     assert(strcmp(ar_data__get_map_string(ref_result, "country"), "Brazil") == 0);
     assert(strcmp(ar_data__get_map_string(ref_result, "city"), "Brasilia") == 0);
     assert(strcmp(ar_data__get_map_string(ref_result, "extra"), "kept") == 0);
+    ar_data_t *ref_result_nested = ar_data__get_map_data(ref_result, "nested");
+    assert(ref_result_nested != NULL);
+    assert(ref_result_nested != ref_input_nested);
+    assert(strcmp(ar_data__get_map_string(ref_result_nested, "note"), "nested kept") == 0);
 
     // Cleanup
     ar_instruction_ast__destroy(own_ast);

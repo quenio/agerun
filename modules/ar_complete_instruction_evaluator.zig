@@ -236,6 +236,65 @@ fn _buildPrefilledText(ref_template: []const u8, ref_values: ?*const c.ar_data_t
     return @ptrCast(own_buffer);
 }
 
+fn _deepCopyData(ref_data: ?*const c.ar_data_t) ?*c.ar_data_t {
+    if (ref_data == null) return null;
+
+    switch (c.ar_data__get_type(ref_data)) {
+        c.AR_DATA_TYPE__INTEGER => return c.ar_data__create_integer(c.ar_data__get_integer(ref_data)),
+        c.AR_DATA_TYPE__DOUBLE => return c.ar_data__create_double(c.ar_data__get_double(ref_data)),
+        c.AR_DATA_TYPE__STRING => return c.ar_data__create_string(c.ar_data__get_string(ref_data)),
+        c.AR_DATA_TYPE__LIST => {
+            const own_copy = c.ar_data__create_list() orelse return null;
+            const item_count = c.ar_data__list_count(ref_data);
+            const own_items = c.ar_data__list_items(ref_data) orelse return own_copy;
+            defer ar_allocator.free(own_items);
+
+            var index: usize = 0;
+            while (index < item_count) : (index += 1) {
+                const own_item_copy = _deepCopyData(own_items[index]) orelse {
+                    c.ar_data__destroy(own_copy);
+                    return null;
+                };
+                if (!c.ar_data__list_add_last_data(own_copy, own_item_copy)) {
+                    c.ar_data__destroy(own_item_copy);
+                    c.ar_data__destroy(own_copy);
+                    return null;
+                }
+            }
+            return own_copy;
+        },
+        c.AR_DATA_TYPE__MAP => {
+            const own_copy = c.ar_data__create_map() orelse return null;
+            const own_keys = c.ar_data__get_map_keys(ref_data) orelse return own_copy;
+            defer c.ar_data__destroy(own_keys);
+
+            const key_count = c.ar_data__list_count(own_keys);
+            const own_key_items = c.ar_data__list_items(own_keys) orelse return own_copy;
+            defer ar_allocator.free(own_key_items);
+
+            var index: usize = 0;
+            while (index < key_count) : (index += 1) {
+                const ref_key = c.ar_data__get_string(own_key_items[index]) orelse {
+                    c.ar_data__destroy(own_copy);
+                    return null;
+                };
+                const ref_value = c.ar_data__get_map_data(ref_data, ref_key) orelse continue;
+                const own_value_copy = _deepCopyData(ref_value) orelse {
+                    c.ar_data__destroy(own_copy);
+                    return null;
+                };
+                if (!c.ar_data__set_map_data(own_copy, ref_key, own_value_copy)) {
+                    c.ar_data__destroy(own_value_copy);
+                    c.ar_data__destroy(own_copy);
+                    return null;
+                }
+            }
+            return own_copy;
+        },
+        else => return null,
+    }
+}
+
 fn _buildCompletedText(ref_template: []const u8, ref_values: ?*const c.ar_data_t) ?[*:0]u8 {
     var total_len: usize = 0;
     var pos: usize = 0;
@@ -344,20 +403,18 @@ export fn ar_complete_instruction_evaluator__evaluate(
     const ref_template = c.ar_data__get_string(own_template_data) orelse
         return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() template string could not be read");
 
-    var own_values_data: ?*c.ar_data_t = null;
-    defer if (own_values_data) |own_values| c.ar_data__destroy(own_values);
+    var ref_values_data: ?*const c.ar_data_t = null;
     if (ref_values_ast != null) {
         const values_result = c.ar_expression_evaluator__evaluate(ref_evaluator.?.ref_expr_evaluator, ref_frame, ref_values_ast);
-        own_values_data = c.ar_data__claim_or_copy(values_result, ref_evaluator) orelse
-            return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() second argument must evaluate to a map value");
-        if (c.ar_data__get_type(own_values_data) != c.AR_DATA_TYPE__MAP) {
+        if (values_result == null or c.ar_data__get_type(values_result) != c.AR_DATA_TYPE__MAP) {
+            if (values_result != null) c.ar_data__destroy_if_owned(values_result, ref_evaluator);
             return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() second argument must evaluate to a map value");
         }
+        ref_values_data = values_result;
     }
-    const ref_values_data: ?*const c.ar_data_t = own_values_data;
 
     var own_result_map: ?*c.ar_data_t = if (ref_values_data != null)
-        c.ar_data__shallow_copy(ref_values_data)
+        _deepCopyData(ref_values_data)
     else
         c.ar_data__create_map();
     if (own_result_map == null) {
