@@ -295,6 +295,11 @@ fn _deepCopyData(ref_data: ?*const c.ar_data_t) ?*c.ar_data_t {
     }
 }
 
+fn _getTemplateValueSlice(ref_values: ?*const c.ar_data_t, ref_name: [*:0]const u8, mut_buffer: []u8) ?[]const u8 {
+    const ref_value = c.ar_data__get_map_data(ref_values, ref_name) orelse return null;
+    return _dataToStringSlice(ref_value, mut_buffer);
+}
+
 fn _buildCompletedText(ref_template: []const u8, ref_values: ?*const c.ar_data_t) ?[*:0]u8 {
     var total_len: usize = 0;
     var pos: usize = 0;
@@ -303,7 +308,8 @@ fn _buildCompletedText(ref_template: []const u8, ref_values: ?*const c.ar_data_t
             total_len += range.open_pos - pos;
             const own_name = _makeCString(ref_template[range.name_start..range.name_end], "complete_placeholder_lookup") orelse return null;
             defer ar_allocator.free(own_name);
-            const ref_value_slice = _getGeneratedValueSlice(ref_values, own_name) orelse return null;
+            var value_buffer: [256]u8 = undefined;
+            const ref_value_slice = _getTemplateValueSlice(ref_values, own_name, &value_buffer) orelse return null;
             total_len += ref_value_slice.len;
             pos = range.next_pos;
         } else {
@@ -326,7 +332,8 @@ fn _buildCompletedText(ref_template: []const u8, ref_values: ?*const c.ar_data_t
                 return null;
             };
             defer ar_allocator.free(own_name);
-            const ref_value_slice = _getGeneratedValueSlice(ref_values, own_name) orelse {
+            var value_buffer: [256]u8 = undefined;
+            const ref_value_slice = _getTemplateValueSlice(ref_values, own_name, &value_buffer) orelse {
                 ar_allocator.free(own_buffer);
                 return null;
             };
@@ -510,7 +517,7 @@ export fn ar_complete_instruction_evaluator__evaluate(
             }
         }
 
-        const own_completed_text = _buildCompletedText(std.mem.span(own_prefilled_template), own_generated_values) orelse
+        const own_completed_text = _buildCompletedText(std.mem.span(ref_template), own_result_map) orelse
             return _handledFailureDetailed(
                 ref_evaluator.?,
                 mut_memory,

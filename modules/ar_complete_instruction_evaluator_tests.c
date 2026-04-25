@@ -251,6 +251,7 @@ static void test_complete_instruction_evaluator__evaluate_returns_new_map_with_e
     ar_data_t *own_input = ar_data__create_map();
     assert(own_input != NULL);
     assert(ar_data__set_map_string(own_input, "country", "Brazil") == true);
+    assert(ar_data__set_map_string(own_input, "description", "{literal}") == true);
     assert(ar_data__set_map_string(own_input, "extra", "kept") == true);
     ar_data_t *own_nested = ar_data__create_map();
     assert(own_nested != NULL);
@@ -260,7 +261,7 @@ static void test_complete_instruction_evaluator__evaluate_returns_new_map_with_e
 
     const char *path[] = {"input"};
     ar_instruction_ast_t *own_ast = _create_complete_ast_with_base_ast(
-        "The capital of {country} is {city}.",
+        "The {description} capital of {country} is {city}.",
         ar_expression_ast__create_memory_access("memory", path, 1),
         "memory.result"
     );
@@ -276,6 +277,7 @@ static void test_complete_instruction_evaluator__evaluate_returns_new_map_with_e
     assert(ref_input != NULL);
     assert(ar_data__get_map_data(ref_input, "city") == NULL);
     assert(strcmp(ar_data__get_map_string(ref_input, "country"), "Brazil") == 0);
+    assert(strcmp(ar_data__get_map_string(ref_input, "description"), "{literal}") == 0);
     assert(strcmp(ar_data__get_map_string(ref_input, "extra"), "kept") == 0);
     ar_data_t *ref_input_nested = ar_data__get_map_data(ref_input, "nested");
     assert(ref_input_nested != NULL);
@@ -285,6 +287,7 @@ static void test_complete_instruction_evaluator__evaluate_returns_new_map_with_e
     assert(ref_result != NULL);
     assert(ar_data__get_type(ref_result) == AR_DATA_TYPE__MAP);
     assert(strcmp(ar_data__get_map_string(ref_result, "country"), "Brazil") == 0);
+    assert(strcmp(ar_data__get_map_string(ref_result, "description"), "{literal}") == 0);
     assert(strcmp(ar_data__get_map_string(ref_result, "city"), "Brasilia") == 0);
     assert(strcmp(ar_data__get_map_string(ref_result, "extra"), "kept") == 0);
     ar_data_t *ref_result_nested = ar_data__get_map_data(ref_result, "nested");
