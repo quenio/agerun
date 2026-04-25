@@ -1098,7 +1098,7 @@ ignored_errors:
   - context: "executable"
     message: "workflow_startup_failure reason=startup_dependency_unavailable"
     comment: "Expected bundled executable startup failure log output"
-# Total entries: 312
-# Test entries: 303
-# Executable entries: 9
+# Total entries: 324
+# Test entries: 314
+# Executable entries: 10
 # Context-free entries: 0
