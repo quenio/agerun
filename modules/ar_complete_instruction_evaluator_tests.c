@@ -123,6 +123,7 @@ static ar_instruction_ast_t* _create_complete_ast(
     assert(own_arg_asts != NULL);
     assert(ar_list__add_last(own_arg_asts, ar_expression_ast__create_literal_string(ref_template)) == true);
     if (ref_base_path != NULL) {
+        assert(strcmp(ref_base_path, "memory.location") == 0);
         const char *path[] = {"location"};
         assert(ar_list__add_last(own_arg_asts, ar_expression_ast__create_memory_access("memory", path, 1)) == true);
     }
@@ -514,6 +515,11 @@ static void test_complete_instruction_evaluator__performance_cold_fixture(void) 
     assert(own_evaluator != NULL);
 
     const char *ref_base_path = (((size_t)own_index) % 2U) == 0U ? NULL : "memory.location";
+    if (ref_base_path != NULL) {
+        ar_data_t *own_location = ar_data__create_map();
+        assert(own_location != NULL);
+        assert(ar_data__set_map_data(ar_evaluator_fixture__get_memory(own_fixture), "location", own_location) == true);
+    }
     ar_instruction_ast_t *own_ast = _create_complete_ast(ref_fixture->ref_template, ref_base_path, "memory.ok");
     ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     struct timespec own_start = {0};
@@ -563,6 +569,10 @@ static void test_complete_instruction_evaluator__performance_warm_fixture_set(vo
     assert(own_warm_evaluator != NULL);
 
     {
+        ar_data_t *own_location = ar_data__create_map();
+        assert(own_location != NULL);
+        assert(ar_data__set_map_data(ar_evaluator_fixture__get_memory(own_warm_fixture), "location", own_location) == true);
+
         ar_instruction_ast_t *own_warmup_ast = _create_complete_ast(
             g_complete_perf_fixtures[0].ref_template,
             NULL,
