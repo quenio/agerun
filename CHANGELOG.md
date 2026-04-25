@@ -10,7 +10,7 @@
   copied input values and generated values. The provided input map is never mutated.
 
   **Implementation**: Updated the complete parser to accept any expression as the optional values
-  argument, revised the complete evaluator to shallow-copy provided maps and return map results,
+  argument, revised the complete evaluator to recursively copy provided maps and return map results,
   preserved handled-failure behavior with empty result maps, adapted the workflow-definition method
   to consume returned completion maps, and updated instruction/evaluator tests plus user/module/spec
   documentation for the new map-returning semantics. Follow-up cleanup standardized the newly added
@@ -19,8 +19,8 @@
   preservation and non-map argument semantics, initialized performance-fixture values maps when
   the optional argument is used, updated performance success checks to validate returned maps, and
   replaced shallow values-map copying with recursive copying so nested input values do not make
-  `complete(...)` fail, and validated completed text against the original template so brace-delimited
-  provided values are not mistaken for generated placeholders. The log whitelist metadata was also
+  `complete(...)` fail, preserved brace-delimited provided values during generated-value validation,
+  and removed dead completed-text reconstruction. The log whitelist metadata was also
   refreshed after validating the timeout entry under the executable context.
 
   **Verification**: `make ar_complete_instruction_parser_tests ar_complete_instruction_evaluator_tests 2>&1`,

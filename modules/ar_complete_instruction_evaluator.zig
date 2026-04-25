@@ -295,62 +295,6 @@ fn _deepCopyData(ref_data: ?*const c.ar_data_t) ?*c.ar_data_t {
     }
 }
 
-fn _getTemplateValueSlice(ref_values: ?*const c.ar_data_t, ref_name: [*:0]const u8, mut_buffer: []u8) ?[]const u8 {
-    const ref_value = c.ar_data__get_map_data(ref_values, ref_name) orelse return null;
-    return _dataToStringSlice(ref_value, mut_buffer);
-}
-
-fn _buildCompletedText(ref_template: []const u8, ref_values: ?*const c.ar_data_t) ?[*:0]u8 {
-    var total_len: usize = 0;
-    var pos: usize = 0;
-    while (pos < ref_template.len) {
-        if (_nextPlaceholderRange(ref_template, pos)) |range| {
-            total_len += range.open_pos - pos;
-            const own_name = _makeCString(ref_template[range.name_start..range.name_end], "complete_placeholder_lookup") orelse return null;
-            defer ar_allocator.free(own_name);
-            var value_buffer: [256]u8 = undefined;
-            const ref_value_slice = _getTemplateValueSlice(ref_values, own_name, &value_buffer) orelse return null;
-            total_len += ref_value_slice.len;
-            pos = range.next_pos;
-        } else {
-            total_len += ref_template.len - pos;
-            break;
-        }
-    }
-
-    const own_buffer = ar_allocator.alloc(u8, total_len + 1, "complete_completed_text") orelse return null;
-    var used: usize = 0;
-    pos = 0;
-    while (pos < ref_template.len) {
-        if (_nextPlaceholderRange(ref_template, pos)) |range| {
-            const literal_len = range.open_pos - pos;
-            @memcpy(own_buffer[used .. used + literal_len], ref_template[pos..range.open_pos]);
-            used += literal_len;
-
-            const own_name = _makeCString(ref_template[range.name_start..range.name_end], "complete_placeholder_copy") orelse {
-                ar_allocator.free(own_buffer);
-                return null;
-            };
-            defer ar_allocator.free(own_name);
-            var value_buffer: [256]u8 = undefined;
-            const ref_value_slice = _getTemplateValueSlice(ref_values, own_name, &value_buffer) orelse {
-                ar_allocator.free(own_buffer);
-                return null;
-            };
-            @memcpy(own_buffer[used .. used + ref_value_slice.len], ref_value_slice);
-            used += ref_value_slice.len;
-            pos = range.next_pos;
-        } else {
-            const literal_len = ref_template.len - pos;
-            @memcpy(own_buffer[used .. used + literal_len], ref_template[pos..]);
-            used += literal_len;
-            break;
-        }
-    }
-    own_buffer[used] = 0;
-    return @ptrCast(own_buffer);
-}
-
 export fn ar_complete_instruction_evaluator__create(
     ref_log: ?*c.ar_log_t,
     ref_expr_evaluator: ?*c.ar_expression_evaluator_t,
@@ -516,18 +460,6 @@ export fn ar_complete_instruction_evaluator__evaluate(
                 return _handledFailure(ref_evaluator.?, mut_memory, ref_ast, "complete() could not store generated values in result map");
             }
         }
-
-        const own_completed_text = _buildCompletedText(std.mem.span(ref_template), own_result_map) orelse
-            return _handledFailureDetailed(
-                ref_evaluator.?,
-                mut_memory,
-                ref_ast,
-                "complete() generated values do not fit the requested template",
-                "unresolved_marker",
-                "generated values did not reconstruct the requested template exactly",
-                "adjust the template or local model output so every literal segment is preserved exactly",
-            );
-        defer ar_allocator.free(own_completed_text);
     }
 
     if (c.ar_instruction_ast__has_result_assignment(ref_ast)) {
