@@ -25,6 +25,15 @@ const ar_instruction_ast_t = struct {
     own_result_path: ?[*:0]u8,       // Owned: optional result assignment path (may be NULL)
 };
 
+fn _path_targets_memory_self(ref_path: ?[*:0]const u8) bool {
+    if (ref_path == null) {
+        return false;
+    }
+
+    const path = std.mem.span(ref_path.?);
+    return std.mem.eql(u8, path, "memory.self") or std.mem.startsWith(u8, path, "memory.self.");
+}
+
 /// Get the type of an AST node.
 export fn ar_instruction_ast__get_type(ref_node: ?*const c.ar_instruction_ast_t) c.ar_instruction_ast_type_t {
     if (ref_node == null) {
@@ -389,4 +398,18 @@ export fn ar_instruction_ast__has_result_assignment(ref_node: ?*const c.ar_instr
         return false;
     }
     return node.own_result_path != null;
+}
+
+/// Check if an instruction attempts to assign to agency-managed memory.self.
+export fn ar_instruction_ast__has_protected_memory_self_assignment(ref_node: ?*const c.ar_instruction_ast_t) bool {
+    if (ref_node == null) {
+        return false;
+    }
+
+    const node = @as(*const ar_instruction_ast_t, @ptrCast(@alignCast(ref_node)));
+    if (node.node_type == c.AR_INSTRUCTION_AST_TYPE__ASSIGNMENT) {
+        return _path_targets_memory_self(node.own_memory_path);
+    }
+
+    return _path_targets_memory_self(node.own_result_path);
 }

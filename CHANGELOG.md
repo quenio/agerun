@@ -1,23 +1,26 @@
 # AgeRun CHANGELOG
 
-## 2026-04-25 (Parse results cannot overwrite agency-managed self identity)
+## 2026-04-25 (Instruction results cannot overwrite agency-managed self identity)
 
-- **Protected `memory.self` from parse instruction result assignment**
+- **Protected `memory.self` from instruction result assignment**
 
-  Parse instructions now reject result paths that would overwrite agency-managed `memory.self`,
-  matching the assignment-instruction protection for the same identity field.
+  Function-style instructions now reject result paths that would overwrite agency-managed
+  `memory.self`, matching the assignment-instruction protection for the same identity field. Parse
+  instructions also reject templates and inputs that could construct or expose protected self data.
 
-  **Implementation**: Added parse evaluator validation for result paths at `memory.self` and nested
-  paths below it, templates that would construct `self` or `self.*` fields, and `memory.self` input
-  expressions. Covered the rejections with parse evaluator tests that verify the existing self ID is
-  preserved, updated parse evaluator documentation and the language specification, and corrected a
-  stale bootstrap test assertion message to refer to agency-managed identity.
+  **Implementation**: Added shared instruction-AST detection for protected `memory.self` and
+  `memory.self.*` result paths; applied it to build, complete, condition, compile, send, spawn, exit,
+  and deprecate evaluators; kept parse-specific validation for result paths, `{self}` and
+  `{self.*}` placeholders, and `memory.self` input expressions. Covered the rejections with parse
+  evaluator tests and an instruction evaluator test spanning the non-parse function instructions,
+  updated evaluator documentation and the language specification, and corrected a stale bootstrap
+  test assertion message to refer to agency-managed identity.
 
-  **Verification**: `make ar_parse_instruction_evaluator_tests bootstrap_tests 2>&1`,
+  **Verification**: `make ar_instruction_evaluator_tests ar_parse_instruction_evaluator_tests bootstrap_tests 2>&1`,
   `make build 2>&1`, `make check-logs`, `make check-docs 2>&1`, and `make check-naming 2>&1`
   passed.
 
-  **Impact**: Methods can no longer bypass `memory.self` protection by assigning a `parse(...)`
+  **Impact**: Methods can no longer bypass `memory.self` protection by assigning any instruction
   result to the protected identity path.
 
 ## 2026-04-25 (Workflow routing uses reply_to and agency-managed self identity)

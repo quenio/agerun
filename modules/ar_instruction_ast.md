@@ -73,6 +73,9 @@ bool ar_instruction_ast__set_function_arg_asts(
 );
 const char* ar_instruction_ast__get_function_result_path(const ar_instruction_ast_t *ref_node);
 bool ar_instruction_ast__has_result_assignment(const ar_instruction_ast_t *ref_node);
+bool ar_instruction_ast__has_protected_memory_self_assignment(
+    const ar_instruction_ast_t *ref_node
+);
 ```
 
 ## Ownership notes
@@ -89,6 +92,8 @@ bool ar_instruction_ast__has_result_assignment(const ar_instruction_ast_t *ref_n
 
 - the module is implemented in Zig behind the stable `ar_instruction_ast.h` header
 - instruction facades use `ar_instruction_ast__get_type()` for dispatch
+- evaluators use `ar_instruction_ast__has_protected_memory_self_assignment()` to reject writes to
+  agency-managed `memory.self` and `memory.self.*` result paths
 - `complete(...)` support is represented with a normal function-call node carrying parsed argument
   ASTs for the template string and optional base path
 - callers should treat the node as opaque and rely only on the documented accessor helpers

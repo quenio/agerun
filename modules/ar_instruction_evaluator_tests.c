@@ -928,6 +928,72 @@ static void test_instruction_evaluator__unified_evaluate_assignment(void) {
     ar_log__destroy(log);
 }
 
+static void test_instruction_evaluator__rejects_protected_self_result_paths(void) {
+    // Given an instruction evaluator with agency-managed memory.self
+    ar_data_t *memory = ar_data__create_map();
+    assert(memory != NULL);
+    ar_data__set_map_integer(memory, "self", 7);
+
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+
+    ar_system_t *sys = ar_system__create();
+    assert(sys != NULL);
+    ar_agency_t *agency = ar_system__get_agency(sys);
+    ar_delegation_t *delegation = ar_system__get_delegation(sys);
+
+    ar_instruction_evaluator_t *evaluator = ar_instruction_evaluator__create(log, agency, delegation);
+    assert(evaluator != NULL);
+
+    ar_data_t *ctx = ar_data__create_map();
+    ar_data_t *msg = ar_data__create_string("");
+    ar_frame_t *frame = ar_frame__create(memory, ctx, msg);
+    assert(frame != NULL);
+
+    struct instruction_case {
+        ar_instruction_ast_type_t type;
+        const char *function_name;
+    } cases[] = {
+        {AR_INSTRUCTION_AST_TYPE__SEND, "send"},
+        {AR_INSTRUCTION_AST_TYPE__IF, "if"},
+        {AR_INSTRUCTION_AST_TYPE__BUILD, "build"},
+        {AR_INSTRUCTION_AST_TYPE__COMPLETE, "complete"},
+        {AR_INSTRUCTION_AST_TYPE__COMPILE, "compile"},
+        {AR_INSTRUCTION_AST_TYPE__SPAWN, "spawn"},
+        {AR_INSTRUCTION_AST_TYPE__EXIT, "exit"},
+        {AR_INSTRUCTION_AST_TYPE__DEPRECATE, "deprecate"}
+    };
+
+    for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); i++) {
+        ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
+            cases[i].type, cases[i].function_name, NULL, 0, "memory.self.anything"
+        );
+        assert(ast != NULL);
+
+        bool result = ar_instruction_evaluator__evaluate(evaluator, frame, ast);
+
+        // Then every non-parse function instruction should reject protected self result paths
+        assert(result == false);
+        assert(ar_data__get_map_integer(memory, "self") == 7);
+
+        ar_event_t *error_event = ar_log__get_last_error(log);
+        assert(error_event != NULL);
+        const char *error_msg = ar_event__get_message(error_event);
+        assert(error_msg != NULL);
+        assert(strstr(error_msg, "memory.self is agency-managed") != NULL);
+
+        ar_instruction_ast__destroy(ast);
+    }
+
+    ar_frame__destroy(frame);
+    ar_data__destroy(ctx);
+    ar_data__destroy(msg);
+    ar_instruction_evaluator__destroy(evaluator);
+    ar_system__destroy(sys);
+    ar_data__destroy(memory);
+    ar_log__destroy(log);
+}
+
 int main(void) {
     setup_fake_complete_runner();
     printf("Starting instruction_evaluator create/destroy tests...\n");
@@ -952,6 +1018,9 @@ int main(void) {
     
     test_instruction_evaluator__unified_evaluate_all_types();
     printf("test_instruction_evaluator__unified_evaluate_all_types passed!\n");
+
+    test_instruction_evaluator__rejects_protected_self_result_paths();
+    printf("test_instruction_evaluator__rejects_protected_self_result_paths passed!\n");
 
     test_instruction_evaluator__complete_failure_returns_boolean_status();
     printf("test_instruction_evaluator__complete_failure_returns_boolean_status passed!\n");

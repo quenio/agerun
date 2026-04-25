@@ -277,7 +277,7 @@ Messages can be any of the supported data types:
 - **LIST**: Collections of values for batch processing.
 - **MAP**: Structured data with named fields.
 
-**Processing**: All messages, regardless of their data type, are handled by the agent's single method. At agent creation time, the agency sets `memory.self` to the agent ID; method instructions cannot assign or parse results into `memory.self`. Parse templates also cannot construct `self` or nested `self.*` result fields, and parse input cannot be `memory.self`.
+**Processing**: All messages, regardless of their data type, are handled by the agent's single method. At agent creation time, the agency sets `memory.self` to the agent ID; method instructions cannot assign or store any instruction result into `memory.self` or `memory.self.*`. Parse templates also cannot construct `self` or nested `self.*` result fields, and parse input cannot be `memory.self`.
 
 ## Agent Creation
 
