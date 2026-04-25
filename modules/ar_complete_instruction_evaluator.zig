@@ -246,7 +246,11 @@ fn _deepCopyData(ref_data: ?*const c.ar_data_t) ?*c.ar_data_t {
         c.AR_DATA_TYPE__LIST => {
             const own_copy = c.ar_data__create_list() orelse return null;
             const item_count = c.ar_data__list_count(ref_data);
-            const own_items = c.ar_data__list_items(ref_data) orelse return own_copy;
+            const own_items = c.ar_data__list_items(ref_data) orelse {
+                if (item_count == 0) return own_copy;
+                c.ar_data__destroy(own_copy);
+                return null;
+            };
             defer ar_allocator.free(own_items);
 
             var index: usize = 0;
@@ -265,11 +269,18 @@ fn _deepCopyData(ref_data: ?*const c.ar_data_t) ?*c.ar_data_t {
         },
         c.AR_DATA_TYPE__MAP => {
             const own_copy = c.ar_data__create_map() orelse return null;
-            const own_keys = c.ar_data__get_map_keys(ref_data) orelse return own_copy;
+            const own_keys = c.ar_data__get_map_keys(ref_data) orelse {
+                c.ar_data__destroy(own_copy);
+                return null;
+            };
             defer c.ar_data__destroy(own_keys);
 
             const key_count = c.ar_data__list_count(own_keys);
-            const own_key_items = c.ar_data__list_items(own_keys) orelse return own_copy;
+            const own_key_items = c.ar_data__list_items(own_keys) orelse {
+                if (key_count == 0) return own_copy;
+                c.ar_data__destroy(own_copy);
+                return null;
+            };
             defer ar_allocator.free(own_key_items);
 
             var index: usize = 0;
