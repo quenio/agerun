@@ -459,7 +459,18 @@ export fn ar_complete_instruction_evaluator__evaluate(
                     "generated placeholder value was empty, had outer whitespace, or contained braces",
                     "adjust the template or local model configuration so each placeholder resolves to a clean string value",
                 );
-            const own_value = c.ar_data__create_string(@ptrCast(ref_value_slice.ptr)) orelse
+            const own_value_text = _makeCString(ref_value_slice, "complete_generated_value") orelse
+                return _handledFailureDetailed(
+                    ref_evaluator.?,
+                    mut_memory,
+                    ref_ast,
+                    "complete() could not stage generated values",
+                    "runtime_failure",
+                    "generated value staging allocation failed",
+                    "retry with a smaller template or investigate allocator failures",
+                );
+            defer ar_allocator.free(own_value_text);
+            const own_value = c.ar_data__create_string(own_value_text) orelse
                 return _handledFailureDetailed(
                     ref_evaluator.?,
                     mut_memory,
