@@ -640,7 +640,10 @@ int main(void) {
                "make complete-model-smoke covers the real backend.\n");
     }
     _run_subtest_subprocess("direct_backend_missing_model_file_failure");
-    if (AR_LOCAL_COMPLETION_SANITIZER_BUILD) {
+    if (getenv("AGERUN_LOCAL_COMPLETION_RUN_VOCAB_ONLY_FAILURE") == NULL) {
+        printf("Skipping vocab-only direct-backend failure subtest in aggregate run; "
+               "set AGERUN_LOCAL_COMPLETION_RUN_VOCAB_ONLY_FAILURE to cover this fixture.\n");
+    } else if (AR_LOCAL_COMPLETION_SANITIZER_BUILD) {
         printf("Skipping vocab-only direct-backend failure subtest in sanitizer aggregate run.\n");
     } else if (access(g_vocab_only_model_path, F_OK) != 0) {
         printf("Skipping vocab-only direct-backend failure subtest; vocab fixture is unavailable.\n");
