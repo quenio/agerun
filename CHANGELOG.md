@@ -1,5 +1,28 @@
 # AgeRun CHANGELOG
 
+## 2026-04-25 (CI build keeps GCC include search order intact)
+
+- **Removed explicit system include-path overrides from the GitHub Actions build**
+
+  The CI workflow now lets GCC 13 and G++ 13 use their default system include search order during
+  `make clean build`, instead of exporting `C_INCLUDE_PATH` and `CPLUS_INCLUDE_PATH` with
+  `/usr/include` at the front.
+
+  **Implementation**: Removed the include-path exports from `.github/workflows/ci.yml` and documented
+  why overriding the search order breaks libstdc++'s `#include_next <stdlib.h>` while building the
+  vendored llama.cpp runtime.
+
+  **Verification**: `gh run view 24922528537 --log-failed` and the downloaded `build-logs` artifact
+  identified `/usr/include/c++/13/cstdlib:79:15: fatal error: stdlib.h: No such file or directory`.
+  A Docker Ubuntu 24.04 GCC 13 reproduction confirmed `<cstdlib>` compiles without
+  `CPLUS_INCLUDE_PATH` and fails with `CPLUS_INCLUDE_PATH=/usr/include:/usr/include/x86_64-linux-gnu`.
+  `python3` YAML parsing of `.github/workflows/ci.yml`, `git diff --check`,
+  `make clean build 2>&1`, `make check-logs`, `make check-docs 2>&1`, and
+  `make check-naming 2>&1` passed.
+
+  **Impact**: The vendored llama.cpp C++ build can resolve libc headers correctly on GitHub Actions,
+  allowing CI to continue past complete-runtime-ready preparation.
+
 ## 2026-04-25 (Instruction results cannot overwrite agency-managed self identity)
 
 - **Protected `memory.self` from instruction result assignment**
