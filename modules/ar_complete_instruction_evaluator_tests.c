@@ -367,8 +367,8 @@ static void test_complete_instruction_evaluator__evaluate_values_map_preserves_e
     ar_evaluator_fixture__destroy(own_fixture);
 }
 
-static void test_complete_instruction_evaluator__failure_stores_false_and_preserves_existing_values(void) {
-    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_complete_instruction_evaluator__failure_stores_false_and_preserves_existing_values");
+static void test_complete_instruction_evaluator__failure_returns_empty_map_and_preserves_existing_values(void) {
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_complete_instruction_evaluator__failure_returns_empty_map_and_preserves_existing_values");
     assert(own_fixture != NULL);
     ar_local_completion_t *own_runtime = ar_local_completion__create(ar_evaluator_fixture__get_log(own_fixture));
     assert(own_runtime != NULL);
@@ -764,7 +764,7 @@ int main(void) {
     test_complete_instruction_evaluator__evaluate_top_level_success();
     test_complete_instruction_evaluator__evaluate_returns_new_map_with_existing_and_completed_values();
     test_complete_instruction_evaluator__evaluate_values_map_preserves_existing_values();
-    test_complete_instruction_evaluator__failure_stores_false_and_preserves_existing_values();
+    test_complete_instruction_evaluator__failure_returns_empty_map_and_preserves_existing_values();
     test_complete_instruction_evaluator__whitespace_rejection_keeps_memory_clean();
     test_complete_instruction_evaluator__template_without_placeholders_returns_empty_map();
     test_complete_instruction_evaluator__non_map_second_argument_returns_empty_map();
