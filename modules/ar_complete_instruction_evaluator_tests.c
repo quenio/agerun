@@ -219,6 +219,7 @@ static void test_complete_instruction_evaluator__evaluate_top_level_success(void
 }
 
 static void test_complete_instruction_evaluator__evaluate_returns_new_map_with_existing_and_completed_values(void) {
+    // Given a complete evaluator and an input values map with one matching placeholder
     ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_complete_instruction_evaluator__evaluate_returns_new_map_with_existing_and_completed_values");
     assert(own_fixture != NULL);
     ar_local_completion_t *own_runtime = ar_local_completion__create(ar_evaluator_fixture__get_log(own_fixture));
@@ -244,7 +245,10 @@ static void test_complete_instruction_evaluator__evaluate_returns_new_map_with_e
     );
     ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
 
+    // When evaluating complete() with the input values map
     bool result = ar_complete_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
+
+    // Then evaluation should return a new map and leave the input map unchanged
     assert(result == true);
 
     ar_data_t *ref_input = ar_data__get_map_data(ar_evaluator_fixture__get_memory(own_fixture), "input");
@@ -260,6 +264,7 @@ static void test_complete_instruction_evaluator__evaluate_returns_new_map_with_e
     assert(strcmp(ar_data__get_map_string(ref_result, "city"), "Brasilia") == 0);
     assert(strcmp(ar_data__get_map_string(ref_result, "extra"), "kept") == 0);
 
+    // Cleanup
     ar_instruction_ast__destroy(own_ast);
     ar_complete_instruction_evaluator__destroy(own_evaluator);
     ar_local_completion__destroy(own_runtime);

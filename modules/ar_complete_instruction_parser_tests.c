@@ -59,40 +59,48 @@ static void test_complete_instruction_parser__parse_two_argument(void) {
 }
 
 static void test_complete_instruction_parser__accepts_map_expression_second_argument(void) {
+    // Given a complete instruction parser
     ar_log_t *own_log = ar_log__create();
     assert(own_log != NULL);
     ar_complete_instruction_parser_t *own_parser = ar_complete_instruction_parser__create(own_log);
     assert(own_parser != NULL);
 
+    // When parsing complete() with a non-memory values expression
     ar_instruction_ast_t *own_ast = ar_complete_instruction_parser__parse(
         own_parser,
         "complete(\"The capital is {city}.\", context.location)",
         NULL
     );
 
+    // Then the parser should accept the expression and defer map validation to evaluation
     assert(own_ast != NULL);
     assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__COMPLETE);
 
+    // Cleanup
     ar_instruction_ast__destroy(own_ast);
     ar_complete_instruction_parser__destroy(own_parser);
     ar_log__destroy(own_log);
 }
 
 static void test_complete_instruction_parser__accepts_template_without_placeholders(void) {
+    // Given a complete instruction parser
     ar_log_t *own_log = ar_log__create();
     assert(own_log != NULL);
     ar_complete_instruction_parser_t *own_parser = ar_complete_instruction_parser__create(own_log);
     assert(own_parser != NULL);
 
+    // When parsing complete() with a template that has no placeholders
     ar_instruction_ast_t *own_ast = ar_complete_instruction_parser__parse(
         own_parser,
         "complete(\"No placeholders here.\")",
         "memory.result"
     );
 
+    // Then the parser should accept the template so evaluation can return an empty result map
     assert(own_ast != NULL);
     assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__COMPLETE);
 
+    // Cleanup
     ar_instruction_ast__destroy(own_ast);
     ar_complete_instruction_parser__destroy(own_parser);
     ar_log__destroy(own_log);
