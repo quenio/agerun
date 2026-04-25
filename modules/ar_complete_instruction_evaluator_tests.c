@@ -426,11 +426,11 @@ static void test_complete_instruction_evaluator__whitespace_rejection_keeps_memo
     ar_evaluator_fixture__destroy(own_fixture);
 }
 
-static void test_complete_instruction_evaluator__invalid_template_fast_failure_does_not_initialize_runtime(void) {
+static void test_complete_instruction_evaluator__template_without_placeholders_returns_empty_map(void) {
     unsetenv("AGERUN_COMPLETE_RUNNER");
     assert(setenv("AGERUN_COMPLETE_RUNNER", "./definitely-missing-llama-cli", 1) == 0);
 
-    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_complete_instruction_evaluator__invalid_template_fast_failure_does_not_initialize_runtime");
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_complete_instruction_evaluator__template_without_placeholders_returns_empty_map");
     assert(own_fixture != NULL);
     ar_local_completion_t *own_runtime = ar_local_completion__create(ar_evaluator_fixture__get_log(own_fixture));
     assert(own_runtime != NULL);
@@ -759,7 +759,7 @@ int main(void) {
     test_complete_instruction_evaluator__evaluate_values_map_preserves_existing_values();
     test_complete_instruction_evaluator__failure_stores_false_and_preserves_existing_values();
     test_complete_instruction_evaluator__whitespace_rejection_keeps_memory_clean();
-    test_complete_instruction_evaluator__invalid_template_fast_failure_does_not_initialize_runtime();
+    test_complete_instruction_evaluator__template_without_placeholders_returns_empty_map();
     test_complete_instruction_evaluator__non_map_second_argument_returns_empty_map();
     test_complete_instruction_evaluator__missing_placeholder_response_keeps_memory_clean();
     test_complete_instruction_evaluator__repeated_placeholders_use_one_consistent_value();
