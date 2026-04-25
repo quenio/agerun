@@ -631,14 +631,18 @@ int main(void) {
     test_local_completion__environment_override_and_lazy_initialization();
     test_local_completion__default_path_handling();
     test_local_completion__success_payload_normalization_and_reuse();
-    if (AR_LOCAL_COMPLETION_SANITIZER_BUILD) {
-        printf("Skipping real phi-3 smoke test in sanitizer aggregate run; "
-               "non-sanitized run-tests covers the real backend.\n");
-    } else {
+    if (getenv("AGERUN_LOCAL_COMPLETION_RUN_REAL_SMOKE") != NULL) {
         test_local_completion__real_phi3_model_smoke();
+    } else {
+        printf("Skipping real phi-3 smoke test in aggregate run; "
+               "make complete-model-smoke covers the real backend.\n");
     }
     _run_subtest_subprocess("direct_backend_missing_model_file_failure");
-    _run_subtest_subprocess("direct_backend_vocab_only_model_failure");
+    if (AR_LOCAL_COMPLETION_SANITIZER_BUILD) {
+        printf("Skipping vocab-only direct-backend failure subtest in sanitizer aggregate run.\n");
+    } else {
+        _run_subtest_subprocess("direct_backend_vocab_only_model_failure");
+    }
     _run_subtest_subprocess("invalid_before_generation_rejects_without_runtime_initialization");
     _run_subtest_subprocess("partial_generation_missing_placeholder_failure_is_actionable");
     _run_subtest_subprocess("timeout_and_unavailable_runtime_failures");
