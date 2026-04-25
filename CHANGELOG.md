@@ -1,5 +1,29 @@
 # AgeRun CHANGELOG
 
+## 2026-04-25 (Complete instruction returns maps with provided values)
+
+- **Revised `complete(...)` to mirror build-style values input**
+
+  The optional second argument to `complete(...)` now evaluates to a values map. Existing primitive
+  placeholder values from that map are substituted into the template first, only missing placeholders
+  are sent to the local completion backend, and the instruction result is a new map containing both
+  copied input values and generated values. The provided input map is never mutated.
+
+  **Implementation**: Updated the complete parser to accept any expression as the optional values
+  argument, revised the complete evaluator to shallow-copy provided maps and return map results,
+  preserved handled-failure behavior with empty result maps, adapted the workflow-definition method
+  to consume returned completion maps, and updated instruction/evaluator tests plus user/module/spec
+  documentation for the new map-returning semantics.
+
+  **Verification**: `make ar_complete_instruction_parser_tests ar_complete_instruction_evaluator_tests 2>&1`,
+  `make ar_instruction_parser_tests 2>&1`, `make ar_instruction_evaluator_tests 2>&1`,
+  `make workflow_definition_tests workflow_coordinator_tests bootstrap_tests ar_executable_tests 2>&1`,
+  `make check-docs 2>&1`, `make check-naming 2>&1`, `make clean build 2>&1`, and
+  `make check-logs` passed.
+
+  **Impact**: Methods can use `complete(...)` like `parse(...)` by assigning the returned map and can
+  safely seed completions with known values without risking mutation of the seed map.
+
 ## 2026-04-25 (Instruction results cannot overwrite agency-managed self identity)
 
 - **Protected `memory.self` from instruction result assignment**

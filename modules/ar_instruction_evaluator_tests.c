@@ -393,7 +393,10 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         ar_data__destroy(ctx);
         ar_data__destroy(msg);
         assert(result == true);
-        assert(ar_data__get_map_data(memory, "ok") != NULL);
+        ar_data_t *value = ar_data__get_map_data(memory, "ok");
+        assert(value != NULL);
+        assert(ar_data__get_type(value) == AR_DATA_TYPE__MAP);
+        assert(strcmp(ar_data__get_map_string(value, "country"), "Brazil") == 0);
 
         ar_instruction_ast__destroy(ast);
     }
@@ -593,7 +596,10 @@ static void test_instruction_evaluator__complete_failure_returns_boolean_status(
 
     bool result = ar_instruction_evaluator__evaluate(evaluator, fr, ast);
     assert(result == true);
-    assert(ar_data__get_map_integer(memory, "ok") == 0);
+    ar_data_t *ref_result = ar_data__get_map_data(memory, "ok");
+    assert(ref_result != NULL);
+    assert(ar_data__get_type(ref_result) == AR_DATA_TYPE__MAP);
+    assert(ar_data__get_map_data(ref_result, "bracey") == NULL);
     assert(ar_log__get_last_error_message(log) != NULL);
 
     ar_frame__destroy(fr);
@@ -639,7 +645,10 @@ static void test_instruction_evaluator__normal_work_continues_after_complete_fai
 
     bool complete_result = ar_instruction_evaluator__evaluate(evaluator, frame1, complete_ast);
     assert(complete_result == true);
-    assert(ar_data__get_map_integer(memory, "ok") == 0);
+    ar_data_t *ref_result = ar_data__get_map_data(memory, "ok");
+    assert(ref_result != NULL);
+    assert(ar_data__get_type(ref_result) == AR_DATA_TYPE__MAP);
+    assert(ar_data__get_map_data(ref_result, "bracey") == NULL);
     assert(strcmp(ar_data__get_map_string(memory, "country"), "Peru") == 0);
 
     ar_frame__destroy(frame1);
@@ -693,7 +702,7 @@ static void test_instruction_evaluator__complete_values_can_feed_later_build_and
     {
         const char *args[] = {"\"{country} is in {continent}. {country} remains consistent.\""};
         ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
-            AR_INSTRUCTION_AST_TYPE__COMPLETE, "complete", args, 1, "memory.ok"
+            AR_INSTRUCTION_AST_TYPE__COMPLETE, "complete", args, 1, "memory.values"
         );
         assert(ast != NULL);
 
@@ -712,9 +721,11 @@ static void test_instruction_evaluator__complete_values_can_feed_later_build_and
 
         bool result = ar_instruction_evaluator__evaluate(evaluator, fr, ast);
         assert(result == true);
-        assert(ar_data__get_map_integer(memory, "ok") == 1);
-        assert(strcmp(ar_data__get_map_string(memory, "country"), "Brazil") == 0);
-        assert(strcmp(ar_data__get_map_string(memory, "continent"), "South America") == 0);
+        ar_data_t *ref_values = ar_data__get_map_data(memory, "values");
+        assert(ref_values != NULL);
+        assert(ar_data__get_type(ref_values) == AR_DATA_TYPE__MAP);
+        assert(strcmp(ar_data__get_map_string(ref_values, "country"), "Brazil") == 0);
+        assert(strcmp(ar_data__get_map_string(ref_values, "continent"), "South America") == 0);
 
         ar_frame__destroy(fr);
         ar_data__destroy(ctx);
@@ -723,7 +734,7 @@ static void test_instruction_evaluator__complete_values_can_feed_later_build_and
     }
 
     {
-        const char *args[] = {"\"reply={country}|{continent}\"", "memory"};
+        const char *args[] = {"\"reply={country}|{continent}\"", "memory.values"};
         ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
             AR_INSTRUCTION_AST_TYPE__BUILD, "build", args, 2, "memory.reply"
         );
@@ -732,7 +743,8 @@ static void test_instruction_evaluator__complete_values_can_feed_later_build_and
         ar_list_t *arg_asts = ar_list__create();
         assert(arg_asts != NULL);
         assert(ar_list__add_last(arg_asts, ar_expression_ast__create_literal_string("reply={country}|{continent}")) == true);
-        assert(ar_list__add_last(arg_asts, ar_expression_ast__create_memory_access("memory", NULL, 0)) == true);
+        const char *values_path[] = {"values"};
+        assert(ar_list__add_last(arg_asts, ar_expression_ast__create_memory_access("memory", values_path, 1)) == true);
         assert(ar_instruction_ast__set_function_arg_asts(ast, arg_asts) == true);
 
         ar_data_t *ctx = ar_data__create_map();

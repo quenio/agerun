@@ -114,8 +114,8 @@ Behavior:
 - resolves known workflow definitions by path
 - sets workflow metadata such as `workflow_name`, `initial_stage`, and terminal outcomes
 - runs `complete("Workflow dependency probe outcome={outcome} reason={reason}.")`
-- uses the boolean return value as the startup gate: success allows `definition_ready`, failure produces `definition_error`
-- treats generated `reason` as diagnostic context (`last_reason` on success, `startup_dependency_unavailable` on failure)
+- checks the returned completion map for substituted `outcome`/`reason` values as the startup gate: success allows `definition_ready`, failure produces `definition_error`
+- treats returned `reason` as diagnostic context (`last_reason` on success, `startup_dependency_unavailable` on failure)
 - does not currently use generated `outcome` to change startup behavior
 - emits a highlighted `complete_trace` marker in startup replies so downstream workflow logs can
   surface searchable `COMPLETE_TRACE[...]` fragments
@@ -135,7 +135,7 @@ Expected fields:
 
 Behavior:
 - runs `complete("Workflow transition decision outcome={outcome} reason={reason}.")`
-- copies generated `outcome` into `transition_outcome` and generated `reason` into `transition_reason`
+- copies returned `outcome` into `transition_outcome` and returned `reason` into `transition_reason`
 - uses `transition_outcome` to choose `advance`, `stay`, or `reject`, which then determines
   `next_stage`, `status`, and `terminal_outcome`
 - uses `transition_reason` as the explanation propagated in the outgoing `transition_decision`
@@ -189,9 +189,9 @@ Transition evaluation failures are normalized to:
 The method currently uses the generated placeholders differently in its two `complete(...)` calls:
 
 ### Startup dependency probe
-- `probe_ok` is the real control signal.
-- Generated `reason` is kept only as diagnostic context via `last_reason` when the probe succeeds.
-- Generated `outcome` is not currently used to affect startup behavior.
+- `probe_ok` is derived from the completion result map after build/parse normalization.
+- Returned `reason` is kept only as diagnostic context via `last_reason` when the probe succeeds.
+- Returned `outcome` is not currently used to affect startup behavior beyond detecting success.
 - Successful startup replies now also carry
   `COMPLETE_TRACE[phase=startup|outcome=...|reason=...]` for searchable log output.
 - Probe failure is surfaced externally as `definition_error` with
@@ -199,11 +199,11 @@ The method currently uses the generated placeholders differently in its two `com
   `COMPLETE_TRACE[phase=startup|status=failure]`.
 
 ### Transition decision evaluation
-- Generated `outcome` becomes `transition_outcome` and drives the workflow branch:
+- Returned `outcome` becomes `transition_outcome` and drives the workflow branch:
   - `advance` moves to the next stage
   - `reject` produces `terminal_outcome = rejected`
   - `stay` keeps the current stage
-- Generated `reason` becomes `transition_reason` and is forwarded in the
+- Returned `reason` becomes `transition_reason` and is forwarded in the
   `transition_decision` message so downstream methods can explain the decision in progress/summary
   logs.
 - Outgoing decisions now also carry
@@ -259,7 +259,10 @@ memory.stages := if(memory.is_known_definition > 0, "intake|triage|active|review
 memory.validation_clause := if(memory.is_default_definition = 1, "review_gate", memory.validation_clause)
 memory.validation_clause := if(memory.is_test_definition = 1, "test_gate", memory.validation_clause)
 memory.file_status := if(memory.is_prepare = 1, "loaded", memory.file_status)
-memory.probe_ok := complete("Workflow dependency probe outcome={outcome} reason={reason}.")
+memory.probe_result := complete("Workflow dependency probe outcome={outcome} reason={reason}.")
+memory.probe_check_input := build("outcome={outcome} reason={reason}", memory.probe_result)
+memory.probe_check := parse("outcome={outcome} reason={reason}", memory.probe_check_input)
+memory.probe_ok := if(memory.probe_check.outcome = "{outcome}", 0, 1)
 memory.dependency_status := if(memory.probe_ok = 1, "ready", memory.dependency_status)
 memory.unknown_definition_flag := if(memory.is_known_definition = 0, 1, 0)
 memory.probe_failed_flag := if(memory.probe_ok = 0, 1, 0)
@@ -274,10 +277,10 @@ memory.error_flag := if(memory.is_prepare = 0, 0, memory.error_flag)
 memory.error_reason := if(memory.is_invalid_definition = 1, "invalid_definition_schema", memory.error_reason)
 memory.error_reason := if(memory.unknown_definition_flag = 1, "invalid_definition_schema", memory.error_reason)
 memory.error_reason := if(memory.probe_failed_flag = 1, "startup_dependency_unavailable", memory.error_reason)
-memory.startup_complete_trace_input := build("COMPLETE_TRACE[phase=startup|outcome={outcome}|reason={reason}]", memory)
+memory.startup_complete_trace_input := build("COMPLETE_TRACE[phase=startup|outcome={outcome}|reason={reason}]", memory.probe_check)
 memory.startup_complete_trace := if(memory.probe_ok = 1, memory.startup_complete_trace_input, memory.startup_complete_trace)
 memory.startup_complete_trace := if(memory.probe_failed_flag = 1, "COMPLETE_TRACE[phase=startup|status=failure]", memory.startup_complete_trace)
-memory.last_reason := if(memory.ready_flag = 1, memory.reason, memory.last_reason)
+memory.last_reason := if(memory.ready_flag = 1, memory.probe_check.reason, memory.last_reason)
 memory.last_reason := if(memory.error_flag = 1, memory.error_reason, memory.last_reason)
 memory.ready_input := build("action=definition_ready workflow_name={workflow_name} workflow_version={workflow_version} initial_stage={initial_stage} requires_local_completion={requires_local_completion} complete_trace={startup_complete_trace}", memory)
 memory.ready_payload := parse("action={action} workflow_name={workflow_name} workflow_version={workflow_version} initial_stage={initial_stage} requires_local_completion={requires_local_completion} complete_trace={complete_trace}", memory.ready_input)
@@ -287,10 +290,13 @@ memory.error_input := build("action=definition_error reason={error_reason} compl
 memory.error_payload := parse("action={action} reason={reason} complete_trace={complete_trace}", memory.error_input)
 memory.error_sent := send(memory.reply_to_id * memory.error_flag, memory.error_payload)
 memory.last_reply_action := if(memory.error_flag = 1, "definition_error", memory.last_reply_action)
-memory.transition_ok := complete("Workflow transition decision outcome={outcome} reason={reason}.")
-memory.transition_outcome := if(memory.transition_ok = 1, memory.outcome, memory.transition_outcome)
+memory.transition_result := complete("Workflow transition decision outcome={outcome} reason={reason}.")
+memory.transition_check_input := build("outcome={outcome} reason={reason}", memory.transition_result)
+memory.transition_check := parse("outcome={outcome} reason={reason}", memory.transition_check_input)
+memory.transition_ok := if(memory.transition_check.outcome = "{outcome}", 0, 1)
+memory.transition_outcome := if(memory.transition_ok = 1, memory.transition_check.outcome, memory.transition_outcome)
 memory.transition_outcome := if(memory.transition_ok = 0, "stay", memory.transition_outcome)
-memory.transition_reason := if(memory.transition_ok = 1, memory.reason, memory.transition_reason)
+memory.transition_reason := if(memory.transition_ok = 1, memory.transition_check.reason, memory.transition_reason)
 memory.transition_reason := if(memory.transition_ok = 0, "complete_transition_failed", memory.transition_reason)
 memory.next_stage := if(message.stage = "intake", "triage", memory.next_stage)
 memory.next_stage := if(message.stage = "triage", "active", memory.next_stage)

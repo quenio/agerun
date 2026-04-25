@@ -74,11 +74,6 @@ fn _scanTemplatePlaceholders(ref_parser: ?*ar_complete_instruction_parser_t, ref
         pos = close_rel;
     }
 
-    if (placeholder_count == 0) {
-        _logError(ref_parser, "complete() template must contain at least one placeholder", 0);
-        return null;
-    }
-
     return .{ .placeholder_count = placeholder_count };
 }
 
@@ -227,10 +222,6 @@ export fn ar_complete_instruction_parser__parse(
             _logError(mut_parser, "Failed to parse complete() base path argument", 0);
             return null;
         };
-        if (!_validateBasePath(mut_parser, own_base_ast)) {
-            c.ar_expression_ast__destroy(own_base_ast);
-            return null;
-        }
         _ = c.ar_list__add_last(own_arg_asts, own_base_ast);
     }
 

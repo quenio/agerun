@@ -1339,9 +1339,9 @@ The [build instruction parser module](ar_build_instruction_parser.md) handles pa
 #### Complete Instruction Parser Module (`ar_complete_instruction_parser`)
 
 The [complete instruction parser module](ar_complete_instruction_parser.md) handles parsing of `complete(...)` calls:
-- **One- and Two-Argument Forms**: Parses both `complete(template)` and `complete(template, memory.path)`
+- **One- and Two-Argument Forms**: Parses both `complete(template)` and `complete(template, values)`
 - **Placeholder Validation**: Accepts supported `{name}` placeholder syntax only
-- **Base-Path Validation**: Requires the optional second argument to be a direct `memory...` access path
+- **Values Expression**: Accepts the optional second argument as an expression evaluated as a map at runtime
 - **AST Wiring**: Produces `AR_INSTRUCTION_AST_TYPE__COMPLETE` nodes with parsed argument ASTs
 
 #### Compile Instruction Parser Module (`ar_compile_instruction_parser`)

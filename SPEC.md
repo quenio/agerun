@@ -139,7 +139,7 @@ The following BNF grammar defines the syntax of individual instructions allowed 
 <send-function> ::= 'send' '(' <expression> ',' <expression> ')'
 <parse-function> ::= 'parse' '(' <expression> ',' <expression> ')'
 <build-function> ::= 'build' '(' <expression> ',' <expression> ')'
-<complete-function> ::= 'complete' '(' <expression> [',' <memory-access>] ')'
+<complete-function> ::= 'complete' '(' <expression> [',' <expression>] ')'
 <compile-function> ::= 'compile' '(' <expression> ',' <expression> ',' <expression> ')'
 <spawn-function> ::= 'spawn' '(' <expression> ',' <expression> ',' <expression> ')'
 <exit-function> ::= 'exit' '(' <expression> ')'
@@ -153,7 +153,7 @@ Instructions in an agent method can be of two types:
   - `send` - Send a message to an agent or delegate
   - `parse` - Extract values from a string using a template
   - `build` - Construct a string using a template and values
-  - `complete` - Fill one or more `memory...` variables from a local completion template
+  - `complete` - Complete template placeholders with local LLM-generated values and return a map
   - `compile` - Define a new agent method
   - `spawn` - Spawn a new agent instance
   - `exit` - Exit an existing agent
@@ -163,7 +163,7 @@ Instructions in an agent method can be of two types:
 Function call instructions can optionally assign their result to a variable. For example:
 - `send(agent_id, message)` - Call the function without storing the result
 - `success := send(agent_id, message)` - Store the result in a memory variable
-- `memory.ok := complete("The capital is {city}.", memory.location)` - Populate `memory.location.city` and store boolean success in `memory.ok`
+- `memory.result := complete("The capital of {country} is {city}.", memory.values)` - Return a new map containing values from `memory.values` plus generated values for missing placeholders
 - `exit(agent_id)` - Exit an agent without storing the result
 - `success := exit(agent_id)` - Exit an agent and store the result
 - `deprecate(method_name, method_version)` - Deprecate a method without storing the result
@@ -229,7 +229,7 @@ The expression evaluator follows these rules:
 
 - `parse(template: string, input: string) → map`: Extracts values from input based on the template. Always returns a map; if parsing fails, returns an empty map. The template parameter must be a STRING type.
 - `build(template: string, values: map) → string`: Constructs a string by replacing placeholders in template with corresponding values from values. Always returns a string; placeholders without corresponding values remain unchanged. The template parameter must be a STRING type.
-- `complete(template: string[, memory_path: memory...]) → boolean`: Uses a local CPU-only completion backend to populate placeholder variables as strings in `memory...` targets. One-argument calls write `{name}` to `memory.name`; two-argument calls write under the supplied direct `memory...` base path. On success, all writes occur atomically and the result is `true`. On failure, the result is `false`, actionable diagnostics are recorded, and no partial target writes occur.
+- `complete(template: string[, values: map]) → map`: Uses a local CPU-only completion backend to complete placeholder variables as strings and returns a new map. When a values map is provided, placeholders with corresponding primitive values are first replaced in the template using build-style substitution, the original values are copied into the result map, and only placeholders still missing from the values map are sent to the local completion backend. When no values map is provided, all placeholders are completed by the backend. The input map is never mutated.
 
 ### 2. Messaging
 
@@ -262,7 +262,7 @@ The expression evaluator follows these rules:
 ### 6. Agent Management
 
 - `compile(method_name: string, instructions: string, version: string) → boolean`: Defines a new method with the specified name, instruction code, and version string. The version string must follow semantic versioning (e.g., "1.0.0"). Compatibility between versions is determined based on semantic versioning rules: agents using version 1.x.x will automatically use the latest 1.x.x version. Returns true if the method was successfully defined, or false if the instructions cannot be parsed or compiled.
-- `complete(...)` is local-only in the first release, uses CPU-only execution, stores generated values as strings, rejects empty/outer-whitespace/braced generated values, and preserves every literal segment in the source template when successful values are substituted back into the template.
+- `complete(...)` is local-only in the first release, uses CPU-only execution, returns generated values as strings in a new map, rejects empty/outer-whitespace/braced generated values, preserves every literal segment after build-style substitution of provided values, and never mutates the provided values map.
 - `spawn(method_name: string | integer, version: string, context: map) → agent_id`: Spawns a new agent instance based on the specified method name and version string. The version parameter is required. If a partial version is specified (e.g., "1"), the latest matching version (e.g., latest "1.x.x") will be used. A context map must be provided as the third argument. Returns a unique agent ID. Special no-op cases: if method_name is 0 (integer) or "" (empty string), the instruction performs no operation but returns true and sets the result to 0 if assigned to a variable.
 - `exit(agent_id: integer) → boolean`: Attempts to exit the specified agent. The agent is immediately destroyed. Returns true if successful, or false if the agent does not exist or is already destroyed.
 - `deprecate(method_name: string, method_version: string) → boolean`: Attempts to deprecate the specified method version by unregistering it from the methodology. This allows deprecating methods even when agents are actively using them. Returns true if successful, or false if the method does not exist.

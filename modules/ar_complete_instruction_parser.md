@@ -6,10 +6,10 @@ The `ar_complete_instruction_parser` module parses `complete(...)` instructions 
 ## Responsibility
 
 - parse one-argument forms such as `complete("The largest country is {country}.")`
-- parse two-argument forms such as `complete("The capital is {city}.", memory.location)`
+- parse two-argument forms such as `complete("The capital of {country} is {city}.", memory.values)`
 - validate that placeholder markers use supported `{name}` syntax
-- validate that the optional second argument is a direct `memory...` access path
-- attach parsed expression ASTs for the template string and optional base path
+- accept the optional second argument as an expression that the evaluator requires to produce a map
+- attach parsed expression ASTs for the template string and optional values expression
 - report parse failures through the shared `ar_log` instance
 
 ## Public API
@@ -29,8 +29,8 @@ ar_instruction_ast_t* ar_complete_instruction_parser__parse(
 - the parser is implemented in Zig with a stable C-facing header
 - successful parses produce a function-call AST with function name `"complete"`
 - argument ASTs are stored on the returned instruction AST so the evaluator can re-use the parsed
-  template string and optional base-path expression without reparsing text
-- invalid placeholder syntax, unsupported interpolation shapes, and non-memory second arguments are
-  rejected during parsing rather than deferred to runtime generation
+  template string and optional values expression without reparsing text
+- invalid placeholder syntax and unsupported interpolation shapes are rejected during parsing;
+  non-map second-argument values are rejected by the evaluator at runtime
 - the parser itself does not perform model/runtime work; it only validates AgeRun syntax and builds
   AST state for `ar_complete_instruction_evaluator`

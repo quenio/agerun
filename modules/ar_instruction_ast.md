@@ -25,7 +25,7 @@ The public enum `ar_instruction_ast_type_t` covers:
 - `AR_INSTRUCTION_AST_TYPE__BUILD`
 - `AR_INSTRUCTION_AST_TYPE__COMPLETE`
 
-`AR_INSTRUCTION_AST_TYPE__COMPLETE` represents `complete(template[, memory.path])` and is used by
+`AR_INSTRUCTION_AST_TYPE__COMPLETE` represents `complete(template[, values])` and is used by
 both the specialized complete parser and the instruction-evaluator facade.
 
 ## Public API highlights

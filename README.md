@@ -192,16 +192,17 @@ printf 'memory.prompt := "Ready"\nmemory.echo_id := spawn("echo", "1.0.0", conte
 ### Local Completion (`complete(...)`)
 
 ```text
-memory.ok := complete("The capital of Brazil is {city}.", memory.location)
-memory.reply := build("ok={ok} city={city}", memory.location)
+memory.location.country := "Brazil"
+memory.facts := complete("The capital of {country} is {city}.", memory.location)
+memory.reply := build("city={city} country={country}", memory.facts)
 send(message.sender, memory.reply)
 ```
 
 Completion behavior highlights:
-- one-argument calls write `{name}` to `memory.name`
-- two-argument calls write under the supplied direct `memory...` base path
-- successful calls write all generated string values atomically
-- failed calls return `false`, record actionable diagnostics, and preserve prior memory values
+- one-argument calls complete all placeholders and return a new map
+- two-argument calls first substitute placeholders found in the provided map, then complete only missing placeholders
+- returned maps include both copied input values and generated string values
+- the provided input map is never mutated
 
 Shell behavior highlights:
 - each entered line is wrapped as `{text = ...}` and delivered to the built-in `shell` method unless it is a built-in shell inspection command
@@ -269,7 +270,7 @@ Agents use a simple expression and instruction language for their methods:
 
 - `parse(template, input)`: Extract values from input based on template placeholders
 - `build(template, values)`: Build a string by inserting values into template placeholders
-- `complete(template[, memory.path])`: Populate placeholder values directly into `memory...` targets and return boolean success/failure
+- `complete(template[, values])`: Return a new map containing provided values plus generated values for missing placeholders
 
 ### Messaging
 

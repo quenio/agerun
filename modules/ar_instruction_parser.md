@@ -42,7 +42,7 @@ The facade currently dispatches to specialized parsers for:
 - `complete(...)`
 
 `complete(...)` is routed to `ar_complete_instruction_parser`, which validates supported
-placeholder syntax and the optional direct `memory...` base path before returning an
+placeholder syntax and stores the optional values expression before returning an
 `AR_INSTRUCTION_AST_TYPE__COMPLETE` node.
 
 ## Current implementation notes
@@ -52,7 +52,7 @@ placeholder syntax and the optional direct `memory...` base path before returnin
 - successful function-call parses store both string arguments and parsed expression ASTs on the
   returned instruction AST
 - `complete(...)` parsing is intentionally kept out of the facade implementation so syntax rules for
-  template placeholders and base-path validation remain isolated in the specialized parser module
+  template placeholders remain isolated in the specialized parser module
 
 ## Typical usage
 
@@ -62,7 +62,7 @@ ar_instruction_parser_t *own_parser = ar_instruction_parser__create(own_log);
 
 ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(
     own_parser,
-    "memory.ok := complete(\"The capital is {city}.\", memory.location)"
+    "memory.result := complete(\"The capital of {country} is {city}.\", memory.values)"
 );
 
 ar_instruction_ast__destroy(own_ast);
