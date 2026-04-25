@@ -372,7 +372,10 @@ fn _deepCopyData(ref_data: ?*const c.ar_data_t) ?*c.ar_data_t {
                     c.ar_data__destroy(own_copy);
                     return null;
                 };
-                const ref_value = c.ar_data__get_map_data(ref_data, ref_key) orelse continue;
+                const ref_value = c.ar_data__get_map_data(ref_data, ref_key) orelse {
+                    c.ar_data__destroy(own_copy);
+                    return null;
+                };
                 const own_value_copy = _deepCopyData(ref_value) orelse {
                     c.ar_data__destroy(own_copy);
                     return null;
