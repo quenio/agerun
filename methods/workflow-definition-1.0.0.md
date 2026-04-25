@@ -186,11 +186,13 @@ Transition evaluation failures are normalized to:
 
 ## `complete(...)` Placeholder Usage Summary
 
-The method currently uses isolated second-argument memory targets for its two `complete(...)`
-calls so generated fields do not overwrite unrelated `memory.outcome` or `memory.reason` state:
+The method passes a small presence-marker values map to its two `complete(...)` calls so generated
+fields are returned in isolated result maps and completion success is detected without relying on
+model-controllable placeholder text:
 
 ### Startup dependency probe
-- `probe_ok` is derived from the returned completion map after build/parse normalization.
+- `probe_ok` is derived from the copied `complete_present` marker in the returned completion map
+  after build/parse normalization.
 - Returned `startup_complete.reason` is copied to `startup_complete_reason` and kept only as
   diagnostic context via `last_reason` when the probe succeeds.
 - Returned `startup_complete.outcome` is copied to `startup_complete_outcome` and is not currently
@@ -212,6 +214,8 @@ calls so generated fields do not overwrite unrelated `memory.outcome` or `memory
 - Outgoing decisions now also carry
   `COMPLETE_TRACE[phase=transition|outcome=...|reason=...]` so reporter output can be searched for
   the exact completion-derived values.
+- `transition_ok` is derived from the copied `complete_present` marker in the returned completion
+  map after build/parse normalization.
 - If `complete(...)` fails, the method preserves workflow continuity by emitting a retryable
   `stay` decision with `reason = complete_transition_failed`.
 
@@ -264,10 +268,12 @@ memory.stages := if(memory.is_known_definition > 0, "intake|triage|active|review
 memory.validation_clause := if(memory.is_default_definition = 1, "review_gate", memory.validation_clause)
 memory.validation_clause := if(memory.is_test_definition = 1, "test_gate", memory.validation_clause)
 memory.file_status := if(memory.is_prepare = 1, "loaded", memory.file_status)
-memory.startup_result := complete("Answer with outcome ready and reason ok. The dependency probe result is {outcome}. The short reason is {reason}.")
-memory.probe_check_input := build("outcome={outcome} reason={reason}", memory.startup_result)
-memory.probe_check := parse("outcome={outcome} reason={reason}", memory.probe_check_input)
-memory.probe_ok := if(memory.probe_check.outcome = "{outcome}", 0, 1)
+memory.complete_presence_input := "complete_present=1"
+memory.complete_presence := parse("complete_present={complete_present}", memory.complete_presence_input)
+memory.startup_result := complete("Answer with outcome ready and reason ok. The dependency probe result is {outcome}. The short reason is {reason}.", memory.complete_presence)
+memory.probe_check_input := build("complete_present={complete_present} outcome={outcome} reason={reason}", memory.startup_result)
+memory.probe_check := parse("complete_present={complete_present} outcome={outcome} reason={reason}", memory.probe_check_input)
+memory.probe_ok := if(memory.probe_check.complete_present = 1, 1, 0)
 memory.startup_complete_outcome := if(memory.probe_ok = 1, memory.probe_check.outcome, memory.startup_complete_outcome)
 memory.startup_complete_reason := if(memory.probe_ok = 1, memory.probe_check.reason, memory.startup_complete_reason)
 memory.dependency_status := if(memory.probe_ok = 1, "ready", memory.dependency_status)
@@ -297,10 +303,10 @@ memory.error_input := build("action=definition_error reason={error_reason} compl
 memory.error_payload := parse("action={action} reason={reason} complete_trace={complete_trace}", memory.error_input)
 memory.error_sent := send(memory.reply_to_id * memory.error_flag, memory.error_payload)
 memory.last_reply_action := if(memory.error_flag = 1, "definition_error", memory.last_reply_action)
-memory.transition_result := complete("Answer with outcome advance and reason approved. The workflow transition decision is {outcome}. The short reason is {reason}.")
-memory.transition_check_input := build("outcome={outcome} reason={reason}", memory.transition_result)
-memory.transition_check := parse("outcome={outcome} reason={reason}", memory.transition_check_input)
-memory.transition_ok := if(memory.transition_check.outcome = "{outcome}", 0, 1)
+memory.transition_result := complete("Answer with outcome advance and reason approved. The workflow transition decision is {outcome}. The short reason is {reason}.", memory.complete_presence)
+memory.transition_check_input := build("complete_present={complete_present} outcome={outcome} reason={reason}", memory.transition_result)
+memory.transition_check := parse("complete_present={complete_present} outcome={outcome} reason={reason}", memory.transition_check_input)
+memory.transition_ok := if(memory.transition_check.complete_present = 1, 1, 0)
 memory.transition_outcome := if(memory.transition_ok = 1, memory.transition_check.outcome, memory.transition_outcome)
 memory.transition_outcome := if(memory.transition_ok = 0, "stay", memory.transition_outcome)
 memory.transition_reason := if(memory.transition_ok = 1, memory.transition_check.reason, memory.transition_reason)
