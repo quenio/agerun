@@ -119,17 +119,38 @@ static bool _complete_result_has_fixture_values(ar_data_t *ref_memory, const ar_
     return true;
 }
 
+static ar_expression_ast_t* _create_memory_access_ast(const char *ref_memory_path) {
+    assert(ref_memory_path != NULL);
+    assert(strncmp(ref_memory_path, "memory.", 7) == 0);
+
+    char mut_path_buffer[128];
+    assert(strlen(ref_memory_path + 7) < sizeof(mut_path_buffer));
+    strcpy(mut_path_buffer, ref_memory_path + 7);
+
+    const char *ref_path_parts[16];
+    size_t path_count = 0;
+    char *mut_path_part = strtok(mut_path_buffer, ".");
+    while (mut_path_part != NULL) {
+        assert(path_count < 16U);
+        ref_path_parts[path_count] = mut_path_part;
+        path_count++;
+        mut_path_part = strtok(NULL, ".");
+    }
+    assert(path_count > 0U);
+    return ar_expression_ast__create_memory_access("memory", ref_path_parts, path_count);
+}
+
 static ar_instruction_ast_t* _create_complete_ast(
     const char *ref_template,
-    const char *ref_base_path,
+    const char *ref_values_path,
     const char *ref_result_path
 ) {
-    const char *args[2] = {ref_template, ref_base_path};
-    size_t arg_count = ref_base_path ? 2U : 1U;
+    const char *ref_args[2] = {ref_template, ref_values_path};
+    size_t arg_count = ref_values_path ? 2U : 1U;
     ar_instruction_ast_t *own_ast = ar_instruction_ast__create_function_call(
         AR_INSTRUCTION_AST_TYPE__COMPLETE,
         "complete",
-        args,
+        ref_args,
         arg_count,
         ref_result_path
     );
@@ -138,10 +159,8 @@ static ar_instruction_ast_t* _create_complete_ast(
     ar_list_t *own_arg_asts = ar_list__create();
     assert(own_arg_asts != NULL);
     assert(ar_list__add_last(own_arg_asts, ar_expression_ast__create_literal_string(ref_template)) == true);
-    if (ref_base_path != NULL) {
-        assert(strcmp(ref_base_path, "memory.location") == 0);
-        const char *path[] = {"location"};
-        assert(ar_list__add_last(own_arg_asts, ar_expression_ast__create_memory_access("memory", path, 1)) == true);
+    if (ref_values_path != NULL) {
+        assert(ar_list__add_last(own_arg_asts, _create_memory_access_ast(ref_values_path)) == true);
     }
     assert(ar_instruction_ast__set_function_arg_asts(own_ast, own_arg_asts) == true);
     return own_ast;
@@ -152,11 +171,11 @@ static ar_instruction_ast_t* _create_complete_ast_with_base_ast(
     ar_expression_ast_t *own_base_ast,
     const char *ref_result_path
 ) {
-    const char *args[2] = {ref_template, "<custom-base>"};
+    const char *ref_args[2] = {ref_template, "<custom-base>"};
     ar_instruction_ast_t *own_ast = ar_instruction_ast__create_function_call(
         AR_INSTRUCTION_AST_TYPE__COMPLETE,
         "complete",
-        args,
+        ref_args,
         2U,
         ref_result_path
     );
