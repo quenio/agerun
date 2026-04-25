@@ -435,7 +435,18 @@ tsan-tests:
 				fi; \
 				;; \
 			*) \
-				AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test; \
+				case "$$test" in \
+					workflow_definition_tests) \
+						if [ -n "$${AGERUN_TSAN_COMPLETE_RUNNER:-}" ]; then \
+							AGERUN_MEMORY_REPORT="memory_report_$$test.log" AGERUN_COMPLETE_RUNNER="$$AGERUN_TSAN_COMPLETE_RUNNER" ./$$test; \
+						else \
+							AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test; \
+						fi; \
+						;; \
+					*) \
+						AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test; \
+						;; \
+				esac; \
 				exitcode=$$?; \
 				if [ $$exitcode -ne 0 ]; then \
 					echo "ERROR: Test $$test failed with status $$exitcode"; \
