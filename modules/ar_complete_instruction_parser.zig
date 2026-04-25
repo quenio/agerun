@@ -51,30 +51,24 @@ fn _validatePlaceholderName(ref_name: []const u8) bool {
     return true;
 }
 
-const template_scan_result_t = struct {
-    placeholder_count: usize,
-};
-
-fn _scanTemplatePlaceholders(ref_parser: ?*ar_complete_instruction_parser_t, ref_template: []const u8) ?template_scan_result_t {
+fn _scanTemplatePlaceholders(ref_parser: ?*ar_complete_instruction_parser_t, ref_template: []const u8) bool {
     var pos: usize = 0;
-    var placeholder_count: usize = 0;
     while (pos < ref_template.len) : (pos += 1) {
         if (ref_template[pos] != '{') continue;
 
         const start = pos + 1;
         const close_rel = std.mem.indexOfScalarPos(u8, ref_template, start, '}') orelse {
             _logError(ref_parser, "complete() template placeholder is missing a closing '}'", pos);
-            return null;
+            return false;
         };
         if (!_validatePlaceholderName(ref_template[start..close_rel])) {
             _logError(ref_parser, "complete() placeholder names must match the existing build()/parse() identifier syntax", pos);
-            return null;
+            return false;
         }
-        placeholder_count += 1;
         pos = close_rel;
     }
 
-    return .{ .placeholder_count = placeholder_count };
+    return true;
 }
 
 fn _validateTemplate(ref_parser: ?*ar_complete_instruction_parser_t, ref_arg: []const u8) bool {
@@ -83,7 +77,7 @@ fn _validateTemplate(ref_parser: ?*ar_complete_instruction_parser_t, ref_arg: []
         return false;
     }
 
-    return _scanTemplatePlaceholders(ref_parser, ref_arg[1 .. ref_arg.len - 1]) != null;
+    return _scanTemplatePlaceholders(ref_parser, ref_arg[1 .. ref_arg.len - 1]);
 }
 
 fn _parseArguments(ref_parser: ?*ar_complete_instruction_parser_t, ref_instruction: []const u8, start_pos: usize, out_args: *[2]?[*:0]u8, out_count: *usize) bool {
