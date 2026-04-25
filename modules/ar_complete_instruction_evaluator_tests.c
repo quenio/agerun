@@ -103,8 +103,13 @@ static void _assert_short_template_fixture(const ar_complete_perf_fixture_t *ref
     assert(_count_placeholder_markers(ref_fixture->ref_template) <= 2U);
 }
 
-static bool _complete_result_has_fixture_values(ar_data_t *ref_memory, const ar_complete_perf_fixture_t *ref_fixture) {
-    ar_data_t *ref_result = ar_data__get_map_data(ref_memory, "ok");
+static bool _complete_result_has_fixture_values(
+    ar_data_t *ref_memory,
+    const char *ref_result_key,
+    const ar_complete_perf_fixture_t *ref_fixture
+) {
+    assert(ref_result_key != NULL);
+    ar_data_t *ref_result = ar_data__get_map_data(ref_memory, ref_result_key);
     if (ref_result == NULL || ar_data__get_type(ref_result) != AR_DATA_TYPE__MAP) {
         return false;
     }
@@ -584,6 +589,7 @@ static void test_complete_instruction_evaluator__performance_cold_fixture(void) 
     int64_t elapsed_ms = _elapsed_ms_since(&own_start);
     bool success = result == true && _complete_result_has_fixture_values(
         ar_evaluator_fixture__get_memory(own_fixture),
+        "ok",
         ref_fixture
     );
 
@@ -642,6 +648,7 @@ static void test_complete_instruction_evaluator__performance_warm_fixture_set(vo
         assert(warmup_result == true);
         assert(_complete_result_has_fixture_values(
             ar_evaluator_fixture__get_memory(own_warm_fixture),
+            "ok",
             &g_complete_perf_fixtures[0]
         ) == true);
         ar_instruction_ast__destroy(own_warmup_ast);
@@ -658,6 +665,7 @@ static void test_complete_instruction_evaluator__performance_warm_fixture_set(vo
         int64_t elapsed_ms = _elapsed_ms_since(&own_start);
         bool success = result == true && _complete_result_has_fixture_values(
             ar_evaluator_fixture__get_memory(own_warm_fixture),
+            "ok",
             ref_fixture
         );
 

@@ -46,8 +46,9 @@
   now honors arbitrary memory values paths, the no-placeholder evaluator test was renamed to match
   the accepted-template behavior, stale complete-template/base-path whitelist entries were removed,
   stale parser base-path error wording was updated to values-map terminology, the values-path
-  test helper now rejects malformed dotted memory paths instead of normalizing them, and the complete-failure
-  evaluator test was renamed to describe empty-map semantics. The log whitelist metadata
+  test helper now rejects malformed dotted memory paths instead of normalizing them, the complete-failure
+  evaluator test was renamed to describe empty-map semantics, and the performance result helper now accepts
+  the result key instead of hardcoding `memory.ok`. The log whitelist metadata
   was also refreshed after validating the timeout entry under the executable context.
 
   **Verification**: `make ar_complete_instruction_parser_tests ar_complete_instruction_evaluator_tests 2>&1`,
