@@ -44,7 +44,8 @@
   placeholders are now preserved instead of being treated as missing generated values, temporary
   values-map expression results are released after evaluation, the complete evaluator test helper
   now honors arbitrary memory values paths, the no-placeholder evaluator test was renamed to match
-  the accepted-template behavior, and stale complete-template/base-path whitelist entries were removed. The log whitelist metadata
+  the accepted-template behavior, stale complete-template/base-path whitelist entries were removed,
+  and stale parser base-path error wording was updated to values-map terminology. The log whitelist metadata
   was also refreshed after validating the timeout entry under the executable context.
 
   **Verification**: `make ar_complete_instruction_parser_tests ar_complete_instruction_evaluator_tests 2>&1`,

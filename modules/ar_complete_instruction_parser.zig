@@ -204,11 +204,11 @@ export fn ar_complete_instruction_parser__parse(
     _ = c.ar_list__add_last(own_arg_asts, own_template_ast);
 
     if (arg_count == 2) {
-        const own_base_ast = _parseExpressionAst(mut_parser, args[1].?) orelse {
-            _logError(mut_parser, "Failed to parse complete() base path argument", 0);
+        const own_values_ast = _parseExpressionAst(mut_parser, args[1].?) orelse {
+            _logError(mut_parser, "Failed to parse complete() values argument", 0);
             return null;
         };
-        _ = c.ar_list__add_last(own_arg_asts, own_base_ast);
+        _ = c.ar_list__add_last(own_arg_asts, own_values_ast);
     }
 
     var ref_arg_ptrs: [2]?[*:0]const u8 = .{ args[0], args[1] };
