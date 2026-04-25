@@ -14,8 +14,9 @@
   preserved handled-failure behavior with empty result maps, adapted the workflow-definition method
   to consume returned completion maps, and updated instruction/evaluator tests plus user/module/spec
   documentation for the new map-returning semantics. Follow-up cleanup standardized the newly added
-  parser/evaluator tests with Given/When/Then/Cleanup structure comments and removed the obsolete
-  complete-parser base-path validation helper.
+  parser/evaluator tests with Given/When/Then/Cleanup structure comments, removed the obsolete
+  complete-parser base-path validation helper, and renamed stale evaluator tests to match the new
+  preservation and non-map argument semantics.
 
   **Verification**: `make ar_complete_instruction_parser_tests ar_complete_instruction_evaluator_tests 2>&1`,
   `make ar_instruction_parser_tests 2>&1`, `make ar_instruction_evaluator_tests 2>&1`,

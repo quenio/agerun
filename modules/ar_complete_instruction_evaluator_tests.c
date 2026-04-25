@@ -271,8 +271,8 @@ static void test_complete_instruction_evaluator__evaluate_returns_new_map_with_e
     ar_evaluator_fixture__destroy(own_fixture);
 }
 
-static void test_complete_instruction_evaluator__evaluate_nested_success_overwrites_existing_values(void) {
-    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_complete_instruction_evaluator__evaluate_nested_success_overwrites_existing_values");
+static void test_complete_instruction_evaluator__evaluate_values_map_preserves_existing_values(void) {
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_complete_instruction_evaluator__evaluate_values_map_preserves_existing_values");
     assert(own_fixture != NULL);
     ar_local_completion_t *own_runtime = ar_local_completion__create(ar_evaluator_fixture__get_log(own_fixture));
     assert(own_runtime != NULL);
@@ -410,11 +410,11 @@ static void test_complete_instruction_evaluator__invalid_template_fast_failure_d
     assert(setenv("AGERUN_COMPLETE_MODEL", g_model_path, 1) == 0);
 }
 
-static void test_complete_instruction_evaluator__invalid_base_path_fast_failure_preserves_memory(void) {
+static void test_complete_instruction_evaluator__non_map_second_argument_returns_empty_map(void) {
     unsetenv("AGERUN_COMPLETE_RUNNER");
     assert(setenv("AGERUN_COMPLETE_RUNNER", "./definitely-missing-llama-cli", 1) == 0);
 
-    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_complete_instruction_evaluator__invalid_base_path_fast_failure_preserves_memory");
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_complete_instruction_evaluator__non_map_second_argument_returns_empty_map");
     assert(own_fixture != NULL);
     ar_local_completion_t *own_runtime = ar_local_completion__create(ar_evaluator_fixture__get_log(own_fixture));
     assert(own_runtime != NULL);
@@ -688,11 +688,11 @@ int main(void) {
     test_complete_instruction_evaluator__create_destroy();
     test_complete_instruction_evaluator__evaluate_top_level_success();
     test_complete_instruction_evaluator__evaluate_returns_new_map_with_existing_and_completed_values();
-    test_complete_instruction_evaluator__evaluate_nested_success_overwrites_existing_values();
+    test_complete_instruction_evaluator__evaluate_values_map_preserves_existing_values();
     test_complete_instruction_evaluator__failure_stores_false_and_preserves_existing_values();
     test_complete_instruction_evaluator__whitespace_rejection_keeps_memory_clean();
     test_complete_instruction_evaluator__invalid_template_fast_failure_does_not_initialize_runtime();
-    test_complete_instruction_evaluator__invalid_base_path_fast_failure_preserves_memory();
+    test_complete_instruction_evaluator__non_map_second_argument_returns_empty_map();
     test_complete_instruction_evaluator__missing_placeholder_response_keeps_memory_clean();
     test_complete_instruction_evaluator__repeated_placeholders_use_one_consistent_value();
     printf("All complete instruction evaluator tests passed!\n");
