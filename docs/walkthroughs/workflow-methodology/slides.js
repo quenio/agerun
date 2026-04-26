@@ -210,7 +210,8 @@ methods/workflow_coordinator_tests.c</div>
                 <section class="panel">
                     <h3>Decision Operations</h3>
                     <ul>
-                        <li><span class="code">evaluate_transition</span> builds a values map from the current workflow item.</li>
+                        <li><span class="code">evaluate_transition</span> builds a values map from canonical definition metadata plus current item fields.</li>
+                        <li><span class="code">workflow_name</span> stays definition-backed; caller transition input cannot overwrite it.</li>
                         <li><span class="code">complete(...)</span> receives stage, item fields, review status, and transition count before generating <span class="code">outcome</span> and <span class="code">reason</span>.</li>
                         <li>Completion failure becomes retryable <span class="code">stay</span> with <span class="code">complete_transition_failed</span>.</li>
                     </ul>
@@ -220,7 +221,7 @@ methods/workflow_coordinator_tests.c</div>
                 <h3>Definition Method Replies</h3>
                 <div class="timeline">
                     <div class="timeline-step"><strong>prepare_definition</strong><br>Reply to <span class="code">message.reply_to</span> with <span class="code">definition_ready</span> or <span class="code">definition_error</span>.</div>
-                    <div class="timeline-step"><strong>evaluate_transition</strong><br>Reply to <span class="code">message.reply_to</span> with <span class="code">transition_decision</span> carrying next stage, status, reason, retryability, and terminal outcome.</div>
+                    <div class="timeline-step"><strong>evaluate_transition</strong><br>Reply to <span class="code">message.reply_to</span> with <span class="code">transition_decision</span> carrying the canonical workflow name, next stage, status, reason, retryability, and terminal outcome.</div>
                     <div class="timeline-step"><strong>describe</strong><br>Reply to <span class="code">message.reply_to</span> with definition metadata for inspection and tests.</div>
                 </div>
             </section>
@@ -558,6 +559,10 @@ methods/workflow-reporter-1.0.0.md</div>
                         <li><span class="code">reject</span> keeps the current stage and emits a rejected summary.</li>
                         <li><span class="code">stay</span> keeps the item in review when context such as <span class="code">review_status</span> says more work is needed.</li>
                     </ul>
+                </section>
+                <section class="panel">
+                    <h3>Identity Boundary</h3>
+                    <p>The definition method keeps <span class="code">workflow_name</span> from the prepared definition. The transition message supplies item context, not authority to rename the workflow.</p>
                 </section>
                 <section class="panel">
                     <h3>Trace Propagation</h3>
