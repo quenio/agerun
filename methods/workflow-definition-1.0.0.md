@@ -134,7 +134,8 @@ Expected fields:
 - `transition_count`
 
 Behavior:
-- builds a transition context map from the current workflow item fields and passes it to `complete(...)`
+- builds a transition context map from the current workflow item fields and the canonical
+  definition-backed workflow name, then passes it to `complete(...)`
 - asks `complete(...)` to evaluate the current item and generate `outcome`/`reason` from that context
 - copies returned `outcome` into `transition_outcome` and returned `reason` into `transition_reason`
 - uses `transition_outcome` to choose `advance`, `stay`, or `reject`, which then determines
@@ -210,6 +211,8 @@ placeholder text:
 - The transition prompt includes the current workflow item context (`workflow_name`, `stage`,
   `item_id`, `title`, `priority`, `owner`, `review_status`, and `transition_count`) as provided
   values so `complete(...)` evaluates the item instead of returning a canned decision.
+- `workflow_name` remains canonical definition metadata; `evaluate_transition` messages do not
+  overwrite it from caller-supplied input.
 - Returned `transition_complete.outcome` becomes `transition_outcome` and drives the workflow branch:
   - `advance` moves to the next stage
   - `reject` produces `terminal_outcome = rejected`
@@ -265,7 +268,6 @@ memory.is_known_definition := memory.is_default_definition + memory.is_test_defi
 memory.is_invalid_definition := if(memory.definition_path = "invalid.workflow", 1, 0)
 memory.workflow_name := if(memory.is_default_definition = 1, "default_workflow", memory.workflow_name)
 memory.workflow_name := if(memory.is_test_definition = 1, "test_workflow", memory.workflow_name)
-memory.workflow_name := if(memory.is_evaluate = 1, message.workflow_name, memory.workflow_name)
 memory.item_id := if(memory.is_evaluate = 1, message.item_id, "")
 memory.title := if(memory.is_evaluate = 1, message.title, "")
 memory.priority := if(memory.is_evaluate = 1, message.priority, "")

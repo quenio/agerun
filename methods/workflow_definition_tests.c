@@ -60,6 +60,11 @@ static void setup_prompt_sensitive_runner(void) {
     fputs("prompt=\"$*\"\n", own_runner);
     fputs("case \"$prompt\" in\n", own_runner);
     fputs(
+        "  *\"workflow_name=caller_typo\"*) "
+        "printf 'outcome=reject\\nreason=caller_workflow_name_leaked\\n' ;;\n",
+        own_runner
+    );
+    fputs(
         "  *\"review_status=pending\"*) "
         "printf 'outcome=stay\\nreason=review_not_approved\\n' ;;\n",
         own_runner
@@ -421,6 +426,10 @@ static void test_workflow_definition__complete_prompt_uses_workflow_item_context
         "pending",
         definition_agent_id
     );
+
+    // When caller-supplied workflow_name conflicts with the prepared definition
+    AR_ASSERT(ar_data__set_map_string(own_message, "workflow_name", "caller_typo"),
+              "Evaluate message should allow caller workflow name override");
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, definition_agent_id, own_message),
               "Evaluate transition should queue");
     AR_ASSERT(ar_method_fixture__process_next_message(own_fixture), "Transition should process");
@@ -435,6 +444,8 @@ static void test_workflow_definition__complete_prompt_uses_workflow_item_context
               "Pending review should preserve context-sensitive complete() reason");
     AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "next_stage"), "review") == 0,
               "Stay decision should keep the current stage");
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "workflow_name"), "default_workflow") == 0,
+              "Transition reply should keep canonical definition workflow name");
     AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "complete_trace"),
                      "COMPLETE_TRACE[phase=transition|outcome=stay|"
                      "reason=review_not_approved]") == 0,

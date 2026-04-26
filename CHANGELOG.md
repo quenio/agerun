@@ -7,7 +7,9 @@
   The `workflow-definition` method now builds a transition context map from workflow item fields and
   passes that map into `complete(...)`. Transition completion receives the current stage, item id,
   title, priority, owner, review status, and transition count before generating `outcome` and
-  `reason`, so the method can stay in review when the item context is not ready to advance.
+  `reason`, so the method can stay in review when the item context is not ready to advance. The
+  canonical workflow name remains definition-backed and cannot be overwritten by caller-supplied
+  transition input.
 
   **Implementation**: Updated `methods/workflow-definition-1.0.0.method`, synchronized
   `methods/workflow-definition-1.0.0.md` and `methods/README.md`, added a regression test in

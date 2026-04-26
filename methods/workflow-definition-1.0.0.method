@@ -34,7 +34,6 @@ memory.is_known_definition := memory.is_default_definition + memory.is_test_defi
 memory.is_invalid_definition := if(memory.definition_path = "invalid.workflow", 1, 0)
 memory.workflow_name := if(memory.is_default_definition = 1, "default_workflow", memory.workflow_name)
 memory.workflow_name := if(memory.is_test_definition = 1, "test_workflow", memory.workflow_name)
-memory.workflow_name := if(memory.is_evaluate = 1, message.workflow_name, memory.workflow_name)
 memory.item_id := if(memory.is_evaluate = 1, message.item_id, "")
 memory.title := if(memory.is_evaluate = 1, message.title, "")
 memory.priority := if(memory.is_evaluate = 1, message.priority, "")
