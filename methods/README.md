@@ -13,7 +13,7 @@ This directory contains AgeRun method definitions. Each file represents a single
 | shell | 1.0.0 | Built-in shell method used by `arsh` for restricted shell parsing, session storage, and runtime interaction | [shell-1.0.0.md](shell-1.0.0.md) |
 | bootstrap | 1.0.0 | Startup demo that spawns the workflow coordinator and queues the bundled workflow run | [bootstrap.md](bootstrap.md) |
 | workflow-coordinator | 1.0.0 | Boot-time orchestrator that stages workflow definition readiness and startup failure handling | [workflow-coordinator-1.0.0.md](workflow-coordinator-1.0.0.md) |
-| workflow-definition | 1.0.0 | Workflow definition loader/evaluator that normalizes `complete(...)` decisions | [workflow-definition-1.0.0.md](workflow-definition-1.0.0.md) |
+| workflow-definition | 1.0.0 | Workflow definition loader/evaluator that passes item context to `complete(...)` and normalizes decisions | [workflow-definition-1.0.0.md](workflow-definition-1.0.0.md) |
 | workflow-item | 1.0.0 | Stateful workflow item method that tracks lifecycle progress and summaries | [workflow-item-1.0.0.md](workflow-item-1.0.0.md) |
 | workflow-reporter | 1.0.0 | Reporter method that emits user-visible progress, startup failure, and summary logs | [workflow-reporter-1.0.0.md](workflow-reporter-1.0.0.md) |
 

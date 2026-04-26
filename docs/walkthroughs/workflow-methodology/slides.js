@@ -6,14 +6,14 @@ const messageProcessingWalkthroughUrl = "https://quenio.github.io/agerun/walkthr
 const slides = [
     {
         title: "Workflow Methodology",
-        subtitle: "How the bundled workflow methodology boots, validates a definition, makes review decisions, and emits visible progress logs.",
+        subtitle: "How the bundled workflow methodology boots, validates a definition, evaluates item context for review transitions, and emits visible progress logs.",
         body: `
             <div class="columns">
                 <section class="panel">
                     <h3>Walkthrough Scope</h3>
                     <ul>
                         <li>The startup path from <span class="code">bootstrap</span> to <span class="code">workflow-coordinator</span> and <span class="code">workflow-item</span></li>
-                        <li>How <span class="code">workflow-definition</span> gates startup and normalizes transition decisions</li>
+                        <li>How <span class="code">workflow-definition</span> gates startup and evaluates item context before normalizing transition decisions</li>
                         <li>How <span class="code">memory.self</span> identifies agents while <span class="code">reply_to</span> routes definition replies</li>
                         <li>How <span class="code">workflow-reporter</span> turns workflow events into log delegate messages</li>
                     </ul>
@@ -196,7 +196,7 @@ methods/workflow_coordinator_tests.c</div>
     },
     {
         title: "Workflow Definition Method",
-        subtitle: "workflow-definition is the schema gate and transition-decision method: it recognizes supported definitions, normalizes complete(...) results, and replies to message.reply_to.",
+        subtitle: "workflow-definition is the schema gate and transition-decision method: it recognizes supported definitions, asks complete(...) to evaluate item context, and replies to message.reply_to.",
         body: `
             <div class="columns">
                 <section class="panel">
@@ -210,8 +210,9 @@ methods/workflow_coordinator_tests.c</div>
                 <section class="panel">
                     <h3>Decision Operations</h3>
                     <ul>
-                        <li><span class="code">evaluate_transition</span> calls <span class="code">complete("Workflow transition decision ...")</span>.</li>
-                        <li>Generated <span class="code">outcome</span> becomes <span class="code">advance</span>, <span class="code">reject</span>, or <span class="code">stay</span>.</li>
+                        <li><span class="code">evaluate_transition</span> builds a values map from canonical definition metadata plus current item fields.</li>
+                        <li><span class="code">workflow_name</span> stays definition-backed; caller transition input cannot overwrite it.</li>
+                        <li><span class="code">complete(...)</span> receives stage, item fields, review status, and transition count before generating <span class="code">outcome</span> and <span class="code">reason</span>.</li>
                         <li>Completion failure becomes retryable <span class="code">stay</span> with <span class="code">complete_transition_failed</span>.</li>
                     </ul>
                 </section>
@@ -220,7 +221,7 @@ methods/workflow_coordinator_tests.c</div>
                 <h3>Definition Method Replies</h3>
                 <div class="timeline">
                     <div class="timeline-step"><strong>prepare_definition</strong><br>Reply to <span class="code">message.reply_to</span> with <span class="code">definition_ready</span> or <span class="code">definition_error</span>.</div>
-                    <div class="timeline-step"><strong>evaluate_transition</strong><br>Reply to <span class="code">message.reply_to</span> with <span class="code">transition_decision</span> carrying next stage, status, reason, retryability, and terminal outcome.</div>
+                    <div class="timeline-step"><strong>evaluate_transition</strong><br>Reply to <span class="code">message.reply_to</span> with <span class="code">transition_decision</span> carrying the canonical workflow name, next stage, status, reason, retryability, and terminal outcome.</div>
                     <div class="timeline-step"><strong>describe</strong><br>Reply to <span class="code">message.reply_to</span> with definition metadata for inspection and tests.</div>
                 </div>
             </section>
@@ -337,7 +338,7 @@ methods/workflow_reporter_tests.c</div>
             <div class="columns">
                 <section class="panel">
                     <h3>Success Output Shape</h3>
-                    <p>Approved demo input becomes a completion summary such as <span class="code">workflow=default_workflow item=demo-item-1 stage=completion terminal=completed reason=approved</span>.</p>
+                    <p>Approved demo input becomes a completion summary such as <span class="code">workflow=default_workflow item=demo-item-1 stage=completion terminal=completed reason=&lt;complete-derived&gt;</span>.</p>
                 </section>
                 <section class="panel">
                     <h3>Failure Output Shape</h3>
@@ -505,7 +506,7 @@ methods/workflow_definition_tests.c</div>
                     <ul>
                         <li><span class="code">item_id</span> identifies progress and summary log messages.</li>
                         <li><span class="code">title</span>, <span class="code">priority</span>, <span class="code">owner</span>, and <span class="code">review_status</span> are stored by the item method and forwarded for transition evaluation.</li>
-                        <li><span class="code">review_status=approved</span> feeds the transition decision prompt and produces the completed summary through the item-and-definition path.</li>
+                        <li><span class="code">review_status=approved</span> is provided to <span class="code">complete(...)</span>, which evaluates the item context before the definition method normalizes the transition.</li>
                     </ul>
                 </section>
             </div>
@@ -532,7 +533,7 @@ methods/workflow-reporter-1.0.0.md</div>
     },
     {
         title: "Review Decision Flow",
-        subtitle: "The full per-item path advances automatically to review, then asks workflow-definition to normalize a generated transition decision.",
+        subtitle: "The full per-item path advances automatically to review, then asks workflow-definition to evaluate the current item before normalizing the transition decision.",
         body: `
             <section class="diagram-panel">
                 <h3>Per-Item Lifecycle Path</h3>
@@ -545,7 +546,7 @@ methods/workflow-reporter-1.0.0.md</div>
                     <div class="flow-arrow">→</div>
                     <div class="flow-step"><strong>Active</strong><span>auto-progress to review</span></div>
                     <div class="flow-arrow">→</div>
-                    <div class="flow-step"><strong>Review</strong><span>send evaluate_transition with reply_to=self_agent_id</span></div>
+                    <div class="flow-step"><strong>Review</strong><span>send evaluate_transition with item context and reply_to=self_agent_id</span></div>
                     <div class="flow-arrow">→</div>
                     <div class="flow-step"><strong>Decision</strong><span>summary on advance/reject, progress on stay</span></div>
                 </div>
@@ -554,10 +555,14 @@ methods/workflow-reporter-1.0.0.md</div>
                 <section class="panel">
                     <h3>Decision Outcomes</h3>
                     <ul>
-                        <li><span class="code">advance</span> moves review to completion and emits a completed summary.</li>
+                        <li><span class="code">advance</span> moves review to completion when the item context is ready.</li>
                         <li><span class="code">reject</span> keeps the current stage and emits a rejected summary.</li>
-                        <li><span class="code">stay</span> keeps the item in review and emits a retryable progress update.</li>
+                        <li><span class="code">stay</span> keeps the item in review when context such as <span class="code">review_status</span> says more work is needed.</li>
                     </ul>
+                </section>
+                <section class="panel">
+                    <h3>Identity Boundary</h3>
+                    <p>The definition method keeps <span class="code">workflow_name</span> from the prepared definition. The transition message supplies item context, not authority to rename the workflow.</p>
                 </section>
                 <section class="panel">
                     <h3>Trace Propagation</h3>
