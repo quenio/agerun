@@ -61,6 +61,13 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 **Preserving Changes**: Always create patches BEFORE reverting files ([details](kb/git-patch-preservation-workflow.md))
 
+**Codex Publish Changes / PR Creation**: The GitHub plugin's Publish Changes skill may fall back to
+local `gh pr create` when the connector cannot infer the repo/head branch cleanly. If PR creation
+fails with `GraphQL: must be a collaborator (createPullRequest)`, check `gh auth status` first and
+ensure the active GitHub CLI account is `quenio` (or another owner/collaborator of
+`quenio/agerun`). Do **not** add a pending collaborator invite named Codex as the fix; connector
+permissions and local `gh` authentication are separate paths.
+
 **Pull Request Review Workflow**: When resolving PR review comments, fetch all review threads and
 comments (including resolved threads), address actionable reviewer replies with exactly one logical
 fix per commit when requested, commit before replying, reply directly to the review comment tagging
