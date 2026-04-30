@@ -649,6 +649,49 @@ methods/workflow-reporter-1.0.0.md</div>
         `
     },
     {
+        title: "Execution Story",
+        subtitle: "A fresh no-persistence run turns the default bootstrap message into one visible item lifecycle in the log file.",
+        body: `
+            <section class="diagram-panel">
+                <h3>Run Storyboard</h3>
+                <div class="sequence-diagram">
+                    <div class="sequence-lane"><strong>Direct run</strong><span><span class="code">./agerun --no-persistence</span> loads methods and creates <span class="code">bootstrap</span>.</span></div>
+                    <div class="sequence-lane"><strong>Bootstrap</strong><span>queues <span class="code">workflow-coordinator</span> and writes the first intake line.</span></div>
+                    <div class="sequence-lane"><strong>Workflow methods</strong><span>prepare the definition, initialize the item, and ask for the review decision.</span></div>
+                    <div class="sequence-lane"><strong>Reporter</strong><span>forwards progress and summary text to the log delegate.</span></div>
+                    <div class="sequence-arrow-row">
+                        <span class="sequence-arrow">fresh boot →</span>
+                        <span class="sequence-arrow">start message →</span>
+                        <span class="sequence-arrow">item lifecycle →</span>
+                        <span class="sequence-arrow">visible logs →</span>
+                    </div>
+                </div>
+            </section>
+            <div class="flow-grid">
+                <section class="flow-step">
+                    <strong>1. Two intake markers</strong>
+                    <span><span class="code">bootstrap intake → item intake</span></span>
+                    <span>The first line proves the demo was queued; the second is the initialized item reporting its own state.</span>
+                </section>
+                <section class="flow-step">
+                    <strong>2. Early stages</strong>
+                    <span><span class="code">triage → active → review</span></span>
+                    <span>The item auto-progresses through the bounded demo lifecycle.</span>
+                </section>
+                <section class="flow-step">
+                    <strong>3. Review decision</strong>
+                    <span><span class="code">review_status=approved</span></span>
+                    <span>The definition method normalizes the completion result to <span class="code">outcome=advance</span>.</span>
+                </section>
+                <section class="flow-step">
+                    <strong>4. Terminal summary</strong>
+                    <span><span class="code">completion / completed</span></span>
+                    <span>The reporter writes the final line with <span class="code">COMPLETE_TRACE[phase=transition|...]</span>.</span>
+                </section>
+            </div>
+        `
+    },
+    {
         title: "Suggested Reading Order",
         subtitle: "Read the workflow methods in message order, then use tests to verify the branches and memory fields.",
         body: `
