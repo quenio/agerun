@@ -4,6 +4,7 @@
 #include "ar_io.h"
 #include "ar_path.h"
 #include "ar_log.h"
+#include "ar_agency.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -12,6 +13,7 @@
 struct ar_file_delegate_s {
     ar_delegate_t *own_delegate;
     ar_log_t *ref_log;
+    ar_agency_t *ref_agency;
     char *own_allowed_path;
     size_t max_file_size;
 };
@@ -247,6 +249,7 @@ ar_file_delegate_t* ar_file_delegate__create(
     }
 
     own_file_delegate->ref_log = ref_log;
+    own_file_delegate->ref_agency = NULL;
     own_file_delegate->max_file_size = (max_file_size > 0)
         ? max_file_size
         : AR_FILE_DELEGATE__DEFAULT_MAX_FILE_SIZE;
@@ -265,6 +268,83 @@ ar_file_delegate_t* ar_file_delegate__create(
     }
 
     return own_file_delegate;
+}
+
+static bool _handle_queued_message(void *mut_context, ar_data_t *ref_message, int64_t sender_id) {
+    ar_file_delegate_t *mut_file_delegate = (ar_file_delegate_t*)mut_context;
+    if (!mut_file_delegate || !ref_message) {
+        return false;
+    }
+
+    ar_data_t *own_response = ar_file_delegate__handle_message(
+        mut_file_delegate,
+        ref_message,
+        sender_id);
+    if (!own_response) {
+        return false;
+    }
+
+    const char *ref_response_action = ar_data__get_map_string(ref_message, "response_action");
+    if (!ref_response_action) {
+        ref_response_action = "file_response";
+    }
+    if (!ar_data__set_map_string(own_response, "action", ref_response_action)) {
+        ar_data__destroy(own_response);
+        return false;
+    }
+
+    const char *ref_path = ar_data__get_map_string(ref_message, "path");
+    if (ref_path && !ar_data__set_map_string(own_response, "path", ref_path)) {
+        ar_data__destroy(own_response);
+        return false;
+    }
+
+    int64_t reply_to = ar_data__get_map_integer(ref_message, "reply_to");
+    if (reply_to <= 0) {
+        reply_to = sender_id;
+    }
+    if (!mut_file_delegate->ref_agency || reply_to <= 0) {
+        ar_data__destroy(own_response);
+        return true;
+    }
+
+    return ar_agency__send_to_agent(mut_file_delegate->ref_agency, reply_to, own_response);
+}
+
+static void _destroy_handler_context(void *own_context) {
+    ar_file_delegate__destroy((ar_file_delegate_t*)own_context);
+}
+
+ar_delegate_t* ar_file_delegate__create_delegate(
+    ar_log_t *ref_log,
+    ar_agency_t *ref_agency,
+    const char *ref_allowed_path,
+    size_t max_file_size) {
+    if (!ref_agency) {
+        return NULL;
+    }
+
+    ar_file_delegate_t *own_file_delegate = ar_file_delegate__create(
+        ref_log,
+        ref_allowed_path,
+        max_file_size);
+    if (!own_file_delegate) {
+        return NULL;
+    }
+
+    own_file_delegate->ref_agency = ref_agency;
+    ar_delegate_t *own_delegate = ar_delegate__create_with_handler(
+        ref_log,
+        "file",
+        _handle_queued_message,
+        own_file_delegate,
+        _destroy_handler_context);
+    if (!own_delegate) {
+        ar_file_delegate__destroy(own_file_delegate);
+        return NULL;
+    }
+
+    return own_delegate;  // Ownership transferred to caller
 }
 
 void ar_file_delegate__destroy(ar_file_delegate_t *own_file_delegate) {

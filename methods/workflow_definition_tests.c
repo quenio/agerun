@@ -88,6 +88,45 @@ static void setup_prompt_sensitive_runner(void) {
               "Fake model env should be set");
 }
 
+static void setup_transition_prompt_runner(void) {
+    snprintf(
+        g_runner_path,
+        sizeof(g_runner_path),
+        "./fake-workflow-transition-runner-%ld.sh",
+        (long)getpid()
+    );
+    snprintf(
+        g_model_path,
+        sizeof(g_model_path),
+        "./fake-workflow-transition-model-%ld.gguf",
+        (long)getpid()
+    );
+
+    FILE *own_model = fopen(g_model_path, "w");
+    AR_ASSERT(own_model != NULL, "Fake model should be created");
+    fputs("fake-model", own_model);
+    fclose(own_model);
+
+    FILE *own_runner = fopen(g_runner_path, "w");
+    AR_ASSERT(own_runner != NULL, "Transition prompt fake runner should be created");
+    fputs("#!/bin/sh\n", own_runner);
+    fputs("prompt=\"$*\"\n", own_runner);
+    fputs("case \"$prompt\" in\n", own_runner);
+    fputs("  *\"intake_to_triage_prompt\"*) printf 'outcome=advance\\nreason=intake_prompt_used\\n' ;;\n", own_runner);
+    fputs("  *\"triage_to_active_prompt\"*) printf 'outcome=stay\\nreason=triage_prompt_used\\n' ;;\n", own_runner);
+    fputs("  *\"active_to_review_prompt\"*) printf 'outcome=reject\\nreason=active_prompt_used\\n' ;;\n", own_runner);
+    fputs("  *\"review_to_completion_prompt\"*) printf 'outcome=advance\\nreason=review_prompt_used\\n' ;;\n", own_runner);
+    fputs("  *) printf 'outcome=reject\\nreason=missing_transition_prompt\\n' ;;\n", own_runner);
+    fputs("esac\n", own_runner);
+    fclose(own_runner);
+    AR_ASSERT(chmod(g_runner_path, 0700) == 0, "Transition prompt runner should be executable");
+
+    AR_ASSERT(setenv("AGERUN_COMPLETE_RUNNER", g_runner_path, 1) == 0,
+              "Fake runner env should be set");
+    AR_ASSERT(setenv("AGERUN_COMPLETE_MODEL", g_model_path, 1) == 0,
+              "Fake model env should be set");
+}
+
 static void cleanup_fake_runner(void) {
     unsetenv("AGERUN_COMPLETE_RUNNER");
     unsetenv("AGERUN_COMPLETE_MODEL");
@@ -144,7 +183,7 @@ static ar_data_t *create_evaluate_transition_message_with_review(
               "Evaluate message should include owner");
     AR_ASSERT(ar_data__set_map_string(own_message, "review_status", ref_review_status),
               "Evaluate message should include review status");
-    AR_ASSERT(ar_data__set_map_integer(own_message, "transition_count", 3),
+    AR_ASSERT(ar_data__set_map_integer(own_message, "transition_count", 4),
               "Evaluate message should include transition count");
     AR_ASSERT(ar_data__set_map_integer(own_message, "reply_to", (int)reply_to),
               "Evaluate message should include reply target");
@@ -153,32 +192,6 @@ static ar_data_t *create_evaluate_transition_message_with_review(
 
 static ar_data_t *create_evaluate_transition_message(const char *ref_stage, int64_t reply_to) {
     return create_evaluate_transition_message_with_review(ref_stage, "approved", reply_to);
-}
-
-static void debug_parse(void) {
-    FILE *own_file = fopen("../../methods/workflow-definition-1.0.0.method", "r");
-    AR_ASSERT(own_file != NULL, "Method file should open");
-    fseek(own_file, 0, SEEK_END);
-    long file_size = ftell(own_file);
-    AR_ASSERT(file_size >= 0, "Definition method file size should be readable");
-    fseek(own_file, 0, SEEK_SET);
-    char *own_content = malloc((size_t)file_size + 1U);
-    AR_ASSERT(own_content != NULL, "Debug content should allocate");
-    size_t read_size = fread(own_content, 1, (size_t)file_size, own_file);
-    own_content[read_size] = '\0';
-    fclose(own_file);
-    ar_log_t *own_log = ar_log__create();
-    AR_ASSERT(own_log != NULL, "Debug log should create");
-    ar_method_t *own_method = ar_method__create_with_log("workflow-definition-debug", own_content, "1.0.0", own_log);
-    AR_ASSERT(own_method != NULL, "Debug method should create");
-    if (ar_method__get_ast(own_method) == NULL) {
-        const char *ref_error = ar_log__get_last_error_message(own_log);
-        printf("parse-error=%s\n", ref_error ? ref_error : "(none)");
-        fflush(stdout);
-    }
-    ar_method__destroy(own_method);
-    ar_log__destroy(own_log);
-    free(own_content);
 }
 
 static ar_method_fixture_t *create_fixture(void) {
@@ -192,6 +205,26 @@ static ar_method_fixture_t *create_fixture(void) {
         "1.0.0"
     ), "workflow-definition method should load");
     return own_fixture;
+}
+
+static ar_data_t *prepare_definition_and_take_reply(
+    ar_method_fixture_t *mut_fixture,
+    ar_agency_t *mut_agency,
+    int64_t definition_agent_id,
+    const char *ref_definition_path
+) {
+    ar_data_t *own_prepare = create_prepare_definition_message(ref_definition_path, definition_agent_id);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, definition_agent_id, own_prepare),
+              "Prepare definition should queue");
+    AR_ASSERT(ar_method_fixture__process_next_message(mut_fixture),
+              "Definition should queue file delegate read");
+    AR_ASSERT(ar_method_fixture__process_next_message(mut_fixture),
+              "File delegate should process definition read");
+    AR_ASSERT(ar_method_fixture__process_next_message(mut_fixture),
+              "Definition should process file delegate response");
+    AR_ASSERT(ar_agency__agent_has_messages(mut_agency, definition_agent_id),
+              "Prepared definition should reply");
+    return ar_agency__get_agent_message(mut_agency, definition_agent_id);
 }
 
 static void test_workflow_definition__prepare_definition_reads_known_file_and_queues_ready_message(void) {
@@ -210,27 +243,20 @@ static void test_workflow_definition__prepare_definition_reads_known_file_and_qu
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, definition_agent_id, own_message),
               "Prepare definition should queue");
 
-    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture), "Definition should process prepare_definition");
+    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture),
+              "Definition should queue file delegate read");
+    AR_ASSERT(!ar_agency__agent_has_messages(mut_agency, definition_agent_id),
+              "Prepare should be asynchronous until file delegate responds");
+    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture),
+              "File delegate should process workflow definition read");
+    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture),
+              "Definition should process workflow definition content");
 
     const ar_data_t *ref_memory = ar_agency__get_agent_memory(mut_agency, definition_agent_id);
     AR_ASSERT(ref_memory != NULL, "Definition memory should exist");
     const char *ref_workflow_name = ar_data__get_map_string(ref_memory, "workflow_name");
     const char *ref_file_status = ar_data__get_map_string(ref_memory, "file_status");
     const char *ref_dependency_status = ar_data__get_map_string(ref_memory, "dependency_status");
-    const ar_data_t *ref_ready_payload = ar_data__get_map_data(ref_memory, "ready_payload");
-    const char *ref_ready_action = ref_ready_payload ? ar_data__get_map_string(ref_ready_payload, "action") : NULL;
-    printf("workflow_name=%s file_status=%s dependency_status=%s probe_ok=%d transition_ok=%d ready_flag=%d error_flag=%d ready_sent=%d reply_to_id=%d ready_action=%s\n",
-           ref_workflow_name ? ref_workflow_name : "(null)",
-           ref_file_status ? ref_file_status : "(null)",
-           ref_dependency_status ? ref_dependency_status : "(null)",
-           ar_data__get_map_integer(ref_memory, "probe_ok"),
-           ar_data__get_map_integer(ref_memory, "transition_ok"),
-           ar_data__get_map_integer(ref_memory, "ready_flag"),
-           ar_data__get_map_integer(ref_memory, "error_flag"),
-           ar_data__get_map_integer(ref_memory, "ready_sent"),
-           ar_data__get_map_integer(ref_memory, "reply_to_id"),
-           ref_ready_action ? ref_ready_action : "(null)");
-    fflush(stdout);
     AR_ASSERT(ref_workflow_name != NULL, "Workflow name should be stored");
     AR_ASSERT(strcmp(ref_workflow_name, "default_workflow") == 0,
               "Workflow name should be stored");
@@ -248,6 +274,8 @@ static void test_workflow_definition__prepare_definition_reads_known_file_and_qu
               "Reply should be definition_ready");
     AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "initial_stage"), "intake") == 0,
               "Reply should include initial stage");
+    AR_ASSERT(ar_data__get_map_integer(own_reply, "transition_count") == 4,
+              "Reply should include parsed transition count");
     AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "complete_trace"),
                      "COMPLETE_TRACE[phase=startup|outcome=advance|reason=probe_ok]") == 0,
               "Definition ready should carry highlighted startup complete() trace markers");
@@ -263,6 +291,32 @@ static void test_workflow_definition__invalid_schema_returns_definition_error(vo
 
     setup_fake_runner("outcome=ready\nreason=ok\n");
 
+    char mut_definition_path[256];
+    char mut_actual_path[320];
+    snprintf(mut_definition_path, sizeof(mut_definition_path),
+             "workflows/invalid-schema-%ld.workflow", (long)getpid());
+    snprintf(mut_actual_path, sizeof(mut_actual_path),
+             "../../%s", mut_definition_path);
+    FILE *own_invalid_workflow = fopen(mut_actual_path, "w");
+    AR_ASSERT(own_invalid_workflow != NULL, "Invalid workflow fixture should be created");
+    fputs(
+        "workflow_name=invalid_workflow "
+        "workflow_version=1.0.0 "
+        "initial_stage=intake "
+        "terminal_completed=completed "
+        "terminal_rejected=rejected "
+        "requires_local_completion=true "
+        "item_fields=item_id,title,priority,owner,review_status "
+        "stages=intake,triage,active,review,completion "
+        "transition_count=3 "
+        "transition_1_from=intake transition_1_to=triage transition_1_prompt=intake_to_triage_prompt "
+        "transition_2_from=triage transition_2_to=active transition_2_prompt=triage_to_active_prompt "
+        "transition_3_from=active transition_3_to=review transition_3_prompt=active_to_review_prompt "
+        "transition_4_from=review transition_4_to=completion transition_4_prompt=review_to_completion_prompt\n",
+        own_invalid_workflow
+    );
+    fclose(own_invalid_workflow);
+
     ar_method_fixture_t *own_fixture = create_fixture();
     ar_agency_t *mut_agency = ar_method_fixture__get_agency(own_fixture);
     ar_data_t *own_context = ar_data__create_map();
@@ -270,23 +324,18 @@ static void test_workflow_definition__invalid_schema_returns_definition_error(vo
     int64_t definition_agent_id = ar_agency__create_agent(mut_agency, "workflow-definition", "1.0.0", own_context);
     AR_ASSERT(definition_agent_id == 1, "Definition agent should be created");
 
-    ar_data_t *own_message = create_prepare_definition_message("invalid.workflow", definition_agent_id);
+    ar_data_t *own_message = create_prepare_definition_message(mut_definition_path, definition_agent_id);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, definition_agent_id, own_message),
               "Prepare definition should queue");
 
-    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture), "Definition should process invalid definition");
+    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture),
+              "Definition should queue invalid definition file read");
+    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture),
+              "File delegate should process invalid definition read");
+    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture),
+              "Definition should process invalid file response");
 
     const ar_data_t *ref_memory = ar_agency__get_agent_memory(mut_agency, definition_agent_id);
-    const ar_data_t *ref_error_payload = ar_data__get_map_data(ref_memory, "error_payload");
-    const char *ref_error_action = ref_error_payload ? ar_data__get_map_string(ref_error_payload, "action") : NULL;
-    printf("invalid last_reason=%s error_flag=%d error_sent=%d reply_to_id=%d error_action=%s category=%s\n",
-           ar_data__get_map_string(ref_memory, "last_reason") ? ar_data__get_map_string(ref_memory, "last_reason") : "(null)",
-           ar_data__get_map_integer(ref_memory, "error_flag"),
-           ar_data__get_map_integer(ref_memory, "error_sent"),
-           ar_data__get_map_integer(ref_memory, "reply_to_id"),
-           ref_error_action ? ref_error_action : "(null)",
-           ar_data__get_map_string(ref_memory, "error_category") ? ar_data__get_map_string(ref_memory, "error_category") : "(null)" );
-    fflush(stdout);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_memory, "last_reason"), "invalid_definition_schema") == 0,
               "Invalid schema should record schema reason");
 
@@ -301,6 +350,7 @@ static void test_workflow_definition__invalid_schema_returns_definition_error(vo
 
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_context);
+    remove(mut_actual_path);
     cleanup_fake_runner();
 }
 
@@ -316,11 +366,12 @@ static void test_workflow_definition__complete_failure_maps_to_retryable_stay(vo
     int64_t definition_agent_id = ar_agency__create_agent(mut_agency, "workflow-definition", "1.0.0", own_context);
     AR_ASSERT(definition_agent_id == 1, "Definition agent should be created");
 
-    ar_data_t *own_prepare = create_prepare_definition_message("workflows/default.workflow", definition_agent_id);
-    AR_ASSERT(ar_agency__send_to_agent(mut_agency, definition_agent_id, own_prepare),
-              "Prepare definition should queue");
-    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture), "Prepare should process");
-    ar_data_t *own_prepare_reply = ar_agency__get_agent_message(mut_agency, definition_agent_id);
+    ar_data_t *own_prepare_reply = prepare_definition_and_take_reply(
+        own_fixture,
+        mut_agency,
+        definition_agent_id,
+        "workflows/default.workflow"
+    );
     ar_data__destroy(own_prepare_reply);
 
     ar_data_t *own_message = create_evaluate_transition_message("review", definition_agent_id);
@@ -358,11 +409,12 @@ static void test_workflow_definition__complete_success_uses_outcome_and_reason(v
     int64_t definition_agent_id = ar_agency__create_agent(mut_agency, "workflow-definition", "1.0.0", own_context);
     AR_ASSERT(definition_agent_id == 1, "Definition agent should be created");
 
-    ar_data_t *own_prepare = create_prepare_definition_message("workflows/default.workflow", definition_agent_id);
-    AR_ASSERT(ar_agency__send_to_agent(mut_agency, definition_agent_id, own_prepare),
-              "Prepare definition should queue");
-    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture), "Prepare should process");
-    ar_data_t *own_prepare_reply = ar_agency__get_agent_message(mut_agency, definition_agent_id);
+    ar_data_t *own_prepare_reply = prepare_definition_and_take_reply(
+        own_fixture,
+        mut_agency,
+        definition_agent_id,
+        "workflows/default.workflow"
+    );
     ar_data__destroy(own_prepare_reply);
 
     ar_data_t *own_message = create_evaluate_transition_message("review", definition_agent_id);
@@ -416,7 +468,9 @@ static void test_workflow_definition__complete_prompt_uses_workflow_item_context
     );
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, definition_agent_id, own_prepare),
               "Prepare definition should queue");
-    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture), "Prepare should process");
+    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture), "Prepare should queue file read");
+    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture), "File delegate should read definition");
+    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture), "Prepare response should process");
     ar_data_t *own_prepare_reply = ar_agency__get_agent_message(mut_agency, definition_agent_id);
     ar_data__destroy(own_prepare_reply);
 
@@ -458,16 +512,146 @@ static void test_workflow_definition__complete_prompt_uses_workflow_item_context
     cleanup_fake_runner();
 }
 
+static void test_workflow_definition__missing_transition_fields_returns_definition_error(void) {
+    printf("Testing workflow-definition rejects missing transition fields...\n");
+
+    setup_fake_runner("outcome=ready\\nreason=ok\\n");
+
+    char mut_definition_path[256];
+    char mut_actual_path[320];
+    snprintf(mut_definition_path, sizeof(mut_definition_path),
+             "workflows/missing-transition-%ld.workflow", (long)getpid());
+    snprintf(mut_actual_path, sizeof(mut_actual_path),
+             "../../%s", mut_definition_path);
+    FILE *own_malformed_workflow = fopen(mut_actual_path, "w");
+    AR_ASSERT(own_malformed_workflow != NULL, "Malformed workflow fixture should be created");
+    fputs(
+        "workflow_name=default_workflow "
+        "workflow_version=1.0.0 "
+        "initial_stage=intake "
+        "terminal_completed=completed "
+        "terminal_rejected=rejected "
+        "requires_local_completion=true "
+        "item_fields=item_id,title,priority,owner,review_status "
+        "stages=intake,triage,active,review,completion "
+        "transition_count=3 "
+        "transition_1_from=intake transition_1_to=triage transition_1_prompt=intake_to_triage_prompt "
+        "transition_2_from=triage transition_2_to=active transition_2_prompt=triage_to_active_prompt "
+        "transition_3_from=active transition_3_to=review transition_3_prompt=active_to_review_prompt "
+        "transition_4_from=review transition_4_to=completion transition_4_prompt=review_to_completion_prompt\n",
+        own_malformed_workflow
+    );
+    fclose(own_malformed_workflow);
+
+    ar_method_fixture_t *own_fixture = create_fixture();
+    ar_agency_t *mut_agency = ar_method_fixture__get_agency(own_fixture);
+    ar_data_t *own_context = ar_data__create_map();
+    AR_ASSERT(own_context != NULL, "Definition context should be created");
+    int64_t definition_agent_id = ar_agency__create_agent(mut_agency, "workflow-definition", "1.0.0", own_context);
+    AR_ASSERT(definition_agent_id == 1, "Definition agent should be created");
+
+    ar_data_t *own_reply = prepare_definition_and_take_reply(
+        own_fixture,
+        mut_agency,
+        definition_agent_id,
+        mut_definition_path
+    );
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "action"), "definition_error") == 0,
+              "Missing transition prompt should return definition_error");
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "reason"), "invalid_definition_schema") == 0,
+              "Missing transition prompt should be a schema error");
+    ar_data__destroy(own_reply);
+
+    ar_method_fixture__destroy(own_fixture);
+    ar_data__destroy(own_context);
+    remove(mut_actual_path);
+    cleanup_fake_runner();
+}
+
+static void test_workflow_definition__uses_configured_prompt_for_each_transition(void) {
+    printf("Testing workflow-definition uses configured prompt for each transition...\n");
+
+    setup_transition_prompt_runner();
+
+    ar_method_fixture_t *own_fixture = create_fixture();
+    ar_agency_t *mut_agency = ar_method_fixture__get_agency(own_fixture);
+    ar_data_t *own_context = ar_data__create_map();
+    AR_ASSERT(own_context != NULL, "Definition context should be created");
+    int64_t definition_agent_id = ar_agency__create_agent(mut_agency, "workflow-definition", "1.0.0", own_context);
+    AR_ASSERT(definition_agent_id == 1, "Definition agent should be created");
+
+    ar_data_t *own_prepare_reply = prepare_definition_and_take_reply(
+        own_fixture,
+        mut_agency,
+        definition_agent_id,
+        "workflows/default.workflow"
+    );
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_prepare_reply, "action"), "definition_ready") == 0,
+              "Default definition should prepare");
+    ar_data__destroy(own_prepare_reply);
+
+    ar_data_t *own_message = create_evaluate_transition_message("intake", definition_agent_id);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, definition_agent_id, own_message),
+              "Intake transition should queue");
+    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture), "Intake transition should process");
+    ar_data_t *own_reply = ar_agency__get_agent_message(mut_agency, definition_agent_id);
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "reason"), "intake_prompt_used") == 0,
+              "Intake transition should use intake prompt");
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "next_stage"), "triage") == 0,
+              "Intake advance should use configured to-stage");
+    ar_data__destroy(own_reply);
+
+    own_message = create_evaluate_transition_message("triage", definition_agent_id);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, definition_agent_id, own_message),
+              "Triage transition should queue");
+    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture), "Triage transition should process");
+    own_reply = ar_agency__get_agent_message(mut_agency, definition_agent_id);
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "outcome"), "stay") == 0,
+              "Triage prompt should produce stay");
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "next_stage"), "triage") == 0,
+              "Stay should keep triage");
+    AR_ASSERT(ar_data__get_map_integer(own_reply, "retryable") == 1,
+              "Successful stay should be retryable");
+    ar_data__destroy(own_reply);
+
+    own_message = create_evaluate_transition_message("active", definition_agent_id);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, definition_agent_id, own_message),
+              "Active transition should queue");
+    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture), "Active transition should process");
+    own_reply = ar_agency__get_agent_message(mut_agency, definition_agent_id);
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "outcome"), "reject") == 0,
+              "Active prompt should produce reject");
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "terminal_outcome"), "rejected") == 0,
+              "Reject should use terminal rejected outcome");
+    ar_data__destroy(own_reply);
+
+    own_message = create_evaluate_transition_message("review", definition_agent_id);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, definition_agent_id, own_message),
+              "Review transition should queue");
+    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture), "Review transition should process");
+    own_reply = ar_agency__get_agent_message(mut_agency, definition_agent_id);
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "reason"), "review_prompt_used") == 0,
+              "Review transition should use review prompt");
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "terminal_outcome"), "completed") == 0,
+              "Review advance should use terminal completed outcome");
+    ar_data__destroy(own_reply);
+
+    ar_method_fixture__destroy(own_fixture);
+    ar_data__destroy(own_context);
+    cleanup_fake_runner();
+}
+
 int main(void) {
     printf("Workflow Definition Method Tests\n");
     printf("===============================\n\n");
 
-    debug_parse();
     test_workflow_definition__prepare_definition_reads_known_file_and_queues_ready_message();
     test_workflow_definition__invalid_schema_returns_definition_error();
     test_workflow_definition__complete_failure_maps_to_retryable_stay();
     test_workflow_definition__complete_success_uses_outcome_and_reason();
     test_workflow_definition__complete_prompt_uses_workflow_item_context();
+    test_workflow_definition__missing_transition_fields_returns_definition_error();
+    test_workflow_definition__uses_configured_prompt_for_each_transition();
 
     printf("\nAll workflow-definition tests passed!\n");
     return 0;

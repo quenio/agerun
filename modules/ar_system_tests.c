@@ -405,15 +405,15 @@ static void test_system__register_proxy(void) {
     ar_delegate_t *own_proxy = ar_delegate__create(ref_log, "test");
     AR_ASSERT(own_proxy != NULL, "Proxy creation should succeed");
 
-    // When we register the proxy with ID -100
-    bool result = ar_system__register_delegate(mut_system, -100, own_proxy);
+    // When we register the proxy with an unused negative ID
+    bool result = ar_system__register_delegate(mut_system, -199, own_proxy);
 
     // Then the registration should succeed
     AR_ASSERT(result, "Proxy registration should succeed");
 
     // And we should be able to find it in the registry
     ar_delegate_registry_t *ref_registry = ar_system__get_delegate_registry(mut_system);
-    ar_delegate_t *ref_found = ar_delegate_registry__find(ref_registry, -100);
+    ar_delegate_t *ref_found = ar_delegate_registry__find(ref_registry, -199);
     AR_ASSERT(ref_found != NULL, "Registered proxy should be findable");
     AR_ASSERT(strcmp(ar_delegate__get_type(ref_found), "test") == 0, "Found proxy should have correct type");
 

@@ -47,7 +47,8 @@ The coordinator owns the boot-time orchestration state.
 ## 3. Workflow Definition Agent Memory
 
 ### Description
-The definition agent stores the recognized definition identity and normalized decision state.
+The definition agent stores the parsed definition identity, transition metadata, and normalized
+decision state.
 
 ### Key Attributes
 - `definition_path`
@@ -59,9 +60,14 @@ The definition agent stores the recognized definition identity and normalized de
 - `requires_local_completion`
 - `file_status`
 - `dependency_status`
-- `validation_clause`
+- `item_fields`
+- `stages`
+- `transition_count`
+- `transition_1_from`, `transition_1_to`, `transition_1_prompt`
+- `transition_2_from`, `transition_2_to`, `transition_2_prompt`
+- `transition_3_from`, `transition_3_to`, `transition_3_prompt`
+- `transition_4_from`, `transition_4_to`, `transition_4_prompt`
 - `last_reason`
-- `last_reply_action`
 - `transition_outcome`
 - `transition_reason`
 - `retryable`
@@ -103,12 +109,8 @@ The reporter tracks the last emitted visible event.
 ## 6. Definition Files
 
 ### Description
-The current implementation treats the files under `workflows/` as path-selected definition assets.
-
-### Supported Paths
-- `workflows/default.workflow`
-- `workflows/test.workflow`
-- `invalid.workflow` (invalid-schema fixture)
+The current implementation treats the files under `workflows/` as flat key-value definition assets
+read through file delegate `-100`.
 
 ### Implemented Attributes Exposed by the Definition Agent
 - `workflow_name`
@@ -119,7 +121,10 @@ The current implementation treats the files under `workflows/` as path-selected 
 - `requires_local_completion`
 - `item_fields`
 - `stages`
-- `validation_clause`
+- `transition_count`
+- `transition_N_from`
+- `transition_N_to`
+- `transition_N_prompt`
 
 ## 7. Visible Output Events
 
@@ -128,20 +133,19 @@ The externally visible runtime output is emitted through the existing log delega
 
 ### Event Shapes
 - intake progress from bootstrap
-- summary from coordinator success path
+- progress and summary from workflow-item through workflow-reporter
 - startup failure from coordinator failure path
-- progress/summary from workflow-item and workflow-reporter method tests
 
 ## Relationships
 
 - one bootstrap demo context starts one coordinator agent
 - one coordinator spawns one definition agent and one reporter agent
 - one definition agent returns either `definition_ready` or `definition_error`
-- one coordinator emits either a success summary handoff or a startup failure handoff
+- one workflow item asks the definition agent for transition decisions until terminal outcome or stay
+- one coordinator emits either an item initialization handoff or a startup failure handoff
 - one reporter emits visible log output
 
 ## Notes
 
-- This reflects the current implementation, not the earlier broader design target.
-- The workflow-item method remains implemented and tested independently even though the current
-  executable startup path uses a simplified coordinator success handoff.
+- The workflow file is authoritative for transition topology; generated completion output supplies
+  only normalized outcomes and reasons.

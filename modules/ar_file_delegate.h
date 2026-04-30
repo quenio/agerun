@@ -5,6 +5,9 @@
 #include <stdint.h>
 #include "ar_log.h"
 #include "ar_data.h"
+#include "ar_delegate.h"
+
+typedef struct ar_agency_s ar_agency_t;
 
 /**
  * Opaque type for a file delegate instance
@@ -24,6 +27,21 @@ typedef struct ar_file_delegate_s ar_file_delegate_t;
  */
 ar_file_delegate_t* ar_file_delegate__create(
     ar_log_t *ref_log,
+    const char *ref_allowed_path,
+    size_t max_file_size);
+
+/**
+ * Creates a runtime delegate wrapper for file operations.
+ * @param ref_log The log instance for error reporting (borrowed reference, may be NULL)
+ * @param ref_agency Agency used to deliver responses to requesting agents (borrowed reference)
+ * @param ref_allowed_path The allowed directory path for file operations (borrowed string)
+ * @param max_file_size Maximum file size for read operations (0 uses default limit)
+ * @return A delegate that owns its file delegate handler context, or NULL on failure.
+ * @note Ownership: Returns an owned value that caller must register or destroy.
+ */
+ar_delegate_t* ar_file_delegate__create_delegate(
+    ar_log_t *ref_log,
+    ar_agency_t *ref_agency,
     const char *ref_allowed_path,
     size_t max_file_size);
 

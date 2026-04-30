@@ -531,8 +531,8 @@ static void test_message_processing_loop(ar_executable_fixture_t *mut_fixture) {
     // Verify message processing occurred
     AR_ASSERT(found_processing_messages, "Should see 'Processing messages' indicating loop started");
     AR_ASSERT(found_messages_processed_count, "Should see count of messages processed");
-    AR_ASSERT(messages_processed == 7,
-              "Should process bootstrap, workflow, and log delegate messages for the demo");
+    AR_ASSERT(messages_processed == 9,
+              "Should process bootstrap, async definition loading, workflow, and log delegate messages for the demo");
 
     printf("Message processing loop test passed! Processed %d messages\n", messages_processed);
 
@@ -1617,4 +1617,3 @@ int main(void) {
     printf("All 21 tests passed!\n");
     return 0;
 }
-

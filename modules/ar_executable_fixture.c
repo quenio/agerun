@@ -104,12 +104,15 @@ char* ar_executable_fixture__create_methods_dir(ar_executable_fixture_t *mut_fix
     
     snprintf(own_methods_dir, 256, "/tmp/agerun_test_%d_methods", (int)pid);
     
-    char setup_cmd[1024];
+    char setup_cmd[2048];
     snprintf(setup_cmd, sizeof(setup_cmd),
         "rm -rf %s 2>/dev/null && "
         "mkdir -p %s && "
-        "cp ../../methods/* %s/",
-        own_methods_dir, own_methods_dir, own_methods_dir);
+        "cp ../../methods/* %s/ && "
+        "mkdir -p %s/workflows && "
+        "cp ../../workflows/* %s/workflows/",
+        own_methods_dir, own_methods_dir, own_methods_dir,
+        mut_fixture->temp_build_dir, mut_fixture->temp_build_dir);
     
     int result = system(setup_cmd);
     if (result != 0) {
