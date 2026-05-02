@@ -788,6 +788,8 @@ static void test_executable__loads_agents_on_startup(ar_executable_fixture_t *mu
     const char *build_dir = ar_executable_fixture__get_build_dir(mut_fixture);
     AR_ASSERT(build_dir != NULL, "Should have build directory");
 
+    ar_executable_fixture__clean_persisted_files(mut_fixture);
+
     char agency_path[512];
     snprintf(agency_path, sizeof(agency_path), "%s/agerun.agency", build_dir);
 
@@ -831,6 +833,8 @@ static void test_executable__skips_bootstrap_when_agents_loaded(ar_executable_fi
 
     const char *build_dir = ar_executable_fixture__get_build_dir(mut_fixture);
     AR_ASSERT(build_dir != NULL, "Should have build directory");
+
+    ar_executable_fixture__clean_persisted_files(mut_fixture);
 
     char agency_path[512];
     snprintf(agency_path, sizeof(agency_path), "%s/agerun.agency", build_dir);
