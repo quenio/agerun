@@ -236,7 +236,12 @@ static void test_workflow_definition__prepare_definition_reads_known_file_and_qu
     ar_agency_t *mut_agency = ar_method_fixture__get_agency(own_fixture);
     ar_data_t *own_context = ar_data__create_map();
     AR_ASSERT(own_context != NULL, "Definition context should be created");
-    int64_t definition_agent_id = ar_agency__create_agent(mut_agency, "workflow-definition", "1.0.0", own_context);
+    int64_t definition_agent_id = ar_agency__create_agent(
+        mut_agency,
+        "workflow-definition",
+        "1.0.0",
+        own_context
+    );
     AR_ASSERT(definition_agent_id == 1, "Definition agent should be created");
 
     ar_data_t *own_message = create_prepare_definition_message("workflows/default.workflow", definition_agent_id);
@@ -321,7 +326,12 @@ static void test_workflow_definition__invalid_schema_returns_definition_error(vo
     ar_agency_t *mut_agency = ar_method_fixture__get_agency(own_fixture);
     ar_data_t *own_context = ar_data__create_map();
     AR_ASSERT(own_context != NULL, "Definition context should be created");
-    int64_t definition_agent_id = ar_agency__create_agent(mut_agency, "workflow-definition", "1.0.0", own_context);
+    int64_t definition_agent_id = ar_agency__create_agent(
+        mut_agency,
+        "workflow-definition",
+        "1.0.0",
+        own_context
+    );
     AR_ASSERT(definition_agent_id == 1, "Definition agent should be created");
 
     ar_data_t *own_message = create_prepare_definition_message(mut_definition_path, definition_agent_id);
@@ -346,6 +356,69 @@ static void test_workflow_definition__invalid_schema_returns_definition_error(vo
               "Reply should be definition_error");
     AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "reason"), "invalid_definition_schema") == 0,
               "Reply should include schema reason");
+    ar_data__destroy(own_reply);
+
+    ar_method_fixture__destroy(own_fixture);
+    ar_data__destroy(own_context);
+    remove(mut_actual_path);
+    cleanup_fake_runner();
+}
+
+static void test_workflow_definition__invalid_schema_reason_wins_over_probe_failure(void) {
+    printf("Testing workflow-definition preserves schema error when startup probe also fails...\n");
+
+    setup_missing_model();
+
+    char mut_definition_path[256];
+    char mut_actual_path[320];
+    snprintf(mut_definition_path, sizeof(mut_definition_path),
+             "workflows/invalid-schema-and-probe-%ld.workflow", (long)getpid());
+    snprintf(mut_actual_path, sizeof(mut_actual_path),
+             "../../%s", mut_definition_path);
+    FILE *own_invalid_workflow = fopen(mut_actual_path, "w");
+    AR_ASSERT(own_invalid_workflow != NULL, "Invalid workflow fixture should be created");
+    fputs(
+        "workflow_name=invalid_workflow "
+        "workflow_version=1.0.0 "
+        "initial_stage=intake "
+        "terminal_completed=completed "
+        "terminal_rejected=rejected "
+        "requires_local_completion=true "
+        "item_fields=item_id,title,priority,owner,review_status "
+        "stages=intake,triage,active,review,completion "
+        "transition_count=3 "
+        "transition_1_from=intake transition_1_to=triage transition_1_prompt=intake_to_triage_prompt "
+        "transition_2_from=triage transition_2_to=active transition_2_prompt=triage_to_active_prompt "
+        "transition_3_from=active transition_3_to=review transition_3_prompt=active_to_review_prompt "
+        "transition_4_from=review transition_4_to=completion transition_4_prompt=review_to_completion_prompt\n",
+        own_invalid_workflow
+    );
+    fclose(own_invalid_workflow);
+
+    ar_method_fixture_t *own_fixture = create_fixture();
+    ar_agency_t *mut_agency = ar_method_fixture__get_agency(own_fixture);
+    ar_data_t *own_context = ar_data__create_map();
+    AR_ASSERT(own_context != NULL, "Definition context should be created");
+    int64_t definition_agent_id = ar_agency__create_agent(
+        mut_agency,
+        "workflow-definition",
+        "1.0.0",
+        own_context
+    );
+    AR_ASSERT(definition_agent_id == 1, "Definition agent should be created");
+
+    ar_data_t *own_reply = prepare_definition_and_take_reply(
+        own_fixture,
+        mut_agency,
+        definition_agent_id,
+        mut_definition_path
+    );
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "action"), "definition_error") == 0,
+              "Invalid schema with missing model should return definition_error");
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "reason"), "invalid_definition_schema") == 0,
+              "Schema error should not be masked by startup dependency failure");
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "failure_category"), "") == 0,
+              "Schema error should not be categorized as runtime unavailable");
     ar_data__destroy(own_reply);
 
     ar_method_fixture__destroy(own_fixture);
@@ -647,6 +720,7 @@ int main(void) {
 
     test_workflow_definition__prepare_definition_reads_known_file_and_queues_ready_message();
     test_workflow_definition__invalid_schema_returns_definition_error();
+    test_workflow_definition__invalid_schema_reason_wins_over_probe_failure();
     test_workflow_definition__complete_failure_maps_to_retryable_stay();
     test_workflow_definition__complete_success_uses_outcome_and_reason();
     test_workflow_definition__complete_prompt_uses_workflow_item_context();

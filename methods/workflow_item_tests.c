@@ -253,12 +253,20 @@ static void test_workflow_item__requests_transition_decision_at_each_non_termina
     AR_ASSERT(ar_method_fixture__load_method(own_fixture, "workflow-reporter",
         "../../methods/workflow-reporter-1.0.0.method", "1.0.0"),
         "workflow-reporter method should load");
+    AR_ASSERT(ar_method_fixture__load_method(own_fixture, "workflow-definition",
+        "../../methods/workflow-definition-1.0.0.method", "1.0.0"),
+        "workflow-definition method should load");
 
     ar_agency_t *mut_agency = ar_method_fixture__get_agency(own_fixture);
     ar_data_t *own_context = ar_data__create_map();
     AR_ASSERT(own_context != NULL, "Workflow item context should be created");
     int64_t reporter_agent_id = ar_agency__create_agent(mut_agency, "workflow-reporter", "1.0.0", own_context);
-    int64_t definition_agent_id = ar_agency__create_agent(mut_agency, "workflow-reporter", "1.0.0", own_context);
+    int64_t definition_agent_id = ar_agency__create_agent(
+        mut_agency,
+        "workflow-definition",
+        "1.0.0",
+        own_context
+    );
     int64_t item_agent_id = ar_agency__create_agent(mut_agency, "workflow-item", "1.0.0", own_context);
     AR_ASSERT(reporter_agent_id > 0 && definition_agent_id > 0 && item_agent_id > 0,
               "Reporter, definition, and item agents should be created");

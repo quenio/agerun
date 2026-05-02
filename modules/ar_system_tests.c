@@ -2,6 +2,7 @@
 #include "ar_method.h"
 #include "ar_methodology.h"
 #include "ar_agency.h"
+#include "ar_data.h"
 #include "ar_agent_registry.h"
 #include "ar_delegate.h"
 #include "ar_delegate_registry.h"
@@ -52,6 +53,7 @@ static void test_message_passing(ar_system_t *mut_system);
 static void test_system__has_delegation(void);
 static void test_system__processes_delegate_messages(void);
 static void test_system__processes_delegate_messages_with_agent_sender_id(void);
+static void test_system__file_delegate_resolves_repo_root_from_bin_directory(void);
 static void test_system__preserves_agency_assigned_memory_self(void);
 static void test_system__closed_shell_session_delegate_discards_late_reply(void);
 static void test_message_forwarding__whole_message_reuses_pointer(void);
@@ -573,6 +575,73 @@ static void test_system__processes_delegate_messages_with_agent_sender_id(void) 
     printf("Delegate sender-ID preservation test passed.\n");
 }
 
+static void test_system__file_delegate_resolves_repo_root_from_bin_directory(void) {
+    char mut_original_cwd[1024];
+    ar_system_t *own_system;
+    ar_agency_t *mut_agency;
+    ar_methodology_t *mut_methodology;
+    ar_data_t *own_context;
+    ar_data_t *own_trigger;
+    ar_data_t *own_reply;
+    int64_t agent_id;
+
+    printf("Testing file delegate root when system starts from bin directory...\n");
+
+    AR_ASSERT(getcwd(mut_original_cwd, sizeof(mut_original_cwd)) != NULL,
+              "Original working directory should be captured");
+    AR_ASSERT(chdir("../../bin") == 0, "Test should enter repository bin directory");
+
+    own_system = ar_system__create();
+    AR_ASSERT(own_system != NULL, "System creation from bin should succeed");
+    AR_ASSERT(ar_system__init(own_system, NULL, NULL) == 0,
+              "System init from bin should succeed");
+
+    mut_agency = ar_system__get_agency(own_system);
+    AR_ASSERT(mut_agency != NULL, "System should provide an agency");
+    mut_methodology = ar_agency__get_methodology(mut_agency);
+    AR_ASSERT(mut_methodology != NULL, "Agency should provide a methodology");
+    AR_ASSERT(ar_methodology__create_method(
+        mut_methodology,
+        "read-workflow-from-bin",
+        "memory.file_request := parse(\"action={action} path={path}\", "
+        "\"action=read path=workflows/default.workflow\")\n"
+        "memory.sent := send(-100, memory.file_request)",
+        "1.0.0"),
+        "File reader method should register");
+
+    own_context = ar_data__create_map();
+    AR_ASSERT(own_context != NULL, "File reader context should be created");
+    agent_id = ar_agency__create_agent(mut_agency, "read-workflow-from-bin", "1.0.0", own_context);
+    AR_ASSERT(agent_id > 0, "File reader agent should be created");
+
+    own_trigger = ar_data__create_string("read");
+    AR_ASSERT(own_trigger != NULL, "Trigger message should be created");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, agent_id, own_trigger),
+              "Trigger message should be queued");
+
+    AR_ASSERT(ar_system__process_next_message(own_system),
+              "System should process file reader message");
+    AR_ASSERT(ar_system__process_next_message(own_system),
+              "System should process file delegate read");
+    AR_ASSERT(ar_agency__agent_has_messages(mut_agency, agent_id),
+              "File delegate should reply to the reader agent");
+
+    own_reply = ar_agency__get_agent_message(mut_agency, agent_id);
+    AR_ASSERT(own_reply != NULL, "File delegate reply should be available");
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "status"), "success") == 0,
+              "Reading workflows/default.workflow from bin should succeed");
+    AR_ASSERT(strstr(ar_data__get_map_string(own_reply, "content"), "workflow_name=") != NULL,
+              "Workflow definition content should be returned");
+
+    ar_data__destroy(own_reply);
+    ar_data__destroy(own_context);
+    ar_system__shutdown(own_system);
+    ar_system__destroy(own_system);
+    AR_ASSERT(chdir(mut_original_cwd) == 0, "Original working directory should be restored");
+
+    printf("File delegate bin root test passed.\n");
+}
+
 static void test_system__preserves_agency_assigned_memory_self(void) {
     ar_system_t *own_system;
     ar_agency_t *mut_agency;
@@ -819,6 +888,7 @@ int main(void) {
     test_system__has_delegation();
     test_system__processes_delegate_messages();
     test_system__processes_delegate_messages_with_agent_sender_id();
+    test_system__file_delegate_resolves_repo_root_from_bin_directory();
     test_system__preserves_agency_assigned_memory_self();
     test_message_forwarding__whole_message_reuses_pointer();
     test_message_forwarding__message_field_still_copies();

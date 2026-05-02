@@ -124,9 +124,11 @@ memory.probe_failed_flag := memory.schema_ok * memory.probe_failed_value
 memory.file_response_flag := memory.is_file_response
 memory.not_ready_flag := if(memory.ready_flag = 1, 0, 1)
 memory.error_flag := memory.file_response_flag * memory.not_ready_flag
+memory.dependency_failed_value := if(memory.dependency_status = "ready", 0, 1)
+memory.startup_dependency_failed_flag := memory.schema_ok * memory.dependency_failed_value
 memory.error_reason := if(message.action = "definition_file", "invalid_definition_schema", memory.error_reason)
-memory.error_reason := if(memory.dependency_status = "ready", memory.error_reason, "startup_dependency_unavailable")
-memory.error_category := if(memory.dependency_status = "ready", "", "runtime_unavailable")
+memory.error_reason := if(memory.startup_dependency_failed_flag = 1, "startup_dependency_unavailable", memory.error_reason)
+memory.error_category := if(memory.startup_dependency_failed_flag = 1, "runtime_unavailable", "")
 memory.startup_complete_trace_input := build("COMPLETE_TRACE[phase=startup|outcome={startup_complete_outcome}|reason={startup_complete_reason}]", memory)
 memory.startup_complete_trace := if(memory.probe_ok = 1, memory.startup_complete_trace_input, memory.startup_complete_trace)
 memory.startup_complete_trace := if(memory.probe_failed_flag = 1, "COMPLETE_TRACE[phase=startup|status=failure]", memory.startup_complete_trace)

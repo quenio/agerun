@@ -62,8 +62,20 @@ static const char* _get_default_file_delegate_root(char *mut_buffer, size_t buff
         return ".";
     }
 
-    if (strstr(mut_buffer, "/bin/run-") != NULL || strstr(mut_buffer, "/bin") != NULL) {
-        return "../..";
+    char *mut_last_separator = strrchr(mut_buffer, '/');
+    const char *ref_leaf = mut_last_separator ? mut_last_separator + 1 : mut_buffer;
+    if (strcmp(ref_leaf, "bin") == 0) {
+        return "..";
+    }
+
+    if (mut_last_separator != NULL) {
+        *mut_last_separator = '\0';
+        char *mut_parent_separator = strrchr(mut_buffer, '/');
+        const char *ref_parent = mut_parent_separator ? mut_parent_separator + 1 : mut_buffer;
+        if (strcmp(ref_parent, "bin") == 0) {
+            return "../..";
+        }
+        *mut_last_separator = '/';
     }
 
     return ".";
