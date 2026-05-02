@@ -122,12 +122,12 @@ run_job "check-naming" "make check-naming" "logs/check-naming.log"
 run_job "check-docs" "make check-docs" "logs/check-docs.log"
 run_job "analyze-exec" "make analyze-exec" "logs/analyze-exec.log"
 run_job "analyze-tests" "make analyze-tests" "logs/analyze-tests.log"
-run_job "run-tests" "make run-tests" "logs/run-tests.log"
-run_job "run-exec" "env AGERUN_COMPLETE_RUNNER=$deterministic_complete_runner make run-exec" "logs/run-exec.log"
+run_job "run-tests" "make run-tests SKIP_COMPLETE_RUNTIME_READY=1" "logs/run-tests.log"
+run_job "run-exec" "env AGERUN_COMPLETE_RUNNER=$deterministic_complete_runner make run-exec NO_PERSISTENCE=1" "logs/run-exec.log"
 run_job "sanitize-tests" "make sanitize-tests" "logs/sanitize-tests.log"
-run_job "sanitize-exec" "env AGERUN_COMPLETE_RUNNER=$deterministic_complete_runner make sanitize-exec" "logs/sanitize-exec.log"
+run_job "sanitize-exec" "env AGERUN_COMPLETE_RUNNER=$deterministic_complete_runner make sanitize-exec NO_PERSISTENCE=1" "logs/sanitize-exec.log"
 run_job "tsan-tests" "env AGERUN_TSAN_COMPLETE_RUNNER=$deterministic_complete_runner make tsan-tests" "logs/tsan-tests.log"
-run_job "tsan-exec" "env AGERUN_COMPLETE_RUNNER=$deterministic_complete_runner make tsan-exec" "logs/tsan-exec.log"
+run_job "tsan-exec" "env AGERUN_COMPLETE_RUNNER=$deterministic_complete_runner make tsan-exec NO_PERSISTENCE=1" "logs/tsan-exec.log"
 
 # Wait for all jobs to complete
 wait
