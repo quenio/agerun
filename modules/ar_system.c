@@ -12,6 +12,7 @@
 #include "ar_delegation.h"
 #include "ar_delegate.h"
 #include "ar_log_delegate.h"
+#include "ar_file_delegate.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,6 +21,7 @@
 #include <stdint.h>
 #include <time.h>
 #include <inttypes.h>
+#include <unistd.h>
 
 /* Constants are now defined in their respective module header files:
  * - MAX_METHODS, MAX_VERSIONS_PER_METHOD, MAX_METHOD_NAME_LENGTH, MAX_INSTRUCTIONS_LENGTH in ar_methodology.h
@@ -49,6 +51,35 @@ struct ar_system_s {
 /* Implementation */
 
 #define AR_SYSTEM__LOG_DELEGATE_ID (-102)
+#define AR_SYSTEM__FILE_DELEGATE_ID (-100)
+
+static const char* _get_default_file_delegate_root(char *mut_buffer, size_t buffer_size) {
+    if (!mut_buffer || buffer_size == 0) {
+        return ".";
+    }
+
+    if (getcwd(mut_buffer, buffer_size) == NULL) {
+        return ".";
+    }
+
+    char *mut_last_separator = strrchr(mut_buffer, '/');
+    const char *ref_leaf = mut_last_separator ? mut_last_separator + 1 : mut_buffer;
+    if (strcmp(ref_leaf, "bin") == 0) {
+        return "..";
+    }
+
+    if (mut_last_separator != NULL) {
+        *mut_last_separator = '\0';
+        char *mut_parent_separator = strrchr(mut_buffer, '/');
+        const char *ref_parent = mut_parent_separator ? mut_parent_separator + 1 : mut_buffer;
+        if (strcmp(ref_parent, "bin") == 0) {
+            return "../..";
+        }
+        *mut_last_separator = '/';
+    }
+
+    return ".";
+}
 
 /* Instance-based API implementation */
 ar_system_t* ar_system__create(void) {
@@ -103,6 +134,25 @@ ar_system_t* ar_system__create(void) {
     // Create agency with our log (it will create its own methodology)
     own_system->own_agency = ar_agency__create(own_system->own_log);
     if (!own_system->own_agency) {
+        ar_delegation__destroy(own_system->own_delegation);
+        ar_log__destroy(own_system->own_log);
+        ar_data__destroy(own_system->own_context);
+        AR__HEAP__FREE(own_system);
+        return NULL;
+    }
+
+    char mut_file_root[1024];
+    ar_delegate_t *own_file_delegate = ar_file_delegate__create_delegate(
+        own_system->own_log,
+        own_system->own_agency,
+        _get_default_file_delegate_root(mut_file_root, sizeof(mut_file_root)),
+        0);
+    if (!own_file_delegate ||
+        !ar_delegation__register_delegate(own_system->own_delegation, AR_SYSTEM__FILE_DELEGATE_ID, own_file_delegate)) {
+        if (own_file_delegate) {
+            ar_delegate__destroy(own_file_delegate);
+        }
+        ar_agency__destroy(own_system->own_agency);
         ar_delegation__destroy(own_system->own_delegation);
         ar_log__destroy(own_system->own_log);
         ar_data__destroy(own_system->own_context);
@@ -302,4 +352,3 @@ bool ar_system__register_delegate(ar_system_t *mut_system, int64_t proxy_id, ar_
 
     return ar_delegation__register_delegate(mut_system->own_delegation, proxy_id, own_proxy);
 }
-

@@ -1,55 +1,110 @@
 memory.is_prepare := if(message.action = "prepare_definition", 1, 0)
+memory.is_file_response := if(message.action = "definition_file", 1, 0)
 memory.is_evaluate := if(message.action = "evaluate_transition", 1, 0)
 memory.is_describe := if(message.action = "describe", 1, 0)
-memory.reply_to_id := if(message.reply_to > 0, message.reply_to, 0)
-memory.from_stage := message.stage
-memory.workflow_name := ""
-memory.workflow_version := ""
-memory.initial_stage := ""
-memory.terminal_completed := ""
-memory.terminal_rejected := ""
-memory.requires_local_completion := ""
-memory.item_fields := ""
-memory.stages := ""
-memory.validation_clause := ""
-memory.file_status := ""
-memory.dependency_status := ""
+memory.self_agent_id := if(memory.is_prepare = 1, memory.self, memory.self_agent_id)
+memory.reply_to_id := if(message.reply_to > 0, message.reply_to, memory.reply_to_id)
+memory.definition_path := if(memory.is_prepare = 1, message.definition_path, memory.definition_path)
+memory.workflow_name := if(memory.is_prepare = 1, "", memory.workflow_name)
+memory.workflow_version := if(memory.is_prepare = 1, "", memory.workflow_version)
+memory.initial_stage := if(memory.is_prepare = 1, "", memory.initial_stage)
+memory.terminal_completed := if(memory.is_prepare = 1, "", memory.terminal_completed)
+memory.terminal_rejected := if(memory.is_prepare = 1, "", memory.terminal_rejected)
+memory.requires_local_completion := if(memory.is_prepare = 1, "", memory.requires_local_completion)
+memory.item_fields := if(memory.is_prepare = 1, "", memory.item_fields)
+memory.stages := if(memory.is_prepare = 1, "", memory.stages)
+memory.transition_count := if(memory.is_prepare = 1, 0, memory.transition_count)
+memory.transition_1_from := if(memory.is_prepare = 1, "", memory.transition_1_from)
+memory.transition_1_to := if(memory.is_prepare = 1, "", memory.transition_1_to)
+memory.transition_1_prompt := if(memory.is_prepare = 1, "", memory.transition_1_prompt)
+memory.transition_2_from := if(memory.is_prepare = 1, "", memory.transition_2_from)
+memory.transition_2_to := if(memory.is_prepare = 1, "", memory.transition_2_to)
+memory.transition_2_prompt := if(memory.is_prepare = 1, "", memory.transition_2_prompt)
+memory.transition_3_from := if(memory.is_prepare = 1, "", memory.transition_3_from)
+memory.transition_3_to := if(memory.is_prepare = 1, "", memory.transition_3_to)
+memory.transition_3_prompt := if(memory.is_prepare = 1, "", memory.transition_3_prompt)
+memory.transition_4_from := if(memory.is_prepare = 1, "", memory.transition_4_from)
+memory.transition_4_to := if(memory.is_prepare = 1, "", memory.transition_4_to)
+memory.transition_4_prompt := if(memory.is_prepare = 1, "", memory.transition_4_prompt)
+memory.file_status := if(memory.is_prepare = 1, "requested", memory.file_status)
+memory.dependency_status := if(memory.is_prepare = 1, "", memory.dependency_status)
+memory.last_reason := if(memory.is_prepare = 1, "", memory.last_reason)
 memory.error_reason := ""
-memory.last_reason := ""
-memory.last_reply_action := ""
 memory.error_category := ""
 memory.startup_complete_trace := "none"
 memory.startup_complete_outcome := ""
 memory.startup_complete_reason := ""
 memory.transition_complete_trace := "none"
-memory.transition_outcome := ""
-memory.transition_reason := ""
-memory.next_stage := ""
-memory.transition_status := ""
-memory.terminal_outcome := ""
-memory.definition_path := if(memory.is_prepare = 1, message.definition_path, memory.definition_path)
-memory.is_default_definition := if(memory.definition_path = "workflows/default.workflow", 1, 0)
-memory.is_test_definition := if(memory.definition_path = "workflows/test.workflow", 1, 0)
-memory.is_known_definition := memory.is_default_definition + memory.is_test_definition
-memory.is_invalid_definition := if(memory.definition_path = "invalid.workflow", 1, 0)
-memory.workflow_name := if(memory.is_default_definition = 1, "default_workflow", memory.workflow_name)
-memory.workflow_name := if(memory.is_test_definition = 1, "test_workflow", memory.workflow_name)
-memory.item_id := if(memory.is_evaluate = 1, message.item_id, "")
-memory.title := if(memory.is_evaluate = 1, message.title, "")
-memory.priority := if(memory.is_evaluate = 1, message.priority, "")
-memory.owner := if(memory.is_evaluate = 1, message.owner, "")
-memory.review_status := if(memory.is_evaluate = 1, message.review_status, "")
-memory.transition_count := if(memory.is_evaluate = 1, message.transition_count, 0)
-memory.workflow_version := if(memory.is_known_definition > 0, "1.0.0", memory.workflow_version)
-memory.initial_stage := if(memory.is_known_definition > 0, "intake", memory.initial_stage)
-memory.terminal_completed := if(memory.is_known_definition > 0, "completed", memory.terminal_completed)
-memory.terminal_rejected := if(memory.is_known_definition > 0, "rejected", memory.terminal_rejected)
-memory.requires_local_completion := if(memory.is_known_definition > 0, "1", memory.requires_local_completion)
-memory.item_fields := if(memory.is_known_definition > 0, "item_id|title|priority|owner|review_status", memory.item_fields)
-memory.stages := if(memory.is_known_definition > 0, "intake|triage|active|review|completion", memory.stages)
-memory.validation_clause := if(memory.is_default_definition = 1, "review_gate", memory.validation_clause)
-memory.validation_clause := if(memory.is_test_definition = 1, "test_gate", memory.validation_clause)
-memory.file_status := if(memory.is_prepare = 1, "loaded", memory.file_status)
+memory.file_response_action := "definition_file"
+memory.file_request_input := build("action=read path={definition_path} response_action={file_response_action} reply_to={self_agent_id}", memory)
+memory.file_request_payload := parse("action={action} path={path} response_action={response_action} reply_to={reply_to}", memory.file_request_input)
+memory.file_request_sent := send(-100 * memory.is_prepare, memory.file_request_payload)
+memory.file_success_value := if(message.status = "success", 1, 0)
+memory.file_success := memory.is_file_response * memory.file_success_value
+memory.definition_content := if(memory.file_success = 1, message.content, "")
+memory.definition_record := parse("workflow_name={workflow_name} workflow_version={workflow_version} initial_stage={initial_stage} terminal_completed={terminal_completed} terminal_rejected={terminal_rejected} requires_local_completion={requires_local_completion} item_fields={item_fields} stages={stages} transition_count={transition_count} transition_1_from={transition_1_from} transition_1_to={transition_1_to} transition_1_prompt={transition_1_prompt} transition_2_from={transition_2_from} transition_2_to={transition_2_to} transition_2_prompt={transition_2_prompt} transition_3_from={transition_3_from} transition_3_to={transition_3_to} transition_3_prompt={transition_3_prompt} transition_4_from={transition_4_from} transition_4_to={transition_4_to} transition_4_prompt={transition_4_prompt}", memory.definition_content)
+memory.file_status := if(memory.file_success = 1, "loaded", memory.file_status)
+memory.workflow_name := if(memory.file_success = 1, memory.definition_record.workflow_name, memory.workflow_name)
+memory.workflow_version := if(memory.file_success = 1, memory.definition_record.workflow_version, memory.workflow_version)
+memory.initial_stage := if(memory.file_success = 1, memory.definition_record.initial_stage, memory.initial_stage)
+memory.terminal_completed := if(memory.file_success = 1, memory.definition_record.terminal_completed, memory.terminal_completed)
+memory.terminal_rejected := if(memory.file_success = 1, memory.definition_record.terminal_rejected, memory.terminal_rejected)
+memory.requires_local_completion := if(memory.file_success = 1, memory.definition_record.requires_local_completion, memory.requires_local_completion)
+memory.item_fields := if(memory.file_success = 1, memory.definition_record.item_fields, memory.item_fields)
+memory.stages := if(memory.file_success = 1, memory.definition_record.stages, memory.stages)
+memory.transition_count := if(memory.file_success = 1, memory.definition_record.transition_count, memory.transition_count)
+memory.transition_1_from := if(memory.file_success = 1, memory.definition_record.transition_1_from, memory.transition_1_from)
+memory.transition_1_to := if(memory.file_success = 1, memory.definition_record.transition_1_to, memory.transition_1_to)
+memory.transition_1_prompt := if(memory.file_success = 1, memory.definition_record.transition_1_prompt, memory.transition_1_prompt)
+memory.transition_2_from := if(memory.file_success = 1, memory.definition_record.transition_2_from, memory.transition_2_from)
+memory.transition_2_to := if(memory.file_success = 1, memory.definition_record.transition_2_to, memory.transition_2_to)
+memory.transition_2_prompt := if(memory.file_success = 1, memory.definition_record.transition_2_prompt, memory.transition_2_prompt)
+memory.transition_3_from := if(memory.file_success = 1, memory.definition_record.transition_3_from, memory.transition_3_from)
+memory.transition_3_to := if(memory.file_success = 1, memory.definition_record.transition_3_to, memory.transition_3_to)
+memory.transition_3_prompt := if(memory.file_success = 1, memory.definition_record.transition_3_prompt, memory.transition_3_prompt)
+memory.transition_4_from := if(memory.file_success = 1, memory.definition_record.transition_4_from, memory.transition_4_from)
+memory.transition_4_to := if(memory.file_success = 1, memory.definition_record.transition_4_to, memory.transition_4_to)
+memory.transition_4_prompt := if(memory.file_success = 1, memory.definition_record.transition_4_prompt, memory.transition_4_prompt)
+memory.has_workflow_name := if(memory.workflow_name = "", 0, 1)
+memory.has_workflow_version := if(memory.workflow_version = "", 0, 1)
+memory.has_initial_stage := if(memory.initial_stage = "", 0, 1)
+memory.has_terminal_completed := if(memory.terminal_completed = "", 0, 1)
+memory.has_terminal_rejected := if(memory.terminal_rejected = "", 0, 1)
+memory.has_item_fields := if(memory.item_fields = "", 0, 1)
+memory.has_stages := if(memory.stages = "", 0, 1)
+memory.has_transition_count := if(memory.transition_count = 4, 1, 0)
+memory.has_transition_1_from := if(memory.transition_1_from = "", 0, 1)
+memory.has_transition_1_to := if(memory.transition_1_to = "", 0, 1)
+memory.has_transition_1_prompt := if(memory.transition_1_prompt = "", 0, 1)
+memory.has_transition_1 := memory.has_transition_1_from * memory.has_transition_1_to
+memory.has_transition_1 := memory.has_transition_1 * memory.has_transition_1_prompt
+memory.has_transition_2_from := if(memory.transition_2_from = "", 0, 1)
+memory.has_transition_2_to := if(memory.transition_2_to = "", 0, 1)
+memory.has_transition_2_prompt := if(memory.transition_2_prompt = "", 0, 1)
+memory.has_transition_2 := memory.has_transition_2_from * memory.has_transition_2_to
+memory.has_transition_2 := memory.has_transition_2 * memory.has_transition_2_prompt
+memory.has_transition_3_from := if(memory.transition_3_from = "", 0, 1)
+memory.has_transition_3_to := if(memory.transition_3_to = "", 0, 1)
+memory.has_transition_3_prompt := if(memory.transition_3_prompt = "", 0, 1)
+memory.has_transition_3 := memory.has_transition_3_from * memory.has_transition_3_to
+memory.has_transition_3 := memory.has_transition_3 * memory.has_transition_3_prompt
+memory.has_transition_4_from := if(memory.transition_4_from = "", 0, 1)
+memory.has_transition_4_to := if(memory.transition_4_to = "", 0, 1)
+memory.has_transition_4_prompt := if(memory.transition_4_prompt = "", 0, 1)
+memory.has_transition_4 := memory.has_transition_4_from * memory.has_transition_4_to
+memory.has_transition_4 := memory.has_transition_4 * memory.has_transition_4_prompt
+memory.metadata_ok := memory.has_workflow_name * memory.has_workflow_version
+memory.metadata_ok := memory.metadata_ok * memory.has_initial_stage
+memory.metadata_ok := memory.metadata_ok * memory.has_terminal_completed
+memory.metadata_ok := memory.metadata_ok * memory.has_terminal_rejected
+memory.metadata_ok := memory.metadata_ok * memory.has_item_fields
+memory.metadata_ok := memory.metadata_ok * memory.has_stages
+memory.transitions_ok := memory.has_transition_count * memory.has_transition_1
+memory.transitions_ok := memory.transitions_ok * memory.has_transition_2
+memory.transitions_ok := memory.transitions_ok * memory.has_transition_3
+memory.transitions_ok := memory.transitions_ok * memory.has_transition_4
+memory.schema_ok := memory.file_success * memory.metadata_ok
+memory.schema_ok := memory.schema_ok * memory.transitions_ok
 memory.complete_presence_input := "complete_present=1"
 memory.complete_presence := parse("complete_present={complete_present}", memory.complete_presence_input)
 memory.startup_result := complete("Answer with outcome ready and reason ok. The dependency probe result is {outcome}. The short reason is {reason}.", memory.complete_presence)
@@ -63,66 +118,85 @@ memory.probe_ok := memory.probe_ok * memory.probe_has_reason
 memory.startup_complete_outcome := if(memory.probe_ok = 1, memory.probe_check.outcome, memory.startup_complete_outcome)
 memory.startup_complete_reason := if(memory.probe_ok = 1, memory.probe_check.reason, memory.startup_complete_reason)
 memory.dependency_status := if(memory.probe_ok = 1, "ready", memory.dependency_status)
-memory.unknown_definition_flag := if(memory.is_known_definition = 0, 1, 0)
-memory.probe_failed_flag := if(memory.probe_ok = 0, 1, 0)
-memory.probe_failed_flag := if(memory.is_known_definition = 0, 0, memory.probe_failed_flag)
-memory.probe_failed_flag := if(memory.is_prepare = 0, 0, memory.probe_failed_flag)
-memory.ready_flag := memory.is_prepare * memory.is_known_definition
-memory.ready_flag := memory.ready_flag * memory.probe_ok
-memory.error_flag := if(memory.is_invalid_definition = 1, 1, 0)
-memory.error_flag := if(memory.unknown_definition_flag = 1, 1, memory.error_flag)
-memory.error_flag := if(memory.probe_failed_flag = 1, 1, memory.error_flag)
-memory.error_flag := if(memory.is_prepare = 0, 0, memory.error_flag)
-memory.error_reason := if(memory.is_invalid_definition = 1, "invalid_definition_schema", memory.error_reason)
-memory.error_reason := if(memory.unknown_definition_flag = 1, "invalid_definition_schema", memory.error_reason)
-memory.error_reason := if(memory.probe_failed_flag = 1, "startup_dependency_unavailable", memory.error_reason)
+memory.ready_flag := memory.schema_ok * memory.probe_ok
+memory.probe_failed_value := if(memory.probe_ok = 1, 0, 1)
+memory.probe_failed_flag := memory.schema_ok * memory.probe_failed_value
+memory.file_response_flag := memory.is_file_response
+memory.not_ready_flag := if(memory.ready_flag = 1, 0, 1)
+memory.error_flag := memory.file_response_flag * memory.not_ready_flag
+memory.dependency_failed_value := if(memory.dependency_status = "ready", 0, 1)
+memory.startup_dependency_failed_flag := memory.schema_ok * memory.dependency_failed_value
+memory.error_reason := if(message.action = "definition_file", "invalid_definition_schema", memory.error_reason)
+memory.error_reason := if(memory.startup_dependency_failed_flag = 1, "startup_dependency_unavailable", memory.error_reason)
+memory.error_category := if(memory.startup_dependency_failed_flag = 1, "runtime_unavailable", "")
 memory.startup_complete_trace_input := build("COMPLETE_TRACE[phase=startup|outcome={startup_complete_outcome}|reason={startup_complete_reason}]", memory)
 memory.startup_complete_trace := if(memory.probe_ok = 1, memory.startup_complete_trace_input, memory.startup_complete_trace)
 memory.startup_complete_trace := if(memory.probe_failed_flag = 1, "COMPLETE_TRACE[phase=startup|status=failure]", memory.startup_complete_trace)
 memory.last_reason := if(memory.ready_flag = 1, memory.startup_complete_reason, memory.last_reason)
 memory.last_reason := if(memory.error_flag = 1, memory.error_reason, memory.last_reason)
-memory.ready_input := build("action=definition_ready workflow_name={workflow_name} workflow_version={workflow_version} initial_stage={initial_stage} requires_local_completion={requires_local_completion} complete_trace={startup_complete_trace}", memory)
-memory.ready_payload := parse("action={action} workflow_name={workflow_name} workflow_version={workflow_version} initial_stage={initial_stage} requires_local_completion={requires_local_completion} complete_trace={complete_trace}", memory.ready_input)
+memory.ready_input := build("action=definition_ready workflow_name={workflow_name} workflow_version={workflow_version} initial_stage={initial_stage} terminal_completed={terminal_completed} terminal_rejected={terminal_rejected} requires_local_completion={requires_local_completion} item_fields={item_fields} transition_count={transition_count} complete_trace={startup_complete_trace}", memory)
+memory.ready_payload := parse("action={action} workflow_name={workflow_name} workflow_version={workflow_version} initial_stage={initial_stage} terminal_completed={terminal_completed} terminal_rejected={terminal_rejected} requires_local_completion={requires_local_completion} item_fields={item_fields} transition_count={transition_count} complete_trace={complete_trace}", memory.ready_input)
 memory.ready_sent := send(memory.reply_to_id * memory.ready_flag, memory.ready_payload)
-memory.last_reply_action := if(memory.ready_flag = 1, "definition_ready", memory.last_reply_action)
-memory.error_input := build("action=definition_error reason={error_reason} complete_trace={startup_complete_trace}", memory)
-memory.error_payload := parse("action={action} reason={reason} complete_trace={complete_trace}", memory.error_input)
-memory.error_sent := send(memory.reply_to_id * memory.error_flag, memory.error_payload)
-memory.last_reply_action := if(memory.error_flag = 1, "definition_error", memory.last_reply_action)
-memory.transition_context_input := build("complete_present=1 workflow_name={workflow_name} stage={from_stage} item_id={item_id} title={title} priority={priority} owner={owner} review_status={review_status} transition_count={transition_count}", memory)
+memory.error_input := build("action=definition_error reason={error_reason} failure_category={error_category} complete_trace={startup_complete_trace}", memory)
+memory.error_payload := parse("action={action} reason={reason} failure_category={failure_category} complete_trace={complete_trace}", memory.error_input)
+memory.error_target := memory.reply_to_id * memory.error_flag
+memory.error_sent := send(memory.error_target, memory.error_payload)
+memory.from_stage := if(memory.is_evaluate = 1, message.stage, "")
+memory.item_id := if(memory.is_evaluate = 1, message.item_id, "")
+memory.title := if(memory.is_evaluate = 1, message.title, "")
+memory.priority := if(memory.is_evaluate = 1, message.priority, "")
+memory.owner := if(memory.is_evaluate = 1, message.owner, "")
+memory.review_status := if(memory.is_evaluate = 1, message.review_status, "")
+memory.request_transition_count := if(memory.is_evaluate = 1, message.transition_count, 0)
+memory.transition_prompt := ""
+memory.configured_to_stage := ""
+memory.transition_prompt := if(memory.from_stage = memory.transition_1_from, memory.transition_1_prompt, memory.transition_prompt)
+memory.configured_to_stage := if(memory.from_stage = memory.transition_1_from, memory.transition_1_to, memory.configured_to_stage)
+memory.transition_prompt := if(memory.from_stage = memory.transition_2_from, memory.transition_2_prompt, memory.transition_prompt)
+memory.configured_to_stage := if(memory.from_stage = memory.transition_2_from, memory.transition_2_to, memory.configured_to_stage)
+memory.transition_prompt := if(memory.from_stage = memory.transition_3_from, memory.transition_3_prompt, memory.transition_prompt)
+memory.configured_to_stage := if(memory.from_stage = memory.transition_3_from, memory.transition_3_to, memory.configured_to_stage)
+memory.transition_prompt := if(memory.from_stage = memory.transition_4_from, memory.transition_4_prompt, memory.transition_prompt)
+memory.configured_to_stage := if(memory.from_stage = memory.transition_4_from, memory.transition_4_to, memory.configured_to_stage)
+memory.has_configured_transition := if(memory.transition_prompt = "", 0, 1)
+memory.has_configured_to_stage := if(memory.configured_to_stage = "", 0, 1)
+memory.has_configured_transition := memory.has_configured_transition * memory.has_configured_to_stage
+memory.transition_context_input := build("complete_present=1 workflow_name={workflow_name} stage={from_stage} item_id={item_id} title={title} priority={priority} owner={owner} review_status={review_status} transition_count={request_transition_count}", memory)
 memory.transition_context := parse("complete_present={complete_present} workflow_name={workflow_name} stage={stage} item_id={item_id} title={title} priority={priority} owner={owner} review_status={review_status} transition_count={transition_count}", memory.transition_context_input)
-memory.transition_result := complete("Evaluate this workflow item and decide the transition. Use the provided workflow context exactly: workflow_name={workflow_name}; stage={stage}; item_id={item_id}; title={title}; priority={priority}; owner={owner}; review_status={review_status}; transition_count={transition_count}. Return outcome={outcome} where outcome is advance, stay, or reject. Advance only when the current item is ready for the next stage; in review, advance only when review_status=approved. Stay when more work or review is needed. Reject only when the item should terminate as rejected. Return reason={reason} as a short snake_case explanation.", memory.transition_context)
+memory.transition_result := complete(memory.transition_prompt, memory.transition_context)
 memory.transition_check_input := build("complete_present={complete_present} outcome={outcome} reason={reason}", memory.transition_result)
 memory.transition_check := parse("complete_present={complete_present} outcome={outcome} reason={reason}", memory.transition_check_input)
 memory.transition_has_marker := if(memory.transition_check.complete_present = 1, 1, 0)
 memory.transition_has_outcome := if(memory.transition_check.outcome = "{outcome}", 0, 1)
 memory.transition_has_reason := if(memory.transition_check.reason = "{reason}", 0, 1)
+memory.transition_outcome_allowed := if(memory.transition_check.outcome = "advance", 1, 0)
+memory.transition_outcome_allowed := if(memory.transition_check.outcome = "stay", 1, memory.transition_outcome_allowed)
+memory.transition_outcome_allowed := if(memory.transition_check.outcome = "reject", 1, memory.transition_outcome_allowed)
 memory.transition_ok := memory.transition_has_marker * memory.transition_has_outcome
 memory.transition_ok := memory.transition_ok * memory.transition_has_reason
-memory.transition_outcome := if(memory.transition_ok = 1, memory.transition_check.outcome, memory.transition_outcome)
-memory.transition_outcome := if(memory.transition_ok = 0, "stay", memory.transition_outcome)
-memory.transition_reason := if(memory.transition_ok = 1, memory.transition_check.reason, memory.transition_reason)
-memory.transition_reason := if(memory.transition_ok = 0, "complete_transition_failed", memory.transition_reason)
-memory.next_stage := if(message.stage = "intake", "triage", memory.next_stage)
-memory.next_stage := if(message.stage = "triage", "active", memory.next_stage)
-memory.next_stage := if(message.stage = "active", "review", memory.next_stage)
-memory.next_stage := if(message.stage = "review", "completion", memory.next_stage)
-memory.next_stage := if(memory.transition_outcome = "stay", message.stage, memory.next_stage)
-memory.next_stage := if(memory.transition_outcome = "reject", message.stage, memory.next_stage)
-memory.transition_status := if(memory.transition_outcome = "advance", memory.next_stage, memory.transition_status)
-memory.transition_status := if(memory.transition_outcome = "stay", "review_waiting", memory.transition_status)
-memory.transition_status := if(memory.transition_outcome = "reject", "rejected", memory.transition_status)
-memory.retryable := if(memory.transition_ok = 0, 1, 0)
-memory.retryable := if(memory.transition_outcome = "stay", memory.retryable, 0)
-memory.review_terminal := if(message.stage = "review", "completed", "")
-memory.terminal_outcome := if(memory.transition_outcome = "advance", memory.review_terminal, memory.terminal_outcome)
-memory.terminal_outcome := if(memory.transition_outcome = "reject", "rejected", memory.terminal_outcome)
-memory.terminal_outcome := if(memory.transition_outcome = "stay", "", memory.terminal_outcome)
+memory.transition_ok := memory.transition_ok * memory.transition_outcome_allowed
+memory.transition_ok := memory.transition_ok * memory.has_configured_transition
+memory.transition_ok := memory.transition_ok * memory.is_evaluate
+memory.transition_outcome := if(memory.transition_ok = 1, memory.transition_check.outcome, "stay")
+memory.transition_reason := if(memory.transition_ok = 1, memory.transition_check.reason, "complete_transition_failed")
+memory.next_stage := if(memory.transition_outcome = "advance", memory.configured_to_stage, memory.from_stage)
+memory.next_stage := if(memory.transition_outcome = "stay", memory.from_stage, memory.next_stage)
+memory.next_stage := if(memory.transition_outcome = "reject", memory.from_stage, memory.next_stage)
+memory.stay_status := build("{from_stage}_waiting", memory)
+memory.transition_status := if(memory.transition_outcome = "advance", memory.next_stage, "")
+memory.transition_status := if(memory.transition_outcome = "stay", memory.stay_status, memory.transition_status)
+memory.transition_status := if(memory.transition_outcome = "reject", memory.terminal_rejected, memory.transition_status)
+memory.retryable := if(memory.transition_outcome = "stay", 1, 0)
+memory.terminal_outcome := if(memory.transition_outcome = "reject", memory.terminal_rejected, "")
+memory.is_completed_stage := if(memory.next_stage = memory.transition_4_to, 1, 0)
+memory.completed_terminal_value := if(memory.is_completed_stage = 1, memory.terminal_completed, "")
+memory.terminal_outcome := if(memory.transition_outcome = "advance", memory.completed_terminal_value, memory.terminal_outcome)
 memory.transition_complete_trace_input := build("COMPLETE_TRACE[phase=transition|outcome={transition_outcome}|reason={transition_reason}]", memory)
 memory.transition_complete_trace := if(memory.is_evaluate = 1, memory.transition_complete_trace_input, memory.transition_complete_trace)
-memory.transition_input := build("action=transition_decision workflow_name={workflow_name} from_stage={from_stage} outcome={transition_outcome} next_stage={next_stage} status={transition_status} validation_clause={validation_clause} reason={transition_reason} retryable={retryable} terminal_outcome={terminal_outcome} note={transition_reason} complete_trace={transition_complete_trace}", memory)
-memory.transition_payload := parse("action={action} workflow_name={workflow_name} from_stage={from_stage} outcome={outcome} next_stage={next_stage} status={status} validation_clause={validation_clause} reason={reason} retryable={retryable} terminal_outcome={terminal_outcome} note={note} complete_trace={complete_trace}", memory.transition_input)
+memory.transition_input := build("action=transition_decision workflow_name={workflow_name} from_stage={from_stage} outcome={transition_outcome} next_stage={next_stage} status={transition_status} reason={transition_reason} retryable={retryable} terminal_outcome={terminal_outcome} note={transition_reason} complete_trace={transition_complete_trace}", memory)
+memory.transition_payload := parse("action={action} workflow_name={workflow_name} from_stage={from_stage} outcome={outcome} next_stage={next_stage} status={status} reason={reason} retryable={retryable} terminal_outcome={terminal_outcome} note={note} complete_trace={complete_trace}", memory.transition_input)
 memory.transition_sent := send(memory.reply_to_id * memory.is_evaluate, memory.transition_payload)
-memory.describe_input := build("action=describe_result workflow_name={workflow_name} workflow_version={workflow_version} initial_stage={initial_stage} terminal_completed={terminal_completed} terminal_rejected={terminal_rejected} requires_local_completion={requires_local_completion} item_fields={item_fields} stages={stages} transitions={validation_clause} validation_clauses={validation_clause}", memory)
-memory.describe_payload := parse("action={action} workflow_name={workflow_name} workflow_version={workflow_version} initial_stage={initial_stage} terminal_completed={terminal_completed} terminal_rejected={terminal_rejected} requires_local_completion={requires_local_completion} item_fields={item_fields} stages={stages} transitions={transitions} validation_clauses={validation_clauses}", memory.describe_input)
+memory.transitions_description := build("{transition_1_from}->{transition_1_to}|{transition_2_from}->{transition_2_to}|{transition_3_from}->{transition_3_to}|{transition_4_from}->{transition_4_to}", memory)
+memory.describe_input := build("action=describe_result workflow_name={workflow_name} workflow_version={workflow_version} initial_stage={initial_stage} terminal_completed={terminal_completed} terminal_rejected={terminal_rejected} requires_local_completion={requires_local_completion} item_fields={item_fields} stages={stages} transition_count={transition_count} transitions={transitions_description}", memory)
+memory.describe_payload := parse("action={action} workflow_name={workflow_name} workflow_version={workflow_version} initial_stage={initial_stage} terminal_completed={terminal_completed} terminal_rejected={terminal_rejected} requires_local_completion={requires_local_completion} item_fields={item_fields} stages={stages} transition_count={transition_count} transitions={transitions}", memory.describe_input)
 memory.describe_sent := send(memory.reply_to_id * memory.is_describe, memory.describe_payload)

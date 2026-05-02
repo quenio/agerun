@@ -531,8 +531,8 @@ static void test_message_processing_loop(ar_executable_fixture_t *mut_fixture) {
     // Verify message processing occurred
     AR_ASSERT(found_processing_messages, "Should see 'Processing messages' indicating loop started");
     AR_ASSERT(found_messages_processed_count, "Should see count of messages processed");
-    AR_ASSERT(messages_processed == 7,
-              "Should process bootstrap, workflow, and log delegate messages for the demo");
+    AR_ASSERT(messages_processed == 30,
+              "Should process the full definition-driven workflow demo to completion");
 
     printf("Message processing loop test passed! Processed %d messages\n", messages_processed);
 
@@ -788,6 +788,8 @@ static void test_executable__loads_agents_on_startup(ar_executable_fixture_t *mu
     const char *build_dir = ar_executable_fixture__get_build_dir(mut_fixture);
     AR_ASSERT(build_dir != NULL, "Should have build directory");
 
+    ar_executable_fixture__clean_persisted_files(mut_fixture);
+
     char agency_path[512];
     snprintf(agency_path, sizeof(agency_path), "%s/agerun.agency", build_dir);
 
@@ -831,6 +833,8 @@ static void test_executable__skips_bootstrap_when_agents_loaded(ar_executable_fi
 
     const char *build_dir = ar_executable_fixture__get_build_dir(mut_fixture);
     AR_ASSERT(build_dir != NULL, "Should have build directory");
+
+    ar_executable_fixture__clean_persisted_files(mut_fixture);
 
     char agency_path[512];
     snprintf(agency_path, sizeof(agency_path), "%s/agerun.agency", build_dir);
@@ -1617,4 +1621,3 @@ int main(void) {
     printf("All 21 tests passed!\n");
     return 0;
 }
-

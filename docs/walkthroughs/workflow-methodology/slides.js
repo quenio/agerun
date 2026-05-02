@@ -6,7 +6,7 @@ const messageProcessingWalkthroughUrl = "https://quenio.github.io/agerun/walkthr
 const slides = [
     {
         title: "Workflow Methodology",
-        subtitle: "How the bundled workflow methodology boots, validates a definition, evaluates item context for review transitions, and emits visible progress logs.",
+        subtitle: "How the bundled workflow methodology boots, loads a definition file, evaluates item context at every configured transition, and emits visible progress logs.",
         body: `
             <div class="columns">
                 <section class="panel">
@@ -51,7 +51,7 @@ workflows/test.workflow</div>
                             </div>
                             <div class="map-node map-node-method">
                                 <strong>Definition</strong>
-                                <span>loads known definitions and decides review outcomes</span>
+                                <span>loads workflow files and decides configured transitions</span>
                             </div>
                             <div class="map-node map-node-agent map-node-workflow-item">
                                 <strong>Item</strong>
@@ -89,7 +89,7 @@ workflows/test.workflow</div>
                 </section>
                 <section class="card">
                     <h3>workflow-definition</h3>
-                    <p>Recognizes supported definition paths, runs <span class="code">complete(...)</span> probes, emits <span class="code">definition_ready</span> or <span class="code">definition_error</span>, and evaluates review-stage transitions.</p>
+                    <p>Reads workflow definition files through delegate <span class="code">-100</span>, runs <span class="code">complete(...)</span> probes, emits <span class="code">definition_ready</span> or <span class="code">definition_error</span>, and evaluates each configured transition.</p>
                     <div class="path-list">methods/workflow-definition-1.0.0.md</div>
                 </section>
                 <section class="card">
@@ -196,15 +196,15 @@ methods/workflow_coordinator_tests.c</div>
     },
     {
         title: "Workflow Definition Method",
-        subtitle: "workflow-definition is the schema gate and transition-decision method: it recognizes supported definitions, asks complete(...) to evaluate item context, and replies to message.reply_to.",
+        subtitle: "workflow-definition is the schema gate and transition-decision method: it parses workflow files, asks complete(...) to evaluate item context, and replies to message.reply_to.",
         body: `
             <div class="columns">
                 <section class="panel">
                     <h3>Definition Operations</h3>
                     <ul>
-                        <li><span class="code">prepare_definition</span> maps known paths to workflow metadata and runs the startup dependency probe.</li>
-                        <li><span class="code">describe</span> returns the workflow metadata, item field list, stages, and validation clauses.</li>
-                        <li>Unknown paths are normalized to <span class="code">invalid_definition_schema</span>.</li>
+                        <li><span class="code">prepare_definition</span> sends a file read to delegate <span class="code">-100</span>, parses the flat record, and runs the startup dependency probe.</li>
+                        <li><span class="code">describe</span> returns the parsed workflow metadata, item field list, stages, transition count, and transition path.</li>
+                        <li>Missing or malformed required fields are normalized to <span class="code">invalid_definition_schema</span>.</li>
                     </ul>
                 </section>
                 <section class="panel">
@@ -212,7 +212,7 @@ methods/workflow_coordinator_tests.c</div>
                     <ul>
                         <li><span class="code">evaluate_transition</span> builds a values map from canonical definition metadata plus current item fields.</li>
                         <li><span class="code">workflow_name</span> stays definition-backed; caller transition input cannot overwrite it.</li>
-                        <li><span class="code">complete(...)</span> receives stage, item fields, review status, and transition count before generating <span class="code">outcome</span> and <span class="code">reason</span>.</li>
+                        <li><span class="code">complete(...)</span> receives the configured transition prompt plus stage, item fields, review status, and transition count before generating <span class="code">outcome</span> and <span class="code">reason</span>.</li>
                         <li>Completion failure becomes retryable <span class="code">stay</span> with <span class="code">complete_transition_failed</span>.</li>
                     </ul>
                 </section>
@@ -235,7 +235,7 @@ methods/workflow_definition_tests.c</div>
     },
     {
         title: "Workflow Item Method",
-        subtitle: "workflow-item is the stateful per-item method: it records item metadata, advances lifecycle stages, and applies definition decisions.",
+        subtitle: "workflow-item is the stateful per-item method: it records item metadata, asks for transition decisions, and applies definition-owned next stages.",
         body: `
             <div class="columns">
                 <section class="panel">
@@ -243,15 +243,15 @@ methods/workflow_definition_tests.c</div>
                     <ul>
                         <li>Stores workflow identity, item fields, current stage, current status, transition count, terminal outcome, and last reason.</li>
                         <li>Copies agency-managed <span class="code">memory.self</span> into <span class="code">self_agent_id</span> during initialization.</li>
-                        <li>Queues its own <span class="code">auto_progress</span> messages to continue the demo lifecycle.</li>
+                        <li>Queues its own <span class="code">auto_progress</span> messages to ask for the next configured transition.</li>
                     </ul>
                 </section>
                 <section class="panel">
                     <h3>Decision Application</h3>
                     <ul>
-                        <li>At <span class="code">review</span>, sends <span class="code">evaluate_transition</span> to <span class="code">workflow-definition</span> with <span class="code">reply_to=self_agent_id</span>.</li>
-                        <li><span class="code">advance</span> and <span class="code">reject</span> produce final summary events.</li>
-                        <li><span class="code">stay</span> keeps the item in review and emits progress instead of a summary.</li>
+                        <li>At every non-terminal stage, sends <span class="code">evaluate_transition</span> to <span class="code">workflow-definition</span> with <span class="code">reply_to=self_agent_id</span>.</li>
+                        <li><span class="code">advance</span> applies the returned <span class="code">next_stage</span>; terminal advances produce summary events.</li>
+                        <li><span class="code">stay</span> keeps the item in the current stage and emits progress instead of a summary.</li>
                     </ul>
                 </section>
             </div>
@@ -349,7 +349,7 @@ methods/workflow_reporter_tests.c</div>
     },
     {
         title: "Definition Schema and Gate",
-        subtitle: "Before the next slides compare concrete definitions, read each workflow file as one compact schema record plus a startup readiness gate.",
+        subtitle: "Before the next slides compare concrete definitions, read each workflow file as one compact schema record plus explicit transition prompts.",
         body: `
             <div class="columns">
                 <section class="panel">
@@ -358,14 +358,14 @@ methods/workflow_reporter_tests.c</div>
                         <li><span class="code">workflow_name</span> and <span class="code">workflow_version</span> identify the definition.</li>
                         <li><span class="code">initial_stage</span>, <span class="code">stages</span>, <span class="code">terminal_completed</span>, and <span class="code">terminal_rejected</span> describe the lifecycle.</li>
                         <li><span class="code">item_fields</span> lists the item data required by the workflow methods.</li>
-                        <li><span class="code">validation_clause</span> and <span class="code">decision_template</span> name the review-decision rule shape.</li>
+                        <li><span class="code">transition_count</span> and <span class="code">transition_N_from/to/prompt</span> records define the stage graph and prompt text.</li>
                     </ul>
                 </section>
                 <section class="panel">
                     <h3>Gate Checks</h3>
                     <ul>
-                        <li>Only known paths are accepted: <span class="code">workflows/default.workflow</span> and <span class="code">workflows/test.workflow</span>.</li>
-                        <li>Unknown paths and <span class="code">invalid.workflow</span> become <span class="code">invalid_definition_schema</span>.</li>
+                        <li>The definition method reads the file asynchronously through delegate <span class="code">-100</span>.</li>
+                        <li>Missing metadata or transition fields become <span class="code">invalid_definition_schema</span>.</li>
                         <li><span class="code">complete("Workflow dependency probe ...")</span> supplies the startup readiness signal.</li>
                     </ul>
                 </section>
@@ -374,24 +374,24 @@ methods/workflow_reporter_tests.c</div>
                 <h3>Schema-to-Reply Flow</h3>
                 <div class="state-compare">
                     <div class="state-card">
-                        <strong>Known schema + probe success</strong>
-                        <span>definition metadata is populated from the recognized path.</span>
+                        <strong>Parsed schema + probe success</strong>
+                        <span>definition metadata and transitions are populated from the workflow file.</span>
                         <span>reply action is <span class="code">definition_ready</span>.</span>
                     </div>
                     <div class="state-transition">prepare_definition</div>
                     <div class="state-card">
-                        <strong>Unknown schema or probe failure</strong>
+                        <strong>Malformed schema or probe failure</strong>
                         <span>failure reason is normalized.</span>
                         <span>reply action is <span class="code">definition_error</span>.</span>
                     </div>
                 </div>
             </section>
-            <p class="note">The next two slides reuse this schema vocabulary: most fields stay the same, while the workflow name, validation clause, and decision template distinguish the default and test definitions.</p>
+            <p class="note">The next two slides reuse this schema vocabulary: most fields stay the same, while the workflow name and transition prompt text distinguish the default and test definitions.</p>
         `
     },
     {
         title: "Default Workflow Definition",
-        subtitle: "The default definition is the bundled executable demo path: default_workflow, intake-first staging, review_gate validation, and workflow_review decision text.",
+        subtitle: "The default definition is the bundled executable demo path: default_workflow, intake-first staging, and four complete-backed transition prompts.",
         body: `
             <div class="columns">
                 <section class="panel">
@@ -420,11 +420,13 @@ methods/workflow_reporter_tests.c</div>
                         <span><span class="code">bootstrap</span> sends <span class="code">workflows/default.workflow</span>.</span>
                         <span><span class="code">workflow-definition</span> maps it to <span class="code">default_workflow</span>.</span>
                     </div>
-                    <div class="state-transition">review gate</div>
+                    <div class="state-transition">transition table</div>
                     <div class="state-card">
-                        <strong>Decision Template</strong>
-                        <span><span class="code">validation_clause=review_gate</span></span>
-                        <span><span class="code">decision_template=workflow_review_{outcome}_{reason}</span></span>
+                        <strong>Definition-Driven Path</strong>
+                        <span><span class="code">intake→triage</span></span>
+                        <span><span class="code">triage→active</span></span>
+                        <span><span class="code">active→review</span></span>
+                        <span><span class="code">review→completion</span></span>
                     </div>
                 </div>
             </section>
@@ -438,7 +440,7 @@ methods/workflow-definition-1.0.0.md</div>
     },
     {
         title: "Test Workflow Definition",
-        subtitle: "The test definition mirrors the default lifecycle but changes the workflow identity, validation clause, and decision template for deterministic alternate-definition coverage.",
+        subtitle: "The test definition mirrors the default lifecycle but changes workflow identity and prompt text for deterministic alternate-definition coverage.",
         body: `
             <div class="columns">
                 <section class="panel">
@@ -455,8 +457,8 @@ methods/workflow-definition-1.0.0.md</div>
                     <h3>What Changes</h3>
                     <ul>
                         <li><span class="code">workflow_name=test_workflow</span></li>
-                        <li><span class="code">validation_clause=test_gate</span></li>
-                        <li><span class="code">decision_template=test_review_{outcome}_{reason}</span></li>
+                        <li><span class="code">transition_count=4</span></li>
+                        <li>Alternate <span class="code">transition_N_prompt</span> values for prompt-selection coverage</li>
                     </ul>
                 </section>
             </div>
@@ -466,15 +468,15 @@ methods/workflow-definition-1.0.0.md</div>
                     <div class="state-card">
                         <strong>Default Definition</strong>
                         <span><span class="code">default_workflow</span></span>
-                        <span><span class="code">review_gate</span></span>
-                        <span><span class="code">workflow_review_{outcome}_{reason}</span></span>
+                        <span><span class="code">default_workflow</span> prompts</span>
+                        <span><span class="code">intake→triage→active→review→completion</span></span>
                     </div>
                     <div class="state-transition">alternate fixture</div>
                     <div class="state-card">
                         <strong>Test Definition</strong>
                         <span><span class="code">test_workflow</span></span>
-                        <span><span class="code">test_gate</span></span>
-                        <span><span class="code">test_review_{outcome}_{reason}</span></span>
+                        <span><span class="code">test_workflow</span> prompts</span>
+                        <span><span class="code">same transition topology</span></span>
                     </div>
                 </div>
             </section>
@@ -532,21 +534,21 @@ methods/workflow-reporter-1.0.0.md</div>
         `
     },
     {
-        title: "Review Decision Flow",
-        subtitle: "The full per-item path advances automatically to review, then asks workflow-definition to evaluate the current item before normalizing the transition decision.",
+        title: "Definition-Driven Flow",
+        subtitle: "The full per-item path asks workflow-definition at each stage, and the definition file decides the only valid next stage for advance.",
         body: `
             <section class="diagram-panel">
                 <h3>Per-Item Lifecycle Path</h3>
                 <div class="lifecycle-flow" aria-label="Workflow item lifecycle">
                     <div class="flow-step"><strong>Initialize</strong><span>store item metadata and emit created progress</span></div>
                     <div class="flow-arrow">→</div>
-                    <div class="flow-step"><strong>Intake</strong><span>auto-progress to triage</span></div>
+                    <div class="flow-step"><strong>Intake</strong><span>ask for intake→triage</span></div>
                     <div class="flow-arrow">→</div>
-                    <div class="flow-step"><strong>Triage</strong><span>auto-progress to active</span></div>
+                    <div class="flow-step"><strong>Triage</strong><span>ask for triage→active</span></div>
                     <div class="flow-arrow">→</div>
-                    <div class="flow-step"><strong>Active</strong><span>auto-progress to review</span></div>
+                    <div class="flow-step"><strong>Active</strong><span>ask for active→review</span></div>
                     <div class="flow-arrow">→</div>
-                    <div class="flow-step"><strong>Review</strong><span>send evaluate_transition with item context and reply_to=self_agent_id</span></div>
+                    <div class="flow-step"><strong>Review</strong><span>ask for review→completion</span></div>
                     <div class="flow-arrow">→</div>
                     <div class="flow-step"><strong>Decision</strong><span>summary on advance/reject, progress on stay</span></div>
                 </div>
@@ -555,9 +557,9 @@ methods/workflow-reporter-1.0.0.md</div>
                 <section class="panel">
                     <h3>Decision Outcomes</h3>
                     <ul>
-                        <li><span class="code">advance</span> moves review to completion when the item context is ready.</li>
+                        <li><span class="code">advance</span> moves only to that stage's configured <span class="code">to</span> stage.</li>
                         <li><span class="code">reject</span> keeps the current stage and emits a rejected summary.</li>
-                        <li><span class="code">stay</span> keeps the item in review when context such as <span class="code">review_status</span> says more work is needed.</li>
+                        <li><span class="code">stay</span> keeps the item in the current stage when context says more work is needed.</li>
                     </ul>
                 </section>
                 <section class="panel">
@@ -635,7 +637,7 @@ methods/workflow-reporter-1.0.0.md</div>
             <div class="grid three">
                 <section class="card">
                     <h3>Invalid Definition</h3>
-                    <p>Unknown paths are normalized to <span class="code">invalid_definition_schema</span>.</p>
+                    <p>Missing files or malformed schema records are normalized to <span class="code">invalid_definition_schema</span>.</p>
                 </section>
                 <section class="card">
                     <h3>Dependency Failure</h3>
@@ -657,7 +659,7 @@ methods/workflow-reporter-1.0.0.md</div>
                 <div class="sequence-diagram">
                     <div class="sequence-lane"><strong>Direct run</strong><span><span class="code">./agerun --no-persistence</span> loads methods and creates <span class="code">bootstrap</span>.</span></div>
                     <div class="sequence-lane"><strong>Bootstrap</strong><span>queues <span class="code">workflow-coordinator</span> and writes the first intake line.</span></div>
-                    <div class="sequence-lane"><strong>Workflow methods</strong><span>prepare the definition, initialize the item, and ask for the review decision.</span></div>
+                    <div class="sequence-lane"><strong>Workflow methods</strong><span>prepare the definition, initialize the item, and ask for each transition decision.</span></div>
                     <div class="sequence-lane"><strong>Reporter</strong><span>forwards progress and summary text to the log delegate.</span></div>
                     <div class="sequence-arrow-row">
                         <span class="sequence-arrow">fresh boot →</span>
@@ -674,14 +676,14 @@ methods/workflow-reporter-1.0.0.md</div>
                     <span>The first line proves the demo was queued; the second is the initialized item reporting its own state.</span>
                 </section>
                 <section class="flow-step">
-                    <strong>2. Early stages</strong>
+                    <strong>2. Three advances</strong>
                     <span><span class="code">triage → active → review</span></span>
-                    <span>The item auto-progresses through the bounded demo lifecycle.</span>
+                    <span>Each line follows a separate <span class="code">evaluate_transition</span> request and configured prompt.</span>
                 </section>
                 <section class="flow-step">
-                    <strong>3. Review decision</strong>
-                    <span><span class="code">review_status=approved</span></span>
-                    <span>The definition method normalizes the completion result to <span class="code">outcome=advance</span>.</span>
+                    <strong>3. Final transition</strong>
+                    <span><span class="code">review → completion</span></span>
+                    <span>The definition method normalizes the last completion result to <span class="code">outcome=advance</span>.</span>
                 </section>
                 <section class="flow-step">
                     <strong>4. Terminal summary</strong>

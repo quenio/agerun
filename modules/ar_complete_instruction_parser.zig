@@ -73,8 +73,7 @@ fn _scanTemplatePlaceholders(ref_parser: ?*ar_complete_instruction_parser_t, ref
 
 fn _validateTemplate(ref_parser: ?*ar_complete_instruction_parser_t, ref_arg: []const u8) bool {
     if (ref_arg.len < 2 or ref_arg[0] != '"' or ref_arg[ref_arg.len - 1] != '"') {
-        _logError(ref_parser, "complete() expects a quoted template string", 0);
-        return false;
+        return true;
     }
 
     return _scanTemplatePlaceholders(ref_parser, ref_arg[1 .. ref_arg.len - 1]);

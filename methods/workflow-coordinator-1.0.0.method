@@ -7,6 +7,7 @@ memory.startup_action := "startup_failure"
 memory.item_method_version := "1.0.0"
 memory.initialize_workflow_name := ""
 memory.initialize_initial_stage := ""
+memory.initialize_transition_count := 0
 memory.startup_failure_reason := ""
 memory.failure_category := ""
 memory.complete_trace := "none"
@@ -39,13 +40,14 @@ memory.prepare_sent := send(memory.prepare_target, memory.prepare_payload)
 memory.demo_status := if(memory.should_launch = 1, "definition_preparation_started", memory.demo_status)
 memory.initialize_workflow_name := if(memory.is_definition_ready = 1, message.workflow_name, memory.initialize_workflow_name)
 memory.initialize_initial_stage := if(memory.is_definition_ready = 1, message.initial_stage, memory.initialize_initial_stage)
+memory.initialize_transition_count := if(memory.is_definition_ready = 1, message.transition_count, memory.initialize_transition_count)
 memory.complete_trace := if(memory.is_definition_ready = 1, message.complete_trace, memory.complete_trace)
 memory.item_spawn_method := if(memory.is_definition_ready = 1, "workflow-item", 0)
 memory.item_spawn_result := spawn(memory.item_spawn_method, memory.item_method_version, context)
 memory.item_agent_id := if(memory.is_definition_ready = 1, memory.item_spawn_result, memory.item_agent_id)
 memory.run_status := if(memory.is_definition_ready = 1, "active", memory.run_status)
-memory.initialize_input := build("action={initialize_action} reply_to={self_agent_id} workflow_name={initialize_workflow_name} item_id={item_id} title={title} priority={priority} owner={owner} review_status={review_status} definition_agent_id={definition_agent_id} reporter_agent_id={reporter_agent_id} initial_stage={initialize_initial_stage}", memory)
-memory.initialize_payload := parse("action={action} reply_to={reply_to} workflow_name={workflow_name} item_id={item_id} title={title} priority={priority} owner={owner} review_status={review_status} definition_agent_id={definition_agent_id} reporter_agent_id={reporter_agent_id} initial_stage={initial_stage}", memory.initialize_input)
+memory.initialize_input := build("action={initialize_action} reply_to={self_agent_id} workflow_name={initialize_workflow_name} item_id={item_id} title={title} priority={priority} owner={owner} review_status={review_status} definition_agent_id={definition_agent_id} reporter_agent_id={reporter_agent_id} initial_stage={initialize_initial_stage} transition_count={initialize_transition_count}", memory)
+memory.initialize_payload := parse("action={action} reply_to={reply_to} workflow_name={workflow_name} item_id={item_id} title={title} priority={priority} owner={owner} review_status={review_status} definition_agent_id={definition_agent_id} reporter_agent_id={reporter_agent_id} initial_stage={initial_stage} transition_count={transition_count}", memory.initialize_input)
 memory.initialize_sent := send(memory.item_agent_id * memory.is_definition_ready, memory.initialize_payload)
 memory.demo_status := if(memory.is_definition_ready = 1, "workflow_item_initialized", memory.demo_status)
 memory.run_status := if(memory.is_definition_error = 1, "startup_failed", memory.run_status)

@@ -7,6 +7,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 
 /**
  * @file ar_executable_fixture.c
@@ -16,8 +17,43 @@
 /* Executable fixture structure */
 struct ar_executable_fixture_s {
     char temp_build_dir[256];     /* Temporary build directory path */
+    char complete_runner_path[512]; /* Deterministic complete() runner for executable tests */
     bool initialized;              /* Whether build directory has been initialized */
 };
+
+/* Create a deterministic complete() runner for executable tests. */
+static void _create_complete_runner(ar_executable_fixture_t *mut_fixture) {
+    snprintf(mut_fixture->complete_runner_path, sizeof(mut_fixture->complete_runner_path),
+             "%s/deterministic-complete-runner.sh", mut_fixture->temp_build_dir);
+
+    FILE *own_runner = fopen(mut_fixture->complete_runner_path, "w");
+    AR_ASSERT(own_runner != NULL, "Should be able to create deterministic complete runner");
+
+    fputs("#!/bin/sh\n", own_runner);
+    fputs("prompt=\"\"\n", own_runner);
+    fputs("while [ \"$#\" -gt 0 ]; do\n", own_runner);
+    fputs("    case \"$1\" in\n", own_runner);
+    fputs("        -p)\n", own_runner);
+    fputs("            shift\n", own_runner);
+    fputs("            prompt=\"$1\"\n", own_runner);
+    fputs("            ;;\n", own_runner);
+    fputs("    esac\n", own_runner);
+    fputs("    shift || break\n", own_runner);
+    fputs("done\n", own_runner);
+    fputs("case \"$prompt\" in\n", own_runner);
+    fputs("    *advance*)\n", own_runner);
+    fputs("        printf 'outcome=advance\\nreason=approved\\n'\n", own_runner);
+    fputs("        ;;\n", own_runner);
+    fputs("    *)\n", own_runner);
+    fputs("        printf 'outcome=ready\\nreason=ok\\n'\n", own_runner);
+    fputs("        ;;\n", own_runner);
+    fputs("esac\n", own_runner);
+    fputs("printf 'country=Brazil\\ncity=Brasilia\\ncontinent=South America\\n'\n", own_runner);
+    fclose(own_runner);
+
+    int result = chmod(mut_fixture->complete_runner_path, 0700);
+    AR_ASSERT(result == 0, "Deterministic complete runner should be executable");
+}
 
 /* Initialize temporary build directory */
 static void _init_temp_build_dir(ar_executable_fixture_t *mut_fixture) {
@@ -36,6 +72,8 @@ static void _init_temp_build_dir(ar_executable_fixture_t *mut_fixture) {
         } else {
             printf("Created temporary build directory: %s\n", mut_fixture->temp_build_dir);
         }
+
+        _create_complete_runner(mut_fixture);
         
         mut_fixture->initialized = true;
     }
@@ -69,6 +107,7 @@ ar_executable_fixture_t* ar_executable_fixture__create(void) {
     
     // Initialize fields
     own_fixture->temp_build_dir[0] = '\0';
+    own_fixture->complete_runner_path[0] = '\0';
     own_fixture->initialized = false;
     
     // Initialize the temporary build directory
@@ -104,12 +143,15 @@ char* ar_executable_fixture__create_methods_dir(ar_executable_fixture_t *mut_fix
     
     snprintf(own_methods_dir, 256, "/tmp/agerun_test_%d_methods", (int)pid);
     
-    char setup_cmd[1024];
+    char setup_cmd[2048];
     snprintf(setup_cmd, sizeof(setup_cmd),
         "rm -rf %s 2>/dev/null && "
         "mkdir -p %s && "
-        "cp ../../methods/* %s/",
-        own_methods_dir, own_methods_dir, own_methods_dir);
+        "cp ../../methods/* %s/ && "
+        "mkdir -p %s/workflows && "
+        "cp ../../workflows/* %s/workflows/",
+        own_methods_dir, own_methods_dir, own_methods_dir,
+        mut_fixture->temp_build_dir, mut_fixture->temp_build_dir);
     
     int result = system(setup_cmd);
     if (result != 0) {
@@ -151,31 +193,45 @@ FILE* ar_executable_fixture__build_and_run_with_options(
         return NULL;
     }
 
-    char mut_build_cmd[1024];
+    char mut_complete_env[640] = "";
+    const char *ref_complete_runner = getenv("AGERUN_COMPLETE_RUNNER");
+    if ((ref_complete_runner == NULL || ref_complete_runner[0] == '\0') &&
+        ref_fixture->complete_runner_path[0] != '\0') {
+        snprintf(mut_complete_env, sizeof(mut_complete_env),
+                 "AGERUN_COMPLETE_RUNNER=%s ",
+                 ref_fixture->complete_runner_path);
+    }
+
+    char mut_build_cmd[1536];
     if (ref_boot_method && ref_boot_method[0] != '\0' && no_persistence) {
         snprintf(mut_build_cmd, sizeof(mut_build_cmd),
             "cd ../.. && "
-            "AGERUN_METHODS_DIR=%s RUN_EXEC_DIR=%s make run-exec BOOT_METHOD=%s NO_PERSISTENCE=1 2>&1",
+            "%sAGERUN_METHODS_DIR=%s RUN_EXEC_DIR=%s make run-exec "
+            "BOOT_METHOD=%s NO_PERSISTENCE=1 2>&1",
+            mut_complete_env,
             ref_methods_dir,
             ref_fixture->temp_build_dir,
             ref_boot_method);
     } else if (ref_boot_method && ref_boot_method[0] != '\0') {
         snprintf(mut_build_cmd, sizeof(mut_build_cmd),
             "cd ../.. && "
-            "AGERUN_METHODS_DIR=%s RUN_EXEC_DIR=%s make run-exec BOOT_METHOD=%s 2>&1",
+            "%sAGERUN_METHODS_DIR=%s RUN_EXEC_DIR=%s make run-exec BOOT_METHOD=%s 2>&1",
+            mut_complete_env,
             ref_methods_dir,
             ref_fixture->temp_build_dir,
             ref_boot_method);
     } else if (no_persistence) {
         snprintf(mut_build_cmd, sizeof(mut_build_cmd),
             "cd ../.. && "
-            "AGERUN_METHODS_DIR=%s RUN_EXEC_DIR=%s make run-exec NO_PERSISTENCE=1 2>&1",
+            "%sAGERUN_METHODS_DIR=%s RUN_EXEC_DIR=%s make run-exec NO_PERSISTENCE=1 2>&1",
+            mut_complete_env,
             ref_methods_dir,
             ref_fixture->temp_build_dir);
     } else {
         snprintf(mut_build_cmd, sizeof(mut_build_cmd),
             "cd ../.. && "
-            "AGERUN_METHODS_DIR=%s RUN_EXEC_DIR=%s make run-exec 2>&1",
+            "%sAGERUN_METHODS_DIR=%s RUN_EXEC_DIR=%s make run-exec 2>&1",
+            mut_complete_env,
             ref_methods_dir,
             ref_fixture->temp_build_dir);
     }
@@ -187,15 +243,24 @@ FILE* ar_executable_fixture__build_and_run_with_extra_args(
     const ar_executable_fixture_t *ref_fixture,
     const char *ref_methods_dir,
     const char *ref_extra_args) {
-    char mut_build_cmd[1024];
-
     if (!ref_fixture || !ref_methods_dir || !ref_extra_args || ref_extra_args[0] == '\0') {
         return NULL;
     }
 
+    char mut_complete_env[640] = "";
+    const char *ref_complete_runner = getenv("AGERUN_COMPLETE_RUNNER");
+    if ((ref_complete_runner == NULL || ref_complete_runner[0] == '\0') &&
+        ref_fixture->complete_runner_path[0] != '\0') {
+        snprintf(mut_complete_env, sizeof(mut_complete_env),
+                 "AGERUN_COMPLETE_RUNNER=%s ",
+                 ref_fixture->complete_runner_path);
+    }
+
+    char mut_build_cmd[1536];
     snprintf(mut_build_cmd, sizeof(mut_build_cmd),
         "cd ../.. && "
-        "AGERUN_METHODS_DIR=%s RUN_EXEC_DIR=%s make run-exec AGERUN_ARGS='%s' 2>&1",
+        "%sAGERUN_METHODS_DIR=%s RUN_EXEC_DIR=%s make run-exec AGERUN_ARGS='%s' 2>&1",
+        mut_complete_env,
         ref_methods_dir,
         ref_fixture->temp_build_dir,
         ref_extra_args);

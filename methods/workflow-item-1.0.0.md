@@ -3,9 +3,9 @@
 ## Overview
 
 `workflow-item` is the stateful per-item workflow method. It records bundled demo item metadata,
-emits progress checkpoints through `workflow-reporter`, auto-advances through the early lifecycle
-stages, asks `workflow-definition` for the review-stage decision, and then emits either a final
-summary or a retryable progress update.
+emits progress checkpoints through `workflow-reporter`, asks `workflow-definition` for a decision at
+each non-terminal stage, applies the returned `next_stage` generically, and then emits either the
+next progress update, a terminal summary, or a retryable progress update.
 
 ## ATN Specification
 
@@ -65,26 +65,8 @@ ENSURES_INITIALIZATION_EMITS_PROGRESS:
     final_memory("last_reason") = "initialized" and
     final_memory("progress_sent") = 1
 
-ENSURES_INTAKE_AUTO_PROGRESS_ADVANCES_TO_TRIAGE:
-  message("action") = "auto_progress" and initial_memory("current_stage") = "intake" =>
-    final_memory("current_stage") = "triage" and
-    final_memory("transition_count") = initial_memory("transition_count") + 1 and
-    final_memory("progress_sent") = 1
-
-ENSURES_TRIAGE_AUTO_PROGRESS_ADVANCES_TO_ACTIVE:
-  message("action") = "auto_progress" and initial_memory("current_stage") = "triage" =>
-    final_memory("current_stage") = "active" and
-    final_memory("transition_count") = initial_memory("transition_count") + 1 and
-    final_memory("progress_sent") = 1
-
-ENSURES_ACTIVE_AUTO_PROGRESS_ADVANCES_TO_REVIEW:
-  message("action") = "auto_progress" and initial_memory("current_stage") = "active" =>
-    final_memory("current_stage") = "review" and
-    final_memory("transition_count") = initial_memory("transition_count") + 1 and
-    final_memory("progress_sent") = 1
-
-ENSURES_REVIEW_REQUESTS_A_TRANSITION_DECISION:
-  message("action") = "auto_progress" and initial_memory("current_stage") = "review" =>
+ENSURES_AUTO_PROGRESS_REQUESTS_A_TRANSITION_DECISION:
+  message("action") = "auto_progress" =>
     final_memory("evaluate_sent") = 1
 
 ENSURES_ADVANCE_DECISION_EMITS_A_SUMMARY:
@@ -132,9 +114,8 @@ Behavior:
 ### `action=auto_progress`
 
 Behavior:
-- advances automatically through `intake -> triage -> active -> review`
-- emits a `progress` message on each stage change
-- when the item reaches `review`, sends `evaluate_transition` to `workflow-definition` with `reply_to` set to the item ID
+- sends `evaluate_transition` to `workflow-definition` for the current stage with `reply_to` set to the item ID
+- relies on the definition-owned transition decision to choose whether to advance, stay, or reject
 
 ### `action=transition_decision`
 
@@ -172,11 +153,9 @@ The method persists:
 
 Default bundled progression:
 1. initialize at `intake`
-2. auto-progress to `triage`
-3. auto-progress to `active`
-4. auto-progress to `review`
-5. ask `workflow-definition` for a review decision
-6. emit summary on `advance`/`reject`, or progress on retryable `stay`
+2. ask `workflow-definition` for the intake transition
+3. apply the returned `next_stage` and repeat for triage, active, and review
+4. emit summary on terminal `advance`/`reject`, or progress on retryable `stay`
 
 ## Method Code
 
@@ -184,22 +163,13 @@ Default bundled progression:
 memory.is_initialize := if(message.action = "initialize", 1, 0)
 memory.is_auto_progress := if(message.action = "auto_progress", 1, 0)
 memory.is_transition_decision := if(message.action = "transition_decision", 1, 0)
-memory.is_current_intake := 0
-memory.is_current_triage := 0
-memory.is_current_active := 0
-memory.is_current_review := 0
-memory.advance_intake := 0
-memory.advance_triage := 0
-memory.advance_active := 0
-memory.request_review := 0
-memory.should_emit_progress := 0
-memory.outcome_is_advance := 0
-memory.outcome_is_reject := 0
-memory.outcome_is_stay := 0
-memory.apply_advance := 0
-memory.apply_reject := 0
-memory.apply_stay := 0
-memory.complete_trace := "none"
+memory.outcome_is_advance := if(message.outcome = "advance", 1, 0)
+memory.outcome_is_reject := if(message.outcome = "reject", 1, 0)
+memory.outcome_is_stay := if(message.outcome = "stay", 1, 0)
+memory.apply_advance := memory.is_transition_decision * memory.outcome_is_advance
+memory.apply_reject := memory.is_transition_decision * memory.outcome_is_reject
+memory.apply_stay := memory.is_transition_decision * memory.outcome_is_stay
+memory.complete_trace := if(memory.is_initialize = 1, "none", memory.complete_trace)
 memory.self_agent_id := if(memory.is_initialize = 1, memory.self, memory.self_agent_id)
 memory.workflow_name := if(memory.is_initialize = 1, message.workflow_name, memory.workflow_name)
 memory.item_id := if(memory.is_initialize = 1, message.item_id, memory.item_id)
@@ -214,7 +184,6 @@ memory.current_status := if(memory.is_initialize = 1, "created", memory.current_
 memory.transition_count := if(memory.is_initialize = 1, 0, memory.transition_count)
 memory.terminal_outcome := if(memory.is_initialize = 1, "", memory.terminal_outcome)
 memory.last_reason := if(memory.is_initialize = 1, "initialized", memory.last_reason)
-memory.complete_trace := if(memory.is_initialize = 1, "none", memory.complete_trace)
 memory.progress_text := build("workflow={workflow_name} item={item_id} stage={current_stage} status={current_status} reason={last_reason}", memory)
 memory.progress_input := build("action=progress workflow_name={workflow_name} item_id={item_id} stage={current_stage} status={current_status} owner={owner} transition_count={transition_count} terminal_outcome={terminal_outcome} reason={last_reason} text={progress_text} complete_trace={complete_trace}", memory)
 memory.progress_payload := parse("action={action} workflow_name={workflow_name} item_id={item_id} stage={stage} status={status} owner={owner} transition_count={transition_count} terminal_outcome={terminal_outcome} reason={reason} text={text} complete_trace={complete_trace}", memory.progress_input)
@@ -222,42 +191,9 @@ memory.progress_sent := send(memory.reporter_agent_id * memory.is_initialize, me
 memory.auto_input := build("action=auto_progress", memory)
 memory.auto_payload := parse("action={action}", memory.auto_input)
 memory.auto_sent := send(memory.self_agent_id * memory.is_initialize, memory.auto_payload)
-memory.is_current_intake := if(memory.current_stage = "intake", 1, 0)
-memory.is_current_triage := if(memory.current_stage = "triage", 1, 0)
-memory.is_current_active := if(memory.current_stage = "active", 1, 0)
-memory.is_current_review := if(memory.current_stage = "review", 1, 0)
-memory.advance_intake := memory.is_auto_progress * memory.is_current_intake
-memory.advance_triage := memory.is_auto_progress * memory.is_current_triage
-memory.advance_active := memory.is_auto_progress * memory.is_current_active
-memory.request_review := memory.is_auto_progress * memory.is_current_review
-memory.current_stage := if(memory.advance_intake = 1, "triage", memory.current_stage)
-memory.current_stage := if(memory.advance_triage = 1, "active", memory.current_stage)
-memory.current_stage := if(memory.advance_active = 1, "review", memory.current_stage)
-memory.current_status := if(memory.advance_intake = 1, "triage", memory.current_status)
-memory.current_status := if(memory.advance_triage = 1, "active", memory.current_status)
-memory.current_status := if(memory.advance_active = 1, "review", memory.current_status)
-memory.last_reason := if(memory.advance_intake = 1, "entered_triage", memory.last_reason)
-memory.last_reason := if(memory.advance_triage = 1, "entered_active", memory.last_reason)
-memory.last_reason := if(memory.advance_active = 1, "entered_review", memory.last_reason)
-memory.transition_count := if(memory.advance_intake = 1, memory.transition_count + 1, memory.transition_count)
-memory.transition_count := if(memory.advance_triage = 1, memory.transition_count + 1, memory.transition_count)
-memory.transition_count := if(memory.advance_active = 1, memory.transition_count + 1, memory.transition_count)
-memory.should_emit_progress := memory.advance_intake + memory.advance_triage
-memory.should_emit_progress := memory.should_emit_progress + memory.advance_active
-memory.progress_text := build("workflow={workflow_name} item={item_id} stage={current_stage} status={current_status} reason={last_reason}", memory)
-memory.progress_input := build("action=progress workflow_name={workflow_name} item_id={item_id} stage={current_stage} status={current_status} owner={owner} transition_count={transition_count} terminal_outcome={terminal_outcome} reason={last_reason} text={progress_text} complete_trace={complete_trace}", memory)
-memory.progress_payload := parse("action={action} workflow_name={workflow_name} item_id={item_id} stage={stage} status={status} owner={owner} transition_count={transition_count} terminal_outcome={terminal_outcome} reason={reason} text={text} complete_trace={complete_trace}", memory.progress_input)
-memory.progress_sent := send(memory.reporter_agent_id * memory.should_emit_progress, memory.progress_payload)
-memory.auto_sent := send(memory.self_agent_id * memory.should_emit_progress, memory.auto_payload)
 memory.evaluate_input := build("action=evaluate_transition reply_to={self_agent_id} workflow_name={workflow_name} stage={current_stage} item_id={item_id} title={title} priority={priority} owner={owner} review_status={review_status} transition_count={transition_count}", memory)
 memory.evaluate_payload := parse("action={action} reply_to={reply_to} workflow_name={workflow_name} stage={stage} item_id={item_id} title={title} priority={priority} owner={owner} review_status={review_status} transition_count={transition_count}", memory.evaluate_input)
-memory.evaluate_sent := send(memory.definition_agent_id * memory.request_review, memory.evaluate_payload)
-memory.outcome_is_advance := if(message.outcome = "advance", 1, 0)
-memory.outcome_is_reject := if(message.outcome = "reject", 1, 0)
-memory.outcome_is_stay := if(message.outcome = "stay", 1, 0)
-memory.apply_advance := memory.is_transition_decision * memory.outcome_is_advance
-memory.apply_reject := memory.is_transition_decision * memory.outcome_is_reject
-memory.apply_stay := memory.is_transition_decision * memory.outcome_is_stay
+memory.evaluate_sent := send(memory.definition_agent_id * memory.is_auto_progress, memory.evaluate_payload)
 memory.current_stage := if(memory.apply_advance = 1, message.next_stage, memory.current_stage)
 memory.current_status := if(memory.is_transition_decision = 1, message.status, memory.current_status)
 memory.last_reason := if(memory.is_transition_decision = 1, message.reason, memory.last_reason)
@@ -265,15 +201,22 @@ memory.complete_trace := if(memory.is_transition_decision = 1, message.complete_
 memory.terminal_outcome := if(memory.apply_advance = 1, message.terminal_outcome, memory.terminal_outcome)
 memory.terminal_outcome := if(memory.apply_reject = 1, message.terminal_outcome, memory.terminal_outcome)
 memory.transition_count := if(memory.apply_advance = 1, memory.transition_count + 1, memory.transition_count)
+memory.has_terminal_outcome := if(memory.terminal_outcome = "", 0, 1)
+memory.advance_is_terminal := memory.apply_advance * memory.has_terminal_outcome
+memory.has_no_terminal_outcome := if(memory.has_terminal_outcome = 1, 0, 1)
+memory.advance_is_progress := memory.apply_advance * memory.has_no_terminal_outcome
 memory.summary := build("workflow={workflow_name} item={item_id} stage={current_stage} terminal={terminal_outcome} reason={last_reason}", memory)
 memory.summary_input := build("action=summary workflow_name={workflow_name} item_id={item_id} stage={current_stage} status={current_status} owner={owner} transition_count={transition_count} terminal_outcome={terminal_outcome} reason={last_reason} text={summary} complete_trace={complete_trace}", memory)
 memory.summary_payload := parse("action={action} workflow_name={workflow_name} item_id={item_id} stage={stage} status={status} owner={owner} transition_count={transition_count} terminal_outcome={terminal_outcome} reason={reason} text={text} complete_trace={complete_trace}", memory.summary_input)
-memory.summary_sent := send(memory.reporter_agent_id * memory.apply_advance, memory.summary_payload)
+memory.summary_sent := send(memory.reporter_agent_id * memory.advance_is_terminal, memory.summary_payload)
 memory.summary_sent := send(memory.reporter_agent_id * memory.apply_reject, memory.summary_payload)
 memory.progress_text := build("workflow={workflow_name} item={item_id} stage={current_stage} status={current_status} reason={last_reason}", memory)
 memory.progress_input := build("action=progress workflow_name={workflow_name} item_id={item_id} stage={current_stage} status={current_status} owner={owner} transition_count={transition_count} terminal_outcome={terminal_outcome} reason={last_reason} text={progress_text} complete_trace={complete_trace}", memory)
 memory.progress_payload := parse("action={action} workflow_name={workflow_name} item_id={item_id} stage={stage} status={status} owner={owner} transition_count={transition_count} terminal_outcome={terminal_outcome} reason={reason} text={text} complete_trace={complete_trace}", memory.progress_input)
 memory.progress_sent := send(memory.reporter_agent_id * memory.apply_stay, memory.progress_payload)
+memory.progress_sent := send(memory.reporter_agent_id * memory.advance_is_progress, memory.progress_payload)
+memory.auto_sent := send(memory.self_agent_id * memory.advance_is_progress, memory.auto_payload)
+
 ```
 
 ## Testing
@@ -282,7 +225,7 @@ Validated by `methods/workflow_item_tests.c`.
 
 The tests verify:
 - initialization stores stable item metadata
-- early lifecycle progress is emitted in order
-- review-stage decisions from `workflow-definition` are applied correctly
+- transition decisions are requested at intake, triage, active, and review
+- returned `next_stage` values from `workflow-definition` are applied generically
 - `advance`, `reject`, and retryable `stay` preserve consistent item state
 - final summaries and reason-bearing progress messages are emitted to the reporter

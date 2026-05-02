@@ -19,9 +19,8 @@ jobs:
 
       - name: Install GCC 13 and matching libc
         run: |
-          sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
-          sudo apt update
-          sudo apt install -y gcc-13 g++-13 libc6-dev build-essential
+          sudo apt-get update
+          sudo apt-get install -y gcc-13 g++-13 libc6-dev build-essential
           # Ensure gcc-13 can find system headers
           sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-13 100
           # Print diagnostic information

@@ -100,7 +100,6 @@ Used by `bootstrap` to start the bundled workflow demo.
 - `outcome`
 - `next_stage`
 - `status`
-- `validation_clause`
 - `reason`
 - `retryable`
 - `terminal_outcome`
@@ -108,9 +107,10 @@ Used by `bootstrap` to start the bundled workflow demo.
 
 **Implemented rules**:
 - `outcome` is one of `advance`, `stay`, `reject`
+- `advance` uses only the configured `to` stage from the parsed workflow definition
 - failed completion evaluation becomes `stay` with `retryable = 1`
 - reject decisions produce `terminal_outcome = rejected`
-- successful review-stage advancement produces `terminal_outcome = completed`
+- successful advancement into the configured terminal stage produces `terminal_outcome = completed`
 
 ## 5. Workflow Reporter Inputs
 
