@@ -368,7 +368,7 @@ methods/workflow_reporter_tests.c</div>
                     <ul>
                         <li>The definition method reads the file asynchronously through delegate <span class="code">-100</span>.</li>
                         <li>Missing metadata or transition fields become <span class="code">invalid_definition_schema</span>.</li>
-                        <li><span class="code">complete("Workflow dependency probe ...")</span> supplies the startup readiness signal.</li>
+                        <li><span class="code">complete("Dependency probe: ... outcome={outcome} ...")</span> supplies the startup readiness signal.</li>
                     </ul>
                 </section>
             </div>

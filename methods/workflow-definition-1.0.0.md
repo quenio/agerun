@@ -108,7 +108,7 @@ Behavior:
 - sends an asynchronous file read request to delegate `-100`
 - parses the flat workflow record after the file response arrives
 - validates required metadata and the configured transition records
-- runs `complete("Workflow dependency probe outcome={outcome} reason={reason}.")`
+- runs `complete("Dependency probe: the only correct output is outcome=ready and reason=ok. Return outcome={outcome} and reason={reason}.")`
 - checks the returned completion map for substituted `outcome`/`reason` values as the startup gate: success allows `definition_ready`, failure produces `definition_error`
 - treats returned `reason` as diagnostic context (`last_reason` on success, `startup_dependency_unavailable` on failure)
 - does not currently use generated `outcome` to change startup behavior
@@ -341,7 +341,7 @@ memory.schema_ok := memory.file_success * memory.metadata_ok
 memory.schema_ok := memory.schema_ok * memory.transitions_ok
 memory.complete_presence_input := "complete_present=1"
 memory.complete_presence := parse("complete_present={complete_present}", memory.complete_presence_input)
-memory.startup_result := complete("Answer with outcome ready and reason ok. The dependency probe result is {outcome}. The short reason is {reason}.", memory.complete_presence)
+memory.startup_result := complete("Dependency probe: the only correct output is outcome=ready and reason=ok. Return outcome={outcome} and reason={reason}.", memory.complete_presence)
 memory.probe_check_input := build("complete_present={complete_present} outcome={outcome} reason={reason}", memory.startup_result)
 memory.probe_check := parse("complete_present={complete_present} outcome={outcome} reason={reason}", memory.probe_check_input)
 memory.probe_has_marker := if(memory.probe_check.complete_present = 1, 1, 0)
