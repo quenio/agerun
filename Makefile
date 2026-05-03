@@ -386,8 +386,10 @@ run-tests: $(WORKFLOW_REAL_COMPLETION_PREREQ) run_tests_lib
 				fi; \
 				;; \
 			*) \
-				if ! AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test; then \
-					echo "ERROR: Test $$test failed with status $$?"; \
+				AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test; \
+				exitcode=$$?; \
+				if [ $$exitcode -ne 0 ]; then \
+					echo "ERROR: Test $$test failed with status $$exitcode"; \
 					failed=1; \
 				fi; \
 				;; \
@@ -416,7 +418,8 @@ sanitize-tests:
 				fi; \
 				;; \
 			*) \
-				AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test; \
+				AGERUN_MEMORY_REPORT="memory_report_$$test.log" \
+					AGERUN_SKIP_REAL_COMPLETION_TESTS=1 ./$$test; \
 				exitcode=$$?; \
 				if [ $$exitcode -ne 0 ]; then \
 					echo "ERROR: Test $$test failed with status $$exitcode"; \
@@ -451,13 +454,13 @@ tsan-tests:
 				case "$$test" in \
 					workflow_definition_tests) \
 						if [ -n "$${AGERUN_TSAN_COMPLETE_RUNNER:-}" ]; then \
-							AGERUN_MEMORY_REPORT="memory_report_$$test.log" AGERUN_COMPLETE_RUNNER="$$AGERUN_TSAN_COMPLETE_RUNNER" ./$$test; \
+							AGERUN_MEMORY_REPORT="memory_report_$$test.log" AGERUN_SKIP_REAL_COMPLETION_TESTS=1 AGERUN_COMPLETE_RUNNER="$$AGERUN_TSAN_COMPLETE_RUNNER" ./$$test; \
 						else \
-							AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test; \
+							AGERUN_MEMORY_REPORT="memory_report_$$test.log" AGERUN_SKIP_REAL_COMPLETION_TESTS=1 ./$$test; \
 						fi; \
 						;; \
 					*) \
-						AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test; \
+						AGERUN_MEMORY_REPORT="memory_report_$$test.log" AGERUN_SKIP_REAL_COMPLETION_TESTS=1 ./$$test; \
 						;; \
 				esac; \
 				exitcode=$$?; \

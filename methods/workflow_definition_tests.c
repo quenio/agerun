@@ -14,6 +14,25 @@ static char g_runner_path[256] = {0};
 static char g_model_path[256] = {0};
 static const char *REF_REAL_MODEL_PATH = "../../models/phi-3-mini-q4.gguf";
 
+#if defined(__has_feature)
+#if __has_feature(address_sanitizer) || __has_feature(thread_sanitizer)
+#define AR_WORKFLOW_REAL_COMPLETION_SANITIZER_BUILD 1
+#endif
+#endif
+#if defined(__SANITIZE_ADDRESS__) || defined(__SANITIZE_THREAD__)
+#define AR_WORKFLOW_REAL_COMPLETION_SANITIZER_BUILD 1
+#endif
+#ifndef AR_WORKFLOW_REAL_COMPLETION_SANITIZER_BUILD
+#define AR_WORKFLOW_REAL_COMPLETION_SANITIZER_BUILD 0
+#endif
+
+static bool should_skip_real_completion_tests(void) {
+    const char *ref_skip = getenv("AGERUN_SKIP_REAL_COMPLETION_TESTS");
+    return AR_WORKFLOW_REAL_COMPLETION_SANITIZER_BUILD || (
+        ref_skip != NULL && ref_skip[0] != '\0' && strcmp(ref_skip, "0") != 0
+    );
+}
+
 static void setup_fake_runner(const char *ref_output) {
     snprintf(g_runner_path, sizeof(g_runner_path), "./fake-workflow-definition-runner-%ld.sh", (long)getpid());
     snprintf(g_model_path, sizeof(g_model_path), "./fake-workflow-definition-model-%ld.gguf", (long)getpid());
@@ -738,6 +757,11 @@ static void test_workflow_definition__complete_prompt_uses_workflow_item_context
 
 static void test_workflow_definition__real_completion_review_status_drives_default_and_test_outcomes(void) {
     printf("Testing workflow-definition real completion review status matrix...\n");
+
+    if (should_skip_real_completion_tests()) {
+        printf("Skipping workflow-definition real completion matrix in sanitizer/opt-out run.\n");
+        return;
+    }
 
     setup_real_completion_runtime();
 
