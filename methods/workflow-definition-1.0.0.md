@@ -108,7 +108,7 @@ Behavior:
 - sends an asynchronous file read request to delegate `-100`
 - parses the flat workflow record after the file response arrives
 - validates required metadata and the configured transition records
-- runs `complete("Workflow dependency probe outcome={outcome} reason={reason}.")`
+- runs `complete("Dependency probe: the only correct output is outcome=ready and reason=ok. Return outcome={outcome} and reason={reason}.")`
 - checks the returned completion map for substituted `outcome`/`reason` values as the startup gate: success allows `definition_ready`, failure produces `definition_error`
 - treats returned `reason` as diagnostic context (`last_reason` on success, `startup_dependency_unavailable` on failure)
 - does not currently use generated `outcome` to change startup behavior
@@ -182,6 +182,12 @@ Transition evaluation failures are normalized to:
 - `outcome = stay`
 - `reason = complete_transition_failed`
 - `retryable = 1`
+
+The checked-in `workflows/default.workflow` and `workflows/test.workflow` definitions also make the
+review-stage prompt deterministic for the item state under test:
+- `review_status = approved` returns `outcome = advance` with `reason = approved_by_review`
+- `review_status = pending` returns `outcome = stay` with `reason = review_not_approved`
+- `review_status = blocked` returns `outcome = reject` with `reason = review_blocked`
 
 ## `complete(...)` Placeholder Usage Summary
 
@@ -335,7 +341,7 @@ memory.schema_ok := memory.file_success * memory.metadata_ok
 memory.schema_ok := memory.schema_ok * memory.transitions_ok
 memory.complete_presence_input := "complete_present=1"
 memory.complete_presence := parse("complete_present={complete_present}", memory.complete_presence_input)
-memory.startup_result := complete("Answer with outcome ready and reason ok. The dependency probe result is {outcome}. The short reason is {reason}.", memory.complete_presence)
+memory.startup_result := complete("Dependency probe: the only correct output is outcome=ready and reason=ok. Return outcome={outcome} and reason={reason}.", memory.complete_presence)
 memory.probe_check_input := build("complete_present={complete_present} outcome={outcome} reason={reason}", memory.startup_result)
 memory.probe_check := parse("complete_present={complete_present} outcome={outcome} reason={reason}", memory.probe_check_input)
 memory.probe_has_marker := if(memory.probe_check.complete_present = 1, 1, 0)
@@ -443,4 +449,6 @@ The tests cover:
 - `describe` responses
 - configured transition prompt usage for intake, triage, active, and review
 - normalized `transition_decision` replies for `advance`, `stay`, `reject`
+- real local completion coverage for the approved/pending/blocked review-state matrix in both
+  checked-in workflow definitions
 - retryable `stay` conversion when `complete(...)` fails

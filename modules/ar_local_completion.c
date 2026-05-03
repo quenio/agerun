@@ -18,6 +18,12 @@
 
 extern char **environ;
 
+#ifdef RTLD_NODELETE
+#define AR_LOCAL_COMPLETION_DLOPEN_FLAGS (RTLD_NOW | RTLD_LOCAL | RTLD_NODELETE)
+#else
+#define AR_LOCAL_COMPLETION_DLOPEN_FLAGS (RTLD_NOW | RTLD_LOCAL)
+#endif
+
 typedef struct ar_local_completion_buffer_s {
     char *own_text;
     size_t length;
@@ -452,7 +458,7 @@ static bool _ensure_llama_backend_initialized(ar_local_completion_t *mut_runtime
         return false;
     }
 
-    void *own_library = dlopen(ref_library_path, RTLD_NOW | RTLD_LOCAL);
+    void *own_library = dlopen(ref_library_path, AR_LOCAL_COMPLETION_DLOPEN_FLAGS);
     if (own_library == NULL) {
         _log_failure(mut_runtime,
                      "complete() could not load the vendored libllama runtime; run make vendor-llama-cpu and verify the installed library dependencies",

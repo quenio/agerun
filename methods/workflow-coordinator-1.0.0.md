@@ -6,7 +6,8 @@
 startup `start` message from `bootstrap`, spawns the supporting `workflow-definition` and
 `workflow-reporter` agents, waits for definition readiness, and then either:
 
-- records a successful handoff and emits a final summary through `workflow-reporter`, or
+- records a successful handoff and initializes `workflow-item`, which emits progress and final
+  summary events through `workflow-reporter`, or
 - reports a startup dependency/definition failure without creating a fake work item.
 
 ## ATN Specification
@@ -213,3 +214,5 @@ The tests verify that the coordinator:
 - transitions to `run_status = "startup_failed"` on `definition_error`
 - skips item creation on startup failure
 - produces visible reporter/log output for both success and failure paths
+- runs the real local completion matrix through coordinator, definition, item, and reporter for
+  `review_status = approved`, `pending`, and `blocked`
