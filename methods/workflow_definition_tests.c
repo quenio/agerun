@@ -85,17 +85,17 @@ static void setup_prompt_sensitive_runner(void) {
         own_runner
     );
     fputs(
-        "  *\"review_status=pending\"*|*\"review_status is pending\"*) "
+        "  *\"review_status=pending\"*|*\"Current review_status is pending\"*) "
         "printf 'outcome=stay\\nreason=review_not_approved\\n' ;;\n",
         own_runner
     );
     fputs(
-        "  *\"review_status=blocked\"*|*\"review_status is blocked\"*) "
+        "  *\"review_status=blocked\"*|*\"Current review_status is blocked\"*) "
         "printf 'outcome=reject\\nreason=review_blocked\\n' ;;\n",
         own_runner
     );
     fputs(
-        "  *\"review_status=approved\"*|*\"review_status is approved\"*) "
+        "  *\"review_status=approved\"*|*\"Current review_status is approved\"*) "
         "printf 'outcome=advance\\nreason=approved_by_review\\n' ;;\n",
         own_runner
     );
@@ -755,6 +755,78 @@ static void test_workflow_definition__complete_prompt_uses_workflow_item_context
     cleanup_fake_runner();
 }
 
+static void test_workflow_definition__fake_runner_distinguishes_review_status_values(void) {
+    printf("Testing workflow-definition fake runner distinguishes review status values...\n");
+
+    setup_prompt_sensitive_runner();
+
+    ar_method_fixture_t *own_fixture = create_fixture();
+    ar_agency_t *mut_agency = ar_method_fixture__get_agency(own_fixture);
+    ar_data_t *own_context = ar_data__create_map();
+    AR_ASSERT(own_context != NULL, "Definition context should be created");
+    int64_t definition_agent_id = ar_agency__create_agent(
+        mut_agency,
+        "workflow-definition",
+        "1.0.0",
+        own_context
+    );
+    AR_ASSERT(definition_agent_id == 1, "Definition agent should be created");
+
+    ar_data_t *own_prepare_reply = prepare_definition_and_take_reply(
+        own_fixture,
+        mut_agency,
+        definition_agent_id,
+        "workflows/default.workflow"
+    );
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_prepare_reply, "action"), "definition_ready") == 0,
+              "Default definition should prepare");
+    ar_data__destroy(own_prepare_reply);
+
+    assert_review_transition_decision(
+        own_fixture,
+        mut_agency,
+        definition_agent_id,
+        "approved",
+        "default_workflow",
+        "advance",
+        "completion",
+        "completion",
+        "approved_by_review",
+        "completed",
+        0
+    );
+    assert_review_transition_decision(
+        own_fixture,
+        mut_agency,
+        definition_agent_id,
+        "pending",
+        "default_workflow",
+        "stay",
+        "review",
+        "review_waiting",
+        "review_not_approved",
+        "",
+        1
+    );
+    assert_review_transition_decision(
+        own_fixture,
+        mut_agency,
+        definition_agent_id,
+        "blocked",
+        "default_workflow",
+        "reject",
+        "review",
+        "rejected",
+        "review_blocked",
+        "rejected",
+        0
+    );
+
+    ar_method_fixture__destroy(own_fixture);
+    ar_data__destroy(own_context);
+    cleanup_fake_runner();
+}
+
 static void test_workflow_definition__real_completion_review_status_drives_default_and_test_outcomes(void) {
     printf("Testing workflow-definition real completion review status matrix...\n");
 
@@ -917,6 +989,7 @@ int main(void) {
     test_workflow_definition__complete_failure_maps_to_retryable_stay();
     test_workflow_definition__complete_success_uses_outcome_and_reason();
     test_workflow_definition__complete_prompt_uses_workflow_item_context();
+    test_workflow_definition__fake_runner_distinguishes_review_status_values();
     test_workflow_definition__real_completion_review_status_drives_default_and_test_outcomes();
     test_workflow_definition__missing_transition_fields_returns_definition_error();
     test_workflow_definition__uses_configured_prompt_for_each_transition();
