@@ -12,6 +12,26 @@
 
 static char g_runner_path[256] = {0};
 static char g_model_path[256] = {0};
+static const char *REF_REAL_MODEL_PATH = "../../models/phi-3-mini-q4.gguf";
+
+#if defined(__has_feature)
+#if __has_feature(address_sanitizer) || __has_feature(thread_sanitizer)
+#define AR_WORKFLOW_REAL_COMPLETION_SANITIZER_BUILD 1
+#endif
+#endif
+#if defined(__SANITIZE_ADDRESS__) || defined(__SANITIZE_THREAD__)
+#define AR_WORKFLOW_REAL_COMPLETION_SANITIZER_BUILD 1
+#endif
+#ifndef AR_WORKFLOW_REAL_COMPLETION_SANITIZER_BUILD
+#define AR_WORKFLOW_REAL_COMPLETION_SANITIZER_BUILD 0
+#endif
+
+static bool should_skip_real_completion_tests(void) {
+    const char *ref_skip = getenv("AGERUN_SKIP_REAL_COMPLETION_TESTS");
+    return AR_WORKFLOW_REAL_COMPLETION_SANITIZER_BUILD || (
+        ref_skip != NULL && ref_skip[0] != '\0' && strcmp(ref_skip, "0") != 0
+    );
+}
 
 static void setup_fake_runner(const char *ref_output) {
     snprintf(g_runner_path, sizeof(g_runner_path), "./fake-workflow-definition-runner-%ld.sh", (long)getpid());
@@ -65,12 +85,17 @@ static void setup_prompt_sensitive_runner(void) {
         own_runner
     );
     fputs(
-        "  *\"review_status=pending\"*) "
+        "  *\"review_status=pending\"*|*\"review_status is pending\"*) "
         "printf 'outcome=stay\\nreason=review_not_approved\\n' ;;\n",
         own_runner
     );
     fputs(
-        "  *\"review_status=approved\"*) "
+        "  *\"review_status=blocked\"*|*\"review_status is blocked\"*) "
+        "printf 'outcome=reject\\nreason=review_blocked\\n' ;;\n",
+        own_runner
+    );
+    fputs(
+        "  *\"review_status=approved\"*|*\"review_status is approved\"*) "
         "printf 'outcome=advance\\nreason=approved_by_review\\n' ;;\n",
         own_runner
     );
@@ -149,6 +174,15 @@ static void setup_missing_model(void) {
     unsetenv("AGERUN_COMPLETE_RUNNER");
 }
 
+static void setup_real_completion_runtime(void) {
+    cleanup_fake_runner();
+    AR_ASSERT(access(REF_REAL_MODEL_PATH, F_OK) == 0,
+              "Real completion model should exist before workflow-definition real tests");
+    unsetenv("AGERUN_COMPLETE_RUNNER");
+    AR_ASSERT(setenv("AGERUN_COMPLETE_MODEL", REF_REAL_MODEL_PATH, 1) == 0,
+              "Real completion model env should be set");
+}
+
 static ar_data_t *create_prepare_definition_message(const char *ref_path, int64_t reply_to) {
     ar_data_t *own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Prepare message should be created");
@@ -225,6 +259,142 @@ static ar_data_t *prepare_definition_and_take_reply(
     AR_ASSERT(ar_agency__agent_has_messages(mut_agency, definition_agent_id),
               "Prepared definition should reply");
     return ar_agency__get_agent_message(mut_agency, definition_agent_id);
+}
+
+static void assert_review_transition_decision(
+    ar_method_fixture_t *mut_fixture,
+    ar_agency_t *mut_agency,
+    int64_t definition_agent_id,
+    const char *ref_review_status,
+    const char *ref_expected_workflow_name,
+    const char *ref_expected_outcome,
+    const char *ref_expected_next_stage,
+    const char *ref_expected_status,
+    const char *ref_expected_reason,
+    const char *ref_expected_terminal_outcome,
+    int64_t expected_retryable
+) {
+    char mut_expected_trace[256];
+    AR_ASSERT(snprintf(
+        mut_expected_trace,
+        sizeof(mut_expected_trace),
+        "COMPLETE_TRACE[phase=transition|outcome=%s|reason=%s]",
+        ref_expected_outcome,
+        ref_expected_reason
+    ) > 0, "Expected complete trace should format");
+
+    ar_data_t *own_message = create_evaluate_transition_message_with_review(
+        "review",
+        ref_review_status,
+        definition_agent_id
+    );
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, definition_agent_id, own_message),
+              "Review transition should queue");
+    AR_ASSERT(ar_method_fixture__process_next_message(mut_fixture),
+              "Review transition should process");
+    AR_ASSERT(ar_agency__agent_has_messages(mut_agency, definition_agent_id),
+              "Review transition decision should be queued");
+
+    ar_data_t *own_reply = ar_agency__get_agent_message(mut_agency, definition_agent_id);
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "action"), "transition_decision") == 0,
+              "Review reply should be transition_decision");
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "workflow_name"),
+                     ref_expected_workflow_name) == 0,
+              "Review reply should use canonical workflow name");
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "outcome"),
+                     ref_expected_outcome) == 0,
+              "Review status should drive expected outcome");
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "next_stage"),
+                     ref_expected_next_stage) == 0,
+              "Review status should drive expected next stage");
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "status"),
+                     ref_expected_status) == 0,
+              "Review status should drive expected item status");
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "reason"),
+                     ref_expected_reason) == 0,
+              "Review status should drive expected reason");
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "terminal_outcome"),
+                     ref_expected_terminal_outcome) == 0,
+              "Review status should drive expected terminal outcome");
+    AR_ASSERT(ar_data__get_map_integer(own_reply, "retryable") == expected_retryable,
+              "Review status should drive retryable flag");
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_reply, "complete_trace"),
+                     mut_expected_trace) == 0,
+              "Review transition should expose exact complete trace");
+    ar_data__destroy(own_reply);
+}
+
+static void assert_real_review_matrix_for_definition(
+    const char *ref_definition_path,
+    const char *ref_expected_workflow_name
+) {
+    ar_method_fixture_t *own_fixture = create_fixture();
+    ar_agency_t *mut_agency = ar_method_fixture__get_agency(own_fixture);
+    ar_data_t *own_context = ar_data__create_map();
+    AR_ASSERT(own_context != NULL, "Definition context should be created");
+    int64_t definition_agent_id = ar_agency__create_agent(
+        mut_agency,
+        "workflow-definition",
+        "1.0.0",
+        own_context
+    );
+    AR_ASSERT(definition_agent_id == 1, "Definition agent should be created");
+
+    ar_data_t *own_prepare_reply = prepare_definition_and_take_reply(
+        own_fixture,
+        mut_agency,
+        definition_agent_id,
+        ref_definition_path
+    );
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_prepare_reply, "action"), "definition_ready") == 0,
+              "Real completion definition should prepare");
+    AR_ASSERT(strcmp(ar_data__get_map_string(own_prepare_reply, "workflow_name"),
+                     ref_expected_workflow_name) == 0,
+              "Prepared definition should use expected workflow name");
+    ar_data__destroy(own_prepare_reply);
+
+    assert_review_transition_decision(
+        own_fixture,
+        mut_agency,
+        definition_agent_id,
+        "approved",
+        ref_expected_workflow_name,
+        "advance",
+        "completion",
+        "completion",
+        "approved_by_review",
+        "completed",
+        0
+    );
+    assert_review_transition_decision(
+        own_fixture,
+        mut_agency,
+        definition_agent_id,
+        "pending",
+        ref_expected_workflow_name,
+        "stay",
+        "review",
+        "review_waiting",
+        "review_not_approved",
+        "",
+        1
+    );
+    assert_review_transition_decision(
+        own_fixture,
+        mut_agency,
+        definition_agent_id,
+        "blocked",
+        ref_expected_workflow_name,
+        "reject",
+        "review",
+        "rejected",
+        "review_blocked",
+        "rejected",
+        0
+    );
+
+    ar_method_fixture__destroy(own_fixture);
+    ar_data__destroy(own_context);
 }
 
 static void test_workflow_definition__prepare_definition_reads_known_file_and_queues_ready_message(void) {
@@ -585,6 +755,29 @@ static void test_workflow_definition__complete_prompt_uses_workflow_item_context
     cleanup_fake_runner();
 }
 
+static void test_workflow_definition__real_completion_review_status_drives_default_and_test_outcomes(void) {
+    printf("Testing workflow-definition real completion review status matrix...\n");
+
+    if (should_skip_real_completion_tests()) {
+        printf("Skipping workflow-definition real completion matrix in sanitizer/opt-out run.\n");
+        return;
+    }
+
+    setup_real_completion_runtime();
+
+    assert_real_review_matrix_for_definition(
+        "workflows/default.workflow",
+        "default_workflow"
+    );
+    assert_real_review_matrix_for_definition(
+        "workflows/test.workflow",
+        "test_workflow"
+    );
+
+    unsetenv("AGERUN_COMPLETE_MODEL");
+    unsetenv("AGERUN_COMPLETE_RUNNER");
+}
+
 static void test_workflow_definition__missing_transition_fields_returns_definition_error(void) {
     printf("Testing workflow-definition rejects missing transition fields...\n");
 
@@ -724,6 +917,7 @@ int main(void) {
     test_workflow_definition__complete_failure_maps_to_retryable_stay();
     test_workflow_definition__complete_success_uses_outcome_and_reason();
     test_workflow_definition__complete_prompt_uses_workflow_item_context();
+    test_workflow_definition__real_completion_review_status_drives_default_and_test_outcomes();
     test_workflow_definition__missing_transition_fields_returns_definition_error();
     test_workflow_definition__uses_configured_prompt_for_each_transition();
 

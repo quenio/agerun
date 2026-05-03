@@ -58,10 +58,14 @@ runtime flow at a time.
 
 4. Individual commands (optional):
    ```
-   make run-tests    # Run tests only
+   make run-tests    # Run tests only; prepares complete() runtime assets if needed
    make run-exec     # Build and run executable
    make              # Show all available targets
    ```
+
+   Standalone workflow test targets that exercise real local completions also prepare the
+   `complete(...)` runtime on demand. `make build` keeps this readiness step centralized before its
+   test fan-out, then skips duplicate readiness checks inside the nested test run.
 
    On a fresh executable run, AgeRun creates the `bootstrap` agent, queues its `"__boot__"`
    message automatically, and processes the bundled workflow demo flow. The current bundled demo

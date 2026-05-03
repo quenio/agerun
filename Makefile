@@ -36,7 +36,7 @@ help:
 	@echo "  make add-newline FILE=<file> - Add newline to end of file if missing"
 	@echo "  make vendor-llama-cpu - Build/install vendored CPU-only llama.cpp into .deps"
 	@echo "  make clean-llama-cpp - Remove vendored llama.cpp build/install artifacts from .deps"
-	@echo "  make complete-runtime-ready - Build vendored libllama and download phi-3-mini-q4.gguf if missing"
+	@echo "  make complete-runtime-ready - Ensure vendored libllama and phi-3-mini-q4.gguf exist"
 	@echo "  make download-complete-model - Download phi-3-mini-q4.gguf into models/ if missing"
 	@echo "  make complete-model-smoke - Ensure complete() runtime assets are ready and run the embedded libllama smoke with a cold-start timeout"
 	@echo "  make complete-performance-validation - Run the documented complete() performance validation subtests"
@@ -76,6 +76,11 @@ COMPLETE_LINUX_CONTAINER_CONTEXT ?= docker/complete-performance-validation
 COMPLETE_LINUX_CONTAINER_LLAMA_BUILD_DIR ?= .deps/linux-container-llama.cpp-build
 COMPLETE_LINUX_CONTAINER_LLAMA_INSTALL_DIR ?= .deps/linux-container-llama.cpp-install
 COMPLETE_LINUX_CONTAINER_RUN_TESTS_DIR ?= bin/run-tests-linux-container
+SKIP_COMPLETE_RUNTIME_READY ?=
+WORKFLOW_REAL_COMPLETION_PREREQ =
+ifeq ($(SKIP_COMPLETE_RUNTIME_READY),)
+WORKFLOW_REAL_COMPLETION_PREREQ = complete-runtime-ready
+endif
 ifeq ($(UNAME_S),Darwin)
 LLAMA_SHARED_EXT = dylib
 LLAMA_CPU_CMAKE_FLAGS = -DGGML_METAL=OFF
@@ -333,12 +338,20 @@ run-shell: run_exec_lib
 # Build and run the executable with Address + Undefined Behavior Sanitizers
 sanitize-exec: sanitize_exec_lib
 	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(SANITIZER_FLAGS) $(SANITIZER_EXTRA_FLAGS) -o $(SANITIZE_EXEC_DIR)/agerun modules/ar_executable.c $(SANITIZE_EXEC_DIR)/libagerun.a $(LDFLAGS) $(SANITIZER_FLAGS)
-	cd $(SANITIZE_EXEC_DIR) && AGERUN_MEMORY_REPORT="memory_report_agerun.log" ./agerun
+	@persistence_args=""; \
+	if [ -n "$(NO_PERSISTENCE)" ]; then \
+		persistence_args="--no-persistence"; \
+	fi; \
+	cd $(SANITIZE_EXEC_DIR) && AGERUN_MEMORY_REPORT="memory_report_agerun.log" ./agerun $$persistence_args
 
 # Build and run the executable with Thread Sanitizer
 tsan-exec: tsan_exec_lib
 	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS) $(SANITIZER_EXTRA_FLAGS) -o $(TSAN_EXEC_DIR)/agerun modules/ar_executable.c $(TSAN_EXEC_DIR)/libagerun.a $(LDFLAGS) $(TSAN_FLAGS)
-	cd $(TSAN_EXEC_DIR) && AGERUN_MEMORY_REPORT="memory_report_agerun.log" ./agerun
+	@persistence_args=""; \
+	if [ -n "$(NO_PERSISTENCE)" ]; then \
+		persistence_args="--no-persistence"; \
+	fi; \
+	cd $(TSAN_EXEC_DIR) && AGERUN_MEMORY_REPORT="memory_report_agerun.log" ./agerun $$persistence_args
 
 # Define test executables without bin/ prefix for use in the bin directory
 # DLSym interception tests remain individually runnable but are excluded from aggregate
@@ -359,7 +372,7 @@ SANITIZER_METHOD_TEST_BIN_NAMES = $(patsubst methods/%_tests.c,%_tests,$(SANITIZ
 SANITIZER_ALL_TEST_BIN_NAMES = $(SANITIZER_TEST_BIN_NAMES) $(SANITIZER_METHOD_TEST_BIN_NAMES) $(ZIG_TEST_BIN_NAMES)
 
 # Build and run tests (always in debug mode)
-run-tests: run_tests_lib
+run-tests: $(WORKFLOW_REAL_COMPLETION_PREREQ) run_tests_lib
 	$(MAKE) $(RUN_TESTS_TEST_BIN) $(RUN_TESTS_METHOD_TEST_BIN)
 	$(MAKE) $(RUN_TESTS_ZIG_TEST_BIN)
 	@cd $(RUN_TESTS_DIR) && failed=0 && for test in $(ALL_TEST_BIN_NAMES); do \
@@ -373,8 +386,10 @@ run-tests: run_tests_lib
 				fi; \
 				;; \
 			*) \
-				if ! AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test; then \
-					echo "ERROR: Test $$test failed with status $$?"; \
+				AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test; \
+				exitcode=$$?; \
+				if [ $$exitcode -ne 0 ]; then \
+					echo "ERROR: Test $$test failed with status $$exitcode"; \
 					failed=1; \
 				fi; \
 				;; \
@@ -403,7 +418,8 @@ sanitize-tests:
 				fi; \
 				;; \
 			*) \
-				AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test; \
+				AGERUN_MEMORY_REPORT="memory_report_$$test.log" \
+					AGERUN_SKIP_REAL_COMPLETION_TESTS=1 ./$$test; \
 				exitcode=$$?; \
 				if [ $$exitcode -ne 0 ]; then \
 					echo "ERROR: Test $$test failed with status $$exitcode"; \
@@ -438,13 +454,13 @@ tsan-tests:
 				case "$$test" in \
 					workflow_definition_tests) \
 						if [ -n "$${AGERUN_TSAN_COMPLETE_RUNNER:-}" ]; then \
-							AGERUN_MEMORY_REPORT="memory_report_$$test.log" AGERUN_COMPLETE_RUNNER="$$AGERUN_TSAN_COMPLETE_RUNNER" ./$$test; \
+							AGERUN_MEMORY_REPORT="memory_report_$$test.log" AGERUN_SKIP_REAL_COMPLETION_TESTS=1 AGERUN_COMPLETE_RUNNER="$$AGERUN_TSAN_COMPLETE_RUNNER" ./$$test; \
 						else \
-							AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test; \
+							AGERUN_MEMORY_REPORT="memory_report_$$test.log" AGERUN_SKIP_REAL_COMPLETION_TESTS=1 ./$$test; \
 						fi; \
 						;; \
 					*) \
-						AGERUN_MEMORY_REPORT="memory_report_$$test.log" ./$$test; \
+						AGERUN_MEMORY_REPORT="memory_report_$$test.log" AGERUN_SKIP_REAL_COMPLETION_TESTS=1 ./$$test; \
 						;; \
 				esac; \
 				exitcode=$$?; \
@@ -462,6 +478,12 @@ tsan-tests:
 
 # Individual test binaries (build in run-tests directory for consistency)
 # Individual test target (without bin/ prefix for convenience)
+workflow_definition_tests: $(WORKFLOW_REAL_COMPLETION_PREREQ) bin/workflow_definition_tests
+	@# Target completed by dependency
+
+workflow_coordinator_tests: $(WORKFLOW_REAL_COMPLETION_PREREQ) bin/workflow_coordinator_tests
+	@# Target completed by dependency
+
 %_tests: bin/%_tests
 	@# Target completed by dependency
 
@@ -791,9 +813,13 @@ $(COMPLETE_MODEL_CARD):
 # Usage: make download-complete-model
 download-complete-model: $(COMPLETE_MODEL_FILE) $(COMPLETE_MODEL_LICENSE) $(COMPLETE_MODEL_CARD)
 
+# Build/install vendored llama.cpp only when installed runtime files are missing or stale
+$(LLAMA_HEADER) $(LLAMA_LIB): $(LLAMA_SOURCE_DIR)/CMakeLists.txt $(LLAMA_SOURCE_HEADER) $(LLAMA_LICENSE)
+	$(MAKE) vendor-llama-cpu
+
 # Ensure complete() runtime assets are ready for embedded local completion tests
 # Usage: make complete-runtime-ready
-complete-runtime-ready: vendor-llama-cpu download-complete-model
+complete-runtime-ready: $(LLAMA_HEADER) $(LLAMA_LIB) download-complete-model
 	@# Target completed by dependency
 
 # Download/build complete() runtime assets if needed and run the embedded libllama smoke test

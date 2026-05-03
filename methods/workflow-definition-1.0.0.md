@@ -183,6 +183,12 @@ Transition evaluation failures are normalized to:
 - `reason = complete_transition_failed`
 - `retryable = 1`
 
+The checked-in `workflows/default.workflow` and `workflows/test.workflow` definitions also make the
+review-stage prompt deterministic for the item state under test:
+- `review_status = approved` returns `outcome = advance` with `reason = approved_by_review`
+- `review_status = pending` returns `outcome = stay` with `reason = review_not_approved`
+- `review_status = blocked` returns `outcome = reject` with `reason = review_blocked`
+
 ## `complete(...)` Placeholder Usage Summary
 
 The method passes explicit values maps to its `complete(...)` calls so generated fields are returned
@@ -443,4 +449,6 @@ The tests cover:
 - `describe` responses
 - configured transition prompt usage for intake, triage, active, and review
 - normalized `transition_decision` replies for `advance`, `stay`, `reject`
+- real local completion coverage for the approved/pending/blocked review-state matrix in both
+  checked-in workflow definitions
 - retryable `stay` conversion when `complete(...)` fails

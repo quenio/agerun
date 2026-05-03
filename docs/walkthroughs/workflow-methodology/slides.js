@@ -6,14 +6,15 @@ const messageProcessingWalkthroughUrl = "https://quenio.github.io/agerun/walkthr
 const slides = [
     {
         title: "Workflow Methodology",
-        subtitle: "How the bundled workflow methodology boots, loads a definition file, evaluates item context at every configured transition, and emits visible progress logs.",
+        subtitle: "How the bundled workflow methodology boots, loads a definition file, evaluates item state at every configured transition, and emits visible progress logs.",
         body: `
             <div class="columns">
                 <section class="panel">
                     <h3>Walkthrough Scope</h3>
                     <ul>
                         <li>The startup path from <span class="code">bootstrap</span> to <span class="code">workflow-coordinator</span> and <span class="code">workflow-item</span></li>
-                        <li>How <span class="code">workflow-definition</span> gates startup and evaluates item context before normalizing transition decisions</li>
+                        <li>How <span class="code">workflow-definition</span> gates startup and evaluates item state before normalizing transition decisions</li>
+                        <li>How <span class="code">review_status</span> drives deterministic <span class="code">advance</span>, <span class="code">stay</span>, and <span class="code">reject</span> branches</li>
                         <li>How <span class="code">memory.self</span> identifies agents while <span class="code">reply_to</span> routes definition replies</li>
                         <li>How <span class="code">workflow-reporter</span> turns workflow events into log delegate messages</li>
                     </ul>
@@ -196,7 +197,7 @@ methods/workflow_coordinator_tests.c</div>
     },
     {
         title: "Workflow Definition Method",
-        subtitle: "workflow-definition is the schema gate and transition-decision method: it parses workflow files, asks complete(...) to evaluate item context, and replies to message.reply_to.",
+        subtitle: "workflow-definition is the schema gate and transition-decision method: it parses workflow files, asks complete(...) to evaluate item state, and replies to message.reply_to.",
         body: `
             <div class="columns">
                 <section class="panel">
@@ -213,6 +214,7 @@ methods/workflow_coordinator_tests.c</div>
                         <li><span class="code">evaluate_transition</span> builds a values map from canonical definition metadata plus current item fields.</li>
                         <li><span class="code">workflow_name</span> stays definition-backed; caller transition input cannot overwrite it.</li>
                         <li><span class="code">complete(...)</span> receives the configured transition prompt plus stage, item fields, review status, and transition count before generating <span class="code">outcome</span> and <span class="code">reason</span>.</li>
+                        <li>The checked-in review prompt maps <span class="code">approved</span> to <span class="code">advance</span>, <span class="code">pending</span> to <span class="code">stay</span>, and <span class="code">blocked</span> to <span class="code">reject</span>.</li>
                         <li>Completion failure becomes retryable <span class="code">stay</span> with <span class="code">complete_transition_failed</span>.</li>
                     </ul>
                 </section>
@@ -260,13 +262,13 @@ methods/workflow_definition_tests.c</div>
                 <div class="lifecycle-flow" aria-label="Workflow item stages">
                     <div class="flow-step"><strong>intake</strong><span>created</span></div>
                     <div class="flow-arrow">→</div>
-                    <div class="flow-step"><strong>triage</strong><span>entered_triage</span></div>
+                    <div class="flow-step"><strong>triage</strong><span>triage</span></div>
                     <div class="flow-arrow">→</div>
-                    <div class="flow-step"><strong>active</strong><span>entered_active</span></div>
+                    <div class="flow-step"><strong>active</strong><span>active</span></div>
                     <div class="flow-arrow">→</div>
                     <div class="flow-step"><strong>review</strong><span>ask definition</span></div>
                     <div class="flow-arrow">→</div>
-                    <div class="flow-step"><strong>completion / rejected / stay</strong><span>apply decision</span></div>
+                    <div class="flow-step"><strong>completion / rejected / review_waiting</strong><span>apply decision</span></div>
                 </div>
             </section>
             <section class="card source-panel">
@@ -338,7 +340,7 @@ methods/workflow_reporter_tests.c</div>
             <div class="columns">
                 <section class="panel">
                     <h3>Success Output Shape</h3>
-                    <p>Approved demo input becomes a completion summary such as <span class="code">workflow=default_workflow item=demo-item-1 stage=completion terminal=completed reason=&lt;complete-derived&gt;</span>.</p>
+                    <p>Approved demo input becomes a completion summary such as <span class="code">workflow=default_workflow item=demo-item-1 stage=completion terminal=completed reason=approved_by_review</span>.</p>
                 </section>
                 <section class="panel">
                     <h3>Failure Output Shape</h3>
@@ -386,12 +388,12 @@ methods/workflow_reporter_tests.c</div>
                     </div>
                 </div>
             </section>
-            <p class="note">The next two slides reuse this schema vocabulary: most fields stay the same, while the workflow name and transition prompt text distinguish the default and test definitions.</p>
+            <p class="note">The next two slides reuse this schema vocabulary: most fields stay the same, while workflow identity and non-review prompt reasons distinguish the default and test definitions. Both definitions keep the same review-state matrix.</p>
         `
     },
     {
         title: "Default Workflow Definition",
-        subtitle: "The default definition is the bundled executable demo path: default_workflow, intake-first staging, and four complete-backed transition prompts.",
+        subtitle: "The default definition is the bundled executable demo path: default_workflow, intake-first staging, and deterministic complete-backed transition prompts.",
         body: `
             <div class="columns">
                 <section class="panel">
@@ -409,6 +411,7 @@ methods/workflow_reporter_tests.c</div>
                         <li>Required item fields are <span class="code">item_id</span>, <span class="code">title</span>, <span class="code">priority</span>, <span class="code">owner</span>, and <span class="code">review_status</span>.</li>
                         <li>The stage list is <span class="code">intake|triage|active|review|completion</span>.</li>
                         <li>Terminal names are <span class="code">completed</span> and <span class="code">rejected</span>.</li>
+                        <li>Non-review transitions return <span class="code">intake_ready</span>, <span class="code">triage_ready</span>, and <span class="code">active_ready</span>.</li>
                     </ul>
                 </section>
             </div>
@@ -427,6 +430,7 @@ methods/workflow_reporter_tests.c</div>
                         <span><span class="code">triage→active</span></span>
                         <span><span class="code">active→review</span></span>
                         <span><span class="code">review→completion</span></span>
+                        <span><span class="code">approved→advance</span>, <span class="code">pending→stay</span>, <span class="code">blocked→reject</span></span>
                     </div>
                 </div>
             </section>
@@ -440,7 +444,7 @@ methods/workflow-definition-1.0.0.md</div>
     },
     {
         title: "Test Workflow Definition",
-        subtitle: "The test definition mirrors the default lifecycle but changes workflow identity and prompt text for deterministic alternate-definition coverage.",
+        subtitle: "The test definition mirrors the default lifecycle and review-state matrix while changing workflow identity and non-review prompt reasons.",
         body: `
             <div class="columns">
                 <section class="panel">
@@ -458,7 +462,8 @@ methods/workflow-definition-1.0.0.md</div>
                     <ul>
                         <li><span class="code">workflow_name=test_workflow</span></li>
                         <li><span class="code">transition_count=4</span></li>
-                        <li>Alternate <span class="code">transition_N_prompt</span> values for prompt-selection coverage</li>
+                        <li>Alternate non-review prompt reasons such as <span class="code">test_intake_ready</span>, <span class="code">test_triage_ready</span>, and <span class="code">test_active_ready</span></li>
+                        <li>The review prompt keeps <span class="code">approved→advance</span>, <span class="code">pending→stay</span>, and <span class="code">blocked→reject</span></li>
                     </ul>
                 </section>
             </div>
@@ -480,7 +485,7 @@ methods/workflow-definition-1.0.0.md</div>
                     </div>
                 </div>
             </section>
-            <p class="note">This keeps test coverage focused: tests can prove alternate definition loading without changing lifecycle stages or required item fields.</p>
+            <p class="note">This keeps test coverage focused: tests can prove alternate definition loading and real-completion review branching without changing lifecycle stages or required item fields.</p>
             <section class="card source-panel">
                 <h3>Source Files</h3>
                 <div class="path-list">workflows/test.workflow
@@ -508,7 +513,7 @@ methods/workflow_definition_tests.c</div>
                     <ul>
                         <li><span class="code">item_id</span> identifies progress and summary log messages.</li>
                         <li><span class="code">title</span>, <span class="code">priority</span>, <span class="code">owner</span>, and <span class="code">review_status</span> are stored by the item method and forwarded for transition evaluation.</li>
-                        <li><span class="code">review_status=approved</span> is provided to <span class="code">complete(...)</span>, which evaluates the item context before the definition method normalizes the transition.</li>
+                        <li>The executable demo uses <span class="code">review_status=approved</span>, while tests also run <span class="code">pending</span> and <span class="code">blocked</span> through real local completions.</li>
                     </ul>
                 </section>
             </div>
@@ -560,6 +565,14 @@ methods/workflow-reporter-1.0.0.md</div>
                         <li><span class="code">advance</span> moves only to that stage's configured <span class="code">to</span> stage.</li>
                         <li><span class="code">reject</span> keeps the current stage and emits a rejected summary.</li>
                         <li><span class="code">stay</span> keeps the item in the current stage when context says more work is needed.</li>
+                    </ul>
+                </section>
+                <section class="panel">
+                    <h3>Review-State Matrix</h3>
+                    <ul>
+                        <li><span class="code">approved</span> advances to <span class="code">completion</span> with <span class="code">approved_by_review</span>.</li>
+                        <li><span class="code">pending</span> stays in <span class="code">review</span> with <span class="code">review_not_approved</span>.</li>
+                        <li><span class="code">blocked</span> rejects the item with <span class="code">review_blocked</span>.</li>
                     </ul>
                 </section>
                 <section class="panel">
@@ -676,14 +689,14 @@ methods/workflow-reporter-1.0.0.md</div>
                     <span>The first line proves the demo was queued; the second is the initialized item reporting its own state.</span>
                 </section>
                 <section class="flow-step">
-                    <strong>2. Three advances</strong>
+                    <strong>2. Three early advances</strong>
                     <span><span class="code">triage → active → review</span></span>
-                    <span>Each line follows a separate <span class="code">evaluate_transition</span> request and configured prompt.</span>
+                    <span>Each line follows a separate <span class="code">evaluate_transition</span> request with <span class="code">intake_ready</span>, <span class="code">triage_ready</span>, or <span class="code">active_ready</span>.</span>
                 </section>
                 <section class="flow-step">
                     <strong>3. Final transition</strong>
                     <span><span class="code">review → completion</span></span>
-                    <span>The definition method normalizes the last completion result to <span class="code">outcome=advance</span>.</span>
+                    <span>The approved review state normalizes the last completion result to <span class="code">outcome=advance</span> and <span class="code">reason=approved_by_review</span>.</span>
                 </section>
                 <section class="flow-step">
                     <strong>4. Terminal summary</strong>
@@ -717,6 +730,7 @@ methods/workflow_item_tests.c
 methods/workflow_reporter_tests.c
 workflows/default.workflow
 workflows/test.workflow</div>
+                    <p class="note">The workflow definition and coordinator tests include fake-runner diagnostics plus real local completion coverage for <span class="code">approved</span>, <span class="code">pending</span>, and <span class="code">blocked</span>.</p>
                 </section>
             </div>
             <section class="read-next">
