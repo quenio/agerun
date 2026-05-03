@@ -518,7 +518,7 @@ export fn ar_complete_instruction_evaluator__evaluate(
             ref_evaluator.?.ref_local_completion,
             own_prefilled_template,
             own_placeholder_list,
-            15000,
+            30000,
         ) orelse return _handledFailureFromExistingOrFallbackLog(
             ref_evaluator.?,
             mut_memory,

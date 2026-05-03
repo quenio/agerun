@@ -22,5 +22,6 @@ The `ar_complete_instruction_evaluator` module evaluates `complete(...)` instruc
 - runtime and semantic failure logs preserve actionable fields such as `failure_category`, `cause`, and `recovery_hint`
 - provided values with braces are preserved in returned maps but sanitized in prompts sent to local completion
 - provided values that cannot be rendered as prompt literals use a neutral prompt marker instead of leaving placeholder text behind
+- direct local completions use a 30-second generation budget, matching the documented CI performance threshold for cold Phi-3 completions
 - generated-value validation failures return the copied input values map while omitting invalid generated values
 - completed values are stored as strings in the returned map for the first release
