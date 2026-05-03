@@ -478,11 +478,11 @@ tsan-tests:
 
 # Individual test binaries (build in run-tests directory for consistency)
 # Individual test target (without bin/ prefix for convenience)
-workflow_definition_tests: $(WORKFLOW_REAL_COMPLETION_PREREQ) bin/workflow_definition_tests
-	@# Target completed by dependency
+workflow_definition_tests: $(WORKFLOW_REAL_COMPLETION_PREREQ)
+	$(MAKE) bin/workflow_definition_tests
 
-workflow_coordinator_tests: $(WORKFLOW_REAL_COMPLETION_PREREQ) bin/workflow_coordinator_tests
-	@# Target completed by dependency
+workflow_coordinator_tests: $(WORKFLOW_REAL_COMPLETION_PREREQ)
+	$(MAKE) bin/workflow_coordinator_tests
 
 %_tests: bin/%_tests
 	@# Target completed by dependency
