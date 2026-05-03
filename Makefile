@@ -813,14 +813,21 @@ $(COMPLETE_MODEL_CARD):
 # Usage: make download-complete-model
 download-complete-model: $(COMPLETE_MODEL_FILE) $(COMPLETE_MODEL_LICENSE) $(COMPLETE_MODEL_CARD)
 
-# Build/install vendored llama.cpp only when installed runtime files are missing or stale
-$(LLAMA_HEADER) $(LLAMA_LIB): $(LLAMA_SOURCE_DIR)/CMakeLists.txt $(LLAMA_SOURCE_HEADER) $(LLAMA_LICENSE)
-	$(MAKE) vendor-llama-cpu
-
 # Ensure complete() runtime assets are ready for embedded local completion tests
 # Usage: make complete-runtime-ready
-complete-runtime-ready: $(LLAMA_HEADER) $(LLAMA_LIB) download-complete-model
-	@# Target completed by dependency
+complete-runtime-ready: download-complete-model
+	@if [ ! -f "$(LLAMA_HEADER)" ] || [ ! -f "$(LLAMA_LIB)" ]; then \
+		$(MAKE) vendor-llama-cpu; \
+	elif [ "$(LLAMA_SOURCE_DIR)/CMakeLists.txt" -nt "$(LLAMA_HEADER)" ] || \
+		[ "$(LLAMA_SOURCE_HEADER)" -nt "$(LLAMA_HEADER)" ] || \
+		[ "$(LLAMA_LICENSE)" -nt "$(LLAMA_HEADER)" ] || \
+		[ "$(LLAMA_SOURCE_DIR)/CMakeLists.txt" -nt "$(LLAMA_LIB)" ] || \
+		[ "$(LLAMA_SOURCE_HEADER)" -nt "$(LLAMA_LIB)" ] || \
+		[ "$(LLAMA_LICENSE)" -nt "$(LLAMA_LIB)" ]; then \
+		$(MAKE) vendor-llama-cpu; \
+	fi
+	@test -f "$(LLAMA_HEADER)"
+	@test -f "$(LLAMA_LIB)"
 
 # Download/build complete() runtime assets if needed and run the embedded libllama smoke test
 # Usage: make complete-model-smoke
