@@ -331,6 +331,7 @@ static int _load_methods_from_directory(ar_methodology_t *mut_methodology) {
 
 static int _load_methods_from_methodologies_directory(ar_methodology_t *mut_methodology) {
     const char *ref_methodologies_dir = getenv("AGERUN_METHODOLOGIES_DIR");
+    bool has_methodologies_dir_override = ref_methodologies_dir != NULL;
     DIR *mut_dir;
     int loaded_count = 0;
     struct dirent *ref_entry;
@@ -341,6 +342,9 @@ static int _load_methods_from_methodologies_directory(ar_methodology_t *mut_meth
 
     mut_dir = opendir(ref_methodologies_dir);
     if (!mut_dir) {
+        if (has_methodologies_dir_override) {
+            printf("Failed to open methodologies directory: %s\n", ref_methodologies_dir);
+        }
         return 0;
     }
 

@@ -22,6 +22,7 @@
 static void test_single_session(ar_executable_fixture_t *mut_fixture);
 static void test_loading_methods_from_directory(ar_executable_fixture_t *mut_fixture);
 static void test_loading_methodology_directories(ar_executable_fixture_t *mut_fixture);
+static void test_missing_methodologies_directory_is_reported(ar_executable_fixture_t *mut_fixture);
 static void test_bootstrap_agent_creation(ar_executable_fixture_t *mut_fixture);
 static void test_bootstrap_agent_creation_failure(ar_executable_fixture_t *mut_fixture);
 static void test_bootstrap_spawns_chat_session(ar_executable_fixture_t *mut_fixture);
@@ -374,6 +375,52 @@ static void test_loading_methodology_directories(ar_executable_fixture_t *mut_fi
               "Methodology boot method should process the startup message");
 
     printf("Methods from methodologies directory loading test passed!\n");
+}
+
+// Test that a missing methodologies directory is reported instead of silently ignored
+static void test_missing_methodologies_directory_is_reported(ar_executable_fixture_t *mut_fixture) {
+    printf("Testing missing methodologies directory is reported...\n");
+
+    ar_executable_fixture__clean_persisted_files(mut_fixture);
+
+    char missing_methodologies_dir[256];
+    snprintf(missing_methodologies_dir, sizeof(missing_methodologies_dir),
+             "/tmp/agerun_test_%d_missing_methodologies", (int)getpid());
+
+    int env_result = setenv("AGERUN_METHODOLOGIES_DIR", missing_methodologies_dir, 1);
+    AR_ASSERT(env_result == 0, "Should set missing methodologies directory override");
+
+    char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
+    FILE *pipe = ar_executable_fixture__build_and_run(mut_fixture, own_methods_dir);
+    AR_ASSERT(pipe != NULL, "Should be able to run executable with missing methodologies dir");
+
+    char line[512];
+    bool found_missing_directory_message = false;
+    bool found_bootstrap_agent_created = false;
+
+    while (fgets(line, sizeof(line), pipe) != NULL) {
+        if (strstr(line, "Failed to open methodologies directory:") &&
+            strstr(line, missing_methodologies_dir)) {
+            found_missing_directory_message = true;
+        }
+        if (strstr(line, "Bootstrap agent created with ID:")) {
+            found_bootstrap_agent_created = true;
+        }
+    }
+
+    int status = pclose(pipe);
+    unsetenv("AGERUN_METHODOLOGIES_DIR");
+    ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
+
+    AR_ASSERT(WIFEXITED(status), "Executable should terminate normally");
+    AR_ASSERT(WEXITSTATUS(status) == 0,
+              "Executable should continue when methodologies directory is missing");
+    AR_ASSERT(found_missing_directory_message,
+              "Should report missing methodologies directory path");
+    AR_ASSERT(found_bootstrap_agent_created,
+              "Should still boot from methods directory when methodologies dir is missing");
+
+    printf("Missing methodologies directory reporting test passed!\n");
 }
 
 // Test that the executable creates a bootstrap agent
@@ -1620,6 +1667,9 @@ int main(void) {
 
     // Test that executable loads methods from methodologies directory
     test_loading_methodology_directories(own_fixture);
+
+    // Test that executable reports a missing methodologies directory
+    test_missing_methodologies_directory_is_reported(own_fixture);
 
     // Test that executable creates bootstrap agent
     test_bootstrap_agent_creation(own_fixture);
