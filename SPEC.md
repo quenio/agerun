@@ -56,7 +56,11 @@ Ctrl-D.
 
 ### Persistence:
 
-- **Methodology**: All method definitions are persisted in a file named `methodology.agerun`. They are loaded and made available when the agent system restarts.
+- **Methodology**: All method definitions are persisted in a file named `agerun.methodology`. They
+  are loaded and made available when the agent system restarts. On fresh executable startup without
+  persisted methodology state, AgeRun loads `.method` files from the existing `methods/` directory
+  and then loads `.method` files from each immediate subdirectory under `methodologies/`, with each
+  subdirectory treated as a methodology instance source.
 - **Agency**: Agents and their memory are not persisted by default. However, if an agent is created with the `persist: boolean` option set to `true` (default is `false`), its memory map and context are saved to a file named `agerun.agency`. The persisted agents are automatically restored at system startup before the first agent is executed.
 
 ## Resource Management

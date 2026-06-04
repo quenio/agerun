@@ -36,6 +36,19 @@ static int _report_boot_agent_creation_failure(const char *ref_boot_method_ident
                                                const char *ref_selected_method_name,
                                                const char *ref_selected_method_version);
 static void _report_restored_startup_outcome(const char *ref_boot_method_identifier);
+static bool _parse_method_filename(const char *ref_filename,
+                                   char *mut_method_name,
+                                   size_t method_name_size,
+                                   char *mut_method_version,
+                                   size_t method_version_size);
+static bool _load_method_file(ar_methodology_t *mut_methodology,
+                              const char *ref_methods_dir,
+                              const char *ref_filename,
+                              const char *ref_methodology_name);
+static int _load_methods_from_directory_path(ar_methodology_t *mut_methodology,
+                                             const char *ref_methods_dir,
+                                             const char *ref_methodology_name);
+static int _load_methods_from_methodologies_directory(ar_methodology_t *mut_methodology);
 
 /**
  * Load all method files from the methods directory
@@ -158,100 +171,228 @@ static void _report_restored_startup_outcome(const char *ref_boot_method_identif
     printf("Agents loaded from disk, skipping bootstrap creation\n");
 }
 
-static int _load_methods_from_directory(ar_methodology_t *mut_methodology) {
-    // Allow methods directory to be overridden via environment variable
-    const char *methods_dir = getenv("AGERUN_METHODS_DIR");
-    if (!methods_dir) {
-        methods_dir = "../../methods";
+static bool _parse_method_filename(const char *ref_filename,
+                                   char *mut_method_name,
+                                   size_t method_name_size,
+                                   char *mut_method_version,
+                                   size_t method_version_size) {
+    const char *ref_extension;
+    char *mut_last_hyphen;
+    size_t ref_name_length;
+
+    if (!ref_filename || !mut_method_name || !mut_method_version) {
+        return false;
     }
-    DIR *dir = opendir(methods_dir);
-    if (!dir) {
-        printf("Failed to open methods directory: %s\n", methods_dir);
+
+    ref_extension = strrchr(ref_filename, '.');
+    if (!ref_extension || strcmp(ref_extension, ".method") != 0) {
+        return false;
+    }
+
+    ref_name_length = (size_t)(ref_extension - ref_filename);
+    if (ref_name_length >= method_name_size) {
+        printf("Method filename too long: %s\n", ref_filename);
+        return false;
+    }
+
+    strncpy(mut_method_name, ref_filename, ref_name_length);
+    mut_method_name[ref_name_length] = '\0';
+
+    mut_last_hyphen = strrchr(mut_method_name, '-');
+    if (!mut_last_hyphen) {
+        printf("Invalid method filename format: %s\n", ref_filename);
+        return false;
+    }
+
+    *mut_last_hyphen = '\0';
+    strncpy(mut_method_version, mut_last_hyphen + 1, method_version_size - 1);
+    mut_method_version[method_version_size - 1] = '\0';
+    return true;
+}
+
+static bool _load_method_file(ar_methodology_t *mut_methodology,
+                              const char *ref_methods_dir,
+                              const char *ref_filename,
+                              const char *ref_methodology_name) {
+    char mut_method_name[256];
+    char mut_version[32];
+    char mut_filepath[2048];
+    FILE *mut_fp = NULL;
+    ar_file_result_t result;
+    long file_size;
+    char *own_content;
+    size_t bytes_read;
+
+    if (!_parse_method_filename(ref_filename,
+                                mut_method_name,
+                                sizeof(mut_method_name),
+                                mut_version,
+                                sizeof(mut_version))) {
+        return false;
+    }
+
+    if (ar_methodology__get_method(mut_methodology, mut_method_name, mut_version)) {
+        if (ref_methodology_name) {
+            printf("Skipped duplicate method '%s' version '%s' from methodology '%s'\n",
+                   mut_method_name,
+                   mut_version,
+                   ref_methodology_name);
+        } else {
+            printf("Skipped duplicate method '%s' version '%s' from directory\n",
+                   mut_method_name,
+                   mut_version);
+        }
+        return false;
+    }
+
+    snprintf(mut_filepath, sizeof(mut_filepath), "%s/%s", ref_methods_dir, ref_filename);
+
+    result = ar_io__open_file(mut_filepath, "r", &mut_fp);
+    if (result != AR_FILE_RESULT__SUCCESS) {
+        printf("Failed to open method file %s: %d\n", mut_filepath, result);
+        return false;
+    }
+
+    fseek(mut_fp, 0, SEEK_END);
+    file_size = ftell(mut_fp);
+    fseek(mut_fp, 0, SEEK_SET);
+
+    own_content = AR__HEAP__MALLOC((size_t)(file_size + 1), "Method file content");
+    if (!own_content) {
+        ar_io__close_file(mut_fp, mut_filepath);
+        return false;
+    }
+
+    bytes_read = fread(own_content, 1, (size_t)file_size, mut_fp);
+    own_content[bytes_read] = '\0';
+    ar_io__close_file(mut_fp, mut_filepath);
+
+    if (ar_methodology__create_method(mut_methodology,
+                                      mut_method_name,
+                                      own_content,
+                                      mut_version)) {
+        if (ref_methodology_name) {
+            printf("Loaded method '%s' version '%s' from methodology '%s'\n",
+                   mut_method_name,
+                   mut_version,
+                   ref_methodology_name);
+        } else {
+            printf("Loaded method '%s' version '%s' from directory\n",
+                   mut_method_name,
+                   mut_version);
+        }
+
+        AR__HEAP__FREE(own_content);
+        return true;
+    }
+
+    printf("Failed to create method '%s' version '%s'\n", mut_method_name, mut_version);
+    AR__HEAP__FREE(own_content);
+    return false;
+}
+
+static int _load_methods_from_directory_path(ar_methodology_t *mut_methodology,
+                                             const char *ref_methods_dir,
+                                             const char *ref_methodology_name) {
+    DIR *mut_dir = opendir(ref_methods_dir);
+    int loaded_count = 0;
+    struct dirent *ref_entry;
+
+    if (!mut_dir) {
+        if (ref_methodology_name) {
+            printf("Failed to open methodology directory '%s': %s\n",
+                   ref_methodology_name,
+                   ref_methods_dir);
+        } else {
+            printf("Failed to open methods directory: %s\n", ref_methods_dir);
+        }
         return 0;
     }
-    
-    int loaded_count = 0;
-    struct dirent *entry;
-    
-    while ((entry = readdir(dir)) != NULL) {
-        // Check if it's a .method file
-        const char *extension = strrchr(entry->d_name, '.');
-        if (!extension || strcmp(extension, ".method") != 0) {
-            continue;
-        }
-        
-        // Parse the filename to extract name and version
-        // Format: name-version.method (e.g., echo-1.0.0.method)
-        char method_name[256];
-        char version[32];
-        
-        // Copy filename without extension
-        size_t name_len = (size_t)(extension - entry->d_name);
-        if (name_len >= sizeof(method_name)) {
-            printf("Method filename too long: %s\n", entry->d_name);
-            continue;
-        }
-        strncpy(method_name, entry->d_name, name_len);
-        method_name[name_len] = '\0';
-        
-        // Find the last hyphen to separate name and version
-        char *last_hyphen = strrchr(method_name, '-');
-        if (!last_hyphen) {
-            printf("Invalid method filename format: %s\n", entry->d_name);
-            continue;
-        }
-        
-        // Split into name and version
-        *last_hyphen = '\0';
-        strncpy(version, last_hyphen + 1, sizeof(version) - 1);
-        version[sizeof(version) - 1] = '\0';
-        
-        // Build full path to method file
-        char filepath[2048];
-        snprintf(filepath, sizeof(filepath), "%s/%s", methods_dir, entry->d_name);
-        
-        // Read the method file
-        FILE *fp = NULL;
-        ar_file_result_t result = ar_io__open_file(filepath, "r", &fp);
-        if (result != AR_FILE_RESULT__SUCCESS) {
-            printf("Failed to open method file %s: %d\n", filepath, result);
-            continue;
-        }
-        
-        // Get file size
-        fseek(fp, 0, SEEK_END);
-        long file_size = ftell(fp);
-        fseek(fp, 0, SEEK_SET);
-        
-        // Allocate buffer for file content
-        char *own_content = AR__HEAP__MALLOC((size_t)(file_size + 1), "Method file content");
-        if (!own_content) {
-            ar_io__close_file(fp, filepath);
-            continue;
-        }
-        
-        // Read file content
-        size_t bytes_read = fread(own_content, 1, (size_t)file_size, fp);
-        own_content[bytes_read] = '\0';
-        ar_io__close_file(fp, filepath);
-        
-        // Create method in methodology
-        if (ar_methodology__create_method(mut_methodology, method_name, own_content, version)) {
-            printf("Loaded method '%s' version '%s' from directory\n", method_name, version);
+
+    while ((ref_entry = readdir(mut_dir)) != NULL) {
+        if (_load_method_file(mut_methodology,
+                              ref_methods_dir,
+                              ref_entry->d_name,
+                              ref_methodology_name)) {
             loaded_count++;
-        } else {
-            printf("Failed to create method '%s' version '%s'\n", method_name, version);
         }
-        
-        AR__HEAP__FREE(own_content);
     }
-    
-    closedir(dir);
-    
+
+    closedir(mut_dir);
+
     if (loaded_count > 0) {
-        printf("Loaded %d methods from directory\n", loaded_count);
+        if (ref_methodology_name) {
+            printf("Loaded %d methods from methodology '%s'\n",
+                   loaded_count,
+                   ref_methodology_name);
+        } else {
+            printf("Loaded %d methods from directory\n", loaded_count);
+        }
     }
-    
+
+    return loaded_count;
+}
+
+static int _load_methods_from_directory(ar_methodology_t *mut_methodology) {
+    // Allow methods directory to be overridden via environment variable
+    const char *ref_methods_dir = getenv("AGERUN_METHODS_DIR");
+    if (!ref_methods_dir) {
+        ref_methods_dir = "../../methods";
+    }
+
+    return _load_methods_from_directory_path(mut_methodology, ref_methods_dir, NULL);
+}
+
+static int _load_methods_from_methodologies_directory(ar_methodology_t *mut_methodology) {
+    const char *ref_methodologies_dir = getenv("AGERUN_METHODOLOGIES_DIR");
+    bool has_methodologies_dir_override = ref_methodologies_dir != NULL;
+    DIR *mut_dir;
+    int loaded_count = 0;
+    struct dirent *ref_entry;
+
+    if (!ref_methodologies_dir) {
+        ref_methodologies_dir = "../../methodologies";
+    }
+
+    mut_dir = opendir(ref_methodologies_dir);
+    if (!mut_dir) {
+        if (has_methodologies_dir_override) {
+            printf("Failed to open methodologies directory: %s\n", ref_methodologies_dir);
+        }
+        return 0;
+    }
+
+    printf("Loading methodologies from directory...\n");
+
+    while ((ref_entry = readdir(mut_dir)) != NULL) {
+        char mut_methodology_path[2048];
+        struct stat mut_entry_stat;
+
+        if (strcmp(ref_entry->d_name, ".") == 0 || strcmp(ref_entry->d_name, "..") == 0) {
+            continue;
+        }
+
+        snprintf(mut_methodology_path,
+                 sizeof(mut_methodology_path),
+                 "%s/%s",
+                 ref_methodologies_dir,
+                 ref_entry->d_name);
+        if (stat(mut_methodology_path, &mut_entry_stat) != 0 ||
+            !S_ISDIR(mut_entry_stat.st_mode)) {
+            continue;
+        }
+
+        loaded_count += _load_methods_from_directory_path(mut_methodology,
+                                                          mut_methodology_path,
+                                                          ref_entry->d_name);
+    }
+
+    closedir(mut_dir);
+
+    if (loaded_count > 0) {
+        printf("Loaded %d methods from methodologies directory\n", loaded_count);
+    }
+
     return loaded_count;
 }
 
@@ -318,6 +459,7 @@ int ar_executable__main_with_args(int argc, char **argv) {
     
     // Check if persisted methodology file exists
     int methods_loaded = 0;
+    int methodology_methods_loaded = 0;
     bool loaded_from_file = false;
     struct stat st;
     if (!ref_persistence_disabled && stat(METHODOLOGY_FILE_NAME, &st) == 0) {
@@ -336,9 +478,10 @@ int ar_executable__main_with_args(int argc, char **argv) {
     if (!loaded_from_file) {
         printf("Loading methods from directory...\n");
         methods_loaded = _load_methods_from_directory(mut_methodology);
+        methodology_methods_loaded = _load_methods_from_methodologies_directory(mut_methodology);
     }
     
-    if (!loaded_from_file && methods_loaded == 0) {
+    if (!loaded_from_file && methods_loaded == 0 && methodology_methods_loaded == 0) {
         // Fall back to creating methods programmatically if both file and directory loading fail
         printf("No methods loaded from file or directory, creating default methods...\n");
         
@@ -370,7 +513,15 @@ int ar_executable__main_with_args(int argc, char **argv) {
         
         printf("Counter method created with version %s\n\n", ref_counter_version);
     } else if (!loaded_from_file) {
-        printf("Successfully loaded %d methods from directory\n\n", methods_loaded);
+        if (methods_loaded > 0) {
+            printf("Successfully loaded %d methods from directory\n", methods_loaded);
+        }
+        if (methodology_methods_loaded > 0) {
+            printf("Successfully loaded %d methods from "
+                   "methodologies directory\n",
+                   methodology_methods_loaded);
+        }
+        printf("\n");
     }
     // If loaded_from_file is true, we already printed the success message above
 
