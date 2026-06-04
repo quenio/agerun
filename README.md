@@ -86,6 +86,16 @@ runtime flow at a time.
    When `BOOT_METHOD` is omitted, the executable keeps using the default `bootstrap-1.0.0` startup
    path.
 
+   Fresh directory-based startup still loads the existing [methods](methods/) directory unchanged.
+   If a [methodologies](methodologies/) directory exists, AgeRun also loads `.method` files from
+   each immediate subdirectory as a separate methodology instance source. This allows boot methods
+   to live under paths such as `methodologies/diagnostic/boot-diagnostic-1.0.0.method` and be
+   selected with the same combined method identifier:
+   ```
+   export AGERUN_METHODOLOGIES_DIR=/path/to/methodologies
+   make run-exec BOOT_METHOD=boot-diagnostic-1.0.0
+   ```
+
    If you need a clean one-off session that ignores persisted runtime state and does not write new
    persistence on shutdown, run:
    ```
@@ -311,6 +321,7 @@ AgeRun maintains comprehensive documentation for developers:
 - **[kb/](kb/)**: Knowledge base with development patterns and best practices
 - **[modules/README.md](modules/README.md)**: Module architecture and dependencies
 - **[methods/README.md](methods/README.md)**: Method file format and examples
+- **[methodologies/README.md](methodologies/README.md)**: Methodology directory layout
 
 ## Code Organization
 
@@ -320,6 +331,7 @@ The AgeRun codebase is organized into modular components, each responsible for a
 
 - **kb/**: Knowledge base articles with development patterns and principles
 - **methods/**: Method definitions (.method files with docs and tests)
+- **methodologies/**: Methodology instances, one subdirectory per loadable method set
 - **modules/**: Core implementation (.c/.h files and tests)
 - **reports/**: Analysis reports and technical comparisons
 - **scripts/**: Build and utility scripts (accessed via make targets)
@@ -341,6 +353,11 @@ For more details on the module structure and dependencies, see the [Modules READ
 ## Method Files
 
 AgeRun method definitions can be stored as standalone `.method` files in the [methods](methods/) directory. These files provide a way to define and share reusable agent behaviors outside of the runtime environment.
+
+The executable also supports grouped methodology sources under [methodologies](methodologies/).
+Each immediate subdirectory is treated as a methodology instance source and may contain `.method`
+files using the same format as [methods](methods/). Fresh startup loads these grouped methods after
+the existing `methods/` directory when persisted methodology state is not used.
 
 Each method file follows a specific naming convention and format that includes:
 - Semantic versioning in the filename (e.g., `echo-1.0.0.method`)

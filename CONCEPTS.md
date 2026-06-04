@@ -287,6 +287,7 @@ The registry of all method definitions available in the system.
 - Contains versioned method definitions
 - Supports method lookup by name and version
 - Can be persisted to disk and restored
+- Can be seeded from `methods/` and `methodologies/<instance>/` method files on fresh startup
 - Shared across all agents in an agency
 
 **Context:** Method registry, version management
@@ -385,7 +386,7 @@ Standalone method definition files with semantic versioning.
 - Example: `echo-1.0.0.method`, `counter-2.1.0.method`
 - Contains method instructions in plain text
 - One instruction per line with newline termination
-- Located in `methods/` directory
+- Located in `methods/` or in a `methodologies/<instance>/` subdirectory
 
 **Context:** Method definitions, reusable behaviors
 

@@ -626,6 +626,7 @@ def check_deep_analysis_errors(whitelist):
                 for i, line in enumerate(lines):
                     if pattern.search(line):
                         if ('Could not load methods from file' not in line and
+                            'DVTFilePathFSEvents: Failed to start fs event stream.' not in line and
                             'expected' not in line):
                             # Check if this error is whitelisted
                             if not is_whitelisted_error(log_file, i + 1, line, whitelist):

@@ -21,6 +21,7 @@
 // Forward declarations
 static void test_single_session(ar_executable_fixture_t *mut_fixture);
 static void test_loading_methods_from_directory(ar_executable_fixture_t *mut_fixture);
+static void test_loading_methodology_directories(ar_executable_fixture_t *mut_fixture);
 static void test_bootstrap_agent_creation(ar_executable_fixture_t *mut_fixture);
 static void test_bootstrap_agent_creation_failure(ar_executable_fixture_t *mut_fixture);
 static void test_bootstrap_spawns_chat_session(ar_executable_fixture_t *mut_fixture);
@@ -275,6 +276,104 @@ static void test_loading_methods_from_directory(ar_executable_fixture_t *mut_fix
     printf("Methods from directory loading test passed!\n");
 
     ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
+}
+
+// Test that the executable loads methods from each methodology subdirectory
+static void test_loading_methodology_directories(ar_executable_fixture_t *mut_fixture) {
+    printf("Testing executable loads methods from methodologies directory...\n");
+
+    ar_executable_fixture__clean_persisted_files(mut_fixture);
+
+    pid_t pid = getpid();
+    char methodologies_dir[256];
+    char diagnostic_dir[512];
+    char support_dir[512];
+    char diagnostic_method_path[1024];
+    char support_method_path[1024];
+    char setup_cmd[1536];
+
+    snprintf(methodologies_dir, sizeof(methodologies_dir),
+             "/tmp/agerun_test_%d_methodologies", (int)pid);
+    snprintf(diagnostic_dir, sizeof(diagnostic_dir), "%s/diagnostic", methodologies_dir);
+    snprintf(support_dir, sizeof(support_dir), "%s/support", methodologies_dir);
+    snprintf(diagnostic_method_path, sizeof(diagnostic_method_path),
+             "%s/boot-diagnostic-1.0.0.method", diagnostic_dir);
+    snprintf(support_method_path, sizeof(support_method_path),
+             "%s/support-helper-1.0.0.method", support_dir);
+
+    snprintf(setup_cmd, sizeof(setup_cmd),
+             "rm -rf %s 2>/dev/null && mkdir -p %s %s",
+             methodologies_dir,
+             diagnostic_dir,
+             support_dir);
+    int setup_result = system(setup_cmd);
+    AR_ASSERT(setup_result == 0, "Should create methodologies test directories");
+
+    _write_text_file(diagnostic_method_path,
+                     "memory.status := \"diagnostic boot loaded\"\n");
+    _write_text_file(support_method_path,
+                     "memory.status := \"support methodology loaded\"\n");
+
+    int env_result = setenv("AGERUN_METHODOLOGIES_DIR", methodologies_dir, 1);
+    AR_ASSERT(env_result == 0, "Should set methodologies directory override");
+
+    char *own_methods_dir = ar_executable_fixture__create_methods_dir(mut_fixture);
+    FILE *pipe = ar_executable_fixture__build_and_run_with_boot_method(
+        mut_fixture,
+        own_methods_dir,
+        "boot-diagnostic-1.0.0");
+    AR_ASSERT(pipe != NULL, "Should be able to run executable with methodology boot method");
+
+    char line[512];
+    bool found_methodologies_loading = false;
+    bool found_diagnostic_method = false;
+    bool found_support_method = false;
+    bool found_boot_agent_created = false;
+    int messages_processed = 0;
+
+    while (fgets(line, sizeof(line), pipe) != NULL) {
+        if (strstr(line, "Loading methodologies from directory")) {
+            found_methodologies_loading = true;
+        }
+        if (strstr(line,
+                   "Loaded method 'boot-diagnostic' version '1.0.0' from "
+                   "methodology 'diagnostic'")) {
+            found_diagnostic_method = true;
+        }
+        if (strstr(line,
+                   "Loaded method 'support-helper' version '1.0.0' from "
+                   "methodology 'support'")) {
+            found_support_method = true;
+        }
+        if (strstr(line, "Boot agent created with ID:")) {
+            found_boot_agent_created = true;
+        }
+        if (strstr(line, "Processed ")) {
+            sscanf(line, "Processed %d message", &messages_processed);
+        }
+    }
+
+    int status = pclose(pipe);
+    unsetenv("AGERUN_METHODOLOGIES_DIR");
+
+    snprintf(setup_cmd, sizeof(setup_cmd), "rm -rf %s 2>/dev/null", methodologies_dir);
+    setup_result = system(setup_cmd);
+    AR_ASSERT(setup_result == 0, "Should remove methodologies test directories");
+
+    ar_executable_fixture__destroy_methods_dir(mut_fixture, own_methods_dir);
+
+    AR_ASSERT(WIFEXITED(status), "Executable should terminate normally");
+    AR_ASSERT(WEXITSTATUS(status) == 0,
+              "Executable should boot from a method loaded from methodologies directory");
+    AR_ASSERT(found_methodologies_loading, "Should report loading methodologies from directory");
+    AR_ASSERT(found_diagnostic_method, "Should load boot method from diagnostic methodology");
+    AR_ASSERT(found_support_method, "Should load method from support methodology");
+    AR_ASSERT(found_boot_agent_created,
+              "Should create boot agent from methodology-loaded method");
+    AR_ASSERT(messages_processed == 1,
+              "Methodology boot method should process the startup message");
+
+    printf("Methods from methodologies directory loading test passed!\n");
 }
 
 // Test that the executable creates a bootstrap agent
@@ -1519,6 +1618,9 @@ int main(void) {
     // Test that executable loads methods from directory
     test_loading_methods_from_directory(own_fixture);
 
+    // Test that executable loads methods from methodologies directory
+    test_loading_methodology_directories(own_fixture);
+
     // Test that executable creates bootstrap agent
     test_bootstrap_agent_creation(own_fixture);
 
@@ -1618,6 +1720,6 @@ int main(void) {
     ar_executable_fixture__destroy(own_fixture);
 
     // And report success
-    printf("All 21 tests passed!\n");
+    printf("All 22 tests passed!\n");
     return 0;
 }
