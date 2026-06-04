@@ -231,6 +231,20 @@ static bool _load_method_file(ar_methodology_t *mut_methodology,
         return false;
     }
 
+    if (ar_methodology__get_method(mut_methodology, mut_method_name, mut_version)) {
+        if (ref_methodology_name) {
+            printf("Skipped duplicate method '%s' version '%s' from methodology '%s'\n",
+                   mut_method_name,
+                   mut_version,
+                   ref_methodology_name);
+        } else {
+            printf("Skipped duplicate method '%s' version '%s' from directory\n",
+                   mut_method_name,
+                   mut_version);
+        }
+        return false;
+    }
+
     snprintf(mut_filepath, sizeof(mut_filepath), "%s/%s", ref_methods_dir, ref_filename);
 
     result = ar_io__open_file(mut_filepath, "r", &mut_fp);
