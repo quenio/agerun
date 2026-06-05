@@ -17,11 +17,13 @@ The `ar_local_completion` module is the local runtime adapter used by `complete(
 
 - the runtime keeps one adapter instance per instruction evaluator facade
 - the direct path is implemented in C for simpler `llama.cpp` dynamic loading and symbol binding, while the public API remains the stable `ar_local_completion.h` header
-- the direct backend expects a cached local runtime at `.deps/llama.cpp-install/`;
-  the vendored `llama.cpp` source tree at top-level `llama-cpp/` is only needed when
-  `make vendor-llama-cpu` has to create that cache
-- `make clean build` reuses the cached runtime, and `make clean-vendor-llama-cpu`
-  removes it when an explicit rebuild is needed
+- the direct backend loads from the worktree-local `.deps/llama.cpp-install/` path,
+  which `make vendor-llama-cpu` links to the shared cache under
+  `~/.agerun/build/cache/vendor-llama-cpu`
+- the vendored `llama.cpp` source tree at top-level `llama-cpp/` is only needed when
+  the shared cache has to be created
+- `make clean build` reuses the shared cached runtime, and
+  `make clean-vendor-llama-cpu` removes it when an explicit rebuild is needed
 - on macOS, `make vendor-llama-cpu` also patches installed rpaths so the vendored binaries and dynamic libraries can find each other from the local install prefix
 - when `AGERUN_COMPLETE_RUNNER` is set, the adapter runs that explicit executable instead of the direct `libllama` path; this keeps deterministic fake-runner tests possible while the direct path is brought up
 - successful responses return one string value per requested placeholder key

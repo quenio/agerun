@@ -34,8 +34,8 @@ help:
 	@echo "Utility targets:"
 	@echo "  make check-logs   - Check build logs for hidden issues"
 	@echo "  make add-newline FILE=<file> - Add newline to end of file if missing"
-	@echo "  make vendor-llama-cpu - Build/install or reuse cached CPU-only llama.cpp in .deps"
-	@echo "  make clean-vendor-llama-cpu - Clear cached vendored llama.cpp artifacts"
+	@echo "  make vendor-llama-cpu - Build/link shared cached CPU-only llama.cpp"
+	@echo "  make clean-vendor-llama-cpu - Clear shared cached vendored llama.cpp artifacts"
 	@echo "  make complete-runtime-ready - Ensure vendored libllama and phi-3-mini-q4.gguf exist"
 	@echo "  make download-complete-model - Download phi-3-mini-q4.gguf into models/ if missing"
 	@echo "  make complete-model-smoke - Ensure complete() runtime assets are ready and run the embedded libllama smoke with a cold-start timeout"
@@ -59,7 +59,11 @@ UNAME_S := $(shell uname -s)
 
 # Vendored llama.cpp CPU-only dependency paths
 LLAMA_SOURCE_DIR ?= llama-cpp
-LLAMA_BUILD_DIR ?= .deps/llama.cpp-build
+LLAMA_CACHE_DIR ?= $(HOME)/.agerun/build/cache/vendor-llama-cpu
+LLAMA_CACHE_BUILD_DIR ?= $(LLAMA_CACHE_DIR)/build
+LLAMA_CACHE_INSTALL_DIR ?= $(LLAMA_CACHE_DIR)/install
+LLAMA_CACHE_LOCK ?= $(LLAMA_CACHE_DIR)/build.lock
+LLAMA_BUILD_DIR ?= $(LLAMA_CACHE_BUILD_DIR)
 LLAMA_INSTALL_DIR ?= .deps/llama.cpp-install
 LLAMA_LICENSE = $(LLAMA_SOURCE_DIR)/LICENSE
 COMPLETE_MODEL_DIR ?= models
@@ -91,7 +95,10 @@ endif
 LLAMA_SOURCE_HEADER = $(LLAMA_SOURCE_DIR)/include/llama.h
 LLAMA_HEADER = $(LLAMA_INSTALL_DIR)/include/llama.h
 LLAMA_LIB = $(LLAMA_INSTALL_DIR)/lib/libllama.$(LLAMA_SHARED_EXT)
+LLAMA_CACHE_HEADER = $(LLAMA_CACHE_INSTALL_DIR)/include/llama.h
+LLAMA_CACHE_LIB = $(LLAMA_CACHE_INSTALL_DIR)/lib/libllama.$(LLAMA_SHARED_EXT)
 LLAMA_AVAILABLE = $(and $(wildcard $(LLAMA_HEADER)),$(wildcard $(LLAMA_LIB)))
+LLAMA_CACHE_AVAILABLE = $(and $(wildcard $(LLAMA_CACHE_HEADER)),$(wildcard $(LLAMA_CACHE_LIB)))
 LLAMA_CFLAGS =
 LLAMA_ZIG_INCLUDE_FLAGS =
 ifneq ($(wildcard $(LLAMA_SOURCE_HEADER)),)
@@ -105,6 +112,17 @@ CC = gcc-13
 # Toolchain commands
 ZIG = zig
 CMAKE ?= cmake
+
+export CMAKE
+export UNAME_S
+export LLAMA_SOURCE_DIR
+export LLAMA_BUILD_DIR
+export LLAMA_INSTALL_DIR
+export LLAMA_CACHE_DIR
+export LLAMA_CACHE_INSTALL_DIR
+export LLAMA_CACHE_LOCK
+export LLAMA_SHARED_EXT
+export LLAMA_CPU_CMAKE_FLAGS
 
 # Sanitizer compiler selection based on OS
 ifeq ($(UNAME_S),Darwin)
@@ -589,7 +607,7 @@ $(TSAN_EXEC_DIR)/obj/%.o: modules/%.zig | $(TSAN_EXEC_DIR)
 
 # Clean cached vendored llama.cpp build/install artifacts
 clean-vendor-llama-cpu:
-	rm -rf "$(LLAMA_BUILD_DIR)" "$(LLAMA_INSTALL_DIR)"
+	rm -rf "$(LLAMA_INSTALL_DIR)" "$(LLAMA_BUILD_DIR)" "$(LLAMA_CACHE_DIR)"
 
 # Backward-compatible alias for the previous clean target name
 clean-llama-cpp: clean-vendor-llama-cpu
@@ -819,11 +837,7 @@ download-complete-model: $(COMPLETE_MODEL_FILE) $(COMPLETE_MODEL_LICENSE) $(COMP
 # Ensure complete() runtime assets are ready for embedded local completion tests
 # Usage: make complete-runtime-ready
 complete-runtime-ready: download-complete-model
-	@if [ ! -f "$(LLAMA_HEADER)" ] || [ ! -f "$(LLAMA_LIB)" ]; then \
-		$(MAKE) vendor-llama-cpu; \
-	else \
-		echo "Using cached vendored llama.cpp runtime at $(LLAMA_INSTALL_DIR)"; \
-	fi
+	$(MAKE) vendor-llama-cpu
 	@test -f "$(LLAMA_HEADER)"
 	@test -f "$(LLAMA_LIB)"
 
@@ -868,12 +882,22 @@ complete-performance-validation-linux-container:
 print-llama-config:
 	@echo "CMAKE=$(CMAKE)"
 	@echo "LLAMA_SOURCE_DIR=$(LLAMA_SOURCE_DIR)"
+	@echo "LLAMA_CACHE_DIR=$(LLAMA_CACHE_DIR)"
 	@echo "LLAMA_BUILD_DIR=$(LLAMA_BUILD_DIR)"
+	@echo "LLAMA_CACHE_INSTALL_DIR=$(LLAMA_CACHE_INSTALL_DIR)"
+	@echo "LLAMA_CACHE_LOCK=$(LLAMA_CACHE_LOCK)"
 	@echo "LLAMA_INSTALL_DIR=$(LLAMA_INSTALL_DIR)"
 	@echo "LLAMA_SOURCE_HEADER=$(LLAMA_SOURCE_HEADER)"
+	@echo "LLAMA_CACHE_HEADER=$(LLAMA_CACHE_HEADER)"
+	@echo "LLAMA_CACHE_LIB=$(LLAMA_CACHE_LIB)"
 	@echo "LLAMA_HEADER=$(LLAMA_HEADER)"
 	@echo "LLAMA_LIB=$(LLAMA_LIB)"
 	@echo "LLAMA_LICENSE=$(LLAMA_LICENSE)"
+	@if [ -n "$(LLAMA_CACHE_AVAILABLE)" ]; then \
+		echo "LLAMA_CACHE_AVAILABLE=yes"; \
+	else \
+		echo "LLAMA_CACHE_AVAILABLE=no"; \
+	fi
 	@if [ -n "$(LLAMA_AVAILABLE)" ]; then \
 		echo "LLAMA_AVAILABLE=yes"; \
 	else \
@@ -882,41 +906,7 @@ print-llama-config:
 
 # Build/install vendored CPU-only llama.cpp
 vendor-llama-cpu:
-ifneq ($(LLAMA_AVAILABLE),)
-	@echo "Using cached vendored llama.cpp runtime at $(LLAMA_INSTALL_DIR)"
-else
-	@if [ ! -f "$(LLAMA_SOURCE_DIR)/CMakeLists.txt" ]; then \
-		echo "ERROR: vendored llama.cpp source not found at $(LLAMA_SOURCE_DIR)"; \
-		echo "Add the pinned upstream source tree under $(LLAMA_SOURCE_DIR) before running this target"; \
-		exit 1; \
-	fi
-	@if [ ! -f "$(LLAMA_LICENSE)" ]; then \
-		echo "ERROR: upstream llama.cpp license file missing at $(LLAMA_LICENSE)"; \
-		echo "Keep the upstream MIT license text in the vendored source tree to preserve redistribution compliance"; \
-		exit 1; \
-	fi
-	@if ! command -v "$(CMAKE)" >/dev/null 2>&1; then \
-		echo "ERROR: cmake is required for make vendor-llama-cpu"; \
-		echo "Set CMAKE=/absolute/path/to/cmake or install cmake before building the vendored dependency"; \
-		exit 1; \
-	fi
-	$(CMAKE) -S "$(LLAMA_SOURCE_DIR)" -B "$(LLAMA_BUILD_DIR)" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$(abspath $(LLAMA_INSTALL_DIR))" -DBUILD_SHARED_LIBS=ON $(LLAMA_CPU_CMAKE_FLAGS)
-	$(CMAKE) --build "$(LLAMA_BUILD_DIR)" --config Release
-	$(CMAKE) --install "$(LLAMA_BUILD_DIR)" --config Release
-	@if [ "$(UNAME_S)" = "Darwin" ]; then \
-		for dylib in "$(LLAMA_INSTALL_DIR)"/lib/*.dylib; do \
-			install_name_tool -add_rpath @loader_path "$$dylib" 2>/dev/null || true; \
-			install_name_tool -add_rpath @loader_path/../lib "$$dylib" 2>/dev/null || true; \
-		done; \
-		for exe in "$(LLAMA_INSTALL_DIR)"/bin/*; do \
-			if [ -f "$$exe" ]; then \
-				install_name_tool -add_rpath @loader_path/../lib "$$exe" 2>/dev/null || true; \
-			fi; \
-		done; \
-		fi
-	@test -f "$(LLAMA_HEADER)"
-	@test -f "$(LLAMA_LIB)"
-endif
+	bash ./scripts/build-vendor-llama-cache.sh
 
 # Fix command documentation structure to match comprehensive standards
 # Usage: make fix-commands
