@@ -116,6 +116,18 @@ _source_is_repo_relative() {
     esac
 }
 
+_git_cache_inputs_are_clean() {
+    local status
+
+    status=$(git -C "$PWD" status --porcelain --untracked-files=all -- \
+        "$LLAMA_SOURCE_DIR" \
+        Makefile \
+        scripts/build-vendor-llama-cache.sh 2>/dev/null) ||
+        return 1
+
+    [ -z "$status" ]
+}
+
 _derive_git_cache_key() {
     local source_oid
     local makefile_oid
@@ -130,6 +142,10 @@ _derive_git_cache_key() {
     fi
 
     if ! git -C "$PWD" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        return 1
+    fi
+
+    if ! _git_cache_inputs_are_clean; then
         return 1
     fi
 
