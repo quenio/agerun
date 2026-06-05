@@ -400,8 +400,51 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
 
         ar_instruction_ast__destroy(ast);
     }
+
+    // Test 6: Append instruction
+    {
+        ar_data__set_map_data(memory, "results", ar_data__create_list());
+
+        const char *args[] = {"memory.results", "42"};
+        ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
+            AR_INSTRUCTION_AST_TYPE__APPEND, "append", args, 2, "memory.append_ok"
+        );
+        assert(ast != NULL);
+
+        ar_list_t *arg_asts = ar_list__create();
+        const char *target_path[] = {"results"};
+        ar_expression_ast_t *target_ast = ar_expression_ast__create_memory_access("memory", target_path, 1);
+        ar_expression_ast_t *value_ast = ar_expression_ast__create_literal_int(42);
+        ar_list__add_last(arg_asts, target_ast);
+        ar_list__add_last(arg_asts, value_ast);
+        ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
+
+        ar_data_t *ctx = ar_data__create_map();
+        ar_data_t *msg = ar_data__create_string("");
+        ar_frame_t *fr = ar_frame__create(memory, ctx, msg);
+
+        bool result = ar_instruction_evaluator__evaluate(evaluator, fr, ast);
+
+        ar_frame__destroy(fr);
+        ar_data__destroy(ctx);
+        ar_data__destroy(msg);
+        assert(result == true);
+
+        ar_data_t *results = ar_data__get_map_data(memory, "results");
+        assert(results != NULL);
+        assert(ar_data__list_count(results) == 1);
+        ar_data_t *appended = ar_data__list_first(results);
+        assert(appended != NULL);
+        assert(ar_data__get_integer(appended) == 42);
+
+        ar_data_t *append_ok = ar_data__get_map_data(memory, "append_ok");
+        assert(append_ok != NULL);
+        assert(ar_data__get_integer(append_ok) == 1);
+
+        ar_instruction_ast__destroy(ast);
+    }
     
-    // Test 6: Method instruction
+    // Test 7: Method instruction
     {
         
         // Given a compile instruction AST with three string arguments and result assignment
@@ -449,7 +492,7 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         ar_instruction_ast__destroy(ast);
     }
     
-    // Test 6: Destroy agent instruction 
+    // Test 8: Destroy agent instruction
     {
         // Use the same agency from the evaluator
         ar_methodology_t *mut_methodology = ar_agency__get_methodology(agency);
@@ -501,7 +544,7 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         ar_instruction_ast__destroy(ast);
     }
     
-    // Test 7: Destroy method instruction 
+    // Test 9: Destroy method instruction
     {
         // Use the same methodology from the evaluator
         ar_methodology_t *mut_methodology = ar_agency__get_methodology(agency);
@@ -970,6 +1013,7 @@ static void test_instruction_evaluator__rejects_protected_self_result_paths(void
         {AR_INSTRUCTION_AST_TYPE__IF, "if"},
         {AR_INSTRUCTION_AST_TYPE__BUILD, "build"},
         {AR_INSTRUCTION_AST_TYPE__COMPLETE, "complete"},
+        {AR_INSTRUCTION_AST_TYPE__APPEND, "append"},
         {AR_INSTRUCTION_AST_TYPE__COMPILE, "compile"},
         {AR_INSTRUCTION_AST_TYPE__SPAWN, "spawn"},
         {AR_INSTRUCTION_AST_TYPE__EXIT, "exit"},
