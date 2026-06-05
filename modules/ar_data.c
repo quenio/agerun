@@ -273,6 +273,59 @@ bool ar_data__drop_ownership(ar_data_t *mut_data, const void *owner) {
     return false;
 }
 
+static bool _data_tree_contains(const ar_data_t *ref_owner, const ar_data_t *ref_data) {
+    if (!ref_owner || !ref_data) {
+        return false;
+    }
+
+    if (ref_owner == ref_data) {
+        return true;
+    }
+
+    if (ref_owner->type == AR_DATA_TYPE__LIST) {
+        void **own_items = ar_list__items(ref_owner->data.own_list);
+        size_t item_count = ar_list__count(ref_owner->data.own_list);
+
+        if (!own_items) {
+            return false;
+        }
+
+        for (size_t i = 0; i < item_count; i++) {
+            if (_data_tree_contains((const ar_data_t*)own_items[i], ref_data)) {
+                AR__HEAP__FREE(own_items);
+                return true;
+            }
+        }
+
+        AR__HEAP__FREE(own_items);
+        return false;
+    }
+
+    if (ref_owner->type == AR_DATA_TYPE__MAP) {
+        void **own_refs = ar_map__refs(ref_owner->data.own_map);
+        size_t ref_count = ar_map__count(ref_owner->data.own_map);
+
+        if (!own_refs) {
+            return false;
+        }
+
+        for (size_t i = 0; i < ref_count; i++) {
+            if (_data_tree_contains((const ar_data_t*)own_refs[i], ref_data)) {
+                AR__HEAP__FREE(own_refs);
+                return true;
+            }
+        }
+
+        AR__HEAP__FREE(own_refs);
+    }
+
+    return false;
+}
+
+bool ar_data__is_owned_by(const ar_data_t *ref_data, const ar_data_t *ref_owner) {
+    return _data_tree_contains(ref_owner, ref_data);
+}
+
 bool ar_data__transfer_ownership(
     ar_data_t *mut_data,
     const void *ref_from_owner,

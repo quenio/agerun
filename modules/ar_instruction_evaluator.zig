@@ -11,6 +11,7 @@ const c = @cImport({
     @cInclude("ar_build_instruction_evaluator.h");
     @cInclude("ar_complete_instruction_evaluator.h");
     @cInclude("ar_local_completion.h");
+    @cInclude("ar_append_instruction_evaluator.h");
     @cInclude("ar_compile_instruction_evaluator.h");
     @cInclude("ar_spawn_instruction_evaluator.h");
     @cInclude("ar_exit_instruction_evaluator.h");
@@ -34,6 +35,7 @@ const ar_instruction_evaluator_t = struct {
     own_build_evaluator: ?*c.ar_build_instruction_evaluator_t,          // Build evaluator (owned)
     own_local_completion: ?*c.ar_local_completion_t,                    // Local completion runtime (owned)
     own_complete_evaluator: ?*c.ar_complete_instruction_evaluator_t,    // Complete evaluator (owned)
+    own_append_evaluator: ?*c.ar_append_instruction_evaluator_t,        // Append evaluator (owned)
     own_compile_evaluator: ?*c.ar_compile_instruction_evaluator_t,      // Compile evaluator (owned)
     own_spawn_evaluator: ?*c.ar_spawn_instruction_evaluator_t,          // Spawn evaluator (owned)
     own_exit_evaluator: ?*c.ar_exit_instruction_evaluator_t,            // Exit evaluator (owned)
@@ -100,6 +102,12 @@ fn _create(ref_log: ?*c.ar_log_t, ref_agency: ?*c.ar_agency_t, ref_delegation: ?
         own_evaluator.own_local_completion
     ) orelse return error.CompleteEvaluatorCreationFailed;
     errdefer c.ar_complete_instruction_evaluator__destroy(own_evaluator.own_complete_evaluator);
+
+    own_evaluator.own_append_evaluator = c.ar_append_instruction_evaluator__create(
+        ref_log,
+        own_evaluator.own_expr_evaluator
+    ) orelse return error.AppendEvaluatorCreationFailed;
+    errdefer c.ar_append_instruction_evaluator__destroy(own_evaluator.own_append_evaluator);
     
     // Get methodology from agency
     const ref_methodology = c.ar_agency__get_methodology(ref_agency);
@@ -158,6 +166,7 @@ export fn ar_instruction_evaluator__destroy(
     c.ar_exit_instruction_evaluator__destroy(own_evaluator.?.own_exit_evaluator);
     c.ar_spawn_instruction_evaluator__destroy(own_evaluator.?.own_spawn_evaluator);
     c.ar_compile_instruction_evaluator__destroy(own_evaluator.?.own_compile_evaluator);
+    c.ar_append_instruction_evaluator__destroy(own_evaluator.?.own_append_evaluator);
     c.ar_complete_instruction_evaluator__destroy(own_evaluator.?.own_complete_evaluator);
     c.ar_local_completion__destroy(own_evaluator.?.own_local_completion);
     c.ar_build_instruction_evaluator__destroy(own_evaluator.?.own_build_evaluator);
@@ -235,6 +244,14 @@ export fn ar_instruction_evaluator__evaluate(
         c.AR_INSTRUCTION_AST_TYPE__COMPLETE => {
             return c.ar_complete_instruction_evaluator__evaluate(
                 ref_evaluator.?.own_complete_evaluator,
+                ref_frame,
+                ref_ast
+            );
+        },
+
+        c.AR_INSTRUCTION_AST_TYPE__APPEND => {
+            return c.ar_append_instruction_evaluator__evaluate(
+                ref_evaluator.?.own_append_evaluator,
                 ref_frame,
                 ref_ast
             );

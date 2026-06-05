@@ -202,6 +202,46 @@ static void test_instruction_parser__parse_complete(void) {
     ar_instruction_parser__destroy(own_parser);
 }
 
+static void test_instruction_parser__parse_append(void) {
+    printf("Testing unified parse method for append instruction...\n");
+
+    const char *instruction = "append(memory.results, message.value)";
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    assert(own_parser != NULL);
+
+    ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
+
+    assert(own_ast != NULL);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__APPEND);
+    assert(strcmp(ar_instruction_ast__get_function_name(own_ast), "append") == 0);
+
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    assert(own_args != NULL);
+    assert(ar_list__count(own_args) == 2);
+    ar_list__destroy(own_args);
+
+    ar_instruction_ast__destroy(own_ast);
+    ar_instruction_parser__destroy(own_parser);
+}
+
+static void test_instruction_parser__parse_append_with_assignment(void) {
+    printf("Testing unified parse method for append with assignment...\n");
+
+    const char *instruction = "memory.append_ok := append(memory.results, 42)";
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    assert(own_parser != NULL);
+
+    ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
+
+    assert(own_ast != NULL);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__APPEND);
+    assert(ar_instruction_ast__has_result_assignment(own_ast) == true);
+    assert(strcmp(ar_instruction_ast__get_function_result_path(own_ast), "memory.append_ok") == 0);
+
+    ar_instruction_ast__destroy(own_ast);
+    ar_instruction_parser__destroy(own_parser);
+}
+
 static void test_instruction_parser__parse_method(void) {
     printf("Testing unified parse method for compile instruction...\n");
     
@@ -869,6 +909,8 @@ int main(void) {
     test_instruction_parser__parse_parse();
     test_instruction_parser__parse_build();
     test_instruction_parser__parse_complete();
+    test_instruction_parser__parse_append();
+    test_instruction_parser__parse_append_with_assignment();
     test_instruction_parser__parse_method();
     test_instruction_parser__parse_spawn();
     test_instruction_parser__parse_exit_agent();

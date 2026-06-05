@@ -25,6 +25,7 @@ static void test_map_add_one_integer(void);
 static void test_map_update_integer(void);
 //static void test_map_get_keys(void);
 static void test_data_ownership(void);
+static void test_data_is_owned_by(void);
 static void test_list_ownership(void);
 static void test_list_remove_ownership(void);
 static void test_map_ownership(void);
@@ -1309,6 +1310,43 @@ static void test_data_ownership(void) {
     printf("Data ownership tests passed!\n");
 }
 
+static void test_data_is_owned_by(void) {
+    printf("Testing data ownership tree lookup...\n");
+
+    ar_data_t *own_memory = ar_data__create_map();
+    ar_data_t *own_direct_list = ar_data__create_list();
+    ar_data_t *ref_direct_list = own_direct_list;
+    assert(own_memory != NULL);
+    assert(own_direct_list != NULL);
+
+    assert(ar_data__is_owned_by(own_memory, own_memory) == true);
+    assert(ar_data__set_map_data(own_memory, "results", own_direct_list) == true);
+    own_direct_list = NULL;
+    assert(ar_data__is_owned_by(ref_direct_list, own_memory) == true);
+
+    ar_data_t *own_wrapper = ar_data__create_map();
+    ar_data_t *own_nested_list = ar_data__create_list();
+    ar_data_t *ref_nested_list = own_nested_list;
+    assert(own_wrapper != NULL);
+    assert(own_nested_list != NULL);
+    assert(ar_data__set_map_data(own_wrapper, "results", own_nested_list) == true);
+    own_nested_list = NULL;
+    assert(ar_data__set_map_data(own_memory, "wrapper", own_wrapper) == true);
+    own_wrapper = NULL;
+    assert(ar_data__is_owned_by(ref_nested_list, own_memory) == true);
+
+    ar_data_t *own_other_list = ar_data__create_list();
+    assert(own_other_list != NULL);
+    assert(ar_data__is_owned_by(own_other_list, own_memory) == false);
+    assert(ar_data__is_owned_by(NULL, own_memory) == false);
+    assert(ar_data__is_owned_by(ref_direct_list, NULL) == false);
+
+    ar_data__destroy(own_other_list);
+    ar_data__destroy(own_memory);
+
+    printf("data ownership tree lookup tests passed!\n");
+}
+
 static void test_list_ownership(void) {
     printf("Testing list ownership behavior...\n");
     
@@ -2256,6 +2294,7 @@ int main(void) {
     
     // Run ownership tests
     test_data_ownership();
+    test_data_is_owned_by();
     test_list_ownership();
     test_list_remove_ownership();
     test_map_ownership();
@@ -2289,7 +2328,7 @@ int main(void) {
     test_data_format_structure();
     
     // Then all tests should pass
-    printf("All 29 tests passed!\n");
+    printf("All 30 tests passed!\n");
     
     return 0;
 }

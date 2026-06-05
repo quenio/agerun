@@ -136,6 +136,7 @@ The following BNF grammar defines the syntax of individual instructions allowed 
                  | <parse-function>
                  | <build-function>
                  | <complete-function>
+                 | <append-function>
                  | <compile-function>
                  | <spawn-function>
                  | <exit-function>
@@ -146,6 +147,7 @@ The following BNF grammar defines the syntax of individual instructions allowed 
 <parse-function> ::= 'parse' '(' <expression> ',' <expression> ')'
 <build-function> ::= 'build' '(' <expression> ',' <expression> ')'
 <complete-function> ::= 'complete' '(' <expression> [',' <expression>] ')'
+<append-function> ::= 'append' '(' <expression> ',' <expression> ')'
 <compile-function> ::= 'compile' '(' <expression> ',' <expression> ',' <expression> ')'
 <spawn-function> ::= 'spawn' '(' <expression> ',' <expression> ',' <expression> ')'
 <exit-function> ::= 'exit' '(' <expression> ')'
@@ -160,6 +162,7 @@ Instructions in an agent method can be of two types:
   - `parse` - Extract values from a string using a template
   - `build` - Construct a string using a template and values
   - `complete` - Complete template placeholders with local LLM-generated values and return a map
+  - `append` - Append a value to an existing memory list
   - `compile` - Define a new agent method
   - `spawn` - Spawn a new agent instance
   - `exit` - Exit an existing agent
@@ -170,6 +173,8 @@ Function call instructions can optionally assign their result to a variable. For
 - `send(agent_id, message)` - Call the function without storing the result
 - `success := send(agent_id, message)` - Store the result in a memory variable
 - `memory.result := complete("The capital of {country} is {city}.", memory.values)` - Return a new map containing values from `memory.values` plus generated values for missing placeholders
+- `append(memory.results, message.value)` - Append a value to the existing `memory.results` list
+- `memory.append_ok := append(memory.results, message.value)` - Append a value and store `1` on success or `0` on failure
 - `exit(agent_id)` - Exit an agent without storing the result
 - `success := exit(agent_id)` - Exit an agent and store the result
 - `deprecate(method_name, method_version)` - Deprecate a method without storing the result
@@ -253,7 +258,14 @@ The expression evaluator follows these rules:
 - `build(template: string, values: map) → string`: Constructs a string by replacing placeholders in template with corresponding values from values. Always returns a string; placeholders without corresponding values remain unchanged. The template parameter must be a STRING type.
 - `complete(template: string[, values: map]) → map`: Uses a local CPU-only completion backend to complete placeholder variables as strings and returns a new map. When a values map is provided, placeholders with corresponding primitive values are first replaced in the template using build-style substitution, the original values are copied into the result map, and only placeholders still missing from the values map are sent to the local completion backend. When no values map is provided, all placeholders are completed by the backend. The input map is never mutated.
 
-### 2. Messaging
+### 2. List Mutation
+
+- `append(target: expression, value: data) → boolean`: Evaluates the target expression and mutates it only when it resolves to an existing LIST directly or indirectly owned by the frame memory map, such as `memory.results` or `memory.wrapper.results`. Targets under `message` or `context`, fresh literal/list expression results, missing targets, non-LIST targets, and protected `memory.self` targets are no-ops.
+- The value argument may be any expression. Fresh literal values are transferred directly into the list. Borrowed values from `memory`, `message`, or `context` are claimed when possible or shallow-copied before append.
+- Borrowed nested containers have a current limitation: `ar_data__claim_or_copy()` can shallow-copy primitives and flat containers only. Appending a borrowed map or list that itself contains nested maps or lists fails and returns/stores `0`.
+- Without result assignment, target no-ops and append failures complete without mutating memory further. With result assignment, `memory.some_flag := append(...)` stores integer `1` for successful append or `0` for no-op/failure, and the instruction itself completes when the result can be stored. Invalid result assignment paths fail before append mutation. If storing the success result fails after a list append, the appended item is removed before the instruction fails.
+
+### 3. Messaging
 
 - `send(recipient_id: integer, message: data) → boolean`:
   - **Routing by ID**:
@@ -267,21 +279,21 @@ The expression evaluator follows these rules:
   - The `message` parameter can be any supported data type (INTEGER, DOUBLE, STRING, LIST, or MAP)
   - **Ownership**: Message ownership transfers to the recipient's queue
 
-### 3. Memory Access
+### 4. Memory Access
 
 - **Reading**: Access values using dot notation with the root identifiers `message`, `memory`, or `context` (e.g., `message.field`, `memory.user.name`, `context.settings`).
 - **Writing**: Assign values to memory using `memory.path := value`. Only `memory` paths can be used on the left side of an assignment.
 
-### 4. Arithmetic Operations
+### 5. Arithmetic Operations
 
 - **Operators**: Standard arithmetic operators are used: `+`, `-`, `*`, `/`.
 - **Type Inference**: When parsing strings, values are inferred in the following order: integer, double, string.
 
-### 5. Conditional Evaluation
+### 6. Conditional Evaluation
 
 - `if(condition: boolean, true_value, false_value)`: Returns `true_value` if condition is true; otherwise, returns `false_value`.
 
-### 6. Agent Management
+### 7. Agent Management
 
 - `compile(method_name: string, instructions: string, version: string) → boolean`: Defines a new method with the specified name, instruction code, and version string. The version string must follow semantic versioning (e.g., "1.0.0"). Compatibility between versions is determined based on semantic versioning rules: agents using version 1.x.x will automatically use the latest 1.x.x version. Returns true if the method was successfully defined, or false if the instructions cannot be parsed or compiled.
 - `complete(...)` is local-only in the first release, uses CPU-only execution, returns generated values as strings in a new map, rejects empty/outer-whitespace/braced generated values, applies build-style substitution for provided values, and never mutates the provided values map.

@@ -24,9 +24,13 @@ The public enum `ar_instruction_ast_type_t` covers:
 - `AR_INSTRUCTION_AST_TYPE__PARSE`
 - `AR_INSTRUCTION_AST_TYPE__BUILD`
 - `AR_INSTRUCTION_AST_TYPE__COMPLETE`
+- `AR_INSTRUCTION_AST_TYPE__APPEND`
 
 `AR_INSTRUCTION_AST_TYPE__COMPLETE` represents `complete(template[, values])` and is used by
 both the specialized complete parser and the instruction-evaluator facade.
+
+`AR_INSTRUCTION_AST_TYPE__APPEND` represents `append(memory.list, value)` and is used by the
+specialized append parser and evaluator facade.
 
 ## Public API highlights
 
@@ -96,4 +100,6 @@ bool ar_instruction_ast__has_protected_memory_self_assignment(
   agency-managed `memory.self` and `memory.self.*` result paths
 - `complete(...)` support is represented with a normal function-call node carrying parsed argument
   ASTs for the template string and optional values-map expression
+- `append(...)` support is represented with a normal function-call node carrying parsed argument ASTs
+  for the mutable memory target and the value expression
 - callers should treat the node as opaque and rely only on the documented accessor helpers
