@@ -294,6 +294,8 @@ Agents use a simple expression and instruction language for their methods:
 
 - Read: `memory.key` or nested paths like `memory.user.name`
 - Write: `memory.key := value` or nested paths like `memory.user.settings.theme := "dark"`
+- Literal containers: one-line lists and maps such as `[1, 2,]` and `{name: "Ada",}` can be assigned or passed as function arguments
+- Multi-line lists and maps are assignment-only, with one item per line and consistent item indentation
 
 ### Arithmetic Operations
 

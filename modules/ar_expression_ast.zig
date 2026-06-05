@@ -26,6 +26,19 @@ const literal_string_data_t = struct {
     own_value: ?[*:0]u8,
 };
 
+const literal_list_data_t = struct {
+    own_items: ?*c.ar_list_t,
+};
+
+const literal_map_entry_t = struct {
+    own_key: ?[*:0]u8,
+    own_value: ?*c.ar_expression_ast_t,
+};
+
+const literal_map_data_t = struct {
+    own_entries: ?*c.ar_list_t,
+};
+
 const memory_access_data_t = struct {
     own_base: ?[*:0]u8,        // "memory", "message", or "context"
     own_path: ?*c.ar_list_t,   // List of path components (strings)
@@ -42,6 +55,8 @@ const node_data_t = union {
     literal_int: literal_int_data_t,
     literal_double: literal_double_data_t,
     literal_string: literal_string_data_t,
+    literal_list: literal_list_data_t,
+    literal_map: literal_map_data_t,
     memory_access: memory_access_data_t,
     binary_op: binary_op_data_t,
 };
@@ -101,6 +116,175 @@ export fn ar_expression_ast__create_literal_string(ref_value: ?[*:0]const u8) ?*
     own_ast_node.?.node_type = c.AR_EXPRESSION_AST_TYPE__LITERAL_STRING;
     own_ast_node.?.data = node_data_t{ .literal_string = literal_string_data_t{ .own_value = own_string_copy } };
     
+    return @ptrCast(own_ast_node);
+}
+
+fn _destroy_child_nodes(own_items: ?[*]?*c.ar_expression_ast_t, item_count: usize) void {
+    if (own_items == null) {
+        return;
+    }
+
+    for (0..item_count) |i| {
+        ar_expression_ast__destroy(own_items.?[i]);
+    }
+}
+
+fn _destroy_literal_list_items(own_items_list: ?*c.ar_list_t) void {
+    if (own_items_list == null) {
+        return;
+    }
+
+    var item: ?*anyopaque = c.ar_list__remove_first(own_items_list);
+    while (item != null) : (item = c.ar_list__remove_first(own_items_list)) {
+        ar_expression_ast__destroy(@ptrCast(@alignCast(item)));
+    }
+    c.ar_list__destroy(own_items_list);
+}
+
+fn _destroy_map_entry(own_entry: ?*literal_map_entry_t) void {
+    if (own_entry == null) {
+        return;
+    }
+
+    if (own_entry.?.own_key != null) {
+        ar_allocator.free(own_entry.?.own_key);
+    }
+    ar_expression_ast__destroy(own_entry.?.own_value);
+    ar_allocator.free(own_entry);
+}
+
+fn _destroy_literal_map_entries(own_entries_list: ?*c.ar_list_t) void {
+    if (own_entries_list == null) {
+        return;
+    }
+
+    var item: ?*anyopaque = c.ar_list__remove_first(own_entries_list);
+    while (item != null) : (item = c.ar_list__remove_first(own_entries_list)) {
+        _destroy_map_entry(@ptrCast(@alignCast(item)));
+    }
+    c.ar_list__destroy(own_entries_list);
+}
+
+fn _destroy_child_nodes_from(
+    own_items: ?[*]?*c.ar_expression_ast_t,
+    item_count: usize,
+    start_index: usize
+) void {
+    if (own_items == null or start_index >= item_count) {
+        return;
+    }
+
+    for (start_index..item_count) |i| {
+        ar_expression_ast__destroy(own_items.?[i]);
+    }
+}
+
+export fn ar_expression_ast__create_literal_list(
+    own_items: ?[*]?*c.ar_expression_ast_t,
+    item_count: usize
+) ?*c.ar_expression_ast_t {
+    if (item_count > 0 and own_items == null) {
+        return null;
+    }
+
+    for (0..item_count) |i| {
+        if (own_items.?[i] == null) {
+            _destroy_child_nodes(own_items, item_count);
+            return null;
+        }
+    }
+
+    const own_ast_node = ar_allocator.create(ar_expression_ast_t, "Expression AST node (list)");
+    if (own_ast_node == null) {
+        _destroy_child_nodes(own_items, item_count);
+        return null;
+    }
+
+    const own_items_list = c.ar_list__create();
+    if (own_items_list == null) {
+        ar_allocator.free(own_ast_node);
+        _destroy_child_nodes(own_items, item_count);
+        return null;
+    }
+
+    for (0..item_count) |i| {
+        if (!c.ar_list__add_last(own_items_list, own_items.?[i])) {
+            _destroy_literal_list_items(own_items_list);
+            _destroy_child_nodes_from(own_items, item_count, i);
+            ar_allocator.free(own_ast_node);
+            return null;
+        }
+    }
+
+    own_ast_node.?.node_type = c.AR_EXPRESSION_AST_TYPE__LITERAL_LIST;
+    own_ast_node.?.data = node_data_t{ .literal_list = literal_list_data_t{ .own_items = own_items_list } };
+
+    return @ptrCast(own_ast_node);
+}
+
+export fn ar_expression_ast__create_literal_map(
+    ref_keys: ?[*]const ?[*:0]const u8,
+    own_values: ?[*]?*c.ar_expression_ast_t,
+    entry_count: usize
+) ?*c.ar_expression_ast_t {
+    if (entry_count > 0 and (ref_keys == null or own_values == null)) {
+        _destroy_child_nodes(own_values, entry_count);
+        return null;
+    }
+
+    for (0..entry_count) |i| {
+        if (ref_keys.?[i] == null or own_values.?[i] == null) {
+            _destroy_child_nodes(own_values, entry_count);
+            return null;
+        }
+    }
+
+    const own_ast_node = ar_allocator.create(ar_expression_ast_t, "Expression AST node (map)");
+    if (own_ast_node == null) {
+        _destroy_child_nodes(own_values, entry_count);
+        return null;
+    }
+
+    const own_entries_list = c.ar_list__create();
+    if (own_entries_list == null) {
+        ar_allocator.free(own_ast_node);
+        _destroy_child_nodes(own_values, entry_count);
+        return null;
+    }
+
+    for (0..entry_count) |i| {
+        const own_entry = ar_allocator.create(literal_map_entry_t, "Expression AST map entry");
+        if (own_entry == null) {
+            _destroy_literal_map_entries(own_entries_list);
+            _destroy_child_nodes_from(own_values, entry_count, i);
+            ar_allocator.free(own_ast_node);
+            return null;
+        }
+
+        const own_key_copy = ar_allocator.dupe(ref_keys.?[i], "Expression AST map key");
+        if (own_key_copy == null) {
+            ar_allocator.free(own_entry);
+            _destroy_literal_map_entries(own_entries_list);
+            _destroy_child_nodes_from(own_values, entry_count, i);
+            ar_allocator.free(own_ast_node);
+            return null;
+        }
+
+        own_entry.?.own_key = own_key_copy;
+        own_entry.?.own_value = own_values.?[i];
+
+        if (!c.ar_list__add_last(own_entries_list, own_entry)) {
+            _destroy_map_entry(own_entry);
+            _destroy_literal_map_entries(own_entries_list);
+            _destroy_child_nodes_from(own_values, entry_count, i + 1);
+            ar_allocator.free(own_ast_node);
+            return null;
+        }
+    }
+
+    own_ast_node.?.node_type = c.AR_EXPRESSION_AST_TYPE__LITERAL_MAP;
+    own_ast_node.?.data = node_data_t{ .literal_map = literal_map_data_t{ .own_entries = own_entries_list } };
+
     return @ptrCast(own_ast_node);
 }
 
@@ -208,6 +392,12 @@ export fn ar_expression_ast__destroy(own_node: ?*c.ar_expression_ast_t) void {
                 ar_allocator.free(ref_ast_node.data.literal_string.own_value);
             }
         },
+        c.AR_EXPRESSION_AST_TYPE__LITERAL_LIST => {
+            _destroy_literal_list_items(ref_ast_node.data.literal_list.own_items);
+        },
+        c.AR_EXPRESSION_AST_TYPE__LITERAL_MAP => {
+            _destroy_literal_map_entries(ref_ast_node.data.literal_map.own_entries);
+        },
         c.AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS => {
             if (ref_ast_node.data.memory_access.own_base != null) {
                 ar_allocator.free(ref_ast_node.data.memory_access.own_base);
@@ -276,6 +466,118 @@ export fn ar_expression_ast__get_string_value(ref_node: ?*const c.ar_expression_
     }
     
     return @ptrCast(ref_ast_node.data.literal_string.own_value);
+}
+
+export fn ar_expression_ast__get_list_item_count(ref_node: ?*const c.ar_expression_ast_t) usize {
+    if (ref_node == null) {
+        return 0;
+    }
+    const ref_ast_node: *const ar_expression_ast_t = @ptrCast(@alignCast(ref_node));
+    if (ref_ast_node.node_type != c.AR_EXPRESSION_AST_TYPE__LITERAL_LIST or
+        ref_ast_node.data.literal_list.own_items == null) {
+        return 0;
+    }
+
+    return c.ar_list__count(ref_ast_node.data.literal_list.own_items);
+}
+
+export fn ar_expression_ast__get_list_item(
+    ref_node: ?*const c.ar_expression_ast_t,
+    index: usize
+) ?*const c.ar_expression_ast_t {
+    if (ref_node == null) {
+        return null;
+    }
+    const ref_ast_node: *const ar_expression_ast_t = @ptrCast(@alignCast(ref_node));
+    if (ref_ast_node.node_type != c.AR_EXPRESSION_AST_TYPE__LITERAL_LIST) {
+        return null;
+    }
+
+    const ref_items_list = ref_ast_node.data.literal_list.own_items;
+    if (ref_items_list == null) {
+        return null;
+    }
+
+    const count = c.ar_list__count(ref_items_list);
+    if (index >= count) {
+        return null;
+    }
+
+    if (index == 0) {
+        return @ptrCast(c.ar_list__first(ref_items_list));
+    }
+
+    if (index == count - 1) {
+        return @ptrCast(c.ar_list__last(ref_items_list));
+    }
+
+    const own_items = c.ar_list__items(ref_items_list) orelse return null;
+    defer ar_allocator.free(own_items);
+    return @ptrCast(own_items[index]);
+}
+
+export fn ar_expression_ast__get_map_entry_count(ref_node: ?*const c.ar_expression_ast_t) usize {
+    if (ref_node == null) {
+        return 0;
+    }
+    const ref_ast_node: *const ar_expression_ast_t = @ptrCast(@alignCast(ref_node));
+    if (ref_ast_node.node_type != c.AR_EXPRESSION_AST_TYPE__LITERAL_MAP or
+        ref_ast_node.data.literal_map.own_entries == null) {
+        return 0;
+    }
+
+    return c.ar_list__count(ref_ast_node.data.literal_map.own_entries);
+}
+
+fn _get_map_entry(
+    ref_node: ?*const c.ar_expression_ast_t,
+    index: usize
+) ?*const literal_map_entry_t {
+    if (ref_node == null) {
+        return null;
+    }
+    const ref_ast_node: *const ar_expression_ast_t = @ptrCast(@alignCast(ref_node));
+    if (ref_ast_node.node_type != c.AR_EXPRESSION_AST_TYPE__LITERAL_MAP) {
+        return null;
+    }
+
+    const ref_entries_list = ref_ast_node.data.literal_map.own_entries;
+    if (ref_entries_list == null) {
+        return null;
+    }
+
+    const count = c.ar_list__count(ref_entries_list);
+    if (index >= count) {
+        return null;
+    }
+
+    if (index == 0) {
+        return @ptrCast(@alignCast(c.ar_list__first(ref_entries_list)));
+    }
+
+    if (index == count - 1) {
+        return @ptrCast(@alignCast(c.ar_list__last(ref_entries_list)));
+    }
+
+    const own_items = c.ar_list__items(ref_entries_list) orelse return null;
+    defer ar_allocator.free(own_items);
+    return @ptrCast(@alignCast(own_items[index]));
+}
+
+export fn ar_expression_ast__get_map_key(
+    ref_node: ?*const c.ar_expression_ast_t,
+    index: usize
+) ?[*:0]const u8 {
+    const ref_entry = _get_map_entry(ref_node, index) orelse return null;
+    return @ptrCast(ref_entry.own_key);
+}
+
+export fn ar_expression_ast__get_map_value(
+    ref_node: ?*const c.ar_expression_ast_t,
+    index: usize
+) ?*const c.ar_expression_ast_t {
+    const ref_entry = _get_map_entry(ref_node, index) orelse return null;
+    return @ptrCast(ref_entry.own_value);
 }
 
 export fn ar_expression_ast__get_memory_base(ref_node: ?*const c.ar_expression_ast_t) ?[*:0]const u8 {
@@ -476,6 +778,9 @@ pub export fn ar_expression_ast__format_path(ref_ast: ?*const c.ar_expression_as
         },
         c.AR_EXPRESSION_AST_TYPE__BINARY_OP => {
             return ar_allocator.dupe("<expression>", "Expression path for binary op");
+        },
+        c.AR_EXPRESSION_AST_TYPE__LITERAL_LIST, c.AR_EXPRESSION_AST_TYPE__LITERAL_MAP => {
+            return ar_allocator.dupe("<expression>", "Expression path for literal container");
         },
         else => {
             return ar_allocator.dupe("unknown", "Expression path for unknown type");

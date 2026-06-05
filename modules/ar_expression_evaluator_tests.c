@@ -8,6 +8,7 @@
 #include <string.h>
 #include "ar_expression_evaluator.h"
 #include "ar_expression_ast.h"
+#include "ar_expression_parser.h"
 #include "ar_data.h"
 #include "ar_heap.h"
 #include "ar_log.h"
@@ -827,6 +828,73 @@ static void test_evaluate_type_mismatch_error_message(void) {
     printf("    (The error above 'Cannot access field 'type_mismatch_test_field' on STRING value \"test_string_value\"' was expected)\n");
 }
 
+static void test_evaluate_list_literal(void) {
+    printf("Testing expression evaluator list literal...\n");
+
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_evaluate_list_literal");
+    assert(own_fixture != NULL);
+
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_evaluator = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(ref_log, "[1, \"two\", {n: 3},]");
+    assert(own_parser != NULL);
+    ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
+    assert(own_ast != NULL);
+
+    ar_data_t *own_result = ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, own_ast);
+
+    assert(own_result != NULL);
+    assert(ar_data__get_type(own_result) == AR_DATA_TYPE__LIST);
+    assert(ar_data__list_count(own_result) == 3);
+
+    ar_data_t **own_items = ar_data__list_items(own_result);
+    assert(own_items != NULL);
+    assert(ar_data__get_integer(own_items[0]) == 1);
+    assert(strcmp(ar_data__get_string(own_items[1]), "two") == 0);
+    assert(ar_data__get_type(own_items[2]) == AR_DATA_TYPE__MAP);
+    assert(ar_data__get_map_integer(own_items[2], "n") == 3);
+    AR__HEAP__FREE(own_items);
+
+    ar_data__destroy(own_result);
+    ar_expression_ast__destroy(own_ast);
+    ar_expression_parser__destroy(own_parser);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_evaluate_map_literal(void) {
+    printf("Testing expression evaluator map literal...\n");
+
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_evaluate_map_literal");
+    assert(own_fixture != NULL);
+
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_evaluator = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(ref_log, "{name: \"Ada\", values: [1, 2,],}");
+    assert(own_parser != NULL);
+    ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
+    assert(own_ast != NULL);
+
+    ar_data_t *own_result = ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, own_ast);
+
+    assert(own_result != NULL);
+    assert(ar_data__get_type(own_result) == AR_DATA_TYPE__MAP);
+    assert(strcmp(ar_data__get_map_string(own_result, "name"), "Ada") == 0);
+
+    ar_data_t *ref_values = ar_data__get_map_data(own_result, "values");
+    assert(ref_values != NULL);
+    assert(ar_data__get_type(ref_values) == AR_DATA_TYPE__LIST);
+    assert(ar_data__list_count(ref_values) == 2);
+
+    ar_data__destroy(own_result);
+    ar_expression_ast__destroy(own_ast);
+    ar_expression_parser__destroy(own_parser);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
 int main(void) {
     printf("\n=== Expression Evaluator Tests ===\n\n");
     
@@ -850,6 +918,8 @@ int main(void) {
     test_evaluate_binary_op_nested();
     test_evaluate_string_comparison();
     test_evaluate_type_mismatch_error_message();
+    test_evaluate_list_literal();
+    test_evaluate_map_literal();
     
     printf("\nAll expression_evaluator tests passed!\n");
     return 0;

@@ -101,6 +101,91 @@ fn _evaluate_literal_string(
     return c.ar_data__create_string(c.ar_expression_ast__get_string_value(ref_node));
 }
 
+fn _evaluate_literal_list(
+    ref_log: ?*c.ar_log_t,
+    ref_frame: ?*const c.ar_frame_t,
+    ref_node: ?*const c.ar_expression_ast_t
+) ?*c.ar_data_t {
+    if (ref_node == null) {
+        c.ar_log__error(ref_log, "evaluate_literal_list: NULL node");
+        return null;
+    }
+
+    if (c.ar_expression_ast__get_type(ref_node) != c.AR_EXPRESSION_AST_TYPE__LITERAL_LIST) {
+        return null;
+    }
+
+    const own_list = c.ar_data__create_list() orelse {
+        c.ar_log__error(ref_log, "evaluate_literal_list: Failed to create list");
+        return null;
+    };
+
+    const item_count = c.ar_expression_ast__get_list_item_count(ref_node);
+    for (0..item_count) |i| {
+        const ref_item_ast = c.ar_expression_ast__get_list_item(ref_node, i);
+        const own_item = _evaluate_expression(ref_log, ref_frame, ref_item_ast) orelse {
+            c.ar_data__destroy(own_list);
+            c.ar_log__error(ref_log, "evaluate_literal_list: Failed to evaluate item");
+            return null;
+        };
+
+        if (!c.ar_data__list_add_last_data(own_list, own_item)) {
+            c.ar_data__destroy(own_item);
+            c.ar_data__destroy(own_list);
+            c.ar_log__error(ref_log, "evaluate_literal_list: Failed to add item");
+            return null;
+        }
+    }
+
+    return own_list;
+}
+
+fn _evaluate_literal_map(
+    ref_log: ?*c.ar_log_t,
+    ref_frame: ?*const c.ar_frame_t,
+    ref_node: ?*const c.ar_expression_ast_t
+) ?*c.ar_data_t {
+    if (ref_node == null) {
+        c.ar_log__error(ref_log, "evaluate_literal_map: NULL node");
+        return null;
+    }
+
+    if (c.ar_expression_ast__get_type(ref_node) != c.AR_EXPRESSION_AST_TYPE__LITERAL_MAP) {
+        return null;
+    }
+
+    const own_map = c.ar_data__create_map() orelse {
+        c.ar_log__error(ref_log, "evaluate_literal_map: Failed to create map");
+        return null;
+    };
+
+    const entry_count = c.ar_expression_ast__get_map_entry_count(ref_node);
+    for (0..entry_count) |i| {
+        const ref_key = c.ar_expression_ast__get_map_key(ref_node, i);
+        const ref_value_ast = c.ar_expression_ast__get_map_value(ref_node, i);
+        if (ref_key == null or ref_value_ast == null) {
+            c.ar_data__destroy(own_map);
+            c.ar_log__error(ref_log, "evaluate_literal_map: Missing entry");
+            return null;
+        }
+
+        const own_value = _evaluate_expression(ref_log, ref_frame, ref_value_ast) orelse {
+            c.ar_data__destroy(own_map);
+            c.ar_log__error(ref_log, "evaluate_literal_map: Failed to evaluate value");
+            return null;
+        };
+
+        if (!c.ar_data__set_map_data(own_map, ref_key, own_value)) {
+            c.ar_data__destroy(own_value);
+            c.ar_data__destroy(own_map);
+            c.ar_log__error(ref_log, "evaluate_literal_map: Failed to set entry");
+            return null;
+        }
+    }
+
+    return own_map;
+}
+
 /// Evaluates a memory access node
 fn _evaluate_memory_access(
     ref_log: ?*c.ar_log_t,
@@ -282,6 +367,12 @@ fn _evaluate_expression(
         c.AR_EXPRESSION_AST_TYPE__LITERAL_STRING => {
             return _evaluate_literal_string(ref_log, ref_node);
         },
+        c.AR_EXPRESSION_AST_TYPE__LITERAL_LIST => {
+            return _evaluate_literal_list(ref_log, ref_frame, ref_node);
+        },
+        c.AR_EXPRESSION_AST_TYPE__LITERAL_MAP => {
+            return _evaluate_literal_map(ref_log, ref_frame, ref_node);
+        },
         c.AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS => {
             // Memory access returns a reference, use claim_or_copy for consistent ownership
             const ref_value = _evaluate_memory_access(ref_log, ref_frame, ref_node) orelse return null;
@@ -329,6 +420,12 @@ fn _evaluate(
         },
         c.AR_EXPRESSION_AST_TYPE__LITERAL_STRING => {
             return _evaluate_literal_string(ref_log, ref_ast);
+        },
+        c.AR_EXPRESSION_AST_TYPE__LITERAL_LIST => {
+            return _evaluate_literal_list(ref_log, ref_frame, ref_ast);
+        },
+        c.AR_EXPRESSION_AST_TYPE__LITERAL_MAP => {
+            return _evaluate_literal_map(ref_log, ref_frame, ref_ast);
         },
         c.AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS => {
             // Memory access returns a reference owned by the memory/context map

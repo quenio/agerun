@@ -171,6 +171,65 @@ static void test_spawn_instruction_evaluator__evaluate_with_result(void) {
     /* ar_methodology__cleanup() removed - fixture handles cleanup */
 }
 
+static void test_spawn_instruction_evaluator__owns_literal_context_map(void) {
+    ar_evaluator_fixture_t *fixture =
+        ar_evaluator_fixture__create("test_owns_literal_context_map");
+    assert(fixture != NULL);
+
+    ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
+    assert(frame != NULL);
+
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_agency_t *mut_agency = ar_evaluator_fixture__get_agency(fixture);
+    ar_methodology_t *mut_methodology = ar_evaluator_fixture__get_methodology(fixture);
+
+    ar_spawn_instruction_evaluator_t *evaluator = ar_spawn_instruction_evaluator__create(
+        log, expr_eval, mut_agency
+    );
+    assert(evaluator != NULL);
+
+    ar_method_t *method = ar_method__create("literal_worker", "memory.ready := 1", "1.0.0");
+    assert(method != NULL);
+    ar_methodology__register_method(mut_methodology, method);
+
+    const char *args[] = {"\"literal_worker\"", "\"1.0.0\"", "{config: \"literal\"}"};
+    ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
+        AR_INSTRUCTION_AST_TYPE__SPAWN, "spawn", args, 3, "memory.agent_id"
+    );
+    assert(ast != NULL);
+
+    ar_list_t *arg_asts = ar_list__create();
+    assert(arg_asts != NULL);
+    ar_list__add_last(arg_asts, ar_expression_ast__create_literal_string("literal_worker"));
+    ar_list__add_last(arg_asts, ar_expression_ast__create_literal_string("1.0.0"));
+
+    const char *keys[] = {"config"};
+    ar_expression_ast_t *own_values[1];
+    own_values[0] = ar_expression_ast__create_literal_string("literal");
+    ar_expression_ast_t *context_ast = ar_expression_ast__create_literal_map(keys, own_values, 1);
+    assert(context_ast != NULL);
+    ar_list__add_last(arg_asts, context_ast);
+
+    assert(ar_instruction_ast__set_function_arg_asts(ast, arg_asts) == true);
+
+    bool result = ar_spawn_instruction_evaluator__evaluate(evaluator, frame, ast);
+
+    assert(result == true);
+    ar_data_t *memory = ar_evaluator_fixture__get_memory(fixture);
+    int agent_id = ar_data__get_map_integer(memory, "agent_id");
+    assert(agent_id > 0);
+
+    const ar_data_t *ref_context = ar_agency__get_agent_context(mut_agency, agent_id);
+    assert(ref_context != NULL);
+    assert(ar_data__get_type(ref_context) == AR_DATA_TYPE__MAP);
+    assert(strcmp(ar_data__get_map_string(ref_context, "config"), "literal") == 0);
+
+    ar_instruction_ast__destroy(ast);
+    ar_spawn_instruction_evaluator__destroy(evaluator);
+    ar_evaluator_fixture__destroy(fixture);
+}
+
 static void test_spawn_instruction_evaluator__evaluate_invalid_method(void) {
     // Initialize system for agent creation
     
@@ -622,6 +681,9 @@ int main(void) {
     
     test_spawn_instruction_evaluator__evaluate_with_result();
     printf("test_spawn_instruction_evaluator__evaluate_with_result passed!\n");
+
+    test_spawn_instruction_evaluator__owns_literal_context_map();
+    printf("test_spawn_instruction_evaluator__owns_literal_context_map passed!\n");
     
     test_spawn_instruction_evaluator__evaluate_invalid_method();
     printf("test_spawn_instruction_evaluator__evaluate_invalid_method passed!\n");
@@ -651,4 +713,3 @@ int main(void) {
     
     return 0;
 }
-

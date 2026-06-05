@@ -79,6 +79,22 @@ int64_t ar_agency__create_agent(ar_agency_t *mut_agency,
                                                const ar_data_t *ref_context);
 
 /**
+ * Create a new agent with ID allocation, tracking, and owned context (instance version)
+ * @param mut_agency The agency instance (mutable reference)
+ * @param ref_method_name Name of the method to use (borrowed reference)
+ * @param ref_version Version string of the method (NULL for latest)
+ * @param own_context Context data (ownership transferred to the created agent)
+ * @return Unique agent ID, or 0 on failure
+ * @note Ownership: Function takes ownership of own_context.
+ */
+int64_t ar_agency__create_agent_with_owned_context(
+    ar_agency_t *mut_agency,
+    const char *ref_method_name,
+    const char *ref_version,
+    ar_data_t *own_context
+);
+
+/**
  * Destroy an agent by ID (instance version)
  * @param mut_agency The agency instance (mutable reference)
  * @param agent_id ID of the agent to destroy
@@ -232,4 +248,3 @@ const ar_data_t* ar_agency__get_agent_context(ar_agency_t *ref_agency, int64_t a
 bool ar_agency__agent_exists(ar_agency_t *ref_agency, int64_t agent_id);
 
 #endif /* AGERUN_AGENCY_H */
-

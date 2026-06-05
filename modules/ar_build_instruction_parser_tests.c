@@ -517,6 +517,40 @@ static void test_build_instruction_parser__unterminated_string_error(void) {
     ar_log__destroy(log);
 }
 
+static void test_build_instruction_parser__parses_literal_argument(void) {
+    printf("Testing build function with one-line literal argument...\n");
+
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    const char *instruction = "build(\"Items: {items}\", {items: [1, 2,]})";
+    ar_build_instruction_parser_t *own_parser = ar_build_instruction_parser__create(log);
+    assert(own_parser != NULL);
+
+    ar_instruction_ast_t *own_ast = ar_build_instruction_parser__parse(own_parser, instruction, NULL);
+
+    assert(own_ast != NULL);
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    assert(own_args != NULL);
+    assert(ar_list__count(own_args) == 2);
+    void **own_items = ar_list__items(own_args);
+    assert(strcmp((const char*)own_items[1], "{items: [1, 2,]}") == 0);
+    AR__HEAP__FREE(own_items);
+    ar_list__destroy(own_args);
+
+    const ar_list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(own_ast);
+    assert(ref_arg_asts != NULL);
+    assert(ar_list__count(ref_arg_asts) == 2);
+    own_items = ar_list__items(ref_arg_asts);
+    assert(ar_expression_ast__get_type((const ar_expression_ast_t*)own_items[1]) == AR_EXPRESSION_AST_TYPE__LITERAL_MAP);
+    AR__HEAP__FREE(own_items);
+
+    assert(ar_log__get_last_error_message(log) == NULL);
+
+    ar_instruction_ast__destroy(own_ast);
+    ar_build_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
 int main(void) {
     printf("Running build instruction parser tests...\n\n");
     
@@ -546,6 +580,7 @@ int main(void) {
     test_build_instruction_parser__empty_expression_error();
     test_build_instruction_parser__invalid_separator_error();
     test_build_instruction_parser__unterminated_string_error();
+    test_build_instruction_parser__parses_literal_argument();
     
     printf("\nAll build instruction parser tests passed!\n");
     return 0;

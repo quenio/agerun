@@ -32,7 +32,7 @@ The parser maintains:
 
 The parser implements proper operator precedence (from highest to lowest):
 
-1. **Primary**: Literals, memory access, parenthesized expressions
+1. **Primary**: Literals, container literals, memory access, parenthesized expressions
 2. **Multiplicative**: `*`, `/`
 3. **Additive**: `+`, `-`
 4. **Relational**: `<`, `<=`, `>`, `>=`, `<>` (not equal)
@@ -41,7 +41,7 @@ The parser implements proper operator precedence (from highest to lowest):
 ### Recursive Descent Architecture
 
 Each precedence level has its own parsing function:
-- `_parse_primary()` - Literals, memory access, parentheses
+- `_parse_primary()` - Literals, container literals, memory access, parentheses
 - `_parse_term()` - Multiplication and division
 - `_parse_additive()` - Addition and subtraction
 - `_parse_relational()` - Comparison operators
@@ -74,6 +74,10 @@ Each precedence level has its own parsing function:
 - **Integer**: `42`, `-10`, `0`
 - **Double**: `3.14`, `-2.5`, `0.0`
 - **String**: `"hello"`, `"world"`, `""`
+- **List**: `[1, 2]`, `[1, 2,]`, `[]`
+- **Map**: `{name: "Ada"}`, `{name: "Ada", scores: [1, 2,]}`, `{}`
+
+Map literal keys are identifiers only. Quoted keys such as `{"name": "Ada"}` are not supported.
 
 ### Memory Access
 
@@ -107,6 +111,8 @@ if (!ast) {
 Common errors:
 - Unterminated string literals
 - Invalid number formats
+- Invalid list or map literal delimiters
+- Quoted or otherwise invalid map literal keys
 - Missing closing parentheses
 - Unexpected characters
 - Invalid identifiers after dots
@@ -156,6 +162,7 @@ ar_expression_parser__destroy(own_parser);
 The module includes comprehensive tests (`ar_expression_parser_tests.c`) that verify:
 
 - Parsing of all literal types
+- One-line list and map literals, including nested literals and trailing commas
 - Memory access with various path depths
 - All binary operators with correct precedence
 - Parenthesized and nested expressions

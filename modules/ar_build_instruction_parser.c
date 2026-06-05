@@ -104,12 +104,49 @@ static char* _parse_string_argument(ar_build_instruction_parser_t *mut_parser, c
 static char* _parse_expression_argument(ar_build_instruction_parser_t *mut_parser, const char *ref_str, size_t *pos) {
     size_t start = *pos;
     size_t end = start;
-    
-    /* Find end of expression (comma, closing paren, or whitespace) */
-    while (ref_str[end] && ref_str[end] != ',' && ref_str[end] != ')' && !ar_string__isspace(ref_str[end])) {
+    int paren_depth = 0;
+    int bracket_depth = 0;
+    int brace_depth = 0;
+    bool in_quotes = false;
+
+    /* Find end of expression (comma or closing paren outside nested literals) */
+    while (ref_str[end]) {
+        char c = ref_str[end];
+        if (c == '"' && (end == 0 || ref_str[end - 1] != '\\')) {
+            in_quotes = !in_quotes;
+        } else if (!in_quotes) {
+            if (c == '(') {
+                paren_depth++;
+            } else if (c == '[') {
+                bracket_depth++;
+            } else if (c == '{') {
+                brace_depth++;
+            } else if (c == ']') {
+                if (bracket_depth > 0) {
+                    bracket_depth--;
+                }
+            } else if (c == '}') {
+                if (brace_depth > 0) {
+                    brace_depth--;
+                }
+            } else if (c == ')') {
+                if (paren_depth == 0 && bracket_depth == 0 && brace_depth == 0) {
+                    break;
+                }
+                if (paren_depth > 0) {
+                    paren_depth--;
+                }
+            } else if (c == ',' && paren_depth == 0 && bracket_depth == 0 && brace_depth == 0) {
+                break;
+            }
+        }
         end++;
     }
     
+    while (end > start && ar_string__isspace(ref_str[end - 1])) {
+        end--;
+    }
+
     if (end == start) {
         _log_error(mut_parser, "Empty expression argument", start);
         return NULL;
@@ -430,4 +467,3 @@ size_t ar_build_instruction_parser__get_error_position(const ar_build_instructio
     (void)ref_parser; // Suppress unused parameter warning
     return 0;
 }
-

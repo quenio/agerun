@@ -30,6 +30,18 @@ Creates a new agent with the specified method and optional context.
 
 **Returns:** Agent ID on success, 0 on failure
 
+#### `ar_agent__create_with_method_owned_context`
+```c
+ar_agent_t* ar_agent__create_with_method_owned_context(const ar_method_t *ref_method, ar_data_t *own_context)
+```
+Creates a new agent with a method reference and context map owned by the agent.
+
+**Parameters:**
+- `ref_method`: Method to execute (borrowed reference)
+- `own_context`: Context data transferred to the agent
+
+**Returns:** Owned agent instance on success, NULL on failure
+
 #### `ar_agent__destroy`
 ```c
 bool ar_agent__destroy(int64_t agent_id)

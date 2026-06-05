@@ -61,6 +61,7 @@ The module follows strict ownership rules:
 - [x] Parse multiple instructions
 - [x] Skip empty lines
 - [x] Skip comments (both full line and inline)
+- [x] Canonicalize top-level multi-line assignment literals
 - [x] Error handling and reporting
 - [ ] Integration with method module
 
@@ -78,3 +79,30 @@ The module follows strict ownership rules:
 10. **Quote-Aware Parsing**: Correctly handles `#` inside quoted strings (not treated as comments)
 11. **Error Reporting**: Reports errors through ar_log (deprecated get_error functions return NULL/0)
 12. **Error State Management**: Error state is managed through ar_log
+13. **Literal Block Canonicalization**: Converts top-level assignment blocks such as `memory.items := [` into a single logical assignment before instruction parsing
+
+## Multi-Line Literal Assignments
+
+The method parser preserves the line-oriented language by allowing multi-line list and map literals only as the top-level right side of assignments:
+
+```agerun
+memory.items := [
+  1
+  {label: "two", values: [2, 3]}
+]
+
+memory.profile := {
+  name: "Ada"
+  scores: [1, 2,]
+}
+```
+
+Rules enforced by the parser:
+
+- The opener must be the full assignment right side: `memory.path := [` or `memory.path := {`
+- Every item line must contain exactly one complete top-level item
+- Item-line commas are optional
+- Every item line must use identical indentation
+- The closing delimiter must be on its own line and align with the assignment line
+- Nested list/map values must be one-line literals
+- Multi-line literals are rejected inside function arguments, list items, and map values
