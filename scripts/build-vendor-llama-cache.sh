@@ -199,6 +199,7 @@ CACHE_DIR=$(_abs_path "$LLAMA_CACHE_DIR")
 CACHE_INSTALL_DIR=$(_abs_path "$LLAMA_CACHE_INSTALL_DIR")
 CACHE_LOCK=$(_abs_path "$LLAMA_CACHE_LOCK")
 STALE_LOCK_RECOVERY_DIR="$CACHE_LOCK.recovery"
+STALE_LOCK_RECOVERY_FILE="$STALE_LOCK_RECOVERY_DIR/holder"
 BUILD_DIR=$(_abs_path "$LLAMA_BUILD_DIR")
 LOCAL_INSTALL_DIR=$(_abs_path "$LLAMA_INSTALL_DIR")
 
@@ -329,16 +330,31 @@ _build_cache() {
     fi
 }
 
-_lock_mtime_epoch() {
-    stat -c %Y "$CACHE_LOCK" 2>/dev/null ||
-        stat -f %m "$CACHE_LOCK" 2>/dev/null ||
+_path_mtime_epoch() {
+    local path="$1"
+
+    stat -c %Y "$path" 2>/dev/null ||
+        stat -f %m "$path" 2>/dev/null ||
         echo 0
 }
 
-_lock_value() {
-    local key="$1"
+_lock_mtime_epoch() {
+    _path_mtime_epoch "$CACHE_LOCK"
+}
 
-    sed -n "s/^$key=//p" "$CACHE_LOCK" 2>/dev/null | head -n 1 || true
+_lock_file_value() {
+    local file="$1"
+    local key="$2"
+
+    sed -n "s/^$key=//p" "$file" 2>/dev/null | head -n 1 || true
+}
+
+_lock_value() {
+    _lock_file_value "$CACHE_LOCK" "$1"
+}
+
+_recovery_lock_value() {
+    _lock_file_value "$STALE_LOCK_RECOVERY_FILE" "$1"
 }
 
 _lock_pid_is_running_on_current_host() {
@@ -389,6 +405,121 @@ _lock_holder_is_foreign_host() {
     [ -n "$lock_host" ] && [ "$lock_host" != "$CURRENT_HOST" ]
 }
 
+_write_recovery_lock_metadata() {
+    {
+        echo "pid=$$"
+        echo "host=$CURRENT_HOST"
+        echo "started_at=$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+        echo "cache_lock=$CACHE_LOCK"
+    } > "$STALE_LOCK_RECOVERY_FILE"
+}
+
+_release_recovery_lock() {
+    rm -f "$STALE_LOCK_RECOVERY_FILE"
+    rmdir "$STALE_LOCK_RECOVERY_DIR" 2>/dev/null || true
+}
+
+_recovery_lock_pid_is_running_on_current_host() {
+    local lock_pid
+    local lock_host
+
+    lock_pid=$(_recovery_lock_value "pid")
+    lock_host=$(_recovery_lock_value "host")
+
+    if [ -z "$lock_pid" ] || [ "$lock_host" != "$CURRENT_HOST" ]; then
+        return 1
+    fi
+
+    case "$lock_pid" in
+        *[!0-9]*)
+            return 1
+            ;;
+    esac
+
+    kill -0 "$lock_pid" 2>/dev/null
+}
+
+_recovery_lock_holder_is_dead_on_current_host() {
+    local lock_pid
+    local lock_host
+
+    lock_pid=$(_recovery_lock_value "pid")
+    lock_host=$(_recovery_lock_value "host")
+
+    if [ -z "$lock_pid" ] || [ "$lock_host" != "$CURRENT_HOST" ]; then
+        return 1
+    fi
+
+    case "$lock_pid" in
+        *[!0-9]*)
+            return 1
+            ;;
+    esac
+
+    ! kill -0 "$lock_pid" 2>/dev/null
+}
+
+_recovery_lock_holder_is_foreign_host() {
+    local lock_host
+
+    lock_host=$(_recovery_lock_value "host")
+
+    [ -n "$lock_host" ] && [ "$lock_host" != "$CURRENT_HOST" ]
+}
+
+_recovery_lock_is_stale() {
+    local lock_mtime
+    local now
+    local lock_age
+
+    if [ ! -d "$STALE_LOCK_RECOVERY_DIR" ]; then
+        return 1
+    fi
+
+    if _recovery_lock_holder_is_dead_on_current_host; then
+        return 0
+    fi
+
+    if _recovery_lock_holder_is_foreign_host; then
+        return 0
+    fi
+
+    lock_mtime=$(_path_mtime_epoch "$STALE_LOCK_RECOVERY_DIR")
+    now=$(date +%s)
+    lock_age=$((now - lock_mtime))
+
+    if [ "$lock_age" -lt "$LLAMA_CACHE_LOCK_TIMEOUT_SECONDS" ]; then
+        return 1
+    fi
+
+    ! _recovery_lock_pid_is_running_on_current_host
+}
+
+_remove_stale_recovery_lock() {
+    if ! _recovery_lock_is_stale; then
+        return 1
+    fi
+
+    echo "Removing stale vendored llama.cpp cache recovery lock at $STALE_LOCK_RECOVERY_DIR"
+    rm -f "$STALE_LOCK_RECOVERY_FILE"
+    rmdir "$STALE_LOCK_RECOVERY_DIR" 2>/dev/null
+}
+
+_acquire_recovery_lock() {
+    while true; do
+        if mkdir "$STALE_LOCK_RECOVERY_DIR" 2>/dev/null; then
+            _write_recovery_lock_metadata
+            return 0
+        fi
+
+        if _remove_stale_recovery_lock; then
+            continue
+        fi
+
+        return 1
+    done
+}
+
 _lock_is_stale() {
     local lock_mtime
     local now
@@ -414,12 +545,12 @@ _lock_is_stale() {
 }
 
 _remove_stale_lock() {
-    if ! mkdir "$STALE_LOCK_RECOVERY_DIR" 2>/dev/null; then
+    if ! _acquire_recovery_lock; then
         return 1
     fi
 
     (
-        trap 'rmdir "$STALE_LOCK_RECOVERY_DIR" 2>/dev/null || true' EXIT INT TERM
+        trap '_release_recovery_lock' EXIT INT TERM
 
         if [ -f "$CACHE_LOCK" ] && _lock_is_stale; then
             echo "Removing stale vendored llama.cpp cache lock at $CACHE_LOCK"
