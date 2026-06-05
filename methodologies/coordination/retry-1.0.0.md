@@ -8,47 +8,79 @@ composition with scheduling.
 
 ## Behavior
 
-On `action=start`, the method stores the operation metadata, retry strategy, maximum attempts,
-scheduler agent, delay tick, and reply target. It sets `attempts=1` and sends the first operation
-attempt.
+On a map whose `action` field is `"start"`, the method stores the operation metadata, retry
+strategy, maximum attempts, scheduler agent, delay tick, and reply target. It sets `attempts=1` and
+sends the first operation attempt.
 
-On `action=failure`, the method retries when `attempts < max_attempts`. For `strategy=immediate`, it
-sends the next attempt directly to the operation target. For `strategy=scheduled`, it sends a
-schedule request to the scheduler agent. If no attempts remain, it reports `status=failed`.
+On a map whose `action` field is `"failure"`, the method retries when `attempts < max_attempts`. For
+`strategy=immediate`, it sends the next attempt directly to the operation target. For
+`strategy=scheduled`, it sends a schedule request to the scheduler agent. If no attempts remain, it
+reports `status=failed`.
 
-On `action=success`, it reports `status=succeeded` with the current attempt count.
+On a map whose `action` field is `"success"`, it reports `status=succeeded` with the current attempt
+count.
 
 ## Message Format
 
 Start request:
 
 ```text
-action=start operation_id=<id> operation_target=<agent> operation_action=<action> operation_text=<text> max_attempts=<number> strategy=<immediate|scheduled> scheduler_agent=<agent> delay_ticks=<tick> reply_to=<agent>
+{
+  action: "start",
+  operation_id: <id>,
+  operation_target: <agent>,
+  operation_action: <action>,
+  operation_text: <text>,
+  max_attempts: <number>,
+  strategy: <immediate|scheduled>,
+  scheduler_agent: <agent>,
+  delay_ticks: <tick>,
+  reply_to: <agent>
+}
 ```
 
 Outcome requests:
 
 ```text
-action=failure
-action=success
+{ action: "failure" }
+{ action: "success" }
 ```
 
 Operation attempt:
 
 ```text
-action=<operation_action> correlation_id=<operation_id> text=<operation_text> attempt=<number>
+{
+  action: <operation_action>,
+  correlation_id: <operation_id>,
+  text: <operation_text>,
+  attempt: <number>
+}
 ```
 
 Scheduled retry request:
 
 ```text
-action=schedule schedule_id=<operation_id> due_tick=<delay_ticks> target=<operation_target> payload_action=<operation_action> payload_text=<operation_text> correlation_id=<operation_id> reply_to=0
+{
+  action: "schedule",
+  schedule_id: <operation_id>,
+  due_tick: <delay_ticks>,
+  target: <operation_target>,
+  payload_action: <operation_action>,
+  payload_text: <operation_text>,
+  correlation_id: <operation_id>,
+  reply_to: 0
+}
 ```
 
 Final result:
 
 ```text
-action=retry_result operation_id=<id> status=<succeeded|failed> attempts=<count>
+{
+  action: "retry_result",
+  operation_id: <id>,
+  status: <succeeded|failed>,
+  attempts: <count>
+}
 ```
 
 ## Composition Notes
@@ -66,4 +98,3 @@ external tick convention and richer policy arithmetic than this bounded method i
 Implementation: [`retry-1.0.0.method`](retry-1.0.0.method)
 
 Test: [`retry_tests.c`](retry_tests.c)
-

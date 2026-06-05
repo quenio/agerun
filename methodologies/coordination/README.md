@@ -62,26 +62,66 @@ initialize an empty map and then populate its keys with ordinary nested assignme
 Request:
 
 ```text
-action=route mode=one target=<agent> payload_action=<action> payload_text=<text> correlation_id=<id> reply_to=<agent>
-action=route mode=many target_a=<agent> target_b=<agent> target_c=<agent> payload_action=<action> payload_text=<text> correlation_id=<id> reply_to=<agent>
+{
+  action: "route",
+  mode: "one",
+  target: <agent>,
+  payload_action: <action>,
+  payload_text: <text>,
+  correlation_id: <id>,
+  reply_to: <agent>
+}
+
+{
+  action: "route",
+  mode: "many",
+  target_a: <agent>,
+  target_b: <agent>,
+  target_c: <agent>,
+  payload_action: <action>,
+  payload_text: <text>,
+  correlation_id: <id>,
+  reply_to: <agent>
+}
 ```
 
 Optional keyed selection for `mode=one`:
 
 ```text
-route_key=<key> route_a_key=<key> target_a=<agent> route_b_key=<key> target_b=<agent> route_c_key=<key> target_c=<agent>
+{
+  route_key: <key>,
+  route_a_key: <key>,
+  target_a: <agent>,
+  route_b_key: <key>,
+  target_b: <agent>,
+  route_c_key: <key>,
+  target_c: <agent>
+}
 ```
 
 Forwarded message:
 
 ```text
-action=<payload_action> correlation_id=<correlation_id> text=<payload_text> source=<routing-agent>
+{
+  action: <payload_action>,
+  correlation_id: <correlation_id>,
+  text: <payload_text>,
+  source: <routing-agent>
+}
 ```
 
 Reply:
 
 ```text
-action=route_result status=<routed|ignored> routed_count=<count> sent_one=<0|1> sent_a=<0|1> sent_b=<0|1> sent_c=<0|1>
+{
+  action: "route_result",
+  status: <routed|ignored>,
+  routed_count: <count>,
+  sent_one: <0|1>,
+  sent_a: <0|1>,
+  sent_b: <0|1>,
+  sent_c: <0|1>
+}
 ```
 
 ### Supervision
@@ -89,16 +129,28 @@ action=route_result status=<routed|ignored> routed_count=<count> sent_one=<0|1> 
 Requests:
 
 ```text
-action=start child_method_name=<method> child_method_version=<version> policy=restart reply_to=<agent>
-action=child_failed
-action=child_exited
-action=stop
+{
+  action: "start",
+  child_method_name: <method>,
+  child_method_version: <version>,
+  policy: "restart",
+  reply_to: <agent>
+}
+
+{ action: "child_failed" }
+{ action: "child_exited" }
+{ action: "stop" }
 ```
 
 Reply:
 
 ```text
-action=supervision_status status=<running|restarted|stopped> child_agent_id=<agent> policy=<policy>
+{
+  action: "supervision_status",
+  status: <running|restarted|stopped>,
+  child_agent_id: <agent>,
+  policy: <policy>
+}
 ```
 
 ### Distribution
@@ -106,19 +158,46 @@ action=supervision_status status=<running|restarted|stopped> child_agent_id=<age
 Request:
 
 ```text
-action=distribute work_id=<id> routing_agent=<agent> reply_to=<agent> worker_a=<agent> portion_a=<text> worker_b=<agent> portion_b=<text> worker_c=<agent> portion_c=<text>
+{
+  action: "distribute",
+  work_id: <id>,
+  routing_agent: <agent>,
+  reply_to: <agent>,
+  worker_a: <agent>,
+  portion_a: <text>,
+  worker_b: <agent>,
+  portion_b: <text>,
+  worker_c: <agent>,
+  portion_c: <text>
+}
 ```
 
 Forwarded through `routing`:
 
 ```text
-action=route mode=one target=<worker> payload_action=work payload_text=<portion> correlation_id=<work_id> reply_to=0
+{
+  action: "route",
+  mode: "one",
+  target: <worker>,
+  payload_action: "work",
+  payload_text: <portion>,
+  correlation_id: <work_id>,
+  reply_to: 0
+}
 ```
 
 Reply:
 
 ```text
-action=distribution_result status=distributed work_id=<id> assignment_count=<count> sent_a=<0|1> sent_b=<0|1> sent_c=<0|1>
+{
+  action: "distribution_result",
+  status: "distributed",
+  work_id: <id>,
+  assignment_count: <count>,
+  sent_a: <0|1>,
+  sent_b: <0|1>,
+  sent_c: <0|1>
+}
 ```
 
 ### Aggregation
@@ -126,14 +205,32 @@ action=distribution_result status=distributed work_id=<id> assignment_count=<cou
 Requests:
 
 ```text
-action=start aggregate_id=<id> required_count=<1-3> reply_to=<agent>
-action=result slot=<a|b|c> value=<text>
+{
+  action: "start",
+  aggregate_id: <id>,
+  required_count: <1-3>,
+  reply_to: <agent>
+}
+
+{
+  action: "result",
+  slot: <a|b|c>,
+  value: <text>
+}
 ```
 
 Completion:
 
 ```text
-action=aggregate_complete aggregate_id=<id> status=complete result_a=<text> result_b=<text> result_c=<text> received_count=<count>
+{
+  action: "aggregate_complete",
+  aggregate_id: <id>,
+  status: "complete",
+  result_a: <text>,
+  result_b: <text>,
+  result_c: <text>,
+  received_count: <count>
+}
 ```
 
 ### Scheduling
@@ -141,21 +238,49 @@ action=aggregate_complete aggregate_id=<id> status=complete result_a=<text> resu
 Requests:
 
 ```text
-action=schedule schedule_id=<id> due_tick=<number> target=<agent> payload_action=<action> payload_text=<text> correlation_id=<id> reply_to=<agent>
-action=tick tick=<number>
-action=cancel schedule_id=<id>
+{
+  action: "schedule",
+  schedule_id: <id>,
+  due_tick: <number>,
+  target: <agent>,
+  payload_action: <action>,
+  payload_text: <text>,
+  correlation_id: <id>,
+  reply_to: <agent>
+}
+
+{
+  action: "tick",
+  tick: <number>
+}
+
+{
+  action: "cancel",
+  schedule_id: <id>
+}
 ```
 
 Triggered message:
 
 ```text
-action=<payload_action> correlation_id=<correlation_id> text=<payload_text> schedule_id=<schedule_id>
+{
+  action: <payload_action>,
+  correlation_id: <correlation_id>,
+  text: <payload_text>,
+  schedule_id: <schedule_id>
+}
 ```
 
 Status:
 
 ```text
-action=schedule_status schedule_id=<id> status=<scheduled|cancelled|triggered> pending=<0|1> current_tick=<number>
+{
+  action: "schedule_status",
+  schedule_id: <id>,
+  status: <scheduled|cancelled|triggered>,
+  pending: <0|1>,
+  current_tick: <number>
+}
 ```
 
 ### Synchronization
@@ -163,20 +288,45 @@ action=schedule_status schedule_id=<id> status=<scheduled|cancelled|triggered> p
 Requests:
 
 ```text
-action=wait sync_id=<id> required_count=<1-3> required_a=<name> required_b=<name> required_c=<name> continuation_target=<agent> continuation_action=<action> continuation_text=<text> reply_to=<agent>
-action=dependency dependency=<name>
+{
+  action: "wait",
+  sync_id: <id>,
+  required_count: <1-3>,
+  required_a: <name>,
+  required_b: <name>,
+  required_c: <name>,
+  continuation_target: <agent>,
+  continuation_action: <action>,
+  continuation_text: <text>,
+  reply_to: <agent>
+}
+
+{
+  action: "dependency",
+  dependency: <name>
+}
 ```
 
 Continuation:
 
 ```text
-action=<continuation_action> sync_id=<id> text=<continuation_text> done_count=<count>
+{
+  action: <continuation_action>,
+  sync_id: <id>,
+  text: <continuation_text>,
+  done_count: <count>
+}
 ```
 
 Status:
 
 ```text
-action=synchronization_status sync_id=<id> status=complete done_count=<count>
+{
+  action: "synchronization_status",
+  sync_id: <id>,
+  status: "complete",
+  done_count: <count>
+}
 ```
 
 ### Workflow
@@ -184,19 +334,43 @@ action=synchronization_status sync_id=<id> status=complete done_count=<count>
 Start:
 
 ```text
-action=start workflow_id=<id> routing_agent=<agent> reply_to=<agent> step1_target=<agent> step1_action=<action> step1_text=<text> step2_target=<agent> step2_action=<action> step2_text=<text> step3_target=<agent> step3_action=<action> step3_text=<text> branch_value=<outcome>
+{
+  action: "start",
+  workflow_id: <id>,
+  routing_agent: <agent>,
+  reply_to: <agent>,
+  step1_target: <agent>,
+  step1_action: <action>,
+  step1_text: <text>,
+  step2_target: <agent>,
+  step2_action: <action>,
+  step2_text: <text>,
+  step3_target: <agent>,
+  step3_action: <action>,
+  step3_text: <text>,
+  branch_value: <outcome>
+}
 ```
 
 Step completion:
 
 ```text
-action=step_done step=<1|2|3> outcome=<value>
+{
+  action: "step_done",
+  step: <1|2|3>,
+  outcome: <value>
+}
 ```
 
 Completion:
 
 ```text
-action=workflow_complete workflow_id=<id> status=complete current_step=3
+{
+  action: "workflow_complete",
+  workflow_id: <id>,
+  status: "complete",
+  current_step: 3
+}
 ```
 
 ### Conversation
@@ -204,18 +378,49 @@ action=workflow_complete workflow_id=<id> status=complete current_step=3
 Requests:
 
 ```text
-action=start conversation_id=<id> user_id=<id> reply_to=<agent>
-action=message text=<text> intent=<intent>
-action=summary
-action=close
+{
+  action: "start",
+  conversation_id: <id>,
+  user_id: <id>,
+  reply_to: <agent>
+}
+
+{
+  action: "message",
+  text: <text>,
+  intent: <intent>
+}
+
+{ action: "summary" }
+{ action: "close" }
 ```
 
 Responses:
 
 ```text
-action=conversation_status conversation_id=<id> state=active text=<state-or-summary> turn_count=<count>
-action=conversation_summary conversation_id=<id> state=<state> text=conversation=<id>|user=<id>|state=<state>|turns=<count>|last=<text>|previous=<text> turn_count=<count>
-action=conversation_closed conversation_id=<id> state=closed text=closed turn_count=<count>
+{
+  action: "conversation_status",
+  conversation_id: <id>,
+  state: "active",
+  text: <state-or-summary>,
+  turn_count: <count>
+}
+
+{
+  action: "conversation_summary",
+  conversation_id: <id>,
+  state: <state>,
+  text: <summary-text>,
+  turn_count: <count>
+}
+
+{
+  action: "conversation_closed",
+  conversation_id: <id>,
+  state: "closed",
+  text: "closed",
+  turn_count: <count>
+}
 ```
 
 ### Retry
@@ -223,27 +428,58 @@ action=conversation_closed conversation_id=<id> state=closed text=closed turn_co
 Requests:
 
 ```text
-action=start operation_id=<id> operation_target=<agent> operation_action=<action> operation_text=<text> max_attempts=<number> strategy=<immediate|scheduled> scheduler_agent=<agent> delay_ticks=<tick> reply_to=<agent>
-action=failure
-action=success
+{
+  action: "start",
+  operation_id: <id>,
+  operation_target: <agent>,
+  operation_action: <action>,
+  operation_text: <text>,
+  max_attempts: <number>,
+  strategy: <immediate|scheduled>,
+  scheduler_agent: <agent>,
+  delay_ticks: <tick>,
+  reply_to: <agent>
+}
+
+{ action: "failure" }
+{ action: "success" }
 ```
 
 Attempt:
 
 ```text
-action=<operation_action> correlation_id=<operation_id> text=<operation_text> attempt=<number>
+{
+  action: <operation_action>,
+  correlation_id: <operation_id>,
+  text: <operation_text>,
+  attempt: <number>
+}
 ```
 
 Scheduled retry request:
 
 ```text
-action=schedule schedule_id=<operation_id> due_tick=<delay_ticks> target=<operation_target> payload_action=<operation_action> payload_text=<operation_text> correlation_id=<operation_id> reply_to=0
+{
+  action: "schedule",
+  schedule_id: <operation_id>,
+  due_tick: <delay_ticks>,
+  target: <operation_target>,
+  payload_action: <operation_action>,
+  payload_text: <operation_text>,
+  correlation_id: <operation_id>,
+  reply_to: 0
+}
 ```
 
 Result:
 
 ```text
-action=retry_result operation_id=<id> status=<succeeded|failed> attempts=<count>
+{
+  action: "retry_result",
+  operation_id: <id>,
+  status: <succeeded|failed>,
+  attempts: <count>
+}
 ```
 
 ## Composition Examples
@@ -251,36 +487,36 @@ action=retry_result operation_id=<id> status=<succeeded|failed> attempts=<count>
 Fan-out and fan-in:
 
 ```text
-1. Send action=distribute to a distribution agent with worker_a, worker_b, worker_c, and routing_agent.
-2. Workers send action=result slot=a|b|c value=<text> to an aggregation agent.
-3. Aggregation emits action=aggregate_complete when required_count results have arrived.
+1. Send a map with action: "distribute" to a distribution agent.
+2. Workers send maps with action: "result" and slot: "a"|"b"|"c" to an aggregation agent.
+3. Aggregation emits a map with action: "aggregate_complete" when required_count results arrive.
 ```
 
 Delayed retry:
 
 ```text
-1. Send action=start strategy=scheduled scheduler_agent=<scheduling-agent> to a retry agent.
-2. On action=failure, retry sends action=schedule to the scheduling agent.
-3. An external tick source sends action=tick tick=<number> to scheduling.
+1. Send a map with action: "start", strategy: "scheduled", and scheduler_agent to a retry agent.
+2. On a map with action: "failure", retry sends a schedule map to the scheduling agent.
+3. An external tick source sends maps with action: "tick" to scheduling.
 4. Scheduling re-emits the operation attempt at the requested tick.
 ```
 
 Branching workflow:
 
 ```text
-1. Send action=start to workflow with routing_agent and three step targets.
+1. Send a map with action: "start" to workflow with routing_agent and three step targets.
 2. Workflow routes step 1 through routing.
-3. Send action=step_done step=1 outcome=<branch_value> to route directly to step 3.
-4. Send action=step_done step=3 to emit action=workflow_complete.
+3. Send a step_done map for step 1 with the branch outcome to route directly to step 3.
+4. Send a step_done map for step 3 to emit a workflow_complete map.
 ```
 
 Conversation-scoped workflow:
 
 ```text
-1. Conversation receives action=start for a user conversation.
-2. Related action=message requests update last and previous text.
+1. Conversation receives a map with action: "start" for a user conversation.
+2. Related maps with action: "message" update last and previous text.
 3. A workflow or routing agent can use conversation_id as correlation_id.
-4. Conversation can emit action=conversation_summary when another agent needs context.
+4. Conversation can emit a map with action: "conversation_summary" when another agent needs context.
 ```
 
 ## Gap Analysis
