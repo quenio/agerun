@@ -14,6 +14,7 @@
 #include "ar_data.h"
 #include "ar_frame.h"
 #include "ar_method_ast.h"
+#include "ar_method_parser.h"
 #include "ar_expression_ast.h"
 #include "ar_instruction_ast.h"
 #include "ar_system.h"
@@ -335,6 +336,69 @@ static void test_method_evaluator__evaluate_with_failing_instruction(void) {
     printf("  ✓ Failing instruction handling verified\n");
 }
 
+static void test_method_evaluator__evaluates_parsed_append_instruction(void) {
+    printf("Testing method evaluator with parsed append instruction...\n");
+
+    ar_system_t *own_system = ar_system__create();
+    assert(own_system != NULL);
+    ar_agency_t *ref_agency = ar_system__get_agency(own_system);
+    ar_delegation_t *ref_delegation = ar_system__get_delegation(own_system);
+    assert(ref_agency != NULL);
+    assert(ref_delegation != NULL);
+
+    ar_log_t *own_log = ar_log__create();
+    assert(own_log != NULL);
+    ar_method_parser_t *own_parser = ar_method_parser__create(own_log);
+    assert(own_parser != NULL);
+    ar_method_evaluator_t *own_evaluator = ar_method_evaluator__create(
+        own_log,
+        ref_agency,
+        ref_delegation
+    );
+    assert(own_evaluator != NULL);
+
+    const char *ref_source =
+        "memory.results := []\n"
+        "memory.append_ok := append(memory.results, message.value)\n";
+    ar_method_ast_t *own_ast = ar_method_parser__parse(own_parser, ref_source);
+    assert(own_ast != NULL);
+    assert(ar_method_ast__get_instruction_count(own_ast) == 2);
+
+    ar_data_t *own_memory = ar_data__create_map();
+    ar_data_t *own_context = ar_data__create_map();
+    ar_data_t *own_message = ar_data__create_map();
+    assert(own_memory != NULL);
+    assert(own_context != NULL);
+    assert(own_message != NULL);
+    assert(ar_data__set_map_string(own_message, "value", "from method"));
+    ar_frame_t *own_frame = ar_frame__create(own_memory, own_context, own_message);
+    assert(own_frame != NULL);
+
+    bool result = ar_method_evaluator__evaluate(own_evaluator, own_frame, own_ast);
+
+    assert(result == true);
+    ar_data_t *ref_results = ar_data__get_map_data(own_memory, "results");
+    assert(ref_results != NULL);
+    assert(ar_data__get_type(ref_results) == AR_DATA_TYPE__LIST);
+    assert(ar_data__list_count(ref_results) == 1);
+    ar_data_t *ref_appended = ar_data__list_first(ref_results);
+    assert(ref_appended != NULL);
+    assert(strcmp(ar_data__get_string(ref_appended), "from method") == 0);
+    assert(ar_data__get_map_integer(own_memory, "append_ok") == 1);
+
+    ar_frame__destroy(own_frame);
+    ar_data__destroy(own_message);
+    ar_data__destroy(own_context);
+    ar_data__destroy(own_memory);
+    ar_method_ast__destroy(own_ast);
+    ar_method_evaluator__destroy(own_evaluator);
+    ar_method_parser__destroy(own_parser);
+    ar_log__destroy(own_log);
+    ar_system__destroy(own_system);
+
+    printf("  ✓ Parsed append instruction evaluated successfully\n");
+}
+
 static void test_method_evaluator__memory_stress_test(void) {
     printf("Testing method evaluator memory handling with many instructions...\n");
     
@@ -421,6 +485,7 @@ int main(void) {
     test_method_evaluator__evaluate_multiple_instructions();
     test_method_evaluator__evaluate_null_parameters();
     test_method_evaluator__evaluate_with_failing_instruction();
+    test_method_evaluator__evaluates_parsed_append_instruction();
     test_method_evaluator__memory_stress_test();
     
     // Check for memory leaks

@@ -14,6 +14,7 @@
 #include "ar_parse_instruction_parser.h"
 #include "ar_build_instruction_parser.h"
 #include "ar_complete_instruction_parser.h"
+#include "ar_append_instruction_parser.h"
 #include "ar_compile_instruction_parser.h"
 #include "ar_spawn_instruction_parser.h"
 #include "ar_exit_instruction_parser.h"
@@ -32,6 +33,7 @@ struct ar_instruction_parser_s {
     ar_parse_instruction_parser_t *own_parse_parser;
     ar_build_instruction_parser_t *own_build_parser;
     ar_complete_instruction_parser_t *own_complete_parser;
+    ar_append_instruction_parser_t *own_append_parser;
     ar_compile_instruction_parser_t *own_method_parser;
     ar_spawn_instruction_parser_t *own_spawn_parser;
     ar_exit_instruction_parser_t *own_exit_parser;
@@ -63,6 +65,9 @@ static void _destroy_specialized_parsers(ar_instruction_parser_t *mut_parser) {
     }
     if (mut_parser->own_complete_parser) {
         ar_complete_instruction_parser__destroy(mut_parser->own_complete_parser);
+    }
+    if (mut_parser->own_append_parser) {
+        ar_append_instruction_parser__destroy(mut_parser->own_append_parser);
     }
     if (mut_parser->own_method_parser) {
         ar_compile_instruction_parser__destroy(mut_parser->own_method_parser);
@@ -146,6 +151,15 @@ ar_instruction_parser_t* ar_instruction_parser__create(ar_log_t *ref_log) {
     if (!own_parser->own_complete_parser) {
         if (ref_log) {
             ar_log__error(ref_log, "Failed to create complete instruction parser");
+        }
+        goto error;
+    }
+
+    // Create append parser
+    own_parser->own_append_parser = ar_append_instruction_parser__create(ref_log);
+    if (!own_parser->own_append_parser) {
+        if (ref_log) {
+            ar_log__error(ref_log, "Failed to create append instruction parser");
         }
         goto error;
     }
@@ -313,6 +327,17 @@ static ar_instruction_ast_t* _dispatch_function(ar_instruction_parser_t *mut_par
     if (func_len == 8 && strncmp(func_name, "complete", 8) == 0) {
         ar_instruction_ast_t *own_ast = ar_complete_instruction_parser__parse(
             mut_parser->own_complete_parser,
+            ref_instruction,
+            own_result_path
+        );
+
+        return own_ast;
+    }
+
+    // Check for append
+    if (func_len == 6 && strncmp(func_name, "append", 6) == 0) {
+        ar_instruction_ast_t *own_ast = ar_append_instruction_parser__parse(
+            mut_parser->own_append_parser,
             ref_instruction,
             own_result_path
         );
@@ -492,5 +517,4 @@ ar_instruction_ast_t* ar_instruction_parser__parse(ar_instruction_parser_t *mut_
     _log_error(mut_parser, "Unknown instruction type", 0);
     return NULL;
 }
-
 

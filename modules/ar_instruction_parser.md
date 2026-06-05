@@ -40,10 +40,14 @@ The facade currently dispatches to specialized parsers for:
 - `parse(...)`
 - `build(...)`
 - `complete(...)`
+- `append(...)`
 
 `complete(...)` is routed to `ar_complete_instruction_parser`, which validates supported
 placeholder syntax and stores the optional values expression before returning an
 `AR_INSTRUCTION_AST_TYPE__COMPLETE` node.
+
+`append(...)` is routed to `ar_append_instruction_parser`, which parses both arguments as
+expressions and returns an `AR_INSTRUCTION_AST_TYPE__APPEND` node.
 
 ## Current implementation notes
 
@@ -53,6 +57,8 @@ placeholder syntax and stores the optional values expression before returning an
   returned instruction AST
 - `complete(...)` parsing is intentionally kept out of the facade implementation so syntax rules for
   template placeholders remain isolated in the specialized parser module
+- `append(...)` parsing leaves target ownership and LIST validation to the evaluator so non-memory
+  target expressions can compile and resolve to no-op results at runtime
 
 ## Typical usage
 
