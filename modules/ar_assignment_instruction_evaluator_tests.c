@@ -417,6 +417,67 @@ static void test_assignment_instruction_evaluator__evaluate_invalid_path(void) {
     ar_evaluator_fixture__destroy(fixture);
 }
 
+static void test_assignment_instruction_evaluator__stores_literal_containers(void) {
+    ar_evaluator_fixture_t *fixture =
+        ar_evaluator_fixture__create("test_stores_literal_containers");
+    assert(fixture != NULL);
+
+    ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
+    assert(frame != NULL);
+
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_assignment_instruction_evaluator_t *evaluator =
+        ar_assignment_instruction_evaluator__create(log, expr_eval);
+    assert(evaluator != NULL);
+
+    ar_expression_ast_t *own_items[2];
+    own_items[0] = ar_expression_ast__create_literal_int(1);
+    own_items[1] = ar_expression_ast__create_literal_int(2);
+    ar_expression_ast_t *own_list_expr = ar_expression_ast__create_literal_list(own_items, 2);
+    assert(own_list_expr != NULL);
+
+    ar_instruction_ast_t *list_ast = ar_evaluator_fixture__create_assignment_expr(
+        fixture, "memory.items", own_list_expr
+    );
+    assert(list_ast != NULL);
+    assert(ar_assignment_instruction_evaluator__evaluate(evaluator, frame, list_ast) == true);
+
+    const char *keys[] = {"name", "scores"};
+    ar_expression_ast_t *own_scores_items[2];
+    own_scores_items[0] = ar_expression_ast__create_literal_int(10);
+    own_scores_items[1] = ar_expression_ast__create_literal_int(20);
+    ar_expression_ast_t *own_values[2];
+    own_values[0] = ar_expression_ast__create_literal_string("Ada");
+    own_values[1] = ar_expression_ast__create_literal_list(own_scores_items, 2);
+    ar_expression_ast_t *own_map_expr = ar_expression_ast__create_literal_map(keys, own_values, 2);
+    assert(own_map_expr != NULL);
+
+    ar_instruction_ast_t *map_ast = ar_evaluator_fixture__create_assignment_expr(
+        fixture, "memory.profile", own_map_expr
+    );
+    assert(map_ast != NULL);
+    assert(ar_assignment_instruction_evaluator__evaluate(evaluator, frame, map_ast) == true);
+
+    ar_data_t *memory = ar_evaluator_fixture__get_memory(fixture);
+    ar_data_t *stored_items = ar_data__get_map_data(memory, "items");
+    assert(stored_items != NULL);
+    assert(ar_data__get_type(stored_items) == AR_DATA_TYPE__LIST);
+    assert(ar_data__list_count(stored_items) == 2);
+
+    ar_data_t *stored_profile = ar_data__get_map_data(memory, "profile");
+    assert(stored_profile != NULL);
+    assert(ar_data__get_type(stored_profile) == AR_DATA_TYPE__MAP);
+    assert(strcmp(ar_data__get_map_string(stored_profile, "name"), "Ada") == 0);
+    ar_data_t *stored_scores = ar_data__get_map_data(stored_profile, "scores");
+    assert(stored_scores != NULL);
+    assert(ar_data__get_type(stored_scores) == AR_DATA_TYPE__LIST);
+    assert(ar_data__list_count(stored_scores) == 2);
+
+    ar_assignment_instruction_evaluator__destroy(evaluator);
+    ar_evaluator_fixture__destroy(fixture);
+}
+
 
 int main(void) {
     printf("Starting assignment instruction_evaluator tests...\n");
@@ -453,9 +514,11 @@ int main(void) {
 
     test_assignment_instruction_evaluator__evaluate_invalid_path();
     printf("test_assignment_instruction_evaluator__evaluate_invalid_path passed!\n");
+
+    test_assignment_instruction_evaluator__stores_literal_containers();
+    printf("test_assignment_instruction_evaluator__stores_literal_containers passed!\n");
     
     printf("All assignment instruction_evaluator tests passed!\n");
     
     return 0;
 }
-

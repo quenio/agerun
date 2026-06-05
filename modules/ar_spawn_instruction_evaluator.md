@@ -44,7 +44,7 @@ Key features:
 1. **Frame-Based Execution**: Uses ar_frame_t for memory, context, and message bundling
 2. **Agent Creation**: Spawns agents with specified method and context
 3. **Method Validation**: Ensures the method exists before creating agent
-4. **Context Handling**: Gets memory and context from execution frame
+4. **Context Handling**: Uses borrowed context expressions or owned literal context maps
 5. **Result Assignment**: Stores agent ID when assignment specified
 
 ### Frame-Based Architecture
@@ -62,7 +62,8 @@ The module follows strict memory ownership rules:
 - Expression evaluator and log are borrowed references stored in the instance
 - Method name and version use `ar_data__claim_or_copy` to ensure ownership
 - Cleanup uses `ar_data__destroy_if_owned` for safe destruction
-- Context is passed as a borrowed reference (never owned by agent)
+- Context expressions such as `memory.config` are passed as borrowed references
+- Literal map contexts such as `{config: "prod"}` are transferred to the spawned agent
 - Agent ID result is created when assignment specified
 - All temporary values properly cleaned up using Zig's defer mechanism
 - The create function returns ownership to the caller
@@ -87,9 +88,9 @@ The module follows strict memory ownership rules:
 The module:
 1. Evaluates method name and version expressions directly into `ar_data__claim_or_copy`
 2. Uses `ar_data__destroy_if_owned` with defer for automatic cleanup
-3. Context evaluation returns a borrowed reference (no ownership taken)
+3. Context evaluation returns a borrowed reference unless the context AST is a literal map
 4. Validates method exists in methodology before agent creation
-5. Creates agent via agency with borrowed context reference
+5. Creates agent via agency with borrowed context reference or owned literal context
 6. Stores agent ID if assignment specified
 7. Eliminates temporary variables by combining operations
 

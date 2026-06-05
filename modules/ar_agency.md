@@ -98,6 +98,7 @@ All global API functions delegate to their instance-based counterparts using an 
 - `ar_agency__get_agent_mutable_memory()` - Get agent's memory (mutable)
 - `ar_agency__get_agent_context()` - Get agent's context
 - `ar_agency__get_agent_method()` - Get agent's method reference
+- `ar_agency__create_agent_with_owned_context()` - Create an agent that owns its context map
 
 ### Agent Updates
 
@@ -131,6 +132,17 @@ ar_data_t *own_context = ar_data__create_map();
 ar_data__set_map_integer(own_context, "max_retries", 3);
 int64_t agent_id2 = ar_agency__create_agent(own_agency, "router", "1.2.0", own_context);
 ar_data__destroy(own_context);  // Agency doesn't take ownership
+
+// Create an agent that owns its context
+ar_data_t *own_literal_context = ar_data__create_map();
+ar_data__set_map_string(own_literal_context, "mode", "literal");
+int64_t agent_id3 = ar_agency__create_agent_with_owned_context(
+    own_agency,
+    "router",
+    "1.2.0",
+    own_literal_context
+);
+own_literal_context = NULL;  // Ownership transferred to agency on call
 ```
 
 ### Sending Messages

@@ -12,6 +12,8 @@ typedef enum {
     AR_EXPRESSION_AST_TYPE__LITERAL_INT,      /* Integer literal (e.g., 42, -10) */
     AR_EXPRESSION_AST_TYPE__LITERAL_DOUBLE,   /* Double literal (e.g., 3.14, -2.5) */
     AR_EXPRESSION_AST_TYPE__LITERAL_STRING,   /* String literal (e.g., "hello") */
+    AR_EXPRESSION_AST_TYPE__LITERAL_LIST,     /* List literal (e.g., [1, 2]) */
+    AR_EXPRESSION_AST_TYPE__LITERAL_MAP,      /* Map literal (e.g., {name: "Ada"}) */
     AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS,    /* Memory/message/context access (e.g., memory.x, message.content) */
     AR_EXPRESSION_AST_TYPE__BINARY_OP         /* Binary operation (arithmetic or comparison) */
 } ar_expression_ast_type_t;
@@ -79,6 +81,37 @@ ar_expression_ast_t* ar_expression_ast__create_literal_double(double value);
 ar_expression_ast_t* ar_expression_ast__create_literal_string(const char *ref_value);
 
 /**
+ * Create a list literal AST node.
+ *
+ * @param own_items Array of item AST nodes (ownership transferred to node, can be NULL if item_count is 0)
+ * @param item_count Number of item AST nodes
+ * @return Newly created AST node (owned by caller), or NULL on failure
+ * @note Ownership: Returns an owned value that caller must destroy.
+ *       Takes ownership of all item nodes. The array itself remains owned by the caller.
+ */
+ar_expression_ast_t* ar_expression_ast__create_literal_list(
+    ar_expression_ast_t **own_items,
+    size_t item_count
+);
+
+/**
+ * Create a map literal AST node.
+ *
+ * @param ref_keys Array of map keys (borrowed references)
+ * @param own_values Array of value AST nodes (ownership transferred to node)
+ * @param entry_count Number of key/value entries
+ * @return Newly created AST node (owned by caller), or NULL on failure
+ * @note Ownership: Returns an owned value that caller must destroy.
+ *       Takes ownership of all value nodes and copies all keys.
+ *       The arrays themselves remain owned by the caller.
+ */
+ar_expression_ast_t* ar_expression_ast__create_literal_map(
+    const char **ref_keys,
+    ar_expression_ast_t **own_values,
+    size_t entry_count
+);
+
+/**
  * Create a memory access AST node.
  * 
  * @param ref_base The base accessor ("memory", "message", or "context") (borrowed reference)
@@ -144,6 +177,61 @@ double ar_expression_ast__get_double_value(const ar_expression_ast_t *ref_node);
  * @note Ownership: Returns a borrowed reference. Do not free.
  */
 const char* ar_expression_ast__get_string_value(const ar_expression_ast_t *ref_node);
+
+/**
+ * Get the number of items from a list literal node.
+ *
+ * @param ref_node The AST node (borrowed reference)
+ * @return The number of list items, or 0 if not a list literal
+ */
+size_t ar_expression_ast__get_list_item_count(const ar_expression_ast_t *ref_node);
+
+/**
+ * Get a list item AST node from a list literal node.
+ *
+ * @param ref_node The AST node (borrowed reference)
+ * @param index Zero-based list item index
+ * @return The item AST node (borrowed reference), or NULL if unavailable
+ * @note Ownership: Returns a borrowed reference. Do not free.
+ */
+const ar_expression_ast_t* ar_expression_ast__get_list_item(
+    const ar_expression_ast_t *ref_node,
+    size_t index
+);
+
+/**
+ * Get the number of entries from a map literal node.
+ *
+ * @param ref_node The AST node (borrowed reference)
+ * @return The number of map entries, or 0 if not a map literal
+ */
+size_t ar_expression_ast__get_map_entry_count(const ar_expression_ast_t *ref_node);
+
+/**
+ * Get a map key from a map literal node.
+ *
+ * @param ref_node The AST node (borrowed reference)
+ * @param index Zero-based map entry index
+ * @return The map key (borrowed reference), or NULL if unavailable
+ * @note Ownership: Returns a borrowed reference. Do not free.
+ */
+const char* ar_expression_ast__get_map_key(
+    const ar_expression_ast_t *ref_node,
+    size_t index
+);
+
+/**
+ * Get a map value AST node from a map literal node.
+ *
+ * @param ref_node The AST node (borrowed reference)
+ * @param index Zero-based map entry index
+ * @return The value AST node (borrowed reference), or NULL if unavailable
+ * @note Ownership: Returns a borrowed reference. Do not free.
+ */
+const ar_expression_ast_t* ar_expression_ast__get_map_value(
+    const ar_expression_ast_t *ref_node,
+    size_t index
+);
 
 /**
  * Get base accessor from a memory access node.

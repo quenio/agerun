@@ -157,6 +157,35 @@ int ar_agency__update_agent_methods(ar_agency_t *mut_agency, const ar_method_t *
     return ar_agent_update__update_methods(mut_agency->own_registry, ref_old_method, ref_new_method);
 }
 
+static int64_t _register_created_agent(ar_agency_t *mut_agency, ar_agent_t *own_agent) {
+    int64_t agent_id = ar_agent_registry__allocate_id(mut_agency->own_registry);
+    if (agent_id == 0) {
+        ar_agent__destroy(own_agent);
+        return 0;
+    }
+
+    ar_agent__set_id(own_agent, agent_id);
+
+    ar_data_t *mut_memory = ar_agent__get_mutable_memory(own_agent);
+    if (!mut_memory || !ar_data__set_map_integer(mut_memory, "self", (int)agent_id)) {
+        ar_agent__destroy(own_agent);
+        return 0;
+    }
+
+    if (!ar_agent_registry__register_id(mut_agency->own_registry, agent_id)) {
+        ar_agent__destroy(own_agent);
+        return 0;
+    }
+
+    if (!ar_agent_registry__track_agent(mut_agency->own_registry, agent_id, own_agent)) {
+        ar_agent_registry__unregister_id(mut_agency->own_registry, agent_id);
+        ar_agent__destroy(own_agent);
+        return 0;
+    }
+
+    return agent_id;
+}
+
 int64_t ar_agency__create_agent(ar_agency_t *mut_agency, 
                                                const char *ref_method_name, 
                                                const char *ref_version, 
@@ -208,37 +237,69 @@ int64_t ar_agency__create_agent(ar_agency_t *mut_agency,
         return 0;
     }
     
-    
-    // Allocate an ID for the agent
-    int64_t agent_id = ar_agent_registry__allocate_id(mut_agency->own_registry);
-    if (agent_id == 0) {
-        ar_agent__destroy(own_agent);
-        return 0;
-    }
-    
-    // Set the agent's ID
-    ar_agent__set_id(own_agent, agent_id);
+    return _register_created_agent(mut_agency, own_agent);
+}
 
-    ar_data_t *mut_memory = ar_agent__get_mutable_memory(own_agent);
-    if (!mut_memory || !ar_data__set_map_integer(mut_memory, "self", (int)agent_id)) {
-        ar_agent__destroy(own_agent);
+int64_t ar_agency__create_agent_with_owned_context(
+    ar_agency_t *mut_agency,
+    const char *ref_method_name,
+    const char *ref_version,
+    ar_data_t *own_context
+) {
+    if (!mut_agency || !mut_agency->is_initialized || !mut_agency->own_registry) {
+        if (own_context) {
+            ar_data__destroy(own_context);
+        }
         return 0;
     }
-    
-    // Register the ID in the registry
-    if (!ar_agent_registry__register_id(mut_agency->own_registry, agent_id)) {
-        ar_agent__destroy(own_agent);
+
+    const ar_method_t *ref_method = NULL;
+    if (mut_agency->own_methodology) {
+        if (mut_agency->ref_log) {
+            char debug_msg[256];
+            snprintf(debug_msg, sizeof(debug_msg),
+                    "Agency: Looking up method '%s' version '%s' in instance methodology",
+                    ref_method_name, ref_version ? ref_version : "latest");
+            ar_log__info(mut_agency->ref_log, debug_msg);
+        }
+
+        ref_method = ar_methodology__get_method(mut_agency->own_methodology, ref_method_name, ref_version);
+        if (!ref_method) {
+            if (mut_agency->ref_log) {
+                char error_msg[256];
+                snprintf(error_msg, sizeof(error_msg),
+                        "Agency: Method '%s' version '%s' not found in methodology",
+                        ref_method_name, ref_version ? ref_version : "latest");
+                ar_log__error(mut_agency->ref_log, error_msg);
+            }
+            if (own_context) {
+                ar_data__destroy(own_context);
+            }
+            return 0;
+        }
+    } else {
+        if (mut_agency->ref_log) {
+            ar_log__error(mut_agency->ref_log, "Agency: No methodology instance available");
+        }
+        if (own_context) {
+            ar_data__destroy(own_context);
+        }
         return 0;
     }
-    
-    // Track the agent in the registry
-    if (!ar_agent_registry__track_agent(mut_agency->own_registry, agent_id, own_agent)) {
-        ar_agent_registry__unregister_id(mut_agency->own_registry, agent_id);
-        ar_agent__destroy(own_agent);
+
+    ar_agent_t *own_agent = ar_agent__create_with_method_owned_context(ref_method, own_context);
+    own_context = NULL;
+    if (!own_agent) {
+        if (mut_agency->ref_log) {
+            char error_msg[256];
+            snprintf(error_msg, sizeof(error_msg),
+                    "Agency: Failed to create agent for method '%s'", ref_method_name);
+            ar_log__error(mut_agency->ref_log, error_msg);
+        }
         return 0;
     }
-    
-    return agent_id;
+
+    return _register_created_agent(mut_agency, own_agent);
 }
 
 bool ar_agency__destroy_agent(ar_agency_t *mut_agency, int64_t agent_id) {

@@ -88,17 +88,30 @@ fn _parseArguments(ref_parser: ?*ar_complete_instruction_parser_t, ref_instructi
         const arg_start = pos;
         var in_quotes = false;
         var paren_depth: usize = 0;
+        var bracket_depth: usize = 0;
+        var brace_depth: usize = 0;
         while (pos < ref_instruction.len) : (pos += 1) {
             const char = ref_instruction[pos];
             if (char == '"' and (pos == arg_start or ref_instruction[pos - 1] != '\\')) {
                 in_quotes = !in_quotes;
             } else if (!in_quotes) {
                 if (char == '(') paren_depth += 1;
-                if (char == ')') {
-                    if (paren_depth == 0) break;
-                    paren_depth -= 1;
+                if (char == '[') bracket_depth += 1;
+                if (char == '{') brace_depth += 1;
+                if (char == ']') {
+                    if (bracket_depth > 0) bracket_depth -= 1;
                 }
-                if (char == ',' and paren_depth == 0) break;
+                if (char == '}') {
+                    if (brace_depth > 0) brace_depth -= 1;
+                }
+                if (char == ')') {
+                    if (paren_depth > 0) {
+                        paren_depth -= 1;
+                    } else if (bracket_depth == 0 and brace_depth == 0) {
+                        break;
+                    }
+                }
+                if (char == ',' and paren_depth == 0 and bracket_depth == 0 and brace_depth == 0) break;
             }
         }
 

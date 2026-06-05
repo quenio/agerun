@@ -127,6 +127,8 @@ The following BNF grammar defines the syntax of individual instructions allowed 
                | <function-instruction>
                
 <assignment> ::= <memory-access> ':=' <expression>
+               | <memory-access> ':=' <multiline-list-literal>
+               | <memory-access> ':=' <multiline-map-literal>
 
 <function-instruction> ::= [<memory-access> ':='] <function-call>
 
@@ -184,6 +186,8 @@ The following BNF grammar defines the syntax of expressions allowed in AgeRun in
 ```
 <expression> ::= <string-literal>
               | <number-literal>
+              | <list-literal>
+              | <map-literal>
               | <memory-access>
               | <arithmetic-expression>
               | <comparison-expression>
@@ -192,6 +196,14 @@ The following BNF grammar defines the syntax of expressions allowed in AgeRun in
 
 <number-literal> ::= <integer>
                   | <double>
+
+<list-literal> ::= '[' [<expression> {',' <expression>} [',']] ']'
+
+<map-literal> ::= '{' [<identifier> ':' <expression> {',' <identifier> ':' <expression>} [',']] '}'
+
+<multiline-list-literal> ::= '[' <newline> {<indent> <expression> [','] <newline>} <assignment-indent> ']'
+
+<multiline-map-literal> ::= '{' <newline> {<indent> <identifier> ':' <expression> [','] <newline>} <assignment-indent> '}'
 
 <integer> ::= ['-'] <digit> {<digit>}
 <double>  ::= <integer> '.' <digit> {<digit>}
@@ -215,6 +227,12 @@ The following BNF grammar defines the syntax of expressions allowed in AgeRun in
 The expression evaluator follows these rules:
 - String literals are enclosed in double quotes and represent string values
 - Number literals can be either integers (whole numbers) or doubles (floating-point numbers)
+- List literals create list values, e.g. `[1, 2]` or `[1, 2,]`
+- Map literals create map values with identifier-only keys, e.g. `{name: "Ada"}` or `{name: "Ada",}`
+- One-line list and map literals can appear anywhere expressions are accepted, including assignment values and function arguments
+- Multi-line list and map literals are accepted only as the top-level right side of an assignment
+- Multi-line literal item lines must use identical indentation, the closing delimiter must align with the assignment line, and item-line commas are optional
+- Multi-line literals cannot appear as function arguments, list elements, or map values; nested list and map values must be written as one-line literals
 - `message` refers to the current message being processed, and nested fields can be accessed using dot notation (e.g., `message.field`)
 - `memory` provides access to the agent's memory map, and nested fields can be accessed using dot notation (e.g., `memory.field`)
 - `context` provides access to the agent's read-only context map, and nested fields can be accessed using dot notation (e.g., `context.field`)

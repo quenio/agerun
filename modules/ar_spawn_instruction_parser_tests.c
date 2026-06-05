@@ -238,6 +238,38 @@ static void test_spawn_parser__parse_with_expression_asts(void) {
     ar_log__destroy(log);
 }
 
+static void test_spawn_parser__parses_literal_context_argument(void) {
+    printf("Testing create instruction with one-line literal context argument...\n");
+
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    const char *instruction = "memory.worker := spawn(\"process\", \"2.1.0\", {config: \"prod\", ports: [1, 2,]})";
+    ar_spawn_instruction_parser_t *own_parser = ar_spawn_instruction_parser__create(log);
+    assert(own_parser != NULL);
+
+    ar_instruction_ast_t *own_ast = ar_spawn_instruction_parser__parse(own_parser, instruction, "memory.worker");
+
+    assert(own_ast != NULL);
+    const ar_list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(own_ast);
+    assert(ref_arg_asts != NULL);
+    assert(ar_list__count(ref_arg_asts) == 3);
+
+    void **items = ar_list__items(ref_arg_asts);
+    assert(items != NULL);
+    const ar_expression_ast_t *ref_context = (const ar_expression_ast_t*)items[2];
+    assert(ar_expression_ast__get_type(ref_context) == AR_EXPRESSION_AST_TYPE__LITERAL_MAP);
+    assert(ar_expression_ast__get_map_entry_count(ref_context) == 2);
+    assert(strcmp(ar_expression_ast__get_map_key(ref_context, 0), "config") == 0);
+    assert(strcmp(ar_expression_ast__get_map_key(ref_context, 1), "ports") == 0);
+    AR__HEAP__FREE(items);
+
+    assert(ar_log__get_last_error_message(log) == NULL);
+
+    ar_instruction_ast__destroy(own_ast);
+    ar_spawn_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
 int main(void) {
     printf("=== Create Instruction Parser Tests ===\n");
     
@@ -252,6 +284,7 @@ int main(void) {
     
     // Expression AST integration
     test_spawn_parser__parse_with_expression_asts();
+    test_spawn_parser__parses_literal_context_argument();
     
     printf("All create instruction parser tests passed!\n");
     
