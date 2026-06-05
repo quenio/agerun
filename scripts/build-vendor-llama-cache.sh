@@ -381,12 +381,24 @@ _lock_holder_is_dead_on_current_host() {
     ! kill -0 "$lock_pid" 2>/dev/null
 }
 
+_lock_holder_is_foreign_host() {
+    local lock_host
+
+    lock_host=$(_lock_value "host")
+
+    [ -n "$lock_host" ] && [ "$lock_host" != "$CURRENT_HOST" ]
+}
+
 _lock_is_stale() {
     local lock_mtime
     local now
     local lock_age
 
     if _lock_holder_is_dead_on_current_host; then
+        return 0
+    fi
+
+    if _lock_holder_is_foreign_host; then
         return 0
     fi
 
