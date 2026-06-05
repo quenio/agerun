@@ -44,7 +44,7 @@ Composition opportunities:
 | [`routing`](routing-1.0.0.md) | [`routing-1.0.0.method`](routing-1.0.0.method) | [`routing_tests.c`](routing_tests.c) | Selects one or more recipients and forwards a message. | Foundation for delivery. |
 | [`supervision`](supervision-1.0.0.md) | [`supervision-1.0.0.method`](supervision-1.0.0.method) | [`supervision_tests.c`](supervision_tests.c) | Creates, tracks, stops, and event-restarts a child agent. | Keeps coordination agents available. |
 | [`distribution`](distribution-1.0.0.md) | [`distribution-1.0.0.method`](distribution-1.0.0.method) | [`distribution_tests.c`](distribution_tests.c) | Assigns caller-provided portions of work to workers. | Builds on routing for fan-out. |
-| [`aggregation`](aggregation-1.0.0.md) | [`aggregation-1.0.0.method`](aggregation-1.0.0.method) | [`aggregation_tests.c`](aggregation_tests.c) | Collects fixed-slot results and emits a combined result. | Completes fan-in. |
+| [`aggregation`](aggregation-1.0.0.md) | [`aggregation-1.0.0.method`](aggregation-1.0.0.method) | [`aggregation_tests.c`](aggregation_tests.c) | Collects bounded fixed-slot results and emits completion. | Completes fan-in within current method-language limits. |
 | [`scheduling`](scheduling-1.0.0.md) | [`scheduling-1.0.0.method`](scheduling-1.0.0.method) | [`scheduling_tests.c`](scheduling_tests.c) | Stores pending work and triggers it on explicit tick messages. | Delayed execution primitive. |
 | [`synchronization`](synchronization-1.0.0.md) | [`synchronization-1.0.0.method`](synchronization-1.0.0.method) | [`synchronization_tests.c`](synchronization_tests.c) | Waits for fixed dependencies before sending a continuation. | Dependency gate. |
 | [`workflow`](workflow-1.0.0.md) | [`workflow-1.0.0.method`](workflow-1.0.0.method) | [`workflow_tests.c`](workflow_tests.c) | Maintains a small step graph, routes steps, branches, and completes. | Higher-level sequence and branch coordinator. |
@@ -225,7 +225,7 @@ Requests:
 }
 ```
 
-Completion:
+Current bounded completion:
 
 ```text
 {
@@ -238,6 +238,22 @@ Completion:
   received_count: <count>
 }
 ```
+
+Intended general completion:
+
+```text
+{
+  action: "aggregate_complete",
+  aggregate_id: <id>,
+  status: "complete",
+  result: [<input-1>, <input-2>, ...],
+  received_count: <count>
+}
+```
+
+The general list-valued `result` form is not fully implementable as an ordinary method today because
+the method language can carry lists but cannot create an empty list, append to a list, or assign by
+list index.
 
 ### Scheduling
 
@@ -532,14 +548,14 @@ Conversation-scoped workflow:
 | Routing | Fully implementable for the bounded contract. | Arbitrary recipient lists and richer message inspection require collection iteration or a richer data query layer. |
 | Supervision | Partially implementable. | Methods cannot autonomously observe child crashes or exits; callers must send `child_failed` or `child_exited` events. |
 | Distribution | Partially implementable. | The method assigns caller-provided portions; dynamic decomposition and arbitrary worker lists require collection iteration. |
-| Aggregation | Fully implementable for the bounded contract. | Arbitrary result sets require dynamic collections or iteration. |
+| Aggregation | Partially implementable. | The intended general contract should emit `result` as a list, but ordinary methods currently lack list construction, append, and indexed assignment. The implemented method therefore emits bounded `result_a`, `result_b`, and `result_c` fields. |
 | Scheduling | Partially implementable. | There is no runtime clock or timer callback; scheduling requires explicit `tick` messages from another agent or host process. |
 | Synchronization | Fully implementable for the bounded contract. | Arbitrary dependency sets require collection iteration. |
 | Workflow | Partially implementable. | General workflow graphs require dynamic graph storage and iteration; this method supports a three-step graph with one branch condition. |
 | Conversation | Fully implementable for bounded memory. | Unbounded history, search, or summarization require additional memory conventions or completion-backed methods. |
 | Retry | Fully implementable for immediate retry and scheduled retry by composition. | Backoff policies need an external tick convention and richer arithmetic/time policy support. |
 
-No method in this methodology is blocked entirely. The missing runtime capabilities are real-time
-timers, autonomous lifecycle event observation, and dynamic collection iteration. Those gaps are
-documented here so the reusable behaviors remain ordinary methods rather than hidden runtime
-features.
+No method in this methodology is blocked entirely. The missing capabilities are real-time timers,
+autonomous lifecycle event observation, dynamic collection iteration, and ordinary-method list
+construction/appending/indexed assignment. Those gaps are documented here so the reusable behaviors
+remain ordinary methods rather than hidden runtime features.
