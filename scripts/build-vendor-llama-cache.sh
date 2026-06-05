@@ -480,16 +480,16 @@ _recovery_lock_is_stale() {
         return 0
     fi
 
-    if _recovery_lock_holder_is_foreign_host; then
-        return 0
-    fi
-
     lock_mtime=$(_path_mtime_epoch "$STALE_LOCK_RECOVERY_DIR")
     now=$(date +%s)
     lock_age=$((now - lock_mtime))
 
     if [ "$lock_age" -lt "$LLAMA_CACHE_LOCK_TIMEOUT_SECONDS" ]; then
         return 1
+    fi
+
+    if _recovery_lock_holder_is_foreign_host; then
+        return 0
     fi
 
     ! _recovery_lock_pid_is_running_on_current_host
@@ -529,16 +529,16 @@ _lock_is_stale() {
         return 0
     fi
 
-    if _lock_holder_is_foreign_host; then
-        return 0
-    fi
-
     lock_mtime=$(_lock_mtime_epoch)
     now=$(date +%s)
     lock_age=$((now - lock_mtime))
 
     if [ "$lock_age" -lt "$LLAMA_CACHE_LOCK_TIMEOUT_SECONDS" ]; then
         return 1
+    fi
+
+    if _lock_holder_is_foreign_host; then
+        return 0
     fi
 
     ! _lock_pid_is_running_on_current_host
