@@ -248,32 +248,6 @@ static ar_list_t* _parse_arguments_to_asts(
     return own_arg_asts;
 }
 
-/**
- * Internal: Validate the append target is a non-root memory path.
- */
-static bool _validate_target_ast(
-    ar_append_instruction_parser_t *mut_parser,
-    const ar_expression_ast_t *ref_target_ast
-) {
-    if (!ref_target_ast || ar_expression_ast__get_type(ref_target_ast) != AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS) {
-        _log_error(mut_parser, "Append target must be a memory path", 0);
-        return false;
-    }
-
-    const char *ref_base = ar_expression_ast__get_memory_base(ref_target_ast);
-    if (!ref_base || strcmp(ref_base, "memory") != 0) {
-        _log_error(mut_parser, "Append target must start with 'memory.'", 0);
-        return false;
-    }
-
-    if (ar_expression_ast__get_memory_path_count(ref_target_ast) == 0) {
-        _log_error(mut_parser, "Append target must include a memory field", 0);
-        return false;
-    }
-
-    return true;
-}
-
 ar_append_instruction_parser_t* ar_append_instruction_parser__create(ar_log_t *ref_log) {
     ar_append_instruction_parser_t *own_parser = AR__HEAP__MALLOC(
         sizeof(ar_append_instruction_parser_t),
@@ -369,14 +343,6 @@ ar_instruction_ast_t* ar_append_instruction_parser__parse(
     ar_list_t *own_arg_asts = _parse_arguments_to_asts(mut_parser, own_args, arg_count, pos);
     if (!own_arg_asts) {
         _cleanup_args(own_args, arg_count);
-        ar_instruction_ast__destroy(own_ast);
-        return NULL;
-    }
-
-    ar_expression_ast_t *ref_target_ast = (ar_expression_ast_t*)ar_list__first(own_arg_asts);
-    if (!_validate_target_ast(mut_parser, ref_target_ast)) {
-        _cleanup_args(own_args, arg_count);
-        _cleanup_arg_asts(own_arg_asts);
         ar_instruction_ast__destroy(own_ast);
         return NULL;
     }

@@ -5,10 +5,8 @@ The `ar_append_instruction_parser` module parses `append(...)` instructions into
 
 ## Responsibility
 
-- parse `append(memory.results, value)` function calls
+- parse `append(target, value)` function calls
 - support optional result assignment such as `memory.append_ok := append(memory.results, value)`
-- require the first argument to be a non-root `memory` access
-- reject `message` and `context` targets during parsing
 - attach parsed expression ASTs for both arguments
 - report parse failures through the shared `ar_log` instance
 
@@ -31,9 +29,7 @@ The deprecated helpers `ar_append_instruction_parser__get_error()` and
 ## Current implementation notes
 
 - successful parses produce a function-call AST with function name `"append"`
-- the target argument remains an expression AST so the evaluator can inspect the memory path without
-  evaluating it as a copied value
-- the value argument is parsed as a normal expression and may refer to memory, message, context, or
+- both arguments are parsed as normal expressions and may refer to memory, message, context, or
   literals
-- runtime checks such as target existence and LIST type validation are handled by
-  `ar_append_instruction_evaluator`
+- runtime checks such as target ownership, target existence, protected `memory.self`, and LIST type
+  validation are handled by `ar_append_instruction_evaluator`

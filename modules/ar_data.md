@@ -156,6 +156,15 @@ bool ar_data__take_ownership(ar_data_t *mut_data, void *owner);
 bool ar_data__drop_ownership(ar_data_t *mut_data, void *owner);
 
 /**
+ * Check whether one data value is contained by another data tree
+ * @param ref_data Pointer to the value to check
+ * @param ref_owner Pointer to the root owner data tree
+ * @return true if ref_data is ref_owner or is nested inside ref_owner
+ * @note Ownership: Does not take ownership of the parameters.
+ */
+bool ar_data__is_owned_by(const ar_data_t *ref_data, const ar_data_t *ref_owner);
+
+/**
  * Claim ownership of data or create a shallow copy
  * @param ref_data The data to claim or copy
  * @param owner The object that wants to own the data
@@ -1020,6 +1029,7 @@ The data module provides shallow copy functionality for creating independent cop
 ```c
 ar_data_t* ar_data__shallow_copy(const ar_data_t *ref_value);
 bool ar_data__is_primitive_type(const ar_data_t *ref_data);
+bool ar_data__is_owned_by(const ar_data_t *ref_data, const ar_data_t *ref_owner);
 bool ar_data__map_contains_only_primitives(const ar_data_t *ref_map);
 bool ar_data__list_contains_only_primitives(const ar_data_t *ref_list);
 ```
@@ -1030,6 +1040,8 @@ bool ar_data__list_contains_only_primitives(const ar_data_t *ref_list);
   - Returns NULL if the value contains nested containers (no deep copy support)
   - Caller owns the returned copy and must destroy it
 - `ar_data__is_primitive_type` checks if a data value is a primitive type (integer, double, or string)
+- `ar_data__is_owned_by` checks whether a data value is the root data value or is contained inside
+  that root's nested map/list tree
 
 ### Ownership Management Helper Functions
 

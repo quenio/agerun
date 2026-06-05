@@ -6,9 +6,9 @@ The `ar_append_instruction_evaluator` module evaluates `append(...)` instruction
 ## Responsibility
 
 - verify the instruction AST is `AR_INSTRUCTION_AST_TYPE__APPEND`
-- resolve the first argument as a mutable path under the frame memory map
-- reject `message`, `context`, root `memory`, and protected `memory.self` targets
-- require the resolved target to be an existing LIST
+- evaluate the first argument as a normal expression
+- mutate the target only when it resolves to an existing LIST owned directly or indirectly by memory
+- treat `message`, `context`, fresh expression, non-LIST, missing, and protected `memory.self` targets as no-ops
 - evaluate the second argument as a normal expression
 - transfer the append value into the target list with `ar_data__list_add_last_data()`
 - write optional result assignments as integer `1` or `0`
@@ -36,14 +36,21 @@ bool ar_append_instruction_evaluator__evaluate(
 
 - the evaluator owns only its internal structure
 - the log and expression evaluator are borrowed references
+- target expressions that evaluate to temporary values are discarded on no-op paths
 - fresh literal values are transferred directly into the list
 - borrowed values are passed through `ar_data__claim_or_copy()` before appending
 - `ar_data__list_add_last_data()` takes ownership only on success
 - if append fails after a value has been claimed or copied, the evaluator destroys the owned value
 
+## No-op behavior
+
+Target expressions that do not resolve to a memory-owned LIST do not mutate anything. If the
+instruction has a result assignment, the evaluator stores integer `0`; otherwise the instruction
+still completes successfully so method execution can continue.
+
 ## Current limitation
 
 Borrowed nested containers cannot be appended yet. `ar_data__claim_or_copy()` shallow-copies
 primitives and flat containers, but returns `NULL` for borrowed maps or lists that contain nested
-maps or lists. In that case `append(...)` logs an error and returns false, or stores integer `0`
-when the instruction has a result assignment.
+maps or lists. In that case `append(...)` logs an error and stores integer `0` when the instruction
+has a result assignment.

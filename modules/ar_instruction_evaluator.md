@@ -31,8 +31,9 @@ The facade currently coordinates specialized evaluators for:
   boolean status results, and failure handling
 - `ar_local_completion`, which owns local backend initialization and placeholder-value generation
 
-`append(...)` support is handled by `ar_append_instruction_evaluator`, which mutates an existing
-memory list and stores integer `1` or `0` when the function call has a result assignment.
+`append(...)` support is handled by `ar_append_instruction_evaluator`, which mutates only an
+existing memory-owned list and stores integer `1` or `0` when the function call has a result
+assignment.
 
 ## Public API
 
@@ -60,8 +61,8 @@ bool ar_instruction_evaluator__evaluate(
 - `complete(...)` failures are handled as normal instruction outcomes: the specialized evaluator
   logs actionable diagnostics, preserves prior memory on failure, and writes boolean `0` when the
   call has a result assignment
-- `append(...)` resolves its target through mutable frame memory, evaluates only the value
-  expression, and transfers the claimed or copied value to the existing LIST
+- `append(...)` evaluates the target expression, accepts it only when it resolves to a
+  memory-owned LIST, and transfers the claimed or copied value to that list
 - post-failure execution continues normally for later non-`complete(...)` instructions
 
 ## Typical usage

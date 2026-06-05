@@ -85,6 +85,15 @@ bool ar_data__take_ownership(ar_data_t *mut_data, const void *owner);
 bool ar_data__drop_ownership(ar_data_t *mut_data, const void *owner);
 
 /**
+ * Check whether a data value is contained by an owner data tree
+ * @param ref_data The data value to check (borrowed reference)
+ * @param ref_owner The root owner data tree (borrowed reference)
+ * @return true if ref_data is ref_owner or appears inside ref_owner's nested maps/lists
+ * @note Ownership: Does not take ownership of the parameters.
+ */
+bool ar_data__is_owned_by(const ar_data_t *ref_data, const ar_data_t *ref_owner);
+
+/**
  * Transfer ownership of data directly from one owner to another
  * @param mut_data The data whose ownership will be transferred (mutable reference)
  * @param ref_from_owner The current owner that must match the data's owner

@@ -147,7 +147,7 @@ The following BNF grammar defines the syntax of individual instructions allowed 
 <parse-function> ::= 'parse' '(' <expression> ',' <expression> ')'
 <build-function> ::= 'build' '(' <expression> ',' <expression> ')'
 <complete-function> ::= 'complete' '(' <expression> [',' <expression>] ')'
-<append-function> ::= 'append' '(' <memory-target-access> ',' <expression> ')'
+<append-function> ::= 'append' '(' <expression> ',' <expression> ')'
 <compile-function> ::= 'compile' '(' <expression> ',' <expression> ',' <expression> ')'
 <spawn-function> ::= 'spawn' '(' <expression> ',' <expression> ',' <expression> ')'
 <exit-function> ::= 'exit' '(' <expression> ')'
@@ -217,8 +217,6 @@ The following BNF grammar defines the syntax of expressions allowed in AgeRun in
                  | 'memory' {'.' <identifier>}
                  | 'context' {'.' <identifier>}
 
-<memory-target-access> ::= 'memory' '.' <identifier> {'.' <identifier>}
-
 <arithmetic-expression> ::= <expression> <arithmetic-operator> <expression>
 <arithmetic-operator> ::= '+' | '-' | '*' | '/'
 
@@ -262,10 +260,10 @@ The expression evaluator follows these rules:
 
 ### 2. List Mutation
 
-- `append(target: memory list, value: data) → boolean`: Mutates an existing list stored in agent memory by appending the evaluated value. The target must be a mutable `memory` path such as `memory.results`, must already exist, and must resolve to a LIST. Targets under `message` or `context` are invalid, and the target expression is not evaluated as a copied value.
+- `append(target: expression, value: data) → boolean`: Evaluates the target expression and mutates it only when it resolves to an existing LIST directly or indirectly owned by the frame memory map, such as `memory.results` or `memory.wrapper.results`. Targets under `message` or `context`, fresh literal/list expression results, missing targets, non-LIST targets, and protected `memory.self` targets are no-ops.
 - The value argument may be any expression. Fresh literal values are transferred directly into the list. Borrowed values from `memory`, `message`, or `context` are claimed when possible or shallow-copied before append.
 - Borrowed nested containers have a current limitation: `ar_data__claim_or_copy()` can shallow-copy primitives and flat containers only. Appending a borrowed map or list that itself contains nested maps or lists fails and returns/stores `0`.
-- Without result assignment, `append(...)` returns true on success and false on failure. With result assignment, `memory.some_flag := append(...)` stores integer `1` for success or `0` for failure and the instruction itself completes when the result can be stored.
+- Without result assignment, target no-ops complete without mutating memory. With result assignment, `memory.some_flag := append(...)` stores integer `1` for successful append or `0` for no-op/failure, and the instruction itself completes when the result can be stored.
 
 ### 3. Messaging
 

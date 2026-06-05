@@ -73,6 +73,15 @@ fn _target_references_memory_self(ref_target_ast: ?*const c.ar_expression_ast_t)
         return false;
     }
 
+    if (c.ar_expression_ast__get_type(ref_target_ast) != c.AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS) {
+        return false;
+    }
+
+    const ref_base = c.ar_expression_ast__get_memory_base(ref_target_ast) orelse return false;
+    if (!std.mem.eql(u8, std.mem.span(ref_base), "memory")) {
+        return false;
+    }
+
     if (c.ar_expression_ast__get_memory_path_count(ref_target_ast) == 0) {
         return false;
     }
@@ -81,73 +90,46 @@ fn _target_references_memory_self(ref_target_ast: ?*const c.ar_expression_ast_t)
     return std.mem.eql(u8, std.mem.span(first_component), "self");
 }
 
-fn _validate_target(
-    ref_evaluator: *const ar_append_instruction_evaluator_t,
-    ref_target_ast: ?*const c.ar_expression_ast_t
-) bool {
-    if (ref_target_ast == null or c.ar_expression_ast__get_type(ref_target_ast) != c.AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS) {
-        c.ar_log__error(ref_evaluator.ref_log, "append target must be a memory path");
-        return false;
-    }
-
-    const ref_base = c.ar_expression_ast__get_memory_base(ref_target_ast) orelse {
-        c.ar_log__error(ref_evaluator.ref_log, "append target must be a memory path");
-        return false;
-    };
-
-    if (!std.mem.eql(u8, std.mem.span(ref_base), "memory")) {
-        c.ar_log__error(ref_evaluator.ref_log, "append target must start with memory");
-        return false;
-    }
-
-    if (c.ar_expression_ast__get_memory_path_count(ref_target_ast) == 0) {
-        c.ar_log__error(ref_evaluator.ref_log, "append target must include a memory field");
-        return false;
-    }
-
-    if (_target_references_memory_self(ref_target_ast)) {
-        c.ar_log__error(ref_evaluator.ref_log, "memory.self is agency-managed and cannot be assigned");
-        return false;
-    }
-
-    return true;
-}
-
-fn _get_target_list(
+fn _complete_noop(
     ref_evaluator: *const ar_append_instruction_evaluator_t,
     ref_frame: ?*const c.ar_frame_t,
-    ref_target_ast: ?*const c.ar_expression_ast_t
-) ?*c.ar_data_t {
-    const mut_memory = c.ar_frame__get_memory(ref_frame) orelse {
-        c.ar_log__error(ref_evaluator.ref_log, "append frame has no memory");
-        return null;
-    };
-
-    const own_full_path = c.ar_expression_ast__format_path(ref_target_ast) orelse {
-        c.ar_log__error(ref_evaluator.ref_log, "append target path could not be formatted");
-        return null;
-    };
-    defer ar_allocator.free(own_full_path);
-
-    const full_path = std.mem.span(own_full_path);
-    const prefix = "memory.";
-    if (!std.mem.startsWith(u8, full_path, prefix)) {
-        c.ar_log__error(ref_evaluator.ref_log, "append target must start with memory");
-        return null;
+    ref_ast: ?*const c.ar_instruction_ast_t
+) bool {
+    if (c.ar_instruction_ast__get_function_result_path(ref_ast) == null) {
+        return true;
     }
 
-    const ref_key: [*:0]const u8 = @ptrCast(own_full_path + prefix.len);
-    const mut_target = c.ar_data__get_map_data(mut_memory, ref_key) orelse {
-        c.ar_log__error(ref_evaluator.ref_log, "append target does not exist");
-        return null;
-    };
+    return _store_result(ref_evaluator, ref_frame, ref_ast, false);
+}
 
-    if (c.ar_data__get_type(mut_target) != c.AR_DATA_TYPE__LIST) {
-        c.ar_log__error(ref_evaluator.ref_log, "append target must be a list");
-        return null;
+fn _is_owned_by_frame_root(ref_frame: ?*const c.ar_frame_t, ref_data: ?*const c.ar_data_t) bool {
+    if (ref_frame == null or ref_data == null) {
+        return false;
     }
 
-    return mut_target;
+    if (c.ar_data__is_owned_by(ref_data, c.ar_frame__get_memory(ref_frame))) {
+        return true;
+    }
+
+    if (c.ar_data__is_owned_by(ref_data, c.ar_frame__get_context(ref_frame))) {
+        return true;
+    }
+
+    return c.ar_data__is_owned_by(ref_data, c.ar_frame__get_message(ref_frame));
+}
+
+fn _destroy_target_if_temporary(
+    ref_evaluator: *const ar_append_instruction_evaluator_t,
+    ref_frame: ?*const c.ar_frame_t,
+    mut_target: ?*c.ar_data_t
+) void {
+    if (mut_target == null) {
+        return;
+    }
+
+    if (!_is_owned_by_frame_root(ref_frame, mut_target)) {
+        c.ar_data__destroy_if_owned(mut_target, ref_evaluator);
+    }
 }
 
 pub export fn ar_append_instruction_evaluator__evaluate(
@@ -177,13 +159,26 @@ pub export fn ar_append_instruction_evaluator__evaluate(
         return false;
     }
 
-    if (!_validate_target(ref_evaluator.?, ref_target_ast)) {
-        return _store_result(ref_evaluator.?, ref_frame, ref_ast, false);
+    if (_target_references_memory_self(ref_target_ast)) {
+        return _complete_noop(ref_evaluator.?, ref_frame, ref_ast);
     }
 
-    const mut_target_list = _get_target_list(ref_evaluator.?, ref_frame, ref_target_ast) orelse {
-        return _store_result(ref_evaluator.?, ref_frame, ref_ast, false);
+    const mut_target = c.ar_expression_evaluator__evaluate(
+        ref_evaluator.?.ref_expr_evaluator,
+        ref_frame,
+        ref_target_ast
+    ) orelse {
+        return _complete_noop(ref_evaluator.?, ref_frame, ref_ast);
     };
+
+    const mut_memory = c.ar_frame__get_memory(ref_frame) orelse return false;
+    if (c.ar_data__get_type(mut_target) != c.AR_DATA_TYPE__LIST or
+        !c.ar_data__is_owned_by(mut_target, mut_memory)) {
+        _destroy_target_if_temporary(ref_evaluator.?, ref_frame, mut_target);
+        return _complete_noop(ref_evaluator.?, ref_frame, ref_ast);
+    }
+
+    const mut_target_list = mut_target;
 
     const ref_value = c.ar_expression_evaluator__evaluate(
         ref_evaluator.?.ref_expr_evaluator,

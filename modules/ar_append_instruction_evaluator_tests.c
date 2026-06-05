@@ -222,35 +222,116 @@ static void test_append_instruction_evaluator__transfers_owned_list_literal(void
     ar_evaluator_fixture__destroy(own_fixture);
 }
 
-static void test_append_instruction_evaluator__rejects_message_target(void) {
-    printf("Testing append rejects message target at evaluation...\n");
+static void test_append_instruction_evaluator__appends_to_nested_memory_owned_list(void) {
+    printf("Testing append to nested memory-owned list...\n");
 
-    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("append_message_target");
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("append_nested_memory_list");
     AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
     ar_append_instruction_evaluator_t *own_evaluator = _create_evaluator(own_fixture);
     ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     AR_ASSERT(ref_frame != NULL, "Frame creation should succeed");
 
-    const char *target_path[] = {"results"};
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    ar_data_t *own_wrapper = ar_data__create_map();
+    AR_ASSERT(own_wrapper != NULL, "Wrapper map should be created");
+    AR_ASSERT(ar_data__set_map_data(own_wrapper, "results", ar_data__create_list()), "Nested list should be stored");
+    AR_ASSERT(ar_data__set_map_data(mut_memory, "wrapper", own_wrapper), "Wrapper should be stored in memory");
+
+    const char *target_path[] = {"wrapper", "results"};
     ar_instruction_ast_t *own_ast = _create_append_ast(
-        "message.results",
-        "42",
+        "memory.wrapper.results",
+        "77",
         NULL,
-        ar_expression_ast__create_memory_access("message", target_path, 1),
-        ar_expression_ast__create_literal_int(42)
+        ar_expression_ast__create_memory_access("memory", target_path, 2),
+        ar_expression_ast__create_literal_int(77)
     );
 
     bool result = ar_append_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
 
-    AR_ASSERT(result == false, "Append to message target should fail");
+    AR_ASSERT(result == true, "Append to nested memory-owned list should succeed");
+    ar_data_t *ref_results = ar_data__get_map_data(mut_memory, "wrapper.results");
+    AR_ASSERT(ref_results != NULL, "Nested results list should exist");
+    AR_ASSERT(ar_data__list_count(ref_results) == 1, "Nested results list should contain one item");
+    AR_ASSERT(ar_data__get_integer(ar_data__list_first(ref_results)) == 77, "Appended value should match");
 
     ar_instruction_ast__destroy(own_ast);
     ar_append_instruction_evaluator__destroy(own_evaluator);
     ar_evaluator_fixture__destroy(own_fixture);
 }
 
-static void test_append_instruction_evaluator__rejects_non_list_target(void) {
-    printf("Testing append rejects non-list target...\n");
+static void test_append_instruction_evaluator__stores_zero_for_message_owned_target(void) {
+    printf("Testing append stores zero for message-owned target...\n");
+
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("append_message_target");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+    ar_append_instruction_evaluator_t *own_evaluator = _create_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+
+    ar_data_t *own_context = ar_data__create_map();
+    ar_data_t *own_message = ar_data__create_map();
+    AR_ASSERT(own_context != NULL, "Context creation should succeed");
+    AR_ASSERT(own_message != NULL, "Message creation should succeed");
+    AR_ASSERT(ar_data__set_map_data(own_message, "results", ar_data__create_list()), "Message list should be stored");
+    ar_frame_t *own_frame = ar_frame__create(mut_memory, own_context, own_message);
+    AR_ASSERT(own_frame != NULL, "Frame creation should succeed");
+
+    const char *target_path[] = {"results"};
+    ar_instruction_ast_t *own_ast = _create_append_ast(
+        "message.results",
+        "42",
+        "memory.append_ok",
+        ar_expression_ast__create_memory_access("message", target_path, 1),
+        ar_expression_ast__create_literal_int(42)
+    );
+
+    bool result = ar_append_instruction_evaluator__evaluate(own_evaluator, own_frame, own_ast);
+
+    AR_ASSERT(result == true, "Assigned append should complete for message-owned target no-op");
+    AR_ASSERT(ar_data__get_integer(ar_data__get_map_data(mut_memory, "append_ok")) == 0, "No-op append should store 0");
+    ar_data_t *ref_message_results = ar_data__get_map_data(own_message, "results");
+    AR_ASSERT(ref_message_results != NULL, "Message results list should still exist");
+    AR_ASSERT(ar_data__list_count(ref_message_results) == 0, "Message results list should remain unchanged");
+
+    ar_instruction_ast__destroy(own_ast);
+    ar_frame__destroy(own_frame);
+    ar_data__destroy(own_message);
+    ar_data__destroy(own_context);
+    ar_append_instruction_evaluator__destroy(own_evaluator);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_append_instruction_evaluator__stores_zero_for_literal_target(void) {
+    printf("Testing append stores zero for literal target...\n");
+
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("append_literal_target");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+    ar_append_instruction_evaluator_t *own_evaluator = _create_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+    AR_ASSERT(ref_frame != NULL, "Frame creation should succeed");
+
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    ar_expression_ast_t *own_target_items[1];
+    own_target_items[0] = ar_expression_ast__create_literal_int(1);
+    ar_instruction_ast_t *own_ast = _create_append_ast(
+        "[1]",
+        "42",
+        "memory.append_ok",
+        ar_expression_ast__create_literal_list(own_target_items, 1),
+        ar_expression_ast__create_literal_int(42)
+    );
+
+    bool result = ar_append_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
+
+    AR_ASSERT(result == true, "Assigned append should complete for literal target no-op");
+    AR_ASSERT(ar_data__get_integer(ar_data__get_map_data(mut_memory, "append_ok")) == 0, "No-op append should store 0");
+
+    ar_instruction_ast__destroy(own_ast);
+    ar_append_instruction_evaluator__destroy(own_evaluator);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_append_instruction_evaluator__stores_zero_for_non_list_target(void) {
+    printf("Testing append stores zero for non-list target...\n");
 
     ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("append_non_list");
     AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
@@ -264,14 +345,15 @@ static void test_append_instruction_evaluator__rejects_non_list_target(void) {
     ar_instruction_ast_t *own_ast = _create_append_ast(
         "memory.results",
         "42",
-        NULL,
+        "memory.append_ok",
         ar_expression_ast__create_memory_access("memory", target_path, 1),
         ar_expression_ast__create_literal_int(42)
     );
 
     bool result = ar_append_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
 
-    AR_ASSERT(result == false, "Append to non-list target should fail");
+    AR_ASSERT(result == true, "Assigned append should complete for non-list target no-op");
+    AR_ASSERT(ar_data__get_integer(ar_data__get_map_data(mut_memory, "append_ok")) == 0, "No-op append should store 0");
     AR_ASSERT(ar_data__get_integer(ar_data__get_map_data(mut_memory, "results")) == 99, "Target should remain unchanged");
 
     ar_instruction_ast__destroy(own_ast);
@@ -351,8 +433,10 @@ int main(void) {
     test_append_instruction_evaluator__copies_borrowed_memory_value();
     test_append_instruction_evaluator__copies_borrowed_message_value();
     test_append_instruction_evaluator__transfers_owned_list_literal();
-    test_append_instruction_evaluator__rejects_message_target();
-    test_append_instruction_evaluator__rejects_non_list_target();
+    test_append_instruction_evaluator__appends_to_nested_memory_owned_list();
+    test_append_instruction_evaluator__stores_zero_for_message_owned_target();
+    test_append_instruction_evaluator__stores_zero_for_literal_target();
+    test_append_instruction_evaluator__stores_zero_for_non_list_target();
     test_append_instruction_evaluator__stores_result_assignment();
     test_append_instruction_evaluator__stores_zero_result_for_failure();
 

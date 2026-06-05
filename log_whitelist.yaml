@@ -108,19 +108,6 @@ ignored_errors:
     message: "ERROR: Failed to allocate memory for assignment instruction parser"
     comment: "DLSym test intentionally simulates memory allocation failure"
 
-  # ar_append_instruction_evaluator_tests
-  - context: "ar_append_instruction_evaluator_tests"
-    message: "ERROR: append target must start with memory"
-    comment: "Testing rejection of append targets outside memory"
-  - context: "ar_append_instruction_evaluator_tests"
-    message: "ERROR: append target must be a list"
-    comment: "Testing rejection of append targets that are not existing lists"
-
-  # ar_append_instruction_parser_tests
-  - context: "ar_append_instruction_parser_tests"
-    message: "ERROR: Append target must start with 'memory.' (at position 0)"
-    comment: "Testing parser rejection of append targets outside memory"
-
   # ar_build_instruction_parser_tests
   - context: "ar_build_instruction_parser_tests"
     message: "ERROR: Expected '(' after 'build' (at position 6)"

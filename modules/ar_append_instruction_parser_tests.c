@@ -96,8 +96,8 @@ static void test_append_instruction_parser__parse_append_with_assignment(void) {
     ar_log__destroy(own_log);
 }
 
-static void test_append_instruction_parser__rejects_message_target(void) {
-    printf("Testing append rejects message target...\n");
+static void test_append_instruction_parser__parses_message_target_expression(void) {
+    printf("Testing append parses message target expression...\n");
 
     ar_log_t *own_log = ar_log__create();
     assert(own_log != NULL);
@@ -110,15 +110,17 @@ static void test_append_instruction_parser__rejects_message_target(void) {
         NULL
     );
 
-    assert(own_ast == NULL);
-    assert(ar_log__get_last_error_message(own_log) != NULL);
+    assert(own_ast != NULL);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__APPEND);
+    assert(ar_log__get_last_error_message(own_log) == NULL);
 
+    ar_instruction_ast__destroy(own_ast);
     ar_append_instruction_parser__destroy(own_parser);
     ar_log__destroy(own_log);
 }
 
-static void test_append_instruction_parser__rejects_context_target(void) {
-    printf("Testing append rejects context target...\n");
+static void test_append_instruction_parser__parses_context_target_expression(void) {
+    printf("Testing append parses context target expression...\n");
 
     ar_log_t *own_log = ar_log__create();
     assert(own_log != NULL);
@@ -131,9 +133,11 @@ static void test_append_instruction_parser__rejects_context_target(void) {
         NULL
     );
 
-    assert(own_ast == NULL);
-    assert(ar_log__get_last_error_message(own_log) != NULL);
+    assert(own_ast != NULL);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__APPEND);
+    assert(ar_log__get_last_error_message(own_log) == NULL);
 
+    ar_instruction_ast__destroy(own_ast);
     ar_append_instruction_parser__destroy(own_parser);
     ar_log__destroy(own_log);
 }
@@ -144,8 +148,8 @@ int main(void) {
     test_append_instruction_parser__create_destroy();
     test_append_instruction_parser__parse_simple_append();
     test_append_instruction_parser__parse_append_with_assignment();
-    test_append_instruction_parser__rejects_message_target();
-    test_append_instruction_parser__rejects_context_target();
+    test_append_instruction_parser__parses_message_target_expression();
+    test_append_instruction_parser__parses_context_target_expression();
 
     printf("\nAll append_instruction_parser tests passed!\n");
     return 0;
