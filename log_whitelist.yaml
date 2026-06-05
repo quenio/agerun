@@ -108,6 +108,11 @@ ignored_errors:
     message: "ERROR: Failed to allocate memory for assignment instruction parser"
     comment: "DLSym test intentionally simulates memory allocation failure"
 
+  # ar_append_instruction_evaluator_tests
+  - context: "ar_append_instruction_evaluator_tests"
+    message: "ERROR: append value expression failed"
+    comment: "Testing append no-op continuation when value expression evaluation fails"
+
   # ar_build_instruction_parser_tests
   - context: "ar_build_instruction_parser_tests"
     message: "ERROR: Expected '(' after 'build' (at position 6)"

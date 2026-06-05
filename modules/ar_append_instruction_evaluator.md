@@ -44,13 +44,14 @@ bool ar_append_instruction_evaluator__evaluate(
 
 ## No-op behavior
 
-Target expressions that do not resolve to a memory-owned LIST do not mutate anything. If the
-instruction has a result assignment, the evaluator stores integer `0`; otherwise the instruction
-still completes successfully so method execution can continue.
+Target expressions that do not resolve to a memory-owned LIST do not mutate anything. Value
+evaluation, copy, and list-insert failures also leave the target unchanged after the failing step.
+If the instruction has a result assignment, the evaluator stores integer `0`; otherwise the
+instruction still completes successfully so method execution can continue.
 
 ## Current limitation
 
 Borrowed nested containers cannot be appended yet. `ar_data__claim_or_copy()` shallow-copies
 primitives and flat containers, but returns `NULL` for borrowed maps or lists that contain nested
-maps or lists. In that case `append(...)` logs an error and stores integer `0` when the instruction
-has a result assignment.
+maps or lists. In that case `append(...)` logs an error, stores integer `0` when the instruction has
+a result assignment, and otherwise completes without stopping method execution.

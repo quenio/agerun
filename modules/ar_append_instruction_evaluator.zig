@@ -50,7 +50,7 @@ fn _store_result(
 ) bool {
     const ref_result_path = c.ar_instruction_ast__get_function_result_path(ref_ast);
     if (ref_result_path == null) {
-        return append_success;
+        return true;
     }
 
     if (c.ar_instruction_ast__has_protected_memory_self_assignment(ref_ast)) {
