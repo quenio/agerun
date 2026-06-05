@@ -120,7 +120,6 @@ _derive_git_cache_key() {
     local source_oid
     local makefile_oid
     local script_oid
-    local head_oid
 
     if ! _source_is_repo_relative; then
         return 1
@@ -140,11 +139,8 @@ _derive_git_cache_key() {
         return 1
     script_oid=$(git -C "$PWD" rev-parse --verify "HEAD:scripts/build-vendor-llama-cache.sh" 2>/dev/null) ||
         return 1
-    head_oid=$(git -C "$PWD" rev-parse --verify HEAD 2>/dev/null) ||
-        return 1
 
     {
-        printf 'head=%s\n' "$head_oid"
         printf 'source_oid=%s\n' "$source_oid"
         printf 'makefile_oid=%s\n' "$makefile_oid"
         printf 'script_oid=%s\n' "$script_oid"
