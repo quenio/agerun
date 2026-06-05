@@ -57,6 +57,131 @@ _require_non_negative_integer() {
     esac
 }
 
+_hash_stdin() {
+    if command -v sha256sum >/dev/null 2>&1; then
+        sha256sum | awk '{print $1}'
+        return
+    fi
+
+    if command -v shasum >/dev/null 2>&1; then
+        shasum -a 256 | awk '{print $1}'
+        return
+    fi
+
+    echo "ERROR: sha256sum or shasum is required to derive the vendored llama.cpp cache key"
+    exit 1
+}
+
+_hash_file() {
+    local file="$1"
+
+    if command -v sha256sum >/dev/null 2>&1; then
+        sha256sum "$file" | awk '{print $1}'
+        return
+    fi
+
+    shasum -a 256 "$file" | awk '{print $1}'
+}
+
+_relative_path() {
+    local path="$1"
+
+    case "$path" in
+        "$PWD"/*)
+            printf '%s\n' "${path#"$PWD"/}"
+            ;;
+        *)
+            printf '%s\n' "$path"
+            ;;
+    esac
+}
+
+_emit_file_cache_key_input() {
+    local file="$1"
+
+    if [ -f "$file" ]; then
+        printf 'file=%s\n' "$(_relative_path "$file")"
+        printf 'sha256=%s\n' "$(_hash_file "$file")"
+    fi
+}
+
+_source_is_repo_relative() {
+    case "$LLAMA_SOURCE_DIR" in
+        /*)
+            return 1
+            ;;
+        *)
+            return 0
+            ;;
+    esac
+}
+
+_derive_git_cache_key() {
+    local source_oid
+    local makefile_oid
+    local script_oid
+    local head_oid
+
+    if ! _source_is_repo_relative; then
+        return 1
+    fi
+
+    if ! command -v git >/dev/null 2>&1; then
+        return 1
+    fi
+
+    if ! git -C "$PWD" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        return 1
+    fi
+
+    source_oid=$(git -C "$PWD" rev-parse --verify "HEAD:$LLAMA_SOURCE_DIR" 2>/dev/null) ||
+        return 1
+    makefile_oid=$(git -C "$PWD" rev-parse --verify "HEAD:Makefile" 2>/dev/null) ||
+        return 1
+    script_oid=$(git -C "$PWD" rev-parse --verify "HEAD:scripts/build-vendor-llama-cache.sh" 2>/dev/null) ||
+        return 1
+    head_oid=$(git -C "$PWD" rev-parse --verify HEAD 2>/dev/null) ||
+        return 1
+
+    {
+        printf 'head=%s\n' "$head_oid"
+        printf 'source_oid=%s\n' "$source_oid"
+        printf 'makefile_oid=%s\n' "$makefile_oid"
+        printf 'script_oid=%s\n' "$script_oid"
+    } | _hash_stdin
+}
+
+_derive_cache_key() {
+    local arch
+    local git_cache_key
+
+    if [ ! -d "$SOURCE_DIR" ]; then
+        echo "ERROR: vendored llama.cpp source not found at $SOURCE_DIR"
+        echo "Cannot derive a cache key for the shared vendored llama.cpp cache"
+        exit 1
+    fi
+
+    arch=$(uname -m)
+    git_cache_key=$(_derive_git_cache_key) || git_cache_key=
+
+    {
+        printf 'system=%s\n' "$UNAME_S"
+        printf 'arch=%s\n' "$arch"
+        printf 'shared_ext=%s\n' "$LLAMA_SHARED_EXT"
+        printf 'cmake_flags=%s\n' "$LLAMA_CPU_CMAKE_FLAGS"
+        if [ -n "$git_cache_key" ]; then
+            printf 'git_key=%s\n' "$git_cache_key"
+        else
+            find "$SOURCE_DIR" -type f ! -path '*/.git/*' -print | LC_ALL=C sort |
+                while IFS= read -r file; do
+                    _emit_file_cache_key_input "$file"
+                done
+            _emit_file_cache_key_input "$PWD/Makefile"
+            _emit_file_cache_key_input "$PWD/scripts/build-vendor-llama-cache.sh"
+        fi
+    } | _hash_stdin
+}
+
 SOURCE_DIR=$(_abs_path "$LLAMA_SOURCE_DIR")
 CACHE_DIR=$(_abs_path "$LLAMA_CACHE_DIR")
 CACHE_INSTALL_DIR=$(_abs_path "$LLAMA_CACHE_INSTALL_DIR")
@@ -79,11 +204,11 @@ LOCAL_HEADER="$LOCAL_INSTALL_DIR/include/llama.h"
 LOCAL_LIB="$LOCAL_INSTALL_DIR/lib/libllama.$LLAMA_SHARED_EXT"
 CURRENT_HOST=$(hostname 2>/dev/null || echo unknown)
 
-_cache_key_matches() {
-    if [ -z "$LLAMA_CACHE_KEY" ]; then
-        return 0
-    fi
+if [ -z "$LLAMA_CACHE_KEY" ]; then
+    LLAMA_CACHE_KEY=$(_derive_cache_key)
+fi
 
+_cache_key_matches() {
     [ -f "$CONTENT_KEY_FILE" ] &&
         [ "$(cat "$CONTENT_KEY_FILE")" = "$LLAMA_CACHE_KEY" ]
 }
