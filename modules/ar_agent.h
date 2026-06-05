@@ -26,6 +26,19 @@ typedef struct ar_agent_s ar_agent_t;
  */
 ar_agent_t* ar_agent__create_with_method(const ar_method_t *ref_method, const ar_data_t *ref_context);
 
+/**
+ * Create a new agent instance with a method reference and owned context.
+ * @param ref_method The method to use (borrowed reference)
+ * @param own_context Context data (ownership transferred to agent)
+ * @return New agent instance (ownership transferred), or NULL on failure
+ * @note Ownership: Function takes ownership of own_context.
+ *       Caller takes ownership of the returned agent.
+ */
+ar_agent_t* ar_agent__create_with_method_owned_context(
+    const ar_method_t *ref_method,
+    ar_data_t *own_context
+);
+
 /* ar_agent__create removed - use ar_agency__create_agent instead */
 
 /**

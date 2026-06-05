@@ -43,6 +43,8 @@ static size_t _skip_whitespace(const char *ref_str, size_t pos) {
  */
 static char* _extract_argument(ar_compile_instruction_parser_t *mut_parser, const char *ref_str, size_t *pos, char delimiter) {
     int paren_depth = 0;
+    int bracket_depth = 0;
+    int brace_depth = 0;
     bool in_quotes = false;
     
     /* Skip leading whitespace */
@@ -63,11 +65,19 @@ static char* _extract_argument(ar_compile_instruction_parser_t *mut_parser, cons
             in_quotes = !in_quotes;
         } else if (!in_quotes) {
             if (c == '(') paren_depth++;
+            else if (c == '[') bracket_depth++;
+            else if (c == '{') brace_depth++;
+            else if (c == ']') {
+                if (bracket_depth > 0) bracket_depth--;
+            }
+            else if (c == '}') {
+                if (brace_depth > 0) brace_depth--;
+            }
             else if (c == ')') {
                 if (paren_depth > 0) paren_depth--;
-                else if (delimiter == ')') break;
+                else if (delimiter == ')' && bracket_depth == 0 && brace_depth == 0) break;
             }
-            else if (c == delimiter && paren_depth == 0) break;
+            else if (c == delimiter && paren_depth == 0 && bracket_depth == 0 && brace_depth == 0) break;
         }
         (*pos)++;
     }

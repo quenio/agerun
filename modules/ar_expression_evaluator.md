@@ -13,6 +13,7 @@ The expression evaluator module provides functionality for evaluating expression
 - **Opaque Evaluator Type**: Uses an opaque structure to encapsulate evaluation state
 - **Single Evaluation Function**: Unified interface that handles all expression types internally
 - **Memory and Context Access**: Supports evaluation of memory.x and context.x paths via frame
+- **Container Literals**: Evaluates list and map literal AST nodes into fresh ar_data_t containers
 - **Binary Operations**: Implements all arithmetic and comparison operators
 - **Recursive Evaluation**: Properly handles nested expressions through recursion
 - **Ownership Semantics**: Clear distinction between references (memory access) and owned values (operations)
@@ -47,6 +48,7 @@ The evaluator follows strict ownership semantics:
 - **Frame Parameter**: Borrowed reference, not owned by evaluator
 - **Memory Access Results**: Returns borrowed references to existing values in frame's memory/context
 - **Literal Results**: Returns new owned values that caller must destroy
+- **Literal Container Results**: Returns new list/map values containing owned evaluated child values
 - **Operation Results**: Returns new owned values that caller must destroy
 - **Binary Operations**: Creates new values for all arithmetic and comparison results
 
@@ -56,7 +58,8 @@ Supports evaluation of all AgeRun data types:
 - **Integers**: Native integer operations and comparisons
 - **Doubles**: Floating-point operations with automatic type promotion
 - **Strings**: Concatenation (with +) and comparison operations
-- **Maps**: Navigation through nested structures via memory access
+- **Lists**: Literal construction with evaluated item values
+- **Maps**: Navigation through nested structures via memory access and literal construction with identifier keys
 
 ## Binary Operations
 
@@ -133,6 +136,7 @@ ar_log__destroy(log);
 - All type-specific evaluation functions are internal (static) implementation details
 - Main `evaluate` function dispatches to appropriate internal evaluator based on AST node type
 - Uses a helper function `_evaluate_expression()` for recursive evaluation
+- List and map literal evaluation recursively evaluates child expressions and transfers them into the new container
 - Memory access results are copied when used in binary operations to ensure ownership safety
 - String concatenation allocates temporary buffer for result
 - Frame-based execution allows stateless evaluation - no stored memory/context references

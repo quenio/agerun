@@ -143,9 +143,6 @@ pub export fn ar_spawn_instruction_evaluator__evaluate(
     }
     defer c.ar_data__destroy_if_owned(own_version, @constCast(@ptrCast(ref_evaluator)));
     
-    // For context, use the reference directly - agency expects a borrowed reference
-    const ref_context_data = c.ar_expression_evaluator__evaluate(ref_expr_evaluator, ref_frame, ref_context_ast);
-    
     // Check for no-op cases: method_name is 0 (integer) or "" (empty string)
     if (c.ar_data__get_type(own_method_name) == c.AR_DATA_TYPE__INTEGER and c.ar_data__get_integer(own_method_name) == 0) {
         if (c.ar_instruction_ast__has_result_assignment(ref_ast)) {
@@ -175,6 +172,16 @@ pub export fn ar_spawn_instruction_evaluator__evaluate(
             return true; // Success for no-op
         }
     }
+
+    const context_is_literal_map =
+        c.ar_expression_ast__get_type(ref_context_ast) == c.AR_EXPRESSION_AST_TYPE__LITERAL_MAP;
+
+    const ref_context_data = c.ar_expression_evaluator__evaluate(ref_expr_evaluator, ref_frame, ref_context_ast);
+    var own_context_data: ?*c.ar_data_t = null;
+    if (context_is_literal_map) {
+        own_context_data = ref_context_data;
+    }
+    defer if (own_context_data != null) c.ar_data__destroy(own_context_data);
     
     var agent_id: i64 = 0;
     var success = false;
@@ -206,12 +213,20 @@ pub export fn ar_spawn_instruction_evaluator__evaluate(
                 own_method_name_string,
                 own_version_string);
             if (ref_method != null) {
-                // Create the agent - context is borrowed, not owned
-                agent_id = c.ar_agency__create_agent(
-                    ref_evaluator.?.ref_agency,
-                    own_method_name_string,
-                    own_version_string,
-                    ref_context_data);
+                if (context_is_literal_map) {
+                    agent_id = c.ar_agency__create_agent_with_owned_context(
+                        ref_evaluator.?.ref_agency,
+                        own_method_name_string,
+                        own_version_string,
+                        own_context_data);
+                    own_context_data = null;
+                } else {
+                    agent_id = c.ar_agency__create_agent(
+                        ref_evaluator.?.ref_agency,
+                        own_method_name_string,
+                        own_version_string,
+                        ref_context_data);
+                }
                 if (agent_id > 0) {
                     success = true;
                 }

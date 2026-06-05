@@ -85,6 +85,55 @@ static void test_create_string_literal_with_null(void) {
     assert(own_node == NULL);
 }
 
+static void test_create_list_literal(void) {
+    printf("Testing list literal creation...\n");
+
+    ar_expression_ast_t *own_items[2];
+    own_items[0] = ar_expression_ast__create_literal_int(1);
+    own_items[1] = ar_expression_ast__create_literal_string("two");
+
+    ar_expression_ast_t *own_node = ar_expression_ast__create_literal_list(own_items, 2);
+
+    assert(own_node != NULL);
+    assert(ar_expression_ast__get_type(own_node) == AR_EXPRESSION_AST_TYPE__LITERAL_LIST);
+    assert(ar_expression_ast__get_list_item_count(own_node) == 2);
+
+    const ar_expression_ast_t *ref_first = ar_expression_ast__get_list_item(own_node, 0);
+    const ar_expression_ast_t *ref_second = ar_expression_ast__get_list_item(own_node, 1);
+    assert(ar_expression_ast__get_type(ref_first) == AR_EXPRESSION_AST_TYPE__LITERAL_INT);
+    assert(ar_expression_ast__get_int_value(ref_first) == 1);
+    assert(ar_expression_ast__get_type(ref_second) == AR_EXPRESSION_AST_TYPE__LITERAL_STRING);
+    assert(strcmp(ar_expression_ast__get_string_value(ref_second), "two") == 0);
+
+    ar_expression_ast__destroy(own_node);
+}
+
+static void test_create_map_literal(void) {
+    printf("Testing map literal creation...\n");
+
+    const char *keys[] = {"name", "age"};
+    ar_expression_ast_t *own_values[2];
+    own_values[0] = ar_expression_ast__create_literal_string("Ada");
+    own_values[1] = ar_expression_ast__create_literal_int(37);
+
+    ar_expression_ast_t *own_node = ar_expression_ast__create_literal_map(keys, own_values, 2);
+
+    assert(own_node != NULL);
+    assert(ar_expression_ast__get_type(own_node) == AR_EXPRESSION_AST_TYPE__LITERAL_MAP);
+    assert(ar_expression_ast__get_map_entry_count(own_node) == 2);
+    assert(strcmp(ar_expression_ast__get_map_key(own_node, 0), "name") == 0);
+    assert(strcmp(ar_expression_ast__get_map_key(own_node, 1), "age") == 0);
+
+    const ar_expression_ast_t *ref_name = ar_expression_ast__get_map_value(own_node, 0);
+    const ar_expression_ast_t *ref_age = ar_expression_ast__get_map_value(own_node, 1);
+    assert(ar_expression_ast__get_type(ref_name) == AR_EXPRESSION_AST_TYPE__LITERAL_STRING);
+    assert(strcmp(ar_expression_ast__get_string_value(ref_name), "Ada") == 0);
+    assert(ar_expression_ast__get_type(ref_age) == AR_EXPRESSION_AST_TYPE__LITERAL_INT);
+    assert(ar_expression_ast__get_int_value(ref_age) == 37);
+
+    ar_expression_ast__destroy(own_node);
+}
+
 static void test_create_simple_memory_access(void) {
     printf("Testing simple memory access creation...\n");
     
@@ -446,6 +495,8 @@ int main(void) {
     test_create_double_literal();
     test_create_string_literal();
     test_create_string_literal_with_null();
+    test_create_list_literal();
+    test_create_map_literal();
     test_create_simple_memory_access();
     test_create_memory_access_with_path();
     test_create_binary_addition();

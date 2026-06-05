@@ -26,6 +26,8 @@ static char _current_char(const ar_expression_parser_t *ref_parser);
 static void _advance(ar_expression_parser_t *mut_parser);
 static void _set_error(ar_expression_parser_t *mut_parser, const char *ref_message);
 static ar_expression_ast_t* _parse_primary(ar_expression_parser_t *mut_parser);
+static ar_expression_ast_t* _parse_list_literal(ar_expression_parser_t *mut_parser);
+static ar_expression_ast_t* _parse_map_literal(ar_expression_parser_t *mut_parser);
 static ar_expression_ast_t* _parse_term(ar_expression_parser_t *mut_parser);
 static ar_expression_ast_t* _parse_additive(ar_expression_parser_t *mut_parser);
 static ar_expression_ast_t* _parse_relational(ar_expression_parser_t *mut_parser);
@@ -168,6 +170,168 @@ static void _set_error(ar_expression_parser_t *mut_parser, const char *ref_messa
     }
 }
 
+static void _cleanup_ast_list(ar_list_t *own_list) {
+    if (!own_list) {
+        return;
+    }
+
+    ar_expression_ast_t *own_item = NULL;
+    while ((own_item = ar_list__remove_first(own_list)) != NULL) {
+        ar_expression_ast__destroy(own_item);
+    }
+    ar_list__destroy(own_list);
+}
+
+static void _cleanup_string_list(ar_list_t *own_list) {
+    if (!own_list) {
+        return;
+    }
+
+    char *own_item = NULL;
+    while ((own_item = ar_list__remove_first(own_list)) != NULL) {
+        AR__HEAP__FREE(own_item);
+    }
+    ar_list__destroy(own_list);
+}
+
+static char* _parse_identifier_copy(ar_expression_parser_t *mut_parser) {
+    _skip_whitespace(mut_parser);
+
+    if (!isalpha((unsigned char)_current_char(mut_parser)) && _current_char(mut_parser) != '_') {
+        _set_error(mut_parser, "Expected identifier");
+        return NULL;
+    }
+
+    size_t start = mut_parser->position;
+    while (isalnum((unsigned char)_current_char(mut_parser)) || _current_char(mut_parser) == '_') {
+        _advance(mut_parser);
+    }
+
+    size_t length = mut_parser->position - start;
+    char *own_identifier = AR__HEAP__MALLOC(length + 1, "Identifier");
+    if (!own_identifier) {
+        _set_error(mut_parser, "Out of memory");
+        return NULL;
+    }
+
+    memcpy(own_identifier, mut_parser->own_expression + start, length);
+    own_identifier[length] = '\0';
+
+    return own_identifier;
+}
+
+static ar_expression_ast_t* _create_list_literal_node(
+    ar_expression_parser_t *mut_parser,
+    ar_list_t *own_items_list
+) {
+    size_t item_count = ar_list__count(own_items_list);
+    void **own_items = NULL;
+
+    if (item_count > 0) {
+        own_items = ar_list__items(own_items_list);
+        if (!own_items) {
+            _cleanup_ast_list(own_items_list);
+            _set_error(mut_parser, "Failed to get list literal items");
+            return NULL;
+        }
+    }
+
+    ar_expression_ast_t *own_node = ar_expression_ast__create_literal_list(
+        (ar_expression_ast_t**)own_items,
+        item_count
+    );
+
+    if (own_items) {
+        AR__HEAP__FREE(own_items);
+    }
+    ar_list__destroy(own_items_list);
+
+    if (!own_node) {
+        _set_error(mut_parser, "Failed to create list literal AST node");
+    }
+
+    return own_node;
+}
+
+static ar_expression_ast_t* _create_map_literal_node(
+    ar_expression_parser_t *mut_parser,
+    ar_list_t *own_keys_list,
+    ar_list_t *own_values_list
+) {
+    size_t entry_count = ar_list__count(own_keys_list);
+    void **own_key_items = NULL;
+    void **own_value_items = NULL;
+    const char **own_keys = NULL;
+    ar_expression_ast_t **own_values = NULL;
+
+    if (entry_count > 0) {
+        own_key_items = ar_list__items(own_keys_list);
+        own_value_items = ar_list__items(own_values_list);
+        if (!own_key_items || !own_value_items) {
+            if (own_key_items) {
+                AR__HEAP__FREE(own_key_items);
+            }
+            if (own_value_items) {
+                AR__HEAP__FREE(own_value_items);
+            }
+            _cleanup_string_list(own_keys_list);
+            _cleanup_ast_list(own_values_list);
+            _set_error(mut_parser, "Failed to get map literal entries");
+            return NULL;
+        }
+
+        own_keys = AR__HEAP__MALLOC(sizeof(const char*) * entry_count, "Map literal key array");
+        own_values = AR__HEAP__MALLOC(sizeof(ar_expression_ast_t*) * entry_count, "Map literal value array");
+        if (!own_keys || !own_values) {
+            if (own_keys) {
+                AR__HEAP__FREE(own_keys);
+            }
+            if (own_values) {
+                AR__HEAP__FREE(own_values);
+            }
+            AR__HEAP__FREE(own_key_items);
+            AR__HEAP__FREE(own_value_items);
+            _cleanup_string_list(own_keys_list);
+            _cleanup_ast_list(own_values_list);
+            _set_error(mut_parser, "Out of memory");
+            return NULL;
+        }
+
+        for (size_t i = 0; i < entry_count; i++) {
+            own_keys[i] = (const char*)own_key_items[i];
+            own_values[i] = (ar_expression_ast_t*)own_value_items[i];
+        }
+    }
+
+    ar_expression_ast_t *own_node = ar_expression_ast__create_literal_map(
+        own_keys,
+        own_values,
+        entry_count
+    );
+
+    if (own_keys) {
+        AR__HEAP__FREE(own_keys);
+    }
+    if (own_values) {
+        AR__HEAP__FREE(own_values);
+    }
+    if (own_key_items) {
+        AR__HEAP__FREE(own_key_items);
+    }
+    if (own_value_items) {
+        AR__HEAP__FREE(own_value_items);
+    }
+
+    _cleanup_string_list(own_keys_list);
+    ar_list__destroy(own_values_list);
+
+    if (!own_node) {
+        _set_error(mut_parser, "Failed to create map literal AST node");
+    }
+
+    return own_node;
+}
+
 /**
  * Parse a literal (integer, double, or string).
  */
@@ -294,6 +458,144 @@ ar_expression_ast_t* ar_expression_parser__parse_literal(ar_expression_parser_t 
     
     _set_error(mut_parser, "Expected literal (string or number)");
     return NULL;
+}
+
+static ar_expression_ast_t* _parse_list_literal(ar_expression_parser_t *mut_parser) {
+    if (!mut_parser) {
+        return NULL;
+    }
+
+    if (!_consume_char(mut_parser, '[')) {
+        return NULL;
+    }
+
+    ar_list_t *own_items_list = ar_list__create();
+    if (!own_items_list) {
+        _set_error(mut_parser, "Out of memory");
+        return NULL;
+    }
+
+    _skip_whitespace(mut_parser);
+    if (_consume_char(mut_parser, ']')) {
+        return _create_list_literal_node(mut_parser, own_items_list);
+    }
+
+    while (true) {
+        ar_expression_ast_t *own_item = _parse_equality(mut_parser);
+        if (!own_item) {
+            _cleanup_ast_list(own_items_list);
+            return NULL;
+        }
+
+        if (!ar_list__add_last(own_items_list, own_item)) {
+            ar_expression_ast__destroy(own_item);
+            _cleanup_ast_list(own_items_list);
+            _set_error(mut_parser, "Failed to add list literal item");
+            return NULL;
+        }
+
+        _skip_whitespace(mut_parser);
+        if (_consume_char(mut_parser, ',')) {
+            _skip_whitespace(mut_parser);
+            if (_consume_char(mut_parser, ']')) {
+                return _create_list_literal_node(mut_parser, own_items_list);
+            }
+            continue;
+        }
+
+        if (_consume_char(mut_parser, ']')) {
+            return _create_list_literal_node(mut_parser, own_items_list);
+        }
+
+        _cleanup_ast_list(own_items_list);
+        _set_error(mut_parser, "Expected ',' or ']' after list literal item");
+        return NULL;
+    }
+}
+
+static ar_expression_ast_t* _parse_map_literal(ar_expression_parser_t *mut_parser) {
+    if (!mut_parser) {
+        return NULL;
+    }
+
+    if (!_consume_char(mut_parser, '{')) {
+        return NULL;
+    }
+
+    ar_list_t *own_keys_list = ar_list__create();
+    ar_list_t *own_values_list = ar_list__create();
+    if (!own_keys_list || !own_values_list) {
+        _cleanup_string_list(own_keys_list);
+        _cleanup_ast_list(own_values_list);
+        _set_error(mut_parser, "Out of memory");
+        return NULL;
+    }
+
+    _skip_whitespace(mut_parser);
+    if (_consume_char(mut_parser, '}')) {
+        return _create_map_literal_node(mut_parser, own_keys_list, own_values_list);
+    }
+
+    while (true) {
+        char *own_key = _parse_identifier_copy(mut_parser);
+        if (!own_key) {
+            _cleanup_string_list(own_keys_list);
+            _cleanup_ast_list(own_values_list);
+            return NULL;
+        }
+
+        _skip_whitespace(mut_parser);
+        if (!_consume_char(mut_parser, ':')) {
+            AR__HEAP__FREE(own_key);
+            _cleanup_string_list(own_keys_list);
+            _cleanup_ast_list(own_values_list);
+            _set_error(mut_parser, "Expected ':' after map literal key");
+            return NULL;
+        }
+
+        ar_expression_ast_t *own_value = _parse_equality(mut_parser);
+        if (!own_value) {
+            AR__HEAP__FREE(own_key);
+            _cleanup_string_list(own_keys_list);
+            _cleanup_ast_list(own_values_list);
+            return NULL;
+        }
+
+        if (!ar_list__add_last(own_keys_list, own_key)) {
+            AR__HEAP__FREE(own_key);
+            ar_expression_ast__destroy(own_value);
+            _cleanup_string_list(own_keys_list);
+            _cleanup_ast_list(own_values_list);
+            _set_error(mut_parser, "Failed to add map literal entry");
+            return NULL;
+        }
+
+        if (!ar_list__add_last(own_values_list, own_value)) {
+            ar_expression_ast__destroy(own_value);
+            _cleanup_string_list(own_keys_list);
+            _cleanup_ast_list(own_values_list);
+            _set_error(mut_parser, "Failed to add map literal entry");
+            return NULL;
+        }
+
+        _skip_whitespace(mut_parser);
+        if (_consume_char(mut_parser, ',')) {
+            _skip_whitespace(mut_parser);
+            if (_consume_char(mut_parser, '}')) {
+                return _create_map_literal_node(mut_parser, own_keys_list, own_values_list);
+            }
+            continue;
+        }
+
+        if (_consume_char(mut_parser, '}')) {
+            return _create_map_literal_node(mut_parser, own_keys_list, own_values_list);
+        }
+
+        _cleanup_string_list(own_keys_list);
+        _cleanup_ast_list(own_values_list);
+        _set_error(mut_parser, "Expected ',' or '}' after map literal entry");
+        return NULL;
+    }
 }
 
 /**
@@ -466,6 +768,14 @@ static ar_expression_ast_t* _parse_primary(ar_expression_parser_t *mut_parser) {
         }
         
         return own_expr;
+    }
+
+    if (_peek_char(mut_parser, '[')) {
+        return _parse_list_literal(mut_parser);
+    }
+
+    if (_peek_char(mut_parser, '{')) {
+        return _parse_map_literal(mut_parser);
     }
     
     // Try memory access first

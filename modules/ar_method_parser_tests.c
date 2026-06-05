@@ -5,6 +5,7 @@
 #include "ar_method_parser.h"
 #include "ar_method_ast.h"
 #include "ar_instruction_ast.h"
+#include "ar_expression_ast.h"
 #include "ar_heap.h"
 #include "ar_log.h"
 
@@ -324,6 +325,119 @@ static void test_method_parser__successful_parse_after_failure(void) {
     printf("✓ test_method_parser__successful_parse_after_failure passed\n");
 }
 
+static void test_method_parser__parse_multiline_list_literal_with_commas(void) {
+    printf("Testing method parser multi-line list literal with commas...\n");
+
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    ar_method_parser_t *own_parser = ar_method_parser__create(log);
+    assert(own_parser != NULL);
+
+    const char *ref_source = "memory.items := [\n  1,\n  2,\n]";
+    ar_method_ast_t *own_ast = ar_method_parser__parse(own_parser, ref_source);
+
+    assert(own_ast != NULL);
+    assert(ar_method_ast__get_instruction_count(own_ast) == 1);
+    const ar_instruction_ast_t *ref_instruction = ar_method_ast__get_instruction(own_ast, 1);
+    const ar_expression_ast_t *ref_expr = ar_instruction_ast__get_assignment_expression_ast(ref_instruction);
+    assert(ref_expr != NULL);
+    assert(ar_expression_ast__get_type(ref_expr) == AR_EXPRESSION_AST_TYPE__LITERAL_LIST);
+    assert(ar_expression_ast__get_list_item_count(ref_expr) == 2);
+
+    ar_method_ast__destroy(own_ast);
+    ar_method_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
+static void test_method_parser__parse_multiline_list_literal_without_commas(void) {
+    printf("Testing method parser multi-line list literal without commas...\n");
+
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    ar_method_parser_t *own_parser = ar_method_parser__create(log);
+    assert(own_parser != NULL);
+
+    const char *ref_source = "memory.items := [\n  1\n  {a: [2, 3]}\n]";
+    ar_method_ast_t *own_ast = ar_method_parser__parse(own_parser, ref_source);
+
+    assert(own_ast != NULL);
+    const ar_instruction_ast_t *ref_instruction = ar_method_ast__get_instruction(own_ast, 1);
+    const ar_expression_ast_t *ref_expr = ar_instruction_ast__get_assignment_expression_ast(ref_instruction);
+    assert(ar_expression_ast__get_type(ref_expr) == AR_EXPRESSION_AST_TYPE__LITERAL_LIST);
+    assert(ar_expression_ast__get_list_item_count(ref_expr) == 2);
+
+    const ar_expression_ast_t *ref_second = ar_expression_ast__get_list_item(ref_expr, 1);
+    assert(ar_expression_ast__get_type(ref_second) == AR_EXPRESSION_AST_TYPE__LITERAL_MAP);
+
+    ar_method_ast__destroy(own_ast);
+    ar_method_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
+static void test_method_parser__parse_multiline_map_literal_without_commas(void) {
+    printf("Testing method parser multi-line map literal without commas...\n");
+
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    ar_method_parser_t *own_parser = ar_method_parser__create(log);
+    assert(own_parser != NULL);
+
+    const char *ref_source = "memory.profile := {\n  name: \"Ada\"\n  scores: [1, 2,]\n}";
+    ar_method_ast_t *own_ast = ar_method_parser__parse(own_parser, ref_source);
+
+    assert(own_ast != NULL);
+    const ar_instruction_ast_t *ref_instruction = ar_method_ast__get_instruction(own_ast, 1);
+    const ar_expression_ast_t *ref_expr = ar_instruction_ast__get_assignment_expression_ast(ref_instruction);
+    assert(ar_expression_ast__get_type(ref_expr) == AR_EXPRESSION_AST_TYPE__LITERAL_MAP);
+    assert(ar_expression_ast__get_map_entry_count(ref_expr) == 2);
+    assert(strcmp(ar_expression_ast__get_map_key(ref_expr, 0), "name") == 0);
+    assert(strcmp(ar_expression_ast__get_map_key(ref_expr, 1), "scores") == 0);
+
+    ar_method_ast__destroy(own_ast);
+    ar_method_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
+static void test_method_parser__rejects_invalid_multiline_literal(const char *ref_source) {
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    ar_method_parser_t *own_parser = ar_method_parser__create(log);
+    assert(own_parser != NULL);
+
+    ar_method_ast_t *own_ast = ar_method_parser__parse(own_parser, ref_source);
+
+    assert(own_ast == NULL);
+    assert(ar_log__get_last_error_message(log) != NULL);
+
+    ar_method_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
+static void test_method_parser__rejects_inconsistent_multiline_item_indentation(void) {
+    printf("Testing method parser rejects inconsistent multi-line item indentation...\n");
+    test_method_parser__rejects_invalid_multiline_literal("memory.items := [\n  1\n   2\n]");
+}
+
+static void test_method_parser__rejects_multiline_closing_indentation_mismatch(void) {
+    printf("Testing method parser rejects multi-line closing indentation mismatch...\n");
+    test_method_parser__rejects_invalid_multiline_literal("memory.items := [\n  1\n ]");
+}
+
+static void test_method_parser__rejects_multiline_literal_as_argument(void) {
+    printf("Testing method parser rejects multi-line literal as function argument...\n");
+    test_method_parser__rejects_invalid_multiline_literal("send(0, [\n  1\n])");
+}
+
+static void test_method_parser__rejects_nested_multiline_literal(void) {
+    printf("Testing method parser rejects nested multi-line literal...\n");
+    test_method_parser__rejects_invalid_multiline_literal("memory.items := [\n  [\n    1\n  ]\n]");
+}
+
+static void test_method_parser__rejects_multiple_items_on_multiline_item_line(void) {
+    printf("Testing method parser rejects multiple items on one multi-line item line...\n");
+    test_method_parser__rejects_invalid_multiline_literal("memory.items := [\n  1, 2\n]");
+}
+
 int main(void) {
     printf("Running method parser tests...\n\n");
     
@@ -340,6 +454,14 @@ int main(void) {
     test_method_parser__parse_hash_in_string();
     test_method_parser__parse_invalid_instruction();
     test_method_parser__successful_parse_after_failure();
+    test_method_parser__parse_multiline_list_literal_with_commas();
+    test_method_parser__parse_multiline_list_literal_without_commas();
+    test_method_parser__parse_multiline_map_literal_without_commas();
+    test_method_parser__rejects_inconsistent_multiline_item_indentation();
+    test_method_parser__rejects_multiline_closing_indentation_mismatch();
+    test_method_parser__rejects_multiline_literal_as_argument();
+    test_method_parser__rejects_nested_multiline_literal();
+    test_method_parser__rejects_multiple_items_on_multiline_item_line();
     
     printf("\nAll method parser tests passed!\n");
     return 0;

@@ -336,6 +336,37 @@ static void test_send_instruction_parser__parse_with_expression_asts(void) {
     ar_log__destroy(log);
 }
 
+static void test_send_instruction_parser__parses_literal_argument(void) {
+    printf("Testing send parsing with one-line literal argument...\n");
+
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    const char *instruction = "send(42, {items: [1, 2,]})";
+    ar_send_instruction_parser_t *own_parser = ar_send_instruction_parser__create(log);
+    assert(own_parser != NULL);
+
+    ar_instruction_ast_t *own_ast = ar_send_instruction_parser__parse(own_parser, instruction, NULL);
+
+    assert(own_ast != NULL);
+    const ar_list_t *ref_arg_asts = ar_instruction_ast__get_function_arg_asts(own_ast);
+    assert(ref_arg_asts != NULL);
+    assert(ar_list__count(ref_arg_asts) == 2);
+
+    void **items = ar_list__items(ref_arg_asts);
+    assert(items != NULL);
+    const ar_expression_ast_t *ref_message = (const ar_expression_ast_t*)items[1];
+    assert(ar_expression_ast__get_type(ref_message) == AR_EXPRESSION_AST_TYPE__LITERAL_MAP);
+    assert(ar_expression_ast__get_map_entry_count(ref_message) == 1);
+    assert(strcmp(ar_expression_ast__get_map_key(ref_message, 0), "items") == 0);
+    AR__HEAP__FREE(items);
+
+    assert(ar_log__get_last_error_message(log) == NULL);
+
+    ar_instruction_ast__destroy(own_ast);
+    ar_send_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
 int main(void) {
     printf("Running send instruction parser tests...\n\n");
     
@@ -357,6 +388,7 @@ int main(void) {
     
     // Expression AST integration
     test_send_instruction_parser__parse_with_expression_asts();
+    test_send_instruction_parser__parses_literal_argument();
     
     printf("\nAll send_instruction_parser tests passed!\n");
     return 0;

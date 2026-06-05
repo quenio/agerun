@@ -20,6 +20,7 @@ struct ar_agent_s {
     bool is_active;
     ar_list_t *own_message_queue;  // Using list as a message queue, owned by agent
     ar_data_t *own_memory;        // Memory owned by agent
+    ar_data_t *own_context;       // Optional context owned by agent
     const ar_data_t *ref_context;  // Context is read-only reference, not owned
 };
 
@@ -41,6 +42,7 @@ ar_agent_t* ar_agent__create_with_method(const ar_method_t *ref_method, const ar
     own_agent->id = 0;  // ID will be set by agency when it registers the agent
     own_agent->is_active = true;
     own_agent->ref_method = ref_method;  // Just store reference
+    own_agent->own_context = NULL;
     own_agent->ref_context = ref_context;  // Store reference, we don't own it
     
     own_agent->own_message_queue = ar_list__create();
@@ -59,6 +61,21 @@ ar_agent_t* ar_agent__create_with_method(const ar_method_t *ref_method, const ar
     return own_agent;
 }
 
+ar_agent_t* ar_agent__create_with_method_owned_context(const ar_method_t *ref_method, ar_data_t *own_context) {
+    ar_agent_t *own_agent = ar_agent__create_with_method(ref_method, own_context);
+    if (!own_agent) {
+        if (own_context) {
+            ar_data__destroy(own_context);
+        }
+        return NULL;
+    }
+
+    own_agent->own_context = own_context;
+    own_agent->ref_context = own_context;
+
+    return own_agent;
+}
+
 /* ar_agent__create removed - use ar_agency__create_agent instead */
 
 void ar_agent__destroy(ar_agent_t *own_agent) {
@@ -72,7 +89,10 @@ void ar_agent__destroy(ar_agent_t *own_agent) {
         own_agent->own_memory = NULL;
     }
     
-    // We don't own the context, just clear the reference
+    if (own_agent->own_context) {
+        ar_data__destroy(own_agent->own_context);
+        own_agent->own_context = NULL;
+    }
     own_agent->ref_context = NULL;
     
     // Destroy any pending messages and the queue
@@ -254,4 +274,3 @@ void ar_agent__set_id(ar_agent_t *mut_agent, int64_t new_id) {
     }
     mut_agent->id = new_id;
 }
-
