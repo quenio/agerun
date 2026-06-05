@@ -13,7 +13,8 @@ count, and reply target. It also clears the three bounded result slots and their
 
 On a map whose `action` field is `"result"`, the method stores the incoming value in slot `a`, `b`,
 or `c`. When the number of received slots is greater than or equal to `required_count`, it sends a
-map whose `action` field is `"aggregate_complete"` to the stored reply target.
+map whose `action` field is `"aggregate_complete"` to the stored reply target. The aggregate values
+are emitted as a list in the `result` field.
 
 ## Message Format
 
@@ -38,21 +39,7 @@ Result request:
 }
 ```
 
-Current bounded completion response:
-
-```text
-{
-  action: "aggregate_complete",
-  aggregate_id: <id>,
-  status: "complete",
-  result_a: <text>,
-  result_b: <text>,
-  result_c: <text>,
-  received_count: <count>
-}
-```
-
-Intended general completion response:
+Completion response:
 
 ```text
 {
@@ -64,9 +51,10 @@ Intended general completion response:
 }
 ```
 
-The general list-valued `result` form is not fully implementable as an ordinary method today because
-the method language can carry lists but cannot create an empty list, append to a list, or assign by
-list index.
+The list contains the collected values for `required_count`: one, two, or three values. The method
+still uses fixed slots internally because ordinary methods cannot append to a list or assign by list
+index. The completion map is constructed directly in `send(...)` so the nested list can be
+transferred as a fresh value rather than copied out of memory.
 
 ## Action Field
 
@@ -76,16 +64,17 @@ and prevents unrelated maps from changing collection state.
 
 ## Composition Notes
 
-Use aggregation after distribution to combine worker outputs when the bounded three-slot contract is
-sufficient. Synchronization or workflow can wait for the aggregate completion before advancing a
-larger process.
+Use aggregation after distribution to combine worker outputs when the bounded three-slot collection
+contract is sufficient. Synchronization or workflow can wait for the aggregate completion before
+advancing a larger process.
 
 ## Limitations
 
-The method supports three fixed slots and emits `result_a`, `result_b`, and `result_c`. The intended
-general contract should emit `result` as a list, but ordinary methods currently lack list
-construction, append, and indexed assignment. Dynamic result sets, duplicate handling policies, and
-custom merge functions require richer collection operations or specialized aggregate methods.
+The method supports three fixed input slots and emits the collected values as `result`. Dynamic
+result sets, duplicate handling policies, and custom merge functions require richer collection
+operations or specialized aggregate methods. Stored maps that contain nested lists cannot be
+forwarded by ordinary `send` because the current data model has shallow copy semantics for memory
+values.
 
 ## Implementation and Tests
 

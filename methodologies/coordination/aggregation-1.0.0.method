@@ -24,13 +24,13 @@ memory.received_c := if(memory.accept_c = 1, 1, memory.received_c)
 memory.received_count := memory.received_a + memory.received_b + memory.received_c
 memory.is_complete := if(memory.received_count >= memory.required_count, 1, 0)
 memory.status := if(memory.is_complete = 1, "complete", "collecting")
-memory.output_message := parse("", "")
-memory.output_message.action := "aggregate_complete"
-memory.output_message.aggregate_id := memory.aggregate_id
-memory.output_message.status := memory.status
-memory.output_message.result_a := memory.result_a
-memory.output_message.result_b := memory.result_b
-memory.output_message.result_c := memory.result_c
-memory.output_message.received_count := memory.received_count
 memory.output_target := memory.reply_to * memory.is_complete
-memory.output_sent := send(memory.output_target, memory.output_message)
+memory.count_one := if(memory.required_count = 1, 1, 0)
+memory.count_two := if(memory.required_count = 2, 1, 0)
+memory.count_three := if(memory.required_count = 3, 1, 0)
+memory.output_target_one := memory.output_target * memory.count_one
+memory.output_target_two := memory.output_target * memory.count_two
+memory.output_target_three := memory.output_target * memory.count_three
+memory.output_sent_one := send(memory.output_target_one, {action: "aggregate_complete", aggregate_id: memory.aggregate_id, status: "complete", result: [memory.result_a], received_count: memory.received_count})
+memory.output_sent_two := send(memory.output_target_two, {action: "aggregate_complete", aggregate_id: memory.aggregate_id, status: "complete", result: [memory.result_a, memory.result_b], received_count: memory.received_count})
+memory.output_sent_three := send(memory.output_target_three, {action: "aggregate_complete", aggregate_id: memory.aggregate_id, status: "complete", result: [memory.result_a, memory.result_b, memory.result_c], received_count: memory.received_count})

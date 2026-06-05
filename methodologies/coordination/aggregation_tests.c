@@ -4,6 +4,7 @@
 #include "ar_agency.h"
 #include "ar_assert.h"
 #include "ar_data.h"
+#include "ar_heap.h"
 #include "ar_method.h"
 #include "ar_method_fixture.h"
 #include "ar_methodology.h"
@@ -47,8 +48,7 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
         "memory.last_action := message.action\n"
         "memory.last_status := message.status\n"
         "memory.last_aggregate_id := message.aggregate_id\n"
-        "memory.last_result_a := message.result_a\n"
-        "memory.last_result_b := message.result_b\n"
+        "memory.last_result := message.result\n"
         "memory.last_received_count := message.received_count\n";
 
     AR_ASSERT(ar_methodology__create_method(mut_methodology,
@@ -113,10 +113,19 @@ static void test_aggregation__combines_required_results(void) {
               "Receiver should observe aggregate completion");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_status"), "complete") == 0,
               "Aggregate status should be complete");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_result_a"), "alpha") == 0,
-              "Aggregate should include slot a");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_result_b"), "beta") == 0,
-              "Aggregate should include slot b");
+    const ar_data_t *ref_result = ar_data__get_map_data(ref_receiver_memory, "last_result");
+    AR_ASSERT(ref_result != NULL, "Aggregate should include result list");
+    AR_ASSERT(ar_data__get_type(ref_result) == AR_DATA_TYPE__LIST,
+              "Aggregate result should be a list");
+    AR_ASSERT(ar_data__list_count(ref_result) == 2,
+              "Aggregate result should include only required values");
+    ar_data_t **own_items = ar_data__list_items(ref_result);
+    AR_ASSERT(own_items != NULL, "Aggregate result items should be readable");
+    AR_ASSERT(strcmp(ar_data__get_string(own_items[0]), "alpha") == 0,
+              "Aggregate result should include first value");
+    AR_ASSERT(strcmp(ar_data__get_string(own_items[1]), "beta") == 0,
+              "Aggregate result should include second value");
+    AR__HEAP__FREE(own_items);
     AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_received_count") == 2,
               "Aggregate should report two received results");
 
