@@ -357,6 +357,24 @@ _recovery_lock_value() {
     _lock_file_value "$STALE_LOCK_RECOVERY_FILE" "$1"
 }
 
+_pid_exists_on_current_host() {
+    local pid="$1"
+
+    case "$pid" in
+        ""|*[!0-9]*)
+            return 1
+            ;;
+    esac
+
+    if kill -0 "$pid" 2>/dev/null; then
+        return 0
+    fi
+
+    # A process owned by another user can reject kill -0 with EPERM while still
+    # being alive. ps keeps that lock holder from being mistaken for a dead PID.
+    ps -p "$pid" >/dev/null 2>&1
+}
+
 _lock_pid_is_running_on_current_host() {
     local lock_pid
     local lock_host
@@ -364,17 +382,7 @@ _lock_pid_is_running_on_current_host() {
     lock_pid=$(_lock_value "pid")
     lock_host=$(_lock_value "host")
 
-    if [ -z "$lock_pid" ] || [ "$lock_host" != "$CURRENT_HOST" ]; then
-        return 1
-    fi
-
-    case "$lock_pid" in
-        *[!0-9]*)
-            return 1
-            ;;
-    esac
-
-    kill -0 "$lock_pid" 2>/dev/null
+    [ "$lock_host" = "$CURRENT_HOST" ] && _pid_exists_on_current_host "$lock_pid"
 }
 
 _lock_holder_is_dead_on_current_host() {
@@ -384,17 +392,7 @@ _lock_holder_is_dead_on_current_host() {
     lock_pid=$(_lock_value "pid")
     lock_host=$(_lock_value "host")
 
-    if [ -z "$lock_pid" ] || [ "$lock_host" != "$CURRENT_HOST" ]; then
-        return 1
-    fi
-
-    case "$lock_pid" in
-        *[!0-9]*)
-            return 1
-            ;;
-    esac
-
-    ! kill -0 "$lock_pid" 2>/dev/null
+    [ "$lock_host" = "$CURRENT_HOST" ] && ! _pid_exists_on_current_host "$lock_pid"
 }
 
 _lock_holder_is_foreign_host() {
@@ -426,17 +424,7 @@ _recovery_lock_pid_is_running_on_current_host() {
     lock_pid=$(_recovery_lock_value "pid")
     lock_host=$(_recovery_lock_value "host")
 
-    if [ -z "$lock_pid" ] || [ "$lock_host" != "$CURRENT_HOST" ]; then
-        return 1
-    fi
-
-    case "$lock_pid" in
-        *[!0-9]*)
-            return 1
-            ;;
-    esac
-
-    kill -0 "$lock_pid" 2>/dev/null
+    [ "$lock_host" = "$CURRENT_HOST" ] && _pid_exists_on_current_host "$lock_pid"
 }
 
 _recovery_lock_holder_is_dead_on_current_host() {
@@ -446,17 +434,7 @@ _recovery_lock_holder_is_dead_on_current_host() {
     lock_pid=$(_recovery_lock_value "pid")
     lock_host=$(_recovery_lock_value "host")
 
-    if [ -z "$lock_pid" ] || [ "$lock_host" != "$CURRENT_HOST" ]; then
-        return 1
-    fi
-
-    case "$lock_pid" in
-        *[!0-9]*)
-            return 1
-            ;;
-    esac
-
-    ! kill -0 "$lock_pid" 2>/dev/null
+    [ "$lock_host" = "$CURRENT_HOST" ] && ! _pid_exists_on_current_host "$lock_pid"
 }
 
 _recovery_lock_holder_is_foreign_host() {
