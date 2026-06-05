@@ -375,14 +375,45 @@ _pid_exists_on_current_host() {
     ps -p "$pid" >/dev/null 2>&1
 }
 
-_lock_pid_is_running_on_current_host() {
+_pid_start_fingerprint() {
+    local pid="$1"
+    local output
+
+    case "$pid" in
+        ""|*[!0-9]*)
+            return 1
+            ;;
+    esac
+
+    output=$(ps -p "$pid" -o lstart= 2>/dev/null) || return 1
+    printf '%s\n' "$output" | awk 'NF { sub(/^[[:space:]]*/, ""); sub(/[[:space:]]*$/, ""); print; exit }'
+}
+
+_pid_matches_start_fingerprint() {
+    local pid="$1"
+    local expected_fingerprint="$2"
+    local actual_fingerprint
+
+    if [ -z "$expected_fingerprint" ]; then
+        return 1
+    fi
+
+    actual_fingerprint=$(_pid_start_fingerprint "$pid") || return 1
+    [ -n "$actual_fingerprint" ] && [ "$actual_fingerprint" = "$expected_fingerprint" ]
+}
+
+_lock_holder_matches_current_process_identity() {
     local lock_pid
     local lock_host
+    local lock_pid_started_at
 
     lock_pid=$(_lock_value "pid")
     lock_host=$(_lock_value "host")
+    lock_pid_started_at=$(_lock_value "pid_started_at")
 
-    [ "$lock_host" = "$CURRENT_HOST" ] && _pid_exists_on_current_host "$lock_pid"
+    [ "$lock_host" = "$CURRENT_HOST" ] &&
+        _pid_exists_on_current_host "$lock_pid" &&
+        _pid_matches_start_fingerprint "$lock_pid" "$lock_pid_started_at"
 }
 
 _lock_holder_is_dead_on_current_host() {
@@ -404,9 +435,16 @@ _lock_holder_is_foreign_host() {
 }
 
 _write_recovery_lock_metadata() {
+    local pid_started_at
+
+    pid_started_at=$(_pid_start_fingerprint "$$") || pid_started_at=
+
     {
         echo "pid=$$"
         echo "host=$CURRENT_HOST"
+        if [ -n "$pid_started_at" ]; then
+            echo "pid_started_at=$pid_started_at"
+        fi
         echo "started_at=$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
         echo "cache_lock=$CACHE_LOCK"
     } > "$STALE_LOCK_RECOVERY_FILE"
@@ -417,14 +455,18 @@ _release_recovery_lock() {
     rmdir "$STALE_LOCK_RECOVERY_DIR" 2>/dev/null || true
 }
 
-_recovery_lock_pid_is_running_on_current_host() {
+_recovery_lock_holder_matches_current_process_identity() {
     local lock_pid
     local lock_host
+    local lock_pid_started_at
 
     lock_pid=$(_recovery_lock_value "pid")
     lock_host=$(_recovery_lock_value "host")
+    lock_pid_started_at=$(_recovery_lock_value "pid_started_at")
 
-    [ "$lock_host" = "$CURRENT_HOST" ] && _pid_exists_on_current_host "$lock_pid"
+    [ "$lock_host" = "$CURRENT_HOST" ] &&
+        _pid_exists_on_current_host "$lock_pid" &&
+        _pid_matches_start_fingerprint "$lock_pid" "$lock_pid_started_at"
 }
 
 _recovery_lock_holder_is_dead_on_current_host() {
@@ -470,7 +512,7 @@ _recovery_lock_is_stale() {
         return 0
     fi
 
-    ! _recovery_lock_pid_is_running_on_current_host
+    ! _recovery_lock_holder_matches_current_process_identity
 }
 
 _remove_stale_recovery_lock() {
@@ -519,7 +561,7 @@ _lock_is_stale() {
         return 0
     fi
 
-    ! _lock_pid_is_running_on_current_host
+    ! _lock_holder_matches_current_process_identity
 }
 
 _remove_stale_lock() {
@@ -552,6 +594,8 @@ _wait_for_lock() {
 }
 
 _acquire_lock() {
+    local pid_started_at
+
     mkdir -p "$CACHE_DIR"
 
     while true; do
@@ -561,11 +605,16 @@ _acquire_lock() {
             return 1
         fi
 
+        pid_started_at=$(_pid_start_fingerprint "$$") || pid_started_at=
+
         if (
             set -o noclobber
             {
                 echo "pid=$$"
                 echo "host=$CURRENT_HOST"
+                if [ -n "$pid_started_at" ]; then
+                    echo "pid_started_at=$pid_started_at"
+                fi
                 echo "started_at=$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
                 echo "cache_dir=$CACHE_DIR"
             } > "$CACHE_LOCK"
