@@ -1,0 +1,30 @@
+memory.is_distribute := if(message.action = "distribute", 1, 0)
+memory.routing_agent := if(memory.is_distribute = 1, message.routing_agent, memory.routing_agent)
+memory.reply_to := if(memory.is_distribute = 1, message.reply_to, memory.reply_to)
+memory.work_id := if(memory.is_distribute = 1, message.work_id, memory.work_id)
+memory.has_a := if(message.worker_a > 0, 1, 0)
+memory.has_b := if(message.worker_b > 0, 1, 0)
+memory.has_c := if(message.worker_c > 0, 1, 0)
+memory.route_action := "route"
+memory.route_mode := "one"
+memory.work_action := "work"
+memory.route_target := message.worker_a
+memory.payload_text := message.portion_a
+memory.route_input_a := build("action={route_action} mode={route_mode} target={route_target} payload_action={work_action} payload_text={payload_text} correlation_id={work_id} reply_to=0", memory)
+memory.route_message_a := parse("action={action} mode={mode} target={target} payload_action={payload_action} payload_text={payload_text} correlation_id={correlation_id} reply_to={reply_to}", memory.route_input_a)
+memory.sent_a := send(memory.routing_agent * memory.is_distribute * memory.has_a, memory.route_message_a)
+memory.route_target := message.worker_b
+memory.payload_text := message.portion_b
+memory.route_input_b := build("action={route_action} mode={route_mode} target={route_target} payload_action={work_action} payload_text={payload_text} correlation_id={work_id} reply_to=0", memory)
+memory.route_message_b := parse("action={action} mode={mode} target={target} payload_action={payload_action} payload_text={payload_text} correlation_id={correlation_id} reply_to={reply_to}", memory.route_input_b)
+memory.sent_b := send(memory.routing_agent * memory.is_distribute * memory.has_b, memory.route_message_b)
+memory.route_target := message.worker_c
+memory.payload_text := message.portion_c
+memory.route_input_c := build("action={route_action} mode={route_mode} target={route_target} payload_action={work_action} payload_text={payload_text} correlation_id={work_id} reply_to=0", memory)
+memory.route_message_c := parse("action={action} mode={mode} target={target} payload_action={payload_action} payload_text={payload_text} correlation_id={correlation_id} reply_to={reply_to}", memory.route_input_c)
+memory.sent_c := send(memory.routing_agent * memory.is_distribute * memory.has_c, memory.route_message_c)
+memory.assignment_count := memory.has_a + memory.has_b + memory.has_c
+memory.status := if(memory.is_distribute = 1, "distributed", "ignored")
+memory.report_input := build("action=distribution_result status={status} work_id={work_id} assignment_count={assignment_count} sent_a={sent_a} sent_b={sent_b} sent_c={sent_c}", memory)
+memory.report_message := parse("action={action} status={status} work_id={work_id} assignment_count={assignment_count} sent_a={sent_a} sent_b={sent_b} sent_c={sent_c}", memory.report_input)
+memory.report_sent := send(memory.reply_to, memory.report_message)

@@ -241,6 +241,12 @@ METHOD_TEST_SRC = $(wildcard methods/*_tests.c)
 METHOD_TEST_OBJ = $(patsubst methods/%.c,bin/obj/%.o,$(METHOD_TEST_SRC))
 METHOD_TEST_BIN = $(patsubst methods/%_tests.c,bin/%_tests,$(METHOD_TEST_SRC))
 
+# Methodology-local test source files
+METHODOLOGY_TEST_SRC = $(wildcard methodologies/*/*_tests.c)
+METHODOLOGY_TEST_NAMES = $(basename $(notdir $(METHODOLOGY_TEST_SRC)))
+METHODOLOGY_TEST_OBJ = $(addprefix bin/obj/,$(addsuffix .o,$(METHODOLOGY_TEST_NAMES)))
+METHODOLOGY_TEST_BIN = $(addprefix bin/,$(METHODOLOGY_TEST_NAMES))
+
 # Zig struct module test source files
 ZIG_TEST_SRC = $(wildcard modules/*Tests.zig)
 ZIG_TEST_BIN = $(patsubst modules/%Tests.zig,bin/%Tests,$(ZIG_TEST_SRC))
@@ -248,12 +254,18 @@ ZIG_TEST_BIN = $(patsubst modules/%Tests.zig,bin/%Tests,$(ZIG_TEST_SRC))
 # Directory-specific method test paths
 RUN_TESTS_METHOD_TEST_OBJ = $(patsubst methods/%.c,$(RUN_TESTS_DIR)/obj/%.o,$(METHOD_TEST_SRC))
 RUN_TESTS_METHOD_TEST_BIN = $(patsubst methods/%_tests.c,$(RUN_TESTS_DIR)/%_tests,$(METHOD_TEST_SRC))
+RUN_TESTS_METHODOLOGY_TEST_OBJ = $(addprefix $(RUN_TESTS_DIR)/obj/,$(addsuffix .o,$(METHODOLOGY_TEST_NAMES)))
+RUN_TESTS_METHODOLOGY_TEST_BIN = $(addprefix $(RUN_TESTS_DIR)/,$(METHODOLOGY_TEST_NAMES))
 
 SANITIZE_TESTS_METHOD_TEST_OBJ = $(patsubst methods/%.c,$(SANITIZE_TESTS_DIR)/obj/%.o,$(SANITIZER_METHOD_TEST_SRC))
 SANITIZE_TESTS_METHOD_TEST_BIN = $(patsubst methods/%_tests.c,$(SANITIZE_TESTS_DIR)/%_tests,$(SANITIZER_METHOD_TEST_SRC))
+SANITIZE_TESTS_METHODOLOGY_TEST_OBJ = $(addprefix $(SANITIZE_TESTS_DIR)/obj/,$(addsuffix .o,$(SANITIZER_METHODOLOGY_TEST_NAMES)))
+SANITIZE_TESTS_METHODOLOGY_TEST_BIN = $(addprefix $(SANITIZE_TESTS_DIR)/,$(SANITIZER_METHODOLOGY_TEST_NAMES))
 
 TSAN_TESTS_METHOD_TEST_OBJ = $(patsubst methods/%.c,$(TSAN_TESTS_DIR)/obj/%.o,$(SANITIZER_METHOD_TEST_SRC))
 TSAN_TESTS_METHOD_TEST_BIN = $(patsubst methods/%_tests.c,$(TSAN_TESTS_DIR)/%_tests,$(SANITIZER_METHOD_TEST_SRC))
+TSAN_TESTS_METHODOLOGY_TEST_OBJ = $(addprefix $(TSAN_TESTS_DIR)/obj/,$(addsuffix .o,$(SANITIZER_METHODOLOGY_TEST_NAMES)))
+TSAN_TESTS_METHODOLOGY_TEST_BIN = $(addprefix $(TSAN_TESTS_DIR)/,$(SANITIZER_METHODOLOGY_TEST_NAMES))
 
 # Directory-specific Zig test paths
 RUN_TESTS_ZIG_TEST_BIN = $(patsubst modules/%Tests.zig,$(RUN_TESTS_DIR)/%Tests,$(ZIG_TEST_SRC))
@@ -287,7 +299,7 @@ $(TSAN_EXEC_DIR):
 
 
 # Directory-specific library targets
-run_tests_lib: $(RUN_TESTS_DIR) $(RUN_TESTS_OBJ) $(RUN_TESTS_TEST_OBJ) $(RUN_TESTS_METHOD_TEST_OBJ)
+run_tests_lib: $(RUN_TESTS_DIR) $(RUN_TESTS_OBJ) $(RUN_TESTS_TEST_OBJ) $(RUN_TESTS_METHOD_TEST_OBJ) $(RUN_TESTS_METHODOLOGY_TEST_OBJ)
 	ar rcs $(RUN_TESTS_DIR)/libagerun.a $(RUN_TESTS_OBJ)
 
 run_exec_lib: $(RUN_EXEC_DIR) $(RUN_EXEC_OBJ)
@@ -296,7 +308,7 @@ run_exec_lib: $(RUN_EXEC_DIR) $(RUN_EXEC_OBJ)
 sanitize_tests_lib: CC = $(SANITIZER_CC)
 sanitize_tests_lib: CFLAGS += $(DEBUG_CFLAGS) $(SANITIZER_FLAGS) $(SANITIZER_EXTRA_FLAGS)
 sanitize_tests_lib: LDFLAGS += $(SANITIZER_FLAGS)
-sanitize_tests_lib: $(SANITIZE_TESTS_DIR) $(SANITIZE_TESTS_OBJ) $(SANITIZE_TESTS_TEST_OBJ) $(SANITIZE_TESTS_METHOD_TEST_OBJ)
+sanitize_tests_lib: $(SANITIZE_TESTS_DIR) $(SANITIZE_TESTS_OBJ) $(SANITIZE_TESTS_TEST_OBJ) $(SANITIZE_TESTS_METHOD_TEST_OBJ) $(SANITIZE_TESTS_METHODOLOGY_TEST_OBJ)
 	ar rcs $(SANITIZE_TESTS_DIR)/libagerun.a $(SANITIZE_TESTS_OBJ)
 
 sanitize_exec_lib: CC = $(SANITIZER_CC)
@@ -308,7 +320,7 @@ sanitize_exec_lib: $(SANITIZE_EXEC_DIR) $(SANITIZE_EXEC_OBJ)
 tsan_tests_lib: CC = $(SANITIZER_CC)
 tsan_tests_lib: CFLAGS += $(DEBUG_CFLAGS) $(TSAN_FLAGS) $(SANITIZER_EXTRA_FLAGS)
 tsan_tests_lib: LDFLAGS += $(TSAN_FLAGS)
-tsan_tests_lib: $(TSAN_TESTS_DIR) $(TSAN_TESTS_OBJ) $(TSAN_TESTS_TEST_OBJ) $(TSAN_TESTS_METHOD_TEST_OBJ)
+tsan_tests_lib: $(TSAN_TESTS_DIR) $(TSAN_TESTS_OBJ) $(TSAN_TESTS_TEST_OBJ) $(TSAN_TESTS_METHOD_TEST_OBJ) $(TSAN_TESTS_METHODOLOGY_TEST_OBJ)
 	ar rcs $(TSAN_TESTS_DIR)/libagerun.a $(TSAN_TESTS_OBJ)
 
 tsan_exec_lib: CC = $(SANITIZER_CC)
@@ -359,21 +371,25 @@ tsan-exec: tsan_exec_lib
 RUN_TEST_TEST_SRC = $(filter-out %_dlsym_tests.c,$(TEST_SRC))
 RUN_TEST_TEST_BIN_NAMES = $(patsubst modules/%_tests.c,%_tests,$(RUN_TEST_TEST_SRC))
 METHOD_TEST_BIN_NAMES = $(notdir $(METHOD_TEST_BIN))
+METHODOLOGY_TEST_BIN_NAMES = $(METHODOLOGY_TEST_NAMES)
 ZIG_TEST_BIN_NAMES = $(notdir $(ZIG_TEST_BIN))
-ALL_TEST_BIN_NAMES = $(RUN_TEST_TEST_BIN_NAMES) $(METHOD_TEST_BIN_NAMES) $(ZIG_TEST_BIN_NAMES)
+ALL_TEST_BIN_NAMES = $(RUN_TEST_TEST_BIN_NAMES) $(METHOD_TEST_BIN_NAMES) $(METHODOLOGY_TEST_BIN_NAMES) $(ZIG_TEST_BIN_NAMES)
 
 # Filtered test sources for sanitizers (exclude *_dlsym_tests.c)
 SANITIZER_TEST_SRC = $(filter-out %_dlsym_tests.c,$(TEST_SRC))
 SANITIZER_METHOD_TEST_SRC = $(filter-out %_dlsym_tests.c,$(METHOD_TEST_SRC))
+SANITIZER_METHODOLOGY_TEST_SRC = $(filter-out %_dlsym_tests.c,$(METHODOLOGY_TEST_SRC))
+SANITIZER_METHODOLOGY_TEST_NAMES = $(basename $(notdir $(SANITIZER_METHODOLOGY_TEST_SRC)))
 
 # Filtered test binaries for sanitizers
 SANITIZER_TEST_BIN_NAMES = $(patsubst modules/%_tests.c,%_tests,$(SANITIZER_TEST_SRC))
 SANITIZER_METHOD_TEST_BIN_NAMES = $(patsubst methods/%_tests.c,%_tests,$(SANITIZER_METHOD_TEST_SRC))
-SANITIZER_ALL_TEST_BIN_NAMES = $(SANITIZER_TEST_BIN_NAMES) $(SANITIZER_METHOD_TEST_BIN_NAMES) $(ZIG_TEST_BIN_NAMES)
+SANITIZER_METHODOLOGY_TEST_BIN_NAMES = $(SANITIZER_METHODOLOGY_TEST_NAMES)
+SANITIZER_ALL_TEST_BIN_NAMES = $(SANITIZER_TEST_BIN_NAMES) $(SANITIZER_METHOD_TEST_BIN_NAMES) $(SANITIZER_METHODOLOGY_TEST_BIN_NAMES) $(ZIG_TEST_BIN_NAMES)
 
 # Build and run tests (always in debug mode)
 run-tests: $(WORKFLOW_REAL_COMPLETION_PREREQ) run_tests_lib
-	$(MAKE) $(RUN_TESTS_TEST_BIN) $(RUN_TESTS_METHOD_TEST_BIN)
+	$(MAKE) $(RUN_TESTS_TEST_BIN) $(RUN_TESTS_METHOD_TEST_BIN) $(RUN_TESTS_METHODOLOGY_TEST_BIN)
 	$(MAKE) $(RUN_TESTS_ZIG_TEST_BIN)
 	@cd $(RUN_TESTS_DIR) && failed=0 && for test in $(ALL_TEST_BIN_NAMES); do \
 		rm -f *.agerun; \
@@ -403,7 +419,7 @@ run-tests: $(WORKFLOW_REAL_COMPLETION_PREREQ) run_tests_lib
 # Build and run tests with Address + Undefined Behavior Sanitizers
 sanitize-tests:
 	$(MAKE) sanitize_tests_lib
-	$(MAKE) $(SANITIZE_TESTS_TEST_BIN) $(SANITIZE_TESTS_METHOD_TEST_BIN) CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(SANITIZER_FLAGS) $(SANITIZER_EXTRA_FLAGS)" LDFLAGS="$(LDFLAGS) $(SANITIZER_FLAGS)"
+	$(MAKE) $(SANITIZE_TESTS_TEST_BIN) $(SANITIZE_TESTS_METHOD_TEST_BIN) $(SANITIZE_TESTS_METHODOLOGY_TEST_BIN) CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(SANITIZER_FLAGS) $(SANITIZER_EXTRA_FLAGS)" LDFLAGS="$(LDFLAGS) $(SANITIZER_FLAGS)"
 	$(MAKE) $(SANITIZE_TESTS_ZIG_TEST_BIN)
 	@cd $(SANITIZE_TESTS_DIR) && failed=0 && for test in $(SANITIZER_ALL_TEST_BIN_NAMES); do \
 		rm -f *.agerun; \
@@ -436,7 +452,7 @@ sanitize-tests:
 # Build and run tests with Thread Sanitizer (must run separately from ASan)
 tsan-tests:
 	$(MAKE) tsan_tests_lib
-	$(MAKE) $(TSAN_TESTS_TEST_BIN) $(TSAN_TESTS_METHOD_TEST_BIN) CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS) $(SANITIZER_EXTRA_FLAGS)" LDFLAGS="$(LDFLAGS) $(TSAN_FLAGS)"
+	$(MAKE) $(TSAN_TESTS_TEST_BIN) $(TSAN_TESTS_METHOD_TEST_BIN) $(TSAN_TESTS_METHODOLOGY_TEST_BIN) CC="$(SANITIZER_CC)" CFLAGS="$(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS) $(SANITIZER_EXTRA_FLAGS)" LDFLAGS="$(LDFLAGS) $(TSAN_FLAGS)"
 	$(MAKE) $(TSAN_TESTS_ZIG_TEST_BIN)
 	@cd $(TSAN_TESTS_DIR) && failed=0 && for test in $(SANITIZER_ALL_TEST_BIN_NAMES); do \
 		rm -f *.agerun; \
@@ -540,6 +556,12 @@ $(RUN_TESTS_DIR)/obj/%_tests.o: modules/%_tests.c | $(RUN_TESTS_DIR)
 $(RUN_TESTS_DIR)/obj/%_tests.o: methods/%_tests.c | $(RUN_TESTS_DIR)
 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(DEBUG_CFLAGS) -c $< -o $@
 
+define RUN_METHODOLOGY_TEST_OBJECT_RULE
+$(RUN_TESTS_DIR)/obj/$(basename $(notdir $(1))).o: $(1) | $(RUN_TESTS_DIR)
+	$$(CC) $$(CFLAGS) $$(EXTRA_CFLAGS) $$(DEBUG_CFLAGS) -c $$< -o $$@
+endef
+$(foreach test_src,$(METHODOLOGY_TEST_SRC),$(eval $(call RUN_METHODOLOGY_TEST_OBJECT_RULE,$(test_src))))
+
 # Run exec directory
 $(RUN_EXEC_DIR)/obj/%.o: modules/%.c | $(RUN_EXEC_DIR)
 	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) -c $< -o $@
@@ -560,6 +582,12 @@ $(SANITIZE_TESTS_DIR)/obj/%_tests.o: modules/%_tests.c | $(SANITIZE_TESTS_DIR)
 $(SANITIZE_TESTS_DIR)/obj/%_tests.o: methods/%_tests.c | $(SANITIZE_TESTS_DIR)
 	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(SANITIZER_FLAGS) $(SANITIZER_EXTRA_FLAGS) -c $< -o $@
 
+define SANITIZE_METHODOLOGY_TEST_OBJECT_RULE
+$(SANITIZE_TESTS_DIR)/obj/$(basename $(notdir $(1))).o: $(1) | $(SANITIZE_TESTS_DIR)
+	$$(SANITIZER_CC) $$(CFLAGS) $$(DEBUG_CFLAGS) $$(SANITIZER_FLAGS) $$(SANITIZER_EXTRA_FLAGS) -c $$< -o $$@
+endef
+$(foreach test_src,$(SANITIZER_METHODOLOGY_TEST_SRC),$(eval $(call SANITIZE_METHODOLOGY_TEST_OBJECT_RULE,$(test_src))))
+
 # Sanitize exec directory
 $(SANITIZE_EXEC_DIR)/obj/%.o: modules/%.c | $(SANITIZE_EXEC_DIR)
 	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(SANITIZER_FLAGS) $(SANITIZER_EXTRA_FLAGS) -c $< -o $@
@@ -579,6 +607,12 @@ $(TSAN_TESTS_DIR)/obj/%_tests.o: modules/%_tests.c | $(TSAN_TESTS_DIR)
 
 $(TSAN_TESTS_DIR)/obj/%_tests.o: methods/%_tests.c | $(TSAN_TESTS_DIR)
 	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS) $(SANITIZER_EXTRA_FLAGS) -c $< -o $@
+
+define TSAN_METHODOLOGY_TEST_OBJECT_RULE
+$(TSAN_TESTS_DIR)/obj/$(basename $(notdir $(1))).o: $(1) | $(TSAN_TESTS_DIR)
+	$$(SANITIZER_CC) $$(CFLAGS) $$(DEBUG_CFLAGS) $$(TSAN_FLAGS) $$(SANITIZER_EXTRA_FLAGS) -c $$< -o $$@
+endef
+$(foreach test_src,$(SANITIZER_METHODOLOGY_TEST_SRC),$(eval $(call TSAN_METHODOLOGY_TEST_OBJECT_RULE,$(test_src))))
 
 # TSan exec directory
 $(TSAN_EXEC_DIR)/obj/%.o: modules/%.c | $(TSAN_EXEC_DIR)
@@ -647,7 +681,7 @@ analyze-tests: $(ANALYZE_TESTS_DIR)
 		total_bugs=0; \
 		rm -f $(ANALYZE_TESTS_DIR)/scan-build-analyze-tests.log; \
 		rm -f $(ANALYZE_TESTS_DIR)/scan-build-warnings.log; \
-		for file in $(C_SRC) $(TEST_SRC) $(METHOD_TEST_SRC); do \
+		for file in $(C_SRC) $(TEST_SRC) $(METHOD_TEST_SRC) $(METHODOLOGY_TEST_SRC); do \
 			echo "Analyzing $$file..."; \
 			$(SCAN_BUILD) -o $(ANALYZE_TESTS_DIR)/scan-build-results --status-bugs --use-cc=$(CC) $(CC) $(CFLAGS) $(DEBUG_CFLAGS) -c -I./modules $$file -o $(ANALYZE_TESTS_DIR)/obj/$$(basename $$file .c).o 2>&1 | tee $(ANALYZE_TESTS_DIR)/scan-build-temp-tests.log; \
 			if grep -q "scan-build: [0-9]* bug" $(ANALYZE_TESTS_DIR)/scan-build-temp-tests.log && ! grep -q "scan-build: 0 bugs found" $(ANALYZE_TESTS_DIR)/scan-build-temp-tests.log; then \
