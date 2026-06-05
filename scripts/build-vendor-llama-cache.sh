@@ -16,11 +16,13 @@ LLAMA_SOURCE_DIR=${LLAMA_SOURCE_DIR:-llama-cpp}
 LLAMA_CACHE_DIR=${LLAMA_CACHE_DIR:-"$HOME/.agerun/build/cache/vendor-llama-cpu"}
 LLAMA_CACHE_INSTALL_DIR=${LLAMA_CACHE_INSTALL_DIR:-"$LLAMA_CACHE_DIR/install"}
 LLAMA_CACHE_LOCK=${LLAMA_CACHE_LOCK:-"$LLAMA_CACHE_DIR/build.lock"}
+LLAMA_CACHE_KEY=${LLAMA_CACHE_KEY:-}
 LLAMA_BUILD_DIR=${LLAMA_BUILD_DIR:-"$LLAMA_CACHE_DIR/build"}
 LLAMA_INSTALL_DIR=${LLAMA_INSTALL_DIR:-.deps/llama.cpp-install}
 LLAMA_SHARED_EXT=${LLAMA_SHARED_EXT:-so}
 LLAMA_CPU_CMAKE_FLAGS=${LLAMA_CPU_CMAKE_FLAGS:-}
 LLAMA_CACHE_LOCK_POLL_SECONDS=${LLAMA_CACHE_LOCK_POLL_SECONDS:-2}
+LLAMA_CACHE_LOCK_TIMEOUT_SECONDS=${LLAMA_CACHE_LOCK_TIMEOUT_SECONDS:-3600}
 
 _abs_path() {
     case "$1" in
@@ -43,6 +45,18 @@ _require_safe_path() {
     fi
 }
 
+_require_non_negative_integer() {
+    local name="$1"
+    local value="$2"
+
+    case "$value" in
+        ""|*[!0-9]*)
+            echo "ERROR: $name must be a non-negative integer, got '$value'"
+            exit 1
+            ;;
+    esac
+}
+
 SOURCE_DIR=$(_abs_path "$LLAMA_SOURCE_DIR")
 CACHE_DIR=$(_abs_path "$LLAMA_CACHE_DIR")
 CACHE_INSTALL_DIR=$(_abs_path "$LLAMA_CACHE_INSTALL_DIR")
@@ -55,14 +69,27 @@ _require_safe_path "LLAMA_CACHE_INSTALL_DIR" "$CACHE_INSTALL_DIR"
 _require_safe_path "LLAMA_CACHE_LOCK" "$CACHE_LOCK"
 _require_safe_path "LLAMA_BUILD_DIR" "$BUILD_DIR"
 _require_safe_path "LLAMA_INSTALL_DIR" "$LOCAL_INSTALL_DIR"
+_require_non_negative_integer "LLAMA_CACHE_LOCK_POLL_SECONDS" "$LLAMA_CACHE_LOCK_POLL_SECONDS"
+_require_non_negative_integer "LLAMA_CACHE_LOCK_TIMEOUT_SECONDS" "$LLAMA_CACHE_LOCK_TIMEOUT_SECONDS"
 
 CACHE_HEADER="$CACHE_INSTALL_DIR/include/llama.h"
 CACHE_LIB="$CACHE_INSTALL_DIR/lib/libllama.$LLAMA_SHARED_EXT"
+CONTENT_KEY_FILE="$CACHE_INSTALL_DIR/.agerun-cache-key"
 LOCAL_HEADER="$LOCAL_INSTALL_DIR/include/llama.h"
 LOCAL_LIB="$LOCAL_INSTALL_DIR/lib/libllama.$LLAMA_SHARED_EXT"
+CURRENT_HOST=$(hostname 2>/dev/null || echo unknown)
+
+_cache_key_matches() {
+    if [ -z "$LLAMA_CACHE_KEY" ]; then
+        return 0
+    fi
+
+    [ -f "$CONTENT_KEY_FILE" ] &&
+        [ "$(cat "$CONTENT_KEY_FILE")" = "$LLAMA_CACHE_KEY" ]
+}
 
 _cache_available() {
-    [ -f "$CACHE_HEADER" ] && [ -f "$CACHE_LIB" ]
+    [ -f "$CACHE_HEADER" ] && [ -f "$CACHE_LIB" ] && _cache_key_matches
 }
 
 _local_link_current() {
@@ -128,11 +155,18 @@ _patch_darwin_rpaths() {
     done
 }
 
+_write_cache_key() {
+    if [ -n "$LLAMA_CACHE_KEY" ]; then
+        printf '%s\n' "$LLAMA_CACHE_KEY" > "$CONTENT_KEY_FILE"
+    fi
+}
+
 _build_cache() {
     local cmake_flags=()
 
     _validate_build_inputs
     mkdir -p "$CACHE_DIR"
+    rm -rf "$BUILD_DIR"
     rm -rf "$CACHE_INSTALL_DIR"
 
     if [ -n "$LLAMA_CPU_CMAKE_FLAGS" ]; then
@@ -149,6 +183,7 @@ _build_cache() {
     "$CMAKE" --build "$BUILD_DIR" --config Release
     "$CMAKE" --install "$BUILD_DIR" --config Release
     _patch_darwin_rpaths
+    _write_cache_key
 
     if ! _cache_available; then
         echo "ERROR: vendored llama.cpp cache build did not produce $CACHE_HEADER and $CACHE_LIB"
@@ -156,8 +191,62 @@ _build_cache() {
     fi
 }
 
+_lock_mtime_epoch() {
+    stat -c %Y "$CACHE_LOCK" 2>/dev/null ||
+        stat -f %m "$CACHE_LOCK" 2>/dev/null ||
+        echo 0
+}
+
+_lock_value() {
+    local key="$1"
+
+    sed -n "s/^$key=//p" "$CACHE_LOCK" 2>/dev/null | head -n 1 || true
+}
+
+_lock_pid_is_running_on_current_host() {
+    local lock_pid
+    local lock_host
+
+    lock_pid=$(_lock_value "pid")
+    lock_host=$(_lock_value "host")
+
+    if [ -z "$lock_pid" ] || [ "$lock_host" != "$CURRENT_HOST" ]; then
+        return 1
+    fi
+
+    case "$lock_pid" in
+        *[!0-9]*)
+            return 1
+            ;;
+    esac
+
+    kill -0 "$lock_pid" 2>/dev/null
+}
+
+_lock_is_stale() {
+    local lock_mtime
+    local now
+    local lock_age
+
+    lock_mtime=$(_lock_mtime_epoch)
+    now=$(date +%s)
+    lock_age=$((now - lock_mtime))
+
+    if [ "$lock_age" -lt "$LLAMA_CACHE_LOCK_TIMEOUT_SECONDS" ]; then
+        return 1
+    fi
+
+    ! _lock_pid_is_running_on_current_host
+}
+
 _wait_for_lock() {
     while [ -f "$CACHE_LOCK" ]; do
+        if _lock_is_stale; then
+            echo "Removing stale vendored llama.cpp cache lock at $CACHE_LOCK"
+            rm -f "$CACHE_LOCK"
+            continue
+        fi
+
         echo "Waiting for vendored llama.cpp cache lock at $CACHE_LOCK"
         sleep "$LLAMA_CACHE_LOCK_POLL_SECONDS"
     done
@@ -177,6 +266,7 @@ _acquire_lock() {
             set -o noclobber
             {
                 echo "pid=$$"
+                echo "host=$CURRENT_HOST"
                 echo "started_at=$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
                 echo "cache_dir=$CACHE_DIR"
             } > "$CACHE_LOCK"
