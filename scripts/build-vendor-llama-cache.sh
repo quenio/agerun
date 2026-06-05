@@ -186,6 +186,7 @@ SOURCE_DIR=$(_abs_path "$LLAMA_SOURCE_DIR")
 CACHE_DIR=$(_abs_path "$LLAMA_CACHE_DIR")
 CACHE_INSTALL_DIR=$(_abs_path "$LLAMA_CACHE_INSTALL_DIR")
 CACHE_LOCK=$(_abs_path "$LLAMA_CACHE_LOCK")
+STALE_LOCK_RECOVERY_DIR="$CACHE_LOCK.recovery"
 BUILD_DIR=$(_abs_path "$LLAMA_BUILD_DIR")
 LOCAL_INSTALL_DIR=$(_abs_path "$LLAMA_INSTALL_DIR")
 
@@ -364,11 +365,27 @@ _lock_is_stale() {
     ! _lock_pid_is_running_on_current_host
 }
 
-_wait_for_lock() {
-    while [ -f "$CACHE_LOCK" ]; do
-        if _lock_is_stale; then
+_remove_stale_lock() {
+    if ! mkdir "$STALE_LOCK_RECOVERY_DIR" 2>/dev/null; then
+        return 1
+    fi
+
+    (
+        trap 'rmdir "$STALE_LOCK_RECOVERY_DIR" 2>/dev/null || true' EXIT INT TERM
+
+        if [ -f "$CACHE_LOCK" ] && _lock_is_stale; then
             echo "Removing stale vendored llama.cpp cache lock at $CACHE_LOCK"
             rm -f "$CACHE_LOCK"
+            exit 0
+        fi
+
+        exit 1
+    )
+}
+
+_wait_for_lock() {
+    while [ -f "$CACHE_LOCK" ]; do
+        if _lock_is_stale && _remove_stale_lock; then
             continue
         fi
 
