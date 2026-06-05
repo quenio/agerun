@@ -44,10 +44,19 @@ memory.route_text := if(memory.next_step = 2, memory.step2_text, memory.route_te
 memory.route_target := if(memory.next_step = 3, memory.step3_target, memory.route_target)
 memory.route_action := if(memory.next_step = 3, memory.step3_action, memory.route_action)
 memory.route_text := if(memory.next_step = 3, memory.step3_text, memory.route_text)
-memory.route_input := build("action=route mode=one target={route_target} payload_action={route_action} payload_text={route_text} correlation_id={workflow_id} reply_to=0", memory)
-memory.route_message := parse("action={action} mode={mode} target={target} payload_action={payload_action} payload_text={payload_text} correlation_id={correlation_id} reply_to={reply_to}", memory.route_input)
+memory.route_message := parse("", "")
+memory.route_message.action := "route"
+memory.route_message.mode := "one"
+memory.route_message.target := memory.route_target
+memory.route_message.payload_action := memory.route_action
+memory.route_message.payload_text := memory.route_text
+memory.route_message.correlation_id := memory.workflow_id
+memory.route_message.reply_to := 0
 memory.route_should_send := if(memory.route_target > 0, 1, 0)
 memory.route_sent := send(memory.routing_agent * memory.route_should_send, memory.route_message)
-memory.complete_input := build("action=workflow_complete workflow_id={workflow_id} status={status} current_step={current_step}", memory)
-memory.complete_message := parse("action={action} workflow_id={workflow_id} status={status} current_step={current_step}", memory.complete_input)
+memory.complete_message := parse("", "")
+memory.complete_message.action := "workflow_complete"
+memory.complete_message.workflow_id := memory.workflow_id
+memory.complete_message.status := memory.status
+memory.complete_message.current_step := memory.current_step
 memory.complete_sent := send(memory.reply_to * memory.step3_done, memory.complete_message)

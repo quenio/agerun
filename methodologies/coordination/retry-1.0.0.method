@@ -12,8 +12,11 @@ memory.delay_ticks := if(memory.is_start = 1, message.delay_ticks, memory.delay_
 memory.reply_to := if(memory.is_start = 1, message.reply_to, memory.reply_to)
 memory.attempts := if(memory.is_start = 1, 1, memory.attempts)
 memory.status := if(memory.is_start = 1, "active", memory.status)
-memory.operation_input := build("action={operation_action} correlation_id={operation_id} text={operation_text} attempt={attempts}", memory)
-memory.operation_message := parse("action={action} correlation_id={correlation_id} text={text} attempt={attempt}", memory.operation_input)
+memory.operation_message := parse("", "")
+memory.operation_message.action := memory.operation_action
+memory.operation_message.correlation_id := memory.operation_id
+memory.operation_message.text := memory.operation_text
+memory.operation_message.attempt := memory.attempts
 memory.start_sent := send(memory.operation_target * memory.is_start, memory.operation_message)
 memory.can_retry := if(memory.attempts < memory.max_attempts, 1, 0)
 memory.retry_allowed := memory.is_failure * memory.can_retry
@@ -21,17 +24,30 @@ memory.attempts := if(memory.retry_allowed = 1, memory.attempts + 1, memory.atte
 memory.use_scheduled := if(memory.strategy = "scheduled", 1, 0)
 memory.use_scheduled := memory.use_scheduled * memory.retry_allowed
 memory.use_immediate := memory.retry_allowed - memory.use_scheduled
-memory.retry_input := build("action={operation_action} correlation_id={operation_id} text={operation_text} attempt={attempts}", memory)
-memory.retry_message := parse("action={action} correlation_id={correlation_id} text={text} attempt={attempt}", memory.retry_input)
+memory.retry_message := parse("", "")
+memory.retry_message.action := memory.operation_action
+memory.retry_message.correlation_id := memory.operation_id
+memory.retry_message.text := memory.operation_text
+memory.retry_message.attempt := memory.attempts
 memory.retry_sent := send(memory.operation_target * memory.use_immediate, memory.retry_message)
-memory.schedule_input := build("action=schedule schedule_id={operation_id} due_tick={delay_ticks} target={operation_target} payload_action={operation_action} payload_text={operation_text} correlation_id={operation_id} reply_to=0", memory)
-memory.schedule_message := parse("action={action} schedule_id={schedule_id} due_tick={due_tick} target={target} payload_action={payload_action} payload_text={payload_text} correlation_id={correlation_id} reply_to={reply_to}", memory.schedule_input)
+memory.schedule_message := parse("", "")
+memory.schedule_message.action := "schedule"
+memory.schedule_message.schedule_id := memory.operation_id
+memory.schedule_message.due_tick := memory.delay_ticks
+memory.schedule_message.target := memory.operation_target
+memory.schedule_message.payload_action := memory.operation_action
+memory.schedule_message.payload_text := memory.operation_text
+memory.schedule_message.correlation_id := memory.operation_id
+memory.schedule_message.reply_to := 0
 memory.schedule_sent := send(memory.scheduler_agent * memory.use_scheduled, memory.schedule_message)
 memory.final_failure := memory.is_failure - memory.retry_allowed
 memory.status := if(memory.final_failure = 1, "failed", memory.status)
 memory.status := if(memory.is_success = 1, "succeeded", memory.status)
-memory.report_input := build("action=retry_result operation_id={operation_id} status={status} attempts={attempts}", memory)
-memory.report_message := parse("action={action} operation_id={operation_id} status={status} attempts={attempts}", memory.report_input)
+memory.report_message := parse("", "")
+memory.report_message.action := "retry_result"
+memory.report_message.operation_id := memory.operation_id
+memory.report_message.status := memory.status
+memory.report_message.attempts := memory.attempts
 memory.report_target := memory.reply_to * memory.final_failure
 memory.report_target := if(memory.is_success = 1, memory.reply_to, memory.report_target)
 memory.report_sent := send(memory.report_target, memory.report_message)

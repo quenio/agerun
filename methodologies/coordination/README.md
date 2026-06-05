@@ -53,8 +53,9 @@ Composition opportunities:
 
 ## Message Contracts
 
-Fields used by `build()` and `parse()` contracts should be token-safe values without unquoted
-spaces. Use identifiers, numbers, or delimiter-based text such as `hello_world` or `a|b`.
+The contracts below are map-shaped messages. Method implementations that create new messages
+initialize an empty map and then populate its keys with ordinary nested assignments such as
+`memory.output.action := "..."`.
 
 ### Routing
 

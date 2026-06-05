@@ -10,21 +10,45 @@ memory.route_mode := "one"
 memory.work_action := "work"
 memory.route_target := message.worker_a
 memory.payload_text := message.portion_a
-memory.route_input_a := build("action={route_action} mode={route_mode} target={route_target} payload_action={work_action} payload_text={payload_text} correlation_id={work_id} reply_to=0", memory)
-memory.route_message_a := parse("action={action} mode={mode} target={target} payload_action={payload_action} payload_text={payload_text} correlation_id={correlation_id} reply_to={reply_to}", memory.route_input_a)
+memory.route_message_a := parse("", "")
+memory.route_message_a.action := memory.route_action
+memory.route_message_a.mode := memory.route_mode
+memory.route_message_a.target := memory.route_target
+memory.route_message_a.payload_action := memory.work_action
+memory.route_message_a.payload_text := memory.payload_text
+memory.route_message_a.correlation_id := memory.work_id
+memory.route_message_a.reply_to := 0
 memory.sent_a := send(memory.routing_agent * memory.is_distribute * memory.has_a, memory.route_message_a)
 memory.route_target := message.worker_b
 memory.payload_text := message.portion_b
-memory.route_input_b := build("action={route_action} mode={route_mode} target={route_target} payload_action={work_action} payload_text={payload_text} correlation_id={work_id} reply_to=0", memory)
-memory.route_message_b := parse("action={action} mode={mode} target={target} payload_action={payload_action} payload_text={payload_text} correlation_id={correlation_id} reply_to={reply_to}", memory.route_input_b)
+memory.route_message_b := parse("", "")
+memory.route_message_b.action := memory.route_action
+memory.route_message_b.mode := memory.route_mode
+memory.route_message_b.target := memory.route_target
+memory.route_message_b.payload_action := memory.work_action
+memory.route_message_b.payload_text := memory.payload_text
+memory.route_message_b.correlation_id := memory.work_id
+memory.route_message_b.reply_to := 0
 memory.sent_b := send(memory.routing_agent * memory.is_distribute * memory.has_b, memory.route_message_b)
 memory.route_target := message.worker_c
 memory.payload_text := message.portion_c
-memory.route_input_c := build("action={route_action} mode={route_mode} target={route_target} payload_action={work_action} payload_text={payload_text} correlation_id={work_id} reply_to=0", memory)
-memory.route_message_c := parse("action={action} mode={mode} target={target} payload_action={payload_action} payload_text={payload_text} correlation_id={correlation_id} reply_to={reply_to}", memory.route_input_c)
+memory.route_message_c := parse("", "")
+memory.route_message_c.action := memory.route_action
+memory.route_message_c.mode := memory.route_mode
+memory.route_message_c.target := memory.route_target
+memory.route_message_c.payload_action := memory.work_action
+memory.route_message_c.payload_text := memory.payload_text
+memory.route_message_c.correlation_id := memory.work_id
+memory.route_message_c.reply_to := 0
 memory.sent_c := send(memory.routing_agent * memory.is_distribute * memory.has_c, memory.route_message_c)
 memory.assignment_count := memory.has_a + memory.has_b + memory.has_c
 memory.status := if(memory.is_distribute = 1, "distributed", "ignored")
-memory.report_input := build("action=distribution_result status={status} work_id={work_id} assignment_count={assignment_count} sent_a={sent_a} sent_b={sent_b} sent_c={sent_c}", memory)
-memory.report_message := parse("action={action} status={status} work_id={work_id} assignment_count={assignment_count} sent_a={sent_a} sent_b={sent_b} sent_c={sent_c}", memory.report_input)
+memory.report_message := parse("", "")
+memory.report_message.action := "distribution_result"
+memory.report_message.status := memory.status
+memory.report_message.work_id := memory.work_id
+memory.report_message.assignment_count := memory.assignment_count
+memory.report_message.sent_a := memory.sent_a
+memory.report_message.sent_b := memory.sent_b
+memory.report_message.sent_c := memory.sent_c
 memory.report_sent := send(memory.reply_to, memory.report_message)

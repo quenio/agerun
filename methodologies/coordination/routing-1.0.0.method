@@ -12,8 +12,11 @@ memory.one_target := if(message.target > 0, message.target, memory.selected_targ
 memory.forward_action := message.payload_action
 memory.forward_text := message.payload_text
 memory.correlation_id := message.correlation_id
-memory.forward_input := build("action={forward_action} correlation_id={correlation_id} text={forward_text} source={self}", memory)
-memory.forward_message := parse("action={action} correlation_id={correlation_id} text={text} source={source}", memory.forward_input)
+memory.forward_message := parse("", "")
+memory.forward_message.action := memory.forward_action
+memory.forward_message.correlation_id := memory.correlation_id
+memory.forward_message.text := memory.forward_text
+memory.forward_message.source := memory.self
 memory.target_one := memory.one_target * memory.is_route * memory.is_one
 memory.target_a := message.target_a * memory.is_route * memory.is_many
 memory.target_b := message.target_b * memory.is_route * memory.is_many
@@ -25,6 +28,12 @@ memory.sent_c := send(memory.target_c, memory.forward_message)
 memory.routed_count := if(memory.is_one = 1, 1, 0)
 memory.routed_count := if(memory.is_many = 1, 3, memory.routed_count)
 memory.status := if(memory.is_route = 1, "routed", "ignored")
-memory.reply_input := build("action=route_result status={status} routed_count={routed_count} sent_one={sent_one} sent_a={sent_a} sent_b={sent_b} sent_c={sent_c}", memory)
-memory.reply_message := parse("action={action} status={status} routed_count={routed_count} sent_one={sent_one} sent_a={sent_a} sent_b={sent_b} sent_c={sent_c}", memory.reply_input)
+memory.reply_message := parse("", "")
+memory.reply_message.action := "route_result"
+memory.reply_message.status := memory.status
+memory.reply_message.routed_count := memory.routed_count
+memory.reply_message.sent_one := memory.sent_one
+memory.reply_message.sent_a := memory.sent_a
+memory.reply_message.sent_b := memory.sent_b
+memory.reply_message.sent_c := memory.sent_c
 memory.reply_sent := send(message.reply_to, memory.reply_message)

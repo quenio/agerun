@@ -24,7 +24,13 @@ memory.received_c := if(memory.accept_c = 1, 1, memory.received_c)
 memory.received_count := memory.received_a + memory.received_b + memory.received_c
 memory.is_complete := if(memory.received_count >= memory.required_count, 1, 0)
 memory.status := if(memory.is_complete = 1, "complete", "collecting")
-memory.output_input := build("action=aggregate_complete aggregate_id={aggregate_id} status={status} result_a={result_a} result_b={result_b} result_c={result_c} received_count={received_count}", memory)
-memory.output_message := parse("action={action} aggregate_id={aggregate_id} status={status} result_a={result_a} result_b={result_b} result_c={result_c} received_count={received_count}", memory.output_input)
+memory.output_message := parse("", "")
+memory.output_message.action := "aggregate_complete"
+memory.output_message.aggregate_id := memory.aggregate_id
+memory.output_message.status := memory.status
+memory.output_message.result_a := memory.result_a
+memory.output_message.result_b := memory.result_b
+memory.output_message.result_c := memory.result_c
+memory.output_message.received_count := memory.received_count
 memory.output_target := memory.reply_to * memory.is_complete
 memory.output_sent := send(memory.output_target, memory.output_message)
