@@ -83,6 +83,12 @@ Final result:
 }
 ```
 
+## Action Field
+
+The input `action` field is a command discriminator in the request map. The retry agent runs this
+method for every message it receives, so the field separates retry setup, failure, and success
+signals and prevents unrelated messages from incrementing attempts or reporting final status.
+
 ## Composition Notes
 
 Use retry directly around unreliable workers, workflow steps, or outbound operations. For delayed

@@ -51,6 +51,12 @@ Completion response:
 }
 ```
 
+## Action Field
+
+The input `action` field is a command discriminator in the request map. The aggregation agent runs
+this method for every message it receives, so the field separates setup messages from result messages
+and prevents unrelated maps from changing collection state.
+
 ## Composition Notes
 
 Use aggregation after distribution to combine worker outputs. Synchronization or workflow can wait

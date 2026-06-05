@@ -63,6 +63,12 @@ Result response:
 }
 ```
 
+## Action Field
+
+The input `action` field is a command discriminator in the request map. The distribution agent runs
+this method for every message it receives, so `action: "distribute"` marks the message as work to
+fan out rather than an arbitrary status, worker result, or coordination message.
+
 ## Composition Notes
 
 Pair distribution with aggregation for fan-out and fan-in. A workflow step can send work to a

@@ -75,6 +75,12 @@ Closed response:
 }
 ```
 
+## Action Field
+
+The input `action` field is a command discriminator in the request map. The conversation agent runs
+this method for every message it receives, so the field separates start, message, summary, and close
+commands while preserving ordinary map-shaped conversational content.
+
 ## Composition Notes
 
 Use conversation to carry context around workflow, routing, or retry messages. Other methods can use

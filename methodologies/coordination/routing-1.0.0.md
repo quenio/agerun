@@ -86,6 +86,13 @@ Reply:
 }
 ```
 
+## Action Field
+
+The input `action` field is a command discriminator in the request map. The routing agent runs this
+method for every message it receives, so `action: "route"` marks the message as a routing request and
+lets the method avoid forwarding unrelated maps that happen to contain fields such as `target`,
+`mode`, or `payload_action`.
+
 ## Composition Notes
 
 Distribution uses routing to assign work portions to workers. Workflow uses routing to dispatch

@@ -57,6 +57,12 @@ The contracts below are map-shaped messages. Method implementations that create 
 initialize an empty map and then populate its keys with ordinary nested assignments such as
 `memory.output.action := "..."`.
 
+The `action` field is a command discriminator inside those maps. AgeRun sends every incoming message
+to the agent's single method, so reusable coordination methods need a conventional field that says
+which operation the message is requesting. The field is not a runtime requirement and not a string
+protocol; it is ordinary map data that lets a method guard behavior such as routing, scheduling, or
+retrying and ignore unrelated messages safely.
+
 ### Routing
 
 Request:

@@ -75,6 +75,12 @@ Completion response:
 }
 ```
 
+## Action Field
+
+The input `action` field is a command discriminator in the request map. The workflow agent runs this
+method for every message it receives, so the field separates workflow start messages from step
+completion messages and avoids advancing the workflow for unrelated maps.
+
 ## Composition Notes
 
 Workflow uses routing directly. It can coordinate distribution, aggregation, synchronization,

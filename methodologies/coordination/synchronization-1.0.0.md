@@ -65,6 +65,12 @@ Status response:
 }
 ```
 
+## Action Field
+
+The input `action` field is a command discriminator in the request map. The synchronization agent
+runs this method for every message it receives, so the field separates wait setup from dependency
+arrival and keeps unrelated messages from satisfying the gate.
+
 ## Composition Notes
 
 Use synchronization when several workers, approvals, or prerequisite steps must complete before a

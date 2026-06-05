@@ -52,6 +52,12 @@ Status response:
 }
 ```
 
+## Action Field
+
+The input `action` field is a command discriminator in the request map. The supervision agent runs
+this method for every message it receives, so the field distinguishes startup, failure, exit, and
+stop commands from unrelated messages.
+
 ## Composition Notes
 
 Use supervision around long-lived routing, scheduling, workflow, or worker agents. Other methods can

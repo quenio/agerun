@@ -72,6 +72,12 @@ Status response:
 }
 ```
 
+## Action Field
+
+The input `action` field is a command discriminator in the request map. The scheduling agent runs
+this method for every message it receives, so the field separates schedule, tick, and cancel commands
+from unrelated messages that should not trigger pending work.
+
 ## Composition Notes
 
 Retry uses scheduling for delayed attempts. A host process or tick-source agent can send tick
