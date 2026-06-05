@@ -34,8 +34,8 @@ help:
 	@echo "Utility targets:"
 	@echo "  make check-logs   - Check build logs for hidden issues"
 	@echo "  make add-newline FILE=<file> - Add newline to end of file if missing"
-	@echo "  make vendor-llama-cpu - Build/install vendored CPU-only llama.cpp into .deps"
-	@echo "  make clean-llama-cpp - Remove vendored llama.cpp build/install artifacts from .deps"
+	@echo "  make vendor-llama-cpu - Build/install or reuse cached CPU-only llama.cpp in .deps"
+	@echo "  make clean-vendor-llama-cpu - Clear cached vendored llama.cpp artifacts"
 	@echo "  make complete-runtime-ready - Ensure vendored libllama and phi-3-mini-q4.gguf exist"
 	@echo "  make download-complete-model - Download phi-3-mini-q4.gguf into models/ if missing"
 	@echo "  make complete-model-smoke - Ensure complete() runtime assets are ready and run the embedded libllama smoke with a cold-start timeout"
@@ -587,9 +587,12 @@ $(TSAN_EXEC_DIR)/obj/%.o: modules/%.c | $(TSAN_EXEC_DIR)
 $(TSAN_EXEC_DIR)/obj/%.o: modules/%.zig | $(TSAN_EXEC_DIR)
 	$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target $(ZIG_TARGET) -mcpu=native -fno-stack-check -lc -I./modules $(LLAMA_ZIG_INCLUDE_FLAGS) $< -femit-bin=$@
 
-# Clean vendored llama.cpp build/install artifacts
-clean-llama-cpp:
+# Clean cached vendored llama.cpp build/install artifacts
+clean-vendor-llama-cpu:
 	rm -rf "$(LLAMA_BUILD_DIR)" "$(LLAMA_INSTALL_DIR)"
+
+# Backward-compatible alias for the previous clean target name
+clean-llama-cpp: clean-vendor-llama-cpu
 
 # Clean target
 clean:
@@ -742,7 +745,7 @@ add-newline:
 		exit 1; \
 	fi
 
-.PHONY: help clean clean-llama-cpp build add-newline check-naming check-docs check-all analyze-exec analyze-tests run-exec run-tests sanitize-exec sanitize-tests tsan-exec tsan-tests install-scan-build print-src print-obj print-llama-config vendor-llama-cpu complete-runtime-ready download-complete-model complete-model-smoke complete-performance-validation complete-performance-validation-linux-container
+.PHONY: help clean clean-vendor-llama-cpu clean-llama-cpp build add-newline check-naming check-docs check-all analyze-exec analyze-tests run-exec run-tests sanitize-exec sanitize-tests tsan-exec tsan-tests install-scan-build print-src print-obj print-llama-config vendor-llama-cpu complete-runtime-ready download-complete-model complete-model-smoke complete-performance-validation complete-performance-validation-linux-container
 
 # Debug targets
 print-src:
@@ -818,13 +821,8 @@ download-complete-model: $(COMPLETE_MODEL_FILE) $(COMPLETE_MODEL_LICENSE) $(COMP
 complete-runtime-ready: download-complete-model
 	@if [ ! -f "$(LLAMA_HEADER)" ] || [ ! -f "$(LLAMA_LIB)" ]; then \
 		$(MAKE) vendor-llama-cpu; \
-	elif [ "$(LLAMA_SOURCE_DIR)/CMakeLists.txt" -nt "$(LLAMA_HEADER)" ] || \
-		[ "$(LLAMA_SOURCE_HEADER)" -nt "$(LLAMA_HEADER)" ] || \
-		[ "$(LLAMA_LICENSE)" -nt "$(LLAMA_HEADER)" ] || \
-		[ "$(LLAMA_SOURCE_DIR)/CMakeLists.txt" -nt "$(LLAMA_LIB)" ] || \
-		[ "$(LLAMA_SOURCE_HEADER)" -nt "$(LLAMA_LIB)" ] || \
-		[ "$(LLAMA_LICENSE)" -nt "$(LLAMA_LIB)" ]; then \
-		$(MAKE) vendor-llama-cpu; \
+	else \
+		echo "Using cached vendored llama.cpp runtime at $(LLAMA_INSTALL_DIR)"; \
 	fi
 	@test -f "$(LLAMA_HEADER)"
 	@test -f "$(LLAMA_LIB)"
@@ -884,6 +882,9 @@ print-llama-config:
 
 # Build/install vendored CPU-only llama.cpp
 vendor-llama-cpu:
+ifneq ($(LLAMA_AVAILABLE),)
+	@echo "Using cached vendored llama.cpp runtime at $(LLAMA_INSTALL_DIR)"
+else
 	@if [ ! -f "$(LLAMA_SOURCE_DIR)/CMakeLists.txt" ]; then \
 		echo "ERROR: vendored llama.cpp source not found at $(LLAMA_SOURCE_DIR)"; \
 		echo "Add the pinned upstream source tree under $(LLAMA_SOURCE_DIR) before running this target"; \
@@ -912,7 +913,10 @@ vendor-llama-cpu:
 				install_name_tool -add_rpath @loader_path/../lib "$$exe" 2>/dev/null || true; \
 			fi; \
 		done; \
-	fi
+		fi
+	@test -f "$(LLAMA_HEADER)"
+	@test -f "$(LLAMA_LIB)"
+endif
 
 # Fix command documentation structure to match comprehensive standards
 # Usage: make fix-commands
