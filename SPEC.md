@@ -263,7 +263,7 @@ The expression evaluator follows these rules:
 - `append(target: expression, value: data) → boolean`: Evaluates the target expression and mutates it only when it resolves to an existing LIST directly or indirectly owned by the frame memory map, such as `memory.results` or `memory.wrapper.results`. Targets under `message` or `context`, fresh literal/list expression results, missing targets, non-LIST targets, and protected `memory.self` targets are no-ops.
 - The value argument may be any expression. Fresh literal values are transferred directly into the list. Borrowed values from `memory`, `message`, or `context` are claimed when possible or shallow-copied before append.
 - Borrowed nested containers have a current limitation: `ar_data__claim_or_copy()` can shallow-copy primitives and flat containers only. Appending a borrowed map or list that itself contains nested maps or lists fails and returns/stores `0`.
-- Without result assignment, target no-ops and append failures complete without mutating memory further. With result assignment, `memory.some_flag := append(...)` stores integer `1` for successful append or `0` for no-op/failure, and the instruction itself completes when the result can be stored.
+- Without result assignment, target no-ops and append failures complete without mutating memory further. With result assignment, `memory.some_flag := append(...)` stores integer `1` for successful append or `0` for no-op/failure, and the instruction itself completes when the result can be stored. Invalid result assignment paths fail before append mutation. If storing the success result fails after a list append, the appended item is removed before the instruction fails.
 
 ### 3. Messaging
 

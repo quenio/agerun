@@ -49,6 +49,13 @@ evaluation, copy, and list-insert failures also leave the target unchanged after
 If the instruction has a result assignment, the evaluator stores integer `0`; otherwise the
 instruction still completes successfully so method execution can continue.
 
+## Result assignment safety
+
+Assigned append instructions validate the result path before mutating the target list. Non-memory
+result paths and protected `memory.self` paths fail without appending. For successful appends, the
+evaluator stores integer `1`; if that success result cannot be stored after the list append, the
+evaluator removes the appended item before failing.
+
 ## Current limitation
 
 Borrowed nested containers cannot be appended yet. `ar_data__claim_or_copy()` shallow-copies

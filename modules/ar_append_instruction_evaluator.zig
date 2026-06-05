@@ -8,6 +8,7 @@ const c = @cImport({
     @cInclude("ar_instruction_ast.h");
     @cInclude("ar_list.h");
     @cInclude("ar_log.h");
+    @cInclude("ar_path.h");
     @cInclude("string.h");
 });
 const ar_allocator = @import("ar_allocator.zig");
@@ -60,6 +61,60 @@ fn _store_result(
 
     const mut_memory = c.ar_frame__get_memory(ref_frame) orelse return false;
     const own_result = c.ar_data__create_integer(if (append_success) 1 else 0) orelse return false;
+    if (!c.ar_data__set_map_data_if_root_matched(mut_memory, "memory", ref_result_path, own_result)) {
+        c.ar_data__destroy(own_result);
+        return false;
+    }
+
+    return true;
+}
+
+fn _result_assignment_can_store(
+    ref_evaluator: *const ar_append_instruction_evaluator_t,
+    ref_frame: ?*const c.ar_frame_t,
+    ref_ast: ?*const c.ar_instruction_ast_t
+) bool {
+    const ref_result_path = c.ar_instruction_ast__get_function_result_path(ref_ast);
+    if (ref_result_path == null) {
+        return true;
+    }
+
+    if (c.ar_instruction_ast__has_protected_memory_self_assignment(ref_ast)) {
+        c.ar_log__error(ref_evaluator.ref_log, "memory.self is agency-managed and cannot be assigned");
+        return false;
+    }
+
+    const mut_memory = c.ar_frame__get_memory(ref_frame) orelse return false;
+    if (c.ar_data__get_type(mut_memory) != c.AR_DATA_TYPE__MAP) {
+        return false;
+    }
+
+    const own_path = c.ar_path__create_variable(ref_result_path) orelse return false;
+    defer c.ar_path__destroy(own_path);
+
+    const ref_root = c.ar_path__get_variable_root(own_path) orelse return false;
+    if (c.strcmp(ref_root, "memory") != 0) {
+        return false;
+    }
+
+    return c.ar_path__get_suffix_after_root(own_path) != null;
+}
+
+fn _store_owned_result(
+    ref_frame: ?*const c.ar_frame_t,
+    ref_ast: ?*const c.ar_instruction_ast_t,
+    own_result: ?*c.ar_data_t
+) bool {
+    const ref_result_path = c.ar_instruction_ast__get_function_result_path(ref_ast) orelse {
+        c.ar_data__destroy(own_result);
+        return true;
+    };
+
+    const mut_memory = c.ar_frame__get_memory(ref_frame) orelse {
+        c.ar_data__destroy(own_result);
+        return false;
+    };
+
     if (!c.ar_data__set_map_data_if_root_matched(mut_memory, "memory", ref_result_path, own_result)) {
         c.ar_data__destroy(own_result);
         return false;
@@ -159,6 +214,10 @@ pub export fn ar_append_instruction_evaluator__evaluate(
         return false;
     }
 
+    if (!_result_assignment_can_store(ref_evaluator.?, ref_frame, ref_ast)) {
+        return false;
+    }
+
     if (_target_references_memory_self(ref_target_ast)) {
         return _complete_noop(ref_evaluator.?, ref_frame, ref_ast);
     }
@@ -194,11 +253,29 @@ pub export fn ar_append_instruction_evaluator__evaluate(
         return _store_result(ref_evaluator.?, ref_frame, ref_ast, false);
     };
 
+    var own_success_result: ?*c.ar_data_t = null;
+    if (c.ar_instruction_ast__get_function_result_path(ref_ast) != null) {
+        own_success_result = c.ar_data__create_integer(1) orelse {
+            c.ar_data__destroy(own_value);
+            return false;
+        };
+    }
+
     if (!c.ar_data__list_add_last_data(mut_target_list, own_value)) {
         c.ar_data__destroy(own_value);
+        c.ar_data__destroy(own_success_result);
         c.ar_log__error(ref_evaluator.?.ref_log, "append failed to add value to list");
         return _store_result(ref_evaluator.?, ref_frame, ref_ast, false);
     }
 
-    return _store_result(ref_evaluator.?, ref_frame, ref_ast, true);
+    if (own_success_result) |own_result| {
+        if (!_store_owned_result(ref_frame, ref_ast, own_result)) {
+            const own_removed = c.ar_data__list_remove_last(mut_target_list);
+            c.ar_data__destroy(own_removed);
+            return false;
+        }
+        return true;
+    }
+
+    return true;
 }

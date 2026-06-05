@@ -427,6 +427,70 @@ static void test_append_instruction_evaluator__stores_result_assignment(void) {
     ar_evaluator_fixture__destroy(own_fixture);
 }
 
+static void test_append_instruction_evaluator__does_not_mutate_when_result_path_invalid(void) {
+    printf("Testing append does not mutate when result path is invalid...\n");
+
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("append_invalid_result_path");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+    ar_append_instruction_evaluator_t *own_evaluator = _create_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+    AR_ASSERT(ref_frame != NULL, "Frame creation should succeed");
+
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    AR_ASSERT(ar_data__set_map_data(mut_memory, "results", ar_data__create_list()), "Results list should be stored");
+    const char *target_path[] = {"results"};
+    ar_instruction_ast_t *own_ast = _create_append_ast(
+        "memory.results",
+        "42",
+        "context.append_ok",
+        ar_expression_ast__create_memory_access("memory", target_path, 1),
+        ar_expression_ast__create_literal_int(42)
+    );
+
+    bool result = ar_append_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
+
+    AR_ASSERT(result == false, "Append should fail when result path is not memory-owned");
+    ar_data_t *ref_results = ar_data__get_map_data(mut_memory, "results");
+    AR_ASSERT(ref_results != NULL, "Results list should still exist");
+    AR_ASSERT(ar_data__list_count(ref_results) == 0, "Invalid result path should prevent append mutation");
+
+    ar_instruction_ast__destroy(own_ast);
+    ar_append_instruction_evaluator__destroy(own_evaluator);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_append_instruction_evaluator__rolls_back_when_result_storage_fails(void) {
+    printf("Testing append rolls back when result storage fails...\n");
+
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("append_result_storage_failure");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+    ar_append_instruction_evaluator_t *own_evaluator = _create_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+    AR_ASSERT(ref_frame != NULL, "Frame creation should succeed");
+
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    AR_ASSERT(ar_data__set_map_data(mut_memory, "results", ar_data__create_list()), "Results list should be stored");
+    const char *target_path[] = {"results"};
+    ar_instruction_ast_t *own_ast = _create_append_ast(
+        "memory.results",
+        "42",
+        "memory.results.append_ok",
+        ar_expression_ast__create_memory_access("memory", target_path, 1),
+        ar_expression_ast__create_literal_int(42)
+    );
+
+    bool result = ar_append_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
+
+    AR_ASSERT(result == false, "Append should fail when result cannot be stored");
+    ar_data_t *ref_results = ar_data__get_map_data(mut_memory, "results");
+    AR_ASSERT(ref_results != NULL, "Results list should still exist");
+    AR_ASSERT(ar_data__list_count(ref_results) == 0, "Failed result storage should roll back append");
+
+    ar_instruction_ast__destroy(own_ast);
+    ar_append_instruction_evaluator__destroy(own_evaluator);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
 static void test_append_instruction_evaluator__stores_zero_result_for_failure(void) {
     printf("Testing append stores zero result for failure...\n");
 
@@ -473,6 +537,8 @@ int main(void) {
     test_append_instruction_evaluator__stores_zero_for_non_list_target();
     test_append_instruction_evaluator__continues_when_unassigned_value_expression_fails();
     test_append_instruction_evaluator__stores_result_assignment();
+    test_append_instruction_evaluator__does_not_mutate_when_result_path_invalid();
+    test_append_instruction_evaluator__rolls_back_when_result_storage_fails();
     test_append_instruction_evaluator__stores_zero_result_for_failure();
 
     printf("All append instruction_evaluator tests passed!\n");
