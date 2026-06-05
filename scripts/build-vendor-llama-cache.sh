@@ -349,10 +349,34 @@ _lock_pid_is_running_on_current_host() {
     kill -0 "$lock_pid" 2>/dev/null
 }
 
+_lock_holder_is_dead_on_current_host() {
+    local lock_pid
+    local lock_host
+
+    lock_pid=$(_lock_value "pid")
+    lock_host=$(_lock_value "host")
+
+    if [ -z "$lock_pid" ] || [ "$lock_host" != "$CURRENT_HOST" ]; then
+        return 1
+    fi
+
+    case "$lock_pid" in
+        *[!0-9]*)
+            return 1
+            ;;
+    esac
+
+    ! kill -0 "$lock_pid" 2>/dev/null
+}
+
 _lock_is_stale() {
     local lock_mtime
     local now
     local lock_age
+
+    if _lock_holder_is_dead_on_current_host; then
+        return 0
+    fi
 
     lock_mtime=$(_lock_mtime_epoch)
     now=$(date +%s)
