@@ -21,9 +21,10 @@ memory.status := if(memory.failure_event = 1, "stopped", memory.status)
 memory.status := if(memory.should_restart = 1, "restarted", memory.status)
 memory.stop_result := exit(memory.child_agent_id * memory.is_stop)
 memory.status := if(memory.is_stop = 1, "stopped", memory.status)
-memory.report_message := parse("", "")
-memory.report_message.action := "supervision_status"
-memory.report_message.status := memory.status
-memory.report_message.child_agent_id := memory.child_agent_id
-memory.report_message.policy := memory.policy
+memory.report_message := {
+  action: "supervision_status"
+  status: memory.status
+  child_agent_id: memory.child_agent_id
+  policy: memory.policy
+}
 memory.report_sent := send(memory.reply_to, memory.report_message)

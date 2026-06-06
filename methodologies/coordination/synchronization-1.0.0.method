@@ -21,15 +21,17 @@ memory.done_c := if(memory.is_dependency * memory.match_c = 1, 1, memory.done_c)
 memory.done_count := memory.done_a + memory.done_b + memory.done_c
 memory.is_complete := if(memory.done_count >= memory.required_count, 1, 0)
 memory.status := if(memory.is_complete = 1, "complete", "waiting")
-memory.continuation_message := parse("", "")
-memory.continuation_message.action := memory.continuation_action
-memory.continuation_message.sync_id := memory.sync_id
-memory.continuation_message.text := memory.continuation_text
-memory.continuation_message.done_count := memory.done_count
+memory.continuation_message := {
+  action: memory.continuation_action
+  sync_id: memory.sync_id
+  text: memory.continuation_text
+  done_count: memory.done_count
+}
 memory.continuation_sent := send(memory.continuation_target * memory.is_complete, memory.continuation_message)
-memory.report_message := parse("", "")
-memory.report_message.action := "synchronization_status"
-memory.report_message.sync_id := memory.sync_id
-memory.report_message.status := memory.status
-memory.report_message.done_count := memory.done_count
+memory.report_message := {
+  action: "synchronization_status"
+  sync_id: memory.sync_id
+  status: memory.status
+  done_count: memory.done_count
+}
 memory.report_sent := send(memory.reply_to * memory.is_complete, memory.report_message)

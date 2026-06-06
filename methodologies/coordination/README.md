@@ -53,9 +53,11 @@ Composition opportunities:
 
 ## Message Contracts
 
-The contracts below are map-shaped messages. Method implementations that create new messages
-initialize an empty map and then populate its keys with ordinary nested assignments such as
-`memory.output.action := "..."`.
+The contracts below are map-shaped messages. Method implementations that create new flat messages
+assign a multi-line map literal to a named memory value, then pass that value to `send(...)`.
+Aggregation is the current exception: its completion message includes the append-backed `result`
+list, and sending a memory-stored map containing that nested list would require deep-copy support.
+It therefore sends a fresh literal so the result list can be copied while the literal is evaluated.
 
 The `action` field is a command discriminator inside those maps. AgeRun sends every incoming message
 to the agent's single method, so reusable coordination methods need a conventional field that says
@@ -533,7 +535,7 @@ Conversation-scoped workflow:
 | Routing | Fully implementable for the bounded contract. | Arbitrary recipient lists and richer message inspection require collection iteration or a richer data query layer. |
 | Supervision | Partially implementable. | Methods cannot autonomously observe child crashes or exits; callers must send `child_failed` or `child_exited` events. |
 | Distribution | Partially implementable. | The method assigns caller-provided portions; dynamic decomposition and arbitrary worker lists require collection iteration. |
-| Aggregation | Fully implementable for text-value fan-in. | The method emits a list-valued `result` for an append-backed result list. Duplicate handling, custom merge functions, and borrowed nested containers still require deeper collection operations or deep-copy support. |
+| Aggregation | Fully implementable for text-value fan-in. | The method emits a list-valued `result` for an append-backed result list. It must send that completion map as a fresh literal because memory-stored maps with nested containers still require deep-copy support. Duplicate handling, custom merge functions, and borrowed nested containers still require deeper collection operations or deep-copy support. |
 | Scheduling | Partially implementable. | There is no runtime clock or timer callback; scheduling requires explicit `tick` messages from another agent or host process. |
 | Synchronization | Fully implementable for the bounded contract. | Arbitrary dependency sets require collection iteration. |
 | Workflow | Partially implementable. | General workflow graphs require dynamic graph storage and iteration; this method supports a three-step graph with one branch condition. |

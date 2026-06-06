@@ -20,10 +20,11 @@ memory.response_action := if(memory.is_summary = 1, "conversation_summary", "con
 memory.response_action := if(memory.is_close = 1, "conversation_closed", memory.response_action)
 memory.response_text := if(memory.is_summary = 1, memory.summary_text, memory.state)
 memory.response_text := if(memory.is_message = 1, memory.summary_text, memory.response_text)
-memory.response_message := parse("", "")
-memory.response_message.action := memory.response_action
-memory.response_message.conversation_id := memory.conversation_id
-memory.response_message.state := memory.state
-memory.response_message.text := memory.response_text
-memory.response_message.turn_count := memory.turn_count
+memory.response_message := {
+  action: memory.response_action
+  conversation_id: memory.conversation_id
+  state: memory.state
+  text: memory.response_text
+  turn_count: memory.turn_count
+}
 memory.response_sent := send(memory.reply_to, memory.response_message)

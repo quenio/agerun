@@ -52,6 +52,10 @@ Completion response:
 
 The list contains each appended result value in arrival order. The method uses `append(...)` to
 mutate an internal result list, so the number of collected values is not bounded by named slots.
+Unlike the other coordination methods, aggregation sends the completion map as a fresh literal
+instead of first storing it in `memory.output_message`. A stored output map would contain the nested
+`result` list, and the current memory copy path cannot send memory-owned maps with nested
+containers without deep-copy support.
 
 ## Action Field
 
@@ -68,8 +72,8 @@ process.
 ## Limitations
 
 The method appends text result values and emits them as `result`. Duplicate handling policies,
-custom merge functions, and aggregating borrowed nested containers require richer collection
-operations, deep-copy support, or specialized aggregate methods.
+custom merge functions, stored nested output maps, and aggregating borrowed nested containers
+require richer collection operations, deep-copy support, or specialized aggregate methods.
 
 ## Implementation and Tests
 

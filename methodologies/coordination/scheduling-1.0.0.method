@@ -18,18 +18,20 @@ memory.status := if(memory.should_cancel = 1, "cancelled", memory.status)
 memory.current_tick := if(memory.is_tick = 1, message.tick, memory.current_tick)
 memory.tick_ready := if(memory.current_tick >= memory.due_tick, 1, 0)
 memory.should_trigger := memory.pending * memory.is_tick * memory.tick_ready
-memory.execution_message := parse("", "")
-memory.execution_message.action := memory.payload_action
-memory.execution_message.correlation_id := memory.correlation_id
-memory.execution_message.text := memory.payload_text
-memory.execution_message.schedule_id := memory.schedule_id
+memory.execution_message := {
+  action: memory.payload_action
+  correlation_id: memory.correlation_id
+  text: memory.payload_text
+  schedule_id: memory.schedule_id
+}
 memory.execution_sent := send(memory.target * memory.should_trigger, memory.execution_message)
 memory.pending := if(memory.should_trigger = 1, 0, memory.pending)
 memory.status := if(memory.should_trigger = 1, "triggered", memory.status)
-memory.report_message := parse("", "")
-memory.report_message.action := "schedule_status"
-memory.report_message.schedule_id := memory.schedule_id
-memory.report_message.status := memory.status
-memory.report_message.pending := memory.pending
-memory.report_message.current_tick := memory.current_tick
+memory.report_message := {
+  action: "schedule_status"
+  schedule_id: memory.schedule_id
+  status: memory.status
+  pending: memory.pending
+  current_tick: memory.current_tick
+}
 memory.report_sent := send(memory.reply_to, memory.report_message)
