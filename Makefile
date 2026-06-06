@@ -87,6 +87,7 @@ COMPLETE_LINUX_CONTAINER_CONTEXT ?= docker/complete-performance-validation
 COMPLETE_LINUX_CONTAINER_LLAMA_BUILD_DIR ?= .deps/linux-container-llama.cpp-build
 COMPLETE_LINUX_CONTAINER_LLAMA_INSTALL_DIR ?= .deps/linux-container-llama.cpp-install
 COMPLETE_LINUX_CONTAINER_RUN_TESTS_DIR ?= bin/run-tests-linux-container
+COMPLETE_LINUX_CONTAINER_MODEL_DIR ?= /tmp/agerun-docker-home/.agerun/models
 SKIP_COMPLETE_RUNTIME_READY ?=
 WORKFLOW_REAL_COMPLETION_PREREQ =
 ifeq ($(SKIP_COMPLETE_RUNTIME_READY),)
@@ -888,15 +889,16 @@ complete-performance-validation: complete-runtime-ready
 
 # Run the documented Linux containerized complete() performance validation
 # Usage: make complete-performance-validation-linux-container
-complete-performance-validation-linux-container:
+complete-performance-validation-linux-container: download-complete-model
 	docker build --platform "$(COMPLETE_LINUX_CONTAINER_PLATFORM)" -t "$(COMPLETE_LINUX_CONTAINER_IMAGE)" "$(COMPLETE_LINUX_CONTAINER_CONTEXT)"
 	docker run --rm \
 		--platform "$(COMPLETE_LINUX_CONTAINER_PLATFORM)" \
 		-u "$(shell id -u):$(shell id -g)" \
 		-v "$(CURDIR)":/workspace \
+		-v "$(abspath $(COMPLETE_MODEL_DIR))":"$(COMPLETE_LINUX_CONTAINER_MODEL_DIR)" \
 		-w /workspace \
 		"$(COMPLETE_LINUX_CONTAINER_IMAGE)" \
-		bash -lc 'set -e; export HOME=/tmp/agerun-docker-home; mkdir -p "$$HOME"; export COMPLETE_MODEL_DIR="$$HOME/.agerun/models"; export AGERUN_COMPLETE_MODEL="$$COMPLETE_MODEL_DIR/phi-3-mini-q4.gguf"; export AGERUN_COMPLETE_LIBLLAMA=/workspace/$(COMPLETE_LINUX_CONTAINER_LLAMA_INSTALL_DIR)/lib/libllama.so; export LD_LIBRARY_PATH=/workspace/$(COMPLETE_LINUX_CONTAINER_LLAMA_INSTALL_DIR)/lib; echo "Linux container validation baseline:"; echo "platform=$(COMPLETE_LINUX_CONTAINER_PLATFORM)"; uname -a; echo "logical_cpus=$$(nproc)"; python3 -c "from pathlib import Path; meminfo = Path(\"/proc/meminfo\").read_text(encoding=\"utf-8\").splitlines(); total = next(line for line in meminfo if line.startswith(\"MemTotal:\")); print(total)"; make EXTRA_CFLAGS=-Wno-error=nonnull-compare RUN_TESTS_DIR=$(COMPLETE_LINUX_CONTAINER_RUN_TESTS_DIR) LLAMA_BUILD_DIR=$(COMPLETE_LINUX_CONTAINER_LLAMA_BUILD_DIR) LLAMA_INSTALL_DIR=$(COMPLETE_LINUX_CONTAINER_LLAMA_INSTALL_DIR) complete-performance-validation 2>&1'
+		bash -lc 'set -e; export HOME=/tmp/agerun-docker-home; mkdir -p "$$HOME"; export COMPLETE_MODEL_DIR="$(COMPLETE_LINUX_CONTAINER_MODEL_DIR)"; export AGERUN_COMPLETE_MODEL="$$COMPLETE_MODEL_DIR/phi-3-mini-q4.gguf"; export AGERUN_COMPLETE_LIBLLAMA=/workspace/$(COMPLETE_LINUX_CONTAINER_LLAMA_INSTALL_DIR)/lib/libllama.so; export LD_LIBRARY_PATH=/workspace/$(COMPLETE_LINUX_CONTAINER_LLAMA_INSTALL_DIR)/lib; echo "Linux container validation baseline:"; echo "platform=$(COMPLETE_LINUX_CONTAINER_PLATFORM)"; uname -a; echo "logical_cpus=$$(nproc)"; python3 -c "from pathlib import Path; meminfo = Path(\"/proc/meminfo\").read_text(encoding=\"utf-8\").splitlines(); total = next(line for line in meminfo if line.startswith(\"MemTotal:\")); print(total)"; make EXTRA_CFLAGS=-Wno-error=nonnull-compare RUN_TESTS_DIR=$(COMPLETE_LINUX_CONTAINER_RUN_TESTS_DIR) LLAMA_BUILD_DIR=$(COMPLETE_LINUX_CONTAINER_LLAMA_BUILD_DIR) LLAMA_INSTALL_DIR=$(COMPLETE_LINUX_CONTAINER_LLAMA_INSTALL_DIR) complete-performance-validation 2>&1'
 
 # Show vendored llama.cpp configuration
 print-llama-config:
