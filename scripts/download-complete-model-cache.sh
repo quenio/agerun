@@ -11,17 +11,22 @@ set -e
 set -o pipefail
 
 _home_directory() {
+    local ref_home
+
     if [ -n "${HOME:-}" ]; then
         printf '%s\n' "$HOME"
         return
     fi
 
     if command -v python3 >/dev/null 2>&1; then
-        python3 -c 'import os, pwd; print(pwd.getpwuid(os.getuid()).pw_dir)'
-        return
+        ref_home=$(python3 -c 'import os, pwd; print(pwd.getpwuid(os.getuid()).pw_dir)' 2>/dev/null || true)
+        if [ -n "$ref_home" ]; then
+            printf '%s\n' "$ref_home"
+            return
+        fi
     fi
 
-    echo "ERROR: HOME is not set and python3 is unavailable for account home lookup"
+    echo "ERROR: HOME is not set and account home lookup failed"
     exit 1
 }
 
@@ -61,6 +66,13 @@ _require_safe_path() {
         echo "ERROR: unsafe $name path: '$path'"
         exit 1
     fi
+
+    case "$path" in
+        /.agerun|/.agerun/*)
+            echo "ERROR: unsafe $name path targets the filesystem root: '$path'"
+            exit 1
+            ;;
+    esac
 }
 
 _require_non_negative_integer() {
