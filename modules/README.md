@@ -7,14 +7,14 @@ In the AgeRun system, a module is a self-contained unit of functionality that pr
 **Module Types**:
 
 1. **C Modules**: Traditional modules with an implementation file (`.c`) and header file (`.h`)
-2. **C-ABI Compatible Zig Modules**: Zig implementations (`.zig`) that maintain full C API compatibility with matching header files (`.h`). Currently implemented in Zig: `ar_assert`, `ar_complete_instruction_evaluator`, `ar_complete_instruction_parser`, `ar_expression_ast`, `ar_heap`, `ar_instruction_ast`, `ar_method_ast`, `ar_method_evaluator`, `ar_semver`, and `ar_string`. The `ar_io` module uses a hybrid approach with most functions in Zig (`ar_io.zig`) and variadic functions in C (`ar_io_variadic.c`) due to platform-specific requirements. `ar_local_completion` is a user-approved C exception for direct `llama.cpp` / `libllama` interop behind a stable AgeRun header.
+2. **C-ABI Compatible Zig Modules**: Zig implementations (`.zig`) that maintain full C API compatibility with matching header files (`.h`). Currently implemented in Zig: `ar_assert`, `ar_append_instruction_evaluator`, `ar_complete_instruction_evaluator`, `ar_complete_instruction_parser`, `ar_expression_ast`, `ar_head_instruction_evaluator`, `ar_heap`, `ar_instruction_ast`, `ar_method_ast`, `ar_method_evaluator`, `ar_semver`, `ar_string`, and `ar_tail_instruction_evaluator`. The `ar_io` module uses a hybrid approach with most functions in Zig (`ar_io.zig`) and variadic functions in C (`ar_io_variadic.c`) due to platform-specific requirements. `ar_local_completion` is a user-approved C exception for direct `llama.cpp` / `libllama` interop behind a stable AgeRun header.
 3. **Zig Struct Modules**: Pure Zig modules using TitleCase naming (e.g., `DataStore.zig`) for internal components that don't require C interop. These modules use Zig's idiomatic patterns while maintaining AgeRun's ownership conventions.
 
 Each module typically follows a consistent naming convention with an `ar_` prefix (e.g., `ar_data`, `ar_string`), and has its own test file (`ar_*_tests.c`) that verifies its functionality. Note: File names are being transitioned from `ar_` to `ar_` prefix gradually as files are modified for other reasons.
 
 **Recent Architectural Achievements:**
 - **Zero Memory Leaks**: All 45 tests pass with zero memory leaks across the entire system
-- **Modular Instruction Evaluation**: Successfully refactored instruction evaluation into specialized evaluator modules, now including `complete(...)` support through `ar_complete_instruction_evaluator`
+- **Modular Instruction Evaluation**: Successfully refactored instruction evaluation into specialized evaluator modules, now including `complete(...)`, `append(...)`, `head(...)`, and `tail(...)` support through specialized evaluators
 - **Legacy Function Elimination**: Completed removal of all legacy wrapper functions from specialized evaluators
 - **Facade Pattern Implementation**: Instruction evaluator now serves as a clean facade coordinating specialized evaluators
 
@@ -1172,7 +1172,7 @@ The expression evaluator module provides evaluation of expression ASTs against m
 
 ### Instruction Evaluator Module (`ar_instruction_evaluator`)
 
-The [instruction evaluator module](ar_instruction_evaluator.md) serves as a facade that coordinates specialized instruction evaluators, including `complete(...)` support:
+The [instruction evaluator module](ar_instruction_evaluator.md) serves as a facade that coordinates specialized instruction evaluators, including `complete(...)`, `append(...)`, `head(...)`, and `tail(...)` support:
 
 - **Facade Pattern**: Creates and manages instances of all specialized evaluators
 - **Unified Interface**: Provides single entry point for all instruction evaluation
@@ -1182,7 +1182,7 @@ The [instruction evaluator module](ar_instruction_evaluator.md) serves as a faca
 - **Memory Safety**: Ensures coordinated cleanup across all specialized modules
 - **Zero Direct Implementation**: Contains no evaluation logic - purely coordination and delegation
 
-The instruction evaluator coordinates the following 9 specialized modules:
+The instruction evaluator coordinates the following specialized modules:
 
 #### Assignment Instruction Evaluator Module (`ar_assignment_instruction_evaluator`)
 
@@ -1225,6 +1225,27 @@ The [complete instruction evaluator module](ar_complete_instruction_evaluator.md
 - **Atomic Memory Population**: Writes generated placeholder strings into `memory...` targets only after full validation succeeds
 - **Handled Failure Semantics**: Records actionable errors, preserves prior memory, and writes boolean status results
 - **Backend Separation**: Delegates model/runtime lifecycle and placeholder generation to `ar_local_completion`
+
+#### Append Instruction Evaluator Module (`ar_append_instruction_evaluator`)
+
+The [append instruction evaluator module](ar_append_instruction_evaluator.md) handles `append(...)` execution:
+- **Memory-Owned Lists**: Mutates only existing LIST values owned by frame memory
+- **No-op Semantics**: Stores integer `0` for invalid targets or append failures when assigned
+- **Atomic Result Writes**: Avoids partial mutation when result assignment cannot be stored
+
+#### Head Instruction Evaluator Module (`ar_head_instruction_evaluator`)
+
+The [head instruction evaluator module](ar_head_instruction_evaluator.md) handles `head(...)` execution:
+- **First Item Return**: Stores a shallow copy of the first LIST item
+- **Source Preservation**: Never mutates the source list
+- **Fallback Semantics**: Stores integer `0` for empty, missing, non-LIST, or not-copyable inputs
+
+#### Tail Instruction Evaluator Module (`ar_tail_instruction_evaluator`)
+
+The [tail instruction evaluator module](ar_tail_instruction_evaluator.md) handles `tail(...)` execution:
+- **Remaining Items Return**: Stores a new LIST of shallow-copied items after the first
+- **Empty Tail Distinction**: Stores an empty LIST for empty and single-item source lists
+- **Fallback Semantics**: Stores integer `0` for missing, non-LIST, or not-copyable inputs
 
 #### Compile Instruction Evaluator Module (`ar_compile_instruction_evaluator`)
 
@@ -1288,7 +1309,7 @@ The [method AST module](ar_method_ast.md) provides Abstract Syntax Tree structur
 
 ### Instruction Parser Module (`ar_instruction_parser`)
 
-The [instruction parser module](ar_instruction_parser.md) serves as a facade that coordinates specialized instruction parsers, including `complete(...)` parsing:
+The [instruction parser module](ar_instruction_parser.md) serves as a facade that coordinates specialized instruction parsers, including `complete(...)`, `append(...)`, `head(...)`, and `tail(...)` parsing:
 
 - **Facade Pattern**: Creates and manages instances of all specialized parsers
 - **Unified Interface**: Provides `ar_instruction_parser__parse()` that automatically detects instruction type
@@ -1299,7 +1320,7 @@ The [instruction parser module](ar_instruction_parser.md) serves as a facade tha
 - **Memory Safety**: Ensures coordinated cleanup across all specialized modules
 - **Zero Direct Implementation**: Contains minimal parsing logic - purely coordination and delegation
 
-The instruction parser coordinates the following 9 specialized parser modules:
+The instruction parser coordinates the following specialized parser modules:
 
 #### Assignment Instruction Parser Module (`ar_assignment_instruction_parser`)
 
@@ -1343,6 +1364,27 @@ The [complete instruction parser module](ar_complete_instruction_parser.md) hand
 - **Placeholder Validation**: Accepts supported `{name}` placeholder syntax only
 - **Values Expression**: Accepts the optional second argument as an expression evaluated as a map at runtime
 - **AST Wiring**: Produces `AR_INSTRUCTION_AST_TYPE__COMPLETE` nodes with parsed argument ASTs
+
+#### Append Instruction Parser Module (`ar_append_instruction_parser`)
+
+The [append instruction parser module](ar_append_instruction_parser.md) handles parsing of `append(...)` calls:
+- **Append Function Syntax**: Parses `append(target, value)` format
+- **Expression Arguments**: Parses both arguments as normal expressions
+- **AST Wiring**: Produces `AR_INSTRUCTION_AST_TYPE__APPEND` nodes with parsed argument ASTs
+
+#### Head Instruction Parser Module (`ar_head_instruction_parser`)
+
+The [head instruction parser module](ar_head_instruction_parser.md) handles parsing of `head(...)` calls:
+- **Head Function Syntax**: Parses `head(list)` format
+- **Expression Argument**: Parses the argument as a normal expression
+- **AST Wiring**: Produces `AR_INSTRUCTION_AST_TYPE__HEAD` nodes with a parsed argument AST
+
+#### Tail Instruction Parser Module (`ar_tail_instruction_parser`)
+
+The [tail instruction parser module](ar_tail_instruction_parser.md) handles parsing of `tail(...)` calls:
+- **Tail Function Syntax**: Parses `tail(list)` format
+- **Expression Argument**: Parses the argument as a normal expression
+- **AST Wiring**: Produces `AR_INSTRUCTION_AST_TYPE__TAIL` nodes with a parsed argument AST
 
 #### Compile Instruction Parser Module (`ar_compile_instruction_parser`)
 

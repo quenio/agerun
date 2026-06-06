@@ -21,6 +21,8 @@ The facade currently coordinates specialized evaluators for:
 - build
 - complete
 - append
+- head
+- tail
 - compile
 - spawn
 - exit
@@ -34,6 +36,10 @@ The facade currently coordinates specialized evaluators for:
 `append(...)` support is handled by `ar_append_instruction_evaluator`, which mutates only an
 existing memory-owned list and stores integer `1` or `0` when the function call has a result
 assignment.
+
+`head(...)` and `tail(...)` support is handled by their specialized evaluators. They evaluate a
+list expression, never mutate the source list, and store either a shallow-copied result or integer
+`0` for invalid input/copy failure.
 
 ## Public API
 
@@ -63,6 +69,9 @@ bool ar_instruction_evaluator__evaluate(
   call has a result assignment
 - `append(...)` evaluates the target expression, accepts it only when it resolves to a
   memory-owned LIST, and transfers the claimed or copied value to that list
+- `head(...)` returns a shallow copy of the first list item, or integer `0` for empty/invalid input
+- `tail(...)` returns a new LIST of shallow-copied items after the first, a new empty LIST for an
+  empty or single-item source list, or integer `0` for invalid input/copy failure
 - post-failure execution continues normally for later non-`complete(...)` instructions
 
 ## Typical usage

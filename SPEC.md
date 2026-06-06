@@ -137,6 +137,8 @@ The following BNF grammar defines the syntax of individual instructions allowed 
                  | <build-function>
                  | <complete-function>
                  | <append-function>
+                 | <head-function>
+                 | <tail-function>
                  | <compile-function>
                  | <spawn-function>
                  | <exit-function>
@@ -148,6 +150,8 @@ The following BNF grammar defines the syntax of individual instructions allowed 
 <build-function> ::= 'build' '(' <expression> ',' <expression> ')'
 <complete-function> ::= 'complete' '(' <expression> [',' <expression>] ')'
 <append-function> ::= 'append' '(' <expression> ',' <expression> ')'
+<head-function> ::= 'head' '(' <expression> ')'
+<tail-function> ::= 'tail' '(' <expression> ')'
 <compile-function> ::= 'compile' '(' <expression> ',' <expression> ',' <expression> ')'
 <spawn-function> ::= 'spawn' '(' <expression> ',' <expression> ',' <expression> ')'
 <exit-function> ::= 'exit' '(' <expression> ')'
@@ -163,6 +167,8 @@ Instructions in an agent method can be of two types:
   - `build` - Construct a string using a template and values
   - `complete` - Complete template placeholders with local LLM-generated values and return a map
   - `append` - Append a value to an existing memory list
+  - `head` - Return the first item from a list
+  - `tail` - Return a new list containing all but the first item
   - `compile` - Define a new agent method
   - `spawn` - Spawn a new agent instance
   - `exit` - Exit an existing agent
@@ -175,6 +181,8 @@ Function call instructions can optionally assign their result to a variable. For
 - `memory.result := complete("The capital of {country} is {city}.", memory.values)` - Return a new map containing values from `memory.values` plus generated values for missing placeholders
 - `append(memory.results, message.value)` - Append a value to the existing `memory.results` list
 - `memory.append_ok := append(memory.results, message.value)` - Append a value and store `1` on success or `0` on failure
+- `memory.next := head(memory.targets)` - Store the first item from `memory.targets`
+- `memory.remaining := tail(memory.targets)` - Store a new list with all items after the first
 - `exit(agent_id)` - Exit an agent without storing the result
 - `success := exit(agent_id)` - Exit an agent and store the result
 - `deprecate(method_name, method_version)` - Deprecate a method without storing the result
@@ -258,12 +266,26 @@ The expression evaluator follows these rules:
 - `build(template: string, values: map) → string`: Constructs a string by replacing placeholders in template with corresponding values from values. Always returns a string; placeholders without corresponding values remain unchanged. The template parameter must be a STRING type.
 - `complete(template: string[, values: map]) → map`: Uses a local CPU-only completion backend to complete placeholder variables as strings and returns a new map. When a values map is provided, placeholders with corresponding primitive values are first replaced in the template using build-style substitution, the original values are copied into the result map, and only placeholders still missing from the values map are sent to the local completion backend. When no values map is provided, all placeholders are completed by the backend. The input map is never mutated.
 
-### 2. List Mutation
+### 2. List Operations
 
 - `append(target: expression, value: data) → boolean`: Evaluates the target expression and mutates it only when it resolves to an existing LIST directly or indirectly owned by the frame memory map, such as `memory.results` or `memory.wrapper.results`. Targets under `message` or `context`, fresh literal/list expression results, missing targets, non-LIST targets, and protected `memory.self` targets are no-ops.
 - The value argument may be any expression. Fresh literal values are transferred directly into the list. Borrowed values from `memory`, `message`, or `context` are claimed when possible or shallow-copied before append.
 - Borrowed nested containers have a current limitation: `ar_data__claim_or_copy()` can shallow-copy primitives and flat containers only. Appending a borrowed map or list that itself contains nested maps or lists fails and returns/stores `0`.
 - Without result assignment, target no-ops and append failures complete without mutating memory further. With result assignment, `memory.some_flag := append(...)` stores integer `1` for successful append or `0` for no-op/failure, and the instruction itself completes when the result can be stored. Invalid result assignment paths fail before append mutation. If storing the success result fails after a list append, the appended item is removed before the instruction fails.
+
+- `head(list: expression) → data | integer`: Evaluates the list expression and never mutates the source list. When the value is a LIST with at least one item, `head(...)` stores a shallow copy of the first item. Empty lists, missing values, non-LIST values, and values that cannot be safely copied store integer `0`. Without result assignment, the computed value is discarded and the instruction completes.
+- `tail(list: expression) → list | integer`: Evaluates the list expression and never mutates the source list. When the value is a non-empty LIST, `tail(...)` stores a new LIST containing shallow copies of every item after the first. When the value is an empty LIST, it stores a new empty LIST. Missing values, non-LIST values, and values that cannot be safely copied store integer `0`, allowing callers to distinguish invalid input from the valid tail of a single-item list.
+- `head(...)` and `tail(...)` use the current shallow-copy behavior for returned list items: primitives and flat containers can be copied, but a returned map or list that contains nested maps or lists cannot be copied. For `head(...)`, that first-item copy failure stores integer `0`. For `tail(...)`, any retained item that cannot be copied makes the whole tail result integer `0`.
+- Together, `head(...)` and `tail(...)` let a method consume an unbounded list through self-messages without loops or indexed access. For example, a method can process a list of nonzero target IDs one message at a time:
+
+```
+memory.next_target := head(message.targets)
+memory.remaining_targets := tail(message.targets)
+memory.target := if(memory.next_target = 0, 0, memory.next_target)
+memory.next_self := if(memory.next_target = 0, 0, memory.self)
+send(memory.target, message.payload)
+send(memory.next_self, {targets: memory.remaining_targets, payload: message.payload})
+```
 
 ### 3. Messaging
 

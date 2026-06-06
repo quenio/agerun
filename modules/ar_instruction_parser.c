@@ -15,6 +15,8 @@
 #include "ar_build_instruction_parser.h"
 #include "ar_complete_instruction_parser.h"
 #include "ar_append_instruction_parser.h"
+#include "ar_head_instruction_parser.h"
+#include "ar_tail_instruction_parser.h"
 #include "ar_compile_instruction_parser.h"
 #include "ar_spawn_instruction_parser.h"
 #include "ar_exit_instruction_parser.h"
@@ -34,6 +36,8 @@ struct ar_instruction_parser_s {
     ar_build_instruction_parser_t *own_build_parser;
     ar_complete_instruction_parser_t *own_complete_parser;
     ar_append_instruction_parser_t *own_append_parser;
+    ar_head_instruction_parser_t *own_head_parser;
+    ar_tail_instruction_parser_t *own_tail_parser;
     ar_compile_instruction_parser_t *own_method_parser;
     ar_spawn_instruction_parser_t *own_spawn_parser;
     ar_exit_instruction_parser_t *own_exit_parser;
@@ -68,6 +72,12 @@ static void _destroy_specialized_parsers(ar_instruction_parser_t *mut_parser) {
     }
     if (mut_parser->own_append_parser) {
         ar_append_instruction_parser__destroy(mut_parser->own_append_parser);
+    }
+    if (mut_parser->own_head_parser) {
+        ar_head_instruction_parser__destroy(mut_parser->own_head_parser);
+    }
+    if (mut_parser->own_tail_parser) {
+        ar_tail_instruction_parser__destroy(mut_parser->own_tail_parser);
     }
     if (mut_parser->own_method_parser) {
         ar_compile_instruction_parser__destroy(mut_parser->own_method_parser);
@@ -160,6 +170,24 @@ ar_instruction_parser_t* ar_instruction_parser__create(ar_log_t *ref_log) {
     if (!own_parser->own_append_parser) {
         if (ref_log) {
             ar_log__error(ref_log, "Failed to create append instruction parser");
+        }
+        goto error;
+    }
+
+    // Create head parser
+    own_parser->own_head_parser = ar_head_instruction_parser__create(ref_log);
+    if (!own_parser->own_head_parser) {
+        if (ref_log) {
+            ar_log__error(ref_log, "Failed to create head instruction parser");
+        }
+        goto error;
+    }
+
+    // Create tail parser
+    own_parser->own_tail_parser = ar_tail_instruction_parser__create(ref_log);
+    if (!own_parser->own_tail_parser) {
+        if (ref_log) {
+            ar_log__error(ref_log, "Failed to create tail instruction parser");
         }
         goto error;
     }
@@ -345,6 +373,28 @@ static ar_instruction_ast_t* _dispatch_function(ar_instruction_parser_t *mut_par
         return own_ast;
     }
 
+    // Check for head
+    if (func_len == 4 && strncmp(func_name, "head", 4) == 0) {
+        ar_instruction_ast_t *own_ast = ar_head_instruction_parser__parse(
+            mut_parser->own_head_parser,
+            ref_instruction,
+            own_result_path
+        );
+
+        return own_ast;
+    }
+
+    // Check for tail
+    if (func_len == 4 && strncmp(func_name, "tail", 4) == 0) {
+        ar_instruction_ast_t *own_ast = ar_tail_instruction_parser__parse(
+            mut_parser->own_tail_parser,
+            ref_instruction,
+            own_result_path
+        );
+
+        return own_ast;
+    }
+
     // Check for compile
     if (func_len == 7 && strncmp(func_name, "compile", 7) == 0) {
         ar_instruction_ast_t *own_ast = ar_compile_instruction_parser__parse(
@@ -517,4 +567,3 @@ ar_instruction_ast_t* ar_instruction_parser__parse(ar_instruction_parser_t *mut_
     _log_error(mut_parser, "Unknown instruction type", 0);
     return NULL;
 }
-
