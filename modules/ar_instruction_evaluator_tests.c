@@ -443,8 +443,81 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
 
         ar_instruction_ast__destroy(ast);
     }
+
+    // Test 7: Head instruction
+    {
+        const char *args[] = {"[7, 8, 9]"};
+        ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
+            AR_INSTRUCTION_AST_TYPE__HEAD, "head", args, 1, "memory.head_value"
+        );
+        assert(ast != NULL);
+
+        ar_list_t *arg_asts = ar_list__create();
+        ar_expression_ast_t *items[3];
+        items[0] = ar_expression_ast__create_literal_int(7);
+        items[1] = ar_expression_ast__create_literal_int(8);
+        items[2] = ar_expression_ast__create_literal_int(9);
+        ar_expression_ast_t *list_ast = ar_expression_ast__create_literal_list(items, 3);
+        ar_list__add_last(arg_asts, list_ast);
+        ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
+
+        ar_data_t *ctx = ar_data__create_map();
+        ar_data_t *msg = ar_data__create_string("");
+        ar_frame_t *fr = ar_frame__create(memory, ctx, msg);
+
+        bool result = ar_instruction_evaluator__evaluate(evaluator, fr, ast);
+
+        ar_frame__destroy(fr);
+        ar_data__destroy(ctx);
+        ar_data__destroy(msg);
+        assert(result == true);
+
+        ar_data_t *head_value = ar_data__get_map_data(memory, "head_value");
+        assert(head_value != NULL);
+        assert(ar_data__get_type(head_value) == AR_DATA_TYPE__INTEGER);
+        assert(ar_data__get_integer(head_value) == 7);
+
+        ar_instruction_ast__destroy(ast);
+    }
+
+    // Test 8: Tail instruction
+    {
+        const char *args[] = {"[7, 8, 9]"};
+        ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
+            AR_INSTRUCTION_AST_TYPE__TAIL, "tail", args, 1, "memory.tail_values"
+        );
+        assert(ast != NULL);
+
+        ar_list_t *arg_asts = ar_list__create();
+        ar_expression_ast_t *items[3];
+        items[0] = ar_expression_ast__create_literal_int(7);
+        items[1] = ar_expression_ast__create_literal_int(8);
+        items[2] = ar_expression_ast__create_literal_int(9);
+        ar_expression_ast_t *list_ast = ar_expression_ast__create_literal_list(items, 3);
+        ar_list__add_last(arg_asts, list_ast);
+        ar_instruction_ast__set_function_arg_asts(ast, arg_asts);
+
+        ar_data_t *ctx = ar_data__create_map();
+        ar_data_t *msg = ar_data__create_string("");
+        ar_frame_t *fr = ar_frame__create(memory, ctx, msg);
+
+        bool result = ar_instruction_evaluator__evaluate(evaluator, fr, ast);
+
+        ar_frame__destroy(fr);
+        ar_data__destroy(ctx);
+        ar_data__destroy(msg);
+        assert(result == true);
+
+        ar_data_t *tail_values = ar_data__get_map_data(memory, "tail_values");
+        assert(tail_values != NULL);
+        assert(ar_data__get_type(tail_values) == AR_DATA_TYPE__LIST);
+        assert(ar_data__list_count(tail_values) == 2);
+        assert(ar_data__get_integer(ar_data__list_first(tail_values)) == 8);
+
+        ar_instruction_ast__destroy(ast);
+    }
     
-    // Test 7: Method instruction
+    // Test 9: Method instruction
     {
         
         // Given a compile instruction AST with three string arguments and result assignment
@@ -492,7 +565,7 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         ar_instruction_ast__destroy(ast);
     }
     
-    // Test 8: Destroy agent instruction
+    // Test 10: Destroy agent instruction
     {
         // Use the same agency from the evaluator
         ar_methodology_t *mut_methodology = ar_agency__get_methodology(agency);
@@ -544,7 +617,7 @@ static void test_instruction_evaluator__unified_evaluate_all_types(void) {
         ar_instruction_ast__destroy(ast);
     }
     
-    // Test 9: Destroy method instruction
+    // Test 11: Destroy method instruction
     {
         // Use the same methodology from the evaluator
         ar_methodology_t *mut_methodology = ar_agency__get_methodology(agency);
@@ -1014,6 +1087,8 @@ static void test_instruction_evaluator__rejects_protected_self_result_paths(void
         {AR_INSTRUCTION_AST_TYPE__BUILD, "build"},
         {AR_INSTRUCTION_AST_TYPE__COMPLETE, "complete"},
         {AR_INSTRUCTION_AST_TYPE__APPEND, "append"},
+        {AR_INSTRUCTION_AST_TYPE__HEAD, "head"},
+        {AR_INSTRUCTION_AST_TYPE__TAIL, "tail"},
         {AR_INSTRUCTION_AST_TYPE__COMPILE, "compile"},
         {AR_INSTRUCTION_AST_TYPE__SPAWN, "spawn"},
         {AR_INSTRUCTION_AST_TYPE__EXIT, "exit"},
