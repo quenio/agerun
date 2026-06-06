@@ -99,7 +99,7 @@ pub export fn ar_exit_instruction_evaluator__evaluate(
     // Check if we need to make a copy (if result is owned by memory/context)
     if (agent_id_result) |result| {
         const own_agent_id = c.ar_data__claim_or_copy(result, ref_evaluator) orelse {
-            c.ar_log__error(ref_evaluator.?.ref_log, "Cannot destroy agent with nested containers in agent ID (no deep copy support)");
+            c.ar_log__error(ref_evaluator.?.ref_log, "Failed to copy agent ID for exit");
             return false;
         };
         defer c.ar_data__destroy_if_owned(own_agent_id, ref_evaluator);

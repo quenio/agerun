@@ -134,7 +134,7 @@ fn _handledFailureDetailedWithResultMap(
 
 fn _copyProvidedValuesOrEmpty(ref_values_data: ?*const c.ar_data_t) ?*c.ar_data_t {
     if (ref_values_data) |ref_values| {
-        return _deepCopyData(ref_values);
+        return c.ar_data__deep_copy(ref_values);
     }
     return c.ar_data__create_map();
 }
@@ -319,79 +319,6 @@ fn _buildPrefilledText(ref_template: []const u8, ref_values: ?*const c.ar_data_t
     return @ptrCast(own_buffer);
 }
 
-fn _deepCopyData(ref_data: ?*const c.ar_data_t) ?*c.ar_data_t {
-    if (ref_data == null) return null;
-
-    switch (c.ar_data__get_type(ref_data)) {
-        c.AR_DATA_TYPE__INTEGER => return c.ar_data__create_integer(c.ar_data__get_integer(ref_data)),
-        c.AR_DATA_TYPE__DOUBLE => return c.ar_data__create_double(c.ar_data__get_double(ref_data)),
-        c.AR_DATA_TYPE__STRING => return c.ar_data__create_string(c.ar_data__get_string(ref_data)),
-        c.AR_DATA_TYPE__LIST => {
-            const own_copy = c.ar_data__create_list() orelse return null;
-            const item_count = c.ar_data__list_count(ref_data);
-            const own_items = c.ar_data__list_items(ref_data) orelse {
-                if (item_count == 0) return own_copy;
-                c.ar_data__destroy(own_copy);
-                return null;
-            };
-            defer ar_allocator.free(own_items);
-
-            var index: usize = 0;
-            while (index < item_count) : (index += 1) {
-                const own_item_copy = _deepCopyData(own_items[index]) orelse {
-                    c.ar_data__destroy(own_copy);
-                    return null;
-                };
-                if (!c.ar_data__list_add_last_data(own_copy, own_item_copy)) {
-                    c.ar_data__destroy(own_item_copy);
-                    c.ar_data__destroy(own_copy);
-                    return null;
-                }
-            }
-            return own_copy;
-        },
-        c.AR_DATA_TYPE__MAP => {
-            const own_copy = c.ar_data__create_map() orelse return null;
-            const own_keys = c.ar_data__get_map_keys(ref_data) orelse {
-                c.ar_data__destroy(own_copy);
-                return null;
-            };
-            defer c.ar_data__destroy(own_keys);
-
-            const key_count = c.ar_data__list_count(own_keys);
-            const own_key_items = c.ar_data__list_items(own_keys) orelse {
-                if (key_count == 0) return own_copy;
-                c.ar_data__destroy(own_copy);
-                return null;
-            };
-            defer ar_allocator.free(own_key_items);
-
-            var index: usize = 0;
-            while (index < key_count) : (index += 1) {
-                const ref_key = c.ar_data__get_string(own_key_items[index]) orelse {
-                    c.ar_data__destroy(own_copy);
-                    return null;
-                };
-                const ref_value = c.ar_data__get_map_data(ref_data, ref_key) orelse {
-                    c.ar_data__destroy(own_copy);
-                    return null;
-                };
-                const own_value_copy = _deepCopyData(ref_value) orelse {
-                    c.ar_data__destroy(own_copy);
-                    return null;
-                };
-                if (!c.ar_data__set_map_data(own_copy, ref_key, own_value_copy)) {
-                    c.ar_data__destroy(own_value_copy);
-                    c.ar_data__destroy(own_copy);
-                    return null;
-                }
-            }
-            return own_copy;
-        },
-        else => return null,
-    }
-}
-
 export fn ar_complete_instruction_evaluator__create(
     ref_log: ?*c.ar_log_t,
     ref_expr_evaluator: ?*c.ar_expression_evaluator_t,
@@ -463,7 +390,7 @@ export fn ar_complete_instruction_evaluator__evaluate(
     }
 
     var own_result_map: ?*c.ar_data_t = if (ref_values_data != null)
-        _deepCopyData(ref_values_data)
+        c.ar_data__deep_copy(ref_values_data)
     else
         c.ar_data__create_map();
     if (own_result_map == null) {

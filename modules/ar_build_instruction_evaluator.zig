@@ -223,7 +223,7 @@ pub export fn ar_build_instruction_evaluator__evaluate(
     // Get ownership of template data first
     const own_template_data = c.ar_data__claim_or_copy(template_result, evaluator);
     if (own_template_data == null) {
-        c.ar_log__error(evaluator.ref_log, "Cannot build with nested containers in template (no deep copy support)");
+        c.ar_log__error(evaluator.ref_log, "Failed to copy build template");
         return false;
     }
     defer c.ar_data__destroy_if_owned(own_template_data, evaluator);

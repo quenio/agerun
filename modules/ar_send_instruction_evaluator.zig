@@ -136,7 +136,7 @@ pub export fn ar_send_instruction_evaluator__evaluate(
 
             // Get ownership of message for sending
             const own_message = c.ar_data__claim_or_copy(message_result, ref_evaluator) orelse {
-                c.ar_log__error(ref_evaluator.?.ref_log, "Cannot send message with nested containers (no deep copy support)");
+                c.ar_log__error(ref_evaluator.?.ref_log, "Failed to copy message for send");
                 return false;
             };
 
@@ -178,7 +178,7 @@ pub export fn ar_send_instruction_evaluator__evaluate(
 
         if (!send_result) {
             const own_message = c.ar_data__claim_or_copy(@constCast(ref_current_message), ref_evaluator) orelse {
-                c.ar_log__error(ref_evaluator.?.ref_log, "Cannot send message with nested containers (no deep copy support)");
+                c.ar_log__error(ref_evaluator.?.ref_log, "Failed to copy message for send");
                 return false;
             };
 
@@ -204,7 +204,7 @@ pub export fn ar_send_instruction_evaluator__evaluate(
 
         // Get ownership of message for sending
         const own_message = c.ar_data__claim_or_copy(message_result, ref_evaluator) orelse {
-            c.ar_log__error(ref_evaluator.?.ref_log, "Cannot send message with nested containers (no deep copy support)");
+            c.ar_log__error(ref_evaluator.?.ref_log, "Failed to copy message for send");
             return false;
         };
 

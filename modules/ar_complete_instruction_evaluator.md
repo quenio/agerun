@@ -10,7 +10,7 @@ The `ar_complete_instruction_evaluator` module evaluates `complete(...)` instruc
 - validate generated strings before storing the result map
 - reject empty values, leading/trailing whitespace, and generated `{` or `}` characters
 - write a new result map to the instruction result path when the call is assigned
-- include both original input-map values and completed values in the returned map
+- include deep copies of original input-map values and completed values in the returned map
 - return handled failure status without aborting the method for normal `complete(...)` failure cases
 
 ## Current implementation notes
@@ -18,7 +18,7 @@ The `ar_complete_instruction_evaluator` module evaluates `complete(...)` instruc
 - placeholder names are extracted once per template and staged before completion is requested
 - templates with no supported `{name}` placeholders return a copied input map or an empty map without invoking local completion
 - invalid second arguments fail unless they evaluate to map values
-- the input values map is recursively copied before generated values are added, so the original map is not mutated
+- the input values map is deep-copied before generated values are added, so nested values are preserved and the original map is not mutated
 - runtime and semantic failure logs preserve actionable fields such as `failure_category`, `cause`, and `recovery_hint`
 - provided values with braces are preserved in returned maps but sanitized in prompts sent to local completion
 - provided values that cannot be rendered as prompt literals use a neutral prompt marker instead of leaving placeholder text behind

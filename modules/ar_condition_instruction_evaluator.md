@@ -60,6 +60,7 @@ Key features:
 3. **Result Assignment**: Stores the evaluated value when assignment is specified
 4. **Type Flexibility**: Can return any data type from either branch
 5. **Short-circuit Evaluation**: Only the selected expression is evaluated
+6. **Nested Copy Support**: Deep-copies selected borrowed list/map branches before storage
 
 ### Memory Management
 
@@ -68,7 +69,7 @@ The module follows strict memory ownership rules:
 - Expression evaluator and log are borrowed references stored in the instance
 - Memory is obtained from the frame during evaluation, not stored
 - Condition evaluation results are owned and must be destroyed
-- Branch evaluation results are owned by the caller when assigned
+- Branch evaluation results are claimed or deep-copied before assignment
 - The create function returns ownership to the caller
 - The destroy function takes ownership and frees all resources
 
