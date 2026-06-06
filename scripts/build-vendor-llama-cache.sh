@@ -409,6 +409,16 @@ _release_build_lock() {
     fi
 }
 
+_prepare_build_lock_directory() {
+    local lock_dir
+
+    lock_dir=$(dirname "$CACHE_LOCK")
+    if ! mkdir -p "$lock_dir"; then
+        echo "ERROR: unable to create vendored llama.cpp cache lock directory at $lock_dir"
+        exit 1
+    fi
+}
+
 _recovery_lock_value() {
     _lock_file_value "$STALE_LOCK_RECOVERY_FILE" "$1"
 }
@@ -667,6 +677,7 @@ _acquire_lock() {
     local pid_started_at
 
     mkdir -p "$CACHE_DIR"
+    _prepare_build_lock_directory
 
     while true; do
         _wait_for_lock
@@ -693,6 +704,11 @@ _acquire_lock() {
         ) 2>/dev/null; then
             trap '_release_build_lock' EXIT INT TERM
             return 0
+        fi
+
+        if [ ! -f "$CACHE_LOCK" ]; then
+            echo "ERROR: unable to create vendored llama.cpp cache lock at $CACHE_LOCK"
+            exit 1
         fi
     done
 }
