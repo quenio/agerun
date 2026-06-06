@@ -1,5 +1,26 @@
 # AgeRun CHANGELOG
 
+## 2026-06-06 (Shared complete model cache)
+
+- **Moved real `complete(...)` model artifacts into a shared cache**
+
+  The Phi-3 GGUF model, license, and model card now live under `$HOME/.agerun/models` by default
+  instead of a worktree-local `models/` directory. `make complete-runtime-ready` uses a locked
+  cache-aware download helper, the local completion runtime resolves the same shared path unless
+  `AGERUN_COMPLETE_MODEL` overrides it, and CI restores/saves `~/.agerun/models` with a stable
+  model-specific key separate from the vendored llama.cpp cache.
+
+  **Implementation**: Updated Makefile model variables, added
+  `scripts/download-complete-model-cache.sh`, removed tracked worktree-local model metadata,
+  synchronized the C/Zig local completion defaults and real-completion tests, refreshed log
+  whitelist entries, and updated GitHub Actions cache configuration.
+
+  **Verification**: `make complete-runtime-ready 2>&1`, cross-worktree warm-cache reuse check,
+  `make complete-model-smoke 2>&1`, `make build 2>&1`, and `make check-logs`.
+
+  **Impact**: Warm local and CI caches no longer redownload or duplicate the 2.2GB GGUF model per
+  AgeRun worktree while preserving the explicit `AGERUN_COMPLETE_MODEL` override.
+
 ## 2026-04-25 (Workflow transition completion evaluates item context)
 
 - **Changed workflow transition prompts from canned decisions to item-context evaluation**

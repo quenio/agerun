@@ -17,10 +17,23 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Restore complete model cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.agerun/models
+          key: agerun-complete-model-phi-3-mini-q4-gguf-v1
+          restore-keys: |
+            agerun-complete-model-phi-3-mini-q4-gguf-
+
+      - name: Drop restored complete model cache locks
+        run: |
+          rm -rf "$HOME/.agerun/models/download.lock"
+          rm -f "$HOME/.agerun/models/"*.partial
+
       - name: Restore AgeRun build cache
         uses: actions/cache@v4
         with:
-          path: ~/.agerun
+          path: ~/.agerun/build/cache/vendor-llama-cpu
           key: agerun-${{ runner.os }}-${{ runner.arch }}-gcc13-llama-${{ hashFiles('llama-cpp/**', 'Makefile', 'scripts/build-vendor-llama-cache.sh') }}
           restore-keys: |
             agerun-${{ runner.os }}-${{ runner.arch }}-gcc13-llama-

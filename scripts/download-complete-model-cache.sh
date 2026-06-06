@@ -1,0 +1,258 @@
+#!/bin/bash
+# Download the shared real complete() model artifacts.
+# Usage: make download-complete-model
+#
+# Purpose:
+# - Reuse one model directory across AgeRun worktrees.
+# - Create a lock while large model artifacts are being downloaded.
+# - Make concurrent instances wait until the lock clears, then re-check availability.
+
+set -e
+set -o pipefail
+
+COMPLETE_MODEL_DIR=${COMPLETE_MODEL_DIR:-"$HOME/.agerun/models"}
+COMPLETE_MODEL_FILE=${COMPLETE_MODEL_FILE:-"$COMPLETE_MODEL_DIR/phi-3-mini-q4.gguf"}
+COMPLETE_MODEL_LICENSE=${COMPLETE_MODEL_LICENSE:-"$COMPLETE_MODEL_DIR/phi-3-mini-q4.LICENSE"}
+COMPLETE_MODEL_CARD=${COMPLETE_MODEL_CARD:-"$COMPLETE_MODEL_DIR/phi-3-mini-q4.README.md"}
+DEFAULT_COMPLETE_MODEL_URL="https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf"
+DEFAULT_COMPLETE_MODEL_LICENSE_URL="$DEFAULT_COMPLETE_MODEL_URL/raw/main/LICENSE"
+DEFAULT_COMPLETE_MODEL_CARD_URL="$DEFAULT_COMPLETE_MODEL_URL/raw/main/README.md"
+DEFAULT_COMPLETE_MODEL_URL="$DEFAULT_COMPLETE_MODEL_URL/resolve/main"
+DEFAULT_COMPLETE_MODEL_URL="$DEFAULT_COMPLETE_MODEL_URL/Phi-3-mini-4k-instruct-q4.gguf?download=true"
+COMPLETE_MODEL_URL=${COMPLETE_MODEL_URL:-"$DEFAULT_COMPLETE_MODEL_URL"}
+COMPLETE_MODEL_LICENSE_URL=${COMPLETE_MODEL_LICENSE_URL:-"$DEFAULT_COMPLETE_MODEL_LICENSE_URL"}
+COMPLETE_MODEL_CARD_URL=${COMPLETE_MODEL_CARD_URL:-"$DEFAULT_COMPLETE_MODEL_CARD_URL"}
+COMPLETE_MODEL_LOCK=${COMPLETE_MODEL_LOCK:-"$COMPLETE_MODEL_DIR/download.lock"}
+COMPLETE_MODEL_LOCK_POLL_SECONDS=${COMPLETE_MODEL_LOCK_POLL_SECONDS:-2}
+COMPLETE_MODEL_LOCK_TIMEOUT_SECONDS=${COMPLETE_MODEL_LOCK_TIMEOUT_SECONDS:-3600}
+
+_abs_path() {
+    case "$1" in
+        /*)
+            printf '%s\n' "$1"
+            ;;
+        *)
+            printf '%s/%s\n' "$PWD" "$1"
+            ;;
+    esac
+}
+
+_require_safe_path() {
+    local name="$1"
+    local path="$2"
+
+    if [ -z "$path" ] || [ "$path" = "/" ]; then
+        echo "ERROR: unsafe $name path: '$path'"
+        exit 1
+    fi
+}
+
+_require_non_negative_integer() {
+    local name="$1"
+    local value="$2"
+
+    case "$value" in
+        ""|*[!0-9]*)
+            echo "ERROR: $name must be a non-negative integer, got '$value'"
+            exit 1
+            ;;
+    esac
+}
+
+MODEL_DIR=$(_abs_path "$COMPLETE_MODEL_DIR")
+MODEL_FILE=$(_abs_path "$COMPLETE_MODEL_FILE")
+MODEL_LICENSE=$(_abs_path "$COMPLETE_MODEL_LICENSE")
+MODEL_CARD=$(_abs_path "$COMPLETE_MODEL_CARD")
+MODEL_LOCK=$(_abs_path "$COMPLETE_MODEL_LOCK")
+MODEL_LOCK_HOLDER="$MODEL_LOCK/holder"
+CURRENT_HOST=$(hostname 2>/dev/null || echo unknown)
+DOWNLOAD_LOCK_TOKEN=
+
+_require_safe_path "COMPLETE_MODEL_DIR" "$MODEL_DIR"
+_require_safe_path "COMPLETE_MODEL_FILE" "$MODEL_FILE"
+_require_safe_path "COMPLETE_MODEL_LICENSE" "$MODEL_LICENSE"
+_require_safe_path "COMPLETE_MODEL_CARD" "$MODEL_CARD"
+_require_safe_path "COMPLETE_MODEL_LOCK" "$MODEL_LOCK"
+_require_non_negative_integer "COMPLETE_MODEL_LOCK_POLL_SECONDS" "$COMPLETE_MODEL_LOCK_POLL_SECONDS"
+_require_non_negative_integer "COMPLETE_MODEL_LOCK_TIMEOUT_SECONDS" "$COMPLETE_MODEL_LOCK_TIMEOUT_SECONDS"
+
+_path_mtime_epoch() {
+    local path="$1"
+
+    stat -c %Y "$path" 2>/dev/null ||
+        stat -f %m "$path" 2>/dev/null ||
+        echo 0
+}
+
+_lock_file_value() {
+    local key="$1"
+
+    sed -n "s/^$key=//p" "$MODEL_LOCK_HOLDER" 2>/dev/null | head -n 1 || true
+}
+
+_pid_exists_on_current_host() {
+    local pid="$1"
+
+    case "$pid" in
+        ""|*[!0-9]*)
+            return 1
+            ;;
+    esac
+
+    if kill -0 "$pid" 2>/dev/null; then
+        return 0
+    fi
+
+    ps -p "$pid" >/dev/null 2>&1
+}
+
+_lock_holder_is_dead_on_current_host() {
+    local lock_pid
+    local lock_host
+
+    lock_pid=$(_lock_file_value "pid")
+    lock_host=$(_lock_file_value "host")
+
+    [ "$lock_host" = "$CURRENT_HOST" ] && ! _pid_exists_on_current_host "$lock_pid"
+}
+
+_lock_is_stale() {
+    local lock_mtime
+    local now
+    local lock_age
+
+    if [ ! -d "$MODEL_LOCK" ]; then
+        return 1
+    fi
+
+    if _lock_holder_is_dead_on_current_host; then
+        return 0
+    fi
+
+    lock_mtime=$(_path_mtime_epoch "$MODEL_LOCK")
+    now=$(date +%s)
+    lock_age=$((now - lock_mtime))
+
+    [ "$lock_age" -ge "$COMPLETE_MODEL_LOCK_TIMEOUT_SECONDS" ]
+}
+
+_remove_stale_lock() {
+    if ! _lock_is_stale; then
+        return 1
+    fi
+
+    echo "Removing stale complete model download lock at $MODEL_LOCK"
+    rm -rf "$MODEL_LOCK"
+}
+
+_all_model_artifacts_available() {
+    [ -s "$MODEL_FILE" ] && [ -s "$MODEL_LICENSE" ] && [ -s "$MODEL_CARD" ]
+}
+
+_new_download_lock_token() {
+    {
+        printf 'host=%s\n' "$CURRENT_HOST"
+        printf 'pid=%s\n' "$$"
+        printf 'nonce=%s-%s-%s\n' "$(date +%s)" "$RANDOM" "$RANDOM"
+    } | (
+        if command -v sha256sum >/dev/null 2>&1; then
+            sha256sum | awk '{print $1}'
+        else
+            shasum -a 256 | awk '{print $1}'
+        fi
+    )
+}
+
+_write_lock_metadata() {
+    {
+        echo "token=$DOWNLOAD_LOCK_TOKEN"
+        echo "pid=$$"
+        echo "host=$CURRENT_HOST"
+        echo "started_at=$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+        echo "model_dir=$MODEL_DIR"
+    } > "$MODEL_LOCK_HOLDER"
+}
+
+_release_download_lock() {
+    if [ -n "$DOWNLOAD_LOCK_TOKEN" ] &&
+        [ -f "$MODEL_LOCK_HOLDER" ] &&
+        [ "$(_lock_file_value "token")" = "$DOWNLOAD_LOCK_TOKEN" ]; then
+        rm -f "$MODEL_LOCK_HOLDER"
+        rmdir "$MODEL_LOCK" 2>/dev/null || true
+    fi
+}
+
+_wait_for_lock() {
+    while [ -d "$MODEL_LOCK" ]; do
+        if _remove_stale_lock; then
+            continue
+        fi
+
+        echo "Waiting for complete model download lock at $MODEL_LOCK"
+        sleep "$COMPLETE_MODEL_LOCK_POLL_SECONDS"
+    done
+}
+
+_acquire_lock() {
+    mkdir -p "$MODEL_DIR"
+
+    while true; do
+        _wait_for_lock
+
+        if _all_model_artifacts_available; then
+            return 1
+        fi
+
+        DOWNLOAD_LOCK_TOKEN=$(_new_download_lock_token)
+        if mkdir "$MODEL_LOCK" 2>/dev/null; then
+            _write_lock_metadata
+            trap '_release_download_lock' EXIT INT TERM
+            return 0
+        fi
+    done
+}
+
+_download_asset() {
+    local target="$1"
+    local url="$2"
+    local label="$3"
+    local partial="$target.partial"
+
+    if [ -s "$target" ]; then
+        echo "Using existing $label at $target"
+        return
+    fi
+
+    mkdir -p "$(dirname "$target")"
+    echo "Downloading $label to $target"
+    curl -L --fail --retry 3 --retry-delay 5 --continue-at - --output "$partial" "$url"
+    mv "$partial" "$target"
+    test -s "$target"
+}
+
+_download_missing_artifacts() {
+    _download_asset "$MODEL_FILE" "$COMPLETE_MODEL_URL" "complete model"
+    _download_asset "$MODEL_LICENSE" "$COMPLETE_MODEL_LICENSE_URL" "complete model license"
+    _download_asset "$MODEL_CARD" "$COMPLETE_MODEL_CARD_URL" "complete model card"
+}
+
+_wait_for_lock
+
+if _all_model_artifacts_available; then
+    echo "Using shared complete model artifacts at $MODEL_DIR"
+    exit 0
+fi
+
+if _acquire_lock; then
+    if _all_model_artifacts_available; then
+        echo "Using shared complete model artifacts at $MODEL_DIR"
+    else
+        _download_missing_artifacts
+    fi
+else
+    echo "Using shared complete model artifacts at $MODEL_DIR"
+fi
+
+test -s "$MODEL_FILE"
+test -s "$MODEL_LICENSE"
+test -s "$MODEL_CARD"

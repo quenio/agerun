@@ -16,6 +16,16 @@ const ProcessChild = std.process.Child;
 const ProcessChildRunResult = std.process.Child.RunResult;
 const runProcessChild = ProcessChild.run;
 const LlamaToken = if (have_llama) @FieldType(llama_api, "llama_token") else i32;
+const default_model_hint = "$HOME/.agerun/models/phi-3-mini-q4.gguf";
+const default_model_missing_hint =
+    "complete() local model file was not found; set AGERUN_COMPLETE_MODEL or provide " ++
+    default_model_hint;
+const default_model_not_configured_hint =
+    "complete() local model path is not configured; set AGERUN_COMPLETE_MODEL or provide " ++
+    default_model_hint;
+const default_model_empty_hint =
+    "complete() local model path is empty; set AGERUN_COMPLETE_MODEL or provide " ++
+    default_model_hint;
 
 var g_llama_backend_initialized = false;
 var g_llama_backend_user_count: usize = 0;
@@ -49,24 +59,33 @@ fn _dupOptional(ref_text: ?[:0]const u8, ref_desc: [*:0]const u8) ?[*:0]u8 {
 }
 
 fn _defaultModelPath() ?[*:0]u8 {
-    return ar_allocator.dupe("models/phi-3-mini-q4.gguf", "local_completion_default_model_path");
-}
+    const ref_home_env = std.posix.getenvZ("HOME") orelse {
+        return ar_allocator.dupe(
+            ".agerun/models/phi-3-mini-q4.gguf",
+            "local_completion_default_model_path",
+        );
+    };
+    const ref_home = std.mem.span(ref_home_env);
+    const ref_suffix = "/.agerun/models/phi-3-mini-q4.gguf";
+    const suffix_offset: usize = if (ref_home.len > 0 and ref_home[ref_home.len - 1] == '/')
+        1
+    else
+        0;
+    const ref_suffix_part = ref_suffix[suffix_offset..];
+    const path_length = ref_home.len + ref_suffix_part.len;
+    const own_path =
+        ar_allocator.alloc(u8, path_length + 1, "local_completion_default_model_path") orelse
+        return null;
 
-fn _alternateModelPath() ?[*:0]u8 {
-    return ar_allocator.dupe("../../models/phi-3-mini-q4.gguf", "local_completion_alternate_model_path");
+    @memcpy(own_path[0..ref_home.len], ref_home);
+    @memcpy(own_path[ref_home.len..path_length], ref_suffix_part);
+    own_path[path_length] = 0;
+    return @ptrCast(own_path);
 }
 
 fn _resolveModelPath() ?[*:0]u8 {
     const own_override = _dupOptional(std.posix.getenvZ("AGERUN_COMPLETE_MODEL"), "local_completion_model_path");
     if (own_override != null) return own_override;
-
-    const own_default = _defaultModelPath() orelse return null;
-    if (_fileExists(own_default)) return own_default;
-    ar_allocator.free(own_default);
-
-    const own_alternate = _alternateModelPath() orelse return null;
-    if (_fileExists(own_alternate)) return own_alternate;
-    ar_allocator.free(own_alternate);
 
     return _defaultModelPath();
 }
@@ -92,15 +111,15 @@ fn _ensureLlamaBackendInitialized(mut_runtime: *ar_local_completion_t) bool {
     }
 
     const ref_model_path = mut_runtime.own_model_path orelse {
-        _logError(mut_runtime, "complete() local model path is not configured; set AGERUN_COMPLETE_MODEL or provide models/phi-3-mini-q4.gguf");
+        _logError(mut_runtime, default_model_not_configured_hint);
         return false;
     };
     if (std.mem.len(ref_model_path) == 0) {
-        _logError(mut_runtime, "complete() local model path is empty; set AGERUN_COMPLETE_MODEL or provide models/phi-3-mini-q4.gguf");
+        _logError(mut_runtime, default_model_empty_hint);
         return false;
     }
     if (!_fileExists(ref_model_path)) {
-        _logError(mut_runtime, "complete() local model file was not found; set AGERUN_COMPLETE_MODEL or provide models/phi-3-mini-q4.gguf");
+        _logError(mut_runtime, default_model_missing_hint);
         return false;
     }
 
@@ -133,7 +152,7 @@ fn _ensureLlamaBackendInitialized(mut_runtime: *ar_local_completion_t) bool {
 fn _ensureBackendInitialized(mut_runtime: *ar_local_completion_t) bool {
     if (mut_runtime.own_backend_initialized) return true;
     if (mut_runtime.own_model_path == null or std.mem.len(mut_runtime.own_model_path.?) == 0) {
-        _logError(mut_runtime, "complete() local model path is not configured; set AGERUN_COMPLETE_MODEL or provide models/phi-3-mini-q4.gguf");
+        _logError(mut_runtime, default_model_not_configured_hint);
         return false;
     }
 

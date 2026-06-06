@@ -37,7 +37,7 @@ help:
 	@echo "  make vendor-llama-cpu - Build/link shared cached CPU-only llama.cpp"
 	@echo "  make clean-vendor-llama-cpu - Clear shared cached vendored llama.cpp artifacts"
 	@echo "  make complete-runtime-ready - Ensure vendored libllama and phi-3-mini-q4.gguf exist"
-	@echo "  make download-complete-model - Download phi-3-mini-q4.gguf into models/ if missing"
+	@echo "  make download-complete-model - Download phi-3-mini-q4.gguf into the shared model cache"
 	@echo "  make complete-model-smoke - Ensure complete() runtime assets are ready and run the embedded libllama smoke with a cold-start timeout"
 	@echo "  make complete-performance-validation - Run the documented complete() performance validation subtests"
 	@echo "  make complete-performance-validation-linux-container - Run the documented Linux containerized complete() performance validation"
@@ -69,13 +69,16 @@ LLAMA_CACHE_LOCK_TIMEOUT_SECONDS ?= 3600
 LLAMA_BUILD_DIR ?= $(LLAMA_CACHE_BUILD_DIR)
 LLAMA_INSTALL_DIR ?= .deps/llama.cpp-install
 LLAMA_LICENSE = $(LLAMA_SOURCE_DIR)/LICENSE
-COMPLETE_MODEL_DIR ?= models
+COMPLETE_MODEL_DIR ?= $(HOME)/.agerun/models
 COMPLETE_MODEL_FILE ?= $(COMPLETE_MODEL_DIR)/phi-3-mini-q4.gguf
 COMPLETE_MODEL_LICENSE ?= $(COMPLETE_MODEL_DIR)/phi-3-mini-q4.LICENSE
 COMPLETE_MODEL_CARD ?= $(COMPLETE_MODEL_DIR)/phi-3-mini-q4.README.md
 COMPLETE_MODEL_URL ?= https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/resolve/main/Phi-3-mini-4k-instruct-q4.gguf?download=true
 COMPLETE_MODEL_LICENSE_URL ?= https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/raw/main/LICENSE
 COMPLETE_MODEL_CARD_URL ?= https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/raw/main/README.md
+COMPLETE_MODEL_LOCK ?= $(COMPLETE_MODEL_DIR)/download.lock
+COMPLETE_MODEL_LOCK_POLL_SECONDS ?= 2
+COMPLETE_MODEL_LOCK_TIMEOUT_SECONDS ?= 3600
 COMPLETE_MODEL_SMOKE_TIMEOUT_SECONDS ?= 35
 COMPLETE_LINUX_CONTAINER_IMAGE ?= agerun-complete-performance-validation
 COMPLETE_LINUX_CONTAINER_PLATFORM ?= linux/arm64
@@ -305,6 +308,9 @@ $(RUN_TESTS_DIR):
 $(RUN_EXEC_DIR):
 	mkdir -p $@/obj
 
+$(RUN_EXEC_DIR)/obj:
+	mkdir -p $@
+
 $(SANITIZE_TESTS_DIR):
 	mkdir -p $@/obj
 
@@ -322,7 +328,7 @@ $(TSAN_EXEC_DIR):
 run_tests_lib: $(RUN_TESTS_DIR) $(RUN_TESTS_OBJ) $(RUN_TESTS_TEST_OBJ) $(RUN_TESTS_METHOD_TEST_OBJ)
 	ar rcs $(RUN_TESTS_DIR)/libagerun.a $(RUN_TESTS_OBJ)
 
-run_exec_lib: $(RUN_EXEC_DIR) $(RUN_EXEC_OBJ)
+run_exec_lib: $(RUN_EXEC_DIR) $(RUN_EXEC_DIR)/obj $(RUN_EXEC_OBJ)
 	ar rcs $(RUN_EXEC_DIR)/libagerun.a $(RUN_EXEC_OBJ)
 
 sanitize_tests_lib: CC = $(SANITIZER_CC)
@@ -573,10 +579,10 @@ $(RUN_TESTS_DIR)/obj/%_tests.o: methods/%_tests.c | $(RUN_TESTS_DIR)
 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(DEBUG_CFLAGS) -c $< -o $@
 
 # Run exec directory
-$(RUN_EXEC_DIR)/obj/%.o: modules/%.c | $(RUN_EXEC_DIR)
+$(RUN_EXEC_DIR)/obj/%.o: modules/%.c | $(RUN_EXEC_DIR)/obj
 	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) -c $< -o $@
 
-$(RUN_EXEC_DIR)/obj/%.o: modules/%.zig | $(RUN_EXEC_DIR)
+$(RUN_EXEC_DIR)/obj/%.o: modules/%.zig | $(RUN_EXEC_DIR)/obj
 	$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target $(ZIG_TARGET) -mcpu=native -fno-stack-check -lc -I./modules $(LLAMA_ZIG_INCLUDE_FLAGS) $< -femit-bin=$@
 
 # Sanitize tests directory
@@ -832,21 +838,20 @@ install-scan-build:
 fi
 
 
-$(COMPLETE_MODEL_FILE):
-	@mkdir -p "$(COMPLETE_MODEL_DIR)"
-	curl -L --fail --continue-at - --output "$@" "$(COMPLETE_MODEL_URL)"
-
-$(COMPLETE_MODEL_LICENSE):
-	@mkdir -p "$(COMPLETE_MODEL_DIR)"
-	curl -L --fail --output "$@" "$(COMPLETE_MODEL_LICENSE_URL)"
-
-$(COMPLETE_MODEL_CARD):
-	@mkdir -p "$(COMPLETE_MODEL_DIR)"
-	curl -L --fail --output "$@" "$(COMPLETE_MODEL_CARD_URL)"
-
 # Download the real phi-3 completion model and its accompanying license/card files
 # Usage: make download-complete-model
-download-complete-model: $(COMPLETE_MODEL_FILE) $(COMPLETE_MODEL_LICENSE) $(COMPLETE_MODEL_CARD)
+download-complete-model:
+	COMPLETE_MODEL_DIR="$(COMPLETE_MODEL_DIR)" \
+	COMPLETE_MODEL_FILE="$(COMPLETE_MODEL_FILE)" \
+	COMPLETE_MODEL_LICENSE="$(COMPLETE_MODEL_LICENSE)" \
+	COMPLETE_MODEL_CARD="$(COMPLETE_MODEL_CARD)" \
+	COMPLETE_MODEL_URL="$(COMPLETE_MODEL_URL)" \
+	COMPLETE_MODEL_LICENSE_URL="$(COMPLETE_MODEL_LICENSE_URL)" \
+	COMPLETE_MODEL_CARD_URL="$(COMPLETE_MODEL_CARD_URL)" \
+	COMPLETE_MODEL_LOCK="$(COMPLETE_MODEL_LOCK)" \
+	COMPLETE_MODEL_LOCK_POLL_SECONDS="$(COMPLETE_MODEL_LOCK_POLL_SECONDS)" \
+	COMPLETE_MODEL_LOCK_TIMEOUT_SECONDS="$(COMPLETE_MODEL_LOCK_TIMEOUT_SECONDS)" \
+	bash ./scripts/download-complete-model-cache.sh
 
 # Ensure complete() runtime assets are ready for embedded local completion tests
 # Usage: make complete-runtime-ready
@@ -890,7 +895,7 @@ complete-performance-validation-linux-container:
 		-v "$(CURDIR)":/workspace \
 		-w /workspace \
 		"$(COMPLETE_LINUX_CONTAINER_IMAGE)" \
-		bash -lc 'set -e; export HOME=/tmp/agerun-docker-home; mkdir -p "$$HOME"; export AGERUN_COMPLETE_MODEL=/workspace/$(COMPLETE_MODEL_FILE); export AGERUN_COMPLETE_LIBLLAMA=/workspace/$(COMPLETE_LINUX_CONTAINER_LLAMA_INSTALL_DIR)/lib/libllama.so; export LD_LIBRARY_PATH=/workspace/$(COMPLETE_LINUX_CONTAINER_LLAMA_INSTALL_DIR)/lib; echo "Linux container validation baseline:"; echo "platform=$(COMPLETE_LINUX_CONTAINER_PLATFORM)"; uname -a; echo "logical_cpus=$$(nproc)"; python3 -c "from pathlib import Path; meminfo = Path(\"/proc/meminfo\").read_text(encoding=\"utf-8\").splitlines(); total = next(line for line in meminfo if line.startswith(\"MemTotal:\")); print(total)"; make EXTRA_CFLAGS=-Wno-error=nonnull-compare RUN_TESTS_DIR=$(COMPLETE_LINUX_CONTAINER_RUN_TESTS_DIR) LLAMA_BUILD_DIR=$(COMPLETE_LINUX_CONTAINER_LLAMA_BUILD_DIR) LLAMA_INSTALL_DIR=$(COMPLETE_LINUX_CONTAINER_LLAMA_INSTALL_DIR) complete-performance-validation 2>&1'
+		bash -lc 'set -e; export HOME=/tmp/agerun-docker-home; mkdir -p "$$HOME"; export COMPLETE_MODEL_DIR="$$HOME/.agerun/models"; export AGERUN_COMPLETE_MODEL="$$COMPLETE_MODEL_DIR/phi-3-mini-q4.gguf"; export AGERUN_COMPLETE_LIBLLAMA=/workspace/$(COMPLETE_LINUX_CONTAINER_LLAMA_INSTALL_DIR)/lib/libllama.so; export LD_LIBRARY_PATH=/workspace/$(COMPLETE_LINUX_CONTAINER_LLAMA_INSTALL_DIR)/lib; echo "Linux container validation baseline:"; echo "platform=$(COMPLETE_LINUX_CONTAINER_PLATFORM)"; uname -a; echo "logical_cpus=$$(nproc)"; python3 -c "from pathlib import Path; meminfo = Path(\"/proc/meminfo\").read_text(encoding=\"utf-8\").splitlines(); total = next(line for line in meminfo if line.startswith(\"MemTotal:\")); print(total)"; make EXTRA_CFLAGS=-Wno-error=nonnull-compare RUN_TESTS_DIR=$(COMPLETE_LINUX_CONTAINER_RUN_TESTS_DIR) LLAMA_BUILD_DIR=$(COMPLETE_LINUX_CONTAINER_LLAMA_BUILD_DIR) LLAMA_INSTALL_DIR=$(COMPLETE_LINUX_CONTAINER_LLAMA_INSTALL_DIR) complete-performance-validation 2>&1'
 
 # Show vendored llama.cpp configuration
 print-llama-config:
@@ -913,6 +918,11 @@ print-llama-config:
 	@echo "LLAMA_HEADER=$(LLAMA_HEADER)"
 	@echo "LLAMA_LIB=$(LLAMA_LIB)"
 	@echo "LLAMA_LICENSE=$(LLAMA_LICENSE)"
+	@echo "COMPLETE_MODEL_DIR=$(COMPLETE_MODEL_DIR)"
+	@echo "COMPLETE_MODEL_FILE=$(COMPLETE_MODEL_FILE)"
+	@echo "COMPLETE_MODEL_LOCK=$(COMPLETE_MODEL_LOCK)"
+	@echo "COMPLETE_MODEL_LOCK_POLL_SECONDS=$(COMPLETE_MODEL_LOCK_POLL_SECONDS)"
+	@echo "COMPLETE_MODEL_LOCK_TIMEOUT_SECONDS=$(COMPLETE_MODEL_LOCK_TIMEOUT_SECONDS)"
 	@if [ -n "$(LLAMA_CACHE_AVAILABLE)" ]; then \
 		echo "LLAMA_CACHE_AVAILABLE=yes"; \
 	else \

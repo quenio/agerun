@@ -1,3 +1,4 @@
+#include <limits.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -12,7 +13,6 @@
 
 static char g_runner_path[256] = {0};
 static char g_model_path[256] = {0};
-static const char *REF_REAL_MODEL_PATH = "../../models/phi-3-mini-q4.gguf";
 
 #if defined(__has_feature)
 #if __has_feature(address_sanitizer) || __has_feature(thread_sanitizer)
@@ -174,13 +174,27 @@ static void setup_missing_model(void) {
     unsetenv("AGERUN_COMPLETE_RUNNER");
 }
 
+static void build_shared_model_path(char *mut_path, size_t path_size) {
+    const char *ref_home = getenv("HOME");
+    AR_ASSERT(ref_home != NULL && ref_home[0] != '\0',
+              "HOME should be set for real completion tests");
+    int written = snprintf(mut_path,
+                           path_size,
+                           "%s/.agerun/models/phi-3-mini-q4.gguf",
+                           ref_home);
+    AR_ASSERT(written >= 0 && (size_t)written < path_size,
+              "Shared model path should fit in buffer");
+}
+
 static void setup_real_completion_runtime(void) {
+    char own_model_path[PATH_MAX];
+
     cleanup_fake_runner();
-    AR_ASSERT(access(REF_REAL_MODEL_PATH, F_OK) == 0,
+    build_shared_model_path(own_model_path, sizeof(own_model_path));
+    AR_ASSERT(access(own_model_path, F_OK) == 0,
               "Real completion model should exist before workflow-definition real tests");
+    unsetenv("AGERUN_COMPLETE_MODEL");
     unsetenv("AGERUN_COMPLETE_RUNNER");
-    AR_ASSERT(setenv("AGERUN_COMPLETE_MODEL", REF_REAL_MODEL_PATH, 1) == 0,
-              "Real completion model env should be set");
 }
 
 static ar_data_t *create_prepare_definition_message(const char *ref_path, int64_t reply_to) {

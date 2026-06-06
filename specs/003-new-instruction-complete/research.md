@@ -68,11 +68,13 @@
 
 ## Decision 5: Resolve model path through an environment-based override with a documented default
 
-- **Decision**: Resolve the GGUF model path from an environment override first, then fall back to a
-  documented default relative path (`models/phi-3-mini-q4.gguf`) for local development and tests.
+- **Decision**: Resolve the GGUF model path from an environment override first, then fall back to the
+  documented shared default path (`$HOME/.agerun/models/phi-3-mini-q4.gguf`) for local development,
+  tests, and CI cache reuse.
 - **Rationale**: The repository already uses environment-variable configuration patterns
   (`AGERUN_METHODS_DIR`, `AGERUN_MEMORY_REPORT`) for runtime-resolved paths. Reusing that pattern
-  keeps local model configuration portable without baking machine-specific paths into source code.
+  keeps local model configuration portable without baking machine-specific paths into source code
+  while avoiding repeated multi-gigabyte downloads in separate worktrees.
 - **Alternatives considered**:
   - Hard-code an absolute filesystem path: rejected because it is non-portable.
   - Require a new CLI flag for all runtimes: rejected because `complete(...)` is a language feature,

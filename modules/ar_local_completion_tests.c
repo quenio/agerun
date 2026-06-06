@@ -25,6 +25,8 @@
 #define AR_LOCAL_COMPLETION_SANITIZER_BUILD 0
 #endif
 
+static const char *g_shared_model_suffix = "/.agerun/models/phi-3-mini-q4.gguf";
+
 static void _setup_fake_runner_with_output(
     char *mut_runner_path,
     size_t runner_size,
@@ -225,7 +227,8 @@ static void test_local_completion__default_path_handling(void) {
     ar_local_completion_t *own_runtime = ar_local_completion__create(own_log);
     assert(own_runtime != NULL);
     assert(ar_local_completion__get_model_path(own_runtime) != NULL);
-    assert(strstr(ar_local_completion__get_model_path(own_runtime), "phi-3-mini-q4.gguf") != NULL);
+    assert(strstr(ar_local_completion__get_model_path(own_runtime),
+                  g_shared_model_suffix) != NULL);
     assert(ar_local_completion__is_ready(own_runtime) == false);
     ar_local_completion__destroy(own_runtime);
     ar_log__destroy(own_log);
@@ -332,17 +335,19 @@ static void test_local_completion__success_payload_normalization_and_reuse(void)
 }
 
 static void test_local_completion__real_phi3_model_smoke(void) {
-    const char *ref_model_path = "../../models/phi-3-mini-q4.gguf";
     const int64_t cold_start_limit_ms = 30000;
 
-    assert(access(ref_model_path, F_OK) == 0);
+    unsetenv("AGERUN_COMPLETE_MODEL");
     unsetenv("AGERUN_COMPLETE_RUNNER");
-    assert(setenv("AGERUN_COMPLETE_MODEL", ref_model_path, 1) == 0);
 
     ar_log_t *own_log = ar_log__create();
     assert(own_log != NULL);
     ar_local_completion_t *own_runtime = ar_local_completion__create(own_log);
     assert(own_runtime != NULL);
+    const char *ref_model_path = ar_local_completion__get_model_path(own_runtime);
+    assert(ref_model_path != NULL);
+    assert(strstr(ref_model_path, g_shared_model_suffix) != NULL);
+    assert(access(ref_model_path, F_OK) == 0);
 
     ar_list_t *own_placeholders = _create_placeholder_list("country", NULL);
     struct timespec own_start = {0};
@@ -375,21 +380,23 @@ static void test_local_completion__real_phi3_model_smoke(void) {
 }
 
 static void test_local_completion__real_phi3_fixture_set_warm_run_support(void) {
-    const char *ref_model_path = "../../models/phi-3-mini-q4.gguf";
     const int64_t warm_run_limit_ms = 15000;
     size_t success_count = 0U;
     size_t under_limit_count = 0U;
     int64_t max_elapsed_ms = 0;
     int64_t total_elapsed_ms = 0;
 
-    assert(access(ref_model_path, F_OK) == 0);
+    unsetenv("AGERUN_COMPLETE_MODEL");
     unsetenv("AGERUN_COMPLETE_RUNNER");
-    assert(setenv("AGERUN_COMPLETE_MODEL", ref_model_path, 1) == 0);
 
     ar_log_t *own_log = ar_log__create();
     assert(own_log != NULL);
     ar_local_completion_t *own_runtime = ar_local_completion__create(own_log);
     assert(own_runtime != NULL);
+    const char *ref_model_path = ar_local_completion__get_model_path(own_runtime);
+    assert(ref_model_path != NULL);
+    assert(strstr(ref_model_path, g_shared_model_suffix) != NULL);
+    assert(access(ref_model_path, F_OK) == 0);
 
     {
         ar_list_t *own_warmup_placeholders = _create_placeholder_list(
