@@ -105,6 +105,32 @@ _emit_file_cache_key_input() {
     fi
 }
 
+_emit_command_cache_key_input() {
+    local label="$1"
+    local command_name="$2"
+    local command_path
+    local version_hash
+
+    printf '%s_command=%s\n' "$label" "$command_name"
+
+    case "$command_name" in
+        ""|*[[:space:]]*)
+            return
+            ;;
+    esac
+
+    command_path=$(command -v "$command_name" 2>/dev/null) || return
+    version_hash=$({ "$command_name" --version 2>&1 || true; } | _hash_stdin)
+
+    printf '%s_path=%s\n' "$label" "$command_path"
+    printf '%s_version_sha256=%s\n' "$label" "$version_hash"
+}
+
+_emit_compiler_cache_key_inputs() {
+    _emit_command_cache_key_input "cc" "${CC:-cc}"
+    _emit_command_cache_key_input "cxx" "${CXX:-c++}"
+}
+
 _source_is_repo_relative() {
     case "$LLAMA_SOURCE_DIR" in
         /*)
@@ -181,6 +207,7 @@ _derive_cache_key() {
         printf 'arch=%s\n' "$arch"
         printf 'shared_ext=%s\n' "$LLAMA_SHARED_EXT"
         printf 'cmake_flags=%s\n' "$LLAMA_CPU_CMAKE_FLAGS"
+        _emit_compiler_cache_key_inputs
         if [ -n "$git_cache_key" ]; then
             printf 'git_key=%s\n' "$git_cache_key"
         else
