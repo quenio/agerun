@@ -68,11 +68,19 @@ ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, const void *owner) {
         ar_data__drop_ownership(ref_data, owner);
         return ref_data;  // Return same pointer - we claimed it!
     } else {
-        // Can't claim ownership - make a shallow copy
-        return ar_data__shallow_copy(ref_data);
+        // Can't claim ownership - make a deep copy
+        return ar_data__deep_copy(ref_data);
     }
 }
 ```
+
+## Container Child Exception
+
+The claim mechanism applies to the value being consumed. It must not be used for a child value that
+is still stored inside a parent container. For example, if a temporary list owns its first item,
+claiming that first item directly can make the list's later destruction fail because the item is now
+owned elsewhere. In that case, use `ar_data__deep_copy()` unless the child has been removed from the
+container first.
 
 ## Related Patterns
 - [Expression Ownership Rules](expression-ownership-rules.md)

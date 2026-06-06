@@ -15,9 +15,9 @@ if (ar_data__take_ownership(result, evaluator)) {
     ar_data__drop_ownership(result, evaluator);
     own_data = result;
 } else {
-    own_data = ar_data__shallow_copy(result);
+    own_data = ar_data__deep_copy(result);
     if (!own_data) {
-        // Handle error - cannot copy nested containers
+        // Handle allocation/storage failure
     }
 }
 
@@ -70,13 +70,25 @@ ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, void *owner) {
         return ref_data;
     }
     
-    return ar_data__shallow_copy(ref_data);
+    return ar_data__deep_copy(ref_data);
 }
 
 // Refactor phase - consider edge cases and optimize
 ```
 
+## Container Child Extraction Boundary
+
+`ar_data__claim_or_copy()` extracts the common ownership pattern for top-level values whose ownership
+is uncertain, especially values returned by expression evaluation. Do not apply it to child values
+that are still stored inside a parent list or map. If the child is unowned, `claim_or_copy()` can
+return the same pointer while the parent container still expects to destroy that child later.
+
+For read-only extraction from a container, such as `head(...)` returning the first list item or
+`tail(...)` returning retained list items, use `ar_data__deep_copy()` so the parent container keeps
+owning its children.
+
 ## Related Patterns
 - [TDD Advanced Large Refactoring](tdd-advanced-large-refactoring.md)
 - [Ownership Naming Conventions](ownership-naming-conventions.md)
 - [Red-Green-Refactor Cycle](red-green-refactor-cycle.md)
+- [Expression Ownership Rules](expression-ownership-rules.md)

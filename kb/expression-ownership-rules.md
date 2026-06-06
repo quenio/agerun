@@ -47,6 +47,8 @@ ar_data__destroy(own_keys);  // Destroys the list structure
 - **Map keys**: `ar_data__get_map_keys()` creates new list with owned string elements
 - **List items**: `ar_data__list_first()` returns references (don't destroy)
 - **Persistence**: Write key/type on one line, value on next for proper parsing
+- **Container child extraction**: Deep-copy child values that remain inside their source container;
+  use `ar_data__claim_or_copy()` only for top-level expression results or removed/transferred children
 
 ## Implementation
 1. Check expression type to determine ownership
@@ -54,6 +56,7 @@ ar_data__destroy(own_keys);  // Destroys the list structure
 3. Add cleanup for all owned values before function exit
 4. Never destroy borrowed references from memory/context
 5. Use `ar_data__take_ownership()` to debug ownership status
+6. Do not claim a container child while its parent still owns/destroys it
 
 **Self-ownership check**: Never let `values_result == mut_memory` in evaluators
 **Context lifetime**: NEVER destroy context or its elements in evaluators
@@ -75,6 +78,18 @@ ar_data__take_ownership(message, owner);
 
 **Warning**: Always ensure data passed to expression evaluation has an owner to prevent unexpected claims.
 
+## Container Child Extraction Exception
+
+`ar_data__claim_or_copy()` is appropriate when an instruction consumes the top-level value returned
+by expression evaluation. It is not appropriate for a subvalue that remains inside a temporary or
+source container. A temporary list literal owns the values it contains. If an instruction reads one
+child from that list and claims the child directly, the later destruction of the temporary list will
+still try to destroy that child.
+
+Use `ar_data__deep_copy()` for `head(...)`, `tail(...)`, and similar read-only extraction from list
+or map containers. Use `claim_or_copy()` only when the child has been removed/transferred out of the
+container, or when the value is the top-level expression result.
+
 ## Related Patterns
 - [Ownership Naming Conventions](ownership-naming-conventions.md)
 - [Memory Debugging Comprehensive Guide](memory-debugging-comprehensive-guide.md)
@@ -82,3 +97,4 @@ ar_data__take_ownership(message, owner);
 - [Ownership Gap Vulnerability](ownership-gap-vulnerability.md) - How unowned data causes corruption
 - [Debug Logging for Ownership Tracing](debug-logging-ownership-tracing.md) - Debugging ownership issues
 - [Expression Evaluator Claim Behavior](expression-evaluator-claim-behavior.md) - Details on claim mechanism
+- [Zig Ownership with claim_or_copy Pattern](zig-ownership-claim-or-copy-pattern.md) - Safe claim-or-copy usage
