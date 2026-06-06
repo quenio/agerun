@@ -93,6 +93,8 @@ MODEL_LICENSE=$(_abs_path "$COMPLETE_MODEL_LICENSE")
 MODEL_CARD=$(_abs_path "$COMPLETE_MODEL_CARD")
 MODEL_LOCK=$(_abs_path "$COMPLETE_MODEL_LOCK")
 MODEL_LOCK_HOLDER="$MODEL_LOCK/holder"
+MODEL_LOCK_RECOVERY="$MODEL_LOCK.recovery"
+MODEL_LOCK_RECOVERY_HOLDER="$MODEL_LOCK_RECOVERY/holder"
 CURRENT_HOST=$(hostname 2>/dev/null || echo unknown)
 DOWNLOAD_LOCK_TOKEN=
 DOWNLOAD_LOCK_HEARTBEAT_PID=
@@ -113,10 +115,23 @@ _path_mtime_epoch() {
         echo 0
 }
 
+_file_value() {
+    local file="$1"
+    local key="$2"
+
+    sed -n "s/^$key=//p" "$file" 2>/dev/null | head -n 1 || true
+}
+
 _lock_file_value() {
     local key="$1"
 
-    sed -n "s/^$key=//p" "$MODEL_LOCK_HOLDER" 2>/dev/null | head -n 1 || true
+    _file_value "$MODEL_LOCK_HOLDER" "$key"
+}
+
+_recovery_lock_file_value() {
+    local key="$1"
+
+    _file_value "$MODEL_LOCK_RECOVERY_HOLDER" "$key"
 }
 
 _pid_exists_on_current_host() {
@@ -155,13 +170,32 @@ _lock_holder_is_live_on_current_host() {
     [ "$lock_host" = "$CURRENT_HOST" ] && _pid_exists_on_current_host "$lock_pid"
 }
 
+_missing_holder_grace_seconds() {
+    if [ "$COMPLETE_MODEL_LOCK_POLL_SECONDS" -gt 0 ]; then
+        printf '%s\n' "$COMPLETE_MODEL_LOCK_POLL_SECONDS"
+    else
+        printf '1\n'
+    fi
+}
+
 _lock_is_stale() {
     local lock_mtime
     local now
     local lock_age
+    local missing_holder_grace
 
     if [ ! -d "$MODEL_LOCK" ]; then
         return 1
+    fi
+
+    lock_mtime=$(_path_mtime_epoch "$MODEL_LOCK")
+    now=$(date +%s)
+    lock_age=$((now - lock_mtime))
+
+    if [ ! -f "$MODEL_LOCK_HOLDER" ]; then
+        missing_holder_grace=$(_missing_holder_grace_seconds)
+        [ "$lock_age" -ge "$missing_holder_grace" ]
+        return
     fi
 
     if _lock_holder_is_dead_on_current_host; then
@@ -172,20 +206,95 @@ _lock_is_stale() {
         return 1
     fi
 
-    lock_mtime=$(_path_mtime_epoch "$MODEL_LOCK")
+    [ "$lock_age" -ge "$COMPLETE_MODEL_LOCK_TIMEOUT_SECONDS" ]
+}
+
+_write_recovery_lock_metadata() {
+    {
+        echo "pid=$$"
+        echo "host=$CURRENT_HOST"
+        echo "started_at=$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+        echo "model_lock=$MODEL_LOCK"
+    } > "$MODEL_LOCK_RECOVERY_HOLDER"
+}
+
+_release_recovery_lock() {
+    rm -f "$MODEL_LOCK_RECOVERY_HOLDER"
+    rmdir "$MODEL_LOCK_RECOVERY" 2>/dev/null || true
+}
+
+_recovery_lock_holder_is_dead_on_current_host() {
+    local lock_pid
+    local lock_host
+
+    lock_pid=$(_recovery_lock_file_value "pid")
+    lock_host=$(_recovery_lock_file_value "host")
+
+    [ "$lock_host" = "$CURRENT_HOST" ] && ! _pid_exists_on_current_host "$lock_pid"
+}
+
+_recovery_lock_is_stale() {
+    local lock_mtime
+    local now
+    local lock_age
+
+    if [ ! -d "$MODEL_LOCK_RECOVERY" ]; then
+        return 1
+    fi
+
+    if _recovery_lock_holder_is_dead_on_current_host; then
+        return 0
+    fi
+
+    lock_mtime=$(_path_mtime_epoch "$MODEL_LOCK_RECOVERY")
     now=$(date +%s)
     lock_age=$((now - lock_mtime))
 
     [ "$lock_age" -ge "$COMPLETE_MODEL_LOCK_TIMEOUT_SECONDS" ]
 }
 
+_remove_stale_recovery_lock() {
+    if ! _recovery_lock_is_stale; then
+        return 1
+    fi
+
+    echo "Removing stale complete model download recovery lock at $MODEL_LOCK_RECOVERY"
+    rm -f "$MODEL_LOCK_RECOVERY_HOLDER"
+    rmdir "$MODEL_LOCK_RECOVERY" 2>/dev/null || true
+}
+
+_acquire_recovery_lock() {
+    while true; do
+        if mkdir "$MODEL_LOCK_RECOVERY" 2>/dev/null; then
+            _write_recovery_lock_metadata
+            return 0
+        fi
+
+        if _remove_stale_recovery_lock; then
+            continue
+        fi
+
+        return 1
+    done
+}
+
 _remove_stale_lock() {
+    local remove_status
+
+    if ! _acquire_recovery_lock; then
+        return 1
+    fi
+
     if ! _lock_is_stale; then
+        _release_recovery_lock
         return 1
     fi
 
     echo "Removing stale complete model download lock at $MODEL_LOCK"
     rm -rf "$MODEL_LOCK"
+    remove_status=$?
+    _release_recovery_lock
+    return "$remove_status"
 }
 
 _all_model_artifacts_available() {
