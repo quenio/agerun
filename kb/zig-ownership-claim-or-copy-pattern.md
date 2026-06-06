@@ -58,8 +58,8 @@ const own_value = c.ar_data__claim_or_copy(
 2. **Use destroy_if_owned** for cleanup - it pairs with claim_or_copy
 3. **Context references** are special - they're always borrowed, never owned
 4. **Combine operations** - no need for temporary variables between evaluate and claim_or_copy
-5. **Do not use claim_or_copy for container children that remain in the container** - use
-   `ar_data__deep_copy()` unless you remove/transfer the child first
+5. **Container children require correct ownership metadata** - public `ar_data` container APIs mark
+   children as owned by their parent, so `claim_or_copy` deep-copies them instead of stealing them
 
 ## Common Use Cases
 
@@ -84,21 +84,20 @@ ar_agency__create_agent(method, version, ref_context);
 ### Container Child Extraction
 
 `ar_data__claim_or_copy()` is safe for the top-level value returned by expression evaluation because
-unowned temporaries can be consumed by the instruction. It is not safe for child values that are still
-inside a container. For example, `head([ ... ])` evaluates a temporary list and then reads the first
-item. If the first item is unowned and `claim_or_copy()` claims it, destroying the temporary source
-list later tries to destroy a child that is now owned elsewhere.
-
-Use `ar_data__deep_copy()` when an instruction returns or stores a subvalue without removing it from
-its source container:
+unowned temporaries can be consumed by the instruction. It is also safe for child values stored by
+the public `ar_data` list/map APIs, because those APIs mark children as owned by the source container.
+For example, `head([ ... ])` evaluates a temporary list, reads the first item, and `claim_or_copy()`
+deep-copies that item because the item is owned by the list.
 
 ```zig
-// Correct for head/tail-style extraction: source list keeps owning ref_item
-const own_copy = c.ar_data__deep_copy(ref_item) orelse return false;
+// Correct for head/tail-style extraction when ref_item came from an ar_data container
+const own_copy = c.ar_data__claim_or_copy(ref_item, ref_evaluator) orelse return false;
 ```
 
-Use `claim_or_copy()` only after the value has been removed/transferred out of the container, or when
-the value is the top-level expression result being consumed by the instruction.
+Do not bypass the `ar_data` container APIs and then rely on `claim_or_copy()`: if a raw list/map holds
+an unowned child, `claim_or_copy()` can still claim that child while the parent later tries to destroy
+it. In that case, fix the container ownership metadata, remove/transfer the child first, or make an
+explicit `ar_data__deep_copy()`.
 
 ## Related Patterns
 

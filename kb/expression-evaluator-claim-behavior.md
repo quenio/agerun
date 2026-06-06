@@ -76,11 +76,13 @@ ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, const void *owner) {
 
 ## Container Child Exception
 
-The claim mechanism applies to the value being consumed. It must not be used for a child value that
-is still stored inside a parent container. For example, if a temporary list owns its first item,
-claiming that first item directly can make the list's later destruction fail because the item is now
-owned elsewhere. In that case, use `ar_data__deep_copy()` unless the child has been removed from the
-container first.
+The claim mechanism applies to the value being consumed. It is safe for child values stored through
+public `ar_data` container APIs because those APIs mark children as owned by the parent; in that
+case, `claim_or_copy()` creates a deep copy and leaves the parent-child relationship intact.
+
+The unsafe case is a raw container mutation that leaves a child unowned while the parent still
+destroys it. If that happens, `claim_or_copy()` can claim the child directly. Fix the ownership
+metadata, remove/transfer the child first, or use `ar_data__deep_copy()` for that exceptional path.
 
 ## Related Patterns
 - [Expression Ownership Rules](expression-ownership-rules.md)

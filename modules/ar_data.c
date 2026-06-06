@@ -1182,30 +1182,23 @@ bool ar_data__set_map_string(ar_data_t *mut_data, const char *ref_key, const cha
  * @param value The integer value to add
  * @return true if successful, false if data is NULL, not a list, or allocation failure
  * @note Ownership: Does not take ownership of the parameters.
+ *       The created integer value is owned by the list on success.
  */
 bool ar_data__list_add_first_integer(ar_data_t *mut_data, int value) {
     if (!mut_data || mut_data->type != AR_DATA_TYPE__LIST) {
         return false;
     }
     
-    // Create new data
     ar_data_t *own_int_data = ar_data__create_integer(value);
     if (!own_int_data) {
         return false;
     }
     
-    // Get the list from the data
-    ar_list_t *ref_list = ar_data__get_list(mut_data);
-    if (!ref_list) {
+    if (!ar_data__list_add_first_data(mut_data, own_int_data)) {
         ar_data__destroy(own_int_data);
         return false;
     }
-    
-    // Add the data to the beginning of the list
-    if (!ar_list__add_first(ref_list, own_int_data)) {
-        ar_data__destroy(own_int_data);
-        return false;
-    }
+    own_int_data = NULL;
     
     return true;
 }
@@ -1216,30 +1209,23 @@ bool ar_data__list_add_first_integer(ar_data_t *mut_data, int value) {
  * @param value The double value to add
  * @return true if successful, false if data is NULL, not a list, or allocation failure
  * @note Ownership: Does not take ownership of the parameters.
+ *       The created double value is owned by the list on success.
  */
 bool ar_data__list_add_first_double(ar_data_t *mut_data, double value) {
     if (!mut_data || mut_data->type != AR_DATA_TYPE__LIST) {
         return false;
     }
     
-    // Create new data
     ar_data_t *own_double_data = ar_data__create_double(value);
     if (!own_double_data) {
         return false;
     }
     
-    // Get the list from the data
-    ar_list_t *ref_list = ar_data__get_list(mut_data);
-    if (!ref_list) {
+    if (!ar_data__list_add_first_data(mut_data, own_double_data)) {
         ar_data__destroy(own_double_data);
         return false;
     }
-    
-    // Add the data to the beginning of the list
-    if (!ar_list__add_first(ref_list, own_double_data)) {
-        ar_data__destroy(own_double_data);
-        return false;
-    }
+    own_double_data = NULL;
     
     return true;
 }
@@ -1250,30 +1236,23 @@ bool ar_data__list_add_first_double(ar_data_t *mut_data, double value) {
  * @param ref_value The string value to add (will be copied)
  * @return true if successful, false if data is NULL, not a list, or allocation failure
  * @note Ownership: Does not take ownership of the parameters.
+ *       The created string value is owned by the list on success.
  */
 bool ar_data__list_add_first_string(ar_data_t *mut_data, const char *ref_value) {
     if (!mut_data || mut_data->type != AR_DATA_TYPE__LIST) {
         return false;
     }
     
-    // Create new data
     ar_data_t *own_string_data = ar_data__create_string(ref_value);
     if (!own_string_data) {
         return false;
     }
     
-    // Get the list from the data
-    ar_list_t *ref_list = ar_data__get_list(mut_data);
-    if (!ref_list) {
+    if (!ar_data__list_add_first_data(mut_data, own_string_data)) {
         ar_data__destroy(own_string_data);
         return false;
     }
-    
-    // Add the data to the beginning of the list
-    if (!ar_list__add_first(ref_list, own_string_data)) {
-        ar_data__destroy(own_string_data);
-        return false;
-    }
+    own_string_data = NULL;
     
     return true;
 }
@@ -1324,30 +1303,23 @@ bool ar_data__list_add_first_data(ar_data_t *mut_data, ar_data_t *own_value) {
  * @param value The integer value to add
  * @return true if successful, false if data is NULL, not a list, or allocation failure
  * @note Ownership: Does not take ownership of the parameters.
+ *       The created integer value is owned by the list on success.
  */
 bool ar_data__list_add_last_integer(ar_data_t *mut_data, int value) {
     if (!mut_data || mut_data->type != AR_DATA_TYPE__LIST) {
         return false;
     }
     
-    // Create new data
     ar_data_t *own_int_data = ar_data__create_integer(value);
     if (!own_int_data) {
         return false;
     }
     
-    // Get the list from the data
-    ar_list_t *ref_list = ar_data__get_list(mut_data);
-    if (!ref_list) {
+    if (!ar_data__list_add_last_data(mut_data, own_int_data)) {
         ar_data__destroy(own_int_data);
         return false;
     }
-    
-    // Add the data to the end of the list
-    if (!ar_list__add_last(ref_list, own_int_data)) {
-        ar_data__destroy(own_int_data);
-        return false;
-    }
+    own_int_data = NULL;
     
     return true;
 }
@@ -1358,30 +1330,23 @@ bool ar_data__list_add_last_integer(ar_data_t *mut_data, int value) {
  * @param value The double value to add
  * @return true if successful, false if data is NULL, not a list, or allocation failure
  * @note Ownership: Does not take ownership of the parameters.
+ *       The created double value is owned by the list on success.
  */
 bool ar_data__list_add_last_double(ar_data_t *mut_data, double value) {
     if (!mut_data || mut_data->type != AR_DATA_TYPE__LIST) {
         return false;
     }
     
-    // Create new data
     ar_data_t *own_double_data = ar_data__create_double(value);
     if (!own_double_data) {
         return false;
     }
     
-    // Get the list from the data
-    ar_list_t *ref_list = ar_data__get_list(mut_data);
-    if (!ref_list) {
+    if (!ar_data__list_add_last_data(mut_data, own_double_data)) {
         ar_data__destroy(own_double_data);
         return false;
     }
-    
-    // Add the data to the end of the list
-    if (!ar_list__add_last(ref_list, own_double_data)) {
-        ar_data__destroy(own_double_data);
-        return false;
-    }
+    own_double_data = NULL;
     
     return true;
 }
@@ -1392,30 +1357,23 @@ bool ar_data__list_add_last_double(ar_data_t *mut_data, double value) {
  * @param ref_value The string value to add (will be copied)
  * @return true if successful, false if data is NULL, not a list, or allocation failure
  * @note Ownership: Does not take ownership of the parameters.
+ *       The created string value is owned by the list on success.
  */
 bool ar_data__list_add_last_string(ar_data_t *mut_data, const char *ref_value) {
     if (!mut_data || mut_data->type != AR_DATA_TYPE__LIST) {
         return false;
     }
     
-    // Create new data
     ar_data_t *own_string_data = ar_data__create_string(ref_value);
     if (!own_string_data) {
         return false;
     }
     
-    // Get the list from the data
-    ar_list_t *ref_list = ar_data__get_list(mut_data);
-    if (!ref_list) {
+    if (!ar_data__list_add_last_data(mut_data, own_string_data)) {
         ar_data__destroy(own_string_data);
         return false;
     }
-    
-    // Add the data to the end of the list
-    if (!ar_list__add_last(ref_list, own_string_data)) {
-        ar_data__destroy(own_string_data);
-        return false;
-    }
+    own_string_data = NULL;
     
     return true;
 }
@@ -1594,6 +1552,7 @@ int ar_data__list_remove_first_integer(ar_data_t *data) {
     int value = ar_data__get_integer(first_data);
     
     // Free the data structure
+    _drop_ownership_on_remove(first_data, data);
     ar_data__destroy(first_data);
     
     return value;
@@ -1633,6 +1592,7 @@ double ar_data__list_remove_first_double(ar_data_t *data) {
     double value = ar_data__get_double(first_data);
     
     // Free the data structure
+    _drop_ownership_on_remove(first_data, data);
     ar_data__destroy(first_data);
     
     return value;
@@ -1671,6 +1631,7 @@ char *ar_data__list_remove_first_string(ar_data_t *data) {
     // Get the string value
     const char *orig_str = ar_data__get_string(first_data);
     if (!orig_str) {
+        _drop_ownership_on_remove(first_data, data);
         ar_data__destroy(first_data);
         return NULL;
     }
@@ -1679,6 +1640,7 @@ char *ar_data__list_remove_first_string(ar_data_t *data) {
     char *str_copy = AR__HEAP__STRDUP(orig_str, "String copy for conversion");
     
     // Free the data structure
+    _drop_ownership_on_remove(first_data, data);
     ar_data__destroy(first_data);
     
     return str_copy;
@@ -1718,6 +1680,7 @@ int ar_data__list_remove_last_integer(ar_data_t *data) {
     int value = ar_data__get_integer(last_data);
     
     // Free the data structure
+    _drop_ownership_on_remove(last_data, data);
     ar_data__destroy(last_data);
     
     return value;
@@ -1757,6 +1720,7 @@ double ar_data__list_remove_last_double(ar_data_t *data) {
     double value = ar_data__get_double(last_data);
     
     // Free the data structure
+    _drop_ownership_on_remove(last_data, data);
     ar_data__destroy(last_data);
     
     return value;
@@ -1795,6 +1759,7 @@ char *ar_data__list_remove_last_string(ar_data_t *data) {
     // Get the string value
     const char *orig_str = ar_data__get_string(last_data);
     if (!orig_str) {
+        _drop_ownership_on_remove(last_data, data);
         ar_data__destroy(last_data);
         return NULL;
     }
@@ -1803,6 +1768,7 @@ char *ar_data__list_remove_last_string(ar_data_t *data) {
     char *str_copy = AR__HEAP__STRDUP(orig_str, "String copy for conversion");
     
     // Free the data structure
+    _drop_ownership_on_remove(last_data, data);
     ar_data__destroy(last_data);
     
     return str_copy;

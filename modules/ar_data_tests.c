@@ -28,6 +28,7 @@ static void test_map_update_integer(void);
 static void test_data_ownership(void);
 static void test_data_is_owned_by(void);
 static void test_list_ownership(void);
+static void test_list_scalar_helpers__own_inserted_items(void);
 static void test_list_remove_ownership(void);
 static void test_map_ownership(void);
 static void test_data_shallow_copy(void);
@@ -1397,6 +1398,50 @@ static void test_list_ownership(void) {
     printf("List ownership tests passed!\n");
 }
 
+static void test_list_scalar_helpers__own_inserted_items(void) {
+    printf("Testing list scalar helpers own inserted items...\n");
+
+    // Given a list populated through scalar convenience helpers
+    ar_data_t *own_list = ar_data__create_list();
+    int owner_token = 0;
+    const void *ref_owner = &owner_token;
+
+    AR_ASSERT(own_list != NULL, "List should be created");
+    AR_ASSERT(ar_data__list_add_first_integer(own_list, 10), "First integer should be stored");
+    AR_ASSERT(ar_data__list_add_first_double(own_list, 2.5), "First double should be stored");
+    AR_ASSERT(ar_data__list_add_first_string(own_list, "first"), "First string should be stored");
+    AR_ASSERT(ar_data__list_add_last_integer(own_list, 20), "Last integer should be stored");
+    AR_ASSERT(ar_data__list_add_last_double(own_list, 4.5), "Last double should be stored");
+    AR_ASSERT(ar_data__list_add_last_string(own_list, "last"), "Last string should be stored");
+
+    ar_data_t **own_items = ar_data__list_items(own_list);
+    size_t item_count = ar_data__list_count(own_list);
+    bool copied_items = true;
+
+    AR_ASSERT(own_items != NULL, "List items should be available");
+    AR_ASSERT(item_count == 6, "List should contain all scalar helper items");
+
+    // When claim_or_copy is asked to claim each contained item
+    for (size_t i = 0; i < item_count; i++) {
+        ar_data_t *ref_item = own_items[i];
+        ar_data_t *own_claimed = ar_data__claim_or_copy(ref_item, ref_owner);
+
+        AR_ASSERT(own_claimed != NULL, "Contained item should be claimable or copyable");
+        if (own_claimed == ref_item) {
+            copied_items = false;
+        } else {
+            ar_data__destroy(own_claimed);
+        }
+    }
+
+    // Cleanup
+    AR__HEAP__FREE(own_items);
+    ar_data__destroy(own_list);
+
+    // Then each contained item should have been copied instead of claimed from the list
+    AR_ASSERT(copied_items, "Scalar helper items should be owned by their containing list");
+}
+
 static void test_list_remove_ownership(void) {
     printf("Testing list remove functions with ownership...\n");
     
@@ -2473,6 +2518,7 @@ int main(void) {
     test_data_ownership();
     test_data_is_owned_by();
     test_list_ownership();
+    test_list_scalar_helpers__own_inserted_items();
     test_list_remove_ownership();
     test_map_ownership();
     
@@ -2511,7 +2557,7 @@ int main(void) {
     test_data_format_structure();
     
     // Then all tests should pass
-    printf("All 34 tests passed!\n");
+    printf("All 35 tests passed!\n");
     
     return 0;
 }

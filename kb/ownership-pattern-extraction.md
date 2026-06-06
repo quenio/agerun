@@ -78,14 +78,16 @@ ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, void *owner) {
 
 ## Container Child Extraction Boundary
 
-`ar_data__claim_or_copy()` extracts the common ownership pattern for top-level values whose ownership
-is uncertain, especially values returned by expression evaluation. Do not apply it to child values
-that are still stored inside a parent list or map. If the child is unowned, `claim_or_copy()` can
-return the same pointer while the parent container still expects to destroy that child later.
+`ar_data__claim_or_copy()` extracts the common ownership pattern for values whose ownership is
+uncertain, especially values returned by expression evaluation. It can also be used for children read
+from containers built through public `ar_data` APIs. Those APIs mark inserted children as owned by
+their parent container, so `claim_or_copy()` takes the copy path and leaves the source container
+intact.
 
 For read-only extraction from a container, such as `head(...)` returning the first list item or
-`tail(...)` returning retained list items, use `ar_data__deep_copy()` so the parent container keeps
-owning its children.
+`tail(...)` returning retained list items, use `claim_or_copy()` when the source is an `ar_data`
+container. Use an explicit `ar_data__deep_copy()` only for exceptional data that bypassed `ar_data`
+container ownership and may contain unowned children.
 
 ## Related Patterns
 - [TDD Advanced Large Refactoring](tdd-advanced-large-refactoring.md)

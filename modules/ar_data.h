@@ -296,6 +296,7 @@ bool ar_data__set_map_data(ar_data_t *mut_data, const char *ref_key, ar_data_t *
  * @param value The integer value to add
  * @return true if successful, false if data is NULL, not a list, or allocation failure
  * @note Ownership: Does not take ownership of the parameters.
+ *       The created integer value is owned by the list on success.
  */
 bool ar_data__list_add_first_integer(ar_data_t *mut_data, int value);
 
@@ -305,6 +306,7 @@ bool ar_data__list_add_first_integer(ar_data_t *mut_data, int value);
  * @param value The double value to add
  * @return true if successful, false if data is NULL, not a list, or allocation failure
  * @note Ownership: Does not take ownership of the parameters.
+ *       The created double value is owned by the list on success.
  */
 bool ar_data__list_add_first_double(ar_data_t *mut_data, double value);
 
@@ -314,6 +316,7 @@ bool ar_data__list_add_first_double(ar_data_t *mut_data, double value);
  * @param ref_value The string value to add (will be copied)
  * @return true if successful, false if data is NULL, not a list, or allocation failure
  * @note Ownership: Does not take ownership of the parameters.
+ *       The created string value is owned by the list on success.
  */
 bool ar_data__list_add_first_string(ar_data_t *mut_data, const char *ref_value);
 
@@ -333,6 +336,7 @@ bool ar_data__list_add_first_data(ar_data_t *mut_data, ar_data_t *own_value);
  * @param value The integer value to add
  * @return true if successful, false if data is NULL, not a list, or allocation failure
  * @note Ownership: Does not take ownership of the parameters.
+ *       The created integer value is owned by the list on success.
  */
 bool ar_data__list_add_last_integer(ar_data_t *mut_data, int value);
 
@@ -342,6 +346,7 @@ bool ar_data__list_add_last_integer(ar_data_t *mut_data, int value);
  * @param value The double value to add
  * @return true if successful, false if data is NULL, not a list, or allocation failure
  * @note Ownership: Does not take ownership of the parameters.
+ *       The created double value is owned by the list on success.
  */
 bool ar_data__list_add_last_double(ar_data_t *mut_data, double value);
 
@@ -351,6 +356,7 @@ bool ar_data__list_add_last_double(ar_data_t *mut_data, double value);
  * @param ref_value The string value to add (will be copied)
  * @return true if successful, false if data is NULL, not a list, or allocation failure
  * @note Ownership: Does not take ownership of the parameters.
+ *       The created string value is owned by the list on success.
  */
 bool ar_data__list_add_last_string(ar_data_t *mut_data, const char *ref_value);
 

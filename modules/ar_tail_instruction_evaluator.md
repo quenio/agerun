@@ -7,7 +7,7 @@ The `ar_tail_instruction_evaluator` module evaluates `tail(...)` instructions in
 
 - verify the instruction AST is `AR_INSTRUCTION_AST_TYPE__TAIL`
 - evaluate the single argument as a normal expression
-- return a new LIST containing deep copies of all items after the first
+- return a new LIST containing independent owned copies of all items after the first
 - return a new empty LIST for empty source lists and single-item source lists
 - store integer `0` for missing, non-LIST, or not-copyable inputs
 - never mutate the source list
@@ -37,7 +37,8 @@ bool ar_tail_instruction_evaluator__evaluate(
 - the evaluator owns only its internal structure
 - the log and expression evaluator are borrowed references
 - source expressions that evaluate to temporary values are discarded after result creation
-- returned tail lists are newly allocated and contain deep-copied items
+- returned tail lists are newly allocated and contain items created with
+  `ar_data__claim_or_copy()`; list-owned items are deep-copied
 - if result storage fails, the owned result value is destroyed before the evaluator returns `false`
 
 ## Empty-list and fallback behavior
@@ -49,6 +50,7 @@ successfully so method execution can continue.
 
 ## Nested values
 
-Returned tail items are deep-copied before storage, so nested list/map structure is preserved and the
-source list is not mutated. If any retained item cannot be copied, `tail(...)` stores integer `0`
-when assigned, and otherwise completes without stopping method execution.
+Returned tail items follow `ar_data__claim_or_copy()`'s deep-copy path for list-owned items, so
+nested list/map structure is preserved and the source list is not mutated. If any retained item
+cannot be copied, `tail(...)` stores integer `0` when assigned, and otherwise completes without
+stopping method execution.
