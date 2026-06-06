@@ -21,7 +21,9 @@ typedef enum {
     AR_INSTRUCTION_AST_TYPE__PARSE,          /* parse(template, input) */
     AR_INSTRUCTION_AST_TYPE__BUILD,          /* build(template, values) */
     AR_INSTRUCTION_AST_TYPE__COMPLETE,       /* complete(template[, memory.path]) */
-    AR_INSTRUCTION_AST_TYPE__APPEND          /* append(memory.list, value) */
+    AR_INSTRUCTION_AST_TYPE__APPEND,         /* append(memory.list, value) */
+    AR_INSTRUCTION_AST_TYPE__HEAD,           /* head(list) */
+    AR_INSTRUCTION_AST_TYPE__TAIL            /* tail(list) */
 } ar_instruction_ast_type_t;
 
 /**
