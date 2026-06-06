@@ -51,5 +51,5 @@ successfully so method execution can continue.
 
 Returned tail items are limited by `ar_data__shallow_copy()`. The evaluator can return primitives
 and flat maps/lists, but any retained item that is a map or list containing nested maps or lists
-cannot be copied. In that case `tail(...)` logs an error, stores integer `0` when assigned, and
-otherwise completes without stopping method execution.
+cannot be copied. In that case `tail(...)` stores integer `0` when assigned, and otherwise
+completes without stopping method execution.

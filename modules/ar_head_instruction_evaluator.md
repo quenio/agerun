@@ -46,9 +46,13 @@ If the input is empty, missing, non-LIST, or cannot be shallow-copied safely, as
 `head(...)` stores integer `0`. Without result assignment, the computed fallback is discarded and
 the instruction completes successfully so method execution can continue.
 
+When callers use `head(...) = 0` as a stop condition, their list item domain must exclude integer
+`0`, or arbitrary values should be wrapped in flat containers so a valid item cannot collide with
+the sentinel.
+
 ## Current limitation
 
 Returned nested containers are limited by `ar_data__shallow_copy()`. The evaluator can return
 primitives and flat maps/lists, but a first item that is a map or list containing nested maps or
-lists cannot be copied. In that case `head(...)` logs an error, stores integer `0` when assigned,
-and otherwise completes without stopping method execution.
+lists cannot be copied. In that case `head(...)` stores integer `0` when assigned, and otherwise
+completes without stopping method execution.
