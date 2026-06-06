@@ -145,6 +145,7 @@ static void test_append_instruction_evaluator__copies_borrowed_memory_value(void
 static void test_append_instruction_evaluator__deep_copies_borrowed_nested_memory_value(void) {
     printf("Testing append deep-copies borrowed nested memory value...\n");
 
+    // Given a memory-owned list and a borrowed nested memory value
     ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("append_nested_memory");
     AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
     ar_append_instruction_evaluator_t *own_evaluator = _create_evaluator(own_fixture);
@@ -173,8 +174,10 @@ static void test_append_instruction_evaluator__deep_copies_borrowed_nested_memor
         ar_expression_ast__create_memory_access("memory", value_path, 1)
     );
 
+    // When appending the borrowed nested value
     bool result = ar_append_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
 
+    // Then the appended value should be an independent deep copy
     AR_ASSERT(result == true, "Append should succeed");
     ar_data_t *ref_original = ar_data__get_map_data(mut_memory, "payload");
     ar_data_t *ref_results = ar_data__get_map_data(mut_memory, "results");
@@ -190,6 +193,7 @@ static void test_append_instruction_evaluator__deep_copies_borrowed_nested_memor
     AR_ASSERT(ar_data__list_count(ref_original_items) == 2, "Original nested list should grow");
     AR_ASSERT(ar_data__list_count(ref_appended_items) == 1, "Appended nested list should remain independent");
 
+    // Cleanup
     ar_instruction_ast__destroy(own_ast);
     ar_append_instruction_evaluator__destroy(own_evaluator);
     ar_evaluator_fixture__destroy(own_fixture);

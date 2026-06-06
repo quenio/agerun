@@ -438,6 +438,7 @@ static void test_send_instruction_evaluator__routes_to_agent(void) {
 }
 
 static void test_send_instruction_evaluator__deep_copies_nested_message_to_agent(void) {
+    // Given a registered agent and a borrowed nested message payload in memory
     ar_send_evaluator_fixture_t *fixture = ar_send_evaluator_fixture__create("test_send_nested_message");
     AR_ASSERT(fixture != NULL, "Fixture creation should succeed");
 
@@ -473,8 +474,10 @@ static void test_send_instruction_evaluator__deep_copies_nested_message_to_agent
     ar_list__add_last(arg_asts, ar_expression_ast__create_memory_access("memory", payload_path, 1));
     AR_ASSERT(ar_instruction_ast__set_function_arg_asts(ast, arg_asts), "Setting args should succeed");
 
+    // When sending the borrowed nested payload to the agent
     bool result = ar_send_instruction_evaluator__evaluate(evaluator, frame, ast);
 
+    // Then the delivered message should be an independent deep copy
     AR_ASSERT(result == true, "Send to agent should succeed");
     ar_agency_t *agency = ar_send_evaluator_fixture__get_agency(fixture);
     ar_data_t *own_received = ar_agency__get_agent_message(agency, 1);
@@ -490,6 +493,7 @@ static void test_send_instruction_evaluator__deep_copies_nested_message_to_agent
     AR_ASSERT(ar_data__list_count(ref_source_items) == 2, "Source nested list should grow");
     AR_ASSERT(ar_data__list_count(ref_received_items) == 1, "Received nested list should remain independent");
 
+    // Cleanup
     ar_data__destroy(own_received);
     ar_instruction_ast__destroy(ast);
     ar_send_instruction_evaluator__destroy(evaluator);

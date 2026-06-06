@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <string.h>
+#include "ar_assert.h"
 #include "ar_expression_evaluator.h"
 #include "ar_instruction_ast.h"
 #include "ar_expression_ast.h"
@@ -424,8 +425,9 @@ static void test_instruction_evaluator__evaluate_if_nested(void) {
 }
 
 static void test_instruction_evaluator__evaluate_if_deep_copies_selected_branch(void) {
+    // Given an if(...) evaluator with a selected nested branch in memory
     ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_if_deep_copy_branch");
-    assert(own_fixture != NULL);
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
 
     ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
     ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
@@ -433,54 +435,59 @@ static void test_instruction_evaluator__evaluate_if_deep_copies_selected_branch(
 
     ar_data_t *own_selected = ar_data__create_map();
     ar_data_t *own_selected_items = ar_data__create_list();
-    assert(own_selected != NULL);
-    assert(own_selected_items != NULL);
-    assert(ar_data__list_add_last_string(own_selected_items, "selected"));
-    assert(ar_data__set_map_data(own_selected, "items", own_selected_items));
-    assert(ar_data__set_map_data(mut_memory, "selected", own_selected));
+    AR_ASSERT(own_selected != NULL, "Selected map should be created");
+    AR_ASSERT(own_selected_items != NULL, "Selected nested list should be created");
+    AR_ASSERT(ar_data__list_add_last_string(own_selected_items, "selected"), "Selected nested item should be stored");
+    AR_ASSERT(ar_data__set_map_data(own_selected, "items", own_selected_items), "Selected nested list should be stored");
+    AR_ASSERT(ar_data__set_map_data(mut_memory, "selected", own_selected), "Selected branch should be stored");
 
     ar_data_t *own_fallback = ar_data__create_map();
-    assert(own_fallback != NULL);
-    assert(ar_data__set_map_string(own_fallback, "unused", "fallback"));
-    assert(ar_data__set_map_data(mut_memory, "fallback", own_fallback));
+    AR_ASSERT(own_fallback != NULL, "Fallback map should be created");
+    AR_ASSERT(ar_data__set_map_string(own_fallback, "unused", "fallback"), "Fallback field should be stored");
+    AR_ASSERT(ar_data__set_map_data(mut_memory, "fallback", own_fallback), "Fallback branch should be stored");
 
     ar_condition_instruction_evaluator_t *evaluator = ar_condition_instruction_evaluator__create(
         ref_log, ref_expr_eval
     );
-    assert(evaluator != NULL);
+    AR_ASSERT(evaluator != NULL, "Condition evaluator creation should succeed");
 
     const char *args[] = {"1", "memory.selected", "memory.fallback"};
     ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
         AR_INSTRUCTION_AST_TYPE__IF, "if", args, 3, "memory.result"
     );
-    assert(ast != NULL);
+    AR_ASSERT(ast != NULL, "If AST creation should succeed");
 
     ar_list_t *arg_asts = ar_list__create();
-    assert(arg_asts != NULL);
+    AR_ASSERT(arg_asts != NULL, "Argument AST list should be created");
     ar_list__add_last(arg_asts, ar_expression_ast__create_literal_int(1));
     const char *selected_path[] = {"selected"};
     ar_list__add_last(arg_asts, ar_expression_ast__create_memory_access("memory", selected_path, 1));
     const char *fallback_path[] = {"fallback"};
     ar_list__add_last(arg_asts, ar_expression_ast__create_memory_access("memory", fallback_path, 1));
-    assert(ar_instruction_ast__set_function_arg_asts(ast, arg_asts) == true);
+    AR_ASSERT(ar_instruction_ast__set_function_arg_asts(ast, arg_asts) == true, "Argument ASTs should be attached");
 
     ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+    AR_ASSERT(ref_frame != NULL, "Frame creation should succeed");
+
+    // When evaluating the if(...) instruction
     bool result = ar_condition_instruction_evaluator__evaluate(evaluator, ref_frame, ast);
 
-    assert(result == true);
+    // Then the selected branch should be stored as an independent deep copy
+    AR_ASSERT(result == true, "If evaluation should succeed");
     ar_data_t *ref_source = ar_data__get_map_data(mut_memory, "selected");
     ar_data_t *ref_copy = ar_data__get_map_data(mut_memory, "result");
-    assert(ref_copy != NULL);
-    assert(ref_copy != ref_source);
+    AR_ASSERT(ref_copy != NULL, "Selected branch copy should be stored");
+    AR_ASSERT(ref_copy != ref_source, "Selected branch copy should be independent");
     ar_data_t *ref_source_items = ar_data__get_map_data(ref_source, "items");
     ar_data_t *ref_copy_items = ar_data__get_map_data(ref_copy, "items");
-    assert(ref_copy_items != NULL);
-    assert(ref_copy_items != ref_source_items);
-    assert(ar_data__list_count(ref_copy_items) == 1);
-    assert(ar_data__list_add_last_string(ref_source_items, "source-only"));
-    assert(ar_data__list_count(ref_source_items) == 2);
-    assert(ar_data__list_count(ref_copy_items) == 1);
+    AR_ASSERT(ref_copy_items != NULL, "Copied nested list should exist");
+    AR_ASSERT(ref_copy_items != ref_source_items, "Nested list should be deep-copied");
+    AR_ASSERT(ar_data__list_count(ref_copy_items) == 1, "Copied nested list count should match source");
+    AR_ASSERT(ar_data__list_add_last_string(ref_source_items, "source-only"), "Source nested list should mutate");
+    AR_ASSERT(ar_data__list_count(ref_source_items) == 2, "Source nested list should grow");
+    AR_ASSERT(ar_data__list_count(ref_copy_items) == 1, "Copied nested list should remain independent");
 
+    // Cleanup
     ar_instruction_ast__destroy(ast);
     ar_condition_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(own_fixture);

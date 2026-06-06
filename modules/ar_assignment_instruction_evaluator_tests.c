@@ -482,6 +482,7 @@ static void test_assignment_instruction_evaluator__stores_literal_containers(voi
 static void test_assignment_instruction_evaluator__deep_copies_nested_sources(void) {
     printf("Testing assignment deep-copies nested sources...\n");
 
+    // Given nested values in memory, context, and message
     ar_evaluator_fixture_t *fixture =
         ar_evaluator_fixture__create("test_deep_copies_nested_sources");
     AR_ASSERT(fixture != NULL, "Fixture creation should succeed");
@@ -524,6 +525,7 @@ static void test_assignment_instruction_evaluator__deep_copies_nested_sources(vo
         ar_assignment_instruction_evaluator__create(log, expr_eval);
     AR_ASSERT(evaluator != NULL, "Evaluator creation should succeed");
 
+    // When assigning those borrowed nested values into memory
     const char *memory_path[] = {"source"};
     ar_instruction_ast_t *memory_ast = ar_evaluator_fixture__create_assignment_expr(
         fixture,
@@ -551,6 +553,7 @@ static void test_assignment_instruction_evaluator__deep_copies_nested_sources(vo
     AR_ASSERT(message_ast != NULL, "Message assignment AST should be created");
     AR_ASSERT(ar_assignment_instruction_evaluator__evaluate(evaluator, frame, message_ast) == true, "Message assignment should succeed");
 
+    // Then each stored value should be an independent deep copy
     ar_data_t *ref_memory_source = ar_data__get_map_data(mut_memory, "source");
     ar_data_t *ref_memory_copy = ar_data__get_map_data(mut_memory, "memory_copy");
     ar_data_t *ref_context_source = ar_data__get_map_data(own_context, "value");
@@ -574,6 +577,7 @@ static void test_assignment_instruction_evaluator__deep_copies_nested_sources(vo
     AR_ASSERT(ar_data__list_add_last_string(ar_data__get_map_data(ref_message_source, "items"), "new"), "Message source should mutate");
     AR_ASSERT(ar_data__list_count(ar_data__get_map_data(ref_message_copy, "items")) == 1, "Message copy should remain independent");
 
+    // Cleanup
     ar_assignment_instruction_evaluator__destroy(evaluator);
     ar_frame__destroy(frame);
     ar_data__destroy(own_context);

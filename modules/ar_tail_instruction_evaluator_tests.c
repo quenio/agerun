@@ -307,6 +307,7 @@ static void test_tail_instruction_evaluator__can_overwrite_source_list(void) {
 static void test_tail_instruction_evaluator__deep_copies_nested_container(void) {
     printf("Testing tail deep-copies nested container...\n");
 
+    // Given a memory list whose retained tail item is a nested container
     ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("tail_nested_limit");
     AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
     ar_tail_instruction_evaluator_t *own_evaluator = _create_evaluator(own_fixture);
@@ -335,8 +336,10 @@ static void test_tail_instruction_evaluator__deep_copies_nested_container(void) 
         ar_expression_ast__create_memory_access("memory", path, 1)
     );
 
+    // When evaluating tail(...) with a result assignment
     bool result = ar_tail_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
 
+    // Then the result tail should contain an independent deep copy
     AR_ASSERT(result == true, "Tail should complete for nested containers");
     ar_data_t *ref_result = _assert_result_list(mut_memory, "result", 1);
     ar_data_t *ref_targets = ar_data__get_map_data(mut_memory, "targets");
@@ -357,6 +360,7 @@ static void test_tail_instruction_evaluator__deep_copies_nested_container(void) 
     AR_ASSERT(ar_data__list_count(ref_source_inner) == 2, "Source inner list should grow");
     AR_ASSERT(ar_data__list_count(ref_result_inner) == 1, "Copied inner list should remain independent");
 
+    // Cleanup
     ar_instruction_ast__destroy(own_ast);
     ar_tail_instruction_evaluator__destroy(own_evaluator);
     ar_evaluator_fixture__destroy(own_fixture);
