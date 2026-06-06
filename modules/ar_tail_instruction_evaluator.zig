@@ -101,14 +101,14 @@ fn _is_owned_by_frame_root(ref_frame: ?*const c.ar_frame_t, ref_data: ?*const c.
 
 fn _destroy_source_if_temporary(
     ref_evaluator: *const ar_tail_instruction_evaluator_t,
-    ref_frame: ?*const c.ar_frame_t,
-    mut_source: ?*c.ar_data_t
+    mut_source: ?*c.ar_data_t,
+    source_is_frame_owned: bool
 ) void {
     if (mut_source == null) {
         return;
     }
 
-    if (!_is_owned_by_frame_root(ref_frame, mut_source)) {
+    if (!source_is_frame_owned) {
         c.ar_data__destroy_if_owned(mut_source, ref_evaluator);
     }
 }
@@ -177,7 +177,8 @@ pub export fn ar_tail_instruction_evaluator__evaluate(
     ) orelse {
         return _store_zero_result(ref_evaluator.?, ref_frame, ref_ast);
     };
-    defer _destroy_source_if_temporary(ref_evaluator.?, ref_frame, mut_source);
+    const source_is_frame_owned = _is_owned_by_frame_root(ref_frame, mut_source);
+    defer _destroy_source_if_temporary(ref_evaluator.?, mut_source, source_is_frame_owned);
 
     if (c.ar_data__get_type(mut_source) != c.AR_DATA_TYPE__LIST) {
         return _store_zero_result(ref_evaluator.?, ref_frame, ref_ast);

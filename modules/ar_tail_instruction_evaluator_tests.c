@@ -270,6 +270,40 @@ static void test_tail_instruction_evaluator__does_not_mutate_source_list(void) {
     ar_evaluator_fixture__destroy(own_fixture);
 }
 
+static void test_tail_instruction_evaluator__can_overwrite_source_list(void) {
+    printf("Testing tail can overwrite source list...\n");
+
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("tail_overwrite_source");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+    ar_tail_instruction_evaluator_t *own_evaluator = _create_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+    AR_ASSERT(ref_frame != NULL, "Frame creation should succeed");
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    ar_data_t *own_targets = ar_data__create_list();
+    AR_ASSERT(own_targets != NULL, "Targets list creation should succeed");
+    AR_ASSERT(ar_data__list_add_last_integer(own_targets, 10), "First target should be stored");
+    AR_ASSERT(ar_data__list_add_last_integer(own_targets, 20), "Second target should be stored");
+    AR_ASSERT(ar_data__set_map_data(mut_memory, "targets", own_targets), "Targets list should be stored");
+    own_targets = NULL;
+
+    const char *path[] = {"targets"};
+    ar_instruction_ast_t *own_ast = _create_tail_ast(
+        "memory.targets",
+        "memory.targets",
+        ar_expression_ast__create_memory_access("memory", path, 1)
+    );
+
+    bool result = ar_tail_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
+
+    AR_ASSERT(result == true, "Tail instruction should complete when overwriting source");
+    ar_data_t *ref_result = _assert_result_list(mut_memory, "targets", 1);
+    AR_ASSERT(ar_data__get_integer(ar_data__list_first(ref_result)) == 20, "Tail should replace source with remaining item");
+
+    ar_instruction_ast__destroy(own_ast);
+    ar_tail_instruction_evaluator__destroy(own_evaluator);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
 static void test_tail_instruction_evaluator__stores_zero_for_nested_container_copy_limit(void) {
     printf("Testing tail stores zero when nested container cannot be copied...\n");
 
@@ -323,6 +357,7 @@ int main(void) {
     test_tail_instruction_evaluator__stores_zero_for_non_list();
     test_tail_instruction_evaluator__stores_zero_for_missing_message_field();
     test_tail_instruction_evaluator__does_not_mutate_source_list();
+    test_tail_instruction_evaluator__can_overwrite_source_list();
     test_tail_instruction_evaluator__stores_zero_for_nested_container_copy_limit();
 
     printf("All tail instruction_evaluator tests passed!\n");
