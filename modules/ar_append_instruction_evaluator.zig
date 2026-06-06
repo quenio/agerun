@@ -249,7 +249,7 @@ pub export fn ar_append_instruction_evaluator__evaluate(
     };
 
     const own_value = c.ar_data__claim_or_copy(ref_value, ref_evaluator) orelse {
-        c.ar_log__error(ref_evaluator.?.ref_log, "Cannot append value with nested containers (no deep copy support)");
+        c.ar_log__error(ref_evaluator.?.ref_log, "Failed to copy append value");
         return _store_result(ref_evaluator.?, ref_frame, ref_ast, false);
     };
 

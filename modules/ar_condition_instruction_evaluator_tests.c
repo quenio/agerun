@@ -423,6 +423,69 @@ static void test_instruction_evaluator__evaluate_if_nested(void) {
     ar_evaluator_fixture__destroy(own_fixture);
 }
 
+static void test_instruction_evaluator__evaluate_if_deep_copies_selected_branch(void) {
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_if_deep_copy_branch");
+    assert(own_fixture != NULL);
+
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+
+    ar_data_t *own_selected = ar_data__create_map();
+    ar_data_t *own_selected_items = ar_data__create_list();
+    assert(own_selected != NULL);
+    assert(own_selected_items != NULL);
+    assert(ar_data__list_add_last_string(own_selected_items, "selected"));
+    assert(ar_data__set_map_data(own_selected, "items", own_selected_items));
+    assert(ar_data__set_map_data(mut_memory, "selected", own_selected));
+
+    ar_data_t *own_fallback = ar_data__create_map();
+    assert(own_fallback != NULL);
+    assert(ar_data__set_map_string(own_fallback, "unused", "fallback"));
+    assert(ar_data__set_map_data(mut_memory, "fallback", own_fallback));
+
+    ar_condition_instruction_evaluator_t *evaluator = ar_condition_instruction_evaluator__create(
+        ref_log, ref_expr_eval
+    );
+    assert(evaluator != NULL);
+
+    const char *args[] = {"1", "memory.selected", "memory.fallback"};
+    ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
+        AR_INSTRUCTION_AST_TYPE__IF, "if", args, 3, "memory.result"
+    );
+    assert(ast != NULL);
+
+    ar_list_t *arg_asts = ar_list__create();
+    assert(arg_asts != NULL);
+    ar_list__add_last(arg_asts, ar_expression_ast__create_literal_int(1));
+    const char *selected_path[] = {"selected"};
+    ar_list__add_last(arg_asts, ar_expression_ast__create_memory_access("memory", selected_path, 1));
+    const char *fallback_path[] = {"fallback"};
+    ar_list__add_last(arg_asts, ar_expression_ast__create_memory_access("memory", fallback_path, 1));
+    assert(ar_instruction_ast__set_function_arg_asts(ast, arg_asts) == true);
+
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+    bool result = ar_condition_instruction_evaluator__evaluate(evaluator, ref_frame, ast);
+
+    assert(result == true);
+    ar_data_t *ref_source = ar_data__get_map_data(mut_memory, "selected");
+    ar_data_t *ref_copy = ar_data__get_map_data(mut_memory, "result");
+    assert(ref_copy != NULL);
+    assert(ref_copy != ref_source);
+    ar_data_t *ref_source_items = ar_data__get_map_data(ref_source, "items");
+    ar_data_t *ref_copy_items = ar_data__get_map_data(ref_copy, "items");
+    assert(ref_copy_items != NULL);
+    assert(ref_copy_items != ref_source_items);
+    assert(ar_data__list_count(ref_copy_items) == 1);
+    assert(ar_data__list_add_last_string(ref_source_items, "source-only"));
+    assert(ar_data__list_count(ref_source_items) == 2);
+    assert(ar_data__list_count(ref_copy_items) == 1);
+
+    ar_instruction_ast__destroy(ast);
+    ar_condition_instruction_evaluator__destroy(evaluator);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
 static void test_instruction_evaluator__evaluate_if_invalid_args(void) {
     // Given a test fixture with memory
     ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_if_invalid_args");
@@ -507,6 +570,9 @@ int main(void) {
     
     test_instruction_evaluator__evaluate_if_nested();
     printf("test_instruction_evaluator__evaluate_if_nested passed!\n");
+
+    test_instruction_evaluator__evaluate_if_deep_copies_selected_branch();
+    printf("test_instruction_evaluator__evaluate_if_deep_copies_selected_branch passed!\n");
     
     test_instruction_evaluator__evaluate_if_invalid_args();
     printf("test_instruction_evaluator__evaluate_if_invalid_args passed!\n");
@@ -515,4 +581,3 @@ int main(void) {
     
     return 0;
 }
-

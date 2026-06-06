@@ -9,6 +9,7 @@
 #include "ar_event.h"
 #include "ar_expression_ast.h"
 #include "ar_frame.h"
+#include "ar_assert.h"
 
 static void test_assignment_instruction_evaluator__create_destroy(void) {
     // Given a test fixture
@@ -478,6 +479,108 @@ static void test_assignment_instruction_evaluator__stores_literal_containers(voi
     ar_evaluator_fixture__destroy(fixture);
 }
 
+static void test_assignment_instruction_evaluator__deep_copies_nested_sources(void) {
+    printf("Testing assignment deep-copies nested sources...\n");
+
+    ar_evaluator_fixture_t *fixture =
+        ar_evaluator_fixture__create("test_deep_copies_nested_sources");
+    AR_ASSERT(fixture != NULL, "Fixture creation should succeed");
+
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(fixture);
+    ar_data_t *own_memory_source = ar_data__create_map();
+    ar_data_t *own_memory_inner = ar_data__create_list();
+    AR_ASSERT(own_memory_source != NULL, "Memory source should be created");
+    AR_ASSERT(own_memory_inner != NULL, "Memory inner list should be created");
+    AR_ASSERT(ar_data__list_add_last_integer(own_memory_inner, 1), "Memory inner item should be stored");
+    AR_ASSERT(ar_data__set_map_data(own_memory_source, "items", own_memory_inner), "Memory inner list should be stored");
+    AR_ASSERT(ar_data__set_map_data(mut_memory, "source", own_memory_source), "Memory source should be stored");
+
+    ar_data_t *own_context = ar_data__create_map();
+    ar_data_t *own_context_value = ar_data__create_map();
+    ar_data_t *own_context_inner = ar_data__create_list();
+    AR_ASSERT(own_context != NULL, "Context should be created");
+    AR_ASSERT(own_context_value != NULL, "Context value should be created");
+    AR_ASSERT(own_context_inner != NULL, "Context inner list should be created");
+    AR_ASSERT(ar_data__list_add_last_string(own_context_inner, "context-item"), "Context inner item should be stored");
+    AR_ASSERT(ar_data__set_map_data(own_context_value, "items", own_context_inner), "Context inner list should be stored");
+    AR_ASSERT(ar_data__set_map_data(own_context, "value", own_context_value), "Context value should be stored");
+
+    ar_data_t *own_message = ar_data__create_map();
+    ar_data_t *own_message_value = ar_data__create_map();
+    ar_data_t *own_message_inner = ar_data__create_list();
+    AR_ASSERT(own_message != NULL, "Message should be created");
+    AR_ASSERT(own_message_value != NULL, "Message value should be created");
+    AR_ASSERT(own_message_inner != NULL, "Message inner list should be created");
+    AR_ASSERT(ar_data__list_add_last_string(own_message_inner, "message-item"), "Message inner item should be stored");
+    AR_ASSERT(ar_data__set_map_data(own_message_value, "items", own_message_inner), "Message inner list should be stored");
+    AR_ASSERT(ar_data__set_map_data(own_message, "value", own_message_value), "Message value should be stored");
+
+    ar_frame_t *frame = ar_frame__create(mut_memory, own_context, own_message);
+    AR_ASSERT(frame != NULL, "Frame creation should succeed");
+
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_assignment_instruction_evaluator_t *evaluator =
+        ar_assignment_instruction_evaluator__create(log, expr_eval);
+    AR_ASSERT(evaluator != NULL, "Evaluator creation should succeed");
+
+    const char *memory_path[] = {"source"};
+    ar_instruction_ast_t *memory_ast = ar_evaluator_fixture__create_assignment_expr(
+        fixture,
+        "memory.memory_copy",
+        ar_expression_ast__create_memory_access("memory", memory_path, 1)
+    );
+    AR_ASSERT(memory_ast != NULL, "Memory assignment AST should be created");
+    AR_ASSERT(ar_assignment_instruction_evaluator__evaluate(evaluator, frame, memory_ast) == true, "Memory assignment should succeed");
+
+    const char *context_path[] = {"value"};
+    ar_instruction_ast_t *context_ast = ar_evaluator_fixture__create_assignment_expr(
+        fixture,
+        "memory.context_copy",
+        ar_expression_ast__create_memory_access("context", context_path, 1)
+    );
+    AR_ASSERT(context_ast != NULL, "Context assignment AST should be created");
+    AR_ASSERT(ar_assignment_instruction_evaluator__evaluate(evaluator, frame, context_ast) == true, "Context assignment should succeed");
+
+    const char *message_path[] = {"value"};
+    ar_instruction_ast_t *message_ast = ar_evaluator_fixture__create_assignment_expr(
+        fixture,
+        "memory.message_copy",
+        ar_expression_ast__create_memory_access("message", message_path, 1)
+    );
+    AR_ASSERT(message_ast != NULL, "Message assignment AST should be created");
+    AR_ASSERT(ar_assignment_instruction_evaluator__evaluate(evaluator, frame, message_ast) == true, "Message assignment should succeed");
+
+    ar_data_t *ref_memory_source = ar_data__get_map_data(mut_memory, "source");
+    ar_data_t *ref_memory_copy = ar_data__get_map_data(mut_memory, "memory_copy");
+    ar_data_t *ref_context_source = ar_data__get_map_data(own_context, "value");
+    ar_data_t *ref_context_copy = ar_data__get_map_data(mut_memory, "context_copy");
+    ar_data_t *ref_message_source = ar_data__get_map_data(own_message, "value");
+    ar_data_t *ref_message_copy = ar_data__get_map_data(mut_memory, "message_copy");
+    AR_ASSERT(ref_memory_copy != NULL, "Memory copy should be stored");
+    AR_ASSERT(ref_context_copy != NULL, "Context copy should be stored");
+    AR_ASSERT(ref_message_copy != NULL, "Message copy should be stored");
+    AR_ASSERT(ref_memory_copy != ref_memory_source, "Memory source should be deep-copied");
+    AR_ASSERT(ref_context_copy != ref_context_source, "Context source should be deep-copied");
+    AR_ASSERT(ref_message_copy != ref_message_source, "Message source should be deep-copied");
+    AR_ASSERT(ar_data__get_type(ar_data__get_map_data(ref_memory_copy, "items")) == AR_DATA_TYPE__LIST, "Memory copy should preserve nested list");
+    AR_ASSERT(ar_data__get_type(ar_data__get_map_data(ref_context_copy, "items")) == AR_DATA_TYPE__LIST, "Context copy should preserve nested list");
+    AR_ASSERT(ar_data__get_type(ar_data__get_map_data(ref_message_copy, "items")) == AR_DATA_TYPE__LIST, "Message copy should preserve nested list");
+
+    AR_ASSERT(ar_data__list_add_last_integer(ar_data__get_map_data(ref_memory_source, "items"), 2), "Memory source should mutate");
+    AR_ASSERT(ar_data__list_count(ar_data__get_map_data(ref_memory_copy, "items")) == 1, "Memory copy should remain independent");
+    AR_ASSERT(ar_data__list_add_last_string(ar_data__get_map_data(ref_context_source, "items"), "new"), "Context source should mutate");
+    AR_ASSERT(ar_data__list_count(ar_data__get_map_data(ref_context_copy, "items")) == 1, "Context copy should remain independent");
+    AR_ASSERT(ar_data__list_add_last_string(ar_data__get_map_data(ref_message_source, "items"), "new"), "Message source should mutate");
+    AR_ASSERT(ar_data__list_count(ar_data__get_map_data(ref_message_copy, "items")) == 1, "Message copy should remain independent");
+
+    ar_assignment_instruction_evaluator__destroy(evaluator);
+    ar_frame__destroy(frame);
+    ar_data__destroy(own_context);
+    ar_data__destroy(own_message);
+    ar_evaluator_fixture__destroy(fixture);
+}
+
 
 int main(void) {
     printf("Starting assignment instruction_evaluator tests...\n");
@@ -517,6 +620,9 @@ int main(void) {
 
     test_assignment_instruction_evaluator__stores_literal_containers();
     printf("test_assignment_instruction_evaluator__stores_literal_containers passed!\n");
+
+    test_assignment_instruction_evaluator__deep_copies_nested_sources();
+    printf("test_assignment_instruction_evaluator__deep_copies_nested_sources passed!\n");
     
     printf("All assignment instruction_evaluator tests passed!\n");
     

@@ -136,6 +136,15 @@ bool ar_data__list_contains_only_primitives(const ar_data_t *ref_data);
 ar_data_t* ar_data__shallow_copy(const ar_data_t *ref_value);
 
 /**
+ * Create a deep copy of data values
+ * @param ref_value The data value to copy
+ * @return New data instance with recursively copied contents, or NULL if copy failed
+ * @note Copies primitives and recursively copies all map/list descendants
+ * @note Ownership: Returns an owned value that caller must destroy, or NULL if copy failed
+ */
+ar_data_t* ar_data__deep_copy(const ar_data_t *ref_value);
+
+/**
  * Hold ownership of a data object
  * @param mut_data Pointer to the data to claim ownership of
  * @param owner Pointer identifying the owner (typically the containing object)
@@ -165,16 +174,15 @@ bool ar_data__drop_ownership(ar_data_t *mut_data, void *owner);
 bool ar_data__is_owned_by(const ar_data_t *ref_data, const ar_data_t *ref_owner);
 
 /**
- * Claim ownership of data or create a shallow copy
+ * Claim ownership of data or create a deep copy
  * @param ref_data The data to claim or copy
  * @param owner The object that wants to own the data
- * @return The same data if ownership was claimed, a shallow copy if already owned, or NULL if cannot copy
+ * @return The same data if ownership was claimed, a deep copy if already owned, or NULL if cannot copy
  * @note If data is unowned, takes ownership and returns the same pointer
- * @note If data is owned by another, creates a shallow copy if possible
- * @note Returns NULL for nested containers (no deep copy support)
+ * @note If data is owned by another, creates a deep copy if possible
  * @note Caller is responsible for destroying the returned data
  */
-ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, void *owner);
+ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, const void *owner);
 
 /**
  * Destroy data only if ownership can be taken
@@ -184,7 +192,7 @@ ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, void *owner);
  * @note If data is owned by another or is NULL, does nothing
  * @note Useful for defensive cleanup where ownership is uncertain
  */
-void ar_data__destroy_if_owned(ar_data_t *ref_data, void *owner);
+void ar_data__destroy_if_owned(ar_data_t *ref_data, const void *owner);
 
 /**
  * Get the integer value from a data structure
@@ -1022,12 +1030,13 @@ struct ar_data_s {
 - The ownership model is clear: the data module owns and manages all memory for data objects and their contents
 - Type safety is improved through the use of const qualifiers throughout the API
 
-### Shallow Copy Functions
+### Data Copy Functions
 
-The data module provides shallow copy functionality for creating independent copies of data values:
+The data module provides both flat shallow-copy and recursive deep-copy functionality:
 
 ```c
 ar_data_t* ar_data__shallow_copy(const ar_data_t *ref_value);
+ar_data_t* ar_data__deep_copy(const ar_data_t *ref_value);
 bool ar_data__is_primitive_type(const ar_data_t *ref_data);
 bool ar_data__is_owned_by(const ar_data_t *ref_data, const ar_data_t *ref_owner);
 bool ar_data__map_contains_only_primitives(const ar_data_t *ref_map);
@@ -1039,6 +1048,11 @@ bool ar_data__list_contains_only_primitives(const ar_data_t *ref_list);
   - For maps and lists, it only copies if they contain exclusively primitive values
   - Returns NULL if the value contains nested containers (no deep copy support)
   - Caller owns the returned copy and must destroy it
+- `ar_data__deep_copy` creates a recursive copy of a data value
+  - For primitive types (integer, double, string), it creates a full copy
+  - For maps and lists, it recursively copies every child value
+  - Returns NULL only for invalid input or allocation/storage failure
+  - Caller owns the returned copy and must destroy it
 - `ar_data__is_primitive_type` checks if a data value is a primitive type (integer, double, or string)
 - `ar_data__is_owned_by` checks whether a data value is the root data value or is contained inside
   that root's nested map/list tree
@@ -1048,14 +1062,14 @@ bool ar_data__list_contains_only_primitives(const ar_data_t *ref_list);
 The data module provides helper functions to simplify common ownership patterns:
 
 ```c
-ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, void *owner);
-void ar_data__destroy_if_owned(ar_data_t *ref_data, void *owner);
+ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, const void *owner);
+void ar_data__destroy_if_owned(ar_data_t *ref_data, const void *owner);
 ```
 
 - `ar_data__claim_or_copy` simplifies the pattern of taking ownership or creating a copy
   - If data is unowned, takes ownership and returns the same pointer
-  - If data is owned by another, creates a shallow copy if possible
-  - Returns NULL for nested containers (no deep copy support)
+  - If data is owned by another, creates a deep copy
+  - Preserves nested maps and lists when copying borrowed values
   - Commonly used in evaluators to handle results from expressions
 - `ar_data__destroy_if_owned` provides defensive cleanup
   - Safely destroys data only if ownership can be taken
@@ -1064,8 +1078,7 @@ void ar_data__destroy_if_owned(ar_data_t *ref_data, void *owner);
   - Useful for cleanup paths where ownership is uncertain
 - `ar_data__map_contains_only_primitives` validates that a map contains only primitive values
 - `ar_data__list_contains_only_primitives` validates that a list contains only primitive values
-- These functions enable safe copying in evaluators while preventing deep copy issues
-- The shallow copy limitation ensures predictable memory management behavior
+- These functions enable safe copying in evaluators while keeping ownership explicit
 - List operations are provided for both generic data objects and specific typed values
 - Typed list operations (add_first_integer, remove_last_double, etc.) simplify working with lists of specific types
 - Remove operations handle type checking and return default values for type mismatches

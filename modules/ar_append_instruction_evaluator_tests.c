@@ -142,6 +142,59 @@ static void test_append_instruction_evaluator__copies_borrowed_memory_value(void
     ar_evaluator_fixture__destroy(own_fixture);
 }
 
+static void test_append_instruction_evaluator__deep_copies_borrowed_nested_memory_value(void) {
+    printf("Testing append deep-copies borrowed nested memory value...\n");
+
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("append_nested_memory");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+    ar_append_instruction_evaluator_t *own_evaluator = _create_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+    AR_ASSERT(ref_frame != NULL, "Frame creation should succeed");
+
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    AR_ASSERT(ar_data__set_map_data(mut_memory, "results", ar_data__create_list()), "Results list should be stored");
+    ar_data_t *own_payload = ar_data__create_map();
+    ar_data_t *own_items = ar_data__create_list();
+    AR_ASSERT(own_payload != NULL, "Payload map should be created");
+    AR_ASSERT(own_items != NULL, "Nested list should be created");
+    AR_ASSERT(ar_data__list_add_last_string(own_items, "first"), "Nested list item should be stored");
+    AR_ASSERT(ar_data__set_map_data(own_payload, "items", own_items), "Nested list should be stored");
+    own_items = NULL;
+    AR_ASSERT(ar_data__set_map_data(mut_memory, "payload", own_payload), "Payload should be stored");
+    own_payload = NULL;
+
+    const char *target_path[] = {"results"};
+    const char *value_path[] = {"payload"};
+    ar_instruction_ast_t *own_ast = _create_append_ast(
+        "memory.results",
+        "memory.payload",
+        NULL,
+        ar_expression_ast__create_memory_access("memory", target_path, 1),
+        ar_expression_ast__create_memory_access("memory", value_path, 1)
+    );
+
+    bool result = ar_append_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
+
+    AR_ASSERT(result == true, "Append should succeed");
+    ar_data_t *ref_original = ar_data__get_map_data(mut_memory, "payload");
+    ar_data_t *ref_results = ar_data__get_map_data(mut_memory, "results");
+    ar_data_t *ref_appended = ar_data__list_first(ref_results);
+    AR_ASSERT(ref_appended != NULL, "Appended value should exist");
+    AR_ASSERT(ref_appended != ref_original, "Nested borrowed memory value should be copied before append");
+    ar_data_t *ref_original_items = ar_data__get_map_data(ref_original, "items");
+    ar_data_t *ref_appended_items = ar_data__get_map_data(ref_appended, "items");
+    AR_ASSERT(ref_appended_items != NULL, "Appended nested list should exist");
+    AR_ASSERT(ref_appended_items != ref_original_items, "Nested list should be copied");
+    AR_ASSERT(ar_data__list_count(ref_appended_items) == 1, "Appended nested list count should match");
+    AR_ASSERT(ar_data__list_add_last_string(ref_original_items, "second"), "Original nested list should mutate");
+    AR_ASSERT(ar_data__list_count(ref_original_items) == 2, "Original nested list should grow");
+    AR_ASSERT(ar_data__list_count(ref_appended_items) == 1, "Appended nested list should remain independent");
+
+    ar_instruction_ast__destroy(own_ast);
+    ar_append_instruction_evaluator__destroy(own_evaluator);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
 static void test_append_instruction_evaluator__copies_borrowed_message_value(void) {
     printf("Testing append copies borrowed message value...\n");
 
@@ -529,6 +582,7 @@ int main(void) {
     test_append_instruction_evaluator__create_destroy();
     test_append_instruction_evaluator__appends_literal_to_memory_list();
     test_append_instruction_evaluator__copies_borrowed_memory_value();
+    test_append_instruction_evaluator__deep_copies_borrowed_nested_memory_value();
     test_append_instruction_evaluator__copies_borrowed_message_value();
     test_append_instruction_evaluator__transfers_owned_list_literal();
     test_append_instruction_evaluator__appends_to_nested_memory_owned_list();

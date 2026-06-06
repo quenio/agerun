@@ -402,6 +402,13 @@ static void test_complete_instruction_evaluator__evaluate_values_map_preserves_e
     assert(own_location != NULL);
     assert(ar_data__set_map_data(ar_evaluator_fixture__get_memory(own_fixture), "location", own_location) == true);
     assert(ar_data__set_map_string(ar_evaluator_fixture__get_memory(own_fixture), "location.city", "Old City") == true);
+    ar_data_t *own_meta = ar_data__create_map();
+    ar_data_t *own_tags = ar_data__create_list();
+    assert(own_meta != NULL);
+    assert(own_tags != NULL);
+    assert(ar_data__list_add_last_string(own_tags, "provided") == true);
+    assert(ar_data__set_map_data(own_meta, "tags", own_tags) == true);
+    assert(ar_data__set_map_data(ar_evaluator_fixture__get_memory(own_fixture), "location.meta", own_meta) == true);
 
     ar_instruction_ast_t *own_ast = _create_complete_ast("The capital is {city}.", "memory.location", "memory.result");
     ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
@@ -418,6 +425,19 @@ static void test_complete_instruction_evaluator__evaluate_values_map_preserves_e
     assert(ref_result != NULL);
     assert(ar_data__get_type(ref_result) == AR_DATA_TYPE__MAP);
     assert(strcmp(ar_data__get_map_string(ref_result, "city"), "Old City") == 0);
+    ar_data_t *ref_location_meta = ar_data__get_map_data(ref_location, "meta");
+    ar_data_t *ref_result_meta = ar_data__get_map_data(ref_result, "meta");
+    assert(ref_location_meta != NULL);
+    assert(ref_result_meta != NULL);
+    assert(ref_result_meta != ref_location_meta);
+    ar_data_t *ref_location_tags = ar_data__get_map_data(ref_location_meta, "tags");
+    ar_data_t *ref_result_tags = ar_data__get_map_data(ref_result_meta, "tags");
+    assert(ref_result_tags != NULL);
+    assert(ref_result_tags != ref_location_tags);
+    assert(ar_data__list_count(ref_result_tags) == 1);
+    assert(ar_data__list_add_last_string(ref_location_tags, "source-only"));
+    assert(ar_data__list_count(ref_location_tags) == 2);
+    assert(ar_data__list_count(ref_result_tags) == 1);
 
     ar_instruction_ast__destroy(own_ast);
     ar_complete_instruction_evaluator__destroy(own_evaluator);

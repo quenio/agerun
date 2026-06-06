@@ -129,7 +129,7 @@ fn _create_tail_result(ref_source: *const c.ar_data_t) ?*c.ar_data_t {
     var i: usize = 1;
     while (i < source_count) : (i += 1) {
         const ref_item: ?*const c.ar_data_t = own_items[i];
-        const own_copy = c.ar_data__shallow_copy(ref_item) orelse {
+        const own_copy = c.ar_data__deep_copy(ref_item) orelse {
             c.ar_data__destroy(own_tail);
             return null;
         };

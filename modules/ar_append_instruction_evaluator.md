@@ -38,7 +38,7 @@ bool ar_append_instruction_evaluator__evaluate(
 - the log and expression evaluator are borrowed references
 - target expressions that evaluate to temporary values are discarded on no-op paths
 - fresh literal values are transferred directly into the list
-- borrowed values are passed through `ar_data__claim_or_copy()` before appending
+- borrowed values are passed through `ar_data__claim_or_copy()` before appending, preserving nested maps and lists
 - `ar_data__list_add_last_data()` takes ownership only on success
 - if append fails after a value has been claimed or copied, the evaluator destroys the owned value
 
@@ -56,9 +56,9 @@ result paths and protected `memory.self` paths fail without appending. For succe
 evaluator stores integer `1`; if that success result cannot be stored after the list append, the
 evaluator removes the appended item before failing.
 
-## Current limitation
+## Nested values
 
-Borrowed nested containers cannot be appended yet. `ar_data__claim_or_copy()` shallow-copies
-primitives and flat containers, but returns `NULL` for borrowed maps or lists that contain nested
-maps or lists. In that case `append(...)` logs an error, stores integer `0` when the instruction has
-a result assignment, and otherwise completes without stopping method execution.
+Borrowed maps and lists are deep-copied before append, so nested list/map structure is preserved and
+the source value is not mutated. If the value cannot be copied or inserted, `append(...)` logs an
+error, stores integer `0` when the instruction has a result assignment, and otherwise completes
+without stopping method execution.

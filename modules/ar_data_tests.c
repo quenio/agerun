@@ -30,6 +30,7 @@ static void test_list_ownership(void);
 static void test_list_remove_ownership(void);
 static void test_map_ownership(void);
 static void test_data_shallow_copy(void);
+static void test_data_deep_copy(void);
 static void test_data_is_primitive_type(void);
 static void test_data_map_contains_only_primitives(void);
 static void test_data_list_contains_only_primitives(void);
@@ -41,20 +42,20 @@ static void test_data_format_structure(void);
 
 static void test_data_creation(void) {
     printf("Testing data creation for different types...\n");
-    
+
     // Given we need to create data of different types
-    
+
     // When we create an integer data item with default value
     ar_data_t *own_int_data_default = ar_data__create_integer(0); // We own this value
-    
+
     // Then it should have the correct type and default value
     assert(own_int_data_default != NULL);
     assert(ar_data__get_type(own_int_data_default) == AR_DATA_TYPE__INTEGER);
     assert(ar_data__get_integer(own_int_data_default) == 0);
-    
+
     // When we create a double data item with default value
     ar_data_t *own_double_data_default = ar_data__create_double(0.0); // We own this value
-    
+
     // Then it should have the correct type and default value
     assert(own_double_data_default != NULL);
     assert(ar_data__get_type(own_double_data_default) == AR_DATA_TYPE__DOUBLE);
@@ -1743,6 +1744,161 @@ static void test_data_shallow_copy(void) {
     printf("Shallow copy tests passed!\n");
 }
 
+static void test_data_deep_copy(void) {
+    printf("Testing data deep copy...\n");
+
+    // Given a NULL input
+    ar_data_t *own_null_copy = ar_data__deep_copy(NULL);
+    assert(own_null_copy == NULL);
+
+    // Given primitive values
+    ar_data_t *own_int = ar_data__create_integer(77);
+    ar_data_t *own_double = ar_data__create_double(8.5);
+    ar_data_t *own_string = ar_data__create_string("deep");
+    assert(own_int != NULL);
+    assert(own_double != NULL);
+    assert(own_string != NULL);
+
+    // When we deep-copy primitives
+    ar_data_t *own_int_copy = ar_data__deep_copy(own_int);
+    ar_data_t *own_double_copy = ar_data__deep_copy(own_double);
+    ar_data_t *own_string_copy = ar_data__deep_copy(own_string);
+
+    // Then each copy should preserve value but use a distinct object
+    assert(own_int_copy != NULL);
+    assert(own_double_copy != NULL);
+    assert(own_string_copy != NULL);
+    assert(own_int_copy != own_int);
+    assert(own_double_copy != own_double);
+    assert(own_string_copy != own_string);
+    assert(ar_data__get_integer(own_int_copy) == 77);
+    assert(ar_data__get_double(own_double_copy) == 8.5);
+    assert(strcmp(ar_data__get_string(own_string_copy), "deep") == 0);
+
+    ar_data__destroy(own_int);
+    ar_data__destroy(own_double);
+    ar_data__destroy(own_string);
+    ar_data__destroy(own_int_copy);
+    ar_data__destroy(own_double_copy);
+    ar_data__destroy(own_string_copy);
+
+    // Given empty containers
+    ar_data_t *own_empty_map = ar_data__create_map();
+    ar_data_t *own_empty_list = ar_data__create_list();
+    assert(own_empty_map != NULL);
+    assert(own_empty_list != NULL);
+
+    // When we deep-copy them
+    ar_data_t *own_empty_map_copy = ar_data__deep_copy(own_empty_map);
+    ar_data_t *own_empty_list_copy = ar_data__deep_copy(own_empty_list);
+
+    // Then they should remain empty independent containers
+    assert(own_empty_map_copy != NULL);
+    assert(own_empty_list_copy != NULL);
+    assert(ar_data__get_type(own_empty_map_copy) == AR_DATA_TYPE__MAP);
+    assert(ar_data__get_type(own_empty_list_copy) == AR_DATA_TYPE__LIST);
+    assert(own_empty_map_copy != own_empty_map);
+    assert(own_empty_list_copy != own_empty_list);
+    assert(ar_data__list_count(own_empty_list_copy) == 0);
+    ar_data_t *own_empty_keys = ar_data__get_map_keys(own_empty_map_copy);
+    assert(own_empty_keys != NULL);
+    assert(ar_data__list_count(own_empty_keys) == 0);
+
+    ar_data__destroy(own_empty_keys);
+    ar_data__destroy(own_empty_map);
+    ar_data__destroy(own_empty_list);
+    ar_data__destroy(own_empty_map_copy);
+    ar_data__destroy(own_empty_list_copy);
+
+    // Given a mixed tree containing map-in-map, list-in-map, map-in-list, and list-in-list
+    ar_data_t *own_source = ar_data__create_map();
+    ar_data_t *own_profile = ar_data__create_map();
+    ar_data_t *own_tags = ar_data__create_list();
+    ar_data_t *own_tag_detail = ar_data__create_map();
+    ar_data_t *own_history = ar_data__create_list();
+    ar_data_t *own_inner_list = ar_data__create_list();
+    ar_data_t *own_inner_map = ar_data__create_map();
+    assert(own_source != NULL);
+    assert(own_profile != NULL);
+    assert(own_tags != NULL);
+    assert(own_tag_detail != NULL);
+    assert(own_history != NULL);
+    assert(own_inner_list != NULL);
+    assert(own_inner_map != NULL);
+
+    assert(ar_data__set_map_integer(own_source, "id", 7));
+    assert(ar_data__set_map_string(own_profile, "name", "Ada"));
+    assert(ar_data__list_add_last_string(own_tags, "engineer"));
+    assert(ar_data__set_map_string(own_tag_detail, "kind", "systems"));
+    assert(ar_data__list_add_last_data(own_tags, own_tag_detail));
+    own_tag_detail = NULL;
+    assert(ar_data__set_map_data(own_profile, "tags", own_tags));
+    own_tags = NULL;
+    assert(ar_data__set_map_data(own_source, "profile", own_profile));
+    own_profile = NULL;
+    assert(ar_data__list_add_last_integer(own_history, 1));
+    assert(ar_data__list_add_last_integer(own_inner_list, 2));
+    assert(ar_data__list_add_last_data(own_history, own_inner_list));
+    own_inner_list = NULL;
+    assert(ar_data__set_map_double(own_inner_map, "score", 9.5));
+    assert(ar_data__list_add_last_data(own_history, own_inner_map));
+    own_inner_map = NULL;
+    assert(ar_data__set_map_data(own_source, "history", own_history));
+    own_history = NULL;
+
+    // When we deep-copy the tree
+    ar_data_t *own_copy = ar_data__deep_copy(own_source);
+
+    // Then the structure and values should be preserved with distinct nested objects
+    assert(own_copy != NULL);
+    assert(own_copy != own_source);
+    assert(ar_data__get_map_integer(own_copy, "id") == 7);
+
+    ar_data_t *ref_source_profile = ar_data__get_map_data(own_source, "profile");
+    ar_data_t *ref_copy_profile = ar_data__get_map_data(own_copy, "profile");
+    assert(ref_source_profile != NULL);
+    assert(ref_copy_profile != NULL);
+    assert(ref_copy_profile != ref_source_profile);
+    assert(strcmp(ar_data__get_map_string(ref_copy_profile, "name"), "Ada") == 0);
+
+    ar_data_t *ref_source_tags = ar_data__get_map_data(ref_source_profile, "tags");
+    ar_data_t *ref_copy_tags = ar_data__get_map_data(ref_copy_profile, "tags");
+    assert(ref_source_tags != NULL);
+    assert(ref_copy_tags != NULL);
+    assert(ref_copy_tags != ref_source_tags);
+    assert(ar_data__list_count(ref_copy_tags) == 2);
+    ar_data_t **own_copy_tag_items = ar_data__list_items(ref_copy_tags);
+    assert(own_copy_tag_items != NULL);
+    assert(strcmp(ar_data__get_string(own_copy_tag_items[0]), "engineer") == 0);
+    assert(ar_data__get_type(own_copy_tag_items[1]) == AR_DATA_TYPE__MAP);
+    assert(strcmp(ar_data__get_map_string(own_copy_tag_items[1], "kind"), "systems") == 0);
+    AR__HEAP__FREE(own_copy_tag_items);
+
+    ar_data_t *ref_copy_history = ar_data__get_map_data(own_copy, "history");
+    assert(ref_copy_history != NULL);
+    assert(ar_data__list_count(ref_copy_history) == 3);
+    ar_data_t **own_history_items = ar_data__list_items(ref_copy_history);
+    assert(own_history_items != NULL);
+    assert(ar_data__get_integer(own_history_items[0]) == 1);
+    assert(ar_data__get_type(own_history_items[1]) == AR_DATA_TYPE__LIST);
+    assert(ar_data__get_integer(ar_data__list_first(own_history_items[1])) == 2);
+    assert(ar_data__get_type(own_history_items[2]) == AR_DATA_TYPE__MAP);
+    assert(ar_data__get_map_double(own_history_items[2], "score") == 9.5);
+    AR__HEAP__FREE(own_history_items);
+
+    // And mutations to source and copy should not leak across the boundary
+    assert(ar_data__set_map_string(ref_source_profile, "name", "Grace"));
+    assert(strcmp(ar_data__get_map_string(ref_copy_profile, "name"), "Ada") == 0);
+    assert(ar_data__list_add_last_string(ref_copy_tags, "copied"));
+    assert(ar_data__list_count(ref_source_tags) == 2);
+    assert(ar_data__list_count(ref_copy_tags) == 3);
+
+    ar_data__destroy(own_source);
+    ar_data__destroy(own_copy);
+
+    printf("Deep copy tests passed!\n");
+}
+
 static void test_data_is_primitive_type(void) {
     printf("Testing ar_data__is_primitive_type...\n");
     
@@ -1896,17 +2052,21 @@ static void test_data_claim_or_copy(void) {
     ar_data__drop_ownership(own_owned_data, other_owner);
     ar_data__destroy(own_owned_data);
     
-    // Test 3: Return NULL when copy fails (nested container)
+    // Test 3: Deep-copy nested containers when data is owned by someone else
     ar_data_t *own_map = ar_data__create_map();
     ar_data_t *own_nested_map = ar_data__create_map();
     ar_data__set_map_data(own_map, "nested", own_nested_map);
     ar_data__take_ownership(own_map, other_owner);
-    
     // When we call claim_or_copy on nested container
-    ar_data_t *own_failed_copy = ar_data__claim_or_copy(own_map, owner);
-    
-    // Then we should get NULL (shallow copy fails on nested containers)
-    assert(own_failed_copy == NULL);
+    ar_data_t *own_nested_copy = ar_data__claim_or_copy(own_map, owner);
+    // Then we should get an independent deep copy
+    assert(own_nested_copy != NULL);
+    assert(own_nested_copy != own_map);
+    ar_data_t *ref_nested_copy = ar_data__get_map_data(own_nested_copy, "nested");
+    assert(ref_nested_copy != NULL);
+    assert(ref_nested_copy != own_nested_map);
+    assert(ar_data__get_type(ref_nested_copy) == AR_DATA_TYPE__MAP);
+    ar_data__destroy(own_nested_copy);
     ar_data__drop_ownership(own_map, other_owner);
     ar_data__destroy(own_map);
     
@@ -2301,6 +2461,9 @@ int main(void) {
     
     // Run shallow copy tests
     test_data_shallow_copy();
+
+    // Run deep copy tests
+    test_data_deep_copy();
     
     // Run is primitive type tests
     test_data_is_primitive_type();
@@ -2328,7 +2491,7 @@ int main(void) {
     test_data_format_structure();
     
     // Then all tests should pass
-    printf("All 30 tests passed!\n");
+    printf("All 31 tests passed!\n");
     
     return 0;
 }

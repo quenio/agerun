@@ -117,13 +117,21 @@ bool ar_data__transfer_ownership(
 ar_data_t* ar_data__shallow_copy(const ar_data_t *ref_value);
 
 /**
- * Claim ownership of data or create a shallow copy if already owned
+ * Create a deep copy of data values
+ * @param ref_value The data value to copy
+ * @return New data instance for primitives and nested containers, NULL on invalid input or allocation failure
+ * @note Recursively copies INTEGER, DOUBLE, STRING, LIST, and MAP values
+ * @note Ownership: Returns an owned value that caller must destroy, or NULL if copy failed
+ */
+ar_data_t* ar_data__deep_copy(const ar_data_t *ref_value);
+
+/**
+ * Claim ownership of data or create a deep copy if already owned
  * @param ref_data The data to claim or copy (borrowed reference)
  * @param owner The potential owner trying to claim the data
  * @return Owned data (either claimed original or new copy), or NULL if copy failed
  * @note If data is unowned, claims it and returns the same pointer
- * @note If data is owned by someone else, returns a shallow copy
- * @note Returns NULL only if shallow copy fails (nested containers)
+ * @note If data is owned by someone else, returns a deep copy
  * @note Ownership: Returns owned value that caller must destroy
  */
 ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, const void *owner);
