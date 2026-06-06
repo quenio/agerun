@@ -55,9 +55,10 @@ Composition opportunities:
 
 The contracts below are map-shaped messages. Method implementations that create new flat messages
 assign a multi-line map literal to a named memory value, then pass that value to `send(...)`.
-Aggregation is the current exception: its completion message includes the append-backed `result`
-list, and sending a memory-stored map containing that nested list would require deep-copy support.
-It therefore sends a fresh literal so the result list can be copied while the literal is evaluated.
+Aggregation and routing continuations are the current exceptions: their messages include nested
+lists (`result` and `targets`), and sending a memory-stored map containing those nested lists would
+require deep-copy support. They therefore send fresh literals so the lists can be copied while the
+literals are evaluated.
 
 The `action` field is a command discriminator inside those maps. AgeRun sends every incoming message
 to the agent's single method, so reusable coordination methods need a conventional field that says
@@ -83,9 +84,7 @@ Request:
 {
   action: "route",
   mode: "many",
-  target_a: <agent>,
-  target_b: <agent>,
-  target_c: <agent>,
+  targets: [<agent>, <agent>, ...],
   payload_action: <action>,
   payload_text: <text>,
   correlation_id: <id>,
@@ -125,10 +124,10 @@ Reply:
   action: "route_result",
   status: <routed|ignored>,
   routed_count: <count>,
+  sent_count: <count>,
   sent_one: <0|1>,
-  sent_a: <0|1>,
-  sent_b: <0|1>,
-  sent_c: <0|1>
+  sent_many: <0|1>,
+  continuation_sent: <0|1>
 }
 ```
 
@@ -532,7 +531,7 @@ Conversation-scoped workflow:
 
 | Method | Status | Gap |
 | --- | --- | --- |
-| Routing | Fully implementable for the bounded contract. | Arbitrary recipient lists and richer message inspection require collection iteration or a richer data query layer. |
+| Routing | Fully implementable for one-to-one and primitive unbounded fan-out. | Richer message inspection and nested recipient descriptors require a richer data query layer or deep-copy support. |
 | Supervision | Partially implementable. | Methods cannot autonomously observe child crashes or exits; callers must send `child_failed` or `child_exited` events. |
 | Distribution | Partially implementable. | The method assigns caller-provided portions; dynamic decomposition and arbitrary worker lists require collection iteration. |
 | Aggregation | Fully implementable for text-value fan-in. | The method emits a list-valued `result` for an append-backed result list. It must send that completion map as a fresh literal because memory-stored maps with nested containers still require deep-copy support. Duplicate handling, custom merge functions, and borrowed nested containers still require deeper collection operations or deep-copy support. |
@@ -543,7 +542,7 @@ Conversation-scoped workflow:
 | Retry | Fully implementable for immediate retry and scheduled retry by composition. | Backoff policies need an external tick convention and richer arithmetic/time policy support. |
 
 No method in this methodology is blocked entirely. The missing capabilities are real-time timers,
-autonomous lifecycle event observation, dynamic collection iteration, and ordinary-method
-indexed assignment. The current memory copy model is also shallow for borrowed nested containers.
+autonomous lifecycle event observation, dynamic collection iteration for non-routing cases, and
+ordinary-method indexed assignment. The current memory copy model is also shallow for borrowed nested containers.
 Those gaps are documented here so the reusable behaviors remain ordinary methods rather than hidden
 runtime features.

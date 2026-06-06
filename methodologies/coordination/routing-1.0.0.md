@@ -9,14 +9,15 @@ by higher-level methods such as distribution and workflow.
 ## Behavior
 
 When the agent receives a map whose `action` field is `"route"`, it builds a forwarded message from
-the payload fields and sends it to either one selected target or up to three explicit targets.
+the payload fields and sends it to either one selected target or an unbounded list of targets.
 
 For `mode=one`, the method sends to `target` when it is greater than zero. If `target` is not set,
 it can select `target_a`, `target_b`, or `target_c` by matching `route_key` against the corresponding
 `route_*_key` field.
 
-For `mode=many`, the method sends the same forwarded message to `target_a`, `target_b`, and
-`target_c`. A target value of zero relies on the ordinary `send(0, message)` no-op behavior.
+For `mode=many`, the method reads `targets` as a list of nonzero agent IDs. It uses `head(...)` to
+send to the next target and `tail(...)` to send a continuation message to itself with the remaining
+targets. This keeps fan-out in ordinary method code instead of adding a runtime routing capability.
 
 ## Message Format
 
@@ -40,9 +41,7 @@ One-to-many route request:
 {
   action: "route",
   mode: "many",
-  target_a: <agent>,
-  target_b: <agent>,
-  target_c: <agent>,
+  targets: [<agent>, <agent>, ...],
   payload_action: <action>,
   payload_text: <text>,
   correlation_id: <id>,
@@ -79,12 +78,15 @@ Reply:
   action: "route_result",
   status: <routed|ignored>,
   routed_count: <count>,
+  sent_count: <count>,
   sent_one: <0|1>,
-  sent_a: <0|1>,
-  sent_b: <0|1>,
-  sent_c: <0|1>
+  sent_many: <0|1>,
+  continuation_sent: <0|1>
 }
 ```
+
+For `mode=many`, `routed_count` and `sent_count` accumulate across the self-message chain. The final
+reply is emitted after the target list is exhausted.
 
 ## Action Field
 
@@ -96,13 +98,14 @@ lets the method avoid forwarding unrelated maps that happen to contain fields su
 ## Composition Notes
 
 Distribution uses routing to assign work portions to workers. Workflow uses routing to dispatch
-activity steps without embedding worker-specific delivery logic.
+activity steps without embedding worker-specific delivery logic. Larger agencies can pass a
+primitive target list to `mode=many` when the fan-out size is not known ahead of time.
 
 ## Limitations
 
-The method supports a bounded contract of one selected target or three fan-out targets. Arbitrary
-recipient lists require collection iteration or a richer data query convention outside the current
-ordinary method language.
+The method supports unbounded fan-out for primitive nonzero agent IDs. The `head(...)` empty
+sentinel is integer `0`, so `0` cannot be used as a valid fan-out target. Lists containing nested
+containers still depend on the current shallow-copy behavior of `head(...)` and `tail(...)`.
 
 ## Implementation and Tests
 

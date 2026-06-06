@@ -46,7 +46,10 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
     const char *ref_instructions =
         "memory.last_action := message.action\n"
         "memory.last_text := message.text\n"
-        "memory.last_correlation_id := message.correlation_id\n";
+        "memory.last_correlation_id := message.correlation_id\n"
+        "memory.last_status := message.status\n"
+        "memory.last_routed_count := message.routed_count\n"
+        "memory.last_sent_count := message.sent_count\n";
 
     AR_ASSERT(ar_methodology__create_method(mut_methodology,
                                             "record-receiver",
@@ -56,11 +59,11 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
     verify_method_parses(mut_methodology, "record-receiver");
 }
 
-static void test_routing__forwards_one_message(void) {
-    printf("Testing routing forwards one message...\n");
+static void test_routing__forwards_one_and_many_messages(void) {
+    printf("Testing routing forwards one and many messages...\n");
 
-    // Given a routing agent and a receiver agent
-    ar_method_fixture_t *own_fixture = ar_method_fixture__create("routing_forward_one");
+    // Given a routing agent and several receiver agents
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("routing_forward_many");
     AR_ASSERT(ar_method_fixture__initialize(own_fixture), "Fixture should initialize");
     AR_ASSERT(ar_method_fixture__verify_directory(own_fixture), "Fixture directory should verify");
     load_method(own_fixture, "routing");
@@ -69,11 +72,26 @@ static void test_routing__forwards_one_message(void) {
     register_record_receiver(mut_agency);
 
     ar_data_t *own_routing_context = create_context();
-    ar_data_t *own_receiver_context = create_context();
+    ar_data_t *own_receiver_one_context = create_context();
+    ar_data_t *own_receiver_a_context = create_context();
+    ar_data_t *own_receiver_b_context = create_context();
+    ar_data_t *own_receiver_c_context = create_context();
+    ar_data_t *own_receiver_d_context = create_context();
+    ar_data_t *own_report_context = create_context();
     int64_t routing_agent = ar_agency__create_agent(
         mut_agency, "routing", "1.0.0", own_routing_context);
-    int64_t receiver_agent = ar_agency__create_agent(
-        mut_agency, "record-receiver", "1.0.0", own_receiver_context);
+    int64_t receiver_one = ar_agency__create_agent(
+        mut_agency, "record-receiver", "1.0.0", own_receiver_one_context);
+    int64_t receiver_a = ar_agency__create_agent(
+        mut_agency, "record-receiver", "1.0.0", own_receiver_a_context);
+    int64_t receiver_b = ar_agency__create_agent(
+        mut_agency, "record-receiver", "1.0.0", own_receiver_b_context);
+    int64_t receiver_c = ar_agency__create_agent(
+        mut_agency, "record-receiver", "1.0.0", own_receiver_c_context);
+    int64_t receiver_d = ar_agency__create_agent(
+        mut_agency, "record-receiver", "1.0.0", own_receiver_d_context);
+    int64_t report_agent = ar_agency__create_agent(
+        mut_agency, "record-receiver", "1.0.0", own_report_context);
 
     // When a one-to-one route request is processed
     ar_data_t *own_message = ar_data__create_map();
@@ -81,7 +99,7 @@ static void test_routing__forwards_one_message(void) {
     ar_data__set_map_string(own_message, "action", "route");
     ar_data__set_map_string(own_message, "mode", "one");
     ar_data__set_map_integer(
-        own_message, "target", checked_agent_id(receiver_agent));
+        own_message, "target", checked_agent_id(receiver_one));
     ar_data__set_map_string(own_message, "payload_action", "work");
     ar_data__set_map_string(own_message, "payload_text", "alpha");
     ar_data__set_map_string(own_message, "correlation_id", "job-1");
@@ -92,7 +110,7 @@ static void test_routing__forwards_one_message(void) {
     ar_method_fixture__process_all_messages(own_fixture);
 
     // Then the receiver observes the forwarded payload contract
-    const ar_data_t *ref_receiver_memory = ar_agency__get_agent_memory(mut_agency, receiver_agent);
+    const ar_data_t *ref_receiver_memory = ar_agency__get_agent_memory(mut_agency, receiver_one);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_action"), "work") == 0,
               "Receiver should observe forwarded action");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_text"), "alpha") == 0,
@@ -101,15 +119,71 @@ static void test_routing__forwards_one_message(void) {
                      "job-1") == 0,
               "Receiver should observe forwarded correlation id");
 
+    // When a one-to-many route request carries more than three targets
+    own_message = ar_data__create_map();
+    AR_ASSERT(own_message != NULL, "Many route message should be created");
+    ar_data__set_map_string(own_message, "action", "route");
+    ar_data__set_map_string(own_message, "mode", "many");
+    ar_data_t *own_targets = ar_data__create_list();
+    AR_ASSERT(own_targets != NULL, "Targets list should be created");
+    AR_ASSERT(ar_data__list_add_last_integer(own_targets, checked_agent_id(receiver_a)),
+              "First target should be stored");
+    AR_ASSERT(ar_data__list_add_last_integer(own_targets, checked_agent_id(receiver_b)),
+              "Second target should be stored");
+    AR_ASSERT(ar_data__list_add_last_integer(own_targets, checked_agent_id(receiver_c)),
+              "Third target should be stored");
+    AR_ASSERT(ar_data__list_add_last_integer(own_targets, checked_agent_id(receiver_d)),
+              "Fourth target should be stored");
+    AR_ASSERT(ar_data__set_map_data(own_message, "targets", own_targets),
+              "Route message should own targets list");
+    own_targets = NULL;
+    ar_data__set_map_string(own_message, "payload_action", "work");
+    ar_data__set_map_string(own_message, "payload_text", "fanout");
+    ar_data__set_map_string(own_message, "correlation_id", "job-2");
+    ar_data__set_map_integer(own_message, "reply_to", checked_agent_id(report_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, routing_agent, own_message),
+              "Many route message should queue");
+    own_message = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    // Then every target receives the forwarded payload through recursive head/tail routing
+    const ar_data_t *ref_receiver_a_memory = ar_agency__get_agent_memory(mut_agency, receiver_a);
+    const ar_data_t *ref_receiver_b_memory = ar_agency__get_agent_memory(mut_agency, receiver_b);
+    const ar_data_t *ref_receiver_c_memory = ar_agency__get_agent_memory(mut_agency, receiver_c);
+    const ar_data_t *ref_receiver_d_memory = ar_agency__get_agent_memory(mut_agency, receiver_d);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_a_memory, "last_text"), "fanout") == 0,
+              "First many target should observe forwarded text");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_b_memory, "last_text"), "fanout") == 0,
+              "Second many target should observe forwarded text");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_c_memory, "last_text"), "fanout") == 0,
+              "Third many target should observe forwarded text");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_d_memory, "last_text"), "fanout") == 0,
+              "Fourth many target should observe forwarded text");
+
+    const ar_data_t *ref_report_memory = ar_agency__get_agent_memory(mut_agency, report_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_action"), "route_result") == 0,
+              "Report receiver should observe route result action");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"), "routed") == 0,
+              "Report receiver should observe routed status");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_routed_count") == 4,
+              "Route result should count every nonzero target");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_sent_count") == 4,
+              "Route result should count every successful target send");
+
     // Cleanup
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_routing_context);
-    ar_data__destroy(own_receiver_context);
+    ar_data__destroy(own_receiver_one_context);
+    ar_data__destroy(own_receiver_a_context);
+    ar_data__destroy(own_receiver_b_context);
+    ar_data__destroy(own_receiver_c_context);
+    ar_data__destroy(own_receiver_d_context);
+    ar_data__destroy(own_report_context);
 }
 
 int main(void) {
     printf("Running routing method tests...\n\n");
-    test_routing__forwards_one_message();
+    test_routing__forwards_one_and_many_messages();
     printf("\nAll routing method tests passed!\n");
     return 0;
 }
