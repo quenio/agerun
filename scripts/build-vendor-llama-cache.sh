@@ -14,7 +14,7 @@ CMAKE=${CMAKE:-cmake}
 UNAME_S=${UNAME_S:-$(uname -s)}
 LLAMA_SOURCE_DIR=${LLAMA_SOURCE_DIR:-llama-cpp}
 LLAMA_CACHE_DIR=${LLAMA_CACHE_DIR:-"$HOME/.agerun/build/cache/vendor-llama-cpu"}
-LLAMA_CACHE_INSTALL_DIR=${LLAMA_CACHE_INSTALL_DIR:-"$LLAMA_CACHE_DIR/install"}
+LLAMA_CACHE_INSTALL_DIR=${LLAMA_CACHE_INSTALL_DIR:-}
 LLAMA_CACHE_LOCK=${LLAMA_CACHE_LOCK:-"$LLAMA_CACHE_DIR/build.lock"}
 LLAMA_CACHE_KEY=${LLAMA_CACHE_KEY:-}
 LLAMA_BUILD_DIR=${LLAMA_BUILD_DIR:-"$LLAMA_CACHE_DIR/build"}
@@ -194,9 +194,26 @@ _derive_cache_key() {
     } | _hash_stdin
 }
 
+_cache_key_directory_name() {
+    printf '%s\n' "$LLAMA_CACHE_KEY" | _hash_stdin
+}
+
+_resolve_cache_install_dir() {
+    local requested_dir="$LLAMA_CACHE_INSTALL_DIR"
+    local default_dir
+
+    default_dir=$(_abs_path "$LLAMA_CACHE_DIR/install")
+
+    if [ -z "$requested_dir" ] || [ "$(_abs_path "$requested_dir")" = "$default_dir" ]; then
+        printf '%s/installs/%s\n' "$CACHE_DIR" "$(_cache_key_directory_name)"
+        return
+    fi
+
+    _abs_path "$requested_dir"
+}
+
 SOURCE_DIR=$(_abs_path "$LLAMA_SOURCE_DIR")
 CACHE_DIR=$(_abs_path "$LLAMA_CACHE_DIR")
-CACHE_INSTALL_DIR=$(_abs_path "$LLAMA_CACHE_INSTALL_DIR")
 CACHE_LOCK=$(_abs_path "$LLAMA_CACHE_LOCK")
 STALE_LOCK_RECOVERY_DIR="$CACHE_LOCK.recovery"
 STALE_LOCK_RECOVERY_FILE="$STALE_LOCK_RECOVERY_DIR/holder"
@@ -204,16 +221,11 @@ BUILD_DIR=$(_abs_path "$LLAMA_BUILD_DIR")
 LOCAL_INSTALL_DIR=$(_abs_path "$LLAMA_INSTALL_DIR")
 
 _require_safe_path "LLAMA_CACHE_DIR" "$CACHE_DIR"
-_require_safe_path "LLAMA_CACHE_INSTALL_DIR" "$CACHE_INSTALL_DIR"
 _require_safe_path "LLAMA_CACHE_LOCK" "$CACHE_LOCK"
 _require_safe_path "LLAMA_BUILD_DIR" "$BUILD_DIR"
 _require_safe_path "LLAMA_INSTALL_DIR" "$LOCAL_INSTALL_DIR"
 _require_non_negative_integer "LLAMA_CACHE_LOCK_POLL_SECONDS" "$LLAMA_CACHE_LOCK_POLL_SECONDS"
 _require_non_negative_integer "LLAMA_CACHE_LOCK_TIMEOUT_SECONDS" "$LLAMA_CACHE_LOCK_TIMEOUT_SECONDS"
-
-CACHE_HEADER="$CACHE_INSTALL_DIR/include/llama.h"
-CACHE_LIB="$CACHE_INSTALL_DIR/lib/libllama.$LLAMA_SHARED_EXT"
-CONTENT_KEY_FILE="$CACHE_INSTALL_DIR/.agerun-cache-key"
 LOCAL_HEADER="$LOCAL_INSTALL_DIR/include/llama.h"
 LOCAL_LIB="$LOCAL_INSTALL_DIR/lib/libllama.$LLAMA_SHARED_EXT"
 CURRENT_HOST=$(hostname 2>/dev/null || echo unknown)
@@ -221,6 +233,13 @@ CURRENT_HOST=$(hostname 2>/dev/null || echo unknown)
 if [ -z "$LLAMA_CACHE_KEY" ]; then
     LLAMA_CACHE_KEY=$(_derive_cache_key)
 fi
+
+CACHE_INSTALL_DIR=$(_resolve_cache_install_dir)
+_require_safe_path "LLAMA_CACHE_INSTALL_DIR" "$CACHE_INSTALL_DIR"
+
+CACHE_HEADER="$CACHE_INSTALL_DIR/include/llama.h"
+CACHE_LIB="$CACHE_INSTALL_DIR/lib/libllama.$LLAMA_SHARED_EXT"
+CONTENT_KEY_FILE="$CACHE_INSTALL_DIR/.agerun-cache-key"
 
 _cache_key_matches() {
     [ -f "$CONTENT_KEY_FILE" ] &&
