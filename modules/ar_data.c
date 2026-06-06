@@ -928,35 +928,46 @@ bool ar_data__set_map_data(ar_data_t *mut_data, const char *ref_key, ar_data_t *
         
         // Get the existing data for later cleanup
         ar_data_t *prev_data = ar_map__get(map, ref_key);
+        bool key_exists = (prev_data != NULL);
         
-        // Create a copy of the key
-        char *key_copy = AR__HEAP__STRDUP(ref_key, "Map key copy");
-        if (!key_copy) {
-            return false;
+        // Create a copy of the key only for new map entries
+        char *own_key_copy = NULL;
+        if (!key_exists) {
+            own_key_copy = AR__HEAP__STRDUP(ref_key, "Map key copy");
+            if (!own_key_copy) {
+                return false;
+            }
         }
         
         // Map should hold ownership of the data
         if (!ar_data__take_ownership(own_value, mut_data)) {
             // Data is already owned by someone else
-            AR__HEAP__FREE(key_copy);
+            if (own_key_copy) {
+                AR__HEAP__FREE(own_key_copy);
+            }
             return false;
         }
         
         // Set the new value
-        if (!ar_map__set(map, key_copy, own_value)) {
+        if (!ar_map__set(map, key_exists ? ref_key : own_key_copy, own_value)) {
             // Failed to set, release ownership
             ar_data__drop_ownership(own_value, mut_data);
-            AR__HEAP__FREE(key_copy);
+            if (own_key_copy) {
+                AR__HEAP__FREE(own_key_copy);
+            }
             return false;
         }
         
-        // Add the key to our tracking list
-        if (!ar_list__add_last(mut_data->own_keys, key_copy)) {
-            // Unlikely, but handle failure
-            ar_map__set(map, ref_key, prev_data); // Try to restore previous state
-            ar_data__drop_ownership(own_value, mut_data);
-            AR__HEAP__FREE(key_copy);
-            return false;
+        // Add new keys to our tracking list
+        if (!key_exists) {
+            if (!ar_list__add_last(mut_data->own_keys, own_key_copy)) {
+                // Unlikely, but handle failure
+                ar_map__set(map, ref_key, prev_data); // Try to restore previous state
+                ar_data__drop_ownership(own_value, mut_data);
+                AR__HEAP__FREE(own_key_copy);
+                return false;
+            }
+            own_key_copy = NULL; // Ownership retained by map data
         }
         
         // Free the old data after successful update

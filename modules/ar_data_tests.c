@@ -1477,6 +1477,15 @@ static void test_map_ownership(void) {
     ar_data_t *data3 = ar_data__create_integer(100);
     assert(ar_data__set_map_data(map, "key1", data3) == true);  // Replace existing
     // Old data1 should have been destroyed internally
+
+    ar_data_t *own_replacement_keys = ar_data__get_map_keys(map);
+    assert(own_replacement_keys != NULL);
+    assert(ar_data__list_count(own_replacement_keys) == 1);
+    ar_data_t *own_replacement_key = ar_data__list_remove_first(own_replacement_keys);
+    assert(own_replacement_key != NULL);
+    assert(strcmp(ar_data__get_string(own_replacement_key), "key1") == 0);
+    ar_data__destroy(own_replacement_key);
+    ar_data__destroy(own_replacement_keys);
     
     // Test 4: Test that convenience functions work (they don't use ownership tracking)
     ar_data_t *map2 = ar_data__create_map();
