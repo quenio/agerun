@@ -83,6 +83,7 @@ MODEL_LOCK=$(_abs_path "$COMPLETE_MODEL_LOCK")
 MODEL_LOCK_HOLDER="$MODEL_LOCK/holder"
 CURRENT_HOST=$(hostname 2>/dev/null || echo unknown)
 DOWNLOAD_LOCK_TOKEN=
+DOWNLOAD_LOCK_HEARTBEAT_PID=
 
 _require_safe_path "COMPLETE_MODEL_DIR" "$MODEL_DIR"
 _require_safe_path "COMPLETE_MODEL_FILE" "$MODEL_FILE"
@@ -132,6 +133,16 @@ _lock_holder_is_dead_on_current_host() {
     [ "$lock_host" = "$CURRENT_HOST" ] && ! _pid_exists_on_current_host "$lock_pid"
 }
 
+_lock_holder_is_live_on_current_host() {
+    local lock_pid
+    local lock_host
+
+    lock_pid=$(_lock_file_value "pid")
+    lock_host=$(_lock_file_value "host")
+
+    [ "$lock_host" = "$CURRENT_HOST" ] && _pid_exists_on_current_host "$lock_pid"
+}
+
 _lock_is_stale() {
     local lock_mtime
     local now
@@ -143,6 +154,10 @@ _lock_is_stale() {
 
     if _lock_holder_is_dead_on_current_host; then
         return 0
+    fi
+
+    if _lock_holder_is_live_on_current_host; then
+        return 1
     fi
 
     lock_mtime=$(_path_mtime_epoch "$MODEL_LOCK")
@@ -189,7 +204,32 @@ _write_lock_metadata() {
     } > "$MODEL_LOCK_HOLDER"
 }
 
+_heartbeat_download_lock() {
+    while [ -n "$DOWNLOAD_LOCK_TOKEN" ] &&
+        [ -d "$MODEL_LOCK" ] &&
+        [ -f "$MODEL_LOCK_HOLDER" ] &&
+        [ "$(_lock_file_value "token")" = "$DOWNLOAD_LOCK_TOKEN" ]; do
+        touch "$MODEL_LOCK" "$MODEL_LOCK_HOLDER" 2>/dev/null || true
+        sleep "$COMPLETE_MODEL_LOCK_POLL_SECONDS"
+    done
+}
+
+_start_download_lock_heartbeat() {
+    _heartbeat_download_lock &
+    DOWNLOAD_LOCK_HEARTBEAT_PID=$!
+}
+
+_stop_download_lock_heartbeat() {
+    if [ -n "$DOWNLOAD_LOCK_HEARTBEAT_PID" ]; then
+        kill "$DOWNLOAD_LOCK_HEARTBEAT_PID" 2>/dev/null || true
+        wait "$DOWNLOAD_LOCK_HEARTBEAT_PID" 2>/dev/null || true
+        DOWNLOAD_LOCK_HEARTBEAT_PID=
+    fi
+}
+
 _release_download_lock() {
+    _stop_download_lock_heartbeat
+
     if [ -n "$DOWNLOAD_LOCK_TOKEN" ] &&
         [ -f "$MODEL_LOCK_HOLDER" ] &&
         [ "$(_lock_file_value "token")" = "$DOWNLOAD_LOCK_TOKEN" ]; then
@@ -222,6 +262,7 @@ _acquire_lock() {
         DOWNLOAD_LOCK_TOKEN=$(_new_download_lock_token)
         if mkdir "$MODEL_LOCK" 2>/dev/null; then
             _write_lock_metadata
+            _start_download_lock_heartbeat
             trap '_release_download_lock' EXIT INT TERM
             return 0
         fi
