@@ -294,8 +294,10 @@ _link_local_install() {
     fi
 
     mkdir -p "$(dirname "$LOCAL_INSTALL_DIR")"
-    rm -rf "$LOCAL_INSTALL_DIR"
-    ln -s "$CACHE_INSTALL_DIR" "$LOCAL_INSTALL_DIR"
+    if [ -e "$LOCAL_INSTALL_DIR" ] && [ ! -L "$LOCAL_INSTALL_DIR" ]; then
+        rm -rf "$LOCAL_INSTALL_DIR"
+    fi
+    ln -sfn "$CACHE_INSTALL_DIR" "$LOCAL_INSTALL_DIR"
 }
 
 _validate_build_inputs() {
