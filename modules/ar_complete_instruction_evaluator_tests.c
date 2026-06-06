@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
+#include "ar_assert.h"
 #include "ar_complete_instruction_evaluator.h"
 #include "ar_local_completion.h"
 #include "ar_instruction_ast.h"
@@ -387,38 +388,63 @@ static void test_complete_instruction_evaluator__validation_failure_preserves_pr
 }
 
 static void test_complete_instruction_evaluator__evaluate_values_map_preserves_existing_values(void) {
+    // Given a complete(...) evaluator and a provided values map with nested values
     ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_complete_instruction_evaluator__evaluate_values_map_preserves_existing_values");
-    assert(own_fixture != NULL);
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
     ar_local_completion_t *own_runtime = ar_local_completion__create(ar_evaluator_fixture__get_log(own_fixture));
-    assert(own_runtime != NULL);
+    AR_ASSERT(own_runtime != NULL, "Local completion runtime creation should succeed");
     ar_complete_instruction_evaluator_t *own_evaluator = ar_complete_instruction_evaluator__create(
         ar_evaluator_fixture__get_log(own_fixture),
         ar_evaluator_fixture__get_expression_evaluator(own_fixture),
         own_runtime
     );
-    assert(own_evaluator != NULL);
+    AR_ASSERT(own_evaluator != NULL, "Complete evaluator creation should succeed");
 
     ar_data_t *own_location = ar_data__create_map();
-    assert(own_location != NULL);
-    assert(ar_data__set_map_data(ar_evaluator_fixture__get_memory(own_fixture), "location", own_location) == true);
-    assert(ar_data__set_map_string(ar_evaluator_fixture__get_memory(own_fixture), "location.city", "Old City") == true);
+    AR_ASSERT(own_location != NULL, "Provided location map should be created");
+    AR_ASSERT(ar_data__set_map_data(ar_evaluator_fixture__get_memory(own_fixture), "location", own_location) == true, "Location map should be stored");
+    AR_ASSERT(ar_data__set_map_string(ar_evaluator_fixture__get_memory(own_fixture), "location.city", "Old City") == true, "Location city should be stored");
+    ar_data_t *own_meta = ar_data__create_map();
+    ar_data_t *own_tags = ar_data__create_list();
+    AR_ASSERT(own_meta != NULL, "Provided metadata map should be created");
+    AR_ASSERT(own_tags != NULL, "Provided nested tag list should be created");
+    AR_ASSERT(ar_data__list_add_last_string(own_tags, "provided") == true, "Provided tag should be stored");
+    AR_ASSERT(ar_data__set_map_data(own_meta, "tags", own_tags) == true, "Provided nested tag list should be stored");
+    AR_ASSERT(ar_data__set_map_data(ar_evaluator_fixture__get_memory(own_fixture), "location.meta", own_meta) == true, "Provided metadata should be stored");
 
     ar_instruction_ast_t *own_ast = _create_complete_ast("The capital is {city}.", "memory.location", "memory.result");
     ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+    AR_ASSERT(ref_frame != NULL, "Frame creation should succeed");
 
+    // When evaluating complete(...) with the provided values map
     bool result = ar_complete_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
-    assert(result == true);
+    AR_ASSERT(result == true, "Complete evaluation should succeed");
 
+    // Then the result should preserve provided nested values as independent deep copies
     ar_data_t *ref_location = ar_data__get_map_data(ar_evaluator_fixture__get_memory(own_fixture), "location");
-    assert(ref_location != NULL);
-    assert(ar_data__get_type(ref_location) == AR_DATA_TYPE__MAP);
-    assert(strcmp(ar_data__get_map_string(ref_location, "city"), "Old City") == 0);
+    AR_ASSERT(ref_location != NULL, "Original location should remain stored");
+    AR_ASSERT(ar_data__get_type(ref_location) == AR_DATA_TYPE__MAP, "Original location should remain a map");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_location, "city"), "Old City") == 0, "Original city should remain unchanged");
 
     ar_data_t *ref_result = ar_data__get_map_data(ar_evaluator_fixture__get_memory(own_fixture), "result");
-    assert(ref_result != NULL);
-    assert(ar_data__get_type(ref_result) == AR_DATA_TYPE__MAP);
-    assert(strcmp(ar_data__get_map_string(ref_result, "city"), "Old City") == 0);
+    AR_ASSERT(ref_result != NULL, "Result map should be stored");
+    AR_ASSERT(ar_data__get_type(ref_result) == AR_DATA_TYPE__MAP, "Result should be a map");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_result, "city"), "Old City") == 0, "Result city should preserve provided value");
+    ar_data_t *ref_location_meta = ar_data__get_map_data(ref_location, "meta");
+    ar_data_t *ref_result_meta = ar_data__get_map_data(ref_result, "meta");
+    AR_ASSERT(ref_location_meta != NULL, "Original nested metadata should exist");
+    AR_ASSERT(ref_result_meta != NULL, "Result nested metadata should exist");
+    AR_ASSERT(ref_result_meta != ref_location_meta, "Nested metadata should be deep-copied");
+    ar_data_t *ref_location_tags = ar_data__get_map_data(ref_location_meta, "tags");
+    ar_data_t *ref_result_tags = ar_data__get_map_data(ref_result_meta, "tags");
+    AR_ASSERT(ref_result_tags != NULL, "Result nested tags should exist");
+    AR_ASSERT(ref_result_tags != ref_location_tags, "Nested tags should be deep-copied");
+    AR_ASSERT(ar_data__list_count(ref_result_tags) == 1, "Result nested tag count should match source");
+    AR_ASSERT(ar_data__list_add_last_string(ref_location_tags, "source-only"), "Original nested tags should mutate");
+    AR_ASSERT(ar_data__list_count(ref_location_tags) == 2, "Original nested tags should grow");
+    AR_ASSERT(ar_data__list_count(ref_result_tags) == 1, "Result nested tags should remain independent");
 
+    // Cleanup
     ar_instruction_ast__destroy(own_ast);
     ar_complete_instruction_evaluator__destroy(own_evaluator);
     ar_local_completion__destroy(own_runtime);

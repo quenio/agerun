@@ -127,7 +127,7 @@ pub export fn ar_spawn_instruction_evaluator__evaluate(
         @constCast(@ptrCast(ref_evaluator))
     );
     if (own_method_name == null) {
-        c.ar_log__error(ref_evaluator.?.ref_log, "Cannot create agent with nested containers in method name (no deep copy support)");
+        c.ar_log__error(ref_evaluator.?.ref_log, "Failed to copy method name for spawn");
         return false;
     }
     defer c.ar_data__destroy_if_owned(own_method_name, @constCast(@ptrCast(ref_evaluator)));
@@ -138,7 +138,7 @@ pub export fn ar_spawn_instruction_evaluator__evaluate(
         @constCast(@ptrCast(ref_evaluator))
     );
     if (own_version == null) {
-        c.ar_log__error(ref_evaluator.?.ref_log, "Cannot create agent with nested containers in version (no deep copy support)");
+        c.ar_log__error(ref_evaluator.?.ref_log, "Failed to copy version for spawn");
         return false;
     }
     defer c.ar_data__destroy_if_owned(own_version, @constCast(@ptrCast(ref_evaluator)));

@@ -437,6 +437,69 @@ static void test_send_instruction_evaluator__routes_to_agent(void) {
     ar_send_evaluator_fixture__destroy(fixture);
 }
 
+static void test_send_instruction_evaluator__deep_copies_nested_message_to_agent(void) {
+    // Given a registered agent and a borrowed nested message payload in memory
+    ar_send_evaluator_fixture_t *fixture = ar_send_evaluator_fixture__create("test_send_nested_message");
+    AR_ASSERT(fixture != NULL, "Fixture creation should succeed");
+
+    ar_agent_t *agent = ar_send_evaluator_fixture__create_and_register_agent(fixture, 1, NULL);
+    AR_ASSERT(agent != NULL, "Agent registration should succeed");
+
+    ar_send_instruction_evaluator_t *evaluator = ar_send_evaluator_fixture__create_evaluator(fixture);
+    AR_ASSERT(evaluator != NULL, "Evaluator creation should succeed");
+    ar_frame_t *frame = ar_send_evaluator_fixture__create_frame(fixture);
+    AR_ASSERT(frame != NULL, "Frame creation should succeed");
+
+    ar_data_t *memory = ar_frame__get_memory(frame);
+    ar_data_t *own_payload = ar_data__create_map();
+    ar_data_t *own_items = ar_data__create_list();
+    AR_ASSERT(own_payload != NULL, "Payload map should be created");
+    AR_ASSERT(own_items != NULL, "Nested list should be created");
+    AR_ASSERT(ar_data__list_add_last_string(own_items, "queued"), "Nested list item should be stored");
+    AR_ASSERT(ar_data__set_map_data(own_payload, "items", own_items), "Nested list should be stored");
+    own_items = NULL;
+    AR_ASSERT(ar_data__set_map_data(memory, "payload", own_payload), "Payload should be stored");
+    own_payload = NULL;
+
+    const char *args[] = {"1", "memory.payload"};
+    ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
+        AR_INSTRUCTION_AST_TYPE__SEND, "send", args, 2, NULL
+    );
+    AR_ASSERT(ast != NULL, "AST creation should succeed");
+
+    ar_list_t *arg_asts = ar_list__create();
+    AR_ASSERT(arg_asts != NULL, "Argument list creation should succeed");
+    ar_list__add_last(arg_asts, ar_expression_ast__create_literal_int(1));
+    const char *payload_path[] = {"payload"};
+    ar_list__add_last(arg_asts, ar_expression_ast__create_memory_access("memory", payload_path, 1));
+    AR_ASSERT(ar_instruction_ast__set_function_arg_asts(ast, arg_asts), "Setting args should succeed");
+
+    // When sending the borrowed nested payload to the agent
+    bool result = ar_send_instruction_evaluator__evaluate(evaluator, frame, ast);
+
+    // Then the delivered message should be an independent deep copy
+    AR_ASSERT(result == true, "Send to agent should succeed");
+    ar_agency_t *agency = ar_send_evaluator_fixture__get_agency(fixture);
+    ar_data_t *own_received = ar_agency__get_agent_message(agency, 1);
+    AR_ASSERT(own_received != NULL, "Agent should receive message");
+    ar_data_t *ref_source_payload = ar_data__get_map_data(memory, "payload");
+    AR_ASSERT(own_received != ref_source_payload, "Received message should be an independent copy");
+    ar_data_t *ref_source_items = ar_data__get_map_data(ref_source_payload, "items");
+    ar_data_t *ref_received_items = ar_data__get_map_data(own_received, "items");
+    AR_ASSERT(ref_received_items != NULL, "Received nested list should exist");
+    AR_ASSERT(ref_received_items != ref_source_items, "Nested list should be deep-copied");
+    AR_ASSERT(ar_data__list_count(ref_received_items) == 1, "Received nested list should match source");
+    AR_ASSERT(ar_data__list_add_last_string(ref_source_items, "source-only"), "Source nested list should mutate");
+    AR_ASSERT(ar_data__list_count(ref_source_items) == 2, "Source nested list should grow");
+    AR_ASSERT(ar_data__list_count(ref_received_items) == 1, "Received nested list should remain independent");
+
+    // Cleanup
+    ar_data__destroy(own_received);
+    ar_instruction_ast__destroy(ast);
+    ar_send_instruction_evaluator__destroy(evaluator);
+    ar_send_evaluator_fixture__destroy(fixture);
+}
+
 static void test_send_instruction_evaluator__nonexistent_delegate_returns_false(void) {
     // Given a send evaluator fixture WITHOUT registering any delegates
     ar_send_evaluator_fixture_t *fixture = ar_send_evaluator_fixture__create("test_nonexistent_delegate");
@@ -519,6 +582,9 @@ int main(void) {
     // Iteration 2: Verify agent routing
     test_send_instruction_evaluator__routes_to_agent();
     printf("test_send_instruction_evaluator__routes_to_agent passed!\n");
+
+    test_send_instruction_evaluator__deep_copies_nested_message_to_agent();
+    printf("test_send_instruction_evaluator__deep_copies_nested_message_to_agent passed!\n");
 
     // Iteration 3: Error handling for non-existent delegate
     test_send_instruction_evaluator__nonexistent_delegate_returns_false();

@@ -380,7 +380,7 @@ fn _evaluate_expression(
             // Use claim_or_copy to handle ownership properly for all types
             const own_value = c.ar_data__claim_or_copy(ref_value, ref_frame);
             if (own_value == null) {
-                c.ar_log__error(ref_log, "_evaluate_expression: Cannot copy value (nested containers)");
+                c.ar_log__error(ref_log, "_evaluate_expression: Cannot copy value");
             }
             // Debug: Check if we got the same pointer or a copy
             if (ref_value == own_value and c.ar_data__get_type(ref_value) == c.AR_DATA_TYPE__MAP) {

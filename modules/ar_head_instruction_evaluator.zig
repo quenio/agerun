@@ -157,7 +157,7 @@ pub export fn ar_head_instruction_evaluator__evaluate(
         return _store_zero_result(ref_evaluator.?, ref_frame, ref_ast);
     };
 
-    const own_result = c.ar_data__shallow_copy(ref_first) orelse
+    const own_result = c.ar_data__claim_or_copy(ref_first, ref_evaluator.?) orelse
         return _store_zero_result(ref_evaluator.?, ref_frame, ref_ast);
 
     return _store_owned_result(ref_evaluator.?, ref_frame, ref_ast, own_result);

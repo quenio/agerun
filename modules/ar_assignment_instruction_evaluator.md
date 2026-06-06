@@ -76,6 +76,7 @@ Key features:
 3. **Expression Evaluation**: Evaluates the right-hand side expression
 4. **Nested Path Support**: Creates intermediate maps as needed for nested paths
 5. **Ownership Transfer**: Properly transfers ownership of evaluated values to memory
+6. **Nested Copy Support**: Deep-copies borrowed nested list/map values from memory, context, or message
 
 ### Memory Management
 
@@ -83,7 +84,7 @@ The module follows strict memory ownership rules:
 - The evaluator instance owns its internal structure but not the dependencies
 - Expression evaluator and log are borrowed references stored in the instance
 - Memory is obtained from the frame during evaluation (not stored)
-- Expression evaluation results are owned and must be stored or destroyed
+- Expression evaluation results are claimed or deep-copied, then stored or destroyed
 - Intermediate maps are created as needed for nested paths
 - All allocated memory is properly managed with no leaks
 - The create function returns ownership to the caller

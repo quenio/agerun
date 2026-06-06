@@ -112,7 +112,7 @@ pub export fn ar_deprecate_instruction_evaluator__evaluate(
     // Handle ownership for name
     const own_name = if (name_result) |result| blk: {
         const owned = c.ar_data__claim_or_copy(result, ref_evaluator) orelse {
-            c.ar_log__error(ref_evaluator.?.ref_log, "Cannot deprecate method with nested containers in name (no deep copy support)");
+            c.ar_log__error(ref_evaluator.?.ref_log, "Failed to copy method name for deprecate");
             return false;
         };
         break :blk owned;
@@ -122,7 +122,7 @@ pub export fn ar_deprecate_instruction_evaluator__evaluate(
     // Handle ownership for version
     const own_version = if (version_result) |result| blk: {
         const owned = c.ar_data__claim_or_copy(result, ref_evaluator) orelse {
-            c.ar_log__error(ref_evaluator.?.ref_log, "Cannot deprecate method with nested containers in version (no deep copy support)");
+            c.ar_log__error(ref_evaluator.?.ref_log, "Failed to copy method version for deprecate");
             return false;
         };
         break :blk owned;
