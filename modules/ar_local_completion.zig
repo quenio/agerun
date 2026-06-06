@@ -3,6 +3,8 @@ const c = @cImport({
     @cInclude("ar_local_completion.h");
     @cInclude("ar_data.h");
     @cInclude("ar_log.h");
+    @cInclude("pwd.h");
+    @cInclude("unistd.h");
 });
 const have_llama = @hasInclude("llama.h");
 const llama_api = if (have_llama)
@@ -58,14 +60,31 @@ fn _dupOptional(ref_text: ?[:0]const u8, ref_desc: [*:0]const u8) ?[*:0]u8 {
     return ar_allocator.dupe(@as([*:0]const u8, @ptrCast(ref_text.?.ptr)), ref_desc);
 }
 
+fn _homeDirectory() ?[]const u8 {
+    if (std.posix.getenvZ("HOME")) |ref_home_env| {
+        const ref_home = std.mem.span(ref_home_env);
+        if (ref_home.len > 0) {
+            return ref_home;
+        }
+    }
+
+    const ref_passwd = c.getpwuid(c.getuid());
+    if (ref_passwd != null and ref_passwd.*.pw_dir != null) {
+        const ref_home = std.mem.span(ref_passwd.*.pw_dir);
+        if (ref_home.len > 0) {
+            return ref_home;
+        }
+    }
+
+    return null;
+}
+
 fn _defaultModelPath() ?[*:0]u8 {
-    const ref_home_env = std.posix.getenvZ("HOME") orelse {
+    const ref_home = _homeDirectory() orelse
         return ar_allocator.dupe(
             ".agerun/models/phi-3-mini-q4.gguf",
             "local_completion_default_model_path",
         );
-    };
-    const ref_home = std.mem.span(ref_home_env);
     const ref_suffix = "/.agerun/models/phi-3-mini-q4.gguf";
     const suffix_offset: usize = if (ref_home.len > 0 and ref_home[ref_home.len - 1] == '/')
         1

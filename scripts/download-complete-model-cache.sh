@@ -10,7 +10,23 @@
 set -e
 set -o pipefail
 
-COMPLETE_MODEL_DIR=${COMPLETE_MODEL_DIR:-"$HOME/.agerun/models"}
+_home_directory() {
+    if [ -n "${HOME:-}" ]; then
+        printf '%s\n' "$HOME"
+        return
+    fi
+
+    if command -v python3 >/dev/null 2>&1; then
+        python3 -c 'import os, pwd; print(pwd.getpwuid(os.getuid()).pw_dir)'
+        return
+    fi
+
+    echo "ERROR: HOME is not set and python3 is unavailable for account home lookup"
+    exit 1
+}
+
+COMPLETE_MODEL_HOME=${COMPLETE_MODEL_HOME:-$(_home_directory)}
+COMPLETE_MODEL_DIR=${COMPLETE_MODEL_DIR:-"$COMPLETE_MODEL_HOME/.agerun/models"}
 COMPLETE_MODEL_FILE=${COMPLETE_MODEL_FILE:-"$COMPLETE_MODEL_DIR/phi-3-mini-q4.gguf"}
 COMPLETE_MODEL_LICENSE=${COMPLETE_MODEL_LICENSE:-"$COMPLETE_MODEL_DIR/phi-3-mini-q4.LICENSE"}
 COMPLETE_MODEL_CARD=${COMPLETE_MODEL_CARD:-"$COMPLETE_MODEL_DIR/phi-3-mini-q4.README.md"}
