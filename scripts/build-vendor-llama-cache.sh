@@ -399,6 +399,16 @@ _lock_value() {
     _lock_file_value "$CACHE_LOCK" "$1"
 }
 
+BUILD_LOCK_TOKEN=
+
+_release_build_lock() {
+    if [ -n "$BUILD_LOCK_TOKEN" ] &&
+        [ -f "$CACHE_LOCK" ] &&
+        [ "$(_lock_value "token")" = "$BUILD_LOCK_TOKEN" ]; then
+        rm -f "$CACHE_LOCK"
+    fi
+}
+
 _recovery_lock_value() {
     _lock_file_value "$STALE_LOCK_RECOVERY_FILE" "$1"
 }
@@ -433,6 +443,17 @@ _pid_start_fingerprint() {
 
     output=$(ps -p "$pid" -o lstart= 2>/dev/null) || return 1
     printf '%s\n' "$output" | awk 'NF { sub(/^[[:space:]]*/, ""); sub(/[[:space:]]*$/, ""); print; exit }'
+}
+
+_new_build_lock_token() {
+    local pid_started_at="$1"
+
+    {
+        printf 'host=%s\n' "$CURRENT_HOST"
+        printf 'pid=%s\n' "$$"
+        printf 'pid_started_at=%s\n' "$pid_started_at"
+        printf 'nonce=%s-%s-%s\n' "$(date +%s)" "$RANDOM" "$RANDOM"
+    } | _hash_stdin
 }
 
 _pid_matches_start_fingerprint() {
@@ -655,10 +676,12 @@ _acquire_lock() {
         fi
 
         pid_started_at=$(_pid_start_fingerprint "$$") || pid_started_at=
+        BUILD_LOCK_TOKEN=$(_new_build_lock_token "$pid_started_at")
 
         if (
             set -o noclobber
             {
+                echo "token=$BUILD_LOCK_TOKEN"
                 echo "pid=$$"
                 echo "host=$CURRENT_HOST"
                 if [ -n "$pid_started_at" ]; then
@@ -668,7 +691,7 @@ _acquire_lock() {
                 echo "cache_dir=$CACHE_DIR"
             } > "$CACHE_LOCK"
         ) 2>/dev/null; then
-            trap 'rm -f "$CACHE_LOCK"' EXIT INT TERM
+            trap '_release_build_lock' EXIT INT TERM
             return 0
         fi
     done
