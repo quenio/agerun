@@ -111,6 +111,14 @@ endif
 
 # Default compiler
 CC = gcc-13
+ifeq ($(UNAME_S),Darwin)
+LLAMA_CC ?= cc
+LLAMA_CXX ?= c++
+else
+CXX = g++-13
+LLAMA_CC ?= $(CC)
+LLAMA_CXX ?= $(CXX)
+endif
 
 # Toolchain commands
 ZIG = zig
@@ -886,6 +894,9 @@ complete-performance-validation-linux-container:
 
 # Show vendored llama.cpp configuration
 print-llama-config:
+	@echo "CC=$(CC)"
+	@echo "LLAMA_CC=$(LLAMA_CC)"
+	@echo "LLAMA_CXX=$(LLAMA_CXX)"
 	@echo "CMAKE=$(CMAKE)"
 	@echo "LLAMA_SOURCE_DIR=$(LLAMA_SOURCE_DIR)"
 	@echo "LLAMA_CACHE_DIR=$(LLAMA_CACHE_DIR)"
@@ -915,7 +926,7 @@ print-llama-config:
 
 # Build/install vendored CPU-only llama.cpp
 vendor-llama-cpu:
-	bash ./scripts/build-vendor-llama-cache.sh
+	CC="$(LLAMA_CC)" CXX="$(LLAMA_CXX)" bash ./scripts/build-vendor-llama-cache.sh
 
 # Fix command documentation structure to match comprehensive standards
 # Usage: make fix-commands
