@@ -26,6 +26,11 @@ jobs:
             agerun-${{ runner.os }}-${{ runner.arch }}-gcc13-llama-
             agerun-${{ runner.os }}-${{ runner.arch }}-gcc13-
 
+      - name: Drop restored vendored llama cache locks
+        run: |
+          rm -f "$HOME/.agerun/build/cache/vendor-llama-cpu/build.lock"
+          rm -rf "$HOME/.agerun/build/cache/vendor-llama-cpu/build.lock.recovery"
+
       - name: Install GCC 13 and matching libc
         run: |
           sudo apt-get update
