@@ -414,7 +414,10 @@ _pid_matches_start_fingerprint() {
     local actual_fingerprint
 
     if [ -z "$expected_fingerprint" ]; then
-        return 1
+        # If ps cannot provide a start-time fingerprint, preserve a live same-host
+        # lock instead of risking an overlapping cache build.
+        _pid_exists_on_current_host "$pid"
+        return
     fi
 
     actual_fingerprint=$(_pid_start_fingerprint "$pid") || return 1
