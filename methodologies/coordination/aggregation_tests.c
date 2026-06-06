@@ -42,6 +42,16 @@ static int checked_agent_id(int64_t agent_id) {
     return (int)agent_id;
 }
 
+static void send_result(ar_agency_t *mut_agency, int64_t aggregation_agent, const char *ref_value) {
+    ar_data_t *own_result = ar_data__create_map();
+    AR_ASSERT(own_result != NULL, "Result message should be created");
+    ar_data__set_map_string(own_result, "action", "result");
+    ar_data__set_map_string(own_result, "value", ref_value);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, aggregation_agent, own_result),
+              "Result message should queue");
+    own_result = NULL;
+}
+
 static void register_record_receiver(ar_agency_t *mut_agency) {
     ar_methodology_t *mut_methodology = ar_agency__get_methodology(mut_agency);
     const char *ref_instructions =
@@ -81,29 +91,16 @@ static void test_aggregation__combines_required_results(void) {
     AR_ASSERT(own_start != NULL, "Start message should be created");
     ar_data__set_map_string(own_start, "action", "start");
     ar_data__set_map_string(own_start, "aggregate_id", "agg-1");
-    ar_data__set_map_integer(own_start, "required_count", 2);
+    ar_data__set_map_integer(own_start, "required_count", 4);
     ar_data__set_map_integer(own_start, "reply_to", checked_agent_id(receiver_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, aggregation_agent, own_start),
               "Start message should queue");
     own_start = NULL;
 
-    ar_data_t *own_result_a = ar_data__create_map();
-    AR_ASSERT(own_result_a != NULL, "First result should be created");
-    ar_data__set_map_string(own_result_a, "action", "result");
-    ar_data__set_map_string(own_result_a, "slot", "a");
-    ar_data__set_map_string(own_result_a, "value", "alpha");
-    AR_ASSERT(ar_agency__send_to_agent(mut_agency, aggregation_agent, own_result_a),
-              "First result should queue");
-    own_result_a = NULL;
-
-    ar_data_t *own_result_b = ar_data__create_map();
-    AR_ASSERT(own_result_b != NULL, "Second result should be created");
-    ar_data__set_map_string(own_result_b, "action", "result");
-    ar_data__set_map_string(own_result_b, "slot", "b");
-    ar_data__set_map_string(own_result_b, "value", "beta");
-    AR_ASSERT(ar_agency__send_to_agent(mut_agency, aggregation_agent, own_result_b),
-              "Second result should queue");
-    own_result_b = NULL;
+    send_result(mut_agency, aggregation_agent, "alpha");
+    send_result(mut_agency, aggregation_agent, "beta");
+    send_result(mut_agency, aggregation_agent, "gamma");
+    send_result(mut_agency, aggregation_agent, "delta");
 
     ar_method_fixture__process_all_messages(own_fixture);
 
@@ -117,17 +114,21 @@ static void test_aggregation__combines_required_results(void) {
     AR_ASSERT(ref_result != NULL, "Aggregate should include result list");
     AR_ASSERT(ar_data__get_type(ref_result) == AR_DATA_TYPE__LIST,
               "Aggregate result should be a list");
-    AR_ASSERT(ar_data__list_count(ref_result) == 2,
-              "Aggregate result should include only required values");
+    AR_ASSERT(ar_data__list_count(ref_result) == 4,
+              "Aggregate result should include all required values");
     ar_data_t **own_items = ar_data__list_items(ref_result);
     AR_ASSERT(own_items != NULL, "Aggregate result items should be readable");
     AR_ASSERT(strcmp(ar_data__get_string(own_items[0]), "alpha") == 0,
               "Aggregate result should include first value");
     AR_ASSERT(strcmp(ar_data__get_string(own_items[1]), "beta") == 0,
               "Aggregate result should include second value");
+    AR_ASSERT(strcmp(ar_data__get_string(own_items[2]), "gamma") == 0,
+              "Aggregate result should include third value");
+    AR_ASSERT(strcmp(ar_data__get_string(own_items[3]), "delta") == 0,
+              "Aggregate result should include fourth value");
     AR__HEAP__FREE(own_items);
-    AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_received_count") == 2,
-              "Aggregate should report two received results");
+    AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_received_count") == 4,
+              "Aggregate should report four received results");
 
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_aggregation_context);

@@ -3,18 +3,18 @@
 ## Overview
 
 The aggregation method collects multiple result messages and emits one aggregate completion message
-when the configured completion condition is met. It provides a bounded fan-in counterpart to
+when the configured completion condition is met. It provides an unbounded fan-in counterpart to
 distribution.
 
 ## Behavior
 
 On a map whose `action` field is `"start"`, the method stores the aggregate id, required result
-count, and reply target. It also clears the three bounded result slots and their received markers.
+count, and reply target. It also clears the result list, received count, and completion marker.
 
-On a map whose `action` field is `"result"`, the method stores the incoming value in slot `a`, `b`,
-or `c`. When the number of received slots is greater than or equal to `required_count`, it sends a
-map whose `action` field is `"aggregate_complete"` to the stored reply target. The aggregate values
-are emitted as a list in the `result` field.
+On a map whose `action` field is `"result"`, the method appends the incoming value to the stored
+result list. When the number of received values is greater than or equal to `required_count`, it
+sends one map whose `action` field is `"aggregate_complete"` to the stored reply target. The
+aggregate values are emitted as a list in the `result` field.
 
 ## Message Format
 
@@ -24,7 +24,7 @@ Start request:
 {
   action: "start",
   aggregate_id: <id>,
-  required_count: <1-3>,
+  required_count: <count>,
   reply_to: <agent>
 }
 ```
@@ -34,7 +34,6 @@ Result request:
 ```text
 {
   action: "result",
-  slot: <a|b|c>,
   value: <text>
 }
 ```
@@ -51,10 +50,8 @@ Completion response:
 }
 ```
 
-The list contains the collected values for `required_count`: one, two, or three values. The method
-still uses fixed slots internally because ordinary methods cannot append to a list or assign by list
-index. The completion map is constructed directly in `send(...)` so the nested list can be
-transferred as a fresh value rather than copied out of memory.
+The list contains each appended result value in arrival order. The method uses `append(...)` to
+mutate an internal result list, so the number of collected values is not bounded by named slots.
 
 ## Action Field
 
@@ -64,17 +61,15 @@ and prevents unrelated maps from changing collection state.
 
 ## Composition Notes
 
-Use aggregation after distribution to combine worker outputs when the bounded three-slot collection
-contract is sufficient. Synchronization or workflow can wait for the aggregate completion before
-advancing a larger process.
+Use aggregation after distribution to combine worker outputs when fan-in can exceed a small fixed
+set. Synchronization or workflow can wait for the aggregate completion before advancing a larger
+process.
 
 ## Limitations
 
-The method supports three fixed input slots and emits the collected values as `result`. Dynamic
-result sets, duplicate handling policies, and custom merge functions require richer collection
-operations or specialized aggregate methods. Stored maps that contain nested lists cannot be
-forwarded by ordinary `send` because the current data model has shallow copy semantics for memory
-values.
+The method appends text result values and emits them as `result`. Duplicate handling policies,
+custom merge functions, and aggregating borrowed nested containers require richer collection
+operations, deep-copy support, or specialized aggregate methods.
 
 ## Implementation and Tests
 

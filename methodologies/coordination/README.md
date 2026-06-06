@@ -44,7 +44,7 @@ Composition opportunities:
 | [`routing`](routing-1.0.0.md) | [`routing-1.0.0.method`](routing-1.0.0.method) | [`routing_tests.c`](routing_tests.c) | Selects one or more recipients and forwards a message. | Foundation for delivery. |
 | [`supervision`](supervision-1.0.0.md) | [`supervision-1.0.0.method`](supervision-1.0.0.method) | [`supervision_tests.c`](supervision_tests.c) | Creates, tracks, stops, and event-restarts a child agent. | Keeps coordination agents available. |
 | [`distribution`](distribution-1.0.0.md) | [`distribution-1.0.0.method`](distribution-1.0.0.method) | [`distribution_tests.c`](distribution_tests.c) | Assigns caller-provided portions of work to workers. | Builds on routing for fan-out. |
-| [`aggregation`](aggregation-1.0.0.md) | [`aggregation-1.0.0.method`](aggregation-1.0.0.method) | [`aggregation_tests.c`](aggregation_tests.c) | Collects bounded fixed-slot results and emits a result list. | Completes fan-in within current method-language limits. |
+| [`aggregation`](aggregation-1.0.0.md) | [`aggregation-1.0.0.method`](aggregation-1.0.0.method) | [`aggregation_tests.c`](aggregation_tests.c) | Appends result values and emits a result list. | Completes fan-in with append-backed state. |
 | [`scheduling`](scheduling-1.0.0.md) | [`scheduling-1.0.0.method`](scheduling-1.0.0.method) | [`scheduling_tests.c`](scheduling_tests.c) | Stores pending work and triggers it on explicit tick messages. | Delayed execution primitive. |
 | [`synchronization`](synchronization-1.0.0.md) | [`synchronization-1.0.0.method`](synchronization-1.0.0.method) | [`synchronization_tests.c`](synchronization_tests.c) | Waits for fixed dependencies before sending a continuation. | Dependency gate. |
 | [`workflow`](workflow-1.0.0.md) | [`workflow-1.0.0.method`](workflow-1.0.0.method) | [`workflow_tests.c`](workflow_tests.c) | Maintains a small step graph, routes steps, branches, and completes. | Higher-level sequence and branch coordinator. |
@@ -214,13 +214,12 @@ Requests:
 {
   action: "start",
   aggregate_id: <id>,
-  required_count: <1-3>,
+  required_count: <count>,
   reply_to: <agent>
 }
 
 {
   action: "result",
-  slot: <a|b|c>,
   value: <text>
 }
 ```
@@ -237,10 +236,8 @@ Completion:
 }
 ```
 
-The list contains the collected values for `required_count`: one, two, or three values. The method
-still uses fixed slots internally because ordinary methods cannot append to a list or assign by list
-index. The completion map is constructed directly in `send(...)` so the nested list can be
-transferred as a fresh value rather than copied out of memory.
+The list contains each appended result value in arrival order. The method uses `append(...)` to
+mutate an internal result list, so the number of collected values is not bounded by named slots.
 
 ### Scheduling
 
@@ -497,7 +494,7 @@ Fan-out and fan-in:
 
 ```text
 1. Send a map with action: "distribute" to a distribution agent.
-2. Workers send maps with action: "result" and slot: "a"|"b"|"c" to an aggregation agent.
+2. Workers send maps with action: "result" and value: <text> to an aggregation agent.
 3. Aggregation emits a map with action: "aggregate_complete" and a result list when required_count
    results arrive.
 ```
@@ -536,7 +533,7 @@ Conversation-scoped workflow:
 | Routing | Fully implementable for the bounded contract. | Arbitrary recipient lists and richer message inspection require collection iteration or a richer data query layer. |
 | Supervision | Partially implementable. | Methods cannot autonomously observe child crashes or exits; callers must send `child_failed` or `child_exited` events. |
 | Distribution | Partially implementable. | The method assigns caller-provided portions; dynamic decomposition and arbitrary worker lists require collection iteration. |
-| Aggregation | Partially implementable. | The method emits a list-valued `result` for one to three fixed slots. Dynamic result sets still require collection iteration, append, or indexed assignment; stored nested response maps cannot be forwarded because memory values are shallow-copied. |
+| Aggregation | Fully implementable for text-value fan-in. | The method emits a list-valued `result` for an append-backed result list. Duplicate handling, custom merge functions, and borrowed nested containers still require deeper collection operations or deep-copy support. |
 | Scheduling | Partially implementable. | There is no runtime clock or timer callback; scheduling requires explicit `tick` messages from another agent or host process. |
 | Synchronization | Fully implementable for the bounded contract. | Arbitrary dependency sets require collection iteration. |
 | Workflow | Partially implementable. | General workflow graphs require dynamic graph storage and iteration; this method supports a three-step graph with one branch condition. |
@@ -545,7 +542,6 @@ Conversation-scoped workflow:
 
 No method in this methodology is blocked entirely. The missing capabilities are real-time timers,
 autonomous lifecycle event observation, dynamic collection iteration, and ordinary-method
-append/indexed assignment. The current memory copy model is also shallow, so reusable methods should
-send fresh nested literals instead of forwarding stored nested response maps. Those gaps are
-documented here so the reusable behaviors remain ordinary methods rather than hidden runtime
-features.
+indexed assignment. The current memory copy model is also shallow for borrowed nested containers.
+Those gaps are documented here so the reusable behaviors remain ordinary methods rather than hidden
+runtime features.
