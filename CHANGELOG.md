@@ -1,5 +1,24 @@
 # AgeRun CHANGELOG
 
+## 2026-06-07 (Harden shared cache home fallback)
+
+- **Stopped `HOME`-less shared cache paths from falling back to `/.agerun` in Make**
+
+  The shared cache follow-up for real `complete(...)` now resolves the AgeRun home directory once in
+  the Makefile and reuses that fallback for both the Phi-3 shared model cache and the vendored
+  llama.cpp build cache. Running `make print-llama-config` with `HOME` unset no longer reports
+  `LLAMA_CACHE_DIR=/.agerun/...` while still rejecting an explicitly empty `COMPLETE_MODEL_HOME`.
+
+  **Implementation**: Added a shared `AGERUN_HOME` Make fallback sourced from `HOME` or the OS
+  account home, switched `LLAMA_CACHE_DIR` to use it instead of raw `$(HOME)`, and pointed
+  `COMPLETE_MODEL_HOME` at the same resolved home by default.
+
+  **Verification**: `env -u HOME make print-llama-config`, `COMPLETE_MODEL_HOME= make
+  print-llama-config`, `bash -n scripts/download-complete-model-cache.sh`, and `COMPLETE_MODEL_DIR=/.agerun/models bash ./scripts/download-complete-model-cache.sh`.
+
+  **Impact**: Shared-model verification and llama.cpp cache setup now agree on the same safe home
+  resolution, avoiding accidental root-path cache locations when `HOME` is unset.
+
 ## 2026-06-06 (Shared complete model cache)
 
 - **Moved real `complete(...)` model artifacts into a shared cache**

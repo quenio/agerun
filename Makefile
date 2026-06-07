@@ -60,7 +60,8 @@ UNAME_S := $(shell uname -s)
 
 # Vendored llama.cpp CPU-only dependency paths
 LLAMA_SOURCE_DIR ?= llama-cpp
-LLAMA_CACHE_DIR ?= $(HOME)/.agerun/build/cache/vendor-llama-cpu
+AGERUN_HOME ?= $(shell python3 -c 'import os, pwd; print(os.environ.get("HOME") or pwd.getpwuid(os.getuid()).pw_dir)')
+LLAMA_CACHE_DIR ?= $(if $(AGERUN_HOME),$(AGERUN_HOME)/.agerun/build/cache/vendor-llama-cpu,$(error AGERUN_HOME is empty; set HOME or AGERUN_HOME))
 LLAMA_CACHE_BUILD_DIR ?= $(LLAMA_CACHE_DIR)/build
 LLAMA_CACHE_INSTALL_DIR ?= $(LLAMA_CACHE_DIR)/install
 LLAMA_CACHE_LOCK ?= $(LLAMA_CACHE_DIR)/build.lock
@@ -70,7 +71,7 @@ LLAMA_CACHE_LOCK_TIMEOUT_SECONDS ?= 3600
 LLAMA_BUILD_DIR ?= $(LLAMA_CACHE_BUILD_DIR)
 LLAMA_INSTALL_DIR ?= .deps/llama.cpp-install
 LLAMA_LICENSE = $(LLAMA_SOURCE_DIR)/LICENSE
-COMPLETE_MODEL_HOME ?= $(shell python3 -c 'import os, pwd; print(os.environ.get("HOME") or pwd.getpwuid(os.getuid()).pw_dir)')
+COMPLETE_MODEL_HOME ?= $(AGERUN_HOME)
 COMPLETE_MODEL_DIR ?= $(if $(COMPLETE_MODEL_HOME),$(COMPLETE_MODEL_HOME)/.agerun/models,$(error COMPLETE_MODEL_HOME is empty; set HOME or COMPLETE_MODEL_HOME))
 COMPLETE_MODEL_FILE ?= $(COMPLETE_MODEL_DIR)/phi-3-mini-q4.gguf
 COMPLETE_MODEL_LICENSE ?= $(COMPLETE_MODEL_DIR)/phi-3-mini-q4.LICENSE
