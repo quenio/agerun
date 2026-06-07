@@ -21,10 +21,6 @@ const LlamaToken = if (have_llama) @FieldType(llama_api, "llama_token") else i32
 const default_model_hint =
     "$HOME/.agerun/models/phi-3-mini-q4.gguf or " ++
     ".agerun/models/phi-3-mini-q4.gguf when no home directory is available";
-const default_model_missing_hint =
-    "complete() local model file was not found at configured path; " ++
-    "set AGERUN_COMPLETE_MODEL or run make complete-runtime-ready; recovery_hint=" ++
-    default_model_hint;
 const default_model_not_configured_hint =
     "complete() local model path is not configured; " ++
     "set AGERUN_COMPLETE_MODEL or make HOME/account home available; recovery_hint=" ++
@@ -143,7 +139,17 @@ fn _ensureLlamaBackendInitialized(mut_runtime: *ar_local_completion_t) bool {
         return false;
     }
     if (!_fileExists(ref_model_path)) {
-        _logError(mut_runtime, default_model_missing_hint);
+        var own_message = std.ArrayList(u8).init(std.heap.c_allocator);
+        defer own_message.deinit();
+        own_message.writer().print(
+            "complete() local model file was not found at configured path; " ++
+                "set AGERUN_COMPLETE_MODEL or run make complete-runtime-ready; recovery_hint={s}",
+            .{std.mem.span(ref_model_path)},
+        ) catch {
+            _logError(mut_runtime, "complete() local model file was not found at configured path");
+            return false;
+        };
+        _logOwnedMessage(mut_runtime, &own_message);
         return false;
     }
 
