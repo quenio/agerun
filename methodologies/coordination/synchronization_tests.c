@@ -70,6 +70,16 @@ static void send_dependency(ar_agency_t *mut_agency, int64_t sync_agent, const c
     own_dependency = NULL;
 }
 
+static void send_noise(ar_agency_t *mut_agency, int64_t sync_agent, const char *ref_sync_id) {
+    ar_data_t *own_noise = ar_data__create_map();
+    AR_ASSERT(own_noise != NULL, "Noise message should be created");
+    ar_data__set_map_string(own_noise, "action", "noise");
+    ar_data__set_map_string(own_noise, "sync_id", ref_sync_id);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, sync_agent, own_noise),
+              "Noise message should queue");
+    own_noise = NULL;
+}
+
 static void test_synchronization__emits_continuation_after_unbounded_dependencies(void) {
     printf("Testing synchronization emits continuation after unbounded dependencies...\n");
 
@@ -188,6 +198,13 @@ static void test_synchronization__emits_continuation_after_unbounded_dependencie
                                        "continuation_target",
                                        checked_agent_id(receiver_agent)),
               "Failed continuation target should be repairable for retry");
+    send_noise(mut_agency, sync_agent, "sync-failed-continuation");
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_sync_id"),
+                     "sync-zero") == 0,
+              "Unrelated messages should not retry failed continuation");
+
     send_dependency(mut_agency, sync_agent, "sync-failed-continuation", "ready-z");
     ar_method_fixture__process_all_messages(own_fixture);
 
@@ -231,15 +248,29 @@ static void test_synchronization__emits_continuation_after_unbounded_dependencie
     AR_ASSERT(ar_data__get_map_integer(ref_sync_memory, "continuation_done") == 1,
               "Synchronization should remember delivered continuation after failed status send");
 
+    AR_ASSERT(ar_data__set_map_integer(mut_sync_memory,
+                                       "reply_to",
+                                       checked_agent_id(receiver_agent)),
+              "Failed status target should be repairable for retry");
+    send_noise(mut_agency, sync_agent, "sync-failed-status");
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_action"),
+                     "continue") == 0,
+              "Unrelated messages should not retry failed status report");
+
     send_dependency(mut_agency, sync_agent, "sync-failed-status", "ready-o");
     ar_method_fixture__process_all_messages(own_fixture);
 
-    AR_ASSERT(ar_data__get_map_integer(ref_sync_memory, "completed") == 0,
-              "Synchronization should stay open after repeated failed status send");
+    AR_ASSERT(ar_data__get_map_integer(ref_sync_memory, "completed") == 1,
+              "Synchronization should complete after matching dependency retries status send");
     AR_ASSERT(ar_data__get_map_integer(ref_sync_memory, "done_count") == 2,
-              "Synchronization should freeze dependencies after continuation delivery");
+              "Synchronization should freeze dependencies after status retry");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_action"),
+                     "synchronization_status") == 0,
+              "Matching dependency should retry failed status report");
     AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_done_count") == 2,
-              "Synchronization should not re-emit continuation after status send failure");
+              "Status retry should preserve frozen dependency count");
 
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_sync_context);

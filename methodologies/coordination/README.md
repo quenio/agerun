@@ -427,7 +427,8 @@ positive agent id, the status reply is delivered; failed delivery keeps the gate
 Once the required count is reached, the dependency list is frozen even if continuation delivery fails;
 later matching dependency messages retry delivery with the same `done_count` and dependencies.
 After continuation delivery, failed status replies are retried without re-emitting the continuation or
-increasing `done_count`.
+increasing `done_count`. Unrelated messages, including maps with other actions, do not trigger
+pending continuation or status retries.
 
 ### Workflow
 
