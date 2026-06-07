@@ -35,9 +35,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.agerun/build/cache/vendor-llama-cpu
-          key: agerun-${{ runner.os }}-${{ runner.arch }}-gcc13-llama-${{ hashFiles('llama-cpp/**', 'Makefile', 'scripts/build-vendor-llama-cache.sh') }}
+          key: agerun-${{ runner.os }}-${{ runner.arch }}-gcc13-genericcpu-llama-${{ hashFiles('llama-cpp/**', 'Makefile', 'scripts/build-vendor-llama-cache.sh') }}
           restore-keys: |
-            agerun-${{ runner.os }}-${{ runner.arch }}-gcc13-llama-
+            agerun-${{ runner.os }}-${{ runner.arch }}-gcc13-genericcpu-llama-
             agerun-${{ runner.os }}-${{ runner.arch }}-gcc13-
 
       - name: Drop restored vendored llama cache locks
@@ -81,7 +81,8 @@ jobs:
           # libstdc++'s #include_next <stdlib.h> during the vendored llama.cpp build.
           export CC=gcc-13
           export CXX=g++-13
-          export LLAMA_CACHE_KEY="agerun-${{ runner.os }}-${{ runner.arch }}-gcc13-llama-${{ hashFiles('llama-cpp/**', 'Makefile', 'scripts/build-vendor-llama-cache.sh') }}"
+          export LLAMA_CPU_CMAKE_FLAGS="-DGGML_NATIVE=OFF"
+          export LLAMA_CACHE_KEY="agerun-${{ runner.os }}-${{ runner.arch }}-gcc13-genericcpu-llama-${{ hashFiles('llama-cpp/**', 'Makefile', 'scripts/build-vendor-llama-cache.sh') }}"
           export LD_LIBRARY_PATH="$PWD/.deps/llama.cpp-install/lib:${LD_LIBRARY_PATH:-}"
           make clean build || BUILD_EXIT=$?; make check-logs || LOGS_EXIT=$?; exit $((BUILD_EXIT + LOGS_EXIT))
 
