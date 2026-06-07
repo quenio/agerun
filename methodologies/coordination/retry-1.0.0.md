@@ -28,6 +28,9 @@ Once the retry state reaches terminal `succeeded` or `failed` status, later stal
 `success` outcome messages are ignored. A new `start` request opens a fresh active retry state. Late
 outcomes from a previous operation are ignored because their `correlation_id` no longer matches the
 active operation id.
+Terminal status is recorded only after the `retry_result` report is delivered. If report delivery
+fails, the retry stays active so a later matching outcome can retry the terminal report without
+changing the attempt count.
 
 ## Message Format
 

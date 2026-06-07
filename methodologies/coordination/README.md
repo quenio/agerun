@@ -548,6 +548,8 @@ A new `start` request opens a fresh active retry state, and late outcomes from p
 ignored because their `correlation_id` does not match the active operation id.
 Retry attempts advance only after an immediate retry or scheduled retry handoff is sent
 successfully; failed dispatch leaves the retry active at the previous attempt count.
+Retry records terminal `succeeded` or `failed` status only after the `retry_result` report is
+delivered; failed report delivery leaves the retry active so a matching outcome can retry the report.
 
 ## Composition Examples
 

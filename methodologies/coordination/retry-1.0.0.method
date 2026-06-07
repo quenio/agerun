@@ -54,14 +54,18 @@ memory.retry_dispatch_sent := if(memory.use_scheduled = 1, memory.schedule_sent,
 memory.retry_dispatched := memory.retry_allowed * memory.retry_dispatch_sent
 memory.attempts := if(memory.retry_dispatched = 1, memory.next_attempt, memory.attempts)
 memory.final_failure := memory.active_failure - memory.retry_allowed
-memory.status := if(memory.final_failure = 1, "failed", memory.status)
-memory.status := if(memory.active_success = 1, "succeeded", memory.status)
+memory.terminal_status := memory.status
+memory.terminal_status := if(memory.final_failure = 1, "failed", memory.terminal_status)
+memory.terminal_status := if(memory.active_success = 1, "succeeded", memory.terminal_status)
 memory.report_message := {
   action: "retry_result"
   operation_id: memory.operation_id
-  status: memory.status
+  status: memory.terminal_status
   attempts: memory.attempts
 }
 memory.report_target := memory.reply_to * memory.final_failure
 memory.report_target := if(memory.active_success = 1, memory.reply_to, memory.report_target)
 memory.report_sent := send(memory.report_target, memory.report_message)
+memory.terminal_event := memory.final_failure + memory.active_success
+memory.terminal_reported := memory.terminal_event * memory.report_sent
+memory.status := if(memory.terminal_reported = 1, memory.terminal_status, memory.status)
