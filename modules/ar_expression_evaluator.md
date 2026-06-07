@@ -86,6 +86,8 @@ The evaluator handles automatic type promotion:
 - Integer operations produce integer results
 - Double operations produce double results
 - Comparison operations always produce integer results (0 or 1)
+- List equality is currently limited to empty-list checks such as `message.items = []` and
+  `message.items <> []`; non-empty lists are not structurally compared
 
 ## Error Handling
 

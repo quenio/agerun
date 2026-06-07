@@ -771,6 +771,96 @@ static void test_evaluate_string_comparison(void) {
     printf("  ✓ String comparison returns correct integer result\n");
 }
 
+static void test_evaluate_empty_list_comparison(void) {
+    printf("Testing expression evaluator empty list comparison...\n");
+
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_empty_list_comparison");
+    assert(own_fixture != NULL);
+
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_evaluator =
+        ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+    assert(ref_frame != NULL);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+
+    ar_data_t *own_payloads = ar_data__create_list();
+    assert(own_payloads != NULL);
+    assert(ar_data__set_map_data(mut_memory, "payloads", own_payloads));
+    own_payloads = NULL;
+
+    {
+        const char *path[] = {"payloads"};
+        ar_expression_ast_t *own_left =
+            ar_expression_ast__create_memory_access("memory", path, 1);
+        ar_expression_ast_t *own_right = ar_expression_ast__create_literal_list(NULL, 0);
+        ar_expression_ast_t *own_ast =
+            ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__EQUAL, own_left, own_right);
+        assert(own_ast != NULL);
+
+        ar_data_t *own_result =
+            ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, own_ast);
+
+        assert(own_result != NULL);
+        assert(ar_data__get_type(own_result) == AR_DATA_TYPE__INTEGER);
+        assert(ar_data__get_integer(own_result) == 1);
+
+        ar_data__destroy(own_result);
+        ar_expression_ast__destroy(own_ast);
+    }
+
+    ar_data_t *ref_payloads = ar_data__get_map_data(mut_memory, "payloads");
+    assert(ref_payloads != NULL);
+    assert(ar_data__list_add_last_string(ref_payloads, "opaque"));
+
+    {
+        const char *path[] = {"payloads"};
+        ar_expression_ast_t *own_left =
+            ar_expression_ast__create_memory_access("memory", path, 1);
+        ar_expression_ast_t *own_right = ar_expression_ast__create_literal_list(NULL, 0);
+        ar_expression_ast_t *own_ast =
+            ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__EQUAL, own_left, own_right);
+        assert(own_ast != NULL);
+
+        ar_data_t *own_result =
+            ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, own_ast);
+
+        assert(own_result != NULL);
+        assert(ar_data__get_type(own_result) == AR_DATA_TYPE__INTEGER);
+        assert(ar_data__get_integer(own_result) == 0);
+
+        ar_data__destroy(own_result);
+        ar_expression_ast__destroy(own_ast);
+    }
+
+    {
+        const char *path[] = {"payloads"};
+        ar_expression_ast_t *own_left =
+            ar_expression_ast__create_memory_access("memory", path, 1);
+        ar_expression_ast_t *own_right = ar_expression_ast__create_literal_list(NULL, 0);
+        ar_expression_ast_t *own_ast =
+            ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__NOT_EQUAL,
+                                                own_left,
+                                                own_right);
+        assert(own_ast != NULL);
+
+        ar_data_t *own_result =
+            ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, own_ast);
+
+        assert(own_result != NULL);
+        assert(ar_data__get_type(own_result) == AR_DATA_TYPE__INTEGER);
+        assert(ar_data__get_integer(own_result) == 1);
+
+        ar_data__destroy(own_result);
+        ar_expression_ast__destroy(own_ast);
+    }
+
+    assert(ar_log__get_last_error_message(ref_log) == NULL);
+
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
 /**
  * Test that accessing a field on a non-map value produces a detailed error message
  */
@@ -917,6 +1007,7 @@ int main(void) {
     test_evaluate_handles_int_as_binary_op();
     test_evaluate_binary_op_nested();
     test_evaluate_string_comparison();
+    test_evaluate_empty_list_comparison();
     test_evaluate_type_mismatch_error_message();
     test_evaluate_list_literal();
     test_evaluate_map_literal();

@@ -629,6 +629,25 @@ fn _evaluate_binary_op(
                 c.ar_log__error(ref_log, "evaluate_binary_op: Unsupported operator for strings");
             },
         }
+    } else if ((op == c.AR_BINARY_OPERATOR__EQUAL or op == c.AR_BINARY_OPERATOR__NOT_EQUAL) and
+               left_type == c.AR_DATA_TYPE__LIST and right_type == c.AR_DATA_TYPE__LIST) {
+        const left_is_empty = c.ar_data__list_count(left) == 0;
+        const right_is_empty = c.ar_data__list_count(right) == 0;
+
+        if (left_is_empty or right_is_empty) {
+            const equal = left_is_empty and right_is_empty;
+            switch (op) {
+                c.AR_BINARY_OPERATOR__EQUAL => {
+                    result = c.ar_data__create_integer(if (equal) 1 else 0);
+                },
+                c.AR_BINARY_OPERATOR__NOT_EQUAL => {
+                    result = c.ar_data__create_integer(if (!equal) 1 else 0);
+                },
+                else => unreachable,
+            }
+        } else {
+            c.ar_log__error(ref_log, "evaluate_binary_op: Non-empty list equality is unsupported");
+        }
     } else if ((op == c.AR_BINARY_OPERATOR__EQUAL or op == c.AR_BINARY_OPERATOR__NOT_EQUAL) and 
                (left_type == c.AR_DATA_TYPE__STRING or right_type == c.AR_DATA_TYPE__STRING)) {
         // Special handling for string comparisons with other types
