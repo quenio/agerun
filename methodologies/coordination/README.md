@@ -204,6 +204,12 @@ Request:
   workers: [<agent>, <agent>, ...],
   work_text: <text>
 }
+
+{
+  action: "retry_report",
+  work_id: <id>,
+  reply_to: <agent>
+}
 ```
 
 Forwarded through `routing`:
@@ -244,6 +250,9 @@ Distribution accepts a `route_result` only when its `correlation_id` matches the
 After a terminal distribution reply is sent successfully, duplicate matching route results are
 ignored.
 Distribution marks itself completed only after the terminal reply is delivered.
+If terminal reply delivery fails, distribution stores it as pending. A later `retry_report` request
+for the same `work_id` retries the stored terminal `distribution_result` with the supplied `reply_to`
+without sending another route request.
 
 ### Aggregation
 

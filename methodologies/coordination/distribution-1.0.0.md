@@ -22,6 +22,9 @@ late results from other jobs cannot be misreported as the current distribution. 
 `distribution_result` is sent successfully, duplicate `route_result` messages for the same work id
 are ignored.
 The distribution is marked completed only when a terminal result report is actually delivered.
+If terminal report delivery fails, distribution leaves `pending_report` set and accepts a later
+`retry_report` message for the same `work_id` with a replacement `reply_to` target. This retries the
+stored `distribution_result` without rerouting the work.
 
 If the routing agent reports a matching terminal `route_result` with `status: "route_failed"`,
 distribution propagates that failure as `distribution_result.status: "route_failed"` while preserving
@@ -44,6 +47,16 @@ Distribution request:
   reply_to: <agent>,
   workers: [<agent>, <agent>, ...],
   work_text: <text>
+}
+```
+
+Report retry request:
+
+```text
+{
+  action: "retry_report",
+  work_id: <id>,
+  reply_to: <agent>
 }
 ```
 
@@ -82,6 +95,8 @@ Result response:
 The input `action` field is a command discriminator in the request map. The distribution agent runs
 this method for every message it receives, so `action: "distribute"` marks the message as work to
 fan out rather than an arbitrary status, worker result, or coordination message.
+`action: "retry_report"` is a separate coordination command that retries a pending terminal report
+for the matching `work_id` without sending a second route request.
 
 ## Composition Notes
 

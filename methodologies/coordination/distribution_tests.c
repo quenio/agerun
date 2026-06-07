@@ -295,6 +295,58 @@ static void test_distribution__assigns_unbounded_workers_through_routing(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_route_sent") == 0,
               "Stale route result should preserve the failed route handoff");
 
+    // And a failed terminal report can be retried without rerouting the work
+    own_message = ar_data__create_map();
+    AR_ASSERT(own_message != NULL, "Report-retry distribution message should be created");
+    own_workers = ar_data__create_list();
+    AR_ASSERT(own_workers != NULL, "Report-retry worker list should be created");
+    append_agent_id(own_workers, worker_a);
+    ar_data__set_map_string(own_message, "action", "distribute");
+    ar_data__set_map_integer(own_message, "routing_agent", 98765);
+    AR_ASSERT(ar_data__set_map_data(own_message, "workers", own_workers),
+              "Report-retry worker list should be stored");
+    own_workers = NULL;
+    ar_data__set_map_string(own_message, "work_text", "retry-report-work");
+    ar_data__set_map_string(own_message, "work_id", "job-report-retry");
+    ar_data__set_map_integer(own_message, "reply_to", 98765);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, distribution_agent, own_message),
+              "Report-retry distribution message should queue");
+    own_message = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    const ar_data_t *ref_distribution_memory =
+        ar_agency__get_agent_memory(mut_agency, distribution_agent);
+    AR_ASSERT(ar_data__get_map_integer(ref_distribution_memory, "pending_report") == 1,
+              "Failed terminal report should remain pending");
+    AR_ASSERT(ar_data__get_map_integer(ref_distribution_memory, "completed") == 0,
+              "Distribution should not complete until report delivery succeeds");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_work_id"),
+                     "job-failed-route") == 0,
+              "Failed terminal report should not update the observer");
+
+    ar_data_t *own_retry_report = ar_data__create_map();
+    AR_ASSERT(own_retry_report != NULL, "Retry report message should be created");
+    ar_data__set_map_string(own_retry_report, "action", "retry_report");
+    ar_data__set_map_string(own_retry_report, "work_id", "job-report-retry");
+    ar_data__set_map_integer(own_retry_report, "reply_to", checked_agent_id(observer));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, distribution_agent, own_retry_report),
+              "Retry report message should queue");
+    own_retry_report = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_work_id"),
+                     "job-report-retry") == 0,
+              "Retried terminal report should reach the observer");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
+                     "route_failed") == 0,
+              "Retried terminal report should preserve terminal status");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_route_sent") == 0,
+              "Retried terminal report should preserve failed route handoff");
+    AR_ASSERT(ar_data__get_map_integer(ref_distribution_memory, "pending_report") == 0,
+              "Delivered retry should clear pending report");
+    AR_ASSERT(ar_data__get_map_integer(ref_distribution_memory, "completed") == 1,
+              "Delivered retry should complete the distribution");
+
     // Cleanup
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_router_context);
