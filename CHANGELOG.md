@@ -1,5 +1,26 @@
 # AgeRun CHANGELOG
 
+## 2026-06-07 (Align workflow test home fallback)
+
+- **Matched workflow real-completion test helpers to the runtime home fallback**
+
+  The workflow coordinator and definition test helpers now resolve the shared Phi-3 model path the
+  same way as `complete()`: use `HOME` when it is set, otherwise fall back to
+  `getpwuid(getuid())`, and avoid introducing a double slash when the resolved home already ends in
+  `/`.
+
+  **Implementation**: Updated `methods/workflow_coordinator_tests.c` and
+  `methods/workflow_definition_tests.c` to use passwd-home fallback in their shared-model path
+  helpers and added focused assertions that validate the passwd fallback when `HOME` is unset.
+
+  **Verification**: `AGERUN_SKIP_REAL_COMPLETION_TESTS=1 make workflow_coordinator_tests 2>&1`,
+  `AGERUN_SKIP_REAL_COMPLETION_TESTS=1 make workflow_definition_tests 2>&1`, `env -u HOME
+  AGERUN_SKIP_REAL_COMPLETION_TESTS=1 ./workflow_coordinator_tests`, `env -u HOME
+  AGERUN_SKIP_REAL_COMPLETION_TESTS=1 ./workflow_definition_tests`, and `make check-naming 2>&1`.
+
+  **Impact**: Workflow test setup now follows the same HOME/passwd resolution path as the runtime,
+  so missing `HOME` no longer causes those helper assertions to diverge from `complete()`.
+
 ## 2026-06-07 (Harden shared cache home fallback)
 
 - **Stopped `HOME`-less shared cache paths from falling back to `/.agerun` in Make**
