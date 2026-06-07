@@ -21,6 +21,9 @@ carries the tail lists, the method can process any number of steps supported by 
 messages and memory.
 If the initial internal continuation or a later step continuation cannot be queued, the method emits
 `workflow_complete` with `status: "handoff_failed"` instead of leaving callers waiting indefinitely.
+The route request sets `reply_to` to the workflow agent itself, so a matching `route_failed` result
+from the routing agent also completes the workflow with `status: "handoff_failed"` when the step
+target cannot receive the routed message.
 
 On a `step_done` map whose `workflow_id` matches the active workflow and whose `step` matches the
 current active step, the method advances to the next pending step only if it is waiting for a
@@ -72,7 +75,7 @@ Route message sent to routing:
   payload_action: <step-action>,
   payload_text: <step-text>,
   correlation_id: <workflow_id>,
-  reply_to: 0
+  reply_to: <workflow-agent>
 }
 ```
 

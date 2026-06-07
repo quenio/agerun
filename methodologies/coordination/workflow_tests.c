@@ -258,6 +258,49 @@ static void test_workflow__routes_unbounded_steps_with_branching_to_completion(v
               "Failed route should not consume pending step queue");
 
     own_start = ar_data__create_map();
+    AR_ASSERT(own_start != NULL, "Failed worker route workflow start should be created");
+    ar_data__set_map_string(own_start, "action", "start");
+    ar_data__set_map_string(own_start, "workflow_id", "wf-failed-worker-route");
+    ar_data__set_map_integer(own_start, "routing_agent", checked_agent_id(routing_agent));
+    ar_data__set_map_integer(own_start, "reply_to", checked_agent_id(report_agent));
+    own_step_targets = ar_data__create_list();
+    own_step_actions = ar_data__create_list();
+    own_step_texts = ar_data__create_list();
+    AR_ASSERT(own_step_targets != NULL, "Failed worker route target list should be created");
+    AR_ASSERT(own_step_actions != NULL, "Failed worker route action list should be created");
+    AR_ASSERT(own_step_texts != NULL, "Failed worker route text list should be created");
+    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+                         98765, "step1", "missing-worker");
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_targets", own_step_targets),
+              "Failed worker route start should own step targets");
+    own_step_targets = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_actions", own_step_actions),
+              "Failed worker route start should own step actions");
+    own_step_actions = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_texts", own_step_texts),
+              "Failed worker route start should own step texts");
+    own_step_texts = NULL;
+    ar_data__set_map_string(own_start, "branch_value", "skip");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, workflow_agent, own_start),
+              "Failed worker route workflow start should queue");
+    own_start = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_workflow_id"),
+                     "wf-failed-worker-route") == 0,
+              "Failed worker route should report the workflow id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
+                     "handoff_failed") == 0,
+              "Failed worker route should report handoff failure");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_current_step") == 1,
+              "Failed worker route should report the attempted step");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_completed_step_count") == 0,
+              "Failed worker route should not count the undelivered step");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_workflow_memory, "status"),
+                     "handoff_failed") == 0,
+              "Failed worker route should store handoff failure status");
+
+    own_start = ar_data__create_map();
     AR_ASSERT(own_start != NULL, "Failed completion workflow start should be created");
     ar_data__set_map_string(own_start, "action", "start");
     ar_data__set_map_string(own_start, "workflow_id", "wf-failed-completion");
