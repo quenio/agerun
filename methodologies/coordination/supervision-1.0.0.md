@@ -15,10 +15,13 @@ for the request's `child_method_names` list. The method consumes that list with 
 memory. When the list is exhausted, it reports `status=running` with the tracked child lists and
 count.
 
-On a map whose `action` field is `"child_failed"` or `"child_exited"`, the method checks whether the
-stored policy is `restart`. If so, it spawns a replacement child using the event's
-`child_method_name` and `child_method_version`, appends the replacement to the tracked lists, and
-reports `status=restarted`. Otherwise, it reports `status=stopped`.
+On a map whose `action` field is `"child_failed"` or `"child_exited"`, the method scans the tracked
+`child_agent_ids` list before applying the lifecycle event. If the child is tracked and the stored
+policy is `restart`, it spawns a replacement child using the event's `child_method_name` and
+`child_method_version`, appends the replacement to the tracked lists, and reports
+`status=restarted`. If the child is tracked and the policy is not `restart`, it reports
+`status=stopped`. If the child is not tracked, it leaves supervisor state unchanged and reports
+`status=ignored`.
 
 On a map whose `action` field is `"stop"`, the method scans the tracked `child_agent_ids` list with
 `head(...)` and `tail(...)`. It exits and reports `status=stopped` only when the supplied
@@ -86,7 +89,8 @@ Use supervision around long-lived routing, scheduling, workflow, or worker agent
 agent can start many children from one `child_method_names` list. Other methods can report lifecycle
 events to the supervisor when they observe a child failure through application-level messages.
 Composed callers can safely send stop requests through supervisors because untracked child ids are
-reported as ignored instead of being exited.
+reported as ignored instead of being exited. Lifecycle events are guarded the same way, so a stale
+or misaddressed failure cannot add bogus replacement children.
 
 ## Limitations
 

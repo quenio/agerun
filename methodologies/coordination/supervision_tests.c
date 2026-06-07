@@ -126,6 +126,36 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_child_count") == 4,
               "Observer should receive child count");
 
+    // When a lifecycle event names an untracked agent
+    ar_data_t *own_untracked_failure = ar_data__create_map();
+    AR_ASSERT(own_untracked_failure != NULL, "Untracked failure should be created");
+    ar_data__set_map_string(own_untracked_failure, "action", "child_failed");
+    ar_data__set_map_integer(own_untracked_failure,
+                             "child_agent_id",
+                             checked_agent_id(untracked_agent));
+    ar_data__set_map_string(own_untracked_failure, "child_method_name", "record-receiver");
+    ar_data__set_map_string(own_untracked_failure, "child_method_version", "1.0.0");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, supervision_agent, own_untracked_failure),
+              "Untracked failure should queue");
+    own_untracked_failure = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    // Then supervision ignores it without adding bogus child records
+    ref_memory = ar_agency__get_agent_memory(mut_agency, supervision_agent);
+    ref_child_ids = ar_data__get_map_data(ref_memory, "child_agent_ids");
+    AR_ASSERT(ref_child_ids != NULL && ar_data__list_count(ref_child_ids) == 4,
+              "Untracked lifecycle event should not append a replacement child id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_memory, "status"), "running") == 0,
+              "Untracked lifecycle event should not change supervisor status");
+    AR_ASSERT(ar_data__get_map_integer(ref_memory, "restart_count") == 0,
+              "Untracked lifecycle event should not increment restart count");
+    ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "ignored") == 0,
+              "Observer should receive ignored status for untracked lifecycle event");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_child_agent_id") ==
+                  untracked_agent,
+              "Observer should receive the ignored lifecycle child id");
+
     // When the child is reported failed
     ar_data_t *own_failure = ar_data__create_map();
     AR_ASSERT(own_failure != NULL, "Child failure should be created");
