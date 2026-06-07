@@ -10,6 +10,8 @@ distribution.
 
 On a map whose `action` field is `"start"`, the method stores the aggregate id, required result
 count, and reply target. It also clears the result list, received count, and completion marker.
+Required counts below one behave as one required result, so a start message cannot complete the
+aggregate before any result arrives.
 
 On a map whose `action` field is `"result"`, the method appends the incoming value to the stored
 result list while the aggregate is still collecting. When the number of received values is greater

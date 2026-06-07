@@ -10,6 +10,8 @@ continuation message. It is a reusable dependency gate for workflows and distrib
 On a map whose `action` field is `"wait"`, the method stores the sync id, required count,
 continuation target, continuation action, continuation text, and reply target. It clears the
 append-backed `received` dependency list and resets the completion marker.
+Required counts below one behave as one required dependency, so a wait message cannot complete the
+gate before any dependency arrives.
 
 On a map whose `action` field is `"dependency"`, the method only counts the message when its
 `sync_id` matches the active wait request and the gate has not already completed. It appends the

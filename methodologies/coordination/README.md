@@ -258,6 +258,8 @@ Completion:
 
 The list contains each appended result value in arrival order. The method uses `append(...)` to
 mutate an internal result list, so the number of collected values is not bounded by named slots.
+Required counts below one behave as one required result, so aggregation never completes on `start`
+alone.
 Aggregation marks completion only after the `aggregate_complete` reply is sent successfully; failed
 completion delivery leaves the aggregate open.
 
@@ -361,6 +363,9 @@ Status:
   dependencies: [<dependency>, <dependency>, ...]
 }
 ```
+
+Required counts below one behave as one required dependency, so synchronization never completes on
+`wait` alone.
 
 ### Workflow
 

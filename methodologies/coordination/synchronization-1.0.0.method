@@ -16,7 +16,8 @@ memory.append_buffer := if(memory.should_count = 1, memory.received, "")
 memory.append_ok := append(memory.append_buffer, message.dependency)
 memory.received := if(memory.append_ok = 1, memory.append_buffer, memory.received)
 memory.done_count := memory.done_count + memory.append_ok
-memory.is_complete := if(memory.done_count >= memory.required_count, 1, 0)
+memory.effective_required_count := if(memory.required_count > 0, memory.required_count, 1)
+memory.is_complete := if(memory.done_count >= memory.effective_required_count, 1, 0)
 memory.status := if(memory.is_complete = 1, "complete", "waiting")
 memory.should_emit := memory.is_complete * memory.not_completed
 memory.continuation_message := {

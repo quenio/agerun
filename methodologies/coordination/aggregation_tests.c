@@ -172,6 +172,32 @@ static void test_aggregation__combines_required_results(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_aggregation_memory, "received_count") == 3,
               "Aggregate should keep collecting after completion send failure");
 
+    ar_data_t *own_zero_start = ar_data__create_map();
+    AR_ASSERT(own_zero_start != NULL, "Zero-count start message should be created");
+    ar_data__set_map_string(own_zero_start, "action", "start");
+    ar_data__set_map_string(own_zero_start, "aggregate_id", "agg-zero");
+    ar_data__set_map_integer(own_zero_start, "required_count", 0);
+    ar_data__set_map_integer(own_zero_start, "reply_to", checked_agent_id(receiver_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, aggregation_agent, own_zero_start),
+              "Zero-count start message should queue");
+    own_zero_start = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ref_aggregation_memory = ar_agency__get_agent_memory(mut_agency, aggregation_agent);
+    AR_ASSERT(ar_data__get_map_integer(ref_aggregation_memory, "completed") == 0,
+              "Zero required count should not complete on start");
+    AR_ASSERT(ar_data__get_map_integer(ref_aggregation_memory, "received_count") == 0,
+              "Zero required count start should not collect results");
+
+    send_result(mut_agency, aggregation_agent, "only");
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_aggregate_id"),
+                     "agg-zero") == 0,
+              "Zero required count should complete after first result");
+    AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_received_count") == 1,
+              "Zero required count should behave as one required result");
+
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_aggregation_context);
     ar_data__destroy(own_receiver_context);
