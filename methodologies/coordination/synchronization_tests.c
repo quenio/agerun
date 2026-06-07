@@ -182,13 +182,27 @@ static void test_synchronization__emits_continuation_after_unbounded_dependencie
     AR_ASSERT(ar_data__get_map_integer(ref_sync_memory, "done_count") == 2,
               "Synchronization should retain dependencies after failed continuation send");
 
+    ar_data_t *mut_sync_memory = ar_agency__get_agent_mutable_memory(mut_agency, sync_agent);
+    AR_ASSERT(mut_sync_memory != NULL, "Synchronization memory should be mutable");
+    AR_ASSERT(ar_data__set_map_integer(mut_sync_memory,
+                                       "continuation_target",
+                                       checked_agent_id(receiver_agent)),
+              "Failed continuation target should be repairable for retry");
     send_dependency(mut_agency, sync_agent, "sync-failed-continuation", "ready-z");
     ar_method_fixture__process_all_messages(own_fixture);
 
-    AR_ASSERT(ar_data__get_map_integer(ref_sync_memory, "completed") == 0,
-              "Synchronization should stay open after repeated failed continuation send");
-    AR_ASSERT(ar_data__get_map_integer(ref_sync_memory, "done_count") == 3,
-              "Synchronization should keep collecting after failed continuation send");
+    AR_ASSERT(ar_data__get_map_integer(ref_sync_memory, "completed") == 1,
+              "Synchronization should complete after continuation retry succeeds");
+    AR_ASSERT(ar_data__get_map_integer(ref_sync_memory, "done_count") == 2,
+              "Synchronization should freeze dependencies after failed continuation send");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_sync_id"),
+                     "sync-failed-continuation") == 0,
+              "Continuation retry should preserve sync id");
+    AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_done_count") == 2,
+              "Continuation retry should report the frozen dependency count");
+    ref_dependencies = ar_data__get_map_data(ref_receiver_memory, "last_dependencies");
+    AR_ASSERT(ref_dependencies != NULL && ar_data__list_count(ref_dependencies) == 2,
+              "Continuation retry should use the frozen dependency list");
 
     own_wait = ar_data__create_map();
     AR_ASSERT(own_wait != NULL, "Failed-status wait message should be created");

@@ -414,6 +414,8 @@ Required counts below one behave as one required dependency, so synchronization 
 `wait` alone.
 Synchronization marks completion only after the continuation is delivered and, when `reply_to` is a
 positive agent id, the status reply is delivered; failed delivery keeps the gate open.
+Once the required count is reached, the dependency list is frozen even if continuation delivery fails;
+later matching dependency messages retry delivery with the same `done_count` and dependencies.
 After continuation delivery, failed status replies are retried without re-emitting the continuation or
 increasing `done_count`.
 

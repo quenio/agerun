@@ -19,10 +19,11 @@ dependency value to `memory.received`. When the number of received dependencies 
 `required_count`, it sends the continuation and reports completion.
 The completion marker is set only after the continuation is delivered and, when `reply_to` is a
 positive agent id, the status reply is delivered. Failed delivery leaves the gate open so later
-dependency messages can retry completion.
-After the continuation has been delivered, the dependency list is frozen; if only the status reply
-fails, later matching dependency messages retry the status report without re-emitting the continuation
-or increasing `done_count`.
+dependency messages can retry completion. Once the required count is reached, the dependency list is
+frozen even if continuation delivery fails; later matching dependency messages retry the continuation
+with the same `done_count` and dependency list. After the continuation has been delivered, if only
+the status reply fails, later matching dependency messages retry the status report without
+re-emitting the continuation or increasing `done_count`.
 
 ## Message Format
 
