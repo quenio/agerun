@@ -27,8 +27,9 @@ policy is `restart`, it spawns a replacement child using the event's `child_meth
 `status=restarted`. If the child is tracked and the policy is not `restart`, it reports
 `status=stopped`. If the child is not tracked, it leaves supervisor state unchanged and reports
 `status=ignored`. If the internal validation message cannot be queued, it reports
-`status=handoff_failed` and leaves lifecycle handling unapplied. A duplicate lifecycle event for the
-last handled child is reported as `ignored` and does not spawn another replacement.
+`status=handoff_failed` and leaves lifecycle handling unapplied. The method records handled lifecycle
+child ids in an internal list, so duplicate lifecycle events for any previously handled child are
+reported as `ignored` and do not spawn another replacement.
 
 On a map whose `action` field is `"stop"`, the method scans the tracked `child_agent_ids` list with
 `head(...)` and `tail(...)`. It exits and reports `status=stopped` only when the supplied
@@ -98,8 +99,8 @@ agent can start many children from one `child_method_names` list. Other methods 
 events to the supervisor when they observe a child failure through application-level messages.
 Composed callers can safely send stop requests through supervisors because untracked child ids are
 reported as ignored instead of being exited. Lifecycle events are guarded the same way, so a stale
-or misaddressed failure cannot add bogus replacement children. Immediate duplicate lifecycle events
-for the last handled child are also reported as ignored.
+or misaddressed failure cannot add bogus replacement children. Duplicate lifecycle events for any
+previously handled child are also reported as ignored.
 
 ## Limitations
 
@@ -109,8 +110,10 @@ uses one shared child method version for the unbounded method-name list; heterog
 be modeled with separate supervisors or by sending restart events with explicit method versions. The
 method appends replacement child ids to its tracked lists; it does not remove arbitrary failed ids
 from the middle of the list because ordinary methods do not currently have an atomic list-filter
-operation. A failed `spawn(...)` instruction aborts method evaluation, so ordinary supervision
-methods cannot catch that failure and send a terminal failure report after the failed instruction.
+operation. The method keeps a separate handled lifecycle id list to suppress delayed duplicate
+failure or exit messages for those retained ids. A failed `spawn(...)` instruction aborts method
+evaluation, so ordinary supervision methods cannot catch that failure and send a terminal failure
+report after the failed instruction.
 
 ## Implementation and Tests
 

@@ -4,6 +4,7 @@
 #include "ar_agency.h"
 #include "ar_assert.h"
 #include "ar_data.h"
+#include "ar_heap.h"
 #include "ar_method.h"
 #include "ar_method_fixture.h"
 #include "ar_methodology.h"
@@ -116,9 +117,13 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
               "Supervision should track all spawned child records");
     AR_ASSERT(ar_data__get_map_integer(ref_memory, "child_count") == 4,
               "Supervision should record four running children");
-    const ar_data_t *ref_first_child = ar_data__list_first(ref_child_ids);
-    int64_t first_child = ar_data__get_integer(ref_first_child);
+    ar_data_t **own_child_id_items = ar_data__list_items(ref_child_ids);
+    AR_ASSERT(own_child_id_items != NULL, "Supervision child ids should be readable");
+    int64_t first_child = ar_data__get_integer(own_child_id_items[0]);
+    int64_t second_child = ar_data__get_integer(own_child_id_items[1]);
+    AR__HEAP__FREE(own_child_id_items);
     AR_ASSERT(first_child > 0, "Supervision should create a child agent");
+    AR_ASSERT(second_child > first_child, "Supervision should create a second child agent");
 
     const ar_data_t *ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "running") == 0,
@@ -203,6 +208,50 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "ignored") == 0,
               "Observer should receive ignored status for duplicate lifecycle event");
+
+    // And a delayed duplicate for an older child is ignored after another child is handled
+    ar_data_t *own_second_failure = ar_data__create_map();
+    AR_ASSERT(own_second_failure != NULL, "Second child failure should be created");
+    ar_data__set_map_string(own_second_failure, "action", "child_failed");
+    ar_data__set_map_integer(own_second_failure,
+                             "child_agent_id",
+                             checked_agent_id(second_child));
+    ar_data__set_map_string(own_second_failure, "child_method_name", "record-receiver");
+    ar_data__set_map_string(own_second_failure, "child_method_version", "1.0.0");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, supervision_agent, own_second_failure),
+              "Second child failure should queue");
+    own_second_failure = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ref_memory = ar_agency__get_agent_memory(mut_agency, supervision_agent);
+    ref_child_ids = ar_data__get_map_data(ref_memory, "child_agent_ids");
+    AR_ASSERT(ref_child_ids != NULL && ar_data__list_count(ref_child_ids) == 6,
+              "Second child failure should append one replacement");
+    AR_ASSERT(ar_data__get_map_integer(ref_memory, "restart_count") == 2,
+              "Second child failure should increment restart count");
+
+    own_duplicate_failure = ar_data__create_map();
+    AR_ASSERT(own_duplicate_failure != NULL, "Delayed duplicate failure should be created");
+    ar_data__set_map_string(own_duplicate_failure, "action", "child_failed");
+    ar_data__set_map_integer(own_duplicate_failure,
+                             "child_agent_id",
+                             checked_agent_id(first_child));
+    ar_data__set_map_string(own_duplicate_failure, "child_method_name", "record-receiver");
+    ar_data__set_map_string(own_duplicate_failure, "child_method_version", "1.0.0");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, supervision_agent, own_duplicate_failure),
+              "Delayed duplicate failure should queue");
+    own_duplicate_failure = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ref_memory = ar_agency__get_agent_memory(mut_agency, supervision_agent);
+    ref_child_ids = ar_data__get_map_data(ref_memory, "child_agent_ids");
+    AR_ASSERT(ref_child_ids != NULL && ar_data__list_count(ref_child_ids) == 6,
+              "Delayed duplicate failure should not append another replacement");
+    AR_ASSERT(ar_data__get_map_integer(ref_memory, "restart_count") == 2,
+              "Delayed duplicate failure should not increment restart count");
+    ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "ignored") == 0,
+              "Observer should receive ignored status for delayed duplicate lifecycle event");
 
     // When a stop request names an untracked agent
     ar_data_t *own_untracked_stop = ar_data__create_map();
