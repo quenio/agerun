@@ -212,11 +212,7 @@ _lock_holder_matches_current_process_identity() {
 }
 
 _missing_holder_grace_seconds() {
-    if [ "$COMPLETE_MODEL_LOCK_POLL_SECONDS" -gt 0 ]; then
-        printf '%s\n' "$COMPLETE_MODEL_LOCK_POLL_SECONDS"
-    else
-        printf '1\n'
-    fi
+    printf '%s\n' "$COMPLETE_MODEL_LOCK_TIMEOUT_SECONDS"
 }
 
 _lock_is_stale() {
