@@ -554,9 +554,8 @@ workflow_coordinator_tests: $(WORKFLOW_REAL_COMPLETION_PREREQ)
 	@# Target completed by dependency
 
 define METHODOLOGY_TEST_ALIAS_RULE
+.PHONY: $(1)
 $(1): $(addprefix bin/,$(call methodology_test_alias_keys,$(1)))
-	@# Target completed by dependency
-bin/$(1): $(addprefix bin/,$(call methodology_test_alias_keys,$(1)))
 	@# Target completed by dependency
 endef
 methodology_test_alias_keys = $(foreach test_src,$(METHODOLOGY_TEST_SRC),$(if $(filter $(1),$(basename $(notdir $(test_src)))),$(call methodology_test_key,$(test_src))))
