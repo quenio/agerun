@@ -444,7 +444,9 @@ Step completion:
 ```
 
 The `step` value must match the workflow agent's active step; stale, duplicate, or out-of-order
-completion maps are ignored.
+completion maps are ignored. Workflow accepts a `step_done` only while it is waiting for the
+currently routed step to report completion, then clears that waiting state before the next internal
+`execute_step` handoff runs so duplicate completions cannot advance the workflow twice.
 Workflow advances `current_step` and consumes a pending step only after the route handoff for that
 step succeeds; failed route handoffs leave the step at the head of the pending queue.
 If the initial internal step handoff or a later step continuation cannot be queued, workflow emits

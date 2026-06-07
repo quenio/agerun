@@ -9,6 +9,7 @@ memory.status := if(memory.is_start = 1, "active", memory.status)
 memory.current_step := if(memory.is_start = 1, 0, memory.current_step)
 memory.completed_step_count := if(memory.is_start = 1, 0, memory.completed_step_count)
 memory.completion_pending := if(memory.is_start = 1, 0, memory.completion_pending)
+memory.awaiting_step_done := if(memory.is_start = 1, 0, memory.awaiting_step_done)
 memory.pending_step_targets := if(memory.is_start = 1, [], memory.pending_step_targets)
 memory.pending_step_actions := if(memory.is_start = 1, [], memory.pending_step_actions)
 memory.pending_step_texts := if(memory.is_start = 1, [], memory.pending_step_texts)
@@ -44,6 +45,7 @@ memory.routed_step := memory.execute_action * memory.route_sent
 memory.route_failed := if(memory.route_sent = 0, 1, 0)
 memory.route_failed := memory.route_failed * memory.execute_action
 memory.current_step := if(memory.routed_step = 1, message.step_number, memory.current_step)
+memory.awaiting_step_done := if(memory.routed_step = 1, 1, memory.awaiting_step_done)
 memory.pending_step_targets := if(memory.routed_step = 1, memory.remaining_step_targets, memory.pending_step_targets)
 memory.pending_step_actions := if(memory.routed_step = 1, memory.remaining_step_actions, memory.pending_step_actions)
 memory.pending_step_texts := if(memory.routed_step = 1, memory.remaining_step_texts, memory.pending_step_texts)
@@ -56,7 +58,7 @@ memory.matching_workflow := if(message.workflow_id = memory.workflow_id, 1, 0)
 memory.matching_step := if(message.step = memory.current_step, 1, 0)
 memory.is_active := if(memory.status = "active", 1, 0)
 memory.not_completion_pending := if(memory.completion_pending = 0, 1, 0)
-memory.step_completion := memory.is_step_done * memory.matching_workflow * memory.matching_step * memory.is_active * memory.not_completion_pending
+memory.step_completion := memory.is_step_done * memory.matching_workflow * memory.matching_step * memory.is_active * memory.not_completion_pending * memory.awaiting_step_done
 memory.completed_step_count := memory.completed_step_count + memory.step_completion
 memory.branch_matched := if(message.outcome = memory.branch_value, 1, 0)
 memory.skip_next := memory.step_completion * memory.branch_matched
@@ -84,6 +86,7 @@ memory.continue_sent := send(memory.self * memory.step_completion * memory.has_n
 memory.continue_required := memory.step_completion * memory.has_next_step
 memory.continue_handoff_failed := if(memory.continue_sent = 0, 1, 0)
 memory.continue_handoff_failed := memory.continue_handoff_failed * memory.continue_required
+memory.awaiting_step_done := if(memory.step_completion = 1, 0, memory.awaiting_step_done)
 memory.no_next_step := if(memory.has_next_step = 1, 0, 1)
 memory.finished_after_step := memory.step_completion * memory.no_next_step
 memory.retry_completion := memory.is_step_done * memory.matching_workflow * memory.matching_step * memory.is_active * memory.completion_pending

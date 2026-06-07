@@ -23,10 +23,13 @@ If the initial internal continuation or a later step continuation cannot be queu
 `workflow_complete` with `status: "handoff_failed"` instead of leaving callers waiting indefinitely.
 
 On a `step_done` map whose `workflow_id` matches the active workflow and whose `step` matches the
-current active step, the method advances to the next pending step. Stale, duplicate, or
-out-of-order completion messages are ignored. When `outcome` equals `branch_value`, it skips one
-pending step before advancing. When no next step remains, it marks the workflow complete and sends a
-map whose `action` field is `"workflow_complete"` to the stored reply target.
+current active step, the method advances to the next pending step only if it is waiting for a
+completion from a routed step. Stale, duplicate, premature, or out-of-order completion messages are
+ignored. The waiting flag is cleared as soon as a completion is accepted, before the next internal
+`execute_step` handoff runs, so duplicate completions cannot count the same step twice. When
+`outcome` equals `branch_value`, it skips one pending step before advancing. When no next step
+remains, it marks the workflow complete and sends a map whose `action` field is
+`"workflow_complete"` to the stored reply target.
 Terminal status is recorded only after the completion message is delivered. If completion delivery
 fails, the workflow stays active with completion pending; a repeated matching `step_done` retries the
 completion message without counting the final step again.

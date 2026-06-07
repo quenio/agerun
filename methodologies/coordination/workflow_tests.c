@@ -179,6 +179,7 @@ static void test_workflow__routes_unbounded_steps_with_branching_to_completion(v
               "Workflow should ignore out-of-order completion before routing step three");
 
     send_step_done(mut_agency, workflow_agent, "wf-1", 1, "skip");
+    send_step_done(mut_agency, workflow_agent, "wf-1", 1, "skip");
     ar_method_fixture__process_all_messages(own_fixture);
 
     AR_ASSERT(ar_data__get_map_data(ref_step2_memory, "last_text") == NULL,
