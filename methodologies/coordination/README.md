@@ -459,7 +459,7 @@ Requests:
   reply_to: <agent>
 }
 
-{ action: "failure" }
+{ action: "failure", current_tick: <tick> }
 { action: "success" }
 ```
 
@@ -480,7 +480,7 @@ Scheduled retry request:
 {
   action: "schedule",
   schedule_id: <operation_id>,
-  due_tick: <delay_ticks>,
+  due_tick: <current_tick + delay_ticks>,
   target: <operation_target>,
   payload_action: <operation_action>,
   payload_text: <operation_text>,
@@ -515,7 +515,8 @@ Delayed retry:
 
 ```text
 1. Send a map with action: "start", strategy: "scheduled", and scheduler_agent to a retry agent.
-2. On a map with action: "failure", retry sends a schedule map to the scheduling agent.
+2. On a map with action: "failure" and current_tick, retry sends a schedule map due at
+   current_tick + delay_ticks.
 3. An external tick source sends maps with action: "tick" to scheduling.
 4. Scheduling re-emits the operation attempt at the requested tick.
 ```

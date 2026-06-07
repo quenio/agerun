@@ -50,7 +50,10 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
         "memory.last_attempt := message.attempt\n"
         "memory.last_operation_id := message.operation_id\n"
         "memory.last_status := message.status\n"
-        "memory.last_attempts := message.attempts\n";
+        "memory.last_attempts := message.attempts\n"
+        "memory.last_schedule_id := message.schedule_id\n"
+        "memory.last_due_tick := message.due_tick\n"
+        "memory.last_target := message.target\n";
 
     AR_ASSERT(ar_methodology__create_method(mut_methodology,
                                             "record-receiver",
@@ -74,12 +77,21 @@ static void test_retry__reexecutes_and_reports_success(void) {
     ar_data_t *own_retry_context = create_context();
     ar_data_t *own_operation_context = create_context();
     ar_data_t *own_report_context = create_context();
+    ar_data_t *own_scheduled_retry_context = create_context();
+    ar_data_t *own_scheduled_operation_context = create_context();
+    ar_data_t *own_scheduler_context = create_context();
     int64_t retry_agent = ar_agency__create_agent(
         mut_agency, "retry", "1.0.0", own_retry_context);
     int64_t operation_agent = ar_agency__create_agent(
         mut_agency, "record-receiver", "1.0.0", own_operation_context);
     int64_t report_agent = ar_agency__create_agent(
         mut_agency, "record-receiver", "1.0.0", own_report_context);
+    int64_t scheduled_retry_agent = ar_agency__create_agent(
+        mut_agency, "retry", "1.0.0", own_scheduled_retry_context);
+    int64_t scheduled_operation_agent = ar_agency__create_agent(
+        mut_agency, "record-receiver", "1.0.0", own_scheduled_operation_context);
+    int64_t scheduler_agent = ar_agency__create_agent(
+        mut_agency, "record-receiver", "1.0.0", own_scheduler_context);
 
     ar_data_t *own_start = ar_data__create_map();
     AR_ASSERT(own_start != NULL, "Retry start should be created");
@@ -130,10 +142,58 @@ static void test_retry__reexecutes_and_reports_success(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_attempts") == 2,
               "Retry should report final attempt count");
 
+    ar_data_t *own_scheduled_start = ar_data__create_map();
+    AR_ASSERT(own_scheduled_start != NULL, "Scheduled retry start should be created");
+    ar_data__set_map_string(own_scheduled_start, "action", "start");
+    ar_data__set_map_string(own_scheduled_start, "operation_id", "op-scheduled");
+    ar_data__set_map_integer(own_scheduled_start,
+                             "operation_target",
+                             checked_agent_id(scheduled_operation_agent));
+    ar_data__set_map_string(own_scheduled_start, "operation_action", "attempt");
+    ar_data__set_map_string(own_scheduled_start, "operation_text", "scheduled-work");
+    ar_data__set_map_integer(own_scheduled_start, "max_attempts", 2);
+    ar_data__set_map_string(own_scheduled_start, "strategy", "scheduled");
+    ar_data__set_map_integer(own_scheduled_start, "scheduler_agent", checked_agent_id(scheduler_agent));
+    ar_data__set_map_integer(own_scheduled_start, "delay_ticks", 3);
+    ar_data__set_map_integer(own_scheduled_start, "reply_to", checked_agent_id(report_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, scheduled_retry_agent, own_scheduled_start),
+              "Scheduled retry start should queue");
+    own_scheduled_start = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    const ar_data_t *ref_scheduled_operation_memory =
+        ar_agency__get_agent_memory(mut_agency, scheduled_operation_agent);
+    AR_ASSERT(ar_data__get_map_integer(ref_scheduled_operation_memory, "last_attempt") == 1,
+              "Scheduled retry should execute first attempt");
+
+    ar_data_t *own_scheduled_failure = ar_data__create_map();
+    AR_ASSERT(own_scheduled_failure != NULL, "Scheduled failure message should be created");
+    ar_data__set_map_string(own_scheduled_failure, "action", "failure");
+    ar_data__set_map_integer(own_scheduled_failure, "current_tick", 10);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, scheduled_retry_agent, own_scheduled_failure),
+              "Scheduled failure message should queue");
+    own_scheduled_failure = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    const ar_data_t *ref_scheduler_memory = ar_agency__get_agent_memory(mut_agency, scheduler_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_scheduler_memory, "last_action"), "schedule") == 0,
+              "Scheduled retry should hand off to scheduling");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_scheduler_memory, "last_schedule_id"),
+                     "op-scheduled") == 0,
+              "Scheduled retry should preserve operation id as schedule id");
+    AR_ASSERT(ar_data__get_map_integer(ref_scheduler_memory, "last_due_tick") == 13,
+              "Scheduled retry should add delay to the failure tick");
+    AR_ASSERT(ar_data__get_map_integer(ref_scheduler_memory, "last_target") ==
+                  checked_agent_id(scheduled_operation_agent),
+              "Scheduled retry should target the operation agent");
+
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_retry_context);
     ar_data__destroy(own_operation_context);
     ar_data__destroy(own_report_context);
+    ar_data__destroy(own_scheduled_retry_context);
+    ar_data__destroy(own_scheduled_operation_context);
+    ar_data__destroy(own_scheduler_context);
 }
 
 int main(void) {

@@ -32,10 +32,12 @@ memory.retry_message := {
   attempt: memory.attempts
 }
 memory.retry_sent := send(memory.operation_target * memory.use_immediate, memory.retry_message)
+memory.failure_tick := if(memory.is_failure = 1, message.current_tick, 0)
+memory.retry_due_tick := memory.failure_tick + memory.delay_ticks
 memory.schedule_message := {
   action: "schedule"
   schedule_id: memory.operation_id
-  due_tick: memory.delay_ticks
+  due_tick: memory.retry_due_tick
   target: memory.operation_target
   payload_action: memory.operation_action
   payload_text: memory.operation_text
