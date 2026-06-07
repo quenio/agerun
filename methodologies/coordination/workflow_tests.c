@@ -49,7 +49,8 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
         "memory.last_correlation_id := message.correlation_id\n"
         "memory.last_workflow_id := message.workflow_id\n"
         "memory.last_status := message.status\n"
-        "memory.last_current_step := message.current_step\n";
+        "memory.last_current_step := message.current_step\n"
+        "memory.last_completed_step_count := message.completed_step_count\n";
 
     AR_ASSERT(ar_methodology__create_method(mut_methodology,
                                             "record-receiver",
@@ -59,8 +60,37 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
     verify_method_parses(mut_methodology, "record-receiver");
 }
 
-static void test_workflow__routes_branching_steps_to_completion(void) {
-    printf("Testing workflow routes branching steps to completion...\n");
+static void append_workflow_step(ar_data_t *mut_step_targets,
+                                 ar_data_t *mut_step_actions,
+                                 ar_data_t *mut_step_texts,
+                                 int target,
+                                 const char *ref_action,
+                                 const char *ref_text) {
+    AR_ASSERT(ar_data__list_add_last_integer(mut_step_targets, target),
+              "Workflow step target should append");
+    AR_ASSERT(ar_data__list_add_last_string(mut_step_actions, ref_action),
+              "Workflow step action should append");
+    AR_ASSERT(ar_data__list_add_last_string(mut_step_texts, ref_text),
+              "Workflow step text should append");
+}
+
+static void send_step_done(ar_agency_t *mut_agency,
+                           int64_t workflow_agent,
+                           int step,
+                           const char *ref_outcome) {
+    ar_data_t *own_done = ar_data__create_map();
+    AR_ASSERT(own_done != NULL, "Step completion should be created");
+    ar_data__set_map_string(own_done, "action", "step_done");
+    ar_data__set_map_string(own_done, "workflow_id", "wf-1");
+    ar_data__set_map_integer(own_done, "step", step);
+    ar_data__set_map_string(own_done, "outcome", ref_outcome);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, workflow_agent, own_done),
+              "Step completion should queue");
+    own_done = NULL;
+}
+
+static void test_workflow__routes_unbounded_steps_with_branching_to_completion(void) {
+    printf("Testing workflow routes unbounded steps with branching to completion...\n");
 
     ar_method_fixture_t *own_fixture = ar_method_fixture__create("workflow_branching");
     AR_ASSERT(ar_method_fixture__initialize(own_fixture), "Fixture should initialize");
@@ -76,6 +106,8 @@ static void test_workflow__routes_branching_steps_to_completion(void) {
     ar_data_t *own_step1_context = create_context();
     ar_data_t *own_step2_context = create_context();
     ar_data_t *own_step3_context = create_context();
+    ar_data_t *own_step4_context = create_context();
+    ar_data_t *own_step5_context = create_context();
     ar_data_t *own_report_context = create_context();
     int64_t routing_agent = ar_agency__create_agent(
         mut_agency, "routing", "1.0.0", own_routing_context);
@@ -87,6 +119,10 @@ static void test_workflow__routes_branching_steps_to_completion(void) {
         mut_agency, "record-receiver", "1.0.0", own_step2_context);
     int64_t step3_agent = ar_agency__create_agent(
         mut_agency, "record-receiver", "1.0.0", own_step3_context);
+    int64_t step4_agent = ar_agency__create_agent(
+        mut_agency, "record-receiver", "1.0.0", own_step4_context);
+    int64_t step5_agent = ar_agency__create_agent(
+        mut_agency, "record-receiver", "1.0.0", own_step5_context);
     int64_t report_agent = ar_agency__create_agent(
         mut_agency, "record-receiver", "1.0.0", own_report_context);
 
@@ -96,15 +132,31 @@ static void test_workflow__routes_branching_steps_to_completion(void) {
     ar_data__set_map_string(own_start, "workflow_id", "wf-1");
     ar_data__set_map_integer(own_start, "routing_agent", checked_agent_id(routing_agent));
     ar_data__set_map_integer(own_start, "reply_to", checked_agent_id(report_agent));
-    ar_data__set_map_integer(own_start, "step1_target", checked_agent_id(step1_agent));
-    ar_data__set_map_string(own_start, "step1_action", "step1");
-    ar_data__set_map_string(own_start, "step1_text", "first");
-    ar_data__set_map_integer(own_start, "step2_target", checked_agent_id(step2_agent));
-    ar_data__set_map_string(own_start, "step2_action", "step2");
-    ar_data__set_map_string(own_start, "step2_text", "second");
-    ar_data__set_map_integer(own_start, "step3_target", checked_agent_id(step3_agent));
-    ar_data__set_map_string(own_start, "step3_action", "step3");
-    ar_data__set_map_string(own_start, "step3_text", "third");
+    ar_data_t *own_step_targets = ar_data__create_list();
+    ar_data_t *own_step_actions = ar_data__create_list();
+    ar_data_t *own_step_texts = ar_data__create_list();
+    AR_ASSERT(own_step_targets != NULL, "Workflow step targets list should be created");
+    AR_ASSERT(own_step_actions != NULL, "Workflow step actions list should be created");
+    AR_ASSERT(own_step_texts != NULL, "Workflow step texts list should be created");
+    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+                         checked_agent_id(step1_agent), "step1", "first");
+    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+                         checked_agent_id(step2_agent), "step2", "second");
+    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+                         checked_agent_id(step3_agent), "step3", "third");
+    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+                         checked_agent_id(step4_agent), "step4", "fourth");
+    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+                         checked_agent_id(step5_agent), "step5", "fifth");
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_targets", own_step_targets),
+              "Workflow start should own step targets list");
+    own_step_targets = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_actions", own_step_actions),
+              "Workflow start should own step actions list");
+    own_step_actions = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_texts", own_step_texts),
+              "Workflow start should own step texts list");
+    own_step_texts = NULL;
     ar_data__set_map_string(own_start, "branch_value", "skip");
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, workflow_agent, own_start),
               "Workflow start should queue");
@@ -115,14 +167,7 @@ static void test_workflow__routes_branching_steps_to_completion(void) {
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_step1_memory, "last_text"), "first") == 0,
               "Workflow should route first step");
 
-    ar_data_t *own_branch = ar_data__create_map();
-    AR_ASSERT(own_branch != NULL, "Step completion should be created");
-    ar_data__set_map_string(own_branch, "action", "step_done");
-    ar_data__set_map_integer(own_branch, "step", 1);
-    ar_data__set_map_string(own_branch, "outcome", "skip");
-    AR_ASSERT(ar_agency__send_to_agent(mut_agency, workflow_agent, own_branch),
-              "Branch completion should queue");
-    own_branch = NULL;
+    send_step_done(mut_agency, workflow_agent, 1, "skip");
     ar_method_fixture__process_all_messages(own_fixture);
 
     const ar_data_t *ref_step2_memory = ar_agency__get_agent_memory(mut_agency, step2_agent);
@@ -132,14 +177,21 @@ static void test_workflow__routes_branching_steps_to_completion(void) {
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_step3_memory, "last_text"), "third") == 0,
               "Workflow should route branched step three");
 
-    ar_data_t *own_complete = ar_data__create_map();
-    AR_ASSERT(own_complete != NULL, "Final completion should be created");
-    ar_data__set_map_string(own_complete, "action", "step_done");
-    ar_data__set_map_integer(own_complete, "step", 3);
-    ar_data__set_map_string(own_complete, "outcome", "done");
-    AR_ASSERT(ar_agency__send_to_agent(mut_agency, workflow_agent, own_complete),
-              "Final completion should queue");
-    own_complete = NULL;
+    send_step_done(mut_agency, workflow_agent, 3, "continue");
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    const ar_data_t *ref_step4_memory = ar_agency__get_agent_memory(mut_agency, step4_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_step4_memory, "last_text"), "fourth") == 0,
+              "Workflow should route fourth step from an unbounded list");
+
+    send_step_done(mut_agency, workflow_agent, 4, "continue");
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    const ar_data_t *ref_step5_memory = ar_agency__get_agent_memory(mut_agency, step5_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_step5_memory, "last_text"), "fifth") == 0,
+              "Workflow should route fifth step from an unbounded list");
+
+    send_step_done(mut_agency, workflow_agent, 5, "done");
     ar_method_fixture__process_all_messages(own_fixture);
 
     const ar_data_t *ref_report_memory = ar_agency__get_agent_memory(mut_agency, report_agent);
@@ -148,8 +200,10 @@ static void test_workflow__routes_branching_steps_to_completion(void) {
               "Workflow should emit completion report");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"), "complete") == 0,
               "Workflow completion status should be complete");
-    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_current_step") == 3,
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_current_step") == 5,
               "Workflow completion should report final step");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_completed_step_count") == 4,
+              "Workflow completion should count executed steps");
 
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_routing_context);
@@ -157,12 +211,14 @@ static void test_workflow__routes_branching_steps_to_completion(void) {
     ar_data__destroy(own_step1_context);
     ar_data__destroy(own_step2_context);
     ar_data__destroy(own_step3_context);
+    ar_data__destroy(own_step4_context);
+    ar_data__destroy(own_step5_context);
     ar_data__destroy(own_report_context);
 }
 
 int main(void) {
     printf("Running workflow method tests...\n\n");
-    test_workflow__routes_branching_steps_to_completion();
+    test_workflow__routes_unbounded_steps_with_branching_to_completion();
     printf("\nAll workflow method tests passed!\n");
     return 0;
 }

@@ -1,30 +1,89 @@
 memory.is_start := if(message.action = "start", 1, 0)
+memory.is_spawn_child := if(message.action = "spawn_child", 1, 0)
 memory.is_child_failed := if(message.action = "child_failed", 1, 0)
 memory.is_child_exited := if(message.action = "child_exited", 1, 0)
 memory.is_stop := if(message.action = "stop", 1, 0)
-memory.child_method_name := if(memory.is_start = 1, message.child_method_name, memory.child_method_name)
-memory.child_method_version := if(memory.is_start = 1, message.child_method_version, memory.child_method_version)
 memory.policy := if(memory.is_start = 1, message.policy, memory.policy)
 memory.reply_to := if(memory.is_start = 1, message.reply_to, memory.reply_to)
-memory.start_method := if(memory.is_start = 1, memory.child_method_name, 0)
-memory.start_spawn_result := spawn(memory.start_method, memory.child_method_version, context)
-memory.child_agent_id := if(memory.is_start = 1, memory.start_spawn_result, memory.child_agent_id)
-memory.status := if(memory.is_start = 1, "running", memory.status)
+memory.child_method_version := if(memory.is_start = 1, message.child_method_version, memory.child_method_version)
+memory.child_agent_ids := if(memory.is_start = 1, [], memory.child_agent_ids)
+memory.child_records := if(memory.is_start = 1, [], memory.child_records)
+memory.child_count := if(memory.is_start = 1, 0, memory.child_count)
+memory.restart_count := if(memory.is_start = 1, 0, memory.restart_count)
+memory.status := if(memory.is_start = 1, "starting", memory.status)
+memory.spawn_request_message := {
+  action: "spawn_child"
+  child_method_names: message.child_method_names
+}
+memory.spawn_request_sent := send(memory.self * memory.is_start, memory.spawn_request_message)
+memory.current_child_method_name := head(message.child_method_names)
+memory.remaining_child_method_names := tail(message.child_method_names)
+memory.has_child := if(memory.current_child_method_name = 0, 0, 1)
+memory.spawn_child_action := memory.is_spawn_child * memory.has_child
+memory.current_method_name := if(memory.spawn_child_action = 1, memory.current_child_method_name, 0)
+memory.current_method_version := if(memory.spawn_child_action = 1, memory.child_method_version, "")
+memory.spawn_result := spawn(memory.current_method_name, memory.current_method_version, context)
+memory.spawned_child := if(memory.spawn_result > 0, memory.spawn_child_action, 0)
+memory.id_append_buffer := if(memory.spawned_child = 1, memory.child_agent_ids, "")
+memory.id_append_ok := append(memory.id_append_buffer, memory.spawn_result)
+memory.child_agent_ids := if(memory.id_append_ok = 1, memory.id_append_buffer, memory.child_agent_ids)
+memory.child_record := {
+  agent_id: memory.spawn_result
+  method_name: memory.current_method_name
+  method_version: memory.current_method_version
+  status: "running"
+}
+memory.record_append_buffer := if(memory.spawned_child = 1, memory.child_records, "")
+memory.record_append_ok := append(memory.record_append_buffer, memory.child_record)
+memory.child_records := if(memory.record_append_ok = 1, memory.record_append_buffer, memory.child_records)
+memory.child_count := memory.child_count + memory.record_append_ok
+memory.next_child := head(memory.remaining_child_method_names)
+memory.has_remaining := if(memory.next_child = 0, 0, 1)
+memory.spawn_continue_message := {
+  action: "spawn_child"
+  child_method_names: memory.remaining_child_method_names
+}
+memory.spawn_continue_sent := send(memory.self * memory.is_spawn_child * memory.has_remaining, memory.spawn_continue_message)
+memory.no_remaining := if(memory.has_remaining = 1, 0, 1)
+memory.start_complete := memory.is_spawn_child * memory.no_remaining
+memory.status := if(memory.start_complete = 1, "running", memory.status)
 memory.restart_policy := if(memory.policy = "restart", 1, 0)
 memory.failure_event := memory.is_child_failed + memory.is_child_exited
 memory.should_restart := memory.failure_event * memory.restart_policy
-memory.restart_method := if(memory.should_restart = 1, memory.child_method_name, 0)
-memory.restart_spawn_result := spawn(memory.restart_method, memory.child_method_version, context)
-memory.child_agent_id := if(memory.should_restart = 1, memory.restart_spawn_result, memory.child_agent_id)
-memory.status := if(memory.should_restart = 1, "restarted", memory.status)
+memory.restart_method := if(memory.should_restart = 1, message.child_method_name, 0)
+memory.restart_method_version := if(memory.should_restart = 1, message.child_method_version, "")
+memory.restart_spawn_result := spawn(memory.restart_method, memory.restart_method_version, context)
+memory.restarted_child := if(memory.restart_spawn_result > 0, memory.should_restart, 0)
+memory.restart_id_append_buffer := if(memory.restarted_child = 1, memory.child_agent_ids, "")
+memory.restart_id_append_ok := append(memory.restart_id_append_buffer, memory.restart_spawn_result)
+memory.child_agent_ids := if(memory.restart_id_append_ok = 1, memory.restart_id_append_buffer, memory.child_agent_ids)
+memory.restart_record := {
+  agent_id: memory.restart_spawn_result
+  replaced_agent_id: message.child_agent_id
+  method_name: memory.restart_method
+  method_version: memory.restart_method_version
+  status: "running"
+}
+memory.restart_record_append_buffer := if(memory.restarted_child = 1, memory.child_records, "")
+memory.restart_record_append_ok := append(memory.restart_record_append_buffer, memory.restart_record)
+memory.child_records := if(memory.restart_record_append_ok = 1, memory.restart_record_append_buffer, memory.child_records)
+memory.child_count := memory.child_count + memory.restart_record_append_ok
+memory.restart_count := memory.restart_count + memory.restart_record_append_ok
+memory.child_agent_id := if(memory.restarted_child = 1, memory.restart_spawn_result, message.child_agent_id)
 memory.status := if(memory.failure_event = 1, "stopped", memory.status)
-memory.status := if(memory.should_restart = 1, "restarted", memory.status)
-memory.stop_result := exit(memory.child_agent_id * memory.is_stop)
+memory.status := if(memory.restarted_child = 1, "restarted", memory.status)
+memory.stop_result := exit(message.child_agent_id * memory.is_stop)
+memory.child_agent_id := if(memory.is_stop = 1, message.child_agent_id, memory.child_agent_id)
 memory.status := if(memory.is_stop = 1, "stopped", memory.status)
+memory.should_report := memory.start_complete + memory.failure_event + memory.is_stop
 memory.report_message := {
   action: "supervision_status"
   status: memory.status
   child_agent_id: memory.child_agent_id
+  child_agent_ids: memory.child_agent_ids
+  child_records: memory.child_records
+  child_count: memory.child_count
+  restart_count: memory.restart_count
   policy: memory.policy
 }
-memory.report_sent := send(memory.reply_to, memory.report_message)
+memory.report_sent := send(memory.reply_to * memory.should_report, memory.report_message)

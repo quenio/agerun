@@ -2,20 +2,26 @@
 
 ## Overview
 
-The workflow method maintains a small workflow state machine and routes each activity step through a
-routing agent. It demonstrates a higher-level coordination behavior built on the lower-level routing
-primitive.
+The workflow method maintains workflow state and routes an unbounded sequence of activity steps
+through a routing agent. It demonstrates a higher-level coordination behavior built on the
+lower-level routing primitive and the `head(...)`/`tail(...)` list traversal pattern.
 
 ## Behavior
 
 On a map whose `action` field is `"start"`, the method stores the workflow id, routing agent, reply
-target, three step targets, step actions, step text values, and branch value. It marks the workflow
-active, sets the current step to 1, and routes step 1.
+target, branch value, and active status. It expects three aligned step lists: `step_targets`,
+`step_actions`, and `step_texts`. The first list contains nonzero target agent ids; the second and
+third lists contain the action and text to route to the target at the same position.
 
-On a step completion map for step 1, the method advances to step 3 when `outcome` equals
-`branch_value`; otherwise it advances to step 2. On a step completion map for step 2, it advances to
-step 3. On a step completion map for step 3, it marks the workflow complete and sends a map whose
-`action` field is `"workflow_complete"` to the stored reply target.
+The method sends itself an `execute_step` message. Each `execute_step` message reads the head item
+from each step list, stores the remaining tails as pending workflow state, and sends a one-to-one
+route request to the routing agent. Because each continuation carries the tail lists, the method can
+process any number of steps supported by ordinary AgeRun messages and memory.
+
+On a `step_done` map whose `workflow_id` matches the active workflow, the method advances to the
+next pending step. When `outcome` equals `branch_value`, it skips one pending step before advancing.
+When no next step remains, it marks the workflow complete and sends a map whose `action` field is
+`"workflow_complete"` to the stored reply target.
 
 ## Message Format
 
@@ -27,15 +33,9 @@ Start request:
   workflow_id: <id>,
   routing_agent: <agent>,
   reply_to: <agent>,
-  step1_target: <agent>,
-  step1_action: <action>,
-  step1_text: <text>,
-  step2_target: <agent>,
-  step2_action: <action>,
-  step2_text: <text>,
-  step3_target: <agent>,
-  step3_action: <action>,
-  step3_text: <text>,
+  step_targets: [<agent>, <agent>, ...],
+  step_actions: [<action>, <action>, ...],
+  step_texts: [<text>, <text>, ...],
   branch_value: <outcome>
 }
 ```
@@ -45,7 +45,8 @@ Step completion request:
 ```text
 {
   action: "step_done",
-  step: <1|2|3>,
+  workflow_id: <id>,
+  step: <current-step-number>,
   outcome: <value>
 }
 ```
@@ -71,25 +72,34 @@ Completion response:
   action: "workflow_complete",
   workflow_id: <id>,
   status: "complete",
-  current_step: 3
+  current_step: <last-step-number>,
+  completed_step_count: <executed-step-count>
 }
 ```
 
 ## Action Field
 
 The input `action` field is a command discriminator in the request map. The workflow agent runs this
-method for every message it receives, so the field separates workflow start messages from step
-completion messages and avoids advancing the workflow for unrelated maps.
+method for every message it receives, so the field separates workflow start messages, internal step
+execution messages, and step completion messages. That prevents unrelated maps from starting,
+advancing, or completing the workflow.
 
 ## Composition Notes
 
 Workflow uses routing directly. It can coordinate distribution, aggregation, synchronization,
 conversation, and retry agents by configuring those agents as step targets.
 
+The method uses aligned primitive lists instead of a list of step maps because the current method
+evaluator cannot safely access fields from a headed map value in this workflow path. The lists are
+still structured data rather than packed strings: each step position is represented by one entry in
+each of `step_targets`, `step_actions`, and `step_texts`.
+
 ## Limitations
 
-This method supports a bounded three-step workflow with one branch from step 1. General workflow
-graphs require dynamic graph storage, iteration, and richer state transition conventions.
+This method supports an unbounded linear workflow with a one-step branch skip when a step outcome
+matches `branch_value`. Arbitrary workflow graphs, branch destinations by id, validation that the
+three step lists have identical lengths, and dynamic step descriptor maps require richer collection
+querying or a specialized validation/transition method.
 
 ## Implementation and Tests
 

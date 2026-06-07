@@ -42,12 +42,12 @@ Composition opportunities:
 | Method | Implementation | Test | Purpose | Composition Role |
 | --- | --- | --- | --- | --- |
 | [`routing`](routing-1.0.0.md) | [`routing-1.0.0.method`](routing-1.0.0.method) | [`routing_tests.c`](routing_tests.c) | Selects one or more recipients and forwards a message. | Foundation for delivery. |
-| [`supervision`](supervision-1.0.0.md) | [`supervision-1.0.0.method`](supervision-1.0.0.method) | [`supervision_tests.c`](supervision_tests.c) | Creates, tracks, stops, and event-restarts a child agent. | Keeps coordination agents available. |
+| [`supervision`](supervision-1.0.0.md) | [`supervision-1.0.0.method`](supervision-1.0.0.method) | [`supervision_tests.c`](supervision_tests.c) | Creates, tracks, stops, and event-restarts unbounded child lists. | Keeps coordination agents available. |
 | [`distribution`](distribution-1.0.0.md) | [`distribution-1.0.0.method`](distribution-1.0.0.method) | [`distribution_tests.c`](distribution_tests.c) | Assigns a work payload to an unbounded worker list. | Builds on routing for fan-out. |
 | [`aggregation`](aggregation-1.0.0.md) | [`aggregation-1.0.0.method`](aggregation-1.0.0.method) | [`aggregation_tests.c`](aggregation_tests.c) | Appends result values and emits a result list. | Completes fan-in with append-backed state. |
 | [`scheduling`](scheduling-1.0.0.md) | [`scheduling-1.0.0.method`](scheduling-1.0.0.method) | [`scheduling_tests.c`](scheduling_tests.c) | Stores pending work and triggers it on explicit tick messages. | Delayed execution primitive. |
-| [`synchronization`](synchronization-1.0.0.md) | [`synchronization-1.0.0.method`](synchronization-1.0.0.method) | [`synchronization_tests.c`](synchronization_tests.c) | Waits for fixed dependencies before sending a continuation. | Dependency gate. |
-| [`workflow`](workflow-1.0.0.md) | [`workflow-1.0.0.method`](workflow-1.0.0.method) | [`workflow_tests.c`](workflow_tests.c) | Maintains a small step graph, routes steps, branches, and completes. | Higher-level sequence and branch coordinator. |
+| [`synchronization`](synchronization-1.0.0.md) | [`synchronization-1.0.0.method`](synchronization-1.0.0.method) | [`synchronization_tests.c`](synchronization_tests.c) | Waits for an unbounded count of dependency messages before sending a continuation. | Dependency gate. |
+| [`workflow`](workflow-1.0.0.md) | [`workflow-1.0.0.method`](workflow-1.0.0.method) | [`workflow_tests.c`](workflow_tests.c) | Routes an unbounded step sequence, supports a branch skip, and completes. | Higher-level sequence and branch coordinator. |
 | [`conversation`](conversation-1.0.0.md) | [`conversation-1.0.0.method`](conversation-1.0.0.method) | [`conversation_tests.c`](conversation_tests.c) | Coordinates a bounded conversation between two participant agents. | Mediated two-agent exchange. |
 | [`retry`](retry-1.0.0.md) | [`retry-1.0.0.method`](retry-1.0.0.method) | [`retry_tests.c`](retry_tests.c) | Re-executes failed operations within a retry policy. | Uses direct send or scheduled retry. |
 
@@ -136,15 +136,27 @@ Requests:
 ```text
 {
   action: "start",
-  child_method_name: <method>,
+  child_method_names: [<method>, <method>, ...],
   child_method_version: <version>,
   policy: "restart",
   reply_to: <agent>
 }
 
-{ action: "child_failed" }
-{ action: "child_exited" }
-{ action: "stop" }
+{
+  action: "child_failed",
+  child_agent_id: <agent>,
+  child_method_name: <method>,
+  child_method_version: <version>
+}
+
+{
+  action: "child_exited",
+  child_agent_id: <agent>,
+  child_method_name: <method>,
+  child_method_version: <version>
+}
+
+{ action: "stop", child_agent_id: <agent> }
 ```
 
 Reply:
@@ -154,6 +166,10 @@ Reply:
   action: "supervision_status",
   status: <running|restarted|stopped>,
   child_agent_id: <agent>,
+  child_agent_ids: [<agent>, <agent>, ...],
+  child_records: [<child-record>, <child-record>, ...],
+  child_count: <count>,
+  restart_count: <count>,
   policy: <policy>
 }
 ```
@@ -294,10 +310,7 @@ Requests:
 {
   action: "wait",
   sync_id: <id>,
-  required_count: <1-3>,
-  required_a: <name>,
-  required_b: <name>,
-  required_c: <name>,
+  required_count: <count>,
   continuation_target: <agent>,
   continuation_action: <action>,
   continuation_text: <text>,
@@ -306,6 +319,7 @@ Requests:
 
 {
   action: "dependency",
+  sync_id: <id>,
   dependency: <name>
 }
 ```
@@ -317,7 +331,8 @@ Continuation:
   action: <continuation_action>,
   sync_id: <id>,
   text: <continuation_text>,
-  done_count: <count>
+  done_count: <count>,
+  dependencies: [<dependency>, <dependency>, ...]
 }
 ```
 
@@ -328,7 +343,8 @@ Status:
   action: "synchronization_status",
   sync_id: <id>,
   status: "complete",
-  done_count: <count>
+  done_count: <count>,
+  dependencies: [<dependency>, <dependency>, ...]
 }
 ```
 
@@ -342,15 +358,9 @@ Start:
   workflow_id: <id>,
   routing_agent: <agent>,
   reply_to: <agent>,
-  step1_target: <agent>,
-  step1_action: <action>,
-  step1_text: <text>,
-  step2_target: <agent>,
-  step2_action: <action>,
-  step2_text: <text>,
-  step3_target: <agent>,
-  step3_action: <action>,
-  step3_text: <text>,
+  step_targets: [<agent>, <agent>, ...],
+  step_actions: [<action>, <action>, ...],
+  step_texts: [<text>, <text>, ...],
   branch_value: <outcome>
 }
 ```
@@ -360,7 +370,8 @@ Step completion:
 ```text
 {
   action: "step_done",
-  step: <1|2|3>,
+  workflow_id: <id>,
+  step: <current-step-number>,
   outcome: <value>
 }
 ```
@@ -372,7 +383,8 @@ Completion:
   action: "workflow_complete",
   workflow_id: <id>,
   status: "complete",
-  current_step: 3
+  current_step: <last-step-number>,
+  completed_step_count: <executed-step-count>
 }
 ```
 
@@ -511,10 +523,10 @@ Delayed retry:
 Branching workflow:
 
 ```text
-1. Send a map with action: "start" to workflow with routing_agent and three step targets.
+1. Send a map with action: "start" to workflow with routing_agent and aligned step lists.
 2. Workflow routes step 1 through routing.
-3. Send a step_done map for step 1 with the branch outcome to route directly to step 3.
-4. Send a step_done map for step 3 to emit a workflow_complete map.
+3. Send a step_done map for step 1 with the branch outcome to skip one pending step.
+4. Continue sending step_done maps until workflow emits a workflow_complete map.
 ```
 
 Conversation-scoped workflow:
@@ -534,12 +546,12 @@ Conversation-scoped workflow:
 | Method | Status | Gap |
 | --- | --- | --- |
 | Routing | Fully implementable for one-to-one and primitive unbounded fan-out. | Richer message inspection and nested recipient descriptors require a richer data query layer. |
-| Supervision | Partially implementable. | Methods cannot autonomously observe child crashes or exits; callers must send `child_failed` or `child_exited` events. |
+| Supervision | Partially implementable. | The method can spawn and track unbounded child method-name lists with one shared start version, but methods cannot autonomously observe child crashes or exits; callers must send `child_failed` or `child_exited` events. Removing arbitrary failed ids from the tracked list or starting one mixed-version list requires a list-filter operation, separate supervisors, or a specialized replacement method. |
 | Distribution | Partially implementable. | The method assigns one work payload to an unbounded worker list by composing with routing. Dynamic decomposition into distinct per-worker portions and load-aware placement require additional decomposition methods or richer collection-processing conventions. |
 | Aggregation | Fully implementable for list-valued fan-in. | Duplicate handling, custom merge functions, and richer aggregate policies require deeper collection operations or specialized aggregate methods. |
 | Scheduling | Partially implementable. | There is no runtime clock or timer callback; scheduling requires explicit `tick` messages from another agent or host process. |
-| Synchronization | Fully implementable for the bounded contract. | Arbitrary dependency sets require collection iteration. |
-| Workflow | Partially implementable. | General workflow graphs require dynamic graph storage and iteration; this method supports a three-step graph with one branch condition. |
+| Synchronization | Fully implementable for unbounded count-based gates. | Membership validation against a declared dependency set and duplicate suppression require richer collection querying/filtering or a specialized validation method. |
+| Workflow | Partially implementable. | The method processes an unbounded linear step sequence and can skip one pending step on a branch outcome. Arbitrary workflow graphs, branch destinations by id, list length validation, and map-shaped step descriptors require richer collection querying or a specialized transition method. |
 | Conversation | Fully implementable for bounded two-agent exchange. | Alternation rules, participant timeouts, semantic summaries, and searchable long-term history require additional methods or host-driven scheduling. |
 | Retry | Fully implementable for immediate retry and scheduled retry by composition. | Backoff policies need an external tick convention and richer arithmetic/time policy support. |
 

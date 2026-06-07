@@ -2,22 +2,26 @@
 
 ## Overview
 
-The supervision method keeps track of one child agent and applies a simple restart policy when the
-supervisor receives explicit lifecycle event messages. It demonstrates supervision as methodology
-logic rather than a runtime capability.
+The supervision method creates and tracks an unbounded list of child agents and applies a simple
+restart policy when the supervisor receives explicit lifecycle event messages. It demonstrates
+supervision as methodology logic rather than a runtime capability.
 
 ## Behavior
 
-On a map whose `action` field is `"start"`, the method stores the child method name, version,
-policy, and reply target, then spawns the child method. It reports `status=running` with the child
-agent id.
+On a map whose `action` field is `"start"`, the method stores the policy, reply target, and shared
+child method version, clears its tracked child lists, and sends itself a `spawn_child` continuation
+for the request's `child_method_names` list. The method consumes that list with `head(...)` and
+`tail(...)`, spawning one child per continuation and appending the agent id and child record into
+memory. When the list is exhausted, it reports `status=running` with the tracked child lists and
+count.
 
 On a map whose `action` field is `"child_failed"` or `"child_exited"`, the method checks whether the
-stored policy is `restart`. If so, it spawns a replacement child and reports `status=restarted`.
-Otherwise, it reports `status=stopped`.
+stored policy is `restart`. If so, it spawns a replacement child using the event's
+`child_method_name` and `child_method_version`, appends the replacement to the tracked lists, and
+reports `status=restarted`. Otherwise, it reports `status=stopped`.
 
-On a map whose `action` field is `"stop"`, the method exits the tracked child agent and reports
-`status=stopped`.
+On a map whose `action` field is `"stop"`, the method exits the supplied `child_agent_id` and
+reports `status=stopped`.
 
 ## Message Format
 
@@ -26,7 +30,7 @@ Start request:
 ```text
 {
   action: "start",
-  child_method_name: <method>,
+  child_method_names: [<method>, <method>, ...],
   child_method_version: <version>,
   policy: "restart",
   reply_to: <agent>
@@ -36,9 +40,21 @@ Start request:
 Lifecycle event requests:
 
 ```text
-{ action: "child_failed" }
-{ action: "child_exited" }
-{ action: "stop" }
+{
+  action: "child_failed",
+  child_agent_id: <agent>,
+  child_method_name: <method>,
+  child_method_version: <version>
+}
+
+{
+  action: "child_exited",
+  child_agent_id: <agent>,
+  child_method_name: <method>,
+  child_method_version: <version>
+}
+
+{ action: "stop", child_agent_id: <agent> }
 ```
 
 Status response:
@@ -48,6 +64,10 @@ Status response:
   action: "supervision_status",
   status: <running|restarted|stopped>,
   child_agent_id: <agent>,
+  child_agent_ids: [<agent>, <agent>, ...],
+  child_records: [<child-record>, <child-record>, ...],
+  child_count: <count>,
+  restart_count: <count>,
   policy: <policy>
 }
 ```
@@ -60,14 +80,19 @@ stop commands from unrelated messages.
 
 ## Composition Notes
 
-Use supervision around long-lived routing, scheduling, workflow, or worker agents. Other methods can
-report lifecycle events to the supervisor when they observe a child failure through application-level
-messages.
+Use supervision around long-lived routing, scheduling, workflow, or worker agents. A supervision
+agent can start many children from one `child_method_names` list. Other methods can report lifecycle
+events to the supervisor when they observe a child failure through application-level messages.
 
 ## Limitations
 
 The method cannot autonomously detect crashes or exits. AgeRun methods do not receive implicit child
-lifecycle events, so callers must send `child_failed` or `child_exited` messages.
+lifecycle events, so callers must send `child_failed` or `child_exited` messages. The start contract
+uses one shared child method version for the unbounded method-name list; heterogeneous versions can
+be modeled with separate supervisors or by sending restart events with explicit method versions. The
+method appends replacement child ids to its tracked lists; it does not remove arbitrary failed ids
+from the middle of the list because ordinary methods do not currently have an atomic list-filter
+operation.
 
 ## Implementation and Tests
 
