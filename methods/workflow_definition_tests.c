@@ -1,4 +1,5 @@
 #include <limits.h>
+#include <pwd.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -174,10 +175,24 @@ static void setup_missing_model(void) {
     unsetenv("AGERUN_COMPLETE_RUNNER");
 }
 
-static void build_shared_model_path(char *mut_path, size_t path_size) {
+static const char *get_default_model_home(void) {
     const char *ref_home = getenv("HOME");
-    AR_ASSERT(ref_home != NULL && ref_home[0] != '\0',
-              "HOME should be set for real completion tests");
+    if (ref_home != NULL && ref_home[0] != '\0') {
+        return ref_home;
+    }
+
+    struct passwd *ref_passwd = getpwuid(getuid());
+    if (ref_passwd != NULL && ref_passwd->pw_dir != NULL && ref_passwd->pw_dir[0] != '\0') {
+        return ref_passwd->pw_dir;
+    }
+
+    return NULL;
+}
+
+static void build_shared_model_path(char *mut_path, size_t path_size) {
+    const char *ref_home = get_default_model_home();
+    AR_ASSERT(ref_home != NULL,
+              "HOME or account home should be available for real completion tests");
     int written = snprintf(mut_path,
                            path_size,
                            "%s/.agerun/models/phi-3-mini-q4.gguf",
