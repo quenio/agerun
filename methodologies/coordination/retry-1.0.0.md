@@ -12,19 +12,22 @@ On a map whose `action` field is `"start"`, the method stores the operation meta
 strategy, maximum attempts, scheduler agent, delay tick, and reply target. It sets `attempts=1` and
 sends the first operation attempt.
 
-On a map whose `action` field is `"failure"`, the method retries when `attempts < max_attempts`. For
-`strategy=immediate`, it sends the next attempt directly to the operation target. For
+On a map whose `action` field is `"failure"` and whose `correlation_id` matches the active
+operation, the method retries when `attempts < max_attempts`. For `strategy=immediate`, it sends the
+next attempt directly to the operation target. For
 `strategy=scheduled`, it sends a schedule request to the scheduler agent with `due_tick` set to the
 failure message's `current_tick` plus `delay_ticks` and `payload_attempt` set to the next attempt
 number. If no attempts remain, it reports `status=failed`.
 The attempt count advances only after the immediate retry or scheduled retry handoff is sent
 successfully. A failed retry dispatch leaves the retry active at the previous attempt count.
 
-On a map whose `action` field is `"success"`, it reports `status=succeeded` with the current attempt
-count.
+On a map whose `action` field is `"success"` and whose `correlation_id` matches the active operation,
+it reports `status=succeeded` with the current attempt count.
 
 Once the retry state reaches terminal `succeeded` or `failed` status, later stale `failure` or
-`success` outcome messages are ignored. A new `start` request opens a fresh active retry state.
+`success` outcome messages are ignored. A new `start` request opens a fresh active retry state. Late
+outcomes from a previous operation are ignored because their `correlation_id` no longer matches the
+active operation id.
 
 ## Message Format
 
@@ -48,8 +51,8 @@ Start request:
 Outcome requests:
 
 ```text
-{ action: "failure", current_tick: <tick> }
-{ action: "success" }
+{ action: "failure", correlation_id: <operation_id>, current_tick: <tick> }
+{ action: "success", correlation_id: <operation_id> }
 ```
 
 Operation attempt:

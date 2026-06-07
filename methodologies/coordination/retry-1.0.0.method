@@ -20,8 +20,9 @@ memory.operation_message := {
 }
 memory.start_sent := send(memory.operation_target * memory.is_start, memory.operation_message)
 memory.is_active_status := if(memory.status = "active", 1, 0)
-memory.active_failure := memory.is_failure * memory.is_active_status
-memory.active_success := memory.is_success * memory.is_active_status
+memory.matching_operation := if(message.correlation_id = memory.operation_id, 1, 0)
+memory.active_failure := memory.is_failure * memory.is_active_status * memory.matching_operation
+memory.active_success := memory.is_success * memory.is_active_status * memory.matching_operation
 memory.can_retry := if(memory.attempts < memory.max_attempts, 1, 0)
 memory.retry_allowed := memory.active_failure * memory.can_retry
 memory.next_attempt := memory.attempts + memory.retry_allowed

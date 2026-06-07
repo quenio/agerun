@@ -498,8 +498,8 @@ Requests:
   reply_to: <agent>
 }
 
-{ action: "failure", current_tick: <tick> }
-{ action: "success" }
+{ action: "failure", correlation_id: <operation_id>, current_tick: <tick> }
+{ action: "success", correlation_id: <operation_id> }
 ```
 
 Attempt:
@@ -541,7 +541,8 @@ Result:
 ```
 
 After retry reports terminal `succeeded` or `failed` status, later stale outcome messages are ignored.
-A new `start` request opens a fresh active retry state.
+A new `start` request opens a fresh active retry state, and late outcomes from previous operations are
+ignored because their `correlation_id` does not match the active operation id.
 Retry attempts advance only after an immediate retry or scheduled retry handoff is sent
 successfully; failed dispatch leaves the retry active at the previous attempt count.
 
@@ -560,8 +561,8 @@ Delayed retry:
 
 ```text
 1. Send a map with action: "start", strategy: "scheduled", and scheduler_agent to a retry agent.
-2. On a map with action: "failure" and current_tick, retry sends a schedule map due at
-   current_tick + delay_ticks.
+2. On a map with action: "failure", correlation_id, and current_tick, retry sends a schedule map due
+   at current_tick + delay_ticks.
 3. An external tick source sends maps with action: "tick" to scheduling.
 4. Scheduling re-emits the operation attempt at the requested tick.
 ```
