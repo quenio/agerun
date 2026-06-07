@@ -44,6 +44,7 @@ memory.schedule_message := {
   target: memory.operation_target
   payload_action: memory.operation_action
   payload_text: memory.operation_text
+  payload_attempt: memory.attempts
   correlation_id: memory.operation_id
   reply_to: 0
 }

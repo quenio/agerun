@@ -6,6 +6,7 @@ memory.due_tick := if(memory.is_schedule = 1, message.due_tick, memory.due_tick)
 memory.target := if(memory.is_schedule = 1, message.target, memory.target)
 memory.payload_action := if(memory.is_schedule = 1, message.payload_action, memory.payload_action)
 memory.payload_text := if(memory.is_schedule = 1, message.payload_text, memory.payload_text)
+memory.payload_attempt := if(memory.is_schedule = 1, message.payload_attempt, memory.payload_attempt)
 memory.correlation_id := if(memory.is_schedule = 1, message.correlation_id, memory.correlation_id)
 memory.reply_to := if(memory.is_schedule = 1, message.reply_to, memory.reply_to)
 memory.pending := if(memory.is_schedule = 1, 1, memory.pending)
@@ -22,6 +23,7 @@ memory.execution_message := {
   action: memory.payload_action
   correlation_id: memory.correlation_id
   text: memory.payload_text
+  attempt: memory.payload_attempt
   schedule_id: memory.schedule_id
 }
 memory.execution_sent := send(memory.target * memory.should_trigger, memory.execution_message)

@@ -15,8 +15,8 @@ sends the first operation attempt.
 On a map whose `action` field is `"failure"`, the method retries when `attempts < max_attempts`. For
 `strategy=immediate`, it sends the next attempt directly to the operation target. For
 `strategy=scheduled`, it sends a schedule request to the scheduler agent with `due_tick` set to the
-failure message's `current_tick` plus `delay_ticks`. If no attempts remain, it reports
-`status=failed`.
+failure message's `current_tick` plus `delay_ticks` and `payload_attempt` set to the next attempt
+number. If no attempts remain, it reports `status=failed`.
 
 On a map whose `action` field is `"success"`, it reports `status=succeeded` with the current attempt
 count.
@@ -71,6 +71,7 @@ Scheduled retry request:
   target: <operation_target>,
   payload_action: <operation_action>,
   payload_text: <operation_text>,
+  payload_attempt: <attempt>,
   correlation_id: <operation_id>,
   reply_to: 0
 }

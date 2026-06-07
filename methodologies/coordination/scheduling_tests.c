@@ -46,6 +46,7 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
     const char *ref_instructions =
         "memory.last_action := message.action\n"
         "memory.last_text := message.text\n"
+        "memory.last_attempt := message.attempt\n"
         "memory.last_correlation_id := message.correlation_id\n"
         "memory.last_schedule_id := message.schedule_id\n"
         "memory.last_status := message.status\n"
@@ -89,6 +90,7 @@ static void test_scheduling__triggers_future_work_on_tick(void) {
     ar_data__set_map_integer(own_schedule, "target", checked_agent_id(receiver_agent));
     ar_data__set_map_string(own_schedule, "payload_action", "execute");
     ar_data__set_map_string(own_schedule, "payload_text", "delayed");
+    ar_data__set_map_integer(own_schedule, "payload_attempt", 7);
     ar_data__set_map_string(own_schedule, "correlation_id", "job-1");
     ar_data__set_map_integer(own_schedule, "reply_to", checked_agent_id(observer_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, scheduling_agent, own_schedule),
@@ -133,6 +135,8 @@ static void test_scheduling__triggers_future_work_on_tick(void) {
               "Receiver should observe scheduled text");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_schedule_id"), "sched-1") == 0,
               "Receiver should observe schedule id");
+    AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_attempt") == 7,
+              "Receiver should observe scheduled attempt");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "triggered") == 0,
               "Observer should receive triggered status");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_current_tick") == 5,

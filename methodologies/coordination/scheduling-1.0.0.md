@@ -8,8 +8,8 @@ or passes the stored due tick. It expresses delayed execution as ordinary messag
 ## Behavior
 
 On a map whose `action` field is `"schedule"`, the method stores the schedule id, due tick, target,
-payload fields, correlation id, and reply target. It marks the work as pending and reports
-`status=scheduled`.
+payload fields, optional payload attempt, correlation id, and reply target. It marks the work as
+pending and reports `status=scheduled`.
 
 On a map whose `action` field is `"tick"`, the method records the current tick. If work is pending
 and `tick >= due_tick`, it sends the stored payload to the stored target. A successful send clears
@@ -33,6 +33,7 @@ Schedule request:
   target: <agent>,
   payload_action: <action>,
   payload_text: <text>,
+  payload_attempt: <attempt>,
   correlation_id: <id>,
   reply_to: <agent>
 }
@@ -59,6 +60,7 @@ Triggered message:
   action: <payload_action>,
   correlation_id: <correlation_id>,
   text: <payload_text>,
+  attempt: <payload_attempt>,
   schedule_id: <schedule_id>
 }
 ```

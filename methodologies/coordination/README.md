@@ -275,6 +275,7 @@ Requests:
   target: <agent>,
   payload_action: <action>,
   payload_text: <text>,
+  payload_attempt: <attempt>,
   correlation_id: <id>,
   reply_to: <agent>
 }
@@ -297,6 +298,7 @@ Triggered message:
   action: <payload_action>,
   correlation_id: <correlation_id>,
   text: <payload_text>,
+  attempt: <payload_attempt>,
   schedule_id: <schedule_id>
 }
 ```
@@ -514,6 +516,7 @@ Scheduled retry request:
   target: <operation_target>,
   payload_action: <operation_action>,
   payload_text: <operation_text>,
+  payload_attempt: <attempt>,
   correlation_id: <operation_id>,
   reply_to: 0
 }

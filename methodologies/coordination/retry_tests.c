@@ -53,7 +53,8 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
         "memory.last_attempts := message.attempts\n"
         "memory.last_schedule_id := message.schedule_id\n"
         "memory.last_due_tick := message.due_tick\n"
-        "memory.last_target := message.target\n";
+        "memory.last_target := message.target\n"
+        "memory.last_payload_attempt := message.payload_attempt\n";
 
     AR_ASSERT(ar_methodology__create_method(mut_methodology,
                                             "record-receiver",
@@ -256,6 +257,8 @@ static void test_retry__reexecutes_and_reports_success(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_scheduler_memory, "last_target") ==
                   checked_agent_id(scheduled_operation_agent),
               "Scheduled retry should target the operation agent");
+    AR_ASSERT(ar_data__get_map_integer(ref_scheduler_memory, "last_payload_attempt") == 2,
+              "Scheduled retry should preserve the next attempt number");
 
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_retry_context);
