@@ -926,8 +926,11 @@ complete-performance-validation-linux-container:
 complete-performance-validation-linux-container-cold:
 	@echo "Preparing an empty isolated model cache for a cold Linux download check"
 	@cold_dir="$(COMPLETE_LINUX_CONTAINER_COLD_MODEL_DIR)"; \
+	while [ "$$cold_dir" != "$${cold_dir%/}" ]; do \
+		cold_dir="$${cold_dir%/}"; \
+	done; \
 	case "$$cold_dir" in \
-		.deps/*) ;; \
+		.deps|.deps/*) ;; \
 		*) echo "ERROR: COMPLETE_LINUX_CONTAINER_COLD_MODEL_DIR must stay under .deps/"; exit 1 ;; \
 	esac; \
 	case "/$$cold_dir/" in \
@@ -936,9 +939,9 @@ complete-performance-validation-linux-container-cold:
 	if [ "$$cold_dir" = ".deps" ] || [ "$$cold_dir" = ".deps/" ]; then \
 		echo "ERROR: unsafe COMPLETE_LINUX_CONTAINER_COLD_MODEL_DIR=$$cold_dir"; \
 		exit 1; \
-	fi
-	rm -rf "$(COMPLETE_LINUX_CONTAINER_COLD_MODEL_DIR)"
-	$(MAKE) COMPLETE_MODEL_DIR="$(CURDIR)/$(COMPLETE_LINUX_CONTAINER_COLD_MODEL_DIR)" \
+	fi; \
+	rm -rf "$$cold_dir"; \
+	$(MAKE) COMPLETE_MODEL_DIR="$(CURDIR)/$$cold_dir" \
 		COMPLETE_LINUX_CONTAINER_MODEL_CACHE_LABEL="cold isolated cache; downloads in Linux if missing" \
 		complete-performance-validation-linux-container
 
