@@ -24,7 +24,8 @@ are ignored.
 The distribution is marked completed only when a terminal result report is actually delivered.
 If terminal report delivery fails, distribution leaves `pending_report` set and accepts a later
 `retry_report` message for the same `work_id` with a replacement `reply_to` target. This retries the
-stored `distribution_result` without rerouting the work.
+stored `distribution_result` without rerouting the work. The retry must be sent before the next
+`distribute` request, because the method maintains a single active work slot.
 
 If the routing agent reports a matching terminal `route_result` with `status: "route_failed"`,
 distribution propagates that failure as `distribution_result.status: "route_failed"` while preserving
@@ -109,7 +110,9 @@ when enough results arrive.
 
 The method assigns one work payload to an unbounded worker list. Dynamic decomposition into distinct
 per-worker portions, load-aware placement, and custom partitioning policies require another
-decomposition method or richer collection-processing conventions.
+decomposition method or richer collection-processing conventions. It keeps one pending terminal
+report for the active work slot; keyed multi-report retention across later `distribute` requests
+would require an exists/default operation or richer map/list filtering patterns.
 
 ## Implementation and Tests
 

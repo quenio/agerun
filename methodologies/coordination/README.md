@@ -254,7 +254,9 @@ ignored.
 Distribution marks itself completed only after the terminal reply is delivered.
 If terminal reply delivery fails, distribution stores it as pending. A later `retry_report` request
 for the same `work_id` retries the stored terminal `distribution_result` with the supplied `reply_to`
-without sending another route request.
+without sending another route request. The retry must arrive before the next `distribute` request,
+because distribution keeps one active work slot. Retaining multiple keyed pending reports across
+later `distribute` requests would require an exists/default operation or richer collection filtering.
 
 ### Aggregation
 
