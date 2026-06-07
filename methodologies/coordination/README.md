@@ -124,14 +124,18 @@ Reply:
   correlation_id: <correlation_id>,
   routed_count: <count>,
   sent_count: <count>,
+  failed_count: <count>,
   sent_one: <0|1>,
   sent_many: <0|1>,
   continuation_sent: <0|1>
 }
 ```
 
-For `mode=many`, a failed self-continuation emits `route_failed` immediately with the partial
-routed/sent counts instead of leaving callers without a terminal result.
+For `mode=many`, `routed_count` and `sent_count` count successful target sends, while
+`failed_count` counts positive target IDs that could not be sent to. A target send failure keeps
+processing the remaining targets and makes the terminal status `route_failed`. A failed
+self-continuation emits `route_failed` immediately with the partial routed/sent counts instead of
+leaving callers without a terminal result.
 
 ### Supervision
 
@@ -228,7 +232,8 @@ Forwarded through `routing`:
   correlation_id: <work_id>,
   reply_to: <distribution-agent>,
   routed_count: 0,
-  sent_count: 0
+  sent_count: 0,
+  failed_count: 0
 }
 ```
 

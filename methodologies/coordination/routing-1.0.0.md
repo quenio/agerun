@@ -18,7 +18,9 @@ it can select `target_a`, `target_b`, or `target_c` by matching `route_key` agai
 For `mode=many`, the method reads `targets` as a list of nonzero agent IDs. It uses `head(...)` to
 send to the next target and `tail(...)` to send a continuation message to itself with the remaining
 targets. This keeps fan-out in ordinary method code instead of adding a runtime routing capability.
-If a required self-continuation cannot be queued, the method emits a terminal `route_result` with
+If a target send fails, the method continues through the remaining targets, counts the failed send in
+`failed_count`, and emits the terminal `route_result` with `status` set to `"route_failed"`. If a
+required self-continuation cannot be queued, the method also emits a terminal `route_result` with
 `status` set to `"route_failed"` and the routed/sent counts accumulated so far.
 
 ## Message Format
@@ -82,14 +84,17 @@ Reply:
   correlation_id: <correlation_id>,
   routed_count: <count>,
   sent_count: <count>,
+  failed_count: <count>,
   sent_one: <0|1>,
   sent_many: <0|1>,
   continuation_sent: <0|1>
 }
 ```
 
-For `mode=many`, `routed_count` and `sent_count` accumulate across the self-message chain. The final
-reply is emitted after the target list is exhausted. The reply preserves the original
+For `mode=many`, `routed_count`, `sent_count`, and `failed_count` accumulate across the self-message
+chain. `routed_count` and `sent_count` count successful target sends; `failed_count` counts positive
+target IDs that could not be sent to. The final reply is emitted after the target list is exhausted.
+The reply preserves the original
 `correlation_id` so downstream coordination methods can match route results to their active work.
 If a self-continuation send fails before the list is exhausted, the reply is emitted immediately with
 partial counts and `continuation_sent` set to `0`.

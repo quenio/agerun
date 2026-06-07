@@ -50,6 +50,7 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
         "memory.last_status := message.status\n"
         "memory.last_routed_count := message.routed_count\n"
         "memory.last_sent_count := message.sent_count\n"
+        "memory.last_failed_count := message.failed_count\n"
         "memory.last_continuation_sent := message.continuation_sent\n";
 
     AR_ASSERT(ar_methodology__create_method(mut_methodology,
@@ -170,11 +171,63 @@ static void test_routing__forwards_one_and_many_messages(void) {
                      "job-2") == 0,
               "Route result should preserve correlation id");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_routed_count") == 4,
-              "Route result should count every nonzero target");
+              "Route result should count every successful target route");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_sent_count") == 4,
               "Route result should count every successful target send");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failed_count") == 0,
+              "Route result should report no failed target sends");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_continuation_sent") == 0,
               "Final route result should report no pending continuation");
+
+    // When a many route includes a positive target id that cannot receive messages
+    own_message = ar_data__create_map();
+    AR_ASSERT(own_message != NULL, "Partial failure route message should be created");
+    ar_data__set_map_string(own_message, "action", "route");
+    ar_data__set_map_string(own_message, "mode", "many");
+    own_targets = ar_data__create_list();
+    AR_ASSERT(own_targets != NULL, "Partial failure targets list should be created");
+    AR_ASSERT(ar_data__list_add_last_integer(own_targets, checked_agent_id(receiver_a)),
+              "First partial target should be stored");
+    AR_ASSERT(ar_data__list_add_last_integer(own_targets, 98765),
+              "Invalid positive target should be stored");
+    AR_ASSERT(ar_data__list_add_last_integer(own_targets, checked_agent_id(receiver_b)),
+              "Final partial target should be stored");
+    AR_ASSERT(ar_data__set_map_data(own_message, "targets", own_targets),
+              "Partial route message should own targets list");
+    own_targets = NULL;
+    ar_data__set_map_string(own_message, "payload_action", "work");
+    ar_data__set_map_string(own_message, "payload_text", "partial-fanout");
+    ar_data__set_map_string(own_message, "correlation_id", "job-failed-send");
+    ar_data__set_map_integer(own_message, "reply_to", checked_agent_id(report_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, routing_agent, own_message),
+              "Partial failure route message should queue");
+    own_message = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    // Then the route result reports successful and failed deliveries separately
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_a_memory, "last_text"),
+                     "partial-fanout") == 0,
+              "First valid partial target should observe forwarded text");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_b_memory, "last_text"),
+                     "partial-fanout") == 0,
+              "Final valid partial target should observe forwarded text");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_action"),
+                     "route_result") == 0,
+              "Partial failure should still emit route result action");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
+                     "route_failed") == 0,
+              "Partial failure should report route_failed status");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_correlation_id"),
+                     "job-failed-send") == 0,
+              "Partial failure result should preserve correlation id");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_routed_count") == 2,
+              "Partial failure result should count successful target routes only");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_sent_count") == 2,
+              "Partial failure result should count successful target sends only");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failed_count") == 1,
+              "Partial failure result should count failed target sends");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_continuation_sent") == 0,
+              "Partial failure final result should report no pending continuation");
 
     // Cleanup
     ar_method_fixture__destroy(own_fixture);

@@ -28,10 +28,19 @@ memory.sent_one_result := send(memory.target_one, memory.forward_message)
 memory.sent_many_result := send(memory.target_many, memory.forward_message)
 memory.sent_one := memory.sent_one_result * memory.has_one_target
 memory.sent_many := memory.sent_many_result * memory.has_many_target
+memory.send_one_failed := if(memory.sent_one_result = 0, 1, 0)
+memory.send_one_failed := memory.send_one_failed * memory.has_one_target
+memory.send_one_failed := memory.send_one_failed * memory.is_one
+memory.send_one_failed := memory.send_one_failed * memory.is_route
+memory.send_many_failed := if(memory.sent_many_result = 0, 1, 0)
+memory.send_many_failed := memory.send_many_failed * memory.has_many_target
+memory.send_many_failed := memory.send_many_failed * memory.is_many
+memory.send_many_failed := memory.send_many_failed * memory.is_route
 memory.remaining_head := head(memory.remaining_targets)
 memory.has_remaining := if(memory.remaining_head > 0, 1, 0)
-memory.routed_count_many := message.routed_count + memory.has_many_target
+memory.routed_count_many := message.routed_count + memory.sent_many
 memory.sent_count_many := message.sent_count + memory.sent_many
+memory.failed_count_many := message.failed_count + memory.send_many_failed
 memory.continuation_required := memory.is_route * memory.is_many * memory.has_remaining
 memory.continuation_target := memory.self * memory.continuation_required
 memory.continuation_message := {
@@ -44,6 +53,7 @@ memory.continuation_message := {
   reply_to: message.reply_to
   routed_count: memory.routed_count_many
   sent_count: memory.sent_count_many
+  failed_count: memory.failed_count_many
 }
 memory.continuation_send_result := send(memory.continuation_target, memory.continuation_message)
 memory.continuation_sent := memory.continuation_send_result * memory.continuation_required
@@ -53,9 +63,12 @@ memory.is_known_mode := memory.is_one + memory.is_many
 memory.should_reply := memory.is_route
 memory.suppress_reply := memory.continuation_required * memory.continuation_sent
 memory.should_reply := if(memory.suppress_reply = 1, 0, memory.should_reply)
-memory.routed_count := if(memory.is_one = 1, memory.has_one_target, memory.routed_count_many)
+memory.routed_count := if(memory.is_one = 1, memory.sent_one, memory.routed_count_many)
 memory.sent_count := if(memory.is_one = 1, memory.sent_one, memory.sent_count_many)
+memory.failed_count := if(memory.is_one = 1, memory.send_one_failed, memory.failed_count_many)
+memory.has_failed_count := if(memory.failed_count > 0, 1, 0)
 memory.status := if(memory.is_route * memory.is_known_mode = 1, "routed", "ignored")
+memory.status := if(memory.has_failed_count = 1, "route_failed", memory.status)
 memory.status := if(memory.continuation_failed = 1, "route_failed", memory.status)
 memory.reply_message := {
   action: "route_result"
@@ -65,6 +78,7 @@ memory.reply_message := {
   sent_count: memory.sent_count
   sent_one: memory.sent_one
   sent_many: memory.sent_many
+  failed_count: memory.failed_count
   continuation_sent: memory.continuation_sent
 }
 memory.reply_sent := send(message.reply_to * memory.should_reply, memory.reply_message)
