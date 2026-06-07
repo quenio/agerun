@@ -50,14 +50,21 @@ COMPLETE_MODEL_LOCK_POLL_SECONDS=${COMPLETE_MODEL_LOCK_POLL_SECONDS:-2}
 COMPLETE_MODEL_LOCK_TIMEOUT_SECONDS=${COMPLETE_MODEL_LOCK_TIMEOUT_SECONDS:-3600}
 
 _abs_path() {
+    local path="$1"
+
     case "$1" in
         /*)
-            printf '%s\n' "$1"
             ;;
         *)
-            printf '%s/%s\n' "$PWD" "$1"
+            path="$PWD/$path"
             ;;
     esac
+
+    while [ "${path#//}" != "$path" ]; do
+        path="/${path#//}"
+    done
+
+    printf '%s\n' "$path"
 }
 
 _require_safe_path() {
