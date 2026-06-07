@@ -180,6 +180,30 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(ar_data__get_map_integer(ref_memory, "restart_count") == 1,
               "Supervision should count the restart");
 
+    // And a duplicate lifecycle event for the replaced child is ignored
+    ar_data_t *own_duplicate_failure = ar_data__create_map();
+    AR_ASSERT(own_duplicate_failure != NULL, "Duplicate child failure should be created");
+    ar_data__set_map_string(own_duplicate_failure, "action", "child_failed");
+    ar_data__set_map_integer(own_duplicate_failure,
+                             "child_agent_id",
+                             checked_agent_id(first_child));
+    ar_data__set_map_string(own_duplicate_failure, "child_method_name", "record-receiver");
+    ar_data__set_map_string(own_duplicate_failure, "child_method_version", "1.0.0");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, supervision_agent, own_duplicate_failure),
+              "Duplicate child failure should queue");
+    own_duplicate_failure = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ref_memory = ar_agency__get_agent_memory(mut_agency, supervision_agent);
+    ref_child_ids = ar_data__get_map_data(ref_memory, "child_agent_ids");
+    AR_ASSERT(ref_child_ids != NULL && ar_data__list_count(ref_child_ids) == 5,
+              "Duplicate child failure should not append another replacement");
+    AR_ASSERT(ar_data__get_map_integer(ref_memory, "restart_count") == 1,
+              "Duplicate child failure should not increment restart count");
+    ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "ignored") == 0,
+              "Observer should receive ignored status for duplicate lifecycle event");
+
     // When a stop request names an untracked agent
     ar_data_t *own_untracked_stop = ar_data__create_map();
     AR_ASSERT(own_untracked_stop != NULL, "Untracked stop should be created");

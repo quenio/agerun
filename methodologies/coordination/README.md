@@ -184,6 +184,8 @@ status or exit the named agent.
 Lifecycle `child_failed` and `child_exited` events are validated against the same tracked list before
 restart or stop handling. Untracked lifecycle events report `ignored` and do not append replacement
 children or increment `restart_count`.
+An immediate duplicate lifecycle event for the last handled child is also reported as `ignored`
+instead of starting another replacement.
 If an internal spawn continuation cannot be queued, supervision reports `handoff_failed` instead of
 remaining in `starting`.
 If an internal lifecycle or stop validation message cannot be queued, supervision also reports

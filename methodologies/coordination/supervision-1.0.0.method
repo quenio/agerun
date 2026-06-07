@@ -12,6 +12,7 @@ memory.child_agent_ids := if(memory.is_start = 1, [], memory.child_agent_ids)
 memory.child_records := if(memory.is_start = 1, [], memory.child_records)
 memory.child_count := if(memory.is_start = 1, 0, memory.child_count)
 memory.restart_count := if(memory.is_start = 1, 0, memory.restart_count)
+memory.last_handled_child_agent_id := if(memory.is_start = 1, 0, memory.last_handled_child_agent_id)
 memory.status := if(memory.is_start = 1, "starting", memory.status)
 memory.spawn_request_message := {
   action: "spawn_child"
@@ -93,7 +94,10 @@ memory.lifecycle_continue_failed := memory.lifecycle_continue_failed * memory.li
 memory.lifecycle_no_remaining := 1 - memory.lifecycle_has_remaining
 memory.lifecycle_scan_exhausted := memory.is_validate_lifecycle * memory.lifecycle_no_remaining
 memory.lifecycle_untracked := memory.lifecycle_scan_exhausted * memory.lifecycle_not_matched
-memory.tracked_failure_event := memory.lifecycle_match
+memory.lifecycle_already_handled := if(message.child_agent_id = memory.last_handled_child_agent_id, memory.is_validate_lifecycle, 0)
+memory.lifecycle_duplicate := memory.lifecycle_match * memory.lifecycle_already_handled
+memory.lifecycle_not_already_handled := 1 - memory.lifecycle_already_handled
+memory.tracked_failure_event := memory.lifecycle_match * memory.lifecycle_not_already_handled
 memory.should_restart := memory.tracked_failure_event * memory.restart_policy
 memory.restart_method := if(memory.should_restart = 1, message.child_method_name, 0)
 memory.restart_method_version := if(memory.should_restart = 1, message.child_method_version, "")
@@ -115,6 +119,7 @@ memory.child_records := if(memory.restart_record_append_ok = 1, memory.restart_r
 memory.child_count := memory.child_count + memory.restart_record_append_ok
 memory.restart_count := memory.restart_count + memory.restart_record_append_ok
 memory.child_agent_id := if(memory.restarted_child = 1, memory.restart_spawn_result, message.child_agent_id)
+memory.last_handled_child_agent_id := if(memory.tracked_failure_event = 1, message.child_agent_id, memory.last_handled_child_agent_id)
 memory.status := if(memory.tracked_failure_event = 1, "stopped", memory.status)
 memory.status := if(memory.restarted_child = 1, "restarted", memory.status)
 memory.stop_validation_message := {
@@ -158,12 +163,14 @@ memory.validation_handoff_failed := memory.validation_handoff_failed + memory.st
 memory.status := if(memory.validation_handoff_failed > 0, "handoff_failed", memory.status)
 memory.report_status := memory.status
 memory.report_status := if(memory.lifecycle_untracked = 1, "ignored", memory.report_status)
+memory.report_status := if(memory.lifecycle_duplicate = 1, "ignored", memory.report_status)
 memory.report_status := if(memory.stop_untracked = 1, "ignored", memory.report_status)
 memory.report_status := if(memory.stop_failed = 1, "stop_failed", memory.report_status)
 memory.should_report := memory.start_complete + memory.tracked_failure_event
 memory.should_report := memory.should_report + memory.spawn_handoff_failed
 memory.should_report := memory.should_report + memory.validation_handoff_failed
 memory.should_report := memory.should_report + memory.lifecycle_untracked
+memory.should_report := memory.should_report + memory.lifecycle_duplicate
 memory.should_report := memory.should_report + memory.stop_done
 memory.report_message := {
   action: "supervision_status"
