@@ -410,6 +410,31 @@ static void test_retry__reexecutes_and_reports_success(void) {
               "Failed success report delivery should leave retry active");
     AR_ASSERT(ar_data__get_map_integer(ref_retry_memory, "attempts") == 1,
               "Failed success report delivery should preserve attempt count");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_retry_memory, "pending_terminal_status"),
+                     "succeeded") == 0,
+              "Failed success report should preserve pending terminal success");
+
+    ar_data_t *own_opposite_failure = ar_data__create_map();
+    AR_ASSERT(own_opposite_failure != NULL, "Opposite failure after success should be created");
+    ar_data__set_map_string(own_opposite_failure, "action", "failure");
+    ar_data__set_map_string(own_opposite_failure,
+                            "correlation_id",
+                            "op-success-report-failed");
+    ar_data__set_map_integer(own_opposite_failure, "current_tick", 95);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_opposite_failure),
+              "Opposite failure after success should queue");
+    own_opposite_failure = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_retry_memory, "status"), "active") == 0,
+              "Opposite failure during pending success report should leave retry active");
+    AR_ASSERT(ar_data__get_map_integer(ref_retry_memory, "attempts") == 1,
+              "Opposite failure during pending success report should preserve attempt count");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_retry_memory, "pending_terminal_status"),
+                     "succeeded") == 0,
+              "Opposite failure should not replace pending terminal success");
+    AR_ASSERT(ar_data__get_map_integer(ref_operation_memory, "last_attempt") == 1,
+              "Opposite failure during pending success report should not dispatch a retry");
 
     own_failed_success_report = ar_data__create_map();
     AR_ASSERT(own_failed_success_report != NULL, "Repeated failed success report should be created");

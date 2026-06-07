@@ -30,8 +30,9 @@ Once the retry state reaches terminal `succeeded` or `failed` status, later stal
 outcomes from a previous operation are ignored because their `correlation_id` no longer matches the
 active operation id.
 Terminal status is recorded only after the `retry_result` report is delivered. If report delivery
-fails, the retry stays active so a later matching outcome can retry the terminal report without
-changing the attempt count.
+fails, the retry stores the pending terminal status and attempt count. Later matching outcomes retry
+that original terminal report without changing the attempt count or replacing the pending terminal
+result.
 
 ## Message Format
 
