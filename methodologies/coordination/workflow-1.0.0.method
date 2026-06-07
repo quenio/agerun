@@ -27,10 +27,6 @@ memory.remaining_step_actions := tail(message.step_actions)
 memory.remaining_step_texts := tail(message.step_texts)
 memory.has_step := if(memory.step_target > 0, 1, 0)
 memory.execute_action := memory.is_execute_step * memory.has_step
-memory.current_step := if(memory.execute_action = 1, message.step_number, memory.current_step)
-memory.pending_step_targets := if(memory.execute_action = 1, memory.remaining_step_targets, memory.pending_step_targets)
-memory.pending_step_actions := if(memory.execute_action = 1, memory.remaining_step_actions, memory.pending_step_actions)
-memory.pending_step_texts := if(memory.execute_action = 1, memory.remaining_step_texts, memory.pending_step_texts)
 memory.route_message := {
   action: "route"
   mode: "one"
@@ -41,6 +37,16 @@ memory.route_message := {
   reply_to: 0
 }
 memory.route_sent := send(memory.routing_agent * memory.execute_action, memory.route_message)
+memory.routed_step := memory.execute_action * memory.route_sent
+memory.route_failed := if(memory.route_sent = 0, 1, 0)
+memory.route_failed := memory.route_failed * memory.execute_action
+memory.current_step := if(memory.routed_step = 1, message.step_number, memory.current_step)
+memory.pending_step_targets := if(memory.routed_step = 1, memory.remaining_step_targets, memory.pending_step_targets)
+memory.pending_step_actions := if(memory.routed_step = 1, memory.remaining_step_actions, memory.pending_step_actions)
+memory.pending_step_texts := if(memory.routed_step = 1, memory.remaining_step_texts, memory.pending_step_texts)
+memory.pending_step_targets := if(memory.route_failed = 1, message.step_targets, memory.pending_step_targets)
+memory.pending_step_actions := if(memory.route_failed = 1, message.step_actions, memory.pending_step_actions)
+memory.pending_step_texts := if(memory.route_failed = 1, message.step_texts, memory.pending_step_texts)
 memory.no_step := if(memory.has_step = 1, 0, 1)
 memory.empty_completion := memory.is_execute_step * memory.no_step
 memory.matching_workflow := if(message.workflow_id = memory.workflow_id, 1, 0)

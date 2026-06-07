@@ -14,9 +14,11 @@ target, branch value, and active status. It expects three aligned step lists: `s
 third lists contain the action and text to route to the target at the same position.
 
 The method sends itself an `execute_step` message. Each `execute_step` message reads the head item
-from each step list, stores the remaining tails as pending workflow state, and sends a one-to-one
-route request to the routing agent. Because each continuation carries the tail lists, the method can
-process any number of steps supported by ordinary AgeRun messages and memory.
+from each step list and sends a one-to-one route request to the routing agent. Only a successful
+route handoff advances `current_step` and stores the remaining tails as pending workflow state; if
+the route handoff fails, the current head remains in the pending queue. Because each continuation
+carries the tail lists, the method can process any number of steps supported by ordinary AgeRun
+messages and memory.
 
 On a `step_done` map whose `workflow_id` matches the active workflow and whose `step` matches the
 current active step, the method advances to the next pending step. Stale, duplicate, or

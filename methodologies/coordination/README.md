@@ -386,6 +386,8 @@ Step completion:
 
 The `step` value must match the workflow agent's active step; stale, duplicate, or out-of-order
 completion maps are ignored.
+Workflow advances `current_step` and consumes a pending step only after the route handoff for that
+step succeeds; failed route handoffs leave the step at the head of the pending queue.
 
 Completion:
 

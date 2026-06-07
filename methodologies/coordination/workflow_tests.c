@@ -213,6 +213,48 @@ static void test_workflow__routes_unbounded_steps_with_branching_to_completion(v
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_completed_step_count") == 4,
               "Workflow completion should count executed steps");
 
+    own_start = ar_data__create_map();
+    AR_ASSERT(own_start != NULL, "Failed route workflow start should be created");
+    ar_data__set_map_string(own_start, "action", "start");
+    ar_data__set_map_string(own_start, "workflow_id", "wf-failed-route");
+    ar_data__set_map_integer(own_start, "routing_agent", 98765);
+    ar_data__set_map_integer(own_start, "reply_to", checked_agent_id(report_agent));
+    own_step_targets = ar_data__create_list();
+    own_step_actions = ar_data__create_list();
+    own_step_texts = ar_data__create_list();
+    AR_ASSERT(own_step_targets != NULL, "Failed route step targets list should be created");
+    AR_ASSERT(own_step_actions != NULL, "Failed route step actions list should be created");
+    AR_ASSERT(own_step_texts != NULL, "Failed route step texts list should be created");
+    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+                         checked_agent_id(step1_agent), "step1", "first");
+    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+                         checked_agent_id(step2_agent), "step2", "second");
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_targets", own_step_targets),
+              "Failed route start should own step targets list");
+    own_step_targets = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_actions", own_step_actions),
+              "Failed route start should own step actions list");
+    own_step_actions = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_texts", own_step_texts),
+              "Failed route start should own step texts list");
+    own_step_texts = NULL;
+    ar_data__set_map_string(own_start, "branch_value", "skip");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, workflow_agent, own_start),
+              "Failed route workflow start should queue");
+    own_start = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    const ar_data_t *ref_workflow_memory = ar_agency__get_agent_memory(mut_agency, workflow_agent);
+    const ar_data_t *ref_pending_targets =
+        ar_data__get_map_data(ref_workflow_memory, "pending_step_targets");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_workflow_memory, "status"), "active") == 0,
+              "Failed route should keep workflow active");
+    AR_ASSERT(ar_data__get_map_integer(ref_workflow_memory, "current_step") == 0,
+              "Failed route should not advance current step");
+    AR_ASSERT(ref_pending_targets != NULL, "Failed route should retain pending targets");
+    AR_ASSERT(ar_data__list_count(ref_pending_targets) == 2,
+              "Failed route should not consume pending step queue");
+
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_routing_context);
     ar_data__destroy(own_workflow_context);
