@@ -10,15 +10,18 @@ lower-level routing primitive and the `head(...)`/`tail(...)` list traversal pat
 
 On a map whose `action` field is `"start"`, the method stores the workflow id, routing agent, reply
 target, branch value, and active status. It expects three aligned step lists: `step_targets`,
-`step_actions`, and `step_texts`. The first list contains nonzero target agent ids; the second and
-third lists contain the action and text to route to the target at the same position.
+`step_actions`, and `step_texts`. The first list contains target agent ids where positive integers
+are deliverable targets and integer `0` can be used as a placeholder; the second and third lists
+contain the action and text to route to the target at the same position.
 
 The method sends itself an `execute_step` message. Each `execute_step` message reads the head item
 from each step list and sends a one-to-one route request to the routing agent. Only a successful
 route handoff advances `current_step` and stores the remaining tails as pending workflow state; if
-the route handoff fails, the current head remains in the pending queue. Because each continuation
-carries the tail lists, the method can process any number of steps supported by ordinary AgeRun
-messages and memory.
+the route handoff fails, the current head remains in the pending queue. If the current target is `0`
+and the next target is positive, the method sends itself another `execute_step` message with the tail
+lists and the same step number, skipping the placeholder without counting it as an executed step.
+Because each continuation carries the tail lists, the method can process any number of steps
+supported by ordinary AgeRun messages and memory.
 If the initial internal continuation or a later step continuation cannot be queued, the method emits
 `workflow_complete` with `status: "handoff_failed"` instead of leaving callers waiting indefinitely.
 The route request sets `reply_to` to the workflow agent itself, so a matching `route_failed` result
@@ -113,7 +116,10 @@ each of `step_targets`, `step_actions`, and `step_texts`.
 This method supports an unbounded linear workflow with a one-step branch skip when a step outcome
 matches `branch_value`. Arbitrary workflow graphs, branch destinations by id, validation that the
 three step lists have identical lengths, and dynamic step descriptor maps require richer collection
-querying or a specialized validation/transition method.
+querying or a specialized validation/transition method. A single zero placeholder before a positive
+step is skipped, but consecutive zero placeholders can still terminate scanning early because
+ordinary methods do not have a list length or type predicate that distinguishes an empty list from a
+list whose next item is integer `0`.
 
 ## Implementation and Tests
 

@@ -216,6 +216,54 @@ static void test_workflow__routes_unbounded_steps_with_branching_to_completion(v
               "Workflow completion should count executed steps");
 
     own_start = ar_data__create_map();
+    AR_ASSERT(own_start != NULL, "Zero-head workflow start should be created");
+    ar_data__set_map_string(own_start, "action", "start");
+    ar_data__set_map_string(own_start, "workflow_id", "wf-zero-head");
+    ar_data__set_map_integer(own_start, "routing_agent", checked_agent_id(routing_agent));
+    ar_data__set_map_integer(own_start, "reply_to", checked_agent_id(report_agent));
+    own_step_targets = ar_data__create_list();
+    own_step_actions = ar_data__create_list();
+    own_step_texts = ar_data__create_list();
+    AR_ASSERT(own_step_targets != NULL, "Zero-head targets should be created");
+    AR_ASSERT(own_step_actions != NULL, "Zero-head actions should be created");
+    AR_ASSERT(own_step_texts != NULL, "Zero-head texts should be created");
+    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+                         0, "noop", "placeholder");
+    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+                         checked_agent_id(step1_agent), "step1", "after-zero");
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_targets", own_step_targets),
+              "Zero-head start should own step targets");
+    own_step_targets = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_actions", own_step_actions),
+              "Zero-head start should own step actions");
+    own_step_actions = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_texts", own_step_texts),
+              "Zero-head start should own step texts");
+    own_step_texts = NULL;
+    ar_data__set_map_string(own_start, "branch_value", "skip");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, workflow_agent, own_start),
+              "Zero-head workflow start should queue");
+    own_start = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_step1_memory, "last_text"),
+                     "after-zero") == 0,
+              "Workflow should skip a zero head and route the later positive step");
+
+    send_step_done(mut_agency, workflow_agent, "wf-zero-head", 1, "done");
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_workflow_id"),
+                     "wf-zero-head") == 0,
+              "Zero-head workflow should report the workflow id after routed step");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"), "complete") == 0,
+              "Zero-head workflow should complete after the routed positive step");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_current_step") == 1,
+              "Zero-head workflow should not count the placeholder as a step");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_completed_step_count") == 1,
+              "Zero-head workflow should count the routed positive step");
+
+    own_start = ar_data__create_map();
     AR_ASSERT(own_start != NULL, "Failed route workflow start should be created");
     ar_data__set_map_string(own_start, "action", "start");
     ar_data__set_map_string(own_start, "workflow_id", "wf-failed-route");

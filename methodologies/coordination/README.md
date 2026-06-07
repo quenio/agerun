@@ -464,6 +464,8 @@ currently routed step to report completion, then clears that waiting state befor
 `execute_step` handoff runs so duplicate completions cannot advance the workflow twice.
 Workflow advances `current_step` and consumes a pending step only after the route handoff for that
 step succeeds; failed route handoffs leave the step at the head of the pending queue.
+If an `execute_step` target head is `0` and the immediate next target is positive, workflow skips the
+placeholder with an internal continuation and keeps the same step number.
 Workflow asks routing to send `route_result` replies back to the workflow agent; a matching
 `route_failed` result for the active step completes the workflow with `status: "handoff_failed"`.
 If the initial internal step handoff or a later step continuation cannot be queued, workflow emits
