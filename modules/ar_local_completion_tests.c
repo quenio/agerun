@@ -255,6 +255,8 @@ static void test_local_completion__direct_backend_missing_model_file_failure(voi
     assert(ar_local_completion__is_ready(own_runtime) == false);
     assert(ar_log__get_last_error_message(own_log) != NULL);
     assert(strstr(ar_log__get_last_error_message(own_log), "model file was not found") != NULL);
+    assert(strstr(ar_log__get_last_error_message(own_log),
+                  "recovery_hint=./missing-direct-model.gguf") != NULL);
 
     _destroy_placeholder_list(own_placeholders);
     ar_local_completion__destroy(own_runtime);

@@ -18,15 +18,20 @@ const ProcessChild = std.process.Child;
 const ProcessChildRunResult = std.process.Child.RunResult;
 const runProcessChild = ProcessChild.run;
 const LlamaToken = if (have_llama) @FieldType(llama_api, "llama_token") else i32;
-const default_model_hint = "$HOME/.agerun/models/phi-3-mini-q4.gguf";
+const default_model_hint =
+    "$HOME/.agerun/models/phi-3-mini-q4.gguf or " ++
+    ".agerun/models/phi-3-mini-q4.gguf when no home directory is available";
 const default_model_missing_hint =
-    "complete() local model file was not found; set AGERUN_COMPLETE_MODEL or provide " ++
+    "complete() local model file was not found at configured path; " ++
+    "set AGERUN_COMPLETE_MODEL or run make complete-runtime-ready; recovery_hint=" ++
     default_model_hint;
 const default_model_not_configured_hint =
-    "complete() local model path is not configured; set AGERUN_COMPLETE_MODEL or provide " ++
+    "complete() local model path is not configured; " ++
+    "set AGERUN_COMPLETE_MODEL or make HOME/account home available; recovery_hint=" ++
     default_model_hint;
 const default_model_empty_hint =
-    "complete() local model path is empty; set AGERUN_COMPLETE_MODEL or provide " ++
+    "complete() local model path is empty; " ++
+    "set AGERUN_COMPLETE_MODEL or make HOME/account home available; recovery_hint=" ++
     default_model_hint;
 
 var g_llama_backend_initialized = false;

@@ -25,7 +25,9 @@ extern char **environ;
 #define AR_LOCAL_COMPLETION_DLOPEN_FLAGS (RTLD_NOW | RTLD_LOCAL)
 #endif
 
-#define AR_LOCAL_COMPLETION_DEFAULT_MODEL_HINT "$HOME/.agerun/models/phi-3-mini-q4.gguf"
+#define AR_LOCAL_COMPLETION_DEFAULT_MODEL_HINT \
+    "set AGERUN_COMPLETE_MODEL or make HOME/account home available for " \
+    ".agerun/models/phi-3-mini-q4.gguf"
 
 typedef struct ar_local_completion_buffer_s {
     char *own_text;
@@ -315,6 +317,15 @@ static bool _file_exists(const char *ref_path) {
     return ref_path != NULL && access(ref_path, F_OK) == 0;
 }
 
+static const char *_model_path_recovery_hint(const ar_local_completion_t *ref_runtime) {
+    if (ref_runtime != NULL &&
+        ref_runtime->own_model_path != NULL &&
+        ref_runtime->own_model_path[0] != '\0') {
+        return ref_runtime->own_model_path;
+    }
+    return AR_LOCAL_COMPLETION_DEFAULT_MODEL_HINT;
+}
+
 static bool _placeholder_items_init(const ar_list_t *ref_placeholders,
                                     ar_local_completion_placeholder_items_t *mut_view) {
     if (mut_view == NULL) {
@@ -450,7 +461,7 @@ static bool _ensure_llama_backend_initialized(ar_local_completion_t *mut_runtime
     if (mut_runtime->own_model_path == NULL || mut_runtime->own_model_path[0] == '\0') {
         _log_failure(mut_runtime,
                      "complete() local model path is not configured; set AGERUN_COMPLETE_MODEL "
-                     "or provide $HOME/.agerun/models/phi-3-mini-q4.gguf",
+                     "or make HOME/account home available",
                      "runtime_unavailable",
                      "local model path is not configured",
                      AR_LOCAL_COMPLETION_DEFAULT_MODEL_HINT);
@@ -458,11 +469,11 @@ static bool _ensure_llama_backend_initialized(ar_local_completion_t *mut_runtime
     }
     if (!_file_exists(mut_runtime->own_model_path)) {
         _log_failure(mut_runtime,
-                     "complete() local model file was not found; set AGERUN_COMPLETE_MODEL "
-                     "or provide $HOME/.agerun/models/phi-3-mini-q4.gguf",
+                     "complete() local model file was not found at configured path; set "
+                     "AGERUN_COMPLETE_MODEL or run make complete-runtime-ready",
                      "runtime_unavailable",
                      "local model file was not found",
-                     AR_LOCAL_COMPLETION_DEFAULT_MODEL_HINT);
+                     _model_path_recovery_hint(mut_runtime));
         return false;
     }
 
