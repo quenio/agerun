@@ -104,6 +104,9 @@ Optional keyed selection for `mode=one`:
 }
 ```
 
+If a one-to-one request has no positive direct or keyed target, routing emits `route_failed` with zero
+delivery counts instead of reporting a successful zero-send route.
+
 Forwarded message:
 
 ```text

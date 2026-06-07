@@ -229,6 +229,39 @@ static void test_routing__forwards_one_and_many_messages(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_continuation_sent") == 0,
               "Partial failure final result should report no pending continuation");
 
+    // When a one-to-one keyed route does not select a target
+    own_message = ar_data__create_map();
+    AR_ASSERT(own_message != NULL, "Missed keyed route message should be created");
+    ar_data__set_map_string(own_message, "action", "route");
+    ar_data__set_map_string(own_message, "mode", "one");
+    ar_data__set_map_string(own_message, "route_key", "missing");
+    ar_data__set_map_string(own_message, "route_a_key", "known");
+    ar_data__set_map_integer(own_message, "target_a", checked_agent_id(receiver_c));
+    ar_data__set_map_string(own_message, "payload_action", "work");
+    ar_data__set_map_string(own_message, "payload_text", "missed");
+    ar_data__set_map_string(own_message, "correlation_id", "job-missing-key");
+    ar_data__set_map_integer(own_message, "reply_to", checked_agent_id(report_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, routing_agent, own_message),
+              "Missed keyed route message should queue");
+    own_message = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    // Then the route result reports failure instead of successful zero-delivery routing
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_c_memory, "last_text"), "fanout") == 0,
+              "Missed keyed route should not forward to unmatched target");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
+                     "route_failed") == 0,
+              "Missed keyed route should report route_failed status");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_correlation_id"),
+                     "job-missing-key") == 0,
+              "Missed keyed route result should preserve correlation id");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_routed_count") == 0,
+              "Missed keyed route should report zero routed targets");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_sent_count") == 0,
+              "Missed keyed route should report zero sent targets");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failed_count") == 0,
+              "Missed keyed route should not count a failed positive target send");
+
     // Cleanup
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_routing_context);

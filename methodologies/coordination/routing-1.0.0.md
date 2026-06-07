@@ -13,7 +13,8 @@ the payload fields and sends it to either one selected target or an unbounded li
 
 For `mode=one`, the method sends to `target` when it is greater than zero. If `target` is not set,
 it can select `target_a`, `target_b`, or `target_c` by matching `route_key` against the corresponding
-`route_*_key` field.
+`route_*_key` field. If no positive one-to-one target is selected, the method emits `route_result`
+with `status: "route_failed"` and zero delivery counts.
 
 For `mode=many`, the method reads `targets` as a list of nonzero agent IDs. It uses `head(...)` to
 send to the next target and `tail(...)` to send a continuation message to itself with the remaining
