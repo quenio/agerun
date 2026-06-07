@@ -15,7 +15,9 @@ request's `workers` list as the route target list.
 The route request has `payload_action` set to `"work"`, uses `work_text` as `payload_text`, and uses
 the work id as the correlation id. The routing agent sends its final `route_result` back to the
 distribution agent. Distribution translates that result into `distribution_result`, preserving the
-router's routed and sent counts.
+router's routed and sent counts. Its `route_sent` field reports whether the original route request
+was handed to the routing agent; later `route_result` processing does not overwrite that handoff
+status.
 
 ## Message Format
 

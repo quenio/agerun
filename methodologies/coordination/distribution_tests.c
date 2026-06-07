@@ -153,6 +153,42 @@ static void test_distribution__assigns_unbounded_workers_through_routing(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_sent_count") == 4,
               "Distribution result should report all sent workers");
 
+    // And a failed route handoff should not be overwritten by the later route_result no-op send
+    own_message = ar_data__create_map();
+    AR_ASSERT(own_message != NULL, "Failed distribution message should be created");
+    own_workers = ar_data__create_list();
+    AR_ASSERT(own_workers != NULL, "Failed worker list should be created");
+    append_agent_id(own_workers, worker_a);
+    ar_data__set_map_string(own_message, "action", "distribute");
+    ar_data__set_map_integer(own_message, "routing_agent", 98765);
+    AR_ASSERT(ar_data__set_map_data(own_message, "workers", own_workers),
+              "Failed worker list should be stored");
+    own_workers = NULL;
+    ar_data__set_map_string(own_message, "work_text", "lost-work");
+    ar_data__set_map_string(own_message, "work_id", "job-failed-route");
+    ar_data__set_map_integer(own_message, "reply_to", checked_agent_id(observer));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, distribution_agent, own_message),
+              "Failed distribution message should queue");
+    own_message = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ar_data_t *own_route_result = ar_data__create_map();
+    AR_ASSERT(own_route_result != NULL, "Manual route result should be created");
+    ar_data__set_map_string(own_route_result, "action", "route_result");
+    ar_data__set_map_string(own_route_result, "status", "ignored");
+    ar_data__set_map_integer(own_route_result, "routed_count", 0);
+    ar_data__set_map_integer(own_route_result, "sent_count", 0);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, distribution_agent, own_route_result),
+              "Manual route result should queue");
+    own_route_result = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_work_id"),
+                     "job-failed-route") == 0,
+              "Distribution result should use the failed handoff work id");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_route_sent") == 0,
+              "Distribution result should preserve the failed route handoff");
+
     // Cleanup
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_router_context);

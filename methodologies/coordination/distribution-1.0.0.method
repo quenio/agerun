@@ -15,7 +15,8 @@ memory.route_message := {
   routed_count: 0
   sent_count: 0
 }
-memory.route_sent := send(memory.routing_agent * memory.is_distribute, memory.route_message)
+memory.route_send_result := send(memory.routing_agent * memory.is_distribute, memory.route_message)
+memory.route_sent := if(memory.is_distribute = 1, memory.route_send_result, memory.route_sent)
 memory.status := if(memory.is_route_result = 1, "distributed", "routing")
 memory.status := if(memory.is_distribute = 1, "routing", memory.status)
 memory.assignment_count := if(memory.is_route_result = 1, message.routed_count, 0)
