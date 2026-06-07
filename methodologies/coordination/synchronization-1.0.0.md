@@ -17,6 +17,9 @@ On a map whose `action` field is `"dependency"`, the method only counts the mess
 `sync_id` matches the active wait request and the gate has not already completed. It appends the
 dependency value to `memory.received`. When the number of received dependencies reaches
 `required_count`, it sends the continuation and reports completion.
+The completion marker is set only after the continuation is delivered and, when `reply_to` is a
+positive agent id, the status reply is delivered. Failed delivery leaves the gate open so later
+dependency messages can retry completion.
 
 ## Message Format
 

@@ -366,6 +366,8 @@ Status:
 
 Required counts below one behave as one required dependency, so synchronization never completes on
 `wait` alone.
+Synchronization marks completion only after the continuation is delivered and, when `reply_to` is a
+positive agent id, the status reply is delivered; failed delivery keeps the gate open.
 
 ### Workflow
 

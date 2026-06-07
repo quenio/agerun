@@ -27,7 +27,9 @@ memory.continuation_message := {
   done_count: memory.done_count
   dependencies: memory.received
 }
-memory.continuation_sent := send(memory.continuation_target * memory.should_emit, memory.continuation_message)
+memory.continuation_target_value := memory.continuation_target * memory.should_emit
+memory.continuation_sent := send(memory.continuation_target_value, memory.continuation_message)
+memory.continuation_delivered := if(memory.continuation_target > 0, memory.continuation_sent, 0)
 memory.report_message := {
   action: "synchronization_status"
   sync_id: memory.sync_id
@@ -35,5 +37,8 @@ memory.report_message := {
   done_count: memory.done_count
   dependencies: memory.received
 }
-memory.report_sent := send(memory.reply_to * memory.should_emit, memory.report_message)
-memory.completed := if(memory.should_emit = 1, 1, memory.completed)
+memory.report_target := memory.reply_to * memory.should_emit
+memory.report_sent := send(memory.report_target, memory.report_message)
+memory.report_delivered := if(memory.reply_to > 0, memory.report_sent, 1)
+memory.completion_delivered := memory.should_emit * memory.continuation_delivered * memory.report_delivered
+memory.completed := if(memory.completion_delivered = 1, 1, memory.completed)

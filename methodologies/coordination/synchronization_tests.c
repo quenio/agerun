@@ -159,6 +159,62 @@ static void test_synchronization__emits_continuation_after_unbounded_dependencie
     AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_done_count") == 1,
               "Zero required count should behave as one required dependency");
 
+    own_wait = ar_data__create_map();
+    AR_ASSERT(own_wait != NULL, "Failed-continuation wait message should be created");
+    ar_data__set_map_string(own_wait, "action", "wait");
+    ar_data__set_map_string(own_wait, "sync_id", "sync-failed-continuation");
+    ar_data__set_map_integer(own_wait, "required_count", 2);
+    ar_data__set_map_integer(own_wait, "reply_to", 0);
+    ar_data__set_map_integer(own_wait, "continuation_target", 98765);
+    ar_data__set_map_string(own_wait, "continuation_action", "continue");
+    ar_data__set_map_string(own_wait, "continuation_text", "failed-go");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, sync_agent, own_wait),
+              "Failed-continuation wait message should queue");
+    own_wait = NULL;
+
+    send_dependency(mut_agency, sync_agent, "sync-failed-continuation", "ready-x");
+    send_dependency(mut_agency, sync_agent, "sync-failed-continuation", "ready-y");
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ref_sync_memory = ar_agency__get_agent_memory(mut_agency, sync_agent);
+    AR_ASSERT(ar_data__get_map_integer(ref_sync_memory, "completed") == 0,
+              "Synchronization should stay open after failed continuation send");
+    AR_ASSERT(ar_data__get_map_integer(ref_sync_memory, "done_count") == 2,
+              "Synchronization should retain dependencies after failed continuation send");
+
+    send_dependency(mut_agency, sync_agent, "sync-failed-continuation", "ready-z");
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(ar_data__get_map_integer(ref_sync_memory, "completed") == 0,
+              "Synchronization should stay open after repeated failed continuation send");
+    AR_ASSERT(ar_data__get_map_integer(ref_sync_memory, "done_count") == 3,
+              "Synchronization should keep collecting after failed continuation send");
+
+    own_wait = ar_data__create_map();
+    AR_ASSERT(own_wait != NULL, "Failed-status wait message should be created");
+    ar_data__set_map_string(own_wait, "action", "wait");
+    ar_data__set_map_string(own_wait, "sync_id", "sync-failed-status");
+    ar_data__set_map_integer(own_wait, "required_count", 2);
+    ar_data__set_map_integer(own_wait, "reply_to", 98765);
+    ar_data__set_map_integer(own_wait, "continuation_target", checked_agent_id(receiver_agent));
+    ar_data__set_map_string(own_wait, "continuation_action", "continue");
+    ar_data__set_map_string(own_wait, "continuation_text", "status-go");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, sync_agent, own_wait),
+              "Failed-status wait message should queue");
+    own_wait = NULL;
+
+    send_dependency(mut_agency, sync_agent, "sync-failed-status", "ready-m");
+    send_dependency(mut_agency, sync_agent, "sync-failed-status", "ready-n");
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_sync_id"),
+                     "sync-failed-status") == 0,
+              "Continuation should still be sent when status reply fails");
+    AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_done_count") == 2,
+              "Continuation should include dependencies even when status reply fails");
+    AR_ASSERT(ar_data__get_map_integer(ref_sync_memory, "completed") == 0,
+              "Synchronization should stay open after failed status send");
+
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_sync_context);
     ar_data__destroy(own_receiver_context);
