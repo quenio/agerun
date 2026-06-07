@@ -318,6 +318,131 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
                      "handoff_failed") == 0,
               "Observer should receive failed spawn continuation status");
 
+    ar_data_t *own_failed_lifecycle_context = create_context();
+    int64_t failed_lifecycle_agent = ar_agency__create_agent(
+        mut_agency, "supervision", "1.0.0", own_failed_lifecycle_context);
+    ar_data_t *own_failed_lifecycle_start = ar_data__create_map();
+    AR_ASSERT(own_failed_lifecycle_start != NULL, "Failed lifecycle start should be created");
+    ar_data__set_map_string(own_failed_lifecycle_start, "action", "start");
+    ar_data_t *own_failed_lifecycle_methods = ar_data__create_list();
+    AR_ASSERT(own_failed_lifecycle_methods != NULL,
+              "Failed lifecycle child methods should be created");
+    append_child_method_name(own_failed_lifecycle_methods, "record-receiver");
+    AR_ASSERT(ar_data__set_map_data(own_failed_lifecycle_start,
+                                    "child_method_names",
+                                    own_failed_lifecycle_methods),
+              "Failed lifecycle start should own child methods");
+    own_failed_lifecycle_methods = NULL;
+    ar_data__set_map_string(own_failed_lifecycle_start, "child_method_version", "1.0.0");
+    ar_data__set_map_string(own_failed_lifecycle_start, "policy", "restart");
+    ar_data__set_map_integer(own_failed_lifecycle_start,
+                             "reply_to",
+                             checked_agent_id(observer_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency,
+                                       failed_lifecycle_agent,
+                                       own_failed_lifecycle_start),
+              "Failed lifecycle start should queue");
+    own_failed_lifecycle_start = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ar_data_t *mut_failed_lifecycle_memory =
+        ar_agency__get_agent_mutable_memory(mut_agency, failed_lifecycle_agent);
+    AR_ASSERT(mut_failed_lifecycle_memory != NULL, "Failed lifecycle memory should exist");
+    int64_t failed_lifecycle_child =
+        ar_data__get_map_integer(mut_failed_lifecycle_memory, "spawn_result");
+    AR_ASSERT(failed_lifecycle_child > 0, "Failed lifecycle setup should spawn a child");
+    AR_ASSERT(ar_data__set_map_integer(mut_failed_lifecycle_memory, "self", 98765),
+              "Failed lifecycle should corrupt supervisor self");
+
+    ar_data_t *own_failed_lifecycle_event = ar_data__create_map();
+    AR_ASSERT(own_failed_lifecycle_event != NULL,
+              "Failed lifecycle event should be created");
+    ar_data__set_map_string(own_failed_lifecycle_event, "action", "child_failed");
+    ar_data__set_map_integer(own_failed_lifecycle_event,
+                             "child_agent_id",
+                             checked_agent_id(failed_lifecycle_child));
+    ar_data__set_map_string(own_failed_lifecycle_event,
+                            "child_method_name",
+                            "record-receiver");
+    ar_data__set_map_string(own_failed_lifecycle_event,
+                            "child_method_version",
+                            "1.0.0");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency,
+                                       failed_lifecycle_agent,
+                                       own_failed_lifecycle_event),
+              "Failed lifecycle event should queue");
+    own_failed_lifecycle_event = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    const ar_data_t *ref_failed_lifecycle_memory =
+        ar_agency__get_agent_memory(mut_agency, failed_lifecycle_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_failed_lifecycle_memory, "status"),
+                     "handoff_failed") == 0,
+              "Failed lifecycle validation should store handoff_failed status");
+    AR_ASSERT(ar_data__get_map_integer(ref_failed_lifecycle_memory, "restart_count") == 0,
+              "Failed lifecycle validation should not restart without validation");
+    ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
+                     "handoff_failed") == 0,
+              "Observer should receive failed lifecycle validation status");
+
+    ar_data_t *own_failed_stop_context = create_context();
+    int64_t failed_stop_agent = ar_agency__create_agent(
+        mut_agency, "supervision", "1.0.0", own_failed_stop_context);
+    ar_data_t *own_failed_stop_start = ar_data__create_map();
+    AR_ASSERT(own_failed_stop_start != NULL, "Failed stop start should be created");
+    ar_data__set_map_string(own_failed_stop_start, "action", "start");
+    ar_data_t *own_failed_stop_methods = ar_data__create_list();
+    AR_ASSERT(own_failed_stop_methods != NULL, "Failed stop child methods should be created");
+    append_child_method_name(own_failed_stop_methods, "record-receiver");
+    AR_ASSERT(ar_data__set_map_data(own_failed_stop_start,
+                                    "child_method_names",
+                                    own_failed_stop_methods),
+              "Failed stop start should own child methods");
+    own_failed_stop_methods = NULL;
+    ar_data__set_map_string(own_failed_stop_start, "child_method_version", "1.0.0");
+    ar_data__set_map_string(own_failed_stop_start, "policy", "restart");
+    ar_data__set_map_integer(own_failed_stop_start,
+                             "reply_to",
+                             checked_agent_id(observer_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency,
+                                       failed_stop_agent,
+                                       own_failed_stop_start),
+              "Failed stop start should queue");
+    own_failed_stop_start = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ar_data_t *mut_failed_stop_memory =
+        ar_agency__get_agent_mutable_memory(mut_agency, failed_stop_agent);
+    AR_ASSERT(mut_failed_stop_memory != NULL, "Failed stop memory should exist");
+    int64_t failed_stop_child = ar_data__get_map_integer(mut_failed_stop_memory, "spawn_result");
+    AR_ASSERT(failed_stop_child > 0, "Failed stop setup should spawn a child");
+    AR_ASSERT(ar_data__set_map_integer(mut_failed_stop_memory, "self", 98765),
+              "Failed stop should corrupt supervisor self");
+
+    ar_data_t *own_failed_stop = ar_data__create_map();
+    AR_ASSERT(own_failed_stop != NULL, "Failed stop message should be created");
+    ar_data__set_map_string(own_failed_stop, "action", "stop");
+    ar_data__set_map_integer(own_failed_stop,
+                             "child_agent_id",
+                             checked_agent_id(failed_stop_child));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, failed_stop_agent, own_failed_stop),
+              "Failed stop message should queue");
+    own_failed_stop = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    const ar_data_t *ref_failed_stop_memory =
+        ar_agency__get_agent_memory(mut_agency, failed_stop_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_failed_stop_memory, "status"),
+                     "handoff_failed") == 0,
+              "Failed stop validation should store handoff_failed status");
+    AR_ASSERT(ar_agency__get_agent_memory(mut_agency, failed_stop_child) != NULL,
+              "Failed stop validation should not exit child without validation");
+    ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
+                     "handoff_failed") == 0,
+              "Observer should receive failed stop validation status");
+
     ar_data_t *own_failed_spawn_context = create_context();
     ar_data_t *own_failed_spawn_observer_context = create_context();
     int64_t failed_spawn_agent = ar_agency__create_agent(
@@ -366,6 +491,8 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     ar_data__destroy(own_untracked_context);
     ar_data__destroy(own_failed_handoff_context);
     ar_data__destroy(own_failed_continue_context);
+    ar_data__destroy(own_failed_lifecycle_context);
+    ar_data__destroy(own_failed_stop_context);
     ar_data__destroy(own_failed_spawn_context);
     ar_data__destroy(own_failed_spawn_observer_context);
 }

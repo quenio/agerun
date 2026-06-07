@@ -186,6 +186,8 @@ restart or stop handling. Untracked lifecycle events report `ignored` and do not
 children or increment `restart_count`.
 If an internal spawn continuation cannot be queued, supervision reports `handoff_failed` instead of
 remaining in `starting`.
+If an internal lifecycle or stop validation message cannot be queued, supervision also reports
+`handoff_failed` and leaves the requested lifecycle or stop action unapplied.
 If a requested child cannot be spawned, the failed `spawn(...)` instruction aborts the remaining
 ordinary method evaluation. The supervisor therefore does not report `running` for an incomplete
 child set, but it also cannot emit a catchable `spawn_failed` status without a runtime-level

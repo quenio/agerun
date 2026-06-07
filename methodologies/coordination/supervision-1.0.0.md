@@ -26,12 +26,14 @@ policy is `restart`, it spawns a replacement child using the event's `child_meth
 `child_method_version`, appends the replacement to the tracked lists, and reports
 `status=restarted`. If the child is tracked and the policy is not `restart`, it reports
 `status=stopped`. If the child is not tracked, it leaves supervisor state unchanged and reports
-`status=ignored`.
+`status=ignored`. If the internal validation message cannot be queued, it reports
+`status=handoff_failed` and leaves lifecycle handling unapplied.
 
 On a map whose `action` field is `"stop"`, the method scans the tracked `child_agent_ids` list with
 `head(...)` and `tail(...)`. It exits and reports `status=stopped` only when the supplied
 `child_agent_id` belongs to that tracked list. If the id is not tracked, it leaves the agent alive,
-keeps the stored supervisor status unchanged, and reports `status=ignored`.
+keeps the stored supervisor status unchanged, and reports `status=ignored`. If the internal stop
+validation message cannot be queued, it reports `status=handoff_failed` and does not exit the child.
 
 ## Message Format
 

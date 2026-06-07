@@ -69,6 +69,8 @@ memory.lifecycle_validation_message := {
   remaining_child_agent_ids: memory.child_agent_ids
 }
 memory.lifecycle_validation_sent := send(memory.self * memory.lifecycle_event, memory.lifecycle_validation_message)
+memory.lifecycle_validation_failed := if(memory.lifecycle_validation_sent = 0, 1, 0)
+memory.lifecycle_validation_failed := memory.lifecycle_validation_failed * memory.lifecycle_event
 memory.current_lifecycle_child_agent_id := head(message.remaining_child_agent_ids)
 memory.remaining_lifecycle_child_agent_ids := tail(message.remaining_child_agent_ids)
 memory.lifecycle_match := if(memory.current_lifecycle_child_agent_id = message.child_agent_id, memory.is_validate_lifecycle, 0)
@@ -86,6 +88,8 @@ memory.lifecycle_continue_message := {
   remaining_child_agent_ids: memory.remaining_lifecycle_child_agent_ids
 }
 memory.lifecycle_continue_sent := send(memory.self * memory.lifecycle_continue_needed, memory.lifecycle_continue_message)
+memory.lifecycle_continue_failed := if(memory.lifecycle_continue_sent = 0, 1, 0)
+memory.lifecycle_continue_failed := memory.lifecycle_continue_failed * memory.lifecycle_continue_needed
 memory.lifecycle_no_remaining := 1 - memory.lifecycle_has_remaining
 memory.lifecycle_scan_exhausted := memory.is_validate_lifecycle * memory.lifecycle_no_remaining
 memory.lifecycle_untracked := memory.lifecycle_scan_exhausted * memory.lifecycle_not_matched
@@ -119,6 +123,8 @@ memory.stop_validation_message := {
   remaining_child_agent_ids: memory.child_agent_ids
 }
 memory.stop_validation_sent := send(memory.self * memory.is_stop, memory.stop_validation_message)
+memory.stop_validation_failed := if(memory.stop_validation_sent = 0, 1, 0)
+memory.stop_validation_failed := memory.stop_validation_failed * memory.is_stop
 memory.current_stop_child_agent_id := head(message.remaining_child_agent_ids)
 memory.remaining_stop_child_agent_ids := tail(message.remaining_child_agent_ids)
 memory.stop_match := if(memory.current_stop_child_agent_id = message.child_agent_id, memory.is_validate_stop, 0)
@@ -135,6 +141,8 @@ memory.stop_continue_message := {
   remaining_child_agent_ids: memory.remaining_stop_child_agent_ids
 }
 memory.stop_continue_sent := send(memory.self * memory.stop_continue_needed, memory.stop_continue_message)
+memory.stop_continue_failed := if(memory.stop_continue_sent = 0, 1, 0)
+memory.stop_continue_failed := memory.stop_continue_failed * memory.stop_continue_needed
 memory.stop_no_remaining := 1 - memory.stop_has_remaining
 memory.stop_scan_exhausted := memory.is_validate_stop * memory.stop_no_remaining
 memory.stop_done_sum := memory.stop_match + memory.stop_scan_exhausted
@@ -144,12 +152,17 @@ memory.stop_exit_failed := 1 - memory.stop_result
 memory.stop_failed := memory.stop_match * memory.stop_exit_failed
 memory.child_agent_id := if(memory.stop_done = 1, message.child_agent_id, memory.child_agent_id)
 memory.status := if(memory.stop_succeeded = 1, "stopped", memory.status)
+memory.validation_handoff_failed := memory.lifecycle_validation_failed + memory.lifecycle_continue_failed
+memory.validation_handoff_failed := memory.validation_handoff_failed + memory.stop_validation_failed
+memory.validation_handoff_failed := memory.validation_handoff_failed + memory.stop_continue_failed
+memory.status := if(memory.validation_handoff_failed > 0, "handoff_failed", memory.status)
 memory.report_status := memory.status
 memory.report_status := if(memory.lifecycle_untracked = 1, "ignored", memory.report_status)
 memory.report_status := if(memory.stop_untracked = 1, "ignored", memory.report_status)
 memory.report_status := if(memory.stop_failed = 1, "stop_failed", memory.report_status)
 memory.should_report := memory.start_complete + memory.tracked_failure_event
 memory.should_report := memory.should_report + memory.spawn_handoff_failed
+memory.should_report := memory.should_report + memory.validation_handoff_failed
 memory.should_report := memory.should_report + memory.lifecycle_untracked
 memory.should_report := memory.should_report + memory.stop_done
 memory.report_message := {
