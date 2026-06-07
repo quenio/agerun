@@ -37,10 +37,11 @@ help:
 	@echo "  make vendor-llama-cpu - Build/link shared cached CPU-only llama.cpp"
 	@echo "  make clean-vendor-llama-cpu - Clear shared cached vendored llama.cpp artifacts"
 	@echo "  make complete-runtime-ready - Ensure vendored libllama and phi-3-mini-q4.gguf exist"
-	@echo "  make download-complete-model - Download phi-3-mini-q4.gguf into models/ if missing"
+	@echo "  make download-complete-model - Download phi-3-mini-q4.gguf into the shared model cache"
 	@echo "  make complete-model-smoke - Ensure complete() runtime assets are ready and run the embedded libllama smoke with a cold-start timeout"
 	@echo "  make complete-performance-validation - Run the documented complete() performance validation subtests"
-	@echo "  make complete-performance-validation-linux-container - Run the documented Linux containerized complete() performance validation"
+	@echo "  make complete-performance-validation-linux-container - Run Linux validation using the shared host model cache"
+	@echo "  make complete-performance-validation-linux-container-cold - Run Linux validation after a cold model download"
 	@echo "  make print-llama-config - Show vendored llama.cpp source/install paths"
 
 # Output directories for parallel builds
@@ -59,7 +60,8 @@ UNAME_S := $(shell uname -s)
 
 # Vendored llama.cpp CPU-only dependency paths
 LLAMA_SOURCE_DIR ?= llama-cpp
-LLAMA_CACHE_DIR ?= $(HOME)/.agerun/build/cache/vendor-llama-cpu
+AGERUN_HOME ?= $(shell python3 -c 'import os, pwd; print(os.environ.get("HOME") or pwd.getpwuid(os.getuid()).pw_dir)')
+LLAMA_CACHE_DIR ?= $(if $(AGERUN_HOME),$(AGERUN_HOME)/.agerun/build/cache/vendor-llama-cpu,$(error AGERUN_HOME is empty; set HOME or AGERUN_HOME))
 LLAMA_CACHE_BUILD_DIR ?= $(LLAMA_CACHE_DIR)/build
 LLAMA_CACHE_INSTALL_DIR ?= $(LLAMA_CACHE_DIR)/install
 LLAMA_CACHE_LOCK ?= $(LLAMA_CACHE_DIR)/build.lock
@@ -69,20 +71,30 @@ LLAMA_CACHE_LOCK_TIMEOUT_SECONDS ?= 3600
 LLAMA_BUILD_DIR ?= $(LLAMA_CACHE_BUILD_DIR)
 LLAMA_INSTALL_DIR ?= .deps/llama.cpp-install
 LLAMA_LICENSE = $(LLAMA_SOURCE_DIR)/LICENSE
-COMPLETE_MODEL_DIR ?= models
+COMPLETE_MODEL_HOME ?= $(AGERUN_HOME)
+COMPLETE_MODEL_DIR ?= $(if $(COMPLETE_MODEL_HOME),$(COMPLETE_MODEL_HOME)/.agerun/models,$(error COMPLETE_MODEL_HOME is empty; set HOME or COMPLETE_MODEL_HOME))
 COMPLETE_MODEL_FILE ?= $(COMPLETE_MODEL_DIR)/phi-3-mini-q4.gguf
 COMPLETE_MODEL_LICENSE ?= $(COMPLETE_MODEL_DIR)/phi-3-mini-q4.LICENSE
 COMPLETE_MODEL_CARD ?= $(COMPLETE_MODEL_DIR)/phi-3-mini-q4.README.md
 COMPLETE_MODEL_URL ?= https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/resolve/main/Phi-3-mini-4k-instruct-q4.gguf?download=true
 COMPLETE_MODEL_LICENSE_URL ?= https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/raw/main/LICENSE
 COMPLETE_MODEL_CARD_URL ?= https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/raw/main/README.md
+COMPLETE_MODEL_LOCK ?= $(COMPLETE_MODEL_DIR)/download.lock
+COMPLETE_MODEL_LOCK_POLL_SECONDS ?= 2
+COMPLETE_MODEL_LOCK_TIMEOUT_SECONDS ?= 3600
 COMPLETE_MODEL_SMOKE_TIMEOUT_SECONDS ?= 35
 COMPLETE_LINUX_CONTAINER_IMAGE ?= agerun-complete-performance-validation
 COMPLETE_LINUX_CONTAINER_PLATFORM ?= linux/arm64
 COMPLETE_LINUX_CONTAINER_CONTEXT ?= docker/complete-performance-validation
+COMPLETE_LINUX_CONTAINER_HOST_HOME ?= .deps/linux-container-home
+COMPLETE_LINUX_CONTAINER_HOME ?= /workspace/$(COMPLETE_LINUX_CONTAINER_HOST_HOME)
+COMPLETE_LINUX_CONTAINER_MODEL_CACHE_LABEL ?= shared host cache
+COMPLETE_LINUX_CONTAINER_COLD_MODEL_DIR ?= .deps/linux-container-cold-model-cache
+COMPLETE_LINUX_CONTAINER_LLAMA_CACHE_DIR ?= .deps/linux-container-llama.cpp-cache
 COMPLETE_LINUX_CONTAINER_LLAMA_BUILD_DIR ?= .deps/linux-container-llama.cpp-build
 COMPLETE_LINUX_CONTAINER_LLAMA_INSTALL_DIR ?= .deps/linux-container-llama.cpp-install
 COMPLETE_LINUX_CONTAINER_RUN_TESTS_DIR ?= bin/run-tests-linux-container
+COMPLETE_LINUX_CONTAINER_MODEL_DIR ?= $(COMPLETE_LINUX_CONTAINER_HOME)/.agerun/models
 SKIP_COMPLETE_RUNTIME_READY ?=
 WORKFLOW_REAL_COMPLETION_PREREQ =
 ifeq ($(SKIP_COMPLETE_RUNTIME_READY),)
@@ -90,10 +102,10 @@ WORKFLOW_REAL_COMPLETION_PREREQ = complete-runtime-ready
 endif
 ifeq ($(UNAME_S),Darwin)
 LLAMA_SHARED_EXT = dylib
-LLAMA_CPU_CMAKE_FLAGS = -DGGML_METAL=OFF
+LLAMA_CPU_CMAKE_FLAGS ?= -DGGML_METAL=OFF
 else
 LLAMA_SHARED_EXT = so
-LLAMA_CPU_CMAKE_FLAGS =
+LLAMA_CPU_CMAKE_FLAGS ?=
 endif
 LLAMA_SOURCE_HEADER = $(LLAMA_SOURCE_DIR)/include/llama.h
 LLAMA_HEADER = $(LLAMA_INSTALL_DIR)/include/llama.h
@@ -317,6 +329,9 @@ $(RUN_TESTS_DIR):
 $(RUN_EXEC_DIR):
 	mkdir -p $@/obj
 
+$(RUN_EXEC_DIR)/obj:
+	mkdir -p $@
+
 $(SANITIZE_TESTS_DIR):
 	mkdir -p $@/obj
 
@@ -334,7 +349,7 @@ $(TSAN_EXEC_DIR):
 run_tests_lib: $(RUN_TESTS_DIR) $(RUN_TESTS_OBJ) $(RUN_TESTS_TEST_OBJ) $(RUN_TESTS_METHOD_TEST_OBJ) $(RUN_TESTS_METHODOLOGY_TEST_OBJ)
 	ar rcs $(RUN_TESTS_DIR)/libagerun.a $(RUN_TESTS_OBJ)
 
-run_exec_lib: $(RUN_EXEC_DIR) $(RUN_EXEC_OBJ)
+run_exec_lib: $(RUN_EXEC_DIR) $(RUN_EXEC_DIR)/obj $(RUN_EXEC_OBJ)
 	ar rcs $(RUN_EXEC_DIR)/libagerun.a $(RUN_EXEC_OBJ)
 
 sanitize_tests_lib: CC = $(SANITIZER_CC)
@@ -595,10 +610,10 @@ endef
 $(foreach test_src,$(METHODOLOGY_TEST_SRC),$(eval $(call RUN_METHODOLOGY_TEST_OBJECT_RULE,$(test_src))))
 
 # Run exec directory
-$(RUN_EXEC_DIR)/obj/%.o: modules/%.c | $(RUN_EXEC_DIR)
+$(RUN_EXEC_DIR)/obj/%.o: modules/%.c | $(RUN_EXEC_DIR)/obj
 	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) -c $< -o $@
 
-$(RUN_EXEC_DIR)/obj/%.o: modules/%.zig | $(RUN_EXEC_DIR)
+$(RUN_EXEC_DIR)/obj/%.o: modules/%.zig | $(RUN_EXEC_DIR)/obj
 	$(ZIG) build-obj -O Debug -DDEBUG -D__ZIG__ -target $(ZIG_TARGET) -mcpu=native -fno-stack-check -lc -I./modules $(LLAMA_ZIG_INCLUDE_FLAGS) $< -femit-bin=$@
 
 # Sanitize tests directory
@@ -811,7 +826,7 @@ add-newline:
 		exit 1; \
 	fi
 
-.PHONY: help clean clean-vendor-llama-cpu clean-llama-cpp build add-newline check-naming check-docs check-all analyze-exec analyze-tests run-exec run-tests sanitize-exec sanitize-tests tsan-exec tsan-tests install-scan-build print-src print-obj print-llama-config vendor-llama-cpu complete-runtime-ready download-complete-model complete-model-smoke complete-performance-validation complete-performance-validation-linux-container
+.PHONY: help clean clean-vendor-llama-cpu clean-llama-cpp build add-newline check-naming check-docs check-all analyze-exec analyze-tests run-exec run-tests sanitize-exec sanitize-tests tsan-exec tsan-tests install-scan-build print-src print-obj print-llama-config vendor-llama-cpu complete-runtime-ready download-complete-model complete-model-smoke complete-performance-validation complete-performance-validation-linux-container complete-performance-validation-linux-container-cold
 
 # Debug targets
 print-src:
@@ -866,21 +881,20 @@ install-scan-build:
 fi
 
 
-$(COMPLETE_MODEL_FILE):
-	@mkdir -p "$(COMPLETE_MODEL_DIR)"
-	curl -L --fail --continue-at - --output "$@" "$(COMPLETE_MODEL_URL)"
-
-$(COMPLETE_MODEL_LICENSE):
-	@mkdir -p "$(COMPLETE_MODEL_DIR)"
-	curl -L --fail --output "$@" "$(COMPLETE_MODEL_LICENSE_URL)"
-
-$(COMPLETE_MODEL_CARD):
-	@mkdir -p "$(COMPLETE_MODEL_DIR)"
-	curl -L --fail --output "$@" "$(COMPLETE_MODEL_CARD_URL)"
-
 # Download the real phi-3 completion model and its accompanying license/card files
 # Usage: make download-complete-model
-download-complete-model: $(COMPLETE_MODEL_FILE) $(COMPLETE_MODEL_LICENSE) $(COMPLETE_MODEL_CARD)
+download-complete-model:
+	COMPLETE_MODEL_DIR="$(COMPLETE_MODEL_DIR)" \
+	COMPLETE_MODEL_FILE="$(COMPLETE_MODEL_FILE)" \
+	COMPLETE_MODEL_LICENSE="$(COMPLETE_MODEL_LICENSE)" \
+	COMPLETE_MODEL_CARD="$(COMPLETE_MODEL_CARD)" \
+	COMPLETE_MODEL_URL="$(COMPLETE_MODEL_URL)" \
+	COMPLETE_MODEL_LICENSE_URL="$(COMPLETE_MODEL_LICENSE_URL)" \
+	COMPLETE_MODEL_CARD_URL="$(COMPLETE_MODEL_CARD_URL)" \
+	COMPLETE_MODEL_LOCK="$(COMPLETE_MODEL_LOCK)" \
+	COMPLETE_MODEL_LOCK_POLL_SECONDS="$(COMPLETE_MODEL_LOCK_POLL_SECONDS)" \
+	COMPLETE_MODEL_LOCK_TIMEOUT_SECONDS="$(COMPLETE_MODEL_LOCK_TIMEOUT_SECONDS)" \
+	bash ./scripts/download-complete-model-cache.sh
 
 # Ensure complete() runtime assets are ready for embedded local completion tests
 # Usage: make complete-runtime-ready
@@ -914,17 +928,71 @@ complete-performance-validation: complete-runtime-ready
 	AGERUN_COMPLETE_EVALUATOR_SUBTEST=performance_warm_fixture_set \
 	./ar_complete_instruction_evaluator_tests
 
-# Run the documented Linux containerized complete() performance validation
+# Run the documented Linux containerized complete() performance validation.
+# The default mode mounts the shared host model cache and reuses it when warm.
+# If the mounted model file is missing, complete-runtime-ready downloads it inside Linux.
 # Usage: make complete-performance-validation-linux-container
 complete-performance-validation-linux-container:
+	mkdir -p "$(COMPLETE_MODEL_DIR)" "$(COMPLETE_LINUX_CONTAINER_HOST_HOME)/.agerun"
+	@echo "Linux container complete() validation"
+	@echo "  Mode: $(COMPLETE_LINUX_CONTAINER_MODEL_CACHE_LABEL)"
+	@if [ -f "$(COMPLETE_MODEL_FILE)" ]; then \
+		echo "  Model state: present; this run should not download the GGUF"; \
+	else \
+		echo "  Model state: missing; complete-runtime-ready will download the GGUF inside Linux"; \
+	fi
+	@echo "  Host shared model cache: $(abspath $(COMPLETE_MODEL_DIR))"
+	@echo "  Container shared model cache: $(COMPLETE_LINUX_CONTAINER_MODEL_DIR)"
+	@echo '  Runtime default: complete() resolves $$HOME/.agerun/models inside the container'
+	@echo "  To force a cold CI-style model download, run: make complete-performance-validation-linux-container-cold"
 	docker build --platform "$(COMPLETE_LINUX_CONTAINER_PLATFORM)" -t "$(COMPLETE_LINUX_CONTAINER_IMAGE)" "$(COMPLETE_LINUX_CONTAINER_CONTEXT)"
 	docker run --rm \
 		--platform "$(COMPLETE_LINUX_CONTAINER_PLATFORM)" \
 		-u "$(shell id -u):$(shell id -g)" \
 		-v "$(CURDIR)":/workspace \
+		-v "$(abspath $(COMPLETE_MODEL_DIR))":"$(COMPLETE_LINUX_CONTAINER_MODEL_DIR)" \
 		-w /workspace \
 		"$(COMPLETE_LINUX_CONTAINER_IMAGE)" \
-		bash -lc 'set -e; export HOME=/tmp/agerun-docker-home; mkdir -p "$$HOME"; export AGERUN_COMPLETE_MODEL=/workspace/$(COMPLETE_MODEL_FILE); export AGERUN_COMPLETE_LIBLLAMA=/workspace/$(COMPLETE_LINUX_CONTAINER_LLAMA_INSTALL_DIR)/lib/libllama.so; export LD_LIBRARY_PATH=/workspace/$(COMPLETE_LINUX_CONTAINER_LLAMA_INSTALL_DIR)/lib; echo "Linux container validation baseline:"; echo "platform=$(COMPLETE_LINUX_CONTAINER_PLATFORM)"; uname -a; echo "logical_cpus=$$(nproc)"; python3 -c "from pathlib import Path; meminfo = Path(\"/proc/meminfo\").read_text(encoding=\"utf-8\").splitlines(); total = next(line for line in meminfo if line.startswith(\"MemTotal:\")); print(total)"; make EXTRA_CFLAGS=-Wno-error=nonnull-compare RUN_TESTS_DIR=$(COMPLETE_LINUX_CONTAINER_RUN_TESTS_DIR) LLAMA_BUILD_DIR=$(COMPLETE_LINUX_CONTAINER_LLAMA_BUILD_DIR) LLAMA_INSTALL_DIR=$(COMPLETE_LINUX_CONTAINER_LLAMA_INSTALL_DIR) complete-performance-validation 2>&1'
+		bash -lc 'set -e; export HOME="$(COMPLETE_LINUX_CONTAINER_HOME)"; mkdir -p "$$HOME"; export AGERUN_COMPLETE_LIBLLAMA=/workspace/$(COMPLETE_LINUX_CONTAINER_LLAMA_INSTALL_DIR)/lib/libllama.so; export LD_LIBRARY_PATH=/workspace/$(COMPLETE_LINUX_CONTAINER_LLAMA_INSTALL_DIR)/lib; echo "Linux container validation baseline:"; echo "platform=$(COMPLETE_LINUX_CONTAINER_PLATFORM)"; echo "model_dir=$$HOME/.agerun/models"; uname -a; echo "logical_cpus=$$(nproc)"; python3 -c "from pathlib import Path; meminfo = Path(\"/proc/meminfo\").read_text(encoding=\"utf-8\").splitlines(); total = next(line for line in meminfo if line.startswith(\"MemTotal:\")); print(total)"; make EXTRA_CFLAGS=-Wno-error=nonnull-compare RUN_TESTS_DIR=$(COMPLETE_LINUX_CONTAINER_RUN_TESTS_DIR) LLAMA_CACHE_DIR=$(COMPLETE_LINUX_CONTAINER_LLAMA_CACHE_DIR) LLAMA_BUILD_DIR=$(COMPLETE_LINUX_CONTAINER_LLAMA_BUILD_DIR) LLAMA_INSTALL_DIR=$(COMPLETE_LINUX_CONTAINER_LLAMA_INSTALL_DIR) complete-performance-validation 2>&1'
+
+# Run the Linux containerized validation with an isolated empty model cache
+# Usage: make complete-performance-validation-linux-container-cold
+complete-performance-validation-linux-container-cold:
+	@echo "Preparing an empty isolated model cache for a cold Linux download check"
+	@cold_dir="$(COMPLETE_LINUX_CONTAINER_COLD_MODEL_DIR)"; \
+	while [ "$$cold_dir" != "$${cold_dir%/}" ]; do \
+		cold_dir="$${cold_dir%/}"; \
+	done; \
+	case "$$cold_dir" in \
+		.deps|.deps/*) ;; \
+		*) echo "ERROR: COMPLETE_LINUX_CONTAINER_COLD_MODEL_DIR must stay under .deps/"; exit 1 ;; \
+	esac; \
+	case "/$$cold_dir/" in \
+		*"/../"*) echo "ERROR: COMPLETE_LINUX_CONTAINER_COLD_MODEL_DIR must not contain '..'"; exit 1 ;; \
+	esac; \
+	if [ "$$cold_dir" = ".deps" ] || [ "$$cold_dir" = ".deps/" ]; then \
+		echo "ERROR: unsafe COMPLETE_LINUX_CONTAINER_COLD_MODEL_DIR=$$cold_dir"; \
+		exit 1; \
+	fi; \
+	rm -rf "$$cold_dir"
+	@cold_dir="$(COMPLETE_LINUX_CONTAINER_COLD_MODEL_DIR)"; \
+	while [ "$$cold_dir" != "$${cold_dir%/}" ]; do \
+		cold_dir="$${cold_dir%/}"; \
+	done; \
+	case "$$cold_dir" in \
+		.deps|.deps/*) ;; \
+		*) echo "ERROR: COMPLETE_LINUX_CONTAINER_COLD_MODEL_DIR must stay under .deps/"; exit 1 ;; \
+	esac; \
+	case "/$$cold_dir/" in \
+		*"/../"*) echo "ERROR: COMPLETE_LINUX_CONTAINER_COLD_MODEL_DIR must not contain '..'"; exit 1 ;; \
+	esac; \
+	if [ "$$cold_dir" = ".deps" ] || [ "$$cold_dir" = ".deps/" ]; then \
+		echo "ERROR: unsafe COMPLETE_LINUX_CONTAINER_COLD_MODEL_DIR=$$cold_dir"; \
+		exit 1; \
+	fi; \
+	$(MAKE) COMPLETE_MODEL_DIR="$(CURDIR)/$$cold_dir" \
+		COMPLETE_LINUX_CONTAINER_MODEL_CACHE_LABEL="cold isolated cache; downloads in Linux if missing" \
+		complete-performance-validation-linux-container
 
 # Show vendored llama.cpp configuration
 print-llama-config:
@@ -947,6 +1015,11 @@ print-llama-config:
 	@echo "LLAMA_HEADER=$(LLAMA_HEADER)"
 	@echo "LLAMA_LIB=$(LLAMA_LIB)"
 	@echo "LLAMA_LICENSE=$(LLAMA_LICENSE)"
+	@echo "COMPLETE_MODEL_DIR=$(COMPLETE_MODEL_DIR)"
+	@echo "COMPLETE_MODEL_FILE=$(COMPLETE_MODEL_FILE)"
+	@echo "COMPLETE_MODEL_LOCK=$(COMPLETE_MODEL_LOCK)"
+	@echo "COMPLETE_MODEL_LOCK_POLL_SECONDS=$(COMPLETE_MODEL_LOCK_POLL_SECONDS)"
+	@echo "COMPLETE_MODEL_LOCK_TIMEOUT_SECONDS=$(COMPLETE_MODEL_LOCK_TIMEOUT_SECONDS)"
 	@if [ -n "$(LLAMA_CACHE_AVAILABLE)" ]; then \
 		echo "LLAMA_CACHE_AVAILABLE=yes"; \
 	else \
@@ -960,6 +1033,17 @@ print-llama-config:
 
 # Build/install vendored CPU-only llama.cpp
 vendor-llama-cpu:
+	LLAMA_SOURCE_DIR="$(LLAMA_SOURCE_DIR)" \
+	LLAMA_CACHE_DIR="$(LLAMA_CACHE_DIR)" \
+	LLAMA_CACHE_INSTALL_DIR="$(LLAMA_CACHE_INSTALL_DIR)" \
+	LLAMA_CACHE_LOCK="$(LLAMA_CACHE_LOCK)" \
+	LLAMA_CACHE_KEY="$(LLAMA_CACHE_KEY)" \
+	LLAMA_BUILD_DIR="$(LLAMA_BUILD_DIR)" \
+	LLAMA_INSTALL_DIR="$(LLAMA_INSTALL_DIR)" \
+	LLAMA_SHARED_EXT="$(LLAMA_SHARED_EXT)" \
+	LLAMA_CPU_CMAKE_FLAGS="$(LLAMA_CPU_CMAKE_FLAGS)" \
+	LLAMA_CACHE_LOCK_POLL_SECONDS="$(LLAMA_CACHE_LOCK_POLL_SECONDS)" \
+	LLAMA_CACHE_LOCK_TIMEOUT_SECONDS="$(LLAMA_CACHE_LOCK_TIMEOUT_SECONDS)" \
 	CC="$(LLAMA_CC)" CXX="$(LLAMA_CXX)" bash ./scripts/build-vendor-llama-cache.sh
 
 # Fix command documentation structure to match comprehensive standards

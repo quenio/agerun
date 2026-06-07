@@ -224,7 +224,7 @@ Validation baseline used:
 - 14 logical CPU cores visible in container
 - `MemTotal: 8024304 kB` visible in container
 - bind-mounted `.deps/linux-container-llama.cpp-install/lib/libllama.so`
-- bind-mounted `models/phi-3-mini-q4.gguf`
+- bind-mounted `$HOME/.agerun/models/phi-3-mini-q4.gguf`
 
 Observed results:
 - runtime warm support: `20/20` success, `20/20` under `15000 ms`, `avg=2109 ms`, `max=10899 ms`

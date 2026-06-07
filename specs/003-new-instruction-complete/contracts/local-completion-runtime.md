@@ -175,7 +175,7 @@ Environment:
 - 14 logical CPU cores
 - 36 GiB RAM
 - vendored CPU-only `libllama`
-- local `models/phi-3-mini-q4.gguf`
+- shared `$HOME/.agerun/models/phi-3-mini-q4.gguf`
 
 Observed results from `make complete-performance-validation 2>&1`:
 - runtime warm support summary: `fixtures=20 success=20 under_15000ms=20 avg=2682 ms max=10061 ms`
@@ -191,7 +191,7 @@ Environment:
 - 14 logical CPU cores visible in container
 - `MemTotal: 8024304 kB` visible in container
 - bind-mounted vendored CPU-only `libllama` from `.deps/linux-container-llama.cpp-install/`
-- bind-mounted local `models/phi-3-mini-q4.gguf`
+- bind-mounted shared `$HOME/.agerun/models/phi-3-mini-q4.gguf`
 
 Observed results from `make complete-performance-validation-linux-container 2>&1`:
 - runtime warm support summary: `fixtures=20 success=20 under_15000ms=20 avg=2109 ms max=10899 ms`

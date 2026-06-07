@@ -19,6 +19,7 @@
 
 static char g_runner_path[128] = {0};
 static char g_model_path[128] = {0};
+static const char *g_shared_model_suffix = "/.agerun/models/phi-3-mini-q4.gguf";
 
 static void _setup_fake_runner(void) {
     snprintf(g_runner_path, sizeof(g_runner_path), "./fake-llama-cli-evaluator-%ld.sh", (long)getpid());
@@ -628,7 +629,6 @@ static void test_complete_instruction_evaluator__missing_placeholder_response_ke
 }
 
 static void test_complete_instruction_evaluator__performance_cold_fixture(void) {
-    const char *ref_model_path = "../../models/phi-3-mini-q4.gguf";
     const int64_t cold_start_limit_ms = 30000;
     const char *ref_index_text = getenv("AGERUN_COMPLETE_EVALUATOR_FIXTURE_INDEX");
     assert(ref_index_text != NULL);
@@ -639,14 +639,17 @@ static void test_complete_instruction_evaluator__performance_cold_fixture(void) 
     const ar_complete_perf_fixture_t *ref_fixture = &g_complete_perf_fixtures[(size_t)own_index];
     _assert_short_template_fixture(ref_fixture);
 
-    assert(access(ref_model_path, F_OK) == 0);
+    unsetenv("AGERUN_COMPLETE_MODEL");
     unsetenv("AGERUN_COMPLETE_RUNNER");
-    assert(setenv("AGERUN_COMPLETE_MODEL", ref_model_path, 1) == 0);
 
     ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_complete_instruction_evaluator__performance_cold_fixture");
     assert(own_fixture != NULL);
     ar_local_completion_t *own_runtime = ar_local_completion__create(ar_evaluator_fixture__get_log(own_fixture));
     assert(own_runtime != NULL);
+    const char *ref_model_path = ar_local_completion__get_model_path(own_runtime);
+    assert(ref_model_path != NULL);
+    assert(strstr(ref_model_path, g_shared_model_suffix) != NULL);
+    assert(access(ref_model_path, F_OK) == 0);
     ar_complete_instruction_evaluator_t *own_evaluator = ar_complete_instruction_evaluator__create(
         ar_evaluator_fixture__get_log(own_fixture),
         ar_evaluator_fixture__get_expression_evaluator(own_fixture),
@@ -690,21 +693,23 @@ static void test_complete_instruction_evaluator__performance_cold_fixture(void) 
 }
 
 static void test_complete_instruction_evaluator__performance_warm_fixture_set(void) {
-    const char *ref_model_path = "../../models/phi-3-mini-q4.gguf";
     const int64_t warm_run_limit_ms = 15000;
     size_t warm_success_count = 0U;
     size_t warm_under_limit_count = 0U;
     int64_t warm_max_ms = 0;
     int64_t warm_total_ms = 0;
 
-    assert(access(ref_model_path, F_OK) == 0);
+    unsetenv("AGERUN_COMPLETE_MODEL");
     unsetenv("AGERUN_COMPLETE_RUNNER");
-    assert(setenv("AGERUN_COMPLETE_MODEL", ref_model_path, 1) == 0);
 
     ar_evaluator_fixture_t *own_warm_fixture = ar_evaluator_fixture__create("test_complete_instruction_evaluator__performance_warm_fixture_set");
     assert(own_warm_fixture != NULL);
     ar_local_completion_t *own_warm_runtime = ar_local_completion__create(ar_evaluator_fixture__get_log(own_warm_fixture));
     assert(own_warm_runtime != NULL);
+    const char *ref_model_path = ar_local_completion__get_model_path(own_warm_runtime);
+    assert(ref_model_path != NULL);
+    assert(strstr(ref_model_path, g_shared_model_suffix) != NULL);
+    assert(access(ref_model_path, F_OK) == 0);
     ar_complete_instruction_evaluator_t *own_warm_evaluator = ar_complete_instruction_evaluator__create(
         ar_evaluator_fixture__get_log(own_warm_fixture),
         ar_evaluator_fixture__get_expression_evaluator(own_warm_fixture),

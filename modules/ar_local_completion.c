@@ -4,6 +4,7 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <pwd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -23,6 +24,10 @@ extern char **environ;
 #else
 #define AR_LOCAL_COMPLETION_DLOPEN_FLAGS (RTLD_NOW | RTLD_LOCAL)
 #endif
+
+#define AR_LOCAL_COMPLETION_DEFAULT_MODEL_HINT \
+    "set AGERUN_COMPLETE_MODEL or make HOME/account home available for " \
+    ".agerun/models/phi-3-mini-q4.gguf"
 
 typedef struct ar_local_completion_buffer_s {
     char *own_text;
@@ -238,13 +243,44 @@ static char *_dup_optional(const char *ref_text, const char *ref_desc) {
     return AR__HEAP__STRDUP(ref_text, ref_desc);
 }
 
-static char *_default_model_path(void) {
-    return AR__HEAP__STRDUP("models/phi-3-mini-q4.gguf", "local_completion_default_model_path");
+static const char *_home_directory(void) {
+    const char *ref_home = getenv("HOME");
+    if (ref_home != NULL && ref_home[0] != '\0') {
+        return ref_home;
+    }
+
+    struct passwd *ref_passwd = getpwuid(getuid());
+    if (ref_passwd != NULL && ref_passwd->pw_dir != NULL && ref_passwd->pw_dir[0] != '\0') {
+        return ref_passwd->pw_dir;
+    }
+
+    return NULL;
 }
 
-static char *_alternate_model_path(void) {
-    return AR__HEAP__STRDUP("../../models/phi-3-mini-q4.gguf",
-                            "local_completion_alternate_model_path");
+static char *_default_model_path(void) {
+    const char *ref_home = _home_directory();
+    const char *ref_suffix = "/.agerun/models/phi-3-mini-q4.gguf";
+    if (ref_home == NULL) {
+        return AR__HEAP__STRDUP(".agerun/models/phi-3-mini-q4.gguf",
+                                "local_completion_default_model_path");
+    }
+
+    size_t home_length = strlen(ref_home);
+    size_t suffix_offset = home_length > 0U && ref_home[home_length - 1U] == '/' ? 1U : 0U;
+    size_t suffix_length = strlen(ref_suffix + suffix_offset);
+    size_t path_size = home_length + suffix_length + 1U;
+    char *own_path = AR__HEAP__MALLOC(path_size, "local_completion_default_model_path");
+    if (own_path == NULL) {
+        return NULL;
+    }
+
+    int written = snprintf(own_path, path_size, "%s%s", ref_home, ref_suffix + suffix_offset);
+    if (written < 0 || (size_t)written >= path_size) {
+        AR__HEAP__FREE(own_path);
+        return NULL;
+    }
+
+    return own_path;
 }
 
 static char *_resolve_model_path(void) {
@@ -253,18 +289,6 @@ static char *_resolve_model_path(void) {
     if (own_path != NULL) {
         return own_path;
     }
-
-    own_path = _default_model_path();
-    if (own_path != NULL && access(own_path, F_OK) == 0) {
-        return own_path;
-    }
-    AR__HEAP__FREE(own_path);
-
-    own_path = _alternate_model_path();
-    if (own_path != NULL && access(own_path, F_OK) == 0) {
-        return own_path;
-    }
-    AR__HEAP__FREE(own_path);
 
     return _default_model_path();
 }
@@ -291,6 +315,15 @@ static const char *_alternate_llama_library_path(void) {
 
 static bool _file_exists(const char *ref_path) {
     return ref_path != NULL && access(ref_path, F_OK) == 0;
+}
+
+static const char *_model_path_recovery_hint(const ar_local_completion_t *ref_runtime) {
+    if (ref_runtime != NULL &&
+        ref_runtime->own_model_path != NULL &&
+        ref_runtime->own_model_path[0] != '\0') {
+        return ref_runtime->own_model_path;
+    }
+    return AR_LOCAL_COMPLETION_DEFAULT_MODEL_HINT;
 }
 
 static bool _placeholder_items_init(const ar_list_t *ref_placeholders,
@@ -427,18 +460,20 @@ static bool _ensure_llama_backend_initialized(ar_local_completion_t *mut_runtime
     }
     if (mut_runtime->own_model_path == NULL || mut_runtime->own_model_path[0] == '\0') {
         _log_failure(mut_runtime,
-                     "complete() local model path is not configured; set AGERUN_COMPLETE_MODEL or provide models/phi-3-mini-q4.gguf",
+                     "complete() local model path is not configured; set AGERUN_COMPLETE_MODEL "
+                     "or make HOME/account home available",
                      "runtime_unavailable",
                      "local model path is not configured",
-                     "set AGERUN_COMPLETE_MODEL or provide models/phi-3-mini-q4.gguf");
+                     AR_LOCAL_COMPLETION_DEFAULT_MODEL_HINT);
         return false;
     }
     if (!_file_exists(mut_runtime->own_model_path)) {
         _log_failure(mut_runtime,
-                     "complete() local model file was not found; set AGERUN_COMPLETE_MODEL or provide models/phi-3-mini-q4.gguf",
+                     "complete() local model file was not found at configured path; set "
+                     "AGERUN_COMPLETE_MODEL or run make complete-runtime-ready",
                      "runtime_unavailable",
                      "local model file was not found",
-                     "set AGERUN_COMPLETE_MODEL or provide models/phi-3-mini-q4.gguf");
+                     _model_path_recovery_hint(mut_runtime));
         return false;
     }
 

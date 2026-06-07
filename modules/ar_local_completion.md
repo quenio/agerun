@@ -16,18 +16,24 @@ The `ar_local_completion` module is the local runtime adapter used by `complete(
 ## Current implementation notes
 
 - the runtime keeps one adapter instance per instruction evaluator facade
+- by default, the runtime resolves the real completion model from
+  `$HOME/.agerun/models/phi-3-mini-q4.gguf`; `AGERUN_COMPLETE_MODEL` remains the
+  explicit override for experiments or alternate model paths
 - the direct path is implemented in C for simpler `llama.cpp` dynamic loading and symbol binding, while the public API remains the stable `ar_local_completion.h` header
 - the direct backend loads from the worktree-local `.deps/llama.cpp-install/` path,
   which `make vendor-llama-cpu` links to the shared cache under
   `~/.agerun/build/cache/vendor-llama-cpu`
+- `make download-complete-model` stores the GGUF, license, and model card under
+  `$HOME/.agerun/models` and protects cold-cache downloads with `download.lock`
 - the vendored `llama.cpp` source tree at top-level `llama-cpp/` is only needed when
   the shared cache has to be created
 - `make clean build` reuses the shared cached runtime, and
   `make clean-vendor-llama-cpu` removes it when an explicit rebuild is needed
 - `make vendor-llama-cpu` protects shared cache creation with `build.lock`; waiters
   poll the lock and remove it after `LLAMA_CACHE_LOCK_TIMEOUT_SECONDS` when it is stale
-- CI restores and saves `~/.agerun`, while `LLAMA_CACHE_KEY` prevents incompatible
-  restored `llama.cpp` caches from being accepted
+- CI restores and saves `~/.agerun/models` with a stable model-specific key, and
+  restores the vendored llama cache separately with `LLAMA_CACHE_KEY` preventing
+  incompatible restored `llama.cpp` caches from being accepted
 - on macOS, `make vendor-llama-cpu` also patches installed rpaths so the vendored binaries and dynamic libraries can find each other from the local install prefix
 - when `AGERUN_COMPLETE_RUNNER` is set, the adapter runs that explicit executable instead of the direct `libllama` path; this keeps deterministic fake-runner tests possible while the direct path is brought up
 - successful responses return one string value per requested placeholder key

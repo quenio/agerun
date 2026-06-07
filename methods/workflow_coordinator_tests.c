@@ -1,3 +1,5 @@
+#include <limits.h>
+#include <pwd.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -11,7 +13,6 @@
 
 static char g_runner_path[256] = {0};
 static char g_model_path[256] = {0};
-static const char *REF_REAL_MODEL_PATH = "../../models/phi-3-mini-q4.gguf";
 
 #if defined(__has_feature)
 #if __has_feature(address_sanitizer) || __has_feature(thread_sanitizer)
@@ -76,13 +77,90 @@ static void setup_missing_model(void) {
     unsetenv("AGERUN_COMPLETE_RUNNER");
 }
 
+static const char *get_default_model_home(void) {
+    const char *ref_home = getenv("HOME");
+    if (ref_home != NULL && ref_home[0] != '\0') {
+        return ref_home;
+    }
+
+    struct passwd *ref_passwd = getpwuid(getuid());
+    if (ref_passwd != NULL && ref_passwd->pw_dir != NULL && ref_passwd->pw_dir[0] != '\0') {
+        return ref_passwd->pw_dir;
+    }
+
+    return NULL;
+}
+
+static void build_shared_model_path(char *mut_path, size_t path_size) {
+    const char *ref_suffix = "/.agerun/models/phi-3-mini-q4.gguf";
+    const char *ref_home = get_default_model_home();
+    AR_ASSERT(ref_home != NULL,
+              "HOME or account home should be available for real completion tests");
+    size_t home_length = strlen(ref_home);
+    size_t suffix_offset = home_length > 0U && ref_home[home_length - 1U] == '/' ? 1U : 0U;
+    int written = snprintf(mut_path,
+                           path_size,
+                           "%s%s",
+                           ref_home,
+                           ref_suffix + suffix_offset);
+    AR_ASSERT(written >= 0 && (size_t)written < path_size,
+              "Shared model path should fit in buffer");
+}
+
 static void setup_real_completion_runtime(void) {
+    char own_model_path[PATH_MAX];
+
     cleanup_fake_runner();
-    AR_ASSERT(access(REF_REAL_MODEL_PATH, F_OK) == 0,
+    build_shared_model_path(own_model_path, sizeof(own_model_path));
+    AR_ASSERT(access(own_model_path, F_OK) == 0,
               "Real completion model should exist before workflow-coordinator real tests");
+    unsetenv("AGERUN_COMPLETE_MODEL");
     unsetenv("AGERUN_COMPLETE_RUNNER");
-    AR_ASSERT(setenv("AGERUN_COMPLETE_MODEL", REF_REAL_MODEL_PATH, 1) == 0,
-              "Real completion model env should be set");
+}
+
+static void test_workflow_coordinator__shared_model_path_uses_passwd_home_when_home_unset(void) {
+    char own_model_path[PATH_MAX];
+    char own_expected_path[PATH_MAX];
+    char own_original_home[PATH_MAX] = {0};
+    const char *ref_original_home = getenv("HOME");
+    bool had_original_home = ref_original_home != NULL && ref_original_home[0] != '\0';
+    const char *ref_suffix = "/.agerun/models/phi-3-mini-q4.gguf";
+    struct passwd *ref_passwd = getpwuid(getuid());
+    size_t home_length;
+    size_t suffix_offset;
+    int written;
+
+    printf("Testing workflow-coordinator shared model path uses passwd home when HOME is unset...\n");
+
+    AR_ASSERT(ref_passwd != NULL && ref_passwd->pw_dir != NULL && ref_passwd->pw_dir[0] != '\0',
+              "Passwd home should be available for fallback test");
+    if (had_original_home) {
+        written = snprintf(own_original_home, sizeof(own_original_home), "%s", ref_original_home);
+        AR_ASSERT(written >= 0 && (size_t)written < sizeof(own_original_home),
+                  "Original HOME should fit in buffer");
+    }
+
+    home_length = strlen(ref_passwd->pw_dir);
+    suffix_offset = home_length > 0U && ref_passwd->pw_dir[home_length - 1U] == '/' ? 1U : 0U;
+    written = snprintf(own_expected_path,
+                       sizeof(own_expected_path),
+                       "%s%s",
+                       ref_passwd->pw_dir,
+                       ref_suffix + suffix_offset);
+    AR_ASSERT(written >= 0 && (size_t)written < sizeof(own_expected_path),
+              "Expected passwd-home model path should fit in buffer");
+
+    unsetenv("HOME");
+    build_shared_model_path(own_model_path, sizeof(own_model_path));
+    AR_ASSERT(strcmp(own_model_path, own_expected_path) == 0,
+              "Shared model path should use passwd home when HOME is unset");
+
+    if (had_original_home) {
+        AR_ASSERT(setenv("HOME", own_original_home, 1) == 0,
+                  "Original HOME should be restored after fallback test");
+    } else {
+        unsetenv("HOME");
+    }
 }
 
 static bool log_file_contains(const char *ref_expected_text) {
@@ -384,6 +462,7 @@ int main(void) {
     printf("Workflow Coordinator Method Tests\n");
     printf("=================================\n\n");
 
+    test_workflow_coordinator__shared_model_path_uses_passwd_home_when_home_unset();
     test_workflow_coordinator__waits_for_definition_ready_before_spawning_item();
     test_workflow_coordinator__startup_failure_skips_item_creation();
     test_workflow_coordinator__real_completion_review_status_drives_outcomes();
