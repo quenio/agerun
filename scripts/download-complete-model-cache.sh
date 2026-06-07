@@ -464,14 +464,34 @@ _acquire_lock() {
             return 1
         fi
 
+        if ! _acquire_recovery_lock; then
+            echo "Waiting for complete model download recovery lock at $MODEL_LOCK_RECOVERY"
+            sleep "$COMPLETE_MODEL_LOCK_POLL_SECONDS"
+            continue
+        fi
+
+        if [ -d "$MODEL_LOCK" ]; then
+            _release_recovery_lock
+            continue
+        fi
+
         DOWNLOAD_LOCK_PID_STARTED_AT=$(_pid_start_fingerprint "$$") || DOWNLOAD_LOCK_PID_STARTED_AT=
         DOWNLOAD_LOCK_TOKEN=$(_new_download_lock_token "$DOWNLOAD_LOCK_PID_STARTED_AT")
         if mkdir "$MODEL_LOCK" 2>/dev/null; then
-            _write_lock_metadata
+            if ! _write_lock_metadata; then
+                rm -f "$MODEL_LOCK_HOLDER"
+                rmdir "$MODEL_LOCK" 2>/dev/null || true
+                _release_recovery_lock
+                echo "ERROR: unable to write complete model download lock metadata at $MODEL_LOCK_HOLDER"
+                exit 1
+            fi
             _start_download_lock_heartbeat
+            _release_recovery_lock
             trap '_release_download_lock' EXIT INT TERM
             return 0
         fi
+
+        _release_recovery_lock
     done
 }
 
