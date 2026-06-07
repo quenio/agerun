@@ -28,6 +28,7 @@ jobs:
       - name: Drop restored complete model cache locks
         run: |
           rm -rf "$HOME/.agerun/models/download.lock"
+          rm -rf "$HOME/.agerun/models/download.lock.recovery"
           rm -f "$HOME/.agerun/models/"*.partial
 
       - name: Restore AgeRun build cache
