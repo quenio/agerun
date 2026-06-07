@@ -186,6 +186,10 @@ restart or stop handling. Untracked lifecycle events report `ignored` and do not
 children or increment `restart_count`.
 If an internal spawn continuation cannot be queued, supervision reports `handoff_failed` instead of
 remaining in `starting`.
+If a requested child cannot be spawned, the failed `spawn(...)` instruction aborts the remaining
+ordinary method evaluation. The supervisor therefore does not report `running` for an incomplete
+child set, but it also cannot emit a catchable `spawn_failed` status without a runtime-level
+non-aborting spawn result or a separate method-existence check.
 
 ### Distribution
 
@@ -615,7 +619,7 @@ Conversation-scoped workflow:
 | Method | Status | Gap |
 | --- | --- | --- |
 | Routing | Fully implementable for one-to-one and primitive unbounded fan-out. | Richer message inspection and nested recipient descriptors require a richer data query layer. |
-| Supervision | Partially implementable. | The method can spawn and track unbounded child method-name lists with one shared start version, but methods cannot autonomously observe child crashes or exits; callers must send `child_failed` or `child_exited` events. Removing arbitrary failed ids from the tracked list or starting one mixed-version list requires a list-filter operation, separate supervisors, or a specialized replacement method. |
+| Supervision | Partially implementable. | The method can spawn and track unbounded child method-name lists with one shared start version, but methods cannot autonomously observe child crashes or exits; callers must send `child_failed` or `child_exited` events. A failed `spawn(...)` aborts the remaining ordinary method evaluation, so supervision can avoid reporting `running` for an incomplete child set but cannot emit a catchable spawn-failure status without a non-aborting spawn result or method-existence check. Removing arbitrary failed ids from the tracked list or starting one mixed-version list requires a list-filter operation, separate supervisors, or a specialized replacement method. |
 | Distribution | Partially implementable. | The method assigns one work payload to an unbounded worker list by composing with routing. Dynamic decomposition into distinct per-worker portions and load-aware placement require additional decomposition methods or richer collection-processing conventions. |
 | Aggregation | Fully implementable for list-valued fan-in. | Duplicate handling, custom merge functions, and richer aggregate policies require deeper collection operations or specialized aggregate methods. |
 | Scheduling | Partially implementable. | There is no runtime clock or timer callback; scheduling requires explicit `tick` messages from another agent or host process. |
@@ -625,6 +629,6 @@ Conversation-scoped workflow:
 | Retry | Fully implementable for immediate retry and scheduled retry by composition. | Backoff policies need an external tick convention and richer arithmetic/time policy support. |
 
 No method in this methodology is blocked entirely. The missing capabilities are real-time timers,
-autonomous lifecycle event observation, dynamic collection iteration for non-routing cases, and
-ordinary-method indexed assignment. Those gaps are documented here so the reusable behaviors remain
-ordinary methods rather than hidden runtime features.
+autonomous lifecycle event observation, non-aborting spawn failure results, dynamic collection
+iteration for non-routing cases, and ordinary-method indexed assignment. Those gaps are documented
+here so the reusable behaviors remain ordinary methods rather than hidden runtime features.

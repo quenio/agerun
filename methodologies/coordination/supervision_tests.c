@@ -318,6 +318,47 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
                      "handoff_failed") == 0,
               "Observer should receive failed spawn continuation status");
 
+    ar_data_t *own_failed_spawn_context = create_context();
+    ar_data_t *own_failed_spawn_observer_context = create_context();
+    int64_t failed_spawn_agent = ar_agency__create_agent(
+        mut_agency, "supervision", "1.0.0", own_failed_spawn_context);
+    int64_t failed_spawn_observer_agent = ar_agency__create_agent(
+        mut_agency, "record-receiver", "1.0.0", own_failed_spawn_observer_context);
+    ar_data_t *own_failed_spawn_start = ar_data__create_map();
+    AR_ASSERT(own_failed_spawn_start != NULL, "Failed spawn start should be created");
+    ar_data__set_map_string(own_failed_spawn_start, "action", "start");
+    ar_data_t *own_failed_spawn_methods = ar_data__create_list();
+    AR_ASSERT(own_failed_spawn_methods != NULL, "Failed spawn methods should be created");
+    append_child_method_name(own_failed_spawn_methods, "missing-child-method");
+    AR_ASSERT(ar_data__set_map_data(own_failed_spawn_start,
+                                    "child_method_names",
+                                    own_failed_spawn_methods),
+              "Failed spawn start should own child methods");
+    own_failed_spawn_methods = NULL;
+    ar_data__set_map_string(own_failed_spawn_start, "child_method_version", "1.0.0");
+    ar_data__set_map_string(own_failed_spawn_start, "policy", "restart");
+    ar_data__set_map_integer(own_failed_spawn_start,
+                             "reply_to",
+                             checked_agent_id(failed_spawn_observer_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency,
+                                       failed_spawn_agent,
+                                       own_failed_spawn_start),
+              "Failed spawn start should queue");
+    own_failed_spawn_start = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    const ar_data_t *ref_failed_spawn_memory =
+        ar_agency__get_agent_memory(mut_agency, failed_spawn_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_failed_spawn_memory, "status"),
+                     "starting") == 0,
+              "Failed child spawn should leave supervisor starting instead of running");
+    AR_ASSERT(ar_data__get_map_integer(ref_failed_spawn_memory, "child_count") == 0,
+              "Failed child spawn should not increment child count");
+    const ar_data_t *ref_failed_spawn_observer_memory =
+        ar_agency__get_agent_memory(mut_agency, failed_spawn_observer_agent);
+    AR_ASSERT(ar_data__get_map_data(ref_failed_spawn_observer_memory, "last_status") == NULL,
+              "Failed child spawn cannot emit status after spawn aborts evaluation");
+
     // Cleanup
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_supervision_context);
@@ -325,6 +366,8 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     ar_data__destroy(own_untracked_context);
     ar_data__destroy(own_failed_handoff_context);
     ar_data__destroy(own_failed_continue_context);
+    ar_data__destroy(own_failed_spawn_context);
+    ar_data__destroy(own_failed_spawn_observer_context);
 }
 
 int main(void) {

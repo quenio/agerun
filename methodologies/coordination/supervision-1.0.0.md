@@ -15,6 +15,10 @@ for the request's `child_method_names` list. The method consumes that list with 
 memory. When the list is exhausted, it reports `status=running` with the tracked child lists and
 count. If the initial spawn continuation or a later continuation cannot be queued, it reports
 `status=handoff_failed` instead of remaining in `starting`.
+If a requested child cannot be spawned, the failed `spawn(...)` instruction aborts the remaining
+ordinary method evaluation. The supervisor does not report `running` for the incomplete child set,
+but it also cannot emit a catchable spawn-failure status without a runtime-level non-aborting spawn
+result or a separate method-existence check.
 
 On a map whose `action` field is `"child_failed"` or `"child_exited"`, the method scans the tracked
 `child_agent_ids` list before applying the lifecycle event. If the child is tracked and the stored
@@ -101,7 +105,8 @@ uses one shared child method version for the unbounded method-name list; heterog
 be modeled with separate supervisors or by sending restart events with explicit method versions. The
 method appends replacement child ids to its tracked lists; it does not remove arbitrary failed ids
 from the middle of the list because ordinary methods do not currently have an atomic list-filter
-operation.
+operation. A failed `spawn(...)` instruction aborts method evaluation, so ordinary supervision
+methods cannot catch that failure and send a terminal failure report after the failed instruction.
 
 ## Implementation and Tests
 

@@ -47,12 +47,14 @@ memory.spawn_continue_message := {
   action: "spawn_child"
   child_method_names: memory.remaining_child_method_names
 }
-memory.spawn_continue_sent := send(memory.self * memory.is_spawn_child * memory.has_remaining, memory.spawn_continue_message)
 memory.spawn_continue_required := memory.is_spawn_child * memory.has_remaining
+memory.spawn_continue_required := memory.spawn_continue_required * memory.spawned_child
+memory.spawn_continue_sent := send(memory.self * memory.spawn_continue_required, memory.spawn_continue_message)
 memory.spawn_continue_failed := if(memory.spawn_continue_sent = 0, 1, 0)
 memory.spawn_continue_failed := memory.spawn_continue_failed * memory.spawn_continue_required
 memory.no_remaining := if(memory.has_remaining = 1, 0, 1)
 memory.start_complete := memory.is_spawn_child * memory.no_remaining
+memory.start_complete := memory.start_complete * memory.spawned_child
 memory.status := if(memory.start_complete = 1, "running", memory.status)
 memory.spawn_handoff_failed := memory.spawn_request_failed + memory.spawn_continue_failed
 memory.status := if(memory.spawn_handoff_failed > 0, "handoff_failed", memory.status)
