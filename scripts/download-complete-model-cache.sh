@@ -141,6 +141,26 @@ _recovery_lock_file_value() {
     _file_value "$MODEL_LOCK_RECOVERY_HOLDER" "$key"
 }
 
+_recovery_lock_holder_snapshot_from_file() {
+    local file="$1"
+
+    if [ ! -f "$file" ]; then
+        printf 'missing\n'
+        return
+    fi
+
+    printf 'token=%s\n' "$(_file_value "$file" "token")"
+    printf 'pid=%s\n' "$(_file_value "$file" "pid")"
+    printf 'host=%s\n' "$(_file_value "$file" "host")"
+    printf 'pid_started_at=%s\n' "$(_file_value "$file" "pid_started_at")"
+    printf 'started_at=%s\n' "$(_file_value "$file" "started_at")"
+    printf 'model_lock=%s\n' "$(_file_value "$file" "model_lock")"
+}
+
+_recovery_lock_holder_snapshot() {
+    _recovery_lock_holder_snapshot_from_file "$MODEL_LOCK_RECOVERY_HOLDER"
+}
+
 _pid_exists_on_current_host() {
     local pid="$1"
 
@@ -262,6 +282,7 @@ _write_recovery_lock_metadata() {
     pid_started_at=$(_pid_start_fingerprint "$$") || pid_started_at=
 
     {
+        echo "token=$(date +%s)-$RANDOM-$RANDOM"
         echo "pid=$$"
         echo "host=$CURRENT_HOST"
         if [ -n "$pid_started_at" ]; then
@@ -338,13 +359,48 @@ _recovery_lock_is_stale() {
 }
 
 _remove_stale_recovery_lock() {
+    local expected_holder_snapshot
+    local claimed_holder
+    local claimed_holder_snapshot
+    local remove_status
+
+    expected_holder_snapshot=$(_recovery_lock_holder_snapshot)
+
     if ! _recovery_lock_is_stale; then
         return 1
     fi
 
     echo "Removing stale complete model download recovery lock at $MODEL_LOCK_RECOVERY"
-    rm -f "$MODEL_LOCK_RECOVERY_HOLDER"
-    rmdir "$MODEL_LOCK_RECOVERY" 2>/dev/null || true
+
+    if [ ! -f "$MODEL_LOCK_RECOVERY_HOLDER" ]; then
+        if [ "$(_recovery_lock_holder_snapshot)" != "$expected_holder_snapshot" ]; then
+            return 1
+        fi
+
+        rmdir "$MODEL_LOCK_RECOVERY" 2>/dev/null
+        return $?
+    fi
+
+    claimed_holder="$MODEL_LOCK_RECOVERY.claimed.$$.$RANDOM.holder"
+    if ! mv "$MODEL_LOCK_RECOVERY_HOLDER" "$claimed_holder" 2>/dev/null; then
+        return 1
+    fi
+
+    claimed_holder_snapshot=$(_recovery_lock_holder_snapshot_from_file "$claimed_holder")
+    if [ "$claimed_holder_snapshot" != "$expected_holder_snapshot" ]; then
+        mv "$claimed_holder" "$MODEL_LOCK_RECOVERY_HOLDER" 2>/dev/null || true
+        return 1
+    fi
+
+    rmdir "$MODEL_LOCK_RECOVERY" 2>/dev/null
+    remove_status=$?
+    if [ "$remove_status" -eq 0 ]; then
+        rm -f "$claimed_holder"
+    else
+        mv "$claimed_holder" "$MODEL_LOCK_RECOVERY_HOLDER" 2>/dev/null || true
+    fi
+
+    return "$remove_status"
 }
 
 _acquire_recovery_lock() {
