@@ -1,0 +1,54 @@
+memory.is_wait := if(message.action = "wait", 1, 0)
+memory.is_dependency := if(message.action = "dependency", 1, 0)
+memory.sync_id := if(memory.is_wait = 1, message.sync_id, memory.sync_id)
+memory.required_count := if(memory.is_wait = 1, message.required_count, memory.required_count)
+memory.reply_to := if(memory.is_wait = 1, message.reply_to, memory.reply_to)
+memory.continuation_target := if(memory.is_wait = 1, message.continuation_target, memory.continuation_target)
+memory.continuation_action := if(memory.is_wait = 1, message.continuation_action, memory.continuation_action)
+memory.continuation_text := if(memory.is_wait = 1, message.continuation_text, memory.continuation_text)
+memory.received := if(memory.is_wait = 1, [], memory.received)
+memory.done_count := if(memory.is_wait = 1, 0, memory.done_count)
+memory.completed := if(memory.is_wait = 1, 0, memory.completed)
+memory.continuation_done := if(memory.is_wait = 1, 0, memory.continuation_done)
+memory.matching_sync := if(message.sync_id = memory.sync_id, 1, 0)
+memory.valid_dependency := memory.is_dependency * memory.matching_sync
+memory.not_completed := if(memory.completed = 0, 1, 0)
+memory.not_continuation_done := if(memory.continuation_done = 0, 1, 0)
+memory.effective_required_count := if(memory.required_count > 0, memory.required_count, 1)
+memory.below_required_count := if(memory.done_count < memory.effective_required_count, 1, 0)
+memory.should_count := memory.valid_dependency * memory.not_completed * memory.not_continuation_done
+memory.should_count := memory.should_count * memory.below_required_count
+memory.append_buffer := if(memory.should_count = 1, memory.received, "")
+memory.append_ok := append(memory.append_buffer, message.dependency)
+memory.received := if(memory.append_ok = 1, memory.append_buffer, memory.received)
+memory.done_count := memory.done_count + memory.append_ok
+memory.is_complete := if(memory.done_count >= memory.effective_required_count, 1, 0)
+memory.status := if(memory.is_complete = 1, "complete", "waiting")
+memory.should_emit := memory.is_complete * memory.not_completed
+memory.should_emit := memory.should_emit * memory.valid_dependency
+memory.should_send_continuation := memory.should_emit * memory.not_continuation_done
+memory.continuation_message := {
+  action: memory.continuation_action
+  sync_id: memory.sync_id
+  text: memory.continuation_text
+  done_count: memory.done_count
+  dependencies: memory.received
+}
+memory.continuation_target_value := memory.continuation_target * memory.should_send_continuation
+memory.continuation_sent := send(memory.continuation_target_value, memory.continuation_message)
+memory.continuation_delivery_ok := if(memory.continuation_target > 0, memory.continuation_sent, 0)
+memory.continuation_delivered_now := memory.should_send_continuation * memory.continuation_delivery_ok
+memory.continuation_done := if(memory.continuation_delivered_now = 1, 1, memory.continuation_done)
+memory.report_message := {
+  action: "synchronization_status"
+  sync_id: memory.sync_id
+  status: memory.status
+  done_count: memory.done_count
+  dependencies: memory.received
+}
+memory.report_ready := memory.should_emit * memory.continuation_done
+memory.report_target := memory.reply_to * memory.report_ready
+memory.report_sent := send(memory.report_target, memory.report_message)
+memory.report_delivered := if(memory.reply_to > 0, memory.report_sent, 1)
+memory.completion_delivered := memory.report_ready * memory.report_delivered
+memory.completed := if(memory.completion_delivered = 1, 1, memory.completed)

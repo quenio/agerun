@@ -1,0 +1,30 @@
+memory.is_start := if(message.action = "start", 1, 0)
+memory.is_result := if(message.action = "result", 1, 0)
+memory.aggregate_id := if(memory.is_start = 1, message.aggregate_id, memory.aggregate_id)
+memory.required_count := if(memory.is_start = 1, message.required_count, memory.required_count)
+memory.reply_to := if(memory.is_start = 1, message.reply_to, memory.reply_to)
+memory.results := if(memory.is_start = 1, [], memory.results)
+memory.received_count := if(memory.is_start = 1, 0, memory.received_count)
+memory.completed := if(memory.is_start = 1, 0, memory.completed)
+memory.not_completed := if(memory.completed = 0, 1, 0)
+memory.matching_aggregate := if(message.aggregate_id = memory.aggregate_id, 1, 0)
+memory.should_collect := memory.is_result * memory.matching_aggregate * memory.not_completed
+memory.append_buffer := if(memory.should_collect = 1, memory.results, "")
+memory.append_ok := append(memory.append_buffer, message.value)
+memory.results := if(memory.append_ok = 1, memory.append_buffer, memory.results)
+memory.received_count := memory.received_count + memory.append_ok
+memory.effective_required_count := if(memory.required_count > 0, memory.required_count, 1)
+memory.is_complete := if(memory.received_count >= memory.effective_required_count, 1, 0)
+memory.status := if(memory.is_complete = 1, "complete", "collecting")
+memory.should_emit := memory.is_complete * memory.not_completed
+memory.output_target := memory.reply_to * memory.should_emit
+memory.output_message := {
+  action: "aggregate_complete"
+  aggregate_id: memory.aggregate_id
+  status: memory.status
+  result: memory.results
+  received_count: memory.received_count
+}
+memory.output_sent := send(memory.output_target, memory.output_message)
+memory.completion_delivered := memory.should_emit * memory.output_sent
+memory.completed := if(memory.completion_delivered = 1, 1, memory.completed)

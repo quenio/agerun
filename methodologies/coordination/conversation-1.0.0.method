@@ -1,0 +1,79 @@
+memory.is_start := if(message.action = "start", 1, 0)
+memory.is_message := if(message.action = "message", 1, 0)
+memory.is_summary := if(message.action = "summary", 1, 0)
+memory.is_close := if(message.action = "close", 1, 0)
+memory.conversation_id := if(memory.is_start = 1, message.conversation_id, memory.conversation_id)
+memory.participant_a := if(memory.is_start = 1, message.participant_a, memory.participant_a)
+memory.participant_b := if(memory.is_start = 1, message.participant_b, memory.participant_b)
+memory.reply_to := if(memory.is_start = 1, message.reply_to, memory.reply_to)
+memory.state := if(memory.is_start = 1, "active", memory.state)
+memory.turn_count := if(memory.is_start = 1, 0, memory.turn_count)
+memory.history := if(memory.is_start = 1, [], memory.history)
+memory.last_sender := if(memory.is_start = 1, 0, memory.last_sender)
+memory.last_recipient := if(memory.is_start = 1, 0, memory.last_recipient)
+memory.last_text := if(memory.is_start = 1, "", memory.last_text)
+memory.matches_conversation := if(message.conversation_id = memory.conversation_id, 1, 0)
+memory.is_active := if(memory.state = "active", 1, 0)
+memory.from_a := if(message.sender = memory.participant_a, 1, 0)
+memory.from_b := if(message.sender = memory.participant_b, 1, 0)
+memory.is_participant := memory.from_a + memory.from_b
+memory.is_turn := memory.is_message * memory.matches_conversation * memory.is_active * memory.is_participant
+memory.recipient := if(memory.from_a = 1, memory.participant_b, 0)
+memory.recipient := if(memory.from_b = 1, memory.participant_a, memory.recipient)
+memory.next_turn_count := memory.turn_count + memory.is_turn
+memory.turn_message := {
+  action: "conversation_turn"
+  conversation_id: memory.conversation_id
+  from: message.sender
+  to: memory.recipient
+  text: message.text
+  intent: message.intent
+  turn_count: memory.next_turn_count
+}
+memory.relay_target := memory.recipient * memory.is_turn
+memory.relay_sent := send(memory.relay_target, memory.turn_message)
+memory.should_record := memory.is_turn * memory.relay_sent
+memory.history_buffer := if(memory.should_record = 1, memory.history, "")
+memory.append_ok := append(memory.history_buffer, memory.turn_message)
+memory.history := if(memory.append_ok = 1, memory.history_buffer, memory.history)
+memory.turn_count := if(memory.append_ok = 1, memory.next_turn_count, memory.turn_count)
+memory.last_sender := if(memory.append_ok = 1, message.sender, memory.last_sender)
+memory.last_recipient := if(memory.append_ok = 1, memory.recipient, memory.last_recipient)
+memory.last_text := if(memory.append_ok = 1, message.text, memory.last_text)
+memory.should_close := memory.is_close * memory.matches_conversation
+memory.state := if(memory.should_close = 1, "closed", memory.state)
+memory.close_message := {
+  action: "conversation_closed"
+  conversation_id: memory.conversation_id
+  state: memory.state
+  turn_count: memory.turn_count
+}
+memory.close_a_sent := send(memory.participant_a * memory.should_close, memory.close_message)
+memory.close_b_sent := send(memory.participant_b * memory.should_close, memory.close_message)
+memory.response_action := if(memory.is_start = 1, "conversation_started", "conversation_status")
+memory.response_action := if(memory.is_message = 1, "conversation_relayed", memory.response_action)
+memory.response_action := if(memory.is_summary = 1, "conversation_summary", memory.response_action)
+memory.response_action := if(memory.should_close = 1, "conversation_closed", memory.response_action)
+memory.response_status := if(memory.is_turn = 1, "relay_failed", "ignored")
+memory.response_status := if(memory.append_ok = 1, "relayed", memory.response_status)
+memory.response_status := if(memory.is_start = 1, "active", memory.response_status)
+memory.summary_matches := memory.is_summary * memory.matches_conversation
+memory.response_status := if(memory.summary_matches = 1, memory.state, memory.response_status)
+memory.response_status := if(memory.should_close = 1, "closed", memory.response_status)
+memory.response_message := {
+  action: memory.response_action
+  conversation_id: memory.conversation_id
+  state: memory.state
+  status: memory.response_status
+  participant_a: memory.participant_a
+  participant_b: memory.participant_b
+  last_sender: memory.last_sender
+  last_recipient: memory.last_recipient
+  last_text: memory.last_text
+  turn_count: memory.turn_count
+  history: memory.history
+}
+memory.should_respond := memory.is_start + memory.is_message
+memory.should_respond := memory.should_respond + memory.summary_matches
+memory.should_respond := memory.should_respond + memory.should_close
+memory.response_sent := send(memory.reply_to * memory.should_respond, memory.response_message)
