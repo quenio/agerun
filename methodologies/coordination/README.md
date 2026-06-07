@@ -541,8 +541,8 @@ Requests:
   reply_to: <agent>
 }
 
-{ action: "failure", correlation_id: <operation_id>, current_tick: <tick> }
-{ action: "success", correlation_id: <operation_id> }
+{ action: "failure", correlation_id: <operation_id>, attempt: <attempt>, current_tick: <tick> }
+{ action: "success", correlation_id: <operation_id>, attempt: <attempt> }
 ```
 
 Attempt:
@@ -588,6 +588,8 @@ fails, it reports `dispatch_failed` with zero attempts.
 After retry reports terminal `succeeded` or `failed` status, later stale outcome messages are ignored.
 A new `start` request opens a fresh active retry state, and late outcomes from previous operations are
 ignored because their `correlation_id` does not match the active operation id.
+Active outcomes must also match the current in-flight `attempt`; duplicate failure or success maps
+from an earlier attempt are ignored instead of consuming another retry slot.
 Retry attempts advance only after an immediate retry or scheduled retry handoff is sent
 successfully; failed dispatch leaves the retry active at the previous attempt count.
 Retry records terminal `succeeded` or `failed` status only after the `retry_result` report is

@@ -30,13 +30,16 @@ memory.attempts := if(memory.start_succeeded = 1, memory.start_attempt, memory.a
 memory.status := if(memory.start_succeeded = 1, "active", memory.status)
 memory.is_active_status := if(memory.status = "active", 1, 0)
 memory.matching_operation := if(message.correlation_id = memory.operation_id, 1, 0)
+memory.matching_attempt := if(message.attempt = memory.attempts, 1, 0)
 memory.no_pending_terminal := if(memory.pending_terminal = 0, 1, 0)
 memory.pending_terminal_outcome := memory.is_failure + memory.is_success
 memory.pending_terminal_retry := memory.pending_terminal_outcome * memory.matching_operation
 memory.pending_terminal_retry := memory.pending_terminal_retry * memory.pending_terminal
 memory.active_failure := memory.is_failure * memory.is_active_status * memory.matching_operation
+memory.active_failure := memory.active_failure * memory.matching_attempt
 memory.active_failure := memory.active_failure * memory.no_pending_terminal
 memory.active_success := memory.is_success * memory.is_active_status * memory.matching_operation
+memory.active_success := memory.active_success * memory.matching_attempt
 memory.active_success := memory.active_success * memory.no_pending_terminal
 memory.can_retry := if(memory.attempts < memory.max_attempts, 1, 0)
 memory.retry_allowed := memory.active_failure * memory.can_retry

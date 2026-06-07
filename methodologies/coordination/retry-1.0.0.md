@@ -13,22 +13,25 @@ strategy, maximum attempts, scheduler agent, delay tick, and reply target. It se
 operation attempt with `attempt: 1` and records `attempts=1` only after that send succeeds. If the
 initial operation send fails, it reports `status=dispatch_failed` with `attempts=0`.
 
-On a map whose `action` field is `"failure"` and whose `correlation_id` matches the active
-operation, the method retries when `attempts < max_attempts`. For `strategy=immediate`, it sends the
-next attempt directly to the operation target. For
+On a map whose `action` field is `"failure"`, whose `correlation_id` matches the active operation,
+and whose `attempt` matches the current attempt count, the method retries when
+`attempts < max_attempts`. For `strategy=immediate`, it sends the next attempt directly to the
+operation target. For
 `strategy=scheduled`, it sends a schedule request to the scheduler agent with `due_tick` set to the
 failure message's `current_tick` plus `delay_ticks` and `payload_attempt` set to the next attempt
 number. If no attempts remain, it reports `status=failed`.
 The attempt count advances only after the immediate retry or scheduled retry handoff is sent
 successfully. A failed retry dispatch leaves the retry active at the previous attempt count.
 
-On a map whose `action` field is `"success"` and whose `correlation_id` matches the active operation,
-it reports `status=succeeded` with the current attempt count.
+On a map whose `action` field is `"success"`, whose `correlation_id` matches the active operation,
+and whose `attempt` matches the current attempt count, it reports `status=succeeded` with the current
+attempt count.
 
 Once the retry state reaches terminal `succeeded` or `failed` status, later stale `failure` or
 `success` outcome messages are ignored. A new `start` request opens a fresh active retry state. Late
 outcomes from a previous operation are ignored because their `correlation_id` no longer matches the
-active operation id.
+active operation id. Duplicate outcomes from an earlier attempt are ignored because their `attempt`
+no longer matches the current in-flight attempt.
 Terminal status is recorded only after the `retry_result` report is delivered. If report delivery
 fails, the retry stores the pending terminal status and attempt count. Later matching outcomes retry
 that original terminal report without changing the attempt count or replacing the pending terminal
@@ -56,8 +59,8 @@ Start request:
 Outcome requests:
 
 ```text
-{ action: "failure", correlation_id: <operation_id>, current_tick: <tick> }
-{ action: "success", correlation_id: <operation_id> }
+{ action: "failure", correlation_id: <operation_id>, attempt: <attempt>, current_tick: <tick> }
+{ action: "success", correlation_id: <operation_id>, attempt: <attempt> }
 ```
 
 Operation attempt:
