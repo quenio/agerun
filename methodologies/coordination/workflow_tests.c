@@ -47,6 +47,9 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
         "memory.last_action := message.action\n"
         "memory.last_text := message.text\n"
         "memory.last_correlation_id := message.correlation_id\n"
+        "memory.last_kind := message.kind\n"
+        "memory.last_source := message.source\n"
+        "memory.last_reply_to := message.reply_to\n"
         "memory.last_workflow_id := message.workflow_id\n"
         "memory.last_status := message.status\n"
         "memory.last_current_step := message.current_step\n"
@@ -60,18 +63,41 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
     verify_method_parses(mut_methodology, "record-receiver");
 }
 
+static ar_data_t *create_step_payload(const char *ref_action,
+                                      const char *ref_text,
+                                      const char *ref_kind,
+                                      int reply_to) {
+    ar_data_t *own_payload = ar_data__create_map();
+    AR_ASSERT(own_payload != NULL, "Workflow step payload should be created");
+    AR_ASSERT(ar_data__set_map_string(own_payload, "action", ref_action),
+              "Workflow step payload should set action");
+    AR_ASSERT(ar_data__set_map_string(own_payload, "text", ref_text),
+              "Workflow step payload should set text");
+    AR_ASSERT(ar_data__set_map_string(own_payload, "kind", ref_kind),
+              "Workflow step payload should set caller-owned field");
+    AR_ASSERT(ar_data__set_map_string(own_payload, "source", "caller-owned-source"),
+              "Workflow step payload should set caller-owned source");
+    if (reply_to > 0) {
+        AR_ASSERT(ar_data__set_map_integer(own_payload, "reply_to", reply_to),
+                  "Workflow step payload should set caller-owned reply target");
+    }
+    return own_payload;
+}
+
 static void append_workflow_step(ar_data_t *mut_step_targets,
-                                 ar_data_t *mut_step_actions,
-                                 ar_data_t *mut_step_texts,
+                                 ar_data_t *mut_step_payloads,
                                  int target,
                                  const char *ref_action,
                                  const char *ref_text) {
     AR_ASSERT(ar_data__list_add_last_integer(mut_step_targets, target),
               "Workflow step target should append");
-    AR_ASSERT(ar_data__list_add_last_string(mut_step_actions, ref_action),
-              "Workflow step action should append");
-    AR_ASSERT(ar_data__list_add_last_string(mut_step_texts, ref_text),
-              "Workflow step text should append");
+    ar_data_t *own_payload = create_step_payload(ref_action,
+                                                 ref_text,
+                                                 "caller-shaped",
+                                                 31415);
+    AR_ASSERT(ar_data__list_add_last_data(mut_step_payloads, own_payload),
+              "Workflow step payload should append");
+    own_payload = NULL;
 }
 
 static void send_step_done(ar_agency_t *mut_agency,
@@ -129,30 +155,25 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
     ar_data__set_map_string(own_start, "workflow_id", "wf-1");
     ar_data__set_map_integer(own_start, "reply_to", checked_agent_id(report_agent));
     ar_data_t *own_step_targets = ar_data__create_list();
-    ar_data_t *own_step_actions = ar_data__create_list();
-    ar_data_t *own_step_texts = ar_data__create_list();
+    ar_data_t *own_step_payloads = ar_data__create_list();
     AR_ASSERT(own_step_targets != NULL, "Workflow step targets list should be created");
-    AR_ASSERT(own_step_actions != NULL, "Workflow step actions list should be created");
-    AR_ASSERT(own_step_texts != NULL, "Workflow step texts list should be created");
-    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+    AR_ASSERT(own_step_payloads != NULL, "Workflow step payloads list should be created");
+    append_workflow_step(own_step_targets, own_step_payloads,
                          checked_agent_id(step1_agent), "step1", "first");
-    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+    append_workflow_step(own_step_targets, own_step_payloads,
                          checked_agent_id(step2_agent), "step2", "second");
-    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+    append_workflow_step(own_step_targets, own_step_payloads,
                          checked_agent_id(step3_agent), "step3", "third");
-    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+    append_workflow_step(own_step_targets, own_step_payloads,
                          checked_agent_id(step4_agent), "step4", "fourth");
-    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+    append_workflow_step(own_step_targets, own_step_payloads,
                          checked_agent_id(step5_agent), "step5", "fifth");
     AR_ASSERT(ar_data__set_map_data(own_start, "step_targets", own_step_targets),
               "Workflow start should own step targets list");
     own_step_targets = NULL;
-    AR_ASSERT(ar_data__set_map_data(own_start, "step_actions", own_step_actions),
-              "Workflow start should own step actions list");
-    own_step_actions = NULL;
-    AR_ASSERT(ar_data__set_map_data(own_start, "step_texts", own_step_texts),
-              "Workflow start should own step texts list");
-    own_step_texts = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_payloads", own_step_payloads),
+              "Workflow start should own step payloads list");
+    own_step_payloads = NULL;
     ar_data__set_map_string(own_start, "branch_value", "skip");
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, workflow_agent, own_start),
               "Workflow start should queue");
@@ -160,8 +181,18 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
     ar_method_fixture__process_all_messages(own_fixture);
 
     const ar_data_t *ref_step1_memory = ar_agency__get_agent_memory(mut_agency, step1_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_step1_memory, "last_action"), "step1") == 0,
+              "Workflow should preserve first step payload action");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_step1_memory, "last_text"), "first") == 0,
               "Workflow should send first step");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_step1_memory, "last_kind"),
+                     "caller-shaped") == 0,
+              "Workflow should preserve caller-owned payload field");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_step1_memory, "last_source"),
+                     "caller-owned-source") == 0,
+              "Workflow should preserve caller-owned source field");
+    AR_ASSERT(ar_data__get_map_integer(ref_step1_memory, "last_reply_to") == 31415,
+              "Workflow should preserve caller-owned reply target");
 
     send_step_done(mut_agency, workflow_agent, "wf-1", 3, "continue");
     ar_method_fixture__process_all_messages(own_fixture);
@@ -216,24 +247,19 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
     ar_data__set_map_string(own_start, "workflow_id", "wf-zero-head");
     ar_data__set_map_integer(own_start, "reply_to", checked_agent_id(report_agent));
     own_step_targets = ar_data__create_list();
-    own_step_actions = ar_data__create_list();
-    own_step_texts = ar_data__create_list();
+    own_step_payloads = ar_data__create_list();
     AR_ASSERT(own_step_targets != NULL, "Zero-head targets should be created");
-    AR_ASSERT(own_step_actions != NULL, "Zero-head actions should be created");
-    AR_ASSERT(own_step_texts != NULL, "Zero-head texts should be created");
-    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+    AR_ASSERT(own_step_payloads != NULL, "Zero-head payloads should be created");
+    append_workflow_step(own_step_targets, own_step_payloads,
                          0, "noop", "placeholder");
-    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+    append_workflow_step(own_step_targets, own_step_payloads,
                          checked_agent_id(step1_agent), "step1", "after-zero");
     AR_ASSERT(ar_data__set_map_data(own_start, "step_targets", own_step_targets),
               "Zero-head start should own step targets");
     own_step_targets = NULL;
-    AR_ASSERT(ar_data__set_map_data(own_start, "step_actions", own_step_actions),
-              "Zero-head start should own step actions");
-    own_step_actions = NULL;
-    AR_ASSERT(ar_data__set_map_data(own_start, "step_texts", own_step_texts),
-              "Zero-head start should own step texts");
-    own_step_texts = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_payloads", own_step_payloads),
+              "Zero-head start should own step payloads");
+    own_step_payloads = NULL;
     ar_data__set_map_string(own_start, "branch_value", "skip");
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, workflow_agent, own_start),
               "Zero-head workflow start should queue");
@@ -263,26 +289,21 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
     ar_data__set_map_string(own_start, "workflow_id", "wf-post-completion-zero");
     ar_data__set_map_integer(own_start, "reply_to", checked_agent_id(report_agent));
     own_step_targets = ar_data__create_list();
-    own_step_actions = ar_data__create_list();
-    own_step_texts = ar_data__create_list();
+    own_step_payloads = ar_data__create_list();
     AR_ASSERT(own_step_targets != NULL, "Post-completion zero targets should be created");
-    AR_ASSERT(own_step_actions != NULL, "Post-completion zero actions should be created");
-    AR_ASSERT(own_step_texts != NULL, "Post-completion zero texts should be created");
-    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+    AR_ASSERT(own_step_payloads != NULL, "Post-completion zero payloads should be created");
+    append_workflow_step(own_step_targets, own_step_payloads,
                          checked_agent_id(step1_agent), "step1", "before-zero");
-    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+    append_workflow_step(own_step_targets, own_step_payloads,
                          0, "noop", "placeholder");
-    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+    append_workflow_step(own_step_targets, own_step_payloads,
                          checked_agent_id(step2_agent), "step2", "after-completion-zero");
     AR_ASSERT(ar_data__set_map_data(own_start, "step_targets", own_step_targets),
               "Post-completion zero start should own step targets");
     own_step_targets = NULL;
-    AR_ASSERT(ar_data__set_map_data(own_start, "step_actions", own_step_actions),
-              "Post-completion zero start should own step actions");
-    own_step_actions = NULL;
-    AR_ASSERT(ar_data__set_map_data(own_start, "step_texts", own_step_texts),
-              "Post-completion zero start should own step texts");
-    own_step_texts = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_payloads", own_step_payloads),
+              "Post-completion zero start should own step payloads");
+    own_step_payloads = NULL;
     ar_data__set_map_string(own_start, "branch_value", "skip");
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, workflow_agent, own_start),
               "Post-completion zero workflow start should queue");
@@ -321,22 +342,17 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
     ar_data__set_map_string(own_start, "workflow_id", "wf-failed-worker-send");
     ar_data__set_map_integer(own_start, "reply_to", checked_agent_id(report_agent));
     own_step_targets = ar_data__create_list();
-    own_step_actions = ar_data__create_list();
-    own_step_texts = ar_data__create_list();
+    own_step_payloads = ar_data__create_list();
     AR_ASSERT(own_step_targets != NULL, "Failed worker send target list should be created");
-    AR_ASSERT(own_step_actions != NULL, "Failed worker send action list should be created");
-    AR_ASSERT(own_step_texts != NULL, "Failed worker send text list should be created");
-    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+    AR_ASSERT(own_step_payloads != NULL, "Failed worker send payload list should be created");
+    append_workflow_step(own_step_targets, own_step_payloads,
                          98765, "step1", "missing-worker");
     AR_ASSERT(ar_data__set_map_data(own_start, "step_targets", own_step_targets),
               "Failed worker send start should own step targets");
     own_step_targets = NULL;
-    AR_ASSERT(ar_data__set_map_data(own_start, "step_actions", own_step_actions),
-              "Failed worker send start should own step actions");
-    own_step_actions = NULL;
-    AR_ASSERT(ar_data__set_map_data(own_start, "step_texts", own_step_texts),
-              "Failed worker send start should own step texts");
-    own_step_texts = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_payloads", own_step_payloads),
+              "Failed worker send start should own step payloads");
+    own_step_payloads = NULL;
     ar_data__set_map_string(own_start, "branch_value", "skip");
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, workflow_agent, own_start),
               "Failed worker send workflow start should queue");
@@ -363,22 +379,17 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
     ar_data__set_map_string(own_start, "workflow_id", "wf-failed-completion");
     ar_data__set_map_integer(own_start, "reply_to", 98765);
     own_step_targets = ar_data__create_list();
-    own_step_actions = ar_data__create_list();
-    own_step_texts = ar_data__create_list();
+    own_step_payloads = ar_data__create_list();
     AR_ASSERT(own_step_targets != NULL, "Failed completion step targets list should be created");
-    AR_ASSERT(own_step_actions != NULL, "Failed completion step actions list should be created");
-    AR_ASSERT(own_step_texts != NULL, "Failed completion step texts list should be created");
-    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+    AR_ASSERT(own_step_payloads != NULL, "Failed completion step payloads list should be created");
+    append_workflow_step(own_step_targets, own_step_payloads,
                          checked_agent_id(step1_agent), "step1", "single");
     AR_ASSERT(ar_data__set_map_data(own_start, "step_targets", own_step_targets),
               "Failed completion start should own step targets list");
     own_step_targets = NULL;
-    AR_ASSERT(ar_data__set_map_data(own_start, "step_actions", own_step_actions),
-              "Failed completion start should own step actions list");
-    own_step_actions = NULL;
-    AR_ASSERT(ar_data__set_map_data(own_start, "step_texts", own_step_texts),
-              "Failed completion start should own step texts list");
-    own_step_texts = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_payloads", own_step_payloads),
+              "Failed completion start should own step payloads list");
+    own_step_payloads = NULL;
     ar_data__set_map_string(own_start, "branch_value", "skip");
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, workflow_agent, own_start),
               "Failed completion workflow start should queue");
@@ -420,22 +431,17 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
     ar_data__set_map_string(own_start, "workflow_id", "wf-failed-start-handoff");
     ar_data__set_map_integer(own_start, "reply_to", checked_agent_id(report_agent));
     own_step_targets = ar_data__create_list();
-    own_step_actions = ar_data__create_list();
-    own_step_texts = ar_data__create_list();
+    own_step_payloads = ar_data__create_list();
     AR_ASSERT(own_step_targets != NULL, "Failed start handoff targets should be created");
-    AR_ASSERT(own_step_actions != NULL, "Failed start handoff actions should be created");
-    AR_ASSERT(own_step_texts != NULL, "Failed start handoff texts should be created");
-    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+    AR_ASSERT(own_step_payloads != NULL, "Failed start handoff payloads should be created");
+    append_workflow_step(own_step_targets, own_step_payloads,
                          checked_agent_id(step1_agent), "step1", "handoff");
     AR_ASSERT(ar_data__set_map_data(own_start, "step_targets", own_step_targets),
               "Failed start handoff should own step targets");
     own_step_targets = NULL;
-    AR_ASSERT(ar_data__set_map_data(own_start, "step_actions", own_step_actions),
-              "Failed start handoff should own step actions");
-    own_step_actions = NULL;
-    AR_ASSERT(ar_data__set_map_data(own_start, "step_texts", own_step_texts),
-              "Failed start handoff should own step texts");
-    own_step_texts = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_payloads", own_step_payloads),
+              "Failed start handoff should own step payloads");
+    own_step_payloads = NULL;
     ar_data__set_map_string(own_start, "branch_value", "skip");
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, failed_handoff_agent, own_start),
               "Failed start handoff workflow should queue");
@@ -464,24 +470,19 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
     ar_data__set_map_string(own_start, "workflow_id", "wf-failed-continue-handoff");
     ar_data__set_map_integer(own_start, "reply_to", checked_agent_id(report_agent));
     own_step_targets = ar_data__create_list();
-    own_step_actions = ar_data__create_list();
-    own_step_texts = ar_data__create_list();
+    own_step_payloads = ar_data__create_list();
     AR_ASSERT(own_step_targets != NULL, "Failed continuation targets should be created");
-    AR_ASSERT(own_step_actions != NULL, "Failed continuation actions should be created");
-    AR_ASSERT(own_step_texts != NULL, "Failed continuation texts should be created");
-    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+    AR_ASSERT(own_step_payloads != NULL, "Failed continuation payloads should be created");
+    append_workflow_step(own_step_targets, own_step_payloads,
                          checked_agent_id(step1_agent), "step1", "continue-a");
-    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+    append_workflow_step(own_step_targets, own_step_payloads,
                          checked_agent_id(step2_agent), "step2", "continue-b");
     AR_ASSERT(ar_data__set_map_data(own_start, "step_targets", own_step_targets),
               "Failed continuation should own step targets");
     own_step_targets = NULL;
-    AR_ASSERT(ar_data__set_map_data(own_start, "step_actions", own_step_actions),
-              "Failed continuation should own step actions");
-    own_step_actions = NULL;
-    AR_ASSERT(ar_data__set_map_data(own_start, "step_texts", own_step_texts),
-              "Failed continuation should own step texts");
-    own_step_texts = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_payloads", own_step_payloads),
+              "Failed continuation should own step payloads");
+    own_step_payloads = NULL;
     ar_data__set_map_string(own_start, "branch_value", "skip");
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, failed_continue_agent, own_start),
               "Failed continuation workflow should queue");

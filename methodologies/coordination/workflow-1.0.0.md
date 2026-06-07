@@ -9,10 +9,10 @@ their configured target agents. It demonstrates a higher-level coordination beha
 ## Behavior
 
 On a map whose `action` field is `"start"`, the method stores the workflow id, reply target, branch
-value, and active status. It expects three aligned step lists: `step_targets`, `step_actions`, and
-`step_texts`. The first list contains target agent ids where positive integers are deliverable
-targets and integer `0` can be used as a placeholder; the second and third lists contain the action
-and text to send to the target at the same position.
+value, and active status. It expects two aligned step lists: `step_targets` and `step_payloads`. The
+first list contains target agent ids where positive integers are deliverable targets and integer `0`
+can be used as a placeholder; the second list contains the caller-provided payload to send to the
+target at the same position.
 
 The method sends itself an `execute_step` message. Each `execute_step` message reads the head item
 from each step list and sends the step payload directly to the target agent. Only a successful step
@@ -50,8 +50,7 @@ Start request:
   workflow_id: <id>,
   reply_to: <agent>,
   step_targets: [<agent>, <agent>, ...],
-  step_actions: [<action>, <action>, ...],
-  step_texts: [<text>, <text>, ...],
+  step_payloads: [<message>, <message>, ...],
   branch_value: <outcome>
 }
 ```
@@ -67,15 +66,10 @@ Step completion request:
 }
 ```
 
-Step message sent to the current step target:
+Step message sent to the current step target is exactly the caller-provided step payload:
 
 ```text
-{
-  action: <step-action>,
-  correlation_id: <workflow_id>,
-  text: <step-text>,
-  source: <workflow-agent>
-}
+<message>
 ```
 
 Completion response:
@@ -99,24 +93,22 @@ advancing, or completing the workflow.
 
 ## Composition Notes
 
-Workflow sends directly to each step target. It can coordinate distribution, aggregation,
-synchronization, conversation, retry, routing, and broadcasting agents by configuring those agents as
-step targets.
+Workflow sends directly to each step target. It can coordinate other methods by placing each method's
+request map in `step_payloads` and configuring the corresponding method agents in `step_targets`.
+It does not depend on routing.
 
-The method uses aligned primitive lists instead of a list of step maps because the current method
-evaluator cannot safely access fields from a headed map value in this workflow path. The lists are
-still structured data rather than packed strings: each step position is represented by one entry in
-each of `step_targets`, `step_actions`, and `step_texts`.
+The method uses aligned lists instead of a list of step maps so ordinary `head(...)` and `tail(...)`
+operations can traverse targets and payloads together. The payload item itself remains opaque to the
+workflow method.
 
 ## Limitations
 
 This method supports an unbounded linear workflow with a one-step branch skip when a step outcome
 matches `branch_value`. Arbitrary workflow graphs, branch destinations by id, validation that the
-three step lists have identical lengths, and dynamic step descriptor maps require richer collection
+two step lists have identical lengths, and dynamic step descriptor maps require richer collection
 querying or a specialized validation/transition method. A single zero placeholder before a positive
 step is skipped at workflow start and after completed steps, but consecutive zero placeholders can
-still terminate scanning early because ordinary methods do not have a list length or type predicate
-that distinguishes an empty list from a list whose next item is integer `0`.
+still terminate scanning early.
 
 ## Implementation and Tests
 

@@ -24,8 +24,8 @@ synchronization
 supervision
 conversation
 
-workflow can coordinate routing, broadcasting, distribution, aggregation, synchronization, retry, and
-conversation agents by sending steps directly to those agents.
+workflow can coordinate other method agents by sending caller-provided step payloads directly to
+those agents.
 ```
 
 Composition opportunities:
@@ -408,8 +408,7 @@ Start:
   workflow_id: <id>,
   reply_to: <agent>,
   step_targets: [<agent>, <agent>, ...],
-  step_actions: [<action>, <action>, ...],
-  step_texts: [<text>, <text>, ...],
+  step_payloads: [<message>, <message>, ...],
   branch_value: <outcome>
 }
 ```
@@ -425,15 +424,10 @@ Step completion:
 }
 ```
 
-Step message sent to the current step target:
+Step message sent to the current step target is exactly the caller-provided step payload:
 
 ```text
-{
-  action: <step-action>,
-  correlation_id: <workflow_id>,
-  text: <step-text>,
-  source: <workflow-agent>
-}
+<message>
 ```
 
 The `step` value must match the workflow agent's active step; stale, duplicate, or out-of-order
