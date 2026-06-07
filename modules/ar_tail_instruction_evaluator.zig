@@ -113,7 +113,10 @@ fn _destroy_source_if_temporary(
     }
 }
 
-fn _create_tail_result(ref_source: *const c.ar_data_t) ?*c.ar_data_t {
+fn _create_tail_result(
+    ref_evaluator: *const ar_tail_instruction_evaluator_t,
+    ref_source: *const c.ar_data_t
+) ?*c.ar_data_t {
     const own_tail = c.ar_data__create_list() orelse return null;
     const source_count = c.ar_data__list_count(ref_source);
     if (source_count <= 1) {
@@ -128,8 +131,8 @@ fn _create_tail_result(ref_source: *const c.ar_data_t) ?*c.ar_data_t {
 
     var i: usize = 1;
     while (i < source_count) : (i += 1) {
-        const ref_item: ?*const c.ar_data_t = own_items[i];
-        const own_copy = c.ar_data__shallow_copy(ref_item) orelse {
+        const mut_item: ?*c.ar_data_t = own_items[i];
+        const own_copy = c.ar_data__claim_or_copy(mut_item, ref_evaluator) orelse {
             c.ar_data__destroy(own_tail);
             return null;
         };
@@ -184,7 +187,7 @@ pub export fn ar_tail_instruction_evaluator__evaluate(
         return _store_zero_result(ref_evaluator.?, ref_frame, ref_ast);
     }
 
-    const own_result = _create_tail_result(mut_source) orelse
+    const own_result = _create_tail_result(ref_evaluator.?, mut_source) orelse
         return _store_zero_result(ref_evaluator.?, ref_frame, ref_ast);
 
     return _store_owned_result(ref_evaluator.?, ref_frame, ref_ast, own_result);

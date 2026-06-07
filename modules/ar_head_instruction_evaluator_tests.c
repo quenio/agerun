@@ -257,9 +257,10 @@ static void test_head_instruction_evaluator__can_overwrite_source_list(void) {
     ar_evaluator_fixture__destroy(own_fixture);
 }
 
-static void test_head_instruction_evaluator__stores_zero_for_nested_container_copy_limit(void) {
-    printf("Testing head stores zero when nested container cannot be copied...\n");
+static void test_head_instruction_evaluator__deep_copies_nested_container(void) {
+    printf("Testing head deep-copies nested container...\n");
 
+    // Given a memory list whose first item is a nested container
     ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("head_nested_limit");
     AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
     ar_head_instruction_evaluator_t *own_evaluator = _create_evaluator(own_fixture);
@@ -287,17 +288,30 @@ static void test_head_instruction_evaluator__stores_zero_for_nested_container_co
         ar_expression_ast__create_memory_access("memory", path, 1)
     );
 
+    // When evaluating head(...) with a result assignment
     bool result = ar_head_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
 
-    AR_ASSERT(result == true, "Head should complete when copy limit is reached");
-    _assert_result_integer(mut_memory, "result", 0);
+    // Then the result should be an independent deep copy of the first item
+    AR_ASSERT(result == true, "Head should complete for nested containers");
+    ar_data_t *ref_result = ar_data__get_map_data(mut_memory, "result");
+    AR_ASSERT(ref_result != NULL, "Result should be stored");
+    AR_ASSERT(ar_data__get_type(ref_result) == AR_DATA_TYPE__LIST, "Result should be a copied list");
+    AR_ASSERT(ar_data__list_count(ref_result) == 1, "Result list should contain copied inner list");
     ar_data_t *ref_targets = ar_data__get_map_data(mut_memory, "targets");
     AR_ASSERT(ar_data__list_count(ref_targets) == 1, "Source list should remain unchanged");
-    AR_ASSERT(
-        ar_data__get_type(ar_data__list_first(ref_targets)) == AR_DATA_TYPE__LIST,
-        "Nested source item should remain a list"
-    );
+    ar_data_t *ref_source_head = ar_data__list_first(ref_targets);
+    AR_ASSERT(ar_data__get_type(ref_source_head) == AR_DATA_TYPE__LIST, "Nested source item should remain a list");
+    AR_ASSERT(ref_result != ref_source_head, "Result list should be independent from source item");
+    ar_data_t *ref_source_inner = ar_data__list_first(ref_source_head);
+    ar_data_t *ref_result_inner = ar_data__list_first(ref_result);
+    AR_ASSERT(ref_result_inner != NULL, "Copied inner list should exist");
+    AR_ASSERT(ref_result_inner != ref_source_inner, "Inner list should be deep-copied");
+    AR_ASSERT(ar_data__list_count(ref_result_inner) == 1, "Copied inner list count should match");
+    AR_ASSERT(ar_data__list_add_last_integer(ref_source_inner, 2), "Source inner list should mutate");
+    AR_ASSERT(ar_data__list_count(ref_source_inner) == 2, "Source inner list should grow");
+    AR_ASSERT(ar_data__list_count(ref_result_inner) == 1, "Copied inner list should remain independent");
 
+    // Cleanup
     ar_instruction_ast__destroy(own_ast);
     ar_head_instruction_evaluator__destroy(own_evaluator);
     ar_evaluator_fixture__destroy(own_fixture);
@@ -313,7 +327,7 @@ int main(void) {
     test_head_instruction_evaluator__stores_zero_for_missing_message_field();
     test_head_instruction_evaluator__does_not_mutate_source_list();
     test_head_instruction_evaluator__can_overwrite_source_list();
-    test_head_instruction_evaluator__stores_zero_for_nested_container_copy_limit();
+    test_head_instruction_evaluator__deep_copies_nested_container();
 
     printf("All head instruction_evaluator tests passed!\n");
     return 0;

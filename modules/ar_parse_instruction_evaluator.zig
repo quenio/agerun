@@ -19,8 +19,8 @@ const ar_parse_instruction_evaluator_t = struct {
     ref_expr_evaluator: ?*c.ar_expression_evaluator_t,  // Expression evaluator (borrowed reference)
 };
 
-// Helper function to report nested container error with detailed information
-fn _report_nested_container_error(
+// Helper function to report input copy errors with detailed information
+fn _report_input_copy_error(
     ref_evaluator: *const ar_parse_instruction_evaluator_t, 
     ref_ast: ?*const c.ar_expression_ast_t, 
     param_name: []const u8, 
@@ -39,7 +39,7 @@ fn _report_nested_container_error(
     
     if (eval_error != null and c.strlen(eval_error) > 0) {
         // Use the specific error from evaluation
-        const msg = std.fmt.bufPrintZ(&buffer, "Cannot parse with nested containers in {s} (expression: {s}, error: {s})", 
+        const msg = std.fmt.bufPrintZ(&buffer, "Cannot copy parse {s} (expression: {s}, error: {s})",
             .{param_name, own_path, eval_error}) catch undefined;
         c.ar_log__error(ref_evaluator.ref_log, msg.ptr);
     } else {
@@ -48,7 +48,7 @@ fn _report_nested_container_error(
         defer if (own_structure) |s| c.AR__HEAP__FREE(s);
         
         const structure_str = if (own_structure) |s| s else @as([*c]const u8, "null");
-        const msg = std.fmt.bufPrintZ(&buffer, "Cannot parse with nested containers in {s} (expression: {s}, structure: {s})", 
+        const msg = std.fmt.bufPrintZ(&buffer, "Cannot copy parse {s} (expression: {s}, structure: {s})",
             .{param_name, own_path, structure_str}) catch undefined;
         c.ar_log__error(ref_evaluator.ref_log, msg.ptr);
     }
@@ -217,7 +217,7 @@ export fn ar_parse_instruction_evaluator__evaluate(
     // Evaluate template expression AST
     const template_result = c.ar_expression_evaluator__evaluate(ref_evaluator.?.ref_expr_evaluator, ref_frame, ref_template_ast);
     const own_template_data = c.ar_data__claim_or_copy(template_result, ref_evaluator) orelse {
-        _report_nested_container_error(ref_evaluator.?, ref_template_ast, "template", ref_frame);
+        _report_input_copy_error(ref_evaluator.?, ref_template_ast, "template", ref_frame);
         return false;
     };
     defer c.ar_data__destroy(own_template_data);
@@ -235,7 +235,7 @@ export fn ar_parse_instruction_evaluator__evaluate(
     // Evaluate input expression AST
     const input_result = c.ar_expression_evaluator__evaluate(ref_evaluator.?.ref_expr_evaluator, ref_frame, ref_input_ast);
     const own_input_data = c.ar_data__claim_or_copy(input_result, ref_evaluator) orelse {
-        _report_nested_container_error(ref_evaluator.?, ref_input_ast, "input", ref_frame);
+        _report_input_copy_error(ref_evaluator.?, ref_input_ast, "input", ref_frame);
         return false;
     };
     defer c.ar_data__destroy(own_input_data);

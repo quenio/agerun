@@ -457,7 +457,7 @@ bool ar_agent_store__load(ar_agent_store_t *mut_store) {
                     
                     ar_data_t *ref_value = ar_data__get_map_data(ref_memory_data, ref_key);
                     if (ref_value) {
-                        ar_data_t *own_value_copy = ar_data__shallow_copy(ref_value);
+                        ar_data_t *own_value_copy = ar_data__deep_copy(ref_value);
                         if (own_value_copy) {
                             ar_data__set_map_data(mut_agent_memory, ref_key, own_value_copy);
                         }

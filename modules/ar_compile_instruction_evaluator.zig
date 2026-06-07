@@ -25,8 +25,8 @@ const ar_compile_instruction_evaluator_t = struct {
     ref_methodology: ?*c.ar_methodology_t,               // Borrowed reference to methodology instance
 };
 
-// Helper function to report nested container error with detailed information
-fn _report_nested_container_error(
+// Helper function to report argument copy errors with detailed information
+fn _report_argument_copy_error(
     ref_evaluator: *const ar_compile_instruction_evaluator_t, 
     ref_ast: ?*const c.ar_expression_ast_t, 
     arg_num: u32, 
@@ -45,7 +45,7 @@ fn _report_nested_container_error(
     
     if (eval_error != null and c.strlen(eval_error) > 0) {
         // Use the specific error from evaluation
-        const msg = std.fmt.bufPrintZ(&buffer, "Cannot create method with nested containers in argument {d} (expression: {s}, error: {s})", 
+        const msg = std.fmt.bufPrintZ(&buffer, "Cannot copy method argument {d} (expression: {s}, error: {s})",
             .{arg_num, own_path, eval_error}) catch undefined;
         c.ar_log__error(ref_evaluator.ref_log, msg.ptr);
     } else {
@@ -54,7 +54,7 @@ fn _report_nested_container_error(
         defer if (own_structure) |s| c.AR__HEAP__FREE(s);
         
         const structure_str = if (own_structure) |s| s else @as([*c]const u8, "null");
-        const msg = std.fmt.bufPrintZ(&buffer, "Cannot create method with nested containers in argument {d} (expression: {s}, structure: {s})", 
+        const msg = std.fmt.bufPrintZ(&buffer, "Cannot copy method argument {d} (expression: {s}, structure: {s})",
             .{arg_num, own_path, structure_str}) catch undefined;
         c.ar_log__error(ref_evaluator.ref_log, msg.ptr);
     }
@@ -167,15 +167,15 @@ pub export fn ar_compile_instruction_evaluator__evaluate(
     
     // Check for claim_or_copy failures
     if (own_method_name == null) {
-        _report_nested_container_error(ref_evaluator.?, ref_ast1, 1, ref_frame);
+        _report_argument_copy_error(ref_evaluator.?, ref_ast1, 1, ref_frame);
         return false;
     }
     if (own_instructions == null) {
-        _report_nested_container_error(ref_evaluator.?, ref_ast2, 2, ref_frame);
+        _report_argument_copy_error(ref_evaluator.?, ref_ast2, 2, ref_frame);
         return false;
     }
     if (own_version == null) {
-        _report_nested_container_error(ref_evaluator.?, ref_ast3, 3, ref_frame);
+        _report_argument_copy_error(ref_evaluator.?, ref_ast3, 3, ref_frame);
         return false;
     }
     

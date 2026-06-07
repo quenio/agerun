@@ -68,6 +68,7 @@ Key features:
    - **ID < 0**: Routes to delegation for delegate delivery
 4. **Result Assignment**: Stores the send result (boolean) when assignment is specified
 5. **Ownership Transfer**: Transfers message ownership to appropriate destination (agency or delegation)
+6. **Nested Payloads**: Deep-copies borrowed nested list/map messages before delivery
 
 ## Message Routing Architecture
 
@@ -85,6 +86,7 @@ The module follows strict memory ownership rules:
 - The evaluator instance owns its internal structure but not the dependencies
 - Log, expression evaluator, agency, and delegation are borrowed references
 - Message ownership is transferred to either agency or delegation depending on ID
+- Borrowed message values are claimed or deep-copied before delivery, preserving nested payloads
 - If send fails, the message is properly destroyed
 - Result values are created and stored when assignment is specified
 - The create function returns ownership to the caller

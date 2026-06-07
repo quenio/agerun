@@ -111,7 +111,7 @@ pub export fn ar_assignment_instruction_evaluator__evaluate(
     
     // Check if we need to make a copy (if result is owned by memory/context)
     const own_value = c.ar_data__claim_or_copy(result, ref_evaluator) orelse {
-        c.ar_log__error(ref_evaluator.?.ref_log, "Cannot assign value with nested containers (no deep copy support)");
+        c.ar_log__error(ref_evaluator.?.ref_log, "Failed to copy assigned value");
         return false;
     };
     

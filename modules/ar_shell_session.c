@@ -123,7 +123,7 @@ static bool _mirror_stored_value_to_agent_memory(
         return false;
     }
 
-    own_value_copy = ar_data__shallow_copy(ref_stored_value);
+    own_value_copy = ar_data__deep_copy(ref_stored_value);
     if (!own_value_copy) {
         return false;
     }
@@ -288,7 +288,7 @@ static bool _handle_runtime_delegate_message(void *mut_context, ar_data_t *ref_m
     if (strcmp(ref_action, AR_SHELL_SESSION__ACTION__STORE_VALUE) == 0) {
         ref_path = ar_data__get_map_string(ref_message, "path");
         ref_value = ar_data__get_map_data(ref_message, "value");
-        own_value_copy = ref_value ? ar_data__shallow_copy(ref_value) : NULL;
+        own_value_copy = ref_value ? ar_data__deep_copy(ref_value) : NULL;
         if (!ref_path || !own_value_copy ||
             !ar_shell_session__store_value(mut_context_data->mut_session, ref_path, own_value_copy)) {
             if (own_value_copy) {
@@ -430,13 +430,13 @@ ar_data_t* ar_shell_session__load_value(
     }
 
     if (ref_relative_path[0] == '\0') {
-        own_loaded_value = ar_data__shallow_copy(ref_session->own_memory);
+        own_loaded_value = ar_data__deep_copy(ref_session->own_memory);
     } else {
         ref_stored_value = ar_data__get_map_data(ref_session->own_memory, ref_relative_path);
         if (!ref_stored_value) {
             return ar_shell_session__report_operation_failure(request_id, "Shell session path not found");
         }
-        own_loaded_value = ar_data__shallow_copy(ref_stored_value);
+        own_loaded_value = ar_data__deep_copy(ref_stored_value);
     }
 
     if (!own_loaded_value) {

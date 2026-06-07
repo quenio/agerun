@@ -68,11 +68,21 @@ ar_data_t* ar_data__claim_or_copy(ar_data_t *ref_data, const void *owner) {
         ar_data__drop_ownership(ref_data, owner);
         return ref_data;  // Return same pointer - we claimed it!
     } else {
-        // Can't claim ownership - make a shallow copy
-        return ar_data__shallow_copy(ref_data);
+        // Can't claim ownership - make a deep copy
+        return ar_data__deep_copy(ref_data);
     }
 }
 ```
+
+## Container Child Exception
+
+The claim mechanism applies to the value being consumed. It is safe for child values stored through
+public `ar_data` container APIs because those APIs mark children as owned by the parent; in that
+case, `claim_or_copy()` creates a deep copy and leaves the parent-child relationship intact.
+
+The unsafe case is a raw container mutation that leaves a child unowned while the parent still
+destroys it. If that happens, `claim_or_copy()` can claim the child directly. Fix the ownership
+metadata, remove/transfer the child first, or use `ar_data__deep_copy()` for that exceptional path.
 
 ## Related Patterns
 - [Expression Ownership Rules](expression-ownership-rules.md)
