@@ -213,22 +213,16 @@ Request:
 {
   action: "distribute",
   work_id: <id>,
-  payload_action: <action>,
   payloads: [<payload>, <payload>, ...],
   workers: [<agent>, <agent>, ...],
   reply_to: <agent>
 }
 ```
 
-Assignment sent to each worker:
+Assignment sent to each worker is exactly the current payload item:
 
 ```text
-{
-  action: <payload_action>,
-  correlation_id: <work_id>,
-  text: <payload>,
-  source: <distribution-agent>
-}
+<payload>
 ```
 
 Reply:
@@ -649,7 +643,7 @@ Conversation-scoped workflow:
 | Routing | Fully implementable for keyed unbounded one-to-one selection. | Keyed routes use a map containing parallel `keys` and `targets` lists because ordinary methods do not have a safe type predicate for scanning a list of route-entry maps. Direct target delivery belongs to direct `send(...)`; same-payload fan-out belongs to broadcasting. |
 | Broadcasting | Fully implementable for unbounded same-payload fan-out to primitive target IDs. | Target lists should contain positive IDs for all intended recipients; integer `0` is treated as a placeholder rather than a recipient. |
 | Supervision | Partially implementable. | The method can spawn and track unbounded child method-name lists with one shared start version, but methods cannot autonomously observe child crashes or exits; callers must send `child_failed` or `child_exited` events. A failed `spawn(...)` aborts the remaining ordinary method evaluation, so supervision can avoid reporting `running` for an incomplete child set but cannot emit a catchable spawn-failure status without a non-aborting spawn result or method-existence check. Removing arbitrary failed ids from the tracked list or starting one mixed-version list requires a list-filter operation, separate supervisors, or a specialized replacement method. |
-| Distribution | Fully implementable for round-robin assignment of scalar payload lists to primitive worker IDs. | Map-valued payload descriptors need a safe type predicate or richer collection query operation before the method can distinguish an empty payload list from a headed map payload. Load-aware placement, weighted assignment, and worker health checks require additional methods or richer collection-processing conventions. |
+| Distribution | Fully implementable for round-robin assignment of opaque payload lists to primitive worker IDs. | Load-aware placement, weighted assignment, and worker health checks require additional methods or richer collection-processing conventions. |
 | Aggregation | Fully implementable for list-valued fan-in. | Duplicate handling, custom merge functions, and richer aggregate policies require deeper collection operations or specialized aggregate methods. |
 | Scheduling | Partially implementable. | There is no runtime clock or timer callback; scheduling requires explicit `tick` messages from another agent or host process. |
 | Synchronization | Fully implementable for unbounded count-based gates. | Membership validation against a declared dependency set and duplicate suppression require richer collection querying/filtering or a specialized validation method. |

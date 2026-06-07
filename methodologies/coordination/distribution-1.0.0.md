@@ -8,20 +8,16 @@ back to the beginning when the end is reached.
 
 ## Behavior
 
-On a map whose `action` field is `"distribute"`, the method sends itself an `assign_payload`
-continuation containing the payload list, worker list, original worker list, work id, payload action,
-reply target, and assignment counters.
+On a map whose `action` field is `"distribute"`, the method treats the request as the first
+assignment pass and initializes the work id, reply target, and assignment counters. Later
+`assign_payload` continuation messages carry the remaining payload list, current worker list,
+original worker list, work id, reply target, and counters.
 
-Each `assign_payload` continuation reads the head payload and head worker. If both are present and
-the worker is positive, the method sends one assignment message to that worker:
+Each assignment pass reads the head payload and head worker. If both are present and the worker is
+positive, the method sends the payload item as-is to that worker:
 
 ```text
-{
-  action: <payload_action>,
-  correlation_id: <work_id>,
-  text: <payload>,
-  source: <distribution-agent>
-}
+<payload>
 ```
 
 The continuation then advances to the next payload and rotates the worker list. If the remaining
@@ -41,7 +37,6 @@ Distribution request:
 {
   action: "distribute",
   work_id: <id>,
-  payload_action: <action>,
   payloads: [<payload>, <payload>, ...],
   workers: [<agent>, <agent>, ...],
   reply_to: <agent>
@@ -79,11 +74,9 @@ workflow step can send a distribution request directly to a distribution agent.
 
 ## Limitations
 
-The method treats payloads as scalar values that can safely be compared against the integer `0`
-sentinel returned by `head(...)` for an empty list. Map-valued payload descriptors would require a
-safe type predicate or richer collection query operation before the method could distinguish an empty
-payload list from a headed map payload. The method uses primitive worker IDs and does not perform
-load-aware placement, weighted routing, or worker health checks.
+The method treats payload items as opaque values and only checks whether the payload list itself is
+empty by comparing it with `[]`. The method uses primitive worker IDs and does not perform load-aware
+placement, weighted assignment, or worker health checks.
 
 ## Implementation and Tests
 

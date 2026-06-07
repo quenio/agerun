@@ -58,12 +58,38 @@ static int checked_agent_id(int64_t agent_id) {
     return (int)agent_id;
 }
 
-static ar_data_t *create_payloads(const char **ref_payloads, size_t payload_count) {
+static ar_data_t *create_payload(const char *ref_action,
+                                 const char *ref_text,
+                                 const char *ref_kind,
+                                 int reply_to) {
+    ar_data_t *own_payload = ar_data__create_map();
+    AR_ASSERT(own_payload != NULL, "Distribution payload should be created");
+    AR_ASSERT(ar_data__set_map_string(own_payload, "action", ref_action),
+              "Distribution payload should set action");
+    AR_ASSERT(ar_data__set_map_string(own_payload, "text", ref_text),
+              "Distribution payload should set text");
+    AR_ASSERT(ar_data__set_map_string(own_payload, "kind", ref_kind),
+              "Distribution payload should set caller-owned field");
+    AR_ASSERT(ar_data__set_map_string(own_payload, "source", "caller-owned-source"),
+              "Distribution payload should set caller-owned source");
+    if (reply_to > 0) {
+        AR_ASSERT(ar_data__set_map_integer(own_payload, "reply_to", reply_to),
+                  "Distribution payload should set caller-owned reply target");
+    }
+    return own_payload;
+}
+
+static ar_data_t *create_payloads(const char **ref_payloads, size_t payload_count, int reply_to) {
     ar_data_t *own_payloads = ar_data__create_list();
     AR_ASSERT(own_payloads != NULL, "Payload list should be created");
     for (size_t i = 0; i < payload_count; i++) {
-        AR_ASSERT(ar_data__list_add_last_string(own_payloads, ref_payloads[i]),
+        ar_data_t *own_payload = create_payload("work",
+                                                ref_payloads[i],
+                                                "caller-shaped",
+                                                reply_to);
+        AR_ASSERT(ar_data__list_add_last_data(own_payloads, own_payload),
                   "Payload should be appended");
+        own_payload = NULL;
     }
     return own_payloads;
 }
@@ -88,7 +114,9 @@ static void register_worker_recorder(ar_agency_t *mut_agency) {
         "memory.received_count := memory.received_count + memory.append_ok\n"
         "memory.last_action := message.action\n"
         "memory.last_correlation_id := message.correlation_id\n"
-        "memory.last_source := message.source\n";
+        "memory.last_kind := message.kind\n"
+        "memory.last_source := message.source\n"
+        "memory.last_reply_to := message.reply_to\n";
 
     AR_ASSERT(ar_methodology__create_method(mut_methodology,
                                             "worker-recorder",
@@ -145,7 +173,6 @@ static void send_distribution(ar_agency_t *mut_agency,
     AR_ASSERT(own_message != NULL, "Distribution message should be created");
     ar_data__set_map_string(own_message, "action", "distribute");
     ar_data__set_map_string(own_message, "work_id", ref_work_id);
-    ar_data__set_map_string(own_message, "payload_action", "work");
     AR_ASSERT(ar_data__set_map_data(own_message, "payloads", own_payloads),
               "Distribution message should own payloads");
     own_payloads = NULL;
@@ -186,11 +213,11 @@ static void test_distribution__round_robins_payloads_across_workers(void) {
     initialize_worker_memory(mut_agency, worker_b);
 
     const char *ref_payload_values[] = {"p1", "p2", "p3", "p4", "p5"};
-    ar_data_t *own_payloads = create_payloads(ref_payload_values, 5);
     const int ref_workers[] = {
         checked_agent_id(worker_a),
         checked_agent_id(worker_b)
     };
+    ar_data_t *own_payloads = create_payloads(ref_payload_values, 5, checked_agent_id(worker_b));
     ar_data_t *own_workers = create_workers(ref_workers, 2);
 
     send_distribution(mut_agency,
@@ -207,6 +234,17 @@ static void test_distribution__round_robins_payloads_across_workers(void) {
     const char *ref_worker_b_expected[] = {"p2", "p4"};
     assert_text_history(ref_worker_a_memory, ref_worker_a_expected, 3);
     assert_text_history(ref_worker_b_memory, ref_worker_b_expected, 2);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_worker_a_memory, "last_action"), "work") == 0,
+              "Distribution should preserve caller payload action");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_worker_a_memory, "last_kind"),
+                     "caller-shaped") == 0,
+              "Distribution should preserve caller-owned field");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_worker_a_memory, "last_source"),
+                     "caller-owned-source") == 0,
+              "Distribution should preserve caller-owned source");
+    AR_ASSERT(ar_data__get_map_integer(ref_worker_a_memory, "last_reply_to") ==
+                  checked_agent_id(worker_b),
+              "Distribution should preserve caller-owned reply target");
 
     const ar_data_t *ref_report_memory = ar_agency__get_agent_memory(mut_agency, report_agent);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_action"),
@@ -256,11 +294,11 @@ static void test_distribution__reports_failed_assignments_and_empty_inputs(void)
     initialize_worker_memory(mut_agency, worker_agent);
 
     const char *ref_payload_values[] = {"x1", "x2", "x3"};
-    ar_data_t *own_payloads = create_payloads(ref_payload_values, 3);
     const int ref_workers[] = {
         checked_agent_id(worker_agent),
         98765
     };
+    ar_data_t *own_payloads = create_payloads(ref_payload_values, 3, 0);
     ar_data_t *own_workers = create_workers(ref_workers, 2);
     send_distribution(mut_agency,
                       distribution_agent,
@@ -310,7 +348,7 @@ static void test_distribution__reports_failed_assignments_and_empty_inputs(void)
               "Empty payload list should report zero assignments");
 
     const char *ref_one_payload[] = {"orphan"};
-    own_payloads = create_payloads(ref_one_payload, 1);
+    own_payloads = create_payloads(ref_one_payload, 1, 0);
     ar_data_t *own_empty_workers = ar_data__create_list();
     AR_ASSERT(own_empty_workers != NULL, "Empty worker list should be created");
     send_distribution(mut_agency,
