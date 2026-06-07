@@ -405,6 +405,8 @@ The `step` value must match the workflow agent's active step; stale, duplicate, 
 completion maps are ignored.
 Workflow advances `current_step` and consumes a pending step only after the route handoff for that
 step succeeds; failed route handoffs leave the step at the head of the pending queue.
+Workflow records terminal status only after `workflow_complete` is delivered; failed completion
+delivery leaves completion pending and retries do not increment `completed_step_count`.
 
 Completion:
 

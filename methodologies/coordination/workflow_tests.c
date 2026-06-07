@@ -76,12 +76,13 @@ static void append_workflow_step(ar_data_t *mut_step_targets,
 
 static void send_step_done(ar_agency_t *mut_agency,
                            int64_t workflow_agent,
+                           const char *ref_workflow_id,
                            int step,
                            const char *ref_outcome) {
     ar_data_t *own_done = ar_data__create_map();
     AR_ASSERT(own_done != NULL, "Step completion should be created");
     ar_data__set_map_string(own_done, "action", "step_done");
-    ar_data__set_map_string(own_done, "workflow_id", "wf-1");
+    ar_data__set_map_string(own_done, "workflow_id", ref_workflow_id);
     ar_data__set_map_integer(own_done, "step", step);
     ar_data__set_map_string(own_done, "outcome", ref_outcome);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, workflow_agent, own_done),
@@ -167,7 +168,7 @@ static void test_workflow__routes_unbounded_steps_with_branching_to_completion(v
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_step1_memory, "last_text"), "first") == 0,
               "Workflow should route first step");
 
-    send_step_done(mut_agency, workflow_agent, 3, "continue");
+    send_step_done(mut_agency, workflow_agent, "wf-1", 3, "continue");
     ar_method_fixture__process_all_messages(own_fixture);
 
     const ar_data_t *ref_step2_memory = ar_agency__get_agent_memory(mut_agency, step2_agent);
@@ -177,7 +178,7 @@ static void test_workflow__routes_unbounded_steps_with_branching_to_completion(v
     AR_ASSERT(ar_data__get_map_data(ref_step3_memory, "last_text") == NULL,
               "Workflow should ignore out-of-order completion before routing step three");
 
-    send_step_done(mut_agency, workflow_agent, 1, "skip");
+    send_step_done(mut_agency, workflow_agent, "wf-1", 1, "skip");
     ar_method_fixture__process_all_messages(own_fixture);
 
     AR_ASSERT(ar_data__get_map_data(ref_step2_memory, "last_text") == NULL,
@@ -185,21 +186,21 @@ static void test_workflow__routes_unbounded_steps_with_branching_to_completion(v
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_step3_memory, "last_text"), "third") == 0,
               "Workflow should route branched step three");
 
-    send_step_done(mut_agency, workflow_agent, 3, "continue");
+    send_step_done(mut_agency, workflow_agent, "wf-1", 3, "continue");
     ar_method_fixture__process_all_messages(own_fixture);
 
     const ar_data_t *ref_step4_memory = ar_agency__get_agent_memory(mut_agency, step4_agent);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_step4_memory, "last_text"), "fourth") == 0,
               "Workflow should route fourth step from an unbounded list");
 
-    send_step_done(mut_agency, workflow_agent, 4, "continue");
+    send_step_done(mut_agency, workflow_agent, "wf-1", 4, "continue");
     ar_method_fixture__process_all_messages(own_fixture);
 
     const ar_data_t *ref_step5_memory = ar_agency__get_agent_memory(mut_agency, step5_agent);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_step5_memory, "last_text"), "fifth") == 0,
               "Workflow should route fifth step from an unbounded list");
 
-    send_step_done(mut_agency, workflow_agent, 5, "done");
+    send_step_done(mut_agency, workflow_agent, "wf-1", 5, "done");
     ar_method_fixture__process_all_messages(own_fixture);
 
     const ar_data_t *ref_report_memory = ar_agency__get_agent_memory(mut_agency, report_agent);
@@ -254,6 +255,55 @@ static void test_workflow__routes_unbounded_steps_with_branching_to_completion(v
     AR_ASSERT(ref_pending_targets != NULL, "Failed route should retain pending targets");
     AR_ASSERT(ar_data__list_count(ref_pending_targets) == 2,
               "Failed route should not consume pending step queue");
+
+    own_start = ar_data__create_map();
+    AR_ASSERT(own_start != NULL, "Failed completion workflow start should be created");
+    ar_data__set_map_string(own_start, "action", "start");
+    ar_data__set_map_string(own_start, "workflow_id", "wf-failed-completion");
+    ar_data__set_map_integer(own_start, "routing_agent", checked_agent_id(routing_agent));
+    ar_data__set_map_integer(own_start, "reply_to", 98765);
+    own_step_targets = ar_data__create_list();
+    own_step_actions = ar_data__create_list();
+    own_step_texts = ar_data__create_list();
+    AR_ASSERT(own_step_targets != NULL, "Failed completion step targets list should be created");
+    AR_ASSERT(own_step_actions != NULL, "Failed completion step actions list should be created");
+    AR_ASSERT(own_step_texts != NULL, "Failed completion step texts list should be created");
+    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+                         checked_agent_id(step1_agent), "step1", "single");
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_targets", own_step_targets),
+              "Failed completion start should own step targets list");
+    own_step_targets = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_actions", own_step_actions),
+              "Failed completion start should own step actions list");
+    own_step_actions = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_texts", own_step_texts),
+              "Failed completion start should own step texts list");
+    own_step_texts = NULL;
+    ar_data__set_map_string(own_start, "branch_value", "skip");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, workflow_agent, own_start),
+              "Failed completion workflow start should queue");
+    own_start = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    send_step_done(mut_agency, workflow_agent, "wf-failed-completion", 1, "done");
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_workflow_memory, "status"), "active") == 0,
+              "Failed completion send should keep workflow active");
+    AR_ASSERT(ar_data__get_map_integer(ref_workflow_memory, "completion_pending") == 1,
+              "Failed completion send should leave completion pending");
+    AR_ASSERT(ar_data__get_map_integer(ref_workflow_memory, "completed_step_count") == 1,
+              "Failed completion send should count the final step once");
+
+    send_step_done(mut_agency, workflow_agent, "wf-failed-completion", 1, "done");
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_workflow_memory, "status"), "active") == 0,
+              "Repeated failed completion send should keep workflow active");
+    AR_ASSERT(ar_data__get_map_integer(ref_workflow_memory, "completion_pending") == 1,
+              "Repeated failed completion send should leave completion pending");
+    AR_ASSERT(ar_data__get_map_integer(ref_workflow_memory, "completed_step_count") == 1,
+              "Repeated completion retry should not count the final step again");
 
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_routing_context);

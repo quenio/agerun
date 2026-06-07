@@ -8,6 +8,7 @@ memory.branch_value := if(memory.is_start = 1, message.branch_value, memory.bran
 memory.status := if(memory.is_start = 1, "active", memory.status)
 memory.current_step := if(memory.is_start = 1, 0, memory.current_step)
 memory.completed_step_count := if(memory.is_start = 1, 0, memory.completed_step_count)
+memory.completion_pending := if(memory.is_start = 1, 0, memory.completion_pending)
 memory.pending_step_targets := if(memory.is_start = 1, [], memory.pending_step_targets)
 memory.pending_step_actions := if(memory.is_start = 1, [], memory.pending_step_actions)
 memory.pending_step_texts := if(memory.is_start = 1, [], memory.pending_step_texts)
@@ -52,7 +53,8 @@ memory.empty_completion := memory.is_execute_step * memory.no_step
 memory.matching_workflow := if(message.workflow_id = memory.workflow_id, 1, 0)
 memory.matching_step := if(message.step = memory.current_step, 1, 0)
 memory.is_active := if(memory.status = "active", 1, 0)
-memory.step_completion := memory.is_step_done * memory.matching_workflow * memory.matching_step * memory.is_active
+memory.not_completion_pending := if(memory.completion_pending = 0, 1, 0)
+memory.step_completion := memory.is_step_done * memory.matching_workflow * memory.matching_step * memory.is_active * memory.not_completion_pending
 memory.completed_step_count := memory.completed_step_count + memory.step_completion
 memory.branch_matched := if(message.outcome = memory.branch_value, 1, 0)
 memory.skip_next := memory.step_completion * memory.branch_matched
@@ -79,13 +81,18 @@ memory.continue_message := {
 memory.continue_sent := send(memory.self * memory.step_completion * memory.has_next_step, memory.continue_message)
 memory.no_next_step := if(memory.has_next_step = 1, 0, 1)
 memory.finished_after_step := memory.step_completion * memory.no_next_step
-memory.should_complete := memory.empty_completion + memory.finished_after_step
-memory.status := if(memory.should_complete > 0, "complete", memory.status)
+memory.retry_completion := memory.is_step_done * memory.matching_workflow * memory.matching_step * memory.is_active * memory.completion_pending
+memory.should_complete := memory.empty_completion + memory.finished_after_step + memory.retry_completion
+memory.completion_status := if(memory.should_complete > 0, "complete", memory.status)
 memory.complete_message := {
   action: "workflow_complete"
   workflow_id: memory.workflow_id
-  status: memory.status
+  status: memory.completion_status
   current_step: memory.current_step
   completed_step_count: memory.completed_step_count
 }
 memory.complete_sent := send(memory.reply_to * memory.should_complete, memory.complete_message)
+memory.completion_delivered := memory.should_complete * memory.complete_sent
+memory.completion_pending := if(memory.should_complete > 0, 1, memory.completion_pending)
+memory.completion_pending := if(memory.completion_delivered = 1, 0, memory.completion_pending)
+memory.status := if(memory.completion_delivered = 1, "complete", memory.status)

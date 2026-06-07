@@ -25,6 +25,9 @@ current active step, the method advances to the next pending step. Stale, duplic
 out-of-order completion messages are ignored. When `outcome` equals `branch_value`, it skips one
 pending step before advancing. When no next step remains, it marks the workflow complete and sends a
 map whose `action` field is `"workflow_complete"` to the stored reply target.
+Terminal status is recorded only after the completion message is delivered. If completion delivery
+fails, the workflow stays active with completion pending; a repeated matching `step_done` retries the
+completion message without counting the final step again.
 
 ## Message Format
 
