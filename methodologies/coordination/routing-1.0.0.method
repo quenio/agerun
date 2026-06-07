@@ -25,9 +25,9 @@ memory.has_remaining_route_key := if(memory.remaining_route_key <> 0, 1, 0)
 memory.has_remaining_route_target := if(memory.remaining_route_target > 0, 1, 0)
 memory.has_remaining_route := memory.has_remaining_route_key + memory.has_remaining_route_target
 memory.has_remaining_route := if(memory.has_remaining_route > 0, 1, 0)
-memory.forward_action := message.payload_action
-memory.forward_text := message.payload_text
-memory.correlation_id := message.correlation_id
+memory.forward_action := if(memory.is_route = 1, message.payload_action, "")
+memory.forward_text := if(memory.is_route = 1, message.payload_text, "")
+memory.correlation_id := if(memory.is_route = 1, message.correlation_id, "")
 memory.forward_message := {
   action: memory.forward_action
   correlation_id: memory.correlation_id

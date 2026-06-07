@@ -649,6 +649,14 @@ ignored_errors:
     comment: "Testing invalid assignment target error handling"
   - context: "ar_method_evaluator_tests"
 
+  # coordination_supervision_tests
+  - context: "coordination_supervision_tests"
+    message: "ERROR: Method evaluation failed at line 29"
+    comment: "Testing documented missing-child-method spawn abort limitation in supervision"
+  - context: "coordination_supervision_tests"
+    message: "ERROR: Method evaluation failed"
+    comment: "Interpreter follow-up for documented missing-child-method spawn abort limitation"
+
   # ar_shell_session_tests
   - context: "ar_shell_session_tests"
     message: "test_shell_session__load_value_reports_missing_path_failure..."

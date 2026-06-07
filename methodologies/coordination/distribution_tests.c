@@ -315,6 +315,7 @@ static void test_distribution__assigns_unbounded_workers_through_routing(void) {
     AR_ASSERT(own_route_result != NULL, "Manual route result should be created");
     ar_data__set_map_string(own_route_result, "action", "route_result");
     ar_data__set_map_string(own_route_result, "status", "ignored");
+    ar_data__set_map_string(own_route_result, "correlation_id", "stale-job");
     ar_data__set_map_integer(own_route_result, "routed_count", 0);
     ar_data__set_map_integer(own_route_result, "sent_count", 0);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, distribution_agent, own_route_result),
