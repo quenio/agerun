@@ -264,6 +264,64 @@ static void test_workflow__routes_unbounded_steps_with_branching_to_completion(v
               "Zero-head workflow should count the routed positive step");
 
     own_start = ar_data__create_map();
+    AR_ASSERT(own_start != NULL, "Post-completion zero workflow start should be created");
+    ar_data__set_map_string(own_start, "action", "start");
+    ar_data__set_map_string(own_start, "workflow_id", "wf-post-completion-zero");
+    ar_data__set_map_integer(own_start, "routing_agent", checked_agent_id(routing_agent));
+    ar_data__set_map_integer(own_start, "reply_to", checked_agent_id(report_agent));
+    own_step_targets = ar_data__create_list();
+    own_step_actions = ar_data__create_list();
+    own_step_texts = ar_data__create_list();
+    AR_ASSERT(own_step_targets != NULL, "Post-completion zero targets should be created");
+    AR_ASSERT(own_step_actions != NULL, "Post-completion zero actions should be created");
+    AR_ASSERT(own_step_texts != NULL, "Post-completion zero texts should be created");
+    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+                         checked_agent_id(step1_agent), "step1", "before-zero");
+    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+                         0, "noop", "placeholder");
+    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+                         checked_agent_id(step2_agent), "step2", "after-completion-zero");
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_targets", own_step_targets),
+              "Post-completion zero start should own step targets");
+    own_step_targets = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_actions", own_step_actions),
+              "Post-completion zero start should own step actions");
+    own_step_actions = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_texts", own_step_texts),
+              "Post-completion zero start should own step texts");
+    own_step_texts = NULL;
+    ar_data__set_map_string(own_start, "branch_value", "skip");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, workflow_agent, own_start),
+              "Post-completion zero workflow start should queue");
+    own_start = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_step1_memory, "last_text"),
+                     "before-zero") == 0,
+              "Post-completion zero workflow should route first step");
+
+    send_step_done(mut_agency, workflow_agent, "wf-post-completion-zero", 1, "continue");
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    const char *ref_step2_text = ar_data__get_map_string(ref_step2_memory, "last_text");
+    AR_ASSERT(ref_step2_text != NULL && strcmp(ref_step2_text, "after-completion-zero") == 0,
+              "Workflow should skip a pending zero head after step completion");
+
+    send_step_done(mut_agency, workflow_agent, "wf-post-completion-zero", 2, "done");
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_workflow_id"),
+                     "wf-post-completion-zero") == 0,
+              "Post-completion zero workflow should report the workflow id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
+                     "complete") == 0,
+              "Post-completion zero workflow should complete after later positive step");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_current_step") == 2,
+              "Post-completion zero workflow should number the later positive step");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_completed_step_count") == 2,
+              "Post-completion zero workflow should count routed positive steps only");
+
+    own_start = ar_data__create_map();
     AR_ASSERT(own_start != NULL, "Failed route workflow start should be created");
     ar_data__set_map_string(own_start, "action", "start");
     ar_data__set_map_string(own_start, "workflow_id", "wf-failed-route");

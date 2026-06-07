@@ -33,9 +33,11 @@ current active step, the method advances to the next pending step only if it is 
 completion from a routed step. Stale, duplicate, premature, or out-of-order completion messages are
 ignored. The waiting flag is cleared as soon as a completion is accepted, before the next internal
 `execute_step` handoff runs, so duplicate completions cannot count the same step twice. When
-`outcome` equals `branch_value`, it skips one pending step before advancing. When no next step
-remains, it marks the workflow complete and sends a map whose `action` field is
-`"workflow_complete"` to the stored reply target.
+`outcome` equals `branch_value`, it skips one pending step before advancing. If the next pending
+target is `0` and the following target is positive, the method still queues the next `execute_step`
+so the same placeholder-skip path can route the later positive step. When no next step remains, it
+marks the workflow complete and sends a map whose `action` field is `"workflow_complete"` to the
+stored reply target.
 Terminal status is recorded only after the completion message is delivered. If completion delivery
 fails, the workflow stays active with completion pending; a repeated matching `step_done` retries the
 completion message without counting the final step again.
@@ -117,9 +119,9 @@ This method supports an unbounded linear workflow with a one-step branch skip wh
 matches `branch_value`. Arbitrary workflow graphs, branch destinations by id, validation that the
 three step lists have identical lengths, and dynamic step descriptor maps require richer collection
 querying or a specialized validation/transition method. A single zero placeholder before a positive
-step is skipped, but consecutive zero placeholders can still terminate scanning early because
-ordinary methods do not have a list length or type predicate that distinguishes an empty list from a
-list whose next item is integer `0`.
+step is skipped at workflow start and after completed steps, but consecutive zero placeholders can
+still terminate scanning early because ordinary methods do not have a list length or type predicate
+that distinguishes an empty list from a list whose next item is integer `0`.
 
 ## Implementation and Tests
 

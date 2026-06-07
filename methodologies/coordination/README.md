@@ -466,6 +466,9 @@ Workflow advances `current_step` and consumes a pending step only after the rout
 step succeeds; failed route handoffs leave the step at the head of the pending queue.
 If an `execute_step` target head is `0` and the immediate next target is positive, workflow skips the
 placeholder with an internal continuation and keeps the same step number.
+After a completed step, a pending zero head with an immediate positive next target still queues the
+next `execute_step`, so the same placeholder-skip path routes the later positive step instead of
+ending the workflow early.
 Workflow asks routing to send `route_result` replies back to the workflow agent; a matching
 `route_failed` result for the active step completes the workflow with `status: "handoff_failed"`.
 If the initial internal step handoff or a later step continuation cannot be queued, workflow emits

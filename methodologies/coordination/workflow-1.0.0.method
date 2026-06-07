@@ -94,7 +94,12 @@ memory.next_step_targets := if(memory.skip_next = 1, memory.skipped_step_targets
 memory.next_step_actions := if(memory.skip_next = 1, memory.skipped_step_actions, memory.next_step_actions)
 memory.next_step_texts := if(memory.skip_next = 1, memory.skipped_step_texts, memory.next_step_texts)
 memory.next_step_target := head(memory.next_step_targets)
+memory.next_step_tail_targets := tail(memory.next_step_targets)
+memory.next_step_tail_target := head(memory.next_step_tail_targets)
 memory.has_next_step := if(memory.next_step_target > 0, 1, 0)
+memory.has_next_step_after_zero := if(memory.next_step_tail_target > 0, 1, 0)
+memory.has_next_step := memory.has_next_step + memory.has_next_step_after_zero
+memory.has_next_step := if(memory.has_next_step > 0, 1, 0)
 memory.step_increment := 1 + memory.skip_next
 memory.next_step_number := memory.current_step + memory.step_increment
 memory.continue_message := {
