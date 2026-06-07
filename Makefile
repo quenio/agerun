@@ -287,9 +287,11 @@ METHOD_TEST_BIN = $(patsubst methods/%_tests.c,bin/%_tests,$(METHOD_TEST_SRC))
 
 # Methodology-local test source files
 METHODOLOGY_TEST_SRC = $(wildcard methodologies/*/*_tests.c)
+methodology_test_key = $(subst /,_,$(patsubst methodologies/%,%,$(basename $(1))))
 METHODOLOGY_TEST_NAMES = $(basename $(notdir $(METHODOLOGY_TEST_SRC)))
-METHODOLOGY_TEST_OBJ = $(addprefix bin/obj/,$(addsuffix .o,$(METHODOLOGY_TEST_NAMES)))
-METHODOLOGY_TEST_BIN = $(addprefix bin/,$(METHODOLOGY_TEST_NAMES))
+METHODOLOGY_TEST_KEYS = $(foreach test_src,$(METHODOLOGY_TEST_SRC),$(call methodology_test_key,$(test_src)))
+METHODOLOGY_TEST_OBJ = $(addprefix bin/obj/,$(addsuffix .o,$(METHODOLOGY_TEST_KEYS)))
+METHODOLOGY_TEST_BIN = $(addprefix bin/,$(METHODOLOGY_TEST_KEYS))
 
 # Zig struct module test source files
 ZIG_TEST_SRC = $(wildcard modules/*Tests.zig)
@@ -298,18 +300,18 @@ ZIG_TEST_BIN = $(patsubst modules/%Tests.zig,bin/%Tests,$(ZIG_TEST_SRC))
 # Directory-specific method test paths
 RUN_TESTS_METHOD_TEST_OBJ = $(patsubst methods/%.c,$(RUN_TESTS_DIR)/obj/%.o,$(METHOD_TEST_SRC))
 RUN_TESTS_METHOD_TEST_BIN = $(patsubst methods/%_tests.c,$(RUN_TESTS_DIR)/%_tests,$(METHOD_TEST_SRC))
-RUN_TESTS_METHODOLOGY_TEST_OBJ = $(addprefix $(RUN_TESTS_DIR)/obj/,$(addsuffix .o,$(METHODOLOGY_TEST_NAMES)))
-RUN_TESTS_METHODOLOGY_TEST_BIN = $(addprefix $(RUN_TESTS_DIR)/,$(METHODOLOGY_TEST_NAMES))
+RUN_TESTS_METHODOLOGY_TEST_OBJ = $(addprefix $(RUN_TESTS_DIR)/obj/,$(addsuffix .o,$(METHODOLOGY_TEST_KEYS)))
+RUN_TESTS_METHODOLOGY_TEST_BIN = $(addprefix $(RUN_TESTS_DIR)/,$(METHODOLOGY_TEST_KEYS))
 
 SANITIZE_TESTS_METHOD_TEST_OBJ = $(patsubst methods/%.c,$(SANITIZE_TESTS_DIR)/obj/%.o,$(SANITIZER_METHOD_TEST_SRC))
 SANITIZE_TESTS_METHOD_TEST_BIN = $(patsubst methods/%_tests.c,$(SANITIZE_TESTS_DIR)/%_tests,$(SANITIZER_METHOD_TEST_SRC))
-SANITIZE_TESTS_METHODOLOGY_TEST_OBJ = $(addprefix $(SANITIZE_TESTS_DIR)/obj/,$(addsuffix .o,$(SANITIZER_METHODOLOGY_TEST_NAMES)))
-SANITIZE_TESTS_METHODOLOGY_TEST_BIN = $(addprefix $(SANITIZE_TESTS_DIR)/,$(SANITIZER_METHODOLOGY_TEST_NAMES))
+SANITIZE_TESTS_METHODOLOGY_TEST_OBJ = $(addprefix $(SANITIZE_TESTS_DIR)/obj/,$(addsuffix .o,$(SANITIZER_METHODOLOGY_TEST_KEYS)))
+SANITIZE_TESTS_METHODOLOGY_TEST_BIN = $(addprefix $(SANITIZE_TESTS_DIR)/,$(SANITIZER_METHODOLOGY_TEST_KEYS))
 
 TSAN_TESTS_METHOD_TEST_OBJ = $(patsubst methods/%.c,$(TSAN_TESTS_DIR)/obj/%.o,$(SANITIZER_METHOD_TEST_SRC))
 TSAN_TESTS_METHOD_TEST_BIN = $(patsubst methods/%_tests.c,$(TSAN_TESTS_DIR)/%_tests,$(SANITIZER_METHOD_TEST_SRC))
-TSAN_TESTS_METHODOLOGY_TEST_OBJ = $(addprefix $(TSAN_TESTS_DIR)/obj/,$(addsuffix .o,$(SANITIZER_METHODOLOGY_TEST_NAMES)))
-TSAN_TESTS_METHODOLOGY_TEST_BIN = $(addprefix $(TSAN_TESTS_DIR)/,$(SANITIZER_METHODOLOGY_TEST_NAMES))
+TSAN_TESTS_METHODOLOGY_TEST_OBJ = $(addprefix $(TSAN_TESTS_DIR)/obj/,$(addsuffix .o,$(SANITIZER_METHODOLOGY_TEST_KEYS)))
+TSAN_TESTS_METHODOLOGY_TEST_BIN = $(addprefix $(TSAN_TESTS_DIR)/,$(SANITIZER_METHODOLOGY_TEST_KEYS))
 
 # Directory-specific Zig test paths
 RUN_TESTS_ZIG_TEST_BIN = $(patsubst modules/%Tests.zig,$(RUN_TESTS_DIR)/%Tests,$(ZIG_TEST_SRC))
@@ -418,7 +420,7 @@ tsan-exec: tsan_exec_lib
 RUN_TEST_TEST_SRC = $(filter-out %_dlsym_tests.c,$(TEST_SRC))
 RUN_TEST_TEST_BIN_NAMES = $(patsubst modules/%_tests.c,%_tests,$(RUN_TEST_TEST_SRC))
 METHOD_TEST_BIN_NAMES = $(notdir $(METHOD_TEST_BIN))
-METHODOLOGY_TEST_BIN_NAMES = $(METHODOLOGY_TEST_NAMES)
+METHODOLOGY_TEST_BIN_NAMES = $(METHODOLOGY_TEST_KEYS)
 ZIG_TEST_BIN_NAMES = $(notdir $(ZIG_TEST_BIN))
 ALL_TEST_BIN_NAMES = $(RUN_TEST_TEST_BIN_NAMES) $(METHOD_TEST_BIN_NAMES) $(METHODOLOGY_TEST_BIN_NAMES) $(ZIG_TEST_BIN_NAMES)
 
@@ -427,11 +429,12 @@ SANITIZER_TEST_SRC = $(filter-out %_dlsym_tests.c,$(TEST_SRC))
 SANITIZER_METHOD_TEST_SRC = $(filter-out %_dlsym_tests.c,$(METHOD_TEST_SRC))
 SANITIZER_METHODOLOGY_TEST_SRC = $(filter-out %_dlsym_tests.c,$(METHODOLOGY_TEST_SRC))
 SANITIZER_METHODOLOGY_TEST_NAMES = $(basename $(notdir $(SANITIZER_METHODOLOGY_TEST_SRC)))
+SANITIZER_METHODOLOGY_TEST_KEYS = $(foreach test_src,$(SANITIZER_METHODOLOGY_TEST_SRC),$(call methodology_test_key,$(test_src)))
 
 # Filtered test binaries for sanitizers
 SANITIZER_TEST_BIN_NAMES = $(patsubst modules/%_tests.c,%_tests,$(SANITIZER_TEST_SRC))
 SANITIZER_METHOD_TEST_BIN_NAMES = $(patsubst methods/%_tests.c,%_tests,$(SANITIZER_METHOD_TEST_SRC))
-SANITIZER_METHODOLOGY_TEST_BIN_NAMES = $(SANITIZER_METHODOLOGY_TEST_NAMES)
+SANITIZER_METHODOLOGY_TEST_BIN_NAMES = $(SANITIZER_METHODOLOGY_TEST_KEYS)
 SANITIZER_ALL_TEST_BIN_NAMES = $(SANITIZER_TEST_BIN_NAMES) $(SANITIZER_METHOD_TEST_BIN_NAMES) $(SANITIZER_METHODOLOGY_TEST_BIN_NAMES) $(ZIG_TEST_BIN_NAMES)
 
 # Build and run tests (always in debug mode)
@@ -550,6 +553,15 @@ workflow_coordinator_tests: $(WORKFLOW_REAL_COMPLETION_PREREQ)
 %_tests: bin/%_tests
 	@# Target completed by dependency
 
+define METHODOLOGY_TEST_ALIAS_RULE
+$(1): $(addprefix bin/,$(call methodology_test_alias_keys,$(1)))
+	@# Target completed by dependency
+bin/$(1): $(addprefix bin/,$(call methodology_test_alias_keys,$(1)))
+	@# Target completed by dependency
+endef
+methodology_test_alias_keys = $(foreach test_src,$(METHODOLOGY_TEST_SRC),$(if $(filter $(1),$(basename $(notdir $(test_src)))),$(call methodology_test_key,$(test_src))))
+$(foreach test_name,$(sort $(METHODOLOGY_TEST_NAMES)),$(eval $(call METHODOLOGY_TEST_ALIAS_RULE,$(test_name))))
+
 # Build and run individual test with bin/ prefix
 bin/%_tests: $(RUN_TESTS_DIR)/obj/%_tests.o run_tests_lib
 	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) -o $(RUN_TESTS_DIR)/$*_tests $< $(RUN_TESTS_DIR)/libagerun.a $(LDFLAGS)
@@ -604,7 +616,7 @@ $(RUN_TESTS_DIR)/obj/%_tests.o: methods/%_tests.c | $(RUN_TESTS_DIR)
 	$(CC) $(CFLAGS) $(EXTRA_CFLAGS) $(DEBUG_CFLAGS) -c $< -o $@
 
 define RUN_METHODOLOGY_TEST_OBJECT_RULE
-$(RUN_TESTS_DIR)/obj/$(basename $(notdir $(1))).o: $(1) | $(RUN_TESTS_DIR)
+$(RUN_TESTS_DIR)/obj/$(call methodology_test_key,$(1)).o: $(1) | $(RUN_TESTS_DIR)
 	$$(CC) $$(CFLAGS) $$(EXTRA_CFLAGS) $$(DEBUG_CFLAGS) -c $$< -o $$@
 endef
 $(foreach test_src,$(METHODOLOGY_TEST_SRC),$(eval $(call RUN_METHODOLOGY_TEST_OBJECT_RULE,$(test_src))))
@@ -630,7 +642,7 @@ $(SANITIZE_TESTS_DIR)/obj/%_tests.o: methods/%_tests.c | $(SANITIZE_TESTS_DIR)
 	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(SANITIZER_FLAGS) $(SANITIZER_EXTRA_FLAGS) -c $< -o $@
 
 define SANITIZE_METHODOLOGY_TEST_OBJECT_RULE
-$(SANITIZE_TESTS_DIR)/obj/$(basename $(notdir $(1))).o: $(1) | $(SANITIZE_TESTS_DIR)
+$(SANITIZE_TESTS_DIR)/obj/$(call methodology_test_key,$(1)).o: $(1) | $(SANITIZE_TESTS_DIR)
 	$$(SANITIZER_CC) $$(CFLAGS) $$(DEBUG_CFLAGS) $$(SANITIZER_FLAGS) $$(SANITIZER_EXTRA_FLAGS) -c $$< -o $$@
 endef
 $(foreach test_src,$(SANITIZER_METHODOLOGY_TEST_SRC),$(eval $(call SANITIZE_METHODOLOGY_TEST_OBJECT_RULE,$(test_src))))
@@ -656,7 +668,7 @@ $(TSAN_TESTS_DIR)/obj/%_tests.o: methods/%_tests.c | $(TSAN_TESTS_DIR)
 	$(SANITIZER_CC) $(CFLAGS) $(DEBUG_CFLAGS) $(TSAN_FLAGS) $(SANITIZER_EXTRA_FLAGS) -c $< -o $@
 
 define TSAN_METHODOLOGY_TEST_OBJECT_RULE
-$(TSAN_TESTS_DIR)/obj/$(basename $(notdir $(1))).o: $(1) | $(TSAN_TESTS_DIR)
+$(TSAN_TESTS_DIR)/obj/$(call methodology_test_key,$(1)).o: $(1) | $(TSAN_TESTS_DIR)
 	$$(SANITIZER_CC) $$(CFLAGS) $$(DEBUG_CFLAGS) $$(TSAN_FLAGS) $$(SANITIZER_EXTRA_FLAGS) -c $$< -o $$@
 endef
 $(foreach test_src,$(SANITIZER_METHODOLOGY_TEST_SRC),$(eval $(call TSAN_METHODOLOGY_TEST_OBJECT_RULE,$(test_src))))
