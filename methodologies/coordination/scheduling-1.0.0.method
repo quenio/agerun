@@ -12,7 +12,7 @@ memory.pending := if(memory.is_schedule = 1, 1, memory.pending)
 memory.status := if(memory.is_schedule = 1, "scheduled", memory.status)
 memory.current_tick := if(memory.is_schedule = 1, 0, memory.current_tick)
 memory.cancel_matches := if(message.schedule_id = memory.schedule_id, 1, 0)
-memory.should_cancel := memory.is_cancel * memory.cancel_matches
+memory.should_cancel := memory.is_cancel * memory.cancel_matches * memory.pending
 memory.pending := if(memory.should_cancel = 1, 0, memory.pending)
 memory.status := if(memory.should_cancel = 1, "cancelled", memory.status)
 memory.current_tick := if(memory.is_tick = 1, message.tick, memory.current_tick)

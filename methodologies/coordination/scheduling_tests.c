@@ -138,6 +138,26 @@ static void test_scheduling__triggers_future_work_on_tick(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_current_tick") == 5,
               "Triggered status should report due tick");
 
+    ar_data_t *own_late_cancel = ar_data__create_map();
+    AR_ASSERT(own_late_cancel != NULL, "Late cancel should be created");
+    ar_data__set_map_string(own_late_cancel, "action", "cancel");
+    ar_data__set_map_string(own_late_cancel, "schedule_id", "sched-1");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, scheduling_agent, own_late_cancel),
+              "Late cancel should queue");
+    own_late_cancel = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    const ar_data_t *ref_scheduling_memory =
+        ar_agency__get_agent_memory(mut_agency, scheduling_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
+                     "triggered") == 0,
+              "Late cancel should not overwrite triggered observer status");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_scheduling_memory, "status"),
+                     "triggered") == 0,
+              "Late cancel should not overwrite triggered scheduler status");
+    AR_ASSERT(ar_data__get_map_integer(ref_scheduling_memory, "pending") == 0,
+              "Late cancel should leave triggered schedule non-pending");
+
     ar_data_t *own_failed_schedule = ar_data__create_map();
     AR_ASSERT(own_failed_schedule != NULL, "Failed schedule message should be created");
     ar_data__set_map_string(own_failed_schedule, "action", "schedule");
@@ -169,8 +189,6 @@ static void test_scheduling__triggers_future_work_on_tick(void) {
               "Failed trigger should remain pending");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_current_tick") == 8,
               "Failed trigger status should report due tick");
-    const ar_data_t *ref_scheduling_memory =
-        ar_agency__get_agent_memory(mut_agency, scheduling_agent);
     AR_ASSERT(ar_data__get_map_integer(ref_scheduling_memory, "pending") == 1,
               "Scheduler memory should keep failed trigger pending");
 

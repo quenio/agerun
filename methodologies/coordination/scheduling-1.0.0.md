@@ -18,7 +18,8 @@ keeps the work pending. A tick that does not trigger the pending work updates sc
 sending a status response.
 
 On a map whose `action` field is `"cancel"`, the method clears pending state when the requested
-schedule id matches the stored schedule id, then reports `status=cancelled`.
+schedule id matches the stored schedule id and the work is still pending, then reports
+`status=cancelled`. Cancels for already triggered or otherwise non-pending schedules are ignored.
 
 ## Message Format
 

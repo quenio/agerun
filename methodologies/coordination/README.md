@@ -309,6 +309,8 @@ Status:
 
 A due tick clears `pending` only when the stored payload is sent successfully. If delivery fails, the
 status is `trigger_failed` and the schedule remains pending for a later tick.
+Cancellation only applies while the matching schedule is still pending; late cancels after a
+successful trigger are ignored.
 
 ### Synchronization
 
