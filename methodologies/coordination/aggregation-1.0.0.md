@@ -14,13 +14,13 @@ Required counts below one behave as one required result, so a start message cann
 aggregate before any result arrives.
 
 On a map whose `action` field is `"result"`, the method appends the incoming value to the stored
-result list while the aggregate is still collecting. When the number of received values is greater
-than or equal to `required_count`, it sends one map whose `action` field is `"aggregate_complete"`
-to the stored reply target. The aggregate values are emitted as a list in the `result` field. After
-completion, late or duplicate result messages are ignored and do not change the stored result list
-or received count. Completion is marked only after the `aggregate_complete` message is sent
-successfully; if delivery fails, the aggregate remains open and later result messages can still be
-collected.
+result list only when the message `aggregate_id` matches the active aggregate and the aggregate is
+still collecting. When the number of received values is greater than or equal to `required_count`, it
+sends one map whose `action` field is `"aggregate_complete"` to the stored reply target. The
+aggregate values are emitted as a list in the `result` field. After completion, late or duplicate
+result messages are ignored and do not change the stored result list or received count. Completion is
+marked only after the `aggregate_complete` message is sent successfully; if delivery fails, the
+aggregate remains open and later matching result messages can still be collected.
 
 ## Message Format
 
@@ -40,6 +40,7 @@ Result request:
 ```text
 {
   action: "result",
+  aggregate_id: <id>,
   value: <text>
 }
 ```

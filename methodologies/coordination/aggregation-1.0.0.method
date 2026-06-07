@@ -7,7 +7,8 @@ memory.results := if(memory.is_start = 1, [], memory.results)
 memory.received_count := if(memory.is_start = 1, 0, memory.received_count)
 memory.completed := if(memory.is_start = 1, 0, memory.completed)
 memory.not_completed := if(memory.completed = 0, 1, 0)
-memory.should_collect := memory.is_result * memory.not_completed
+memory.matching_aggregate := if(message.aggregate_id = memory.aggregate_id, 1, 0)
+memory.should_collect := memory.is_result * memory.matching_aggregate * memory.not_completed
 memory.append_buffer := if(memory.should_collect = 1, memory.results, "")
 memory.append_ok := append(memory.append_buffer, message.value)
 memory.results := if(memory.append_ok = 1, memory.append_buffer, memory.results)

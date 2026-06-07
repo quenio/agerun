@@ -240,6 +240,7 @@ Requests:
 
 {
   action: "result",
+  aggregate_id: <id>,
   value: <text>
 }
 ```
@@ -262,6 +263,8 @@ Required counts below one behave as one required result, so aggregation never co
 alone.
 Aggregation marks completion only after the `aggregate_complete` reply is sent successfully; failed
 completion delivery leaves the aggregate open.
+Result messages must carry the active `aggregate_id`; late results for a previous aggregate are
+ignored.
 
 ### Scheduling
 
@@ -548,7 +551,7 @@ Fan-out and fan-in:
 
 ```text
 1. Send a map with action: "distribute" to a distribution agent.
-2. Workers send maps with action: "result" and value: <text> to an aggregation agent.
+2. Workers send maps with action: "result", aggregate_id, and value: <text> to an aggregation agent.
 3. Aggregation emits a map with action: "aggregate_complete" and a result list when required_count
    results arrive.
 ```
