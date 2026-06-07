@@ -10,17 +10,9 @@ memory.route_matches := if(message.route_key = memory.route_key, 1, 0)
 memory.route_matches := memory.route_matches * memory.has_request_key
 memory.route_matches := memory.route_matches * memory.has_route_key
 memory.route_matches := memory.route_matches * memory.has_route_target
-memory.forward_action := if(memory.is_route = 1, message.payload_action, "")
-memory.forward_text := if(memory.is_route = 1, message.payload_text, "")
 memory.correlation_id := if(memory.is_route = 1, message.correlation_id, "")
-memory.forward_message := {
-  action: memory.forward_action
-  correlation_id: memory.correlation_id
-  text: memory.forward_text
-  source: memory.self
-}
 memory.target := memory.route_target * memory.route_matches * memory.is_route
-memory.sent_result := send(memory.target, memory.forward_message)
+memory.sent_result := send(memory.target, message.payload)
 memory.sent := memory.sent_result * memory.route_matches
 memory.send_failed := if(memory.sent_result = 0, 1, 0)
 memory.send_failed := memory.send_failed * memory.route_matches
@@ -43,8 +35,7 @@ memory.scan_message := {
   action: "route"
   route_key: message.route_key
   routes: memory.scan_routes
-  payload_action: memory.forward_action
-  payload_text: memory.forward_text
+  payload: message.payload
   correlation_id: memory.correlation_id
   reply_to: message.reply_to
 }

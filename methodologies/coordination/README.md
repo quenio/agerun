@@ -80,8 +80,7 @@ Request:
     keys: [<key>, <key>, ...],
     targets: [<agent>, <agent>, ...]
   },
-  payload_action: <action>,
-  payload_text: <text>,
+  payload: <message>,
   correlation_id: <id>,
   reply_to: <agent>
 }
@@ -92,15 +91,10 @@ The `routes.keys` and `routes.targets` lists are paired by position and scanned 
 key must be nonzero/present before a candidate can match. A direct `target` field is not a supported
 routing mechanism; callers that already know the target should use direct `send(...)`.
 
-Delivered message:
+Delivered message is exactly the caller-provided `payload`:
 
 ```text
-{
-  action: <payload_action>,
-  correlation_id: <correlation_id>,
-  text: <payload_text>,
-  source: <routing-agent>
-}
+<message>
 ```
 
 Reply:

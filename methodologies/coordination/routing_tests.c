@@ -77,6 +77,9 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
     const char *ref_instructions =
         "memory.last_action := message.action\n"
         "memory.last_text := message.text\n"
+        "memory.last_kind := message.kind\n"
+        "memory.last_source := message.source\n"
+        "memory.last_reply_to := message.reply_to\n"
         "memory.last_correlation_id := message.correlation_id\n"
         "memory.last_status := message.status\n"
         "memory.last_routed_count := message.routed_count\n"
@@ -89,6 +92,27 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
                                             "1.0.0"),
               "record-receiver should be registered");
     verify_method_parses(mut_methodology, "record-receiver");
+}
+
+static ar_data_t *create_payload(const char *ref_action,
+                                 const char *ref_text,
+                                 const char *ref_kind,
+                                 int reply_to) {
+    ar_data_t *own_payload = ar_data__create_map();
+    AR_ASSERT(own_payload != NULL, "Route payload should be created");
+    AR_ASSERT(ar_data__set_map_string(own_payload, "action", ref_action),
+              "Route payload should set action");
+    AR_ASSERT(ar_data__set_map_string(own_payload, "text", ref_text),
+              "Route payload should set text");
+    AR_ASSERT(ar_data__set_map_string(own_payload, "kind", ref_kind),
+              "Route payload should set caller-owned field");
+    AR_ASSERT(ar_data__set_map_string(own_payload, "source", "caller-owned-source"),
+              "Route payload should set caller-owned source");
+    if (reply_to > 0) {
+        AR_ASSERT(ar_data__set_map_integer(own_payload, "reply_to", reply_to),
+                  "Route payload should set caller-owned reply target");
+    }
+    return own_payload;
 }
 
 static void test_routing__selects_one_target_by_key_only(void) {
@@ -126,8 +150,10 @@ static void test_routing__selects_one_target_by_key_only(void) {
     AR_ASSERT(own_message != NULL, "Direct route message should be created");
     ar_data__set_map_string(own_message, "action", "route");
     ar_data__set_map_integer(own_message, "target", checked_agent_id(receiver_a));
-    ar_data__set_map_string(own_message, "payload_action", "work");
-    ar_data__set_map_string(own_message, "payload_text", "direct");
+    ar_data_t *own_payload = create_payload("domain_event", "direct", "caller-shaped", 0);
+    AR_ASSERT(ar_data__set_map_data(own_message, "payload", own_payload),
+              "Direct route message should own opaque payload");
+    own_payload = NULL;
     ar_data__set_map_string(own_message, "correlation_id", "job-direct");
     ar_data__set_map_integer(own_message, "reply_to", checked_agent_id(report_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, routing_agent, own_message),
@@ -165,8 +191,13 @@ static void test_routing__selects_one_target_by_key_only(void) {
     AR_ASSERT(ar_data__set_map_data(own_message, "routes", own_routes),
               "Keyed route message should own routes map");
     own_routes = NULL;
-    ar_data__set_map_string(own_message, "payload_action", "work");
-    ar_data__set_map_string(own_message, "payload_text", "keyed");
+    own_payload = create_payload("domain_event",
+                                 "keyed",
+                                 "caller-shaped",
+                                 checked_agent_id(receiver_a));
+    AR_ASSERT(ar_data__set_map_data(own_message, "payload", own_payload),
+              "Keyed route message should own opaque payload");
+    own_payload = NULL;
     ar_data__set_map_string(own_message, "correlation_id", "job-keyed");
     ar_data__set_map_integer(own_message, "reply_to", checked_agent_id(report_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, routing_agent, own_message),
@@ -176,8 +207,20 @@ static void test_routing__selects_one_target_by_key_only(void) {
 
     // Then keyed routing scans the unbounded route list until it finds the matching route
     const ar_data_t *ref_receiver_d_memory = ar_agency__get_agent_memory(mut_agency, receiver_d);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_d_memory, "last_action"),
+                     "domain_event") == 0,
+              "Fourth keyed route target should observe caller payload action");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_d_memory, "last_text"), "keyed") == 0,
               "Fourth keyed route target should observe delivered text");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_d_memory, "last_kind"),
+                     "caller-shaped") == 0,
+              "Fourth keyed route target should observe caller-owned field");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_d_memory, "last_source"),
+                     "caller-owned-source") == 0,
+              "Routing should preserve caller-owned source field");
+    AR_ASSERT(ar_data__get_map_integer(ref_receiver_d_memory, "last_reply_to") ==
+                  checked_agent_id(receiver_a),
+              "Routing should preserve caller-owned reply target");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"), "routed") == 0,
               "Keyed route should report routed status");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_correlation_id"),
@@ -201,8 +244,10 @@ static void test_routing__selects_one_target_by_key_only(void) {
     AR_ASSERT(ar_data__set_map_data(own_message, "routes", own_routes),
               "Missed keyed route message should own routes map");
     own_routes = NULL;
-    ar_data__set_map_string(own_message, "payload_action", "work");
-    ar_data__set_map_string(own_message, "payload_text", "missed");
+    own_payload = create_payload("domain_event", "missed", "caller-shaped", 0);
+    AR_ASSERT(ar_data__set_map_data(own_message, "payload", own_payload),
+              "Missed keyed route message should own opaque payload");
+    own_payload = NULL;
     ar_data__set_map_string(own_message, "correlation_id", "job-missing-key");
     ar_data__set_map_integer(own_message, "reply_to", checked_agent_id(report_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, routing_agent, own_message),
