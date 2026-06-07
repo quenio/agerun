@@ -168,7 +168,7 @@ Reply:
 ```text
 {
   action: "supervision_status",
-  status: <running|restarted|stopped|ignored|stop_failed>,
+  status: <running|restarted|stopped|ignored|stop_failed|handoff_failed>,
   child_agent_id: <agent>,
   child_agent_ids: [<agent>, <agent>, ...],
   child_records: [<child-record>, <child-record>, ...],
@@ -184,6 +184,8 @@ status or exit the named agent.
 Lifecycle `child_failed` and `child_exited` events are validated against the same tracked list before
 restart or stop handling. Untracked lifecycle events report `ignored` and do not append replacement
 children or increment `restart_count`.
+If an internal spawn continuation cannot be queued, supervision reports `handoff_failed` instead of
+remaining in `starting`.
 
 ### Distribution
 

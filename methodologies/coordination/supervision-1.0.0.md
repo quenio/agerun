@@ -13,7 +13,8 @@ child method version, clears its tracked child lists, and sends itself a `spawn_
 for the request's `child_method_names` list. The method consumes that list with `head(...)` and
 `tail(...)`, spawning one child per continuation and appending the agent id and child record into
 memory. When the list is exhausted, it reports `status=running` with the tracked child lists and
-count.
+count. If the initial spawn continuation or a later continuation cannot be queued, it reports
+`status=handoff_failed` instead of remaining in `starting`.
 
 On a map whose `action` field is `"child_failed"` or `"child_exited"`, the method scans the tracked
 `child_agent_ids` list before applying the lifecycle event. If the child is tracked and the stored
@@ -67,7 +68,7 @@ Status response:
 ```text
 {
   action: "supervision_status",
-  status: <running|restarted|stopped|ignored|stop_failed>,
+  status: <running|restarted|stopped|ignored|stop_failed|handoff_failed>,
   child_agent_id: <agent>,
   child_agent_ids: [<agent>, <agent>, ...],
   child_records: [<child-record>, <child-record>, ...],

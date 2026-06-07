@@ -225,11 +225,106 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "stopped") == 0,
               "Observer should receive stopped status for tracked stop");
 
+    ar_data_t *own_failed_handoff_context = create_context();
+    int64_t failed_handoff_agent = ar_agency__create_agent(
+        mut_agency, "supervision", "1.0.0", own_failed_handoff_context);
+    ar_data_t *mut_failed_handoff_memory =
+        ar_agency__get_agent_mutable_memory(mut_agency, failed_handoff_agent);
+    AR_ASSERT(mut_failed_handoff_memory != NULL, "Failed handoff supervisor memory should exist");
+    AR_ASSERT(ar_data__set_map_integer(mut_failed_handoff_memory, "self", 98765),
+              "Failed start handoff should corrupt supervisor self");
+
+    ar_data_t *own_failed_handoff_start = ar_data__create_map();
+    AR_ASSERT(own_failed_handoff_start != NULL, "Failed handoff start should be created");
+    ar_data__set_map_string(own_failed_handoff_start, "action", "start");
+    ar_data_t *own_failed_handoff_methods = ar_data__create_list();
+    AR_ASSERT(own_failed_handoff_methods != NULL,
+              "Failed handoff child methods should be created");
+    append_child_method_name(own_failed_handoff_methods, "record-receiver");
+    AR_ASSERT(ar_data__set_map_data(own_failed_handoff_start,
+                                    "child_method_names",
+                                    own_failed_handoff_methods),
+              "Failed handoff start should own child methods");
+    own_failed_handoff_methods = NULL;
+    ar_data__set_map_string(own_failed_handoff_start, "child_method_version", "1.0.0");
+    ar_data__set_map_string(own_failed_handoff_start, "policy", "restart");
+    ar_data__set_map_integer(own_failed_handoff_start,
+                             "reply_to",
+                             checked_agent_id(observer_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency,
+                                       failed_handoff_agent,
+                                       own_failed_handoff_start),
+              "Failed handoff start should queue");
+    own_failed_handoff_start = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    const ar_data_t *ref_failed_handoff_memory =
+        ar_agency__get_agent_memory(mut_agency, failed_handoff_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_failed_handoff_memory, "status"),
+                     "handoff_failed") == 0,
+              "Failed start handoff should store handoff_failed status");
+    AR_ASSERT(ar_data__get_map_integer(ref_failed_handoff_memory, "child_count") == 0,
+              "Failed start handoff should not spawn children");
+    ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
+                     "handoff_failed") == 0,
+              "Observer should receive failed start handoff status");
+
+    ar_data_t *own_failed_continue_context = create_context();
+    int64_t failed_continue_agent = ar_agency__create_agent(
+        mut_agency, "supervision", "1.0.0", own_failed_continue_context);
+    ar_data_t *own_failed_continue_start = ar_data__create_map();
+    AR_ASSERT(own_failed_continue_start != NULL, "Failed continuation start should be created");
+    ar_data__set_map_string(own_failed_continue_start, "action", "start");
+    ar_data_t *own_failed_continue_methods = ar_data__create_list();
+    AR_ASSERT(own_failed_continue_methods != NULL,
+              "Failed continuation child methods should be created");
+    append_child_method_name(own_failed_continue_methods, "record-receiver");
+    append_child_method_name(own_failed_continue_methods, "record-receiver");
+    AR_ASSERT(ar_data__set_map_data(own_failed_continue_start,
+                                    "child_method_names",
+                                    own_failed_continue_methods),
+              "Failed continuation start should own child methods");
+    own_failed_continue_methods = NULL;
+    ar_data__set_map_string(own_failed_continue_start, "child_method_version", "1.0.0");
+    ar_data__set_map_string(own_failed_continue_start, "policy", "restart");
+    ar_data__set_map_integer(own_failed_continue_start,
+                             "reply_to",
+                             checked_agent_id(observer_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency,
+                                       failed_continue_agent,
+                                       own_failed_continue_start),
+              "Failed continuation start should queue");
+    own_failed_continue_start = NULL;
+    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture),
+              "Failed continuation start should process");
+    ar_data_t *mut_failed_continue_memory =
+        ar_agency__get_agent_mutable_memory(mut_agency, failed_continue_agent);
+    AR_ASSERT(mut_failed_continue_memory != NULL, "Failed continuation memory should exist");
+    AR_ASSERT(ar_data__set_map_integer(mut_failed_continue_memory, "self", 98765),
+              "Failed continuation should corrupt supervisor self");
+    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture),
+              "Failed continuation spawn should process");
+
+    const ar_data_t *ref_failed_continue_memory =
+        ar_agency__get_agent_memory(mut_agency, failed_continue_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_failed_continue_memory, "status"),
+                     "handoff_failed") == 0,
+              "Failed spawn continuation should store handoff_failed status");
+    AR_ASSERT(ar_data__get_map_integer(ref_failed_continue_memory, "child_count") == 1,
+              "Failed spawn continuation should preserve partial child count");
+    ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
+                     "handoff_failed") == 0,
+              "Observer should receive failed spawn continuation status");
+
     // Cleanup
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_supervision_context);
     ar_data__destroy(own_observer_context);
     ar_data__destroy(own_untracked_context);
+    ar_data__destroy(own_failed_handoff_context);
+    ar_data__destroy(own_failed_continue_context);
 }
 
 int main(void) {

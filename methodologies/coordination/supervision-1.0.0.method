@@ -18,6 +18,8 @@ memory.spawn_request_message := {
   child_method_names: message.child_method_names
 }
 memory.spawn_request_sent := send(memory.self * memory.is_start, memory.spawn_request_message)
+memory.spawn_request_failed := if(memory.spawn_request_sent = 0, 1, 0)
+memory.spawn_request_failed := memory.spawn_request_failed * memory.is_start
 memory.current_child_method_name := head(message.child_method_names)
 memory.remaining_child_method_names := tail(message.child_method_names)
 memory.has_child := if(memory.current_child_method_name = 0, 0, 1)
@@ -46,9 +48,14 @@ memory.spawn_continue_message := {
   child_method_names: memory.remaining_child_method_names
 }
 memory.spawn_continue_sent := send(memory.self * memory.is_spawn_child * memory.has_remaining, memory.spawn_continue_message)
+memory.spawn_continue_required := memory.is_spawn_child * memory.has_remaining
+memory.spawn_continue_failed := if(memory.spawn_continue_sent = 0, 1, 0)
+memory.spawn_continue_failed := memory.spawn_continue_failed * memory.spawn_continue_required
 memory.no_remaining := if(memory.has_remaining = 1, 0, 1)
 memory.start_complete := memory.is_spawn_child * memory.no_remaining
 memory.status := if(memory.start_complete = 1, "running", memory.status)
+memory.spawn_handoff_failed := memory.spawn_request_failed + memory.spawn_continue_failed
+memory.status := if(memory.spawn_handoff_failed > 0, "handoff_failed", memory.status)
 memory.restart_policy := if(memory.policy = "restart", 1, 0)
 memory.lifecycle_event := memory.is_child_failed + memory.is_child_exited
 memory.lifecycle_validation_message := {
@@ -140,6 +147,7 @@ memory.report_status := if(memory.lifecycle_untracked = 1, "ignored", memory.rep
 memory.report_status := if(memory.stop_untracked = 1, "ignored", memory.report_status)
 memory.report_status := if(memory.stop_failed = 1, "stop_failed", memory.report_status)
 memory.should_report := memory.start_complete + memory.tracked_failure_event
+memory.should_report := memory.should_report + memory.spawn_handoff_failed
 memory.should_report := memory.should_report + memory.lifecycle_untracked
 memory.should_report := memory.should_report + memory.stop_done
 memory.report_message := {
