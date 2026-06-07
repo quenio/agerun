@@ -137,10 +137,11 @@ Reply:
 ```
 
 For `mode=many`, `routed_count` and `sent_count` count successful target sends, while
-`failed_count` counts positive target IDs that could not be sent to. A target send failure keeps
-processing the remaining targets and makes the terminal status `route_failed`. A failed
-self-continuation emits `route_failed` immediately with the partial routed/sent counts instead of
-leaving callers without a terminal result.
+`failed_count` counts positive target IDs that could not be sent to. Integer `0` entries are skipped
+placeholders, not failed sends, and a single interior zero does not stop fan-out to a later positive
+target. A target send failure keeps processing the remaining targets and makes the terminal status
+`route_failed`. A failed self-continuation emits `route_failed` immediately with the partial
+routed/sent counts instead of leaving callers without a terminal result.
 If a many-route target list is empty or contains no positive targets, routing emits `route_failed`
 with zero delivery counts instead of reporting a successful zero-send route.
 

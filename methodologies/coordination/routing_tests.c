@@ -210,6 +210,50 @@ static void test_routing__forwards_one_and_many_messages(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_continuation_sent") == 0,
               "Final route result should report no pending continuation");
 
+    // When a one-to-many route request contains an interior zero placeholder
+    own_message = ar_data__create_map();
+    AR_ASSERT(own_message != NULL, "Interior zero many route message should be created");
+    ar_data__set_map_string(own_message, "action", "route");
+    ar_data__set_map_string(own_message, "mode", "many");
+    own_targets = ar_data__create_list();
+    AR_ASSERT(own_targets != NULL, "Interior zero targets list should be created");
+    AR_ASSERT(ar_data__list_add_last_integer(own_targets, checked_agent_id(receiver_a)),
+              "Interior zero first target should be stored");
+    AR_ASSERT(ar_data__list_add_last_integer(own_targets, 0),
+              "Interior zero placeholder should be stored");
+    AR_ASSERT(ar_data__list_add_last_integer(own_targets, checked_agent_id(receiver_d)),
+              "Interior zero final target should be stored");
+    AR_ASSERT(ar_data__set_map_data(own_message, "targets", own_targets),
+              "Interior zero route message should own targets list");
+    own_targets = NULL;
+    ar_data__set_map_string(own_message, "payload_action", "work");
+    ar_data__set_map_string(own_message, "payload_text", "skip-zero");
+    ar_data__set_map_string(own_message, "correlation_id", "job-skip-zero");
+    ar_data__set_map_integer(own_message, "reply_to", checked_agent_id(report_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, routing_agent, own_message),
+              "Interior zero route message should queue");
+    own_message = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    // Then zero placeholders do not stop fan-out to later positive targets
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_a_memory, "last_text"),
+                     "skip-zero") == 0,
+              "Interior zero route should deliver to the first positive target");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_d_memory, "last_text"),
+                     "skip-zero") == 0,
+              "Interior zero route should deliver to the later positive target");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"), "routed") == 0,
+              "Interior zero route should report routed status");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_correlation_id"),
+                     "job-skip-zero") == 0,
+              "Interior zero route result should preserve correlation id");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_routed_count") == 2,
+              "Interior zero route should count positive target routes");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_sent_count") == 2,
+              "Interior zero route should count positive target sends");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failed_count") == 0,
+              "Interior zero route should not count zero placeholders as failures");
+
     // When a one-to-many route request contains no positive targets
     own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Zero-delivery many route message should be created");

@@ -53,7 +53,9 @@ memory.has_remaining := if(memory.remaining_head > 0, 1, 0)
 memory.routed_count_many := message.routed_count + memory.sent_many
 memory.sent_count_many := message.sent_count + memory.sent_many
 memory.failed_count_many := message.failed_count + memory.send_many_failed
-memory.continuation_required := memory.is_route * memory.is_many * memory.has_remaining
+memory.has_more_many_work := memory.has_many_target + memory.has_remaining
+memory.has_more_many_work := if(memory.has_more_many_work > 0, 1, 0)
+memory.continuation_required := memory.is_route * memory.is_many * memory.has_more_many_work
 memory.continuation_target := memory.self * memory.continuation_required
 memory.continuation_message := {
   action: "route"

@@ -16,15 +16,16 @@ it scans `routes.keys` and `routes.targets` as paired unbounded lists, matching 
 each candidate key and sending to the paired positive target. If no positive one-to-one target is
 selected, the method emits `route_result` with `status: "route_failed"` and zero delivery counts.
 
-For `mode=many`, the method reads `targets` as a list of nonzero agent IDs. It uses `head(...)` to
-send to the next target and `tail(...)` to send a continuation message to itself with the remaining
-targets. This keeps fan-out in ordinary method code instead of adding a runtime routing capability.
-If a target send fails, the method continues through the remaining targets, counts the failed send in
-`failed_count`, and emits the terminal `route_result` with `status` set to `"route_failed"`. If the
-target list is empty or contains no positive targets, the terminal `route_result` is also
-`"route_failed"` with zero delivery counts. If a required self-continuation cannot be queued, the
-method emits a terminal `route_result` with `status` set to `"route_failed"` and the routed/sent
-counts accumulated so far.
+For `mode=many`, the method reads `targets` as a list of agent IDs where positive integers are
+deliverable targets and integer `0` is a placeholder. It uses `head(...)` to send to the next
+positive target and `tail(...)` to send a continuation message to itself with the remaining targets.
+This keeps fan-out in ordinary method code instead of adding a runtime routing capability. A single
+interior zero placeholder does not stop fan-out to a later positive target. If a target send fails,
+the method continues through the remaining targets, counts the failed send in `failed_count`, and
+emits the terminal `route_result` with `status` set to `"route_failed"`. If the target list is empty
+or contains no positive targets, the terminal `route_result` is also `"route_failed"` with zero
+delivery counts. If a required self-continuation cannot be queued, the method emits a terminal
+`route_result` with `status` set to `"route_failed"` and the routed/sent counts accumulated so far.
 
 ## Message Format
 
@@ -101,8 +102,8 @@ Reply:
 
 For `mode=many`, `routed_count`, `sent_count`, and `failed_count` accumulate across the self-message
 chain. `routed_count` and `sent_count` count successful target sends; `failed_count` counts positive
-target IDs that could not be sent to. The final reply is emitted after the target list is exhausted.
-The reply preserves the original
+target IDs that could not be sent to. Integer `0` entries are skipped placeholders, not failed
+sends. The final reply is emitted after the target list is exhausted. The reply preserves the original
 `correlation_id` so downstream coordination methods can match route results to their active work.
 If no positive target is delivered, the terminal reply uses `status: "route_failed"` with zero
 delivery counts rather than reporting a successful zero-send route. If a self-continuation send fails
@@ -127,11 +128,14 @@ primitive target list to `mode=many` when the fan-out size is not known ahead of
 
 The method supports unbounded fan-out for primitive nonzero agent IDs and unbounded keyed
 one-to-one selection through parallel `routes.keys` and `routes.targets` lists. The `head(...)` empty
-sentinel is integer `0`, so `0` cannot be used as a valid fan-out target or route key. Continuation
-messages keep remaining lists in memory-built messages; `send(...)` deep-copies those nested lists
-when routing back to the same agent. A list of route-entry maps would be a more natural external
-shape, but ordinary methods currently do not have a safe type predicate for checking that
-`head(routes)` returned a map before reading nested fields.
+sentinel is integer `0`, so `0` cannot be used as a valid fan-out target or route key. A single
+interior zero placeholder is skipped, but consecutive zero placeholders can still terminate scanning
+before a later positive target because ordinary methods do not have a list length or type predicate
+that distinguishes an empty list from a list whose next item is integer `0`. Continuation messages
+keep remaining lists in memory-built messages; `send(...)` deep-copies those nested lists when
+routing back to the same agent. A list of route-entry maps would be a more natural external shape,
+but ordinary methods currently do not have a safe type predicate for checking that `head(routes)`
+returned a map before reading nested fields.
 
 ## Implementation and Tests
 
