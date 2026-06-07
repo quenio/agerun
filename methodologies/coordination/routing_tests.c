@@ -49,7 +49,8 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
         "memory.last_correlation_id := message.correlation_id\n"
         "memory.last_status := message.status\n"
         "memory.last_routed_count := message.routed_count\n"
-        "memory.last_sent_count := message.sent_count\n";
+        "memory.last_sent_count := message.sent_count\n"
+        "memory.last_continuation_sent := message.continuation_sent\n";
 
     AR_ASSERT(ar_methodology__create_method(mut_methodology,
                                             "record-receiver",
@@ -172,6 +173,8 @@ static void test_routing__forwards_one_and_many_messages(void) {
               "Route result should count every nonzero target");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_sent_count") == 4,
               "Route result should count every successful target send");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_continuation_sent") == 0,
+              "Final route result should report no pending continuation");
 
     // Cleanup
     ar_method_fixture__destroy(own_fixture);

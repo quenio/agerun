@@ -32,7 +32,8 @@ memory.remaining_head := head(memory.remaining_targets)
 memory.has_remaining := if(memory.remaining_head > 0, 1, 0)
 memory.routed_count_many := message.routed_count + memory.has_many_target
 memory.sent_count_many := message.sent_count + memory.sent_many
-memory.continuation_target := memory.self * memory.is_route * memory.is_many * memory.has_remaining
+memory.continuation_required := memory.is_route * memory.is_many * memory.has_remaining
+memory.continuation_target := memory.self * memory.continuation_required
 memory.continuation_message := {
   action: "route"
   mode: "many"
@@ -44,13 +45,18 @@ memory.continuation_message := {
   routed_count: memory.routed_count_many
   sent_count: memory.sent_count_many
 }
-memory.continuation_sent := send(memory.continuation_target, memory.continuation_message)
+memory.continuation_send_result := send(memory.continuation_target, memory.continuation_message)
+memory.continuation_sent := memory.continuation_send_result * memory.continuation_required
+memory.continuation_failed := if(memory.continuation_send_result = 0, 1, 0)
+memory.continuation_failed := memory.continuation_failed * memory.continuation_required
 memory.is_known_mode := memory.is_one + memory.is_many
 memory.should_reply := memory.is_route
-memory.should_reply := if(memory.is_many * memory.has_remaining = 1, 0, memory.should_reply)
+memory.suppress_reply := memory.continuation_required * memory.continuation_sent
+memory.should_reply := if(memory.suppress_reply = 1, 0, memory.should_reply)
 memory.routed_count := if(memory.is_one = 1, memory.has_one_target, memory.routed_count_many)
 memory.sent_count := if(memory.is_one = 1, memory.sent_one, memory.sent_count_many)
 memory.status := if(memory.is_route * memory.is_known_mode = 1, "routed", "ignored")
+memory.status := if(memory.continuation_failed = 1, "route_failed", memory.status)
 memory.reply_message := {
   action: "route_result"
   status: memory.status

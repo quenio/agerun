@@ -120,7 +120,7 @@ Reply:
 ```text
 {
   action: "route_result",
-  status: <routed|ignored>,
+  status: <routed|ignored|route_failed>,
   correlation_id: <correlation_id>,
   routed_count: <count>,
   sent_count: <count>,
@@ -129,6 +129,9 @@ Reply:
   continuation_sent: <0|1>
 }
 ```
+
+For `mode=many`, a failed self-continuation emits `route_failed` immediately with the partial
+routed/sent counts instead of leaving callers without a terminal result.
 
 ### Supervision
 
