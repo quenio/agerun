@@ -97,9 +97,10 @@ stop commands from unrelated messages.
 
 ## Composition Notes
 
-Use supervision around long-lived routing, scheduling, workflow, or worker agents. A supervision
-agent can start many children from one `child_method_names` list. Other methods can report lifecycle
-events to the supervisor when they observe a child failure through application-level messages.
+Use supervision around long-lived routing, broadcasting, scheduling, workflow, or worker agents. A
+supervision agent can start many children from one `child_method_names` list. Other methods can
+report lifecycle events to the supervisor when they observe a child failure through application-level
+messages.
 Composed callers can safely send stop requests through supervisors because untracked child ids are
 reported as ignored instead of being exited. Lifecycle events are guarded the same way, so a stale
 or misaddressed failure cannot add bogus replacement children. Duplicate lifecycle events for any

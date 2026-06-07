@@ -19,8 +19,8 @@ methodologies/
 Available methodology libraries:
 
 - [`coordination/`](coordination/) provides reusable coordination methods for routing,
-  supervision, distribution, aggregation, scheduling, synchronization, workflow, conversation,
-  and retry.
+  broadcasting, supervision, distribution, aggregation, scheduling, synchronization, workflow,
+  conversation, and retry.
 
 When `agerun` starts without loading `agerun.methodology`, it first loads the existing
 `methods/` directory and then loads each `methodologies/<instance>/` subdirectory that exists.

@@ -2,40 +2,38 @@
 
 ## Overview
 
-The workflow method maintains workflow state and routes an unbounded sequence of activity steps
-through a routing agent. It demonstrates a higher-level coordination behavior built on the
-lower-level routing primitive and the `head(...)`/`tail(...)` list traversal pattern.
+The workflow method maintains workflow state and sends an unbounded sequence of activity steps to
+their configured target agents. It demonstrates a higher-level coordination behavior built on the
+`head(...)`/`tail(...)` list traversal pattern.
 
 ## Behavior
 
-On a map whose `action` field is `"start"`, the method stores the workflow id, routing agent, reply
-target, branch value, and active status. It expects three aligned step lists: `step_targets`,
-`step_actions`, and `step_texts`. The first list contains target agent ids where positive integers
-are deliverable targets and integer `0` can be used as a placeholder; the second and third lists
-contain the action and text to route to the target at the same position.
+On a map whose `action` field is `"start"`, the method stores the workflow id, reply target, branch
+value, and active status. It expects three aligned step lists: `step_targets`, `step_actions`, and
+`step_texts`. The first list contains target agent ids where positive integers are deliverable
+targets and integer `0` can be used as a placeholder; the second and third lists contain the action
+and text to send to the target at the same position.
 
 The method sends itself an `execute_step` message. Each `execute_step` message reads the head item
-from each step list and sends a one-to-one route request to the routing agent. Only a successful
-route handoff advances `current_step` and stores the remaining tails as pending workflow state; if
-the route handoff fails, the current head remains in the pending queue. If the current target is `0`
+from each step list and sends the step payload directly to the target agent. Only a successful step
+send marks the workflow as waiting for `step_done` and stores the remaining tails as pending
+workflow state. If the current step send fails, the method emits `workflow_complete` with
+`status: "handoff_failed"`. If the current target is `0`
 and the next target is positive, the method sends itself another `execute_step` message with the tail
 lists and the same step number, skipping the placeholder without counting it as an executed step.
 Because each continuation carries the tail lists, the method can process any number of steps
 supported by ordinary AgeRun messages and memory.
 If the initial internal continuation or a later step continuation cannot be queued, the method emits
 `workflow_complete` with `status: "handoff_failed"` instead of leaving callers waiting indefinitely.
-The route request sets `reply_to` to the workflow agent itself, so a matching `route_failed` result
-from the routing agent also completes the workflow with `status: "handoff_failed"` when the step
-target cannot receive the routed message.
 
 On a `step_done` map whose `workflow_id` matches the active workflow and whose `step` matches the
 current active step, the method advances to the next pending step only if it is waiting for a
-completion from a routed step. Stale, duplicate, premature, or out-of-order completion messages are
+completion from a sent step. Stale, duplicate, premature, or out-of-order completion messages are
 ignored. The waiting flag is cleared as soon as a completion is accepted, before the next internal
 `execute_step` handoff runs, so duplicate completions cannot count the same step twice. When
 `outcome` equals `branch_value`, it skips one pending step before advancing. If the next pending
 target is `0` and the following target is positive, the method still queues the next `execute_step`
-so the same placeholder-skip path can route the later positive step. When no next step remains, it
+so the same placeholder-skip path can send the later positive step. When no next step remains, it
 marks the workflow complete and sends a map whose `action` field is `"workflow_complete"` to the
 stored reply target.
 Terminal status is recorded only after the completion message is delivered. If completion delivery
@@ -50,7 +48,6 @@ Start request:
 {
   action: "start",
   workflow_id: <id>,
-  routing_agent: <agent>,
   reply_to: <agent>,
   step_targets: [<agent>, <agent>, ...],
   step_actions: [<action>, <action>, ...],
@@ -70,17 +67,14 @@ Step completion request:
 }
 ```
 
-Route message sent to routing:
+Step message sent to the current step target:
 
 ```text
 {
-  action: "route",
-  mode: "one",
-  target: <step-target>,
-  payload_action: <step-action>,
-  payload_text: <step-text>,
+  action: <step-action>,
   correlation_id: <workflow_id>,
-  reply_to: <workflow-agent>
+  text: <step-text>,
+  source: <workflow-agent>
 }
 ```
 
@@ -105,8 +99,9 @@ advancing, or completing the workflow.
 
 ## Composition Notes
 
-Workflow uses routing directly. It can coordinate distribution, aggregation, synchronization,
-conversation, and retry agents by configuring those agents as step targets.
+Workflow sends directly to each step target. It can coordinate distribution, aggregation,
+synchronization, conversation, retry, routing, and broadcasting agents by configuring those agents as
+step targets.
 
 The method uses aligned primitive lists instead of a list of step maps because the current method
 evaluator cannot safely access fields from a headed map value in this workflow path. The lists are

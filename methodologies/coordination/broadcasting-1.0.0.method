@@ -1,0 +1,38 @@
+memory.is_broadcast := if(message.action = "broadcast", 1, 0)
+memory.target := head(message.targets)
+memory.remaining_targets := tail(message.targets)
+memory.has_target := if(memory.target > 0, 1, 0)
+memory.target_to_send := memory.target * memory.is_broadcast
+memory.sent_result := send(memory.target_to_send, message.payload)
+memory.sent := memory.sent_result * memory.has_target
+memory.send_failed := if(memory.sent_result = 0, 1, 0)
+memory.send_failed := memory.send_failed * memory.has_target
+memory.send_failed := memory.send_failed * memory.is_broadcast
+memory.remaining_head := head(memory.remaining_targets)
+memory.has_remaining := if(memory.remaining_head > 0, 1, 0)
+memory.recipient_count := message.recipient_count + memory.sent
+memory.sent_count := message.sent_count + memory.sent
+memory.failed_count := message.failed_count + memory.send_failed
+memory.has_more_work := memory.has_target + memory.has_remaining
+memory.has_more_work := if(memory.has_more_work > 0, 1, 0)
+memory.continuation_required := memory.is_broadcast * memory.has_more_work
+memory.continuation_target := memory.self * memory.continuation_required
+memory.continuation_message := {
+  action: "broadcast"
+  targets: memory.remaining_targets
+  payload: message.payload
+  recipient_count: memory.recipient_count
+  sent_count: memory.sent_count
+  failed_count: memory.failed_count
+}
+memory.continuation_send_result := send(memory.continuation_target, memory.continuation_message)
+memory.continuation_sent := memory.continuation_send_result * memory.continuation_required
+memory.continuation_failed := if(memory.continuation_send_result = 0, 1, 0)
+memory.continuation_failed := memory.continuation_failed * memory.continuation_required
+memory.has_failed_count := if(memory.failed_count > 0, 1, 0)
+memory.zero_delivery := if(memory.sent_count = 0, 1, 0)
+memory.zero_delivery := memory.zero_delivery * memory.is_broadcast
+memory.status := if(memory.is_broadcast = 1, "broadcasted", "ignored")
+memory.status := if(memory.zero_delivery = 1, "broadcast_failed", memory.status)
+memory.status := if(memory.has_failed_count = 1, "broadcast_failed", memory.status)
+memory.status := if(memory.continuation_failed = 1, "broadcast_failed", memory.status)

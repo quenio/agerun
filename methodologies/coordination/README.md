@@ -12,8 +12,9 @@ between agents that run these methods.
 
 ```text
 routing
-  distribution
-  workflow
+broadcasting
+distribution
+workflow
 
 scheduling
   retry
@@ -23,31 +24,34 @@ synchronization
 supervision
 conversation
 
-workflow can coordinate distribution, aggregation, synchronization, retry, and conversation agents
-by routing work to them, but its direct implementation dependency is routing.
+workflow can coordinate routing, broadcasting, distribution, aggregation, synchronization, retry, and
+conversation agents by sending steps directly to those agents.
 ```
 
 Composition opportunities:
 
-- Use `routing` as the lowest-level delivery primitive for higher-level coordination.
-- Build fan-out with `distribution` and fan-in with `aggregation`.
+- Use `routing` when one recipient must be selected from a key-based route table.
+- Use `broadcasting` when one payload must be sent to every recipient in a target list.
+- Build distinct work assignment with `distribution` and fan-in with `aggregation`.
 - Combine `synchronization` with `workflow` to gate step advancement on required dependency
   messages.
 - Use `scheduling` as the delayed execution primitive for `retry`.
 - Use `conversation` to preserve correlation and context around workflow or routing requests.
-- Use `supervision` to keep long-lived routing, scheduling, workflow, or worker agents present.
+- Use `supervision` to keep long-lived routing, broadcasting, scheduling, workflow, or worker
+  agents present.
 
 ## Methods
 
 | Method | Implementation | Test | Purpose | Composition Role |
 | --- | --- | --- | --- | --- |
-| [`routing`](routing-1.0.0.md) | [`routing-1.0.0.method`](routing-1.0.0.method) | [`routing_tests.c`](routing_tests.c) | Selects one or more recipients and forwards a message. | Foundation for delivery. |
+| [`routing`](routing-1.0.0.md) | [`routing-1.0.0.method`](routing-1.0.0.method) | [`routing_tests.c`](routing_tests.c) | Selects one recipient by route key and delivers a message. | Keyed selection primitive. |
+| [`broadcasting`](broadcasting-1.0.0.md) | [`broadcasting-1.0.0.method`](broadcasting-1.0.0.method) | [`broadcasting_tests.c`](broadcasting_tests.c) | Sends one payload to every recipient in an unbounded target list. | Same-payload fan-out primitive. |
 | [`supervision`](supervision-1.0.0.md) | [`supervision-1.0.0.method`](supervision-1.0.0.method) | [`supervision_tests.c`](supervision_tests.c) | Creates, tracks, stops, and event-restarts unbounded child lists. | Keeps coordination agents available. |
-| [`distribution`](distribution-1.0.0.md) | [`distribution-1.0.0.method`](distribution-1.0.0.method) | [`distribution_tests.c`](distribution_tests.c) | Assigns a work payload to an unbounded worker list. | Builds on routing for fan-out. |
+| [`distribution`](distribution-1.0.0.md) | [`distribution-1.0.0.method`](distribution-1.0.0.method) | [`distribution_tests.c`](distribution_tests.c) | Round-robins payload items across an unbounded worker list. | Distinct-payload assignment. |
 | [`aggregation`](aggregation-1.0.0.md) | [`aggregation-1.0.0.method`](aggregation-1.0.0.method) | [`aggregation_tests.c`](aggregation_tests.c) | Appends result values and emits a result list. | Completes fan-in with append-backed state. |
 | [`scheduling`](scheduling-1.0.0.md) | [`scheduling-1.0.0.method`](scheduling-1.0.0.method) | [`scheduling_tests.c`](scheduling_tests.c) | Stores pending work and triggers it on explicit tick messages. | Delayed execution primitive. |
 | [`synchronization`](synchronization-1.0.0.md) | [`synchronization-1.0.0.method`](synchronization-1.0.0.method) | [`synchronization_tests.c`](synchronization_tests.c) | Waits for an unbounded count of dependency messages before sending a continuation. | Dependency gate. |
-| [`workflow`](workflow-1.0.0.md) | [`workflow-1.0.0.method`](workflow-1.0.0.method) | [`workflow_tests.c`](workflow_tests.c) | Routes an unbounded step sequence, supports a branch skip, and completes. | Higher-level sequence and branch coordinator. |
+| [`workflow`](workflow-1.0.0.md) | [`workflow-1.0.0.method`](workflow-1.0.0.method) | [`workflow_tests.c`](workflow_tests.c) | Sends an unbounded step sequence, supports a branch skip, and completes. | Higher-level sequence and branch coordinator. |
 | [`conversation`](conversation-1.0.0.md) | [`conversation-1.0.0.method`](conversation-1.0.0.method) | [`conversation_tests.c`](conversation_tests.c) | Coordinates a bounded conversation between two participant agents. | Mediated two-agent exchange. |
 | [`retry`](retry-1.0.0.md) | [`retry-1.0.0.method`](retry-1.0.0.method) | [`retry_tests.c`](retry_tests.c) | Re-executes failed operations within a retry policy. | Uses direct send or scheduled retry. |
 
@@ -71,45 +75,24 @@ Request:
 ```text
 {
   action: "route",
-  mode: "one",
-  target: <agent>,
-  payload_action: <action>,
-  payload_text: <text>,
-  correlation_id: <id>,
-  reply_to: <agent>
-}
-
-{
-  action: "route",
-  mode: "many",
-  targets: [<agent>, <agent>, ...],
-  payload_action: <action>,
-  payload_text: <text>,
-  correlation_id: <id>,
-  reply_to: <agent>
-}
-```
-
-Optional keyed selection for `mode=one`:
-
-```text
-{
   route_key: <key>,
   routes: {
     keys: [<key>, <key>, ...],
     targets: [<agent>, <agent>, ...]
-  }
+  },
+  payload_action: <action>,
+  payload_text: <text>,
+  correlation_id: <id>,
+  reply_to: <agent>
 }
 ```
 
 The `routes.keys` and `routes.targets` lists are paired by position and scanned with `head(...)` and
 `tail(...)`, so keyed one-to-one routing is unbounded. Both the request `route_key` and the candidate
-key must be nonzero/present before a candidate can match.
+key must be nonzero/present before a candidate can match. A direct `target` field is not a supported
+routing mechanism; callers that already know the target should use direct `send(...)`.
 
-If a one-to-one request has no positive direct or keyed target, routing emits `route_failed` with zero
-delivery counts instead of reporting a successful zero-send route.
-
-Forwarded message:
+Delivered message:
 
 ```text
 {
@@ -125,25 +108,44 @@ Reply:
 ```text
 {
   action: "route_result",
-  status: <routed|ignored|route_failed>,
+  status: <routed|route_failed>,
   correlation_id: <correlation_id>,
-  routed_count: <count>,
-  sent_count: <count>,
-  failed_count: <count>,
-  sent_one: <0|1>,
-  sent_many: <0|1>,
-  continuation_sent: <0|1>
+  routed_count: <0|1>,
+  sent_count: <0|1>,
+  failed_count: <0|1>
 }
 ```
 
-For `mode=many`, `routed_count` and `sent_count` count successful target sends, while
-`failed_count` counts positive target IDs that could not be sent to. Integer `0` entries are skipped
-placeholders, not failed sends, and a single interior zero does not stop fan-out to a later positive
-target. A target send failure keeps processing the remaining targets and makes the terminal status
-`route_failed`. A failed self-continuation emits `route_failed` immediately with the partial
-routed/sent counts instead of leaving callers without a terminal result.
-If a many-route target list is empty or contains no positive targets, routing emits `route_failed`
-with zero delivery counts instead of reporting a successful zero-send route.
+If no keyed candidate selects a positive target, routing emits `route_failed` with zero delivery
+counts. If a matching positive target cannot receive the delivery payload, routing emits
+`route_failed` with `failed_count: 1`.
+
+### Broadcasting
+
+Request:
+
+```text
+{
+  action: "broadcast",
+  targets: [<agent>, <agent>, ...],
+  payload: <message>
+}
+```
+
+Delivered message is exactly the caller-provided `payload`:
+
+```text
+<message>
+```
+
+Broadcasting does not add `reply_to`, `source`, `correlation_id`, or any other field to the payload.
+If recipients should see those fields, the caller includes them inside `payload`. `recipient_count`
+and `sent_count` in the broadcasting agent's memory count successful target sends. `failed_count`
+counts positive target IDs that could not receive the payload. Integer `0` entries are skipped
+placeholders, not failed sends. A target send failure keeps processing remaining targets and records
+terminal status `broadcast_failed`. If a broadcast target list is empty or contains no positive
+targets, broadcasting records `broadcast_failed` with zero delivery counts. Broadcasting does not
+emit a status reply.
 
 ### Supervision
 
@@ -217,33 +219,21 @@ Request:
 {
   action: "distribute",
   work_id: <id>,
-  routing_agent: <agent>,
-  reply_to: <agent>,
+  payload_action: <action>,
+  payloads: [<payload>, <payload>, ...],
   workers: [<agent>, <agent>, ...],
-  work_text: <text>
-}
-
-{
-  action: "retry_report",
-  work_id: <id>,
   reply_to: <agent>
 }
 ```
 
-Forwarded through `routing`:
+Assignment sent to each worker:
 
 ```text
 {
-  action: "route",
-  mode: "many",
-  targets: [<agent>, <agent>, ...],
-  payload_action: "work",
-  payload_text: <work_text>,
+  action: <payload_action>,
   correlation_id: <work_id>,
-  reply_to: <distribution-agent>,
-  routed_count: 0,
-  sent_count: 0,
-  failed_count: 0
+  text: <payload>,
+  source: <distribution-agent>
 }
 ```
 
@@ -252,30 +242,20 @@ Reply:
 ```text
 {
   action: "distribution_result",
-  status: <distributed|route_failed>,
+  status: <distributed|distribution_failed>,
   work_id: <id>,
   assignment_count: <count>,
   sent_count: <count>,
-  route_status: <status>,
-  route_sent: <0|1>
+  failed_count: <count>
 }
 ```
 
-If the route request cannot be handed to the routing agent, distribution emits this reply immediately
-with `status: "route_failed"`, zero counts, and `route_sent: 0`.
-If routing returns a matching terminal `route_result` whose `status` is `"route_failed"`,
-distribution also reports `status: "route_failed"` and preserves the partial routed and sent counts.
-This includes empty or no-positive worker lists, because routing reports those many-route requests as
-zero-delivery failures.
-Distribution accepts a `route_result` only when its `correlation_id` matches the active `work_id`.
-After a terminal distribution reply is sent successfully, duplicate matching route results are
-ignored.
-Distribution marks itself completed only after the terminal reply is delivered.
-If terminal reply delivery fails, distribution stores it as pending. A later `retry_report` request
-for the same `work_id` retries the stored terminal `distribution_result` with the supplied `reply_to`
-without sending another route request. The retry must arrive before the next `distribute` request,
-because distribution keeps one active work slot. Retaining multiple keyed pending reports across
-later `distribute` requests would require an exists/default operation or richer collection filtering.
+Distribution assigns the first payload to the first worker, the second payload to the second worker,
+and so on, rotating back to the first worker when the worker list is exhausted. `assignment_count`
+counts all payload items assigned to positive worker IDs, including assignments whose send failed.
+`sent_count` counts successful assignment sends. `failed_count` counts positive worker IDs that could
+not receive their assigned payload. Empty payload or worker lists produce `distribution_failed` with
+zero assignment counts.
 
 ### Aggregation
 
@@ -438,7 +418,6 @@ Start:
 {
   action: "start",
   workflow_id: <id>,
-  routing_agent: <agent>,
   reply_to: <agent>,
   step_targets: [<agent>, <agent>, ...],
   step_actions: [<action>, <action>, ...],
@@ -458,19 +437,28 @@ Step completion:
 }
 ```
 
+Step message sent to the current step target:
+
+```text
+{
+  action: <step-action>,
+  correlation_id: <workflow_id>,
+  text: <step-text>,
+  source: <workflow-agent>
+}
+```
+
 The `step` value must match the workflow agent's active step; stale, duplicate, or out-of-order
 completion maps are ignored. Workflow accepts a `step_done` only while it is waiting for the
-currently routed step to report completion, then clears that waiting state before the next internal
+currently sent step to report completion, then clears that waiting state before the next internal
 `execute_step` handoff runs so duplicate completions cannot advance the workflow twice.
-Workflow advances `current_step` and consumes a pending step only after the route handoff for that
-step succeeds; failed route handoffs leave the step at the head of the pending queue.
+Workflow advances `current_step` and consumes a pending step only after the direct step send
+succeeds; failed step sends complete the workflow with `status: "handoff_failed"`.
 If an `execute_step` target head is `0` and the immediate next target is positive, workflow skips the
 placeholder with an internal continuation and keeps the same step number.
 After a completed step, a pending zero head with an immediate positive next target still queues the
-next `execute_step`, so the same placeholder-skip path routes the later positive step instead of
+next `execute_step`, so the same placeholder-skip path sends the later positive step instead of
 ending the workflow early.
-Workflow asks routing to send `route_result` replies back to the workflow agent; a matching
-`route_failed` result for the active step completes the workflow with `status: "handoff_failed"`.
 If the initial internal step handoff or a later step continuation cannot be queued, workflow emits
 `workflow_complete` with `status: "handoff_failed"`.
 Workflow records terminal status only after `workflow_complete` is delivered; failed completion
@@ -642,8 +630,8 @@ Delayed retry:
 Branching workflow:
 
 ```text
-1. Send a map with action: "start" to workflow with routing_agent and aligned step lists.
-2. Workflow routes step 1 through routing.
+1. Send a map with action: "start" to workflow with aligned step target, action, and text lists.
+2. Workflow sends step 1 directly to the first configured step target.
 3. Send a step_done map for step 1 with the branch outcome to skip one pending step.
 4. Continue sending step_done maps until workflow emits a workflow_complete map.
 ```
@@ -664,9 +652,10 @@ Conversation-scoped workflow:
 
 | Method | Status | Gap |
 | --- | --- | --- |
-| Routing | Fully implementable for direct one-to-one, keyed unbounded one-to-one, and primitive unbounded fan-out. | Keyed routes use a map containing parallel `keys` and `targets` lists because ordinary methods do not have a safe type predicate for scanning a list of route-entry maps. Richer message inspection and nested recipient descriptors require a richer data query layer. |
+| Routing | Fully implementable for keyed unbounded one-to-one selection. | Keyed routes use a map containing parallel `keys` and `targets` lists because ordinary methods do not have a safe type predicate for scanning a list of route-entry maps. Direct target delivery belongs to direct `send(...)`; same-payload fan-out belongs to broadcasting. |
+| Broadcasting | Fully implementable for unbounded same-payload fan-out to primitive target IDs. | Consecutive zero placeholders can terminate scanning before a later positive target because ordinary methods do not have a list length or type predicate that distinguishes an empty list from a list whose next item is integer `0`. |
 | Supervision | Partially implementable. | The method can spawn and track unbounded child method-name lists with one shared start version, but methods cannot autonomously observe child crashes or exits; callers must send `child_failed` or `child_exited` events. A failed `spawn(...)` aborts the remaining ordinary method evaluation, so supervision can avoid reporting `running` for an incomplete child set but cannot emit a catchable spawn-failure status without a non-aborting spawn result or method-existence check. Removing arbitrary failed ids from the tracked list or starting one mixed-version list requires a list-filter operation, separate supervisors, or a specialized replacement method. |
-| Distribution | Partially implementable. | The method assigns one work payload to an unbounded worker list by composing with routing. Dynamic decomposition into distinct per-worker portions and load-aware placement require additional decomposition methods or richer collection-processing conventions. |
+| Distribution | Fully implementable for round-robin assignment of scalar payload lists to primitive worker IDs. | Map-valued payload descriptors need a safe type predicate or richer collection query operation before the method can distinguish an empty payload list from a headed map payload. Load-aware placement, weighted assignment, and worker health checks require additional methods or richer collection-processing conventions. |
 | Aggregation | Fully implementable for list-valued fan-in. | Duplicate handling, custom merge functions, and richer aggregate policies require deeper collection operations or specialized aggregate methods. |
 | Scheduling | Partially implementable. | There is no runtime clock or timer callback; scheduling requires explicit `tick` messages from another agent or host process. |
 | Synchronization | Fully implementable for unbounded count-based gates. | Membership validation against a declared dependency set and duplicate suppression require richer collection querying/filtering or a specialized validation method. |
@@ -676,5 +665,6 @@ Conversation-scoped workflow:
 
 No method in this methodology is blocked entirely. The missing capabilities are real-time timers,
 autonomous lifecycle event observation, non-aborting spawn failure results, dynamic collection
-iteration for non-routing cases, and ordinary-method indexed assignment. Those gaps are documented
-here so the reusable behaviors remain ordinary methods rather than hidden runtime features.
+filtering, safe type predicates for map-valued list items, and ordinary-method indexed assignment.
+Those gaps are documented here so the reusable behaviors remain ordinary methods rather than hidden
+runtime features.

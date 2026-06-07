@@ -88,7 +88,7 @@ summaries, and closure while preserving ordinary map-shaped conversational conte
 ## Composition Notes
 
 Use conversation when two worker or assistant agents need a mediated exchange. Workflow can start a
-conversation for a pair of agents, routing can deliver participant messages to the conversation
+conversation for a pair of agents, direct sends can deliver participant messages to the conversation
 coordinator, and aggregation or workflow can consume the structured summary history when the
 conversation closes.
 
