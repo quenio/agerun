@@ -210,7 +210,7 @@ Reply:
 ```text
 {
   action: "distribution_result",
-  status: "distributed",
+  status: <distributed|route_failed>,
   work_id: <id>,
   assignment_count: <count>,
   sent_count: <count>,
@@ -218,6 +218,9 @@ Reply:
   route_sent: <0|1>
 }
 ```
+
+If the route request cannot be handed to the routing agent, distribution emits this reply immediately
+with `status: "route_failed"`, zero counts, and `route_sent: 0`.
 
 ### Aggregation
 

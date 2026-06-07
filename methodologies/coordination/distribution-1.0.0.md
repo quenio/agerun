@@ -19,6 +19,11 @@ router's routed and sent counts. Its `route_sent` field reports whether the orig
 was handed to the routing agent; later `route_result` processing does not overwrite that handoff
 status.
 
+If the initial route request cannot be sent to the routing agent, distribution immediately emits a
+terminal `distribution_result` with `status: "route_failed"`, `assignment_count: 0`,
+`sent_count: 0`, and `route_sent: 0`. Later stale `route_result` messages are ignored after that
+failed handoff.
+
 ## Message Format
 
 Distribution request:
@@ -55,7 +60,7 @@ Result response:
 ```text
 {
   action: "distribution_result",
-  status: "distributed",
+  status: <distributed|route_failed>,
   work_id: <id>,
   assignment_count: <count>,
   sent_count: <count>,

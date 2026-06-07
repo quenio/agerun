@@ -17,18 +17,24 @@ memory.route_message := {
 }
 memory.route_send_result := send(memory.routing_agent * memory.is_distribute, memory.route_message)
 memory.route_sent := if(memory.is_distribute = 1, memory.route_send_result, memory.route_sent)
-memory.status := if(memory.is_route_result = 1, "distributed", "routing")
+memory.valid_route_result := memory.is_route_result * memory.route_sent
+memory.status := if(memory.valid_route_result = 1, "distributed", memory.status)
 memory.status := if(memory.is_distribute = 1, "routing", memory.status)
-memory.assignment_count := if(memory.is_route_result = 1, message.routed_count, 0)
-memory.sent_count := if(memory.is_route_result = 1, message.sent_count, memory.route_sent)
+memory.route_failed := if(memory.route_sent = 0, 1, 0)
+memory.route_failed := memory.route_failed * memory.is_distribute
+memory.status := if(memory.route_failed = 1, "route_failed", memory.status)
+memory.assignment_count := if(memory.valid_route_result = 1, message.routed_count, 0)
+memory.sent_count := if(memory.valid_route_result = 1, message.sent_count, memory.route_sent)
+memory.route_status := if(memory.valid_route_result = 1, message.status, memory.status)
 memory.report_message := {
   action: "distribution_result"
   status: memory.status
   work_id: memory.work_id
   assignment_count: memory.assignment_count
   sent_count: memory.sent_count
-  route_status: message.status
+  route_status: memory.route_status
   route_sent: memory.route_sent
 }
-memory.report_target := memory.reply_to * memory.is_route_result
+memory.should_report := memory.valid_route_result + memory.route_failed
+memory.report_target := memory.reply_to * memory.should_report
 memory.report_sent := send(memory.report_target, memory.report_message)

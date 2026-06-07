@@ -153,7 +153,7 @@ static void test_distribution__assigns_unbounded_workers_through_routing(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_sent_count") == 4,
               "Distribution result should report all sent workers");
 
-    // And a failed route handoff should not be overwritten by the later route_result no-op send
+    // And a failed route handoff should immediately report terminal failure
     own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Failed distribution message should be created");
     own_workers = ar_data__create_list();
@@ -172,6 +172,26 @@ static void test_distribution__assigns_unbounded_workers_through_routing(void) {
     own_message = NULL;
     ar_method_fixture__process_all_messages(own_fixture);
 
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_action"),
+                     "distribution_result") == 0,
+              "Observer should receive failed handoff distribution result");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_work_id"),
+                     "job-failed-route") == 0,
+              "Failed handoff result should use the distribution work id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
+                     "route_failed") == 0,
+              "Failed handoff should report route failure status");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_assignment_count") == 0,
+              "Failed handoff should not report assignments");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_sent_count") == 0,
+              "Failed handoff should not report sent assignments");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_route_status"),
+                     "route_failed") == 0,
+              "Failed handoff should report route failure route status");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_route_sent") == 0,
+              "Failed handoff result should preserve the failed route send");
+
+    // And a stale route_result after a failed handoff should not overwrite the terminal result
     ar_data_t *own_route_result = ar_data__create_map();
     AR_ASSERT(own_route_result != NULL, "Manual route result should be created");
     ar_data__set_map_string(own_route_result, "action", "route_result");
@@ -185,9 +205,12 @@ static void test_distribution__assigns_unbounded_workers_through_routing(void) {
 
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_work_id"),
                      "job-failed-route") == 0,
-              "Distribution result should use the failed handoff work id");
+              "Stale route result should not overwrite the failed handoff work id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
+                     "route_failed") == 0,
+              "Stale route result should not overwrite failed handoff status");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_route_sent") == 0,
-              "Distribution result should preserve the failed route handoff");
+              "Stale route result should preserve the failed route handoff");
 
     // Cleanup
     ar_method_fixture__destroy(own_fixture);
