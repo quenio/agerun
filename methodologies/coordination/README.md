@@ -545,11 +545,13 @@ Result:
 {
   action: "retry_result",
   operation_id: <id>,
-  status: <succeeded|failed>,
+  status: <succeeded|failed|dispatch_failed>,
   attempts: <count>
 }
 ```
 
+Retry records the initial attempt only after the first operation send succeeds. If that initial send
+fails, it reports `dispatch_failed` with zero attempts.
 After retry reports terminal `succeeded` or `failed` status, later stale outcome messages are ignored.
 A new `start` request opens a fresh active retry state, and late outcomes from previous operations are
 ignored because their `correlation_id` does not match the active operation id.

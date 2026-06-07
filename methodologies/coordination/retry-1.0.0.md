@@ -9,8 +9,9 @@ composition with scheduling.
 ## Behavior
 
 On a map whose `action` field is `"start"`, the method stores the operation metadata, retry
-strategy, maximum attempts, scheduler agent, delay tick, and reply target. It sets `attempts=1` and
-sends the first operation attempt.
+strategy, maximum attempts, scheduler agent, delay tick, and reply target. It sends the first
+operation attempt with `attempt: 1` and records `attempts=1` only after that send succeeds. If the
+initial operation send fails, it reports `status=dispatch_failed` with `attempts=0`.
 
 On a map whose `action` field is `"failure"` and whose `correlation_id` matches the active
 operation, the method retries when `attempts < max_attempts`. For `strategy=immediate`, it sends the
@@ -91,7 +92,7 @@ Final result:
 {
   action: "retry_result",
   operation_id: <id>,
-  status: <succeeded|failed>,
+  status: <succeeded|failed|dispatch_failed>,
   attempts: <count>
 }
 ```

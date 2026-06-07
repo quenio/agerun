@@ -266,37 +266,51 @@ static void test_retry__reexecutes_and_reports_success(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_scheduler_memory, "last_payload_attempt") == 2,
               "Scheduled retry should preserve the next attempt number");
 
-    ar_data_t *own_failed_dispatch_start = ar_data__create_map();
-    AR_ASSERT(own_failed_dispatch_start != NULL, "Failed dispatch start should be created");
-    ar_data__set_map_string(own_failed_dispatch_start, "action", "start");
-    ar_data__set_map_string(own_failed_dispatch_start, "operation_id", "op-dispatch-failed");
-    ar_data__set_map_integer(own_failed_dispatch_start, "operation_target", 98765);
-    ar_data__set_map_string(own_failed_dispatch_start, "operation_action", "attempt");
-    ar_data__set_map_string(own_failed_dispatch_start, "operation_text", "missing-worker");
-    ar_data__set_map_integer(own_failed_dispatch_start, "max_attempts", 2);
-    ar_data__set_map_string(own_failed_dispatch_start, "strategy", "immediate");
-    ar_data__set_map_integer(own_failed_dispatch_start, "scheduler_agent", 0);
-    ar_data__set_map_integer(own_failed_dispatch_start, "delay_ticks", 0);
-    ar_data__set_map_integer(own_failed_dispatch_start, "reply_to", checked_agent_id(report_agent));
-    AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_failed_dispatch_start),
-              "Failed dispatch start should queue");
-    own_failed_dispatch_start = NULL;
+    ar_data_t *own_failed_start = ar_data__create_map();
+    AR_ASSERT(own_failed_start != NULL, "Failed start dispatch should be created");
+    ar_data__set_map_string(own_failed_start, "action", "start");
+    ar_data__set_map_string(own_failed_start, "operation_id", "op-start-dispatch-failed");
+    ar_data__set_map_integer(own_failed_start, "operation_target", 98765);
+    ar_data__set_map_string(own_failed_start, "operation_action", "attempt");
+    ar_data__set_map_string(own_failed_start, "operation_text", "missing-worker");
+    ar_data__set_map_integer(own_failed_start, "max_attempts", 2);
+    ar_data__set_map_string(own_failed_start, "strategy", "immediate");
+    ar_data__set_map_integer(own_failed_start, "scheduler_agent", 0);
+    ar_data__set_map_integer(own_failed_start, "delay_ticks", 0);
+    ar_data__set_map_integer(own_failed_start, "reply_to", checked_agent_id(report_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_failed_start),
+              "Failed start dispatch should queue");
+    own_failed_start = NULL;
     ar_method_fixture__process_all_messages(own_fixture);
 
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_retry_memory, "status"),
+                     "dispatch_failed") == 0,
+              "Failed initial dispatch should record dispatch_failed after reporting");
+    AR_ASSERT(ar_data__get_map_integer(ref_retry_memory, "attempts") == 0,
+              "Failed initial dispatch should not record an attempt");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
+                     "dispatch_failed") == 0,
+              "Failed initial dispatch should report dispatch_failed");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_attempts") == 0,
+              "Failed initial dispatch should report zero attempts");
+
     ar_data_t *own_dispatch_failure = ar_data__create_map();
-    AR_ASSERT(own_dispatch_failure != NULL, "Failed dispatch failure should be created");
+    AR_ASSERT(own_dispatch_failure != NULL, "Failed start synthetic failure should be created");
     ar_data__set_map_string(own_dispatch_failure, "action", "failure");
-    ar_data__set_map_string(own_dispatch_failure, "correlation_id", "op-dispatch-failed");
+    ar_data__set_map_string(own_dispatch_failure,
+                            "correlation_id",
+                            "op-start-dispatch-failed");
     ar_data__set_map_integer(own_dispatch_failure, "current_tick", 70);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_dispatch_failure),
-              "Failed dispatch failure should queue");
+              "Failed start synthetic failure should queue");
     own_dispatch_failure = NULL;
     ar_method_fixture__process_all_messages(own_fixture);
 
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_retry_memory, "status"), "active") == 0,
-              "Failed immediate retry dispatch should leave retry active");
-    AR_ASSERT(ar_data__get_map_integer(ref_retry_memory, "attempts") == 1,
-              "Failed immediate retry dispatch should not consume an attempt");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_retry_memory, "status"),
+                     "dispatch_failed") == 0,
+              "Synthetic failure after failed start should not reactivate retry");
+    AR_ASSERT(ar_data__get_map_integer(ref_retry_memory, "attempts") == 0,
+              "Synthetic failure after failed start should not consume an attempt");
 
     ar_data_t *own_correlated_start = ar_data__create_map();
     AR_ASSERT(own_correlated_start != NULL, "Correlated retry start should be created");
@@ -324,7 +338,9 @@ static void test_retry__reexecutes_and_reports_success(void) {
     ar_data_t *own_stale_active_failure = ar_data__create_map();
     AR_ASSERT(own_stale_active_failure != NULL, "Stale active failure should be created");
     ar_data__set_map_string(own_stale_active_failure, "action", "failure");
-    ar_data__set_map_string(own_stale_active_failure, "correlation_id", "op-dispatch-failed");
+    ar_data__set_map_string(own_stale_active_failure,
+                            "correlation_id",
+                            "op-start-dispatch-failed");
     ar_data__set_map_integer(own_stale_active_failure, "current_tick", 90);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_stale_active_failure),
               "Stale active failure should queue");
@@ -341,7 +357,9 @@ static void test_retry__reexecutes_and_reports_success(void) {
     ar_data_t *own_stale_active_success = ar_data__create_map();
     AR_ASSERT(own_stale_active_success != NULL, "Stale active success should be created");
     ar_data__set_map_string(own_stale_active_success, "action", "success");
-    ar_data__set_map_string(own_stale_active_success, "correlation_id", "op-dispatch-failed");
+    ar_data__set_map_string(own_stale_active_success,
+                            "correlation_id",
+                            "op-start-dispatch-failed");
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_stale_active_success),
               "Stale active success should queue");
     own_stale_active_success = NULL;
@@ -350,7 +368,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_retry_memory, "status"), "active") == 0,
               "Stale success for previous operation should leave new retry active");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_operation_id"),
-                     "op-final") == 0,
+                     "op-start-dispatch-failed") == 0,
               "Stale success for previous operation should not report the new retry");
 
     ar_data_t *own_failed_success_report_start = ar_data__create_map();
