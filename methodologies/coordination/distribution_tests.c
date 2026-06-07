@@ -193,6 +193,49 @@ static void test_distribution__assigns_unbounded_workers_through_routing(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_sent_count") == 4,
               "Duplicate route result should not overwrite sent count");
 
+    // And a route_failed result from the routing agent should propagate to callers
+    own_message = ar_data__create_map();
+    AR_ASSERT(own_message != NULL, "Route-failed result distribution should be created");
+    own_workers = ar_data__create_list();
+    AR_ASSERT(own_workers != NULL, "Route-failed result worker list should be created");
+    append_agent_id(own_workers, worker_a);
+    append_agent_id(own_workers, worker_b);
+    ar_data__set_map_string(own_message, "action", "distribute");
+    ar_data__set_map_integer(own_message, "routing_agent", checked_agent_id(observer));
+    AR_ASSERT(ar_data__set_map_data(own_message, "workers", own_workers),
+              "Route-failed result worker list should be stored");
+    own_workers = NULL;
+    ar_data__set_map_string(own_message, "work_text", "partial-work");
+    ar_data__set_map_string(own_message, "work_id", "job-route-result-failed");
+    ar_data__set_map_integer(own_message, "reply_to", checked_agent_id(observer));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, distribution_agent, own_message),
+              "Route-failed result distribution should queue");
+    own_message = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    own_route_result = ar_data__create_map();
+    AR_ASSERT(own_route_result != NULL, "Route failed result should be created");
+    ar_data__set_map_string(own_route_result, "action", "route_result");
+    ar_data__set_map_string(own_route_result, "status", "route_failed");
+    ar_data__set_map_string(own_route_result, "correlation_id", "job-route-result-failed");
+    ar_data__set_map_integer(own_route_result, "routed_count", 1);
+    ar_data__set_map_integer(own_route_result, "sent_count", 1);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, distribution_agent, own_route_result),
+              "Route failed result should queue");
+    own_route_result = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
+                     "route_failed") == 0,
+              "Route failed result should propagate distribution status");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_route_status"),
+                     "route_failed") == 0,
+              "Route failed result should preserve route status");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_assignment_count") == 1,
+              "Route failed result should preserve partial routed count");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_sent_count") == 1,
+              "Route failed result should preserve partial sent count");
+
     // And a failed route handoff should immediately report terminal failure
     own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Failed distribution message should be created");

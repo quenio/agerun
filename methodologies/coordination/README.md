@@ -229,9 +229,12 @@ Reply:
 
 If the route request cannot be handed to the routing agent, distribution emits this reply immediately
 with `status: "route_failed"`, zero counts, and `route_sent: 0`.
+If routing returns a matching terminal `route_result` whose `status` is `"route_failed"`,
+distribution also reports `status: "route_failed"` and preserves the partial routed and sent counts.
 Distribution accepts a `route_result` only when its `correlation_id` matches the active `work_id`.
 After a terminal distribution reply is sent successfully, duplicate matching route results are
 ignored.
+Distribution marks itself completed only after the terminal reply is delivered.
 
 ### Aggregation
 

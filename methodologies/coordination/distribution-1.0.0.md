@@ -21,6 +21,11 @@ status. Route results are accepted only when their `correlation_id` matches the 
 late results from other jobs cannot be misreported as the current distribution. After a terminal
 `distribution_result` is sent successfully, duplicate `route_result` messages for the same work id
 are ignored.
+The distribution is marked completed only when a terminal result report is actually delivered.
+
+If the routing agent reports a matching terminal `route_result` with `status: "route_failed"`,
+distribution propagates that failure as `distribution_result.status: "route_failed"` while preserving
+the partial routed and sent counts.
 
 If the initial route request cannot be sent to the routing agent, distribution immediately emits a
 terminal `distribution_result` with `status: "route_failed"`, `assignment_count: 0`,
