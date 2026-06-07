@@ -13,8 +13,9 @@ child method version, clears its tracked child lists, and sends itself a `spawn_
 for the request's `child_method_names` list. The method consumes that list with `head(...)` and
 `tail(...)`, spawning one child per continuation and appending the agent id and child record into
 memory. When the list is exhausted, it reports `status=running` with the tracked child lists and
-count. If the initial spawn continuation or a later continuation cannot be queued, it reports
-`status=handoff_failed` instead of remaining in `starting`.
+count. An empty `child_method_names` list reports `status=running` with `child_count=0`. If the
+initial spawn continuation or a later continuation cannot be queued, it reports `status=handoff_failed`
+instead of remaining in `starting`.
 If a requested child cannot be spawned, the failed `spawn(...)` instruction aborts the remaining
 ordinary method evaluation. The supervisor does not report `running` for the incomplete child set,
 but it also cannot emit a catchable spawn-failure status without a runtime-level non-aborting spawn

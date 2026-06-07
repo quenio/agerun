@@ -54,8 +54,12 @@ memory.spawn_continue_sent := send(memory.self * memory.spawn_continue_required,
 memory.spawn_continue_failed := if(memory.spawn_continue_sent = 0, 1, 0)
 memory.spawn_continue_failed := memory.spawn_continue_failed * memory.spawn_continue_required
 memory.no_remaining := if(memory.has_remaining = 1, 0, 1)
-memory.start_complete := memory.is_spawn_child * memory.no_remaining
-memory.start_complete := memory.start_complete * memory.spawned_child
+memory.empty_child_list := 1 - memory.has_child
+memory.empty_start_complete := memory.is_spawn_child * memory.no_remaining
+memory.empty_start_complete := memory.empty_start_complete * memory.empty_child_list
+memory.spawned_start_complete := memory.is_spawn_child * memory.no_remaining
+memory.spawned_start_complete := memory.spawned_start_complete * memory.spawned_child
+memory.start_complete := memory.spawned_start_complete + memory.empty_start_complete
 memory.status := if(memory.start_complete = 1, "running", memory.status)
 memory.spawn_handoff_failed := memory.spawn_request_failed + memory.spawn_continue_failed
 memory.status := if(memory.spawn_handoff_failed > 0, "handoff_failed", memory.status)

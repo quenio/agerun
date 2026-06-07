@@ -324,6 +324,39 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "ignored") == 0,
               "Observer should receive ignored status for stopped child lifecycle event");
 
+    ar_data_t *own_empty_start_context = create_context();
+    int64_t empty_start_agent = ar_agency__create_agent(
+        mut_agency, "supervision", "1.0.0", own_empty_start_context);
+    ar_data_t *own_empty_start = ar_data__create_map();
+    AR_ASSERT(own_empty_start != NULL, "Empty child list start should be created");
+    ar_data__set_map_string(own_empty_start, "action", "start");
+    ar_data_t *own_empty_child_methods = ar_data__create_list();
+    AR_ASSERT(own_empty_child_methods != NULL, "Empty child method list should be created");
+    AR_ASSERT(ar_data__set_map_data(own_empty_start,
+                                    "child_method_names",
+                                    own_empty_child_methods),
+              "Empty start should own child method list");
+    own_empty_child_methods = NULL;
+    ar_data__set_map_string(own_empty_start, "child_method_version", "1.0.0");
+    ar_data__set_map_string(own_empty_start, "policy", "restart");
+    ar_data__set_map_integer(own_empty_start, "reply_to", checked_agent_id(observer_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, empty_start_agent, own_empty_start),
+              "Empty child list start should queue");
+    own_empty_start = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    const ar_data_t *ref_empty_start_memory =
+        ar_agency__get_agent_memory(mut_agency, empty_start_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_empty_start_memory, "status"), "running") == 0,
+              "Empty child list start should report running");
+    AR_ASSERT(ar_data__get_map_integer(ref_empty_start_memory, "child_count") == 0,
+              "Empty child list start should keep zero children");
+    ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "running") == 0,
+              "Observer should receive running status for empty child list");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_child_count") == 0,
+              "Observer should receive zero child count for empty child list");
+
     ar_data_t *own_failed_handoff_context = create_context();
     int64_t failed_handoff_agent = ar_agency__create_agent(
         mut_agency, "supervision", "1.0.0", own_failed_handoff_context);
@@ -592,6 +625,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     ar_data__destroy(own_failed_continue_context);
     ar_data__destroy(own_failed_lifecycle_context);
     ar_data__destroy(own_failed_stop_context);
+    ar_data__destroy(own_empty_start_context);
     ar_data__destroy(own_failed_spawn_context);
     ar_data__destroy(own_failed_spawn_observer_context);
 }
