@@ -47,7 +47,10 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
         "memory.last_action := message.action\n"
         "memory.last_text := message.text\n"
         "memory.last_correlation_id := message.correlation_id\n"
-        "memory.last_schedule_id := message.schedule_id\n";
+        "memory.last_schedule_id := message.schedule_id\n"
+        "memory.last_status := message.status\n"
+        "memory.last_pending := message.pending\n"
+        "memory.last_current_tick := message.current_tick\n";
 
     AR_ASSERT(ar_methodology__create_method(mut_methodology,
                                             "record-receiver",
@@ -70,10 +73,13 @@ static void test_scheduling__triggers_future_work_on_tick(void) {
 
     ar_data_t *own_scheduling_context = create_context();
     ar_data_t *own_receiver_context = create_context();
+    ar_data_t *own_observer_context = create_context();
     int64_t scheduling_agent = ar_agency__create_agent(
         mut_agency, "scheduling", "1.0.0", own_scheduling_context);
     int64_t receiver_agent = ar_agency__create_agent(
         mut_agency, "record-receiver", "1.0.0", own_receiver_context);
+    int64_t observer_agent = ar_agency__create_agent(
+        mut_agency, "record-receiver", "1.0.0", own_observer_context);
 
     ar_data_t *own_schedule = ar_data__create_map();
     AR_ASSERT(own_schedule != NULL, "Schedule message should be created");
@@ -84,10 +90,17 @@ static void test_scheduling__triggers_future_work_on_tick(void) {
     ar_data__set_map_string(own_schedule, "payload_action", "execute");
     ar_data__set_map_string(own_schedule, "payload_text", "delayed");
     ar_data__set_map_string(own_schedule, "correlation_id", "job-1");
-    ar_data__set_map_integer(own_schedule, "reply_to", 0);
+    ar_data__set_map_integer(own_schedule, "reply_to", checked_agent_id(observer_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, scheduling_agent, own_schedule),
               "Schedule message should queue");
     own_schedule = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    const ar_data_t *ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "scheduled") == 0,
+              "Observer should receive scheduled status");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_current_tick") == 0,
+              "Scheduled status should report initial tick");
 
     ar_data_t *own_early_tick = ar_data__create_map();
     AR_ASSERT(own_early_tick != NULL, "Early tick should be created");
@@ -101,6 +114,8 @@ static void test_scheduling__triggers_future_work_on_tick(void) {
     const ar_data_t *ref_receiver_memory = ar_agency__get_agent_memory(mut_agency, receiver_agent);
     AR_ASSERT(ar_data__get_map_data(ref_receiver_memory, "last_action") == NULL,
               "Receiver should not run before the due tick");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_current_tick") == 0,
+              "Observer should not receive status for a pending early tick");
 
     ar_data_t *own_due_tick = ar_data__create_map();
     AR_ASSERT(own_due_tick != NULL, "Due tick should be created");
@@ -118,10 +133,15 @@ static void test_scheduling__triggers_future_work_on_tick(void) {
               "Receiver should observe scheduled text");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_schedule_id"), "sched-1") == 0,
               "Receiver should observe schedule id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "triggered") == 0,
+              "Observer should receive triggered status");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_current_tick") == 5,
+              "Triggered status should report due tick");
 
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_scheduling_context);
     ar_data__destroy(own_receiver_context);
+    ar_data__destroy(own_observer_context);
 }
 
 int main(void) {

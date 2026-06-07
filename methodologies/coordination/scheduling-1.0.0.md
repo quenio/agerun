@@ -13,7 +13,8 @@ payload fields, correlation id, and reply target. It marks the work as pending a
 
 On a map whose `action` field is `"tick"`, the method records the current tick. If work is pending
 and `tick >= due_tick`, it sends the stored payload to the stored target, clears pending state, and
-reports `status=triggered`.
+reports `status=triggered`. A tick that does not trigger the pending work updates scheduler state
+without sending a status response.
 
 On a map whose `action` field is `"cancel"`, the method clears pending state when the requested
 schedule id matches the stored schedule id, then reports `status=cancelled`.

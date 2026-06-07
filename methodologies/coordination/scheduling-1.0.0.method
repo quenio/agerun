@@ -34,4 +34,5 @@ memory.report_message := {
   pending: memory.pending
   current_tick: memory.current_tick
 }
-memory.report_sent := send(memory.reply_to, memory.report_message)
+memory.should_report := memory.is_schedule + memory.should_cancel + memory.should_trigger
+memory.report_sent := send(memory.reply_to * memory.should_report, memory.report_message)
