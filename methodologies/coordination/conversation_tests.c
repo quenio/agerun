@@ -46,9 +46,17 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
     const char *ref_instructions =
         "memory.last_action := message.action\n"
         "memory.last_conversation_id := message.conversation_id\n"
+        "memory.last_from := message.from\n"
+        "memory.last_to := message.to\n"
         "memory.last_state := message.state\n"
+        "memory.last_status := message.status\n"
         "memory.last_text := message.text\n"
-        "memory.last_turn_count := message.turn_count\n";
+        "memory.last_intent := message.intent\n"
+        "memory.last_turn_count := message.turn_count\n"
+        "memory.last_history := message.history\n"
+        "memory.last_last_sender := message.last_sender\n"
+        "memory.last_last_recipient := message.last_recipient\n"
+        "memory.last_last_text := message.last_text\n";
 
     AR_ASSERT(ar_methodology__create_method(mut_methodology,
                                             "record-receiver",
@@ -58,10 +66,11 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
     verify_method_parses(mut_methodology, "record-receiver");
 }
 
-static void test_conversation__maintains_context_across_messages(void) {
-    printf("Testing conversation maintains context across messages...\n");
+static void test_conversation__coordinates_two_participant_agents(void) {
+    printf("Testing conversation coordinates two participant agents...\n");
 
-    ar_method_fixture_t *own_fixture = ar_method_fixture__create("conversation_context");
+    // Given a conversation coordinator, two participant agents, and a reply observer
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("conversation_two_agents");
     AR_ASSERT(ar_method_fixture__initialize(own_fixture), "Fixture should initialize");
     AR_ASSERT(ar_method_fixture__verify_directory(own_fixture), "Fixture directory should verify");
     load_method(own_fixture, "conversation");
@@ -70,18 +79,26 @@ static void test_conversation__maintains_context_across_messages(void) {
     register_record_receiver(mut_agency);
 
     ar_data_t *own_conversation_context = create_context();
-    ar_data_t *own_receiver_context = create_context();
+    ar_data_t *own_participant_a_context = create_context();
+    ar_data_t *own_participant_b_context = create_context();
+    ar_data_t *own_observer_context = create_context();
     int64_t conversation_agent = ar_agency__create_agent(
         mut_agency, "conversation", "1.0.0", own_conversation_context);
-    int64_t receiver_agent = ar_agency__create_agent(
-        mut_agency, "record-receiver", "1.0.0", own_receiver_context);
+    int64_t participant_a = ar_agency__create_agent(
+        mut_agency, "record-receiver", "1.0.0", own_participant_a_context);
+    int64_t participant_b = ar_agency__create_agent(
+        mut_agency, "record-receiver", "1.0.0", own_participant_b_context);
+    int64_t observer = ar_agency__create_agent(
+        mut_agency, "record-receiver", "1.0.0", own_observer_context);
 
+    // When the coordinator starts a conversation and relays one turn from each participant
     ar_data_t *own_start = ar_data__create_map();
     AR_ASSERT(own_start != NULL, "Conversation start should be created");
     ar_data__set_map_string(own_start, "action", "start");
     ar_data__set_map_string(own_start, "conversation_id", "chat-1");
-    ar_data__set_map_string(own_start, "user_id", "user-1");
-    ar_data__set_map_integer(own_start, "reply_to", checked_agent_id(receiver_agent));
+    ar_data__set_map_integer(own_start, "participant_a", checked_agent_id(participant_a));
+    ar_data__set_map_integer(own_start, "participant_b", checked_agent_id(participant_b));
+    ar_data__set_map_integer(own_start, "reply_to", checked_agent_id(observer));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_start),
               "Conversation start should queue");
     own_start = NULL;
@@ -89,7 +106,9 @@ static void test_conversation__maintains_context_across_messages(void) {
     ar_data_t *own_first = ar_data__create_map();
     AR_ASSERT(own_first != NULL, "First conversation message should be created");
     ar_data__set_map_string(own_first, "action", "message");
-    ar_data__set_map_string(own_first, "text", "first");
+    ar_data__set_map_string(own_first, "conversation_id", "chat-1");
+    ar_data__set_map_integer(own_first, "sender", checked_agent_id(participant_a));
+    ar_data__set_map_string(own_first, "text", "hello");
     ar_data__set_map_string(own_first, "intent", "ask");
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_first),
               "First conversation message should queue");
@@ -98,8 +117,10 @@ static void test_conversation__maintains_context_across_messages(void) {
     ar_data_t *own_second = ar_data__create_map();
     AR_ASSERT(own_second != NULL, "Second conversation message should be created");
     ar_data__set_map_string(own_second, "action", "message");
-    ar_data__set_map_string(own_second, "text", "second");
-    ar_data__set_map_string(own_second, "intent", "followup");
+    ar_data__set_map_string(own_second, "conversation_id", "chat-1");
+    ar_data__set_map_integer(own_second, "sender", checked_agent_id(participant_b));
+    ar_data__set_map_string(own_second, "text", "reply");
+    ar_data__set_map_string(own_second, "intent", "answer");
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_second),
               "Second conversation message should queue");
     own_second = NULL;
@@ -107,33 +128,77 @@ static void test_conversation__maintains_context_across_messages(void) {
     ar_data_t *own_summary = ar_data__create_map();
     AR_ASSERT(own_summary != NULL, "Summary request should be created");
     ar_data__set_map_string(own_summary, "action", "summary");
+    ar_data__set_map_string(own_summary, "conversation_id", "chat-1");
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_summary),
               "Summary request should queue");
     own_summary = NULL;
 
     ar_method_fixture__process_all_messages(own_fixture);
 
-    const ar_data_t *ref_receiver_memory = ar_agency__get_agent_memory(mut_agency, receiver_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_action"),
+    // Then participant B should receive participant A's first turn
+    const ar_data_t *ref_participant_b_memory = ar_agency__get_agent_memory(mut_agency,
+                                                                           participant_b);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_b_memory, "last_action"),
+                     "conversation_turn") == 0,
+              "Participant B should receive a conversation turn");
+    AR_ASSERT(ar_data__get_map_integer(ref_participant_b_memory, "last_from") ==
+                  checked_agent_id(participant_a),
+              "Participant B should see participant A as sender");
+    AR_ASSERT(ar_data__get_map_integer(ref_participant_b_memory, "last_to") ==
+                  checked_agent_id(participant_b),
+              "Participant B should be the first turn recipient");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_b_memory, "last_text"),
+                     "hello") == 0,
+              "Participant B should receive participant A's text");
+    AR_ASSERT(ar_data__get_map_integer(ref_participant_b_memory, "last_turn_count") == 1,
+              "Participant B should receive turn one");
+
+    // Then participant A should receive participant B's reply turn
+    const ar_data_t *ref_participant_a_memory = ar_agency__get_agent_memory(mut_agency,
+                                                                           participant_a);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_a_memory, "last_action"),
+                     "conversation_turn") == 0,
+              "Participant A should receive a conversation turn");
+    AR_ASSERT(ar_data__get_map_integer(ref_participant_a_memory, "last_from") ==
+                  checked_agent_id(participant_b),
+              "Participant A should see participant B as sender");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_a_memory, "last_text"),
+                     "reply") == 0,
+              "Participant A should receive participant B's text");
+    AR_ASSERT(ar_data__get_map_integer(ref_participant_a_memory, "last_turn_count") == 2,
+              "Participant A should receive turn two");
+
+    // Then the observer should receive a structured summary with both turns
+    const ar_data_t *ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_action"),
                      "conversation_summary") == 0,
-              "Receiver should observe conversation summary");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_conversation_id"),
+              "Observer should receive conversation summary");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_conversation_id"),
                      "chat-1") == 0,
               "Summary should preserve conversation id");
-    AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_turn_count") == 2,
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_turn_count") == 2,
               "Summary should report two turns");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_text"),
-                     "conversation=chat-1|user=user-1|state=active|turns=2|last=second|previous=first") == 0,
-              "Summary should include recent conversational context");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_last_sender") ==
+                  checked_agent_id(participant_b),
+              "Summary should report participant B as the last sender");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_last_text"),
+                     "reply") == 0,
+              "Summary should report the last text");
+    ar_data_t *ref_history = ar_data__get_map_data(ref_observer_memory, "last_history");
+    AR_ASSERT(ref_history != NULL, "Summary should include history");
+    AR_ASSERT(ar_data__list_count(ref_history) == 2, "Summary history should include both turns");
 
+    // Cleanup
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_conversation_context);
-    ar_data__destroy(own_receiver_context);
+    ar_data__destroy(own_participant_a_context);
+    ar_data__destroy(own_participant_b_context);
+    ar_data__destroy(own_observer_context);
 }
 
 int main(void) {
     printf("Running conversation method tests...\n\n");
-    test_conversation__maintains_context_across_messages();
+    test_conversation__coordinates_two_participant_agents();
     printf("\nAll conversation method tests passed!\n");
     return 0;
 }

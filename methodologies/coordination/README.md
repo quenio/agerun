@@ -48,7 +48,7 @@ Composition opportunities:
 | [`scheduling`](scheduling-1.0.0.md) | [`scheduling-1.0.0.method`](scheduling-1.0.0.method) | [`scheduling_tests.c`](scheduling_tests.c) | Stores pending work and triggers it on explicit tick messages. | Delayed execution primitive. |
 | [`synchronization`](synchronization-1.0.0.md) | [`synchronization-1.0.0.method`](synchronization-1.0.0.method) | [`synchronization_tests.c`](synchronization_tests.c) | Waits for fixed dependencies before sending a continuation. | Dependency gate. |
 | [`workflow`](workflow-1.0.0.md) | [`workflow-1.0.0.method`](workflow-1.0.0.method) | [`workflow_tests.c`](workflow_tests.c) | Maintains a small step graph, routes steps, branches, and completes. | Higher-level sequence and branch coordinator. |
-| [`conversation`](conversation-1.0.0.md) | [`conversation-1.0.0.method`](conversation-1.0.0.method) | [`conversation_tests.c`](conversation_tests.c) | Tracks conversation state across related messages. | Context and correlation memory. |
+| [`conversation`](conversation-1.0.0.md) | [`conversation-1.0.0.method`](conversation-1.0.0.method) | [`conversation_tests.c`](conversation_tests.c) | Coordinates a bounded conversation between two participant agents. | Mediated two-agent exchange. |
 | [`retry`](retry-1.0.0.md) | [`retry-1.0.0.method`](retry-1.0.0.method) | [`retry_tests.c`](retry_tests.c) | Re-executes failed operations within a retry policy. | Uses direct send or scheduled retry. |
 
 ## Message Contracts
@@ -386,45 +386,48 @@ Requests:
 {
   action: "start",
   conversation_id: <id>,
-  user_id: <id>,
+  participant_a: <agent>,
+  participant_b: <agent>,
   reply_to: <agent>
 }
 
 {
   action: "message",
+  conversation_id: <id>,
+  sender: <agent>,
   text: <text>,
   intent: <intent>
 }
 
-{ action: "summary" }
-{ action: "close" }
+{ action: "summary", conversation_id: <id> }
+{ action: "close", conversation_id: <id> }
 ```
 
 Responses:
 
 ```text
 {
-  action: "conversation_status",
+  action: "conversation_turn",
   conversation_id: <id>,
-  state: "active",
-  text: <state-or-summary>,
+  from: <agent>,
+  to: <agent>,
+  text: <text>,
+  intent: <intent>,
   turn_count: <count>
 }
 
 {
-  action: "conversation_summary",
+  action: <conversation_started|conversation_relayed|conversation_summary|conversation_closed>,
   conversation_id: <id>,
   state: <state>,
-  text: <summary-text>,
-  turn_count: <count>
-}
-
-{
-  action: "conversation_closed",
-  conversation_id: <id>,
-  state: "closed",
-  text: "closed",
-  turn_count: <count>
+  status: <active|relayed|ignored|closed>,
+  participant_a: <agent>,
+  participant_b: <agent>,
+  last_sender: <agent>,
+  last_recipient: <agent>,
+  last_text: <text>,
+  turn_count: <count>,
+  history: [<conversation_turn>, ...]
 }
 ```
 
@@ -519,10 +522,13 @@ Branching workflow:
 Conversation-scoped workflow:
 
 ```text
-1. Conversation receives a map with action: "start" for a user conversation.
-2. Related maps with action: "message" update last and previous text.
-3. A workflow or routing agent can use conversation_id as correlation_id.
-4. Conversation can emit a map with action: "conversation_summary" when another agent needs context.
+1. Conversation receives a map with action: "start" for two participant agents.
+2. Participant A sends a map with action: "message"; conversation relays a `conversation_turn` to
+   participant B.
+3. Participant B replies through the same coordinator; conversation relays the turn back to
+   participant A.
+4. A workflow or aggregation agent can request `conversation_summary` and consume the structured
+   turn history.
 ```
 
 ## Gap Analysis
@@ -536,7 +542,7 @@ Conversation-scoped workflow:
 | Scheduling | Partially implementable. | There is no runtime clock or timer callback; scheduling requires explicit `tick` messages from another agent or host process. |
 | Synchronization | Fully implementable for the bounded contract. | Arbitrary dependency sets require collection iteration. |
 | Workflow | Partially implementable. | General workflow graphs require dynamic graph storage and iteration; this method supports a three-step graph with one branch condition. |
-| Conversation | Fully implementable for bounded memory. | Unbounded history, search, or summarization require additional memory conventions or completion-backed methods. |
+| Conversation | Fully implementable for bounded two-agent exchange. | Alternation rules, participant timeouts, semantic summaries, and searchable long-term history require additional methods or host-driven scheduling. |
 | Retry | Fully implementable for immediate retry and scheduled retry by composition. | Backoff policies need an external tick convention and richer arithmetic/time policy support. |
 
 No method in this methodology is blocked entirely. The missing capabilities are real-time timers,

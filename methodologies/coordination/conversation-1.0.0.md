@@ -2,20 +2,23 @@
 
 ## Overview
 
-The conversation method keeps lightweight conversational state across related messages. It provides
-context and correlation memory that other coordination methods can use while still remaining an
-ordinary AgeRun method.
+The conversation method coordinates a bounded conversation between two participant agents. It relays
+each turn from one participant to the other, tracks turn history, and exposes structured status and
+summary messages while remaining an ordinary AgeRun method.
 
 ## Behavior
 
-On a map whose `action` field is `"start"`, the method stores the conversation id, user id, and
-reply target. It marks the conversation active and clears turn state.
+On a map whose `action` field is `"start"`, the method stores the conversation id, two participant
+agent ids, and reply target. It marks the conversation active and clears turn state and history.
 
-On a map whose `action` field is `"message"`, it moves the previous last text into `previous_text`,
-stores the new text and intent, increments the turn count, and replies with a compact summary string.
+On a map whose `action` field is `"message"`, it accepts the message only when the
+`conversation_id` matches the active conversation, the conversation is active, and `sender` is one
+of the two participants. It sends a `conversation_turn` map to the other participant, appends the
+turn to history, updates last-turn state, and reports relay status to the reply target.
 
-On a map whose `action` field is `"summary"`, it sends the current summary. On a map whose `action`
-field is `"close"`, it marks the conversation closed and sends a closed response.
+On a map whose `action` field is `"summary"`, it sends a structured summary containing the turn
+history. On a map whose `action` field is `"close"`, it marks the conversation closed and sends a
+closed notice to both participants and the reply target.
 
 ## Message Format
 
@@ -25,73 +28,73 @@ Requests:
 {
   action: "start",
   conversation_id: <id>,
-  user_id: <id>,
+  participant_a: <agent>,
+  participant_b: <agent>,
   reply_to: <agent>
 }
 
 {
   action: "message",
+  conversation_id: <id>,
+  sender: <agent>,
   text: <text>,
   intent: <intent>
 }
 
-{ action: "summary" }
-{ action: "close" }
+{ action: "summary", conversation_id: <id> }
+{ action: "close", conversation_id: <id> }
 ```
 
-Status response:
+Relayed turn:
 
 ```text
 {
-  action: "conversation_status",
+  action: "conversation_turn",
   conversation_id: <id>,
-  state: "active",
-  text: <state-or-summary>,
+  from: <agent>,
+  to: <agent>,
+  text: <text>,
+  intent: <intent>,
   turn_count: <count>
 }
 ```
 
-Summary response:
+Coordinator response:
 
 ```text
 {
-  action: "conversation_summary",
+  action: <conversation_started|conversation_relayed|conversation_summary|conversation_closed>,
   conversation_id: <id>,
   state: <state>,
-  text: <summary-text>,
-  turn_count: <count>
-}
-```
-
-Closed response:
-
-```text
-{
-  action: "conversation_closed",
-  conversation_id: <id>,
-  state: "closed",
-  text: "closed",
-  turn_count: <count>
+  status: <active|relayed|ignored|closed>,
+  participant_a: <agent>,
+  participant_b: <agent>,
+  last_sender: <agent>,
+  last_recipient: <agent>,
+  last_text: <text>,
+  turn_count: <count>,
+  history: [<conversation_turn>, ...]
 }
 ```
 
 ## Action Field
 
 The input `action` field is a command discriminator in the request map. The conversation agent runs
-this method for every message it receives, so the field separates start, message, summary, and close
-commands while preserving ordinary map-shaped conversational content.
+this method for every message it receives, so the field separates setup, participant turns,
+summaries, and closure while preserving ordinary map-shaped conversational content.
 
 ## Composition Notes
 
-Use conversation to carry context around workflow, routing, or retry messages. Other methods can use
-`conversation_id` as a correlation id and request a summary map when they need a compact context
-snapshot.
+Use conversation when two worker or assistant agents need a mediated exchange. Workflow can start a
+conversation for a pair of agents, routing can deliver participant messages to the conversation
+coordinator, and aggregation or workflow can consume the structured summary history when the
+conversation closes.
 
 ## Limitations
 
-The method stores bounded memory only: current text, previous text, last intent, state, and turn
-count. Unbounded history, search, and summarization need additional memory conventions or
-completion-backed methods.
+The method stores an append-backed turn history but does not enforce alternation, speaker-specific
+policies, participant timeouts, unbounded search, or semantic summarization. Those behaviors require
+additional methods, completion-backed summaries, or host-driven scheduling.
 
 ## Implementation and Tests
 
