@@ -112,10 +112,14 @@ _require_non_negative_integer "COMPLETE_MODEL_LOCK_TIMEOUT_SECONDS" "$COMPLETE_M
 
 _path_mtime_epoch() {
     local path="$1"
+    local now
 
     stat -c %Y "$path" 2>/dev/null ||
         stat -f %m "$path" 2>/dev/null ||
-        echo 0
+        {
+            now=$(date +%s)
+            printf '%s\n' "$now"
+        }
 }
 
 _file_value() {
