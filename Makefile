@@ -925,12 +925,16 @@ complete-performance-validation-linux-container:
 # Usage: make complete-performance-validation-linux-container-cold
 complete-performance-validation-linux-container-cold:
 	@echo "Preparing an empty isolated model cache for a cold Linux download check"
-	@case "$(COMPLETE_LINUX_CONTAINER_COLD_MODEL_DIR)" in \
+	@cold_dir="$(COMPLETE_LINUX_CONTAINER_COLD_MODEL_DIR)"; \
+	case "$$cold_dir" in \
 		.deps/*) ;; \
 		*) echo "ERROR: COMPLETE_LINUX_CONTAINER_COLD_MODEL_DIR must stay under .deps/"; exit 1 ;; \
-	esac
-	@if [ "$(COMPLETE_LINUX_CONTAINER_COLD_MODEL_DIR)" = ".deps" ]; then \
-		echo "ERROR: unsafe COMPLETE_LINUX_CONTAINER_COLD_MODEL_DIR=$(COMPLETE_LINUX_CONTAINER_COLD_MODEL_DIR)"; \
+	esac; \
+	case "/$$cold_dir/" in \
+		*"/../"*) echo "ERROR: COMPLETE_LINUX_CONTAINER_COLD_MODEL_DIR must not contain '..'"; exit 1 ;; \
+	esac; \
+	if [ "$$cold_dir" = ".deps" ] || [ "$$cold_dir" = ".deps/" ]; then \
+		echo "ERROR: unsafe COMPLETE_LINUX_CONTAINER_COLD_MODEL_DIR=$$cold_dir"; \
 		exit 1; \
 	fi
 	rm -rf "$(COMPLETE_LINUX_CONTAINER_COLD_MODEL_DIR)"
