@@ -18,10 +18,11 @@ from each step list, stores the remaining tails as pending workflow state, and s
 route request to the routing agent. Because each continuation carries the tail lists, the method can
 process any number of steps supported by ordinary AgeRun messages and memory.
 
-On a `step_done` map whose `workflow_id` matches the active workflow, the method advances to the
-next pending step. When `outcome` equals `branch_value`, it skips one pending step before advancing.
-When no next step remains, it marks the workflow complete and sends a map whose `action` field is
-`"workflow_complete"` to the stored reply target.
+On a `step_done` map whose `workflow_id` matches the active workflow and whose `step` matches the
+current active step, the method advances to the next pending step. Stale, duplicate, or
+out-of-order completion messages are ignored. When `outcome` equals `branch_value`, it skips one
+pending step before advancing. When no next step remains, it marks the workflow complete and sends a
+map whose `action` field is `"workflow_complete"` to the stored reply target.
 
 ## Message Format
 

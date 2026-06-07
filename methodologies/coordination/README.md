@@ -376,6 +376,9 @@ Step completion:
 }
 ```
 
+The `step` value must match the workflow agent's active step; stale, duplicate, or out-of-order
+completion maps are ignored.
+
 Completion:
 
 ```text

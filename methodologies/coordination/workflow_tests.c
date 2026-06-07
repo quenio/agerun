@@ -167,11 +167,19 @@ static void test_workflow__routes_unbounded_steps_with_branching_to_completion(v
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_step1_memory, "last_text"), "first") == 0,
               "Workflow should route first step");
 
-    send_step_done(mut_agency, workflow_agent, 1, "skip");
+    send_step_done(mut_agency, workflow_agent, 3, "continue");
     ar_method_fixture__process_all_messages(own_fixture);
 
     const ar_data_t *ref_step2_memory = ar_agency__get_agent_memory(mut_agency, step2_agent);
     const ar_data_t *ref_step3_memory = ar_agency__get_agent_memory(mut_agency, step3_agent);
+    AR_ASSERT(ar_data__get_map_data(ref_step2_memory, "last_text") == NULL,
+              "Workflow should ignore out-of-order completion before routing step two");
+    AR_ASSERT(ar_data__get_map_data(ref_step3_memory, "last_text") == NULL,
+              "Workflow should ignore out-of-order completion before routing step three");
+
+    send_step_done(mut_agency, workflow_agent, 1, "skip");
+    ar_method_fixture__process_all_messages(own_fixture);
+
     AR_ASSERT(ar_data__get_map_data(ref_step2_memory, "last_text") == NULL,
               "Workflow should skip step two on matching branch outcome");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_step3_memory, "last_text"), "third") == 0,

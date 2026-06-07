@@ -44,7 +44,9 @@ memory.route_sent := send(memory.routing_agent * memory.execute_action, memory.r
 memory.no_step := if(memory.has_step = 1, 0, 1)
 memory.empty_completion := memory.is_execute_step * memory.no_step
 memory.matching_workflow := if(message.workflow_id = memory.workflow_id, 1, 0)
-memory.step_completion := memory.is_step_done * memory.matching_workflow
+memory.matching_step := if(message.step = memory.current_step, 1, 0)
+memory.is_active := if(memory.status = "active", 1, 0)
+memory.step_completion := memory.is_step_done * memory.matching_workflow * memory.matching_step * memory.is_active
 memory.completed_step_count := memory.completed_step_count + memory.step_completion
 memory.branch_matched := if(message.outcome = memory.branch_value, 1, 0)
 memory.skip_next := memory.step_completion * memory.branch_matched
