@@ -513,6 +513,9 @@ Result:
 }
 ```
 
+After retry reports terminal `succeeded` or `failed` status, later stale outcome messages are ignored.
+A new `start` request opens a fresh active retry state.
+
 ## Composition Examples
 
 Fan-out and fan-in:

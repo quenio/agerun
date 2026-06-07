@@ -19,8 +19,11 @@ memory.operation_message := {
   attempt: memory.attempts
 }
 memory.start_sent := send(memory.operation_target * memory.is_start, memory.operation_message)
+memory.is_active_status := if(memory.status = "active", 1, 0)
+memory.active_failure := memory.is_failure * memory.is_active_status
+memory.active_success := memory.is_success * memory.is_active_status
 memory.can_retry := if(memory.attempts < memory.max_attempts, 1, 0)
-memory.retry_allowed := memory.is_failure * memory.can_retry
+memory.retry_allowed := memory.active_failure * memory.can_retry
 memory.attempts := if(memory.retry_allowed = 1, memory.attempts + 1, memory.attempts)
 memory.use_scheduled := if(memory.strategy = "scheduled", 1, 0)
 memory.use_scheduled := memory.use_scheduled * memory.retry_allowed
@@ -32,7 +35,7 @@ memory.retry_message := {
   attempt: memory.attempts
 }
 memory.retry_sent := send(memory.operation_target * memory.use_immediate, memory.retry_message)
-memory.failure_tick := if(memory.is_failure = 1, message.current_tick, 0)
+memory.failure_tick := if(memory.active_failure = 1, message.current_tick, 0)
 memory.retry_due_tick := memory.failure_tick + memory.delay_ticks
 memory.schedule_message := {
   action: "schedule"
@@ -45,9 +48,9 @@ memory.schedule_message := {
   reply_to: 0
 }
 memory.schedule_sent := send(memory.scheduler_agent * memory.use_scheduled, memory.schedule_message)
-memory.final_failure := memory.is_failure - memory.retry_allowed
+memory.final_failure := memory.active_failure - memory.retry_allowed
 memory.status := if(memory.final_failure = 1, "failed", memory.status)
-memory.status := if(memory.is_success = 1, "succeeded", memory.status)
+memory.status := if(memory.active_success = 1, "succeeded", memory.status)
 memory.report_message := {
   action: "retry_result"
   operation_id: memory.operation_id
@@ -55,5 +58,5 @@ memory.report_message := {
   attempts: memory.attempts
 }
 memory.report_target := memory.reply_to * memory.final_failure
-memory.report_target := if(memory.is_success = 1, memory.reply_to, memory.report_target)
+memory.report_target := if(memory.active_success = 1, memory.reply_to, memory.report_target)
 memory.report_sent := send(memory.report_target, memory.report_message)

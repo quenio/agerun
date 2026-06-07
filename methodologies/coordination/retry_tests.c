@@ -142,6 +142,76 @@ static void test_retry__reexecutes_and_reports_success(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_attempts") == 2,
               "Retry should report final attempt count");
 
+    ar_data_t *own_stale_failure = ar_data__create_map();
+    AR_ASSERT(own_stale_failure != NULL, "Stale failure message should be created");
+    ar_data__set_map_string(own_stale_failure, "action", "failure");
+    ar_data__set_map_integer(own_stale_failure, "current_tick", 50);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_stale_failure),
+              "Stale failure message should queue");
+    own_stale_failure = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    const ar_data_t *ref_retry_memory = ar_agency__get_agent_memory(mut_agency, retry_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_retry_memory, "status"), "succeeded") == 0,
+              "Stale failure should not change succeeded retry status");
+    AR_ASSERT(ar_data__get_map_integer(ref_retry_memory, "attempts") == 2,
+              "Stale failure should not increment succeeded retry attempts");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"), "succeeded") == 0,
+              "Stale failure should not overwrite success report");
+    AR_ASSERT(ar_data__get_map_integer(ref_operation_memory, "last_attempt") == 2,
+              "Stale failure should not send another operation attempt after success");
+
+    ar_data_t *own_final_start = ar_data__create_map();
+    AR_ASSERT(own_final_start != NULL, "Final failure retry start should be created");
+    ar_data__set_map_string(own_final_start, "action", "start");
+    ar_data__set_map_string(own_final_start, "operation_id", "op-final");
+    ar_data__set_map_integer(own_final_start,
+                             "operation_target",
+                             checked_agent_id(operation_agent));
+    ar_data__set_map_string(own_final_start, "operation_action", "attempt");
+    ar_data__set_map_string(own_final_start, "operation_text", "final-work");
+    ar_data__set_map_integer(own_final_start, "max_attempts", 1);
+    ar_data__set_map_string(own_final_start, "strategy", "immediate");
+    ar_data__set_map_integer(own_final_start, "scheduler_agent", 0);
+    ar_data__set_map_integer(own_final_start, "delay_ticks", 0);
+    ar_data__set_map_integer(own_final_start, "reply_to", checked_agent_id(report_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_final_start),
+              "Final failure retry start should queue");
+    own_final_start = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ar_data_t *own_final_failure = ar_data__create_map();
+    AR_ASSERT(own_final_failure != NULL, "Final failure message should be created");
+    ar_data__set_map_string(own_final_failure, "action", "failure");
+    ar_data__set_map_integer(own_final_failure, "current_tick", 60);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_final_failure),
+              "Final failure message should queue");
+    own_final_failure = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"), "failed") == 0,
+              "Retry should report final failure");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_attempts") == 1,
+              "Final failure should report one attempt");
+
+    own_stale_failure = ar_data__create_map();
+    AR_ASSERT(own_stale_failure != NULL, "Stale final failure message should be created");
+    ar_data__set_map_string(own_stale_failure, "action", "failure");
+    ar_data__set_map_integer(own_stale_failure, "current_tick", 61);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_stale_failure),
+              "Stale final failure message should queue");
+    own_stale_failure = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_retry_memory, "status"), "failed") == 0,
+              "Stale failure should not change failed retry status");
+    AR_ASSERT(ar_data__get_map_integer(ref_retry_memory, "attempts") == 1,
+              "Stale failure should not increment failed retry attempts");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"), "failed") == 0,
+              "Stale failure should not overwrite failure report");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_attempts") == 1,
+              "Stale failure should preserve failure attempt count");
+
     ar_data_t *own_scheduled_start = ar_data__create_map();
     AR_ASSERT(own_scheduled_start != NULL, "Scheduled retry start should be created");
     ar_data__set_map_string(own_scheduled_start, "action", "start");

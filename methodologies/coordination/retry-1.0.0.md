@@ -21,6 +21,9 @@ failure message's `current_tick` plus `delay_ticks`. If no attempts remain, it r
 On a map whose `action` field is `"success"`, it reports `status=succeeded` with the current attempt
 count.
 
+Once the retry state reaches terminal `succeeded` or `failed` status, later stale `failure` or
+`success` outcome messages are ignored. A new `start` request opens a fresh active retry state.
+
 ## Message Format
 
 Start request:
