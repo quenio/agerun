@@ -130,6 +130,20 @@ static void test_aggregation__combines_required_results(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_received_count") == 4,
               "Aggregate should report four received results");
 
+    send_result(mut_agency, aggregation_agent, "epsilon");
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    const ar_data_t *ref_aggregation_memory =
+        ar_agency__get_agent_memory(mut_agency, aggregation_agent);
+    const ar_data_t *ref_stored_results = ar_data__get_map_data(ref_aggregation_memory, "results");
+    AR_ASSERT(ref_stored_results != NULL, "Aggregation memory should retain result list");
+    AR_ASSERT(ar_data__list_count(ref_stored_results) == 4,
+              "Late results should not mutate completed aggregation state");
+    AR_ASSERT(ar_data__get_map_integer(ref_aggregation_memory, "received_count") == 4,
+              "Late results should not increment completed aggregation count");
+    AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_received_count") == 4,
+              "Late results should not emit another completion");
+
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_aggregation_context);
     ar_data__destroy(own_receiver_context);
