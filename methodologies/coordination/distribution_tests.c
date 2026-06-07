@@ -236,6 +236,42 @@ static void test_distribution__assigns_unbounded_workers_through_routing(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_sent_count") == 1,
               "Route failed result should preserve partial sent count");
 
+    // And a worker list with no positive targets should fail through routing rather than succeed
+    own_message = ar_data__create_map();
+    AR_ASSERT(own_message != NULL, "Zero-worker distribution message should be created");
+    own_workers = ar_data__create_list();
+    AR_ASSERT(own_workers != NULL, "Zero-worker list should be created");
+    AR_ASSERT(ar_data__list_add_last_integer(own_workers, 0),
+              "Zero worker target should be stored");
+    ar_data__set_map_string(own_message, "action", "distribute");
+    ar_data__set_map_integer(own_message, "routing_agent", checked_agent_id(router_agent));
+    AR_ASSERT(ar_data__set_map_data(own_message, "workers", own_workers),
+              "Zero-worker list should be stored");
+    own_workers = NULL;
+    ar_data__set_map_string(own_message, "work_text", "zero-worker-work");
+    ar_data__set_map_string(own_message, "work_id", "job-zero-workers");
+    ar_data__set_map_integer(own_message, "reply_to", checked_agent_id(observer));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, distribution_agent, own_message),
+              "Zero-worker distribution message should queue");
+    own_message = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_work_id"),
+                     "job-zero-workers") == 0,
+              "Zero-worker distribution should report its work id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
+                     "route_failed") == 0,
+              "Zero-worker distribution should report route_failed");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_route_status"),
+                     "route_failed") == 0,
+              "Zero-worker distribution should preserve route_failed route status");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_assignment_count") == 0,
+              "Zero-worker distribution should report zero assignments");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_sent_count") == 0,
+              "Zero-worker distribution should report zero sent assignments");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_route_sent") == 1,
+              "Zero-worker distribution should preserve successful route handoff");
+
     // And a failed route handoff should immediately report terminal failure
     own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Failed distribution message should be created");

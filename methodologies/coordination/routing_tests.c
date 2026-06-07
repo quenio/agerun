@@ -210,6 +210,43 @@ static void test_routing__forwards_one_and_many_messages(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_continuation_sent") == 0,
               "Final route result should report no pending continuation");
 
+    // When a one-to-many route request contains no positive targets
+    own_message = ar_data__create_map();
+    AR_ASSERT(own_message != NULL, "Zero-delivery many route message should be created");
+    ar_data__set_map_string(own_message, "action", "route");
+    ar_data__set_map_string(own_message, "mode", "many");
+    own_targets = ar_data__create_list();
+    AR_ASSERT(own_targets != NULL, "Zero-delivery targets list should be created");
+    AR_ASSERT(ar_data__list_add_last_integer(own_targets, 0),
+              "First zero target should be stored");
+    AR_ASSERT(ar_data__list_add_last_integer(own_targets, 0),
+              "Second zero target should be stored");
+    AR_ASSERT(ar_data__set_map_data(own_message, "targets", own_targets),
+              "Zero-delivery route message should own targets list");
+    own_targets = NULL;
+    ar_data__set_map_string(own_message, "payload_action", "work");
+    ar_data__set_map_string(own_message, "payload_text", "zero-delivery");
+    ar_data__set_map_string(own_message, "correlation_id", "job-zero-delivery");
+    ar_data__set_map_integer(own_message, "reply_to", checked_agent_id(report_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, routing_agent, own_message),
+              "Zero-delivery route message should queue");
+    own_message = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    // Then the route result reports failure instead of successful zero-delivery routing
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
+                     "route_failed") == 0,
+              "Zero-delivery many route should report route_failed status");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_correlation_id"),
+                     "job-zero-delivery") == 0,
+              "Zero-delivery result should preserve correlation id");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_routed_count") == 0,
+              "Zero-delivery route should report zero routed targets");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_sent_count") == 0,
+              "Zero-delivery route should report zero sent targets");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failed_count") == 0,
+              "Zero-delivery route should not count a failed positive target send");
+
     // When a keyed one-to-one route request carries more than three candidate routes
     own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Keyed route message should be created");

@@ -108,8 +108,12 @@ memory.has_failed_count := if(memory.failed_count > 0, 1, 0)
 memory.one_target_missing := 1 - memory.has_one_target
 memory.one_target_missing := memory.one_target_missing * memory.is_route
 memory.one_target_missing := memory.one_target_missing * memory.is_one
+memory.many_zero_delivery := if(memory.sent_count_many = 0, 1, 0)
+memory.many_zero_delivery := memory.many_zero_delivery * memory.is_route
+memory.many_zero_delivery := memory.many_zero_delivery * memory.is_many
 memory.status := if(memory.is_route * memory.is_known_mode = 1, "routed", "ignored")
 memory.status := if(memory.one_target_missing = 1, "route_failed", memory.status)
+memory.status := if(memory.many_zero_delivery = 1, "route_failed", memory.status)
 memory.status := if(memory.has_failed_count = 1, "route_failed", memory.status)
 memory.status := if(memory.continuation_failed = 1, "route_failed", memory.status)
 memory.status := if(memory.scan_failed = 1, "route_failed", memory.status)

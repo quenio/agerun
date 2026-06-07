@@ -141,6 +141,8 @@ For `mode=many`, `routed_count` and `sent_count` count successful target sends, 
 processing the remaining targets and makes the terminal status `route_failed`. A failed
 self-continuation emits `route_failed` immediately with the partial routed/sent counts instead of
 leaving callers without a terminal result.
+If a many-route target list is empty or contains no positive targets, routing emits `route_failed`
+with zero delivery counts instead of reporting a successful zero-send route.
 
 ### Supervision
 
@@ -262,6 +264,8 @@ If the route request cannot be handed to the routing agent, distribution emits t
 with `status: "route_failed"`, zero counts, and `route_sent: 0`.
 If routing returns a matching terminal `route_result` whose `status` is `"route_failed"`,
 distribution also reports `status: "route_failed"` and preserves the partial routed and sent counts.
+This includes empty or no-positive worker lists, because routing reports those many-route requests as
+zero-delivery failures.
 Distribution accepts a `route_result` only when its `correlation_id` matches the active `work_id`.
 After a terminal distribution reply is sent successfully, duplicate matching route results are
 ignored.

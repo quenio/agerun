@@ -29,7 +29,8 @@ stored `distribution_result` without rerouting the work. The retry must be sent 
 
 If the routing agent reports a matching terminal `route_result` with `status: "route_failed"`,
 distribution propagates that failure as `distribution_result.status: "route_failed"` while preserving
-the partial routed and sent counts.
+the partial routed and sent counts. Empty worker lists or worker lists with no positive targets are
+reported this way because routing treats zero-delivery many-route requests as failures.
 
 If the initial route request cannot be sent to the routing agent, distribution immediately emits a
 terminal `distribution_result` with `status: "route_failed"`, `assignment_count: 0`,
