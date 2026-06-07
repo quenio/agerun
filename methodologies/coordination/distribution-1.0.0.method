@@ -1,58 +1,33 @@
 memory.is_distribute := if(message.action = "distribute", 1, 0)
+memory.is_route_result := if(message.action = "route_result", 1, 0)
 memory.routing_agent := if(memory.is_distribute = 1, message.routing_agent, memory.routing_agent)
 memory.reply_to := if(memory.is_distribute = 1, message.reply_to, memory.reply_to)
 memory.work_id := if(memory.is_distribute = 1, message.work_id, memory.work_id)
-memory.has_a := if(message.worker_a > 0, 1, 0)
-memory.has_b := if(message.worker_b > 0, 1, 0)
-memory.has_c := if(message.worker_c > 0, 1, 0)
-memory.route_action := "route"
-memory.route_mode := "one"
-memory.work_action := "work"
-memory.route_target := message.worker_a
-memory.payload_text := message.portion_a
-memory.route_message_a := {
-  action: memory.route_action
-  mode: memory.route_mode
-  target: memory.route_target
-  payload_action: memory.work_action
-  payload_text: memory.payload_text
+memory.work_text := if(memory.is_distribute = 1, message.work_text, memory.work_text)
+memory.route_message := {
+  action: "route"
+  mode: "many"
+  targets: message.workers
+  payload_action: "work"
+  payload_text: memory.work_text
   correlation_id: memory.work_id
-  reply_to: 0
+  reply_to: memory.self
+  routed_count: 0
+  sent_count: 0
 }
-memory.sent_a := send(memory.routing_agent * memory.is_distribute * memory.has_a, memory.route_message_a)
-memory.route_target := message.worker_b
-memory.payload_text := message.portion_b
-memory.route_message_b := {
-  action: memory.route_action
-  mode: memory.route_mode
-  target: memory.route_target
-  payload_action: memory.work_action
-  payload_text: memory.payload_text
-  correlation_id: memory.work_id
-  reply_to: 0
-}
-memory.sent_b := send(memory.routing_agent * memory.is_distribute * memory.has_b, memory.route_message_b)
-memory.route_target := message.worker_c
-memory.payload_text := message.portion_c
-memory.route_message_c := {
-  action: memory.route_action
-  mode: memory.route_mode
-  target: memory.route_target
-  payload_action: memory.work_action
-  payload_text: memory.payload_text
-  correlation_id: memory.work_id
-  reply_to: 0
-}
-memory.sent_c := send(memory.routing_agent * memory.is_distribute * memory.has_c, memory.route_message_c)
-memory.assignment_count := memory.has_a + memory.has_b + memory.has_c
-memory.status := if(memory.is_distribute = 1, "distributed", "ignored")
+memory.route_sent := send(memory.routing_agent * memory.is_distribute, memory.route_message)
+memory.status := if(memory.is_route_result = 1, "distributed", "routing")
+memory.status := if(memory.is_distribute = 1, "routing", memory.status)
+memory.assignment_count := if(memory.is_route_result = 1, message.routed_count, 0)
+memory.sent_count := if(memory.is_route_result = 1, message.sent_count, memory.route_sent)
 memory.report_message := {
   action: "distribution_result"
   status: memory.status
   work_id: memory.work_id
   assignment_count: memory.assignment_count
-  sent_a: memory.sent_a
-  sent_b: memory.sent_b
-  sent_c: memory.sent_c
+  sent_count: memory.sent_count
+  route_status: message.status
+  route_sent: memory.route_sent
 }
-memory.report_sent := send(memory.reply_to, memory.report_message)
+memory.report_target := memory.reply_to * memory.is_route_result
+memory.report_sent := send(memory.report_target, memory.report_message)

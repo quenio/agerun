@@ -2,19 +2,20 @@
 
 ## Overview
 
-The distribution method assigns caller-provided work portions to worker agents. It composes with the
-routing method for delivery, making fan-out reusable without duplicating route construction in every
-agency.
+The distribution method assigns a caller-provided work payload to an unbounded list of worker
+agents. It composes with the routing method for delivery, making fan-out reusable without
+duplicating route construction in every agency.
 
 ## Behavior
 
-On a map whose `action` field is `"distribute"`, the method stores the work id, routing agent, and
-reply target. It then creates one route request for each nonzero worker slot `worker_a`, `worker_b`,
-and `worker_c`.
+On a map whose `action` field is `"distribute"`, the method stores the work id, routing agent, reply
+target, and work text. It sends one `mode: "many"` route request to the routing agent, using the
+request's `workers` list as the route target list.
 
-Each route request has `payload_action` set to `"work"`, uses the worker portion as `payload_text`,
-and uses the work id as the correlation id. The method replies with the assignment count and send
-outcomes.
+The route request has `payload_action` set to `"work"`, uses `work_text` as `payload_text`, and uses
+the work id as the correlation id. The routing agent sends its final `route_result` back to the
+distribution agent. Distribution translates that result into `distribution_result`, preserving the
+router's routed and sent counts.
 
 ## Message Format
 
@@ -26,12 +27,8 @@ Distribution request:
   work_id: <id>,
   routing_agent: <agent>,
   reply_to: <agent>,
-  worker_a: <agent>,
-  portion_a: <text>,
-  worker_b: <agent>,
-  portion_b: <text>,
-  worker_c: <agent>,
-  portion_c: <text>
+  workers: [<agent>, <agent>, ...],
+  work_text: <text>
 }
 ```
 
@@ -40,12 +37,14 @@ Route message sent to routing:
 ```text
 {
   action: "route",
-  mode: "one",
-  target: <worker>,
+  mode: "many",
+  targets: [<agent>, <agent>, ...],
   payload_action: "work",
-  payload_text: <portion>,
+  payload_text: <work_text>,
   correlation_id: <work_id>,
-  reply_to: 0
+  reply_to: <distribution-agent>,
+  routed_count: 0,
+  sent_count: 0
 }
 ```
 
@@ -57,9 +56,9 @@ Result response:
   status: "distributed",
   work_id: <id>,
   assignment_count: <count>,
-  sent_a: <0|1>,
-  sent_b: <0|1>,
-  sent_c: <0|1>
+  sent_count: <count>,
+  route_status: <status>,
+  route_sent: <0|1>
 }
 ```
 
@@ -72,13 +71,15 @@ fan out rather than an arbitrary status, worker result, or coordination message.
 ## Composition Notes
 
 Pair distribution with aggregation for fan-out and fan-in. A workflow step can send work to a
-distribution agent, workers can return maps whose `action` field is `"result"` to an aggregation
-agent, and aggregation can emit completion when enough results arrive.
+distribution agent, distribution can use routing for unbounded worker delivery, workers can return
+maps whose `action` field is `"result"` to an aggregation agent, and aggregation can emit completion
+when enough results arrive.
 
 ## Limitations
 
-The method assigns already-partitioned portions. Dynamic decomposition, arbitrary worker lists, and
-load-aware placement require collection iteration or another decomposition method.
+The method assigns one work payload to an unbounded worker list. Dynamic decomposition into distinct
+per-worker portions, load-aware placement, and custom partitioning policies require another
+decomposition method or richer collection-processing conventions.
 
 ## Implementation and Tests
 

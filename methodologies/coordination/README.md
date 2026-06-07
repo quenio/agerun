@@ -43,7 +43,7 @@ Composition opportunities:
 | --- | --- | --- | --- | --- |
 | [`routing`](routing-1.0.0.md) | [`routing-1.0.0.method`](routing-1.0.0.method) | [`routing_tests.c`](routing_tests.c) | Selects one or more recipients and forwards a message. | Foundation for delivery. |
 | [`supervision`](supervision-1.0.0.md) | [`supervision-1.0.0.method`](supervision-1.0.0.method) | [`supervision_tests.c`](supervision_tests.c) | Creates, tracks, stops, and event-restarts a child agent. | Keeps coordination agents available. |
-| [`distribution`](distribution-1.0.0.md) | [`distribution-1.0.0.method`](distribution-1.0.0.method) | [`distribution_tests.c`](distribution_tests.c) | Assigns caller-provided portions of work to workers. | Builds on routing for fan-out. |
+| [`distribution`](distribution-1.0.0.md) | [`distribution-1.0.0.method`](distribution-1.0.0.method) | [`distribution_tests.c`](distribution_tests.c) | Assigns a work payload to an unbounded worker list. | Builds on routing for fan-out. |
 | [`aggregation`](aggregation-1.0.0.md) | [`aggregation-1.0.0.method`](aggregation-1.0.0.method) | [`aggregation_tests.c`](aggregation_tests.c) | Appends result values and emits a result list. | Completes fan-in with append-backed state. |
 | [`scheduling`](scheduling-1.0.0.md) | [`scheduling-1.0.0.method`](scheduling-1.0.0.method) | [`scheduling_tests.c`](scheduling_tests.c) | Stores pending work and triggers it on explicit tick messages. | Delayed execution primitive. |
 | [`synchronization`](synchronization-1.0.0.md) | [`synchronization-1.0.0.method`](synchronization-1.0.0.method) | [`synchronization_tests.c`](synchronization_tests.c) | Waits for fixed dependencies before sending a continuation. | Dependency gate. |
@@ -168,12 +168,8 @@ Request:
   work_id: <id>,
   routing_agent: <agent>,
   reply_to: <agent>,
-  worker_a: <agent>,
-  portion_a: <text>,
-  worker_b: <agent>,
-  portion_b: <text>,
-  worker_c: <agent>,
-  portion_c: <text>
+  workers: [<agent>, <agent>, ...],
+  work_text: <text>
 }
 ```
 
@@ -182,12 +178,14 @@ Forwarded through `routing`:
 ```text
 {
   action: "route",
-  mode: "one",
-  target: <worker>,
+  mode: "many",
+  targets: [<agent>, <agent>, ...],
   payload_action: "work",
-  payload_text: <portion>,
+  payload_text: <work_text>,
   correlation_id: <work_id>,
-  reply_to: 0
+  reply_to: <distribution-agent>,
+  routed_count: 0,
+  sent_count: 0
 }
 ```
 
@@ -199,9 +197,9 @@ Reply:
   status: "distributed",
   work_id: <id>,
   assignment_count: <count>,
-  sent_a: <0|1>,
-  sent_b: <0|1>,
-  sent_c: <0|1>
+  sent_count: <count>,
+  route_status: <status>,
+  route_sent: <0|1>
 }
 ```
 
@@ -537,7 +535,7 @@ Conversation-scoped workflow:
 | --- | --- | --- |
 | Routing | Fully implementable for one-to-one and primitive unbounded fan-out. | Richer message inspection and nested recipient descriptors require a richer data query layer. |
 | Supervision | Partially implementable. | Methods cannot autonomously observe child crashes or exits; callers must send `child_failed` or `child_exited` events. |
-| Distribution | Partially implementable. | The method assigns caller-provided portions; dynamic decomposition and arbitrary worker lists require collection iteration. |
+| Distribution | Partially implementable. | The method assigns one work payload to an unbounded worker list by composing with routing. Dynamic decomposition into distinct per-worker portions and load-aware placement require additional decomposition methods or richer collection-processing conventions. |
 | Aggregation | Fully implementable for list-valued fan-in. | Duplicate handling, custom merge functions, and richer aggregate policies require deeper collection operations or specialized aggregate methods. |
 | Scheduling | Partially implementable. | There is no runtime clock or timer callback; scheduling requires explicit `tick` messages from another agent or host process. |
 | Synchronization | Fully implementable for the bounded contract. | Arbitrary dependency sets require collection iteration. |
