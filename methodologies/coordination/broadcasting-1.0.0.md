@@ -56,10 +56,9 @@ routing when one recipient must be selected by key.
 
 ## Limitations
 
-The method supports unbounded fan-out for primitive nonzero agent IDs. A single interior zero
-placeholder is skipped, but consecutive zero placeholders can still terminate scanning before a
-later positive target because ordinary methods do not have a list length or type predicate that
-distinguishes an empty list from a list whose next item is integer `0`.
+The method supports unbounded fan-out for primitive positive agent IDs. Integer `0` is treated as a
+placeholder rather than a recipient; target lists should contain positive IDs for all intended
+recipients.
 
 ## Implementation and Tests
 
