@@ -205,6 +205,18 @@ _pid_matches_start_fingerprint() {
     [ -n "$actual_fingerprint" ] && [ "$actual_fingerprint" = "$expected_fingerprint" ]
 }
 
+_pid_identity_is_active_or_matches_fingerprint() {
+    local pid="$1"
+    local expected_fingerprint="$2"
+
+    if [ -z "$expected_fingerprint" ]; then
+        _pid_exists_on_current_host "$pid"
+        return
+    fi
+
+    _pid_matches_start_fingerprint "$pid" "$expected_fingerprint"
+}
+
 _lock_holder_is_dead_on_current_host() {
     local lock_pid
     local lock_host
@@ -234,7 +246,7 @@ _lock_holder_matches_current_process_identity() {
 
     [ "$lock_host" = "$CURRENT_HOST" ] &&
         _pid_exists_on_current_host "$lock_pid" &&
-        _pid_matches_start_fingerprint "$lock_pid" "$lock_pid_started_at"
+        _pid_identity_is_active_or_matches_fingerprint "$lock_pid" "$lock_pid_started_at"
 }
 
 _missing_holder_grace_seconds() {
@@ -327,7 +339,7 @@ _recovery_lock_holder_matches_current_process_identity() {
 
     [ "$lock_host" = "$CURRENT_HOST" ] &&
         _pid_exists_on_current_host "$lock_pid" &&
-        _pid_matches_start_fingerprint "$lock_pid" "$lock_pid_started_at"
+        _pid_identity_is_active_or_matches_fingerprint "$lock_pid" "$lock_pid_started_at"
 }
 
 _recovery_lock_is_stale() {
