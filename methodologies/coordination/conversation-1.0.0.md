@@ -14,7 +14,9 @@ agent ids, and reply target. It marks the conversation active and clears turn st
 On a map whose `action` field is `"message"`, it accepts the message only when the
 `conversation_id` matches the active conversation, the conversation is active, and `sender` is one
 of the two participants. It sends a `conversation_turn` map to the other participant, appends the
-turn to history, updates last-turn state, and reports relay status to the reply target.
+turn to history, updates last-turn state, and reports relay status to the reply target. The
+`relayed` status means the turn was delivered and recorded; if delivery fails, the method reports
+`relay_failed` without appending the turn or incrementing `turn_count`.
 
 On a map whose `action` field is `"summary"`, it sends a structured summary containing the turn
 history. On a map whose `action` field is `"close"`, it marks the conversation closed and sends a
@@ -66,7 +68,7 @@ Coordinator response:
   action: <conversation_started|conversation_relayed|conversation_summary|conversation_closed>,
   conversation_id: <id>,
   state: <state>,
-  status: <active|relayed|ignored|closed>,
+  status: <active|relayed|relay_failed|ignored|closed>,
   participant_a: <agent>,
   participant_b: <agent>,
   last_sender: <agent>,

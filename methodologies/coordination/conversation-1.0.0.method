@@ -54,7 +54,8 @@ memory.response_action := if(memory.is_start = 1, "conversation_started", "conve
 memory.response_action := if(memory.is_message = 1, "conversation_relayed", memory.response_action)
 memory.response_action := if(memory.is_summary = 1, "conversation_summary", memory.response_action)
 memory.response_action := if(memory.should_close = 1, "conversation_closed", memory.response_action)
-memory.response_status := if(memory.is_turn = 1, "relayed", "ignored")
+memory.response_status := if(memory.is_turn = 1, "relay_failed", "ignored")
+memory.response_status := if(memory.append_ok = 1, "relayed", memory.response_status)
 memory.response_status := if(memory.is_start = 1, "active", memory.response_status)
 memory.summary_matches := memory.is_summary * memory.matches_conversation
 memory.response_status := if(memory.summary_matches = 1, memory.state, memory.response_status)

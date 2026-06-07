@@ -433,7 +433,7 @@ Responses:
   action: <conversation_started|conversation_relayed|conversation_summary|conversation_closed>,
   conversation_id: <id>,
   state: <state>,
-  status: <active|relayed|ignored|closed>,
+  status: <active|relayed|relay_failed|ignored|closed>,
   participant_a: <agent>,
   participant_b: <agent>,
   last_sender: <agent>,
@@ -443,6 +443,10 @@ Responses:
   history: [<conversation_turn>, ...]
 }
 ```
+
+The `relayed` status is used only when a participant turn is delivered and recorded. If the
+participant turn is valid for the conversation but the delivery send fails, the coordinator reports
+`relay_failed` and leaves the history and turn count unchanged.
 
 ### Retry
 

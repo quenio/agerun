@@ -188,6 +188,45 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     AR_ASSERT(ref_history != NULL, "Summary should include history");
     AR_ASSERT(ar_data__list_count(ref_history) == 2, "Summary history should include both turns");
 
+    // When a participant message cannot be delivered
+    ar_data_t *own_failed_start = ar_data__create_map();
+    AR_ASSERT(own_failed_start != NULL, "Failed relay conversation start should be created");
+    ar_data__set_map_string(own_failed_start, "action", "start");
+    ar_data__set_map_string(own_failed_start, "conversation_id", "chat-2");
+    ar_data__set_map_integer(own_failed_start, "participant_a", checked_agent_id(participant_a));
+    ar_data__set_map_integer(own_failed_start, "participant_b", 98765);
+    ar_data__set_map_integer(own_failed_start, "reply_to", checked_agent_id(observer));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_failed_start),
+              "Failed relay start should queue");
+    own_failed_start = NULL;
+
+    ar_data_t *own_failed_turn = ar_data__create_map();
+    AR_ASSERT(own_failed_turn != NULL, "Failed relay message should be created");
+    ar_data__set_map_string(own_failed_turn, "action", "message");
+    ar_data__set_map_string(own_failed_turn, "conversation_id", "chat-2");
+    ar_data__set_map_integer(own_failed_turn, "sender", checked_agent_id(participant_a));
+    ar_data__set_map_string(own_failed_turn, "text", "undeliverable");
+    ar_data__set_map_string(own_failed_turn, "intent", "notify");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_failed_turn),
+              "Failed relay message should queue");
+    own_failed_turn = NULL;
+
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    // Then the coordinator should report the failed relay without recording the turn
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_action"),
+                     "conversation_relayed") == 0,
+              "Observer should receive a relay response for failed delivery");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
+                     "relay_failed") == 0,
+              "Observer should see relay failure status");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_turn_count") == 0,
+              "Failed relays should not increment turn count");
+    ref_history = ar_data__get_map_data(ref_observer_memory, "last_history");
+    AR_ASSERT(ref_history != NULL, "Failed relay response should include history");
+    AR_ASSERT(ar_data__list_count(ref_history) == 0,
+              "Failed relays should not append to history");
+
     // Cleanup
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_conversation_context);
