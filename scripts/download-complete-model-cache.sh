@@ -98,6 +98,7 @@ MODEL_LOCK_RECOVERY_HOLDER="$MODEL_LOCK_RECOVERY/holder"
 CURRENT_HOST=$(hostname 2>/dev/null || echo unknown)
 DOWNLOAD_LOCK_TOKEN=
 DOWNLOAD_LOCK_HEARTBEAT_PID=
+DOWNLOAD_LOCK_PID_STARTED_AT=
 
 _require_safe_path "COMPLETE_MODEL_DIR" "$MODEL_DIR"
 _require_safe_path "COMPLETE_MODEL_FILE" "$MODEL_FILE"
@@ -150,6 +151,34 @@ _pid_exists_on_current_host() {
     ps -p "$pid" >/dev/null 2>&1
 }
 
+_pid_start_fingerprint() {
+    local pid="$1"
+    local output
+
+    case "$pid" in
+        ""|*[!0-9]*)
+            return 1
+            ;;
+    esac
+
+    output=$(ps -p "$pid" -o lstart= 2>/dev/null) || return 1
+    printf '%s\n' "$output" |
+        awk 'NF { sub(/^[[:space:]]*/, ""); sub(/[[:space:]]*$/, ""); print; exit }'
+}
+
+_pid_matches_start_fingerprint() {
+    local pid="$1"
+    local expected_fingerprint="$2"
+    local actual_fingerprint
+
+    if [ -z "$expected_fingerprint" ]; then
+        return 1
+    fi
+
+    actual_fingerprint=$(_pid_start_fingerprint "$pid") || return 1
+    [ -n "$actual_fingerprint" ] && [ "$actual_fingerprint" = "$expected_fingerprint" ]
+}
+
 _lock_holder_is_dead_on_current_host() {
     local lock_pid
     local lock_host
@@ -160,14 +189,26 @@ _lock_holder_is_dead_on_current_host() {
     [ "$lock_host" = "$CURRENT_HOST" ] && ! _pid_exists_on_current_host "$lock_pid"
 }
 
-_lock_holder_is_live_on_current_host() {
+_lock_holder_is_foreign_host() {
+    local lock_host
+
+    lock_host=$(_lock_file_value "host")
+
+    [ -n "$lock_host" ] && [ "$lock_host" != "$CURRENT_HOST" ]
+}
+
+_lock_holder_matches_current_process_identity() {
     local lock_pid
     local lock_host
+    local lock_pid_started_at
 
     lock_pid=$(_lock_file_value "pid")
     lock_host=$(_lock_file_value "host")
+    lock_pid_started_at=$(_lock_file_value "pid_started_at")
 
-    [ "$lock_host" = "$CURRENT_HOST" ] && _pid_exists_on_current_host "$lock_pid"
+    [ "$lock_host" = "$CURRENT_HOST" ] &&
+        _pid_exists_on_current_host "$lock_pid" &&
+        _pid_matches_start_fingerprint "$lock_pid" "$lock_pid_started_at"
 }
 
 _missing_holder_grace_seconds() {
@@ -202,17 +243,28 @@ _lock_is_stale() {
         return 0
     fi
 
-    if _lock_holder_is_live_on_current_host; then
+    if [ "$lock_age" -lt "$COMPLETE_MODEL_LOCK_TIMEOUT_SECONDS" ]; then
         return 1
     fi
 
-    [ "$lock_age" -ge "$COMPLETE_MODEL_LOCK_TIMEOUT_SECONDS" ]
+    if _lock_holder_is_foreign_host; then
+        return 0
+    fi
+
+    ! _lock_holder_matches_current_process_identity
 }
 
 _write_recovery_lock_metadata() {
+    local pid_started_at
+
+    pid_started_at=$(_pid_start_fingerprint "$$") || pid_started_at=
+
     {
         echo "pid=$$"
         echo "host=$CURRENT_HOST"
+        if [ -n "$pid_started_at" ]; then
+            echo "pid_started_at=$pid_started_at"
+        fi
         echo "started_at=$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
         echo "model_lock=$MODEL_LOCK"
     } > "$MODEL_LOCK_RECOVERY_HOLDER"
@@ -233,6 +285,28 @@ _recovery_lock_holder_is_dead_on_current_host() {
     [ "$lock_host" = "$CURRENT_HOST" ] && ! _pid_exists_on_current_host "$lock_pid"
 }
 
+_recovery_lock_holder_is_foreign_host() {
+    local lock_host
+
+    lock_host=$(_recovery_lock_file_value "host")
+
+    [ -n "$lock_host" ] && [ "$lock_host" != "$CURRENT_HOST" ]
+}
+
+_recovery_lock_holder_matches_current_process_identity() {
+    local lock_pid
+    local lock_host
+    local lock_pid_started_at
+
+    lock_pid=$(_recovery_lock_file_value "pid")
+    lock_host=$(_recovery_lock_file_value "host")
+    lock_pid_started_at=$(_recovery_lock_file_value "pid_started_at")
+
+    [ "$lock_host" = "$CURRENT_HOST" ] &&
+        _pid_exists_on_current_host "$lock_pid" &&
+        _pid_matches_start_fingerprint "$lock_pid" "$lock_pid_started_at"
+}
+
 _recovery_lock_is_stale() {
     local lock_mtime
     local now
@@ -250,7 +324,15 @@ _recovery_lock_is_stale() {
     now=$(date +%s)
     lock_age=$((now - lock_mtime))
 
-    [ "$lock_age" -ge "$COMPLETE_MODEL_LOCK_TIMEOUT_SECONDS" ]
+    if [ "$lock_age" -lt "$COMPLETE_MODEL_LOCK_TIMEOUT_SECONDS" ]; then
+        return 1
+    fi
+
+    if _recovery_lock_holder_is_foreign_host; then
+        return 0
+    fi
+
+    ! _recovery_lock_holder_matches_current_process_identity
 }
 
 _remove_stale_recovery_lock() {
@@ -302,9 +384,12 @@ _all_model_artifacts_available() {
 }
 
 _new_download_lock_token() {
+    local pid_started_at="$1"
+
     {
         printf 'host=%s\n' "$CURRENT_HOST"
         printf 'pid=%s\n' "$$"
+        printf 'pid_started_at=%s\n' "$pid_started_at"
         printf 'nonce=%s-%s-%s\n' "$(date +%s)" "$RANDOM" "$RANDOM"
     } | (
         if command -v sha256sum >/dev/null 2>&1; then
@@ -320,6 +405,9 @@ _write_lock_metadata() {
         echo "token=$DOWNLOAD_LOCK_TOKEN"
         echo "pid=$$"
         echo "host=$CURRENT_HOST"
+        if [ -n "$DOWNLOAD_LOCK_PID_STARTED_AT" ]; then
+            echo "pid_started_at=$DOWNLOAD_LOCK_PID_STARTED_AT"
+        fi
         echo "started_at=$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
         echo "model_dir=$MODEL_DIR"
     } > "$MODEL_LOCK_HOLDER"
@@ -380,7 +468,8 @@ _acquire_lock() {
             return 1
         fi
 
-        DOWNLOAD_LOCK_TOKEN=$(_new_download_lock_token)
+        DOWNLOAD_LOCK_PID_STARTED_AT=$(_pid_start_fingerprint "$$") || DOWNLOAD_LOCK_PID_STARTED_AT=
+        DOWNLOAD_LOCK_TOKEN=$(_new_download_lock_token "$DOWNLOAD_LOCK_PID_STARTED_AT")
         if mkdir "$MODEL_LOCK" 2>/dev/null; then
             _write_lock_metadata
             _start_download_lock_heartbeat
