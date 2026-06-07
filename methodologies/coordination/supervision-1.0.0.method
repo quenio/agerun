@@ -3,6 +3,7 @@ memory.is_spawn_child := if(message.action = "spawn_child", 1, 0)
 memory.is_child_failed := if(message.action = "child_failed", 1, 0)
 memory.is_child_exited := if(message.action = "child_exited", 1, 0)
 memory.is_stop := if(message.action = "stop", 1, 0)
+memory.is_validate_stop := if(message.action = "validate_stop", 1, 0)
 memory.policy := if(memory.is_start = 1, message.policy, memory.policy)
 memory.reply_to := if(memory.is_start = 1, message.reply_to, memory.reply_to)
 memory.child_method_version := if(memory.is_start = 1, message.child_method_version, memory.child_method_version)
@@ -72,13 +73,44 @@ memory.restart_count := memory.restart_count + memory.restart_record_append_ok
 memory.child_agent_id := if(memory.restarted_child = 1, memory.restart_spawn_result, message.child_agent_id)
 memory.status := if(memory.failure_event = 1, "stopped", memory.status)
 memory.status := if(memory.restarted_child = 1, "restarted", memory.status)
-memory.stop_result := exit(message.child_agent_id * memory.is_stop)
-memory.child_agent_id := if(memory.is_stop = 1, message.child_agent_id, memory.child_agent_id)
-memory.status := if(memory.is_stop = 1, "stopped", memory.status)
-memory.should_report := memory.start_complete + memory.failure_event + memory.is_stop
+memory.stop_validation_message := {
+  action: "validate_stop"
+  child_agent_id: message.child_agent_id
+  remaining_child_agent_ids: memory.child_agent_ids
+}
+memory.stop_validation_sent := send(memory.self * memory.is_stop, memory.stop_validation_message)
+memory.current_stop_child_agent_id := head(message.remaining_child_agent_ids)
+memory.remaining_stop_child_agent_ids := tail(message.remaining_child_agent_ids)
+memory.stop_match := if(memory.current_stop_child_agent_id = message.child_agent_id, memory.is_validate_stop, 0)
+memory.stop_result := exit(memory.current_stop_child_agent_id * memory.stop_match)
+memory.stop_succeeded := memory.stop_match * memory.stop_result
+memory.next_stop_child_agent_id := head(memory.remaining_stop_child_agent_ids)
+memory.stop_has_remaining := if(memory.next_stop_child_agent_id > 0, 1, 0)
+memory.stop_not_matched := 1 - memory.stop_match
+memory.stop_continue_needed := memory.is_validate_stop * memory.stop_has_remaining
+memory.stop_continue_needed := memory.stop_continue_needed * memory.stop_not_matched
+memory.stop_continue_message := {
+  action: "validate_stop"
+  child_agent_id: message.child_agent_id
+  remaining_child_agent_ids: memory.remaining_stop_child_agent_ids
+}
+memory.stop_continue_sent := send(memory.self * memory.stop_continue_needed, memory.stop_continue_message)
+memory.stop_no_remaining := 1 - memory.stop_has_remaining
+memory.stop_scan_exhausted := memory.is_validate_stop * memory.stop_no_remaining
+memory.stop_done_sum := memory.stop_match + memory.stop_scan_exhausted
+memory.stop_done := if(memory.stop_done_sum > 0, 1, 0)
+memory.stop_untracked := memory.stop_scan_exhausted * memory.stop_not_matched
+memory.stop_exit_failed := 1 - memory.stop_result
+memory.stop_failed := memory.stop_match * memory.stop_exit_failed
+memory.child_agent_id := if(memory.stop_done = 1, message.child_agent_id, memory.child_agent_id)
+memory.status := if(memory.stop_succeeded = 1, "stopped", memory.status)
+memory.report_status := memory.status
+memory.report_status := if(memory.stop_untracked = 1, "ignored", memory.report_status)
+memory.report_status := if(memory.stop_failed = 1, "stop_failed", memory.report_status)
+memory.should_report := memory.start_complete + memory.failure_event + memory.stop_done
 memory.report_message := {
   action: "supervision_status"
-  status: memory.status
+  status: memory.report_status
   child_agent_id: memory.child_agent_id
   child_agent_ids: memory.child_agent_ids
   child_records: memory.child_records

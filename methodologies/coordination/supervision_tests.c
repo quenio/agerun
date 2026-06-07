@@ -52,6 +52,7 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
     const char *ref_instructions =
         "memory.last_action := message.action\n"
         "memory.last_status := message.status\n"
+        "memory.last_child_agent_id := message.child_agent_id\n"
         "memory.last_child_count := message.child_count\n"
         "memory.last_restart_count := message.restart_count\n";
 
@@ -77,10 +78,13 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
 
     ar_data_t *own_supervision_context = create_context();
     ar_data_t *own_observer_context = create_context();
+    ar_data_t *own_untracked_context = create_context();
     int64_t supervision_agent = ar_agency__create_agent(
         mut_agency, "supervision", "1.0.0", own_supervision_context);
     int64_t observer_agent = ar_agency__create_agent(
         mut_agency, "record-receiver", "1.0.0", own_observer_context);
+    int64_t untracked_agent = ar_agency__create_agent(
+        mut_agency, "record-receiver", "1.0.0", own_untracked_context);
 
     ar_data_t *own_start = ar_data__create_map();
     AR_ASSERT(own_start != NULL, "Supervision start should be created");
@@ -146,10 +150,56 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(ar_data__get_map_integer(ref_memory, "restart_count") == 1,
               "Supervision should count the restart");
 
+    // When a stop request names an untracked agent
+    ar_data_t *own_untracked_stop = ar_data__create_map();
+    AR_ASSERT(own_untracked_stop != NULL, "Untracked stop should be created");
+    ar_data__set_map_string(own_untracked_stop, "action", "stop");
+    ar_data__set_map_integer(own_untracked_stop,
+                             "child_agent_id",
+                             checked_agent_id(untracked_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, supervision_agent, own_untracked_stop),
+              "Untracked stop should queue");
+    own_untracked_stop = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    // Then the unrelated agent remains alive and the supervisor reports an ignored stop
+    AR_ASSERT(ar_agency__agent_exists(mut_agency, untracked_agent),
+              "Untracked stop should not exit an unrelated agent");
+    ref_memory = ar_agency__get_agent_memory(mut_agency, supervision_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_memory, "status"), "restarted") == 0,
+              "Untracked stop should not change the stored supervisor status");
+    ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "ignored") == 0,
+              "Observer should receive ignored status for untracked stop");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_child_agent_id") ==
+                  untracked_agent,
+              "Observer should receive the ignored child id");
+
+    // When a stop request names a tracked child
+    ar_data_t *own_tracked_stop = ar_data__create_map();
+    AR_ASSERT(own_tracked_stop != NULL, "Tracked stop should be created");
+    ar_data__set_map_string(own_tracked_stop, "action", "stop");
+    ar_data__set_map_integer(own_tracked_stop, "child_agent_id", checked_agent_id(first_child));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, supervision_agent, own_tracked_stop),
+              "Tracked stop should queue");
+    own_tracked_stop = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    // Then the tracked child exits and the supervisor reports stopped
+    AR_ASSERT(!ar_agency__agent_exists(mut_agency, first_child),
+              "Tracked stop should exit the named child");
+    ref_memory = ar_agency__get_agent_memory(mut_agency, supervision_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_memory, "status"), "stopped") == 0,
+              "Tracked stop should record stopped status");
+    ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "stopped") == 0,
+              "Observer should receive stopped status for tracked stop");
+
     // Cleanup
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_supervision_context);
     ar_data__destroy(own_observer_context);
+    ar_data__destroy(own_untracked_context);
 }
 
 int main(void) {

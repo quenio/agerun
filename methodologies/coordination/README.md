@@ -168,7 +168,7 @@ Reply:
 ```text
 {
   action: "supervision_status",
-  status: <running|restarted|stopped>,
+  status: <running|restarted|stopped|ignored|stop_failed>,
   child_agent_id: <agent>,
   child_agent_ids: [<agent>, <agent>, ...],
   child_records: [<child-record>, <child-record>, ...],
@@ -177,6 +177,10 @@ Reply:
   policy: <policy>
 }
 ```
+
+Stop requests are validated against the tracked `child_agent_ids` list before any `exit(...)` call.
+An untracked `child_agent_id` is reported as `ignored` and does not alter the stored supervisor
+status or exit the named agent.
 
 ### Distribution
 

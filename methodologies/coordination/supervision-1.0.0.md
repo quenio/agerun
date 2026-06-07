@@ -20,8 +20,10 @@ stored policy is `restart`. If so, it spawns a replacement child using the event
 `child_method_name` and `child_method_version`, appends the replacement to the tracked lists, and
 reports `status=restarted`. Otherwise, it reports `status=stopped`.
 
-On a map whose `action` field is `"stop"`, the method exits the supplied `child_agent_id` and
-reports `status=stopped`.
+On a map whose `action` field is `"stop"`, the method scans the tracked `child_agent_ids` list with
+`head(...)` and `tail(...)`. It exits and reports `status=stopped` only when the supplied
+`child_agent_id` belongs to that tracked list. If the id is not tracked, it leaves the agent alive,
+keeps the stored supervisor status unchanged, and reports `status=ignored`.
 
 ## Message Format
 
@@ -62,7 +64,7 @@ Status response:
 ```text
 {
   action: "supervision_status",
-  status: <running|restarted|stopped>,
+  status: <running|restarted|stopped|ignored|stop_failed>,
   child_agent_id: <agent>,
   child_agent_ids: [<agent>, <agent>, ...],
   child_records: [<child-record>, <child-record>, ...],
@@ -83,6 +85,8 @@ stop commands from unrelated messages.
 Use supervision around long-lived routing, scheduling, workflow, or worker agents. A supervision
 agent can start many children from one `child_method_names` list. Other methods can report lifecycle
 events to the supervisor when they observe a child failure through application-level messages.
+Composed callers can safely send stop requests through supervisors because untracked child ids are
+reported as ignored instead of being exited.
 
 ## Limitations
 
