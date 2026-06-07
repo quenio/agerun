@@ -214,6 +214,18 @@ static void test_synchronization__emits_continuation_after_unbounded_dependencie
               "Continuation should include dependencies even when status reply fails");
     AR_ASSERT(ar_data__get_map_integer(ref_sync_memory, "completed") == 0,
               "Synchronization should stay open after failed status send");
+    AR_ASSERT(ar_data__get_map_integer(ref_sync_memory, "continuation_done") == 1,
+              "Synchronization should remember delivered continuation after failed status send");
+
+    send_dependency(mut_agency, sync_agent, "sync-failed-status", "ready-o");
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(ar_data__get_map_integer(ref_sync_memory, "completed") == 0,
+              "Synchronization should stay open after repeated failed status send");
+    AR_ASSERT(ar_data__get_map_integer(ref_sync_memory, "done_count") == 2,
+              "Synchronization should freeze dependencies after continuation delivery");
+    AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_done_count") == 2,
+              "Synchronization should not re-emit continuation after status send failure");
 
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_sync_context);
