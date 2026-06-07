@@ -138,6 +138,42 @@ static void test_scheduling__triggers_future_work_on_tick(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_current_tick") == 5,
               "Triggered status should report due tick");
 
+    ar_data_t *own_failed_schedule = ar_data__create_map();
+    AR_ASSERT(own_failed_schedule != NULL, "Failed schedule message should be created");
+    ar_data__set_map_string(own_failed_schedule, "action", "schedule");
+    ar_data__set_map_string(own_failed_schedule, "schedule_id", "sched-failed");
+    ar_data__set_map_integer(own_failed_schedule, "due_tick", 8);
+    ar_data__set_map_integer(own_failed_schedule, "target", 98765);
+    ar_data__set_map_string(own_failed_schedule, "payload_action", "execute");
+    ar_data__set_map_string(own_failed_schedule, "payload_text", "lost");
+    ar_data__set_map_string(own_failed_schedule, "correlation_id", "job-failed");
+    ar_data__set_map_integer(own_failed_schedule, "reply_to", checked_agent_id(observer_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, scheduling_agent, own_failed_schedule),
+              "Failed schedule message should queue");
+    own_failed_schedule = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ar_data_t *own_failed_tick = ar_data__create_map();
+    AR_ASSERT(own_failed_tick != NULL, "Failed trigger tick should be created");
+    ar_data__set_map_string(own_failed_tick, "action", "tick");
+    ar_data__set_map_integer(own_failed_tick, "tick", 8);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, scheduling_agent, own_failed_tick),
+              "Failed trigger tick should queue");
+    own_failed_tick = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
+                     "trigger_failed") == 0,
+              "Observer should receive failed trigger status");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_pending") == 1,
+              "Failed trigger should remain pending");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_current_tick") == 8,
+              "Failed trigger status should report due tick");
+    const ar_data_t *ref_scheduling_memory =
+        ar_agency__get_agent_memory(mut_agency, scheduling_agent);
+    AR_ASSERT(ar_data__get_map_integer(ref_scheduling_memory, "pending") == 1,
+              "Scheduler memory should keep failed trigger pending");
+
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_scheduling_context);
     ar_data__destroy(own_receiver_context);

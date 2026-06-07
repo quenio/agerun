@@ -299,11 +299,14 @@ Status:
 {
   action: "schedule_status",
   schedule_id: <id>,
-  status: <scheduled|cancelled|triggered>,
+  status: <scheduled|cancelled|triggered|trigger_failed>,
   pending: <0|1>,
   current_tick: <number>
 }
 ```
+
+A due tick clears `pending` only when the stored payload is sent successfully. If delivery fails, the
+status is `trigger_failed` and the schedule remains pending for a later tick.
 
 ### Synchronization
 

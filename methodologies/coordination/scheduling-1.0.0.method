@@ -25,8 +25,12 @@ memory.execution_message := {
   schedule_id: memory.schedule_id
 }
 memory.execution_sent := send(memory.target * memory.should_trigger, memory.execution_message)
-memory.pending := if(memory.should_trigger = 1, 0, memory.pending)
-memory.status := if(memory.should_trigger = 1, "triggered", memory.status)
+memory.trigger_succeeded := memory.should_trigger * memory.execution_sent
+memory.trigger_failed := if(memory.execution_sent = 0, 1, 0)
+memory.trigger_failed := memory.trigger_failed * memory.should_trigger
+memory.pending := if(memory.trigger_succeeded = 1, 0, memory.pending)
+memory.status := if(memory.trigger_succeeded = 1, "triggered", memory.status)
+memory.status := if(memory.trigger_failed = 1, "trigger_failed", memory.status)
 memory.report_message := {
   action: "schedule_status"
   schedule_id: memory.schedule_id
