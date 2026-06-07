@@ -95,14 +95,16 @@ Optional keyed selection for `mode=one`:
 ```text
 {
   route_key: <key>,
-  route_a_key: <key>,
-  target_a: <agent>,
-  route_b_key: <key>,
-  target_b: <agent>,
-  route_c_key: <key>,
-  target_c: <agent>
+  routes: {
+    keys: [<key>, <key>, ...],
+    targets: [<agent>, <agent>, ...]
+  }
 }
 ```
+
+The `routes.keys` and `routes.targets` lists are paired by position and scanned with `head(...)` and
+`tail(...)`, so keyed one-to-one routing is unbounded. Both the request `route_key` and the candidate
+key must be nonzero/present before a candidate can match.
 
 If a one-to-one request has no positive direct or keyed target, routing emits `route_failed` with zero
 delivery counts instead of reporting a successful zero-send route.
@@ -649,7 +651,7 @@ Conversation-scoped workflow:
 
 | Method | Status | Gap |
 | --- | --- | --- |
-| Routing | Fully implementable for one-to-one and primitive unbounded fan-out. | Richer message inspection and nested recipient descriptors require a richer data query layer. |
+| Routing | Fully implementable for direct one-to-one, keyed unbounded one-to-one, and primitive unbounded fan-out. | Keyed routes use a map containing parallel `keys` and `targets` lists because ordinary methods do not have a safe type predicate for scanning a list of route-entry maps. Richer message inspection and nested recipient descriptors require a richer data query layer. |
 | Supervision | Partially implementable. | The method can spawn and track unbounded child method-name lists with one shared start version, but methods cannot autonomously observe child crashes or exits; callers must send `child_failed` or `child_exited` events. A failed `spawn(...)` aborts the remaining ordinary method evaluation, so supervision can avoid reporting `running` for an incomplete child set but cannot emit a catchable spawn-failure status without a non-aborting spawn result or method-existence check. Removing arbitrary failed ids from the tracked list or starting one mixed-version list requires a list-filter operation, separate supervisors, or a specialized replacement method. |
 | Distribution | Partially implementable. | The method assigns one work payload to an unbounded worker list by composing with routing. Dynamic decomposition into distinct per-worker portions and load-aware placement require additional decomposition methods or richer collection-processing conventions. |
 | Aggregation | Fully implementable for list-valued fan-in. | Duplicate handling, custom merge functions, and richer aggregate policies require deeper collection operations or specialized aggregate methods. |

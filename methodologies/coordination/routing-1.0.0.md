@@ -12,9 +12,9 @@ When the agent receives a map whose `action` field is `"route"`, it builds a for
 the payload fields and sends it to either one selected target or an unbounded list of targets.
 
 For `mode=one`, the method sends to `target` when it is greater than zero. If `target` is not set,
-it can select `target_a`, `target_b`, or `target_c` by matching `route_key` against the corresponding
-`route_*_key` field. If no positive one-to-one target is selected, the method emits `route_result`
-with `status: "route_failed"` and zero delivery counts.
+it scans `routes.keys` and `routes.targets` as paired unbounded lists, matching `route_key` against
+each candidate key and sending to the paired positive target. If no positive one-to-one target is
+selected, the method emits `route_result` with `status: "route_failed"` and zero delivery counts.
 
 For `mode=many`, the method reads `targets` as a list of nonzero agent IDs. It uses `head(...)` to
 send to the next target and `tail(...)` to send a continuation message to itself with the remaining
@@ -54,16 +54,21 @@ One-to-many route request:
 }
 ```
 
-Optional keyed fields for one-to-one selection:
+Optional keyed route map for one-to-one selection:
 
 ```text
 {
   route_key: <key>,
-  route_a_key: <key>,
-  route_b_key: <key>,
-  route_c_key: <key>
+  routes: {
+    keys: [<key>, <key>, ...],
+    targets: [<agent>, <agent>, ...]
+  }
 }
 ```
+
+The `routes.keys` and `routes.targets` lists are paired by position. The method scans them with
+`head(...)` and `tail(...)`, so keyed one-to-one routing is not limited to three candidates. Both the
+request `route_key` and the candidate key must be nonzero/present before the candidate can match.
 
 Forwarded message:
 
@@ -111,14 +116,18 @@ lets the method avoid forwarding unrelated maps that happen to contain fields su
 
 Distribution uses routing to assign work portions to workers. Workflow uses routing to dispatch
 activity steps without embedding worker-specific delivery logic. Larger agencies can pass a
-primitive target list to `mode=many` when the fan-out size is not known ahead of time.
+primitive target list to `mode=many` when the fan-out size is not known ahead of time, or pass a
+`routes` map when a one-to-one recipient must be selected from an unbounded route table.
 
 ## Limitations
 
-The method supports unbounded fan-out for primitive nonzero agent IDs. The `head(...)` empty
-sentinel is integer `0`, so `0` cannot be used as a valid fan-out target. Continuation messages keep
-the remaining target list in `memory.continuation_message`; `send(...)` deep-copies that nested list
-when routing back to the same agent.
+The method supports unbounded fan-out for primitive nonzero agent IDs and unbounded keyed
+one-to-one selection through parallel `routes.keys` and `routes.targets` lists. The `head(...)` empty
+sentinel is integer `0`, so `0` cannot be used as a valid fan-out target or route key. Continuation
+messages keep remaining lists in memory-built messages; `send(...)` deep-copies those nested lists
+when routing back to the same agent. A list of route-entry maps would be a more natural external
+shape, but ordinary methods currently do not have a safe type predicate for checking that
+`head(routes)` returned a map before reading nested fields.
 
 ## Implementation and Tests
 
