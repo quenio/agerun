@@ -24,4 +24,5 @@ memory.output_message := {
   received_count: memory.received_count
 }
 memory.output_sent := send(memory.output_target, memory.output_message)
-memory.completed := if(memory.should_emit = 1, 1, memory.completed)
+memory.completion_delivered := memory.should_emit * memory.output_sent
+memory.completed := if(memory.completion_delivered = 1, 1, memory.completed)

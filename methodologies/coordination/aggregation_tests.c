@@ -144,6 +144,34 @@ static void test_aggregation__combines_required_results(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_received_count") == 4,
               "Late results should not emit another completion");
 
+    ar_data_t *own_failed_start = ar_data__create_map();
+    AR_ASSERT(own_failed_start != NULL, "Failed completion start message should be created");
+    ar_data__set_map_string(own_failed_start, "action", "start");
+    ar_data__set_map_string(own_failed_start, "aggregate_id", "agg-failed-send");
+    ar_data__set_map_integer(own_failed_start, "required_count", 2);
+    ar_data__set_map_integer(own_failed_start, "reply_to", 98765);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, aggregation_agent, own_failed_start),
+              "Failed completion start message should queue");
+    own_failed_start = NULL;
+
+    send_result(mut_agency, aggregation_agent, "one");
+    send_result(mut_agency, aggregation_agent, "two");
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ref_aggregation_memory = ar_agency__get_agent_memory(mut_agency, aggregation_agent);
+    AR_ASSERT(ar_data__get_map_integer(ref_aggregation_memory, "completed") == 0,
+              "Failed completion send should not mark aggregate complete");
+    AR_ASSERT(ar_data__get_map_integer(ref_aggregation_memory, "received_count") == 2,
+              "Failed completion send should retain collected count");
+
+    send_result(mut_agency, aggregation_agent, "three");
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(ar_data__get_map_integer(ref_aggregation_memory, "completed") == 0,
+              "Aggregate should stay open after repeated completion send failure");
+    AR_ASSERT(ar_data__get_map_integer(ref_aggregation_memory, "received_count") == 3,
+              "Aggregate should keep collecting after completion send failure");
+
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_aggregation_context);
     ar_data__destroy(own_receiver_context);
