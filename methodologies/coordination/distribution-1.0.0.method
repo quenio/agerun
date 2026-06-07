@@ -4,6 +4,7 @@ memory.routing_agent := if(memory.is_distribute = 1, message.routing_agent, memo
 memory.reply_to := if(memory.is_distribute = 1, message.reply_to, memory.reply_to)
 memory.work_id := if(memory.is_distribute = 1, message.work_id, memory.work_id)
 memory.work_text := if(memory.is_distribute = 1, message.work_text, memory.work_text)
+memory.completed := if(memory.is_distribute = 1, 0, memory.completed)
 memory.route_message := {
   action: "route"
   mode: "many"
@@ -18,7 +19,9 @@ memory.route_message := {
 memory.route_send_result := send(memory.routing_agent * memory.is_distribute, memory.route_message)
 memory.route_sent := if(memory.is_distribute = 1, memory.route_send_result, memory.route_sent)
 memory.route_result_matches := if(message.correlation_id = memory.work_id, 1, 0)
+memory.not_completed := if(memory.completed = 0, 1, 0)
 memory.valid_route_result := memory.is_route_result * memory.route_sent * memory.route_result_matches
+memory.valid_route_result := memory.valid_route_result * memory.not_completed
 memory.status := if(memory.valid_route_result = 1, "distributed", memory.status)
 memory.status := if(memory.is_distribute = 1, "routing", memory.status)
 memory.route_failed := if(memory.route_sent = 0, 1, 0)
@@ -39,3 +42,4 @@ memory.report_message := {
 memory.should_report := memory.valid_route_result + memory.route_failed
 memory.report_target := memory.reply_to * memory.should_report
 memory.report_sent := send(memory.report_target, memory.report_message)
+memory.completed := if(memory.report_sent = 1, 1, memory.completed)

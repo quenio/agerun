@@ -18,7 +18,9 @@ distribution agent. Distribution translates that result into `distribution_resul
 router's routed and sent counts. Its `route_sent` field reports whether the original route request
 was handed to the routing agent; later `route_result` processing does not overwrite that handoff
 status. Route results are accepted only when their `correlation_id` matches the active work id, so
-late results from other jobs cannot be misreported as the current distribution.
+late results from other jobs cannot be misreported as the current distribution. After a terminal
+`distribution_result` is sent successfully, duplicate `route_result` messages for the same work id
+are ignored.
 
 If the initial route request cannot be sent to the routing agent, distribution immediately emits a
 terminal `distribution_result` with `status: "route_failed"`, `assignment_count: 0`,
