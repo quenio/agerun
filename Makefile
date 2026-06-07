@@ -895,16 +895,22 @@ complete-performance-validation: complete-runtime-ready
 	./ar_complete_instruction_evaluator_tests
 
 # Run the documented Linux containerized complete() performance validation.
-# The container performs complete-runtime-ready itself so cache misses download in Linux,
-# matching the CI restore/miss path while warm host caches are reused through the bind mount.
+# The default mode mounts the shared host model cache and reuses it when warm.
+# If the mounted model file is missing, complete-runtime-ready downloads it inside Linux.
 # Usage: make complete-performance-validation-linux-container
 complete-performance-validation-linux-container:
 	mkdir -p "$(COMPLETE_MODEL_DIR)" "$(COMPLETE_LINUX_CONTAINER_HOST_HOME)/.agerun"
-	@echo "Linux container model cache mode: $(COMPLETE_LINUX_CONTAINER_MODEL_CACHE_LABEL)"
-	@echo "  Host model cache: $(abspath $(COMPLETE_MODEL_DIR))"
-	@echo "  Container model cache: $(COMPLETE_LINUX_CONTAINER_MODEL_DIR)"
+	@echo "Linux container complete() validation"
+	@echo "  Mode: $(COMPLETE_LINUX_CONTAINER_MODEL_CACHE_LABEL)"
+	@if [ -f "$(COMPLETE_MODEL_FILE)" ]; then \
+		echo "  Model state: present; this run should not download the GGUF"; \
+	else \
+		echo "  Model state: missing; complete-runtime-ready will download the GGUF inside Linux"; \
+	fi
+	@echo "  Host shared model cache: $(abspath $(COMPLETE_MODEL_DIR))"
+	@echo "  Container shared model cache: $(COMPLETE_LINUX_CONTAINER_MODEL_DIR)"
 	@echo '  Runtime default: complete() resolves $$HOME/.agerun/models inside the container'
-	@echo "  Cold download check: make complete-performance-validation-linux-container-cold"
+	@echo "  To force a cold CI-style model download, run: make complete-performance-validation-linux-container-cold"
 	docker build --platform "$(COMPLETE_LINUX_CONTAINER_PLATFORM)" -t "$(COMPLETE_LINUX_CONTAINER_IMAGE)" "$(COMPLETE_LINUX_CONTAINER_CONTEXT)"
 	docker run --rm \
 		--platform "$(COMPLETE_LINUX_CONTAINER_PLATFORM)" \
@@ -918,6 +924,7 @@ complete-performance-validation-linux-container:
 # Run the Linux containerized validation with an isolated empty model cache
 # Usage: make complete-performance-validation-linux-container-cold
 complete-performance-validation-linux-container-cold:
+	@echo "Preparing an empty isolated model cache for a cold Linux download check"
 	@case "$(COMPLETE_LINUX_CONTAINER_COLD_MODEL_DIR)" in \
 		.deps/*) ;; \
 		*) echo "ERROR: COMPLETE_LINUX_CONTAINER_COLD_MODEL_DIR must stay under .deps/"; exit 1 ;; \
