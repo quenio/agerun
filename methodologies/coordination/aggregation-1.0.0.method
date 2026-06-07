@@ -15,5 +15,12 @@ memory.status := if(memory.is_complete = 1, "complete", "collecting")
 memory.not_completed := if(memory.completed = 0, 1, 0)
 memory.should_emit := memory.is_complete * memory.not_completed
 memory.output_target := memory.reply_to * memory.should_emit
-memory.output_sent := send(memory.output_target, {action: "aggregate_complete", aggregate_id: memory.aggregate_id, status: memory.status, result: memory.results, received_count: memory.received_count})
+memory.output_message := {
+  action: "aggregate_complete"
+  aggregate_id: memory.aggregate_id
+  status: memory.status
+  result: memory.results
+  received_count: memory.received_count
+}
+memory.output_sent := send(memory.output_target, memory.output_message)
 memory.completed := if(memory.should_emit = 1, 1, memory.completed)

@@ -33,7 +33,18 @@ memory.has_remaining := if(memory.remaining_head > 0, 1, 0)
 memory.routed_count_many := message.routed_count + memory.has_many_target
 memory.sent_count_many := message.sent_count + memory.sent_many
 memory.continuation_target := memory.self * memory.is_route * memory.is_many * memory.has_remaining
-memory.continuation_sent := send(memory.continuation_target, {action: "route", mode: "many", targets: memory.remaining_targets, payload_action: memory.forward_action, payload_text: memory.forward_text, correlation_id: memory.correlation_id, reply_to: message.reply_to, routed_count: memory.routed_count_many, sent_count: memory.sent_count_many})
+memory.continuation_message := {
+  action: "route"
+  mode: "many"
+  targets: memory.remaining_targets
+  payload_action: memory.forward_action
+  payload_text: memory.forward_text
+  correlation_id: memory.correlation_id
+  reply_to: message.reply_to
+  routed_count: memory.routed_count_many
+  sent_count: memory.sent_count_many
+}
+memory.continuation_sent := send(memory.continuation_target, memory.continuation_message)
 memory.is_known_mode := memory.is_one + memory.is_many
 memory.should_reply := memory.is_route
 memory.should_reply := if(memory.is_many * memory.has_remaining = 1, 0, memory.should_reply)

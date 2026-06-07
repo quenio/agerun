@@ -104,8 +104,9 @@ primitive target list to `mode=many` when the fan-out size is not known ahead of
 ## Limitations
 
 The method supports unbounded fan-out for primitive nonzero agent IDs. The `head(...)` empty
-sentinel is integer `0`, so `0` cannot be used as a valid fan-out target. Lists containing nested
-containers still depend on the current shallow-copy behavior of `head(...)` and `tail(...)`.
+sentinel is integer `0`, so `0` cannot be used as a valid fan-out target. Continuation messages keep
+the remaining target list in `memory.continuation_message`; `send(...)` deep-copies that nested list
+when routing back to the same agent.
 
 ## Implementation and Tests
 
