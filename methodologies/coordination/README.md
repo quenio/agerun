@@ -184,7 +184,8 @@ Reply:
 
 Stop requests are validated against the tracked `child_agent_ids` list before any `exit(...)` call.
 An untracked `child_agent_id` is reported as `ignored` and does not alter the stored supervisor
-status or exit the named agent.
+status or exit the named agent. A successfully stopped tracked child is recorded as handled so a
+later `child_exited` or `child_failed` message for that child is ignored instead of restarted.
 Lifecycle `child_failed` and `child_exited` events are validated against the same tracked list before
 restart or stop handling. Untracked lifecycle events report `ignored` and do not append replacement
 children or increment `restart_count`.

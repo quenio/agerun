@@ -121,9 +121,11 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(own_child_id_items != NULL, "Supervision child ids should be readable");
     int64_t first_child = ar_data__get_integer(own_child_id_items[0]);
     int64_t second_child = ar_data__get_integer(own_child_id_items[1]);
+    int64_t third_child = ar_data__get_integer(own_child_id_items[2]);
     AR__HEAP__FREE(own_child_id_items);
     AR_ASSERT(first_child > 0, "Supervision should create a child agent");
     AR_ASSERT(second_child > first_child, "Supervision should create a second child agent");
+    AR_ASSERT(third_child > second_child, "Supervision should create a third child agent");
 
     const ar_data_t *ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "running") == 0,
@@ -282,14 +284,14 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     ar_data_t *own_tracked_stop = ar_data__create_map();
     AR_ASSERT(own_tracked_stop != NULL, "Tracked stop should be created");
     ar_data__set_map_string(own_tracked_stop, "action", "stop");
-    ar_data__set_map_integer(own_tracked_stop, "child_agent_id", checked_agent_id(first_child));
+    ar_data__set_map_integer(own_tracked_stop, "child_agent_id", checked_agent_id(third_child));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, supervision_agent, own_tracked_stop),
               "Tracked stop should queue");
     own_tracked_stop = NULL;
     ar_method_fixture__process_all_messages(own_fixture);
 
     // Then the tracked child exits and the supervisor reports stopped
-    AR_ASSERT(!ar_agency__agent_exists(mut_agency, first_child),
+    AR_ASSERT(!ar_agency__agent_exists(mut_agency, third_child),
               "Tracked stop should exit the named child");
     ref_memory = ar_agency__get_agent_memory(mut_agency, supervision_agent);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_memory, "status"), "stopped") == 0,
@@ -297,6 +299,30 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "stopped") == 0,
               "Observer should receive stopped status for tracked stop");
+
+    // And a delayed lifecycle event for the stopped child is ignored
+    ar_data_t *own_stopped_lifecycle = ar_data__create_map();
+    AR_ASSERT(own_stopped_lifecycle != NULL, "Stopped child lifecycle should be created");
+    ar_data__set_map_string(own_stopped_lifecycle, "action", "child_exited");
+    ar_data__set_map_integer(own_stopped_lifecycle,
+                             "child_agent_id",
+                             checked_agent_id(third_child));
+    ar_data__set_map_string(own_stopped_lifecycle, "child_method_name", "record-receiver");
+    ar_data__set_map_string(own_stopped_lifecycle, "child_method_version", "1.0.0");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, supervision_agent, own_stopped_lifecycle),
+              "Stopped child lifecycle should queue");
+    own_stopped_lifecycle = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ref_memory = ar_agency__get_agent_memory(mut_agency, supervision_agent);
+    ref_child_ids = ar_data__get_map_data(ref_memory, "child_agent_ids");
+    AR_ASSERT(ref_child_ids != NULL && ar_data__list_count(ref_child_ids) == 6,
+              "Stopped child lifecycle should not append another replacement");
+    AR_ASSERT(ar_data__get_map_integer(ref_memory, "restart_count") == 2,
+              "Stopped child lifecycle should not increment restart count");
+    ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "ignored") == 0,
+              "Observer should receive ignored status for stopped child lifecycle event");
 
     ar_data_t *own_failed_handoff_context = create_context();
     int64_t failed_handoff_agent = ar_agency__create_agent(

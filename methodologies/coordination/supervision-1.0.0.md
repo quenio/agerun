@@ -36,6 +36,8 @@ On a map whose `action` field is `"stop"`, the method scans the tracked `child_a
 `child_agent_id` belongs to that tracked list. If the id is not tracked, it leaves the agent alive,
 keeps the stored supervisor status unchanged, and reports `status=ignored`. If the internal stop
 validation message cannot be queued, it reports `status=handoff_failed` and does not exit the child.
+A successful stop also records the child id as handled so later lifecycle messages for that stopped
+child are ignored instead of restarting it.
 
 ## Message Format
 
@@ -100,7 +102,7 @@ events to the supervisor when they observe a child failure through application-l
 Composed callers can safely send stop requests through supervisors because untracked child ids are
 reported as ignored instead of being exited. Lifecycle events are guarded the same way, so a stale
 or misaddressed failure cannot add bogus replacement children. Duplicate lifecycle events for any
-previously handled child are also reported as ignored.
+previously handled or explicitly stopped child are also reported as ignored.
 
 ## Limitations
 
@@ -111,9 +113,9 @@ be modeled with separate supervisors or by sending restart events with explicit 
 method appends replacement child ids to its tracked lists; it does not remove arbitrary failed ids
 from the middle of the list because ordinary methods do not currently have an atomic list-filter
 operation. The method keeps a separate handled lifecycle id list to suppress delayed duplicate
-failure or exit messages for those retained ids. A failed `spawn(...)` instruction aborts method
-evaluation, so ordinary supervision methods cannot catch that failure and send a terminal failure
-report after the failed instruction.
+failure or exit messages for retained ids that were already handled or explicitly stopped. A failed
+`spawn(...)` instruction aborts method evaluation, so ordinary supervision methods cannot catch that
+failure and send a terminal failure report after the failed instruction.
 
 ## Implementation and Tests
 

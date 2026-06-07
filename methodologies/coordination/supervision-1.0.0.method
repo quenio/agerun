@@ -175,6 +175,9 @@ memory.stop_untracked := memory.stop_scan_exhausted * memory.stop_not_matched
 memory.stop_exit_failed := 1 - memory.stop_result
 memory.stop_failed := memory.stop_match * memory.stop_exit_failed
 memory.child_agent_id := if(memory.stop_done = 1, message.child_agent_id, memory.child_agent_id)
+memory.stop_handled_append_buffer := if(memory.stop_succeeded = 1, memory.handled_lifecycle_child_agent_ids, "")
+memory.stop_handled_append_ok := append(memory.stop_handled_append_buffer, message.child_agent_id)
+memory.handled_lifecycle_child_agent_ids := if(memory.stop_handled_append_ok = 1, memory.stop_handled_append_buffer, memory.handled_lifecycle_child_agent_ids)
 memory.status := if(memory.stop_succeeded = 1, "stopped", memory.status)
 memory.validation_handoff_failed := memory.lifecycle_validation_failed + memory.lifecycle_continue_failed
 memory.validation_handoff_failed := memory.validation_handoff_failed + memory.stop_validation_failed
