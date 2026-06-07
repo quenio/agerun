@@ -305,6 +305,111 @@ static void test_workflow__routes_unbounded_steps_with_branching_to_completion(v
     AR_ASSERT(ar_data__get_map_integer(ref_workflow_memory, "completed_step_count") == 1,
               "Repeated completion retry should not count the final step again");
 
+    ar_data_t *own_failed_handoff_context = create_context();
+    int64_t failed_handoff_agent = ar_agency__create_agent(
+        mut_agency, "workflow", "1.0.0", own_failed_handoff_context);
+    ar_data_t *mut_failed_handoff_memory =
+        ar_agency__get_agent_mutable_memory(mut_agency, failed_handoff_agent);
+    AR_ASSERT(mut_failed_handoff_memory != NULL, "Failed handoff workflow memory should exist");
+    AR_ASSERT(ar_data__set_map_integer(mut_failed_handoff_memory, "self", 98765),
+              "Failed start handoff should corrupt self for regression setup");
+
+    own_start = ar_data__create_map();
+    AR_ASSERT(own_start != NULL, "Failed start handoff workflow start should be created");
+    ar_data__set_map_string(own_start, "action", "start");
+    ar_data__set_map_string(own_start, "workflow_id", "wf-failed-start-handoff");
+    ar_data__set_map_integer(own_start, "routing_agent", checked_agent_id(routing_agent));
+    ar_data__set_map_integer(own_start, "reply_to", checked_agent_id(report_agent));
+    own_step_targets = ar_data__create_list();
+    own_step_actions = ar_data__create_list();
+    own_step_texts = ar_data__create_list();
+    AR_ASSERT(own_step_targets != NULL, "Failed start handoff targets should be created");
+    AR_ASSERT(own_step_actions != NULL, "Failed start handoff actions should be created");
+    AR_ASSERT(own_step_texts != NULL, "Failed start handoff texts should be created");
+    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+                         checked_agent_id(step1_agent), "step1", "handoff");
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_targets", own_step_targets),
+              "Failed start handoff should own step targets");
+    own_step_targets = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_actions", own_step_actions),
+              "Failed start handoff should own step actions");
+    own_step_actions = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_texts", own_step_texts),
+              "Failed start handoff should own step texts");
+    own_step_texts = NULL;
+    ar_data__set_map_string(own_start, "branch_value", "skip");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, failed_handoff_agent, own_start),
+              "Failed start handoff workflow should queue");
+    own_start = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    const ar_data_t *ref_failed_handoff_memory =
+        ar_agency__get_agent_memory(mut_agency, failed_handoff_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_workflow_id"),
+                     "wf-failed-start-handoff") == 0,
+              "Failed start handoff should report the workflow id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
+                     "handoff_failed") == 0,
+              "Failed start handoff should report handoff failure");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_failed_handoff_memory, "status"),
+                     "handoff_failed") == 0,
+              "Failed start handoff should store handoff failure status");
+
+    ar_data_t *own_failed_continue_context = create_context();
+    int64_t failed_continue_agent = ar_agency__create_agent(
+        mut_agency, "workflow", "1.0.0", own_failed_continue_context);
+
+    own_start = ar_data__create_map();
+    AR_ASSERT(own_start != NULL, "Failed continuation workflow start should be created");
+    ar_data__set_map_string(own_start, "action", "start");
+    ar_data__set_map_string(own_start, "workflow_id", "wf-failed-continue-handoff");
+    ar_data__set_map_integer(own_start, "routing_agent", checked_agent_id(routing_agent));
+    ar_data__set_map_integer(own_start, "reply_to", checked_agent_id(report_agent));
+    own_step_targets = ar_data__create_list();
+    own_step_actions = ar_data__create_list();
+    own_step_texts = ar_data__create_list();
+    AR_ASSERT(own_step_targets != NULL, "Failed continuation targets should be created");
+    AR_ASSERT(own_step_actions != NULL, "Failed continuation actions should be created");
+    AR_ASSERT(own_step_texts != NULL, "Failed continuation texts should be created");
+    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+                         checked_agent_id(step1_agent), "step1", "continue-a");
+    append_workflow_step(own_step_targets, own_step_actions, own_step_texts,
+                         checked_agent_id(step2_agent), "step2", "continue-b");
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_targets", own_step_targets),
+              "Failed continuation should own step targets");
+    own_step_targets = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_actions", own_step_actions),
+              "Failed continuation should own step actions");
+    own_step_actions = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_start, "step_texts", own_step_texts),
+              "Failed continuation should own step texts");
+    own_step_texts = NULL;
+    ar_data__set_map_string(own_start, "branch_value", "skip");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, failed_continue_agent, own_start),
+              "Failed continuation workflow should queue");
+    own_start = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ar_data_t *mut_failed_continue_memory =
+        ar_agency__get_agent_mutable_memory(mut_agency, failed_continue_agent);
+    AR_ASSERT(mut_failed_continue_memory != NULL, "Failed continuation memory should exist");
+    AR_ASSERT(ar_data__set_map_integer(mut_failed_continue_memory, "self", 98765),
+              "Failed continuation should corrupt self for regression setup");
+    send_step_done(mut_agency, failed_continue_agent, "wf-failed-continue-handoff", 1, "continue");
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    const ar_data_t *ref_failed_continue_memory =
+        ar_agency__get_agent_memory(mut_agency, failed_continue_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_workflow_id"),
+                     "wf-failed-continue-handoff") == 0,
+              "Failed continuation handoff should report the workflow id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
+                     "handoff_failed") == 0,
+              "Failed continuation handoff should report handoff failure");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_failed_continue_memory, "status"),
+                     "handoff_failed") == 0,
+              "Failed continuation handoff should store handoff failure status");
+
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_routing_context);
     ar_data__destroy(own_workflow_context);
@@ -314,6 +419,8 @@ static void test_workflow__routes_unbounded_steps_with_branching_to_completion(v
     ar_data__destroy(own_step4_context);
     ar_data__destroy(own_step5_context);
     ar_data__destroy(own_report_context);
+    ar_data__destroy(own_failed_handoff_context);
+    ar_data__destroy(own_failed_continue_context);
 }
 
 int main(void) {

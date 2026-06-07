@@ -20,6 +20,8 @@ memory.start_execute_message := {
   step_number: 1
 }
 memory.start_execute_sent := send(memory.self * memory.is_start, memory.start_execute_message)
+memory.start_handoff_failed := if(memory.start_execute_sent = 0, 1, 0)
+memory.start_handoff_failed := memory.start_handoff_failed * memory.is_start
 memory.step_target := head(message.step_targets)
 memory.step_action := head(message.step_actions)
 memory.step_text := head(message.step_texts)
@@ -79,11 +81,17 @@ memory.continue_message := {
   step_number: memory.next_step_number
 }
 memory.continue_sent := send(memory.self * memory.step_completion * memory.has_next_step, memory.continue_message)
+memory.continue_required := memory.step_completion * memory.has_next_step
+memory.continue_handoff_failed := if(memory.continue_sent = 0, 1, 0)
+memory.continue_handoff_failed := memory.continue_handoff_failed * memory.continue_required
 memory.no_next_step := if(memory.has_next_step = 1, 0, 1)
 memory.finished_after_step := memory.step_completion * memory.no_next_step
 memory.retry_completion := memory.is_step_done * memory.matching_workflow * memory.matching_step * memory.is_active * memory.completion_pending
 memory.should_complete := memory.empty_completion + memory.finished_after_step + memory.retry_completion
+memory.handoff_failed := memory.start_handoff_failed + memory.continue_handoff_failed
+memory.should_complete := memory.should_complete + memory.handoff_failed
 memory.completion_status := if(memory.should_complete > 0, "complete", memory.status)
+memory.completion_status := if(memory.handoff_failed > 0, "handoff_failed", memory.completion_status)
 memory.complete_message := {
   action: "workflow_complete"
   workflow_id: memory.workflow_id
@@ -95,4 +103,4 @@ memory.complete_sent := send(memory.reply_to * memory.should_complete, memory.co
 memory.completion_delivered := memory.should_complete * memory.complete_sent
 memory.completion_pending := if(memory.should_complete > 0, 1, memory.completion_pending)
 memory.completion_pending := if(memory.completion_delivered = 1, 0, memory.completion_pending)
-memory.status := if(memory.completion_delivered = 1, "complete", memory.status)
+memory.status := if(memory.completion_delivered = 1, memory.completion_status, memory.status)

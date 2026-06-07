@@ -421,6 +421,8 @@ The `step` value must match the workflow agent's active step; stale, duplicate, 
 completion maps are ignored.
 Workflow advances `current_step` and consumes a pending step only after the route handoff for that
 step succeeds; failed route handoffs leave the step at the head of the pending queue.
+If the initial internal step handoff or a later step continuation cannot be queued, workflow emits
+`workflow_complete` with `status: "handoff_failed"`.
 Workflow records terminal status only after `workflow_complete` is delivered; failed completion
 delivery leaves completion pending and retries do not increment `completed_step_count`.
 
@@ -430,7 +432,7 @@ Completion:
 {
   action: "workflow_complete",
   workflow_id: <id>,
-  status: "complete",
+  status: <complete|handoff_failed>,
   current_step: <last-step-number>,
   completed_step_count: <executed-step-count>
 }

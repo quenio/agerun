@@ -19,6 +19,8 @@ route handoff advances `current_step` and stores the remaining tails as pending 
 the route handoff fails, the current head remains in the pending queue. Because each continuation
 carries the tail lists, the method can process any number of steps supported by ordinary AgeRun
 messages and memory.
+If the initial internal continuation or a later step continuation cannot be queued, the method emits
+`workflow_complete` with `status: "handoff_failed"` instead of leaving callers waiting indefinitely.
 
 On a `step_done` map whose `workflow_id` matches the active workflow and whose `step` matches the
 current active step, the method advances to the next pending step. Stale, duplicate, or
@@ -77,7 +79,7 @@ Completion response:
 {
   action: "workflow_complete",
   workflow_id: <id>,
-  status: "complete",
+  status: <complete|handoff_failed>,
   current_step: <last-step-number>,
   completed_step_count: <executed-step-count>
 }
