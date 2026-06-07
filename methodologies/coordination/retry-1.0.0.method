@@ -24,7 +24,7 @@ memory.active_failure := memory.is_failure * memory.is_active_status
 memory.active_success := memory.is_success * memory.is_active_status
 memory.can_retry := if(memory.attempts < memory.max_attempts, 1, 0)
 memory.retry_allowed := memory.active_failure * memory.can_retry
-memory.attempts := if(memory.retry_allowed = 1, memory.attempts + 1, memory.attempts)
+memory.next_attempt := memory.attempts + memory.retry_allowed
 memory.use_scheduled := if(memory.strategy = "scheduled", 1, 0)
 memory.use_scheduled := memory.use_scheduled * memory.retry_allowed
 memory.use_immediate := memory.retry_allowed - memory.use_scheduled
@@ -32,7 +32,7 @@ memory.retry_message := {
   action: memory.operation_action
   correlation_id: memory.operation_id
   text: memory.operation_text
-  attempt: memory.attempts
+  attempt: memory.next_attempt
 }
 memory.retry_sent := send(memory.operation_target * memory.use_immediate, memory.retry_message)
 memory.failure_tick := if(memory.active_failure = 1, message.current_tick, 0)
@@ -44,11 +44,14 @@ memory.schedule_message := {
   target: memory.operation_target
   payload_action: memory.operation_action
   payload_text: memory.operation_text
-  payload_attempt: memory.attempts
+  payload_attempt: memory.next_attempt
   correlation_id: memory.operation_id
   reply_to: 0
 }
 memory.schedule_sent := send(memory.scheduler_agent * memory.use_scheduled, memory.schedule_message)
+memory.retry_dispatch_sent := if(memory.use_scheduled = 1, memory.schedule_sent, memory.retry_sent)
+memory.retry_dispatched := memory.retry_allowed * memory.retry_dispatch_sent
+memory.attempts := if(memory.retry_dispatched = 1, memory.next_attempt, memory.attempts)
 memory.final_failure := memory.active_failure - memory.retry_allowed
 memory.status := if(memory.final_failure = 1, "failed", memory.status)
 memory.status := if(memory.active_success = 1, "succeeded", memory.status)

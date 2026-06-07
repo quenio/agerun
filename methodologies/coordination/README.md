@@ -537,6 +537,8 @@ Result:
 
 After retry reports terminal `succeeded` or `failed` status, later stale outcome messages are ignored.
 A new `start` request opens a fresh active retry state.
+Retry attempts advance only after an immediate retry or scheduled retry handoff is sent
+successfully; failed dispatch leaves the retry active at the previous attempt count.
 
 ## Composition Examples
 

@@ -260,6 +260,72 @@ static void test_retry__reexecutes_and_reports_success(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_scheduler_memory, "last_payload_attempt") == 2,
               "Scheduled retry should preserve the next attempt number");
 
+    ar_data_t *own_failed_dispatch_start = ar_data__create_map();
+    AR_ASSERT(own_failed_dispatch_start != NULL, "Failed dispatch start should be created");
+    ar_data__set_map_string(own_failed_dispatch_start, "action", "start");
+    ar_data__set_map_string(own_failed_dispatch_start, "operation_id", "op-dispatch-failed");
+    ar_data__set_map_integer(own_failed_dispatch_start, "operation_target", 98765);
+    ar_data__set_map_string(own_failed_dispatch_start, "operation_action", "attempt");
+    ar_data__set_map_string(own_failed_dispatch_start, "operation_text", "missing-worker");
+    ar_data__set_map_integer(own_failed_dispatch_start, "max_attempts", 2);
+    ar_data__set_map_string(own_failed_dispatch_start, "strategy", "immediate");
+    ar_data__set_map_integer(own_failed_dispatch_start, "scheduler_agent", 0);
+    ar_data__set_map_integer(own_failed_dispatch_start, "delay_ticks", 0);
+    ar_data__set_map_integer(own_failed_dispatch_start, "reply_to", checked_agent_id(report_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_failed_dispatch_start),
+              "Failed dispatch start should queue");
+    own_failed_dispatch_start = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ar_data_t *own_dispatch_failure = ar_data__create_map();
+    AR_ASSERT(own_dispatch_failure != NULL, "Failed dispatch failure should be created");
+    ar_data__set_map_string(own_dispatch_failure, "action", "failure");
+    ar_data__set_map_integer(own_dispatch_failure, "current_tick", 70);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_dispatch_failure),
+              "Failed dispatch failure should queue");
+    own_dispatch_failure = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_retry_memory, "status"), "active") == 0,
+              "Failed immediate retry dispatch should leave retry active");
+    AR_ASSERT(ar_data__get_map_integer(ref_retry_memory, "attempts") == 1,
+              "Failed immediate retry dispatch should not consume an attempt");
+
+    ar_data_t *own_failed_schedule_start = ar_data__create_map();
+    AR_ASSERT(own_failed_schedule_start != NULL, "Failed schedule start should be created");
+    ar_data__set_map_string(own_failed_schedule_start, "action", "start");
+    ar_data__set_map_string(own_failed_schedule_start, "operation_id", "op-schedule-failed");
+    ar_data__set_map_integer(own_failed_schedule_start,
+                             "operation_target",
+                             checked_agent_id(scheduled_operation_agent));
+    ar_data__set_map_string(own_failed_schedule_start, "operation_action", "attempt");
+    ar_data__set_map_string(own_failed_schedule_start, "operation_text", "schedule-missing");
+    ar_data__set_map_integer(own_failed_schedule_start, "max_attempts", 2);
+    ar_data__set_map_string(own_failed_schedule_start, "strategy", "scheduled");
+    ar_data__set_map_integer(own_failed_schedule_start, "scheduler_agent", 98765);
+    ar_data__set_map_integer(own_failed_schedule_start, "delay_ticks", 3);
+    ar_data__set_map_integer(own_failed_schedule_start, "reply_to", checked_agent_id(report_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, scheduled_retry_agent, own_failed_schedule_start),
+              "Failed schedule start should queue");
+    own_failed_schedule_start = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ar_data_t *own_schedule_failure = ar_data__create_map();
+    AR_ASSERT(own_schedule_failure != NULL, "Failed schedule failure should be created");
+    ar_data__set_map_string(own_schedule_failure, "action", "failure");
+    ar_data__set_map_integer(own_schedule_failure, "current_tick", 80);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, scheduled_retry_agent, own_schedule_failure),
+              "Failed schedule failure should queue");
+    own_schedule_failure = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    const ar_data_t *ref_scheduled_retry_memory =
+        ar_agency__get_agent_memory(mut_agency, scheduled_retry_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_scheduled_retry_memory, "status"), "active") == 0,
+              "Failed scheduled retry dispatch should leave retry active");
+    AR_ASSERT(ar_data__get_map_integer(ref_scheduled_retry_memory, "attempts") == 1,
+              "Failed scheduled retry dispatch should not consume an attempt");
+
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_retry_context);
     ar_data__destroy(own_operation_context);

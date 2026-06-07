@@ -17,6 +17,8 @@ On a map whose `action` field is `"failure"`, the method retries when `attempts 
 `strategy=scheduled`, it sends a schedule request to the scheduler agent with `due_tick` set to the
 failure message's `current_tick` plus `delay_ticks` and `payload_attempt` set to the next attempt
 number. If no attempts remain, it reports `status=failed`.
+The attempt count advances only after the immediate retry or scheduled retry handoff is sent
+successfully. A failed retry dispatch leaves the retry active at the previous attempt count.
 
 On a map whose `action` field is `"success"`, it reports `status=succeeded` with the current attempt
 count.
