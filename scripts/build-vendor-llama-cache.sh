@@ -10,10 +10,33 @@
 set -e
 set -o pipefail
 
+_home_directory() {
+    local ref_home
+
+    if [ -n "${HOME:-}" ]; then
+        printf '%s\n' "$HOME"
+        return
+    fi
+
+    if command -v python3 >/dev/null 2>&1; then
+        ref_home=$(python3 -c 'import os, pwd; print(pwd.getpwuid(os.getuid()).pw_dir)' 2>/dev/null || true)
+        if [ -n "$ref_home" ]; then
+            printf '%s\n' "$ref_home"
+            return
+        fi
+    fi
+
+    echo "ERROR: HOME is not set and account home lookup failed"
+    exit 1
+}
+
 CMAKE=${CMAKE:-cmake}
 UNAME_S=${UNAME_S:-$(uname -s)}
 LLAMA_SOURCE_DIR=${LLAMA_SOURCE_DIR:-llama-cpp}
-LLAMA_CACHE_DIR=${LLAMA_CACHE_DIR:-"$HOME/.agerun/build/cache/vendor-llama-cpu"}
+if [ -z "${LLAMA_CACHE_DIR:-}" ]; then
+    AGERUN_HOME=${AGERUN_HOME:-$(_home_directory)}
+    LLAMA_CACHE_DIR="$AGERUN_HOME/.agerun/build/cache/vendor-llama-cpu"
+fi
 LLAMA_CACHE_INSTALL_DIR=${LLAMA_CACHE_INSTALL_DIR:-}
 LLAMA_CACHE_LOCK=${LLAMA_CACHE_LOCK:-"$LLAMA_CACHE_DIR/build.lock"}
 LLAMA_CACHE_KEY=${LLAMA_CACHE_KEY:-}

@@ -1,5 +1,66 @@
 # AgeRun CHANGELOG
 
+## 2026-06-07 (Align workflow test home fallback)
+
+- **Matched workflow real-completion test helpers to the runtime home fallback**
+
+  The workflow coordinator and definition test helpers now resolve the shared Phi-3 model path the
+  same way as `complete()`: use `HOME` when it is set, otherwise fall back to
+  `getpwuid(getuid())`, and avoid introducing a double slash when the resolved home already ends in
+  `/`.
+
+  **Implementation**: Updated `methods/workflow_coordinator_tests.c` and
+  `methods/workflow_definition_tests.c` to use passwd-home fallback in their shared-model path
+  helpers and added focused assertions that validate the passwd fallback when `HOME` is unset.
+
+  **Verification**: `AGERUN_SKIP_REAL_COMPLETION_TESTS=1 make workflow_coordinator_tests 2>&1`,
+  `AGERUN_SKIP_REAL_COMPLETION_TESTS=1 make workflow_definition_tests 2>&1`, `env -u HOME
+  AGERUN_SKIP_REAL_COMPLETION_TESTS=1 ./workflow_coordinator_tests`, `env -u HOME
+  AGERUN_SKIP_REAL_COMPLETION_TESTS=1 ./workflow_definition_tests`, and `make check-naming 2>&1`.
+
+  **Impact**: Workflow test setup now follows the same HOME/passwd resolution path as the runtime,
+  so missing `HOME` no longer causes those helper assertions to diverge from `complete()`.
+
+## 2026-06-07 (Harden shared cache home fallback)
+
+- **Stopped `HOME`-less shared cache paths from falling back to `/.agerun` in Make**
+
+  The shared cache follow-up for real `complete(...)` now resolves the AgeRun home directory once in
+  the Makefile and reuses that fallback for both the Phi-3 shared model cache and the vendored
+  llama.cpp build cache. Running `make print-llama-config` with `HOME` unset no longer reports
+  `LLAMA_CACHE_DIR=/.agerun/...` while still rejecting an explicitly empty `COMPLETE_MODEL_HOME`.
+
+  **Implementation**: Added a shared `AGERUN_HOME` Make fallback sourced from `HOME` or the OS
+  account home, switched `LLAMA_CACHE_DIR` to use it instead of raw `$(HOME)`, and pointed
+  `COMPLETE_MODEL_HOME` at the same resolved home by default.
+
+  **Verification**: `env -u HOME make print-llama-config`, `COMPLETE_MODEL_HOME= make
+  print-llama-config`, `bash -n scripts/download-complete-model-cache.sh`, and `COMPLETE_MODEL_DIR=/.agerun/models bash ./scripts/download-complete-model-cache.sh`.
+
+  **Impact**: Shared-model verification and llama.cpp cache setup now agree on the same safe home
+  resolution, avoiding accidental root-path cache locations when `HOME` is unset.
+
+## 2026-06-06 (Shared complete model cache)
+
+- **Moved real `complete(...)` model artifacts into a shared cache**
+
+  The Phi-3 GGUF model, license, and model card now live under `$HOME/.agerun/models` by default
+  instead of a worktree-local `models/` directory. `make complete-runtime-ready` uses a locked
+  cache-aware download helper, the local completion runtime resolves the same shared path unless
+  `AGERUN_COMPLETE_MODEL` overrides it, and CI restores/saves `~/.agerun/models` with a stable
+  model-specific key separate from the vendored llama.cpp cache.
+
+  **Implementation**: Updated Makefile model variables, added
+  `scripts/download-complete-model-cache.sh`, removed tracked worktree-local model metadata,
+  synchronized the C/Zig local completion defaults and real-completion tests, refreshed log
+  whitelist entries, and updated GitHub Actions cache configuration.
+
+  **Verification**: `make complete-runtime-ready 2>&1`, cross-worktree warm-cache reuse check,
+  `make complete-model-smoke 2>&1`, `make build 2>&1`, and `make check-logs`.
+
+  **Impact**: Warm local and CI caches no longer redownload or duplicate the 2.2GB GGUF model per
+  AgeRun worktree while preserving the explicit `AGERUN_COMPLETE_MODEL` override.
+
 ## 2026-04-25 (Workflow transition completion evaluates item context)
 
 - **Changed workflow transition prompts from canned decisions to item-context evaluation**

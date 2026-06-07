@@ -71,6 +71,7 @@ bin/
 logs/
 
 # Local model artifacts
+/models/
 *.gguf
 **/.claude/settings.local.json
 .DS_Store
