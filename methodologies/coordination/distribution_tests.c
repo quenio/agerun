@@ -153,6 +153,26 @@ static void test_distribution__assigns_unbounded_workers_through_routing(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_sent_count") == 4,
               "Distribution result should report all sent workers");
 
+    ar_data_t *own_route_result = ar_data__create_map();
+    AR_ASSERT(own_route_result != NULL, "Mismatched route result should be created");
+    ar_data__set_map_string(own_route_result, "action", "route_result");
+    ar_data__set_map_string(own_route_result, "status", "routed");
+    ar_data__set_map_string(own_route_result, "correlation_id", "other-job");
+    ar_data__set_map_integer(own_route_result, "routed_count", 99);
+    ar_data__set_map_integer(own_route_result, "sent_count", 99);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, distribution_agent, own_route_result),
+              "Mismatched route result should queue");
+    own_route_result = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_work_id"),
+                     "job-2") == 0,
+              "Mismatched route result should not overwrite active work id");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_assignment_count") == 4,
+              "Mismatched route result should not overwrite assignment count");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_sent_count") == 4,
+              "Mismatched route result should not overwrite sent count");
+
     // And a failed route handoff should immediately report terminal failure
     own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Failed distribution message should be created");
@@ -192,7 +212,7 @@ static void test_distribution__assigns_unbounded_workers_through_routing(void) {
               "Failed handoff result should preserve the failed route send");
 
     // And a stale route_result after a failed handoff should not overwrite the terminal result
-    ar_data_t *own_route_result = ar_data__create_map();
+    own_route_result = ar_data__create_map();
     AR_ASSERT(own_route_result != NULL, "Manual route result should be created");
     ar_data__set_map_string(own_route_result, "action", "route_result");
     ar_data__set_map_string(own_route_result, "status", "ignored");

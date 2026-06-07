@@ -121,6 +121,7 @@ Reply:
 {
   action: "route_result",
   status: <routed|ignored>,
+  correlation_id: <correlation_id>,
   routed_count: <count>,
   sent_count: <count>,
   sent_one: <0|1>,
@@ -221,6 +222,7 @@ Reply:
 
 If the route request cannot be handed to the routing agent, distribution emits this reply immediately
 with `status: "route_failed"`, zero counts, and `route_sent: 0`.
+Distribution accepts a `route_result` only when its `correlation_id` matches the active `work_id`.
 
 ### Aggregation
 

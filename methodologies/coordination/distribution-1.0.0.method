@@ -17,7 +17,8 @@ memory.route_message := {
 }
 memory.route_send_result := send(memory.routing_agent * memory.is_distribute, memory.route_message)
 memory.route_sent := if(memory.is_distribute = 1, memory.route_send_result, memory.route_sent)
-memory.valid_route_result := memory.is_route_result * memory.route_sent
+memory.route_result_matches := if(message.correlation_id = memory.work_id, 1, 0)
+memory.valid_route_result := memory.is_route_result * memory.route_sent * memory.route_result_matches
 memory.status := if(memory.valid_route_result = 1, "distributed", memory.status)
 memory.status := if(memory.is_distribute = 1, "routing", memory.status)
 memory.route_failed := if(memory.route_sent = 0, 1, 0)

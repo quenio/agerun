@@ -77,6 +77,7 @@ Reply:
 {
   action: "route_result",
   status: <routed|ignored>,
+  correlation_id: <correlation_id>,
   routed_count: <count>,
   sent_count: <count>,
   sent_one: <0|1>,
@@ -86,7 +87,8 @@ Reply:
 ```
 
 For `mode=many`, `routed_count` and `sent_count` accumulate across the self-message chain. The final
-reply is emitted after the target list is exhausted.
+reply is emitted after the target list is exhausted. The reply preserves the original
+`correlation_id` so downstream coordination methods can match route results to their active work.
 
 ## Action Field
 

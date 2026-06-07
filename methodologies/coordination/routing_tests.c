@@ -165,6 +165,9 @@ static void test_routing__forwards_one_and_many_messages(void) {
               "Report receiver should observe route result action");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"), "routed") == 0,
               "Report receiver should observe routed status");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_correlation_id"),
+                     "job-2") == 0,
+              "Route result should preserve correlation id");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_routed_count") == 4,
               "Route result should count every nonzero target");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_sent_count") == 4,
