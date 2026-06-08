@@ -196,6 +196,33 @@ static void test_broadcasting__sends_same_payload_to_all_recipients(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_broadcasting_memory, "failed_count") == 0,
               "Broadcasting agent should report no failed sends");
 
+    // When an unrelated message carries positive targets
+    own_message = ar_data__create_map();
+    AR_ASSERT(own_message != NULL, "Ignored message should be created");
+    ar_data__set_map_string(own_message, "action", "ignored");
+    own_targets = create_targets(receiver_a, receiver_b, receiver_c, receiver_d);
+    AR_ASSERT(ar_data__set_map_data(own_message, "targets", own_targets),
+              "Ignored message should own targets list");
+    own_targets = NULL;
+    own_payload = create_payload("domain_event", "ignored", "caller-shaped", 0);
+    AR_ASSERT(ar_data__set_map_data(own_message, "payload", own_payload),
+              "Ignored message should own opaque payload");
+    own_payload = NULL;
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, broadcasting_agent, own_message),
+              "Ignored message should queue");
+    own_message = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_a_memory, "last_text"), "fanout") == 0,
+              "Ignored message should not deliver to first recipient");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_broadcasting_memory, "status"),
+                     "broadcasted") == 0,
+              "Ignored message should not overwrite broadcast status");
+    AR_ASSERT(ar_data__get_map_integer(ref_broadcasting_memory, "recipient_count") == 4,
+              "Ignored message should not change recipient count");
+    AR_ASSERT(ar_data__get_map_integer(ref_broadcasting_memory, "sent_count") == 4,
+              "Ignored message should not change sent count");
+
     // When one recipient cannot receive messages
     own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Partial broadcast message should be created");
