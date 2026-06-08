@@ -59,7 +59,7 @@ memory.continuation_required := if(memory.continuation_required > 0, 1, 0)
 memory.continuation_message := {
   action: "assign_payload"
   work_id: message.work_id
-  correlation_id: memory.correlation_id
+  correlation_id: message.correlation_id
   payloads: memory.continuation_payloads
   workers: memory.continuation_workers
   all_workers: memory.all_workers
@@ -75,6 +75,7 @@ memory.continuation_failed := memory.continuation_failed * memory.continuation_r
 memory.should_report := memory.is_assignment
 memory.should_report := if(memory.continuation_sent = 1, 0, memory.should_report)
 memory.report_work_id := message.work_id
+memory.report_correlation_id := message.correlation_id
 memory.report_reply_to := message.reply_to
 memory.report_assignment_count := memory.next_assignment_count
 memory.report_sent_count := memory.next_sent_count
@@ -89,7 +90,7 @@ memory.result_message := {
   action: "distribution_result"
   status: memory.result_status
   work_id: memory.report_work_id
-  correlation_id: memory.correlation_id
+  correlation_id: memory.report_correlation_id
   success_count: memory.report_sent_count
   failure_count: memory.report_failed_count
   assignment_count: memory.report_assignment_count
