@@ -22,7 +22,9 @@ positive, the method sends the payload item as-is to that worker:
 
 The continuation then advances to the next payload and rotates the worker list. If the remaining
 worker list has a positive head, that tail becomes the next worker list. Otherwise, the next
-continuation resets to the original worker list, implementing round-robin assignment.
+continuation resets to the original worker list, implementing round-robin assignment. If the current
+worker is integer `0` and later workers remain, the method skips that worker placeholder while
+keeping the same payload for the next positive worker.
 
 When all payload items have been attempted, the method emits one `distribution_result`. The result is
 `distributed` when at least one assignment was attempted and no assignment send failed. It is

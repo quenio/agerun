@@ -376,10 +376,79 @@ static void test_distribution__reports_failed_assignments_and_empty_inputs(void)
     ar_data__destroy(own_report_context);
 }
 
+static void test_distribution__skips_zero_worker_placeholders(void) {
+    printf("Testing distribution skips zero worker placeholders...\n");
+
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("distribution_zero_workers");
+    AR_ASSERT(ar_method_fixture__initialize(own_fixture), "Fixture should initialize");
+    AR_ASSERT(ar_method_fixture__verify_directory(own_fixture), "Fixture directory should verify");
+    load_method(own_fixture, "distribution");
+
+    ar_agency_t *mut_agency = ar_method_fixture__get_agency(own_fixture);
+    register_worker_recorder(mut_agency);
+    register_report_recorder(mut_agency);
+
+    ar_data_t *own_distribution_context = create_context();
+    ar_data_t *own_worker_a_context = create_worker_context();
+    ar_data_t *own_worker_b_context = create_worker_context();
+    ar_data_t *own_report_context = create_context();
+    int64_t distribution_agent = ar_agency__create_agent(
+        mut_agency, "distribution", "1.0.0", own_distribution_context);
+    int64_t worker_a = ar_agency__create_agent(
+        mut_agency, "worker-recorder", "1.0.0", own_worker_a_context);
+    int64_t worker_b = ar_agency__create_agent(
+        mut_agency, "worker-recorder", "1.0.0", own_worker_b_context);
+    int64_t report_agent = ar_agency__create_agent(
+        mut_agency, "report-recorder", "1.0.0", own_report_context);
+    initialize_worker_memory(mut_agency, worker_a);
+    initialize_worker_memory(mut_agency, worker_b);
+
+    const char *ref_payload_values[] = {"z1", "z2", "z3", "z4"};
+    const int ref_workers[] = {
+        0,
+        checked_agent_id(worker_a),
+        checked_agent_id(worker_b)
+    };
+    ar_data_t *own_payloads = create_payloads(ref_payload_values, 4, 0);
+    ar_data_t *own_workers = create_workers(ref_workers, 3);
+    send_distribution(mut_agency,
+                      distribution_agent,
+                      "job-zero-worker",
+                      own_payloads,
+                      own_workers,
+                      checked_agent_id(report_agent));
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    const ar_data_t *ref_worker_a_memory = ar_agency__get_agent_memory(mut_agency, worker_a);
+    const ar_data_t *ref_worker_b_memory = ar_agency__get_agent_memory(mut_agency, worker_b);
+    const char *ref_worker_a_expected[] = {"z1", "z3"};
+    const char *ref_worker_b_expected[] = {"z2", "z4"};
+    assert_text_history(ref_worker_a_memory, ref_worker_a_expected, 2);
+    assert_text_history(ref_worker_b_memory, ref_worker_b_expected, 2);
+
+    const ar_data_t *ref_report_memory = ar_agency__get_agent_memory(mut_agency, report_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
+                     "distributed") == 0,
+              "Zero worker placeholders should still distribute work");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_assignment_count") == 4,
+              "Zero worker placeholders should not consume payloads");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_sent_count") == 4,
+              "Zero worker placeholders should preserve all successful sends");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failed_count") == 0,
+              "Zero worker placeholders should not count as failed sends");
+
+    ar_method_fixture__destroy(own_fixture);
+    ar_data__destroy(own_distribution_context);
+    ar_data__destroy(own_worker_a_context);
+    ar_data__destroy(own_worker_b_context);
+    ar_data__destroy(own_report_context);
+}
+
 int main(void) {
     printf("Running distribution method tests...\n\n");
     test_distribution__round_robins_payloads_across_workers();
     test_distribution__reports_failed_assignments_and_empty_inputs();
+    test_distribution__skips_zero_worker_placeholders();
     printf("\nAll distribution method tests passed!\n");
     return 0;
 }

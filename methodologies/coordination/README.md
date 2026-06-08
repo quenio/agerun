@@ -242,8 +242,9 @@ Distribution assigns the first payload to the first worker, the second payload t
 and so on, rotating back to the first worker when the worker list is exhausted. `assignment_count`
 counts all payload items assigned to positive worker IDs, including assignments whose send failed.
 `sent_count` counts successful assignment sends. `failed_count` counts positive worker IDs that could
-not receive their assigned payload. Empty payload or worker lists produce `distribution_failed` with
-zero assignment counts.
+not receive their assigned payload. Integer `0` worker placeholders are skipped without consuming the
+current payload when later workers remain. Empty payload or worker lists produce
+`distribution_failed` with zero assignment counts.
 
 ### Aggregation
 
