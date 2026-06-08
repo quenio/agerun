@@ -287,6 +287,42 @@ static void test_broadcasting__sends_same_payload_to_all_recipients(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_broadcasting_memory, "sent_count") == 0,
               "Zero-recipient broadcast should record zero sent messages");
 
+    // When consecutive placeholder targets precede a valid recipient
+    own_message = ar_data__create_map();
+    AR_ASSERT(own_message != NULL, "Placeholder broadcast message should be created");
+    ar_data__set_map_string(own_message, "action", "broadcast");
+    own_targets = ar_data__create_list();
+    AR_ASSERT(own_targets != NULL, "Placeholder targets list should be created");
+    AR_ASSERT(ar_data__list_add_last_integer(own_targets, 0),
+              "First placeholder should be stored");
+    AR_ASSERT(ar_data__list_add_last_integer(own_targets, 0),
+              "Second placeholder should be stored");
+    append_agent_id(own_targets, receiver_c);
+    AR_ASSERT(ar_data__set_map_data(own_message, "targets", own_targets),
+              "Placeholder broadcast message should own targets list");
+    own_targets = NULL;
+    own_payload = create_payload("domain_event", "skip-placeholders", "caller-shaped", 0);
+    AR_ASSERT(ar_data__set_map_data(own_message, "payload", own_payload),
+              "Placeholder broadcast message should own opaque payload");
+    own_payload = NULL;
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, broadcasting_agent, own_message),
+              "Placeholder broadcast message should queue");
+    own_message = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_c_memory, "last_text"),
+                     "skip-placeholders") == 0,
+              "Later valid recipient should receive placeholder broadcast text");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_broadcasting_memory, "status"),
+                     "broadcasted") == 0,
+              "Placeholder broadcast should record broadcasted status");
+    AR_ASSERT(ar_data__get_map_integer(ref_broadcasting_memory, "recipient_count") == 1,
+              "Placeholder broadcast should count one successful recipient");
+    AR_ASSERT(ar_data__get_map_integer(ref_broadcasting_memory, "sent_count") == 1,
+              "Placeholder broadcast should count one sent message");
+    AR_ASSERT(ar_data__get_map_integer(ref_broadcasting_memory, "failed_count") == 0,
+              "Placeholder broadcast should report no failed sends");
+
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_broadcasting_context);
     ar_data__destroy(own_receiver_a_context);

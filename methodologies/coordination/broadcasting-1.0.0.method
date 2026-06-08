@@ -9,8 +9,8 @@ memory.sent := memory.sent * memory.is_broadcast
 memory.send_failed := if(memory.sent_result = 0, 1, 0)
 memory.send_failed := memory.send_failed * memory.has_target
 memory.send_failed := memory.send_failed * memory.is_broadcast
-memory.remaining_head := head(memory.remaining_targets)
-memory.has_remaining := if(memory.remaining_head > 0, 1, 0)
+memory.remaining_targets_empty := if(memory.remaining_targets = [], 1, 0)
+memory.has_remaining := if(memory.remaining_targets_empty = 1, 0, 1)
 memory.next_recipient_count := message.recipient_count + memory.sent
 memory.next_sent_count := message.sent_count + memory.sent
 memory.next_failed_count := message.failed_count + memory.send_failed
