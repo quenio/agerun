@@ -274,6 +274,28 @@ static void test_distribution__round_robins_payloads_across_workers(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failed_count") == 0,
               "Distribution result should report no failed sends");
 
+    ar_data_t *own_ignored_message = ar_data__create_map();
+    AR_ASSERT(own_ignored_message != NULL, "Ignored message should be created");
+    AR_ASSERT(ar_data__set_map_string(own_ignored_message, "action", "ignored"),
+              "Ignored message should set action");
+    AR_ASSERT(ar_data__set_map_integer(own_ignored_message, "reply_to", checked_agent_id(report_agent)),
+              "Ignored message should set reply target");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, distribution_agent, own_ignored_message),
+              "Ignored message should queue");
+    own_ignored_message = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    const ar_data_t *ref_distribution_memory =
+        ar_agency__get_agent_memory(mut_agency, distribution_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_distribution_memory, "status"),
+                     "distributed") == 0,
+              "Ignored messages should not overwrite distribution status");
+    AR_ASSERT(ar_data__get_map_integer(ref_distribution_memory, "assignment_count") == 5,
+              "Ignored messages should not reset assignment count");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_work_id"),
+                     "job-round-robin") == 0,
+              "Ignored messages should not emit a new distribution result");
+
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_distribution_context);
     ar_data__destroy(own_worker_a_context);
