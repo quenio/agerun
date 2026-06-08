@@ -175,6 +175,40 @@ static void test_routing__selects_one_target_by_key_only(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_routed_count") == 0,
               "Direct target request should report zero routed targets");
 
+    // When an unrelated message carries a matching route table
+    own_message = ar_data__create_map();
+    AR_ASSERT(own_message != NULL, "Ignored route-shaped message should be created");
+    ar_data__set_map_string(own_message, "action", "ignored");
+    ar_data__set_map_string(own_message, "route_key", "ignored-key");
+    const char *ref_ignored_route_keys[] = {"ignored-key"};
+    const int ref_ignored_route_targets[] = {checked_agent_id(receiver_b)};
+    ar_data_t *own_routes = create_routes(ref_ignored_route_keys, 1, ref_ignored_route_targets, 1);
+    AR_ASSERT(ar_data__set_map_data(own_message, "routes", own_routes),
+              "Ignored route-shaped message should own routes map");
+    own_routes = NULL;
+    own_payload = create_payload("domain_event", "ignored", "caller-shaped", 0);
+    AR_ASSERT(ar_data__set_map_data(own_message, "payload", own_payload),
+              "Ignored route-shaped message should own opaque payload");
+    own_payload = NULL;
+    ar_data__set_map_string(own_message, "correlation_id", "job-ignored");
+    ar_data__set_map_integer(own_message, "reply_to", checked_agent_id(report_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, routing_agent, own_message),
+              "Ignored route-shaped message should queue");
+    own_message = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    const ar_data_t *ref_routing_memory = ar_agency__get_agent_memory(mut_agency, routing_agent);
+    const ar_data_t *ref_receiver_b_memory = ar_agency__get_agent_memory(mut_agency, receiver_b);
+    AR_ASSERT(ar_data__get_map_data(ref_receiver_b_memory, "last_text") == NULL,
+              "Ignored route-shaped message should not deliver payload");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_routing_memory, "status"),
+                     "route_failed") == 0,
+              "Ignored route-shaped message should not overwrite route status");
+    AR_ASSERT(ar_data__get_map_integer(ref_routing_memory, "routed_count") == 0,
+              "Ignored route-shaped message should not change routed count");
+    AR_ASSERT(ar_data__get_map_integer(ref_routing_memory, "sent_count") == 0,
+              "Ignored route-shaped message should not change sent count");
+
     // When a keyed route request carries more than three candidate routes
     own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Keyed route message should be created");
@@ -187,7 +221,7 @@ static void test_routing__selects_one_target_by_key_only(void) {
         checked_agent_id(receiver_c),
         checked_agent_id(receiver_d)
     };
-    ar_data_t *own_routes = create_routes(ref_route_keys, 4, ref_route_targets, 4);
+    own_routes = create_routes(ref_route_keys, 4, ref_route_targets, 4);
     AR_ASSERT(ar_data__set_map_data(own_message, "routes", own_routes),
               "Keyed route message should own routes map");
     own_routes = NULL;
