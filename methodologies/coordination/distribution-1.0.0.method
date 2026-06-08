@@ -13,7 +13,6 @@ memory.payload := head(message.payloads)
 memory.remaining_payloads := tail(message.payloads)
 memory.worker := head(message.workers)
 memory.remaining_workers := tail(message.workers)
-memory.next_worker_head := head(memory.remaining_workers)
 memory.payloads_empty := if(message.payloads = [], 1, 0)
 memory.has_payload := if(memory.payloads_empty = 1, 0, 1)
 memory.has_worker := if(memory.worker > 0, 1, 0)
@@ -34,9 +33,8 @@ memory.remaining_payloads_empty := if(memory.remaining_payloads = [], 1, 0)
 memory.has_next_payload := if(memory.remaining_payloads_empty = 1, 0, 1)
 memory.remaining_workers_empty := if(memory.remaining_workers = [], 1, 0)
 memory.has_remaining_worker := if(memory.remaining_workers_empty = 1, 0, 1)
-memory.has_next_worker := if(memory.next_worker_head > 0, 1, 0)
 memory.all_workers := if(memory.is_distribute = 1, message.workers, message.all_workers)
-memory.next_workers := if(memory.has_next_worker = 1, memory.remaining_workers, memory.all_workers)
+memory.next_workers := if(memory.has_remaining_worker = 1, memory.remaining_workers, memory.all_workers)
 memory.skip_worker := memory.is_assignment * memory.has_payload
 memory.skip_worker := memory.skip_worker * memory.no_worker
 memory.skip_worker := memory.skip_worker * memory.has_remaining_worker

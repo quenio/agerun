@@ -422,10 +422,11 @@ static void test_distribution__skips_zero_worker_placeholders(void) {
     const int ref_workers[] = {
         0,
         checked_agent_id(worker_a),
+        0,
         checked_agent_id(worker_b)
     };
     ar_data_t *own_payloads = create_payloads(ref_payload_values, 4, 0);
-    ar_data_t *own_workers = create_workers(ref_workers, 3);
+    ar_data_t *own_workers = create_workers(ref_workers, 4);
     send_distribution(mut_agency,
                       distribution_agent,
                       "job-zero-worker",
