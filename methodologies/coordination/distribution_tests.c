@@ -131,6 +131,9 @@ static void register_report_recorder(ar_agency_t *mut_agency) {
     const char *ref_instructions =
         "memory.last_action := message.action\n"
         "memory.last_status := message.status\n"
+        "memory.last_correlation_id := message.correlation_id\n"
+        "memory.last_success_count := message.success_count\n"
+        "memory.last_failure_count := message.failure_count\n"
         "memory.last_work_id := message.work_id\n"
         "memory.last_assignment_count := message.assignment_count\n"
         "memory.last_sent_count := message.sent_count\n"
@@ -179,6 +182,7 @@ static void send_distribution(ar_agency_t *mut_agency,
     AR_ASSERT(ar_data__set_map_data(own_message, "workers", own_workers),
               "Distribution message should own workers");
     own_workers = NULL;
+    ar_data__set_map_string(own_message, "correlation_id", ref_work_id);
     ar_data__set_map_integer(own_message, "reply_to", reply_to);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, distribution_agent, own_message),
               "Distribution message should queue");
@@ -256,6 +260,13 @@ static void test_distribution__round_robins_payloads_across_workers(void) {
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_work_id"),
                      "job-round-robin") == 0,
               "Distribution result should preserve work id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_correlation_id"),
+                     "job-round-robin") == 0,
+              "Distribution result should preserve correlation id");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 5,
+              "Distribution result should report successful assignment sends");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 0,
+              "Distribution result should report no failed assignment sends");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_assignment_count") == 5,
               "Distribution result should count every payload assignment");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_sent_count") == 5,
@@ -325,6 +336,10 @@ static void test_distribution__reports_failed_assignments_and_empty_inputs(void)
               "Partial worker failure should count successful sends");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failed_count") == 1,
               "Partial worker failure should count failed sends");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 2,
+              "Partial worker failure should report successful assignment sends");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 1,
+              "Partial worker failure should report failed assignment sends");
 
     ar_data_t *own_empty_payloads = ar_data__create_list();
     AR_ASSERT(own_empty_payloads != NULL, "Empty payload list should be created");

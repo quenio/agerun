@@ -60,6 +60,8 @@ memory.reply_message := {
   status: memory.status
   correlation_id: memory.correlation_id
   routed_count: memory.routed_count
+  success_count: memory.sent_count
+  failure_count: memory.failed_count
   sent_count: memory.sent_count
   failed_count: memory.failed_count
 }

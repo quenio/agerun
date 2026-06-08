@@ -71,7 +71,10 @@ Status response:
 {
   action: "schedule_status",
   schedule_id: <id>,
+  correlation_id: <correlation_id>,
   status: <scheduled|cancelled|triggered|trigger_failed>,
+  success_count: <count>,
+  failure_count: <count>,
   pending: <0|1>,
   current_tick: <number>
 }

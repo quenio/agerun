@@ -3,6 +3,7 @@ memory.is_message := if(message.action = "message", 1, 0)
 memory.is_summary := if(message.action = "summary", 1, 0)
 memory.is_close := if(message.action = "close", 1, 0)
 memory.conversation_id := if(memory.is_start = 1, message.conversation_id, memory.conversation_id)
+memory.correlation_id := if(memory.is_start = 1, message.correlation_id, memory.correlation_id)
 memory.participant_a := if(memory.is_start = 1, message.participant_a, memory.participant_a)
 memory.participant_b := if(memory.is_start = 1, message.participant_b, memory.participant_b)
 memory.reply_to := if(memory.is_start = 1, message.reply_to, memory.reply_to)
@@ -24,6 +25,7 @@ memory.next_turn_count := memory.turn_count + memory.is_turn
 memory.turn_message := {
   action: "conversation_turn"
   conversation_id: memory.conversation_id
+  correlation_id: memory.correlation_id
   from: message.sender
   to: memory.recipient
   text: message.text
@@ -45,7 +47,10 @@ memory.state := if(memory.should_close = 1, "closed", memory.state)
 memory.close_message := {
   action: "conversation_closed"
   conversation_id: memory.conversation_id
+  correlation_id: memory.correlation_id
   state: memory.state
+  success_count: memory.turn_count
+  failure_count: 0
   turn_count: memory.turn_count
 }
 memory.close_a_sent := send(memory.participant_a * memory.should_close, memory.close_message)
@@ -60,11 +65,19 @@ memory.response_status := if(memory.is_start = 1, "active", memory.response_stat
 memory.summary_matches := memory.is_summary * memory.matches_conversation
 memory.response_status := if(memory.summary_matches = 1, memory.state, memory.response_status)
 memory.response_status := if(memory.should_close = 1, "closed", memory.response_status)
+memory.relay_failure_count := memory.is_turn - memory.append_ok
+memory.response_success_count := memory.turn_count
+memory.response_success_count := if(memory.is_message = 1, memory.append_ok, memory.response_success_count)
+memory.response_success_count := if(memory.is_start = 1, 0, memory.response_success_count)
+memory.response_failure_count := memory.relay_failure_count
 memory.response_message := {
   action: memory.response_action
   conversation_id: memory.conversation_id
+  correlation_id: memory.correlation_id
   state: memory.state
   status: memory.response_status
+  success_count: memory.response_success_count
+  failure_count: memory.response_failure_count
   participant_a: memory.participant_a
   participant_b: memory.participant_b
   last_sender: memory.last_sender

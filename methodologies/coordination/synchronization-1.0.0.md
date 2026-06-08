@@ -34,6 +34,7 @@ Wait request:
 {
   action: "wait",
   sync_id: <id>,
+  correlation_id: <id>,
   required_count: <count>,
   continuation_target: <agent>,
   continuation_action: <action>,
@@ -58,6 +59,7 @@ Continuation message:
 {
   action: <continuation_action>,
   sync_id: <id>,
+  correlation_id: <correlation_id>,
   text: <continuation_text>,
   done_count: <count>,
   dependencies: [<dependency>, <dependency>, ...]
@@ -70,7 +72,10 @@ Status response:
 {
   action: "synchronization_status",
   sync_id: <id>,
+  correlation_id: <correlation_id>,
   status: "complete",
+  success_count: <count>,
+  failure_count: 0,
   done_count: <count>,
   dependencies: [<dependency>, <dependency>, ...]
 }

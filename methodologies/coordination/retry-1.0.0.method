@@ -2,6 +2,8 @@ memory.is_start := if(message.action = "start", 1, 0)
 memory.is_failure := if(message.action = "failure", 1, 0)
 memory.is_success := if(message.action = "success", 1, 0)
 memory.operation_id := if(memory.is_start = 1, message.operation_id, memory.operation_id)
+memory.start_correlation_id := if(message.correlation_id <> 0, message.correlation_id, message.operation_id)
+memory.correlation_id := if(memory.is_start = 1, memory.start_correlation_id, memory.correlation_id)
 memory.operation_target := if(memory.is_start = 1, message.operation_target, memory.operation_target)
 memory.operation_action := if(memory.is_start = 1, message.operation_action, memory.operation_action)
 memory.operation_text := if(memory.is_start = 1, message.operation_text, memory.operation_text)
@@ -18,7 +20,7 @@ memory.pending_terminal_attempts := if(memory.is_start = 1, 0, memory.pending_te
 memory.start_attempt := memory.attempts + memory.is_start
 memory.operation_message := {
   action: memory.operation_action
-  correlation_id: memory.operation_id
+  correlation_id: memory.correlation_id
   text: memory.operation_text
   attempt: memory.start_attempt
 }
@@ -29,7 +31,7 @@ memory.start_send_failed := memory.start_send_failed * memory.is_start
 memory.attempts := if(memory.start_succeeded = 1, memory.start_attempt, memory.attempts)
 memory.status := if(memory.start_succeeded = 1, "active", memory.status)
 memory.is_active_status := if(memory.status = "active", 1, 0)
-memory.matching_operation := if(message.correlation_id = memory.operation_id, 1, 0)
+memory.matching_operation := if(message.correlation_id = memory.correlation_id, 1, 0)
 memory.matching_attempt := if(message.attempt = memory.attempts, 1, 0)
 memory.no_pending_terminal := if(memory.pending_terminal = 0, 1, 0)
 memory.pending_terminal_outcome := memory.is_failure + memory.is_success
@@ -49,7 +51,7 @@ memory.use_scheduled := memory.use_scheduled * memory.retry_allowed
 memory.use_immediate := memory.retry_allowed - memory.use_scheduled
 memory.retry_message := {
   action: memory.operation_action
-  correlation_id: memory.operation_id
+  correlation_id: memory.correlation_id
   text: memory.operation_text
   attempt: memory.next_attempt
 }
@@ -64,7 +66,7 @@ memory.schedule_message := {
   payload_action: memory.operation_action
   payload_text: memory.operation_text
   payload_attempt: memory.next_attempt
-  correlation_id: memory.operation_id
+  correlation_id: memory.correlation_id
   reply_to: 0
 }
 memory.schedule_sent := send(memory.scheduler_agent * memory.use_scheduled, memory.schedule_message)
@@ -78,10 +80,17 @@ memory.terminal_status := if(memory.final_failure = 1, "failed", memory.terminal
 memory.terminal_status := if(memory.active_success = 1, "succeeded", memory.terminal_status)
 memory.report_status := if(memory.pending_terminal_retry = 1, memory.pending_terminal_status, memory.terminal_status)
 memory.report_attempts := if(memory.pending_terminal_retry = 1, memory.pending_terminal_attempts, memory.attempts)
+memory.report_success_count := if(memory.report_status = "succeeded", 1, 0)
+memory.report_failure_count := if(memory.report_status = "failed", 1, 0)
+memory.report_dispatch_failure_count := if(memory.report_status = "dispatch_failed", 1, 0)
+memory.report_failure_count := memory.report_failure_count + memory.report_dispatch_failure_count
 memory.report_message := {
   action: "retry_result"
   operation_id: memory.operation_id
+  correlation_id: memory.correlation_id
   status: memory.report_status
+  success_count: memory.report_success_count
+  failure_count: memory.report_failure_count
   attempts: memory.report_attempts
 }
 memory.report_target := memory.reply_to * memory.final_failure

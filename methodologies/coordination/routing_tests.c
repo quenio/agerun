@@ -83,6 +83,8 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
         "memory.last_correlation_id := message.correlation_id\n"
         "memory.last_status := message.status\n"
         "memory.last_routed_count := message.routed_count\n"
+        "memory.last_success_count := message.success_count\n"
+        "memory.last_failure_count := message.failure_count\n"
         "memory.last_sent_count := message.sent_count\n"
         "memory.last_failed_count := message.failed_count\n";
 
@@ -262,6 +264,10 @@ static void test_routing__selects_one_target_by_key_only(void) {
               "Keyed route result should preserve correlation id");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_routed_count") == 1,
               "Keyed route should report one routed target");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 1,
+              "Keyed route should report one successful target");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 0,
+              "Keyed route should report no failed targets");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_sent_count") == 1,
               "Keyed route should report one sent target");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failed_count") == 0,
@@ -300,6 +306,10 @@ static void test_routing__selects_one_target_by_key_only(void) {
               "Missed keyed route result should preserve correlation id");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_routed_count") == 0,
               "Missed keyed route should report zero routed targets");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 0,
+              "Missed keyed route should report zero successful targets");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 0,
+              "Missed keyed route should report zero failed target sends");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_sent_count") == 0,
               "Missed keyed route should report zero sent targets");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failed_count") == 0,

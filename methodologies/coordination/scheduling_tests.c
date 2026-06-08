@@ -50,6 +50,8 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
         "memory.last_correlation_id := message.correlation_id\n"
         "memory.last_schedule_id := message.schedule_id\n"
         "memory.last_status := message.status\n"
+        "memory.last_success_count := message.success_count\n"
+        "memory.last_failure_count := message.failure_count\n"
         "memory.last_pending := message.pending\n"
         "memory.last_current_tick := message.current_tick\n";
 
@@ -101,6 +103,13 @@ static void test_scheduling__triggers_future_work_on_tick(void) {
     const ar_data_t *ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "scheduled") == 0,
               "Observer should receive scheduled status");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_correlation_id"),
+                     "job-1") == 0,
+              "Scheduled status should preserve correlation id");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_success_count") == 0,
+              "Scheduled status should report no triggered work yet");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_failure_count") == 0,
+              "Scheduled status should report no failed work");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_current_tick") == 0,
               "Scheduled status should report initial tick");
 
@@ -139,6 +148,10 @@ static void test_scheduling__triggers_future_work_on_tick(void) {
               "Receiver should observe scheduled attempt");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "triggered") == 0,
               "Observer should receive triggered status");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_success_count") == 1,
+              "Triggered status should report one successful trigger");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_failure_count") == 0,
+              "Triggered status should report no failed trigger");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_current_tick") == 5,
               "Triggered status should report due tick");
 
@@ -189,6 +202,10 @@ static void test_scheduling__triggers_future_work_on_tick(void) {
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
                      "trigger_failed") == 0,
               "Observer should receive failed trigger status");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_success_count") == 0,
+              "Failed trigger should report no successful trigger");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_failure_count") == 1,
+              "Failed trigger should report one failed trigger");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_pending") == 1,
               "Failed trigger should remain pending");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_current_tick") == 8,

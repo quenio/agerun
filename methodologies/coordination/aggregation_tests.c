@@ -62,6 +62,9 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
         "memory.last_action := message.action\n"
         "memory.last_status := message.status\n"
         "memory.last_aggregate_id := message.aggregate_id\n"
+        "memory.last_correlation_id := message.correlation_id\n"
+        "memory.last_success_count := message.success_count\n"
+        "memory.last_failure_count := message.failure_count\n"
         "memory.last_result := message.result\n"
         "memory.last_received_count := message.received_count\n";
 
@@ -95,6 +98,7 @@ static void test_aggregation__combines_required_results(void) {
     AR_ASSERT(own_start != NULL, "Start message should be created");
     ar_data__set_map_string(own_start, "action", "start");
     ar_data__set_map_string(own_start, "aggregate_id", "agg-1");
+    ar_data__set_map_string(own_start, "correlation_id", "agg-correlation-1");
     ar_data__set_map_integer(own_start, "required_count", 4);
     ar_data__set_map_integer(own_start, "reply_to", checked_agent_id(receiver_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, aggregation_agent, own_start),
@@ -114,6 +118,13 @@ static void test_aggregation__combines_required_results(void) {
               "Receiver should observe aggregate completion");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_status"), "complete") == 0,
               "Aggregate status should be complete");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_correlation_id"),
+                     "agg-correlation-1") == 0,
+              "Aggregate completion should preserve correlation id");
+    AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_success_count") == 4,
+              "Aggregate completion should report successful result count");
+    AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_failure_count") == 0,
+              "Aggregate completion should report no failed results");
     const ar_data_t *ref_result = ar_data__get_map_data(ref_receiver_memory, "last_result");
     AR_ASSERT(ref_result != NULL, "Aggregate should include result list");
     AR_ASSERT(ar_data__get_type(ref_result) == AR_DATA_TYPE__LIST,

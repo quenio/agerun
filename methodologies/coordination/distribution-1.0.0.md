@@ -41,6 +41,7 @@ Distribution request:
   work_id: <id>,
   payloads: [<payload>, <payload>, ...],
   workers: [<agent>, <agent>, ...],
+  correlation_id: <id>,
   reply_to: <agent>
 }
 ```
@@ -52,6 +53,9 @@ Result response:
   action: "distribution_result",
   status: <distributed|distribution_failed>,
   work_id: <id>,
+  correlation_id: <correlation_id>,
+  success_count: <count>,
+  failure_count: <count>,
   assignment_count: <count>,
   sent_count: <count>,
   failed_count: <count>

@@ -8,10 +8,12 @@ composition with scheduling.
 
 ## Behavior
 
-On a map whose `action` field is `"start"`, the method stores the operation metadata, retry
-strategy, maximum attempts, scheduler agent, delay tick, and reply target. It sends the first
-operation attempt with `attempt: 1` and records `attempts=1` only after that send succeeds. If the
-initial operation send fails, it reports `status=dispatch_failed` with `attempts=0`.
+On a map whose `action` field is `"start"`, the method stores the operation metadata, optional
+correlation id, retry strategy, maximum attempts, scheduler agent, delay tick, and reply target. If
+the request omits `correlation_id`, the method uses `operation_id` as the operation correlation id.
+It sends the first operation attempt with `attempt: 1` and records `attempts=1` only after that send
+succeeds. If the initial operation send fails, it reports `status=dispatch_failed` with
+`attempts=0`.
 
 On a map whose `action` field is `"failure"`, whose `correlation_id` matches the active operation,
 and whose `attempt` matches the current attempt count, the method retries when
@@ -52,6 +54,7 @@ Start request:
   strategy: <immediate|scheduled>,
   scheduler_agent: <agent>,
   delay_ticks: <tick>,
+  correlation_id: <id>,
   reply_to: <agent>
 }
 ```
@@ -59,8 +62,8 @@ Start request:
 Outcome requests:
 
 ```text
-{ action: "failure", correlation_id: <operation_id>, attempt: <attempt>, current_tick: <tick> }
-{ action: "success", correlation_id: <operation_id>, attempt: <attempt> }
+{ action: "failure", correlation_id: <correlation_id>, attempt: <attempt>, current_tick: <tick> }
+{ action: "success", correlation_id: <correlation_id>, attempt: <attempt> }
 ```
 
 Operation attempt:
@@ -68,7 +71,7 @@ Operation attempt:
 ```text
 {
   action: <operation_action>,
-  correlation_id: <operation_id>,
+  correlation_id: <correlation_id>,
   text: <operation_text>,
   attempt: <number>
 }
@@ -85,7 +88,7 @@ Scheduled retry request:
   payload_action: <operation_action>,
   payload_text: <operation_text>,
   payload_attempt: <attempt>,
-  correlation_id: <operation_id>,
+  correlation_id: <correlation_id>,
   reply_to: 0
 }
 ```
@@ -96,7 +99,10 @@ Final result:
 {
   action: "retry_result",
   operation_id: <id>,
+  correlation_id: <correlation_id>,
   status: <succeeded|failed|dispatch_failed>,
+  success_count: <0|1>,
+  failure_count: <0|1>,
   attempts: <count>
 }
 ```

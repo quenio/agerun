@@ -68,6 +68,11 @@ which operation the message is requesting. The field is not a runtime requiremen
 protocol; it is ordinary map data that lets a method guard behavior such as routing, scheduling, or
 retrying and ignore unrelated messages safely.
 
+Coordination request messages may include `correlation_id` and `reply_to`. When `reply_to` is a
+positive agent id and the method emits an external result or status message, that message includes
+`action`, `correlation_id`, `success_count`, and `failure_count`. Method-specific identifiers,
+status fields, and legacy count fields may also be present.
+
 ### Routing
 
 Request:
@@ -105,6 +110,8 @@ Reply:
   status: <routed|route_failed>,
   correlation_id: <correlation_id>,
   routed_count: <0|1>,
+  success_count: <0|1>,
+  failure_count: <0|1>,
   sent_count: <0|1>,
   failed_count: <0|1>
 }
@@ -122,7 +129,9 @@ Request:
 {
   action: "broadcast",
   targets: [<agent>, <agent>, ...],
-  payload: <message>
+  payload: <message>,
+  correlation_id: <id>,
+  reply_to: <agent>
 }
 ```
 
@@ -133,13 +142,28 @@ Delivered message is exactly the caller-provided `payload`:
 ```
 
 Broadcasting does not add `reply_to`, `source`, `correlation_id`, or any other field to the payload.
-If recipients should see those fields, the caller includes them inside `payload`. `recipient_count`
-and `sent_count` in the broadcasting agent's memory count successful target sends. `failed_count`
-counts positive target IDs that could not receive the payload. Integer `0` entries are skipped
-placeholders, not failed sends. A target send failure keeps processing remaining targets and records
-terminal status `broadcast_failed`. If a broadcast target list is empty or contains no positive
-targets, broadcasting records `broadcast_failed` with zero delivery counts. Broadcasting does not
-emit a status reply.
+If recipients should see those fields, the caller includes them inside `payload`.
+
+Reply:
+
+```text
+{
+  action: "broadcast_result",
+  status: <broadcasted|broadcast_failed>,
+  correlation_id: <correlation_id>,
+  success_count: <count>,
+  failure_count: <count>,
+  recipient_count: <count>,
+  sent_count: <count>,
+  failed_count: <count>
+}
+```
+
+`recipient_count` and `sent_count` in the broadcasting agent's memory count successful target sends.
+`failed_count` counts positive target IDs that could not receive the payload. Integer `0` entries
+are skipped placeholders, not failed sends. A target send failure keeps processing remaining targets
+and records terminal status `broadcast_failed`. If a broadcast target list is empty or contains no
+positive targets, broadcasting records `broadcast_failed` with zero delivery counts.
 
 ### Supervision
 
@@ -151,6 +175,7 @@ Requests:
   child_method_names: [<method>, <method>, ...],
   child_method_version: <version>,
   policy: "restart",
+  correlation_id: <id>,
   reply_to: <agent>
 }
 
@@ -176,7 +201,10 @@ Reply:
 ```text
 {
   action: "supervision_status",
+  correlation_id: <correlation_id>,
   status: <running|restarted|stopped|ignored|stop_failed|handoff_failed>,
+  success_count: <count>,
+  failure_count: <count>,
   child_agent_id: <agent>,
   child_agent_ids: [<agent>, <agent>, ...],
   child_records: [<child-record>, <child-record>, ...],
@@ -215,6 +243,7 @@ Request:
   work_id: <id>,
   payloads: [<payload>, <payload>, ...],
   workers: [<agent>, <agent>, ...],
+  correlation_id: <id>,
   reply_to: <agent>
 }
 ```
@@ -232,6 +261,9 @@ Reply:
   action: "distribution_result",
   status: <distributed|distribution_failed>,
   work_id: <id>,
+  correlation_id: <correlation_id>,
+  success_count: <count>,
+  failure_count: <count>,
   assignment_count: <count>,
   sent_count: <count>,
   failed_count: <count>
@@ -255,6 +287,7 @@ Requests:
   action: "start",
   aggregate_id: <id>,
   required_count: <count>,
+  correlation_id: <id>,
   reply_to: <agent>
 }
 
@@ -271,7 +304,10 @@ Completion:
 {
   action: "aggregate_complete",
   aggregate_id: <id>,
+  correlation_id: <correlation_id>,
   status: "complete",
+  success_count: <count>,
+  failure_count: 0,
   result: [<input-1>, <input-2>, ...],
   received_count: <count>
 }
@@ -332,7 +368,10 @@ Status:
 {
   action: "schedule_status",
   schedule_id: <id>,
+  correlation_id: <correlation_id>,
   status: <scheduled|cancelled|triggered|trigger_failed>,
+  success_count: <count>,
+  failure_count: <count>,
   pending: <0|1>,
   current_tick: <number>
 }
@@ -351,6 +390,7 @@ Requests:
 {
   action: "wait",
   sync_id: <id>,
+  correlation_id: <id>,
   required_count: <count>,
   continuation_target: <agent>,
   continuation_action: <action>,
@@ -371,6 +411,7 @@ Continuation:
 {
   action: <continuation_action>,
   sync_id: <id>,
+  correlation_id: <correlation_id>,
   text: <continuation_text>,
   done_count: <count>,
   dependencies: [<dependency>, <dependency>, ...]
@@ -383,7 +424,10 @@ Status:
 {
   action: "synchronization_status",
   sync_id: <id>,
+  correlation_id: <correlation_id>,
   status: "complete",
+  success_count: <count>,
+  failure_count: 0,
   done_count: <count>,
   dependencies: [<dependency>, <dependency>, ...]
 }
@@ -407,6 +451,7 @@ Start:
 {
   action: "start",
   workflow_id: <id>,
+  correlation_id: <id>,
   reply_to: <agent>,
   step_targets: [<agent>, <agent>, ...],
   step_payloads: [<message>, <message>, ...],
@@ -453,7 +498,10 @@ Completion:
 {
   action: "workflow_complete",
   workflow_id: <id>,
+  correlation_id: <correlation_id>,
   status: <complete|handoff_failed>,
+  success_count: <count>,
+  failure_count: <count>,
   current_step: <last-step-number>,
   completed_step_count: <executed-step-count>
 }
@@ -467,6 +515,7 @@ Requests:
 {
   action: "start",
   conversation_id: <id>,
+  correlation_id: <id>,
   participant_a: <agent>,
   participant_b: <agent>,
   reply_to: <agent>
@@ -500,8 +549,11 @@ Responses:
 {
   action: <conversation_started|conversation_relayed|conversation_summary|conversation_closed>,
   conversation_id: <id>,
+  correlation_id: <correlation_id>,
   state: <state>,
   status: <active|relayed|relay_failed|ignored|closed>,
+  success_count: <count>,
+  failure_count: <count>,
   participant_a: <agent>,
   participant_b: <agent>,
   last_sender: <agent>,
@@ -531,11 +583,12 @@ Requests:
   strategy: <immediate|scheduled>,
   scheduler_agent: <agent>,
   delay_ticks: <tick>,
+  correlation_id: <id>,
   reply_to: <agent>
 }
 
-{ action: "failure", correlation_id: <operation_id>, attempt: <attempt>, current_tick: <tick> }
-{ action: "success", correlation_id: <operation_id>, attempt: <attempt> }
+{ action: "failure", correlation_id: <correlation_id>, attempt: <attempt>, current_tick: <tick> }
+{ action: "success", correlation_id: <correlation_id>, attempt: <attempt> }
 ```
 
 Attempt:
@@ -543,7 +596,7 @@ Attempt:
 ```text
 {
   action: <operation_action>,
-  correlation_id: <operation_id>,
+  correlation_id: <correlation_id>,
   text: <operation_text>,
   attempt: <number>
 }
@@ -560,7 +613,7 @@ Scheduled retry request:
   payload_action: <operation_action>,
   payload_text: <operation_text>,
   payload_attempt: <attempt>,
-  correlation_id: <operation_id>,
+  correlation_id: <correlation_id>,
   reply_to: 0
 }
 ```
@@ -571,7 +624,10 @@ Result:
 {
   action: "retry_result",
   operation_id: <id>,
+  correlation_id: <correlation_id>,
   status: <succeeded|failed|dispatch_failed>,
+  success_count: <0|1>,
+  failure_count: <0|1>,
   attempts: <count>
 }
 ```

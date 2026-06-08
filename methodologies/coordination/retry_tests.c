@@ -50,6 +50,8 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
         "memory.last_attempt := message.attempt\n"
         "memory.last_operation_id := message.operation_id\n"
         "memory.last_status := message.status\n"
+        "memory.last_success_count := message.success_count\n"
+        "memory.last_failure_count := message.failure_count\n"
         "memory.last_attempts := message.attempts\n"
         "memory.last_schedule_id := message.schedule_id\n"
         "memory.last_due_tick := message.due_tick\n"
@@ -98,6 +100,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
     AR_ASSERT(own_start != NULL, "Retry start should be created");
     ar_data__set_map_string(own_start, "action", "start");
     ar_data__set_map_string(own_start, "operation_id", "op-1");
+    ar_data__set_map_string(own_start, "correlation_id", "retry-correlation-1");
     ar_data__set_map_integer(own_start, "operation_target", checked_agent_id(operation_agent));
     ar_data__set_map_string(own_start, "operation_action", "attempt");
     ar_data__set_map_string(own_start, "operation_text", "work");
@@ -119,7 +122,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
     ar_data_t *own_failure = ar_data__create_map();
     AR_ASSERT(own_failure != NULL, "Failure message should be created");
     ar_data__set_map_string(own_failure, "action", "failure");
-    ar_data__set_map_string(own_failure, "correlation_id", "op-1");
+    ar_data__set_map_string(own_failure, "correlation_id", "retry-correlation-1");
     ar_data__set_map_integer(own_failure, "attempt", 1);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_failure),
               "Failure message should queue");
@@ -132,7 +135,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
     ar_data_t *own_duplicate_failure = ar_data__create_map();
     AR_ASSERT(own_duplicate_failure != NULL, "Duplicate stale failure should be created");
     ar_data__set_map_string(own_duplicate_failure, "action", "failure");
-    ar_data__set_map_string(own_duplicate_failure, "correlation_id", "op-1");
+    ar_data__set_map_string(own_duplicate_failure, "correlation_id", "retry-correlation-1");
     ar_data__set_map_integer(own_duplicate_failure, "attempt", 1);
     ar_data__set_map_integer(own_duplicate_failure, "current_tick", 49);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_duplicate_failure),
@@ -150,7 +153,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
     ar_data_t *own_success = ar_data__create_map();
     AR_ASSERT(own_success != NULL, "Success message should be created");
     ar_data__set_map_string(own_success, "action", "success");
-    ar_data__set_map_string(own_success, "correlation_id", "op-1");
+    ar_data__set_map_string(own_success, "correlation_id", "retry-correlation-1");
     ar_data__set_map_integer(own_success, "attempt", 2);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_success),
               "Success message should queue");
@@ -163,13 +166,20 @@ static void test_retry__reexecutes_and_reports_success(void) {
               "Retry should report result");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"), "succeeded") == 0,
               "Retry should report success");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_correlation_id"),
+                     "retry-correlation-1") == 0,
+              "Retry result should preserve correlation id");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 1,
+              "Retry result should report one successful operation");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 0,
+              "Retry result should report no terminal failures");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_attempts") == 2,
               "Retry should report final attempt count");
 
     ar_data_t *own_stale_failure = ar_data__create_map();
     AR_ASSERT(own_stale_failure != NULL, "Stale failure message should be created");
     ar_data__set_map_string(own_stale_failure, "action", "failure");
-    ar_data__set_map_string(own_stale_failure, "correlation_id", "op-1");
+    ar_data__set_map_string(own_stale_failure, "correlation_id", "retry-correlation-1");
     ar_data__set_map_integer(own_stale_failure, "attempt", 1);
     ar_data__set_map_integer(own_stale_failure, "current_tick", 50);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_stale_failure),
@@ -220,6 +230,10 @@ static void test_retry__reexecutes_and_reports_success(void) {
               "Retry should report final failure");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_attempts") == 1,
               "Final failure should report one attempt");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 0,
+              "Final failure should report no successful operation");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 1,
+              "Final failure should report one failed operation");
 
     own_stale_failure = ar_data__create_map();
     AR_ASSERT(own_stale_failure != NULL, "Stale final failure message should be created");

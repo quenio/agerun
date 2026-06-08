@@ -8,11 +8,11 @@ their configured target agents. It demonstrates a higher-level coordination beha
 
 ## Behavior
 
-On a map whose `action` field is `"start"`, the method stores the workflow id, reply target, branch
-value, and active status. It expects two aligned step lists: `step_targets` and `step_payloads`. The
-first list contains target agent ids where positive integers are deliverable targets and integer `0`
-can be used as a placeholder; the second list contains the caller-provided payload to send to the
-target at the same position.
+On a map whose `action` field is `"start"`, the method stores the workflow id, optional
+correlation id, reply target, branch value, and active status. It expects two aligned step lists:
+`step_targets` and `step_payloads`. The first list contains target agent ids where positive integers
+are deliverable targets and integer `0` can be used as a placeholder; the second list contains the
+caller-provided payload to send to the target at the same position.
 
 The method sends itself an `execute_step` message. Each `execute_step` message reads the head item
 from each step list and sends the step payload directly to the target agent. Only a successful step
@@ -48,6 +48,7 @@ Start request:
 {
   action: "start",
   workflow_id: <id>,
+  correlation_id: <id>,
   reply_to: <agent>,
   step_targets: [<agent>, <agent>, ...],
   step_payloads: [<message>, <message>, ...],
@@ -78,7 +79,10 @@ Completion response:
 {
   action: "workflow_complete",
   workflow_id: <id>,
+  correlation_id: <correlation_id>,
   status: <complete|handoff_failed>,
+  success_count: <count>,
+  failure_count: <count>,
   current_step: <last-step-number>,
   completed_step_count: <executed-step-count>
 }

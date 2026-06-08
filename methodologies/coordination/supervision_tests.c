@@ -52,8 +52,11 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
     ar_methodology_t *mut_methodology = ar_agency__get_methodology(mut_agency);
     const char *ref_instructions =
         "memory.last_action := message.action\n"
+        "memory.last_correlation_id := message.correlation_id\n"
         "memory.last_status := message.status\n"
         "memory.last_child_agent_id := message.child_agent_id\n"
+        "memory.last_success_count := message.success_count\n"
+        "memory.last_failure_count := message.failure_count\n"
         "memory.last_child_count := message.child_count\n"
         "memory.last_restart_count := message.restart_count\n";
 
@@ -101,6 +104,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     own_child_method_names = NULL;
     ar_data__set_map_string(own_start, "child_method_version", "1.0.0");
     ar_data__set_map_string(own_start, "policy", "restart");
+    ar_data__set_map_string(own_start, "correlation_id", "supervision-correlation-1");
     ar_data__set_map_integer(own_start, "reply_to", checked_agent_id(observer_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, supervision_agent, own_start),
               "Supervision start should queue");
@@ -132,6 +136,13 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
               "Observer should receive running supervision status");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_child_count") == 4,
               "Observer should receive child count");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_correlation_id"),
+                     "supervision-correlation-1") == 0,
+              "Supervision status should preserve correlation id");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_success_count") == 4,
+              "Supervision status should report spawned child count");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_failure_count") == 0,
+              "Supervision status should report no failed child coordination");
 
     // When a lifecycle event names an untracked agent
     ar_data_t *own_untracked_failure = ar_data__create_map();

@@ -56,6 +56,8 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
         "memory.last_source := message.source\n"
         "memory.last_correlation_id := message.correlation_id\n"
         "memory.last_status := message.status\n"
+        "memory.last_success_count := message.success_count\n"
+        "memory.last_failure_count := message.failure_count\n"
         "memory.last_recipient_count := message.recipient_count\n"
         "memory.last_sent_count := message.sent_count\n"
         "memory.last_failed_count := message.failed_count\n";
@@ -118,6 +120,7 @@ static void test_broadcasting__sends_same_payload_to_all_recipients(void) {
     ar_data_t *own_receiver_b_context = create_context();
     ar_data_t *own_receiver_c_context = create_context();
     ar_data_t *own_receiver_d_context = create_context();
+    ar_data_t *own_report_context = create_context();
     int64_t broadcasting_agent = ar_agency__create_agent(
         mut_agency, "broadcasting", "1.0.0", own_broadcasting_context);
     int64_t receiver_a = ar_agency__create_agent(
@@ -128,6 +131,8 @@ static void test_broadcasting__sends_same_payload_to_all_recipients(void) {
         mut_agency, "record-receiver", "1.0.0", own_receiver_c_context);
     int64_t receiver_d = ar_agency__create_agent(
         mut_agency, "record-receiver", "1.0.0", own_receiver_d_context);
+    int64_t report_agent = ar_agency__create_agent(
+        mut_agency, "record-receiver", "1.0.0", own_report_context);
 
     // When one broadcast carries more than three recipients
     ar_data_t *own_message = ar_data__create_map();
@@ -144,6 +149,8 @@ static void test_broadcasting__sends_same_payload_to_all_recipients(void) {
     AR_ASSERT(ar_data__set_map_data(own_message, "payload", own_payload),
               "Broadcast message should own opaque payload");
     own_payload = NULL;
+    ar_data__set_map_string(own_message, "correlation_id", "broadcast-fanout");
+    ar_data__set_map_integer(own_message, "reply_to", checked_agent_id(report_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, broadcasting_agent, own_message),
               "Broadcast message should queue");
     own_message = NULL;
@@ -195,6 +202,18 @@ static void test_broadcasting__sends_same_payload_to_all_recipients(void) {
               "Broadcasting agent should count every successful send");
     AR_ASSERT(ar_data__get_map_integer(ref_broadcasting_memory, "failed_count") == 0,
               "Broadcasting agent should report no failed sends");
+
+    const ar_data_t *ref_report_memory = ar_agency__get_agent_memory(mut_agency, report_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_action"),
+                     "broadcast_result") == 0,
+              "Broadcasting should emit a result when reply_to is provided");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_correlation_id"),
+                     "broadcast-fanout") == 0,
+              "Broadcast result should preserve correlation id");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 4,
+              "Broadcast result should report successful recipient count");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 0,
+              "Broadcast result should report no failed recipients");
 
     // When an unrelated message carries positive targets
     own_message = ar_data__create_map();
@@ -329,6 +348,7 @@ static void test_broadcasting__sends_same_payload_to_all_recipients(void) {
     ar_data__destroy(own_receiver_b_context);
     ar_data__destroy(own_receiver_c_context);
     ar_data__destroy(own_receiver_d_context);
+    ar_data__destroy(own_report_context);
 }
 
 int main(void) {

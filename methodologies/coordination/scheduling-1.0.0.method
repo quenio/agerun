@@ -33,10 +33,15 @@ memory.trigger_failed := memory.trigger_failed * memory.should_trigger
 memory.pending := if(memory.trigger_succeeded = 1, 0, memory.pending)
 memory.status := if(memory.trigger_succeeded = 1, "triggered", memory.status)
 memory.status := if(memory.trigger_failed = 1, "trigger_failed", memory.status)
+memory.report_success_count := memory.trigger_succeeded + memory.should_cancel
+memory.report_failure_count := memory.trigger_failed
 memory.report_message := {
   action: "schedule_status"
   schedule_id: memory.schedule_id
+  correlation_id: memory.correlation_id
   status: memory.status
+  success_count: memory.report_success_count
+  failure_count: memory.report_failure_count
   pending: memory.pending
   current_tick: memory.current_tick
 }

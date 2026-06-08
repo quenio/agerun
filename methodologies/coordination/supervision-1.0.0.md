@@ -8,14 +8,14 @@ supervision as methodology logic rather than a runtime capability.
 
 ## Behavior
 
-On a map whose `action` field is `"start"`, the method stores the policy, reply target, and shared
-child method version, clears its tracked child lists, and sends itself a `spawn_child` continuation
-for the request's `child_method_names` list. The method consumes that list with `head(...)` and
-`tail(...)`, spawning one child per continuation and appending the agent id and child record into
-memory. When the list is exhausted, it reports `status=running` with the tracked child lists and
-count. An empty `child_method_names` list reports `status=running` with `child_count=0`. If the
-initial spawn continuation or a later continuation cannot be queued, it reports `status=handoff_failed`
-instead of remaining in `starting`.
+On a map whose `action` field is `"start"`, the method stores the policy, optional correlation id,
+reply target, and shared child method version, clears its tracked child lists, and sends itself a
+`spawn_child` continuation for the request's `child_method_names` list. The method consumes that
+list with `head(...)` and `tail(...)`, spawning one child per continuation and appending the agent id
+and child record into memory. When the list is exhausted, it reports `status=running` with the
+tracked child lists and count. An empty `child_method_names` list reports `status=running` with
+`child_count=0`. If the initial spawn continuation or a later continuation cannot be queued, it
+reports `status=handoff_failed` instead of remaining in `starting`.
 If a requested child cannot be spawned, the failed `spawn(...)` instruction aborts the remaining
 ordinary method evaluation. The supervisor does not report `running` for the incomplete child set,
 but it also cannot emit a catchable spawn-failure status without a runtime-level non-aborting spawn
@@ -50,6 +50,7 @@ Start request:
   child_method_names: [<method>, <method>, ...],
   child_method_version: <version>,
   policy: "restart",
+  correlation_id: <id>,
   reply_to: <agent>
 }
 ```
@@ -79,7 +80,10 @@ Status response:
 ```text
 {
   action: "supervision_status",
+  correlation_id: <correlation_id>,
   status: <running|restarted|stopped|ignored|stop_failed|handoff_failed>,
+  success_count: <count>,
+  failure_count: <count>,
   child_agent_id: <agent>,
   child_agent_ids: [<agent>, <agent>, ...],
   child_records: [<child-record>, <child-record>, ...],

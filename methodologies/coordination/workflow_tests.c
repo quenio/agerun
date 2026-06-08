@@ -52,6 +52,8 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
         "memory.last_reply_to := message.reply_to\n"
         "memory.last_workflow_id := message.workflow_id\n"
         "memory.last_status := message.status\n"
+        "memory.last_success_count := message.success_count\n"
+        "memory.last_failure_count := message.failure_count\n"
         "memory.last_current_step := message.current_step\n"
         "memory.last_completed_step_count := message.completed_step_count\n";
 
@@ -153,6 +155,7 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
     AR_ASSERT(own_start != NULL, "Workflow start should be created");
     ar_data__set_map_string(own_start, "action", "start");
     ar_data__set_map_string(own_start, "workflow_id", "wf-1");
+    ar_data__set_map_string(own_start, "correlation_id", "workflow-correlation-1");
     ar_data__set_map_integer(own_start, "reply_to", checked_agent_id(report_agent));
     ar_data_t *own_step_targets = ar_data__create_list();
     ar_data_t *own_step_payloads = ar_data__create_list();
@@ -236,6 +239,13 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
               "Workflow should emit completion report");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"), "complete") == 0,
               "Workflow completion status should be complete");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_correlation_id"),
+                     "workflow-correlation-1") == 0,
+              "Workflow completion should preserve correlation id");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 4,
+              "Workflow completion should report completed step count");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 0,
+              "Workflow completion should report no handoff failures");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_current_step") == 5,
               "Workflow completion should report final step");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_completed_step_count") == 4,
@@ -365,6 +375,10 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
                      "handoff_failed") == 0,
               "Failed worker send should report handoff failure");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 0,
+              "Failed worker send should report no completed steps");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 1,
+              "Failed worker send should report one handoff failure");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_current_step") == 1,
               "Failed worker send should report the attempted step");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_completed_step_count") == 0,

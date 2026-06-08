@@ -45,11 +45,14 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
     ar_methodology_t *mut_methodology = ar_agency__get_methodology(mut_agency);
     const char *ref_instructions =
         "memory.last_action := message.action\n"
+        "memory.last_correlation_id := message.correlation_id\n"
         "memory.last_conversation_id := message.conversation_id\n"
         "memory.last_from := message.from\n"
         "memory.last_to := message.to\n"
         "memory.last_state := message.state\n"
         "memory.last_status := message.status\n"
+        "memory.last_success_count := message.success_count\n"
+        "memory.last_failure_count := message.failure_count\n"
         "memory.last_text := message.text\n"
         "memory.last_intent := message.intent\n"
         "memory.last_turn_count := message.turn_count\n"
@@ -96,6 +99,7 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     AR_ASSERT(own_start != NULL, "Conversation start should be created");
     ar_data__set_map_string(own_start, "action", "start");
     ar_data__set_map_string(own_start, "conversation_id", "chat-1");
+    ar_data__set_map_string(own_start, "correlation_id", "chat-correlation-1");
     ar_data__set_map_integer(own_start, "participant_a", checked_agent_id(participant_a));
     ar_data__set_map_integer(own_start, "participant_b", checked_agent_id(participant_b));
     ar_data__set_map_integer(own_start, "reply_to", checked_agent_id(observer));
@@ -178,6 +182,13 @@ static void test_conversation__coordinates_two_participant_agents(void) {
               "Summary should preserve conversation id");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_turn_count") == 2,
               "Summary should report two turns");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_correlation_id"),
+                     "chat-correlation-1") == 0,
+              "Conversation summary should preserve correlation id");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_success_count") == 2,
+              "Conversation summary should report successful turn count");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_failure_count") == 0,
+              "Conversation summary should report no failed turns");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_last_sender") ==
                   checked_agent_id(participant_b),
               "Summary should report participant B as the last sender");
@@ -220,6 +231,10 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
                      "relay_failed") == 0,
               "Observer should see relay failure status");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_success_count") == 0,
+              "Failed relay should report no successful turn");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_failure_count") == 1,
+              "Failed relay should report one failed turn");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_turn_count") == 0,
               "Failed relays should not increment turn count");
     ref_history = ar_data__get_map_data(ref_observer_memory, "last_history");

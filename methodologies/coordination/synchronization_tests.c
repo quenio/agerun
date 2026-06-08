@@ -45,8 +45,11 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
     ar_methodology_t *mut_methodology = ar_agency__get_methodology(mut_agency);
     const char *ref_instructions =
         "memory.last_action := message.action\n"
+        "memory.last_correlation_id := message.correlation_id\n"
         "memory.last_text := message.text\n"
         "memory.last_sync_id := message.sync_id\n"
+        "memory.last_success_count := message.success_count\n"
+        "memory.last_failure_count := message.failure_count\n"
         "memory.last_done_count := message.done_count\n"
         "memory.last_dependencies := message.dependencies\n";
 
@@ -225,6 +228,7 @@ static void test_synchronization__emits_continuation_after_unbounded_dependencie
     AR_ASSERT(own_wait != NULL, "Failed-status wait message should be created");
     ar_data__set_map_string(own_wait, "action", "wait");
     ar_data__set_map_string(own_wait, "sync_id", "sync-failed-status");
+    ar_data__set_map_string(own_wait, "correlation_id", "sync-correlation-status");
     ar_data__set_map_integer(own_wait, "required_count", 2);
     ar_data__set_map_integer(own_wait, "reply_to", 98765);
     ar_data__set_map_integer(own_wait, "continuation_target", checked_agent_id(receiver_agent));
@@ -271,6 +275,13 @@ static void test_synchronization__emits_continuation_after_unbounded_dependencie
               "Matching dependency should retry failed status report");
     AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_done_count") == 2,
               "Status retry should preserve frozen dependency count");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_correlation_id"),
+                     "sync-correlation-status") == 0,
+              "Synchronization status should preserve correlation id");
+    AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_success_count") == 2,
+              "Synchronization status should report satisfied dependencies");
+    AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_failure_count") == 0,
+              "Synchronization status should report no failed dependencies");
 
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_sync_context);

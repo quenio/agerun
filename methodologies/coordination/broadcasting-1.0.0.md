@@ -16,9 +16,8 @@ The method processes the list with `head(...)` and `tail(...)`, sending continua
 itself until the target list is exhausted. Positive target IDs that cannot receive messages are
 counted in the broadcasting agent's memory; valid later targets are still processed. If no positive
 target is delivered, or if any positive target send fails, the terminal memory `status` is
-`"broadcast_failed"`. Broadcasting does not emit a status reply; callers that need acknowledgements
-or recipient replies should include those instructions in the payload or compose broadcasting with
-another coordination method.
+`"broadcast_failed"`. When `reply_to` is a positive agent id, broadcasting emits one
+`broadcast_result` after the target list is exhausted.
 
 ## Message Format
 
@@ -28,7 +27,9 @@ Broadcast request:
 {
   action: "broadcast",
   targets: [<agent>, <agent>, ...],
-  payload: <message>
+  payload: <message>,
+  correlation_id: <id>,
+  reply_to: <agent>
 }
 ```
 
@@ -41,6 +42,21 @@ Delivered message is exactly the caller-provided `payload`:
 `recipient_count` and `sent_count` in the broadcasting agent's memory count successful recipient
 sends. `failed_count` counts positive target IDs that could not receive the payload. Integer `0`
 entries are skipped placeholders, not failed sends.
+
+Result response:
+
+```text
+{
+  action: "broadcast_result",
+  status: <broadcasted|broadcast_failed>,
+  correlation_id: <correlation_id>,
+  success_count: <count>,
+  failure_count: <count>,
+  recipient_count: <count>,
+  sent_count: <count>,
+  failed_count: <count>
+}
+```
 
 ## Action Field
 

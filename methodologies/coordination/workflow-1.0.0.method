@@ -2,6 +2,7 @@ memory.is_start := if(message.action = "start", 1, 0)
 memory.is_execute_step := if(message.action = "execute_step", 1, 0)
 memory.is_step_done := if(message.action = "step_done", 1, 0)
 memory.workflow_id := if(memory.is_start = 1, message.workflow_id, memory.workflow_id)
+memory.correlation_id := if(memory.is_start = 1, message.correlation_id, memory.correlation_id)
 memory.reply_to := if(memory.is_start = 1, message.reply_to, memory.reply_to)
 memory.branch_value := if(memory.is_start = 1, message.branch_value, memory.branch_value)
 memory.status := if(memory.is_start = 1, "active", memory.status)
@@ -13,6 +14,8 @@ memory.pending_step_targets := if(memory.is_start = 1, [], memory.pending_step_t
 memory.pending_step_payloads := if(memory.is_start = 1, [], memory.pending_step_payloads)
 memory.start_execute_message := {
   action: "execute_step"
+  workflow_id: memory.workflow_id
+  correlation_id: memory.correlation_id
   step_targets: message.step_targets
   step_payloads: message.step_payloads
   step_number: 1
@@ -32,6 +35,8 @@ memory.execute_action := memory.is_execute_step * memory.has_step
 memory.skip_empty_step := memory.is_execute_step * memory.no_step * memory.has_remaining_step
 memory.skip_step_message := {
   action: "execute_step"
+  workflow_id: memory.workflow_id
+  correlation_id: memory.correlation_id
   step_targets: memory.remaining_step_targets
   step_payloads: memory.remaining_step_payloads
   step_number: message.step_number
@@ -76,6 +81,8 @@ memory.step_increment := 1 + memory.skip_next
 memory.next_step_number := memory.current_step + memory.step_increment
 memory.continue_message := {
   action: "execute_step"
+  workflow_id: memory.workflow_id
+  correlation_id: memory.correlation_id
   step_targets: memory.next_step_targets
   step_payloads: memory.next_step_payloads
   step_number: memory.next_step_number
@@ -95,10 +102,14 @@ memory.handoff_failed := memory.handoff_failed + memory.step_handoff_failed
 memory.should_complete := memory.should_complete + memory.handoff_failed
 memory.completion_status := if(memory.should_complete > 0, "complete", memory.status)
 memory.completion_status := if(memory.handoff_failed > 0, "handoff_failed", memory.completion_status)
+memory.completion_failure_count := if(memory.handoff_failed > 0, 1, 0)
 memory.complete_message := {
   action: "workflow_complete"
   workflow_id: memory.workflow_id
+  correlation_id: memory.correlation_id
   status: memory.completion_status
+  success_count: memory.completed_step_count
+  failure_count: memory.completion_failure_count
   current_step: memory.current_step
   completed_step_count: memory.completed_step_count
 }

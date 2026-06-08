@@ -48,6 +48,8 @@ Reply:
   status: <routed|route_failed>,
   correlation_id: <correlation_id>,
   routed_count: <0|1>,
+  success_count: <0|1>,
+  failure_count: <0|1>,
   sent_count: <0|1>,
   failed_count: <0|1>
 }

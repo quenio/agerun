@@ -1,4 +1,6 @@
 memory.is_broadcast := if(message.action = "broadcast", 1, 0)
+memory.correlation_id := if(memory.is_broadcast = 1, message.correlation_id, memory.correlation_id)
+memory.reply_to := if(memory.is_broadcast = 1, message.reply_to, memory.reply_to)
 memory.target := head(message.targets)
 memory.remaining_targets := tail(message.targets)
 memory.has_target := if(memory.target > 0, 1, 0)
@@ -25,6 +27,8 @@ memory.continuation_message := {
   action: "broadcast"
   targets: memory.remaining_targets
   payload: message.payload
+  correlation_id: memory.correlation_id
+  reply_to: memory.reply_to
   recipient_count: memory.recipient_count
   sent_count: memory.sent_count
   failed_count: memory.failed_count
@@ -40,3 +44,16 @@ memory.status := if(memory.is_broadcast = 1, "broadcasted", memory.status)
 memory.status := if(memory.zero_delivery = 1, "broadcast_failed", memory.status)
 memory.status := if(memory.has_failed_count = 1, "broadcast_failed", memory.status)
 memory.status := if(memory.continuation_failed = 1, "broadcast_failed", memory.status)
+memory.should_report := memory.is_broadcast
+memory.should_report := if(memory.continuation_sent = 1, 0, memory.should_report)
+memory.result_message := {
+  action: "broadcast_result"
+  status: memory.status
+  correlation_id: memory.correlation_id
+  success_count: memory.sent_count
+  failure_count: memory.failed_count
+  recipient_count: memory.recipient_count
+  sent_count: memory.sent_count
+  failed_count: memory.failed_count
+}
+memory.result_sent := send(memory.reply_to * memory.should_report, memory.result_message)

@@ -31,6 +31,7 @@ Start request:
   action: "start",
   aggregate_id: <id>,
   required_count: <count>,
+  correlation_id: <id>,
   reply_to: <agent>
 }
 ```
@@ -51,7 +52,10 @@ Completion response:
 {
   action: "aggregate_complete",
   aggregate_id: <id>,
+  correlation_id: <correlation_id>,
   status: "complete",
+  success_count: <count>,
+  failure_count: 0,
   result: [<input-1>, <input-2>, ...],
   received_count: <count>
 }

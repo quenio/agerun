@@ -8,8 +8,9 @@ summary messages while remaining an ordinary AgeRun method.
 
 ## Behavior
 
-On a map whose `action` field is `"start"`, the method stores the conversation id, two participant
-agent ids, and reply target. It marks the conversation active and clears turn state and history.
+On a map whose `action` field is `"start"`, the method stores the conversation id, optional
+correlation id, two participant agent ids, and reply target. It marks the conversation active and
+clears turn state and history.
 
 On a map whose `action` field is `"message"`, it accepts the message only when the
 `conversation_id` matches the active conversation, the conversation is active, and `sender` is one
@@ -30,6 +31,7 @@ Requests:
 {
   action: "start",
   conversation_id: <id>,
+  correlation_id: <id>,
   participant_a: <agent>,
   participant_b: <agent>,
   reply_to: <agent>
@@ -53,6 +55,7 @@ Relayed turn:
 {
   action: "conversation_turn",
   conversation_id: <id>,
+  correlation_id: <correlation_id>,
   from: <agent>,
   to: <agent>,
   text: <text>,
@@ -67,8 +70,11 @@ Coordinator response:
 {
   action: <conversation_started|conversation_relayed|conversation_summary|conversation_closed>,
   conversation_id: <id>,
+  correlation_id: <correlation_id>,
   state: <state>,
   status: <active|relayed|relay_failed|ignored|closed>,
+  success_count: <count>,
+  failure_count: <count>,
   participant_a: <agent>,
   participant_b: <agent>,
   last_sender: <agent>,
