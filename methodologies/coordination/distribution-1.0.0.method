@@ -33,16 +33,25 @@ memory.remaining_payloads_empty := if(memory.remaining_payloads = [], 1, 0)
 memory.has_next_payload := if(memory.remaining_payloads_empty = 1, 0, 1)
 memory.remaining_workers_empty := if(memory.remaining_workers = [], 1, 0)
 memory.has_remaining_worker := if(memory.remaining_workers_empty = 1, 0, 1)
+memory.no_remaining_worker := if(memory.has_remaining_worker = 1, 0, 1)
+memory.has_prior_assignment := if(message.assignment_count > 0, 1, 0)
 memory.all_workers := if(memory.is_distribute = 1, message.workers, message.all_workers)
 memory.next_workers := if(memory.has_remaining_worker = 1, memory.remaining_workers, memory.all_workers)
 memory.skip_worker := memory.is_assignment * memory.has_payload
 memory.skip_worker := memory.skip_worker * memory.no_worker
 memory.skip_worker := memory.skip_worker * memory.has_remaining_worker
+memory.wrap_worker := memory.is_assignment * memory.has_payload
+memory.wrap_worker := memory.wrap_worker * memory.no_worker
+memory.wrap_worker := memory.wrap_worker * memory.no_remaining_worker
+memory.wrap_worker := memory.wrap_worker * memory.has_prior_assignment
 memory.continuation_payloads := if(memory.skip_worker = 1, message.payloads, memory.remaining_payloads)
+memory.continuation_payloads := if(memory.wrap_worker = 1, message.payloads, memory.continuation_payloads)
 memory.continuation_workers := if(memory.skip_worker = 1, memory.remaining_workers, memory.next_workers)
+memory.continuation_workers := if(memory.wrap_worker = 1, memory.all_workers, memory.continuation_workers)
 memory.continuation_required := memory.is_assignment * memory.has_next_payload
 memory.continuation_required := memory.continuation_required * memory.has_worker
 memory.continuation_required := memory.continuation_required + memory.skip_worker
+memory.continuation_required := memory.continuation_required + memory.wrap_worker
 memory.continuation_required := if(memory.continuation_required > 0, 1, 0)
 memory.continuation_message := {
   action: "assign_payload"
