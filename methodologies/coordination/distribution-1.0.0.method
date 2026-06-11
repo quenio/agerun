@@ -99,7 +99,8 @@ memory.result_message := {
 }
 memory.report_sent := send(memory.report_reply_to * memory.should_report, memory.result_message)
 memory.report_recorded := memory.report_sent * memory.should_report
-memory.status := if(memory.report_recorded = 1, memory.result_status, memory.status)
-memory.assignment_count := if(memory.report_recorded = 1, memory.report_assignment_count, memory.assignment_count)
-memory.sent_count := if(memory.report_recorded = 1, memory.report_sent_count, memory.sent_count)
-memory.failed_count := if(memory.report_recorded = 1, memory.report_failed_count, memory.failed_count)
+memory.completion_recorded := memory.should_report
+memory.status := if(memory.completion_recorded = 1, memory.result_status, memory.status)
+memory.assignment_count := if(memory.completion_recorded = 1, memory.report_assignment_count, memory.assignment_count)
+memory.sent_count := if(memory.completion_recorded = 1, memory.report_sent_count, memory.sent_count)
+memory.failed_count := if(memory.completion_recorded = 1, memory.report_failed_count, memory.failed_count)

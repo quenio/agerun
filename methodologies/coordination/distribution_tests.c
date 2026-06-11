@@ -413,6 +413,58 @@ static void test_distribution__reports_failed_assignments_and_empty_inputs(void)
     ar_data__destroy(own_report_context);
 }
 
+static void test_distribution__records_completion_when_reply_fails(void) {
+    printf("Testing distribution records completion when reply fails...\n");
+
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("distribution_reply_fails");
+    AR_ASSERT(ar_method_fixture__initialize(own_fixture), "Fixture should initialize");
+    AR_ASSERT(ar_method_fixture__verify_directory(own_fixture), "Fixture directory should verify");
+    load_method(own_fixture, "distribution");
+
+    ar_agency_t *mut_agency = ar_method_fixture__get_agency(own_fixture);
+    register_worker_recorder(mut_agency);
+
+    ar_data_t *own_distribution_context = create_context();
+    ar_data_t *own_worker_context = create_worker_context();
+    int64_t distribution_agent = ar_agency__create_agent(
+        mut_agency, "distribution", "1.0.0", own_distribution_context);
+    int64_t worker_agent = ar_agency__create_agent(
+        mut_agency, "worker-recorder", "1.0.0", own_worker_context);
+    initialize_worker_memory(mut_agency, worker_agent);
+
+    const char *ref_payload_values[] = {"solo"};
+    const int ref_workers[] = {checked_agent_id(worker_agent)};
+    ar_data_t *own_payloads = create_payloads(ref_payload_values, 1, 0);
+    ar_data_t *own_workers = create_workers(ref_workers, 1);
+    send_distribution(mut_agency,
+                      distribution_agent,
+                      "job-reply-fails",
+                      own_payloads,
+                      own_workers,
+                      98765);
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    const ar_data_t *ref_worker_memory = ar_agency__get_agent_memory(mut_agency, worker_agent);
+    const char *ref_worker_expected[] = {"solo"};
+    assert_text_history(ref_worker_memory, ref_worker_expected, 1);
+
+    const ar_data_t *ref_distribution_memory =
+        ar_agency__get_agent_memory(mut_agency, distribution_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_distribution_memory, "status"),
+                     "distributed") == 0,
+              "Distribution should record terminal status when reply delivery fails");
+    AR_ASSERT(ar_data__get_map_integer(ref_distribution_memory, "assignment_count") == 1,
+              "Distribution should record attempted assignment count when reply delivery fails");
+    AR_ASSERT(ar_data__get_map_integer(ref_distribution_memory, "sent_count") == 1,
+              "Distribution should record successful send count when reply delivery fails");
+    AR_ASSERT(ar_data__get_map_integer(ref_distribution_memory, "failed_count") == 0,
+              "Distribution should record failed send count when reply delivery fails");
+
+    ar_method_fixture__destroy(own_fixture);
+    ar_data__destroy(own_distribution_context);
+    ar_data__destroy(own_worker_context);
+}
+
 static void test_distribution__preserves_correlation_for_interleaved_jobs(void) {
     printf("Testing distribution preserves correlation for interleaved jobs...\n");
 
@@ -570,6 +622,7 @@ int main(void) {
     printf("Running distribution method tests...\n\n");
     test_distribution__round_robins_payloads_across_workers();
     test_distribution__reports_failed_assignments_and_empty_inputs();
+    test_distribution__records_completion_when_reply_fails();
     test_distribution__preserves_correlation_for_interleaved_jobs();
     test_distribution__skips_zero_worker_placeholders();
     printf("\nAll distribution method tests passed!\n");
