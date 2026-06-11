@@ -1,8 +1,9 @@
 memory.is_broadcast := if(message.action = "broadcast", 1, 0)
 memory.correlation_id := if(memory.is_broadcast = 1, message.correlation_id, memory.correlation_id)
 memory.reply_to := if(memory.is_broadcast = 1, message.reply_to, memory.reply_to)
-memory.target := head(message.targets)
-memory.remaining_targets := tail(message.targets)
+memory.current_targets := if(memory.is_broadcast = 1, message.targets, [])
+memory.target := head(memory.current_targets)
+memory.remaining_targets := tail(memory.current_targets)
 memory.has_target := if(memory.target > 0, 1, 0)
 memory.target_to_send := memory.target * memory.is_broadcast
 memory.sent_result := send(memory.target_to_send, message.payload)

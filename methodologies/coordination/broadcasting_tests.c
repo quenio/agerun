@@ -242,6 +242,23 @@ static void test_broadcasting__sends_same_payload_to_all_recipients(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_broadcasting_memory, "sent_count") == 4,
               "Ignored message should not change sent count");
 
+    // When an unrelated message omits broadcast-only fields
+    own_message = ar_data__create_map();
+    AR_ASSERT(own_message != NULL, "Ignored message without targets should be created");
+    ar_data__set_map_string(own_message, "action", "ignored");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, broadcasting_agent, own_message),
+              "Ignored message without targets should queue");
+    own_message = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_broadcasting_memory, "status"),
+                     "broadcasted") == 0,
+              "Ignored message without targets should not overwrite broadcast status");
+    AR_ASSERT(ar_data__get_map_integer(ref_broadcasting_memory, "recipient_count") == 4,
+              "Ignored message without targets should not change recipient count");
+    AR_ASSERT(ar_data__get_map_integer(ref_broadcasting_memory, "sent_count") == 4,
+              "Ignored message without targets should not change sent count");
+
     // When one recipient cannot receive messages
     own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Partial broadcast message should be created");
