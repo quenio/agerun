@@ -856,6 +856,50 @@ static void test_evaluate_empty_list_comparison(void) {
         ar_expression_ast__destroy(own_ast);
     }
 
+    assert(ar_data__set_map_integer(mut_memory, "empty_sentinel", 0));
+
+    {
+        const char *path[] = {"empty_sentinel"};
+        ar_expression_ast_t *own_left =
+            ar_expression_ast__create_memory_access("memory", path, 1);
+        ar_expression_ast_t *own_right = ar_expression_ast__create_literal_list(NULL, 0);
+        ar_expression_ast_t *own_ast =
+            ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__EQUAL, own_left, own_right);
+        assert(own_ast != NULL);
+
+        ar_data_t *own_result =
+            ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, own_ast);
+
+        assert(own_result != NULL);
+        assert(ar_data__get_type(own_result) == AR_DATA_TYPE__INTEGER);
+        assert(ar_data__get_integer(own_result) == 1);
+
+        ar_data__destroy(own_result);
+        ar_expression_ast__destroy(own_ast);
+    }
+
+    {
+        const char *path[] = {"empty_sentinel"};
+        ar_expression_ast_t *own_left =
+            ar_expression_ast__create_memory_access("memory", path, 1);
+        ar_expression_ast_t *own_right = ar_expression_ast__create_literal_list(NULL, 0);
+        ar_expression_ast_t *own_ast =
+            ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__NOT_EQUAL,
+                                                own_left,
+                                                own_right);
+        assert(own_ast != NULL);
+
+        ar_data_t *own_result =
+            ar_expression_evaluator__evaluate(ref_evaluator, ref_frame, own_ast);
+
+        assert(own_result != NULL);
+        assert(ar_data__get_type(own_result) == AR_DATA_TYPE__INTEGER);
+        assert(ar_data__get_integer(own_result) == 0);
+
+        ar_data__destroy(own_result);
+        ar_expression_ast__destroy(own_ast);
+    }
+
     assert(ar_log__get_last_error_message(ref_log) == NULL);
 
     ar_evaluator_fixture__destroy(own_fixture);

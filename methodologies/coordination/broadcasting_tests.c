@@ -368,9 +368,72 @@ static void test_broadcasting__sends_same_payload_to_all_recipients(void) {
     ar_data__destroy(own_report_context);
 }
 
+static void test_broadcasting__reports_failed_when_targets_missing(void) {
+    printf("Testing broadcasting reports failed when targets are missing...\n");
+
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("broadcasting_missing_targets");
+    AR_ASSERT(ar_method_fixture__initialize(own_fixture), "Fixture should initialize");
+    AR_ASSERT(ar_method_fixture__verify_directory(own_fixture), "Fixture directory should verify");
+    load_method(own_fixture, "broadcasting");
+
+    ar_agency_t *mut_agency = ar_method_fixture__get_agency(own_fixture);
+    register_record_receiver(mut_agency);
+
+    ar_data_t *own_broadcasting_context = create_context();
+    ar_data_t *own_report_context = create_context();
+    int64_t broadcasting_agent = ar_agency__create_agent(
+        mut_agency, "broadcasting", "1.0.0", own_broadcasting_context);
+    int64_t report_agent = ar_agency__create_agent(
+        mut_agency, "record-receiver", "1.0.0", own_report_context);
+
+    ar_data_t *own_message = ar_data__create_map();
+    AR_ASSERT(own_message != NULL, "Broadcast message without targets should be created");
+    ar_data__set_map_string(own_message, "action", "broadcast");
+    ar_data_t *own_payload = create_payload("domain_event", "missing", "caller-shaped", 0);
+    AR_ASSERT(ar_data__set_map_data(own_message, "payload", own_payload),
+              "Broadcast message without targets should own opaque payload");
+    own_payload = NULL;
+    ar_data__set_map_string(own_message, "correlation_id", "broadcast-missing-targets");
+    ar_data__set_map_integer(own_message, "reply_to", checked_agent_id(report_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, broadcasting_agent, own_message),
+              "Broadcast message without targets should queue");
+    own_message = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    const ar_data_t *ref_broadcasting_memory =
+        ar_agency__get_agent_memory(mut_agency, broadcasting_agent);
+    const char *ref_status = ar_data__get_map_string(ref_broadcasting_memory, "status");
+    AR_ASSERT(ref_status != NULL, "Broadcasting should record status without targets");
+    AR_ASSERT(strcmp(ref_status, "broadcast_failed") == 0,
+              "Broadcast without targets should record broadcast_failed");
+    AR_ASSERT(ar_data__get_map_integer(ref_broadcasting_memory, "recipient_count") == 0,
+              "Broadcast without targets should record zero recipients");
+    AR_ASSERT(ar_data__get_map_integer(ref_broadcasting_memory, "sent_count") == 0,
+              "Broadcast without targets should record zero sent messages");
+    AR_ASSERT(ar_data__get_map_integer(ref_broadcasting_memory, "failed_count") == 0,
+              "Broadcast without targets should record zero failed sends");
+
+    const ar_data_t *ref_report_memory = ar_agency__get_agent_memory(mut_agency, report_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_action"),
+                     "broadcast_result") == 0,
+              "Broadcast without targets should emit a result");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
+                     "broadcast_failed") == 0,
+              "Broadcast without targets should report failed status");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 0,
+              "Broadcast without targets should report zero successes");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 0,
+              "Broadcast without targets should report zero failures");
+
+    ar_method_fixture__destroy(own_fixture);
+    ar_data__destroy(own_broadcasting_context);
+    ar_data__destroy(own_report_context);
+}
+
 int main(void) {
     printf("Running broadcasting method tests...\n\n");
     test_broadcasting__sends_same_payload_to_all_recipients();
+    test_broadcasting__reports_failed_when_targets_missing();
     printf("\nAll broadcasting method tests passed!\n");
     return 0;
 }
