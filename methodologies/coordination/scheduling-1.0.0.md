@@ -10,18 +10,18 @@ the stored due tick. It expresses delayed execution as ordinary message state.
 Only messages with a recognized `request` value are handled as coordination requests.
 
 On `request: "scheduling_schedule"`, the method stores schedule metadata, target agent, payload
-fields, `trace_id`, and `source`. On a due `scheduling_tick`, it sends the stored payload to
-the stored target agent. On `scheduling_cancel`, it clears pending state only when the matching
-schedule is still pending.
+fields, `trace_id`, `session_id`, and `source`. On a due `scheduling_tick` with the same
+`session_id`, it sends the stored payload to the stored target agent. On `scheduling_cancel`, it
+clears pending state only when the matching schedule and session are still pending.
 
 ## Message Format
 
 Requests:
 
 ```text
-{ source: <agent>, request: "scheduling_schedule", trace_id: <trace_id>, schedule_id: <id>, due_tick: <number>, target: <agent>, payload_request: <request>, payload_text: <text>, payload_attempt: <attempt> }
-{ source: <agent>, request: "scheduling_tick", trace_id: <trace_id>, tick: <number> }
-{ source: <agent>, request: "scheduling_cancel", trace_id: <trace_id>, schedule_id: <id> }
+{ source: <agent>, request: "scheduling_schedule", trace_id: <trace_id>, session_id: <session_id>, schedule_id: <id>, due_tick: <number>, target: <agent>, payload_request: <request>, payload_text: <text>, payload_attempt: <attempt> }
+{ source: <agent>, request: "scheduling_tick", trace_id: <trace_id>, session_id: <session_id>, tick: <number> }
+{ source: <agent>, request: "scheduling_cancel", trace_id: <trace_id>, session_id: <session_id>, schedule_id: <id> }
 ```
 
 Triggered message:
@@ -31,6 +31,7 @@ Triggered message:
   source: <scheduling-agent>,
   request: <payload_request>,
   trace_id: <trace_id>,
+  session_id: <session_id>,
   text: <payload_text>,
   attempt: <payload_attempt>,
   schedule_id: <schedule_id>
@@ -44,6 +45,7 @@ Response:
   source: <scheduling-agent>,
   response: "scheduling_result",
   trace_id: <trace_id>,
+  session_id: <session_id>,
   status: <success|failure>,
   state: <scheduled|cancelled|triggered|trigger_failed>,
   schedule_id: <id>,
@@ -54,8 +56,9 @@ Response:
 }
 ```
 
-Trigger responses use the stored schedule trace because they report the stored schedule request;
-cancel responses use the cancel request trace.
+Trigger responses and triggered payload requests use the tick request's `trace_id`; cancel
+responses use the cancel request's `trace_id`. All request kinds in one pending schedule use the
+same `session_id`.
 
 ## Implementation and Tests
 

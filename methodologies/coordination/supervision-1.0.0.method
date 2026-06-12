@@ -8,7 +8,16 @@ memory.is_validate_stop := if(memory.is_request = 1, message.request = "supervis
 memory.is_validate_lifecycle := if(memory.is_request = 1, message.request = "supervision_validate_lifecycle", 0)
 memory.policy := if(memory.is_start = 1, message.policy, memory.policy)
 memory.trace_id := if(memory.is_start = 1, message.trace_id, memory.trace_id)
+memory.session_id := if(memory.is_start = 1, message.session_id, memory.session_id)
 memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.trace_id)
+memory.has_request_session := if(message.session_id <> 0, 1, 0)
+memory.request_session_matches := if(memory.has_request_session = 1, message.session_id = memory.session_id, 0)
+memory.is_spawn_child_active := memory.is_spawn_child * memory.request_session_matches
+memory.is_child_failed_active := memory.is_child_failed * memory.request_session_matches
+memory.is_child_exited_active := memory.is_child_exited * memory.request_session_matches
+memory.is_stop_active := memory.is_stop * memory.request_session_matches
+memory.is_validate_stop_active := memory.is_validate_stop * memory.request_session_matches
+memory.is_validate_lifecycle_active := memory.is_validate_lifecycle * memory.request_session_matches
 memory.source := if(memory.is_start = 1, message.source, memory.source)
 memory.child_method_version := if(memory.is_start = 1, message.child_method_version, memory.child_method_version)
 memory.child_agent_ids := if(memory.is_start = 1, [], memory.child_agent_ids)
@@ -22,6 +31,7 @@ memory.spawn_request_message := {
   source: memory.self
   request: "supervision_spawn_child"
   trace_id: memory.trace_id
+  session_id: memory.session_id
   child_method_names: message.child_method_names
   child_method_version: memory.child_method_version
 }
@@ -29,16 +39,16 @@ memory.spawn_request_sent := send(memory.self * memory.is_start, memory.spawn_re
 memory.spawn_request_failed := if(memory.spawn_request_sent = 0, 1, 0)
 memory.spawn_request_failed := memory.spawn_request_failed * memory.is_start
 memory.child_method_names_input := if(memory.is_start = 1, message.child_method_names, [])
-memory.child_method_names_input := if(memory.is_spawn_child = 1, message.child_method_names, memory.child_method_names_input)
+memory.child_method_names_input := if(memory.is_spawn_child_active = 1, message.child_method_names, memory.child_method_names_input)
 memory.current_child_method_name := head(memory.child_method_names_input)
 memory.remaining_child_method_names := tail(memory.child_method_names_input)
-memory.spawn_child_action := memory.is_spawn_child
+memory.spawn_child_action := memory.is_spawn_child_active
 memory.current_method_name := if(memory.spawn_child_action = 1, memory.current_child_method_name, 0)
 memory.current_method_version := if(memory.spawn_child_action = 1, memory.child_method_version, "")
 memory.spawn_attempt_result := spawn(memory.current_method_name, memory.current_method_version, context)
 memory.spawn_result := if(memory.spawn_attempt_result > 0, memory.spawn_attempt_result, memory.spawn_result)
 memory.spawned_child := if(memory.spawn_attempt_result > 0, memory.spawn_child_action, 0)
-memory.empty_child_list := if(memory.spawn_attempt_result = 0, memory.is_spawn_child, 0)
+memory.empty_child_list := if(memory.spawn_attempt_result = 0, memory.spawn_child_action, 0)
 memory.id_append_buffer := if(memory.spawned_child = 1, memory.child_agent_ids, "")
 memory.id_append_ok := append(memory.id_append_buffer, memory.spawn_attempt_result)
 memory.child_agent_ids := if(memory.id_append_ok = 1, memory.id_append_buffer, memory.child_agent_ids)
@@ -58,6 +68,7 @@ memory.spawn_continue_message := {
   source: memory.self
   request: "supervision_spawn_child"
   trace_id: memory.trace_id
+  session_id: memory.session_id
   child_method_names: memory.remaining_child_method_names
   child_method_version: memory.child_method_version
 }
@@ -73,11 +84,12 @@ memory.status := if(memory.start_complete = 1, "running", memory.status)
 memory.spawn_handoff_failed := memory.spawn_request_failed + memory.spawn_continue_failed
 memory.status := if(memory.spawn_handoff_failed > 0, "handoff_failed", memory.status)
 memory.restart_policy := if(memory.policy = "restart", 1, 0)
-memory.lifecycle_event := memory.is_child_failed + memory.is_child_exited
+memory.lifecycle_event := memory.is_child_failed_active + memory.is_child_exited_active
 memory.lifecycle_validation_message := {
   source: memory.self
   request: "supervision_validate_lifecycle"
   trace_id: memory.request_trace_id
+  session_id: memory.session_id
   lifecycle_request: message.request
   child_agent_id: message.child_agent_id
   child_method_name: message.child_method_name
@@ -94,8 +106,8 @@ memory.current_lifecycle_child_agent_id := head(message.remaining_child_agent_id
 memory.remaining_lifecycle_child_agent_ids := tail(message.remaining_child_agent_ids)
 memory.current_handled_lifecycle_child_agent_id := head(message.remaining_handled_lifecycle_child_agent_ids)
 memory.remaining_handled_lifecycle_child_agent_ids := tail(message.remaining_handled_lifecycle_child_agent_ids)
-memory.lifecycle_match := if(memory.current_lifecycle_child_agent_id = message.child_agent_id, memory.is_validate_lifecycle, 0)
-memory.lifecycle_handled_match := if(memory.current_handled_lifecycle_child_agent_id = message.child_agent_id, memory.is_validate_lifecycle, 0)
+memory.lifecycle_match := if(memory.current_lifecycle_child_agent_id = message.child_agent_id, memory.is_validate_lifecycle_active, 0)
+memory.lifecycle_handled_match := if(memory.current_handled_lifecycle_child_agent_id = message.child_agent_id, memory.is_validate_lifecycle_active, 0)
 memory.lifecycle_tracked_count := message.lifecycle_tracked + memory.lifecycle_match
 memory.lifecycle_handled_count := message.lifecycle_handled + memory.lifecycle_handled_match
 memory.lifecycle_tracked := if(memory.lifecycle_tracked_count > 0, 1, 0)
@@ -106,11 +118,12 @@ memory.next_handled_lifecycle_child_agent_id := head(memory.remaining_handled_li
 memory.lifecycle_handled_has_remaining := if(memory.next_handled_lifecycle_child_agent_id > 0, 1, 0)
 memory.lifecycle_remaining_count := memory.lifecycle_child_has_remaining + memory.lifecycle_handled_has_remaining
 memory.lifecycle_has_remaining := if(memory.lifecycle_remaining_count > 0, 1, 0)
-memory.lifecycle_continue_needed := memory.is_validate_lifecycle * memory.lifecycle_has_remaining
+memory.lifecycle_continue_needed := memory.is_validate_lifecycle_active * memory.lifecycle_has_remaining
 memory.lifecycle_continue_message := {
   source: memory.self
   request: "supervision_validate_lifecycle"
   trace_id: message.trace_id
+  session_id: memory.session_id
   lifecycle_request: message.lifecycle_request
   child_agent_id: message.child_agent_id
   child_method_name: message.child_method_name
@@ -124,7 +137,7 @@ memory.lifecycle_continue_sent := send(memory.self * memory.lifecycle_continue_n
 memory.lifecycle_continue_failed := if(memory.lifecycle_continue_sent = 0, 1, 0)
 memory.lifecycle_continue_failed := memory.lifecycle_continue_failed * memory.lifecycle_continue_needed
 memory.lifecycle_no_remaining := 1 - memory.lifecycle_has_remaining
-memory.lifecycle_scan_exhausted := memory.is_validate_lifecycle * memory.lifecycle_no_remaining
+memory.lifecycle_scan_exhausted := memory.is_validate_lifecycle_active * memory.lifecycle_no_remaining
 memory.lifecycle_not_matched := 1 - memory.lifecycle_tracked
 memory.lifecycle_untracked := memory.lifecycle_scan_exhausted * memory.lifecycle_not_matched
 memory.lifecycle_duplicate := memory.lifecycle_scan_exhausted * memory.lifecycle_tracked
@@ -162,26 +175,28 @@ memory.stop_validation_message := {
   source: memory.self
   request: "supervision_validate_stop"
   trace_id: memory.request_trace_id
+  session_id: memory.session_id
   child_agent_id: message.child_agent_id
   remaining_child_agent_ids: memory.child_agent_ids
 }
-memory.stop_validation_sent := send(memory.self * memory.is_stop, memory.stop_validation_message)
+memory.stop_validation_sent := send(memory.self * memory.is_stop_active, memory.stop_validation_message)
 memory.stop_validation_failed := if(memory.stop_validation_sent = 0, 1, 0)
-memory.stop_validation_failed := memory.stop_validation_failed * memory.is_stop
+memory.stop_validation_failed := memory.stop_validation_failed * memory.is_stop_active
 memory.current_stop_child_agent_id := head(message.remaining_child_agent_ids)
 memory.remaining_stop_child_agent_ids := tail(message.remaining_child_agent_ids)
-memory.stop_match := if(memory.current_stop_child_agent_id = message.child_agent_id, memory.is_validate_stop, 0)
+memory.stop_match := if(memory.current_stop_child_agent_id = message.child_agent_id, memory.is_validate_stop_active, 0)
 memory.stop_result := exit(memory.current_stop_child_agent_id * memory.stop_match)
 memory.stop_succeeded := memory.stop_match * memory.stop_result
 memory.next_stop_child_agent_id := head(memory.remaining_stop_child_agent_ids)
 memory.stop_has_remaining := if(memory.next_stop_child_agent_id > 0, 1, 0)
 memory.stop_not_matched := 1 - memory.stop_match
-memory.stop_continue_needed := memory.is_validate_stop * memory.stop_has_remaining
+memory.stop_continue_needed := memory.is_validate_stop_active * memory.stop_has_remaining
 memory.stop_continue_needed := memory.stop_continue_needed * memory.stop_not_matched
 memory.stop_continue_message := {
   source: memory.self
   request: "supervision_validate_stop"
   trace_id: message.trace_id
+  session_id: memory.session_id
   child_agent_id: message.child_agent_id
   remaining_child_agent_ids: memory.remaining_stop_child_agent_ids
 }
@@ -189,7 +204,7 @@ memory.stop_continue_sent := send(memory.self * memory.stop_continue_needed, mem
 memory.stop_continue_failed := if(memory.stop_continue_sent = 0, 1, 0)
 memory.stop_continue_failed := memory.stop_continue_failed * memory.stop_continue_needed
 memory.stop_no_remaining := 1 - memory.stop_has_remaining
-memory.stop_scan_exhausted := memory.is_validate_stop * memory.stop_no_remaining
+memory.stop_scan_exhausted := memory.is_validate_stop_active * memory.stop_no_remaining
 memory.stop_done_sum := memory.stop_match + memory.stop_scan_exhausted
 memory.stop_done := if(memory.stop_done_sum > 0, 1, 0)
 memory.stop_untracked := memory.stop_scan_exhausted * memory.stop_not_matched
@@ -226,6 +241,7 @@ memory.report_message := {
   source: memory.self
   response: "supervision_result"
   trace_id: memory.request_trace_id
+  session_id: memory.session_id
   status: memory.report_status
   state: memory.report_state
   success_count: memory.report_success_count

@@ -4,6 +4,8 @@
 
 Routing selects exactly one recipient by matching a request key against an unbounded keyed route
 table. It is a keyed-selection primitive, not a direct target delivery or fan-out primitive.
+Because routing is a stateless single-call method, its request and response require `trace_id` but
+do not require `session_id`.
 
 ## Behavior
 

@@ -49,6 +49,7 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
         "memory.last_response := message.response\n"
         "memory.last_text := message.text\n"
         "memory.last_trace_id := message.trace_id\n"
+        "memory.last_session_id := message.session_id\n"
         "memory.last_kind := message.kind\n"
         "memory.last_source := message.source\n"
         "memory.last_workflow_id := message.workflow_id\n"
@@ -109,6 +110,8 @@ static void send_step_done(ar_agency_t *mut_agency,
     AR_ASSERT(own_done != NULL, "Step completion should be created");
     ar_data__set_map_string(own_done, "request", "workflow_step_done");
     ar_data__set_map_string(own_done, "workflow_id", ref_workflow_id);
+    ar_data__set_map_string(own_done, "trace_id", ref_workflow_id);
+    ar_data__set_map_string(own_done, "session_id", ref_workflow_id);
     ar_data__set_map_integer(own_done, "step", step);
     ar_data__set_map_string(own_done, "outcome", ref_outcome);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, workflow_agent, own_done),
@@ -154,6 +157,7 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
     ar_data__set_map_string(own_start, "request", "workflow_start");
     ar_data__set_map_string(own_start, "workflow_id", "wf-1");
     ar_data__set_map_string(own_start, "trace_id", "workflow-trace-1");
+    ar_data__set_map_string(own_start, "session_id", "wf-1");
     ar_data__set_map_integer(own_start, "source", checked_agent_id(report_agent));
     ar_data_t *own_step_targets = ar_data__create_list();
     ar_data_t *own_step_payloads = ar_data__create_list();
@@ -240,8 +244,11 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_state"), "complete") == 0,
               "Workflow completion status should be complete");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_trace_id"),
-                     "workflow-trace-1") == 0,
-              "Workflow completion should preserve trace id");
+                     "wf-1") == 0,
+              "Workflow completion should preserve completing request trace id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_session_id"),
+                     "wf-1") == 0,
+              "Workflow completion should preserve session id");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 4,
               "Workflow completion should report completed step count");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 0,
@@ -255,6 +262,8 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
     AR_ASSERT(own_start != NULL, "Zero-head workflow start should be created");
     ar_data__set_map_string(own_start, "request", "workflow_start");
     ar_data__set_map_string(own_start, "workflow_id", "wf-zero-head");
+    ar_data__set_map_string(own_start, "trace_id", "wf-zero-head-start");
+    ar_data__set_map_string(own_start, "session_id", "wf-zero-head");
     ar_data__set_map_integer(own_start, "source", checked_agent_id(report_agent));
     own_step_targets = ar_data__create_list();
     own_step_payloads = ar_data__create_list();
@@ -297,6 +306,8 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
     AR_ASSERT(own_start != NULL, "Post-completion zero workflow start should be created");
     ar_data__set_map_string(own_start, "request", "workflow_start");
     ar_data__set_map_string(own_start, "workflow_id", "wf-post-completion-zero");
+    ar_data__set_map_string(own_start, "trace_id", "wf-post-completion-zero-start");
+    ar_data__set_map_string(own_start, "session_id", "wf-post-completion-zero");
     ar_data__set_map_integer(own_start, "source", checked_agent_id(report_agent));
     own_step_targets = ar_data__create_list();
     own_step_payloads = ar_data__create_list();
@@ -350,6 +361,8 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
     AR_ASSERT(own_start != NULL, "Failed worker send workflow start should be created");
     ar_data__set_map_string(own_start, "request", "workflow_start");
     ar_data__set_map_string(own_start, "workflow_id", "wf-failed-worker-send");
+    ar_data__set_map_string(own_start, "trace_id", "wf-failed-worker-send-start");
+    ar_data__set_map_string(own_start, "session_id", "wf-failed-worker-send");
     ar_data__set_map_integer(own_start, "source", checked_agent_id(report_agent));
     own_step_targets = ar_data__create_list();
     own_step_payloads = ar_data__create_list();
@@ -394,6 +407,8 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
     AR_ASSERT(own_start != NULL, "Failed completion workflow start should be created");
     ar_data__set_map_string(own_start, "request", "workflow_start");
     ar_data__set_map_string(own_start, "workflow_id", "wf-failed-completion");
+    ar_data__set_map_string(own_start, "trace_id", "wf-failed-completion-start");
+    ar_data__set_map_string(own_start, "session_id", "wf-failed-completion");
     ar_data__set_map_integer(own_start, "source", 98765);
     own_step_targets = ar_data__create_list();
     own_step_payloads = ar_data__create_list();
@@ -446,6 +461,8 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
     AR_ASSERT(own_start != NULL, "Failed start handoff workflow start should be created");
     ar_data__set_map_string(own_start, "request", "workflow_start");
     ar_data__set_map_string(own_start, "workflow_id", "wf-failed-start-handoff");
+    ar_data__set_map_string(own_start, "trace_id", "wf-failed-start-handoff-start");
+    ar_data__set_map_string(own_start, "session_id", "wf-failed-start-handoff");
     ar_data__set_map_integer(own_start, "source", checked_agent_id(report_agent));
     own_step_targets = ar_data__create_list();
     own_step_payloads = ar_data__create_list();
@@ -485,6 +502,8 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
     AR_ASSERT(own_start != NULL, "Failed continuation workflow start should be created");
     ar_data__set_map_string(own_start, "request", "workflow_start");
     ar_data__set_map_string(own_start, "workflow_id", "wf-failed-continue-handoff");
+    ar_data__set_map_string(own_start, "trace_id", "wf-failed-continue-handoff-start");
+    ar_data__set_map_string(own_start, "session_id", "wf-failed-continue-handoff");
     ar_data__set_map_integer(own_start, "source", checked_agent_id(report_agent));
     own_step_targets = ar_data__create_list();
     own_step_payloads = ar_data__create_list();

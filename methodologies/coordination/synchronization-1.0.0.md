@@ -10,19 +10,21 @@ message. It is a reusable dependency gate for workflows and distributed work.
 Only messages with a recognized `request` value are handled as coordination requests.
 
 On `request: "synchronization_wait"`, the method stores the sync id, required count, continuation
-target agent, continuation request, continuation text, `trace_id`, and `source`. On matching
-`synchronization_dependency`, it appends the dependency value until the required count is reached.
+target agent, continuation request, continuation text, `trace_id`, `session_id`, and `source`. On
+matching `synchronization_dependency` requests with the same `session_id`, it appends the dependency
+value until the required count is reached.
 
 Completion is recorded only after the continuation and response are delivered. Failed delivery
-keeps the gate open for retry.
+keeps the gate open for retry. Continuation and response messages use the triggering dependency
+request's `trace_id` and the active synchronization `session_id`.
 
 ## Message Format
 
 Requests:
 
 ```text
-{ source: <agent>, request: "synchronization_wait", trace_id: <trace_id>, sync_id: <id>, required_count: <count>, continuation_target: <agent>, continuation_request: <request>, continuation_text: <text> }
-{ source: <agent>, request: "synchronization_dependency", trace_id: <trace_id>, sync_id: <id>, dependency: <name> }
+{ source: <agent>, request: "synchronization_wait", trace_id: <trace_id>, session_id: <session_id>, sync_id: <id>, required_count: <count>, continuation_target: <agent>, continuation_request: <request>, continuation_text: <text> }
+{ source: <agent>, request: "synchronization_dependency", trace_id: <trace_id>, session_id: <session_id>, sync_id: <id>, dependency: <name> }
 ```
 
 Continuation:
@@ -32,6 +34,7 @@ Continuation:
   source: <synchronization-agent>,
   request: <continuation_request>,
   trace_id: <trace_id>,
+  session_id: <session_id>,
   sync_id: <id>,
   text: <continuation_text>,
   done_count: <count>,
@@ -46,6 +49,7 @@ Response:
   source: <synchronization-agent>,
   response: "synchronization_result",
   trace_id: <trace_id>,
+  session_id: <session_id>,
   status: "success",
   state: "complete",
   sync_id: <id>,

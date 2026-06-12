@@ -3,6 +3,7 @@ memory.is_wait := if(memory.is_request = 1, message.request = "synchronization_w
 memory.is_dependency := if(memory.is_request = 1, message.request = "synchronization_dependency", 0)
 memory.sync_id := if(memory.is_wait = 1, message.sync_id, memory.sync_id)
 memory.trace_id := if(memory.is_wait = 1, message.trace_id, memory.trace_id)
+memory.session_id := if(memory.is_wait = 1, message.session_id, memory.session_id)
 memory.required_count := if(memory.is_wait = 1, message.required_count, memory.required_count)
 memory.source := if(memory.is_wait = 1, message.source, memory.source)
 memory.continuation_target := if(memory.is_wait = 1, message.continuation_target, memory.continuation_target)
@@ -12,8 +13,12 @@ memory.received := if(memory.is_wait = 1, [], memory.received)
 memory.done_count := if(memory.is_wait = 1, 0, memory.done_count)
 memory.completed := if(memory.is_wait = 1, 0, memory.completed)
 memory.continuation_done := if(memory.is_wait = 1, 0, memory.continuation_done)
+memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.trace_id)
 memory.matching_sync := if(message.sync_id = memory.sync_id, 1, 0)
+memory.has_request_session := if(message.session_id <> 0, 1, 0)
+memory.matching_session := if(memory.has_request_session = 1, message.session_id = memory.session_id, 0)
 memory.valid_dependency := memory.is_dependency * memory.matching_sync
+memory.valid_dependency := memory.valid_dependency * memory.matching_session
 memory.not_completed := if(memory.completed = 0, 1, 0)
 memory.not_continuation_done := if(memory.continuation_done = 0, 1, 0)
 memory.effective_required_count := if(memory.required_count > 0, memory.required_count, 1)
@@ -32,7 +37,8 @@ memory.should_send_continuation := memory.should_emit * memory.not_continuation_
 memory.continuation_message := {
   source: memory.self
   request: memory.continuation_request
-  trace_id: memory.trace_id
+  trace_id: memory.request_trace_id
+  session_id: memory.session_id
   sync_id: memory.sync_id
   text: memory.continuation_text
   done_count: memory.done_count
@@ -46,7 +52,8 @@ memory.continuation_done := if(memory.continuation_delivered_now = 1, 1, memory.
 memory.report_message := {
   source: memory.self
   response: "synchronization_result"
-  trace_id: memory.trace_id
+  trace_id: memory.request_trace_id
+  session_id: memory.session_id
   status: "success"
   state: memory.status
   sync_id: memory.sync_id

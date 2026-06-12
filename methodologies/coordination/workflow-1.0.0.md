@@ -10,22 +10,22 @@ pattern.
 
 Only messages with a recognized `request` value are handled as coordination requests.
 
-On `request: "workflow_start"`, the method stores workflow metadata, `trace_id`, `source`,
-branch value, and aligned `step_targets` and `step_payloads` lists. Each step payload is sent
-directly and as-is to the corresponding positive step target agent. Integer `0` step target agents
-can be skipped when followed by a later positive target.
+On `request: "workflow_start"`, the method stores workflow metadata, `trace_id`, `session_id`,
+`source`, branch value, and aligned `step_targets` and `step_payloads` lists. Each step payload is
+sent directly and as-is to the corresponding positive step target agent. Integer `0` step target
+agents can be skipped when followed by a later positive target.
 
 On `request: "workflow_step_done"`, the method advances only when the workflow id and step number
-match the currently active sent step. Duplicate, stale, premature, or out-of-order completions are
-ignored.
+match the currently active sent step and the `session_id` matches the active workflow session.
+Duplicate, stale, premature, or out-of-order completions are ignored.
 
 ## Message Format
 
 Requests:
 
 ```text
-{ source: <agent>, request: "workflow_start", trace_id: <trace_id>, workflow_id: <id>, step_targets: [<agent>, ...], step_payloads: [<message>, ...], branch_value: <outcome> }
-{ source: <agent>, request: "workflow_step_done", trace_id: <trace_id>, workflow_id: <id>, step: <current-step-number>, outcome: <value> }
+{ source: <agent>, request: "workflow_start", trace_id: <trace_id>, session_id: <session_id>, workflow_id: <id>, step_targets: [<agent>, ...], step_payloads: [<message>, ...], branch_value: <outcome> }
+{ source: <agent>, request: "workflow_step_done", trace_id: <trace_id>, session_id: <session_id>, workflow_id: <id>, step: <current-step-number>, outcome: <value> }
 ```
 
 Completion response:
@@ -35,6 +35,7 @@ Completion response:
   source: <workflow-agent>,
   response: "workflow_result",
   trace_id: <trace_id>,
+  session_id: <session_id>,
   status: <success|failure>,
   state: <complete|handoff_failed>,
   workflow_id: <id>,
@@ -46,7 +47,8 @@ Completion response:
 ```
 
 Terminal status is recorded only after the response is delivered; failed completion delivery leaves
-completion pending and retries do not increment `completed_step_count`.
+completion pending and retries do not increment `completed_step_count`. Completion responses use the
+triggering workflow control request's `trace_id` and the active workflow `session_id`.
 
 ## Implementation and Tests
 

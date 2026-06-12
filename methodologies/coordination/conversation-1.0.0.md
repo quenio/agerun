@@ -9,22 +9,22 @@ tracks turn history, and exposes structured responses while remaining an ordinar
 
 Only messages with a recognized `request` value are handled as coordination requests.
 
-On `request: "conversation_start"`, the method stores the conversation id, `trace_id`, participant
-agent ids, and `source`. On `request: "conversation_message"`, it accepts messages from
-either participant while the conversation is active, relays a `conversation_turn` request to the
-other participant, and records the turn only after delivery succeeds. On `conversation_summary`, it
-responds with history. On `conversation_close`, it marks the conversation closed and notifies the
-participants.
+On `request: "conversation_start"`, the method stores the conversation id, `trace_id`,
+`session_id`, participant agent ids, and `source`. On `request: "conversation_message"` with the
+same `session_id`, it accepts messages from either participant while the conversation is active,
+relays a `conversation_turn` request to the other participant, and records the turn only after
+delivery succeeds. On `conversation_summary`, it responds with history. On `conversation_close`, it
+marks the conversation closed and notifies the participants.
 
 ## Message Format
 
 Requests:
 
 ```text
-{ source: <agent>, request: "conversation_start", trace_id: <trace_id>, conversation_id: <id>, participant_a: <agent>, participant_b: <agent> }
-{ source: <agent>, request: "conversation_message", trace_id: <trace_id>, conversation_id: <id>, sender: <agent>, text: <text>, intent: <intent> }
-{ source: <agent>, request: "conversation_summary", trace_id: <trace_id>, conversation_id: <id> }
-{ source: <agent>, request: "conversation_close", trace_id: <trace_id>, conversation_id: <id> }
+{ source: <agent>, request: "conversation_start", trace_id: <trace_id>, session_id: <session_id>, conversation_id: <id>, participant_a: <agent>, participant_b: <agent> }
+{ source: <agent>, request: "conversation_message", trace_id: <trace_id>, session_id: <session_id>, conversation_id: <id>, sender: <agent>, text: <text>, intent: <intent> }
+{ source: <agent>, request: "conversation_summary", trace_id: <trace_id>, session_id: <session_id>, conversation_id: <id> }
+{ source: <agent>, request: "conversation_close", trace_id: <trace_id>, session_id: <session_id>, conversation_id: <id> }
 ```
 
 Relayed turn:
@@ -34,6 +34,7 @@ Relayed turn:
   source: <conversation-agent>,
   request: "conversation_turn",
   trace_id: <trace_id>,
+  session_id: <session_id>,
   conversation_id: <id>,
   from: <agent>,
   to: <agent>,
@@ -50,6 +51,7 @@ Coordinator response:
   source: <conversation-agent>,
   response: "conversation_result",
   trace_id: <trace_id>,
+  session_id: <session_id>,
   status: <success|failure>,
   state: <active|closed>,
   conversation_id: <id>,

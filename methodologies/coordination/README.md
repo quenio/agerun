@@ -66,10 +66,13 @@ By AgeRun method convention, every external request includes a `source` value id
 originating agent and a `request` value that identifies the requested command with the
 `<method>_<action>` naming convention. Every external response includes a `source` value identifying
 the method agent that produced the response and a `response` value that identifies the result
-envelope with the `<method>_result` naming convention, preserves the request's `trace_id`, and
-reports standard `status: "success"` or `status: "failure"` with `success_count` and
-`failure_count`.
-When a method has only one request kind, that request is named `<method>_start`.
+envelope with the `<method>_result` naming convention, preserves the triggering request's
+`trace_id`, and reports standard `status: "success"` or `status: "failure"` with `success_count`
+and `failure_count`. The `trace_id` is a per-request/response correlation. The `session_id` is a
+per-session correlation for methods that receive different request kinds in one logical session.
+Those sessionful requests, generated control requests, and responses include `session_id`; stateless
+single-request methods that are expected to be called once require only `trace_id`. When a method
+has only one request kind, that request is named `<method>_start`.
 Method-specific contracts define any additional response fields. When a method eventually returns
 multiple distinct result envelopes, the `response` value should use `<method>_<result_kind>`.
 Method-specific outcomes such as `routed`, `broadcast_failed`, or `handoff_failed` are carried in
@@ -155,10 +158,10 @@ Integer `0` entries are skipped placeholders, not failed sends.
 Requests:
 
 ```text
-{ source: <agent>, request: "supervision_start", trace_id: <trace_id>, child_method_names: [<method>, ...], child_method_version: <version>, policy: "restart" }
-{ source: <agent>, request: "supervision_child_failed", trace_id: <trace_id>, child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
-{ source: <agent>, request: "supervision_child_exited", trace_id: <trace_id>, child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
-{ source: <agent>, request: "supervision_stop", trace_id: <trace_id>, child_agent_id: <agent> }
+{ source: <agent>, request: "supervision_start", trace_id: <trace_id>, session_id: <session_id>, child_method_names: [<method>, ...], child_method_version: <version>, policy: "restart" }
+{ source: <agent>, request: "supervision_child_failed", trace_id: <trace_id>, session_id: <session_id>, child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
+{ source: <agent>, request: "supervision_child_exited", trace_id: <trace_id>, session_id: <session_id>, child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
+{ source: <agent>, request: "supervision_stop", trace_id: <trace_id>, session_id: <session_id>, child_agent_id: <agent> }
 ```
 
 Reply:
@@ -168,6 +171,7 @@ Reply:
   source: <supervision-agent>,
   response: "supervision_result",
   trace_id: <trace_id>,
+  session_id: <session_id>,
   status: <success|failure>,
   state: <running|restarted|stopped|ignored|stop_failed|handoff_failed>,
   success_count: <count>,
@@ -220,14 +224,16 @@ Reply:
 
 Distribution sends each payload item as-is, round-robin, to positive worker IDs. Integer `0` worker
 placeholders are skipped without consuming the current payload when later workers remain.
+Because distribution is a one-shot caller-facing method, its request and response require
+`trace_id` but do not require `session_id`.
 
 ### Aggregation
 
 Requests:
 
 ```text
-{ source: <agent>, request: "aggregation_start", trace_id: <trace_id>, expected_count: <count> }
-{ source: <agent>, request: "aggregation_collect", trace_id: <trace_id>, payload: <payload> }
+{ source: <agent>, request: "aggregation_start", trace_id: <trace_id>, session_id: <session_id>, expected_count: <count> }
+{ source: <agent>, request: "aggregation_collect", trace_id: <trace_id>, session_id: <session_id>, payload: <payload> }
 ```
 
 Completion response:
@@ -237,6 +243,7 @@ Completion response:
   source: <aggregation-agent>,
   response: "aggregation_result",
   trace_id: <trace_id>,
+  session_id: <session_id>,
   payloads: [<payload-1>, <payload-2>, ...],
   status: <success|failure>,
   success_count: <count>,
@@ -247,9 +254,9 @@ Completion response:
 Aggregation marks completion only after the aggregate response is sent successfully; failed
 completion delivery leaves the aggregate open. An `aggregation_start` request resets aggregation
 and starts a fresh payload list with the configured `expected_count`. Payload collection requests
-use `request: "aggregation_collect"` and must carry the same `trace_id` as the active start
-request; mismatched or missing collection traces fail without appending the payload.
-Failed collection attempts are reported in the eventual aggregate response's `failure_count`. The
+use `request: "aggregation_collect"` and must carry the same `session_id` as the active start
+request; missing collection traces fail without appending the payload. Failed collection attempts
+are reported in the eventual aggregate response's `failure_count`. The
 response is sent when `success_count + failure_count` equals the configured `expected_count`; the
 response status is `success` only when `success_count` equals that `expected_count`, and `failure`
 otherwise.
@@ -259,9 +266,9 @@ otherwise.
 Requests:
 
 ```text
-{ source: <agent>, request: "scheduling_schedule", trace_id: <trace_id>, schedule_id: <id>, due_tick: <number>, target: <agent>, payload_request: <request>, payload_text: <text>, payload_attempt: <attempt> }
-{ source: <agent>, request: "scheduling_tick", trace_id: <trace_id>, tick: <number> }
-{ source: <agent>, request: "scheduling_cancel", trace_id: <trace_id>, schedule_id: <id> }
+{ source: <agent>, request: "scheduling_schedule", trace_id: <trace_id>, session_id: <session_id>, schedule_id: <id>, due_tick: <number>, target: <agent>, payload_request: <request>, payload_text: <text>, payload_attempt: <attempt> }
+{ source: <agent>, request: "scheduling_tick", trace_id: <trace_id>, session_id: <session_id>, tick: <number> }
+{ source: <agent>, request: "scheduling_cancel", trace_id: <trace_id>, session_id: <session_id>, schedule_id: <id> }
 ```
 
 Triggered message:
@@ -271,6 +278,7 @@ Triggered message:
   source: <scheduling-agent>,
   request: <payload_request>,
   trace_id: <trace_id>,
+  session_id: <session_id>,
   text: <payload_text>,
   attempt: <payload_attempt>,
   schedule_id: <schedule_id>
@@ -284,6 +292,7 @@ Response:
   source: <scheduling-agent>,
   response: "scheduling_result",
   trace_id: <trace_id>,
+  session_id: <session_id>,
   status: <success|failure>,
   state: <scheduled|cancelled|triggered|trigger_failed>,
   schedule_id: <id>,
@@ -296,16 +305,17 @@ Response:
 
 A due tick clears `pending` only when the stored payload is sent successfully. If delivery fails,
 the state is `trigger_failed` and the schedule remains pending for a later tick. Trigger responses
-use the stored schedule trace because they report the stored schedule request; cancel responses use
-the cancel request trace.
+and triggered payload requests use the tick request's `trace_id`; cancel responses use the cancel
+request's `trace_id`; all scheduling requests and responses for one schedule use the same
+`session_id`.
 
 ### Synchronization
 
 Requests:
 
 ```text
-{ source: <agent>, request: "synchronization_wait", trace_id: <trace_id>, sync_id: <id>, required_count: <count>, continuation_target: <agent>, continuation_request: <request>, continuation_text: <text> }
-{ source: <agent>, request: "synchronization_dependency", trace_id: <trace_id>, sync_id: <id>, dependency: <name> }
+{ source: <agent>, request: "synchronization_wait", trace_id: <trace_id>, session_id: <session_id>, sync_id: <id>, required_count: <count>, continuation_target: <agent>, continuation_request: <request>, continuation_text: <text> }
+{ source: <agent>, request: "synchronization_dependency", trace_id: <trace_id>, session_id: <session_id>, sync_id: <id>, dependency: <name> }
 ```
 
 Continuation:
@@ -315,6 +325,7 @@ Continuation:
   source: <synchronization-agent>,
   request: <continuation_request>,
   trace_id: <trace_id>,
+  session_id: <session_id>,
   sync_id: <id>,
   text: <continuation_text>,
   done_count: <count>,
@@ -329,6 +340,7 @@ Response:
   source: <synchronization-agent>,
   response: "synchronization_result",
   trace_id: <trace_id>,
+  session_id: <session_id>,
   status: "success",
   state: "complete",
   sync_id: <id>,
@@ -347,8 +359,8 @@ delivery keeps the gate open for retry.
 Requests:
 
 ```text
-{ source: <agent>, request: "workflow_start", trace_id: <trace_id>, workflow_id: <id>, step_targets: [<agent>, ...], step_payloads: [<message>, ...], branch_value: <outcome> }
-{ source: <agent>, request: "workflow_step_done", trace_id: <trace_id>, workflow_id: <id>, step: <current-step-number>, outcome: <value> }
+{ source: <agent>, request: "workflow_start", trace_id: <trace_id>, session_id: <session_id>, workflow_id: <id>, step_targets: [<agent>, ...], step_payloads: [<message>, ...], branch_value: <outcome> }
+{ source: <agent>, request: "workflow_step_done", trace_id: <trace_id>, session_id: <session_id>, workflow_id: <id>, step: <current-step-number>, outcome: <value> }
 ```
 
 Step messages sent to step agents are exactly the caller-provided step payloads.
@@ -360,6 +372,7 @@ Completion response:
   source: <workflow-agent>,
   response: "workflow_result",
   trace_id: <trace_id>,
+  session_id: <session_id>,
   status: <success|failure>,
   state: <complete|handoff_failed>,
   workflow_id: <id>,
@@ -378,10 +391,10 @@ delivery leaves completion pending and retries do not increment `completed_step_
 Requests:
 
 ```text
-{ source: <agent>, request: "conversation_start", trace_id: <trace_id>, conversation_id: <id>, participant_a: <agent>, participant_b: <agent> }
-{ source: <agent>, request: "conversation_message", trace_id: <trace_id>, conversation_id: <id>, sender: <agent>, text: <text>, intent: <intent> }
-{ source: <agent>, request: "conversation_summary", trace_id: <trace_id>, conversation_id: <id> }
-{ source: <agent>, request: "conversation_close", trace_id: <trace_id>, conversation_id: <id> }
+{ source: <agent>, request: "conversation_start", trace_id: <trace_id>, session_id: <session_id>, conversation_id: <id>, participant_a: <agent>, participant_b: <agent> }
+{ source: <agent>, request: "conversation_message", trace_id: <trace_id>, session_id: <session_id>, conversation_id: <id>, sender: <agent>, text: <text>, intent: <intent> }
+{ source: <agent>, request: "conversation_summary", trace_id: <trace_id>, session_id: <session_id>, conversation_id: <id> }
+{ source: <agent>, request: "conversation_close", trace_id: <trace_id>, session_id: <session_id>, conversation_id: <id> }
 ```
 
 Participant turn:
@@ -391,6 +404,7 @@ Participant turn:
   source: <conversation-agent>,
   request: "conversation_turn",
   trace_id: <trace_id>,
+  session_id: <session_id>,
   conversation_id: <id>,
   from: <agent>,
   to: <agent>,
@@ -407,6 +421,7 @@ Response:
   source: <conversation-agent>,
   response: "conversation_result",
   trace_id: <trace_id>,
+  session_id: <session_id>,
   status: <success|failure>,
   state: <active|closed>,
   conversation_id: <id>,
@@ -431,15 +446,15 @@ history and turn count unchanged.
 Requests:
 
 ```text
-{ source: <agent>, request: "retry_start", trace_id: <trace_id>, operation_id: <id>, operation_target: <agent>, operation_request: <request>, operation_text: <text>, max_attempts: <number>, strategy: <immediate|scheduled>, scheduler_agent: <agent>, delay_ticks: <tick> }
-{ source: <agent>, request: "retry_failure", trace_id: <trace_id>, attempt: <attempt>, current_tick: <tick> }
-{ source: <agent>, request: "retry_success", trace_id: <trace_id>, attempt: <attempt> }
+{ source: <agent>, request: "retry_start", trace_id: <trace_id>, session_id: <session_id>, operation_id: <id>, operation_target: <agent>, operation_request: <request>, operation_text: <text>, max_attempts: <number>, strategy: <immediate|scheduled>, scheduler_agent: <agent>, delay_ticks: <tick> }
+{ source: <agent>, request: "retry_failure", trace_id: <trace_id>, session_id: <session_id>, attempt: <attempt>, current_tick: <tick> }
+{ source: <agent>, request: "retry_success", trace_id: <trace_id>, session_id: <session_id>, attempt: <attempt> }
 ```
 
 Operation attempt:
 
 ```text
-{ source: <retry-agent>, request: <operation_request>, trace_id: <trace_id>, text: <operation_text>, attempt: <number> }
+{ source: <retry-agent>, request: <operation_request>, trace_id: <trace_id>, session_id: <session_id>, text: <operation_text>, attempt: <number> }
 ```
 
 Scheduled retry request:
@@ -449,6 +464,7 @@ Scheduled retry request:
   source: <retry-agent>,
   request: "scheduling_schedule",
   trace_id: <trace_id>,
+  session_id: <session_id>,
   schedule_id: <operation_id>,
   due_tick: <current_tick + delay_ticks>,
   target: <operation_target>,
@@ -465,6 +481,7 @@ Terminal response:
   source: <retry-agent>,
   response: "retry_result",
   trace_id: <trace_id>,
+  session_id: <session_id>,
   status: <success|failure>,
   state: <succeeded|failed|dispatch_failed>,
   operation_id: <id>,
@@ -476,7 +493,8 @@ Terminal response:
 
 Retry records terminal state only after the `start` response is delivered; failed report delivery
 stores the pending terminal result so a matching outcome retries that report without replacing it or
-changing the attempt count.
+changing the attempt count. Failure and success requests match the active retry by `session_id`;
+terminal responses use the triggering outcome request's `trace_id`.
 
 ## Composition Examples
 
@@ -485,7 +503,7 @@ Fan-out and fan-in:
 ```text
 1. Send a request with `request: "aggregation_start"` and expected_count to an aggregation agent.
 2. Send a request with `request: "distribution_distribute"` to a distribution agent.
-3. Workers send requests with `request: "aggregation_collect"`, the same trace_id, and payload to an aggregation agent.
+3. Workers send requests with `request: "aggregation_collect"`, the same session_id, and payload to an aggregation agent.
 4. Aggregation emits a response when `expected_count` collection outcomes are accounted for.
 ```
 
@@ -493,9 +511,9 @@ Delayed retry:
 
 ```text
 1. Send a request with `request: "retry_start"`, strategy: "scheduled", and scheduler_agent to a retry agent.
-2. On a request with `request: "retry_failure"`, trace_id, and current_tick, retry sends a schedule request
+2. On a request with `request: "retry_failure"`, trace_id, session_id, and current_tick, retry sends a schedule request
    due at current_tick + delay_ticks.
-3. An external tick source sends requests with `request: "scheduling_tick"` to scheduling.
+3. An external tick source sends requests with `request: "scheduling_tick"` and the schedule session_id to scheduling.
 4. Scheduling re-emits the operation attempt at the requested tick.
 ```
 
@@ -504,15 +522,15 @@ Branching workflow:
 ```text
 1. Send a request with `request: "workflow_start"` to workflow with aligned step targets and payload lists.
 2. Workflow sends step 1 directly to the first configured step target.
-3. Send a `workflow_step_done` request for step 1 with the branch outcome to skip one pending step.
-4. Continue sending `workflow_step_done` requests until workflow emits `workflow_result`.
+3. Send a `workflow_step_done` request for step 1 with the workflow session_id and branch outcome to skip one pending step.
+4. Continue sending `workflow_step_done` requests with the same session_id until workflow emits `workflow_result`.
 ```
 
 Conversation-scoped workflow:
 
 ```text
 1. Conversation receives a request with `request: "conversation_start"` for two participant agents.
-2. Participant A sends a request with `request: "conversation_message"`; conversation relays a conversation_turn
+2. Participant A sends a request with `request: "conversation_message"` and the conversation session_id; conversation relays a conversation_turn
    request to participant B.
 3. Participant B replies through the same coordinator; conversation relays the turn back to
    participant A.

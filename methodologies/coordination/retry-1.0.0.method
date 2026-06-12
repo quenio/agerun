@@ -5,6 +5,7 @@ memory.is_success := if(memory.is_request = 1, message.request = "retry_success"
 memory.operation_id := if(memory.is_start = 1, message.operation_id, memory.operation_id)
 memory.start_trace_id := if(message.trace_id <> 0, message.trace_id, message.operation_id)
 memory.trace_id := if(memory.is_start = 1, memory.start_trace_id, memory.trace_id)
+memory.session_id := if(memory.is_start = 1, message.session_id, memory.session_id)
 memory.operation_target := if(memory.is_start = 1, message.operation_target, memory.operation_target)
 memory.operation_request := if(memory.is_start = 1, message.operation_request, memory.operation_request)
 memory.operation_text := if(memory.is_start = 1, message.operation_text, memory.operation_text)
@@ -18,11 +19,13 @@ memory.status := if(memory.is_start = 1, "starting", memory.status)
 memory.pending_terminal := if(memory.is_start = 1, 0, memory.pending_terminal)
 memory.pending_terminal_status := if(memory.is_start = 1, "", memory.pending_terminal_status)
 memory.pending_terminal_attempts := if(memory.is_start = 1, 0, memory.pending_terminal_attempts)
+memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.trace_id)
 memory.start_attempt := memory.attempts + memory.is_start
 memory.operation_message := {
   source: memory.self
   request: memory.operation_request
   trace_id: memory.trace_id
+  session_id: memory.session_id
   text: memory.operation_text
   attempt: memory.start_attempt
 }
@@ -33,7 +36,8 @@ memory.start_send_failed := memory.start_send_failed * memory.is_start
 memory.attempts := if(memory.start_succeeded = 1, memory.start_attempt, memory.attempts)
 memory.status := if(memory.start_succeeded = 1, "active", memory.status)
 memory.is_active_status := if(memory.status = "active", 1, 0)
-memory.matching_operation := if(message.trace_id = memory.trace_id, 1, 0)
+memory.has_request_session := if(message.session_id <> 0, 1, 0)
+memory.matching_operation := if(memory.has_request_session = 1, message.session_id = memory.session_id, 0)
 memory.matching_attempt := if(message.attempt = memory.attempts, 1, 0)
 memory.no_pending_terminal := if(memory.pending_terminal = 0, 1, 0)
 memory.pending_terminal_outcome := memory.is_failure + memory.is_success
@@ -54,7 +58,8 @@ memory.use_immediate := memory.retry_allowed - memory.use_scheduled
 memory.retry_message := {
   source: memory.self
   request: memory.operation_request
-  trace_id: memory.trace_id
+  trace_id: memory.request_trace_id
+  session_id: memory.session_id
   text: memory.operation_text
   attempt: memory.next_attempt
 }
@@ -64,7 +69,8 @@ memory.retry_due_tick := memory.failure_tick + memory.delay_ticks
 memory.schedule_message := {
   source: memory.self
   request: "scheduling_schedule"
-  trace_id: memory.trace_id
+  trace_id: memory.request_trace_id
+  session_id: memory.session_id
   schedule_id: memory.operation_id
   due_tick: memory.retry_due_tick
   target: memory.operation_target
@@ -92,7 +98,8 @@ memory.report_status := if(memory.report_failure_count > 0, "failure", "success"
 memory.report_message := {
   source: memory.self
   response: "retry_result"
-  trace_id: memory.trace_id
+  trace_id: memory.request_trace_id
+  session_id: memory.session_id
   status: memory.report_status
   state: memory.report_state
   operation_id: memory.operation_id

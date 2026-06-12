@@ -50,6 +50,7 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
         "memory.last_source := message.source\n"
         "memory.last_text := message.text\n"
         "memory.last_trace_id := message.trace_id\n"
+        "memory.last_session_id := message.session_id\n"
         "memory.last_attempt := message.attempt\n"
         "memory.last_operation_id := message.operation_id\n"
         "memory.last_status := message.status\n"
@@ -105,6 +106,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
     ar_data__set_map_string(own_start, "request", "retry_start");
     ar_data__set_map_string(own_start, "operation_id", "op-1");
     ar_data__set_map_string(own_start, "trace_id", "retry-trace-1");
+    ar_data__set_map_string(own_start, "session_id", "op-1");
     ar_data__set_map_integer(own_start, "operation_target", checked_agent_id(operation_agent));
     ar_data__set_map_string(own_start, "operation_request", "attempt");
     ar_data__set_map_string(own_start, "operation_text", "work");
@@ -130,6 +132,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
     AR_ASSERT(own_failure != NULL, "Failure message should be created");
     ar_data__set_map_string(own_failure, "request", "retry_failure");
     ar_data__set_map_string(own_failure, "trace_id", "retry-trace-1");
+    ar_data__set_map_string(own_failure, "session_id", "op-1");
     ar_data__set_map_integer(own_failure, "attempt", 1);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_failure),
               "Failure message should queue");
@@ -143,6 +146,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
     AR_ASSERT(own_duplicate_failure != NULL, "Duplicate stale failure should be created");
     ar_data__set_map_string(own_duplicate_failure, "request", "retry_failure");
     ar_data__set_map_string(own_duplicate_failure, "trace_id", "retry-trace-1");
+    ar_data__set_map_string(own_duplicate_failure, "session_id", "op-1");
     ar_data__set_map_integer(own_duplicate_failure, "attempt", 1);
     ar_data__set_map_integer(own_duplicate_failure, "current_tick", 49);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_duplicate_failure),
@@ -161,6 +165,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
     AR_ASSERT(own_success != NULL, "Success message should be created");
     ar_data__set_map_string(own_success, "request", "retry_success");
     ar_data__set_map_string(own_success, "trace_id", "retry-trace-1");
+    ar_data__set_map_string(own_success, "session_id", "op-1");
     ar_data__set_map_integer(own_success, "attempt", 2);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_success),
               "Success message should queue");
@@ -181,6 +186,9 @@ static void test_retry__reexecutes_and_reports_success(void) {
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_trace_id"),
                      "retry-trace-1") == 0,
               "Retry result should preserve trace id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_session_id"),
+                     "op-1") == 0,
+              "Retry result should preserve session id");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 1,
               "Retry result should report one successful operation");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 0,
@@ -192,6 +200,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
     AR_ASSERT(own_stale_failure != NULL, "Stale failure message should be created");
     ar_data__set_map_string(own_stale_failure, "request", "retry_failure");
     ar_data__set_map_string(own_stale_failure, "trace_id", "retry-trace-1");
+    ar_data__set_map_string(own_stale_failure, "session_id", "op-1");
     ar_data__set_map_integer(own_stale_failure, "attempt", 1);
     ar_data__set_map_integer(own_stale_failure, "current_tick", 50);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_stale_failure),
@@ -212,6 +221,8 @@ static void test_retry__reexecutes_and_reports_success(void) {
     AR_ASSERT(own_final_start != NULL, "Final failure retry start should be created");
     ar_data__set_map_string(own_final_start, "request", "retry_start");
     ar_data__set_map_string(own_final_start, "operation_id", "op-final");
+    ar_data__set_map_string(own_final_start, "trace_id", "op-final-start");
+    ar_data__set_map_string(own_final_start, "session_id", "op-final");
     ar_data__set_map_integer(own_final_start,
                              "operation_target",
                              checked_agent_id(operation_agent));
@@ -231,6 +242,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
     AR_ASSERT(own_final_failure != NULL, "Final failure message should be created");
     ar_data__set_map_string(own_final_failure, "request", "retry_failure");
     ar_data__set_map_string(own_final_failure, "trace_id", "op-final");
+    ar_data__set_map_string(own_final_failure, "session_id", "op-final");
     ar_data__set_map_integer(own_final_failure, "attempt", 1);
     ar_data__set_map_integer(own_final_failure, "current_tick", 60);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_final_failure),
@@ -254,6 +266,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
     AR_ASSERT(own_stale_failure != NULL, "Stale final failure message should be created");
     ar_data__set_map_string(own_stale_failure, "request", "retry_failure");
     ar_data__set_map_string(own_stale_failure, "trace_id", "op-final");
+    ar_data__set_map_string(own_stale_failure, "session_id", "op-final");
     ar_data__set_map_integer(own_stale_failure, "attempt", 1);
     ar_data__set_map_integer(own_stale_failure, "current_tick", 61);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_stale_failure),
@@ -274,6 +287,8 @@ static void test_retry__reexecutes_and_reports_success(void) {
     AR_ASSERT(own_scheduled_start != NULL, "Scheduled retry start should be created");
     ar_data__set_map_string(own_scheduled_start, "request", "retry_start");
     ar_data__set_map_string(own_scheduled_start, "operation_id", "op-scheduled");
+    ar_data__set_map_string(own_scheduled_start, "trace_id", "op-scheduled-start");
+    ar_data__set_map_string(own_scheduled_start, "session_id", "op-scheduled");
     ar_data__set_map_integer(own_scheduled_start,
                              "operation_target",
                              checked_agent_id(scheduled_operation_agent));
@@ -298,6 +313,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
     AR_ASSERT(own_scheduled_failure != NULL, "Scheduled failure message should be created");
     ar_data__set_map_string(own_scheduled_failure, "request", "retry_failure");
     ar_data__set_map_string(own_scheduled_failure, "trace_id", "op-scheduled");
+    ar_data__set_map_string(own_scheduled_failure, "session_id", "op-scheduled");
     ar_data__set_map_integer(own_scheduled_failure, "attempt", 1);
     ar_data__set_map_integer(own_scheduled_failure, "current_tick", 10);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, scheduled_retry_agent, own_scheduled_failure),
@@ -322,11 +338,16 @@ static void test_retry__reexecutes_and_reports_success(void) {
               "Scheduled retry request should identify the retry source");
     AR_ASSERT(ar_data__get_map_integer(ref_scheduler_memory, "last_payload_attempt") == 2,
               "Scheduled retry should preserve the next attempt number");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_scheduler_memory, "last_session_id"),
+                     "op-scheduled") == 0,
+              "Scheduled retry should preserve operation session id");
 
     ar_data_t *own_failed_start = ar_data__create_map();
     AR_ASSERT(own_failed_start != NULL, "Failed start dispatch should be created");
     ar_data__set_map_string(own_failed_start, "request", "retry_start");
     ar_data__set_map_string(own_failed_start, "operation_id", "op-start-dispatch-failed");
+    ar_data__set_map_string(own_failed_start, "trace_id", "op-start-dispatch-failed-start");
+    ar_data__set_map_string(own_failed_start, "session_id", "op-start-dispatch-failed");
     ar_data__set_map_integer(own_failed_start, "operation_target", 98765);
     ar_data__set_map_string(own_failed_start, "operation_request", "attempt");
     ar_data__set_map_string(own_failed_start, "operation_text", "missing-worker");
@@ -360,6 +381,9 @@ static void test_retry__reexecutes_and_reports_success(void) {
     ar_data__set_map_string(own_dispatch_failure,
                             "trace_id",
                             "op-start-dispatch-failed");
+    ar_data__set_map_string(own_dispatch_failure,
+                            "session_id",
+                            "op-start-dispatch-failed");
     ar_data__set_map_integer(own_dispatch_failure, "attempt", 1);
     ar_data__set_map_integer(own_dispatch_failure, "current_tick", 70);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_dispatch_failure),
@@ -377,6 +401,8 @@ static void test_retry__reexecutes_and_reports_success(void) {
     AR_ASSERT(own_correlated_start != NULL, "Correlated retry start should be created");
     ar_data__set_map_string(own_correlated_start, "request", "retry_start");
     ar_data__set_map_string(own_correlated_start, "operation_id", "op-correlated");
+    ar_data__set_map_string(own_correlated_start, "trace_id", "op-correlated");
+    ar_data__set_map_string(own_correlated_start, "session_id", "op-correlated");
     ar_data__set_map_integer(own_correlated_start,
                              "operation_target",
                              checked_agent_id(operation_agent));
@@ -402,6 +428,9 @@ static void test_retry__reexecutes_and_reports_success(void) {
     ar_data__set_map_string(own_stale_active_failure,
                             "trace_id",
                             "op-start-dispatch-failed");
+    ar_data__set_map_string(own_stale_active_failure,
+                            "session_id",
+                            "op-start-dispatch-failed");
     ar_data__set_map_integer(own_stale_active_failure, "attempt", 1);
     ar_data__set_map_integer(own_stale_active_failure, "current_tick", 90);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_stale_active_failure),
@@ -422,6 +451,9 @@ static void test_retry__reexecutes_and_reports_success(void) {
     ar_data__set_map_string(own_stale_active_success,
                             "trace_id",
                             "op-start-dispatch-failed");
+    ar_data__set_map_string(own_stale_active_success,
+                            "session_id",
+                            "op-start-dispatch-failed");
     ar_data__set_map_integer(own_stale_active_success, "attempt", 1);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_stale_active_success),
               "Stale active success should queue");
@@ -440,6 +472,12 @@ static void test_retry__reexecutes_and_reports_success(void) {
     ar_data__set_map_string(own_failed_success_report_start, "request", "retry_start");
     ar_data__set_map_string(own_failed_success_report_start,
                             "operation_id",
+                            "op-success-report-failed");
+    ar_data__set_map_string(own_failed_success_report_start,
+                            "trace_id",
+                            "op-success-report-failed-start");
+    ar_data__set_map_string(own_failed_success_report_start,
+                            "session_id",
                             "op-success-report-failed");
     ar_data__set_map_integer(own_failed_success_report_start,
                              "operation_target",
@@ -464,6 +502,9 @@ static void test_retry__reexecutes_and_reports_success(void) {
     ar_data__set_map_string(own_failed_success_report,
                             "trace_id",
                             "op-success-report-failed");
+    ar_data__set_map_string(own_failed_success_report,
+                            "session_id",
+                            "op-success-report-failed");
     ar_data__set_map_integer(own_failed_success_report, "attempt", 1);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_failed_success_report),
               "Failed success report should queue");
@@ -483,6 +524,9 @@ static void test_retry__reexecutes_and_reports_success(void) {
     ar_data__set_map_string(own_opposite_failure, "request", "retry_failure");
     ar_data__set_map_string(own_opposite_failure,
                             "trace_id",
+                            "op-success-report-failed");
+    ar_data__set_map_string(own_opposite_failure,
+                            "session_id",
                             "op-success-report-failed");
     ar_data__set_map_integer(own_opposite_failure, "attempt", 1);
     ar_data__set_map_integer(own_opposite_failure, "current_tick", 95);
@@ -507,6 +551,9 @@ static void test_retry__reexecutes_and_reports_success(void) {
     ar_data__set_map_string(own_failed_success_report,
                             "trace_id",
                             "op-success-report-failed");
+    ar_data__set_map_string(own_failed_success_report,
+                            "session_id",
+                            "op-success-report-failed");
     ar_data__set_map_integer(own_failed_success_report, "attempt", 1);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_failed_success_report),
               "Repeated failed success report should queue");
@@ -524,6 +571,12 @@ static void test_retry__reexecutes_and_reports_success(void) {
     ar_data__set_map_string(own_failed_failure_report_start, "request", "retry_start");
     ar_data__set_map_string(own_failed_failure_report_start,
                             "operation_id",
+                            "op-failure-report-failed");
+    ar_data__set_map_string(own_failed_failure_report_start,
+                            "trace_id",
+                            "op-failure-report-failed-start");
+    ar_data__set_map_string(own_failed_failure_report_start,
+                            "session_id",
                             "op-failure-report-failed");
     ar_data__set_map_integer(own_failed_failure_report_start,
                              "operation_target",
@@ -548,6 +601,9 @@ static void test_retry__reexecutes_and_reports_success(void) {
     ar_data__set_map_string(own_failed_failure_report,
                             "trace_id",
                             "op-failure-report-failed");
+    ar_data__set_map_string(own_failed_failure_report,
+                            "session_id",
+                            "op-failure-report-failed");
     ar_data__set_map_integer(own_failed_failure_report, "attempt", 1);
     ar_data__set_map_integer(own_failed_failure_report, "current_tick", 100);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_failed_failure_report),
@@ -567,6 +623,9 @@ static void test_retry__reexecutes_and_reports_success(void) {
     ar_data__set_map_string(own_failed_failure_report,
                             "trace_id",
                             "op-failure-report-failed");
+    ar_data__set_map_string(own_failed_failure_report,
+                            "session_id",
+                            "op-failure-report-failed");
     ar_data__set_map_integer(own_failed_failure_report, "attempt", 1);
     ar_data__set_map_integer(own_failed_failure_report, "current_tick", 101);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_failed_failure_report),
@@ -583,6 +642,12 @@ static void test_retry__reexecutes_and_reports_success(void) {
     AR_ASSERT(own_failed_schedule_start != NULL, "Failed schedule start should be created");
     ar_data__set_map_string(own_failed_schedule_start, "request", "retry_start");
     ar_data__set_map_string(own_failed_schedule_start, "operation_id", "op-schedule-failed");
+    ar_data__set_map_string(own_failed_schedule_start,
+                            "trace_id",
+                            "op-schedule-failed-start");
+    ar_data__set_map_string(own_failed_schedule_start,
+                            "session_id",
+                            "op-schedule-failed");
     ar_data__set_map_integer(own_failed_schedule_start,
                              "operation_target",
                              checked_agent_id(scheduled_operation_agent));
@@ -602,6 +667,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
     AR_ASSERT(own_schedule_failure != NULL, "Failed schedule failure should be created");
     ar_data__set_map_string(own_schedule_failure, "request", "retry_failure");
     ar_data__set_map_string(own_schedule_failure, "trace_id", "op-schedule-failed");
+    ar_data__set_map_string(own_schedule_failure, "session_id", "op-schedule-failed");
     ar_data__set_map_integer(own_schedule_failure, "attempt", 1);
     ar_data__set_map_integer(own_schedule_failure, "current_tick", 80);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, scheduled_retry_agent, own_schedule_failure),

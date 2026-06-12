@@ -11,16 +11,17 @@ fan-in counterpart to distribution.
 Only messages with `request: "aggregation_start"` or `request: "aggregation_collect"` are handled
 as coordination requests.
 
-A start request resets aggregation, stores `trace_id` and `source`, sets the target count
-from `expected_count`, and clears the append-backed payload list. A collect request appends the
-incoming opaque `payload` only when its `trace_id` matches the active aggregate trace while
+A start request resets aggregation, stores `trace_id`, `session_id`, and `source`, sets the target
+count from `expected_count`, and clears the append-backed payload list. A collect request appends
+the incoming opaque `payload` only when its `session_id` matches the active aggregate session while
 aggregation is active and completion has not been delivered.
 
-Mismatched or missing collection traces fail the collection request and do not append its payload.
-Those failed collection attempts are reported through `failure_count` when the aggregate response is
-eventually returned. The response is sent when `success_count + failure_count` equals the configured
-`expected_count`. Completion is recorded only after the aggregate response is sent successfully.
-The `request` field differentiates start requests from collect requests; `expected_count`
+Missing collection traces fail the collection request and do not append its payload. Those failed
+collection attempts are reported through `failure_count` when the aggregate response is eventually
+returned. The response is sent when `success_count + failure_count` equals the configured
+`expected_count` and uses the completing collection request's `trace_id`. Completion is recorded
+only after the aggregate response is sent successfully. The `request` field differentiates start
+requests from collect requests; `expected_count`
 only configures the start request threshold.
 
 ## Message Format
@@ -28,8 +29,8 @@ only configures the start request threshold.
 Requests:
 
 ```text
-{ source: <agent>, request: "aggregation_start", trace_id: <trace_id>, expected_count: <count> }
-{ source: <agent>, request: "aggregation_collect", trace_id: <trace_id>, payload: <payload> }
+{ source: <agent>, request: "aggregation_start", trace_id: <trace_id>, session_id: <session_id>, expected_count: <count> }
+{ source: <agent>, request: "aggregation_collect", trace_id: <trace_id>, session_id: <session_id>, payload: <payload> }
 ```
 
 Completion response:
@@ -39,6 +40,7 @@ Completion response:
   source: <aggregation-agent>,
   response: "aggregation_result",
   trace_id: <trace_id>,
+  session_id: <session_id>,
   payloads: [<payload-1>, <payload-2>, ...],
   status: <success|failure>,
   success_count: <count>,

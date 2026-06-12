@@ -12,6 +12,8 @@ Only messages with a recognized `request` value are handled as coordination requ
 When the agent receives `request: "distribution_distribute"`, it starts an assignment pass for
 `payloads` and `workers`. Internal `distribution_assign_payload` requests carry the remaining
 payloads, current worker list, original worker list, counters, `trace_id`, and `source`.
+Because distribution is a one-shot caller-facing method, its request and response require `trace_id`
+but do not require `session_id`.
 
 Each assigned payload is sent as-is. Integer `0` worker placeholders are skipped without consuming
 the current payload when later workers remain.

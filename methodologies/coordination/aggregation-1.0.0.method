@@ -2,6 +2,7 @@ memory.is_request := if(message.request <> 0, 1, 0)
 memory.is_start := if(memory.is_request = 1, message.request = "aggregation_start", 0)
 memory.is_collect := if(memory.is_request = 1, message.request = "aggregation_collect", 0)
 memory.trace_id := if(memory.is_start = 1, message.trace_id, memory.trace_id)
+memory.session_id := if(memory.is_start = 1, message.session_id, memory.session_id)
 memory.target_count := if(memory.is_start = 1, message.expected_count, memory.target_count)
 memory.source := if(memory.is_start = 1, message.source, memory.source)
 memory.payloads := if(memory.is_start = 1, [], memory.payloads)
@@ -15,11 +16,13 @@ memory.outcome_count_reached := if(memory.outcome_count >= memory.target_count, 
 memory.outcome_count_pending := if(memory.outcome_count_reached = 1, 0, 1)
 memory.collect_candidate := memory.is_collect * memory.active * memory.not_completed
 memory.collect_candidate := memory.collect_candidate * memory.outcome_count_pending
+memory.collect_has_session := if(message.session_id <> 0, 1, 0)
+memory.collect_session_candidate := memory.collect_candidate * memory.collect_has_session
+memory.collect_session_matches := if(memory.collect_session_candidate = 1, message.session_id = memory.session_id, 0)
+memory.collect_same_session := memory.collect_candidate * memory.collect_session_matches
 memory.collect_has_trace := if(message.trace_id <> 0, 1, 0)
-memory.collect_trace_candidate := memory.collect_candidate * memory.collect_has_trace
-memory.collect_trace_matches := if(memory.collect_trace_candidate = 1, message.trace_id = memory.trace_id, 0)
-memory.should_collect := memory.collect_candidate * memory.collect_trace_matches
-memory.collect_failed := memory.collect_candidate - memory.should_collect
+memory.should_collect := memory.collect_same_session * memory.collect_has_trace
+memory.collect_failed := memory.collect_same_session - memory.should_collect
 memory.failure_count := memory.failure_count + memory.collect_failed
 memory.append_buffer := if(memory.should_collect = 1, memory.payloads, "")
 memory.append_ok := append(memory.append_buffer, message.payload)
@@ -32,10 +35,12 @@ memory.success_complete := if(memory.count >= memory.target_count, 1, 0)
 memory.status := if(memory.success_complete = 1, "success", "failure")
 memory.should_emit := memory.is_complete * memory.not_completed
 memory.output_target := memory.source * memory.should_emit
+memory.output_trace_id := if(message.trace_id <> 0, message.trace_id, memory.trace_id)
 memory.output_message := {
   source: memory.self
   response: "aggregation_result"
-  trace_id: memory.trace_id
+  trace_id: memory.output_trace_id
+  session_id: memory.session_id
   payloads: memory.payloads
   status: memory.status
   success_count: memory.count

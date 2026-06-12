@@ -49,6 +49,7 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
         "memory.last_response := message.response\n"
         "memory.last_source := message.source\n"
         "memory.last_trace_id := message.trace_id\n"
+        "memory.last_session_id := message.session_id\n"
         "memory.last_conversation_id := message.conversation_id\n"
         "memory.last_from := message.from\n"
         "memory.last_to := message.to\n"
@@ -104,6 +105,7 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     ar_data__set_map_string(own_start, "request", "conversation_start");
     ar_data__set_map_string(own_start, "conversation_id", "chat-1");
     ar_data__set_map_string(own_start, "trace_id", "chat-trace-1");
+    ar_data__set_map_string(own_start, "session_id", "chat-session-1");
     ar_data__set_map_integer(own_start, "participant_a", checked_agent_id(participant_a));
     ar_data__set_map_integer(own_start, "participant_b", checked_agent_id(participant_b));
     ar_data__set_map_integer(own_start, "source", checked_agent_id(observer));
@@ -116,6 +118,7 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     ar_data__set_map_string(own_first, "request", "conversation_message");
     ar_data__set_map_string(own_first, "conversation_id", "chat-1");
     ar_data__set_map_string(own_first, "trace_id", "chat-turn-1");
+    ar_data__set_map_string(own_first, "session_id", "chat-session-1");
     ar_data__set_map_integer(own_first, "sender", checked_agent_id(participant_a));
     ar_data__set_map_string(own_first, "text", "hello");
     ar_data__set_map_string(own_first, "intent", "ask");
@@ -128,6 +131,7 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     ar_data__set_map_string(own_second, "request", "conversation_message");
     ar_data__set_map_string(own_second, "conversation_id", "chat-1");
     ar_data__set_map_string(own_second, "trace_id", "chat-turn-2");
+    ar_data__set_map_string(own_second, "session_id", "chat-session-1");
     ar_data__set_map_integer(own_second, "sender", checked_agent_id(participant_b));
     ar_data__set_map_string(own_second, "text", "reply");
     ar_data__set_map_string(own_second, "intent", "answer");
@@ -140,6 +144,7 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     ar_data__set_map_string(own_summary, "request", "conversation_summary");
     ar_data__set_map_string(own_summary, "conversation_id", "chat-1");
     ar_data__set_map_string(own_summary, "trace_id", "chat-summary-1");
+    ar_data__set_map_string(own_summary, "session_id", "chat-session-1");
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_summary),
               "Summary request should queue");
     own_summary = NULL;
@@ -167,6 +172,9 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_b_memory, "last_trace_id"),
                      "chat-turn-1") == 0,
               "Participant B turn should preserve first message trace id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_b_memory, "last_session_id"),
+                     "chat-session-1") == 0,
+              "Participant B turn should preserve conversation session id");
     AR_ASSERT(ar_data__get_map_integer(ref_participant_b_memory, "last_turn_count") == 1,
               "Participant B should receive turn one");
 
@@ -185,6 +193,9 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_a_memory, "last_trace_id"),
                      "chat-turn-2") == 0,
               "Participant A turn should preserve second message trace id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_a_memory, "last_session_id"),
+                     "chat-session-1") == 0,
+              "Participant A turn should preserve conversation session id");
     AR_ASSERT(ar_data__get_map_integer(ref_participant_a_memory, "last_turn_count") == 2,
               "Participant A should receive turn two");
 
@@ -206,6 +217,9 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
                      "chat-summary-1") == 0,
               "Conversation summary should preserve summary request trace id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_session_id"),
+                     "chat-session-1") == 0,
+              "Conversation summary should preserve conversation session id");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_success_count") == 2,
               "Conversation summary should report successful turn count");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_failure_count") == 0,
@@ -225,6 +239,8 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     AR_ASSERT(own_failed_start != NULL, "Failed relay conversation start should be created");
     ar_data__set_map_string(own_failed_start, "request", "conversation_start");
     ar_data__set_map_string(own_failed_start, "conversation_id", "chat-2");
+    ar_data__set_map_string(own_failed_start, "trace_id", "chat-2-start");
+    ar_data__set_map_string(own_failed_start, "session_id", "chat-session-2");
     ar_data__set_map_integer(own_failed_start, "participant_a", checked_agent_id(participant_a));
     ar_data__set_map_integer(own_failed_start, "participant_b", 98765);
     ar_data__set_map_integer(own_failed_start, "source", checked_agent_id(observer));
@@ -237,6 +253,7 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     ar_data__set_map_string(own_failed_turn, "request", "conversation_message");
     ar_data__set_map_string(own_failed_turn, "conversation_id", "chat-2");
     ar_data__set_map_string(own_failed_turn, "trace_id", "chat-failed-turn");
+    ar_data__set_map_string(own_failed_turn, "session_id", "chat-session-2");
     ar_data__set_map_integer(own_failed_turn, "sender", checked_agent_id(participant_a));
     ar_data__set_map_string(own_failed_turn, "text", "undeliverable");
     ar_data__set_map_string(own_failed_turn, "intent", "notify");
@@ -259,6 +276,9 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
                      "chat-failed-turn") == 0,
               "Failed relay response should preserve message request trace id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_session_id"),
+                     "chat-session-2") == 0,
+              "Failed relay response should preserve conversation session id");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_success_count") == 0,
               "Failed relay should report no successful turn");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_failure_count") == 1,

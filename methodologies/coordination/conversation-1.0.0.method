@@ -5,6 +5,7 @@ memory.is_summary := if(memory.is_request = 1, message.request = "conversation_s
 memory.is_close := if(memory.is_request = 1, message.request = "conversation_close", 0)
 memory.conversation_id := if(memory.is_start = 1, message.conversation_id, memory.conversation_id)
 memory.trace_id := if(memory.is_start = 1, message.trace_id, memory.trace_id)
+memory.session_id := if(memory.is_start = 1, message.session_id, memory.session_id)
 memory.participant_a := if(memory.is_start = 1, message.participant_a, memory.participant_a)
 memory.participant_b := if(memory.is_start = 1, message.participant_b, memory.participant_b)
 memory.source := if(memory.is_start = 1, message.source, memory.source)
@@ -16,10 +17,14 @@ memory.last_sender := if(memory.is_start = 1, 0, memory.last_sender)
 memory.last_recipient := if(memory.is_start = 1, 0, memory.last_recipient)
 memory.last_text := if(memory.is_start = 1, "", memory.last_text)
 memory.matches_conversation := if(message.conversation_id = memory.conversation_id, 1, 0)
+memory.has_request_session := if(message.session_id <> 0, 1, 0)
+memory.matches_session := if(memory.has_request_session = 1, message.session_id = memory.session_id, 0)
+memory.matches_conversation := memory.matches_conversation * memory.matches_session
 memory.is_active := if(memory.state = "active", 1, 0)
 memory.from_a := if(message.sender = memory.participant_a, 1, 0)
 memory.from_b := if(message.sender = memory.participant_b, 1, 0)
 memory.is_participant := memory.from_a + memory.from_b
+memory.message_matches := memory.is_message * memory.matches_conversation
 memory.is_turn := memory.is_message * memory.matches_conversation * memory.is_active * memory.is_participant
 memory.recipient := if(memory.from_a = 1, memory.participant_b, 0)
 memory.recipient := if(memory.from_b = 1, memory.participant_a, memory.recipient)
@@ -28,6 +33,7 @@ memory.turn_message := {
   source: memory.self
   request: "conversation_turn"
   trace_id: memory.request_trace_id
+  session_id: memory.session_id
   conversation_id: memory.conversation_id
   from: message.sender
   to: memory.recipient
@@ -51,6 +57,7 @@ memory.close_message := {
   source: memory.self
   response: "conversation_result"
   trace_id: memory.request_trace_id
+  session_id: memory.session_id
   status: "success"
   state: memory.state
   conversation_id: memory.conversation_id
@@ -60,13 +67,13 @@ memory.close_message := {
 }
 memory.close_a_sent := send(memory.participant_a * memory.should_close, memory.close_message)
 memory.close_b_sent := send(memory.participant_b * memory.should_close, memory.close_message)
-memory.response_state := if(memory.is_turn = 1, "relay_failed", "ignored")
+memory.response_state := if(memory.message_matches = 1, "relay_failed", "ignored")
 memory.response_state := if(memory.append_ok = 1, "relayed", memory.response_state)
 memory.response_state := if(memory.is_start = 1, "active", memory.response_state)
 memory.summary_matches := memory.is_summary * memory.matches_conversation
 memory.response_state := if(memory.summary_matches = 1, memory.state, memory.response_state)
 memory.response_state := if(memory.should_close = 1, "closed", memory.response_state)
-memory.relay_failure_count := memory.is_message - memory.append_ok
+memory.relay_failure_count := memory.message_matches - memory.append_ok
 memory.response_success_count := memory.turn_count
 memory.response_success_count := if(memory.is_message = 1, memory.append_ok, memory.response_success_count)
 memory.response_success_count := if(memory.is_start = 1, 0, memory.response_success_count)
@@ -76,6 +83,7 @@ memory.response_message := {
   source: memory.self
   response: "conversation_result"
   trace_id: memory.request_trace_id
+  session_id: memory.session_id
   status: memory.response_status
   state: memory.state
   conversation_id: memory.conversation_id
@@ -90,7 +98,7 @@ memory.response_message := {
   turn_count: memory.turn_count
   history: memory.history
 }
-memory.should_respond := memory.is_start + memory.is_message
+memory.should_respond := memory.is_start + memory.message_matches
 memory.should_respond := memory.should_respond + memory.summary_matches
 memory.should_respond := memory.should_respond + memory.should_close
 memory.response_sent := send(memory.source * memory.should_respond, memory.response_message)
