@@ -62,10 +62,13 @@ a multi-line map literal to a named memory value, then pass that value to `send(
 flat and nested messages because `send(...)`, `append(...)`, `head(...)`, and `tail(...)` deep-copy
 borrowed maps and lists.
 
-Every external coordination request uses `type: "request"`. Every external coordination response
-uses `type: "response"`, repeats the request action it reports, preserves that request's
-`trace_id`, and reports standard `status: "success"` or `status: "failure"` with `success_count`
-and `failure_count`.
+Every external coordination request uses `type: "request"` and includes an `action` that identifies
+the requested command. Every external coordination response uses `type: "response"`, preserves the
+request's `trace_id`, and reports standard `status: "success"` or `status: "failure"` with
+`success_count` and `failure_count`.
+Method-specific contracts define any additional response fields. Aggregation completion responses
+intentionally omit `action` because `start` and `collect` identify request phases, not a response
+command.
 Method-specific outcomes such as `routed`, `broadcast_failed`, or `handoff_failed` are carried in
 `state` when the response needs that detail. `source_agent` is the optional positive agent id that
 receives responses. Coordination methods handle command actions only on `type: "request"` messages;
@@ -223,15 +226,14 @@ placeholders are skipped without consuming the current payload when later worker
 Requests:
 
 ```text
-{ action: "aggregate", type: "request", expected_count: <count>, trace_id: <trace_id>, source_agent: <agent> }
-{ action: "aggregate", type: "request", trace_id: <trace_id>, payload: <payload> }
+{ action: "start", type: "request", expected_count: <count>, trace_id: <trace_id>, source_agent: <agent> }
+{ action: "collect", type: "request", trace_id: <trace_id>, payload: <payload> }
 ```
 
 Completion response:
 
 ```text
 {
-  action: "aggregate",
   type: "response",
   trace_id: <trace_id>,
   status: <success|failure>,
@@ -242,9 +244,10 @@ Completion response:
 ```
 
 Aggregation marks completion only after the aggregate response is sent successfully; failed
-completion delivery leaves the aggregate open. A positive `expected_count` resets aggregation and
-starts a fresh payload list. Payload collection requests must use the same `trace_id` as the active
-expected-count request; mismatched or missing collection traces fail without appending the payload.
+completion delivery leaves the aggregate open. A `start` request resets aggregation and starts a
+fresh payload list with the configured `expected_count`. Payload collection requests use
+`action: "collect"` and must carry the same `trace_id` as the active start request; mismatched or
+missing collection traces fail without appending the payload.
 Failed collection attempts are reported in the eventual aggregate response's `failure_count`. The
 response is sent when `success_count + failure_count` equals the configured `expected_count`; the
 response status is `success` only when `success_count` equals that `expected_count`, and `failure`
@@ -480,9 +483,10 @@ changing the attempt count.
 Fan-out and fan-in:
 
 ```text
-1. Send a request with action: "distribute" to a distribution agent.
-2. Workers send requests with action: "aggregate", the same trace_id, and payload to an aggregation agent.
-3. Aggregation emits a response with action: "aggregate" when `expected_count` collection outcomes are accounted for.
+1. Send a request with action: "start" and expected_count to an aggregation agent.
+2. Send a request with action: "distribute" to a distribution agent.
+3. Workers send requests with action: "collect", the same trace_id, and payload to an aggregation agent.
+4. Aggregation emits a response when `expected_count` collection outcomes are accounted for.
 ```
 
 Delayed retry:

@@ -48,7 +48,7 @@ static void send_collect(ar_agency_t *mut_agency,
                          const char *ref_payload) {
     ar_data_t *own_collect = ar_data__create_map();
     AR_ASSERT(own_collect != NULL, "Collect message should be created");
-    ar_data__set_map_string(own_collect, "action", "aggregate");
+    ar_data__set_map_string(own_collect, "action", "collect");
     ar_data__set_map_string(own_collect, "type", "request");
     ar_data__set_map_string(own_collect, "trace_id", ref_trace_id);
     ar_data__set_map_string(own_collect, "payload", ref_payload);
@@ -96,7 +96,7 @@ static void test_aggregation__combines_required_payloads(void) {
 
     ar_data_t *own_reset = ar_data__create_map();
     AR_ASSERT(own_reset != NULL, "Aggregate reset message should be created");
-    ar_data__set_map_string(own_reset, "action", "aggregate");
+    ar_data__set_map_string(own_reset, "action", "start");
     ar_data__set_map_string(own_reset, "type", "request");
     ar_data__set_map_string(own_reset, "trace_id", "agg-trace-1");
     ar_data__set_map_integer(own_reset, "expected_count", 4);
@@ -114,9 +114,9 @@ static void test_aggregation__combines_required_payloads(void) {
 
     const ar_data_t *ref_receiver_memory = ar_agency__get_agent_memory(mut_agency, receiver_agent);
     const char *ref_action = ar_data__get_map_string(ref_receiver_memory, "last_action");
-    AR_ASSERT(ref_action != NULL && strcmp(ref_action, "aggregate") == 0,
-              "Receiver should observe aggregate completion");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_type"), "response") == 0,
+    AR_ASSERT(ref_action == NULL, "Aggregate completion response should not include action");
+    const char *ref_type = ar_data__get_map_string(ref_receiver_memory, "last_type");
+    AR_ASSERT(ref_type != NULL && strcmp(ref_type, "response") == 0,
               "Aggregate completion should be a response");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_status"), "success") == 0,
               "Aggregate completion should report standard success status");
@@ -160,7 +160,7 @@ static void test_aggregation__combines_required_payloads(void) {
 
     own_reset = ar_data__create_map();
     AR_ASSERT(own_reset != NULL, "Failed completion reset message should be created");
-    ar_data__set_map_string(own_reset, "action", "aggregate");
+    ar_data__set_map_string(own_reset, "action", "start");
     ar_data__set_map_string(own_reset, "type", "request");
     ar_data__set_map_string(own_reset, "trace_id", "agg-failed-trace");
     ar_data__set_map_integer(own_reset, "expected_count", 2);
@@ -189,7 +189,7 @@ static void test_aggregation__combines_required_payloads(void) {
 
     own_reset = ar_data__create_map();
     AR_ASSERT(own_reset != NULL, "Reset message should be created");
-    ar_data__set_map_string(own_reset, "action", "aggregate");
+    ar_data__set_map_string(own_reset, "action", "start");
     ar_data__set_map_string(own_reset, "type", "request");
     ar_data__set_map_string(own_reset, "trace_id", "agg-reset-trace");
     ar_data__set_map_integer(own_reset, "expected_count", 2);
@@ -242,7 +242,7 @@ static void test_aggregation__reports_collection_failures_on_completion(void) {
 
     ar_data_t *own_reset = ar_data__create_map();
     AR_ASSERT(own_reset != NULL, "Aggregate reset message should be created");
-    ar_data__set_map_string(own_reset, "action", "aggregate");
+    ar_data__set_map_string(own_reset, "action", "start");
     ar_data__set_map_string(own_reset, "type", "request");
     ar_data__set_map_string(own_reset, "trace_id", "agg-trace-1");
     ar_data__set_map_integer(own_reset, "expected_count", 2);
@@ -271,7 +271,8 @@ static void test_aggregation__reports_collection_failures_on_completion(void) {
 
     AR_ASSERT(ar_data__get_map_integer(ref_aggregation_memory, "count") == 1,
               "Matching collect should increment aggregation count");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_status"), "failure") == 0,
+    const char *ref_status = ar_data__get_map_string(ref_receiver_memory, "last_status");
+    AR_ASSERT(ref_status != NULL && strcmp(ref_status, "failure") == 0,
               "Completion should report standard failure status when collection failures occurred");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_trace_id"),
                      "agg-trace-1") == 0,
