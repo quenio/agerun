@@ -1,36 +1,35 @@
 memory.is_request := if(message.type = "request", 1, 0)
-memory.is_start := if(message.action = "start", memory.is_request, 0)
-memory.is_collect := if(message.action = "collect", memory.is_request, 0)
-memory.aggregate_id := if(memory.is_start = 1, message.aggregate_id, memory.aggregate_id)
-memory.trace_id := if(memory.is_start = 1, message.trace_id, memory.trace_id)
-memory.required_count := if(memory.is_start = 1, message.required_count, memory.required_count)
-memory.source_agent := if(memory.is_start = 1, message.source_agent, memory.source_agent)
-memory.payloads := if(memory.is_start = 1, [], memory.payloads)
-memory.received_count := if(memory.is_start = 1, 0, memory.received_count)
-memory.completed := if(memory.is_start = 1, 0, memory.completed)
+memory.is_aggregate := if(message.action = "aggregate", memory.is_request, 0)
+memory.is_reset := if(message.count > 0, memory.is_aggregate, 0)
+memory.is_collect := memory.is_aggregate - memory.is_reset
+memory.trace_id := if(memory.is_reset = 1, message.trace_id, memory.trace_id)
+memory.target_count := if(memory.is_reset = 1, message.count, memory.target_count)
+memory.source_agent := if(memory.is_reset = 1, message.source_agent, memory.source_agent)
+memory.payloads := if(memory.is_reset = 1, [], memory.payloads)
+memory.count := if(memory.is_reset = 1, 0, memory.count)
+memory.completed := if(memory.is_reset = 1, 0, memory.completed)
+memory.active := if(memory.is_reset = 1, 1, memory.active)
 memory.not_completed := if(memory.completed = 0, 1, 0)
-memory.matching_aggregate := if(message.aggregate_id = memory.aggregate_id, 1, 0)
-memory.should_collect := memory.is_collect * memory.matching_aggregate * memory.not_completed
+memory.should_collect := memory.is_collect * memory.active * memory.not_completed
 memory.append_buffer := if(memory.should_collect = 1, memory.payloads, "")
 memory.append_ok := append(memory.append_buffer, message.payload)
 memory.payloads := if(memory.append_ok = 1, memory.append_buffer, memory.payloads)
-memory.received_count := memory.received_count + memory.append_ok
-memory.effective_required_count := if(memory.required_count > 0, memory.required_count, 1)
-memory.is_complete := if(memory.received_count >= memory.effective_required_count, 1, 0)
+memory.count := memory.count + memory.append_ok
+memory.count_reached := if(memory.count >= memory.target_count, 1, 0)
+memory.is_complete := memory.active * memory.count_reached
 memory.status := if(memory.is_complete = 1, "complete", "collecting")
 memory.should_emit := memory.is_complete * memory.not_completed
 memory.output_target := memory.source_agent * memory.should_emit
 memory.output_message := {
-  action: "start"
+  action: "aggregate"
   type: "response"
-  aggregate_id: memory.aggregate_id
   trace_id: memory.trace_id
   status: "success"
   state: memory.status
-  success_count: memory.received_count
+  success_count: memory.count
   failure_count: 0
   payloads: memory.payloads
-  received_count: memory.received_count
+  count: memory.count
 }
 memory.output_sent := send(memory.output_target, memory.output_message)
 memory.completion_delivered := memory.should_emit * memory.output_sent

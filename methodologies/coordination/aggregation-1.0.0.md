@@ -7,39 +7,38 @@ configured payload count is met. It provides an unbounded fan-in counterpart to 
 
 ## Behavior
 
-Only messages with `type: "request"` are handled as coordination requests.
+Only messages with `type: "request"` and `action: "aggregate"` are handled as coordination
+requests.
 
-On `action: "start"`, the method stores the aggregate id, required payload count, `trace_id`, and
-`source_agent`, then clears the append-backed payload list. On `action: "collect"`, it appends the
-incoming `payload` only when `aggregate_id` matches the active aggregate and completion has not been
-delivered.
+An aggregate request with a positive `count` resets aggregation, stores `trace_id` and
+`source_agent`, and clears the append-backed payload list. An aggregate request without a positive
+`count` appends the incoming opaque `payload` while aggregation is active and completion has not
+been delivered.
 
-Required counts below one behave as one required payload. Completion is recorded only after the
-`start` response is sent successfully.
+Completion is recorded only after the aggregate response is sent successfully.
 
 ## Message Format
 
 Requests:
 
 ```text
-{ action: "start", type: "request", aggregate_id: <id>, required_count: <count>, trace_id: <id>, source_agent: <agent> }
-{ action: "collect", type: "request", aggregate_id: <id>, payload: <payload> }
+{ action: "aggregate", type: "request", count: <count>, trace_id: <id>, source_agent: <agent> }
+{ action: "aggregate", type: "request", payload: <payload> }
 ```
 
 Completion response:
 
 ```text
 {
-  action: "start",
+  action: "aggregate",
   type: "response",
-  aggregate_id: <id>,
   trace_id: <trace_id>,
   status: "success",
   state: "complete",
   success_count: <count>,
   failure_count: 0,
   payloads: [<payload-1>, <payload-2>, ...],
-  received_count: <count>
+  count: <count>
 }
 ```
 

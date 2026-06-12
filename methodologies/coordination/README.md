@@ -222,29 +222,29 @@ placeholders are skipped without consuming the current payload when later worker
 Requests:
 
 ```text
-{ action: "start", type: "request", aggregate_id: <id>, required_count: <count>, trace_id: <id>, source_agent: <agent> }
-{ action: "collect", type: "request", aggregate_id: <id>, payload: <payload> }
+{ action: "aggregate", type: "request", count: <count>, trace_id: <id>, source_agent: <agent> }
+{ action: "aggregate", type: "request", payload: <payload> }
 ```
 
 Completion response:
 
 ```text
 {
-  action: "start",
+  action: "aggregate",
   type: "response",
-  aggregate_id: <id>,
   trace_id: <trace_id>,
   status: "success",
   state: "complete",
   success_count: <count>,
   failure_count: 0,
   payloads: [<payload-1>, <payload-2>, ...],
-  received_count: <count>
+  count: <count>
 }
 ```
 
-Aggregation marks completion only after the `start` response is sent successfully; failed completion
-delivery leaves the aggregate open. Required counts below one behave as one required payload.
+Aggregation marks completion only after the aggregate response is sent successfully; failed
+completion delivery leaves the aggregate open. A positive `count` resets aggregation and starts a
+fresh payload list.
 
 ### Scheduling
 
@@ -477,8 +477,8 @@ Fan-out and fan-in:
 
 ```text
 1. Send a request with action: "distribute" to a distribution agent.
-2. Workers send requests with action: "collect", aggregate_id, and payload to an aggregation agent.
-3. Aggregation emits a response with action: "start" and a payloads list when required_count payloads arrive.
+2. Workers send requests with action: "aggregate" and payload to an aggregation agent.
+3. Aggregation emits a response with action: "aggregate" and a payloads list when count payloads arrive.
 ```
 
 Delayed retry:
