@@ -7,7 +7,7 @@ memory.conversation_id := if(memory.is_start = 1, message.conversation_id, memor
 memory.trace_id := if(memory.is_start = 1, message.trace_id, memory.trace_id)
 memory.participant_a := if(memory.is_start = 1, message.participant_a, memory.participant_a)
 memory.participant_b := if(memory.is_start = 1, message.participant_b, memory.participant_b)
-memory.source_agent := if(memory.is_start = 1, message.source_agent, memory.source_agent)
+memory.source := if(memory.is_start = 1, message.source, memory.source)
 memory.state := if(memory.is_start = 1, "active", memory.state)
 memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.trace_id)
 memory.turn_count := if(memory.is_start = 1, 0, memory.turn_count)
@@ -25,9 +25,10 @@ memory.recipient := if(memory.from_a = 1, memory.participant_b, 0)
 memory.recipient := if(memory.from_b = 1, memory.participant_a, memory.recipient)
 memory.next_turn_count := memory.turn_count + memory.is_turn
 memory.turn_message := {
+  source: memory.self
   request: "conversation_turn"
-  conversation_id: memory.conversation_id
   trace_id: memory.request_trace_id
+  conversation_id: memory.conversation_id
   from: message.sender
   to: memory.recipient
   text: message.text
@@ -47,11 +48,12 @@ memory.last_text := if(memory.append_ok = 1, message.text, memory.last_text)
 memory.should_close := memory.is_close * memory.matches_conversation
 memory.state := if(memory.should_close = 1, "closed", memory.state)
 memory.close_message := {
+  source: memory.self
   response: "conversation_result"
-  conversation_id: memory.conversation_id
   trace_id: memory.request_trace_id
   status: "success"
   state: memory.state
+  conversation_id: memory.conversation_id
   success_count: memory.turn_count
   failure_count: 0
   turn_count: memory.turn_count
@@ -71,11 +73,12 @@ memory.response_success_count := if(memory.is_start = 1, 0, memory.response_succ
 memory.response_failure_count := memory.relay_failure_count
 memory.response_status := if(memory.response_failure_count > 0, "failure", "success")
 memory.response_message := {
+  source: memory.self
   response: "conversation_result"
-  conversation_id: memory.conversation_id
   trace_id: memory.request_trace_id
-  state: memory.state
   status: memory.response_status
+  state: memory.state
+  conversation_id: memory.conversation_id
   result: memory.response_state
   success_count: memory.response_success_count
   failure_count: memory.response_failure_count
@@ -90,4 +93,4 @@ memory.response_message := {
 memory.should_respond := memory.is_start + memory.is_message
 memory.should_respond := memory.should_respond + memory.summary_matches
 memory.should_respond := memory.should_respond + memory.should_close
-memory.response_sent := send(memory.source_agent * memory.should_respond, memory.response_message)
+memory.response_sent := send(memory.source * memory.should_respond, memory.response_message)

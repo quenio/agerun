@@ -11,7 +11,7 @@ Only messages with a recognized `request` value are handled as coordination requ
 
 When the agent receives `request: "distribution_distribute"`, it starts an assignment pass for
 `payloads` and `workers`. Internal `distribution_assign_payload` requests carry the remaining
-payloads, current worker list, original worker list, counters, `trace_id`, and `source_agent`.
+payloads, current worker list, original worker list, counters, `trace_id`, and `source`.
 
 Each assigned payload is sent as-is. Integer `0` worker placeholders are skipped without consuming
 the current payload when later workers remain.
@@ -22,12 +22,12 @@ Request:
 
 ```text
 {
+  source: <agent>,
   request: "distribution_distribute",
-  work_id: <id>,
-  payloads: [<payload>, <payload>, ...],
-  workers: [<agent>, <agent>, ...],
   trace_id: <trace_id>,
-  source_agent: <agent>
+  payloads: [<payload>, <payload>, ...],
+  work_id: <id>,
+  workers: [<agent>, <agent>, ...]
 }
 ```
 
@@ -35,11 +35,12 @@ Response:
 
 ```text
 {
+  source: <distribution-agent>,
   response: "distribution_result",
+  trace_id: <trace_id>,
   status: <success|failure>,
   state: <distributed|distribution_failed>,
   work_id: <id>,
-  trace_id: <trace_id>,
   success_count: <count>,
   failure_count: <count>,
   assignment_count: <count>,

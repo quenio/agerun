@@ -4,42 +4,44 @@ memory.is_execute_step := if(memory.is_request = 1, message.request = "workflow_
 memory.is_step_done := if(memory.is_request = 1, message.request = "workflow_step_done", 0)
 memory.workflow_id := if(memory.is_start = 1, message.workflow_id, memory.workflow_id)
 memory.trace_id := if(memory.is_start = 1, message.trace_id, memory.trace_id)
-memory.source_agent := if(memory.is_start = 1, message.source_agent, memory.source_agent)
+memory.source := if(memory.is_start = 1, message.source, memory.source)
 memory.branch_value := if(memory.is_start = 1, message.branch_value, memory.branch_value)
 memory.status := if(memory.is_start = 1, "active", memory.status)
 memory.current_step := if(memory.is_start = 1, 0, memory.current_step)
 memory.completed_step_count := if(memory.is_start = 1, 0, memory.completed_step_count)
 memory.completion_pending := if(memory.is_start = 1, 0, memory.completion_pending)
 memory.awaiting_step_done := if(memory.is_start = 1, 0, memory.awaiting_step_done)
-memory.pending_step_target_agents := if(memory.is_start = 1, [], memory.pending_step_target_agents)
+memory.pending_step_targets := if(memory.is_start = 1, [], memory.pending_step_targets)
 memory.pending_step_payloads := if(memory.is_start = 1, [], memory.pending_step_payloads)
 memory.start_execute_message := {
+  source: memory.source
   request: "workflow_execute_step"
-  workflow_id: memory.workflow_id
   trace_id: memory.trace_id
-  step_target_agents: message.step_target_agents
+  step_targets: message.step_targets
   step_payloads: message.step_payloads
+  workflow_id: memory.workflow_id
   step_number: 1
 }
 memory.start_execute_sent := send(memory.self * memory.is_start, memory.start_execute_message)
 memory.start_handoff_failed := if(memory.start_execute_sent = 0, 1, 0)
 memory.start_handoff_failed := memory.start_handoff_failed * memory.is_start
-memory.step_target := head(message.step_target_agents)
+memory.step_target := head(message.step_targets)
 memory.step_payload := head(message.step_payloads)
-memory.remaining_step_target_agents := tail(message.step_target_agents)
+memory.remaining_step_targets := tail(message.step_targets)
 memory.remaining_step_payloads := tail(message.step_payloads)
-memory.remaining_step_target := head(memory.remaining_step_target_agents)
+memory.remaining_step_target := head(memory.remaining_step_targets)
 memory.has_step := if(memory.step_target > 0, 1, 0)
 memory.no_step := if(memory.has_step = 1, 0, 1)
 memory.has_remaining_step := if(memory.remaining_step_target > 0, 1, 0)
 memory.execute_action := memory.is_execute_step * memory.has_step
 memory.skip_empty_step := memory.is_execute_step * memory.no_step * memory.has_remaining_step
 memory.skip_step_message := {
+  source: memory.source
   request: "workflow_execute_step"
-  workflow_id: memory.workflow_id
   trace_id: memory.trace_id
-  step_target_agents: memory.remaining_step_target_agents
+  step_targets: memory.remaining_step_targets
   step_payloads: memory.remaining_step_payloads
+  workflow_id: memory.workflow_id
   step_number: message.step_number
 }
 memory.skip_step_sent := send(memory.self * memory.skip_empty_step, memory.skip_step_message)
@@ -51,9 +53,9 @@ memory.step_handoff_failed := if(memory.step_sent = 0, 1, 0)
 memory.step_handoff_failed := memory.step_handoff_failed * memory.execute_action
 memory.current_step := if(memory.execute_action = 1, message.step_number, memory.current_step)
 memory.awaiting_step_done := if(memory.sent_step = 1, 1, memory.awaiting_step_done)
-memory.pending_step_target_agents := if(memory.sent_step = 1, memory.remaining_step_target_agents, memory.pending_step_target_agents)
+memory.pending_step_targets := if(memory.sent_step = 1, memory.remaining_step_targets, memory.pending_step_targets)
 memory.pending_step_payloads := if(memory.sent_step = 1, memory.remaining_step_payloads, memory.pending_step_payloads)
-memory.pending_step_target_agents := if(memory.step_handoff_failed = 1, message.step_target_agents, memory.pending_step_target_agents)
+memory.pending_step_targets := if(memory.step_handoff_failed = 1, message.step_targets, memory.pending_step_targets)
 memory.pending_step_payloads := if(memory.step_handoff_failed = 1, message.step_payloads, memory.pending_step_payloads)
 memory.empty_completion := memory.is_execute_step * memory.no_step
 memory.empty_completion := if(memory.skip_empty_step = 1, 0, memory.empty_completion)
@@ -65,15 +67,15 @@ memory.step_completion := memory.is_step_done * memory.matching_workflow * memor
 memory.completed_step_count := memory.completed_step_count + memory.step_completion
 memory.branch_matched := if(message.outcome = memory.branch_value, 1, 0)
 memory.skip_next := memory.step_completion * memory.branch_matched
-memory.skipped_step_target_agents := tail(memory.pending_step_target_agents)
+memory.skipped_step_targets := tail(memory.pending_step_targets)
 memory.skipped_step_payloads := tail(memory.pending_step_payloads)
-memory.next_step_target_agents := memory.pending_step_target_agents
+memory.next_step_targets := memory.pending_step_targets
 memory.next_step_payloads := memory.pending_step_payloads
-memory.next_step_target_agents := if(memory.skip_next = 1, memory.skipped_step_target_agents, memory.next_step_target_agents)
+memory.next_step_targets := if(memory.skip_next = 1, memory.skipped_step_targets, memory.next_step_targets)
 memory.next_step_payloads := if(memory.skip_next = 1, memory.skipped_step_payloads, memory.next_step_payloads)
-memory.next_step_target := head(memory.next_step_target_agents)
-memory.next_step_tail_target_agents := tail(memory.next_step_target_agents)
-memory.next_step_tail_target := head(memory.next_step_tail_target_agents)
+memory.next_step_target := head(memory.next_step_targets)
+memory.next_step_tail_targets := tail(memory.next_step_targets)
+memory.next_step_tail_target := head(memory.next_step_tail_targets)
 memory.has_next_step := if(memory.next_step_target > 0, 1, 0)
 memory.has_next_step_after_zero := if(memory.next_step_tail_target > 0, 1, 0)
 memory.has_next_step := memory.has_next_step + memory.has_next_step_after_zero
@@ -81,11 +83,12 @@ memory.has_next_step := if(memory.has_next_step > 0, 1, 0)
 memory.step_increment := 1 + memory.skip_next
 memory.next_step_number := memory.current_step + memory.step_increment
 memory.continue_message := {
+  source: memory.source
   request: "workflow_execute_step"
-  workflow_id: memory.workflow_id
   trace_id: memory.trace_id
-  step_target_agents: memory.next_step_target_agents
+  step_targets: memory.next_step_targets
   step_payloads: memory.next_step_payloads
+  workflow_id: memory.workflow_id
   step_number: memory.next_step_number
 }
 memory.continue_sent := send(memory.self * memory.step_completion * memory.has_next_step, memory.continue_message)
@@ -107,17 +110,18 @@ memory.completion_status := if(memory.should_complete > 0, "success", memory.sta
 memory.completion_status := if(memory.handoff_failed > 0, "failure", memory.completion_status)
 memory.completion_failure_count := if(memory.handoff_failed > 0, 1, 0)
 memory.complete_message := {
+  source: memory.self
   response: "workflow_result"
-  workflow_id: memory.workflow_id
   trace_id: memory.trace_id
   status: memory.completion_status
   state: memory.completion_state
+  workflow_id: memory.workflow_id
   success_count: memory.completed_step_count
   failure_count: memory.completion_failure_count
   current_step: memory.current_step
   completed_step_count: memory.completed_step_count
 }
-memory.complete_sent := send(memory.source_agent * memory.should_complete, memory.complete_message)
+memory.complete_sent := send(memory.source * memory.should_complete, memory.complete_message)
 memory.completion_delivered := memory.should_complete * memory.complete_sent
 memory.completion_pending := if(memory.should_complete > 0, 1, memory.completion_pending)
 memory.completion_pending := if(memory.completion_delivered = 1, 0, memory.completion_pending)

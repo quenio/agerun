@@ -11,7 +11,7 @@ with scheduling.
 Only messages with a recognized `request` value are handled as coordination requests.
 
 On `request: "retry_start"`, the method stores operation metadata, `trace_id`, retry strategy,
-maximum attempts, scheduler agent, delay ticks, and `source_agent`. It records an attempt only
+maximum attempts, scheduler agent, delay ticks, and `source`. It records an attempt only
 after the operation send succeeds.
 
 Matching `failure` requests retry while attempts remain. Matching `success` requests emit the
@@ -23,30 +23,30 @@ report delivery stores a pending terminal result for retry.
 Requests:
 
 ```text
-{ request: "retry_start", operation_id: <id>, operation_target_agent: <agent>, operation_request: <request>, operation_text: <text>, max_attempts: <number>, strategy: <immediate|scheduled>, scheduler_agent: <agent>, delay_ticks: <tick>, trace_id: <trace_id>, source_agent: <agent> }
-{ request: "retry_failure", trace_id: <trace_id>, attempt: <attempt>, current_tick: <tick> }
-{ request: "retry_success", trace_id: <trace_id>, attempt: <attempt> }
+{ source: <agent>, request: "retry_start", trace_id: <trace_id>, operation_id: <id>, operation_target: <agent>, operation_request: <request>, operation_text: <text>, max_attempts: <number>, strategy: <immediate|scheduled>, scheduler_agent: <agent>, delay_ticks: <tick> }
+{ source: <agent>, request: "retry_failure", trace_id: <trace_id>, attempt: <attempt>, current_tick: <tick> }
+{ source: <agent>, request: "retry_success", trace_id: <trace_id>, attempt: <attempt> }
 ```
 
 Operation attempt:
 
 ```text
-{ request: <operation_request>, trace_id: <trace_id>, text: <operation_text>, attempt: <number> }
+{ source: <retry-agent>, request: <operation_request>, trace_id: <trace_id>, text: <operation_text>, attempt: <number> }
 ```
 
 Scheduled retry request:
 
 ```text
 {
+  source: <retry-agent>,
   request: "scheduling_schedule",
+  trace_id: <trace_id>,
   schedule_id: <operation_id>,
   due_tick: <current_tick + delay_ticks>,
-  target_agent: <operation_target_agent>,
+  target: <operation_target>,
   payload_request: <operation_request>,
   payload_text: <operation_text>,
-  payload_attempt: <attempt>,
-  trace_id: <trace_id>,
-  source_agent: 0
+  payload_attempt: <attempt>
 }
 ```
 
@@ -54,11 +54,12 @@ Terminal response:
 
 ```text
 {
+  source: <retry-agent>,
   response: "retry_result",
-  operation_id: <id>,
   trace_id: <trace_id>,
   status: <success|failure>,
   state: <succeeded|failed|dispatch_failed>,
+  operation_id: <id>,
   success_count: <0|1>,
   failure_count: <0|1>,
   attempts: <count>

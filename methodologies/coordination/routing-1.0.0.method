@@ -2,9 +2,9 @@ memory.is_request := if(message.request <> 0, 1, 0)
 memory.is_route := if(memory.is_request = 1, message.request = "routing_route", 0)
 memory.has_request_key := if(message.route_key <> 0, 1, 0)
 memory.route_key := head(message.routes.keys)
-memory.route_target := head(message.routes.target_agents)
+memory.route_target := head(message.routes.targets)
 memory.remaining_route_keys := tail(message.routes.keys)
-memory.remaining_route_target_agents := tail(message.routes.target_agents)
+memory.remaining_route_targets := tail(message.routes.targets)
 memory.has_route_key := if(memory.route_key <> 0, 1, 0)
 memory.has_route_target := if(memory.route_target > 0, 1, 0)
 memory.route_matches := if(message.route_key = memory.route_key, 1, 0)
@@ -12,15 +12,15 @@ memory.route_matches := memory.route_matches * memory.has_request_key
 memory.route_matches := memory.route_matches * memory.has_route_key
 memory.route_matches := memory.route_matches * memory.has_route_target
 memory.trace_id := if(memory.is_route = 1, message.trace_id, memory.trace_id)
-memory.target_agent := memory.route_target * memory.route_matches * memory.is_route
-memory.sent_result := send(memory.target_agent, message.payload)
+memory.target := memory.route_target * memory.route_matches * memory.is_route
+memory.sent_result := send(memory.target, message.payload)
 memory.sent := memory.sent_result * memory.route_matches
 memory.sent := memory.sent * memory.is_route
 memory.send_failed := if(memory.sent_result = 0, 1, 0)
 memory.send_failed := memory.send_failed * memory.route_matches
 memory.send_failed := memory.send_failed * memory.is_route
 memory.remaining_route_key := head(memory.remaining_route_keys)
-memory.remaining_route_target := head(memory.remaining_route_target_agents)
+memory.remaining_route_target := head(memory.remaining_route_targets)
 memory.has_remaining_route_key := if(memory.remaining_route_key <> 0, 1, 0)
 memory.has_remaining_route_target := if(memory.remaining_route_target > 0, 1, 0)
 memory.has_remaining_route := memory.has_remaining_route_key + memory.has_remaining_route_target
@@ -31,15 +31,15 @@ memory.scan_required := memory.scan_required * memory.no_match
 memory.scan_required := memory.scan_required * memory.has_remaining_route
 memory.scan_routes := {
   keys: memory.remaining_route_keys
-  target_agents: memory.remaining_route_target_agents
+  targets: memory.remaining_route_targets
 }
 memory.scan_message := {
+  source: message.source
   request: "routing_route"
+  trace_id: memory.trace_id
+  payload: message.payload
   route_key: message.route_key
   routes: memory.scan_routes
-  payload: message.payload
-  trace_id: memory.trace_id
-  source_agent: message.source_agent
 }
 memory.scan_target := memory.self * memory.scan_required
 memory.scan_send_result := send(memory.scan_target, memory.scan_message)
@@ -61,14 +61,15 @@ memory.status := if(memory.sent = 1, "success", memory.status)
 memory.status := if(memory.has_failed_count = 1, "failure", memory.status)
 memory.status := if(memory.scan_failed = 1, "failure", memory.status)
 memory.response_message := {
+  source: memory.self
   response: "routing_result"
+  trace_id: memory.trace_id
   status: memory.status
   state: memory.state
-  trace_id: memory.trace_id
   routed_count: memory.routed_count
   success_count: memory.sent_count
   failure_count: memory.failed_count
   sent_count: memory.sent_count
   failed_count: memory.failed_count
 }
-memory.response_sent := send(message.source_agent * memory.should_respond, memory.response_message)
+memory.response_sent := send(message.source * memory.should_respond, memory.response_message)

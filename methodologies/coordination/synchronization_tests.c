@@ -47,6 +47,7 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
         "memory.last_action := message.action\n"
         "memory.last_request := message.request\n"
         "memory.last_response := message.response\n"
+        "memory.last_source := message.source\n"
         "memory.last_trace_id := message.trace_id\n"
         "memory.last_status := message.status\n"
         "memory.last_state := message.state\n"
@@ -100,18 +101,21 @@ static void test_synchronization__emits_continuation_after_unbounded_dependencie
 
     ar_data_t *own_sync_context = create_context();
     ar_data_t *own_receiver_context = create_context();
+    ar_data_t *own_observer_context = create_context();
     int64_t sync_agent = ar_agency__create_agent(
         mut_agency, "synchronization", "1.0.0", own_sync_context);
     int64_t receiver_agent = ar_agency__create_agent(
         mut_agency, "record-receiver", "1.0.0", own_receiver_context);
+    int64_t observer_agent = ar_agency__create_agent(
+        mut_agency, "record-receiver", "1.0.0", own_observer_context);
 
     ar_data_t *own_wait = ar_data__create_map();
     AR_ASSERT(own_wait != NULL, "Wait message should be created");
     ar_data__set_map_string(own_wait, "request", "synchronization_wait");
     ar_data__set_map_string(own_wait, "sync_id", "sync-1");
     ar_data__set_map_integer(own_wait, "required_count", 4);
-    ar_data__set_map_integer(own_wait, "source_agent", 0);
-    ar_data__set_map_integer(own_wait, "continuation_target_agent", checked_agent_id(receiver_agent));
+    ar_data__set_map_integer(own_wait, "source", checked_agent_id(observer_agent));
+    ar_data__set_map_integer(own_wait, "continuation_target", checked_agent_id(receiver_agent));
     ar_data__set_map_string(own_wait, "continuation_request", "continue");
     ar_data__set_map_string(own_wait, "continuation_text", "go");
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, sync_agent, own_wait),
@@ -141,6 +145,13 @@ static void test_synchronization__emits_continuation_after_unbounded_dependencie
                                                               "last_dependencies");
     AR_ASSERT(ref_dependencies != NULL && ar_data__list_count(ref_dependencies) == 4,
               "Continuation should include every received dependency");
+    const ar_data_t *ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_response"),
+                     "synchronization_result") == 0,
+              "Synchronization should emit a response to the request source");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_source") ==
+                  checked_agent_id(sync_agent),
+              "Synchronization response should identify the synchronization source");
 
     const ar_data_t *ref_sync_memory = ar_agency__get_agent_memory(mut_agency, sync_agent);
     const ar_data_t *ref_received = ar_data__get_map_data(ref_sync_memory, "received");
@@ -152,8 +163,8 @@ static void test_synchronization__emits_continuation_after_unbounded_dependencie
     ar_data__set_map_string(own_wait, "request", "synchronization_wait");
     ar_data__set_map_string(own_wait, "sync_id", "sync-zero");
     ar_data__set_map_integer(own_wait, "required_count", 0);
-    ar_data__set_map_integer(own_wait, "source_agent", 0);
-    ar_data__set_map_integer(own_wait, "continuation_target_agent", checked_agent_id(receiver_agent));
+    ar_data__set_map_integer(own_wait, "source", checked_agent_id(observer_agent));
+    ar_data__set_map_integer(own_wait, "continuation_target", checked_agent_id(receiver_agent));
     ar_data__set_map_string(own_wait, "continuation_request", "continue");
     ar_data__set_map_string(own_wait, "continuation_text", "zero-go");
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, sync_agent, own_wait),
@@ -181,8 +192,8 @@ static void test_synchronization__emits_continuation_after_unbounded_dependencie
     ar_data__set_map_string(own_wait, "request", "synchronization_wait");
     ar_data__set_map_string(own_wait, "sync_id", "sync-failed-continuation");
     ar_data__set_map_integer(own_wait, "required_count", 2);
-    ar_data__set_map_integer(own_wait, "source_agent", 0);
-    ar_data__set_map_integer(own_wait, "continuation_target_agent", 98765);
+    ar_data__set_map_integer(own_wait, "source", checked_agent_id(observer_agent));
+    ar_data__set_map_integer(own_wait, "continuation_target", 98765);
     ar_data__set_map_string(own_wait, "continuation_request", "continue");
     ar_data__set_map_string(own_wait, "continuation_text", "failed-go");
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, sync_agent, own_wait),
@@ -202,9 +213,9 @@ static void test_synchronization__emits_continuation_after_unbounded_dependencie
     ar_data_t *mut_sync_memory = ar_agency__get_agent_mutable_memory(mut_agency, sync_agent);
     AR_ASSERT(mut_sync_memory != NULL, "Synchronization memory should be mutable");
     AR_ASSERT(ar_data__set_map_integer(mut_sync_memory,
-                                       "continuation_target_agent",
+                                       "continuation_target",
                                        checked_agent_id(receiver_agent)),
-              "Failed continuation target_agent should be repairable for retry");
+              "Failed continuation target should be repairable for retry");
     send_noise(mut_agency, sync_agent, "sync-failed-continuation");
     ar_method_fixture__process_all_messages(own_fixture);
 
@@ -234,8 +245,8 @@ static void test_synchronization__emits_continuation_after_unbounded_dependencie
     ar_data__set_map_string(own_wait, "sync_id", "sync-failed-status");
     ar_data__set_map_string(own_wait, "trace_id", "sync-trace-status");
     ar_data__set_map_integer(own_wait, "required_count", 2);
-    ar_data__set_map_integer(own_wait, "source_agent", 98765);
-    ar_data__set_map_integer(own_wait, "continuation_target_agent", checked_agent_id(receiver_agent));
+    ar_data__set_map_integer(own_wait, "source", 98765);
+    ar_data__set_map_integer(own_wait, "continuation_target", checked_agent_id(receiver_agent));
     ar_data__set_map_string(own_wait, "continuation_request", "continue");
     ar_data__set_map_string(own_wait, "continuation_text", "status-go");
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, sync_agent, own_wait),
@@ -249,6 +260,9 @@ static void test_synchronization__emits_continuation_after_unbounded_dependencie
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_sync_id"),
                      "sync-failed-status") == 0,
               "Continuation should still be sent when status response fails");
+    AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_source") ==
+                  checked_agent_id(sync_agent),
+              "Continuation should identify the synchronization source");
     AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_done_count") == 2,
               "Continuation should include dependencies even when status response fails");
     AR_ASSERT(ar_data__get_map_integer(ref_sync_memory, "completed") == 0,
@@ -257,9 +271,9 @@ static void test_synchronization__emits_continuation_after_unbounded_dependencie
               "Synchronization should remember delivered continuation after failed status send");
 
     AR_ASSERT(ar_data__set_map_integer(mut_sync_memory,
-                                       "source_agent",
+                                       "source",
                                        checked_agent_id(receiver_agent)),
-              "Failed status target_agent should be repairable for retry");
+              "Failed status target should be repairable for retry");
     send_noise(mut_agency, sync_agent, "sync-failed-status");
     ar_method_fixture__process_all_messages(own_fixture);
 
@@ -277,6 +291,9 @@ static void test_synchronization__emits_continuation_after_unbounded_dependencie
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_response"),
                      "synchronization_result") == 0,
               "Synchronization status retry should emit a response");
+    AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_source") ==
+                  checked_agent_id(sync_agent),
+              "Synchronization response should identify the synchronization source");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_status"), "success") == 0,
               "Synchronization status retry should report standard success");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_state"), "complete") == 0,
@@ -294,6 +311,7 @@ static void test_synchronization__emits_continuation_after_unbounded_dependencie
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_sync_context);
     ar_data__destroy(own_receiver_context);
+    ar_data__destroy(own_observer_context);
 }
 
 int main(void) {

@@ -1,20 +1,20 @@
 memory.is_request := if(message.request <> 0, 1, 0)
 memory.is_broadcast := if(memory.is_request = 1, message.request = "broadcasting_broadcast", 0)
 memory.trace_id := if(memory.is_broadcast = 1, message.trace_id, memory.trace_id)
-memory.source_agent := if(memory.is_broadcast = 1, message.source_agent, memory.source_agent)
-memory.current_target_agents := if(memory.is_broadcast = 1, message.target_agents, [])
-memory.target_agent := head(memory.current_target_agents)
-memory.remaining_target_agents := tail(memory.current_target_agents)
-memory.has_target := if(memory.target_agent > 0, 1, 0)
-memory.target_to_send := memory.target_agent * memory.is_broadcast
+memory.source := if(memory.is_broadcast = 1, message.source, memory.source)
+memory.current_targets := if(memory.is_broadcast = 1, message.targets, [])
+memory.target := head(memory.current_targets)
+memory.remaining_targets := tail(memory.current_targets)
+memory.has_target := if(memory.target > 0, 1, 0)
+memory.target_to_send := memory.target * memory.is_broadcast
 memory.sent_result := send(memory.target_to_send, message.payload)
 memory.sent := memory.sent_result * memory.has_target
 memory.sent := memory.sent * memory.is_broadcast
 memory.send_failed := if(memory.sent_result = 0, 1, 0)
 memory.send_failed := memory.send_failed * memory.has_target
 memory.send_failed := memory.send_failed * memory.is_broadcast
-memory.remaining_target_agents_empty := if(memory.remaining_target_agents = [], 1, 0)
-memory.has_remaining := if(memory.remaining_target_agents_empty = 1, 0, 1)
+memory.remaining_targets_empty := if(memory.remaining_targets = [], 1, 0)
+memory.has_remaining := if(memory.remaining_targets_empty = 1, 0, 1)
 memory.next_recipient_count := message.recipient_count + memory.sent
 memory.next_sent_count := message.sent_count + memory.sent
 memory.next_failed_count := message.failed_count + memory.send_failed
@@ -24,18 +24,18 @@ memory.failed_count := if(memory.is_broadcast = 1, memory.next_failed_count, mem
 memory.has_more_work := memory.has_target + memory.has_remaining
 memory.has_more_work := if(memory.has_more_work > 0, 1, 0)
 memory.continuation_required := memory.is_broadcast * memory.has_more_work
-memory.continuation_target_agent := memory.self * memory.continuation_required
+memory.continuation_target := memory.self * memory.continuation_required
 memory.continuation_message := {
+  source: memory.source
   request: "broadcasting_broadcast"
-  target_agents: memory.remaining_target_agents
-  payload: message.payload
   trace_id: memory.trace_id
-  source_agent: memory.source_agent
+  payload: message.payload
+  targets: memory.remaining_targets
   recipient_count: memory.recipient_count
   sent_count: memory.sent_count
   failed_count: memory.failed_count
 }
-memory.continuation_send_result := send(memory.continuation_target_agent, memory.continuation_message)
+memory.continuation_send_result := send(memory.continuation_target, memory.continuation_message)
 memory.continuation_sent := memory.continuation_send_result * memory.continuation_required
 memory.continuation_failed := if(memory.continuation_send_result = 0, 1, 0)
 memory.continuation_failed := memory.continuation_failed * memory.continuation_required
@@ -53,14 +53,15 @@ memory.status := if(memory.continuation_failed = 1, "failure", memory.status)
 memory.should_report := memory.is_broadcast
 memory.should_report := if(memory.continuation_sent = 1, 0, memory.should_report)
 memory.result_message := {
+  source: memory.self
   response: "broadcasting_result"
+  trace_id: memory.trace_id
   status: memory.status
   state: memory.state
-  trace_id: memory.trace_id
   success_count: memory.sent_count
   failure_count: memory.failed_count
   recipient_count: memory.recipient_count
   sent_count: memory.sent_count
   failed_count: memory.failed_count
 }
-memory.result_sent := send(memory.source_agent * memory.should_report, memory.result_message)
+memory.result_sent := send(memory.source * memory.should_report, memory.result_message)

@@ -44,7 +44,7 @@ static int checked_agent_id(int64_t agent_id) {
 static ar_data_t *create_routes(
         const char **ref_keys,
         size_t key_count,
-        const int *ref_target_agents,
+        const int *ref_targets,
         size_t target_count) {
     ar_data_t *own_routes = ar_data__create_map();
     AR_ASSERT(own_routes != NULL, "Routes map should be created");
@@ -59,15 +59,15 @@ static ar_data_t *create_routes(
               "Routes map should own keys list");
     own_keys = NULL;
 
-    ar_data_t *own_target_agents = ar_data__create_list();
-    AR_ASSERT(own_target_agents != NULL, "Route target_agents list should be created");
+    ar_data_t *own_targets = ar_data__create_list();
+    AR_ASSERT(own_targets != NULL, "Route targets list should be created");
     for (size_t i = 0; i < target_count; i++) {
-        AR_ASSERT(ar_data__list_add_last_integer(own_target_agents, ref_target_agents[i]),
-                  "Route target_agent should be stored");
+        AR_ASSERT(ar_data__list_add_last_integer(own_targets, ref_targets[i]),
+                  "Route target should be stored");
     }
-    AR_ASSERT(ar_data__set_map_data(own_routes, "target_agents", own_target_agents),
-              "Routes map should own target_agents list");
-    own_target_agents = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_routes, "targets", own_targets),
+              "Routes map should own targets list");
+    own_targets = NULL;
 
     return own_routes;
 }
@@ -81,7 +81,6 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
         "memory.last_text := message.text\n"
         "memory.last_kind := message.kind\n"
         "memory.last_source := message.source\n"
-        "memory.last_source_agent := message.source_agent\n"
         "memory.last_trace_id := message.trace_id\n"
         "memory.last_status := message.status\n"
         "memory.last_state := message.state\n"
@@ -102,7 +101,7 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
 static ar_data_t *create_payload(const char *ref_action,
                                  const char *ref_text,
                                  const char *ref_kind,
-                                 int source_agent) {
+                                 int source) {
     ar_data_t *own_payload = ar_data__create_map();
     AR_ASSERT(own_payload != NULL, "Route payload should be created");
     AR_ASSERT(ar_data__set_map_string(own_payload, "action", ref_action),
@@ -111,17 +110,13 @@ static ar_data_t *create_payload(const char *ref_action,
               "Route payload should set text");
     AR_ASSERT(ar_data__set_map_string(own_payload, "kind", ref_kind),
               "Route payload should set caller-owned field");
-    AR_ASSERT(ar_data__set_map_string(own_payload, "source", "caller-owned-source"),
-              "Route payload should set caller-owned source");
-    if (source_agent > 0) {
-        AR_ASSERT(ar_data__set_map_integer(own_payload, "source_agent", source_agent),
-                  "Route payload should set caller-owned source_agent");
-    }
+    AR_ASSERT(ar_data__set_map_integer(own_payload, "source", source),
+              "Route payload should set standard source");
     return own_payload;
 }
 
 static void test_routing__selects_one_target_by_key_only(void) {
-    printf("Testing routing selects one target_agent by key only...\n");
+    printf("Testing routing selects one target by key only...\n");
 
     ar_method_fixture_t *own_fixture = ar_method_fixture__create("routing_keyed_only");
     AR_ASSERT(ar_method_fixture__initialize(own_fixture), "Fixture should initialize");
@@ -150,38 +145,41 @@ static void test_routing__selects_one_target_by_key_only(void) {
     int64_t report_agent = ar_agency__create_agent(
         mut_agency, "record-receiver", "1.0.0", own_report_context);
 
-    // When a direct-target_agent request is sent without a route key
+    // When a direct-target request is sent without a route key
     ar_data_t *own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Direct route message should be created");
     ar_data__set_map_string(own_message, "request", "routing_route");
-    ar_data__set_map_integer(own_message, "target_agent", checked_agent_id(receiver_a));
+    ar_data__set_map_integer(own_message, "target", checked_agent_id(receiver_a));
     ar_data_t *own_payload = create_payload("domain_event", "direct", "caller-shaped", 0);
     AR_ASSERT(ar_data__set_map_data(own_message, "payload", own_payload),
               "Direct route message should own opaque payload");
     own_payload = NULL;
     ar_data__set_map_string(own_message, "trace_id", "job-direct");
-    ar_data__set_map_integer(own_message, "source_agent", checked_agent_id(report_agent));
+    ar_data__set_map_integer(own_message, "source", checked_agent_id(report_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, routing_agent, own_message),
               "Direct route message should queue");
     own_message = NULL;
     ar_method_fixture__process_all_messages(own_fixture);
 
-    // Then routing does not treat a direct target_agent as a supported route mechanism
+    // Then routing does not treat a direct target as a supported route mechanism
     const ar_data_t *ref_receiver_a_memory = ar_agency__get_agent_memory(mut_agency, receiver_a);
     const ar_data_t *ref_report_memory = ar_agency__get_agent_memory(mut_agency, report_agent);
     AR_ASSERT(ar_data__get_map_data(ref_receiver_a_memory, "last_text") == NULL,
-              "Routing should not forward direct target_agent requests");
+              "Routing should not forward direct target requests");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_response"),
                      "routing_result") == 0,
-              "Direct target_agent request should emit a route response");
+              "Direct target request should emit a route response");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_source") ==
+                  checked_agent_id(routing_agent),
+              "Route response should identify the routing source");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
                      "failure") == 0,
-              "Direct target_agent request should report standard failure status");
+              "Direct target request should report standard failure status");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_state"),
                      "route_failed") == 0,
-              "Direct target_agent request should fail because routing is key-based only");
+              "Direct target request should fail because routing is key-based only");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_routed_count") == 0,
-              "Direct target_agent request should report zero routed target_agents");
+              "Direct target request should report zero routed targets");
 
     // When an unrelated message carries a matching route table
     own_message = ar_data__create_map();
@@ -189,8 +187,8 @@ static void test_routing__selects_one_target_by_key_only(void) {
     ar_data__set_map_string(own_message, "request", "routing_ignored");
     ar_data__set_map_string(own_message, "route_key", "ignored-key");
     const char *ref_ignored_route_keys[] = {"ignored-key"};
-    const int ref_ignored_route_target_agents[] = {checked_agent_id(receiver_b)};
-    ar_data_t *own_routes = create_routes(ref_ignored_route_keys, 1, ref_ignored_route_target_agents, 1);
+    const int ref_ignored_route_targets[] = {checked_agent_id(receiver_b)};
+    ar_data_t *own_routes = create_routes(ref_ignored_route_keys, 1, ref_ignored_route_targets, 1);
     AR_ASSERT(ar_data__set_map_data(own_message, "routes", own_routes),
               "Ignored route-shaped message should own routes map");
     own_routes = NULL;
@@ -199,7 +197,7 @@ static void test_routing__selects_one_target_by_key_only(void) {
               "Ignored route-shaped message should own opaque payload");
     own_payload = NULL;
     ar_data__set_map_string(own_message, "trace_id", "job-ignored");
-    ar_data__set_map_integer(own_message, "source_agent", checked_agent_id(report_agent));
+    ar_data__set_map_integer(own_message, "source", checked_agent_id(report_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, routing_agent, own_message),
               "Ignored route-shaped message should queue");
     own_message = NULL;
@@ -223,13 +221,13 @@ static void test_routing__selects_one_target_by_key_only(void) {
     ar_data__set_map_string(own_message, "request", "routing_route");
     ar_data__set_map_string(own_message, "route_key", "delta");
     const char *ref_route_keys[] = {"alpha", "beta", "gamma", "delta"};
-    const int ref_route_target_agents[] = {
+    const int ref_route_targets[] = {
         checked_agent_id(receiver_a),
         checked_agent_id(receiver_b),
         checked_agent_id(receiver_c),
         checked_agent_id(receiver_d)
     };
-    own_routes = create_routes(ref_route_keys, 4, ref_route_target_agents, 4);
+    own_routes = create_routes(ref_route_keys, 4, ref_route_targets, 4);
     AR_ASSERT(ar_data__set_map_data(own_message, "routes", own_routes),
               "Keyed route message should own routes map");
     own_routes = NULL;
@@ -241,7 +239,7 @@ static void test_routing__selects_one_target_by_key_only(void) {
               "Keyed route message should own opaque payload");
     own_payload = NULL;
     ar_data__set_map_string(own_message, "trace_id", "job-keyed");
-    ar_data__set_map_integer(own_message, "source_agent", checked_agent_id(report_agent));
+    ar_data__set_map_integer(own_message, "source", checked_agent_id(report_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, routing_agent, own_message),
               "Keyed route message should queue");
     own_message = NULL;
@@ -251,18 +249,15 @@ static void test_routing__selects_one_target_by_key_only(void) {
     const ar_data_t *ref_receiver_d_memory = ar_agency__get_agent_memory(mut_agency, receiver_d);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_d_memory, "last_action"),
                      "domain_event") == 0,
-              "Fourth keyed route target_agent should observe caller payload action");
+              "Fourth keyed route target should observe caller payload action");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_d_memory, "last_text"), "keyed") == 0,
-              "Fourth keyed route target_agent should observe delivered text");
+              "Fourth keyed route target should observe delivered text");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_d_memory, "last_kind"),
                      "caller-shaped") == 0,
-              "Fourth keyed route target_agent should observe caller-owned field");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_d_memory, "last_source"),
-                     "caller-owned-source") == 0,
-              "Routing should preserve caller-owned source field");
-    AR_ASSERT(ar_data__get_map_integer(ref_receiver_d_memory, "last_source_agent") ==
+              "Fourth keyed route target should observe caller-owned field");
+    AR_ASSERT(ar_data__get_map_integer(ref_receiver_d_memory, "last_source") ==
                   checked_agent_id(receiver_a),
-              "Routing should preserve caller-owned source_agent");
+              "Routing should preserve caller payload source");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_state"), "routed") == 0,
               "Keyed route should report routed status");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"), "success") == 0,
@@ -271,24 +266,24 @@ static void test_routing__selects_one_target_by_key_only(void) {
                      "job-keyed") == 0,
               "Keyed route result should preserve trace id");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_routed_count") == 1,
-              "Keyed route should report one routed target_agent");
+              "Keyed route should report one routed target");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 1,
-              "Keyed route should report one successful target_agent");
+              "Keyed route should report one successful target");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 0,
-              "Keyed route should report no failed target_agents");
+              "Keyed route should report no failed targets");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_sent_count") == 1,
-              "Keyed route should report one sent target_agent");
+              "Keyed route should report one sent target");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failed_count") == 0,
-              "Keyed route should report no failed target_agent sends");
+              "Keyed route should report no failed target sends");
 
-    // When a keyed route does not select a target_agent
+    // When a keyed route does not select a target
     own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Missed keyed route message should be created");
     ar_data__set_map_string(own_message, "request", "routing_route");
     ar_data__set_map_string(own_message, "route_key", "missing");
     const char *ref_missed_route_keys[] = {"known"};
-    const int ref_missed_route_target_agents[] = {checked_agent_id(receiver_c)};
-    own_routes = create_routes(ref_missed_route_keys, 1, ref_missed_route_target_agents, 1);
+    const int ref_missed_route_targets[] = {checked_agent_id(receiver_c)};
+    own_routes = create_routes(ref_missed_route_keys, 1, ref_missed_route_targets, 1);
     AR_ASSERT(ar_data__set_map_data(own_message, "routes", own_routes),
               "Missed keyed route message should own routes map");
     own_routes = NULL;
@@ -297,7 +292,7 @@ static void test_routing__selects_one_target_by_key_only(void) {
               "Missed keyed route message should own opaque payload");
     own_payload = NULL;
     ar_data__set_map_string(own_message, "trace_id", "job-missing-key");
-    ar_data__set_map_integer(own_message, "source_agent", checked_agent_id(report_agent));
+    ar_data__set_map_integer(own_message, "source", checked_agent_id(report_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, routing_agent, own_message),
               "Missed keyed route message should queue");
     own_message = NULL;
@@ -305,7 +300,7 @@ static void test_routing__selects_one_target_by_key_only(void) {
 
     const ar_data_t *ref_receiver_c_memory = ar_agency__get_agent_memory(mut_agency, receiver_c);
     AR_ASSERT(ar_data__get_map_data(ref_receiver_c_memory, "last_text") == NULL,
-              "Missed keyed route should not forward to unmatched target_agent");
+              "Missed keyed route should not forward to unmatched target");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_state"),
                      "route_failed") == 0,
               "Missed keyed route should report route_failed status");
@@ -316,15 +311,15 @@ static void test_routing__selects_one_target_by_key_only(void) {
                      "job-missing-key") == 0,
               "Missed keyed route result should preserve trace id");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_routed_count") == 0,
-              "Missed keyed route should report zero routed target_agents");
+              "Missed keyed route should report zero routed targets");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 0,
-              "Missed keyed route should report zero successful target_agents");
+              "Missed keyed route should report zero successful targets");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 0,
-              "Missed keyed route should report zero failed target_agent sends");
+              "Missed keyed route should report zero failed target sends");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_sent_count") == 0,
-              "Missed keyed route should report zero sent target_agents");
+              "Missed keyed route should report zero sent targets");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failed_count") == 0,
-              "Missed keyed route should not count a failed positive target_agent send");
+              "Missed keyed route should not count a failed positive target send");
 
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_routing_context);

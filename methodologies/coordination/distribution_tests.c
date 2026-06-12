@@ -61,7 +61,7 @@ static int checked_agent_id(int64_t agent_id) {
 static ar_data_t *create_payload(const char *ref_action,
                                  const char *ref_text,
                                  const char *ref_kind,
-                                 int source_agent) {
+                                 int source) {
     ar_data_t *own_payload = ar_data__create_map();
     AR_ASSERT(own_payload != NULL, "Distribution payload should be created");
     AR_ASSERT(ar_data__set_map_string(own_payload, "action", ref_action),
@@ -70,23 +70,19 @@ static ar_data_t *create_payload(const char *ref_action,
               "Distribution payload should set text");
     AR_ASSERT(ar_data__set_map_string(own_payload, "kind", ref_kind),
               "Distribution payload should set caller-owned field");
-    AR_ASSERT(ar_data__set_map_string(own_payload, "source", "caller-owned-source"),
-              "Distribution payload should set caller-owned source");
-    if (source_agent > 0) {
-        AR_ASSERT(ar_data__set_map_integer(own_payload, "source_agent", source_agent),
-                  "Distribution payload should set caller-owned source_agent");
-    }
+    AR_ASSERT(ar_data__set_map_integer(own_payload, "source", source),
+              "Distribution payload should set standard source");
     return own_payload;
 }
 
-static ar_data_t *create_payloads(const char **ref_payloads, size_t payload_count, int source_agent) {
+static ar_data_t *create_payloads(const char **ref_payloads, size_t payload_count, int source) {
     ar_data_t *own_payloads = ar_data__create_list();
     AR_ASSERT(own_payloads != NULL, "Payload list should be created");
     for (size_t i = 0; i < payload_count; i++) {
         ar_data_t *own_payload = create_payload("work",
                                                 ref_payloads[i],
                                                 "caller-shaped",
-                                                source_agent);
+                                                source);
         AR_ASSERT(ar_data__list_add_last_data(own_payloads, own_payload),
                   "Payload should be appended");
         own_payload = NULL;
@@ -117,8 +113,7 @@ static void register_worker_recorder(ar_agency_t *mut_agency) {
         "memory.last_response := message.response\n"
         "memory.last_trace_id := message.trace_id\n"
         "memory.last_kind := message.kind\n"
-        "memory.last_source := message.source\n"
-        "memory.last_source_agent := message.source_agent\n";
+        "memory.last_source := message.source\n";
 
     AR_ASSERT(ar_methodology__create_method(mut_methodology,
                                             "worker-recorder",
@@ -134,6 +129,7 @@ static void register_report_recorder(ar_agency_t *mut_agency) {
         "memory.last_action := message.action\n"
         "memory.last_request := message.request\n"
         "memory.last_response := message.response\n"
+        "memory.last_source := message.source\n"
         "memory.last_status := message.status\n"
         "memory.last_state := message.state\n"
         "memory.last_trace_id := message.trace_id\n"
@@ -176,7 +172,7 @@ static void send_distribution(ar_agency_t *mut_agency,
                               const char *ref_work_id,
                               ar_data_t *own_payloads,
                               ar_data_t *own_workers,
-                              int source_agent) {
+                              int source) {
     ar_data_t *own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Distribution message should be created");
     ar_data__set_map_string(own_message, "request", "distribution_distribute");
@@ -188,7 +184,7 @@ static void send_distribution(ar_agency_t *mut_agency,
               "Distribution message should own workers");
     own_workers = NULL;
     ar_data__set_map_string(own_message, "trace_id", ref_work_id);
-    ar_data__set_map_integer(own_message, "source_agent", source_agent);
+    ar_data__set_map_integer(own_message, "source", source);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, distribution_agent, own_message),
               "Distribution message should queue");
     own_message = NULL;
@@ -248,17 +244,17 @@ static void test_distribution__round_robins_payloads_across_workers(void) {
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_worker_a_memory, "last_kind"),
                      "caller-shaped") == 0,
               "Distribution should preserve caller-owned field");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_worker_a_memory, "last_source"),
-                     "caller-owned-source") == 0,
-              "Distribution should preserve caller-owned source");
-    AR_ASSERT(ar_data__get_map_integer(ref_worker_a_memory, "last_source_agent") ==
+    AR_ASSERT(ar_data__get_map_integer(ref_worker_a_memory, "last_source") ==
                   checked_agent_id(worker_b),
-              "Distribution should preserve caller-owned source_agent");
+              "Distribution should preserve caller payload source");
 
     const ar_data_t *ref_report_memory = ar_agency__get_agent_memory(mut_agency, report_agent);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_response"),
                      "distribution_result") == 0,
               "Distribution result should be a response");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_source") ==
+                  checked_agent_id(distribution_agent),
+              "Distribution result should identify the distribution source");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"), "success") == 0,
               "Distribution result should report standard success status");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_state"),
@@ -285,8 +281,8 @@ static void test_distribution__round_robins_payloads_across_workers(void) {
     AR_ASSERT(own_ignored_message != NULL, "Ignored message should be created");
     AR_ASSERT(ar_data__set_map_string(own_ignored_message, "request", "distribution_ignored"),
               "Ignored message should set action");
-    AR_ASSERT(ar_data__set_map_integer(own_ignored_message, "source_agent", checked_agent_id(report_agent)),
-              "Ignored message should set source_agent");
+    AR_ASSERT(ar_data__set_map_integer(own_ignored_message, "source", checked_agent_id(report_agent)),
+              "Ignored message should set source");
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, distribution_agent, own_ignored_message),
               "Ignored message should queue");
     own_ignored_message = NULL;

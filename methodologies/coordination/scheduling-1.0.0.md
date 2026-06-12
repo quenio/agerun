@@ -10,7 +10,7 @@ the stored due tick. It expresses delayed execution as ordinary message state.
 Only messages with a recognized `request` value are handled as coordination requests.
 
 On `request: "scheduling_schedule"`, the method stores schedule metadata, target agent, payload
-fields, `trace_id`, and `source_agent`. On a due `scheduling_tick`, it sends the stored payload to
+fields, `trace_id`, and `source`. On a due `scheduling_tick`, it sends the stored payload to
 the stored target agent. On `scheduling_cancel`, it clears pending state only when the matching
 schedule is still pending.
 
@@ -19,15 +19,16 @@ schedule is still pending.
 Requests:
 
 ```text
-{ request: "scheduling_schedule", schedule_id: <id>, due_tick: <number>, target_agent: <agent>, payload_request: <request>, payload_text: <text>, payload_attempt: <attempt>, trace_id: <trace_id>, source_agent: <agent> }
-{ request: "scheduling_tick", tick: <number> }
-{ request: "scheduling_cancel", schedule_id: <id>, trace_id: <trace_id> }
+{ source: <agent>, request: "scheduling_schedule", trace_id: <trace_id>, schedule_id: <id>, due_tick: <number>, target: <agent>, payload_request: <request>, payload_text: <text>, payload_attempt: <attempt> }
+{ source: <agent>, request: "scheduling_tick", trace_id: <trace_id>, tick: <number> }
+{ source: <agent>, request: "scheduling_cancel", trace_id: <trace_id>, schedule_id: <id> }
 ```
 
 Triggered message:
 
 ```text
 {
+  source: <scheduling-agent>,
   request: <payload_request>,
   trace_id: <trace_id>,
   text: <payload_text>,
@@ -40,11 +41,12 @@ Response:
 
 ```text
 {
+  source: <scheduling-agent>,
   response: "scheduling_result",
-  schedule_id: <id>,
   trace_id: <trace_id>,
   status: <success|failure>,
   state: <scheduled|cancelled|triggered|trigger_failed>,
+  schedule_id: <id>,
   success_count: <count>,
   failure_count: <count>,
   pending: <0|1>,

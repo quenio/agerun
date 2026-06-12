@@ -3,7 +3,7 @@
 ## Overview
 
 Broadcasting sends the same caller-provided payload to every positive recipient in an unbounded
-`target_agents` list. It is the coordination methodology's opaque fan-out delivery primitive.
+`targets` list. It is the coordination methodology's opaque fan-out delivery primitive.
 
 ## Behavior
 
@@ -22,11 +22,11 @@ Request:
 
 ```text
 {
+  source: <agent>,
   request: "broadcasting_broadcast",
-  target_agents: [<agent>, <agent>, ...],
-  payload: <message>,
   trace_id: <trace_id>,
-  source_agent: <agent>
+  payload: <message>,
+  targets: [<agent>, <agent>, ...]
 }
 ```
 
@@ -40,10 +40,11 @@ Response:
 
 ```text
 {
+  source: <broadcasting-agent>,
   response: "broadcasting_result",
+  trace_id: <trace_id>,
   status: <success|failure>,
   state: <broadcasted|broadcast_failed>,
-  trace_id: <trace_id>,
   success_count: <count>,
   failure_count: <count>,
   recipient_count: <count>,

@@ -10,7 +10,7 @@ table. It is a keyed-selection primitive, not a direct target delivery or fan-ou
 Only messages with a recognized `request` value are handled as coordination requests.
 
 When the agent receives `request: "routing_route"`, the method scans `routes.keys` and
-`routes.target_agents` as paired unbounded lists. It sends the caller-provided `payload` as-is to
+`routes.targets` as paired unbounded lists. It sends the caller-provided `payload` as-is to
 the first positive target agent whose paired key matches `route_key`.
 
 If no keyed candidate selects a positive target agent, or if the matching target cannot receive the
@@ -22,15 +22,15 @@ Request:
 
 ```text
 {
+  source: <agent>,
   request: "routing_route",
+  trace_id: <trace_id>,
+  payload: <message>,
   route_key: <key>,
   routes: {
     keys: [<key>, <key>, ...],
-    target_agents: [<agent>, <agent>, ...]
-  },
-  payload: <message>,
-  trace_id: <trace_id>,
-  source_agent: <agent>
+    targets: [<agent>, <agent>, ...]
+  }
 }
 ```
 
@@ -38,10 +38,11 @@ Response:
 
 ```text
 {
+  source: <routing-agent>,
   response: "routing_result",
+  trace_id: <trace_id>,
   status: <success|failure>,
   state: <routed|route_failed>,
-  trace_id: <trace_id>,
   routed_count: <0|1>,
   success_count: <0|1>,
   failure_count: <0|1>,
@@ -50,7 +51,7 @@ Response:
 }
 ```
 
-A direct `target_agent` field is ignored; callers that already know the recipient should use direct
+A direct `target` field is ignored; callers that already know the recipient should use direct
 `send(...)`. The `head(...)` empty sentinel is integer `0`, so `0` cannot be used as a valid route
 key.
 

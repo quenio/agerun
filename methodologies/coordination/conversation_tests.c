@@ -47,6 +47,7 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
         "memory.last_action := message.action\n"
         "memory.last_request := message.request\n"
         "memory.last_response := message.response\n"
+        "memory.last_source := message.source\n"
         "memory.last_trace_id := message.trace_id\n"
         "memory.last_conversation_id := message.conversation_id\n"
         "memory.last_from := message.from\n"
@@ -105,7 +106,7 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     ar_data__set_map_string(own_start, "trace_id", "chat-trace-1");
     ar_data__set_map_integer(own_start, "participant_a", checked_agent_id(participant_a));
     ar_data__set_map_integer(own_start, "participant_b", checked_agent_id(participant_b));
-    ar_data__set_map_integer(own_start, "source_agent", checked_agent_id(observer));
+    ar_data__set_map_integer(own_start, "source", checked_agent_id(observer));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_start),
               "Conversation start should queue");
     own_start = NULL;
@@ -151,6 +152,9 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_b_memory, "last_request"),
                      "conversation_turn") == 0,
               "Participant B should receive a conversation turn");
+    AR_ASSERT(ar_data__get_map_integer(ref_participant_b_memory, "last_source") ==
+                  checked_agent_id(conversation_agent),
+              "Participant B turn should identify the conversation source");
     AR_ASSERT(ar_data__get_map_integer(ref_participant_b_memory, "last_from") ==
                   checked_agent_id(participant_a),
               "Participant B should see participant A as sender");
@@ -189,6 +193,9 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_response"),
                      "conversation_result") == 0,
               "Conversation summary should be a response");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_source") ==
+                  checked_agent_id(conversation_agent),
+              "Conversation summary should identify the conversation source");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "success") == 0,
               "Conversation summary should report standard success status");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_conversation_id"),
@@ -220,7 +227,7 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     ar_data__set_map_string(own_failed_start, "conversation_id", "chat-2");
     ar_data__set_map_integer(own_failed_start, "participant_a", checked_agent_id(participant_a));
     ar_data__set_map_integer(own_failed_start, "participant_b", 98765);
-    ar_data__set_map_integer(own_failed_start, "source_agent", checked_agent_id(observer));
+    ar_data__set_map_integer(own_failed_start, "source", checked_agent_id(observer));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_failed_start),
               "Failed relay start should queue");
     own_failed_start = NULL;
