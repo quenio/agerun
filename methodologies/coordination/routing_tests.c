@@ -148,7 +148,7 @@ static void test_routing__selects_one_target_by_key_only(void) {
     // When a direct-target request is sent without a route key
     ar_data_t *own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Direct route message should be created");
-    ar_data__set_map_string(own_message, "request", "routing_route");
+    ar_data__set_map_string(own_message, "request", "routing_start");
     ar_data__set_map_integer(own_message, "target", checked_agent_id(receiver_a));
     ar_data_t *own_payload = create_payload("domain_event", "direct", "caller-shaped", 0);
     AR_ASSERT(ar_data__set_map_data(own_message, "payload", own_payload),
@@ -218,7 +218,7 @@ static void test_routing__selects_one_target_by_key_only(void) {
     // When a keyed route request carries more than three candidate routes
     own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Keyed route message should be created");
-    ar_data__set_map_string(own_message, "request", "routing_route");
+    ar_data__set_map_string(own_message, "request", "routing_start");
     ar_data__set_map_string(own_message, "route_key", "delta");
     const char *ref_route_keys[] = {"alpha", "beta", "gamma", "delta"};
     const int ref_route_targets[] = {
@@ -279,7 +279,7 @@ static void test_routing__selects_one_target_by_key_only(void) {
     // When a keyed route does not select a target
     own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Missed keyed route message should be created");
-    ar_data__set_map_string(own_message, "request", "routing_route");
+    ar_data__set_map_string(own_message, "request", "routing_start");
     ar_data__set_map_string(own_message, "route_key", "missing");
     const char *ref_missed_route_keys[] = {"known"};
     const int ref_missed_route_targets[] = {checked_agent_id(receiver_c)};

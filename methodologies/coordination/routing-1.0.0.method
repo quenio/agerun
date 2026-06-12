@@ -1,5 +1,5 @@
 memory.is_request := if(message.request <> 0, 1, 0)
-memory.is_route := if(memory.is_request = 1, message.request = "routing_route", 0)
+memory.is_route := if(memory.is_request = 1, message.request = "routing_start", 0)
 memory.has_request_key := if(message.route_key <> 0, 1, 0)
 memory.route_key := head(message.routes.keys)
 memory.route_target := head(message.routes.targets)
@@ -35,7 +35,7 @@ memory.scan_routes := {
 }
 memory.scan_message := {
   source: message.source
-  request: "routing_route"
+  request: "routing_start"
   trace_id: memory.trace_id
   payload: message.payload
   route_key: message.route_key

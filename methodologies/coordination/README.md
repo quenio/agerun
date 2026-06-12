@@ -69,6 +69,7 @@ the method agent that produced the response and a `response` value that identifi
 envelope with the `<method>_result` naming convention, preserves the request's `trace_id`, and
 reports standard `status: "success"` or `status: "failure"` with `success_count` and
 `failure_count`.
+When a method has only one request kind, that request is named `<method>_start`.
 Method-specific contracts define any additional response fields. When a method eventually returns
 multiple distinct result envelopes, the `response` value should use `<method>_<result_kind>`.
 Method-specific outcomes such as `routed`, `broadcast_failed`, or `handoff_failed` are carried in
@@ -83,7 +84,7 @@ Request:
 ```text
 {
   source: <agent>,
-  request: "routing_route",
+  request: "routing_start",
   trace_id: <trace_id>,
   payload: <message>,
   route_key: <key>,
@@ -122,7 +123,7 @@ Request:
 ```text
 {
   source: <agent>,
-  request: "broadcasting_broadcast",
+  request: "broadcasting_start",
   trace_id: <trace_id>,
   payload: <message>,
   targets: [<agent>, <agent>, ...]

@@ -9,7 +9,7 @@ Broadcasting sends the same caller-provided payload to every positive recipient 
 
 Only messages with a recognized `request` value are handled as coordination requests.
 
-When the agent receives `request: "broadcasting_broadcast"`, the method sends `payload` as-is to
+When the agent receives `request: "broadcasting_start"`, the method sends `payload` as-is to
 each positive target agent. It processes the list with `head(...)` and `tail(...)`, sending
 continuation messages to itself until the list is exhausted.
 
@@ -23,7 +23,7 @@ Request:
 ```text
 {
   source: <agent>,
-  request: "broadcasting_broadcast",
+  request: "broadcasting_start",
   trace_id: <trace_id>,
   payload: <message>,
   targets: [<agent>, <agent>, ...]

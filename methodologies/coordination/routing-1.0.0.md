@@ -9,7 +9,7 @@ table. It is a keyed-selection primitive, not a direct target delivery or fan-ou
 
 Only messages with a recognized `request` value are handled as coordination requests.
 
-When the agent receives `request: "routing_route"`, the method scans `routes.keys` and
+When the agent receives `request: "routing_start"`, the method scans `routes.keys` and
 `routes.targets` as paired unbounded lists. It sends the caller-provided `payload` as-is to
 the first positive target agent whose paired key matches `route_key`.
 
@@ -23,7 +23,7 @@ Request:
 ```text
 {
   source: <agent>,
-  request: "routing_route",
+  request: "routing_start",
   trace_id: <trace_id>,
   payload: <message>,
   route_key: <key>,

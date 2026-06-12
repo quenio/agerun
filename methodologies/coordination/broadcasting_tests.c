@@ -135,7 +135,7 @@ static void test_broadcasting__sends_same_payload_to_all_recipients(void) {
     // When one broadcast carries more than three recipients
     ar_data_t *own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Broadcast message should be created");
-    ar_data__set_map_string(own_message, "request", "broadcasting_broadcast");
+    ar_data__set_map_string(own_message, "request", "broadcasting_start");
     ar_data_t *own_targets = create_targets(receiver_a, receiver_b, receiver_c, receiver_d);
     AR_ASSERT(ar_data__set_map_data(own_message, "targets", own_targets),
               "Broadcast message should own targets list");
@@ -265,7 +265,7 @@ static void test_broadcasting__sends_same_payload_to_all_recipients(void) {
     // When one recipient cannot receive messages
     own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Partial broadcast message should be created");
-    ar_data__set_map_string(own_message, "request", "broadcasting_broadcast");
+    ar_data__set_map_string(own_message, "request", "broadcasting_start");
     own_targets = ar_data__create_list();
     AR_ASSERT(own_targets != NULL, "Partial broadcast targets list should be created");
     append_agent_id(own_targets, receiver_a);
@@ -301,7 +301,7 @@ static void test_broadcasting__sends_same_payload_to_all_recipients(void) {
     // When the target list has no positive recipients
     own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Zero-recipient broadcast message should be created");
-    ar_data__set_map_string(own_message, "request", "broadcasting_broadcast");
+    ar_data__set_map_string(own_message, "request", "broadcasting_start");
     own_targets = ar_data__create_list();
     AR_ASSERT(own_targets != NULL, "Zero-recipient targets list should be created");
     AR_ASSERT(ar_data__list_add_last_integer(own_targets, 0),
@@ -329,7 +329,7 @@ static void test_broadcasting__sends_same_payload_to_all_recipients(void) {
     // When consecutive placeholder targets precede a valid recipient
     own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Placeholder broadcast message should be created");
-    ar_data__set_map_string(own_message, "request", "broadcasting_broadcast");
+    ar_data__set_map_string(own_message, "request", "broadcasting_start");
     own_targets = ar_data__create_list();
     AR_ASSERT(own_targets != NULL, "Placeholder targets list should be created");
     AR_ASSERT(ar_data__list_add_last_integer(own_targets, 0),
@@ -391,7 +391,7 @@ static void test_broadcasting__reports_failed_when_targets_missing(void) {
 
     ar_data_t *own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Broadcast message without targets should be created");
-    ar_data__set_map_string(own_message, "request", "broadcasting_broadcast");
+    ar_data__set_map_string(own_message, "request", "broadcasting_start");
     ar_data_t *own_payload = create_payload("domain_event", "missing", "caller-shaped", 0);
     AR_ASSERT(ar_data__set_map_data(own_message, "payload", own_payload),
               "Broadcast message without targets should own opaque payload");

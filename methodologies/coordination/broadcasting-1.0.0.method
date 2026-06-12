@@ -1,5 +1,5 @@
 memory.is_request := if(message.request <> 0, 1, 0)
-memory.is_broadcast := if(memory.is_request = 1, message.request = "broadcasting_broadcast", 0)
+memory.is_broadcast := if(memory.is_request = 1, message.request = "broadcasting_start", 0)
 memory.trace_id := if(memory.is_broadcast = 1, message.trace_id, memory.trace_id)
 memory.source := if(memory.is_broadcast = 1, message.source, memory.source)
 memory.current_targets := if(memory.is_broadcast = 1, message.targets, [])
@@ -27,7 +27,7 @@ memory.continuation_required := memory.is_broadcast * memory.has_more_work
 memory.continuation_target := memory.self * memory.continuation_required
 memory.continuation_message := {
   source: memory.source
-  request: "broadcasting_broadcast"
+  request: "broadcasting_start"
   trace_id: memory.trace_id
   payload: message.payload
   targets: memory.remaining_targets
