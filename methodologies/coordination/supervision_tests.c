@@ -52,8 +52,10 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
     ar_methodology_t *mut_methodology = ar_agency__get_methodology(mut_agency);
     const char *ref_instructions =
         "memory.last_action := message.action\n"
-        "memory.last_correlation_id := message.correlation_id\n"
+        "memory.last_type := message.type\n"
+        "memory.last_trace_id := message.trace_id\n"
         "memory.last_status := message.status\n"
+        "memory.last_state := message.state\n"
         "memory.last_child_agent_id := message.child_agent_id\n"
         "memory.last_success_count := message.success_count\n"
         "memory.last_failure_count := message.failure_count\n"
@@ -93,6 +95,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     ar_data_t *own_start = ar_data__create_map();
     AR_ASSERT(own_start != NULL, "Supervision start should be created");
     ar_data__set_map_string(own_start, "action", "start");
+    ar_data__set_map_string(own_start, "type", "request");
     ar_data_t *own_child_method_names = ar_data__create_list();
     AR_ASSERT(own_child_method_names != NULL, "Child method name list should be created");
     append_child_method_name(own_child_method_names, "record-receiver");
@@ -104,8 +107,8 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     own_child_method_names = NULL;
     ar_data__set_map_string(own_start, "child_method_version", "1.0.0");
     ar_data__set_map_string(own_start, "policy", "restart");
-    ar_data__set_map_string(own_start, "correlation_id", "supervision-correlation-1");
-    ar_data__set_map_integer(own_start, "reply_to", checked_agent_id(observer_agent));
+    ar_data__set_map_string(own_start, "trace_id", "supervision-trace-1");
+    ar_data__set_map_integer(own_start, "source_agent", checked_agent_id(observer_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, supervision_agent, own_start),
               "Supervision start should queue");
     own_start = NULL;
@@ -132,13 +135,17 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(third_child > second_child, "Supervision should create a third child agent");
 
     const ar_data_t *ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "running") == 0,
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_type"), "response") == 0,
+              "Observer should receive a supervision response");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "success") == 0,
+              "Observer should receive standard success status for running supervision");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"), "running") == 0,
               "Observer should receive running supervision status");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_child_count") == 4,
               "Observer should receive child count");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_correlation_id"),
-                     "supervision-correlation-1") == 0,
-              "Supervision status should preserve correlation id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
+                     "supervision-trace-1") == 0,
+              "Supervision status should preserve trace id");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_success_count") == 4,
               "Supervision status should report spawned child count");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_failure_count") == 0,
@@ -148,6 +155,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     ar_data_t *own_untracked_failure = ar_data__create_map();
     AR_ASSERT(own_untracked_failure != NULL, "Untracked failure should be created");
     ar_data__set_map_string(own_untracked_failure, "action", "child_failed");
+    ar_data__set_map_string(own_untracked_failure, "type", "request");
     ar_data__set_map_integer(own_untracked_failure,
                              "child_agent_id",
                              checked_agent_id(untracked_agent));
@@ -168,7 +176,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(ar_data__get_map_integer(ref_memory, "restart_count") == 0,
               "Untracked lifecycle event should not increment restart count");
     ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "ignored") == 0,
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"), "ignored") == 0,
               "Observer should receive ignored status for untracked lifecycle event");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_child_agent_id") ==
                   untracked_agent,
@@ -178,6 +186,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     ar_data_t *own_failure = ar_data__create_map();
     AR_ASSERT(own_failure != NULL, "Child failure should be created");
     ar_data__set_map_string(own_failure, "action", "child_failed");
+    ar_data__set_map_string(own_failure, "type", "request");
     ar_data__set_map_integer(own_failure, "child_agent_id", checked_agent_id(first_child));
     ar_data__set_map_string(own_failure, "child_method_name", "record-receiver");
     ar_data__set_map_string(own_failure, "child_method_version", "1.0.0");
@@ -202,6 +211,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     ar_data_t *own_duplicate_failure = ar_data__create_map();
     AR_ASSERT(own_duplicate_failure != NULL, "Duplicate child failure should be created");
     ar_data__set_map_string(own_duplicate_failure, "action", "child_failed");
+    ar_data__set_map_string(own_duplicate_failure, "type", "request");
     ar_data__set_map_integer(own_duplicate_failure,
                              "child_agent_id",
                              checked_agent_id(first_child));
@@ -219,13 +229,14 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(ar_data__get_map_integer(ref_memory, "restart_count") == 1,
               "Duplicate child failure should not increment restart count");
     ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "ignored") == 0,
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"), "ignored") == 0,
               "Observer should receive ignored status for duplicate lifecycle event");
 
     // And a delayed duplicate for an older child is ignored after another child is handled
     ar_data_t *own_second_failure = ar_data__create_map();
     AR_ASSERT(own_second_failure != NULL, "Second child failure should be created");
     ar_data__set_map_string(own_second_failure, "action", "child_failed");
+    ar_data__set_map_string(own_second_failure, "type", "request");
     ar_data__set_map_integer(own_second_failure,
                              "child_agent_id",
                              checked_agent_id(second_child));
@@ -246,6 +257,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     own_duplicate_failure = ar_data__create_map();
     AR_ASSERT(own_duplicate_failure != NULL, "Delayed duplicate failure should be created");
     ar_data__set_map_string(own_duplicate_failure, "action", "child_failed");
+    ar_data__set_map_string(own_duplicate_failure, "type", "request");
     ar_data__set_map_integer(own_duplicate_failure,
                              "child_agent_id",
                              checked_agent_id(first_child));
@@ -263,13 +275,14 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(ar_data__get_map_integer(ref_memory, "restart_count") == 2,
               "Delayed duplicate failure should not increment restart count");
     ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "ignored") == 0,
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"), "ignored") == 0,
               "Observer should receive ignored status for delayed duplicate lifecycle event");
 
     // When a stop request names an untracked agent
     ar_data_t *own_untracked_stop = ar_data__create_map();
     AR_ASSERT(own_untracked_stop != NULL, "Untracked stop should be created");
     ar_data__set_map_string(own_untracked_stop, "action", "stop");
+    ar_data__set_map_string(own_untracked_stop, "type", "request");
     ar_data__set_map_integer(own_untracked_stop,
                              "child_agent_id",
                              checked_agent_id(untracked_agent));
@@ -285,7 +298,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_memory, "status"), "restarted") == 0,
               "Untracked stop should not change the stored supervisor status");
     ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "ignored") == 0,
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"), "ignored") == 0,
               "Observer should receive ignored status for untracked stop");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_child_agent_id") ==
                   untracked_agent,
@@ -295,6 +308,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     ar_data_t *own_tracked_stop = ar_data__create_map();
     AR_ASSERT(own_tracked_stop != NULL, "Tracked stop should be created");
     ar_data__set_map_string(own_tracked_stop, "action", "stop");
+    ar_data__set_map_string(own_tracked_stop, "type", "request");
     ar_data__set_map_integer(own_tracked_stop, "child_agent_id", checked_agent_id(third_child));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, supervision_agent, own_tracked_stop),
               "Tracked stop should queue");
@@ -308,13 +322,14 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_memory, "status"), "stopped") == 0,
               "Tracked stop should record stopped status");
     ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "stopped") == 0,
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"), "stopped") == 0,
               "Observer should receive stopped status for tracked stop");
 
     // And a delayed lifecycle event for the stopped child is ignored
     ar_data_t *own_stopped_lifecycle = ar_data__create_map();
     AR_ASSERT(own_stopped_lifecycle != NULL, "Stopped child lifecycle should be created");
     ar_data__set_map_string(own_stopped_lifecycle, "action", "child_exited");
+    ar_data__set_map_string(own_stopped_lifecycle, "type", "request");
     ar_data__set_map_integer(own_stopped_lifecycle,
                              "child_agent_id",
                              checked_agent_id(third_child));
@@ -332,7 +347,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(ar_data__get_map_integer(ref_memory, "restart_count") == 2,
               "Stopped child lifecycle should not increment restart count");
     ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "ignored") == 0,
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"), "ignored") == 0,
               "Observer should receive ignored status for stopped child lifecycle event");
 
     ar_data_t *own_empty_start_context = create_context();
@@ -341,6 +356,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     ar_data_t *own_empty_start = ar_data__create_map();
     AR_ASSERT(own_empty_start != NULL, "Empty child list start should be created");
     ar_data__set_map_string(own_empty_start, "action", "start");
+    ar_data__set_map_string(own_empty_start, "type", "request");
     ar_data_t *own_empty_child_methods = ar_data__create_list();
     AR_ASSERT(own_empty_child_methods != NULL, "Empty child method list should be created");
     AR_ASSERT(ar_data__set_map_data(own_empty_start,
@@ -350,7 +366,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     own_empty_child_methods = NULL;
     ar_data__set_map_string(own_empty_start, "child_method_version", "1.0.0");
     ar_data__set_map_string(own_empty_start, "policy", "restart");
-    ar_data__set_map_integer(own_empty_start, "reply_to", checked_agent_id(observer_agent));
+    ar_data__set_map_integer(own_empty_start, "source_agent", checked_agent_id(observer_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, empty_start_agent, own_empty_start),
               "Empty child list start should queue");
     own_empty_start = NULL;
@@ -363,7 +379,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(ar_data__get_map_integer(ref_empty_start_memory, "child_count") == 0,
               "Empty child list start should keep zero children");
     ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "running") == 0,
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"), "running") == 0,
               "Observer should receive running status for empty child list");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_child_count") == 0,
               "Observer should receive zero child count for empty child list");
@@ -380,6 +396,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     ar_data_t *own_failed_handoff_start = ar_data__create_map();
     AR_ASSERT(own_failed_handoff_start != NULL, "Failed handoff start should be created");
     ar_data__set_map_string(own_failed_handoff_start, "action", "start");
+    ar_data__set_map_string(own_failed_handoff_start, "type", "request");
     ar_data_t *own_failed_handoff_methods = ar_data__create_list();
     AR_ASSERT(own_failed_handoff_methods != NULL,
               "Failed handoff child methods should be created");
@@ -392,7 +409,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     ar_data__set_map_string(own_failed_handoff_start, "child_method_version", "1.0.0");
     ar_data__set_map_string(own_failed_handoff_start, "policy", "restart");
     ar_data__set_map_integer(own_failed_handoff_start,
-                             "reply_to",
+                             "source_agent",
                              checked_agent_id(observer_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency,
                                        failed_handoff_agent,
@@ -410,6 +427,9 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
               "Failed start handoff should not spawn children");
     ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
+                     "failure") == 0,
+              "Observer should receive standard failure status for failed start handoff");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"),
                      "handoff_failed") == 0,
               "Observer should receive failed start handoff status");
 
@@ -419,6 +439,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     ar_data_t *own_failed_continue_start = ar_data__create_map();
     AR_ASSERT(own_failed_continue_start != NULL, "Failed continuation start should be created");
     ar_data__set_map_string(own_failed_continue_start, "action", "start");
+    ar_data__set_map_string(own_failed_continue_start, "type", "request");
     ar_data_t *own_failed_continue_methods = ar_data__create_list();
     AR_ASSERT(own_failed_continue_methods != NULL,
               "Failed continuation child methods should be created");
@@ -432,7 +453,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     ar_data__set_map_string(own_failed_continue_start, "child_method_version", "1.0.0");
     ar_data__set_map_string(own_failed_continue_start, "policy", "restart");
     ar_data__set_map_integer(own_failed_continue_start,
-                             "reply_to",
+                             "source_agent",
                              checked_agent_id(observer_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency,
                                        failed_continue_agent,
@@ -457,7 +478,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(ar_data__get_map_integer(ref_failed_continue_memory, "child_count") == 1,
               "Failed spawn continuation should preserve partial child count");
     ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"),
                      "handoff_failed") == 0,
               "Observer should receive failed spawn continuation status");
 
@@ -467,6 +488,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     ar_data_t *own_failed_lifecycle_start = ar_data__create_map();
     AR_ASSERT(own_failed_lifecycle_start != NULL, "Failed lifecycle start should be created");
     ar_data__set_map_string(own_failed_lifecycle_start, "action", "start");
+    ar_data__set_map_string(own_failed_lifecycle_start, "type", "request");
     ar_data_t *own_failed_lifecycle_methods = ar_data__create_list();
     AR_ASSERT(own_failed_lifecycle_methods != NULL,
               "Failed lifecycle child methods should be created");
@@ -479,7 +501,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     ar_data__set_map_string(own_failed_lifecycle_start, "child_method_version", "1.0.0");
     ar_data__set_map_string(own_failed_lifecycle_start, "policy", "restart");
     ar_data__set_map_integer(own_failed_lifecycle_start,
-                             "reply_to",
+                             "source_agent",
                              checked_agent_id(observer_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency,
                                        failed_lifecycle_agent,
@@ -501,6 +523,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(own_failed_lifecycle_event != NULL,
               "Failed lifecycle event should be created");
     ar_data__set_map_string(own_failed_lifecycle_event, "action", "child_failed");
+    ar_data__set_map_string(own_failed_lifecycle_event, "type", "request");
     ar_data__set_map_integer(own_failed_lifecycle_event,
                              "child_agent_id",
                              checked_agent_id(failed_lifecycle_child));
@@ -525,7 +548,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(ar_data__get_map_integer(ref_failed_lifecycle_memory, "restart_count") == 0,
               "Failed lifecycle validation should not restart without validation");
     ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"),
                      "handoff_failed") == 0,
               "Observer should receive failed lifecycle validation status");
 
@@ -535,6 +558,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     ar_data_t *own_failed_stop_start = ar_data__create_map();
     AR_ASSERT(own_failed_stop_start != NULL, "Failed stop start should be created");
     ar_data__set_map_string(own_failed_stop_start, "action", "start");
+    ar_data__set_map_string(own_failed_stop_start, "type", "request");
     ar_data_t *own_failed_stop_methods = ar_data__create_list();
     AR_ASSERT(own_failed_stop_methods != NULL, "Failed stop child methods should be created");
     append_child_method_name(own_failed_stop_methods, "record-receiver");
@@ -546,7 +570,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     ar_data__set_map_string(own_failed_stop_start, "child_method_version", "1.0.0");
     ar_data__set_map_string(own_failed_stop_start, "policy", "restart");
     ar_data__set_map_integer(own_failed_stop_start,
-                             "reply_to",
+                             "source_agent",
                              checked_agent_id(observer_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency,
                                        failed_stop_agent,
@@ -566,6 +590,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     ar_data_t *own_failed_stop = ar_data__create_map();
     AR_ASSERT(own_failed_stop != NULL, "Failed stop message should be created");
     ar_data__set_map_string(own_failed_stop, "action", "stop");
+    ar_data__set_map_string(own_failed_stop, "type", "request");
     ar_data__set_map_integer(own_failed_stop,
                              "child_agent_id",
                              checked_agent_id(failed_stop_child));
@@ -582,7 +607,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(ar_agency__get_agent_memory(mut_agency, failed_stop_child) != NULL,
               "Failed stop validation should not exit child without validation");
     ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"),
                      "handoff_failed") == 0,
               "Observer should receive failed stop validation status");
 
@@ -595,6 +620,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     ar_data_t *own_failed_spawn_start = ar_data__create_map();
     AR_ASSERT(own_failed_spawn_start != NULL, "Failed spawn start should be created");
     ar_data__set_map_string(own_failed_spawn_start, "action", "start");
+    ar_data__set_map_string(own_failed_spawn_start, "type", "request");
     ar_data_t *own_failed_spawn_methods = ar_data__create_list();
     AR_ASSERT(own_failed_spawn_methods != NULL, "Failed spawn methods should be created");
     append_child_method_name(own_failed_spawn_methods, "missing-child-method");
@@ -606,7 +632,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     ar_data__set_map_string(own_failed_spawn_start, "child_method_version", "1.0.0");
     ar_data__set_map_string(own_failed_spawn_start, "policy", "restart");
     ar_data__set_map_integer(own_failed_spawn_start,
-                             "reply_to",
+                             "source_agent",
                              checked_agent_id(failed_spawn_observer_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency,
                                        failed_spawn_agent,

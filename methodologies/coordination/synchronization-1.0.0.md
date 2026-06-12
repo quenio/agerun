@@ -2,102 +2,59 @@
 
 ## Overview
 
-The synchronization method waits for an unbounded stream of dependency messages before sending a
-continuation message. It is a reusable dependency gate for workflows and distributed work.
+Synchronization waits for an unbounded stream of dependency messages before sending a continuation
+message. It is a reusable dependency gate for workflows and distributed work.
 
 ## Behavior
 
-On a map whose `action` field is `"wait"`, the method stores the sync id, required count,
-continuation target, continuation action, continuation text, and reply target. It clears the
-append-backed `received` dependency list and resets the completion marker.
-Required counts below one behave as one required dependency, so a wait message cannot complete the
-gate before any dependency arrives.
+Only messages with `type: "request"` are handled as coordination requests.
 
-On a map whose `action` field is `"dependency"`, the method only counts the message when its
-`sync_id` matches the active wait request and the gate has not already completed. It appends the
-dependency value to `memory.received`. When the number of received dependencies reaches
-`required_count`, it sends the continuation and reports completion.
-The completion marker is set only after the continuation is delivered and, when `reply_to` is a
-positive agent id, the status reply is delivered. Failed delivery leaves the gate open so later
-matching dependency messages can retry completion. Once the required count is reached, the dependency
-list is frozen even if continuation delivery fails; later matching dependency messages retry the
-continuation with the same `done_count` and dependency list. Unrelated messages, including maps with
-other actions, do not retry pending delivery. After the continuation has been delivered, if only the
-status reply fails, later matching dependency messages retry the status report without re-emitting
-the continuation or increasing `done_count`.
+On `action: "wait"`, the method stores the sync id, required count, continuation target agent,
+continuation action, continuation text, `trace_id`, and `source_agent`. On matching
+`action: "dependency"`, it appends the dependency value until the required count is reached.
+
+Completion is recorded only after the continuation is delivered and, when `source_agent` is
+positive, the `wait` response is delivered. Failed delivery keeps the gate open for retry.
 
 ## Message Format
 
-Wait request:
+Requests:
 
 ```text
-{
-  action: "wait",
-  sync_id: <id>,
-  correlation_id: <id>,
-  required_count: <count>,
-  continuation_target: <agent>,
-  continuation_action: <action>,
-  continuation_text: <text>,
-  reply_to: <agent>
-}
+{ action: "wait", type: "request", sync_id: <id>, trace_id: <id>, required_count: <count>, continuation_target_agent: <agent>, continuation_action: <action>, continuation_text: <text>, source_agent: <agent> }
+{ action: "dependency", type: "request", sync_id: <id>, dependency: <name> }
 ```
 
-Dependency request:
-
-```text
-{
-  action: "dependency",
-  sync_id: <id>,
-  dependency: <name>
-}
-```
-
-Continuation message:
+Continuation:
 
 ```text
 {
   action: <continuation_action>,
+  type: "request",
   sync_id: <id>,
-  correlation_id: <correlation_id>,
+  trace_id: <trace_id>,
   text: <continuation_text>,
   done_count: <count>,
   dependencies: [<dependency>, <dependency>, ...]
 }
 ```
 
-Status response:
+Response:
 
 ```text
 {
-  action: "synchronization_status",
+  action: "wait",
+  type: "response",
   sync_id: <id>,
-  correlation_id: <correlation_id>,
-  status: "complete",
+  trace_id: <trace_id>,
+  status: "success",
+  state: "complete",
   success_count: <count>,
   failure_count: 0,
   done_count: <count>,
   dependencies: [<dependency>, <dependency>, ...]
 }
 ```
-
-## Action Field
-
-The input `action` field is a command discriminator in the request map. The synchronization agent
-runs this method for every message it receives, so the field separates wait setup from dependency
-arrival and keeps unrelated messages from satisfying the gate.
-
-## Composition Notes
-
-Use synchronization when several workers, approvals, or prerequisite steps must complete before a
-workflow advances. It can also gate an aggregation completion before sending a follow-up message.
-
-## Limitations
-
-The method supports an unbounded count of dependency messages by appending received dependencies to
-a list. It does not validate membership against a declared dependency set or de-duplicate repeated
-dependency names; callers that need those policies should put that validation in the producing
-methods or compose a specialized filtering method before this gate.
 
 ## Implementation and Tests
 

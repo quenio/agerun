@@ -61,7 +61,7 @@ static int checked_agent_id(int64_t agent_id) {
 static ar_data_t *create_payload(const char *ref_action,
                                  const char *ref_text,
                                  const char *ref_kind,
-                                 int reply_to) {
+                                 int source_agent) {
     ar_data_t *own_payload = ar_data__create_map();
     AR_ASSERT(own_payload != NULL, "Distribution payload should be created");
     AR_ASSERT(ar_data__set_map_string(own_payload, "action", ref_action),
@@ -72,21 +72,21 @@ static ar_data_t *create_payload(const char *ref_action,
               "Distribution payload should set caller-owned field");
     AR_ASSERT(ar_data__set_map_string(own_payload, "source", "caller-owned-source"),
               "Distribution payload should set caller-owned source");
-    if (reply_to > 0) {
-        AR_ASSERT(ar_data__set_map_integer(own_payload, "reply_to", reply_to),
-                  "Distribution payload should set caller-owned reply target");
+    if (source_agent > 0) {
+        AR_ASSERT(ar_data__set_map_integer(own_payload, "source_agent", source_agent),
+                  "Distribution payload should set caller-owned source_agent");
     }
     return own_payload;
 }
 
-static ar_data_t *create_payloads(const char **ref_payloads, size_t payload_count, int reply_to) {
+static ar_data_t *create_payloads(const char **ref_payloads, size_t payload_count, int source_agent) {
     ar_data_t *own_payloads = ar_data__create_list();
     AR_ASSERT(own_payloads != NULL, "Payload list should be created");
     for (size_t i = 0; i < payload_count; i++) {
         ar_data_t *own_payload = create_payload("work",
                                                 ref_payloads[i],
                                                 "caller-shaped",
-                                                reply_to);
+                                                source_agent);
         AR_ASSERT(ar_data__list_add_last_data(own_payloads, own_payload),
                   "Payload should be appended");
         own_payload = NULL;
@@ -113,10 +113,11 @@ static void register_worker_recorder(ar_agency_t *mut_agency) {
         "memory.received_texts := if(memory.append_ok = 1, memory.append_buffer, memory.received_texts)\n"
         "memory.received_count := memory.received_count + memory.append_ok\n"
         "memory.last_action := message.action\n"
-        "memory.last_correlation_id := message.correlation_id\n"
+        "memory.last_type := message.type\n"
+        "memory.last_trace_id := message.trace_id\n"
         "memory.last_kind := message.kind\n"
         "memory.last_source := message.source\n"
-        "memory.last_reply_to := message.reply_to\n";
+        "memory.last_source_agent := message.source_agent\n";
 
     AR_ASSERT(ar_methodology__create_method(mut_methodology,
                                             "worker-recorder",
@@ -130,8 +131,10 @@ static void register_report_recorder(ar_agency_t *mut_agency) {
     ar_methodology_t *mut_methodology = ar_agency__get_methodology(mut_agency);
     const char *ref_instructions =
         "memory.last_action := message.action\n"
+        "memory.last_type := message.type\n"
         "memory.last_status := message.status\n"
-        "memory.last_correlation_id := message.correlation_id\n"
+        "memory.last_state := message.state\n"
+        "memory.last_trace_id := message.trace_id\n"
         "memory.last_success_count := message.success_count\n"
         "memory.last_failure_count := message.failure_count\n"
         "memory.last_work_id := message.work_id\n"
@@ -171,10 +174,11 @@ static void send_distribution(ar_agency_t *mut_agency,
                               const char *ref_work_id,
                               ar_data_t *own_payloads,
                               ar_data_t *own_workers,
-                              int reply_to) {
+                              int source_agent) {
     ar_data_t *own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Distribution message should be created");
     ar_data__set_map_string(own_message, "action", "distribute");
+    ar_data__set_map_string(own_message, "type", "request");
     ar_data__set_map_string(own_message, "work_id", ref_work_id);
     AR_ASSERT(ar_data__set_map_data(own_message, "payloads", own_payloads),
               "Distribution message should own payloads");
@@ -182,8 +186,8 @@ static void send_distribution(ar_agency_t *mut_agency,
     AR_ASSERT(ar_data__set_map_data(own_message, "workers", own_workers),
               "Distribution message should own workers");
     own_workers = NULL;
-    ar_data__set_map_string(own_message, "correlation_id", ref_work_id);
-    ar_data__set_map_integer(own_message, "reply_to", reply_to);
+    ar_data__set_map_string(own_message, "trace_id", ref_work_id);
+    ar_data__set_map_integer(own_message, "source_agent", source_agent);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, distribution_agent, own_message),
               "Distribution message should queue");
     own_message = NULL;
@@ -246,23 +250,27 @@ static void test_distribution__round_robins_payloads_across_workers(void) {
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_worker_a_memory, "last_source"),
                      "caller-owned-source") == 0,
               "Distribution should preserve caller-owned source");
-    AR_ASSERT(ar_data__get_map_integer(ref_worker_a_memory, "last_reply_to") ==
+    AR_ASSERT(ar_data__get_map_integer(ref_worker_a_memory, "last_source_agent") ==
                   checked_agent_id(worker_b),
-              "Distribution should preserve caller-owned reply target");
+              "Distribution should preserve caller-owned source_agent");
 
     const ar_data_t *ref_report_memory = ar_agency__get_agent_memory(mut_agency, report_agent);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_action"),
-                     "distribution_result") == 0,
+                     "distribute") == 0,
               "Report receiver should observe distribution result");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_type"), "response") == 0,
+              "Distribution result should be a response");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"), "success") == 0,
+              "Distribution result should report standard success status");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_state"),
                      "distributed") == 0,
               "Distribution result should report distributed status");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_work_id"),
                      "job-round-robin") == 0,
               "Distribution result should preserve work id");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_correlation_id"),
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_trace_id"),
                      "job-round-robin") == 0,
-              "Distribution result should preserve correlation id");
+              "Distribution result should preserve trace id");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 5,
               "Distribution result should report successful assignment sends");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 0,
@@ -278,8 +286,9 @@ static void test_distribution__round_robins_payloads_across_workers(void) {
     AR_ASSERT(own_ignored_message != NULL, "Ignored message should be created");
     AR_ASSERT(ar_data__set_map_string(own_ignored_message, "action", "ignored"),
               "Ignored message should set action");
-    AR_ASSERT(ar_data__set_map_integer(own_ignored_message, "reply_to", checked_agent_id(report_agent)),
-              "Ignored message should set reply target");
+    ar_data__set_map_string(own_ignored_message, "type", "request");
+    AR_ASSERT(ar_data__set_map_integer(own_ignored_message, "source_agent", checked_agent_id(report_agent)),
+              "Ignored message should set source_agent");
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, distribution_agent, own_ignored_message),
               "Ignored message should queue");
     own_ignored_message = NULL;
@@ -288,7 +297,7 @@ static void test_distribution__round_robins_payloads_across_workers(void) {
     const ar_data_t *ref_distribution_memory =
         ar_agency__get_agent_memory(mut_agency, distribution_agent);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_distribution_memory, "status"),
-                     "distributed") == 0,
+                     "success") == 0,
               "Ignored messages should not overwrite distribution status");
     AR_ASSERT(ar_data__get_map_integer(ref_distribution_memory, "assignment_count") == 5,
               "Ignored messages should not reset assignment count");
@@ -347,6 +356,9 @@ static void test_distribution__reports_failed_assignments_and_empty_inputs(void)
 
     const ar_data_t *ref_report_memory = ar_agency__get_agent_memory(mut_agency, report_agent);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
+                     "failure") == 0,
+              "Partial worker failure should report standard failure status");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_state"),
                      "distribution_failed") == 0,
               "Partial worker failure should report distribution_failed");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_work_id"),
@@ -375,7 +387,7 @@ static void test_distribution__reports_failed_assignments_and_empty_inputs(void)
                       checked_agent_id(report_agent));
     ar_method_fixture__process_all_messages(own_fixture);
 
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_state"),
                      "distribution_failed") == 0,
               "Empty payload list should report distribution_failed");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_work_id"),
@@ -396,7 +408,7 @@ static void test_distribution__reports_failed_assignments_and_empty_inputs(void)
                       checked_agent_id(report_agent));
     ar_method_fixture__process_all_messages(own_fixture);
 
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_state"),
                      "distribution_failed") == 0,
               "Empty worker list should report distribution_failed");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_work_id"),
@@ -413,10 +425,10 @@ static void test_distribution__reports_failed_assignments_and_empty_inputs(void)
     ar_data__destroy(own_report_context);
 }
 
-static void test_distribution__records_completion_when_reply_fails(void) {
-    printf("Testing distribution records completion when reply fails...\n");
+static void test_distribution__records_completion_when_response_fails(void) {
+    printf("Testing distribution records completion when response fails...\n");
 
-    ar_method_fixture_t *own_fixture = ar_method_fixture__create("distribution_reply_fails");
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("distribution_response_fails");
     AR_ASSERT(ar_method_fixture__initialize(own_fixture), "Fixture should initialize");
     AR_ASSERT(ar_method_fixture__verify_directory(own_fixture), "Fixture directory should verify");
     load_method(own_fixture, "distribution");
@@ -438,7 +450,7 @@ static void test_distribution__records_completion_when_reply_fails(void) {
     ar_data_t *own_workers = create_workers(ref_workers, 1);
     send_distribution(mut_agency,
                       distribution_agent,
-                      "job-reply-fails",
+                      "job-response-fails",
                       own_payloads,
                       own_workers,
                       98765);
@@ -451,22 +463,22 @@ static void test_distribution__records_completion_when_reply_fails(void) {
     const ar_data_t *ref_distribution_memory =
         ar_agency__get_agent_memory(mut_agency, distribution_agent);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_distribution_memory, "status"),
-                     "distributed") == 0,
-              "Distribution should record terminal status when reply delivery fails");
+                     "success") == 0,
+              "Distribution should record terminal status when response delivery fails");
     AR_ASSERT(ar_data__get_map_integer(ref_distribution_memory, "assignment_count") == 1,
-              "Distribution should record attempted assignment count when reply delivery fails");
+              "Distribution should record attempted assignment count when response delivery fails");
     AR_ASSERT(ar_data__get_map_integer(ref_distribution_memory, "sent_count") == 1,
-              "Distribution should record successful send count when reply delivery fails");
+              "Distribution should record successful send count when response delivery fails");
     AR_ASSERT(ar_data__get_map_integer(ref_distribution_memory, "failed_count") == 0,
-              "Distribution should record failed send count when reply delivery fails");
+              "Distribution should record failed send count when response delivery fails");
 
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_distribution_context);
     ar_data__destroy(own_worker_context);
 }
 
-static void test_distribution__preserves_correlation_for_interleaved_jobs(void) {
-    printf("Testing distribution preserves correlation for interleaved jobs...\n");
+static void test_distribution__preserves_trace_for_interleaved_jobs(void) {
+    printf("Testing distribution preserves trace for interleaved jobs...\n");
 
     ar_method_fixture_t *own_fixture = ar_method_fixture__create("distribution_interleaved");
     AR_ASSERT(ar_method_fixture__initialize(own_fixture), "Fixture should initialize");
@@ -526,9 +538,9 @@ static void test_distribution__preserves_correlation_for_interleaved_jobs(void) 
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_one_memory, "last_work_id"),
                      "job-one") == 0,
               "First interleaved result should preserve work id");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_one_memory, "last_correlation_id"),
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_one_memory, "last_trace_id"),
                      "job-one") == 0,
-              "First interleaved result should preserve its own correlation id");
+              "First interleaved result should preserve its own trace id");
     AR_ASSERT(ar_data__get_map_integer(ref_report_one_memory, "last_assignment_count") == 2,
               "First interleaved result should count both assignments");
 
@@ -536,9 +548,9 @@ static void test_distribution__preserves_correlation_for_interleaved_jobs(void) 
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_two_memory, "last_work_id"),
                      "job-two") == 0,
               "Second interleaved result should preserve work id");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_two_memory, "last_correlation_id"),
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_two_memory, "last_trace_id"),
                      "job-two") == 0,
-              "Second interleaved result should preserve its own correlation id");
+              "Second interleaved result should preserve its own trace id");
 
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_distribution_context);
@@ -601,7 +613,7 @@ static void test_distribution__skips_zero_worker_placeholders(void) {
     assert_text_history(ref_worker_b_memory, ref_worker_b_expected, 2);
 
     const ar_data_t *ref_report_memory = ar_agency__get_agent_memory(mut_agency, report_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_state"),
                      "distributed") == 0,
               "Zero worker placeholders should still distribute work");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_assignment_count") == 4,
@@ -622,8 +634,8 @@ int main(void) {
     printf("Running distribution method tests...\n\n");
     test_distribution__round_robins_payloads_across_workers();
     test_distribution__reports_failed_assignments_and_empty_inputs();
-    test_distribution__records_completion_when_reply_fails();
-    test_distribution__preserves_correlation_for_interleaved_jobs();
+    test_distribution__records_completion_when_response_fails();
+    test_distribution__preserves_trace_for_interleaved_jobs();
     test_distribution__skips_zero_worker_placeholders();
     printf("\nAll distribution method tests passed!\n");
     return 0;

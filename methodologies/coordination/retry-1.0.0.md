@@ -2,79 +2,37 @@
 
 ## Overview
 
-The retry method executes an operation and re-executes it after failure messages until the configured
-retry policy succeeds or reaches its limit. It supports immediate retry directly and delayed retry by
-composition with scheduling.
+Retry executes an operation and re-executes it after failure messages until the configured policy
+succeeds or reaches its limit. It supports immediate retry directly and delayed retry by composing
+with scheduling.
 
 ## Behavior
 
-On a map whose `action` field is `"start"`, the method stores the operation metadata, optional
-correlation id, retry strategy, maximum attempts, scheduler agent, delay tick, and reply target. If
-the request omits `correlation_id`, the method uses `operation_id` as the operation correlation id.
-It sends the first operation attempt with `attempt: 1` and records `attempts=1` only after that send
-succeeds. If the initial operation send fails, it reports `status=dispatch_failed` with
-`attempts=0`.
+Only messages with `type: "request"` are handled as coordination requests.
 
-On a map whose `action` field is `"failure"`, whose `correlation_id` matches the active operation,
-and whose `attempt` matches the current attempt count, the method retries when
-`attempts < max_attempts`. For `strategy=immediate`, it sends the next attempt directly to the
-operation target. For
-`strategy=scheduled`, it sends a schedule request to the scheduler agent with `due_tick` set to the
-failure message's `current_tick` plus `delay_ticks` and `payload_attempt` set to the next attempt
-number. If no attempts remain, it reports `status=failed`.
-The attempt count advances only after the immediate retry or scheduled retry handoff is sent
-successfully. A failed retry dispatch leaves the retry active at the previous attempt count.
+On `action: "start"`, the method stores operation metadata, `trace_id`, retry strategy, maximum
+attempts, scheduler agent, delay ticks, and `source_agent`. If the request omits `trace_id`, the
+method uses `operation_id` as the trace. It records an attempt only after the operation send
+succeeds.
 
-On a map whose `action` field is `"success"`, whose `correlation_id` matches the active operation,
-and whose `attempt` matches the current attempt count, it reports `status=succeeded` with the current
-attempt count.
-
-Once the retry state reaches terminal `succeeded` or `failed` status, later stale `failure` or
-`success` outcome messages are ignored. A new `start` request opens a fresh active retry state. Late
-outcomes from a previous operation are ignored because their `correlation_id` no longer matches the
-active operation id. Duplicate outcomes from an earlier attempt are ignored because their `attempt`
-no longer matches the current in-flight attempt.
-Terminal status is recorded only after the `retry_result` report is delivered. If report delivery
-fails, the retry stores the pending terminal status and attempt count. Later matching outcomes retry
-that original terminal report without changing the attempt count or replacing the pending terminal
-result.
+Matching `failure` requests retry while attempts remain. Matching `success` requests emit the
+terminal response. Terminal state is recorded only after the `start` response is delivered; failed
+report delivery stores a pending terminal result for retry.
 
 ## Message Format
 
-Start request:
+Requests:
 
 ```text
-{
-  action: "start",
-  operation_id: <id>,
-  operation_target: <agent>,
-  operation_action: <action>,
-  operation_text: <text>,
-  max_attempts: <number>,
-  strategy: <immediate|scheduled>,
-  scheduler_agent: <agent>,
-  delay_ticks: <tick>,
-  correlation_id: <id>,
-  reply_to: <agent>
-}
-```
-
-Outcome requests:
-
-```text
-{ action: "failure", correlation_id: <correlation_id>, attempt: <attempt>, current_tick: <tick> }
-{ action: "success", correlation_id: <correlation_id>, attempt: <attempt> }
+{ action: "start", type: "request", operation_id: <id>, operation_target_agent: <agent>, operation_action: <action>, operation_text: <text>, max_attempts: <number>, strategy: <immediate|scheduled>, scheduler_agent: <agent>, delay_ticks: <tick>, trace_id: <id>, source_agent: <agent> }
+{ action: "failure", type: "request", trace_id: <trace_id>, attempt: <attempt>, current_tick: <tick> }
+{ action: "success", type: "request", trace_id: <trace_id>, attempt: <attempt> }
 ```
 
 Operation attempt:
 
 ```text
-{
-  action: <operation_action>,
-  correlation_id: <correlation_id>,
-  text: <operation_text>,
-  attempt: <number>
-}
+{ action: <operation_action>, type: "request", trace_id: <trace_id>, text: <operation_text>, attempt: <number> }
 ```
 
 Scheduled retry request:
@@ -82,46 +40,33 @@ Scheduled retry request:
 ```text
 {
   action: "schedule",
+  type: "request",
   schedule_id: <operation_id>,
   due_tick: <current_tick + delay_ticks>,
-  target: <operation_target>,
+  target_agent: <operation_target_agent>,
   payload_action: <operation_action>,
   payload_text: <operation_text>,
   payload_attempt: <attempt>,
-  correlation_id: <correlation_id>,
-  reply_to: 0
+  trace_id: <trace_id>,
+  source_agent: 0
 }
 ```
 
-Final result:
+Terminal response:
 
 ```text
 {
-  action: "retry_result",
+  action: "start",
+  type: "response",
   operation_id: <id>,
-  correlation_id: <correlation_id>,
-  status: <succeeded|failed|dispatch_failed>,
+  trace_id: <trace_id>,
+  status: <success|failure>,
+  state: <succeeded|failed|dispatch_failed>,
   success_count: <0|1>,
   failure_count: <0|1>,
   attempts: <count>
 }
 ```
-
-## Action Field
-
-The input `action` field is a command discriminator in the request map. The retry agent runs this
-method for every message it receives, so the field separates retry setup, failure, and success
-signals and prevents unrelated messages from incrementing attempts or reporting final status.
-
-## Composition Notes
-
-Use retry directly around unreliable workers, workflow steps, or outbound operations. For delayed
-retry, pair it with a scheduling agent and a tick source.
-
-## Limitations
-
-The method supports immediate retry and a scheduled retry handoff. Backoff policies depend on an
-external tick convention and richer policy arithmetic than this bounded method implements.
 
 ## Implementation and Tests
 

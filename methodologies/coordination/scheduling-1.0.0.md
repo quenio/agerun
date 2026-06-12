@@ -2,55 +2,25 @@
 
 ## Overview
 
-The scheduling method stores one pending execution and triggers it when a later tick message reaches
-or passes the stored due tick. It expresses delayed execution as ordinary message state.
+Scheduling stores one pending execution and triggers it when a later tick message reaches or passes
+the stored due tick. It expresses delayed execution as ordinary message state.
 
 ## Behavior
 
-On a map whose `action` field is `"schedule"`, the method stores the schedule id, due tick, target,
-payload fields, optional payload attempt, correlation id, and reply target. It marks the work as
-pending and reports `status=scheduled`.
+Only messages with `type: "request"` are handled as coordination requests.
 
-On a map whose `action` field is `"tick"`, the method records the current tick. If work is pending
-and `tick >= due_tick`, it sends the stored payload to the stored target. A successful send clears
-pending state and reports `status=triggered`; a failed send reports `status=trigger_failed` and
-keeps the work pending. A tick that does not trigger the pending work updates scheduler state without
-sending a status response.
-
-On a map whose `action` field is `"cancel"`, the method clears pending state when the requested
-schedule id matches the stored schedule id and the work is still pending, then reports
-`status=cancelled`. Cancels for already triggered or otherwise non-pending schedules are ignored.
+On `action: "schedule"`, the method stores schedule metadata, target agent, payload fields,
+`trace_id`, and `source_agent`. On a due `tick`, it sends the stored payload to the stored target
+agent. On `cancel`, it clears pending state only when the matching schedule is still pending.
 
 ## Message Format
 
-Schedule request:
+Requests:
 
 ```text
-{
-  action: "schedule",
-  schedule_id: <id>,
-  due_tick: <number>,
-  target: <agent>,
-  payload_action: <action>,
-  payload_text: <text>,
-  payload_attempt: <attempt>,
-  correlation_id: <id>,
-  reply_to: <agent>
-}
-```
-
-Tick and cancel requests:
-
-```text
-{
-  action: "tick",
-  tick: <number>
-}
-
-{
-  action: "cancel",
-  schedule_id: <id>
-}
+{ action: "schedule", type: "request", schedule_id: <id>, due_tick: <number>, target_agent: <agent>, payload_action: <action>, payload_text: <text>, payload_attempt: <attempt>, trace_id: <id>, source_agent: <agent> }
+{ action: "tick", type: "request", tick: <number> }
+{ action: "cancel", type: "request", schedule_id: <id> }
 ```
 
 Triggered message:
@@ -58,21 +28,24 @@ Triggered message:
 ```text
 {
   action: <payload_action>,
-  correlation_id: <correlation_id>,
+  type: "request",
+  trace_id: <trace_id>,
   text: <payload_text>,
   attempt: <payload_attempt>,
   schedule_id: <schedule_id>
 }
 ```
 
-Status response:
+Response:
 
 ```text
 {
-  action: "schedule_status",
+  action: <schedule|cancel>,
+  type: "response",
   schedule_id: <id>,
-  correlation_id: <correlation_id>,
-  status: <scheduled|cancelled|triggered|trigger_failed>,
+  trace_id: <trace_id>,
+  status: <success|failure>,
+  state: <scheduled|cancelled|triggered|trigger_failed>,
   success_count: <count>,
   failure_count: <count>,
   pending: <0|1>,
@@ -80,21 +53,8 @@ Status response:
 }
 ```
 
-## Action Field
-
-The input `action` field is a command discriminator in the request map. The scheduling agent runs
-this method for every message it receives, so the field separates schedule, tick, and cancel commands
-from unrelated messages that should not trigger pending work.
-
-## Composition Notes
-
-Retry uses scheduling for delayed attempts. A host process or tick-source agent can send tick
-messages to a scheduling agent, while retry or workflow agents submit pending work.
-
-## Limitations
-
-There is no runtime clock or timer callback in the ordinary method instruction set. Scheduling
-therefore requires explicit `tick` messages from another agent or host process.
+Trigger responses use `action: "schedule"` because they report the stored schedule request; cancel
+responses use `action: "cancel"`.
 
 ## Implementation and Tests
 

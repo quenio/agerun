@@ -2,86 +2,41 @@
 
 ## Overview
 
-The supervision method creates and tracks an unbounded list of child agents and applies a simple
-restart policy when the supervisor receives explicit lifecycle event messages. It demonstrates
-supervision as methodology logic rather than a runtime capability.
+Supervision creates and tracks an unbounded list of child agents and applies a simple restart policy
+when it receives explicit lifecycle event messages. It is methodology logic rather than a runtime
+capability.
 
 ## Behavior
 
-On a map whose `action` field is `"start"`, the method stores the policy, optional correlation id,
-reply target, and shared child method version, clears its tracked child lists, and sends itself a
-`spawn_child` continuation for the request's `child_method_names` list. The method consumes that
-list with `head(...)` and `tail(...)`, spawning one child per continuation and appending the agent id
-and child record into memory. When the list is exhausted, it reports `status=running` with the
-tracked child lists and count. An empty `child_method_names` list reports `status=running` with
-`child_count=0`. If the initial spawn continuation or a later continuation cannot be queued, it
-reports `status=handoff_failed` instead of remaining in `starting`.
-If a requested child cannot be spawned, the failed `spawn(...)` instruction aborts the remaining
-ordinary method evaluation. The supervisor does not report `running` for the incomplete child set,
-but it also cannot emit a catchable spawn-failure status without a runtime-level non-aborting spawn
-result or a separate method-existence check.
+Only messages with `type: "request"` are handled as coordination requests.
 
-On a map whose `action` field is `"child_failed"` or `"child_exited"`, the method scans the tracked
-`child_agent_ids` list before applying the lifecycle event. If the child is tracked and the stored
-policy is `restart`, it spawns a replacement child using the event's `child_method_name` and
-`child_method_version`, appends the replacement to the tracked lists, and reports
-`status=restarted`. If the child is tracked and the policy is not `restart`, it reports
-`status=stopped`. If the child is not tracked, it leaves supervisor state unchanged and reports
-`status=ignored`. If the internal validation message cannot be queued, it reports
-`status=handoff_failed` and leaves lifecycle handling unapplied. The method records handled lifecycle
-child ids in an internal list, so duplicate lifecycle events for any previously handled child are
-reported as `ignored` and do not spawn another replacement.
+On `action: "start"`, the method stores policy, `trace_id`, `source_agent`, and child method
+version, then spawns one child per `child_method_names` entry. Lifecycle and stop requests are
+validated against tracked child ids before restart or exit behavior is applied.
 
-On a map whose `action` field is `"stop"`, the method scans the tracked `child_agent_ids` list with
-`head(...)` and `tail(...)`. It exits and reports `status=stopped` only when the supplied
-`child_agent_id` belongs to that tracked list. If the id is not tracked, it leaves the agent alive,
-keeps the stored supervisor status unchanged, and reports `status=ignored`. If the internal stop
-validation message cannot be queued, it reports `status=handoff_failed` and does not exit the child.
-A successful stop also records the child id as handled so later lifecycle messages for that stopped
-child are ignored instead of restarting it.
+Untracked lifecycle and stop requests report `state: "ignored"`. Handoff failures report
+`state: "handoff_failed"` and standard `status: "failure"`.
 
 ## Message Format
 
-Start request:
+Requests:
 
 ```text
-{
-  action: "start",
-  child_method_names: [<method>, <method>, ...],
-  child_method_version: <version>,
-  policy: "restart",
-  correlation_id: <id>,
-  reply_to: <agent>
-}
+{ action: "start", type: "request", child_method_names: [<method>, ...], child_method_version: <version>, policy: "restart", trace_id: <id>, source_agent: <agent> }
+{ action: "child_failed", type: "request", child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
+{ action: "child_exited", type: "request", child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
+{ action: "stop", type: "request", child_agent_id: <agent> }
 ```
 
-Lifecycle event requests:
+Response:
 
 ```text
 {
-  action: "child_failed",
-  child_agent_id: <agent>,
-  child_method_name: <method>,
-  child_method_version: <version>
-}
-
-{
-  action: "child_exited",
-  child_agent_id: <agent>,
-  child_method_name: <method>,
-  child_method_version: <version>
-}
-
-{ action: "stop", child_agent_id: <agent> }
-```
-
-Status response:
-
-```text
-{
-  action: "supervision_status",
-  correlation_id: <correlation_id>,
-  status: <running|restarted|stopped|ignored|stop_failed|handoff_failed>,
+  action: <start|child_failed|child_exited|stop>,
+  type: "response",
+  trace_id: <trace_id>,
+  status: <success|failure>,
+  state: <running|restarted|stopped|ignored|stop_failed|handoff_failed>,
   success_count: <count>,
   failure_count: <count>,
   child_agent_id: <agent>,
@@ -92,36 +47,6 @@ Status response:
   policy: <policy>
 }
 ```
-
-## Action Field
-
-The input `action` field is a command discriminator in the request map. The supervision agent runs
-this method for every message it receives, so the field distinguishes startup, failure, exit, and
-stop commands from unrelated messages.
-
-## Composition Notes
-
-Use supervision around long-lived routing, broadcasting, scheduling, workflow, or worker agents. A
-supervision agent can start many children from one `child_method_names` list. Other methods can
-report lifecycle events to the supervisor when they observe a child failure through application-level
-messages.
-Composed callers can safely send stop requests through supervisors because untracked child ids are
-reported as ignored instead of being exited. Lifecycle events are guarded the same way, so a stale
-or misaddressed failure cannot add bogus replacement children. Duplicate lifecycle events for any
-previously handled or explicitly stopped child are also reported as ignored.
-
-## Limitations
-
-The method cannot autonomously detect crashes or exits. AgeRun methods do not receive implicit child
-lifecycle events, so callers must send `child_failed` or `child_exited` messages. The start contract
-uses one shared child method version for the unbounded method-name list; heterogeneous versions can
-be modeled with separate supervisors or by sending restart events with explicit method versions. The
-method appends replacement child ids to its tracked lists; it does not remove arbitrary failed ids
-from the middle of the list because ordinary methods do not currently have an atomic list-filter
-operation. The method keeps a separate handled lifecycle id list to suppress delayed duplicate
-failure or exit messages for retained ids that were already handled or explicitly stopped. A failed
-`spawn(...)` instruction aborts method evaluation, so ordinary supervision methods cannot catch that
-failure and send a terminal failure report after the failed instruction.
 
 ## Implementation and Tests
 

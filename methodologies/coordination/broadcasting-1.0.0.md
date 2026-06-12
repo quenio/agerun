@@ -2,54 +2,50 @@
 
 ## Overview
 
-The broadcasting method sends the same caller-provided payload to every positive recipient in an
-unbounded target list. It is the coordination methodology's opaque fan-out delivery primitive.
+Broadcasting sends the same caller-provided payload to every positive recipient in an unbounded
+`target_agents` list. It is the coordination methodology's opaque fan-out delivery primitive.
 
 ## Behavior
 
-When the agent receives a map whose `action` field is `"broadcast"`, the method reads `targets` as a
-list of agent IDs and sends `payload` as-is to each positive target. Broadcasting does not add,
-remove, or normalize fields on that payload. If recipients should see a `reply_to`, `source`,
-`correlation_id`, or any domain-specific field, the caller includes that field inside `payload`.
+Only messages with `type: "request"` are handled as coordination requests.
 
-The method processes the list with `head(...)` and `tail(...)`, sending continuation messages to
-itself until the target list is exhausted. Positive target IDs that cannot receive messages are
-counted in the broadcasting agent's memory; valid later targets are still processed. If no positive
-target is delivered, or if any positive target send fails, the terminal memory `status` is
-`"broadcast_failed"`. When `reply_to` is a positive agent id, broadcasting emits one
-`broadcast_result` after the target list is exhausted.
+When the agent receives `action: "broadcast"`, the method sends `payload` as-is to each positive
+target agent. It processes the list with `head(...)` and `tail(...)`, sending continuation messages
+to itself until the list is exhausted.
+
+Positive target agents that cannot receive messages are counted as failures, but valid later target
+agents are still processed. Integer `0` entries are placeholders and are skipped.
 
 ## Message Format
 
-Broadcast request:
+Request:
 
 ```text
 {
   action: "broadcast",
-  targets: [<agent>, <agent>, ...],
+  type: "request",
+  target_agents: [<agent>, <agent>, ...],
   payload: <message>,
-  correlation_id: <id>,
-  reply_to: <agent>
+  trace_id: <id>,
+  source_agent: <agent>
 }
 ```
 
-Delivered message is exactly the caller-provided `payload`:
+Delivered message:
 
 ```text
 <message>
 ```
 
-`recipient_count` and `sent_count` in the broadcasting agent's memory count successful recipient
-sends. `failed_count` counts positive target IDs that could not receive the payload. Integer `0`
-entries are skipped placeholders, not failed sends.
-
-Result response:
+Response:
 
 ```text
 {
-  action: "broadcast_result",
-  status: <broadcasted|broadcast_failed>,
-  correlation_id: <correlation_id>,
+  action: "broadcast",
+  type: "response",
+  status: <success|failure>,
+  state: <broadcasted|broadcast_failed>,
+  trace_id: <trace_id>,
   success_count: <count>,
   failure_count: <count>,
   recipient_count: <count>,
@@ -58,23 +54,7 @@ Result response:
 }
 ```
 
-## Action Field
-
-The input `action` field is a command discriminator in the request map. The broadcasting agent runs
-this method for every message it receives, so `action: "broadcast"` marks the message as fan-out work
-instead of arbitrary status or coordination data.
-
-## Composition Notes
-
-Use broadcasting when every recipient should receive the same message without changing its shape.
-Use distribution when a list of distinct payloads should be assigned across a worker list. Use
-routing when one recipient must be selected by key.
-
-## Limitations
-
-The method supports unbounded fan-out for primitive positive agent IDs. Integer `0` is treated as a
-placeholder rather than a recipient; target lists should contain positive IDs for all intended
-recipients.
+Broadcasting sends the caller-provided `payload` as-is.
 
 ## Implementation and Tests
 

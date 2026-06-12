@@ -49,6 +49,7 @@ static void send_result(ar_agency_t *mut_agency,
     ar_data_t *own_result = ar_data__create_map();
     AR_ASSERT(own_result != NULL, "Result message should be created");
     ar_data__set_map_string(own_result, "action", "result");
+    ar_data__set_map_string(own_result, "type", "request");
     ar_data__set_map_string(own_result, "aggregate_id", ref_aggregate_id);
     ar_data__set_map_string(own_result, "value", ref_value);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, aggregation_agent, own_result),
@@ -60,9 +61,11 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
     ar_methodology_t *mut_methodology = ar_agency__get_methodology(mut_agency);
     const char *ref_instructions =
         "memory.last_action := message.action\n"
+        "memory.last_type := message.type\n"
         "memory.last_status := message.status\n"
+        "memory.last_state := message.state\n"
         "memory.last_aggregate_id := message.aggregate_id\n"
-        "memory.last_correlation_id := message.correlation_id\n"
+        "memory.last_trace_id := message.trace_id\n"
         "memory.last_success_count := message.success_count\n"
         "memory.last_failure_count := message.failure_count\n"
         "memory.last_result := message.result\n"
@@ -97,10 +100,11 @@ static void test_aggregation__combines_required_results(void) {
     ar_data_t *own_start = ar_data__create_map();
     AR_ASSERT(own_start != NULL, "Start message should be created");
     ar_data__set_map_string(own_start, "action", "start");
+    ar_data__set_map_string(own_start, "type", "request");
     ar_data__set_map_string(own_start, "aggregate_id", "agg-1");
-    ar_data__set_map_string(own_start, "correlation_id", "agg-correlation-1");
+    ar_data__set_map_string(own_start, "trace_id", "agg-trace-1");
     ar_data__set_map_integer(own_start, "required_count", 4);
-    ar_data__set_map_integer(own_start, "reply_to", checked_agent_id(receiver_agent));
+    ar_data__set_map_integer(own_start, "source_agent", checked_agent_id(receiver_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, aggregation_agent, own_start),
               "Start message should queue");
     own_start = NULL;
@@ -114,13 +118,17 @@ static void test_aggregation__combines_required_results(void) {
 
     const ar_data_t *ref_receiver_memory = ar_agency__get_agent_memory(mut_agency, receiver_agent);
     const char *ref_action = ar_data__get_map_string(ref_receiver_memory, "last_action");
-    AR_ASSERT(ref_action != NULL && strcmp(ref_action, "aggregate_complete") == 0,
+    AR_ASSERT(ref_action != NULL && strcmp(ref_action, "start") == 0,
               "Receiver should observe aggregate completion");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_status"), "complete") == 0,
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_type"), "response") == 0,
+              "Aggregate completion should be a response");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_status"), "success") == 0,
+              "Aggregate completion should report standard success status");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_state"), "complete") == 0,
               "Aggregate status should be complete");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_correlation_id"),
-                     "agg-correlation-1") == 0,
-              "Aggregate completion should preserve correlation id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_trace_id"),
+                     "agg-trace-1") == 0,
+              "Aggregate completion should preserve trace id");
     AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_success_count") == 4,
               "Aggregate completion should report successful result count");
     AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_failure_count") == 0,
@@ -162,9 +170,10 @@ static void test_aggregation__combines_required_results(void) {
     ar_data_t *own_failed_start = ar_data__create_map();
     AR_ASSERT(own_failed_start != NULL, "Failed completion start message should be created");
     ar_data__set_map_string(own_failed_start, "action", "start");
+    ar_data__set_map_string(own_failed_start, "type", "request");
     ar_data__set_map_string(own_failed_start, "aggregate_id", "agg-failed-send");
     ar_data__set_map_integer(own_failed_start, "required_count", 2);
-    ar_data__set_map_integer(own_failed_start, "reply_to", 98765);
+    ar_data__set_map_integer(own_failed_start, "source_agent", 98765);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, aggregation_agent, own_failed_start),
               "Failed completion start message should queue");
     own_failed_start = NULL;
@@ -190,9 +199,10 @@ static void test_aggregation__combines_required_results(void) {
     ar_data_t *own_zero_start = ar_data__create_map();
     AR_ASSERT(own_zero_start != NULL, "Zero-count start message should be created");
     ar_data__set_map_string(own_zero_start, "action", "start");
+    ar_data__set_map_string(own_zero_start, "type", "request");
     ar_data__set_map_string(own_zero_start, "aggregate_id", "agg-zero");
     ar_data__set_map_integer(own_zero_start, "required_count", 0);
-    ar_data__set_map_integer(own_zero_start, "reply_to", checked_agent_id(receiver_agent));
+    ar_data__set_map_integer(own_zero_start, "source_agent", checked_agent_id(receiver_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, aggregation_agent, own_zero_start),
               "Zero-count start message should queue");
     own_zero_start = NULL;
@@ -216,9 +226,10 @@ static void test_aggregation__combines_required_results(void) {
     ar_data_t *own_correlated_start = ar_data__create_map();
     AR_ASSERT(own_correlated_start != NULL, "Correlated start message should be created");
     ar_data__set_map_string(own_correlated_start, "action", "start");
+    ar_data__set_map_string(own_correlated_start, "type", "request");
     ar_data__set_map_string(own_correlated_start, "aggregate_id", "agg-correlated");
     ar_data__set_map_integer(own_correlated_start, "required_count", 2);
-    ar_data__set_map_integer(own_correlated_start, "reply_to", checked_agent_id(receiver_agent));
+    ar_data__set_map_integer(own_correlated_start, "source_agent", checked_agent_id(receiver_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, aggregation_agent, own_correlated_start),
               "Correlated start message should queue");
     own_correlated_start = NULL;

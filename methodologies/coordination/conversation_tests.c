@@ -45,12 +45,14 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
     ar_methodology_t *mut_methodology = ar_agency__get_methodology(mut_agency);
     const char *ref_instructions =
         "memory.last_action := message.action\n"
-        "memory.last_correlation_id := message.correlation_id\n"
+        "memory.last_type := message.type\n"
+        "memory.last_trace_id := message.trace_id\n"
         "memory.last_conversation_id := message.conversation_id\n"
         "memory.last_from := message.from\n"
         "memory.last_to := message.to\n"
         "memory.last_state := message.state\n"
         "memory.last_status := message.status\n"
+        "memory.last_result := message.result\n"
         "memory.last_success_count := message.success_count\n"
         "memory.last_failure_count := message.failure_count\n"
         "memory.last_text := message.text\n"
@@ -72,7 +74,7 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
 static void test_conversation__coordinates_two_participant_agents(void) {
     printf("Testing conversation coordinates two participant agents...\n");
 
-    // Given a conversation coordinator, two participant agents, and a reply observer
+    // Given a conversation coordinator, two participant agents, and a response observer
     ar_method_fixture_t *own_fixture = ar_method_fixture__create("conversation_two_agents");
     AR_ASSERT(ar_method_fixture__initialize(own_fixture), "Fixture should initialize");
     AR_ASSERT(ar_method_fixture__verify_directory(own_fixture), "Fixture directory should verify");
@@ -98,11 +100,12 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     ar_data_t *own_start = ar_data__create_map();
     AR_ASSERT(own_start != NULL, "Conversation start should be created");
     ar_data__set_map_string(own_start, "action", "start");
+    ar_data__set_map_string(own_start, "type", "request");
     ar_data__set_map_string(own_start, "conversation_id", "chat-1");
-    ar_data__set_map_string(own_start, "correlation_id", "chat-correlation-1");
+    ar_data__set_map_string(own_start, "trace_id", "chat-trace-1");
     ar_data__set_map_integer(own_start, "participant_a", checked_agent_id(participant_a));
     ar_data__set_map_integer(own_start, "participant_b", checked_agent_id(participant_b));
-    ar_data__set_map_integer(own_start, "reply_to", checked_agent_id(observer));
+    ar_data__set_map_integer(own_start, "source_agent", checked_agent_id(observer));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_start),
               "Conversation start should queue");
     own_start = NULL;
@@ -110,6 +113,7 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     ar_data_t *own_first = ar_data__create_map();
     AR_ASSERT(own_first != NULL, "First conversation message should be created");
     ar_data__set_map_string(own_first, "action", "message");
+    ar_data__set_map_string(own_first, "type", "request");
     ar_data__set_map_string(own_first, "conversation_id", "chat-1");
     ar_data__set_map_integer(own_first, "sender", checked_agent_id(participant_a));
     ar_data__set_map_string(own_first, "text", "hello");
@@ -121,6 +125,7 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     ar_data_t *own_second = ar_data__create_map();
     AR_ASSERT(own_second != NULL, "Second conversation message should be created");
     ar_data__set_map_string(own_second, "action", "message");
+    ar_data__set_map_string(own_second, "type", "request");
     ar_data__set_map_string(own_second, "conversation_id", "chat-1");
     ar_data__set_map_integer(own_second, "sender", checked_agent_id(participant_b));
     ar_data__set_map_string(own_second, "text", "reply");
@@ -132,6 +137,7 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     ar_data_t *own_summary = ar_data__create_map();
     AR_ASSERT(own_summary != NULL, "Summary request should be created");
     ar_data__set_map_string(own_summary, "action", "summary");
+    ar_data__set_map_string(own_summary, "type", "request");
     ar_data__set_map_string(own_summary, "conversation_id", "chat-1");
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_summary),
               "Summary request should queue");
@@ -175,16 +181,20 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     // Then the observer should receive a structured summary with both turns
     const ar_data_t *ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_action"),
-                     "conversation_summary") == 0,
+                     "summary") == 0,
               "Observer should receive conversation summary");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_type"), "response") == 0,
+              "Conversation summary should be a response");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "success") == 0,
+              "Conversation summary should report standard success status");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_conversation_id"),
                      "chat-1") == 0,
               "Summary should preserve conversation id");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_turn_count") == 2,
               "Summary should report two turns");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_correlation_id"),
-                     "chat-correlation-1") == 0,
-              "Conversation summary should preserve correlation id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
+                     "chat-trace-1") == 0,
+              "Conversation summary should preserve trace id");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_success_count") == 2,
               "Conversation summary should report successful turn count");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_failure_count") == 0,
@@ -203,10 +213,11 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     ar_data_t *own_failed_start = ar_data__create_map();
     AR_ASSERT(own_failed_start != NULL, "Failed relay conversation start should be created");
     ar_data__set_map_string(own_failed_start, "action", "start");
+    ar_data__set_map_string(own_failed_start, "type", "request");
     ar_data__set_map_string(own_failed_start, "conversation_id", "chat-2");
     ar_data__set_map_integer(own_failed_start, "participant_a", checked_agent_id(participant_a));
     ar_data__set_map_integer(own_failed_start, "participant_b", 98765);
-    ar_data__set_map_integer(own_failed_start, "reply_to", checked_agent_id(observer));
+    ar_data__set_map_integer(own_failed_start, "source_agent", checked_agent_id(observer));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_failed_start),
               "Failed relay start should queue");
     own_failed_start = NULL;
@@ -214,6 +225,7 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     ar_data_t *own_failed_turn = ar_data__create_map();
     AR_ASSERT(own_failed_turn != NULL, "Failed relay message should be created");
     ar_data__set_map_string(own_failed_turn, "action", "message");
+    ar_data__set_map_string(own_failed_turn, "type", "request");
     ar_data__set_map_string(own_failed_turn, "conversation_id", "chat-2");
     ar_data__set_map_integer(own_failed_turn, "sender", checked_agent_id(participant_a));
     ar_data__set_map_string(own_failed_turn, "text", "undeliverable");
@@ -226,9 +238,14 @@ static void test_conversation__coordinates_two_participant_agents(void) {
 
     // Then the coordinator should report the failed relay without recording the turn
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_action"),
-                     "conversation_relayed") == 0,
+                     "message") == 0,
               "Observer should receive a relay response for failed delivery");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_type"), "response") == 0,
+              "Failed relay response should be a response");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
+                     "failure") == 0,
+              "Failed relay response should report standard failure status");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_result"),
                      "relay_failed") == 0,
               "Observer should see relay failure status");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_success_count") == 0,

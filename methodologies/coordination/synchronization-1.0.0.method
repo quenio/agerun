@@ -1,10 +1,11 @@
-memory.is_wait := if(message.action = "wait", 1, 0)
-memory.is_dependency := if(message.action = "dependency", 1, 0)
+memory.is_request := if(message.type = "request", 1, 0)
+memory.is_wait := if(message.action = "wait", memory.is_request, 0)
+memory.is_dependency := if(message.action = "dependency", memory.is_request, 0)
 memory.sync_id := if(memory.is_wait = 1, message.sync_id, memory.sync_id)
-memory.correlation_id := if(memory.is_wait = 1, message.correlation_id, memory.correlation_id)
+memory.trace_id := if(memory.is_wait = 1, message.trace_id, memory.trace_id)
 memory.required_count := if(memory.is_wait = 1, message.required_count, memory.required_count)
-memory.reply_to := if(memory.is_wait = 1, message.reply_to, memory.reply_to)
-memory.continuation_target := if(memory.is_wait = 1, message.continuation_target, memory.continuation_target)
+memory.source_agent := if(memory.is_wait = 1, message.source_agent, memory.source_agent)
+memory.continuation_target_agent := if(memory.is_wait = 1, message.continuation_target_agent, memory.continuation_target_agent)
 memory.continuation_action := if(memory.is_wait = 1, message.continuation_action, memory.continuation_action)
 memory.continuation_text := if(memory.is_wait = 1, message.continuation_text, memory.continuation_text)
 memory.received := if(memory.is_wait = 1, [], memory.received)
@@ -30,30 +31,33 @@ memory.should_emit := memory.should_emit * memory.valid_dependency
 memory.should_send_continuation := memory.should_emit * memory.not_continuation_done
 memory.continuation_message := {
   action: memory.continuation_action
+  type: "request"
   sync_id: memory.sync_id
-  correlation_id: memory.correlation_id
+  trace_id: memory.trace_id
   text: memory.continuation_text
   done_count: memory.done_count
   dependencies: memory.received
 }
-memory.continuation_target_value := memory.continuation_target * memory.should_send_continuation
-memory.continuation_sent := send(memory.continuation_target_value, memory.continuation_message)
-memory.continuation_delivery_ok := if(memory.continuation_target > 0, memory.continuation_sent, 0)
+memory.continuation_target_agent_value := memory.continuation_target_agent * memory.should_send_continuation
+memory.continuation_sent := send(memory.continuation_target_agent_value, memory.continuation_message)
+memory.continuation_delivery_ok := if(memory.continuation_target_agent > 0, memory.continuation_sent, 0)
 memory.continuation_delivered_now := memory.should_send_continuation * memory.continuation_delivery_ok
 memory.continuation_done := if(memory.continuation_delivered_now = 1, 1, memory.continuation_done)
 memory.report_message := {
-  action: "synchronization_status"
+  action: "wait"
+  type: "response"
   sync_id: memory.sync_id
-  correlation_id: memory.correlation_id
-  status: memory.status
+  trace_id: memory.trace_id
+  status: "success"
+  state: memory.status
   success_count: memory.done_count
   failure_count: 0
   done_count: memory.done_count
   dependencies: memory.received
 }
 memory.report_ready := memory.should_emit * memory.continuation_done
-memory.report_target := memory.reply_to * memory.report_ready
+memory.report_target := memory.source_agent * memory.report_ready
 memory.report_sent := send(memory.report_target, memory.report_message)
-memory.report_delivered := if(memory.reply_to > 0, memory.report_sent, 1)
+memory.report_delivered := if(memory.source_agent > 0, memory.report_sent, 1)
 memory.completion_delivered := memory.report_ready * memory.report_delivered
 memory.completed := if(memory.completion_delivered = 1, 1, memory.completed)

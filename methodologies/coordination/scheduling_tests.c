@@ -45,11 +45,13 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
     ar_methodology_t *mut_methodology = ar_agency__get_methodology(mut_agency);
     const char *ref_instructions =
         "memory.last_action := message.action\n"
+        "memory.last_type := message.type\n"
         "memory.last_text := message.text\n"
         "memory.last_attempt := message.attempt\n"
-        "memory.last_correlation_id := message.correlation_id\n"
+        "memory.last_trace_id := message.trace_id\n"
         "memory.last_schedule_id := message.schedule_id\n"
         "memory.last_status := message.status\n"
+        "memory.last_state := message.state\n"
         "memory.last_success_count := message.success_count\n"
         "memory.last_failure_count := message.failure_count\n"
         "memory.last_pending := message.pending\n"
@@ -87,25 +89,32 @@ static void test_scheduling__triggers_future_work_on_tick(void) {
     ar_data_t *own_schedule = ar_data__create_map();
     AR_ASSERT(own_schedule != NULL, "Schedule message should be created");
     ar_data__set_map_string(own_schedule, "action", "schedule");
+    ar_data__set_map_string(own_schedule, "type", "request");
     ar_data__set_map_string(own_schedule, "schedule_id", "sched-1");
     ar_data__set_map_integer(own_schedule, "due_tick", 5);
-    ar_data__set_map_integer(own_schedule, "target", checked_agent_id(receiver_agent));
+    ar_data__set_map_integer(own_schedule, "target_agent", checked_agent_id(receiver_agent));
     ar_data__set_map_string(own_schedule, "payload_action", "execute");
     ar_data__set_map_string(own_schedule, "payload_text", "delayed");
     ar_data__set_map_integer(own_schedule, "payload_attempt", 7);
-    ar_data__set_map_string(own_schedule, "correlation_id", "job-1");
-    ar_data__set_map_integer(own_schedule, "reply_to", checked_agent_id(observer_agent));
+    ar_data__set_map_string(own_schedule, "trace_id", "job-1");
+    ar_data__set_map_integer(own_schedule, "source_agent", checked_agent_id(observer_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, scheduling_agent, own_schedule),
               "Schedule message should queue");
     own_schedule = NULL;
     ar_method_fixture__process_all_messages(own_fixture);
 
     const ar_data_t *ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "scheduled") == 0,
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_action"), "schedule") == 0,
+              "Observer should receive a schedule action response");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_type"), "response") == 0,
+              "Observer should receive a schedule response");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "success") == 0,
+              "Scheduled status should report standard success");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"), "scheduled") == 0,
               "Observer should receive scheduled status");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_correlation_id"),
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
                      "job-1") == 0,
-              "Scheduled status should preserve correlation id");
+              "Scheduled status should preserve trace id");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_success_count") == 0,
               "Scheduled status should report no triggered work yet");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_failure_count") == 0,
@@ -116,6 +125,7 @@ static void test_scheduling__triggers_future_work_on_tick(void) {
     ar_data_t *own_early_tick = ar_data__create_map();
     AR_ASSERT(own_early_tick != NULL, "Early tick should be created");
     ar_data__set_map_string(own_early_tick, "action", "tick");
+    ar_data__set_map_string(own_early_tick, "type", "request");
     ar_data__set_map_integer(own_early_tick, "tick", 4);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, scheduling_agent, own_early_tick),
               "Early tick should queue");
@@ -131,6 +141,7 @@ static void test_scheduling__triggers_future_work_on_tick(void) {
     ar_data_t *own_due_tick = ar_data__create_map();
     AR_ASSERT(own_due_tick != NULL, "Due tick should be created");
     ar_data__set_map_string(own_due_tick, "action", "tick");
+    ar_data__set_map_string(own_due_tick, "type", "request");
     ar_data__set_map_integer(own_due_tick, "tick", 5);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, scheduling_agent, own_due_tick),
               "Due tick should queue");
@@ -146,8 +157,12 @@ static void test_scheduling__triggers_future_work_on_tick(void) {
               "Receiver should observe schedule id");
     AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_attempt") == 7,
               "Receiver should observe scheduled attempt");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "triggered") == 0,
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"), "triggered") == 0,
               "Observer should receive triggered status");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_action"), "schedule") == 0,
+              "Triggered status should use the stored schedule action");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "success") == 0,
+              "Triggered status should report standard success");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_success_count") == 1,
               "Triggered status should report one successful trigger");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_failure_count") == 0,
@@ -158,6 +173,7 @@ static void test_scheduling__triggers_future_work_on_tick(void) {
     ar_data_t *own_late_cancel = ar_data__create_map();
     AR_ASSERT(own_late_cancel != NULL, "Late cancel should be created");
     ar_data__set_map_string(own_late_cancel, "action", "cancel");
+    ar_data__set_map_string(own_late_cancel, "type", "request");
     ar_data__set_map_string(own_late_cancel, "schedule_id", "sched-1");
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, scheduling_agent, own_late_cancel),
               "Late cancel should queue");
@@ -166,7 +182,7 @@ static void test_scheduling__triggers_future_work_on_tick(void) {
 
     const ar_data_t *ref_scheduling_memory =
         ar_agency__get_agent_memory(mut_agency, scheduling_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"),
                      "triggered") == 0,
               "Late cancel should not overwrite triggered observer status");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_scheduling_memory, "status"),
@@ -178,13 +194,14 @@ static void test_scheduling__triggers_future_work_on_tick(void) {
     ar_data_t *own_failed_schedule = ar_data__create_map();
     AR_ASSERT(own_failed_schedule != NULL, "Failed schedule message should be created");
     ar_data__set_map_string(own_failed_schedule, "action", "schedule");
+    ar_data__set_map_string(own_failed_schedule, "type", "request");
     ar_data__set_map_string(own_failed_schedule, "schedule_id", "sched-failed");
     ar_data__set_map_integer(own_failed_schedule, "due_tick", 8);
-    ar_data__set_map_integer(own_failed_schedule, "target", 98765);
+    ar_data__set_map_integer(own_failed_schedule, "target_agent", 98765);
     ar_data__set_map_string(own_failed_schedule, "payload_action", "execute");
     ar_data__set_map_string(own_failed_schedule, "payload_text", "lost");
-    ar_data__set_map_string(own_failed_schedule, "correlation_id", "job-failed");
-    ar_data__set_map_integer(own_failed_schedule, "reply_to", checked_agent_id(observer_agent));
+    ar_data__set_map_string(own_failed_schedule, "trace_id", "job-failed");
+    ar_data__set_map_integer(own_failed_schedule, "source_agent", checked_agent_id(observer_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, scheduling_agent, own_failed_schedule),
               "Failed schedule message should queue");
     own_failed_schedule = NULL;
@@ -193,15 +210,21 @@ static void test_scheduling__triggers_future_work_on_tick(void) {
     ar_data_t *own_failed_tick = ar_data__create_map();
     AR_ASSERT(own_failed_tick != NULL, "Failed trigger tick should be created");
     ar_data__set_map_string(own_failed_tick, "action", "tick");
+    ar_data__set_map_string(own_failed_tick, "type", "request");
     ar_data__set_map_integer(own_failed_tick, "tick", 8);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, scheduling_agent, own_failed_tick),
               "Failed trigger tick should queue");
     own_failed_tick = NULL;
     ar_method_fixture__process_all_messages(own_fixture);
 
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"),
                      "trigger_failed") == 0,
               "Observer should receive failed trigger status");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_action"), "schedule") == 0,
+              "Failed trigger should use the stored schedule action");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
+                     "failure") == 0,
+              "Failed trigger should report standard failure");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_success_count") == 0,
               "Failed trigger should report no successful trigger");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_failure_count") == 1,

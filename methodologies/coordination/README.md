@@ -31,12 +31,12 @@ those agents.
 Composition opportunities:
 
 - Use `routing` when one recipient must be selected from a key-based route table.
-- Use `broadcasting` when one payload must be sent to every recipient in a target list.
+- Use `broadcasting` when one payload must be sent to every recipient in a target-agent list.
 - Build distinct work assignment with `distribution` and fan-in with `aggregation`.
 - Combine `synchronization` with `workflow` to gate step advancement on required dependency
   messages.
 - Use `scheduling` as the delayed execution primitive for `retry`.
-- Use `conversation` to preserve correlation and context around workflow or routing requests.
+- Use `conversation` to preserve trace and context around workflow or routing requests.
 - Use `supervision` to keep long-lived routing, broadcasting, scheduling, workflow, or worker
   agents present.
 
@@ -45,7 +45,7 @@ Composition opportunities:
 | Method | Implementation | Test | Purpose | Composition Role |
 | --- | --- | --- | --- | --- |
 | [`routing`](routing-1.0.0.md) | [`routing-1.0.0.method`](routing-1.0.0.method) | [`routing_tests.c`](routing_tests.c) | Selects one recipient by route key and delivers a message. | Keyed selection primitive. |
-| [`broadcasting`](broadcasting-1.0.0.md) | [`broadcasting-1.0.0.method`](broadcasting-1.0.0.method) | [`broadcasting_tests.c`](broadcasting_tests.c) | Sends one payload to every recipient in an unbounded target list. | Same-payload fan-out primitive. |
+| [`broadcasting`](broadcasting-1.0.0.md) | [`broadcasting-1.0.0.method`](broadcasting-1.0.0.method) | [`broadcasting_tests.c`](broadcasting_tests.c) | Sends one payload to every recipient in an unbounded target-agent list. | Same-payload fan-out primitive. |
 | [`supervision`](supervision-1.0.0.md) | [`supervision-1.0.0.method`](supervision-1.0.0.method) | [`supervision_tests.c`](supervision_tests.c) | Creates, tracks, stops, and event-restarts unbounded child lists. | Keeps coordination agents available. |
 | [`distribution`](distribution-1.0.0.md) | [`distribution-1.0.0.method`](distribution-1.0.0.method) | [`distribution_tests.c`](distribution_tests.c) | Round-robins payload items across an unbounded worker list. | Distinct-payload assignment. |
 | [`aggregation`](aggregation-1.0.0.md) | [`aggregation-1.0.0.method`](aggregation-1.0.0.method) | [`aggregation_tests.c`](aggregation_tests.c) | Appends result values and emits a result list. | Completes fan-in with append-backed state. |
@@ -62,16 +62,13 @@ a multi-line map literal to a named memory value, then pass that value to `send(
 flat and nested messages because `send(...)`, `append(...)`, `head(...)`, and `tail(...)` deep-copy
 borrowed maps and lists.
 
-The `action` field is a command discriminator inside those maps. AgeRun sends every incoming message
-to the agent's single method, so reusable coordination methods need a conventional field that says
-which operation the message is requesting. The field is not a runtime requirement and not a string
-protocol; it is ordinary map data that lets a method guard behavior such as routing, scheduling, or
-retrying and ignore unrelated messages safely.
-
-Coordination request messages may include `correlation_id` and `reply_to`. When `reply_to` is a
-positive agent id and the method emits an external result or status message, that message includes
-`action`, `correlation_id`, `success_count`, and `failure_count`. Method-specific identifiers,
-status fields, and legacy count fields may also be present.
+Every external coordination request uses `type: "request"`. Every external coordination response
+uses `type: "response"`, repeats the initiating request `action`, preserves `trace_id`, and reports
+standard `status: "success"` or `status: "failure"` with `success_count` and `failure_count`.
+Method-specific outcomes such as `routed`, `broadcast_failed`, or `handoff_failed` are carried in
+`state` when the response needs that detail. `source_agent` is the optional positive agent id that
+receives responses. Coordination methods handle command actions only on `type: "request"` messages;
+`type: "response"` messages are not treated as new coordination requests.
 
 ### Routing
 
@@ -80,35 +77,27 @@ Request:
 ```text
 {
   action: "route",
+  type: "request",
   route_key: <key>,
   routes: {
     keys: [<key>, <key>, ...],
-    targets: [<agent>, <agent>, ...]
+    target_agents: [<agent>, <agent>, ...]
   },
   payload: <message>,
-  correlation_id: <id>,
-  reply_to: <agent>
+  trace_id: <id>,
+  source_agent: <agent>
 }
-```
-
-The `routes.keys` and `routes.targets` lists are paired by position and scanned with `head(...)` and
-`tail(...)`, so keyed one-to-one routing is unbounded. Both the request `route_key` and the candidate
-key must be nonzero/present before a candidate can match. A direct `target` field is not a supported
-routing mechanism; callers that already know the target should use direct `send(...)`.
-
-Delivered message is exactly the caller-provided `payload`:
-
-```text
-<message>
 ```
 
 Reply:
 
 ```text
 {
-  action: "route_result",
-  status: <routed|route_failed>,
-  correlation_id: <correlation_id>,
+  action: "route",
+  type: "response",
+  status: <success|failure>,
+  state: <routed|route_failed>,
+  trace_id: <trace_id>,
   routed_count: <0|1>,
   success_count: <0|1>,
   failure_count: <0|1>,
@@ -117,9 +106,9 @@ Reply:
 }
 ```
 
-If no keyed candidate selects a positive target, routing emits `route_failed` with zero delivery
-counts. If a matching positive target cannot receive the delivery payload, routing emits
-`route_failed` with `failed_count: 1`.
+Routing delivers exactly the caller-provided `payload` to the first positive target agent whose
+paired route key matches `route_key`. A direct `target_agent` field is not a supported routing
+mechanism; callers that already know the recipient should use direct `send(...)`.
 
 ### Broadcasting
 
@@ -128,29 +117,23 @@ Request:
 ```text
 {
   action: "broadcast",
-  targets: [<agent>, <agent>, ...],
+  type: "request",
+  target_agents: [<agent>, <agent>, ...],
   payload: <message>,
-  correlation_id: <id>,
-  reply_to: <agent>
+  trace_id: <id>,
+  source_agent: <agent>
 }
 ```
-
-Delivered message is exactly the caller-provided `payload`:
-
-```text
-<message>
-```
-
-Broadcasting does not add `reply_to`, `source`, `correlation_id`, or any other field to the payload.
-If recipients should see those fields, the caller includes them inside `payload`.
 
 Reply:
 
 ```text
 {
-  action: "broadcast_result",
-  status: <broadcasted|broadcast_failed>,
-  correlation_id: <correlation_id>,
+  action: "broadcast",
+  type: "response",
+  status: <success|failure>,
+  state: <broadcasted|broadcast_failed>,
+  trace_id: <trace_id>,
   success_count: <count>,
   failure_count: <count>,
   recipient_count: <count>,
@@ -159,50 +142,29 @@ Reply:
 }
 ```
 
-`recipient_count` and `sent_count` in the broadcasting agent's memory count successful target sends.
-`failed_count` counts positive target IDs that could not receive the payload. Integer `0` entries
-are skipped placeholders, not failed sends. A target send failure keeps processing remaining targets
-and records terminal status `broadcast_failed`. If a broadcast target list is empty or contains no
-positive targets, broadcasting records `broadcast_failed` with zero delivery counts.
+Broadcasting sends the caller-provided `payload` as-is to every positive `target_agents` entry.
+Integer `0` entries are skipped placeholders, not failed sends.
 
 ### Supervision
 
 Requests:
 
 ```text
-{
-  action: "start",
-  child_method_names: [<method>, <method>, ...],
-  child_method_version: <version>,
-  policy: "restart",
-  correlation_id: <id>,
-  reply_to: <agent>
-}
-
-{
-  action: "child_failed",
-  child_agent_id: <agent>,
-  child_method_name: <method>,
-  child_method_version: <version>
-}
-
-{
-  action: "child_exited",
-  child_agent_id: <agent>,
-  child_method_name: <method>,
-  child_method_version: <version>
-}
-
-{ action: "stop", child_agent_id: <agent> }
+{ action: "start", type: "request", child_method_names: [<method>, ...], child_method_version: <version>, policy: "restart", trace_id: <id>, source_agent: <agent> }
+{ action: "child_failed", type: "request", child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
+{ action: "child_exited", type: "request", child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
+{ action: "stop", type: "request", child_agent_id: <agent> }
 ```
 
 Reply:
 
 ```text
 {
-  action: "supervision_status",
-  correlation_id: <correlation_id>,
-  status: <running|restarted|stopped|ignored|stop_failed|handoff_failed>,
+  action: <start|child_failed|child_exited|stop>,
+  type: "response",
+  trace_id: <trace_id>,
+  status: <success|failure>,
+  state: <running|restarted|stopped|ignored|stop_failed|handoff_failed>,
   success_count: <count>,
   failure_count: <count>,
   child_agent_id: <agent>,
@@ -214,24 +176,9 @@ Reply:
 }
 ```
 
-Stop requests are validated against the tracked `child_agent_ids` list before any `exit(...)` call.
-An untracked `child_agent_id` is reported as `ignored` and does not alter the stored supervisor
-status or exit the named agent. A successfully stopped tracked child is recorded as handled so a
-later `child_exited` or `child_failed` message for that child is ignored instead of restarted.
-An empty `child_method_names` list is a successful zero-child start and reports `running`.
-Lifecycle `child_failed` and `child_exited` events are validated against the same tracked list before
-restart or stop handling. Untracked lifecycle events report `ignored` and do not append replacement
-children or increment `restart_count`.
-Duplicate lifecycle events for any previously handled child are also reported as `ignored` instead
-of starting another replacement.
-If an internal spawn continuation cannot be queued, supervision reports `handoff_failed` instead of
-remaining in `starting`.
-If an internal lifecycle or stop validation message cannot be queued, supervision also reports
-`handoff_failed` and leaves the requested lifecycle or stop action unapplied.
-If a requested child cannot be spawned, the failed `spawn(...)` instruction aborts the remaining
-ordinary method evaluation. The supervisor therefore does not report `running` for an incomplete
-child set, but it also cannot emit a catchable `spawn_failed` status without a runtime-level
-non-aborting spawn result or a separate method-existence check.
+Stop and lifecycle requests are validated against tracked `child_agent_ids`. Untracked or duplicate
+lifecycle events report `ignored`; successful tracked stop requests report `stopped`; restart policy
+can report `restarted`.
 
 ### Distribution
 
@@ -240,28 +187,25 @@ Request:
 ```text
 {
   action: "distribute",
+  type: "request",
   work_id: <id>,
   payloads: [<payload>, <payload>, ...],
   workers: [<agent>, <agent>, ...],
-  correlation_id: <id>,
-  reply_to: <agent>
+  trace_id: <id>,
+  source_agent: <agent>
 }
-```
-
-Assignment sent to each worker is exactly the current payload item:
-
-```text
-<payload>
 ```
 
 Reply:
 
 ```text
 {
-  action: "distribution_result",
-  status: <distributed|distribution_failed>,
+  action: "distribute",
+  type: "response",
+  status: <success|failure>,
+  state: <distributed|distribution_failed>,
   work_id: <id>,
-  correlation_id: <correlation_id>,
+  trace_id: <trace_id>,
   success_count: <count>,
   failure_count: <count>,
   assignment_count: <count>,
@@ -270,42 +214,28 @@ Reply:
 }
 ```
 
-Distribution assigns the first payload to the first worker, the second payload to the second worker,
-and so on, rotating back to the first worker when the worker list is exhausted. `assignment_count`
-counts all payload items assigned to positive worker IDs, including assignments whose send failed.
-`sent_count` counts successful assignment sends. `failed_count` counts positive worker IDs that could
-not receive their assigned payload. Integer `0` worker placeholders are skipped without consuming the
-current payload when later workers remain. Empty payload or worker lists produce
-`distribution_failed` with zero assignment counts.
+Distribution sends each payload item as-is, round-robin, to positive worker IDs. Integer `0` worker
+placeholders are skipped without consuming the current payload when later workers remain.
 
 ### Aggregation
 
 Requests:
 
 ```text
-{
-  action: "start",
-  aggregate_id: <id>,
-  required_count: <count>,
-  correlation_id: <id>,
-  reply_to: <agent>
-}
-
-{
-  action: "result",
-  aggregate_id: <id>,
-  value: <text>
-}
+{ action: "start", type: "request", aggregate_id: <id>, required_count: <count>, trace_id: <id>, source_agent: <agent> }
+{ action: "result", type: "request", aggregate_id: <id>, value: <text> }
 ```
 
-Completion:
+Completion response:
 
 ```text
 {
-  action: "aggregate_complete",
+  action: "start",
+  type: "response",
   aggregate_id: <id>,
-  correlation_id: <correlation_id>,
-  status: "complete",
+  trace_id: <trace_id>,
+  status: "success",
+  state: "complete",
   success_count: <count>,
   failure_count: 0,
   result: [<input-1>, <input-2>, ...],
@@ -313,41 +243,17 @@ Completion:
 }
 ```
 
-The list contains each appended result value in arrival order. The method uses `append(...)` to
-mutate an internal result list, so the number of collected values is not bounded by named slots.
-Required counts below one behave as one required result, so aggregation never completes on `start`
-alone.
-Aggregation marks completion only after the `aggregate_complete` reply is sent successfully; failed
-completion delivery leaves the aggregate open.
-Result messages must carry the active `aggregate_id`; late results for a previous aggregate are
-ignored.
+Aggregation marks completion only after the `start` response is sent successfully; failed completion
+delivery leaves the aggregate open. Required counts below one behave as one required result.
 
 ### Scheduling
 
 Requests:
 
 ```text
-{
-  action: "schedule",
-  schedule_id: <id>,
-  due_tick: <number>,
-  target: <agent>,
-  payload_action: <action>,
-  payload_text: <text>,
-  payload_attempt: <attempt>,
-  correlation_id: <id>,
-  reply_to: <agent>
-}
-
-{
-  action: "tick",
-  tick: <number>
-}
-
-{
-  action: "cancel",
-  schedule_id: <id>
-}
+{ action: "schedule", type: "request", schedule_id: <id>, due_tick: <number>, target_agent: <agent>, payload_action: <action>, payload_text: <text>, payload_attempt: <attempt>, trace_id: <id>, source_agent: <agent> }
+{ action: "tick", type: "request", tick: <number> }
+{ action: "cancel", type: "request", schedule_id: <id> }
 ```
 
 Triggered message:
@@ -355,21 +261,24 @@ Triggered message:
 ```text
 {
   action: <payload_action>,
-  correlation_id: <correlation_id>,
+  type: "request",
+  trace_id: <trace_id>,
   text: <payload_text>,
   attempt: <payload_attempt>,
   schedule_id: <schedule_id>
 }
 ```
 
-Status:
+Response:
 
 ```text
 {
-  action: "schedule_status",
+  action: <schedule|cancel>,
+  type: "response",
   schedule_id: <id>,
-  correlation_id: <correlation_id>,
-  status: <scheduled|cancelled|triggered|trigger_failed>,
+  trace_id: <trace_id>,
+  status: <success|failure>,
+  state: <scheduled|cancelled|triggered|trigger_failed>,
   success_count: <count>,
   failure_count: <count>,
   pending: <0|1>,
@@ -377,32 +286,18 @@ Status:
 }
 ```
 
-A due tick clears `pending` only when the stored payload is sent successfully. If delivery fails, the
-status is `trigger_failed` and the schedule remains pending for a later tick.
-Cancellation only applies while the matching schedule is still pending; late cancels after a
-successful trigger are ignored.
+A due tick clears `pending` only when the stored payload is sent successfully. If delivery fails,
+the state is `trigger_failed` and the schedule remains pending for a later tick. Trigger responses
+use `action: "schedule"` because they report the stored schedule request; cancel responses use
+`action: "cancel"`.
 
 ### Synchronization
 
 Requests:
 
 ```text
-{
-  action: "wait",
-  sync_id: <id>,
-  correlation_id: <id>,
-  required_count: <count>,
-  continuation_target: <agent>,
-  continuation_action: <action>,
-  continuation_text: <text>,
-  reply_to: <agent>
-}
-
-{
-  action: "dependency",
-  sync_id: <id>,
-  dependency: <name>
-}
+{ action: "wait", type: "request", sync_id: <id>, trace_id: <id>, required_count: <count>, continuation_target_agent: <agent>, continuation_action: <action>, continuation_text: <text>, source_agent: <agent> }
+{ action: "dependency", type: "request", sync_id: <id>, dependency: <name> }
 ```
 
 Continuation:
@@ -410,22 +305,25 @@ Continuation:
 ```text
 {
   action: <continuation_action>,
+  type: "request",
   sync_id: <id>,
-  correlation_id: <correlation_id>,
+  trace_id: <trace_id>,
   text: <continuation_text>,
   done_count: <count>,
   dependencies: [<dependency>, <dependency>, ...]
 }
 ```
 
-Status:
+Response:
 
 ```text
 {
-  action: "synchronization_status",
+  action: "wait",
+  type: "response",
   sync_id: <id>,
-  correlation_id: <correlation_id>,
-  status: "complete",
+  trace_id: <trace_id>,
+  status: "success",
+  state: "complete",
   success_count: <count>,
   failure_count: 0,
   done_count: <count>,
@@ -433,73 +331,30 @@ Status:
 }
 ```
 
-Required counts below one behave as one required dependency, so synchronization never completes on
-`wait` alone.
-Synchronization marks completion only after the continuation is delivered and, when `reply_to` is a
-positive agent id, the status reply is delivered; failed delivery keeps the gate open.
-Once the required count is reached, the dependency list is frozen even if continuation delivery fails;
-later matching dependency messages retry delivery with the same `done_count` and dependencies.
-After continuation delivery, failed status replies are retried without re-emitting the continuation or
-increasing `done_count`. Unrelated messages, including maps with other actions, do not trigger
-pending continuation or status retries.
+Synchronization marks completion only after the continuation is delivered and, when `source_agent`
+is positive, the `wait` response is delivered. Failed delivery keeps the gate open for retry.
 
 ### Workflow
 
-Start:
+Requests:
+
+```text
+{ action: "start", type: "request", workflow_id: <id>, trace_id: <id>, source_agent: <agent>, step_target_agents: [<agent>, ...], step_payloads: [<message>, ...], branch_value: <outcome> }
+{ action: "step_done", type: "request", workflow_id: <id>, step: <current-step-number>, outcome: <value> }
+```
+
+Step messages sent to step agents are exactly the caller-provided step payloads.
+
+Completion response:
 
 ```text
 {
   action: "start",
+  type: "response",
   workflow_id: <id>,
-  correlation_id: <id>,
-  reply_to: <agent>,
-  step_targets: [<agent>, <agent>, ...],
-  step_payloads: [<message>, <message>, ...],
-  branch_value: <outcome>
-}
-```
-
-Step completion:
-
-```text
-{
-  action: "step_done",
-  workflow_id: <id>,
-  step: <current-step-number>,
-  outcome: <value>
-}
-```
-
-Step message sent to the current step target is exactly the caller-provided step payload:
-
-```text
-<message>
-```
-
-The `step` value must match the workflow agent's active step; stale, duplicate, or out-of-order
-completion maps are ignored. Workflow accepts a `step_done` only while it is waiting for the
-currently sent step to report completion, then clears that waiting state before the next internal
-`execute_step` handoff runs so duplicate completions cannot advance the workflow twice.
-Workflow advances `current_step` and consumes a pending step only after the direct step send
-succeeds; failed step sends complete the workflow with `status: "handoff_failed"`.
-If an `execute_step` target head is `0` and the immediate next target is positive, workflow skips the
-placeholder with an internal continuation and keeps the same step number.
-After a completed step, a pending zero head with an immediate positive next target still queues the
-next `execute_step`, so the same placeholder-skip path sends the later positive step instead of
-ending the workflow early.
-If the initial internal step handoff or a later step continuation cannot be queued, workflow emits
-`workflow_complete` with `status: "handoff_failed"`.
-Workflow records terminal status only after `workflow_complete` is delivered; failed completion
-delivery leaves completion pending and retries do not increment `completed_step_count`.
-
-Completion:
-
-```text
-{
-  action: "workflow_complete",
-  workflow_id: <id>,
-  correlation_id: <correlation_id>,
-  status: <complete|handoff_failed>,
+  trace_id: <trace_id>,
+  status: <success|failure>,
+  state: <complete|handoff_failed>,
   success_count: <count>,
   failure_count: <count>,
   current_step: <last-step-number>,
@@ -507,51 +362,47 @@ Completion:
 }
 ```
 
+Workflow records terminal status only after the `start` response is delivered; failed completion
+delivery leaves completion pending and retries do not increment `completed_step_count`.
+
 ### Conversation
 
 Requests:
 
 ```text
-{
-  action: "start",
-  conversation_id: <id>,
-  correlation_id: <id>,
-  participant_a: <agent>,
-  participant_b: <agent>,
-  reply_to: <agent>
-}
-
-{
-  action: "message",
-  conversation_id: <id>,
-  sender: <agent>,
-  text: <text>,
-  intent: <intent>
-}
-
-{ action: "summary", conversation_id: <id> }
-{ action: "close", conversation_id: <id> }
+{ action: "start", type: "request", conversation_id: <id>, trace_id: <id>, participant_a: <agent>, participant_b: <agent>, source_agent: <agent> }
+{ action: "message", type: "request", conversation_id: <id>, sender: <agent>, text: <text>, intent: <intent> }
+{ action: "summary", type: "request", conversation_id: <id> }
+{ action: "close", type: "request", conversation_id: <id> }
 ```
 
-Responses:
+Participant turn:
 
 ```text
 {
   action: "conversation_turn",
+  type: "request",
   conversation_id: <id>,
+  trace_id: <trace_id>,
   from: <agent>,
   to: <agent>,
   text: <text>,
   intent: <intent>,
   turn_count: <count>
 }
+```
 
+Response:
+
+```text
 {
-  action: <conversation_started|conversation_relayed|conversation_summary|conversation_closed>,
+  action: <start|message|summary|close>,
+  type: "response",
   conversation_id: <id>,
-  correlation_id: <correlation_id>,
-  state: <state>,
-  status: <active|relayed|relay_failed|ignored|closed>,
+  trace_id: <trace_id>,
+  state: <active|closed>,
+  status: <success|failure>,
+  result: <active|relayed|relay_failed|ignored|closed>,
   success_count: <count>,
   failure_count: <count>,
   participant_a: <agent>,
@@ -564,42 +415,23 @@ Responses:
 }
 ```
 
-The `relayed` status is used only when a participant turn is delivered and recorded. If the
-participant turn is valid for the conversation but the delivery send fails, the coordinator reports
-`relay_failed` and leaves the history and turn count unchanged.
+If participant turn delivery fails, the coordinator reports `result: "relay_failed"` and leaves the
+history and turn count unchanged.
 
 ### Retry
 
 Requests:
 
 ```text
-{
-  action: "start",
-  operation_id: <id>,
-  operation_target: <agent>,
-  operation_action: <action>,
-  operation_text: <text>,
-  max_attempts: <number>,
-  strategy: <immediate|scheduled>,
-  scheduler_agent: <agent>,
-  delay_ticks: <tick>,
-  correlation_id: <id>,
-  reply_to: <agent>
-}
-
-{ action: "failure", correlation_id: <correlation_id>, attempt: <attempt>, current_tick: <tick> }
-{ action: "success", correlation_id: <correlation_id>, attempt: <attempt> }
+{ action: "start", type: "request", operation_id: <id>, operation_target_agent: <agent>, operation_action: <action>, operation_text: <text>, max_attempts: <number>, strategy: <immediate|scheduled>, scheduler_agent: <agent>, delay_ticks: <tick>, trace_id: <id>, source_agent: <agent> }
+{ action: "failure", type: "request", trace_id: <trace_id>, attempt: <attempt>, current_tick: <tick> }
+{ action: "success", type: "request", trace_id: <trace_id>, attempt: <attempt> }
 ```
 
-Attempt:
+Operation attempt:
 
 ```text
-{
-  action: <operation_action>,
-  correlation_id: <correlation_id>,
-  text: <operation_text>,
-  attempt: <number>
-}
+{ action: <operation_action>, type: "request", trace_id: <trace_id>, text: <operation_text>, attempt: <number> }
 ```
 
 Scheduled retry request:
@@ -607,93 +439,85 @@ Scheduled retry request:
 ```text
 {
   action: "schedule",
+  type: "request",
   schedule_id: <operation_id>,
   due_tick: <current_tick + delay_ticks>,
-  target: <operation_target>,
+  target_agent: <operation_target_agent>,
   payload_action: <operation_action>,
   payload_text: <operation_text>,
   payload_attempt: <attempt>,
-  correlation_id: <correlation_id>,
-  reply_to: 0
+  trace_id: <trace_id>,
+  source_agent: 0
 }
 ```
 
-Result:
+Terminal response:
 
 ```text
 {
-  action: "retry_result",
+  action: "start",
+  type: "response",
   operation_id: <id>,
-  correlation_id: <correlation_id>,
-  status: <succeeded|failed|dispatch_failed>,
+  trace_id: <trace_id>,
+  status: <success|failure>,
+  state: <succeeded|failed|dispatch_failed>,
   success_count: <0|1>,
   failure_count: <0|1>,
   attempts: <count>
 }
 ```
 
-Retry records the initial attempt only after the first operation send succeeds. If that initial send
-fails, it reports `dispatch_failed` with zero attempts.
-After retry reports terminal `succeeded` or `failed` status, later stale outcome messages are ignored.
-A new `start` request opens a fresh active retry state, and late outcomes from previous operations are
-ignored because their `correlation_id` does not match the active operation id.
-Active outcomes must also match the current in-flight `attempt`; duplicate failure or success maps
-from an earlier attempt are ignored instead of consuming another retry slot.
-Retry attempts advance only after an immediate retry or scheduled retry handoff is sent
-successfully; failed dispatch leaves the retry active at the previous attempt count.
-Retry records terminal `succeeded` or `failed` status only after the `retry_result` report is
-delivered; failed report delivery stores the pending terminal result so a matching outcome retries
-that report without replacing it or changing the attempt count.
+Retry records terminal state only after the `start` response is delivered; failed report delivery
+stores the pending terminal result so a matching outcome retries that report without replacing it or
+changing the attempt count.
 
 ## Composition Examples
 
 Fan-out and fan-in:
 
 ```text
-1. Send a map with action: "distribute" to a distribution agent.
-2. Workers send maps with action: "result", aggregate_id, and value: <text> to an aggregation agent.
-3. Aggregation emits a map with action: "aggregate_complete" and a result list when required_count
-   results arrive.
+1. Send a request with action: "distribute" to a distribution agent.
+2. Workers send requests with action: "result", aggregate_id, and value: <text> to an aggregation agent.
+3. Aggregation emits a response with action: "start" and a result list when required_count results arrive.
 ```
 
 Delayed retry:
 
 ```text
-1. Send a map with action: "start", strategy: "scheduled", and scheduler_agent to a retry agent.
-2. On a map with action: "failure", correlation_id, and current_tick, retry sends a schedule map due
-   at current_tick + delay_ticks.
-3. An external tick source sends maps with action: "tick" to scheduling.
+1. Send a request with action: "start", strategy: "scheduled", and scheduler_agent to a retry agent.
+2. On a request with action: "failure", trace_id, and current_tick, retry sends a schedule request
+   due at current_tick + delay_ticks.
+3. An external tick source sends requests with action: "tick" to scheduling.
 4. Scheduling re-emits the operation attempt at the requested tick.
 ```
 
 Branching workflow:
 
 ```text
-1. Send a map with action: "start" to workflow with aligned step target, action, and text lists.
-2. Workflow sends step 1 directly to the first configured step target.
-3. Send a step_done map for step 1 with the branch outcome to skip one pending step.
-4. Continue sending step_done maps until workflow emits a workflow_complete map.
+1. Send a request with action: "start" to workflow with aligned step target agents and payload lists.
+2. Workflow sends step 1 directly to the first configured step target agent.
+3. Send a step_done request for step 1 with the branch outcome to skip one pending step.
+4. Continue sending step_done requests until workflow emits a start response.
 ```
 
 Conversation-scoped workflow:
 
 ```text
-1. Conversation receives a map with action: "start" for two participant agents.
-2. Participant A sends a map with action: "message"; conversation relays a `conversation_turn` to
-   participant B.
+1. Conversation receives a request with action: "start" for two participant agents.
+2. Participant A sends a request with action: "message"; conversation relays a conversation_turn
+   request to participant B.
 3. Participant B replies through the same coordinator; conversation relays the turn back to
    participant A.
-4. A workflow or aggregation agent can request `conversation_summary` and consume the structured
-   turn history.
+4. A workflow or aggregation agent can request summary and consume the structured turn history.
 ```
 
 ## Gap Analysis
 
 | Method | Status | Gap |
 | --- | --- | --- |
-| Routing | Fully implementable for keyed unbounded one-to-one selection. | Keyed routes use a map containing parallel `keys` and `targets` lists because ordinary methods do not have a safe type predicate for scanning a list of route-entry maps. Direct target delivery belongs to direct `send(...)`; same-payload fan-out belongs to broadcasting. |
-| Broadcasting | Fully implementable for unbounded same-payload fan-out to primitive target IDs. | Target lists should contain positive IDs for all intended recipients; integer `0` is treated as a placeholder rather than a recipient. |
-| Supervision | Partially implementable. | The method can spawn and track unbounded child method-name lists with one shared start version, but methods cannot autonomously observe child crashes or exits; callers must send `child_failed` or `child_exited` events. A failed `spawn(...)` aborts the remaining ordinary method evaluation, so supervision can avoid reporting `running` for an incomplete child set but cannot emit a catchable spawn-failure status without a non-aborting spawn result or method-existence check. Removing arbitrary failed ids from the tracked list or starting one mixed-version list requires a list-filter operation, separate supervisors, or a specialized replacement method. |
+| Routing | Fully implementable for keyed unbounded one-to-one selection. | Keyed routes use a map containing parallel `keys` and `target_agents` lists because ordinary methods do not have a safe type predicate for scanning a list of route-entry maps. Direct target delivery belongs to direct `send(...)`; same-payload fan-out belongs to broadcasting. |
+| Broadcasting | Fully implementable for unbounded same-payload fan-out to primitive target IDs. | Target-agent lists should contain positive IDs for all intended recipients; integer `0` is treated as a placeholder rather than a recipient. |
+| Supervision | Partially implementable. | The method can spawn and track unbounded child method-name lists with one shared start version, but methods cannot autonomously observe child crashes or exits; callers must send `child_failed` or `child_exited` events. A failed `spawn(...)` aborts the remaining ordinary method evaluation, so supervision can avoid reporting `running` for an incomplete child set but cannot emit a catchable `spawn_failed` state without a non-aborting spawn result or method-existence check. Removing arbitrary failed ids from the tracked list or starting one mixed-version list requires a list-filter operation, separate supervisors, or a specialized replacement method. |
 | Distribution | Fully implementable for round-robin assignment of opaque payload lists to primitive worker IDs. | Load-aware placement, weighted assignment, and worker health checks require additional methods or richer collection-processing conventions. |
 | Aggregation | Fully implementable for list-valued fan-in. | Duplicate handling, custom merge functions, and richer aggregate policies require deeper collection operations or specialized aggregate methods. |
 | Scheduling | Partially implementable. | There is no runtime clock or timer callback; scheduling requires explicit `tick` messages from another agent or host process. |
