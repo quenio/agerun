@@ -42,19 +42,19 @@ static int checked_agent_id(int64_t agent_id) {
     return (int)agent_id;
 }
 
-static void send_result(ar_agency_t *mut_agency,
-                        int64_t aggregation_agent,
-                        const char *ref_aggregate_id,
-                        const char *ref_value) {
-    ar_data_t *own_result = ar_data__create_map();
-    AR_ASSERT(own_result != NULL, "Result message should be created");
-    ar_data__set_map_string(own_result, "action", "result");
-    ar_data__set_map_string(own_result, "type", "request");
-    ar_data__set_map_string(own_result, "aggregate_id", ref_aggregate_id);
-    ar_data__set_map_string(own_result, "value", ref_value);
-    AR_ASSERT(ar_agency__send_to_agent(mut_agency, aggregation_agent, own_result),
-              "Result message should queue");
-    own_result = NULL;
+static void send_collect(ar_agency_t *mut_agency,
+                         int64_t aggregation_agent,
+                         const char *ref_aggregate_id,
+                         const char *ref_payload) {
+    ar_data_t *own_collect = ar_data__create_map();
+    AR_ASSERT(own_collect != NULL, "Collect message should be created");
+    ar_data__set_map_string(own_collect, "action", "collect");
+    ar_data__set_map_string(own_collect, "type", "request");
+    ar_data__set_map_string(own_collect, "aggregate_id", ref_aggregate_id);
+    ar_data__set_map_string(own_collect, "payload", ref_payload);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, aggregation_agent, own_collect),
+              "Collect message should queue");
+    own_collect = NULL;
 }
 
 static void register_record_receiver(ar_agency_t *mut_agency) {
@@ -68,7 +68,7 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
         "memory.last_trace_id := message.trace_id\n"
         "memory.last_success_count := message.success_count\n"
         "memory.last_failure_count := message.failure_count\n"
-        "memory.last_result := message.result\n"
+        "memory.last_payloads := message.payloads\n"
         "memory.last_received_count := message.received_count\n";
 
     AR_ASSERT(ar_methodology__create_method(mut_methodology,
@@ -79,10 +79,10 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
     verify_method_parses(mut_methodology, "record-receiver");
 }
 
-static void test_aggregation__combines_required_results(void) {
-    printf("Testing aggregation combines required results...\n");
+static void test_aggregation__combines_required_payloads(void) {
+    printf("Testing aggregation combines required payloads...\n");
 
-    ar_method_fixture_t *own_fixture = ar_method_fixture__create("aggregation_results");
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("aggregation_payloads");
     AR_ASSERT(ar_method_fixture__initialize(own_fixture), "Fixture should initialize");
     AR_ASSERT(ar_method_fixture__verify_directory(own_fixture), "Fixture directory should verify");
     load_method(own_fixture, "aggregation");
@@ -109,10 +109,10 @@ static void test_aggregation__combines_required_results(void) {
               "Start message should queue");
     own_start = NULL;
 
-    send_result(mut_agency, aggregation_agent, "agg-1", "alpha");
-    send_result(mut_agency, aggregation_agent, "agg-1", "beta");
-    send_result(mut_agency, aggregation_agent, "agg-1", "gamma");
-    send_result(mut_agency, aggregation_agent, "agg-1", "delta");
+    send_collect(mut_agency, aggregation_agent, "agg-1", "alpha");
+    send_collect(mut_agency, aggregation_agent, "agg-1", "beta");
+    send_collect(mut_agency, aggregation_agent, "agg-1", "gamma");
+    send_collect(mut_agency, aggregation_agent, "agg-1", "delta");
 
     ar_method_fixture__process_all_messages(own_fixture);
 
@@ -130,42 +130,42 @@ static void test_aggregation__combines_required_results(void) {
                      "agg-trace-1") == 0,
               "Aggregate completion should preserve trace id");
     AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_success_count") == 4,
-              "Aggregate completion should report successful result count");
+              "Aggregate completion should report successful payload count");
     AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_failure_count") == 0,
-              "Aggregate completion should report no failed results");
-    const ar_data_t *ref_result = ar_data__get_map_data(ref_receiver_memory, "last_result");
-    AR_ASSERT(ref_result != NULL, "Aggregate should include result list");
-    AR_ASSERT(ar_data__get_type(ref_result) == AR_DATA_TYPE__LIST,
-              "Aggregate result should be a list");
-    AR_ASSERT(ar_data__list_count(ref_result) == 4,
-              "Aggregate result should include all required values");
-    ar_data_t **own_items = ar_data__list_items(ref_result);
-    AR_ASSERT(own_items != NULL, "Aggregate result items should be readable");
+              "Aggregate completion should report no failed payloads");
+    const ar_data_t *ref_payloads = ar_data__get_map_data(ref_receiver_memory, "last_payloads");
+    AR_ASSERT(ref_payloads != NULL, "Aggregate should include payload list");
+    AR_ASSERT(ar_data__get_type(ref_payloads) == AR_DATA_TYPE__LIST,
+              "Aggregate payloads should be a list");
+    AR_ASSERT(ar_data__list_count(ref_payloads) == 4,
+              "Aggregate payloads should include all required values");
+    ar_data_t **own_items = ar_data__list_items(ref_payloads);
+    AR_ASSERT(own_items != NULL, "Aggregate payload items should be readable");
     AR_ASSERT(strcmp(ar_data__get_string(own_items[0]), "alpha") == 0,
-              "Aggregate result should include first value");
+              "Aggregate payloads should include first value");
     AR_ASSERT(strcmp(ar_data__get_string(own_items[1]), "beta") == 0,
-              "Aggregate result should include second value");
+              "Aggregate payloads should include second value");
     AR_ASSERT(strcmp(ar_data__get_string(own_items[2]), "gamma") == 0,
-              "Aggregate result should include third value");
+              "Aggregate payloads should include third value");
     AR_ASSERT(strcmp(ar_data__get_string(own_items[3]), "delta") == 0,
-              "Aggregate result should include fourth value");
+              "Aggregate payloads should include fourth value");
     AR__HEAP__FREE(own_items);
     AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_received_count") == 4,
-              "Aggregate should report four received results");
+              "Aggregate should report four received payloads");
 
-    send_result(mut_agency, aggregation_agent, "agg-1", "epsilon");
+    send_collect(mut_agency, aggregation_agent, "agg-1", "epsilon");
     ar_method_fixture__process_all_messages(own_fixture);
 
     const ar_data_t *ref_aggregation_memory =
         ar_agency__get_agent_memory(mut_agency, aggregation_agent);
-    const ar_data_t *ref_stored_results = ar_data__get_map_data(ref_aggregation_memory, "results");
-    AR_ASSERT(ref_stored_results != NULL, "Aggregation memory should retain result list");
-    AR_ASSERT(ar_data__list_count(ref_stored_results) == 4,
-              "Late results should not mutate completed aggregation state");
+    const ar_data_t *ref_stored_payloads = ar_data__get_map_data(ref_aggregation_memory, "payloads");
+    AR_ASSERT(ref_stored_payloads != NULL, "Aggregation memory should retain payload list");
+    AR_ASSERT(ar_data__list_count(ref_stored_payloads) == 4,
+              "Late payloads should not mutate completed aggregation state");
     AR_ASSERT(ar_data__get_map_integer(ref_aggregation_memory, "received_count") == 4,
-              "Late results should not increment completed aggregation count");
+              "Late payloads should not increment completed aggregation count");
     AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_received_count") == 4,
-              "Late results should not emit another completion");
+              "Late payloads should not emit another completion");
 
     ar_data_t *own_failed_start = ar_data__create_map();
     AR_ASSERT(own_failed_start != NULL, "Failed completion start message should be created");
@@ -178,8 +178,8 @@ static void test_aggregation__combines_required_results(void) {
               "Failed completion start message should queue");
     own_failed_start = NULL;
 
-    send_result(mut_agency, aggregation_agent, "agg-failed-send", "one");
-    send_result(mut_agency, aggregation_agent, "agg-failed-send", "two");
+    send_collect(mut_agency, aggregation_agent, "agg-failed-send", "one");
+    send_collect(mut_agency, aggregation_agent, "agg-failed-send", "two");
     ar_method_fixture__process_all_messages(own_fixture);
 
     ref_aggregation_memory = ar_agency__get_agent_memory(mut_agency, aggregation_agent);
@@ -188,7 +188,7 @@ static void test_aggregation__combines_required_results(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_aggregation_memory, "received_count") == 2,
               "Failed completion send should retain collected count");
 
-    send_result(mut_agency, aggregation_agent, "agg-failed-send", "three");
+    send_collect(mut_agency, aggregation_agent, "agg-failed-send", "three");
     ar_method_fixture__process_all_messages(own_fixture);
 
     AR_ASSERT(ar_data__get_map_integer(ref_aggregation_memory, "completed") == 0,
@@ -212,16 +212,16 @@ static void test_aggregation__combines_required_results(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_aggregation_memory, "completed") == 0,
               "Zero required count should not complete on start");
     AR_ASSERT(ar_data__get_map_integer(ref_aggregation_memory, "received_count") == 0,
-              "Zero required count start should not collect results");
+              "Zero required count start should not collect payloads");
 
-    send_result(mut_agency, aggregation_agent, "agg-zero", "only");
+    send_collect(mut_agency, aggregation_agent, "agg-zero", "only");
     ar_method_fixture__process_all_messages(own_fixture);
 
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_aggregate_id"),
                      "agg-zero") == 0,
-              "Zero required count should complete after first result");
+              "Zero required count should complete after first payload");
     AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_received_count") == 1,
-              "Zero required count should behave as one required result");
+              "Zero required count should behave as one required payload");
 
     ar_data_t *own_correlated_start = ar_data__create_map();
     AR_ASSERT(own_correlated_start != NULL, "Correlated start message should be created");
@@ -235,24 +235,24 @@ static void test_aggregation__combines_required_results(void) {
     own_correlated_start = NULL;
     ar_method_fixture__process_all_messages(own_fixture);
 
-    send_result(mut_agency, aggregation_agent, "agg-zero", "late-stale");
-    send_result(mut_agency, aggregation_agent, "agg-correlated", "fresh-one");
+    send_collect(mut_agency, aggregation_agent, "agg-zero", "late-stale");
+    send_collect(mut_agency, aggregation_agent, "agg-correlated", "fresh-one");
     ar_method_fixture__process_all_messages(own_fixture);
 
     AR_ASSERT(ar_data__get_map_integer(ref_aggregation_memory, "received_count") == 1,
-              "Stale result from a previous aggregate should not be collected");
+              "Stale payload from a previous aggregate should not be collected");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_aggregate_id"),
                      "agg-zero") == 0,
-              "Stale result should not complete the new aggregate early");
+              "Stale payload should not complete the new aggregate early");
 
-    send_result(mut_agency, aggregation_agent, "agg-correlated", "fresh-two");
+    send_collect(mut_agency, aggregation_agent, "agg-correlated", "fresh-two");
     ar_method_fixture__process_all_messages(own_fixture);
 
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_aggregate_id"),
                      "agg-correlated") == 0,
-              "Matching results should complete the active aggregate");
+              "Matching payloads should complete the active aggregate");
     AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_received_count") == 2,
-              "Only matching aggregate results should count toward completion");
+              "Only matching aggregate payloads should count toward completion");
 
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_aggregation_context);
@@ -261,7 +261,7 @@ static void test_aggregation__combines_required_results(void) {
 
 int main(void) {
     printf("Running aggregation method tests...\n\n");
-    test_aggregation__combines_required_results();
+    test_aggregation__combines_required_payloads();
     printf("\nAll aggregation method tests passed!\n");
     return 0;
 }

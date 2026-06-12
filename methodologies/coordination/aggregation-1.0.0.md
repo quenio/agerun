@@ -2,19 +2,19 @@
 
 ## Overview
 
-Aggregation collects result messages and emits one aggregate completion response when the configured
-result count is met. It provides an unbounded fan-in counterpart to distribution.
+Aggregation collects opaque payload messages and emits one aggregate completion response when the
+configured payload count is met. It provides an unbounded fan-in counterpart to distribution.
 
 ## Behavior
 
 Only messages with `type: "request"` are handled as coordination requests.
 
-On `action: "start"`, the method stores the aggregate id, required result count, `trace_id`, and
-`source_agent`, then clears the append-backed result list. On `action: "result"`, it appends the
-incoming `value` only when `aggregate_id` matches the active aggregate and completion has not been
+On `action: "start"`, the method stores the aggregate id, required payload count, `trace_id`, and
+`source_agent`, then clears the append-backed payload list. On `action: "collect"`, it appends the
+incoming `payload` only when `aggregate_id` matches the active aggregate and completion has not been
 delivered.
 
-Required counts below one behave as one required result. Completion is recorded only after the
+Required counts below one behave as one required payload. Completion is recorded only after the
 `start` response is sent successfully.
 
 ## Message Format
@@ -23,7 +23,7 @@ Requests:
 
 ```text
 { action: "start", type: "request", aggregate_id: <id>, required_count: <count>, trace_id: <id>, source_agent: <agent> }
-{ action: "result", type: "request", aggregate_id: <id>, value: <text> }
+{ action: "collect", type: "request", aggregate_id: <id>, payload: <payload> }
 ```
 
 Completion response:
@@ -38,7 +38,7 @@ Completion response:
   state: "complete",
   success_count: <count>,
   failure_count: 0,
-  result: [<input-1>, <input-2>, ...],
+  payloads: [<payload-1>, <payload-2>, ...],
   received_count: <count>
 }
 ```

@@ -48,7 +48,7 @@ Composition opportunities:
 | [`broadcasting`](broadcasting-1.0.0.md) | [`broadcasting-1.0.0.method`](broadcasting-1.0.0.method) | [`broadcasting_tests.c`](broadcasting_tests.c) | Sends one payload to every recipient in an unbounded target-agent list. | Same-payload fan-out primitive. |
 | [`supervision`](supervision-1.0.0.md) | [`supervision-1.0.0.method`](supervision-1.0.0.method) | [`supervision_tests.c`](supervision_tests.c) | Creates, tracks, stops, and event-restarts unbounded child lists. | Keeps coordination agents available. |
 | [`distribution`](distribution-1.0.0.md) | [`distribution-1.0.0.method`](distribution-1.0.0.method) | [`distribution_tests.c`](distribution_tests.c) | Round-robins payload items across an unbounded worker list. | Distinct-payload assignment. |
-| [`aggregation`](aggregation-1.0.0.md) | [`aggregation-1.0.0.method`](aggregation-1.0.0.method) | [`aggregation_tests.c`](aggregation_tests.c) | Appends result values and emits a result list. | Completes fan-in with append-backed state. |
+| [`aggregation`](aggregation-1.0.0.md) | [`aggregation-1.0.0.method`](aggregation-1.0.0.method) | [`aggregation_tests.c`](aggregation_tests.c) | Appends opaque payloads and emits a payload list. | Completes fan-in with append-backed state. |
 | [`scheduling`](scheduling-1.0.0.md) | [`scheduling-1.0.0.method`](scheduling-1.0.0.method) | [`scheduling_tests.c`](scheduling_tests.c) | Stores pending work and triggers it on explicit tick messages. | Delayed execution primitive. |
 | [`synchronization`](synchronization-1.0.0.md) | [`synchronization-1.0.0.method`](synchronization-1.0.0.method) | [`synchronization_tests.c`](synchronization_tests.c) | Waits for an unbounded count of dependency messages before sending a continuation. | Dependency gate. |
 | [`workflow`](workflow-1.0.0.md) | [`workflow-1.0.0.method`](workflow-1.0.0.method) | [`workflow_tests.c`](workflow_tests.c) | Sends an unbounded step sequence, supports a branch skip, and completes. | Higher-level sequence and branch coordinator. |
@@ -223,7 +223,7 @@ Requests:
 
 ```text
 { action: "start", type: "request", aggregate_id: <id>, required_count: <count>, trace_id: <id>, source_agent: <agent> }
-{ action: "result", type: "request", aggregate_id: <id>, value: <text> }
+{ action: "collect", type: "request", aggregate_id: <id>, payload: <payload> }
 ```
 
 Completion response:
@@ -238,13 +238,13 @@ Completion response:
   state: "complete",
   success_count: <count>,
   failure_count: 0,
-  result: [<input-1>, <input-2>, ...],
+  payloads: [<payload-1>, <payload-2>, ...],
   received_count: <count>
 }
 ```
 
 Aggregation marks completion only after the `start` response is sent successfully; failed completion
-delivery leaves the aggregate open. Required counts below one behave as one required result.
+delivery leaves the aggregate open. Required counts below one behave as one required payload.
 
 ### Scheduling
 
@@ -477,8 +477,8 @@ Fan-out and fan-in:
 
 ```text
 1. Send a request with action: "distribute" to a distribution agent.
-2. Workers send requests with action: "result", aggregate_id, and value: <text> to an aggregation agent.
-3. Aggregation emits a response with action: "start" and a result list when required_count results arrive.
+2. Workers send requests with action: "collect", aggregate_id, and payload to an aggregation agent.
+3. Aggregation emits a response with action: "start" and a payloads list when required_count payloads arrive.
 ```
 
 Delayed retry:
