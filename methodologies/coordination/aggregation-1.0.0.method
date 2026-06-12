@@ -29,7 +29,6 @@ memory.output_message := {
   success_count: memory.count
   failure_count: 0
   payloads: memory.payloads
-  count: memory.count
 }
 memory.output_sent := send(memory.output_target, memory.output_message)
 memory.completion_delivered := memory.should_emit * memory.output_sent

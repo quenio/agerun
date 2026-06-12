@@ -237,8 +237,7 @@ Completion response:
   state: "complete",
   success_count: <count>,
   failure_count: 0,
-  payloads: [<payload-1>, <payload-2>, ...],
-  count: <count>
+  payloads: [<payload-1>, <payload-2>, ...]
 }
 ```
 

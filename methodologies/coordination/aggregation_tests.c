@@ -65,8 +65,7 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
         "memory.last_trace_id := message.trace_id\n"
         "memory.last_success_count := message.success_count\n"
         "memory.last_failure_count := message.failure_count\n"
-        "memory.last_payloads := message.payloads\n"
-        "memory.last_count := message.count\n";
+        "memory.last_payloads := message.payloads\n";
 
     AR_ASSERT(ar_methodology__create_method(mut_methodology,
                                             "record-receiver",
@@ -146,9 +145,6 @@ static void test_aggregation__combines_required_payloads(void) {
     AR_ASSERT(strcmp(ar_data__get_string(own_items[3]), "delta") == 0,
               "Aggregate payloads should include fourth value");
     AR__HEAP__FREE(own_items);
-    AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_count") == 4,
-              "Aggregate should report four received payloads");
-
     send_collect(mut_agency, aggregation_agent, "epsilon");
     ar_method_fixture__process_all_messages(own_fixture);
 
@@ -160,7 +156,7 @@ static void test_aggregation__combines_required_payloads(void) {
               "Late payloads should not mutate completed aggregation state");
     AR_ASSERT(ar_data__get_map_integer(ref_aggregation_memory, "count") == 4,
               "Late payloads should not increment completed aggregation count");
-    AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_count") == 4,
+    AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_success_count") == 4,
               "Late payloads should not emit another completion");
 
     own_reset = ar_data__create_map();
@@ -218,7 +214,7 @@ static void test_aggregation__combines_required_payloads(void) {
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_trace_id"),
                      "agg-reset-trace") == 0,
               "Reset aggregate should complete with the new trace id");
-    AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_count") == 2,
+    AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_success_count") == 2,
               "Reset aggregate should count only fresh payloads toward completion");
 
     ar_method_fixture__destroy(own_fixture);
