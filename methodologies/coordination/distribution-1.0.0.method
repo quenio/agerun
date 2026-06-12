@@ -1,6 +1,6 @@
-memory.is_request := if(message.type = "request", 1, 0)
-memory.is_distribute := if(message.action = "distribute", memory.is_request, 0)
-memory.is_assign_payload := if(message.action = "assign_payload", memory.is_request, 0)
+memory.is_request := if(message.request <> 0, 1, 0)
+memory.is_distribute := if(memory.is_request = 1, message.request = "distribution_distribute", 0)
+memory.is_assign_payload := if(memory.is_request = 1, message.request = "distribution_assign_payload", 0)
 memory.is_assignment := memory.is_distribute + memory.is_assign_payload
 memory.is_assignment := if(memory.is_assignment > 0, 1, 0)
 memory.work_id := if(memory.is_distribute = 1, message.work_id, memory.work_id)
@@ -58,8 +58,7 @@ memory.continuation_required := memory.continuation_required + memory.skip_worke
 memory.continuation_required := memory.continuation_required + memory.wrap_worker
 memory.continuation_required := if(memory.continuation_required > 0, 1, 0)
 memory.continuation_message := {
-  action: "assign_payload"
-  type: "request"
+  request: "distribution_assign_payload"
   work_id: message.work_id
   trace_id: message.trace_id
   payloads: memory.continuation_payloads
@@ -93,8 +92,7 @@ memory.result_status := if(memory.zero_assignments = 1, "failure", memory.result
 memory.result_status := if(memory.has_failures = 1, "failure", memory.result_status)
 memory.result_status := if(memory.continuation_failed = 1, "failure", memory.result_status)
 memory.result_message := {
-  action: "distribute"
-  type: "response"
+  response: "distribution_result"
   status: memory.result_status
   state: memory.result_state
   work_id: memory.report_work_id

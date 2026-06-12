@@ -1,12 +1,12 @@
-memory.is_request := if(message.type = "request", 1, 0)
-memory.is_wait := if(message.action = "wait", memory.is_request, 0)
-memory.is_dependency := if(message.action = "dependency", memory.is_request, 0)
+memory.is_request := if(message.request <> 0, 1, 0)
+memory.is_wait := if(memory.is_request = 1, message.request = "synchronization_wait", 0)
+memory.is_dependency := if(memory.is_request = 1, message.request = "synchronization_dependency", 0)
 memory.sync_id := if(memory.is_wait = 1, message.sync_id, memory.sync_id)
 memory.trace_id := if(memory.is_wait = 1, message.trace_id, memory.trace_id)
 memory.required_count := if(memory.is_wait = 1, message.required_count, memory.required_count)
 memory.source_agent := if(memory.is_wait = 1, message.source_agent, memory.source_agent)
 memory.continuation_target_agent := if(memory.is_wait = 1, message.continuation_target_agent, memory.continuation_target_agent)
-memory.continuation_action := if(memory.is_wait = 1, message.continuation_action, memory.continuation_action)
+memory.continuation_request := if(memory.is_wait = 1, message.continuation_request, memory.continuation_request)
 memory.continuation_text := if(memory.is_wait = 1, message.continuation_text, memory.continuation_text)
 memory.received := if(memory.is_wait = 1, [], memory.received)
 memory.done_count := if(memory.is_wait = 1, 0, memory.done_count)
@@ -30,8 +30,7 @@ memory.should_emit := memory.is_complete * memory.not_completed
 memory.should_emit := memory.should_emit * memory.valid_dependency
 memory.should_send_continuation := memory.should_emit * memory.not_continuation_done
 memory.continuation_message := {
-  action: memory.continuation_action
-  type: "request"
+  request: memory.continuation_request
   sync_id: memory.sync_id
   trace_id: memory.trace_id
   text: memory.continuation_text
@@ -44,8 +43,7 @@ memory.continuation_delivery_ok := if(memory.continuation_target_agent > 0, memo
 memory.continuation_delivered_now := memory.should_send_continuation * memory.continuation_delivery_ok
 memory.continuation_done := if(memory.continuation_delivered_now = 1, 1, memory.continuation_done)
 memory.report_message := {
-  action: "wait"
-  type: "response"
+  response: "synchronization_result"
   sync_id: memory.sync_id
   trace_id: memory.trace_id
   status: "success"

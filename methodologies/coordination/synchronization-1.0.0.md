@@ -7,11 +7,11 @@ message. It is a reusable dependency gate for workflows and distributed work.
 
 ## Behavior
 
-Only messages with `type: "request"` are handled as coordination requests.
+Only messages with a recognized `request` value are handled as coordination requests.
 
-On `action: "wait"`, the method stores the sync id, required count, continuation target agent,
-continuation action, continuation text, `trace_id`, and `source_agent`. On matching
-`action: "dependency"`, it appends the dependency value until the required count is reached.
+On `request: "synchronization_wait"`, the method stores the sync id, required count, continuation
+target agent, continuation request, continuation text, `trace_id`, and `source_agent`. On matching
+`synchronization_dependency`, it appends the dependency value until the required count is reached.
 
 Completion is recorded only after the continuation is delivered and, when `source_agent` is
 positive, the `wait` response is delivered. Failed delivery keeps the gate open for retry.
@@ -21,16 +21,15 @@ positive, the `wait` response is delivered. Failed delivery keeps the gate open 
 Requests:
 
 ```text
-{ action: "wait", type: "request", sync_id: <id>, trace_id: <trace_id>, required_count: <count>, continuation_target_agent: <agent>, continuation_action: <action>, continuation_text: <text>, source_agent: <agent> }
-{ action: "dependency", type: "request", sync_id: <id>, dependency: <name> }
+{ request: "synchronization_wait", sync_id: <id>, trace_id: <trace_id>, required_count: <count>, continuation_target_agent: <agent>, continuation_request: <request>, continuation_text: <text>, source_agent: <agent> }
+{ request: "synchronization_dependency", sync_id: <id>, dependency: <name> }
 ```
 
 Continuation:
 
 ```text
 {
-  action: <continuation_action>,
-  type: "request",
+  request: <continuation_request>,
   sync_id: <id>,
   trace_id: <trace_id>,
   text: <continuation_text>,
@@ -43,8 +42,7 @@ Response:
 
 ```text
 {
-  action: "wait",
-  type: "response",
+  response: "synchronization_result",
   sync_id: <id>,
   trace_id: <trace_id>,
   status: "success",

@@ -62,17 +62,17 @@ a multi-line map literal to a named memory value, then pass that value to `send(
 flat and nested messages because `send(...)`, `append(...)`, `head(...)`, and `tail(...)` deep-copy
 borrowed maps and lists.
 
-Every external coordination request uses `type: "request"` and includes an `action` that identifies
-the requested command. Every external coordination response uses `type: "response"`, preserves the
-request's `trace_id`, and reports standard `status: "success"` or `status: "failure"` with
-`success_count` and `failure_count`.
-Method-specific contracts define any additional response fields. Aggregation completion responses
-intentionally omit `action` because `start` and `collect` identify request phases, not a response
-command.
+Every external coordination request includes a `request` value that identifies the requested
+command with the `<method>_<action>` naming convention. Every external coordination response
+includes a `response` value that identifies the result envelope with the `<method>_result` naming
+convention, preserves the request's `trace_id`, and reports standard `status: "success"` or
+`status: "failure"` with `success_count` and `failure_count`.
+Method-specific contracts define any additional response fields. When a method eventually returns
+multiple distinct result envelopes, the `response` value should use `<method>_<result_kind>`.
 Method-specific outcomes such as `routed`, `broadcast_failed`, or `handoff_failed` are carried in
 `state` when the response needs that detail. `source_agent` is the optional positive agent id that
-receives responses. Coordination methods handle command actions only on `type: "request"` messages;
-`type: "response"` messages are not treated as new coordination requests.
+receives responses. Coordination methods handle only recognized `request` values as coordination
+commands; messages with `response` values are not treated as new coordination requests.
 
 ### Routing
 
@@ -80,8 +80,7 @@ Request:
 
 ```text
 {
-  action: "route",
-  type: "request",
+  request: "routing_route",
   route_key: <key>,
   routes: {
     keys: [<key>, <key>, ...],
@@ -97,8 +96,7 @@ Reply:
 
 ```text
 {
-  action: "route",
-  type: "response",
+  response: "routing_result",
   status: <success|failure>,
   state: <routed|route_failed>,
   trace_id: <trace_id>,
@@ -120,8 +118,7 @@ Request:
 
 ```text
 {
-  action: "broadcast",
-  type: "request",
+  request: "broadcasting_broadcast",
   target_agents: [<agent>, <agent>, ...],
   payload: <message>,
   trace_id: <trace_id>,
@@ -133,8 +130,7 @@ Reply:
 
 ```text
 {
-  action: "broadcast",
-  type: "response",
+  response: "broadcasting_result",
   status: <success|failure>,
   state: <broadcasted|broadcast_failed>,
   trace_id: <trace_id>,
@@ -154,18 +150,17 @@ Integer `0` entries are skipped placeholders, not failed sends.
 Requests:
 
 ```text
-{ action: "start", type: "request", child_method_names: [<method>, ...], child_method_version: <version>, policy: "restart", trace_id: <trace_id>, source_agent: <agent> }
-{ action: "child_failed", type: "request", trace_id: <trace_id>, child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
-{ action: "child_exited", type: "request", trace_id: <trace_id>, child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
-{ action: "stop", type: "request", trace_id: <trace_id>, child_agent_id: <agent> }
+{ request: "supervision_start", child_method_names: [<method>, ...], child_method_version: <version>, policy: "restart", trace_id: <trace_id>, source_agent: <agent> }
+{ request: "supervision_child_failed", trace_id: <trace_id>, child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
+{ request: "supervision_child_exited", trace_id: <trace_id>, child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
+{ request: "supervision_stop", trace_id: <trace_id>, child_agent_id: <agent> }
 ```
 
 Reply:
 
 ```text
 {
-  action: <start|child_failed|child_exited|stop>,
-  type: "response",
+  response: "supervision_result",
   trace_id: <trace_id>,
   status: <success|failure>,
   state: <running|restarted|stopped|ignored|stop_failed|handoff_failed>,
@@ -190,8 +185,7 @@ Request:
 
 ```text
 {
-  action: "distribute",
-  type: "request",
+  request: "distribution_distribute",
   work_id: <id>,
   payloads: [<payload>, <payload>, ...],
   workers: [<agent>, <agent>, ...],
@@ -204,8 +198,7 @@ Reply:
 
 ```text
 {
-  action: "distribute",
-  type: "response",
+  response: "distribution_result",
   status: <success|failure>,
   state: <distributed|distribution_failed>,
   work_id: <id>,
@@ -226,15 +219,15 @@ placeholders are skipped without consuming the current payload when later worker
 Requests:
 
 ```text
-{ action: "start", type: "request", expected_count: <count>, trace_id: <trace_id>, source_agent: <agent> }
-{ action: "collect", type: "request", trace_id: <trace_id>, payload: <payload> }
+{ request: "aggregation_start", expected_count: <count>, trace_id: <trace_id>, source_agent: <agent> }
+{ request: "aggregation_collect", trace_id: <trace_id>, payload: <payload> }
 ```
 
 Completion response:
 
 ```text
 {
-  type: "response",
+  response: "aggregation_result",
   trace_id: <trace_id>,
   status: <success|failure>,
   success_count: <count>,
@@ -244,10 +237,10 @@ Completion response:
 ```
 
 Aggregation marks completion only after the aggregate response is sent successfully; failed
-completion delivery leaves the aggregate open. A `start` request resets aggregation and starts a
-fresh payload list with the configured `expected_count`. Payload collection requests use
-`action: "collect"` and must carry the same `trace_id` as the active start request; mismatched or
-missing collection traces fail without appending the payload.
+completion delivery leaves the aggregate open. An `aggregation_start` request resets aggregation
+and starts a fresh payload list with the configured `expected_count`. Payload collection requests
+use `request: "aggregation_collect"` and must carry the same `trace_id` as the active start
+request; mismatched or missing collection traces fail without appending the payload.
 Failed collection attempts are reported in the eventual aggregate response's `failure_count`. The
 response is sent when `success_count + failure_count` equals the configured `expected_count`; the
 response status is `success` only when `success_count` equals that `expected_count`, and `failure`
@@ -258,17 +251,16 @@ otherwise.
 Requests:
 
 ```text
-{ action: "schedule", type: "request", schedule_id: <id>, due_tick: <number>, target_agent: <agent>, payload_action: <action>, payload_text: <text>, payload_attempt: <attempt>, trace_id: <trace_id>, source_agent: <agent> }
-{ action: "tick", type: "request", tick: <number> }
-{ action: "cancel", type: "request", schedule_id: <id>, trace_id: <trace_id> }
+{ request: "scheduling_schedule", schedule_id: <id>, due_tick: <number>, target_agent: <agent>, payload_request: <request>, payload_text: <text>, payload_attempt: <attempt>, trace_id: <trace_id>, source_agent: <agent> }
+{ request: "scheduling_tick", tick: <number> }
+{ request: "scheduling_cancel", schedule_id: <id>, trace_id: <trace_id> }
 ```
 
 Triggered message:
 
 ```text
 {
-  action: <payload_action>,
-  type: "request",
+  request: <payload_request>,
   trace_id: <trace_id>,
   text: <payload_text>,
   attempt: <payload_attempt>,
@@ -280,8 +272,7 @@ Response:
 
 ```text
 {
-  action: <schedule|cancel>,
-  type: "response",
+  response: "scheduling_result",
   schedule_id: <id>,
   trace_id: <trace_id>,
   status: <success|failure>,
@@ -295,24 +286,23 @@ Response:
 
 A due tick clears `pending` only when the stored payload is sent successfully. If delivery fails,
 the state is `trigger_failed` and the schedule remains pending for a later tick. Trigger responses
-use `action: "schedule"` and the stored schedule trace because they report the stored schedule
-request; cancel responses use `action: "cancel"` and the cancel request trace.
+use the stored schedule trace because they report the stored schedule request; cancel responses use
+the cancel request trace.
 
 ### Synchronization
 
 Requests:
 
 ```text
-{ action: "wait", type: "request", sync_id: <id>, trace_id: <trace_id>, required_count: <count>, continuation_target_agent: <agent>, continuation_action: <action>, continuation_text: <text>, source_agent: <agent> }
-{ action: "dependency", type: "request", sync_id: <id>, dependency: <name> }
+{ request: "synchronization_wait", sync_id: <id>, trace_id: <trace_id>, required_count: <count>, continuation_target_agent: <agent>, continuation_request: <request>, continuation_text: <text>, source_agent: <agent> }
+{ request: "synchronization_dependency", sync_id: <id>, dependency: <name> }
 ```
 
 Continuation:
 
 ```text
 {
-  action: <continuation_action>,
-  type: "request",
+  request: <continuation_request>,
   sync_id: <id>,
   trace_id: <trace_id>,
   text: <continuation_text>,
@@ -325,8 +315,7 @@ Response:
 
 ```text
 {
-  action: "wait",
-  type: "response",
+  response: "synchronization_result",
   sync_id: <id>,
   trace_id: <trace_id>,
   status: "success",
@@ -346,8 +335,8 @@ is positive, the `wait` response is delivered. Failed delivery keeps the gate op
 Requests:
 
 ```text
-{ action: "start", type: "request", workflow_id: <id>, trace_id: <trace_id>, source_agent: <agent>, step_target_agents: [<agent>, ...], step_payloads: [<message>, ...], branch_value: <outcome> }
-{ action: "step_done", type: "request", workflow_id: <id>, step: <current-step-number>, outcome: <value> }
+{ request: "workflow_start", workflow_id: <id>, trace_id: <trace_id>, source_agent: <agent>, step_target_agents: [<agent>, ...], step_payloads: [<message>, ...], branch_value: <outcome> }
+{ request: "workflow_step_done", workflow_id: <id>, step: <current-step-number>, outcome: <value> }
 ```
 
 Step messages sent to step agents are exactly the caller-provided step payloads.
@@ -356,8 +345,7 @@ Completion response:
 
 ```text
 {
-  action: "start",
-  type: "response",
+  response: "workflow_result",
   workflow_id: <id>,
   trace_id: <trace_id>,
   status: <success|failure>,
@@ -377,18 +365,17 @@ delivery leaves completion pending and retries do not increment `completed_step_
 Requests:
 
 ```text
-{ action: "start", type: "request", conversation_id: <id>, trace_id: <trace_id>, participant_a: <agent>, participant_b: <agent>, source_agent: <agent> }
-{ action: "message", type: "request", conversation_id: <id>, trace_id: <trace_id>, sender: <agent>, text: <text>, intent: <intent> }
-{ action: "summary", type: "request", conversation_id: <id>, trace_id: <trace_id> }
-{ action: "close", type: "request", conversation_id: <id>, trace_id: <trace_id> }
+{ request: "conversation_start", conversation_id: <id>, trace_id: <trace_id>, participant_a: <agent>, participant_b: <agent>, source_agent: <agent> }
+{ request: "conversation_message", conversation_id: <id>, trace_id: <trace_id>, sender: <agent>, text: <text>, intent: <intent> }
+{ request: "conversation_summary", conversation_id: <id>, trace_id: <trace_id> }
+{ request: "conversation_close", conversation_id: <id>, trace_id: <trace_id> }
 ```
 
 Participant turn:
 
 ```text
 {
-  action: "conversation_turn",
-  type: "request",
+  request: "conversation_turn",
   conversation_id: <id>,
   trace_id: <trace_id>,
   from: <agent>,
@@ -403,8 +390,7 @@ Response:
 
 ```text
 {
-  action: <start|message|summary|close>,
-  type: "response",
+  response: "conversation_result",
   conversation_id: <id>,
   trace_id: <trace_id>,
   state: <active|closed>,
@@ -430,27 +416,26 @@ history and turn count unchanged.
 Requests:
 
 ```text
-{ action: "start", type: "request", operation_id: <id>, operation_target_agent: <agent>, operation_action: <action>, operation_text: <text>, max_attempts: <number>, strategy: <immediate|scheduled>, scheduler_agent: <agent>, delay_ticks: <tick>, trace_id: <trace_id>, source_agent: <agent> }
-{ action: "failure", type: "request", trace_id: <trace_id>, attempt: <attempt>, current_tick: <tick> }
-{ action: "success", type: "request", trace_id: <trace_id>, attempt: <attempt> }
+{ request: "retry_start", operation_id: <id>, operation_target_agent: <agent>, operation_request: <request>, operation_text: <text>, max_attempts: <number>, strategy: <immediate|scheduled>, scheduler_agent: <agent>, delay_ticks: <tick>, trace_id: <trace_id>, source_agent: <agent> }
+{ request: "retry_failure", trace_id: <trace_id>, attempt: <attempt>, current_tick: <tick> }
+{ request: "retry_success", trace_id: <trace_id>, attempt: <attempt> }
 ```
 
 Operation attempt:
 
 ```text
-{ action: <operation_action>, type: "request", trace_id: <trace_id>, text: <operation_text>, attempt: <number> }
+{ request: <operation_request>, trace_id: <trace_id>, text: <operation_text>, attempt: <number> }
 ```
 
 Scheduled retry request:
 
 ```text
 {
-  action: "schedule",
-  type: "request",
+  request: "scheduling_schedule",
   schedule_id: <operation_id>,
   due_tick: <current_tick + delay_ticks>,
   target_agent: <operation_target_agent>,
-  payload_action: <operation_action>,
+  payload_request: <operation_request>,
   payload_text: <operation_text>,
   payload_attempt: <attempt>,
   trace_id: <trace_id>,
@@ -462,8 +447,7 @@ Terminal response:
 
 ```text
 {
-  action: "start",
-  type: "response",
+  response: "retry_result",
   operation_id: <id>,
   trace_id: <trace_id>,
   status: <success|failure>,
@@ -483,36 +467,36 @@ changing the attempt count.
 Fan-out and fan-in:
 
 ```text
-1. Send a request with action: "start" and expected_count to an aggregation agent.
-2. Send a request with action: "distribute" to a distribution agent.
-3. Workers send requests with action: "collect", the same trace_id, and payload to an aggregation agent.
+1. Send a request with `request: "aggregation_start"` and expected_count to an aggregation agent.
+2. Send a request with `request: "distribution_distribute"` to a distribution agent.
+3. Workers send requests with `request: "aggregation_collect"`, the same trace_id, and payload to an aggregation agent.
 4. Aggregation emits a response when `expected_count` collection outcomes are accounted for.
 ```
 
 Delayed retry:
 
 ```text
-1. Send a request with action: "start", strategy: "scheduled", and scheduler_agent to a retry agent.
-2. On a request with action: "failure", trace_id, and current_tick, retry sends a schedule request
+1. Send a request with `request: "retry_start"`, strategy: "scheduled", and scheduler_agent to a retry agent.
+2. On a request with `request: "retry_failure"`, trace_id, and current_tick, retry sends a schedule request
    due at current_tick + delay_ticks.
-3. An external tick source sends requests with action: "tick" to scheduling.
+3. An external tick source sends requests with `request: "scheduling_tick"` to scheduling.
 4. Scheduling re-emits the operation attempt at the requested tick.
 ```
 
 Branching workflow:
 
 ```text
-1. Send a request with action: "start" to workflow with aligned step target agents and payload lists.
+1. Send a request with `request: "workflow_start"` to workflow with aligned step target agents and payload lists.
 2. Workflow sends step 1 directly to the first configured step target agent.
-3. Send a step_done request for step 1 with the branch outcome to skip one pending step.
-4. Continue sending step_done requests until workflow emits a start response.
+3. Send a `workflow_step_done` request for step 1 with the branch outcome to skip one pending step.
+4. Continue sending `workflow_step_done` requests until workflow emits `workflow_result`.
 ```
 
 Conversation-scoped workflow:
 
 ```text
-1. Conversation receives a request with action: "start" for two participant agents.
-2. Participant A sends a request with action: "message"; conversation relays a conversation_turn
+1. Conversation receives a request with `request: "conversation_start"` for two participant agents.
+2. Participant A sends a request with `request: "conversation_message"`; conversation relays a conversation_turn
    request to participant B.
 3. Participant B replies through the same coordinator; conversation relays the turn back to
    participant A.

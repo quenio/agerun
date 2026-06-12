@@ -76,7 +76,8 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
     ar_methodology_t *mut_methodology = ar_agency__get_methodology(mut_agency);
     const char *ref_instructions =
         "memory.last_action := message.action\n"
-        "memory.last_type := message.type\n"
+        "memory.last_request := message.request\n"
+        "memory.last_response := message.response\n"
         "memory.last_text := message.text\n"
         "memory.last_kind := message.kind\n"
         "memory.last_source := message.source\n"
@@ -152,8 +153,7 @@ static void test_routing__selects_one_target_by_key_only(void) {
     // When a direct-target_agent request is sent without a route key
     ar_data_t *own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Direct route message should be created");
-    ar_data__set_map_string(own_message, "action", "route");
-    ar_data__set_map_string(own_message, "type", "request");
+    ar_data__set_map_string(own_message, "request", "routing_route");
     ar_data__set_map_integer(own_message, "target_agent", checked_agent_id(receiver_a));
     ar_data_t *own_payload = create_payload("domain_event", "direct", "caller-shaped", 0);
     AR_ASSERT(ar_data__set_map_data(own_message, "payload", own_payload),
@@ -171,10 +171,8 @@ static void test_routing__selects_one_target_by_key_only(void) {
     const ar_data_t *ref_report_memory = ar_agency__get_agent_memory(mut_agency, report_agent);
     AR_ASSERT(ar_data__get_map_data(ref_receiver_a_memory, "last_text") == NULL,
               "Routing should not forward direct target_agent requests");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_action"),
-                     "route") == 0,
-              "Direct target_agent request should emit route");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_type"), "response") == 0,
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_response"),
+                     "routing_result") == 0,
               "Direct target_agent request should emit a route response");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
                      "failure") == 0,
@@ -188,8 +186,7 @@ static void test_routing__selects_one_target_by_key_only(void) {
     // When an unrelated message carries a matching route table
     own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Ignored route-shaped message should be created");
-    ar_data__set_map_string(own_message, "action", "ignored");
-    ar_data__set_map_string(own_message, "type", "request");
+    ar_data__set_map_string(own_message, "request", "routing_ignored");
     ar_data__set_map_string(own_message, "route_key", "ignored-key");
     const char *ref_ignored_route_keys[] = {"ignored-key"};
     const int ref_ignored_route_target_agents[] = {checked_agent_id(receiver_b)};
@@ -223,8 +220,7 @@ static void test_routing__selects_one_target_by_key_only(void) {
     // When a keyed route request carries more than three candidate routes
     own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Keyed route message should be created");
-    ar_data__set_map_string(own_message, "action", "route");
-    ar_data__set_map_string(own_message, "type", "request");
+    ar_data__set_map_string(own_message, "request", "routing_route");
     ar_data__set_map_string(own_message, "route_key", "delta");
     const char *ref_route_keys[] = {"alpha", "beta", "gamma", "delta"};
     const int ref_route_target_agents[] = {
@@ -288,8 +284,7 @@ static void test_routing__selects_one_target_by_key_only(void) {
     // When a keyed route does not select a target_agent
     own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Missed keyed route message should be created");
-    ar_data__set_map_string(own_message, "action", "route");
-    ar_data__set_map_string(own_message, "type", "request");
+    ar_data__set_map_string(own_message, "request", "routing_route");
     ar_data__set_map_string(own_message, "route_key", "missing");
     const char *ref_missed_route_keys[] = {"known"};
     const int ref_missed_route_target_agents[] = {checked_agent_id(receiver_c)};

@@ -1,12 +1,12 @@
-memory.is_request := if(message.type = "request", 1, 0)
-memory.is_start := if(message.action = "start", memory.is_request, 0)
-memory.is_failure := if(message.action = "failure", memory.is_request, 0)
-memory.is_success := if(message.action = "success", memory.is_request, 0)
+memory.is_request := if(message.request <> 0, 1, 0)
+memory.is_start := if(memory.is_request = 1, message.request = "retry_start", 0)
+memory.is_failure := if(memory.is_request = 1, message.request = "retry_failure", 0)
+memory.is_success := if(memory.is_request = 1, message.request = "retry_success", 0)
 memory.operation_id := if(memory.is_start = 1, message.operation_id, memory.operation_id)
 memory.start_trace_id := if(message.trace_id <> 0, message.trace_id, message.operation_id)
 memory.trace_id := if(memory.is_start = 1, memory.start_trace_id, memory.trace_id)
 memory.operation_target_agent := if(memory.is_start = 1, message.operation_target_agent, memory.operation_target_agent)
-memory.operation_action := if(memory.is_start = 1, message.operation_action, memory.operation_action)
+memory.operation_request := if(memory.is_start = 1, message.operation_request, memory.operation_request)
 memory.operation_text := if(memory.is_start = 1, message.operation_text, memory.operation_text)
 memory.max_attempts := if(memory.is_start = 1, message.max_attempts, memory.max_attempts)
 memory.strategy := if(memory.is_start = 1, message.strategy, memory.strategy)
@@ -20,8 +20,7 @@ memory.pending_terminal_status := if(memory.is_start = 1, "", memory.pending_ter
 memory.pending_terminal_attempts := if(memory.is_start = 1, 0, memory.pending_terminal_attempts)
 memory.start_attempt := memory.attempts + memory.is_start
 memory.operation_message := {
-  action: memory.operation_action
-  type: "request"
+  request: memory.operation_request
   trace_id: memory.trace_id
   text: memory.operation_text
   attempt: memory.start_attempt
@@ -52,8 +51,7 @@ memory.use_scheduled := if(memory.strategy = "scheduled", 1, 0)
 memory.use_scheduled := memory.use_scheduled * memory.retry_allowed
 memory.use_immediate := memory.retry_allowed - memory.use_scheduled
 memory.retry_message := {
-  action: memory.operation_action
-  type: "request"
+  request: memory.operation_request
   trace_id: memory.trace_id
   text: memory.operation_text
   attempt: memory.next_attempt
@@ -62,12 +60,11 @@ memory.retry_sent := send(memory.operation_target_agent * memory.use_immediate, 
 memory.failure_tick := if(memory.active_failure = 1, message.current_tick, 0)
 memory.retry_due_tick := memory.failure_tick + memory.delay_ticks
 memory.schedule_message := {
-  action: "schedule"
-  type: "request"
+  request: "scheduling_schedule"
   schedule_id: memory.operation_id
   due_tick: memory.retry_due_tick
   target_agent: memory.operation_target_agent
-  payload_action: memory.operation_action
+  payload_request: memory.operation_request
   payload_text: memory.operation_text
   payload_attempt: memory.next_attempt
   trace_id: memory.trace_id
@@ -91,8 +88,7 @@ memory.report_failure_count := memory.report_failure_count + memory.report_dispa
 memory.report_state := memory.report_status
 memory.report_status := if(memory.report_failure_count > 0, "failure", "success")
 memory.report_message := {
-  action: "start"
-  type: "response"
+  response: "retry_result"
   operation_id: memory.operation_id
   trace_id: memory.trace_id
   status: memory.report_status

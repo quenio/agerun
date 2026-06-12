@@ -45,7 +45,8 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
     ar_methodology_t *mut_methodology = ar_agency__get_methodology(mut_agency);
     const char *ref_instructions =
         "memory.last_action := message.action\n"
-        "memory.last_type := message.type\n"
+        "memory.last_request := message.request\n"
+        "memory.last_response := message.response\n"
         "memory.last_text := message.text\n"
         "memory.last_trace_id := message.trace_id\n"
         "memory.last_attempt := message.attempt\n"
@@ -100,12 +101,11 @@ static void test_retry__reexecutes_and_reports_success(void) {
 
     ar_data_t *own_start = ar_data__create_map();
     AR_ASSERT(own_start != NULL, "Retry start should be created");
-    ar_data__set_map_string(own_start, "action", "start");
-    ar_data__set_map_string(own_start, "type", "request");
+    ar_data__set_map_string(own_start, "request", "retry_start");
     ar_data__set_map_string(own_start, "operation_id", "op-1");
     ar_data__set_map_string(own_start, "trace_id", "retry-trace-1");
     ar_data__set_map_integer(own_start, "operation_target_agent", checked_agent_id(operation_agent));
-    ar_data__set_map_string(own_start, "operation_action", "attempt");
+    ar_data__set_map_string(own_start, "operation_request", "attempt");
     ar_data__set_map_string(own_start, "operation_text", "work");
     ar_data__set_map_integer(own_start, "max_attempts", 2);
     ar_data__set_map_string(own_start, "strategy", "immediate");
@@ -124,8 +124,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
 
     ar_data_t *own_failure = ar_data__create_map();
     AR_ASSERT(own_failure != NULL, "Failure message should be created");
-    ar_data__set_map_string(own_failure, "action", "failure");
-    ar_data__set_map_string(own_failure, "type", "request");
+    ar_data__set_map_string(own_failure, "request", "retry_failure");
     ar_data__set_map_string(own_failure, "trace_id", "retry-trace-1");
     ar_data__set_map_integer(own_failure, "attempt", 1);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_failure),
@@ -138,8 +137,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
 
     ar_data_t *own_duplicate_failure = ar_data__create_map();
     AR_ASSERT(own_duplicate_failure != NULL, "Duplicate stale failure should be created");
-    ar_data__set_map_string(own_duplicate_failure, "action", "failure");
-    ar_data__set_map_string(own_duplicate_failure, "type", "request");
+    ar_data__set_map_string(own_duplicate_failure, "request", "retry_failure");
     ar_data__set_map_string(own_duplicate_failure, "trace_id", "retry-trace-1");
     ar_data__set_map_integer(own_duplicate_failure, "attempt", 1);
     ar_data__set_map_integer(own_duplicate_failure, "current_tick", 49);
@@ -157,8 +155,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
 
     ar_data_t *own_success = ar_data__create_map();
     AR_ASSERT(own_success != NULL, "Success message should be created");
-    ar_data__set_map_string(own_success, "action", "success");
-    ar_data__set_map_string(own_success, "type", "request");
+    ar_data__set_map_string(own_success, "request", "retry_success");
     ar_data__set_map_string(own_success, "trace_id", "retry-trace-1");
     ar_data__set_map_integer(own_success, "attempt", 2);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_success),
@@ -167,10 +164,8 @@ static void test_retry__reexecutes_and_reports_success(void) {
     ar_method_fixture__process_all_messages(own_fixture);
 
     const ar_data_t *ref_report_memory = ar_agency__get_agent_memory(mut_agency, report_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_action"),
-                     "start") == 0,
-              "Retry should report result");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_type"), "response") == 0,
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_response"),
+                     "retry_result") == 0,
               "Retry terminal report should be a response");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"), "success") == 0,
               "Retry terminal success should report standard success status");
@@ -188,8 +183,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
 
     ar_data_t *own_stale_failure = ar_data__create_map();
     AR_ASSERT(own_stale_failure != NULL, "Stale failure message should be created");
-    ar_data__set_map_string(own_stale_failure, "action", "failure");
-    ar_data__set_map_string(own_stale_failure, "type", "request");
+    ar_data__set_map_string(own_stale_failure, "request", "retry_failure");
     ar_data__set_map_string(own_stale_failure, "trace_id", "retry-trace-1");
     ar_data__set_map_integer(own_stale_failure, "attempt", 1);
     ar_data__set_map_integer(own_stale_failure, "current_tick", 50);
@@ -209,13 +203,12 @@ static void test_retry__reexecutes_and_reports_success(void) {
 
     ar_data_t *own_final_start = ar_data__create_map();
     AR_ASSERT(own_final_start != NULL, "Final failure retry start should be created");
-    ar_data__set_map_string(own_final_start, "action", "start");
-    ar_data__set_map_string(own_final_start, "type", "request");
+    ar_data__set_map_string(own_final_start, "request", "retry_start");
     ar_data__set_map_string(own_final_start, "operation_id", "op-final");
     ar_data__set_map_integer(own_final_start,
                              "operation_target_agent",
                              checked_agent_id(operation_agent));
-    ar_data__set_map_string(own_final_start, "operation_action", "attempt");
+    ar_data__set_map_string(own_final_start, "operation_request", "attempt");
     ar_data__set_map_string(own_final_start, "operation_text", "final-work");
     ar_data__set_map_integer(own_final_start, "max_attempts", 1);
     ar_data__set_map_string(own_final_start, "strategy", "immediate");
@@ -229,8 +222,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
 
     ar_data_t *own_final_failure = ar_data__create_map();
     AR_ASSERT(own_final_failure != NULL, "Final failure message should be created");
-    ar_data__set_map_string(own_final_failure, "action", "failure");
-    ar_data__set_map_string(own_final_failure, "type", "request");
+    ar_data__set_map_string(own_final_failure, "request", "retry_failure");
     ar_data__set_map_string(own_final_failure, "trace_id", "op-final");
     ar_data__set_map_integer(own_final_failure, "attempt", 1);
     ar_data__set_map_integer(own_final_failure, "current_tick", 60);
@@ -253,8 +245,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
 
     own_stale_failure = ar_data__create_map();
     AR_ASSERT(own_stale_failure != NULL, "Stale final failure message should be created");
-    ar_data__set_map_string(own_stale_failure, "action", "failure");
-    ar_data__set_map_string(own_stale_failure, "type", "request");
+    ar_data__set_map_string(own_stale_failure, "request", "retry_failure");
     ar_data__set_map_string(own_stale_failure, "trace_id", "op-final");
     ar_data__set_map_integer(own_stale_failure, "attempt", 1);
     ar_data__set_map_integer(own_stale_failure, "current_tick", 61);
@@ -274,13 +265,12 @@ static void test_retry__reexecutes_and_reports_success(void) {
 
     ar_data_t *own_scheduled_start = ar_data__create_map();
     AR_ASSERT(own_scheduled_start != NULL, "Scheduled retry start should be created");
-    ar_data__set_map_string(own_scheduled_start, "action", "start");
-    ar_data__set_map_string(own_scheduled_start, "type", "request");
+    ar_data__set_map_string(own_scheduled_start, "request", "retry_start");
     ar_data__set_map_string(own_scheduled_start, "operation_id", "op-scheduled");
     ar_data__set_map_integer(own_scheduled_start,
                              "operation_target_agent",
                              checked_agent_id(scheduled_operation_agent));
-    ar_data__set_map_string(own_scheduled_start, "operation_action", "attempt");
+    ar_data__set_map_string(own_scheduled_start, "operation_request", "attempt");
     ar_data__set_map_string(own_scheduled_start, "operation_text", "scheduled-work");
     ar_data__set_map_integer(own_scheduled_start, "max_attempts", 2);
     ar_data__set_map_string(own_scheduled_start, "strategy", "scheduled");
@@ -299,8 +289,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
 
     ar_data_t *own_scheduled_failure = ar_data__create_map();
     AR_ASSERT(own_scheduled_failure != NULL, "Scheduled failure message should be created");
-    ar_data__set_map_string(own_scheduled_failure, "action", "failure");
-    ar_data__set_map_string(own_scheduled_failure, "type", "request");
+    ar_data__set_map_string(own_scheduled_failure, "request", "retry_failure");
     ar_data__set_map_string(own_scheduled_failure, "trace_id", "op-scheduled");
     ar_data__set_map_integer(own_scheduled_failure, "attempt", 1);
     ar_data__set_map_integer(own_scheduled_failure, "current_tick", 10);
@@ -310,7 +299,8 @@ static void test_retry__reexecutes_and_reports_success(void) {
     ar_method_fixture__process_all_messages(own_fixture);
 
     const ar_data_t *ref_scheduler_memory = ar_agency__get_agent_memory(mut_agency, scheduler_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_scheduler_memory, "last_action"), "schedule") == 0,
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_scheduler_memory, "last_request"),
+                     "scheduling_schedule") == 0,
               "Scheduled retry should hand off to scheduling");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_scheduler_memory, "last_schedule_id"),
                      "op-scheduled") == 0,
@@ -325,11 +315,10 @@ static void test_retry__reexecutes_and_reports_success(void) {
 
     ar_data_t *own_failed_start = ar_data__create_map();
     AR_ASSERT(own_failed_start != NULL, "Failed start dispatch should be created");
-    ar_data__set_map_string(own_failed_start, "action", "start");
-    ar_data__set_map_string(own_failed_start, "type", "request");
+    ar_data__set_map_string(own_failed_start, "request", "retry_start");
     ar_data__set_map_string(own_failed_start, "operation_id", "op-start-dispatch-failed");
     ar_data__set_map_integer(own_failed_start, "operation_target_agent", 98765);
-    ar_data__set_map_string(own_failed_start, "operation_action", "attempt");
+    ar_data__set_map_string(own_failed_start, "operation_request", "attempt");
     ar_data__set_map_string(own_failed_start, "operation_text", "missing-worker");
     ar_data__set_map_integer(own_failed_start, "max_attempts", 2);
     ar_data__set_map_string(own_failed_start, "strategy", "immediate");
@@ -357,8 +346,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
 
     ar_data_t *own_dispatch_failure = ar_data__create_map();
     AR_ASSERT(own_dispatch_failure != NULL, "Failed start synthetic failure should be created");
-    ar_data__set_map_string(own_dispatch_failure, "action", "failure");
-    ar_data__set_map_string(own_dispatch_failure, "type", "request");
+    ar_data__set_map_string(own_dispatch_failure, "request", "retry_failure");
     ar_data__set_map_string(own_dispatch_failure,
                             "trace_id",
                             "op-start-dispatch-failed");
@@ -377,13 +365,12 @@ static void test_retry__reexecutes_and_reports_success(void) {
 
     ar_data_t *own_correlated_start = ar_data__create_map();
     AR_ASSERT(own_correlated_start != NULL, "Correlated retry start should be created");
-    ar_data__set_map_string(own_correlated_start, "action", "start");
-    ar_data__set_map_string(own_correlated_start, "type", "request");
+    ar_data__set_map_string(own_correlated_start, "request", "retry_start");
     ar_data__set_map_string(own_correlated_start, "operation_id", "op-correlated");
     ar_data__set_map_integer(own_correlated_start,
                              "operation_target_agent",
                              checked_agent_id(operation_agent));
-    ar_data__set_map_string(own_correlated_start, "operation_action", "attempt");
+    ar_data__set_map_string(own_correlated_start, "operation_request", "attempt");
     ar_data__set_map_string(own_correlated_start, "operation_text", "correlated-work");
     ar_data__set_map_integer(own_correlated_start, "max_attempts", 2);
     ar_data__set_map_string(own_correlated_start, "strategy", "immediate");
@@ -401,8 +388,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
 
     ar_data_t *own_stale_active_failure = ar_data__create_map();
     AR_ASSERT(own_stale_active_failure != NULL, "Stale active failure should be created");
-    ar_data__set_map_string(own_stale_active_failure, "action", "failure");
-    ar_data__set_map_string(own_stale_active_failure, "type", "request");
+    ar_data__set_map_string(own_stale_active_failure, "request", "retry_failure");
     ar_data__set_map_string(own_stale_active_failure,
                             "trace_id",
                             "op-start-dispatch-failed");
@@ -422,8 +408,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
 
     ar_data_t *own_stale_active_success = ar_data__create_map();
     AR_ASSERT(own_stale_active_success != NULL, "Stale active success should be created");
-    ar_data__set_map_string(own_stale_active_success, "action", "success");
-    ar_data__set_map_string(own_stale_active_success, "type", "request");
+    ar_data__set_map_string(own_stale_active_success, "request", "retry_success");
     ar_data__set_map_string(own_stale_active_success,
                             "trace_id",
                             "op-start-dispatch-failed");
@@ -442,15 +427,14 @@ static void test_retry__reexecutes_and_reports_success(void) {
     ar_data_t *own_failed_success_report_start = ar_data__create_map();
     AR_ASSERT(own_failed_success_report_start != NULL,
               "Failed success report start should be created");
-    ar_data__set_map_string(own_failed_success_report_start, "action", "start");
-    ar_data__set_map_string(own_failed_success_report_start, "type", "request");
+    ar_data__set_map_string(own_failed_success_report_start, "request", "retry_start");
     ar_data__set_map_string(own_failed_success_report_start,
                             "operation_id",
                             "op-success-report-failed");
     ar_data__set_map_integer(own_failed_success_report_start,
                              "operation_target_agent",
                              checked_agent_id(operation_agent));
-    ar_data__set_map_string(own_failed_success_report_start, "operation_action", "attempt");
+    ar_data__set_map_string(own_failed_success_report_start, "operation_request", "attempt");
     ar_data__set_map_string(own_failed_success_report_start, "operation_text", "success-report");
     ar_data__set_map_integer(own_failed_success_report_start, "max_attempts", 2);
     ar_data__set_map_string(own_failed_success_report_start, "strategy", "immediate");
@@ -466,8 +450,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
 
     ar_data_t *own_failed_success_report = ar_data__create_map();
     AR_ASSERT(own_failed_success_report != NULL, "Failed success report should be created");
-    ar_data__set_map_string(own_failed_success_report, "action", "success");
-    ar_data__set_map_string(own_failed_success_report, "type", "request");
+    ar_data__set_map_string(own_failed_success_report, "request", "retry_success");
     ar_data__set_map_string(own_failed_success_report,
                             "trace_id",
                             "op-success-report-failed");
@@ -487,8 +470,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
 
     ar_data_t *own_opposite_failure = ar_data__create_map();
     AR_ASSERT(own_opposite_failure != NULL, "Opposite failure after success should be created");
-    ar_data__set_map_string(own_opposite_failure, "action", "failure");
-    ar_data__set_map_string(own_opposite_failure, "type", "request");
+    ar_data__set_map_string(own_opposite_failure, "request", "retry_failure");
     ar_data__set_map_string(own_opposite_failure,
                             "trace_id",
                             "op-success-report-failed");
@@ -511,8 +493,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
 
     own_failed_success_report = ar_data__create_map();
     AR_ASSERT(own_failed_success_report != NULL, "Repeated failed success report should be created");
-    ar_data__set_map_string(own_failed_success_report, "action", "success");
-    ar_data__set_map_string(own_failed_success_report, "type", "request");
+    ar_data__set_map_string(own_failed_success_report, "request", "retry_success");
     ar_data__set_map_string(own_failed_success_report,
                             "trace_id",
                             "op-success-report-failed");
@@ -530,15 +511,14 @@ static void test_retry__reexecutes_and_reports_success(void) {
     ar_data_t *own_failed_failure_report_start = ar_data__create_map();
     AR_ASSERT(own_failed_failure_report_start != NULL,
               "Failed final failure report start should be created");
-    ar_data__set_map_string(own_failed_failure_report_start, "action", "start");
-    ar_data__set_map_string(own_failed_failure_report_start, "type", "request");
+    ar_data__set_map_string(own_failed_failure_report_start, "request", "retry_start");
     ar_data__set_map_string(own_failed_failure_report_start,
                             "operation_id",
                             "op-failure-report-failed");
     ar_data__set_map_integer(own_failed_failure_report_start,
                              "operation_target_agent",
                              checked_agent_id(operation_agent));
-    ar_data__set_map_string(own_failed_failure_report_start, "operation_action", "attempt");
+    ar_data__set_map_string(own_failed_failure_report_start, "operation_request", "attempt");
     ar_data__set_map_string(own_failed_failure_report_start, "operation_text", "failure-report");
     ar_data__set_map_integer(own_failed_failure_report_start, "max_attempts", 1);
     ar_data__set_map_string(own_failed_failure_report_start, "strategy", "immediate");
@@ -554,8 +534,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
 
     ar_data_t *own_failed_failure_report = ar_data__create_map();
     AR_ASSERT(own_failed_failure_report != NULL, "Failed final failure report should be created");
-    ar_data__set_map_string(own_failed_failure_report, "action", "failure");
-    ar_data__set_map_string(own_failed_failure_report, "type", "request");
+    ar_data__set_map_string(own_failed_failure_report, "request", "retry_failure");
     ar_data__set_map_string(own_failed_failure_report,
                             "trace_id",
                             "op-failure-report-failed");
@@ -574,8 +553,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
     own_failed_failure_report = ar_data__create_map();
     AR_ASSERT(own_failed_failure_report != NULL,
               "Repeated failed final failure report should be created");
-    ar_data__set_map_string(own_failed_failure_report, "action", "failure");
-    ar_data__set_map_string(own_failed_failure_report, "type", "request");
+    ar_data__set_map_string(own_failed_failure_report, "request", "retry_failure");
     ar_data__set_map_string(own_failed_failure_report,
                             "trace_id",
                             "op-failure-report-failed");
@@ -593,13 +571,12 @@ static void test_retry__reexecutes_and_reports_success(void) {
 
     ar_data_t *own_failed_schedule_start = ar_data__create_map();
     AR_ASSERT(own_failed_schedule_start != NULL, "Failed schedule start should be created");
-    ar_data__set_map_string(own_failed_schedule_start, "action", "start");
-    ar_data__set_map_string(own_failed_schedule_start, "type", "request");
+    ar_data__set_map_string(own_failed_schedule_start, "request", "retry_start");
     ar_data__set_map_string(own_failed_schedule_start, "operation_id", "op-schedule-failed");
     ar_data__set_map_integer(own_failed_schedule_start,
                              "operation_target_agent",
                              checked_agent_id(scheduled_operation_agent));
-    ar_data__set_map_string(own_failed_schedule_start, "operation_action", "attempt");
+    ar_data__set_map_string(own_failed_schedule_start, "operation_request", "attempt");
     ar_data__set_map_string(own_failed_schedule_start, "operation_text", "schedule-missing");
     ar_data__set_map_integer(own_failed_schedule_start, "max_attempts", 2);
     ar_data__set_map_string(own_failed_schedule_start, "strategy", "scheduled");
@@ -613,8 +590,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
 
     ar_data_t *own_schedule_failure = ar_data__create_map();
     AR_ASSERT(own_schedule_failure != NULL, "Failed schedule failure should be created");
-    ar_data__set_map_string(own_schedule_failure, "action", "failure");
-    ar_data__set_map_string(own_schedule_failure, "type", "request");
+    ar_data__set_map_string(own_schedule_failure, "request", "retry_failure");
     ar_data__set_map_string(own_schedule_failure, "trace_id", "op-schedule-failed");
     ar_data__set_map_integer(own_schedule_failure, "attempt", 1);
     ar_data__set_map_integer(own_schedule_failure, "current_tick", 80);

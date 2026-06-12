@@ -45,7 +45,8 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
     ar_methodology_t *mut_methodology = ar_agency__get_methodology(mut_agency);
     const char *ref_instructions =
         "memory.last_action := message.action\n"
-        "memory.last_type := message.type\n"
+        "memory.last_request := message.request\n"
+        "memory.last_response := message.response\n"
         "memory.last_trace_id := message.trace_id\n"
         "memory.last_conversation_id := message.conversation_id\n"
         "memory.last_from := message.from\n"
@@ -99,8 +100,7 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     // When the coordinator starts a conversation and relays one turn from each participant
     ar_data_t *own_start = ar_data__create_map();
     AR_ASSERT(own_start != NULL, "Conversation start should be created");
-    ar_data__set_map_string(own_start, "action", "start");
-    ar_data__set_map_string(own_start, "type", "request");
+    ar_data__set_map_string(own_start, "request", "conversation_start");
     ar_data__set_map_string(own_start, "conversation_id", "chat-1");
     ar_data__set_map_string(own_start, "trace_id", "chat-trace-1");
     ar_data__set_map_integer(own_start, "participant_a", checked_agent_id(participant_a));
@@ -112,8 +112,7 @@ static void test_conversation__coordinates_two_participant_agents(void) {
 
     ar_data_t *own_first = ar_data__create_map();
     AR_ASSERT(own_first != NULL, "First conversation message should be created");
-    ar_data__set_map_string(own_first, "action", "message");
-    ar_data__set_map_string(own_first, "type", "request");
+    ar_data__set_map_string(own_first, "request", "conversation_message");
     ar_data__set_map_string(own_first, "conversation_id", "chat-1");
     ar_data__set_map_string(own_first, "trace_id", "chat-turn-1");
     ar_data__set_map_integer(own_first, "sender", checked_agent_id(participant_a));
@@ -125,8 +124,7 @@ static void test_conversation__coordinates_two_participant_agents(void) {
 
     ar_data_t *own_second = ar_data__create_map();
     AR_ASSERT(own_second != NULL, "Second conversation message should be created");
-    ar_data__set_map_string(own_second, "action", "message");
-    ar_data__set_map_string(own_second, "type", "request");
+    ar_data__set_map_string(own_second, "request", "conversation_message");
     ar_data__set_map_string(own_second, "conversation_id", "chat-1");
     ar_data__set_map_string(own_second, "trace_id", "chat-turn-2");
     ar_data__set_map_integer(own_second, "sender", checked_agent_id(participant_b));
@@ -138,8 +136,7 @@ static void test_conversation__coordinates_two_participant_agents(void) {
 
     ar_data_t *own_summary = ar_data__create_map();
     AR_ASSERT(own_summary != NULL, "Summary request should be created");
-    ar_data__set_map_string(own_summary, "action", "summary");
-    ar_data__set_map_string(own_summary, "type", "request");
+    ar_data__set_map_string(own_summary, "request", "conversation_summary");
     ar_data__set_map_string(own_summary, "conversation_id", "chat-1");
     ar_data__set_map_string(own_summary, "trace_id", "chat-summary-1");
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_summary),
@@ -151,7 +148,7 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     // Then participant B should receive participant A's first turn
     const ar_data_t *ref_participant_b_memory = ar_agency__get_agent_memory(mut_agency,
                                                                            participant_b);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_b_memory, "last_action"),
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_b_memory, "last_request"),
                      "conversation_turn") == 0,
               "Participant B should receive a conversation turn");
     AR_ASSERT(ar_data__get_map_integer(ref_participant_b_memory, "last_from") ==
@@ -172,7 +169,7 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     // Then participant A should receive participant B's reply turn
     const ar_data_t *ref_participant_a_memory = ar_agency__get_agent_memory(mut_agency,
                                                                            participant_a);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_a_memory, "last_action"),
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_a_memory, "last_request"),
                      "conversation_turn") == 0,
               "Participant A should receive a conversation turn");
     AR_ASSERT(ar_data__get_map_integer(ref_participant_a_memory, "last_from") ==
@@ -189,10 +186,8 @@ static void test_conversation__coordinates_two_participant_agents(void) {
 
     // Then the observer should receive a structured summary with both turns
     const ar_data_t *ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_action"),
-                     "summary") == 0,
-              "Observer should receive conversation summary");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_type"), "response") == 0,
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_response"),
+                     "conversation_result") == 0,
               "Conversation summary should be a response");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "success") == 0,
               "Conversation summary should report standard success status");
@@ -221,8 +216,7 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     // When a participant message cannot be delivered
     ar_data_t *own_failed_start = ar_data__create_map();
     AR_ASSERT(own_failed_start != NULL, "Failed relay conversation start should be created");
-    ar_data__set_map_string(own_failed_start, "action", "start");
-    ar_data__set_map_string(own_failed_start, "type", "request");
+    ar_data__set_map_string(own_failed_start, "request", "conversation_start");
     ar_data__set_map_string(own_failed_start, "conversation_id", "chat-2");
     ar_data__set_map_integer(own_failed_start, "participant_a", checked_agent_id(participant_a));
     ar_data__set_map_integer(own_failed_start, "participant_b", 98765);
@@ -233,8 +227,7 @@ static void test_conversation__coordinates_two_participant_agents(void) {
 
     ar_data_t *own_failed_turn = ar_data__create_map();
     AR_ASSERT(own_failed_turn != NULL, "Failed relay message should be created");
-    ar_data__set_map_string(own_failed_turn, "action", "message");
-    ar_data__set_map_string(own_failed_turn, "type", "request");
+    ar_data__set_map_string(own_failed_turn, "request", "conversation_message");
     ar_data__set_map_string(own_failed_turn, "conversation_id", "chat-2");
     ar_data__set_map_string(own_failed_turn, "trace_id", "chat-failed-turn");
     ar_data__set_map_integer(own_failed_turn, "sender", checked_agent_id(participant_a));
@@ -247,10 +240,8 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     ar_method_fixture__process_all_messages(own_fixture);
 
     // Then the coordinator should report the failed relay without recording the turn
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_action"),
-                     "message") == 0,
-              "Observer should receive a relay response for failed delivery");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_type"), "response") == 0,
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_response"),
+                     "conversation_result") == 0,
               "Failed relay response should be a response");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
                      "failure") == 0,

@@ -48,8 +48,7 @@ static void send_collect(ar_agency_t *mut_agency,
                          const char *ref_payload) {
     ar_data_t *own_collect = ar_data__create_map();
     AR_ASSERT(own_collect != NULL, "Collect message should be created");
-    ar_data__set_map_string(own_collect, "action", "collect");
-    ar_data__set_map_string(own_collect, "type", "request");
+    ar_data__set_map_string(own_collect, "request", "aggregation_collect");
     ar_data__set_map_string(own_collect, "trace_id", ref_trace_id);
     ar_data__set_map_string(own_collect, "payload", ref_payload);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, aggregation_agent, own_collect),
@@ -61,7 +60,8 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
     ar_methodology_t *mut_methodology = ar_agency__get_methodology(mut_agency);
     const char *ref_instructions =
         "memory.last_action := message.action\n"
-        "memory.last_type := message.type\n"
+        "memory.last_request := message.request\n"
+        "memory.last_response := message.response\n"
         "memory.last_status := message.status\n"
         "memory.last_trace_id := message.trace_id\n"
         "memory.last_success_count := message.success_count\n"
@@ -96,8 +96,7 @@ static void test_aggregation__combines_required_payloads(void) {
 
     ar_data_t *own_reset = ar_data__create_map();
     AR_ASSERT(own_reset != NULL, "Aggregate reset message should be created");
-    ar_data__set_map_string(own_reset, "action", "start");
-    ar_data__set_map_string(own_reset, "type", "request");
+    ar_data__set_map_string(own_reset, "request", "aggregation_start");
     ar_data__set_map_string(own_reset, "trace_id", "agg-trace-1");
     ar_data__set_map_integer(own_reset, "expected_count", 4);
     ar_data__set_map_integer(own_reset, "source_agent", checked_agent_id(receiver_agent));
@@ -115,8 +114,8 @@ static void test_aggregation__combines_required_payloads(void) {
     const ar_data_t *ref_receiver_memory = ar_agency__get_agent_memory(mut_agency, receiver_agent);
     const char *ref_action = ar_data__get_map_string(ref_receiver_memory, "last_action");
     AR_ASSERT(ref_action == NULL, "Aggregate completion response should not include action");
-    const char *ref_type = ar_data__get_map_string(ref_receiver_memory, "last_type");
-    AR_ASSERT(ref_type != NULL && strcmp(ref_type, "response") == 0,
+    const char *ref_response = ar_data__get_map_string(ref_receiver_memory, "last_response");
+    AR_ASSERT(ref_response != NULL && strcmp(ref_response, "aggregation_result") == 0,
               "Aggregate completion should be a response");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_status"), "success") == 0,
               "Aggregate completion should report standard success status");
@@ -160,8 +159,7 @@ static void test_aggregation__combines_required_payloads(void) {
 
     own_reset = ar_data__create_map();
     AR_ASSERT(own_reset != NULL, "Failed completion reset message should be created");
-    ar_data__set_map_string(own_reset, "action", "start");
-    ar_data__set_map_string(own_reset, "type", "request");
+    ar_data__set_map_string(own_reset, "request", "aggregation_start");
     ar_data__set_map_string(own_reset, "trace_id", "agg-failed-trace");
     ar_data__set_map_integer(own_reset, "expected_count", 2);
     ar_data__set_map_integer(own_reset, "source_agent", 98765);
@@ -189,8 +187,7 @@ static void test_aggregation__combines_required_payloads(void) {
 
     own_reset = ar_data__create_map();
     AR_ASSERT(own_reset != NULL, "Reset message should be created");
-    ar_data__set_map_string(own_reset, "action", "start");
-    ar_data__set_map_string(own_reset, "type", "request");
+    ar_data__set_map_string(own_reset, "request", "aggregation_start");
     ar_data__set_map_string(own_reset, "trace_id", "agg-reset-trace");
     ar_data__set_map_integer(own_reset, "expected_count", 2);
     ar_data__set_map_integer(own_reset, "source_agent", checked_agent_id(receiver_agent));
@@ -242,8 +239,7 @@ static void test_aggregation__reports_collection_failures_on_completion(void) {
 
     ar_data_t *own_reset = ar_data__create_map();
     AR_ASSERT(own_reset != NULL, "Aggregate reset message should be created");
-    ar_data__set_map_string(own_reset, "action", "start");
-    ar_data__set_map_string(own_reset, "type", "request");
+    ar_data__set_map_string(own_reset, "request", "aggregation_start");
     ar_data__set_map_string(own_reset, "trace_id", "agg-trace-1");
     ar_data__set_map_integer(own_reset, "expected_count", 2);
     ar_data__set_map_integer(own_reset, "source_agent", checked_agent_id(receiver_agent));

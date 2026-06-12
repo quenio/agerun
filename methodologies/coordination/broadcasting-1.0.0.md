@@ -7,11 +7,11 @@ Broadcasting sends the same caller-provided payload to every positive recipient 
 
 ## Behavior
 
-Only messages with `type: "request"` are handled as coordination requests.
+Only messages with a recognized `request` value are handled as coordination requests.
 
-When the agent receives `action: "broadcast"`, the method sends `payload` as-is to each positive
-target agent. It processes the list with `head(...)` and `tail(...)`, sending continuation messages
-to itself until the list is exhausted.
+When the agent receives `request: "broadcasting_broadcast"`, the method sends `payload` as-is to
+each positive target agent. It processes the list with `head(...)` and `tail(...)`, sending
+continuation messages to itself until the list is exhausted.
 
 Positive target agents that cannot receive messages are counted as failures, but valid later target
 agents are still processed. Integer `0` entries are placeholders and are skipped.
@@ -22,8 +22,7 @@ Request:
 
 ```text
 {
-  action: "broadcast",
-  type: "request",
+  request: "broadcasting_broadcast",
   target_agents: [<agent>, <agent>, ...],
   payload: <message>,
   trace_id: <trace_id>,
@@ -41,8 +40,7 @@ Response:
 
 ```text
 {
-  action: "broadcast",
-  type: "response",
+  response: "broadcasting_result",
   status: <success|failure>,
   state: <broadcasted|broadcast_failed>,
   trace_id: <trace_id>,

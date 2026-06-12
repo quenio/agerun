@@ -1,5 +1,5 @@
-memory.is_request := if(message.type = "request", 1, 0)
-memory.is_broadcast := if(message.action = "broadcast", memory.is_request, 0)
+memory.is_request := if(message.request <> 0, 1, 0)
+memory.is_broadcast := if(memory.is_request = 1, message.request = "broadcasting_broadcast", 0)
 memory.trace_id := if(memory.is_broadcast = 1, message.trace_id, memory.trace_id)
 memory.source_agent := if(memory.is_broadcast = 1, message.source_agent, memory.source_agent)
 memory.current_target_agents := if(memory.is_broadcast = 1, message.target_agents, [])
@@ -26,8 +26,7 @@ memory.has_more_work := if(memory.has_more_work > 0, 1, 0)
 memory.continuation_required := memory.is_broadcast * memory.has_more_work
 memory.continuation_target_agent := memory.self * memory.continuation_required
 memory.continuation_message := {
-  action: "broadcast"
-  type: "request"
+  request: "broadcasting_broadcast"
   target_agents: memory.remaining_target_agents
   payload: message.payload
   trace_id: memory.trace_id
@@ -54,8 +53,7 @@ memory.status := if(memory.continuation_failed = 1, "failure", memory.status)
 memory.should_report := memory.is_broadcast
 memory.should_report := if(memory.continuation_sent = 1, 0, memory.should_report)
 memory.result_message := {
-  action: "broadcast"
-  type: "response"
+  response: "broadcasting_result"
   status: memory.status
   state: memory.state
   trace_id: memory.trace_id

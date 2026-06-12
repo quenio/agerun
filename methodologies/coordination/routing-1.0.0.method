@@ -1,5 +1,5 @@
-memory.is_request := if(message.type = "request", 1, 0)
-memory.is_route := if(message.action = "route", memory.is_request, 0)
+memory.is_request := if(message.request <> 0, 1, 0)
+memory.is_route := if(memory.is_request = 1, message.request = "routing_route", 0)
 memory.has_request_key := if(message.route_key <> 0, 1, 0)
 memory.route_key := head(message.routes.keys)
 memory.route_target := head(message.routes.target_agents)
@@ -34,8 +34,7 @@ memory.scan_routes := {
   target_agents: memory.remaining_route_target_agents
 }
 memory.scan_message := {
-  action: "route"
-  type: "request"
+  request: "routing_route"
   route_key: message.route_key
   routes: memory.scan_routes
   payload: message.payload
@@ -62,8 +61,7 @@ memory.status := if(memory.sent = 1, "success", memory.status)
 memory.status := if(memory.has_failed_count = 1, "failure", memory.status)
 memory.status := if(memory.scan_failed = 1, "failure", memory.status)
 memory.response_message := {
-  action: "route"
-  type: "response"
+  response: "routing_result"
   status: memory.status
   state: memory.state
   trace_id: memory.trace_id

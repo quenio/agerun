@@ -8,31 +8,31 @@ pattern.
 
 ## Behavior
 
-Only messages with `type: "request"` are handled as coordination requests.
+Only messages with a recognized `request` value are handled as coordination requests.
 
-On `action: "start"`, the method stores workflow metadata, `trace_id`, `source_agent`, branch
-value, and aligned `step_target_agents` and `step_payloads` lists. Each step payload is sent
+On `request: "workflow_start"`, the method stores workflow metadata, `trace_id`, `source_agent`,
+branch value, and aligned `step_target_agents` and `step_payloads` lists. Each step payload is sent
 directly and as-is to the corresponding positive step target agent. Integer `0` step target agents
 can be skipped when followed by a later positive target.
 
-On `action: "step_done"`, the method advances only when the workflow id and step number match the
-currently active sent step. Duplicate, stale, premature, or out-of-order completions are ignored.
+On `request: "workflow_step_done"`, the method advances only when the workflow id and step number
+match the currently active sent step. Duplicate, stale, premature, or out-of-order completions are
+ignored.
 
 ## Message Format
 
 Requests:
 
 ```text
-{ action: "start", type: "request", workflow_id: <id>, trace_id: <trace_id>, source_agent: <agent>, step_target_agents: [<agent>, ...], step_payloads: [<message>, ...], branch_value: <outcome> }
-{ action: "step_done", type: "request", workflow_id: <id>, step: <current-step-number>, outcome: <value> }
+{ request: "workflow_start", workflow_id: <id>, trace_id: <trace_id>, source_agent: <agent>, step_target_agents: [<agent>, ...], step_payloads: [<message>, ...], branch_value: <outcome> }
+{ request: "workflow_step_done", workflow_id: <id>, step: <current-step-number>, outcome: <value> }
 ```
 
 Completion response:
 
 ```text
 {
-  action: "start",
-  type: "response",
+  response: "workflow_result",
   workflow_id: <id>,
   trace_id: <trace_id>,
   status: <success|failure>,

@@ -50,7 +50,8 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
     ar_methodology_t *mut_methodology = ar_agency__get_methodology(mut_agency);
     const char *ref_instructions =
         "memory.last_action := message.action\n"
-        "memory.last_type := message.type\n"
+        "memory.last_request := message.request\n"
+        "memory.last_response := message.response\n"
         "memory.last_text := message.text\n"
         "memory.last_kind := message.kind\n"
         "memory.last_source_agent := message.source_agent\n"
@@ -139,8 +140,7 @@ static void test_broadcasting__sends_same_payload_to_all_recipients(void) {
     // When one broadcast carries more than three recipients
     ar_data_t *own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Broadcast message should be created");
-    ar_data__set_map_string(own_message, "action", "broadcast");
-    ar_data__set_map_string(own_message, "type", "request");
+    ar_data__set_map_string(own_message, "request", "broadcasting_broadcast");
     ar_data_t *own_target_agents = create_target_agents(receiver_a, receiver_b, receiver_c, receiver_d);
     AR_ASSERT(ar_data__set_map_data(own_message, "target_agents", own_target_agents),
               "Broadcast message should own target_agents list");
@@ -207,10 +207,8 @@ static void test_broadcasting__sends_same_payload_to_all_recipients(void) {
               "Broadcasting agent should report no failed sends");
 
     const ar_data_t *ref_report_memory = ar_agency__get_agent_memory(mut_agency, report_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_action"),
-                     "broadcast") == 0,
-              "Broadcasting should emit a result when source_agent is provided");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_type"), "response") == 0,
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_response"),
+                     "broadcasting_result") == 0,
               "Broadcasting should emit a response");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"), "success") == 0,
               "Broadcasting should report standard success status");
@@ -225,8 +223,7 @@ static void test_broadcasting__sends_same_payload_to_all_recipients(void) {
     // When an unrelated message carries positive target_agents
     own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Ignored message should be created");
-    ar_data__set_map_string(own_message, "action", "ignored");
-    ar_data__set_map_string(own_message, "type", "request");
+    ar_data__set_map_string(own_message, "request", "broadcasting_ignored");
     own_target_agents = create_target_agents(receiver_a, receiver_b, receiver_c, receiver_d);
     AR_ASSERT(ar_data__set_map_data(own_message, "target_agents", own_target_agents),
               "Ignored message should own target_agents list");
@@ -253,8 +250,7 @@ static void test_broadcasting__sends_same_payload_to_all_recipients(void) {
     // When an unrelated message omits broadcast-only fields
     own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Ignored message without target_agents should be created");
-    ar_data__set_map_string(own_message, "action", "ignored");
-    ar_data__set_map_string(own_message, "type", "request");
+    ar_data__set_map_string(own_message, "request", "broadcasting_ignored");
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, broadcasting_agent, own_message),
               "Ignored message without target_agents should queue");
     own_message = NULL;
@@ -271,8 +267,7 @@ static void test_broadcasting__sends_same_payload_to_all_recipients(void) {
     // When one recipient cannot receive messages
     own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Partial broadcast message should be created");
-    ar_data__set_map_string(own_message, "action", "broadcast");
-    ar_data__set_map_string(own_message, "type", "request");
+    ar_data__set_map_string(own_message, "request", "broadcasting_broadcast");
     own_target_agents = ar_data__create_list();
     AR_ASSERT(own_target_agents != NULL, "Partial broadcast target_agents list should be created");
     append_agent_id(own_target_agents, receiver_a);
@@ -308,8 +303,7 @@ static void test_broadcasting__sends_same_payload_to_all_recipients(void) {
     // When the target_agent list has no positive recipients
     own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Zero-recipient broadcast message should be created");
-    ar_data__set_map_string(own_message, "action", "broadcast");
-    ar_data__set_map_string(own_message, "type", "request");
+    ar_data__set_map_string(own_message, "request", "broadcasting_broadcast");
     own_target_agents = ar_data__create_list();
     AR_ASSERT(own_target_agents != NULL, "Zero-recipient target_agents list should be created");
     AR_ASSERT(ar_data__list_add_last_integer(own_target_agents, 0),
@@ -337,8 +331,7 @@ static void test_broadcasting__sends_same_payload_to_all_recipients(void) {
     // When consecutive placeholder target_agents precede a valid recipient
     own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Placeholder broadcast message should be created");
-    ar_data__set_map_string(own_message, "action", "broadcast");
-    ar_data__set_map_string(own_message, "type", "request");
+    ar_data__set_map_string(own_message, "request", "broadcasting_broadcast");
     own_target_agents = ar_data__create_list();
     AR_ASSERT(own_target_agents != NULL, "Placeholder target_agents list should be created");
     AR_ASSERT(ar_data__list_add_last_integer(own_target_agents, 0),
@@ -400,8 +393,7 @@ static void test_broadcasting__reports_failed_when_target_agents_missing(void) {
 
     ar_data_t *own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Broadcast message without target_agents should be created");
-    ar_data__set_map_string(own_message, "action", "broadcast");
-    ar_data__set_map_string(own_message, "type", "request");
+    ar_data__set_map_string(own_message, "request", "broadcasting_broadcast");
     ar_data_t *own_payload = create_payload("domain_event", "missing", "caller-shaped", 0);
     AR_ASSERT(ar_data__set_map_data(own_message, "payload", own_payload),
               "Broadcast message without target_agents should own opaque payload");
@@ -427,10 +419,8 @@ static void test_broadcasting__reports_failed_when_target_agents_missing(void) {
               "Broadcast without target_agents should record zero failed sends");
 
     const ar_data_t *ref_report_memory = ar_agency__get_agent_memory(mut_agency, report_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_action"),
-                     "broadcast") == 0,
-              "Broadcast without target_agents should emit a result");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_type"), "response") == 0,
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_response"),
+                     "broadcasting_result") == 0,
               "Broadcast without target_agents should emit a response");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
                      "failure") == 0,

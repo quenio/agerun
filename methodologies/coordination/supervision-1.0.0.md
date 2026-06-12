@@ -8,11 +8,11 @@ capability.
 
 ## Behavior
 
-Only messages with `type: "request"` are handled as coordination requests.
+Only messages with a recognized `request` value are handled as coordination requests.
 
-On `action: "start"`, the method stores policy, `trace_id`, `source_agent`, and child method
-version, then spawns one child per `child_method_names` entry. Lifecycle and stop requests are
-validated against tracked child ids before restart or exit behavior is applied.
+On `request: "supervision_start"`, the method stores policy, `trace_id`, `source_agent`, and child
+method version, then spawns one child per `child_method_names` entry. Lifecycle and stop requests
+are validated against tracked child ids before restart or exit behavior is applied.
 
 Untracked lifecycle and stop requests report `state: "ignored"`. Handoff failures report
 `state: "handoff_failed"` and standard `status: "failure"`.
@@ -22,18 +22,17 @@ Untracked lifecycle and stop requests report `state: "ignored"`. Handoff failure
 Requests:
 
 ```text
-{ action: "start", type: "request", child_method_names: [<method>, ...], child_method_version: <version>, policy: "restart", trace_id: <trace_id>, source_agent: <agent> }
-{ action: "child_failed", type: "request", trace_id: <trace_id>, child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
-{ action: "child_exited", type: "request", trace_id: <trace_id>, child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
-{ action: "stop", type: "request", trace_id: <trace_id>, child_agent_id: <agent> }
+{ request: "supervision_start", child_method_names: [<method>, ...], child_method_version: <version>, policy: "restart", trace_id: <trace_id>, source_agent: <agent> }
+{ request: "supervision_child_failed", trace_id: <trace_id>, child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
+{ request: "supervision_child_exited", trace_id: <trace_id>, child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
+{ request: "supervision_stop", trace_id: <trace_id>, child_agent_id: <agent> }
 ```
 
 Response:
 
 ```text
 {
-  action: <start|child_failed|child_exited|stop>,
-  type: "response",
+  response: "supervision_result",
   trace_id: <trace_id>,
   status: <success|failure>,
   state: <running|restarted|stopped|ignored|stop_failed|handoff_failed>,

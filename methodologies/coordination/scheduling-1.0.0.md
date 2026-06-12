@@ -7,28 +7,28 @@ the stored due tick. It expresses delayed execution as ordinary message state.
 
 ## Behavior
 
-Only messages with `type: "request"` are handled as coordination requests.
+Only messages with a recognized `request` value are handled as coordination requests.
 
-On `action: "schedule"`, the method stores schedule metadata, target agent, payload fields,
-`trace_id`, and `source_agent`. On a due `tick`, it sends the stored payload to the stored target
-agent. On `cancel`, it clears pending state only when the matching schedule is still pending.
+On `request: "scheduling_schedule"`, the method stores schedule metadata, target agent, payload
+fields, `trace_id`, and `source_agent`. On a due `scheduling_tick`, it sends the stored payload to
+the stored target agent. On `scheduling_cancel`, it clears pending state only when the matching
+schedule is still pending.
 
 ## Message Format
 
 Requests:
 
 ```text
-{ action: "schedule", type: "request", schedule_id: <id>, due_tick: <number>, target_agent: <agent>, payload_action: <action>, payload_text: <text>, payload_attempt: <attempt>, trace_id: <trace_id>, source_agent: <agent> }
-{ action: "tick", type: "request", tick: <number> }
-{ action: "cancel", type: "request", schedule_id: <id>, trace_id: <trace_id> }
+{ request: "scheduling_schedule", schedule_id: <id>, due_tick: <number>, target_agent: <agent>, payload_request: <request>, payload_text: <text>, payload_attempt: <attempt>, trace_id: <trace_id>, source_agent: <agent> }
+{ request: "scheduling_tick", tick: <number> }
+{ request: "scheduling_cancel", schedule_id: <id>, trace_id: <trace_id> }
 ```
 
 Triggered message:
 
 ```text
 {
-  action: <payload_action>,
-  type: "request",
+  request: <payload_request>,
   trace_id: <trace_id>,
   text: <payload_text>,
   attempt: <payload_attempt>,
@@ -40,8 +40,7 @@ Response:
 
 ```text
 {
-  action: <schedule|cancel>,
-  type: "response",
+  response: "scheduling_result",
   schedule_id: <id>,
   trace_id: <trace_id>,
   status: <success|failure>,
@@ -53,8 +52,8 @@ Response:
 }
 ```
 
-Trigger responses use `action: "schedule"` and the stored schedule trace because they report the
-stored schedule request; cancel responses use `action: "cancel"` and the cancel request trace.
+Trigger responses use the stored schedule trace because they report the stored schedule request;
+cancel responses use the cancel request trace.
 
 ## Implementation and Tests
 

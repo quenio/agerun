@@ -1,7 +1,7 @@
-memory.is_request := if(message.type = "request", 1, 0)
-memory.is_start := if(message.action = "start", memory.is_request, 0)
-memory.is_execute_step := if(message.action = "execute_step", memory.is_request, 0)
-memory.is_step_done := if(message.action = "step_done", memory.is_request, 0)
+memory.is_request := if(message.request <> 0, 1, 0)
+memory.is_start := if(memory.is_request = 1, message.request = "workflow_start", 0)
+memory.is_execute_step := if(memory.is_request = 1, message.request = "workflow_execute_step", 0)
+memory.is_step_done := if(memory.is_request = 1, message.request = "workflow_step_done", 0)
 memory.workflow_id := if(memory.is_start = 1, message.workflow_id, memory.workflow_id)
 memory.trace_id := if(memory.is_start = 1, message.trace_id, memory.trace_id)
 memory.source_agent := if(memory.is_start = 1, message.source_agent, memory.source_agent)
@@ -14,8 +14,7 @@ memory.awaiting_step_done := if(memory.is_start = 1, 0, memory.awaiting_step_don
 memory.pending_step_target_agents := if(memory.is_start = 1, [], memory.pending_step_target_agents)
 memory.pending_step_payloads := if(memory.is_start = 1, [], memory.pending_step_payloads)
 memory.start_execute_message := {
-  action: "execute_step"
-  type: "request"
+  request: "workflow_execute_step"
   workflow_id: memory.workflow_id
   trace_id: memory.trace_id
   step_target_agents: message.step_target_agents
@@ -36,8 +35,7 @@ memory.has_remaining_step := if(memory.remaining_step_target > 0, 1, 0)
 memory.execute_action := memory.is_execute_step * memory.has_step
 memory.skip_empty_step := memory.is_execute_step * memory.no_step * memory.has_remaining_step
 memory.skip_step_message := {
-  action: "execute_step"
-  type: "request"
+  request: "workflow_execute_step"
   workflow_id: memory.workflow_id
   trace_id: memory.trace_id
   step_target_agents: memory.remaining_step_target_agents
@@ -83,8 +81,7 @@ memory.has_next_step := if(memory.has_next_step > 0, 1, 0)
 memory.step_increment := 1 + memory.skip_next
 memory.next_step_number := memory.current_step + memory.step_increment
 memory.continue_message := {
-  action: "execute_step"
-  type: "request"
+  request: "workflow_execute_step"
   workflow_id: memory.workflow_id
   trace_id: memory.trace_id
   step_target_agents: memory.next_step_target_agents
@@ -110,8 +107,7 @@ memory.completion_status := if(memory.should_complete > 0, "success", memory.sta
 memory.completion_status := if(memory.handoff_failed > 0, "failure", memory.completion_status)
 memory.completion_failure_count := if(memory.handoff_failed > 0, 1, 0)
 memory.complete_message := {
-  action: "start"
-  type: "response"
+  response: "workflow_result"
   workflow_id: memory.workflow_id
   trace_id: memory.trace_id
   status: memory.completion_status

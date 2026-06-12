@@ -1,6 +1,6 @@
-memory.is_request := if(message.type = "request", 1, 0)
-memory.is_start := if(message.action = "start", memory.is_request, 0)
-memory.is_collect := if(message.action = "collect", memory.is_request, 0)
+memory.is_request := if(message.request <> 0, 1, 0)
+memory.is_start := if(memory.is_request = 1, message.request = "aggregation_start", 0)
+memory.is_collect := if(memory.is_request = 1, message.request = "aggregation_collect", 0)
 memory.trace_id := if(memory.is_start = 1, message.trace_id, memory.trace_id)
 memory.target_count := if(memory.is_start = 1, message.expected_count, memory.target_count)
 memory.source_agent := if(memory.is_start = 1, message.source_agent, memory.source_agent)
@@ -33,7 +33,7 @@ memory.status := if(memory.success_complete = 1, "success", "failure")
 memory.should_emit := memory.is_complete * memory.not_completed
 memory.output_target := memory.source_agent * memory.should_emit
 memory.output_message := {
-  type: "response"
+  response: "aggregation_result"
   trace_id: memory.trace_id
   status: memory.status
   success_count: memory.count

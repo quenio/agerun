@@ -8,8 +8,8 @@ fan-in counterpart to distribution.
 
 ## Behavior
 
-Only messages with `type: "request"` and `action: "start"` or `action: "collect"` are handled as
-coordination requests.
+Only messages with `request: "aggregation_start"` or `request: "aggregation_collect"` are handled
+as coordination requests.
 
 A start request resets aggregation, stores `trace_id` and `source_agent`, sets the target count
 from `expected_count`, and clears the append-backed payload list. A collect request appends the
@@ -20,7 +20,7 @@ Mismatched or missing collection traces fail the collection request and do not a
 Those failed collection attempts are reported through `failure_count` when the aggregate response is
 eventually returned. The response is sent when `success_count + failure_count` equals the configured
 `expected_count`. Completion is recorded only after the aggregate response is sent successfully.
-The request `action` field differentiates start requests from collect requests; `expected_count`
+The `request` field differentiates start requests from collect requests; `expected_count`
 only configures the start request threshold.
 
 ## Message Format
@@ -28,15 +28,15 @@ only configures the start request threshold.
 Requests:
 
 ```text
-{ action: "start", type: "request", expected_count: <count>, trace_id: <trace_id>, source_agent: <agent> }
-{ action: "collect", type: "request", trace_id: <trace_id>, payload: <payload> }
+{ request: "aggregation_start", expected_count: <count>, trace_id: <trace_id>, source_agent: <agent> }
+{ request: "aggregation_collect", trace_id: <trace_id>, payload: <payload> }
 ```
 
 Completion response:
 
 ```text
 {
-  type: "response",
+  response: "aggregation_result",
   trace_id: <trace_id>,
   status: <success|failure>,
   success_count: <count>,

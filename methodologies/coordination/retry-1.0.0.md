@@ -8,11 +8,11 @@ with scheduling.
 
 ## Behavior
 
-Only messages with `type: "request"` are handled as coordination requests.
+Only messages with a recognized `request` value are handled as coordination requests.
 
-On `action: "start"`, the method stores operation metadata, `trace_id`, retry strategy, maximum
-attempts, scheduler agent, delay ticks, and `source_agent`. It records an attempt only after the
-operation send succeeds.
+On `request: "retry_start"`, the method stores operation metadata, `trace_id`, retry strategy,
+maximum attempts, scheduler agent, delay ticks, and `source_agent`. It records an attempt only
+after the operation send succeeds.
 
 Matching `failure` requests retry while attempts remain. Matching `success` requests emit the
 terminal response. Terminal state is recorded only after the `start` response is delivered; failed
@@ -23,27 +23,26 @@ report delivery stores a pending terminal result for retry.
 Requests:
 
 ```text
-{ action: "start", type: "request", operation_id: <id>, operation_target_agent: <agent>, operation_action: <action>, operation_text: <text>, max_attempts: <number>, strategy: <immediate|scheduled>, scheduler_agent: <agent>, delay_ticks: <tick>, trace_id: <trace_id>, source_agent: <agent> }
-{ action: "failure", type: "request", trace_id: <trace_id>, attempt: <attempt>, current_tick: <tick> }
-{ action: "success", type: "request", trace_id: <trace_id>, attempt: <attempt> }
+{ request: "retry_start", operation_id: <id>, operation_target_agent: <agent>, operation_request: <request>, operation_text: <text>, max_attempts: <number>, strategy: <immediate|scheduled>, scheduler_agent: <agent>, delay_ticks: <tick>, trace_id: <trace_id>, source_agent: <agent> }
+{ request: "retry_failure", trace_id: <trace_id>, attempt: <attempt>, current_tick: <tick> }
+{ request: "retry_success", trace_id: <trace_id>, attempt: <attempt> }
 ```
 
 Operation attempt:
 
 ```text
-{ action: <operation_action>, type: "request", trace_id: <trace_id>, text: <operation_text>, attempt: <number> }
+{ request: <operation_request>, trace_id: <trace_id>, text: <operation_text>, attempt: <number> }
 ```
 
 Scheduled retry request:
 
 ```text
 {
-  action: "schedule",
-  type: "request",
+  request: "scheduling_schedule",
   schedule_id: <operation_id>,
   due_tick: <current_tick + delay_ticks>,
   target_agent: <operation_target_agent>,
-  payload_action: <operation_action>,
+  payload_request: <operation_request>,
   payload_text: <operation_text>,
   payload_attempt: <attempt>,
   trace_id: <trace_id>,
@@ -55,8 +54,7 @@ Terminal response:
 
 ```text
 {
-  action: "start",
-  type: "response",
+  response: "retry_result",
   operation_id: <id>,
   trace_id: <trace_id>,
   status: <success|failure>,

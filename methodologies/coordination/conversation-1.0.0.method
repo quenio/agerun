@@ -1,8 +1,8 @@
-memory.is_request := if(message.type = "request", 1, 0)
-memory.is_start := if(message.action = "start", memory.is_request, 0)
-memory.is_message := if(message.action = "message", memory.is_request, 0)
-memory.is_summary := if(message.action = "summary", memory.is_request, 0)
-memory.is_close := if(message.action = "close", memory.is_request, 0)
+memory.is_request := if(message.request <> 0, 1, 0)
+memory.is_start := if(memory.is_request = 1, message.request = "conversation_start", 0)
+memory.is_message := if(memory.is_request = 1, message.request = "conversation_message", 0)
+memory.is_summary := if(memory.is_request = 1, message.request = "conversation_summary", 0)
+memory.is_close := if(memory.is_request = 1, message.request = "conversation_close", 0)
 memory.conversation_id := if(memory.is_start = 1, message.conversation_id, memory.conversation_id)
 memory.trace_id := if(memory.is_start = 1, message.trace_id, memory.trace_id)
 memory.participant_a := if(memory.is_start = 1, message.participant_a, memory.participant_a)
@@ -25,8 +25,7 @@ memory.recipient := if(memory.from_a = 1, memory.participant_b, 0)
 memory.recipient := if(memory.from_b = 1, memory.participant_a, memory.recipient)
 memory.next_turn_count := memory.turn_count + memory.is_turn
 memory.turn_message := {
-  action: "conversation_turn"
-  type: "request"
+  request: "conversation_turn"
   conversation_id: memory.conversation_id
   trace_id: memory.request_trace_id
   from: message.sender
@@ -48,8 +47,7 @@ memory.last_text := if(memory.append_ok = 1, message.text, memory.last_text)
 memory.should_close := memory.is_close * memory.matches_conversation
 memory.state := if(memory.should_close = 1, "closed", memory.state)
 memory.close_message := {
-  action: "close"
-  type: "response"
+  response: "conversation_result"
   conversation_id: memory.conversation_id
   trace_id: memory.request_trace_id
   status: "success"
@@ -60,7 +58,6 @@ memory.close_message := {
 }
 memory.close_a_sent := send(memory.participant_a * memory.should_close, memory.close_message)
 memory.close_b_sent := send(memory.participant_b * memory.should_close, memory.close_message)
-memory.response_action := message.action
 memory.response_state := if(memory.is_turn = 1, "relay_failed", "ignored")
 memory.response_state := if(memory.append_ok = 1, "relayed", memory.response_state)
 memory.response_state := if(memory.is_start = 1, "active", memory.response_state)
@@ -74,8 +71,7 @@ memory.response_success_count := if(memory.is_start = 1, 0, memory.response_succ
 memory.response_failure_count := memory.relay_failure_count
 memory.response_status := if(memory.response_failure_count > 0, "failure", "success")
 memory.response_message := {
-  action: memory.response_action
-  type: "response"
+  response: "conversation_result"
   conversation_id: memory.conversation_id
   trace_id: memory.request_trace_id
   state: memory.state

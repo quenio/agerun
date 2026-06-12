@@ -7,11 +7,11 @@ item to the next positive worker and rotates back to the beginning of the worker
 
 ## Behavior
 
-Only messages with `type: "request"` are handled as coordination requests.
+Only messages with a recognized `request` value are handled as coordination requests.
 
-When the agent receives `action: "distribute"`, it starts an assignment pass for `payloads` and
-`workers`. Internal `assign_payload` messages carry the remaining payloads, current worker list,
-original worker list, counters, `trace_id`, and `source_agent`.
+When the agent receives `request: "distribution_distribute"`, it starts an assignment pass for
+`payloads` and `workers`. Internal `distribution_assign_payload` requests carry the remaining
+payloads, current worker list, original worker list, counters, `trace_id`, and `source_agent`.
 
 Each assigned payload is sent as-is. Integer `0` worker placeholders are skipped without consuming
 the current payload when later workers remain.
@@ -22,8 +22,7 @@ Request:
 
 ```text
 {
-  action: "distribute",
-  type: "request",
+  request: "distribution_distribute",
   work_id: <id>,
   payloads: [<payload>, <payload>, ...],
   workers: [<agent>, <agent>, ...],
@@ -36,8 +35,7 @@ Response:
 
 ```text
 {
-  action: "distribute",
-  type: "response",
+  response: "distribution_result",
   status: <success|failure>,
   state: <distributed|distribution_failed>,
   work_id: <id>,

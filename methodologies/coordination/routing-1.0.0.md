@@ -7,9 +7,9 @@ table. It is a keyed-selection primitive, not a direct target delivery or fan-ou
 
 ## Behavior
 
-Only messages with `type: "request"` are handled as coordination requests.
+Only messages with a recognized `request` value are handled as coordination requests.
 
-When the agent receives `action: "route"`, the method scans `routes.keys` and
+When the agent receives `request: "routing_route"`, the method scans `routes.keys` and
 `routes.target_agents` as paired unbounded lists. It sends the caller-provided `payload` as-is to
 the first positive target agent whose paired key matches `route_key`.
 
@@ -22,8 +22,7 @@ Request:
 
 ```text
 {
-  action: "route",
-  type: "request",
+  request: "routing_route",
   route_key: <key>,
   routes: {
     keys: [<key>, <key>, ...],
@@ -39,8 +38,7 @@ Response:
 
 ```text
 {
-  action: "route",
-  type: "response",
+  response: "routing_result",
   status: <success|failure>,
   state: <routed|route_failed>,
   trace_id: <trace_id>,

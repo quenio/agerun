@@ -113,7 +113,8 @@ static void register_worker_recorder(ar_agency_t *mut_agency) {
         "memory.received_texts := if(memory.append_ok = 1, memory.append_buffer, memory.received_texts)\n"
         "memory.received_count := memory.received_count + memory.append_ok\n"
         "memory.last_action := message.action\n"
-        "memory.last_type := message.type\n"
+        "memory.last_request := message.request\n"
+        "memory.last_response := message.response\n"
         "memory.last_trace_id := message.trace_id\n"
         "memory.last_kind := message.kind\n"
         "memory.last_source := message.source\n"
@@ -131,7 +132,8 @@ static void register_report_recorder(ar_agency_t *mut_agency) {
     ar_methodology_t *mut_methodology = ar_agency__get_methodology(mut_agency);
     const char *ref_instructions =
         "memory.last_action := message.action\n"
-        "memory.last_type := message.type\n"
+        "memory.last_request := message.request\n"
+        "memory.last_response := message.response\n"
         "memory.last_status := message.status\n"
         "memory.last_state := message.state\n"
         "memory.last_trace_id := message.trace_id\n"
@@ -177,8 +179,7 @@ static void send_distribution(ar_agency_t *mut_agency,
                               int source_agent) {
     ar_data_t *own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Distribution message should be created");
-    ar_data__set_map_string(own_message, "action", "distribute");
-    ar_data__set_map_string(own_message, "type", "request");
+    ar_data__set_map_string(own_message, "request", "distribution_distribute");
     ar_data__set_map_string(own_message, "work_id", ref_work_id);
     AR_ASSERT(ar_data__set_map_data(own_message, "payloads", own_payloads),
               "Distribution message should own payloads");
@@ -255,10 +256,8 @@ static void test_distribution__round_robins_payloads_across_workers(void) {
               "Distribution should preserve caller-owned source_agent");
 
     const ar_data_t *ref_report_memory = ar_agency__get_agent_memory(mut_agency, report_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_action"),
-                     "distribute") == 0,
-              "Report receiver should observe distribution result");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_type"), "response") == 0,
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_response"),
+                     "distribution_result") == 0,
               "Distribution result should be a response");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"), "success") == 0,
               "Distribution result should report standard success status");
@@ -284,9 +283,8 @@ static void test_distribution__round_robins_payloads_across_workers(void) {
 
     ar_data_t *own_ignored_message = ar_data__create_map();
     AR_ASSERT(own_ignored_message != NULL, "Ignored message should be created");
-    AR_ASSERT(ar_data__set_map_string(own_ignored_message, "action", "ignored"),
+    AR_ASSERT(ar_data__set_map_string(own_ignored_message, "request", "distribution_ignored"),
               "Ignored message should set action");
-    ar_data__set_map_string(own_ignored_message, "type", "request");
     AR_ASSERT(ar_data__set_map_integer(own_ignored_message, "source_agent", checked_agent_id(report_agent)),
               "Ignored message should set source_agent");
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, distribution_agent, own_ignored_message),
