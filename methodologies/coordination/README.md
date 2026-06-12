@@ -63,8 +63,9 @@ flat and nested messages because `send(...)`, `append(...)`, `head(...)`, and `t
 borrowed maps and lists.
 
 Every external coordination request uses `type: "request"`. Every external coordination response
-uses `type: "response"`, repeats the initiating request `action`, preserves `trace_id`, and reports
-standard `status: "success"` or `status: "failure"` with `success_count` and `failure_count`.
+uses `type: "response"`, repeats the request action it reports, preserves that request's
+`trace_id`, and reports standard `status: "success"` or `status: "failure"` with `success_count`
+and `failure_count`.
 Method-specific outcomes such as `routed`, `broadcast_failed`, or `handoff_failed` are carried in
 `state` when the response needs that detail. `source_agent` is the optional positive agent id that
 receives responses. Coordination methods handle command actions only on `type: "request"` messages;
@@ -151,9 +152,9 @@ Requests:
 
 ```text
 { action: "start", type: "request", child_method_names: [<method>, ...], child_method_version: <version>, policy: "restart", trace_id: <id>, source_agent: <agent> }
-{ action: "child_failed", type: "request", child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
-{ action: "child_exited", type: "request", child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
-{ action: "stop", type: "request", child_agent_id: <agent> }
+{ action: "child_failed", type: "request", trace_id: <id>, child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
+{ action: "child_exited", type: "request", trace_id: <id>, child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
+{ action: "stop", type: "request", trace_id: <id>, child_agent_id: <agent> }
 ```
 
 Reply:
@@ -252,7 +253,7 @@ Requests:
 ```text
 { action: "schedule", type: "request", schedule_id: <id>, due_tick: <number>, target_agent: <agent>, payload_action: <action>, payload_text: <text>, payload_attempt: <attempt>, trace_id: <id>, source_agent: <agent> }
 { action: "tick", type: "request", tick: <number> }
-{ action: "cancel", type: "request", schedule_id: <id> }
+{ action: "cancel", type: "request", schedule_id: <id>, trace_id: <id> }
 ```
 
 Triggered message:
@@ -287,8 +288,8 @@ Response:
 
 A due tick clears `pending` only when the stored payload is sent successfully. If delivery fails,
 the state is `trigger_failed` and the schedule remains pending for a later tick. Trigger responses
-use `action: "schedule"` because they report the stored schedule request; cancel responses use
-`action: "cancel"`.
+use `action: "schedule"` and the stored schedule trace because they report the stored schedule
+request; cancel responses use `action: "cancel"` and the cancel request trace.
 
 ### Synchronization
 
@@ -370,9 +371,9 @@ Requests:
 
 ```text
 { action: "start", type: "request", conversation_id: <id>, trace_id: <id>, participant_a: <agent>, participant_b: <agent>, source_agent: <agent> }
-{ action: "message", type: "request", conversation_id: <id>, sender: <agent>, text: <text>, intent: <intent> }
-{ action: "summary", type: "request", conversation_id: <id> }
-{ action: "close", type: "request", conversation_id: <id> }
+{ action: "message", type: "request", conversation_id: <id>, trace_id: <id>, sender: <agent>, text: <text>, intent: <intent> }
+{ action: "summary", type: "request", conversation_id: <id>, trace_id: <id> }
+{ action: "close", type: "request", conversation_id: <id>, trace_id: <id> }
 ```
 
 Participant turn:

@@ -21,9 +21,9 @@ Requests:
 
 ```text
 { action: "start", type: "request", conversation_id: <id>, trace_id: <id>, participant_a: <agent>, participant_b: <agent>, source_agent: <agent> }
-{ action: "message", type: "request", conversation_id: <id>, sender: <agent>, text: <text>, intent: <intent> }
-{ action: "summary", type: "request", conversation_id: <id> }
-{ action: "close", type: "request", conversation_id: <id> }
+{ action: "message", type: "request", conversation_id: <id>, trace_id: <id>, sender: <agent>, text: <text>, intent: <intent> }
+{ action: "summary", type: "request", conversation_id: <id>, trace_id: <id> }
+{ action: "close", type: "request", conversation_id: <id>, trace_id: <id> }
 ```
 
 Relayed turn:

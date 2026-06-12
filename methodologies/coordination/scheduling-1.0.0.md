@@ -20,7 +20,7 @@ Requests:
 ```text
 { action: "schedule", type: "request", schedule_id: <id>, due_tick: <number>, target_agent: <agent>, payload_action: <action>, payload_text: <text>, payload_attempt: <attempt>, trace_id: <id>, source_agent: <agent> }
 { action: "tick", type: "request", tick: <number> }
-{ action: "cancel", type: "request", schedule_id: <id> }
+{ action: "cancel", type: "request", schedule_id: <id>, trace_id: <id> }
 ```
 
 Triggered message:
@@ -53,8 +53,8 @@ Response:
 }
 ```
 
-Trigger responses use `action: "schedule"` because they report the stored schedule request; cancel
-responses use `action: "cancel"`.
+Trigger responses use `action: "schedule"` and the stored schedule trace because they report the
+stored schedule request; cancel responses use `action: "cancel"` and the cancel request trace.
 
 ## Implementation and Tests
 

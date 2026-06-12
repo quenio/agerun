@@ -23,9 +23,9 @@ Requests:
 
 ```text
 { action: "start", type: "request", child_method_names: [<method>, ...], child_method_version: <version>, policy: "restart", trace_id: <id>, source_agent: <agent> }
-{ action: "child_failed", type: "request", child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
-{ action: "child_exited", type: "request", child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
-{ action: "stop", type: "request", child_agent_id: <agent> }
+{ action: "child_failed", type: "request", trace_id: <id>, child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
+{ action: "child_exited", type: "request", trace_id: <id>, child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
+{ action: "stop", type: "request", trace_id: <id>, child_agent_id: <agent> }
 ```
 
 Response:

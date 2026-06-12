@@ -40,12 +40,14 @@ memory.report_failure_count := memory.trigger_failed
 memory.report_action := if(memory.is_schedule = 1, "schedule", memory.report_action)
 memory.report_action := if(memory.should_cancel = 1, "cancel", memory.report_action)
 memory.report_action := if(memory.should_trigger = 1, "schedule", memory.report_action)
+memory.cancel_trace_id := if(message.trace_id <> 0, message.trace_id, memory.trace_id)
+memory.report_trace_id := if(memory.should_cancel = 1, memory.cancel_trace_id, memory.trace_id)
 memory.report_status := if(memory.report_failure_count > 0, "failure", "success")
 memory.report_message := {
   action: memory.report_action
   type: "response"
   schedule_id: memory.schedule_id
-  trace_id: memory.trace_id
+  trace_id: memory.report_trace_id
   status: memory.report_status
   state: memory.status
   success_count: memory.report_success_count

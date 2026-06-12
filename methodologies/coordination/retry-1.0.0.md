@@ -11,9 +11,8 @@ with scheduling.
 Only messages with `type: "request"` are handled as coordination requests.
 
 On `action: "start"`, the method stores operation metadata, `trace_id`, retry strategy, maximum
-attempts, scheduler agent, delay ticks, and `source_agent`. If the request omits `trace_id`, the
-method uses `operation_id` as the trace. It records an attempt only after the operation send
-succeeds.
+attempts, scheduler agent, delay ticks, and `source_agent`. It records an attempt only after the
+operation send succeeds.
 
 Matching `failure` requests retry while attempts remain. Matching `success` requests emit the
 terminal response. Terminal state is recorded only after the `start` response is delivered; failed

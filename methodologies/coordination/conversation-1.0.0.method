@@ -9,6 +9,7 @@ memory.participant_a := if(memory.is_start = 1, message.participant_a, memory.pa
 memory.participant_b := if(memory.is_start = 1, message.participant_b, memory.participant_b)
 memory.source_agent := if(memory.is_start = 1, message.source_agent, memory.source_agent)
 memory.state := if(memory.is_start = 1, "active", memory.state)
+memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.trace_id)
 memory.turn_count := if(memory.is_start = 1, 0, memory.turn_count)
 memory.history := if(memory.is_start = 1, [], memory.history)
 memory.last_sender := if(memory.is_start = 1, 0, memory.last_sender)
@@ -27,7 +28,7 @@ memory.turn_message := {
   action: "conversation_turn"
   type: "request"
   conversation_id: memory.conversation_id
-  trace_id: memory.trace_id
+  trace_id: memory.request_trace_id
   from: message.sender
   to: memory.recipient
   text: message.text
@@ -50,7 +51,7 @@ memory.close_message := {
   action: "close"
   type: "response"
   conversation_id: memory.conversation_id
-  trace_id: memory.trace_id
+  trace_id: memory.request_trace_id
   status: "success"
   state: memory.state
   success_count: memory.turn_count
@@ -76,7 +77,7 @@ memory.response_message := {
   action: memory.response_action
   type: "response"
   conversation_id: memory.conversation_id
-  trace_id: memory.trace_id
+  trace_id: memory.request_trace_id
   state: memory.state
   status: memory.response_status
   result: memory.response_state

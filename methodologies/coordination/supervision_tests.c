@@ -156,6 +156,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(own_untracked_failure != NULL, "Untracked failure should be created");
     ar_data__set_map_string(own_untracked_failure, "action", "child_failed");
     ar_data__set_map_string(own_untracked_failure, "type", "request");
+    ar_data__set_map_string(own_untracked_failure, "trace_id", "supervision-untracked-failure");
     ar_data__set_map_integer(own_untracked_failure,
                              "child_agent_id",
                              checked_agent_id(untracked_agent));
@@ -178,6 +179,9 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"), "ignored") == 0,
               "Observer should receive ignored status for untracked lifecycle event");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
+                     "supervision-untracked-failure") == 0,
+              "Untracked lifecycle response should preserve request trace id");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_child_agent_id") ==
                   untracked_agent,
               "Observer should receive the ignored lifecycle child id");
@@ -309,6 +313,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(own_tracked_stop != NULL, "Tracked stop should be created");
     ar_data__set_map_string(own_tracked_stop, "action", "stop");
     ar_data__set_map_string(own_tracked_stop, "type", "request");
+    ar_data__set_map_string(own_tracked_stop, "trace_id", "supervision-stop-trace");
     ar_data__set_map_integer(own_tracked_stop, "child_agent_id", checked_agent_id(third_child));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, supervision_agent, own_tracked_stop),
               "Tracked stop should queue");
@@ -324,6 +329,9 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"), "stopped") == 0,
               "Observer should receive stopped status for tracked stop");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
+                     "supervision-stop-trace") == 0,
+              "Tracked stop response should preserve request trace id");
 
     // And a delayed lifecycle event for the stopped child is ignored
     ar_data_t *own_stopped_lifecycle = ar_data__create_map();

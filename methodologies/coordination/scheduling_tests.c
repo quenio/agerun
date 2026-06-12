@@ -175,6 +175,7 @@ static void test_scheduling__triggers_future_work_on_tick(void) {
     ar_data__set_map_string(own_late_cancel, "action", "cancel");
     ar_data__set_map_string(own_late_cancel, "type", "request");
     ar_data__set_map_string(own_late_cancel, "schedule_id", "sched-1");
+    ar_data__set_map_string(own_late_cancel, "trace_id", "cancel-after-trigger");
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, scheduling_agent, own_late_cancel),
               "Late cancel should queue");
     own_late_cancel = NULL;
@@ -190,6 +191,42 @@ static void test_scheduling__triggers_future_work_on_tick(void) {
               "Late cancel should not overwrite triggered scheduler status");
     AR_ASSERT(ar_data__get_map_integer(ref_scheduling_memory, "pending") == 0,
               "Late cancel should leave triggered schedule non-pending");
+
+    ar_data_t *own_cancel_schedule = ar_data__create_map();
+    AR_ASSERT(own_cancel_schedule != NULL, "Cancellable schedule message should be created");
+    ar_data__set_map_string(own_cancel_schedule, "action", "schedule");
+    ar_data__set_map_string(own_cancel_schedule, "type", "request");
+    ar_data__set_map_string(own_cancel_schedule, "schedule_id", "sched-cancel");
+    ar_data__set_map_integer(own_cancel_schedule, "due_tick", 9);
+    ar_data__set_map_integer(own_cancel_schedule, "target_agent", checked_agent_id(receiver_agent));
+    ar_data__set_map_string(own_cancel_schedule, "payload_action", "execute");
+    ar_data__set_map_string(own_cancel_schedule, "payload_text", "cancelled");
+    ar_data__set_map_integer(own_cancel_schedule, "payload_attempt", 1);
+    ar_data__set_map_string(own_cancel_schedule, "trace_id", "schedule-before-cancel");
+    ar_data__set_map_integer(own_cancel_schedule, "source_agent", checked_agent_id(observer_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, scheduling_agent, own_cancel_schedule),
+              "Cancellable schedule message should queue");
+    own_cancel_schedule = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ar_data_t *own_cancel = ar_data__create_map();
+    AR_ASSERT(own_cancel != NULL, "Cancel request should be created");
+    ar_data__set_map_string(own_cancel, "action", "cancel");
+    ar_data__set_map_string(own_cancel, "type", "request");
+    ar_data__set_map_string(own_cancel, "schedule_id", "sched-cancel");
+    ar_data__set_map_string(own_cancel, "trace_id", "cancel-trace-1");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, scheduling_agent, own_cancel),
+              "Cancel request should queue");
+    own_cancel = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_action"), "cancel") == 0,
+              "Cancel should emit a cancel response");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
+                     "cancel-trace-1") == 0,
+              "Cancel response should preserve cancel request trace id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"), "cancelled") == 0,
+              "Cancel response should report cancelled state");
 
     ar_data_t *own_failed_schedule = ar_data__create_map();
     AR_ASSERT(own_failed_schedule != NULL, "Failed schedule message should be created");
