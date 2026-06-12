@@ -26,7 +26,7 @@ Request:
   type: "request",
   target_agents: [<agent>, <agent>, ...],
   payload: <message>,
-  trace_id: <id>,
+  trace_id: <trace_id>,
   source_agent: <agent>
 }
 ```

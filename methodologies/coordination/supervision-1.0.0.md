@@ -22,10 +22,10 @@ Untracked lifecycle and stop requests report `state: "ignored"`. Handoff failure
 Requests:
 
 ```text
-{ action: "start", type: "request", child_method_names: [<method>, ...], child_method_version: <version>, policy: "restart", trace_id: <id>, source_agent: <agent> }
-{ action: "child_failed", type: "request", trace_id: <id>, child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
-{ action: "child_exited", type: "request", trace_id: <id>, child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
-{ action: "stop", type: "request", trace_id: <id>, child_agent_id: <agent> }
+{ action: "start", type: "request", child_method_names: [<method>, ...], child_method_version: <version>, policy: "restart", trace_id: <trace_id>, source_agent: <agent> }
+{ action: "child_failed", type: "request", trace_id: <trace_id>, child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
+{ action: "child_exited", type: "request", trace_id: <trace_id>, child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
+{ action: "stop", type: "request", trace_id: <trace_id>, child_agent_id: <agent> }
 ```
 
 Response:

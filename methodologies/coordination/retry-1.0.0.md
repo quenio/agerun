@@ -23,7 +23,7 @@ report delivery stores a pending terminal result for retry.
 Requests:
 
 ```text
-{ action: "start", type: "request", operation_id: <id>, operation_target_agent: <agent>, operation_action: <action>, operation_text: <text>, max_attempts: <number>, strategy: <immediate|scheduled>, scheduler_agent: <agent>, delay_ticks: <tick>, trace_id: <id>, source_agent: <agent> }
+{ action: "start", type: "request", operation_id: <id>, operation_target_agent: <agent>, operation_action: <action>, operation_text: <text>, max_attempts: <number>, strategy: <immediate|scheduled>, scheduler_agent: <agent>, delay_ticks: <tick>, trace_id: <trace_id>, source_agent: <agent> }
 { action: "failure", type: "request", trace_id: <trace_id>, attempt: <attempt>, current_tick: <tick> }
 { action: "success", type: "request", trace_id: <trace_id>, attempt: <attempt> }
 ```

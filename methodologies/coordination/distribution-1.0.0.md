@@ -27,7 +27,7 @@ Request:
   work_id: <id>,
   payloads: [<payload>, <payload>, ...],
   workers: [<agent>, <agent>, ...],
-  trace_id: <id>,
+  trace_id: <trace_id>,
   source_agent: <agent>
 }
 ```

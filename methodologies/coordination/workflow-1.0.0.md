@@ -23,7 +23,7 @@ currently active sent step. Duplicate, stale, premature, or out-of-order complet
 Requests:
 
 ```text
-{ action: "start", type: "request", workflow_id: <id>, trace_id: <id>, source_agent: <agent>, step_target_agents: [<agent>, ...], step_payloads: [<message>, ...], branch_value: <outcome> }
+{ action: "start", type: "request", workflow_id: <id>, trace_id: <trace_id>, source_agent: <agent>, step_target_agents: [<agent>, ...], step_payloads: [<message>, ...], branch_value: <outcome> }
 { action: "step_done", type: "request", workflow_id: <id>, step: <current-step-number>, outcome: <value> }
 ```
 

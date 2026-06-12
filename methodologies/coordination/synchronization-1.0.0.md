@@ -21,7 +21,7 @@ positive, the `wait` response is delivered. Failed delivery keeps the gate open 
 Requests:
 
 ```text
-{ action: "wait", type: "request", sync_id: <id>, trace_id: <id>, required_count: <count>, continuation_target_agent: <agent>, continuation_action: <action>, continuation_text: <text>, source_agent: <agent> }
+{ action: "wait", type: "request", sync_id: <id>, trace_id: <trace_id>, required_count: <count>, continuation_target_agent: <agent>, continuation_action: <action>, continuation_text: <text>, source_agent: <agent> }
 { action: "dependency", type: "request", sync_id: <id>, dependency: <name> }
 ```
 

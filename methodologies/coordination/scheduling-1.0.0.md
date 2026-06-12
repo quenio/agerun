@@ -18,9 +18,9 @@ agent. On `cancel`, it clears pending state only when the matching schedule is s
 Requests:
 
 ```text
-{ action: "schedule", type: "request", schedule_id: <id>, due_tick: <number>, target_agent: <agent>, payload_action: <action>, payload_text: <text>, payload_attempt: <attempt>, trace_id: <id>, source_agent: <agent> }
+{ action: "schedule", type: "request", schedule_id: <id>, due_tick: <number>, target_agent: <agent>, payload_action: <action>, payload_text: <text>, payload_attempt: <attempt>, trace_id: <trace_id>, source_agent: <agent> }
 { action: "tick", type: "request", tick: <number> }
-{ action: "cancel", type: "request", schedule_id: <id>, trace_id: <id> }
+{ action: "cancel", type: "request", schedule_id: <id>, trace_id: <trace_id> }
 ```
 
 Triggered message:
