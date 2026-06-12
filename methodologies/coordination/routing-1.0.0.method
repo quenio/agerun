@@ -1,5 +1,7 @@
 memory.is_request := if(message.request <> 0, 1, 0)
 memory.is_route := if(memory.is_request = 1, message.request = "routing_start", 0)
+memory.generated_trace_base := message.source * 1000
+memory.generated_trace_id := memory.generated_trace_base + memory.self
 memory.has_request_key := if(message.route_key <> 0, 1, 0)
 memory.route_key := head(message.routes.keys)
 memory.route_target := head(message.routes.targets)
@@ -11,7 +13,8 @@ memory.route_matches := if(message.route_key = memory.route_key, 1, 0)
 memory.route_matches := memory.route_matches * memory.has_request_key
 memory.route_matches := memory.route_matches * memory.has_route_key
 memory.route_matches := memory.route_matches * memory.has_route_target
-memory.trace_id := if(memory.is_route = 1, message.trace_id, memory.trace_id)
+memory.trace_id := if(memory.is_route = 1, memory.generated_trace_id, memory.trace_id)
+memory.trace_id := if(message.trace_id <> 0, message.trace_id, memory.trace_id)
 memory.target := memory.route_target * memory.route_matches * memory.is_route
 memory.sent_result := send(memory.target, message.payload)
 memory.sent := memory.sent_result * memory.route_matches

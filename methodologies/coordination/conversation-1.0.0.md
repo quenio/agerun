@@ -9,7 +9,7 @@ tracks turn history, and exposes structured responses while remaining an ordinar
 
 Only messages with a recognized `request` value are handled as coordination requests.
 
-On `request: "conversation_start"`, the method stores the conversation id, `trace_id`,
+On `request: "conversation_start"`, the method stores the conversation id, effective `trace_id`,
 `session_id`, participant agent ids, and `source`. On `request: "conversation_message"` with the
 same `session_id`, it accepts messages from either participant while the conversation is active,
 relays a `conversation_turn` request to the other participant, and records the turn only after

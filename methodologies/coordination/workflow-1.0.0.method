@@ -2,8 +2,15 @@ memory.is_request := if(message.request <> 0, 1, 0)
 memory.is_start := if(memory.is_request = 1, message.request = "workflow_start", 0)
 memory.is_execute_step := if(memory.is_request = 1, message.request = "workflow_execute_step", 0)
 memory.is_step_done := if(memory.is_request = 1, message.request = "workflow_step_done", 0)
+memory.is_workflow_request := memory.is_start + memory.is_execute_step
+memory.is_workflow_request := memory.is_workflow_request + memory.is_step_done
+memory.is_workflow_request := if(memory.is_workflow_request > 0, 1, 0)
+memory.generated_trace_base := message.source * 1000
+memory.generated_trace_id := memory.generated_trace_base + memory.self
+memory.request_trace_id := memory.generated_trace_id
+memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.request_trace_id)
 memory.workflow_id := if(memory.is_start = 1, message.workflow_id, memory.workflow_id)
-memory.trace_id := if(memory.is_start = 1, message.trace_id, memory.trace_id)
+memory.trace_id := if(memory.is_start = 1, memory.request_trace_id, memory.trace_id)
 memory.session_id := if(memory.is_start = 1, message.session_id, memory.session_id)
 memory.source := if(memory.is_start = 1, message.source, memory.source)
 memory.branch_value := if(memory.is_start = 1, message.branch_value, memory.branch_value)
@@ -14,7 +21,6 @@ memory.completion_pending := if(memory.is_start = 1, 0, memory.completion_pendin
 memory.awaiting_step_done := if(memory.is_start = 1, 0, memory.awaiting_step_done)
 memory.pending_step_targets := if(memory.is_start = 1, [], memory.pending_step_targets)
 memory.pending_step_payloads := if(memory.is_start = 1, [], memory.pending_step_payloads)
-memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.trace_id)
 memory.has_request_session := if(message.session_id <> 0, 1, 0)
 memory.message_session_matches := if(memory.has_request_session = 1, message.session_id = memory.session_id, 0)
 memory.is_execute_step_active := memory.is_execute_step * memory.message_session_matches

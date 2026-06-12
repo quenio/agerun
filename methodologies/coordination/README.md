@@ -67,12 +67,16 @@ originating agent and a `request` value that identifies the requested command wi
 `<method>_<action>` naming convention. Every external response includes a `source` value identifying
 the method agent that produced the response and a `response` value that identifies the result
 envelope with the `<method>_result` naming convention, preserves the triggering request's
-`trace_id`, and reports standard `status: "success"` or `status: "failure"` with `success_count`
-and `failure_count`. The `trace_id` is a per-request/response correlation. The `session_id` is a
-per-session correlation for methods that receive different request kinds in one logical session.
-Those sessionful requests, generated control requests, and responses include `session_id`; stateless
-single-request methods that are expected to be called once require only `trace_id`. When a method
-has only one request kind, that request is named `<method>_start`.
+effective `trace_id`, and reports standard `status: "success"` or `status: "failure"` with
+`success_count` and `failure_count`. The `trace_id` is a call-chain correlation: callers pass the
+received trace to continue a chain, pass a fresh trace to reset at a top-level boundary, or omit it
+to let the receiving method generate one for that request edge. Coordination methods use the
+effective trace for responses and method-owned control messages they create; opaque caller payloads
+are sent as-is. The `session_id` is a per-session correlation for methods that receive different
+request kinds in one logical session. Those sessionful requests, generated control requests, and
+responses include `session_id`; stateless single-request methods that are expected to be called
+once use only `trace_id`. When a method has only one request kind, that request is named
+`<method>_start`.
 Method-specific contracts define any additional response fields. When a method eventually returns
 multiple distinct result envelopes, the `response` value should use `<method>_<result_kind>`.
 Method-specific outcomes such as `routed`, `broadcast_failed`, or `handoff_failed` are carried in
@@ -224,8 +228,8 @@ Reply:
 
 Distribution sends each payload item as-is, round-robin, to positive worker IDs. Integer `0` worker
 placeholders are skipped without consuming the current payload when later workers remain.
-Because distribution is a one-shot caller-facing method, its request and response require
-`trace_id` but do not require `session_id`.
+Because distribution is a one-shot caller-facing method, its request and response use `trace_id`
+but do not require `session_id`; an omitted `trace_id` is generated for the result envelope.
 
 ### Aggregation
 
@@ -255,11 +259,11 @@ Aggregation marks completion only after the aggregate response is sent successfu
 completion delivery leaves the aggregate open. An `aggregation_start` request resets aggregation
 and starts a fresh payload list with the configured `expected_count`. Payload collection requests
 use `request: "aggregation_collect"` and must carry the same `session_id` as the active start
-request; missing collection traces fail without appending the payload. Failed collection attempts
-are reported in the eventual aggregate response's `failure_count`. The
-response is sent when `success_count + failure_count` equals the configured `expected_count`; the
-response status is `success` only when `success_count` equals that `expected_count`, and `failure`
-otherwise.
+request. Collection requests that omit `trace_id` use a generated trace and still append their
+payload. Failed append attempts are reported in the eventual aggregate response's `failure_count`.
+The response is sent when `success_count + failure_count` equals the configured `expected_count`;
+the response status is `success` only when `success_count` equals that `expected_count`, and
+`failure` otherwise.
 
 ### Scheduling
 
@@ -494,7 +498,7 @@ Terminal response:
 Retry records terminal state only after the `start` response is delivered; failed report delivery
 stores the pending terminal result so a matching outcome retries that report without replacing it or
 changing the attempt count. Failure and success requests match the active retry by `session_id`;
-terminal responses use the triggering outcome request's `trace_id`.
+terminal responses use the triggering outcome request's effective `trace_id`.
 
 ## Composition Examples
 

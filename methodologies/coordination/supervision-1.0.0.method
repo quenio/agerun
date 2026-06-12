@@ -6,10 +6,20 @@ memory.is_child_exited := if(memory.is_request = 1, message.request = "supervisi
 memory.is_stop := if(memory.is_request = 1, message.request = "supervision_stop", 0)
 memory.is_validate_stop := if(memory.is_request = 1, message.request = "supervision_validate_stop", 0)
 memory.is_validate_lifecycle := if(memory.is_request = 1, message.request = "supervision_validate_lifecycle", 0)
+memory.is_supervision_request := memory.is_start + memory.is_spawn_child
+memory.is_supervision_request := memory.is_supervision_request + memory.is_child_failed
+memory.is_supervision_request := memory.is_supervision_request + memory.is_child_exited
+memory.is_supervision_request := memory.is_supervision_request + memory.is_stop
+memory.is_supervision_request := memory.is_supervision_request + memory.is_validate_stop
+memory.is_supervision_request := memory.is_supervision_request + memory.is_validate_lifecycle
+memory.is_supervision_request := if(memory.is_supervision_request > 0, 1, 0)
+memory.generated_trace_base := message.source * 1000
+memory.generated_trace_id := memory.generated_trace_base + memory.self
+memory.request_trace_id := memory.generated_trace_id
+memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.request_trace_id)
 memory.policy := if(memory.is_start = 1, message.policy, memory.policy)
-memory.trace_id := if(memory.is_start = 1, message.trace_id, memory.trace_id)
+memory.trace_id := if(memory.is_start = 1, memory.request_trace_id, memory.trace_id)
 memory.session_id := if(memory.is_start = 1, message.session_id, memory.session_id)
-memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.trace_id)
 memory.has_request_session := if(message.session_id <> 0, 1, 0)
 memory.request_session_matches := if(memory.has_request_session = 1, message.session_id = memory.session_id, 0)
 memory.is_spawn_child_active := memory.is_spawn_child * memory.request_session_matches

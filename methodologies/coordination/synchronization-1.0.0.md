@@ -10,13 +10,13 @@ message. It is a reusable dependency gate for workflows and distributed work.
 Only messages with a recognized `request` value are handled as coordination requests.
 
 On `request: "synchronization_wait"`, the method stores the sync id, required count, continuation
-target agent, continuation request, continuation text, `trace_id`, `session_id`, and `source`. On
-matching `synchronization_dependency` requests with the same `session_id`, it appends the dependency
-value until the required count is reached.
+target agent, continuation request, continuation text, effective `trace_id`, `session_id`, and
+`source`. On matching `synchronization_dependency` requests with the same `session_id`, it appends
+the dependency value until the required count is reached.
 
 Completion is recorded only after the continuation and response are delivered. Failed delivery
 keeps the gate open for retry. Continuation and response messages use the triggering dependency
-request's `trace_id` and the active synchronization `session_id`.
+request's effective `trace_id` and the active synchronization `session_id`.
 
 ## Message Format
 

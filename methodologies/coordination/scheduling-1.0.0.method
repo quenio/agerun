@@ -2,19 +2,25 @@ memory.is_request := if(message.request <> 0, 1, 0)
 memory.is_schedule := if(memory.is_request = 1, message.request = "scheduling_schedule", 0)
 memory.is_tick := if(memory.is_request = 1, message.request = "scheduling_tick", 0)
 memory.is_cancel := if(memory.is_request = 1, message.request = "scheduling_cancel", 0)
+memory.is_scheduling_request := memory.is_schedule + memory.is_tick
+memory.is_scheduling_request := memory.is_scheduling_request + memory.is_cancel
+memory.is_scheduling_request := if(memory.is_scheduling_request > 0, 1, 0)
+memory.generated_trace_base := message.source * 1000
+memory.generated_trace_id := memory.generated_trace_base + memory.self
+memory.request_trace_id := memory.generated_trace_id
+memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.request_trace_id)
 memory.schedule_id := if(memory.is_schedule = 1, message.schedule_id, memory.schedule_id)
 memory.due_tick := if(memory.is_schedule = 1, message.due_tick, memory.due_tick)
 memory.target := if(memory.is_schedule = 1, message.target, memory.target)
 memory.payload_request := if(memory.is_schedule = 1, message.payload_request, memory.payload_request)
 memory.payload_text := if(memory.is_schedule = 1, message.payload_text, memory.payload_text)
 memory.payload_attempt := if(memory.is_schedule = 1, message.payload_attempt, memory.payload_attempt)
-memory.trace_id := if(memory.is_schedule = 1, message.trace_id, memory.trace_id)
+memory.trace_id := if(memory.is_schedule = 1, memory.request_trace_id, memory.trace_id)
 memory.session_id := if(memory.is_schedule = 1, message.session_id, memory.session_id)
 memory.source := if(memory.is_schedule = 1, message.source, memory.source)
 memory.pending := if(memory.is_schedule = 1, 1, memory.pending)
 memory.status := if(memory.is_schedule = 1, "scheduled", memory.status)
 memory.current_tick := if(memory.is_schedule = 1, 0, memory.current_tick)
-memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.trace_id)
 memory.has_request_session := if(message.session_id <> 0, 1, 0)
 memory.session_matches := if(memory.has_request_session = 1, message.session_id = memory.session_id, 0)
 memory.cancel_matches := if(message.schedule_id = memory.schedule_id, 1, 0)

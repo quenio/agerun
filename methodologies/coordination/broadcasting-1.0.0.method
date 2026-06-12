@@ -1,6 +1,10 @@
 memory.is_request := if(message.request <> 0, 1, 0)
 memory.is_broadcast := if(memory.is_request = 1, message.request = "broadcasting_start", 0)
-memory.trace_id := if(memory.is_broadcast = 1, message.trace_id, memory.trace_id)
+memory.generated_trace_base := message.source * 1000
+memory.generated_trace_id := memory.generated_trace_base + memory.self
+memory.request_trace_id := memory.generated_trace_id
+memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.request_trace_id)
+memory.trace_id := if(memory.is_broadcast = 1, memory.request_trace_id, memory.trace_id)
 memory.source := if(memory.is_broadcast = 1, message.source, memory.source)
 memory.current_targets := if(memory.is_broadcast = 1, message.targets, [])
 memory.target := head(memory.current_targets)

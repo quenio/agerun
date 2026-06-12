@@ -247,8 +247,10 @@ static void test_routing__selects_one_target_by_key_only(void) {
 
     // Then keyed routing scans the unbounded route list until it finds the matching route
     const ar_data_t *ref_receiver_d_memory = ar_agency__get_agent_memory(mut_agency, receiver_d);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_d_memory, "last_action"),
-                     "domain_event") == 0,
+    const char *ref_receiver_d_action =
+        ar_data__get_map_string(ref_receiver_d_memory, "last_action");
+    AR_ASSERT(ref_receiver_d_action != NULL, "Fourth keyed route target should receive payload");
+    AR_ASSERT(strcmp(ref_receiver_d_action, "domain_event") == 0,
               "Fourth keyed route target should observe caller payload action");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_d_memory, "last_text"), "keyed") == 0,
               "Fourth keyed route target should observe delivered text");
@@ -291,7 +293,6 @@ static void test_routing__selects_one_target_by_key_only(void) {
     AR_ASSERT(ar_data__set_map_data(own_message, "payload", own_payload),
               "Missed keyed route message should own opaque payload");
     own_payload = NULL;
-    ar_data__set_map_string(own_message, "trace_id", "job-missing-key");
     ar_data__set_map_integer(own_message, "source", checked_agent_id(report_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, routing_agent, own_message),
               "Missed keyed route message should queue");
@@ -307,9 +308,11 @@ static void test_routing__selects_one_target_by_key_only(void) {
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
                      "failure") == 0,
               "Missed keyed route should report standard failure status");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_trace_id"),
-                     "job-missing-key") == 0,
-              "Missed keyed route result should preserve trace id");
+    int expected_generated_trace_id =
+        checked_agent_id(report_agent) * 1000 + checked_agent_id(routing_agent);
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_trace_id") ==
+                  expected_generated_trace_id,
+              "Missed keyed route result should generate trace id when omitted");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_routed_count") == 0,
               "Missed keyed route should report zero routed targets");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 0,

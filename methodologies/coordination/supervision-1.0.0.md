@@ -10,10 +10,10 @@ capability.
 
 Only messages with a recognized `request` value are handled as coordination requests.
 
-On `request: "supervision_start"`, the method stores policy, `trace_id`, `session_id`, `source`,
-and child method version, then spawns one child per `child_method_names` entry. Lifecycle and stop
-requests with the same `session_id` are validated against tracked child ids before restart or exit
-behavior is applied.
+On `request: "supervision_start"`, the method stores policy, effective `trace_id`, `session_id`,
+`source`, and child method version, then spawns one child per `child_method_names` entry.
+Lifecycle and stop requests with the same `session_id` are validated against tracked child ids
+before restart or exit behavior is applied.
 
 Untracked lifecycle and stop requests report `state: "ignored"`. Handoff failures report
 `state: "handoff_failed"` and standard `status: "failure"`.

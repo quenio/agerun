@@ -1,8 +1,14 @@
 memory.is_request := if(message.request <> 0, 1, 0)
 memory.is_wait := if(memory.is_request = 1, message.request = "synchronization_wait", 0)
 memory.is_dependency := if(memory.is_request = 1, message.request = "synchronization_dependency", 0)
+memory.is_synchronization_request := memory.is_wait + memory.is_dependency
+memory.is_synchronization_request := if(memory.is_synchronization_request > 0, 1, 0)
+memory.generated_trace_base := message.source * 1000
+memory.generated_trace_id := memory.generated_trace_base + memory.self
+memory.request_trace_id := memory.generated_trace_id
+memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.request_trace_id)
 memory.sync_id := if(memory.is_wait = 1, message.sync_id, memory.sync_id)
-memory.trace_id := if(memory.is_wait = 1, message.trace_id, memory.trace_id)
+memory.trace_id := if(memory.is_wait = 1, memory.request_trace_id, memory.trace_id)
 memory.session_id := if(memory.is_wait = 1, message.session_id, memory.session_id)
 memory.required_count := if(memory.is_wait = 1, message.required_count, memory.required_count)
 memory.source := if(memory.is_wait = 1, message.source, memory.source)
@@ -13,7 +19,6 @@ memory.received := if(memory.is_wait = 1, [], memory.received)
 memory.done_count := if(memory.is_wait = 1, 0, memory.done_count)
 memory.completed := if(memory.is_wait = 1, 0, memory.completed)
 memory.continuation_done := if(memory.is_wait = 1, 0, memory.continuation_done)
-memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.trace_id)
 memory.matching_sync := if(message.sync_id = memory.sync_id, 1, 0)
 memory.has_request_session := if(message.session_id <> 0, 1, 0)
 memory.matching_session := if(memory.has_request_session = 1, message.session_id = memory.session_id, 0)

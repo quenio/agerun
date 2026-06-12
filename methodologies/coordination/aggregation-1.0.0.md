@@ -11,18 +11,18 @@ fan-in counterpart to distribution.
 Only messages with `request: "aggregation_start"` or `request: "aggregation_collect"` are handled
 as coordination requests.
 
-A start request resets aggregation, stores `trace_id`, `session_id`, and `source`, sets the target
-count from `expected_count`, and clears the append-backed payload list. A collect request appends
-the incoming opaque `payload` only when its `session_id` matches the active aggregate session while
-aggregation is active and completion has not been delivered.
+A start request resets aggregation, stores the effective `trace_id`, `session_id`, and `source`,
+sets the target count from `expected_count`, and clears the append-backed payload list. A collect
+request appends the incoming opaque `payload` only when its `session_id` matches the active
+aggregate session while aggregation is active and completion has not been delivered.
 
-Missing collection traces fail the collection request and do not append its payload. Those failed
-collection attempts are reported through `failure_count` when the aggregate response is eventually
-returned. The response is sent when `success_count + failure_count` equals the configured
-`expected_count` and uses the completing collection request's `trace_id`. Completion is recorded
-only after the aggregate response is sent successfully. The `request` field differentiates start
-requests from collect requests; `expected_count`
-only configures the start request threshold.
+Collection requests that omit `trace_id` use a generated trace and still append their payload.
+Failed append attempts are reported through `failure_count` when the aggregate response is
+eventually returned. The response is sent when `success_count + failure_count` equals the
+configured `expected_count` and uses the completing collection request's effective `trace_id`.
+Completion is recorded only after the aggregate response is sent successfully. The `request` field
+differentiates start requests from collect requests; `expected_count` only configures the start
+request threshold.
 
 ## Message Format
 

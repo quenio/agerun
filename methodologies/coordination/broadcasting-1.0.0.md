@@ -4,8 +4,9 @@
 
 Broadcasting sends the same caller-provided payload to every positive recipient in an unbounded
 `targets` list. It is the coordination methodology's opaque fan-out delivery primitive.
-Because broadcasting is a stateless single-call method, its request and response require `trace_id`
-but do not require `session_id`.
+Because broadcasting is a stateless single-call method, its request and response use `trace_id` but
+do not require `session_id`; an omitted `trace_id` is generated for the result envelope and
+internal continuation messages.
 
 ## Behavior
 

@@ -2,9 +2,15 @@ memory.is_request := if(message.request <> 0, 1, 0)
 memory.is_start := if(memory.is_request = 1, message.request = "retry_start", 0)
 memory.is_failure := if(memory.is_request = 1, message.request = "retry_failure", 0)
 memory.is_success := if(memory.is_request = 1, message.request = "retry_success", 0)
+memory.is_retry_request := memory.is_start + memory.is_failure
+memory.is_retry_request := memory.is_retry_request + memory.is_success
+memory.is_retry_request := if(memory.is_retry_request > 0, 1, 0)
+memory.generated_trace_base := message.source * 1000
+memory.generated_trace_id := memory.generated_trace_base + memory.self
+memory.request_trace_id := memory.generated_trace_id
+memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.request_trace_id)
 memory.operation_id := if(memory.is_start = 1, message.operation_id, memory.operation_id)
-memory.start_trace_id := if(message.trace_id <> 0, message.trace_id, message.operation_id)
-memory.trace_id := if(memory.is_start = 1, memory.start_trace_id, memory.trace_id)
+memory.trace_id := if(memory.is_start = 1, memory.request_trace_id, memory.trace_id)
 memory.session_id := if(memory.is_start = 1, message.session_id, memory.session_id)
 memory.operation_target := if(memory.is_start = 1, message.operation_target, memory.operation_target)
 memory.operation_request := if(memory.is_start = 1, message.operation_request, memory.operation_request)
@@ -19,7 +25,6 @@ memory.status := if(memory.is_start = 1, "starting", memory.status)
 memory.pending_terminal := if(memory.is_start = 1, 0, memory.pending_terminal)
 memory.pending_terminal_status := if(memory.is_start = 1, "", memory.pending_terminal_status)
 memory.pending_terminal_attempts := if(memory.is_start = 1, 0, memory.pending_terminal_attempts)
-memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.trace_id)
 memory.start_attempt := memory.attempts + memory.is_start
 memory.operation_message := {
   source: memory.self

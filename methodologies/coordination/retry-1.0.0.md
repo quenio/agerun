@@ -10,9 +10,9 @@ with scheduling.
 
 Only messages with a recognized `request` value are handled as coordination requests.
 
-On `request: "retry_start"`, the method stores operation metadata, `trace_id`, `session_id`, retry
-strategy, maximum attempts, scheduler agent, delay ticks, and `source`. It records an attempt only
-after the operation send succeeds.
+On `request: "retry_start"`, the method stores operation metadata, effective `trace_id`,
+`session_id`, retry strategy, maximum attempts, scheduler agent, delay ticks, and `source`. It
+records an attempt only after the operation send succeeds.
 
 Matching `failure` requests with the same `session_id` retry while attempts remain. Matching
 `success` requests with the same `session_id` emit the terminal response. Terminal state is

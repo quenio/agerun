@@ -3,8 +3,12 @@ memory.is_distribute := if(memory.is_request = 1, message.request = "distributio
 memory.is_assign_payload := if(memory.is_request = 1, message.request = "distribution_assign_payload", 0)
 memory.is_assignment := memory.is_distribute + memory.is_assign_payload
 memory.is_assignment := if(memory.is_assignment > 0, 1, 0)
+memory.generated_trace_base := message.source * 1000
+memory.generated_trace_id := memory.generated_trace_base + memory.self
+memory.request_trace_id := memory.generated_trace_id
+memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.request_trace_id)
 memory.work_id := if(memory.is_distribute = 1, message.work_id, memory.work_id)
-memory.trace_id := if(memory.is_distribute = 1, message.trace_id, memory.trace_id)
+memory.trace_id := if(memory.is_distribute = 1, memory.request_trace_id, memory.trace_id)
 memory.source := if(memory.is_distribute = 1, message.source, memory.source)
 memory.status := if(memory.is_distribute = 1, "distributing", memory.status)
 memory.assignment_count := if(memory.is_distribute = 1, 0, memory.assignment_count)
@@ -60,7 +64,7 @@ memory.continuation_required := if(memory.continuation_required > 0, 1, 0)
 memory.continuation_message := {
   source: message.source
   request: "distribution_assign_payload"
-  trace_id: message.trace_id
+  trace_id: memory.request_trace_id
   payloads: memory.continuation_payloads
   work_id: message.work_id
   workers: memory.continuation_workers
@@ -76,7 +80,7 @@ memory.continuation_failed := memory.continuation_failed * memory.continuation_r
 memory.should_report := memory.is_assignment
 memory.should_report := if(memory.continuation_sent = 1, 0, memory.should_report)
 memory.report_work_id := message.work_id
-memory.report_trace_id := message.trace_id
+memory.report_trace_id := memory.request_trace_id
 memory.report_source := message.source
 memory.report_assignment_count := memory.next_assignment_count
 memory.report_sent_count := memory.next_sent_count

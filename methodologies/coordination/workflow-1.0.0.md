@@ -10,10 +10,10 @@ pattern.
 
 Only messages with a recognized `request` value are handled as coordination requests.
 
-On `request: "workflow_start"`, the method stores workflow metadata, `trace_id`, `session_id`,
-`source`, branch value, and aligned `step_targets` and `step_payloads` lists. Each step payload is
-sent directly and as-is to the corresponding positive step target agent. Integer `0` step target
-agents can be skipped when followed by a later positive target.
+On `request: "workflow_start"`, the method stores workflow metadata, effective `trace_id`,
+`session_id`, `source`, branch value, and aligned `step_targets` and `step_payloads` lists. Each
+step payload is sent directly and as-is to the corresponding positive step target agent. Integer
+`0` step target agents can be skipped when followed by a later positive target.
 
 On `request: "workflow_step_done"`, the method advances only when the workflow id and step number
 match the currently active sent step and the `session_id` matches the active workflow session.
@@ -48,7 +48,7 @@ Completion response:
 
 Terminal status is recorded only after the response is delivered; failed completion delivery leaves
 completion pending and retries do not increment `completed_step_count`. Completion responses use the
-triggering workflow control request's `trace_id` and the active workflow `session_id`.
+triggering workflow control request's effective `trace_id` and the active workflow `session_id`.
 
 ## Implementation and Tests
 

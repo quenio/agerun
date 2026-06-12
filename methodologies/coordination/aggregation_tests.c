@@ -246,10 +246,10 @@ static void test_aggregation__combines_required_payloads(void) {
     ar_data__destroy(own_receiver_context);
 }
 
-static void test_aggregation__reports_collection_failures_on_completion(void) {
-    printf("Testing aggregation reports collection failures on completion...\n");
+static void test_aggregation__generates_missing_collect_trace_and_completes(void) {
+    printf("Testing aggregation generates missing collect trace and completes...\n");
 
-    ar_method_fixture_t *own_fixture = ar_method_fixture__create("aggregation_trace_mismatch");
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("aggregation_generated_trace");
     AR_ASSERT(ar_method_fixture__initialize(own_fixture), "Fixture should initialize");
     AR_ASSERT(ar_method_fixture__verify_directory(own_fixture), "Fixture directory should verify");
     load_method(own_fixture, "aggregation");
@@ -300,10 +300,10 @@ static void test_aggregation__reports_collection_failures_on_completion(void) {
                                "missing-trace");
     ar_method_fixture__process_all_messages(own_fixture);
 
-    AR_ASSERT(ar_data__get_map_integer(ref_aggregation_memory, "count") == 0,
-              "Missing-trace collect should not increment aggregation count");
-    AR_ASSERT(ar_data__get_map_integer(ref_aggregation_memory, "failure_count") == 1,
-              "Missing-trace collect should increment collection failure count");
+    AR_ASSERT(ar_data__get_map_integer(ref_aggregation_memory, "count") == 1,
+              "Missing-trace collect should increment aggregation count with generated trace");
+    AR_ASSERT(ar_data__get_map_integer(ref_aggregation_memory, "failure_count") == 0,
+              "Missing-trace collect should not increment collection failure count");
 
     send_collect(mut_agency,
                  aggregation_agent,
@@ -312,30 +312,32 @@ static void test_aggregation__reports_collection_failures_on_completion(void) {
                  "first");
     ar_method_fixture__process_all_messages(own_fixture);
 
-    AR_ASSERT(ar_data__get_map_integer(ref_aggregation_memory, "count") == 1,
+    AR_ASSERT(ar_data__get_map_integer(ref_aggregation_memory, "count") == 2,
               "Matching collect should increment aggregation count");
     const char *ref_status = ar_data__get_map_string(ref_receiver_memory, "last_status");
-    AR_ASSERT(ref_status != NULL && strcmp(ref_status, "failure") == 0,
-              "Completion should report standard failure status when collection failures occurred");
+    AR_ASSERT(ref_status != NULL && strcmp(ref_status, "success") == 0,
+              "Completion should report standard success status when all outcomes succeeded");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_trace_id"),
                      "agg-failure-first") == 0,
               "Completion should preserve completing request trace id");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_session_id"),
                      "agg-failure-session") == 0,
               "Completion should preserve session id");
-    AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_success_count") == 1,
-              "Completion should count only matching collect requests");
-    AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_failure_count") == 1,
-              "Completion should report collection failures");
+    AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_success_count") == 2,
+              "Completion should count generated-trace collect requests");
+    AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_failure_count") == 0,
+              "Completion should report no collection failures");
 
     const ar_data_t *ref_payloads = ar_data__get_map_data(ref_receiver_memory, "last_payloads");
     AR_ASSERT(ref_payloads != NULL, "Completion should include payload list");
-    AR_ASSERT(ar_data__list_count(ref_payloads) == 1,
-              "Rejected mismatched payload should be excluded from payload list");
+    AR_ASSERT(ar_data__list_count(ref_payloads) == 2,
+              "Missing-trace and matching payloads should both be included");
     ar_data_t **own_items = ar_data__list_items(ref_payloads);
     AR_ASSERT(own_items != NULL, "Aggregate payload items should be readable");
-    AR_ASSERT(strcmp(ar_data__get_string(own_items[0]), "first") == 0,
-              "First accepted payload should be retained");
+    AR_ASSERT(strcmp(ar_data__get_string(own_items[0]), "missing-trace") == 0,
+              "Generated-trace payload should be retained");
+    AR_ASSERT(strcmp(ar_data__get_string(own_items[1]), "first") == 0,
+              "Explicit-trace payload should be retained");
     AR__HEAP__FREE(own_items);
 
     send_collect(mut_agency,
@@ -345,7 +347,7 @@ static void test_aggregation__reports_collection_failures_on_completion(void) {
                  "second");
     ar_method_fixture__process_all_messages(own_fixture);
 
-    AR_ASSERT(ar_data__get_map_integer(ref_aggregation_memory, "count") == 1,
+    AR_ASSERT(ar_data__get_map_integer(ref_aggregation_memory, "count") == 2,
               "Late matching collect should not increment completed aggregate count");
 
     ar_method_fixture__destroy(own_fixture);
@@ -356,7 +358,7 @@ static void test_aggregation__reports_collection_failures_on_completion(void) {
 int main(void) {
     printf("Running aggregation method tests...\n\n");
     test_aggregation__combines_required_payloads();
-    test_aggregation__reports_collection_failures_on_completion();
+    test_aggregation__generates_missing_collect_trace_and_completes();
     printf("\nAll aggregation method tests passed!\n");
     return 0;
 }

@@ -3,14 +3,21 @@ memory.is_start := if(memory.is_request = 1, message.request = "conversation_sta
 memory.is_message := if(memory.is_request = 1, message.request = "conversation_message", 0)
 memory.is_summary := if(memory.is_request = 1, message.request = "conversation_summary", 0)
 memory.is_close := if(memory.is_request = 1, message.request = "conversation_close", 0)
+memory.is_conversation_request := memory.is_start + memory.is_message
+memory.is_conversation_request := memory.is_conversation_request + memory.is_summary
+memory.is_conversation_request := memory.is_conversation_request + memory.is_close
+memory.is_conversation_request := if(memory.is_conversation_request > 0, 1, 0)
+memory.generated_trace_base := message.source * 1000
+memory.generated_trace_id := memory.generated_trace_base + memory.self
+memory.request_trace_id := memory.generated_trace_id
+memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.request_trace_id)
 memory.conversation_id := if(memory.is_start = 1, message.conversation_id, memory.conversation_id)
-memory.trace_id := if(memory.is_start = 1, message.trace_id, memory.trace_id)
+memory.trace_id := if(memory.is_start = 1, memory.request_trace_id, memory.trace_id)
 memory.session_id := if(memory.is_start = 1, message.session_id, memory.session_id)
 memory.participant_a := if(memory.is_start = 1, message.participant_a, memory.participant_a)
 memory.participant_b := if(memory.is_start = 1, message.participant_b, memory.participant_b)
 memory.source := if(memory.is_start = 1, message.source, memory.source)
 memory.state := if(memory.is_start = 1, "active", memory.state)
-memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.trace_id)
 memory.turn_count := if(memory.is_start = 1, 0, memory.turn_count)
 memory.history := if(memory.is_start = 1, [], memory.history)
 memory.last_sender := if(memory.is_start = 1, 0, memory.last_sender)
