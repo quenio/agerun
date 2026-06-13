@@ -30,7 +30,7 @@ The deprecated helpers `ar_instruction_parser__get_error()` and
 
 The facade currently dispatches to specialized parsers for:
 
-- assignment instructions
+- assignment instructions using `:=` and map merge assignments using `+=`
 - `send(...)`
 - `if(...)`
 - `compile(...)`
@@ -60,6 +60,8 @@ expression and returns `AR_INSTRUCTION_AST_TYPE__HEAD` or `AR_INSTRUCTION_AST_TY
 - specialized parser instances are created once and reused across parse calls
 - successful function-call parses store both string arguments and parsed expression ASTs on the
   returned instruction AST
+- merge assignments are dispatched to `ar_assignment_instruction_parser` and represented as
+  assignment AST nodes with `AR_ASSIGNMENT_OPERATOR__MERGE`
 - `complete(...)` parsing is intentionally kept out of the facade implementation so syntax rules for
   template placeholders remain isolated in the specialized parser module
 - `append(...)` parsing leaves target ownership and LIST validation to the evaluator so non-memory

@@ -464,15 +464,20 @@ ar_instruction_ast_t* ar_instruction_parser__parse(ar_instruction_parser_t *mut_
     const char *p = ref_instruction;
     bool in_quotes = false;
     const char *assign_pos = NULL;
+    bool is_merge_assignment = false;
     const char *paren_pos = NULL;
     
-    // First pass: find := and ( positions
+    // First pass: find assignment operator and ( positions
     while (*p) {
         if (*p == '"' && (p == ref_instruction || *(p-1) != '\\')) {
             in_quotes = !in_quotes;
         } else if (!in_quotes) {
             if (*p == ':' && *(p+1) == '=' && !assign_pos) {
                 assign_pos = p;
+                is_merge_assignment = false;
+            } else if (*p == '+' && *(p+1) == '=' && !assign_pos) {
+                assign_pos = p;
+                is_merge_assignment = true;
             } else if (*p == '(' && !paren_pos) {
                 paren_pos = p;
             }
@@ -483,7 +488,7 @@ ar_instruction_ast_t* ar_instruction_parser__parse(ar_instruction_parser_t *mut_
     // Determine instruction type based on what we found
     if (assign_pos) {
         // Check if there's a function call after :=
-        if (paren_pos && paren_pos > assign_pos) {
+        if (!is_merge_assignment && paren_pos && paren_pos > assign_pos) {
             // This is a function with assignment
             // Extract the result path (everything before :=)
             const char *path_start = ref_instruction;

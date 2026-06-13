@@ -16,6 +16,7 @@ const ar_instruction_ast_t = struct {
     own_memory_path: ?[*:0]u8,       // Owned: e.g., "memory.x.y"
     own_expression: ?[*:0]u8,        // Owned: the expression to evaluate (legacy)
     own_expression_ast: ?*c.ar_expression_ast_t, // Owned: the expression as AST (new)
+    assignment_operator: c.ar_assignment_operator_t,
     
     // For function call instructions
     own_function_name: ?[*:0]u8,     // Owned: function name
@@ -64,6 +65,7 @@ export fn ar_instruction_ast__create_assignment(
         .own_memory_path = null,
         .own_expression = null,
         .own_expression_ast = null,
+        .assignment_operator = c.AR_ASSIGNMENT_OPERATOR__SET,
         .own_function_name = null,
         .own_args = null,
         .own_arg_asts = null,
@@ -117,6 +119,7 @@ export fn ar_instruction_ast__create_function_call(
         .own_memory_path = null,
         .own_expression = null,
         .own_expression_ast = null,
+        .assignment_operator = c.AR_ASSIGNMENT_OPERATOR__SET,
         .own_function_name = null,
         .own_args = null,
         .own_arg_asts = null,
@@ -256,6 +259,34 @@ export fn ar_instruction_ast__get_assignment_expression(ref_node: ?*const c.ar_i
         return null;
     }
     return node.own_expression;
+}
+
+/// Get assignment operator from an assignment node.
+export fn ar_instruction_ast__get_assignment_operator(ref_node: ?*const c.ar_instruction_ast_t) c.ar_assignment_operator_t {
+    if (ref_node == null) {
+        return c.AR_ASSIGNMENT_OPERATOR__SET;
+    }
+    const node = @as(*const ar_instruction_ast_t, @ptrCast(@alignCast(ref_node)));
+    if (node.node_type != c.AR_INSTRUCTION_AST_TYPE__ASSIGNMENT) {
+        return c.AR_ASSIGNMENT_OPERATOR__SET;
+    }
+    return node.assignment_operator;
+}
+
+/// Set assignment operator for an assignment node.
+export fn ar_instruction_ast__set_assignment_operator(
+    mut_node: ?*c.ar_instruction_ast_t,
+    operator: c.ar_assignment_operator_t
+) bool {
+    if (mut_node == null) {
+        return false;
+    }
+    const node = @as(*ar_instruction_ast_t, @ptrCast(@alignCast(mut_node)));
+    if (node.node_type != c.AR_INSTRUCTION_AST_TYPE__ASSIGNMENT) {
+        return false;
+    }
+    node.assignment_operator = operator;
+    return true;
 }
 
 /// Get expression AST from an assignment node.

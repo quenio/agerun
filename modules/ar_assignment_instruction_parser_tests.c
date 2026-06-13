@@ -148,6 +148,36 @@ static void test_assignment_instruction_parser__parse_expression_assignment(void
     ar_log__destroy(log);
 }
 
+static void test_assignment_instruction_parser__parse_map_merge_assignment(void) {
+    printf("Testing map merge assignment parsing...\n");
+
+    // Given a map merge assignment instruction
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    const char *instruction = "memory += {count: 42, name: \"Ada\"}";
+    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(log);
+    assert(own_parser != NULL);
+
+    // When parsing the instruction
+    ar_instruction_ast_t *own_ast = ar_assignment_instruction_parser__parse(own_parser, instruction);
+
+    // Then it should parse as an assignment with the map literal expression preserved
+    assert(own_ast != NULL);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT);
+    assert(ar_instruction_ast__get_assignment_operator(own_ast) == AR_ASSIGNMENT_OPERATOR__MERGE);
+    assert(strcmp(ar_instruction_ast__get_assignment_path(own_ast), "memory") == 0);
+    assert(strcmp(ar_instruction_ast__get_assignment_expression(own_ast), "{count: 42, name: \"Ada\"}") == 0);
+
+    const ar_expression_ast_t *ref_expr_ast = ar_instruction_ast__get_assignment_expression_ast(own_ast);
+    assert(ref_expr_ast != NULL);
+    assert(ar_expression_ast__get_type(ref_expr_ast) == AR_EXPRESSION_AST_TYPE__LITERAL_MAP);
+    assert(ar_expression_ast__get_map_entry_count(ref_expr_ast) == 2);
+
+    ar_instruction_ast__destroy(own_ast);
+    ar_assignment_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
 static void test_assignment_instruction_parser__parse_whitespace_handling(void) {
     printf("Testing whitespace handling...\n");
     
@@ -357,6 +387,7 @@ int main(void) {
     test_assignment_instruction_parser__parse_string_assignment();
     test_assignment_instruction_parser__parse_nested_assignment();
     test_assignment_instruction_parser__parse_expression_assignment();
+    test_assignment_instruction_parser__parse_map_merge_assignment();
     
     // Edge cases
     test_assignment_instruction_parser__parse_whitespace_handling();

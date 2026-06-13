@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include "ar_evaluator_fixture.h"
 #include "ar_assignment_instruction_evaluator.h"
+#include "ar_assignment_instruction_parser.h"
 #include "ar_data.h"
 #include "ar_event.h"
 #include "ar_expression_ast.h"
@@ -585,6 +586,51 @@ static void test_assignment_instruction_evaluator__deep_copies_nested_sources(vo
     ar_evaluator_fixture__destroy(fixture);
 }
 
+static void test_assignment_instruction_evaluator__merges_map_entries_in_order(void) {
+    printf("Testing assignment map merge applies entries in order...\n");
+
+    // Given memory with existing and untouched values
+    ar_evaluator_fixture_t *fixture =
+        ar_evaluator_fixture__create("test_merges_map_entries_in_order");
+    AR_ASSERT(fixture != NULL, "Fixture creation should succeed");
+
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(fixture);
+    AR_ASSERT(ar_data__set_map_integer(mut_memory, "existing", 1), "Existing key should be stored");
+    AR_ASSERT(ar_data__set_map_integer(mut_memory, "untouched", 99), "Untouched key should be stored");
+
+    ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
+    AR_ASSERT(frame != NULL, "Frame creation should succeed");
+
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(log);
+    AR_ASSERT(own_parser != NULL, "Parser creation should succeed");
+
+    ar_instruction_ast_t *own_ast = ar_assignment_instruction_parser__parse(
+        own_parser,
+        "memory += {existing: 2, added: memory.existing + 3, existing: memory.added * 2}"
+    );
+    AR_ASSERT(own_ast != NULL, "Map merge assignment should parse");
+
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_assignment_instruction_evaluator_t *evaluator =
+        ar_assignment_instruction_evaluator__create(log, expr_eval);
+    AR_ASSERT(evaluator != NULL, "Evaluator creation should succeed");
+
+    // When evaluating the merge assignment
+    bool result = ar_assignment_instruction_evaluator__evaluate(evaluator, frame, own_ast);
+
+    // Then existing keys are replaced, new keys are added, and untouched keys remain
+    AR_ASSERT(result == true, "Map merge assignment should evaluate");
+    AR_ASSERT(ar_data__get_map_integer(mut_memory, "existing") == 10, "Duplicate key should keep final merged value");
+    AR_ASSERT(ar_data__get_map_integer(mut_memory, "added") == 5, "New key should see earlier merged values");
+    AR_ASSERT(ar_data__get_map_integer(mut_memory, "untouched") == 99, "Untouched key should remain unchanged");
+
+    ar_assignment_instruction_evaluator__destroy(evaluator);
+    ar_instruction_ast__destroy(own_ast);
+    ar_assignment_instruction_parser__destroy(own_parser);
+    ar_evaluator_fixture__destroy(fixture);
+}
+
 
 int main(void) {
     printf("Starting assignment instruction_evaluator tests...\n");
@@ -627,6 +673,9 @@ int main(void) {
 
     test_assignment_instruction_evaluator__deep_copies_nested_sources();
     printf("test_assignment_instruction_evaluator__deep_copies_nested_sources passed!\n");
+
+    test_assignment_instruction_evaluator__merges_map_entries_in_order();
+    printf("test_assignment_instruction_evaluator__merges_map_entries_in_order passed!\n");
     
     printf("All assignment instruction_evaluator tests passed!\n");
     

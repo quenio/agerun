@@ -398,6 +398,32 @@ static void test_method_parser__parse_multiline_map_literal_without_commas(void)
     ar_log__destroy(log);
 }
 
+static void test_method_parser__parse_multiline_map_merge_literal(void) {
+    printf("Testing method parser multi-line map merge literal...\n");
+
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    ar_method_parser_t *own_parser = ar_method_parser__create(log);
+    assert(own_parser != NULL);
+
+    const char *ref_source = "memory += {\n  count: 42\n  name: \"Ada\"\n}";
+    ar_method_ast_t *own_ast = ar_method_parser__parse(own_parser, ref_source);
+
+    assert(own_ast != NULL);
+    assert(ar_method_ast__get_instruction_count(own_ast) == 1);
+    const ar_instruction_ast_t *ref_instruction = ar_method_ast__get_instruction(own_ast, 1);
+    const ar_expression_ast_t *ref_expr = ar_instruction_ast__get_assignment_expression_ast(ref_instruction);
+    assert(ref_expr != NULL);
+    assert(ar_expression_ast__get_type(ref_expr) == AR_EXPRESSION_AST_TYPE__LITERAL_MAP);
+    assert(ar_expression_ast__get_map_entry_count(ref_expr) == 2);
+    assert(strcmp(ar_expression_ast__get_map_key(ref_expr, 0), "count") == 0);
+    assert(strcmp(ar_expression_ast__get_map_key(ref_expr, 1), "name") == 0);
+
+    ar_method_ast__destroy(own_ast);
+    ar_method_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
 static void test_method_parser__rejects_invalid_multiline_literal(const char *ref_source) {
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
@@ -457,6 +483,7 @@ int main(void) {
     test_method_parser__parse_multiline_list_literal_with_commas();
     test_method_parser__parse_multiline_list_literal_without_commas();
     test_method_parser__parse_multiline_map_literal_without_commas();
+    test_method_parser__parse_multiline_map_merge_literal();
     test_method_parser__rejects_inconsistent_multiline_item_indentation();
     test_method_parser__rejects_multiline_closing_indentation_mismatch();
     test_method_parser__rejects_multiline_literal_as_argument();

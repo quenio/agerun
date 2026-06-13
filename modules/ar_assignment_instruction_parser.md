@@ -2,15 +2,15 @@
 
 ## Overview
 
-The `assignment_instruction_parser` module provides specialized parsing for memory assignment instructions in the AgeRun language. It handles instructions of the form `memory.path := expression`.
+The `assignment_instruction_parser` module provides specialized parsing for memory assignment instructions in the AgeRun language. It handles instructions of the form `memory.path := expression` and map merge assignments of the form `memory.path += {key: value}`.
 
 ## Purpose
 
 This module is part of the specialized parser architecture, where each instruction type has its own dedicated parser. The assignment instruction parser:
 
-- Validates assignment syntax (memory path, := operator, expression)
+- Validates assignment syntax (memory path, `:=` or `+=` operator, expression)
 - Extracts the memory path and expression components
-- Creates appropriate AST nodes for assignment instructions
+- Creates appropriate AST nodes for assignment instructions and records the assignment operator
 - Reports errors through ar_log (get_error functions are deprecated)
 
 ## Interface
@@ -70,7 +70,7 @@ ar_assignment_instruction_parser__destroy(parser);
 ### Parsing Rules
 
 1. **Memory Path**: Must start with "memory" followed by optional dot-separated identifiers
-2. **Assignment Operator**: Must be `:=` (single `=` is not valid)
+2. **Assignment Operator**: Must be `:=` for replacement or `+=` for map merge (single `=` is not valid)
 3. **Expression**: Any valid expression after the operator (parsing deferred to expression parser)
 4. **Whitespace**: Leading/trailing whitespace is trimmed, internal whitespace preserved
 
@@ -79,7 +79,7 @@ ar_assignment_instruction_parser__destroy(parser);
 - Empty instruction
 - Missing memory prefix
 - Invalid assignment operator
-- Missing expression after `:=`
+- Missing expression after `:=` or `+=`
 - Memory allocation failures
 
 ### Memory Management
@@ -107,6 +107,7 @@ This module is designed to be used by the main `instruction_parser` facade, whic
 Comprehensive tests are provided in `ar_assignment_instruction_parser_tests.c` covering:
 
 - Basic assignment parsing
+- Map merge assignment parsing
 - String and expression assignments
 - Nested memory paths
 - Error conditions

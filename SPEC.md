@@ -145,6 +145,8 @@ The following BNF grammar defines the syntax of individual instructions allowed 
 <assignment> ::= <memory-access> ':=' <expression>
                | <memory-access> ':=' <multiline-list-literal>
                | <memory-access> ':=' <multiline-map-literal>
+               | <memory-access> '+=' <map-literal>
+               | <memory-access> '+=' <multiline-map-literal>
 
 <function-instruction> ::= [<memory-access> ':='] <function-call>
 
@@ -176,7 +178,7 @@ The following BNF grammar defines the syntax of individual instructions allowed 
 ```
 
 Instructions in an agent method can be of two types:
-- An assignment, which stores the result of an expression in the agent's memory using the `:=` operator
+- An assignment, which stores the result of an expression in the agent's memory using the `:=` operator or merges map entries into an existing memory map using the `+=` operator
 - A function call instruction, which must be one of the supported system functions:
   - `send` - Send a message to an agent or delegate
   - `parse` - Extract values from a string using a template
@@ -195,6 +197,7 @@ Function call instructions can optionally assign their result to a variable. For
 - `send(agent_id, message)` - Call the function without storing the result
 - `success := send(agent_id, message)` - Store the result in a memory variable
 - `memory.result := complete("The capital of {country} is {city}.", memory.values)` - Return a new map containing values from `memory.values` plus generated values for missing placeholders
+- `memory += {count: memory.count + 1, status: "active"}` - Merge map entries into the memory map, replacing existing keys and adding missing keys while leaving other keys unchanged
 - `append(memory.results, message.value)` - Append a value to the existing `memory.results` list
 - `memory.append_ok := append(memory.results, message.value)` - Append a value and store `1` on success or `0` on failure
 - `memory.next := head(memory.targets)` - Store the first item from `memory.targets`
@@ -262,10 +265,12 @@ The expression evaluator follows these rules:
 - Multi-line list and map literals are accepted only as the top-level right side of an assignment
 - Multi-line literal item lines must use identical indentation, the closing delimiter must align with the assignment line, and item-line commas are optional
 - Multi-line literals cannot appear as function arguments, list elements, or map values; nested list and map values must be written as one-line literals
+- Merge assignments use `memory.path += map_value` to merge map entries into an existing memory map target. Existing keys are replaced, missing keys are added, and other keys remain unchanged.
+- Literal-map merge entries are evaluated and applied in order, so later entries can read keys written by earlier entries in the same merge. If the same key appears more than once, the final entry determines the stored value.
 - `message` refers to the current message being processed, and nested fields can be accessed using dot notation (e.g., `message.field`)
 - `memory` provides access to the agent's memory map, and nested fields can be accessed using dot notation (e.g., `memory.field`)
 - `context` provides access to the agent's read-only context map, and nested fields can be accessed using dot notation (e.g., `context.field`)
-- In assignments, only `memory` paths can be used on the left side of the ':=' operator
+- In assignments, only `memory` paths can be used on the left side of the `:=` and `+=` operators
 - Arithmetic operations can be performed with basic operators: +, -, *, /
 - Comparison operations use relational operators to compare values:
   - `=` equality (returns true if the values are equal)
@@ -319,7 +324,7 @@ send(memory.next_self, {targets: memory.remaining_targets, payload: message.payl
 ### 4. Memory Access
 
 - **Reading**: Access values using dot notation with the root identifiers `message`, `memory`, or `context` (e.g., `message.field`, `memory.user.name`, `context.settings`).
-- **Writing**: Assign values to memory using `memory.path := value`. Only `memory` paths can be used on the left side of an assignment.
+- **Writing**: Assign values to memory using `memory.path := value`. Merge map entries into an existing memory map using `memory.path += {key: value}`. Only `memory` paths can be used on the left side of an assignment.
 
 ### 5. Arithmetic Operations
 

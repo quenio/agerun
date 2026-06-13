@@ -69,6 +69,7 @@ Evaluates an assignment instruction using the frame's memory.
 The module evaluates assignment instructions of the form:
 - `memory.key := expression`
 - `memory.nested.path := expression`
+- `memory.map += {key: expression}`
 
 Key features:
 1. **Path Validation**: Ensures assignment paths start with "memory."
@@ -77,6 +78,8 @@ Key features:
 4. **Nested Path Support**: Creates intermediate maps as needed for nested paths
 5. **Ownership Transfer**: Properly transfers ownership of evaluated values to memory
 6. **Nested Copy Support**: Deep-copies borrowed nested list/map values from memory, context, or message
+7. **Map Merge Support**: Merges map values into existing memory maps, replacing existing keys, adding missing keys, and preserving untouched keys
+8. **Ordered Literal Merge Entries**: Applies literal map entries in source order, allowing later entries to read earlier merged keys
 
 ### Memory Management
 
@@ -115,18 +118,18 @@ The module includes helper functions for:
 ar_log_t *log = ar_log__create();
 ar_data_t *memory = ar_data__create_map();
 ar_data_t *context = ar_data__create_map();
-ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log, memory, context);
+ar_data_t *message = ar_data__create_string("test");
+ar_expression_evaluator_t *expr_eval = ar_expression_evaluator__create(log);
 
 // Create assignment instruction evaluator
 ar_assignment_instruction_evaluator_t *assign_eval = ar_assignment_instruction_evaluator__create(
     log, expr_eval
 );
 
-// Parse assignment instruction: memory.result := 42
-ar_instruction_ast_t *ast = ar_instruction_parser__parse_assignment(parser);
+ar_instruction_parser_t *parser = ar_instruction_parser__create(log);
+ar_instruction_ast_t *ast = ar_instruction_parser__parse(parser, "memory.result := 42");
 
 // Create a frame for evaluation
-ar_data_t *message = ar_data__create_string("test");
 ar_frame_t *frame = ar_frame__create(memory, context, message);
 
 // Evaluate the assignment
@@ -136,6 +139,8 @@ bool success = ar_assignment_instruction_evaluator__evaluate(assign_eval, frame,
 
 // Cleanup
 ar_frame__destroy(frame);
+ar_instruction_ast__destroy(ast);
+ar_instruction_parser__destroy(parser);
 ar_data__destroy(message);
 ar_assignment_instruction_evaluator__destroy(assign_eval);
 ar_expression_evaluator__destroy(expr_eval);
@@ -150,6 +155,7 @@ The module includes comprehensive tests covering:
 - Simple assignments
 - Nested path assignments
 - Various expression types (literals, operations, memory access)
+- Map merge assignment replacement/addition/untouched-key behavior
 - Error handling for invalid paths (errors reported through log)
 - Memory leak verification
 

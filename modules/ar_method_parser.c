@@ -88,8 +88,29 @@ static char* _strip_inline_comments_and_trim(char *mut_line) {
     return mut_trimmed;
 }
 
-static bool _is_multiline_literal_opener(char *mut_trimmed, char *out_open_delimiter, char *out_close_delimiter) {
-    char *assignment = strstr(mut_trimmed, ":=");
+static char* _find_assignment_operator(char *mut_trimmed, const char **out_operator) {
+    char *set_assignment = strstr(mut_trimmed, ":=");
+    char *merge_assignment = strstr(mut_trimmed, "+=");
+    char *assignment = NULL;
+
+    if (set_assignment && (!merge_assignment || set_assignment < merge_assignment)) {
+        assignment = set_assignment;
+        *out_operator = ":=";
+    } else if (merge_assignment) {
+        assignment = merge_assignment;
+        *out_operator = "+=";
+    }
+
+    return assignment;
+}
+
+static bool _is_multiline_literal_opener(
+    char *mut_trimmed,
+    char *out_open_delimiter,
+    char *out_close_delimiter,
+    const char **out_operator
+) {
+    char *assignment = _find_assignment_operator(mut_trimmed, out_operator);
     if (!assignment || assignment == mut_trimmed) {
         return false;
     }
@@ -168,6 +189,7 @@ static bool _append_canonical_literal_block(
     size_t *mut_output_length,
     size_t *mut_output_capacity,
     const char *ref_lhs,
+    const char *ref_operator,
     char open_delimiter,
     char close_delimiter,
     char **mut_cursor,
@@ -179,7 +201,9 @@ static bool _append_canonical_literal_block(
     bool first_item = true;
 
     if (!_append_cstr(own_output, mut_output_length, mut_output_capacity, ref_lhs) ||
-        !_append_cstr(own_output, mut_output_length, mut_output_capacity, " := ") ||
+        !_append_cstr(own_output, mut_output_length, mut_output_capacity, " ") ||
+        !_append_cstr(own_output, mut_output_length, mut_output_capacity, ref_operator) ||
+        !_append_cstr(own_output, mut_output_length, mut_output_capacity, " ") ||
         !_append_char(own_output, mut_output_length, mut_output_capacity, open_delimiter)) {
         _log_error(mut_parser, *mut_line_number, "Out of memory");
         return false;
@@ -332,7 +356,13 @@ static char* _canonicalize_multiline_literals(ar_method_parser_t *mut_parser, co
         char *trimmed = _strip_inline_comments_and_trim(own_line);
         char open_delimiter = '\0';
         char close_delimiter = '\0';
-        bool is_opener = _is_multiline_literal_opener(trimmed, &open_delimiter, &close_delimiter);
+        const char *assignment_operator = NULL;
+        bool is_opener = _is_multiline_literal_opener(
+            trimmed,
+            &open_delimiter,
+            &close_delimiter,
+            &assignment_operator
+        );
 
         char *next_line = line_end;
         if (*next_line == '\n') {
@@ -345,7 +375,7 @@ static char* _canonicalize_multiline_literals(ar_method_parser_t *mut_parser, co
         }
 
         if (is_opener) {
-            char *assignment = strstr(trimmed, ":=");
+            char *assignment = _find_assignment_operator(trimmed, &assignment_operator);
             *assignment = '\0';
             char *lhs = ar_string__trim(trimmed);
 
@@ -357,6 +387,7 @@ static char* _canonicalize_multiline_literals(ar_method_parser_t *mut_parser, co
                 &output_length,
                 &output_capacity,
                 lhs,
+                assignment_operator,
                 open_delimiter,
                 close_delimiter,
                 &cursor,

@@ -172,8 +172,17 @@ ar_instruction_ast_t* ar_assignment_instruction_parser__parse(
     pos = _skip_whitespace(ref_instruction, pos);
     
     /* Check for assignment operator */
-    if (pos + 1 >= len || ref_instruction[pos] != ':' || ref_instruction[pos + 1] != '=') {
-        _log_error(mut_parser, "Expected ':=' operator", pos);
+    ar_assignment_operator_t operator = AR_ASSIGNMENT_OPERATOR__SET;
+    if (pos + 1 >= len) {
+        _log_error(mut_parser, "Expected ':=' or '+=' operator", pos);
+        return NULL;
+    }
+    if (ref_instruction[pos] == ':' && ref_instruction[pos + 1] == '=') {
+        operator = AR_ASSIGNMENT_OPERATOR__SET;
+    } else if (ref_instruction[pos] == '+' && ref_instruction[pos + 1] == '=') {
+        operator = AR_ASSIGNMENT_OPERATOR__MERGE;
+    } else {
+        _log_error(mut_parser, "Expected ':=' or '+=' operator", pos);
         return NULL;
     }
     pos += 2;
@@ -217,6 +226,14 @@ ar_instruction_ast_t* ar_assignment_instruction_parser__parse(
         _log_error(mut_parser, "Failed to create AST node", 0);
         return NULL;
     }
+
+    if (!ar_instruction_ast__set_assignment_operator(own_ast, operator)) {
+        AR__HEAP__FREE(own_path);
+        AR__HEAP__FREE(own_expr);
+        ar_instruction_ast__destroy(own_ast);
+        _log_error(mut_parser, "Failed to set assignment operator", 0);
+        return NULL;
+    }
     
     /* Parse expression into AST and set it in the instruction AST */
     if (!_parse_and_set_expression_ast(mut_parser, own_ast, own_expr, expr_start)) {
@@ -253,4 +270,3 @@ size_t ar_assignment_instruction_parser__get_error_position(
     (void)ref_parser; // Suppress unused parameter warning
     return 0;
 }
-

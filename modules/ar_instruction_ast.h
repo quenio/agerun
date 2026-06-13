@@ -27,6 +27,14 @@ typedef enum {
 } ar_instruction_ast_type_t;
 
 /**
+ * Assignment operator types.
+ */
+typedef enum {
+    AR_ASSIGNMENT_OPERATOR__SET,      /* memory.x := expression */
+    AR_ASSIGNMENT_OPERATOR__MERGE     /* memory.x += map */
+} ar_assignment_operator_t;
+
+/**
  * Opaque AST node structure.
  * Internal structure is hidden to maintain encapsulation.
  */
@@ -102,6 +110,26 @@ const char* ar_instruction_ast__get_assignment_path(const ar_instruction_ast_t *
  * @note Ownership: Returns a borrowed reference. Do not free.
  */
 const char* ar_instruction_ast__get_assignment_expression(const ar_instruction_ast_t *ref_node);
+
+/**
+ * Get assignment operator from an assignment node.
+ *
+ * @param ref_node The AST node (borrowed reference)
+ * @return The assignment operator, or AR_ASSIGNMENT_OPERATOR__SET if not an assignment
+ */
+ar_assignment_operator_t ar_instruction_ast__get_assignment_operator(const ar_instruction_ast_t *ref_node);
+
+/**
+ * Set assignment operator for an assignment node.
+ *
+ * @param mut_node The AST node (mutable reference)
+ * @param operator The assignment operator
+ * @return true if successful, false if not an assignment node
+ */
+bool ar_instruction_ast__set_assignment_operator(
+    ar_instruction_ast_t *mut_node,
+    ar_assignment_operator_t operator
+);
 
 /**
  * Get expression AST from an assignment node.

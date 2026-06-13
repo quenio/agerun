@@ -40,6 +40,9 @@ and evaluator facade.
 `AR_INSTRUCTION_AST_TYPE__TAIL` represents `tail(list)` and is used by the specialized tail parser
 and evaluator facade.
 
+Assignment nodes carry an `ar_assignment_operator_t`: `AR_ASSIGNMENT_OPERATOR__SET` for `:=` and
+`AR_ASSIGNMENT_OPERATOR__MERGE` for `+=` map merge assignments.
+
 ## Public API highlights
 
 ### Node creation
@@ -64,6 +67,13 @@ ar_instruction_ast_t* ar_instruction_ast__create_function_call(
 ```c
 const char* ar_instruction_ast__get_assignment_path(const ar_instruction_ast_t *ref_node);
 const char* ar_instruction_ast__get_assignment_expression(const ar_instruction_ast_t *ref_node);
+ar_assignment_operator_t ar_instruction_ast__get_assignment_operator(
+    const ar_instruction_ast_t *ref_node
+);
+bool ar_instruction_ast__set_assignment_operator(
+    ar_instruction_ast_t *mut_node,
+    ar_assignment_operator_t operator
+);
 const ar_expression_ast_t* ar_instruction_ast__get_assignment_expression_ast(
     const ar_instruction_ast_t *ref_node
 );
@@ -106,6 +116,8 @@ bool ar_instruction_ast__has_protected_memory_self_assignment(
 - instruction facades use `ar_instruction_ast__get_type()` for dispatch
 - evaluators use `ar_instruction_ast__has_protected_memory_self_assignment()` to reject writes to
   agency-managed `memory.self` and `memory.self.*` result paths
+- assignment evaluators use `ar_instruction_ast__get_assignment_operator()` to distinguish normal
+  replacement assignments from map merge assignments
 - `complete(...)` support is represented with a normal function-call node carrying parsed argument
   ASTs for the template string and optional values-map expression
 - `append(...)` support is represented with a normal function-call node carrying parsed argument ASTs

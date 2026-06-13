@@ -21,8 +21,12 @@ static void test_create_assignment_instruction(void) {
     // Then the node should be created successfully with correct type and values
     assert(own_node != NULL);
     assert(ar_instruction_ast__get_type(own_node) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT);
+    assert(ar_instruction_ast__get_assignment_operator(own_node) == AR_ASSIGNMENT_OPERATOR__SET);
     assert(strcmp(ar_instruction_ast__get_assignment_path(own_node), "memory.x") == 0);
     assert(strcmp(ar_instruction_ast__get_assignment_expression(own_node), "42") == 0);
+
+    assert(ar_instruction_ast__set_assignment_operator(own_node, AR_ASSIGNMENT_OPERATOR__MERGE) == true);
+    assert(ar_instruction_ast__get_assignment_operator(own_node) == AR_ASSIGNMENT_OPERATOR__MERGE);
     
     ar_instruction_ast__destroy(own_node);
 }

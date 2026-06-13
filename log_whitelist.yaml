@@ -97,7 +97,7 @@ ignored_errors:
 
   # ar_assignment_instruction_parser_tests
   - context: "ar_assignment_instruction_parser_tests"
-    message: "ERROR: Expected ':=' operator (at position 9)"
+    message: "ERROR: Expected ':=' or '+=' operator (at position 9)"
     comment: "Testing missing assignment operator"
   - context: "ar_assignment_instruction_parser_tests"
     message: "ERROR: NULL parameter provided (at position 0)"

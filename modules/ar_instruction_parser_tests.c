@@ -69,6 +69,36 @@ static void test_instruction_parser__parse_assignment(void) {
     ar_log__destroy(log);
 }
 
+static void test_instruction_parser__parse_map_merge_assignment(void) {
+    printf("Testing unified parse method for map merge assignments...\n");
+
+    // Given a map merge assignment instruction
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    const char *instruction = "memory += {count: 42}";
+
+    // When creating a parser and parsing via unified method
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(log);
+    assert(own_parser != NULL);
+
+    ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
+
+    // Then it should parse successfully as an assignment
+    assert(own_ast != NULL);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT);
+    assert(ar_instruction_ast__get_assignment_operator(own_ast) == AR_ASSIGNMENT_OPERATOR__MERGE);
+    assert(strcmp(ar_instruction_ast__get_assignment_path(own_ast), "memory") == 0);
+    assert(strcmp(ar_instruction_ast__get_assignment_expression(own_ast), "{count: 42}") == 0);
+
+    const ar_expression_ast_t *ref_expr_ast = ar_instruction_ast__get_assignment_expression_ast(own_ast);
+    assert(ref_expr_ast != NULL);
+    assert(ar_expression_ast__get_type(ref_expr_ast) == AR_EXPRESSION_AST_TYPE__LITERAL_MAP);
+
+    ar_instruction_ast__destroy(own_ast);
+    ar_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
 static void test_instruction_parser__parse_send(void) {
     printf("Testing unified parse method for send instruction...\n");
     
@@ -951,6 +981,7 @@ int main(void) {
     
     // Unified parser tests
     test_instruction_parser__parse_assignment();
+    test_instruction_parser__parse_map_merge_assignment();
     test_instruction_parser__parse_send();
     test_instruction_parser__parse_send_with_assignment();
     test_instruction_parser__parse_if();
