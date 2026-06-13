@@ -694,6 +694,12 @@ ignored_errors:
     message: "ERROR: Line 2: Multi-line literal items must be one complete item per line (at position 2)"
     comment: "Testing rejection of nested and multi-item lines in multi-line literals"
   - context: "ar_method_parser_tests"
+    message: "ERROR: Expected literal (string or number) (at position 1)"
+    comment: "Testing rejected multi-line list merge literal"
+  - context: "ar_method_parser_tests"
+    message: "ERROR: Failed to parse expression (at position 10)"
+    comment: "Testing rejected multi-line list merge literal"
+  - context: "ar_method_parser_tests"
     message: "✓ test_method_parser__successful_parse_after_failure passed"
     comment: "Test pass message treated as error by pattern"
 
