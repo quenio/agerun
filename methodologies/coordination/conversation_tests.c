@@ -549,6 +549,63 @@ static void test_conversation__broadcasts_turns_to_all_other_participants(void) 
                      "after-intruder") == 0,
               "Stale broadcast selection should not relay a mismatched turn");
 
+    ar_data__set_map_integer(mut_stale_conversation_memory, "pending_turn_active", 1);
+    ar_data__set_map_string(mut_stale_conversation_memory, "pending_trace_id",
+                            "missing-participants-trace");
+    ar_data__set_map_integer(mut_stale_conversation_memory, "pending_sender", 0);
+    ar_data__set_map_integer(mut_stale_conversation_memory, "pending_candidate_found", 0);
+
+    ar_data_t *own_missing_participants_select = ar_data__create_map();
+    AR_ASSERT(own_missing_participants_select != NULL,
+              "Missing participants selection should be created");
+    ar_data__set_map_integer(own_missing_participants_select,
+                             "sender",
+                             checked_agent_id(conversation_agent));
+    ar_data__set_map_string(own_missing_participants_select,
+                            "request",
+                            "conversation_select_recipients");
+    ar_data__set_map_string(own_missing_participants_select,
+                            "trace_id",
+                            "missing-participants-trace");
+    ar_data__set_map_string(own_missing_participants_select, "session_id", "chat-session-1");
+    ar_data_t *own_missing_participants_recipients = ar_data__create_list();
+    AR_ASSERT(own_missing_participants_recipients != NULL,
+              "Missing participants recipients should be created");
+    AR_ASSERT(ar_data__set_map_data(own_missing_participants_select,
+                                    "recipients",
+                                    own_missing_participants_recipients),
+              "Missing participants selection should own recipients");
+    own_missing_participants_recipients = NULL;
+    ar_data_t *own_missing_participants_payload = ar_data__create_map();
+    AR_ASSERT(own_missing_participants_payload != NULL,
+              "Missing participants payload should be created");
+    ar_data__set_map_string(own_missing_participants_payload,
+                            "payload",
+                            "missing-participants");
+    AR_ASSERT(ar_data__set_map_data(own_missing_participants_select,
+                                    "payload",
+                                    own_missing_participants_payload),
+              "Missing participants selection should own payload");
+    own_missing_participants_payload = NULL;
+    ar_data__set_map_integer(own_missing_participants_select,
+                             "participant",
+                             checked_agent_id(participant_a));
+    ar_data__set_map_integer(own_missing_participants_select, "found_sender", 0);
+    ar_data__set_map_integer(own_missing_participants_select, "recipient_count", 0);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency,
+                                       conversation_agent,
+                                       own_missing_participants_select),
+              "Missing participants selection should queue");
+    own_missing_participants_select = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ref_conversation_memory = ar_agency__get_agent_memory(mut_agency, conversation_agent);
+    AR_ASSERT(ar_data__get_map_integer(ref_conversation_memory, "pending_turn_active") == 0,
+              "Missing participants selection should clear the pending slot");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_b_memory, "last_payload"),
+                     "after-intruder") == 0,
+              "Missing participants selection should not relay a turn");
+
     // When a forged broadcasting result arrives while a broadcast is pending
     ar_data_t *own_forged_start = ar_data__create_map();
     AR_ASSERT(own_forged_start != NULL, "Forged-result conversation start should be created");

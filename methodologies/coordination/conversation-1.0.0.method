@@ -103,10 +103,12 @@ memory.select_active := memory.select_active * memory.select_matches_session
 memory.select_active := memory.select_active * memory.is_active
 
 # Scan participants
-memory.scan_participants := if(memory.select_active = 1, message.participants, [])
+memory.raw_scan_participants := if(memory.select_active = 1, message.participants, [])
+memory.scan_participants := if(memory.raw_scan_participants = 0, [], memory.raw_scan_participants)
 memory.scan_recipients := if(memory.select_active = 1, message.recipients, [])
 memory.current_participant := head(memory.scan_participants)
-memory.remaining_participants := tail(memory.scan_participants)
+memory.raw_remaining_participants := tail(memory.scan_participants)
+memory.remaining_participants := if(memory.raw_remaining_participants = 0, [], memory.raw_remaining_participants)
 memory.scan_participants_empty := if(memory.scan_participants = [], 1, 0)
 memory.has_scan_participant := if(memory.scan_participants_empty = 1, 0, 1)
 memory.participant_is_sender := if(message.participant = memory.current_participant, 1, 0)
