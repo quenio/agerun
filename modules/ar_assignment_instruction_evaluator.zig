@@ -38,6 +38,7 @@ fn _storeValue(
     }
 
     const own_value = c.ar_data__claim_or_copy(ref_result, ref_evaluator) orelse {
+        c.ar_data__destroy_if_owned(ref_result, ref_evaluator);
         c.ar_log__error(ref_evaluator.ref_log, "Failed to copy assigned value");
         return false;
     };
@@ -223,6 +224,7 @@ fn _evaluateMergeAssignment(
     };
 
     const own_source_map = c.ar_data__claim_or_copy(result, ref_evaluator) orelse {
+        c.ar_data__destroy_if_owned(result, ref_evaluator);
         c.ar_log__error(ref_evaluator.ref_log, "Failed to copy assigned value");
         return false;
     };
