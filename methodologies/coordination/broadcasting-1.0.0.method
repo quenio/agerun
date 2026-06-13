@@ -2,11 +2,13 @@
 memory.is_request := if(message.request <> 0, 1, 0)
 memory.is_broadcast := if(memory.is_request = 1, message.request = "broadcasting_start", 0)
 
-# Establish trace and sender state
+# Establish trace state
 memory.generated_trace_base := message.sender * 1000
 memory.generated_trace_id := memory.generated_trace_base + memory.self
 memory.request_trace_id := memory.generated_trace_id
 memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.request_trace_id)
+
+# Establish sender state
 memory.trace_id := if(memory.is_broadcast = 1, memory.request_trace_id, memory.trace_id)
 memory.sender := if(memory.is_broadcast = 1, message.sender, memory.sender)
 memory.current_recipients := if(memory.is_broadcast = 1, message.recipients, [])

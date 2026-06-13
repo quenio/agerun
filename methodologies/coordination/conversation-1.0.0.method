@@ -3,7 +3,7 @@ memory.is_request := if(message.request <> 0, 1, 0)
 memory.is_response := if(message.response <> 0, 1, 0)
 memory.is_start := if(memory.is_request = 1, message.request = "conversation_start", 0)
 memory.is_message := if(memory.is_request = 1, message.request = "conversation_message", 0)
-memory.is_summary := if(memory.is_request = 1, message.request = "conversation_summary", 0)
+memory.is_history := if(memory.is_request = 1, message.request = "conversation_history", 0)
 memory.is_close := if(memory.is_request = 1, message.request = "conversation_close", 0)
 memory.is_select_recipients := if(memory.is_request = 1, message.request = "conversation_select_recipients", 0)
 memory.is_broadcast_result := if(memory.is_response = 1, message.response = "broadcasting_result", 0)
@@ -166,10 +166,10 @@ memory.last_payload := if(memory.relay_succeeded = 1, memory.pending_payload, me
 memory.relay_failed := memory.broadcast_result_active - memory.relay_succeeded
 memory.pending_broadcast := if(memory.broadcast_result_active = 1, 0, memory.pending_broadcast)
 
-# Handle summary and close requests
+# Handle history and close requests
 memory.should_close := memory.is_close * memory.matches_session
 memory.state := if(memory.should_close = 1, "closed", memory.state)
-memory.summary_matches := memory.is_summary * memory.matches_session
+memory.history_matches := memory.is_history * memory.matches_session
 
 # Derive conversation result
 memory.relay_outcome := memory.relay_succeeded + memory.relay_failed
@@ -180,7 +180,7 @@ memory.relay_failure_count := if(memory.relay_failure_count > 0, 1, 0)
 memory.response_result := "ignored"
 memory.response_result := if(memory.is_start = 1, "active", memory.response_result)
 memory.response_result := if(memory.start_failed = 1, "handoff_failed", memory.response_result)
-memory.response_result := if(memory.summary_matches = 1, memory.state, memory.response_result)
+memory.response_result := if(memory.history_matches = 1, memory.state, memory.response_result)
 memory.response_result := if(memory.should_close = 1, "closed", memory.response_result)
 memory.response_result := if(memory.relay_succeeded = 1, "relayed", memory.response_result)
 memory.response_result := if(memory.relay_failure_count = 1, "relay_failed", memory.response_result)
@@ -210,7 +210,7 @@ memory.response_message := {
   turn_count: memory.turn_count
   history: memory.history
 }
-memory.should_respond := memory.is_start + memory.summary_matches
+memory.should_respond := memory.is_start + memory.history_matches
 memory.should_respond := memory.should_respond + memory.should_close
 memory.should_respond := memory.should_respond + memory.relay_outcome
 memory.response_sent := send(memory.sender * memory.should_respond, memory.response_message)

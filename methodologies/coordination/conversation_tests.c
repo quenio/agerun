@@ -271,52 +271,52 @@ static void test_conversation__broadcasts_turns_to_all_other_participants(void) 
     AR_ASSERT(ar_data__get_map_integer(ref_participant_c_memory, "last_turn_count") == 2,
               "Participant C should receive turn two");
 
-    // When a summary is requested
-    ar_data_t *own_summary = ar_data__create_map();
-    AR_ASSERT(own_summary != NULL, "Summary request should be created");
-    ar_data__set_map_string(own_summary, "request", "conversation_summary");
-    ar_data__set_map_string(own_summary, "trace_id", "chat-summary-1");
-    ar_data__set_map_string(own_summary, "session_id", "chat-session-1");
-    AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_summary),
-              "Summary request should queue");
-    own_summary = NULL;
+    // When history is requested
+    ar_data_t *own_history = ar_data__create_map();
+    AR_ASSERT(own_history != NULL, "History request should be created");
+    ar_data__set_map_string(own_history, "request", "conversation_history");
+    ar_data__set_map_string(own_history, "trace_id", "chat-history-1");
+    ar_data__set_map_string(own_history, "session_id", "chat-session-1");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_history),
+              "History request should queue");
+    own_history = NULL;
 
     ar_method_fixture__process_all_messages(own_fixture);
 
-    // Then the observer should receive a structured summary with both turns
+    // Then the observer should receive structured history with both turns
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_response"),
                      "conversation_result") == 0,
-              "Conversation summary should be a response");
+              "Conversation history should be a response");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_sender") ==
                   checked_agent_id(conversation_agent),
-              "Conversation summary should identify the conversation sender");
+              "Conversation history should identify the conversation sender");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "success") == 0,
-              "Conversation summary should report standard success status");
+              "Conversation history should report standard success status");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_turn_count") == 2,
-              "Summary should report two turns");
+              "History should report two turns");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
-                     "chat-summary-1") == 0,
-              "Conversation summary should preserve summary request trace id");
+                     "chat-history-1") == 0,
+              "Conversation history should preserve history request trace id");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_session_id"),
                      "chat-session-1") == 0,
-              "Conversation summary should preserve conversation session id");
+              "Conversation history should preserve conversation session id");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_success_count") == 2,
-              "Conversation summary should report successful turn count");
+              "Conversation history should report successful turn count");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_failure_count") == 0,
-              "Conversation summary should report no failed turns");
+              "Conversation history should report no failed turns");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_last_sender") ==
                   checked_agent_id(participant_b),
-              "Summary should report participant B as the last sender");
+              "History should report participant B as the last sender");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_last_payload"),
                      "reply") == 0,
-              "Summary should report the last payload");
+              "History should report the last payload");
     ar_data_t *ref_participants = ar_data__get_map_data(ref_observer_memory, "last_participants");
-    AR_ASSERT(ref_participants != NULL, "Summary should include participants");
+    AR_ASSERT(ref_participants != NULL, "History should include participants");
     AR_ASSERT(ar_data__list_count(ref_participants) == 3,
-              "Summary should include all participants");
+              "History should include all participants");
     ar_data_t *ref_history = ar_data__get_map_data(ref_observer_memory, "last_history");
-    AR_ASSERT(ref_history != NULL, "Summary should include history");
-    AR_ASSERT(ar_data__list_count(ref_history) == 2, "Summary history should include both turns");
+    AR_ASSERT(ref_history != NULL, "History should include history");
+    AR_ASSERT(ar_data__list_count(ref_history) == 2, "History should include both turns");
 
     // When an agent outside the participant list sends a payload
     ar_data_t *own_intruder_turn = ar_data__create_map();

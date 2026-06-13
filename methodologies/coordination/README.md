@@ -463,7 +463,7 @@ Requests:
 ```text
 { sender: <sender-agent>, request: "conversation_start", trace_id: <trace_id>, session_id: <session_id>, participants: [<recipient-agent-1>, <recipient-agent-2>, ...] }
 { sender: <sender-agent>, request: "conversation_message", trace_id: <trace_id>, session_id: <session_id>, payload: <payload> }
-{ sender: <sender-agent>, request: "conversation_summary", trace_id: <trace_id>, session_id: <session_id> }
+{ sender: <sender-agent>, request: "conversation_history", trace_id: <trace_id>, session_id: <session_id> }
 { sender: <sender-agent>, request: "conversation_close", trace_id: <trace_id>, session_id: <session_id> }
 ```
 
@@ -511,13 +511,13 @@ If the `sender` of a `conversation_message` is not in the participant list, the 
 `result: "not_participant"` and does not broadcast, record, or retain the sender-provided payload.
 
 Count semantics: `success_count` increments for a `conversation_message` only when the participant
-turn is broadcast successfully and appended to history; summary and close responses report the
+turn is broadcast successfully and appended to history; history and close responses report the
 current successful turn count, and start responses report `0`. `failure_count` increments to `1`
 when the broadcasting helper cannot be spawned, when a turn relay fails before or during
-broadcasting or history append, or when a non-participant sends `conversation_message`; summary and
+broadcasting or history append, or when a non-participant sends `conversation_message`; history and
 close responses report `0`.
 
-Status semantics: the response status is `success` for a successful start, summary, close, or
+Status semantics: the response status is `success` for a successful start, history, close, or
 participant turn relay. It is `failure` when the broadcasting helper cannot be spawned, when a turn
 relay fails, or when a non-participant sends `conversation_message`.
 
@@ -623,7 +623,7 @@ Conversation-scoped workflow:
    request through broadcasting to every other participant.
 3. Participant B replies through the same coordinator; conversation reuses the same broadcasting
    agent and excludes participant B from that turn.
-4. A workflow or aggregation agent can request summary and consume the structured turn history.
+4. A workflow or aggregation agent can request history and consume the structured turn history.
 ```
 
 ## Gap Analysis
