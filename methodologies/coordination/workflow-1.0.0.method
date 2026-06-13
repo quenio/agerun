@@ -52,8 +52,10 @@ memory.start_handoff_failed := memory.start_handoff_failed * memory.is_start
 # Select current step
 memory.step_recipient := head(message.recipients)
 memory.step_payload := head(message.payloads)
-memory.remaining_step_recipients := tail(message.recipients)
-memory.remaining_step_payloads := tail(message.payloads)
+memory.raw_remaining_step_recipients := tail(message.recipients)
+memory.raw_remaining_step_payloads := tail(message.payloads)
+memory.remaining_step_recipients := if(memory.raw_remaining_step_recipients = 0, [], memory.raw_remaining_step_recipients)
+memory.remaining_step_payloads := if(memory.raw_remaining_step_payloads = 0, [], memory.raw_remaining_step_payloads)
 memory.has_step := if(memory.step_recipient > 0, 1, 0)
 memory.no_step := if(memory.has_step = 1, 0, 1)
 memory.remaining_step_recipients_empty := if(memory.remaining_step_recipients = [], 1, 0)

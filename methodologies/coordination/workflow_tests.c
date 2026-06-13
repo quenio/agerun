@@ -288,6 +288,54 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
     assert_workflow_result_omits_redundant_fields(ref_report_memory);
 
     own_start = ar_data__create_map();
+    AR_ASSERT(own_start != NULL, "Missing-recipient workflow start should be created");
+    ar_data__set_map_string(own_start, "request", "workflow_start");
+    ar_data__set_map_string(own_start, "trace_id", "wf-missing-recipients-start");
+    ar_data__set_map_string(own_start, "session_id", "wf-missing-recipients");
+    ar_data__set_map_integer(own_start, "sender", checked_agent_id(report_agent));
+    ar_data__set_map_string(own_start, "branch_value", "skip");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, workflow_agent, own_start),
+              "Missing-recipient workflow start should queue");
+    own_start = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_trace_id"),
+                     "wf-missing-recipients-start") == 0,
+              "Missing-recipient workflow should complete without looping");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"), "success") == 0,
+              "Missing-recipient workflow should report standard success status");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 0,
+              "Missing-recipient workflow should report zero completed steps");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 0,
+              "Missing-recipient workflow should report no handoff failure");
+    assert_workflow_result_omits_redundant_fields(ref_report_memory);
+
+    own_start = ar_data__create_map();
+    AR_ASSERT(own_start != NULL, "Non-list workflow start should be created");
+    ar_data__set_map_string(own_start, "request", "workflow_start");
+    ar_data__set_map_string(own_start, "trace_id", "wf-non-list-recipients-start");
+    ar_data__set_map_string(own_start, "session_id", "wf-non-list-recipients");
+    ar_data__set_map_integer(own_start, "sender", checked_agent_id(report_agent));
+    ar_data__set_map_integer(own_start, "recipients", 42);
+    ar_data__set_map_integer(own_start, "payloads", 7);
+    ar_data__set_map_string(own_start, "branch_value", "skip");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, workflow_agent, own_start),
+              "Non-list workflow start should queue");
+    own_start = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_trace_id"),
+                     "wf-non-list-recipients-start") == 0,
+              "Non-list workflow should complete without looping");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"), "success") == 0,
+              "Non-list workflow should report standard success status");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 0,
+              "Non-list workflow should report zero completed steps");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 0,
+              "Non-list workflow should report no handoff failure");
+    assert_workflow_result_omits_redundant_fields(ref_report_memory);
+
+    own_start = ar_data__create_map();
     AR_ASSERT(own_start != NULL, "Zero-head workflow start should be created");
     ar_data__set_map_string(own_start, "request", "workflow_start");
     ar_data__set_map_string(own_start, "trace_id", "wf-zero-head-start");
