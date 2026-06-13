@@ -506,6 +506,33 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_child_count") == 0,
               "Observer should receive zero child count for empty child list");
 
+    ar_data_t *own_zero_lifecycle = ar_data__create_map();
+    AR_ASSERT(own_zero_lifecycle != NULL, "Zero child lifecycle event should be created");
+    ar_data__set_map_string(own_zero_lifecycle, "request", "supervision_child_failed");
+    ar_data__set_map_string(own_zero_lifecycle, "trace_id", "supervision-zero-lifecycle");
+    ar_data__set_map_string(own_zero_lifecycle, "session_id", "supervision-empty-session");
+    ar_data__set_map_integer(own_zero_lifecycle, "child_agent_id", 0);
+    ar_data__set_map_string(own_zero_lifecycle, "child_method_name", "record-receiver");
+    ar_data__set_map_string(own_zero_lifecycle, "child_method_version", "1.0.0");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, empty_start_agent, own_zero_lifecycle),
+              "Zero child lifecycle event should queue");
+    own_zero_lifecycle = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ref_empty_start_memory = ar_agency__get_agent_memory(mut_agency, empty_start_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_empty_start_memory, "status"), "running") == 0,
+              "Zero child lifecycle event should leave empty supervisor running");
+    AR_ASSERT(ar_data__get_map_integer(ref_empty_start_memory, "child_count") == 0,
+              "Zero child lifecycle event should not spawn a replacement child");
+    AR_ASSERT(ar_data__get_map_integer(ref_empty_start_memory, "restart_count") == 0,
+              "Zero child lifecycle event should not increment restart count");
+    ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
+                     "supervision-zero-lifecycle") == 0,
+              "Zero child lifecycle response should preserve request trace id");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_child_agent_id") == 0,
+              "Zero child lifecycle response should report the ignored child id");
+
     ar_data_t *own_failed_handoff_context = create_context();
     int64_t failed_handoff_agent = ar_agency__create_agent(
         mut_agency, "supervision", "1.0.0", own_failed_handoff_context);

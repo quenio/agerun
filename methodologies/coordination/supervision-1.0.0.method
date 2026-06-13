@@ -139,8 +139,12 @@ memory.current_lifecycle_child_agent_id := head(message.remaining_child_agent_id
 memory.remaining_lifecycle_child_agent_ids := tail(message.remaining_child_agent_ids)
 memory.current_handled_lifecycle_child_agent_id := head(message.remaining_handled_lifecycle_child_agent_ids)
 memory.remaining_handled_lifecycle_child_agent_ids := tail(message.remaining_handled_lifecycle_child_agent_ids)
+memory.has_lifecycle_child_agent_id := if(memory.current_lifecycle_child_agent_id > 0, 1, 0)
+memory.has_handled_lifecycle_child_agent_id := if(memory.current_handled_lifecycle_child_agent_id > 0, 1, 0)
 memory.lifecycle_match := if(memory.current_lifecycle_child_agent_id = message.child_agent_id, memory.is_validate_lifecycle_active, 0)
+memory.lifecycle_match := memory.lifecycle_match * memory.has_lifecycle_child_agent_id
 memory.lifecycle_handled_match := if(memory.current_handled_lifecycle_child_agent_id = message.child_agent_id, memory.is_validate_lifecycle_active, 0)
+memory.lifecycle_handled_match := memory.lifecycle_handled_match * memory.has_handled_lifecycle_child_agent_id
 memory.lifecycle_tracked_count := message.lifecycle_tracked + memory.lifecycle_match
 memory.lifecycle_handled_count := message.lifecycle_handled + memory.lifecycle_handled_match
 memory.lifecycle_tracked := if(memory.lifecycle_tracked_count > 0, 1, 0)
