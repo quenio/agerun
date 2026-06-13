@@ -291,6 +291,70 @@ static void test_routing__selects_one_recipient_by_key_only(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failed_count") == 0,
               "Keyed route should report no failed recipient sends");
 
+    // When a route table contains zero placeholders before a later matching route
+    own_message = ar_data__create_map();
+    AR_ASSERT(own_message != NULL, "Zero-placeholder route message should be created");
+    ar_data__set_map_string(own_message, "request", "routing_start");
+    ar_data__set_map_string(own_message, "route_key", "delta");
+    own_routes = ar_data__create_map();
+    AR_ASSERT(own_routes != NULL, "Zero-placeholder routes map should be created");
+    ar_data_t *own_route_keys = ar_data__create_list();
+    AR_ASSERT(own_route_keys != NULL, "Zero-placeholder route keys should be created");
+    AR_ASSERT(ar_data__list_add_last_string(own_route_keys, "alpha"),
+              "Zero-placeholder alpha route key should append");
+    AR_ASSERT(ar_data__list_add_last_integer(own_route_keys, 0),
+              "Zero-placeholder route key should append");
+    AR_ASSERT(ar_data__list_add_last_string(own_route_keys, "delta"),
+              "Zero-placeholder delta route key should append");
+    AR_ASSERT(ar_data__set_map_data(own_routes, "keys", own_route_keys),
+              "Zero-placeholder routes should own keys");
+    own_route_keys = NULL;
+    ar_data_t *own_route_recipients = ar_data__create_list();
+    AR_ASSERT(own_route_recipients != NULL, "Zero-placeholder route recipients should be created");
+    AR_ASSERT(ar_data__list_add_last_integer(own_route_recipients, checked_agent_id(receiver_a)),
+              "Zero-placeholder alpha recipient should append");
+    AR_ASSERT(ar_data__list_add_last_integer(own_route_recipients, 0),
+              "Zero-placeholder recipient should append");
+    AR_ASSERT(ar_data__list_add_last_integer(own_route_recipients, checked_agent_id(receiver_b)),
+              "Zero-placeholder delta recipient should append");
+    AR_ASSERT(ar_data__set_map_data(own_routes, "recipients", own_route_recipients),
+              "Zero-placeholder routes should own recipients");
+    own_route_recipients = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_message, "routes", own_routes),
+              "Zero-placeholder route message should own routes map");
+    own_routes = NULL;
+    own_payload = create_payload("domain_event",
+                                 "zero-placeholder",
+                                 "caller-shaped",
+                                 checked_agent_id(receiver_c));
+    AR_ASSERT(ar_data__set_map_data(own_message, "payload", own_payload),
+              "Zero-placeholder route message should own opaque payload");
+    own_payload = NULL;
+    ar_data__set_map_string(own_message, "trace_id", "job-route-zero-placeholder");
+    ar_data__set_map_integer(own_message, "sender", checked_agent_id(report_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, routing_agent, own_message),
+              "Zero-placeholder route message should queue");
+    own_message = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    const ar_data_t *ref_placeholder_receiver_memory =
+        ar_agency__get_agent_memory(mut_agency, receiver_b);
+    const char *ref_placeholder_text =
+        ar_data__get_map_string(ref_placeholder_receiver_memory, "last_text");
+    AR_ASSERT(ref_placeholder_text != NULL,
+              "Routing should deliver past zero placeholders to the later match");
+    AR_ASSERT(strcmp(ref_placeholder_text, "zero-placeholder") == 0,
+              "Routing should scan past zero placeholders to the later match");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"), "success") == 0,
+              "Zero-placeholder route should report standard success status");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_trace_id"),
+                     "job-route-zero-placeholder") == 0,
+              "Zero-placeholder route should preserve trace id");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 1,
+              "Zero-placeholder route should report one successful recipient");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 0,
+              "Zero-placeholder route should report no failed recipient sends");
+
     // When a keyed route does not select a recipient
     own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Missed keyed route message should be created");

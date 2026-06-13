@@ -40,8 +40,10 @@ memory.send_failed := memory.send_failed * memory.is_route
 # Decide whether to scan remaining routes
 memory.remaining_route_key := head(memory.remaining_route_keys)
 memory.remaining_route_recipient := head(memory.remaining_route_recipients)
-memory.has_remaining_route_key := if(memory.remaining_route_key <> 0, 1, 0)
-memory.has_remaining_route_recipient := if(memory.remaining_route_recipient > 0, 1, 0)
+memory.remaining_route_keys_empty := if(memory.remaining_route_keys = [], 1, 0)
+memory.remaining_route_recipients_empty := if(memory.remaining_route_recipients = [], 1, 0)
+memory.has_remaining_route_key := if(memory.remaining_route_keys_empty = 1, 0, 1)
+memory.has_remaining_route_recipient := if(memory.remaining_route_recipients_empty = 1, 0, 1)
 memory.has_remaining_route := memory.has_remaining_route_key + memory.has_remaining_route_recipient
 memory.has_remaining_route := if(memory.has_remaining_route > 0, 1, 0)
 memory.no_match := 1 - memory.route_matches

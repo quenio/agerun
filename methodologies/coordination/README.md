@@ -120,6 +120,8 @@ Reply:
 Routing delivers exactly the sender-provided `payload` to the first positive recipient agent whose
 paired route key matches `route_key`. A direct `recipient` field is not a supported routing
 mechanism; callers that already know the recipient should use direct `send(...)`.
+Integer `0` keys or recipients are placeholders and do not stop scanning while later route entries
+remain.
 
 Count semantics: `success_count` increments to `1` only when the matched positive recipient receives
 the sender-provided `payload`. `failure_count` increments to `1` only when that matched recipient

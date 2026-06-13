@@ -14,7 +14,8 @@ Only messages with a recognized `request` value are handled as coordination requ
 
 When the agent receives `request: "routing_start"`, the method scans `routes.keys` and
 `routes.recipients` as paired unbounded lists. It sends the sender-provided `payload` as-is to
-the first positive recipient agent whose paired key matches `route_key`.
+the first positive recipient agent whose paired key matches `route_key`. Integer `0` keys or
+recipients are placeholders and do not stop scanning while later route entries remain.
 
 If no keyed candidate selects a positive recipient agent, or if the matching recipient cannot receive the
 payload, routing responds with standard `status: "failure"`.
