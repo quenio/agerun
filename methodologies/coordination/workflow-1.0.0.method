@@ -41,6 +41,7 @@ memory.start_execute_message := {
   recipients: message.recipients
   payloads: message.payloads
   step_number: 1
+  skip_positive: 0
 }
 memory.start_execute_sent := send(memory.self * memory.is_start, memory.start_execute_message)
 memory.start_handoff_failed := if(memory.start_execute_sent = 0, 1, 0)
@@ -51,12 +52,16 @@ memory.step_recipient := head(message.recipients)
 memory.step_payload := head(message.payloads)
 memory.remaining_step_recipients := tail(message.recipients)
 memory.remaining_step_payloads := tail(message.payloads)
-memory.remaining_step_recipient := head(memory.remaining_step_recipients)
 memory.has_step := if(memory.step_recipient > 0, 1, 0)
 memory.no_step := if(memory.has_step = 1, 0, 1)
-memory.has_remaining_step := if(memory.remaining_step_recipient > 0, 1, 0)
+memory.remaining_step_recipients_empty := if(memory.remaining_step_recipients = [], 1, 0)
+memory.has_remaining_step := if(memory.remaining_step_recipients_empty = 1, 0, 1)
+memory.skip_positive := if(message.skip_positive > 0, 1, 0)
+memory.no_skip_positive := if(memory.skip_positive = 1, 0, 1)
 memory.execute_action := memory.is_execute_step_active * memory.has_step
+memory.execute_action := memory.execute_action * memory.no_skip_positive
 memory.skip_empty_step := memory.is_execute_step_active * memory.no_step * memory.has_remaining_step
+memory.skip_positive_step := memory.is_execute_step_active * memory.has_step * memory.skip_positive
 
 # Skip empty step placeholders
 memory.skip_step_message := {
@@ -67,10 +72,27 @@ memory.skip_step_message := {
   recipients: memory.remaining_step_recipients
   payloads: memory.remaining_step_payloads
   step_number: message.step_number
+  skip_positive: memory.skip_positive
 }
 memory.skip_step_sent := send(memory.self * memory.skip_empty_step, memory.skip_step_message)
 memory.skip_step_failed := if(memory.skip_step_sent = 0, 1, 0)
 memory.skip_step_failed := memory.skip_step_failed * memory.skip_empty_step
+
+# Skip branched positive step
+memory.skip_positive_step_number := message.step_number + memory.skip_positive_step
+memory.skip_positive_message := {
+  sender: memory.sender
+  request: "workflow_execute_step"
+  trace_id: memory.trace_id
+  session_id: memory.session_id
+  recipients: memory.remaining_step_recipients
+  payloads: memory.remaining_step_payloads
+  step_number: memory.skip_positive_step_number
+  skip_positive: 0
+}
+memory.skip_positive_sent := send(memory.self * memory.skip_positive_step, memory.skip_positive_message)
+memory.skip_positive_failed := if(memory.skip_positive_sent = 0, 1, 0)
+memory.skip_positive_failed := memory.skip_positive_failed * memory.skip_positive_step
 
 # Send current step payload
 memory.step_sent := send(memory.step_recipient * memory.execute_action, memory.step_payload)
@@ -98,21 +120,11 @@ memory.branch_matched := if(message.outcome = memory.branch_value, 1, 0)
 memory.skip_next := memory.step_completion * memory.branch_matched
 
 # Choose next step
-memory.skipped_step_recipients := tail(memory.pending_step_recipients)
-memory.skipped_step_payloads := tail(memory.pending_step_payloads)
 memory.next_step_recipients := memory.pending_step_recipients
 memory.next_step_payloads := memory.pending_step_payloads
-memory.next_step_recipients := if(memory.skip_next = 1, memory.skipped_step_recipients, memory.next_step_recipients)
-memory.next_step_payloads := if(memory.skip_next = 1, memory.skipped_step_payloads, memory.next_step_payloads)
-memory.next_step_recipient := head(memory.next_step_recipients)
-memory.next_step_tail_recipients := tail(memory.next_step_recipients)
-memory.next_step_tail_recipient := head(memory.next_step_tail_recipients)
-memory.has_next_step := if(memory.next_step_recipient > 0, 1, 0)
-memory.has_next_step_after_zero := if(memory.next_step_tail_recipient > 0, 1, 0)
-memory.has_next_step := memory.has_next_step + memory.has_next_step_after_zero
-memory.has_next_step := if(memory.has_next_step > 0, 1, 0)
-memory.step_increment := 1 + memory.skip_next
-memory.next_step_number := memory.current_step + memory.step_increment
+memory.next_step_recipients_empty := if(memory.next_step_recipients = [], 1, 0)
+memory.has_next_step := if(memory.next_step_recipients_empty = 1, 0, 1)
+memory.next_step_number := memory.current_step + 1
 
 # Continue workflow execution
 memory.continue_message := {
@@ -123,6 +135,7 @@ memory.continue_message := {
   recipients: memory.next_step_recipients
   payloads: memory.next_step_payloads
   step_number: memory.next_step_number
+  skip_positive: memory.skip_next
 }
 memory.continue_sent := send(memory.self * memory.step_completion * memory.has_next_step, memory.continue_message)
 memory.continue_required := memory.step_completion * memory.has_next_step
@@ -136,6 +149,7 @@ memory.finished_after_step := memory.step_completion * memory.no_next_step
 memory.retry_completion := memory.is_step_done_active * memory.matching_step * memory.is_active * memory.completion_pending
 memory.should_complete := memory.empty_completion + memory.finished_after_step + memory.retry_completion
 memory.handoff_failed := memory.start_handoff_failed + memory.skip_step_failed
+memory.handoff_failed := memory.handoff_failed + memory.skip_positive_failed
 memory.handoff_failed := memory.handoff_failed + memory.continue_handoff_failed
 memory.handoff_failed := memory.handoff_failed + memory.step_handoff_failed
 memory.should_complete := memory.should_complete + memory.handoff_failed

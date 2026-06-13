@@ -297,6 +297,45 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
     assert_workflow_result_omits_redundant_fields(ref_report_memory);
 
     own_start = ar_data__create_map();
+    AR_ASSERT(own_start != NULL, "Consecutive zero-head workflow start should be created");
+    ar_data__set_map_string(own_start, "request", "workflow_start");
+    ar_data__set_map_string(own_start, "trace_id", "wf-zero-head-repeat-start");
+    ar_data__set_map_string(own_start, "session_id", "wf-zero-head-repeat");
+    ar_data__set_map_integer(own_start, "sender", checked_agent_id(report_agent));
+    own_step_recipients = ar_data__create_list();
+    own_step_payloads = ar_data__create_list();
+    AR_ASSERT(own_step_recipients != NULL, "Consecutive zero-head recipients should be created");
+    AR_ASSERT(own_step_payloads != NULL, "Consecutive zero-head payloads should be created");
+    append_workflow_step(own_step_recipients, own_step_payloads,
+                         0, "noop", "first-placeholder");
+    append_workflow_step(own_step_recipients, own_step_payloads,
+                         0, "noop", "second-placeholder");
+    append_workflow_step(own_step_recipients, own_step_payloads,
+                         checked_agent_id(step1_agent), "step1", "after-two-zeros");
+    AR_ASSERT(ar_data__set_map_data(own_start, "recipients", own_step_recipients),
+              "Consecutive zero-head start should own step recipients");
+    own_step_recipients = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_start, "payloads", own_step_payloads),
+              "Consecutive zero-head start should own step payloads");
+    own_step_payloads = NULL;
+    ar_data__set_map_string(own_start, "branch_value", "skip");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, workflow_agent, own_start),
+              "Consecutive zero-head workflow start should queue");
+    own_start = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_step1_memory, "last_text"),
+                     "after-two-zeros") == 0,
+              "Workflow should skip consecutive zero heads and send the later positive step");
+
+    send_step_done(mut_agency, workflow_agent, "wf-zero-head-repeat", 1, "done");
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 1,
+              "Consecutive zero-head workflow should count the sent positive step");
+    assert_workflow_result_omits_redundant_fields(ref_report_memory);
+
+    own_start = ar_data__create_map();
     AR_ASSERT(own_start != NULL, "Post-completion zero workflow start should be created");
     ar_data__set_map_string(own_start, "request", "workflow_start");
     ar_data__set_map_string(own_start, "trace_id", "wf-post-completion-zero-start");
@@ -310,6 +349,8 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
                          checked_agent_id(step1_agent), "step1", "before-zero");
     append_workflow_step(own_step_recipients, own_step_payloads,
                          0, "noop", "placeholder");
+    append_workflow_step(own_step_recipients, own_step_payloads,
+                         0, "noop", "second-placeholder");
     append_workflow_step(own_step_recipients, own_step_payloads,
                          checked_agent_id(step2_agent), "step2", "after-completion-zero");
     AR_ASSERT(ar_data__set_map_data(own_start, "recipients", own_step_recipients),
@@ -333,13 +374,64 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
 
     const char *ref_step2_text = ar_data__get_map_string(ref_step2_memory, "last_text");
     AR_ASSERT(ref_step2_text != NULL && strcmp(ref_step2_text, "after-completion-zero") == 0,
-              "Workflow should skip a pending zero head after step completion");
+              "Workflow should skip consecutive pending zero heads after step completion");
 
     send_step_done(mut_agency, workflow_agent, "wf-post-completion-zero", 2, "done");
     ar_method_fixture__process_all_messages(own_fixture);
 
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 2,
               "Post-completion zero workflow should count sent positive steps only");
+    assert_workflow_result_omits_redundant_fields(ref_report_memory);
+
+    own_start = ar_data__create_map();
+    AR_ASSERT(own_start != NULL, "Branch zero-skip workflow start should be created");
+    ar_data__set_map_string(own_start, "request", "workflow_start");
+    ar_data__set_map_string(own_start, "trace_id", "wf-branch-zero-skip-start");
+    ar_data__set_map_string(own_start, "session_id", "wf-branch-zero-skip");
+    ar_data__set_map_integer(own_start, "sender", checked_agent_id(report_agent));
+    own_step_recipients = ar_data__create_list();
+    own_step_payloads = ar_data__create_list();
+    AR_ASSERT(own_step_recipients != NULL, "Branch zero-skip recipients should be created");
+    AR_ASSERT(own_step_payloads != NULL, "Branch zero-skip payloads should be created");
+    append_workflow_step(own_step_recipients, own_step_payloads,
+                         checked_agent_id(step1_agent), "step1", "branch-before-zero");
+    append_workflow_step(own_step_recipients, own_step_payloads,
+                         0, "noop", "placeholder");
+    append_workflow_step(own_step_recipients, own_step_payloads,
+                         checked_agent_id(step2_agent), "step2", "branch-skipped");
+    append_workflow_step(own_step_recipients, own_step_payloads,
+                         checked_agent_id(step3_agent), "step3", "branch-after-zero-skip");
+    AR_ASSERT(ar_data__set_map_data(own_start, "recipients", own_step_recipients),
+              "Branch zero-skip start should own step recipients");
+    own_step_recipients = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_start, "payloads", own_step_payloads),
+              "Branch zero-skip start should own step payloads");
+    own_step_payloads = NULL;
+    ar_data__set_map_string(own_start, "branch_value", "skip");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, workflow_agent, own_start),
+              "Branch zero-skip workflow should queue");
+    own_start = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_step1_memory, "last_text"),
+                     "branch-before-zero") == 0,
+              "Branch zero-skip workflow should send first step");
+
+    send_step_done(mut_agency, workflow_agent, "wf-branch-zero-skip", 1, "skip");
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ref_step2_text = ar_data__get_map_string(ref_step2_memory, "last_text");
+    AR_ASSERT(ref_step2_text == NULL || strcmp(ref_step2_text, "branch-skipped") != 0,
+              "Branch skip should skip the next positive step after zero placeholders");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_step3_memory, "last_text"),
+                     "branch-after-zero-skip") == 0,
+              "Branch skip should send the later positive step after the skipped step");
+
+    send_step_done(mut_agency, workflow_agent, "wf-branch-zero-skip", 3, "done");
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 2,
+              "Branch zero-skip workflow should count only sent positive steps");
     assert_workflow_result_omits_redundant_fields(ref_report_memory);
 
     const ar_data_t *ref_workflow_memory = ar_agency__get_agent_memory(mut_agency, workflow_agent);

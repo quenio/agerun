@@ -13,7 +13,9 @@ Only messages with a recognized `request` value are handled as coordination requ
 On `request: "workflow_start"`, the method stores workflow metadata, effective `trace_id`,
 `session_id`, `sender`, branch value, and aligned `recipients` and `payloads` lists. Each
 payload is sent directly and as-is to the corresponding positive step recipient agent. Integer
-`0` step recipient agents can be skipped when followed by a later positive recipient.
+`0` step recipient agents are placeholders and are skipped until the next positive recipient or
+workflow completion. When a branch outcome matches, workflow skips the next positive recipient step,
+ignoring any intervening `0` placeholders.
 
 On `request: "workflow_step_done"`, the method advances only when the step number matches the
 currently active sent step and the `session_id` matches the active workflow session. Duplicate,

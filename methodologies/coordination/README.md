@@ -419,7 +419,9 @@ Requests:
 { sender: <sender-agent>, request: "workflow_step_done", trace_id: <trace_id>, session_id: <session_id>, step: <current-step-number>, outcome: <value> }
 ```
 
-Step messages sent to step agents are exactly the sender-provided payloads.
+Step messages sent to step agents are exactly the sender-provided payloads. Integer `0` recipients
+are placeholders and are skipped until workflow finds a positive recipient or completes. A matching
+branch outcome skips the next positive recipient step, ignoring intervening `0` placeholders.
 
 Completion response:
 
