@@ -205,16 +205,17 @@ Reply:
 
 Stop and lifecycle requests are validated against tracked `child_agent_ids`. Untracked or duplicate
 lifecycle events report `ignored`; successful tracked stop requests report `stopped`; restart policy
-can report `restarted`.
+can report `restarted`. An actually empty `child_method_names` list completes as an empty running
+supervision set; a non-empty entry that produces no child is a start handoff failure.
 
 Count semantics: `success_count` increases by the number of children tracked when start completes,
 by `1` for a successful restart, and by `1` for a successful tracked stop. `failure_count` increases
-for spawn or validation handoff failures and for failed tracked stop exits. Untracked or duplicate
-lifecycle events do not increment either count.
+for spawn failures, validation handoff failures, and failed tracked stop exits. Untracked or
+duplicate lifecycle events do not increment either count.
 
 Status semantics: the response status is `success` for running, restarted, stopped, and ignored
-results. It is `failure` when a spawn or validation handoff fails, or when a tracked stop cannot
-exit the child.
+results. It is `failure` when a child spawn produces no child, when a validation handoff fails, or
+when a tracked stop cannot exit the child.
 
 ### Distribution
 
@@ -636,7 +637,7 @@ Conversation-scoped workflow:
 | --- | --- | --- |
 | Routing | Fully implementable for keyed unbounded one-to-one selection. | Keyed routes use a map containing parallel `keys` and `recipients` lists because ordinary methods do not have a safe type predicate for scanning a list of route-entry maps. Direct recipient delivery belongs to direct `send(...)`; same-payload fan-out belongs to broadcasting. |
 | Broadcasting | Fully implementable for unbounded same-payload fan-out to primitive recipient IDs. | Recipient lists should contain positive IDs for all intended recipients; integer `0` is treated as a placeholder rather than a recipient. |
-| Supervision | Partially implementable. | The method can spawn and track unbounded child method-name lists with one shared start version, but methods cannot autonomously observe child crashes or exits; callers must send `child_failed` or `child_exited` events. A failed `spawn(...)` aborts the remaining ordinary method evaluation, so supervision can avoid reporting `running` for an incomplete child set but cannot emit a catchable `spawn_failed` outcome without a non-aborting spawn result or method-existence check. Removing arbitrary failed ids from the tracked list or starting one mixed-version list requires a list-filter operation, separate supervisors, or a specialized replacement method. |
+| Supervision | Partially implementable. | The method can spawn and track unbounded child method-name lists with one shared start version, but methods cannot autonomously observe child crashes or exits; callers must send `child_failed` or `child_exited` events. A catchable no-child spawn result is reported as failure instead of empty-list completion, but a `spawn(...)` failure that aborts ordinary method evaluation still cannot emit a `spawn_failed` outcome without a non-aborting spawn result or method-existence check. Removing arbitrary failed ids from the tracked list or starting one mixed-version list requires a list-filter operation, separate supervisors, or a specialized replacement method. |
 | Distribution | Fully implementable for round-robin assignment of opaque payload lists to primitive recipient IDs. | Load-aware placement, weighted assignment, and recipient health checks require additional methods or richer collection-processing conventions. |
 | Aggregation | Fully implementable for list-valued fan-in. | Duplicate handling, custom merge functions, and richer aggregate policies require deeper collection operations or specialized aggregate methods. |
 | Scheduling | Partially implementable. | There is no runtime clock or timer callback; scheduling requires explicit `tick` messages from another agent or host process. |

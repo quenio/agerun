@@ -12,6 +12,8 @@ Only messages with a recognized `request` value are handled as coordination requ
 
 On `request: "supervision_start"`, the method stores policy, effective `trace_id`, `session_id`,
 `sender`, and child method version, then spawns one child per `child_method_names` entry.
+An actually empty `child_method_names` list completes as an empty running supervision set; a
+non-empty entry that produces no child is a start handoff failure.
 Lifecycle and stop requests with the same `session_id` are validated against tracked child ids
 before restart or exit behavior is applied.
 
@@ -51,12 +53,12 @@ Response:
 
 Count semantics: `success_count` increases by the number of children tracked when start completes,
 by `1` for a successful restart, and by `1` for a successful tracked stop. `failure_count` increases
-for spawn or validation handoff failures and for failed tracked stop exits. Untracked or duplicate
-lifecycle events are reported as ignored and do not increment either count.
+for spawn failures, validation handoff failures, and failed tracked stop exits. Untracked or
+duplicate lifecycle events are reported as ignored and do not increment either count.
 
 Status semantics: the response status is `success` for running, restarted, stopped, and ignored
-results. It is `failure` when a spawn or validation handoff fails, or when a tracked stop cannot
-exit the child.
+results. It is `failure` when a child spawn produces no child, when a validation handoff fails, or
+when a tracked stop cannot exit the child.
 
 ## Implementation and Tests
 

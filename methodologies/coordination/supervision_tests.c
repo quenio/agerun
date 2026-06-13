@@ -812,10 +812,16 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
 
     ar_data_t *own_failed_spawn_context = create_context();
     ar_data_t *own_failed_spawn_observer_context = create_context();
+    ar_data_t *own_malformed_spawn_context = create_context();
+    ar_data_t *own_malformed_spawn_observer_context = create_context();
     int64_t failed_spawn_agent = ar_agency__create_agent(
         mut_agency, "supervision", "1.0.0", own_failed_spawn_context);
     int64_t failed_spawn_observer_agent = ar_agency__create_agent(
         mut_agency, "record-receiver", "1.0.0", own_failed_spawn_observer_context);
+    int64_t malformed_spawn_agent = ar_agency__create_agent(
+        mut_agency, "supervision", "1.0.0", own_malformed_spawn_context);
+    int64_t malformed_spawn_observer_agent = ar_agency__create_agent(
+        mut_agency, "record-receiver", "1.0.0", own_malformed_spawn_observer_context);
     ar_data_t *own_failed_spawn_start = ar_data__create_map();
     AR_ASSERT(own_failed_spawn_start != NULL, "Failed spawn start should be created");
     ar_data__set_map_string(own_failed_spawn_start, "request", "supervision_start");
@@ -857,6 +863,58 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(ar_data__get_map_data(ref_failed_spawn_observer_memory, "last_status") == NULL,
               "Failed child spawn cannot emit status after spawn aborts evaluation");
 
+    ar_data_t *own_malformed_spawn_start = ar_data__create_map();
+    AR_ASSERT(own_malformed_spawn_start != NULL, "Malformed spawn start should be created");
+    ar_data__set_map_string(own_malformed_spawn_start, "request", "supervision_start");
+    ar_data_t *own_malformed_spawn_methods = ar_data__create_list();
+    AR_ASSERT(own_malformed_spawn_methods != NULL, "Malformed spawn methods should be created");
+    append_child_method_name(own_malformed_spawn_methods, "record-receiver");
+    AR_ASSERT(ar_data__list_add_last_integer(own_malformed_spawn_methods, 0),
+              "Malformed spawn method entry should append");
+    append_child_method_name(own_malformed_spawn_methods, "record-receiver");
+    AR_ASSERT(ar_data__set_map_data(own_malformed_spawn_start,
+                                    "child_method_names",
+                                    own_malformed_spawn_methods),
+              "Malformed spawn start should own child methods");
+    own_malformed_spawn_methods = NULL;
+    ar_data__set_map_string(own_malformed_spawn_start, "child_method_version", "1.0.0");
+    ar_data__set_map_string(own_malformed_spawn_start, "policy", "restart");
+    ar_data__set_map_string(own_malformed_spawn_start,
+                            "trace_id",
+                            "supervision-malformed-spawn-start");
+    ar_data__set_map_string(own_malformed_spawn_start,
+                            "session_id",
+                            "supervision-malformed-spawn-session");
+    ar_data__set_map_integer(own_malformed_spawn_start,
+                             "sender",
+                             checked_agent_id(malformed_spawn_observer_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency,
+                                       malformed_spawn_agent,
+                                       own_malformed_spawn_start),
+              "Malformed spawn start should queue");
+    own_malformed_spawn_start = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    const ar_data_t *ref_malformed_spawn_memory =
+        ar_agency__get_agent_memory(mut_agency, malformed_spawn_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_malformed_spawn_memory, "status"),
+                     "handoff_failed") == 0,
+              "Malformed child spawn should not report running");
+    AR_ASSERT(ar_data__get_map_integer(ref_malformed_spawn_memory, "child_count") == 1,
+              "Malformed child spawn should retain previously spawned children");
+    const ar_data_t *ref_malformed_spawn_observer_memory =
+        ar_agency__get_agent_memory(mut_agency, malformed_spawn_observer_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_malformed_spawn_observer_memory,
+                                             "last_status"),
+                     "failure") == 0,
+              "Malformed child spawn should emit standard failure status");
+    AR_ASSERT(ar_data__get_map_integer(ref_malformed_spawn_observer_memory,
+                                       "last_success_count") == 0,
+              "Malformed child spawn should not report start success");
+    AR_ASSERT(ar_data__get_map_integer(ref_malformed_spawn_observer_memory,
+                                       "last_failure_count") == 1,
+              "Malformed child spawn should report one failed handoff");
+
     // Cleanup
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_supervision_context);
@@ -869,6 +927,8 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     ar_data__destroy(own_empty_start_context);
     ar_data__destroy(own_failed_spawn_context);
     ar_data__destroy(own_failed_spawn_observer_context);
+    ar_data__destroy(own_malformed_spawn_context);
+    ar_data__destroy(own_malformed_spawn_observer_context);
 }
 
 int main(void) {

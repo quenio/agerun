@@ -67,13 +67,17 @@ memory.child_method_names_input := if(memory.is_start = 1, message.child_method_
 memory.child_method_names_input := if(memory.is_spawn_child_active = 1, message.child_method_names, memory.child_method_names_input)
 memory.current_child_method_name := head(memory.child_method_names_input)
 memory.remaining_child_method_names := tail(memory.child_method_names_input)
+memory.child_method_names_empty := if(memory.child_method_names_input = [], 1, 0)
+memory.child_method_names_not_empty := if(memory.child_method_names_empty = 1, 0, 1)
 memory.spawn_child_action := memory.is_spawn_child_active
 memory.current_method_name := if(memory.spawn_child_action = 1, memory.current_child_method_name, 0)
 memory.current_method_version := if(memory.spawn_child_action = 1, memory.child_method_version, "")
 memory.spawn_attempt_result := spawn(memory.current_method_name, memory.current_method_version, context)
 memory.spawn_result := if(memory.spawn_attempt_result > 0, memory.spawn_attempt_result, memory.spawn_result)
 memory.spawned_child := if(memory.spawn_attempt_result > 0, memory.spawn_child_action, 0)
-memory.empty_child_list := if(memory.spawn_attempt_result = 0, memory.spawn_child_action, 0)
+memory.empty_child_list := memory.spawn_child_action * memory.child_method_names_empty
+memory.spawn_failed := if(memory.spawn_attempt_result = 0, memory.spawn_child_action, 0)
+memory.spawn_failed := memory.spawn_failed * memory.child_method_names_not_empty
 memory.id_append_buffer := if(memory.spawned_child = 1, memory.child_agent_ids, "")
 memory.id_append_ok := append(memory.id_append_buffer, memory.spawn_attempt_result)
 memory.child_agent_ids := if(memory.id_append_ok = 1, memory.id_append_buffer, memory.child_agent_ids)
@@ -90,7 +94,8 @@ memory.child_count := memory.child_count + memory.record_append_ok
 
 # Queue remaining child spawns
 memory.next_child_method_name := head(memory.remaining_child_method_names)
-memory.has_remaining_child_method := if(memory.next_child_method_name <> 0, 1, 0)
+memory.remaining_child_method_names_empty := if(memory.remaining_child_method_names = [], 1, 0)
+memory.has_remaining_child_method := if(memory.remaining_child_method_names_empty = 1, 0, 1)
 memory.spawn_continue_message := {
   sender: memory.self
   request: "supervision_spawn_child"
@@ -111,6 +116,7 @@ memory.spawned_start_complete := memory.spawned_child * memory.no_remaining_chil
 memory.start_complete := memory.spawned_start_complete + memory.empty_start_complete
 memory.status := if(memory.start_complete = 1, "running", memory.status)
 memory.spawn_handoff_failed := memory.spawn_request_failed + memory.spawn_continue_failed
+memory.spawn_handoff_failed := memory.spawn_handoff_failed + memory.spawn_failed
 memory.status := if(memory.spawn_handoff_failed > 0, "handoff_failed", memory.status)
 
 # Prepare lifecycle validation
