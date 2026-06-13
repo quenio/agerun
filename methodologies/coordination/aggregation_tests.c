@@ -241,6 +241,31 @@ static void test_aggregation__combines_required_payloads(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_success_count") == 2,
               "Reset aggregate should count only fresh payloads toward completion");
 
+    own_reset = ar_data__create_map();
+    AR_ASSERT(own_reset != NULL, "Zero expected count reset message should be created");
+    ar_data__set_map_string(own_reset, "request", "aggregation_start");
+    ar_data__set_map_string(own_reset, "trace_id", "agg-zero-start");
+    ar_data__set_map_string(own_reset, "session_id", "agg-zero-session");
+    ar_data__set_map_integer(own_reset, "expected_count", 0);
+    ar_data__set_map_integer(own_reset, "sender", checked_agent_id(receiver_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, aggregation_agent, own_reset),
+              "Zero expected count reset message should queue");
+    own_reset = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_trace_id"),
+                     "agg-reset-two") == 0,
+              "Zero expected count start should not complete before the first collect");
+
+    send_collect(mut_agency, aggregation_agent, "agg-zero-first", "agg-zero-session", "zero-one");
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_trace_id"),
+                     "agg-zero-first") == 0,
+              "Zero expected count should complete after one matching collect");
+    AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_success_count") == 1,
+              "Zero expected count should normalize to one expected payload");
+
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_aggregation_context);
     ar_data__destroy(own_receiver_context);

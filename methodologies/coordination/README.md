@@ -286,8 +286,9 @@ Completion response:
 
 Aggregation marks completion only after the aggregate response is sent successfully; failed
 completion delivery leaves the aggregate open. An `aggregation_start` request resets aggregation
-and starts a fresh payload list with the configured `expected_count`. Payload collection requests
-use `request: "aggregation_collect"` and must carry the same `session_id` as the active start
+and starts a fresh payload list with the configured `expected_count`, normalizing non-positive counts
+to one. Payload collection requests use `request: "aggregation_collect"` and must carry the same
+`session_id` as the active start
 request. Collection requests that omit `trace_id` use a generated trace and still append their
 payload.
 

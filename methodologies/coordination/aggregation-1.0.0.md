@@ -12,9 +12,10 @@ Only messages with `request: "aggregation_start"` or `request: "aggregation_coll
 as coordination requests.
 
 A start request resets aggregation, stores the effective `trace_id`, `session_id`, and `sender`,
-sets the recipient count from `expected_count`, and clears the append-backed payload list. A collect
-request appends the incoming opaque `payload` only when its `session_id` matches the active
-aggregate session while aggregation is active and completion has not been delivered.
+sets the recipient count from `expected_count`, normalizes non-positive counts to one, and clears
+the append-backed payload list. A collect request appends the incoming opaque `payload` only when
+its `session_id` matches the active aggregate session while aggregation is active and completion has
+not been delivered.
 
 Collection requests that omit `trace_id` use a generated trace and still append their payload.
 Count semantics: `success_count` increments when a matching active `aggregation_collect` appends its

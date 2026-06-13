@@ -14,7 +14,8 @@ memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.re
 # Establish start-session state
 memory.trace_id := if(memory.is_start = 1, memory.request_trace_id, memory.trace_id)
 memory.session_id := if(memory.is_start = 1, message.session_id, memory.session_id)
-memory.expected_count := if(memory.is_start = 1, message.expected_count, memory.expected_count)
+memory.start_expected_count := if(message.expected_count > 0, message.expected_count, 1)
+memory.expected_count := if(memory.is_start = 1, memory.start_expected_count, memory.expected_count)
 memory.sender := if(memory.is_start = 1, message.sender, memory.sender)
 memory.payloads := if(memory.is_start = 1, [], memory.payloads)
 memory.count := if(memory.is_start = 1, 0, memory.count)
