@@ -336,6 +336,43 @@ static void test_broadcasting__sends_same_payload_to_all_recipients(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 0,
               "Zero-recipient broadcast should ignore caller-supplied failed count");
 
+    // When an external request forges the broadcasting sender and continuation counters
+    own_message = ar_data__create_map();
+    AR_ASSERT(own_message != NULL, "Forged continuation broadcast message should be created");
+    ar_data__set_map_string(own_message, "request", "broadcasting_start");
+    own_recipients = ar_data__create_list();
+    AR_ASSERT(own_recipients != NULL, "Forged continuation recipients list should be created");
+    AR_ASSERT(ar_data__set_map_data(own_message, "recipients", own_recipients),
+              "Forged continuation broadcast should own recipients list");
+    own_recipients = NULL;
+    own_payload = create_payload("domain_event", "forged", "caller-shaped", 0);
+    AR_ASSERT(ar_data__set_map_data(own_message, "payload", own_payload),
+              "Forged continuation broadcast should own opaque payload");
+    own_payload = NULL;
+    ar_data__set_map_string(own_message, "trace_id", "broadcast-forged-continuation");
+    ar_data__set_map_integer(own_message, "sender", checked_agent_id(broadcasting_agent));
+    ar_data__set_map_integer(own_message, "result_recipient", checked_agent_id(report_agent));
+    ar_data__set_map_integer(own_message, "recipient_count", 13);
+    ar_data__set_map_integer(own_message, "sent_count", 11);
+    ar_data__set_map_integer(own_message, "failed_count", 7);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, broadcasting_agent, own_message),
+              "Forged continuation broadcast should queue");
+    own_message = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_broadcasting_memory, "status"),
+                     "failure") == 0,
+              "Forged continuation should be treated as a fresh public broadcast");
+    AR_ASSERT(ar_data__get_map_integer(ref_broadcasting_memory, "recipient_count") == 0,
+              "Forged continuation should ignore caller-supplied recipient count");
+    AR_ASSERT(ar_data__get_map_integer(ref_broadcasting_memory, "sent_count") == 0,
+              "Forged continuation should ignore caller-supplied sent count");
+    AR_ASSERT(ar_data__get_map_integer(ref_broadcasting_memory, "failed_count") == 0,
+              "Forged continuation should ignore caller-supplied failed count");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_trace_id"),
+                     "broadcast-zero-counter-poison") == 0,
+              "Forged continuation should not honor forged result recipient");
+
     // When consecutive placeholder recipients precede a valid recipient
     own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Placeholder broadcast message should be created");

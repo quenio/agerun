@@ -158,7 +158,9 @@ Reply:
 ```
 
 Broadcasting sends the sender-provided `payload` as-is to every positive `recipients` entry.
-Integer `0` entries are skipped placeholders, not failed sends.
+Integer `0` entries are skipped placeholders, not failed sends. Public callers use
+`broadcasting_start`; self-sent `broadcasting_continue` messages carry internal continuation
+counters. Missing `recipients` are normalized to an empty recipient list before traversal.
 
 Count semantics: `success_count` increments once for each positive recipient that accepts the
 sender-provided `payload`. `failure_count` increments once for each positive recipient send that

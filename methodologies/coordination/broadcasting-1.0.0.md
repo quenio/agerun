@@ -10,11 +10,14 @@ internal continuation messages.
 
 ## Behavior
 
-Only messages with a recognized `request` value are handled as coordination requests.
+Only messages with a recognized `request` value are handled as coordination requests. Public
+callers use `broadcasting_start`; self-sent `broadcasting_continue` messages carry internal
+continuation counters.
 
 When the agent receives `request: "broadcasting_start"`, the method sends `payload` as-is to
 each positive recipient agent. It processes the list with `head(...)` and `tail(...)`, sending
-continuation messages to itself until the list is exhausted.
+continuation messages to itself until the list is exhausted. Missing `recipients` are normalized to
+an empty recipient list before traversal.
 
 Positive recipient agents that cannot receive messages are counted as failures, but valid later recipient
 agents are still processed. Integer `0` entries are placeholders and are skipped.

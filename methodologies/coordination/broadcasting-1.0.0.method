@@ -1,7 +1,11 @@
 # Classify broadcast request
 memory.is_request := if(message.request <> 0, 1, 0)
-memory.is_broadcast := if(memory.is_request = 1, message.request = "broadcasting_start", 0)
-memory.is_internal_continue := if(memory.is_broadcast = 1, message.sender = memory.self, 0)
+memory.is_start := if(memory.is_request = 1, message.request = "broadcasting_start", 0)
+memory.is_continue := if(memory.is_request = 1, message.request = "broadcasting_continue", 0)
+memory.is_broadcast := memory.is_start + memory.is_continue
+memory.is_broadcast := if(memory.is_broadcast > 0, 1, 0)
+memory.is_self_sender := if(message.sender = memory.self, 1, 0)
+memory.is_internal_continue := memory.is_continue * memory.is_self_sender
 
 # Generate trace_id
 memory.generated_trace_base := message.sender * 1000
@@ -14,7 +18,9 @@ memory.trace_id := if(memory.is_broadcast = 1, memory.request_trace_id, memory.t
 memory.sender := if(memory.is_broadcast = 1, message.sender, memory.sender)
 memory.result_recipient := if(memory.is_broadcast = 1, message.sender, memory.result_recipient)
 memory.result_recipient := if(memory.is_internal_continue = 1, message.result_recipient, memory.result_recipient)
-memory.current_recipients := if(memory.is_broadcast = 1, message.recipients, [])
+memory.has_recipients_input := if(message.recipients <> 0, 1, 0)
+memory.recipients_available := memory.is_broadcast * memory.has_recipients_input
+memory.current_recipients := if(memory.recipients_available = 1, message.recipients, [])
 
 # Select current recipient
 memory.recipient := head(memory.current_recipients)
@@ -50,7 +56,7 @@ memory.continuation_required := memory.is_broadcast * memory.has_more_work
 memory.continuation_recipient := memory.self * memory.continuation_required
 memory.continuation_message := {
   sender: memory.self
-  request: "broadcasting_start"
+  request: "broadcasting_continue"
   trace_id: memory.trace_id
   payload: message.payload
   recipients: memory.remaining_recipients
