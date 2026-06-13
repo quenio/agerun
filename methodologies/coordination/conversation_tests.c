@@ -474,6 +474,81 @@ static void test_conversation__broadcasts_turns_to_all_other_participants(void) 
                      "trusted-selection-trace") == 0,
               "Stale selection should preserve the trusted pending trace");
 
+    ar_data_t *own_stale_broadcast_select = ar_data__create_map();
+    AR_ASSERT(own_stale_broadcast_select != NULL,
+              "Stale broadcast selection should be created");
+    ar_data__set_map_integer(own_stale_broadcast_select,
+                             "sender",
+                             checked_agent_id(conversation_agent));
+    ar_data__set_map_string(own_stale_broadcast_select,
+                            "request",
+                            "conversation_select_recipients");
+    ar_data__set_map_string(own_stale_broadcast_select,
+                            "trace_id",
+                            "stale-broadcast-trace");
+    ar_data__set_map_string(own_stale_broadcast_select, "session_id", "chat-session-1");
+    ar_data_t *own_stale_broadcast_participants = ar_data__create_list();
+    AR_ASSERT(own_stale_broadcast_participants != NULL,
+              "Stale broadcast participants should be created");
+    AR_ASSERT(ar_data__set_map_data(own_stale_broadcast_select,
+                                    "participants",
+                                    own_stale_broadcast_participants),
+              "Stale broadcast selection should own participants");
+    own_stale_broadcast_participants = NULL;
+    ar_data_t *own_stale_broadcast_recipients = ar_data__create_list();
+    AR_ASSERT(own_stale_broadcast_recipients != NULL,
+              "Stale broadcast recipients should be created");
+    append_agent_id(own_stale_broadcast_recipients, participant_b);
+    AR_ASSERT(ar_data__set_map_data(own_stale_broadcast_select,
+                                    "recipients",
+                                    own_stale_broadcast_recipients),
+              "Stale broadcast selection should own recipients");
+    own_stale_broadcast_recipients = NULL;
+    ar_data_t *own_stale_broadcast_payload = ar_data__create_map();
+    AR_ASSERT(own_stale_broadcast_payload != NULL,
+              "Stale broadcast payload should be created");
+    ar_data__set_map_integer(own_stale_broadcast_payload,
+                             "sender",
+                             checked_agent_id(conversation_agent));
+    ar_data__set_map_string(own_stale_broadcast_payload, "request", "conversation_turn");
+    ar_data__set_map_string(own_stale_broadcast_payload,
+                            "trace_id",
+                            "stale-broadcast-trace");
+    ar_data__set_map_string(own_stale_broadcast_payload,
+                            "session_id",
+                            "chat-session-1");
+    ar_data__set_map_string(own_stale_broadcast_payload, "payload", "stale-broadcast");
+    ar_data__set_map_integer(own_stale_broadcast_payload,
+                             "participant",
+                             checked_agent_id(participant_a));
+    ar_data__set_map_integer(own_stale_broadcast_payload, "turn_count", 99);
+    AR_ASSERT(ar_data__set_map_data(own_stale_broadcast_select,
+                                    "payload",
+                                    own_stale_broadcast_payload),
+              "Stale broadcast selection should own payload");
+    own_stale_broadcast_payload = NULL;
+    ar_data__set_map_integer(own_stale_broadcast_select,
+                             "participant",
+                             checked_agent_id(participant_a));
+    ar_data__set_map_integer(own_stale_broadcast_select, "found_sender", 1);
+    ar_data__set_map_integer(own_stale_broadcast_select, "recipient_count", 1);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency,
+                                       conversation_agent,
+                                       own_stale_broadcast_select),
+              "Stale broadcast selection should queue");
+    own_stale_broadcast_select = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ref_conversation_memory = ar_agency__get_agent_memory(mut_agency, conversation_agent);
+    AR_ASSERT(ar_data__get_map_integer(ref_conversation_memory, "pending_turn_active") == 1,
+              "Stale broadcast selection should not clear the pending slot");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_conversation_memory, "pending_trace_id"),
+                     "trusted-selection-trace") == 0,
+              "Stale broadcast selection should preserve the trusted pending trace");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_b_memory, "last_payload"),
+                     "after-intruder") == 0,
+              "Stale broadcast selection should not relay a mismatched turn");
+
     // When a forged broadcasting result arrives while a broadcast is pending
     ar_data_t *own_forged_start = ar_data__create_map();
     AR_ASSERT(own_forged_start != NULL, "Forged-result conversation start should be created");
