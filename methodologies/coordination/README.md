@@ -47,7 +47,7 @@ Composition opportunities:
 | [`routing`](routing-1.0.0.md) | [`routing-1.0.0.method`](routing-1.0.0.method) | [`routing_tests.c`](routing_tests.c) | Selects one recipient by route key and delivers a message. | Keyed selection primitive. |
 | [`broadcasting`](broadcasting-1.0.0.md) | [`broadcasting-1.0.0.method`](broadcasting-1.0.0.method) | [`broadcasting_tests.c`](broadcasting_tests.c) | Sends one payload to every recipient in an unbounded recipient list. | Same-payload fan-out primitive. |
 | [`supervision`](supervision-1.0.0.md) | [`supervision-1.0.0.method`](supervision-1.0.0.method) | [`supervision_tests.c`](supervision_tests.c) | Creates, tracks, stops, and event-restarts unbounded child lists. | Keeps coordination agents available. |
-| [`distribution`](distribution-1.0.0.md) | [`distribution-1.0.0.method`](distribution-1.0.0.method) | [`distribution_tests.c`](distribution_tests.c) | Round-robins payload items across an unbounded worker list. | Distinct-payload assignment. |
+| [`distribution`](distribution-1.0.0.md) | [`distribution-1.0.0.method`](distribution-1.0.0.method) | [`distribution_tests.c`](distribution_tests.c) | Round-robins payload items across an unbounded recipient list. | Distinct-payload assignment. |
 | [`aggregation`](aggregation-1.0.0.md) | [`aggregation-1.0.0.method`](aggregation-1.0.0.method) | [`aggregation_tests.c`](aggregation_tests.c) | Appends opaque payloads and emits a payload list. | Completes fan-in with append-backed state. |
 | [`scheduling`](scheduling-1.0.0.md) | [`scheduling-1.0.0.method`](scheduling-1.0.0.method) | [`scheduling_tests.c`](scheduling_tests.c) | Stores pending work and triggers it on explicit tick messages. | Delayed execution primitive. |
 | [`synchronization`](synchronization-1.0.0.md) | [`synchronization-1.0.0.method`](synchronization-1.0.0.method) | [`synchronization_tests.c`](synchronization_tests.c) | Waits for an unbounded count of dependency messages before sending a continuation. | Dependency gate. |
@@ -199,8 +199,7 @@ Request:
   request: "distribution_start",
   trace_id: <trace_id>,
   payloads: [<payload>, <payload>, ...],
-  work_id: <id>,
-  workers: [<agent>, <agent>, ...]
+  recipients: [<recipient-agent-1>, <recipient-agent-2>, ...]
 }
 ```
 
@@ -212,14 +211,14 @@ Reply:
   response: "distribution_result",
   trace_id: <trace_id>,
   status: <success|failure>,
-  work_id: <id>,
   success_count: <count>,
   failure_count: <count>
 }
 ```
 
-Distribution sends each payload item as-is, round-robin, to positive worker IDs. Integer `0` worker
-placeholders are skipped without consuming the current payload when later workers remain.
+Distribution sends each payload item as-is, round-robin, to positive recipient IDs. Integer `0`
+recipient placeholders are skipped without consuming the current payload when later recipients
+remain.
 Because distribution is a one-shot caller-facing method, its request and response use `trace_id`
 but do not require `session_id`; an omitted `trace_id` is generated for the result envelope.
 
@@ -498,7 +497,7 @@ Fan-out and fan-in:
 ```text
 1. Send a request with `request: "aggregation_start"` and expected_count to an aggregation agent.
 2. Send a request with `request: "distribution_start"` to a distribution agent.
-3. Workers send requests with `request: "aggregation_collect"`, the same session_id, and payload to an aggregation agent.
+3. Recipients send requests with `request: "aggregation_collect"`, the same session_id, and payload to an aggregation agent.
 4. Aggregation emits a response when `expected_count` collection outcomes are accounted for.
 ```
 
@@ -539,7 +538,7 @@ Conversation-scoped workflow:
 | Routing | Fully implementable for keyed unbounded one-to-one selection. | Keyed routes use a map containing parallel `keys` and `recipients` lists because ordinary methods do not have a safe type predicate for scanning a list of route-entry maps. Direct recipient delivery belongs to direct `send(...)`; same-payload fan-out belongs to broadcasting. |
 | Broadcasting | Fully implementable for unbounded same-payload fan-out to primitive recipient IDs. | Recipient lists should contain positive IDs for all intended recipients; integer `0` is treated as a placeholder rather than a recipient. |
 | Supervision | Partially implementable. | The method can spawn and track unbounded child method-name lists with one shared start version, but methods cannot autonomously observe child crashes or exits; callers must send `child_failed` or `child_exited` events. A failed `spawn(...)` aborts the remaining ordinary method evaluation, so supervision can avoid reporting `running` for an incomplete child set but cannot emit a catchable `spawn_failed` state without a non-aborting spawn result or method-existence check. Removing arbitrary failed ids from the tracked list or starting one mixed-version list requires a list-filter operation, separate supervisors, or a specialized replacement method. |
-| Distribution | Fully implementable for round-robin assignment of opaque payload lists to primitive worker IDs. | Load-aware placement, weighted assignment, and worker health checks require additional methods or richer collection-processing conventions. |
+| Distribution | Fully implementable for round-robin assignment of opaque payload lists to primitive recipient IDs. | Load-aware placement, weighted assignment, and recipient health checks require additional methods or richer collection-processing conventions. |
 | Aggregation | Fully implementable for list-valued fan-in. | Duplicate handling, custom merge functions, and richer aggregate policies require deeper collection operations or specialized aggregate methods. |
 | Scheduling | Partially implementable. | There is no runtime clock or timer callback; scheduling requires explicit `tick` messages from another agent or host process. |
 | Synchronization | Fully implementable for unbounded count-based gates. | Membership validation against a declared dependency set and duplicate suppression require richer collection querying/filtering or a specialized validation method. |

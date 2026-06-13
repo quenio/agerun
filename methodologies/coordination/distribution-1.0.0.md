@@ -2,22 +2,23 @@
 
 ## Overview
 
-Distribution assigns a list of payload values across a list of worker agents. It sends each payload
-item to the next positive worker and rotates back to the beginning of the worker list when needed.
+Distribution assigns a list of payload values across a list of recipient agents. It sends each
+payload item to the next positive recipient and rotates back to the beginning of the recipient list
+when needed.
 
 ## Behavior
 
 Only messages with a recognized `request` value are handled as coordination requests.
 
 When the agent receives `request: "distribution_start"`, it starts an assignment pass for
-`payloads` and `workers`. Internal `distribution_assign_payload` requests carry the remaining
-payloads, current worker list, original worker list, counters, `trace_id`, and `sender`.
+`payloads` and `recipients`. Internal `distribution_assign_payload` requests carry the remaining
+payloads, current recipient list, original recipient list, counters, `trace_id`, and `sender`.
 Because distribution is a one-shot caller-facing method, its request and response use `trace_id`
 but do not require `session_id`; an omitted `trace_id` is generated for the result envelope and
 internal assignment messages.
 
-Each assigned payload is sent as-is. Integer `0` worker placeholders are skipped without consuming
-the current payload when later workers remain.
+Each assigned payload is sent as-is. Integer `0` recipient placeholders are skipped without
+consuming the current payload when later recipients remain.
 
 ## Message Format
 
@@ -29,8 +30,7 @@ Request:
   request: "distribution_start",
   trace_id: <trace_id>,
   payloads: [<payload>, <payload>, ...],
-  work_id: <id>,
-  workers: [<agent>, <agent>, ...]
+  recipients: [<recipient-agent-1>, <recipient-agent-2>, ...]
 }
 ```
 
@@ -42,14 +42,13 @@ Response:
   response: "distribution_result",
   trace_id: <trace_id>,
   status: <success|failure>,
-  work_id: <id>,
   success_count: <count>,
   failure_count: <count>
 }
 ```
 
 `success_count` counts successful assignment sends, and `failure_count` counts failed assignment
-sends. Empty payload or worker lists produce `status: "failure"`.
+sends. Empty payload or recipient lists produce `status: "failure"`.
 
 ## Implementation and Tests
 
