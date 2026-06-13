@@ -6,6 +6,7 @@ memory.is_message := if(memory.is_request = 1, message.request = "conversation_m
 memory.is_history := if(memory.is_request = 1, message.request = "conversation_history", 0)
 memory.is_close := if(memory.is_request = 1, message.request = "conversation_close", 0)
 memory.is_select_recipients := if(memory.is_request = 1, message.request = "conversation_select_recipients", 0)
+memory.is_deferred_message := if(memory.is_request = 1, message.request = "conversation_deferred_message", 0)
 memory.is_broadcast_result := if(memory.is_response = 1, message.response = "broadcasting_result", 0)
 
 # Generate trace_id
@@ -32,6 +33,11 @@ memory.pending_candidate_found := if(memory.is_start = 1, 0, memory.pending_cand
 memory.pending_payload := if(memory.is_start = 1, 0, memory.pending_payload)
 memory.pending_turn_count := if(memory.is_start = 1, 0, memory.pending_turn_count)
 memory.pending_trace_id := if(memory.is_start = 1, "", memory.pending_trace_id)
+memory.deferred_turn_active := if(memory.is_start = 1, 0, memory.deferred_turn_active)
+memory.deferred_trace_id := if(memory.is_start = 1, "", memory.deferred_trace_id)
+memory.deferred_session_id := if(memory.is_start = 1, "", memory.deferred_session_id)
+memory.deferred_sender := if(memory.is_start = 1, 0, memory.deferred_sender)
+memory.deferred_payload := if(memory.is_start = 1, 0, memory.deferred_payload)
 memory.broadcasting_method := if(memory.is_start = 1, "broadcasting", 0)
 memory.broadcasting_version := if(memory.is_start = 1, "1.0.0", "")
 
@@ -47,15 +53,36 @@ memory.phase := if(memory.start_failed = 1, "handoff_failed", memory.phase)
 memory.has_request_session := if(message.session_id <> 0, 1, 0)
 memory.matches_session := if(memory.has_request_session = 1, message.session_id = memory.session_id, 0)
 memory.is_active := if(memory.phase = "active", 1, 0)
+memory.deferred_from_self := if(message.sender = memory.self, 1, 0)
 memory.has_pending_sender := if(memory.pending_sender > 0, memory.pending_turn_active, 0)
 memory.has_pending_candidate := if(memory.pending_candidate_found > 0, memory.pending_turn_active, 0)
 memory.has_confirmed_pending := memory.has_pending_sender + memory.has_pending_candidate
 memory.has_confirmed_pending := if(memory.has_confirmed_pending > 0, 1, 0)
-memory.no_pending_turn := if(memory.has_confirmed_pending = 0, 1, 0)
-memory.message_candidate := memory.is_message * memory.matches_session
-memory.message_candidate := memory.message_candidate * memory.is_active
-memory.message_candidate := memory.message_candidate * memory.no_pending_turn
+memory.pending_unconfirmed := memory.pending_turn_active - memory.has_confirmed_pending
+memory.no_pending_turn := if(memory.pending_turn_active = 0, 1, 0)
+memory.public_message_candidate := memory.is_message * memory.matches_session
+memory.public_message_candidate := memory.public_message_candidate * memory.is_active
+memory.public_message_candidate := memory.public_message_candidate * memory.no_pending_turn
+memory.deferred_message_candidate := memory.is_deferred_message * memory.deferred_from_self
+memory.deferred_message_candidate := memory.deferred_message_candidate * memory.matches_session
+memory.deferred_message_candidate := memory.deferred_message_candidate * memory.is_active
+memory.deferred_message_candidate := memory.deferred_message_candidate * memory.no_pending_turn
+memory.message_candidate := memory.public_message_candidate + memory.deferred_message_candidate
+memory.message_candidate := if(memory.message_candidate > 0, 1, 0)
+memory.no_deferred_turn := if(memory.deferred_turn_active = 0, 1, 0)
+memory.defer_candidate := memory.is_message * memory.matches_session
+memory.defer_candidate := memory.defer_candidate * memory.is_active
+memory.defer_candidate := memory.defer_candidate * memory.pending_unconfirmed
+memory.defer_candidate := memory.defer_candidate * memory.no_deferred_turn
+memory.message_participant := if(memory.deferred_message_candidate = 1, message.participant, message.sender)
 memory.next_turn_count := memory.turn_count + memory.message_candidate
+
+# Defer a public turn behind an unconfirmed pending scan
+memory.deferred_turn_active := if(memory.defer_candidate = 1, 1, memory.deferred_turn_active)
+memory.deferred_trace_id := if(memory.defer_candidate = 1, memory.request_trace_id, memory.deferred_trace_id)
+memory.deferred_session_id := if(memory.defer_candidate = 1, message.session_id, memory.deferred_session_id)
+memory.deferred_sender := if(memory.defer_candidate = 1, message.sender, memory.deferred_sender)
+memory.deferred_payload := if(memory.defer_candidate = 1, message.payload, memory.deferred_payload)
 
 # Build participant turn
 memory.turn_message := {
@@ -64,7 +91,7 @@ memory.turn_message := {
   trace_id: memory.request_trace_id
   session_id: memory.session_id
   payload: message.payload
-  participant: message.sender
+  participant: memory.message_participant
   turn_count: memory.next_turn_count
 }
 
@@ -76,7 +103,7 @@ memory.select_recipients_message := {
   session_id: memory.session_id
   participants: memory.participants
   recipients: []
-  participant: message.sender
+  participant: memory.message_participant
   payload: memory.turn_message
   found_sender: 0
   recipient_count: 0
@@ -149,6 +176,7 @@ memory.scan_matches_pending := if(message.trace_id = memory.pending_trace_id, 1,
 memory.scan_matches_pending := memory.scan_matches_pending * memory.pending_turn_active
 memory.candidate_found_in_scan := memory.participant_is_sender * memory.scan_matches_pending
 memory.pending_candidate_found := if(memory.candidate_found_in_scan = 1, 1, memory.pending_candidate_found)
+memory.deferred_turn_active := if(memory.candidate_found_in_scan = 1, 0, memory.deferred_turn_active)
 memory.has_staged_pending := if(memory.pending_sender > 0, memory.pending_turn_active, 0)
 memory.no_staged_pending := if(memory.has_staged_pending = 0, 1, 0)
 memory.sender_missing := if(memory.next_found_sender = 0, 1, 0)
@@ -174,6 +202,19 @@ memory.pending_turn_active := if(memory.stage_ready = 1, 1, memory.pending_turn_
 memory.pending_trace_id := if(memory.sender_missing = 1, "", memory.pending_trace_id)
 memory.pending_turn_active := if(memory.sender_missing = 1, 0, memory.pending_turn_active)
 memory.pending_candidate_found := if(memory.sender_missing = 1, 0, memory.pending_candidate_found)
+
+# Retry a deferred turn after an invalid pending sender
+memory.deferred_retry_ready := memory.sender_missing * memory.deferred_turn_active
+memory.deferred_retry_message := {
+  sender: memory.self
+  request: "conversation_deferred_message"
+  trace_id: memory.deferred_trace_id
+  session_id: memory.deferred_session_id
+  payload: memory.deferred_payload
+  participant: memory.deferred_sender
+}
+memory.deferred_retry_sent := send(memory.self * memory.deferred_retry_ready, memory.deferred_retry_message)
+memory.deferred_turn_active := if(memory.deferred_retry_ready = 1, 0, memory.deferred_turn_active)
 
 # Broadcast staged turn
 memory.broadcast_message := {

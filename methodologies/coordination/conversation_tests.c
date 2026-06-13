@@ -426,6 +426,27 @@ static void test_conversation__broadcasts_turns_to_all_other_participants(void) 
                      "after-intruder") == 0,
               "Participant C should receive the turn after the intruder scan");
 
+    // And an externally forged deferred message is ignored
+    ar_data_t *own_forged_deferred = ar_data__create_map();
+    AR_ASSERT(own_forged_deferred != NULL, "Forged deferred message should be created");
+    ar_data__set_map_integer(own_forged_deferred, "sender", checked_agent_id(intruder));
+    ar_data__set_map_string(own_forged_deferred, "request", "conversation_deferred_message");
+    ar_data__set_map_string(own_forged_deferred, "trace_id", "forged-deferred-trace");
+    ar_data__set_map_string(own_forged_deferred, "session_id", "chat-session-1");
+    ar_data__set_map_integer(own_forged_deferred, "participant", checked_agent_id(participant_a));
+    ar_data__set_map_string(own_forged_deferred, "payload", "forged-deferred");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_forged_deferred),
+              "Forged deferred message should queue");
+    own_forged_deferred = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_b_memory, "last_payload"),
+                     "after-intruder") == 0,
+              "Forged deferred message should not relay to participant B");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_c_memory, "last_payload"),
+                     "after-intruder") == 0,
+              "Forged deferred message should not relay to participant C");
+
     // And a stale recipient-selection completion cannot clear another pending selection
     ar_data_t *mut_stale_conversation_memory =
         ar_agency__get_agent_mutable_memory(mut_agency, conversation_agent);
@@ -727,18 +748,6 @@ static void test_conversation__broadcasts_turns_to_all_other_participants(void) 
     ar_data__set_map_string(own_queued_first, "session_id", "chat-session-queued");
     ar_data__set_map_integer(own_queued_first, "sender", checked_agent_id(participant_a));
     ar_data__set_map_string(own_queued_first, "payload", "queued-one");
-    AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_queued_first),
-              "First queued turn should queue");
-    own_queued_first = NULL;
-    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture),
-              "First queued turn should start recipient selection");
-    ref_conversation_memory = ar_agency__get_agent_memory(mut_agency, conversation_agent);
-    AR_ASSERT(ar_data__get_map_integer(ref_conversation_memory, "pending_turn_active") == 1,
-              "Conversation should claim the pending turn before recipient selection finishes");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_conversation_memory, "pending_trace_id"),
-                     "chat-queued-first") == 0,
-              "Conversation should remember the pending selection trace");
-
     ar_data_t *own_queued_second = ar_data__create_map();
     AR_ASSERT(own_queued_second != NULL, "Second queued turn should be created");
     ar_data__set_map_string(own_queued_second, "request", "conversation_message");
@@ -746,9 +755,20 @@ static void test_conversation__broadcasts_turns_to_all_other_participants(void) 
     ar_data__set_map_string(own_queued_second, "session_id", "chat-session-queued");
     ar_data__set_map_integer(own_queued_second, "sender", checked_agent_id(participant_a));
     ar_data__set_map_string(own_queued_second, "payload", "queued-two");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_queued_first),
+              "First queued turn should queue");
+    own_queued_first = NULL;
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_queued_second),
               "Second queued turn should queue");
     own_queued_second = NULL;
+    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture),
+              "First queued turn should start recipient selection behind the second turn");
+    ref_conversation_memory = ar_agency__get_agent_memory(mut_agency, conversation_agent);
+    AR_ASSERT(ar_data__get_map_integer(ref_conversation_memory, "pending_turn_active") == 1,
+              "Conversation should claim the pending turn before recipient selection finishes");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_conversation_memory, "pending_trace_id"),
+                     "chat-queued-first") == 0,
+              "Conversation should remember the pending selection trace");
     ar_method_fixture__process_all_messages(own_fixture);
 
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
