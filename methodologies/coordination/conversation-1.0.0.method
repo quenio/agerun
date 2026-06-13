@@ -44,7 +44,7 @@ memory.turn_message := {
   trace_id: memory.request_trace_id
   session_id: memory.session_id
   payload: message.payload
-  from: message.sender
+  participant: message.sender
   turn_count: memory.next_turn_count
 }
 memory.pending_turn_message := if(memory.message_candidate = 1, memory.turn_message, memory.pending_turn_message)

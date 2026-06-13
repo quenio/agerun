@@ -406,7 +406,7 @@ Participant turn:
   trace_id: <trace_id>,
   session_id: <session_id>,
   payload: <payload>,
-  from: <agent>,
+  participant: <sender-agent>,
   turn_count: <count>
 }
 ```

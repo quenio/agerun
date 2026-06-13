@@ -68,7 +68,7 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
         "memory.last_source := message.source\n"
         "memory.last_trace_id := message.trace_id\n"
         "memory.last_session_id := message.session_id\n"
-        "memory.last_from := message.from\n"
+        "memory.last_participant := message.participant\n"
         "memory.last_state := message.state\n"
         "memory.last_status := message.status\n"
         "memory.last_result := message.result\n"
@@ -184,10 +184,10 @@ static void test_conversation__broadcasts_turns_to_all_other_participants(void) 
     AR_ASSERT(ar_data__get_map_integer(ref_participant_c_memory, "last_source") ==
                   checked_agent_id(conversation_agent),
               "Participant C turn should identify the conversation source");
-    AR_ASSERT(ar_data__get_map_integer(ref_participant_b_memory, "last_from") ==
+    AR_ASSERT(ar_data__get_map_integer(ref_participant_b_memory, "last_participant") ==
                   checked_agent_id(participant_a),
               "Participant B should see participant A as sender");
-    AR_ASSERT(ar_data__get_map_integer(ref_participant_c_memory, "last_from") ==
+    AR_ASSERT(ar_data__get_map_integer(ref_participant_c_memory, "last_participant") ==
                   checked_agent_id(participant_a),
               "Participant C should see participant A as sender");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_b_memory, "last_payload"),
@@ -239,10 +239,10 @@ static void test_conversation__broadcasts_turns_to_all_other_participants(void) 
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_a_memory, "last_request"),
                      "conversation_turn") == 0,
               "Participant A should receive participant B's reply turn");
-    AR_ASSERT(ar_data__get_map_integer(ref_participant_a_memory, "last_from") ==
+    AR_ASSERT(ar_data__get_map_integer(ref_participant_a_memory, "last_participant") ==
                   checked_agent_id(participant_b),
               "Participant A should see participant B as sender");
-    AR_ASSERT(ar_data__get_map_integer(ref_participant_c_memory, "last_from") ==
+    AR_ASSERT(ar_data__get_map_integer(ref_participant_c_memory, "last_participant") ==
                   checked_agent_id(participant_b),
               "Participant C should see participant B as sender");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_a_memory, "last_payload"),
