@@ -11,8 +11,9 @@ when needed.
 Only messages with a recognized `request` value are handled as coordination requests.
 
 When the agent receives `request: "distribution_start"`, it starts an assignment pass for
-`payloads` and `recipients`. Internal `distribution_assign_payload` requests carry the remaining
-payloads, current recipient list, original recipient list, counters, `trace_id`, and `sender`.
+`payloads` and `recipients`. Internal `distribution_continue` requests carry the remaining
+payloads, current recipient list, original recipient list, counters, `trace_id`, and
+`result_recipient`.
 Because distribution is a one-shot caller-facing method, its request and response use `trace_id`
 but do not require `session_id`; an omitted `trace_id` is generated for the result envelope and
 internal assignment messages.
@@ -33,6 +34,27 @@ Request:
   recipients: [<recipient-agent-1>, <recipient-agent-2>, ...]
 }
 ```
+
+Internal continuation request:
+
+```text
+{
+  sender: <distribution-agent>,
+  request: "distribution_continue",
+  trace_id: <trace_id>,
+  payloads: [<payload>, <payload>, ...],
+  recipients: [<recipient-agent-1>, <recipient-agent-2>, ...],
+  all_recipients: [<recipient-agent-1>, <recipient-agent-2>, ...],
+  result_recipient: <sender-agent>,
+  assignment_count: <count>,
+  sent_count: <count>,
+  failed_count: <count>
+}
+```
+
+`distribution_continue` is queued by the distribution agent to itself and is processed only when its
+`sender` is the distribution agent. Callers should use `distribution_start`; the continuation format
+is documented to make the recursive state explicit.
 
 Response:
 

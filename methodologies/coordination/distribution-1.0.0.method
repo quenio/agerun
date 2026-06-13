@@ -1,18 +1,21 @@
 memory.is_request := if(message.request <> 0, 1, 0)
 memory.is_distribute := if(memory.is_request = 1, message.request = "distribution_start", 0)
-memory.is_assign_payload := if(memory.is_request = 1, message.request = "distribution_assign_payload", 0)
-memory.is_assignment := memory.is_distribute + memory.is_assign_payload
+memory.is_continue_request := if(memory.is_request = 1, message.request = "distribution_continue", 0)
+memory.continue_from_self := if(message.sender = memory.self, 1, 0)
+memory.is_continue := memory.is_continue_request * memory.continue_from_self
+memory.is_assignment := memory.is_distribute + memory.is_continue
 memory.is_assignment := if(memory.is_assignment > 0, 1, 0)
 memory.generated_trace_base := message.sender * 1000
 memory.generated_trace_id := memory.generated_trace_base + memory.self
 memory.request_trace_id := memory.generated_trace_id
 memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.request_trace_id)
-memory.trace_id := if(memory.is_distribute = 1, memory.request_trace_id, memory.trace_id)
-memory.sender := if(memory.is_distribute = 1, message.sender, memory.sender)
-memory.status := if(memory.is_distribute = 1, "distributing", memory.status)
-memory.assignment_count := if(memory.is_distribute = 1, 0, memory.assignment_count)
-memory.sent_count := if(memory.is_distribute = 1, 0, memory.sent_count)
-memory.failed_count := if(memory.is_distribute = 1, 0, memory.failed_count)
+memory.trace_id := if(memory.is_distribute = 1, memory.request_trace_id, 0)
+memory.sender := if(memory.is_distribute = 1, message.sender, 0)
+memory.status := if(memory.is_distribute = 1, "distributing", "")
+memory.assignment_count := 0
+memory.sent_count := 0
+memory.failed_count := 0
+memory.result_recipient := if(memory.is_continue = 1, message.result_recipient, message.sender)
 memory.current_payloads := if(memory.is_assignment = 1, message.payloads, [])
 memory.current_recipients := if(memory.is_assignment = 1, message.recipients, [])
 memory.payload := head(memory.current_payloads)
@@ -41,7 +44,7 @@ memory.remaining_recipients_empty := if(memory.remaining_recipients = [], 1, 0)
 memory.has_remaining_recipient := if(memory.remaining_recipients_empty = 1, 0, 1)
 memory.no_remaining_recipient := if(memory.has_remaining_recipient = 1, 0, 1)
 memory.has_prior_assignment := if(message.assignment_count > 0, 1, 0)
-memory.all_recipients := if(memory.is_assign_payload = 1, message.all_recipients, [])
+memory.all_recipients := if(memory.is_continue = 1, message.all_recipients, [])
 memory.all_recipients := if(memory.is_distribute = 1, memory.current_recipients, memory.all_recipients)
 memory.next_recipients := if(memory.has_remaining_recipient = 1, memory.remaining_recipients, memory.all_recipients)
 memory.skip_recipient := memory.is_assignment * memory.has_payload
@@ -61,12 +64,13 @@ memory.continuation_required := memory.continuation_required + memory.skip_recip
 memory.continuation_required := memory.continuation_required + memory.wrap_recipient
 memory.continuation_required := if(memory.continuation_required > 0, 1, 0)
 memory.continuation_message := {
-  sender: message.sender
-  request: "distribution_assign_payload"
+  sender: memory.self
+  request: "distribution_continue"
   trace_id: memory.request_trace_id
   payloads: memory.continuation_payloads
   recipients: memory.continuation_recipients
   all_recipients: memory.all_recipients
+  result_recipient: memory.result_recipient
   assignment_count: memory.next_assignment_count
   sent_count: memory.next_sent_count
   failed_count: memory.next_failed_count
@@ -78,7 +82,7 @@ memory.continuation_failed := memory.continuation_failed * memory.continuation_r
 memory.should_report := memory.is_assignment
 memory.should_report := if(memory.continuation_sent = 1, 0, memory.should_report)
 memory.report_trace_id := memory.request_trace_id
-memory.report_sender := message.sender
+memory.report_sender := memory.result_recipient
 memory.report_assignment_count := memory.next_assignment_count
 memory.report_sent_count := memory.next_sent_count
 memory.report_failed_count := memory.next_failed_count

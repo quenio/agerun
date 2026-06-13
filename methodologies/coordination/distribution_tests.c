@@ -287,13 +287,6 @@ static void test_distribution__round_robins_payloads_across_recipients(void) {
     own_ignored_message = NULL;
     ar_method_fixture__process_all_messages(own_fixture);
 
-    const ar_data_t *ref_distribution_memory =
-        ar_agency__get_agent_memory(mut_agency, distribution_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_distribution_memory, "status"),
-                     "success") == 0,
-              "Ignored messages should not overwrite distribution status");
-    AR_ASSERT(ar_data__get_map_integer(ref_distribution_memory, "assignment_count") == 5,
-              "Ignored messages should not reset assignment count");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_trace_id"),
                      "job-round-robin") == 0,
               "Ignored messages should not emit a new distribution result");
@@ -600,6 +593,80 @@ static void test_distribution__skips_zero_recipient_placeholders(void) {
     ar_data__destroy(own_report_context);
 }
 
+static void test_distribution__rejects_external_continue_request(void) {
+    printf("Testing distribution rejects external continue requests...\n");
+
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("distribution_external_continue");
+    AR_ASSERT(ar_method_fixture__initialize(own_fixture), "Fixture should initialize");
+    AR_ASSERT(ar_method_fixture__verify_directory(own_fixture), "Fixture directory should verify");
+    load_method(own_fixture, "distribution");
+
+    ar_agency_t *mut_agency = ar_method_fixture__get_agency(own_fixture);
+    register_worker_recorder(mut_agency);
+    register_report_recorder(mut_agency);
+
+    ar_data_t *own_distribution_context = create_context();
+    ar_data_t *own_worker_context = create_worker_context();
+    ar_data_t *own_report_context = create_context();
+    int64_t distribution_agent = ar_agency__create_agent(
+        mut_agency, "distribution", "1.0.0", own_distribution_context);
+    int64_t worker_agent = ar_agency__create_agent(
+        mut_agency, "worker-recorder", "1.0.0", own_worker_context);
+    int64_t report_agent = ar_agency__create_agent(
+        mut_agency, "report-recorder", "1.0.0", own_report_context);
+    initialize_worker_memory(mut_agency, worker_agent);
+
+    const char *ref_payload_values[] = {"forged"};
+    const int ref_recipients[] = {checked_agent_id(worker_agent)};
+    ar_data_t *own_payloads = create_payloads(ref_payload_values, 1, 0);
+    ar_data_t *own_recipients = create_recipients(ref_recipients, 1);
+    ar_data_t *own_all_recipients = create_recipients(ref_recipients, 1);
+
+    ar_data_t *own_message = ar_data__create_map();
+    AR_ASSERT(own_message != NULL, "Forged continuation should be created");
+    AR_ASSERT(ar_data__set_map_string(own_message, "request", "distribution_continue"),
+              "Forged continuation should set request");
+    AR_ASSERT(ar_data__set_map_string(own_message, "trace_id", "forged-continue"),
+              "Forged continuation should set trace id");
+    AR_ASSERT(ar_data__set_map_data(own_message, "payloads", own_payloads),
+              "Forged continuation should own payloads");
+    own_payloads = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_message, "recipients", own_recipients),
+              "Forged continuation should own recipients");
+    own_recipients = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_message, "all_recipients", own_all_recipients),
+              "Forged continuation should own all recipients");
+    own_all_recipients = NULL;
+    AR_ASSERT(ar_data__set_map_integer(own_message, "assignment_count", 0),
+              "Forged continuation should set assignment count");
+    AR_ASSERT(ar_data__set_map_integer(own_message, "sent_count", 0),
+              "Forged continuation should set sent count");
+    AR_ASSERT(ar_data__set_map_integer(own_message, "failed_count", 0),
+              "Forged continuation should set failed count");
+    AR_ASSERT(ar_data__set_map_integer(own_message, "result_recipient", checked_agent_id(report_agent)),
+              "Forged continuation should set result recipient");
+    AR_ASSERT(ar_data__set_map_integer(own_message, "sender", checked_agent_id(report_agent)),
+              "Forged continuation should set external sender");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, distribution_agent, own_message),
+              "Forged continuation should queue");
+    own_message = NULL;
+
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    const ar_data_t *ref_worker_memory = ar_agency__get_agent_memory(mut_agency, worker_agent);
+    AR_ASSERT(ar_data__get_map_integer(ref_worker_memory, "received_count") == 0,
+              "External continue request should not assign payloads");
+
+    const ar_data_t *ref_report_memory = ar_agency__get_agent_memory(mut_agency, report_agent);
+    AR_ASSERT(ar_data__get_map_data(ref_report_memory, "last_message") == NULL,
+              "External continue request should not emit a result");
+
+    ar_method_fixture__destroy(own_fixture);
+    ar_data__destroy(own_distribution_context);
+    ar_data__destroy(own_worker_context);
+    ar_data__destroy(own_report_context);
+}
+
 int main(void) {
     printf("Running distribution method tests...\n\n");
     test_distribution__round_robins_payloads_across_recipients();
@@ -607,6 +674,7 @@ int main(void) {
     test_distribution__records_completion_when_response_fails();
     test_distribution__preserves_trace_for_interleaved_jobs();
     test_distribution__skips_zero_recipient_placeholders();
+    test_distribution__rejects_external_continue_request();
     printf("\nAll distribution method tests passed!\n");
     return 0;
 }

@@ -219,6 +219,10 @@ Reply:
 Distribution sends each payload item as-is, round-robin, to positive recipient IDs. Integer `0`
 recipient placeholders are skipped without consuming the current payload when later recipients
 remain.
+The method queues private `distribution_continue` requests to itself to carry the remaining
+payloads, current recipients, original recipients, counters, and `result_recipient` between
+recursive assignment steps. Continuations are processed only when `sender` is the distribution
+agent.
 Because distribution is a one-shot caller-facing method, its request and response use `trace_id`
 but do not require `session_id`; an omitted `trace_id` is generated for the result envelope.
 
