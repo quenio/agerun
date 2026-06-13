@@ -3,14 +3,14 @@ memory.is_start := if(memory.is_request = 1, message.request = "aggregation_star
 memory.is_collect := if(memory.is_request = 1, message.request = "aggregation_collect", 0)
 memory.is_aggregation_request := memory.is_start + memory.is_collect
 memory.is_aggregation_request := if(memory.is_aggregation_request > 0, 1, 0)
-memory.generated_trace_base := message.source * 1000
+memory.generated_trace_base := message.sender * 1000
 memory.generated_trace_id := memory.generated_trace_base + memory.self
 memory.request_trace_id := memory.generated_trace_id
 memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.request_trace_id)
 memory.trace_id := if(memory.is_start = 1, memory.request_trace_id, memory.trace_id)
 memory.session_id := if(memory.is_start = 1, message.session_id, memory.session_id)
-memory.target_count := if(memory.is_start = 1, message.expected_count, memory.target_count)
-memory.source := if(memory.is_start = 1, message.source, memory.source)
+memory.expected_count := if(memory.is_start = 1, message.expected_count, memory.expected_count)
+memory.sender := if(memory.is_start = 1, message.sender, memory.sender)
 memory.payloads := if(memory.is_start = 1, [], memory.payloads)
 memory.count := if(memory.is_start = 1, 0, memory.count)
 memory.failure_count := if(memory.is_start = 1, 0, memory.failure_count)
@@ -18,7 +18,7 @@ memory.completed := if(memory.is_start = 1, 0, memory.completed)
 memory.active := if(memory.is_start = 1, 1, memory.active)
 memory.not_completed := if(memory.completed = 0, 1, 0)
 memory.outcome_count := memory.count + memory.failure_count
-memory.outcome_count_reached := if(memory.outcome_count >= memory.target_count, 1, 0)
+memory.outcome_count_reached := if(memory.outcome_count >= memory.expected_count, 1, 0)
 memory.outcome_count_pending := if(memory.outcome_count_reached = 1, 0, 1)
 memory.collect_candidate := memory.is_collect * memory.active * memory.not_completed
 memory.collect_candidate := memory.collect_candidate * memory.outcome_count_pending
@@ -34,14 +34,14 @@ memory.failure_count := memory.failure_count + memory.collect_failed
 memory.payloads := if(memory.append_ok = 1, memory.append_buffer, memory.payloads)
 memory.count := memory.count + memory.append_ok
 memory.outcome_count := memory.count + memory.failure_count
-memory.outcome_count_reached := if(memory.outcome_count >= memory.target_count, 1, 0)
+memory.outcome_count_reached := if(memory.outcome_count >= memory.expected_count, 1, 0)
 memory.is_complete := memory.active * memory.outcome_count_reached
-memory.success_complete := if(memory.count >= memory.target_count, 1, 0)
+memory.success_complete := if(memory.count >= memory.expected_count, 1, 0)
 memory.status := if(memory.success_complete = 1, "success", "failure")
 memory.should_emit := memory.is_complete * memory.not_completed
-memory.output_target := memory.source * memory.should_emit
+memory.output_recipient := memory.sender * memory.should_emit
 memory.output_message := {
-  source: memory.self
+  sender: memory.self
   response: "aggregation_result"
   trace_id: memory.request_trace_id
   session_id: memory.session_id
@@ -50,6 +50,6 @@ memory.output_message := {
   success_count: memory.count
   failure_count: memory.failure_count
 }
-memory.output_sent := send(memory.output_target, memory.output_message)
+memory.output_sent := send(memory.output_recipient, memory.output_message)
 memory.completion_delivered := memory.should_emit * memory.output_sent
 memory.completed := if(memory.completion_delivered = 1, 1, memory.completed)

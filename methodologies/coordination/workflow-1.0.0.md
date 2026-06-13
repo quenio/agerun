@@ -2,7 +2,7 @@
 
 ## Overview
 
-Workflow sends an unbounded sequence of activity steps to configured target agents. It demonstrates
+Workflow sends an unbounded sequence of activity steps to configured recipient agents. It demonstrates
 a higher-level coordination behavior built on the `head(...)` and `tail(...)` list traversal
 pattern.
 
@@ -11,9 +11,9 @@ pattern.
 Only messages with a recognized `request` value are handled as coordination requests.
 
 On `request: "workflow_start"`, the method stores workflow metadata, effective `trace_id`,
-`session_id`, `source`, branch value, and aligned `step_targets` and `step_payloads` lists. Each
-step payload is sent directly and as-is to the corresponding positive step target agent. Integer
-`0` step target agents can be skipped when followed by a later positive target.
+`session_id`, `sender`, branch value, and aligned `step_recipients` and `step_payloads` lists. Each
+step payload is sent directly and as-is to the corresponding positive step recipient agent. Integer
+`0` step recipient agents can be skipped when followed by a later positive recipient.
 
 On `request: "workflow_step_done"`, the method advances only when the workflow id and step number
 match the currently active sent step and the `session_id` matches the active workflow session.
@@ -24,15 +24,15 @@ Duplicate, stale, premature, or out-of-order completions are ignored.
 Requests:
 
 ```text
-{ source: <sender-agent>, request: "workflow_start", trace_id: <trace_id>, session_id: <session_id>, workflow_id: <id>, step_targets: [<agent>, ...], step_payloads: [<message>, ...], branch_value: <outcome> }
-{ source: <sender-agent>, request: "workflow_step_done", trace_id: <trace_id>, session_id: <session_id>, workflow_id: <id>, step: <current-step-number>, outcome: <value> }
+{ sender: <sender-agent>, request: "workflow_start", trace_id: <trace_id>, session_id: <session_id>, workflow_id: <id>, step_recipients: [<agent>, ...], step_payloads: [<message>, ...], branch_value: <outcome> }
+{ sender: <sender-agent>, request: "workflow_step_done", trace_id: <trace_id>, session_id: <session_id>, workflow_id: <id>, step: <current-step-number>, outcome: <value> }
 ```
 
 Completion response:
 
 ```text
 {
-  source: <workflow-agent>,
+  sender: <workflow-agent>,
   response: "workflow_result",
   trace_id: <trace_id>,
   session_id: <session_id>,

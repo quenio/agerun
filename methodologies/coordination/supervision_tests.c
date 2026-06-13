@@ -54,7 +54,7 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
         "memory.last_action := message.action\n"
         "memory.last_request := message.request\n"
         "memory.last_response := message.response\n"
-        "memory.last_source := message.source\n"
+        "memory.last_sender := message.sender\n"
         "memory.last_trace_id := message.trace_id\n"
         "memory.last_session_id := message.session_id\n"
         "memory.last_status := message.status\n"
@@ -111,7 +111,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     ar_data__set_map_string(own_start, "policy", "restart");
     ar_data__set_map_string(own_start, "trace_id", "supervision-trace-1");
     ar_data__set_map_string(own_start, "session_id", "supervision-session-1");
-    ar_data__set_map_integer(own_start, "source", checked_agent_id(observer_agent));
+    ar_data__set_map_integer(own_start, "sender", checked_agent_id(observer_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, supervision_agent, own_start),
               "Supervision start should queue");
     own_start = NULL;
@@ -141,9 +141,9 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_response"),
                      "supervision_result") == 0,
               "Observer should receive a supervision response");
-    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_source") ==
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_sender") ==
                   checked_agent_id(supervision_agent),
-              "Supervision response should identify the supervision source");
+              "Supervision response should identify the supervision sender");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "success") == 0,
               "Observer should receive standard success status for running supervision");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"), "running") == 0,
@@ -394,7 +394,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     ar_data__set_map_string(own_empty_start, "policy", "restart");
     ar_data__set_map_string(own_empty_start, "trace_id", "supervision-empty-start");
     ar_data__set_map_string(own_empty_start, "session_id", "supervision-empty-session");
-    ar_data__set_map_integer(own_empty_start, "source", checked_agent_id(observer_agent));
+    ar_data__set_map_integer(own_empty_start, "sender", checked_agent_id(observer_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, empty_start_agent, own_empty_start),
               "Empty child list start should queue");
     own_empty_start = NULL;
@@ -442,7 +442,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
                             "session_id",
                             "supervision-failed-handoff-session");
     ar_data__set_map_integer(own_failed_handoff_start,
-                             "source",
+                             "sender",
                              checked_agent_id(observer_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency,
                                        failed_handoff_agent,
@@ -491,7 +491,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
                             "session_id",
                             "supervision-failed-continue-session");
     ar_data__set_map_integer(own_failed_continue_start,
-                             "source",
+                             "sender",
                              checked_agent_id(observer_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency,
                                        failed_continue_agent,
@@ -544,7 +544,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
                             "session_id",
                             "supervision-failed-lifecycle-session");
     ar_data__set_map_integer(own_failed_lifecycle_start,
-                             "source",
+                             "sender",
                              checked_agent_id(observer_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency,
                                        failed_lifecycle_agent,
@@ -623,7 +623,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
                             "session_id",
                             "supervision-failed-stop-session");
     ar_data__set_map_integer(own_failed_stop_start,
-                             "source",
+                             "sender",
                              checked_agent_id(observer_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency,
                                        failed_stop_agent,
@@ -691,7 +691,7 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
                             "session_id",
                             "supervision-failed-spawn-session");
     ar_data__set_map_integer(own_failed_spawn_start,
-                             "source",
+                             "sender",
                              checked_agent_id(failed_spawn_observer_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency,
                                        failed_spawn_agent,

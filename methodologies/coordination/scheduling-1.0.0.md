@@ -9,9 +9,9 @@ the stored due tick. It expresses delayed execution as ordinary message state.
 
 Only messages with a recognized `request` value are handled as coordination requests.
 
-On `request: "scheduling_schedule"`, the method stores schedule metadata, target agent, payload
-fields, effective `trace_id`, `session_id`, and `source`. On a due `scheduling_tick` with the same
-`session_id`, it sends the stored payload to the stored target agent. On `scheduling_cancel`, it
+On `request: "scheduling_schedule"`, the method stores schedule metadata, recipient agent, payload
+fields, effective `trace_id`, `session_id`, and `sender`. On a due `scheduling_tick` with the same
+`session_id`, it sends the stored payload to the stored recipient agent. On `scheduling_cancel`, it
 clears pending state only when the matching schedule and session are still pending.
 
 ## Message Format
@@ -19,16 +19,16 @@ clears pending state only when the matching schedule and session are still pendi
 Requests:
 
 ```text
-{ source: <sender-agent>, request: "scheduling_schedule", trace_id: <trace_id>, session_id: <session_id>, schedule_id: <id>, due_tick: <number>, target: <recipient-agent>, payload_request: <request>, payload_text: <text>, payload_attempt: <attempt> }
-{ source: <sender-agent>, request: "scheduling_tick", trace_id: <trace_id>, session_id: <session_id>, tick: <number> }
-{ source: <sender-agent>, request: "scheduling_cancel", trace_id: <trace_id>, session_id: <session_id>, schedule_id: <id> }
+{ sender: <sender-agent>, request: "scheduling_schedule", trace_id: <trace_id>, session_id: <session_id>, schedule_id: <id>, due_tick: <number>, recipient: <recipient-agent>, payload_request: <request>, payload_text: <text>, payload_attempt: <attempt> }
+{ sender: <sender-agent>, request: "scheduling_tick", trace_id: <trace_id>, session_id: <session_id>, tick: <number> }
+{ sender: <sender-agent>, request: "scheduling_cancel", trace_id: <trace_id>, session_id: <session_id>, schedule_id: <id> }
 ```
 
 Triggered message:
 
 ```text
 {
-  source: <sender-agent>,
+  sender: <sender-agent>,
   request: <payload_request>,
   trace_id: <trace_id>,
   session_id: <session_id>,
@@ -42,7 +42,7 @@ Response:
 
 ```text
 {
-  source: <scheduling-agent>,
+  sender: <scheduling-agent>,
   response: "scheduling_result",
   trace_id: <trace_id>,
   session_id: <session_id>,

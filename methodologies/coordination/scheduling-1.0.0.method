@@ -5,19 +5,19 @@ memory.is_cancel := if(memory.is_request = 1, message.request = "scheduling_canc
 memory.is_scheduling_request := memory.is_schedule + memory.is_tick
 memory.is_scheduling_request := memory.is_scheduling_request + memory.is_cancel
 memory.is_scheduling_request := if(memory.is_scheduling_request > 0, 1, 0)
-memory.generated_trace_base := message.source * 1000
+memory.generated_trace_base := message.sender * 1000
 memory.generated_trace_id := memory.generated_trace_base + memory.self
 memory.request_trace_id := memory.generated_trace_id
 memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.request_trace_id)
 memory.schedule_id := if(memory.is_schedule = 1, message.schedule_id, memory.schedule_id)
 memory.due_tick := if(memory.is_schedule = 1, message.due_tick, memory.due_tick)
-memory.target := if(memory.is_schedule = 1, message.target, memory.target)
+memory.recipient := if(memory.is_schedule = 1, message.recipient, memory.recipient)
 memory.payload_request := if(memory.is_schedule = 1, message.payload_request, memory.payload_request)
 memory.payload_text := if(memory.is_schedule = 1, message.payload_text, memory.payload_text)
 memory.payload_attempt := if(memory.is_schedule = 1, message.payload_attempt, memory.payload_attempt)
 memory.trace_id := if(memory.is_schedule = 1, memory.request_trace_id, memory.trace_id)
 memory.session_id := if(memory.is_schedule = 1, message.session_id, memory.session_id)
-memory.source := if(memory.is_schedule = 1, message.source, memory.source)
+memory.sender := if(memory.is_schedule = 1, message.sender, memory.sender)
 memory.pending := if(memory.is_schedule = 1, 1, memory.pending)
 memory.status := if(memory.is_schedule = 1, "scheduled", memory.status)
 memory.current_tick := if(memory.is_schedule = 1, 0, memory.current_tick)
@@ -33,7 +33,7 @@ memory.current_tick := if(memory.session_tick = 1, message.tick, memory.current_
 memory.tick_ready := if(memory.current_tick >= memory.due_tick, 1, 0)
 memory.should_trigger := memory.pending * memory.session_tick * memory.tick_ready
 memory.execution_message := {
-  source: memory.self
+  sender: memory.self
   request: memory.payload_request
   trace_id: memory.request_trace_id
   session_id: memory.session_id
@@ -41,7 +41,7 @@ memory.execution_message := {
   attempt: memory.payload_attempt
   schedule_id: memory.schedule_id
 }
-memory.execution_sent := send(memory.target * memory.should_trigger, memory.execution_message)
+memory.execution_sent := send(memory.recipient * memory.should_trigger, memory.execution_message)
 memory.trigger_succeeded := memory.should_trigger * memory.execution_sent
 memory.trigger_failed := if(memory.execution_sent = 0, 1, 0)
 memory.trigger_failed := memory.trigger_failed * memory.should_trigger
@@ -52,7 +52,7 @@ memory.report_success_count := memory.trigger_succeeded + memory.should_cancel
 memory.report_failure_count := memory.trigger_failed
 memory.report_status := if(memory.report_failure_count > 0, "failure", "success")
 memory.report_message := {
-  source: memory.self
+  sender: memory.self
   response: "scheduling_result"
   trace_id: memory.request_trace_id
   session_id: memory.session_id
@@ -65,4 +65,4 @@ memory.report_message := {
   current_tick: memory.current_tick
 }
 memory.should_report := memory.is_schedule + memory.should_cancel + memory.should_trigger
-memory.report_sent := send(memory.source * memory.should_report, memory.report_message)
+memory.report_sent := send(memory.sender * memory.should_report, memory.report_message)

@@ -6,14 +6,14 @@ memory.is_summary := if(memory.is_request = 1, message.request = "conversation_s
 memory.is_close := if(memory.is_request = 1, message.request = "conversation_close", 0)
 memory.is_select_recipients := if(memory.is_request = 1, message.request = "conversation_select_recipients", 0)
 memory.is_broadcast_result := if(memory.is_response = 1, message.response = "broadcasting_result", 0)
-memory.generated_trace_base := message.source * 1000
+memory.generated_trace_base := message.sender * 1000
 memory.generated_trace_id := memory.generated_trace_base + memory.self
 memory.request_trace_id := memory.generated_trace_id
 memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.request_trace_id)
 memory.trace_id := if(memory.is_start = 1, memory.request_trace_id, memory.trace_id)
 memory.session_id := if(memory.is_start = 1, message.session_id, memory.session_id)
 memory.participants := if(memory.is_start = 1, message.participants, memory.participants)
-memory.source := if(memory.is_start = 1, message.source, memory.source)
+memory.sender := if(memory.is_start = 1, message.sender, memory.sender)
 memory.state := if(memory.is_start = 1, "starting", memory.state)
 memory.turn_count := if(memory.is_start = 1, 0, memory.turn_count)
 memory.history := if(memory.is_start = 1, [], memory.history)
@@ -39,7 +39,7 @@ memory.message_candidate := memory.is_message * memory.matches_session
 memory.message_candidate := memory.message_candidate * memory.is_active
 memory.next_turn_count := memory.turn_count + memory.message_candidate
 memory.turn_message := {
-  source: memory.self
+  sender: memory.self
   request: "conversation_turn"
   trace_id: memory.request_trace_id
   session_id: memory.session_id
@@ -52,13 +52,13 @@ memory.pending_sender := if(memory.message_candidate = 1, message.sender, memory
 memory.pending_payload := if(memory.message_candidate = 1, message.payload, memory.pending_payload)
 memory.pending_turn_count := if(memory.message_candidate = 1, memory.next_turn_count, memory.pending_turn_count)
 memory.select_recipients_message := {
-  source: memory.self
+  sender: memory.self
   request: "conversation_select_recipients"
   trace_id: memory.request_trace_id
   session_id: memory.session_id
   participants: memory.participants
-  targets: []
-  sender: message.sender
+  recipients: []
+  participant: message.sender
   payload: memory.turn_message
   found_sender: 0
   recipient_count: 0
@@ -67,18 +67,18 @@ memory.select_sent := send(memory.self * memory.message_candidate, memory.select
 memory.select_send_failed := if(memory.select_sent = 0, 1, 0)
 memory.select_send_failed := memory.select_send_failed * memory.message_candidate
 memory.scan_participants := if(memory.is_select_recipients = 1, message.participants, [])
-memory.scan_targets := if(memory.is_select_recipients = 1, message.targets, [])
+memory.scan_recipients := if(memory.is_select_recipients = 1, message.recipients, [])
 memory.current_participant := head(memory.scan_participants)
 memory.remaining_participants := tail(memory.scan_participants)
 memory.scan_participants_empty := if(memory.scan_participants = [], 1, 0)
 memory.has_scan_participant := if(memory.scan_participants_empty = 1, 0, 1)
-memory.participant_is_sender := if(message.sender = memory.current_participant, 1, 0)
+memory.participant_is_sender := if(message.participant = memory.current_participant, 1, 0)
 memory.participant_is_sender := memory.participant_is_sender * memory.has_scan_participant
 memory.include_participant := memory.has_scan_participant - memory.participant_is_sender
-memory.target_value := memory.current_participant * memory.include_participant
-memory.targets_buffer := if(memory.has_scan_participant = 1, memory.scan_targets, "")
-memory.target_append_ok := append(memory.targets_buffer, memory.target_value)
-memory.next_targets := if(memory.target_append_ok = 1, memory.targets_buffer, memory.scan_targets)
+memory.recipient_value := memory.current_participant * memory.include_participant
+memory.recipients_buffer := if(memory.has_scan_participant = 1, memory.scan_recipients, "")
+memory.recipient_append_ok := append(memory.recipients_buffer, memory.recipient_value)
+memory.next_recipients := if(memory.recipient_append_ok = 1, memory.recipients_buffer, memory.scan_recipients)
 memory.next_found_sender := message.found_sender + memory.participant_is_sender
 memory.next_found_sender := if(memory.next_found_sender > 0, 1, 0)
 memory.next_recipient_count := message.recipient_count + memory.include_participant
@@ -87,13 +87,13 @@ memory.has_remaining_participants := if(memory.remaining_participants_empty = 1,
 memory.scan_continue := memory.is_select_recipients * memory.has_scan_participant
 memory.scan_continue := memory.scan_continue * memory.has_remaining_participants
 memory.scan_continue_message := {
-  source: memory.self
+  sender: memory.self
   request: "conversation_select_recipients"
   trace_id: message.trace_id
   session_id: memory.session_id
   participants: memory.remaining_participants
-  targets: memory.next_targets
-  sender: message.sender
+  recipients: memory.next_recipients
+  participant: message.participant
   payload: message.payload
   found_sender: memory.next_found_sender
   recipient_count: memory.next_recipient_count
@@ -115,11 +115,11 @@ memory.no_recipients := memory.no_recipients * memory.has_no_recipients
 memory.broadcast_ready := memory.scan_finished * memory.next_found_sender
 memory.broadcast_ready := memory.broadcast_ready * memory.has_recipients
 memory.broadcast_message := {
-  source: memory.self
+  sender: memory.self
   request: "broadcasting_start"
   trace_id: message.trace_id
   payload: message.payload
-  targets: memory.next_targets
+  recipients: memory.next_recipients
 }
 memory.broadcast_sent := send(memory.broadcasting_agent * memory.broadcast_ready, memory.broadcast_message)
 memory.broadcast_send_failed := if(memory.broadcast_sent = 0, 1, 0)
@@ -166,7 +166,7 @@ memory.response_failure_count := if(memory.is_start = 1, memory.start_failed, me
 memory.response_failure_count := if(memory.relay_outcome = 1, memory.relay_failure_count, memory.response_failure_count)
 memory.response_status := if(memory.response_failure_count > 0, "failure", "success")
 memory.response_message := {
-  source: memory.self
+  sender: memory.self
   response: "conversation_result"
   trace_id: memory.request_trace_id
   session_id: memory.session_id
@@ -184,4 +184,4 @@ memory.response_message := {
 memory.should_respond := memory.is_start + memory.summary_matches
 memory.should_respond := memory.should_respond + memory.should_close
 memory.should_respond := memory.should_respond + memory.relay_outcome
-memory.response_sent := send(memory.source * memory.should_respond, memory.response_message)
+memory.response_sent := send(memory.sender * memory.should_respond, memory.response_message)

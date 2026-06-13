@@ -78,7 +78,7 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
         "memory.last_action := message.action\n"
         "memory.last_request := message.request\n"
         "memory.last_response := message.response\n"
-        "memory.last_source := message.source\n"
+        "memory.last_sender := message.sender\n"
         "memory.last_status := message.status\n"
         "memory.last_trace_id := message.trace_id\n"
         "memory.last_session_id := message.session_id\n"
@@ -118,7 +118,7 @@ static void test_aggregation__combines_required_payloads(void) {
     ar_data__set_map_string(own_reset, "trace_id", "agg-trace-1");
     ar_data__set_map_string(own_reset, "session_id", "agg-session-1");
     ar_data__set_map_integer(own_reset, "expected_count", 4);
-    ar_data__set_map_integer(own_reset, "source", checked_agent_id(receiver_agent));
+    ar_data__set_map_integer(own_reset, "sender", checked_agent_id(receiver_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, aggregation_agent, own_reset),
               "Aggregate reset message should queue");
     own_reset = NULL;
@@ -136,9 +136,9 @@ static void test_aggregation__combines_required_payloads(void) {
     const char *ref_response = ar_data__get_map_string(ref_receiver_memory, "last_response");
     AR_ASSERT(ref_response != NULL && strcmp(ref_response, "aggregation_result") == 0,
               "Aggregate completion should be a response");
-    AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_source") ==
+    AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_sender") ==
                   checked_agent_id(aggregation_agent),
-              "Aggregate completion should identify the aggregation source");
+              "Aggregate completion should identify the aggregation sender");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_status"), "success") == 0,
               "Aggregate completion should report standard success status");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_trace_id"),
@@ -188,7 +188,7 @@ static void test_aggregation__combines_required_payloads(void) {
     ar_data__set_map_string(own_reset, "trace_id", "agg-failed-trace");
     ar_data__set_map_string(own_reset, "session_id", "agg-failed-session");
     ar_data__set_map_integer(own_reset, "expected_count", 2);
-    ar_data__set_map_integer(own_reset, "source", 98765);
+    ar_data__set_map_integer(own_reset, "sender", 98765);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, aggregation_agent, own_reset),
               "Failed completion reset message should queue");
     own_reset = NULL;
@@ -217,7 +217,7 @@ static void test_aggregation__combines_required_payloads(void) {
     ar_data__set_map_string(own_reset, "trace_id", "agg-reset-trace");
     ar_data__set_map_string(own_reset, "session_id", "agg-reset-session");
     ar_data__set_map_integer(own_reset, "expected_count", 2);
-    ar_data__set_map_integer(own_reset, "source", checked_agent_id(receiver_agent));
+    ar_data__set_map_integer(own_reset, "sender", checked_agent_id(receiver_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, aggregation_agent, own_reset),
               "Reset message should queue");
     own_reset = NULL;
@@ -270,7 +270,7 @@ static void test_aggregation__generates_missing_collect_trace_and_completes(void
     ar_data__set_map_string(own_reset, "trace_id", "agg-failure-start");
     ar_data__set_map_string(own_reset, "session_id", "agg-failure-session");
     ar_data__set_map_integer(own_reset, "expected_count", 2);
-    ar_data__set_map_integer(own_reset, "source", checked_agent_id(receiver_agent));
+    ar_data__set_map_integer(own_reset, "sender", checked_agent_id(receiver_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, aggregation_agent, own_reset),
               "Aggregate reset message should queue");
     own_reset = NULL;

@@ -3,7 +3,7 @@
 ## Overview
 
 Broadcasting sends the same sender-provided payload to every positive recipient in an unbounded
-`targets` list. It is the coordination methodology's opaque fan-out delivery primitive.
+`recipients` list. It is the coordination methodology's opaque fan-out delivery primitive.
 Because broadcasting is a stateless single-call method, its request and response use `trace_id` but
 do not require `session_id`; an omitted `trace_id` is generated for the result envelope and
 internal continuation messages.
@@ -13,10 +13,10 @@ internal continuation messages.
 Only messages with a recognized `request` value are handled as coordination requests.
 
 When the agent receives `request: "broadcasting_start"`, the method sends `payload` as-is to
-each positive target agent. It processes the list with `head(...)` and `tail(...)`, sending
+each positive recipient agent. It processes the list with `head(...)` and `tail(...)`, sending
 continuation messages to itself until the list is exhausted.
 
-Positive target agents that cannot receive messages are counted as failures, but valid later target
+Positive recipient agents that cannot receive messages are counted as failures, but valid later recipient
 agents are still processed. Integer `0` entries are placeholders and are skipped.
 
 ## Message Format
@@ -25,11 +25,11 @@ Request:
 
 ```text
 {
-  source: <sender-agent>,
+  sender: <sender-agent>,
   request: "broadcasting_start",
   trace_id: <trace_id>,
   payload: <message>,
-  targets: [<recipient-agent-1>, <recipient-agent-2>, ...]
+  recipients: [<recipient-agent-1>, <recipient-agent-2>, ...]
 }
 ```
 
@@ -43,7 +43,7 @@ Response:
 
 ```text
 {
-  source: <broadcasting-agent>,
+  sender: <broadcasting-agent>,
   response: "broadcasting_result",
   trace_id: <trace_id>,
   status: <success|failure>,

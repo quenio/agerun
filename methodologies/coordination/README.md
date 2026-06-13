@@ -24,14 +24,14 @@ synchronization
 supervision
 conversation
 
-workflow can coordinate other method agents by sending caller-provided step payloads directly to
+workflow can coordinate other method agents by sending sender-provided step payloads directly to
 those agents.
 ```
 
 Composition opportunities:
 
 - Use `routing` when one recipient must be selected from a key-based route table.
-- Use `broadcasting` when one payload must be sent to every recipient in a target list.
+- Use `broadcasting` when one payload must be sent to every recipient in a recipient list.
 - Build distinct work assignment with `distribution` and fan-in with `aggregation`.
 - Combine `synchronization` with `workflow` to gate step advancement on required dependency
   messages.
@@ -45,7 +45,7 @@ Composition opportunities:
 | Method | Implementation | Test | Purpose | Composition Role |
 | --- | --- | --- | --- | --- |
 | [`routing`](routing-1.0.0.md) | [`routing-1.0.0.method`](routing-1.0.0.method) | [`routing_tests.c`](routing_tests.c) | Selects one recipient by route key and delivers a message. | Keyed selection primitive. |
-| [`broadcasting`](broadcasting-1.0.0.md) | [`broadcasting-1.0.0.method`](broadcasting-1.0.0.method) | [`broadcasting_tests.c`](broadcasting_tests.c) | Sends one payload to every recipient in an unbounded target list. | Same-payload fan-out primitive. |
+| [`broadcasting`](broadcasting-1.0.0.md) | [`broadcasting-1.0.0.method`](broadcasting-1.0.0.method) | [`broadcasting_tests.c`](broadcasting_tests.c) | Sends one payload to every recipient in an unbounded recipient list. | Same-payload fan-out primitive. |
 | [`supervision`](supervision-1.0.0.md) | [`supervision-1.0.0.method`](supervision-1.0.0.method) | [`supervision_tests.c`](supervision_tests.c) | Creates, tracks, stops, and event-restarts unbounded child lists. | Keeps coordination agents available. |
 | [`distribution`](distribution-1.0.0.md) | [`distribution-1.0.0.method`](distribution-1.0.0.method) | [`distribution_tests.c`](distribution_tests.c) | Round-robins payload items across an unbounded worker list. | Distinct-payload assignment. |
 | [`aggregation`](aggregation-1.0.0.md) | [`aggregation-1.0.0.method`](aggregation-1.0.0.method) | [`aggregation_tests.c`](aggregation_tests.c) | Appends opaque payloads and emits a payload list. | Completes fan-in with append-backed state. |
@@ -62,16 +62,16 @@ a multi-line map literal to a named memory value, then pass that value to `send(
 flat and nested messages because `send(...)`, `append(...)`, `head(...)`, and `tail(...)` deep-copy
 borrowed maps and lists.
 
-By AgeRun method convention, every external request includes a `source` value identifying the
+By AgeRun method convention, every external request includes a `sender` value identifying the
 originating agent and a `request` value that identifies the requested command with the
-`<method>_<action>` naming convention. Every external response includes a `source` value identifying
+`<method>_<action>` naming convention. Every external response includes a `sender` value identifying
 the method agent that produced the response and a `response` value that identifies the result
 envelope with the `<method>_result` naming convention, preserves the triggering request's
 effective `trace_id`, and reports standard `status: "success"` or `status: "failure"` with
 `success_count` and `failure_count`. The `trace_id` is a call-chain correlation: callers pass the
 received trace to continue a chain, pass a fresh trace to reset at a top-level boundary, or omit it
 to let the receiving method generate one for that request edge. Coordination methods use the
-effective trace for responses and method-owned control messages they create; opaque caller payloads
+effective trace for responses and method-owned control messages they create; opaque sender payloads
 are sent as-is. The `session_id` is a per-session correlation for methods that receive different
 request kinds in one logical session. Those sessionful requests, generated control requests, and
 responses include `session_id`; stateless single-request methods that are expected to be called
@@ -90,14 +90,14 @@ Request:
 
 ```text
 {
-  source: <sender-agent>,
+  sender: <sender-agent>,
   request: "routing_start",
   trace_id: <trace_id>,
   payload: <message>,
   route_key: <key>,
   routes: {
     keys: [<key>, <key>, ...],
-    targets: [<recipient-agent-1>, <recipient-agent-2>, ...]
+    recipients: [<recipient-agent-1>, <recipient-agent-2>, ...]
   }
 }
 ```
@@ -106,7 +106,7 @@ Reply:
 
 ```text
 {
-  source: <routing-agent>,
+  sender: <routing-agent>,
   response: "routing_result",
   trace_id: <trace_id>,
   status: <success|failure>,
@@ -119,8 +119,8 @@ Reply:
 }
 ```
 
-Routing delivers exactly the caller-provided `payload` to the first positive target agent whose
-paired route key matches `route_key`. A direct `target` field is not a supported routing
+Routing delivers exactly the sender-provided `payload` to the first positive recipient agent whose
+paired route key matches `route_key`. A direct `recipient` field is not a supported routing
 mechanism; callers that already know the recipient should use direct `send(...)`.
 
 ### Broadcasting
@@ -129,11 +129,11 @@ Request:
 
 ```text
 {
-  source: <sender-agent>,
+  sender: <sender-agent>,
   request: "broadcasting_start",
   trace_id: <trace_id>,
   payload: <message>,
-  targets: [<recipient-agent-1>, <recipient-agent-2>, ...]
+  recipients: [<recipient-agent-1>, <recipient-agent-2>, ...]
 }
 ```
 
@@ -141,7 +141,7 @@ Reply:
 
 ```text
 {
-  source: <broadcasting-agent>,
+  sender: <broadcasting-agent>,
   response: "broadcasting_result",
   trace_id: <trace_id>,
   status: <success|failure>,
@@ -150,7 +150,7 @@ Reply:
 }
 ```
 
-Broadcasting sends the sender-provided `payload` as-is to every positive `targets` entry.
+Broadcasting sends the sender-provided `payload` as-is to every positive `recipients` entry.
 Integer `0` entries are skipped placeholders, not failed sends.
 
 ### Supervision
@@ -158,17 +158,17 @@ Integer `0` entries are skipped placeholders, not failed sends.
 Requests:
 
 ```text
-{ source: <sender-agent>, request: "supervision_start", trace_id: <trace_id>, session_id: <session_id>, child_method_names: [<method>, ...], child_method_version: <version>, policy: "restart" }
-{ source: <sender-agent>, request: "supervision_child_failed", trace_id: <trace_id>, session_id: <session_id>, child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
-{ source: <sender-agent>, request: "supervision_child_exited", trace_id: <trace_id>, session_id: <session_id>, child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
-{ source: <sender-agent>, request: "supervision_stop", trace_id: <trace_id>, session_id: <session_id>, child_agent_id: <agent> }
+{ sender: <sender-agent>, request: "supervision_start", trace_id: <trace_id>, session_id: <session_id>, child_method_names: [<method>, ...], child_method_version: <version>, policy: "restart" }
+{ sender: <sender-agent>, request: "supervision_child_failed", trace_id: <trace_id>, session_id: <session_id>, child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
+{ sender: <sender-agent>, request: "supervision_child_exited", trace_id: <trace_id>, session_id: <session_id>, child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
+{ sender: <sender-agent>, request: "supervision_stop", trace_id: <trace_id>, session_id: <session_id>, child_agent_id: <agent> }
 ```
 
 Reply:
 
 ```text
 {
-  source: <supervision-agent>,
+  sender: <supervision-agent>,
   response: "supervision_result",
   trace_id: <trace_id>,
   session_id: <session_id>,
@@ -195,7 +195,7 @@ Request:
 
 ```text
 {
-  source: <sender-agent>,
+  sender: <sender-agent>,
   request: "distribution_distribute",
   trace_id: <trace_id>,
   payloads: [<payload>, <payload>, ...],
@@ -208,7 +208,7 @@ Reply:
 
 ```text
 {
-  source: <distribution-agent>,
+  sender: <distribution-agent>,
   response: "distribution_result",
   trace_id: <trace_id>,
   status: <success|failure>,
@@ -232,15 +232,15 @@ but do not require `session_id`; an omitted `trace_id` is generated for the resu
 Requests:
 
 ```text
-{ source: <sender-agent>, request: "aggregation_start", trace_id: <trace_id>, session_id: <session_id>, expected_count: <count> }
-{ source: <sender-agent>, request: "aggregation_collect", trace_id: <trace_id>, session_id: <session_id>, payload: <payload> }
+{ sender: <sender-agent>, request: "aggregation_start", trace_id: <trace_id>, session_id: <session_id>, expected_count: <count> }
+{ sender: <sender-agent>, request: "aggregation_collect", trace_id: <trace_id>, session_id: <session_id>, payload: <payload> }
 ```
 
 Completion response:
 
 ```text
 {
-  source: <aggregation-agent>,
+  sender: <aggregation-agent>,
   response: "aggregation_result",
   trace_id: <trace_id>,
   session_id: <session_id>,
@@ -266,16 +266,16 @@ the response status is `success` only when `success_count` equals that `expected
 Requests:
 
 ```text
-{ source: <sender-agent>, request: "scheduling_schedule", trace_id: <trace_id>, session_id: <session_id>, schedule_id: <id>, due_tick: <number>, target: <recipient-agent>, payload_request: <request>, payload_text: <text>, payload_attempt: <attempt> }
-{ source: <sender-agent>, request: "scheduling_tick", trace_id: <trace_id>, session_id: <session_id>, tick: <number> }
-{ source: <sender-agent>, request: "scheduling_cancel", trace_id: <trace_id>, session_id: <session_id>, schedule_id: <id> }
+{ sender: <sender-agent>, request: "scheduling_schedule", trace_id: <trace_id>, session_id: <session_id>, schedule_id: <id>, due_tick: <number>, recipient: <recipient-agent>, payload_request: <request>, payload_text: <text>, payload_attempt: <attempt> }
+{ sender: <sender-agent>, request: "scheduling_tick", trace_id: <trace_id>, session_id: <session_id>, tick: <number> }
+{ sender: <sender-agent>, request: "scheduling_cancel", trace_id: <trace_id>, session_id: <session_id>, schedule_id: <id> }
 ```
 
 Triggered message:
 
 ```text
 {
-  source: <sender-agent>,
+  sender: <sender-agent>,
   request: <payload_request>,
   trace_id: <trace_id>,
   session_id: <session_id>,
@@ -289,7 +289,7 @@ Response:
 
 ```text
 {
-  source: <scheduling-agent>,
+  sender: <scheduling-agent>,
   response: "scheduling_result",
   trace_id: <trace_id>,
   session_id: <session_id>,
@@ -314,15 +314,15 @@ request's `trace_id`; all scheduling requests and responses for one schedule use
 Requests:
 
 ```text
-{ source: <sender-agent>, request: "synchronization_wait", trace_id: <trace_id>, session_id: <session_id>, sync_id: <id>, required_count: <count>, continuation_target: <agent>, continuation_request: <request>, continuation_text: <text> }
-{ source: <sender-agent>, request: "synchronization_dependency", trace_id: <trace_id>, session_id: <session_id>, sync_id: <id>, dependency: <name> }
+{ sender: <sender-agent>, request: "synchronization_wait", trace_id: <trace_id>, session_id: <session_id>, sync_id: <id>, required_count: <count>, continuation_recipient: <agent>, continuation_request: <request>, continuation_text: <text> }
+{ sender: <sender-agent>, request: "synchronization_dependency", trace_id: <trace_id>, session_id: <session_id>, sync_id: <id>, dependency: <name> }
 ```
 
 Continuation:
 
 ```text
 {
-  source: <sender-agent>,
+  sender: <sender-agent>,
   request: <continuation_request>,
   trace_id: <trace_id>,
   session_id: <session_id>,
@@ -337,7 +337,7 @@ Response:
 
 ```text
 {
-  source: <synchronization-agent>,
+  sender: <synchronization-agent>,
   response: "synchronization_result",
   trace_id: <trace_id>,
   session_id: <session_id>,
@@ -359,17 +359,17 @@ delivery keeps the gate open for retry.
 Requests:
 
 ```text
-{ source: <sender-agent>, request: "workflow_start", trace_id: <trace_id>, session_id: <session_id>, workflow_id: <id>, step_targets: [<agent>, ...], step_payloads: [<message>, ...], branch_value: <outcome> }
-{ source: <sender-agent>, request: "workflow_step_done", trace_id: <trace_id>, session_id: <session_id>, workflow_id: <id>, step: <current-step-number>, outcome: <value> }
+{ sender: <sender-agent>, request: "workflow_start", trace_id: <trace_id>, session_id: <session_id>, workflow_id: <id>, step_recipients: [<agent>, ...], step_payloads: [<message>, ...], branch_value: <outcome> }
+{ sender: <sender-agent>, request: "workflow_step_done", trace_id: <trace_id>, session_id: <session_id>, workflow_id: <id>, step: <current-step-number>, outcome: <value> }
 ```
 
-Step messages sent to step agents are exactly the caller-provided step payloads.
+Step messages sent to step agents are exactly the sender-provided step payloads.
 
 Completion response:
 
 ```text
 {
-  source: <workflow-agent>,
+  sender: <workflow-agent>,
   response: "workflow_result",
   trace_id: <trace_id>,
   session_id: <session_id>,
@@ -391,17 +391,17 @@ delivery leaves completion pending and retries do not increment `completed_step_
 Requests:
 
 ```text
-{ source: <sender-agent>, request: "conversation_start", trace_id: <trace_id>, session_id: <session_id>, participants: [<recipient-agent-1>, <recipient-agent-2>, ...] }
-{ source: <sender-agent>, request: "conversation_message", trace_id: <trace_id>, session_id: <session_id>, payload: <payload>, sender: <agent> }
-{ source: <sender-agent>, request: "conversation_summary", trace_id: <trace_id>, session_id: <session_id> }
-{ source: <sender-agent>, request: "conversation_close", trace_id: <trace_id>, session_id: <session_id> }
+{ sender: <sender-agent>, request: "conversation_start", trace_id: <trace_id>, session_id: <session_id>, participants: [<recipient-agent-1>, <recipient-agent-2>, ...] }
+{ sender: <sender-agent>, request: "conversation_message", trace_id: <trace_id>, session_id: <session_id>, payload: <payload> }
+{ sender: <sender-agent>, request: "conversation_summary", trace_id: <trace_id>, session_id: <session_id> }
+{ sender: <sender-agent>, request: "conversation_close", trace_id: <trace_id>, session_id: <session_id> }
 ```
 
 Participant turn:
 
 ```text
 {
-  source: <conversation-agent>,
+  sender: <conversation-agent>,
   request: "conversation_turn",
   trace_id: <trace_id>,
   session_id: <session_id>,
@@ -415,7 +415,7 @@ Response:
 
 ```text
 {
-  source: <conversation-agent>,
+  sender: <conversation-agent>,
   response: "conversation_result",
   trace_id: <trace_id>,
   session_id: <session_id>,
@@ -433,11 +433,11 @@ Response:
 ```
 
 Conversation spawns one broadcasting agent when the conversation starts. It reuses that agent for
-every turn and excludes the sender from the broadcast targets. If broadcast delivery fails for any
+every turn and excludes the sender from the broadcast recipients. If broadcast delivery fails for any
 recipient, the coordinator reports `result: "relay_failed"` and leaves the history and turn count
 unchanged.
 
-If `conversation_message.sender` is not in the participant list, the coordinator reports
+If the `sender` of a `conversation_message` is not in the participant list, the coordinator reports
 `result: "not_participant"` and does not broadcast, record, or retain the sender-provided payload.
 
 ### Retry
@@ -445,28 +445,28 @@ If `conversation_message.sender` is not in the participant list, the coordinator
 Requests:
 
 ```text
-{ source: <sender-agent>, request: "retry_start", trace_id: <trace_id>, session_id: <session_id>, operation_id: <id>, operation_target: <agent>, operation_request: <request>, operation_text: <text>, max_attempts: <number>, strategy: <immediate|scheduled>, scheduler_agent: <agent>, delay_ticks: <tick> }
-{ source: <sender-agent>, request: "retry_failure", trace_id: <trace_id>, session_id: <session_id>, attempt: <attempt>, current_tick: <tick> }
-{ source: <sender-agent>, request: "retry_success", trace_id: <trace_id>, session_id: <session_id>, attempt: <attempt> }
+{ sender: <sender-agent>, request: "retry_start", trace_id: <trace_id>, session_id: <session_id>, operation_id: <id>, operation_recipient: <agent>, operation_request: <request>, operation_text: <text>, max_attempts: <number>, strategy: <immediate|scheduled>, scheduler_agent: <agent>, delay_ticks: <tick> }
+{ sender: <sender-agent>, request: "retry_failure", trace_id: <trace_id>, session_id: <session_id>, attempt: <attempt>, current_tick: <tick> }
+{ sender: <sender-agent>, request: "retry_success", trace_id: <trace_id>, session_id: <session_id>, attempt: <attempt> }
 ```
 
 Operation attempt:
 
 ```text
-{ source: <sender-agent>, request: <operation_request>, trace_id: <trace_id>, session_id: <session_id>, text: <operation_text>, attempt: <number> }
+{ sender: <sender-agent>, request: <operation_request>, trace_id: <trace_id>, session_id: <session_id>, text: <operation_text>, attempt: <number> }
 ```
 
 Scheduled retry request:
 
 ```text
 {
-  source: <sender-agent>,
+  sender: <sender-agent>,
   request: "scheduling_schedule",
   trace_id: <trace_id>,
   session_id: <session_id>,
   schedule_id: <operation_id>,
   due_tick: <current_tick + delay_ticks>,
-  target: <recipient-agent>,
+  recipient: <recipient-agent>,
   payload_request: <operation_request>,
   payload_text: <operation_text>,
   payload_attempt: <attempt>
@@ -477,7 +477,7 @@ Terminal response:
 
 ```text
 {
-  source: <retry-agent>,
+  sender: <retry-agent>,
   response: "retry_result",
   trace_id: <trace_id>,
   session_id: <session_id>,
@@ -512,15 +512,15 @@ Delayed retry:
 1. Send a request with `request: "retry_start"`, strategy: "scheduled", and scheduler_agent to a retry agent.
 2. On a request with `request: "retry_failure"`, trace_id, session_id, and current_tick, retry sends a schedule request
    due at current_tick + delay_ticks.
-3. An external tick source sends requests with `request: "scheduling_tick"` and the schedule session_id to scheduling.
+3. An external tick sender sends requests with `request: "scheduling_tick"` and the schedule session_id to scheduling.
 4. Scheduling re-emits the operation attempt at the requested tick.
 ```
 
 Branching workflow:
 
 ```text
-1. Send a request with `request: "workflow_start"` to workflow with aligned step targets and payload lists.
-2. Workflow sends step 1 directly to the first configured step target.
+1. Send a request with `request: "workflow_start"` to workflow with aligned step recipients and payload lists.
+2. Workflow sends step 1 directly to the first configured step recipient.
 3. Send a `workflow_step_done` request for step 1 with the workflow session_id and branch outcome to skip one pending step.
 4. Continue sending `workflow_step_done` requests with the same session_id until workflow emits `workflow_result`.
 ```
@@ -540,8 +540,8 @@ Conversation-scoped workflow:
 
 | Method | Status | Gap |
 | --- | --- | --- |
-| Routing | Fully implementable for keyed unbounded one-to-one selection. | Keyed routes use a map containing parallel `keys` and `targets` lists because ordinary methods do not have a safe type predicate for scanning a list of route-entry maps. Direct target delivery belongs to direct `send(...)`; same-payload fan-out belongs to broadcasting. |
-| Broadcasting | Fully implementable for unbounded same-payload fan-out to primitive target IDs. | Target lists should contain positive IDs for all intended recipients; integer `0` is treated as a placeholder rather than a recipient. |
+| Routing | Fully implementable for keyed unbounded one-to-one selection. | Keyed routes use a map containing parallel `keys` and `recipients` lists because ordinary methods do not have a safe type predicate for scanning a list of route-entry maps. Direct recipient delivery belongs to direct `send(...)`; same-payload fan-out belongs to broadcasting. |
+| Broadcasting | Fully implementable for unbounded same-payload fan-out to primitive recipient IDs. | Recipient lists should contain positive IDs for all intended recipients; integer `0` is treated as a placeholder rather than a recipient. |
 | Supervision | Partially implementable. | The method can spawn and track unbounded child method-name lists with one shared start version, but methods cannot autonomously observe child crashes or exits; callers must send `child_failed` or `child_exited` events. A failed `spawn(...)` aborts the remaining ordinary method evaluation, so supervision can avoid reporting `running` for an incomplete child set but cannot emit a catchable `spawn_failed` state without a non-aborting spawn result or method-existence check. Removing arbitrary failed ids from the tracked list or starting one mixed-version list requires a list-filter operation, separate supervisors, or a specialized replacement method. |
 | Distribution | Fully implementable for round-robin assignment of opaque payload lists to primitive worker IDs. | Load-aware placement, weighted assignment, and worker health checks require additional methods or richer collection-processing conventions. |
 | Aggregation | Fully implementable for list-valued fan-in. | Duplicate handling, custom merge functions, and richer aggregate policies require deeper collection operations or specialized aggregate methods. |

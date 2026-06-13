@@ -11,8 +11,8 @@ fan-in counterpart to distribution.
 Only messages with `request: "aggregation_start"` or `request: "aggregation_collect"` are handled
 as coordination requests.
 
-A start request resets aggregation, stores the effective `trace_id`, `session_id`, and `source`,
-sets the target count from `expected_count`, and clears the append-backed payload list. A collect
+A start request resets aggregation, stores the effective `trace_id`, `session_id`, and `sender`,
+sets the recipient count from `expected_count`, and clears the append-backed payload list. A collect
 request appends the incoming opaque `payload` only when its `session_id` matches the active
 aggregate session while aggregation is active and completion has not been delivered.
 
@@ -29,15 +29,15 @@ request threshold.
 Requests:
 
 ```text
-{ source: <sender-agent>, request: "aggregation_start", trace_id: <trace_id>, session_id: <session_id>, expected_count: <count> }
-{ source: <sender-agent>, request: "aggregation_collect", trace_id: <trace_id>, session_id: <session_id>, payload: <payload> }
+{ sender: <sender-agent>, request: "aggregation_start", trace_id: <trace_id>, session_id: <session_id>, expected_count: <count> }
+{ sender: <sender-agent>, request: "aggregation_collect", trace_id: <trace_id>, session_id: <session_id>, payload: <payload> }
 ```
 
 Completion response:
 
 ```text
 {
-  source: <aggregation-agent>,
+  sender: <aggregation-agent>,
   response: "aggregation_result",
   trace_id: <trace_id>,
   session_id: <session_id>,

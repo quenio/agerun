@@ -11,7 +11,7 @@ remaining an ordinary AgeRun method.
 Only messages with a recognized `request` value are handled as coordination requests.
 
 On `request: "conversation_start"`, the method stores the effective `trace_id`, `session_id`,
-participant list, and `source`, then spawns one `broadcasting` method agent for the conversation
+participant list, and `sender`, then spawns one `broadcasting` method agent for the conversation
 session. Later turns reuse that broadcasting agent.
 
 On `request: "conversation_message"` with the same `session_id`, it accepts the sender-provided
@@ -26,17 +26,17 @@ closed.
 Requests:
 
 ```text
-{ source: <sender-agent>, request: "conversation_start", trace_id: <trace_id>, session_id: <session_id>, participants: [<recipient-agent-1>, <recipient-agent-2>, ...] }
-{ source: <sender-agent>, request: "conversation_message", trace_id: <trace_id>, session_id: <session_id>, payload: <payload>, sender: <agent> }
-{ source: <sender-agent>, request: "conversation_summary", trace_id: <trace_id>, session_id: <session_id> }
-{ source: <sender-agent>, request: "conversation_close", trace_id: <trace_id>, session_id: <session_id> }
+{ sender: <sender-agent>, request: "conversation_start", trace_id: <trace_id>, session_id: <session_id>, participants: [<recipient-agent-1>, <recipient-agent-2>, ...] }
+{ sender: <sender-agent>, request: "conversation_message", trace_id: <trace_id>, session_id: <session_id>, payload: <payload> }
+{ sender: <sender-agent>, request: "conversation_summary", trace_id: <trace_id>, session_id: <session_id> }
+{ sender: <sender-agent>, request: "conversation_close", trace_id: <trace_id>, session_id: <session_id> }
 ```
 
 Relayed turn:
 
 ```text
 {
-  source: <conversation-agent>,
+  sender: <conversation-agent>,
   request: "conversation_turn",
   trace_id: <trace_id>,
   session_id: <session_id>,
@@ -50,7 +50,7 @@ Coordinator response:
 
 ```text
 {
-  source: <conversation-agent>,
+  sender: <conversation-agent>,
   response: "conversation_result",
   trace_id: <trace_id>,
   session_id: <session_id>,
@@ -70,7 +70,7 @@ Coordinator response:
 If broadcast delivery fails for any recipient, the coordinator reports `result: "relay_failed"` and
 leaves the history and turn count unchanged.
 
-If `conversation_message.sender` is not in the participant list, the coordinator reports
+If the `sender` of a `conversation_message` is not in the participant list, the coordinator reports
 `result: "not_participant"` and does not broadcast, record, or retain the sender-provided payload.
 
 ## Implementation and Tests
