@@ -231,7 +231,9 @@ memory.stop_validation_failed := memory.stop_validation_failed * memory.is_stop_
 # Scan stop target
 memory.current_stop_child_agent_id := head(message.remaining_child_agent_ids)
 memory.remaining_stop_child_agent_ids := tail(message.remaining_child_agent_ids)
+memory.has_stop_child_agent_id := if(memory.current_stop_child_agent_id > 0, 1, 0)
 memory.stop_match := if(memory.current_stop_child_agent_id = message.child_agent_id, memory.is_validate_stop_active, 0)
+memory.stop_match := memory.stop_match * memory.has_stop_child_agent_id
 memory.stop_result := exit(memory.current_stop_child_agent_id * memory.stop_match)
 memory.stop_succeeded := memory.stop_match * memory.stop_result
 memory.next_stop_child_agent_id := head(memory.remaining_stop_child_agent_ids)

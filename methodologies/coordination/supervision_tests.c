@@ -533,6 +533,33 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_child_agent_id") == 0,
               "Zero child lifecycle response should report the ignored child id");
 
+    ar_data_t *own_zero_stop = ar_data__create_map();
+    AR_ASSERT(own_zero_stop != NULL, "Zero child stop request should be created");
+    ar_data__set_map_string(own_zero_stop, "request", "supervision_stop");
+    ar_data__set_map_string(own_zero_stop, "trace_id", "supervision-zero-stop");
+    ar_data__set_map_string(own_zero_stop, "session_id", "supervision-empty-session");
+    ar_data__set_map_integer(own_zero_stop, "child_agent_id", 0);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, empty_start_agent, own_zero_stop),
+              "Zero child stop request should queue");
+    own_zero_stop = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ref_empty_start_memory = ar_agency__get_agent_memory(mut_agency, empty_start_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_empty_start_memory, "status"), "running") == 0,
+              "Zero child stop request should leave empty supervisor running");
+    AR_ASSERT(ar_data__get_map_integer(ref_empty_start_memory, "child_count") == 0,
+              "Zero child stop request should keep zero children");
+    ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
+                     "supervision-zero-stop") == 0,
+              "Zero child stop response should preserve request trace id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "success") == 0,
+              "Zero child stop response should report standard success status for ignored stop");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_failure_count") == 0,
+              "Zero child stop response should not report a failed tracked stop");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_child_agent_id") == 0,
+              "Zero child stop response should report the ignored child id");
+
     ar_data_t *own_failed_handoff_context = create_context();
     int64_t failed_handoff_agent = ar_agency__create_agent(
         mut_agency, "supervision", "1.0.0", own_failed_handoff_context);
