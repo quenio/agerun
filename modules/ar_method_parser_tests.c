@@ -464,6 +464,11 @@ static void test_method_parser__rejects_multiple_items_on_multiline_item_line(vo
     test_method_parser__rejects_invalid_multiline_literal("memory.items := [\n  1, 2\n]");
 }
 
+static void test_method_parser__rejects_multiline_list_merge_literal(void) {
+    printf("Testing method parser rejects multi-line list merge literal...\n");
+    test_method_parser__rejects_invalid_multiline_literal("memory += [\n  1\n]");
+}
+
 int main(void) {
     printf("Running method parser tests...\n\n");
     
@@ -489,6 +494,7 @@ int main(void) {
     test_method_parser__rejects_multiline_literal_as_argument();
     test_method_parser__rejects_nested_multiline_literal();
     test_method_parser__rejects_multiple_items_on_multiline_item_line();
+    test_method_parser__rejects_multiline_list_merge_literal();
     
     printf("\nAll method parser tests passed!\n");
     return 0;

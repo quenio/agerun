@@ -117,6 +117,9 @@ static bool _is_multiline_literal_opener(
 
     char *rhs = ar_string__trim(assignment + 2);
     if (strcmp(rhs, "[") == 0) {
+        if (strcmp(*out_operator, "+=") == 0) {
+            return false;
+        }
         *out_open_delimiter = '[';
         *out_close_delimiter = ']';
         return true;
