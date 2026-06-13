@@ -332,26 +332,37 @@ static void test_conversation__broadcasts_turns_to_all_other_participants(void) 
 
     ar_method_fixture__process_all_messages(own_fixture);
 
-    // Then the coordinator rejects the payload without broadcasting or recording it
+    // Then the coordinator ignores the payload without changing state or reporting a result
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
-                     "failure") == 0,
-              "Non-participant payload should report standard failure status");
+                     "success") == 0,
+              "Non-participant payload should leave prior response status unchanged");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_result"),
-                     "not_participant") == 0,
-              "Non-participant payload should be rejected before delivery");
+                     "active") == 0,
+              "Non-participant payload should leave prior response result unchanged");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
-                     "chat-intruder-turn") == 0,
-              "Non-participant response should preserve request trace id");
-    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_success_count") == 0,
-              "Non-participant payload should report no successful turn");
-    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_failure_count") == 1,
-              "Non-participant payload should report one failed turn");
+                     "chat-history-1") == 0,
+              "Non-participant payload should not replace prior response trace id");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_success_count") == 2,
+              "Non-participant payload should leave prior success count unchanged");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_failure_count") == 0,
+              "Non-participant payload should leave prior failure count unchanged");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_turn_count") == 2,
-              "Non-participant payload should not increment turn count");
+              "Non-participant payload should leave prior turn count unchanged");
     ref_history = ar_data__get_map_data(ref_observer_memory, "last_history");
-    AR_ASSERT(ref_history != NULL, "Non-participant response should include history");
+    AR_ASSERT(ref_history != NULL, "Prior history response should remain available");
     AR_ASSERT(ar_data__list_count(ref_history) == 2,
               "Non-participant payload should not append to history");
+    ref_conversation_memory = ar_agency__get_agent_memory(mut_agency, conversation_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_conversation_memory, "state"), "active") == 0,
+              "Non-participant payload should leave conversation state unchanged");
+    AR_ASSERT(ar_data__get_map_integer(ref_conversation_memory, "turn_count") == 2,
+              "Non-participant payload should leave stored turn count unchanged");
+    AR_ASSERT(ar_data__get_map_integer(ref_conversation_memory, "last_sender") ==
+                  checked_agent_id(participant_b),
+              "Non-participant payload should leave last sender unchanged");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_conversation_memory, "last_payload"),
+                     "reply") == 0,
+              "Non-participant payload should leave last payload unchanged");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_a_memory, "last_trace_id"),
                      "chat-turn-2") == 0,
               "Participant A should not receive the non-participant payload");

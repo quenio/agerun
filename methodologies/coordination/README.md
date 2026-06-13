@@ -491,7 +491,7 @@ Response:
   session_id: <session_id>,
   status: <success|failure>,
   state: <active|closed>,
-  result: <active|relayed|not_participant|relay_failed|ignored|closed>,
+  result: <active|relayed|relay_failed|ignored|closed>,
   success_count: <count>,
   failure_count: <count>,
   participants: [<recipient-agent-1>, <recipient-agent-2>, ...],
@@ -507,19 +507,19 @@ every turn and excludes the sender from the broadcast recipients. If broadcast d
 recipient, the coordinator reports `result: "relay_failed"` and leaves the history and turn count
 unchanged.
 
-If the `sender` of a `conversation_message` is not in the participant list, the coordinator reports
-`result: "not_participant"` and does not broadcast, record, or retain the sender-provided payload.
+If the `sender` of a `conversation_message` is not in the participant list, the coordinator ignores
+the request. It does not broadcast, record, respond, or update conversation state.
 
 Count semantics: `success_count` increments for a `conversation_message` only when the participant
 turn is broadcast successfully and appended to history; history and close responses report the
 current successful turn count, and start responses report `0`. `failure_count` increments to `1`
 when the broadcasting helper cannot be spawned, when a turn relay fails before or during
-broadcasting or history append, or when a non-participant sends `conversation_message`; history and
-close responses report `0`.
+broadcasting or history append; history and close responses report `0`. Non-participant
+`conversation_message` requests are ignored and do not change status or count attributes.
 
 Status semantics: the response status is `success` for a successful start, history, close, or
 participant turn relay. It is `failure` when the broadcasting helper cannot be spawned, when a turn
-relay fails, or when a non-participant sends `conversation_message`.
+relay fails, or when history append fails.
 
 ### Retry
 
