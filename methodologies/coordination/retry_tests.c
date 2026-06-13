@@ -384,6 +384,40 @@ static void test_retry__reexecutes_and_reports_success(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_retry_memory, "attempts") == 0,
               "Synthetic failure after failed start should not consume an attempt");
 
+    ar_data_t *own_zero_recipient_start = ar_data__create_map();
+    AR_ASSERT(own_zero_recipient_start != NULL, "Zero recipient retry start should be created");
+    ar_data__set_map_string(own_zero_recipient_start, "request", "retry_start");
+    ar_data__set_map_string(own_zero_recipient_start, "trace_id", "op-zero-recipient-start");
+    ar_data__set_map_string(own_zero_recipient_start, "session_id", "op-zero-recipient");
+    ar_data__set_map_integer(own_zero_recipient_start, "operation_recipient", 0);
+    ar_data__set_map_string(own_zero_recipient_start, "operation_request", "attempt");
+    ar_data__set_map_string(own_zero_recipient_start, "operation_text", "zero-worker");
+    ar_data__set_map_integer(own_zero_recipient_start, "max_attempts", 2);
+    ar_data__set_map_string(own_zero_recipient_start, "strategy", "immediate");
+    ar_data__set_map_integer(own_zero_recipient_start, "scheduler_agent", 0);
+    ar_data__set_map_integer(own_zero_recipient_start, "delay_ticks", 0);
+    ar_data__set_map_integer(own_zero_recipient_start, "sender", checked_agent_id(report_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, retry_agent, own_zero_recipient_start),
+              "Zero recipient retry start should queue");
+    own_zero_recipient_start = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_retry_memory, "status"),
+                     "failure") == 0,
+              "Zero recipient initial dispatch should record dispatch_failed after reporting");
+    AR_ASSERT(ar_data__get_map_integer(ref_retry_memory, "attempts") == 0,
+              "Zero recipient initial dispatch should not record an attempt");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_session_id"),
+                     "op-zero-recipient") == 0,
+              "Zero recipient initial dispatch should report its own session id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
+                     "failure") == 0,
+              "Zero recipient initial dispatch should report standard failure status");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_attempts") == 0,
+              "Zero recipient initial dispatch should report zero attempts");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 1,
+              "Zero recipient initial dispatch should report one failed operation");
+
     ar_data_t *own_correlated_start = ar_data__create_map();
     AR_ASSERT(own_correlated_start != NULL, "Correlated retry start should be created");
     ar_data__set_map_string(own_correlated_start, "request", "retry_start");
@@ -449,7 +483,7 @@ static void test_retry__reexecutes_and_reports_success(void) {
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_retry_memory, "status"), "active") == 0,
               "Stale success for previous operation should leave new retry active");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_session_id"),
-                     "op-start-dispatch-failed") == 0,
+                     "op-zero-recipient") == 0,
               "Stale success for previous operation should not report the new retry");
 
     ar_data_t *own_failed_success_report_start = ar_data__create_map();

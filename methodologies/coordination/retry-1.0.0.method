@@ -40,10 +40,15 @@ memory.operation_message := {
   text: memory.operation_text
   attempt: memory.start_attempt
 }
-memory.start_sent := send(memory.operation_recipient * memory.is_start, memory.operation_message)
-memory.start_succeeded := memory.is_start * memory.start_sent
+memory.has_operation_recipient := if(memory.operation_recipient > 0, 1, 0)
+memory.start_dispatch_ready := memory.is_start * memory.has_operation_recipient
+memory.start_invalid_recipient := memory.is_start - memory.start_dispatch_ready
+memory.start_sent := send(memory.operation_recipient * memory.start_dispatch_ready, memory.operation_message)
+memory.start_succeeded := memory.start_dispatch_ready * memory.start_sent
 memory.start_send_failed := if(memory.start_sent = 0, 1, 0)
-memory.start_send_failed := memory.start_send_failed * memory.is_start
+memory.start_send_failed := memory.start_send_failed * memory.start_dispatch_ready
+memory.start_send_failed := memory.start_send_failed + memory.start_invalid_recipient
+memory.start_send_failed := if(memory.start_send_failed > 0, 1, 0)
 memory.attempts := if(memory.start_succeeded = 1, memory.start_attempt, memory.attempts)
 memory.status := if(memory.start_succeeded = 1, "active", memory.status)
 
