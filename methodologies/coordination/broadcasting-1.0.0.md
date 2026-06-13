@@ -12,7 +12,7 @@ internal continuation messages.
 
 Only messages with a recognized `request` value are handled as coordination requests. Public
 callers use `broadcasting_start`; self-sent `broadcasting_continue` messages carry internal
-continuation counters.
+continuation counters. External `broadcasting_continue` requests are ignored.
 
 When the agent receives `request: "broadcasting_start"`, the method sends `payload` as-is to
 each positive recipient agent. It processes the list with `head(...)` and `tail(...)`, sending

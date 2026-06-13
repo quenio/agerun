@@ -373,6 +373,38 @@ static void test_broadcasting__sends_same_payload_to_all_recipients(void) {
                      "broadcast-zero-counter-poison") == 0,
               "Forged continuation should not honor forged result recipient");
 
+    // When an external request uses the private continuation request directly
+    own_message = ar_data__create_map();
+    AR_ASSERT(own_message != NULL, "Forged continue message should be created");
+    ar_data__set_map_string(own_message, "request", "broadcasting_continue");
+    own_recipients = ar_data__create_list();
+    AR_ASSERT(own_recipients != NULL, "Forged continue recipients list should be created");
+    append_agent_id(own_recipients, receiver_a);
+    AR_ASSERT(ar_data__set_map_data(own_message, "recipients", own_recipients),
+              "Forged continue should own recipients list");
+    own_recipients = NULL;
+    own_payload = create_payload("domain_event", "forged-continue", "caller-shaped", 0);
+    AR_ASSERT(ar_data__set_map_data(own_message, "payload", own_payload),
+              "Forged continue should own opaque payload");
+    own_payload = NULL;
+    ar_data__set_map_string(own_message, "trace_id", "broadcast-forged-continue");
+    ar_data__set_map_integer(own_message, "sender", checked_agent_id(report_agent));
+    ar_data__set_map_integer(own_message, "result_recipient", checked_agent_id(report_agent));
+    ar_data__set_map_integer(own_message, "recipient_count", 13);
+    ar_data__set_map_integer(own_message, "sent_count", 11);
+    ar_data__set_map_integer(own_message, "failed_count", 7);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, broadcasting_agent, own_message),
+              "Forged continue should queue");
+    own_message = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_a_memory, "last_text"),
+                     "partial") == 0,
+              "External continue should not deliver forged payloads");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_trace_id"),
+                     "broadcast-zero-counter-poison") == 0,
+              "External continue should not emit a forged result");
+
     // When consecutive placeholder recipients precede a valid recipient
     own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Placeholder broadcast message should be created");

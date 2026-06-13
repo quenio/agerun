@@ -2,10 +2,10 @@
 memory.is_request := if(message.request <> 0, 1, 0)
 memory.is_start := if(memory.is_request = 1, message.request = "broadcasting_start", 0)
 memory.is_continue := if(memory.is_request = 1, message.request = "broadcasting_continue", 0)
-memory.is_broadcast := memory.is_start + memory.is_continue
-memory.is_broadcast := if(memory.is_broadcast > 0, 1, 0)
 memory.is_self_sender := if(message.sender = memory.self, 1, 0)
 memory.is_internal_continue := memory.is_continue * memory.is_self_sender
+memory.is_broadcast := memory.is_start + memory.is_internal_continue
+memory.is_broadcast := if(memory.is_broadcast > 0, 1, 0)
 
 # Generate trace_id
 memory.generated_trace_base := message.sender * 1000
