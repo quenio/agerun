@@ -7,11 +7,13 @@ memory.is_scheduling_request := memory.is_schedule + memory.is_tick
 memory.is_scheduling_request := memory.is_scheduling_request + memory.is_cancel
 memory.is_scheduling_request := if(memory.is_scheduling_request > 0, 1, 0)
 
-# Establish trace and schedule state
+# Generate trace_id
 memory.generated_trace_base := message.sender * 1000
 memory.generated_trace_id := memory.generated_trace_base + memory.self
 memory.request_trace_id := memory.generated_trace_id
 memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.request_trace_id)
+
+# Establish schedule state
 memory.schedule_id := if(memory.is_schedule = 1, message.schedule_id, memory.schedule_id)
 memory.due_tick := if(memory.is_schedule = 1, message.due_tick, memory.due_tick)
 memory.recipient := if(memory.is_schedule = 1, message.recipient, memory.recipient)

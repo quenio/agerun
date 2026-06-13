@@ -7,11 +7,13 @@ memory.is_continue := memory.is_continue_request * memory.continue_from_self
 memory.is_assignment := memory.is_distribute + memory.is_continue
 memory.is_assignment := if(memory.is_assignment > 0, 1, 0)
 
-# Establish trace, sender, and counters
+# Generate trace_id
 memory.generated_trace_base := message.sender * 1000
 memory.generated_trace_id := memory.generated_trace_base + memory.self
 memory.request_trace_id := memory.generated_trace_id
 memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.request_trace_id)
+
+# Establish sender and counters
 memory.trace_id := if(memory.is_distribute = 1, memory.request_trace_id, 0)
 memory.sender := if(memory.is_distribute = 1, message.sender, 0)
 memory.status := if(memory.is_distribute = 1, "distributing", "")

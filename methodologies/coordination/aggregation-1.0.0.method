@@ -5,7 +5,7 @@ memory.is_collect := if(memory.is_request = 1, message.request = "aggregation_co
 memory.is_aggregation_request := memory.is_start + memory.is_collect
 memory.is_aggregation_request := if(memory.is_aggregation_request > 0, 1, 0)
 
-# Establish trace state
+# Generate trace_id
 memory.generated_trace_base := message.sender * 1000
 memory.generated_trace_id := memory.generated_trace_base + memory.self
 memory.request_trace_id := memory.generated_trace_id

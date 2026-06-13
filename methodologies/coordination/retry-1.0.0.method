@@ -7,11 +7,13 @@ memory.is_retry_request := memory.is_start + memory.is_failure
 memory.is_retry_request := memory.is_retry_request + memory.is_success
 memory.is_retry_request := if(memory.is_retry_request > 0, 1, 0)
 
-# Establish retry session state
+# Generate trace_id
 memory.generated_trace_base := message.sender * 1000
 memory.generated_trace_id := memory.generated_trace_base + memory.self
 memory.request_trace_id := memory.generated_trace_id
 memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.request_trace_id)
+
+# Establish retry session state
 memory.operation_id := if(memory.is_start = 1, message.operation_id, memory.operation_id)
 memory.trace_id := if(memory.is_start = 1, memory.request_trace_id, memory.trace_id)
 memory.session_id := if(memory.is_start = 1, message.session_id, memory.session_id)

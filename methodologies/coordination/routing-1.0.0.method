@@ -1,8 +1,12 @@
 # Classify route request
 memory.is_request := if(message.request <> 0, 1, 0)
 memory.is_route := if(memory.is_request = 1, message.request = "routing_start", 0)
+
+# Generate trace_id
 memory.generated_trace_base := message.sender * 1000
 memory.generated_trace_id := memory.generated_trace_base + memory.self
+
+# Validate requested route key
 memory.has_request_key := if(message.route_key <> 0, 1, 0)
 
 # Select current route candidate
@@ -16,6 +20,8 @@ memory.route_matches := if(message.route_key = memory.route_key, 1, 0)
 memory.route_matches := memory.route_matches * memory.has_request_key
 memory.route_matches := memory.route_matches * memory.has_route_key
 memory.route_matches := memory.route_matches * memory.has_route_recipient
+
+# Establish route trace
 memory.trace_id := if(memory.is_route = 1, memory.generated_trace_id, memory.trace_id)
 memory.trace_id := if(message.trace_id <> 0, message.trace_id, memory.trace_id)
 

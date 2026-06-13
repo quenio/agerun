@@ -8,11 +8,13 @@ memory.is_close := if(memory.is_request = 1, message.request = "conversation_clo
 memory.is_select_recipients := if(memory.is_request = 1, message.request = "conversation_select_recipients", 0)
 memory.is_broadcast_result := if(memory.is_response = 1, message.response = "broadcasting_result", 0)
 
-# Establish conversation session
+# Generate trace_id
 memory.generated_trace_base := message.sender * 1000
 memory.generated_trace_id := memory.generated_trace_base + memory.self
 memory.request_trace_id := memory.generated_trace_id
 memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.request_trace_id)
+
+# Establish conversation session
 memory.trace_id := if(memory.is_start = 1, memory.request_trace_id, memory.trace_id)
 memory.session_id := if(memory.is_start = 1, message.session_id, memory.session_id)
 memory.participants := if(memory.is_start = 1, message.participants, memory.participants)

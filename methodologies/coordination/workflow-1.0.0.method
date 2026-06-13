@@ -7,11 +7,13 @@ memory.is_workflow_request := memory.is_start + memory.is_execute_step
 memory.is_workflow_request := memory.is_workflow_request + memory.is_step_done
 memory.is_workflow_request := if(memory.is_workflow_request > 0, 1, 0)
 
-# Establish workflow state
+# Generate trace_id
 memory.generated_trace_base := message.sender * 1000
 memory.generated_trace_id := memory.generated_trace_base + memory.self
 memory.request_trace_id := memory.generated_trace_id
 memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.request_trace_id)
+
+# Establish workflow state
 memory.workflow_id := if(memory.is_start = 1, message.workflow_id, memory.workflow_id)
 memory.trace_id := if(memory.is_start = 1, memory.request_trace_id, memory.trace_id)
 memory.session_id := if(memory.is_start = 1, message.session_id, memory.session_id)
