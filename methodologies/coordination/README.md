@@ -128,6 +128,10 @@ the sender-provided `payload`. `failure_count` increments to `1` only when that 
 send is attempted and fails. Route misses, non-positive recipients, and internal scan handoff
 failures leave both counts at `0` even when the response status is `failure`.
 
+Status semantics: the response status is `success` only when routing delivers the payload to the
+matched positive recipient. It is `failure` when no route selects a positive recipient, when the
+matched recipient send fails, or when an internal scan handoff fails.
+
 ### Broadcasting
 
 Request:
@@ -161,6 +165,11 @@ Integer `0` entries are skipped placeholders, not failed sends.
 Count semantics: `success_count` increments once for each positive recipient that accepts the
 sender-provided `payload`. `failure_count` increments once for each positive recipient send that
 fails.
+
+Status semantics: the response status is `success` when the broadcast completes with at least one
+successful positive-recipient delivery and no recipient or continuation send failures. It is
+`failure` when no positive recipient receives the payload, when any positive-recipient send fails,
+or when an internal continuation handoff fails.
 
 ### Supervision
 
@@ -202,6 +211,10 @@ Count semantics: `success_count` increases by the number of children tracked whe
 by `1` for a successful restart, and by `1` for a successful tracked stop. `failure_count` increases
 for spawn or validation handoff failures and for failed tracked stop exits. Untracked or duplicate
 lifecycle events do not increment either count.
+
+Status semantics: the response status is `success` for running, restarted, stopped, and ignored
+results. It is `failure` when a spawn or validation handoff fails, or when a tracked stop cannot
+exit the child.
 
 ### Distribution
 
@@ -246,6 +259,10 @@ that fails. Integer `0` recipient placeholders are skipped without consuming the
 affecting either count. Empty payload or recipient lists produce `status: "failure"` with no
 assignment count increments.
 
+Status semantics: the response status is `success` when at least one assignment is attempted and all
+attempted assignment sends succeed. It is `failure` when no assignment is attempted, when any
+assignment send fails, or when an internal continuation handoff fails.
+
 ### Aggregation
 
 Requests:
@@ -284,6 +301,10 @@ and do not affect either count. The response is sent when `success_count + failu
 the configured `expected_count`;
 the response status is `success` only when `success_count` equals that `expected_count`, and
 `failure` otherwise.
+
+Status semantics: the response status is `success` only when collected payload count reaches the
+configured `expected_count`. It is `failure` when the response threshold is reached only because one
+or more accepted collection attempts failed to append.
 
 ### Scheduling
 
@@ -338,6 +359,10 @@ and when a matching cancel clears a pending schedule. The schedule creation resp
 increment it. `failure_count` increments when a due tick should trigger but the stored payload send
 fails.
 
+Status semantics: the response status is `success` for schedule creation, for a matching cancel
+that clears a pending schedule, and for a due tick that successfully sends the stored payload. It is
+`failure` only when a due tick should trigger but the stored payload send fails.
+
 ### Synchronization
 
 Requests:
@@ -388,6 +413,11 @@ appended before completion. No current synchronization event increments `failure
 continuation or result delivery keeps the gate open instead of producing a failure result, so result
 `failure_count` is always `0`.
 
+Status semantics: the only emitted synchronization result has status `success`, and it is emitted
+after the required dependencies have been collected and the continuation has been delivered. Failed
+continuation or result delivery emits no failure result; it keeps the synchronization open for
+retry.
+
 ### Workflow
 
 Requests:
@@ -423,6 +453,10 @@ currently awaited sent step. Skipped zero-recipient placeholders, stale completi
 completions, out-of-order completions, and pending completion retries do not increment it.
 `failure_count` becomes `1` when any workflow handoff fails, including start or continuation
 self-sends, skipped-step self-sends, or direct step payload sends; otherwise it is `0`.
+
+Status semantics: the completion response status is `success` when workflow completion is reached
+without a handoff failure, including empty completion after skipped placeholders or completion after
+the final step. It is `failure` when any workflow handoff fails.
 
 ### Conversation
 
@@ -485,6 +519,10 @@ when the broadcasting helper cannot be spawned, when a turn relay fails before o
 broadcasting or history append, or when a non-participant sends `conversation_message`; summary and
 close responses report `0`.
 
+Status semantics: the response status is `success` for a successful start, summary, close, or
+participant turn relay. It is `failure` when the broadcasting helper cannot be spawned, when a turn
+relay fails, or when a non-participant sends `conversation_message`.
+
 ### Retry
 
 Requests:
@@ -544,6 +582,10 @@ Count semantics: `success_count` is `1` only for the terminal response produced 
 `retry_success` outcome. `failure_count` is `1` when initial operation dispatch fails or when a
 matching `retry_failure` reaches the final allowed attempt. Non-terminal failures that schedule or
 dispatch another attempt do not increment either terminal count.
+
+Status semantics: the terminal response status is `success` only for a matching `retry_success`
+outcome. It is `failure` when the initial operation dispatch fails or when a matching
+`retry_failure` reaches the final allowed attempt.
 
 ## Composition Examples
 

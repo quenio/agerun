@@ -26,6 +26,10 @@ Completion is recorded only after the aggregate response is sent successfully. T
 differentiates start requests from collect requests; `expected_count` only configures the start
 request threshold.
 
+Status semantics: the response status is `success` only when collected payload count reaches the
+configured `expected_count`. It is `failure` when the response threshold is reached only because one
+or more accepted collection attempts failed to append.
+
 ## Message Format
 
 Requests:

@@ -50,6 +50,10 @@ completions, out-of-order completions, and pending completion retries do not inc
 `failure_count` becomes `1` when any workflow handoff fails, including start or continuation
 self-sends, skipped-step self-sends, or direct step payload sends; otherwise it is `0`.
 
+Status semantics: the completion response status is `success` when workflow completion is reached
+without a handoff failure, including empty completion after skipped placeholders or completion after
+the final step. It is `failure` when any workflow handoff fails.
+
 Terminal status is recorded only after the response is delivered; failed completion delivery leaves
 completion pending and retries do not increment the completed-step counter. Completion responses use the
 triggering workflow control request's effective `trace_id` and the active workflow `session_id`.

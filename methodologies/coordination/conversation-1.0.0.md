@@ -74,6 +74,10 @@ when the broadcasting helper cannot be spawned, when a turn relay fails before o
 broadcasting or history append, or when a non-participant sends `conversation_message`; summary and
 close responses report `0`.
 
+Status semantics: the response status is `success` for a successful start, summary, close, or
+participant turn relay. It is `failure` when the broadcasting helper cannot be spawned, when a turn
+relay fails, or when a non-participant sends `conversation_message`.
+
 If broadcast delivery fails for any recipient, the coordinator reports `result: "relay_failed"` and
 leaves the history and turn count unchanged.
 

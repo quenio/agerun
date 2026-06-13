@@ -75,6 +75,10 @@ that fails. Integer `0` recipient placeholders are skipped without consuming the
 affecting either count. Empty payload or recipient lists produce `status: "failure"` with no
 assignment count increments.
 
+Status semantics: the response status is `success` when at least one assignment is attempted and all
+attempted assignment sends succeed. It is `failure` when no assignment is attempted, when any
+assignment send fails, or when an internal continuation handoff fails.
+
 ## Implementation and Tests
 
 Implementation: [`distribution-1.0.0.method`](distribution-1.0.0.method)

@@ -55,6 +55,10 @@ by `1` for a successful restart, and by `1` for a successful tracked stop. `fail
 for spawn or validation handoff failures and for failed tracked stop exits. Untracked or duplicate
 lifecycle events are reported as ignored and do not increment either count.
 
+Status semantics: the response status is `success` for running, restarted, stopped, and ignored
+results. It is `failure` when a spawn or validation handoff fails, or when a tracked stop cannot
+exit the child.
+
 ## Implementation and Tests
 
 Implementation: [`supervision-1.0.0.method`](supervision-1.0.0.method)

@@ -56,6 +56,11 @@ Count semantics: `success_count` increments once for each positive recipient tha
 sender-provided `payload`. `failure_count` increments once for each positive recipient send that
 fails. Integer `0` placeholders are skipped without affecting either count.
 
+Status semantics: the response status is `success` when the broadcast completes with at least one
+successful positive-recipient delivery and no recipient or continuation send failures. It is
+`failure` when no positive recipient receives the payload, when any positive-recipient send fails,
+or when an internal continuation handoff fails.
+
 Broadcasting sends the sender-provided `payload` as-is.
 
 ## Implementation and Tests

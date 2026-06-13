@@ -59,6 +59,10 @@ the sender-provided `payload`. `failure_count` increments to `1` only when that 
 send is attempted and fails. A route miss, a non-positive recipient, or an internal scan handoff
 failure leaves both counts at `0` even though the response status is `failure`.
 
+Status semantics: the response status is `success` only when routing delivers the payload to the
+matched positive recipient. It is `failure` when no route selects a positive recipient, when the
+matched recipient send fails, or when an internal scan handoff fails.
+
 A direct `recipient` field is ignored; callers that already know the recipient should use direct
 `send(...)`. The `head(...)` empty sentinel is integer `0`, so `0` cannot be used as a valid route
 key.

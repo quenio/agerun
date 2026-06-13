@@ -65,6 +65,11 @@ appended before completion. No current synchronization event increments `failure
 continuation or result delivery keeps the gate open for retry instead of producing a failure result,
 so result `failure_count` is always `0`.
 
+Status semantics: the only emitted synchronization result has status `success`, and it is emitted
+after the required dependencies have been collected and the continuation has been delivered. Failed
+continuation or result delivery emits no failure result; it keeps the synchronization open for
+retry.
+
 ## Implementation and Tests
 
 Implementation: [`synchronization-1.0.0.method`](synchronization-1.0.0.method)
