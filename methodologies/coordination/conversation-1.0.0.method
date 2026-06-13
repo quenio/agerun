@@ -11,7 +11,6 @@ memory.generated_trace_base := message.source * 1000
 memory.generated_trace_id := memory.generated_trace_base + memory.self
 memory.request_trace_id := memory.generated_trace_id
 memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.request_trace_id)
-memory.conversation_id := if(memory.is_start = 1, message.conversation_id, memory.conversation_id)
 memory.trace_id := if(memory.is_start = 1, memory.request_trace_id, memory.trace_id)
 memory.session_id := if(memory.is_start = 1, message.session_id, memory.session_id)
 memory.participant_a := if(memory.is_start = 1, message.participant_a, memory.participant_a)
@@ -23,16 +22,14 @@ memory.history := if(memory.is_start = 1, [], memory.history)
 memory.last_sender := if(memory.is_start = 1, 0, memory.last_sender)
 memory.last_recipient := if(memory.is_start = 1, 0, memory.last_recipient)
 memory.last_text := if(memory.is_start = 1, "", memory.last_text)
-memory.matches_conversation := if(message.conversation_id = memory.conversation_id, 1, 0)
 memory.has_request_session := if(message.session_id <> 0, 1, 0)
 memory.matches_session := if(memory.has_request_session = 1, message.session_id = memory.session_id, 0)
-memory.matches_conversation := memory.matches_conversation * memory.matches_session
 memory.is_active := if(memory.state = "active", 1, 0)
 memory.from_a := if(message.sender = memory.participant_a, 1, 0)
 memory.from_b := if(message.sender = memory.participant_b, 1, 0)
 memory.is_participant := memory.from_a + memory.from_b
-memory.message_matches := memory.is_message * memory.matches_conversation
-memory.is_turn := memory.is_message * memory.matches_conversation * memory.is_active * memory.is_participant
+memory.message_matches := memory.is_message * memory.matches_session
+memory.is_turn := memory.is_message * memory.matches_session * memory.is_active * memory.is_participant
 memory.recipient := if(memory.from_a = 1, memory.participant_b, 0)
 memory.recipient := if(memory.from_b = 1, memory.participant_a, memory.recipient)
 memory.next_turn_count := memory.turn_count + memory.is_turn
@@ -41,7 +38,6 @@ memory.turn_message := {
   request: "conversation_turn"
   trace_id: memory.request_trace_id
   session_id: memory.session_id
-  conversation_id: memory.conversation_id
   from: message.sender
   to: memory.recipient
   text: message.text
@@ -58,7 +54,7 @@ memory.turn_count := if(memory.append_ok = 1, memory.next_turn_count, memory.tur
 memory.last_sender := if(memory.append_ok = 1, message.sender, memory.last_sender)
 memory.last_recipient := if(memory.append_ok = 1, memory.recipient, memory.last_recipient)
 memory.last_text := if(memory.append_ok = 1, message.text, memory.last_text)
-memory.should_close := memory.is_close * memory.matches_conversation
+memory.should_close := memory.is_close * memory.matches_session
 memory.state := if(memory.should_close = 1, "closed", memory.state)
 memory.close_message := {
   source: memory.self
@@ -67,7 +63,6 @@ memory.close_message := {
   session_id: memory.session_id
   status: "success"
   state: memory.state
-  conversation_id: memory.conversation_id
   success_count: memory.turn_count
   failure_count: 0
   turn_count: memory.turn_count
@@ -77,7 +72,7 @@ memory.close_b_sent := send(memory.participant_b * memory.should_close, memory.c
 memory.response_state := if(memory.message_matches = 1, "relay_failed", "ignored")
 memory.response_state := if(memory.append_ok = 1, "relayed", memory.response_state)
 memory.response_state := if(memory.is_start = 1, "active", memory.response_state)
-memory.summary_matches := memory.is_summary * memory.matches_conversation
+memory.summary_matches := memory.is_summary * memory.matches_session
 memory.response_state := if(memory.summary_matches = 1, memory.state, memory.response_state)
 memory.response_state := if(memory.should_close = 1, "closed", memory.response_state)
 memory.relay_failure_count := memory.message_matches - memory.append_ok
@@ -93,7 +88,6 @@ memory.response_message := {
   session_id: memory.session_id
   status: memory.response_status
   state: memory.state
-  conversation_id: memory.conversation_id
   result: memory.response_state
   success_count: memory.response_success_count
   failure_count: memory.response_failure_count

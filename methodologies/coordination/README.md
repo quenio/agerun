@@ -391,10 +391,10 @@ delivery leaves completion pending and retries do not increment `completed_step_
 Requests:
 
 ```text
-{ source: <sender-agent>, request: "conversation_start", trace_id: <trace_id>, session_id: <session_id>, conversation_id: <id>, participant_a: <agent>, participant_b: <agent> }
-{ source: <sender-agent>, request: "conversation_message", trace_id: <trace_id>, session_id: <session_id>, conversation_id: <id>, sender: <agent>, text: <text>, intent: <intent> }
-{ source: <sender-agent>, request: "conversation_summary", trace_id: <trace_id>, session_id: <session_id>, conversation_id: <id> }
-{ source: <sender-agent>, request: "conversation_close", trace_id: <trace_id>, session_id: <session_id>, conversation_id: <id> }
+{ source: <sender-agent>, request: "conversation_start", trace_id: <trace_id>, session_id: <session_id>, participant_a: <agent>, participant_b: <agent> }
+{ source: <sender-agent>, request: "conversation_message", trace_id: <trace_id>, session_id: <session_id>, sender: <agent>, text: <text>, intent: <intent> }
+{ source: <sender-agent>, request: "conversation_summary", trace_id: <trace_id>, session_id: <session_id> }
+{ source: <sender-agent>, request: "conversation_close", trace_id: <trace_id>, session_id: <session_id> }
 ```
 
 Participant turn:
@@ -405,7 +405,6 @@ Participant turn:
   request: "conversation_turn",
   trace_id: <trace_id>,
   session_id: <session_id>,
-  conversation_id: <id>,
   from: <agent>,
   to: <agent>,
   text: <text>,
@@ -424,7 +423,6 @@ Response:
   session_id: <session_id>,
   status: <success|failure>,
   state: <active|closed>,
-  conversation_id: <id>,
   result: <active|relayed|relay_failed|ignored|closed>,
   success_count: <count>,
   failure_count: <count>,
