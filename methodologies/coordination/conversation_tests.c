@@ -839,6 +839,149 @@ static void test_conversation__broadcasts_turns_to_all_other_participants(void) 
     AR_ASSERT(ar_data__list_count(ref_history) == 0,
               "Failed relays should not append to history");
 
+    // When recipient selection cannot queue its next self-continuation
+    ar_data_t *mut_failure_memory =
+        ar_agency__get_agent_mutable_memory(mut_agency, conversation_agent);
+    AR_ASSERT(mut_failure_memory != NULL, "Conversation memory should be mutable");
+    ar_data__set_map_integer(mut_failure_memory, "self", 98765);
+    ar_data__set_map_integer(mut_failure_memory, "pending_turn_active", 1);
+    ar_data__set_map_string(mut_failure_memory, "pending_trace_id",
+                            "scan-continuation-fails");
+    ar_data__set_map_integer(mut_failure_memory, "pending_sender", 0);
+    ar_data__set_map_integer(mut_failure_memory, "pending_candidate_found", 0);
+    ar_data__set_map_integer(mut_failure_memory, "pending_broadcast", 0);
+
+    ar_data_t *own_continue_select = ar_data__create_map();
+    AR_ASSERT(own_continue_select != NULL,
+              "Continuation failure selection should be created");
+    ar_data__set_map_integer(own_continue_select, "sender", 98765);
+    ar_data__set_map_string(own_continue_select, "request",
+                            "conversation_select_recipients");
+    ar_data__set_map_string(own_continue_select, "trace_id",
+                            "scan-continuation-fails");
+    ar_data__set_map_string(own_continue_select, "session_id", "chat-session-2");
+    own_participants = create_participants(participant_a, participant_b, 0);
+    AR_ASSERT(ar_data__set_map_data(own_continue_select, "participants",
+                                    own_participants),
+              "Continuation failure selection should own participants");
+    own_participants = NULL;
+    ar_data_t *own_continue_recipients = ar_data__create_list();
+    AR_ASSERT(own_continue_recipients != NULL,
+              "Continuation failure recipients should be created");
+    AR_ASSERT(ar_data__set_map_data(own_continue_select, "recipients",
+                                    own_continue_recipients),
+              "Continuation failure selection should own recipients");
+    own_continue_recipients = NULL;
+    ar_data_t *own_continue_payload = ar_data__create_map();
+    AR_ASSERT(own_continue_payload != NULL,
+              "Continuation failure payload should be created");
+    ar_data__set_map_integer(own_continue_payload, "sender", 98765);
+    ar_data__set_map_string(own_continue_payload, "request", "conversation_turn");
+    ar_data__set_map_string(own_continue_payload, "trace_id",
+                            "scan-continuation-fails");
+    ar_data__set_map_string(own_continue_payload, "session_id", "chat-session-2");
+    ar_data__set_map_string(own_continue_payload, "payload", "scan-fail");
+    ar_data__set_map_integer(own_continue_payload, "participant",
+                             checked_agent_id(participant_a));
+    ar_data__set_map_integer(own_continue_payload, "turn_count", 1);
+    AR_ASSERT(ar_data__set_map_data(own_continue_select, "payload",
+                                    own_continue_payload),
+              "Continuation failure selection should own payload");
+    own_continue_payload = NULL;
+    ar_data__set_map_integer(own_continue_select, "participant",
+                             checked_agent_id(participant_a));
+    ar_data__set_map_integer(own_continue_select, "found_sender", 0);
+    ar_data__set_map_integer(own_continue_select, "recipient_count", 0);
+
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent,
+                                       own_continue_select),
+              "Continuation failure selection should queue");
+    own_continue_select = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ref_conversation_memory = ar_agency__get_agent_memory(mut_agency, conversation_agent);
+    AR_ASSERT(ar_data__get_map_integer(ref_conversation_memory,
+                                       "pending_turn_active") == 0,
+              "Failed selection continuation should clear the pending turn");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
+                     "scan-continuation-fails") == 0,
+              "Failed selection continuation should report its trace id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_result"),
+                     "relay_failed") == 0,
+              "Failed selection continuation should report relay failure");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_failure_count") == 1,
+              "Failed selection continuation should count one failure");
+
+    // When a deferred turn retry cannot queue its internal self-message
+    mut_failure_memory = ar_agency__get_agent_mutable_memory(mut_agency, conversation_agent);
+    AR_ASSERT(mut_failure_memory != NULL, "Conversation memory should still be mutable");
+    ar_data__set_map_integer(mut_failure_memory, "self", 98765);
+    ar_data__set_map_integer(mut_failure_memory, "pending_turn_active", 1);
+    ar_data__set_map_string(mut_failure_memory, "pending_trace_id",
+                            "missing-sender-trace");
+    ar_data__set_map_integer(mut_failure_memory, "pending_sender", 0);
+    ar_data__set_map_integer(mut_failure_memory, "pending_candidate_found", 0);
+    ar_data__set_map_integer(mut_failure_memory, "deferred_turn_active", 1);
+    ar_data__set_map_string(mut_failure_memory, "deferred_trace_id",
+                            "deferred-retained");
+    ar_data__set_map_string(mut_failure_memory, "deferred_session_id",
+                            "chat-session-2");
+    ar_data__set_map_integer(mut_failure_memory, "deferred_sender",
+                             checked_agent_id(participant_b));
+    ar_data__set_map_string(mut_failure_memory, "deferred_payload",
+                            "deferred-payload");
+
+    ar_data_t *own_missing_sender_select = ar_data__create_map();
+    AR_ASSERT(own_missing_sender_select != NULL,
+              "Missing sender selection should be created");
+    ar_data__set_map_integer(own_missing_sender_select, "sender", 98765);
+    ar_data__set_map_string(own_missing_sender_select, "request",
+                            "conversation_select_recipients");
+    ar_data__set_map_string(own_missing_sender_select, "trace_id",
+                            "missing-sender-trace");
+    ar_data__set_map_string(own_missing_sender_select, "session_id",
+                            "chat-session-2");
+    own_participants = create_single_participant(participant_a);
+    AR_ASSERT(ar_data__set_map_data(own_missing_sender_select, "participants",
+                                    own_participants),
+              "Missing sender selection should own participants");
+    own_participants = NULL;
+    ar_data_t *own_missing_recipients = ar_data__create_list();
+    AR_ASSERT(own_missing_recipients != NULL,
+              "Missing sender recipients should be created");
+    AR_ASSERT(ar_data__set_map_data(own_missing_sender_select, "recipients",
+                                    own_missing_recipients),
+              "Missing sender selection should own recipients");
+    own_missing_recipients = NULL;
+    ar_data_t *own_missing_payload = ar_data__create_map();
+    AR_ASSERT(own_missing_payload != NULL, "Missing sender payload should be created");
+    ar_data__set_map_string(own_missing_payload, "payload", "missing-sender");
+    AR_ASSERT(ar_data__set_map_data(own_missing_sender_select, "payload",
+                                    own_missing_payload),
+              "Missing sender selection should own payload");
+    own_missing_payload = NULL;
+    ar_data__set_map_integer(own_missing_sender_select, "participant",
+                             checked_agent_id(intruder));
+    ar_data__set_map_integer(own_missing_sender_select, "found_sender", 0);
+    ar_data__set_map_integer(own_missing_sender_select, "recipient_count", 0);
+
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent,
+                                       own_missing_sender_select),
+              "Missing sender selection should queue");
+    own_missing_sender_select = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ref_conversation_memory = ar_agency__get_agent_memory(mut_agency, conversation_agent);
+    AR_ASSERT(ar_data__get_map_integer(ref_conversation_memory,
+                                       "deferred_turn_active") == 1,
+              "Failed deferred retry should keep the deferred turn active");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_conversation_memory, "deferred_trace_id"),
+                     "deferred-retained") == 0,
+              "Failed deferred retry should keep the deferred trace id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_conversation_memory, "deferred_payload"),
+                     "deferred-payload") == 0,
+              "Failed deferred retry should keep the deferred payload");
+
     // Cleanup
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_conversation_context);

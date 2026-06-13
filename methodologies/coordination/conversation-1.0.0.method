@@ -167,6 +167,8 @@ memory.scan_continue_message := {
   recipient_count: memory.next_recipient_count
 }
 memory.scan_continue_sent := send(memory.self * memory.scan_continue, memory.scan_continue_message)
+memory.scan_continue_send_failed := if(memory.scan_continue_sent = 0, 1, 0)
+memory.scan_continue_send_failed := memory.scan_continue_send_failed * memory.scan_continue
 
 # Finish recipient selection
 memory.scan_finished := memory.select_active
@@ -214,7 +216,8 @@ memory.deferred_retry_message := {
   participant: memory.deferred_sender
 }
 memory.deferred_retry_sent := send(memory.self * memory.deferred_retry_ready, memory.deferred_retry_message)
-memory.deferred_turn_active := if(memory.deferred_retry_ready = 1, 0, memory.deferred_turn_active)
+memory.deferred_retry_succeeded := memory.deferred_retry_sent * memory.deferred_retry_ready
+memory.deferred_turn_active := if(memory.deferred_retry_succeeded = 1, 0, memory.deferred_turn_active)
 
 # Broadcast staged turn
 memory.broadcast_message := {
@@ -232,6 +235,7 @@ memory.pending_broadcast := if(memory.broadcast_started = 1, 1, memory.pending_b
 
 # Apply immediate relay failures
 memory.immediate_relay_failure := memory.select_send_failed
+memory.immediate_relay_failure := memory.immediate_relay_failure + memory.scan_continue_send_failed
 memory.immediate_relay_failure := memory.immediate_relay_failure + memory.broadcast_send_failed
 memory.immediate_relay_failure := if(memory.immediate_relay_failure > 0, 1, 0)
 memory.pending_broadcast := if(memory.immediate_relay_failure = 1, 0, memory.pending_broadcast)
