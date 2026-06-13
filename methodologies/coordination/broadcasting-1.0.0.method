@@ -1,6 +1,7 @@
 # Classify broadcast request
 memory.is_request := if(message.request <> 0, 1, 0)
 memory.is_broadcast := if(memory.is_request = 1, message.request = "broadcasting_start", 0)
+memory.is_internal_continue := if(memory.is_broadcast = 1, message.sender = memory.self, 0)
 
 # Generate trace_id
 memory.generated_trace_base := message.sender * 1000
@@ -11,6 +12,8 @@ memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.re
 # Establish sender state
 memory.trace_id := if(memory.is_broadcast = 1, memory.request_trace_id, memory.trace_id)
 memory.sender := if(memory.is_broadcast = 1, message.sender, memory.sender)
+memory.result_recipient := if(memory.is_broadcast = 1, message.sender, memory.result_recipient)
+memory.result_recipient := if(memory.is_internal_continue = 1, message.result_recipient, memory.result_recipient)
 memory.current_recipients := if(memory.is_broadcast = 1, message.recipients, [])
 
 # Select current recipient
@@ -30,9 +33,12 @@ memory.send_failed := memory.send_failed * memory.is_broadcast
 # Accumulate delivery counters
 memory.remaining_recipients_empty := if(memory.remaining_recipients = [], 1, 0)
 memory.has_remaining := if(memory.remaining_recipients_empty = 1, 0, 1)
-memory.next_recipient_count := message.recipient_count + memory.sent
-memory.next_sent_count := message.sent_count + memory.sent
-memory.next_failed_count := message.failed_count + memory.send_failed
+memory.input_recipient_count := if(memory.is_internal_continue = 1, message.recipient_count, 0)
+memory.input_sent_count := if(memory.is_internal_continue = 1, message.sent_count, 0)
+memory.input_failed_count := if(memory.is_internal_continue = 1, message.failed_count, 0)
+memory.next_recipient_count := memory.input_recipient_count + memory.sent
+memory.next_sent_count := memory.input_sent_count + memory.sent
+memory.next_failed_count := memory.input_failed_count + memory.send_failed
 memory.recipient_count := if(memory.is_broadcast = 1, memory.next_recipient_count, memory.recipient_count)
 memory.sent_count := if(memory.is_broadcast = 1, memory.next_sent_count, memory.sent_count)
 memory.failed_count := if(memory.is_broadcast = 1, memory.next_failed_count, memory.failed_count)
@@ -43,11 +49,12 @@ memory.has_more_work := if(memory.has_more_work > 0, 1, 0)
 memory.continuation_required := memory.is_broadcast * memory.has_more_work
 memory.continuation_recipient := memory.self * memory.continuation_required
 memory.continuation_message := {
-  sender: memory.sender
+  sender: memory.self
   request: "broadcasting_start"
   trace_id: memory.trace_id
   payload: message.payload
   recipients: memory.remaining_recipients
+  result_recipient: memory.result_recipient
   recipient_count: memory.recipient_count
   sent_count: memory.sent_count
   failed_count: memory.failed_count
@@ -77,4 +84,4 @@ memory.result_message := {
   success_count: memory.sent_count
   failure_count: memory.failed_count
 }
-memory.result_sent := send(memory.sender * memory.should_report, memory.result_message)
+memory.result_sent := send(memory.result_recipient * memory.should_report, memory.result_message)

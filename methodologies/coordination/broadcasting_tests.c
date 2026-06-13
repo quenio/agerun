@@ -309,6 +309,11 @@ static void test_broadcasting__sends_same_payload_to_all_recipients(void) {
     AR_ASSERT(ar_data__set_map_data(own_message, "payload", own_payload),
               "Zero-recipient broadcast message should own opaque payload");
     own_payload = NULL;
+    ar_data__set_map_string(own_message, "trace_id", "broadcast-zero-counter-poison");
+    ar_data__set_map_integer(own_message, "sender", checked_agent_id(report_agent));
+    ar_data__set_map_integer(own_message, "recipient_count", 7);
+    ar_data__set_map_integer(own_message, "sent_count", 5);
+    ar_data__set_map_integer(own_message, "failed_count", 3);
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, broadcasting_agent, own_message),
               "Zero-recipient broadcast message should queue");
     own_message = NULL;
@@ -321,6 +326,15 @@ static void test_broadcasting__sends_same_payload_to_all_recipients(void) {
               "Zero-recipient broadcast should record zero recipients");
     AR_ASSERT(ar_data__get_map_integer(ref_broadcasting_memory, "sent_count") == 0,
               "Zero-recipient broadcast should record zero sent messages");
+    AR_ASSERT(ar_data__get_map_integer(ref_broadcasting_memory, "failed_count") == 0,
+              "Zero-recipient broadcast should ignore caller-supplied failed count");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_trace_id"),
+                     "broadcast-zero-counter-poison") == 0,
+              "Zero-recipient broadcast should emit a fresh result");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 0,
+              "Zero-recipient broadcast should ignore caller-supplied sent count");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 0,
+              "Zero-recipient broadcast should ignore caller-supplied failed count");
 
     // When consecutive placeholder recipients precede a valid recipient
     own_message = ar_data__create_map();
