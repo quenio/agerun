@@ -211,6 +211,25 @@ static void test_routing__selects_one_recipient_by_key_only(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_routing_memory, "sent_count") == 0,
               "Ignored route-shaped message should not change sent count");
 
+    // When an unrelated message has no routes map
+    own_message = ar_data__create_map();
+    AR_ASSERT(own_message != NULL, "Ignored route-less message should be created");
+    ar_data__set_map_string(own_message, "request", "routing_ignored");
+    ar_data__set_map_string(own_message, "trace_id", "job-routeless");
+    ar_data__set_map_integer(own_message, "sender", checked_agent_id(report_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, routing_agent, own_message),
+              "Ignored route-less message should queue");
+    own_message = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_trace_id"),
+                     "job-direct") == 0,
+              "Ignored route-less message should not emit a new route response");
+    AR_ASSERT(ar_data__get_map_integer(ref_routing_memory, "routed_count") == 0,
+              "Ignored route-less message should not change routed count");
+    AR_ASSERT(ar_data__get_map_integer(ref_routing_memory, "sent_count") == 0,
+              "Ignored route-less message should not change sent count");
+
     // When a keyed route request carries more than three candidate routes
     own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Keyed route message should be created");

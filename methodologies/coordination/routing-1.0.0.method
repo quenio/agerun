@@ -8,12 +8,15 @@ memory.generated_trace_id := memory.generated_trace_base + memory.self
 
 # Validate requested route key
 memory.has_request_key := if(message.route_key <> 0, 1, 0)
+memory.scan_route_request := memory.is_route * memory.has_request_key
+memory.route_keys := if(memory.scan_route_request = 1, message.routes.keys, [])
+memory.route_recipients := if(memory.scan_route_request = 1, message.routes.recipients, [])
 
 # Select current route candidate
-memory.route_key := head(message.routes.keys)
-memory.route_recipient := head(message.routes.recipients)
-memory.remaining_route_keys := tail(message.routes.keys)
-memory.remaining_route_recipients := tail(message.routes.recipients)
+memory.route_key := head(memory.route_keys)
+memory.route_recipient := head(memory.route_recipients)
+memory.remaining_route_keys := tail(memory.route_keys)
+memory.remaining_route_recipients := tail(memory.route_recipients)
 memory.has_route_key := if(memory.route_key <> 0, 1, 0)
 memory.has_route_recipient := if(memory.route_recipient > 0, 1, 0)
 memory.route_matches := if(message.route_key = memory.route_key, 1, 0)
