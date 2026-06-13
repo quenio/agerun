@@ -416,6 +416,40 @@ static void test_distribution__reports_failed_assignments_and_empty_inputs(void)
     AR_ASSERT(ar_data__get_map_integer(ref_worker_memory, "received_count") == 2,
               "Missing payloads should not send zero payloads");
 
+    ar_data_t *own_nonlist_payloads = ar_data__create_map();
+    AR_ASSERT(own_nonlist_payloads != NULL, "Non-list payloads request should be created");
+    ar_data_t *own_nonlist_payload_recipients = create_recipients(ref_single_recipient, 1);
+    AR_ASSERT(ar_data__set_map_string(own_nonlist_payloads, "request", "distribution_start"),
+              "Non-list payloads request should set request");
+    AR_ASSERT(ar_data__set_map_string(own_nonlist_payloads, "trace_id", "job-nonlist-payloads"),
+              "Non-list payloads request should set trace id");
+    AR_ASSERT(ar_data__set_map_integer(own_nonlist_payloads,
+                                       "sender",
+                                       checked_agent_id(report_agent)),
+              "Non-list payloads request should set sender");
+    AR_ASSERT(ar_data__set_map_string(own_nonlist_payloads, "payloads", "not-a-list"),
+              "Non-list payloads request should set malformed payloads");
+    AR_ASSERT(ar_data__set_map_data(own_nonlist_payloads,
+                                    "recipients",
+                                    own_nonlist_payload_recipients),
+              "Non-list payloads request should own recipients");
+    own_nonlist_payload_recipients = NULL;
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, distribution_agent, own_nonlist_payloads),
+              "Non-list payloads request should queue");
+    own_nonlist_payloads = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
+                     "failure") == 0,
+              "Non-list payloads should report standard failure status");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_trace_id"),
+                     "job-nonlist-payloads") == 0,
+              "Non-list payloads should preserve trace id");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 0,
+              "Non-list payloads should not report sentinel assignment success");
+    AR_ASSERT(ar_data__get_map_integer(ref_worker_memory, "received_count") == 2,
+              "Non-list payloads should not send a zero payload");
+
     const char *ref_one_payload[] = {"orphan"};
     own_payloads = create_payloads(ref_one_payload, 1, 0);
     ar_data_t *own_empty_recipients = ar_data__create_list();
