@@ -1,30 +1,67 @@
-memory.is_start := if(message.action = "start", 1, 0)
-memory.is_result := if(message.action = "result", 1, 0)
-memory.aggregate_id := if(memory.is_start = 1, message.aggregate_id, memory.aggregate_id)
-memory.required_count := if(memory.is_start = 1, message.required_count, memory.required_count)
-memory.reply_to := if(memory.is_start = 1, message.reply_to, memory.reply_to)
-memory.results := if(memory.is_start = 1, [], memory.results)
-memory.received_count := if(memory.is_start = 1, 0, memory.received_count)
+# Classify aggregation request
+memory.is_request := if(message.request <> 0, 1, 0)
+memory.is_start := if(memory.is_request = 1, message.request = "aggregation_start", 0)
+memory.is_collect := if(memory.is_request = 1, message.request = "aggregation_collect", 0)
+memory.is_aggregation_request := memory.is_start + memory.is_collect
+memory.is_aggregation_request := if(memory.is_aggregation_request > 0, 1, 0)
+
+# Generate trace_id
+memory.generated_trace_base := message.sender * 1000
+memory.generated_trace_id := memory.generated_trace_base + memory.self
+memory.request_trace_id := memory.generated_trace_id
+memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.request_trace_id)
+
+# Establish start-session state
+memory.trace_id := if(memory.is_start = 1, memory.request_trace_id, memory.trace_id)
+memory.session_id := if(memory.is_start = 1, message.session_id, memory.session_id)
+memory.start_expected_count := if(message.expected_count > 0, message.expected_count, 1)
+memory.expected_count := if(memory.is_start = 1, memory.start_expected_count, memory.expected_count)
+memory.sender := if(memory.is_start = 1, message.sender, memory.sender)
+memory.payloads := if(memory.is_start = 1, [], memory.payloads)
+memory.count := if(memory.is_start = 1, 0, memory.count)
+memory.failure_count := if(memory.is_start = 1, 0, memory.failure_count)
 memory.completed := if(memory.is_start = 1, 0, memory.completed)
+memory.active := if(memory.is_start = 1, 1, memory.active)
+
+# Guard collect requests for the active session
 memory.not_completed := if(memory.completed = 0, 1, 0)
-memory.matching_aggregate := if(message.aggregate_id = memory.aggregate_id, 1, 0)
-memory.should_collect := memory.is_result * memory.matching_aggregate * memory.not_completed
-memory.append_buffer := if(memory.should_collect = 1, memory.results, "")
-memory.append_ok := append(memory.append_buffer, message.value)
-memory.results := if(memory.append_ok = 1, memory.append_buffer, memory.results)
-memory.received_count := memory.received_count + memory.append_ok
-memory.effective_required_count := if(memory.required_count > 0, memory.required_count, 1)
-memory.is_complete := if(memory.received_count >= memory.effective_required_count, 1, 0)
-memory.status := if(memory.is_complete = 1, "complete", "collecting")
+memory.collect_candidate := memory.is_collect * memory.active * memory.not_completed
+memory.collect_has_session := if(message.session_id <> 0, 1, 0)
+memory.collect_session_candidate := memory.collect_candidate * memory.collect_has_session
+memory.collect_session_matches := if(memory.collect_session_candidate = 1, message.session_id = memory.session_id, 0)
+memory.collect_same_session := memory.collect_candidate * memory.collect_session_matches
+memory.should_collect := memory.collect_same_session
+
+# Append accepted payload or count collection failure
+memory.append_buffer := if(memory.should_collect = 1, memory.payloads, "")
+memory.append_ok := append(memory.append_buffer, message.payload)
+memory.collect_failed := memory.should_collect - memory.append_ok
+memory.failure_count := memory.failure_count + memory.collect_failed
+memory.payloads := if(memory.append_ok = 1, memory.append_buffer, memory.payloads)
+memory.count := memory.count + memory.append_ok
+
+# Decide completion outcome
+memory.outcome_count := memory.count + memory.failure_count
+memory.outcome_count_reached := if(memory.outcome_count >= memory.expected_count, 1, 0)
+memory.is_complete := memory.active * memory.outcome_count_reached
+memory.success_complete := if(memory.count >= memory.expected_count, 1, 0)
+memory.status := if(memory.success_complete = 1, "success", "failure")
 memory.should_emit := memory.is_complete * memory.not_completed
-memory.output_target := memory.reply_to * memory.should_emit
+
+# Emit aggregation result
+memory.output_recipient := memory.sender * memory.should_emit
 memory.output_message := {
-  action: "aggregate_complete"
-  aggregate_id: memory.aggregate_id
+  sender: memory.self
+  response: "aggregation_result"
+  trace_id: memory.request_trace_id
+  session_id: memory.session_id
+  payloads: memory.payloads
   status: memory.status
-  result: memory.results
-  received_count: memory.received_count
+  success_count: memory.count
+  failure_count: memory.failure_count
 }
-memory.output_sent := send(memory.output_target, memory.output_message)
+memory.output_sent := send(memory.output_recipient, memory.output_message)
+
+# Mark delivered completion
 memory.completion_delivered := memory.should_emit * memory.output_sent
 memory.completed := if(memory.completion_delivered = 1, 1, memory.completed)

@@ -233,6 +233,9 @@ and **never mark review threads resolved yourself**—leave resolution to Cursor
 **Method tests**: Verify AST after loading to catch parse errors ([details](kb/method-test-ast-verification.md))
 **Cleanup**: `ar_methodology__cleanup()` & `ar_agency__reset()`
 **Messages**: Process all messages to prevent memory leaks
+**Message ordering**: Agents process one FIFO-queued message at a time; self-continuations can
+interleave with already queued messages but are not re-entrant
+([details](kb/agent-fifo-queue-continuation-interleaving.md))
 **Test isolation**: Comment out tests to isolate errors ([details](kb/test-isolation-through-commenting.md)); cleanup shared files ([details](kb/test-isolation-shared-directory-pattern.md))
 **Test cleanup**: Remove persisted files before tests run ([details](kb/test-file-cleanup-pattern.md))
 **Test redundancy**: Avoid cleanup already handled by fixtures ([details](kb/redundant-test-cleanup-anti-pattern.md))

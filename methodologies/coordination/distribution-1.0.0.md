@@ -2,118 +2,83 @@
 
 ## Overview
 
-The distribution method assigns a caller-provided work payload to an unbounded list of worker
-agents. It composes with the routing method for delivery, making fan-out reusable without
-duplicating route construction in every agency.
+Distribution assigns a list of payload values across a list of recipient agents. It sends each
+payload item to the next positive recipient and rotates back to the beginning of the recipient list
+when needed.
 
 ## Behavior
 
-On a map whose `action` field is `"distribute"`, the method stores the work id, routing agent, reply
-target, and work text. It sends one `mode: "many"` route request to the routing agent, using the
-request's `workers` list as the route target list.
+Only messages with a recognized `request` value are handled as coordination requests.
 
-The route request has `payload_action` set to `"work"`, uses `work_text` as `payload_text`, and uses
-the work id as the correlation id. The routing agent sends its final `route_result` back to the
-distribution agent. Distribution translates that result into `distribution_result`, preserving the
-router's routed and sent counts. Its `route_sent` field reports whether the original route request
-was handed to the routing agent; later `route_result` processing does not overwrite that handoff
-status. Route results are accepted only when their `correlation_id` matches the active work id, so
-late results from other jobs cannot be misreported as the current distribution. After a terminal
-`distribution_result` is sent successfully, duplicate `route_result` messages for the same work id
-are ignored.
-The distribution is marked completed only when a terminal result report is actually delivered.
-If terminal report delivery fails, distribution leaves `pending_report` set and accepts a later
-`retry_report` message for the same `work_id` with a replacement `reply_to` target. This retries the
-stored `distribution_result` without rerouting the work. The retry must be sent before the next
-`distribute` request, because the method maintains a single active work slot.
+When the agent receives `request: "distribution_start"`, it starts an assignment pass for
+`payloads` and `recipients`. Internal `distribution_continue` requests carry the remaining
+payloads, current recipient list, original recipient list, counters, `trace_id`, and
+`result_recipient`.
+Because distribution is a one-shot caller-facing method, its request and response use `trace_id`
+but do not require `session_id`; an omitted `trace_id` is generated for the result envelope and
+internal assignment messages.
 
-If the routing agent reports a matching terminal `route_result` with `status: "route_failed"`,
-distribution propagates that failure as `distribution_result.status: "route_failed"` while preserving
-the partial routed and sent counts. Empty worker lists or worker lists with no positive targets are
-reported this way because routing treats zero-delivery many-route requests as failures.
-
-If the initial route request cannot be sent to the routing agent, distribution immediately emits a
-terminal `distribution_result` with `status: "route_failed"`, `assignment_count: 0`,
-`sent_count: 0`, and `route_sent: 0`. Later stale `route_result` messages are ignored after that
-failed handoff.
+Each assigned payload is sent as-is. Integer `0` recipient placeholders are skipped without
+consuming the current payload when later recipients remain. Missing `payloads` or `recipients` are
+normalized to empty lists before traversal.
 
 ## Message Format
 
-Distribution request:
+Request:
 
 ```text
 {
-  action: "distribute",
-  work_id: <id>,
-  routing_agent: <agent>,
-  reply_to: <agent>,
-  workers: [<agent>, <agent>, ...],
-  work_text: <text>
+  sender: <sender-agent>,
+  request: "distribution_start",
+  trace_id: <trace_id>,
+  payloads: [<payload>, <payload>, ...],
+  recipients: [<recipient-agent-1>, <recipient-agent-2>, ...]
 }
 ```
 
-Report retry request:
+Internal continuation request:
 
 ```text
 {
-  action: "retry_report",
-  work_id: <id>,
-  reply_to: <agent>
-}
-```
-
-Route message sent to routing:
-
-```text
-{
-  action: "route",
-  mode: "many",
-  targets: [<agent>, <agent>, ...],
-  payload_action: "work",
-  payload_text: <work_text>,
-  correlation_id: <work_id>,
-  reply_to: <distribution-agent>,
-  routed_count: 0,
-  sent_count: 0
-}
-```
-
-Result response:
-
-```text
-{
-  action: "distribution_result",
-  status: <distributed|route_failed>,
-  work_id: <id>,
+  sender: <distribution-agent>,
+  request: "distribution_continue",
+  trace_id: <trace_id>,
+  payloads: [<payload>, <payload>, ...],
+  recipients: [<recipient-agent-1>, <recipient-agent-2>, ...],
+  all_recipients: [<recipient-agent-1>, <recipient-agent-2>, ...],
+  result_recipient: <sender-agent>,
   assignment_count: <count>,
   sent_count: <count>,
-  route_status: <status>,
-  route_sent: <0|1>
+  failed_count: <count>
 }
 ```
 
-## Action Field
+`distribution_continue` is queued by the distribution agent to itself and is processed only when its
+`sender` is the distribution agent. Callers should use `distribution_start`; the continuation format
+is documented to make the recursive state explicit.
 
-The input `action` field is a command discriminator in the request map. The distribution agent runs
-this method for every message it receives, so `action: "distribute"` marks the message as work to
-fan out rather than an arbitrary status, worker result, or coordination message.
-`action: "retry_report"` is a separate coordination command that retries a pending terminal report
-for the matching `work_id` without sending a second route request.
+Response:
 
-## Composition Notes
+```text
+{
+  sender: <distribution-agent>,
+  response: "distribution_result",
+  trace_id: <trace_id>,
+  status: <success|failure>,
+  success_count: <count>,
+  failure_count: <count>
+}
+```
 
-Pair distribution with aggregation for fan-out and fan-in. A workflow step can send work to a
-distribution agent, distribution can use routing for unbounded worker delivery, workers can return
-maps whose `action` field is `"result"` to an aggregation agent, and aggregation can emit completion
-when enough results arrive.
+Count semantics: `success_count` increments once for each assignment send of one payload item to a
+positive recipient that succeeds. `failure_count` increments once for each attempted assignment send
+that fails. Integer `0` recipient placeholders are skipped without consuming the payload or
+affecting either count. Empty payload or recipient lists produce `status: "failure"` with no
+assignment count increments.
 
-## Limitations
-
-The method assigns one work payload to an unbounded worker list. Dynamic decomposition into distinct
-per-worker portions, load-aware placement, and custom partitioning policies require another
-decomposition method or richer collection-processing conventions. It keeps one pending terminal
-report for the active work slot; keyed multi-report retention across later `distribute` requests
-would require an exists/default operation or richer map/list filtering patterns.
+Status semantics: the response status is `success` when at least one assignment is attempted and all
+attempted assignment sends succeed. It is `failure` when no assignment is attempted, when any
+assignment send fails, or when an internal continuation handoff fails.
 
 ## Implementation and Tests
 

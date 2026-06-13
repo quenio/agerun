@@ -86,6 +86,11 @@ The evaluator handles automatic type promotion:
 - Integer operations produce integer results
 - Double operations produce double results
 - Comparison operations always produce integer results (0 or 1)
+- List equality is currently limited to empty-list checks such as `message.items = []` and
+  `message.items <> []`; integer `0` is not equal to `[]`. `tail([])` and `tail([value])`
+  produce an empty LIST, while missing or non-LIST `tail(...)` inputs store integer `0`. Methods
+  that accept possibly invalid list inputs should normalize `tail(...) = 0` to `[]` before using
+  `... = []` as a traversal stop. Non-empty lists are not structurally compared.
 
 ## Error Handling
 

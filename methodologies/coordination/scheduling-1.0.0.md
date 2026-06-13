@@ -2,96 +2,71 @@
 
 ## Overview
 
-The scheduling method stores one pending execution and triggers it when a later tick message reaches
-or passes the stored due tick. It expresses delayed execution as ordinary message state.
+Scheduling stores one pending execution and triggers it when a later tick message reaches or passes
+the stored due tick. It expresses delayed execution as ordinary message state.
 
 ## Behavior
 
-On a map whose `action` field is `"schedule"`, the method stores the schedule id, due tick, target,
-payload fields, optional payload attempt, correlation id, and reply target. It marks the work as
-pending and reports `status=scheduled`.
+Only messages with a recognized `request` value are handled as coordination requests.
 
-On a map whose `action` field is `"tick"`, the method records the current tick. If work is pending
-and `tick >= due_tick`, it sends the stored payload to the stored target. A successful send clears
-pending state and reports `status=triggered`; a failed send reports `status=trigger_failed` and
-keeps the work pending. A tick that does not trigger the pending work updates scheduler state without
-sending a status response.
-
-On a map whose `action` field is `"cancel"`, the method clears pending state when the requested
-schedule id matches the stored schedule id and the work is still pending, then reports
-`status=cancelled`. Cancels for already triggered or otherwise non-pending schedules are ignored.
+On `request: "scheduling_schedule"`, the method stores schedule metadata, recipient agent, payload
+fields, effective `trace_id`, `session_id`, and `sender`. On a due `scheduling_tick` with the same
+`session_id`, it sends the stored payload to the stored recipient agent with the stored schedule
+sender. On `scheduling_cancel`, it clears pending state only when the matching session is still
+pending.
 
 ## Message Format
 
-Schedule request:
+Requests:
 
 ```text
-{
-  action: "schedule",
-  schedule_id: <id>,
-  due_tick: <number>,
-  target: <agent>,
-  payload_action: <action>,
-  payload_text: <text>,
-  payload_attempt: <attempt>,
-  correlation_id: <id>,
-  reply_to: <agent>
-}
-```
-
-Tick and cancel requests:
-
-```text
-{
-  action: "tick",
-  tick: <number>
-}
-
-{
-  action: "cancel",
-  schedule_id: <id>
-}
+{ sender: <sender-agent>, request: "scheduling_schedule", trace_id: <trace_id>, session_id: <session_id>, due_tick: <number>, recipient: <recipient-agent>, payload_request: <request>, payload_text: <text>, payload_attempt: <attempt> }
+{ sender: <sender-agent>, request: "scheduling_tick", trace_id: <trace_id>, session_id: <session_id>, tick: <number> }
+{ sender: <sender-agent>, request: "scheduling_cancel", trace_id: <trace_id>, session_id: <session_id> }
 ```
 
 Triggered message:
 
 ```text
 {
-  action: <payload_action>,
-  correlation_id: <correlation_id>,
+  sender: <sender-agent>,
+  request: <payload_request>,
+  trace_id: <trace_id>,
+  session_id: <session_id>,
   text: <payload_text>,
-  attempt: <payload_attempt>,
-  schedule_id: <schedule_id>
+  attempt: <payload_attempt>
 }
 ```
 
-Status response:
+Response:
 
 ```text
 {
-  action: "schedule_status",
-  schedule_id: <id>,
-  status: <scheduled|cancelled|triggered|trigger_failed>,
+  sender: <scheduling-agent>,
+  response: "scheduling_result",
+  trace_id: <trace_id>,
+  session_id: <session_id>,
+  status: <success|failure>,
+  success_count: <count>,
+  failure_count: <count>,
   pending: <0|1>,
   current_tick: <number>
 }
 ```
 
-## Action Field
+Count semantics: `success_count` increments when a due tick successfully sends the stored payload,
+and when a matching cancel clears a pending schedule. The schedule creation response does not
+increment it. `failure_count` increments when a due tick should trigger but the stored payload send
+fails; the schedule remains pending.
 
-The input `action` field is a command discriminator in the request map. The scheduling agent runs
-this method for every message it receives, so the field separates schedule, tick, and cancel commands
-from unrelated messages that should not trigger pending work.
+Status semantics: the response status is `success` for schedule creation, for a matching cancel
+that clears a pending schedule, and for a due tick that successfully sends the stored payload. It is
+`failure` only when a due tick should trigger but the stored payload send fails.
 
-## Composition Notes
-
-Retry uses scheduling for delayed attempts. A host process or tick-source agent can send tick
-messages to a scheduling agent, while retry or workflow agents submit pending work.
-
-## Limitations
-
-There is no runtime clock or timer callback in the ordinary method instruction set. Scheduling
-therefore requires explicit `tick` messages from another agent or host process.
+Trigger responses and triggered payload requests use the tick request's effective `trace_id`;
+triggered payload requests preserve the original schedule request's `sender`. Cancel responses use
+the cancel request's effective `trace_id`. All request kinds in one pending schedule use the same
+`session_id`.
 
 ## Implementation and Tests
 

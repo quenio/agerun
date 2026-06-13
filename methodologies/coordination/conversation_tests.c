@@ -41,22 +41,51 @@ static int checked_agent_id(int64_t agent_id) {
     return (int)agent_id;
 }
 
+static void append_agent_id(ar_data_t *mut_list, int64_t agent_id) {
+    AR_ASSERT(ar_data__list_add_last_integer(mut_list, checked_agent_id(agent_id)),
+              "Agent id should be appended");
+}
+
+static ar_data_t *create_participants(int64_t first,
+                                      int64_t second,
+                                      int64_t third) {
+    ar_data_t *own_participants = ar_data__create_list();
+    AR_ASSERT(own_participants != NULL, "Participants list should be created");
+    append_agent_id(own_participants, first);
+    append_agent_id(own_participants, second);
+    if (third > 0) {
+        append_agent_id(own_participants, third);
+    }
+    return own_participants;
+}
+
+static ar_data_t *create_single_participant(int64_t participant) {
+    ar_data_t *own_participants = ar_data__create_list();
+    AR_ASSERT(own_participants != NULL, "Single participant list should be created");
+    append_agent_id(own_participants, participant);
+    return own_participants;
+}
+
 static void register_record_receiver(ar_agency_t *mut_agency) {
     ar_methodology_t *mut_methodology = ar_agency__get_methodology(mut_agency);
     const char *ref_instructions =
         "memory.last_action := message.action\n"
-        "memory.last_conversation_id := message.conversation_id\n"
-        "memory.last_from := message.from\n"
-        "memory.last_to := message.to\n"
-        "memory.last_state := message.state\n"
+        "memory.last_request := message.request\n"
+        "memory.last_response := message.response\n"
+        "memory.last_sender := message.sender\n"
+        "memory.last_trace_id := message.trace_id\n"
+        "memory.last_session_id := message.session_id\n"
+        "memory.last_participant := message.participant\n"
         "memory.last_status := message.status\n"
-        "memory.last_text := message.text\n"
-        "memory.last_intent := message.intent\n"
+        "memory.last_result := message.result\n"
+        "memory.last_success_count := message.success_count\n"
+        "memory.last_failure_count := message.failure_count\n"
+        "memory.last_payload := message.payload\n"
         "memory.last_turn_count := message.turn_count\n"
         "memory.last_history := message.history\n"
+        "memory.last_participants := message.participants\n"
         "memory.last_last_sender := message.last_sender\n"
-        "memory.last_last_recipient := message.last_recipient\n"
-        "memory.last_last_text := message.last_text\n";
+        "memory.last_last_payload := message.last_payload\n";
 
     AR_ASSERT(ar_methodology__create_method(mut_methodology,
                                             "record-receiver",
@@ -66,14 +95,15 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
     verify_method_parses(mut_methodology, "record-receiver");
 }
 
-static void test_conversation__coordinates_two_participant_agents(void) {
-    printf("Testing conversation coordinates two participant agents...\n");
+static void test_conversation__broadcasts_turns_to_all_other_participants(void) {
+    printf("Testing conversation broadcasts turns to all other participants...\n");
 
-    // Given a conversation coordinator, two participant agents, and a reply observer
-    ar_method_fixture_t *own_fixture = ar_method_fixture__create("conversation_two_agents");
+    // Given a conversation coordinator, three participants, and a response observer
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("conversation_multi_agent");
     AR_ASSERT(ar_method_fixture__initialize(own_fixture), "Fixture should initialize");
     AR_ASSERT(ar_method_fixture__verify_directory(own_fixture), "Fixture directory should verify");
     load_method(own_fixture, "conversation");
+    load_method(own_fixture, "broadcasting");
 
     ar_agency_t *mut_agency = ar_method_fixture__get_agency(own_fixture);
     register_record_receiver(mut_agency);
@@ -81,6 +111,8 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     ar_data_t *own_conversation_context = create_context();
     ar_data_t *own_participant_a_context = create_context();
     ar_data_t *own_participant_b_context = create_context();
+    ar_data_t *own_participant_c_context = create_context();
+    ar_data_t *own_intruder_context = create_context();
     ar_data_t *own_observer_context = create_context();
     int64_t conversation_agent = ar_agency__create_agent(
         mut_agency, "conversation", "1.0.0", own_conversation_context);
@@ -88,125 +120,692 @@ static void test_conversation__coordinates_two_participant_agents(void) {
         mut_agency, "record-receiver", "1.0.0", own_participant_a_context);
     int64_t participant_b = ar_agency__create_agent(
         mut_agency, "record-receiver", "1.0.0", own_participant_b_context);
+    int64_t participant_c = ar_agency__create_agent(
+        mut_agency, "record-receiver", "1.0.0", own_participant_c_context);
+    int64_t intruder = ar_agency__create_agent(
+        mut_agency, "record-receiver", "1.0.0", own_intruder_context);
     int64_t observer = ar_agency__create_agent(
         mut_agency, "record-receiver", "1.0.0", own_observer_context);
 
-    // When the coordinator starts a conversation and relays one turn from each participant
+    // When the coordinator starts a conversation
     ar_data_t *own_start = ar_data__create_map();
     AR_ASSERT(own_start != NULL, "Conversation start should be created");
-    ar_data__set_map_string(own_start, "action", "start");
-    ar_data__set_map_string(own_start, "conversation_id", "chat-1");
-    ar_data__set_map_integer(own_start, "participant_a", checked_agent_id(participant_a));
-    ar_data__set_map_integer(own_start, "participant_b", checked_agent_id(participant_b));
-    ar_data__set_map_integer(own_start, "reply_to", checked_agent_id(observer));
+    ar_data__set_map_string(own_start, "request", "conversation_start");
+    ar_data__set_map_string(own_start, "trace_id", "chat-trace-1");
+    ar_data__set_map_string(own_start, "session_id", "chat-session-1");
+    ar_data_t *own_participants = create_participants(participant_a, participant_b, participant_c);
+    AR_ASSERT(ar_data__set_map_data(own_start, "participants", own_participants),
+              "Conversation start should own participants list");
+    own_participants = NULL;
+    ar_data__set_map_integer(own_start, "sender", checked_agent_id(observer));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_start),
               "Conversation start should queue");
     own_start = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
 
+    const ar_data_t *ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_response"),
+                     "conversation_result") == 0,
+              "Conversation start should emit a response");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "success") == 0,
+              "Conversation start should report standard success status");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_result"), "active") == 0,
+              "Conversation start should report active result");
+
+    const ar_data_t *ref_conversation_memory = ar_agency__get_agent_memory(mut_agency,
+                                                                          conversation_agent);
+    int64_t first_broadcasting_agent =
+        ar_data__get_map_integer(ref_conversation_memory, "broadcasting_agent");
+    AR_ASSERT(first_broadcasting_agent > 0,
+              "Conversation should spawn a broadcasting helper on start");
+
+    // When participant A sends a turn
     ar_data_t *own_first = ar_data__create_map();
     AR_ASSERT(own_first != NULL, "First conversation message should be created");
-    ar_data__set_map_string(own_first, "action", "message");
-    ar_data__set_map_string(own_first, "conversation_id", "chat-1");
+    ar_data__set_map_string(own_first, "request", "conversation_message");
+    ar_data__set_map_string(own_first, "trace_id", "chat-turn-1");
+    ar_data__set_map_string(own_first, "session_id", "chat-session-1");
     ar_data__set_map_integer(own_first, "sender", checked_agent_id(participant_a));
-    ar_data__set_map_string(own_first, "text", "hello");
-    ar_data__set_map_string(own_first, "intent", "ask");
+    ar_data__set_map_string(own_first, "payload", "hello");
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_first),
               "First conversation message should queue");
     own_first = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
 
+    // Then participants B and C should receive the same turn while A is excluded
+    const ar_data_t *ref_participant_a_memory = ar_agency__get_agent_memory(mut_agency,
+                                                                           participant_a);
+    const ar_data_t *ref_participant_b_memory = ar_agency__get_agent_memory(mut_agency,
+                                                                           participant_b);
+    const ar_data_t *ref_participant_c_memory = ar_agency__get_agent_memory(mut_agency,
+                                                                           participant_c);
+    AR_ASSERT(ar_data__get_map_data(ref_participant_a_memory, "last_request") == NULL,
+              "Sender A should not receive its own turn");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_b_memory, "last_request"),
+                     "conversation_turn") == 0,
+              "Participant B should receive a conversation turn");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_c_memory, "last_request"),
+                     "conversation_turn") == 0,
+              "Participant C should receive a conversation turn");
+    AR_ASSERT(ar_data__get_map_integer(ref_participant_b_memory, "last_sender") ==
+                  checked_agent_id(conversation_agent),
+              "Participant B turn should identify the conversation sender");
+    AR_ASSERT(ar_data__get_map_integer(ref_participant_c_memory, "last_sender") ==
+                  checked_agent_id(conversation_agent),
+              "Participant C turn should identify the conversation sender");
+    AR_ASSERT(ar_data__get_map_integer(ref_participant_b_memory, "last_participant") ==
+                  checked_agent_id(participant_a),
+              "Participant B should see participant A as sender");
+    AR_ASSERT(ar_data__get_map_integer(ref_participant_c_memory, "last_participant") ==
+                  checked_agent_id(participant_a),
+              "Participant C should see participant A as sender");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_b_memory, "last_payload"),
+                     "hello") == 0,
+              "Participant B should receive participant A's payload");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_c_memory, "last_payload"),
+                     "hello") == 0,
+              "Participant C should receive participant A's payload");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_b_memory, "last_trace_id"),
+                     "chat-turn-1") == 0,
+              "Participant B turn should preserve first message trace id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_c_memory, "last_trace_id"),
+                     "chat-turn-1") == 0,
+              "Participant C turn should preserve first message trace id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_b_memory, "last_session_id"),
+                     "chat-session-1") == 0,
+              "Participant B turn should preserve conversation session id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_c_memory, "last_session_id"),
+                     "chat-session-1") == 0,
+              "Participant C turn should preserve conversation session id");
+    AR_ASSERT(ar_data__get_map_integer(ref_participant_b_memory, "last_turn_count") == 1,
+              "Participant B should receive turn one");
+    AR_ASSERT(ar_data__get_map_integer(ref_participant_c_memory, "last_turn_count") == 1,
+              "Participant C should receive turn one");
+
+    // When participant B sends a turn
     ar_data_t *own_second = ar_data__create_map();
     AR_ASSERT(own_second != NULL, "Second conversation message should be created");
-    ar_data__set_map_string(own_second, "action", "message");
-    ar_data__set_map_string(own_second, "conversation_id", "chat-1");
+    ar_data__set_map_string(own_second, "request", "conversation_message");
+    ar_data__set_map_string(own_second, "trace_id", "chat-turn-2");
+    ar_data__set_map_string(own_second, "session_id", "chat-session-1");
     ar_data__set_map_integer(own_second, "sender", checked_agent_id(participant_b));
-    ar_data__set_map_string(own_second, "text", "reply");
-    ar_data__set_map_string(own_second, "intent", "answer");
+    ar_data__set_map_string(own_second, "payload", "reply");
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_second),
               "Second conversation message should queue");
     own_second = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
 
-    ar_data_t *own_summary = ar_data__create_map();
-    AR_ASSERT(own_summary != NULL, "Summary request should be created");
-    ar_data__set_map_string(own_summary, "action", "summary");
-    ar_data__set_map_string(own_summary, "conversation_id", "chat-1");
-    AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_summary),
-              "Summary request should queue");
-    own_summary = NULL;
+    // Then participants A and C should receive the turn, B should not, and broadcasting is reused
+    ref_conversation_memory = ar_agency__get_agent_memory(mut_agency, conversation_agent);
+    int64_t second_broadcasting_agent =
+        ar_data__get_map_integer(ref_conversation_memory, "broadcasting_agent");
+    AR_ASSERT(second_broadcasting_agent == first_broadcasting_agent,
+              "Conversation should reuse the broadcasting helper across turns");
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_b_memory, "last_trace_id"),
+                     "chat-turn-1") == 0,
+              "Sender B should not receive its own reply turn");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_a_memory, "last_request"),
+                     "conversation_turn") == 0,
+              "Participant A should receive participant B's reply turn");
+    AR_ASSERT(ar_data__get_map_integer(ref_participant_a_memory, "last_participant") ==
+                  checked_agent_id(participant_b),
+              "Participant A should see participant B as sender");
+    AR_ASSERT(ar_data__get_map_integer(ref_participant_c_memory, "last_participant") ==
+                  checked_agent_id(participant_b),
+              "Participant C should see participant B as sender");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_a_memory, "last_payload"),
+                     "reply") == 0,
+              "Participant A should receive participant B's payload");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_c_memory, "last_payload"),
+                     "reply") == 0,
+              "Participant C should receive participant B's payload");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_a_memory, "last_trace_id"),
+                     "chat-turn-2") == 0,
+              "Participant A turn should preserve second message trace id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_c_memory, "last_trace_id"),
+                     "chat-turn-2") == 0,
+              "Participant C turn should preserve second message trace id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_a_memory, "last_session_id"),
+                     "chat-session-1") == 0,
+              "Participant A turn should preserve conversation session id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_c_memory, "last_session_id"),
+                     "chat-session-1") == 0,
+              "Participant C turn should preserve conversation session id");
+    AR_ASSERT(ar_data__get_map_integer(ref_participant_a_memory, "last_turn_count") == 2,
+              "Participant A should receive turn two");
+    AR_ASSERT(ar_data__get_map_integer(ref_participant_c_memory, "last_turn_count") == 2,
+              "Participant C should receive turn two");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
+                     "chat-turn-2") == 0,
+              "Second relay response should preserve second message trace id");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_success_count") == 2,
+              "Second relay response should report the accumulated successful turn count");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_failure_count") == 0,
+              "Second relay response should report no failed turns");
+
+    // When history is requested
+    ar_data_t *own_history = ar_data__create_map();
+    AR_ASSERT(own_history != NULL, "History request should be created");
+    ar_data__set_map_string(own_history, "request", "conversation_history");
+    ar_data__set_map_string(own_history, "trace_id", "chat-history-1");
+    ar_data__set_map_string(own_history, "session_id", "chat-session-1");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_history),
+              "History request should queue");
+    own_history = NULL;
 
     ar_method_fixture__process_all_messages(own_fixture);
 
-    // Then participant B should receive participant A's first turn
-    const ar_data_t *ref_participant_b_memory = ar_agency__get_agent_memory(mut_agency,
-                                                                           participant_b);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_b_memory, "last_action"),
-                     "conversation_turn") == 0,
-              "Participant B should receive a conversation turn");
-    AR_ASSERT(ar_data__get_map_integer(ref_participant_b_memory, "last_from") ==
-                  checked_agent_id(participant_a),
-              "Participant B should see participant A as sender");
-    AR_ASSERT(ar_data__get_map_integer(ref_participant_b_memory, "last_to") ==
-                  checked_agent_id(participant_b),
-              "Participant B should be the first turn recipient");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_b_memory, "last_text"),
-                     "hello") == 0,
-              "Participant B should receive participant A's text");
-    AR_ASSERT(ar_data__get_map_integer(ref_participant_b_memory, "last_turn_count") == 1,
-              "Participant B should receive turn one");
-
-    // Then participant A should receive participant B's reply turn
-    const ar_data_t *ref_participant_a_memory = ar_agency__get_agent_memory(mut_agency,
-                                                                           participant_a);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_a_memory, "last_action"),
-                     "conversation_turn") == 0,
-              "Participant A should receive a conversation turn");
-    AR_ASSERT(ar_data__get_map_integer(ref_participant_a_memory, "last_from") ==
-                  checked_agent_id(participant_b),
-              "Participant A should see participant B as sender");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_a_memory, "last_text"),
-                     "reply") == 0,
-              "Participant A should receive participant B's text");
-    AR_ASSERT(ar_data__get_map_integer(ref_participant_a_memory, "last_turn_count") == 2,
-              "Participant A should receive turn two");
-
-    // Then the observer should receive a structured summary with both turns
-    const ar_data_t *ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_action"),
-                     "conversation_summary") == 0,
-              "Observer should receive conversation summary");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_conversation_id"),
-                     "chat-1") == 0,
-              "Summary should preserve conversation id");
+    // Then the observer should receive structured history with both turns
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_response"),
+                     "conversation_result") == 0,
+              "Conversation history should be a response");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_sender") ==
+                  checked_agent_id(conversation_agent),
+              "Conversation history should identify the conversation sender");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "success") == 0,
+              "Conversation history should report standard success status");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_turn_count") == 2,
-              "Summary should report two turns");
+              "History should report two turns");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
+                     "chat-history-1") == 0,
+              "Conversation history should preserve history request trace id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_session_id"),
+                     "chat-session-1") == 0,
+              "Conversation history should preserve conversation session id");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_success_count") == 2,
+              "Conversation history should report successful turn count");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_failure_count") == 0,
+              "Conversation history should report no failed turns");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_last_sender") ==
                   checked_agent_id(participant_b),
-              "Summary should report participant B as the last sender");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_last_text"),
+              "History should report participant B as the last sender");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_last_payload"),
                      "reply") == 0,
-              "Summary should report the last text");
+              "History should report the last payload");
+    ar_data_t *ref_participants = ar_data__get_map_data(ref_observer_memory, "last_participants");
+    AR_ASSERT(ref_participants != NULL, "History should include participants");
+    AR_ASSERT(ar_data__list_count(ref_participants) == 3,
+              "History should include all participants");
     ar_data_t *ref_history = ar_data__get_map_data(ref_observer_memory, "last_history");
-    AR_ASSERT(ref_history != NULL, "Summary should include history");
-    AR_ASSERT(ar_data__list_count(ref_history) == 2, "Summary history should include both turns");
+    AR_ASSERT(ref_history != NULL, "History should include history");
+    AR_ASSERT(ar_data__list_count(ref_history) == 2, "History should include both turns");
+
+    // When an agent outside the participant list sends a payload
+    ar_data_t *own_intruder_turn = ar_data__create_map();
+    AR_ASSERT(own_intruder_turn != NULL, "Intruder conversation message should be created");
+    ar_data__set_map_string(own_intruder_turn, "request", "conversation_message");
+    ar_data__set_map_string(own_intruder_turn, "trace_id", "chat-intruder-turn");
+    ar_data__set_map_string(own_intruder_turn, "session_id", "chat-session-1");
+    ar_data__set_map_integer(own_intruder_turn, "sender", checked_agent_id(intruder));
+    ar_data__set_map_string(own_intruder_turn, "payload", "intruder");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_intruder_turn),
+              "Intruder conversation message should queue");
+    own_intruder_turn = NULL;
+
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    // Then the coordinator ignores the payload without changing phase or reporting a result
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
+                     "success") == 0,
+              "Non-participant payload should leave prior response status unchanged");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_result"),
+                     "active") == 0,
+              "Non-participant payload should leave prior response result unchanged");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
+                     "chat-history-1") == 0,
+              "Non-participant payload should not replace prior response trace id");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_success_count") == 2,
+              "Non-participant payload should leave prior success count unchanged");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_failure_count") == 0,
+              "Non-participant payload should leave prior failure count unchanged");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_turn_count") == 2,
+              "Non-participant payload should leave prior turn count unchanged");
+    ref_history = ar_data__get_map_data(ref_observer_memory, "last_history");
+    AR_ASSERT(ref_history != NULL, "Prior history response should remain available");
+    AR_ASSERT(ar_data__list_count(ref_history) == 2,
+              "Non-participant payload should not append to history");
+    ref_conversation_memory = ar_agency__get_agent_memory(mut_agency, conversation_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_conversation_memory, "phase"), "active") == 0,
+              "Non-participant payload should leave conversation phase unchanged");
+    AR_ASSERT(ar_data__get_map_integer(ref_conversation_memory, "turn_count") == 2,
+              "Non-participant payload should leave stored turn count unchanged");
+    AR_ASSERT(ar_data__get_map_integer(ref_conversation_memory, "last_sender") ==
+                  checked_agent_id(participant_b),
+              "Non-participant payload should leave last sender unchanged");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_conversation_memory, "last_payload"),
+                     "reply") == 0,
+              "Non-participant payload should leave last payload unchanged");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_a_memory, "last_trace_id"),
+                     "chat-turn-2") == 0,
+              "Participant A should not receive the non-participant payload");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_b_memory, "last_trace_id"),
+                     "chat-turn-1") == 0,
+              "Participant B should not receive the non-participant payload");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_c_memory, "last_trace_id"),
+                     "chat-turn-2") == 0,
+              "Participant C should not receive the non-participant payload");
+
+    // And a non-participant scan does not block a later participant turn
+    ar_data_t *own_intruder_pending_turn = ar_data__create_map();
+    AR_ASSERT(own_intruder_pending_turn != NULL,
+              "Pending intruder conversation message should be created");
+    ar_data__set_map_string(own_intruder_pending_turn, "request", "conversation_message");
+    ar_data__set_map_string(own_intruder_pending_turn, "trace_id", "chat-intruder-pending");
+    ar_data__set_map_string(own_intruder_pending_turn, "session_id", "chat-session-1");
+    ar_data__set_map_integer(own_intruder_pending_turn, "sender", checked_agent_id(intruder));
+    ar_data__set_map_string(own_intruder_pending_turn, "payload", "intruder-pending");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_intruder_pending_turn),
+              "Pending intruder conversation message should queue");
+    own_intruder_pending_turn = NULL;
+    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture),
+              "Pending intruder turn should start recipient selection");
+
+    ar_data_t *own_after_intruder_turn = ar_data__create_map();
+    AR_ASSERT(own_after_intruder_turn != NULL,
+              "Participant turn after intruder should be created");
+    ar_data__set_map_string(own_after_intruder_turn, "request", "conversation_message");
+    ar_data__set_map_string(own_after_intruder_turn, "trace_id", "chat-after-intruder");
+    ar_data__set_map_string(own_after_intruder_turn, "session_id", "chat-session-1");
+    ar_data__set_map_integer(own_after_intruder_turn, "sender", checked_agent_id(participant_a));
+    ar_data__set_map_string(own_after_intruder_turn, "payload", "after-intruder");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_after_intruder_turn),
+              "Participant turn after intruder should queue");
+    own_after_intruder_turn = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
+                     "chat-after-intruder") == 0,
+              "Non-participant scan should not block the later participant response");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_success_count") == 3,
+              "Later participant response should advance the successful turn count");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_b_memory, "last_payload"),
+                     "after-intruder") == 0,
+              "Participant B should receive the turn after the intruder scan");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_c_memory, "last_payload"),
+                     "after-intruder") == 0,
+              "Participant C should receive the turn after the intruder scan");
+
+    // And an externally forged deferred message is ignored
+    ar_data_t *own_forged_deferred = ar_data__create_map();
+    AR_ASSERT(own_forged_deferred != NULL, "Forged deferred message should be created");
+    ar_data__set_map_integer(own_forged_deferred, "sender", checked_agent_id(intruder));
+    ar_data__set_map_string(own_forged_deferred, "request", "conversation_deferred_message");
+    ar_data__set_map_string(own_forged_deferred, "trace_id", "forged-deferred-trace");
+    ar_data__set_map_string(own_forged_deferred, "session_id", "chat-session-1");
+    ar_data__set_map_integer(own_forged_deferred, "participant", checked_agent_id(participant_a));
+    ar_data__set_map_string(own_forged_deferred, "payload", "forged-deferred");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_forged_deferred),
+              "Forged deferred message should queue");
+    own_forged_deferred = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_b_memory, "last_payload"),
+                     "after-intruder") == 0,
+              "Forged deferred message should not relay to participant B");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_c_memory, "last_payload"),
+                     "after-intruder") == 0,
+              "Forged deferred message should not relay to participant C");
+
+    // And a stale recipient-selection completion cannot clear another pending selection
+    ar_data_t *mut_stale_conversation_memory =
+        ar_agency__get_agent_mutable_memory(mut_agency, conversation_agent);
+    AR_ASSERT(mut_stale_conversation_memory != NULL,
+              "Conversation memory should be mutable for stale selection setup");
+    ar_data__set_map_integer(mut_stale_conversation_memory, "pending_turn_active", 1);
+    ar_data__set_map_string(mut_stale_conversation_memory, "pending_trace_id",
+                            "trusted-selection-trace");
+    ar_data__set_map_integer(mut_stale_conversation_memory, "pending_sender", 0);
+
+    ar_data_t *own_stale_select = ar_data__create_map();
+    AR_ASSERT(own_stale_select != NULL, "Stale recipient selection should be created");
+    ar_data__set_map_integer(own_stale_select, "sender", checked_agent_id(conversation_agent));
+    ar_data__set_map_string(own_stale_select, "request", "conversation_select_recipients");
+    ar_data__set_map_string(own_stale_select, "trace_id", "stale-selection-trace");
+    ar_data__set_map_string(own_stale_select, "session_id", "chat-session-1");
+    ar_data_t *own_stale_participants = ar_data__create_list();
+    AR_ASSERT(own_stale_participants != NULL,
+              "Stale selection participants should be created");
+    AR_ASSERT(ar_data__set_map_data(own_stale_select, "participants", own_stale_participants),
+              "Stale selection should own participants");
+    own_stale_participants = NULL;
+    ar_data_t *own_stale_recipients = ar_data__create_list();
+    AR_ASSERT(own_stale_recipients != NULL,
+              "Stale selection recipients should be created");
+    AR_ASSERT(ar_data__set_map_data(own_stale_select, "recipients", own_stale_recipients),
+              "Stale selection should own recipients");
+    own_stale_recipients = NULL;
+    ar_data_t *own_stale_payload = ar_data__create_map();
+    AR_ASSERT(own_stale_payload != NULL, "Stale selection payload should be created");
+    AR_ASSERT(ar_data__set_map_data(own_stale_select, "payload", own_stale_payload),
+              "Stale selection should own payload");
+    own_stale_payload = NULL;
+    ar_data__set_map_integer(own_stale_select, "participant", checked_agent_id(intruder));
+    ar_data__set_map_integer(own_stale_select, "found_sender", 0);
+    ar_data__set_map_integer(own_stale_select, "recipient_count", 0);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_stale_select),
+              "Stale selection should queue");
+    own_stale_select = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ref_conversation_memory = ar_agency__get_agent_memory(mut_agency, conversation_agent);
+    AR_ASSERT(ar_data__get_map_integer(ref_conversation_memory, "pending_turn_active") == 1,
+              "Stale selection should not clear the pending slot");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_conversation_memory, "pending_trace_id"),
+                     "trusted-selection-trace") == 0,
+              "Stale selection should preserve the trusted pending trace");
+
+    ar_data_t *own_stale_broadcast_select = ar_data__create_map();
+    AR_ASSERT(own_stale_broadcast_select != NULL,
+              "Stale broadcast selection should be created");
+    ar_data__set_map_integer(own_stale_broadcast_select,
+                             "sender",
+                             checked_agent_id(conversation_agent));
+    ar_data__set_map_string(own_stale_broadcast_select,
+                            "request",
+                            "conversation_select_recipients");
+    ar_data__set_map_string(own_stale_broadcast_select,
+                            "trace_id",
+                            "stale-broadcast-trace");
+    ar_data__set_map_string(own_stale_broadcast_select, "session_id", "chat-session-1");
+    ar_data_t *own_stale_broadcast_participants = ar_data__create_list();
+    AR_ASSERT(own_stale_broadcast_participants != NULL,
+              "Stale broadcast participants should be created");
+    AR_ASSERT(ar_data__set_map_data(own_stale_broadcast_select,
+                                    "participants",
+                                    own_stale_broadcast_participants),
+              "Stale broadcast selection should own participants");
+    own_stale_broadcast_participants = NULL;
+    ar_data_t *own_stale_broadcast_recipients = ar_data__create_list();
+    AR_ASSERT(own_stale_broadcast_recipients != NULL,
+              "Stale broadcast recipients should be created");
+    append_agent_id(own_stale_broadcast_recipients, participant_b);
+    AR_ASSERT(ar_data__set_map_data(own_stale_broadcast_select,
+                                    "recipients",
+                                    own_stale_broadcast_recipients),
+              "Stale broadcast selection should own recipients");
+    own_stale_broadcast_recipients = NULL;
+    ar_data_t *own_stale_broadcast_payload = ar_data__create_map();
+    AR_ASSERT(own_stale_broadcast_payload != NULL,
+              "Stale broadcast payload should be created");
+    ar_data__set_map_integer(own_stale_broadcast_payload,
+                             "sender",
+                             checked_agent_id(conversation_agent));
+    ar_data__set_map_string(own_stale_broadcast_payload, "request", "conversation_turn");
+    ar_data__set_map_string(own_stale_broadcast_payload,
+                            "trace_id",
+                            "stale-broadcast-trace");
+    ar_data__set_map_string(own_stale_broadcast_payload,
+                            "session_id",
+                            "chat-session-1");
+    ar_data__set_map_string(own_stale_broadcast_payload, "payload", "stale-broadcast");
+    ar_data__set_map_integer(own_stale_broadcast_payload,
+                             "participant",
+                             checked_agent_id(participant_a));
+    ar_data__set_map_integer(own_stale_broadcast_payload, "turn_count", 99);
+    AR_ASSERT(ar_data__set_map_data(own_stale_broadcast_select,
+                                    "payload",
+                                    own_stale_broadcast_payload),
+              "Stale broadcast selection should own payload");
+    own_stale_broadcast_payload = NULL;
+    ar_data__set_map_integer(own_stale_broadcast_select,
+                             "participant",
+                             checked_agent_id(participant_a));
+    ar_data__set_map_integer(own_stale_broadcast_select, "found_sender", 1);
+    ar_data__set_map_integer(own_stale_broadcast_select, "recipient_count", 1);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency,
+                                       conversation_agent,
+                                       own_stale_broadcast_select),
+              "Stale broadcast selection should queue");
+    own_stale_broadcast_select = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ref_conversation_memory = ar_agency__get_agent_memory(mut_agency, conversation_agent);
+    AR_ASSERT(ar_data__get_map_integer(ref_conversation_memory, "pending_turn_active") == 1,
+              "Stale broadcast selection should not clear the pending slot");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_conversation_memory, "pending_trace_id"),
+                     "trusted-selection-trace") == 0,
+              "Stale broadcast selection should preserve the trusted pending trace");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_b_memory, "last_payload"),
+                     "after-intruder") == 0,
+              "Stale broadcast selection should not relay a mismatched turn");
+
+    ar_data__set_map_integer(mut_stale_conversation_memory, "pending_turn_active", 1);
+    ar_data__set_map_string(mut_stale_conversation_memory, "pending_trace_id",
+                            "missing-participants-trace");
+    ar_data__set_map_integer(mut_stale_conversation_memory, "pending_sender", 0);
+    ar_data__set_map_integer(mut_stale_conversation_memory, "pending_candidate_found", 0);
+
+    ar_data_t *own_missing_participants_select = ar_data__create_map();
+    AR_ASSERT(own_missing_participants_select != NULL,
+              "Missing participants selection should be created");
+    ar_data__set_map_integer(own_missing_participants_select,
+                             "sender",
+                             checked_agent_id(conversation_agent));
+    ar_data__set_map_string(own_missing_participants_select,
+                            "request",
+                            "conversation_select_recipients");
+    ar_data__set_map_string(own_missing_participants_select,
+                            "trace_id",
+                            "missing-participants-trace");
+    ar_data__set_map_string(own_missing_participants_select, "session_id", "chat-session-1");
+    ar_data_t *own_missing_participants_recipients = ar_data__create_list();
+    AR_ASSERT(own_missing_participants_recipients != NULL,
+              "Missing participants recipients should be created");
+    AR_ASSERT(ar_data__set_map_data(own_missing_participants_select,
+                                    "recipients",
+                                    own_missing_participants_recipients),
+              "Missing participants selection should own recipients");
+    own_missing_participants_recipients = NULL;
+    ar_data_t *own_missing_participants_payload = ar_data__create_map();
+    AR_ASSERT(own_missing_participants_payload != NULL,
+              "Missing participants payload should be created");
+    ar_data__set_map_string(own_missing_participants_payload,
+                            "payload",
+                            "missing-participants");
+    AR_ASSERT(ar_data__set_map_data(own_missing_participants_select,
+                                    "payload",
+                                    own_missing_participants_payload),
+              "Missing participants selection should own payload");
+    own_missing_participants_payload = NULL;
+    ar_data__set_map_integer(own_missing_participants_select,
+                             "participant",
+                             checked_agent_id(participant_a));
+    ar_data__set_map_integer(own_missing_participants_select, "found_sender", 0);
+    ar_data__set_map_integer(own_missing_participants_select, "recipient_count", 0);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency,
+                                       conversation_agent,
+                                       own_missing_participants_select),
+              "Missing participants selection should queue");
+    own_missing_participants_select = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ref_conversation_memory = ar_agency__get_agent_memory(mut_agency, conversation_agent);
+    AR_ASSERT(ar_data__get_map_integer(ref_conversation_memory, "pending_turn_active") == 0,
+              "Missing participants selection should clear the pending slot");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_b_memory, "last_payload"),
+                     "after-intruder") == 0,
+              "Missing participants selection should not relay a turn");
+
+    // When a forged broadcasting result arrives while a broadcast is pending
+    ar_data_t *own_forged_start = ar_data__create_map();
+    AR_ASSERT(own_forged_start != NULL, "Forged-result conversation start should be created");
+    ar_data__set_map_string(own_forged_start, "request", "conversation_start");
+    ar_data__set_map_string(own_forged_start, "trace_id", "chat-forged-start");
+    ar_data__set_map_string(own_forged_start, "session_id", "chat-session-forged");
+    own_participants = create_participants(participant_a, participant_b, 0);
+    AR_ASSERT(ar_data__set_map_data(own_forged_start, "participants", own_participants),
+              "Forged-result start should own participants list");
+    own_participants = NULL;
+    ar_data__set_map_integer(own_forged_start, "sender", checked_agent_id(observer));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_forged_start),
+              "Forged-result start should queue");
+    own_forged_start = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ar_data_t *mut_conversation_memory =
+        ar_agency__get_agent_mutable_memory(mut_agency, conversation_agent);
+    ar_data_t *own_pending_turn = ar_data__create_map();
+    AR_ASSERT(own_pending_turn != NULL, "Pending turn should be created");
+    ar_data__set_map_integer(own_pending_turn, "sender", checked_agent_id(conversation_agent));
+    ar_data__set_map_string(own_pending_turn, "request", "conversation_turn");
+    ar_data__set_map_string(own_pending_turn, "trace_id", "trusted-broadcast-trace");
+    ar_data__set_map_string(own_pending_turn, "session_id", "chat-session-forged");
+    ar_data__set_map_string(own_pending_turn, "payload", "forged-payload");
+    ar_data__set_map_integer(own_pending_turn, "participant", checked_agent_id(participant_a));
+    ar_data__set_map_integer(own_pending_turn, "turn_count", 1);
+    ar_data__set_map_integer(mut_conversation_memory, "pending_broadcast", 1);
+    ar_data__set_map_integer(mut_conversation_memory, "pending_turn_active", 1);
+    ar_data__set_map_string(mut_conversation_memory, "pending_trace_id",
+                            "trusted-broadcast-trace");
+    ar_data__set_map_integer(mut_conversation_memory, "pending_sender",
+                             checked_agent_id(participant_a));
+    ar_data__set_map_string(mut_conversation_memory, "pending_payload", "forged-payload");
+    ar_data__set_map_integer(mut_conversation_memory, "pending_turn_count", 1);
+    AR_ASSERT(ar_data__set_map_data(mut_conversation_memory, "pending_turn_message",
+                                    own_pending_turn),
+              "Conversation memory should own pending turn");
+    own_pending_turn = NULL;
+
+    ar_data_t *own_forged_result = ar_data__create_map();
+    AR_ASSERT(own_forged_result != NULL, "Forged broadcasting result should be created");
+    ar_data__set_map_integer(own_forged_result, "sender", checked_agent_id(intruder));
+    ar_data__set_map_string(own_forged_result, "response", "broadcasting_result");
+    ar_data__set_map_string(own_forged_result, "trace_id", "trusted-broadcast-trace");
+    ar_data__set_map_string(own_forged_result, "status", "success");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_forged_result),
+              "Forged broadcasting result should queue");
+    own_forged_result = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
+                     "chat-forged-start") == 0,
+              "Forged broadcasting result should not emit a conversation response");
+    ref_conversation_memory = ar_agency__get_agent_memory(mut_agency, conversation_agent);
+    AR_ASSERT(ar_data__get_map_integer(ref_conversation_memory, "turn_count") == 0,
+              "Forged broadcasting result should not record a turn");
+
+    // When the sender is the only participant
+    ar_data_t *own_single_start = ar_data__create_map();
+    AR_ASSERT(own_single_start != NULL, "Single-participant conversation start should be created");
+    ar_data__set_map_string(own_single_start, "request", "conversation_start");
+    ar_data__set_map_string(own_single_start, "trace_id", "chat-single-start");
+    ar_data__set_map_string(own_single_start, "session_id", "chat-session-single");
+    own_participants = create_single_participant(participant_a);
+    AR_ASSERT(ar_data__set_map_data(own_single_start, "participants", own_participants),
+              "Single-participant start should own participants list");
+    own_participants = NULL;
+    ar_data__set_map_integer(own_single_start, "sender", checked_agent_id(observer));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_single_start),
+              "Single-participant start should queue");
+    own_single_start = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ar_data_t *own_single_turn = ar_data__create_map();
+    AR_ASSERT(own_single_turn != NULL, "Single-participant message should be created");
+    ar_data__set_map_string(own_single_turn, "request", "conversation_message");
+    ar_data__set_map_string(own_single_turn, "trace_id", "chat-single-turn");
+    ar_data__set_map_string(own_single_turn, "session_id", "chat-session-single");
+    ar_data__set_map_integer(own_single_turn, "sender", checked_agent_id(participant_a));
+    ar_data__set_map_string(own_single_turn, "payload", "solo");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_single_turn),
+              "Single-participant message should queue");
+    own_single_turn = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "success") == 0,
+              "Single-participant turn should succeed without recipients");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_result"), "relayed") == 0,
+              "Single-participant turn should be reported as relayed");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
+                     "chat-single-turn") == 0,
+              "Single-participant response should preserve turn trace id");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_success_count") == 1,
+              "Single-participant response should count the recorded turn");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_failure_count") == 0,
+              "Single-participant response should not report a relay failure");
+
+    // When two participant turns are queued before the first relay completes
+    ar_data_t *own_queued_start = ar_data__create_map();
+    AR_ASSERT(own_queued_start != NULL, "Queued-turn conversation start should be created");
+    ar_data__set_map_string(own_queued_start, "request", "conversation_start");
+    ar_data__set_map_string(own_queued_start, "trace_id", "chat-queued-start");
+    ar_data__set_map_string(own_queued_start, "session_id", "chat-session-queued");
+    own_participants = create_participants(participant_a, participant_b, 0);
+    AR_ASSERT(ar_data__set_map_data(own_queued_start, "participants", own_participants),
+              "Queued-turn start should own participants list");
+    own_participants = NULL;
+    ar_data__set_map_integer(own_queued_start, "sender", checked_agent_id(observer));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_queued_start),
+              "Queued-turn start should queue");
+    own_queued_start = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ar_data_t *own_queued_first = ar_data__create_map();
+    AR_ASSERT(own_queued_first != NULL, "First queued turn should be created");
+    ar_data__set_map_string(own_queued_first, "request", "conversation_message");
+    ar_data__set_map_string(own_queued_first, "trace_id", "chat-queued-first");
+    ar_data__set_map_string(own_queued_first, "session_id", "chat-session-queued");
+    ar_data__set_map_integer(own_queued_first, "sender", checked_agent_id(participant_a));
+    ar_data__set_map_string(own_queued_first, "payload", "queued-one");
+    ar_data_t *own_queued_second = ar_data__create_map();
+    AR_ASSERT(own_queued_second != NULL, "Second queued turn should be created");
+    ar_data__set_map_string(own_queued_second, "request", "conversation_message");
+    ar_data__set_map_string(own_queued_second, "trace_id", "chat-queued-second");
+    ar_data__set_map_string(own_queued_second, "session_id", "chat-session-queued");
+    ar_data__set_map_integer(own_queued_second, "sender", checked_agent_id(participant_a));
+    ar_data__set_map_string(own_queued_second, "payload", "queued-two");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_queued_first),
+              "First queued turn should queue");
+    own_queued_first = NULL;
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_queued_second),
+              "Second queued turn should queue");
+    own_queued_second = NULL;
+    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture),
+              "First queued turn should start recipient selection behind the second turn");
+    ref_conversation_memory = ar_agency__get_agent_memory(mut_agency, conversation_agent);
+    AR_ASSERT(ar_data__get_map_integer(ref_conversation_memory, "pending_turn_active") == 1,
+              "Conversation should claim the pending turn before recipient selection finishes");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_conversation_memory, "pending_trace_id"),
+                     "chat-queued-first") == 0,
+              "Conversation should remember the pending selection trace");
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
+                     "chat-queued-first") == 0,
+              "Queued overlap should keep the first turn response");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_turn_count") == 1,
+              "Queued overlap should record only one turn");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_last_payload"),
+                     "queued-one") == 0,
+              "Queued overlap should preserve the first pending payload");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_b_memory, "last_payload"),
+                     "queued-one") == 0,
+              "Queued overlap should not relay the overwritten payload");
 
     // When a participant message cannot be delivered
     ar_data_t *own_failed_start = ar_data__create_map();
     AR_ASSERT(own_failed_start != NULL, "Failed relay conversation start should be created");
-    ar_data__set_map_string(own_failed_start, "action", "start");
-    ar_data__set_map_string(own_failed_start, "conversation_id", "chat-2");
-    ar_data__set_map_integer(own_failed_start, "participant_a", checked_agent_id(participant_a));
-    ar_data__set_map_integer(own_failed_start, "participant_b", 98765);
-    ar_data__set_map_integer(own_failed_start, "reply_to", checked_agent_id(observer));
+    ar_data__set_map_string(own_failed_start, "request", "conversation_start");
+    ar_data__set_map_string(own_failed_start, "trace_id", "chat-2-start");
+    ar_data__set_map_string(own_failed_start, "session_id", "chat-session-2");
+    own_participants = create_participants(participant_a, 98765, 0);
+    AR_ASSERT(ar_data__set_map_data(own_failed_start, "participants", own_participants),
+              "Failed relay start should own participants list");
+    own_participants = NULL;
+    ar_data__set_map_integer(own_failed_start, "sender", checked_agent_id(observer));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_failed_start),
               "Failed relay start should queue");
     own_failed_start = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
 
     ar_data_t *own_failed_turn = ar_data__create_map();
     AR_ASSERT(own_failed_turn != NULL, "Failed relay message should be created");
-    ar_data__set_map_string(own_failed_turn, "action", "message");
-    ar_data__set_map_string(own_failed_turn, "conversation_id", "chat-2");
+    ar_data__set_map_string(own_failed_turn, "request", "conversation_message");
+    ar_data__set_map_string(own_failed_turn, "trace_id", "chat-failed-turn");
+    ar_data__set_map_string(own_failed_turn, "session_id", "chat-session-2");
     ar_data__set_map_integer(own_failed_turn, "sender", checked_agent_id(participant_a));
-    ar_data__set_map_string(own_failed_turn, "text", "undeliverable");
-    ar_data__set_map_string(own_failed_turn, "intent", "notify");
+    ar_data__set_map_string(own_failed_turn, "payload", "undeliverable");
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_failed_turn),
               "Failed relay message should queue");
     own_failed_turn = NULL;
@@ -214,12 +813,25 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     ar_method_fixture__process_all_messages(own_fixture);
 
     // Then the coordinator should report the failed relay without recording the turn
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_action"),
-                     "conversation_relayed") == 0,
-              "Observer should receive a relay response for failed delivery");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_response"),
+                     "conversation_result") == 0,
+              "Failed relay response should be a response");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
+                     "failure") == 0,
+              "Failed relay response should report standard failure status");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_result"),
                      "relay_failed") == 0,
               "Observer should see relay failure status");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
+                     "chat-failed-turn") == 0,
+              "Failed relay response should preserve message request trace id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_session_id"),
+                     "chat-session-2") == 0,
+              "Failed relay response should preserve conversation session id");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_success_count") == 0,
+              "Failed relay should report no successful turn");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_failure_count") == 1,
+              "Failed relay should report one failed turn");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_turn_count") == 0,
               "Failed relays should not increment turn count");
     ref_history = ar_data__get_map_data(ref_observer_memory, "last_history");
@@ -227,17 +839,162 @@ static void test_conversation__coordinates_two_participant_agents(void) {
     AR_ASSERT(ar_data__list_count(ref_history) == 0,
               "Failed relays should not append to history");
 
+    // When recipient selection cannot queue its next self-continuation
+    ar_data_t *mut_failure_memory =
+        ar_agency__get_agent_mutable_memory(mut_agency, conversation_agent);
+    AR_ASSERT(mut_failure_memory != NULL, "Conversation memory should be mutable");
+    ar_data__set_map_integer(mut_failure_memory, "self", 98765);
+    ar_data__set_map_integer(mut_failure_memory, "pending_turn_active", 1);
+    ar_data__set_map_string(mut_failure_memory, "pending_trace_id",
+                            "scan-continuation-fails");
+    ar_data__set_map_integer(mut_failure_memory, "pending_sender", 0);
+    ar_data__set_map_integer(mut_failure_memory, "pending_candidate_found", 0);
+    ar_data__set_map_integer(mut_failure_memory, "pending_broadcast", 0);
+
+    ar_data_t *own_continue_select = ar_data__create_map();
+    AR_ASSERT(own_continue_select != NULL,
+              "Continuation failure selection should be created");
+    ar_data__set_map_integer(own_continue_select, "sender", 98765);
+    ar_data__set_map_string(own_continue_select, "request",
+                            "conversation_select_recipients");
+    ar_data__set_map_string(own_continue_select, "trace_id",
+                            "scan-continuation-fails");
+    ar_data__set_map_string(own_continue_select, "session_id", "chat-session-2");
+    own_participants = create_participants(participant_a, participant_b, 0);
+    AR_ASSERT(ar_data__set_map_data(own_continue_select, "participants",
+                                    own_participants),
+              "Continuation failure selection should own participants");
+    own_participants = NULL;
+    ar_data_t *own_continue_recipients = ar_data__create_list();
+    AR_ASSERT(own_continue_recipients != NULL,
+              "Continuation failure recipients should be created");
+    AR_ASSERT(ar_data__set_map_data(own_continue_select, "recipients",
+                                    own_continue_recipients),
+              "Continuation failure selection should own recipients");
+    own_continue_recipients = NULL;
+    ar_data_t *own_continue_payload = ar_data__create_map();
+    AR_ASSERT(own_continue_payload != NULL,
+              "Continuation failure payload should be created");
+    ar_data__set_map_integer(own_continue_payload, "sender", 98765);
+    ar_data__set_map_string(own_continue_payload, "request", "conversation_turn");
+    ar_data__set_map_string(own_continue_payload, "trace_id",
+                            "scan-continuation-fails");
+    ar_data__set_map_string(own_continue_payload, "session_id", "chat-session-2");
+    ar_data__set_map_string(own_continue_payload, "payload", "scan-fail");
+    ar_data__set_map_integer(own_continue_payload, "participant",
+                             checked_agent_id(participant_a));
+    ar_data__set_map_integer(own_continue_payload, "turn_count", 1);
+    AR_ASSERT(ar_data__set_map_data(own_continue_select, "payload",
+                                    own_continue_payload),
+              "Continuation failure selection should own payload");
+    own_continue_payload = NULL;
+    ar_data__set_map_integer(own_continue_select, "participant",
+                             checked_agent_id(participant_a));
+    ar_data__set_map_integer(own_continue_select, "found_sender", 0);
+    ar_data__set_map_integer(own_continue_select, "recipient_count", 0);
+
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent,
+                                       own_continue_select),
+              "Continuation failure selection should queue");
+    own_continue_select = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ref_conversation_memory = ar_agency__get_agent_memory(mut_agency, conversation_agent);
+    AR_ASSERT(ar_data__get_map_integer(ref_conversation_memory,
+                                       "pending_turn_active") == 0,
+              "Failed selection continuation should clear the pending turn");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
+                     "scan-continuation-fails") == 0,
+              "Failed selection continuation should report its trace id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_result"),
+                     "relay_failed") == 0,
+              "Failed selection continuation should report relay failure");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_failure_count") == 1,
+              "Failed selection continuation should count one failure");
+
+    // When a deferred turn retry cannot queue its internal self-message
+    mut_failure_memory = ar_agency__get_agent_mutable_memory(mut_agency, conversation_agent);
+    AR_ASSERT(mut_failure_memory != NULL, "Conversation memory should still be mutable");
+    ar_data__set_map_integer(mut_failure_memory, "self", 98765);
+    ar_data__set_map_integer(mut_failure_memory, "pending_turn_active", 1);
+    ar_data__set_map_string(mut_failure_memory, "pending_trace_id",
+                            "missing-sender-trace");
+    ar_data__set_map_integer(mut_failure_memory, "pending_sender", 0);
+    ar_data__set_map_integer(mut_failure_memory, "pending_candidate_found", 0);
+    ar_data__set_map_integer(mut_failure_memory, "deferred_turn_active", 1);
+    ar_data__set_map_string(mut_failure_memory, "deferred_trace_id",
+                            "deferred-retained");
+    ar_data__set_map_string(mut_failure_memory, "deferred_session_id",
+                            "chat-session-2");
+    ar_data__set_map_integer(mut_failure_memory, "deferred_sender",
+                             checked_agent_id(participant_b));
+    ar_data__set_map_string(mut_failure_memory, "deferred_payload",
+                            "deferred-payload");
+
+    ar_data_t *own_missing_sender_select = ar_data__create_map();
+    AR_ASSERT(own_missing_sender_select != NULL,
+              "Missing sender selection should be created");
+    ar_data__set_map_integer(own_missing_sender_select, "sender", 98765);
+    ar_data__set_map_string(own_missing_sender_select, "request",
+                            "conversation_select_recipients");
+    ar_data__set_map_string(own_missing_sender_select, "trace_id",
+                            "missing-sender-trace");
+    ar_data__set_map_string(own_missing_sender_select, "session_id",
+                            "chat-session-2");
+    own_participants = create_single_participant(participant_a);
+    AR_ASSERT(ar_data__set_map_data(own_missing_sender_select, "participants",
+                                    own_participants),
+              "Missing sender selection should own participants");
+    own_participants = NULL;
+    ar_data_t *own_missing_recipients = ar_data__create_list();
+    AR_ASSERT(own_missing_recipients != NULL,
+              "Missing sender recipients should be created");
+    AR_ASSERT(ar_data__set_map_data(own_missing_sender_select, "recipients",
+                                    own_missing_recipients),
+              "Missing sender selection should own recipients");
+    own_missing_recipients = NULL;
+    ar_data_t *own_missing_payload = ar_data__create_map();
+    AR_ASSERT(own_missing_payload != NULL, "Missing sender payload should be created");
+    ar_data__set_map_string(own_missing_payload, "payload", "missing-sender");
+    AR_ASSERT(ar_data__set_map_data(own_missing_sender_select, "payload",
+                                    own_missing_payload),
+              "Missing sender selection should own payload");
+    own_missing_payload = NULL;
+    ar_data__set_map_integer(own_missing_sender_select, "participant",
+                             checked_agent_id(intruder));
+    ar_data__set_map_integer(own_missing_sender_select, "found_sender", 0);
+    ar_data__set_map_integer(own_missing_sender_select, "recipient_count", 0);
+
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent,
+                                       own_missing_sender_select),
+              "Missing sender selection should queue");
+    own_missing_sender_select = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ref_conversation_memory = ar_agency__get_agent_memory(mut_agency, conversation_agent);
+    AR_ASSERT(ar_data__get_map_integer(ref_conversation_memory,
+                                       "deferred_turn_active") == 1,
+              "Failed deferred retry should keep the deferred turn active");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_conversation_memory, "deferred_trace_id"),
+                     "deferred-retained") == 0,
+              "Failed deferred retry should keep the deferred trace id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_conversation_memory, "deferred_payload"),
+                     "deferred-payload") == 0,
+              "Failed deferred retry should keep the deferred payload");
+
     // Cleanup
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_conversation_context);
     ar_data__destroy(own_participant_a_context);
     ar_data__destroy(own_participant_b_context);
+    ar_data__destroy(own_participant_c_context);
+    ar_data__destroy(own_intruder_context);
     ar_data__destroy(own_observer_context);
 }
 
 int main(void) {
     printf("Running conversation method tests...\n\n");
-    test_conversation__coordinates_two_participant_agents();
+    test_conversation__broadcasts_turns_to_all_other_participants();
     printf("\nAll conversation method tests passed!\n");
     return 0;
 }

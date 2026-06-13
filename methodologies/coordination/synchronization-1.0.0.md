@@ -2,97 +2,70 @@
 
 ## Overview
 
-The synchronization method waits for an unbounded stream of dependency messages before sending a
-continuation message. It is a reusable dependency gate for workflows and distributed work.
+Synchronization waits for an unbounded stream of dependency messages before sending a continuation
+message. It is a reusable dependency gate for workflows and distributed work.
 
 ## Behavior
 
-On a map whose `action` field is `"wait"`, the method stores the sync id, required count,
-continuation target, continuation action, continuation text, and reply target. It clears the
-append-backed `received` dependency list and resets the completion marker.
-Required counts below one behave as one required dependency, so a wait message cannot complete the
-gate before any dependency arrives.
+Only messages with a recognized `request` value are handled as coordination requests.
 
-On a map whose `action` field is `"dependency"`, the method only counts the message when its
-`sync_id` matches the active wait request and the gate has not already completed. It appends the
-dependency value to `memory.received`. When the number of received dependencies reaches
-`required_count`, it sends the continuation and reports completion.
-The completion marker is set only after the continuation is delivered and, when `reply_to` is a
-positive agent id, the status reply is delivered. Failed delivery leaves the gate open so later
-matching dependency messages can retry completion. Once the required count is reached, the dependency
-list is frozen even if continuation delivery fails; later matching dependency messages retry the
-continuation with the same `done_count` and dependency list. Unrelated messages, including maps with
-other actions, do not retry pending delivery. After the continuation has been delivered, if only the
-status reply fails, later matching dependency messages retry the status report without re-emitting
-the continuation or increasing `done_count`.
+On `request: "synchronization_wait"`, the method stores the required count, continuation recipient
+agent, continuation request, continuation text, effective `trace_id`, `session_id`, and `sender`.
+On matching `synchronization_dependency` requests with the same `session_id`, it appends the
+dependency value until the required count is reached.
+
+Completion is recorded only after the continuation and response are delivered. Failed delivery
+keeps the gate open for retry. Continuation and response messages use the triggering dependency
+request's effective `trace_id` and the active synchronization `session_id`.
 
 ## Message Format
 
-Wait request:
+Requests:
 
 ```text
-{
-  action: "wait",
-  sync_id: <id>,
-  required_count: <count>,
-  continuation_target: <agent>,
-  continuation_action: <action>,
-  continuation_text: <text>,
-  reply_to: <agent>
-}
+{ sender: <sender-agent>, request: "synchronization_wait", trace_id: <trace_id>, session_id: <session_id>, required_count: <count>, continuation_recipient: <agent>, continuation_request: <request>, continuation_text: <text> }
+{ sender: <sender-agent>, request: "synchronization_dependency", trace_id: <trace_id>, session_id: <session_id>, dependency: <name> }
 ```
 
-Dependency request:
+Continuation:
 
 ```text
 {
-  action: "dependency",
-  sync_id: <id>,
-  dependency: <name>
-}
-```
-
-Continuation message:
-
-```text
-{
-  action: <continuation_action>,
-  sync_id: <id>,
+  sender: <sender-agent>,
+  request: <continuation_request>,
+  trace_id: <trace_id>,
+  session_id: <session_id>,
   text: <continuation_text>,
   done_count: <count>,
   dependencies: [<dependency>, <dependency>, ...]
 }
 ```
 
-Status response:
+Response:
 
 ```text
 {
-  action: "synchronization_status",
-  sync_id: <id>,
-  status: "complete",
+  sender: <synchronization-agent>,
+  response: "synchronization_result",
+  trace_id: <trace_id>,
+  session_id: <session_id>,
+  status: "success",
+  success_count: <count>,
+  failure_count: 0,
   done_count: <count>,
   dependencies: [<dependency>, <dependency>, ...]
 }
 ```
 
-## Action Field
+Count semantics: `success_count` increments by one for each matching dependency whose value is
+appended before completion. No current synchronization event increments `failure_count`; failed
+continuation or result delivery keeps the gate open for retry instead of producing a failure result,
+so result `failure_count` is always `0`.
 
-The input `action` field is a command discriminator in the request map. The synchronization agent
-runs this method for every message it receives, so the field separates wait setup from dependency
-arrival and keeps unrelated messages from satisfying the gate.
-
-## Composition Notes
-
-Use synchronization when several workers, approvals, or prerequisite steps must complete before a
-workflow advances. It can also gate an aggregation completion before sending a follow-up message.
-
-## Limitations
-
-The method supports an unbounded count of dependency messages by appending received dependencies to
-a list. It does not validate membership against a declared dependency set or de-duplicate repeated
-dependency names; callers that need those policies should put that validation in the producing
-methods or compose a specialized filtering method before this gate.
+Status semantics: the only emitted synchronization result has status `success`, and it is emitted
+after the required dependencies have been collected and the continuation has been delivered. Failed
+continuation or result delivery emits no failure result; it keeps the synchronization open for
+retry.
 
 ## Implementation and Tests
 

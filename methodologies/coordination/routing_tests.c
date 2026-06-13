@@ -44,8 +44,8 @@ static int checked_agent_id(int64_t agent_id) {
 static ar_data_t *create_routes(
         const char **ref_keys,
         size_t key_count,
-        const int *ref_targets,
-        size_t target_count) {
+        const int *ref_recipients,
+        size_t recipient_count) {
     ar_data_t *own_routes = ar_data__create_map();
     AR_ASSERT(own_routes != NULL, "Routes map should be created");
 
@@ -59,15 +59,15 @@ static ar_data_t *create_routes(
               "Routes map should own keys list");
     own_keys = NULL;
 
-    ar_data_t *own_targets = ar_data__create_list();
-    AR_ASSERT(own_targets != NULL, "Route targets list should be created");
-    for (size_t i = 0; i < target_count; i++) {
-        AR_ASSERT(ar_data__list_add_last_integer(own_targets, ref_targets[i]),
-                  "Route target should be stored");
+    ar_data_t *own_recipients = ar_data__create_list();
+    AR_ASSERT(own_recipients != NULL, "Route recipients list should be created");
+    for (size_t i = 0; i < recipient_count; i++) {
+        AR_ASSERT(ar_data__list_add_last_integer(own_recipients, ref_recipients[i]),
+                  "Route recipient should be stored");
     }
-    AR_ASSERT(ar_data__set_map_data(own_routes, "targets", own_targets),
-              "Routes map should own targets list");
-    own_targets = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_routes, "recipients", own_recipients),
+              "Routes map should own recipients list");
+    own_recipients = NULL;
 
     return own_routes;
 }
@@ -76,13 +76,18 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
     ar_methodology_t *mut_methodology = ar_agency__get_methodology(mut_agency);
     const char *ref_instructions =
         "memory.last_action := message.action\n"
+        "memory.last_request := message.request\n"
+        "memory.last_response := message.response\n"
         "memory.last_text := message.text\n"
-        "memory.last_correlation_id := message.correlation_id\n"
+        "memory.last_kind := message.kind\n"
+        "memory.last_sender := message.sender\n"
+        "memory.last_trace_id := message.trace_id\n"
         "memory.last_status := message.status\n"
         "memory.last_routed_count := message.routed_count\n"
+        "memory.last_success_count := message.success_count\n"
+        "memory.last_failure_count := message.failure_count\n"
         "memory.last_sent_count := message.sent_count\n"
-        "memory.last_failed_count := message.failed_count\n"
-        "memory.last_continuation_sent := message.continuation_sent\n";
+        "memory.last_failed_count := message.failed_count\n";
 
     AR_ASSERT(ar_methodology__create_method(mut_methodology,
                                             "record-receiver",
@@ -92,11 +97,27 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
     verify_method_parses(mut_methodology, "record-receiver");
 }
 
-static void test_routing__forwards_one_and_many_messages(void) {
-    printf("Testing routing forwards one and many messages...\n");
+static ar_data_t *create_payload(const char *ref_action,
+                                 const char *ref_text,
+                                 const char *ref_kind,
+                                 int sender) {
+    ar_data_t *own_payload = ar_data__create_map();
+    AR_ASSERT(own_payload != NULL, "Route payload should be created");
+    AR_ASSERT(ar_data__set_map_string(own_payload, "action", ref_action),
+              "Route payload should set action");
+    AR_ASSERT(ar_data__set_map_string(own_payload, "text", ref_text),
+              "Route payload should set text");
+    AR_ASSERT(ar_data__set_map_string(own_payload, "kind", ref_kind),
+              "Route payload should set caller-owned field");
+    AR_ASSERT(ar_data__set_map_integer(own_payload, "sender", sender),
+              "Route payload should set standard sender");
+    return own_payload;
+}
 
-    // Given a routing agent and several receiver agents
-    ar_method_fixture_t *own_fixture = ar_method_fixture__create("routing_forward_many");
+static void test_routing__selects_one_recipient_by_key_only(void) {
+    printf("Testing routing selects one recipient by key only...\n");
+
+    ar_method_fixture_t *own_fixture = ar_method_fixture__create("routing_keyed_only");
     AR_ASSERT(ar_method_fixture__initialize(own_fixture), "Fixture should initialize");
     AR_ASSERT(ar_method_fixture__verify_directory(own_fixture), "Fixture directory should verify");
     load_method(own_fixture, "routing");
@@ -105,7 +126,6 @@ static void test_routing__forwards_one_and_many_messages(void) {
     register_record_receiver(mut_agency);
 
     ar_data_t *own_routing_context = create_context();
-    ar_data_t *own_receiver_one_context = create_context();
     ar_data_t *own_receiver_a_context = create_context();
     ar_data_t *own_receiver_b_context = create_context();
     ar_data_t *own_receiver_c_context = create_context();
@@ -113,8 +133,6 @@ static void test_routing__forwards_one_and_many_messages(void) {
     ar_data_t *own_report_context = create_context();
     int64_t routing_agent = ar_agency__create_agent(
         mut_agency, "routing", "1.0.0", own_routing_context);
-    int64_t receiver_one = ar_agency__create_agent(
-        mut_agency, "record-receiver", "1.0.0", own_receiver_one_context);
     int64_t receiver_a = ar_agency__create_agent(
         mut_agency, "record-receiver", "1.0.0", own_receiver_a_context);
     int64_t receiver_b = ar_agency__create_agent(
@@ -126,343 +144,262 @@ static void test_routing__forwards_one_and_many_messages(void) {
     int64_t report_agent = ar_agency__create_agent(
         mut_agency, "record-receiver", "1.0.0", own_report_context);
 
-    // When a one-to-one route request is processed
+    // When a direct-recipient request is sent without a route key
     ar_data_t *own_message = ar_data__create_map();
-    AR_ASSERT(own_message != NULL, "Route message should be created");
-    ar_data__set_map_string(own_message, "action", "route");
-    ar_data__set_map_string(own_message, "mode", "one");
-    ar_data__set_map_integer(
-        own_message, "target", checked_agent_id(receiver_one));
-    ar_data__set_map_string(own_message, "payload_action", "work");
-    ar_data__set_map_string(own_message, "payload_text", "alpha");
-    ar_data__set_map_string(own_message, "correlation_id", "job-1");
-    ar_data__set_map_integer(own_message, "reply_to", 0);
+    AR_ASSERT(own_message != NULL, "Direct route message should be created");
+    ar_data__set_map_string(own_message, "request", "routing_start");
+    ar_data__set_map_integer(own_message, "recipient", checked_agent_id(receiver_a));
+    ar_data_t *own_payload = create_payload("domain_event", "direct", "caller-shaped", 0);
+    AR_ASSERT(ar_data__set_map_data(own_message, "payload", own_payload),
+              "Direct route message should own opaque payload");
+    own_payload = NULL;
+    ar_data__set_map_string(own_message, "trace_id", "job-direct");
+    ar_data__set_map_integer(own_message, "sender", checked_agent_id(report_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, routing_agent, own_message),
-              "Route message should queue");
+              "Direct route message should queue");
     own_message = NULL;
     ar_method_fixture__process_all_messages(own_fixture);
 
-    // Then the receiver observes the forwarded payload contract
-    const ar_data_t *ref_receiver_memory = ar_agency__get_agent_memory(mut_agency, receiver_one);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_action"), "work") == 0,
-              "Receiver should observe forwarded action");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_text"), "alpha") == 0,
-              "Receiver should observe forwarded text");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_correlation_id"),
-                     "job-1") == 0,
-              "Receiver should observe forwarded correlation id");
-
-    // When a one-to-many route request carries more than three targets
-    own_message = ar_data__create_map();
-    AR_ASSERT(own_message != NULL, "Many route message should be created");
-    ar_data__set_map_string(own_message, "action", "route");
-    ar_data__set_map_string(own_message, "mode", "many");
-    ar_data_t *own_targets = ar_data__create_list();
-    AR_ASSERT(own_targets != NULL, "Targets list should be created");
-    AR_ASSERT(ar_data__list_add_last_integer(own_targets, checked_agent_id(receiver_a)),
-              "First target should be stored");
-    AR_ASSERT(ar_data__list_add_last_integer(own_targets, checked_agent_id(receiver_b)),
-              "Second target should be stored");
-    AR_ASSERT(ar_data__list_add_last_integer(own_targets, checked_agent_id(receiver_c)),
-              "Third target should be stored");
-    AR_ASSERT(ar_data__list_add_last_integer(own_targets, checked_agent_id(receiver_d)),
-              "Fourth target should be stored");
-    AR_ASSERT(ar_data__set_map_data(own_message, "targets", own_targets),
-              "Route message should own targets list");
-    own_targets = NULL;
-    ar_data__set_map_string(own_message, "payload_action", "work");
-    ar_data__set_map_string(own_message, "payload_text", "fanout");
-    ar_data__set_map_string(own_message, "correlation_id", "job-2");
-    ar_data__set_map_integer(own_message, "reply_to", checked_agent_id(report_agent));
-    AR_ASSERT(ar_agency__send_to_agent(mut_agency, routing_agent, own_message),
-              "Many route message should queue");
-    own_message = NULL;
-    ar_method_fixture__process_all_messages(own_fixture);
-
-    // Then every target receives the forwarded payload through recursive head/tail routing
+    // Then routing does not treat a direct recipient as a supported route mechanism
     const ar_data_t *ref_receiver_a_memory = ar_agency__get_agent_memory(mut_agency, receiver_a);
-    const ar_data_t *ref_receiver_b_memory = ar_agency__get_agent_memory(mut_agency, receiver_b);
-    const ar_data_t *ref_receiver_c_memory = ar_agency__get_agent_memory(mut_agency, receiver_c);
-    const ar_data_t *ref_receiver_d_memory = ar_agency__get_agent_memory(mut_agency, receiver_d);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_a_memory, "last_text"), "fanout") == 0,
-              "First many target should observe forwarded text");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_b_memory, "last_text"), "fanout") == 0,
-              "Second many target should observe forwarded text");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_c_memory, "last_text"), "fanout") == 0,
-              "Third many target should observe forwarded text");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_d_memory, "last_text"), "fanout") == 0,
-              "Fourth many target should observe forwarded text");
-
     const ar_data_t *ref_report_memory = ar_agency__get_agent_memory(mut_agency, report_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_action"), "route_result") == 0,
-              "Report receiver should observe route result action");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"), "routed") == 0,
-              "Report receiver should observe routed status");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_correlation_id"),
-                     "job-2") == 0,
-              "Route result should preserve correlation id");
-    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_routed_count") == 4,
-              "Route result should count every successful target route");
-    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_sent_count") == 4,
-              "Route result should count every successful target send");
-    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failed_count") == 0,
-              "Route result should report no failed target sends");
-    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_continuation_sent") == 0,
-              "Final route result should report no pending continuation");
-
-    // When a one-to-many route request contains an interior zero placeholder
-    own_message = ar_data__create_map();
-    AR_ASSERT(own_message != NULL, "Interior zero many route message should be created");
-    ar_data__set_map_string(own_message, "action", "route");
-    ar_data__set_map_string(own_message, "mode", "many");
-    own_targets = ar_data__create_list();
-    AR_ASSERT(own_targets != NULL, "Interior zero targets list should be created");
-    AR_ASSERT(ar_data__list_add_last_integer(own_targets, checked_agent_id(receiver_a)),
-              "Interior zero first target should be stored");
-    AR_ASSERT(ar_data__list_add_last_integer(own_targets, 0),
-              "Interior zero placeholder should be stored");
-    AR_ASSERT(ar_data__list_add_last_integer(own_targets, checked_agent_id(receiver_d)),
-              "Interior zero final target should be stored");
-    AR_ASSERT(ar_data__set_map_data(own_message, "targets", own_targets),
-              "Interior zero route message should own targets list");
-    own_targets = NULL;
-    ar_data__set_map_string(own_message, "payload_action", "work");
-    ar_data__set_map_string(own_message, "payload_text", "skip-zero");
-    ar_data__set_map_string(own_message, "correlation_id", "job-skip-zero");
-    ar_data__set_map_integer(own_message, "reply_to", checked_agent_id(report_agent));
-    AR_ASSERT(ar_agency__send_to_agent(mut_agency, routing_agent, own_message),
-              "Interior zero route message should queue");
-    own_message = NULL;
-    ar_method_fixture__process_all_messages(own_fixture);
-
-    // Then zero placeholders do not stop fan-out to later positive targets
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_a_memory, "last_text"),
-                     "skip-zero") == 0,
-              "Interior zero route should deliver to the first positive target");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_d_memory, "last_text"),
-                     "skip-zero") == 0,
-              "Interior zero route should deliver to the later positive target");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"), "routed") == 0,
-              "Interior zero route should report routed status");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_correlation_id"),
-                     "job-skip-zero") == 0,
-              "Interior zero route result should preserve correlation id");
-    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_routed_count") == 2,
-              "Interior zero route should count positive target routes");
-    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_sent_count") == 2,
-              "Interior zero route should count positive target sends");
-    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failed_count") == 0,
-              "Interior zero route should not count zero placeholders as failures");
-
-    // When a one-to-many route request contains no positive targets
-    own_message = ar_data__create_map();
-    AR_ASSERT(own_message != NULL, "Zero-delivery many route message should be created");
-    ar_data__set_map_string(own_message, "action", "route");
-    ar_data__set_map_string(own_message, "mode", "many");
-    own_targets = ar_data__create_list();
-    AR_ASSERT(own_targets != NULL, "Zero-delivery targets list should be created");
-    AR_ASSERT(ar_data__list_add_last_integer(own_targets, 0),
-              "First zero target should be stored");
-    AR_ASSERT(ar_data__list_add_last_integer(own_targets, 0),
-              "Second zero target should be stored");
-    AR_ASSERT(ar_data__set_map_data(own_message, "targets", own_targets),
-              "Zero-delivery route message should own targets list");
-    own_targets = NULL;
-    ar_data__set_map_string(own_message, "payload_action", "work");
-    ar_data__set_map_string(own_message, "payload_text", "zero-delivery");
-    ar_data__set_map_string(own_message, "correlation_id", "job-zero-delivery");
-    ar_data__set_map_integer(own_message, "reply_to", checked_agent_id(report_agent));
-    AR_ASSERT(ar_agency__send_to_agent(mut_agency, routing_agent, own_message),
-              "Zero-delivery route message should queue");
-    own_message = NULL;
-    ar_method_fixture__process_all_messages(own_fixture);
-
-    // Then the route result reports failure instead of successful zero-delivery routing
+    AR_ASSERT(ar_data__get_map_data(ref_receiver_a_memory, "last_text") == NULL,
+              "Routing should not forward direct recipient requests");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_response"),
+                     "routing_result") == 0,
+              "Direct recipient request should emit a route response");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_sender") ==
+                  checked_agent_id(routing_agent),
+              "Route response should identify the routing sender");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
-                     "route_failed") == 0,
-              "Zero-delivery many route should report route_failed status");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_correlation_id"),
-                     "job-zero-delivery") == 0,
-              "Zero-delivery result should preserve correlation id");
+                     "failure") == 0,
+              "Direct recipient request should report standard failure status");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_routed_count") == 0,
-              "Zero-delivery route should report zero routed targets");
-    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_sent_count") == 0,
-              "Zero-delivery route should report zero sent targets");
-    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failed_count") == 0,
-              "Zero-delivery route should not count a failed positive target send");
+              "Direct recipient request should report zero routed recipients");
 
-    // When a keyed one-to-one route request carries more than three candidate routes
+    // When an unrelated message carries a matching route table
+    own_message = ar_data__create_map();
+    AR_ASSERT(own_message != NULL, "Ignored route-shaped message should be created");
+    ar_data__set_map_string(own_message, "request", "routing_ignored");
+    ar_data__set_map_string(own_message, "route_key", "ignored-key");
+    const char *ref_ignored_route_keys[] = {"ignored-key"};
+    const int ref_ignored_route_recipients[] = {checked_agent_id(receiver_b)};
+    ar_data_t *own_routes = create_routes(ref_ignored_route_keys, 1, ref_ignored_route_recipients, 1);
+    AR_ASSERT(ar_data__set_map_data(own_message, "routes", own_routes),
+              "Ignored route-shaped message should own routes map");
+    own_routes = NULL;
+    own_payload = create_payload("domain_event", "ignored", "caller-shaped", 0);
+    AR_ASSERT(ar_data__set_map_data(own_message, "payload", own_payload),
+              "Ignored route-shaped message should own opaque payload");
+    own_payload = NULL;
+    ar_data__set_map_string(own_message, "trace_id", "job-ignored");
+    ar_data__set_map_integer(own_message, "sender", checked_agent_id(report_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, routing_agent, own_message),
+              "Ignored route-shaped message should queue");
+    own_message = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    const ar_data_t *ref_routing_memory = ar_agency__get_agent_memory(mut_agency, routing_agent);
+    const ar_data_t *ref_receiver_b_memory = ar_agency__get_agent_memory(mut_agency, receiver_b);
+    AR_ASSERT(ar_data__get_map_data(ref_receiver_b_memory, "last_text") == NULL,
+              "Ignored route-shaped message should not deliver payload");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_routing_memory, "status"),
+                     "failure") == 0,
+              "Ignored route-shaped message should not overwrite standard route status");
+    AR_ASSERT(ar_data__get_map_integer(ref_routing_memory, "routed_count") == 0,
+              "Ignored route-shaped message should not change routed count");
+    AR_ASSERT(ar_data__get_map_integer(ref_routing_memory, "sent_count") == 0,
+              "Ignored route-shaped message should not change sent count");
+
+    // When an unrelated message has no routes map
+    own_message = ar_data__create_map();
+    AR_ASSERT(own_message != NULL, "Ignored route-less message should be created");
+    ar_data__set_map_string(own_message, "request", "routing_ignored");
+    ar_data__set_map_string(own_message, "trace_id", "job-routeless");
+    ar_data__set_map_integer(own_message, "sender", checked_agent_id(report_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, routing_agent, own_message),
+              "Ignored route-less message should queue");
+    own_message = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_trace_id"),
+                     "job-direct") == 0,
+              "Ignored route-less message should not emit a new route response");
+    AR_ASSERT(ar_data__get_map_integer(ref_routing_memory, "routed_count") == 0,
+              "Ignored route-less message should not change routed count");
+    AR_ASSERT(ar_data__get_map_integer(ref_routing_memory, "sent_count") == 0,
+              "Ignored route-less message should not change sent count");
+
+    // When a keyed route request carries more than three candidate routes
     own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Keyed route message should be created");
-    ar_data__set_map_string(own_message, "action", "route");
-    ar_data__set_map_string(own_message, "mode", "one");
+    ar_data__set_map_string(own_message, "request", "routing_start");
     ar_data__set_map_string(own_message, "route_key", "delta");
     const char *ref_route_keys[] = {"alpha", "beta", "gamma", "delta"};
-    const int ref_route_targets[] = {
+    const int ref_route_recipients[] = {
         checked_agent_id(receiver_a),
         checked_agent_id(receiver_b),
         checked_agent_id(receiver_c),
         checked_agent_id(receiver_d)
     };
-    ar_data_t *own_routes = create_routes(ref_route_keys,
-                                          4,
-                                          ref_route_targets,
-                                          4);
+    own_routes = create_routes(ref_route_keys, 4, ref_route_recipients, 4);
     AR_ASSERT(ar_data__set_map_data(own_message, "routes", own_routes),
               "Keyed route message should own routes map");
     own_routes = NULL;
-    ar_data__set_map_string(own_message, "payload_action", "work");
-    ar_data__set_map_string(own_message, "payload_text", "keyed");
-    ar_data__set_map_string(own_message, "correlation_id", "job-keyed");
-    ar_data__set_map_integer(own_message, "reply_to", checked_agent_id(report_agent));
+    own_payload = create_payload("domain_event",
+                                 "keyed",
+                                 "caller-shaped",
+                                 checked_agent_id(receiver_a));
+    AR_ASSERT(ar_data__set_map_data(own_message, "payload", own_payload),
+              "Keyed route message should own opaque payload");
+    own_payload = NULL;
+    ar_data__set_map_string(own_message, "trace_id", "job-keyed");
+    ar_data__set_map_integer(own_message, "sender", checked_agent_id(report_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, routing_agent, own_message),
               "Keyed route message should queue");
     own_message = NULL;
     ar_method_fixture__process_all_messages(own_fixture);
 
     // Then keyed routing scans the unbounded route list until it finds the matching route
+    const ar_data_t *ref_receiver_d_memory = ar_agency__get_agent_memory(mut_agency, receiver_d);
+    const char *ref_receiver_d_action =
+        ar_data__get_map_string(ref_receiver_d_memory, "last_action");
+    AR_ASSERT(ref_receiver_d_action != NULL, "Fourth keyed route recipient should receive payload");
+    AR_ASSERT(strcmp(ref_receiver_d_action, "domain_event") == 0,
+              "Fourth keyed route recipient should observe caller payload action");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_d_memory, "last_text"), "keyed") == 0,
-              "Fourth keyed route target should observe forwarded text");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
-                     "routed") == 0,
-              "Keyed route should report routed status");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_correlation_id"),
+              "Fourth keyed route recipient should observe delivered text");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_d_memory, "last_kind"),
+                     "caller-shaped") == 0,
+              "Fourth keyed route recipient should observe caller-owned field");
+    AR_ASSERT(ar_data__get_map_integer(ref_receiver_d_memory, "last_sender") ==
+                  checked_agent_id(receiver_a),
+              "Routing should preserve caller payload sender");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"), "success") == 0,
+              "Keyed route should report standard success status");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_trace_id"),
                      "job-keyed") == 0,
-              "Keyed route result should preserve correlation id");
+              "Keyed route result should preserve trace id");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_routed_count") == 1,
-              "Keyed route should report one routed target");
+              "Keyed route should report one routed recipient");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 1,
+              "Keyed route should report one successful recipient");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 0,
+              "Keyed route should report no failed recipients");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_sent_count") == 1,
-              "Keyed route should report one sent target");
+              "Keyed route should report one sent recipient");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failed_count") == 0,
-              "Keyed route should report no failed target sends");
+              "Keyed route should report no failed recipient sends");
 
-    // When a many route includes a positive target id that cannot receive messages
+    // When a route table contains zero placeholders before a later matching route
     own_message = ar_data__create_map();
-    AR_ASSERT(own_message != NULL, "Partial failure route message should be created");
-    ar_data__set_map_string(own_message, "action", "route");
-    ar_data__set_map_string(own_message, "mode", "many");
-    own_targets = ar_data__create_list();
-    AR_ASSERT(own_targets != NULL, "Partial failure targets list should be created");
-    AR_ASSERT(ar_data__list_add_last_integer(own_targets, checked_agent_id(receiver_a)),
-              "First partial target should be stored");
-    AR_ASSERT(ar_data__list_add_last_integer(own_targets, 98765),
-              "Invalid positive target should be stored");
-    AR_ASSERT(ar_data__list_add_last_integer(own_targets, checked_agent_id(receiver_b)),
-              "Final partial target should be stored");
-    AR_ASSERT(ar_data__set_map_data(own_message, "targets", own_targets),
-              "Partial route message should own targets list");
-    own_targets = NULL;
-    ar_data__set_map_string(own_message, "payload_action", "work");
-    ar_data__set_map_string(own_message, "payload_text", "partial-fanout");
-    ar_data__set_map_string(own_message, "correlation_id", "job-failed-send");
-    ar_data__set_map_integer(own_message, "reply_to", checked_agent_id(report_agent));
+    AR_ASSERT(own_message != NULL, "Zero-placeholder route message should be created");
+    ar_data__set_map_string(own_message, "request", "routing_start");
+    ar_data__set_map_string(own_message, "route_key", "delta");
+    own_routes = ar_data__create_map();
+    AR_ASSERT(own_routes != NULL, "Zero-placeholder routes map should be created");
+    ar_data_t *own_route_keys = ar_data__create_list();
+    AR_ASSERT(own_route_keys != NULL, "Zero-placeholder route keys should be created");
+    AR_ASSERT(ar_data__list_add_last_string(own_route_keys, "alpha"),
+              "Zero-placeholder alpha route key should append");
+    AR_ASSERT(ar_data__list_add_last_integer(own_route_keys, 0),
+              "Zero-placeholder route key should append");
+    AR_ASSERT(ar_data__list_add_last_string(own_route_keys, "delta"),
+              "Zero-placeholder delta route key should append");
+    AR_ASSERT(ar_data__set_map_data(own_routes, "keys", own_route_keys),
+              "Zero-placeholder routes should own keys");
+    own_route_keys = NULL;
+    ar_data_t *own_route_recipients = ar_data__create_list();
+    AR_ASSERT(own_route_recipients != NULL, "Zero-placeholder route recipients should be created");
+    AR_ASSERT(ar_data__list_add_last_integer(own_route_recipients, checked_agent_id(receiver_a)),
+              "Zero-placeholder alpha recipient should append");
+    AR_ASSERT(ar_data__list_add_last_integer(own_route_recipients, 0),
+              "Zero-placeholder recipient should append");
+    AR_ASSERT(ar_data__list_add_last_integer(own_route_recipients, checked_agent_id(receiver_b)),
+              "Zero-placeholder delta recipient should append");
+    AR_ASSERT(ar_data__set_map_data(own_routes, "recipients", own_route_recipients),
+              "Zero-placeholder routes should own recipients");
+    own_route_recipients = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_message, "routes", own_routes),
+              "Zero-placeholder route message should own routes map");
+    own_routes = NULL;
+    own_payload = create_payload("domain_event",
+                                 "zero-placeholder",
+                                 "caller-shaped",
+                                 checked_agent_id(receiver_c));
+    AR_ASSERT(ar_data__set_map_data(own_message, "payload", own_payload),
+              "Zero-placeholder route message should own opaque payload");
+    own_payload = NULL;
+    ar_data__set_map_string(own_message, "trace_id", "job-route-zero-placeholder");
+    ar_data__set_map_integer(own_message, "sender", checked_agent_id(report_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, routing_agent, own_message),
-              "Partial failure route message should queue");
+              "Zero-placeholder route message should queue");
     own_message = NULL;
     ar_method_fixture__process_all_messages(own_fixture);
 
-    // Then the route result reports successful and failed deliveries separately
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_a_memory, "last_text"),
-                     "partial-fanout") == 0,
-              "First valid partial target should observe forwarded text");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_b_memory, "last_text"),
-                     "partial-fanout") == 0,
-              "Final valid partial target should observe forwarded text");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_action"),
-                     "route_result") == 0,
-              "Partial failure should still emit route result action");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
-                     "route_failed") == 0,
-              "Partial failure should report route_failed status");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_correlation_id"),
-                     "job-failed-send") == 0,
-              "Partial failure result should preserve correlation id");
-    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_routed_count") == 2,
-              "Partial failure result should count successful target routes only");
-    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_sent_count") == 2,
-              "Partial failure result should count successful target sends only");
-    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failed_count") == 1,
-              "Partial failure result should count failed target sends");
-    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_continuation_sent") == 0,
-              "Partial failure final result should report no pending continuation");
+    const ar_data_t *ref_placeholder_receiver_memory =
+        ar_agency__get_agent_memory(mut_agency, receiver_b);
+    const char *ref_placeholder_text =
+        ar_data__get_map_string(ref_placeholder_receiver_memory, "last_text");
+    AR_ASSERT(ref_placeholder_text != NULL,
+              "Routing should deliver past zero placeholders to the later match");
+    AR_ASSERT(strcmp(ref_placeholder_text, "zero-placeholder") == 0,
+              "Routing should scan past zero placeholders to the later match");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"), "success") == 0,
+              "Zero-placeholder route should report standard success status");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_trace_id"),
+                     "job-route-zero-placeholder") == 0,
+              "Zero-placeholder route should preserve trace id");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 1,
+              "Zero-placeholder route should report one successful recipient");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 0,
+              "Zero-placeholder route should report no failed recipient sends");
 
-    // When a one-to-one keyed route does not select a target
+    // When a keyed route does not select a recipient
     own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Missed keyed route message should be created");
-    ar_data__set_map_string(own_message, "action", "route");
-    ar_data__set_map_string(own_message, "mode", "one");
+    ar_data__set_map_string(own_message, "request", "routing_start");
     ar_data__set_map_string(own_message, "route_key", "missing");
     const char *ref_missed_route_keys[] = {"known"};
-    const int ref_missed_route_targets[] = {checked_agent_id(receiver_c)};
-    own_routes = create_routes(ref_missed_route_keys, 1, ref_missed_route_targets, 1);
+    const int ref_missed_route_recipients[] = {checked_agent_id(receiver_c)};
+    own_routes = create_routes(ref_missed_route_keys, 1, ref_missed_route_recipients, 1);
     AR_ASSERT(ar_data__set_map_data(own_message, "routes", own_routes),
               "Missed keyed route message should own routes map");
     own_routes = NULL;
-    ar_data__set_map_string(own_message, "payload_action", "work");
-    ar_data__set_map_string(own_message, "payload_text", "missed");
-    ar_data__set_map_string(own_message, "correlation_id", "job-missing-key");
-    ar_data__set_map_integer(own_message, "reply_to", checked_agent_id(report_agent));
+    own_payload = create_payload("domain_event", "missed", "caller-shaped", 0);
+    AR_ASSERT(ar_data__set_map_data(own_message, "payload", own_payload),
+              "Missed keyed route message should own opaque payload");
+    own_payload = NULL;
+    ar_data__set_map_integer(own_message, "sender", checked_agent_id(report_agent));
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, routing_agent, own_message),
               "Missed keyed route message should queue");
     own_message = NULL;
     ar_method_fixture__process_all_messages(own_fixture);
 
-    // Then the route result reports failure instead of successful zero-delivery routing
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_c_memory, "last_text"), "fanout") == 0,
-              "Missed keyed route should not forward to unmatched target");
+    const ar_data_t *ref_receiver_c_memory = ar_agency__get_agent_memory(mut_agency, receiver_c);
+    AR_ASSERT(ar_data__get_map_data(ref_receiver_c_memory, "last_text") == NULL,
+              "Missed keyed route should not forward to unmatched recipient");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
-                     "route_failed") == 0,
-              "Missed keyed route should report route_failed status");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_correlation_id"),
-                     "job-missing-key") == 0,
-              "Missed keyed route result should preserve correlation id");
+                     "failure") == 0,
+              "Missed keyed route should report standard failure status");
+    int expected_generated_trace_id =
+        checked_agent_id(report_agent) * 1000 + checked_agent_id(routing_agent);
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_trace_id") ==
+                  expected_generated_trace_id,
+              "Missed keyed route result should generate trace id when omitted");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_routed_count") == 0,
-              "Missed keyed route should report zero routed targets");
+              "Missed keyed route should report zero routed recipients");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 0,
+              "Missed keyed route should report zero successful recipients");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 0,
+              "Missed keyed route should report zero failed recipient sends");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_sent_count") == 0,
-              "Missed keyed route should report zero sent targets");
+              "Missed keyed route should report zero sent recipients");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failed_count") == 0,
-              "Missed keyed route should not count a failed positive target send");
+              "Missed keyed route should not count a failed positive recipient send");
 
-    // When a one-to-one keyed route has a zero route key and omits the candidate key
-    own_message = ar_data__create_map();
-    AR_ASSERT(own_message != NULL, "Missing keyed fields route message should be created");
-    ar_data__set_map_string(own_message, "action", "route");
-    ar_data__set_map_string(own_message, "mode", "one");
-    ar_data__set_map_integer(own_message, "route_key", 0);
-    const int ref_missing_key_route_targets[] = {checked_agent_id(receiver_c)};
-    own_routes = create_routes(NULL, 0, ref_missing_key_route_targets, 1);
-    AR_ASSERT(ar_data__set_map_data(own_message, "routes", own_routes),
-              "Missing keyed fields route message should own routes map");
-    own_routes = NULL;
-    ar_data__set_map_string(own_message, "payload_action", "work");
-    ar_data__set_map_string(own_message, "payload_text", "missing-fields");
-    ar_data__set_map_string(own_message, "correlation_id", "job-missing-fields");
-    ar_data__set_map_integer(own_message, "reply_to", checked_agent_id(report_agent));
-    AR_ASSERT(ar_agency__send_to_agent(mut_agency, routing_agent, own_message),
-              "Missing keyed fields route message should queue");
-    own_message = NULL;
-    ar_method_fixture__process_all_messages(own_fixture);
-
-    // Then absent keys do not compare equal and forward to a keyed target accidentally
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_c_memory, "last_text"), "fanout") == 0,
-              "Missing keyed fields route should not forward to candidate target");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
-                     "route_failed") == 0,
-              "Missing keyed fields route should report route_failed status");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_correlation_id"),
-                     "job-missing-fields") == 0,
-              "Missing keyed fields route result should preserve correlation id");
-    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_routed_count") == 0,
-              "Missing keyed fields route should report zero routed targets");
-    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_sent_count") == 0,
-              "Missing keyed fields route should report zero sent targets");
-    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failed_count") == 0,
-              "Missing keyed fields route should not count a failed positive target send");
-
-    // Cleanup
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_routing_context);
-    ar_data__destroy(own_receiver_one_context);
     ar_data__destroy(own_receiver_a_context);
     ar_data__destroy(own_receiver_b_context);
     ar_data__destroy(own_receiver_c_context);
@@ -472,7 +409,7 @@ static void test_routing__forwards_one_and_many_messages(void) {
 
 int main(void) {
     printf("Running routing method tests...\n\n");
-    test_routing__forwards_one_and_many_messages();
+    test_routing__selects_one_recipient_by_key_only();
     printf("\nAll routing method tests passed!\n");
     return 0;
 }

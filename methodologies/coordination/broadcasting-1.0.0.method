@@ -1,0 +1,93 @@
+# Classify broadcast request
+memory.is_request := if(message.request <> 0, 1, 0)
+memory.is_start := if(memory.is_request = 1, message.request = "broadcasting_start", 0)
+memory.is_continue := if(memory.is_request = 1, message.request = "broadcasting_continue", 0)
+memory.is_self_sender := if(message.sender = memory.self, 1, 0)
+memory.is_internal_continue := memory.is_continue * memory.is_self_sender
+memory.is_broadcast := memory.is_start + memory.is_internal_continue
+memory.is_broadcast := if(memory.is_broadcast > 0, 1, 0)
+
+# Generate trace_id
+memory.generated_trace_base := message.sender * 1000
+memory.generated_trace_id := memory.generated_trace_base + memory.self
+memory.request_trace_id := memory.generated_trace_id
+memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.request_trace_id)
+
+# Establish sender state
+memory.trace_id := if(memory.is_broadcast = 1, memory.request_trace_id, memory.trace_id)
+memory.sender := if(memory.is_broadcast = 1, message.sender, memory.sender)
+memory.result_recipient := if(memory.is_broadcast = 1, message.sender, memory.result_recipient)
+memory.result_recipient := if(memory.is_internal_continue = 1, message.result_recipient, memory.result_recipient)
+memory.has_recipients_input := if(message.recipients <> 0, 1, 0)
+memory.recipients_available := memory.is_broadcast * memory.has_recipients_input
+memory.current_recipients := if(memory.recipients_available = 1, message.recipients, [])
+
+# Select current recipient
+memory.recipient := head(memory.current_recipients)
+memory.remaining_recipients := tail(memory.current_recipients)
+memory.has_recipient := if(memory.recipient > 0, 1, 0)
+
+# Send payload to current recipient
+memory.recipient_to_send := memory.recipient * memory.is_broadcast
+memory.sent_result := send(memory.recipient_to_send, message.payload)
+memory.sent := memory.sent_result * memory.has_recipient
+memory.sent := memory.sent * memory.is_broadcast
+memory.send_failed := if(memory.sent_result = 0, 1, 0)
+memory.send_failed := memory.send_failed * memory.has_recipient
+memory.send_failed := memory.send_failed * memory.is_broadcast
+
+# Accumulate delivery counters
+memory.remaining_recipients_empty := if(memory.remaining_recipients = [], 1, 0)
+memory.has_remaining := if(memory.remaining_recipients_empty = 1, 0, 1)
+memory.input_recipient_count := if(memory.is_internal_continue = 1, message.recipient_count, 0)
+memory.input_sent_count := if(memory.is_internal_continue = 1, message.sent_count, 0)
+memory.input_failed_count := if(memory.is_internal_continue = 1, message.failed_count, 0)
+memory.next_recipient_count := memory.input_recipient_count + memory.sent
+memory.next_sent_count := memory.input_sent_count + memory.sent
+memory.next_failed_count := memory.input_failed_count + memory.send_failed
+memory.recipient_count := if(memory.is_broadcast = 1, memory.next_recipient_count, memory.recipient_count)
+memory.sent_count := if(memory.is_broadcast = 1, memory.next_sent_count, memory.sent_count)
+memory.failed_count := if(memory.is_broadcast = 1, memory.next_failed_count, memory.failed_count)
+memory.has_more_work := memory.has_recipient + memory.has_remaining
+memory.has_more_work := if(memory.has_more_work > 0, 1, 0)
+
+# Queue continuation for remaining recipients
+memory.continuation_required := memory.is_broadcast * memory.has_more_work
+memory.continuation_recipient := memory.self * memory.continuation_required
+memory.continuation_message := {
+  sender: memory.self
+  request: "broadcasting_continue"
+  trace_id: memory.trace_id
+  payload: message.payload
+  recipients: memory.remaining_recipients
+  result_recipient: memory.result_recipient
+  recipient_count: memory.recipient_count
+  sent_count: memory.sent_count
+  failed_count: memory.failed_count
+}
+memory.continuation_send_result := send(memory.continuation_recipient, memory.continuation_message)
+memory.continuation_sent := memory.continuation_send_result * memory.continuation_required
+memory.continuation_failed := if(memory.continuation_send_result = 0, 1, 0)
+memory.continuation_failed := memory.continuation_failed * memory.continuation_required
+
+# Derive broadcast outcome
+memory.has_failed_count := if(memory.failed_count > 0, 1, 0)
+memory.zero_delivery := if(memory.sent_count = 0, 1, 0)
+memory.zero_delivery := memory.zero_delivery * memory.is_broadcast
+memory.status := if(memory.is_broadcast = 1, "success", memory.status)
+memory.status := if(memory.zero_delivery = 1, "failure", memory.status)
+memory.status := if(memory.has_failed_count = 1, "failure", memory.status)
+memory.status := if(memory.continuation_failed = 1, "failure", memory.status)
+memory.should_report := memory.is_broadcast
+memory.should_report := if(memory.continuation_sent = 1, 0, memory.should_report)
+
+# Emit broadcast result
+memory.result_message := {
+  sender: memory.self
+  response: "broadcasting_result"
+  trace_id: memory.trace_id
+  status: memory.status
+  success_count: memory.sent_count
+  failure_count: memory.failed_count
+}
+memory.result_sent := send(memory.result_recipient * memory.should_report, memory.result_message)
