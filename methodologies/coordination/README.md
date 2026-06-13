@@ -438,8 +438,6 @@ Completion response:
   trace_id: <trace_id>,
   session_id: <session_id>,
   status: <success|failure>,
-  state: <complete|handoff_failed>,
-  workflow_id: <id>,
   success_count: <count>,
   failure_count: <count>
 }

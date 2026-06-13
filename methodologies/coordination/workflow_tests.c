@@ -53,9 +53,7 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
         "memory.last_kind := message.kind\n"
         "memory.last_sender := message.sender\n"
         "memory.last_message := message\n"
-        "memory.last_workflow_id := message.workflow_id\n"
         "memory.last_status := message.status\n"
-        "memory.last_state := message.state\n"
         "memory.last_success_count := message.success_count\n"
         "memory.last_failure_count := message.failure_count\n";
 
@@ -67,13 +65,17 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
     verify_method_parses(mut_methodology, "record-receiver");
 }
 
-static void assert_workflow_result_omits_step_counters(const ar_data_t *ref_report_memory) {
+static void assert_workflow_result_omits_redundant_fields(const ar_data_t *ref_report_memory) {
     const ar_data_t *ref_message = ar_data__get_map_data(ref_report_memory, "last_message");
     AR_ASSERT(ref_message != NULL, "Workflow result message should be recorded");
     AR_ASSERT(ar_data__get_map_data(ref_message, "current_step") == NULL,
               "Workflow result should omit redundant current step");
     AR_ASSERT(ar_data__get_map_data(ref_message, "completed_step_count") == NULL,
               "Workflow result should omit redundant completed step count");
+    AR_ASSERT(ar_data__get_map_data(ref_message, "state") == NULL,
+              "Workflow result should omit redundant state");
+    AR_ASSERT(ar_data__get_map_data(ref_message, "workflow_id") == NULL,
+              "Workflow result should omit redundant workflow id");
 }
 
 static ar_data_t *create_step_payload(const char *ref_action,
@@ -249,8 +251,6 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
               "Workflow completion should identify the workflow sender");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"), "success") == 0,
               "Workflow completion should report standard success status");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_state"), "complete") == 0,
-              "Workflow completion status should be complete");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_trace_id"),
                      "wf-1") == 0,
               "Workflow completion should preserve completing request trace id");
@@ -261,7 +261,7 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
               "Workflow completion should report completed step count");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 0,
               "Workflow completion should report no handoff failures");
-    assert_workflow_result_omits_step_counters(ref_report_memory);
+    assert_workflow_result_omits_redundant_fields(ref_report_memory);
 
     own_start = ar_data__create_map();
     AR_ASSERT(own_start != NULL, "Zero-head workflow start should be created");
@@ -297,14 +297,9 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
     send_step_done(mut_agency, workflow_agent, "wf-zero-head", 1, "done");
     ar_method_fixture__process_all_messages(own_fixture);
 
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_workflow_id"),
-                     "wf-zero-head") == 0,
-              "Zero-head workflow should report the workflow id after sent step");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_state"), "complete") == 0,
-              "Zero-head workflow should complete after the sent positive step");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 1,
               "Zero-head workflow should count the sent positive step");
-    assert_workflow_result_omits_step_counters(ref_report_memory);
+    assert_workflow_result_omits_redundant_fields(ref_report_memory);
 
     own_start = ar_data__create_map();
     AR_ASSERT(own_start != NULL, "Post-completion zero workflow start should be created");
@@ -349,15 +344,9 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
     send_step_done(mut_agency, workflow_agent, "wf-post-completion-zero", 2, "done");
     ar_method_fixture__process_all_messages(own_fixture);
 
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_workflow_id"),
-                     "wf-post-completion-zero") == 0,
-              "Post-completion zero workflow should report the workflow id");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_state"),
-                     "complete") == 0,
-              "Post-completion zero workflow should complete after later positive step");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 2,
               "Post-completion zero workflow should count sent positive steps only");
-    assert_workflow_result_omits_step_counters(ref_report_memory);
+    assert_workflow_result_omits_redundant_fields(ref_report_memory);
 
     const ar_data_t *ref_workflow_memory = ar_agency__get_agent_memory(mut_agency, workflow_agent);
     own_start = ar_data__create_map();
@@ -385,12 +374,6 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
     own_start = NULL;
     ar_method_fixture__process_all_messages(own_fixture);
 
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_workflow_id"),
-                     "wf-failed-worker-send") == 0,
-              "Failed worker send should report the workflow id");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_state"),
-                     "handoff_failed") == 0,
-              "Failed worker send should report handoff failure");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
                      "failure") == 0,
               "Failed worker send should report standard failure status");
@@ -398,7 +381,7 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
               "Failed worker send should report no completed steps");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 1,
               "Failed worker send should report one handoff failure");
-    assert_workflow_result_omits_step_counters(ref_report_memory);
+    assert_workflow_result_omits_redundant_fields(ref_report_memory);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_workflow_memory, "status"),
                      "failure") == 0,
               "Failed worker send should store standard failure status");
@@ -484,12 +467,7 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
 
     const ar_data_t *ref_failed_handoff_memory =
         ar_agency__get_agent_memory(mut_agency, failed_handoff_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_workflow_id"),
-                     "wf-failed-start-handoff") == 0,
-              "Failed start handoff should report the workflow id");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_state"),
-                     "handoff_failed") == 0,
-              "Failed start handoff should report handoff failure");
+    assert_workflow_result_omits_redundant_fields(ref_report_memory);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_failed_handoff_memory, "status"),
                      "failure") == 0,
               "Failed start handoff should store standard failure status");
@@ -535,12 +513,7 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
 
     const ar_data_t *ref_failed_continue_memory =
         ar_agency__get_agent_memory(mut_agency, failed_continue_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_workflow_id"),
-                     "wf-failed-continue-handoff") == 0,
-              "Failed continuation handoff should report the workflow id");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_state"),
-                     "handoff_failed") == 0,
-              "Failed continuation handoff should report handoff failure");
+    assert_workflow_result_omits_redundant_fields(ref_report_memory);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_failed_continue_memory, "status"),
                      "failure") == 0,
               "Failed continuation handoff should store standard failure status");

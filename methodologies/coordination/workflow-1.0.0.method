@@ -119,8 +119,6 @@ memory.handoff_failed := memory.start_handoff_failed + memory.skip_step_failed
 memory.handoff_failed := memory.handoff_failed + memory.continue_handoff_failed
 memory.handoff_failed := memory.handoff_failed + memory.step_handoff_failed
 memory.should_complete := memory.should_complete + memory.handoff_failed
-memory.completion_state := if(memory.should_complete > 0, "complete", memory.status)
-memory.completion_state := if(memory.handoff_failed > 0, "handoff_failed", memory.completion_state)
 memory.completion_status := if(memory.should_complete > 0, "success", memory.status)
 memory.completion_status := if(memory.handoff_failed > 0, "failure", memory.completion_status)
 memory.completion_failure_count := if(memory.handoff_failed > 0, 1, 0)
@@ -130,8 +128,6 @@ memory.complete_message := {
   trace_id: memory.request_trace_id
   session_id: memory.session_id
   status: memory.completion_status
-  state: memory.completion_state
-  workflow_id: memory.workflow_id
   success_count: memory.completed_step_count
   failure_count: memory.completion_failure_count
 }
