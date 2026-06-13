@@ -1,5 +1,28 @@
 # AgeRun CHANGELOG
 
+## 2026-06-13 (Reject protected root merge keys before any writes)
+
+- **Stopped root map merges from partially applying before `memory.self` rejection**
+
+  Root `memory += ...` merges now validate all incoming keys for protected `self` / `self.*` names
+  before evaluating or storing any entries, so a merge like `{other: 1, self: 0}` fails without
+  mutating `memory.other` first. The same up-front rejection now applies to evaluated patch maps,
+  preventing partial writes when protected keys appear later in map enumeration order.
+
+  **Implementation**: Split merge evaluation in `modules/ar_assignment_instruction_evaluator.zig`
+  into prevalidation and write phases for both literal maps and evaluated map values while keeping
+  `_storeValue()` as a defensive backstop. Expanded
+  `modules/ar_assignment_instruction_evaluator_tests.c` to prove both literal and evaluated root
+  merges reject protected keys without partially storing earlier entries.
+
+  **Verification**: Passing checks: `make ar_assignment_instruction_evaluator_tests
+  ar_method_parser_tests 2>&1`, `make check-docs 2>&1`, and `make check-naming 2>&1`. Also ran
+  `make clean build 2>&1`, `make check-logs 2>&1`, and `make sanitize-tests 2>&1`, which currently
+  fail in unrelated shell/workflow tests already present on this branch.
+
+  **Impact**: Agency-managed `memory.self` protection is now atomic for root merge assignments,
+  eliminating order-dependent partial state changes during rejected merges.
+
 ## 2026-06-07 (Align workflow test home fallback)
 
 - **Matched workflow real-completion test helpers to the runtime home fallback**

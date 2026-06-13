@@ -51,6 +51,19 @@ fn _storeValue(
     return true;
 }
 
+fn _validateProtectedRootMergeKey(
+    ref_evaluator: *const ar_assignment_instruction_evaluator_t,
+    ref_key: [*c]const u8,
+    protect_self_key: bool
+) bool {
+    if (protect_self_key and _isProtectedRootMergeKey(ref_key)) {
+        c.ar_log__error(ref_evaluator.ref_log, "memory.self is agency-managed and cannot be assigned");
+        return false;
+    }
+
+    return true;
+}
+
 fn _getMergeTargetMap(
     ref_evaluator: *const ar_assignment_instruction_evaluator_t,
     ref_frame: *const c.ar_frame_t,
@@ -92,12 +105,16 @@ fn _mergeLiteralMap(
 
     for (0..entry_count) |i| {
         const ref_key = c.ar_expression_ast__get_map_key(ref_expr_ast, i);
+        const ref_value_ast = c.ar_expression_ast__get_map_value(ref_expr_ast, i);
         if (ref_key == null) {
             c.ar_log__error(ref_evaluator.ref_log, "Map merge literal has invalid entries");
             return false;
         }
-        if (protect_self_key and _isProtectedRootMergeKey(ref_key)) {
-            c.ar_log__error(ref_evaluator.ref_log, "memory.self is agency-managed and cannot be assigned");
+        if (ref_value_ast == null) {
+            c.ar_log__error(ref_evaluator.ref_log, "Map merge literal has invalid entries");
+            return false;
+        }
+        if (!_validateProtectedRootMergeKey(ref_evaluator, ref_key, protect_self_key)) {
             return false;
         }
     }
@@ -157,8 +174,7 @@ fn _mergeMapValue(
             c.ar_log__error(ref_evaluator.ref_log, "Merge map key must be a string");
             return false;
         }
-        if (protect_self_key and _isProtectedRootMergeKey(ref_key)) {
-            c.ar_log__error(ref_evaluator.ref_log, "memory.self is agency-managed and cannot be assigned");
+        if (!_validateProtectedRootMergeKey(ref_evaluator, ref_key, protect_self_key)) {
             return false;
         }
     }

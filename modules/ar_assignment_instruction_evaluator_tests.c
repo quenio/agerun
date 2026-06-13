@@ -690,6 +690,7 @@ static void test_assignment_instruction_evaluator__rejects_root_merge_to_memory_
 
     ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(fixture);
     AR_ASSERT(ar_data__set_map_integer(mut_memory, "self", 7), "Self ID should be stored");
+    AR_ASSERT(ar_data__set_map_integer(mut_memory, "untouched", 99), "Untouched key should be stored");
 
     ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
     AR_ASSERT(frame != NULL, "Frame creation should succeed");
@@ -703,7 +704,7 @@ static void test_assignment_instruction_evaluator__rejects_root_merge_to_memory_
         ar_assignment_instruction_evaluator__create(log, expr_eval);
     AR_ASSERT(evaluator != NULL, "Evaluator creation should succeed");
 
-    // When a literal root merge tries to replace memory.self
+    // When a literal root merge tries to replace memory.self after another key
     ar_instruction_ast_t *own_literal_ast = ar_assignment_instruction_parser__parse(
         own_parser,
         "memory += {other: 1, self: 0}"
@@ -711,13 +712,16 @@ static void test_assignment_instruction_evaluator__rejects_root_merge_to_memory_
     AR_ASSERT(own_literal_ast != NULL, "Literal map merge assignment should parse");
     bool literal_result = ar_assignment_instruction_evaluator__evaluate(evaluator, frame, own_literal_ast);
 
-    // Then the merge is rejected before any root-memory writes occur
+    // Then the merge is rejected before any keys are written
     AR_ASSERT(literal_result == false, "Literal root merge to memory.self should be rejected");
     AR_ASSERT(ar_data__get_map_integer(mut_memory, "self") == 7, "Self ID should remain unchanged");
-    AR_ASSERT(ar_data__get_map_data(mut_memory, "other") == NULL, "Literal merge should not partially write");
+    AR_ASSERT(ar_data__get_map_data(mut_memory, "other") == NULL,
+              "Literal root merge should not partially write earlier keys");
+    AR_ASSERT(ar_data__get_map_integer(mut_memory, "untouched") == 99,
+              "Literal root merge should leave unrelated keys unchanged");
     ar_instruction_ast__destroy(own_literal_ast);
 
-    // And evaluated patch maps cannot bypass the same guard
+    // And evaluated patch maps cannot bypass the same guard or partially write earlier keys
     ar_data_t *own_patch = ar_data__create_map();
     AR_ASSERT(own_patch != NULL, "Patch map should be created");
     AR_ASSERT(ar_data__set_map_integer(own_patch, "other", 1), "Patch other key should be stored");
@@ -733,7 +737,10 @@ static void test_assignment_instruction_evaluator__rejects_root_merge_to_memory_
 
     AR_ASSERT(patch_result == false, "Patch root merge to memory.self should be rejected");
     AR_ASSERT(ar_data__get_map_integer(mut_memory, "self") == 7, "Self ID should remain unchanged");
-    AR_ASSERT(ar_data__get_map_data(mut_memory, "other") == NULL, "Patch merge should not partially write");
+    AR_ASSERT(ar_data__get_map_data(mut_memory, "other") == NULL,
+              "Patch root merge should not partially write earlier keys");
+    AR_ASSERT(ar_data__get_map_integer(mut_memory, "untouched") == 99,
+              "Patch root merge should leave unrelated keys unchanged");
 
     ar_event_t *error_event = ar_log__get_last_error(log);
     AR_ASSERT(error_event != NULL, "Protected self merge should log an error");
