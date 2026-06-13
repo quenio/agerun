@@ -8,18 +8,17 @@ memory.is_assignment := memory.is_distribute + memory.is_continue
 memory.is_assignment := if(memory.is_assignment > 0, 1, 0)
 
 # Generate trace_id
-memory.generated_trace_base := message.sender * 1000
-memory.generated_trace_id := memory.generated_trace_base + memory.self
+memory.generated_trace_id := "distribution-generated-trace"
 memory.request_trace_id := memory.generated_trace_id
 memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.request_trace_id)
 
 # Establish sender and counters
-memory.trace_id := if(memory.is_distribute = 1, memory.request_trace_id, memory.trace_id)
-memory.sender := if(memory.is_distribute = 1, message.sender, memory.sender)
-memory.status := if(memory.is_distribute = 1, "distributing", memory.status)
-memory.assignment_count := if(memory.is_distribute = 1, 0, memory.assignment_count)
-memory.sent_count := if(memory.is_distribute = 1, 0, memory.sent_count)
-memory.failed_count := if(memory.is_distribute = 1, 0, memory.failed_count)
+memory.trace_id := if(memory.is_assignment = 1, memory.request_trace_id, 0)
+memory.sender := if(memory.is_distribute = 1, message.sender, 0)
+memory.status := if(memory.is_distribute = 1, "distributing", 0)
+memory.assignment_count := 0
+memory.sent_count := 0
+memory.failed_count := 0
 memory.result_recipient := if(memory.is_continue = 1, message.result_recipient, memory.sender)
 memory.input_assignment_count := if(memory.is_continue = 1, message.assignment_count, 0)
 memory.input_sent_count := if(memory.is_continue = 1, message.sent_count, 0)

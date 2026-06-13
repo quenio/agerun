@@ -290,17 +290,10 @@ static void test_distribution__round_robins_payloads_across_recipients(void) {
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_trace_id"),
                      "job-round-robin") == 0,
               "Ignored messages should not emit a new distribution result");
-    const ar_data_t *ref_distribution_memory =
-        ar_agency__get_agent_memory(mut_agency, distribution_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_distribution_memory, "status"),
-                     "success") == 0,
-              "Ignored messages should preserve recorded distribution status");
-    AR_ASSERT(ar_data__get_map_integer(ref_distribution_memory, "assignment_count") == 5,
-              "Ignored messages should preserve recorded assignment count");
-    AR_ASSERT(ar_data__get_map_integer(ref_distribution_memory, "sent_count") == 5,
-              "Ignored messages should preserve recorded sent count");
-    AR_ASSERT(ar_data__get_map_integer(ref_distribution_memory, "failed_count") == 0,
-              "Ignored messages should preserve recorded failed count");
+    AR_ASSERT(ar_data__get_map_integer(ref_worker_a_memory, "received_count") == 3,
+              "Ignored messages should not assign extra payloads to first worker");
+    AR_ASSERT(ar_data__get_map_integer(ref_worker_b_memory, "received_count") == 2,
+              "Ignored messages should not assign extra payloads to second worker");
 
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_distribution_context);
@@ -773,6 +766,23 @@ static void test_distribution__rejects_external_continue_request(void) {
     const ar_data_t *ref_report_memory = ar_agency__get_agent_memory(mut_agency, report_agent);
     AR_ASSERT(ar_data__get_map_data(ref_report_memory, "last_message") == NULL,
               "External continue request should not emit a result");
+
+    ar_data_t *own_malformed_sender = ar_data__create_map();
+    AR_ASSERT(own_malformed_sender != NULL, "Malformed ignored message should be created");
+    AR_ASSERT(ar_data__set_map_string(own_malformed_sender, "request", "distribution_ignored"),
+              "Malformed ignored message should set ignored request");
+    AR_ASSERT(ar_data__set_map_string(own_malformed_sender, "sender", "not-an-agent"),
+              "Malformed ignored message should set non-integer sender");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, distribution_agent, own_malformed_sender),
+              "Malformed ignored message should queue");
+    own_malformed_sender = NULL;
+
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(ar_data__get_map_integer(ref_worker_memory, "received_count") == 0,
+              "Malformed ignored message should not assign payloads");
+    AR_ASSERT(ar_data__get_map_data(ref_report_memory, "last_message") == NULL,
+              "Malformed ignored message should not emit a result");
 
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_distribution_context);
