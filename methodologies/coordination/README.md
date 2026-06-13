@@ -90,14 +90,14 @@ Request:
 
 ```text
 {
-  source: <agent>,
+  source: <sender-agent>,
   request: "routing_start",
   trace_id: <trace_id>,
   payload: <message>,
   route_key: <key>,
   routes: {
     keys: [<key>, <key>, ...],
-    targets: [<agent>, <agent>, ...]
+    targets: [<recipient-agent-1>, <recipient-agent-2>, ...]
   }
 }
 ```
@@ -129,11 +129,11 @@ Request:
 
 ```text
 {
-  source: <agent>,
+  source: <sender-agent>,
   request: "broadcasting_start",
   trace_id: <trace_id>,
   payload: <message>,
-  targets: [<agent>, <agent>, ...]
+  targets: [<recipient-agent-1>, <recipient-agent-2>, ...]
 }
 ```
 
@@ -162,10 +162,10 @@ Integer `0` entries are skipped placeholders, not failed sends.
 Requests:
 
 ```text
-{ source: <agent>, request: "supervision_start", trace_id: <trace_id>, session_id: <session_id>, child_method_names: [<method>, ...], child_method_version: <version>, policy: "restart" }
-{ source: <agent>, request: "supervision_child_failed", trace_id: <trace_id>, session_id: <session_id>, child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
-{ source: <agent>, request: "supervision_child_exited", trace_id: <trace_id>, session_id: <session_id>, child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
-{ source: <agent>, request: "supervision_stop", trace_id: <trace_id>, session_id: <session_id>, child_agent_id: <agent> }
+{ source: <sender-agent>, request: "supervision_start", trace_id: <trace_id>, session_id: <session_id>, child_method_names: [<method>, ...], child_method_version: <version>, policy: "restart" }
+{ source: <sender-agent>, request: "supervision_child_failed", trace_id: <trace_id>, session_id: <session_id>, child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
+{ source: <sender-agent>, request: "supervision_child_exited", trace_id: <trace_id>, session_id: <session_id>, child_agent_id: <agent>, child_method_name: <method>, child_method_version: <version> }
+{ source: <sender-agent>, request: "supervision_stop", trace_id: <trace_id>, session_id: <session_id>, child_agent_id: <agent> }
 ```
 
 Reply:
@@ -199,7 +199,7 @@ Request:
 
 ```text
 {
-  source: <agent>,
+  source: <sender-agent>,
   request: "distribution_distribute",
   trace_id: <trace_id>,
   payloads: [<payload>, <payload>, ...],
@@ -236,8 +236,8 @@ but do not require `session_id`; an omitted `trace_id` is generated for the resu
 Requests:
 
 ```text
-{ source: <agent>, request: "aggregation_start", trace_id: <trace_id>, session_id: <session_id>, expected_count: <count> }
-{ source: <agent>, request: "aggregation_collect", trace_id: <trace_id>, session_id: <session_id>, payload: <payload> }
+{ source: <sender-agent>, request: "aggregation_start", trace_id: <trace_id>, session_id: <session_id>, expected_count: <count> }
+{ source: <sender-agent>, request: "aggregation_collect", trace_id: <trace_id>, session_id: <session_id>, payload: <payload> }
 ```
 
 Completion response:
@@ -270,16 +270,16 @@ the response status is `success` only when `success_count` equals that `expected
 Requests:
 
 ```text
-{ source: <agent>, request: "scheduling_schedule", trace_id: <trace_id>, session_id: <session_id>, schedule_id: <id>, due_tick: <number>, target: <agent>, payload_request: <request>, payload_text: <text>, payload_attempt: <attempt> }
-{ source: <agent>, request: "scheduling_tick", trace_id: <trace_id>, session_id: <session_id>, tick: <number> }
-{ source: <agent>, request: "scheduling_cancel", trace_id: <trace_id>, session_id: <session_id>, schedule_id: <id> }
+{ source: <sender-agent>, request: "scheduling_schedule", trace_id: <trace_id>, session_id: <session_id>, schedule_id: <id>, due_tick: <number>, target: <recipient-agent>, payload_request: <request>, payload_text: <text>, payload_attempt: <attempt> }
+{ source: <sender-agent>, request: "scheduling_tick", trace_id: <trace_id>, session_id: <session_id>, tick: <number> }
+{ source: <sender-agent>, request: "scheduling_cancel", trace_id: <trace_id>, session_id: <session_id>, schedule_id: <id> }
 ```
 
 Triggered message:
 
 ```text
 {
-  source: <scheduling-agent>,
+  source: <sender-agent>,
   request: <payload_request>,
   trace_id: <trace_id>,
   session_id: <session_id>,
@@ -318,15 +318,15 @@ request's `trace_id`; all scheduling requests and responses for one schedule use
 Requests:
 
 ```text
-{ source: <agent>, request: "synchronization_wait", trace_id: <trace_id>, session_id: <session_id>, sync_id: <id>, required_count: <count>, continuation_target: <agent>, continuation_request: <request>, continuation_text: <text> }
-{ source: <agent>, request: "synchronization_dependency", trace_id: <trace_id>, session_id: <session_id>, sync_id: <id>, dependency: <name> }
+{ source: <sender-agent>, request: "synchronization_wait", trace_id: <trace_id>, session_id: <session_id>, sync_id: <id>, required_count: <count>, continuation_target: <agent>, continuation_request: <request>, continuation_text: <text> }
+{ source: <sender-agent>, request: "synchronization_dependency", trace_id: <trace_id>, session_id: <session_id>, sync_id: <id>, dependency: <name> }
 ```
 
 Continuation:
 
 ```text
 {
-  source: <synchronization-agent>,
+  source: <sender-agent>,
   request: <continuation_request>,
   trace_id: <trace_id>,
   session_id: <session_id>,
@@ -363,8 +363,8 @@ delivery keeps the gate open for retry.
 Requests:
 
 ```text
-{ source: <agent>, request: "workflow_start", trace_id: <trace_id>, session_id: <session_id>, workflow_id: <id>, step_targets: [<agent>, ...], step_payloads: [<message>, ...], branch_value: <outcome> }
-{ source: <agent>, request: "workflow_step_done", trace_id: <trace_id>, session_id: <session_id>, workflow_id: <id>, step: <current-step-number>, outcome: <value> }
+{ source: <sender-agent>, request: "workflow_start", trace_id: <trace_id>, session_id: <session_id>, workflow_id: <id>, step_targets: [<agent>, ...], step_payloads: [<message>, ...], branch_value: <outcome> }
+{ source: <sender-agent>, request: "workflow_step_done", trace_id: <trace_id>, session_id: <session_id>, workflow_id: <id>, step: <current-step-number>, outcome: <value> }
 ```
 
 Step messages sent to step agents are exactly the caller-provided step payloads.
@@ -395,17 +395,17 @@ delivery leaves completion pending and retries do not increment `completed_step_
 Requests:
 
 ```text
-{ source: <agent>, request: "conversation_start", trace_id: <trace_id>, session_id: <session_id>, conversation_id: <id>, participant_a: <agent>, participant_b: <agent> }
-{ source: <agent>, request: "conversation_message", trace_id: <trace_id>, session_id: <session_id>, conversation_id: <id>, sender: <agent>, text: <text>, intent: <intent> }
-{ source: <agent>, request: "conversation_summary", trace_id: <trace_id>, session_id: <session_id>, conversation_id: <id> }
-{ source: <agent>, request: "conversation_close", trace_id: <trace_id>, session_id: <session_id>, conversation_id: <id> }
+{ source: <sender-agent>, request: "conversation_start", trace_id: <trace_id>, session_id: <session_id>, conversation_id: <id>, participant_a: <agent>, participant_b: <agent> }
+{ source: <sender-agent>, request: "conversation_message", trace_id: <trace_id>, session_id: <session_id>, conversation_id: <id>, sender: <agent>, text: <text>, intent: <intent> }
+{ source: <sender-agent>, request: "conversation_summary", trace_id: <trace_id>, session_id: <session_id>, conversation_id: <id> }
+{ source: <sender-agent>, request: "conversation_close", trace_id: <trace_id>, session_id: <session_id>, conversation_id: <id> }
 ```
 
 Participant turn:
 
 ```text
 {
-  source: <conversation-agent>,
+  source: <sender-agent>,
   request: "conversation_turn",
   trace_id: <trace_id>,
   session_id: <session_id>,
@@ -450,28 +450,28 @@ history and turn count unchanged.
 Requests:
 
 ```text
-{ source: <agent>, request: "retry_start", trace_id: <trace_id>, session_id: <session_id>, operation_id: <id>, operation_target: <agent>, operation_request: <request>, operation_text: <text>, max_attempts: <number>, strategy: <immediate|scheduled>, scheduler_agent: <agent>, delay_ticks: <tick> }
-{ source: <agent>, request: "retry_failure", trace_id: <trace_id>, session_id: <session_id>, attempt: <attempt>, current_tick: <tick> }
-{ source: <agent>, request: "retry_success", trace_id: <trace_id>, session_id: <session_id>, attempt: <attempt> }
+{ source: <sender-agent>, request: "retry_start", trace_id: <trace_id>, session_id: <session_id>, operation_id: <id>, operation_target: <agent>, operation_request: <request>, operation_text: <text>, max_attempts: <number>, strategy: <immediate|scheduled>, scheduler_agent: <agent>, delay_ticks: <tick> }
+{ source: <sender-agent>, request: "retry_failure", trace_id: <trace_id>, session_id: <session_id>, attempt: <attempt>, current_tick: <tick> }
+{ source: <sender-agent>, request: "retry_success", trace_id: <trace_id>, session_id: <session_id>, attempt: <attempt> }
 ```
 
 Operation attempt:
 
 ```text
-{ source: <retry-agent>, request: <operation_request>, trace_id: <trace_id>, session_id: <session_id>, text: <operation_text>, attempt: <number> }
+{ source: <sender-agent>, request: <operation_request>, trace_id: <trace_id>, session_id: <session_id>, text: <operation_text>, attempt: <number> }
 ```
 
 Scheduled retry request:
 
 ```text
 {
-  source: <retry-agent>,
+  source: <sender-agent>,
   request: "scheduling_schedule",
   trace_id: <trace_id>,
   session_id: <session_id>,
   schedule_id: <operation_id>,
   due_tick: <current_tick + delay_ticks>,
-  target: <operation_target>,
+  target: <recipient-agent>,
   payload_request: <operation_request>,
   payload_text: <operation_text>,
   payload_attempt: <attempt>

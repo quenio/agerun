@@ -25,7 +25,7 @@ Request:
 
 ```text
 {
-  source: <agent>,
+  source: <sender-agent>,
   request: "distribution_distribute",
   trace_id: <trace_id>,
   payloads: [<payload>, <payload>, ...],

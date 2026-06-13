@@ -25,11 +25,11 @@ Request:
 
 ```text
 {
-  source: <agent>,
+  source: <sender-agent>,
   request: "broadcasting_start",
   trace_id: <trace_id>,
   payload: <message>,
-  targets: [<agent>, <agent>, ...]
+  targets: [<recipient-agent-1>, <recipient-agent-2>, ...]
 }
 ```
 

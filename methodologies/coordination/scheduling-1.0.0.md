@@ -19,16 +19,16 @@ clears pending state only when the matching schedule and session are still pendi
 Requests:
 
 ```text
-{ source: <agent>, request: "scheduling_schedule", trace_id: <trace_id>, session_id: <session_id>, schedule_id: <id>, due_tick: <number>, target: <agent>, payload_request: <request>, payload_text: <text>, payload_attempt: <attempt> }
-{ source: <agent>, request: "scheduling_tick", trace_id: <trace_id>, session_id: <session_id>, tick: <number> }
-{ source: <agent>, request: "scheduling_cancel", trace_id: <trace_id>, session_id: <session_id>, schedule_id: <id> }
+{ source: <sender-agent>, request: "scheduling_schedule", trace_id: <trace_id>, session_id: <session_id>, schedule_id: <id>, due_tick: <number>, target: <recipient-agent>, payload_request: <request>, payload_text: <text>, payload_attempt: <attempt> }
+{ source: <sender-agent>, request: "scheduling_tick", trace_id: <trace_id>, session_id: <session_id>, tick: <number> }
+{ source: <sender-agent>, request: "scheduling_cancel", trace_id: <trace_id>, session_id: <session_id>, schedule_id: <id> }
 ```
 
 Triggered message:
 
 ```text
 {
-  source: <scheduling-agent>,
+  source: <sender-agent>,
   request: <payload_request>,
   trace_id: <trace_id>,
   session_id: <session_id>,

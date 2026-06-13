@@ -24,8 +24,8 @@ Duplicate, stale, premature, or out-of-order completions are ignored.
 Requests:
 
 ```text
-{ source: <agent>, request: "workflow_start", trace_id: <trace_id>, session_id: <session_id>, workflow_id: <id>, step_targets: [<agent>, ...], step_payloads: [<message>, ...], branch_value: <outcome> }
-{ source: <agent>, request: "workflow_step_done", trace_id: <trace_id>, session_id: <session_id>, workflow_id: <id>, step: <current-step-number>, outcome: <value> }
+{ source: <sender-agent>, request: "workflow_start", trace_id: <trace_id>, session_id: <session_id>, workflow_id: <id>, step_targets: [<agent>, ...], step_payloads: [<message>, ...], branch_value: <outcome> }
+{ source: <sender-agent>, request: "workflow_step_done", trace_id: <trace_id>, session_id: <session_id>, workflow_id: <id>, step: <current-step-number>, outcome: <value> }
 ```
 
 Completion response:

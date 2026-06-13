@@ -23,15 +23,15 @@ request's effective `trace_id` and the active synchronization `session_id`.
 Requests:
 
 ```text
-{ source: <agent>, request: "synchronization_wait", trace_id: <trace_id>, session_id: <session_id>, sync_id: <id>, required_count: <count>, continuation_target: <agent>, continuation_request: <request>, continuation_text: <text> }
-{ source: <agent>, request: "synchronization_dependency", trace_id: <trace_id>, session_id: <session_id>, sync_id: <id>, dependency: <name> }
+{ source: <sender-agent>, request: "synchronization_wait", trace_id: <trace_id>, session_id: <session_id>, sync_id: <id>, required_count: <count>, continuation_target: <agent>, continuation_request: <request>, continuation_text: <text> }
+{ source: <sender-agent>, request: "synchronization_dependency", trace_id: <trace_id>, session_id: <session_id>, sync_id: <id>, dependency: <name> }
 ```
 
 Continuation:
 
 ```text
 {
-  source: <synchronization-agent>,
+  source: <sender-agent>,
   request: <continuation_request>,
   trace_id: <trace_id>,
   session_id: <session_id>,

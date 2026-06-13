@@ -21,17 +21,17 @@ marks the conversation closed and notifies the participants.
 Requests:
 
 ```text
-{ source: <agent>, request: "conversation_start", trace_id: <trace_id>, session_id: <session_id>, conversation_id: <id>, participant_a: <agent>, participant_b: <agent> }
-{ source: <agent>, request: "conversation_message", trace_id: <trace_id>, session_id: <session_id>, conversation_id: <id>, sender: <agent>, text: <text>, intent: <intent> }
-{ source: <agent>, request: "conversation_summary", trace_id: <trace_id>, session_id: <session_id>, conversation_id: <id> }
-{ source: <agent>, request: "conversation_close", trace_id: <trace_id>, session_id: <session_id>, conversation_id: <id> }
+{ source: <sender-agent>, request: "conversation_start", trace_id: <trace_id>, session_id: <session_id>, conversation_id: <id>, participant_a: <agent>, participant_b: <agent> }
+{ source: <sender-agent>, request: "conversation_message", trace_id: <trace_id>, session_id: <session_id>, conversation_id: <id>, sender: <agent>, text: <text>, intent: <intent> }
+{ source: <sender-agent>, request: "conversation_summary", trace_id: <trace_id>, session_id: <session_id>, conversation_id: <id> }
+{ source: <sender-agent>, request: "conversation_close", trace_id: <trace_id>, session_id: <session_id>, conversation_id: <id> }
 ```
 
 Relayed turn:
 
 ```text
 {
-  source: <conversation-agent>,
+  source: <sender-agent>,
   request: "conversation_turn",
   trace_id: <trace_id>,
   session_id: <session_id>,

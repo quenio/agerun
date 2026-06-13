@@ -29,8 +29,8 @@ request threshold.
 Requests:
 
 ```text
-{ source: <agent>, request: "aggregation_start", trace_id: <trace_id>, session_id: <session_id>, expected_count: <count> }
-{ source: <agent>, request: "aggregation_collect", trace_id: <trace_id>, session_id: <session_id>, payload: <payload> }
+{ source: <sender-agent>, request: "aggregation_start", trace_id: <trace_id>, session_id: <session_id>, expected_count: <count> }
+{ source: <sender-agent>, request: "aggregation_collect", trace_id: <trace_id>, session_id: <session_id>, payload: <payload> }
 ```
 
 Completion response:

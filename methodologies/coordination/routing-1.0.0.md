@@ -25,14 +25,14 @@ Request:
 
 ```text
 {
-  source: <agent>,
+  source: <sender-agent>,
   request: "routing_start",
   trace_id: <trace_id>,
   payload: <message>,
   route_key: <key>,
   routes: {
     keys: [<key>, <key>, ...],
-    targets: [<agent>, <agent>, ...]
+    targets: [<recipient-agent-1>, <recipient-agent-2>, ...]
   }
 }
 ```

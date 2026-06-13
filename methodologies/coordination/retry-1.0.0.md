@@ -24,28 +24,28 @@ result for retry.
 Requests:
 
 ```text
-{ source: <agent>, request: "retry_start", trace_id: <trace_id>, session_id: <session_id>, operation_id: <id>, operation_target: <agent>, operation_request: <request>, operation_text: <text>, max_attempts: <number>, strategy: <immediate|scheduled>, scheduler_agent: <agent>, delay_ticks: <tick> }
-{ source: <agent>, request: "retry_failure", trace_id: <trace_id>, session_id: <session_id>, attempt: <attempt>, current_tick: <tick> }
-{ source: <agent>, request: "retry_success", trace_id: <trace_id>, session_id: <session_id>, attempt: <attempt> }
+{ source: <sender-agent>, request: "retry_start", trace_id: <trace_id>, session_id: <session_id>, operation_id: <id>, operation_target: <agent>, operation_request: <request>, operation_text: <text>, max_attempts: <number>, strategy: <immediate|scheduled>, scheduler_agent: <agent>, delay_ticks: <tick> }
+{ source: <sender-agent>, request: "retry_failure", trace_id: <trace_id>, session_id: <session_id>, attempt: <attempt>, current_tick: <tick> }
+{ source: <sender-agent>, request: "retry_success", trace_id: <trace_id>, session_id: <session_id>, attempt: <attempt> }
 ```
 
 Operation attempt:
 
 ```text
-{ source: <retry-agent>, request: <operation_request>, trace_id: <trace_id>, session_id: <session_id>, text: <operation_text>, attempt: <number> }
+{ source: <sender-agent>, request: <operation_request>, trace_id: <trace_id>, session_id: <session_id>, text: <operation_text>, attempt: <number> }
 ```
 
 Scheduled retry request:
 
 ```text
 {
-  source: <retry-agent>,
+  source: <sender-agent>,
   request: "scheduling_schedule",
   trace_id: <trace_id>,
   session_id: <session_id>,
   schedule_id: <operation_id>,
   due_tick: <current_tick + delay_ticks>,
-  target: <operation_target>,
+  target: <recipient-agent>,
   payload_request: <operation_request>,
   payload_text: <operation_text>,
   payload_attempt: <attempt>
