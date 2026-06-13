@@ -345,9 +345,9 @@ Response:
 
 A due tick clears `pending` only when the stored payload is sent successfully. If delivery fails,
 the response status is `failure` and the schedule remains pending for a later tick. Trigger responses
-and triggered payload requests use the tick request's `trace_id`; cancel responses use the cancel
-request's `trace_id`; all scheduling requests and responses for one schedule use the same
-`session_id`.
+and triggered payload requests use the tick request's `trace_id`; triggered payload requests
+preserve the original schedule request's `sender`. Cancel responses use the cancel request's
+`trace_id`; all scheduling requests and responses for one schedule use the same `session_id`.
 
 Count semantics: `success_count` increments when a due tick successfully sends the stored payload,
 and when a matching cancel clears a pending schedule. The schedule creation response does not

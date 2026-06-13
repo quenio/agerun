@@ -41,7 +41,7 @@ memory.should_trigger := memory.pending * memory.session_tick * memory.tick_read
 
 # Send scheduled payload
 memory.execution_message := {
-  sender: memory.self
+  sender: memory.sender
   request: memory.payload_request
   trace_id: memory.request_trace_id
   session_id: memory.session_id

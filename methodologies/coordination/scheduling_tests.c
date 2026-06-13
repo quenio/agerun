@@ -159,8 +159,8 @@ static void test_scheduling__triggers_future_work_on_tick(void) {
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_text"), "delayed") == 0,
               "Receiver should observe scheduled text");
     AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_sender") ==
-                  checked_agent_id(scheduling_agent),
-              "Receiver should observe scheduling as the execution sender");
+                  checked_agent_id(observer_agent),
+              "Receiver should observe the schedule sender as the execution sender");
     AR_ASSERT(ar_data__get_map_integer(ref_receiver_memory, "last_attempt") == 7,
               "Receiver should observe scheduled attempt");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_trace_id"),

@@ -11,8 +11,9 @@ Only messages with a recognized `request` value are handled as coordination requ
 
 On `request: "scheduling_schedule"`, the method stores schedule metadata, recipient agent, payload
 fields, effective `trace_id`, `session_id`, and `sender`. On a due `scheduling_tick` with the same
-`session_id`, it sends the stored payload to the stored recipient agent. On `scheduling_cancel`, it
-clears pending state only when the matching session is still pending.
+`session_id`, it sends the stored payload to the stored recipient agent with the stored schedule
+sender. On `scheduling_cancel`, it clears pending state only when the matching session is still
+pending.
 
 ## Message Format
 
@@ -63,8 +64,9 @@ that clears a pending schedule, and for a due tick that successfully sends the s
 `failure` only when a due tick should trigger but the stored payload send fails.
 
 Trigger responses and triggered payload requests use the tick request's effective `trace_id`;
-cancel responses use the cancel request's effective `trace_id`. All request kinds in one pending
-schedule use the same `session_id`.
+triggered payload requests preserve the original schedule request's `sender`. Cancel responses use
+the cancel request's effective `trace_id`. All request kinds in one pending schedule use the same
+`session_id`.
 
 ## Implementation and Tests
 
