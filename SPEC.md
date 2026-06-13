@@ -99,6 +99,22 @@ The AgeRun system implements zero-tolerance memory management with:
 
 Both the list and map structures are implemented as opaque types to maintain encapsulation and protect internal implementation details.
 
+### Message Processing Order
+
+The runtime processes one dequeued agent message by executing that agent's method once, to
+completion, before processing another message. A single agent is therefore not re-entrant in the
+current runtime, and two invocations of the same agent method cannot mutate that agent's memory
+simultaneously.
+
+Messages sent with `send(...)` are enqueued; they do not execute the recipient method inline. When
+an agent sends a message to itself, that self-sent message is appended to the agent's FIFO queue
+behind any messages already queued for that agent. Therefore, self-sent continuation messages can be
+interleaved with older queued messages, but this interleaving occurs across completed method
+invocations rather than through concurrent or re-entrant execution.
+
+See [Agent FIFO Queue and Continuation Interleaving](kb/agent-fifo-queue-continuation-interleaving.md)
+for the review-triage implications of this ordering model.
+
 ## Method Definition
 
 A method definition consists of a sequence of instructions, with each instruction on a separate line. The following BNF grammar defines the syntax of a method definition:
