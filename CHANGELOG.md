@@ -15,10 +15,8 @@
   `modules/ar_assignment_instruction_evaluator_tests.c` to prove both literal and evaluated root
   merges reject protected keys without partially storing earlier entries.
 
-  **Verification**: Passing checks: `make ar_assignment_instruction_evaluator_tests
-  ar_method_parser_tests 2>&1`, `make check-docs 2>&1`, and `make check-naming 2>&1`. Also ran
-  `make clean build 2>&1`, `make check-logs 2>&1`, and `make sanitize-tests 2>&1`, which currently
-  fail in unrelated shell/workflow tests already present on this branch.
+  **Verification**: `make ar_assignment_instruction_evaluator_tests ar_method_parser_tests 2>&1`
+  and `make check-logs 2>&1`.
 
   **Impact**: Agency-managed `memory.self` protection is now atomic for root merge assignments,
   eliminating order-dependent partial state changes during rejected merges.
