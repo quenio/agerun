@@ -631,6 +631,55 @@ static void test_assignment_instruction_evaluator__merges_map_entries_in_order(v
     ar_evaluator_fixture__destroy(fixture);
 }
 
+static void test_assignment_instruction_evaluator__merges_empty_map_value(void) {
+    printf("Testing assignment map merge accepts empty map values...\n");
+
+    // Given memory with an empty patch map
+    ar_evaluator_fixture_t *fixture =
+        ar_evaluator_fixture__create("test_merges_empty_map_value");
+    AR_ASSERT(fixture != NULL, "Fixture creation should succeed");
+
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(fixture);
+    AR_ASSERT(ar_data__set_map_integer(mut_memory, "existing", 7), "Existing key should be stored");
+    ar_data_t *own_patch = ar_data__create_map();
+    AR_ASSERT(own_patch != NULL, "Patch map should be created");
+    AR_ASSERT(ar_data__set_map_data(mut_memory, "patch", own_patch), "Patch map should be stored");
+
+    ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
+    AR_ASSERT(frame != NULL, "Frame creation should succeed");
+
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(log);
+    AR_ASSERT(own_parser != NULL, "Parser creation should succeed");
+
+    ar_instruction_ast_t *own_ast = ar_assignment_instruction_parser__parse(
+        own_parser,
+        "memory += memory.patch"
+    );
+    AR_ASSERT(own_ast != NULL, "Map merge assignment should parse");
+
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_assignment_instruction_evaluator_t *evaluator =
+        ar_assignment_instruction_evaluator__create(log, expr_eval);
+    AR_ASSERT(evaluator != NULL, "Evaluator creation should succeed");
+
+    // When evaluating the empty map merge
+    bool result = ar_assignment_instruction_evaluator__evaluate(evaluator, frame, own_ast);
+
+    // Then the merge succeeds without changing existing keys
+    AR_ASSERT(result == true, "Empty map merge should evaluate as a no-op");
+    AR_ASSERT(ar_data__get_map_integer(mut_memory, "existing") == 7, "Existing key should remain unchanged");
+    ar_data_t *own_patch_keys = ar_data__get_map_keys(ar_data__get_map_data(mut_memory, "patch"));
+    AR_ASSERT(own_patch_keys != NULL, "Patch map keys should be available");
+    AR_ASSERT(ar_data__list_count(own_patch_keys) == 0, "Patch map should remain empty");
+    ar_data__destroy(own_patch_keys);
+
+    ar_assignment_instruction_evaluator__destroy(evaluator);
+    ar_instruction_ast__destroy(own_ast);
+    ar_assignment_instruction_parser__destroy(own_parser);
+    ar_evaluator_fixture__destroy(fixture);
+}
+
 
 int main(void) {
     printf("Starting assignment instruction_evaluator tests...\n");
@@ -676,6 +725,9 @@ int main(void) {
 
     test_assignment_instruction_evaluator__merges_map_entries_in_order();
     printf("test_assignment_instruction_evaluator__merges_map_entries_in_order passed!\n");
+
+    test_assignment_instruction_evaluator__merges_empty_map_value();
+    printf("test_assignment_instruction_evaluator__merges_empty_map_value passed!\n");
     
     printf("All assignment instruction_evaluator tests passed!\n");
     

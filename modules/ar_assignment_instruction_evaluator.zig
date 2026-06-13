@@ -115,6 +115,10 @@ fn _mergeMapValue(
     defer c.ar_data__destroy(own_keys);
 
     const key_count = c.ar_data__list_count(own_keys);
+    if (key_count == 0) {
+        return true;
+    }
+
     const own_key_items = c.ar_data__list_items(own_keys) orelse {
         c.ar_log__error(ref_evaluator.ref_log, "Failed to enumerate merge map keys");
         return false;
