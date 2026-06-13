@@ -2,27 +2,31 @@
 
 ## Overview
 
-Conversation coordinates a bounded exchange between two participant agents. It relays each turn,
-tracks turn history, and exposes structured responses while remaining an ordinary AgeRun method.
+Conversation coordinates an exchange among participant agents. It relays each turn to every
+participant except the sender, tracks turn history, and exposes structured responses while
+remaining an ordinary AgeRun method.
 
 ## Behavior
 
 Only messages with a recognized `request` value are handled as coordination requests.
 
 On `request: "conversation_start"`, the method stores the effective `trace_id`, `session_id`,
-participant agent ids, and `source`. On `request: "conversation_message"` with the same
-`session_id`, it accepts messages from either participant while the conversation is active, relays
-a `conversation_turn` request to the other participant, and records the turn only after delivery
-succeeds. On `conversation_summary`, it responds with history. On `conversation_close`, it marks
-the conversation closed and notifies the participants.
+participant list, and `source`, then spawns one `broadcasting` method agent for the conversation
+session. Later turns reuse that broadcasting agent.
+
+On `request: "conversation_message"` with the same `session_id`, it accepts the sender-provided
+`payload` while the conversation is active, builds a `conversation_turn` request, and sends that
+same turn message through broadcasting to all participants except the sender. The turn is recorded
+only after broadcasting reports success. On `conversation_summary`, it responds with history. On
+`conversation_close`, it marks the conversation closed.
 
 ## Message Format
 
 Requests:
 
 ```text
-{ source: <sender-agent>, request: "conversation_start", trace_id: <trace_id>, session_id: <session_id>, participant_a: <agent>, participant_b: <agent> }
-{ source: <sender-agent>, request: "conversation_message", trace_id: <trace_id>, session_id: <session_id>, sender: <agent>, text: <text>, intent: <intent> }
+{ source: <sender-agent>, request: "conversation_start", trace_id: <trace_id>, session_id: <session_id>, participants: [<recipient-agent-1>, <recipient-agent-2>, ...] }
+{ source: <sender-agent>, request: "conversation_message", trace_id: <trace_id>, session_id: <session_id>, payload: <payload>, sender: <agent> }
 { source: <sender-agent>, request: "conversation_summary", trace_id: <trace_id>, session_id: <session_id> }
 { source: <sender-agent>, request: "conversation_close", trace_id: <trace_id>, session_id: <session_id> }
 ```
@@ -31,14 +35,12 @@ Relayed turn:
 
 ```text
 {
-  source: <sender-agent>,
+  source: <conversation-agent>,
   request: "conversation_turn",
   trace_id: <trace_id>,
   session_id: <session_id>,
+  payload: <payload>,
   from: <agent>,
-  to: <agent>,
-  text: <text>,
-  intent: <intent>,
   turn_count: <count>
 }
 ```
@@ -56,15 +58,16 @@ Coordinator response:
   result: <active|relayed|relay_failed|ignored|closed>,
   success_count: <count>,
   failure_count: <count>,
-  participant_a: <agent>,
-  participant_b: <agent>,
+  participants: [<recipient-agent-1>, <recipient-agent-2>, ...],
   last_sender: <agent>,
-  last_recipient: <agent>,
-  last_text: <text>,
+  last_payload: <payload>,
   turn_count: <count>,
   history: [<conversation_turn>, ...]
 }
 ```
+
+If broadcast delivery fails for any recipient, the coordinator reports `result: "relay_failed"` and
+leaves the history and turn count unchanged.
 
 ## Implementation and Tests
 

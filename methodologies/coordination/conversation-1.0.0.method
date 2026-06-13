@@ -1,85 +1,163 @@
 memory.is_request := if(message.request <> 0, 1, 0)
+memory.is_response := if(message.response <> 0, 1, 0)
 memory.is_start := if(memory.is_request = 1, message.request = "conversation_start", 0)
 memory.is_message := if(memory.is_request = 1, message.request = "conversation_message", 0)
 memory.is_summary := if(memory.is_request = 1, message.request = "conversation_summary", 0)
 memory.is_close := if(memory.is_request = 1, message.request = "conversation_close", 0)
-memory.is_conversation_request := memory.is_start + memory.is_message
-memory.is_conversation_request := memory.is_conversation_request + memory.is_summary
-memory.is_conversation_request := memory.is_conversation_request + memory.is_close
-memory.is_conversation_request := if(memory.is_conversation_request > 0, 1, 0)
+memory.is_select_recipients := if(memory.is_request = 1, message.request = "conversation_select_recipients", 0)
+memory.is_broadcast_result := if(memory.is_response = 1, message.response = "broadcasting_result", 0)
 memory.generated_trace_base := message.source * 1000
 memory.generated_trace_id := memory.generated_trace_base + memory.self
 memory.request_trace_id := memory.generated_trace_id
 memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.request_trace_id)
 memory.trace_id := if(memory.is_start = 1, memory.request_trace_id, memory.trace_id)
 memory.session_id := if(memory.is_start = 1, message.session_id, memory.session_id)
-memory.participant_a := if(memory.is_start = 1, message.participant_a, memory.participant_a)
-memory.participant_b := if(memory.is_start = 1, message.participant_b, memory.participant_b)
+memory.participants := if(memory.is_start = 1, message.participants, memory.participants)
 memory.source := if(memory.is_start = 1, message.source, memory.source)
-memory.state := if(memory.is_start = 1, "active", memory.state)
+memory.state := if(memory.is_start = 1, "starting", memory.state)
 memory.turn_count := if(memory.is_start = 1, 0, memory.turn_count)
 memory.history := if(memory.is_start = 1, [], memory.history)
 memory.last_sender := if(memory.is_start = 1, 0, memory.last_sender)
-memory.last_recipient := if(memory.is_start = 1, 0, memory.last_recipient)
-memory.last_text := if(memory.is_start = 1, "", memory.last_text)
+memory.last_payload := if(memory.is_start = 1, 0, memory.last_payload)
+memory.pending_broadcast := if(memory.is_start = 1, 0, memory.pending_broadcast)
+memory.pending_turn_message := if(memory.is_start = 1, {}, memory.pending_turn_message)
+memory.pending_sender := if(memory.is_start = 1, 0, memory.pending_sender)
+memory.pending_payload := if(memory.is_start = 1, 0, memory.pending_payload)
+memory.pending_turn_count := if(memory.is_start = 1, 0, memory.pending_turn_count)
+memory.broadcasting_method := if(memory.is_start = 1, "broadcasting", 0)
+memory.broadcasting_version := if(memory.is_start = 1, "1.0.0", "")
+memory.broadcasting_spawn_result := spawn(memory.broadcasting_method, memory.broadcasting_version, context)
+memory.broadcasting_agent := if(memory.broadcasting_spawn_result > 0, memory.broadcasting_spawn_result, memory.broadcasting_agent)
+memory.broadcasting_spawned := if(memory.broadcasting_spawn_result > 0, memory.is_start, 0)
+memory.start_failed := memory.is_start - memory.broadcasting_spawned
+memory.state := if(memory.broadcasting_spawned = 1, "active", memory.state)
+memory.state := if(memory.start_failed = 1, "handoff_failed", memory.state)
 memory.has_request_session := if(message.session_id <> 0, 1, 0)
 memory.matches_session := if(memory.has_request_session = 1, message.session_id = memory.session_id, 0)
 memory.is_active := if(memory.state = "active", 1, 0)
-memory.from_a := if(message.sender = memory.participant_a, 1, 0)
-memory.from_b := if(message.sender = memory.participant_b, 1, 0)
-memory.is_participant := memory.from_a + memory.from_b
-memory.message_matches := memory.is_message * memory.matches_session
-memory.is_turn := memory.is_message * memory.matches_session * memory.is_active * memory.is_participant
-memory.recipient := if(memory.from_a = 1, memory.participant_b, 0)
-memory.recipient := if(memory.from_b = 1, memory.participant_a, memory.recipient)
-memory.next_turn_count := memory.turn_count + memory.is_turn
+memory.message_candidate := memory.is_message * memory.matches_session
+memory.message_candidate := memory.message_candidate * memory.is_active
+memory.next_turn_count := memory.turn_count + memory.message_candidate
 memory.turn_message := {
   source: memory.self
   request: "conversation_turn"
   trace_id: memory.request_trace_id
   session_id: memory.session_id
+  payload: message.payload
   from: message.sender
-  to: memory.recipient
-  text: message.text
-  intent: message.intent
   turn_count: memory.next_turn_count
 }
-memory.relay_target := memory.recipient * memory.is_turn
-memory.relay_sent := send(memory.relay_target, memory.turn_message)
-memory.should_record := memory.is_turn * memory.relay_sent
-memory.history_buffer := if(memory.should_record = 1, memory.history, "")
-memory.append_ok := append(memory.history_buffer, memory.turn_message)
-memory.history := if(memory.append_ok = 1, memory.history_buffer, memory.history)
-memory.turn_count := if(memory.append_ok = 1, memory.next_turn_count, memory.turn_count)
-memory.last_sender := if(memory.append_ok = 1, message.sender, memory.last_sender)
-memory.last_recipient := if(memory.append_ok = 1, memory.recipient, memory.last_recipient)
-memory.last_text := if(memory.append_ok = 1, message.text, memory.last_text)
-memory.should_close := memory.is_close * memory.matches_session
-memory.state := if(memory.should_close = 1, "closed", memory.state)
-memory.close_message := {
+memory.pending_turn_message := if(memory.message_candidate = 1, memory.turn_message, memory.pending_turn_message)
+memory.pending_sender := if(memory.message_candidate = 1, message.sender, memory.pending_sender)
+memory.pending_payload := if(memory.message_candidate = 1, message.payload, memory.pending_payload)
+memory.pending_turn_count := if(memory.message_candidate = 1, memory.next_turn_count, memory.pending_turn_count)
+memory.select_recipients_message := {
   source: memory.self
-  response: "conversation_result"
+  request: "conversation_select_recipients"
   trace_id: memory.request_trace_id
   session_id: memory.session_id
-  status: "success"
-  state: memory.state
-  success_count: memory.turn_count
-  failure_count: 0
-  turn_count: memory.turn_count
+  participants: memory.participants
+  targets: []
+  sender: message.sender
+  payload: memory.turn_message
+  found_sender: 0
+  recipient_count: 0
 }
-memory.close_a_sent := send(memory.participant_a * memory.should_close, memory.close_message)
-memory.close_b_sent := send(memory.participant_b * memory.should_close, memory.close_message)
-memory.response_state := if(memory.message_matches = 1, "relay_failed", "ignored")
-memory.response_state := if(memory.append_ok = 1, "relayed", memory.response_state)
-memory.response_state := if(memory.is_start = 1, "active", memory.response_state)
+memory.select_sent := send(memory.self * memory.message_candidate, memory.select_recipients_message)
+memory.select_send_failed := if(memory.select_sent = 0, 1, 0)
+memory.select_send_failed := memory.select_send_failed * memory.message_candidate
+memory.scan_participants := if(memory.is_select_recipients = 1, message.participants, [])
+memory.scan_targets := if(memory.is_select_recipients = 1, message.targets, [])
+memory.current_participant := head(memory.scan_participants)
+memory.remaining_participants := tail(memory.scan_participants)
+memory.scan_participants_empty := if(memory.scan_participants = [], 1, 0)
+memory.has_scan_participant := if(memory.scan_participants_empty = 1, 0, 1)
+memory.participant_is_sender := if(message.sender = memory.current_participant, 1, 0)
+memory.participant_is_sender := memory.participant_is_sender * memory.has_scan_participant
+memory.include_participant := memory.has_scan_participant - memory.participant_is_sender
+memory.target_value := memory.current_participant * memory.include_participant
+memory.targets_buffer := if(memory.has_scan_participant = 1, memory.scan_targets, "")
+memory.target_append_ok := append(memory.targets_buffer, memory.target_value)
+memory.next_targets := if(memory.target_append_ok = 1, memory.targets_buffer, memory.scan_targets)
+memory.next_found_sender := message.found_sender + memory.participant_is_sender
+memory.next_found_sender := if(memory.next_found_sender > 0, 1, 0)
+memory.next_recipient_count := message.recipient_count + memory.include_participant
+memory.remaining_participants_empty := if(memory.remaining_participants = [], 1, 0)
+memory.has_remaining_participants := if(memory.remaining_participants_empty = 1, 0, 1)
+memory.scan_continue := memory.is_select_recipients * memory.has_scan_participant
+memory.scan_continue := memory.scan_continue * memory.has_remaining_participants
+memory.scan_continue_message := {
+  source: memory.self
+  request: "conversation_select_recipients"
+  trace_id: message.trace_id
+  session_id: memory.session_id
+  participants: memory.remaining_participants
+  targets: memory.next_targets
+  sender: message.sender
+  payload: message.payload
+  found_sender: memory.next_found_sender
+  recipient_count: memory.next_recipient_count
+}
+memory.scan_continue_sent := send(memory.self * memory.scan_continue, memory.scan_continue_message)
+memory.scan_finished := memory.is_select_recipients
+memory.scan_finished := if(memory.scan_continue = 1, 0, memory.scan_finished)
+memory.has_recipients := if(memory.next_recipient_count > 0, 1, 0)
+memory.sender_missing := if(memory.next_found_sender = 0, 1, 0)
+memory.sender_missing := memory.sender_missing * memory.scan_finished
+memory.has_no_recipients := 1 - memory.has_recipients
+memory.no_recipients := memory.scan_finished * memory.next_found_sender
+memory.no_recipients := memory.no_recipients * memory.has_no_recipients
+memory.broadcast_ready := memory.scan_finished * memory.next_found_sender
+memory.broadcast_ready := memory.broadcast_ready * memory.has_recipients
+memory.broadcast_message := {
+  source: memory.self
+  request: "broadcasting_start"
+  trace_id: message.trace_id
+  payload: message.payload
+  targets: memory.next_targets
+}
+memory.broadcast_sent := send(memory.broadcasting_agent * memory.broadcast_ready, memory.broadcast_message)
+memory.broadcast_send_failed := if(memory.broadcast_sent = 0, 1, 0)
+memory.broadcast_send_failed := memory.broadcast_send_failed * memory.broadcast_ready
+memory.pending_broadcast := if(memory.broadcast_sent = 1, 1, memory.pending_broadcast)
+memory.immediate_relay_failure := memory.select_send_failed + memory.sender_missing
+memory.immediate_relay_failure := memory.immediate_relay_failure + memory.no_recipients
+memory.immediate_relay_failure := memory.immediate_relay_failure + memory.broadcast_send_failed
+memory.immediate_relay_failure := if(memory.immediate_relay_failure > 0, 1, 0)
+memory.pending_broadcast := if(memory.immediate_relay_failure = 1, 0, memory.pending_broadcast)
+memory.broadcast_result_active := memory.is_broadcast_result * memory.pending_broadcast
+memory.broadcast_status_success := if(message.status = "success", 1, 0)
+memory.broadcast_success := memory.broadcast_result_active * memory.broadcast_status_success
+memory.history_buffer := if(memory.broadcast_success = 1, memory.history, "")
+memory.append_ok := append(memory.history_buffer, memory.pending_turn_message)
+memory.relay_succeeded := memory.broadcast_success * memory.append_ok
+memory.history := if(memory.relay_succeeded = 1, memory.history_buffer, memory.history)
+memory.turn_count := if(memory.relay_succeeded = 1, memory.pending_turn_count, memory.turn_count)
+memory.last_sender := if(memory.relay_succeeded = 1, memory.pending_sender, memory.last_sender)
+memory.last_payload := if(memory.relay_succeeded = 1, memory.pending_payload, memory.last_payload)
+memory.relay_failed := memory.broadcast_result_active - memory.relay_succeeded
+memory.pending_broadcast := if(memory.broadcast_result_active = 1, 0, memory.pending_broadcast)
+memory.should_close := memory.is_close * memory.matches_session
+memory.state := if(memory.should_close = 1, "closed", memory.state)
 memory.summary_matches := memory.is_summary * memory.matches_session
-memory.response_state := if(memory.summary_matches = 1, memory.state, memory.response_state)
-memory.response_state := if(memory.should_close = 1, "closed", memory.response_state)
-memory.relay_failure_count := memory.message_matches - memory.append_ok
+memory.relay_outcome := memory.relay_succeeded + memory.relay_failed
+memory.relay_outcome := memory.relay_outcome + memory.immediate_relay_failure
+memory.relay_outcome := if(memory.relay_outcome > 0, 1, 0)
+memory.relay_failure_count := memory.relay_failed + memory.immediate_relay_failure
+memory.relay_failure_count := if(memory.relay_failure_count > 0, 1, 0)
+memory.response_result := "ignored"
+memory.response_result := if(memory.is_start = 1, "active", memory.response_result)
+memory.response_result := if(memory.start_failed = 1, "handoff_failed", memory.response_result)
+memory.response_result := if(memory.summary_matches = 1, memory.state, memory.response_result)
+memory.response_result := if(memory.should_close = 1, "closed", memory.response_result)
+memory.response_result := if(memory.relay_succeeded = 1, "relayed", memory.response_result)
+memory.response_result := if(memory.relay_failure_count = 1, "relay_failed", memory.response_result)
 memory.response_success_count := memory.turn_count
-memory.response_success_count := if(memory.is_message = 1, memory.append_ok, memory.response_success_count)
 memory.response_success_count := if(memory.is_start = 1, 0, memory.response_success_count)
-memory.response_failure_count := memory.relay_failure_count
+memory.response_success_count := if(memory.relay_outcome = 1, memory.relay_succeeded, memory.response_success_count)
+memory.response_failure_count := 0
+memory.response_failure_count := if(memory.is_start = 1, memory.start_failed, memory.response_failure_count)
+memory.response_failure_count := if(memory.relay_outcome = 1, memory.relay_failure_count, memory.response_failure_count)
 memory.response_status := if(memory.response_failure_count > 0, "failure", "success")
 memory.response_message := {
   source: memory.self
@@ -88,18 +166,16 @@ memory.response_message := {
   session_id: memory.session_id
   status: memory.response_status
   state: memory.state
-  result: memory.response_state
+  result: memory.response_result
   success_count: memory.response_success_count
   failure_count: memory.response_failure_count
-  participant_a: memory.participant_a
-  participant_b: memory.participant_b
+  participants: memory.participants
   last_sender: memory.last_sender
-  last_recipient: memory.last_recipient
-  last_text: memory.last_text
+  last_payload: memory.last_payload
   turn_count: memory.turn_count
   history: memory.history
 }
-memory.should_respond := memory.is_start + memory.message_matches
-memory.should_respond := memory.should_respond + memory.summary_matches
+memory.should_respond := memory.is_start + memory.summary_matches
 memory.should_respond := memory.should_respond + memory.should_close
+memory.should_respond := memory.should_respond + memory.relay_outcome
 memory.response_sent := send(memory.source * memory.should_respond, memory.response_message)

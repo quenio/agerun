@@ -52,7 +52,7 @@ Composition opportunities:
 | [`scheduling`](scheduling-1.0.0.md) | [`scheduling-1.0.0.method`](scheduling-1.0.0.method) | [`scheduling_tests.c`](scheduling_tests.c) | Stores pending work and triggers it on explicit tick messages. | Delayed execution primitive. |
 | [`synchronization`](synchronization-1.0.0.md) | [`synchronization-1.0.0.method`](synchronization-1.0.0.method) | [`synchronization_tests.c`](synchronization_tests.c) | Waits for an unbounded count of dependency messages before sending a continuation. | Dependency gate. |
 | [`workflow`](workflow-1.0.0.md) | [`workflow-1.0.0.method`](workflow-1.0.0.method) | [`workflow_tests.c`](workflow_tests.c) | Sends an unbounded step sequence, supports a branch skip, and completes. | Higher-level sequence and branch coordinator. |
-| [`conversation`](conversation-1.0.0.md) | [`conversation-1.0.0.method`](conversation-1.0.0.method) | [`conversation_tests.c`](conversation_tests.c) | Coordinates a bounded conversation between two participant agents. | Mediated two-agent exchange. |
+| [`conversation`](conversation-1.0.0.md) | [`conversation-1.0.0.method`](conversation-1.0.0.method) | [`conversation_tests.c`](conversation_tests.c) | Coordinates a participant-list conversation by broadcasting turns to all other participants. | Mediated multi-agent exchange. |
 | [`retry`](retry-1.0.0.md) | [`retry-1.0.0.method`](retry-1.0.0.method) | [`retry_tests.c`](retry_tests.c) | Re-executes failed operations within a retry policy. | Uses direct send or scheduled retry. |
 
 ## Message Contracts
@@ -391,8 +391,8 @@ delivery leaves completion pending and retries do not increment `completed_step_
 Requests:
 
 ```text
-{ source: <sender-agent>, request: "conversation_start", trace_id: <trace_id>, session_id: <session_id>, participant_a: <agent>, participant_b: <agent> }
-{ source: <sender-agent>, request: "conversation_message", trace_id: <trace_id>, session_id: <session_id>, sender: <agent>, text: <text>, intent: <intent> }
+{ source: <sender-agent>, request: "conversation_start", trace_id: <trace_id>, session_id: <session_id>, participants: [<recipient-agent-1>, <recipient-agent-2>, ...] }
+{ source: <sender-agent>, request: "conversation_message", trace_id: <trace_id>, session_id: <session_id>, payload: <payload>, sender: <agent> }
 { source: <sender-agent>, request: "conversation_summary", trace_id: <trace_id>, session_id: <session_id> }
 { source: <sender-agent>, request: "conversation_close", trace_id: <trace_id>, session_id: <session_id> }
 ```
@@ -401,14 +401,12 @@ Participant turn:
 
 ```text
 {
-  source: <sender-agent>,
+  source: <conversation-agent>,
   request: "conversation_turn",
   trace_id: <trace_id>,
   session_id: <session_id>,
+  payload: <payload>,
   from: <agent>,
-  to: <agent>,
-  text: <text>,
-  intent: <intent>,
   turn_count: <count>
 }
 ```
@@ -426,18 +424,18 @@ Response:
   result: <active|relayed|relay_failed|ignored|closed>,
   success_count: <count>,
   failure_count: <count>,
-  participant_a: <agent>,
-  participant_b: <agent>,
+  participants: [<recipient-agent-1>, <recipient-agent-2>, ...],
   last_sender: <agent>,
-  last_recipient: <agent>,
-  last_text: <text>,
+  last_payload: <payload>,
   turn_count: <count>,
   history: [<conversation_turn>, ...]
 }
 ```
 
-If participant turn delivery fails, the coordinator reports `result: "relay_failed"` and leaves the
-history and turn count unchanged.
+Conversation spawns one broadcasting agent when the conversation starts. It reuses that agent for
+every turn and excludes the sender from the broadcast targets. If broadcast delivery fails for any
+recipient, the coordinator reports `result: "relay_failed"` and leaves the history and turn count
+unchanged.
 
 ### Retry
 
@@ -527,11 +525,11 @@ Branching workflow:
 Conversation-scoped workflow:
 
 ```text
-1. Conversation receives a request with `request: "conversation_start"` for two participant agents.
-2. Participant A sends a request with `request: "conversation_message"` and the conversation session_id; conversation relays a conversation_turn
-   request to participant B.
-3. Participant B replies through the same coordinator; conversation relays the turn back to
-   participant A.
+1. Conversation receives a request with `request: "conversation_start"` and a participant list.
+2. Participant A sends a request with `request: "conversation_message"` and the conversation session_id; conversation sends one conversation_turn
+   request through broadcasting to every other participant.
+3. Participant B replies through the same coordinator; conversation reuses the same broadcasting
+   agent and excludes participant B from that turn.
 4. A workflow or aggregation agent can request summary and consume the structured turn history.
 ```
 
@@ -547,7 +545,7 @@ Conversation-scoped workflow:
 | Scheduling | Partially implementable. | There is no runtime clock or timer callback; scheduling requires explicit `tick` messages from another agent or host process. |
 | Synchronization | Fully implementable for unbounded count-based gates. | Membership validation against a declared dependency set and duplicate suppression require richer collection querying/filtering or a specialized validation method. |
 | Workflow | Partially implementable. | The method processes an unbounded linear step sequence and can skip one pending step on a branch outcome. Arbitrary workflow graphs, branch destinations by id, list length validation, and map-shaped step descriptors require richer collection querying or a specialized transition method. |
-| Conversation | Fully implementable for bounded two-agent exchange. | Alternation rules, participant timeouts, semantic summaries, and searchable long-term history require additional methods or host-driven scheduling. |
+| Conversation | Fully implementable for participant-list exchange by composition with broadcasting. | Alternation rules, participant timeouts, semantic summaries, and searchable long-term history require additional methods or host-driven scheduling. |
 | Retry | Fully implementable for immediate retry and scheduled retry by composition. | Backoff policies need an external tick convention and richer arithmetic/time policy support. |
 
 No method in this methodology is blocked entirely. The missing capabilities are real-time timers,
