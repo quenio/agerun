@@ -510,6 +510,14 @@ static void test_conversation__broadcasts_turns_to_all_other_participants(void) 
     AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_queued_first),
               "First queued turn should queue");
     own_queued_first = NULL;
+    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture),
+              "First queued turn should start recipient selection");
+    ref_conversation_memory = ar_agency__get_agent_memory(mut_agency, conversation_agent);
+    AR_ASSERT(ar_data__get_map_integer(ref_conversation_memory, "pending_turn_active") == 1,
+              "Conversation should claim the pending turn before recipient selection finishes");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_conversation_memory, "pending_trace_id"),
+                     "chat-queued-first") == 0,
+              "Conversation should remember the pending selection trace");
 
     ar_data_t *own_queued_second = ar_data__create_map();
     AR_ASSERT(own_queued_second != NULL, "Second queued turn should be created");

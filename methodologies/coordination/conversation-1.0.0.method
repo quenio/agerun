@@ -79,6 +79,9 @@ memory.select_recipients_message := {
 memory.select_sent := send(memory.self * memory.message_candidate, memory.select_recipients_message)
 memory.select_send_failed := if(memory.select_sent = 0, 1, 0)
 memory.select_send_failed := memory.select_send_failed * memory.message_candidate
+memory.select_started := memory.select_sent * memory.message_candidate
+memory.pending_turn_active := if(memory.select_started = 1, 1, memory.pending_turn_active)
+memory.pending_trace_id := if(memory.select_started = 1, memory.request_trace_id, memory.pending_trace_id)
 
 # Validate recipient selection
 memory.select_from_self := if(message.sender = memory.self, 1, 0)
@@ -135,9 +138,10 @@ memory.no_recipients := memory.scan_finished * memory.next_found_sender
 memory.no_recipients := memory.no_recipients * memory.has_no_recipients
 memory.broadcast_ready := memory.scan_finished * memory.next_found_sender
 memory.broadcast_ready := memory.broadcast_ready * memory.has_recipients
-memory.turn_slot_available := if(memory.pending_turn_active = 0, 1, 0)
-memory.no_recipients := memory.no_recipients * memory.turn_slot_available
-memory.broadcast_ready := memory.broadcast_ready * memory.turn_slot_available
+memory.scan_matches_pending := if(message.trace_id = memory.pending_trace_id, 1, 0)
+memory.scan_matches_pending := memory.scan_matches_pending * memory.pending_turn_active
+memory.no_recipients := memory.no_recipients * memory.scan_matches_pending
+memory.broadcast_ready := memory.broadcast_ready * memory.scan_matches_pending
 memory.stage_ready := memory.no_recipients + memory.broadcast_ready
 memory.stage_ready := if(memory.stage_ready > 0, 1, 0)
 memory.pending_turn_message := if(memory.stage_ready = 1, message.payload, memory.pending_turn_message)
@@ -146,6 +150,8 @@ memory.pending_payload := if(memory.stage_ready = 1, message.payload.payload, me
 memory.pending_turn_count := if(memory.stage_ready = 1, message.payload.turn_count, memory.pending_turn_count)
 memory.pending_trace_id := if(memory.stage_ready = 1, message.trace_id, memory.pending_trace_id)
 memory.pending_turn_active := if(memory.stage_ready = 1, 1, memory.pending_turn_active)
+memory.pending_trace_id := if(memory.sender_missing = 1, "", memory.pending_trace_id)
+memory.pending_turn_active := if(memory.sender_missing = 1, 0, memory.pending_turn_active)
 
 # Broadcast staged turn
 memory.broadcast_message := {

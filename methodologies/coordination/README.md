@@ -502,9 +502,10 @@ Response:
 
 Conversation spawns one broadcasting agent when the conversation starts. It reuses that agent for
 every turn and excludes the sender from the broadcast recipients. Turns received while another turn
-relay is pending are ignored. If broadcast delivery fails for any recipient, the coordinator reports
-`result: "relay_failed"` and leaves the history and turn count unchanged. If no other participant
-needs to receive the turn, the coordinator records it without broadcasting.
+relay is pending are ignored, including while the coordinator is still selecting recipients. If
+broadcast delivery fails for any recipient, the coordinator reports `result: "relay_failed"` and
+leaves the history and turn count unchanged. If no other participant needs to receive the turn, the
+coordinator records it without broadcasting.
 
 If the `sender` of a `conversation_message` is not in the participant list, the coordinator ignores
 the request. It does not broadcast, record, respond, or update conversation state.

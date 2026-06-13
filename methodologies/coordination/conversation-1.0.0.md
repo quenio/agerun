@@ -20,7 +20,8 @@ participant senders, it builds a `conversation_turn` request and sends that same
 through broadcasting to all participants except the sender. The turn is recorded after broadcasting
 reports success, or immediately when the sender is the only participant. On `conversation_history`,
 it responds with history. On `conversation_close`, it marks the conversation closed and clears
-pending relay work.
+pending relay work. The pending relay slot is claimed before recipient selection completes, so
+overlapping participant turns are ignored while selection or broadcast is in progress.
 
 ## Message Format
 
