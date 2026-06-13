@@ -15,7 +15,7 @@ On `request: "retry_start"`, the method stores operation metadata, effective `tr
 records an attempt only after the operation send succeeds.
 
 Matching `failure` requests with the same `session_id` retry while attempts remain. Matching
-`success` requests with the same `session_id` emit the terminal response. Terminal state is
+`success` requests with the same `session_id` emit the terminal response. Terminal outcome is
 recorded only after the response is delivered; failed report delivery stores a pending terminal
 result for retry.
 
@@ -24,7 +24,7 @@ result for retry.
 Requests:
 
 ```text
-{ sender: <sender-agent>, request: "retry_start", trace_id: <trace_id>, session_id: <session_id>, operation_id: <id>, operation_recipient: <agent>, operation_request: <request>, operation_text: <text>, max_attempts: <number>, strategy: <immediate|scheduled>, scheduler_agent: <agent>, delay_ticks: <tick> }
+{ sender: <sender-agent>, request: "retry_start", trace_id: <trace_id>, session_id: <session_id>, operation_recipient: <agent>, operation_request: <request>, operation_text: <text>, max_attempts: <number>, strategy: <immediate|scheduled>, scheduler_agent: <agent>, delay_ticks: <tick> }
 { sender: <sender-agent>, request: "retry_failure", trace_id: <trace_id>, session_id: <session_id>, attempt: <attempt>, current_tick: <tick> }
 { sender: <sender-agent>, request: "retry_success", trace_id: <trace_id>, session_id: <session_id>, attempt: <attempt> }
 ```
@@ -43,7 +43,6 @@ Scheduled retry request:
   request: "scheduling_schedule",
   trace_id: <trace_id>,
   session_id: <session_id>,
-  schedule_id: <operation_id>,
   due_tick: <current_tick + delay_ticks>,
   recipient: <recipient-agent>,
   payload_request: <operation_request>,
@@ -61,8 +60,6 @@ Terminal response:
   trace_id: <trace_id>,
   session_id: <session_id>,
   status: <success|failure>,
-  state: <succeeded|failed|dispatch_failed>,
-  operation_id: <id>,
   success_count: <0|1>,
   failure_count: <0|1>,
   attempts: <count>

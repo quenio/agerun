@@ -15,8 +15,8 @@ On `request: "supervision_start"`, the method stores policy, effective `trace_id
 Lifecycle and stop requests with the same `session_id` are validated against tracked child ids
 before restart or exit behavior is applied.
 
-Untracked lifecycle and stop requests report `state: "ignored"`. Handoff failures report
-`state: "handoff_failed"` and standard `status: "failure"`.
+Untracked lifecycle and stop requests report no failure count. Handoff failures report standard
+`status: "failure"`.
 
 ## Message Format
 
@@ -38,7 +38,6 @@ Response:
   trace_id: <trace_id>,
   session_id: <session_id>,
   status: <success|failure>,
-  state: <running|restarted|stopped|ignored|stop_failed|handoff_failed>,
   success_count: <count>,
   failure_count: <count>,
   child_agent_id: <agent>,

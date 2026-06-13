@@ -83,7 +83,6 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
         "memory.last_sender := message.sender\n"
         "memory.last_trace_id := message.trace_id\n"
         "memory.last_status := message.status\n"
-        "memory.last_state := message.state\n"
         "memory.last_routed_count := message.routed_count\n"
         "memory.last_success_count := message.success_count\n"
         "memory.last_failure_count := message.failure_count\n"
@@ -175,9 +174,6 @@ static void test_routing__selects_one_recipient_by_key_only(void) {
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
                      "failure") == 0,
               "Direct recipient request should report standard failure status");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_state"),
-                     "route_failed") == 0,
-              "Direct recipient request should fail because routing is key-based only");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_routed_count") == 0,
               "Direct recipient request should report zero routed recipients");
 
@@ -260,8 +256,6 @@ static void test_routing__selects_one_recipient_by_key_only(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_receiver_d_memory, "last_sender") ==
                   checked_agent_id(receiver_a),
               "Routing should preserve caller payload sender");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_state"), "routed") == 0,
-              "Keyed route should report routed status");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"), "success") == 0,
               "Keyed route should report standard success status");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_trace_id"),
@@ -302,9 +296,6 @@ static void test_routing__selects_one_recipient_by_key_only(void) {
     const ar_data_t *ref_receiver_c_memory = ar_agency__get_agent_memory(mut_agency, receiver_c);
     AR_ASSERT(ar_data__get_map_data(ref_receiver_c_memory, "last_text") == NULL,
               "Missed keyed route should not forward to unmatched recipient");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_state"),
-                     "route_failed") == 0,
-              "Missed keyed route should report route_failed status");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
                      "failure") == 0,
               "Missed keyed route should report standard failure status");

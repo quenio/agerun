@@ -15,17 +15,17 @@ On `request: "workflow_start"`, the method stores workflow metadata, effective `
 payload is sent directly and as-is to the corresponding positive step recipient agent. Integer
 `0` step recipient agents can be skipped when followed by a later positive recipient.
 
-On `request: "workflow_step_done"`, the method advances only when the workflow id and step number
-match the currently active sent step and the `session_id` matches the active workflow session.
-Duplicate, stale, premature, or out-of-order completions are ignored.
+On `request: "workflow_step_done"`, the method advances only when the step number matches the
+currently active sent step and the `session_id` matches the active workflow session. Duplicate,
+stale, premature, or out-of-order completions are ignored.
 
 ## Message Format
 
 Requests:
 
 ```text
-{ sender: <sender-agent>, request: "workflow_start", trace_id: <trace_id>, session_id: <session_id>, workflow_id: <id>, recipients: [<recipient-agent-1>, <recipient-agent-2>, ...], payloads: [<payload>, <payload>, ...], branch_value: <outcome> }
-{ sender: <sender-agent>, request: "workflow_step_done", trace_id: <trace_id>, session_id: <session_id>, workflow_id: <id>, step: <current-step-number>, outcome: <value> }
+{ sender: <sender-agent>, request: "workflow_start", trace_id: <trace_id>, session_id: <session_id>, recipients: [<recipient-agent-1>, <recipient-agent-2>, ...], payloads: [<payload>, <payload>, ...], branch_value: <outcome> }
+{ sender: <sender-agent>, request: "workflow_step_done", trace_id: <trace_id>, session_id: <session_id>, step: <current-step-number>, outcome: <value> }
 ```
 
 Completion response:

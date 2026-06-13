@@ -79,10 +79,9 @@ once use only `trace_id`. When a method has only one request kind, that request 
 `<method>_start`.
 Method-specific contracts define any additional response fields. When a method eventually returns
 multiple distinct result envelopes, the `response` value should use `<method>_<result_kind>`.
-Method-specific outcomes such as `routed`, `broadcast_failed`, or `handoff_failed` are carried in
-`state` when the response needs that detail. Coordination methods handle only recognized `request`
-values as coordination commands; messages with `response` values are not treated as new
-coordination requests.
+Method-specific outcome detail is carried by method-specific fields only when the response needs
+that detail. Coordination methods handle only recognized `request` values as coordination commands;
+messages with `response` values are not treated as new coordination requests.
 
 ### Routing
 
@@ -110,7 +109,6 @@ Reply:
   response: "routing_result",
   trace_id: <trace_id>,
   status: <success|failure>,
-  state: <routed|route_failed>,
   routed_count: <0|1>,
   success_count: <0|1>,
   failure_count: <0|1>,
@@ -191,7 +189,6 @@ Reply:
   trace_id: <trace_id>,
   session_id: <session_id>,
   status: <success|failure>,
-  state: <running|restarted|stopped|ignored|stop_failed|handoff_failed>,
   success_count: <count>,
   failure_count: <count>,
   child_agent_id: <agent>,
@@ -311,9 +308,9 @@ or more accepted collection attempts failed to append.
 Requests:
 
 ```text
-{ sender: <sender-agent>, request: "scheduling_schedule", trace_id: <trace_id>, session_id: <session_id>, schedule_id: <id>, due_tick: <number>, recipient: <recipient-agent>, payload_request: <request>, payload_text: <text>, payload_attempt: <attempt> }
+{ sender: <sender-agent>, request: "scheduling_schedule", trace_id: <trace_id>, session_id: <session_id>, due_tick: <number>, recipient: <recipient-agent>, payload_request: <request>, payload_text: <text>, payload_attempt: <attempt> }
 { sender: <sender-agent>, request: "scheduling_tick", trace_id: <trace_id>, session_id: <session_id>, tick: <number> }
-{ sender: <sender-agent>, request: "scheduling_cancel", trace_id: <trace_id>, session_id: <session_id>, schedule_id: <id> }
+{ sender: <sender-agent>, request: "scheduling_cancel", trace_id: <trace_id>, session_id: <session_id> }
 ```
 
 Triggered message:
@@ -325,8 +322,7 @@ Triggered message:
   trace_id: <trace_id>,
   session_id: <session_id>,
   text: <payload_text>,
-  attempt: <payload_attempt>,
-  schedule_id: <schedule_id>
+  attempt: <payload_attempt>
 }
 ```
 
@@ -339,8 +335,6 @@ Response:
   trace_id: <trace_id>,
   session_id: <session_id>,
   status: <success|failure>,
-  state: <scheduled|cancelled|triggered|trigger_failed>,
-  schedule_id: <id>,
   success_count: <count>,
   failure_count: <count>,
   pending: <0|1>,
@@ -349,7 +343,7 @@ Response:
 ```
 
 A due tick clears `pending` only when the stored payload is sent successfully. If delivery fails,
-the state is `trigger_failed` and the schedule remains pending for a later tick. Trigger responses
+the response status is `failure` and the schedule remains pending for a later tick. Trigger responses
 and triggered payload requests use the tick request's `trace_id`; cancel responses use the cancel
 request's `trace_id`; all scheduling requests and responses for one schedule use the same
 `session_id`.
@@ -368,8 +362,8 @@ that clears a pending schedule, and for a due tick that successfully sends the s
 Requests:
 
 ```text
-{ sender: <sender-agent>, request: "synchronization_wait", trace_id: <trace_id>, session_id: <session_id>, sync_id: <id>, required_count: <count>, continuation_recipient: <agent>, continuation_request: <request>, continuation_text: <text> }
-{ sender: <sender-agent>, request: "synchronization_dependency", trace_id: <trace_id>, session_id: <session_id>, sync_id: <id>, dependency: <name> }
+{ sender: <sender-agent>, request: "synchronization_wait", trace_id: <trace_id>, session_id: <session_id>, required_count: <count>, continuation_recipient: <agent>, continuation_request: <request>, continuation_text: <text> }
+{ sender: <sender-agent>, request: "synchronization_dependency", trace_id: <trace_id>, session_id: <session_id>, dependency: <name> }
 ```
 
 Continuation:
@@ -380,7 +374,6 @@ Continuation:
   request: <continuation_request>,
   trace_id: <trace_id>,
   session_id: <session_id>,
-  sync_id: <id>,
   text: <continuation_text>,
   done_count: <count>,
   dependencies: [<dependency>, <dependency>, ...]
@@ -396,8 +389,6 @@ Response:
   trace_id: <trace_id>,
   session_id: <session_id>,
   status: "success",
-  state: "complete",
-  sync_id: <id>,
   success_count: <count>,
   failure_count: 0,
   done_count: <count>,
@@ -423,8 +414,8 @@ retry.
 Requests:
 
 ```text
-{ sender: <sender-agent>, request: "workflow_start", trace_id: <trace_id>, session_id: <session_id>, workflow_id: <id>, recipients: [<recipient-agent-1>, <recipient-agent-2>, ...], payloads: [<payload>, <payload>, ...], branch_value: <outcome> }
-{ sender: <sender-agent>, request: "workflow_step_done", trace_id: <trace_id>, session_id: <session_id>, workflow_id: <id>, step: <current-step-number>, outcome: <value> }
+{ sender: <sender-agent>, request: "workflow_start", trace_id: <trace_id>, session_id: <session_id>, recipients: [<recipient-agent-1>, <recipient-agent-2>, ...], payloads: [<payload>, <payload>, ...], branch_value: <outcome> }
+{ sender: <sender-agent>, request: "workflow_step_done", trace_id: <trace_id>, session_id: <session_id>, step: <current-step-number>, outcome: <value> }
 ```
 
 Step messages sent to step agents are exactly the sender-provided payloads.
@@ -490,7 +481,6 @@ Response:
   trace_id: <trace_id>,
   session_id: <session_id>,
   status: <success|failure>,
-  state: <active|closed>,
   result: <active|relayed|relay_failed|ignored|closed>,
   success_count: <count>,
   failure_count: <count>,
@@ -526,7 +516,7 @@ relay fails, or when history append fails.
 Requests:
 
 ```text
-{ sender: <sender-agent>, request: "retry_start", trace_id: <trace_id>, session_id: <session_id>, operation_id: <id>, operation_recipient: <agent>, operation_request: <request>, operation_text: <text>, max_attempts: <number>, strategy: <immediate|scheduled>, scheduler_agent: <agent>, delay_ticks: <tick> }
+{ sender: <sender-agent>, request: "retry_start", trace_id: <trace_id>, session_id: <session_id>, operation_recipient: <agent>, operation_request: <request>, operation_text: <text>, max_attempts: <number>, strategy: <immediate|scheduled>, scheduler_agent: <agent>, delay_ticks: <tick> }
 { sender: <sender-agent>, request: "retry_failure", trace_id: <trace_id>, session_id: <session_id>, attempt: <attempt>, current_tick: <tick> }
 { sender: <sender-agent>, request: "retry_success", trace_id: <trace_id>, session_id: <session_id>, attempt: <attempt> }
 ```
@@ -545,7 +535,6 @@ Scheduled retry request:
   request: "scheduling_schedule",
   trace_id: <trace_id>,
   session_id: <session_id>,
-  schedule_id: <operation_id>,
   due_tick: <current_tick + delay_ticks>,
   recipient: <recipient-agent>,
   payload_request: <operation_request>,
@@ -563,15 +552,13 @@ Terminal response:
   trace_id: <trace_id>,
   session_id: <session_id>,
   status: <success|failure>,
-  state: <succeeded|failed|dispatch_failed>,
-  operation_id: <id>,
   success_count: <0|1>,
   failure_count: <0|1>,
   attempts: <count>
 }
 ```
 
-Retry records terminal state only after the `start` response is delivered; failed report delivery
+Retry records a terminal outcome only after the `start` response is delivered; failed report delivery
 stores the pending terminal result so a matching outcome retries that report without replacing it or
 changing the attempt count. Failure and success requests match the active retry by `session_id`;
 terminal responses use the triggering outcome request's effective `trace_id`.
@@ -632,7 +619,7 @@ Conversation-scoped workflow:
 | --- | --- | --- |
 | Routing | Fully implementable for keyed unbounded one-to-one selection. | Keyed routes use a map containing parallel `keys` and `recipients` lists because ordinary methods do not have a safe type predicate for scanning a list of route-entry maps. Direct recipient delivery belongs to direct `send(...)`; same-payload fan-out belongs to broadcasting. |
 | Broadcasting | Fully implementable for unbounded same-payload fan-out to primitive recipient IDs. | Recipient lists should contain positive IDs for all intended recipients; integer `0` is treated as a placeholder rather than a recipient. |
-| Supervision | Partially implementable. | The method can spawn and track unbounded child method-name lists with one shared start version, but methods cannot autonomously observe child crashes or exits; callers must send `child_failed` or `child_exited` events. A failed `spawn(...)` aborts the remaining ordinary method evaluation, so supervision can avoid reporting `running` for an incomplete child set but cannot emit a catchable `spawn_failed` state without a non-aborting spawn result or method-existence check. Removing arbitrary failed ids from the tracked list or starting one mixed-version list requires a list-filter operation, separate supervisors, or a specialized replacement method. |
+| Supervision | Partially implementable. | The method can spawn and track unbounded child method-name lists with one shared start version, but methods cannot autonomously observe child crashes or exits; callers must send `child_failed` or `child_exited` events. A failed `spawn(...)` aborts the remaining ordinary method evaluation, so supervision can avoid reporting `running` for an incomplete child set but cannot emit a catchable `spawn_failed` outcome without a non-aborting spawn result or method-existence check. Removing arbitrary failed ids from the tracked list or starting one mixed-version list requires a list-filter operation, separate supervisors, or a specialized replacement method. |
 | Distribution | Fully implementable for round-robin assignment of opaque payload lists to primitive recipient IDs. | Load-aware placement, weighted assignment, and recipient health checks require additional methods or richer collection-processing conventions. |
 | Aggregation | Fully implementable for list-valued fan-in. | Duplicate handling, custom merge functions, and richer aggregate policies require deeper collection operations or specialized aggregate methods. |
 | Scheduling | Partially implementable. | There is no runtime clock or timer callback; scheduling requires explicit `tick` messages from another agent or host process. |

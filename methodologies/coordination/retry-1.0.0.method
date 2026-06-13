@@ -14,7 +14,6 @@ memory.request_trace_id := memory.generated_trace_id
 memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.request_trace_id)
 
 # Establish retry session state
-memory.operation_id := if(memory.is_start = 1, message.operation_id, memory.operation_id)
 memory.trace_id := if(memory.is_start = 1, memory.request_trace_id, memory.trace_id)
 memory.session_id := if(memory.is_start = 1, message.session_id, memory.session_id)
 memory.operation_recipient := if(memory.is_start = 1, message.operation_recipient, memory.operation_recipient)
@@ -89,7 +88,6 @@ memory.schedule_message := {
   request: "scheduling_schedule"
   trace_id: memory.request_trace_id
   session_id: memory.session_id
-  schedule_id: memory.operation_id
   due_tick: memory.retry_due_tick
   recipient: memory.operation_recipient
   payload_request: memory.operation_request
@@ -113,7 +111,6 @@ memory.report_success_count := if(memory.report_status = "succeeded", 1, 0)
 memory.report_failure_count := if(memory.report_status = "failed", 1, 0)
 memory.report_dispatch_failure_count := if(memory.report_status = "dispatch_failed", 1, 0)
 memory.report_failure_count := memory.report_failure_count + memory.report_dispatch_failure_count
-memory.report_state := memory.report_status
 memory.report_status := if(memory.report_failure_count > 0, "failure", "success")
 
 # Emit retry result
@@ -123,8 +120,6 @@ memory.report_message := {
   trace_id: memory.request_trace_id
   session_id: memory.session_id
   status: memory.report_status
-  state: memory.report_state
-  operation_id: memory.operation_id
   success_count: memory.report_success_count
   failure_count: memory.report_failure_count
   attempts: memory.report_attempts

@@ -19,7 +19,7 @@ memory.trace_id := if(memory.is_start = 1, memory.request_trace_id, memory.trace
 memory.session_id := if(memory.is_start = 1, message.session_id, memory.session_id)
 memory.participants := if(memory.is_start = 1, message.participants, memory.participants)
 memory.sender := if(memory.is_start = 1, message.sender, memory.sender)
-memory.state := if(memory.is_start = 1, "starting", memory.state)
+memory.phase := if(memory.is_start = 1, "starting", memory.phase)
 memory.turn_count := if(memory.is_start = 1, 0, memory.turn_count)
 memory.history := if(memory.is_start = 1, [], memory.history)
 memory.last_sender := if(memory.is_start = 1, 0, memory.last_sender)
@@ -37,13 +37,13 @@ memory.broadcasting_spawn_result := spawn(memory.broadcasting_method, memory.bro
 memory.broadcasting_agent := if(memory.broadcasting_spawn_result > 0, memory.broadcasting_spawn_result, memory.broadcasting_agent)
 memory.broadcasting_spawned := if(memory.broadcasting_spawn_result > 0, memory.is_start, 0)
 memory.start_failed := memory.is_start - memory.broadcasting_spawned
-memory.state := if(memory.broadcasting_spawned = 1, "active", memory.state)
-memory.state := if(memory.start_failed = 1, "handoff_failed", memory.state)
+memory.phase := if(memory.broadcasting_spawned = 1, "active", memory.phase)
+memory.phase := if(memory.start_failed = 1, "handoff_failed", memory.phase)
 
 # Validate active session
 memory.has_request_session := if(message.session_id <> 0, 1, 0)
 memory.matches_session := if(memory.has_request_session = 1, message.session_id = memory.session_id, 0)
-memory.is_active := if(memory.state = "active", 1, 0)
+memory.is_active := if(memory.phase = "active", 1, 0)
 memory.message_candidate := memory.is_message * memory.matches_session
 memory.message_candidate := memory.message_candidate * memory.is_active
 memory.next_turn_count := memory.turn_count + memory.message_candidate
@@ -165,7 +165,7 @@ memory.pending_broadcast := if(memory.broadcast_result_active = 1, 0, memory.pen
 
 # Handle history and close requests
 memory.should_close := memory.is_close * memory.matches_session
-memory.state := if(memory.should_close = 1, "closed", memory.state)
+memory.phase := if(memory.should_close = 1, "closed", memory.phase)
 memory.history_matches := memory.is_history * memory.matches_session
 
 # Derive conversation result
@@ -181,7 +181,7 @@ memory.should_respond := if(memory.should_respond > 0, 1, 0)
 memory.response_result := if(memory.should_respond = 1, "ignored", memory.response_result)
 memory.response_result := if(memory.is_start = 1, "active", memory.response_result)
 memory.response_result := if(memory.start_failed = 1, "handoff_failed", memory.response_result)
-memory.response_result := if(memory.history_matches = 1, memory.state, memory.response_result)
+memory.response_result := if(memory.history_matches = 1, memory.phase, memory.response_result)
 memory.response_result := if(memory.should_close = 1, "closed", memory.response_result)
 memory.response_result := if(memory.relay_succeeded = 1, "relayed", memory.response_result)
 memory.response_result := if(memory.relay_failure_count = 1, "relay_failed", memory.response_result)
@@ -201,7 +201,6 @@ memory.response_message := {
   trace_id: memory.request_trace_id
   session_id: memory.session_id
   status: memory.response_status
-  state: memory.state
   result: memory.response_result
   success_count: memory.response_success_count
   failure_count: memory.response_failure_count

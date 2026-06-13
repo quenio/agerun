@@ -72,10 +72,6 @@ memory.routed_count := if(memory.is_route = 1, memory.sent, memory.routed_count)
 memory.sent_count := if(memory.is_route = 1, memory.sent, memory.sent_count)
 memory.failed_count := if(memory.is_route = 1, memory.send_failed, memory.failed_count)
 memory.has_failed_count := if(memory.failed_count > 0, 1, 0)
-memory.state := if(memory.is_route = 1, "route_failed", memory.state)
-memory.state := if(memory.sent = 1, "routed", memory.state)
-memory.state := if(memory.has_failed_count = 1, "route_failed", memory.state)
-memory.state := if(memory.scan_failed = 1, "route_failed", memory.state)
 memory.status := if(memory.is_route = 1, "failure", memory.status)
 memory.status := if(memory.sent = 1, "success", memory.status)
 memory.status := if(memory.has_failed_count = 1, "failure", memory.status)
@@ -87,7 +83,6 @@ memory.response_message := {
   response: "routing_result"
   trace_id: memory.trace_id
   status: memory.status
-  state: memory.state
   routed_count: memory.routed_count
   success_count: memory.sent_count
   failure_count: memory.failed_count

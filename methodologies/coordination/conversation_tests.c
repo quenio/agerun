@@ -69,7 +69,6 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
         "memory.last_trace_id := message.trace_id\n"
         "memory.last_session_id := message.session_id\n"
         "memory.last_participant := message.participant\n"
-        "memory.last_state := message.state\n"
         "memory.last_status := message.status\n"
         "memory.last_result := message.result\n"
         "memory.last_success_count := message.success_count\n"
@@ -144,7 +143,7 @@ static void test_conversation__broadcasts_turns_to_all_other_participants(void) 
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "success") == 0,
               "Conversation start should report standard success status");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_result"), "active") == 0,
-              "Conversation start should report active state");
+              "Conversation start should report active result");
 
     const ar_data_t *ref_conversation_memory = ar_agency__get_agent_memory(mut_agency,
                                                                           conversation_agent);
@@ -332,7 +331,7 @@ static void test_conversation__broadcasts_turns_to_all_other_participants(void) 
 
     ar_method_fixture__process_all_messages(own_fixture);
 
-    // Then the coordinator ignores the payload without changing state or reporting a result
+    // Then the coordinator ignores the payload without changing phase or reporting a result
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
                      "success") == 0,
               "Non-participant payload should leave prior response status unchanged");
@@ -353,8 +352,8 @@ static void test_conversation__broadcasts_turns_to_all_other_participants(void) 
     AR_ASSERT(ar_data__list_count(ref_history) == 2,
               "Non-participant payload should not append to history");
     ref_conversation_memory = ar_agency__get_agent_memory(mut_agency, conversation_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_conversation_memory, "state"), "active") == 0,
-              "Non-participant payload should leave conversation state unchanged");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_conversation_memory, "phase"), "active") == 0,
+              "Non-participant payload should leave conversation phase unchanged");
     AR_ASSERT(ar_data__get_map_integer(ref_conversation_memory, "turn_count") == 2,
               "Non-participant payload should leave stored turn count unchanged");
     AR_ASSERT(ar_data__get_map_integer(ref_conversation_memory, "last_sender") ==

@@ -55,7 +55,6 @@ Coordinator response:
   trace_id: <trace_id>,
   session_id: <session_id>,
   status: <success|failure>,
-  state: <active|closed>,
   result: <active|relayed|relay_failed|ignored|closed>,
   success_count: <count>,
   failure_count: <count>,

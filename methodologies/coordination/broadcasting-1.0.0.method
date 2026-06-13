@@ -61,10 +61,6 @@ memory.continuation_failed := memory.continuation_failed * memory.continuation_r
 memory.has_failed_count := if(memory.failed_count > 0, 1, 0)
 memory.zero_delivery := if(memory.sent_count = 0, 1, 0)
 memory.zero_delivery := memory.zero_delivery * memory.is_broadcast
-memory.state := if(memory.is_broadcast = 1, "broadcasted", memory.state)
-memory.state := if(memory.zero_delivery = 1, "broadcast_failed", memory.state)
-memory.state := if(memory.has_failed_count = 1, "broadcast_failed", memory.state)
-memory.state := if(memory.continuation_failed = 1, "broadcast_failed", memory.state)
 memory.status := if(memory.is_broadcast = 1, "success", memory.status)
 memory.status := if(memory.zero_delivery = 1, "failure", memory.status)
 memory.status := if(memory.has_failed_count = 1, "failure", memory.status)

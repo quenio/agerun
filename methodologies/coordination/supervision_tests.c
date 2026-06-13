@@ -58,7 +58,6 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
         "memory.last_trace_id := message.trace_id\n"
         "memory.last_session_id := message.session_id\n"
         "memory.last_status := message.status\n"
-        "memory.last_state := message.state\n"
         "memory.last_child_agent_id := message.child_agent_id\n"
         "memory.last_success_count := message.success_count\n"
         "memory.last_failure_count := message.failure_count\n"
@@ -146,8 +145,6 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
               "Supervision response should identify the supervision sender");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "success") == 0,
               "Observer should receive standard success status for running supervision");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"), "running") == 0,
-              "Observer should receive running supervision status");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_child_count") == 4,
               "Observer should receive child count");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
@@ -187,8 +184,8 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(ar_data__get_map_integer(ref_memory, "restart_count") == 0,
               "Untracked lifecycle event should not increment restart count");
     ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"), "ignored") == 0,
-              "Observer should receive ignored status for untracked lifecycle event");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "success") == 0,
+              "Observer should receive standard success status for ignored lifecycle event");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
                      "supervision-untracked-failure") == 0,
               "Untracked lifecycle response should preserve request trace id");
@@ -245,8 +242,9 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(ar_data__get_map_integer(ref_memory, "restart_count") == 1,
               "Duplicate child failure should not increment restart count");
     ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"), "ignored") == 0,
-              "Observer should receive ignored status for duplicate lifecycle event");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
+                     "supervision-duplicate-failure") == 0,
+              "Duplicate lifecycle response should preserve request trace id");
 
     // And a delayed duplicate for an older child is ignored after another child is handled
     ar_data_t *own_second_failure = ar_data__create_map();
@@ -293,8 +291,9 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(ar_data__get_map_integer(ref_memory, "restart_count") == 2,
               "Delayed duplicate failure should not increment restart count");
     ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"), "ignored") == 0,
-              "Observer should receive ignored status for delayed duplicate lifecycle event");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
+                     "supervision-delayed-duplicate") == 0,
+              "Delayed duplicate lifecycle response should preserve request trace id");
 
     // When a stop request names an untracked agent
     ar_data_t *own_untracked_stop = ar_data__create_map();
@@ -317,8 +316,9 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_memory, "status"), "restarted") == 0,
               "Untracked stop should not change the stored supervisor status");
     ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"), "ignored") == 0,
-              "Observer should receive ignored status for untracked stop");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
+                     "supervision-untracked-stop") == 0,
+              "Untracked stop response should preserve request trace id");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_child_agent_id") ==
                   untracked_agent,
               "Observer should receive the ignored child id");
@@ -342,8 +342,8 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_memory, "status"), "stopped") == 0,
               "Tracked stop should record stopped status");
     ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"), "stopped") == 0,
-              "Observer should receive stopped status for tracked stop");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "success") == 0,
+              "Observer should receive standard success status for tracked stop");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
                      "supervision-stop-trace") == 0,
               "Tracked stop response should preserve request trace id");
@@ -374,8 +374,9 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(ar_data__get_map_integer(ref_memory, "restart_count") == 2,
               "Stopped child lifecycle should not increment restart count");
     ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"), "ignored") == 0,
-              "Observer should receive ignored status for stopped child lifecycle event");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
+                     "supervision-stopped-lifecycle") == 0,
+              "Stopped child lifecycle response should preserve request trace id");
 
     ar_data_t *own_empty_start_context = create_context();
     int64_t empty_start_agent = ar_agency__create_agent(
@@ -407,8 +408,8 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(ar_data__get_map_integer(ref_empty_start_memory, "child_count") == 0,
               "Empty child list start should keep zero children");
     ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"), "running") == 0,
-              "Observer should receive running status for empty child list");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"), "success") == 0,
+              "Observer should receive standard success status for empty child list");
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_child_count") == 0,
               "Observer should receive zero child count for empty child list");
 
@@ -462,9 +463,6 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
                      "failure") == 0,
               "Observer should receive standard failure status for failed start handoff");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"),
-                     "handoff_failed") == 0,
-              "Observer should receive failed start handoff status");
 
     ar_data_t *own_failed_continue_context = create_context();
     int64_t failed_continue_agent = ar_agency__create_agent(
@@ -516,9 +514,9 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(ar_data__get_map_integer(ref_failed_continue_memory, "child_count") == 1,
               "Failed spawn continuation should preserve partial child count");
     ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"),
-                     "handoff_failed") == 0,
-              "Observer should receive failed spawn continuation status");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
+                     "failure") == 0,
+              "Observer should receive standard failure status for failed spawn continuation");
 
     ar_data_t *own_failed_lifecycle_context = create_context();
     int64_t failed_lifecycle_agent = ar_agency__create_agent(
@@ -596,9 +594,9 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(ar_data__get_map_integer(ref_failed_lifecycle_memory, "restart_count") == 0,
               "Failed lifecycle validation should not restart without validation");
     ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"),
-                     "handoff_failed") == 0,
-              "Observer should receive failed lifecycle validation status");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
+                     "failure") == 0,
+              "Observer should receive standard failure status for failed lifecycle validation");
 
     ar_data_t *own_failed_stop_context = create_context();
     int64_t failed_stop_agent = ar_agency__create_agent(
@@ -661,9 +659,9 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(ar_agency__get_agent_memory(mut_agency, failed_stop_child) != NULL,
               "Failed stop validation should not exit child without validation");
     ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_state"),
-                     "handoff_failed") == 0,
-              "Observer should receive failed stop validation status");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
+                     "failure") == 0,
+              "Observer should receive standard failure status for failed stop validation");
 
     ar_data_t *own_failed_spawn_context = create_context();
     ar_data_t *own_failed_spawn_observer_context = create_context();

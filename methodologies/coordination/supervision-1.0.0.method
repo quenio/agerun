@@ -77,7 +77,7 @@ memory.child_record := {
   agent_id: memory.spawn_attempt_result
   method_name: memory.current_method_name
   method_version: memory.current_method_version
-  state: "running"
+  child_status: "running"
 }
 memory.record_append_buffer := if(memory.spawned_child = 1, memory.child_records, "")
 memory.record_append_ok := append(memory.record_append_buffer, memory.child_record)
@@ -196,7 +196,7 @@ memory.restart_record := {
   replaced_agent_id: message.child_agent_id
   method_name: memory.restart_method
   method_version: memory.restart_method_version
-  state: "running"
+  child_status: "running"
 }
 memory.restart_record_append_buffer := if(memory.restarted_child = 1, memory.child_records, "")
 memory.restart_record_append_ok := append(memory.restart_record_append_buffer, memory.restart_record)
@@ -280,7 +280,6 @@ memory.report_success_count := memory.report_success_count + memory.restarted_ch
 memory.report_success_count := memory.report_success_count + memory.stop_succeeded
 memory.report_failure_count := memory.spawn_handoff_failed + memory.validation_handoff_failed
 memory.report_failure_count := memory.report_failure_count + memory.stop_failed
-memory.report_state := memory.report_status
 memory.report_status := if(memory.report_failure_count > 0, "failure", "success")
 
 # Emit supervision result
@@ -290,7 +289,6 @@ memory.report_message := {
   trace_id: memory.request_trace_id
   session_id: memory.session_id
   status: memory.report_status
-  state: memory.report_state
   success_count: memory.report_success_count
   failure_count: memory.report_failure_count
   child_agent_id: memory.child_agent_id

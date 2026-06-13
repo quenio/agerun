@@ -12,16 +12,16 @@ Only messages with a recognized `request` value are handled as coordination requ
 On `request: "scheduling_schedule"`, the method stores schedule metadata, recipient agent, payload
 fields, effective `trace_id`, `session_id`, and `sender`. On a due `scheduling_tick` with the same
 `session_id`, it sends the stored payload to the stored recipient agent. On `scheduling_cancel`, it
-clears pending state only when the matching schedule and session are still pending.
+clears pending state only when the matching session is still pending.
 
 ## Message Format
 
 Requests:
 
 ```text
-{ sender: <sender-agent>, request: "scheduling_schedule", trace_id: <trace_id>, session_id: <session_id>, schedule_id: <id>, due_tick: <number>, recipient: <recipient-agent>, payload_request: <request>, payload_text: <text>, payload_attempt: <attempt> }
+{ sender: <sender-agent>, request: "scheduling_schedule", trace_id: <trace_id>, session_id: <session_id>, due_tick: <number>, recipient: <recipient-agent>, payload_request: <request>, payload_text: <text>, payload_attempt: <attempt> }
 { sender: <sender-agent>, request: "scheduling_tick", trace_id: <trace_id>, session_id: <session_id>, tick: <number> }
-{ sender: <sender-agent>, request: "scheduling_cancel", trace_id: <trace_id>, session_id: <session_id>, schedule_id: <id> }
+{ sender: <sender-agent>, request: "scheduling_cancel", trace_id: <trace_id>, session_id: <session_id> }
 ```
 
 Triggered message:
@@ -33,8 +33,7 @@ Triggered message:
   trace_id: <trace_id>,
   session_id: <session_id>,
   text: <payload_text>,
-  attempt: <payload_attempt>,
-  schedule_id: <schedule_id>
+  attempt: <payload_attempt>
 }
 ```
 
@@ -47,8 +46,6 @@ Response:
   trace_id: <trace_id>,
   session_id: <session_id>,
   status: <success|failure>,
-  state: <scheduled|cancelled|triggered|trigger_failed>,
-  schedule_id: <id>,
   success_count: <count>,
   failure_count: <count>,
   pending: <0|1>,

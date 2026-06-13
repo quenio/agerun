@@ -17,7 +17,7 @@ When the agent receives `request: "routing_start"`, the method scans `routes.key
 the first positive recipient agent whose paired key matches `route_key`.
 
 If no keyed candidate selects a positive recipient agent, or if the matching recipient cannot receive the
-payload, routing responds with `state: "route_failed"` and standard `status: "failure"`.
+payload, routing responds with standard `status: "failure"`.
 
 ## Message Format
 
@@ -45,7 +45,6 @@ Response:
   response: "routing_result",
   trace_id: <trace_id>,
   status: <success|failure>,
-  state: <routed|route_failed>,
   routed_count: <0|1>,
   success_count: <0|1>,
   failure_count: <0|1>,
