@@ -46,7 +46,8 @@ memory.phase := if(memory.start_failed = 1, "handoff_failed", memory.phase)
 memory.has_request_session := if(message.session_id <> 0, 1, 0)
 memory.matches_session := if(memory.has_request_session = 1, message.session_id = memory.session_id, 0)
 memory.is_active := if(memory.phase = "active", 1, 0)
-memory.no_pending_turn := if(memory.pending_turn_active = 0, 1, 0)
+memory.has_confirmed_pending := if(memory.pending_sender > 0, memory.pending_turn_active, 0)
+memory.no_pending_turn := if(memory.has_confirmed_pending = 0, 1, 0)
 memory.message_candidate := memory.is_message * memory.matches_session
 memory.message_candidate := memory.message_candidate * memory.is_active
 memory.message_candidate := memory.message_candidate * memory.no_pending_turn
@@ -80,8 +81,14 @@ memory.select_sent := send(memory.self * memory.message_candidate, memory.select
 memory.select_send_failed := if(memory.select_sent = 0, 1, 0)
 memory.select_send_failed := memory.select_send_failed * memory.message_candidate
 memory.select_started := memory.select_sent * memory.message_candidate
+memory.selection_slot_open := if(memory.pending_turn_active = 0, 1, 0)
+memory.record_selection_trace := memory.select_started * memory.selection_slot_open
 memory.pending_turn_active := if(memory.select_started = 1, 1, memory.pending_turn_active)
-memory.pending_trace_id := if(memory.select_started = 1, memory.request_trace_id, memory.pending_trace_id)
+memory.pending_trace_id := if(memory.record_selection_trace = 1, memory.request_trace_id, memory.pending_trace_id)
+memory.pending_turn_message := if(memory.select_started = 1, {}, memory.pending_turn_message)
+memory.pending_sender := if(memory.select_started = 1, 0, memory.pending_sender)
+memory.pending_payload := if(memory.select_started = 1, 0, memory.pending_payload)
+memory.pending_turn_count := if(memory.select_started = 1, 0, memory.pending_turn_count)
 
 # Validate recipient selection
 memory.select_from_self := if(message.sender = memory.self, 1, 0)
@@ -131,17 +138,20 @@ memory.scan_continue_sent := send(memory.self * memory.scan_continue, memory.sca
 memory.scan_finished := memory.select_active
 memory.scan_finished := if(memory.scan_continue = 1, 0, memory.scan_finished)
 memory.has_recipients := if(memory.next_recipient_count > 0, 1, 0)
+memory.scan_matches_pending := if(message.trace_id = memory.pending_trace_id, 1, 0)
+memory.scan_matches_pending := memory.scan_matches_pending * memory.pending_turn_active
+memory.has_staged_pending := if(memory.pending_sender > 0, memory.pending_turn_active, 0)
+memory.no_staged_pending := if(memory.has_staged_pending = 0, 1, 0)
 memory.sender_missing := if(memory.next_found_sender = 0, 1, 0)
 memory.sender_missing := memory.sender_missing * memory.scan_finished
+memory.sender_missing := memory.sender_missing * memory.scan_matches_pending
 memory.has_no_recipients := 1 - memory.has_recipients
 memory.no_recipients := memory.scan_finished * memory.next_found_sender
 memory.no_recipients := memory.no_recipients * memory.has_no_recipients
 memory.broadcast_ready := memory.scan_finished * memory.next_found_sender
 memory.broadcast_ready := memory.broadcast_ready * memory.has_recipients
-memory.scan_matches_pending := if(message.trace_id = memory.pending_trace_id, 1, 0)
-memory.scan_matches_pending := memory.scan_matches_pending * memory.pending_turn_active
-memory.no_recipients := memory.no_recipients * memory.scan_matches_pending
-memory.broadcast_ready := memory.broadcast_ready * memory.scan_matches_pending
+memory.no_recipients := memory.no_recipients * memory.no_staged_pending
+memory.broadcast_ready := memory.broadcast_ready * memory.no_staged_pending
 memory.stage_ready := memory.no_recipients + memory.broadcast_ready
 memory.stage_ready := if(memory.stage_ready > 0, 1, 0)
 memory.pending_turn_message := if(memory.stage_ready = 1, message.payload, memory.pending_turn_message)

@@ -386,6 +386,94 @@ static void test_conversation__broadcasts_turns_to_all_other_participants(void) 
                      "chat-turn-2") == 0,
               "Participant C should not receive the non-participant payload");
 
+    // And a non-participant scan does not block a later participant turn
+    ar_data_t *own_intruder_pending_turn = ar_data__create_map();
+    AR_ASSERT(own_intruder_pending_turn != NULL,
+              "Pending intruder conversation message should be created");
+    ar_data__set_map_string(own_intruder_pending_turn, "request", "conversation_message");
+    ar_data__set_map_string(own_intruder_pending_turn, "trace_id", "chat-intruder-pending");
+    ar_data__set_map_string(own_intruder_pending_turn, "session_id", "chat-session-1");
+    ar_data__set_map_integer(own_intruder_pending_turn, "sender", checked_agent_id(intruder));
+    ar_data__set_map_string(own_intruder_pending_turn, "payload", "intruder-pending");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_intruder_pending_turn),
+              "Pending intruder conversation message should queue");
+    own_intruder_pending_turn = NULL;
+    AR_ASSERT(ar_method_fixture__process_next_message(own_fixture),
+              "Pending intruder turn should start recipient selection");
+
+    ar_data_t *own_after_intruder_turn = ar_data__create_map();
+    AR_ASSERT(own_after_intruder_turn != NULL,
+              "Participant turn after intruder should be created");
+    ar_data__set_map_string(own_after_intruder_turn, "request", "conversation_message");
+    ar_data__set_map_string(own_after_intruder_turn, "trace_id", "chat-after-intruder");
+    ar_data__set_map_string(own_after_intruder_turn, "session_id", "chat-session-1");
+    ar_data__set_map_integer(own_after_intruder_turn, "sender", checked_agent_id(participant_a));
+    ar_data__set_map_string(own_after_intruder_turn, "payload", "after-intruder");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_after_intruder_turn),
+              "Participant turn after intruder should queue");
+    own_after_intruder_turn = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
+                     "chat-after-intruder") == 0,
+              "Non-participant scan should not block the later participant response");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_success_count") == 3,
+              "Later participant response should advance the successful turn count");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_b_memory, "last_payload"),
+                     "after-intruder") == 0,
+              "Participant B should receive the turn after the intruder scan");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_c_memory, "last_payload"),
+                     "after-intruder") == 0,
+              "Participant C should receive the turn after the intruder scan");
+
+    // And a stale recipient-selection completion cannot clear another pending selection
+    ar_data_t *mut_stale_conversation_memory =
+        ar_agency__get_agent_mutable_memory(mut_agency, conversation_agent);
+    AR_ASSERT(mut_stale_conversation_memory != NULL,
+              "Conversation memory should be mutable for stale selection setup");
+    ar_data__set_map_integer(mut_stale_conversation_memory, "pending_turn_active", 1);
+    ar_data__set_map_string(mut_stale_conversation_memory, "pending_trace_id",
+                            "trusted-selection-trace");
+    ar_data__set_map_integer(mut_stale_conversation_memory, "pending_sender", 0);
+
+    ar_data_t *own_stale_select = ar_data__create_map();
+    AR_ASSERT(own_stale_select != NULL, "Stale recipient selection should be created");
+    ar_data__set_map_integer(own_stale_select, "sender", checked_agent_id(conversation_agent));
+    ar_data__set_map_string(own_stale_select, "request", "conversation_select_recipients");
+    ar_data__set_map_string(own_stale_select, "trace_id", "stale-selection-trace");
+    ar_data__set_map_string(own_stale_select, "session_id", "chat-session-1");
+    ar_data_t *own_stale_participants = ar_data__create_list();
+    AR_ASSERT(own_stale_participants != NULL,
+              "Stale selection participants should be created");
+    AR_ASSERT(ar_data__set_map_data(own_stale_select, "participants", own_stale_participants),
+              "Stale selection should own participants");
+    own_stale_participants = NULL;
+    ar_data_t *own_stale_recipients = ar_data__create_list();
+    AR_ASSERT(own_stale_recipients != NULL,
+              "Stale selection recipients should be created");
+    AR_ASSERT(ar_data__set_map_data(own_stale_select, "recipients", own_stale_recipients),
+              "Stale selection should own recipients");
+    own_stale_recipients = NULL;
+    ar_data_t *own_stale_payload = ar_data__create_map();
+    AR_ASSERT(own_stale_payload != NULL, "Stale selection payload should be created");
+    AR_ASSERT(ar_data__set_map_data(own_stale_select, "payload", own_stale_payload),
+              "Stale selection should own payload");
+    own_stale_payload = NULL;
+    ar_data__set_map_integer(own_stale_select, "participant", checked_agent_id(intruder));
+    ar_data__set_map_integer(own_stale_select, "found_sender", 0);
+    ar_data__set_map_integer(own_stale_select, "recipient_count", 0);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_stale_select),
+              "Stale selection should queue");
+    own_stale_select = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ref_conversation_memory = ar_agency__get_agent_memory(mut_agency, conversation_agent);
+    AR_ASSERT(ar_data__get_map_integer(ref_conversation_memory, "pending_turn_active") == 1,
+              "Stale selection should not clear the pending slot");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_conversation_memory, "pending_trace_id"),
+                     "trusted-selection-trace") == 0,
+              "Stale selection should preserve the trusted pending trace");
+
     // When a forged broadcasting result arrives while a broadcast is pending
     ar_data_t *own_forged_start = ar_data__create_map();
     AR_ASSERT(own_forged_start != NULL, "Forged-result conversation start should be created");
