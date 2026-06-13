@@ -577,12 +577,13 @@ terminal responses use the triggering outcome request's effective `trace_id`.
 
 Count semantics: `success_count` is `1` only for the terminal response produced by a matching
 `retry_success` outcome. `failure_count` is `1` when initial operation dispatch fails or when a
-matching `retry_failure` reaches the final allowed attempt. Non-terminal failures that schedule or
-dispatch another attempt do not increment either terminal count.
+matching `retry_failure` reaches the final allowed attempt or cannot dispatch the next attempt.
+Non-terminal failures that schedule or dispatch another attempt do not increment either terminal
+count.
 
 Status semantics: the terminal response status is `success` only for a matching `retry_success`
 outcome. It is `failure` when the initial operation dispatch fails or when a matching
-`retry_failure` reaches the final allowed attempt.
+`retry_failure` reaches the final allowed attempt or cannot dispatch the next attempt.
 
 ## Composition Examples
 

@@ -690,10 +690,19 @@ static void test_retry__reexecutes_and_reports_success(void) {
 
     const ar_data_t *ref_scheduled_retry_memory =
         ar_agency__get_agent_memory(mut_agency, scheduled_retry_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_scheduled_retry_memory, "status"), "active") == 0,
-              "Failed scheduled retry dispatch should leave retry active");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_scheduled_retry_memory, "status"), "failure") == 0,
+              "Failed scheduled retry dispatch should report terminal failure");
     AR_ASSERT(ar_data__get_map_integer(ref_scheduled_retry_memory, "attempts") == 1,
               "Failed scheduled retry dispatch should not consume an attempt");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_response"), "retry_result") == 0,
+              "Failed scheduled retry dispatch should emit retry result");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_session_id"),
+                     "op-schedule-failed") == 0,
+              "Failed scheduled retry dispatch should report its own session id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"), "failure") == 0,
+              "Failed scheduled retry dispatch should report standard failure status");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 1,
+              "Failed scheduled retry dispatch should report one failed operation");
 
     ar_data_t *own_zero_scheduler_start = ar_data__create_map();
     AR_ASSERT(own_zero_scheduler_start != NULL, "Zero scheduler start should be created");
@@ -731,10 +740,19 @@ static void test_retry__reexecutes_and_reports_success(void) {
     own_zero_scheduler_failure = NULL;
     ar_method_fixture__process_all_messages(own_fixture);
 
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_scheduled_retry_memory, "status"), "active") == 0,
-              "Zero scheduler retry dispatch should leave retry active");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_scheduled_retry_memory, "status"), "failure") == 0,
+              "Zero scheduler retry dispatch should report terminal failure");
     AR_ASSERT(ar_data__get_map_integer(ref_scheduled_retry_memory, "attempts") == 1,
               "Zero scheduler retry dispatch should not consume an attempt");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_response"), "retry_result") == 0,
+              "Zero scheduler retry dispatch should emit retry result");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_session_id"),
+                     "op-zero-scheduler") == 0,
+              "Zero scheduler retry dispatch should report its own session id");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"), "failure") == 0,
+              "Zero scheduler retry dispatch should report standard failure status");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 1,
+              "Zero scheduler retry dispatch should report one failed operation");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_scheduler_memory, "last_session_id"),
                      "op-scheduled") == 0,
               "Zero scheduler retry dispatch should not enqueue a schedule request");

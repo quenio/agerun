@@ -14,10 +14,10 @@ On `request: "retry_start"`, the method stores operation metadata, effective `tr
 `session_id`, retry strategy, maximum attempts, scheduler agent, delay ticks, and `sender`. It
 records an attempt only after the operation send succeeds.
 
-Matching `failure` requests with the same `session_id` retry while attempts remain. Matching
-`success` requests with the same `session_id` emit the terminal response. Terminal outcome is
-recorded only after the response is delivered; failed report delivery stores a pending terminal
-result for retry.
+Matching `failure` requests with the same `session_id` retry while attempts remain and the next
+attempt can be dispatched. Matching `success` requests with the same `session_id` emit the terminal
+response. Terminal outcome is recorded only after the response is delivered; failed report delivery
+stores a pending terminal result for retry.
 
 ## Message Format
 
@@ -68,12 +68,13 @@ Terminal response:
 
 Count semantics: `success_count` is `1` only for the terminal response produced by a matching
 `retry_success` outcome. `failure_count` is `1` when initial operation dispatch fails or when a
-matching `retry_failure` reaches the final allowed attempt. Non-terminal failures that schedule or
-dispatch another attempt do not increment either terminal count.
+matching `retry_failure` reaches the final allowed attempt or cannot dispatch the next attempt.
+Non-terminal failures that schedule or dispatch another attempt do not increment either terminal
+count.
 
 Status semantics: the terminal response status is `success` only for a matching `retry_success`
 outcome. It is `failure` when the initial operation dispatch fails or when a matching
-`retry_failure` reaches the final allowed attempt.
+`retry_failure` reaches the final allowed attempt or cannot dispatch the next attempt.
 
 ## Implementation and Tests
 

@@ -107,9 +107,13 @@ memory.scheduled_dispatched := memory.use_scheduled_ready * memory.schedule_sent
 memory.retry_dispatched := memory.immediate_dispatched + memory.scheduled_dispatched
 memory.retry_dispatched := if(memory.retry_dispatched > 0, 1, 0)
 memory.attempts := if(memory.retry_dispatched = 1, memory.next_attempt, memory.attempts)
+memory.retry_dispatch_failed := memory.retry_allowed - memory.retry_dispatched
+memory.retry_dispatch_failed := if(memory.retry_dispatch_failed > 0, 1, 0)
 
 # Derive terminal outcome
 memory.final_failure := memory.active_failure - memory.retry_allowed
+memory.final_failure := memory.final_failure + memory.retry_dispatch_failed
+memory.final_failure := if(memory.final_failure > 0, 1, 0)
 memory.terminal_status := memory.status
 memory.terminal_status := if(memory.start_send_failed = 1, "dispatch_failed", memory.terminal_status)
 memory.terminal_status := if(memory.final_failure = 1, "failed", memory.terminal_status)
