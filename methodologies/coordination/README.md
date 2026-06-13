@@ -358,11 +358,11 @@ delivery keeps the gate open for retry.
 Requests:
 
 ```text
-{ sender: <sender-agent>, request: "workflow_start", trace_id: <trace_id>, session_id: <session_id>, workflow_id: <id>, step_recipients: [<agent>, ...], step_payloads: [<message>, ...], branch_value: <outcome> }
+{ sender: <sender-agent>, request: "workflow_start", trace_id: <trace_id>, session_id: <session_id>, workflow_id: <id>, recipients: [<recipient-agent-1>, <recipient-agent-2>, ...], payloads: [<payload>, <payload>, ...], branch_value: <outcome> }
 { sender: <sender-agent>, request: "workflow_step_done", trace_id: <trace_id>, session_id: <session_id>, workflow_id: <id>, step: <current-step-number>, outcome: <value> }
 ```
 
-Step messages sent to step agents are exactly the sender-provided step payloads.
+Step messages sent to step agents are exactly the sender-provided payloads.
 
 Completion response:
 
@@ -376,14 +376,12 @@ Completion response:
   state: <complete|handoff_failed>,
   workflow_id: <id>,
   success_count: <count>,
-  failure_count: <count>,
-  current_step: <last-step-number>,
-  completed_step_count: <executed-step-count>
+  failure_count: <count>
 }
 ```
 
 Workflow records terminal status only after the `start` response is delivered; failed completion
-delivery leaves completion pending and retries do not increment `completed_step_count`.
+delivery leaves completion pending and retries do not increment the completed-step counter.
 
 ### Conversation
 
@@ -518,7 +516,7 @@ Delayed retry:
 Branching workflow:
 
 ```text
-1. Send a request with `request: "workflow_start"` to workflow with aligned step recipients and payload lists.
+1. Send a request with `request: "workflow_start"` to workflow with aligned recipients and payloads.
 2. Workflow sends step 1 directly to the first configured step recipient.
 3. Send a `workflow_step_done` request for step 1 with the workflow session_id and branch outcome to skip one pending step.
 4. Continue sending `workflow_step_done` requests with the same session_id until workflow emits `workflow_result`.
