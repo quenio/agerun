@@ -872,7 +872,7 @@ static void test_evaluate_empty_list_comparison(void) {
 
         assert(own_result != NULL);
         assert(ar_data__get_type(own_result) == AR_DATA_TYPE__INTEGER);
-        assert(ar_data__get_integer(own_result) == 1);
+        assert(ar_data__get_integer(own_result) == 0);
 
         ar_data__destroy(own_result);
         ar_expression_ast__destroy(own_ast);
@@ -894,7 +894,7 @@ static void test_evaluate_empty_list_comparison(void) {
 
         assert(own_result != NULL);
         assert(ar_data__get_type(own_result) == AR_DATA_TYPE__INTEGER);
-        assert(ar_data__get_integer(own_result) == 0);
+        assert(ar_data__get_integer(own_result) == 1);
 
         ar_data__destroy(own_result);
         ar_expression_ast__destroy(own_ast);

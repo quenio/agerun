@@ -632,17 +632,12 @@ fn _evaluate_binary_op(
     } else if ((op == c.AR_BINARY_OPERATOR__EQUAL or op == c.AR_BINARY_OPERATOR__NOT_EQUAL) and
                ((left_type == c.AR_DATA_TYPE__LIST and right_type == c.AR_DATA_TYPE__INTEGER) or
                 (left_type == c.AR_DATA_TYPE__INTEGER and right_type == c.AR_DATA_TYPE__LIST))) {
-        const list_value = if (left_type == c.AR_DATA_TYPE__LIST) left else right;
-        const integer_value = if (left_type == c.AR_DATA_TYPE__INTEGER) left else right;
-        const equal = c.ar_data__list_count(list_value) == 0 and
-            c.ar_data__get_integer(integer_value) == 0;
-
         switch (op) {
             c.AR_BINARY_OPERATOR__EQUAL => {
-                result = c.ar_data__create_integer(if (equal) 1 else 0);
+                result = c.ar_data__create_integer(0);
             },
             c.AR_BINARY_OPERATOR__NOT_EQUAL => {
-                result = c.ar_data__create_integer(if (!equal) 1 else 0);
+                result = c.ar_data__create_integer(1);
             },
             else => unreachable,
         }
