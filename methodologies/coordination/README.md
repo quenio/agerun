@@ -421,7 +421,7 @@ Response:
   session_id: <session_id>,
   status: <success|failure>,
   state: <active|closed>,
-  result: <active|relayed|relay_failed|ignored|closed>,
+  result: <active|relayed|not_participant|relay_failed|ignored|closed>,
   success_count: <count>,
   failure_count: <count>,
   participants: [<recipient-agent-1>, <recipient-agent-2>, ...],
@@ -436,6 +436,9 @@ Conversation spawns one broadcasting agent when the conversation starts. It reus
 every turn and excludes the sender from the broadcast targets. If broadcast delivery fails for any
 recipient, the coordinator reports `result: "relay_failed"` and leaves the history and turn count
 unchanged.
+
+If `conversation_message.sender` is not in the participant list, the coordinator reports
+`result: "not_participant"` and does not broadcast, record, or retain the sender-provided payload.
 
 ### Retry
 

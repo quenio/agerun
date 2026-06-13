@@ -15,10 +15,11 @@ participant list, and `source`, then spawns one `broadcasting` method agent for 
 session. Later turns reuse that broadcasting agent.
 
 On `request: "conversation_message"` with the same `session_id`, it accepts the sender-provided
-`payload` while the conversation is active, builds a `conversation_turn` request, and sends that
-same turn message through broadcasting to all participants except the sender. The turn is recorded
-only after broadcasting reports success. On `conversation_summary`, it responds with history. On
-`conversation_close`, it marks the conversation closed.
+`payload` only when `sender` is in the participant list. For participant senders, it builds a
+`conversation_turn` request and sends that same turn message through broadcasting to all
+participants except the sender. The turn is recorded only after broadcasting reports success. On
+`conversation_summary`, it responds with history. On `conversation_close`, it marks the conversation
+closed.
 
 ## Message Format
 
@@ -55,7 +56,7 @@ Coordinator response:
   session_id: <session_id>,
   status: <success|failure>,
   state: <active|closed>,
-  result: <active|relayed|relay_failed|ignored|closed>,
+  result: <active|relayed|not_participant|relay_failed|ignored|closed>,
   success_count: <count>,
   failure_count: <count>,
   participants: [<recipient-agent-1>, <recipient-agent-2>, ...],
@@ -68,6 +69,9 @@ Coordinator response:
 
 If broadcast delivery fails for any recipient, the coordinator reports `result: "relay_failed"` and
 leaves the history and turn count unchanged.
+
+If `conversation_message.sender` is not in the participant list, the coordinator reports
+`result: "not_participant"` and does not broadcast, record, or retain the sender-provided payload.
 
 ## Implementation and Tests
 

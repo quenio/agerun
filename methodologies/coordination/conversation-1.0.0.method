@@ -104,6 +104,11 @@ memory.scan_finished := if(memory.scan_continue = 1, 0, memory.scan_finished)
 memory.has_recipients := if(memory.next_recipient_count > 0, 1, 0)
 memory.sender_missing := if(memory.next_found_sender = 0, 1, 0)
 memory.sender_missing := memory.sender_missing * memory.scan_finished
+memory.nonparticipant_rejected := memory.sender_missing
+memory.pending_turn_message := if(memory.nonparticipant_rejected = 1, {}, memory.pending_turn_message)
+memory.pending_sender := if(memory.nonparticipant_rejected = 1, 0, memory.pending_sender)
+memory.pending_payload := if(memory.nonparticipant_rejected = 1, 0, memory.pending_payload)
+memory.pending_turn_count := if(memory.nonparticipant_rejected = 1, memory.turn_count, memory.pending_turn_count)
 memory.has_no_recipients := 1 - memory.has_recipients
 memory.no_recipients := memory.scan_finished * memory.next_found_sender
 memory.no_recipients := memory.no_recipients * memory.has_no_recipients
@@ -152,6 +157,7 @@ memory.response_result := if(memory.summary_matches = 1, memory.state, memory.re
 memory.response_result := if(memory.should_close = 1, "closed", memory.response_result)
 memory.response_result := if(memory.relay_succeeded = 1, "relayed", memory.response_result)
 memory.response_result := if(memory.relay_failure_count = 1, "relay_failed", memory.response_result)
+memory.response_result := if(memory.nonparticipant_rejected = 1, "not_participant", memory.response_result)
 memory.response_success_count := memory.turn_count
 memory.response_success_count := if(memory.is_start = 1, 0, memory.response_success_count)
 memory.response_success_count := if(memory.relay_outcome = 1, memory.relay_succeeded, memory.response_success_count)

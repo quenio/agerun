@@ -106,6 +106,7 @@ static void test_conversation__broadcasts_turns_to_all_other_participants(void) 
     ar_data_t *own_participant_a_context = create_context();
     ar_data_t *own_participant_b_context = create_context();
     ar_data_t *own_participant_c_context = create_context();
+    ar_data_t *own_intruder_context = create_context();
     ar_data_t *own_observer_context = create_context();
     int64_t conversation_agent = ar_agency__create_agent(
         mut_agency, "conversation", "1.0.0", own_conversation_context);
@@ -115,6 +116,8 @@ static void test_conversation__broadcasts_turns_to_all_other_participants(void) 
         mut_agency, "record-receiver", "1.0.0", own_participant_b_context);
     int64_t participant_c = ar_agency__create_agent(
         mut_agency, "record-receiver", "1.0.0", own_participant_c_context);
+    int64_t intruder = ar_agency__create_agent(
+        mut_agency, "record-receiver", "1.0.0", own_intruder_context);
     int64_t observer = ar_agency__create_agent(
         mut_agency, "record-receiver", "1.0.0", own_observer_context);
 
@@ -315,6 +318,50 @@ static void test_conversation__broadcasts_turns_to_all_other_participants(void) 
     AR_ASSERT(ref_history != NULL, "Summary should include history");
     AR_ASSERT(ar_data__list_count(ref_history) == 2, "Summary history should include both turns");
 
+    // When an agent outside the participant list sends a payload
+    ar_data_t *own_intruder_turn = ar_data__create_map();
+    AR_ASSERT(own_intruder_turn != NULL, "Intruder conversation message should be created");
+    ar_data__set_map_string(own_intruder_turn, "request", "conversation_message");
+    ar_data__set_map_string(own_intruder_turn, "trace_id", "chat-intruder-turn");
+    ar_data__set_map_string(own_intruder_turn, "session_id", "chat-session-1");
+    ar_data__set_map_integer(own_intruder_turn, "sender", checked_agent_id(intruder));
+    ar_data__set_map_string(own_intruder_turn, "payload", "intruder");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, conversation_agent, own_intruder_turn),
+              "Intruder conversation message should queue");
+    own_intruder_turn = NULL;
+
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    // Then the coordinator rejects the payload without broadcasting or recording it
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
+                     "failure") == 0,
+              "Non-participant payload should report standard failure status");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_result"),
+                     "not_participant") == 0,
+              "Non-participant payload should be rejected before delivery");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
+                     "chat-intruder-turn") == 0,
+              "Non-participant response should preserve request trace id");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_success_count") == 0,
+              "Non-participant payload should report no successful turn");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_failure_count") == 1,
+              "Non-participant payload should report one failed turn");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_turn_count") == 2,
+              "Non-participant payload should not increment turn count");
+    ref_history = ar_data__get_map_data(ref_observer_memory, "last_history");
+    AR_ASSERT(ref_history != NULL, "Non-participant response should include history");
+    AR_ASSERT(ar_data__list_count(ref_history) == 2,
+              "Non-participant payload should not append to history");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_a_memory, "last_trace_id"),
+                     "chat-turn-2") == 0,
+              "Participant A should not receive the non-participant payload");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_b_memory, "last_trace_id"),
+                     "chat-turn-1") == 0,
+              "Participant B should not receive the non-participant payload");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_participant_c_memory, "last_trace_id"),
+                     "chat-turn-2") == 0,
+              "Participant C should not receive the non-participant payload");
+
     // When a participant message cannot be delivered
     ar_data_t *own_failed_start = ar_data__create_map();
     AR_ASSERT(own_failed_start != NULL, "Failed relay conversation start should be created");
@@ -377,6 +424,7 @@ static void test_conversation__broadcasts_turns_to_all_other_participants(void) 
     ar_data__destroy(own_participant_a_context);
     ar_data__destroy(own_participant_b_context);
     ar_data__destroy(own_participant_c_context);
+    ar_data__destroy(own_intruder_context);
     ar_data__destroy(own_observer_context);
 }
 
