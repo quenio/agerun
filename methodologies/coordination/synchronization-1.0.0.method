@@ -1,8 +1,11 @@
+# Classify synchronization request
 memory.is_request := if(message.request <> 0, 1, 0)
 memory.is_wait := if(memory.is_request = 1, message.request = "synchronization_wait", 0)
 memory.is_dependency := if(memory.is_request = 1, message.request = "synchronization_dependency", 0)
 memory.is_synchronization_request := memory.is_wait + memory.is_dependency
 memory.is_synchronization_request := if(memory.is_synchronization_request > 0, 1, 0)
+
+# Establish wait state
 memory.generated_trace_base := message.sender * 1000
 memory.generated_trace_id := memory.generated_trace_base + memory.self
 memory.request_trace_id := memory.generated_trace_id
@@ -19,6 +22,8 @@ memory.received := if(memory.is_wait = 1, [], memory.received)
 memory.done_count := if(memory.is_wait = 1, 0, memory.done_count)
 memory.completed := if(memory.is_wait = 1, 0, memory.completed)
 memory.continuation_done := if(memory.is_wait = 1, 0, memory.continuation_done)
+
+# Validate dependency message
 memory.matching_sync := if(message.sync_id = memory.sync_id, 1, 0)
 memory.has_request_session := if(message.session_id <> 0, 1, 0)
 memory.matching_session := if(memory.has_request_session = 1, message.session_id = memory.session_id, 0)
@@ -30,6 +35,8 @@ memory.effective_required_count := if(memory.required_count > 0, memory.required
 memory.below_required_count := if(memory.done_count < memory.effective_required_count, 1, 0)
 memory.should_count := memory.valid_dependency * memory.not_completed * memory.not_continuation_done
 memory.should_count := memory.should_count * memory.below_required_count
+
+# Count accepted dependency
 memory.append_buffer := if(memory.should_count = 1, memory.received, "")
 memory.append_ok := append(memory.append_buffer, message.dependency)
 memory.received := if(memory.append_ok = 1, memory.append_buffer, memory.received)
@@ -39,6 +46,8 @@ memory.status := if(memory.is_complete = 1, "complete", "waiting")
 memory.should_emit := memory.is_complete * memory.not_completed
 memory.should_emit := memory.should_emit * memory.valid_dependency
 memory.should_send_continuation := memory.should_emit * memory.not_continuation_done
+
+# Build continuation message
 memory.continuation_message := {
   sender: memory.self
   request: memory.continuation_request
@@ -49,11 +58,15 @@ memory.continuation_message := {
   done_count: memory.done_count
   dependencies: memory.received
 }
+
+# Deliver continuation
 memory.continuation_recipient_value := memory.continuation_recipient * memory.should_send_continuation
 memory.continuation_sent := send(memory.continuation_recipient_value, memory.continuation_message)
 memory.continuation_delivery_ok := if(memory.continuation_recipient > 0, memory.continuation_sent, 0)
 memory.continuation_delivered_now := memory.should_send_continuation * memory.continuation_delivery_ok
 memory.continuation_done := if(memory.continuation_delivered_now = 1, 1, memory.continuation_done)
+
+# Build synchronization result
 memory.report_message := {
   sender: memory.self
   response: "synchronization_result"
@@ -67,6 +80,8 @@ memory.report_message := {
   done_count: memory.done_count
   dependencies: memory.received
 }
+
+# Emit and record completion
 memory.report_ready := memory.should_emit * memory.continuation_done
 memory.report_recipient := memory.sender * memory.report_ready
 memory.report_sent := send(memory.report_recipient, memory.report_message)

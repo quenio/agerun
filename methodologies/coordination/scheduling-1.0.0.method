@@ -1,3 +1,4 @@
+# Classify scheduling request
 memory.is_request := if(message.request <> 0, 1, 0)
 memory.is_schedule := if(memory.is_request = 1, message.request = "scheduling_schedule", 0)
 memory.is_tick := if(memory.is_request = 1, message.request = "scheduling_tick", 0)
@@ -5,6 +6,8 @@ memory.is_cancel := if(memory.is_request = 1, message.request = "scheduling_canc
 memory.is_scheduling_request := memory.is_schedule + memory.is_tick
 memory.is_scheduling_request := memory.is_scheduling_request + memory.is_cancel
 memory.is_scheduling_request := if(memory.is_scheduling_request > 0, 1, 0)
+
+# Establish trace and schedule state
 memory.generated_trace_base := message.sender * 1000
 memory.generated_trace_id := memory.generated_trace_base + memory.self
 memory.request_trace_id := memory.generated_trace_id
@@ -23,15 +26,21 @@ memory.status := if(memory.is_schedule = 1, "scheduled", memory.status)
 memory.current_tick := if(memory.is_schedule = 1, 0, memory.current_tick)
 memory.has_request_session := if(message.session_id <> 0, 1, 0)
 memory.session_matches := if(memory.has_request_session = 1, message.session_id = memory.session_id, 0)
+
+# Apply matching cancellation
 memory.cancel_matches := if(message.schedule_id = memory.schedule_id, 1, 0)
 memory.should_cancel := memory.is_cancel * memory.cancel_matches * memory.pending
 memory.should_cancel := memory.should_cancel * memory.session_matches
 memory.pending := if(memory.should_cancel = 1, 0, memory.pending)
 memory.status := if(memory.should_cancel = 1, "cancelled", memory.status)
+
+# Evaluate due tick
 memory.session_tick := memory.is_tick * memory.session_matches
 memory.current_tick := if(memory.session_tick = 1, message.tick, memory.current_tick)
 memory.tick_ready := if(memory.current_tick >= memory.due_tick, 1, 0)
 memory.should_trigger := memory.pending * memory.session_tick * memory.tick_ready
+
+# Send scheduled payload
 memory.execution_message := {
   sender: memory.self
   request: memory.payload_request
@@ -48,9 +57,13 @@ memory.trigger_failed := memory.trigger_failed * memory.should_trigger
 memory.pending := if(memory.trigger_succeeded = 1, 0, memory.pending)
 memory.status := if(memory.trigger_succeeded = 1, "triggered", memory.status)
 memory.status := if(memory.trigger_failed = 1, "trigger_failed", memory.status)
+
+# Derive scheduling result
 memory.report_success_count := memory.trigger_succeeded + memory.should_cancel
 memory.report_failure_count := memory.trigger_failed
 memory.report_status := if(memory.report_failure_count > 0, "failure", "success")
+
+# Emit scheduling result
 memory.report_message := {
   sender: memory.self
   response: "scheduling_result"

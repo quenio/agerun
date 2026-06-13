@@ -1,3 +1,4 @@
+# Classify workflow request
 memory.is_request := if(message.request <> 0, 1, 0)
 memory.is_start := if(memory.is_request = 1, message.request = "workflow_start", 0)
 memory.is_execute_step := if(memory.is_request = 1, message.request = "workflow_execute_step", 0)
@@ -5,6 +6,8 @@ memory.is_step_done := if(memory.is_request = 1, message.request = "workflow_ste
 memory.is_workflow_request := memory.is_start + memory.is_execute_step
 memory.is_workflow_request := memory.is_workflow_request + memory.is_step_done
 memory.is_workflow_request := if(memory.is_workflow_request > 0, 1, 0)
+
+# Establish workflow state
 memory.generated_trace_base := message.sender * 1000
 memory.generated_trace_id := memory.generated_trace_base + memory.self
 memory.request_trace_id := memory.generated_trace_id
@@ -21,10 +24,14 @@ memory.completion_pending := if(memory.is_start = 1, 0, memory.completion_pendin
 memory.awaiting_step_done := if(memory.is_start = 1, 0, memory.awaiting_step_done)
 memory.pending_step_recipients := if(memory.is_start = 1, [], memory.pending_step_recipients)
 memory.pending_step_payloads := if(memory.is_start = 1, [], memory.pending_step_payloads)
+
+# Validate active session
 memory.has_request_session := if(message.session_id <> 0, 1, 0)
 memory.message_session_matches := if(memory.has_request_session = 1, message.session_id = memory.session_id, 0)
 memory.is_execute_step_active := memory.is_execute_step * memory.message_session_matches
 memory.is_step_done_active := memory.is_step_done * memory.message_session_matches
+
+# Start first step execution
 memory.start_execute_message := {
   sender: memory.sender
   request: "workflow_execute_step"
@@ -38,6 +45,8 @@ memory.start_execute_message := {
 memory.start_execute_sent := send(memory.self * memory.is_start, memory.start_execute_message)
 memory.start_handoff_failed := if(memory.start_execute_sent = 0, 1, 0)
 memory.start_handoff_failed := memory.start_handoff_failed * memory.is_start
+
+# Select current step
 memory.step_recipient := head(message.recipients)
 memory.step_payload := head(message.payloads)
 memory.remaining_step_recipients := tail(message.recipients)
@@ -48,6 +57,8 @@ memory.no_step := if(memory.has_step = 1, 0, 1)
 memory.has_remaining_step := if(memory.remaining_step_recipient > 0, 1, 0)
 memory.execute_action := memory.is_execute_step_active * memory.has_step
 memory.skip_empty_step := memory.is_execute_step_active * memory.no_step * memory.has_remaining_step
+
+# Skip empty step placeholders
 memory.skip_step_message := {
   sender: memory.sender
   request: "workflow_execute_step"
@@ -61,10 +72,14 @@ memory.skip_step_message := {
 memory.skip_step_sent := send(memory.self * memory.skip_empty_step, memory.skip_step_message)
 memory.skip_step_failed := if(memory.skip_step_sent = 0, 1, 0)
 memory.skip_step_failed := memory.skip_step_failed * memory.skip_empty_step
+
+# Send current step payload
 memory.step_sent := send(memory.step_recipient * memory.execute_action, memory.step_payload)
 memory.sent_step := memory.execute_action * memory.step_sent
 memory.step_handoff_failed := if(memory.step_sent = 0, 1, 0)
 memory.step_handoff_failed := memory.step_handoff_failed * memory.execute_action
+
+# Track dispatched step state
 memory.current_step := if(memory.execute_action = 1, message.step_number, memory.current_step)
 memory.awaiting_step_done := if(memory.sent_step = 1, 1, memory.awaiting_step_done)
 memory.pending_step_recipients := if(memory.sent_step = 1, memory.remaining_step_recipients, memory.pending_step_recipients)
@@ -73,6 +88,8 @@ memory.pending_step_recipients := if(memory.step_handoff_failed = 1, message.rec
 memory.pending_step_payloads := if(memory.step_handoff_failed = 1, message.payloads, memory.pending_step_payloads)
 memory.empty_completion := memory.is_execute_step_active * memory.no_step
 memory.empty_completion := if(memory.skip_empty_step = 1, 0, memory.empty_completion)
+
+# Validate step completion
 memory.matching_workflow := if(message.workflow_id = memory.workflow_id, 1, 0)
 memory.matching_step := if(message.step = memory.current_step, 1, 0)
 memory.is_active := if(memory.status = "active", 1, 0)
@@ -81,6 +98,8 @@ memory.step_completion := memory.is_step_done_active * memory.matching_workflow 
 memory.completed_step_count := memory.completed_step_count + memory.step_completion
 memory.branch_matched := if(message.outcome = memory.branch_value, 1, 0)
 memory.skip_next := memory.step_completion * memory.branch_matched
+
+# Choose next step
 memory.skipped_step_recipients := tail(memory.pending_step_recipients)
 memory.skipped_step_payloads := tail(memory.pending_step_payloads)
 memory.next_step_recipients := memory.pending_step_recipients
@@ -96,6 +115,8 @@ memory.has_next_step := memory.has_next_step + memory.has_next_step_after_zero
 memory.has_next_step := if(memory.has_next_step > 0, 1, 0)
 memory.step_increment := 1 + memory.skip_next
 memory.next_step_number := memory.current_step + memory.step_increment
+
+# Continue workflow execution
 memory.continue_message := {
   sender: memory.sender
   request: "workflow_execute_step"
@@ -111,6 +132,8 @@ memory.continue_required := memory.step_completion * memory.has_next_step
 memory.continue_handoff_failed := if(memory.continue_sent = 0, 1, 0)
 memory.continue_handoff_failed := memory.continue_handoff_failed * memory.continue_required
 memory.awaiting_step_done := if(memory.step_completion = 1, 0, memory.awaiting_step_done)
+
+# Decide completion outcome
 memory.no_next_step := if(memory.has_next_step = 1, 0, 1)
 memory.finished_after_step := memory.step_completion * memory.no_next_step
 memory.retry_completion := memory.is_step_done_active * memory.matching_workflow * memory.matching_step * memory.is_active * memory.completion_pending
@@ -122,6 +145,8 @@ memory.should_complete := memory.should_complete + memory.handoff_failed
 memory.completion_status := if(memory.should_complete > 0, "success", memory.status)
 memory.completion_status := if(memory.handoff_failed > 0, "failure", memory.completion_status)
 memory.completion_failure_count := if(memory.handoff_failed > 0, 1, 0)
+
+# Emit workflow result
 memory.complete_message := {
   sender: memory.self
   response: "workflow_result"
@@ -133,6 +158,8 @@ memory.complete_message := {
 }
 memory.complete_sent := send(memory.sender * memory.should_complete, memory.complete_message)
 memory.completion_delivered := memory.should_complete * memory.complete_sent
+
+# Record delivered completion
 memory.completion_pending := if(memory.should_complete > 0, 1, memory.completion_pending)
 memory.completion_pending := if(memory.completion_delivered = 1, 0, memory.completion_pending)
 memory.status := if(memory.completion_delivered = 1, memory.completion_status, memory.status)

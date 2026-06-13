@@ -1,8 +1,11 @@
+# Classify route request
 memory.is_request := if(message.request <> 0, 1, 0)
 memory.is_route := if(memory.is_request = 1, message.request = "routing_start", 0)
 memory.generated_trace_base := message.sender * 1000
 memory.generated_trace_id := memory.generated_trace_base + memory.self
 memory.has_request_key := if(message.route_key <> 0, 1, 0)
+
+# Select current route candidate
 memory.route_key := head(message.routes.keys)
 memory.route_recipient := head(message.routes.recipients)
 memory.remaining_route_keys := tail(message.routes.keys)
@@ -15,6 +18,8 @@ memory.route_matches := memory.route_matches * memory.has_route_key
 memory.route_matches := memory.route_matches * memory.has_route_recipient
 memory.trace_id := if(memory.is_route = 1, memory.generated_trace_id, memory.trace_id)
 memory.trace_id := if(message.trace_id <> 0, message.trace_id, memory.trace_id)
+
+# Attempt matched route delivery
 memory.recipient := memory.route_recipient * memory.route_matches * memory.is_route
 memory.sent_result := send(memory.recipient, message.payload)
 memory.sent := memory.sent_result * memory.route_matches
@@ -22,6 +27,8 @@ memory.sent := memory.sent * memory.is_route
 memory.send_failed := if(memory.sent_result = 0, 1, 0)
 memory.send_failed := memory.send_failed * memory.route_matches
 memory.send_failed := memory.send_failed * memory.is_route
+
+# Decide whether to scan remaining routes
 memory.remaining_route_key := head(memory.remaining_route_keys)
 memory.remaining_route_recipient := head(memory.remaining_route_recipients)
 memory.has_remaining_route_key := if(memory.remaining_route_key <> 0, 1, 0)
@@ -36,6 +43,8 @@ memory.scan_routes := {
   keys: memory.remaining_route_keys
   recipients: memory.remaining_route_recipients
 }
+
+# Queue scan continuation
 memory.scan_message := {
   sender: message.sender
   request: "routing_start"
@@ -49,6 +58,8 @@ memory.scan_send_result := send(memory.scan_recipient, memory.scan_message)
 memory.scan_sent := memory.scan_send_result * memory.scan_required
 memory.scan_failed := if(memory.scan_send_result = 0, 1, 0)
 memory.scan_failed := memory.scan_failed * memory.scan_required
+
+# Derive routing result
 memory.should_respond := memory.is_route
 memory.should_respond := if(memory.scan_sent = 1, 0, memory.should_respond)
 memory.routed_count := if(memory.is_route = 1, memory.sent, memory.routed_count)
@@ -63,6 +74,8 @@ memory.status := if(memory.is_route = 1, "failure", memory.status)
 memory.status := if(memory.sent = 1, "success", memory.status)
 memory.status := if(memory.has_failed_count = 1, "failure", memory.status)
 memory.status := if(memory.scan_failed = 1, "failure", memory.status)
+
+# Emit routing result
 memory.response_message := {
   sender: memory.self
   response: "routing_result"

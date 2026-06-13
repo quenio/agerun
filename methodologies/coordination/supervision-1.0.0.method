@@ -1,3 +1,4 @@
+# Classify supervision request
 memory.is_request := if(message.request <> 0, 1, 0)
 memory.is_start := if(memory.is_request = 1, message.request = "supervision_start", 0)
 memory.is_spawn_child := if(memory.is_request = 1, message.request = "supervision_spawn_child", 0)
@@ -13,6 +14,8 @@ memory.is_supervision_request := memory.is_supervision_request + memory.is_stop
 memory.is_supervision_request := memory.is_supervision_request + memory.is_validate_stop
 memory.is_supervision_request := memory.is_supervision_request + memory.is_validate_lifecycle
 memory.is_supervision_request := if(memory.is_supervision_request > 0, 1, 0)
+
+# Establish trace and session guards
 memory.generated_trace_base := message.sender * 1000
 memory.generated_trace_id := memory.generated_trace_base + memory.self
 memory.request_trace_id := memory.generated_trace_id
@@ -28,6 +31,8 @@ memory.is_child_exited_active := memory.is_child_exited * memory.request_session
 memory.is_stop_active := memory.is_stop * memory.request_session_matches
 memory.is_validate_stop_active := memory.is_validate_stop * memory.request_session_matches
 memory.is_validate_lifecycle_active := memory.is_validate_lifecycle * memory.request_session_matches
+
+# Initialize supervision state
 memory.sender := if(memory.is_start = 1, message.sender, memory.sender)
 memory.child_method_version := if(memory.is_start = 1, message.child_method_version, memory.child_method_version)
 memory.child_agent_ids := if(memory.is_start = 1, [], memory.child_agent_ids)
@@ -37,6 +42,8 @@ memory.child_count := if(memory.is_start = 1, 0, memory.child_count)
 memory.restart_count := if(memory.is_start = 1, 0, memory.restart_count)
 memory.spawn_result := if(memory.is_start = 1, 0, memory.spawn_result)
 memory.status := if(memory.is_start = 1, "starting", memory.status)
+
+# Start child spawn pass
 memory.spawn_request_message := {
   sender: memory.self
   request: "supervision_spawn_child"
@@ -48,6 +55,8 @@ memory.spawn_request_message := {
 memory.spawn_request_sent := send(memory.self * memory.is_start, memory.spawn_request_message)
 memory.spawn_request_failed := if(memory.spawn_request_sent = 0, 1, 0)
 memory.spawn_request_failed := memory.spawn_request_failed * memory.is_start
+
+# Spawn current child
 memory.child_method_names_input := if(memory.is_start = 1, message.child_method_names, [])
 memory.child_method_names_input := if(memory.is_spawn_child_active = 1, message.child_method_names, memory.child_method_names_input)
 memory.current_child_method_name := head(memory.child_method_names_input)
@@ -72,6 +81,8 @@ memory.record_append_buffer := if(memory.spawned_child = 1, memory.child_records
 memory.record_append_ok := append(memory.record_append_buffer, memory.child_record)
 memory.child_records := if(memory.record_append_ok = 1, memory.record_append_buffer, memory.child_records)
 memory.child_count := memory.child_count + memory.record_append_ok
+
+# Queue remaining child spawns
 memory.next_child_method_name := head(memory.remaining_child_method_names)
 memory.has_remaining_child_method := if(memory.next_child_method_name <> 0, 1, 0)
 memory.spawn_continue_message := {
@@ -86,6 +97,8 @@ memory.spawn_continue_required := memory.spawned_child * memory.has_remaining_ch
 memory.spawn_continue_sent := send(memory.self * memory.spawn_continue_required, memory.spawn_continue_message)
 memory.spawn_continue_failed := if(memory.spawn_continue_sent = 0, 1, 0)
 memory.spawn_continue_failed := memory.spawn_continue_failed * memory.spawn_continue_required
+
+# Finalize start outcome
 memory.empty_start_complete := memory.empty_child_list
 memory.no_remaining_child_methods := 1 - memory.has_remaining_child_method
 memory.spawned_start_complete := memory.spawned_child * memory.no_remaining_child_methods
@@ -93,6 +106,8 @@ memory.start_complete := memory.spawned_start_complete + memory.empty_start_comp
 memory.status := if(memory.start_complete = 1, "running", memory.status)
 memory.spawn_handoff_failed := memory.spawn_request_failed + memory.spawn_continue_failed
 memory.status := if(memory.spawn_handoff_failed > 0, "handoff_failed", memory.status)
+
+# Prepare lifecycle validation
 memory.restart_policy := if(memory.policy = "restart", 1, 0)
 memory.lifecycle_event := memory.is_child_failed_active + memory.is_child_exited_active
 memory.lifecycle_validation_message := {
@@ -112,6 +127,8 @@ memory.lifecycle_validation_message := {
 memory.lifecycle_validation_sent := send(memory.self * memory.lifecycle_event, memory.lifecycle_validation_message)
 memory.lifecycle_validation_failed := if(memory.lifecycle_validation_sent = 0, 1, 0)
 memory.lifecycle_validation_failed := memory.lifecycle_validation_failed * memory.lifecycle_event
+
+# Scan lifecycle records
 memory.current_lifecycle_child_agent_id := head(message.remaining_child_agent_ids)
 memory.remaining_lifecycle_child_agent_ids := tail(message.remaining_child_agent_ids)
 memory.current_handled_lifecycle_child_agent_id := head(message.remaining_handled_lifecycle_child_agent_ids)
@@ -129,6 +146,8 @@ memory.lifecycle_handled_has_remaining := if(memory.next_handled_lifecycle_child
 memory.lifecycle_remaining_count := memory.lifecycle_child_has_remaining + memory.lifecycle_handled_has_remaining
 memory.lifecycle_has_remaining := if(memory.lifecycle_remaining_count > 0, 1, 0)
 memory.lifecycle_continue_needed := memory.is_validate_lifecycle_active * memory.lifecycle_has_remaining
+
+# Continue lifecycle validation
 memory.lifecycle_continue_message := {
   sender: memory.self
   request: "supervision_validate_lifecycle"
@@ -146,6 +165,8 @@ memory.lifecycle_continue_message := {
 memory.lifecycle_continue_sent := send(memory.self * memory.lifecycle_continue_needed, memory.lifecycle_continue_message)
 memory.lifecycle_continue_failed := if(memory.lifecycle_continue_sent = 0, 1, 0)
 memory.lifecycle_continue_failed := memory.lifecycle_continue_failed * memory.lifecycle_continue_needed
+
+# Finish lifecycle validation
 memory.lifecycle_no_remaining := 1 - memory.lifecycle_has_remaining
 memory.lifecycle_scan_exhausted := memory.is_validate_lifecycle_active * memory.lifecycle_no_remaining
 memory.lifecycle_not_matched := 1 - memory.lifecycle_tracked
@@ -155,6 +176,8 @@ memory.lifecycle_duplicate := memory.lifecycle_duplicate * memory.lifecycle_hand
 memory.lifecycle_not_already_handled := 1 - memory.lifecycle_handled
 memory.tracked_failure_event := memory.lifecycle_scan_exhausted * memory.lifecycle_tracked
 memory.tracked_failure_event := memory.tracked_failure_event * memory.lifecycle_not_already_handled
+
+# Apply tracked lifecycle policy
 memory.handled_lifecycle_append_buffer := if(memory.tracked_failure_event = 1, memory.handled_lifecycle_child_agent_ids, "")
 memory.handled_lifecycle_append_ok := append(memory.handled_lifecycle_append_buffer, message.child_agent_id)
 memory.handled_lifecycle_child_agent_ids := if(memory.handled_lifecycle_append_ok = 1, memory.handled_lifecycle_append_buffer, memory.handled_lifecycle_child_agent_ids)
@@ -181,6 +204,8 @@ memory.restart_count := memory.restart_count + memory.restart_record_append_ok
 memory.child_agent_id := if(memory.restarted_child = 1, memory.restart_spawn_result, message.child_agent_id)
 memory.status := if(memory.tracked_failure_event = 1, "stopped", memory.status)
 memory.status := if(memory.restarted_child = 1, "restarted", memory.status)
+
+# Prepare stop validation
 memory.stop_validation_message := {
   sender: memory.self
   request: "supervision_validate_stop"
@@ -192,6 +217,8 @@ memory.stop_validation_message := {
 memory.stop_validation_sent := send(memory.self * memory.is_stop_active, memory.stop_validation_message)
 memory.stop_validation_failed := if(memory.stop_validation_sent = 0, 1, 0)
 memory.stop_validation_failed := memory.stop_validation_failed * memory.is_stop_active
+
+# Scan stop target
 memory.current_stop_child_agent_id := head(message.remaining_child_agent_ids)
 memory.remaining_stop_child_agent_ids := tail(message.remaining_child_agent_ids)
 memory.stop_match := if(memory.current_stop_child_agent_id = message.child_agent_id, memory.is_validate_stop_active, 0)
@@ -202,6 +229,8 @@ memory.stop_has_remaining := if(memory.next_stop_child_agent_id > 0, 1, 0)
 memory.stop_not_matched := 1 - memory.stop_match
 memory.stop_continue_needed := memory.is_validate_stop_active * memory.stop_has_remaining
 memory.stop_continue_needed := memory.stop_continue_needed * memory.stop_not_matched
+
+# Continue stop validation
 memory.stop_continue_message := {
   sender: memory.self
   request: "supervision_validate_stop"
@@ -213,6 +242,8 @@ memory.stop_continue_message := {
 memory.stop_continue_sent := send(memory.self * memory.stop_continue_needed, memory.stop_continue_message)
 memory.stop_continue_failed := if(memory.stop_continue_sent = 0, 1, 0)
 memory.stop_continue_failed := memory.stop_continue_failed * memory.stop_continue_needed
+
+# Apply stop result
 memory.stop_no_remaining := 1 - memory.stop_has_remaining
 memory.stop_scan_exhausted := memory.is_validate_stop_active * memory.stop_no_remaining
 memory.stop_done_sum := memory.stop_match + memory.stop_scan_exhausted
@@ -225,6 +256,8 @@ memory.stop_handled_append_buffer := if(memory.stop_succeeded = 1, memory.handle
 memory.stop_handled_append_ok := append(memory.stop_handled_append_buffer, message.child_agent_id)
 memory.handled_lifecycle_child_agent_ids := if(memory.stop_handled_append_ok = 1, memory.stop_handled_append_buffer, memory.handled_lifecycle_child_agent_ids)
 memory.status := if(memory.stop_succeeded = 1, "stopped", memory.status)
+
+# Derive supervision result
 memory.validation_handoff_failed := memory.lifecycle_validation_failed + memory.lifecycle_continue_failed
 memory.validation_handoff_failed := memory.validation_handoff_failed + memory.stop_validation_failed
 memory.validation_handoff_failed := memory.validation_handoff_failed + memory.stop_continue_failed
@@ -247,6 +280,8 @@ memory.report_failure_count := memory.spawn_handoff_failed + memory.validation_h
 memory.report_failure_count := memory.report_failure_count + memory.stop_failed
 memory.report_state := memory.report_status
 memory.report_status := if(memory.report_failure_count > 0, "failure", "success")
+
+# Emit supervision result
 memory.report_message := {
   sender: memory.self
   response: "supervision_result"

@@ -1,3 +1,4 @@
+# Classify retry request
 memory.is_request := if(message.request <> 0, 1, 0)
 memory.is_start := if(memory.is_request = 1, message.request = "retry_start", 0)
 memory.is_failure := if(memory.is_request = 1, message.request = "retry_failure", 0)
@@ -5,6 +6,8 @@ memory.is_success := if(memory.is_request = 1, message.request = "retry_success"
 memory.is_retry_request := memory.is_start + memory.is_failure
 memory.is_retry_request := memory.is_retry_request + memory.is_success
 memory.is_retry_request := if(memory.is_retry_request > 0, 1, 0)
+
+# Establish retry session state
 memory.generated_trace_base := message.sender * 1000
 memory.generated_trace_id := memory.generated_trace_base + memory.self
 memory.request_trace_id := memory.generated_trace_id
@@ -26,6 +29,8 @@ memory.pending_terminal := if(memory.is_start = 1, 0, memory.pending_terminal)
 memory.pending_terminal_status := if(memory.is_start = 1, "", memory.pending_terminal_status)
 memory.pending_terminal_attempts := if(memory.is_start = 1, 0, memory.pending_terminal_attempts)
 memory.start_attempt := memory.attempts + memory.is_start
+
+# Send first operation attempt
 memory.operation_message := {
   sender: memory.self
   request: memory.operation_request
@@ -40,6 +45,8 @@ memory.start_send_failed := if(memory.start_sent = 0, 1, 0)
 memory.start_send_failed := memory.start_send_failed * memory.is_start
 memory.attempts := if(memory.start_succeeded = 1, memory.start_attempt, memory.attempts)
 memory.status := if(memory.start_succeeded = 1, "active", memory.status)
+
+# Match active outcome requests
 memory.is_active_status := if(memory.status = "active", 1, 0)
 memory.has_request_session := if(message.session_id <> 0, 1, 0)
 memory.matching_operation := if(memory.has_request_session = 1, message.session_id = memory.session_id, 0)
@@ -54,12 +61,16 @@ memory.active_failure := memory.active_failure * memory.no_pending_terminal
 memory.active_success := memory.is_success * memory.is_active_status * memory.matching_operation
 memory.active_success := memory.active_success * memory.matching_attempt
 memory.active_success := memory.active_success * memory.no_pending_terminal
+
+# Decide retry strategy
 memory.can_retry := if(memory.attempts < memory.max_attempts, 1, 0)
 memory.retry_allowed := memory.active_failure * memory.can_retry
 memory.next_attempt := memory.attempts + memory.retry_allowed
 memory.use_scheduled := if(memory.strategy = "scheduled", 1, 0)
 memory.use_scheduled := memory.use_scheduled * memory.retry_allowed
 memory.use_immediate := memory.retry_allowed - memory.use_scheduled
+
+# Dispatch retry attempt
 memory.retry_message := {
   sender: memory.self
   request: memory.operation_request
@@ -87,6 +98,8 @@ memory.schedule_sent := send(memory.scheduler_agent * memory.use_scheduled, memo
 memory.retry_dispatch_sent := if(memory.use_scheduled = 1, memory.schedule_sent, memory.retry_sent)
 memory.retry_dispatched := memory.retry_allowed * memory.retry_dispatch_sent
 memory.attempts := if(memory.retry_dispatched = 1, memory.next_attempt, memory.attempts)
+
+# Derive terminal outcome
 memory.final_failure := memory.active_failure - memory.retry_allowed
 memory.terminal_status := memory.status
 memory.terminal_status := if(memory.start_send_failed = 1, "dispatch_failed", memory.terminal_status)
@@ -100,6 +113,8 @@ memory.report_dispatch_failure_count := if(memory.report_status = "dispatch_fail
 memory.report_failure_count := memory.report_failure_count + memory.report_dispatch_failure_count
 memory.report_state := memory.report_status
 memory.report_status := if(memory.report_failure_count > 0, "failure", "success")
+
+# Emit retry result
 memory.report_message := {
   sender: memory.self
   response: "retry_result"
@@ -117,6 +132,8 @@ memory.report_recipient := if(memory.active_success = 1, memory.sender, memory.r
 memory.report_recipient := if(memory.start_send_failed = 1, memory.sender, memory.report_recipient)
 memory.report_recipient := if(memory.pending_terminal_retry = 1, memory.sender, memory.report_recipient)
 memory.report_sent := send(memory.report_recipient, memory.report_message)
+
+# Record pending or delivered terminal result
 memory.new_terminal_event := memory.start_send_failed + memory.final_failure
 memory.new_terminal_event := memory.new_terminal_event + memory.active_success
 memory.terminal_event := memory.new_terminal_event + memory.pending_terminal_retry

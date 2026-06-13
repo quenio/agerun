@@ -1,3 +1,4 @@
+# Classify distribution request
 memory.is_request := if(message.request <> 0, 1, 0)
 memory.is_distribute := if(memory.is_request = 1, message.request = "distribution_start", 0)
 memory.is_continue_request := if(memory.is_request = 1, message.request = "distribution_continue", 0)
@@ -5,6 +6,8 @@ memory.continue_from_self := if(message.sender = memory.self, 1, 0)
 memory.is_continue := memory.is_continue_request * memory.continue_from_self
 memory.is_assignment := memory.is_distribute + memory.is_continue
 memory.is_assignment := if(memory.is_assignment > 0, 1, 0)
+
+# Establish trace, sender, and counters
 memory.generated_trace_base := message.sender * 1000
 memory.generated_trace_id := memory.generated_trace_base + memory.self
 memory.request_trace_id := memory.generated_trace_id
@@ -16,6 +19,8 @@ memory.assignment_count := 0
 memory.sent_count := 0
 memory.failed_count := 0
 memory.result_recipient := if(memory.is_continue = 1, message.result_recipient, message.sender)
+
+# Select current payload and recipient
 memory.current_payloads := if(memory.is_assignment = 1, message.payloads, [])
 memory.current_recipients := if(memory.is_assignment = 1, message.recipients, [])
 memory.payload := head(memory.current_payloads)
@@ -29,6 +34,8 @@ memory.no_recipient := if(memory.has_recipient = 1, 0, 1)
 memory.assignment_recipient := memory.recipient * memory.has_payload
 memory.assignment_recipient := memory.assignment_recipient * memory.has_recipient
 memory.assignment_recipient := memory.assignment_recipient * memory.is_assignment
+
+# Attempt current assignment
 memory.assignment_send_result := send(memory.assignment_recipient, memory.payload)
 memory.assignment_attempted := memory.has_payload * memory.has_recipient
 memory.assignment_attempted := memory.assignment_attempted * memory.is_assignment
@@ -38,6 +45,8 @@ memory.assignment_failed := memory.assignment_failed * memory.assignment_attempt
 memory.next_assignment_count := message.assignment_count + memory.assignment_attempted
 memory.next_sent_count := message.sent_count + memory.assignment_sent
 memory.next_failed_count := message.failed_count + memory.assignment_failed
+
+# Choose next recipient window
 memory.remaining_payloads_empty := if(memory.remaining_payloads = [], 1, 0)
 memory.has_next_payload := if(memory.remaining_payloads_empty = 1, 0, 1)
 memory.remaining_recipients_empty := if(memory.remaining_recipients = [], 1, 0)
@@ -63,6 +72,8 @@ memory.continuation_required := memory.continuation_required * memory.has_recipi
 memory.continuation_required := memory.continuation_required + memory.skip_recipient
 memory.continuation_required := memory.continuation_required + memory.wrap_recipient
 memory.continuation_required := if(memory.continuation_required > 0, 1, 0)
+
+# Queue continuation for remaining work
 memory.continuation_message := {
   sender: memory.self
   request: "distribution_continue"
@@ -79,6 +90,8 @@ memory.continuation_send_result := send(memory.self * memory.continuation_requir
 memory.continuation_sent := memory.continuation_send_result * memory.continuation_required
 memory.continuation_failed := if(memory.continuation_send_result = 0, 1, 0)
 memory.continuation_failed := memory.continuation_failed * memory.continuation_required
+
+# Prepare distribution result
 memory.should_report := memory.is_assignment
 memory.should_report := if(memory.continuation_sent = 1, 0, memory.should_report)
 memory.report_trace_id := memory.request_trace_id
@@ -92,6 +105,8 @@ memory.result_status := if(memory.should_report > 0, "success", memory.status)
 memory.result_status := if(memory.zero_assignments = 1, "failure", memory.result_status)
 memory.result_status := if(memory.has_failures = 1, "failure", memory.result_status)
 memory.result_status := if(memory.continuation_failed = 1, "failure", memory.result_status)
+
+# Emit distribution result
 memory.result_message := {
   sender: memory.self
   response: "distribution_result"
@@ -102,6 +117,8 @@ memory.result_message := {
 }
 memory.report_sent := send(memory.report_sender * memory.should_report, memory.result_message)
 memory.report_recorded := memory.report_sent * memory.should_report
+
+# Record completion state
 memory.completion_recorded := memory.should_report
 memory.status := if(memory.completion_recorded = 1, memory.result_status, memory.status)
 memory.assignment_count := if(memory.completion_recorded = 1, memory.report_assignment_count, memory.assignment_count)
