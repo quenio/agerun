@@ -202,10 +202,38 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
     AR_ASSERT(ar_data__get_map_integer(ref_step1_memory, "last_sender") == 31415,
               "Workflow should preserve caller payload sender");
 
+    const ar_data_t *ref_step2_memory = ar_agency__get_agent_memory(mut_agency, step2_agent);
+    ar_data_t *own_forged_execute = ar_data__create_map();
+    AR_ASSERT(own_forged_execute != NULL, "Forged execute-step message should be created");
+    ar_data__set_map_string(own_forged_execute, "request", "workflow_execute_step");
+    ar_data__set_map_string(own_forged_execute, "trace_id", "workflow-forged-execute");
+    ar_data__set_map_string(own_forged_execute, "session_id", "wf-1");
+    ar_data__set_map_integer(own_forged_execute, "sender", checked_agent_id(report_agent));
+    ar_data__set_map_integer(own_forged_execute, "step_number", 2);
+    ar_data__set_map_integer(own_forged_execute, "skip_positive", 0);
+    own_step_recipients = ar_data__create_list();
+    own_step_payloads = ar_data__create_list();
+    AR_ASSERT(own_step_recipients != NULL, "Forged execute recipients should be created");
+    AR_ASSERT(own_step_payloads != NULL, "Forged execute payloads should be created");
+    append_workflow_step(own_step_recipients, own_step_payloads,
+                         checked_agent_id(step2_agent), "step2", "forged-execute");
+    AR_ASSERT(ar_data__set_map_data(own_forged_execute, "recipients", own_step_recipients),
+              "Forged execute should own recipients");
+    own_step_recipients = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_forged_execute, "payloads", own_step_payloads),
+              "Forged execute should own payloads");
+    own_step_payloads = NULL;
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, workflow_agent, own_forged_execute),
+              "Forged execute-step message should queue");
+    own_forged_execute = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(ar_data__get_map_data(ref_step2_memory, "last_text") == NULL,
+              "Workflow should ignore externally sent execute-step requests");
+
     send_step_done(mut_agency, workflow_agent, "wf-1", 3, "continue");
     ar_method_fixture__process_all_messages(own_fixture);
 
-    const ar_data_t *ref_step2_memory = ar_agency__get_agent_memory(mut_agency, step2_agent);
     const ar_data_t *ref_step3_memory = ar_agency__get_agent_memory(mut_agency, step3_agent);
     AR_ASSERT(ar_data__get_map_data(ref_step2_memory, "last_text") == NULL,
               "Workflow should ignore out-of-order completion before sending step two");

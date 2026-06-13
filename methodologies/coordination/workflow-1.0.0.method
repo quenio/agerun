@@ -29,12 +29,14 @@ memory.pending_step_payloads := if(memory.is_start = 1, [], memory.pending_step_
 # Validate active session
 memory.has_request_session := if(message.session_id <> 0, 1, 0)
 memory.message_session_matches := if(memory.has_request_session = 1, message.session_id = memory.session_id, 0)
+memory.is_self_sender := if(message.sender = memory.self, 1, 0)
 memory.is_execute_step_active := memory.is_execute_step * memory.message_session_matches
+memory.is_execute_step_active := memory.is_execute_step_active * memory.is_self_sender
 memory.is_step_done_active := memory.is_step_done * memory.message_session_matches
 
 # Start first step execution
 memory.start_execute_message := {
-  sender: memory.sender
+  sender: memory.self
   request: "workflow_execute_step"
   trace_id: memory.trace_id
   session_id: memory.session_id
@@ -65,7 +67,7 @@ memory.skip_positive_step := memory.is_execute_step_active * memory.has_step * m
 
 # Skip empty step placeholders
 memory.skip_step_message := {
-  sender: memory.sender
+  sender: memory.self
   request: "workflow_execute_step"
   trace_id: memory.trace_id
   session_id: memory.session_id
@@ -81,7 +83,7 @@ memory.skip_step_failed := memory.skip_step_failed * memory.skip_empty_step
 # Skip branched positive step
 memory.skip_positive_step_number := message.step_number + memory.skip_positive_step
 memory.skip_positive_message := {
-  sender: memory.sender
+  sender: memory.self
   request: "workflow_execute_step"
   trace_id: memory.trace_id
   session_id: memory.session_id
@@ -128,7 +130,7 @@ memory.next_step_number := memory.current_step + 1
 
 # Continue workflow execution
 memory.continue_message := {
-  sender: memory.sender
+  sender: memory.self
   request: "workflow_execute_step"
   trace_id: memory.trace_id
   session_id: memory.session_id

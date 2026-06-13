@@ -17,6 +17,9 @@ payload is sent directly and as-is to the corresponding positive step recipient 
 workflow completion. When a branch outcome matches, workflow skips the next positive recipient step,
 ignoring any intervening `0` placeholders.
 
+Internal `workflow_execute_step` continuations are accepted only when self-sent by the workflow
+agent for the active `session_id`.
+
 On `request: "workflow_step_done"`, the method advances only when the step number matches the
 currently active sent step and the `session_id` matches the active workflow session. Duplicate,
 stale, premature, or out-of-order completions are ignored.

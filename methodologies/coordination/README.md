@@ -424,6 +424,8 @@ Requests:
 Step messages sent to step agents are exactly the sender-provided payloads. Integer `0` recipients
 are placeholders and are skipped until workflow finds a positive recipient or completes. A matching
 branch outcome skips the next positive recipient step, ignoring intervening `0` placeholders.
+Internal `workflow_execute_step` continuations are accepted only when self-sent by the workflow
+agent for the active `session_id`.
 
 Completion response:
 
