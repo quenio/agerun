@@ -16,6 +16,8 @@ payload is sent directly and as-is to the corresponding positive step recipient 
 `0` step recipient agents are placeholders and are skipped until the next positive recipient or
 workflow completion. When a branch outcome matches, workflow skips the next positive recipient step,
 ignoring any intervening `0` placeholders.
+If a positive step recipient has no corresponding payload item, workflow completes with failure
+instead of inventing a payload.
 
 Internal `workflow_execute_step` continuations are accepted only when self-sent by the workflow
 agent for the active `session_id`.
@@ -51,11 +53,13 @@ Count semantics: `success_count` increments when a matching `workflow_step_done`
 currently awaited sent step. Skipped zero-recipient placeholders, stale completions, duplicate
 completions, out-of-order completions, and pending completion retries do not increment it.
 `failure_count` becomes `1` when any workflow handoff fails, including start or continuation
-self-sends, skipped-step self-sends, or direct step payload sends; otherwise it is `0`.
+self-sends, skipped-step self-sends, missing step payloads, or direct step payload sends; otherwise
+it is `0`.
 
 Status semantics: the completion response status is `success` when workflow completion is reached
 without a handoff failure, including empty completion after skipped placeholders or completion after
-the final step. It is `failure` when any workflow handoff fails.
+the final step. It is `failure` when any workflow handoff fails or a positive step recipient has no
+corresponding payload item.
 
 Terminal status is recorded only after the response is delivered; failed completion delivery leaves
 completion pending and retries do not increment the completed-step counter. Completion responses use the

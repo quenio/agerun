@@ -143,6 +143,7 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
     ar_data_t *own_step3_context = create_context();
     ar_data_t *own_step4_context = create_context();
     ar_data_t *own_step5_context = create_context();
+    ar_data_t *own_missing_payload_context = create_context();
     ar_data_t *own_report_context = create_context();
     int64_t workflow_agent = ar_agency__create_agent(
         mut_agency, "workflow", "1.0.0", own_workflow_context);
@@ -156,6 +157,8 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
         mut_agency, "record-receiver", "1.0.0", own_step4_context);
     int64_t step5_agent = ar_agency__create_agent(
         mut_agency, "record-receiver", "1.0.0", own_step5_context);
+    int64_t missing_payload_agent = ar_agency__create_agent(
+        mut_agency, "record-receiver", "1.0.0", own_missing_payload_context);
     int64_t report_agent = ar_agency__create_agent(
         mut_agency, "record-receiver", "1.0.0", own_report_context);
 
@@ -333,6 +336,46 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
               "Non-list workflow should report zero completed steps");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 0,
               "Non-list workflow should report no handoff failure");
+    assert_workflow_result_omits_redundant_fields(ref_report_memory);
+
+    own_start = ar_data__create_map();
+    AR_ASSERT(own_start != NULL, "Short-payload workflow start should be created");
+    ar_data__set_map_string(own_start, "request", "workflow_start");
+    ar_data__set_map_string(own_start, "trace_id", "wf-short-payloads-start");
+    ar_data__set_map_string(own_start, "session_id", "wf-short-payloads");
+    ar_data__set_map_integer(own_start, "sender", checked_agent_id(report_agent));
+    own_step_recipients = ar_data__create_list();
+    own_step_payloads = ar_data__create_list();
+    AR_ASSERT(own_step_recipients != NULL, "Short-payload recipients should be created");
+    AR_ASSERT(own_step_payloads != NULL, "Short-payload payloads should be created");
+    AR_ASSERT(ar_data__list_add_last_integer(own_step_recipients,
+                                             checked_agent_id(missing_payload_agent)),
+              "Short-payload recipient should append");
+    AR_ASSERT(ar_data__set_map_data(own_start, "recipients", own_step_recipients),
+              "Short-payload start should own recipients");
+    own_step_recipients = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_start, "payloads", own_step_payloads),
+              "Short-payload start should own empty payload list");
+    own_step_payloads = NULL;
+    ar_data__set_map_string(own_start, "branch_value", "skip");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, workflow_agent, own_start),
+              "Short-payload workflow start should queue");
+    own_start = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    const ar_data_t *ref_missing_payload_memory =
+        ar_agency__get_agent_memory(mut_agency, missing_payload_agent);
+    AR_ASSERT(ar_data__get_map_data(ref_missing_payload_memory, "last_sender") == NULL,
+              "Short-payload workflow should not send a sentinel payload");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_trace_id"),
+                     "wf-short-payloads-start") == 0,
+              "Short-payload workflow should emit its own result");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"), "failure") == 0,
+              "Short-payload workflow should report standard failure status");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 0,
+              "Short-payload workflow should report zero completed steps");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 1,
+              "Short-payload workflow should report one handoff failure");
     assert_workflow_result_omits_redundant_fields(ref_report_memory);
 
     own_start = ar_data__create_map();
@@ -683,6 +726,7 @@ static void test_workflow__sends_unbounded_steps_with_branching_to_completion(vo
     ar_data__destroy(own_step3_context);
     ar_data__destroy(own_step4_context);
     ar_data__destroy(own_step5_context);
+    ar_data__destroy(own_missing_payload_context);
     ar_data__destroy(own_report_context);
     ar_data__destroy(own_failed_handoff_context);
     ar_data__destroy(own_failed_continue_context);

@@ -50,20 +50,29 @@ memory.start_handoff_failed := if(memory.start_execute_sent = 0, 1, 0)
 memory.start_handoff_failed := memory.start_handoff_failed * memory.is_start
 
 # Select current step
-memory.step_recipient := head(message.recipients)
-memory.step_payload := head(message.payloads)
 memory.raw_remaining_step_recipients := tail(message.recipients)
 memory.raw_remaining_step_payloads := tail(message.payloads)
+memory.current_step_recipients := if(memory.raw_remaining_step_recipients = 0, [], message.recipients)
+memory.current_step_payloads := if(memory.raw_remaining_step_payloads = 0, [], message.payloads)
+memory.step_recipient := head(memory.current_step_recipients)
+memory.step_payload := head(memory.current_step_payloads)
 memory.remaining_step_recipients := if(memory.raw_remaining_step_recipients = 0, [], memory.raw_remaining_step_recipients)
 memory.remaining_step_payloads := if(memory.raw_remaining_step_payloads = 0, [], memory.raw_remaining_step_payloads)
 memory.has_step := if(memory.step_recipient > 0, 1, 0)
 memory.no_step := if(memory.has_step = 1, 0, 1)
+memory.current_step_payloads_empty := if(memory.current_step_payloads = [], 1, 0)
+memory.has_step_payload := if(memory.current_step_payloads_empty = 1, 0, 1)
+memory.no_step_payload := if(memory.has_step_payload = 1, 0, 1)
 memory.remaining_step_recipients_empty := if(memory.remaining_step_recipients = [], 1, 0)
 memory.has_remaining_step := if(memory.remaining_step_recipients_empty = 1, 0, 1)
 memory.skip_positive := if(message.skip_positive > 0, 1, 0)
 memory.no_skip_positive := if(memory.skip_positive = 1, 0, 1)
 memory.execute_action := memory.is_execute_step_active * memory.has_step
 memory.execute_action := memory.execute_action * memory.no_skip_positive
+memory.execute_action := memory.execute_action * memory.has_step_payload
+memory.missing_step_payload := memory.is_execute_step_active * memory.has_step
+memory.missing_step_payload := memory.missing_step_payload * memory.no_skip_positive
+memory.missing_step_payload := memory.missing_step_payload * memory.no_step_payload
 memory.skip_empty_step := memory.is_execute_step_active * memory.no_step * memory.has_remaining_step
 memory.skip_positive_step := memory.is_execute_step_active * memory.has_step * memory.skip_positive
 
@@ -156,6 +165,7 @@ memory.handoff_failed := memory.start_handoff_failed + memory.skip_step_failed
 memory.handoff_failed := memory.handoff_failed + memory.skip_positive_failed
 memory.handoff_failed := memory.handoff_failed + memory.continue_handoff_failed
 memory.handoff_failed := memory.handoff_failed + memory.step_handoff_failed
+memory.handoff_failed := memory.handoff_failed + memory.missing_step_payload
 memory.should_complete := memory.should_complete + memory.handoff_failed
 memory.completion_status := if(memory.should_complete > 0, "success", memory.status)
 memory.completion_status := if(memory.handoff_failed > 0, "failure", memory.completion_status)
