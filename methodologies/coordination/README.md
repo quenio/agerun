@@ -494,23 +494,26 @@ Response:
 ```
 
 Conversation spawns one broadcasting agent when the conversation starts. It reuses that agent for
-every turn and excludes the sender from the broadcast recipients. If broadcast delivery fails for any
-recipient, the coordinator reports `result: "relay_failed"` and leaves the history and turn count
-unchanged.
+every turn and excludes the sender from the broadcast recipients. Turns received while another turn
+relay is pending are ignored. If broadcast delivery fails for any recipient, the coordinator reports
+`result: "relay_failed"` and leaves the history and turn count unchanged. If no other participant
+needs to receive the turn, the coordinator records it without broadcasting.
 
 If the `sender` of a `conversation_message` is not in the participant list, the coordinator ignores
 the request. It does not broadcast, record, respond, or update conversation state.
 
-Count semantics: `success_count` increments for a `conversation_message` only when the participant
-turn is broadcast successfully and appended to history; history and close responses report the
-current successful turn count, and start responses report `0`. `failure_count` increments to `1`
-when the broadcasting helper cannot be spawned, when a turn relay fails before or during
-broadcasting or history append; history and close responses report `0`. Non-participant
-`conversation_message` requests are ignored and do not change status or count attributes.
+Count semantics: `success_count` reports the current successful turn count. A
+`conversation_message` increments that count when the participant turn is broadcast successfully, or
+when no other participant needs to receive it and the turn is recorded locally. History and close
+responses report the current successful turn count, and start responses report `0`. `failure_count`
+increments to `1` when the broadcasting helper cannot be spawned or when a turn relay fails before
+or during broadcasting; history and close responses report `0`. Non-participant
+`conversation_message` requests and turns received while another relay is pending are ignored and do
+not change status or count attributes.
 
 Status semantics: the response status is `success` for a successful start, history, close, or
 participant turn relay. It is `failure` when the broadcasting helper cannot be spawned, when a turn
-relay fails, or when history append fails.
+relay fails.
 
 ### Retry
 
