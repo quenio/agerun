@@ -290,6 +290,17 @@ static void test_distribution__round_robins_payloads_across_recipients(void) {
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_trace_id"),
                      "job-round-robin") == 0,
               "Ignored messages should not emit a new distribution result");
+    const ar_data_t *ref_distribution_memory =
+        ar_agency__get_agent_memory(mut_agency, distribution_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_distribution_memory, "status"),
+                     "success") == 0,
+              "Ignored messages should preserve recorded distribution status");
+    AR_ASSERT(ar_data__get_map_integer(ref_distribution_memory, "assignment_count") == 5,
+              "Ignored messages should preserve recorded assignment count");
+    AR_ASSERT(ar_data__get_map_integer(ref_distribution_memory, "sent_count") == 5,
+              "Ignored messages should preserve recorded sent count");
+    AR_ASSERT(ar_data__get_map_integer(ref_distribution_memory, "failed_count") == 0,
+              "Ignored messages should preserve recorded failed count");
 
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_distribution_context);
@@ -392,6 +403,45 @@ static void test_distribution__reports_failed_assignments_and_empty_inputs(void)
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_trace_id"),
                      "job-empty-recipients") == 0,
               "Empty recipient list should preserve trace id");
+
+    ar_data_t *own_poisoned_payloads = ar_data__create_list();
+    AR_ASSERT(own_poisoned_payloads != NULL, "Poisoned empty payload list should be created");
+    ar_data_t *own_poisoned_recipients = create_recipients(ref_single_recipient, 1);
+    ar_data_t *own_poisoned = ar_data__create_map();
+    AR_ASSERT(own_poisoned != NULL, "Poisoned distribution start should be created");
+    AR_ASSERT(ar_data__set_map_string(own_poisoned, "request", "distribution_start"),
+              "Poisoned distribution should set request");
+    AR_ASSERT(ar_data__set_map_string(own_poisoned, "trace_id", "job-poisoned-counters"),
+              "Poisoned distribution should set trace id");
+    AR_ASSERT(ar_data__set_map_integer(own_poisoned, "sender", checked_agent_id(report_agent)),
+              "Poisoned distribution should set sender");
+    AR_ASSERT(ar_data__set_map_data(own_poisoned, "payloads", own_poisoned_payloads),
+              "Poisoned distribution should own payloads");
+    own_poisoned_payloads = NULL;
+    AR_ASSERT(ar_data__set_map_data(own_poisoned, "recipients", own_poisoned_recipients),
+              "Poisoned distribution should own recipients");
+    own_poisoned_recipients = NULL;
+    AR_ASSERT(ar_data__set_map_integer(own_poisoned, "assignment_count", 11),
+              "Poisoned distribution should carry caller-supplied assignment count");
+    AR_ASSERT(ar_data__set_map_integer(own_poisoned, "sent_count", 9),
+              "Poisoned distribution should carry caller-supplied sent count");
+    AR_ASSERT(ar_data__set_map_integer(own_poisoned, "failed_count", 5),
+              "Poisoned distribution should carry caller-supplied failed count");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, distribution_agent, own_poisoned),
+              "Poisoned distribution should queue");
+    own_poisoned = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_trace_id"),
+                     "job-poisoned-counters") == 0,
+              "Poisoned public start should emit its own result");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
+                     "failure") == 0,
+              "Poisoned empty payload list should still fail");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 0,
+              "Poisoned public start should ignore caller-supplied sent count");
+    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 0,
+              "Poisoned public start should ignore caller-supplied failed count");
 
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_distribution_context);

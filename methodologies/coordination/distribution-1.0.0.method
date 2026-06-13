@@ -14,13 +14,16 @@ memory.request_trace_id := memory.generated_trace_id
 memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.request_trace_id)
 
 # Establish sender and counters
-memory.trace_id := if(memory.is_distribute = 1, memory.request_trace_id, 0)
-memory.sender := if(memory.is_distribute = 1, message.sender, 0)
-memory.status := if(memory.is_distribute = 1, "distributing", "")
-memory.assignment_count := 0
-memory.sent_count := 0
-memory.failed_count := 0
-memory.result_recipient := if(memory.is_continue = 1, message.result_recipient, message.sender)
+memory.trace_id := if(memory.is_distribute = 1, memory.request_trace_id, memory.trace_id)
+memory.sender := if(memory.is_distribute = 1, message.sender, memory.sender)
+memory.status := if(memory.is_distribute = 1, "distributing", memory.status)
+memory.assignment_count := if(memory.is_distribute = 1, 0, memory.assignment_count)
+memory.sent_count := if(memory.is_distribute = 1, 0, memory.sent_count)
+memory.failed_count := if(memory.is_distribute = 1, 0, memory.failed_count)
+memory.result_recipient := if(memory.is_continue = 1, message.result_recipient, memory.sender)
+memory.input_assignment_count := if(memory.is_continue = 1, message.assignment_count, 0)
+memory.input_sent_count := if(memory.is_continue = 1, message.sent_count, 0)
+memory.input_failed_count := if(memory.is_continue = 1, message.failed_count, 0)
 
 # Select current payload and recipient
 memory.current_payloads := if(memory.is_assignment = 1, message.payloads, [])
@@ -44,9 +47,9 @@ memory.assignment_attempted := memory.assignment_attempted * memory.is_assignmen
 memory.assignment_sent := memory.assignment_send_result * memory.assignment_attempted
 memory.assignment_failed := if(memory.assignment_send_result = 0, 1, 0)
 memory.assignment_failed := memory.assignment_failed * memory.assignment_attempted
-memory.next_assignment_count := message.assignment_count + memory.assignment_attempted
-memory.next_sent_count := message.sent_count + memory.assignment_sent
-memory.next_failed_count := message.failed_count + memory.assignment_failed
+memory.next_assignment_count := memory.input_assignment_count + memory.assignment_attempted
+memory.next_sent_count := memory.input_sent_count + memory.assignment_sent
+memory.next_failed_count := memory.input_failed_count + memory.assignment_failed
 
 # Choose next recipient window
 memory.remaining_payloads_empty := if(memory.remaining_payloads = [], 1, 0)
@@ -54,7 +57,7 @@ memory.has_next_payload := if(memory.remaining_payloads_empty = 1, 0, 1)
 memory.remaining_recipients_empty := if(memory.remaining_recipients = [], 1, 0)
 memory.has_remaining_recipient := if(memory.remaining_recipients_empty = 1, 0, 1)
 memory.no_remaining_recipient := if(memory.has_remaining_recipient = 1, 0, 1)
-memory.has_prior_assignment := if(message.assignment_count > 0, 1, 0)
+memory.has_prior_assignment := if(memory.input_assignment_count > 0, 1, 0)
 memory.all_recipients := if(memory.is_continue = 1, message.all_recipients, [])
 memory.all_recipients := if(memory.is_distribute = 1, memory.current_recipients, memory.all_recipients)
 memory.next_recipients := if(memory.has_remaining_recipient = 1, memory.remaining_recipients, memory.all_recipients)
