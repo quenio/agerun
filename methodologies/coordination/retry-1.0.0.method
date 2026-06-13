@@ -88,6 +88,8 @@ memory.retry_message := {
 memory.retry_sent := send(memory.operation_recipient * memory.use_immediate, memory.retry_message)
 memory.failure_tick := if(memory.active_failure = 1, message.current_tick, 0)
 memory.retry_due_tick := memory.failure_tick + memory.delay_ticks
+memory.has_scheduler_agent := if(memory.scheduler_agent > 0, 1, 0)
+memory.use_scheduled_ready := memory.use_scheduled * memory.has_scheduler_agent
 memory.schedule_message := {
   sender: memory.self
   request: "scheduling_schedule"
@@ -99,9 +101,11 @@ memory.schedule_message := {
   payload_text: memory.operation_text
   payload_attempt: memory.next_attempt
 }
-memory.schedule_sent := send(memory.scheduler_agent * memory.use_scheduled, memory.schedule_message)
-memory.retry_dispatch_sent := if(memory.use_scheduled = 1, memory.schedule_sent, memory.retry_sent)
-memory.retry_dispatched := memory.retry_allowed * memory.retry_dispatch_sent
+memory.schedule_sent := send(memory.scheduler_agent * memory.use_scheduled_ready, memory.schedule_message)
+memory.immediate_dispatched := memory.use_immediate * memory.retry_sent
+memory.scheduled_dispatched := memory.use_scheduled_ready * memory.schedule_sent
+memory.retry_dispatched := memory.immediate_dispatched + memory.scheduled_dispatched
+memory.retry_dispatched := if(memory.retry_dispatched > 0, 1, 0)
 memory.attempts := if(memory.retry_dispatched = 1, memory.next_attempt, memory.attempts)
 
 # Derive terminal outcome

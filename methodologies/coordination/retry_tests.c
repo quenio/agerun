@@ -695,6 +695,50 @@ static void test_retry__reexecutes_and_reports_success(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_scheduled_retry_memory, "attempts") == 1,
               "Failed scheduled retry dispatch should not consume an attempt");
 
+    ar_data_t *own_zero_scheduler_start = ar_data__create_map();
+    AR_ASSERT(own_zero_scheduler_start != NULL, "Zero scheduler start should be created");
+    ar_data__set_map_string(own_zero_scheduler_start, "request", "retry_start");
+    ar_data__set_map_string(own_zero_scheduler_start,
+                            "trace_id",
+                            "op-zero-scheduler-start");
+    ar_data__set_map_string(own_zero_scheduler_start,
+                            "session_id",
+                            "op-zero-scheduler");
+    ar_data__set_map_integer(own_zero_scheduler_start,
+                             "operation_recipient",
+                             checked_agent_id(scheduled_operation_agent));
+    ar_data__set_map_string(own_zero_scheduler_start, "operation_request", "attempt");
+    ar_data__set_map_string(own_zero_scheduler_start, "operation_text", "zero-scheduler");
+    ar_data__set_map_integer(own_zero_scheduler_start, "max_attempts", 2);
+    ar_data__set_map_string(own_zero_scheduler_start, "strategy", "scheduled");
+    ar_data__set_map_integer(own_zero_scheduler_start, "scheduler_agent", 0);
+    ar_data__set_map_integer(own_zero_scheduler_start, "delay_ticks", 3);
+    ar_data__set_map_integer(own_zero_scheduler_start, "sender", checked_agent_id(report_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, scheduled_retry_agent, own_zero_scheduler_start),
+              "Zero scheduler start should queue");
+    own_zero_scheduler_start = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ar_data_t *own_zero_scheduler_failure = ar_data__create_map();
+    AR_ASSERT(own_zero_scheduler_failure != NULL, "Zero scheduler failure should be created");
+    ar_data__set_map_string(own_zero_scheduler_failure, "request", "retry_failure");
+    ar_data__set_map_string(own_zero_scheduler_failure, "trace_id", "op-zero-scheduler");
+    ar_data__set_map_string(own_zero_scheduler_failure, "session_id", "op-zero-scheduler");
+    ar_data__set_map_integer(own_zero_scheduler_failure, "attempt", 1);
+    ar_data__set_map_integer(own_zero_scheduler_failure, "current_tick", 85);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, scheduled_retry_agent, own_zero_scheduler_failure),
+              "Zero scheduler failure should queue");
+    own_zero_scheduler_failure = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_scheduled_retry_memory, "status"), "active") == 0,
+              "Zero scheduler retry dispatch should leave retry active");
+    AR_ASSERT(ar_data__get_map_integer(ref_scheduled_retry_memory, "attempts") == 1,
+              "Zero scheduler retry dispatch should not consume an attempt");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_scheduler_memory, "last_session_id"),
+                     "op-scheduled") == 0,
+              "Zero scheduler retry dispatch should not enqueue a schedule request");
+
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_retry_context);
     ar_data__destroy(own_operation_context);
