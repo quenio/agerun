@@ -706,19 +706,21 @@ static void test_assignment_instruction_evaluator__rejects_root_merge_to_memory_
     // When a literal root merge tries to replace memory.self
     ar_instruction_ast_t *own_literal_ast = ar_assignment_instruction_parser__parse(
         own_parser,
-        "memory += {self: 0}"
+        "memory += {other: 1, self: 0}"
     );
     AR_ASSERT(own_literal_ast != NULL, "Literal map merge assignment should parse");
     bool literal_result = ar_assignment_instruction_evaluator__evaluate(evaluator, frame, own_literal_ast);
 
-    // Then the merge is rejected and self remains agency-managed
+    // Then the merge is rejected before any root-memory writes occur
     AR_ASSERT(literal_result == false, "Literal root merge to memory.self should be rejected");
     AR_ASSERT(ar_data__get_map_integer(mut_memory, "self") == 7, "Self ID should remain unchanged");
+    AR_ASSERT(ar_data__get_map_data(mut_memory, "other") == NULL, "Literal merge should not partially write");
     ar_instruction_ast__destroy(own_literal_ast);
 
     // And evaluated patch maps cannot bypass the same guard
     ar_data_t *own_patch = ar_data__create_map();
     AR_ASSERT(own_patch != NULL, "Patch map should be created");
+    AR_ASSERT(ar_data__set_map_integer(own_patch, "other", 1), "Patch other key should be stored");
     AR_ASSERT(ar_data__set_map_integer(own_patch, "self", 0), "Patch self key should be stored");
     AR_ASSERT(ar_data__set_map_data(mut_memory, "patch", own_patch), "Patch map should be stored");
 
@@ -731,6 +733,7 @@ static void test_assignment_instruction_evaluator__rejects_root_merge_to_memory_
 
     AR_ASSERT(patch_result == false, "Patch root merge to memory.self should be rejected");
     AR_ASSERT(ar_data__get_map_integer(mut_memory, "self") == 7, "Self ID should remain unchanged");
+    AR_ASSERT(ar_data__get_map_data(mut_memory, "other") == NULL, "Patch merge should not partially write");
 
     ar_event_t *error_event = ar_log__get_last_error(log);
     AR_ASSERT(error_event != NULL, "Protected self merge should log an error");
