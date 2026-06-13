@@ -48,10 +48,15 @@ memory.execution_message := {
   text: memory.payload_text
   attempt: memory.payload_attempt
 }
-memory.execution_sent := send(memory.recipient * memory.should_trigger, memory.execution_message)
-memory.trigger_succeeded := memory.should_trigger * memory.execution_sent
+memory.has_recipient := if(memory.recipient > 0, 1, 0)
+memory.trigger_ready := memory.should_trigger * memory.has_recipient
+memory.trigger_missing_recipient := memory.should_trigger - memory.trigger_ready
+memory.execution_sent := send(memory.recipient * memory.trigger_ready, memory.execution_message)
+memory.trigger_succeeded := memory.trigger_ready * memory.execution_sent
 memory.trigger_failed := if(memory.execution_sent = 0, 1, 0)
-memory.trigger_failed := memory.trigger_failed * memory.should_trigger
+memory.trigger_failed := memory.trigger_failed * memory.trigger_ready
+memory.trigger_failed := memory.trigger_failed + memory.trigger_missing_recipient
+memory.trigger_failed := if(memory.trigger_failed > 0, 1, 0)
 memory.pending := if(memory.trigger_succeeded = 1, 0, memory.pending)
 memory.status := if(memory.trigger_succeeded = 1, "triggered", memory.status)
 memory.status := if(memory.trigger_failed = 1, "trigger_failed", memory.status)

@@ -245,6 +245,50 @@ static void test_scheduling__triggers_future_work_on_tick(void) {
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_success_count") == 1,
               "Cancel response should report one successful cancellation");
 
+    ar_data_t *own_zero_recipient_schedule = ar_data__create_map();
+    AR_ASSERT(own_zero_recipient_schedule != NULL, "Zero recipient schedule should be created");
+    ar_data__set_map_string(own_zero_recipient_schedule, "request", "scheduling_schedule");
+    ar_data__set_map_integer(own_zero_recipient_schedule, "due_tick", 7);
+    ar_data__set_map_integer(own_zero_recipient_schedule, "recipient", 0);
+    ar_data__set_map_string(own_zero_recipient_schedule, "payload_request", "execute");
+    ar_data__set_map_string(own_zero_recipient_schedule, "payload_text", "zero-recipient");
+    ar_data__set_map_string(own_zero_recipient_schedule, "trace_id", "job-zero-recipient");
+    ar_data__set_map_string(own_zero_recipient_schedule, "session_id", "sched-zero-session");
+    ar_data__set_map_integer(own_zero_recipient_schedule, "sender", checked_agent_id(observer_agent));
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, scheduling_agent, own_zero_recipient_schedule),
+              "Zero recipient schedule should queue");
+    own_zero_recipient_schedule = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    ar_data_t *own_zero_recipient_tick = ar_data__create_map();
+    AR_ASSERT(own_zero_recipient_tick != NULL, "Zero recipient tick should be created");
+    ar_data__set_map_string(own_zero_recipient_tick, "request", "scheduling_tick");
+    ar_data__set_map_string(own_zero_recipient_tick, "trace_id", "tick-zero-recipient");
+    ar_data__set_map_string(own_zero_recipient_tick, "session_id", "sched-zero-session");
+    ar_data__set_map_integer(own_zero_recipient_tick, "tick", 7);
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, scheduling_agent, own_zero_recipient_tick),
+              "Zero recipient tick should queue");
+    own_zero_recipient_tick = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_response"),
+                     "scheduling_result") == 0,
+              "Zero recipient trigger should use the scheduling result response");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
+                     "failure") == 0,
+              "Zero recipient trigger should report standard failure");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
+                     "tick-zero-recipient") == 0,
+              "Zero recipient trigger should preserve tick trace id");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_success_count") == 0,
+              "Zero recipient trigger should not report a no-op success");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_failure_count") == 1,
+              "Zero recipient trigger should report one failed trigger");
+    AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_pending") == 1,
+              "Zero recipient trigger should remain pending");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_receiver_memory, "last_text"), "delayed") == 0,
+              "Zero recipient trigger should not deliver a payload");
+
     ar_data_t *own_failed_schedule = ar_data__create_map();
     AR_ASSERT(own_failed_schedule != NULL, "Failed schedule message should be created");
     ar_data__set_map_string(own_failed_schedule, "request", "scheduling_schedule");
