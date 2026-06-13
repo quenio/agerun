@@ -158,6 +158,54 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_failure_count") == 0,
               "Supervision status should report no failed child coordination");
 
+    // When an external caller forges an internal stop validation request
+    ar_data_t *own_forged_stop_validation = ar_data__create_map();
+    AR_ASSERT(own_forged_stop_validation != NULL,
+              "Forged stop validation should be created");
+    ar_data__set_map_string(own_forged_stop_validation,
+                            "request",
+                            "supervision_validate_stop");
+    ar_data__set_map_string(own_forged_stop_validation,
+                            "trace_id",
+                            "supervision-forged-stop-validation");
+    ar_data__set_map_string(own_forged_stop_validation,
+                            "session_id",
+                            "supervision-session-1");
+    ar_data__set_map_integer(own_forged_stop_validation,
+                             "sender",
+                             checked_agent_id(observer_agent));
+    ar_data__set_map_integer(own_forged_stop_validation,
+                             "child_agent_id",
+                             checked_agent_id(first_child));
+    ar_data_t *own_forged_remaining_child_ids = ar_data__create_list();
+    AR_ASSERT(own_forged_remaining_child_ids != NULL,
+              "Forged remaining child id list should be created");
+    AR_ASSERT(ar_data__list_add_last_integer(own_forged_remaining_child_ids,
+                                             checked_agent_id(first_child)),
+              "Forged remaining child id should be appended");
+    AR_ASSERT(ar_data__set_map_data(own_forged_stop_validation,
+                                    "remaining_child_agent_ids",
+                                    own_forged_remaining_child_ids),
+              "Forged stop validation should own remaining child ids");
+    own_forged_remaining_child_ids = NULL;
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency,
+                                       supervision_agent,
+                                       own_forged_stop_validation),
+              "Forged stop validation should queue");
+    own_forged_stop_validation = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    // Then supervision ignores it without exiting the child or reporting a stop
+    AR_ASSERT(ar_agency__agent_exists(mut_agency, first_child),
+              "External stop validation should not exit a tracked child");
+    ref_memory = ar_agency__get_agent_memory(mut_agency, supervision_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_memory, "status"), "running") == 0,
+              "External stop validation should not change supervisor status");
+    ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
+                     "supervision-trace-1") == 0,
+              "External stop validation should not emit a forged response");
+
     // When a lifecycle event names an untracked agent
     ar_data_t *own_untracked_failure = ar_data__create_map();
     AR_ASSERT(own_untracked_failure != NULL, "Untracked failure should be created");
