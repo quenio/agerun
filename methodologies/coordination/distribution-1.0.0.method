@@ -26,8 +26,12 @@ memory.input_sent_count := if(memory.is_continue = 1, message.sent_count, 0)
 memory.input_failed_count := if(memory.is_continue = 1, message.failed_count, 0)
 
 # Select current payload and recipient
-memory.current_payloads := if(memory.is_assignment = 1, message.payloads, [])
-memory.current_recipients := if(memory.is_assignment = 1, message.recipients, [])
+memory.has_payloads_input := if(message.payloads <> 0, 1, 0)
+memory.has_recipients_input := if(message.recipients <> 0, 1, 0)
+memory.payloads_available := memory.is_assignment * memory.has_payloads_input
+memory.recipients_available := memory.is_assignment * memory.has_recipients_input
+memory.current_payloads := if(memory.payloads_available = 1, message.payloads, [])
+memory.current_recipients := if(memory.recipients_available = 1, message.recipients, [])
 memory.payload := head(memory.current_payloads)
 memory.remaining_payloads := tail(memory.current_payloads)
 memory.recipient := head(memory.current_recipients)
@@ -68,8 +72,8 @@ memory.wrap_recipient := memory.is_assignment * memory.has_payload
 memory.wrap_recipient := memory.wrap_recipient * memory.no_recipient
 memory.wrap_recipient := memory.wrap_recipient * memory.no_remaining_recipient
 memory.wrap_recipient := memory.wrap_recipient * memory.has_prior_assignment
-memory.continuation_payloads := if(memory.skip_recipient = 1, message.payloads, memory.remaining_payloads)
-memory.continuation_payloads := if(memory.wrap_recipient = 1, message.payloads, memory.continuation_payloads)
+memory.continuation_payloads := if(memory.skip_recipient = 1, memory.current_payloads, memory.remaining_payloads)
+memory.continuation_payloads := if(memory.wrap_recipient = 1, memory.current_payloads, memory.continuation_payloads)
 memory.continuation_recipients := if(memory.skip_recipient = 1, memory.remaining_recipients, memory.next_recipients)
 memory.continuation_recipients := if(memory.wrap_recipient = 1, memory.all_recipients, memory.continuation_recipients)
 memory.continuation_required := memory.is_assignment * memory.has_next_payload

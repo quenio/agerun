@@ -19,7 +19,8 @@ but do not require `session_id`; an omitted `trace_id` is generated for the resu
 internal assignment messages.
 
 Each assigned payload is sent as-is. Integer `0` recipient placeholders are skipped without
-consuming the current payload when later recipients remain.
+consuming the current payload when later recipients remain. Missing `payloads` or `recipients` are
+normalized to empty lists before traversal.
 
 ## Message Format
 

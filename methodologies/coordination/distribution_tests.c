@@ -383,6 +383,38 @@ static void test_distribution__reports_failed_assignments_and_empty_inputs(void)
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_trace_id"),
                      "job-empty-payloads") == 0,
               "Empty payload list should preserve trace id");
+    AR_ASSERT(ar_data__get_map_integer(ref_worker_memory, "received_count") == 2,
+              "Empty payload list should not send work");
+
+    ar_data_t *own_missing_payloads = ar_data__create_map();
+    AR_ASSERT(own_missing_payloads != NULL, "Missing payloads request should be created");
+    ar_data_t *own_missing_payload_recipients = create_recipients(ref_single_recipient, 1);
+    AR_ASSERT(ar_data__set_map_string(own_missing_payloads, "request", "distribution_start"),
+              "Missing payloads request should set request");
+    AR_ASSERT(ar_data__set_map_string(own_missing_payloads, "trace_id", "job-missing-payloads"),
+              "Missing payloads request should set trace id");
+    AR_ASSERT(ar_data__set_map_integer(own_missing_payloads,
+                                       "sender",
+                                       checked_agent_id(report_agent)),
+              "Missing payloads request should set sender");
+    AR_ASSERT(ar_data__set_map_data(own_missing_payloads,
+                                    "recipients",
+                                    own_missing_payload_recipients),
+              "Missing payloads request should own recipients");
+    own_missing_payload_recipients = NULL;
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, distribution_agent, own_missing_payloads),
+              "Missing payloads request should queue");
+    own_missing_payloads = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
+                     "failure") == 0,
+              "Missing payloads should report standard failure status");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_trace_id"),
+                     "job-missing-payloads") == 0,
+              "Missing payloads should preserve trace id");
+    AR_ASSERT(ar_data__get_map_integer(ref_worker_memory, "received_count") == 2,
+              "Missing payloads should not send zero payloads");
 
     const char *ref_one_payload[] = {"orphan"};
     own_payloads = create_payloads(ref_one_payload, 1, 0);
@@ -403,6 +435,37 @@ static void test_distribution__reports_failed_assignments_and_empty_inputs(void)
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_trace_id"),
                      "job-empty-recipients") == 0,
               "Empty recipient list should preserve trace id");
+    AR_ASSERT(ar_data__get_map_integer(ref_worker_memory, "received_count") == 2,
+              "Empty recipient list should not send work");
+
+    const char *ref_missing_recipient_payload[] = {"missing-recipient"};
+    own_payloads = create_payloads(ref_missing_recipient_payload, 1, 0);
+    ar_data_t *own_missing_recipients = ar_data__create_map();
+    AR_ASSERT(own_missing_recipients != NULL, "Missing recipients request should be created");
+    AR_ASSERT(ar_data__set_map_string(own_missing_recipients, "request", "distribution_start"),
+              "Missing recipients request should set request");
+    AR_ASSERT(ar_data__set_map_string(own_missing_recipients, "trace_id", "job-missing-recipients"),
+              "Missing recipients request should set trace id");
+    AR_ASSERT(ar_data__set_map_integer(own_missing_recipients,
+                                       "sender",
+                                       checked_agent_id(report_agent)),
+              "Missing recipients request should set sender");
+    AR_ASSERT(ar_data__set_map_data(own_missing_recipients, "payloads", own_payloads),
+              "Missing recipients request should own payloads");
+    own_payloads = NULL;
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency, distribution_agent, own_missing_recipients),
+              "Missing recipients request should queue");
+    own_missing_recipients = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
+                     "failure") == 0,
+              "Missing recipients should report standard failure status");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_trace_id"),
+                     "job-missing-recipients") == 0,
+              "Missing recipients should preserve trace id");
+    AR_ASSERT(ar_data__get_map_integer(ref_worker_memory, "received_count") == 2,
+              "Missing recipients should not send work");
 
     ar_data_t *own_poisoned_payloads = ar_data__create_list();
     AR_ASSERT(own_poisoned_payloads != NULL, "Poisoned empty payload list should be created");
