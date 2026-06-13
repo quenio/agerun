@@ -680,6 +680,71 @@ static void test_assignment_instruction_evaluator__merges_empty_map_value(void) 
     ar_evaluator_fixture__destroy(fixture);
 }
 
+static void test_assignment_instruction_evaluator__rejects_root_merge_to_memory_self(void) {
+    printf("Testing assignment map merge rejects root memory.self entries...\n");
+
+    // Given memory with an agency-managed self ID
+    ar_evaluator_fixture_t *fixture =
+        ar_evaluator_fixture__create("test_rejects_root_merge_to_memory_self");
+    AR_ASSERT(fixture != NULL, "Fixture creation should succeed");
+
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(fixture);
+    AR_ASSERT(ar_data__set_map_integer(mut_memory, "self", 7), "Self ID should be stored");
+
+    ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
+    AR_ASSERT(frame != NULL, "Frame creation should succeed");
+
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_assignment_instruction_parser_t *own_parser = ar_assignment_instruction_parser__create(log);
+    AR_ASSERT(own_parser != NULL, "Parser creation should succeed");
+
+    ar_expression_evaluator_t *expr_eval = ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_assignment_instruction_evaluator_t *evaluator =
+        ar_assignment_instruction_evaluator__create(log, expr_eval);
+    AR_ASSERT(evaluator != NULL, "Evaluator creation should succeed");
+
+    // When a literal root merge tries to replace memory.self
+    ar_instruction_ast_t *own_literal_ast = ar_assignment_instruction_parser__parse(
+        own_parser,
+        "memory += {self: 0}"
+    );
+    AR_ASSERT(own_literal_ast != NULL, "Literal map merge assignment should parse");
+    bool literal_result = ar_assignment_instruction_evaluator__evaluate(evaluator, frame, own_literal_ast);
+
+    // Then the merge is rejected and self remains agency-managed
+    AR_ASSERT(literal_result == false, "Literal root merge to memory.self should be rejected");
+    AR_ASSERT(ar_data__get_map_integer(mut_memory, "self") == 7, "Self ID should remain unchanged");
+    ar_instruction_ast__destroy(own_literal_ast);
+
+    // And evaluated patch maps cannot bypass the same guard
+    ar_data_t *own_patch = ar_data__create_map();
+    AR_ASSERT(own_patch != NULL, "Patch map should be created");
+    AR_ASSERT(ar_data__set_map_integer(own_patch, "self", 0), "Patch self key should be stored");
+    AR_ASSERT(ar_data__set_map_data(mut_memory, "patch", own_patch), "Patch map should be stored");
+
+    ar_instruction_ast_t *own_patch_ast = ar_assignment_instruction_parser__parse(
+        own_parser,
+        "memory += memory.patch"
+    );
+    AR_ASSERT(own_patch_ast != NULL, "Patch map merge assignment should parse");
+    bool patch_result = ar_assignment_instruction_evaluator__evaluate(evaluator, frame, own_patch_ast);
+
+    AR_ASSERT(patch_result == false, "Patch root merge to memory.self should be rejected");
+    AR_ASSERT(ar_data__get_map_integer(mut_memory, "self") == 7, "Self ID should remain unchanged");
+
+    ar_event_t *error_event = ar_log__get_last_error(log);
+    AR_ASSERT(error_event != NULL, "Protected self merge should log an error");
+    const char *error_msg = ar_event__get_message(error_event);
+    AR_ASSERT(error_msg != NULL, "Protected self merge should have an error message");
+    AR_ASSERT(strstr(error_msg, "memory.self is agency-managed") != NULL,
+              "Protected self merge should explain agency-managed self");
+
+    ar_instruction_ast__destroy(own_patch_ast);
+    ar_assignment_instruction_evaluator__destroy(evaluator);
+    ar_assignment_instruction_parser__destroy(own_parser);
+    ar_evaluator_fixture__destroy(fixture);
+}
+
 
 int main(void) {
     printf("Starting assignment instruction_evaluator tests...\n");
@@ -728,6 +793,9 @@ int main(void) {
 
     test_assignment_instruction_evaluator__merges_empty_map_value();
     printf("test_assignment_instruction_evaluator__merges_empty_map_value passed!\n");
+
+    test_assignment_instruction_evaluator__rejects_root_merge_to_memory_self();
+    printf("test_assignment_instruction_evaluator__rejects_root_merge_to_memory_self passed!\n");
     
     printf("All assignment instruction_evaluator tests passed!\n");
     

@@ -20,12 +20,23 @@ const ar_assignment_instruction_evaluator_t = struct {
     ref_expr_evaluator: ?*c.ar_expression_evaluator_t,  // Borrowed reference to expression evaluator
 };
 
+fn _isProtectedRootMergeKey(ref_key: [*c]const u8) bool {
+    const key = std.mem.span(ref_key);
+    return std.mem.eql(u8, key, "self") or std.mem.startsWith(u8, key, "self.");
+}
+
 fn _storeValue(
     ref_evaluator: *const ar_assignment_instruction_evaluator_t,
     mut_target_map: *c.ar_data_t,
     ref_key: [*c]const u8,
-    ref_result: ?*c.ar_data_t
+    ref_result: ?*c.ar_data_t,
+    protect_self_key: bool
 ) bool {
+    if (protect_self_key and _isProtectedRootMergeKey(ref_key)) {
+        c.ar_log__error(ref_evaluator.ref_log, "memory.self is agency-managed and cannot be assigned");
+        return false;
+    }
+
     const own_value = c.ar_data__claim_or_copy(ref_result, ref_evaluator) orelse {
         c.ar_log__error(ref_evaluator.ref_log, "Failed to copy assigned value");
         return false;
@@ -74,7 +85,8 @@ fn _mergeLiteralMap(
     ref_evaluator: *const ar_assignment_instruction_evaluator_t,
     ref_frame: *const c.ar_frame_t,
     mut_target_map: *c.ar_data_t,
-    ref_expr_ast: *const c.ar_expression_ast_t
+    ref_expr_ast: *const c.ar_expression_ast_t,
+    protect_self_key: bool
 ) bool {
     const entry_count = c.ar_expression_ast__get_map_entry_count(ref_expr_ast);
 
@@ -83,6 +95,10 @@ fn _mergeLiteralMap(
         const ref_value_ast = c.ar_expression_ast__get_map_value(ref_expr_ast, i);
         if (ref_key == null or ref_value_ast == null) {
             c.ar_log__error(ref_evaluator.ref_log, "Map merge literal has invalid entries");
+            return false;
+        }
+        if (protect_self_key and _isProtectedRootMergeKey(ref_key)) {
+            c.ar_log__error(ref_evaluator.ref_log, "memory.self is agency-managed and cannot be assigned");
             return false;
         }
 
@@ -95,7 +111,7 @@ fn _mergeLiteralMap(
             return false;
         };
 
-        if (!_storeValue(ref_evaluator, mut_target_map, ref_key, result)) {
+        if (!_storeValue(ref_evaluator, mut_target_map, ref_key, result, protect_self_key)) {
             return false;
         }
     }
@@ -106,7 +122,8 @@ fn _mergeLiteralMap(
 fn _mergeMapValue(
     ref_evaluator: *const ar_assignment_instruction_evaluator_t,
     mut_target_map: *c.ar_data_t,
-    ref_source_map: *c.ar_data_t
+    ref_source_map: *c.ar_data_t,
+    protect_self_key: bool
 ) bool {
     const own_keys = c.ar_data__get_map_keys(ref_source_map) orelse {
         c.ar_log__error(ref_evaluator.ref_log, "Failed to enumerate merge map keys");
@@ -138,7 +155,7 @@ fn _mergeMapValue(
             return false;
         };
 
-        if (!_storeValue(ref_evaluator, mut_target_map, ref_key, ref_value)) {
+        if (!_storeValue(ref_evaluator, mut_target_map, ref_key, ref_value, protect_self_key)) {
             return false;
         }
     }
@@ -153,9 +170,10 @@ fn _evaluateMergeAssignment(
     ref_expr_ast: *const c.ar_expression_ast_t
 ) bool {
     const mut_target_map = _getMergeTargetMap(ref_evaluator, ref_frame, ref_path) orelse return false;
+    const protect_self_key = std.mem.eql(u8, std.mem.span(ref_path), "memory");
 
     if (c.ar_expression_ast__get_type(ref_expr_ast) == c.AR_EXPRESSION_AST_TYPE__LITERAL_MAP) {
-        return _mergeLiteralMap(ref_evaluator, ref_frame, mut_target_map, ref_expr_ast);
+        return _mergeLiteralMap(ref_evaluator, ref_frame, mut_target_map, ref_expr_ast, protect_self_key);
     }
 
     const result = c.ar_expression_evaluator__evaluate(
@@ -178,7 +196,7 @@ fn _evaluateMergeAssignment(
         return false;
     }
 
-    return _mergeMapValue(ref_evaluator, mut_target_map, own_source_map);
+    return _mergeMapValue(ref_evaluator, mut_target_map, own_source_map, protect_self_key);
 }
 
 /// Creates a new assignment instruction evaluator
