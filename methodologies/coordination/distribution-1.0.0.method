@@ -1,5 +1,5 @@
 memory.is_request := if(message.request <> 0, 1, 0)
-memory.is_distribute := if(memory.is_request = 1, message.request = "distribution_distribute", 0)
+memory.is_distribute := if(memory.is_request = 1, message.request = "distribution_start", 0)
 memory.is_assign_payload := if(memory.is_request = 1, message.request = "distribution_assign_payload", 0)
 memory.is_assignment := memory.is_distribute + memory.is_assign_payload
 memory.is_assignment := if(memory.is_assignment > 0, 1, 0)
@@ -87,10 +87,6 @@ memory.report_sent_count := memory.next_sent_count
 memory.report_failed_count := memory.next_failed_count
 memory.zero_assignments := if(memory.report_assignment_count = 0, 1, 0)
 memory.has_failures := if(memory.report_failed_count > 0, 1, 0)
-memory.result_state := if(memory.should_report > 0, "distributed", memory.status)
-memory.result_state := if(memory.zero_assignments = 1, "distribution_failed", memory.result_state)
-memory.result_state := if(memory.has_failures = 1, "distribution_failed", memory.result_state)
-memory.result_state := if(memory.continuation_failed = 1, "distribution_failed", memory.result_state)
 memory.result_status := if(memory.should_report > 0, "success", memory.status)
 memory.result_status := if(memory.zero_assignments = 1, "failure", memory.result_status)
 memory.result_status := if(memory.has_failures = 1, "failure", memory.result_status)
@@ -100,13 +96,9 @@ memory.result_message := {
   response: "distribution_result"
   trace_id: memory.report_trace_id
   status: memory.result_status
-  state: memory.result_state
   work_id: memory.report_work_id
   success_count: memory.report_sent_count
   failure_count: memory.report_failed_count
-  assignment_count: memory.report_assignment_count
-  sent_count: memory.report_sent_count
-  failed_count: memory.report_failed_count
 }
 memory.report_sent := send(memory.report_sender * memory.should_report, memory.result_message)
 memory.report_recorded := memory.report_sent * memory.should_report

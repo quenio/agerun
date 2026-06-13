@@ -9,7 +9,7 @@ item to the next positive worker and rotates back to the beginning of the worker
 
 Only messages with a recognized `request` value are handled as coordination requests.
 
-When the agent receives `request: "distribution_distribute"`, it starts an assignment pass for
+When the agent receives `request: "distribution_start"`, it starts an assignment pass for
 `payloads` and `workers`. Internal `distribution_assign_payload` requests carry the remaining
 payloads, current worker list, original worker list, counters, `trace_id`, and `sender`.
 Because distribution is a one-shot caller-facing method, its request and response use `trace_id`
@@ -26,7 +26,7 @@ Request:
 ```text
 {
   sender: <sender-agent>,
-  request: "distribution_distribute",
+  request: "distribution_start",
   trace_id: <trace_id>,
   payloads: [<payload>, <payload>, ...],
   work_id: <id>,
@@ -42,18 +42,14 @@ Response:
   response: "distribution_result",
   trace_id: <trace_id>,
   status: <success|failure>,
-  state: <distributed|distribution_failed>,
   work_id: <id>,
   success_count: <count>,
-  failure_count: <count>,
-  assignment_count: <count>,
-  sent_count: <count>,
-  failed_count: <count>
+  failure_count: <count>
 }
 ```
 
-`assignment_count` counts payload items assigned to positive worker IDs, including assignments whose
-send failed. Empty payload or worker lists produce `state: "distribution_failed"`.
+`success_count` counts successful assignment sends, and `failure_count` counts failed assignment
+sends. Empty payload or worker lists produce `status: "failure"`.
 
 ## Implementation and Tests
 

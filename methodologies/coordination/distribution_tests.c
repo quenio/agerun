@@ -129,16 +129,13 @@ static void register_report_recorder(ar_agency_t *mut_agency) {
         "memory.last_action := message.action\n"
         "memory.last_request := message.request\n"
         "memory.last_response := message.response\n"
+        "memory.last_message := message\n"
         "memory.last_sender := message.sender\n"
         "memory.last_status := message.status\n"
-        "memory.last_state := message.state\n"
         "memory.last_trace_id := message.trace_id\n"
         "memory.last_success_count := message.success_count\n"
         "memory.last_failure_count := message.failure_count\n"
-        "memory.last_work_id := message.work_id\n"
-        "memory.last_assignment_count := message.assignment_count\n"
-        "memory.last_sent_count := message.sent_count\n"
-        "memory.last_failed_count := message.failed_count\n";
+        "memory.last_work_id := message.work_id\n";
 
     AR_ASSERT(ar_methodology__create_method(mut_methodology,
                                             "report-recorder",
@@ -167,6 +164,19 @@ static void assert_text_history(const ar_data_t *ref_memory,
     AR__HEAP__FREE(own_items);
 }
 
+static void assert_result_omits_redundant_fields(const ar_data_t *ref_report_memory) {
+    const ar_data_t *ref_message = ar_data__get_map_data(ref_report_memory, "last_message");
+    AR_ASSERT(ref_message != NULL, "Distribution result message should be recorded");
+    AR_ASSERT(ar_data__get_map_data(ref_message, "state") == NULL,
+              "Distribution result should omit redundant state");
+    AR_ASSERT(ar_data__get_map_data(ref_message, "assignment_count") == NULL,
+              "Distribution result should omit redundant assignment count");
+    AR_ASSERT(ar_data__get_map_data(ref_message, "sent_count") == NULL,
+              "Distribution result should omit redundant sent count");
+    AR_ASSERT(ar_data__get_map_data(ref_message, "failed_count") == NULL,
+              "Distribution result should omit redundant failed count");
+}
+
 static void send_distribution(ar_agency_t *mut_agency,
                               int64_t distribution_agent,
                               const char *ref_work_id,
@@ -175,7 +185,7 @@ static void send_distribution(ar_agency_t *mut_agency,
                               int sender) {
     ar_data_t *own_message = ar_data__create_map();
     AR_ASSERT(own_message != NULL, "Distribution message should be created");
-    ar_data__set_map_string(own_message, "request", "distribution_distribute");
+    ar_data__set_map_string(own_message, "request", "distribution_start");
     ar_data__set_map_string(own_message, "work_id", ref_work_id);
     AR_ASSERT(ar_data__set_map_data(own_message, "payloads", own_payloads),
               "Distribution message should own payloads");
@@ -257,9 +267,7 @@ static void test_distribution__round_robins_payloads_across_workers(void) {
               "Distribution result should identify the distribution sender");
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"), "success") == 0,
               "Distribution result should report standard success status");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_state"),
-                     "distributed") == 0,
-              "Distribution result should report distributed status");
+    assert_result_omits_redundant_fields(ref_report_memory);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_work_id"),
                      "job-round-robin") == 0,
               "Distribution result should preserve work id");
@@ -270,12 +278,6 @@ static void test_distribution__round_robins_payloads_across_workers(void) {
               "Distribution result should report successful assignment sends");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 0,
               "Distribution result should report no failed assignment sends");
-    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_assignment_count") == 5,
-              "Distribution result should count every payload assignment");
-    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_sent_count") == 5,
-              "Distribution result should count every successful send");
-    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failed_count") == 0,
-              "Distribution result should report no failed sends");
 
     ar_data_t *own_ignored_message = ar_data__create_map();
     AR_ASSERT(own_ignored_message != NULL, "Ignored message should be created");
@@ -352,18 +354,10 @@ static void test_distribution__reports_failed_assignments_and_empty_inputs(void)
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
                      "failure") == 0,
               "Partial worker failure should report standard failure status");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_state"),
-                     "distribution_failed") == 0,
-              "Partial worker failure should report distribution_failed");
+    assert_result_omits_redundant_fields(ref_report_memory);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_work_id"),
                      "job-partial") == 0,
               "Partial worker failure should preserve work id");
-    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_assignment_count") == 3,
-              "Partial worker failure should count all attempted assignments");
-    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_sent_count") == 2,
-              "Partial worker failure should count successful sends");
-    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failed_count") == 1,
-              "Partial worker failure should count failed sends");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 2,
               "Partial worker failure should report successful assignment sends");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 1,
@@ -381,14 +375,13 @@ static void test_distribution__reports_failed_assignments_and_empty_inputs(void)
                       checked_agent_id(report_agent));
     ar_method_fixture__process_all_messages(own_fixture);
 
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_state"),
-                     "distribution_failed") == 0,
-              "Empty payload list should report distribution_failed");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
+                     "failure") == 0,
+              "Empty payload list should report standard failure status");
+    assert_result_omits_redundant_fields(ref_report_memory);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_work_id"),
                      "job-empty-payloads") == 0,
               "Empty payload list should preserve work id");
-    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_assignment_count") == 0,
-              "Empty payload list should report zero assignments");
 
     const char *ref_one_payload[] = {"orphan"};
     own_payloads = create_payloads(ref_one_payload, 1, 0);
@@ -402,16 +395,13 @@ static void test_distribution__reports_failed_assignments_and_empty_inputs(void)
                       checked_agent_id(report_agent));
     ar_method_fixture__process_all_messages(own_fixture);
 
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_state"),
-                     "distribution_failed") == 0,
-              "Empty worker list should report distribution_failed");
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
+                     "failure") == 0,
+              "Empty worker list should report standard failure status");
+    assert_result_omits_redundant_fields(ref_report_memory);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_work_id"),
                      "job-empty-workers") == 0,
               "Empty worker list should preserve work id");
-    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_assignment_count") == 0,
-              "Empty worker list should report zero assignments");
-    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_sent_count") == 0,
-              "Empty worker list should report zero sent assignments");
 
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_distribution_context);
@@ -535,8 +525,7 @@ static void test_distribution__preserves_trace_for_interleaved_jobs(void) {
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_one_memory, "last_trace_id"),
                      "job-one") == 0,
               "First interleaved result should preserve its own trace id");
-    AR_ASSERT(ar_data__get_map_integer(ref_report_one_memory, "last_assignment_count") == 2,
-              "First interleaved result should count both assignments");
+    assert_result_omits_redundant_fields(ref_report_one_memory);
 
     const ar_data_t *ref_report_two_memory = ar_agency__get_agent_memory(mut_agency, report_two);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_two_memory, "last_work_id"),
@@ -545,6 +534,7 @@ static void test_distribution__preserves_trace_for_interleaved_jobs(void) {
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_two_memory, "last_trace_id"),
                      "job-two") == 0,
               "Second interleaved result should preserve its own trace id");
+    assert_result_omits_redundant_fields(ref_report_two_memory);
 
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_distribution_context);
@@ -607,15 +597,10 @@ static void test_distribution__skips_zero_worker_placeholders(void) {
     assert_text_history(ref_worker_b_memory, ref_worker_b_expected, 2);
 
     const ar_data_t *ref_report_memory = ar_agency__get_agent_memory(mut_agency, report_agent);
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_state"),
-                     "distributed") == 0,
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
+                     "success") == 0,
               "Zero worker placeholders should still distribute work");
-    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_assignment_count") == 4,
-              "Zero worker placeholders should not consume payloads");
-    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_sent_count") == 4,
-              "Zero worker placeholders should preserve all successful sends");
-    AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failed_count") == 0,
-              "Zero worker placeholders should not count as failed sends");
+    assert_result_omits_redundant_fields(ref_report_memory);
 
     ar_method_fixture__destroy(own_fixture);
     ar_data__destroy(own_distribution_context);

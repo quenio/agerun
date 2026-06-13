@@ -196,7 +196,7 @@ Request:
 ```text
 {
   sender: <sender-agent>,
-  request: "distribution_distribute",
+  request: "distribution_start",
   trace_id: <trace_id>,
   payloads: [<payload>, <payload>, ...],
   work_id: <id>,
@@ -212,13 +212,9 @@ Reply:
   response: "distribution_result",
   trace_id: <trace_id>,
   status: <success|failure>,
-  state: <distributed|distribution_failed>,
   work_id: <id>,
   success_count: <count>,
-  failure_count: <count>,
-  assignment_count: <count>,
-  sent_count: <count>,
-  failed_count: <count>
+  failure_count: <count>
 }
 ```
 
@@ -501,7 +497,7 @@ Fan-out and fan-in:
 
 ```text
 1. Send a request with `request: "aggregation_start"` and expected_count to an aggregation agent.
-2. Send a request with `request: "distribution_distribute"` to a distribution agent.
+2. Send a request with `request: "distribution_start"` to a distribution agent.
 3. Workers send requests with `request: "aggregation_collect"`, the same session_id, and payload to an aggregation agent.
 4. Aggregation emits a response when `expected_count` collection outcomes are accounted for.
 ```
