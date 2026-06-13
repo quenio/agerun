@@ -288,7 +288,7 @@ Completion response:
 ```
 
 Aggregation marks completion only after the aggregate response is sent successfully; failed
-completion delivery leaves the aggregate open. An `aggregation_start` request resets aggregation
+completion delivery leaves the aggregate open for further matching collect requests. An `aggregation_start` request resets aggregation
 and starts a fresh payload list with the configured `expected_count`, normalizing non-positive counts
 to one. Payload collection requests use `request: "aggregation_collect"` and must carry the same
 `session_id` as the active start
@@ -298,9 +298,9 @@ payload.
 Count semantics: `success_count` increments when a matching active `aggregation_collect` appends its
 payload. `failure_count` increments when such a collection attempt is accepted for the active
 session but append fails. Wrong-session, inactive, or post-completion collect requests are ignored
-and do not affect either count. The response is sent when `success_count + failure_count` equals
-the configured `expected_count`;
-the response status is `success` only when `success_count` equals that `expected_count`, and
+and do not affect either count. The response is sent when `success_count + failure_count` reaches
+or exceeds the configured `expected_count`;
+the response status is `success` when `success_count` reaches or exceeds that `expected_count`, and
 `failure` otherwise.
 
 Status semantics: the response status is `success` only when collected payload count reaches the

@@ -208,8 +208,12 @@ static void test_aggregation__combines_required_payloads(void) {
 
     AR_ASSERT(ar_data__get_map_integer(ref_aggregation_memory, "completed") == 0,
               "Aggregate should stay open after repeated completion send failure");
-    AR_ASSERT(ar_data__get_map_integer(ref_aggregation_memory, "count") == 2,
-              "Aggregate should not collect beyond the requested outcome count");
+    AR_ASSERT(ar_data__get_map_integer(ref_aggregation_memory, "count") == 3,
+              "Aggregate should keep collecting while completion delivery is open");
+    ref_stored_payloads = ar_data__get_map_data(ref_aggregation_memory, "payloads");
+    AR_ASSERT(ref_stored_payloads != NULL, "Open aggregate should retain payload list");
+    AR_ASSERT(ar_data__list_count(ref_stored_payloads) == 3,
+              "Open aggregate should include payloads collected after failed completion");
 
     own_reset = ar_data__create_map();
     AR_ASSERT(own_reset != NULL, "Reset message should be created");

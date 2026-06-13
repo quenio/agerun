@@ -21,9 +21,10 @@ Collection requests that omit `trace_id` use a generated trace and still append 
 Count semantics: `success_count` increments when a matching active `aggregation_collect` appends its
 payload. `failure_count` increments when such a collection attempt is accepted for the active
 session but append fails. Wrong-session, inactive, or post-completion collect requests are ignored
-and do not affect either count. The response is sent when `success_count + failure_count` equals
-the configured `expected_count` and uses the completing collection request's effective `trace_id`.
-Completion is recorded only after the aggregate response is sent successfully. The `request` field
+and do not affect either count. The response is sent when `success_count + failure_count` reaches
+or exceeds the configured `expected_count` and uses the completing collection request's effective
+`trace_id`. Completion is recorded only after the aggregate response is sent successfully; failed
+completion delivery leaves the aggregate open for further matching collect requests. The `request` field
 differentiates start requests from collect requests; `expected_count` only configures the start
 request threshold.
 
@@ -55,8 +56,8 @@ Completion response:
 }
 ```
 
-The response status is `success` only when `success_count` equals the configured `expected_count`;
-otherwise it is `failure`.
+The response status is `success` when `success_count` reaches or exceeds the configured
+`expected_count`; otherwise it is `failure`.
 
 ## Implementation and Tests
 

@@ -25,11 +25,7 @@ memory.active := if(memory.is_start = 1, 1, memory.active)
 
 # Guard collect requests for the active session
 memory.not_completed := if(memory.completed = 0, 1, 0)
-memory.outcome_count := memory.count + memory.failure_count
-memory.outcome_count_reached := if(memory.outcome_count >= memory.expected_count, 1, 0)
-memory.outcome_count_pending := if(memory.outcome_count_reached = 1, 0, 1)
 memory.collect_candidate := memory.is_collect * memory.active * memory.not_completed
-memory.collect_candidate := memory.collect_candidate * memory.outcome_count_pending
 memory.collect_has_session := if(message.session_id <> 0, 1, 0)
 memory.collect_session_candidate := memory.collect_candidate * memory.collect_has_session
 memory.collect_session_matches := if(memory.collect_session_candidate = 1, message.session_id = memory.session_id, 0)
