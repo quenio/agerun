@@ -211,6 +211,7 @@ Each learning file contains:
 ### 3. ARCHITECTURE & DESIGN
 
 #### 3.1 Architectural Patterns
+- [Agent FIFO Queue and Continuation Interleaving](agent-fifo-queue-continuation-interleaving.md)
 - [Architectural Patterns Hierarchy](architectural-patterns-hierarchy.md)
 - [Architectural Simplification Through Feature Removal](architectural-simplification-through-feature-removal.md)
 - [Bug to Architecture Pattern](bug-to-architecture-pattern.md)
