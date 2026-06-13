@@ -158,6 +158,51 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     AR_ASSERT(ar_data__get_map_integer(ref_observer_memory, "last_failure_count") == 0,
               "Supervision status should report no failed child coordination");
 
+    // When an external caller forges an internal child-spawn request
+    ar_data_t *own_forged_spawn_child = ar_data__create_map();
+    AR_ASSERT(own_forged_spawn_child != NULL,
+              "Forged child spawn should be created");
+    ar_data__set_map_string(own_forged_spawn_child,
+                            "request",
+                            "supervision_spawn_child");
+    ar_data__set_map_string(own_forged_spawn_child,
+                            "trace_id",
+                            "supervision-forged-spawn-child");
+    ar_data__set_map_string(own_forged_spawn_child,
+                            "session_id",
+                            "supervision-session-1");
+    ar_data__set_map_integer(own_forged_spawn_child,
+                             "sender",
+                             checked_agent_id(observer_agent));
+    ar_data_t *own_forged_child_methods = ar_data__create_list();
+    AR_ASSERT(own_forged_child_methods != NULL,
+              "Forged child method list should be created");
+    append_child_method_name(own_forged_child_methods, "record-receiver");
+    AR_ASSERT(ar_data__set_map_data(own_forged_spawn_child,
+                                    "child_method_names",
+                                    own_forged_child_methods),
+              "Forged child spawn should own child methods");
+    own_forged_child_methods = NULL;
+    ar_data__set_map_string(own_forged_spawn_child, "child_method_version", "1.0.0");
+    AR_ASSERT(ar_agency__send_to_agent(mut_agency,
+                                       supervision_agent,
+                                       own_forged_spawn_child),
+              "Forged child spawn should queue");
+    own_forged_spawn_child = NULL;
+    ar_method_fixture__process_all_messages(own_fixture);
+
+    // Then supervision ignores it without spawning a child or reporting progress
+    ref_memory = ar_agency__get_agent_memory(mut_agency, supervision_agent);
+    ref_child_ids = ar_data__get_map_data(ref_memory, "child_agent_ids");
+    AR_ASSERT(ref_child_ids != NULL && ar_data__list_count(ref_child_ids) == 4,
+              "External child spawn should not append a child id");
+    AR_ASSERT(ar_data__get_map_integer(ref_memory, "child_count") == 4,
+              "External child spawn should not increment child count");
+    ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
+    AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_trace_id"),
+                     "supervision-trace-1") == 0,
+              "External child spawn should not emit a forged response");
+
     // When an external caller forges an internal stop validation request
     ar_data_t *own_forged_stop_validation = ar_data__create_map();
     AR_ASSERT(own_forged_stop_validation != NULL,
@@ -557,14 +602,14 @@ static void test_supervision__tracks_unbounded_children_and_restarts_failed_chil
     const ar_data_t *ref_failed_continue_memory =
         ar_agency__get_agent_memory(mut_agency, failed_continue_agent);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_failed_continue_memory, "status"),
-                     "handoff_failed") == 0,
-              "Failed spawn continuation should store handoff_failed status");
-    AR_ASSERT(ar_data__get_map_integer(ref_failed_continue_memory, "child_count") == 1,
-              "Failed spawn continuation should preserve partial child count");
+                     "starting") == 0,
+              "Sender-mismatched spawn continuation should be ignored");
+    AR_ASSERT(ar_data__get_map_integer(ref_failed_continue_memory, "child_count") == 0,
+              "Sender-mismatched spawn continuation should not spawn children");
     ref_observer_memory = ar_agency__get_agent_memory(mut_agency, observer_agent);
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_observer_memory, "last_status"),
                      "failure") == 0,
-              "Observer should receive standard failure status for failed spawn continuation");
+              "Observer should not receive a new status for ignored spawn continuation");
 
     ar_data_t *own_failed_lifecycle_context = create_context();
     int64_t failed_lifecycle_agent = ar_agency__create_agent(

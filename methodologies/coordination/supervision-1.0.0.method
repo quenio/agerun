@@ -29,6 +29,7 @@ memory.has_request_session := if(message.session_id <> 0, 1, 0)
 memory.request_session_matches := if(memory.has_request_session = 1, message.session_id = memory.session_id, 0)
 memory.is_self_sender := if(message.sender = memory.self, 1, 0)
 memory.is_spawn_child_active := memory.is_spawn_child * memory.request_session_matches
+memory.is_spawn_child_active := memory.is_spawn_child_active * memory.is_self_sender
 memory.is_child_failed_active := memory.is_child_failed * memory.request_session_matches
 memory.is_child_exited_active := memory.is_child_exited * memory.request_session_matches
 memory.is_stop_active := memory.is_stop * memory.request_session_matches
