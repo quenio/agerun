@@ -57,12 +57,8 @@ static void register_record_receiver(ar_agency_t *mut_agency) {
         "memory.last_source := message.source\n"
         "memory.last_trace_id := message.trace_id\n"
         "memory.last_status := message.status\n"
-        "memory.last_state := message.state\n"
         "memory.last_success_count := message.success_count\n"
-        "memory.last_failure_count := message.failure_count\n"
-        "memory.last_recipient_count := message.recipient_count\n"
-        "memory.last_sent_count := message.sent_count\n"
-        "memory.last_failed_count := message.failed_count\n";
+        "memory.last_failure_count := message.failure_count\n";
 
     AR_ASSERT(ar_methodology__create_method(mut_methodology,
                                             "record-receiver",
@@ -423,9 +419,6 @@ static void test_broadcasting__reports_failed_when_targets_missing(void) {
     AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_status"),
                      "failure") == 0,
               "Broadcast without targets should report standard failure status");
-    AR_ASSERT(strcmp(ar_data__get_map_string(ref_report_memory, "last_state"),
-                     "broadcast_failed") == 0,
-              "Broadcast without targets should report failed status");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_success_count") == 0,
               "Broadcast without targets should report zero successes");
     AR_ASSERT(ar_data__get_map_integer(ref_report_memory, "last_failure_count") == 0,

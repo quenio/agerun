@@ -145,16 +145,12 @@ Reply:
   response: "broadcasting_result",
   trace_id: <trace_id>,
   status: <success|failure>,
-  state: <broadcasted|broadcast_failed>,
   success_count: <count>,
-  failure_count: <count>,
-  recipient_count: <count>,
-  sent_count: <count>,
-  failed_count: <count>
+  failure_count: <count>
 }
 ```
 
-Broadcasting sends the caller-provided `payload` as-is to every positive `targets` entry.
+Broadcasting sends the sender-provided `payload` as-is to every positive `targets` entry.
 Integer `0` entries are skipped placeholders, not failed sends.
 
 ### Supervision

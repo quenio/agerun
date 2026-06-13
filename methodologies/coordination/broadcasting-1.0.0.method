@@ -61,11 +61,7 @@ memory.result_message := {
   response: "broadcasting_result"
   trace_id: memory.trace_id
   status: memory.status
-  state: memory.state
   success_count: memory.sent_count
   failure_count: memory.failed_count
-  recipient_count: memory.recipient_count
-  sent_count: memory.sent_count
-  failed_count: memory.failed_count
 }
 memory.result_sent := send(memory.source * memory.should_report, memory.result_message)
