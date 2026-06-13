@@ -162,6 +162,65 @@ static void test_condition_instruction_evaluator__evaluate_without_legacy(void) 
     ar_evaluator_fixture__destroy(own_fixture);
 }
 
+static void test_condition_instruction_evaluator__accepts_empty_list_condition(void) {
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_empty_list_condition");
+    assert(own_fixture != NULL);
+
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval =
+        ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    ar_data_t *own_message = ar_data__create_map();
+    ar_data_t *own_payloads = ar_data__create_list();
+    ar_data_t *own_context = ar_data__create_map();
+    assert(own_message != NULL);
+    assert(own_payloads != NULL);
+    assert(own_context != NULL);
+    assert(ar_data__set_map_data(own_message, "payloads", own_payloads));
+    own_payloads = NULL;
+    ar_frame_t *own_frame = ar_frame__create(mut_memory, own_context, own_message);
+    assert(own_frame != NULL);
+
+    ar_condition_instruction_evaluator_t *own_evaluator =
+        ar_condition_instruction_evaluator__create(ref_log, ref_expr_eval);
+    assert(own_evaluator != NULL);
+
+    const char *args[] = {"message.payloads = []", "1", "0"};
+    ar_instruction_ast_t *own_ast = ar_instruction_ast__create_function_call(
+        AR_INSTRUCTION_AST_TYPE__IF, "if", args, 3, "memory.is_empty"
+    );
+    assert(own_ast != NULL);
+
+    ar_list_t *own_arg_asts = ar_list__create();
+    assert(own_arg_asts != NULL);
+    const char *payload_path[] = {"payloads"};
+    ar_expression_ast_t *own_left =
+        ar_expression_ast__create_memory_access("message", payload_path, 1);
+    ar_expression_ast_t *own_right = ar_expression_ast__create_literal_list(NULL, 0);
+    ar_expression_ast_t *own_condition =
+        ar_expression_ast__create_binary_op(AR_BINARY_OPERATOR__EQUAL, own_left, own_right);
+    ar_expression_ast_t *own_true = ar_expression_ast__create_literal_int(1);
+    ar_expression_ast_t *own_false = ar_expression_ast__create_literal_int(0);
+    assert(ar_list__add_last(own_arg_asts, own_condition));
+    assert(ar_list__add_last(own_arg_asts, own_true));
+    assert(ar_list__add_last(own_arg_asts, own_false));
+    assert(ar_instruction_ast__set_function_arg_asts(own_ast, own_arg_asts));
+
+    bool result =
+        ar_condition_instruction_evaluator__evaluate(own_evaluator, own_frame, own_ast);
+
+    assert(result == true);
+    assert(ar_data__get_map_integer(mut_memory, "is_empty") == 1);
+
+    ar_instruction_ast__destroy(own_ast);
+    ar_condition_instruction_evaluator__destroy(own_evaluator);
+    ar_frame__destroy(own_frame);
+    ar_data__destroy(own_message);
+    ar_data__destroy(own_context);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
 static void test_instruction_evaluator__evaluate_if_true_condition(void) {
     // Given a test fixture with memory containing a condition
     ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_if_true_condition");
@@ -565,6 +624,9 @@ int main(void) {
     
     test_condition_instruction_evaluator__evaluate_without_legacy();
     printf("test_condition_instruction_evaluator__evaluate_without_legacy passed!\n");
+
+    test_condition_instruction_evaluator__accepts_empty_list_condition();
+    printf("test_condition_instruction_evaluator__accepts_empty_list_condition passed!\n");
     
     test_instruction_evaluator__evaluate_if_true_condition();
     printf("test_instruction_evaluator__evaluate_if_true_condition passed!\n");

@@ -1,68 +1,109 @@
-memory.is_distribute := if(message.action = "distribute", 1, 0)
-memory.is_route_result := if(message.action = "route_result", 1, 0)
-memory.is_retry_report := if(message.action = "retry_report", 1, 0)
-memory.routing_agent := if(memory.is_distribute = 1, message.routing_agent, memory.routing_agent)
-memory.reply_to := if(memory.is_distribute = 1, message.reply_to, memory.reply_to)
-memory.work_id := if(memory.is_distribute = 1, message.work_id, memory.work_id)
-memory.work_text := if(memory.is_distribute = 1, message.work_text, memory.work_text)
-memory.completed := if(memory.is_distribute = 1, 0, memory.completed)
-memory.pending_report := if(memory.is_distribute = 1, 0, memory.pending_report)
-memory.assignment_count := if(memory.is_distribute = 1, 0, memory.assignment_count)
-memory.sent_count := if(memory.is_distribute = 1, 0, memory.sent_count)
-memory.route_status := if(memory.is_distribute = 1, "routing", memory.route_status)
-memory.status := if(memory.is_distribute = 1, "routing", memory.status)
-memory.route_message := {
-  action: "route"
-  mode: "many"
-  targets: message.workers
-  payload_action: "work"
-  payload_text: memory.work_text
-  correlation_id: memory.work_id
-  reply_to: memory.self
-  routed_count: 0
-  sent_count: 0
+memory.is_request := if(message.request <> 0, 1, 0)
+memory.is_distribute := if(memory.is_request = 1, message.request = "distribution_start", 0)
+memory.is_continue_request := if(memory.is_request = 1, message.request = "distribution_continue", 0)
+memory.continue_from_self := if(message.sender = memory.self, 1, 0)
+memory.is_continue := memory.is_continue_request * memory.continue_from_self
+memory.is_assignment := memory.is_distribute + memory.is_continue
+memory.is_assignment := if(memory.is_assignment > 0, 1, 0)
+memory.generated_trace_base := message.sender * 1000
+memory.generated_trace_id := memory.generated_trace_base + memory.self
+memory.request_trace_id := memory.generated_trace_id
+memory.request_trace_id := if(message.trace_id <> 0, message.trace_id, memory.request_trace_id)
+memory.trace_id := if(memory.is_distribute = 1, memory.request_trace_id, 0)
+memory.sender := if(memory.is_distribute = 1, message.sender, 0)
+memory.status := if(memory.is_distribute = 1, "distributing", "")
+memory.assignment_count := 0
+memory.sent_count := 0
+memory.failed_count := 0
+memory.result_recipient := if(memory.is_continue = 1, message.result_recipient, message.sender)
+memory.current_payloads := if(memory.is_assignment = 1, message.payloads, [])
+memory.current_recipients := if(memory.is_assignment = 1, message.recipients, [])
+memory.payload := head(memory.current_payloads)
+memory.remaining_payloads := tail(memory.current_payloads)
+memory.recipient := head(memory.current_recipients)
+memory.remaining_recipients := tail(memory.current_recipients)
+memory.payloads_empty := if(memory.current_payloads = [], 1, 0)
+memory.has_payload := if(memory.payloads_empty = 1, 0, 1)
+memory.has_recipient := if(memory.recipient > 0, 1, 0)
+memory.no_recipient := if(memory.has_recipient = 1, 0, 1)
+memory.assignment_recipient := memory.recipient * memory.has_payload
+memory.assignment_recipient := memory.assignment_recipient * memory.has_recipient
+memory.assignment_recipient := memory.assignment_recipient * memory.is_assignment
+memory.assignment_send_result := send(memory.assignment_recipient, memory.payload)
+memory.assignment_attempted := memory.has_payload * memory.has_recipient
+memory.assignment_attempted := memory.assignment_attempted * memory.is_assignment
+memory.assignment_sent := memory.assignment_send_result * memory.assignment_attempted
+memory.assignment_failed := if(memory.assignment_send_result = 0, 1, 0)
+memory.assignment_failed := memory.assignment_failed * memory.assignment_attempted
+memory.next_assignment_count := message.assignment_count + memory.assignment_attempted
+memory.next_sent_count := message.sent_count + memory.assignment_sent
+memory.next_failed_count := message.failed_count + memory.assignment_failed
+memory.remaining_payloads_empty := if(memory.remaining_payloads = [], 1, 0)
+memory.has_next_payload := if(memory.remaining_payloads_empty = 1, 0, 1)
+memory.remaining_recipients_empty := if(memory.remaining_recipients = [], 1, 0)
+memory.has_remaining_recipient := if(memory.remaining_recipients_empty = 1, 0, 1)
+memory.no_remaining_recipient := if(memory.has_remaining_recipient = 1, 0, 1)
+memory.has_prior_assignment := if(message.assignment_count > 0, 1, 0)
+memory.all_recipients := if(memory.is_continue = 1, message.all_recipients, [])
+memory.all_recipients := if(memory.is_distribute = 1, memory.current_recipients, memory.all_recipients)
+memory.next_recipients := if(memory.has_remaining_recipient = 1, memory.remaining_recipients, memory.all_recipients)
+memory.skip_recipient := memory.is_assignment * memory.has_payload
+memory.skip_recipient := memory.skip_recipient * memory.no_recipient
+memory.skip_recipient := memory.skip_recipient * memory.has_remaining_recipient
+memory.wrap_recipient := memory.is_assignment * memory.has_payload
+memory.wrap_recipient := memory.wrap_recipient * memory.no_recipient
+memory.wrap_recipient := memory.wrap_recipient * memory.no_remaining_recipient
+memory.wrap_recipient := memory.wrap_recipient * memory.has_prior_assignment
+memory.continuation_payloads := if(memory.skip_recipient = 1, message.payloads, memory.remaining_payloads)
+memory.continuation_payloads := if(memory.wrap_recipient = 1, message.payloads, memory.continuation_payloads)
+memory.continuation_recipients := if(memory.skip_recipient = 1, memory.remaining_recipients, memory.next_recipients)
+memory.continuation_recipients := if(memory.wrap_recipient = 1, memory.all_recipients, memory.continuation_recipients)
+memory.continuation_required := memory.is_assignment * memory.has_next_payload
+memory.continuation_required := memory.continuation_required * memory.has_recipient
+memory.continuation_required := memory.continuation_required + memory.skip_recipient
+memory.continuation_required := memory.continuation_required + memory.wrap_recipient
+memory.continuation_required := if(memory.continuation_required > 0, 1, 0)
+memory.continuation_message := {
+  sender: memory.self
+  request: "distribution_continue"
+  trace_id: memory.request_trace_id
+  payloads: memory.continuation_payloads
+  recipients: memory.continuation_recipients
+  all_recipients: memory.all_recipients
+  result_recipient: memory.result_recipient
+  assignment_count: memory.next_assignment_count
+  sent_count: memory.next_sent_count
+  failed_count: memory.next_failed_count
 }
-memory.route_send_result := send(memory.routing_agent * memory.is_distribute, memory.route_message)
-memory.route_sent := if(memory.is_distribute = 1, memory.route_send_result, memory.route_sent)
-memory.route_result_correlation_id := if(memory.is_route_result = 1, message.correlation_id, memory.work_id)
-memory.retry_report_work_id := if(memory.is_retry_report = 1, message.work_id, memory.work_id)
-memory.route_result_matches := if(memory.route_result_correlation_id = memory.work_id, memory.is_route_result, 0)
-memory.retry_report_matches := if(memory.retry_report_work_id = memory.work_id, memory.is_retry_report, 0)
-memory.pending_retry_report := memory.is_retry_report * memory.retry_report_matches
-memory.pending_retry_report := memory.pending_retry_report * memory.pending_report
-memory.reply_to := if(memory.pending_retry_report = 1, message.reply_to, memory.reply_to)
-memory.not_completed := if(memory.completed = 0, 1, 0)
-memory.valid_route_result := memory.is_route_result * memory.route_sent * memory.route_result_matches
-memory.valid_route_result := memory.valid_route_result * memory.not_completed
-memory.route_result_status := if(memory.is_route_result = 1, message.status, "")
-memory.route_result_failed := if(memory.route_result_status = "route_failed", 1, 0)
-memory.route_result_failed := if(memory.valid_route_result = 1, memory.route_result_failed, 0)
-memory.status := if(memory.valid_route_result = 1, "distributed", memory.status)
-memory.status := if(memory.route_result_failed = 1, "route_failed", memory.status)
-memory.route_failed := if(memory.route_sent = 0, 1, 0)
-memory.route_failed := memory.route_failed * memory.is_distribute
-memory.status := if(memory.route_failed = 1, "route_failed", memory.status)
-memory.assignment_count := if(memory.valid_route_result = 1, message.routed_count, memory.assignment_count)
-memory.sent_count := if(memory.valid_route_result = 1, message.sent_count, memory.sent_count)
-memory.route_status := if(memory.valid_route_result = 1, message.status, memory.route_status)
-memory.route_status := if(memory.route_failed = 1, "route_failed", memory.route_status)
-memory.report_message := {
-  action: "distribution_result"
-  status: memory.status
-  work_id: memory.work_id
-  assignment_count: memory.assignment_count
-  sent_count: memory.sent_count
-  route_status: memory.route_status
-  route_sent: memory.route_sent
+memory.continuation_send_result := send(memory.self * memory.continuation_required, memory.continuation_message)
+memory.continuation_sent := memory.continuation_send_result * memory.continuation_required
+memory.continuation_failed := if(memory.continuation_send_result = 0, 1, 0)
+memory.continuation_failed := memory.continuation_failed * memory.continuation_required
+memory.should_report := memory.is_assignment
+memory.should_report := if(memory.continuation_sent = 1, 0, memory.should_report)
+memory.report_trace_id := memory.request_trace_id
+memory.report_sender := memory.result_recipient
+memory.report_assignment_count := memory.next_assignment_count
+memory.report_sent_count := memory.next_sent_count
+memory.report_failed_count := memory.next_failed_count
+memory.zero_assignments := if(memory.report_assignment_count = 0, 1, 0)
+memory.has_failures := if(memory.report_failed_count > 0, 1, 0)
+memory.result_status := if(memory.should_report > 0, "success", memory.status)
+memory.result_status := if(memory.zero_assignments = 1, "failure", memory.result_status)
+memory.result_status := if(memory.has_failures = 1, "failure", memory.result_status)
+memory.result_status := if(memory.continuation_failed = 1, "failure", memory.result_status)
+memory.result_message := {
+  sender: memory.self
+  response: "distribution_result"
+  trace_id: memory.report_trace_id
+  status: memory.result_status
+  success_count: memory.report_sent_count
+  failure_count: memory.report_failed_count
 }
-memory.should_report_sum := memory.valid_route_result + memory.route_failed
-memory.should_report_sum := memory.should_report_sum + memory.pending_retry_report
-memory.should_report := if(memory.should_report_sum > 0, 1, 0)
-memory.report_target := memory.reply_to * memory.should_report
-memory.report_sent := send(memory.report_target, memory.report_message)
-memory.report_delivered := memory.should_report * memory.report_sent
-memory.report_not_sent := if(memory.report_sent = 0, 1, 0)
-memory.report_failed := memory.should_report * memory.report_not_sent
-memory.pending_report := if(memory.report_failed = 1, 1, memory.pending_report)
-memory.pending_report := if(memory.report_delivered = 1, 0, memory.pending_report)
-memory.completed := if(memory.report_delivered = 1, 1, memory.completed)
+memory.report_sent := send(memory.report_sender * memory.should_report, memory.result_message)
+memory.report_recorded := memory.report_sent * memory.should_report
+memory.completion_recorded := memory.should_report
+memory.status := if(memory.completion_recorded = 1, memory.result_status, memory.status)
+memory.assignment_count := if(memory.completion_recorded = 1, memory.report_assignment_count, memory.assignment_count)
+memory.sent_count := if(memory.completion_recorded = 1, memory.report_sent_count, memory.sent_count)
+memory.failed_count := if(memory.completion_recorded = 1, memory.report_failed_count, memory.failed_count)

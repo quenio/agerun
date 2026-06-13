@@ -2,140 +2,70 @@
 
 ## Overview
 
-The routing method selects recipients for a message and forwards a normalized payload to those
-recipients. It is the lowest-level delivery primitive in the coordination methodology and is used
-by higher-level methods such as distribution and workflow.
+Routing selects exactly one recipient by matching a request key against an unbounded keyed route
+table. It is a keyed-selection primitive, not a direct recipient delivery or fan-out primitive.
+Because routing is a stateless single-call method, its request and response use `trace_id` but do
+not require `session_id`; an omitted `trace_id` is generated for the result envelope and internal
+scan messages.
 
 ## Behavior
 
-When the agent receives a map whose `action` field is `"route"`, it builds a forwarded message from
-the payload fields and sends it to either one selected target or an unbounded list of targets.
+Only messages with a recognized `request` value are handled as coordination requests.
 
-For `mode=one`, the method sends to `target` when it is greater than zero. If `target` is not set,
-it scans `routes.keys` and `routes.targets` as paired unbounded lists, matching `route_key` against
-each candidate key and sending to the paired positive target. If no positive one-to-one target is
-selected, the method emits `route_result` with `status: "route_failed"` and zero delivery counts.
+When the agent receives `request: "routing_start"`, the method scans `routes.keys` and
+`routes.recipients` as paired unbounded lists. It sends the sender-provided `payload` as-is to
+the first positive recipient agent whose paired key matches `route_key`.
 
-For `mode=many`, the method reads `targets` as a list of agent IDs where positive integers are
-deliverable targets and integer `0` is a placeholder. It uses `head(...)` to send to the next
-positive target and `tail(...)` to send a continuation message to itself with the remaining targets.
-This keeps fan-out in ordinary method code instead of adding a runtime routing capability. A single
-interior zero placeholder does not stop fan-out to a later positive target. If a target send fails,
-the method continues through the remaining targets, counts the failed send in `failed_count`, and
-emits the terminal `route_result` with `status` set to `"route_failed"`. If the target list is empty
-or contains no positive targets, the terminal `route_result` is also `"route_failed"` with zero
-delivery counts. If a required self-continuation cannot be queued, the method emits a terminal
-`route_result` with `status` set to `"route_failed"` and the routed/sent counts accumulated so far.
+If no keyed candidate selects a positive recipient agent, or if the matching recipient cannot receive the
+payload, routing responds with `state: "route_failed"` and standard `status: "failure"`.
 
 ## Message Format
 
-One-to-one route request:
+Request:
 
 ```text
 {
-  action: "route",
-  mode: "one",
-  target: <agent>,
-  payload_action: <action>,
-  payload_text: <text>,
-  correlation_id: <id>,
-  reply_to: <agent>
-}
-```
-
-One-to-many route request:
-
-```text
-{
-  action: "route",
-  mode: "many",
-  targets: [<agent>, <agent>, ...],
-  payload_action: <action>,
-  payload_text: <text>,
-  correlation_id: <id>,
-  reply_to: <agent>
-}
-```
-
-Optional keyed route map for one-to-one selection:
-
-```text
-{
+  sender: <sender-agent>,
+  request: "routing_start",
+  trace_id: <trace_id>,
+  payload: <message>,
   route_key: <key>,
   routes: {
     keys: [<key>, <key>, ...],
-    targets: [<agent>, <agent>, ...]
+    recipients: [<recipient-agent-1>, <recipient-agent-2>, ...]
   }
 }
 ```
 
-The `routes.keys` and `routes.targets` lists are paired by position. The method scans them with
-`head(...)` and `tail(...)`, so keyed one-to-one routing is not limited to three candidates. Both the
-request `route_key` and the candidate key must be nonzero/present before the candidate can match.
-
-Forwarded message:
+Response:
 
 ```text
 {
-  action: <payload_action>,
-  correlation_id: <correlation_id>,
-  text: <payload_text>,
-  source: <routing-agent>
+  sender: <routing-agent>,
+  response: "routing_result",
+  trace_id: <trace_id>,
+  status: <success|failure>,
+  state: <routed|route_failed>,
+  routed_count: <0|1>,
+  success_count: <0|1>,
+  failure_count: <0|1>,
+  sent_count: <0|1>,
+  failed_count: <0|1>
 }
 ```
 
-Reply:
+Count semantics: `success_count` increments to `1` only when the matched positive recipient receives
+the sender-provided `payload`. `failure_count` increments to `1` only when that matched recipient
+send is attempted and fails. A route miss, a non-positive recipient, or an internal scan handoff
+failure leaves both counts at `0` even though the response status is `failure`.
 
-```text
-{
-  action: "route_result",
-  status: <routed|ignored|route_failed>,
-  correlation_id: <correlation_id>,
-  routed_count: <count>,
-  sent_count: <count>,
-  failed_count: <count>,
-  sent_one: <0|1>,
-  sent_many: <0|1>,
-  continuation_sent: <0|1>
-}
-```
+Status semantics: the response status is `success` only when routing delivers the payload to the
+matched positive recipient. It is `failure` when no route selects a positive recipient, when the
+matched recipient send fails, or when an internal scan handoff fails.
 
-For `mode=many`, `routed_count`, `sent_count`, and `failed_count` accumulate across the self-message
-chain. `routed_count` and `sent_count` count successful target sends; `failed_count` counts positive
-target IDs that could not be sent to. Integer `0` entries are skipped placeholders, not failed
-sends. The final reply is emitted after the target list is exhausted. The reply preserves the original
-`correlation_id` so downstream coordination methods can match route results to their active work.
-If no positive target is delivered, the terminal reply uses `status: "route_failed"` with zero
-delivery counts rather than reporting a successful zero-send route. If a self-continuation send fails
-before the list is exhausted, the reply is emitted immediately with partial counts and
-`continuation_sent` set to `0`.
-
-## Action Field
-
-The input `action` field is a command discriminator in the request map. The routing agent runs this
-method for every message it receives, so `action: "route"` marks the message as a routing request and
-lets the method avoid forwarding unrelated maps that happen to contain fields such as `target`,
-`mode`, or `payload_action`.
-
-## Composition Notes
-
-Distribution uses routing to assign work portions to workers. Workflow uses routing to dispatch
-activity steps without embedding worker-specific delivery logic. Larger agencies can pass a
-primitive target list to `mode=many` when the fan-out size is not known ahead of time, or pass a
-`routes` map when a one-to-one recipient must be selected from an unbounded route table.
-
-## Limitations
-
-The method supports unbounded fan-out for primitive nonzero agent IDs and unbounded keyed
-one-to-one selection through parallel `routes.keys` and `routes.targets` lists. The `head(...)` empty
-sentinel is integer `0`, so `0` cannot be used as a valid fan-out target or route key. A single
-interior zero placeholder is skipped, but consecutive zero placeholders can still terminate scanning
-before a later positive target because ordinary methods do not have a list length or type predicate
-that distinguishes an empty list from a list whose next item is integer `0`. Continuation messages
-keep remaining lists in memory-built messages; `send(...)` deep-copies those nested lists when
-routing back to the same agent. A list of route-entry maps would be a more natural external shape,
-but ordinary methods currently do not have a safe type predicate for checking that `head(routes)`
-returned a map before reading nested fields.
+A direct `recipient` field is ignored; callers that already know the recipient should use direct
+`send(...)`. The `head(...)` empty sentinel is integer `0`, so `0` cannot be used as a valid route
+key.
 
 ## Implementation and Tests
 
