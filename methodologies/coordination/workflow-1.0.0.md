@@ -44,6 +44,12 @@ Completion response:
 }
 ```
 
+Count semantics: `success_count` increments when a matching `workflow_step_done` completes the
+currently awaited sent step. Skipped zero-recipient placeholders, stale completions, duplicate
+completions, out-of-order completions, and pending completion retries do not increment it.
+`failure_count` becomes `1` when any workflow handoff fails, including start or continuation
+self-sends, skipped-step self-sends, or direct step payload sends; otherwise it is `0`.
+
 Terminal status is recorded only after the response is delivered; failed completion delivery leaves
 completion pending and retries do not increment the completed-step counter. Completion responses use the
 triggering workflow control request's effective `trace_id` and the active workflow `session_id`.

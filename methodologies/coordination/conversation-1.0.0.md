@@ -67,6 +67,13 @@ Coordinator response:
 }
 ```
 
+Count semantics: `success_count` increments for a `conversation_message` only when the participant
+turn is broadcast successfully and appended to history; summary and close responses report the
+current successful turn count, and start responses report `0`. `failure_count` increments to `1`
+when the broadcasting helper cannot be spawned, when a turn relay fails before or during
+broadcasting or history append, or when a non-participant sends `conversation_message`; summary and
+close responses report `0`.
+
 If broadcast delivery fails for any recipient, the coordinator reports `result: "relay_failed"` and
 leaves the history and turn count unchanged.
 

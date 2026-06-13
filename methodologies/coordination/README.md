@@ -123,6 +123,11 @@ Routing delivers exactly the sender-provided `payload` to the first positive rec
 paired route key matches `route_key`. A direct `recipient` field is not a supported routing
 mechanism; callers that already know the recipient should use direct `send(...)`.
 
+Count semantics: `success_count` increments to `1` only when the matched positive recipient receives
+the sender-provided `payload`. `failure_count` increments to `1` only when that matched recipient
+send is attempted and fails. Route misses, non-positive recipients, and internal scan handoff
+failures leave both counts at `0` even when the response status is `failure`.
+
 ### Broadcasting
 
 Request:
@@ -152,6 +157,10 @@ Reply:
 
 Broadcasting sends the sender-provided `payload` as-is to every positive `recipients` entry.
 Integer `0` entries are skipped placeholders, not failed sends.
+
+Count semantics: `success_count` increments once for each positive recipient that accepts the
+sender-provided `payload`. `failure_count` increments once for each positive recipient send that
+fails.
 
 ### Supervision
 
@@ -188,6 +197,11 @@ Reply:
 Stop and lifecycle requests are validated against tracked `child_agent_ids`. Untracked or duplicate
 lifecycle events report `ignored`; successful tracked stop requests report `stopped`; restart policy
 can report `restarted`.
+
+Count semantics: `success_count` increases by the number of children tracked when start completes,
+by `1` for a successful restart, and by `1` for a successful tracked stop. `failure_count` increases
+for spawn or validation handoff failures and for failed tracked stop exits. Untracked or duplicate
+lifecycle events do not increment either count.
 
 ### Distribution
 
@@ -226,6 +240,12 @@ agent.
 Because distribution is a one-shot caller-facing method, its request and response use `trace_id`
 but do not require `session_id`; an omitted `trace_id` is generated for the result envelope.
 
+Count semantics: `success_count` increments once for each assignment send of one payload item to a
+positive recipient that succeeds. `failure_count` increments once for each attempted assignment send
+that fails. Integer `0` recipient placeholders are skipped without consuming the payload or
+affecting either count. Empty payload or recipient lists produce `status: "failure"` with no
+assignment count increments.
+
 ### Aggregation
 
 Requests:
@@ -255,8 +275,13 @@ completion delivery leaves the aggregate open. An `aggregation_start` request re
 and starts a fresh payload list with the configured `expected_count`. Payload collection requests
 use `request: "aggregation_collect"` and must carry the same `session_id` as the active start
 request. Collection requests that omit `trace_id` use a generated trace and still append their
-payload. Failed append attempts are reported in the eventual aggregate response's `failure_count`.
-The response is sent when `success_count + failure_count` equals the configured `expected_count`;
+payload.
+
+Count semantics: `success_count` increments when a matching active `aggregation_collect` appends its
+payload. `failure_count` increments when such a collection attempt is accepted for the active
+session but append fails. Wrong-session, inactive, or post-completion collect requests are ignored
+and do not affect either count. The response is sent when `success_count + failure_count` equals
+the configured `expected_count`;
 the response status is `success` only when `success_count` equals that `expected_count`, and
 `failure` otherwise.
 
@@ -308,6 +333,11 @@ and triggered payload requests use the tick request's `trace_id`; cancel respons
 request's `trace_id`; all scheduling requests and responses for one schedule use the same
 `session_id`.
 
+Count semantics: `success_count` increments when a due tick successfully sends the stored payload,
+and when a matching cancel clears a pending schedule. The schedule creation response does not
+increment it. `failure_count` increments when a due tick should trigger but the stored payload send
+fails.
+
 ### Synchronization
 
 Requests:
@@ -353,6 +383,11 @@ Response:
 Synchronization marks completion only after the continuation and response are delivered. Failed
 delivery keeps the gate open for retry.
 
+Count semantics: `success_count` increments by one for each matching dependency whose value is
+appended before completion. No current synchronization event increments `failure_count`; failed
+continuation or result delivery keeps the gate open instead of producing a failure result, so result
+`failure_count` is always `0`.
+
 ### Workflow
 
 Requests:
@@ -382,6 +417,12 @@ Completion response:
 
 Workflow records terminal status only after the `start` response is delivered; failed completion
 delivery leaves completion pending and retries do not increment the completed-step counter.
+
+Count semantics: `success_count` increments when a matching `workflow_step_done` completes the
+currently awaited sent step. Skipped zero-recipient placeholders, stale completions, duplicate
+completions, out-of-order completions, and pending completion retries do not increment it.
+`failure_count` becomes `1` when any workflow handoff fails, including start or continuation
+self-sends, skipped-step self-sends, or direct step payload sends; otherwise it is `0`.
 
 ### Conversation
 
@@ -437,6 +478,13 @@ unchanged.
 If the `sender` of a `conversation_message` is not in the participant list, the coordinator reports
 `result: "not_participant"` and does not broadcast, record, or retain the sender-provided payload.
 
+Count semantics: `success_count` increments for a `conversation_message` only when the participant
+turn is broadcast successfully and appended to history; summary and close responses report the
+current successful turn count, and start responses report `0`. `failure_count` increments to `1`
+when the broadcasting helper cannot be spawned, when a turn relay fails before or during
+broadcasting or history append, or when a non-participant sends `conversation_message`; summary and
+close responses report `0`.
+
 ### Retry
 
 Requests:
@@ -491,6 +539,11 @@ Retry records terminal state only after the `start` response is delivered; faile
 stores the pending terminal result so a matching outcome retries that report without replacing it or
 changing the attempt count. Failure and success requests match the active retry by `session_id`;
 terminal responses use the triggering outcome request's effective `trace_id`.
+
+Count semantics: `success_count` is `1` only for the terminal response produced by a matching
+`retry_success` outcome. `failure_count` is `1` when initial operation dispatch fails or when a
+matching `retry_failure` reaches the final allowed attempt. Non-terminal failures that schedule or
+dispatch another attempt do not increment either terminal count.
 
 ## Composition Examples
 

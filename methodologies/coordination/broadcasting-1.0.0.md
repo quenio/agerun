@@ -52,6 +52,10 @@ Response:
 }
 ```
 
+Count semantics: `success_count` increments once for each positive recipient that accepts the
+sender-provided `payload`. `failure_count` increments once for each positive recipient send that
+fails. Integer `0` placeholders are skipped without affecting either count.
+
 Broadcasting sends the sender-provided `payload` as-is.
 
 ## Implementation and Tests

@@ -56,6 +56,11 @@ Response:
 }
 ```
 
+Count semantics: `success_count` increments when a due tick successfully sends the stored payload,
+and when a matching cancel clears a pending schedule. The schedule creation response does not
+increment it. `failure_count` increments when a due tick should trigger but the stored payload send
+fails; the schedule remains pending.
+
 Trigger responses and triggered payload requests use the tick request's effective `trace_id`;
 cancel responses use the cancel request's effective `trace_id`. All request kinds in one pending
 schedule use the same `session_id`.

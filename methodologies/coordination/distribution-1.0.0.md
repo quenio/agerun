@@ -69,8 +69,11 @@ Response:
 }
 ```
 
-`success_count` counts successful assignment sends, and `failure_count` counts failed assignment
-sends. Empty payload or recipient lists produce `status: "failure"`.
+Count semantics: `success_count` increments once for each assignment send of one payload item to a
+positive recipient that succeeds. `failure_count` increments once for each attempted assignment send
+that fails. Integer `0` recipient placeholders are skipped without consuming the payload or
+affecting either count. Empty payload or recipient lists produce `status: "failure"` with no
+assignment count increments.
 
 ## Implementation and Tests
 

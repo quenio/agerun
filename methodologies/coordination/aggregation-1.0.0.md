@@ -17,9 +17,11 @@ request appends the incoming opaque `payload` only when its `session_id` matches
 aggregate session while aggregation is active and completion has not been delivered.
 
 Collection requests that omit `trace_id` use a generated trace and still append their payload.
-Failed append attempts are reported through `failure_count` when the aggregate response is
-eventually returned. The response is sent when `success_count + failure_count` equals the
-configured `expected_count` and uses the completing collection request's effective `trace_id`.
+Count semantics: `success_count` increments when a matching active `aggregation_collect` appends its
+payload. `failure_count` increments when such a collection attempt is accepted for the active
+session but append fails. Wrong-session, inactive, or post-completion collect requests are ignored
+and do not affect either count. The response is sent when `success_count + failure_count` equals
+the configured `expected_count` and uses the completing collection request's effective `trace_id`.
 Completion is recorded only after the aggregate response is sent successfully. The `request` field
 differentiates start requests from collect requests; `expected_count` only configures the start
 request threshold.

@@ -69,6 +69,11 @@ Terminal response:
 }
 ```
 
+Count semantics: `success_count` is `1` only for the terminal response produced by a matching
+`retry_success` outcome. `failure_count` is `1` when initial operation dispatch fails or when a
+matching `retry_failure` reaches the final allowed attempt. Non-terminal failures that schedule or
+dispatch another attempt do not increment either terminal count.
+
 ## Implementation and Tests
 
 Implementation: [`retry-1.0.0.method`](retry-1.0.0.method)

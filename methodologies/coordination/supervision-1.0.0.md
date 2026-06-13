@@ -50,6 +50,11 @@ Response:
 }
 ```
 
+Count semantics: `success_count` increases by the number of children tracked when start completes,
+by `1` for a successful restart, and by `1` for a successful tracked stop. `failure_count` increases
+for spawn or validation handoff failures and for failed tracked stop exits. Untracked or duplicate
+lifecycle events are reported as ignored and do not increment either count.
+
 ## Implementation and Tests
 
 Implementation: [`supervision-1.0.0.method`](supervision-1.0.0.method)

@@ -60,6 +60,11 @@ Response:
 }
 ```
 
+Count semantics: `success_count` increments by one for each matching dependency whose value is
+appended before completion. No current synchronization event increments `failure_count`; failed
+continuation or result delivery keeps the gate open for retry instead of producing a failure result,
+so result `failure_count` is always `0`.
+
 ## Implementation and Tests
 
 Implementation: [`synchronization-1.0.0.method`](synchronization-1.0.0.method)
