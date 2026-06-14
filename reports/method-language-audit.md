@@ -161,7 +161,7 @@ principles or should be treated as a future design gap.
 | F6 | Missing field and empty-list sentinels | Composable as expressions once produced, but sentinel values leak into method logic. | Missing `message.field`, empty `head(...)`, invalid `tail(...)`, failed spawn, and no-op send/spawn all use integer `0` in different roles. | `SPEC.md` documents integer `0` sentinel behavior for `head(...)`, `tail(...)`, `send(0, ...)`, and `spawn(0, ...)`. Tests cover missing message fields for head/tail. | Medium |
 | F7 | `memory.self` protection | Protection is consistently enforced for assignment and many result paths, but it is bolted onto instruction semantics. | Write permission depends on target root/path and, for parse, placeholder names/input origin. | `SPEC.md` says method instructions cannot assign or store into `memory.self`; `ar_instruction_ast__has_protected_memory_self_assignment()` supports instruction-level checks; parse evaluator adds placeholder/input-specific checks. | Medium |
 | F8 | Operators over containers | One-line literals are composable in expressions, but equality semantics are partial. | Empty list equality exists; non-empty list structural equality does not. Maps are constructible but not structurally comparable. | `ar_expression_evaluator.md` says list equality is limited to empty-list checks and non-empty lists are not structurally compared. | Low |
-| F9 | Documentation consistency | `SPEC.md` now names the language design principles and separates them from current language state. The earlier stale `if(...)` and string-escape wording has been corrected in the directly affected docs. | The remaining risk is future drift across the spec, KB, parser docs, and this audit report as language behavior evolves. | `SPEC.md` documents `Language Design Principles` and `Current Language State`. `AGENTS.md` and `kb/agerun-method-language-nesting-constraint.md` still document non-expression calls as current constraints. `kb/agerun-language-constraint-workarounds.md` now matches lazy `if(...)`. | Low |
+| F9 | Documentation consistency | `SPEC.md` now names the language design principles and separates them from current language state. The earlier stale `if(...)` and string-escape wording has been corrected in the directly affected docs. | The remaining risk is future drift across the spec, README, KB, parser docs, module index, and this audit report as language behavior evolves. | `SPEC.md` documents `Language Design Principles` and `Current Language State`. `README.md`, `modules/README.md`, and `kb/agerun-language-constraint-workarounds.md` now match lazy integer-conditioned `if(...)` value selection. `AGENTS.md` and `kb/agerun-method-language-nesting-constraint.md` still document non-expression calls as current constraints. | Low |
 | F10 | Syntax-directed semantics | Several constructs use one syntax shape while dispatching to context-dependent evaluation behavior. | Semantic differences are sometimes hidden behind evaluator checks rather than syntax: result binding, lvalue eligibility, sentinel `0`, and partial equality. | Assignment-looking function results, `append(...)` targets, no-op `0` semantics, and container equality restrictions. | Medium |
 
 ## Detailed Observations
@@ -369,6 +369,8 @@ instruction argument or result position. In ordinary expression evaluation and o
 - `SPEC.md`, `kb/agerun-language-constraint-workarounds.md`, and
   `modules/ar_condition_instruction_evaluator.md` now agree on lazy selected-branch `if(...)`
   evaluation.
+- `README.md` and `modules/README.md` now avoid invalid branch-side assignment/call examples and
+  stale string-truthiness/conditional-execution wording.
 - Parser module docs now describe quote/backslash handling as function-call boundary parsing rather
   than value-level escaped-quote or escape-sequence support.
 
@@ -427,6 +429,13 @@ quote handling from raw string-literal value semantics:
 After the documentation correction pass that split `SPEC.md` language principles from current
 language state, fixed stale lazy-`if(...)` wording, and aligned parser docs with raw string values
 and boundary-only quote/backslash handling, this report was revised to reflect that completed
+baseline:
+
+- `make check-docs`: passed; 746 documentation files checked.
+- `git diff --check`: passed.
+
+After the user-facing `if(...)` documentation cleanup that removed an invalid README example and
+stale module-index condition wording, this report was revised to include those docs in the current
 baseline:
 
 - `make check-docs`: passed; 746 documentation files checked.

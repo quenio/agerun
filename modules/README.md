@@ -1200,10 +1200,10 @@ The [send instruction evaluator module](ar_send_instruction_evaluator.md) handle
 
 #### Condition Instruction Evaluator Module (`ar_condition_instruction_evaluator`)
 
-The [condition instruction evaluator module](ar_condition_instruction_evaluator.md) handles conditional execution:
-- **Boolean Evaluation**: Evaluates condition expressions to boolean
-- **Branch Selection**: Executes appropriate instruction list based on condition
-- **Truthiness**: Non-zero integers and non-empty strings are truthy
+The [condition instruction evaluator module](ar_condition_instruction_evaluator.md) handles conditional value selection:
+- **Condition Evaluation**: Evaluates the condition expression as an integer
+- **Branch Selection**: Evaluates only the selected branch expression
+- **Truthiness**: Integer `0` is false; non-zero integers are true
 
 #### Parse Instruction Evaluator Module (`ar_parse_instruction_evaluator`)
 

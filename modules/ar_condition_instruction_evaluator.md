@@ -136,9 +136,9 @@ ar_log__destroy(log);
 The module includes comprehensive tests covering:
 - True conditions (then-branch execution)
 - False conditions (else-branch execution)
-- Various condition types (integers, strings, expressions)
-- Missing else branches
-- Multiple instructions in branches
+- Integer conditions and expression-derived integer conditions
+- Branch value selection
+- Rejection of non-integer condition values
 - Memory leak verification
 
 All tests pass with zero memory leaks. Errors are now reported through the centralized logging system rather than stored internally.
