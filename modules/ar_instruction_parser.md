@@ -60,6 +60,8 @@ expression and returns `AR_INSTRUCTION_AST_TYPE__HEAD` or `AR_INSTRUCTION_AST_TY
 - specialized parser instances are created once and reused across parse calls
 - successful function-call parses store both string arguments and parsed expression ASTs on the
   returned instruction AST
+- function-call argument boundaries and argument AST-list creation are centralized in
+  `ar_function_call_parser`
 - `complete(...)` parsing is intentionally kept out of the facade implementation so syntax rules for
   template placeholders remain isolated in the specialized parser module
 - `append(...)` parsing leaves target ownership and LIST validation to the evaluator so non-memory

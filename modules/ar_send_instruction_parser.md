@@ -9,7 +9,7 @@ The send instruction parser module is a specialized parser for AgeRun's send fun
 This module provides:
 - Dedicated parsing for send function calls
 - Support for optional result assignment
-- Handling of nested function calls in arguments
+- Shared function-call argument boundary handling
 - Detailed error reporting with position information
 
 ## Architecture
@@ -68,8 +68,11 @@ ar_log__destroy(own_log); // Only if log was created
 The parser handles:
 - Basic send: `send(agent_id, message)`
 - Complex expressions: `send(memory.agent_id, "Count: " + memory.count)`
-- Nested function calls: `send(0, build("Hello {0}", memory.name))`
+- Nested parentheses inside argument text
 - Result assignment: `memory.result := send(1, "Query")`
+
+Nested function-call text is preserved as one argument boundary, but function calls are not
+currently valid expressions.
 
 ## Error Handling
 

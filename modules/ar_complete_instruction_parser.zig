@@ -2,6 +2,7 @@ const std = @import("std");
 const ar_allocator = @import("ar_allocator.zig");
 const c = @cImport({
     @cInclude("ar_complete_instruction_parser.h");
+    @cInclude("ar_function_call_parser.h");
     @cInclude("ar_expression_parser.h");
     @cInclude("ar_expression_ast.h");
     @cInclude("ar_list.h");
@@ -23,21 +24,6 @@ fn _skipWhitespace(ref_text: []const u8, start: usize) usize {
     var pos = start;
     while (pos < ref_text.len and std.ascii.isWhitespace(ref_text[pos])) : (pos += 1) {}
     return pos;
-}
-
-fn _makeCString(ref_text: []const u8, ref_desc: [*:0]const u8) ?[*:0]u8 {
-    const own_text = ar_allocator.alloc(u8, ref_text.len + 1, ref_desc) orelse return null;
-    @memcpy(own_text[0..ref_text.len], ref_text);
-    own_text[ref_text.len] = 0;
-    return @ptrCast(own_text);
-}
-
-fn _trimSlice(ref_text: []const u8) []const u8 {
-    var start: usize = 0;
-    var end: usize = ref_text.len;
-    while (start < end and std.ascii.isWhitespace(ref_text[start])) : (start += 1) {}
-    while (end > start and std.ascii.isWhitespace(ref_text[end - 1])) : (end -= 1) {}
-    return ref_text[start..end];
 }
 
 fn _validatePlaceholderName(ref_name: []const u8) bool {
@@ -79,70 +65,63 @@ fn _validateTemplate(ref_parser: ?*ar_complete_instruction_parser_t, ref_arg: []
     return _scanTemplatePlaceholders(ref_parser, ref_arg[1 .. ref_arg.len - 1]);
 }
 
-fn _parseArguments(ref_parser: ?*ar_complete_instruction_parser_t, ref_instruction: []const u8, start_pos: usize, out_args: *[2]?[*:0]u8, out_count: *usize) bool {
+fn _getLog(ref_parser: ?*ar_complete_instruction_parser_t) ?*c.ar_log_t {
+    return if (ref_parser) |parser| parser.ref_log else null;
+}
+
+fn _extractArgument(
+    ref_log: ?*c.ar_log_t,
+    ref_instruction: [*:0]const u8,
+    mut_pos: *usize,
+    delimiter: u8,
+) ?[*:0]u8 {
+    const own_arg = c.ar_function_call_parser__extract_argument(
+        ref_log,
+        ref_instruction,
+        mut_pos,
+        delimiter,
+    ) orelse return null;
+    return @ptrCast(own_arg);
+}
+
+fn _parseArguments(
+    ref_parser: ?*ar_complete_instruction_parser_t,
+    ref_instruction: [*:0]const u8,
+    start_pos: usize,
+    out_args: *[2]?[*:0]u8,
+    out_count: *usize,
+) bool {
     out_args.* = .{ null, null };
     out_count.* = 0;
 
-    var pos = _skipWhitespace(ref_instruction, start_pos);
-    while (pos < ref_instruction.len and ref_instruction[pos] != ')') {
-        const arg_start = pos;
-        var in_quotes = false;
-        var paren_depth: usize = 0;
-        var bracket_depth: usize = 0;
-        var brace_depth: usize = 0;
-        while (pos < ref_instruction.len) : (pos += 1) {
-            const char = ref_instruction[pos];
-            if (char == '"' and (pos == arg_start or ref_instruction[pos - 1] != '\\')) {
-                in_quotes = !in_quotes;
-            } else if (!in_quotes) {
-                if (char == '(') paren_depth += 1;
-                if (char == '[') bracket_depth += 1;
-                if (char == '{') brace_depth += 1;
-                if (char == ']') {
-                    if (bracket_depth > 0) bracket_depth -= 1;
-                }
-                if (char == '}') {
-                    if (brace_depth > 0) brace_depth -= 1;
-                }
-                if (char == ')') {
-                    if (paren_depth > 0) {
-                        paren_depth -= 1;
-                    } else if (bracket_depth == 0 and brace_depth == 0) {
-                        break;
-                    }
-                }
-                if (char == ',' and paren_depth == 0 and bracket_depth == 0 and brace_depth == 0) break;
-            }
-        }
+    const ref_log = _getLog(ref_parser);
+    var look_ahead = start_pos;
+    if (_extractArgument(null, ref_instruction, &look_ahead, ',')) |own_first_arg| {
+        out_args[0] = own_first_arg;
+        out_count.* = 1;
 
-        const ref_arg = _trimSlice(ref_instruction[arg_start..pos]);
-        if (ref_arg.len == 0) {
-            _logError(ref_parser, "complete() does not allow empty arguments", arg_start);
+        var pos = look_ahead + 1;
+        const own_second_arg = _extractArgument(ref_log, ref_instruction, &pos, ')') orelse {
             return false;
-        }
-        if (out_count.* >= 2) {
-            _logError(ref_parser, "complete() expects one or two arguments", arg_start);
-            return false;
-        }
-        out_args[out_count.*] = _makeCString(ref_arg, "complete parser argument") orelse return false;
-        out_count.* += 1;
-
-        pos = _skipWhitespace(ref_instruction, pos);
-        if (pos < ref_instruction.len and ref_instruction[pos] == ',') {
-            pos += 1;
-            pos = _skipWhitespace(ref_instruction, pos);
-            continue;
-        }
-        if (pos < ref_instruction.len and ref_instruction[pos] == ')') break;
+        };
+        out_args[1] = own_second_arg;
+        out_count.* = 2;
+        return true;
     }
 
-    return out_count.* >= 1 and out_count.* <= 2;
+    var pos = start_pos;
+    const own_only_arg = _extractArgument(ref_log, ref_instruction, &pos, ')') orelse {
+        return false;
+    };
+    out_args[0] = own_only_arg;
+    out_count.* = 1;
+    return true;
 }
 
 fn _cleanupArgs(ref_args: [2]?[*:0]u8, arg_count: usize) void {
     var i: usize = 0;
     while (i < arg_count) : (i += 1) {
-        if (ref_args[i] != null) ar_allocator.free(ref_args[i]);
+        if (ref_args[i]) |own_arg| c.ar_function_call_parser__destroy_arg(own_arg);
     }
 }
 
@@ -185,7 +164,7 @@ export fn ar_complete_instruction_parser__parse(
 
     var args: [2]?[*:0]u8 = .{ null, null };
     var arg_count: usize = 0;
-    if (!_parseArguments(mut_parser, ref_text, pos, &args, &arg_count)) {
+    if (!_parseArguments(mut_parser, ref_instruction.?, pos, &args, &arg_count)) {
         _cleanupArgs(args, arg_count);
         return null;
     }
