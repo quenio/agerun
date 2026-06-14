@@ -88,7 +88,7 @@ principles or should be treated as a future design gap.
 | Function result storage uses assignment-looking syntax on function instructions. | `SPEC.md`, `modules/ar_instruction_ast.md`, evaluator module docs | Conflicts with Syntax-Directed Semantics because ordinary assignment and instruction result binding look similar while using different AST/evaluator paths. | Move pure call results into expression assignment, and centralize or visibly distinguish any remaining effectful result binding. |
 | One-line list/map literals can appear in expression contexts; multiline list/map literals are assignment-only and cannot appear as call arguments, list items, or map values. | `SPEC.md`, `README.md`, `modules/ar_method_parser.md` | Partially aligns. One-line literals are composable; multiline literals are an explicit formatting exception to the one-line instruction model. | Either document multiline literals as a deliberate source-format exception or move them into expression parsing while preserving clear line-boundary rules. |
 | Map literal keys must be identifiers; quoted keys are not supported. | `SPEC.md`, `modules/ar_expression_parser.md` | Mostly compatible as an explicit grammar restriction. It limits data shape expressiveness but does not by itself create semantic drift. | Preserve unless future data requirements need arbitrary string keys. |
-| There is no null type; integer `0` is used as the absent/failure/no-op sentinel in several places. | `AGENTS.md`, `SPEC.md`, `modules/ar_expression_evaluator.md` | Conflicts with orthogonality when unrelated cases share the same value: missing field, empty `head(...)`, invalid `tail(...)`, no-op spawn, false condition. | Treat as a sentinel-coupling gap; consider an explicit absence value or predicates before adding more sentinel semantics. |
+| There is no null type; integer `0` is used as the absent/failure/no-op sentinel in several places. | `AGENTS.md`, `SPEC.md`, `modules/ar_expression_evaluator.md` | Conflicts with orthogonality when unrelated cases share the same value: missing field, empty `head(...)`, invalid `tail(...)`, no-op spawn, false condition. | Preserve existing `0` behavior for compatibility, but stop treating it as a default pattern for new features. Before adding another `0`-based case, decide whether the language should keep `0` as the official absence/no-op value, add explicit predicates such as "is missing" or "is empty", or introduce a distinct absence value. |
 | No static type checking; methods must handle possible runtime types defensively. | `AGENTS.md`, `kb/agerun-language-constraint-workarounds.md` | Acceptable as a dynamic-language constraint, but it raises the burden on orthogonal runtime behavior and diagnostics. | Preserve as current-state behavior; improve documentation and tests around type-dependent built-ins. |
 | `if(...)` is documented inconsistently: some docs say value selection, current evaluator docs say selected-branch evaluation, and one KB article says both branches are evaluated. | `SPEC.md`, `modules/ar_condition_instruction_evaluator.md`, `kb/agerun-language-constraint-workarounds.md` | Violates Single Source of Semantics. Selected-branch evaluation fits conditional value selection; expression purity means branch evaluation must not be a place to hide side effects. | Correct documentation after deciding the expression-level `if(...)` model. |
 | No conditional execution statement exists; all method instructions execute in order and conditional behavior is encoded with value selection and no-op targets. | `kb/agerun-language-constraint-workarounds.md`, coordination method patterns | Aligns with line-based sequential evaluation and pure expressions, but it couples conditional side effects to sentinel/no-op instruction behavior instead of explicit control flow. | Keep in scope for the line-based, pure-expression, sequenced-instruction, and sentinel semantics follow-up plans. |
@@ -271,12 +271,21 @@ The language has no null type, so integer `0` appears as:
 - `send(0, ...)` no-op destination
 - common conditional false value
 
-This is workable, but it couples unrelated components through a shared sentinel. It also makes
-method authors choose item domains carefully, such as avoiding integer `0` as a valid list item when
-using `head(...)` as a stop condition.
+This is workable as current behavior, but it couples unrelated components through a shared sentinel.
+It also makes method authors choose item domains carefully, such as avoiding integer `0` as a valid
+list item when using `head(...)` as a stop condition.
 
-Recommended follow-up: if orthogonality becomes the guiding principle, consider a first-class absent
-value, option type, or explicit predicates before adding more sentinel-based built-ins.
+The audit treatment is not "change all existing `0` behavior now." It is a design warning for future
+language work: avoid adding more feature-specific meanings to `0` until the language explicitly
+chooses one absence/no-op model. The follow-up decision should be one of:
+
+- Keep integer `0` as the official absence/no-op value and document that contract centrally.
+- Add explicit predicates, such as "is missing" or "is empty", so methods do not rely only on value
+  equality with `0`.
+- Introduce a distinct absence value if `0` needs to remain ordinary integer data.
+
+Recommended follow-up: make that choice before adding more sentinel-based built-ins, then update the
+grammar, evaluator docs, and method guidance consistently.
 
 ## Recommended Follow-Up Order
 
