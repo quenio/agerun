@@ -410,7 +410,7 @@ send(memory.next_self, {targets: memory.remaining_targets, payload: message.payl
 
 ### 6. Conditional Evaluation
 
-- `if(condition: expression, true_value, false_value)`: Evaluates the condition first, treats integer `0` as false and a non-zero integer as true, then evaluates and returns only the selected branch expression.
+- `if(condition: expression, true_value, false_value)`: Evaluates the condition first, treats integer `0` as false, a non-zero integer as true, and non-integer condition values as false, then evaluates and returns only the selected branch expression.
 
 ### 7. Agent Management
 

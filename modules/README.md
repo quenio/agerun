@@ -1201,9 +1201,9 @@ The [send instruction evaluator module](ar_send_instruction_evaluator.md) handle
 #### Condition Instruction Evaluator Module (`ar_condition_instruction_evaluator`)
 
 The [condition instruction evaluator module](ar_condition_instruction_evaluator.md) handles conditional value selection:
-- **Condition Evaluation**: Evaluates the condition expression as an integer
+- **Condition Evaluation**: Evaluates the condition expression
 - **Branch Selection**: Evaluates only the selected branch expression
-- **Truthiness**: Integer `0` is false; non-zero integers are true
+- **Truthiness**: Integer `0` is false; non-zero integers are true; non-integer values select the false branch
 
 #### Parse Instruction Evaluator Module (`ar_parse_instruction_evaluator`)
 

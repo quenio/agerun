@@ -89,7 +89,7 @@ The module follows strict memory ownership rules:
 
 The module inspects all three condition arguments, but only evaluates the condition and selected
 branch:
-1. Condition must evaluate to an integer (0 = false, non-zero = true)
+1. Integer conditions use 0 = false and non-zero = true; non-integer condition values select the false branch
 2. True expression is evaluated only if condition is true
 3. False expression is evaluated only if condition is false
 4. Uses helper functions for expression parsing and evaluation
@@ -138,7 +138,7 @@ The module includes comprehensive tests covering:
 - False conditions (else-branch execution)
 - Integer conditions and expression-derived integer conditions
 - Branch value selection
-- Rejection of non-integer condition values
+- Non-integer condition values selecting the false branch
 - Memory leak verification
 
 All tests pass with zero memory leaks. Errors are now reported through the centralized logging system rather than stored internally.

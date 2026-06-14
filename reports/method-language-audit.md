@@ -155,7 +155,7 @@ principles or should be treated as a future design gap.
 | F1a | Function-call argument boundaries | Argument splitting is now consistent across instruction parsers. It preserves nested expression syntax inside one argument but still requires the argument to parse as an expression afterward. | The boundary rule is no longer duplicated across built-in parsers. Arity and instruction-specific semantics remain per call. | `SPEC.md` defines shared `<function-argument>` productions. `ar_function_call_parser` owns splitting and argument AST-list creation for C and Zig instruction parsers. `ar_function_call_parser_tests` covers nested list/map/quoted commas and nested call rejection as an expression. | Low |
 | F1b | Quote and escape handling | Function-call boundary parsing is quote-aware, including even/odd backslash parity before quotes. Expression string parsing remains a simple raw span between delimiters. | Backslash has context-dependent meaning: it can keep a quote from closing an argument span, but it is preserved as data and is not decoded by expression evaluation. Escaped quotes are not currently string value characters. | `SPEC.md` and parser module docs document the split. `_isQuote` in `ar_function_call_parser.zig` counts consecutive backslashes before quotes. `ar_expression_parser.c` copies bytes between the opening quote and the next quote. | Low |
 | F2 | Multiline list/map literals | Not composable. Multiline literals are canonicalized only as top-level assignment RHS values. | A list/map value has different syntax availability depending on whether it is one-line or multiline. | `SPEC.md`, `README.md`, and `ar_method_parser.md` say multiline lists/maps are assignment-only. Current corpus has 36 top-level multiline literal assignments. | Medium |
-| F3 | `if(...)` condition and branch evaluation | Partially composable. `SPEC.md` now states that the first argument is an `<expression>`, and parser tests accept `if(1, 1, 0)`. Calls still cannot appear inside branches because calls are not expressions. | Docs now agree that the evaluator checks the condition first and evaluates only the selected branch. That is more orthogonal than the earlier stale both-branches wording. | `ar_condition_instruction_parser.c` parses all three arguments through `ar_expression_parser`; `ar_condition_instruction_evaluator.zig` selects one branch; `SPEC.md`, `ar_condition_instruction_evaluator.md`, and `kb/agerun-language-constraint-workarounds.md` document selected-branch evaluation. | Medium |
+| F3 | `if(...)` condition and branch evaluation | Partially composable. `SPEC.md` now states that the first argument is an `<expression>`, and parser tests accept `if(1, 1, 0)`. Calls still cannot appear inside branches because calls are not expressions. | Docs now agree that the evaluator checks the condition first, evaluates only the selected branch, treats integer `0` as false, treats non-zero integers as true, and sends non-integer condition values to the false branch. That is more orthogonal than the earlier stale both-branches wording. | `ar_condition_instruction_parser.c` parses all three arguments through `ar_expression_parser`; `ar_condition_instruction_evaluator.zig` selects one branch; `SPEC.md`, `modules/README.md`, `ar_condition_instruction_evaluator.md`, and `kb/agerun-language-constraint-workarounds.md` document selected-branch evaluation. | Medium |
 | F4 | Assignment vs result assignment | Expression assignment is normal only for `memory.path := <expression>`. Function result assignment is encoded inside function instruction AST nodes. | Pure expression results and effectful instruction results are represented through overlapping storage paths. The syntax may remain compact, but storage validation should have one owner. | `ar_instruction_ast_t` stores assignment data separately from function-call result paths. Instruction evaluators use `ar_instruction_ast__has_result_assignment()` and `ar_instruction_ast__get_function_result_path()`. | High |
 | F5 | `append(...)` target | Syntactically accepts any expression for the target. Semantically only memory-owned lists can mutate. | A list value from `memory.results`, `message.results`, and `[1]` is not interchangeable for mutation. Non-memory targets become no-ops. As a mutating operation, `append(...)` should remain outside expression grammar. | `ar_append_instruction_evaluator.md` documents that message/context/fresh/non-list/missing/protected targets are no-ops. Tests cover message-owned, literal, and non-list no-op targets. | Medium |
 | F6 | Missing field and empty-list sentinels | Composable as expressions once produced, but sentinel values leak into method logic. | Missing `message.field`, empty `head(...)`, invalid `tail(...)`, failed spawn, and no-op send/spawn all use integer `0` in different roles. | `SPEC.md` documents integer `0` sentinel behavior for `head(...)`, `tail(...)`, `send(0, ...)`, and `spawn(0, ...)`. Tests cover missing message fields for head/tail. | Medium |
@@ -366,9 +366,9 @@ instruction argument or result position. In ordinary expression evaluation and o
 - `SPEC.md` now documents that quote/backslash handling for function-call argument splitting is a
   boundary rule, while string literal values preserve source characters and do not decode escapes.
 - `SPEC.md` now has separate `Language Design Principles` and `Current Language State` sections.
-- `SPEC.md`, `kb/agerun-language-constraint-workarounds.md`, and
+- `SPEC.md`, `kb/agerun-language-constraint-workarounds.md`, `modules/README.md`, and
   `modules/ar_condition_instruction_evaluator.md` now agree on lazy selected-branch `if(...)`
-  evaluation.
+  evaluation and the current non-integer-falls-through-false condition behavior.
 - `README.md` and `modules/README.md` now avoid invalid branch-side assignment/call examples and
   stale string-truthiness/conditional-execution wording.
 - Parser module docs now describe quote/backslash handling as function-call boundary parsing rather
@@ -437,6 +437,13 @@ baseline:
 After the user-facing `if(...)` documentation cleanup that removed an invalid README example and
 stale module-index condition wording, this report was revised to include those docs in the current
 baseline:
+
+- `make check-docs`: passed; 746 documentation files checked.
+- `git diff --check`: passed.
+
+After review identified that the README counter example still relied on uninitialized memory fields
+and the condition evaluator docs overstated non-integer rejection, this report was revised to record
+the initialized example and current non-integer-falls-through-false behavior:
 
 - `make check-docs`: passed; 746 documentation files checked.
 - `git diff --check`: passed.
