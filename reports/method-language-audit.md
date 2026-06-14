@@ -1,6 +1,9 @@
 # Method Language Semantic Principles Audit
 **Date**: 2026-06-14
-**Audit base**: `origin/main` at `ae3a064d` (`Merge pull request #28 from quenio/codex/separate-routing-methods`)
+**Initial audit base**: `origin/main` at `ae3a064d` (`Merge pull request #28 from quenio/codex/separate-routing-methods`)
+**Current revision note**: The current workspace now includes the first cleanup from this audit:
+function-call argument splitting and expression-nesting boundary handling are centralized in
+`ar_function_call_parser`, and `SPEC.md` names shared function-argument grammar productions.
 **Focus**: AgeRun method definition grammar, parser architecture, evaluator semantics, documentation, tests, and current method corpus.
 
 ## Executive Summary
@@ -26,6 +29,12 @@ Today, all built-in calls are modeled as instruction AST nodes rather than expre
 even pure calls cannot be nested inside expressions, operators, list items, map values, or other call
 arguments. This is the largest gap against the composability principle.
 
+One parser-level gap has now been closed: top-level function-call argument splitting has one
+language owner. `ar_function_call_parser` applies the shared delimiter rule for all current C and
+Zig instruction parsers, while `SPEC.md` expresses the same rule through reusable
+`<function-argument>` productions. This does not make calls into expressions; it only makes the
+current instruction-call argument boundary consistent.
+
 The main semantic gaps are coupled to syntax and origin. Pure function result storage is currently
 mixed with instruction result storage instead of normal assignment of an expression result.
 `append(...)` can accept any target expression syntactically, but mutates only memory-owned lists.
@@ -33,7 +42,8 @@ mixed with instruction result storage instead of normal assignment of an express
 are useful in the current language, but they are not fully orthogonal because equivalent-looking
 values can behave differently depending on where they came from or how they are used.
 
-This audit does not change behavior. It records the current state and recommends follow-up work.
+The initial audit did not change behavior. This revision records the first completed follow-up
+cleanup and keeps the remaining recommendations scoped to language behavior that is still unchanged.
 
 ## Audit Principles
 
@@ -84,7 +94,8 @@ principles or should be treated as a future design gap.
 |-----------------------|------------------------|---------------------|-----------------|
 | Methods are line-oriented: one instruction per line, no combined instructions, final newline required, empty lines ignored. | `SPEC.md`, `methods/README.md`, `modules/ar_method_parser.md` | Strongly aligns with Line-Based Parsing and Evaluation. It is an intentional instruction-boundary rule that simplifies parsing, evaluation, and traceability. | Preserve as a core language principle. Future expression work should compose inside a line, not erase line boundaries. |
 | Standalone expressions are not instructions. Expressions must appear under assignment or allowed function calls. | `SPEC.md` | Aligns with the line-based instruction model because a method line remains an executable instruction, not an implicit expression statement. It still limits statement-level composability. | Preserve unless a future design explicitly adds expression statements without side effects. |
-| Function calls are documented as instructions, not expressions; nested calls are forbidden. | `AGENTS.md`, `kb/agerun-method-language-nesting-constraint.md`, disabled parser tests | Conflicts with composability for pure value-producing calls, but protects expression purity for effectful operations such as `send(...)`, `spawn(...)`, and `append(...)`. Syntax should make the pure-expression versus effectful-instruction split clear. | Treat pure call composition as the primary gap; keep side-effectful operations sequenced as instructions. |
+| Function calls are documented as instructions, not expressions; nested calls are forbidden. | `SPEC.md`, `AGENTS.md`, `kb/agerun-method-language-nesting-constraint.md`, disabled parser tests | Conflicts with composability for pure value-producing calls, but protects expression purity for effectful operations such as `send(...)`, `spawn(...)`, and `append(...)`. Syntax should make the pure-expression versus effectful-instruction split clear. | Treat pure call composition as the primary gap; keep side-effectful operations sequenced as instructions. |
+| Function-call argument boundaries use one shared grammar rule. | `SPEC.md`, `modules/ar_function_call_parser.md`, `modules/ar_function_call_parser_tests.c` | Aligns with Single Source of Semantics: top-level commas and closing parentheses delimit arguments, while quoted strings, parenthesized expression groups, and one-line list/map literals are preserved inside an argument. | Preserve as the current baseline. Future pure-call-expression work should reuse this boundary rule instead of reintroducing per-call scanners. |
 | Function result storage uses assignment-looking syntax on function instructions. | `SPEC.md`, `modules/ar_instruction_ast.md`, evaluator module docs | Conflicts with Syntax-Directed Semantics because ordinary assignment and instruction result binding look similar while using different AST/evaluator paths. | Move pure call results into expression assignment, and centralize or visibly distinguish any remaining effectful result binding. |
 | One-line list/map literals can appear in expression contexts; multiline list/map literals are assignment-only and cannot appear as call arguments, list items, or map values. | `SPEC.md`, `README.md`, `modules/ar_method_parser.md` | Partially aligns. One-line literals are composable; multiline literals are an explicit formatting exception to the one-line instruction model. | Either document multiline literals as a deliberate source-format exception or move them into expression parsing while preserving clear line-boundary rules. |
 | Map literal keys must be identifiers; quoted keys are not supported. | `SPEC.md`, `modules/ar_expression_parser.md` | Mostly compatible as an explicit grammar restriction. It limits data shape expressiveness but does not by itself create semantic drift. | Preserve unless future data requirements need arbitrary string keys. |
@@ -126,6 +137,7 @@ principles or should be treated as a future design gap.
 |----|------|----------------------|----------------------|----------|------|
 | F0 | Line-based parsing and evaluation | Statement-level composition is deliberately limited: each nonempty line is one instruction. Pure expression composition should happen inside that instruction boundary. | Evaluation order is explicit and source-ordered, which reduces hidden semantic coupling across lines. | `SPEC.md`, `methods/README.md`, and `ar_method_parser.md` document one instruction per line, no combined instructions, final newline requirement, and ignored empty lines. | Low |
 | F1 | Built-in calls | Pure built-in calls are not composable as expressions. Calls are accepted only as top-level function instructions, with optional result assignment. | Function results are stored through instruction-specific result assignment, not by normal expression assignment. Effectful built-ins are correctly kept out of expressions if expression purity is a hard rule. | `SPEC.md` separates `<function-instruction>` from `<expression>`. `ar_expression_ast_t` has no call node, while `ar_instruction_ast_t` has per-call instruction types. `AGENTS.md` says function calls are not expressions. Disabled tests state function calls in expressions are not supported. | High |
+| F1a | Function-call argument boundaries | Argument splitting is now consistent across instruction parsers. It preserves nested expression syntax inside one argument but still requires the argument to parse as an expression afterward. | The boundary rule is no longer duplicated across built-in parsers. Arity and instruction-specific semantics remain per call. | `SPEC.md` defines shared `<function-argument>` productions. `ar_function_call_parser` owns splitting and argument AST-list creation for C and Zig instruction parsers. `ar_function_call_parser_tests` covers nested list/map/quoted commas and nested call rejection as an expression. | Low |
 | F2 | Multiline list/map literals | Not composable. Multiline literals are canonicalized only as top-level assignment RHS values. | A list/map value has different syntax availability depending on whether it is one-line or multiline. | `SPEC.md`, `README.md`, and `ar_method_parser.md` say multiline lists/maps are assignment-only. Current corpus has 36 top-level multiline literal assignments. | Medium |
 | F3 | `if(...)` condition and branch evaluation | Partially composable. Parser tests accept `if(1, 1, 0)`, but `SPEC.md` says the first argument is `<comparison-expression>`. Calls still cannot appear inside branches because calls are not expressions. | Docs disagree. Current evaluator evaluates only the selected branch, while one KB article still says both branches are evaluated. | `ar_condition_instruction_parser.c` parses all three arguments through `ar_expression_parser`; `ar_condition_instruction_evaluator.zig` selects one branch; `ar_condition_instruction_evaluator.md` documents short-circuit behavior; `kb/agerun-language-constraint-workarounds.md` contradicts it. | High |
 | F4 | Assignment vs result assignment | Expression assignment is normal only for `memory.path := <expression>`. Function result assignment is encoded inside function instruction AST nodes. | Pure expression results and effectful instruction results are represented through overlapping storage paths. The syntax may remain compact, but storage validation should have one owner. | `ar_instruction_ast_t` stores assignment data separately from function-call result paths. Instruction evaluators use `ar_instruction_ast__has_result_assignment()` and `ar_instruction_ast__get_function_result_path()`. | High |
@@ -180,8 +192,11 @@ infer a different behavior from hidden origin, ownership, or data-shape checks.
 ### 3. Pure Function Calls Are the Central Composability Gap
 
 The grammar accepts built-ins through `<function-instruction>`, not `<expression>`. Each built-in
-has a specialized parser and instruction AST type. The expression AST supports literals, accessors,
-and binary operations only. Because of that split, pure value compositions are not supported:
+has a specialized parser and instruction AST type. The current workspace has already removed the
+duplicated function-call argument scanner: the specialized parsers share `ar_function_call_parser`
+for argument boundaries and argument AST-list creation, and `SPEC.md` now reflects that shared
+argument grammar. The expression AST still has no call node. Because of that split, pure value
+compositions are not supported:
 
 - `memory.payload := parse("name={name}", build("name={name}", memory))`
 - `memory.items := [head(memory.items), tail(memory.items)]`
@@ -192,11 +207,12 @@ The existing method corpus appears to work around this by using intermediate mem
 regex found 1,023 assigned built-in call lines and no nested built-in call lines in `.method`
 sources. That is strong evidence that the grammar shape controls method style.
 
-Recommended follow-up: add an expression-level call AST and call evaluator only for calls classified
-as pure. Calls such as `parse`, `build`, `head`, `tail`, and value-returning `if(...)` are good
-candidate expressions. Side-effectful operations such as `send`, `spawn`, `exit`, `deprecate`,
-`append`, `compile`, and `complete` should remain sequenced instructions unless their semantics are
-split into pure value production plus a separate effectful instruction.
+Recommended follow-up: reuse the shared function-call boundary parser while adding an
+expression-level call AST and call evaluator only for calls classified as pure. Calls such as
+`parse`, `build`, `head`, `tail`, and value-returning `if(...)` are good candidate expressions.
+Side-effectful operations such as `send`, `spawn`, `exit`, `deprecate`, `append`, `compile`, and
+`complete` should remain sequenced instructions unless their semantics are split into pure value
+production plus a separate effectful instruction.
 
 ### 4. Multiline Literals Are a Syntax Convenience, Not a True Expression Form
 
@@ -300,9 +316,10 @@ instruction argument or result position. In ordinary expression evaluation and o
 2. **Purity and syntax classification design note**: decide which built-ins are pure expressions,
    which must remain sequenced instructions because they mutate state, communicate, create agents, or
    otherwise perform effects, and how those differences are visible in syntax.
-3. **AST refactor plan**: add `AR_EXPRESSION_AST_TYPE__CALL` for pure calls, define function
-   metadata once, and reduce per-built-in parser duplication without admitting side-effectful
-   operations into expression parsing or weakening line-based instruction parsing.
+3. **AST refactor plan**: add `AR_EXPRESSION_AST_TYPE__CALL` for pure calls, reuse
+   `ar_function_call_parser` for expression-call argument boundaries, define function metadata once,
+   and reduce remaining per-built-in metadata/evaluator duplication without admitting
+   side-effectful operations into expression parsing or weakening line-based instruction parsing.
 4. **Result binding plan**: make `memory.path := <expression>` the only pure-expression storage
    mechanism, and centralize any statement-level result binding needed by effectful instructions.
 5. **Multiline expression plan**: choose between documenting assignment-only multiline literals as
@@ -310,9 +327,15 @@ instruction argument or result position. In ordinary expression evaluation and o
 6. **Sentinel semantics plan**: evaluate whether integer `0` remains the language-wide absent value
    or whether the data model needs an explicit absence representation.
 
-## Acceptance Criteria for Future Implementation
+## Current Baseline Now Satisfied
 
-- Pure function-call parsing has one source of truth for argument splitting and expression nesting.
+- Function-call argument splitting and expression-nesting boundary handling have one source of truth
+  in `ar_function_call_parser`.
+- `SPEC.md` names shared function-argument productions instead of spelling each built-in argument
+  list independently.
+
+## Acceptance Criteria for Remaining Future Implementation
+
 - Each nonempty source line remains one complete instruction boundary.
 - Method evaluation remains source-ordered and line-based.
 - Expression evaluation is side-effect free by grammar and by evaluator contract.
@@ -348,3 +371,9 @@ syntax-directed-semantics guidance, only lightweight documentation checks were n
 
 - `make check-docs`: passed; 743 documentation files checked.
 - `git diff --check`: passed.
+
+After the function-call parser cleanup and SPEC grammar update, this report was revised to separate
+the now-satisfied shared argument-boundary baseline from the remaining pure-call-expression work:
+
+- `make check-docs`: passed; 746 documentation files checked.
+- `git diff --check reports/method-language-audit.md`: passed.

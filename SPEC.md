@@ -161,18 +161,28 @@ The following BNF grammar defines the syntax of individual instructions allowed 
                  | <deprecate-function>
                  | <if-function>
 
-<send-function> ::= 'send' '(' <expression> ',' <expression> ')'
-<parse-function> ::= 'parse' '(' <expression> ',' <expression> ')'
-<build-function> ::= 'build' '(' <expression> ',' <expression> ')'
-<complete-function> ::= 'complete' '(' <expression> [',' <expression>] ')'
-<append-function> ::= 'append' '(' <expression> ',' <expression> ')'
-<head-function> ::= 'head' '(' <expression> ')'
-<tail-function> ::= 'tail' '(' <expression> ')'
-<compile-function> ::= 'compile' '(' <expression> ',' <expression> ',' <expression> ')'
-<spawn-function> ::= 'spawn' '(' <expression> ',' <expression> ',' <expression> ')'
-<exit-function> ::= 'exit' '(' <expression> ')'
-<deprecate-function> ::= 'deprecate' '(' <expression> ',' <expression> ')'
-<if-function> ::= 'if' '(' <comparison-expression> ',' <expression> ',' <expression> ')'
+<send-function> ::= 'send' '(' <two-function-arguments> ')'
+<parse-function> ::= 'parse' '(' <two-function-arguments> ')'
+<build-function> ::= 'build' '(' <two-function-arguments> ')'
+<complete-function> ::= 'complete' '(' <one-or-two-function-arguments> ')'
+<append-function> ::= 'append' '(' <two-function-arguments> ')'
+<head-function> ::= 'head' '(' <one-function-argument> ')'
+<tail-function> ::= 'tail' '(' <one-function-argument> ')'
+<compile-function> ::= 'compile' '(' <three-function-arguments> ')'
+<spawn-function> ::= 'spawn' '(' <three-function-arguments> ')'
+<exit-function> ::= 'exit' '(' <one-function-argument> ')'
+<deprecate-function> ::= 'deprecate' '(' <two-function-arguments> ')'
+<if-function> ::= 'if' '(' <condition-function-arguments> ')'
+
+<one-function-argument> ::= <function-argument>
+<one-or-two-function-arguments> ::= <one-function-argument>
+                                  | <two-function-arguments>
+<two-function-arguments> ::= <function-argument> <function-argument-tail>
+<three-function-arguments> ::= <function-argument> <function-argument-tail> <function-argument-tail>
+<condition-function-arguments> ::= <comparison-expression> <function-argument-tail> <function-argument-tail>
+<function-argument-tail> ::= <function-argument-separator> <function-argument>
+<function-argument> ::= <expression>
+<function-argument-separator> ::= ','
 ```
 
 Instructions in an agent method can be of two types:
@@ -206,7 +216,16 @@ Function call instructions can optionally assign their result to a variable. For
 - `if(condition, true_value, false_value)` - Evaluate without storing the result
 - `result := if(condition, true_value, false_value)` - Store the result in a memory variable
 
-Standalone expressions that are not part of an assignment or one of the allowed function calls are not permitted as instructions.
+All function-call argument lists use the same language rule for argument boundaries:
+- Arguments are separated only by top-level commas and the closing parenthesis for the call.
+- Commas and closing parentheses inside quoted strings, parenthesized expression groups, one-line
+  list literals, or one-line map literals do not terminate an argument.
+- Function-specific arity rules still apply after this shared splitting rule. For example,
+  `send(...)` requires exactly two arguments, while `complete(...)` accepts one or two arguments.
+- Nested call-like text can be preserved as one argument while parsing boundaries, but it is not a
+  valid expression because function calls are instructions, not expressions.
+
+Standalone expressions that are not part of an assignment or one of the allowed function calls are not permitted as instructions. Function calls are also not expressions and cannot be nested inside assignment expressions or other function-call arguments.
 
 ### Expression Syntax
 
@@ -218,6 +237,7 @@ The following BNF grammar defines the syntax of expressions allowed in AgeRun in
               | <list-literal>
               | <map-literal>
               | <memory-access>
+              | <parenthesized-expression>
               | <arithmetic-expression>
               | <comparison-expression>
 
@@ -229,6 +249,8 @@ The following BNF grammar defines the syntax of expressions allowed in AgeRun in
 <list-literal> ::= '[' [<expression> {',' <expression>} [',']] ']'
 
 <map-literal> ::= '{' [<identifier> ':' <expression> {',' <identifier> ':' <expression>} [',']] '}'
+
+<parenthesized-expression> ::= '(' <expression> ')'
 
 <multiline-list-literal> ::= '[' <newline> {<indent> <expression> [','] <newline>} <assignment-indent> ']'
 
