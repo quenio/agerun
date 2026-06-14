@@ -65,8 +65,9 @@ The parser handles the if() function with this syntax:
 
 The parser correctly handles:
 - Nested expressions in arguments
-- Quoted strings with escapes
-- Nested function calls
+- Quoted argument spans using shared function-call boundary parsing
+- Nested call-like text for argument boundary detection; function calls are still rejected as
+  expression values
 - Complex boolean conditions
 - Whitespace variations
 
@@ -76,7 +77,7 @@ The parser:
 1. Validates the function name is "if"
 2. Ensures opening parenthesis follows
 3. Extracts exactly 3 arguments (condition, then, else)
-4. Handles nested parentheses and quoted strings in arguments
+4. Uses shared function-call boundary parsing for nested parentheses and quoted argument spans
 5. Creates an AR_INSTRUCTION_AST_TYPE__IF node with the parsed arguments
 6. Tracks optional result assignment path
 
