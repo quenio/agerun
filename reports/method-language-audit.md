@@ -6,7 +6,10 @@ function-call argument splitting and expression-nesting boundary handling are ce
 `ar_function_call_parser`, and `SPEC.md` names shared function-argument grammar productions. The
 spec now also distinguishes boundary-level quote handling from string-literal value semantics:
 backslash parity affects whether a quote closes a function-call argument span, but string literal
-values preserve source characters and do not decode escape sequences.
+values preserve source characters and do not decode escape sequences. A follow-up documentation
+correction pass now names the language design principles in `SPEC.md`, separates those principles
+from the current language state, fixes stale lazy-`if(...)` wording, and removes stale module-doc
+claims that implied general escaped-quote or escape-sequence support.
 **Focus**: AgeRun method definition grammar, parser architecture, evaluator semantics, documentation, tests, and current method corpus.
 
 ## Executive Summary
@@ -52,8 +55,9 @@ mixed with instruction result storage instead of normal assignment of an express
 are useful in the current language, but they are not fully orthogonal because equivalent-looking
 values can behave differently depending on where they came from or how they are used.
 
-The initial audit did not change behavior. This revision records the first completed follow-up
-cleanup and keeps the remaining recommendations scoped to language behavior that is still unchanged.
+The initial audit did not change behavior. This revision records completed documentation and parser
+follow-ups and keeps the remaining recommendations scoped to language behavior that is still
+unchanged.
 
 ## Audit Principles
 
@@ -112,7 +116,7 @@ principles or should be treated as a future design gap.
 | Map literal keys must be identifiers; quoted keys are not supported. | `SPEC.md`, `modules/ar_expression_parser.md` | Mostly compatible as an explicit grammar restriction. It limits data shape expressiveness but does not by itself create semantic drift. | Preserve unless future data requirements need arbitrary string keys. |
 | There is no null type; integer `0` is used as the absent/failure/no-op sentinel in several places. | `AGENTS.md`, `SPEC.md`, `modules/ar_expression_evaluator.md` | Conflicts with orthogonality when unrelated cases share the same value: missing field, empty `head(...)`, invalid `tail(...)` input, no-op spawn, false condition. | Preserve existing `0` behavior for compatibility, but stop treating it as a default pattern for new features. Before adding another `0`-based case, decide whether the language should keep `0` as the official absence/no-op value, add explicit predicates such as "is missing" or "is empty", or introduce a distinct absence value. |
 | No static type checking; methods must handle possible runtime types defensively. | `AGENTS.md`, `kb/agerun-language-constraint-workarounds.md` | Acceptable as a dynamic-language constraint, but it raises the burden on orthogonal runtime behavior and diagnostics. | Preserve as current-state behavior; improve documentation and tests around type-dependent built-ins. |
-| `if(...)` is documented inconsistently: some docs say value selection, current evaluator docs say selected-branch evaluation, and one KB article says both branches are evaluated. | `SPEC.md`, `modules/ar_condition_instruction_evaluator.md`, `kb/agerun-language-constraint-workarounds.md` | Violates Single Source of Semantics. Selected-branch evaluation fits conditional value selection; expression purity means branch evaluation must not be a place to hide side effects. | Correct documentation after deciding the expression-level `if(...)` model. |
+| `if(...)` is documented as lazy value selection: evaluate the condition, then evaluate and return only the selected branch expression. | `SPEC.md`, `modules/ar_condition_instruction_evaluator.md`, `kb/agerun-language-constraint-workarounds.md` | Aligns with Single Source of Semantics for current instruction-level conditionals. Selected-branch evaluation fits conditional value selection; expression purity means branch evaluation must not become a place to hide side effects. | Preserve the lazy selected-branch rule. If `if(...)` later becomes an expression-level conditional, keep it pure and lazy. |
 | No conditional execution statement exists; all method instructions execute in order and conditional behavior is encoded with value selection and no-op targets. | `kb/agerun-language-constraint-workarounds.md`, coordination method patterns | Aligns with line-based sequential evaluation and pure expressions, but it couples conditional side effects to sentinel/no-op instruction behavior instead of explicit control flow. | Keep in scope for the line-based, pure-expression, sequenced-instruction, and sentinel semantics follow-up plans. |
 | `send(0, message)` is a no-op; `spawn(0, ...)` and `spawn("", ...)` are no-ops returning/storing `0`. | `AGENTS.md`, `SPEC.md`, `kb/no-op-semantics-pattern.md`, `kb/no-op-instruction-semantics.md` | Aligns with Explicit Exceptions when documented and with Expression Purity when kept outside expressions. It still assigns special instruction semantics to ordinary integer/string values. | Preserve the current no-op rules, but document them as instruction-specific exceptions: in `send(...)`, `0` means "no destination, do not send"; in `spawn(...)`, `0` or `""` means "do not spawn and return/store `0`". Do not imply that integer `0` has this no-op meaning in ordinary expression evaluation or ordinary data values. |
 | `append(target, value)` accepts any target expression syntactically, but only mutates an existing memory-owned list; message/context/fresh/missing/non-list/protected targets are no-ops. | `SPEC.md`, `modules/ar_append_instruction_evaluator.md` | Explicit but not fully orthogonal: identical list values differ by origin and ownership. The expression-looking target hides lvalue semantics unless the root/path syntax is treated as the mutation marker. | Define lvalue/mutation-target rules for mutating instructions, not expression calls. |
@@ -149,15 +153,15 @@ principles or should be treated as a future design gap.
 | F0 | Line-based parsing and evaluation | Statement-level composition is deliberately limited: each nonempty line is one instruction. Pure expression composition should happen inside that instruction boundary. | Evaluation order is explicit and source-ordered, which reduces hidden semantic coupling across lines. | `SPEC.md`, `methods/README.md`, and `ar_method_parser.md` document one instruction per line, no combined instructions, final newline requirement, and ignored empty lines. | Low |
 | F1 | Built-in calls | Pure built-in calls are not composable as expressions. Calls are accepted only as top-level function instructions, with optional result assignment. | Function results are stored through instruction-specific result assignment, not by normal expression assignment. Effectful built-ins are correctly kept out of expressions if expression purity is a hard rule. | `SPEC.md` separates `<function-instruction>` from `<expression>`. `ar_expression_ast_t` has no call node, while `ar_instruction_ast_t` has per-call instruction types. `AGENTS.md` says function calls are not expressions. Disabled tests state function calls in expressions are not supported. | High |
 | F1a | Function-call argument boundaries | Argument splitting is now consistent across instruction parsers. It preserves nested expression syntax inside one argument but still requires the argument to parse as an expression afterward. | The boundary rule is no longer duplicated across built-in parsers. Arity and instruction-specific semantics remain per call. | `SPEC.md` defines shared `<function-argument>` productions. `ar_function_call_parser` owns splitting and argument AST-list creation for C and Zig instruction parsers. `ar_function_call_parser_tests` covers nested list/map/quoted commas and nested call rejection as an expression. | Low |
-| F1b | Quote and escape handling | Function-call boundary parsing is quote-aware, including even/odd backslash parity before quotes. Expression string parsing remains a simple raw span between delimiters. | Backslash has context-dependent meaning: it can keep a quote from closing an argument span, but it is preserved as data and is not decoded by expression evaluation. Escaped quotes are not currently string value characters. | `SPEC.md` documents the split. `_isQuote` in `ar_function_call_parser.zig` counts consecutive backslashes before quotes. `ar_expression_parser.c` copies bytes between the opening quote and the next quote. Some module docs still describe escaped quotes or escape sequences more broadly than the implementation supports. | Medium |
+| F1b | Quote and escape handling | Function-call boundary parsing is quote-aware, including even/odd backslash parity before quotes. Expression string parsing remains a simple raw span between delimiters. | Backslash has context-dependent meaning: it can keep a quote from closing an argument span, but it is preserved as data and is not decoded by expression evaluation. Escaped quotes are not currently string value characters. | `SPEC.md` and parser module docs document the split. `_isQuote` in `ar_function_call_parser.zig` counts consecutive backslashes before quotes. `ar_expression_parser.c` copies bytes between the opening quote and the next quote. | Low |
 | F2 | Multiline list/map literals | Not composable. Multiline literals are canonicalized only as top-level assignment RHS values. | A list/map value has different syntax availability depending on whether it is one-line or multiline. | `SPEC.md`, `README.md`, and `ar_method_parser.md` say multiline lists/maps are assignment-only. Current corpus has 36 top-level multiline literal assignments. | Medium |
-| F3 | `if(...)` condition and branch evaluation | Partially composable. Parser tests accept `if(1, 1, 0)`, but `SPEC.md` says the first argument is `<comparison-expression>`. Calls still cannot appear inside branches because calls are not expressions. | Docs disagree. Current evaluator evaluates only the selected branch, while one KB article still says both branches are evaluated. | `ar_condition_instruction_parser.c` parses all three arguments through `ar_expression_parser`; `ar_condition_instruction_evaluator.zig` selects one branch; `ar_condition_instruction_evaluator.md` documents short-circuit behavior; `kb/agerun-language-constraint-workarounds.md` contradicts it. | High |
+| F3 | `if(...)` condition and branch evaluation | Partially composable. `SPEC.md` now states that the first argument is an `<expression>`, and parser tests accept `if(1, 1, 0)`. Calls still cannot appear inside branches because calls are not expressions. | Docs now agree that the evaluator checks the condition first and evaluates only the selected branch. That is more orthogonal than the earlier stale both-branches wording. | `ar_condition_instruction_parser.c` parses all three arguments through `ar_expression_parser`; `ar_condition_instruction_evaluator.zig` selects one branch; `SPEC.md`, `ar_condition_instruction_evaluator.md`, and `kb/agerun-language-constraint-workarounds.md` document selected-branch evaluation. | Medium |
 | F4 | Assignment vs result assignment | Expression assignment is normal only for `memory.path := <expression>`. Function result assignment is encoded inside function instruction AST nodes. | Pure expression results and effectful instruction results are represented through overlapping storage paths. The syntax may remain compact, but storage validation should have one owner. | `ar_instruction_ast_t` stores assignment data separately from function-call result paths. Instruction evaluators use `ar_instruction_ast__has_result_assignment()` and `ar_instruction_ast__get_function_result_path()`. | High |
 | F5 | `append(...)` target | Syntactically accepts any expression for the target. Semantically only memory-owned lists can mutate. | A list value from `memory.results`, `message.results`, and `[1]` is not interchangeable for mutation. Non-memory targets become no-ops. As a mutating operation, `append(...)` should remain outside expression grammar. | `ar_append_instruction_evaluator.md` documents that message/context/fresh/non-list/missing/protected targets are no-ops. Tests cover message-owned, literal, and non-list no-op targets. | Medium |
 | F6 | Missing field and empty-list sentinels | Composable as expressions once produced, but sentinel values leak into method logic. | Missing `message.field`, empty `head(...)`, invalid `tail(...)`, failed spawn, and no-op send/spawn all use integer `0` in different roles. | `SPEC.md` documents integer `0` sentinel behavior for `head(...)`, `tail(...)`, `send(0, ...)`, and `spawn(0, ...)`. Tests cover missing message fields for head/tail. | Medium |
 | F7 | `memory.self` protection | Protection is consistently enforced for assignment and many result paths, but it is bolted onto instruction semantics. | Write permission depends on target root/path and, for parse, placeholder names/input origin. | `SPEC.md` says method instructions cannot assign or store into `memory.self`; `ar_instruction_ast__has_protected_memory_self_assignment()` supports instruction-level checks; parse evaluator adds placeholder/input-specific checks. | Medium |
 | F8 | Operators over containers | One-line literals are composable in expressions, but equality semantics are partial. | Empty list equality exists; non-empty list structural equality does not. Maps are constructible but not structurally comparable. | `ar_expression_evaluator.md` says list equality is limited to empty-list checks and non-empty lists are not structurally compared. | Low |
-| F9 | Documentation consistency | Documentation documents real constraints but not under a single principle. Some docs are stale. | Stale docs can make semantics appear less orthogonal than the implementation or hide actual couplings. | `AGENTS.md` and `kb/agerun-method-language-nesting-constraint.md` document non-expression calls. `kb/agerun-language-constraint-workarounds.md` contradicts current lazy `if(...)`. | Medium |
+| F9 | Documentation consistency | `SPEC.md` now names the language design principles and separates them from current language state. The earlier stale `if(...)` and string-escape wording has been corrected in the directly affected docs. | The remaining risk is future drift across the spec, KB, parser docs, and this audit report as language behavior evolves. | `SPEC.md` documents `Language Design Principles` and `Current Language State`. `AGENTS.md` and `kb/agerun-method-language-nesting-constraint.md` still document non-expression calls as current constraints. `kb/agerun-language-constraint-workarounds.md` now matches lazy `if(...)`. | Low |
 | F10 | Syntax-directed semantics | Several constructs use one syntax shape while dispatching to context-dependent evaluation behavior. | Semantic differences are sometimes hidden behind evaluator checks rather than syntax: result binding, lvalue eligibility, sentinel `0`, and partial equality. | Assignment-looking function results, `append(...)` targets, no-op `0` semantics, and container equality restrictions. | Medium |
 
 ## Detailed Observations
@@ -174,8 +178,9 @@ richer inside a single instruction, but the language does not need to make multi
 share one line, introduce implicit expression statements, or hide side effects inside nested
 expressions.
 
-Recommended follow-up: document line-based parsing and evaluation as a core language rule in the
-same place as expression purity. Treat multiline literals as an explicit source-format exception
+Current documentation baseline: `SPEC.md` now names Line-Based Parsing and Evaluation beside
+Expression Purity and the other language design principles, then separately records the current
+language state. Multiline literals remain documented as an assignment-only source-format exception
 whose parser behavior must preserve clear instruction boundaries.
 
 ### 2. Syntax Should Reveal Evaluation Behavior
@@ -263,19 +268,14 @@ with clear layout rules.
 ### 6. `if(...)` Has Better Runtime Orthogonality Than Some Docs Say
 
 The current parser parses all three `if(...)` arguments as normal expressions, and tests show
-literal integer conditions are accepted. The evaluator checks integer truthiness and evaluates only
-the selected branch. This is more orthogonal than the stale KB guidance that says both branches are
-evaluated.
+literal integer conditions are accepted. `SPEC.md` now reflects that condition grammar. The evaluator
+checks integer truthiness and evaluates only the selected branch, and the KB/module docs now match
+that selected-branch model.
 
-However, `SPEC.md` still states the condition grammar as `<comparison-expression>`, and calls cannot
-appear inside branches because calls are not expressions. The result is an inconsistent contract:
-implementation allows expression conditions, current evaluator is lazy, but some docs describe a
-stricter or older semantic model.
-
-Recommended follow-up: update documentation after deciding whether `if(...)` remains a function
-instruction or becomes an expression-level conditional. If it becomes an expression, it should remain
-pure and lazy: only the selected branch should be evaluated, and neither branch should be able to
-perform effects through expression evaluation.
+Calls still cannot appear inside branches because calls are not expressions. If a future language
+change makes `if(...)` an expression-level conditional, it should remain pure and lazy: only the
+selected branch should be evaluated, and neither branch should be able to perform effects through
+expression evaluation.
 
 ### 7. Result Assignment Is Duplicated Semantics
 
@@ -341,24 +341,20 @@ Those rules are instruction-specific exceptions: `0` is interpreted specially on
 instruction argument or result position. In ordinary expression evaluation and ordinary data storage,
 `0` remains just the integer value `0`.
 
-## Recommended Follow-Up Order
+## Remaining Recommended Follow-Up Order
 
-1. **Documentation correction pass**: fix the stale `if(...)` branch-evaluation KB wording, fix
-   stale module docs that overstate escaped quote or escape-sequence support, and add line-based
-   parsing/evaluation, expression purity, syntax-directed semantics, composability, and
-   orthogonality as language design goals, clearly labeled as goal vs current state.
-2. **Purity and syntax classification design note**: decide which built-ins are pure expressions,
+1. **Purity and syntax classification design note**: decide which built-ins are pure expressions,
    which must remain sequenced instructions because they mutate state, communicate, create agents, or
    otherwise perform effects, and how those differences are visible in syntax.
-3. **AST refactor plan**: add `AR_EXPRESSION_AST_TYPE__CALL` for pure calls, reuse
+2. **AST refactor plan**: add `AR_EXPRESSION_AST_TYPE__CALL` for pure calls, reuse
    `ar_function_call_parser` for expression-call argument boundaries, define function metadata once,
    and reduce remaining per-built-in metadata/evaluator duplication without admitting
    side-effectful operations into expression parsing or weakening line-based instruction parsing.
-4. **Result binding plan**: make `memory.path := <expression>` the only pure-expression storage
+3. **Result binding plan**: make `memory.path := <expression>` the only pure-expression storage
    mechanism, and centralize any statement-level result binding needed by effectful instructions.
-5. **Multiline expression plan**: choose between documenting assignment-only multiline literals as
+4. **Multiline expression plan**: choose between documenting assignment-only multiline literals as
    an explicit exception or promoting them into the expression parser.
-6. **Sentinel semantics plan**: evaluate whether integer `0` remains the language-wide absent value
+5. **Sentinel semantics plan**: evaluate whether integer `0` remains the language-wide absent value
    or whether the data model needs an explicit absence representation.
 
 ## Current Baseline Now Satisfied
@@ -369,6 +365,12 @@ instruction argument or result position. In ordinary expression evaluation and o
   list independently.
 - `SPEC.md` now documents that quote/backslash handling for function-call argument splitting is a
   boundary rule, while string literal values preserve source characters and do not decode escapes.
+- `SPEC.md` now has separate `Language Design Principles` and `Current Language State` sections.
+- `SPEC.md`, `kb/agerun-language-constraint-workarounds.md`, and
+  `modules/ar_condition_instruction_evaluator.md` now agree on lazy selected-branch `if(...)`
+  evaluation.
+- Parser module docs now describe quote/backslash handling as function-call boundary parsing rather
+  than value-level escaped-quote or escape-sequence support.
 
 ## Acceptance Criteria for Remaining Future Implementation
 
@@ -421,3 +423,11 @@ quote handling from raw string-literal value semantics:
 
 - `make check-docs`: passed; 746 documentation files checked.
 - `git diff --check reports/method-language-audit.md`: passed.
+
+After the documentation correction pass that split `SPEC.md` language principles from current
+language state, fixed stale lazy-`if(...)` wording, and aligned parser docs with raw string values
+and boundary-only quote/backslash handling, this report was revised to reflect that completed
+baseline:
+
+- `make check-docs`: passed; 746 documentation files checked.
+- `git diff --check`: passed.
