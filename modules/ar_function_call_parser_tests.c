@@ -120,12 +120,43 @@ static void test_function_call_parser__keeps_nested_calls_whole_but_not_expressi
     ar_log__destroy(own_log);
 }
 
+static void test_function_call_parser__quote_after_even_backslashes_closes_string(void) {
+    printf("Testing quote after even backslashes closes string...\n");
+
+    ar_log_t *own_log = ar_log__create();
+    assert(own_log != NULL);
+    const char *ref_instruction = "build(\"C:\\\\\", memory.data)";
+    size_t pos = strlen("build(");
+    char **own_args = NULL;
+    size_t arg_count = 0;
+
+    bool parsed = ar_function_call_parser__parse_exact(
+        own_log,
+        ref_instruction,
+        &pos,
+        &own_args,
+        &arg_count,
+        2
+    );
+
+    assert(parsed == true);
+    assert(arg_count == 2);
+    assert(strcmp(own_args[0], "\"C:\\\\\"") == 0);
+    assert(strcmp(own_args[1], "memory.data") == 0);
+    assert(ref_instruction[pos] == ')');
+    assert(ar_log__get_last_error_message(own_log) == NULL);
+
+    ar_function_call_parser__destroy_args(own_args, arg_count);
+    ar_log__destroy(own_log);
+}
+
 int main(void) {
     printf("Running function call parser tests...\n\n");
 
     test_function_call_parser__parse_exact_respects_expression_nesting();
     test_function_call_parser__parse_arg_asts_uses_expression_parser();
     test_function_call_parser__keeps_nested_calls_whole_but_not_expressions();
+    test_function_call_parser__quote_after_even_backslashes_closes_string();
 
     printf("\nAll function call parser tests passed!\n");
     return 0;

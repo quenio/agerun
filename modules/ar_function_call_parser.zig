@@ -23,7 +23,17 @@ fn _skipWhitespace(ref_text: [*:0]const u8, start: usize) usize {
 }
 
 fn _isQuote(ref_text: [*:0]const u8, pos: usize) bool {
-    return ref_text[pos] == '"' and (pos == 0 or ref_text[pos - 1] != '\\');
+    if (ref_text[pos] != '"') {
+        return false;
+    }
+
+    var backslash_count: usize = 0;
+    var scan_pos = pos;
+    while (scan_pos > 0 and ref_text[scan_pos - 1] == '\\') {
+        backslash_count += 1;
+        scan_pos -= 1;
+    }
+    return backslash_count % 2 == 0;
 }
 
 export fn ar_function_call_parser__extract_argument(
