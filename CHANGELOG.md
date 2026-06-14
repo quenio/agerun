@@ -14,8 +14,9 @@
   table, strengthen findings F1 and F9, and add a detailed note in the pure-call composability
   section about stale parser-module wording versus end-to-end language semantics.
 
-  **Verification**: `make check-docs`, `git diff --check`, `make clean build 2>&1`,
-  `make check-logs`, and `make check-naming`.
+  **Verification**: `make check-docs` passed; `git diff --check` passed; `make clean build 2>&1`
+  still fails in existing `run-tests`, `run-exec`, `tsan-exec`, `tsan-tests`, `sanitize-tests`, and
+  `sanitize-exec` legs; `make check-logs` passed; `make check-naming` passed.
 
   **Impact**: Reviewers now see the real documentation inconsistency around nested call support,
   which keeps the audit aligned with current parser/evaluator behavior and clarifies which docs
