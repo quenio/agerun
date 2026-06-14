@@ -87,7 +87,8 @@ The module follows strict memory ownership rules:
 
 ## Implementation Details
 
-The module evaluates all three arguments:
+The module inspects all three condition arguments, but only evaluates the condition and selected
+branch:
 1. Condition must evaluate to an integer (0 = false, non-zero = true)
 2. True expression is evaluated only if condition is true
 3. False expression is evaluated only if condition is false

@@ -130,6 +130,57 @@ Important rules for method definitions:
 - Even the last instruction must be followed by a newline
 - Empty lines are ignored
 
+### Language Design Principles
+
+The following principles guide language design. They are aspirations for language evolution, not a
+claim that every current construct fully satisfies them.
+
+- **Line-Based Parsing and Evaluation**: Each nonempty source line should parse to one complete
+  instruction, and instructions should evaluate in source order. Line boundaries should remain
+  visible parser and evaluation boundaries.
+- **Expression Purity**: Expressions should have no side effects. Evaluating an expression should
+  not mutate memory, send messages, create agents, deprecate methods, exit agents, complete work, or
+  change observable runtime state.
+- **Single Source of Semantics**: Each language behavior should have one clear owner in the parser,
+  AST, evaluator, and documentation so behavior cannot drift across duplicate paths.
+- **Syntax-Directed Semantics**: Each syntax construct should map to one evaluation behavior, and
+  intentional semantic differences should be visible in the syntax or documented as explicit
+  exceptions.
+- **Explicit Exceptions**: Any behavior that is intentionally non-composable, non-orthogonal, or
+  context-specific should be documented as a named language rule and covered by tests.
+- **Composability**: Every pure value-producing construct should be usable in every compatible
+  expression context unless the language defines a specific exception.
+- **Orthogonality**: Equivalent values should behave the same regardless of whether they came from a
+  literal, accessor, selected branch, function result, or intermediate assignment.
+
+### Current Language State
+
+The current language partially satisfies those principles:
+
+- **Line-Based Parsing and Evaluation**: Methods are line-oriented: one instruction per line,
+  ordered evaluation, required final newline, and ignored empty lines. Multi-line list and map
+  literals are an explicit assignment-only source-format exception.
+- **Expression Purity**: Current expression nodes are value-producing and side-effect free. Built-in
+  calls are currently function instructions, not expression calls; effectful operations therefore
+  remain sequenced as method lines.
+- **Single Source of Semantics**: The shared function-call argument parser centralizes argument
+  boundary rules, but ordinary assignment and function-result assignment still use separate
+  AST/evaluator paths, and some instruction-specific exceptions remain documented outside one
+  consolidated semantics section.
+- **Syntax-Directed Semantics**: Memory assignment, function-result assignment, mutation targets
+  such as `append(memory.items, value)`, and sentinel uses of integer `0` still have documented
+  special cases.
+- **Explicit Exceptions**: Current exceptions include assignment-only multi-line literals,
+  memory-only mutation targets, protected `memory.self` paths, no-op `send(0, ...)` and
+  `spawn(0, ...)` behavior, and raw string values with boundary-only quote/backslash parsing.
+- **Composability**: Literals, accessors, operators, and one-line list/map literals compose as
+  expressions. Function calls are not expressions, so pure built-ins such as `parse(...)`,
+  `build(...)`, `head(...)`, `tail(...)`, and `if(...)` cannot yet be nested inside other
+  expressions or call arguments. Multi-line literals are assignment-only.
+- **Orthogonality**: Current documented exceptions include memory-only mutation targets, integer `0`
+  as several absence/no-op/failure sentinels, and boundary-level quote handling that does not define
+  value-level string escape sequences.
+
 ## Method Expressions and Instructions
 
 Agents can use the following expressions and instructions within their method:
@@ -179,7 +230,7 @@ The following BNF grammar defines the syntax of individual instructions allowed 
                                   | <two-function-arguments>
 <two-function-arguments> ::= <function-argument> <function-argument-tail>
 <three-function-arguments> ::= <function-argument> <function-argument-tail> <function-argument-tail>
-<condition-function-arguments> ::= <comparison-expression> <function-argument-tail> <function-argument-tail>
+<condition-function-arguments> ::= <expression> <function-argument-tail> <function-argument-tail>
 <function-argument-tail> ::= <function-argument-separator> <function-argument>
 <function-argument> ::= <expression>
 <function-argument-separator> ::= ','
@@ -359,7 +410,7 @@ send(memory.next_self, {targets: memory.remaining_targets, payload: message.payl
 
 ### 6. Conditional Evaluation
 
-- `if(condition: boolean, true_value, false_value)`: Returns `true_value` if condition is true; otherwise, returns `false_value`.
+- `if(condition: expression, true_value, false_value)`: Evaluates the condition first, treats integer `0` as false and a non-zero integer as true, then evaluates and returns only the selected branch expression.
 
 ### 7. Agent Management
 
