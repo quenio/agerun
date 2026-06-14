@@ -1,5 +1,26 @@
 # AgeRun CHANGELOG
 
+## 2026-06-14 (Clarify audit-report documentation contradictions)
+
+- **Corrected the method-language audit to call out stale nested-call documentation**
+
+  The semantic audit now explicitly distinguishes the current language rule from stale parser-module
+  documentation. It no longer reads as if all documentation agrees that built-in calls are
+  instruction-only: the report now names the `ar_send_instruction_parser`,
+  `ar_condition_instruction_parser`, and `modules/README.md` sections that still advertise nested
+  function-call support even though the expression layer and disabled tests reject nested calls.
+
+  **Implementation**: Updated `reports/method-language-audit.md` to revise the documented-constraint
+  table, strengthen findings F1 and F9, and add a detailed note in the pure-call composability
+  section about stale parser-module wording versus end-to-end language semantics.
+
+  **Verification**: `make check-docs`, `git diff --check`, `make clean build 2>&1`,
+  `make check-logs`, and `make check-naming`.
+
+  **Impact**: Reviewers now see the real documentation inconsistency around nested call support,
+  which keeps the audit aligned with current parser/evaluator behavior and clarifies which docs
+  still need cleanup.
+
 ## 2026-06-07 (Align workflow test home fallback)
 
 - **Matched workflow real-completion test helpers to the runtime home fallback**
