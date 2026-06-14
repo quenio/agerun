@@ -101,6 +101,13 @@ fn _parseArguments(
         out_count.* = 1;
 
         var pos = look_ahead + 1;
+        var extra_check = pos;
+        if (_extractArgument(null, ref_instruction, &extra_check, ',')) |own_second_prefix| {
+            c.ar_function_call_parser__destroy_arg(own_second_prefix);
+            _logError(ref_parser, "complete() expects one or two arguments", extra_check);
+            return false;
+        }
+
         const own_second_arg = _extractArgument(ref_log, ref_instruction, &pos, ')') orelse {
             return false;
         };
