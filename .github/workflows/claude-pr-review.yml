@@ -44,8 +44,8 @@ jobs:
         env:
           CLAUDE_EXECUTION_FILE: ${{ steps.claude-review.outputs.execution_file }}
         run: |
-          if jq -e 'select(.type == "result" and .is_error == true)' "$CLAUDE_EXECUTION_FILE" >/dev/null; then
-            error_message=$(jq -r 'select(.type == "result" and .is_error == true) | .result // "unknown Claude error"' "$CLAUDE_EXECUTION_FILE" | tail -n 1)
+          if jq -e '.. | objects | select(.type? == "result" and .is_error? == true)' "$CLAUDE_EXECUTION_FILE" >/dev/null; then
+            error_message=$(jq -r '.. | objects | select(.type? == "result" and .is_error? == true) | .result // "unknown Claude error"' "$CLAUDE_EXECUTION_FILE" | tail -n 1)
             echo "::error::Claude Code reported an error: ${error_message}"
             exit 1
           fi
