@@ -74,8 +74,8 @@ Each precedence level has its own parsing function:
 - **Integer**: `42`, `-10`, `0`
 - **Double**: `3.14`, `-2.5`, `0.0`
 - **String**: `"hello"`, `"world"`, `""`
-- **List**: `[1, 2]`, `[1, 2,]`, `[]`
-- **Map**: `{name: "Ada"}`, `{name: "Ada", scores: [1, 2,]}`, `{}`
+- **List**: `[1, 2]`, `[]`
+- **Map**: `{name: "Ada"}`, `{name: "Ada", scores: [1, 2]}`, `{}`
 
 Map literal keys are identifiers only. Quoted keys such as `{"name": "Ada"}` are not supported.
 
@@ -162,7 +162,7 @@ ar_expression_parser__destroy(own_parser);
 The module includes comprehensive tests (`ar_expression_parser_tests.c`) that verify:
 
 - Parsing of all literal types
-- One-line list and map literals, including nested literals and trailing commas
+- One-line list and map literals, including nested literals and trailing-comma rejection
 - Memory access with various path depths
 - All binary operators with correct precedence
 - Parenthesized and nested expressions

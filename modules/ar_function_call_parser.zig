@@ -88,6 +88,15 @@ export fn ar_function_call_parser__extract_argument(
                 brace_depth == 0
             ) {
                 break;
+            } else if (
+                delimiter == ')' and
+                char == ',' and
+                paren_depth == 0 and
+                bracket_depth == 0 and
+                brace_depth == 0
+            ) {
+                _logError(ref_log, "Unexpected argument separator", mut_pos.?.*);
+                return null;
             }
         }
         mut_pos.?.* += 1;

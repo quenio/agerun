@@ -243,7 +243,7 @@ static void test_spawn_parser__parses_literal_context_argument(void) {
 
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
-    const char *instruction = "memory.worker := spawn(\"process\", \"2.1.0\", {config: \"prod\", ports: [1, 2,]})";
+    const char *instruction = "memory.worker := spawn(\"process\", \"2.1.0\", {config: \"prod\", ports: [1, 2]})";
     ar_spawn_instruction_parser_t *own_parser = ar_spawn_instruction_parser__create(log);
     assert(own_parser != NULL);
 

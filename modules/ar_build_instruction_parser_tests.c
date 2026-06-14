@@ -522,7 +522,7 @@ static void test_build_instruction_parser__parses_literal_argument(void) {
 
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
-    const char *instruction = "build(\"Items: {items}\", {items: [1, 2,]})";
+    const char *instruction = "build(\"Items: {items}\", {items: [1, 2]})";
     ar_build_instruction_parser_t *own_parser = ar_build_instruction_parser__create(log);
     assert(own_parser != NULL);
 
@@ -533,7 +533,7 @@ static void test_build_instruction_parser__parses_literal_argument(void) {
     assert(own_args != NULL);
     assert(ar_list__count(own_args) == 2);
     void **own_items = ar_list__items(own_args);
-    assert(strcmp((const char*)own_items[1], "{items: [1, 2,]}") == 0);
+    assert(strcmp((const char*)own_items[1], "{items: [1, 2]}") == 0);
     AR__HEAP__FREE(own_items);
     ar_list__destroy(own_args);
 

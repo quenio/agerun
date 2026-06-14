@@ -225,6 +225,7 @@ All function-call argument lists use the same language rule for argument boundar
   number of consecutive backslashes is treated as part of the quoted span for boundary detection.
 - Function-specific arity rules still apply after this shared splitting rule. For example,
   `send(...)` requires exactly two arguments, while `complete(...)` accepts one or two arguments.
+- Function-call argument lists do not allow trailing commas before the closing parenthesis.
 - Nested call-like text can be preserved as one argument while parsing boundaries, but it is not a
   valid expression because function calls are instructions, not expressions.
 
@@ -249,9 +250,9 @@ The following BNF grammar defines the syntax of expressions allowed in AgeRun in
 <number-literal> ::= <integer>
                   | <double>
 
-<list-literal> ::= '[' [<expression> {',' <expression>} [',']] ']'
+<list-literal> ::= '[' [<expression> {',' <expression>}] ']'
 
-<map-literal> ::= '{' [<identifier> ':' <expression> {',' <identifier> ':' <expression>} [',']] '}'
+<map-literal> ::= '{' [<identifier> ':' <expression> {',' <identifier> ':' <expression>}] '}'
 
 <parenthesized-expression> ::= '(' <expression> ')'
 
@@ -285,9 +286,10 @@ The expression evaluator follows these rules:
 - The current expression grammar does not specify an escaped double quote as a string value
   character; quote/backslash handling above is a function-call argument boundary rule
 - Number literals can be either integers (whole numbers) or doubles (floating-point numbers)
-- List literals create list values, e.g. `[1, 2]` or `[1, 2,]`
-- Map literals create map values with identifier-only keys, e.g. `{name: "Ada"}` or `{name: "Ada",}`
+- List literals create list values, e.g. `[1, 2]`
+- Map literals create map values with identifier-only keys, e.g. `{name: "Ada"}`
 - One-line list and map literals can appear anywhere expressions are accepted, including assignment values and function arguments
+- One-line list and map literals do not allow trailing commas before the closing delimiter
 - Multi-line list and map literals are accepted only as the top-level right side of an assignment
 - Multi-line literal item lines must use identical indentation, the closing delimiter must align with the assignment line, and item-line commas are optional
 - Multi-line literals cannot appear as function arguments, list elements, or map values; nested list and map values must be written as one-line literals

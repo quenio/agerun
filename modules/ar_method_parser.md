@@ -93,7 +93,7 @@ memory.items := [
 
 memory.profile := {
   name: "Ada"
-  scores: [1, 2,]
+  scores: [1, 2]
 }
 ```
 

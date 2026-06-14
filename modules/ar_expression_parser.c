@@ -498,7 +498,9 @@ static ar_expression_ast_t* _parse_list_literal(ar_expression_parser_t *mut_pars
         if (_consume_char(mut_parser, ',')) {
             _skip_whitespace(mut_parser);
             if (_consume_char(mut_parser, ']')) {
-                return _create_list_literal_node(mut_parser, own_items_list);
+                _cleanup_ast_list(own_items_list);
+                _set_error(mut_parser, "Trailing comma in list literal");
+                return NULL;
             }
             continue;
         }
@@ -582,7 +584,10 @@ static ar_expression_ast_t* _parse_map_literal(ar_expression_parser_t *mut_parse
         if (_consume_char(mut_parser, ',')) {
             _skip_whitespace(mut_parser);
             if (_consume_char(mut_parser, '}')) {
-                return _create_map_literal_node(mut_parser, own_keys_list, own_values_list);
+                _cleanup_string_list(own_keys_list);
+                _cleanup_ast_list(own_values_list);
+                _set_error(mut_parser, "Trailing comma in map literal");
+                return NULL;
             }
             continue;
         }

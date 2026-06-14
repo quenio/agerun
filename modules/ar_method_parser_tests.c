@@ -382,7 +382,7 @@ static void test_method_parser__parse_multiline_map_literal_without_commas(void)
     ar_method_parser_t *own_parser = ar_method_parser__create(log);
     assert(own_parser != NULL);
 
-    const char *ref_source = "memory.profile := {\n  name: \"Ada\"\n  scores: [1, 2,]\n}";
+    const char *ref_source = "memory.profile := {\n  name: \"Ada\"\n  scores: [1, 2]\n}";
     ar_method_ast_t *own_ast = ar_method_parser__parse(own_parser, ref_source);
 
     assert(own_ast != NULL);

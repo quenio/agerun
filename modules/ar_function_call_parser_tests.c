@@ -12,7 +12,7 @@ static void test_function_call_parser__parse_exact_respects_expression_nesting(v
 
     ar_log_t *own_log = ar_log__create();
     assert(own_log != NULL);
-    const char *ref_instruction = "send(42, {items: [1, 2,], text: \"a,b\"})";
+    const char *ref_instruction = "send(42, {items: [1, 2], text: \"a,b\"})";
     size_t pos = strlen("send(");
     char **own_args = NULL;
     size_t arg_count = 0;
@@ -29,7 +29,7 @@ static void test_function_call_parser__parse_exact_respects_expression_nesting(v
     assert(parsed == true);
     assert(arg_count == 2);
     assert(strcmp(own_args[0], "42") == 0);
-    assert(strcmp(own_args[1], "{items: [1, 2,], text: \"a,b\"}") == 0);
+    assert(strcmp(own_args[1], "{items: [1, 2], text: \"a,b\"}") == 0);
     assert(ref_instruction[pos] == ')');
     assert(ar_log__get_last_error_message(own_log) == NULL);
 
@@ -42,7 +42,7 @@ static void test_function_call_parser__parse_arg_asts_uses_expression_parser(voi
 
     ar_log_t *own_log = ar_log__create();
     assert(own_log != NULL);
-    const char *ref_instruction = "build(\"Items: {items}\", {items: [1, 2,]})";
+    const char *ref_instruction = "build(\"Items: {items}\", {items: [1, 2]})";
     size_t pos = strlen("build(");
     char **own_args = NULL;
     size_t arg_count = 0;
@@ -120,6 +120,33 @@ static void test_function_call_parser__keeps_nested_calls_whole_but_not_expressi
     ar_log__destroy(own_log);
 }
 
+static void test_function_call_parser__rejects_trailing_argument_comma(void) {
+    printf("Testing trailing argument comma is rejected...\n");
+
+    ar_log_t *own_log = ar_log__create();
+    assert(own_log != NULL);
+    const char *ref_instruction = "send(42, memory.value,)";
+    size_t pos = strlen("send(");
+    char **own_args = NULL;
+    size_t arg_count = 0;
+
+    bool parsed = ar_function_call_parser__parse_exact(
+        own_log,
+        ref_instruction,
+        &pos,
+        &own_args,
+        &arg_count,
+        2
+    );
+
+    assert(parsed == false);
+    assert(own_args == NULL);
+    assert(arg_count == 0 || arg_count == 1);
+    assert(ar_log__get_last_error_message(own_log) != NULL);
+
+    ar_log__destroy(own_log);
+}
+
 static void test_function_call_parser__quote_after_even_backslashes_closes_string(void) {
     printf("Testing quote after even backslashes closes string...\n");
 
@@ -156,6 +183,7 @@ int main(void) {
     test_function_call_parser__parse_exact_respects_expression_nesting();
     test_function_call_parser__parse_arg_asts_uses_expression_parser();
     test_function_call_parser__keeps_nested_calls_whole_but_not_expressions();
+    test_function_call_parser__rejects_trailing_argument_comma();
     test_function_call_parser__quote_after_even_backslashes_closes_string();
 
     printf("\nAll function call parser tests passed!\n");
