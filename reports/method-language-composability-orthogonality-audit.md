@@ -1,4 +1,4 @@
-# Method Language Expression Purity, Composability, and Orthogonality Audit
+# Method Language Line-Based Parsing, Expression Purity, Composability, and Orthogonality Audit
 **Date**: 2026-06-14
 **Audit base**: `origin/main` at `ae3a064d` (`Merge pull request #28 from quenio/codex/separate-routing-methods`)
 **Focus**: AgeRun method definition grammar, parser architecture, evaluator semantics, documentation, tests, and current method corpus.
@@ -12,6 +12,10 @@ expressions, arithmetic, comparison, and one-line list/map literals are parsed i
 `ar_expression_ast_t` and evaluated by one expression evaluator. The missing explicit design rule is
 that expressions must have no side effects. Under that rule, pure value-producing built-ins should be
 composable as expressions, while effectful operations should remain sequenced instructions.
+
+The other governing design rule is line-based parsing and evaluation. Each nonempty method line is
+one instruction boundary, and method evaluation proceeds line by line in source order. That keeps
+runtime behavior easy to trace and keeps parser/evaluator responsibilities small.
 
 Today, all built-in calls are modeled as instruction AST nodes rather than expression AST nodes, so
 even pure calls cannot be nested inside expressions, operators, list items, map values, or other call
@@ -30,31 +34,35 @@ This audit does not change behavior. It records the current state and recommends
 
 This audit is guided by these principles:
 
-1. **Expression Purity**: Expressions must have no side effects. Evaluating an expression should not
+1. **Line-Based Parsing and Evaluation**: Each nonempty source line should parse to one complete
+   instruction, and instructions should evaluate in source order. A line boundary is therefore both a
+   parser boundary and an evaluation boundary. This keeps control flow explicit, makes traces easy to
+   follow, and avoids hidden multi-statement parsing rules.
+2. **Expression Purity**: Expressions must have no side effects. Evaluating an expression should not
    mutate memory, send messages, create agents, deprecate methods, exit agents, complete work, or
    change observable runtime state. This keeps expression evaluation easy to reason about and makes
    nesting, reordering, and reuse safe.
-2. **Composability**: Every pure grammar component should be usable in every compatible syntactic
+3. **Composability**: Every pure grammar component should be usable in every compatible syntactic
    context. If a pure construct produces a value, it should be eligible wherever expressions are
    accepted unless the language defines a specific exception. This is the lens for questions such as
    whether pure built-in calls can appear inside call arguments, list/map literals, operators,
    assignments, and condition branches.
-3. **Orthogonality**: Equivalent values should behave the same regardless of how they were produced.
+4. **Orthogonality**: Equivalent values should behave the same regardless of how they were produced.
    A value from a literal, accessor, function result, selected branch, or intermediate assignment
    should not gain hidden semantic differences unless the language defines an explicit distinction
    such as mutation target eligibility.
-4. **Single Source of Semantics**: Each language behavior should have one clear owner in the parser,
+5. **Single Source of Semantics**: Each language behavior should have one clear owner in the parser,
    AST, evaluator, and documentation. Duplicate paths, such as regular assignment versus
    instruction-specific result assignment, are treated as audit findings because they make behavior
    easier to drift.
-5. **Explicit Exceptions**: Any non-composable or non-orthogonal behavior should be intentional,
+6. **Explicit Exceptions**: Any non-composable or non-orthogonal behavior should be intentional,
    documented, and test-covered. Useful restrictions, such as memory-only mutation targets, are not
    automatically wrong, but they must be visible as language rules rather than incidental evaluator
    side effects.
-6. **Evidence Before Aspiration**: The audit separates the current language from the desired
+7. **Evidence Before Aspiration**: The audit separates the current language from the desired
    principle. It records what the current commit actually parses, evaluates, documents, and tests
    before recommending future changes.
-7. **Compatibility-Aware Evolution**: Recommendations should preserve existing method behavior
+8. **Compatibility-Aware Evolution**: Recommendations should preserve existing method behavior
    unless a later migration explicitly changes the language contract. Current corpus shape and
    existing tests are part of the design evidence.
 
@@ -66,15 +74,15 @@ principles or should be treated as a future design gap.
 
 | Documented Constraint | Documentation Evidence | Principle Alignment | Audit Treatment |
 |-----------------------|------------------------|---------------------|-----------------|
-| Methods are line-oriented: one instruction per line, no combined instructions, final newline required, empty lines ignored. | `SPEC.md`, `methods/README.md`, `modules/ar_method_parser.md` | Compatible with composability if it remains a statement-boundary rule. It is an explicit syntax constraint, not a semantic coupling. | Preserve unless the language later gains block or expression-statement syntax. |
-| Standalone expressions are not instructions. Expressions must appear under assignment or allowed function calls. | `SPEC.md` | Limits composability at the statement level. It is explicit, but it keeps expression evaluation from being uniformly usable as a top-level form. | Track as a statement/expression split that must be revisited if calls become expressions. |
+| Methods are line-oriented: one instruction per line, no combined instructions, final newline required, empty lines ignored. | `SPEC.md`, `methods/README.md`, `modules/ar_method_parser.md` | Strongly aligns with Line-Based Parsing and Evaluation. It is an intentional instruction-boundary rule that simplifies parsing, evaluation, and traceability. | Preserve as a core language principle. Future expression work should compose inside a line, not erase line boundaries. |
+| Standalone expressions are not instructions. Expressions must appear under assignment or allowed function calls. | `SPEC.md` | Aligns with the line-based instruction model because a method line remains an executable instruction, not an implicit expression statement. It still limits statement-level composability. | Preserve unless a future design explicitly adds expression statements without side effects. |
 | Function calls are documented as instructions, not expressions; nested calls are forbidden. | `AGENTS.md`, `kb/agerun-method-language-nesting-constraint.md`, disabled parser tests | Conflicts with composability for pure value-producing calls, but protects expression purity for effectful operations such as `send(...)`, `spawn(...)`, and `append(...)`. | Treat pure call composition as the primary gap; keep side-effectful operations sequenced as instructions. |
-| One-line list/map literals can appear in expression contexts; multiline list/map literals are assignment-only and cannot appear as call arguments, list items, or map values. | `SPEC.md`, `README.md`, `modules/ar_method_parser.md` | Partially aligns. One-line literals are composable; multiline literals are an explicit but formatting-dependent exception. | Either document multiline literals as a deliberate source-format exception or move them into expression parsing. |
+| One-line list/map literals can appear in expression contexts; multiline list/map literals are assignment-only and cannot appear as call arguments, list items, or map values. | `SPEC.md`, `README.md`, `modules/ar_method_parser.md` | Partially aligns. One-line literals are composable; multiline literals are an explicit formatting exception to the one-line instruction model. | Either document multiline literals as a deliberate source-format exception or move them into expression parsing while preserving clear line-boundary rules. |
 | Map literal keys must be identifiers; quoted keys are not supported. | `SPEC.md`, `modules/ar_expression_parser.md` | Mostly compatible as an explicit grammar restriction. It limits data shape expressiveness but does not by itself create semantic drift. | Preserve unless future data requirements need arbitrary string keys. |
 | There is no null type; integer `0` is used as the absent/failure/no-op sentinel in several places. | `AGENTS.md`, `SPEC.md`, `modules/ar_expression_evaluator.md` | Conflicts with orthogonality when unrelated cases share the same value: missing field, empty `head(...)`, invalid `tail(...)`, no-op spawn, false condition. | Treat as a sentinel-coupling gap; consider an explicit absence value or predicates before adding more sentinel semantics. |
 | No static type checking; methods must handle possible runtime types defensively. | `AGENTS.md`, `kb/agerun-language-constraint-workarounds.md` | Acceptable as a dynamic-language constraint, but it raises the burden on orthogonal runtime behavior and diagnostics. | Preserve as current-state behavior; improve documentation and tests around type-dependent built-ins. |
 | `if(...)` is documented inconsistently: some docs say value selection, current evaluator docs say selected-branch evaluation, and one KB article says both branches are evaluated. | `SPEC.md`, `modules/ar_condition_instruction_evaluator.md`, `kb/agerun-language-constraint-workarounds.md` | Violates Single Source of Semantics. Selected-branch evaluation fits conditional value selection; expression purity means branch evaluation must not be a place to hide side effects. | Correct documentation after deciding the expression-level `if(...)` model. |
-| No conditional execution statement exists; all method instructions execute in order and conditional behavior is encoded with value selection and no-op targets. | `kb/agerun-language-constraint-workarounds.md`, coordination method patterns | Compatible with pure expressions, but it couples conditional side effects to sentinel/no-op instruction behavior instead of explicit control flow. | Keep in scope for the pure-expression, sequenced-instruction, and sentinel semantics follow-up plans. |
+| No conditional execution statement exists; all method instructions execute in order and conditional behavior is encoded with value selection and no-op targets. | `kb/agerun-language-constraint-workarounds.md`, coordination method patterns | Aligns with line-based sequential evaluation and pure expressions, but it couples conditional side effects to sentinel/no-op instruction behavior instead of explicit control flow. | Keep in scope for the line-based, pure-expression, sequenced-instruction, and sentinel semantics follow-up plans. |
 | `send(0, message)` is a no-op; `spawn(0, ...)` and `spawn("", ...)` are no-ops returning/storing `0`. | `AGENTS.md`, `SPEC.md`, `kb/no-op-semantics-pattern.md`, `kb/no-op-instruction-semantics.md` | Aligns with Explicit Exceptions when documented and with Expression Purity when kept outside expressions. It still adds semantic meaning to integer `0`. | Preserve current behavior, but classify it under sentinel/no-op instruction semantics rather than ordinary value behavior. |
 | `append(target, value)` accepts any target expression syntactically, but only mutates an existing memory-owned list; message/context/fresh/missing/non-list/protected targets are no-ops. | `SPEC.md`, `modules/ar_append_instruction_evaluator.md` | Explicit but not fully orthogonal: identical list values differ by origin and ownership. It must remain a sequenced instruction if expressions are pure. | Define lvalue/mutation-target rules for mutating instructions, not expression calls. |
 | Writes are limited to `memory` paths, and `memory.self` plus nested `memory.self.*` are protected from assignment/result storage. | `SPEC.md`, `modules/ar_instruction_ast.md`, parse evaluator docs | Aligns with Explicit Exceptions and runtime identity safety. It is a legitimate non-orthogonal write rule if kept visible and test-covered. | Preserve, but centralize the rule so assignment, function results, parse templates, and future merge-like operations cannot drift. |
@@ -95,7 +103,9 @@ principles or should be treated as a future design gap.
   - 36 top-level multiline literal assignments
   - 0 nested built-in call lines in `.method` files under the audit regex
   - 75 incomplete `TODO.md` items; none directly supersedes this audit
-- Applied two separate lenses:
+- Applied four separate lenses:
+  - Line-based parsing and evaluation: whether a construct preserves one instruction per source
+    line and source-order evaluation.
   - Expression purity: whether a construct can be evaluated without side effects.
   - Composability: where each pure grammar component can appear and combine.
   - Orthogonality: whether equivalent values behave the same regardless of syntactic form or origin.
@@ -104,6 +114,7 @@ principles or should be treated as a future design gap.
 
 | ID | Area | Composability Status | Orthogonality Status | Evidence | Risk |
 |----|------|----------------------|----------------------|----------|------|
+| F0 | Line-based parsing and evaluation | Statement-level composition is deliberately limited: each nonempty line is one instruction. Pure expression composition should happen inside that instruction boundary. | Evaluation order is explicit and source-ordered, which reduces hidden semantic coupling across lines. | `SPEC.md`, `methods/README.md`, and `ar_method_parser.md` document one instruction per line, no combined instructions, final newline requirement, and ignored empty lines. | Low |
 | F1 | Built-in calls | Pure built-in calls are not composable as expressions. Calls are accepted only as top-level function instructions, with optional result assignment. | Function results are stored through instruction-specific result assignment, not by normal expression assignment. Effectful built-ins are correctly kept out of expressions if expression purity is a hard rule. | `SPEC.md` separates `<function-instruction>` from `<expression>`. `ar_expression_ast_t` has no call node, while `ar_instruction_ast_t` has per-call instruction types. `AGENTS.md` says function calls are not expressions. Disabled tests state function calls in expressions are not supported. | High |
 | F2 | Multiline list/map literals | Not composable. Multiline literals are canonicalized only as top-level assignment RHS values. | A list/map value has different syntax availability depending on whether it is one-line or multiline. | `SPEC.md`, `README.md`, and `ar_method_parser.md` say multiline lists/maps are assignment-only. Current corpus has 36 top-level multiline literal assignments. | Medium |
 | F3 | `if(...)` condition and branch evaluation | Partially composable. Parser tests accept `if(1, 1, 0)`, but `SPEC.md` says the first argument is `<comparison-expression>`. Calls still cannot appear inside branches because calls are not expressions. | Docs disagree. Current evaluator evaluates only the selected branch, while one KB article still says both branches are evaluated. | `ar_condition_instruction_parser.c` parses all three arguments through `ar_expression_parser`; `ar_condition_instruction_evaluator.zig` selects one branch; `ar_condition_instruction_evaluator.md` documents short-circuit behavior; `kb/agerun-language-constraint-workarounds.md` contradicts it. | High |
@@ -116,7 +127,23 @@ principles or should be treated as a future design gap.
 
 ## Detailed Observations
 
-### 1. Pure Function Calls Are the Central Composability Gap
+### 1. Line Boundaries Are an Intentional Semantic Boundary
+
+The current language uses line boundaries as instruction boundaries. That is more than a parser
+shortcut: it also makes evaluation order explicit. A method can be read from top to bottom as a
+sequence of instructions, with pure expressions evaluated inside each instruction rather than as
+separate hidden steps.
+
+This principle changes how composability should be applied. Expression composition should become
+richer inside a single instruction, but the language does not need to make multiple instructions
+share one line, introduce implicit expression statements, or hide side effects inside nested
+expressions.
+
+Recommended follow-up: document line-based parsing and evaluation as a core language rule in the
+same place as expression purity. Treat multiline literals as an explicit source-format exception
+whose parser behavior must preserve clear instruction boundaries.
+
+### 2. Pure Function Calls Are the Central Composability Gap
 
 The grammar accepts built-ins through `<function-instruction>`, not `<expression>`. Each built-in
 has a specialized parser and instruction AST type. The expression AST supports literals, accessors,
@@ -137,7 +164,7 @@ candidate expressions. Side-effectful operations such as `send`, `spawn`, `exit`
 `append`, `compile`, and `complete` should remain sequenced instructions unless their semantics are
 split into pure value production plus a separate effectful instruction.
 
-### 2. Multiline Literals Are a Syntax Convenience, Not a True Expression Form
+### 3. Multiline Literals Are a Syntax Convenience, Not a True Expression Form
 
 One-line list and map literals compose through the expression parser. Multiline list and map
 literals are recognized by the method parser before instruction parsing and canonicalized only when
@@ -150,7 +177,7 @@ Recommended follow-up: either document multiline literals as a source-format sho
 explicit exception to composability, or promote multiline literal parsing into expression parsing
 with clear layout rules.
 
-### 3. `if(...)` Has Better Runtime Orthogonality Than Some Docs Say
+### 4. `if(...)` Has Better Runtime Orthogonality Than Some Docs Say
 
 The current parser parses all three `if(...)` arguments as normal expressions, and tests show
 literal integer conditions are accepted. The evaluator checks integer truthiness and evaluates only
@@ -167,7 +194,7 @@ instruction or becomes an expression-level conditional. If it becomes an express
 pure and lazy: only the selected branch should be evaluated, and neither branch should be able to
 perform effects through expression evaluation.
 
-### 4. Result Assignment Is Duplicated Semantics
+### 5. Result Assignment Is Duplicated Semantics
 
 Regular assignment stores an evaluated expression into memory. Function result assignment stores a
 function result into memory from inside the function instruction evaluator. This duplicate path
@@ -184,7 +211,7 @@ Effectful instructions that return values, such as a future `spawn(...)` result 
 need statement-level result storage. If so, that storage rule should be centralized and explicitly
 separate from expression assignment rather than repeated in each evaluator.
 
-### 5. Mutation Semantics Need an Explicit Lvalue Concept
+### 6. Mutation Semantics Need an Explicit Lvalue Concept
 
 `append(...)` already reveals an important design boundary. Its target argument parses as a normal
 expression, but mutation succeeds only when the expression resolves to a memory-owned list. A
@@ -199,7 +226,7 @@ Recommended follow-up: define lvalue semantics for mutating instructions without
 instructions expression-level. That definition should cover `append(...)` now and any future
 mutating operations.
 
-### 6. Sentinel `0` Is Useful but Leaks Across Components
+### 7. Sentinel `0` Is Useful but Leaks Across Components
 
 The language has no null type, so integer `0` appears as:
 
@@ -220,14 +247,14 @@ value, option type, or explicit predicates before adding more sentinel-based bui
 ## Recommended Follow-Up Order
 
 1. **Documentation correction pass**: fix the stale `if(...)` branch-evaluation KB wording and add
-   expression purity, composability, and orthogonality as language design goals, clearly labeled as
-   goal vs current state.
+   line-based parsing/evaluation, expression purity, composability, and orthogonality as language
+   design goals, clearly labeled as goal vs current state.
 2. **Purity classification design note**: decide which built-ins are pure expressions and which must
    remain sequenced instructions because they mutate state, communicate, create agents, or otherwise
    perform effects.
 3. **AST refactor plan**: add `AR_EXPRESSION_AST_TYPE__CALL` for pure calls, define function
    metadata once, and reduce per-built-in parser duplication without admitting side-effectful
-   operations into expression parsing.
+   operations into expression parsing or weakening line-based instruction parsing.
 4. **Result binding plan**: make `memory.path := <expression>` the only pure-expression storage
    mechanism, and centralize any statement-level result binding needed by effectful instructions.
 5. **Multiline expression plan**: choose between documenting assignment-only multiline literals as
@@ -238,6 +265,8 @@ value, option type, or explicit predicates before adding more sentinel-based bui
 ## Acceptance Criteria for Future Implementation
 
 - Pure function-call parsing has one source of truth for argument splitting and expression nesting.
+- Each nonempty source line remains one complete instruction boundary.
+- Method evaluation remains source-ordered and line-based.
 - Expression evaluation is side-effect free by grammar and by evaluator contract.
 - Pure built-in calls can appear anywhere an expression can appear.
 - Side-effectful built-ins remain explicit sequenced instructions.
@@ -264,7 +293,8 @@ Initial verification commands run after creating the report:
   unwhitelisted error/warning patterns were found.
 
 After the docs-only refinements that added the explicit audit principles, documented constraint
-alignment, and expression-purity guidance, only lightweight documentation checks were needed:
+alignment, expression-purity guidance, and line-based parsing/evaluation guidance, only lightweight
+documentation checks were needed:
 
 - `make check-docs`: passed; 743 documentation files checked.
 - `git diff --check`: passed.
