@@ -3,7 +3,10 @@
 **Initial audit base**: `origin/main` at `ae3a064d` (`Merge pull request #28 from quenio/codex/separate-routing-methods`)
 **Current revision note**: The current workspace now includes the first cleanup from this audit:
 function-call argument splitting and expression-nesting boundary handling are centralized in
-`ar_function_call_parser`, and `SPEC.md` names shared function-argument grammar productions.
+`ar_function_call_parser`, and `SPEC.md` names shared function-argument grammar productions. The
+spec now also distinguishes boundary-level quote handling from string-literal value semantics:
+backslash parity affects whether a quote closes a function-call argument span, but string literal
+values preserve source characters and do not decode escape sequences.
 **Focus**: AgeRun method definition grammar, parser architecture, evaluator semantics, documentation, tests, and current method corpus.
 
 ## Executive Summary
@@ -34,6 +37,13 @@ language owner. `ar_function_call_parser` applies the shared delimiter rule for 
 Zig instruction parsers, while `SPEC.md` expresses the same rule through reusable
 `<function-argument>` productions. This does not make calls into expressions; it only makes the
 current instruction-call argument boundary consistent.
+
+That cleanup also exposed a narrower string-literal contract. The shared function-call scanner is
+quote-aware enough to keep commas and closing parentheses inside quoted argument spans, including
+spans whose closing quote follows an even number of consecutive backslashes. This is not general
+escape-sequence support: the expression parser still treats string literal contents as raw source
+characters between delimiters, does not decode backslash escapes, and does not currently specify an
+escaped double quote as a string value character.
 
 The main semantic gaps are coupled to syntax and origin. Pure function result storage is currently
 mixed with instruction result storage instead of normal assignment of an expression result.
@@ -96,6 +106,7 @@ principles or should be treated as a future design gap.
 | Standalone expressions are not instructions. Expressions must appear under assignment or allowed function calls. | `SPEC.md` | Aligns with the line-based instruction model because a method line remains an executable instruction, not an implicit expression statement. It still limits statement-level composability. | Preserve unless a future design explicitly adds expression statements without side effects. |
 | Function calls are documented as instructions, not expressions; nested calls are forbidden. | `SPEC.md`, `AGENTS.md`, `kb/agerun-method-language-nesting-constraint.md`, disabled parser tests | Conflicts with composability for pure value-producing calls, but protects expression purity for effectful operations such as `send(...)`, `spawn(...)`, and `append(...)`. Syntax should make the pure-expression versus effectful-instruction split clear. | Treat pure call composition as the primary gap; keep side-effectful operations sequenced as instructions. |
 | Function-call argument boundaries use one shared grammar rule. | `SPEC.md`, `modules/ar_function_call_parser.md`, `modules/ar_function_call_parser_tests.c` | Aligns with Single Source of Semantics: top-level commas and closing parentheses delimit arguments, while quoted strings, parenthesized expression groups, and one-line list/map literals are preserved inside an argument. | Preserve as the current baseline. Future pure-call-expression work should reuse this boundary rule instead of reintroducing per-call scanners. |
+| String literal escaping is boundary-level, not value-level. | `SPEC.md`, `modules/ar_function_call_parser.zig`, `modules/ar_expression_parser.c`, parser tests | Partially aligns now that the distinction is documented. Backslash parity has parser-boundary meaning before quotes in function-call arguments, but the expression parser preserves backslashes as ordinary characters and does not decode escape sequences. | Do not describe this as general escaped-character support. Either preserve raw string literals and fix stale module docs that claim escaped quotes/escape sequences, or add true expression-level escape parsing as an explicit language change. |
 | Function result storage uses assignment-looking syntax on function instructions. | `SPEC.md`, `modules/ar_instruction_ast.md`, evaluator module docs | Conflicts with Syntax-Directed Semantics because ordinary assignment and instruction result binding look similar while using different AST/evaluator paths. | Move pure call results into expression assignment, and centralize or visibly distinguish any remaining effectful result binding. |
 | One-line list/map literals can appear in expression contexts; multiline list/map literals are assignment-only and cannot appear as call arguments, list items, or map values. | `SPEC.md`, `README.md`, `modules/ar_method_parser.md` | Partially aligns. One-line literals are composable; multiline literals are an explicit formatting exception to the one-line instruction model. | Either document multiline literals as a deliberate source-format exception or move them into expression parsing while preserving clear line-boundary rules. |
 | Map literal keys must be identifiers; quoted keys are not supported. | `SPEC.md`, `modules/ar_expression_parser.md` | Mostly compatible as an explicit grammar restriction. It limits data shape expressiveness but does not by itself create semantic drift. | Preserve unless future data requirements need arbitrary string keys. |
@@ -138,6 +149,7 @@ principles or should be treated as a future design gap.
 | F0 | Line-based parsing and evaluation | Statement-level composition is deliberately limited: each nonempty line is one instruction. Pure expression composition should happen inside that instruction boundary. | Evaluation order is explicit and source-ordered, which reduces hidden semantic coupling across lines. | `SPEC.md`, `methods/README.md`, and `ar_method_parser.md` document one instruction per line, no combined instructions, final newline requirement, and ignored empty lines. | Low |
 | F1 | Built-in calls | Pure built-in calls are not composable as expressions. Calls are accepted only as top-level function instructions, with optional result assignment. | Function results are stored through instruction-specific result assignment, not by normal expression assignment. Effectful built-ins are correctly kept out of expressions if expression purity is a hard rule. | `SPEC.md` separates `<function-instruction>` from `<expression>`. `ar_expression_ast_t` has no call node, while `ar_instruction_ast_t` has per-call instruction types. `AGENTS.md` says function calls are not expressions. Disabled tests state function calls in expressions are not supported. | High |
 | F1a | Function-call argument boundaries | Argument splitting is now consistent across instruction parsers. It preserves nested expression syntax inside one argument but still requires the argument to parse as an expression afterward. | The boundary rule is no longer duplicated across built-in parsers. Arity and instruction-specific semantics remain per call. | `SPEC.md` defines shared `<function-argument>` productions. `ar_function_call_parser` owns splitting and argument AST-list creation for C and Zig instruction parsers. `ar_function_call_parser_tests` covers nested list/map/quoted commas and nested call rejection as an expression. | Low |
+| F1b | Quote and escape handling | Function-call boundary parsing is quote-aware, including even/odd backslash parity before quotes. Expression string parsing remains a simple raw span between delimiters. | Backslash has context-dependent meaning: it can keep a quote from closing an argument span, but it is preserved as data and is not decoded by expression evaluation. Escaped quotes are not currently string value characters. | `SPEC.md` documents the split. `_isQuote` in `ar_function_call_parser.zig` counts consecutive backslashes before quotes. `ar_expression_parser.c` copies bytes between the opening quote and the next quote. Some module docs still describe escaped quotes or escape sequences more broadly than the implementation supports. | Medium |
 | F2 | Multiline list/map literals | Not composable. Multiline literals are canonicalized only as top-level assignment RHS values. | A list/map value has different syntax availability depending on whether it is one-line or multiline. | `SPEC.md`, `README.md`, and `ar_method_parser.md` say multiline lists/maps are assignment-only. Current corpus has 36 top-level multiline literal assignments. | Medium |
 | F3 | `if(...)` condition and branch evaluation | Partially composable. Parser tests accept `if(1, 1, 0)`, but `SPEC.md` says the first argument is `<comparison-expression>`. Calls still cannot appear inside branches because calls are not expressions. | Docs disagree. Current evaluator evaluates only the selected branch, while one KB article still says both branches are evaluated. | `ar_condition_instruction_parser.c` parses all three arguments through `ar_expression_parser`; `ar_condition_instruction_evaluator.zig` selects one branch; `ar_condition_instruction_evaluator.md` documents short-circuit behavior; `kb/agerun-language-constraint-workarounds.md` contradicts it. | High |
 | F4 | Assignment vs result assignment | Expression assignment is normal only for `memory.path := <expression>`. Function result assignment is encoded inside function instruction AST nodes. | Pure expression results and effectful instruction results are represented through overlapping storage paths. The syntax may remain compact, but storage validation should have one owner. | `ar_instruction_ast_t` stores assignment data separately from function-call result paths. Instruction evaluators use `ar_instruction_ast__has_result_assignment()` and `ar_instruction_ast__get_function_result_path()`. | High |
@@ -214,7 +226,28 @@ Side-effectful operations such as `send`, `spawn`, `exit`, `deprecate`, `append`
 `complete` should remain sequenced instructions unless their semantics are split into pure value
 production plus a separate effectful instruction.
 
-### 4. Multiline Literals Are a Syntax Convenience, Not a True Expression Form
+### 4. String Literal Escaping Is Boundary-Level Today
+
+The current implementation has two different quote-related behaviors:
+
+- Function-call argument boundary parsing treats a double quote as a quote delimiter only when it is
+  preceded by zero or an even number of consecutive backslashes. This keeps calls such as
+  `build("C:\\", memory.data)` from being rejected as unterminated during argument splitting.
+- Expression string literal parsing still copies the raw source characters between the opening
+  delimiter and the next double quote. Backslashes are preserved; they are not decoded into escape
+  sequences, and `\"` is not currently a specified way to include a double quote in a string value.
+
+This means "escaping" is currently a parser-boundary rule, not a value-level string semantics
+rule. That distinction matters for documentation and future expression-call work. If the language
+keeps raw string literals, module docs should stop implying general escaped-quote or escape-sequence
+support. If the language wants escaped characters in values, that should be added as an explicit
+expression-parser/evaluator feature with tests for raw value contents.
+
+Recommended follow-up: decide whether AgeRun string literals remain raw-delimited strings or gain
+defined escape sequences. Until then, preserve the current boundary behavior and avoid treating
+backslash parity before quotes as a general string escape contract.
+
+### 5. Multiline Literals Are a Syntax Convenience, Not a True Expression Form
 
 One-line list and map literals compose through the expression parser. Multiline list and map
 literals are recognized by the method parser before instruction parsing and canonicalized only when
@@ -227,7 +260,7 @@ Recommended follow-up: either document multiline literals as a source-format sho
 explicit exception to composability, or promote multiline literal parsing into expression parsing
 with clear layout rules.
 
-### 5. `if(...)` Has Better Runtime Orthogonality Than Some Docs Say
+### 6. `if(...)` Has Better Runtime Orthogonality Than Some Docs Say
 
 The current parser parses all three `if(...)` arguments as normal expressions, and tests show
 literal integer conditions are accepted. The evaluator checks integer truthiness and evaluates only
@@ -244,7 +277,7 @@ instruction or becomes an expression-level conditional. If it becomes an express
 pure and lazy: only the selected branch should be evaluated, and neither branch should be able to
 perform effects through expression evaluation.
 
-### 6. Result Assignment Is Duplicated Semantics
+### 7. Result Assignment Is Duplicated Semantics
 
 Regular assignment stores an evaluated expression into memory. Function result assignment stores a
 function result into memory from inside the function instruction evaluator. This duplicate path
@@ -261,7 +294,7 @@ Effectful instructions that return values, such as a future `spawn(...)` result 
 need statement-level result storage. If so, that storage rule should be centralized and explicitly
 separate from expression assignment rather than repeated in each evaluator.
 
-### 7. Mutation Semantics Need an Explicit Lvalue Concept
+### 8. Mutation Semantics Need an Explicit Lvalue Concept
 
 `append(...)` already reveals an important design boundary. Its target argument parses as a normal
 expression, but mutation succeeds only when the expression resolves to a memory-owned list. A
@@ -276,7 +309,7 @@ Recommended follow-up: define lvalue semantics for mutating instructions without
 instructions expression-level. That definition should cover `append(...)` now and any future
 mutating operations.
 
-### 8. Sentinel `0` Is Useful but Leaks Across Components
+### 9. Sentinel `0` Is Useful but Leaks Across Components
 
 The language has no null type, so integer `0` appears as:
 
@@ -310,8 +343,9 @@ instruction argument or result position. In ordinary expression evaluation and o
 
 ## Recommended Follow-Up Order
 
-1. **Documentation correction pass**: fix the stale `if(...)` branch-evaluation KB wording and add
-   line-based parsing/evaluation, expression purity, syntax-directed semantics, composability, and
+1. **Documentation correction pass**: fix the stale `if(...)` branch-evaluation KB wording, fix
+   stale module docs that overstate escaped quote or escape-sequence support, and add line-based
+   parsing/evaluation, expression purity, syntax-directed semantics, composability, and
    orthogonality as language design goals, clearly labeled as goal vs current state.
 2. **Purity and syntax classification design note**: decide which built-ins are pure expressions,
    which must remain sequenced instructions because they mutate state, communicate, create agents, or
@@ -333,6 +367,8 @@ instruction argument or result position. In ordinary expression evaluation and o
   in `ar_function_call_parser`.
 - `SPEC.md` names shared function-argument productions instead of spelling each built-in argument
   list independently.
+- `SPEC.md` now documents that quote/backslash handling for function-call argument splitting is a
+  boundary rule, while string literal values preserve source characters and do not decode escapes.
 
 ## Acceptance Criteria for Remaining Future Implementation
 
@@ -348,6 +384,8 @@ instruction argument or result position. In ordinary expression evaluation and o
 - Multiline literal behavior is either composable or documented as a deliberate source-format
   exception.
 - Documentation and tests agree on `if(...)` laziness.
+- Documentation and tests agree on whether string literals are raw strings or define escape
+  sequences.
 - Existing method corpus behavior remains unchanged unless a migration is explicitly planned.
 
 ## Verification Performed for This Audit
@@ -374,6 +412,12 @@ syntax-directed-semantics guidance, only lightweight documentation checks were n
 
 After the function-call parser cleanup and SPEC grammar update, this report was revised to separate
 the now-satisfied shared argument-boundary baseline from the remaining pure-call-expression work:
+
+- `make check-docs`: passed; 746 documentation files checked.
+- `git diff --check reports/method-language-audit.md`: passed.
+
+After the quote/backslash SPEC clarification, this report was revised to distinguish boundary-level
+quote handling from raw string-literal value semantics:
 
 - `make check-docs`: passed; 746 documentation files checked.
 - `git diff --check reports/method-language-audit.md`: passed.
