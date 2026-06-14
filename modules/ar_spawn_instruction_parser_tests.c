@@ -270,6 +270,29 @@ static void test_spawn_parser__parses_literal_context_argument(void) {
     ar_log__destroy(log);
 }
 
+static void test_spawn_parser__rejects_more_than_three_arguments(void) {
+    printf("Testing create rejects more than three arguments...\n");
+
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    ar_spawn_instruction_parser_t *own_parser = ar_spawn_instruction_parser__create(log);
+    assert(own_parser != NULL);
+
+    ar_instruction_ast_t *own_ast = ar_spawn_instruction_parser__parse(
+        own_parser,
+        "spawn(\"process\", \"2.1.0\", memory.config, memory.extra)",
+        NULL
+    );
+
+    assert(own_ast == NULL);
+    const char *ref_error = ar_log__get_last_error_message(log);
+    assert(ref_error != NULL);
+    assert(strstr(ref_error, "expects two or three arguments") != NULL);
+
+    ar_spawn_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
 int main(void) {
     printf("=== Create Instruction Parser Tests ===\n");
     
@@ -285,6 +308,7 @@ int main(void) {
     // Expression AST integration
     test_spawn_parser__parse_with_expression_asts();
     test_spawn_parser__parses_literal_context_argument();
+    test_spawn_parser__rejects_more_than_three_arguments();
     
     printf("All create instruction parser tests passed!\n");
     

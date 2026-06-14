@@ -97,6 +97,16 @@ static bool _parse_create_arguments(ar_spawn_instruction_parser_t *mut_parser, c
     *pos = _skip_whitespace(str, *pos);
     
     // Parse third argument (context)
+    look_ahead = *pos;
+    arg = ar_function_call_parser__extract_argument(NULL, str, &look_ahead, ',');
+    if (arg && str[look_ahead] == ',') {
+        ar_function_call_parser__destroy_arg(arg);
+        _log_error(mut_parser, "spawn() expects two or three arguments", look_ahead);
+        _cleanup_parsed_args(out_args, *out_count);
+        return false;
+    }
+    ar_function_call_parser__destroy_arg(arg);
+
     arg = ar_function_call_parser__extract_argument(mut_parser->ref_log, str, pos, ')');
     if (!arg) {
         _cleanup_parsed_args(out_args, *out_count);
