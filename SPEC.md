@@ -220,6 +220,9 @@ All function-call argument lists use the same language rule for argument boundar
 - Arguments are separated only by top-level commas and the closing parenthesis for the call.
 - Commas and closing parentheses inside quoted strings, parenthesized expression groups, one-line
   list literals, or one-line map literals do not terminate an argument.
+- While splitting function-call arguments, a double quote toggles quoted-string state only when it
+  is preceded by zero or an even number of consecutive backslashes. A quote preceded by an odd
+  number of consecutive backslashes is treated as part of the quoted span for boundary detection.
 - Function-specific arity rules still apply after this shared splitting rule. For example,
   `send(...)` requires exactly two arguments, while `complete(...)` accepts one or two arguments.
 - Nested call-like text can be preserved as one argument while parsing boundaries, but it is not a
@@ -277,6 +280,10 @@ The following BNF grammar defines the syntax of expressions allowed in AgeRun in
 
 The expression evaluator follows these rules:
 - String literals are enclosed in double quotes and represent string values
+- String literal values preserve their source characters between delimiters; backslashes are not
+  decoded into escape sequences
+- The current expression grammar does not specify an escaped double quote as a string value
+  character; quote/backslash handling above is a function-call argument boundary rule
 - Number literals can be either integers (whole numbers) or doubles (floating-point numbers)
 - List literals create list values, e.g. `[1, 2]` or `[1, 2,]`
 - Map literals create map values with identifier-only keys, e.g. `{name: "Ada"}` or `{name: "Ada",}`
