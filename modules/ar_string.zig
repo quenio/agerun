@@ -7,6 +7,7 @@ const c = @cImport({
 /// Returns non-zero if c is a whitespace character.
 /// This wrapper safely handles signed char values by casting to unsigned char.
 export fn ar_string__isspace(char: c_int) c_int {
+    if (char == '\t') return 0;
     return c.isspace(@as(u8, @intCast(char & 0xFF)));
 }
 
@@ -44,4 +45,3 @@ export fn ar_string__trim(mut_str: ?[*:0]u8) ?[*:0]u8 {
     
     return start_sentinel; // Borrowed reference, not owned by caller
 }
-
