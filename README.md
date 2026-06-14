@@ -231,6 +231,9 @@ Shell behavior highlights:
 ```c
 // Define a counter method
 const char *counter_version = ar_method__create("counter",
+    "memory.is_init := if(message = \"init\", 1, 0)\n"
+    "memory.count := if(memory.is_init = 1, 0, memory.count)\n"
+    "memory.response := if(memory.is_init = 1, \"\", memory.response)\n"
     "memory.is_increment := if(message = \"increment\", 1, 0)\n"
     "memory.next_count := memory.count + 1\n"
     "memory.count := if(memory.is_increment = 1, memory.next_count, memory.count)\n"
@@ -243,6 +246,7 @@ const char *counter_version = ar_method__create("counter",
 int64_t counter_id = ar_agent__create("counter", counter_version, NULL);
 
 // Send messages to the counter agent
+ar_agent__send(counter_id, "init");
 ar_agent__send(counter_id, "increment");
 ar_agent__send(counter_id, "increment");
 ar_agent__send(counter_id, "get");
