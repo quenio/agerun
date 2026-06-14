@@ -66,7 +66,7 @@ The parser handles the parse() function with this syntax:
 
 The parser correctly handles:
 - Quoted string arguments
-- Escaped quotes within strings
+- Quote/backslash patterns needed to keep arguments together during function-call boundary parsing
 - Whitespace variations
 - Complex templates with multiple placeholders
 
@@ -76,7 +76,7 @@ The parser:
 1. Validates the function name is "parse"
 2. Ensures opening parenthesis follows
 3. Extracts exactly 2 arguments (template and input strings)
-4. Handles quoted strings with escape sequences
+4. Uses shared function-call boundary parsing for quoted argument spans
 5. Creates an AR_INSTRUCTION_AST_TYPE__PARSE node with the parsed arguments
 6. Tracks optional result assignment path
 

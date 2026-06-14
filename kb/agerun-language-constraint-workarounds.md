@@ -15,8 +15,9 @@ should_exit := if(is_wake, 1, 0)
 exit(should_exit)  // EXAMPLE: Incorrect usage - this tries to exit agent with ID 0 or 1
 
 // WRONG: Attempting conditional execution
-// The if() function returns a value, it doesn't skip instructions
-if(message = "__wake__", send(0, "wake"), send(0, "not wake"))  // EXAMPLE: Both arguments evaluated
+// The if() function selects a value, it doesn't skip method instructions
+// or allow effectful function calls inside branch expressions
+if(message = "__wake__", send(0, "wake"), send(0, "not wake"))  // ERROR: Nested send() calls are not expressions
 
 // CORRECT: Using if() for value selection
 memory.is_wake := if(message = "__wake__", 1, 0)
@@ -63,7 +64,7 @@ Strategies for working within constraints:
 4. **Understanding function purposes**:
    - `exit(agent_id)`: Terminates another agent, not current execution
    - `send(agent_id, message)`: Returns boolean, not control flow
-   - `if(condition, a, b)`: Returns value, evaluates both branches
+   - `if(condition, a, b)`: Evaluates the condition, then evaluates and returns only the selected branch value
 
 ## Related Patterns
 - [Expression Ownership Rules](expression-ownership-rules.md)
