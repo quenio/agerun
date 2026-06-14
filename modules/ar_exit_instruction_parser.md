@@ -107,7 +107,7 @@ Access error information using:
 - **Zero Leaks**: All allocations are properly tracked and freed
 
 ### Argument Parsing
-The parser uses `_extract_argument()` to parse a single argument up to the closing parenthesis. It handles:
+The parser uses `ar_function_call_parser` to parse a single argument up to the closing parenthesis. It handles:
 - Nested parentheses in expressions
 - Quoted strings
 - Whitespace trimming
@@ -116,6 +116,7 @@ The parser uses `_extract_argument()` to parse a single argument up to the closi
 ## Dependencies
 
 - `ar_instruction_ast.h` - For creating AST nodes
+- `ar_function_call_parser.h` - For shared function-call argument parsing
 - `ar_heap.h` - For memory tracking
 - Standard C libraries: `string.h`, `stdio.h`, `ctype.h`, `stdbool.h`
 

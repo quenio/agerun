@@ -161,18 +161,28 @@ The following BNF grammar defines the syntax of individual instructions allowed 
                  | <deprecate-function>
                  | <if-function>
 
-<send-function> ::= 'send' '(' <expression> ',' <expression> ')'
-<parse-function> ::= 'parse' '(' <expression> ',' <expression> ')'
-<build-function> ::= 'build' '(' <expression> ',' <expression> ')'
-<complete-function> ::= 'complete' '(' <expression> [',' <expression>] ')'
-<append-function> ::= 'append' '(' <expression> ',' <expression> ')'
-<head-function> ::= 'head' '(' <expression> ')'
-<tail-function> ::= 'tail' '(' <expression> ')'
-<compile-function> ::= 'compile' '(' <expression> ',' <expression> ',' <expression> ')'
-<spawn-function> ::= 'spawn' '(' <expression> ',' <expression> ',' <expression> ')'
-<exit-function> ::= 'exit' '(' <expression> ')'
-<deprecate-function> ::= 'deprecate' '(' <expression> ',' <expression> ')'
-<if-function> ::= 'if' '(' <comparison-expression> ',' <expression> ',' <expression> ')'
+<send-function> ::= 'send' '(' <two-function-arguments> ')'
+<parse-function> ::= 'parse' '(' <two-function-arguments> ')'
+<build-function> ::= 'build' '(' <two-function-arguments> ')'
+<complete-function> ::= 'complete' '(' <one-or-two-function-arguments> ')'
+<append-function> ::= 'append' '(' <two-function-arguments> ')'
+<head-function> ::= 'head' '(' <one-function-argument> ')'
+<tail-function> ::= 'tail' '(' <one-function-argument> ')'
+<compile-function> ::= 'compile' '(' <three-function-arguments> ')'
+<spawn-function> ::= 'spawn' '(' <three-function-arguments> ')'
+<exit-function> ::= 'exit' '(' <one-function-argument> ')'
+<deprecate-function> ::= 'deprecate' '(' <two-function-arguments> ')'
+<if-function> ::= 'if' '(' <condition-function-arguments> ')'
+
+<one-function-argument> ::= <function-argument>
+<one-or-two-function-arguments> ::= <one-function-argument>
+                                  | <two-function-arguments>
+<two-function-arguments> ::= <function-argument> <function-argument-tail>
+<three-function-arguments> ::= <function-argument> <function-argument-tail> <function-argument-tail>
+<condition-function-arguments> ::= <comparison-expression> <function-argument-tail> <function-argument-tail>
+<function-argument-tail> ::= <function-argument-separator> <function-argument>
+<function-argument> ::= <expression>
+<function-argument-separator> ::= ','
 ```
 
 Instructions in an agent method can be of two types:
@@ -206,7 +216,20 @@ Function call instructions can optionally assign their result to a variable. For
 - `if(condition, true_value, false_value)` - Evaluate without storing the result
 - `result := if(condition, true_value, false_value)` - Store the result in a memory variable
 
-Standalone expressions that are not part of an assignment or one of the allowed function calls are not permitted as instructions.
+All function-call argument lists use the same language rule for argument boundaries:
+- Arguments are separated only by top-level commas and the closing parenthesis for the call.
+- Commas and closing parentheses inside quoted strings, parenthesized expression groups, one-line
+  list literals, or one-line map literals do not terminate an argument.
+- While splitting function-call arguments, a double quote toggles quoted-string state only when it
+  is preceded by zero or an even number of consecutive backslashes. A quote preceded by an odd
+  number of consecutive backslashes is treated as part of the quoted span for boundary detection.
+- Function-specific arity rules still apply after this shared splitting rule. For example,
+  `send(...)` requires exactly two arguments, while `complete(...)` accepts one or two arguments.
+- Function-call argument lists do not allow trailing commas before the closing parenthesis.
+- Nested call-like text can be preserved as one argument while parsing boundaries, but it is not a
+  valid expression because function calls are instructions, not expressions.
+
+Standalone expressions that are not part of an assignment or one of the allowed function calls are not permitted as instructions. Function calls are also not expressions and cannot be nested inside assignment expressions or other function-call arguments.
 
 ### Expression Syntax
 
@@ -218,6 +241,7 @@ The following BNF grammar defines the syntax of expressions allowed in AgeRun in
               | <list-literal>
               | <map-literal>
               | <memory-access>
+              | <parenthesized-expression>
               | <arithmetic-expression>
               | <comparison-expression>
 
@@ -226,9 +250,11 @@ The following BNF grammar defines the syntax of expressions allowed in AgeRun in
 <number-literal> ::= <integer>
                   | <double>
 
-<list-literal> ::= '[' [<expression> {',' <expression>} [',']] ']'
+<list-literal> ::= '[' [<expression> {',' <expression>}] ']'
 
-<map-literal> ::= '{' [<identifier> ':' <expression> {',' <identifier> ':' <expression>} [',']] '}'
+<map-literal> ::= '{' [<identifier> ':' <expression> {',' <identifier> ':' <expression>}] '}'
+
+<parenthesized-expression> ::= '(' <expression> ')'
 
 <multiline-list-literal> ::= '[' <newline> {<indent> <expression> [','] <newline>} <assignment-indent> ']'
 
@@ -255,10 +281,15 @@ The following BNF grammar defines the syntax of expressions allowed in AgeRun in
 
 The expression evaluator follows these rules:
 - String literals are enclosed in double quotes and represent string values
+- String literal values preserve their source characters between delimiters; backslashes are not
+  decoded into escape sequences
+- The current expression grammar does not specify an escaped double quote as a string value
+  character; quote/backslash handling above is a function-call argument boundary rule
 - Number literals can be either integers (whole numbers) or doubles (floating-point numbers)
-- List literals create list values, e.g. `[1, 2]` or `[1, 2,]`
-- Map literals create map values with identifier-only keys, e.g. `{name: "Ada"}` or `{name: "Ada",}`
+- List literals create list values, e.g. `[1, 2]`
+- Map literals create map values with identifier-only keys, e.g. `{name: "Ada"}`
 - One-line list and map literals can appear anywhere expressions are accepted, including assignment values and function arguments
+- One-line list and map literals do not allow trailing commas before the closing delimiter
 - Multi-line list and map literals are accepted only as the top-level right side of an assignment
 - Multi-line literal item lines must use identical indentation, the closing delimiter must align with the assignment line, and item-line commas are optional
 - Multi-line literals cannot appear as function arguments, list elements, or map values; nested list and map values must be written as one-line literals

@@ -766,8 +766,8 @@ static void test_parse_empty_list_literal(void) {
     ar_log__destroy(log);
 }
 
-static void test_parse_list_literal_with_trailing_comma(void) {
-    printf("Testing list literal parsing with trailing comma...\n");
+static void test_parse_list_literal_rejects_trailing_comma(void) {
+    printf("Testing list literal rejects trailing comma...\n");
 
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
@@ -776,13 +776,11 @@ static void test_parse_list_literal_with_trailing_comma(void) {
 
     ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
 
-    assert(own_ast != NULL);
-    assert(ar_expression_ast__get_type(own_ast) == AR_EXPRESSION_AST_TYPE__LITERAL_LIST);
-    assert(ar_expression_ast__get_list_item_count(own_ast) == 2);
-    assert(ar_expression_ast__get_int_value(ar_expression_ast__get_list_item(own_ast, 0)) == 1);
-    assert(ar_expression_ast__get_int_value(ar_expression_ast__get_list_item(own_ast, 1)) == 2);
+    assert(own_ast == NULL);
+    const char *error_msg = ar_log__get_last_error_message(log);
+    assert(error_msg != NULL);
+    assert(strstr(error_msg, "Trailing comma") != NULL);
 
-    ar_expression_ast__destroy(own_ast);
     ar_expression_parser__destroy(own_parser);
     ar_log__destroy(log);
 }
@@ -806,12 +804,12 @@ static void test_parse_empty_map_literal(void) {
     ar_log__destroy(log);
 }
 
-static void test_parse_nested_map_literal_with_trailing_comma(void) {
-    printf("Testing nested map literal parsing with trailing comma...\n");
+static void test_parse_nested_map_literal(void) {
+    printf("Testing nested map literal parsing...\n");
 
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
-    ar_expression_parser_t *own_parser = ar_expression_parser__create(log, "{name: \"Ada\", scores: [1, 2,],}");
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(log, "{name: \"Ada\", scores: [1, 2]}");
     assert(own_parser != NULL);
 
     ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
@@ -827,6 +825,25 @@ static void test_parse_nested_map_literal_with_trailing_comma(void) {
     assert(ar_expression_ast__get_list_item_count(ref_scores) == 2);
 
     ar_expression_ast__destroy(own_ast);
+    ar_expression_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
+static void test_parse_map_literal_rejects_trailing_comma(void) {
+    printf("Testing map literal rejects trailing comma...\n");
+
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(log, "{name: \"Ada\",}");
+    assert(own_parser != NULL);
+
+    ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
+
+    assert(own_ast == NULL);
+    const char *error_msg = ar_log__get_last_error_message(log);
+    assert(error_msg != NULL);
+    assert(strstr(error_msg, "Trailing comma") != NULL);
+
     ar_expression_parser__destroy(own_parser);
     ar_log__destroy(log);
 }
@@ -916,9 +933,10 @@ int main(void) {
     test_parse_invalid_expression();
     test_parse_trailing_characters();
     test_parse_empty_list_literal();
-    test_parse_list_literal_with_trailing_comma();
+    test_parse_list_literal_rejects_trailing_comma();
     test_parse_empty_map_literal();
-    test_parse_nested_map_literal_with_trailing_comma();
+    test_parse_nested_map_literal();
+    test_parse_map_literal_rejects_trailing_comma();
     test_parse_map_literal_rejects_quoted_key();
     test_parse_position_tracking();
     test_parse_null_safety();

@@ -1,6 +1,7 @@
 #include "ar_spawn_instruction_parser.h"
 #include "ar_instruction_ast.h"
 #include "ar_heap.h"
+#include "ar_function_call_parser.h"
 #include "ar_expression_parser.h"
 #include "ar_expression_ast.h"
 #include "ar_list.h"
@@ -40,86 +41,9 @@ static size_t _skip_whitespace(const char *str, size_t pos) {
     return pos;
 }
 
-static char* _extract_argument(ar_spawn_instruction_parser_t *mut_parser, const char *str, size_t *pos, char delimiter) {
-    size_t start = *pos;
-    int paren_depth = 0;
-    int bracket_depth = 0;
-    int brace_depth = 0;
-    bool in_quotes = false;
-    
-    /* Skip leading whitespace */
-    while (str[*pos] && isspace((unsigned char)str[*pos])) {
-        (*pos)++;
-        start++;
-    }
-    
-    /* Check for empty argument */
-    if (str[*pos] == delimiter) {
-        _log_error(mut_parser, "Empty argument", *pos);
-        return NULL;
-    }
-    
-    /* Find delimiter or end */
-    while (str[*pos]) {
-        char c = str[*pos];
-        
-        if (c == '"' && (*pos == 0 || str[*pos - 1] != '\\')) {
-            in_quotes = !in_quotes;
-        } else if (!in_quotes) {
-            if (c == '(') paren_depth++;
-            else if (c == '[') bracket_depth++;
-            else if (c == '{') brace_depth++;
-            else if (c == ']') {
-                if (bracket_depth > 0) bracket_depth--;
-            }
-            else if (c == '}') {
-                if (brace_depth > 0) brace_depth--;
-            }
-            else if (c == ')') {
-                if (paren_depth > 0) paren_depth--;
-                else if (delimiter == ')' && bracket_depth == 0 && brace_depth == 0) break;
-            }
-            else if (c == delimiter && paren_depth == 0 && bracket_depth == 0 && brace_depth == 0) break;
-        }
-        (*pos)++;
-    }
-    
-    if (str[*pos] != delimiter) {
-        _log_error(mut_parser, "Expected delimiter not found", *pos);
-        return NULL;
-    }
-    
-    /* Trim trailing whitespace */
-    size_t end = *pos;
-    while (end > start && isspace((unsigned char)str[end - 1])) {
-        end--;
-    }
-    
-    /* Extract argument */
-    size_t len = end - start;
-    char *arg = AR__HEAP__MALLOC(len + 1, "function argument");
-    if (!arg) {
-        _log_error(mut_parser, "Memory allocation failed", start);
-        return NULL;
-    }
-    memcpy(arg, str + start, len);
-    arg[len] = '\0';
-    
-    return arg;
-}
-
-static void _cleanup_string_array(char **args, size_t count) {
-    if (args) {
-        for (size_t i = 0; i < count; i++) {
-            AR__HEAP__FREE(args[i]);
-        }
-        AR__HEAP__FREE(args);
-    }
-}
-
 static void _cleanup_parsed_args(char ***args, size_t count) {
     if (*args) {
-        _cleanup_string_array(*args, count);
+        ar_function_call_parser__destroy_args(*args, count);
         *args = NULL;
     }
 }
@@ -136,7 +60,7 @@ static bool _parse_create_arguments(ar_spawn_instruction_parser_t *mut_parser, c
     *out_count = 0;
     
     // Parse first argument (method name)
-    char *arg = _extract_argument(mut_parser, str, pos, ',');
+    char *arg = ar_function_call_parser__extract_argument(mut_parser->ref_log, str, pos, ',');
     if (!arg) {
         AR__HEAP__FREE(*out_args);
         *out_args = NULL;
@@ -151,7 +75,7 @@ static bool _parse_create_arguments(ar_spawn_instruction_parser_t *mut_parser, c
     // Parse second argument (version)
     // First, check ahead to see if there's a comma or closing paren after this argument
     size_t look_ahead = *pos;
-    arg = _extract_argument(NULL, str, &look_ahead, ',');  /* Pass NULL to suppress error logging for lookahead */
+    arg = ar_function_call_parser__extract_argument(NULL, str, &look_ahead, ',');
     if (arg && str[look_ahead] == ',') {
         // Found a comma, this is a 3-argument call
         (*out_args)[1] = arg;
@@ -159,8 +83,8 @@ static bool _parse_create_arguments(ar_spawn_instruction_parser_t *mut_parser, c
         *pos = look_ahead + 1; /* Skip comma */
     } else {
         // No comma found, try parsing until closing paren (2-argument call)
-        AR__HEAP__FREE(arg); // Free the lookahead result
-        arg = _extract_argument(mut_parser, str, pos, ')');
+        ar_function_call_parser__destroy_arg(arg); // Free the lookahead result
+        arg = ar_function_call_parser__extract_argument(mut_parser->ref_log, str, pos, ')');
         if (!arg) {
             _cleanup_parsed_args(out_args, *out_count);
             return false;
@@ -173,7 +97,17 @@ static bool _parse_create_arguments(ar_spawn_instruction_parser_t *mut_parser, c
     *pos = _skip_whitespace(str, *pos);
     
     // Parse third argument (context)
-    arg = _extract_argument(mut_parser, str, pos, ')');
+    look_ahead = *pos;
+    arg = ar_function_call_parser__extract_argument(NULL, str, &look_ahead, ',');
+    if (arg && str[look_ahead] == ',') {
+        ar_function_call_parser__destroy_arg(arg);
+        _log_error(mut_parser, "spawn() expects two or three arguments", look_ahead);
+        _cleanup_parsed_args(out_args, *out_count);
+        return false;
+    }
+    ar_function_call_parser__destroy_arg(arg);
+
+    arg = ar_function_call_parser__extract_argument(mut_parser->ref_log, str, pos, ')');
     if (!arg) {
         _cleanup_parsed_args(out_args, *out_count);
         return false;
@@ -182,69 +116,6 @@ static bool _parse_create_arguments(ar_spawn_instruction_parser_t *mut_parser, c
     (*out_count)++;
     
     return true;
-}
-
-/**
- * Internal: Cleanup argument AST list and all contained ASTs.
- */
-static void _cleanup_arg_asts(ar_list_t *arg_asts) {
-    if (arg_asts) {
-        void **items = ar_list__items(arg_asts);
-        if (items) {
-            size_t list_count = ar_list__count(arg_asts);
-            for (size_t j = 0; j < list_count; j++) {
-                ar_expression_ast__destroy((ar_expression_ast_t*)items[j]);
-            }
-            AR__HEAP__FREE(items);
-        }
-        ar_list__destroy(arg_asts);
-    }
-}
-
-/**
- * Internal: Parse argument strings into expression ASTs and return as a list.
- */
-static ar_list_t* _parse_arguments_to_asts(ar_spawn_instruction_parser_t *mut_parser, 
-                                        char **ref_args, 
-                                        size_t arg_count,
-                                        size_t error_offset) {
-    ar_list_t *own_arg_asts = ar_list__create();
-    if (!own_arg_asts) {
-        _log_error(mut_parser, "Failed to create argument AST list", error_offset);
-        return NULL;
-    }
-    
-    for (size_t i = 0; i < arg_count; i++) {
-        ar_expression_parser_t *own_expr_parser = ar_expression_parser__create(mut_parser->ref_log, ref_args[i]);
-        if (!own_expr_parser) {
-            _cleanup_arg_asts(own_arg_asts);
-            _log_error(mut_parser, "Failed to create expression parser", error_offset);
-            return NULL;
-        }
-        
-        ar_expression_ast_t *own_expr_ast = ar_expression_parser__parse_expression(own_expr_parser);
-        if (!own_expr_ast) {
-            const char *expr_error = ar_expression_parser__get_error(own_expr_parser);
-            char *own_error_copy = expr_error ? AR__HEAP__STRDUP(expr_error, "error message copy") : NULL;
-            _cleanup_arg_asts(own_arg_asts);
-            ar_expression_parser__destroy(own_expr_parser);
-            _log_error(mut_parser, own_error_copy ? own_error_copy : "Failed to parse argument expression", error_offset);
-            AR__HEAP__FREE(own_error_copy);
-            return NULL;
-        }
-        
-        if (!ar_list__add_last(own_arg_asts, own_expr_ast)) {
-            _cleanup_arg_asts(own_arg_asts);
-            ar_expression_ast__destroy(own_expr_ast);
-            ar_expression_parser__destroy(own_expr_parser);
-            _log_error(mut_parser, "Failed to add argument AST to list", error_offset);
-            return NULL;
-        }
-        
-        ar_expression_parser__destroy(own_expr_parser);
-    }
-    
-    return own_arg_asts;
 }
 
 /**
@@ -339,10 +210,7 @@ ar_instruction_ast_t* ar_spawn_instruction_parser__parse(
     /* Create AST node - need to copy args to const array to avoid cast-qual warning */
     const char **const_args = AR__HEAP__MALLOC(final_arg_count * sizeof(const char*), "const args");
     if (!const_args) {
-        for (size_t i = 0; i < arg_count; i++) {
-            AR__HEAP__FREE(args[i]);
-        }
-        AR__HEAP__FREE(args);
+        ar_function_call_parser__destroy_args(args, arg_count);
         _log_error(mut_parser, "Memory allocation failed", 0);
         return NULL;
     }
@@ -364,16 +232,18 @@ ar_instruction_ast_t* ar_spawn_instruction_parser__parse(
     
     if (!own_ast) {
         /* Clean up arguments before returning */
-        _cleanup_string_array(args, arg_count);
+        ar_function_call_parser__destroy_args(args, arg_count);
         _log_error(mut_parser, "Failed to create AST node", 0);
         return NULL;
     }
     
     /* Parse arguments into expression ASTs and set them in the instruction AST */
-    ar_list_t *own_arg_asts = _parse_arguments_to_asts(mut_parser, args, arg_count, pos);
+    ar_list_t *own_arg_asts = ar_function_call_parser__parse_arg_asts(
+        mut_parser->ref_log, args, arg_count, pos
+    );
     if (!own_arg_asts) {
         /* Clean up arguments and AST before returning */
-        _cleanup_string_array(args, arg_count);
+        ar_function_call_parser__destroy_args(args, arg_count);
         ar_instruction_ast__destroy(own_ast);
         return NULL;
     }
@@ -383,8 +253,8 @@ ar_instruction_ast_t* ar_spawn_instruction_parser__parse(
         /* Create a null literal AST for the third argument */
         ar_log_t *own_log_for_null = ar_log__create();
         if (!own_log_for_null) {
-            _cleanup_string_array(args, arg_count);
-            ar_list__destroy(own_arg_asts);
+            ar_function_call_parser__destroy_args(args, arg_count);
+            ar_function_call_parser__destroy_arg_asts(own_arg_asts);
             ar_instruction_ast__destroy(own_ast);
             _log_error(mut_parser, "Failed to create ar_log", pos);
             return NULL;
@@ -402,15 +272,15 @@ ar_instruction_ast_t* ar_spawn_instruction_parser__parse(
     
     if (!ar_instruction_ast__set_function_arg_asts(own_ast, own_arg_asts)) {
         /* Clean up everything on failure */
-        _cleanup_string_array(args, arg_count);
+        ar_function_call_parser__destroy_args(args, arg_count);
         ar_instruction_ast__destroy(own_ast);
-        _cleanup_arg_asts(own_arg_asts);
+        ar_function_call_parser__destroy_arg_asts(own_arg_asts);
         _log_error(mut_parser, "Failed to set argument ASTs", 0);
         return NULL;
     }
     
     /* Clean up arguments */
-    _cleanup_string_array(args, arg_count);
+    ar_function_call_parser__destroy_args(args, arg_count);
     
     return own_ast;
 }

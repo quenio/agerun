@@ -7,7 +7,7 @@ In the AgeRun system, a module is a self-contained unit of functionality that pr
 **Module Types**:
 
 1. **C Modules**: Traditional modules with an implementation file (`.c`) and header file (`.h`)
-2. **C-ABI Compatible Zig Modules**: Zig implementations (`.zig`) that maintain full C API compatibility with matching header files (`.h`). Currently implemented in Zig: `ar_assert`, `ar_append_instruction_evaluator`, `ar_complete_instruction_evaluator`, `ar_complete_instruction_parser`, `ar_expression_ast`, `ar_head_instruction_evaluator`, `ar_heap`, `ar_instruction_ast`, `ar_method_ast`, `ar_method_evaluator`, `ar_semver`, `ar_string`, and `ar_tail_instruction_evaluator`. The `ar_io` module uses a hybrid approach with most functions in Zig (`ar_io.zig`) and variadic functions in C (`ar_io_variadic.c`) due to platform-specific requirements. `ar_local_completion` is a user-approved C exception for direct `llama.cpp` / `libllama` interop behind a stable AgeRun header.
+2. **C-ABI Compatible Zig Modules**: Zig implementations (`.zig`) that maintain full C API compatibility with matching header files (`.h`). Currently implemented in Zig: `ar_assert`, `ar_append_instruction_evaluator`, `ar_complete_instruction_evaluator`, `ar_complete_instruction_parser`, `ar_expression_ast`, `ar_function_call_parser`, `ar_head_instruction_evaluator`, `ar_heap`, `ar_instruction_ast`, `ar_method_ast`, `ar_method_evaluator`, `ar_semver`, `ar_string`, and `ar_tail_instruction_evaluator`. The `ar_io` module uses a hybrid approach with most functions in Zig (`ar_io.zig`) and variadic functions in C (`ar_io_variadic.c`) due to platform-specific requirements. `ar_local_completion` is a user-approved C exception for direct `llama.cpp` / `libllama` interop behind a stable AgeRun header.
 3. **Zig Struct Modules**: Pure Zig modules using TitleCase naming (e.g., `DataStore.zig`) for internal components that don't require C interop. These modules use Zig's idiomatic patterns while maintaining AgeRun's ownership conventions.
 
 Each module typically follows a consistent naming convention with an `ar_` prefix (e.g., `ar_data`, `ar_string`), and has its own test file (`ar_*_tests.c`) that verifies its functionality. Note: File names are being transitioned from `ar_` to `ar_` prefix gradually as files are modified for other reasons.
@@ -1322,6 +1322,18 @@ The [instruction parser module](ar_instruction_parser.md) serves as a facade tha
 
 The instruction parser coordinates the following specialized parser modules:
 
+#### Function Call Parser Module (`ar_function_call_parser`)
+
+The [function call parser module](ar_function_call_parser.md) owns the shared
+function-call argument-list grammar used by C and Zig instruction parsers:
+- **Argument Boundaries**: Splits at top-level delimiters while preserving nested
+  parentheses, one-line list/map literals, and quoted strings
+- **Expression ASTs**: Converts parsed argument strings into expression AST lists
+- **Scope Boundary**: Does not decide instruction names or instruction-specific arity
+  rules
+- **Language Constraint**: Preserves nested call text as one argument, while expression
+  parsing still rejects function calls as expressions
+
 #### Assignment Instruction Parser Module (`ar_assignment_instruction_parser`)
 
 The [assignment instruction parser module](ar_assignment_instruction_parser.md) handles parsing of memory assignment instructions:
@@ -1413,7 +1425,7 @@ The [spawn instruction parser module](ar_spawn_instruction_parser.md) handles pa
 The [condition instruction parser module](ar_condition_instruction_parser.md) handles parsing of conditional (if) instructions:
 - **If Function Syntax**: Parses `if(condition, then_value, else_value)` format
 - **Optional Assignment**: Supports `memory.result := if(...)` syntax
-- **Nested Function Support**: Handles nested function calls in arguments
+- **Shared Argument Parsing**: Uses the function-call parser for argument boundaries
 - **Complex Conditions**: Parses boolean expressions with operators
 - **Instantiable Parser**: Follows create/destroy lifecycle pattern
 

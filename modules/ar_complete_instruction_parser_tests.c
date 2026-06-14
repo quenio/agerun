@@ -146,6 +146,27 @@ static void test_complete_instruction_parser__rejects_invalid_placeholder_name(v
     ar_log__destroy(own_log);
 }
 
+static void test_complete_instruction_parser__rejects_more_than_two_arguments(void) {
+    ar_log_t *own_log = ar_log__create();
+    assert(own_log != NULL);
+    ar_complete_instruction_parser_t *own_parser = ar_complete_instruction_parser__create(own_log);
+    assert(own_parser != NULL);
+
+    ar_instruction_ast_t *own_ast = ar_complete_instruction_parser__parse(
+        own_parser,
+        "complete(\"The capital is {city}.\", memory.location, memory.extra)",
+        NULL
+    );
+
+    assert(own_ast == NULL);
+    const char *ref_error = ar_log__get_last_error_message(own_log);
+    assert(ref_error != NULL);
+    assert(strstr(ref_error, "expects one or two arguments") != NULL);
+
+    ar_complete_instruction_parser__destroy(own_parser);
+    ar_log__destroy(own_log);
+}
+
 int main(void) {
     printf("Running complete instruction parser tests...\n");
     test_complete_instruction_parser__create_destroy();
@@ -155,6 +176,7 @@ int main(void) {
     test_complete_instruction_parser__accepts_template_without_placeholders();
     test_complete_instruction_parser__accepts_dynamic_template_expression();
     test_complete_instruction_parser__rejects_invalid_placeholder_name();
+    test_complete_instruction_parser__rejects_more_than_two_arguments();
     printf("All complete instruction parser tests passed!\n");
     return 0;
 }

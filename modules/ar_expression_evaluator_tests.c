@@ -972,7 +972,7 @@ static void test_evaluate_list_literal(void) {
     ar_expression_evaluator_t *ref_evaluator = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
     ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
 
-    ar_expression_parser_t *own_parser = ar_expression_parser__create(ref_log, "[1, \"two\", {n: 3},]");
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(ref_log, "[1, \"two\", {n: 3}]");
     assert(own_parser != NULL);
     ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
     assert(own_ast != NULL);
@@ -1007,7 +1007,7 @@ static void test_evaluate_map_literal(void) {
     ar_expression_evaluator_t *ref_evaluator = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
     ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
 
-    ar_expression_parser_t *own_parser = ar_expression_parser__create(ref_log, "{name: \"Ada\", values: [1, 2,],}");
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(ref_log, "{name: \"Ada\", values: [1, 2]}");
     assert(own_parser != NULL);
     ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
     assert(own_ast != NULL);

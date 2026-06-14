@@ -341,7 +341,7 @@ static void test_send_instruction_parser__parses_literal_argument(void) {
 
     ar_log_t *log = ar_log__create();
     assert(log != NULL);
-    const char *instruction = "send(42, {items: [1, 2,]})";
+    const char *instruction = "send(42, {items: [1, 2]})";
     ar_send_instruction_parser_t *own_parser = ar_send_instruction_parser__create(log);
     assert(own_parser != NULL);
 
