@@ -2,22 +2,18 @@
 
 ## 2026-06-15 (Refine method-language built-in purity audit)
 
-- **Documented built-in purity recommendations and restored Claude review defaults**
+- **Documented built-in purity recommendations**
 
   The method-language audit now distinguishes built-ins that are true pure expressions from
   instruction-like built-ins, recommends keeping side-effecting agent operations as instructions,
-  and records `append(...)` as the candidate for a future pure list-returning expression form. The
-  Claude PR Review workflow is back out of temporary diagnostic mode after validating the full-output
-  permission investigation.
+  and records `append(...)` as the candidate for a future pure list-returning expression form.
 
   **Implementation**: Updated `reports/method-language-audit.md` with the refined built-in
-  classification and recommendations, and removed the temporary `github_token` and
-  `show_full_output` Claude workflow debugging inputs from `.github/workflows/claude-pr-review.yml`.
+  classification and recommendations.
 
   **Verification**: `git diff --check` and `make check-docs`.
 
-  **Impact**: The audit records the intended pure-expression direction while the Claude review
-  workflow returns to its normal lower-noise configuration.
+  **Impact**: The audit records the intended pure-expression direction for future language changes.
 
 ## 2026-06-07 (Align workflow test home fallback)
 
