@@ -39,6 +39,20 @@ jobs:
           owner="${REPOSITORY%/*}"
           repo="${REPOSITORY#*/}"
           context_dir="$(mktemp -d)"
+          top_level_comments_file="${context_dir}/top-level-comments.json"
+          reviews_file="${context_dir}/reviews.json"
+          review_comments_file="${context_dir}/review-comments.json"
+
+          gh api --paginate --method GET \
+            "repos/${owner}/${repo}/issues/${PR_NUMBER}/comments" |
+            jq -s 'add // []' > "$top_level_comments_file"
+          gh api --paginate --method GET \
+            "repos/${owner}/${repo}/pulls/${PR_NUMBER}/reviews" |
+            jq -s 'add // []' > "$reviews_file"
+          gh api --paginate --method GET \
+            "repos/${owner}/${repo}/pulls/${PR_NUMBER}/comments" |
+            jq -s 'add // []' > "$review_comments_file"
+
           page=0
           after=""
 
@@ -63,23 +77,6 @@ jobs:
               ) {
                 repository(owner: $owner, name: $repo) {
                   pullRequest(number: $number) {
-                    comments(first: 50) {
-                      nodes {
-                        author { login }
-                        body
-                        createdAt
-                        url
-                      }
-                    }
-                    reviews(first: 50) {
-                      nodes {
-                        author { login }
-                        body
-                        commit { oid }
-                        state
-                        submittedAt
-                      }
-                    }
                     reviewThreads(first: 100, after: $threadCursor) {
                       pageInfo {
                         endCursor
@@ -91,18 +88,6 @@ jobs:
                         line
                         originalLine
                         path
-                        comments(first: 50) {
-                          nodes {
-                            author { login }
-                            body
-                            createdAt
-                            line
-                            originalLine
-                            outdated
-                            path
-                            url
-                          }
-                        }
                       }
                     }
                   }
@@ -118,12 +103,23 @@ jobs:
             page=$((page + 1))
           done
 
-          jq -s '
+          jq -s \
+            --arg repository "$REPOSITORY" \
+            --argjson pullRequest "$PR_NUMBER" \
+            --slurpfile topLevelComments "$top_level_comments_file" \
+            --slurpfile reviews "$reviews_file" \
+            --slurpfile reviewComments "$review_comments_file" \
+            '
             . as $pages
-            | $pages[0]
-            | .data.repository.pullRequest.reviewThreads.nodes =
-                ($pages | map(.data.repository.pullRequest.reviewThreads.nodes[]))
-            | .data.repository.pullRequest.reviewThreads.pageInfo = {
+            | {
+              repository: $repository,
+              pullRequest: $pullRequest,
+              topLevelComments: $topLevelComments[0],
+              reviews: $reviews[0],
+              reviewComments: $reviewComments[0],
+              reviewThreads: {
+                nodes: ($pages | map(.data.repository.pullRequest.reviewThreads.nodes[])),
+                pageInfo: {
                 capturedPages: ($pages | length),
                 capturedThreadCount: (
                   $pages | map(.data.repository.pullRequest.reviewThreads.nodes[]) | length
@@ -131,6 +127,8 @@ jobs:
                 endCursor: ($pages[-1].data.repository.pullRequest.reviewThreads.pageInfo.endCursor),
                 hasNextPage: false
               }
+              }
+            }
           ' "$context_dir"/page-*.json > /tmp/claude-pr-review-context.json
           rm -rf "$context_dir"
 
@@ -158,6 +156,7 @@ jobs:
                   "Bash(gh pr diff:*)",
                   "Bash(gh pr list:*)",
                   "Bash(gh api graphql:*)",
+                  "Bash(gh api --method GET repos/*/*/issues/*/comments:*)",
                   "Bash(gh api --method GET repos/*/*/pulls/*/comments:*)",
                   "Bash(gh api --method GET repos/*/*/pulls/*/reviews:*)",
                   "Bash(git diff:*)",
@@ -233,7 +232,7 @@ jobs:
             true. If no issues are found, print a short terminal summary and do
             not post a PR comment.
           claude_args: |
-            --allowedTools "Read,Glob,Grep,Edit(//tmp/**),Write(//tmp/**),WebFetch,WebSearch,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr list:*),Bash(gh api graphql:*),Bash(gh api --method GET repos/*/*/pulls/*/comments:*),Bash(gh api --method GET repos/*/*/pulls/*/reviews:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(cd:*),Bash(cat:*),Bash(jq:*),Bash(mkdir:*),Bash(mktemp:*),Bash(rm:*),mcp__github_inline_comment__create_inline_comment"
+            --allowedTools "Read,Glob,Grep,Edit(//tmp/**),Write(//tmp/**),WebFetch,WebSearch,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr list:*),Bash(gh api graphql:*),Bash(gh api --method GET repos/*/*/issues/*/comments:*),Bash(gh api --method GET repos/*/*/pulls/*/comments:*),Bash(gh api --method GET repos/*/*/pulls/*/reviews:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(cd:*),Bash(cat:*),Bash(jq:*),Bash(mkdir:*),Bash(mktemp:*),Bash(rm:*),mcp__github_inline_comment__create_inline_comment"
         env:
           GH_TOKEN: ${{ github.token }}
 
