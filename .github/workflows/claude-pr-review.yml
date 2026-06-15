@@ -36,11 +36,23 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPOSITORY: ${{ github.repository }}
         run: |
-          set -o pipefail
+          set -euo pipefail
 
           owner="${REPOSITORY%/*}"
           repo="${REPOSITORY#*/}"
           context_dir="$(mktemp -d)"
+          cleanup_context() {
+            status=$?
+            set +e
+            rm -rf "$context_dir"
+            cleanup_status=$?
+            if [ "$status" -ne 0 ]; then
+              exit "$status"
+            fi
+            exit "$cleanup_status"
+          }
+          trap cleanup_context EXIT
+
           top_level_comments_file="${context_dir}/top-level-comments.json"
           reviews_file="${context_dir}/reviews.json"
           review_comments_file="${context_dir}/review-comments.json"
@@ -318,7 +330,6 @@ jobs:
               }
             }
           ' "$context_dir"/page-*.json > /tmp/claude-pr-review-context.json
-          rm -rf "$context_dir"
 
       - name: Run Claude Code Review
         id: claude-review
