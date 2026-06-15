@@ -67,7 +67,7 @@ The parser handles the build() function with this syntax:
 The parser correctly handles:
 - Quoted string templates with placeholders
 - Multiple placeholders in one template
-- Escaped quotes within templates
+- Quote/backslash patterns needed to keep template arguments together during function-call boundary parsing
 - Whitespace variations
 - Memory references as map arguments
 
@@ -77,7 +77,7 @@ The parser:
 1. Validates the function name is "build"
 2. Ensures opening parenthesis follows
 3. Extracts exactly 2 arguments (template string and map expression)
-4. Handles quoted strings with escape sequences
+4. Uses shared function-call boundary parsing for quoted argument spans
 5. Creates an AR_INSTRUCTION_AST_TYPE__BUILD node with the parsed arguments
 6. Tracks optional result assignment path
 

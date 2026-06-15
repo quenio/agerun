@@ -66,7 +66,7 @@ The parser handles the compile() function with this syntax:
 
 The parser correctly handles:
 - Method names as quoted strings
-- Method code containing AgeRun instructions (with escaped quotes)
+- Method code as a quoted string argument using shared function-call boundary parsing
 - Version strings in semantic versioning format
 - Whitespace variations between tokens
 - Complex code with nested function calls
@@ -77,7 +77,7 @@ The parser:
 1. Validates the function name is "method"
 2. Ensures opening parenthesis follows
 3. Extracts exactly 3 string arguments (name, code, version)
-4. Handles quoted strings with escape sequences
+4. Uses shared function-call boundary parsing for quoted argument spans
 5. Creates an AR_INSTRUCTION_AST_TYPE__METHOD node with the parsed arguments
 6. Tracks optional result assignment path
 

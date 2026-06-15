@@ -1200,10 +1200,10 @@ The [send instruction evaluator module](ar_send_instruction_evaluator.md) handle
 
 #### Condition Instruction Evaluator Module (`ar_condition_instruction_evaluator`)
 
-The [condition instruction evaluator module](ar_condition_instruction_evaluator.md) handles conditional execution:
-- **Boolean Evaluation**: Evaluates condition expressions to boolean
-- **Branch Selection**: Executes appropriate instruction list based on condition
-- **Truthiness**: Non-zero integers and non-empty strings are truthy
+The [condition instruction evaluator module](ar_condition_instruction_evaluator.md) handles conditional value selection:
+- **Condition Evaluation**: Evaluates the condition expression
+- **Branch Selection**: Evaluates only the selected branch expression
+- **Truthiness**: Integer `0` is false; non-zero integers are true; non-integer values select the false branch
 
 #### Parse Instruction Evaluator Module (`ar_parse_instruction_evaluator`)
 
@@ -1356,7 +1356,7 @@ The [parse instruction parser module](ar_parse_instruction_parser.md) handles pa
 - **Parse Function Syntax**: Parses `parse(template, input)` format
 - **Template Placeholders**: Extracts values using `{variable}` syntax
 - **Optional Assignment**: Supports `memory.result := parse(...)` syntax
-- **String Handling**: Manages quoted strings with escape sequences
+- **String Handling**: Uses shared function-call boundary parsing for quoted arguments; expression string values remain raw
 - **Instantiable Parser**: Follows create/destroy lifecycle pattern
 
 #### Build Instruction Parser Module (`ar_build_instruction_parser`)
@@ -1366,7 +1366,7 @@ The [build instruction parser module](ar_build_instruction_parser.md) handles pa
 - **Template Placeholders**: Combines template with values using `{variable}` syntax
 - **Map Expression**: Second argument must be a map expression
 - **Optional Assignment**: Supports `memory.result := build(...)` syntax
-- **String Handling**: Manages quoted templates with escape sequences
+- **String Handling**: Uses shared function-call boundary parsing for quoted templates; expression string values remain raw
 - **Instantiable Parser**: Follows create/destroy lifecycle pattern
 
 #### Complete Instruction Parser Module (`ar_complete_instruction_parser`)
@@ -1404,7 +1404,7 @@ The [compile instruction parser module](ar_compile_instruction_parser.md) handle
 - **Method Function Syntax**: Parses `method(name, code, version)` format
 - **Three String Arguments**: Validates all arguments are quoted strings
 - **Method Creation**: Creates AR_INSTRUCTION_AST_TYPE__METHOD nodes for method definitions
-- **Code Parameter**: Handles AgeRun instructions in code with escape sequences
+- **Code Parameter**: Handles code as a quoted argument using shared function-call boundary parsing
 - **Version Strings**: Accepts semantic version format (e.g., "1.0.0")
 - **Optional Assignment**: Supports `memory.ref := method(...)` syntax
 - **Instantiable Parser**: Follows create/destroy lifecycle pattern

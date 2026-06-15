@@ -69,11 +69,13 @@ memory.result := deprecate("method_name", "version")
 memory.success := deprecate("calculator", "1.0.0")
 ```
 
-### Complex Strings
-Handles escaped quotes and special characters:
+### Quoted String Arguments
+Handles quoted argument spans through the shared function-call boundary parser. Backslashes are
+preserved as literal source characters by expression string parsing; this module does not define
+value-level escape sequences.
 ```
-deprecate("test\"method", "1.0.0-beta")
-deprecate("multi\nline", "1.0.0")
+deprecate("test-method", "1.0.0-beta")
+deprecate("calculator", "2.1.0")
 ```
 
 ## Error Handling
@@ -132,7 +134,7 @@ The module includes comprehensive tests covering:
 - Two string argument parsing
 - Assignment forms
 - Error handling for various invalid inputs
-- Complex string handling with escaped quotes
+- Quoted argument boundary handling
 
 Run tests with:
 ```bash
