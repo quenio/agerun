@@ -179,7 +179,6 @@ jobs:
                   "Bash(gh pr view:*)",
                   "Bash(gh pr diff:*)",
                   "Bash(gh pr list:*)",
-                  "Bash(gh api graphql:*)",
                   "Bash(gh api --method GET repos/*/*/issues/*/comments:*)",
                   "Bash(gh api --method GET repos/*/*/pulls/*/comments:*)",
                   "Bash(gh api --method GET repos/*/*/pulls/*/reviews:*)",
@@ -187,8 +186,6 @@ jobs:
                   "Bash(git log:*)",
                   "Bash(git show:*)",
                   "Bash(cd:*)",
-                  "Bash(cat:*)",
-                  "Bash(jq:*)",
                   "Bash(mkdir:*)",
                   "Bash(mktemp:*)",
                   "Bash(rm:*)",
@@ -198,6 +195,8 @@ jobs:
                   "MultiEdit",
                   "Edit(//home/runner/work/_temp/_runner_file_commands/**)",
                   "Write(//home/runner/work/_temp/_runner_file_commands/**)",
+                  "Bash(*GH_TOKEN*)",
+                  "Bash(*GITHUB_TOKEN*)",
                   "Bash(*GITHUB_ENV*)",
                   "Bash(*GITHUB_OUTPUT*)",
                   "Bash(*GITHUB_PATH*)",
@@ -207,10 +206,10 @@ jobs:
                   "Bash(git commit:*)",
                   "Bash(git push:*)",
                   "Bash(gh auth token:*)",
-                  "Bash(gh api graphql *--input*)",
-                  "Bash(gh api graphql *@*)",
+                  "Bash(gh api graphql:*)",
                   "Bash(gh api graphql *mutation*)",
                   "Bash(gh api graphql *Mutation*)",
+                  "Bash(jq:*)",
                   "Bash(gh api * --method DELETE*)",
                   "Bash(gh api * --method PATCH*)",
                   "Bash(gh api * --method POST*)",
@@ -248,11 +247,11 @@ jobs:
             Use gh pr view and gh pr diff to inspect the PR. Focus on changed
             lines and repository instructions that apply to changed files.
             The workflow pre-captures GraphQL review-thread context in
-            /tmp/claude-pr-review-context.json. Use gh api GraphQL only for
-            read-only inline queries when the captured context is insufficient;
-            do not use --input, @file field values, or GraphQL mutations. Use
-            --method GET for REST gh api pull review/comment requests. Do not
-            run mutating gh api requests.
+            /tmp/claude-pr-review-context.json. Read that file directly with
+            Read; do not use cat, jq, or gh api GraphQL. Use
+            --method GET for REST gh api pull review/comment requests only when
+            the captured context is insufficient. Do not run mutating gh api
+            requests.
             Report only high-confidence bugs, workflow/configuration failures,
             security problems, or clear repository-instruction violations.
 
@@ -270,7 +269,7 @@ jobs:
             true. If no issues are found, print a short terminal summary and do
             not post a PR comment.
           claude_args: |
-            --allowedTools "Read,Glob,Grep,Edit(//tmp/**),Write(//tmp/**),WebFetch,WebSearch,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr list:*),Bash(gh api graphql:*),Bash(gh api --method GET repos/*/*/issues/*/comments:*),Bash(gh api --method GET repos/*/*/pulls/*/comments:*),Bash(gh api --method GET repos/*/*/pulls/*/reviews:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(cd:*),Bash(cat:*),Bash(jq:*),Bash(mkdir:*),Bash(mktemp:*),Bash(rm:*),mcp__github_inline_comment__create_inline_comment"
+            --allowedTools "Read,Glob,Grep,Edit(//tmp/**),Write(//tmp/**),WebFetch,WebSearch,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr list:*),Bash(gh api --method GET repos/*/*/issues/*/comments:*),Bash(gh api --method GET repos/*/*/pulls/*/comments:*),Bash(gh api --method GET repos/*/*/pulls/*/reviews:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(cd:*),Bash(mkdir:*),Bash(mktemp:*),Bash(rm:*),mcp__github_inline_comment__create_inline_comment"
         env:
           GH_TOKEN: ${{ github.token }}
 
