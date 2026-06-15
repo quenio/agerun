@@ -143,18 +143,17 @@ jobs:
             exit 1
           fi
 
-          if jq -e '.. | objects | select(.type? == "result" and .is_error? == true)' "$CLAUDE_EXECUTION_FILE" >/dev/null; then
-            error_message=$(jq -r '.. | objects | select(.type? == "result" and .is_error? == true) | .result // "unknown Claude error"' "$CLAUDE_EXECUTION_FILE" | tail -n 1)
+          if jq -s -e '.[] | .. | objects | select(.type? == "result" and .is_error? == true)' "$CLAUDE_EXECUTION_FILE" >/dev/null; then
+            error_message=$(jq -s -r '[.[] | .. | objects | select(.type? == "result" and .is_error? == true) | (.result // "unknown Claude error")] | last' "$CLAUDE_EXECUTION_FILE")
             echo "::error::Claude Code reported an error: ${error_message}"
             exit 1
           fi
 
           permission_denials_count=$(
-            jq -r '.. | objects | select(.type? == "result") | ((.permission_denials? // []) | length)' "$CLAUDE_EXECUTION_FILE" |
-            tail -n 1
+            jq -s -r '[.[] | .. | objects | select(.type? == "result") | (.permission_denials? // [])[]] | length' "$CLAUDE_EXECUTION_FILE"
           )
           if [ -n "$permission_denials_count" ] && [ "$permission_denials_count" != "0" ]; then
-            denied_tools=$(jq -r '[.. | objects | select(.type? == "result") | (.permission_denials? // [])[]?.tool_name] | unique | join(", ")' "$CLAUDE_EXECUTION_FILE")
+            denied_tools=$(jq -s -r '[.[] | .. | objects | select(.type? == "result") | (.permission_denials? // [])[]?.tool_name] | unique | join(", ")' "$CLAUDE_EXECUTION_FILE")
             echo "::error::Claude Code reported ${permission_denials_count} permission denials."
             if [ -n "$denied_tools" ]; then
               echo "::error::Denied tools: ${denied_tools}"
