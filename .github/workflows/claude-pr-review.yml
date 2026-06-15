@@ -83,11 +83,29 @@ jobs:
                         hasNextPage
                       }
                       nodes {
+                        id
                         isOutdated
                         isResolved
                         line
                         originalLine
                         path
+                        comments(first: 100) {
+                          totalCount
+                          pageInfo {
+                            endCursor
+                            hasNextPage
+                          }
+                          nodes {
+                            author { login }
+                            body
+                            createdAt
+                            line
+                            originalLine
+                            outdated
+                            path
+                            url
+                          }
+                        }
                       }
                     }
                   }
