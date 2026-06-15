@@ -172,6 +172,111 @@ jobs:
               exit 1
             fi
 
+            comment_thread_index=0
+            while IFS= read -r thread_id; do
+              thread_comments_file="${context_dir}/comments-${page}-${comment_thread_index}.json"
+              jq \
+                --arg thread_id "$thread_id" \
+                '.data.repository.pullRequest.reviewThreads.nodes[]
+                  | select(.id == $thread_id)
+                  | .comments.nodes' \
+                "$page_file" > "$thread_comments_file"
+
+              comment_after="$(jq -r \
+                --arg thread_id "$thread_id" \
+                '.data.repository.pullRequest.reviewThreads.nodes[]
+                  | select(.id == $thread_id)
+                  | .comments.pageInfo.endCursor // empty' \
+                "$page_file")"
+              if [ -z "$comment_after" ]; then
+                echo "::error::GitHub reported more thread comments without an endCursor."
+                exit 1
+              fi
+
+              while :; do
+                comment_page_file="${context_dir}/comments-${page}-${comment_thread_index}-page.json"
+                gh api graphql \
+                  -F threadId="$thread_id" \
+                  -F commentCursor="$comment_after" \
+                  -f query='
+                  query($threadId: ID!, $commentCursor: String) {
+                    node(id: $threadId) {
+                      ... on PullRequestReviewThread {
+                        comments(first: 100, after: $commentCursor) {
+                          pageInfo {
+                            endCursor
+                            hasNextPage
+                          }
+                          nodes {
+                            author { login }
+                            body
+                            createdAt
+                            line
+                            originalLine
+                            outdated
+                            path
+                            url
+                          }
+                        }
+                      }
+                    }
+                  }
+                ' > "$comment_page_file"
+
+                if jq -e '(.errors // []) | length > 0' "$comment_page_file" >/dev/null; then
+                  echo "::error::GitHub GraphQL returned errors while capturing thread comments."
+                  jq -r '.errors[]?.message // "unknown GraphQL error"' "$comment_page_file" |
+                    while IFS= read -r error_message; do
+                      echo "::error::GraphQL error: ${error_message}"
+                    done
+                  exit 1
+                fi
+
+                if ! jq -e '.data.node.comments.pageInfo' "$comment_page_file" >/dev/null; then
+                  echo "::error::GitHub GraphQL response is missing thread comments pageInfo."
+                  exit 1
+                fi
+
+                jq -s '.[0] + (.[1].data.node.comments.nodes // [])' \
+                  "$thread_comments_file" \
+                  "$comment_page_file" > "${thread_comments_file}.tmp"
+                mv "${thread_comments_file}.tmp" "$thread_comments_file"
+
+                if [ "$(jq -r '.data.node.comments.pageInfo.hasNextPage' "$comment_page_file")" != "true" ]; then
+                  break
+                fi
+
+                next_comment_after="$(jq -r '.data.node.comments.pageInfo.endCursor // empty' "$comment_page_file")"
+                if [ -z "$next_comment_after" ] || [ "$next_comment_after" = "$comment_after" ]; then
+                  echo "::error::GitHub reported another thread comments page without a new endCursor."
+                  exit 1
+                fi
+
+                comment_after="$next_comment_after"
+              done
+
+              jq \
+                --arg thread_id "$thread_id" \
+                --slurpfile comments "$thread_comments_file" \
+                '(.data.repository.pullRequest.reviewThreads.nodes[]
+                    | select(.id == $thread_id)
+                    | .comments.nodes) = $comments[0]
+                  | (.data.repository.pullRequest.reviewThreads.nodes[]
+                    | select(.id == $thread_id)
+                    | .comments.pageInfo.hasNextPage) = false
+                  | (.data.repository.pullRequest.reviewThreads.nodes[]
+                    | select(.id == $thread_id)
+                    | .comments.pageInfo.endCursor) = null' \
+                "$page_file" > "${page_file}.tmp"
+              mv "${page_file}.tmp" "$page_file"
+
+              comment_thread_index=$((comment_thread_index + 1))
+            done < <(jq -r \
+              '.data.repository.pullRequest.reviewThreads.nodes[]
+                | select(.comments.pageInfo.hasNextPage == true)
+                | .id' \
+              "$page_file")
+
             if [ "$(jq -r '.data.repository.pullRequest.reviewThreads.pageInfo.hasNextPage' "$page_file")" != "true" ]; then
               break
             fi
