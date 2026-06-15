@@ -226,6 +226,7 @@ jobs:
                   "WebFetch",
                   "WebSearch",
                   "Bash(gh pr view:*)",
+                  "Bash(cd /tmp && gh pr view:*)",
                   "Bash(gh pr diff:*)",
                   "Bash(gh pr list:*)",
                   "Bash(gh api --method GET repos/*/*/issues/*/comments:*)",
@@ -251,11 +252,18 @@ jobs:
                   "Bash(*GITHUB_PATH*)",
                   "Bash(*GITHUB_STEP_SUMMARY*)",
                   "Bash(*_runner_file_commands*)",
+                  "Bash(*ANTHROPIC_API_KEY*)",
+                  "Bash(* /proc/*)",
+                  "Bash(* /home/runner/work/_temp/*)",
+                  "Bash(*;*)",
+                  "Bash(* env*)",
+                  "Bash(* printenv*)",
+                  "Bash(* curl*)",
+                  "Bash(* wget*)",
                   "Bash(git add:*)",
                   "Bash(git commit:*)",
                   "Bash(git diff:*)",
                   "Bash(git push:*)",
-                  "Bash(cd:*)",
                   "Bash(gh auth token:*)",
                   "Bash(gh api graphql:*)",
                   "Bash(gh api graphql *mutation*)",
@@ -302,13 +310,16 @@ jobs:
             lines and repository instructions that apply to changed files.
             The workflow pre-captures GraphQL review-thread context in
             /tmp/claude-pr-review-context.json. Read that file directly with
-            Read; do not use cat, jq, or gh api GraphQL. Use
+            Read; do not use cat, external jq, or gh api GraphQL. Use
             --method GET for REST gh api pull review/comment requests only when
             the captured context is insufficient. Do not run mutating gh api
             requests.
-            Do not run local validation, self-tests, git diff, Python, jq,
-            cat, cd, or compound Bash scripts; denied tool attempts fail this
-            check. If a fact cannot be inspected with the allowed tools,
+            Do not run local validation, self-tests, git diff, Python,
+            external jq, cat, arbitrary cd, or arbitrary compound Bash scripts;
+            denied tool attempts fail this check. A single
+            cd /tmp && gh pr view ... | head ... command is allowed only for
+            read-only PR metadata or review output. If a fact cannot be
+            inspected with the allowed tools,
             continue without that optional check.
             Report only high-confidence bugs, workflow/configuration failures,
             security problems, or clear repository-instruction violations.
@@ -329,7 +340,7 @@ jobs:
             true. If no issues are found, print a short terminal summary and do
             not post a PR comment.
           claude_args: |
-            --allowedTools "Read(/**),Read(//tmp/claude-pr-review-context.json),Read(//tmp/claude-pr-review-*),Read(//tmp/claude-pr-review-*/**),Glob,Grep,Edit(//tmp/**),Write(//tmp/**),WebFetch,WebSearch,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr list:*),Bash(gh api --method GET repos/*/*/issues/*/comments:*),Bash(gh api --method GET repos/*/*/pulls/*/comments:*),Bash(gh api --method GET repos/*/*/pulls/*/reviews:*),Bash(git log:*),Bash(git show:*),Bash(mkdir:*),Bash(mktemp:*),Bash(rm:*),mcp__github_inline_comment__create_inline_comment"
+            --allowedTools "Read(/**),Read(//tmp/claude-pr-review-context.json),Read(//tmp/claude-pr-review-*),Read(//tmp/claude-pr-review-*/**),Glob,Grep,Edit(//tmp/**),Write(//tmp/**),WebFetch,WebSearch,Bash(gh pr view:*),Bash(cd /tmp && gh pr view:*),Bash(gh pr diff:*),Bash(gh pr list:*),Bash(gh api --method GET repos/*/*/issues/*/comments:*),Bash(gh api --method GET repos/*/*/pulls/*/comments:*),Bash(gh api --method GET repos/*/*/pulls/*/reviews:*),Bash(git log:*),Bash(git show:*),Bash(mkdir:*),Bash(mktemp:*),Bash(rm:*),mcp__github_inline_comment__create_inline_comment"
         env:
           GH_TOKEN: ${{ github.token }}
 
