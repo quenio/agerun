@@ -117,7 +117,13 @@ jobs:
               break
             fi
 
-            after="$(jq -r '.data.repository.pullRequest.reviewThreads.pageInfo.endCursor' "$page_file")"
+            next_after="$(jq -r '.data.repository.pullRequest.reviewThreads.pageInfo.endCursor // empty' "$page_file")"
+            if [ -z "$next_after" ] || [ "$next_after" = "$after" ]; then
+              echo "::error::GitHub reported another reviewThreads page without a new endCursor."
+              exit 1
+            fi
+
+            after="$next_after"
             page=$((page + 1))
           done
 
