@@ -282,9 +282,13 @@ jobs:
             exit 1
           fi
 
-          permission_denials_count=$(
+          if ! permission_denials_count=$(
             jq -s -r '[.[] | .. | objects | select(.type? == "result") | (.permission_denials? // [])[]] | length' "$CLAUDE_EXECUTION_FILE"
-          )
+          ); then
+            echo "::error::Failed to parse Claude execution file while checking permission denials."
+            exit 1
+          fi
+
           if [ -n "$permission_denials_count" ] && [ "$permission_denials_count" != "0" ]; then
             denied_tools=$(jq -s -r '[.[] | .. | objects | select(.type? == "result") | (.permission_denials? // [])[]?.tool_name] | unique | join(", ")' "$CLAUDE_EXECUTION_FILE")
             echo "::error::Claude Code reported ${permission_denials_count} permission denials."
