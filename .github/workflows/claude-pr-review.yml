@@ -46,26 +46,36 @@ jobs:
                   "Read",
                   "Glob",
                   "Grep",
-                  "Write",
-                  "WebFetch",
-                  "WebSearch",
-                  "Bash(gh:*)",
+                  "Edit(//tmp/**)",
+                  "Write(//tmp/**)",
+                  "WebFetch(domain:code.claude.com)",
+                  "WebFetch(domain:docs.anthropic.com)",
+                  "WebFetch(domain:docs.github.com)",
+                  "WebFetch(domain:github.com)",
+                  "WebFetch(domain:platform.claude.com)",
+                  "Bash(gh pr view:*)",
+                  "Bash(gh pr diff:*)",
+                  "Bash(gh pr list:*)",
                   "Bash(git diff:*)",
                   "Bash(git log:*)",
                   "Bash(git show:*)",
                   "Bash(cd:*)",
                   "Bash(cat:*)",
-                  "Bash(echo:*)",
                   "Bash(jq:*)",
                   "Bash(mkdir:*)",
                   "Bash(mktemp:*)",
-                  "Bash(printf:*)",
                   "Bash(rm:*)",
                   "mcp__github_inline_comment__create_inline_comment"
                 ],
                 "deny": [
-                  "Edit",
                   "MultiEdit",
+                  "Edit(//home/runner/work/_temp/_runner_file_commands/**)",
+                  "Write(//home/runner/work/_temp/_runner_file_commands/**)",
+                  "Bash(*GITHUB_ENV*)",
+                  "Bash(*GITHUB_OUTPUT*)",
+                  "Bash(*GITHUB_PATH*)",
+                  "Bash(*GITHUB_STEP_SUMMARY*)",
+                  "Bash(*_runner_file_commands*)",
                   "Bash(git add:*)",
                   "Bash(git commit:*)",
                   "Bash(git push:*)",
@@ -91,20 +101,21 @@ jobs:
             Report only high-confidence bugs, workflow/configuration failures,
             security problems, or clear repository-instruction violations.
 
-            Temporary scratch files are allowed only under /tmp or $RUNNER_TEMP.
+            Temporary scratch files are allowed only under /tmp.
             Do not write under the repository checkout, do not commit or push
-            changes, and do not merge, edit, or mutate the PR through gh.
-            WebFetch and WebSearch are allowed only for public documentation,
-            public issues, or public references that materially improve review
-            accuracy. Do not include secrets, tokens, private command output, or
-            bulk repository content in web tool requests.
+            changes, do not write to GitHub Actions env/output/path files, and
+            do not merge, edit, or mutate the PR through gh.
+            WebFetch is allowed only for trusted public documentation and public
+            GitHub references that materially improve review accuracy. Do not
+            include secrets, tokens, private command output, or bulk repository
+            content in web tool requests.
 
             For changed-line findings, post inline comments with
             mcp__github_inline_comment__create_inline_comment using confirmed:
             true. If no issues are found, print a short terminal summary and do
             not post a PR comment.
           claude_args: |
-            --allowedTools "Read,Glob,Grep,Write,WebFetch,WebSearch,Bash(gh:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(cd:*),Bash(cat:*),Bash(echo:*),Bash(jq:*),Bash(mkdir:*),Bash(mktemp:*),Bash(printf:*),Bash(rm:*),mcp__github_inline_comment__create_inline_comment"
+            --allowedTools "Read,Glob,Grep,Edit(//tmp/**),Write(//tmp/**),WebFetch(domain:code.claude.com),WebFetch(domain:docs.anthropic.com),WebFetch(domain:docs.github.com),WebFetch(domain:github.com),WebFetch(domain:platform.claude.com),Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr list:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(cd:*),Bash(cat:*),Bash(jq:*),Bash(mkdir:*),Bash(mktemp:*),Bash(rm:*),mcp__github_inline_comment__create_inline_comment"
         env:
           GH_TOKEN: ${{ github.token }}
 
