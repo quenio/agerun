@@ -52,7 +52,7 @@ jobs:
               add // []
               | map({
                   id,
-                  author: .user.login,
+                  author: (.user.login // "deleted-user"),
                   body,
                   created_at,
                   updated_at,
@@ -65,7 +65,7 @@ jobs:
               add // []
               | map({
                   id,
-                  author: .user.login,
+                  author: (.user.login // "deleted-user"),
                   state,
                   body,
                   submitted_at,
@@ -80,7 +80,7 @@ jobs:
               | map({
                   id,
                   pull_request_review_id,
-                  author: .user.login,
+                  author: (.user.login // "deleted-user"),
                   body,
                   path,
                   line,
