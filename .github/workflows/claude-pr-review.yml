@@ -315,7 +315,12 @@ jobs:
           fi
 
           if ! permission_denials_count=$(
-            jq -s -r '[.[] | .. | objects | select(.type? == "result") | (.permission_denials? // [])[]] | length' "$CLAUDE_EXECUTION_FILE"
+            jq -s -r '
+              [
+                ([.[] | .. | objects | select(.type? == "result") | (.permission_denials? // [])[]] | length),
+                ([.[] | .. | objects | select(.type? == "result") | (.permission_denials_count? // empty) | tonumber] | add // 0)
+              ] | max
+            ' "$CLAUDE_EXECUTION_FILE"
           ); then
             echo "::error::Failed to parse Claude execution file while checking permission denials."
             exit 1
