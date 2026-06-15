@@ -44,4 +44,3 @@ export fn ar_string__trim(mut_str: ?[*:0]u8) ?[*:0]u8 {
     
     return start_sentinel; // Borrowed reference, not owned by caller
 }
-
