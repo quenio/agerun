@@ -155,7 +155,6 @@ jobs:
                   "Bash(gh pr view:*)",
                   "Bash(gh pr diff:*)",
                   "Bash(gh pr list:*)",
-                  "Bash(gh api graphql:*)",
                   "Bash(gh api --method GET repos/*/*/issues/*/comments:*)",
                   "Bash(gh api --method GET repos/*/*/pulls/*/comments:*)",
                   "Bash(gh api --method GET repos/*/*/pulls/*/reviews:*)",
@@ -183,6 +182,7 @@ jobs:
                   "Bash(git commit:*)",
                   "Bash(git push:*)",
                   "Bash(gh auth token:*)",
+                  "Bash(gh api graphql:*)",
                   "Bash(gh api graphql *mutation*)",
                   "Bash(gh api graphql *Mutation*)",
                   "Bash(gh api * --method DELETE*)",
@@ -211,10 +211,11 @@ jobs:
 
             Use gh pr view and gh pr diff to inspect the PR. Focus on changed
             lines and repository instructions that apply to changed files.
-            gh api may be used only for read-only GraphQL queries or pull
+            The workflow pre-captures GraphQL review-thread context in
+            /tmp/claude-pr-review-context.json. Use gh api only for pull
             review/comment endpoints when the captured context is insufficient.
             Use --method GET for REST gh api review/comment requests. Do not run
-            GraphQL mutations or mutating gh api requests.
+            GraphQL requests or mutating gh api requests.
             Report only high-confidence bugs, workflow/configuration failures,
             security problems, or clear repository-instruction violations.
 
@@ -232,7 +233,7 @@ jobs:
             true. If no issues are found, print a short terminal summary and do
             not post a PR comment.
           claude_args: |
-            --allowedTools "Read,Glob,Grep,Edit(//tmp/**),Write(//tmp/**),WebFetch,WebSearch,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr list:*),Bash(gh api graphql:*),Bash(gh api --method GET repos/*/*/issues/*/comments:*),Bash(gh api --method GET repos/*/*/pulls/*/comments:*),Bash(gh api --method GET repos/*/*/pulls/*/reviews:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(cd:*),Bash(cat:*),Bash(jq:*),Bash(mkdir:*),Bash(mktemp:*),Bash(rm:*),mcp__github_inline_comment__create_inline_comment"
+            --allowedTools "Read,Glob,Grep,Edit(//tmp/**),Write(//tmp/**),WebFetch,WebSearch,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr list:*),Bash(gh api --method GET repos/*/*/issues/*/comments:*),Bash(gh api --method GET repos/*/*/pulls/*/comments:*),Bash(gh api --method GET repos/*/*/pulls/*/reviews:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(cd:*),Bash(cat:*),Bash(jq:*),Bash(mkdir:*),Bash(mktemp:*),Bash(rm:*),mcp__github_inline_comment__create_inline_comment"
         env:
           GH_TOKEN: ${{ github.token }}
 
