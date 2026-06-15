@@ -209,6 +209,7 @@ jobs:
                   "Bash(gh api graphql:*)",
                   "Bash(gh api graphql *mutation*)",
                   "Bash(gh api graphql *Mutation*)",
+                  "Bash(cat:*)",
                   "Bash(jq:*)",
                   "Bash(gh api * --method DELETE*)",
                   "Bash(gh api * --method PATCH*)",
