@@ -323,9 +323,24 @@ jobs:
 
           if [ -n "$permission_denials_count" ] && [ "$permission_denials_count" != "0" ]; then
             denied_tools=$(jq -s -r '[.[] | .. | objects | select(.type? == "result") | (.permission_denials? // [])[]?.tool_name] | unique | join(", ")' "$CLAUDE_EXECUTION_FILE")
+            denied_details=$(jq -s -r '
+              [.[] | .. | objects | select(.type? == "result") | (.permission_denials? // [])[]?
+                | {
+                    tool: (.tool_name // "unknown"),
+                    command: (.tool_input.command // .input.command // .command // null),
+                    reason: (.reason // .message // .error // null)
+                  }
+                | @json
+              ] | unique | .[]
+            ' "$CLAUDE_EXECUTION_FILE")
             echo "::error::Claude Code reported ${permission_denials_count} permission denials."
             if [ -n "$denied_tools" ]; then
               echo "::error::Denied tools: ${denied_tools}"
+            fi
+            if [ -n "$denied_details" ]; then
+              echo "$denied_details" | while IFS= read -r denied_detail; do
+                echo "::error::Denied detail: ${denied_detail}"
+              done
             fi
             echo "::error::Review output may be missing or incomplete until the tool allowlist is updated."
             exit 1
