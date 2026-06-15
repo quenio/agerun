@@ -19,19 +19,438 @@ jobs:
       pull-requests: write
       issues: write
       actions: read
-      id-token: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          fetch-depth: 1
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Record checkout state
+        id: checkout-state
+        run: echo "head=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Capture PR review context
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          owner="${REPOSITORY%/*}"
+          repo="${REPOSITORY#*/}"
+          context_dir="$(mktemp -d)"
+          cleanup_context() {
+            status=$?
+            set +e
+            rm -rf "$context_dir"
+            cleanup_status=$?
+            if [ "$status" -ne 0 ]; then
+              exit "$status"
+            fi
+            exit "$cleanup_status"
+          }
+          trap cleanup_context EXIT
+
+          top_level_comments_file="${context_dir}/top-level-comments.json"
+          reviews_file="${context_dir}/reviews.json"
+          review_comments_file="${context_dir}/review-comments.json"
+
+          gh api --paginate --method GET \
+            "repos/${owner}/${repo}/issues/${PR_NUMBER}/comments" |
+            jq -s '
+              add // []
+              | map({
+                  id,
+                  author: (.user.login // "deleted-user"),
+                  body,
+                  created_at,
+                  updated_at,
+                  html_url
+                })
+            ' > "$top_level_comments_file"
+          gh api --paginate --method GET \
+            "repos/${owner}/${repo}/pulls/${PR_NUMBER}/reviews" |
+            jq -s '
+              add // []
+              | map({
+                  id,
+                  author: (.user.login // "deleted-user"),
+                  state,
+                  body,
+                  submitted_at,
+                  commit_id,
+                  html_url
+                })
+            ' > "$reviews_file"
+          gh api --paginate --method GET \
+            "repos/${owner}/${repo}/pulls/${PR_NUMBER}/comments" |
+            jq -s '
+              add // []
+              | map({
+                  id,
+                  pull_request_review_id,
+                  author: (.user.login // "deleted-user"),
+                  body,
+                  path,
+                  line,
+                  original_line,
+                  start_line,
+                  original_start_line,
+                  side,
+                  start_side,
+                  in_reply_to_id,
+                  diff_hunk,
+                  commit_id,
+                  original_commit_id,
+                  created_at,
+                  updated_at,
+                  html_url
+                })
+            ' > "$review_comments_file"
+
+          page=0
+          after=""
+
+          while :; do
+            page_file="${context_dir}/page-$(printf "%05d" "$page").json"
+            cursor_args=()
+            if [ -n "$after" ]; then
+              cursor_args=(-F "threadCursor=${after}")
+            fi
+
+            gh api graphql \
+              -F owner="$owner" \
+              -F repo="$repo" \
+              -F number="$PR_NUMBER" \
+              "${cursor_args[@]}" \
+              -f query='
+              query(
+                $owner: String!
+                $repo: String!
+                $number: Int!
+                $threadCursor: String
+              ) {
+                repository(owner: $owner, name: $repo) {
+                  pullRequest(number: $number) {
+                    reviewThreads(first: 100, after: $threadCursor) {
+                      pageInfo {
+                        endCursor
+                        hasNextPage
+                      }
+                      nodes {
+                        id
+                        isOutdated
+                        isResolved
+                        line
+                        originalLine
+                        path
+                        comments(first: 100) {
+                          totalCount
+                          pageInfo {
+                            endCursor
+                            hasNextPage
+                          }
+                          nodes {
+                            author { login }
+                            body
+                            createdAt
+                            line
+                            originalLine
+                            outdated
+                            path
+                            url
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ' > "$page_file"
+
+            if jq -e '(.errors // []) | length > 0' "$page_file" >/dev/null; then
+              echo "::error::GitHub GraphQL returned errors while capturing review threads."
+              jq -r '.errors[]?.message // "unknown GraphQL error"' "$page_file" |
+                while IFS= read -r error_message; do
+                  echo "::error::GraphQL error: ${error_message}"
+                done
+              exit 1
+            fi
+
+            if ! jq -e '.data.repository.pullRequest.reviewThreads.pageInfo' "$page_file" >/dev/null; then
+              echo "::error::GitHub GraphQL response is missing reviewThreads pageInfo."
+              exit 1
+            fi
+
+            comment_thread_index=0
+            while IFS= read -r thread_id; do
+              thread_comments_file="${context_dir}/comments-${page}-${comment_thread_index}.json"
+              jq \
+                --arg thread_id "$thread_id" \
+                '.data.repository.pullRequest.reviewThreads.nodes[]
+                  | select(.id == $thread_id)
+                  | .comments.nodes' \
+                "$page_file" > "$thread_comments_file"
+
+              comment_after="$(jq -r \
+                --arg thread_id "$thread_id" \
+                '.data.repository.pullRequest.reviewThreads.nodes[]
+                  | select(.id == $thread_id)
+                  | .comments.pageInfo.endCursor // empty' \
+                "$page_file")"
+              if [ -z "$comment_after" ]; then
+                echo "::error::GitHub reported more thread comments without an endCursor."
+                exit 1
+              fi
+
+              while :; do
+                comment_page_file="${context_dir}/comments-${page}-${comment_thread_index}-page.json"
+                gh api graphql \
+                  -F threadId="$thread_id" \
+                  -F commentCursor="$comment_after" \
+                  -f query='
+                  query($threadId: ID!, $commentCursor: String) {
+                    node(id: $threadId) {
+                      ... on PullRequestReviewThread {
+                        comments(first: 100, after: $commentCursor) {
+                          pageInfo {
+                            endCursor
+                            hasNextPage
+                          }
+                          nodes {
+                            author { login }
+                            body
+                            createdAt
+                            line
+                            originalLine
+                            outdated
+                            path
+                            url
+                          }
+                        }
+                      }
+                    }
+                  }
+                ' > "$comment_page_file"
+
+                if jq -e '(.errors // []) | length > 0' "$comment_page_file" >/dev/null; then
+                  echo "::error::GitHub GraphQL returned errors while capturing thread comments."
+                  jq -r '.errors[]?.message // "unknown GraphQL error"' "$comment_page_file" |
+                    while IFS= read -r error_message; do
+                      echo "::error::GraphQL error: ${error_message}"
+                    done
+                  exit 1
+                fi
+
+                if ! jq -e '.data.node.comments.pageInfo' "$comment_page_file" >/dev/null; then
+                  echo "::error::GitHub GraphQL response is missing thread comments pageInfo."
+                  exit 1
+                fi
+
+                jq -s '.[0] + (.[1].data.node.comments.nodes // [])' \
+                  "$thread_comments_file" \
+                  "$comment_page_file" > "${thread_comments_file}.tmp"
+                mv "${thread_comments_file}.tmp" "$thread_comments_file"
+
+                if [ "$(jq -r '.data.node.comments.pageInfo.hasNextPage' "$comment_page_file")" != "true" ]; then
+                  break
+                fi
+
+                next_comment_after="$(jq -r '.data.node.comments.pageInfo.endCursor // empty' "$comment_page_file")"
+                if [ -z "$next_comment_after" ] || [ "$next_comment_after" = "$comment_after" ]; then
+                  echo "::error::GitHub reported another thread comments page without a new endCursor."
+                  exit 1
+                fi
+
+                comment_after="$next_comment_after"
+              done
+
+              jq \
+                --arg thread_id "$thread_id" \
+                --slurpfile comments "$thread_comments_file" \
+                '(.data.repository.pullRequest.reviewThreads.nodes[]
+                    | select(.id == $thread_id)
+                    | .comments.nodes) = $comments[0]
+                  | (.data.repository.pullRequest.reviewThreads.nodes[]
+                    | select(.id == $thread_id)
+                    | .comments.pageInfo.hasNextPage) = false
+                  | (.data.repository.pullRequest.reviewThreads.nodes[]
+                    | select(.id == $thread_id)
+                    | .comments.pageInfo.endCursor) = null' \
+                "$page_file" > "${page_file}.tmp"
+              mv "${page_file}.tmp" "$page_file"
+
+              comment_thread_index=$((comment_thread_index + 1))
+            done < <(jq -r \
+              '.data.repository.pullRequest.reviewThreads.nodes[]
+                | select(.comments.pageInfo.hasNextPage == true)
+                | .id' \
+              "$page_file")
+
+            if [ "$(jq -r '.data.repository.pullRequest.reviewThreads.pageInfo.hasNextPage' "$page_file")" != "true" ]; then
+              break
+            fi
+
+            next_after="$(jq -r '.data.repository.pullRequest.reviewThreads.pageInfo.endCursor // empty' "$page_file")"
+            if [ -z "$next_after" ] || [ "$next_after" = "$after" ]; then
+              echo "::error::GitHub reported another reviewThreads page without a new endCursor."
+              exit 1
+            fi
+
+            after="$next_after"
+            page=$((page + 1))
+          done
+
+          jq -s \
+            --arg repository "$REPOSITORY" \
+            --argjson pullRequest "$PR_NUMBER" \
+            --slurpfile topLevelComments "$top_level_comments_file" \
+            --slurpfile reviews "$reviews_file" \
+            --slurpfile reviewComments "$review_comments_file" \
+            '
+            . as $pages
+            | {
+              repository: $repository,
+              pullRequest: $pullRequest,
+              topLevelComments: $topLevelComments[0],
+              reviews: $reviews[0],
+              reviewComments: $reviewComments[0],
+              reviewThreads: {
+                nodes: ($pages | map(.data.repository.pullRequest.reviewThreads.nodes[])),
+                pageInfo: {
+                capturedPages: ($pages | length),
+                capturedThreadCount: (
+                  $pages | map(.data.repository.pullRequest.reviewThreads.nodes[]) | length
+                ),
+                endCursor: ($pages[-1].data.repository.pullRequest.reviewThreads.pageInfo.endCursor),
+                hasNextPage: false
+              }
+              }
+            }
+          ' "$context_dir"/page-*.json > /tmp/claude-pr-review-context.json
 
       - name: Run Claude Code Review
         id: claude-review
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Temporary diagnostic bypass for workflow-file PRs. Remove after
+          # this workflow lands on the default branch.
+          github_token: ${{ github.token }}
           allowed_bots: "claude[bot],chatgpt-codex-connector[bot],cursor[bot]"
+          settings: |
+            {
+              "permissions": {
+                "allow": [
+                  "Read(/**)",
+                  "Read(//tmp/claude-pr-review-context.json)",
+                  "Read(//tmp/claude-pr-review-*)",
+                  "Read(//tmp/claude-pr-review-*/**)",
+                  "Glob",
+                  "Grep",
+                  "Edit(//tmp/**)",
+                  "Write(//tmp/**)",
+                  "WebFetch",
+                  "WebSearch",
+                  "Bash(gh pr view:*)",
+                  "Bash(cd /tmp)",
+                  "Bash(cd /tmp && gh pr view:*)",
+                  "Bash(gh pr diff:*)",
+                  "Bash(gh pr list:*)",
+                  "Bash(gh api --method GET repos/*/*/issues/*/comments:*)",
+                  "Bash(gh api --method GET repos/*/*/pulls/*/comments:*)",
+                  "Bash(gh api --method GET repos/*/*/pulls/*/reviews:*)",
+                  "Bash(cd /tmp && gh api --method GET repos/*/*/issues/*/comments:*)",
+                  "Bash(cd /tmp && gh api --method GET repos/*/*/pulls/*/comments:*)",
+                  "Bash(cd /tmp && gh api --method GET repos/*/*/pulls/*/reviews:*)",
+                  "Bash(git log:*)",
+                  "Bash(git show:*)",
+                  "Bash(head -50)",
+                  "Bash(head -100)",
+                  "Bash(head -200)",
+                  "Bash(mkdir:*)",
+                  "Bash(mktemp:*)",
+                  "Bash(rm:*)",
+                  "mcp__github_inline_comment__create_inline_comment"
+                ],
+                "deny": [
+                  "MultiEdit",
+                  "Read(//proc/**/environ)",
+                  "Read(//home/runner/work/_temp/_runner_file_commands/**)",
+                  "Read(//home/runner/work/*/*/.git/**)",
+                  "Read(//github/workspace/.git/**)",
+                  "Edit(//home/runner/work/_temp/_runner_file_commands/**)",
+                  "Write(//home/runner/work/_temp/_runner_file_commands/**)",
+                  "Bash(*GH_TOKEN*)",
+                  "Bash(*GITHUB_TOKEN*)",
+                  "Bash(*GITHUB_ENV*)",
+                  "Bash(*GITHUB_OUTPUT*)",
+                  "Bash(*GITHUB_PATH*)",
+                  "Bash(*GITHUB_STEP_SUMMARY*)",
+                  "Bash(*_runner_file_commands*)",
+                  "Bash(*ANTHROPIC_API_KEY*)",
+                  "Bash(*ACTIONS_ID_TOKEN*)",
+                  "Bash(*ACTIONS_ID_TOKEN_REQUEST_TOKEN*)",
+                  "Bash(*ACTIONS_ID_TOKEN_REQUEST_URL*)",
+                  "Bash(* /proc/*)",
+                  "Bash(* /home/runner/work/_temp/*)",
+                  "Bash(*;*)",
+                  "Bash(* env*)",
+                  "Bash(* printenv*)",
+                  "Bash(* curl*)",
+                  "Bash(* wget*)",
+                  "Bash(git add:*)",
+                  "Bash(git commit:*)",
+                  "Bash(git config:*)",
+                  "Bash(git diff:*)",
+                  "Bash(git push:*)",
+                  "Bash(git remote:*)",
+                  "Bash(gh auth token:*)",
+                  "Bash(gh api graphql:*)",
+                  "Bash(gh api graphql *mutation*)",
+                  "Bash(gh api graphql *Mutation*)",
+                  "Bash(cat:*)",
+                  "Bash(jq:*)",
+                  "Bash(python:*)",
+                  "Bash(python3:*)",
+                  "Bash(gh api * --method DELETE*)",
+                  "Bash(gh api * --method PATCH*)",
+                  "Bash(gh api * --method POST*)",
+                  "Bash(gh api * --method PUT*)",
+                  "Bash(gh api * --method=DELETE*)",
+                  "Bash(gh api * --method=PATCH*)",
+                  "Bash(gh api * --method=POST*)",
+                  "Bash(gh api * --method=PUT*)",
+                  "Bash(* --method DELETE*)",
+                  "Bash(* --method PATCH*)",
+                  "Bash(* --method POST*)",
+                  "Bash(* --method PUT*)",
+                  "Bash(* --method=DELETE*)",
+                  "Bash(* --method=PATCH*)",
+                  "Bash(* --method=POST*)",
+                  "Bash(* --method=PUT*)",
+                  "Bash(gh api * -X DELETE*)",
+                  "Bash(gh api * -X PATCH*)",
+                  "Bash(gh api * -X POST*)",
+                  "Bash(gh api * -X PUT*)",
+                  "Bash(* -X DELETE*)",
+                  "Bash(* -X PATCH*)",
+                  "Bash(* -X POST*)",
+                  "Bash(* -X PUT*)",
+                  "Bash(gh api * -XDELETE*)",
+                  "Bash(gh api * -XPATCH*)",
+                  "Bash(gh api * -XPOST*)",
+                  "Bash(gh api * -XPUT*)",
+                  "Bash(* -XDELETE*)",
+                  "Bash(* -XPATCH*)",
+                  "Bash(* -XPOST*)",
+                  "Bash(* -XPUT*)",
+                  "Bash(gh pr merge:*)"
+                ]
+              }
+            }
           prompt: |
             Review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}
             at head ${{ github.event.pull_request.head.sha }}.
@@ -40,21 +459,79 @@ jobs:
             already commented on this PR. Do not stop just because prior Claude
             comments exist.
 
-            Before reporting, inspect existing PR comments and review threads.
-            Do not duplicate findings that are already reported, resolved,
-            answered, intentionally accepted, or fixed on the current head.
+            Before reporting, read /tmp/claude-pr-review-context.json to inspect
+            existing PR comments, reviews, and review threads, including
+            resolved/outdated state and replies. Do not duplicate findings that
+            are already reported, resolved, answered, intentionally accepted, or
+            fixed on the current head.
 
             Use gh pr view and gh pr diff to inspect the PR. Focus on changed
             lines and repository instructions that apply to changed files.
+            The workflow pre-captures GraphQL review-thread context in
+            /tmp/claude-pr-review-context.json. Read that file directly with
+            Read; do not use cat, external jq, or gh api GraphQL. Use
+            --method GET for REST gh api pull review/comment requests only when
+            the captured context is insufficient. Do not run mutating gh api
+            requests.
+            Do not run local validation, self-tests, git diff, Python,
+            external jq, cat, arbitrary cd, or arbitrary compound Bash scripts;
+            denied tool attempts fail this check. Single cd /tmp && gh ...
+            | head ... commands, and their split cd /tmp and short head
+            subcommands, are allowed only for read-only PR metadata or GET
+            comment/review output. If a fact cannot be inspected with the
+            allowed tools,
+            continue without that optional check.
             Report only high-confidence bugs, workflow/configuration failures,
             security problems, or clear repository-instruction violations.
+
+            Temporary scratch files are allowed only under /tmp. Use
+            /tmp/claude-pr-review-* paths for scratch files that need to be
+            read back.
+            Do not write under the repository checkout, do not commit or push
+            changes, do not write to GitHub Actions env/output/path files, and
+            do not merge, edit, or mutate the PR through gh.
+            WebSearch and WebFetch are allowed when public web research improves
+            review accuracy, including fetching references found through
+            WebSearch. Do not include secrets, tokens, private command output,
+            or bulk repository content in web tool requests.
 
             For changed-line findings, post inline comments with
             mcp__github_inline_comment__create_inline_comment using confirmed:
             true. If no issues are found, print a short terminal summary and do
             not post a PR comment.
           claude_args: |
-            --allowedTools "Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr comment:*),Bash(gh pr list:*),Bash(gh api:*),mcp__github_inline_comment__create_inline_comment"
+            --allowedTools "Read(/**),Read(//tmp/claude-pr-review-context.json),Read(//tmp/claude-pr-review-*),Read(//tmp/claude-pr-review-*/**),Glob,Grep,Edit(//tmp/**),Write(//tmp/**),WebFetch,WebSearch,Bash(gh pr view:*),Bash(cd /tmp),Bash(cd /tmp && gh pr view:*),Bash(gh pr diff:*),Bash(gh pr list:*),Bash(gh api --method GET repos/*/*/issues/*/comments:*),Bash(gh api --method GET repos/*/*/pulls/*/comments:*),Bash(gh api --method GET repos/*/*/pulls/*/reviews:*),Bash(cd /tmp && gh api --method GET repos/*/*/issues/*/comments:*),Bash(cd /tmp && gh api --method GET repos/*/*/pulls/*/comments:*),Bash(cd /tmp && gh api --method GET repos/*/*/pulls/*/reviews:*),Bash(git log:*),Bash(git show:*),Bash(head -50),Bash(head -100),Bash(head -200),Bash(mkdir:*),Bash(mktemp:*),Bash(rm:*),mcp__github_inline_comment__create_inline_comment"
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Require clean repository after Claude review
+        if: ${{ always() }}
+        env:
+          CHECKOUT_HEAD: ${{ steps.checkout-state.outputs.head }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          if [ -z "$CHECKOUT_HEAD" ]; then
+            echo "::error::Recorded checkout HEAD is missing; cannot verify Claude review left HEAD unchanged."
+            exit 1
+          fi
+
+          if [ -z "$PR_HEAD" ]; then
+            echo "::error::PR head SHA is missing; cannot verify Claude review left HEAD unchanged."
+            exit 1
+          fi
+
+          current_head=$(git rev-parse HEAD)
+          if [ "$current_head" != "$CHECKOUT_HEAD" ] && [ "$current_head" != "$PR_HEAD" ]; then
+            echo "::error::Claude review changed HEAD to unexpected commit ${current_head}."
+            echo "::error::Expected checkout HEAD ${CHECKOUT_HEAD} or PR head ${PR_HEAD}."
+            exit 1
+          fi
+
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::Claude review left repository changes in the checkout."
+            git status --short
+            exit 1
+          fi
 
       - name: Require Claude review execution
         if: ${{ always() && steps.claude-review.outcome == 'success' && steps.claude-review.outputs.execution_file == '' }}
@@ -64,7 +541,7 @@ jobs:
           echo "::error::For workflow-validation skips, land the workflow on main first."
           exit 1
 
-      - name: Fail on Claude execution errors
+      - name: Fail on Claude execution errors or denials
         if: ${{ always() && steps.claude-review.outputs.execution_file != '' }}
         env:
           CLAUDE_EXECUTION_FILE: ${{ steps.claude-review.outputs.execution_file }}
@@ -74,8 +551,45 @@ jobs:
             exit 1
           fi
 
-          if jq -e '.. | objects | select(.type? == "result" and .is_error? == true)' "$CLAUDE_EXECUTION_FILE" >/dev/null; then
-            error_message=$(jq -r '.. | objects | select(.type? == "result" and .is_error? == true) | .result // "unknown Claude error"' "$CLAUDE_EXECUTION_FILE" | tail -n 1)
+          if jq -s -e '.[] | .. | objects | select(.type? == "result" and .is_error? == true)' "$CLAUDE_EXECUTION_FILE" >/dev/null; then
+            error_message=$(jq -s -r '[.[] | .. | objects | select(.type? == "result" and .is_error? == true) | (.result // "unknown Claude error")] | last' "$CLAUDE_EXECUTION_FILE")
             echo "::error::Claude Code reported an error: ${error_message}"
+            exit 1
+          fi
+
+          if ! permission_denials_count=$(
+            jq -s -r '
+              [
+                ([.[] | .. | objects | select(.type? == "result") | (.permission_denials? // [])[]] | length),
+                ([.[] | .. | objects | select(.type? == "result") | (.permission_denials_count? // empty) | tonumber] | add // 0)
+              ] | max
+            ' "$CLAUDE_EXECUTION_FILE"
+          ); then
+            echo "::error::Failed to parse Claude execution file while checking permission denials."
+            exit 1
+          fi
+
+          if [ -n "$permission_denials_count" ] && [ "$permission_denials_count" != "0" ]; then
+            denied_tools=$(jq -s -r '[.[] | .. | objects | select(.type? == "result") | (.permission_denials? // [])[]?.tool_name] | unique | join(", ")' "$CLAUDE_EXECUTION_FILE")
+            denied_details=$(jq -s -r '
+              [.[] | .. | objects | select(.type? == "result") | (.permission_denials? // [])[]?
+                | {
+                    tool: (.tool_name // "unknown"),
+                    command: (.tool_input.command // .input.command // .command // null),
+                    reason: (.reason // .message // .error // null)
+                  }
+                | @json
+              ] | unique | .[]
+            ' "$CLAUDE_EXECUTION_FILE")
+            echo "::error::Claude Code reported ${permission_denials_count} permission denials."
+            if [ -n "$denied_tools" ]; then
+              echo "::error::Denied tools: ${denied_tools}"
+            fi
+            if [ -n "$denied_details" ]; then
+              echo "$denied_details" | while IFS= read -r denied_detail; do
+                echo "::error::Denied detail: ${denied_detail}"
+              done
+            fi
+            echo "::error::Review output may be missing or incomplete until the tool allowlist is updated."
             exit 1
           fi
