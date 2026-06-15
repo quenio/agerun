@@ -37,6 +37,8 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPOSITORY: ${{ github.repository }}
         run: |
+          set -o pipefail
+
           owner="${REPOSITORY%/*}"
           repo="${REPOSITORY#*/}"
           context_dir="$(mktemp -d)"
