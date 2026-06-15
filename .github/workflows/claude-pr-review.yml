@@ -30,6 +30,65 @@ jobs:
         id: checkout-state
         run: echo "head=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
+      - name: Capture PR review context
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          owner="${REPOSITORY%/*}"
+          repo="${REPOSITORY#*/}"
+          gh api graphql \
+            -F owner="$owner" \
+            -F repo="$repo" \
+            -F number="$PR_NUMBER" \
+            -f query='
+              query($owner: String!, $repo: String!, $number: Int!) {
+                repository(owner: $owner, name: $repo) {
+                  pullRequest(number: $number) {
+                    comments(first: 50) {
+                      nodes {
+                        author { login }
+                        body
+                        createdAt
+                        url
+                      }
+                    }
+                    reviews(first: 50) {
+                      nodes {
+                        author { login }
+                        body
+                        commit { oid }
+                        state
+                        submittedAt
+                      }
+                    }
+                    reviewThreads(first: 100) {
+                      nodes {
+                        isOutdated
+                        isResolved
+                        line
+                        originalLine
+                        path
+                        comments(first: 50) {
+                          nodes {
+                            author { login }
+                            body
+                            createdAt
+                            line
+                            originalLine
+                            outdated
+                            path
+                            url
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            ' > /tmp/claude-pr-review-context.json
+
       - name: Run Claude Code Review
         id: claude-review
         uses: anthropics/claude-code-action@v1
@@ -89,9 +148,11 @@ jobs:
             already commented on this PR. Do not stop just because prior Claude
             comments exist.
 
-            Before reporting, inspect existing PR comments and review threads.
-            Do not duplicate findings that are already reported, resolved,
-            answered, intentionally accepted, or fixed on the current head.
+            Before reporting, read /tmp/claude-pr-review-context.json to inspect
+            existing PR comments, reviews, and review threads, including
+            resolved/outdated state and replies. Do not duplicate findings that
+            are already reported, resolved, answered, intentionally accepted, or
+            fixed on the current head.
 
             Use gh pr view and gh pr diff to inspect the PR. Focus on changed
             lines and repository instructions that apply to changed files.
