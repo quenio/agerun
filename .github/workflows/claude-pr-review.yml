@@ -48,13 +48,56 @@ jobs:
 
           gh api --paginate --method GET \
             "repos/${owner}/${repo}/issues/${PR_NUMBER}/comments" |
-            jq -s 'add // []' > "$top_level_comments_file"
+            jq -s '
+              add // []
+              | map({
+                  id,
+                  author: .user.login,
+                  body,
+                  created_at,
+                  updated_at,
+                  html_url
+                })
+            ' > "$top_level_comments_file"
           gh api --paginate --method GET \
             "repos/${owner}/${repo}/pulls/${PR_NUMBER}/reviews" |
-            jq -s 'add // []' > "$reviews_file"
+            jq -s '
+              add // []
+              | map({
+                  id,
+                  author: .user.login,
+                  state,
+                  body,
+                  submitted_at,
+                  commit_id,
+                  html_url
+                })
+            ' > "$reviews_file"
           gh api --paginate --method GET \
             "repos/${owner}/${repo}/pulls/${PR_NUMBER}/comments" |
-            jq -s 'add // []' > "$review_comments_file"
+            jq -s '
+              add // []
+              | map({
+                  id,
+                  pull_request_review_id,
+                  author: .user.login,
+                  body,
+                  path,
+                  line,
+                  original_line,
+                  start_line,
+                  original_start_line,
+                  side,
+                  start_side,
+                  in_reply_to_id,
+                  diff_hunk,
+                  commit_id,
+                  original_commit_id,
+                  created_at,
+                  updated_at,
+                  html_url
+                })
+            ' > "$review_comments_file"
 
           page=0
           after=""
