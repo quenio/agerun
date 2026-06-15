@@ -38,12 +38,29 @@ jobs:
         run: |
           owner="${REPOSITORY%/*}"
           repo="${REPOSITORY#*/}"
-          gh api graphql \
-            -F owner="$owner" \
-            -F repo="$repo" \
-            -F number="$PR_NUMBER" \
-            -f query='
-              query($owner: String!, $repo: String!, $number: Int!) {
+          context_dir="$(mktemp -d)"
+          page=0
+          after=""
+
+          while :; do
+            page_file="${context_dir}/page-$(printf "%05d" "$page").json"
+            cursor_args=()
+            if [ -n "$after" ]; then
+              cursor_args=(-F "threadCursor=${after}")
+            fi
+
+            gh api graphql \
+              -F owner="$owner" \
+              -F repo="$repo" \
+              -F number="$PR_NUMBER" \
+              "${cursor_args[@]}" \
+              -f query='
+              query(
+                $owner: String!
+                $repo: String!
+                $number: Int!
+                $threadCursor: String
+              ) {
                 repository(owner: $owner, name: $repo) {
                   pullRequest(number: $number) {
                     comments(first: 50) {
@@ -63,7 +80,11 @@ jobs:
                         submittedAt
                       }
                     }
-                    reviewThreads(first: 100) {
+                    reviewThreads(first: 100, after: $threadCursor) {
+                      pageInfo {
+                        endCursor
+                        hasNextPage
+                      }
                       nodes {
                         isOutdated
                         isResolved
@@ -87,7 +108,31 @@ jobs:
                   }
                 }
               }
-            ' > /tmp/claude-pr-review-context.json
+            ' > "$page_file"
+
+            if [ "$(jq -r '.data.repository.pullRequest.reviewThreads.pageInfo.hasNextPage' "$page_file")" != "true" ]; then
+              break
+            fi
+
+            after="$(jq -r '.data.repository.pullRequest.reviewThreads.pageInfo.endCursor' "$page_file")"
+            page=$((page + 1))
+          done
+
+          jq -s '
+            . as $pages
+            | $pages[0]
+            | .data.repository.pullRequest.reviewThreads.nodes =
+                ($pages | map(.data.repository.pullRequest.reviewThreads.nodes[]))
+            | .data.repository.pullRequest.reviewThreads.pageInfo = {
+                capturedPages: ($pages | length),
+                capturedThreadCount: (
+                  $pages | map(.data.repository.pullRequest.reviewThreads.nodes[]) | length
+                ),
+                endCursor: ($pages[-1].data.repository.pullRequest.reviewThreads.pageInfo.endCursor),
+                hasNextPage: false
+              }
+          ' "$context_dir"/page-*.json > /tmp/claude-pr-review-context.json
+          rm -rf "$context_dir"
 
       - name: Run Claude Code Review
         id: claude-review
@@ -113,8 +158,8 @@ jobs:
                   "Bash(gh pr diff:*)",
                   "Bash(gh pr list:*)",
                   "Bash(gh api graphql:*)",
-                  "Bash(gh api repos/*/*/pulls/*/comments:*)",
-                  "Bash(gh api repos/*/*/pulls/*/reviews:*)",
+                  "Bash(gh api --method GET repos/*/*/pulls/*/comments:*)",
+                  "Bash(gh api --method GET repos/*/*/pulls/*/reviews:*)",
                   "Bash(git diff:*)",
                   "Bash(git log:*)",
                   "Bash(git show:*)",
@@ -169,7 +214,8 @@ jobs:
             lines and repository instructions that apply to changed files.
             gh api may be used only for read-only GraphQL queries or pull
             review/comment endpoints when the captured context is insufficient.
-            Do not run GraphQL mutations or mutating gh api requests.
+            Use --method GET for REST gh api review/comment requests. Do not run
+            GraphQL mutations or mutating gh api requests.
             Report only high-confidence bugs, workflow/configuration failures,
             security problems, or clear repository-instruction violations.
 
@@ -187,7 +233,7 @@ jobs:
             true. If no issues are found, print a short terminal summary and do
             not post a PR comment.
           claude_args: |
-            --allowedTools "Read,Glob,Grep,Edit(//tmp/**),Write(//tmp/**),WebFetch,WebSearch,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr list:*),Bash(gh api graphql:*),Bash(gh api repos/*/*/pulls/*/comments:*),Bash(gh api repos/*/*/pulls/*/reviews:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(cd:*),Bash(cat:*),Bash(jq:*),Bash(mkdir:*),Bash(mktemp:*),Bash(rm:*),mcp__github_inline_comment__create_inline_comment"
+            --allowedTools "Read,Glob,Grep,Edit(//tmp/**),Write(//tmp/**),WebFetch,WebSearch,Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr list:*),Bash(gh api graphql:*),Bash(gh api --method GET repos/*/*/pulls/*/comments:*),Bash(gh api --method GET repos/*/*/pulls/*/reviews:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(cd:*),Bash(cat:*),Bash(jq:*),Bash(mkdir:*),Bash(mktemp:*),Bash(rm:*),mcp__github_inline_comment__create_inline_comment"
         env:
           GH_TOKEN: ${{ github.token }}
 
