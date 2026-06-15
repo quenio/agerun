@@ -108,7 +108,7 @@ principles or should be treated as a future design gap.
 |-----------------------|------------------------|---------------------|-----------------|
 | Methods are line-oriented: one instruction per line, no combined instructions, final newline required, empty lines ignored. | `SPEC.md`, `methods/README.md`, `modules/ar_method_parser.md` | Strongly aligns with Line-Based Parsing and Evaluation. It is an intentional instruction-boundary rule that simplifies parsing, evaluation, and traceability. | Preserve as a core language principle. Future expression work should compose inside a line, not erase line boundaries. |
 | Standalone expressions are not instructions. Expressions must appear under assignment or allowed function calls. | `SPEC.md` | Aligns with the line-based instruction model because a method line remains an executable instruction, not an implicit expression statement. It still limits statement-level composability. | Preserve unless a future design explicitly adds expression statements without side effects. |
-| Function calls are documented as instructions, not expressions; nested calls are forbidden. | `SPEC.md`, `AGENTS.md`, `kb/agerun-method-language-nesting-constraint.md`, disabled parser tests | Conflicts with composability for pure value-producing calls, but protects expression purity for effectful operations such as `send(...)`, `spawn(...)`, and `append(...)`. Syntax should make the pure-expression versus effectful-instruction split clear. | Treat pure call composition as the primary gap; keep side-effectful operations sequenced as instructions. |
+| Function calls are documented as instructions, not expressions; nested calls are forbidden. | `SPEC.md`, `AGENTS.md`, `kb/agerun-method-language-nesting-constraint.md`, disabled parser tests | Conflicts with composability for pure value-producing calls, but protects expression purity for effectful operations such as `send(...)`, `spawn(...)`, `compile(...)`, `exit(...)`, `deprecate(...)`, and `complete(...)`. Syntax should make the pure-expression versus effectful-instruction split clear. | Treat pure call composition as the primary gap; promote only `parse(...)`, `build(...)`, `head(...)`, `tail(...)`, lazy `if(...)`, and a redesigned pure `append(...)` into expression calls. Keep the other built-ins sequenced as instructions. |
 | Function-call argument boundaries use one shared grammar rule. | `SPEC.md`, `modules/ar_function_call_parser.md`, `modules/ar_function_call_parser_tests.c` | Aligns with Single Source of Semantics: top-level commas and closing parentheses delimit arguments, while quoted strings, parenthesized expression groups, and one-line list/map literals are preserved inside an argument. | Preserve as the current baseline. Future pure-call-expression work should reuse this boundary rule instead of reintroducing per-call scanners. |
 | String literal escaping is boundary-level, not value-level. | `SPEC.md`, `modules/ar_function_call_parser.zig`, `modules/ar_expression_parser.c`, parser tests | Partially aligns now that the distinction is documented. Backslash parity has parser-boundary meaning before quotes in function-call arguments, but the expression parser preserves backslashes as ordinary characters and does not decode escape sequences. | Do not describe this as general escaped-character support. Preserve raw string literals unless true expression-level escape parsing is added as an explicit language change. |
 | Function result storage uses assignment-looking syntax on function instructions. | `SPEC.md`, `modules/ar_instruction_ast.md`, evaluator module docs | Conflicts with Syntax-Directed Semantics because ordinary assignment and instruction result binding look similar while using different AST/evaluator paths. | Move pure call results into expression assignment, and centralize or visibly distinguish any remaining effectful result binding. |
@@ -119,7 +119,7 @@ principles or should be treated as a future design gap.
 | `if(...)` is documented as lazy value selection: evaluate the condition, then evaluate and return only the selected branch expression. | `SPEC.md`, `modules/ar_condition_instruction_evaluator.md`, `kb/agerun-language-constraint-workarounds.md` | Aligns with Single Source of Semantics for current instruction-level conditionals. Selected-branch evaluation fits conditional value selection; expression purity means branch evaluation must not become a place to hide side effects. | Preserve the lazy selected-branch rule. If `if(...)` later becomes an expression-level conditional, keep it pure and lazy. |
 | No conditional execution statement exists; all method instructions execute in order and conditional behavior is encoded with value selection and no-op targets. | `kb/agerun-language-constraint-workarounds.md`, coordination method patterns | Aligns with line-based sequential evaluation and pure expressions, but it couples conditional side effects to sentinel/no-op instruction behavior instead of explicit control flow. | Keep in scope for the line-based, pure-expression, sequenced-instruction, and sentinel semantics follow-up plans. |
 | `send(0, message)` is a no-op; `spawn(0, ...)` and `spawn("", ...)` are no-ops returning/storing `0`. | `AGENTS.md`, `SPEC.md`, `kb/no-op-semantics-pattern.md`, `kb/no-op-instruction-semantics.md` | Aligns with Explicit Exceptions when documented and with Expression Purity when kept outside expressions. It still assigns special instruction semantics to ordinary integer/string values. | Preserve the current no-op rules, but document them as instruction-specific exceptions: in `send(...)`, `0` means "no destination, do not send"; in `spawn(...)`, `0` or `""` means "do not spawn and return/store `0`". Do not imply that integer `0` has this no-op meaning in ordinary expression evaluation or ordinary data values. |
-| `append(target, value)` accepts any target expression syntactically, but only mutates an existing memory-owned list; message/context/fresh/missing/non-list/protected targets are no-ops. | `SPEC.md`, `modules/ar_append_instruction_evaluator.md` | Explicit but not fully orthogonal: identical list values differ by origin and ownership. The expression-looking target hides lvalue semantics unless the root/path syntax is treated as the mutation marker. | Define lvalue/mutation-target rules for mutating instructions, not expression calls. |
+| `append(target, value)` accepts any target expression syntactically, but only mutates an existing memory-owned list; message/context/fresh/missing/non-list/protected targets are no-ops. | `SPEC.md`, `modules/ar_append_instruction_evaluator.md` | Explicit but not fully orthogonal: identical list values differ by origin and ownership. The expression-looking target hides lvalue semantics unless the root/path syntax is treated as the mutation marker. | Change `append(...)` into a pure list-construction expression that returns a new list, and migrate or rename the current mutating form as an explicit effectful instruction only if compatibility requires it. |
 | Writes are limited to `memory` paths, and `memory.self` plus nested `memory.self.*` are protected from assignment/result storage. | `SPEC.md`, `modules/ar_instruction_ast.md`, parse evaluator docs | Aligns with Explicit Exceptions and runtime identity safety. The `memory` root visibly marks writable state, but protected subpaths and function-result storage need one documented rule. | Preserve, but centralize the rule so assignment, function results, parse templates, and future merge-like operations cannot drift. |
 | `head(...)` and `tail(...)` use deep-copy list traversal, but their sentinel cases differ. `head(...)` stores integer `0` for empty, missing, non-list, or copy-failure inputs; `tail(...)` stores a new empty LIST for empty or single-item lists and stores integer `0` only for missing, non-list, or copy-failure inputs. | `SPEC.md`, `modules/ar_head_instruction_evaluator.md`, `modules/ar_tail_instruction_evaluator.md`, `modules/ar_expression_evaluator.md` | Partially aligns: list values are safely copied, and `tail(...)` distinguishes valid empty tails from invalid input. `head(...)` still uses integer `0` for both empty input and invalid input, so that sentinel remains coupled to valid integer payloads. | Keep as current behavior; include the asymmetric `head(...)`/`tail(...)` sentinel rules in sentinel semantics planning. |
 | Non-empty list equality and map structural equality are not supported; list equality is limited to empty-list checks. | `modules/ar_expression_evaluator.md` | Limits orthogonality and syntax-directed semantics. The same `=` syntax changes behavior based on container shape and content. | Treat as a lower-risk expression semantics gap. |
@@ -157,7 +157,7 @@ principles or should be treated as a future design gap.
 | F2 | Multiline list/map literals | Not composable. Multiline literals are canonicalized only as top-level assignment RHS values. | A list/map value has different syntax availability depending on whether it is one-line or multiline. | `SPEC.md`, `README.md`, and `ar_method_parser.md` say multiline lists/maps are assignment-only. Current corpus has 36 top-level multiline literal assignments. | Medium |
 | F3 | `if(...)` condition and branch evaluation | Partially composable. `SPEC.md` now states that the first argument is an `<expression>`, and parser tests accept `if(1, 1, 0)`. Calls still cannot appear inside branches because calls are not expressions. | Docs now agree that the evaluator checks the condition first, evaluates only the selected branch, treats integer `0` as false, treats non-zero integers as true, and sends non-integer condition values to the false branch. That is more orthogonal than the earlier stale both-branches wording. | `ar_condition_instruction_parser.c` parses all three arguments through `ar_expression_parser`; `ar_condition_instruction_evaluator.zig` selects one branch; `SPEC.md`, `modules/README.md`, `ar_condition_instruction_evaluator.md`, and `kb/agerun-language-constraint-workarounds.md` document selected-branch evaluation. | Medium |
 | F4 | Assignment vs result assignment | Expression assignment is normal only for `memory.path := <expression>`. Function result assignment is encoded inside function instruction AST nodes. | Pure expression results and effectful instruction results are represented through overlapping storage paths. The syntax may remain compact, but storage validation should have one owner. | `ar_instruction_ast_t` stores assignment data separately from function-call result paths. Instruction evaluators use `ar_instruction_ast__has_result_assignment()` and `ar_instruction_ast__get_function_result_path()`. | High |
-| F5 | `append(...)` target | Syntactically accepts any expression for the target. Semantically only memory-owned lists can mutate. | A list value from `memory.results`, `message.results`, and `[1]` is not interchangeable for mutation. Non-memory targets become no-ops. As a mutating operation, `append(...)` should remain outside expression grammar. | `ar_append_instruction_evaluator.md` documents that message/context/fresh/non-list/missing/protected targets are no-ops. Tests cover message-owned, literal, and non-list no-op targets. | Medium |
+| F5 | `append(...)` target | Syntactically accepts any expression for the target. Semantically only memory-owned lists can mutate. | A list value from `memory.results`, `message.results`, and `[1]` is not interchangeable for mutation. This is the strongest candidate for redesign as a pure value-producing list operation. | `ar_append_instruction_evaluator.md` documents that message/context/fresh/non-list/missing/protected targets are no-ops. Tests cover message-owned, literal, and non-list no-op targets. | Medium |
 | F6 | Missing field and empty-list sentinels | Composable as expressions once produced, but sentinel values leak into method logic. | Missing `message.field`, empty `head(...)`, invalid `tail(...)`, failed spawn, and no-op send/spawn all use integer `0` in different roles. | `SPEC.md` documents integer `0` sentinel behavior for `head(...)`, `tail(...)`, `send(0, ...)`, and `spawn(0, ...)`. Tests cover missing message fields for head/tail. | Medium |
 | F7 | `memory.self` protection | Protection is consistently enforced for assignment and many result paths, but it is bolted onto instruction semantics. | Write permission depends on target root/path and, for parse, placeholder names/input origin. | `SPEC.md` says method instructions cannot assign or store into `memory.self`; `ar_instruction_ast__has_protected_memory_self_assignment()` supports instruction-level checks; parse evaluator adds placeholder/input-specific checks. | Medium |
 | F8 | Operators over containers | One-line literals are composable in expressions, but equality semantics are partial. | Empty list equality exists; non-empty list structural equality does not. Maps are constructible but not structurally comparable. | `ar_expression_evaluator.md` says list equality is limited to empty-list checks and non-empty lists are not structurally compared. | Low |
@@ -225,11 +225,27 @@ regex found 1,023 assigned built-in call lines and no nested built-in call lines
 sources. That is strong evidence that the grammar shape controls method style.
 
 Recommended follow-up: reuse the shared function-call boundary parser while adding an
-expression-level call AST and call evaluator only for calls classified as pure. Calls such as
-`parse`, `build`, `head`, `tail`, and value-returning `if(...)` are good candidate expressions.
-Side-effectful operations such as `send`, `spawn`, `exit`, `deprecate`, `append`, `compile`, and
-`complete` should remain sequenced instructions unless their semantics are split into pure value
-production plus a separate effectful instruction.
+expression-level call AST and call evaluator only for calls classified as pure. The classification
+should be explicit:
+
+| Built-in | Recommendation | Rationale |
+|----------|----------------|-----------|
+| `parse(template, input)` | Promote to pure expression with its current safety checks preserved. | It produces a new map from argument values and does not need to mutate runtime state, but the pure evaluator must still reject templates that construct `self` or `self.*`, inputs that read `memory.self`, and result storage into `memory.self` or `memory.self.*`. |
+| `build(template, values)` | Promote to pure expression. | It deterministically constructs a string from argument values. |
+| `head(list)` | Promote to pure expression. | It returns an independent copy of the first item or integer `0` and never mutates the source list. |
+| `tail(list)` | Promote to pure expression. | It returns a new list or integer `0` and never mutates the source list. |
+| `if(condition, true_value, false_value)` | Promote to a pure lazy expression. | It is value selection, not control flow; only the selected branch should be evaluated. |
+| `append(list, value)` | Redesign as a pure expression. | It should return a new list with the value appended, or `0` for invalid/non-list/copy-failure inputs, instead of mutating only memory-owned lists. |
+| `send(recipient_id, message)` | Keep as an instruction. | It enqueues messages, routes to agents or delegates, and transfers message ownership. |
+| `compile(method_name, instructions, version)` | Keep as an instruction. | It registers a method in the methodology. |
+| `spawn(method_name, version, context)` | Keep as an instruction. | It creates a runtime agent and returns a new agent ID. |
+| `exit(agent_id)` | Keep as an instruction. | It destroys an agent. |
+| `deprecate(method_name, method_version)` | Keep as an instruction. | It unregisters or deprecates a method version. |
+| `complete(template[, values])` | Keep as an instruction. | It performs local completion work, may initialize or reuse backend/model state, can time out or depend on configured runtime resources, and is explicitly outside expression purity. |
+
+The expression grammar should reject the instruction-only built-ins. If an effectful instruction still
+needs to bind a result, that result-binding rule should remain visibly statement-level rather than
+borrowing ordinary expression assignment semantics.
 
 ### 4. String Literal Escaping Is Boundary-Level Today
 
@@ -294,20 +310,28 @@ Effectful instructions that return values, such as a future `spawn(...)` result 
 need statement-level result storage. If so, that storage rule should be centralized and explicitly
 separate from expression assignment rather than repeated in each evaluator.
 
-### 8. Mutation Semantics Need an Explicit Lvalue Concept
+### 8. `append(...)` Should Become Pure List Construction
 
 `append(...)` already reveals an important design boundary. Its target argument parses as a normal
 expression, but mutation succeeds only when the expression resolves to a memory-owned list. A
 message-owned list, context-owned list, fresh literal list, missing target, non-list, or protected
 `memory.self` target becomes a no-op.
 
-That may be the right runtime safety model, but it is not semantically orthogonal if all expressions
-are treated as interchangeable values. It needs explicit language wording: some call arguments are
-values, while mutation targets are lvalues with memory ownership requirements.
+That current runtime safety model is useful, but it is not semantically orthogonal if all expressions
+are treated as interchangeable values. The better language direction is to make `append(...)` a pure
+list-construction function:
 
-Recommended follow-up: define lvalue semantics for mutating instructions without making those
-instructions expression-level. That definition should cover `append(...)` now and any future
-mutating operations.
+- `memory.items := append(memory.items, message.value)` should evaluate a list value and return a new
+  list with `message.value` appended.
+- `memory.items := append(message.items, message.value)` should behave the same for an equivalent
+  message-owned list because ownership origin should not affect pure value construction.
+- Invalid, missing, non-list, or not-copyable inputs should return the language's chosen failure value
+  for list operations, currently integer `0`.
+
+If compatibility requires preserving the current memory-mutating behavior, it should be renamed or
+documented as a separate effectful instruction with explicit lvalue semantics. The unqualified
+`append(...)` name should move toward pure expression semantics because list append is naturally a
+value transformation.
 
 ### 9. Sentinel `0` Is Useful but Leaks Across Components
 
@@ -343,9 +367,10 @@ instruction argument or result position. In ordinary expression evaluation and o
 
 ## Remaining Recommended Follow-Up Order
 
-1. **Purity and syntax classification design note**: decide which built-ins are pure expressions,
-   which must remain sequenced instructions because they mutate state, communicate, create agents, or
-   otherwise perform effects, and how those differences are visible in syntax.
+1. **Purity and syntax classification design note**: record the concrete built-in split:
+   `parse(...)`, `build(...)`, `head(...)`, `tail(...)`, lazy `if(...)`, and redesigned
+   `append(...)` are expression candidates; `send(...)`, `compile(...)`, `spawn(...)`, `exit(...)`,
+   `deprecate(...)`, and `complete(...)` remain sequenced instructions.
 2. **AST refactor plan**: add `AR_EXPRESSION_AST_TYPE__CALL` for pure calls, reuse
    `ar_function_call_parser` for expression-call argument boundaries, define function metadata once,
    and reduce remaining per-built-in metadata/evaluator duplication without admitting
@@ -384,7 +409,8 @@ instruction argument or result position. In ordinary expression evaluation and o
 - Pure built-in calls can appear anywhere an expression can appear.
 - Side-effectful built-ins remain explicit sequenced instructions.
 - Assignment evaluates and stores pure expression results through one storage path.
-- Mutating instructions have explicit lvalue rules instead of hidden origin checks.
+- `append(...)` is either a pure list-construction expression or the mutating compatibility form is
+  renamed/documented as an explicit effectful instruction with lvalue rules.
 - Multiline literal behavior is either composable or documented as a deliberate source-format
   exception.
 - Documentation and tests agree on `if(...)` laziness.
@@ -447,3 +473,11 @@ the initialized example and current non-integer-falls-through-false behavior:
 
 - `make check-docs`: passed; 746 documentation files checked.
 - `git diff --check`: passed.
+
+After the pure built-in classification update, this report was revised to recommend promoting
+`parse(...)`, `build(...)`, `head(...)`, `tail(...)`, lazy `if(...)`, and redesigned pure
+`append(...)` into expression calls while keeping `send(...)`, `compile(...)`, `spawn(...)`,
+`exit(...)`, `deprecate(...)`, and `complete(...)` as sequenced instructions:
+
+- `make check-docs`: passed; 746 documentation files checked.
+- `git diff --check reports/method-language-audit.md`: passed.

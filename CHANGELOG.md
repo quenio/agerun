@@ -1,5 +1,23 @@
 # AgeRun CHANGELOG
 
+## 2026-06-15 (Refine method-language built-in purity audit)
+
+- **Documented built-in purity recommendations**
+
+  The method-language audit now distinguishes built-ins that are true pure expressions from
+  instruction-like built-ins, recommends keeping side-effecting agent operations as instructions,
+  records `append(...)` as the candidate for a future pure list-returning expression form, and
+  preserves `parse(...)`-specific `memory.self` protections in the pure-expression recommendation.
+
+  **Implementation**: Updated `reports/method-language-audit.md` with the refined built-in
+  classification and recommendations, including the requirement that a future pure `parse(...)`
+  evaluator still reject `self`/`self.*` template fields, `memory.self` input, and
+  `memory.self` result paths.
+
+  **Verification**: `git diff --check` and `make check-docs`.
+
+  **Impact**: The audit records the intended pure-expression direction for future language changes.
+
 ## 2026-06-07 (Align workflow test home fallback)
 
 - **Matched workflow real-completion test helpers to the runtime home fallback**
