@@ -31,7 +31,7 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
-          allowed_bots: "claude[bot]"
+          allowed_bots: "claude[bot],chatgpt-codex-connector[bot],cursor[bot]"
           prompt: |
             Review ${{ github.repository }}/pull/${{ github.event.pull_request.number }}
             at head ${{ github.event.pull_request.head.sha }}.
