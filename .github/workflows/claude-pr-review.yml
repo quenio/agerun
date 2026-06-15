@@ -26,15 +26,18 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Record checkout state
+        id: checkout-state
+        run: echo "head=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
       - name: Run Claude Code Review
         id: claude-review
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           # Temporary diagnostic bypass for workflow-file PRs. Remove after
-          # confirming the review reaches Claude execution without denials.
+          # this workflow lands on the default branch.
           github_token: ${{ github.token }}
-          show_full_output: true
           allowed_bots: "claude[bot],chatgpt-codex-connector[bot],cursor[bot]"
           settings: |
             {
@@ -43,11 +46,31 @@ jobs:
                   "Read",
                   "Glob",
                   "Grep",
+                  "Write",
+                  "WebFetch",
+                  "WebSearch",
                   "Bash(gh:*)",
                   "Bash(git diff:*)",
                   "Bash(git log:*)",
                   "Bash(git show:*)",
+                  "Bash(cd:*)",
+                  "Bash(cat:*)",
+                  "Bash(echo:*)",
+                  "Bash(jq:*)",
+                  "Bash(mkdir:*)",
+                  "Bash(mktemp:*)",
+                  "Bash(printf:*)",
+                  "Bash(rm:*)",
                   "mcp__github_inline_comment__create_inline_comment"
+                ],
+                "deny": [
+                  "Edit",
+                  "MultiEdit",
+                  "Bash(git add:*)",
+                  "Bash(git commit:*)",
+                  "Bash(git push:*)",
+                  "Bash(gh auth token:*)",
+                  "Bash(gh pr merge:*)"
                 ]
               }
             }
@@ -68,14 +91,39 @@ jobs:
             Report only high-confidence bugs, workflow/configuration failures,
             security problems, or clear repository-instruction violations.
 
+            Temporary scratch files are allowed only under /tmp or $RUNNER_TEMP.
+            Do not write under the repository checkout, do not commit or push
+            changes, and do not merge, edit, or mutate the PR through gh.
+            WebFetch and WebSearch are allowed only for public documentation,
+            public issues, or public references that materially improve review
+            accuracy. Do not include secrets, tokens, private command output, or
+            bulk repository content in web tool requests.
+
             For changed-line findings, post inline comments with
             mcp__github_inline_comment__create_inline_comment using confirmed:
             true. If no issues are found, print a short terminal summary and do
             not post a PR comment.
           claude_args: |
-            --allowedTools "Read,Glob,Grep,Bash(gh:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),mcp__github_inline_comment__create_inline_comment"
+            --allowedTools "Read,Glob,Grep,Write,WebFetch,WebSearch,Bash(gh:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(cd:*),Bash(cat:*),Bash(echo:*),Bash(jq:*),Bash(mkdir:*),Bash(mktemp:*),Bash(printf:*),Bash(rm:*),mcp__github_inline_comment__create_inline_comment"
         env:
           GH_TOKEN: ${{ github.token }}
+
+      - name: Require clean repository after Claude review
+        if: ${{ always() }}
+        env:
+          CHECKOUT_HEAD: ${{ steps.checkout-state.outputs.head }}
+        run: |
+          current_head=$(git rev-parse HEAD)
+          if [ "$current_head" != "$CHECKOUT_HEAD" ]; then
+            echo "::error::Claude review changed HEAD from ${CHECKOUT_HEAD} to ${current_head}."
+            exit 1
+          fi
+
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "::error::Claude review left repository changes in the checkout."
+            git status --short
+            exit 1
+          fi
 
       - name: Require Claude review execution
         if: ${{ always() && steps.claude-review.outcome == 'success' && steps.claude-review.outputs.execution_file == '' }}
@@ -106,7 +154,11 @@ jobs:
             tail -n 1
           )
           if [ -n "$permission_denials_count" ] && [ "$permission_denials_count" != "0" ]; then
+            denied_tools=$(jq -r '[.. | objects | select(.type? == "result") | (.permission_denials? // [])[]?.tool_name] | unique | join(", ")' "$CLAUDE_EXECUTION_FILE")
             echo "::error::Claude Code reported ${permission_denials_count} permission denials."
+            if [ -n "$denied_tools" ]; then
+              echo "::error::Denied tools: ${denied_tools}"
+            fi
             echo "::error::Review output may be missing or incomplete until the tool allowlist is updated."
             exit 1
           fi
