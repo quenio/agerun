@@ -205,10 +205,20 @@ jobs:
                   "Bash(gh api graphql *Mutation*)",
                   "Bash(gh api * --method DELETE*)",
                   "Bash(gh api * --method PATCH*)",
+                  "Bash(gh api * --method POST*)",
                   "Bash(gh api * --method PUT*)",
+                  "Bash(gh api * --method=DELETE*)",
+                  "Bash(gh api * --method=PATCH*)",
+                  "Bash(gh api * --method=POST*)",
+                  "Bash(gh api * --method=PUT*)",
                   "Bash(gh api * -X DELETE*)",
                   "Bash(gh api * -X PATCH*)",
+                  "Bash(gh api * -X POST*)",
                   "Bash(gh api * -X PUT*)",
+                  "Bash(gh api * -XDELETE*)",
+                  "Bash(gh api * -XPATCH*)",
+                  "Bash(gh api * -XPOST*)",
+                  "Bash(gh api * -XPUT*)",
                   "Bash(gh pr merge:*)"
                 ]
               }
