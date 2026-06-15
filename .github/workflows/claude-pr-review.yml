@@ -19,7 +19,6 @@ jobs:
       pull-requests: write
       issues: write
       actions: read
-      id-token: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -274,6 +273,9 @@ jobs:
                   "Bash(*GITHUB_STEP_SUMMARY*)",
                   "Bash(*_runner_file_commands*)",
                   "Bash(*ANTHROPIC_API_KEY*)",
+                  "Bash(*ACTIONS_ID_TOKEN*)",
+                  "Bash(*ACTIONS_ID_TOKEN_REQUEST_TOKEN*)",
+                  "Bash(*ACTIONS_ID_TOKEN_REQUEST_URL*)",
                   "Bash(* /proc/*)",
                   "Bash(* /home/runner/work/_temp/*)",
                   "Bash(*;*)",
