@@ -102,7 +102,7 @@ jobs:
           fi
 
           permission_denials_count=$(
-            jq -r '.. | objects | select(.type? == "result") | .permission_denials_count? // empty' "$CLAUDE_EXECUTION_FILE" |
+            jq -r '.. | objects | select(.type? == "result") | ((.permission_denials? // []) | length)' "$CLAUDE_EXECUTION_FILE" |
             tail -n 1
           )
           if [ -n "$permission_denials_count" ] && [ "$permission_denials_count" != "0" ]; then
