@@ -159,6 +159,20 @@ jobs:
               }
             ' > "$page_file"
 
+            if jq -e '(.errors // []) | length > 0' "$page_file" >/dev/null; then
+              echo "::error::GitHub GraphQL returned errors while capturing review threads."
+              jq -r '.errors[]?.message // "unknown GraphQL error"' "$page_file" |
+                while IFS= read -r error_message; do
+                  echo "::error::GraphQL error: ${error_message}"
+                done
+              exit 1
+            fi
+
+            if ! jq -e '.data.repository.pullRequest.reviewThreads.pageInfo' "$page_file" >/dev/null; then
+              echo "::error::GitHub GraphQL response is missing reviewThreads pageInfo."
+              exit 1
+            fi
+
             if [ "$(jq -r '.data.repository.pullRequest.reviewThreads.pageInfo.hasNextPage' "$page_file")" != "true" ]; then
               break
             fi
