@@ -241,6 +241,11 @@ jobs:
         env:
           CHECKOUT_HEAD: ${{ steps.checkout-state.outputs.head }}
         run: |
+          if [ -z "$CHECKOUT_HEAD" ]; then
+            echo "::error::Recorded checkout HEAD is missing; cannot verify Claude review left HEAD unchanged."
+            exit 1
+          fi
+
           current_head=$(git rev-parse HEAD)
           if [ "$current_head" != "$CHECKOUT_HEAD" ]; then
             echo "::error::Claude review changed HEAD from ${CHECKOUT_HEAD} to ${current_head}."
