@@ -230,7 +230,7 @@ should be explicit:
 
 | Built-in | Recommendation | Rationale |
 |----------|----------------|-----------|
-| `parse(template, input)` | Promote to pure expression. | It produces a new map from argument values and does not need to mutate runtime state. Assignment and `memory.self` protection should be handled by ordinary result storage rules. |
+| `parse(template, input)` | Promote to pure expression with its current safety checks preserved. | It produces a new map from argument values and does not need to mutate runtime state, but the pure evaluator must still reject templates that construct `self` or `self.*`, inputs that read `memory.self`, and result storage into `memory.self` or `memory.self.*`. |
 | `build(template, values)` | Promote to pure expression. | It deterministically constructs a string from argument values. |
 | `head(list)` | Promote to pure expression. | It returns an independent copy of the first item or integer `0` and never mutates the source list. |
 | `tail(list)` | Promote to pure expression. | It returns a new list or integer `0` and never mutates the source list. |
