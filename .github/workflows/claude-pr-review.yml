@@ -277,15 +277,22 @@ jobs:
         if: ${{ always() }}
         env:
           CHECKOUT_HEAD: ${{ steps.checkout-state.outputs.head }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
         run: |
           if [ -z "$CHECKOUT_HEAD" ]; then
             echo "::error::Recorded checkout HEAD is missing; cannot verify Claude review left HEAD unchanged."
             exit 1
           fi
 
+          if [ -z "$PR_HEAD" ]; then
+            echo "::error::PR head SHA is missing; cannot verify Claude review left HEAD unchanged."
+            exit 1
+          fi
+
           current_head=$(git rev-parse HEAD)
-          if [ "$current_head" != "$CHECKOUT_HEAD" ]; then
-            echo "::error::Claude review changed HEAD from ${CHECKOUT_HEAD} to ${current_head}."
+          if [ "$current_head" != "$CHECKOUT_HEAD" ] && [ "$current_head" != "$PR_HEAD" ]; then
+            echo "::error::Claude review changed HEAD to unexpected commit ${current_head}."
+            echo "::error::Expected checkout HEAD ${CHECKOUT_HEAD} or PR head ${PR_HEAD}."
             exit 1
           fi
 
