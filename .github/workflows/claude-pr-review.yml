@@ -226,6 +226,7 @@ jobs:
                   "WebFetch",
                   "WebSearch",
                   "Bash(gh pr view:*)",
+                  "Bash(cd /tmp)",
                   "Bash(cd /tmp && gh pr view:*)",
                   "Bash(gh pr diff:*)",
                   "Bash(gh pr list:*)",
@@ -237,6 +238,7 @@ jobs:
                   "Bash(cd /tmp && gh api --method GET repos/*/*/pulls/*/reviews:*)",
                   "Bash(git log:*)",
                   "Bash(git show:*)",
+                  "Bash(head -200)",
                   "Bash(mkdir:*)",
                   "Bash(mktemp:*)",
                   "Bash(rm:*)",
@@ -336,8 +338,9 @@ jobs:
             Do not run local validation, self-tests, git diff, Python,
             external jq, cat, arbitrary cd, or arbitrary compound Bash scripts;
             denied tool attempts fail this check. Single cd /tmp && gh ...
-            | head ... commands are allowed only for read-only PR metadata or
-            GET comment/review output. If a fact cannot be inspected with the
+            | head ... commands, and their split cd /tmp and head -200
+            subcommands, are allowed only for read-only PR metadata or GET
+            comment/review output. If a fact cannot be inspected with the
             allowed tools,
             continue without that optional check.
             Report only high-confidence bugs, workflow/configuration failures,
@@ -359,7 +362,7 @@ jobs:
             true. If no issues are found, print a short terminal summary and do
             not post a PR comment.
           claude_args: |
-            --allowedTools "Read(/**),Read(//tmp/claude-pr-review-context.json),Read(//tmp/claude-pr-review-*),Read(//tmp/claude-pr-review-*/**),Glob,Grep,Edit(//tmp/**),Write(//tmp/**),WebFetch,WebSearch,Bash(gh pr view:*),Bash(cd /tmp && gh pr view:*),Bash(gh pr diff:*),Bash(gh pr list:*),Bash(gh api --method GET repos/*/*/issues/*/comments:*),Bash(gh api --method GET repos/*/*/pulls/*/comments:*),Bash(gh api --method GET repos/*/*/pulls/*/reviews:*),Bash(cd /tmp && gh api --method GET repos/*/*/issues/*/comments:*),Bash(cd /tmp && gh api --method GET repos/*/*/pulls/*/comments:*),Bash(cd /tmp && gh api --method GET repos/*/*/pulls/*/reviews:*),Bash(git log:*),Bash(git show:*),Bash(mkdir:*),Bash(mktemp:*),Bash(rm:*),mcp__github_inline_comment__create_inline_comment"
+            --allowedTools "Read(/**),Read(//tmp/claude-pr-review-context.json),Read(//tmp/claude-pr-review-*),Read(//tmp/claude-pr-review-*/**),Glob,Grep,Edit(//tmp/**),Write(//tmp/**),WebFetch,WebSearch,Bash(gh pr view:*),Bash(cd /tmp),Bash(cd /tmp && gh pr view:*),Bash(gh pr diff:*),Bash(gh pr list:*),Bash(gh api --method GET repos/*/*/issues/*/comments:*),Bash(gh api --method GET repos/*/*/pulls/*/comments:*),Bash(gh api --method GET repos/*/*/pulls/*/reviews:*),Bash(cd /tmp && gh api --method GET repos/*/*/issues/*/comments:*),Bash(cd /tmp && gh api --method GET repos/*/*/pulls/*/comments:*),Bash(cd /tmp && gh api --method GET repos/*/*/pulls/*/reviews:*),Bash(git log:*),Bash(git show:*),Bash(head -200),Bash(mkdir:*),Bash(mktemp:*),Bash(rm:*),mcp__github_inline_comment__create_inline_comment"
         env:
           GH_TOKEN: ${{ github.token }}
 
