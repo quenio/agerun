@@ -339,7 +339,10 @@ static void test_reject_effectful_function_call_expression(void) {
 
     // Then the expression parser should keep effectful calls out of expressions
     assert(ast == NULL);
-    assert(ar_log__get_last_error_message(log) != NULL);
+    const char *last_error = ar_log__get_last_error_message(log);
+    assert(last_error != NULL);
+    assert(strcmp(last_error, "Function call is not a pure expression") == 0);
+    assert(ar_log__get_last_error_position(log) == 0);
     assert(ar_expression_parser__get_position(parser) == 0);
 
     ar_expression_parser__destroy(parser);
@@ -363,7 +366,10 @@ static void test_reject_effectful_function_call_in_literal_restores_position(voi
 
     // Then the rejected function call should leave the item parser at the call boundary
     assert(ast == NULL);
-    assert(ar_log__get_last_error_message(log) != NULL);
+    const char *last_error = ar_log__get_last_error_message(log);
+    assert(last_error != NULL);
+    assert(strcmp(last_error, "Function call is not a pure expression") == 0);
+    assert(ar_log__get_last_error_position(log) == 1);
     assert(ar_expression_parser__get_position(parser) == 1);
 
     ar_expression_parser__destroy(parser);

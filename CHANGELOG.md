@@ -1,5 +1,25 @@
 # AgeRun CHANGELOG
 
+## 2026-06-16 (Stop expression parser fallback after rejected calls)
+
+- **Preserved the primary non-pure-call parser error**
+
+  The expression parser now treats function-call-shaped input as a committed parse path in primary
+  expression position. Rejecting `send(...)` or another non-pure call no longer falls through into
+  memory-access/literal parsing, so the parser keeps the correct rejection error instead of
+  appending misleading secondary diagnostics.
+
+  **Implementation**: Updated `modules/ar_expression_parser.c` to return directly from the
+  function-call parser once the input matches `identifier(`, strengthened the effectful-call
+  regressions in `modules/ar_expression_parser_tests.c` to assert the final error text and
+  position, and removed stale fallback-error whitelist entries in `log_whitelist.yaml`.
+
+  **Verification**: `make ar_expression_parser_tests 2>&1` *(blocked in this environment: `zig`
+  executable missing before test linking)*.
+
+  **Impact**: Expression parsing now reports the real non-pure call failure cleanly, which avoids
+  masking the original error inside nested literal and argument parsing flows.
+
 ## 2026-06-15 (Refine method-language built-in purity audit)
 
 - **Documented built-in purity recommendations**

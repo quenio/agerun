@@ -939,9 +939,8 @@ static ar_expression_ast_t* _parse_primary(ar_expression_parser_t *mut_parser) {
         return _parse_map_literal(mut_parser);
     }
 
-    ar_expression_ast_t *own_function_call = _parse_function_call(mut_parser);
-    if (own_function_call) {
-        return own_function_call;
+    if (_looks_like_function_call(mut_parser)) {
+        return _parse_function_call(mut_parser);
     }
     
     // Try memory access first

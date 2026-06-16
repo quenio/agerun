@@ -181,11 +181,8 @@ ignored_errors:
 
   # ar_function_call_parser_tests
   - context: "ar_function_call_parser_tests"
-    message: "ERROR: Expected literal (string or number) (at position 0)"
-    comment: "Testing that nested function-call text is not accepted as an expression"
-  - context: "ar_function_call_parser_tests"
     message: "ERROR: Function call is not a pure expression (at position 0)"
-    comment: "Testing effectful nested call rejection restores expression position"
+    comment: "Testing that nested function-call text is rejected as a non-pure expression"
   - context: "ar_function_call_parser_tests"
     message: "ERROR: Unexpected characters after expression (at position 12)"
     comment: "Testing trailing text after rejected nested effectful call"
@@ -371,9 +368,6 @@ ignored_errors:
   - context: "ar_expression_parser_tests"
     message: "ERROR: Function call is not a pure expression (at position 0)"
     comment: "Testing effectful function call rejection restores expression position"
-  - context: "ar_expression_parser_tests"
-    message: "ERROR: Expected literal (string or number) (at position 0)"
-    comment: "Testing fallback literal rejection after effectful call restores position"
   - context: "ar_expression_parser_tests"
     message: "ERROR: Function call is not a pure expression (at position 1)"
     comment: "Testing effectful function call rejection restores list item position"
