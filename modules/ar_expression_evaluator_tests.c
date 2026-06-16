@@ -1158,6 +1158,14 @@ static void test_evaluate_parse_returns_empty_map_for_bad_inputs(void) {
     assert(_map_key_count(own_missing) == 0);
     ar_data__destroy(own_missing);
 
+    ar_data_t *own_ambiguous_parent = _evaluate_expression_text(
+        own_fixture,
+        "parse(\"{a.b}-{a}\", \"1-2\")"
+    );
+    assert(ar_data__get_type(own_ambiguous_parent) == AR_DATA_TYPE__MAP);
+    assert(_map_key_count(own_ambiguous_parent) == 0);
+    ar_data__destroy(own_ambiguous_parent);
+
     ar_evaluator_fixture__destroy(own_fixture);
 }
 

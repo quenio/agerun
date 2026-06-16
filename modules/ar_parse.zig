@@ -110,6 +110,11 @@ fn _storeParsedValue(
         return .allocation_failure;
     defer ar_allocator.free(own_key);
 
+    const ref_existing = c.ar_data__get_map_data(mut_result, own_key);
+    if (ref_existing != null and c.ar_data__get_type(ref_existing) == c.AR_DATA_TYPE__MAP) {
+        return .empty_result;
+    }
+
     const own_value = _createParsedValue(ref_value) orelse return .allocation_failure;
     if (!c.ar_data__set_map_data(mut_result, own_key, own_value)) {
         c.ar_data__destroy(own_value);
