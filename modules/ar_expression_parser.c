@@ -718,6 +718,7 @@ static ar_expression_ast_t* _parse_function_call(ar_expression_parser_t *mut_par
     size_t expected_arg_count = 0;
     if (!_get_pure_function_arg_count(own_function_name, &expected_arg_count)) {
         AR__HEAP__FREE(own_function_name);
+        mut_parser->position = call_start;
         _set_error(mut_parser, "Function call is not a pure expression");
         return NULL;
     }
