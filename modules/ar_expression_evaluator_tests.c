@@ -1190,6 +1190,37 @@ static void test_evaluate_parse_is_path_neutral_for_memory_self(void) {
     ar_evaluator_fixture__destroy(own_fixture);
 }
 
+static void test_evaluate_parse_preserves_borrowed_frame_maps(void) {
+    printf("Testing expression evaluator parse preserves borrowed frame maps...\n");
+
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_evaluate_parse_preserves_borrowed_frame_maps");
+    assert(own_fixture != NULL);
+
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    assert(ar_data__set_map_string(mut_memory, "sentinel", "alive"));
+
+    ar_data_t *own_template_result = _evaluate_expression_text(
+        own_fixture,
+        "parse(memory, \"ignored\")"
+    );
+    assert(ar_data__get_type(own_template_result) == AR_DATA_TYPE__MAP);
+    assert(_map_key_count(own_template_result) == 0);
+    ar_data__destroy(own_template_result);
+    assert(strcmp(ar_data__get_map_string(mut_memory, "sentinel"), "alive") == 0);
+
+    ar_data_t *own_input_result = _evaluate_expression_text(
+        own_fixture,
+        "parse(\"{value}\", memory)"
+    );
+    assert(ar_data__get_type(own_input_result) == AR_DATA_TYPE__MAP);
+    assert(_map_key_count(own_input_result) == 0);
+    ar_data__destroy(own_input_result);
+    assert(strcmp(ar_data__get_map_string(mut_memory, "sentinel"), "alive") == 0);
+
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
 int main(void) {
     printf("\n=== Expression Evaluator Tests ===\n\n");
     
@@ -1220,6 +1251,7 @@ int main(void) {
     test_evaluate_parse_function_call_in_literals();
     test_evaluate_parse_returns_empty_map_for_bad_inputs();
     test_evaluate_parse_is_path_neutral_for_memory_self();
+    test_evaluate_parse_preserves_borrowed_frame_maps();
     
     printf("\nAll expression_evaluator tests passed!\n");
     return 0;
