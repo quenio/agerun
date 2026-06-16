@@ -448,6 +448,60 @@ static ar_instruction_ast_t* _dispatch_function(ar_instruction_parser_t *mut_par
     return NULL;
 }
 
+static bool _is_instruction_result_function(const char *ref_func_name, size_t func_len) {
+    return (func_len == 4 && strncmp(ref_func_name, "send", 4) == 0) ||
+           (func_len == 2 && strncmp(ref_func_name, "if", 2) == 0) ||
+           (func_len == 5 && strncmp(ref_func_name, "build", 5) == 0) ||
+           (func_len == 8 && strncmp(ref_func_name, "complete", 8) == 0) ||
+           (func_len == 6 && strncmp(ref_func_name, "append", 6) == 0) ||
+           (func_len == 4 && strncmp(ref_func_name, "head", 4) == 0) ||
+           (func_len == 4 && strncmp(ref_func_name, "tail", 4) == 0) ||
+           (func_len == 7 && strncmp(ref_func_name, "compile", 7) == 0) ||
+           (func_len == 5 && strncmp(ref_func_name, "spawn", 5) == 0) ||
+           (func_len == 9 && strncmp(ref_func_name, "deprecate", 9) == 0) ||
+           (func_len == 4 && strncmp(ref_func_name, "exit", 4) == 0);
+}
+
+static bool _find_assigned_instruction_function(
+    const char *ref_instruction,
+    const char *ref_assign_pos,
+    const char **out_func_start,
+    size_t *out_func_len
+) {
+    const char *func_start = ref_assign_pos + 2;
+    while (*func_start && isspace((unsigned char)*func_start)) {
+        func_start++;
+    }
+
+    if (!isalpha((unsigned char)*func_start) && *func_start != '_') {
+        return false;
+    }
+
+    const char *func_end = func_start;
+    while (isalnum((unsigned char)*func_end) || *func_end == '_') {
+        func_end++;
+    }
+
+    const char *after_name = func_end;
+    while (*after_name && isspace((unsigned char)*after_name)) {
+        after_name++;
+    }
+
+    if (*after_name != '(') {
+        return false;
+    }
+
+    size_t func_len = (size_t)(func_end - func_start);
+    if (!_is_instruction_result_function(func_start, func_len)) {
+        return false;
+    }
+
+    (void)ref_instruction;
+    *out_func_start = func_start;
+    *out_func_len = func_len;
+    return true;
+}
+
 /**
  * Parse an instruction using the unified parser facade.
  */
@@ -482,9 +536,9 @@ ar_instruction_ast_t* ar_instruction_parser__parse(ar_instruction_parser_t *mut_
     
     // Determine instruction type based on what we found
     if (assign_pos) {
-        // Check if there's a function call after :=
-        if (paren_pos && paren_pos > assign_pos) {
-            // This is a function with assignment
+        const char *func_start = NULL;
+        size_t func_len = 0;
+        if (_find_assigned_instruction_function(ref_instruction, assign_pos, &func_start, &func_len)) {
             // Extract the result path (everything before :=)
             const char *path_start = ref_instruction;
             while (*path_start && isspace((unsigned char)*path_start)) {
@@ -502,17 +556,7 @@ ar_instruction_ast_t* ar_instruction_parser__parse(ar_instruction_parser_t *mut_
             }
             memcpy(own_result_path, path_start, path_len);
             own_result_path[path_len] = '\0';
-            
-            // Extract function name (between := and ()
-            const char *func_start = assign_pos + 2;
-            while (*func_start && isspace((unsigned char)*func_start)) {
-                func_start++;
-            }
-            size_t func_len = (size_t)(paren_pos - func_start);
-            while (func_len > 0 && isspace((unsigned char)func_start[func_len - 1])) {
-                func_len--;
-            }
-            
+
             // Dispatch to appropriate parser
             ar_instruction_ast_t *own_ast = _dispatch_function(mut_parser, ref_instruction, 
                                                            func_start, func_len, own_result_path);

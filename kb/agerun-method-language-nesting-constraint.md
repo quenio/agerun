@@ -1,34 +1,43 @@
 # AgeRun Method Language Function Nesting Constraint
 
 ## Learning
-Function calls cannot be nested within expressions in the AgeRun method language. The BNF grammar specifies that function calls are instructions, not expressions, preventing constructs like `send(0, if(condition, a, b))`.
+Effectful function calls cannot be nested within expressions in the AgeRun method language. Registered
+pure calls such as `parse(...)` are expressions and can be nested, while calls such as `send(...)`,
+`spawn(...)`, and instruction-form `if(...)` remain sequenced instructions.
 
 ## Importance
-This fundamental constraint shapes how all AgeRun methods must be written. Developers must use intermediate variables to combine function results, which affects code structure and readability.
+This constraint keeps side effects explicit while allowing pure value-producing calls to compose.
+Developers must still use intermediate variables to combine effectful instruction results, but pure
+calls can appear in assignment right-hand sides, function arguments, list items, map values, and
+selected branch expressions.
 
 ## Example
 ```c
-// Invalid - function call nested in expression
+// Invalid - effectful function call nested in another call
 // send(0, if(memory.initialized > 0, "Ready", "Not ready"))  // ERROR: Parse failure
 
 // Valid - using intermediate variable
 memory.status := if(memory.initialized > 0, "Ready", "Not ready")
 send(0, memory.status)
 
-// Also invalid - nested spawn in if
+// Invalid - effectful spawn nested in if
 // memory.id := if(condition > 0, spawn("echo", "1.0.0", 0), 0)  // ERROR: Parse failure
 
 // Valid - function result then conditional
 memory.spawn_result := spawn("echo", "1.0.0", 0)
 memory.id := if(condition > 0, memory.spawn_result, 0)
+
+// Valid - pure parse call in expression position
+memory.parsed := parse("name={name}", message.text)
+memory.wrapper := {payload: parse("id={id}", message.text)}
 ```
 
 ## Generalization
 When writing AgeRun methods:
-1. Never nest function calls within other function calls
-2. Always assign function results to variables first
-3. Use those variables in subsequent expressions
-4. Remember: if(), spawn(), send(), etc. are all function calls
+1. Pure function calls may be nested anywhere expressions are accepted.
+2. Effectful function calls remain instructions and cannot be expression operands.
+3. Assign effectful function results to variables before using them in later expressions.
+4. Check whether a call is registered as pure before composing it.
 
 ## Implementation
 ```bash

@@ -1,6 +1,7 @@
 const std = @import("std");
 const c = @cImport({
     @cInclude("ar_expression_ast.h");
+    @cInclude("ar_parse.h");
     @cInclude("ar_data.h");
     @cInclude("ar_log.h");
     @cInclude("ar_frame.h");
@@ -345,6 +346,64 @@ fn _evaluate_memory_access(
     return null;
 }
 
+fn _evaluate_parse_call(
+    ref_log: ?*c.ar_log_t,
+    ref_frame: ?*const c.ar_frame_t,
+    ref_node: ?*const c.ar_expression_ast_t
+) ?*c.ar_data_t {
+    if (c.ar_expression_ast__get_function_arg_count(ref_node) != 2) {
+        return c.ar_data__create_map();
+    }
+
+    const ref_template_ast = c.ar_expression_ast__get_function_arg(ref_node, 0);
+    const ref_input_ast = c.ar_expression_ast__get_function_arg(ref_node, 1);
+
+    const template_result = if (ref_template_ast != null)
+        _evaluate_expression(ref_log, ref_frame, ref_template_ast)
+    else
+        null;
+    defer if (template_result != null) c.ar_data__destroy_if_owned(template_result, ref_frame);
+
+    const input_result = if (ref_input_ast != null)
+        _evaluate_expression(ref_log, ref_frame, ref_input_ast)
+    else
+        null;
+    defer if (input_result != null) c.ar_data__destroy_if_owned(input_result, ref_frame);
+
+    const own_result = c.ar_parse__create_result(template_result, input_result);
+    if (own_result == null) {
+        c.ar_log__error(ref_log, "evaluate_function_call: Failed to create parse result");
+    }
+    return own_result;
+}
+
+fn _evaluate_function_call(
+    ref_log: ?*c.ar_log_t,
+    ref_frame: ?*const c.ar_frame_t,
+    ref_node: ?*const c.ar_expression_ast_t
+) ?*c.ar_data_t {
+    if (ref_node == null) {
+        c.ar_log__error(ref_log, "evaluate_function_call: NULL node");
+        return null;
+    }
+
+    if (c.ar_expression_ast__get_type(ref_node) != c.AR_EXPRESSION_AST_TYPE__CALL) {
+        return null;
+    }
+
+    const function_name = c.ar_expression_ast__get_function_name(ref_node) orelse {
+        c.ar_log__error(ref_log, "evaluate_function_call: Missing function name");
+        return null;
+    };
+
+    if (c.strcmp(function_name, "parse") == 0) {
+        return _evaluate_parse_call(ref_log, ref_frame, ref_node);
+    }
+
+    c.ar_log__error(ref_log, "evaluate_function_call: Unknown pure function");
+    return null;
+}
+
 
 /// Helper function to evaluate any expression AST node
 /// This is used internally by binary operations to evaluate operands
@@ -391,6 +450,9 @@ fn _evaluate_expression(
         c.AR_EXPRESSION_AST_TYPE__BINARY_OP => {
             return _evaluate_binary_op(ref_log, ref_frame, ref_node);
         },
+        c.AR_EXPRESSION_AST_TYPE__CALL => {
+            return _evaluate_function_call(ref_log, ref_frame, ref_node);
+        },
         else => {
             c.ar_log__error(ref_log, "_evaluate_expression: Unknown expression type");
             return null;
@@ -433,6 +495,9 @@ fn _evaluate(
         },
         c.AR_EXPRESSION_AST_TYPE__BINARY_OP => {
             return _evaluate_binary_op(ref_log, ref_frame, ref_ast);
+        },
+        c.AR_EXPRESSION_AST_TYPE__CALL => {
+            return _evaluate_function_call(ref_log, ref_frame, ref_ast);
         },
         else => {
             c.ar_log__error(ref_log, "evaluate: Unknown expression type");

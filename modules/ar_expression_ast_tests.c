@@ -134,6 +134,30 @@ static void test_create_map_literal(void) {
     ar_expression_ast__destroy(own_node);
 }
 
+static void test_create_function_call(void) {
+    printf("Testing function call creation...\n");
+
+    ar_expression_ast_t *own_args[2];
+    own_args[0] = ar_expression_ast__create_literal_string("name={name}");
+    own_args[1] = ar_expression_ast__create_literal_string("name=Ada");
+
+    ar_expression_ast_t *own_node = ar_expression_ast__create_function_call("parse", own_args, 2);
+
+    assert(own_node != NULL);
+    assert(ar_expression_ast__get_type(own_node) == AR_EXPRESSION_AST_TYPE__CALL);
+    assert(strcmp(ar_expression_ast__get_function_name(own_node), "parse") == 0);
+    assert(ar_expression_ast__get_function_arg_count(own_node) == 2);
+
+    const ar_expression_ast_t *ref_template = ar_expression_ast__get_function_arg(own_node, 0);
+    const ar_expression_ast_t *ref_input = ar_expression_ast__get_function_arg(own_node, 1);
+    assert(ar_expression_ast__get_type(ref_template) == AR_EXPRESSION_AST_TYPE__LITERAL_STRING);
+    assert(strcmp(ar_expression_ast__get_string_value(ref_template), "name={name}") == 0);
+    assert(ar_expression_ast__get_type(ref_input) == AR_EXPRESSION_AST_TYPE__LITERAL_STRING);
+    assert(strcmp(ar_expression_ast__get_string_value(ref_input), "name=Ada") == 0);
+
+    ar_expression_ast__destroy(own_node);
+}
+
 static void test_create_simple_memory_access(void) {
     printf("Testing simple memory access creation...\n");
     
@@ -487,6 +511,21 @@ static void test_format_path_binary_op(void) {
     ar_expression_ast__destroy(own_mul);
 }
 
+static void test_format_path_function_call(void) {
+    printf("Testing format path for function calls...\n");
+
+    ar_expression_ast_t *own_args[2];
+    own_args[0] = ar_expression_ast__create_literal_string("{value}");
+    own_args[1] = ar_expression_ast__create_literal_string("42");
+    ar_expression_ast_t *own_call = ar_expression_ast__create_function_call("parse", own_args, 2);
+
+    char *path = ar_expression_ast__format_path(own_call);
+    assert(path != NULL);
+    assert(strcmp(path, "parse(...)") == 0);
+    AR__HEAP__FREE(path);
+    ar_expression_ast__destroy(own_call);
+}
+
 int main(void) {
     printf("Running expression AST node tests...\n\n");
     
@@ -497,6 +536,7 @@ int main(void) {
     test_create_string_literal_with_null();
     test_create_list_literal();
     test_create_map_literal();
+    test_create_function_call();
     test_create_simple_memory_access();
     test_create_memory_access_with_path();
     test_create_binary_addition();
@@ -510,6 +550,7 @@ int main(void) {
     test_format_path_literals();
     test_format_path_memory_access();
     test_format_path_binary_op();
+    test_format_path_function_call();
     
     printf("\nAll expression AST node tests passed!\n");
     return 0;

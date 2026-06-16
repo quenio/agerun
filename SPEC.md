@@ -160,9 +160,8 @@ The current language partially satisfies those principles:
 - **Line-Based Parsing and Evaluation**: Methods are line-oriented: one instruction per line,
   ordered evaluation, required final newline, and ignored empty lines. Multi-line list and map
   literals are an explicit assignment-only source-format exception.
-- **Expression Purity**: Current expression nodes are value-producing and side-effect free. Built-in
-  calls are currently function instructions, not expression calls; effectful operations therefore
-  remain sequenced as method lines.
+- **Expression Purity**: Current expression nodes are value-producing and side-effect free. Registered
+  pure built-in calls are expression calls; effectful operations remain sequenced as method lines.
 - **Single Source of Semantics**: The shared function-call argument parser centralizes argument
   boundary rules, but ordinary assignment and function-result assignment still use separate
   AST/evaluator paths, and some instruction-specific exceptions remain documented outside one
@@ -173,10 +172,9 @@ The current language partially satisfies those principles:
 - **Explicit Exceptions**: Current exceptions include assignment-only multi-line literals,
   memory-only mutation targets, protected `memory.self` paths, no-op `send(0, ...)` and
   `spawn(0, ...)` behavior, and raw string values with boundary-only quote/backslash parsing.
-- **Composability**: Literals, accessors, operators, and one-line list/map literals compose as
-  expressions. Function calls are not expressions, so pure built-ins such as `parse(...)`,
-  `build(...)`, `head(...)`, `tail(...)`, and `if(...)` cannot yet be nested inside other
-  expressions or call arguments. Multi-line literals are assignment-only.
+- **Composability**: Literals, accessors, operators, registered pure calls such as `parse(...)`, and
+  one-line list/map literals compose as expressions. Effectful built-in calls are not expressions and
+  remain sequenced instructions. Multi-line literals are assignment-only.
 - **Orthogonality**: Current documented exceptions include memory-only mutation targets, integer `0`
   as several absence/no-op/failure sentinels, and boundary-level quote handling that does not define
   value-level string escape sequences.
@@ -197,20 +195,22 @@ The following BNF grammar defines the syntax of individual instructions allowed 
                | <memory-access> ':=' <multiline-list-literal>
                | <memory-access> ':=' <multiline-map-literal>
 
-<function-instruction> ::= [<memory-access> ':='] <function-call>
+<function-instruction> ::= [<memory-access> ':='] <instruction-function-call>
+                         | <pure-function-call>
 
-<function-call> ::= <send-function>
-                 | <parse-function>
-                 | <build-function>
-                 | <complete-function>
-                 | <append-function>
-                 | <head-function>
-                 | <tail-function>
-                 | <compile-function>
-                 | <spawn-function>
-                 | <exit-function>
-                 | <deprecate-function>
-                 | <if-function>
+<instruction-function-call> ::= <send-function>
+                              | <build-function>
+                              | <complete-function>
+                              | <append-function>
+                              | <head-function>
+                              | <tail-function>
+                              | <compile-function>
+                              | <spawn-function>
+                              | <exit-function>
+                              | <deprecate-function>
+                              | <if-function>
+
+<pure-function-call> ::= <parse-function>
 
 <send-function> ::= 'send' '(' <two-function-arguments> ')'
 <parse-function> ::= 'parse' '(' <two-function-arguments> ')'
@@ -238,9 +238,8 @@ The following BNF grammar defines the syntax of individual instructions allowed 
 
 Instructions in an agent method can be of two types:
 - An assignment, which stores the result of an expression in the agent's memory using the `:=` operator
-- A function call instruction, which must be one of the supported system functions:
+- A function call instruction, which must be one of the supported instruction functions:
   - `send` - Send a message to an agent or delegate
-  - `parse` - Extract values from a string using a template
   - `build` - Construct a string using a template and values
   - `complete` - Complete template placeholders with local LLM-generated values and return a map
   - `append` - Append a value to an existing memory list
@@ -251,6 +250,11 @@ Instructions in an agent method can be of two types:
   - `exit` - Exit an existing agent
   - `deprecate` - Deprecate an existing method
   - `if` - Evaluates a condition and returns one of two values based on the result
+
+Pure function calls are expressions. `parse(...)` is the first registered pure call and can appear
+anywhere an expression is accepted, including assignment right-hand sides, function-call arguments,
+list items, map values, and selected `if(...)` branch values. A standalone `parse(...)` instruction is
+accepted for compatibility and discards the returned map.
 
 Function call instructions can optionally assign their result to a variable. For example:
 - `send(agent_id, message)` - Call the function without storing the result
@@ -266,6 +270,7 @@ Function call instructions can optionally assign their result to a variable. For
 - `success := deprecate(method_name, method_version)` - Deprecate a method and store the result
 - `if(condition, true_value, false_value)` - Evaluate without storing the result
 - `result := if(condition, true_value, false_value)` - Store the result in a memory variable
+- `memory.parsed := parse("name={name}", message.text)` - Store a pure parse expression result
 
 All function-call argument lists use the same language rule for argument boundaries:
 - Arguments are separated only by top-level commas and the closing parenthesis for the call.
@@ -277,10 +282,10 @@ All function-call argument lists use the same language rule for argument boundar
 - Function-specific arity rules still apply after this shared splitting rule. For example,
   `send(...)` requires exactly two arguments, while `complete(...)` accepts one or two arguments.
 - Function-call argument lists do not allow trailing commas before the closing parenthesis.
-- Nested call-like text can be preserved as one argument while parsing boundaries, but it is not a
-  valid expression because function calls are instructions, not expressions.
+- Registered pure function calls can be nested anywhere expressions are accepted. Effectful
+  instruction calls are not valid expressions.
 
-Standalone expressions that are not part of an assignment or one of the allowed function calls are not permitted as instructions. Function calls are also not expressions and cannot be nested inside assignment expressions or other function-call arguments.
+Standalone expressions that are not part of an assignment or one of the allowed function calls are not permitted as instructions. Registered pure calls are expressions; effectful instruction calls cannot be nested inside assignment expressions or other function-call arguments.
 
 ### Expression Syntax
 
@@ -292,6 +297,7 @@ The following BNF grammar defines the syntax of expressions allowed in AgeRun in
               | <list-literal>
               | <map-literal>
               | <memory-access>
+              | <pure-function-call>
               | <parenthesized-expression>
               | <arithmetic-expression>
               | <comparison-expression>
@@ -360,7 +366,7 @@ The expression evaluator follows these rules:
 
 ### 1. Parsing, Building, and Completing Strings
 
-- `parse(template: string, input: string) → map`: Extracts values from input based on the template. Always returns a map; if parsing fails, returns an empty map. The template parameter must be a STRING type.
+- `parse(template: data, input: data) → map`: Pure expression call that extracts values from input based on the template and returns a new map. STRING, INTEGER, and DOUBLE arguments are interpreted as strings using ordinary conversion rules. Missing values, LIST or MAP arguments, malformed templates, non-matching input, and values that cannot be interpreted as strings return an empty map. Placeholder names are ordinary result keys, so `self` and nested `self.*` fields may appear in the returned map when it is stored outside protected paths.
 - `build(template: string, values: map) → string`: Constructs a string by replacing placeholders in template with corresponding values from values. Always returns a string; placeholders without corresponding values remain unchanged. The template parameter must be a STRING type.
 - `complete(template: string[, values: map]) → map`: Uses a local CPU-only completion backend to complete placeholder variables as strings and returns a new map. When a values map is provided, placeholders with corresponding primitive values are first replaced in the template using build-style substitution, the original values are deep-copied into the result map, and only placeholders still missing from the values map are sent to the local completion backend. When no values map is provided, all placeholders are completed by the backend. The input map is never mutated.
 
@@ -430,7 +436,7 @@ Messages can be any of the supported data types:
 - **LIST**: Collections of values for batch processing.
 - **MAP**: Structured data with named fields.
 
-**Processing**: All messages, regardless of their data type, are handled by the agent's single method. At agent creation time, the agency sets `memory.self` to the agent ID; method instructions cannot assign or store any instruction result into `memory.self` or `memory.self.*`. Parse templates also cannot construct `self` or nested `self.*` result fields, and parse input cannot be `memory.self`.
+**Processing**: All messages, regardless of their data type, are handled by the agent's single method. At agent creation time, the agency sets `memory.self` to the agent ID; method instructions cannot assign or store any instruction result into `memory.self` or `memory.self.*`. Protected identity behavior is enforced by storage rules, not by parse argument names or paths.
 
 ## Agent Creation
 

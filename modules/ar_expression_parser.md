@@ -32,7 +32,7 @@ The parser maintains:
 
 The parser implements proper operator precedence (from highest to lowest):
 
-1. **Primary**: Literals, container literals, memory access, parenthesized expressions
+1. **Primary**: Literals, container literals, pure function calls, memory access, parenthesized expressions
 2. **Multiplicative**: `*`, `/`
 3. **Additive**: `+`, `-`
 4. **Relational**: `<`, `<=`, `>`, `>=`, `<>` (not equal)
@@ -41,7 +41,7 @@ The parser implements proper operator precedence (from highest to lowest):
 ### Recursive Descent Architecture
 
 Each precedence level has its own parsing function:
-- `_parse_primary()` - Literals, container literals, memory access, parentheses
+- `_parse_primary()` - Literals, container literals, pure function calls, memory access, parentheses
 - `_parse_term()` - Multiplication and division
 - `_parse_additive()` - Addition and subtraction
 - `_parse_relational()` - Comparison operators
@@ -94,6 +94,14 @@ Map literal keys are identifiers only. Quoted keys such as `{"name": "Ada"}` are
 - `(2 + 3) * 4` - Override default precedence
 - `((a + b) * c) / d` - Nested parentheses
 
+### Pure Function Calls
+
+- `parse("name={name}", message.text)` - Produces a `CALL` AST node for the registered pure call
+
+Pure function calls can appear anywhere expressions are accepted, including list items, map values,
+assignment right-hand sides, and other function-call arguments. Effectful instruction calls such as
+`send(...)` are rejected in expression position.
+
 ## Error Handling
 
 The parser reports errors through the ar_log instance provided during creation:
@@ -113,6 +121,7 @@ Common errors:
 - Invalid number formats
 - Invalid list or map literal delimiters
 - Quoted or otherwise invalid map literal keys
+- Effectful or unknown function calls in expression position
 - Missing closing parentheses
 - Unexpected characters
 - Invalid identifiers after dots
@@ -163,6 +172,7 @@ The module includes comprehensive tests (`ar_expression_parser_tests.c`) that ve
 
 - Parsing of all literal types
 - One-line list and map literals, including nested literals and trailing-comma rejection
+- Pure function call parsing and effectful call rejection
 - Memory access with various path depths
 - All binary operators with correct precedence
 - Parenthesized and nested expressions

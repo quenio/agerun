@@ -8,6 +8,7 @@
 #include "ar_data.h"
 #include "ar_event.h"
 #include "ar_expression_ast.h"
+#include "ar_expression_parser.h"
 #include "ar_frame.h"
 #include "ar_assert.h"
 
@@ -380,6 +381,121 @@ static void test_assignment_instruction_evaluator__rejects_assignment_to_memory_
     ar_evaluator_fixture__destroy(fixture);
 }
 
+static ar_expression_ast_t *_parse_assignment_test_expression(
+    ar_log_t *ref_log,
+    const char *ref_expression
+) {
+    ar_expression_parser_t *own_parser =
+        ar_expression_parser__create(ref_log, ref_expression);
+    assert(own_parser != NULL);
+    ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
+    assert(own_ast != NULL);
+    ar_expression_parser__destroy(own_parser);
+
+    // Ownership transferred to caller
+    return own_ast;
+}
+
+static void test_assignment_instruction_evaluator__stores_parse_self_fields_outside_memory_self(void) {
+    // Given parse() expressions that produce self and nested self fields
+    ar_evaluator_fixture_t *fixture =
+        ar_evaluator_fixture__create("test_assignment_stores_parse_self_fields");
+    assert(fixture != NULL);
+
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
+    assert(frame != NULL);
+    ar_expression_evaluator_t *expr_eval =
+        ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_assignment_instruction_evaluator_t *evaluator =
+        ar_assignment_instruction_evaluator__create(log, expr_eval);
+    assert(evaluator != NULL);
+
+    ar_expression_ast_t *own_self_parse_ast = _parse_assignment_test_expression(
+        log,
+        "parse(\"self={self}\", \"self=7\")"
+    );
+    ar_instruction_ast_t *self_ast = ar_evaluator_fixture__create_assignment_expr(
+        fixture, "memory.result_self", own_self_parse_ast
+    );
+    assert(self_ast != NULL);
+
+    bool result = ar_assignment_instruction_evaluator__evaluate(evaluator, frame, self_ast);
+
+    assert(result == true);
+    ar_data_t *memory = ar_evaluator_fixture__get_memory(fixture);
+    ar_data_t *ref_self_result = ar_data__get_map_data(memory, "result_self");
+    assert(ref_self_result != NULL);
+    assert(ar_data__get_type(ref_self_result) == AR_DATA_TYPE__MAP);
+    assert(ar_data__get_map_integer(ref_self_result, "self") == 7);
+
+    ar_expression_ast_t *own_nested_parse_ast = _parse_assignment_test_expression(
+        log,
+        "parse(\"nested={self.anything}\", \"nested=99\")"
+    );
+    ar_instruction_ast_t *nested_ast = ar_evaluator_fixture__create_assignment_expr(
+        fixture, "memory.result_nested", own_nested_parse_ast
+    );
+    assert(nested_ast != NULL);
+
+    result = ar_assignment_instruction_evaluator__evaluate(evaluator, frame, nested_ast);
+
+    assert(result == true);
+    ar_data_t *ref_nested_result = ar_data__get_map_data(memory, "result_nested");
+    assert(ref_nested_result != NULL);
+    assert(ar_data__get_type(ref_nested_result) == AR_DATA_TYPE__MAP);
+    assert(ar_data__get_map_integer(ref_nested_result, "self.anything") == 99);
+
+    ar_assignment_instruction_evaluator__destroy(evaluator);
+    ar_evaluator_fixture__destroy(fixture);
+}
+
+static void test_assignment_instruction_evaluator__rejects_parse_expression_memory_self_writes(void) {
+    // Given protected memory.self assignment targets and parse() expression RHS values
+    ar_evaluator_fixture_t *fixture =
+        ar_evaluator_fixture__create("test_assignment_rejects_parse_memory_self_writes");
+    assert(fixture != NULL);
+
+    ar_data_t *memory = ar_evaluator_fixture__get_memory(fixture);
+    assert(ar_data__set_map_integer(memory, "self", 7));
+
+    ar_frame_t *frame = ar_evaluator_fixture__create_frame(fixture);
+    assert(frame != NULL);
+
+    ar_log_t *log = ar_evaluator_fixture__get_log(fixture);
+    ar_expression_evaluator_t *expr_eval =
+        ar_evaluator_fixture__get_expression_evaluator(fixture);
+    ar_assignment_instruction_evaluator_t *evaluator =
+        ar_assignment_instruction_evaluator__create(log, expr_eval);
+    assert(evaluator != NULL);
+
+    const char *targets[] = {"memory.self", "memory.self.anything"};
+    for (size_t i = 0; i < sizeof(targets) / sizeof(targets[0]); i++) {
+        ar_expression_ast_t *own_parse_ast = _parse_assignment_test_expression(
+            log,
+            "parse(\"value={value}\", \"value=99\")"
+        );
+        ar_instruction_ast_t *ast = ar_evaluator_fixture__create_assignment_expr(
+            fixture, targets[i], own_parse_ast
+        );
+        assert(ast != NULL);
+
+        bool result = ar_assignment_instruction_evaluator__evaluate(evaluator, frame, ast);
+
+        assert(result == false);
+        assert(ar_data__get_map_integer(memory, "self") == 7);
+
+        ar_event_t *error_event = ar_log__get_last_error(log);
+        assert(error_event != NULL);
+        const char *error_msg = ar_event__get_message(error_event);
+        assert(error_msg != NULL);
+        assert(strstr(error_msg, "memory.self is agency-managed") != NULL);
+    }
+
+    ar_assignment_instruction_evaluator__destroy(evaluator);
+    ar_evaluator_fixture__destroy(fixture);
+}
+
 static void test_assignment_instruction_evaluator__evaluate_invalid_path(void) {
     // Given a test fixture
     ar_evaluator_fixture_t *fixture = 
@@ -618,6 +734,12 @@ int main(void) {
     
     test_assignment_instruction_evaluator__rejects_assignment_to_memory_self();
     printf("test_assignment_instruction_evaluator__rejects_assignment_to_memory_self passed!\n");
+
+    test_assignment_instruction_evaluator__stores_parse_self_fields_outside_memory_self();
+    printf("test_assignment_instruction_evaluator__stores_parse_self_fields_outside_memory_self passed!\n");
+
+    test_assignment_instruction_evaluator__rejects_parse_expression_memory_self_writes();
+    printf("test_assignment_instruction_evaluator__rejects_parse_expression_memory_self_writes passed!\n");
 
     test_assignment_instruction_evaluator__evaluate_invalid_path();
     printf("test_assignment_instruction_evaluator__evaluate_invalid_path passed!\n");

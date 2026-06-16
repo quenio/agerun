@@ -544,10 +544,10 @@ static void test_parse_instruction_evaluator__rejects_result_path_memory_self(vo
     ar_evaluator_fixture__destroy(own_fixture);
 }
 
-static void test_parse_instruction_evaluator__rejects_self_placeholder(void) {
+static void test_parse_instruction_evaluator__allows_self_placeholder_outside_memory_self(void) {
     // Given a test fixture with agency-managed memory.self
     ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create(
-        "test_parse_instruction_evaluator__rejects_self_placeholder"
+        "test_parse_instruction_evaluator__allows_self_placeholder_outside_memory_self"
     );
     assert(own_fixture != NULL);
 
@@ -570,9 +570,12 @@ static void test_parse_instruction_evaluator__rejects_self_placeholder(void) {
 
     bool result = ar_parse_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
 
-    // Then parse should reject a result field that would construct self data
-    assert(result == false);
-    assert(ar_data__get_map_data(mut_memory, "result") == NULL);
+    // Then parse should be path-neutral and store a map containing self outside memory.self
+    assert(result == true);
+    ar_data_t *ref_result = ar_data__get_map_data(mut_memory, "result");
+    assert(ref_result != NULL);
+    assert(ar_data__get_type(ref_result) == AR_DATA_TYPE__MAP);
+    assert(ar_data__get_map_integer(ref_result, "self") == 99);
     assert(ar_data__get_map_integer(mut_memory, "self") == 7);
 
     ar_instruction_ast__destroy(own_ast);
@@ -580,10 +583,10 @@ static void test_parse_instruction_evaluator__rejects_self_placeholder(void) {
     ar_evaluator_fixture__destroy(own_fixture);
 }
 
-static void test_parse_instruction_evaluator__rejects_nested_self_placeholder(void) {
+static void test_parse_instruction_evaluator__allows_nested_self_placeholder_outside_memory_self(void) {
     // Given a test fixture with agency-managed memory.self
     ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create(
-        "test_parse_instruction_evaluator__rejects_nested_self_placeholder"
+        "test_parse_instruction_evaluator__allows_nested_self_placeholder_outside_memory_self"
     );
     assert(own_fixture != NULL);
 
@@ -598,7 +601,7 @@ static void test_parse_instruction_evaluator__rejects_nested_self_placeholder(vo
     );
     assert(own_evaluator != NULL);
 
-    ar_expression_ast_t *own_input_ast = ar_expression_ast__create_memory_access("memory", NULL, 0);
+    ar_expression_ast_t *own_input_ast = ar_expression_ast__create_literal_string("99");
     assert(own_input_ast != NULL);
     ar_instruction_ast_t *own_ast = _create_parse_ast_with_input_ast(
         "memory.result", "{self.anything}", own_input_ast
@@ -606,9 +609,12 @@ static void test_parse_instruction_evaluator__rejects_nested_self_placeholder(vo
 
     bool result = ar_parse_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
 
-    // Then parse should reject a nested result field that would construct self data
-    assert(result == false);
-    assert(ar_data__get_map_data(mut_memory, "result") == NULL);
+    // Then parse should be path-neutral and store nested self data outside memory.self
+    assert(result == true);
+    ar_data_t *ref_result = ar_data__get_map_data(mut_memory, "result");
+    assert(ref_result != NULL);
+    assert(ar_data__get_type(ref_result) == AR_DATA_TYPE__MAP);
+    assert(ar_data__get_map_integer(ref_result, "self.anything") == 99);
     assert(ar_data__get_map_integer(mut_memory, "self") == 7);
 
     ar_instruction_ast__destroy(own_ast);
@@ -616,10 +622,10 @@ static void test_parse_instruction_evaluator__rejects_nested_self_placeholder(vo
     ar_evaluator_fixture__destroy(own_fixture);
 }
 
-static void test_parse_instruction_evaluator__rejects_memory_self_input(void) {
+static void test_parse_instruction_evaluator__allows_memory_self_input_by_value(void) {
     // Given a test fixture with agency-managed memory.self
     ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create(
-        "test_parse_instruction_evaluator__rejects_memory_self_input"
+        "test_parse_instruction_evaluator__allows_memory_self_input_by_value"
     );
     assert(own_fixture != NULL);
 
@@ -643,9 +649,12 @@ static void test_parse_instruction_evaluator__rejects_memory_self_input(void) {
 
     bool result = ar_parse_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
 
-    // Then parse should reject memory.self as input
-    assert(result == false);
-    assert(ar_data__get_map_data(mut_memory, "result") == NULL);
+    // Then parse should depend on the evaluated value, not on the memory.self path spelling
+    assert(result == true);
+    ar_data_t *ref_result = ar_data__get_map_data(mut_memory, "result");
+    assert(ref_result != NULL);
+    assert(ar_data__get_type(ref_result) == AR_DATA_TYPE__MAP);
+    assert(ar_data__get_map_integer(ref_result, "anything") == 7);
     assert(ar_data__get_map_integer(mut_memory, "self") == 7);
 
     ar_instruction_ast__destroy(own_ast);
@@ -692,10 +701,10 @@ static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
     
     ar_instruction_ast__destroy(ast1);
     
-    // Test case 2: Non-string template argument
+    // Test case 2: Numeric template and input arguments convert through ordinary rules
     const char *args2[] = {"123", "\"input=value\""};
     ar_instruction_ast_t *ast2 = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__PARSE, "parse", args2, 2, NULL
+        AR_INSTRUCTION_AST_TYPE__PARSE, "parse", args2, 2, "memory.numeric_template"
     );
     assert(ast2 != NULL);
     
@@ -713,14 +722,21 @@ static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
     assert(ast_set2 == true);
     
     bool result2 = ar_parse_instruction_evaluator__evaluate(evaluator, ref_frame, ast2);
-    assert(result2 == false);
+    assert(result2 == true);
+    ar_data_t *ref_numeric_template = ar_data__get_map_data(
+        ar_evaluator_fixture__get_memory(own_fixture),
+        "numeric_template"
+    );
+    assert(ref_numeric_template != NULL);
+    assert(ar_data__get_type(ref_numeric_template) == AR_DATA_TYPE__MAP);
+    assert(ar_data__get_map_data(ref_numeric_template, "value") == NULL);
     
     ar_instruction_ast__destroy(ast2);
     
-    // Test case 3: Non-string input argument
-    const char *args3[] = {"\"template={value}\"", "456"};
+    // Test case 3: Numeric input argument converts to a string and parses normally
+    const char *args3[] = {"\"{value}\"", "456"};
     ar_instruction_ast_t *ast3 = ar_instruction_ast__create_function_call(
-        AR_INSTRUCTION_AST_TYPE__PARSE, "parse", args3, 2, NULL
+        AR_INSTRUCTION_AST_TYPE__PARSE, "parse", args3, 2, "memory.numeric_input"
     );
     assert(ast3 != NULL);
     
@@ -728,7 +744,7 @@ static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
     ar_list_t *arg_asts3 = ar_list__create();
     assert(arg_asts3 != NULL);
     
-    ar_expression_ast_t *template_ast3 = ar_expression_ast__create_literal_string("template={value}");
+    ar_expression_ast_t *template_ast3 = ar_expression_ast__create_literal_string("{value}");
     ar_list__add_last(arg_asts3, template_ast3);
     
     ar_expression_ast_t *input_ast3 = ar_expression_ast__create_literal_int(456);
@@ -738,7 +754,14 @@ static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
     assert(ast_set3 == true);
     
     bool result3 = ar_parse_instruction_evaluator__evaluate(evaluator, ref_frame, ast3);
-    assert(result3 == false);
+    assert(result3 == true);
+    ar_data_t *ref_numeric_input = ar_data__get_map_data(
+        ar_evaluator_fixture__get_memory(own_fixture),
+        "numeric_input"
+    );
+    assert(ref_numeric_input != NULL);
+    assert(ar_data__get_type(ref_numeric_input) == AR_DATA_TYPE__MAP);
+    assert(ar_data__get_map_integer(ref_numeric_input, "value") == 456);
     
     ar_instruction_ast__destroy(ast3);
     
@@ -777,14 +800,14 @@ int main(void) {
     test_parse_instruction_evaluator__rejects_nested_result_path_memory_self();
     printf("test_parse_instruction_evaluator__rejects_nested_result_path_memory_self passed!\n");
 
-    test_parse_instruction_evaluator__rejects_self_placeholder();
-    printf("test_parse_instruction_evaluator__rejects_self_placeholder passed!\n");
+    test_parse_instruction_evaluator__allows_self_placeholder_outside_memory_self();
+    printf("test_parse_instruction_evaluator__allows_self_placeholder_outside_memory_self passed!\n");
 
-    test_parse_instruction_evaluator__rejects_nested_self_placeholder();
-    printf("test_parse_instruction_evaluator__rejects_nested_self_placeholder passed!\n");
+    test_parse_instruction_evaluator__allows_nested_self_placeholder_outside_memory_self();
+    printf("test_parse_instruction_evaluator__allows_nested_self_placeholder_outside_memory_self passed!\n");
 
-    test_parse_instruction_evaluator__rejects_memory_self_input();
-    printf("test_parse_instruction_evaluator__rejects_memory_self_input passed!\n");
+    test_parse_instruction_evaluator__allows_memory_self_input_by_value();
+    printf("test_parse_instruction_evaluator__allows_memory_self_input_by_value passed!\n");
     
     test_instruction_evaluator__evaluate_parse_invalid_args();
     printf("test_instruction_evaluator__evaluate_parse_invalid_args passed!\n");

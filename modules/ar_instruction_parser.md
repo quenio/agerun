@@ -54,6 +54,10 @@ expressions and returns an `AR_INSTRUCTION_AST_TYPE__APPEND` node.
 `head(...)` and `tail(...)` are routed to their specialized parsers, each of which parses one list
 expression and returns `AR_INSTRUCTION_AST_TYPE__HEAD` or `AR_INSTRUCTION_AST_TYPE__TAIL`.
 
+Assigned `parse(...)` calls, such as `memory.result := parse(template, input)`, are parsed as normal
+assignment instructions whose right-hand side is a pure function call expression. Standalone
+`parse(...)` remains accepted as a function instruction for compatibility and discards its result.
+
 ## Current implementation notes
 
 - the facade itself stays small and only performs top-level dispatch decisions
@@ -62,6 +66,8 @@ expression and returns `AR_INSTRUCTION_AST_TYPE__HEAD` or `AR_INSTRUCTION_AST_TY
   returned instruction AST
 - function-call argument boundaries and argument AST-list creation are centralized in
   `ar_function_call_parser`
+- assignment dispatch only treats a right-hand side as an instruction-result call when it starts with
+  an instruction function; registered pure calls are left for the expression parser
 - `complete(...)` parsing is intentionally kept out of the facade implementation so syntax rules for
   template placeholders remain isolated in the specialized parser module
 - `append(...)` parsing leaves target ownership and LIST validation to the evaluator so non-memory

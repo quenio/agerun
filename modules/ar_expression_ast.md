@@ -39,7 +39,8 @@ typedef enum {
     AR_EXPRESSION_AST_TYPE__LITERAL_LIST,     /* List literal (e.g., [1, 2]) */
     AR_EXPRESSION_AST_TYPE__LITERAL_MAP,      /* Map literal (e.g., {name: "Ada"}) */
     AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS,    /* Memory/message/context access */
-    AR_EXPRESSION_AST_TYPE__BINARY_OP         /* Binary operation (arithmetic or comparison) */
+    AR_EXPRESSION_AST_TYPE__BINARY_OP,        /* Binary operation (arithmetic or comparison) */
+    AR_EXPRESSION_AST_TYPE__CALL              /* Pure function call */
 } ar_expression_ast_type_t;
 ```
 
@@ -78,6 +79,7 @@ Each node type has its own creation function:
 - `ar_expression_ast__create_literal_map(ref_keys, own_values, entry_count)` - Creates map literal nodes
 - `ar_expression_ast__create_memory_access(base, path, count)` - Creates memory access nodes
 - `ar_expression_ast__create_binary_op(op, left, right)` - Creates binary operation nodes
+- `ar_expression_ast__create_function_call(name, own_args, arg_count)` - Creates pure function call nodes
 
 ### Node Inspection
 
@@ -97,6 +99,9 @@ Type-safe accessor functions for retrieving node data:
 - `ar_expression_ast__get_operator()` - Gets operator from binary nodes
 - `ar_expression_ast__get_left()` - Gets left operand from binary nodes
 - `ar_expression_ast__get_right()` - Gets right operand from binary nodes
+- `ar_expression_ast__get_function_name()` - Gets the function name from call nodes
+- `ar_expression_ast__get_function_arg_count()` - Gets the number of call arguments
+- `ar_expression_ast__get_function_arg()` - Gets a borrowed call argument AST node
 
 ### Memory Management
 
@@ -110,9 +115,10 @@ The module follows strict ownership semantics:
 2. **Binary Operations**: Take ownership of both operand nodes
 3. **List Literals**: Take ownership of every item AST node
 4. **Map Literals**: Take ownership of every value AST node and copy every key string
-5. **String Values**: The module makes copies of all string parameters
-6. **Accessor Functions**: Return borrowed references, except for `get_memory_path()` which transfers array ownership
-7. **Destruction**: Recursively frees all child nodes and owned memory
+5. **Function Calls**: Take ownership of every argument AST node and copy the function name
+6. **String Values**: The module makes copies of all string parameters
+7. **Accessor Functions**: Return borrowed references, except for `get_memory_path()` which transfers array ownership
+8. **Destruction**: Recursively frees all child nodes and owned memory
 
 ## Usage Example
 

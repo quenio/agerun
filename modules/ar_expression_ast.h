@@ -15,7 +15,8 @@ typedef enum {
     AR_EXPRESSION_AST_TYPE__LITERAL_LIST,     /* List literal (e.g., [1, 2]) */
     AR_EXPRESSION_AST_TYPE__LITERAL_MAP,      /* Map literal (e.g., {name: "Ada"}) */
     AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS,    /* Memory/message/context access (e.g., memory.x, message.content) */
-    AR_EXPRESSION_AST_TYPE__BINARY_OP         /* Binary operation (arithmetic or comparison) */
+    AR_EXPRESSION_AST_TYPE__BINARY_OP,        /* Binary operation (arithmetic or comparison) */
+    AR_EXPRESSION_AST_TYPE__CALL              /* Pure function call (e.g., parse("x={x}", input)) */
 } ar_expression_ast_type_t;
 
 /**
@@ -141,6 +142,23 @@ ar_expression_ast_t* ar_expression_ast__create_binary_op(
     ar_binary_operator_t op,
     ar_expression_ast_t *own_left,
     ar_expression_ast_t *own_right
+);
+
+/**
+ * Create a pure function call AST node.
+ *
+ * @param ref_function_name Function name (borrowed reference)
+ * @param own_args Array of argument AST nodes (ownership transferred to node)
+ * @param arg_count Number of argument AST nodes
+ * @return Newly created AST node (owned by caller), or NULL on failure
+ * @note Ownership: Returns an owned value that caller must destroy.
+ *       Takes ownership of all argument nodes and copies the function name.
+ *       The array itself remains owned by the caller.
+ */
+ar_expression_ast_t* ar_expression_ast__create_function_call(
+    const char *ref_function_name,
+    ar_expression_ast_t **own_args,
+    size_t arg_count
 );
 
 /**
@@ -302,6 +320,36 @@ const ar_expression_ast_t* ar_expression_ast__get_left(const ar_expression_ast_t
  * @note Ownership: Returns a borrowed reference. Do not free.
  */
 const ar_expression_ast_t* ar_expression_ast__get_right(const ar_expression_ast_t *ref_node);
+
+/**
+ * Get the function name from a pure function call node.
+ *
+ * @param ref_node The AST node (borrowed reference)
+ * @return The function name (borrowed reference), or NULL if not a function call
+ * @note Ownership: Returns a borrowed reference. Do not free.
+ */
+const char* ar_expression_ast__get_function_name(const ar_expression_ast_t *ref_node);
+
+/**
+ * Get the number of arguments from a pure function call node.
+ *
+ * @param ref_node The AST node (borrowed reference)
+ * @return The number of arguments, or 0 if not a function call
+ */
+size_t ar_expression_ast__get_function_arg_count(const ar_expression_ast_t *ref_node);
+
+/**
+ * Get one argument AST node from a pure function call node.
+ *
+ * @param ref_node The AST node (borrowed reference)
+ * @param index Zero-based argument index
+ * @return The argument AST node (borrowed reference), or NULL if unavailable
+ * @note Ownership: Returns a borrowed reference. Do not free.
+ */
+const ar_expression_ast_t* ar_expression_ast__get_function_arg(
+    const ar_expression_ast_t *ref_node,
+    size_t index
+);
 
 /**
  * Formats an expression AST as a human-readable path string
