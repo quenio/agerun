@@ -65,6 +65,29 @@ static ar_instruction_ast_t *_create_parse_ast_with_input_ast(
     return own_ast;
 }
 
+static ar_instruction_ast_t *_create_parse_ast_with_arg_asts(
+    const char *ref_result_path,
+    ar_expression_ast_t *own_template_ast,
+    ar_expression_ast_t *own_input_ast
+) {
+    const char *args[] = {"template", "input"};
+    ar_instruction_ast_t *own_ast = ar_instruction_ast__create_function_call(
+        AR_INSTRUCTION_AST_TYPE__PARSE, "parse", args, 2, ref_result_path
+    );
+    assert(own_ast != NULL);
+
+    ar_list_t *own_arg_asts = ar_list__create();
+    assert(own_arg_asts != NULL);
+    ar_list__add_last(own_arg_asts, own_template_ast);
+    ar_list__add_last(own_arg_asts, own_input_ast);
+
+    bool ast_set = ar_instruction_ast__set_function_arg_asts(own_ast, own_arg_asts);
+    assert(ast_set == true);
+
+    // Ownership transferred to caller
+    return own_ast;
+}
+
 static void test_parse_instruction_evaluator__evaluate_with_instance(void) {
     // Given a test fixture
     ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create(
@@ -662,6 +685,52 @@ static void test_parse_instruction_evaluator__allows_memory_self_input_by_value(
     ar_evaluator_fixture__destroy(own_fixture);
 }
 
+static void test_parse_instruction_evaluator__preserves_borrowed_frame_maps(void) {
+    // Given a test fixture whose root memory map is passed as a parse argument
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create(
+        "test_parse_instruction_evaluator__preserves_borrowed_frame_maps"
+    );
+    assert(own_fixture != NULL);
+
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval = ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+    assert(ar_data__set_map_string(mut_memory, "sentinel", "alive"));
+
+    ar_parse_instruction_evaluator_t *own_evaluator = ar_parse_instruction_evaluator__create(
+        ref_log, ref_expr_eval
+    );
+    assert(own_evaluator != NULL);
+
+    ar_instruction_ast_t *own_template_ast = _create_parse_ast_with_arg_asts(
+        "memory.template_result",
+        ar_expression_ast__create_memory_access("memory", NULL, 0),
+        ar_expression_ast__create_literal_string("ignored")
+    );
+    assert(ar_parse_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_template_ast));
+    assert(strcmp(ar_data__get_map_string(mut_memory, "sentinel"), "alive") == 0);
+    ar_data_t *ref_template_result = ar_data__get_map_data(mut_memory, "template_result");
+    assert(ref_template_result != NULL);
+    assert(ar_data__get_type(ref_template_result) == AR_DATA_TYPE__MAP);
+
+    ar_instruction_ast_t *own_input_ast = _create_parse_ast_with_arg_asts(
+        "memory.input_result",
+        ar_expression_ast__create_literal_string("{value}"),
+        ar_expression_ast__create_memory_access("memory", NULL, 0)
+    );
+    assert(ar_parse_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_input_ast));
+    assert(strcmp(ar_data__get_map_string(mut_memory, "sentinel"), "alive") == 0);
+    ar_data_t *ref_input_result = ar_data__get_map_data(mut_memory, "input_result");
+    assert(ref_input_result != NULL);
+    assert(ar_data__get_type(ref_input_result) == AR_DATA_TYPE__MAP);
+
+    ar_instruction_ast__destroy(own_template_ast);
+    ar_instruction_ast__destroy(own_input_ast);
+    ar_parse_instruction_evaluator__destroy(own_evaluator);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
 static void test_instruction_evaluator__evaluate_parse_invalid_args(void) {
     // Given a test fixture
     ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create(
@@ -808,7 +877,10 @@ int main(void) {
 
     test_parse_instruction_evaluator__allows_memory_self_input_by_value();
     printf("test_parse_instruction_evaluator__allows_memory_self_input_by_value passed!\n");
-    
+
+    test_parse_instruction_evaluator__preserves_borrowed_frame_maps();
+    printf("test_parse_instruction_evaluator__preserves_borrowed_frame_maps passed!\n");
+
     test_instruction_evaluator__evaluate_parse_invalid_args();
     printf("test_instruction_evaluator__evaluate_parse_invalid_args passed!\n");
     

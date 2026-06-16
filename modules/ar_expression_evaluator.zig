@@ -346,56 +346,6 @@ fn _evaluate_memory_access(
     return null;
 }
 
-fn _data_tree_contains(
-    ref_root: ?*const c.ar_data_t,
-    ref_value: ?*const c.ar_data_t
-) bool {
-    if (ref_root == null or ref_value == null) {
-        return false;
-    }
-
-    if (ref_root == ref_value) {
-        return true;
-    }
-
-    switch (c.ar_data__get_type(ref_root)) {
-        c.AR_DATA_TYPE__MAP => {
-            const own_keys = c.ar_data__get_map_keys(ref_root) orelse return false;
-            defer c.ar_data__destroy(own_keys);
-
-            const key_count = c.ar_data__list_count(own_keys);
-            const own_key_items = c.ar_data__list_items(own_keys) orelse return false;
-            defer ar_allocator.free(own_key_items);
-
-            var i: usize = 0;
-            while (i < key_count) : (i += 1) {
-                const ref_key_data: ?*const c.ar_data_t = @ptrCast(own_key_items[i]);
-                const ref_key = c.ar_data__get_string(ref_key_data) orelse continue;
-                const ref_child = c.ar_data__get_map_data(ref_root, ref_key);
-                if (_data_tree_contains(ref_child, ref_value)) {
-                    return true;
-                }
-            }
-        },
-        c.AR_DATA_TYPE__LIST => {
-            const item_count = c.ar_data__list_count(ref_root);
-            const own_items = c.ar_data__list_items(ref_root) orelse return false;
-            defer ar_allocator.free(own_items);
-
-            var i: usize = 0;
-            while (i < item_count) : (i += 1) {
-                const ref_child: ?*const c.ar_data_t = @ptrCast(own_items[i]);
-                if (_data_tree_contains(ref_child, ref_value)) {
-                    return true;
-                }
-            }
-        },
-        else => {},
-    }
-
-    return false;
-}
-
 fn _is_frame_reference(
     ref_frame: ?*const c.ar_frame_t,
     ref_value: ?*const c.ar_data_t
@@ -404,9 +354,9 @@ fn _is_frame_reference(
         return false;
     }
 
-    return _data_tree_contains(c.ar_frame__get_memory(ref_frame), ref_value) or
-        _data_tree_contains(c.ar_frame__get_context(ref_frame), ref_value) or
-        _data_tree_contains(c.ar_frame__get_message(ref_frame), ref_value);
+    return c.ar_data__is_owned_by(ref_value, c.ar_frame__get_memory(ref_frame)) or
+        c.ar_data__is_owned_by(ref_value, c.ar_frame__get_context(ref_frame)) or
+        c.ar_data__is_owned_by(ref_value, c.ar_frame__get_message(ref_frame));
 }
 
 fn _evaluate_parse_call(

@@ -57,11 +57,31 @@ fn _evaluateArgument(
     );
 }
 
+fn _is_owned_by_frame_root(
+    ref_frame: ?*const c.ar_frame_t,
+    ref_data: ?*const c.ar_data_t
+) bool {
+    if (ref_frame == null or ref_data == null) {
+        return false;
+    }
+
+    if (c.ar_data__is_owned_by(ref_data, c.ar_frame__get_memory(ref_frame))) {
+        return true;
+    }
+
+    if (c.ar_data__is_owned_by(ref_data, c.ar_frame__get_context(ref_frame))) {
+        return true;
+    }
+
+    return c.ar_data__is_owned_by(ref_data, c.ar_frame__get_message(ref_frame));
+}
+
 fn _destroyTemporary(
     ref_evaluator: *const ar_parse_instruction_evaluator_t,
-    mut_value: ?*c.ar_data_t
+    mut_value: ?*c.ar_data_t,
+    value_is_frame_owned: bool
 ) void {
-    if (mut_value != null) {
+    if (mut_value != null and !value_is_frame_owned) {
         c.ar_data__destroy_if_owned(mut_value, ref_evaluator);
     }
 }
@@ -125,10 +145,12 @@ export fn ar_parse_instruction_evaluator__evaluate(
     const ref_input_ast: ?*const c.ar_expression_ast_t = @ptrCast(@alignCast(own_items[1]));
 
     const template_result = _evaluateArgument(ref_evaluator.?, ref_frame, ref_template_ast);
-    defer _destroyTemporary(ref_evaluator.?, template_result);
+    const template_is_frame_owned = _is_owned_by_frame_root(ref_frame, template_result);
+    defer _destroyTemporary(ref_evaluator.?, template_result, template_is_frame_owned);
 
     const input_result = _evaluateArgument(ref_evaluator.?, ref_frame, ref_input_ast);
-    defer _destroyTemporary(ref_evaluator.?, input_result);
+    const input_is_frame_owned = _is_owned_by_frame_root(ref_frame, input_result);
+    defer _destroyTemporary(ref_evaluator.?, input_result, input_is_frame_owned);
 
     const own_result = c.ar_parse__create_result(template_result, input_result) orelse return false;
     return _storeResult(ref_evaluator.?, ref_frame, ref_ast, own_result);
