@@ -50,6 +50,11 @@ const binary_op_data_t = struct {
     own_right: ?*c.ar_expression_ast_t,
 };
 
+const function_call_data_t = struct {
+    own_function_name: ?[*:0]u8,
+    own_args: ?*c.ar_list_t,
+};
+
 // Union for node data
 const node_data_t = union {
     literal_int: literal_int_data_t,
@@ -59,6 +64,7 @@ const node_data_t = union {
     literal_map: literal_map_data_t,
     memory_access: memory_access_data_t,
     binary_op: binary_op_data_t,
+    function_call: function_call_data_t,
 };
 
 // Full AST node structure - matches C definition (type renamed to avoid Zig keyword)
@@ -378,6 +384,63 @@ export fn ar_expression_ast__create_binary_op(
     return @ptrCast(own_ast_node);
 }
 
+export fn ar_expression_ast__create_function_call(
+    ref_function_name: ?[*:0]const u8,
+    own_args: ?[*]?*c.ar_expression_ast_t,
+    arg_count: usize
+) ?*c.ar_expression_ast_t {
+    if (ref_function_name == null or (arg_count > 0 and own_args == null)) {
+        _destroy_child_nodes(own_args, arg_count);
+        return null;
+    }
+
+    for (0..arg_count) |i| {
+        if (own_args.?[i] == null) {
+            _destroy_child_nodes(own_args, arg_count);
+            return null;
+        }
+    }
+
+    const own_ast_node = ar_allocator.create(ar_expression_ast_t, "Expression AST node (call)");
+    if (own_ast_node == null) {
+        _destroy_child_nodes(own_args, arg_count);
+        return null;
+    }
+
+    const own_name_copy = ar_allocator.dupe(ref_function_name, "Expression AST function name");
+    if (own_name_copy == null) {
+        ar_allocator.free(own_ast_node);
+        _destroy_child_nodes(own_args, arg_count);
+        return null;
+    }
+
+    const own_args_list = c.ar_list__create();
+    if (own_args_list == null) {
+        ar_allocator.free(own_name_copy);
+        ar_allocator.free(own_ast_node);
+        _destroy_child_nodes(own_args, arg_count);
+        return null;
+    }
+
+    for (0..arg_count) |i| {
+        if (!c.ar_list__add_last(own_args_list, own_args.?[i])) {
+            _destroy_literal_list_items(own_args_list);
+            _destroy_child_nodes_from(own_args, arg_count, i);
+            ar_allocator.free(own_name_copy);
+            ar_allocator.free(own_ast_node);
+            return null;
+        }
+    }
+
+    own_ast_node.?.node_type = c.AR_EXPRESSION_AST_TYPE__CALL;
+    own_ast_node.?.data = node_data_t{ .function_call = function_call_data_t{
+        .own_function_name = own_name_copy,
+        .own_args = own_args_list,
+    } };
+
+    return @ptrCast(own_ast_node);
+}
+
 // Destruction function
 export fn ar_expression_ast__destroy(own_node: ?*c.ar_expression_ast_t) void {
     if (own_node == null) {
@@ -414,6 +477,12 @@ export fn ar_expression_ast__destroy(own_node: ?*c.ar_expression_ast_t) void {
         c.AR_EXPRESSION_AST_TYPE__BINARY_OP => {
             ar_expression_ast__destroy(ref_ast_node.data.binary_op.own_left);
             ar_expression_ast__destroy(ref_ast_node.data.binary_op.own_right);
+        },
+        c.AR_EXPRESSION_AST_TYPE__CALL => {
+            if (ref_ast_node.data.function_call.own_function_name != null) {
+                ar_allocator.free(ref_ast_node.data.function_call.own_function_name);
+            }
+            _destroy_literal_list_items(ref_ast_node.data.function_call.own_args);
         },
         else => {
             // Literal int and double have no owned data to clean up
@@ -710,6 +779,66 @@ export fn ar_expression_ast__get_right(ref_node: ?*const c.ar_expression_ast_t) 
     return @ptrCast(ref_ast_node.data.binary_op.own_right);
 }
 
+export fn ar_expression_ast__get_function_name(ref_node: ?*const c.ar_expression_ast_t) ?[*:0]const u8 {
+    if (ref_node == null) {
+        return null;
+    }
+    const ref_ast_node: *const ar_expression_ast_t = @ptrCast(@alignCast(ref_node));
+    if (ref_ast_node.node_type != c.AR_EXPRESSION_AST_TYPE__CALL) {
+        return null;
+    }
+
+    return @ptrCast(ref_ast_node.data.function_call.own_function_name);
+}
+
+export fn ar_expression_ast__get_function_arg_count(ref_node: ?*const c.ar_expression_ast_t) usize {
+    if (ref_node == null) {
+        return 0;
+    }
+    const ref_ast_node: *const ar_expression_ast_t = @ptrCast(@alignCast(ref_node));
+    if (ref_ast_node.node_type != c.AR_EXPRESSION_AST_TYPE__CALL or
+        ref_ast_node.data.function_call.own_args == null) {
+        return 0;
+    }
+
+    return c.ar_list__count(ref_ast_node.data.function_call.own_args);
+}
+
+export fn ar_expression_ast__get_function_arg(
+    ref_node: ?*const c.ar_expression_ast_t,
+    index: usize
+) ?*const c.ar_expression_ast_t {
+    if (ref_node == null) {
+        return null;
+    }
+    const ref_ast_node: *const ar_expression_ast_t = @ptrCast(@alignCast(ref_node));
+    if (ref_ast_node.node_type != c.AR_EXPRESSION_AST_TYPE__CALL) {
+        return null;
+    }
+
+    const ref_args_list = ref_ast_node.data.function_call.own_args;
+    if (ref_args_list == null) {
+        return null;
+    }
+
+    const count = c.ar_list__count(ref_args_list);
+    if (index >= count) {
+        return null;
+    }
+
+    if (index == 0) {
+        return @ptrCast(c.ar_list__first(ref_args_list));
+    }
+
+    if (index == count - 1) {
+        return @ptrCast(c.ar_list__last(ref_args_list));
+    }
+
+    const own_items = c.ar_list__items(ref_args_list) orelse return null;
+    defer ar_allocator.free(own_items);
+    return @ptrCast(own_items[index]);
+}
+
 /// Formats an expression AST as a human-readable path string
 pub export fn ar_expression_ast__format_path(ref_ast: ?*const c.ar_expression_ast_t) [*c]u8 {
     if (ref_ast == null) {
@@ -778,6 +907,13 @@ pub export fn ar_expression_ast__format_path(ref_ast: ?*const c.ar_expression_as
         },
         c.AR_EXPRESSION_AST_TYPE__BINARY_OP => {
             return ar_allocator.dupe("<expression>", "Expression path for binary op");
+        },
+        c.AR_EXPRESSION_AST_TYPE__CALL => {
+            var buffer: [256]u8 = undefined;
+            const function_name = ref_ast_node.data.function_call.own_function_name orelse "call";
+            _ = std.fmt.bufPrintZ(&buffer, "{s}(...)", .{function_name}) catch
+                return ar_allocator.dupe("<call>", "Expression path for call");
+            return ar_allocator.dupe(&buffer, "Expression path for call");
         },
         c.AR_EXPRESSION_AST_TYPE__LITERAL_LIST, c.AR_EXPRESSION_AST_TYPE__LITERAL_MAP => {
             return ar_allocator.dupe("<expression>", "Expression path for literal container");

@@ -648,7 +648,7 @@ static void test_parse_deprecate(void) {
 }
 
 static void test_parse_parse_function(void) {
-    printf("Testing parse function parsing...\n");
+    printf("Testing parse function expression assignment parsing...\n");
     
     // Given a parse function call
     const char *instruction = "memory.parsed := parse(\"name={name}\", \"name=John\")";
@@ -659,9 +659,11 @@ static void test_parse_parse_function(void) {
     
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
     
-    // Then it should parse as a parse function
+    // Then it should parse as an ordinary assignment whose RHS is a pure expression
     assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__PARSE);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT);
+    assert(strcmp(ar_instruction_ast__get_assignment_path(own_ast), "memory.parsed") == 0);
+    assert(ar_instruction_ast__get_assignment_expression_ast(own_ast) != NULL);
     
     ar_instruction_ast__destroy(own_ast);
     ar_instruction_parser__destroy(own_parser);

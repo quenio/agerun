@@ -1,4 +1,5 @@
 #include "ar_expression_parser.h"
+#include "ar_function_call_parser.h"
 #include "ar_heap.h"
 #include "ar_string.h"
 #include "ar_list.h"
@@ -28,6 +29,7 @@ static void _set_error(ar_expression_parser_t *mut_parser, const char *ref_messa
 static ar_expression_ast_t* _parse_primary(ar_expression_parser_t *mut_parser);
 static ar_expression_ast_t* _parse_list_literal(ar_expression_parser_t *mut_parser);
 static ar_expression_ast_t* _parse_map_literal(ar_expression_parser_t *mut_parser);
+static ar_expression_ast_t* _parse_function_call(ar_expression_parser_t *mut_parser);
 static ar_expression_ast_t* _parse_term(ar_expression_parser_t *mut_parser);
 static ar_expression_ast_t* _parse_additive(ar_expression_parser_t *mut_parser);
 static ar_expression_ast_t* _parse_relational(ar_expression_parser_t *mut_parser);
@@ -194,6 +196,63 @@ static void _cleanup_string_list(ar_list_t *own_list) {
     ar_list__destroy(own_list);
 }
 
+typedef struct {
+    const char *name;
+    size_t arg_count;
+} ar_pure_function_spec_t;
+
+static const ar_pure_function_spec_t PURE_FUNCTIONS[] = {
+    {"parse", 2}
+};
+
+static bool _is_identifier_start(char c) {
+    return isalpha((unsigned char)c) || c == '_';
+}
+
+static bool _is_identifier_part(char c) {
+    return isalnum((unsigned char)c) || c == '_';
+}
+
+static bool _get_pure_function_arg_count(const char *ref_function_name, size_t *out_arg_count) {
+    if (!ref_function_name || !out_arg_count) {
+        return false;
+    }
+
+    for (size_t i = 0; i < sizeof(PURE_FUNCTIONS) / sizeof(PURE_FUNCTIONS[0]); i++) {
+        if (strcmp(ref_function_name, PURE_FUNCTIONS[i].name) == 0) {
+            *out_arg_count = PURE_FUNCTIONS[i].arg_count;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static bool _looks_like_function_call(const ar_expression_parser_t *ref_parser) {
+    if (!ref_parser || !ref_parser->own_expression) {
+        return false;
+    }
+
+    size_t pos = ref_parser->position;
+    while (isspace((unsigned char)ref_parser->own_expression[pos])) {
+        pos++;
+    }
+
+    if (!_is_identifier_start(ref_parser->own_expression[pos])) {
+        return false;
+    }
+
+    while (_is_identifier_part(ref_parser->own_expression[pos])) {
+        pos++;
+    }
+
+    while (isspace((unsigned char)ref_parser->own_expression[pos])) {
+        pos++;
+    }
+
+    return ref_parser->own_expression[pos] == '(';
+}
+
 static char* _parse_identifier_copy(ar_expression_parser_t *mut_parser) {
     _skip_whitespace(mut_parser);
 
@@ -218,6 +277,41 @@ static char* _parse_identifier_copy(ar_expression_parser_t *mut_parser) {
     own_identifier[length] = '\0';
 
     return own_identifier;
+}
+
+static ar_expression_ast_t* _create_function_call_node(
+    ar_expression_parser_t *mut_parser,
+    const char *ref_function_name,
+    ar_list_t *own_arg_asts
+) {
+    size_t arg_count = ar_list__count(own_arg_asts);
+    void **own_items = NULL;
+
+    if (arg_count > 0) {
+        own_items = ar_list__items(own_arg_asts);
+        if (!own_items) {
+            ar_function_call_parser__destroy_arg_asts(own_arg_asts);
+            _set_error(mut_parser, "Failed to get function call arguments");
+            return NULL;
+        }
+    }
+
+    ar_expression_ast_t *own_node = ar_expression_ast__create_function_call(
+        ref_function_name,
+        (ar_expression_ast_t**)own_items,
+        arg_count
+    );
+
+    if (own_items) {
+        AR__HEAP__FREE(own_items);
+    }
+    ar_list__destroy(own_arg_asts);
+
+    if (!own_node) {
+        _set_error(mut_parser, "Failed to create function call AST node");
+    }
+
+    return own_node;
 }
 
 static ar_expression_ast_t* _create_list_literal_node(
@@ -603,6 +697,68 @@ static ar_expression_ast_t* _parse_map_literal(ar_expression_parser_t *mut_parse
     }
 }
 
+static ar_expression_ast_t* _parse_function_call(ar_expression_parser_t *mut_parser) {
+    if (!mut_parser || !_looks_like_function_call(mut_parser)) {
+        return NULL;
+    }
+
+    const size_t call_start = mut_parser->position;
+    char *own_function_name = _parse_identifier_copy(mut_parser);
+    if (!own_function_name) {
+        return NULL;
+    }
+
+    _skip_whitespace(mut_parser);
+    if (!_consume_char(mut_parser, '(')) {
+        AR__HEAP__FREE(own_function_name);
+        mut_parser->position = call_start;
+        return NULL;
+    }
+
+    size_t expected_arg_count = 0;
+    if (!_get_pure_function_arg_count(own_function_name, &expected_arg_count)) {
+        AR__HEAP__FREE(own_function_name);
+        mut_parser->position = call_start;
+        _set_error(mut_parser, "Function call is not a pure expression");
+        return NULL;
+    }
+
+    char **own_args = NULL;
+    size_t arg_count = 0;
+    if (!ar_function_call_parser__parse_exact(
+            mut_parser->ref_log,
+            mut_parser->own_expression,
+            &mut_parser->position,
+            &own_args,
+            &arg_count,
+            expected_arg_count)) {
+        AR__HEAP__FREE(own_function_name);
+        return NULL;
+    }
+
+    mut_parser->position++;
+
+    ar_list_t *own_arg_asts = ar_function_call_parser__parse_arg_asts(
+        mut_parser->ref_log,
+        own_args,
+        arg_count,
+        call_start
+    );
+    ar_function_call_parser__destroy_args(own_args, arg_count);
+    if (!own_arg_asts) {
+        AR__HEAP__FREE(own_function_name);
+        return NULL;
+    }
+
+    ar_expression_ast_t *own_node = _create_function_call_node(
+        mut_parser,
+        own_function_name,
+        own_arg_asts
+    );
+    AR__HEAP__FREE(own_function_name);
+    return own_node;
+}
+
 /**
  * Parse a memory access expression.
  */
@@ -781,6 +937,10 @@ static ar_expression_ast_t* _parse_primary(ar_expression_parser_t *mut_parser) {
 
     if (_peek_char(mut_parser, '{')) {
         return _parse_map_literal(mut_parser);
+    }
+
+    if (_looks_like_function_call(mut_parser)) {
+        return _parse_function_call(mut_parser);
     }
     
     // Try memory access first

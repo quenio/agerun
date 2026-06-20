@@ -58,8 +58,9 @@ Key features:
 1. **Template Patterns**: Supports templates with `{name}` placeholders
 2. **Value Extraction**: Extracts substrings matching placeholder positions
 3. **Multiple Placeholders**: Can extract multiple values from one string
-4. **Result Storage**: Stores extracted values as a map in memory
-5. **Protected Identity**: Rejects result paths at agency-managed `memory.self`, rejects `{self}` and `{self.*}` placeholders, and rejects `memory.self` as parse input
+4. **Shared Parse Semantics**: Delegates value-level parsing to `ar_parse`
+5. **Result Storage**: Stores extracted values as a map in memory
+6. **Protected Identity**: Rejects result paths at agency-managed `memory.self`
 
 ### Template Syntax
 
@@ -84,26 +85,21 @@ The module follows strict memory ownership rules:
 
 - `ar_log`: For centralized error reporting
 - `ar_expression_evaluator`: For evaluating expressions
-- `ar_expression_parser`: For parsing expression strings
 - `ar_expression_ast`: For expression AST nodes
 - `ar_instruction_ast`: For accessing instruction AST structure
-- `ar_instruction`: For parse operation implementation
+- `ar_parse`: For the shared pure parse operation
 - `ar_data`: For data manipulation
-- `ar_string`: For string operations
-- `ar_heap`: For memory tracking
 
 ## Implementation Details
 
 The module:
-1. Evaluates template and input string expressions
-2. Validates both are strings
-3. Performs pattern matching to extract values based on {variable} placeholders
-4. Automatically detects types (integer, double, string) for extracted values
-5. Rejects result paths that would overwrite agency-managed `memory.self`
-6. Rejects templates that would construct `self` or nested `self.*` result fields
-7. Rejects `memory.self` as parse input
-8. Stores resulting map in memory at specified path
-9. Handles all error cases with proper cleanup using Zig's defer
+1. Evaluates template and input expressions using ordinary expression semantics
+2. Passes the resulting values to `ar_parse__create_result()`
+3. Receives a new result map, including an empty map for malformed templates, non-matching input,
+   missing values, or values that cannot reasonably be interpreted as strings
+4. Rejects result paths that would overwrite agency-managed `memory.self`
+5. Stores the resulting map in memory at the specified path
+6. Handles all error cases with proper cleanup using Zig's defer
 
 ## Usage Example
 
@@ -144,7 +140,9 @@ The module includes comprehensive tests covering:
 - Multiple placeholder extraction
 - Templates with literal text
 - Edge cases (empty strings, no placeholders)
-- Invalid arguments handling (errors reported through log)
+- Invalid arguments producing empty maps
+- Path-neutral `self` and `memory.self` argument handling
+- Protected `memory.self` result-path rejection
 - Memory leak verification
 
 All tests pass with zero memory leaks. Errors are now reported through the centralized logging system rather than stored internally.

@@ -76,6 +76,12 @@ This document tracks pending tasks and improvements for the AgeRun project.
 
 ## Recent Completions
 
+- [x] Expression parser non-pure call error preservation: Stopped `_parse_primary()` from
+  falling through into memory/literal parsing after rejecting function-call-shaped expressions, so
+  `send(...)` in expression position now preserves the original "not a pure expression" error
+  instead of logging a misleading fallback literal error; strengthened the parser regressions and
+  refreshed the matching log whitelist entries (Completed 2026-06-16)
+
 - [x] Agent Store Load Implementation: Full YAML-based persistence; 17 tests passing; zero memory leaks (Completed 2025-10-07)
 
 - [x] Parse and Build Functions: Fixed functions; 29 tests passing (Completed 2025-06-12)

@@ -295,6 +295,87 @@ static void test_cascading_null_nested_expressions(void) {
     ar_log__destroy(log);
 }
 
+static void test_parse_pure_function_call_expression(void) {
+    printf("Testing pure function call expression parsing...\n");
+
+    // Given a pure parse() call in expression position
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    ar_expression_parser_t *parser = ar_expression_parser__create(
+        log,
+        "parse(\"name={name}\", \"name=Ada\")"
+    );
+    assert(parser != NULL);
+
+    // When parsing it as an expression
+    ar_expression_ast_t *ast = ar_expression_parser__parse_expression(parser);
+
+    // Then the expression parser should accept the pure call
+    assert(ast != NULL);
+    assert(ar_expression_ast__get_type(ast) == AR_EXPRESSION_AST_TYPE__CALL);
+    assert(strcmp(ar_expression_ast__get_function_name(ast), "parse") == 0);
+    assert(ar_expression_ast__get_function_arg_count(ast) == 2);
+    assert(ar_log__get_last_error_message(log) == NULL);
+
+    ar_expression_ast__destroy(ast);
+    ar_expression_parser__destroy(parser);
+    ar_log__destroy(log);
+}
+
+static void test_reject_effectful_function_call_expression(void) {
+    printf("Testing effectful function call expression rejection...\n");
+
+    // Given an effectful send() call in expression position
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    ar_expression_parser_t *parser = ar_expression_parser__create(
+        log,
+        "send(0, \"hello\")"
+    );
+    assert(parser != NULL);
+
+    // When parsing it as an expression
+    ar_expression_ast_t *ast = ar_expression_parser__parse_expression(parser);
+
+    // Then the expression parser should keep effectful calls out of expressions
+    assert(ast == NULL);
+    const char *last_error = ar_log__get_last_error_message(log);
+    assert(last_error != NULL);
+    assert(strcmp(last_error, "Function call is not a pure expression") == 0);
+    assert(ar_log__get_last_error_position(log) == 0);
+    assert(ar_expression_parser__get_position(parser) == 0);
+
+    ar_expression_parser__destroy(parser);
+    ar_log__destroy(log);
+}
+
+static void test_reject_effectful_function_call_in_literal_restores_position(void) {
+    printf("Testing effectful function call rejection restores literal item position...\n");
+
+    // Given an effectful send() call where a list item expression is expected
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    ar_expression_parser_t *parser = ar_expression_parser__create(
+        log,
+        "[send(0, \"hello\")]"
+    );
+    assert(parser != NULL);
+
+    // When parsing the list expression
+    ar_expression_ast_t *ast = ar_expression_parser__parse_expression(parser);
+
+    // Then the rejected function call should leave the item parser at the call boundary
+    assert(ast == NULL);
+    const char *last_error = ar_log__get_last_error_message(log);
+    assert(last_error != NULL);
+    assert(strcmp(last_error, "Function call is not a pure expression") == 0);
+    assert(ar_log__get_last_error_position(log) == 1);
+    assert(ar_expression_parser__get_position(parser) == 1);
+
+    ar_expression_parser__destroy(parser);
+    ar_log__destroy(log);
+}
+
 static void test_parse_integer_literal(void) {
     printf("Testing integer literal parsing...\n");
     ar_log_t *log = ar_log__create();
@@ -914,6 +995,9 @@ int main(void) {
     test_cascading_null_primary_expression();
     test_cascading_null_binary_operations();
     test_cascading_null_nested_expressions();
+    test_parse_pure_function_call_expression();
+    test_reject_effectful_function_call_expression();
+    test_reject_effectful_function_call_in_literal_restores_position();
     test_parse_integer_literal();
     test_parse_negative_integer();
     test_parse_double_literal();

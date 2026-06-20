@@ -441,10 +441,10 @@ interleave with already queued messages but are not re-entrant
 - **Validate documentation**: Run `make check-docs` before committing
 
 **Method Language Rules**:
-- Expressions: literals, memory access, arithmetic
-- Instructions: assignments, function calls
-- Function calls cannot be nested
-- `if()` cannot be nested
+- Expressions: literals, memory/message/context access, one-line containers, arithmetic, pure calls
+- Instructions: assignments, effectful function calls
+- Pure function calls such as `parse(...)` can be nested
+- Effectful function calls cannot be nested
 - `send(0, message)` is a no-op returning true ([details](kb/no-op-semantics-pattern.md))
 
 ### 8. Development Practices
@@ -671,12 +671,12 @@ Never compile directly with gcc or run binaries directly ([details](kb/make-only
 - No null type - use integer 0
 - All parameters required
 - Version strings explicit (e.g., "1.0.0")
-- **No map literals** - `{}` syntax is not supported in AgeRun expressions
+- **Map literals** - one-line `{}` map literals are supported in AgeRun expressions
 - Agent ID 0 indicates failure
 - Always process messages after sending to prevent memory leaks
 - Message processing loop required for complete execution ([details](kb/message-processing-loop-pattern.md))
 - All messages flow through system layer ([details](kb/system-message-flow-architecture.md))
-- **Function calls are NOT expressions** - cannot nest in other calls ([details](kb/agerun-method-language-nesting-constraint.md))
+- **Pure function calls are expressions** - registered pure calls such as `parse(...)` can nest; effectful calls remain instructions ([details](kb/agerun-method-language-nesting-constraint.md))
 - **Send with memory references not supported** - send() needs ownership of message
 - **Message accessor** - `message.field` returns references like memory/context ([details](kb/expression-evaluator-accessor-extension.md))
 - **Language constraints** - No type checking, if() returns values ([details](kb/agerun-language-constraint-workarounds.md))

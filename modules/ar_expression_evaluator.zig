@@ -1,6 +1,7 @@
 const std = @import("std");
 const c = @cImport({
     @cInclude("ar_expression_ast.h");
+    @cInclude("ar_parse.h");
     @cInclude("ar_data.h");
     @cInclude("ar_log.h");
     @cInclude("ar_frame.h");
@@ -345,6 +346,77 @@ fn _evaluate_memory_access(
     return null;
 }
 
+fn _is_frame_reference(
+    ref_frame: ?*const c.ar_frame_t,
+    ref_value: ?*const c.ar_data_t
+) bool {
+    if (ref_frame == null or ref_value == null) {
+        return false;
+    }
+
+    return c.ar_data__is_owned_by(ref_value, c.ar_frame__get_memory(ref_frame)) or
+        c.ar_data__is_owned_by(ref_value, c.ar_frame__get_context(ref_frame)) or
+        c.ar_data__is_owned_by(ref_value, c.ar_frame__get_message(ref_frame));
+}
+
+fn _evaluate_parse_call(
+    ref_log: ?*c.ar_log_t,
+    ref_frame: ?*const c.ar_frame_t,
+    ref_node: ?*const c.ar_expression_ast_t
+) ?*c.ar_data_t {
+    if (c.ar_expression_ast__get_function_arg_count(ref_node) != 2) {
+        return c.ar_data__create_map();
+    }
+
+    const ref_template_ast = c.ar_expression_ast__get_function_arg(ref_node, 0);
+    const ref_input_ast = c.ar_expression_ast__get_function_arg(ref_node, 1);
+
+    const template_result = if (ref_template_ast != null)
+        _evaluate_expression(ref_log, ref_frame, ref_template_ast)
+    else
+        null;
+    defer if (template_result != null) c.ar_data__destroy_if_owned(template_result, ref_frame);
+
+    const input_result = if (ref_input_ast != null)
+        _evaluate_expression(ref_log, ref_frame, ref_input_ast)
+    else
+        null;
+    defer if (input_result != null) c.ar_data__destroy_if_owned(input_result, ref_frame);
+
+    const own_result = c.ar_parse__create_result(template_result, input_result);
+    if (own_result == null) {
+        c.ar_log__error(ref_log, "evaluate_function_call: Failed to create parse result");
+    }
+    return own_result;
+}
+
+fn _evaluate_function_call(
+    ref_log: ?*c.ar_log_t,
+    ref_frame: ?*const c.ar_frame_t,
+    ref_node: ?*const c.ar_expression_ast_t
+) ?*c.ar_data_t {
+    if (ref_node == null) {
+        c.ar_log__error(ref_log, "evaluate_function_call: NULL node");
+        return null;
+    }
+
+    if (c.ar_expression_ast__get_type(ref_node) != c.AR_EXPRESSION_AST_TYPE__CALL) {
+        return null;
+    }
+
+    const function_name = c.ar_expression_ast__get_function_name(ref_node) orelse {
+        c.ar_log__error(ref_log, "evaluate_function_call: Missing function name");
+        return null;
+    };
+
+    if (c.strcmp(function_name, "parse") == 0) {
+        return _evaluate_parse_call(ref_log, ref_frame, ref_node);
+    }
+
+    c.ar_log__error(ref_log, "evaluate_function_call: Unknown pure function");
+    return null;
+}
+
 
 /// Helper function to evaluate any expression AST node
 /// This is used internally by binary operations to evaluate operands
@@ -374,22 +446,24 @@ fn _evaluate_expression(
             return _evaluate_literal_map(ref_log, ref_frame, ref_node);
         },
         c.AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS => {
-            // Memory access returns a reference, use claim_or_copy for consistent ownership
+            // Memory access returns frame references. Internal callers need independent values.
             const ref_value = _evaluate_memory_access(ref_log, ref_frame, ref_node) orelse return null;
-            
-            // Use claim_or_copy to handle ownership properly for all types
-            const own_value = c.ar_data__claim_or_copy(ref_value, ref_frame);
+
+            if (!_is_frame_reference(ref_frame, ref_value)) {
+                return ref_value;
+            }
+
+            const own_value = c.ar_data__deep_copy(ref_value);
             if (own_value == null) {
                 c.ar_log__error(ref_log, "_evaluate_expression: Cannot copy value");
-            }
-            // Debug: Check if we got the same pointer or a copy
-            if (ref_value == own_value and c.ar_data__get_type(ref_value) == c.AR_DATA_TYPE__MAP) {
-                std.debug.print("DEBUG [EVALUATE_EXPR]: Claimed ownership of MAP at {*}\n", .{ref_value});
             }
             return own_value;
         },
         c.AR_EXPRESSION_AST_TYPE__BINARY_OP => {
             return _evaluate_binary_op(ref_log, ref_frame, ref_node);
+        },
+        c.AR_EXPRESSION_AST_TYPE__CALL => {
+            return _evaluate_function_call(ref_log, ref_frame, ref_node);
         },
         else => {
             c.ar_log__error(ref_log, "_evaluate_expression: Unknown expression type");
@@ -433,6 +507,9 @@ fn _evaluate(
         },
         c.AR_EXPRESSION_AST_TYPE__BINARY_OP => {
             return _evaluate_binary_op(ref_log, ref_frame, ref_ast);
+        },
+        c.AR_EXPRESSION_AST_TYPE__CALL => {
+            return _evaluate_function_call(ref_log, ref_frame, ref_ast);
         },
         else => {
             c.ar_log__error(ref_log, "evaluate: Unknown expression type");

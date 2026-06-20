@@ -478,8 +478,9 @@ jobs:
             denied tool attempts fail this check. Single cd /tmp && gh ...
             | head ... commands, and their split cd /tmp and short head
             subcommands, are allowed only for read-only PR metadata or GET
-            comment/review output. If a fact cannot be inspected with the
-            allowed tools,
+            comment/review output. Do not redirect gh pr diff to scratch files
+            or run wc to count it; inspect smaller direct diff sections
+            instead. If a fact cannot be inspected with the allowed tools,
             continue without that optional check.
             Report only high-confidence bugs, workflow/configuration failures,
             security problems, or clear repository-instruction violations.

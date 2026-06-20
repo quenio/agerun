@@ -4,6 +4,7 @@
 #include <string.h>
 #include "ar_build_instruction_evaluator.h"
 #include "ar_expression_evaluator.h"
+#include "ar_expression_parser.h"
 #include "ar_instruction_ast.h"
 #include "ar_expression_ast.h"
 #include "ar_data.h"
@@ -211,6 +212,63 @@ static void test_build_instruction_evaluator__evaluate_simple(void) {
     assert(strcmp(ar_data__get_string(result_value), "Hello Alice!") == 0);
     
     // Cleanup
+    ar_instruction_ast__destroy(ast);
+    ar_build_instruction_evaluator__destroy(evaluator);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_build_instruction_evaluator__accepts_parse_expression_argument(void) {
+    // Given a build instruction whose values argument is a pure parse() expression
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_build_accepts_parse_expression_argument");
+    assert(own_fixture != NULL);
+
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval =
+        ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+
+    ar_build_instruction_evaluator_t *evaluator =
+        ar_build_instruction_evaluator__create(ref_log, ref_expr_eval);
+    assert(evaluator != NULL);
+
+    const char *args[] = {
+        "\"Hello {name}!\"",
+        "parse(\"name={name}\", \"name=Ada\")"
+    };
+    ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
+        AR_INSTRUCTION_AST_TYPE__BUILD, "build", args, 2, "memory.result"
+    );
+    assert(ast != NULL);
+
+    ar_list_t *arg_asts = ar_list__create();
+    assert(arg_asts != NULL);
+
+    ar_expression_ast_t *template_ast =
+        ar_expression_ast__create_literal_string("Hello {name}!");
+    assert(template_ast != NULL);
+    assert(ar_list__add_last(arg_asts, template_ast));
+
+    ar_expression_parser_t *own_parser =
+        ar_expression_parser__create(ref_log, "parse(\"name={name}\", \"name=Ada\")");
+    assert(own_parser != NULL);
+    ar_expression_ast_t *values_ast = ar_expression_parser__parse_expression(own_parser);
+    assert(values_ast != NULL);
+    ar_expression_parser__destroy(own_parser);
+    assert(ar_list__add_last(arg_asts, values_ast));
+
+    assert(ar_instruction_ast__set_function_arg_asts(ast, arg_asts));
+
+    // When evaluating the build instruction
+    bool result = ar_build_instruction_evaluator__evaluate(evaluator, ref_frame, ast);
+
+    // Then the parse result should be usable as the build values map
+    assert(result == true);
+    const char *result_value = ar_data__get_map_string(mut_memory, "result");
+    assert(result_value != NULL);
+    assert(strcmp(result_value, "Hello Ada!") == 0);
+
     ar_instruction_ast__destroy(ast);
     ar_build_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(own_fixture);
@@ -510,6 +568,9 @@ int main(void) {
     
     test_build_instruction_evaluator__evaluate_simple();
     printf("test_build_instruction_evaluator__evaluate_simple passed!\n");
+
+    test_build_instruction_evaluator__accepts_parse_expression_argument();
+    printf("test_build_instruction_evaluator__accepts_parse_expression_argument passed!\n");
     
     test_build_instruction_evaluator__evaluate_multiple_variables();
     printf("test_build_instruction_evaluator__evaluate_multiple_variables passed!\n");
@@ -527,4 +588,3 @@ int main(void) {
     
     return 0;
 }
-
