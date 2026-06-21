@@ -98,6 +98,8 @@ Map literal keys are identifiers only. Quoted keys such as `{"name": "Ada"}` are
 
 - `parse("name={name}", message.text)` - Produces a `CALL` AST node for template parsing
 - `build("Hello {name}", {name: "Ada"})` - Produces a `CALL` AST node for template building
+- `head(memory.items)` - Produces a `CALL` AST node for list head extraction
+- `tail(memory.items)` - Produces a `CALL` AST node for list tail extraction
 
 Pure function calls can appear anywhere expressions are accepted, including list items, map values,
 assignment right-hand sides, and other function-call arguments. Effectful instruction calls such as

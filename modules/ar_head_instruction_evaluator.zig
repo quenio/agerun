@@ -1,5 +1,6 @@
 const c = @cImport({
     @cInclude("ar_head_instruction_evaluator.h");
+    @cInclude("ar_head.h");
     @cInclude("ar_data.h");
     @cInclude("ar_expression_ast.h");
     @cInclude("ar_expression_evaluator.h");
@@ -74,15 +75,6 @@ fn _store_owned_result(
     return true;
 }
 
-fn _store_zero_result(
-    ref_evaluator: *const ar_head_instruction_evaluator_t,
-    ref_frame: ?*const c.ar_frame_t,
-    ref_ast: ?*const c.ar_instruction_ast_t
-) bool {
-    const own_result = c.ar_data__create_integer(0) orelse return false;
-    return _store_owned_result(ref_evaluator, ref_frame, ref_ast, own_result);
-}
-
 fn _is_owned_by_frame_root(ref_frame: ?*const c.ar_frame_t, ref_data: ?*const c.ar_data_t) bool {
     if (ref_frame == null or ref_data == null) {
         return false;
@@ -144,21 +136,13 @@ pub export fn ar_head_instruction_evaluator__evaluate(
         ref_frame,
         ref_list_ast
     ) orelse {
-        return _store_zero_result(ref_evaluator.?, ref_frame, ref_ast);
+        const own_result = c.ar_head__create_result(null) orelse return false;
+        return _store_owned_result(ref_evaluator.?, ref_frame, ref_ast, own_result);
     };
     const source_is_frame_owned = _is_owned_by_frame_root(ref_frame, mut_source);
     defer _destroy_source_if_temporary(ref_evaluator.?, mut_source, source_is_frame_owned);
 
-    if (c.ar_data__get_type(mut_source) != c.AR_DATA_TYPE__LIST or c.ar_data__list_count(mut_source) == 0) {
-        return _store_zero_result(ref_evaluator.?, ref_frame, ref_ast);
-    }
-
-    const ref_first = c.ar_data__list_first(mut_source) orelse {
-        return _store_zero_result(ref_evaluator.?, ref_frame, ref_ast);
-    };
-
-    const own_result = c.ar_data__claim_or_copy(ref_first, ref_evaluator.?) orelse
-        return _store_zero_result(ref_evaluator.?, ref_frame, ref_ast);
+    const own_result = c.ar_head__create_result(mut_source) orelse return false;
 
     return _store_owned_result(ref_evaluator.?, ref_frame, ref_ast, own_result);
 }

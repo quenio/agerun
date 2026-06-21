@@ -7,6 +7,7 @@
 #include "ar_data.h"
 #include "ar_evaluator_fixture.h"
 #include "ar_expression_ast.h"
+#include "ar_expression_parser.h"
 #include "ar_frame.h"
 #include "ar_instruction_ast.h"
 #include "ar_list.h"
@@ -50,6 +51,20 @@ static ar_append_instruction_evaluator_t* _create_evaluator(ar_evaluator_fixture
     );
     AR_ASSERT(own_evaluator != NULL, "Append evaluator creation should succeed");
     return own_evaluator; // Ownership transferred to caller
+}
+
+static ar_expression_ast_t *_parse_append_test_expression(
+    ar_log_t *ref_log,
+    const char *ref_expression
+) {
+    ar_expression_parser_t *own_parser =
+        ar_expression_parser__create(ref_log, ref_expression);
+    AR_ASSERT(own_parser != NULL, "Expression parser creation should succeed");
+    ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
+    AR_ASSERT(own_ast != NULL, "Expression should parse");
+    ar_expression_parser__destroy(own_parser);
+
+    return own_ast; // Ownership transferred to caller
 }
 
 static void test_append_instruction_evaluator__create_destroy(void) {
@@ -275,6 +290,72 @@ static void test_append_instruction_evaluator__transfers_owned_list_literal(void
     AR_ASSERT(ar_data__list_count(ref_appended) == 2, "Appended list should keep its items");
 
     ar_instruction_ast__destroy(own_ast);
+    ar_append_instruction_evaluator__destroy(own_evaluator);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_append_instruction_evaluator__accepts_head_tail_value_arguments(void) {
+    printf("Testing append accepts head/tail value arguments...\n");
+
+    ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("append_head_tail_args");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+    ar_append_instruction_evaluator_t *own_evaluator = _create_evaluator(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+    AR_ASSERT(ref_frame != NULL, "Frame creation should succeed");
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    AR_ASSERT(ar_data__set_map_data(mut_memory, "results", ar_data__create_list()),
+              "Results list should be stored");
+
+    const char *target_path[] = {"results"};
+    ar_instruction_ast_t *own_head_ast = _create_append_ast(
+        "memory.results",
+        "head([7, 8])",
+        NULL,
+        ar_expression_ast__create_memory_access("memory", target_path, 1),
+        _parse_append_test_expression(ref_log, "head([7, 8])")
+    );
+
+    bool result = ar_append_instruction_evaluator__evaluate(
+        own_evaluator, ref_frame, own_head_ast
+    );
+
+    AR_ASSERT(result == true, "Append should accept head() as a value argument");
+    ar_data_t *ref_results = ar_data__get_map_data(mut_memory, "results");
+    AR_ASSERT(ar_data__list_count(ref_results) == 1,
+              "Results should contain appended head result");
+    AR_ASSERT(ar_data__get_integer(ar_data__list_first(ref_results)) == 7,
+              "Head argument should append first item");
+
+    ar_instruction_ast_t *own_tail_ast = _create_append_ast(
+        "memory.results",
+        "tail([7, 8, 9])",
+        NULL,
+        ar_expression_ast__create_memory_access("memory", target_path, 1),
+        _parse_append_test_expression(ref_log, "tail([7, 8, 9])")
+    );
+
+    result = ar_append_instruction_evaluator__evaluate(
+        own_evaluator, ref_frame, own_tail_ast
+    );
+
+    AR_ASSERT(result == true, "Append should accept tail() as a value argument");
+    AR_ASSERT(ar_data__list_count(ref_results) == 2,
+              "Results should contain both appended values");
+    ar_data_t *ref_tail = ar_data__list_last(ref_results);
+    AR_ASSERT(ref_tail != NULL, "Tail argument should be appended");
+    AR_ASSERT(ar_data__get_type(ref_tail) == AR_DATA_TYPE__LIST,
+              "Tail argument should append a list");
+    AR_ASSERT(ar_data__list_count(ref_tail) == 2,
+              "Tail argument list should contain remaining items");
+    AR_ASSERT(ar_data__get_integer(ar_data__list_first(ref_tail)) == 8,
+              "Tail argument first item should match");
+    AR_ASSERT(ar_data__get_integer(ar_data__list_last(ref_tail)) == 9,
+              "Tail argument last item should match");
+
+    ar_instruction_ast__destroy(own_head_ast);
+    ar_instruction_ast__destroy(own_tail_ast);
     ar_append_instruction_evaluator__destroy(own_evaluator);
     ar_evaluator_fixture__destroy(own_fixture);
 }
@@ -589,6 +670,7 @@ int main(void) {
     test_append_instruction_evaluator__deep_copies_borrowed_nested_memory_value();
     test_append_instruction_evaluator__copies_borrowed_message_value();
     test_append_instruction_evaluator__transfers_owned_list_literal();
+    test_append_instruction_evaluator__accepts_head_tail_value_arguments();
     test_append_instruction_evaluator__appends_to_nested_memory_owned_list();
     test_append_instruction_evaluator__stores_zero_for_message_owned_target();
     test_append_instruction_evaluator__stores_zero_for_literal_target();

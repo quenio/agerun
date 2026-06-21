@@ -354,6 +354,74 @@ static void test_parse_build_pure_function_call_expression(void) {
     ar_log__destroy(own_log);
 }
 
+static void test_parse_head_pure_function_call_expression(void) {
+    printf("Testing head pure function call expression parsing...\n");
+
+    // Given a pure head() call in expression position
+    ar_log_t *own_log = ar_log__create();
+    AR_ASSERT(own_log != NULL, "Log creation should succeed");
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(
+        own_log,
+        "head([1, 2])"
+    );
+    AR_ASSERT(own_parser != NULL, "Expression parser creation should succeed");
+
+    // When parsing it as an expression
+    ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
+
+    // Then the expression parser should accept the pure call
+    AR_ASSERT(own_ast != NULL, "Head call expression should parse");
+    AR_ASSERT(ar_expression_ast__get_type(own_ast) == AR_EXPRESSION_AST_TYPE__CALL,
+              "Head call should produce a call expression AST");
+    AR_ASSERT(strcmp(ar_expression_ast__get_function_name(own_ast), "head") == 0,
+              "Head call should preserve the function name");
+    AR_ASSERT(ar_expression_ast__get_function_arg_count(own_ast) == 1,
+              "Head call should preserve its argument");
+    AR_ASSERT(ar_log__get_last_error_message(own_log) == NULL,
+              "Parser should not log an error for pure head expression");
+
+    ar_expression_ast__destroy(own_ast);
+    ar_expression_parser__destroy(own_parser);
+    ar_log__destroy(own_log);
+}
+
+static void test_parse_nested_tail_pure_function_call_expression(void) {
+    printf("Testing nested tail pure function call expression parsing...\n");
+
+    // Given nested pure head()/tail() calls in expression position
+    ar_log_t *own_log = ar_log__create();
+    AR_ASSERT(own_log != NULL, "Log creation should succeed");
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(
+        own_log,
+        "head(tail(memory.items))"
+    );
+    AR_ASSERT(own_parser != NULL, "Expression parser creation should succeed");
+
+    // When parsing them as an expression
+    ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
+
+    // Then both calls should be represented as pure call expression AST nodes
+    AR_ASSERT(own_ast != NULL, "Nested head/tail expression should parse");
+    AR_ASSERT(ar_expression_ast__get_type(own_ast) == AR_EXPRESSION_AST_TYPE__CALL,
+              "Outer head should produce a call expression AST");
+    AR_ASSERT(strcmp(ar_expression_ast__get_function_name(own_ast), "head") == 0,
+              "Outer call should be head");
+    const ar_expression_ast_t *ref_tail_arg = ar_expression_ast__get_function_arg(own_ast, 0);
+    AR_ASSERT(ref_tail_arg != NULL, "Outer head should have a tail argument");
+    AR_ASSERT(ar_expression_ast__get_type(ref_tail_arg) == AR_EXPRESSION_AST_TYPE__CALL,
+              "Nested tail should produce a call expression AST");
+    AR_ASSERT(strcmp(ar_expression_ast__get_function_name(ref_tail_arg), "tail") == 0,
+              "Nested call should be tail");
+    AR_ASSERT(ar_expression_ast__get_function_arg_count(ref_tail_arg) == 1,
+              "Nested tail should preserve its argument");
+    AR_ASSERT(ar_log__get_last_error_message(own_log) == NULL,
+              "Parser should not log an error for nested pure head/tail expression");
+
+    ar_expression_ast__destroy(own_ast);
+    ar_expression_parser__destroy(own_parser);
+    ar_log__destroy(own_log);
+}
+
 static void test_reject_effectful_function_call_expression(void) {
     printf("Testing effectful function call expression rejection...\n");
 
@@ -1029,6 +1097,8 @@ int main(void) {
     test_cascading_null_nested_expressions();
     test_parse_pure_function_call_expression();
     test_parse_build_pure_function_call_expression();
+    test_parse_head_pure_function_call_expression();
+    test_parse_nested_tail_pure_function_call_expression();
     test_reject_effectful_function_call_expression();
     test_reject_effectful_function_call_in_literal_restores_position();
     test_parse_integer_literal();

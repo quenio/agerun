@@ -203,7 +203,9 @@ typedef struct {
 
 static const ar_pure_function_spec_t PURE_FUNCTIONS[] = {
     {"parse", 2},
-    {"build", 2}
+    {"build", 2},
+    {"head", 1},
+    {"tail", 1}
 };
 
 static bool _is_identifier_start(char c) {

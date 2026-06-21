@@ -37,9 +37,9 @@ The facade currently coordinates specialized evaluators for:
 existing memory-owned list and stores integer `1` or `0` when the function call has a result
 assignment.
 
-`head(...)` and `tail(...)` support is handled by their specialized evaluators. They evaluate a
-list expression, never mutate the source list, and store either a deep-copied result or integer `0`
-for invalid input/copy failure.
+Standalone compatibility `head(...)` and `tail(...)` support is handled by their specialized
+evaluators. Assigned `head(...)` and `tail(...)` calls normally run through ordinary assignment of
+pure expression-call results. Both paths share the same value-level head/tail semantics.
 
 ## Public API
 
@@ -69,9 +69,11 @@ bool ar_instruction_evaluator__evaluate(
   call has a result assignment
 - `append(...)` evaluates the target expression, accepts it only when it resolves to a
   memory-owned LIST, and transfers the claimed or copied value to that list
-- `head(...)` returns a deep copy of the first list item, or integer `0` for empty/invalid input
-- `tail(...)` returns a new LIST of deep-copied items after the first, a new empty LIST for an
-  empty or single-item source list, or integer `0` for invalid input/copy failure
+- standalone `head(...)` delegates to `ar_head` and returns a deep copy of the first list item, or
+  integer `0` for empty/invalid input
+- standalone `tail(...)` delegates to `ar_tail` and returns a new LIST of deep-copied items after
+  the first, a new empty LIST for an empty or single-item source list, or integer `0` for invalid
+  input/copy failure
 - post-failure execution continues normally for later non-`complete(...)` instructions
 
 ## Typical usage

@@ -437,6 +437,68 @@ static void test_assignment_instruction_evaluator__stores_build_expression_strin
     ar_evaluator_fixture__destroy(own_fixture);
 }
 
+static void test_assignment_instruction_evaluator__stores_head_tail_expression_results(void) {
+    // Given assignments whose RHS values are pure head() and tail() expressions
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_assignment_stores_head_tail_results");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+    AR_ASSERT(ref_frame != NULL, "Frame creation should succeed");
+    ar_expression_evaluator_t *ref_expr_eval =
+        ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_assignment_instruction_evaluator_t *own_evaluator =
+        ar_assignment_instruction_evaluator__create(ref_log, ref_expr_eval);
+    AR_ASSERT(own_evaluator != NULL, "Assignment evaluator creation should succeed");
+
+    ar_expression_ast_t *own_head_ast = _parse_assignment_test_expression(
+        ref_log,
+        "head([9, 10])"
+    );
+    ar_instruction_ast_t *own_head_assignment = ar_evaluator_fixture__create_assignment_expr(
+        own_fixture, "memory.first", own_head_ast
+    );
+    AR_ASSERT(own_head_assignment != NULL, "Head assignment AST creation should succeed");
+
+    bool result = ar_assignment_instruction_evaluator__evaluate(
+        own_evaluator, ref_frame, own_head_assignment
+    );
+
+    AR_ASSERT(result == true, "Head assignment evaluation should succeed");
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    AR_ASSERT(ar_data__get_map_integer(mut_memory, "first") == 9,
+              "Assignment should store the head result");
+
+    ar_expression_ast_t *own_tail_ast = _parse_assignment_test_expression(
+        ref_log,
+        "tail([9, 10, 11])"
+    );
+    ar_instruction_ast_t *own_tail_assignment = ar_evaluator_fixture__create_assignment_expr(
+        own_fixture, "memory.rest", own_tail_ast
+    );
+    AR_ASSERT(own_tail_assignment != NULL, "Tail assignment AST creation should succeed");
+
+    result = ar_assignment_instruction_evaluator__evaluate(
+        own_evaluator, ref_frame, own_tail_assignment
+    );
+
+    AR_ASSERT(result == true, "Tail assignment evaluation should succeed");
+    ar_data_t *ref_rest = ar_data__get_map_data(mut_memory, "rest");
+    AR_ASSERT(ref_rest != NULL, "Assignment should store the tail result");
+    AR_ASSERT(ar_data__get_type(ref_rest) == AR_DATA_TYPE__LIST,
+              "Tail assignment should store a list");
+    AR_ASSERT(ar_data__list_count(ref_rest) == 2,
+              "Tail assignment should store remaining items");
+    AR_ASSERT(ar_data__get_integer(ar_data__list_first(ref_rest)) == 10,
+              "Tail assignment first item should match");
+    AR_ASSERT(ar_data__get_integer(ar_data__list_last(ref_rest)) == 11,
+              "Tail assignment last item should match");
+
+    ar_assignment_instruction_evaluator__destroy(own_evaluator);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
 static void test_assignment_instruction_evaluator__stores_parse_self_fields_outside_memory_self(void) {
     // Given parse() expressions that produce self and nested self fields
     ar_evaluator_fixture_t *fixture =
@@ -778,6 +840,9 @@ int main(void) {
 
     test_assignment_instruction_evaluator__stores_build_expression_string();
     printf("test_assignment_instruction_evaluator__stores_build_expression_string passed!\n");
+
+    test_assignment_instruction_evaluator__stores_head_tail_expression_results();
+    printf("test_assignment_instruction_evaluator__stores_head_tail_expression_results passed!\n");
 
     test_assignment_instruction_evaluator__stores_parse_self_fields_outside_memory_self();
     printf("test_assignment_instruction_evaluator__stores_parse_self_fields_outside_memory_self passed!\n");

@@ -1072,6 +1072,231 @@ static void _assert_string_value(ar_data_t *ref_data, const char *ref_expected) 
               "String result should match expected value");
 }
 
+static void _assert_integer_value(ar_data_t *ref_data, int expected) {
+    AR_ASSERT(ref_data != NULL, "Result should not be NULL");
+    AR_ASSERT(ar_data__get_type(ref_data) == AR_DATA_TYPE__INTEGER,
+              "Result should be an integer");
+    AR_ASSERT(ar_data__get_integer(ref_data) == expected,
+              "Integer result should match expected value");
+}
+
+static void _assert_empty_list(ar_data_t *ref_data) {
+    AR_ASSERT(ref_data != NULL, "Result should not be NULL");
+    AR_ASSERT(ar_data__get_type(ref_data) == AR_DATA_TYPE__LIST,
+              "Result should be a list");
+    AR_ASSERT(ar_data__list_count(ref_data) == 0,
+              "List result should be empty");
+}
+
+static void test_evaluate_head_function_call(void) {
+    printf("Testing expression evaluator head function call...\n");
+
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_evaluate_head_function_call");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+
+    ar_data_t *own_result = _evaluate_expression_text(
+        own_fixture,
+        "head([1, 2, 3])"
+    );
+
+    _assert_integer_value(own_result, 1);
+
+    ar_data__destroy(own_result);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_evaluate_tail_function_call(void) {
+    printf("Testing expression evaluator tail function call...\n");
+
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_evaluate_tail_function_call");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+
+    ar_data_t *own_result = _evaluate_expression_text(
+        own_fixture,
+        "tail([1, 2, 3])"
+    );
+
+    AR_ASSERT(ar_data__get_type(own_result) == AR_DATA_TYPE__LIST,
+              "Tail result should be a list");
+    AR_ASSERT(ar_data__list_count(own_result) == 2,
+              "Tail result should contain remaining items");
+    ar_data_t **own_items = ar_data__list_items(own_result);
+    AR_ASSERT(own_items != NULL, "Tail items should be available");
+    _assert_integer_value(own_items[0], 2);
+    _assert_integer_value(own_items[1], 3);
+    AR__HEAP__FREE(own_items);
+
+    ar_data__destroy(own_result);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_evaluate_head_tail_sentinel_cases(void) {
+    printf("Testing expression evaluator head/tail sentinel cases...\n");
+
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_evaluate_head_tail_sentinel_cases");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+
+    ar_data_t *own_empty_head = _evaluate_expression_text(own_fixture, "head([])");
+    _assert_integer_value(own_empty_head, 0);
+    ar_data__destroy(own_empty_head);
+
+    ar_data_t *own_empty_tail = _evaluate_expression_text(own_fixture, "tail([])");
+    _assert_empty_list(own_empty_tail);
+    ar_data__destroy(own_empty_tail);
+
+    ar_data_t *own_single_tail = _evaluate_expression_text(own_fixture, "tail([42])");
+    _assert_empty_list(own_single_tail);
+    ar_data__destroy(own_single_tail);
+
+    ar_data_t *own_head_missing = _evaluate_expression_text(own_fixture, "head(memory.missing)");
+    _assert_integer_value(own_head_missing, 0);
+    ar_data__destroy(own_head_missing);
+
+    ar_data_t *own_tail_missing = _evaluate_expression_text(own_fixture, "tail(memory.missing)");
+    _assert_integer_value(own_tail_missing, 0);
+    ar_data__destroy(own_tail_missing);
+
+    ar_data_t *own_head_non_list = _evaluate_expression_text(own_fixture, "head(42)");
+    _assert_integer_value(own_head_non_list, 0);
+    ar_data__destroy(own_head_non_list);
+
+    ar_data_t *own_tail_non_list = _evaluate_expression_text(own_fixture, "tail(\"not-list\")");
+    _assert_integer_value(own_tail_non_list, 0);
+    ar_data__destroy(own_tail_non_list);
+
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_evaluate_head_tail_nested_composition(void) {
+    printf("Testing expression evaluator head/tail nested composition...\n");
+
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_evaluate_head_tail_nested_composition");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+
+    ar_data_t *own_second = _evaluate_expression_text(
+        own_fixture,
+        "head(tail([1, 2, 3]))"
+    );
+    _assert_integer_value(own_second, 2);
+    ar_data__destroy(own_second);
+
+    ar_data_t *own_last_list = _evaluate_expression_text(
+        own_fixture,
+        "tail(tail([1, 2, 3]))"
+    );
+    AR_ASSERT(ar_data__get_type(own_last_list) == AR_DATA_TYPE__LIST,
+              "Nested tail result should be a list");
+    AR_ASSERT(ar_data__list_count(own_last_list) == 1,
+              "Nested tail should keep only the last item");
+    ar_data_t **own_items = ar_data__list_items(own_last_list);
+    AR_ASSERT(own_items != NULL, "Nested tail item should be available");
+    _assert_integer_value(own_items[0], 3);
+    AR__HEAP__FREE(own_items);
+    ar_data__destroy(own_last_list);
+
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_evaluate_head_tail_function_call_in_literals(void) {
+    printf("Testing expression evaluator head/tail function call in literals...\n");
+
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_evaluate_head_tail_function_call_in_literals");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+
+    ar_data_t *own_list = _evaluate_expression_text(
+        own_fixture,
+        "[head([1, 2]), tail([1, 2, 3])]"
+    );
+    AR_ASSERT(ar_data__get_type(own_list) == AR_DATA_TYPE__LIST,
+              "Outer literal should evaluate to a list");
+    AR_ASSERT(ar_data__list_count(own_list) == 2,
+              "Outer literal should contain both call results");
+    ar_data_t **own_list_items = ar_data__list_items(own_list);
+    AR_ASSERT(own_list_items != NULL, "Outer list items should be available");
+    _assert_integer_value(own_list_items[0], 1);
+    AR_ASSERT(ar_data__get_type(own_list_items[1]) == AR_DATA_TYPE__LIST,
+              "Tail literal item should be a list");
+    AR_ASSERT(ar_data__list_count(own_list_items[1]) == 2,
+              "Tail literal item should contain remaining items");
+    AR__HEAP__FREE(own_list_items);
+    ar_data__destroy(own_list);
+
+    ar_data_t *own_map = _evaluate_expression_text(
+        own_fixture,
+        "{first: head([5, 6]), rest: tail([5, 6, 7])}"
+    );
+    AR_ASSERT(ar_data__get_type(own_map) == AR_DATA_TYPE__MAP,
+              "Outer literal should evaluate to a map");
+    AR_ASSERT(ar_data__get_map_integer(own_map, "first") == 5,
+              "Map should store head result");
+    ar_data_t *ref_rest = ar_data__get_map_data(own_map, "rest");
+    AR_ASSERT(ref_rest != NULL, "Map should store tail result");
+    AR_ASSERT(ar_data__get_type(ref_rest) == AR_DATA_TYPE__LIST,
+              "Tail map value should be a list");
+    AR_ASSERT(ar_data__list_count(ref_rest) == 2,
+              "Tail map value should contain remaining items");
+    ar_data__destroy(own_map);
+
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_evaluate_head_tail_is_path_neutral_for_memory_self(void) {
+    printf("Testing expression evaluator head/tail path-neutral memory.self handling...\n");
+
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_evaluate_head_tail_is_path_neutral_for_memory_self");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    ar_data_t *own_self_list = ar_data__create_list();
+    AR_ASSERT(own_self_list != NULL, "Self list creation should succeed");
+    AR_ASSERT(ar_data__list_add_last_integer(own_self_list, 7),
+              "Self list setup should store first value");
+    AR_ASSERT(ar_data__list_add_last_integer(own_self_list, 8),
+              "Self list setup should store second value");
+    AR_ASSERT(ar_data__set_map_data(mut_memory, "self", own_self_list),
+              "Memory setup should store self list");
+
+    ar_data_t *own_head_result = _evaluate_expression_text(own_fixture, "head(memory.self)");
+    _assert_integer_value(own_head_result, 7);
+    ar_data__destroy(own_head_result);
+
+    ar_data_t *own_tail_result = _evaluate_expression_text(own_fixture, "tail(memory.self)");
+    AR_ASSERT(ar_data__get_type(own_tail_result) == AR_DATA_TYPE__LIST,
+              "Tail result should be a list for memory.self list value");
+    AR_ASSERT(ar_data__list_count(own_tail_result) == 1,
+              "Tail result should contain one item");
+    ar_data_t **own_tail_items = ar_data__list_items(own_tail_result);
+    AR_ASSERT(own_tail_items != NULL, "Tail item should be available");
+    _assert_integer_value(own_tail_items[0], 8);
+    AR__HEAP__FREE(own_tail_items);
+    ar_data__destroy(own_tail_result);
+
+    ar_data_t *own_nested_items = ar_data__create_list();
+    AR_ASSERT(own_nested_items != NULL, "Nested items list creation should succeed");
+    AR_ASSERT(ar_data__list_add_last_integer(own_nested_items, 11),
+              "Nested list setup should store first value");
+    AR_ASSERT(ar_data__list_add_last_integer(own_nested_items, 12),
+              "Nested list setup should store second value");
+    ar_data_t *own_self_map = ar_data__create_map();
+    AR_ASSERT(own_self_map != NULL, "Self map creation should succeed");
+    AR_ASSERT(ar_data__set_map_data(own_self_map, "items", own_nested_items),
+              "Self map setup should store nested list");
+    AR_ASSERT(ar_data__set_map_data(mut_memory, "self", own_self_map),
+              "Memory setup should replace self with nested map");
+
+    ar_data_t *own_nested_head = _evaluate_expression_text(own_fixture, "head(memory.self.items)");
+    _assert_integer_value(own_nested_head, 11);
+    ar_data__destroy(own_nested_head);
+
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
 static void test_evaluate_parse_function_call(void) {
     printf("Testing expression evaluator parse function call...\n");
 
@@ -1475,6 +1700,12 @@ int main(void) {
     test_evaluate_build_returns_string_for_bad_inputs();
     test_evaluate_build_is_path_neutral_for_memory_self();
     test_evaluate_build_preserves_borrowed_frame_maps();
+    test_evaluate_head_function_call();
+    test_evaluate_tail_function_call();
+    test_evaluate_head_tail_sentinel_cases();
+    test_evaluate_head_tail_nested_composition();
+    test_evaluate_head_tail_function_call_in_literals();
+    test_evaluate_head_tail_is_path_neutral_for_memory_self();
     
     printf("\nAll expression_evaluator tests passed!\n");
     return 0;

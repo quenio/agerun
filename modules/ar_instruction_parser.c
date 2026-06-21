@@ -453,8 +453,6 @@ static bool _is_instruction_result_function(const char *ref_func_name, size_t fu
            (func_len == 2 && strncmp(ref_func_name, "if", 2) == 0) ||
            (func_len == 8 && strncmp(ref_func_name, "complete", 8) == 0) ||
            (func_len == 6 && strncmp(ref_func_name, "append", 6) == 0) ||
-           (func_len == 4 && strncmp(ref_func_name, "head", 4) == 0) ||
-           (func_len == 4 && strncmp(ref_func_name, "tail", 4) == 0) ||
            (func_len == 7 && strncmp(ref_func_name, "compile", 7) == 0) ||
            (func_len == 5 && strncmp(ref_func_name, "spawn", 5) == 0) ||
            (func_len == 9 && strncmp(ref_func_name, "deprecate", 9) == 0) ||

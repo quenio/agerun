@@ -54,11 +54,13 @@ expressions and returns an `AR_INSTRUCTION_AST_TYPE__APPEND` node.
 `head(...)` and `tail(...)` are routed to their specialized parsers, each of which parses one list
 expression and returns `AR_INSTRUCTION_AST_TYPE__HEAD` or `AR_INSTRUCTION_AST_TYPE__TAIL`.
 
-Assigned pure calls, such as `memory.result := parse(template, input)` or
-`memory.result := build(template, values)`, are parsed as normal assignment instructions whose
-right-hand side is a pure function call expression. Standalone `parse(...)` remains accepted as a
-function instruction for compatibility and discards its result. Standalone `build(...)` keeps the
-existing build instruction behavior.
+Assigned pure calls, such as `memory.result := parse(template, input)`,
+`memory.result := build(template, values)`, `memory.first := head(memory.items)`, or
+`memory.rest := tail(memory.items)`, are parsed as normal assignment instructions whose right-hand
+side is a pure function call expression. Standalone `parse(...)` remains accepted as a function
+instruction for compatibility and discards its result. Standalone `build(...)` keeps the existing
+build instruction behavior. Standalone `head(...)` and `tail(...)` keep their compatibility
+instruction behavior and discard the computed value when no result path is present.
 
 ## Current implementation notes
 
@@ -74,8 +76,10 @@ existing build instruction behavior.
   template placeholders remain isolated in the specialized parser module
 - `append(...)` parsing leaves target ownership and LIST validation to the evaluator so non-memory
   target expressions can compile and resolve to no-op results at runtime
-- `head(...)` and `tail(...)` parsing accepts any expression; LIST validation, empty-list handling,
-  and copy-limit behavior are evaluator concerns
+- assigned `head(...)` and `tail(...)` calls are ordinary assignment expressions; standalone forms
+  still route to the compatibility parsers
+- `head(...)` and `tail(...)` argument parsing accepts any expression; LIST validation,
+  empty-list handling, and copy-limit behavior are evaluator concerns
 
 ## Typical usage
 

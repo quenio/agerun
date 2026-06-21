@@ -4,6 +4,7 @@
 #include "ar_assert.h"
 #include "ar_instruction_parser.h"
 #include "ar_instruction_ast.h"
+#include "ar_expression_ast.h"
 #include "ar_list.h"
 #include "ar_heap.h"
 #include "ar_log.h"
@@ -244,7 +245,7 @@ static void test_instruction_parser__parse_append_with_assignment(void) {
 }
 
 static void test_instruction_parser__parse_head(void) {
-    printf("Testing unified parse method for head instruction...\n");
+    printf("Testing unified parse method for assigned head expression...\n");
 
     const char *instruction = "memory.next := head(memory.targets)";
     ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
@@ -253,10 +254,59 @@ static void test_instruction_parser__parse_head(void) {
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
 
     assert(own_ast != NULL);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT);
+    assert(strcmp(ar_instruction_ast__get_assignment_path(own_ast), "memory.next") == 0);
+    assert(strcmp(ar_instruction_ast__get_assignment_expression(own_ast), "head(memory.targets)") == 0);
+
+    const ar_expression_ast_t *ref_expression_ast =
+        ar_instruction_ast__get_assignment_expression_ast(own_ast);
+    assert(ref_expression_ast != NULL);
+    assert(ar_expression_ast__get_type(ref_expression_ast) == AR_EXPRESSION_AST_TYPE__CALL);
+    assert(strcmp(ar_expression_ast__get_function_name(ref_expression_ast), "head") == 0);
+    assert(ar_expression_ast__get_function_arg_count(ref_expression_ast) == 1);
+
+    ar_instruction_ast__destroy(own_ast);
+    ar_instruction_parser__destroy(own_parser);
+}
+
+static void test_instruction_parser__parse_tail(void) {
+    printf("Testing unified parse method for assigned tail expression...\n");
+
+    const char *instruction = "memory.remaining := tail(memory.targets)";
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    assert(own_parser != NULL);
+
+    ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
+
+    assert(own_ast != NULL);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT);
+    assert(strcmp(ar_instruction_ast__get_assignment_path(own_ast), "memory.remaining") == 0);
+    assert(strcmp(ar_instruction_ast__get_assignment_expression(own_ast), "tail(memory.targets)") == 0);
+
+    const ar_expression_ast_t *ref_expression_ast =
+        ar_instruction_ast__get_assignment_expression_ast(own_ast);
+    assert(ref_expression_ast != NULL);
+    assert(ar_expression_ast__get_type(ref_expression_ast) == AR_EXPRESSION_AST_TYPE__CALL);
+    assert(strcmp(ar_expression_ast__get_function_name(ref_expression_ast), "tail") == 0);
+    assert(ar_expression_ast__get_function_arg_count(ref_expression_ast) == 1);
+
+    ar_instruction_ast__destroy(own_ast);
+    ar_instruction_parser__destroy(own_parser);
+}
+
+static void test_instruction_parser__parse_standalone_head(void) {
+    printf("Testing unified parse method for standalone head instruction...\n");
+
+    const char *instruction = "head(memory.targets)";
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    assert(own_parser != NULL);
+
+    ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
+
+    assert(own_ast != NULL);
     assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__HEAD);
     assert(strcmp(ar_instruction_ast__get_function_name(own_ast), "head") == 0);
-    assert(ar_instruction_ast__has_result_assignment(own_ast) == true);
-    assert(strcmp(ar_instruction_ast__get_function_result_path(own_ast), "memory.next") == 0);
+    assert(ar_instruction_ast__has_result_assignment(own_ast) == false);
 
     ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(own_args != NULL);
@@ -267,10 +317,10 @@ static void test_instruction_parser__parse_head(void) {
     ar_instruction_parser__destroy(own_parser);
 }
 
-static void test_instruction_parser__parse_tail(void) {
-    printf("Testing unified parse method for tail instruction...\n");
+static void test_instruction_parser__parse_standalone_tail(void) {
+    printf("Testing unified parse method for standalone tail instruction...\n");
 
-    const char *instruction = "memory.remaining := tail(memory.targets)";
+    const char *instruction = "tail(memory.targets)";
     ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
 
@@ -279,8 +329,7 @@ static void test_instruction_parser__parse_tail(void) {
     assert(own_ast != NULL);
     assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__TAIL);
     assert(strcmp(ar_instruction_ast__get_function_name(own_ast), "tail") == 0);
-    assert(ar_instruction_ast__has_result_assignment(own_ast) == true);
-    assert(strcmp(ar_instruction_ast__get_function_result_path(own_ast), "memory.remaining") == 0);
+    assert(ar_instruction_ast__has_result_assignment(own_ast) == false);
 
     ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(own_args != NULL);
@@ -994,6 +1043,8 @@ int main(void) {
     test_instruction_parser__parse_append_with_assignment();
     test_instruction_parser__parse_head();
     test_instruction_parser__parse_tail();
+    test_instruction_parser__parse_standalone_head();
+    test_instruction_parser__parse_standalone_tail();
     test_instruction_parser__parse_method();
     test_instruction_parser__parse_spawn();
     test_instruction_parser__parse_exit_agent();

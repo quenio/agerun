@@ -3,6 +3,8 @@ const c = @cImport({
     @cInclude("ar_expression_ast.h");
     @cInclude("ar_parse.h");
     @cInclude("ar_build.h");
+    @cInclude("ar_head.h");
+    @cInclude("ar_tail.h");
     @cInclude("ar_data.h");
     @cInclude("ar_log.h");
     @cInclude("ar_frame.h");
@@ -462,6 +464,52 @@ fn _evaluate_build_call(
     return own_result;
 }
 
+fn _evaluate_head_call(
+    ref_log: ?*c.ar_log_t,
+    ref_frame: ?*const c.ar_frame_t,
+    ref_node: ?*const c.ar_expression_ast_t
+) ?*c.ar_data_t {
+    if (c.ar_expression_ast__get_function_arg_count(ref_node) != 1) {
+        return c.ar_head__create_result(null);
+    }
+
+    const ref_list_ast = c.ar_expression_ast__get_function_arg(ref_node, 0);
+    const list_result = if (ref_list_ast != null)
+        _evaluate_read_only_expression(ref_log, ref_frame, ref_list_ast)
+    else
+        null;
+    defer if (list_result != null) _destroy_temporary_result(list_result, ref_frame);
+
+    const own_result = c.ar_head__create_result(list_result);
+    if (own_result == null) {
+        c.ar_log__error(ref_log, "evaluate_function_call: Failed to create head result");
+    }
+    return own_result;
+}
+
+fn _evaluate_tail_call(
+    ref_log: ?*c.ar_log_t,
+    ref_frame: ?*const c.ar_frame_t,
+    ref_node: ?*const c.ar_expression_ast_t
+) ?*c.ar_data_t {
+    if (c.ar_expression_ast__get_function_arg_count(ref_node) != 1) {
+        return c.ar_tail__create_result(null);
+    }
+
+    const ref_list_ast = c.ar_expression_ast__get_function_arg(ref_node, 0);
+    const list_result = if (ref_list_ast != null)
+        _evaluate_read_only_expression(ref_log, ref_frame, ref_list_ast)
+    else
+        null;
+    defer if (list_result != null) _destroy_temporary_result(list_result, ref_frame);
+
+    const own_result = c.ar_tail__create_result(list_result);
+    if (own_result == null) {
+        c.ar_log__error(ref_log, "evaluate_function_call: Failed to create tail result");
+    }
+    return own_result;
+}
+
 fn _evaluate_function_call(
     ref_log: ?*c.ar_log_t,
     ref_frame: ?*const c.ar_frame_t,
@@ -487,6 +535,14 @@ fn _evaluate_function_call(
 
     if (c.strcmp(function_name, "build") == 0) {
         return _evaluate_build_call(ref_log, ref_frame, ref_node);
+    }
+
+    if (c.strcmp(function_name, "head") == 0) {
+        return _evaluate_head_call(ref_log, ref_frame, ref_node);
+    }
+
+    if (c.strcmp(function_name, "tail") == 0) {
+        return _evaluate_tail_call(ref_log, ref_frame, ref_node);
     }
 
     c.ar_log__error(ref_log, "evaluate_function_call: Unknown pure function");

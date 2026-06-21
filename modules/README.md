@@ -7,7 +7,7 @@ In the AgeRun system, a module is a self-contained unit of functionality that pr
 **Module Types**:
 
 1. **C Modules**: Traditional modules with an implementation file (`.c`) and header file (`.h`)
-2. **C-ABI Compatible Zig Modules**: Zig implementations (`.zig`) that maintain full C API compatibility with matching header files (`.h`). Currently implemented in Zig: `ar_assert`, `ar_append_instruction_evaluator`, `ar_complete_instruction_evaluator`, `ar_complete_instruction_parser`, `ar_expression_ast`, `ar_function_call_parser`, `ar_head_instruction_evaluator`, `ar_heap`, `ar_instruction_ast`, `ar_method_ast`, `ar_method_evaluator`, `ar_semver`, `ar_string`, and `ar_tail_instruction_evaluator`. The `ar_io` module uses a hybrid approach with most functions in Zig (`ar_io.zig`) and variadic functions in C (`ar_io_variadic.c`) due to platform-specific requirements. `ar_local_completion` is a user-approved C exception for direct `llama.cpp` / `libllama` interop behind a stable AgeRun header.
+2. **C-ABI Compatible Zig Modules**: Zig implementations (`.zig`) that maintain full C API compatibility with matching header files (`.h`). Currently implemented in Zig: `ar_assert`, `ar_append_instruction_evaluator`, `ar_build`, `ar_complete_instruction_evaluator`, `ar_complete_instruction_parser`, `ar_expression_ast`, `ar_expression_evaluator`, `ar_function_call_parser`, `ar_head`, `ar_head_instruction_evaluator`, `ar_heap`, `ar_instruction_ast`, `ar_method_ast`, `ar_method_evaluator`, `ar_parse`, `ar_semver`, `ar_string`, `ar_tail`, and `ar_tail_instruction_evaluator`. The `ar_io` module uses a hybrid approach with most functions in Zig (`ar_io.zig`) and variadic functions in C (`ar_io_variadic.c`) due to platform-specific requirements. `ar_local_completion` is a user-approved C exception for direct `llama.cpp` / `libllama` interop behind a stable AgeRun header.
 3. **Zig Struct Modules**: Pure Zig modules using TitleCase naming (e.g., `DataStore.zig`) for internal components that don't require C interop. These modules use Zig's idiomatic patterns while maintaining AgeRun's ownership conventions.
 
 Each module typically follows a consistent naming convention with an `ar_` prefix (e.g., `ar_data`, `ar_string`), and has its own test file (`ar_*_tests.c`) that verifies its functionality. Note: File names are being transitioned from `ar_` to `ar_` prefix gradually as files are modified for other reasons.
@@ -1162,6 +1162,7 @@ The expression evaluator module provides evaluation of expression ASTs against m
 - **Type-Specific Functions**: Separate evaluation functions for each AST node type
 - **Memory Access**: Evaluates memory.x and context.x paths with nested navigation
 - **Binary Operations**: Supports all arithmetic and comparison operators
+- **Pure Function Calls**: Evaluates `parse(...)`, `build(...)`, `head(...)`, and `tail(...)`
 - **Type Conversions**: Handles automatic promotion between integers and doubles
 - **String Operations**: Implements string concatenation and comparison
 - **Ownership Semantics**: Returns references for memory access, owned values for operations
@@ -1212,6 +1213,13 @@ The [parse instruction evaluator module](ar_parse_instruction_evaluator.md) hand
 - **Pattern Matching**: Supports placeholder extraction with `{name}` syntax
 - **Result Storage**: Stores extracted values in memory map
 
+#### Parse Module (`ar_parse`)
+
+The [parse module](ar_parse.md) provides pure value-level template parsing:
+- **Pure Operation**: Returns a new map without mutating runtime state
+- **Fallback Semantics**: Returns an empty map for missing, malformed, non-matching, or unsupported inputs
+- **Shared Semantics**: Used by expression `parse(...)` and instruction-level parse evaluation
+
 #### Build Module (`ar_build`)
 
 The [build module](ar_build.md) provides pure value-level template building:
@@ -1243,17 +1251,35 @@ The [append instruction evaluator module](ar_append_instruction_evaluator.md) ha
 
 #### Head Instruction Evaluator Module (`ar_head_instruction_evaluator`)
 
-The [head instruction evaluator module](ar_head_instruction_evaluator.md) handles `head(...)` execution:
-- **First Item Return**: Stores a shallow copy of the first LIST item
+The [head instruction evaluator module](ar_head_instruction_evaluator.md) handles standalone
+compatibility `head(...)` execution:
+- **First Item Return**: Stores a deep copy of the first LIST item
 - **Source Preservation**: Never mutates the source list
+- **Shared Head Semantics**: Delegates value behavior to `ar_head`
 - **Fallback Semantics**: Stores integer `0` for empty, missing, non-LIST, or not-copyable inputs
+
+#### Head Module (`ar_head`)
+
+The [head module](ar_head.md) provides pure value-level list head extraction:
+- **Pure Operation**: Returns a deep copy of the first item without mutating runtime state
+- **Fallback Semantics**: Returns integer `0` for empty, missing, non-LIST, or not-copyable inputs
+- **Shared Semantics**: Used by expression `head(...)` and standalone head instruction evaluation
 
 #### Tail Instruction Evaluator Module (`ar_tail_instruction_evaluator`)
 
-The [tail instruction evaluator module](ar_tail_instruction_evaluator.md) handles `tail(...)` execution:
-- **Remaining Items Return**: Stores a new LIST of shallow-copied items after the first
+The [tail instruction evaluator module](ar_tail_instruction_evaluator.md) handles standalone
+compatibility `tail(...)` execution:
+- **Remaining Items Return**: Stores a new LIST of deep-copied items after the first
 - **Empty Tail Distinction**: Stores an empty LIST for empty and single-item source lists
+- **Shared Tail Semantics**: Delegates value behavior to `ar_tail`
 - **Fallback Semantics**: Stores integer `0` for missing, non-LIST, or not-copyable inputs
+
+#### Tail Module (`ar_tail`)
+
+The [tail module](ar_tail.md) provides pure value-level list tail extraction:
+- **Pure Operation**: Returns a new LIST of deep-copied items after the first
+- **Empty Tail Distinction**: Returns an empty LIST for empty and single-item source lists
+- **Shared Semantics**: Used by expression `tail(...)` and standalone tail instruction evaluation
 
 #### Compile Instruction Evaluator Module (`ar_compile_instruction_evaluator`)
 

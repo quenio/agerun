@@ -7,7 +7,8 @@ The `ar_head_instruction_evaluator` module evaluates `head(...)` instructions in
 
 - verify the instruction AST is `AR_INSTRUCTION_AST_TYPE__HEAD`
 - evaluate the single argument as a normal expression
-- return an independent owned copy of the first item when the argument resolves to a non-empty LIST
+- delegate value semantics to `ar_head`
+- return an independent owned deep copy of the first item when the argument resolves to a non-empty LIST
 - store integer `0` for empty, missing, non-LIST, or not-copyable inputs
 - never mutate the source list
 - write optional result assignments with the returned value
@@ -36,7 +37,7 @@ bool ar_head_instruction_evaluator__evaluate(
 - the evaluator owns only its internal structure
 - the log and expression evaluator are borrowed references
 - source expressions that evaluate to temporary values are discarded after result creation
-- returned values are created with `ar_data__claim_or_copy()`; list-owned items are deep-copied, so
+- returned values come from `ar_head__create_result()` and deep-copy list-owned items, so
   `head(...)` does not claim or move items out of the source list
 - if result storage fails, the owned result value is destroyed before the evaluator returns `false`
 
@@ -52,7 +53,7 @@ the sentinel.
 
 ## Nested values
 
-Returned maps and lists follow `ar_data__claim_or_copy()`'s deep-copy path for list-owned items, so
-nested list/map structure is preserved and the source list is not mutated. If the first item cannot
-be copied, `head(...)` stores integer `0` when assigned, and otherwise completes without stopping
-method execution.
+Returned maps and lists follow `ar_data__deep_copy()` through `ar_head`, so nested list/map
+structure is preserved and the source list is not mutated. If the first item cannot be copied,
+`head(...)` stores integer `0` when assigned, and otherwise completes without stopping method
+execution.

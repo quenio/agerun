@@ -1,5 +1,6 @@
 const c = @cImport({
     @cInclude("ar_tail_instruction_evaluator.h");
+    @cInclude("ar_tail.h");
     @cInclude("ar_data.h");
     @cInclude("ar_expression_ast.h");
     @cInclude("ar_expression_evaluator.h");
@@ -74,15 +75,6 @@ fn _store_owned_result(
     return true;
 }
 
-fn _store_zero_result(
-    ref_evaluator: *const ar_tail_instruction_evaluator_t,
-    ref_frame: ?*const c.ar_frame_t,
-    ref_ast: ?*const c.ar_instruction_ast_t
-) bool {
-    const own_result = c.ar_data__create_integer(0) orelse return false;
-    return _store_owned_result(ref_evaluator, ref_frame, ref_ast, own_result);
-}
-
 fn _is_owned_by_frame_root(ref_frame: ?*const c.ar_frame_t, ref_data: ?*const c.ar_data_t) bool {
     if (ref_frame == null or ref_data == null) {
         return false;
@@ -111,40 +103,6 @@ fn _destroy_source_if_temporary(
     if (!source_is_frame_owned) {
         c.ar_data__destroy_if_owned(mut_source, ref_evaluator);
     }
-}
-
-fn _create_tail_result(
-    ref_evaluator: *const ar_tail_instruction_evaluator_t,
-    ref_source: *const c.ar_data_t
-) ?*c.ar_data_t {
-    const own_tail = c.ar_data__create_list() orelse return null;
-    const source_count = c.ar_data__list_count(ref_source);
-    if (source_count <= 1) {
-        return own_tail;
-    }
-
-    const own_items = c.ar_data__list_items(ref_source) orelse {
-        c.ar_data__destroy(own_tail);
-        return null;
-    };
-    defer ar_allocator.free(own_items);
-
-    var i: usize = 1;
-    while (i < source_count) : (i += 1) {
-        const mut_item: ?*c.ar_data_t = own_items[i];
-        const own_copy = c.ar_data__claim_or_copy(mut_item, ref_evaluator) orelse {
-            c.ar_data__destroy(own_tail);
-            return null;
-        };
-
-        if (!c.ar_data__list_add_last_data(own_tail, own_copy)) {
-            c.ar_data__destroy(own_copy);
-            c.ar_data__destroy(own_tail);
-            return null;
-        }
-    }
-
-    return own_tail;
 }
 
 pub export fn ar_tail_instruction_evaluator__evaluate(
@@ -178,17 +136,13 @@ pub export fn ar_tail_instruction_evaluator__evaluate(
         ref_frame,
         ref_list_ast
     ) orelse {
-        return _store_zero_result(ref_evaluator.?, ref_frame, ref_ast);
+        const own_result = c.ar_tail__create_result(null) orelse return false;
+        return _store_owned_result(ref_evaluator.?, ref_frame, ref_ast, own_result);
     };
     const source_is_frame_owned = _is_owned_by_frame_root(ref_frame, mut_source);
     defer _destroy_source_if_temporary(ref_evaluator.?, mut_source, source_is_frame_owned);
 
-    if (c.ar_data__get_type(mut_source) != c.AR_DATA_TYPE__LIST) {
-        return _store_zero_result(ref_evaluator.?, ref_frame, ref_ast);
-    }
-
-    const own_result = _create_tail_result(ref_evaluator.?, mut_source) orelse
-        return _store_zero_result(ref_evaluator.?, ref_frame, ref_ast);
+    const own_result = c.ar_tail__create_result(mut_source) orelse return false;
 
     return _store_owned_result(ref_evaluator.?, ref_frame, ref_ast, own_result);
 }
