@@ -15,6 +15,7 @@
 #include "ar_event.h"
 #include "ar_evaluator_fixture.h"
 #include "ar_frame.h"
+#include "ar_assert.h"
 
 /**
  * Test creating and destroying an evaluator with ar_log
@@ -1064,9 +1065,11 @@ static ar_data_t *_evaluate_expression_text(
 }
 
 static void _assert_string_value(ar_data_t *ref_data, const char *ref_expected) {
-    assert(ref_data != NULL);
-    assert(ar_data__get_type(ref_data) == AR_DATA_TYPE__STRING);
-    assert(strcmp(ar_data__get_string(ref_data), ref_expected) == 0);
+    AR_ASSERT(ref_data != NULL, "Result should not be NULL");
+    AR_ASSERT(ar_data__get_type(ref_data) == AR_DATA_TYPE__STRING,
+              "Result should be a string");
+    AR_ASSERT(strcmp(ar_data__get_string(ref_data), ref_expected) == 0,
+              "String result should match expected value");
 }
 
 static void test_evaluate_parse_function_call(void) {
@@ -1238,15 +1241,18 @@ static void test_evaluate_parse_preserves_borrowed_frame_maps(void) {
 static void test_evaluate_build_function_call(void) {
     printf("Testing expression evaluator build function call...\n");
 
+    // Given a fixture with an expression evaluator
     ar_evaluator_fixture_t *own_fixture =
         ar_evaluator_fixture__create("test_evaluate_build_function_call");
-    assert(own_fixture != NULL);
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
 
+    // When evaluating a pure build() expression
     ar_data_t *own_result = _evaluate_expression_text(
         own_fixture,
         "build(\"Hello {name}!\", {name: \"Ada\"})"
     );
 
+    // Then it should return the built string
     _assert_string_value(own_result, "Hello Ada!");
 
     ar_data__destroy(own_result);
@@ -1256,27 +1262,37 @@ static void test_evaluate_build_function_call(void) {
 static void test_evaluate_build_function_call_in_literals(void) {
     printf("Testing expression evaluator build function call in literals...\n");
 
+    // Given a fixture with an expression evaluator
     ar_evaluator_fixture_t *own_fixture =
         ar_evaluator_fixture__create("test_evaluate_build_function_call_in_literals");
-    assert(own_fixture != NULL);
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
 
+    // When evaluating a list literal containing build()
     ar_data_t *own_list = _evaluate_expression_text(
         own_fixture,
         "[build(\"id={id}\", {id: 42})]"
     );
-    assert(ar_data__get_type(own_list) == AR_DATA_TYPE__LIST);
-    assert(ar_data__list_count(own_list) == 1);
+
+    // Then the nested build() result should be stored as a string value
+    AR_ASSERT(ar_data__get_type(own_list) == AR_DATA_TYPE__LIST,
+              "List literal result should be a list");
+    AR_ASSERT(ar_data__list_count(own_list) == 1,
+              "List literal should contain one item");
     ar_data_t **own_items = ar_data__list_items(own_list);
-    assert(own_items != NULL);
+    AR_ASSERT(own_items != NULL, "List items should be available");
     _assert_string_value(own_items[0], "id=42");
     AR__HEAP__FREE(own_items);
     ar_data__destroy(own_list);
 
+    // When evaluating a map literal containing build()
     ar_data_t *own_map = _evaluate_expression_text(
         own_fixture,
         "{payload: build(\"name={name}\", {name: \"Ada\"})}"
     );
-    assert(ar_data__get_type(own_map) == AR_DATA_TYPE__MAP);
+
+    // Then the nested build() result should be stored as a string field
+    AR_ASSERT(ar_data__get_type(own_map) == AR_DATA_TYPE__MAP,
+              "Map literal result should be a map");
     ar_data_t *ref_payload = ar_data__get_map_data(own_map, "payload");
     _assert_string_value(ref_payload, "name=Ada");
     ar_data__destroy(own_map);
@@ -1287,28 +1303,38 @@ static void test_evaluate_build_function_call_in_literals(void) {
 static void test_evaluate_build_returns_string_for_bad_inputs(void) {
     printf("Testing expression evaluator build returns string for bad inputs...\n");
 
+    // Given a fixture with an expression evaluator
     ar_evaluator_fixture_t *own_fixture =
         ar_evaluator_fixture__create("test_evaluate_build_returns_string_for_bad_inputs");
-    assert(own_fixture != NULL);
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
 
+    // When the values argument is not a map
     ar_data_t *own_non_map_values = _evaluate_expression_text(
         own_fixture,
         "build(\"Name: {name}\", \"not a map\")"
     );
+
+    // Then unresolved placeholders should remain unchanged
     _assert_string_value(own_non_map_values, "Name: {name}");
     ar_data__destroy(own_non_map_values);
 
+    // When the template argument is not a string
     ar_data_t *own_non_string_template = _evaluate_expression_text(
         own_fixture,
         "build({template: \"Name: {name}\"}, {name: \"Ada\"})"
     );
+
+    // Then build() should return a safe string fallback
     _assert_string_value(own_non_string_template, "");
     ar_data__destroy(own_non_string_template);
 
+    // When a placeholder value cannot be converted for building
     ar_data_t *own_non_string_value = _evaluate_expression_text(
         own_fixture,
         "build(\"items={items}\", {items: [1, 2]})"
     );
+
+    // Then the placeholder should remain unchanged
     _assert_string_value(own_non_string_value, "items={items}");
     ar_data__destroy(own_non_string_value);
 
@@ -1318,38 +1344,52 @@ static void test_evaluate_build_returns_string_for_bad_inputs(void) {
 static void test_evaluate_build_is_path_neutral_for_memory_self(void) {
     printf("Testing expression evaluator build path-neutral memory.self handling...\n");
 
+    // Given memory with a field named self
     ar_evaluator_fixture_t *own_fixture =
         ar_evaluator_fixture__create("test_evaluate_build_is_path_neutral_for_memory_self");
-    assert(own_fixture != NULL);
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
 
     ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
-    assert(ar_data__set_map_integer(mut_memory, "self", 7));
+    AR_ASSERT(ar_data__set_map_integer(mut_memory, "self", 7),
+              "Memory setup should store self value");
 
+    // When build() receives the evaluated memory map
     ar_data_t *own_map_path = _evaluate_expression_text(
         own_fixture,
         "build(\"{self}\", memory)"
     );
+
+    // Then it should use the map's self field
     _assert_string_value(own_map_path, "7");
     ar_data__destroy(own_map_path);
 
+    // When build() receives an equivalent literal map
     ar_data_t *own_literal_map = _evaluate_expression_text(
         own_fixture,
         "build(\"{self}\", {self: 7})"
     );
+
+    // Then it should behave the same way
     _assert_string_value(own_literal_map, "7");
     ar_data__destroy(own_literal_map);
 
+    // When build() receives the evaluated memory.self integer
     ar_data_t *own_memory_self = _evaluate_expression_text(
         own_fixture,
         "build(\"{self}\", memory.self)"
     );
+
+    // Then the non-map value should leave the placeholder unresolved
     _assert_string_value(own_memory_self, "{self}");
     ar_data__destroy(own_memory_self);
 
+    // When build() receives an equivalent integer literal
     ar_data_t *own_literal_integer = _evaluate_expression_text(
         own_fixture,
         "build(\"{self}\", 7)"
     );
+
+    // Then it should behave the same way
     _assert_string_value(own_literal_integer, "{self}");
     ar_data__destroy(own_literal_integer);
 
@@ -1359,28 +1399,42 @@ static void test_evaluate_build_is_path_neutral_for_memory_self(void) {
 static void test_evaluate_build_preserves_borrowed_frame_maps(void) {
     printf("Testing expression evaluator build preserves borrowed frame maps...\n");
 
+    // Given memory whose lifetime is owned by the frame
     ar_evaluator_fixture_t *own_fixture =
         ar_evaluator_fixture__create("test_evaluate_build_preserves_borrowed_frame_maps");
-    assert(own_fixture != NULL);
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
 
     ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
-    assert(ar_data__set_map_string(mut_memory, "sentinel", "alive"));
+    AR_ASSERT(ar_data__set_map_string(mut_memory, "sentinel", "alive"),
+              "Memory setup should store sentinel value");
 
+    // When build() reads the root memory map as values
     ar_data_t *own_result = _evaluate_expression_text(
         own_fixture,
         "build(\"sentinel={sentinel}\", memory)"
     );
+
+    // Then it should build from the map without destroying frame memory
     _assert_string_value(own_result, "sentinel=alive");
     ar_data__destroy(own_result);
-    assert(strcmp(ar_data__get_map_string(mut_memory, "sentinel"), "alive") == 0);
+    const char *ref_sentinel = ar_data__get_map_string(mut_memory, "sentinel");
+    AR_ASSERT(ref_sentinel != NULL, "Frame memory should retain sentinel");
+    AR_ASSERT(strcmp(ref_sentinel, "alive") == 0,
+              "Frame memory value should remain unchanged");
 
+    // When build() reads the root memory map as a non-string template
     ar_data_t *own_template_result = _evaluate_expression_text(
         own_fixture,
         "build(memory, memory)"
     );
+
+    // Then it should return the fallback string without destroying frame memory
     _assert_string_value(own_template_result, "");
     ar_data__destroy(own_template_result);
-    assert(strcmp(ar_data__get_map_string(mut_memory, "sentinel"), "alive") == 0);
+    ref_sentinel = ar_data__get_map_string(mut_memory, "sentinel");
+    AR_ASSERT(ref_sentinel != NULL, "Frame memory should still retain sentinel");
+    AR_ASSERT(strcmp(ref_sentinel, "alive") == 0,
+              "Frame memory value should still remain unchanged");
 
     ar_evaluator_fixture__destroy(own_fixture);
 }

@@ -330,27 +330,31 @@ static void test_assignment_instruction_parser__parse_build_call_expression(void
     printf("Testing assignment parsing with build call expression...\n");
 
     // Given an assignment whose RHS is a pure build() expression
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
+    ar_log_t *own_log = ar_log__create();
+    AR_ASSERT(own_log != NULL, "Log creation should succeed");
     const char *instruction = "memory.result := build(\"Hello {name}!\", {name: \"Ada\"})";
     ar_assignment_instruction_parser_t *own_parser =
-        ar_assignment_instruction_parser__create(log);
-    assert(own_parser != NULL);
+        ar_assignment_instruction_parser__create(own_log);
+    AR_ASSERT(own_parser != NULL, "Assignment parser creation should succeed");
 
     // When parsing the assignment directly
     ar_instruction_ast_t *own_ast =
         ar_assignment_instruction_parser__parse(own_parser, instruction);
 
     // Then the assignment parser should accept the build() expression
-    assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT);
-    assert(strcmp(ar_instruction_ast__get_assignment_path(own_ast), "memory.result") == 0);
-    assert(ar_instruction_ast__get_assignment_expression_ast(own_ast) != NULL);
-    assert(ar_log__get_last_error_message(log) == NULL);
+    AR_ASSERT(own_ast != NULL, "Build expression assignment should parse");
+    AR_ASSERT(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT,
+              "Build expression should parse as an assignment RHS");
+    AR_ASSERT(strcmp(ar_instruction_ast__get_assignment_path(own_ast), "memory.result") == 0,
+              "Assignment path should be preserved");
+    AR_ASSERT(ar_instruction_ast__get_assignment_expression_ast(own_ast) != NULL,
+              "Assignment should carry parsed build expression AST");
+    AR_ASSERT(ar_log__get_last_error_message(own_log) == NULL,
+              "Parser should not log an error for build expression assignment");
 
     ar_instruction_ast__destroy(own_ast);
     ar_assignment_instruction_parser__destroy(own_parser);
-    ar_log__destroy(log);
+    ar_log__destroy(own_log);
 }
 
 /**

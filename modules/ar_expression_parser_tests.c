@@ -6,6 +6,7 @@
 #include "ar_expression_ast.h"
 #include "ar_heap.h"
 #include "ar_log.h"
+#include "ar_assert.h"
 
 
 static void test_create_parser_with_log(void) {
@@ -326,27 +327,31 @@ static void test_parse_build_pure_function_call_expression(void) {
     printf("Testing build pure function call expression parsing...\n");
 
     // Given a pure build() call in expression position
-    ar_log_t *log = ar_log__create();
-    assert(log != NULL);
-    ar_expression_parser_t *parser = ar_expression_parser__create(
-        log,
+    ar_log_t *own_log = ar_log__create();
+    AR_ASSERT(own_log != NULL, "Log creation should succeed");
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(
+        own_log,
         "build(\"Hello {name}!\", {name: \"Ada\"})"
     );
-    assert(parser != NULL);
+    AR_ASSERT(own_parser != NULL, "Expression parser creation should succeed");
 
     // When parsing it as an expression
-    ar_expression_ast_t *ast = ar_expression_parser__parse_expression(parser);
+    ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
 
     // Then the expression parser should accept the pure call
-    assert(ast != NULL);
-    assert(ar_expression_ast__get_type(ast) == AR_EXPRESSION_AST_TYPE__CALL);
-    assert(strcmp(ar_expression_ast__get_function_name(ast), "build") == 0);
-    assert(ar_expression_ast__get_function_arg_count(ast) == 2);
-    assert(ar_log__get_last_error_message(log) == NULL);
+    AR_ASSERT(own_ast != NULL, "Build call expression should parse");
+    AR_ASSERT(ar_expression_ast__get_type(own_ast) == AR_EXPRESSION_AST_TYPE__CALL,
+              "Build call should produce a call expression AST");
+    AR_ASSERT(strcmp(ar_expression_ast__get_function_name(own_ast), "build") == 0,
+              "Build call should preserve the function name");
+    AR_ASSERT(ar_expression_ast__get_function_arg_count(own_ast) == 2,
+              "Build call should preserve both arguments");
+    AR_ASSERT(ar_log__get_last_error_message(own_log) == NULL,
+              "Parser should not log an error for pure build expression");
 
-    ar_expression_ast__destroy(ast);
-    ar_expression_parser__destroy(parser);
-    ar_log__destroy(log);
+    ar_expression_ast__destroy(own_ast);
+    ar_expression_parser__destroy(own_parser);
+    ar_log__destroy(own_log);
 }
 
 static void test_reject_effectful_function_call_expression(void) {
