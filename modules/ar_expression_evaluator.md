@@ -14,7 +14,7 @@ The expression evaluator module provides functionality for evaluating expression
 - **Single Evaluation Function**: Unified interface that handles all expression types internally
 - **Memory and Context Access**: Supports evaluation of memory.x and context.x paths via frame
 - **Container Literals**: Evaluates list and map literal AST nodes into fresh ar_data_t containers
-- **Pure Function Calls**: Evaluates registered pure calls such as `parse(...)` into fresh values
+- **Pure Function Calls**: Evaluates registered pure calls such as `parse(...)` and `build(...)` into fresh values
 - **Binary Operations**: Implements all arithmetic and comparison operators
 - **Recursive Evaluation**: Properly handles nested expressions through recursion
 - **Ownership Semantics**: Clear distinction between references (memory access) and owned values (operations)
@@ -50,7 +50,7 @@ The evaluator follows strict ownership semantics:
 - **Memory Access Results**: Returns borrowed references to existing values in frame's memory/context
 - **Literal Results**: Returns new owned values that caller must destroy
 - **Literal Container Results**: Returns new list/map values containing owned evaluated child values
-- **Pure Call Results**: Return new owned values; `parse(...)` always returns a new MAP when allocation succeeds
+- **Pure Call Results**: Return new owned values; `parse(...)` returns a new MAP and `build(...)` returns a new STRING when allocation succeeds
 - **Operation Results**: Returns new owned values that caller must destroy
 - **Binary Operations**: Creates new values for all arithmetic and comparison results
 
@@ -65,13 +65,22 @@ Supports evaluation of all AgeRun data types:
 
 ## Pure Function Calls
 
-The evaluator supports registered pure function calls through generic `CALL` AST nodes. `parse(...)`
-is currently the registered pure call. It evaluates its arguments using ordinary expression semantics
-and passes the resulting values to the shared parse operation:
+The evaluator supports registered pure function calls through generic `CALL` AST nodes. Pure calls
+evaluate their arguments using ordinary expression semantics and pass the resulting values to shared
+pure operations.
+
+For `parse(...)`:
 - STRING, INTEGER, and DOUBLE arguments are interpreted as strings.
 - Missing values, LIST or MAP arguments, malformed templates, and non-matching input return an empty MAP.
 - Placeholder names are ordinary result keys; `self` and nested `self.*` fields are allowed in the
   returned map when storage rules allow the destination.
+
+For `build(...)`:
+- STRING, INTEGER, and DOUBLE templates are interpreted as strings.
+- Missing or non-primitive templates use an empty string fallback.
+- Placeholders are substituted from MAP values when the matched value is STRING, INTEGER, or DOUBLE.
+- Missing placeholders, non-MAP values arguments, and non-primitive placeholder values are preserved
+  unchanged in the returned STRING.
 
 ## Binary Operations
 

@@ -1212,12 +1212,20 @@ The [parse instruction evaluator module](ar_parse_instruction_evaluator.md) hand
 - **Pattern Matching**: Supports placeholder extraction with `{name}` syntax
 - **Result Storage**: Stores extracted values in memory map
 
+#### Build Module (`ar_build`)
+
+The [build module](ar_build.md) provides pure value-level template building:
+- **Pure Operation**: Returns a new string without mutating runtime state
+- **Fallback Semantics**: Preserves unresolved placeholders and returns string fallbacks
+- **Shared Semantics**: Used by expression `build(...)` and instruction-level build evaluation
+
 #### Build Instruction Evaluator Module (`ar_build_instruction_evaluator`)
 
 The [build instruction evaluator module](ar_build_instruction_evaluator.md) handles string building:
 - **Template Building**: Constructs strings from templates with placeholders
 - **Value Substitution**: Replaces `{key}` with values from provided map
-- **Type Conversion**: Converts all value types to strings
+- **Type Conversion**: Converts string, integer, and double values to strings
+- **Shared Build Semantics**: Delegates placeholder expansion to `ar_build`
 
 #### Complete Instruction Evaluator Module (`ar_complete_instruction_evaluator`)
 
@@ -1332,7 +1340,7 @@ function-call argument-list grammar used by C and Zig instruction parsers:
 - **Scope Boundary**: Does not decide instruction names or instruction-specific arity
   rules
 - **Language Constraint**: Preserves nested call text as one argument, while expression
-  parsing still rejects function calls as expressions
+  parsing still rejects unknown and effectful function calls as expressions
 
 #### Assignment Instruction Parser Module (`ar_assignment_instruction_parser`)
 
@@ -1364,7 +1372,7 @@ The [parse instruction parser module](ar_parse_instruction_parser.md) handles pa
 The [build instruction parser module](ar_build_instruction_parser.md) handles parsing of build function calls:
 - **Build Function Syntax**: Parses `build(template, map)` format
 - **Template Placeholders**: Combines template with values using `{variable}` syntax
-- **Map Expression**: Second argument must be a map expression
+- **Map Expression**: Second argument must evaluate to a map for instruction-level evaluation
 - **Optional Assignment**: Supports `memory.result := build(...)` syntax
 - **String Handling**: Uses shared function-call boundary parsing for quoted templates; expression string values remain raw
 - **Instantiable Parser**: Follows create/destroy lifecycle pattern

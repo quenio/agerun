@@ -54,9 +54,11 @@ expressions and returns an `AR_INSTRUCTION_AST_TYPE__APPEND` node.
 `head(...)` and `tail(...)` are routed to their specialized parsers, each of which parses one list
 expression and returns `AR_INSTRUCTION_AST_TYPE__HEAD` or `AR_INSTRUCTION_AST_TYPE__TAIL`.
 
-Assigned `parse(...)` calls, such as `memory.result := parse(template, input)`, are parsed as normal
-assignment instructions whose right-hand side is a pure function call expression. Standalone
-`parse(...)` remains accepted as a function instruction for compatibility and discards its result.
+Assigned pure calls, such as `memory.result := parse(template, input)` or
+`memory.result := build(template, values)`, are parsed as normal assignment instructions whose
+right-hand side is a pure function call expression. Standalone `parse(...)` remains accepted as a
+function instruction for compatibility and discards its result. Standalone `build(...)` keeps the
+existing build instruction behavior.
 
 ## Current implementation notes
 

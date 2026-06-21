@@ -76,7 +76,7 @@ The parser correctly handles:
 The parser:
 1. Validates the function name is "build"
 2. Ensures opening parenthesis follows
-3. Extracts exactly 2 arguments (template string and map expression)
+3. Extracts exactly 2 arguments (template expression and values expression)
 4. Uses shared function-call boundary parsing for quoted argument spans
 5. Creates an AR_INSTRUCTION_AST_TYPE__BUILD node with the parsed arguments
 6. Tracks optional result assignment path

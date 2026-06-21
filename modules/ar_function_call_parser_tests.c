@@ -84,12 +84,12 @@ static void test_function_call_parser__parse_arg_asts_uses_expression_parser(voi
     ar_log__destroy(own_log);
 }
 
-static void test_function_call_parser__keeps_nested_calls_whole_but_not_expressions(void) {
-    printf("Testing nested calls stay whole but are not expressions...\n");
+static void test_function_call_parser__keeps_effectful_nested_calls_whole(void) {
+    printf("Testing effectful nested calls stay whole but are not expressions...\n");
 
     ar_log_t *own_log = ar_log__create();
     assert(own_log != NULL);
-    const char *ref_instruction = "send(0, build(\"x, y\", memory.data))";
+    const char *ref_instruction = "send(0, send(1, memory.data))";
     size_t pos = strlen("send(");
     char **own_args = NULL;
     size_t arg_count = 0;
@@ -105,7 +105,7 @@ static void test_function_call_parser__keeps_nested_calls_whole_but_not_expressi
 
     assert(parsed == true);
     assert(arg_count == 2);
-    assert(strcmp(own_args[1], "build(\"x, y\", memory.data)") == 0);
+    assert(strcmp(own_args[1], "send(1, memory.data)") == 0);
 
     ar_list_t *own_arg_asts = ar_function_call_parser__parse_arg_asts(
         own_log,
@@ -182,7 +182,7 @@ int main(void) {
 
     test_function_call_parser__parse_exact_respects_expression_nesting();
     test_function_call_parser__parse_arg_asts_uses_expression_parser();
-    test_function_call_parser__keeps_nested_calls_whole_but_not_expressions();
+    test_function_call_parser__keeps_effectful_nested_calls_whole();
     test_function_call_parser__rejects_trailing_argument_comma();
     test_function_call_parser__quote_after_even_backslashes_closes_string();
 

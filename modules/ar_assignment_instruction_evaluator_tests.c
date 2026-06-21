@@ -396,6 +396,47 @@ static ar_expression_ast_t *_parse_assignment_test_expression(
     return own_ast;
 }
 
+static void test_assignment_instruction_evaluator__stores_build_expression_string(void) {
+    // Given an assignment whose RHS is a pure build() expression
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_assignment_stores_build_expression_string");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+    AR_ASSERT(ref_frame != NULL, "Frame creation should succeed");
+    ar_expression_evaluator_t *ref_expr_eval =
+        ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_assignment_instruction_evaluator_t *own_evaluator =
+        ar_assignment_instruction_evaluator__create(ref_log, ref_expr_eval);
+    AR_ASSERT(own_evaluator != NULL, "Assignment evaluator creation should succeed");
+
+    ar_expression_ast_t *own_build_ast = _parse_assignment_test_expression(
+        ref_log,
+        "build(\"Hello {name}!\", {name: \"Ada\"})"
+    );
+    ar_instruction_ast_t *ref_ast = ar_evaluator_fixture__create_assignment_expr(
+        own_fixture, "memory.result", own_build_ast
+    );
+    AR_ASSERT(ref_ast != NULL, "Assignment AST creation should succeed");
+
+    // When evaluating the assignment
+    bool result = ar_assignment_instruction_evaluator__evaluate(
+        own_evaluator, ref_frame, ref_ast
+    );
+
+    // Then the built string should be stored in memory
+    AR_ASSERT(result == true, "Assignment evaluation should succeed");
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    const char *ref_result = ar_data__get_map_string(mut_memory, "result");
+    AR_ASSERT(ref_result != NULL, "Assignment should store a result string");
+    AR_ASSERT(strcmp(ref_result, "Hello Ada!") == 0,
+              "Assignment should store the built string");
+
+    ar_assignment_instruction_evaluator__destroy(own_evaluator);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
 static void test_assignment_instruction_evaluator__stores_parse_self_fields_outside_memory_self(void) {
     // Given parse() expressions that produce self and nested self fields
     ar_evaluator_fixture_t *fixture =
@@ -734,6 +775,9 @@ int main(void) {
     
     test_assignment_instruction_evaluator__rejects_assignment_to_memory_self();
     printf("test_assignment_instruction_evaluator__rejects_assignment_to_memory_self passed!\n");
+
+    test_assignment_instruction_evaluator__stores_build_expression_string();
+    printf("test_assignment_instruction_evaluator__stores_build_expression_string passed!\n");
 
     test_assignment_instruction_evaluator__stores_parse_self_fields_outside_memory_self();
     printf("test_assignment_instruction_evaluator__stores_parse_self_fields_outside_memory_self passed!\n");

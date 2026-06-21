@@ -6,6 +6,7 @@
 #include "ar_expression_ast.h"
 #include "ar_heap.h"
 #include "ar_log.h"
+#include "ar_assert.h"
 
 
 static void test_create_parser_with_log(void) {
@@ -320,6 +321,37 @@ static void test_parse_pure_function_call_expression(void) {
     ar_expression_ast__destroy(ast);
     ar_expression_parser__destroy(parser);
     ar_log__destroy(log);
+}
+
+static void test_parse_build_pure_function_call_expression(void) {
+    printf("Testing build pure function call expression parsing...\n");
+
+    // Given a pure build() call in expression position
+    ar_log_t *own_log = ar_log__create();
+    AR_ASSERT(own_log != NULL, "Log creation should succeed");
+    ar_expression_parser_t *own_parser = ar_expression_parser__create(
+        own_log,
+        "build(\"Hello {name}!\", {name: \"Ada\"})"
+    );
+    AR_ASSERT(own_parser != NULL, "Expression parser creation should succeed");
+
+    // When parsing it as an expression
+    ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
+
+    // Then the expression parser should accept the pure call
+    AR_ASSERT(own_ast != NULL, "Build call expression should parse");
+    AR_ASSERT(ar_expression_ast__get_type(own_ast) == AR_EXPRESSION_AST_TYPE__CALL,
+              "Build call should produce a call expression AST");
+    AR_ASSERT(strcmp(ar_expression_ast__get_function_name(own_ast), "build") == 0,
+              "Build call should preserve the function name");
+    AR_ASSERT(ar_expression_ast__get_function_arg_count(own_ast) == 2,
+              "Build call should preserve both arguments");
+    AR_ASSERT(ar_log__get_last_error_message(own_log) == NULL,
+              "Parser should not log an error for pure build expression");
+
+    ar_expression_ast__destroy(own_ast);
+    ar_expression_parser__destroy(own_parser);
+    ar_log__destroy(own_log);
 }
 
 static void test_reject_effectful_function_call_expression(void) {
@@ -996,6 +1028,7 @@ int main(void) {
     test_cascading_null_binary_operations();
     test_cascading_null_nested_expressions();
     test_parse_pure_function_call_expression();
+    test_parse_build_pure_function_call_expression();
     test_reject_effectful_function_call_expression();
     test_reject_effectful_function_call_in_literal_restores_position();
     test_parse_integer_literal();

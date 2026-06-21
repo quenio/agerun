@@ -190,6 +190,9 @@ ignored_errors:
     message: "ERROR: Failed to parse argument expression (at position 34)"
     comment: "Testing nested function-call expression rejection after boundary parsing"
   - context: "ar_function_call_parser_tests"
+    message: "ERROR: Failed to parse argument expression (at position 28)"
+    comment: "Testing nested effectful function-call expression rejection after boundary parsing"
+  - context: "ar_function_call_parser_tests"
     message: "ERROR: Unexpected argument separator (at position 21)"
     comment: "Testing trailing function-call argument comma rejection"
 
