@@ -2,6 +2,7 @@ const std = @import("std");
 const c = @cImport({
     @cInclude("ar_expression_ast.h");
     @cInclude("ar_parse.h");
+    @cInclude("ar_build.h");
     @cInclude("ar_data.h");
     @cInclude("ar_log.h");
     @cInclude("ar_frame.h");
@@ -390,6 +391,37 @@ fn _evaluate_parse_call(
     return own_result;
 }
 
+fn _evaluate_build_call(
+    ref_log: ?*c.ar_log_t,
+    ref_frame: ?*const c.ar_frame_t,
+    ref_node: ?*const c.ar_expression_ast_t
+) ?*c.ar_data_t {
+    if (c.ar_expression_ast__get_function_arg_count(ref_node) != 2) {
+        return c.ar_data__create_string("");
+    }
+
+    const ref_template_ast = c.ar_expression_ast__get_function_arg(ref_node, 0);
+    const ref_values_ast = c.ar_expression_ast__get_function_arg(ref_node, 1);
+
+    const template_result = if (ref_template_ast != null)
+        _evaluate_expression(ref_log, ref_frame, ref_template_ast)
+    else
+        null;
+    defer if (template_result != null) c.ar_data__destroy_if_owned(template_result, ref_frame);
+
+    const values_result = if (ref_values_ast != null)
+        _evaluate_expression(ref_log, ref_frame, ref_values_ast)
+    else
+        null;
+    defer if (values_result != null) c.ar_data__destroy_if_owned(values_result, ref_frame);
+
+    const own_result = c.ar_build__create_result(template_result, values_result);
+    if (own_result == null) {
+        c.ar_log__error(ref_log, "evaluate_function_call: Failed to create build result");
+    }
+    return own_result;
+}
+
 fn _evaluate_function_call(
     ref_log: ?*c.ar_log_t,
     ref_frame: ?*const c.ar_frame_t,
@@ -411,6 +443,10 @@ fn _evaluate_function_call(
 
     if (c.strcmp(function_name, "parse") == 0) {
         return _evaluate_parse_call(ref_log, ref_frame, ref_node);
+    }
+
+    if (c.strcmp(function_name, "build") == 0) {
+        return _evaluate_build_call(ref_log, ref_frame, ref_node);
     }
 
     c.ar_log__error(ref_log, "evaluate_function_call: Unknown pure function");

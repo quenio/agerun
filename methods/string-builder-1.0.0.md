@@ -48,5 +48,5 @@ The implementation uses the parse() function to extract values from the input st
 ## Error Handling
 
 - If parsing fails (template doesn't match input), an empty map is used
-- Placeholders in the output template without corresponding values are left empty
+- Placeholders in the output template without corresponding values are left unchanged
 - Special messages are handled gracefully with empty string operations

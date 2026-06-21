@@ -1063,6 +1063,12 @@ static ar_data_t *_evaluate_expression_text(
     return own_result;
 }
 
+static void _assert_string_value(ar_data_t *ref_data, const char *ref_expected) {
+    assert(ref_data != NULL);
+    assert(ar_data__get_type(ref_data) == AR_DATA_TYPE__STRING);
+    assert(strcmp(ar_data__get_string(ref_data), ref_expected) == 0);
+}
+
 static void test_evaluate_parse_function_call(void) {
     printf("Testing expression evaluator parse function call...\n");
 
@@ -1229,6 +1235,156 @@ static void test_evaluate_parse_preserves_borrowed_frame_maps(void) {
     ar_evaluator_fixture__destroy(own_fixture);
 }
 
+static void test_evaluate_build_function_call(void) {
+    printf("Testing expression evaluator build function call...\n");
+
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_evaluate_build_function_call");
+    assert(own_fixture != NULL);
+
+    ar_data_t *own_result = _evaluate_expression_text(
+        own_fixture,
+        "build(\"Hello {name}!\", {name: \"Ada\"})"
+    );
+
+    _assert_string_value(own_result, "Hello Ada!");
+
+    ar_data__destroy(own_result);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_evaluate_build_function_call_in_literals(void) {
+    printf("Testing expression evaluator build function call in literals...\n");
+
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_evaluate_build_function_call_in_literals");
+    assert(own_fixture != NULL);
+
+    ar_data_t *own_list = _evaluate_expression_text(
+        own_fixture,
+        "[build(\"id={id}\", {id: 42})]"
+    );
+    assert(ar_data__get_type(own_list) == AR_DATA_TYPE__LIST);
+    assert(ar_data__list_count(own_list) == 1);
+    ar_data_t **own_items = ar_data__list_items(own_list);
+    assert(own_items != NULL);
+    _assert_string_value(own_items[0], "id=42");
+    AR__HEAP__FREE(own_items);
+    ar_data__destroy(own_list);
+
+    ar_data_t *own_map = _evaluate_expression_text(
+        own_fixture,
+        "{payload: build(\"name={name}\", {name: \"Ada\"})}"
+    );
+    assert(ar_data__get_type(own_map) == AR_DATA_TYPE__MAP);
+    ar_data_t *ref_payload = ar_data__get_map_data(own_map, "payload");
+    _assert_string_value(ref_payload, "name=Ada");
+    ar_data__destroy(own_map);
+
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_evaluate_build_returns_string_for_bad_inputs(void) {
+    printf("Testing expression evaluator build returns string for bad inputs...\n");
+
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_evaluate_build_returns_string_for_bad_inputs");
+    assert(own_fixture != NULL);
+
+    ar_data_t *own_non_map_values = _evaluate_expression_text(
+        own_fixture,
+        "build(\"Name: {name}\", \"not a map\")"
+    );
+    _assert_string_value(own_non_map_values, "Name: {name}");
+    ar_data__destroy(own_non_map_values);
+
+    ar_data_t *own_non_string_template = _evaluate_expression_text(
+        own_fixture,
+        "build({template: \"Name: {name}\"}, {name: \"Ada\"})"
+    );
+    _assert_string_value(own_non_string_template, "");
+    ar_data__destroy(own_non_string_template);
+
+    ar_data_t *own_non_string_value = _evaluate_expression_text(
+        own_fixture,
+        "build(\"items={items}\", {items: [1, 2]})"
+    );
+    _assert_string_value(own_non_string_value, "items={items}");
+    ar_data__destroy(own_non_string_value);
+
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_evaluate_build_is_path_neutral_for_memory_self(void) {
+    printf("Testing expression evaluator build path-neutral memory.self handling...\n");
+
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_evaluate_build_is_path_neutral_for_memory_self");
+    assert(own_fixture != NULL);
+
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    assert(ar_data__set_map_integer(mut_memory, "self", 7));
+
+    ar_data_t *own_map_path = _evaluate_expression_text(
+        own_fixture,
+        "build(\"{self}\", memory)"
+    );
+    _assert_string_value(own_map_path, "7");
+    ar_data__destroy(own_map_path);
+
+    ar_data_t *own_literal_map = _evaluate_expression_text(
+        own_fixture,
+        "build(\"{self}\", {self: 7})"
+    );
+    _assert_string_value(own_literal_map, "7");
+    ar_data__destroy(own_literal_map);
+
+    ar_data_t *own_memory_self = _evaluate_expression_text(
+        own_fixture,
+        "build(\"{self}\", memory.self)"
+    );
+    _assert_string_value(own_memory_self, "{self}");
+    ar_data__destroy(own_memory_self);
+
+    ar_data_t *own_literal_integer = _evaluate_expression_text(
+        own_fixture,
+        "build(\"{self}\", 7)"
+    );
+    _assert_string_value(own_literal_integer, "{self}");
+    ar_data__destroy(own_literal_integer);
+
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_evaluate_build_preserves_borrowed_frame_maps(void) {
+    printf("Testing expression evaluator build preserves borrowed frame maps...\n");
+
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_evaluate_build_preserves_borrowed_frame_maps");
+    assert(own_fixture != NULL);
+
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    assert(ar_data__set_map_string(mut_memory, "sentinel", "alive"));
+
+    ar_data_t *own_result = _evaluate_expression_text(
+        own_fixture,
+        "build(\"sentinel={sentinel}\", memory)"
+    );
+    _assert_string_value(own_result, "sentinel=alive");
+    ar_data__destroy(own_result);
+    assert(strcmp(ar_data__get_map_string(mut_memory, "sentinel"), "alive") == 0);
+
+    ar_data_t *own_template_result = _evaluate_expression_text(
+        own_fixture,
+        "build(memory, memory)"
+    );
+    _assert_string_value(own_template_result, "");
+    ar_data__destroy(own_template_result);
+    assert(strcmp(ar_data__get_map_string(mut_memory, "sentinel"), "alive") == 0);
+
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
 int main(void) {
     printf("\n=== Expression Evaluator Tests ===\n\n");
     
@@ -1260,6 +1416,11 @@ int main(void) {
     test_evaluate_parse_returns_empty_map_for_bad_inputs();
     test_evaluate_parse_is_path_neutral_for_memory_self();
     test_evaluate_parse_preserves_borrowed_frame_maps();
+    test_evaluate_build_function_call();
+    test_evaluate_build_function_call_in_literals();
+    test_evaluate_build_returns_string_for_bad_inputs();
+    test_evaluate_build_is_path_neutral_for_memory_self();
+    test_evaluate_build_preserves_borrowed_frame_maps();
     
     printf("\nAll expression_evaluator tests passed!\n");
     return 0;

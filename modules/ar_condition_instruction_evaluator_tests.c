@@ -286,6 +286,69 @@ static void test_condition_instruction_evaluator__selected_branch_allows_parse_e
     ar_evaluator_fixture__destroy(own_fixture);
 }
 
+static void test_condition_instruction_evaluator__selected_branch_allows_build_expression(void) {
+    // Given an if instruction whose selected branch is a pure build() expression
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_if_selected_branch_allows_build_expression");
+    assert(own_fixture != NULL);
+
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval =
+        ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+
+    ar_condition_instruction_evaluator_t *own_evaluator =
+        ar_condition_instruction_evaluator__create(ref_log, ref_expr_eval);
+    assert(own_evaluator != NULL);
+
+    const char *args[] = {
+        "1",
+        "build(\"Hello {name}!\", {name: \"Ada\"})",
+        "build(\"Hello {name}!\", {name: \"Byron\"})"
+    };
+    ar_instruction_ast_t *own_ast = ar_instruction_ast__create_function_call(
+        AR_INSTRUCTION_AST_TYPE__IF, "if", args, 3, "memory.result"
+    );
+    assert(own_ast != NULL);
+
+    ar_list_t *own_arg_asts = ar_list__create();
+    assert(own_arg_asts != NULL);
+    assert(ar_list__add_last(own_arg_asts, ar_expression_ast__create_literal_int(1)));
+
+    ar_expression_parser_t *own_true_parser =
+        ar_expression_parser__create(ref_log, "build(\"Hello {name}!\", {name: \"Ada\"})");
+    assert(own_true_parser != NULL);
+    ar_expression_ast_t *own_true_ast =
+        ar_expression_parser__parse_expression(own_true_parser);
+    assert(own_true_ast != NULL);
+    ar_expression_parser__destroy(own_true_parser);
+    assert(ar_list__add_last(own_arg_asts, own_true_ast));
+
+    ar_expression_parser_t *own_false_parser =
+        ar_expression_parser__create(ref_log, "build(\"Hello {name}!\", {name: \"Byron\"})");
+    assert(own_false_parser != NULL);
+    ar_expression_ast_t *own_false_ast =
+        ar_expression_parser__parse_expression(own_false_parser);
+    assert(own_false_ast != NULL);
+    ar_expression_parser__destroy(own_false_parser);
+    assert(ar_list__add_last(own_arg_asts, own_false_ast));
+
+    assert(ar_instruction_ast__set_function_arg_asts(own_ast, own_arg_asts));
+
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+    bool result =
+        ar_condition_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_ast);
+
+    assert(result == true);
+    const char *ref_result = ar_data__get_map_string(mut_memory, "result");
+    assert(ref_result != NULL);
+    assert(strcmp(ref_result, "Hello Ada!") == 0);
+
+    ar_instruction_ast__destroy(own_ast);
+    ar_condition_instruction_evaluator__destroy(own_evaluator);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
 static void test_instruction_evaluator__evaluate_if_true_condition(void) {
     // Given a test fixture with memory containing a condition
     ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_if_true_condition");
@@ -695,7 +758,10 @@ int main(void) {
 
     test_condition_instruction_evaluator__selected_branch_allows_parse_expression();
     printf("test_condition_instruction_evaluator__selected_branch_allows_parse_expression passed!\n");
-    
+
+    test_condition_instruction_evaluator__selected_branch_allows_build_expression();
+    printf("test_condition_instruction_evaluator__selected_branch_allows_build_expression passed!\n");
+
     test_instruction_evaluator__evaluate_if_true_condition();
     printf("test_instruction_evaluator__evaluate_if_true_condition passed!\n");
     

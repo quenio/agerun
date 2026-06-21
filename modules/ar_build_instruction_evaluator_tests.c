@@ -273,6 +273,124 @@ static void test_build_instruction_evaluator__accepts_parse_expression_argument(
     ar_build_instruction_evaluator__destroy(evaluator);
     ar_evaluator_fixture__destroy(own_fixture);
 }
+
+static void test_build_instruction_evaluator__accepts_build_expression_argument(void) {
+    // Given a build instruction whose template argument is a pure build() expression
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_build_accepts_build_expression_argument");
+    assert(own_fixture != NULL);
+
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval =
+        ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+
+    ar_build_instruction_evaluator_t *evaluator =
+        ar_build_instruction_evaluator__create(ref_log, ref_expr_eval);
+    assert(evaluator != NULL);
+
+    const char *args[] = {
+        "build(\"{prefix} {name}!\", {prefix: \"Hello\"})",
+        "{name: \"Ada\"}"
+    };
+    ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
+        AR_INSTRUCTION_AST_TYPE__BUILD, "build", args, 2, "memory.result"
+    );
+    assert(ast != NULL);
+
+    ar_list_t *arg_asts = ar_list__create();
+    assert(arg_asts != NULL);
+
+    ar_expression_parser_t *own_template_parser = ar_expression_parser__create(
+        ref_log,
+        "build(\"{prefix} {name}!\", {prefix: \"Hello\"})"
+    );
+    assert(own_template_parser != NULL);
+    ar_expression_ast_t *template_ast =
+        ar_expression_parser__parse_expression(own_template_parser);
+    assert(template_ast != NULL);
+    ar_expression_parser__destroy(own_template_parser);
+    assert(ar_list__add_last(arg_asts, template_ast));
+
+    ar_expression_parser_t *own_values_parser =
+        ar_expression_parser__create(ref_log, "{name: \"Ada\"}");
+    assert(own_values_parser != NULL);
+    ar_expression_ast_t *values_ast = ar_expression_parser__parse_expression(own_values_parser);
+    assert(values_ast != NULL);
+    ar_expression_parser__destroy(own_values_parser);
+    assert(ar_list__add_last(arg_asts, values_ast));
+
+    assert(ar_instruction_ast__set_function_arg_asts(ast, arg_asts));
+
+    // When evaluating the build instruction
+    bool result = ar_build_instruction_evaluator__evaluate(evaluator, ref_frame, ast);
+
+    // Then the build expression should be usable as the template argument
+    assert(result == true);
+    const char *result_value = ar_data__get_map_string(mut_memory, "result");
+    assert(result_value != NULL);
+    assert(strcmp(result_value, "Hello Ada!") == 0);
+
+    ar_instruction_ast__destroy(ast);
+    ar_build_instruction_evaluator__destroy(evaluator);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_build_instruction_evaluator__does_not_destroy_root_memory_argument(void) {
+    // Given a build instruction whose values argument is the root memory map
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_build_does_not_destroy_root_memory_argument");
+    assert(own_fixture != NULL);
+
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval =
+        ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+
+    assert(ar_data__set_map_string(mut_memory, "name", "Ada"));
+
+    ar_build_instruction_evaluator_t *evaluator =
+        ar_build_instruction_evaluator__create(ref_log, ref_expr_eval);
+    assert(evaluator != NULL);
+
+    const char *args[] = {"\"Hello {name}!\"", "memory"};
+    ar_instruction_ast_t *ast = ar_instruction_ast__create_function_call(
+        AR_INSTRUCTION_AST_TYPE__BUILD, "build", args, 2, "memory.result"
+    );
+    assert(ast != NULL);
+
+    ar_list_t *arg_asts = ar_list__create();
+    assert(arg_asts != NULL);
+
+    ar_expression_ast_t *template_ast =
+        ar_expression_ast__create_literal_string("Hello {name}!");
+    assert(template_ast != NULL);
+    assert(ar_list__add_last(arg_asts, template_ast));
+
+    ar_expression_ast_t *values_ast =
+        ar_expression_ast__create_memory_access("memory", NULL, 0);
+    assert(values_ast != NULL);
+    assert(ar_list__add_last(arg_asts, values_ast));
+
+    assert(ar_instruction_ast__set_function_arg_asts(ast, arg_asts));
+
+    // When evaluating the build instruction
+    bool result = ar_build_instruction_evaluator__evaluate(evaluator, ref_frame, ast);
+
+    // Then root memory remains alive and usable after temporary cleanup
+    assert(result == true);
+    const char *result_value = ar_data__get_map_string(mut_memory, "result");
+    assert(result_value != NULL);
+    assert(strcmp(result_value, "Hello Ada!") == 0);
+    assert(strcmp(ar_data__get_map_string(mut_memory, "name"), "Ada") == 0);
+
+    ar_instruction_ast__destroy(ast);
+    ar_build_instruction_evaluator__destroy(evaluator);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
 static void test_build_instruction_evaluator__evaluate_multiple_variables(void) {
     // Given a test fixture with memory containing a map
     ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_build_instruction_evaluator__evaluate_multiple_variables");
@@ -571,6 +689,12 @@ int main(void) {
 
     test_build_instruction_evaluator__accepts_parse_expression_argument();
     printf("test_build_instruction_evaluator__accepts_parse_expression_argument passed!\n");
+
+    test_build_instruction_evaluator__accepts_build_expression_argument();
+    printf("test_build_instruction_evaluator__accepts_build_expression_argument passed!\n");
+
+    test_build_instruction_evaluator__does_not_destroy_root_memory_argument();
+    printf("test_build_instruction_evaluator__does_not_destroy_root_memory_argument passed!\n");
     
     test_build_instruction_evaluator__evaluate_multiple_variables();
     printf("test_build_instruction_evaluator__evaluate_multiple_variables passed!\n");

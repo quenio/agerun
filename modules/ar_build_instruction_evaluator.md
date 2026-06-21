@@ -56,9 +56,10 @@ The module evaluates build instructions of the form:
 
 Key features:
 1. **Template Substitution**: Replaces `{key}` placeholders with values
-2. **Type Conversion**: Automatically converts all types to strings
+2. **Primitive Type Conversion**: Converts string, integer, and double values to strings
 3. **Map-based Values**: Takes values from a map data structure
 4. **Missing Keys**: Leaves placeholders unchanged if key not found
+5. **Shared Build Semantics**: Delegates placeholder expansion to `ar_build`
 
 ### Template Syntax
 
@@ -88,17 +89,15 @@ The module follows strict memory ownership rules:
 - `ar_instruction_ast`: For accessing instruction AST structure
 - `ar_frame`: For frame-based execution context
 - `ar_data`: For data manipulation
-- `ar_heap`: For memory tracking
+- `ar_build`: For the shared pure build operation
 
 ## Implementation Details
 
 The module:
 1. Evaluates template and values expressions
-2. Validates template is string and values is map
-3. Iterates through template finding placeholders
-4. For each placeholder, looks up value in map
-5. Converts values to strings and substitutes
-6. Builds final string with all substitutions
+2. Validates template is string and values is map for instruction-level compatibility
+3. Passes the resulting values to `ar_build__create_result()`
+4. Stores or discards the returned string according to the instruction result path
 
 ## Usage Example
 

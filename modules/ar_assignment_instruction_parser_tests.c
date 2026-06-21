@@ -326,6 +326,33 @@ static void test_assignment_instruction_parser__parse_parse_call_expression(void
     ar_log__destroy(log);
 }
 
+static void test_assignment_instruction_parser__parse_build_call_expression(void) {
+    printf("Testing assignment parsing with build call expression...\n");
+
+    // Given an assignment whose RHS is a pure build() expression
+    ar_log_t *log = ar_log__create();
+    assert(log != NULL);
+    const char *instruction = "memory.result := build(\"Hello {name}!\", {name: \"Ada\"})";
+    ar_assignment_instruction_parser_t *own_parser =
+        ar_assignment_instruction_parser__create(log);
+    assert(own_parser != NULL);
+
+    // When parsing the assignment directly
+    ar_instruction_ast_t *own_ast =
+        ar_assignment_instruction_parser__parse(own_parser, instruction);
+
+    // Then the assignment parser should accept the build() expression
+    assert(own_ast != NULL);
+    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT);
+    assert(strcmp(ar_instruction_ast__get_assignment_path(own_ast), "memory.result") == 0);
+    assert(ar_instruction_ast__get_assignment_expression_ast(own_ast) != NULL);
+    assert(ar_log__get_last_error_message(log) == NULL);
+
+    ar_instruction_ast__destroy(own_ast);
+    ar_assignment_instruction_parser__destroy(own_parser);
+    ar_log__destroy(log);
+}
+
 /**
  * Tests NULL parameter error logging following patterns from:
  * - kb/test-assertion-strength-patterns.md
@@ -395,6 +422,7 @@ int main(void) {
     // Expression AST integration
     test_assignment_instruction_parser__parse_with_expression_ast();
     test_assignment_instruction_parser__parse_parse_call_expression();
+    test_assignment_instruction_parser__parse_build_call_expression();
     
     // Error logging tests
     test_assignment_instruction_parser__parse_null_instruction();

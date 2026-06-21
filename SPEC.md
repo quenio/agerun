@@ -172,9 +172,9 @@ The current language partially satisfies those principles:
 - **Explicit Exceptions**: Current exceptions include assignment-only multi-line literals,
   memory-only mutation targets, protected `memory.self` paths, no-op `send(0, ...)` and
   `spawn(0, ...)` behavior, and raw string values with boundary-only quote/backslash parsing.
-- **Composability**: Literals, accessors, operators, registered pure calls such as `parse(...)`, and
-  one-line list/map literals compose as expressions. Effectful built-in calls are not expressions and
-  remain sequenced instructions. Multi-line literals are assignment-only.
+- **Composability**: Literals, accessors, operators, registered pure calls such as `parse(...)` and
+  `build(...)`, and one-line list/map literals compose as expressions. Effectful built-in calls are
+  not expressions and remain sequenced instructions. Multi-line literals are assignment-only.
 - **Orthogonality**: Current documented exceptions include memory-only mutation targets, integer `0`
   as several absence/no-op/failure sentinels, and boundary-level quote handling that does not define
   value-level string escape sequences.
@@ -211,6 +211,7 @@ The following BNF grammar defines the syntax of individual instructions allowed 
                               | <if-function>
 
 <pure-function-call> ::= <parse-function>
+                       | <build-function>
 
 <send-function> ::= 'send' '(' <two-function-arguments> ')'
 <parse-function> ::= 'parse' '(' <two-function-arguments> ')'
@@ -251,10 +252,11 @@ Instructions in an agent method can be of two types:
   - `deprecate` - Deprecate an existing method
   - `if` - Evaluates a condition and returns one of two values based on the result
 
-Pure function calls are expressions. `parse(...)` is the first registered pure call and can appear
-anywhere an expression is accepted, including assignment right-hand sides, function-call arguments,
-list items, map values, and selected `if(...)` branch values. A standalone `parse(...)` instruction is
-accepted for compatibility and discards the returned map.
+Pure function calls are expressions. Registered pure calls such as `parse(...)` and `build(...)` can
+appear anywhere an expression is accepted, including assignment right-hand sides, function-call
+arguments, list items, map values, and selected `if(...)` branch values. Standalone pure calls remain
+accepted for compatibility; `parse(...)` discards its returned map, while `build(...)` uses the
+existing top-level build instruction behavior.
 
 Function call instructions can optionally assign their result to a variable. For example:
 - `send(agent_id, message)` - Call the function without storing the result
@@ -271,6 +273,7 @@ Function call instructions can optionally assign their result to a variable. For
 - `if(condition, true_value, false_value)` - Evaluate without storing the result
 - `result := if(condition, true_value, false_value)` - Store the result in a memory variable
 - `memory.parsed := parse("name={name}", message.text)` - Store a pure parse expression result
+- `memory.text := build("Hello {name}", {name: "Ada"})` - Store a pure build expression result
 
 All function-call argument lists use the same language rule for argument boundaries:
 - Arguments are separated only by top-level commas and the closing parenthesis for the call.
@@ -367,7 +370,7 @@ The expression evaluator follows these rules:
 ### 1. Parsing, Building, and Completing Strings
 
 - `parse(template: data, input: data) → map`: Pure expression call that extracts values from input based on the template and returns a new map. STRING, INTEGER, and DOUBLE arguments are interpreted as strings using ordinary conversion rules. Missing values, LIST or MAP arguments, malformed templates, non-matching input, and values that cannot be interpreted as strings return an empty map. Placeholder names are ordinary result keys, so `self` and nested `self.*` fields may appear in the returned map when it is stored outside protected paths.
-- `build(template: string, values: map) → string`: Constructs a string by replacing placeholders in template with corresponding values from values. Always returns a string; placeholders without corresponding values remain unchanged. The template parameter must be a STRING type.
+- `build(template: data, values: data) → string`: Pure expression call that constructs a string by replacing placeholders in the template with corresponding values from a values map. STRING, INTEGER, and DOUBLE templates are interpreted as strings. Missing or non-primitive templates use an empty string fallback. When values is not a MAP, placeholders remain unchanged. Missing placeholders and values that cannot be interpreted as STRING, INTEGER, or DOUBLE also remain unchanged. The operation never mutates the values map. Top-level build instructions preserve the existing compatibility contract: the template argument must evaluate to STRING and the values argument must evaluate to MAP before the shared build operation is applied.
 - `complete(template: string[, values: map]) → map`: Uses a local CPU-only completion backend to complete placeholder variables as strings and returns a new map. When a values map is provided, placeholders with corresponding primitive values are first replaced in the template using build-style substitution, the original values are deep-copied into the result map, and only placeholders still missing from the values map are sent to the local completion backend. When no values map is provided, all placeholders are completed by the backend. The input map is never mutated.
 
 ### 2. List Operations

@@ -96,7 +96,8 @@ Map literal keys are identifiers only. Quoted keys such as `{"name": "Ada"}` are
 
 ### Pure Function Calls
 
-- `parse("name={name}", message.text)` - Produces a `CALL` AST node for the registered pure call
+- `parse("name={name}", message.text)` - Produces a `CALL` AST node for template parsing
+- `build("Hello {name}", {name: "Ada"})` - Produces a `CALL` AST node for template building
 
 Pure function calls can appear anywhere expressions are accepted, including list items, map values,
 assignment right-hand sides, and other function-call arguments. Effectful instruction calls such as
