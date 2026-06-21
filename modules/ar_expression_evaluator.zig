@@ -360,6 +360,46 @@ fn _is_frame_reference(
         c.ar_data__is_owned_by(ref_value, c.ar_frame__get_message(ref_frame));
 }
 
+fn _is_root_frame_value(
+    ref_frame: ?*const c.ar_frame_t,
+    ref_value: ?*const c.ar_data_t
+) bool {
+    if (ref_frame == null or ref_value == null) {
+        return false;
+    }
+
+    return ref_value == c.ar_frame__get_memory(ref_frame) or
+        ref_value == c.ar_frame__get_context(ref_frame) or
+        ref_value == c.ar_frame__get_message(ref_frame);
+}
+
+fn _destroy_temporary_result(
+    ref_result: ?*c.ar_data_t,
+    ref_frame: ?*const c.ar_frame_t
+) void {
+    if (ref_result == null or _is_root_frame_value(ref_frame, ref_result)) {
+        return;
+    }
+
+    c.ar_data__destroy_if_owned(ref_result, ref_frame);
+}
+
+fn _evaluate_read_only_expression(
+    ref_log: ?*c.ar_log_t,
+    ref_frame: ?*const c.ar_frame_t,
+    ref_node: ?*const c.ar_expression_ast_t
+) ?*c.ar_data_t {
+    if (ref_node == null) {
+        return null;
+    }
+
+    if (c.ar_expression_ast__get_type(ref_node) == c.AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS) {
+        return _evaluate_memory_access(ref_log, ref_frame, ref_node);
+    }
+
+    return _evaluate_expression(ref_log, ref_frame, ref_node);
+}
+
 fn _evaluate_parse_call(
     ref_log: ?*c.ar_log_t,
     ref_frame: ?*const c.ar_frame_t,
@@ -404,16 +444,16 @@ fn _evaluate_build_call(
     const ref_values_ast = c.ar_expression_ast__get_function_arg(ref_node, 1);
 
     const template_result = if (ref_template_ast != null)
-        _evaluate_expression(ref_log, ref_frame, ref_template_ast)
+        _evaluate_read_only_expression(ref_log, ref_frame, ref_template_ast)
     else
         null;
-    defer if (template_result != null) c.ar_data__destroy_if_owned(template_result, ref_frame);
+    defer if (template_result != null) _destroy_temporary_result(template_result, ref_frame);
 
     const values_result = if (ref_values_ast != null)
-        _evaluate_expression(ref_log, ref_frame, ref_values_ast)
+        _evaluate_read_only_expression(ref_log, ref_frame, ref_values_ast)
     else
         null;
-    defer if (values_result != null) c.ar_data__destroy_if_owned(values_result, ref_frame);
+    defer if (values_result != null) _destroy_temporary_result(values_result, ref_frame);
 
     const own_result = c.ar_build__create_result(template_result, values_result);
     if (own_result == null) {
