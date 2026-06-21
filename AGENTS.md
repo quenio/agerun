@@ -61,6 +61,12 @@ This is a MANDATORY verification step. Never assume a push succeeded without che
 
 **Preserving Changes**: Always create patches BEFORE reverting files ([details](kb/git-patch-preservation-workflow.md))
 
+**Pre-PR Quality Gate**: Before opening a pull request, marking a draft PR ready for
+review, or asking reviewers to review new changes, run `make check-all` and treat any
+failure as a blocker. This gate is in addition to task-specific validation such as
+`make build 2>&1`, `make check-logs`, sanitizer runs, or focused module tests
+([details](kb/pre-pr-check-all-gate.md)).
+
 **Codex Publish Changes / PR Creation**: The GitHub plugin's Publish Changes skill may fall back to
 local `gh pr create` when the connector cannot infer the repo/head branch cleanly. If PR creation
 fails with `GraphQL: must be a collaborator (createPullRequest)`, check `gh auth status` first and

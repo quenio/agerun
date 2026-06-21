@@ -4,6 +4,7 @@
 #include "ar_assert.h"
 #include "ar_instruction_parser.h"
 #include "ar_instruction_ast.h"
+#include "ar_expression_ast.h"
 #include "ar_list.h"
 #include "ar_heap.h"
 #include "ar_log.h"
@@ -244,49 +245,137 @@ static void test_instruction_parser__parse_append_with_assignment(void) {
 }
 
 static void test_instruction_parser__parse_head(void) {
-    printf("Testing unified parse method for head instruction...\n");
+    printf("Testing unified parse method for assigned head expression...\n");
 
+    // Given an assigned head() expression instruction
     const char *instruction = "memory.next := head(memory.targets)";
     ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
-    assert(own_parser != NULL);
+    AR_ASSERT(own_parser != NULL, "Instruction parser creation should succeed");
 
+    // When parsing via the unified instruction parser
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
 
-    assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__HEAD);
-    assert(strcmp(ar_instruction_ast__get_function_name(own_ast), "head") == 0);
-    assert(ar_instruction_ast__has_result_assignment(own_ast) == true);
-    assert(strcmp(ar_instruction_ast__get_function_result_path(own_ast), "memory.next") == 0);
+    // Then it should parse as assignment with a pure head() expression AST
+    AR_ASSERT(own_ast != NULL, "Assigned head expression should parse");
+    AR_ASSERT(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT,
+              "Assigned head should parse as an assignment instruction");
+    AR_ASSERT(strcmp(ar_instruction_ast__get_assignment_path(own_ast), "memory.next") == 0,
+              "Assigned head should preserve the target path");
+    AR_ASSERT(strcmp(ar_instruction_ast__get_assignment_expression(own_ast),
+                     "head(memory.targets)") == 0,
+              "Assigned head should preserve the RHS expression text");
 
-    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
-    assert(own_args != NULL);
-    assert(ar_list__count(own_args) == 1);
-    ar_list__destroy(own_args);
+    // Then the assignment RHS should expose a pure head() call AST
+    const ar_expression_ast_t *ref_expression_ast =
+        ar_instruction_ast__get_assignment_expression_ast(own_ast);
+    AR_ASSERT(ref_expression_ast != NULL, "Assigned head should have a parsed expression AST");
+    AR_ASSERT(ar_expression_ast__get_type(ref_expression_ast) == AR_EXPRESSION_AST_TYPE__CALL,
+              "Assigned head RHS should parse as a pure call expression");
+    AR_ASSERT(strcmp(ar_expression_ast__get_function_name(ref_expression_ast), "head") == 0,
+              "Assigned head call should preserve the function name");
+    AR_ASSERT(ar_expression_ast__get_function_arg_count(ref_expression_ast) == 1,
+              "Assigned head call should preserve its argument");
 
+    // Cleanup
     ar_instruction_ast__destroy(own_ast);
     ar_instruction_parser__destroy(own_parser);
 }
 
 static void test_instruction_parser__parse_tail(void) {
-    printf("Testing unified parse method for tail instruction...\n");
+    printf("Testing unified parse method for assigned tail expression...\n");
 
+    // Given an assigned tail() expression instruction
     const char *instruction = "memory.remaining := tail(memory.targets)";
     ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
-    assert(own_parser != NULL);
+    AR_ASSERT(own_parser != NULL, "Instruction parser creation should succeed");
 
+    // When parsing via the unified instruction parser
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
 
-    assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__TAIL);
-    assert(strcmp(ar_instruction_ast__get_function_name(own_ast), "tail") == 0);
-    assert(ar_instruction_ast__has_result_assignment(own_ast) == true);
-    assert(strcmp(ar_instruction_ast__get_function_result_path(own_ast), "memory.remaining") == 0);
+    // Then it should parse as assignment with a pure tail() expression AST
+    AR_ASSERT(own_ast != NULL, "Assigned tail expression should parse");
+    AR_ASSERT(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT,
+              "Assigned tail should parse as an assignment instruction");
+    AR_ASSERT(strcmp(ar_instruction_ast__get_assignment_path(own_ast), "memory.remaining") == 0,
+              "Assigned tail should preserve the target path");
+    AR_ASSERT(strcmp(ar_instruction_ast__get_assignment_expression(own_ast),
+                     "tail(memory.targets)") == 0,
+              "Assigned tail should preserve the RHS expression text");
 
+    // Then the assignment RHS should expose a pure tail() call AST
+    const ar_expression_ast_t *ref_expression_ast =
+        ar_instruction_ast__get_assignment_expression_ast(own_ast);
+    AR_ASSERT(ref_expression_ast != NULL, "Assigned tail should have a parsed expression AST");
+    AR_ASSERT(ar_expression_ast__get_type(ref_expression_ast) == AR_EXPRESSION_AST_TYPE__CALL,
+              "Assigned tail RHS should parse as a pure call expression");
+    AR_ASSERT(strcmp(ar_expression_ast__get_function_name(ref_expression_ast), "tail") == 0,
+              "Assigned tail call should preserve the function name");
+    AR_ASSERT(ar_expression_ast__get_function_arg_count(ref_expression_ast) == 1,
+              "Assigned tail call should preserve its argument");
+
+    // Cleanup
+    ar_instruction_ast__destroy(own_ast);
+    ar_instruction_parser__destroy(own_parser);
+}
+
+static void test_instruction_parser__parse_standalone_head(void) {
+    printf("Testing unified parse method for standalone head instruction...\n");
+
+    // Given a standalone head() compatibility instruction
+    const char *instruction = "head(memory.targets)";
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    AR_ASSERT(own_parser != NULL, "Instruction parser creation should succeed");
+
+    // When parsing via the unified instruction parser
+    ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
+
+    // Then it should preserve standalone head instruction compatibility
+    AR_ASSERT(own_ast != NULL, "Standalone head instruction should parse");
+    AR_ASSERT(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__HEAD,
+              "Standalone head should parse as a head instruction");
+    AR_ASSERT(strcmp(ar_instruction_ast__get_function_name(own_ast), "head") == 0,
+              "Standalone head should preserve the function name");
+    AR_ASSERT(ar_instruction_ast__has_result_assignment(own_ast) == false,
+              "Standalone head should not have a result assignment");
+
+    // Then the standalone head instruction should preserve one argument
     ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
-    assert(own_args != NULL);
-    assert(ar_list__count(own_args) == 1);
-    ar_list__destroy(own_args);
+    AR_ASSERT(own_args != NULL, "Standalone head should expose its argument list");
+    AR_ASSERT(ar_list__count(own_args) == 1, "Standalone head should preserve one argument");
 
+    // Cleanup
+    ar_list__destroy(own_args);
+    ar_instruction_ast__destroy(own_ast);
+    ar_instruction_parser__destroy(own_parser);
+}
+
+static void test_instruction_parser__parse_standalone_tail(void) {
+    printf("Testing unified parse method for standalone tail instruction...\n");
+
+    // Given a standalone tail() compatibility instruction
+    const char *instruction = "tail(memory.targets)";
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    AR_ASSERT(own_parser != NULL, "Instruction parser creation should succeed");
+
+    // When parsing via the unified instruction parser
+    ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
+
+    // Then it should preserve standalone tail instruction compatibility
+    AR_ASSERT(own_ast != NULL, "Standalone tail instruction should parse");
+    AR_ASSERT(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__TAIL,
+              "Standalone tail should parse as a tail instruction");
+    AR_ASSERT(strcmp(ar_instruction_ast__get_function_name(own_ast), "tail") == 0,
+              "Standalone tail should preserve the function name");
+    AR_ASSERT(ar_instruction_ast__has_result_assignment(own_ast) == false,
+              "Standalone tail should not have a result assignment");
+
+    // Then the standalone tail instruction should preserve one argument
+    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
+    AR_ASSERT(own_args != NULL, "Standalone tail should expose its argument list");
+    AR_ASSERT(ar_list__count(own_args) == 1, "Standalone tail should preserve one argument");
+
+    // Cleanup
+    ar_list__destroy(own_args);
     ar_instruction_ast__destroy(own_ast);
     ar_instruction_parser__destroy(own_parser);
 }
@@ -994,6 +1083,8 @@ int main(void) {
     test_instruction_parser__parse_append_with_assignment();
     test_instruction_parser__parse_head();
     test_instruction_parser__parse_tail();
+    test_instruction_parser__parse_standalone_head();
+    test_instruction_parser__parse_standalone_tail();
     test_instruction_parser__parse_method();
     test_instruction_parser__parse_spawn();
     test_instruction_parser__parse_exit_agent();

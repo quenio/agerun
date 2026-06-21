@@ -97,9 +97,10 @@ Each step MUST be added to the session todo list before execution begins ([detai
 ## MANDATORY KB Consultation
 
 Before committing, you MUST:
-1. Search: `grep "commit\|pre-commit\|checklist" kb/README.md`
+1. Search: `grep "commit\|pre-commit\|checklist\|pre-pr\|check-all" kb/README.md`
 2. Read these KB articles IN FULL using the Read tool:
    - `kb/pre-commit-checklist-detailed.md`
+   - `kb/pre-pr-check-all-gate.md`
    - `kb/atomic-commit-documentation-pattern.md`
    - `kb/incomplete-commit-message-recovery-pattern.md`
    - `kb/tdd-feature-completion-before-commit.md`
@@ -109,6 +110,7 @@ Before committing, you MUST:
 3. Check Related Patterns sections in each article and read any additional relevant articles found there
 4. In your response, quote these specific items from the KB:
    - The complete pre-commit checklist steps
+   - The requirement to run `make check-all` before PR creation or review requests
    - Requirements for CHANGELOG.md updates (NON-NEGOTIABLE)
    - When to use supplemental documentation commits
    - Module integration documentation requirements
@@ -163,6 +165,7 @@ After module integration, modules/README.md must be updated per documentation-in
 
 **MANDATORY for successful commit:**
 - [ ] Clean build passes (exit code 0)
+- [ ] `make check-all` passes before PR creation or review request
 - [ ] check-logs finds no issues
 - [ ] Documentation validates
 - [ ] TODO.md updated
@@ -188,6 +191,9 @@ Before starting this step, update the step todo item status to `in_progress`:
 ```bash
 # Run comprehensive build verification
 make clean build 2>&1
+
+# Run shared quality checks before PR creation or review request
+make check-all
 ```
 
 **⚠️ MANDATORY STEP VERIFICATION**
@@ -202,6 +208,7 @@ Before proceeding to Step 2, you MUST verify Step 1 completion via step-verifier
 
 1. **Invoke step-verifier sub-agent** to verify:
    - Clean build completed successfully
+   - `make check-all` completed successfully
    - All tests passed
    - No compilation errors
    - Step objectives were met

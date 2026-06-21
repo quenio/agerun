@@ -360,6 +360,109 @@ static void test_condition_instruction_evaluator__selected_branch_allows_build_e
     ar_evaluator_fixture__destroy(own_fixture);
 }
 
+static ar_expression_ast_t *_parse_condition_test_expression(
+    ar_log_t *ref_log,
+    const char *ref_expression
+) {
+    ar_expression_parser_t *own_parser =
+        ar_expression_parser__create(ref_log, ref_expression);
+    AR_ASSERT(own_parser != NULL, "Expression parser creation should succeed");
+    ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
+    AR_ASSERT(own_ast != NULL, "Expression should parse");
+    ar_expression_parser__destroy(own_parser);
+
+    return own_ast; // Ownership transferred to caller
+}
+
+static void test_condition_instruction_evaluator__selected_branch_allows_head_tail_expression(void) {
+    // Given if instructions whose selected branches are pure head() and tail() expressions
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_if_selected_branch_allows_head_tail_expression");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+
+    // Given expression evaluation dependencies and writable memory
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_expression_evaluator_t *ref_expr_eval =
+        ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+
+    // Given a condition evaluator with a frame
+    ar_condition_instruction_evaluator_t *own_evaluator =
+        ar_condition_instruction_evaluator__create(ref_log, ref_expr_eval);
+    AR_ASSERT(own_evaluator != NULL, "Condition evaluator creation should succeed");
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+    AR_ASSERT(ref_frame != NULL, "Frame creation should succeed");
+
+    // When building an if instruction whose selected branch is head()
+    const char *ref_head_args[] = {"1", "head([4, 5])", "0"};
+    ar_instruction_ast_t *own_head_ast = ar_instruction_ast__create_function_call(
+        AR_INSTRUCTION_AST_TYPE__IF, "if", ref_head_args, 3, "memory.first"
+    );
+    AR_ASSERT(own_head_ast != NULL, "If head AST creation should succeed");
+    ar_list_t *own_head_arg_asts = ar_list__create();
+    AR_ASSERT(own_head_arg_asts != NULL, "Head argument AST list creation should succeed");
+    AR_ASSERT(ar_list__add_last(own_head_arg_asts, ar_expression_ast__create_literal_int(1)),
+              "Head condition AST should be added");
+    AR_ASSERT(ar_list__add_last(
+        own_head_arg_asts,
+        _parse_condition_test_expression(ref_log, "head([4, 5])")
+    ), "Head branch AST should be added");
+    AR_ASSERT(ar_list__add_last(own_head_arg_asts, ar_expression_ast__create_literal_int(0)),
+              "Head false branch AST should be added");
+    AR_ASSERT(ar_instruction_ast__set_function_arg_asts(own_head_ast, own_head_arg_asts),
+              "Head if instruction should take ownership of argument ASTs");
+
+    // When evaluating the head() branch instruction
+    bool result =
+        ar_condition_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_head_ast);
+
+    // Then the selected branch should store the head result
+    AR_ASSERT(result == true, "If head evaluation should succeed");
+    AR_ASSERT(ar_data__get_map_integer(mut_memory, "first") == 4,
+              "Selected head branch should store first item");
+
+    // When building an if instruction whose selected branch is tail()
+    const char *ref_tail_args[] = {"0", "0", "tail([5, 6, 7])"};
+    ar_instruction_ast_t *own_tail_ast = ar_instruction_ast__create_function_call(
+        AR_INSTRUCTION_AST_TYPE__IF, "if", ref_tail_args, 3, "memory.rest"
+    );
+    AR_ASSERT(own_tail_ast != NULL, "If tail AST creation should succeed");
+    ar_list_t *own_tail_arg_asts = ar_list__create();
+    AR_ASSERT(own_tail_arg_asts != NULL, "Tail argument AST list creation should succeed");
+    AR_ASSERT(ar_list__add_last(own_tail_arg_asts, ar_expression_ast__create_literal_int(0)),
+              "Tail condition AST should be added");
+    AR_ASSERT(ar_list__add_last(own_tail_arg_asts, ar_expression_ast__create_literal_int(0)),
+              "Tail true branch AST should be added");
+    AR_ASSERT(ar_list__add_last(
+        own_tail_arg_asts,
+        _parse_condition_test_expression(ref_log, "tail([5, 6, 7])")
+    ), "Tail branch AST should be added");
+    AR_ASSERT(ar_instruction_ast__set_function_arg_asts(own_tail_ast, own_tail_arg_asts),
+              "Tail if instruction should take ownership of argument ASTs");
+
+    // When evaluating the tail() branch instruction
+    result = ar_condition_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_tail_ast);
+
+    // Then the selected branch should store the tail result
+    AR_ASSERT(result == true, "If tail evaluation should succeed");
+    ar_data_t *ref_rest = ar_data__get_map_data(mut_memory, "rest");
+    AR_ASSERT(ref_rest != NULL, "Selected tail branch should store a result");
+    AR_ASSERT(ar_data__get_type(ref_rest) == AR_DATA_TYPE__LIST,
+              "Selected tail branch should store a list");
+    AR_ASSERT(ar_data__list_count(ref_rest) == 2,
+              "Selected tail branch should contain remaining items");
+    AR_ASSERT(ar_data__get_integer(ar_data__list_first(ref_rest)) == 6,
+              "Selected tail branch first item should match");
+    AR_ASSERT(ar_data__get_integer(ar_data__list_last(ref_rest)) == 7,
+              "Selected tail branch last item should match");
+
+    // Cleanup
+    ar_instruction_ast__destroy(own_head_ast);
+    ar_instruction_ast__destroy(own_tail_ast);
+    ar_condition_instruction_evaluator__destroy(own_evaluator);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
 static void test_instruction_evaluator__evaluate_if_true_condition(void) {
     // Given a test fixture with memory containing a condition
     ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("test_if_true_condition");
@@ -772,6 +875,9 @@ int main(void) {
 
     test_condition_instruction_evaluator__selected_branch_allows_build_expression();
     printf("test_condition_instruction_evaluator__selected_branch_allows_build_expression passed!\n");
+
+    test_condition_instruction_evaluator__selected_branch_allows_head_tail_expression();
+    printf("test_condition_instruction_evaluator__selected_branch_allows_head_tail_expression passed!\n");
 
     test_instruction_evaluator__evaluate_if_true_condition();
     printf("test_instruction_evaluator__evaluate_if_true_condition passed!\n");

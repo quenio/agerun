@@ -172,9 +172,10 @@ The current language partially satisfies those principles:
 - **Explicit Exceptions**: Current exceptions include assignment-only multi-line literals,
   memory-only mutation targets, protected `memory.self` paths, no-op `send(0, ...)` and
   `spawn(0, ...)` behavior, and raw string values with boundary-only quote/backslash parsing.
-- **Composability**: Literals, accessors, operators, registered pure calls such as `parse(...)` and
-  `build(...)`, and one-line list/map literals compose as expressions. Effectful built-in calls are
-  not expressions and remain sequenced instructions. Multi-line literals are assignment-only.
+- **Composability**: Literals, accessors, operators, registered pure calls such as `parse(...)`,
+  `build(...)`, `head(...)`, and `tail(...)`, and one-line list/map literals compose as
+  expressions. Effectful built-in calls are not expressions and remain sequenced instructions.
+  Multi-line literals are assignment-only.
 - **Orthogonality**: Current documented exceptions include memory-only mutation targets, integer `0`
   as several absence/no-op/failure sentinels, and boundary-level quote handling that does not define
   value-level string escape sequences.
@@ -212,6 +213,8 @@ The following BNF grammar defines the syntax of individual instructions allowed 
 
 <pure-function-call> ::= <parse-function>
                        | <build-function>
+                       | <head-function>
+                       | <tail-function>
 
 <send-function> ::= 'send' '(' <two-function-arguments> ')'
 <parse-function> ::= 'parse' '(' <two-function-arguments> ')'
@@ -252,11 +255,12 @@ Instructions in an agent method can be of two types:
   - `deprecate` - Deprecate an existing method
   - `if` - Evaluates a condition and returns one of two values based on the result
 
-Pure function calls are expressions. Registered pure calls such as `parse(...)` and `build(...)` can
-appear anywhere an expression is accepted, including assignment right-hand sides, function-call
-arguments, list items, map values, and selected `if(...)` branch values. Standalone pure calls remain
-accepted for compatibility; `parse(...)` discards its returned map, while `build(...)` uses the
-existing top-level build instruction behavior.
+Pure function calls are expressions. Registered pure calls such as `parse(...)`, `build(...)`,
+`head(...)`, and `tail(...)` can appear anywhere an expression is accepted, including assignment
+right-hand sides, function-call arguments, list items, map values, nested pure calls, and selected
+`if(...)` branch values. Standalone pure calls remain accepted for compatibility; `parse(...)`
+discards its returned map, `build(...)` uses the existing top-level build instruction behavior, and
+standalone `head(...)` / `tail(...)` calls compute and discard their values.
 
 Function call instructions can optionally assign their result to a variable. For example:
 - `send(agent_id, message)` - Call the function without storing the result
@@ -264,8 +268,6 @@ Function call instructions can optionally assign their result to a variable. For
 - `memory.result := complete("The capital of {country} is {city}.", memory.values)` - Return a new map containing values from `memory.values` plus generated values for missing placeholders
 - `append(memory.results, message.value)` - Append a value to the existing `memory.results` list
 - `memory.append_ok := append(memory.results, message.value)` - Append a value and store `1` on success or `0` on failure
-- `memory.next := head(memory.targets)` - Store the first item from `memory.targets`
-- `memory.remaining := tail(memory.targets)` - Store a new list with all items after the first
 - `exit(agent_id)` - Exit an agent without storing the result
 - `success := exit(agent_id)` - Exit an agent and store the result
 - `deprecate(method_name, method_version)` - Deprecate a method without storing the result
@@ -274,6 +276,8 @@ Function call instructions can optionally assign their result to a variable. For
 - `result := if(condition, true_value, false_value)` - Store the result in a memory variable
 - `memory.parsed := parse("name={name}", message.text)` - Store a pure parse expression result
 - `memory.text := build("Hello {name}", {name: "Ada"})` - Store a pure build expression result
+- `memory.next := head(memory.targets)` - Store a pure head expression result
+- `memory.remaining := tail(memory.targets)` - Store a pure tail expression result
 
 All function-call argument lists use the same language rule for argument boundaries:
 - Arguments are separated only by top-level commas and the closing parenthesis for the call.
@@ -379,9 +383,9 @@ The expression evaluator follows these rules:
 - The value argument may be any expression. Fresh literal values are transferred directly into the list. Borrowed values from `memory`, `message`, or `context` are claimed when possible or deep-copied before append, preserving nested list/map structure.
 - Without result assignment, target no-ops and append failures complete without mutating memory further. With result assignment, `memory.some_flag := append(...)` stores integer `1` for successful append or `0` for no-op/failure, and the instruction itself completes when the result can be stored. Invalid result assignment paths fail before append mutation. If storing the success result fails after a list append, the appended item is removed before the instruction fails.
 
-- `head(list: expression) → data | integer`: Evaluates the list expression and never mutates the source list. When the value is a LIST with at least one item, `head(...)` stores a deep copy of the first item. Empty lists, missing values, non-LIST values, and values that cannot be safely copied store integer `0`. Without result assignment, the computed value is discarded and the instruction completes.
-- `tail(list: expression) → list | integer`: Evaluates the list expression and never mutates the source list. When the value is a non-empty LIST, `tail(...)` stores a new LIST containing deep copies of every item after the first. When the value is an empty LIST, it stores a new empty LIST. Missing values, non-LIST values, and values that cannot be safely copied store integer `0`, allowing callers to distinguish invalid input from the valid tail of a single-item list.
-- `head(...)` and `tail(...)` preserve nested list/map structure in returned values. Copy failure stores integer `0`: for `head(...)`, when the first item cannot be copied; for `tail(...)`, when any retained item cannot be copied.
+- `head(list: expression) → data | integer`: Pure expression call that evaluates the list expression and never mutates the source list. When the value is a LIST with at least one item, `head(...)` returns a deep copy of the first item. Empty lists, missing values, non-LIST values, and values that cannot be safely copied return integer `0`. Standalone compatibility `head(...)` instructions discard the computed value when no result assignment is present.
+- `tail(list: expression) → list | integer`: Pure expression call that evaluates the list expression and never mutates the source list. When the value is a LIST, `tail(...)` returns a new LIST containing deep copies of every item after the first. Empty lists and single-item lists return a new empty LIST. Missing values, non-LIST values, and values that cannot be safely copied return integer `0`, allowing callers to distinguish invalid input from the valid tail of a single-item list. Standalone compatibility `tail(...)` instructions discard the computed value when no result assignment is present.
+- `head(...)` and `tail(...)` can be nested and used anywhere expressions are accepted. They preserve nested list/map structure in returned values. Copy failure returns integer `0`: for `head(...)`, when the first item cannot be copied; for `tail(...)`, when any retained item cannot be copied.
 - Together, `head(...)` and `tail(...)` let a method consume an unbounded list through self-messages without loops or indexed access. Because `head(...)` uses integer `0` as the empty/invalid sentinel, callers that use `0` as a stop condition must choose an item domain where integer `0` is not a valid item, or wrap arbitrary values in maps/lists so a valid item cannot be confused with the sentinel. For example, a method can process a list of nonzero target IDs one message at a time:
 
 ```

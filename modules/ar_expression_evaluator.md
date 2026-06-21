@@ -14,7 +14,8 @@ The expression evaluator module provides functionality for evaluating expression
 - **Single Evaluation Function**: Unified interface that handles all expression types internally
 - **Memory and Context Access**: Supports evaluation of memory.x and context.x paths via frame
 - **Container Literals**: Evaluates list and map literal AST nodes into fresh ar_data_t containers
-- **Pure Function Calls**: Evaluates registered pure calls such as `parse(...)` and `build(...)` into fresh values
+- **Pure Function Calls**: Evaluates registered pure calls such as `parse(...)`, `build(...)`,
+  `head(...)`, and `tail(...)` into fresh values
 - **Binary Operations**: Implements all arithmetic and comparison operators
 - **Recursive Evaluation**: Properly handles nested expressions through recursion
 - **Ownership Semantics**: Clear distinction between references (memory access) and owned values (operations)
@@ -50,7 +51,9 @@ The evaluator follows strict ownership semantics:
 - **Memory Access Results**: Returns borrowed references to existing values in frame's memory/context
 - **Literal Results**: Returns new owned values that caller must destroy
 - **Literal Container Results**: Returns new list/map values containing owned evaluated child values
-- **Pure Call Results**: Return new owned values; `parse(...)` returns a new MAP and `build(...)` returns a new STRING when allocation succeeds
+- **Pure Call Results**: Return new owned values; `parse(...)` returns a new MAP, `build(...)`
+  returns a new STRING, `head(...)` returns a copied item or integer `0`, and `tail(...)` returns a
+  new LIST or integer `0` when allocation succeeds
 - **Operation Results**: Returns new owned values that caller must destroy
 - **Binary Operations**: Creates new values for all arithmetic and comparison results
 
@@ -81,6 +84,17 @@ For `build(...)`:
 - Placeholders are substituted from MAP values when the matched value is STRING, INTEGER, or DOUBLE.
 - Missing placeholders, non-MAP values arguments, and non-primitive placeholder values are preserved
   unchanged in the returned STRING.
+
+For `head(...)`:
+- LIST values with at least one item return a deep copy of the first item.
+- Empty LIST values, missing values, non-LIST values, and copy failures return integer `0`.
+- Argument handling is path-neutral; storage rules, not argument paths, protect `memory.self`.
+
+For `tail(...)`:
+- LIST values return a new LIST containing deep copies of every item after the first.
+- Empty and single-item LIST values return a new empty LIST.
+- Missing values, non-LIST values, and copy failures return integer `0`.
+- Argument handling is path-neutral; storage rules, not argument paths, protect `memory.self`.
 
 ## Binary Operations
 
