@@ -380,6 +380,7 @@ static void test_parse_head_pure_function_call_expression(void) {
     AR_ASSERT(ar_log__get_last_error_message(own_log) == NULL,
               "Parser should not log an error for pure head expression");
 
+    // Cleanup
     ar_expression_ast__destroy(own_ast);
     ar_expression_parser__destroy(own_parser);
     ar_log__destroy(own_log);
@@ -417,6 +418,7 @@ static void test_parse_nested_tail_pure_function_call_expression(void) {
     AR_ASSERT(ar_log__get_last_error_message(own_log) == NULL,
               "Parser should not log an error for nested pure head/tail expression");
 
+    // Cleanup
     ar_expression_ast__destroy(own_ast);
     ar_expression_parser__destroy(own_parser);
     ar_log__destroy(own_log);

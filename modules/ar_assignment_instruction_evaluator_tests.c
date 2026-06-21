@@ -452,6 +452,7 @@ static void test_assignment_instruction_evaluator__stores_head_tail_expression_r
         ar_assignment_instruction_evaluator__create(ref_log, ref_expr_eval);
     AR_ASSERT(own_evaluator != NULL, "Assignment evaluator creation should succeed");
 
+    // When evaluating an assignment whose RHS is head()
     ar_expression_ast_t *own_head_ast = _parse_assignment_test_expression(
         ref_log,
         "head([9, 10])"
@@ -465,11 +466,13 @@ static void test_assignment_instruction_evaluator__stores_head_tail_expression_r
         own_evaluator, ref_frame, own_head_assignment
     );
 
+    // Then the assignment should store the first item
     AR_ASSERT(result == true, "Head assignment evaluation should succeed");
     ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
     AR_ASSERT(ar_data__get_map_integer(mut_memory, "first") == 9,
               "Assignment should store the head result");
 
+    // When evaluating an assignment whose RHS is tail()
     ar_expression_ast_t *own_tail_ast = _parse_assignment_test_expression(
         ref_log,
         "tail([9, 10, 11])"
@@ -483,6 +486,7 @@ static void test_assignment_instruction_evaluator__stores_head_tail_expression_r
         own_evaluator, ref_frame, own_tail_assignment
     );
 
+    // Then the assignment should store the remaining items
     AR_ASSERT(result == true, "Tail assignment evaluation should succeed");
     ar_data_t *ref_rest = ar_data__get_map_data(mut_memory, "rest");
     AR_ASSERT(ref_rest != NULL, "Assignment should store the tail result");
@@ -495,6 +499,7 @@ static void test_assignment_instruction_evaluator__stores_head_tail_expression_r
     AR_ASSERT(ar_data__get_integer(ar_data__list_last(ref_rest)) == 11,
               "Tail assignment last item should match");
 
+    // Cleanup
     ar_assignment_instruction_evaluator__destroy(own_evaluator);
     ar_evaluator_fixture__destroy(own_fixture);
 }

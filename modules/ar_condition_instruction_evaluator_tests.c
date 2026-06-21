@@ -391,6 +391,7 @@ static void test_condition_instruction_evaluator__selected_branch_allows_head_ta
     ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     AR_ASSERT(ref_frame != NULL, "Frame creation should succeed");
 
+    // When evaluating an if instruction whose selected branch is head()
     const char *ref_head_args[] = {"1", "head([4, 5])", "0"};
     ar_instruction_ast_t *own_head_ast = ar_instruction_ast__create_function_call(
         AR_INSTRUCTION_AST_TYPE__IF, "if", ref_head_args, 3, "memory.first"
@@ -412,10 +413,12 @@ static void test_condition_instruction_evaluator__selected_branch_allows_head_ta
     bool result =
         ar_condition_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_head_ast);
 
+    // Then the selected branch should store the head result
     AR_ASSERT(result == true, "If head evaluation should succeed");
     AR_ASSERT(ar_data__get_map_integer(mut_memory, "first") == 4,
               "Selected head branch should store first item");
 
+    // When evaluating an if instruction whose selected branch is tail()
     const char *ref_tail_args[] = {"0", "0", "tail([5, 6, 7])"};
     ar_instruction_ast_t *own_tail_ast = ar_instruction_ast__create_function_call(
         AR_INSTRUCTION_AST_TYPE__IF, "if", ref_tail_args, 3, "memory.rest"
@@ -436,6 +439,7 @@ static void test_condition_instruction_evaluator__selected_branch_allows_head_ta
 
     result = ar_condition_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_tail_ast);
 
+    // Then the selected branch should store the tail result
     AR_ASSERT(result == true, "If tail evaluation should succeed");
     ar_data_t *ref_rest = ar_data__get_map_data(mut_memory, "rest");
     AR_ASSERT(ref_rest != NULL, "Selected tail branch should store a result");
@@ -448,6 +452,7 @@ static void test_condition_instruction_evaluator__selected_branch_allows_head_ta
     AR_ASSERT(ar_data__get_integer(ar_data__list_last(ref_rest)) == 7,
               "Selected tail branch last item should match");
 
+    // Cleanup
     ar_instruction_ast__destroy(own_head_ast);
     ar_instruction_ast__destroy(own_tail_ast);
     ar_condition_instruction_evaluator__destroy(own_evaluator);

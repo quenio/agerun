@@ -297,6 +297,7 @@ static void test_append_instruction_evaluator__transfers_owned_list_literal(void
 static void test_append_instruction_evaluator__accepts_head_tail_value_arguments(void) {
     printf("Testing append accepts head/tail value arguments...\n");
 
+    // Given an append evaluator with an empty target list in memory
     ar_evaluator_fixture_t *own_fixture = ar_evaluator_fixture__create("append_head_tail_args");
     AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
     ar_append_instruction_evaluator_t *own_evaluator = _create_evaluator(own_fixture);
@@ -309,6 +310,8 @@ static void test_append_instruction_evaluator__accepts_head_tail_value_arguments
               "Results list should be stored");
 
     const char *target_path[] = {"results"};
+
+    // When appending a head() expression result
     ar_instruction_ast_t *own_head_ast = _create_append_ast(
         "memory.results",
         "head([7, 8])",
@@ -321,6 +324,7 @@ static void test_append_instruction_evaluator__accepts_head_tail_value_arguments
         own_evaluator, ref_frame, own_head_ast
     );
 
+    // Then the first list item should be appended
     AR_ASSERT(result == true, "Append should accept head() as a value argument");
     ar_data_t *ref_results = ar_data__get_map_data(mut_memory, "results");
     AR_ASSERT(ar_data__list_count(ref_results) == 1,
@@ -328,6 +332,7 @@ static void test_append_instruction_evaluator__accepts_head_tail_value_arguments
     AR_ASSERT(ar_data__get_integer(ar_data__list_first(ref_results)) == 7,
               "Head argument should append first item");
 
+    // When appending a tail() expression result
     ar_instruction_ast_t *own_tail_ast = _create_append_ast(
         "memory.results",
         "tail([7, 8, 9])",
@@ -340,6 +345,7 @@ static void test_append_instruction_evaluator__accepts_head_tail_value_arguments
         own_evaluator, ref_frame, own_tail_ast
     );
 
+    // Then the tail list should be appended as a value
     AR_ASSERT(result == true, "Append should accept tail() as a value argument");
     AR_ASSERT(ar_data__list_count(ref_results) == 2,
               "Results should contain both appended values");
@@ -354,6 +360,7 @@ static void test_append_instruction_evaluator__accepts_head_tail_value_arguments
     AR_ASSERT(ar_data__get_integer(ar_data__list_last(ref_tail)) == 9,
               "Tail argument last item should match");
 
+    // Cleanup
     ar_instruction_ast__destroy(own_head_ast);
     ar_instruction_ast__destroy(own_tail_ast);
     ar_append_instruction_evaluator__destroy(own_evaluator);
