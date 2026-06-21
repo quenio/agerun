@@ -80,7 +80,10 @@ def _changed_lines_from_diff(args: list[str], path: Path) -> set[int]:
             continue
         start = int(match.group(1))
         count = int(match.group(2) or "1")
-        changed.update(range(start, start + count))
+        if count == 0:
+            changed.add(start)
+        else:
+            changed.update(range(start, start + count))
     return changed
 
 
