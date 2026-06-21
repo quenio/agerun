@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include "ar_assert.h"
 #include "ar_instruction_parser.h"
 #include "ar_instruction_ast.h"
 #include "ar_list.h"
@@ -520,24 +521,27 @@ static void test_parse_expression_assignment(void) {
     ar_instruction_parser__destroy(own_parser);
 }
 
-static void test_parse_build_expression_assignment(void) {
-    printf("Testing build expression assignment parsing...\n");
+static void test_parse_build_expression_assignment_with_fallback_template(void) {
+    printf("Testing build expression assignment with fallback template...\n");
 
-    // Given a build() expression on an assignment RHS
+    // Given an assignment whose RHS is a build() expression with a non-string template
     const char *instruction = "memory.result := build(42, {})";
+    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
+    AR_ASSERT(own_parser != NULL, "Parser creation should succeed");
 
     // When parsing through the unified instruction parser
-    ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
-    assert(own_parser != NULL);
-
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
 
     // Then it should remain a pure assignment expression
-    assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT);
-    assert(strcmp(ar_instruction_ast__get_assignment_path(own_ast), "memory.result") == 0);
-    assert(strcmp(ar_instruction_ast__get_assignment_expression(own_ast), "build(42, {})") == 0);
-    assert(ar_instruction_ast__get_assignment_expression_ast(own_ast) != NULL);
+    AR_ASSERT(own_ast != NULL, "Build expression assignment should parse");
+    AR_ASSERT(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT,
+              "Assigned build() should parse as assignment");
+    AR_ASSERT(strcmp(ar_instruction_ast__get_assignment_path(own_ast), "memory.result") == 0,
+              "Assignment path should be preserved");
+    AR_ASSERT(strcmp(ar_instruction_ast__get_assignment_expression(own_ast), "build(42, {})") == 0,
+              "Assignment expression should be preserved");
+    AR_ASSERT(ar_instruction_ast__get_assignment_expression_ast(own_ast) != NULL,
+              "Assignment should carry parsed expression AST");
 
     ar_instruction_ast__destroy(own_ast);
     ar_instruction_parser__destroy(own_parser);
@@ -692,23 +696,25 @@ static void test_parse_parse_function(void) {
     ar_instruction_parser__destroy(own_parser);
 }
 
-static void test_parse_build_function(void) {
-    printf("Testing build function expression assignment parsing...\n");
+static void test_parse_build_expression_assignment_with_map_values(void) {
+    printf("Testing build expression assignment with map values...\n");
     
-    // Given a build function call
+    // Given an assignment whose RHS is a build() expression with map values
     const char *instruction = "memory.greeting := build(\"Hello {name}!\", memory.data)";
-    
-    // When creating a parser and parsing the instruction
     ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
-    assert(own_parser != NULL);
+    AR_ASSERT(own_parser != NULL, "Parser creation should succeed");
     
+    // When parsing through the unified instruction parser
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
     
     // Then it should parse as an ordinary assignment whose RHS is a pure expression
-    assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT);
-    assert(strcmp(ar_instruction_ast__get_assignment_path(own_ast), "memory.greeting") == 0);
-    assert(ar_instruction_ast__get_assignment_expression_ast(own_ast) != NULL);
+    AR_ASSERT(own_ast != NULL, "Build expression assignment should parse");
+    AR_ASSERT(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT,
+              "Assigned build() should parse as assignment");
+    AR_ASSERT(strcmp(ar_instruction_ast__get_assignment_path(own_ast), "memory.greeting") == 0,
+              "Assignment path should be preserved");
+    AR_ASSERT(ar_instruction_ast__get_assignment_expression_ast(own_ast) != NULL,
+              "Assignment should carry parsed expression AST");
     
     ar_instruction_ast__destroy(own_ast);
     ar_instruction_parser__destroy(own_parser);
@@ -1001,7 +1007,7 @@ int main(void) {
     test_parse_string_assignment();
     test_parse_nested_assignment();
     test_parse_expression_assignment();
-    test_parse_build_expression_assignment();
+    test_parse_build_expression_assignment_with_fallback_template();
     
     // Function call tests
     // Send tests moved to ar_send_instruction_parser_tests.c
@@ -1011,7 +1017,7 @@ int main(void) {
     test_parse_exit_one_arg();
     test_parse_deprecate();
     test_parse_parse_function();
-    test_parse_build_function();
+    test_parse_build_expression_assignment_with_map_values();
     
     // Edge cases
     test_parse_whitespace_handling();
