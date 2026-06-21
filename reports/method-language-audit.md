@@ -200,8 +200,8 @@ The current language already does this in useful places. A `memory.*` path visib
 writable state, and one method line visibly identifies one instruction. The less clear cases are
 where one syntactic form hides multiple evaluation paths:
 
-- `memory.value := 1 + 1` is ordinary assignment, while `memory.value := build(...)` is parsed and
-  evaluated through function-instruction result storage.
+- `memory.value := build(template, values)` is ordinary assignment, while
+  `memory.value := head(memory.items)` still uses compatibility function-instruction result storage.
 - `append(memory.items, value)` and `append(message.items, value)` use the same expression-looking
   target position, but only the `memory` target can mutate.
 - Integer `0` can mean ordinary data, condition false, missing value, empty `head(...)`, invalid
