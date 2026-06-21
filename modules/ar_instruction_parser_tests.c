@@ -265,6 +265,7 @@ static void test_instruction_parser__parse_head(void) {
                      "head(memory.targets)") == 0,
               "Assigned head should preserve the RHS expression text");
 
+    // Then the assignment RHS should expose a pure head() call AST
     const ar_expression_ast_t *ref_expression_ast =
         ar_instruction_ast__get_assignment_expression_ast(own_ast);
     AR_ASSERT(ref_expression_ast != NULL, "Assigned head should have a parsed expression AST");
@@ -301,6 +302,7 @@ static void test_instruction_parser__parse_tail(void) {
                      "tail(memory.targets)") == 0,
               "Assigned tail should preserve the RHS expression text");
 
+    // Then the assignment RHS should expose a pure tail() call AST
     const ar_expression_ast_t *ref_expression_ast =
         ar_instruction_ast__get_assignment_expression_ast(own_ast);
     AR_ASSERT(ref_expression_ast != NULL, "Assigned tail should have a parsed expression AST");
@@ -336,13 +338,13 @@ static void test_instruction_parser__parse_standalone_head(void) {
     AR_ASSERT(ar_instruction_ast__has_result_assignment(own_ast) == false,
               "Standalone head should not have a result assignment");
 
+    // Then the standalone head instruction should preserve one argument
     ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     AR_ASSERT(own_args != NULL, "Standalone head should expose its argument list");
     AR_ASSERT(ar_list__count(own_args) == 1, "Standalone head should preserve one argument");
 
     // Cleanup
     ar_list__destroy(own_args);
-
     ar_instruction_ast__destroy(own_ast);
     ar_instruction_parser__destroy(own_parser);
 }
@@ -367,13 +369,13 @@ static void test_instruction_parser__parse_standalone_tail(void) {
     AR_ASSERT(ar_instruction_ast__has_result_assignment(own_ast) == false,
               "Standalone tail should not have a result assignment");
 
+    // Then the standalone tail instruction should preserve one argument
     ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     AR_ASSERT(own_args != NULL, "Standalone tail should expose its argument list");
     AR_ASSERT(ar_list__count(own_args) == 1, "Standalone tail should preserve one argument");
 
     // Cleanup
     ar_list__destroy(own_args);
-
     ar_instruction_ast__destroy(own_ast);
     ar_instruction_parser__destroy(own_parser);
 }

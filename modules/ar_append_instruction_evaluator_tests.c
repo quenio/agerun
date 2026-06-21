@@ -305,13 +305,15 @@ static void test_append_instruction_evaluator__accepts_head_tail_value_arguments
     AR_ASSERT(ref_frame != NULL, "Frame creation should succeed");
     ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
 
+    // Given memory contains the target results list
     ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
     AR_ASSERT(ar_data__set_map_data(mut_memory, "results", ar_data__create_list()),
               "Results list should be stored");
 
+    // Given the append target path names the results list
     const char *target_path[] = {"results"};
 
-    // When appending a head() expression result
+    // When building an append instruction with a head() expression value
     ar_instruction_ast_t *own_head_ast = _create_append_ast(
         "memory.results",
         "head([7, 8])",
@@ -320,6 +322,7 @@ static void test_append_instruction_evaluator__accepts_head_tail_value_arguments
         _parse_append_test_expression(ref_log, "head([7, 8])")
     );
 
+    // When evaluating the head() append instruction
     bool result = ar_append_instruction_evaluator__evaluate(
         own_evaluator, ref_frame, own_head_ast
     );
@@ -332,7 +335,7 @@ static void test_append_instruction_evaluator__accepts_head_tail_value_arguments
     AR_ASSERT(ar_data__get_integer(ar_data__list_first(ref_results)) == 7,
               "Head argument should append first item");
 
-    // When appending a tail() expression result
+    // When building an append instruction with a tail() expression value
     ar_instruction_ast_t *own_tail_ast = _create_append_ast(
         "memory.results",
         "tail([7, 8, 9])",
@@ -341,6 +344,7 @@ static void test_append_instruction_evaluator__accepts_head_tail_value_arguments
         _parse_append_test_expression(ref_log, "tail([7, 8, 9])")
     );
 
+    // When evaluating the tail() append instruction
     result = ar_append_instruction_evaluator__evaluate(
         own_evaluator, ref_frame, own_tail_ast
     );

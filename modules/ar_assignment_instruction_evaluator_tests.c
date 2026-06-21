@@ -443,6 +443,7 @@ static void test_assignment_instruction_evaluator__stores_head_tail_expression_r
         ar_evaluator_fixture__create("test_assignment_stores_head_tail_results");
     AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
 
+    // Given an assignment evaluator with a frame
     ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
     ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     AR_ASSERT(ref_frame != NULL, "Frame creation should succeed");
@@ -452,7 +453,7 @@ static void test_assignment_instruction_evaluator__stores_head_tail_expression_r
         ar_assignment_instruction_evaluator__create(ref_log, ref_expr_eval);
     AR_ASSERT(own_evaluator != NULL, "Assignment evaluator creation should succeed");
 
-    // When evaluating an assignment whose RHS is head()
+    // When building an assignment whose RHS is head()
     ar_expression_ast_t *own_head_ast = _parse_assignment_test_expression(
         ref_log,
         "head([9, 10])"
@@ -462,6 +463,7 @@ static void test_assignment_instruction_evaluator__stores_head_tail_expression_r
     );
     AR_ASSERT(own_head_assignment != NULL, "Head assignment AST creation should succeed");
 
+    // When evaluating the head() assignment
     bool result = ar_assignment_instruction_evaluator__evaluate(
         own_evaluator, ref_frame, own_head_assignment
     );
@@ -472,7 +474,7 @@ static void test_assignment_instruction_evaluator__stores_head_tail_expression_r
     AR_ASSERT(ar_data__get_map_integer(mut_memory, "first") == 9,
               "Assignment should store the head result");
 
-    // When evaluating an assignment whose RHS is tail()
+    // When building an assignment whose RHS is tail()
     ar_expression_ast_t *own_tail_ast = _parse_assignment_test_expression(
         ref_log,
         "tail([9, 10, 11])"
@@ -482,6 +484,7 @@ static void test_assignment_instruction_evaluator__stores_head_tail_expression_r
     );
     AR_ASSERT(own_tail_assignment != NULL, "Tail assignment AST creation should succeed");
 
+    // When evaluating the tail() assignment
     result = ar_assignment_instruction_evaluator__evaluate(
         own_evaluator, ref_frame, own_tail_assignment
     );

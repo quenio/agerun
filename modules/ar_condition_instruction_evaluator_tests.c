@@ -380,18 +380,20 @@ static void test_condition_instruction_evaluator__selected_branch_allows_head_ta
         ar_evaluator_fixture__create("test_if_selected_branch_allows_head_tail_expression");
     AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
 
+    // Given expression evaluation dependencies and writable memory
     ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
     ar_expression_evaluator_t *ref_expr_eval =
         ar_evaluator_fixture__get_expression_evaluator(own_fixture);
     ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
 
+    // Given a condition evaluator with a frame
     ar_condition_instruction_evaluator_t *own_evaluator =
         ar_condition_instruction_evaluator__create(ref_log, ref_expr_eval);
     AR_ASSERT(own_evaluator != NULL, "Condition evaluator creation should succeed");
     ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
     AR_ASSERT(ref_frame != NULL, "Frame creation should succeed");
 
-    // When evaluating an if instruction whose selected branch is head()
+    // When building an if instruction whose selected branch is head()
     const char *ref_head_args[] = {"1", "head([4, 5])", "0"};
     ar_instruction_ast_t *own_head_ast = ar_instruction_ast__create_function_call(
         AR_INSTRUCTION_AST_TYPE__IF, "if", ref_head_args, 3, "memory.first"
@@ -410,6 +412,7 @@ static void test_condition_instruction_evaluator__selected_branch_allows_head_ta
     AR_ASSERT(ar_instruction_ast__set_function_arg_asts(own_head_ast, own_head_arg_asts),
               "Head if instruction should take ownership of argument ASTs");
 
+    // When evaluating the head() branch instruction
     bool result =
         ar_condition_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_head_ast);
 
@@ -418,7 +421,7 @@ static void test_condition_instruction_evaluator__selected_branch_allows_head_ta
     AR_ASSERT(ar_data__get_map_integer(mut_memory, "first") == 4,
               "Selected head branch should store first item");
 
-    // When evaluating an if instruction whose selected branch is tail()
+    // When building an if instruction whose selected branch is tail()
     const char *ref_tail_args[] = {"0", "0", "tail([5, 6, 7])"};
     ar_instruction_ast_t *own_tail_ast = ar_instruction_ast__create_function_call(
         AR_INSTRUCTION_AST_TYPE__IF, "if", ref_tail_args, 3, "memory.rest"
@@ -437,6 +440,7 @@ static void test_condition_instruction_evaluator__selected_branch_allows_head_ta
     AR_ASSERT(ar_instruction_ast__set_function_arg_asts(own_tail_ast, own_tail_arg_asts),
               "Tail if instruction should take ownership of argument ASTs");
 
+    // When evaluating the tail() branch instruction
     result = ar_condition_instruction_evaluator__evaluate(own_evaluator, ref_frame, own_tail_ast);
 
     // Then the selected branch should store the tail result

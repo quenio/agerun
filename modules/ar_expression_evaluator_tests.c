@@ -1300,6 +1300,7 @@ static void test_evaluate_head_tail_is_path_neutral_for_memory_self(void) {
         ar_evaluator_fixture__create("test_evaluate_head_tail_is_path_neutral_for_memory_self");
     AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
 
+    // Given memory.self is populated with list values
     ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
     ar_data_t *own_self_list = ar_data__create_list();
     AR_ASSERT(own_self_list != NULL, "Self list creation should succeed");
