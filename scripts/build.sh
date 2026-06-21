@@ -120,6 +120,7 @@ echo
 echo "Launching parallel builds..."
 run_job "check-naming" "make check-naming" "logs/check-naming.log"
 run_job "check-docs" "make check-docs" "logs/check-docs.log"
+run_job "check-test-structure" "make check-test-structure" "logs/check-test-structure.log"
 run_job "analyze-exec" "make analyze-exec" "logs/analyze-exec.log"
 run_job "analyze-tests" "make analyze-tests" "logs/analyze-tests.log"
 run_job "run-tests" "make run-tests SKIP_COMPLETE_RUNTIME_READY=1" "logs/run-tests.log"
@@ -178,6 +179,11 @@ show_results() {
                             echo "  All checks passed"
                         fi
                         ;;
+                    "check-test-structure")
+                        if grep -q "BDD test structure check passed" "$log" 2>/dev/null; then
+                            grep "Checked .* C test function" "$log" 2>/dev/null | sed 's/^/  /'
+                        fi
+                        ;;
                 esac
             else
                 echo "✗ $name: FAILED"
@@ -219,6 +225,9 @@ show_results() {
                             grep -E "(ERROR:|Invalid|FAILED)" "$log" 2>/dev/null | head -5 | sed 's/^/    /'
                         fi
                         ;;
+                    "check-test-structure")
+                        grep -E "(BDD test structure violations:|block must start)" "$log" 2>/dev/null | head -10 | sed 's/^/    /'
+                        ;;
                     *)
                         grep -E "(ERROR:|FAILED:|error:|failed)" "$log" 2>/dev/null | head -5 | sed 's/^/    /'
                         ;;
@@ -229,7 +238,7 @@ show_results() {
 }
 
 # Display results in order: checks → analysis → runs → sanitizers → tsan
-show_results "Code Quality Checks" "logs/check-naming.log" "logs/check-docs.log"
+show_results "Code Quality Checks" "logs/check-naming.log" "logs/check-docs.log" "logs/check-test-structure.log"
 show_results "Static Analysis" "logs/analyze-exec.log" "logs/analyze-tests.log"
 show_results "Build and Run" "logs/run-tests.log" "logs/run-exec.log"
 show_results "Sanitizers (ASan + UBSan)" "logs/sanitize-tests.log" "logs/sanitize-exec.log"

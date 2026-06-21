@@ -20,6 +20,7 @@ help:
 	@echo "  make analyze-tests - Run static analysis on tests"
 	@echo "  make check-naming - Check naming conventions"
 	@echo "  make check-docs   - Check documentation validity"
+	@echo "  make check-test-structure - Check changed C test BDD block structure"
 	@echo "  make check-kb-links - Check KB article cross-references"
 	@echo "  make check-kb-integration - Verify KB integration quality"
 	@echo "  make check-all    - Run all code quality checks"
@@ -798,8 +799,18 @@ check-docs:
 		exit 1; \
 	fi
 
-# Run all code quality checks (naming conventions and documentation)
-check-all: check-naming check-docs
+# Check changed C test functions for BDD block structure
+check-test-structure:
+	@if command -v python3 >/dev/null 2>&1; then \
+		python3 ./scripts/check_test_structure.py $(TEST_FILES); \
+	else \
+		echo "ERROR: python3 not found - required for test structure validation"; \
+		echo "Install python3 to run check_test_structure.py"; \
+		exit 1; \
+	fi
+
+# Run all code quality checks (naming conventions, documentation, and test structure)
+check-all: check-naming check-docs check-test-structure
 	@echo ""
 	@echo "All code quality checks completed!"
 
@@ -837,7 +848,7 @@ add-newline:
 		exit 1; \
 	fi
 
-.PHONY: help clean clean-vendor-llama-cpu clean-llama-cpp build add-newline check-naming check-docs check-all analyze-exec analyze-tests run-exec run-tests sanitize-exec sanitize-tests tsan-exec tsan-tests install-scan-build print-src print-obj print-llama-config vendor-llama-cpu complete-runtime-ready download-complete-model complete-model-smoke complete-performance-validation complete-performance-validation-linux-container complete-performance-validation-linux-container-cold
+.PHONY: help clean clean-vendor-llama-cpu clean-llama-cpp build add-newline check-naming check-docs check-test-structure check-all analyze-exec analyze-tests run-exec run-tests sanitize-exec sanitize-tests tsan-exec tsan-tests install-scan-build print-src print-obj print-llama-config vendor-llama-cpu complete-runtime-ready download-complete-model complete-model-smoke complete-performance-validation complete-performance-validation-linux-container complete-performance-validation-linux-container-cold
 
 # Debug targets
 print-src:
