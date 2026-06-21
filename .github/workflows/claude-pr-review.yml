@@ -475,14 +475,14 @@ jobs:
             the captured context is insufficient. Do not run mutating gh api
             requests.
             Do not run local validation, self-tests, git diff, Python,
-            external jq, cat, arbitrary cd, or arbitrary compound Bash scripts;
-            denied tool attempts fail this check. Single cd /tmp && gh ...
-            | head ... commands, and their split cd /tmp and short head
-            subcommands, are allowed only for read-only PR metadata or GET
-            comment/review output. Do not redirect gh pr diff to scratch files
-            or run wc to count it; inspect smaller direct diff sections
-            instead. If a fact cannot be inspected with the allowed tools,
-            continue without that optional check.
+            external jq, cat, arbitrary cd, or compound Bash scripts; denied
+            tool attempts fail this check. Do not use Bash pipes, redirection,
+            semicolons, `||`, Bash grep, Bash sed, or Bash wc. Use only one
+            allowed Bash command at a time, such as `gh pr view`, `gh pr diff`,
+            file-specific `gh pr diff ... -- path`, `cd /tmp && gh pr view`,
+            or `cd /tmp && gh pr diff`. If a diff is too large, inspect smaller
+            file-specific diffs, use the Grep/Read tools on checked-out files,
+            or continue without that optional check.
             Report only high-confidence bugs, workflow/configuration failures,
             security problems, or clear repository-instruction violations.
 
