@@ -112,6 +112,54 @@ def _changed_lines(path: Path, check_all: bool, explicit: bool) -> set[int] | No
     return changed
 
 
+def _brace_delta(line: str, in_block_comment: bool) -> tuple[int, bool]:
+    delta = 0
+    index = 0
+    quote: str | None = None
+    escaped = False
+
+    while index < len(line):
+        char = line[index]
+
+        if in_block_comment:
+            if char == "*" and index + 1 < len(line) and line[index + 1] == "/":
+                in_block_comment = False
+                index += 2
+                continue
+            index += 1
+            continue
+
+        if quote:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == quote:
+                quote = None
+            index += 1
+            continue
+
+        if char == "/" and index + 1 < len(line):
+            next_char = line[index + 1]
+            if next_char == "/":
+                break
+            if next_char == "*":
+                in_block_comment = True
+                index += 2
+                continue
+
+        if char in ('"', "'"):
+            quote = char
+        elif char == "{":
+            delta += 1
+        elif char == "}":
+            delta -= 1
+
+        index += 1
+
+    return delta, in_block_comment
+
+
 def _test_ranges(path: Path) -> list[tuple[str, int, int, list[str]]]:
     lines = path.read_text().splitlines()
     ranges: list[tuple[str, int, int, list[str]]] = []
@@ -124,10 +172,15 @@ def _test_ranges(path: Path) -> list[tuple[str, int, int, list[str]]]:
 
         name = match.group(1)
         start = line_index + 1
-        brace_depth = lines[line_index].count("{") - lines[line_index].count("}")
+        brace_delta, in_block_comment = _brace_delta(lines[line_index], False)
+        brace_depth = brace_delta
         end_index = line_index + 1
         while end_index < len(lines) and brace_depth > 0:
-            brace_depth += lines[end_index].count("{") - lines[end_index].count("}")
+            brace_delta, in_block_comment = _brace_delta(
+                lines[end_index],
+                in_block_comment,
+            )
+            brace_depth += brace_delta
             end_index += 1
 
         end = end_index
