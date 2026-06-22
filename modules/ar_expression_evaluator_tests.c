@@ -1088,6 +1088,200 @@ static void _assert_empty_list(ar_data_t *ref_data) {
               "List result should be empty");
 }
 
+static void test_evaluate_if_function_call_truthiness(void) {
+    printf("Testing expression evaluator if function call truthiness...\n");
+
+    // Given a fixture for evaluating pure if() calls
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_evaluate_if_function_call_truthiness");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+
+    // When the condition is a nonzero integer
+    ar_data_t *own_true = _evaluate_expression_text(own_fixture, "if(7, \"yes\", \"no\")");
+
+    // Then the true branch should be selected
+    _assert_string_value(own_true, "yes");
+    ar_data__destroy(own_true);
+
+    // When the condition is integer zero
+    ar_data_t *own_false = _evaluate_expression_text(own_fixture, "if(0, \"yes\", \"no\")");
+
+    // Then the false branch should be selected
+    _assert_string_value(own_false, "no");
+    ar_data__destroy(own_false);
+
+    // When the condition is not an integer
+    ar_data_t *own_non_integer = _evaluate_expression_text(
+        own_fixture,
+        "if(\"truthy-looking\", \"yes\", \"no\")"
+    );
+
+    // Then the false branch should be selected
+    _assert_string_value(own_non_integer, "no");
+    ar_data__destroy(own_non_integer);
+
+    // When the condition cannot produce a value
+    ar_data_t *own_missing = _evaluate_expression_text(
+        own_fixture,
+        "if(memory.missing_condition, \"yes\", \"no\")"
+    );
+
+    // Then it should behave like a false condition
+    _assert_string_value(own_missing, "no");
+    ar_data__destroy(own_missing);
+
+    // Cleanup
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_evaluate_if_function_call_composition(void) {
+    printf("Testing expression evaluator if function call composition...\n");
+
+    // Given a fixture for evaluating if() in composite expressions
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_evaluate_if_function_call_composition");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+
+    // When evaluating if() around nested pure calls
+    ar_data_t *own_nested = _evaluate_expression_text(
+        own_fixture,
+        "if(1, head([4, 5]), head(tail([4, 5])))"
+    );
+
+    // Then nested pure calls should compose in selected branches
+    _assert_integer_value(own_nested, 4);
+    ar_data__destroy(own_nested);
+
+    // When evaluating a list literal containing if()
+    ar_data_t *own_list = _evaluate_expression_text(
+        own_fixture,
+        "[if(1, 10, 20), if(0, 30, 40)]"
+    );
+
+    // Then the literal should contain selected branch values
+    AR_ASSERT(ar_data__get_type(own_list) == AR_DATA_TYPE__LIST,
+              "Outer result should be a list");
+    AR_ASSERT(ar_data__list_count(own_list) == 2,
+              "Outer list should contain two items");
+    ar_data_t **own_items = ar_data__list_items(own_list);
+    AR_ASSERT(own_items != NULL, "List items should be available");
+    _assert_integer_value(own_items[0], 10);
+    _assert_integer_value(own_items[1], 40);
+    AR__HEAP__FREE(own_items);
+    ar_data__destroy(own_list);
+
+    // When evaluating a map literal containing if()
+    ar_data_t *own_map = _evaluate_expression_text(
+        own_fixture,
+        "{status: if(1, \"ready\", \"blocked\")}"
+    );
+
+    // Then the map value should be the selected branch
+    AR_ASSERT(ar_data__get_type(own_map) == AR_DATA_TYPE__MAP,
+              "Outer result should be a map");
+    const char *ref_status = ar_data__get_map_string(own_map, "status");
+    AR_ASSERT(ref_status != NULL, "Map should contain a status string");
+    AR_ASSERT(strcmp(ref_status, "ready") == 0,
+              "Map should store the selected branch value");
+    ar_data__destroy(own_map);
+
+    // Cleanup
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_evaluate_if_function_call_is_lazy(void) {
+    printf("Testing expression evaluator if function call laziness...\n");
+
+    // Given a fixture with a branch expression that would fail if evaluated
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_evaluate_if_function_call_is_lazy");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    AR_ASSERT(ar_data__set_map_string(mut_memory, "poison", "not-a-map"),
+              "Memory setup should store a non-map value");
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+
+    // When the invalid false branch is not selected
+    ar_data_t *own_true = _evaluate_expression_text(
+        own_fixture,
+        "if(1, \"selected\", memory.poison.field)"
+    );
+
+    // Then only the true branch should be evaluated
+    _assert_string_value(own_true, "selected");
+    AR_ASSERT(ar_log__get_last_error_message(ref_log) == NULL,
+              "Unselected false branch should not log an evaluation error");
+    ar_data__destroy(own_true);
+
+    // When the invalid true branch is not selected
+    ar_data_t *own_false = _evaluate_expression_text(
+        own_fixture,
+        "if(0, memory.poison.field, \"selected\")"
+    );
+
+    // Then only the false branch should be evaluated
+    _assert_string_value(own_false, "selected");
+    AR_ASSERT(ar_log__get_last_error_message(ref_log) == NULL,
+              "Unselected true branch should not log an evaluation error");
+    ar_data__destroy(own_false);
+
+    // Cleanup
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_evaluate_if_selected_invalid_branch_returns_zero(void) {
+    printf("Testing expression evaluator if selected invalid branch fallback...\n");
+
+    // Given a fixture for evaluating fallback behavior
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_evaluate_if_selected_invalid_branch_returns_zero");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+
+    // When the selected branch cannot produce a value
+    ar_data_t *own_result = _evaluate_expression_text(
+        own_fixture,
+        "if(1, memory.missing_value, 9)"
+    );
+
+    // Then expression-level if() should still return a reasonable value
+    _assert_integer_value(own_result, 0);
+    ar_data__destroy(own_result);
+
+    // Cleanup
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
+static void test_evaluate_if_is_path_neutral_for_memory_self(void) {
+    printf("Testing expression evaluator if path-neutral memory.self handling...\n");
+
+    // Given memory.self contains an ordinary map value
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_evaluate_if_is_path_neutral_for_memory_self");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    ar_data_t *own_self_map = ar_data__create_map();
+    AR_ASSERT(own_self_map != NULL, "Self map creation should succeed");
+    AR_ASSERT(ar_data__set_map_integer(own_self_map, "enabled", 1),
+              "Self map should store enabled flag");
+    AR_ASSERT(ar_data__set_map_integer(own_self_map, "value", 42),
+              "Self map should store branch value");
+    AR_ASSERT(ar_data__set_map_data(mut_memory, "self", own_self_map),
+              "Memory setup should store self map");
+
+    // When memory.self and nested memory.self paths are used as if() arguments
+    ar_data_t *own_result = _evaluate_expression_text(
+        own_fixture,
+        "if(memory.self.enabled, memory.self.value, 0)"
+    );
+
+    // Then they should be treated as ordinary argument values
+    _assert_integer_value(own_result, 42);
+    ar_data__destroy(own_result);
+
+    // Cleanup
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
 static void test_evaluate_head_function_call(void) {
     printf("Testing expression evaluator head function call...\n");
 
@@ -1760,6 +1954,11 @@ int main(void) {
     test_evaluate_build_returns_string_for_bad_inputs();
     test_evaluate_build_is_path_neutral_for_memory_self();
     test_evaluate_build_preserves_borrowed_frame_maps();
+    test_evaluate_if_function_call_truthiness();
+    test_evaluate_if_function_call_composition();
+    test_evaluate_if_function_call_is_lazy();
+    test_evaluate_if_selected_invalid_branch_returns_zero();
+    test_evaluate_if_is_path_neutral_for_memory_self();
     test_evaluate_head_function_call();
     test_evaluate_tail_function_call();
     test_evaluate_head_tail_sentinel_cases();

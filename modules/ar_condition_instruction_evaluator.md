@@ -50,9 +50,12 @@ Evaluates a condition instruction using frame-based execution. The frame provide
 
 ### Functionality
 
-The module evaluates conditional instructions of the form:
+The module evaluates compatibility conditional instruction ASTs of the form:
 - `if(condition, true_expr, false_expr)`
-- `memory.result := if(condition, true_expr, false_expr)`
+
+The unified instruction parser now routes `memory.result := if(condition, true_expr, false_expr)`
+through ordinary assignment with a pure expression `if(...)` RHS. This evaluator still supports
+condition ASTs with result paths when they are produced by the specialized condition parser.
 
 Key features:
 1. **Condition Evaluation**: Evaluates the condition expression to determine which branch to take
@@ -82,6 +85,7 @@ The module follows strict memory ownership rules:
 - `ar_instruction_ast`: For accessing instruction AST structure
 - `ar_frame`: For frame-based execution context
 - `ar_data`: For data manipulation
+- `ar_condition`: For shared AgeRun condition truthiness
 - `ar_string`: For string operations
 - `ar_heap`: For memory tracking
 
@@ -92,8 +96,8 @@ branch:
 1. Integer conditions use 0 = false and non-zero = true; non-integer condition values select the false branch
 2. True expression is evaluated only if condition is true
 3. False expression is evaluated only if condition is false
-4. Uses helper functions for expression parsing and evaluation
-5. Handles result storage for assigned conditionals
+4. Uses `ar_condition__is_true()` for shared truthiness with expression-level `if(...)`
+5. Handles result storage for compatibility condition ASTs that still carry result paths
 
 ## Usage Example
 
@@ -107,8 +111,12 @@ ar_condition_instruction_evaluator_t *cond_eval = ar_condition_instruction_evalu
     log, expr_eval
 );
 
-// Parse if instruction: result := if(x > 5, 100, 200)
-ar_instruction_ast_t *ast = ar_instruction_parser__parse_if(parser);
+// Parse standalone if instruction
+ar_instruction_parser_t *parser = ar_instruction_parser__create(log);
+ar_instruction_ast_t *ast = ar_instruction_parser__parse(
+    parser,
+    "if(memory.x > 5, 100, 200)"
+);
 
 // Create memory and frame for evaluation
 ar_data_t *memory = ar_data__create_map();
@@ -119,13 +127,15 @@ ar_frame_t *frame = ar_frame__create(memory, context, message);
 // Evaluate the condition
 bool success = ar_condition_instruction_evaluator__evaluate(cond_eval, frame, ast);
 
-// The appropriate value (100 or 200) has been stored in memory.result
+// The selected branch was evaluated and discarded by the standalone instruction
 
 // Cleanup
 ar_frame__destroy(frame);
 ar_data__destroy(context);
 ar_data__destroy(message);
 ar_data__destroy(memory);
+ar_instruction_ast__destroy(ast);
+ar_instruction_parser__destroy(parser);
 ar_condition_instruction_evaluator__destroy(cond_eval);
 ar_expression_evaluator__destroy(expr_eval);
 ar_log__destroy(log);

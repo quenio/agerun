@@ -7,7 +7,7 @@ In the AgeRun system, a module is a self-contained unit of functionality that pr
 **Module Types**:
 
 1. **C Modules**: Traditional modules with an implementation file (`.c`) and header file (`.h`)
-2. **C-ABI Compatible Zig Modules**: Zig implementations (`.zig`) that maintain full C API compatibility with matching header files (`.h`). Currently implemented in Zig: `ar_assert`, `ar_append_instruction_evaluator`, `ar_build`, `ar_complete_instruction_evaluator`, `ar_complete_instruction_parser`, `ar_expression_ast`, `ar_expression_evaluator`, `ar_function_call_parser`, `ar_head`, `ar_head_instruction_evaluator`, `ar_heap`, `ar_instruction_ast`, `ar_method_ast`, `ar_method_evaluator`, `ar_parse`, `ar_semver`, `ar_string`, `ar_tail`, and `ar_tail_instruction_evaluator`. The `ar_io` module uses a hybrid approach with most functions in Zig (`ar_io.zig`) and variadic functions in C (`ar_io_variadic.c`) due to platform-specific requirements. `ar_local_completion` is a user-approved C exception for direct `llama.cpp` / `libllama` interop behind a stable AgeRun header.
+2. **C-ABI Compatible Zig Modules**: Zig implementations (`.zig`) that maintain full C API compatibility with matching header files (`.h`). Currently implemented in Zig: `ar_assert`, `ar_append_instruction_evaluator`, `ar_build`, `ar_complete_instruction_evaluator`, `ar_complete_instruction_parser`, `ar_condition`, `ar_expression_ast`, `ar_expression_evaluator`, `ar_function_call_parser`, `ar_head`, `ar_head_instruction_evaluator`, `ar_heap`, `ar_instruction_ast`, `ar_method_ast`, `ar_method_evaluator`, `ar_parse`, `ar_semver`, `ar_string`, `ar_tail`, and `ar_tail_instruction_evaluator`. The `ar_io` module uses a hybrid approach with most functions in Zig (`ar_io.zig`) and variadic functions in C (`ar_io_variadic.c`) due to platform-specific requirements. `ar_local_completion` is a user-approved C exception for direct `llama.cpp` / `libllama` interop behind a stable AgeRun header.
 3. **Zig Struct Modules**: Pure Zig modules using TitleCase naming (e.g., `DataStore.zig`) for internal components that don't require C interop. These modules use Zig's idiomatic patterns while maintaining AgeRun's ownership conventions.
 
 Each module typically follows a consistent naming convention with an `ar_` prefix (e.g., `ar_data`, `ar_string`), and has its own test file (`ar_*_tests.c`) that verifies its functionality. Note: File names are being transitioned from `ar_` to `ar_` prefix gradually as files are modified for other reasons.
@@ -1134,6 +1134,8 @@ The [expression parser module](ar_expression_parser.md) provides a recursive des
 - **Recursive Descent**: Implements proper operator precedence through recursive functions
 - **Error Reporting**: Provides detailed error messages with position information
 - **Complete Coverage**: Supports all AgeRun expression types (literals, memory access, binary ops)
+- **Pure Calls**: Parses registered pure calls including `parse(...)`, `build(...)`, `if(...)`,
+  `head(...)`, and `tail(...)` into generic call AST nodes
 - **Proper Precedence**: Implements correct operator precedence and associativity
 - **Memory Safety**: Zero memory leaks with proper cleanup of temporary structures
 - **Depends on AST**: Uses expression_ast module for building parse trees
@@ -1162,7 +1164,7 @@ The expression evaluator module provides evaluation of expression ASTs against m
 - **Type-Specific Functions**: Separate evaluation functions for each AST node type
 - **Memory Access**: Evaluates memory.x and context.x paths with nested navigation
 - **Binary Operations**: Supports all arithmetic and comparison operators
-- **Pure Function Calls**: Evaluates `parse(...)`, `build(...)`, `head(...)`, and `tail(...)`
+- **Pure Function Calls**: Evaluates `parse(...)`, `build(...)`, `if(...)`, `head(...)`, and `tail(...)`
 - **Type Conversions**: Handles automatic promotion between integers and doubles
 - **String Operations**: Implements string concatenation and comparison
 - **Ownership Semantics**: Returns references for memory access, owned values for operations
@@ -1205,6 +1207,13 @@ The [condition instruction evaluator module](ar_condition_instruction_evaluator.
 - **Condition Evaluation**: Evaluates the condition expression
 - **Branch Selection**: Evaluates only the selected branch expression
 - **Truthiness**: Integer `0` is false; non-zero integers are true; non-integer values select the false branch
+
+#### Condition Module (`ar_condition`)
+
+The [condition module](ar_condition.md) owns shared AgeRun condition truthiness:
+- **Shared Truthiness**: Used by expression-level `if(...)` and condition instruction evaluation
+- **Integer Semantics**: Integer `0` is false and nonzero integers are true
+- **Fallback Semantics**: Non-integer and missing values are false
 
 #### Parse Instruction Evaluator Module (`ar_parse_instruction_evaluator`)
 
@@ -1458,7 +1467,8 @@ The [spawn instruction parser module](ar_spawn_instruction_parser.md) handles pa
 
 The [condition instruction parser module](ar_condition_instruction_parser.md) handles parsing of conditional (if) instructions:
 - **If Function Syntax**: Parses `if(condition, then_value, else_value)` format
-- **Optional Assignment**: Supports `memory.result := if(...)` syntax
+- **Compatibility Result Path**: Supports specialized condition ASTs with result paths, while the
+  unified parser treats `memory.result := if(...)` as ordinary assignment expression syntax
 - **Shared Argument Parsing**: Uses the function-call parser for argument boundaries
 - **Complex Conditions**: Parses boolean expressions with operators
 - **Instantiable Parser**: Follows create/destroy lifecycle pattern

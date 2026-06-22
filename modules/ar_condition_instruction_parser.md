@@ -36,7 +36,7 @@ ar_instruction_ast_t *ast1 = ar_condition_instruction_parser__parse(
     NULL
 );
 
-// Parse if with assignment
+// Parse a compatibility if AST with a result path
 ar_instruction_ast_t *ast2 = ar_condition_instruction_parser__parse(
     parser,
     "memory.result := if(memory.age >= 18, \"adult\", \"minor\")",
@@ -61,7 +61,8 @@ ar_log__destroy(own_log); // Only if log was created
 
 The parser handles the if() function with this syntax:
 - `if(condition, then_value, else_value)`
-- Can be used with assignment: `memory.path := if(...)`
+- The specialized parser accepts an optional compatibility result path. The unified instruction
+  parser routes `memory.path := if(...)` through ordinary assignment with an expression RHS.
 
 The parser correctly handles:
 - Nested expressions in arguments
@@ -79,7 +80,7 @@ The parser:
 3. Extracts exactly 3 arguments (condition, then, else)
 4. Uses shared function-call boundary parsing for nested parentheses and quoted argument spans
 5. Creates an AR_INSTRUCTION_AST_TYPE__IF node with the parsed arguments
-6. Tracks optional result assignment path
+6. Tracks optional compatibility result assignment path
 
 ## Error Handling
 

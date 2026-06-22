@@ -507,6 +507,50 @@ static void test_assignment_instruction_evaluator__stores_head_tail_expression_r
     ar_evaluator_fixture__destroy(own_fixture);
 }
 
+static void test_assignment_instruction_evaluator__stores_if_expression_result(void) {
+    // Given an assignment whose RHS value is a pure if() expression
+    ar_evaluator_fixture_t *own_fixture =
+        ar_evaluator_fixture__create("test_assignment_stores_if_expression_result");
+    AR_ASSERT(own_fixture != NULL, "Fixture creation should succeed");
+
+    // Given an assignment evaluator with a frame
+    ar_log_t *ref_log = ar_evaluator_fixture__get_log(own_fixture);
+    ar_frame_t *ref_frame = ar_evaluator_fixture__create_frame(own_fixture);
+    AR_ASSERT(ref_frame != NULL, "Frame creation should succeed");
+    ar_expression_evaluator_t *ref_expr_eval =
+        ar_evaluator_fixture__get_expression_evaluator(own_fixture);
+    ar_assignment_instruction_evaluator_t *own_evaluator =
+        ar_assignment_instruction_evaluator__create(ref_log, ref_expr_eval);
+    AR_ASSERT(own_evaluator != NULL, "Assignment evaluator creation should succeed");
+
+    // When building an assignment whose RHS is if()
+    ar_expression_ast_t *own_if_ast = _parse_assignment_test_expression(
+        ref_log,
+        "if(1, \"ready\", \"blocked\")"
+    );
+    ar_instruction_ast_t *own_assignment = ar_evaluator_fixture__create_assignment_expr(
+        own_fixture, "memory.status", own_if_ast
+    );
+    AR_ASSERT(own_assignment != NULL, "If assignment AST creation should succeed");
+
+    // When evaluating the if() assignment
+    bool result = ar_assignment_instruction_evaluator__evaluate(
+        own_evaluator, ref_frame, own_assignment
+    );
+
+    // Then the assignment should store the selected branch result
+    AR_ASSERT(result == true, "If assignment evaluation should succeed");
+    ar_data_t *mut_memory = ar_evaluator_fixture__get_memory(own_fixture);
+    const char *ref_status = ar_data__get_map_string(mut_memory, "status");
+    AR_ASSERT(ref_status != NULL, "Assignment should store the if result");
+    AR_ASSERT(strcmp(ref_status, "ready") == 0,
+              "Assignment should store the selected branch value");
+
+    // Cleanup
+    ar_assignment_instruction_evaluator__destroy(own_evaluator);
+    ar_evaluator_fixture__destroy(own_fixture);
+}
+
 static void test_assignment_instruction_evaluator__stores_parse_self_fields_outside_memory_self(void) {
     // Given parse() expressions that produce self and nested self fields
     ar_evaluator_fixture_t *fixture =
@@ -851,6 +895,9 @@ int main(void) {
 
     test_assignment_instruction_evaluator__stores_head_tail_expression_results();
     printf("test_assignment_instruction_evaluator__stores_head_tail_expression_results passed!\n");
+
+    test_assignment_instruction_evaluator__stores_if_expression_result();
+    printf("test_assignment_instruction_evaluator__stores_if_expression_result passed!\n");
 
     test_assignment_instruction_evaluator__stores_parse_self_fields_outside_memory_self();
     printf("test_assignment_instruction_evaluator__stores_parse_self_fields_outside_memory_self passed!\n");

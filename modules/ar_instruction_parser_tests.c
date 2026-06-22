@@ -81,12 +81,14 @@ static void test_instruction_parser__parse_send(void) {
     ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
+    // When parsing the instruction
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
     
     // Then it should parse successfully as a send
     assert(own_ast != NULL);
     assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__SEND);
     
+    // Then the send arguments should be preserved
     ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(own_args != NULL);
     assert(ar_list__count(own_args) == 2);
@@ -96,6 +98,7 @@ static void test_instruction_parser__parse_send(void) {
     AR__HEAP__FREE(items);
     ar_list__destroy(own_args);
     
+    // Cleanup
     ar_instruction_ast__destroy(own_ast);
     ar_instruction_parser__destroy(own_parser);
 }
@@ -110,6 +113,7 @@ static void test_instruction_parser__parse_send_with_assignment(void) {
     ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
+    // When parsing the instruction
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
     
     // Then it should parse successfully as a send instruction with result assignment
@@ -118,12 +122,13 @@ static void test_instruction_parser__parse_send_with_assignment(void) {
     assert(ar_instruction_ast__has_result_assignment(own_ast) == true);
     assert(strcmp(ar_instruction_ast__get_function_result_path(own_ast), "memory.result") == 0);
     
-    // Verify arguments
+    // Then arguments should be preserved
     ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
     assert(own_args != NULL);
     assert(ar_list__count(own_args) == 2);
     ar_list__destroy(own_args);
     
+    // Cleanup
     ar_instruction_ast__destroy(own_ast);
     ar_instruction_parser__destroy(own_parser);
 }
@@ -138,12 +143,14 @@ static void test_instruction_parser__parse_if(void) {
     ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
+    // When parsing the instruction
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
     
     // Then it should parse successfully as an if
     assert(own_ast != NULL);
     assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__IF);
     
+    // Cleanup
     ar_instruction_ast__destroy(own_ast);
     ar_instruction_parser__destroy(own_parser);
 }
@@ -158,12 +165,14 @@ static void test_instruction_parser__parse_parse(void) {
     ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
+    // When parsing the instruction
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
     
     // Then it should parse successfully
     assert(own_ast != NULL);
     assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__PARSE);
     
+    // Cleanup
     ar_instruction_ast__destroy(own_ast);
     ar_instruction_parser__destroy(own_parser);
 }
@@ -639,33 +648,38 @@ static void test_parse_build_expression_assignment_with_fallback_template(void) 
 // Send tests moved to ar_send_instruction_parser_tests.c
 
 static void test_parse_if_function(void) {
-    printf("Testing if function parsing...\n");
+    printf("Testing assigned if expression parsing...\n");
     
-    // Given an if function call
+    // Given an assignment whose RHS is an if() expression
     const char *instruction = "memory.level := if(memory.count > 5, \"High\", \"Low\")";
     
     // When creating a parser and parsing the instruction
     ar_instruction_parser_t *own_parser = ar_instruction_parser__create(NULL);
     assert(own_parser != NULL);
     
+    // When parsing the instruction
     ar_instruction_ast_t *own_ast = ar_instruction_parser__parse(own_parser, instruction);
     
-    // Then it should parse as an if function
-    assert(own_ast != NULL);
-    assert(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__IF);
-    assert(strcmp(ar_instruction_ast__get_function_name(own_ast), "if") == 0);
+    // Then it should parse as a normal assignment with an if() expression AST
+    AR_ASSERT(own_ast != NULL, "Assigned if expression should parse");
+    AR_ASSERT(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT,
+              "Assigned if should parse as an assignment");
+    AR_ASSERT(strcmp(ar_instruction_ast__get_assignment_path(own_ast), "memory.level") == 0,
+              "Assignment target should be preserved");
+    AR_ASSERT(strcmp(ar_instruction_ast__get_assignment_expression(own_ast),
+                     "if(memory.count > 5, \"High\", \"Low\")") == 0,
+              "Assignment expression should be preserved");
+    const ar_expression_ast_t *ref_expression_ast =
+        ar_instruction_ast__get_assignment_expression_ast(own_ast);
+    AR_ASSERT(ref_expression_ast != NULL, "Assignment should carry parsed if expression AST");
+    AR_ASSERT(ar_expression_ast__get_type(ref_expression_ast) == AR_EXPRESSION_AST_TYPE__CALL,
+              "Assigned if RHS should parse as a call expression");
+    AR_ASSERT(strcmp(ar_expression_ast__get_function_name(ref_expression_ast), "if") == 0,
+              "Assigned if call should preserve the function name");
+    AR_ASSERT(ar_expression_ast__get_function_arg_count(ref_expression_ast) == 3,
+              "Assigned if should preserve three arguments");
     
-    // Verify arguments
-    ar_list_t *own_args = ar_instruction_ast__get_function_args(own_ast);
-    assert(own_args != NULL);
-    assert(ar_list__count(own_args) == 3);
-    void **own_items = ar_list__items(own_args);
-    assert(strcmp((const char*)own_items[0], "memory.count > 5") == 0);
-    assert(strcmp((const char*)own_items[1], "\"High\"") == 0);
-    assert(strcmp((const char*)own_items[2], "\"Low\"") == 0);
-    AR__HEAP__FREE(own_items);
-    ar_list__destroy(own_args);
-    
+    // Cleanup
     ar_instruction_ast__destroy(own_ast);
     ar_instruction_parser__destroy(own_parser);
 }

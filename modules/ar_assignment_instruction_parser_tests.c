@@ -357,6 +357,43 @@ static void test_assignment_instruction_parser__parse_build_call_expression(void
     ar_log__destroy(own_log);
 }
 
+static void test_assignment_instruction_parser__parse_if_call_expression(void) {
+    printf("Testing assignment parsing with if call expression...\n");
+
+    // Given an assignment whose RHS is a pure if() expression
+    ar_log_t *own_log = ar_log__create();
+    AR_ASSERT(own_log != NULL, "Log creation should succeed");
+    const char *instruction = "memory.result := if(memory.enabled, \"yes\", \"no\")";
+    ar_assignment_instruction_parser_t *own_parser =
+        ar_assignment_instruction_parser__create(own_log);
+    AR_ASSERT(own_parser != NULL, "Assignment parser creation should succeed");
+
+    // When parsing the assignment directly
+    ar_instruction_ast_t *own_ast =
+        ar_assignment_instruction_parser__parse(own_parser, instruction);
+
+    // Then the assignment parser should accept the if() expression
+    AR_ASSERT(own_ast != NULL, "If expression assignment should parse");
+    AR_ASSERT(ar_instruction_ast__get_type(own_ast) == AR_INSTRUCTION_AST_TYPE__ASSIGNMENT,
+              "If expression should parse as an assignment RHS");
+    AR_ASSERT(strcmp(ar_instruction_ast__get_assignment_path(own_ast), "memory.result") == 0,
+              "Assignment path should be preserved");
+    const ar_expression_ast_t *ref_expr_ast =
+        ar_instruction_ast__get_assignment_expression_ast(own_ast);
+    AR_ASSERT(ref_expr_ast != NULL, "Assignment should carry parsed if expression AST");
+    AR_ASSERT(ar_expression_ast__get_type(ref_expr_ast) == AR_EXPRESSION_AST_TYPE__CALL,
+              "Assigned if expression should be a call AST");
+    AR_ASSERT(strcmp(ar_expression_ast__get_function_name(ref_expr_ast), "if") == 0,
+              "Assigned if expression should preserve the function name");
+    AR_ASSERT(ar_log__get_last_error_message(own_log) == NULL,
+              "Parser should not log an error for if expression assignment");
+
+    // Cleanup
+    ar_instruction_ast__destroy(own_ast);
+    ar_assignment_instruction_parser__destroy(own_parser);
+    ar_log__destroy(own_log);
+}
+
 /**
  * Tests NULL parameter error logging following patterns from:
  * - kb/test-assertion-strength-patterns.md
@@ -427,6 +464,7 @@ int main(void) {
     test_assignment_instruction_parser__parse_with_expression_ast();
     test_assignment_instruction_parser__parse_parse_call_expression();
     test_assignment_instruction_parser__parse_build_call_expression();
+    test_assignment_instruction_parser__parse_if_call_expression();
     
     // Error logging tests
     test_assignment_instruction_parser__parse_null_instruction();

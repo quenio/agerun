@@ -424,6 +424,117 @@ static void test_parse_nested_tail_pure_function_call_expression(void) {
     ar_log__destroy(own_log);
 }
 
+static void test_parse_if_pure_function_call_expression(void) {
+    printf("Testing if pure function call expression parsing...\n");
+
+    // Given an if() pure function call expression
+    ar_log_t *own_log = ar_log__create();
+    AR_ASSERT(own_log != NULL, "Log creation should succeed");
+    const char *ref_expression = "if(memory.enabled, \"ready\", \"blocked\")";
+    ar_expression_parser_t *own_parser =
+        ar_expression_parser__create(own_log, ref_expression);
+    AR_ASSERT(own_parser != NULL, "Parser creation should succeed");
+
+    // When parsing the expression
+    ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
+
+    // Then it should produce a pure call AST
+    AR_ASSERT(own_ast != NULL, "if() expression should parse");
+    AR_ASSERT(ar_expression_ast__get_type(own_ast) == AR_EXPRESSION_AST_TYPE__CALL,
+              "if() should parse as a call expression");
+    AR_ASSERT(strcmp(ar_expression_ast__get_function_name(own_ast), "if") == 0,
+              "Call name should be if");
+    AR_ASSERT(ar_expression_ast__get_function_arg_count(own_ast) == 3,
+              "if() should preserve three arguments");
+    const ar_expression_ast_t *ref_condition = ar_expression_ast__get_function_arg(own_ast, 0);
+    AR_ASSERT(ref_condition != NULL, "Condition argument should be present");
+    AR_ASSERT(ar_expression_ast__get_type(ref_condition) == AR_EXPRESSION_AST_TYPE__MEMORY_ACCESS,
+              "Condition should parse as an ordinary expression");
+    AR_ASSERT(ar_log__get_last_error_message(own_log) == NULL,
+              "Parser should not log an error for if() expression");
+
+    // Cleanup
+    ar_expression_ast__destroy(own_ast);
+    ar_expression_parser__destroy(own_parser);
+    ar_log__destroy(own_log);
+}
+
+static void test_parse_if_composes_in_literals_and_nested_calls(void) {
+    printf("Testing if composition in literals and nested calls...\n");
+
+    // Given a list literal containing if()
+    ar_log_t *own_log = ar_log__create();
+    AR_ASSERT(own_log != NULL, "Log creation should succeed");
+    ar_expression_parser_t *own_parser =
+        ar_expression_parser__create(own_log, "[if(1, 2, 3)]");
+    AR_ASSERT(own_parser != NULL, "Parser creation should succeed");
+
+    // When parsing the list expression
+    ar_expression_ast_t *own_list_ast = ar_expression_parser__parse_expression(own_parser);
+
+    // Then the list item should be an if() call
+    AR_ASSERT(own_list_ast != NULL, "List literal with if() should parse");
+    AR_ASSERT(ar_expression_ast__get_type(own_list_ast) == AR_EXPRESSION_AST_TYPE__LITERAL_LIST,
+              "Outer expression should be a list literal");
+    const ar_expression_ast_t *ref_list_item = ar_expression_ast__get_list_item(own_list_ast, 0);
+    AR_ASSERT(ref_list_item != NULL, "List item should be present");
+    AR_ASSERT(ar_expression_ast__get_type(ref_list_item) == AR_EXPRESSION_AST_TYPE__CALL,
+              "List item should parse as a call");
+    AR_ASSERT(strcmp(ar_expression_ast__get_function_name(ref_list_item), "if") == 0,
+              "List item call should be if");
+    ar_expression_ast__destroy(own_list_ast);
+    ar_expression_parser__destroy(own_parser);
+
+    // Given a map literal containing if()
+    own_parser = ar_expression_parser__create(own_log, "{status: if(0, \"yes\", \"no\")}");
+    AR_ASSERT(own_parser != NULL, "Parser creation should succeed");
+
+    // When parsing the map expression
+    ar_expression_ast_t *own_map_ast = ar_expression_parser__parse_expression(own_parser);
+
+    // Then the map value should be an if() call
+    AR_ASSERT(own_map_ast != NULL, "Map literal with if() should parse");
+    AR_ASSERT(ar_expression_ast__get_type(own_map_ast) == AR_EXPRESSION_AST_TYPE__LITERAL_MAP,
+              "Outer expression should be a map literal");
+    const ar_expression_ast_t *ref_map_value = ar_expression_ast__get_map_value(own_map_ast, 0);
+    AR_ASSERT(ref_map_value != NULL, "Map value should be present");
+    AR_ASSERT(ar_expression_ast__get_type(ref_map_value) == AR_EXPRESSION_AST_TYPE__CALL,
+              "Map value should parse as a call");
+    AR_ASSERT(strcmp(ar_expression_ast__get_function_name(ref_map_value), "if") == 0,
+              "Map value call should be if");
+    ar_expression_ast__destroy(own_map_ast);
+    ar_expression_parser__destroy(own_parser);
+
+    // Given a nested pure call using if() as an argument
+    own_parser = ar_expression_parser__create(
+        own_log,
+        "build(if(1, \"Hello {name}\", \"Bye\"), {name: \"Ada\"})"
+    );
+    AR_ASSERT(own_parser != NULL, "Parser creation should succeed");
+
+    // When parsing the nested call expression
+    ar_expression_ast_t *own_build_ast = ar_expression_parser__parse_expression(own_parser);
+
+    // Then the nested argument should be an if() call
+    AR_ASSERT(own_build_ast != NULL, "Nested build(if()) expression should parse");
+    AR_ASSERT(ar_expression_ast__get_type(own_build_ast) == AR_EXPRESSION_AST_TYPE__CALL,
+              "Outer expression should be a call");
+    const ar_expression_ast_t *ref_build_arg =
+        ar_expression_ast__get_function_arg(own_build_ast, 0);
+    AR_ASSERT(ref_build_arg != NULL, "Build argument should be present");
+    AR_ASSERT(ar_expression_ast__get_type(ref_build_arg) == AR_EXPRESSION_AST_TYPE__CALL,
+              "Build argument should parse as a call");
+    AR_ASSERT(strcmp(ar_expression_ast__get_function_name(ref_build_arg), "if") == 0,
+              "Build argument call should be if");
+    AR_ASSERT(ar_log__get_last_error_message(own_log) == NULL,
+              "Parser should not log an error for if() composition");
+
+    // Cleanup
+    ar_expression_ast__destroy(own_build_ast);
+    ar_expression_parser__destroy(own_parser);
+    ar_log__destroy(own_log);
+}
+
 static void test_reject_effectful_function_call_expression(void) {
     printf("Testing effectful function call expression rejection...\n");
 
@@ -449,6 +560,29 @@ static void test_reject_effectful_function_call_expression(void) {
 
     ar_expression_parser__destroy(parser);
     ar_log__destroy(log);
+}
+
+static void test_reject_effectful_function_call_inside_if_expression(void) {
+    printf("Testing effectful call inside if expression rejection...\n");
+
+    // Given an if() expression containing an effectful instruction call
+    ar_log_t *own_log = ar_log__create();
+    AR_ASSERT(own_log != NULL, "Log creation should succeed");
+    ar_expression_parser_t *own_parser =
+        ar_expression_parser__create(own_log, "if(1, send(1, {}), 0)");
+    AR_ASSERT(own_parser != NULL, "Parser creation should succeed");
+
+    // When parsing the expression
+    ar_expression_ast_t *own_ast = ar_expression_parser__parse_expression(own_parser);
+
+    // Then parsing should reject the effectful branch expression
+    AR_ASSERT(own_ast == NULL, "Effectful instruction calls should not parse in if()");
+    AR_ASSERT(ar_log__get_last_error_message(own_log) != NULL,
+              "Parser should log an error for effectful calls inside if()");
+
+    // Cleanup
+    ar_expression_parser__destroy(own_parser);
+    ar_log__destroy(own_log);
 }
 
 static void test_reject_effectful_function_call_in_literal_restores_position(void) {
@@ -1101,7 +1235,10 @@ int main(void) {
     test_parse_build_pure_function_call_expression();
     test_parse_head_pure_function_call_expression();
     test_parse_nested_tail_pure_function_call_expression();
+    test_parse_if_pure_function_call_expression();
+    test_parse_if_composes_in_literals_and_nested_calls();
     test_reject_effectful_function_call_expression();
+    test_reject_effectful_function_call_inside_if_expression();
     test_reject_effectful_function_call_in_literal_restores_position();
     test_parse_integer_literal();
     test_parse_negative_integer();

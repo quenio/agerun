@@ -173,7 +173,7 @@ The current language partially satisfies those principles:
   memory-only mutation targets, protected `memory.self` paths, no-op `send(0, ...)` and
   `spawn(0, ...)` behavior, and raw string values with boundary-only quote/backslash parsing.
 - **Composability**: Literals, accessors, operators, registered pure calls such as `parse(...)`,
-  `build(...)`, `head(...)`, and `tail(...)`, and one-line list/map literals compose as
+  `build(...)`, `if(...)`, `head(...)`, and `tail(...)`, and one-line list/map literals compose as
   expressions. Effectful built-in calls are not expressions and remain sequenced instructions.
   Multi-line literals are assignment-only.
 - **Orthogonality**: Current documented exceptions include memory-only mutation targets, integer `0`
@@ -213,6 +213,7 @@ The following BNF grammar defines the syntax of individual instructions allowed 
 
 <pure-function-call> ::= <parse-function>
                        | <build-function>
+                       | <if-function>
                        | <head-function>
                        | <tail-function>
 
@@ -256,11 +257,13 @@ Instructions in an agent method can be of two types:
   - `if` - Evaluates a condition and returns one of two values based on the result
 
 Pure function calls are expressions. Registered pure calls such as `parse(...)`, `build(...)`,
-`head(...)`, and `tail(...)` can appear anywhere an expression is accepted, including assignment
+`if(...)`, `head(...)`, and `tail(...)` can appear anywhere an expression is accepted, including assignment
 right-hand sides, function-call arguments, list items, map values, nested pure calls, and selected
-`if(...)` branch values. Standalone pure calls remain accepted for compatibility; `parse(...)`
-discards its returned map, `build(...)` uses the existing top-level build instruction behavior, and
-standalone `head(...)` / `tail(...)` calls compute and discard their values.
+`if(...)` branch values. Expression-level `if(...)` is lazy and evaluates only the selected branch.
+Standalone pure calls remain accepted for compatibility; `parse(...)` discards its returned map,
+`build(...)` uses the existing top-level build instruction behavior, standalone `if(...)` uses the
+existing condition instruction behavior, and standalone `head(...)` / `tail(...)` calls compute and
+discard their values.
 
 Function call instructions can optionally assign their result to a variable. For example:
 - `send(agent_id, message)` - Call the function without storing the result
@@ -273,7 +276,7 @@ Function call instructions can optionally assign their result to a variable. For
 - `deprecate(method_name, method_version)` - Deprecate a method without storing the result
 - `success := deprecate(method_name, method_version)` - Deprecate a method and store the result
 - `if(condition, true_value, false_value)` - Evaluate without storing the result
-- `result := if(condition, true_value, false_value)` - Store the result in a memory variable
+- `memory.result := if(condition, true_value, false_value)` - Store the pure expression result in memory
 - `memory.parsed := parse("name={name}", message.text)` - Store a pure parse expression result
 - `memory.text := build("Hello {name}", {name: "Ada"})` - Store a pure build expression result
 - `memory.next := head(memory.targets)` - Store a pure head expression result
@@ -423,7 +426,7 @@ send(memory.next_self, {targets: memory.remaining_targets, payload: message.payl
 
 ### 6. Conditional Evaluation
 
-- `if(condition: expression, true_value, false_value)`: Evaluates the condition first, treats integer `0` as false, a non-zero integer as true, and non-integer condition values as false, then evaluates and returns only the selected branch expression.
+- `if(condition: expression, true_value: expression, false_value: expression) → data | integer`: Pure expression call that evaluates the condition first, treats integer `0` as false, a non-zero integer as true, and non-integer or missing condition values as false, then evaluates and returns only the selected branch expression. The unselected branch is never evaluated. If the selected branch cannot produce a value, expression-level `if(...)` returns integer `0`.
 
 ### 7. Agent Management
 
