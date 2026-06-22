@@ -559,11 +559,6 @@ expressions the next recommended follow-up:
   static analysis found no bugs; no memory leaks detected.
 - `make check-logs`: passed; no unexpected errors, warnings, leaks, or suspicious patterns found.
 - `make sanitize-tests 2>&1`: passed.
-- `make check-docs`: passed; 754 documentation files checked.
-- `make build 2>&1`: passed; 111 tests ran in normal, sanitizer, and thread-sanitizer legs; static
-  analysis found no bugs; no memory leaks detected.
-- `make check-logs`: passed; no unexpected errors, warnings, leaks, or suspicious patterns found.
-- `make sanitize-tests 2>&1`: passed.
 
 After lazy pure `if(...)` expressions landed, this report was revised to mark the condition
 selection slice and shared `ar_condition` truthiness baseline as satisfied, to record path-neutral
@@ -571,3 +566,11 @@ argument handling and lazy selected-branch evaluation, and to make pure `append(
 next recommended follow-up:
 
 - focused parser/evaluator/instruction tests: passed.
+- `make check-test-structure 2>&1`: passed.
+- `make check-docs 2>&1`: passed; 754 documentation files checked.
+- `make build 2>&1`: passed; 111 tests ran in normal, sanitizer, and thread-sanitizer legs; static
+  analysis found no bugs; no memory leaks detected.
+- `make check-logs 2>&1`: passed; no unexpected errors, warnings, leaks, or suspicious patterns
+  found.
+- `make sanitize-tests 2>&1`: passed.
+- `make check-all 2>&1`: passed.
