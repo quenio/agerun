@@ -14,8 +14,9 @@
  * with create/destroy lifecycle.
  *
  * The if() function syntax:
- * - if(condition, then_instruction, else_instruction)
- * - Can be used with assignment: memory.result := if(cond, val1, val2)
+ * - if(condition, then_expression, else_expression)
+ * - Compatibility result paths are supported by the specialized parser; the unified parser routes
+ *   memory.result := if(cond, val1, val2) through ordinary assignment expression parsing.
  */
 
 /* Forward declaration of opaque parser type */

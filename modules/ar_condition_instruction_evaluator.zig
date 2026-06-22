@@ -7,6 +7,7 @@ const c = @cImport({
     @cInclude("ar_data.h");
     @cInclude("ar_instruction_ast.h");
     @cInclude("ar_expression_evaluator.h");
+    @cInclude("ar_condition.h");
 });
 
 const ar_allocator = @import("ar_allocator.zig");
@@ -111,11 +112,8 @@ export fn ar_condition_instruction_evaluator__evaluate(
         return false;
     }
     
-    // Check condition value (0 is false, non-zero is true)
-    var condition_is_true = false;
-    if (c.ar_data__get_type(own_condition_result) == c.AR_DATA_TYPE__INTEGER) {
-        condition_is_true = (c.ar_data__get_integer(own_condition_result) != 0);
-    }
+    // Check condition value using shared AgeRun truthiness.
+    const condition_is_true = c.ar_condition__is_true(own_condition_result);
     
     // Select which expression AST to evaluate based on condition
     const ref_ast_to_eval = if (condition_is_true) ref_true_ast else ref_false_ast;

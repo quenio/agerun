@@ -204,6 +204,7 @@ typedef struct {
 static const ar_pure_function_spec_t PURE_FUNCTIONS[] = {
     {"parse", 2},
     {"build", 2},
+    {"if", 3},
     {"head", 1},
     {"tail", 1}
 };

@@ -5,6 +5,7 @@ const c = @cImport({
     @cInclude("ar_build.h");
     @cInclude("ar_head.h");
     @cInclude("ar_tail.h");
+    @cInclude("ar_condition.h");
     @cInclude("ar_data.h");
     @cInclude("ar_log.h");
     @cInclude("ar_frame.h");
@@ -510,6 +511,52 @@ fn _evaluate_tail_call(
     return own_result;
 }
 
+fn _create_zero_result(
+    ref_log: ?*c.ar_log_t
+) ?*c.ar_data_t {
+    const own_result = c.ar_data__create_integer(0);
+    if (own_result == null) {
+        c.ar_log__error(ref_log, "evaluate_function_call: Failed to create integer fallback");
+    }
+    return own_result;
+}
+
+fn _evaluate_if_call(
+    ref_log: ?*c.ar_log_t,
+    ref_frame: ?*const c.ar_frame_t,
+    ref_node: ?*const c.ar_expression_ast_t
+) ?*c.ar_data_t {
+    if (c.ar_expression_ast__get_function_arg_count(ref_node) != 3) {
+        return _create_zero_result(ref_log);
+    }
+
+    const ref_condition_ast = c.ar_expression_ast__get_function_arg(ref_node, 0);
+    const ref_true_ast = c.ar_expression_ast__get_function_arg(ref_node, 1);
+    const ref_false_ast = c.ar_expression_ast__get_function_arg(ref_node, 2);
+
+    const condition_result = if (ref_condition_ast != null)
+        _evaluate_read_only_expression(ref_log, ref_frame, ref_condition_ast)
+    else
+        null;
+    defer if (condition_result != null) _destroy_temporary_result(condition_result, ref_frame);
+
+    const ref_selected_ast = if (c.ar_condition__is_true(condition_result))
+        ref_true_ast
+    else
+        ref_false_ast;
+
+    if (ref_selected_ast == null) {
+        return _create_zero_result(ref_log);
+    }
+
+    const own_result = _evaluate_expression(ref_log, ref_frame, ref_selected_ast);
+    if (own_result == null) {
+        return _create_zero_result(ref_log);
+    }
+
+    return own_result;
+}
+
 fn _evaluate_function_call(
     ref_log: ?*c.ar_log_t,
     ref_frame: ?*const c.ar_frame_t,
@@ -535,6 +582,10 @@ fn _evaluate_function_call(
 
     if (c.strcmp(function_name, "build") == 0) {
         return _evaluate_build_call(ref_log, ref_frame, ref_node);
+    }
+
+    if (c.strcmp(function_name, "if") == 0) {
+        return _evaluate_if_call(ref_log, ref_frame, ref_node);
     }
 
     if (c.strcmp(function_name, "head") == 0) {
